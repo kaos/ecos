@@ -237,7 +237,7 @@ struct socket {
  * Unless SB_NOINTR is set on sockbuf, sleep is interruptible.
  * Returns error without lock if sleep is interrupted.
  */
-#ifdef __ECOS__
+#ifdef __ECOS
 extern int  sblock(struct sockbuf *sb, int wf);
 extern void sbunlock(struct sockbuf *sb);
 #else

@@ -1,3 +1,19 @@
+2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/mqueue.cxx (mq_open): Conditionalize use of sigev correctly.
+	(mq_close): Similarly.
+
+2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/pthread.cdl (CYGNUM_POSIX_MAIN_DEFAULT_PRIORITY): Clarify
+	POSIX thread priority description.
+
+2001-09-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/pthread.cdl: Changed default priority of POSIX main to
+	16. This allows service threads (such as DHCP thread) to run when
+	started from main().
+
 2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pthread.h: Separate mutex and condvar API into separate

@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -31,8 +31,7 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      jskov
-# Original data:  bartv
+# Author(s):      nickg
 # Contributors:
 # Date:           1999-11-02
 #
@@ -69,6 +68,11 @@ cdl_package CYGPKG_HAL_MIPS_VR4300_VRC4373 {
         description   "
            When targetting the VRC4373 board it is possible to build
            the system for either RAM bootstrap or ROM bootstrap."
+    }
+
+    cdl_option CYGPKG_HAL_MIPS_MSBFIRST {
+        display    "CPU big-endian"
+        calculated { 1 }
     }
 
     # Real-time clock/counter specifics

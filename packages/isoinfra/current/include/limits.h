@@ -200,6 +200,11 @@
 # endif
 #endif
 
+/* When using a crosscompiler targeting linux, the next limits.h file
+   in the include sequence may be the glibc header - which breaks our
+   world. So skip it by defining _LIBC_LIMITS_H_ */
+#define _LIBC_LIMITS_H_
+
 #include_next <limits.h>
 
 #endif /* CYGONCE_ISO_LIMITS_H multiple inclusion protection */

@@ -317,7 +317,9 @@ mq_open( const char *name, int oflag, ... )
         mqtab[i].maxmsg  = attr->mq_maxmsg;
         mqtab[i].msgsize = attr->mq_msgsize;
         mqtab[i].unlinkme = false;
+#ifdef CYGFUN_POSIX_MQUEUE_NOTIFY
         mqtab[i].sigev = NULL;
+#endif
         strncpy( mqtab[i].name, name, PATH_MAX );
 
         // initialize first mqtab[i].users
@@ -420,6 +422,7 @@ mq_close( mqd_t mqdes )
     // perhaps should return EBADF instead of assert?
     CYG_ASSERT( tabent->users != NULL, "Null message queue user list" );
 
+#ifdef CYGFUN_POSIX_MQUEUE_NOTIFY
     // deregister notification iff this was the message queue descriptor
     // that was used to register it (POSIX says)
     if ( true == user->notifieruser ) {
@@ -427,6 +430,7 @@ mq_close( mqd_t mqdes )
         tabent->sigev = NULL;
         // not worth clearing notifieruser
     }
+#endif
 
     // find in the list for this queue and remove - sucks a bit, but seems
     // best over all - the list shouldn't be too long

@@ -1,3 +1,8 @@
+2001-09-26  Gary Thomas  <gthomas@redhat.com
+
+	* cdl/hal_arm_edb7xxx.cdl: Implement CYGINT_HAL_SUPPORTS_MMU_TABLES
+	to show that this HAL uses MMU tables.
+
 2001-07-25  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_arm_edb7211_ram.h:

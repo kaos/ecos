@@ -1,3 +1,8 @@
+2001-09-28  Richard Panton <rpanton@3glab.com>
+
+	* include/hal_platform_setup.h: Use correct MMU control register bits
+	during initial disable.
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_cmds.c: 

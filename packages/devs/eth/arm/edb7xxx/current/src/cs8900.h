@@ -63,7 +63,6 @@
 #define CS8900_ISQ    *(volatile unsigned short *)(CS8900_BASE+0x10)
 #define CS8900_PPTR   *(volatile unsigned short *)(CS8900_BASE+0x14)
 #define CS8900_PDATA  *(volatile unsigned short *)(CS8900_BASE+0x18)
-
 #define ISQ_RxEvent     0x04
 #define ISQ_TxEvent     0x08
 #define ISQ_BufEvent    0x0C
@@ -197,8 +196,10 @@
 static __inline__ unsigned short
 get_reg(int regno)
 {
+    unsigned short val;
     CS8900_PPTR = regno;
-    return CS8900_PDATA;
+    val = CS8900_PDATA;
+    return val;
 }
 
 static __inline__ void

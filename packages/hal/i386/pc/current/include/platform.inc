@@ -76,8 +76,8 @@ hal_cpu_init_start:
 	lgdt	0
 
 	# Make an IDT pointer in location 0 and load new LDTR
-	movw	$0x77F,%eax
-	movw	%eax,0
+	movw	$0x77F,%ax
+	movw	%ax,0
 	leal	idtStart,%eax
 	movl	%eax,2	
 	lidt	0
@@ -140,6 +140,8 @@ gdtEnd:
 	movw	%ax, %fs
 	movw	%ax, %gs
 
+	movw	%ax, %ss
+	
 	# Set up SP
 	movl	$__interrupt_stack,%esp
 	

@@ -94,7 +94,7 @@ do_ping(int argc, char *argv[])
     init_opts(&opts[2], 'i', true, OPTION_ARG_TYPE_STR, 
               (void **)&local_ip_addr, (bool *)&local_ip_addr_set, "local IP address");
     init_opts(&opts[3], 'h', true, OPTION_ARG_TYPE_STR, 
-              (void **)&host_ip_addr, (bool *)&host_ip_addr_set, "host IP address");
+              (void **)&host_ip_addr, (bool *)&host_ip_addr_set, "host name or IP address");
     init_opts(&opts[4], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void **)&length, (bool *)&length_set, "<length> - size of payload");
     init_opts(&opts[5], 'v', false, OPTION_ARG_TYPE_FLG, 
@@ -108,24 +108,25 @@ do_ping(int argc, char *argv[])
     // Set defaults; this has to be done _after_ the scan, since it will
     // have destroyed all values not explicitly set.
     if (local_ip_addr_set) {
-        if (!inet_aton(local_ip_addr, (in_addr_t *)&local_addr)) {
-            diag_printf("PING - Invalid IP address: %s\n", local_ip_addr);
+        if (!_gethostbyname(local_ip_addr, (in_addr_t *)&local_addr)) {
+            diag_printf("PING - Invalid local name: %s\n", local_ip_addr);
             return;
         }
     } else {
         memcpy((in_addr_t *)&local_addr, __local_ip_addr, sizeof(__local_ip_addr));
     }
     if (host_ip_addr_set) {
-        if (!inet_aton(host_ip_addr, (in_addr_t *)&host_addr)) {
-            diag_printf("PING - Invalid IP address: %s\n", host_ip_addr);
+        if (!_gethostbyname(host_ip_addr, (in_addr_t *)&host_addr)) {
+            diag_printf("PING - Invalid host name: %s\n", host_ip_addr);
             return;
         }
         if (__arp_lookup((ip_addr_t *)&host_addr.sin_addr, &dest_ip) < 0) {
-            diag_printf("PING: Can't find address of server '%s'\n", host_ip_addr);
+            diag_printf("PING: Cannot reach server '%s' (%s)\n", 
+                        host_ip_addr, inet_ntoa((in_addr_t *)&host_addr));
             return;
         }
     } else {
-        diag_printf("PING - host IP address required\n");
+        diag_printf("PING - host name or IP address required\n");
         return;
     }
 #define DEFAULT_LENGTH   64

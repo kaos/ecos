@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      io/serial/mips/vrc4373_serial.c
+//      io/serial/mips/vrc437x_serial.c
 //
-//      Mips VRC4373 Serial I/O Interface Module (interrupt driven)
+//      Mips VRC437X Serial I/O Interface Module (interrupt driven)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -34,7 +34,7 @@
 // Author(s):    gthomas
 // Contributors: gthomas
 // Date:         1999-04-15
-// Purpose:      VRC4373 Serial I/O module (interrupt driven version)
+// Purpose:      VRC437X Serial I/O module (interrupt driven version)
 // Description: 
 //
 //####DESCRIPTIONEND####
@@ -49,73 +49,73 @@
 #include <cyg/io/devtab.h>
 #include <cyg/io/serial.h>
 
-#ifdef CYGPKG_IO_SERIAL_MIPS_VRC4373
+#ifdef CYGPKG_IO_SERIAL_MIPS_VRC437X
 
-#include "vrc4373_serial.h"
+#include "vrc437x_serial.h"
 
 #if defined(CYGPKG_HAL_MIPS_LSBFIRST)
-#define VRC4373_SCC_BASE 0xC1000000
+#define VRC437X_SCC_BASE 0xC1000000
 #elif defined(CYGPKG_HAL_MIPS_MSBFIRST)
-#define VRC4373_SCC_BASE 0xC1000003
+#define VRC437X_SCC_BASE 0xC1000003
 #else
 #error MIPS endianness not defined by configuration
 #endif
 
-#define VRC4373_SCC_INT  CYGNUM_HAL_INTERRUPT_DUART
+#define VRC437X_SCC_INT  CYGNUM_HAL_INTERRUPT_DUART
 #define SCC_CHANNEL_A             4
 #define SCC_CHANNEL_B             0
 
 extern void diag_printf(const char *fmt, ...);
 
-typedef struct vrc4373_serial_info {
+typedef struct vrc437x_serial_info {
     CYG_ADDRWORD   base;
     unsigned char  regs[16];   // Known register state (since hardware is write-only!)
-} vrc4373_serial_info;
+} vrc437x_serial_info;
 
-static bool vrc4373_serial_init(struct cyg_devtab_entry *tab);
-static bool vrc4373_serial_putc(serial_channel *chan, unsigned char c);
-static Cyg_ErrNo vrc4373_serial_lookup(struct cyg_devtab_entry **tab, 
+static bool vrc437x_serial_init(struct cyg_devtab_entry *tab);
+static bool vrc437x_serial_putc(serial_channel *chan, unsigned char c);
+static Cyg_ErrNo vrc437x_serial_lookup(struct cyg_devtab_entry **tab, 
                                        struct cyg_devtab_entry *sub_tab,
                                        const char *name);
-static unsigned char vrc4373_serial_getc(serial_channel *chan);
-static Cyg_ErrNo vrc4373_serial_set_config(serial_channel *chan, cyg_uint32 key,
+static unsigned char vrc437x_serial_getc(serial_channel *chan);
+static Cyg_ErrNo vrc437x_serial_set_config(serial_channel *chan, cyg_uint32 key,
                                            const void *xbuf, cyg_uint32 *len);
-static void vrc4373_serial_start_xmit(serial_channel *chan);
-static void vrc4373_serial_stop_xmit(serial_channel *chan);
+static void vrc437x_serial_start_xmit(serial_channel *chan);
+static void vrc437x_serial_stop_xmit(serial_channel *chan);
 
-static cyg_uint32 vrc4373_serial_ISR(cyg_vector_t vector, cyg_addrword_t data);
-static void       vrc4373_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
+static cyg_uint32 vrc437x_serial_ISR(cyg_vector_t vector, cyg_addrword_t data);
+static void       vrc437x_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
 
-static SERIAL_FUNS(vrc4373_serial_funs, 
-                   vrc4373_serial_putc, 
-                   vrc4373_serial_getc,
-                   vrc4373_serial_set_config,
-                   vrc4373_serial_start_xmit,
-                   vrc4373_serial_stop_xmit
+static SERIAL_FUNS(vrc437x_serial_funs, 
+                   vrc437x_serial_putc, 
+                   vrc437x_serial_getc,
+                   vrc437x_serial_set_config,
+                   vrc437x_serial_start_xmit,
+                   vrc437x_serial_stop_xmit
     );
 
-#ifdef CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0
-static vrc4373_serial_info vrc4373_serial_info0 = {VRC4373_SCC_BASE+SCC_CHANNEL_A};
-#if CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BUFSIZE > 0
-static unsigned char vrc4373_serial_out_buf0[CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BUFSIZE];
-static unsigned char vrc4373_serial_in_buf0[CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BUFSIZE];
+#ifdef CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL0
+static vrc437x_serial_info vrc437x_serial_info0 = {VRC437X_SCC_BASE+SCC_CHANNEL_A};
+#if CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BUFSIZE > 0
+static unsigned char vrc437x_serial_out_buf0[CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BUFSIZE];
+static unsigned char vrc437x_serial_in_buf0[CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BUFSIZE];
 
-static SERIAL_CHANNEL_USING_INTERRUPTS(vrc4373_serial_channel0,
-                                       vrc4373_serial_funs, 
-                                       vrc4373_serial_info0,
-                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BAUD),
+static SERIAL_CHANNEL_USING_INTERRUPTS(vrc437x_serial_channel0,
+                                       vrc437x_serial_funs, 
+                                       vrc437x_serial_info0,
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BAUD),
                                        CYG_SERIAL_STOP_DEFAULT,
                                        CYG_SERIAL_PARITY_DEFAULT,
                                        CYG_SERIAL_WORD_LENGTH_DEFAULT,
                                        CYG_SERIAL_FLAGS_DEFAULT,
-                                       &vrc4373_serial_out_buf0[0], sizeof(vrc4373_serial_out_buf0),
-                                       &vrc4373_serial_in_buf0[0], sizeof(vrc4373_serial_in_buf0)
+                                       &vrc437x_serial_out_buf0[0], sizeof(vrc437x_serial_out_buf0),
+                                       &vrc437x_serial_in_buf0[0], sizeof(vrc437x_serial_in_buf0)
     );
 #else
-static SERIAL_CHANNEL(vrc4373_serial_channel0,
-                      vrc4373_serial_funs, 
-                      vrc4373_serial_info0,
-                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL0_BAUD),
+static SERIAL_CHANNEL(vrc437x_serial_channel0,
+                      vrc437x_serial_funs, 
+                      vrc437x_serial_info0,
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL0_BAUD),
                       CYG_SERIAL_STOP_DEFAULT,
                       CYG_SERIAL_PARITY_DEFAULT,
                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
@@ -123,38 +123,38 @@ static SERIAL_CHANNEL(vrc4373_serial_channel0,
     );
 #endif
 
-DEVTAB_ENTRY(vrc4373_serial_io0, 
-             CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL0_NAME,
+DEVTAB_ENTRY(vrc437x_serial_io0, 
+             CYGDAT_IO_SERIAL_MIPS_VRC437X_SERIAL0_NAME,
              0,                     // Does not depend on a lower level interface
              &cyg_io_serial_devio, 
-             vrc4373_serial_init, 
-             vrc4373_serial_lookup,     // Serial driver may need initializing
-             &vrc4373_serial_channel0
+             vrc437x_serial_init, 
+             vrc437x_serial_lookup,     // Serial driver may need initializing
+             &vrc437x_serial_channel0
     );
-#endif //  CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0
+#endif //  CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL0
 
-#ifdef CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1
-static vrc4373_serial_info vrc4373_serial_info1 = {VRC4373_SCC_BASE+SCC_CHANNEL_B};
-#if CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BUFSIZE > 0
-static unsigned char vrc4373_serial_out_buf1[CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BUFSIZE];
-static unsigned char vrc4373_serial_in_buf1[CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BUFSIZE];
+#ifdef CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL1
+static vrc437x_serial_info vrc437x_serial_info1 = {VRC437X_SCC_BASE+SCC_CHANNEL_B};
+#if CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BUFSIZE > 0
+static unsigned char vrc437x_serial_out_buf1[CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BUFSIZE];
+static unsigned char vrc437x_serial_in_buf1[CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BUFSIZE];
 
-static SERIAL_CHANNEL_USING_INTERRUPTS(vrc4373_serial_channel1,
-                                       vrc4373_serial_funs, 
-                                       vrc4373_serial_info1,
-                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BAUD),
+static SERIAL_CHANNEL_USING_INTERRUPTS(vrc437x_serial_channel1,
+                                       vrc437x_serial_funs, 
+                                       vrc437x_serial_info1,
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BAUD),
                                        CYG_SERIAL_STOP_DEFAULT,
                                        CYG_SERIAL_PARITY_DEFAULT,
                                        CYG_SERIAL_WORD_LENGTH_DEFAULT,
                                        CYG_SERIAL_FLAGS_DEFAULT,
-                                       &vrc4373_serial_out_buf1[0], sizeof(vrc4373_serial_out_buf1),
-                                       &vrc4373_serial_in_buf1[0], sizeof(vrc4373_serial_in_buf1)
+                                       &vrc437x_serial_out_buf1[0], sizeof(vrc437x_serial_out_buf1),
+                                       &vrc437x_serial_in_buf1[0], sizeof(vrc437x_serial_in_buf1)
     );
 #else
-static SERIAL_CHANNEL(vrc4373_serial_channel1,
-                      vrc4373_serial_funs, 
-                      vrc4373_serial_info1,
-                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC4373_SERIAL1_BAUD),
+static SERIAL_CHANNEL(vrc437x_serial_channel1,
+                      vrc437x_serial_funs, 
+                      vrc437x_serial_info1,
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_VRC437X_SERIAL1_BAUD),
                       CYG_SERIAL_STOP_DEFAULT,
                       CYG_SERIAL_PARITY_DEFAULT,
                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
@@ -162,28 +162,28 @@ static SERIAL_CHANNEL(vrc4373_serial_channel1,
     );
 #endif
 
-DEVTAB_ENTRY(vrc4373_serial_io1, 
-             CYGDAT_IO_SERIAL_MIPS_VRC4373_SERIAL1_NAME,
+DEVTAB_ENTRY(vrc437x_serial_io1, 
+             CYGDAT_IO_SERIAL_MIPS_VRC437X_SERIAL1_NAME,
              0,                     // Does not depend on a lower level interface
              &cyg_io_serial_devio, 
-             vrc4373_serial_init, 
-             vrc4373_serial_lookup,     // Serial driver may need initializing
-             &vrc4373_serial_channel1
+             vrc437x_serial_init, 
+             vrc437x_serial_lookup,     // Serial driver may need initializing
+             &vrc437x_serial_channel1
     );
-#endif //  CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1
+#endif //  CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL1
 
-static cyg_interrupt  vrc4373_serial_interrupt;
-static cyg_handle_t   vrc4373_serial_interrupt_handle;
+static cyg_interrupt  vrc437x_serial_interrupt;
+static cyg_handle_t   vrc437x_serial_interrupt_handle;
 
 // Table which maps hardware channels (A,B) to software ones
-struct serial_channel *vrc4373_chans[] = {
-#ifdef CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL0    // Hardware channel A
-    &vrc4373_serial_channel0,        
+struct serial_channel *vrc437x_chans[] = {
+#ifdef CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL0    // Hardware channel A
+    &vrc437x_serial_channel0,        
 #else
     0,
 #endif
-#ifdef CYGPKG_IO_SERIAL_MIPS_VRC4373_SERIAL1    // Hardware channel B
-    &vrc4373_serial_channel1,
+#ifdef CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL1    // Hardware channel B
+    &vrc437x_serial_channel1,
 #else
     0,
 #endif
@@ -248,13 +248,13 @@ scc_write_dat(volatile struct serial_port *port, unsigned char val)
 
 // Internal function to actually configure the hardware to desired baud rate, etc.
 static bool
-vrc4373_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bool init)
+vrc437x_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, bool init)
 {
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
-    volatile struct serial_port *port = (volatile struct serial_port *)vrc4373_chan->base;
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)vrc437x_chan->base;
     cyg_int32 baud_rate = select_baud[new_config->baud];
     cyg_int32 baud_divisor;
-    unsigned char *regs = &vrc4373_chan->regs[0];
+    unsigned char *regs = &vrc437x_chan->regs[0];
     if (baud_rate == 0) return false;
     // Compute state of registers.  The register/control state needs to be kept in
     // the shadow variable 'regs' because the hardware registers can only be written,
@@ -303,36 +303,36 @@ vrc4373_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
 
 // Function to initialize the device.  Called at bootstrap time.
 static bool 
-vrc4373_serial_init(struct cyg_devtab_entry *tab)
+vrc437x_serial_init(struct cyg_devtab_entry *tab)
 {
     serial_channel *chan = (serial_channel *)tab->priv;
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
     static bool init = false;
 #ifdef CYGDBG_IO_INIT
-    diag_printf("VRC4373 SERIAL init '%s' - dev: %x\n", tab->name, vrc4373_chan->base);
+    diag_printf("VRC437X SERIAL init '%s' - dev: %x\n", tab->name, vrc437x_chan->base);
 #endif
     (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
     if (!init && chan->out_cbuf.len != 0) {
         init = true;
 // Note that the hardware is rather broken.  The interrupt status needs to
 // be read using only channel A
-        cyg_drv_interrupt_create(VRC4373_SCC_INT,
+        cyg_drv_interrupt_create(VRC437X_SCC_INT,
                                  99,                     
-                                 (cyg_addrword_t)VRC4373_SCC_BASE+SCC_CHANNEL_A,
-                                 vrc4373_serial_ISR,
-                                 vrc4373_serial_DSR,
-                                 &vrc4373_serial_interrupt_handle,
-                                 &vrc4373_serial_interrupt);
-        cyg_drv_interrupt_attach(vrc4373_serial_interrupt_handle);
-        cyg_drv_interrupt_unmask(VRC4373_SCC_INT);
+                                 (cyg_addrword_t)VRC437X_SCC_BASE+SCC_CHANNEL_A,
+                                 vrc437x_serial_ISR,
+                                 vrc437x_serial_DSR,
+                                 &vrc437x_serial_interrupt_handle,
+                                 &vrc437x_serial_interrupt);
+        cyg_drv_interrupt_attach(vrc437x_serial_interrupt_handle);
+        cyg_drv_interrupt_unmask(VRC437X_SCC_INT);
     }
-    vrc4373_serial_config_port(chan, &chan->config, true);
+    vrc437x_serial_config_port(chan, &chan->config, true);
     return true;
 }
 
 // This routine is called when the device is "looked" up (i.e. attached)
 static Cyg_ErrNo 
-vrc4373_serial_lookup(struct cyg_devtab_entry **tab, 
+vrc437x_serial_lookup(struct cyg_devtab_entry **tab, 
                   struct cyg_devtab_entry *sub_tab,
                   const char *name)
 {
@@ -344,10 +344,10 @@ vrc4373_serial_lookup(struct cyg_devtab_entry **tab,
 // Send a character to the device output buffer.
 // Return 'true' if character is sent to device
 static bool
-vrc4373_serial_putc(serial_channel *chan, unsigned char c)
+vrc437x_serial_putc(serial_channel *chan, unsigned char c)
 {
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
-    volatile struct serial_port *port = (volatile struct serial_port *)vrc4373_chan->base;
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)vrc437x_chan->base;
     if (scc_read_ctl(port, R0) & RR0_TxEmpty) {
 // Transmit buffer is empty
         scc_write_dat(port, c);
@@ -360,11 +360,11 @@ vrc4373_serial_putc(serial_channel *chan, unsigned char c)
 
 // Fetch a character from the device input buffer, waiting if necessary
 static unsigned char 
-vrc4373_serial_getc(serial_channel *chan)
+vrc437x_serial_getc(serial_channel *chan)
 {
     unsigned char c;
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
-    volatile struct serial_port *port = (volatile struct serial_port *)vrc4373_chan->base;
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)vrc437x_chan->base;
     while ((scc_read_ctl(port, R0) & RR0_RxAvail) == 0) ;   // Wait for char
     c = scc_read_dat(port);
     return c;
@@ -372,7 +372,7 @@ vrc4373_serial_getc(serial_channel *chan)
 
 // Set up the device characteristics; baud rate, etc.
 static Cyg_ErrNo
-vrc4373_serial_set_config(serial_channel *chan, cyg_uint32 key,
+vrc437x_serial_set_config(serial_channel *chan, cyg_uint32 key,
                           const void *xbuf, cyg_uint32 *len)
 {
     switch (key) {
@@ -383,7 +383,7 @@ vrc4373_serial_set_config(serial_channel *chan, cyg_uint32 key,
             return -EINVAL;
         }
         *len = sizeof(cyg_serial_info_t);
-        if ( true != vrc4373_serial_config_port(chan, config, false) )
+        if ( true != vrc437x_serial_config_port(chan, config, false) )
             return -EINVAL;
       }
       break;
@@ -395,15 +395,15 @@ vrc4373_serial_set_config(serial_channel *chan, cyg_uint32 key,
 
 // Enable the transmitter on the device
 static void
-vrc4373_serial_start_xmit(serial_channel *chan)
+vrc437x_serial_start_xmit(serial_channel *chan)
 {
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
-    volatile struct serial_port *port = (volatile struct serial_port *)vrc4373_chan->base;
-    if ((vrc4373_chan->regs[R1] & WR1_TxIntEnab) == 0) {
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)vrc437x_chan->base;
+    if ((vrc437x_chan->regs[R1] & WR1_TxIntEnab) == 0) {
         CYG_INTERRUPT_STATE old;
         HAL_DISABLE_INTERRUPTS(old);
-        vrc4373_chan->regs[R1] |= WR1_TxIntEnab;  // Enable Tx interrupt
-        scc_write_ctl(port, R1, vrc4373_chan->regs[R1]);
+        vrc437x_chan->regs[R1] |= WR1_TxIntEnab;  // Enable Tx interrupt
+        scc_write_ctl(port, R1, vrc437x_chan->regs[R1]);
         (chan->callbacks->xmt_char)(chan);  // Send first character to start xmitter
         HAL_RESTORE_INTERRUPTS(old);
     }
@@ -411,33 +411,33 @@ vrc4373_serial_start_xmit(serial_channel *chan)
 
 // Disable the transmitter on the device
 static void 
-vrc4373_serial_stop_xmit(serial_channel *chan)
+vrc437x_serial_stop_xmit(serial_channel *chan)
 {
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
-    volatile struct serial_port *port = (volatile struct serial_port *)vrc4373_chan->base;
-    if ((vrc4373_chan->regs[R1] & WR1_TxIntEnab) != 0) {
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)vrc437x_chan->base;
+    if ((vrc437x_chan->regs[R1] & WR1_TxIntEnab) != 0) {
         CYG_INTERRUPT_STATE old;
         HAL_DISABLE_INTERRUPTS(old);
-        vrc4373_chan->regs[R1] &= ~WR1_TxIntEnab;  // Disable Tx interrupt
-        scc_write_ctl(port, R1, vrc4373_chan->regs[R1]);
+        vrc437x_chan->regs[R1] &= ~WR1_TxIntEnab;  // Disable Tx interrupt
+        scc_write_ctl(port, R1, vrc437x_chan->regs[R1]);
         HAL_RESTORE_INTERRUPTS(old);
     }
 }
 
 // Serial I/O - low level interrupt handler (ISR)
 static cyg_uint32 
-vrc4373_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
+vrc437x_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
-    cyg_drv_interrupt_mask(VRC4373_SCC_INT);
-    cyg_drv_interrupt_acknowledge(VRC4373_SCC_INT);
+    cyg_drv_interrupt_mask(VRC437X_SCC_INT);
+    cyg_drv_interrupt_acknowledge(VRC437X_SCC_INT);
     return CYG_ISR_CALL_DSR;  // Cause DSR to be run
 }
 
 inline static void
-vrc4373_int(serial_channel *chan, unsigned char stat)
+vrc437x_int(serial_channel *chan, unsigned char stat)
 {
-    vrc4373_serial_info *vrc4373_chan = (vrc4373_serial_info *)chan->dev_priv;
-    volatile struct serial_port *port = (volatile struct serial_port *)vrc4373_chan->base;
+    vrc437x_serial_info *vrc437x_chan = (vrc437x_serial_info *)chan->dev_priv;
+    volatile struct serial_port *port = (volatile struct serial_port *)vrc437x_chan->base;
     // Note: 'stat' value is interrupt status register, shifted into "B" position
     if (stat & RR3_BRxIP) {
         // Receive interrupt
@@ -462,7 +462,7 @@ vrc4373_int(serial_channel *chan, unsigned char stat)
 // Also note that the hardware is rather broken.  The interrupt status needs to
 // be read using only channel A (pointed to by 'data')
 static void       
-vrc4373_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+vrc437x_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
     serial_channel *chan;
     volatile struct serial_port *port = (volatile struct serial_port *)data;
@@ -470,16 +470,16 @@ vrc4373_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     while (true) {
         stat = scc_read_ctl(port, R3);
         if (stat & (RR3_AExt | RR3_ATxIP | RR3_ARxIP)) {
-            chan = vrc4373_chans[0];  // Hardware channel A
-            vrc4373_int(chan, stat>>3);  // Handle interrupt
+            chan = vrc437x_chans[0];  // Hardware channel A
+            vrc437x_int(chan, stat>>3);  // Handle interrupt
         } else if (stat & (RR3_BExt | RR3_BTxIP | RR3_BRxIP)) {
-            chan = vrc4373_chans[1];  // Hardware channel B
-            vrc4373_int(chan, stat);  // Handle interrupt
+            chan = vrc437x_chans[1];  // Hardware channel B
+            vrc437x_int(chan, stat);  // Handle interrupt
         } else {
             // No more interrupts, all done
             break;
         }
     }
-    cyg_drv_interrupt_unmask(VRC4373_SCC_INT);
+    cyg_drv_interrupt_unmask(VRC437X_SCC_INT);
 }
 #endif

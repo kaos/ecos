@@ -170,13 +170,15 @@ cdl_component CYGPKG_POSIX_MAIN_THREAD {
 	     display        "main()'s default thread priority"
 	     flavor         data
 	     legal_values   0 to 31
-	     default_value  30
+	     default_value  16
 	     description    "
                 POSIX compatibility requires that the application's
                 main() function be invoked in a thread.
-		This option controls the priority of that thread. Its
-		default value makes it the second highest priority in
-		the system."
+		This option controls the priority of that thread. This
+                priority is the POSIX priority and is NOT the same as
+                an eCos thread priority. With POSIX thread priorities,
+                lower numbers are lower priority, and higher numbers are
+                higher priority."
 	}
 }
 

@@ -696,8 +696,8 @@ id codes, indicating the supported languages. The language code
 </para>
 <programlisting width=72>
 const unsigned char* usb_strings[] = {
-    "\x04\x03\x09\x04",
-    "\x10\x03R\0e\0d\0 \0H\0a\0t\0"
+    "\004\003\011\004",
+    "\020\003R\000e\000d\000 \000H\000a\000t\000"
 };
 
 const usbs_enumeration_data usb_enum_data = {

@@ -46,7 +46,7 @@
 #include <fcntl.h>
 #include <termios.h>
 
-char ReceiveChar(long port)
+char _ReceiveChar(long port)
 {
     char buf;
     int res;
@@ -67,7 +67,7 @@ uspin(int len)
     }
 }
 
-void SendChar(long port, char ch)
+void _SendChar(long port, char ch)
 {
     char buf = ch;
     write(port, &buf, 1);
@@ -76,7 +76,7 @@ void SendChar(long port, char ch)
     uspin(100);
 }
 
-void SetBaud(long port, long reqRate)
+void _SetBaud(long port, long reqRate)
 {
     struct termios buf;
     int rate;
@@ -131,9 +131,10 @@ void SetBaud(long port, long reqRate)
 
     tcdrain(port);
     usleep(1000000/10*2);
+    sleep(2);
 }
 
-int CharReady(long port)
+int _CharReady(long port)
 {
 #ifdef __CYGWIN__
     // Windows doesn't support the below ioctl
@@ -145,12 +146,12 @@ int CharReady(long port)
 #endif
 }
 
-void WaitForOutputEmpty(long port)
+void _WaitForOutputEmpty(long port)
 {
     usleep(2000000);
 }
 
-long OpenPort(char *name)
+long _OpenPort(char *name)
 {
     int fd;
     fd = open(name, O_RDWR|O_NONBLOCK);

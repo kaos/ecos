@@ -422,8 +422,10 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
     // If this is the initializer, start with 0/0/0
     if (CYG_PCI_NULL_DEVID == cur_devid) {
         bus = dev = fn = 0;
+        dev = CYG_PCI_MIN_DEV;
     } else if (CYG_PCI_NULL_DEVFN == (cur_devid & CYG_PCI_NULL_DEVFN)) {
         dev = fn = 0;
+        dev = CYG_PCI_MIN_DEV;
     } else {
         // Otherwise, check multi-function bit of device's first function
         cyg_uint8 header;
@@ -446,7 +448,7 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
 
     // Note: Reset iterators in enclosing statement's "next" part.
     //       Allows resuming scan with given input values. 
-    for (;bus < CYG_PCI_MAX_BUS; bus++, dev=0) {
+    for (;bus < CYG_PCI_MAX_BUS; bus++, dev=CYG_PCI_MIN_DEV) {
         for (;dev < CYG_PCI_MAX_DEV; dev++, fn=0) {
             for (;fn < CYG_PCI_MAX_FN; fn++) {
                 cyg_uint16 vendor;

@@ -524,5 +524,5 @@ put_reg(struct eth_drv_sc *sc, int regno, cyg_uint16 val)
 }
 
 // ------------------------------------------------------------------------
-#endif CYGONCE_DEVS_ETH_AMD_PCNET_H
+#endif // CYGONCE_DEVS_ETH_AMD_PCNET_H
 // EOF amd_pcnet.h

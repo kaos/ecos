@@ -162,6 +162,16 @@ package CYGPKG_DEVS_FLASH_ARM_PID {
 	   on the ARM PID platform."
 }
 
+package CYGPKG_DEVS_FLASH_SH_EDK7708 {
+	alias 		{ "Support for flash memory on Hitachi/EDK7708 board" flash_sh_edk7708 }
+	directory	devs/flash/sh/edk7708
+	script		flash_sh_edk7708.cdl
+	hardware
+        description "
+           This package contains hardware support for flash memory
+	   on the Hitachi EDK7708 platform."
+}
+
 package CYGPKG_DEVS_FLASH_MIPS_OCELOT {
 	alias 		{ "Support for flash memory on PMC-Sierra/Ocelot board" flash_qed_ocelot }
 	directory	devs/flash/mips/ocelot
@@ -331,7 +341,6 @@ package CYGPKG_DEVS_FLASH_ATLAS {
            This package contains hardware support for FLASH memory
 	   on the MIPS Atlas platform."
 }
-
 package CYGPKG_DEVS_TOUCH_IPAQ {
 	alias 		{ "Touch screen support for iPAQ" touch_ipaq }
 	directory	devs/touch/arm/ipaq
@@ -772,6 +781,7 @@ package CYGPKG_DEVS_ETH_CF {
         hardware
         description     "Ethernet drivers for PCMCIA (Compact Flash) cardss."
 }
+
 package CYGPKG_IO_PCI	{
 	alias		{ "PCI configuration library" io_pci }
 	directory	io/pci
@@ -829,6 +839,17 @@ package CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955 {
            This package provides a wallclock driver implementation for the
            Toshiba REF4955 board."
 }
+
+package CYGPKG_DEVICES_WALLCLOCK_I386_PC {
+         alias          { "Standard PC RTC device" devs_wallclock_i386_pc_ds12887 pc_rtc }
+         hardware
+         directory      devs/wallclock/i386/pc
+         script         i386_pc_wallclock_drivers.cdl
+         description    "
+            RTC driver for standard PC. This is essentially support for a
+            Dallas DS12887 RTC."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
 	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
 	directory	devs/watchdog/arm/aeb
@@ -907,6 +928,15 @@ package CYGPKG_MEMALLOC {
 This package provides memory allocator infrastructure required for
 dynamic memory allocators, including the ISO standard malloc
 interface. It also contains some sample implementations."
+}
+
+package CYGPKG_LOADER {
+        alias           { "Dynamic loader" loader dload }
+        directory       services/loader
+        script          loader.cdl
+        description "
+This package provides support for the dynamic executable and
+library loader."
 }
 
 package CYGPKG_COMPRESS_ZLIB {
@@ -1843,11 +1873,13 @@ evaluation board."
 
 
 
+
 # ==========================================================================
 
 
+
 # --------------------------------------------------------------------------
-# ARM targets
+# ARM Targets
 
 target pid {
 	alias { "ARM development board (PID)" PID }
@@ -2067,6 +2099,8 @@ target sh7708 {
 	              CYGPKG_IO_SERIAL_SH_SCI
 	              CYGPKG_IO_SERIAL_SH_EDK7708
                       CYGPKG_DEVICES_WATCHDOG_SH_SH3
+                      CYGPKG_DEVS_FLASH_SH_EDK7708
+                      CYGPKG_DEVS_FLASH_ATMEL_AT29CXXXX
         }
         description "
            The sh7708 target provides the packages needed to run
@@ -2109,6 +2143,8 @@ target pc {
 	                  CYGPKG_IO_SERIAL_I386_PC
 			  CYGPKG_DEVS_ETH_INTEL_I82559
 			  CYGPKG_DEVS_ETH_I386_PC_I82559
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
+                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
         }
         description "
     	    The pc target provides the 

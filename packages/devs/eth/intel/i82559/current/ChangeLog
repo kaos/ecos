@@ -1,3 +1,21 @@
+2001-09-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_i82559.c: Add declaration of 'i82559_stop' to quiet warning.
+
+2001-09-13  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/intel_i82559_eth_drivers.cdl: 
+	* src/if_i82559.c: 
+	Remove the tickle thread from this driver.  The functionality is
+	now in the network timeout functionality which handles the
+	"deliver" calls.  So it's only called if the net is quiet.
+
+2001-09-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (TxDone): Defensive programming; zero the Tx key
+	in the global data before making the callback.  This change
+	appeared useful in our forebear, the EBSA-specific driver.
+
 2001-08-29  Hugo Tyson  <hmt@redhat.com>
 
 	* cdl/intel_i82559_eth_drivers.cdl: New CDL options called 

@@ -167,6 +167,7 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
     struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
     unsigned short chip_type, chip_rev, chip_status;
     int i;
+    long timeout = 500000;
 
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_EINT3,
@@ -199,6 +200,10 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
 #if 0
     diag_printf("CS8900 - type: %x, rev: %x\n", chip_type, chip_rev);
 #endif
+    if (chip_type != 0x630e) {
+        diag_printf("CS8900 - invalid device: %x, must be 0x630E\n", chip_type);
+        return false;
+    }
 
     // Fetch hardware address
 #if defined(CYGPKG_REDBOOT) && \
@@ -214,7 +219,12 @@ edb7xxx_cs8900_init(struct cyg_netdevtab_entry *tab)
 #endif
 
     put_reg(PP_SelfCtl, PP_SelfCtl_Reset);  // Reset chip
-    while ((get_reg(PP_SelfStat) & PP_SelfStat_InitD) == 0) ;  
+    while ((get_reg(PP_SelfStat) & PP_SelfStat_InitD) == 0) {
+        if (--timeout <= 0) {
+            diag_printf("CS8900 didn't reset - abort!\n");
+            return false;
+        }
+    }
 
     chip_status = get_reg(PP_SelfStat);
 #if 0

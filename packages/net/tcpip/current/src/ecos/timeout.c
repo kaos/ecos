@@ -157,14 +157,29 @@ alarm_thread(cyg_addrword_t param)
     // functions who need attention.
     extern void eth_drv_run_deliveries( void );
 
+    // This is from the logical ethernet dev; it tickles somehow
+    // all ethernet devices in case one is wedged.
+    extern void eth_drv_tickle_devices( void );
+
     while ( 1 ) {
         int spl;
-        int x = cyg_flag_wait(
+        int x;
+#ifdef CYGPKG_NET_FAST_THREAD_TICKLE_DEVS
+        cyg_tick_count_t later = cyg_current_time();
+        later += CYGNUM_NET_FAST_THREAD_TICKLE_DEVS_DELAY;
+        x = cyg_flag_timed_wait(
+            &alarm_flag,
+            -1,
+            CYG_FLAG_WAITMODE_OR | CYG_FLAG_WAITMODE_CLR,
+            later );
+#else
+        x = cyg_flag_wait(
             &alarm_flag,
             -1,
             CYG_FLAG_WAITMODE_OR | CYG_FLAG_WAITMODE_CLR );
 
         CYG_ASSERT( 3 & x, "Lost my bits" );
+#endif // CYGPKG_NET_FAST_THREAD_TICKLE_DEVS
         CYG_ASSERT( !((~3) & x), "Extra bits" );
 
         spl = cyg_splinternal();
@@ -173,7 +188,14 @@ alarm_thread(cyg_addrword_t param)
 
         if ( 2 & x )
             eth_drv_run_deliveries();
-       
+#ifdef CYGPKG_NET_FAST_THREAD_TICKLE_DEVS
+        // This is in the else clause for "do we deliver" because the
+        // network stack might have continuous timing events anyway - so
+        // the timeout would not occur, x would be 1 every time.
+        else // Tickle the devices...
+            eth_drv_tickle_devices();
+#endif // CYGPKG_NET_FAST_THREAD_TICKLE_DEVS
+
         if ( 1 & x )
             do_timeout();
 

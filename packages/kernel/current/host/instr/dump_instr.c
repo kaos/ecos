@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
   struct Instrument_Record record;
   int cnt=0;
 
-  if (argc != 1) {
+  if (argc != 2) {
     usage(argv[0]);
     exit(1);
   }

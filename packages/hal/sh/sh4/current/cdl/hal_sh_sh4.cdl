@@ -78,6 +78,7 @@ cdl_package CYGPKG_HAL_SH_SH4 {
         parent        CYGPKG_HAL_SH_CPU
         implements    CYGINT_HAL_SH_VARIANT
         implements    CYGINT_HAL_SH_CPG_T1
+        requires      ! CYGHWR_HAL_SH_CACHE_ENABLE
         default_value 0
         no_define
         define        -file=system.h CYGPKG_HAL_SH_7750

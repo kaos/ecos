@@ -78,6 +78,10 @@ main(void)
     DEFINE(HAL_UCACHE_WAYS, HAL_UCACHE_WAYS);
     DEFINE(HAL_UCACHE_LINE_SIZE, HAL_UCACHE_LINE_SIZE);
 
+    // Interrupt details
+    DEFINE(CYGNUM_HAL_ISR_MAX, CYGNUM_HAL_ISR_MAX);
+    DEFINE(CYGNUM_HAL_INTERRUPT_RESERVED_3E0, CYGNUM_HAL_INTERRUPT_RESERVED_3E0);
+
 }
 
 //--------------------------------------------------------------------------

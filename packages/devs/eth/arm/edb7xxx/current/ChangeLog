@@ -1,3 +1,8 @@
+2001-09-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c (edb7xxx_cs8900_init): Handle case where device
+	doesn't work - instead of just hanging.
+
 2001-08-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_edb7xxx.c (cs8900_send): Only start transmitter after

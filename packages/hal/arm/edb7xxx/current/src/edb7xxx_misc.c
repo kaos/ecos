@@ -319,9 +319,11 @@ void hal_hardware_init(void)
 {
     volatile cyg_uint32 *icr;
     int vector;
+
     // Clear and initialize instruction cache
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_ICACHE_ENABLE();
+
     // Any hardware/platform initialization that needs to be done.
     *(volatile cyg_uint32 *)INTMR1 = 0;
     *(volatile cyg_uint32 *)INTMR2 = 0;
@@ -329,6 +331,7 @@ void hal_hardware_init(void)
     *(volatile cyg_uint32 *)INTMR3 = 0;
     *(volatile cyg_uint8 *)SYSCON3 = SYSCON3_CLKCTL(CPU_CLOCK);
 #endif
+
 #if 0
     diag_printf("IMR1: %04x, IMR2: %04x\n",
                 *(volatile cyg_uint32 *)INTMR1,
@@ -396,6 +399,7 @@ void hal_hardware_init(void)
     // Initialize system control
     *(volatile cyg_uint32 *)SYSCON2 = SYSCON2_KBWEN;
 #endif
+
     // Reset all interrupt masks (disable all interrupt sources)
     for (vector = CYGNUM_HAL_ISR_MIN;  vector < CYGNUM_HAL_ISR_COUNT;  vector++) {
         icr = (volatile cyg_uint32 *)hal_interrupt_clear_map[vector];
@@ -420,6 +424,7 @@ void hal_hardware_init(void)
 
     // Set up eCos/ROM interfaces
     hal_if_init();
+
 }
 
 //

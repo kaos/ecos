@@ -222,13 +222,16 @@ static void
 getpacket (buffer)
      char *buffer;
 {
-  struct gdb_packet packet;
+    struct gdb_packet packet;
+    int res;
 
-  packet.state = 0;
-  packet.contents = buffer;
-  while (__add_char_to_packet (readDebugChar () & 0xff, &packet) != 1)
-    {
-      /* Empty */
+    packet.state = 0;
+    packet.contents = buffer;
+    while ((res = __add_char_to_packet (readDebugChar () & 0xff, &packet)) != 1) {
+        if (res == -2) {
+            putDebugChar ('+'); // Pretend we took the packet
+            __putpacket("E01"); // ... but didn't process it
+        }
     }
 }
 
@@ -260,7 +263,7 @@ __add_char_to_packet (ch, packet)
         {
           if (packet->length == BUFMAX) {
             packet->state = 0;
-            return -1;
+            return -2;
           }
           packet->checksum += ch;
           packet->contents[packet->length++] = ch;

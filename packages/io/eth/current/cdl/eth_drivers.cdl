@@ -44,6 +44,8 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
     display       "Common ethernet support"
     include_dir   .
     parent        CYGPKG_IO
+    requires      CYGINT_ISO_STRING_MEMFUNCS 
+    requires      CYGINT_ISO_STRING_STRFUNCS
     description   "Platform independent ethernet drivers"
 
     implements    CYGPKG_NET_DRIVER_FRAMEWORK

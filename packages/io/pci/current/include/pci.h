@@ -328,10 +328,22 @@ externC cyg_bool cyg_pci_allocate_io_priv( cyg_pci_device *dev_info,
 
 //----------------------------------------------------------------------
 // Bus probing limits.
+// Note: these can be overridden by the platform
+#ifndef CYG_PCI_MAX_BUS
 #define CYG_PCI_MAX_BUS                      8  // Eight is enough?
+#endif
+#ifndef CYG_PCI_MAX_DEV
 #define CYG_PCI_MAX_DEV                      32
+#endif
+#ifndef CYG_PCI_MIN_DEV
+#define CYG_PCI_MIN_DEV                      0
+#endif
+#ifndef CYG_PCI_MAX_FN
 #define CYG_PCI_MAX_FN                       8
+#endif
+#ifndef CYG_PCI_MAX_BAR
 #define CYG_PCI_MAX_BAR                      6
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_PCI_H

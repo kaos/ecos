@@ -1,3 +1,14 @@
+2001-10-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_i386_pc.cdl 
+	(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT): Allow user to
+	change value.
+
+2001-09-28  Ian Campbell  <icampbell@arcom.co.uk>
+
+	* include/platform.inc (hal_cpu_init): Initialise %ss.
+	Be more pedantic about register names matching opcode suffixes.
+
 2001-09-07  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* misc/redboot_FLOPPY.ecm: Disable

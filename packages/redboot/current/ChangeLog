@@ -1,19 +1,74 @@
+2001-10-02  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.h: 
+	* src/xyzModem.c (xyzModem_stream_open): 
+	* src/load.c (do_load): Add new option "-c <N>" to let the user
+	specify the I/O channel to use - xyModem only.
+
+2001-10-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/udp.c (__udp_recvfrom): Don't change server address (returned
+	by this function) until a packet has been received with no timeout.
+
+2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/flash.c (fis_create): if not copying, still update directory.
+
+2001-09-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (_expand_aliases): Properly null terminate expanded 
+	string - failed if alias was at end of line.
+
+2001-09-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/version.c: Simplify _CERTIFICATE handling.
+
+2001-09-13  Fabrice Gautier <Fabrice_Gautier@sdesigns.com>
+
+	* cdl/redboot.cdl: Added configuration options to deactivate BOOTP and
+	enable net debug.
+	* src/net/net_io.c (net_init): Use them.
+
+2001-09-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: Cleanups - removing some redundant code.
+
+2001-09-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+        * src/flash.c (do_flash_init): Only allocate fis block when
+        CYGOPT_REDBOOT_FIS enabled.
+        Conditionalize fis_work_block and fisdir_size.
+
+2001-09-12  Gary Thomas  <gthomas@redhat.com>
+
+        * src/flash.c (load_flash_config): Use additional space in the
+        FLASH work area (at end of RAM) for 'fconfig' data.  This reduces
+        overall stack requirements as there is no need for 'fconfig' data
+        to be held on the stack anymore.
+
+        * src/flash.c: 
+        * include/fis.h: Define flash addresses using CYG_ADDRESS which
+        is more portable than (unsigned long).
+
 2001-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
-	* cdl/redboot.cdl (CYGPKG_REDBOOT_FLASH): Be conditional on an
-	actual flash device, not just the generic flash layer.
+        * cdl/redboot.cdl (CYGPKG_REDBOOT_FLASH): Be conditional on an
+        actual flash device, not just the generic flash layer.
 
 2001-09-11  Gary Thomas  <gthomas@redhat.com>
 
-	* src/version.c (_CERTIFICATE): Add information about product
-	certification (either Red Hat certified or not).
+        * src/version.c (_CERTIFICATE): Add information about product
+        certification (either Red Hat certified or not).
 
-	* src/flash.c (fis_delete): Deny user deleting "reserved" images.
+        * src/flash.c (fis_delete): Deny user deleting "reserved" images.
 
 2001-09-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+	* src/flash.c: Extend the alias handling to allow configuration
+	information to be access using alias. Fixed alias expansion
+	when the alias is bigger than the replacement.
 	* src/parse.c: A semi colon can be used to separate multiple
 	commands on one line. 
-
+	
 2001-09-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/redboot.h: Include string function prototype header.

@@ -46,7 +46,6 @@
 #include <cyg/hal/sh3_offsets.inc>
 
 #include <cyg/hal/arch.inc>
-#include <cyg/hal/hal_intr.h>
 
 #---------------------------------------------------------------------------
 # Cache operations

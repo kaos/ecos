@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.cpp,v 1.46 2001/09/05 14:35:53 julians Exp $
+// Version:     $Id: configtool.cpp,v 1.47 2001/09/25 09:50:23 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool application class
 // Requires:
@@ -254,13 +254,7 @@ bool ecApp::OnInit()
 #endif
 */
 
-    if (m_splashScreenBitmap.Ok() && GetSettings().m_showSplashScreen)
-    {
-        m_splashScreen = new ecSplashScreen(m_splashScreenBitmap, wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
-            6000, NULL, -1, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER|wxFRAME_FLOAT_ON_PARENT|wxSTAY_ON_TOP);
-    }
-
-    wxYieldIfNeeded();
+    //    wxYieldIfNeeded();
 
     // create the main application window
     ecMainFrame *frame = new ecMainFrame(m_docManager, GetSettings().GetAppName(),
@@ -277,8 +271,14 @@ bool ecApp::OnInit()
 
     InitializeWindowSettings(FALSE /* beforeWindowConstruction */) ;
 
-    if (m_splashScreen)
-        m_splashScreen->Raise();
+    if (m_splashScreenBitmap.Ok() && GetSettings().m_showSplashScreen)
+    {
+        m_splashScreen = new ecSplashScreen(m_splashScreenBitmap, wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
+            5000, NULL, -1, wxDefaultPosition, wxDefaultSize, wxNO_BORDER|wxFRAME_FLOAT_ON_PARENT|wxSTAY_ON_TOP);
+    }
+
+    //    if (m_splashScreen)
+    //        m_splashScreen->Raise();
 
     wxYieldIfNeeded();
 
@@ -603,7 +603,10 @@ bool ecApp::VersionStampSplashScreen()
         wxString verString;
         verString.Printf("%.2f", ecCONFIGURATION_TOOL_VERSION);
 
-        int x = 339; int y = 236;
+        int x = 339; int y = 231;
+#ifdef __WXMSW__
+	y += 6; // For some reason
+#endif
         int w, h;
         dc.GetTextExtent(verString, & w, & h);
         dc.DrawText(verString, x, y - h);

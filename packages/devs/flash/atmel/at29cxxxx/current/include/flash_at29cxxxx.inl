@@ -88,6 +88,15 @@
 # define CYGNUM_FLASH_ID_MANUFACTURER   FLASHWORD(0x1F)
 # define CYGNUM_FLASH_ID_DEVICE         FLASHWORD(0xA4)
 #endif
+#ifdef CYGPKG_DEVS_FLASH_ATMEL_AT29LV1024
+# define FLASH_BLOCK_SIZE               (0x100*CYGNUM_FLASH_INTERLEAVE)
+# define FLASH_NUM_REGIONS              (512)
+# define CYGNUM_FLASH_BASE_MASK         (0xFFFe0000u) // 128kB devices
+# define CYGNUM_FLASH_WIDTH             (16)
+# define CYGNUM_FLASH_BLANK             (1)
+# define CYGNUM_FLASH_ID_MANUFACTURER   FLASHWORD(0x1F)
+# define CYGNUM_FLASH_ID_DEVICE         FLASHWORD(0x26)
+#endif
 
 #define FLASH_DEVICE_SIZE               (FLASH_BLOCK_SIZE*FLASH_NUM_REGIONS)
 #define CYGNUM_FLASH_DEVICES            (CYGNUM_FLASH_INTERLEAVE*CYGNUM_FLASH_SERIES)
@@ -123,10 +132,10 @@ flash_hwr_init(void)
         return FLASH_ERR_DRV_WRONG_PART;
 
     // Hard wired for now
-    flash_info.block_size = FLASH_BLOCK_SIZE * CYGNUM_FLASH_INTERLEAVE;
+    flash_info.block_size = FLASH_BLOCK_SIZE;
     flash_info.blocks = FLASH_NUM_REGIONS;
     flash_info.start = (void *)CYGNUM_FLASH_BASE;
-    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_SERIES));
+    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_SERIES));
     return FLASH_ERR_OK;
 }
 
@@ -191,10 +200,63 @@ flash_query(void* data)
 //----------------------------------------------------------------------------
 // Erase Block
 int
-flash_erase_block(void* block, unsigned int size)
+flash_erase_block(void* block, unsigned int len)
 {
-    // Erasing is not necessary. Alternatively, use program function
-    // to write 0xff
+    volatile flash_data_t* ROM;
+    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) block;
+    volatile flash_data_t* addr_ptr2;
+
+    int res = FLASH_ERR_OK;
+
+    while ((FLASH_ERR_OK == res) && (len > 0)) {
+        int len2, i, timeout;
+        flash_data_t state, prev_state;
+
+        // Base address of device(s) being programmed. 
+        ROM = (volatile flash_data_t*)((unsigned long)block & ~(FLASH_DEVICE_SIZE-1));
+
+        // Program data [byte] - 4 step sequence
+        ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
+        ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
+        ROM[FLASH_Setup_Addr1] = FLASH_Program;
+
+        addr_ptr2 = addr_ptr;
+        len2 = len;
+
+        // Always load 256 bytes
+        for (i = 0; i < 256;) {
+            *addr_ptr2++ = FLASH_BlankValue;
+            i += sizeof(*addr_ptr2);
+        }
+
+        // Wait for completion (bit 6 stops toggling)
+        timeout = 5000000;
+        prev_state = *addr_ptr & FLASH_Busy;
+        while (true) {
+            state = *addr_ptr & FLASH_Busy;
+            if (prev_state == state) {
+                break;
+            }
+            if (--timeout == 0) {
+                res = FLASH_ERR_DRV_TIMEOUT;
+                break;
+            }
+            prev_state = state;
+        }
+
+        // Verify loaded data bytes
+        for (i = 0; (len > 0) && (i < 256) ;) {
+            if (*addr_ptr != FLASH_BlankValue) {
+                // Only update return value if erase operation was OK
+                if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
+                break;
+            }
+            addr_ptr++;
+            len -= sizeof(*addr_ptr);
+            i += sizeof(*addr_ptr);
+        }
+    }
+
     return FLASH_ERR_OK;
 }
 
@@ -235,13 +297,14 @@ flash_program_buf(void* addr, void* data, int len)
         len2 = len;
 
         // Always load 256 bytes
-        for (i = 0; i < 256; i++) {
+        for (i = 0; i < 256;) {
             if (len2 > 0) {
                 *addr_ptr2++ = *data_ptr2++;
-                len2 -= sizeof(*data_ptr);
+                len2 -= sizeof(*data_ptr2);
             } else {
                 *addr_ptr2++ = FLASH_BlankValue;
             }
+            i += sizeof(*data_ptr2);
         }
 
         // Wait for completion (bit 6 stops toggling)
@@ -260,7 +323,7 @@ flash_program_buf(void* addr, void* data, int len)
         }
 
         // Verify loaded data bytes
-        for (i = 0; (len > 0) && (i < 256) ; i++) {
+        for (i = 0; (len > 0) && (i < 256) ;) {
             if (*addr_ptr != *data_ptr) {
                 // Only update return value if erase operation was OK
                 if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
@@ -269,6 +332,7 @@ flash_program_buf(void* addr, void* data, int len)
             addr_ptr++;
             data_ptr++;
             len -= sizeof(*data_ptr);
+            i += sizeof(*data_ptr);
         }
     }
 

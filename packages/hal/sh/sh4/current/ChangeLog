@@ -1,3 +1,20 @@
+2001-09-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h: Default CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF
+	and CYGPRI_HAL_INTERRUPT_CONFIGURE_PLF added.
+
+	* src/var_misc.c: Use those macros.
+
+2001-09-24  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh4.cdl: Disable cache on 7750. Doesn't work
+	properly.
+
+2001-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h (CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF):
+	Provide default version.
+
 2001-08-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/mod_7750.h: Don't use UBC as handling of it is broken.

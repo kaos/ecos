@@ -1,3 +1,7 @@
+2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* current.ect: Add net related packages.
+
 2001-08-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* current.ect: Pre-infer CYGBLD_ISO_PMUTEXTYPES_HEADER.

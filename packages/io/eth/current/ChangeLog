@@ -1,3 +1,24 @@
+2001-09-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/eth_drivers.cdl: Require the string functions.
+
+	* src/stand_alone/eth_drv.c: Fix warnings.
+
+2001-09-25  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_dsr): Assert that the "sc" given to
+	eth_drv_dsr() really is a sc from the valid list.  This can save a
+	few hours debug time of a typo.
+
+2001-09-13  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_tickle_devices): New function to call
+	can_send() on all devices to allow them to unstick from a lost
+	interrupt or other wedge - it's up to the device to detect this,
+	of course, can_send() does not explicitly do this, it's just used
+	as an opportunity harmlessly to get control into the device so it
+	can examine its world.
+
 2001-09-05  Gary Thomas  <gthomas@redhat.com>
 
 	* src/stand_alone/eth_drv.c (eth_drv_init): Don't initialize

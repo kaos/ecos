@@ -136,41 +136,5 @@ cdl_package CYGPKG_DEVS_ETH_INTEL_I82559 {
                 global flags."
         }
     }
-
-    cdl_component CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD {
-        display "Create a thread to 'unstick' from lost interrupts"
-        active_if CYGPKG_KERNEL
-        active_if CYGPKG_NET
-        default_value 0
-        description "
-            If this is enabled, the driver creates a thread to tickle the
-            device(s) periodically, to unblock them when the hardware has
-            become wedged due to a lost interrupt or other hardware
-            race-condition type problem.
-            This is not necessary if a networked app is running, provided
-            that it tries to send packets itself from time to time - or
-            uses TCP, or amy similar protocol which exchanges keep-alive
-            packets periodically and often enough.
-            Trying to send a packet passes control into the driver; this is
-            sufficient to detect and unblock jammed hardware."
-
-        cdl_option CYGNUM_DEVS_ETH_INTEL_I82559_TICKLE_THREAD_PRIORITY {
-            display "Priority of i82559 tickle thread"
-            flavor data
-            default_value CYGPKG_NET_THREAD_PRIORITY + 2
-            description "
-                The default is two below the net thread, which is one below
-                the default prio of the DHCP thread."
-        }
-
-        cdl_option CYGNUM_DEVS_ETH_INTEL_I82559_TICKLE_THREAD_DELAY {
-            display "Delay in kernel clocks of i82559 tickle loop"
-            flavor data
-            default_value 50
-            description "
-                The default is 50, which will usually mean a delay between
-                tests for 'stuck' devices of 500mS, that is half a second."
-        }
-    }
 }
 # EOF intel_i82559_eth_drivers.cdl

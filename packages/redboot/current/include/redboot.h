@@ -247,9 +247,63 @@ typedef struct {
   CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
 #endif
 
-//
+#ifdef CYGPKG_REDBOOT_NETWORKING
+//-----------------------------------------------------------------------------
+// DNS wrapper
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+
+// I would really like if we could just pull in cyg/ns/dns/dns.h, but
+// that would require adding dummy <network.h> and <netinet/in.h> files.
+
+// Host name / IP mapping
+struct hostent {
+    char    *h_name;        /* official name of host */
+    char    **h_aliases;    /* alias list */
+    int     h_addrtype;     /* host address type */
+    int     h_length;       /* length of address */
+    char    **h_addr_list;  /* list of addresses */
+};
+#define h_addr  h_addr_list[0]  /* for backward compatibility */
+
+externC int redboot_dns_res_init(void);
+externC struct hostent *gethostbyname(const char *host);
+
+// Error reporting
+externC int h_errno;
+
+#define DNS_SUCCESS  0
+#define HOST_NOT_FOUND 1
+#define TRY_AGAIN      2
+#define NO_RECOVERY    3
+#define NO_DATA        4
+
+static inline bool
+_gethostbyname(const char* name, in_addr_t* host)
+{ 
+    struct hostent* hent = gethostbyname(name);
+    if (hent) {
+        memcpy(host, hent->h_addr_list[0], sizeof(in_addr_t));
+        return true;
+    }
+    // Fall back to inet_aton - gethostbyname may already have tried
+    // it, but we can't know for sure (the DNS IP may not have been
+    // valid, preventing the inet_aton).
+    return inet_aton(name, host);
+}
+#else
+static inline bool
+_gethostbyname(const char* name, in_addr_t* host)
+{ 
+    return inet_aton(name, host);
+}
+#endif // CYGPKG_REDBOOT_NETWORKING_DNS
+#endif // CYGPKG_REDBOOT_NETWORKING
+
+//-----------------------------------------------------------------------------
+// String functions. Some of these are duplicates of the same functions in
+// the I18N package.
+
 // Validate a hex character
-//
 __inline__ static bool
 _is_hex(char c)
 {
@@ -258,9 +312,7 @@ _is_hex(char c)
             ((c >= 'a') && (c <= 'f')));
 }
 
-//
 // Convert a single hex nibble
-//
 __inline__ static int
 _from_hex(char c) 
 {
@@ -276,10 +328,7 @@ _from_hex(char c)
     return ret;
 }
 
-
-//
 // Convert a character to lower case
-//
 __inline__ static char
 _tolower(char c)
 {
@@ -287,6 +336,28 @@ _tolower(char c)
         c = (c - 'A') + 'a';
     }
     return c;
+}
+
+// Validate alpha
+__inline__ static bool
+isalpha(int c)
+{
+    return (((c >= 'a') && (c <= 'z')) || 
+            ((c >= 'A') && (c <= 'Z')));
+}
+
+// Validate digit
+__inline__ static bool
+isdigit(int c)
+{
+    return ((c >= '0') && (c <= '9'));
+}
+
+// Validate alphanum
+__inline__ static bool
+isalnum(int c)
+{
+    return (isalpha(c) || isdigit(c));
 }
 
 #endif // _REDBOOT_H_

@@ -1,8 +1,11 @@
+#ifndef CYGONCE_LOADER_DLFCN_H
+#define CYGONCE_LOADER_DLFCN_H
+
 //==========================================================================
 //
-//      include/netdb.h
+//      dlfcn.h
 //
-//      eCos implementations of network "database" functions
+//      ELF dynamic loader API definitions
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -28,75 +31,46 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//####BSDCOPYRIGHTBEGIN####
-//
-// -------------------------------------------
-//
-// Portions of this software may have been derived from OpenBSD or other sources,
-// and are covered by the appropriate copyright disclaimers included herein.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-01-10
-// Purpose:      
-// Description:  
-//              
+// Author(s):           nickg
+// Contributors:        nickg
+// Date:                2000-11-15
+// Purpose:             Define ELF dynamic loader API
+// Description:         The functions defined here collectively implement the
+//                      external API of the ELF dynamic loader.
+// Usage:               #include <cyg/loader/dlfcn.h>
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-//
-// Support for various "network databases"
-//
+#include <pkgconf/system.h>
 
-#ifndef _NETDB_H_
-#define _NETDB_H_
+#include <cyg/infra/cyg_type.h>         /* types etc.           */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// =========================================================================
+// Mode values
 
-// Internet protocols
-struct protoent {
-    char *p_name;
-    int   p_proto;
-};
+#define RTLD_NOW        0x00    /* Relocate now (default)               */
+#define RTLD_LAZY       0x01    /* Relocate opportunistically           */
+#define RTLD_GLOBAL     0x00    /* make symbols available globally (default) */
+#define RTLD_LOCAL      0x10    /* keep symbols secret                  */
 
-struct protoent *getprotobyname(const char *);
-struct protoent *getprotobynumber(const int);
+// =========================================================================
+// API calls
 
-// Internet services
-struct servent {
-    char    *s_name;        /* official service name */
-    char    **s_aliases;    /* alias list */
-    int     s_port;         /* port number */
-    char    *s_proto;       /* protocol to use */
-};
+__externC void *dlopen (const char *file, int mode);
 
-struct servent *getservbyname(const char *name, const char *proto);
-struct servent *getservbyport(int port, const char *proto);
+__externC void *dlopenmem(const void *addr, size_t size, int mode);
 
-// Host name / IP mapping
-struct hostent {
-    char    *h_name;        /* official name of host */
-    char    **h_aliases;    /* alias list */
-    int     h_addrtype;     /* host address type */
-    int     h_length;       /* length of address */
-    char    **h_addr_list;  /* list of addresses */
-};
-#define h_addr  h_addr_list[0]  /* for backward compatibility */
+__externC int dlclose (void *handle);
 
-struct hostent *gethostbyname(const char *host);
-struct hostent *gethostbyaddr(const char *addr, int len, int type);
+__externC void *dlsym (void *handle, const char *name);
 
-#ifdef __cplusplus
-}
-#endif
-#endif // _NETDB_H_
+__externC const char *dlerror (void);
+
+// -------------------------------------------------------------------------
+#endif // ifndef CYGONCE_LOADER_DLFCN_H
+// EOF dlfcn.h

@@ -91,9 +91,14 @@ cdl_option CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG {
         C library."
 }
 
+cdl_interface CYGINT_HAL_SUPPORTS_MMU_TABLES {
+    display   "HAL uses the MMU and allows for CDL manipulation of it's use"
+}
+
 cdl_option CYGSEM_HAL_INSTALL_MMU_TABLES {
     display        "Install MMU tables."
-    default_value  1
+    default_value  { CYG_HAL_STARTUP != "RAM" }
+    active_if      CYGINT_HAL_SUPPORTS_MMU_TABLES
     description    "This option controls whether this application installs
        its own Memory Management Unit (MMU) tables, or relies on the
        existing environment to run."

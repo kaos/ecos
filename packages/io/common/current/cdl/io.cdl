@@ -51,7 +51,7 @@ cdl_package CYGPKG_IO {
         support which is the basis for all drivers."
 
     compile       -library=libextras.a ioinit.cxx
-    compile       iosys.c io_diag.c
+    compile       iosys.c
 
  
     cdl_option CYGDBG_IO_INIT {

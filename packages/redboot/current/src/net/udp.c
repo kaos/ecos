@@ -235,7 +235,6 @@ __udp_recvfrom(char *data, int len, struct sockaddr_in *server,
     udp_socket_t skt;
     unsigned long start;
 
-    server->sin_port = 0;
     my_port = ntohs(local->sin_port);
     if (__udp_install_listener(&skt, my_port, __udp_recvfrom_handler) < 0) {
         return -1;

@@ -67,6 +67,7 @@
 static struct servent services[] = {
     { "ftp",      0,   21 , "tcp" },
     { "ftp-data", 0,   20 , "tcp" },
+    { "domain",   0,   53 , "udp" },
     { "tftp",     0,   69 , "udp" },
     { "snmp",     0,  161 , "udp" },
 

@@ -298,7 +298,7 @@ hexR6:
 	mcr p15,0,r0,c9,c0,0	// Flush Read-Buffer
 	mcr p15,0,r0,c7,c10,4	// Drain write buffer
 	mcr p15,0,r0,c13,c0,0	// Disable virtual ID mapping
-	mcr p15,0,r0,c1,c0,0	// Write MMU control register
+	mcr p15,0,r1,c1,c0,0	// Write MMU control register
 	nop; nop; nop; nop
 
         InitUART3

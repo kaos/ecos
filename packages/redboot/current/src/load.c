@@ -61,6 +61,9 @@ static char usage[] = "[-r] [-v] "
 #ifdef CYGPKG_REDBOOT_DISK
                       " | disk"
 #endif
+#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
+                      "-c <channel_number>"
+#endif
                       "}]\n        [-b <base_address>] <file_name>";
 
 // Exported CLI function
@@ -292,11 +295,13 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_COMPRESS_ZLIB
     bool decompress;
 #endif
+    int chan = -1;
+    bool chan_set;
     unsigned long base = 0;
     unsigned long end = 0;
     char type[4];
     char *filename = 0;
-    struct option_info opts[6];
+    struct option_info opts[7];
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memset((char *)&host, 0, sizeof(host));
@@ -320,9 +325,14 @@ do_load(int argc, char *argv[])
     init_opts(&opts[3], 'm', true, OPTION_ARG_TYPE_STR, 
               (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP, xyzMODEM, or disk)");
     num_options = 4;
+#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
+    init_opts(&opts[num_options], 'c', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&chan, (bool *)&chan_set, "I/O channel");
+    num_options++;
+#endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
     init_opts(&opts[num_options], 'h', true, OPTION_ARG_TYPE_STR, 
-              (void **)&hostname, (bool *)&hostname_set, "host name (IP address)");
+              (void **)&hostname, (bool *)&hostname_set, "host name or IP address");
     num_options++;
 #endif
 #ifdef CYGPKG_COMPRESS_ZLIB
@@ -337,8 +347,15 @@ do_load(int argc, char *argv[])
     }
 #ifdef CYGPKG_REDBOOT_NETWORKING
     if (hostname_set) {
-        if (!inet_aton(hostname, (in_addr_t *)&host)) {
-            diag_printf("Invalid IP address: %s\n", hostname);
+        ip_route_t rt;
+        if (!_gethostbyname(hostname, (in_addr_t *)&host)) {
+            diag_printf("Invalid host: %s\n", hostname);
+            return;
+        }
+        /* check that the host can be accessed */
+        if (__arp_lookup((ip_addr_t *)&host.sin_addr, &rt) < 0) {
+            diag_printf("Unable to reach host %s (%s)\n",
+                        hostname, inet_ntoa((in_addr_t *)&host));
             return;
         }
     }
@@ -386,6 +403,20 @@ do_load(int argc, char *argv[])
         return;
     }
 #endif
+#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
+    if (chan_set) {
+        if ((mode != MODE_XMODEM) && (mode != MODE_YMODEM) && (mode != MODE_ZMODEM)) {
+            diag_printf("I/O channel can only be used with {xyz}Modem\n");
+            return;
+        }
+        if (chan >= CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
+            diag_printf("Invalid I/O channel: %d\n", chan);
+            return;
+        }
+    } else {
+        chan = -1;
+    }
+#endif
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     if (base_addr_set &&
         ((base < (unsigned long)user_ram_start) ||
@@ -419,7 +450,7 @@ do_load(int argc, char *argv[])
     }
 #endif
     else {
-        res = xyzModem_stream_open(filename, mode, &err);
+        res = xyzModem_stream_open(filename, mode, chan, &err);
         if (res < 0) {
             diag_printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
             return;

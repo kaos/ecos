@@ -219,7 +219,8 @@ cdl_package CYGPKG_HAL_ARM_AEB {
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 # Then build version with checksum from previously built image.
-                $(CC) -c -DCHECKSUM=`$(dir $<)flash_cksum.tcl src/gdb_module_ncs.bin` $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o src/gdb_module.o $<
+                @cp $(dir $<)flash_cksum.tcl src/
+                $(CC) -c -DCHECKSUM=`src/flash_cksum.tcl src/gdb_module_ncs.bin` $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o src/gdb_module.o $<
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o src/gdb_module.tmp src/gdb_module.o
                 $(OBJCOPY) --strip-debug --change-addresses=0xFBFF4000 src/gdb_module.tmp $(@:.bin=.img)
                 $(OBJCOPY) -O binary $(@:.bin=.img) src/gdb_module.bin

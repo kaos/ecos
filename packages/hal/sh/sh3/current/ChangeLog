@@ -1,3 +1,23 @@
+2001-09-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h: Default CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF
+	and CYGPRI_HAL_INTERRUPT_CONFIGURE_PLF added.
+
+	* src/var_misc.c: Use those macros.
+
+2001-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/variant.S: Don't include C intr header.
+
+	* include/var_intr.h (CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF):
+	Provide default version.
+
+	* src/var_misc.c (hal_interrupt_update_level): Don't ignore LVL
+	interrupts.
+	* src/var_misc.c (hal_interrupt_unmask, hal_interrupt_mask): Same.
+
+	* src/var_mk_defs.c: Added some interrupt defs.
+
 2001-09-10  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh3_sci.c (cyg_hal_plf_sci_isr,

@@ -1,3 +1,7 @@
+2001-09-20  Jesper Skov  <jskov@redhat.com>
+
+	* tests/heaptest.c: Fix failure reporting.
+
 2001-09-07  Jesper Skov  <jskov@redhat.com>
 
 	* tests/heaptest.c: Added some extra output on failures.

@@ -58,9 +58,6 @@
 #include <cyg/hal/sh_regs.h>
 #include <cyg/hal/sh_offsets.inc>
 
-#include <cyg/hal/hal_intr.h>
-
-
 #===========================================================================
 
         .file   "vectors.S"

@@ -53,7 +53,7 @@ cdl_package CYGPKG_IO_SERIAL_MIPS_VRC437X {
     include_files ; # none _exported_ whatsoever
     description   "
            This option enables the serial device drivers for the
-           VRC4373."
+           VRC437X."
     doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   vrc437x_serial.c
@@ -86,7 +86,7 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL0 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value 9600
+        default_value 38400
         description   "
             This option specifies the default baud rate (speed) for the
             VRC437X port 0."
@@ -124,7 +124,7 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_VRC437X_SERIAL1 {
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
         }
-        default_value 9600
+        default_value 38400
         description   "
             This option specifies the default baud rate (speed) for the
             VRC437X port 1."

@@ -1,5 +1,5 @@
 2001-08-31  Hugo Tyson  <hmt@redhat.com>
-2001-08-31  Andrew Lunn <Andrew.Lunn@ascom.ch>
+2001-08-31  Sanjay Bisen <sanjay.bisen@ascom.ch>
 
 	* src/if_ebsa285.c (TxDone): Check from prev change is moved to
 	the logical driver.  Also, we zero the key in global state before

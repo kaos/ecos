@@ -1,3 +1,8 @@
+2001-09-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/io_diag.c: Delete. No longer used.
+	* cdl/io.cdl: Don't build io_diag.c.
+
 2001-04-18  Jesper Skov  <jskov@redhat.com>
 	Case 105926
 	* src/io_file.c (falloc): Don't return -EMFILE, but EMFILE. Found

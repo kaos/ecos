@@ -1,3 +1,23 @@
+2001-10-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/generic-stub.c (getpacket): Send back error response (E01) if
+	packet received which overflows buffers.  GDB doesn't always do much
+	with this error, but at least it keeps the protocol moving.
+
+2001-09-26  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/common.cdl: New interface CYGINT_HAL_SUPPORTS_MMU_TABLES which
+	indicates if the HAL supports MMU tables (few do).
+
+2001-09-25  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/common.cdl (CYGSEM_HAL_INSTALL_MMU_TABLES): Change to be
+	default for ROM startup.
+
+2001-09-20  Jesper Skov  <jskov@redhat.com>
+
+	* tests/vaargs.c (cyg_start): Call CYG_TEST_INIT.
+
 2001-09-10  Nick Garnett  <nickg@redhat.com>
 
 	* include/hal_stub.h (strlen): Changed return type to size_t from

@@ -138,10 +138,10 @@ cdl_package CYGPKG_HAL_I386_PC {
      }
 
      cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
-          display      "Default console channel."
-          flavor       data
-          legal_values 0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-          calculated   0
+          display       "Default console channel."
+          flavor        data
+          legal_values  0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+          default_value 0
      }
 
      cdl_option CYGSEM_HAL_I386_PC_DIAG_SCREEN {

@@ -16,13 +16,22 @@
 #define CHAR_READY_IS_RELIABLE
 #endif
 
-#define DEFAULT_PORT "/dev/ttyS1"
-extern char ReceiveChar(long);
-extern void SendChar(long, char);
-extern void SetBaud(long, long);
-extern int  CharRead(long port);
-extern void WaitForOutputReady(long port);
-extern long OpenPort(char *);
+#define DEFAULT_PORT "/dev/ttyS0"
+extern char _ReceiveChar(long);
+extern void _SendChar(long, char);
+extern void _SetBaud(long, long);
+extern int  _CharRead(long port);
+extern void _WaitForOutputReady(long port);
+extern long _OpenPort(char *);
+extern int  _CharReady(long port);
+
+#define ReceiveChar _ReceiveChar
+#define SendChar    _SendChar
+#define SetBaud     _SetBaud
+#define CharRead    _CharRead
+#define WaitForOutputEmpty _WaitForOutputEmpty
+#define OpenPort    _OpenPort
+#define CharReady   _CharReady
 
 //****************************************************************************
 //
@@ -382,6 +391,7 @@ main(int argc, char *argv[])
         //
         fprintf(stderr, "\b\b\b\b\b%3d%%)",
                ((cFirstChar - cChar + 1) * 100) / (cFirstChar - '0'));
+        fprintf(stderr, "%c\n", cChar);
 
         //
         // Read a character from the boot code.

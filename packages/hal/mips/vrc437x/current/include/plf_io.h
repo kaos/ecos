@@ -67,14 +67,14 @@
 
 // This is where the PCI spaces are mapped in the CPU's (virtual)
 // address space.
-#define HAL_PCI_PHYSICAL_MEMORY_BASE    0xC0000000
-#define HAL_PCI_PHYSICAL_IO_BASE        0xAC000000
+#define HAL_PCI_PHYSICAL_IO_BASE        0xA0000000
+#define HAL_PCI_PHYSICAL_MEMORY_BASE    0xBC100000
 
 //-----------------------------------------------------------------------------
 
 // Initialize the PCI bus.
-// This has actually already been done by the HAL.
-#define HAL_PCI_INIT()
+externC void cyg_hal_plf_pci_init(void);
+#define HAL_PCI_INIT() cyg_hal_plf_pci_init()
 
 // Compute address necessary to access PCI config space for the given
 // bus and device.
@@ -177,7 +177,7 @@ CYG_MACRO_END
 
 // Map PCI device resources starting from these addresses in PCI space.
 #define HAL_PCI_ALLOC_BASE_MEMORY       0
-#define HAL_PCI_ALLOC_BASE_IO           0
+#define HAL_PCI_ALLOC_BASE_IO           0x0c000000
 
 // Translate the PCI interrupt requested by the device (INTA#, INTB#,
 // INTC# or INTD#) to the associated CPU interrupt (i.e., HAL vector).

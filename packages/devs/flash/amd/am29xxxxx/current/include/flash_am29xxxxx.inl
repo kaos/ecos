@@ -288,6 +288,7 @@ flash_erase_block(void* block, unsigned int size)
     }
 
     while (len > 0) {
+#ifndef CYGHWR_FLASH_AM29XXXXX_NO_WRITE_PROTECT
         // First check whether the block is protected
         *f_s1 = FLASH_Setup_Code1;
         *f_s2 = FLASH_Setup_Code2;
@@ -297,6 +298,7 @@ flash_erase_block(void* block, unsigned int size)
 
         if (FLASH_unlocked != state)
             return FLASH_ERR_PROTECT;
+#endif
 
         b_v = FLASH_P2V(b_p);
     

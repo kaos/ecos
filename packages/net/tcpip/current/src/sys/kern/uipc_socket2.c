@@ -369,7 +369,7 @@ sb_lock(sb)
 	return (0);
 }
 
-#ifdef __ECOS__
+#ifdef __ECOS
 /*
  * Set lock on sockbuf sb; sleep if lock is already held.
  * Unless SB_NOINTR is set on sockbuf, sleep is interruptible.

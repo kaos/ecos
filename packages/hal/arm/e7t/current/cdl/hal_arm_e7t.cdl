@@ -280,7 +280,8 @@ cdl_package CYGPKG_HAL_ARM_E7T {
                 @echo >> $(notdir $@).deps
                 @rm deps.tmp
                 # Then build version with checksum from previously built image.
-                $(CC) -c -DCHECKSUM=`$(dir $<)flash_cksum.tcl src/redboot_ncs.bin` $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o src/redboot.o $<
+                @cp $(dir $<)flash_cksum.tcl src/
+                $(CC) -c -DCHECKSUM=`src/flash_cksum.tcl src/redboot_ncs.bin` $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -o src/redboot.o $<
                 $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o src/redboot.tmp $(PREFIX)/lib/version.o src/redboot.o
                 $(OBJCOPY) --strip-debug src/redboot.tmp $(@:.bin=.img)
                 $(OBJCOPY) -O binary $(@:.bin=.img) src/redboot.bin

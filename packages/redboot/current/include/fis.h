@@ -25,7 +25,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -47,12 +47,12 @@
 
 struct fis_image_desc {
     unsigned char name[16];      // Null terminated name
-    unsigned long flash_base;    // Address within FLASH of image
-    unsigned long mem_base;      // Address in memory where it executes
+    CYG_ADDRESS   flash_base;    // Address within FLASH of image
+    CYG_ADDRESS   mem_base;      // Address in memory where it executes
     unsigned long size;          // Length of image
-    unsigned long entry_point;   // Execution entry point
+    CYG_ADDRESS   entry_point;   // Execution entry point
     unsigned long data_length;   // Length of actual data
-    unsigned char _pad[256-(16+7*sizeof(unsigned long))];
+    unsigned char _pad[256-(16+4*sizeof(unsigned long)+3*sizeof(CYG_ADDRESS))];
     unsigned long desc_cksum;    // Checksum over image descriptor
     unsigned long file_cksum;    // Checksum over image data
 };

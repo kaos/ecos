@@ -1,3 +1,6 @@
+* Added rudimentary ELF loader, including support for dynamic objects under
+  services/loader.
+* Dallas wallclock driver implemented for x86 PC.
 * AMD PCNet ethernet driver added.
 * Generic SMP support added.
 * RedBoot support added to AM33-STB port.

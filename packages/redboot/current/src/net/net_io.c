@@ -537,8 +537,16 @@ net_init(void)
     cyg_netdevtab_entry_t *t;
 
     // Set defaults as appropriate
+#ifdef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
+    use_bootp = CYGSEM_REDBOOT_DEFAULT_NO_BOOTP;
+#else
     use_bootp = true;
+#endif
+#ifdef CYGDBG_REDBOOT_NET_DEBUG
+    net_debug = CYGDBG_REDBOOT_NET_DEBUG;
+#else
     net_debug = false;
+#endif
     gdb_port = CYGNUM_REDBOOT_NETWORKING_TCP_PORT;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     // Fetch values from saved config data, if available
@@ -608,4 +616,8 @@ net_init(void)
         diag_printf(", Default server: %s\n", inet_ntoa(&my_bootp_info.bp_siaddr));
         net_io_init();
     }
+
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+    redboot_dns_res_init();
+#endif
 }

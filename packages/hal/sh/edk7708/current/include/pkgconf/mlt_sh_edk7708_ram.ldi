@@ -6,13 +6,13 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0x8008000, LENGTH = 0xf8000
+    ram : ORIGIN = 0x88010000, LENGTH = 0xf0000
 }
 
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_vectors (ram, 0x8008000, LMA_EQ_VMA)
+    SECTION_vectors (ram, 0x88010000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)

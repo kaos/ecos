@@ -47,7 +47,7 @@
 #include <net/net.h>
 
 bool
-inet_aton(char *s, in_addr_t *addr)
+inet_aton(const char *s, in_addr_t *addr)
 {
     int i, val, radix, digit;
     unsigned long res = 0;

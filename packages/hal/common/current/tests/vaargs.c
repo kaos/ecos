@@ -139,6 +139,8 @@ entry(void)
 externC void
 cyg_start( void )
 {
+    CYG_TEST_INIT();
+
     entry();
 }
 

@@ -262,7 +262,8 @@ std::string tab_indent (const std::string input) {
 // return the tests of the specified loadable
 std::string get_tests (const CdlConfiguration config, const CdlBuildInfo_Loadable & build_info) {
 	CdlValuable tests = dynamic_cast <CdlValuable> (config->lookup (build_info.name + "_TESTS"));
-	if (tests) { // if there are tests
+    // check if there are tests active and enabled
+	if (tests && tests->is_active() && tests->is_enabled()) {
 		return tests->get_value ();
 	} else { // there are no tests
 		return "";

@@ -331,6 +331,11 @@ dp83902a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
     pkt_len = total_len;
     if (pkt_len < IEEE_8023_MIN_FRAME) pkt_len = IEEE_8023_MIN_FRAME;
+#ifdef CYGHWR_NS_DP83902A_PLF_16BIT_DATA
+    // Make length even when using 16 bit transfers
+    if (pkt_len % 2) pkt_len++;
+#endif
+
     start_page = dp->tx_next;
     if (dp->tx_next == DP_TX_BUF1) {
         dp->tx1 = start_page;
@@ -350,9 +355,25 @@ dp83902a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #endif
 
     DP_OUT(base, DP_ISR, DP_ISR_RDC);  // Clear end of DMA
-    // Set these first, following the small print of the manual
-    DP_OUT(base, DP_RBCL, 1);
-    DP_OUT(base, DP_CR, DP_CR_PAGE0 | DP_CR_RDMA | DP_CR_START);
+    {
+        // Dummy read. The manual sez something slightly different,
+        // but the code is extended a bit to do what Hitachi's monitor
+        // does (i.e., also read data).
+
+        cyg_uint16 tmp;
+#ifdef CYGHWR_NS_DP83902A_PLF_16BIT_DATA
+        int len = 2;
+#else
+        int len = 1;
+#endif
+
+        DP_OUT(base, DP_RSAL, 0x100-len);
+        DP_OUT(base, DP_RSAH, (start_page-1) & 0xff);
+        DP_OUT(base, DP_RBCL, len);
+        DP_OUT(base, DP_RBCH, 0);
+        DP_OUT(base, DP_CR, DP_CR_PAGE0 | DP_CR_RDMA | DP_CR_START);
+        DP_IN_DATA(dp->data, tmp);
+    }
 
 #ifdef CYGHWR_NS_DP83902A_PLF_BROKEN_TX_DMA
     // Stall for a bit before continuing to work around random data

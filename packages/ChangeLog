@@ -1,3 +1,12 @@
+2001-09-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add i386 PC wallclock driver package, and include it
+	in the PC target.
+
+2001-09-13  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added flash support to EDK7708.
+
 2001-09-10  Nick Garnett  <nickg@redhat.com>
 
 	* ecos.db:
@@ -219,6 +228,10 @@
 	* ecos.db: Added Ocelot packages.
 
 
+2000-11-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* ecos.db: Added entry for loader package.
+	
 2000-11-25  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* pkgconf/rules.mak (mlt_headers): Rewrite to work under Solaris,

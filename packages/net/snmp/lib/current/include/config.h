@@ -86,6 +86,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 #include <pkgconf/system.h>
+#include <pkgconf/isoinfra.h>
 #include <pkgconf/snmplib.h>
 #include <pkgconf/snmpagent.h>
 
@@ -1162,7 +1163,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define HAVE_LIBRPM 1
 
 /* define if you have gethostbyname */
-#define HAVE_GETHOSTBYNAME 1
+#if CYGINT_ISO_DNS
+# define HAVE_GETHOSTBYNAME 1
+#endif
 
 /* define if you have getservbyname */
 #define HAVE_GETSERVBYNAME 1

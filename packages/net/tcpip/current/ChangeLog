@@ -1,3 +1,55 @@
+2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl: Tell isoinfra we support getproto* and getserv*
+	NS functionality.
+	* include/netdb.h: Move to...
+	* include/net/netdb.h: ...here.
+
+2001-09-25  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/net.cdl: Don't build tests/nc_test_master as it's a host
+	side tool.
+
+	* src/lib/getserv.c: Added domain service.
+
+	* include/netdb.h: Moved getbyhost()/getbyaddr() declarations and
+	hostent struct definition to the DNS package. 
+
+	* src/lib/gethost.c: Removed.
+
+	* cdl/net.cdl: Removed gethost.c (replaced by proper
+	implementation in CYGPKG_NS_DNS).
+
+2001-09-17  Hugo Tyson  <hmt@redhat.com>
+2001-09-17  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/sys/net/if_bridge.c (bridge_broadcast): Fix a null pointer
+	deference.  Supporting VLANs, it seems that during the net_init()
+	function, it sends a packet to the bridge with the source
+	interface being NULL.  Stats counting assumed otherwise.
+
+2001-09-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sys/kern/uipc_syscalls.c: Last change to uipc_syscalls.c
+	wasn't right. The parts that were __ECOS__ should simply have
+	been completely removed.
+
+2001-09-13  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/net.cdl: Add configury to control whether we can tickle the
+	network devices if there's a lack of network traffic, and to
+	control the delay time before so doing.
+
+	* src/ecos/timeout.c (alarm_thread): Use a timed wait, if so
+	configured, for the flag; and if it times out, tickle all the
+	devices via the common ether driver routine for so doing.
+
+2001-09-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sys/socketvar.h: Use __ECOS, not __ECOS__.
+	* src/sys/kern/uipc_syscalls.c: Ditto.
+	* src/sys/kern/uipc_socket2.c (sblock): Ditto.
+
 2001-08-02  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/linux_echo.c (echo_test): Set socket options before bind.

@@ -2,102 +2,104 @@
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
-<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- http://www.opencontent.org/openpub/).                           -->
 <!-- Distribution of substantively modified versions of this         -->
 <!-- document is prohibited without the explicit permission of the   -->
 <!-- copyright holder.                                               -->
 <!-- Distribution of the work or derivative of the work in any       -->
 <!-- standard (paper) book form is prohibited unless prior           -->
-<!-- permission obtained from the copyright holder                   -->
-<HTML>
-<HEAD>
-<TITLE>
-Writing a USB Device Driver</TITLE>
+<!-- permission is obtained from the copyright holder.               -->
+<HTML
+><HEAD
+><TITLE
+>Writing a USB Device Driver</TITLE
+><meta name="MSSmartTagsPreventParsing" content="TRUE">
 <META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.54"><LINK
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
 REL="HOME"
 TITLE="eCos USB Slave Support"
 HREF="io-usb-slave.html"><LINK
 REL="PREVIOUS"
 TITLE="Data Endpoints"
-HREF="usbs-data.html"></HEAD>
-<BODY
+HREF="usbs-data.html"></HEAD
+><BODY
 CLASS="REFENTRY"
 BGCOLOR="#FFFFFF"
 TEXT="#000000"
 LINK="#0000FF"
 VLINK="#840084"
-ALINK="#0000FF">
-<DIV
-CLASS="NAVHEADER">
-<TABLE
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
-CELLSPACING="0">
-<TR>
-<TH
+CELLSPACING="0"
+><TR
+><TH
 COLSPAN="3"
-ALIGN="center">
-eCos USB Slave Support</TH>
-</TR>
-<TR>
-<TD
+ALIGN="center"
+>eCos USB Slave Support</TH
+></TR
+><TR
+><TD
 WIDTH="10%"
 ALIGN="left"
-VALIGN="bottom">
-<A
-HREF="usbs-data.html">
-Prev</A>
-</TD>
-<TD
+VALIGN="bottom"
+><A
+HREF="usbs-data.html"
+>Prev</A
+></TD
+><TD
 WIDTH="80%"
 ALIGN="center"
-VALIGN="bottom">
-</TD>
-<TD
+VALIGN="bottom"
+></TD
+><TD
 WIDTH="10%"
 ALIGN="right"
-VALIGN="bottom">
-&nbsp;</TD>
-</TR>
-</TABLE>
-<HR
+VALIGN="bottom"
+>&nbsp;</TD
+></TR
+></TABLE
+><HR
 ALIGN="LEFT"
-WIDTH="100%"></DIV>
-<H1>
-<A
-NAME="USBS-WRITING">
-Writing a USB Device Driver</A>
-</H1>
-<DIV
-CLASS="REFNAMEDIV">
-<A
-NAME="AEN668">
-</A>
-<H2>
-Name</H2>
-Writing a USB Device Driver&nbsp;--&nbsp;USB Device Driver Porting Guide</DIV>
-<DIV
-CLASS="REFSECT1">
-<A
-NAME="AEN671">
-</A>
-<H2>
-Introduction</H2>
-<P>
-Often the best way to write a USB device driver will be to start with
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="USBS-WRITING"
+>Writing a USB Device Driver</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN668"
+></A
+><H2
+>Name</H2
+>Writing a USB Device Driver&nbsp;--&nbsp;USB Device Driver Porting Guide</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN671"
+></A
+><H2
+>Introduction</H2
+><P
+>Often the best way to write a USB device driver will be to start with
 an existing one and modify it as necessary. The information given here
-is intended primarily as an outline rather than as a complete guide.</P>
-<DIV
-CLASS="NOTE">
-<BLOCKQUOTE
-CLASS="NOTE">
-<P>
-<B>
-Note: </B>
-At the time of writing only one USB device driver has been
+is intended primarily as an outline rather than as a complete guide.</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>At the time of writing only one USB device driver has been
 implemented. Hence it is possible, perhaps probable, that some
 portability issues have not yet been addressed. One issue
 involves the different types of transfer, for example the initial
@@ -107,25 +109,25 @@ types. Another issue would be hardware where a given endpoint number,
 say endpoint 1, could be used for either receiving or transmitting
 data, but not both because a single fifo is used. Issues like these
 will have to be resolved as and when additional USB device drivers are
-written.</P>
-</BLOCKQUOTE>
-</DIV>
-</DIV>
-<DIV
-CLASS="REFSECT1">
-<A
-NAME="AEN676">
-</A>
-<H2>
-The Control Endpoint</H2>
-<P>
-A USB device driver should provide a single <A
-HREF="usbs-control.html">
-<SPAN
-CLASS="STRUCTNAME">
-usbs_control_endpoint</SPAN>
-</A>
-
+written.</P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN676"
+></A
+><H2
+>The Control Endpoint</H2
+><P
+>A USB device driver should provide a single <A
+HREF="usbs-control.html"
+><SPAN
+CLASS="STRUCTNAME"
+>usbs_control_endpoint</SPAN
+></A
+>
 data structure for every USB device. Typical peripherals will have
 only one USB port so there will be just one such data structure in the
 entire system, but theoretically it is possible to have multiple USB
@@ -133,103 +135,103 @@ devices. These may all involve the same chip, in which case a single
 device driver should support multiple device instances, or they may
 involve different chips. The name or names of these data structures
 are determined by the device driver, but appropriate care should be
-taken to avoid name clashes. </P>
-<P>
-A USB device cannot be used unless the control endpoint data structure
+taken to avoid name clashes. </P
+><P
+>A USB device cannot be used unless the control endpoint data structure
 exists. However, the presence of USB hardware in the target processor
 or board does not guarantee that the application will necessarily want
 to use that hardware. To avoid unwanted code or data overheads, the
 device driver can provide a configuration option to determine whether
 or not the endpoint 0 data structure is actually provided. A default
 value of <TT
-CLASS="LITERAL">
-CYGINT_IO_USB_SLAVE_CLIENTS</TT>
- ensures that
+CLASS="LITERAL"
+>CYGINT_IO_USB_SLAVE_CLIENTS</TT
+> ensures that
 the USB driver will be enabled automatically if higher-level code does
-require USB support, while leaving ultimate control to the user.</P>
-<P>
-The USB device driver is responsible for filling in the
+require USB support, while leaving ultimate control to the user.</P
+><P
+>The USB device driver is responsible for filling in the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-start_fn</I>
-</TT>
-,
+CLASS="STRUCTFIELD"
+><I
+>start_fn</I
+></TT
+>,
 <TT
-CLASS="STRUCTFIELD">
-<I>
-poll_fn</I>
-</TT>
- and
+CLASS="STRUCTFIELD"
+><I
+>poll_fn</I
+></TT
+> and
 <TT
-CLASS="STRUCTFIELD">
-<I>
-interrupt_vector</I>
-</TT>
- fields. Usually this can
+CLASS="STRUCTFIELD"
+><I
+>interrupt_vector</I
+></TT
+> fields. Usually this can
 be achieved by static initialization. The driver is also largely
 responsible for maintaining the <TT
-CLASS="STRUCTFIELD">
-<I>
-state</I>
-</TT>
-
+CLASS="STRUCTFIELD"
+><I
+>state</I
+></TT
+>
 field. The <TT
-CLASS="STRUCTFIELD">
-<I>
-control_buffer</I>
-</TT>
- array should be
+CLASS="STRUCTFIELD"
+><I
+>control_buffer</I
+></TT
+> array should be
 used to hold the first packet of a control message. The
 <TT
-CLASS="STRUCTFIELD">
-<I>
-buffer</I>
-</TT>
- and other fields related to data
+CLASS="STRUCTFIELD"
+><I
+>buffer</I
+></TT
+> and other fields related to data
 transfers will be managed <A
-HREF="usbs-control.html#AEN578">
-jointly</A>
- by higher-level code and
+HREF="usbs-control.html#AEN578"
+>jointly</A
+> by higher-level code and
 the device driver. The remaining fields are generally filled in by
 higher-level code, although the driver should initialize them to NULL
-values.</P>
-<P>
-Hardware permitting, the USB device should be inactive until the
+values.</P
+><P
+>Hardware permitting, the USB device should be inactive until the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-start_fn</I>
-</TT>
- is invoked, for example by
+CLASS="STRUCTFIELD"
+><I
+>start_fn</I
+></TT
+> is invoked, for example by
 tristating the appropriate pins. This prevents the host from
 interacting with the peripheral before all other parts of the system
 have initialized. It is expected that the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-start_fn</I>
-</TT>
- will only be invoked once, shortly
-after power-up.</P>
-<P>
-Where possible the device driver should detect state changes, such as
+CLASS="STRUCTFIELD"
+><I
+>start_fn</I
+></TT
+> will only be invoked once, shortly
+after power-up.</P
+><P
+>Where possible the device driver should detect state changes, such as
 when the connection between host and peripheral is established, and
 <A
-HREF="usbs-control.html#AEN515">
-report</A>
- these to higher-level
+HREF="usbs-control.html#AEN515"
+>report</A
+> these to higher-level
 code via the <TT
-CLASS="STRUCTFIELD">
-<I>
-state_change_fn</I>
-</TT>
- callback, if
+CLASS="STRUCTFIELD"
+><I
+>state_change_fn</I
+></TT
+> callback, if
 any. The state change to and from configured state cannot easily be
 handled by the device driver itself, instead higher-level code such as
-the common USB slave package will take care of this.</P>
-<P>
-Once the connection between host and peripheral has been established,
+the common USB slave package will take care of this.</P
+><P
+>Once the connection between host and peripheral has been established,
 the peripheral must be ready to accept control messages at all times,
 and must respond to these within certain time constraints. For
 example, the standard set-address control message must be handled
@@ -238,134 +240,134 @@ constraints. The device driver is responsible for receiving the
 initial packet of a control message. This packet will always be eight
 bytes and should be stored in the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-control_buffer</I>
-</TT>
- field. Certain standard
+CLASS="STRUCTFIELD"
+><I
+>control_buffer</I
+></TT
+> field. Certain standard
 control messages should be detected and handled by the device driver
 itself. The most important is set-address, but usually the get-status,
 set-feature and clear-feature requests when applied to halted
 endpoints should also be handled by the driver. Other standard control
 messages should first be passed on to the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-standard_control_fn</I>
-</TT>
- callback (if any), and
+CLASS="STRUCTFIELD"
+><I
+>standard_control_fn</I
+></TT
+> callback (if any), and
 finally to the default handler
 <TT
-CLASS="FUNCTION">
-usbs_handle_standard_control</TT>
- provided by the
+CLASS="FUNCTION"
+>usbs_handle_standard_control</TT
+> provided by the
 common USB slave package. Class, vendor and reserved control messages
 should always be dispatched to the appropriate callback and there is
-no default handler for these.</P>
-<P>
-Some control messages will involve further data transfer, not just the
+no default handler for these.</P
+><P
+>Some control messages will involve further data transfer, not just the
 initial packet. The device driver must handle this in accordance with
 the USB specification and the <A
-HREF="usbs-control.html#AEN578">
-buffer management strategy</A>
-. The
+HREF="usbs-control.html#AEN578"
+>buffer management strategy</A
+>. The
 driver is also responsible for keeping track of whether or not the
 control operation has succeeded and generating an ACK or STALL
-handshake. </P>
-<P>
-The polling support is optional and may not be feasible on all
+handshake. </P
+><P
+>The polling support is optional and may not be feasible on all
 hardware. It is only used in certain specialised environments such as
 RedBoot. A typical implementation of the polling function would just
 check whether or not an interrupt would have occurred and, if so, call
-the same code that the interrupt handler would.</P>
-</DIV>
-<DIV
-CLASS="REFSECT1">
-<A
-NAME="AEN704">
-</A>
-<H2>
-Data Endpoints</H2>
-<P>
-In addition to the control endpoint data structure, a USB device
+the same code that the interrupt handler would.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN704"
+></A
+><H2
+>Data Endpoints</H2
+><P
+>In addition to the control endpoint data structure, a USB device
 driver should also provide appropriate <A
-HREF="usbs-data.html">
-data
-endpoint</A>
- data structures. Obviously this is only relevant if
+HREF="usbs-data.html"
+>data
+endpoint</A
+> data structures. Obviously this is only relevant if
 the USB support generally is desired, that is if the control endpoint is
 provided. In addition, higher-level code may not require all the
 endpoints, so it may be useful to provide configuration options that
 control the presence of each endpoint. For example, the intended
 application might only involve a single transmit endpoint and of
 course control messages, so supporting receive endpoints might waste
-memory.</P>
-<P>
-Conceptually, data endpoints are much simpler than the control
+memory.</P
+><P
+>Conceptually, data endpoints are much simpler than the control
 endpoint. The device driver has to supply two functions, one for
 data transfers and another to control the halted condition. These
 implement the functionality for
 <A
-HREF="usbs-start-rx.html">
-<TT
-CLASS="FUNCTION">
-usbs_start_rx_buffer</TT>
-</A>
-,
+HREF="usbs-start-rx.html"
+><TT
+CLASS="FUNCTION"
+>usbs_start_rx_buffer</TT
+></A
+>,
 <A
-HREF="usbs-start-tx.html">
-<TT
-CLASS="FUNCTION">
-usbs_start_tx_buffer</TT>
-</A>
-,
+HREF="usbs-start-tx.html"
+><TT
+CLASS="FUNCTION"
+>usbs_start_tx_buffer</TT
+></A
+>,
 <A
-HREF="usbs-halt.html">
-<TT
-CLASS="FUNCTION">
-usbs_set_rx_endpoint_halted</TT>
-</A>
- and
+HREF="usbs-halt.html"
+><TT
+CLASS="FUNCTION"
+>usbs_set_rx_endpoint_halted</TT
+></A
+> and
 <A
-HREF="usbs-halt.html">
-<TT
-CLASS="FUNCTION">
-usbs_set_tx_endpoint_halted</TT>
-</A>
-.
+HREF="usbs-halt.html"
+><TT
+CLASS="FUNCTION"
+>usbs_set_tx_endpoint_halted</TT
+></A
+>.
 The device driver is also responsible for maintaining the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-halted</I>
-</TT>
- status.</P>
-<P>
-For data transfers, higher-level code will have filled in the
+CLASS="STRUCTFIELD"
+><I
+>halted</I
+></TT
+> status.</P
+><P
+>For data transfers, higher-level code will have filled in the
 <TT
-CLASS="STRUCTFIELD">
-<I>
-buffer</I>
-</TT>
-,
+CLASS="STRUCTFIELD"
+><I
+>buffer</I
+></TT
+>,
 <TT
-CLASS="STRUCTFIELD">
-<I>
-buffer_size</I>
-</TT>
-,
+CLASS="STRUCTFIELD"
+><I
+>buffer_size</I
+></TT
+>,
 <TT
-CLASS="STRUCTFIELD">
-<I>
-complete_fn</I>
-</TT>
- and
+CLASS="STRUCTFIELD"
+><I
+>complete_fn</I
+></TT
+> and
 <TT
-CLASS="STRUCTFIELD">
-<I>
-complete_data</I>
-</TT>
- fields. The transfer function
+CLASS="STRUCTFIELD"
+><I
+>complete_data</I
+></TT
+> fields. The transfer function
 should arrange for the transfer to start, allowing the host to send or
 receive packets. Typically this will result in an interrupt at the end
 of the transfer or after each packet. Once the entire transfer has
@@ -375,58 +377,58 @@ context, depending on the driver's implementation. There are a number
 of special cases to consider. If the endpoint is halted when the
 transfer is started then the completion function can be invoked
 immediately with <TT
-CLASS="LITERAL">
--EAGAIN</TT>
-. If the transfer cannot be
+CLASS="LITERAL"
+>-EAGAIN</TT
+>. If the transfer cannot be
 completed because the connection is broken then the completion
 function should be invoked with <TT
-CLASS="LITERAL">
--EPIPE</TT>
-. If the
+CLASS="LITERAL"
+>-EPIPE</TT
+>. If the
 endpoint is stalled during the transfer, either because of a standard
 control message or because higher-level code calls the appropriate
 <TT
-CLASS="STRUCTFIELD">
-<I>
-set_halted_fn</I>
-</TT>
-, then again the completion
+CLASS="STRUCTFIELD"
+><I
+>set_halted_fn</I
+></TT
+>, then again the completion
 function should be invoked with <TT
-CLASS="LITERAL">
--EAGAIN</TT>
-. Finally,
+CLASS="LITERAL"
+>-EAGAIN</TT
+>. Finally,
 the &#60;<TT
-CLASS="FUNCTION">
-usbs_start_rx_endpoint_wait</TT>
- and
+CLASS="FUNCTION"
+>usbs_start_rx_endpoint_wait</TT
+> and
 <TT
-CLASS="FUNCTION">
-usbs_start_tx_endpoint_wait</TT>
- functions involve
+CLASS="FUNCTION"
+>usbs_start_tx_endpoint_wait</TT
+> functions involve
 calling the device driver's data transfer function with a buffer size
-of 0 bytes.</P>
-</DIV>
-<DIV
-CLASS="REFSECT1">
-<A
-NAME="AEN729">
-</A>
-<H2>
-Devtab Entries</H2>
-<P>
-For some applications or higher-level packages it may be more
+of 0 bytes.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN729"
+></A
+><H2
+>Devtab Entries</H2
+><P
+>For some applications or higher-level packages it may be more
 convenient to use traditional open/read/write I/O calls rather than
 the non-blocking USB I/O calls. To support this the device driver can
-provide a devtab entry for each endpoint, for example:</P>
-<TABLE
+provide a devtab entry for each endpoint, for example:</P
+><TABLE
 BORDER="0"
 BGCOLOR="#E0E0E0"
-WIDTH="100%">
-<TR>
-<TD>
-<PRE
-CLASS="PROGRAMLISTING">
-#ifdef CYGVAR_DEVS_USB_SA11X0_EP1_DEVTAB_ENTRY
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>#ifdef CYGVAR_DEVS_USB_SA11X0_EP1_DEVTAB_ENTRY
 
 static CHAR_DEVIO_TABLE(usbs_sa11x0_ep1_devtab_functions,
                         &amp;cyg_devio_cwrite,
@@ -444,63 +446,63 @@ static CHAR_DEVTAB_ENTRY(usbs_sa11x0_ep1_devtab_entry,
                          &amp;usbs_sa11x0_devtab_dummy_init,
                          0,
                          (void*) &amp;usbs_sa11x0_ep1);
-#endif</PRE>
-</TD>
-</TR>
-</TABLE>
-<P>
-Again care must be taken to avoid name clashes. This can be achieved
+#endif</PRE
+></TD
+></TR
+></TABLE
+><P
+>Again care must be taken to avoid name clashes. This can be achieved
 by having a configuration option to control the base name, with a
 default value of e.g. <TT
-CLASS="LITERAL">
-/dev/usbs</TT>
-, and appending an
+CLASS="LITERAL"
+>/dev/usbs</TT
+>, and appending an
 endpoint-specific string. This gives the application developer
 sufficient control to eliminate any name clashes. The common USB slave
 package provides functions <TT
-CLASS="FUNCTION">
-usbs_devtab_cwrite</TT>
- and
+CLASS="FUNCTION"
+>usbs_devtab_cwrite</TT
+> and
 <TT
-CLASS="FUNCTION">
-usbs_devtab_cread</TT>
-, which can be used in the
+CLASS="FUNCTION"
+>usbs_devtab_cread</TT
+>, which can be used in the
 function tables for transmit and receive endpoints respectively. The
 private field <TT
-CLASS="STRUCTFIELD">
-<I>
-priv</I>
-</TT>
- of the devtab entry
-should be a pointer to the underlying endpoint data structure.</P>
-<P>
-Because devtab entries are never accessed directly, only indirectly,
+CLASS="STRUCTFIELD"
+><I
+>priv</I
+></TT
+> of the devtab entry
+should be a pointer to the underlying endpoint data structure.</P
+><P
+>Because devtab entries are never accessed directly, only indirectly,
 they would usually be eliminated by the linker. To avoid this the
 devtab entries should normally be defined in a separate source file
 which ends up the special library <TT
-CLASS="FILENAME">
-libextras.a</TT>
-
+CLASS="FILENAME"
+>libextras.a</TT
+>
 rather than in the default library <TT
-CLASS="FILENAME">
-libtarget.a</TT>
-.</P>
-<P>
-Not all applications or higher-level packages will want to use the
+CLASS="FILENAME"
+>libtarget.a</TT
+>.</P
+><P
+>Not all applications or higher-level packages will want to use the
 devtab entries and the blocking I/O facilities. It may be appropriate
 for the device driver to provide additional configuration options that
 control whether or not any or all of the devtab entries should be
-provided, to avoid unnecessary memory overheads.</P>
-</DIV>
-<DIV
-CLASS="REFSECT1">
-<A
-NAME="AEN742">
-</A>
-<H2>
-Interrupt Handling</H2>
-<P>
-A typical USB device driver will need to service interrupts for all of
+provided, to avoid unnecessary memory overheads.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN742"
+></A
+><H2
+>Interrupt Handling</H2
+><P
+>A typical USB device driver will need to service interrupts for all of
 the endpoints and possibly for additional USB events such as entering
 or leaving suspended mode. Usually these interrupts need not be
 serviced directly by the ISR. Instead, they can be left to a DSR. If
@@ -509,9 +511,9 @@ the hardware will generate a NAK and the host will just retry a little
 bit later. If high throughput is required then it may be desirable to
 handle the bulk transfer protocol largely at ISR level, that is take
 care of each packet in the ISR and only activate the DSR once the
-whole transfer has completed.</P>
-<P>
-Control messages may involve invoking arbitrary callback functions in
+whole transfer has completed.</P
+><P
+>Control messages may involve invoking arbitrary callback functions in
 higher-level code. This should normally happen at DSR level. Doing it
 at ISR level could seriously affect the system's interrupt latency and
 impose unacceptable constraints on what operations can be performed by
@@ -521,58 +523,59 @@ usually it is not worthwhile to add a new thread to the system just
 for this; higher-level code is expected to write callbacks that
 function sensibly at DSR level. Much the same applies to the
 completion functions associated with data transfers. These should also
-be invoked at DSR or thread level.</P>
-</DIV>
-<DIV
-CLASS="NAVFOOTER">
-<HR
+be invoked at DSR or thread level.</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
-CELLSPACING="0">
-<TR>
-<TD
+CELLSPACING="0"
+><TR
+><TD
 WIDTH="33%"
 ALIGN="left"
-VALIGN="top">
-<A
-HREF="usbs-data.html">
-Prev</A>
-</TD>
-<TD
+VALIGN="top"
+><A
+HREF="usbs-data.html"
+>Prev</A
+></TD
+><TD
 WIDTH="34%"
 ALIGN="center"
-VALIGN="top">
-<A
-HREF="io-usb-slave.html">
-Home</A>
-</TD>
-<TD
+VALIGN="top"
+><A
+HREF="io-usb-slave.html"
+>Home</A
+></TD
+><TD
 WIDTH="33%"
 ALIGN="right"
-VALIGN="top">
-&nbsp;</TD>
-</TR>
-<TR>
-<TD
+VALIGN="top"
+>&nbsp;</TD
+></TR
+><TR
+><TD
 WIDTH="33%"
 ALIGN="left"
-VALIGN="top">
-Data Endpoints</TD>
-<TD
+VALIGN="top"
+>Data Endpoints</TD
+><TD
 WIDTH="34%"
 ALIGN="center"
-VALIGN="top">
-&nbsp;</TD>
-<TD
+VALIGN="top"
+>&nbsp;</TD
+><TD
 WIDTH="33%"
 ALIGN="right"
-VALIGN="top">
-&nbsp;</TD>
-</TR>
-</TABLE>
-</DIV>
-</BODY>
-</HTML>
+VALIGN="top"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

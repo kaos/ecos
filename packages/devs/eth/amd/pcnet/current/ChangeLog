@@ -1,3 +1,7 @@
+2001-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/amd_pcnet.h: fix warning.
+
 2001-07-26  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_pcnet.c (amd_pcnet_init): Wait for init table loadup

@@ -14,7 +14,7 @@ This is the RedBoot configuration, used when building the RedBoot environment." 
     package     CYGPKG_INFRA current ;
     package     CYGPKG_REDBOOT current ;
     package     CYGPKG_ISOINFRA current ;
-    package     CYGPKG_LIBC_STRING current ;
+    package     CYGPKG_LIBC_STRING current ; 
 };
 
 cdl_option CYGBLD_BUILD_REDBOOT {
@@ -23,10 +23,6 @@ cdl_option CYGBLD_BUILD_REDBOOT {
 
 cdl_option CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT {
     user_value 0
-};
-
-cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
-    user_value 6144
 };
 
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {
@@ -43,5 +39,9 @@ cdl_option CYGBLD_ISO_STRING_MEMFUNCS_HEADER {
 
 cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
     inferred_value 1 <cyg/libc/string/string.h>
+};
+
+cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
+    user_value 4096
 };
 

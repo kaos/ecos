@@ -1,3 +1,17 @@
+2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/isoinfra.cdl: Add netdb services and proto function support.
+	* include/netdb.h: New file.
+
+2001-09-24  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/isoinfra.cdl: Added CYGINT_ISO_DNS and
+	CYGBLD_ISO_DNS_HEADER.
+
+2001-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* include/limits.h: Work around glibc header problem.
+
 2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/isoinfra.cdl: Add CYGINT_ISO_PTHREAD_MUTEX and

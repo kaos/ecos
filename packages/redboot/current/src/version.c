@@ -66,14 +66,16 @@
 
 #if defined(CYGDAT_REDBOOT_CUSTOM_VERSION)
 #define _REDBOOT_VERSION CYGDAT_REDBOOT_CUSTOM_VERSION
-#define _CERTIFICATE Non-certified
 #elif defined(CYGPKG_REDBOOT_current)
 #define _REDBOOT_VERSION UNKNOWN
-#define _CERTIFICATE Non-certified
 #else
 #define _REDBOOT_VERSION CYGPKG_REDBOOT
-#define _CERTIFICATE Red Hat certified
 #endif
+
+#ifndef _CERTIFICATE
+#define _CERTIFICATE Non-certified
+#endif
+
 #define __s(x) #x
 #define _s(x) __s(x)
 

@@ -1,3 +1,8 @@
+2001-09-14  Mark Salter  <msalter@redhat.com>
+
+	* include/pcmb_io.h (HAL_IDE_READ_ALTSTATUS): Add 2 for correct offset.
+	(HAL_IDE_WRITE_CONTROL): Ditto.
+
 2001-08-22  Nick Garnett  <nickg@redhat.com>
 
 	* src/pcmb_misc.c: Added spinlock to clock read operation.

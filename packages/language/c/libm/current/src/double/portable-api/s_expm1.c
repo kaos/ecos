@@ -274,7 +274,7 @@ Q5  =  -2.01099218183624371326e-07; /* BE8AFDB7 6E09C32D */
 	    t = huge+x;	/* return x with inexact flags when x!=0 */
 	    return x - (t-(huge+x));	
 	}
-	else k = 0;
+	else k = 0, c = 0;
 
     /* x is now in primary range */
 	hfx = 0.5*x;

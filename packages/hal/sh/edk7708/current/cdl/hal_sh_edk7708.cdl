@@ -56,15 +56,14 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED
-    implements    CYGINT_HAL_SH_PLF_BIGENDIAN_DEFAULT
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_sh.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_sh_edk7708.h>"
 
         puts $::cdl_header "#define CYGNUM_HAL_SH_SH3_SCI_PORTS 1"
-        puts $::cdl_header "#define CYGHWR_HAL_VSR_TABLE 0x08000000"
-        puts $::cdl_header "#define CYGHWR_HAL_VECTOR_TABLE 0x08000100"
+        puts $::cdl_header "#define CYGHWR_HAL_VSR_TABLE 0x88000000"
+        puts $::cdl_header "#define CYGHWR_HAL_VECTOR_TABLE 0x88000100"
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -310,5 +309,32 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             ROM monitor may process exceptions or interrupts generated from the
             application. This enables features such as utilizing a separate
             interrupt stack when exceptions are generated."
+    }
+
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display       "Redboot HAL options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+    
+        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build Redboot ROM binary image"
+            active_if     CYGBLD_BUILD_REDBOOT
+            default_value 1
+            no_define
+            description "This option enables the conversion of the Redboot ELF
+                         image to a binary image suitable for ROM programming."
+    
+            make -priority 325 {
+                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 
+                $(OBJCOPY) -O srec $< $(@:.bin=.srec)
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
     }
 }

@@ -1,3 +1,8 @@
+2001-09-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pci.c (cyg_pci_find_next): 
+	* include/pci.h: Allow platforms to restrict PCI bus/device ranges.
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pci.c: 

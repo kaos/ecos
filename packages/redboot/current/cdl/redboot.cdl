@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -127,7 +127,15 @@ cdl_package CYGPKG_REDBOOT {
             puts $::cdl_system_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS 1"
         }
 
-        cdl_option CYGDAT_REDBOOT_DEFAULT_IP_ADDR {
+        cdl_option CYGDBG_REDBOOT_NET_DEBUG {
+            display          "Print net debug information"
+            flavor           bool
+            default_value    0
+            description      "
+                This option is overriden by the configuration stored in flash."
+        }
+
+        cdl_component CYGDAT_REDBOOT_DEFAULT_IP_ADDR {
             display          "Default IP address"
             flavor           booldata
             default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
@@ -137,7 +145,20 @@ cdl_package CYGPKG_REDBOOT {
                 server does not respond. The numbers should be separated by
                 *commas*, and not dots. If an IP address is configured into
                 the Flash configuration, that will be used in preference."
+
+            cdl_option CYGSEM_REDBOOT_DEFAULT_NO_BOOTP {
+                 display          "Do not try to use BOOTP"
+                 flavor           bool
+                 default_value    0
+                 description      "
+                     By default Redboot tries to use BOOTP to get an IP
+                     address. If there's no BOOTP server on your network
+                     use this option to avoid to wait until the
+                     timeout. This option is overriden by the
+                     configuration stored in flash."
+            }
         }
+
 
         cdl_option CYGNUM_REDBOOT_NETWORKING_TCP_PORT {
             display          "TCP port to listen for incoming connections"
@@ -162,7 +183,6 @@ cdl_package CYGPKG_REDBOOT {
                about 1514 bytes.  Note: there is little need to make this larger
                than the default."
         }
-    }
 
     cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {
         display       "Allow RedBoot to use any I/O channel for it's console."
@@ -479,8 +499,8 @@ cdl_package CYGPKG_REDBOOT {
             default_value 1
             description "
               When this option is enabled, RedBoot will support IDE disks."
-	    compile -library=libextras.a fs/ide.c
-	}
+            compile -library=libextras.a fs/ide.c
+        }
 
         cdl_component CYGSEM_REDBOOT_DISK_EXT2FS {
             display       "Support Linux second extended filesystems."
@@ -488,8 +508,8 @@ cdl_package CYGPKG_REDBOOT {
             default_value 1
             description "
               When this option is enabled, RedBoot will support IDE disks."
-	    compile -library=libextras.a fs/e2fs.c
-	}
+            compile -library=libextras.a fs/e2fs.c
+        }
 
         cdl_component CYGSEM_REDBOOT_DISK_ISO9660 {
             display       "Support ISO9660 filesystems."
@@ -497,8 +517,8 @@ cdl_package CYGPKG_REDBOOT {
             calculated    0
             description "
               When this option is enabled, RedBoot will support ISO9660 filesystems."
-	    compile -library=libextras.a fs/iso9660fs.c
-	}
+            compile -library=libextras.a fs/iso9660fs.c
+        }
     }
 
     cdl_component CYGPKG_REDBOOT_BOOT_SCRIPT {
@@ -550,12 +570,12 @@ cdl_package CYGPKG_REDBOOT {
     }
 
     cdl_option CYGPRI_REDBOOT_ROM_MONITOR {
-	display      "Behave like a ROM monitor"
+        display      "Behave like a ROM monitor"
         active_if    { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMRAM" }
         requires     CYGSEM_HAL_ROM_MONITOR
         calculated   1
         no_define
-	description  "
+        description  "
           Enabling this option will allow RedBoot to provide ROM monitor-style
           services to programs which it executes."
     }

@@ -1,3 +1,15 @@
+2001-09-17  Nick Garnett  <nickg@redhat.com>
+
+	* src/hal_misc.c (hal_delay_us): Rewrote this routine to work
+	correctly in higher speed CPUs. The counter register counts at
+	half CPU clock speed. The original ticks calculation could
+	overflow very easily. For example in a 133MHz CPU, it overflowed
+	with any argument greater than 32! This is another of those "how
+	did it ever work?" things.
+
+	* include/hal_arch.h: Added casts to CYGARC_PHYSICAL_ADDRESS() and
+	friends.
+
 2001-09-07  Nick Garnett  <nickg@redhat.com>
 
 	* include/mips-stub.h: Returned target_register_t to long long
@@ -1477,7 +1489,7 @@ Tue Aug 25 02:33:59 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                        
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

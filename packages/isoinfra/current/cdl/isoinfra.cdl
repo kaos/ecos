@@ -435,8 +435,6 @@ cdl_package CYGPKG_ISOINFRA {
             flavor        booldata
             default_value 0
         }
-
-        
     }
 
 # ====================================================================
@@ -1107,6 +1105,51 @@ cdl_package CYGPKG_ISOINFRA {
             flavor        booldata
             default_value 0
         }
+    }
+
+# ====================================================================
+
+    cdl_component CYGPKG_ISO_NETDB {
+        display       "NetDB utility functions"
+        flavor        none
+        no_define
+
+        cdl_interface CYGINT_ISO_DNS {
+            display       "DNS implementations"
+            flavor        bool
+            requires      { 1 >= CYGINT_ISO_DNS }
+        }
+    
+        cdl_option CYGBLD_ISO_DNS_HEADER {
+            display       "DNS implementation header"
+            flavor        booldata
+            default_value 0
+        }
+        
+        cdl_interface CYGINT_ISO_NETDB_PROTO {
+            display       "Protocol network database implementations"
+            flavor        bool
+            requires      { 1 >= CYGINT_ISO_NETDB_PROTO }
+        }
+    
+        cdl_option CYGBLD_ISO_NETDB_PROTO_HEADER {
+            display       "Protocol network database implementation header"
+            flavor        booldata
+            default_value 0
+        }
+        
+        cdl_interface CYGINT_ISO_NETDB_SERV {
+            display       "Services network database implementations"
+            flavor        bool
+            requires      { 1 >= CYGINT_ISO_NETDB_SERV }
+        }
+    
+        cdl_option CYGBLD_ISO_NETDB_SERV_HEADER {
+            display       "Services network database implementation header"
+            flavor        booldata
+            default_value 0
+        }
+        
     }
 
 # ====================================================================

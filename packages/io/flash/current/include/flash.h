@@ -47,7 +47,7 @@
 #include <pkgconf/io_flash.h>
 #include <cyg/hal/hal_cache.h>
 
-typedef int _printf(char* fmt, ...);
+typedef int _printf(const char *fmt, ...);
 
 #define FLASH_MIN_WORKSPACE CYGNUM_FLASH_WORKSPACE_SIZE  // Space used by FLASH code
 

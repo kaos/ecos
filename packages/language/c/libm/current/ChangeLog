@@ -1,3 +1,7 @@
+2001-09-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/double/portable-api/s_expm1.c (expm1): Init c before it's used.
+
 2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/double/portable-api/s_expm1.c: Reimport from newlib

@@ -45,16 +45,26 @@
 // CONFIGURATION
 
 #include <pkgconf/system.h>
-/* We can't do anything without the isoinfra package */
+
 #ifdef CYGPKG_ISOINFRA 
-#include <pkgconf/isoinfra.h>   // Configuration header
+# include <pkgconf/isoinfra.h>     // Configuration header
+#endif
 
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>    // Common type definitions and support
 #include <cyg/infra/cyg_ass.h>     // Default assertion
-#include <stdio.h>
-#include <stdlib.h>
+#include <cyg/infra/diag.h>
+
+#ifdef CYGPKG_ISOINFRA
+# if defined(CYGINT_ISO_STDIO_FORMATTED_IO) || \
+     defined(CYGINT_ISO_STDIO_FILEACCESS)
+#  include <stdio.h>
+# endif
+# if CYGINT_ISO_EXIT
+#  include <stdlib.h>
+# endif
+#endif
 
 // FUNCTIONS
 
@@ -77,7 +87,5 @@ __eprintf (const char *string, const char *expression,
     for (;;);
 #endif
 } // __eprintf()
-
-#endif // ifdef CYGPKG_ISOINFRA 
 
 // EOF eprintf.c

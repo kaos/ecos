@@ -117,7 +117,7 @@ test_pat(unsigned char *buf, int size,
         if (addrpat)
             bpat = ((int)bufptr)&0xFF;
         if ( *bufptr != bpat ) {
-            diag_printf( "Failed to compare at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
+            diag_printf( "Failed to compare byte at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
                          bufptr, *bufptr, bpat );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
@@ -131,8 +131,8 @@ test_pat(unsigned char *buf, int size,
         if (addrpat)
             pat = (unsigned int)ibufptr;
         if ( *ibufptr != pat ) {
-            diag_printf( "Failed to compare at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
-                         bufptr, *ibufptr, pat );
+            diag_printf( "Failed to compare int at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
+                         ibufptr, *ibufptr, pat );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -144,7 +144,7 @@ test_pat(unsigned char *buf, int size,
         if (addrpat)
             bpat = ((int)bufptr)&0xFF;
         if ( *bufptr != bpat ) {
-            diag_printf( "Failed to compare at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
+            diag_printf( "Failed to compare byte at 0x%08x (saw 0x%08x expected 0x%08x)\n", 
                          bufptr, *bufptr, bpat );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );

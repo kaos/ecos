@@ -54,7 +54,26 @@
 
 #include CYGBLD_HAL_CPU_MODULES_H       // INTC module selection
 
+//--------------------------------------------------------------------------
+// Optional platform overrides and fallbacks
 #include <cyg/hal/plf_intr.h>
+
+#ifndef CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF
+# define CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF(vec, level)                  \
+    case CYGNUM_HAL_INTERRUPT_NMI:                                          \
+        /* fall through */                                                  \
+    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:          \
+        /* Cannot change levels */                                          \
+        break;                                                           
+#endif
+
+#ifndef CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF
+# define CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF(vec)
+#endif
+
+#ifndef CYGPRI_HAL_INTERRUPT_CONFIGURE_PLF
+# define CYGPRI_HAL_INTERRUPT_CONFIGURE_PLF(vec, level, up)
+#endif
 
 //----------------------------------------------------------------------------
 // Additional vectors provided by INTC V2

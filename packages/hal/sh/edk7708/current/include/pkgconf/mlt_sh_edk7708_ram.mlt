@@ -1,6 +1,6 @@
 version 0
-region ram 8008000 f8000 0 !
-section vectors 0 1 0 1 1 1 1 1 8008000 8008000 text text !
+region ram 88010000 f0000 0 !
+section vectors 0 1 0 1 1 1 1 1 88010000 88010000 text text !
 section text 0 4 0 1 0 1 0 1 fini fini !
 section fini 0 4 0 1 0 1 0 1 rodata1 rodata1 !
 section rodata1 0 8 0 1 0 1 0 1 rodata rodata !

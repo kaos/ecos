@@ -1,11 +1,11 @@
-#ifndef CYGONCE_MIPS_VRC4373_SERIAL_H
-#define CYGONCE_MIPS_VRC4373_SERIAL_H
+#ifndef CYGONCE_MIPS_VRC437X_SERIAL_H
+#define CYGONCE_MIPS_VRC437X_SERIAL_H
 
 // ====================================================================
 //
-//      aeb_serial.h
+//      vrc437x_serial.h
 //
-//      Device I/O - Description of Mips VRC4373 serial hardware
+//      Device I/O - Description of Mips VRC437X serial hardware
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -44,7 +44,7 @@
 //
 // ====================================================================
 
-// Description of serial ports on Mips VRC4373
+// Description of serial ports on Mips VRC437X
 //   Based on Zilog 85C30 SCC
 
 struct serial_port {
@@ -332,4 +332,4 @@ static cyg_int32 select_baud[] = {
     0,      // 230400
 };
 
-#endif // CYGONCE_MIPS_VRC4373_SERIAL_H
+#endif // CYGONCE_MIPS_VRC437X_SERIAL_H

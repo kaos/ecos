@@ -338,20 +338,40 @@ hal_delay_us(int us)
 {
     cyg_uint32 val1, val2;
     int diff;
+    long usticks;
     long ticks;
-    // Scale the desired number of microseconds to be a number of
-    // incrementer ticks
-    ticks = us * (CYGNUM_HAL_RTC_PERIOD * CYGNUM_HAL_RTC_DENOMINATOR) / 1000000;
 
-    asm volatile("mfc0 %0,$9;" : "=r"(val1));
-    while (ticks > 0) {
-        do {
-            asm volatile("mfc0 %0,$9;" : "=r"(val2));
-        } while (val1 == val2);
-        diff = val2 - val1;
-        if (diff < 0) diff += CYGNUM_HAL_RTC_PERIOD;
-        ticks -= diff;
-        val1 = val2;
+    // Calculate the number of counter register ticks per microsecond.
+    
+    usticks = (CYGNUM_HAL_RTC_PERIOD * CYGNUM_HAL_RTC_DENOMINATOR) / 1000000;
+
+    // Make sure that the value is not zero. This will only happen if the
+    // CPU is running at < 2MHz.
+    if( usticks == 0 ) usticks = 1;
+    
+    while( us > 0 )
+    {
+        int us1 = us;
+
+        // Wait in bursts of less than 10000us to avoid any overflow
+        // problems in the multiply.
+        if( us1 > 10000 )
+            us1 = 10000;
+
+        us -= us1;
+
+        ticks = us1 * usticks;
+
+        asm volatile("mfc0 %0,$9;" : "=r"(val1));
+        while (ticks > 0) {
+            do {
+                asm volatile("mfc0 %0,$9;" : "=r"(val2));
+            } while (val1 == val2);
+            diff = val2 - val1;
+            if (diff < 0) diff += CYGNUM_HAL_RTC_PERIOD;
+            ticks -= diff;
+            val1 = val2;
+        }
     }
 }
 

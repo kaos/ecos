@@ -197,11 +197,7 @@ sys_bind(p, v, retval)
 	struct mbuf *nam;
 	int error;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	error = sockargs(&nam, (caddr_t)SCARG(uap, name), SCARG(uap, namelen),
 			 MT_SONAME);
@@ -232,11 +228,7 @@ sys_listen(p, v, retval)
 	struct file *fp;
 	int error;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	return (solisten((struct socket *)fp->f_data, SCARG(uap, backlog)));
 }
@@ -267,11 +259,7 @@ sys_accept(p, v, retval)
 	if (SCARG(uap, name) && (error = copyin((caddr_t)SCARG(uap, anamelen),
 	    (caddr_t)&namelen, sizeof (namelen))))
 		return (error);
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	s = splsoftnet();
 	so = (struct socket *)fp->f_data;
@@ -363,11 +351,7 @@ sys_connect(p, v, retval)
 	struct mbuf *nam;
 	int error, s;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	so = (struct socket *)fp->f_data;
 	if ((so->so_state & SS_NBIO) && (so->so_state & SS_ISCONNECTING))
@@ -578,11 +562,7 @@ sendit(p, s, mp, flags, retsize)
 	struct iovec *ktriov = NULL;
 #endif
 	
-#ifdef __ECOS__
-	if ((error = getsock(s, &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, s, &fp)) != 0)
-#endif
 		return (error);
 	auio.uio_iov = mp->msg_iov;
 	auio.uio_iovcnt = mp->msg_iovlen;
@@ -802,11 +782,7 @@ recvit(p, s, mp, namelenp, retsize)
 	struct iovec *ktriov = NULL;
 #endif
 
-#ifdef __ECOS__
-	if ((error = getsock(s, &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, s, &fp)) != 0)
-#endif
 		return (error);
 	auio.uio_iov = mp->msg_iov;
 	auio.uio_iovcnt = mp->msg_iovlen;
@@ -962,11 +938,7 @@ sys_shutdown(p, v, retval)
 	struct file *fp;
 	int error;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	return (soshutdown((struct socket *)fp->f_data, SCARG(uap, how)));
 }
@@ -995,11 +967,7 @@ sys_setsockopt(p, v, retval)
 	struct mbuf *m = NULL;
 	int error;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	if (SCARG(uap, valsize) > MCLBYTES)
 		return (EINVAL);
@@ -1051,11 +1019,7 @@ sys_getsockopt(p, v, retval)
 	socklen_t valsize;
 	int error;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, s), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, s), &fp)) != 0)
-#endif
 		return (error);
 	if (SCARG(uap, val)) {
 		error = copyin((caddr_t)SCARG(uap, avalsize),
@@ -1183,11 +1147,7 @@ sys_getsockname(p, v, retval)
 	socklen_t len;
 	int error;
 
-#ifdef __ECOS__
-	if ((error = getsock(SCARG(uap, fdes), &fp)) != 0)
-#else
 	if ((error = getsock(p->p_fd, SCARG(uap, fdes), &fp)) != 0)
-#endif
 		return (error);
 	error = copyin((caddr_t)SCARG(uap, alen), (caddr_t)&len, sizeof (len));
 	if (error)

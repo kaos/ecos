@@ -53,6 +53,7 @@
 #include <cyg/hal/hal_if.h>
 #include <eth_drv.h>
 #include <netdev.h>
+#include <string.h>
 
 // High-level ethernet driver
 
@@ -250,8 +251,8 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
         int old_console;
         old_console = start_console();
         diag_printf("Ethernet send:\n");
-        diag_dump_buf((CYG_ADDRWORD)eth_hdr, 14);
-        diag_dump_buf((CYG_ADDRWORD)buf, len);
+        diag_dump_buf(eth_hdr, 14);
+        diag_dump_buf(buf, len);
         end_console(old_console);
     }
 #endif
@@ -423,8 +424,8 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         int old_console;
         old_console = start_console();
         diag_printf("Ethernet recv:\n");
-        diag_dump_buf((CYG_ADDRWORD)buf, 14);
-        diag_dump_buf((CYG_ADDRWORD)buf+14, total_len-14);
+        diag_dump_buf(buf, 14);
+        diag_dump_buf(buf+14, total_len-14);
         end_console(old_console);
     }
 #endif

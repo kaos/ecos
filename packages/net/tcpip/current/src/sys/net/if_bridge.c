@@ -1271,7 +1271,7 @@ bridge_broadcast(sc, ifp, eh, m)
 
 		sc->sc_if.if_opackets++;
 		sc->sc_if.if_obytes += mc->m_pkthdr.len;
-		if ((eh->ether_shost[0] & 1) == 0)
+		if (ifp && ((eh->ether_shost[0] & 1) == 0) )
 			ifp->if_omcasts++;
 
 		IF_ENQUEUE(&p->ifp->if_snd, mc);

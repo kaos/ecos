@@ -1,3 +1,19 @@
+2001-09-17  Nick Garnett  <nickg@redhat.com>
+
+	* src/plf_misc.c:
+	Added ISR for dealing with spurious interrupts from the VRC437X.
+	Added PCI initialization routine.
+
+	* src/platform.S: Change PCI IO base address setup to a more
+	explicit value.
+
+	* include/plf_io.h: Adjust PCI IO and memory base addresses to
+	match the actual hardware setup.
+	Add explicit PCI initialization routine.
+
+	* include/platform.inc: Install bus error VSR in non-stub
+	configurations too.
+
 2001-09-07  Nick Garnett  <nickg@redhat.com>
 
 	This package is newly created to contain code that is common to

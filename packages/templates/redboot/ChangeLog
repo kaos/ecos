@@ -1,3 +1,8 @@
+2001-09-12  Gary Thomas  <gthomas@redhat.com>
+
+	* current.ect: Large stack no longer necessary as 'fconfig' data
+	is now associated with the FLASH workspace.	
+
 2001-09-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* current.ect: Silence warnings when selecting redboot template.

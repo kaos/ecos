@@ -1,3 +1,8 @@
+2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/ebsa285_flash.c (flash_hwr_init): Only re-enable icache if it
+	was enabled before.
+
 2001-07-11  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* src/flash.h:

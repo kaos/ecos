@@ -378,7 +378,7 @@ extern Cyg_ErrNo usbs_devtab_set_config(cyg_io_handle_t, cyg_uint32, const void*
 typedef struct usbs_testing_endpoint {
     int         endpoint_type;          // One of ATTR_CONTROL, ATTR_BULK, ...
     int         endpoint_number;        // Between 0 and 15
-    cyg_bool    in_endpoint;            // host->slave?
+    int         endpoint_direction;     // ENDPOINT_IN or ENDPOINT_OUT
     void*       endpoint;               // pointer to the usbs_control_endpoint, usbs_rx_endpoint, ...
     const char* devtab_entry;           // e.g. "/dev/usbs1r", or 0 if inaccessible via devtab
     int         min_size;               // Minimum transfer size
@@ -387,22 +387,24 @@ typedef struct usbs_testing_endpoint {
                                         // Primarily for SA11x0 hardware. It is assumed
                                         // for now that no other hardware will exhibit
                                         // comparable problems.
+    int         alignment;              // Buffer should be aligned to a suitable boundary
 } usbs_testing_endpoint;
 
 // A specific instance provided by the device driver. The end of
 // the table is indicated by a NULL endpoint field.    
 extern usbs_testing_endpoint usbs_testing_endpoints[];    
 
-#define USBS_TESTING_ENDPOINTS_TERMINATOR                       \
-    {                                                           \
-        endpoint_type   : USB_ENDPOINT_DESCRIPTOR_ATTR_CONTROL, \
-        endpoint_number : 0,                                    \
-        in_endpoint     : false,                                \
-        endpoint        : (void*) 0,                            \
-        devtab_entry    : (const char*) 0,                      \
-        min_size        : 0,                                    \
-        max_size        : 0,                                    \
-        max_in_padding  : 0                                     \
+#define USBS_TESTING_ENDPOINTS_TERMINATOR                           \
+    {                                                               \
+        endpoint_type       : USB_ENDPOINT_DESCRIPTOR_ATTR_CONTROL, \
+        endpoint_number     : 0,                                    \
+        endpoint_direction  : USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN,  \
+        endpoint            : (void*) 0,                            \
+        devtab_entry        : (const char*) 0,                      \
+        min_size            : 0,                                    \
+        max_size            : 0,                                    \
+        max_in_padding      : 0,                                    \
+        alignment           : 0                                     \
     }
 
 #define USBS_TESTING_ENDPOINTS_IS_TERMINATOR(_endpoint_) ((void*)0 == (_endpoint_).endpoint)

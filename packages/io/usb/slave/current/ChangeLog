@@ -1,3 +1,16 @@
+2001-09-14  Bart Veer  <bartv@redhat.com>
+
+	* doc/usbs.sgml, doc/*.html:
+	Fix the example strings in the enumeration data.
+	Regenerate html.
+
+	* include/usbs.h:
+	Update the USB testing data structure	
+
+	* src/usbs.c (usbs_handle_standard_control):
+	Fix an assertion for the special case of a USB configuration that
+	defines no endpoints.
+
 2001-08-06  Bart Veer  <bartv@redhat.com>
 
 	* include/usbs.h:

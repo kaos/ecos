@@ -213,14 +213,14 @@ CYG_MACRO_END
 #define HAL_IDE_READ_UINT16( __ctlr, __regno, __val )  \
     HAL_READ_UINT16(__CMD_ADDR(__ctlr) + (__regno), (__val))
 #define HAL_IDE_READ_ALTSTATUS( __ctlr, __val )  \
-    HAL_READ_UINT16(__CTL_ADDR(__ctlr), (__val))
+    HAL_READ_UINT16(__CTL_ADDR(__ctlr) + 2, (__val))
 
 #define HAL_IDE_WRITE_UINT8( __ctlr, __regno, __val )  \
     HAL_WRITE_UINT8(__CMD_ADDR(__ctlr) + (__regno), (__val))
 #define HAL_IDE_WRITE_UINT16( __ctlr, __regno, __val )  \
     HAL_WRITE_UINT16(__CMD_ADDR(__ctlr) + (__regno), (__val))
 #define HAL_IDE_WRITE_CONTROL( __ctlr, __val )  \
-    HAL_WRITE_UINT16(__CTL_ADDR(__ctlr), (__val))
+    HAL_WRITE_UINT16(__CTL_ADDR(__ctlr) + 2, (__val))
 
 
 //-----------------------------------------------------------------------------

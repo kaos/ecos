@@ -375,7 +375,7 @@ hal_mmu_setup_return:
 	sw	v0,(4*4)(v1)
 	sw	v0,(5*4)(v1)
 	sw	v0,(6*4)(v1)
-	sw	v0,(7*4)(v1)
+#	sw	v0,(7*4)(v1)	# Bus error
 	sw	v0,(8*4)(v1)
 	sw	v0,(9*4)(v1)
 	sw	v0,(10*4)(v1)
@@ -392,6 +392,12 @@ hal_mmu_setup_return:
 
 	la	v0,__default_interrupt_vsr
 	sw	v0,(0*4)(v1)
+
+	# plant a pointer to our own bus error handler. See the
+	# comments in platform.S.
+	.extern	hal_bus_error_vsr
+	la	v0,hal_bus_error_vsr
+	sw	v0,(7*4)(v1)
 
 	.endm
 

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -45,10 +45,12 @@
 
 STARTUP(vectors.o)
 ENTRY(CYG_LABEL_DEFN(_reset))
-#ifdef EXTRAS
 INPUT(extras.o)
-#endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 #define ALIGN_LMA 16
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -82,7 +84,6 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.dtors*))) CYG_LABEL_DEFN(__DTOR_END__) = ABSOLUTE(.); \
     . = ALIGN(8);							 \
       KEEP(*( SORT (.ecos.table.*))) ;					 \
-      *(.got*) *(.rela.got) *(.rel.got)					 \
     . = ALIGN(4);                                                        \
     } > _region_							 \
     CYG_LABEL_DEFN(_rom_data_start) = LOADADDR(.data);			 \
@@ -90,6 +91,73 @@ GROUP(libtarget.a libgcc.a)
     CYG_LABEL_DEFN(edata) = .; PROVIDE (edata = .);
 
 
+#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
+  .eh_frame _vma_ : _lma_                             \
+    {                                                 \
+       FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
+       KEEP(*(.eh_frame))                             \
+       __FRAME_END__ = .;                             \
+       . = . + 8;                                     \
+    } > _region_ = 0
+
+#define SECTION_RELOCS(_region_, _vma_, _lma_)                              \
+  .rel.text      :                                                          \
+    {                                                                       \
+      *(.rel.text)                                                          \
+      *(.rel.text.*)                                                        \
+      *(.rel.gnu.linkonce.t*)                                               \
+    } > _region_                                                            \
+  .rela.text     :                                                          \
+    {                                                                       \
+      *(.rela.text)                                                         \
+      *(.rela.text.*)                                                       \
+      *(.rela.gnu.linkonce.t*)                                              \
+    } > _region_                                                            \
+  .rel.data      :                                                          \
+    {                                                                       \
+      *(.rel.data)                                                          \
+      *(.rel.data.*)                                                        \
+      *(.rel.gnu.linkonce.d*)                                               \
+    } > _region_                                                            \
+  .rela.data     :                                                          \
+    {                                                                       \
+      *(.rela.data)                                                         \
+      *(.rela.data.*)                                                       \
+      *(.rela.gnu.linkonce.d*)                                              \
+    } > _region_                                                            \
+  .rel.rodata    :                                                          \
+    {                                                                       \
+      *(.rel.rodata)                                                        \
+      *(.rel.rodata.*)                                                      \
+      *(.rel.gnu.linkonce.r*)                                               \
+    } > _region_                                                            \
+  .rela.rodata   :                                                          \
+    {                                                                       \
+      *(.rela.rodata)                                                       \
+      *(.rela.rodata.*)                                                     \
+      *(.rela.gnu.linkonce.r*)                                              \
+    } > _region_                                                            \
+  .rel.got       :   { *(.rel.got)    } > _region_                          \
+  .rela.got      :   { *(.rela.got)   } > _region_                          \
+  .rel.ctors     :   { *(.rel.ctors)  } > _region_                          \
+  .rela.ctors    :   { *(.rela.ctors) } > _region_                          \
+  .rel.dtors     :   { *(.rel.dtors)  } > _region_                          \
+  .rela.dtors    :   { *(.rela.dtors) } > _region_                          \
+  .rel.init      :   { *(.rel.init)   } > _region_                          \
+  .rela.init     :   { *(.rela.init)  } > _region_                          \
+  .rel.fini      :   { *(.rel.fini)   } > _region_                          \
+  .rela.fini     :   { *(.rela.fini)  } > _region_                          \
+  .rel.bss       :   { *(.rel.bss)    } > _region_                          \
+  .rela.bss      :   { *(.rela.bss)   } > _region_                          \
+  .rel.plt       :   { *(.rel.plt)    } > _region_                          \
+  .rela.plt      :   { *(.rela.plt)   } > _region_                          \
+  .rel.dyn       :   { *(.rel.dyn)    } > _region_
+
+#define SECTION_got(_region_, _vma_, _lma_)                                 \
+  .got _vma_ : _lma_                                                        \
+    {                                                                       \
+      FORCE_OUTPUT; *(.got.plt) *(.got)                                     \
+    } > _region_
 
 #define SECTION_fini(_region_, _vma_, _lma_)	\
     .fini _vma_ : _lma_				\

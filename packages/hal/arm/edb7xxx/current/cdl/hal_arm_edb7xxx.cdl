@@ -56,6 +56,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_ARM_ARCH_ARM7
+    implements    CYGINT_HAL_SUPPORTS_MMU_TABLES
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
@@ -70,31 +71,50 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         description   "
             The Cirrus Logic processor variant."
         define -file system.h CYGHWR_HAL_ARM_EDB7XXX_VARIANT
+    }
+
+    cdl_option CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT {
+        display       "Cirrus Logic board variant"
+        flavor        data
+        legal_values  { "CL7111" "EDB7209" "EDB7211" "EDB7212" }
+        default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "CL7111" : \
+                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? "EDB7209" : \
+                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ? "EDB7211" : \
+                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ? "EDB7212" : \
+                        "" }
+        description   "
+            The board type which uses a Cirrus Logic processor variant."
+        define -file system.h CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT
 	define_proc {
             puts $::cdl_header ""
-            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_CL_PS7111"
+            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_CL7111"
             puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM 710C\""
             puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Cirrus Logic CL-PS7111\""
             puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
-            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_VARIANT_CL_PS7111"
+            puts $::cdl_header "#define __CL7111"
+            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_CL7111"
             puts $::cdl_header ""
-            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7209"
+            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7209"
             puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM 720T\""
             puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Cirrus Logic EDB7209\""
             puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
-            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7209"
+            puts $::cdl_header "#define __EDB7209"
+            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7209"
             puts $::cdl_header ""
-            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7211"
+            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7211"
             puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM 720T\""
             puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Cirrus Logic EDB7211\""
             puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
-            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7211"
+            puts $::cdl_header "#define __EDB7211"
+            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7211"
             puts $::cdl_header ""
-            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7212"
+            puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7212"
             puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM 720T\""
             puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Cirrus Logic EDB7212\""
             puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
-            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7212"
+            puts $::cdl_header "#define __EDB7209"
+            puts $::cdl_header "#define __EDB7212"
+            puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7212"
             puts $::cdl_header ""
 	}
     }
@@ -136,7 +156,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         description   "
             This option controls the baud rate used for the GDB connection."
     }
-    
+
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
         display      "Number of communication channels on the board"
         flavor       data
@@ -186,8 +206,8 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         display       "Installed DRAM on board"
         flavor        data
         legal_values  0 2 16
-        default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? 2 : \
-                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? 0 : 16 }
+        default_value { CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ? 2 : \
+                        CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ? 0 : 16 }
         description   "
             The Cirrus Logic boards can have various amounts of DRAM installed.
             The machine needs to be initialized differently, depending
@@ -212,7 +232,7 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
             If an LCD panel is installed, 128K of DRAM will be dedicated to the
             LCD buffer by the system intialization.  Note: changing this value
 	    from the default will alter the memory map and a new debug enviroment
-	    (GDB or CygMon) may be required."
+	    (GDB or RedBoot) may be required."
     }
 
     # Real-time clock/counter specifics
@@ -397,15 +417,18 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
 	    compiler flags used only in building this package,
 	    and details of which tests are built."
 
+# Note: now defined in <pkgconf/hal.h>
+#            default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "-D__CL7111" : 
+#                            CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? "-D__EDB7209" : 
+#                            CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ? "-D__EDB7211" : 
+#                            CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ? "-D__EDB7209 -D__EDB7212" : 
+#                            "" }
 
         cdl_option CYGPKG_HAL_ARM_EDB7XXX_CFLAGS_ADD {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "-D__CL7111" : \
-                            CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? "-D__EDB7209" : \
-                            CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ? "-D__EDB7211" : \
-                            CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ? "-D__EDB7209 -D__EDB7212" : "" }
+            default_value { "" }
             description   "
                 This option modifies the set of compiler flags for
                 building the Cirrus Logic HAL. These flags are used in addition
@@ -438,15 +461,15 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
         flavor data
         no_define
         calculated { 
-          CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? 
+          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ? 
             (CYG_HAL_STARTUP == "RAM" ? "arm_cl7111_ram" : \
              CYG_HAL_STARTUP == "ROM" ? "arm_cl7111_rom" : "BOGUS.mlt" ) : \
-          CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? 
+          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ? 
             (CYG_HAL_STARTUP == "ROM" ? "arm_edb7209_rom" : "BOGUS.mlt" ) : \
-          CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ? 
+          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7211" ? 
             (CYG_HAL_STARTUP == "RAM" ? "arm_edb7211_ram" : \
              CYG_HAL_STARTUP == "ROM" ? "arm_edb7211_rom" : "BOGUS.mlt" ) : \
-          CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ? 
+          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7212" ? 
             (CYG_HAL_STARTUP == "RAM" ? "arm_edb7212_ram" : \
              CYG_HAL_STARTUP == "ROM" ? "arm_edb7212_rom" : "BOGUS.mlt" ) : \
           "BOGUS.mlt" }
@@ -457,15 +480,15 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { 
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_cl7111_ram.ldi>" :  \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_cl7111_rom.ldi>" :  "BOGUS.ldi" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ?
                 (CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7209_rom.ldi>" :  "BOGUS.ldi" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7211" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7211_ram.ldi>" :  \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7211_rom.ldi>" :  "BOGUS.ldi" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7212" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7212_ram.ldi>" :  \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7212_rom.ldi>" :  "BOGUS.ldi" ) : \
               "BOGUS.ldi" }
@@ -477,15 +500,15 @@ cdl_package CYGPKG_HAL_ARM_EDB7XXX {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated {
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_cl7111_ram.h>" :  \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_cl7111_rom.h>" :  "BOGUS.h" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ?
                 (CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7209_rom.h>" :  "BOGUS.h" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7211" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7211_ram.h>" :  \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7211_rom.h>" :  "BOGUS.h" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ?
+              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7212" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7212_ram.h>" :  \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7212_rom.h>" :  "BOGUS.h" ) : \
               "BOGUS.h" }

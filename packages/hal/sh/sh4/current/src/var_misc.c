@@ -275,9 +275,11 @@ hal_interrupt_unmask(int vector)
 void
 hal_interrupt_acknowledge(int vector)
 {
+    CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF(vector);
 }
 
 void 
 hal_interrupt_configure(int vector, int level, int up)
 {
+    CYGPRI_HAL_INTERRUPT_CONFIGURE_PLF(vector, level, up);
 }

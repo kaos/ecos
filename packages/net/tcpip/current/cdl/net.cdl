@@ -63,6 +63,10 @@ cdl_package CYGPKG_NET {
     # Export our types to <sys/types.h>
     implements    CYGINT_ISO_BSDTYPES
     requires      { CYGBLD_ISO_BSDTYPES_HEADER == "<sys/bsdtypes.h>" }
+    implements    CYGINT_ISO_NETDB_PROTO
+    implements    CYGINT_ISO_NETDB_SERV
+    requires      { CYGBLD_ISO_NETDB_PROTO_HEADER == "<net/netdb.h>" }
+    requires      { CYGBLD_ISO_NETDB_SERV_HEADER == "<net/netdb.h>" }
     
     compile ecos/support.c \
         ecos/synch.c \
@@ -105,9 +109,7 @@ cdl_package CYGPKG_NET {
         lib/dhcp_prot.c \
         lib/network_support.c \
         lib/getproto.c \
-        lib/getserv.c \
-        lib/gethost.c
-
+        lib/getserv.c
 
     cdl_option CYGPKG_NET_API_LOCAL {
         display "Implement the socket API locally"
@@ -307,6 +309,36 @@ cdl_package CYGPKG_NET {
         threads themselves, potentially at a cost to network throughput."
     }
 
+    cdl_component CYGPKG_NET_FAST_THREAD_TICKLE_DEVS {
+        display "Fast network processing thread 'tickles' drivers"
+        default_value 1
+        description "
+            If this is enabled, the fast network thread will tickle the
+            device(s) periodically, to unblock them when the hardware has
+            become wedged due to a lost interrupt or other hardware
+            race-condition type problem.
+            This is not necessary if a networked app is running which sends
+            packets itself often - or
+            uses TCP, or any similar protocol which exchanges keep-alive
+            packets periodically and often enough.
+            Trying to send a packet passes control into the driver; this is
+            sufficient to detect and unblock jammed hardware."
+
+        cdl_option CYGNUM_NET_FAST_THREAD_TICKLE_DEVS_DELAY {
+            display "Delay in kernel clocks of tickle loop"
+            flavor data
+            default_value 50
+            description "
+                The default is 50, which will usually mean a delay between
+                tests for 'stuck' devices of 500mS, that is half a second.
+	        The overhead only applies if no network activity occurred,
+	        so it may be acceptable to make this value very small,
+                where high CPU load does not matter during network idle
+                periods, or very large if your application tries often to
+                send packets itself."
+        }
+    }
+
     cdl_option CYGPKG_NET_NBPF {
         display "Number of BPF filters"
         flavor  data
@@ -446,7 +478,6 @@ cdl_package CYGPKG_NET {
                     tests/socket_test \
                     tests/ftp_test \
                     tests/server_test \
-                    tests/nc_test_master \
                     tests/nc_test_slave \
                     tests/tftp_client_test \
                     tests/tftp_server_test \

@@ -538,7 +538,8 @@ usbs_handle_standard_control(usbs_control_endpoint* endpoint)
                     }
                     CYG_ASSERT( start_interface < endpoint->enumeration_data->total_number_interfaces, \
                                 "Valid interface count in enumeration data");
-                    CYG_ASSERT( start_endpoint < endpoint->enumeration_data->total_number_endpoints, \
+                    CYG_ASSERT( ((0 == endpoint->enumeration_data->total_number_endpoints) && (0 == start_endpoint)) || \
+                                (start_endpoint < endpoint->enumeration_data->total_number_endpoints), \
                                 "Valid endpoint count in enumeration data");
 
                     req->type           = (unsigned char) start_interface;

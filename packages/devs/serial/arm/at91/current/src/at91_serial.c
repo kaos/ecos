@@ -217,7 +217,7 @@ at91_serial_init(struct cyg_devtab_entry *tab)
     (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
     if (chan->out_cbuf.len != 0) {
         cyg_drv_interrupt_create(at91_chan->int_num,
-                                 99,                     // Priority - unused
+                                 4,                      // Priority
                                  (cyg_addrword_t)chan,   // Data item passed to interrupt handler
                                  at91_serial_ISR,
                                  at91_serial_DSR,

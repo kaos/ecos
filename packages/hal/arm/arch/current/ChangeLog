@@ -1,3 +1,10 @@
+2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/arm.ld: Make separate section for GOT and .eh_frame.
+	Make macro section for all reloc sections.
+	Input extras.o unconditionally.
+	* cdl/hal_arm.cdl: Don't bother with -DEXTRAS=1 - unconditional now.
+
 2001-08-24  Mark Salter  <msalter@redhat.com>
 
 	* src/arm_stub.c (target_thumb_ins): Add support for pop insn.

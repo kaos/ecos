@@ -83,6 +83,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_if.h>
 #include <pkgconf/io_eth_drivers.h> // module configury; SIMULATED_FAILURES
+#include <pkgconf/net.h>            // CYGPKG_NET_FAST_THREAD_TICKLE_DEVS?
 
 #include <eth_drv.h>
 #include <netdev.h>
@@ -807,6 +808,17 @@ eth_drv_dsr(cyg_vector_t vector,
 {
     struct eth_drv_sc *sc = (struct eth_drv_sc *)data;
 
+#ifdef CYGDBG_USE_ASSERTS
+    // then check that this really is a "sc"
+    {
+        cyg_netdevtab_entry_t *t;
+        for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++)
+            if ( ((struct eth_drv_sc *)t->device_instance) == sc )
+                break; // found it
+        CYG_ASSERT( t != &__NETDEVTAB_END__, "eth_drv_dsr: Failed to find sc in NETDEVTAB" );
+    }
+#endif // Checking code
+
     sc->state |= ETH_DRV_NEEDS_DELIVERY;
 
     ecos_synch_eth_drv_dsr(); // [request] run delivery function for this dev
@@ -832,6 +844,19 @@ void eth_drv_run_deliveries( void )
     }
 }
 
+// This is called from the delivery thread, to unstick devices if there is
+// no network activity.
+#ifdef CYGPKG_NET_FAST_THREAD_TICKLE_DEVS
+void eth_drv_tickle_devices( void )
+{
+    cyg_netdevtab_entry_t *t;
+    for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
+        struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
+        if ( ETH_DRV_STATE_ACTIVE & sc->state )
+            (*sc->funs->can_send)(sc);
+    }
+}
+#endif // CYGPKG_NET_FAST_THREAD_TICKLE_DEVS
 
 // ------------------------------------------------------------------------
 

@@ -49,6 +49,7 @@
 #include <pkgconf/redboot.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/basetype.h>
+#include <string.h>
 
 extern bool net_debug;
 
@@ -567,7 +568,7 @@ extern void net_init(void);
 extern void net_io_test(bool is_idle);
 
 // Conversion between IP addresses and printable strings
-extern bool  inet_aton(char *, in_addr_t *);
+extern bool  inet_aton(const char *, in_addr_t *);
 extern char *inet_ntoa(in_addr_t *);
 
 // FIXME

@@ -1,3 +1,9 @@
+2001-09-26  Gary Thomas  <gthomas@redhat.com>
+
+	* include/flash_am29xxxxx.inl (flash_erase_block): 
+	New platform control - CYGHWR_FLASH_AM29XXXXX_NO_WRITE_PROTECT.
+	Define this if the write-protect feature is non-functional/missing.
+
 2001-08-16  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/flash_am29xxxxx.inl: Double erase timeouts for faster CPUs.

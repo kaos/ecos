@@ -695,7 +695,7 @@ hal_memc_setup_table:
 	.long	PCISLAVADDR2,	0x10081080
 
 	# Map PCI IO space Phys == Local
-	.long	PCIMSTRIO,	(0x000fd000 | ( PCI_IOSPACE_BASE << 24) | PCI_IOSPACE_BASE)
+	.long	PCIMSTRIO,	0x0c0fd00c
 
 	# VRC437X Bridge config space
 

@@ -1,3 +1,8 @@
+2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sa1100mm_flash.c (flash_hwr_init): Only re-enable icache if it
+	was enabled before.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/sa1100mm_flash.c: Remove dependency on printf() via user functions.

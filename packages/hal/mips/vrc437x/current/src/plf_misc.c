@@ -58,8 +58,28 @@
 
 /*------------------------------------------------------------------------*/
 
+#ifdef CYGSEM_HAL_MIPS_VR4300_VRC437X_DIAG_ACKS_INT_0
+
+static cyg_uint32 hal_int0_count = 0;
+
+static cyg_uint32 hal_int0_isr( cyg_uint32 vector, cyg_uint32 data )
+{
+    hal_int0_count++;
+    HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_VRC437X );
+    return 0;
+}
+
+#endif
+
+/*------------------------------------------------------------------------*/
+
+
 void hal_platform_init(void)
 {
+#ifdef CYGSEM_HAL_MIPS_VR4300_VRC437X_DIAG_ACKS_INT_0
+    HAL_INTERRUPT_ATTACH( CYGNUM_HAL_INTERRUPT_VRC437X, hal_int0_isr, 0, 0 );
+#endif
+    
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
     // Set up eCos/ROM interfaces
     hal_if_init();
@@ -75,7 +95,21 @@ void hal_platform_init(void)
         patch_dbg_syscalls( (void *)(&hal_virtual_vector_table[0]) );
     }
 #endif
+
 }
+/*------------------------------------------------------------------------*/
+// One-time PCI initialization.
+
+void cyg_hal_plf_pci_init(void)
+{
+    cyg_uint8  next_bus;
+
+    // Configure PCI bus.
+    next_bus = 1;
+    cyg_pci_configure_bus(0, &next_bus);
+
+}
+    
 
 /*------------------------------------------------------------------------*/
 /* Functions to support the detection and execution of a user provoked    */

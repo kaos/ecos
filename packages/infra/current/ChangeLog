@@ -1,3 +1,8 @@
+2001-09-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/eprintf.c (__eprintf): Tolerate absence of standard ISO C
+	functions better.
+
 2001-09-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/diag.cxx (diag_check_string): Also accept \b.

@@ -1,3 +1,19 @@
+2001-09-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_sh_edk7708_romram.mlt: Moved RAM to
+	0x88000000, flash to 0x80000000, leave 0x10000 for RedBoot.
+	* include/pkgconf/mlt_sh_edk7708_romram.ldi: Same.
+	* include/pkgconf/mlt_sh_edk7708_romram.h: Same.
+	* include/pkgconf/mlt_sh_edk7708_rom.mlt: Same.
+	* include/pkgconf/mlt_sh_edk7708_rom.ldi: Same.
+	* include/pkgconf/mlt_sh_edk7708_rom.h: Same.
+	* include/pkgconf/mlt_sh_edk7708_ram.mlt: Same.
+	* include/pkgconf/mlt_sh_edk7708_ram.ldi: Same.
+	* include/pkgconf/mlt_sh_edk7708_ram.h: Same.
+
+	* cdl/hal_sh_edk7708.cdl: Moved memory to 88000000. Added RedBoot
+	options. Made LE by default.
+
 2001-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_sh_edk7708.cdl: Default to big endian.

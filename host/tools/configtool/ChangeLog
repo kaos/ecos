@@ -1,3 +1,11 @@
+2001-09-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* common/common/build.cxx: Test for active properly in below change.
+
+2001-09-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* common/common/build.cxx: Only use tests value if enabled/active.
+
 2001-07-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* common/common/flags.cxx: Include <cctype> for isspace()

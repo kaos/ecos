@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.cpp,v 1.24 2001/09/05 14:35:53 julians Exp $
+// Version:     $Id: appsettings.cpp,v 1.25 2001/09/25 09:50:23 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecSettings
 // Requires:
@@ -206,7 +206,8 @@ wxString ecSettings::GenerateFilename(const wxString& rootName)
     if (!m_lastFilename.IsEmpty())
         path = wxPathOnly(m_lastFilename);
     else
-        path = wxGetApp().GetAppDir();
+	//        path = wxGetApp().GetAppDir();
+        path = wxGetCwd();
     
     wxString filename(path);
     if (filename.Last() != wxFILE_SEP_PATH )
@@ -347,6 +348,39 @@ bool ecSettings::LoadConfig()
                     m_arstrBinDirs.Set(targetName, strDefaultBuildToolsPath);
                     
                     bMore = finder.GetNext(& filename);
+                }
+            }
+        }
+    }
+#endif
+
+#ifndef __WXMSW__
+    // Look in the PATH for build tools, under Unix
+    {
+        wxString strPath;
+        if (wxGetEnv(wxT("PATH"), & strPath))
+        {
+	    wxString gccExe(wxT("*-gcc"));
+
+	    wxArrayString arstrPath;
+            ecUtils::Chop(strPath, arstrPath, wxT(':'));
+            
+            for (int i = arstrPath.GetCount()-1;i >= 0; --i)
+            { // Reverse order is important to treat path correctly
+                wxLogNull log;
+                wxDir finder(arstrPath[i]);
+                wxString filename;
+            
+                if (finder.IsOpened())
+                {
+                    bool bMore = finder.GetFirst(& filename, gccExe);
+                    while (bMore)
+                    {
+                        wxString targetName = filename.Left(filename.Find(wxT("-gcc")));
+                        m_arstrBinDirs.Set(targetName, arstrPath[i]);
+                    
+                        bMore = finder.GetNext(& filename);
+                    }
                 }
             }
         }

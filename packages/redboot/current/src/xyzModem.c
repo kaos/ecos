@@ -295,7 +295,7 @@ xyzModem_get_hdr(void)
 }
 
 int 
-xyzModem_stream_open(char *filename, int mode, int *err)
+xyzModem_stream_open(char *filename, int mode, int chan, int *err)
 {
     int console_chan, stat;
     int retries = xyzModem_MAX_RETRIES;
@@ -309,7 +309,11 @@ xyzModem_stream_open(char *filename, int mode, int *err)
 
     // Set up the I/O channel.  Note: this allows for using a different port in the future
     console_chan = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(console_chan);
+    if (chan >= 0) {
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);
+    } else {
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(console_chan);
+    }
     xyz.__chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     CYGACC_CALL_IF_SET_CONSOLE_COMM(console_chan);
     CYGACC_COMM_IF_CONTROL(*xyz.__chan, __COMMCTL_SET_TIMEOUT, xyzModem_CHAR_TIMEOUT);

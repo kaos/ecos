@@ -1,7 +1,6 @@
 //=============================================================================
 //
 // MLT linker script for ARM
-// adapted from packages/hal/arm/pid/v1_1/src/pid.ld
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -22,7 +21,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                     
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -33,10 +32,12 @@
 
 STARTUP(vectors.o)
 ENTRY(reset_vector)
-#ifdef EXTRAS
 INPUT(extras.o)
-#endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 #if defined(__ARMEB__)
 OUTPUT_FORMAT(elf32-bigarm)
@@ -128,6 +129,76 @@ OUTPUT_FORMAT(elf32-bigarm)
     { FORCE_OUTPUT; *(.gcc_except_table) } \
     > _region_
 
+#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
+  .eh_frame _vma_ : _lma_                             \
+    {                                                 \
+       FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
+       KEEP(*(.eh_frame))                             \
+       __FRAME_END__ = .;                             \
+       . = . + 8;                                     \
+    } > _region_ = 0
+
+#define SECTION_RELOCS(_region_, _vma_, _lma_)                              \
+  .rel.text      :                                                          \
+    {                                                                       \
+      *(.rel.text)                                                          \
+      *(.rel.text.*)                                                        \
+      *(.rel.gnu.linkonce.t*)                                               \
+    } > _region_                                                            \
+  .rela.text     :                                                          \
+    {                                                                       \
+      *(.rela.text)                                                         \
+      *(.rela.text.*)                                                       \
+      *(.rela.gnu.linkonce.t*)                                              \
+    } > _region_                                                            \
+  .rel.data      :                                                          \
+    {                                                                       \
+      *(.rel.data)                                                          \
+      *(.rel.data.*)                                                        \
+      *(.rel.gnu.linkonce.d*)                                               \
+    } > _region_                                                            \
+  .rela.data     :                                                          \
+    {                                                                       \
+      *(.rela.data)                                                         \
+      *(.rela.data.*)                                                       \
+      *(.rela.gnu.linkonce.d*)                                              \
+    } > _region_                                                            \
+  .rel.rodata    :                                                          \
+    {                                                                       \
+      *(.rel.rodata)                                                        \
+      *(.rel.rodata.*)                                                      \
+      *(.rel.gnu.linkonce.r*)                                               \
+    } > _region_                                                            \
+  .rela.rodata   :                                                          \
+    {                                                                       \
+      *(.rela.rodata)                                                       \
+      *(.rela.rodata.*)                                                     \
+      *(.rela.gnu.linkonce.r*)                                              \
+    } > _region_                                                            \
+  .rel.got       :   { *(.rel.got)    } > _region_                          \
+  .rela.got      :   { *(.rela.got)   } > _region_                          \
+  .rel.ctors     :   { *(.rel.ctors)  } > _region_                          \
+  .rela.ctors    :   { *(.rela.ctors) } > _region_                          \
+  .rel.dtors     :   { *(.rel.dtors)  } > _region_                          \
+  .rela.dtors    :   { *(.rela.dtors) } > _region_                          \
+  .rel.init      :   { *(.rel.init)   } > _region_                          \
+  .rela.init     :   { *(.rela.init)  } > _region_                          \
+  .rel.fini      :   { *(.rel.fini)   } > _region_                          \
+  .rela.fini     :   { *(.rela.fini)  } > _region_                          \
+  .rel.bss       :   { *(.rel.bss)    } > _region_                          \
+  .rela.bss      :   { *(.rela.bss)   } > _region_                          \
+  .rel.plt       :   { *(.rel.plt)    } > _region_                          \
+  .rela.plt      :   { *(.rela.plt)   } > _region_                          \
+  .rel.dyn       :   { *(.rel.dyn)    } > _region_
+
+#define SECTION_got(_region_, _vma_, _lma_)                                 \
+  .got _vma_ : _lma_                                                        \
+    {                                                                       \
+      FORCE_OUTPUT; *(.got.plt) *(.got)                                     \
+      _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.);      \
+      _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.);      \
+    } > _region_
+
 #define SECTION_mmu_tables(_region_, _vma_, _lma_) \
     .mmu_tables _vma_ : _lma_ \
     { FORCE_OUTPUT; *(.mmu_tables) } \
@@ -141,8 +212,6 @@ OUTPUT_FORMAT(elf32-bigarm)
 #define SECTION_data(_region_,  _vma_, _lma_) \
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) MERGE_IN_RODATA \
-    _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
-    _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
     KEEP(*( SORT (.ecos.table.*))) ;            \
     . = ALIGN (4); \
