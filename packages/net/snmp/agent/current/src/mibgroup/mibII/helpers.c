@@ -60,7 +60,7 @@
 /* How many interfaces are there? */
 
 #ifdef CYGPKG_NET_FREEBSD_STACK
-struct ifaddr **ifnet_addrs;
+extern struct ifaddr **ifnet_addrs;
 
 long cyg_snmp_num_interfaces(void) {
   long long_ret=0;

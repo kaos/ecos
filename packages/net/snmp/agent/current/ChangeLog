@@ -1,3 +1,9 @@
+2003-06-17  Michael Checky  <Michael_Checky@ThermoKing.com>
+  
+        * src/mibgroup/mibII/helpers.c: Changed the definition of
+	ifnet_addrs to an extern declaration because of multiple symbol
+	definition errors when using a compiler that does not merge them.
+ 
 2003-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * include/mibgroup/mibII/itf_helpers.h:
