@@ -1,3 +1,20 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* sgml/doclist: Reorder in a slightly more logical order with
+	related bits grouped together.
+	Add docs for power management, USB (slave, eth slave, and SA11x0
+	and NEC uPD8985xx drivers), and synthetic target HAL, eth and
+	watchdog drivers.
+
+	* sgml/.cvsignore: Add gifs and rename ecos.* to ecos-ref.*
+
+	* sgml/makemakefile: Rename ecos.sgml/html/etc. to ecos-ref.
+	Copy over GIFs where they exist.
+	Don't treat porting guide specially at the top... treat it only as
+	specially as the other special cases.
+	Update (C) holders.
+	Update licence/warranty blurb.
+
 2003-01-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: Added snmp-manpages.sgml 

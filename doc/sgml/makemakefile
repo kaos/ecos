@@ -1,8 +1,8 @@
 #!/bin/sh
 
-touch ecos.sgml
+touch ecos-ref.sgml
 touch makefile
-chmod +w ecos.sgml 
+chmod +w ecos-ref.sgml 
 chmod +w makefile
 
 cat > makefile <<EOF
@@ -17,6 +17,7 @@ cat > makefile <<EOF
 # -------------------------------------------
 # This file is part of eCos, the Embedded Configurable Operating System.
 # Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+# Copyright (C) 2003 Jonathan Larmour
 #
 # eCos is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -55,10 +56,10 @@ cat > makefile <<EOF
 
 TOPLEVEL   := ../../packages
 EOF
-/bin/echo MAIN_SGML   := ecos.sgml >> makefile
+/bin/echo MAIN_SGML   := ecos-ref.sgml >> makefile
 /bin/echo -n OTHER_SGML   :=  >> makefile
 
-cat >ecos.sgml <<EOF
+cat >ecos-ref.sgml <<EOF
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
 
 <!-- Begin Document Specific Declarations -->
@@ -75,27 +76,36 @@ for i in `cat doclist`; do
   if (test ! -z $line); then
    /bin/echo -n " ../../packages/$i" | sed "s@/current/@/${PACKAGEVER}/@g" >> makefile
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
-   echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" | sed "s@/current/@/${PACKAGEVER}/@g" >> ecos.sgml
+   echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" | sed "s@/current/@/${PACKAGEVER}/@g" >> ecos-ref.sgml
   fi
 done
-echo "<!ENTITY hal-common-current-doc-porting-sgml SYSTEM \"../../packages/hal/common/${PACKAGEVER}/doc/porting.sgml\">" >> ecos.sgml
+
+# Go through again but find GIFs to copy
+for i in `for j in \`cat doclist\` ; do dirname $j ; done | sort | uniq` ; do
+  diri=`echo ../../packages/$i | sed "s@/current/@/${PACKAGEVER}/@g"`
+  dirigifs=`ls $diri/*.gif 2>/dev/null | tr '\n' ' '`
+  if [ x"$dirigifs" != x ]; then
+        copyfiles="$copyfiles $dirigifs"
+  fi
+done
 
 cat >> makefile <<EOF
 
-MAIN_HTML  := ecos.html
-MAIN_PDF   := ecos.pdf
+MAIN_HTML  := ecos-ref.html
+MAIN_PDF   := ecos-ref.pdf
 PICTURES   :=
+COPYFILES  := $copyfiles
 
 include \$(TOPLEVEL)/pkgconf/rules.doc
 EOF
 
-cat >> ecos.sgml <<EOF
+cat >> ecos-ref.sgml <<EOF
 <!-- End Document Specific Declarations -->
 ]>
 
-<BOOK ID="ECOS">
+<BOOK ID="ECOS-REF">
   <bookinfo>
-    <TITLE>eCos</TITLE>
+    <TITLE>eCos Reference Manual</TITLE>
 
     <copyright>
       <year>1998</year>
@@ -103,7 +113,13 @@ cat >> ecos.sgml <<EOF
       <year>2000</year>
       <year>2001</year>
       <year>2002</year>
+      <year>2003</year>
       <holder>Red Hat, Inc.</holder>
+      <holder>Nick Garnett (eCosCentric)</holder>
+      <holder>Jonathan Larmour (eCosCentric)</holder>
+      <holder>Andrew Lunn (Ascom)</holder>
+      <holder>Gary Thomas (MLB Associates)</holder>
+      <holder>Bart Veer (eCosCentric)</holder>
     </copyright>
 
     <legalnotice>
@@ -153,12 +169,14 @@ property of their respective owners. </para>
       </legalnotice>
       <legalnotice>
 <title>Warranty</title>
-<para>eCos and RedBoot are open source software, covered by the Red Hat eCos Public License,
+<para>eCos and RedBoot are open source software, covered by a
+modified version of the <ulink url="http://www.gnu.org/copyleft/gpl.html">GNU
+General Public Licence</ulink>,
 and you are welcome to change it and/or distribute copies of it under certain
-conditions. The supplied version of eCos and/or RedBoot is supported for customers of Red Hat. See <ulink
+conditions. See <ulink
 url="http://sources.redhat.com/ecos/license-overview.html">http://sources.redhat.com/ecos/license-overview.html
-</ulink></para>
-<para>For non-customers, eCos and RedBoot software has NO WARRANTY. </para>
+</ulink> for more information about the license.</para>
+<para>eCos and RedBoot software have NO WARRANTY. </para>
 <para>Because this software is licensed free of charge, there are no warranties
 for it, to the extent permitted by applicable law. Except when otherwise stated
 in writing, the copyright holders and/or other parties provide the software
@@ -186,12 +204,10 @@ for i in `cat doclist`; do
   if (test ! -z $line); then
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
    # special kludge
-   if [ "`basename $i`" != "tcpip-manpages.sgml" -a "`basename $i`" != "snmp-manpages.sgml" ]; then
-     echo "&$entityi;" >> ecos.sgml
+   if [ "`basename $i`" != "tcpip-manpages.sgml" -a "`basename $i`" != "snmp-manpages.sgml" -a "`basename $i`" != "porting.sgml" ]; then
+     echo "&$entityi;" >> ecos-ref.sgml
    fi
   fi
 done
 
-echo '</book>' >> ecos.sgml
-
-
+echo '</book>' >> ecos-ref.sgml
