@@ -3,6 +3,12 @@
 	* cdl/redboot.cdl: Put virtually all options inside
 	CYGBLD_BUILD_REDBOOT. And indent accordingly.
 
+2003-02-04  Gary Thomas  <gary@mind.be>
+
+	* src/fs/ide.c: Print more info if failed to identify IDE device.
+
+	* src/fs/e2fs.c: Improved debug output.
+
 2003-02-04  Mark Salter  <msalter@redhat.com>
 2003-02-04  Brian Murphy <brian@murphy.dk>
 

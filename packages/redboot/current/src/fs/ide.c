@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -441,8 +442,11 @@ ide_init(void)
 	    HAL_IDE_WRITE_UINT8(i, IDE_REG_FEATURES, 0);
 	    CYGACC_CALL_IF_DELAY_US(50000);
 	    HAL_IDE_READ_UINT8(i, IDE_REG_DEVICE, u8);
-	    if (u8 != DEV_INIT_VAL)
+	    if (u8 != DEV_INIT_VAL) {
+                diag_printf("IDE failed to identify unit %d - wrote: %x, read: %x\n", 
+                            i, DEV_INIT_VAL, u8);
 		continue;
+            }
 
 	    // device present
 	    priv->flags |= IDE_DEV_PRESENT;

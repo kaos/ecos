@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -135,7 +136,7 @@ e2fs_get_inode(e2fs_desc_t *e2fs, int ino, e2fs_inode_t *ip)
     // and the offset within that sector.
     offset %= SECTOR_SIZE;
 
-#if DEBUG_E2FS > 0
+#if DEBUG_E2FS > 0x08
     diag_printf("%s: ino[%d], sec_nr[%d] offset[%d]\n", __FUNCTION__,
                 ino, sec_nr, offset);
 #endif
@@ -269,6 +270,9 @@ search_dir_block(e2fs_desc_t *e2fs, cyg_uint32 *blkbuf,
     cyg_uint16 reclen, len;
     cyg_uint32 offset;
 
+#if DEBUG_E2FS > 0
+    diag_dump_buf(blkbuf, e2fs->blocksize);
+#endif
     offset = 0;
     while (offset < e2fs->blocksize) {
 	dir = (e2fs_dir_entry_t *)((char *)blkbuf + offset);
@@ -360,7 +364,7 @@ e2fs_follow_symlink(e2fs_desc_t *e2fs, cyg_uint32 dir_ino, cyg_uint32 sym_ino, i
 
     if (!e2fs_get_inode(e2fs, sym_ino, &inode)) {
 #if DEBUG_E2FS > 0
-	diag_printf("%s: e2fs_get_inode [%d] failed\n", __FUNCTION__, *ino);
+	diag_printf("%s: e2fs_get_inode [%d] failed\n", __FUNCTION__, sym_ino);
 #endif
 	return 0;
     }
