@@ -1,3 +1,9 @@
+2003-10-15  Gary Thomas  <gary@mlbassoc.com>
+2003-09-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* pkgconf/rules.mak Only pass C flags to the C compiler.
+	Workaround for BUG #1000035.
+ 
 2003-10-04  Savin Zlobec <savin@elatec.si>
 
 	* ecos.db: New package - Synth wall clock device
