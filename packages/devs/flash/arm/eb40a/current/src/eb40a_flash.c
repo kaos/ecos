@@ -54,11 +54,11 @@
 // The EB40 can either contain a AT49LV1604 or a AT49LV1614. For now we just
 // treat both as a 1614.
 
-#define CYGPKG_DEVS_FLASH_ATMEL_AT49LV1614
+#define CYGHWR_DEVS_FLASH_ATMEL_AT49LV1614A
 #define CYGNUM_FLASH_INTERLEAVE	(1)
+#define CYGNUM_FLASH_WIDTH      (16)
 #define CYGNUM_FLASH_SERIES	(1)
-// skip plane A of the flash and start with plane B
-#define CYGNUM_FLASH_BASE 	(0x01010000u)
+#define CYGNUM_FLASH_BASE 	(0x01000000u)
 
 #include "cyg/io/flash_at49xxxx.inl"
 
