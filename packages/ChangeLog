@@ -1,3 +1,7 @@
+1999-12-02  Mark Salter  <msalter@cygnus.com>
+
+	* targets: Added cma222 platform.
+
 1999-11-16  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* targets: Add aliases for Cirrus Logic platforms.

@@ -1,3 +1,9 @@
+1999-12-02  Mark Salter  <msalter@cygnus.com>
+
+	* include/hal_platform_setup.h: Add support for CMA222 (ARM710T).
+	* include/hal_cache.h: Add support for unified CMA222 caches.
+	* include/hal_platform_extras.h: New file with static MMU tables.
+
 1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's

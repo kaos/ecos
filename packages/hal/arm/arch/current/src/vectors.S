@@ -384,28 +384,15 @@ undefined_instruction:
 
 	.code	32
 software_interrupt:
-	ldr	sp,.__startup_stack	// get good stack
-	stmfd	sp!,{r0,ip,lr}		
-	mrs	r0,spsr
-	stmfd	sp!,{r0}
-	mov	ip,sp			// save SP which will vanish with
-                                        //   mode switch
-	mrs	r0,cpsr			// switch to Supervisor Mode
-	bic	r0,r0,#CPSR_MODE_BITS
-	orr	r0,r0,#CPSR_SUPERVISOR_MODE
-	msr	cpsr,r0			// sp,lr are now old values
-	mov	ip,sp
-	ldr	sp,.__startup_stack	// get good stack
 	sub	sp,sp,#ARMREG_SIZE+16	// make space for frame
 	stmea	sp,{r0-r10,fp}		// save immediately visible registers
-	ldmfd	ip,{r0-r3}		// saved registers
-	sub	r3,r3,#4		// PC at time of interrupt
+	mrs	r0,spsr
+	sub	r3,lr,#4		// PC at time of interrupt
 	str	r0,[sp,#armreg_cpsr]	// CPSR at time of interrupt
-	str	r1,[sp,#armreg_r0]	// saved R0
-	str	r2,[sp,#armreg_ip]	// saved IP
+	str	ip,[sp,#armreg_ip]	// saved IP
 	str	r3,[sp,#armreg_pc]	// PC at time of interrupt
 	str	lr,[sp,#armreg_lr]	// LR at time of interrupt
-	add	r0,ip,#ARMREG_SIZE
+	add	r0,sp,#ARMREG_SIZE+16
 	str	r0,[sp,#armreg_sp]	// SP at time of interrupt
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 	mov	r0,sp

@@ -1,3 +1,14 @@
+1999-12-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm.ld: Add ".sram" section support (used by platforms
+	that have separate SRAM and DRAM).
+
+1999-12-06  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (software_interrupt): Context save was incorrect
+	for this mode.  Note that when entering from supervisor mode, the
+	link register (LR) is destroyed.
+
 1999-11-22  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm.ld: Add section for definining static MMU tables.

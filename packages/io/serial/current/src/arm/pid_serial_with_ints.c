@@ -302,13 +302,14 @@ pid_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     pid_serial_info *pid_chan = (pid_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)pid_chan->base;
     unsigned char isr;
-    isr = port->isr & 0x0E;
-    if (isr == ISR_Tx) {
-        (chan->callbacks->xmt_char)(chan);
-    } else if (isr == ISR_RxTO) {
-        (chan->callbacks->rcv_char)(chan, port->rhr);
-    } else if (isr == ISR_Rx) {
-        (chan->callbacks->rcv_char)(chan, port->rhr);
+    while ((isr = port->isr & 0x0E) != 0) {
+        if (isr == ISR_Tx) {
+            (chan->callbacks->xmt_char)(chan);
+        } else if (isr == ISR_RxTO) {
+            (chan->callbacks->rcv_char)(chan, port->rhr);
+        } else if (isr == ISR_Rx) {
+            (chan->callbacks->rcv_char)(chan, port->rhr);
+        }
     }
     cyg_drv_interrupt_unmask(pid_chan->int_num);
 }

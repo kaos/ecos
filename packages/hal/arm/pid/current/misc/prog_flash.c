@@ -59,8 +59,8 @@ extern void diag_printf(const char *, ...);
 int identify_FLASH(void);
 void write_sector(int, char *);
 
-char *flash_buffer = (char *)0x60000;
-char *flash_buffer_end = (char *)0x64000;
+char *flash_buffer =     (char *)0x60000;
+char *flash_buffer_end = (char *)0x80000;
 
 #ifdef BE_IMAGE
 #define BUF(x) buf[x^3]

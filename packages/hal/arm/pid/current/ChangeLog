@@ -1,3 +1,12 @@
+1999-12-06  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_pid.h (HAL_PLATFORM_BOARD):
+	(HAL_PLATFORM_CPU): 
+	(HAL_PLATFORM_EXTRA): Add - used by CygMon.
+
+	* misc/prog_flash.c: Increase flash image size (needed to
+	build CygMon image).
+
 1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_pid.h:

@@ -196,6 +196,13 @@
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
 #define CYGNUM_HAL_RTC_PERIOD        12500
 
+//---------------------------------------------------------------------------
+// Platform information - descriptive only
+
+#define HAL_PLATFORM_CPU    "ARM 7TDMI"
+#define HAL_PLATFORM_BOARD  "ARM PID"
+#define HAL_PLATFORM_EXTRA  ""
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_ARM_PID_H */
 /* EOF hal_arm_pid.h */

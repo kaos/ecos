@@ -1,0 +1,25 @@
+// eCos memory layout - Tue Nov 09 08:31:08 1999
+
+// This is a generated file - do not edit
+
+MEMORY
+{
+    ram : ORIGIN = 0, LENGTH = 0x200000
+    rom : ORIGIN = 0xe000000, LENGTH = 0x40000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (rom, 0xe000000, LMA_EQ_VMA)
+    SECTION_text (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_fini (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_rodata (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_rodata1 (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_fixup (rom, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
+    __reserved = 0; . = __reserved + 0x1000;
+    SECTION_data (ram, ALIGN (0x1), FOLLOWING (.gcc_except_table))
+    SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTIONS_END
+}

@@ -353,6 +353,23 @@ target arm {
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
     }
+    platform cma222 {
+        alias		{ "Cogent CMA222" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_CMA230
+	}
+	base_platform cma230
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7tdmi -D__CMA222"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
 }
 
 target sparclite {
