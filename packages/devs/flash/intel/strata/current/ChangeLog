@@ -1,3 +1,10 @@
+2004-09-02  Mark Salter  <msalter@redhat.com>
+
+	* src/flash_query.c (CYGHWR_FLASH_READ_QUERY): Add platform hook
+	to handle access to query info.
+	* src/flash_program_buf.c (CYGHWR_FLASH_WRITE_BUF): Add platform
+	hook handle access to write buffer.
+
 2004-08-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash_unlock_block.c (flash_unlock_block): 

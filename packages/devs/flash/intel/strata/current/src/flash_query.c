@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -56,6 +56,10 @@
 #include <cyg/hal/hal_arch.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
+// Platforms may define this for special handling when accessing the query data.
+#ifndef CYGHWR_FLASH_READ_QUERY
+#define CYGHWR_FLASH_READ_QUERY(a) (*(a))
+#endif
 
 #define CNT 20*1000*10  // Approx 20ms
 
@@ -81,10 +85,10 @@ flash_query(unsigned char *data)
 #endif // Not CYGOPT_FLASH_IS_BOOTBLOCK
 
     for (cnt = CNT;  cnt > 0;  cnt--) ;
-    for ( /* i */;  i > 0;  i-- ) {
+    for ( /* i */;  i > 0;  i--, ++ROM) {
         // It is very deliberate that data is chars NOT flash_t:
         // The info comes out in bytes regardless of device.
-        *data++ = (unsigned char) (*ROM++);
+        *data++ = (unsigned char) CYGHWR_FLASH_READ_QUERY(ROM);
 #ifndef CYGOPT_FLASH_IS_BOOTBLOCK
 # if  8 == CYGNUM_FLASH_WIDTH
 	// strata flash with 'byte-enable' contains the configuration data

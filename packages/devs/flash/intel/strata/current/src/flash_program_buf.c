@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,6 +55,11 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
+// Platforms may define this for special handling when accessing the write buffer.
+#ifndef CYGHWR_FLASH_WRITE_BUF
+#define CYGHWR_FLASH_WRITE_BUF(a,b) (*(a) = *(b))
+#endif
+
 int
 flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
                   unsigned long block_mask, int buffer_size)
@@ -99,7 +104,7 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
 #ifdef CYGHWR_FLASH_WRITE_ELEM
             CYGHWR_FLASH_WRITE_ELEM(addr+i, data+i);
 #else
-            *(addr+i) = *(data+i);
+            CYGHWR_FLASH_WRITE_BUF(addr+i, data+i);
 #endif
         }
         *BA = FLASH_Confirm;
