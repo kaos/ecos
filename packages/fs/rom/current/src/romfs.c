@@ -594,10 +594,12 @@ static int romfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
     if ( !mte->data ) {
 	// If the image address was not in the MTE data word,
 	if ( mte->devname && mte->devname[0] ) {
-	    // And there's something in the 'hardware device' field,
+            char *addr;
+            // And there's something in the 'hardware device' field,
 	    // then read the address from there.
-	    sscanf( mte->devname, "%p", (char**)&disk );
-	}
+	    sscanf( mte->devname, "%p", &addr );
+            disk = (romfs_disk *) addr;
+        }
     } else {
         disk = (romfs_disk *)mte->data;
     }
