@@ -151,16 +151,6 @@ package CYGPKG_IO_FLASH {
            This package contains generic support for FLASH memory."
 }
 
-package CYGPKG_DEVS_FLASH_INTEL_BOOTBLOCK {
-	alias 		{ "Support for Intel boot block flash memory" flash_intel_bootblock }
-	directory	devs/flash/intel/bootblock
-	script		flash_intel_bootblock.cdl
-	hardware
-        description "
-           This package contains hardware support for Intel boot block flash memory."
-}
-
-
 package CYGPKG_DEVS_FLASH_ARM_AAED2000 {
 	alias 		{ "Support for flash memory on Agilent AAED2000 board" flash_aaed2000 }
 	directory	devs/flash/arm/aaed2000
@@ -339,17 +329,6 @@ package CYGPKG_DEVS_FLASH_EDB7XXX {
         description "
            This package contains hardware support for FLASH memory
 	   on the Cirrus Logic EP7xxx based platform(s)."
-}
-
-package CYGPKG_DEVS_FLASH_AT91 {
-	alias 		{ "FLASH memory support for Atmel AT91/EB40 (obsolete)" flash_at91 }
-	directory	devs/flash/arm/at91
-	script		flash_at91.cdl
-	hardware
-        description "
-           This package contains hardware support for FLASH memory
-	   on the Atmel AT91/EB40 platform(s). This driver is obsolete,
-           use CYGPKG_DEVS_FLASH_EB40 instead!"
 }
 
 package CYGPKG_DEVS_FLASH_EB40 {

@@ -1,3 +1,8 @@
+2004-08-06  Jani Monoses <jani@iv.ro>
+
+	* ecos.db: Remove two obsolete flash drivers: INTEL_BOOTBLOCK
+	and AT91.They have better replacements and are not used anyway.
+	
 2004-05-15  Roland Ca?ebohm <roland.cassebohm@VisionSystems.de>
 
 	* ecos.db: Added aim711 support
