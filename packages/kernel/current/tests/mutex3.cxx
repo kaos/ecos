@@ -464,10 +464,11 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Mutex3 test requires:\n"
+    CYG_TEST_INFO("Mutex3 test requires:\n"
                          "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
                          "(CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&\n"
                          "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+    CYG_TEST_NA("Mutex3 test requirements");
 }
 #endif // CYGVAR_KERNEL_COUNTERS_CLOCK &c
 

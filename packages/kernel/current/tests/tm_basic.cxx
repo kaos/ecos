@@ -1867,12 +1867,13 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_NA("Timing tests require:\n"
+    CYG_TEST_INFO("Timing tests require:\n"
                 "CYGFUN_KERNEL_API_C && \n"
                 "CYGSEM_KERNEL_SCHED_MLQUEUE &&\n"
                 "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
                 "!CYGDBG_INFRA_DIAG_USE_DEVICE &&\n"
                 "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
+    CYG_TEST_NA("Timing tests requirements");
 }
 #endif // CYGFUN_KERNEL_API_C, etc.
 

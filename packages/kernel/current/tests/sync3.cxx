@@ -220,9 +220,10 @@ externC void
 cyg_start( void )
 { 
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Sync3 test requires:\n"
+    CYG_TEST_INFO("Sync3 test requires:\n"
                          "defined(CYGIMP_THREAD_PRIORITY) &&\n"
                          "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+    CYG_TEST_NA("Sync3 test requirements");
 
 }
 

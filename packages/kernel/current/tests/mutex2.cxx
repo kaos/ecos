@@ -260,8 +260,7 @@ externC void
 cyg_start( void )
 { 
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Mutex2 test requires:\n"
-                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+    CYG_TEST_NA("Mutex2 test requires: !defined(CYGPKG_KERNEL_SMP_SUPPORT)");
 
 }
 

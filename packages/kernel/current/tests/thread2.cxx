@@ -222,10 +222,10 @@ externC void
 cyg_start( void )
 { 
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Thread2 test requires:\n"
+    CYG_TEST_INFO("Thread2 test requires:\n"
                          "defined(CYGIMP_THREAD_PRIORITY) &&\n"
                          "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
-
+    CYG_TEST_NA("Thread2 test requirements");
 }
 
 // ------------------------------------------------------------------------

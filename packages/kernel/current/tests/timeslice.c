@@ -264,7 +264,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_NA("SMP test requires:\n"
+    CYG_TEST_INFO("SMP test requires:\n"
                 "CYGSEM_KERNEL_SCHED_TIMESLICE &&\n"
                 "CYGPKG_KERNEL_SMP_SUPPORT &&\n"
                 "CYGFUN_KERNEL_API_C && \n"
@@ -273,6 +273,7 @@ cyg_start( void )
                 "!CYGPKG_HAL_I386_LINUX &&\n"
                 "!CYGDBG_INFRA_DIAG_USE_DEVICE &&\n"
                 "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
+    CYG_TEST_NA("SMP test requirements");
 }
 
 #endif // CYGSEM_KERNEL_SCHED_TIMESLICE etc.
