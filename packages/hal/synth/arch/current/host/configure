@@ -1623,7 +1623,7 @@ fi
                 ecos_INCLUDES="${ecos_INCLUDES} -I${ecos_tcl_incdir}"
             fi
         fi
-        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl$${ecos_tcl_version} /usr/lib"
+        possibles="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl${ecos_tcl_version} /usr/lib"
         
     ecos_tcl_libdir=""
     for i in ${possibles}; do
