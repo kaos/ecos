@@ -1,3 +1,8 @@
+2003-08-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/rattler.S: 
+	* src/hal_aux.c: Add PCI initialization - agent mode only.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c: 

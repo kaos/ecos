@@ -899,11 +899,141 @@ typedef _Packed struct
     volatile CYG_BYTE reserved34[0x156]; /* Reserved area */
     
 /* pci, part 2 */
-    volatile CYG_WORD pci_pci;           /* PCI Configuration space */
-    volatile CYG_BYTE reserved35[0x7fc]; /* Reserved area */
+    volatile CYG_WORD pci_pci;           /* PCI Configuration space - offset 0x10400 */
+    volatile CYG_BYTE reserved_pci404[0x10430-0x10404];
+    volatile CYG_WORD pci_omisr;         /* Outbound interrupt status */
+    volatile CYG_WORD pci_omimr;         /* Outbound interrupt mask */
+    volatile CYG_WORD reserved_pci438;
+    volatile CYG_WORD reserved_pci43C;
+    volatile CYG_WORD pci_ifqpr;         /* Inbound FIFO queue */
+    volatile CYG_WORD pci_ofqpr;         /* Outbound FIFO queue */
+    volatile CYG_WORD reserved_pci448;
+    volatile CYG_WORD reserved_pci44C;
+    volatile CYG_WORD pci_imr;           /* Inbound message register #0 */
+    volatile CYG_WORD pci_imr1;          /* Inbound message register #1 */
+    volatile CYG_WORD pci_omr0;          /* Outbound message register #0 */
+    volatile CYG_WORD pci_omr1;          /* Outbound message register #1 */
+    volatile CYG_WORD pci_odr;           /* Outbound doorbell */
+    volatile CYG_WORD reserved_pci464;
+    volatile CYG_WORD pci_idr;           /* Inbound doorbell */
+    volatile CYG_BYTE reserved_pci46C[0x10480-0x1046C];
+    volatile CYG_WORD pci_imisr;         /* Inbound message interrupt status */
+    volatile CYG_WORD pci_imimr;         /* Inbound message interrupt mask */
+    volatile CYG_BYTE reserved_pci488[0x104A0-0x10488];
+    volatile CYG_WORD pci_ifhpr;         /* Inbound free FIFO head */
+    volatile CYG_WORD reserved_pci4A4;
+    volatile CYG_WORD pci_iftpr;         /* Inbound free FIFO tail */
+    volatile CYG_WORD reserved_pci4AC;
+    volatile CYG_WORD pci_iphpr;         /* Inbound post FIFO head */
+    volatile CYG_WORD reserved_pci4B4;
+    volatile CYG_WORD pci_iptpr;         /* Inbound post FIFO tail */
+    volatile CYG_WORD reserved_pci4BC;
+    volatile CYG_WORD pci_ofhpr;         /* Outbound free FIFO head */
+    volatile CYG_WORD reserved_pci4C4;
+    volatile CYG_WORD pci_oftpr;         /* Outbound free FIFO tail */
+    volatile CYG_WORD reserved_pci4CC;
+    volatile CYG_WORD pci_ophpr;         /* Outbound post FIFO head */
+    volatile CYG_WORD reserved_pci4D4;
+    volatile CYG_WORD pci_optpr;         /* Outbound post FIFO tail */
+    volatile CYG_WORD reserved_pci4DC;
+    volatile CYG_WORD reserved_pci4E0;
+    volatile CYG_WORD pci_mucr;          /* Message unit control */
+    volatile CYG_BYTE reserved_pci4E8[0x104F0-0x104E8];
+    volatile CYG_WORD pci_qbar;          /* Queue base address */
+    volatile CYG_BYTE reserved_pci4F4[0x10500-0x104F4];
+    volatile CYG_WORD pci_dmamr0;        /* DMA #0 - mode */
+    volatile CYG_WORD pci_dmasr0;        /* DMA #0 - status */
+    volatile CYG_WORD pci_dmacdar0;      /* DMA #0 - current descriptor address */
+    volatile CYG_WORD reserved_pci50C;
+    volatile CYG_WORD pci_dmasar0;       /* DMA #0 - source address */
+    volatile CYG_WORD reserved_pci514;
+    volatile CYG_WORD pci_dmadar0;       /* DMA #0 - destination address */
+    volatile CYG_WORD reserved_pci51C;
+    volatile CYG_WORD pci_dmabcr0;       /* DMA #0 - byte count */
+    volatile CYG_WORD pci_dmandar0;      /* DMA #0 - next descriptor */
+    volatile CYG_BYTE reserved_pci528[0x10580-0x10528];
+    volatile CYG_WORD pci_dmamr1;        /* DMA #1 - mode */
+    volatile CYG_WORD pci_dmasr1;        /* DMA #1 - status */
+    volatile CYG_WORD pci_dmacdar1;      /* DMA #1 - current descriptor address */
+    volatile CYG_WORD reserved_pci58C;
+    volatile CYG_WORD pci_dmasar1;       /* DMA #1 - source address */
+    volatile CYG_WORD reserved_pci594;
+    volatile CYG_WORD pci_dmadar1;       /* DMA #1 - destination address */
+    volatile CYG_WORD reserved_pci59C;
+    volatile CYG_WORD pci_dmabcr1;       /* DMA #1 - byte count */
+    volatile CYG_WORD pci_dmandar1;      /* DMA #1 - next descriptor */
+    volatile CYG_BYTE reserved_pci5A8[0x10600-0x105A8];
+    volatile CYG_WORD pci_dmamr2;        /* DMA #2 - mode */
+    volatile CYG_WORD pci_dmasr2;        /* DMA #2 - status */
+    volatile CYG_WORD pci_dmacdar2;      /* DMA #2 - current descriptor address */
+    volatile CYG_WORD reserved_pci60C;
+    volatile CYG_WORD pci_dmasar2;       /* DMA #2 - source address */
+    volatile CYG_WORD reserved_pci614;
+    volatile CYG_WORD pci_dmadar2;       /* DMA #2 - destination address */
+    volatile CYG_WORD reserved_pci61C;
+    volatile CYG_WORD pci_dmabcr2;       /* DMA #2 - byte count */
+    volatile CYG_WORD pci_dmandar2;      /* DMA #2 - next descriptor */
+    volatile CYG_BYTE reserved_pci628[0x10680-0x10628];
+    volatile CYG_WORD pci_dmamr3;        /* DMA #3 - mode */
+    volatile CYG_WORD pci_dmasr3;        /* DMA #3 - status */
+    volatile CYG_WORD pci_dmacdar3;      /* DMA #3 - current descriptor address */
+    volatile CYG_WORD reserved_pci68C;
+    volatile CYG_WORD pci_dmasar3;       /* DMA #3 - source address */
+    volatile CYG_WORD reserved_pci694;
+    volatile CYG_WORD pci_dmadar3;       /* DMA #3 - destination address */
+    volatile CYG_WORD reserved_pci69C;
+    volatile CYG_WORD pci_dmabcr3;       /* DMA #3 - byte count */
+    volatile CYG_WORD pci_dmandar3;      /* DMA #3 - next descriptor */
+    volatile CYG_BYTE reserved_pci6A8[0x10800-0x106A8];
+    volatile CYG_WORD pci_potar0;        /* PCI outbound translation address #0 */
+    volatile CYG_WORD reserved_pci804;
+    volatile CYG_WORD pci_potbar0;       /* PCI outbound base address #0 */
+    volatile CYG_WORD reserved_pci80C;
+    volatile CYG_WORD pci_pocmr0;        /* PCI outbound comparison mask #0 */
+    volatile CYG_WORD reserved_pci814;
+    volatile CYG_WORD pci_potar1;        /* PCI outbound translation address #1 */
+    volatile CYG_WORD reserved_pci81C;
+    volatile CYG_WORD pci_potbar1;       /* PCI outbound base address #1 */
+    volatile CYG_WORD reserved_pci824;
+    volatile CYG_WORD pci_pocmr1;        /* PCI outbound comparison mask #1 */
+    volatile CYG_WORD reserved_pci82C;
+    volatile CYG_WORD pci_potar2;        /* PCI outbound translation address #2 */
+    volatile CYG_WORD reserved_pci834;
+    volatile CYG_WORD pci_potbar2;       /* PCI outbound base address #2 */
+    volatile CYG_WORD reserved_pci83C;
+    volatile CYG_WORD pci_pocmr2;        /* PCI outbound comparison mask #2 */
+    volatile CYG_BYTE reserved_pci844[0x10878-0x10844];
+    volatile CYG_WORD pci_ptcr;          /* Discard timer control */
+    volatile CYG_WORD pci_gpcr;          /* General purpose control */
+    volatile CYG_WORD pci_gcr;           /* PCI general control */
+    volatile CYG_WORD pci_esr;           /* Error status */
+    volatile CYG_WORD pci_emr;           /* Error mask */
+    volatile CYG_WORD pci_ecr;           /* Error control */
+    volatile CYG_WORD pci_eacr;          /* Error address capture */
+    volatile CYG_WORD reserved_pci894;
+    volatile CYG_WORD pci_edcr;          /* Error data capture */
+    volatile CYG_WORD reserved_pci89C;
+    volatile CYG_WORD pci_eccr;          /* Error control */
+    volatile CYG_BYTE reserved_pci8D0[0x108D0-0x108A4];
+    volatile CYG_WORD pci_pitar1;        /* Inbound address translation #1 */
+    volatile CYG_WORD reserved_pci8D8;
+    volatile CYG_WORD pci_pibar1;        /* Inbound address base #1 */
+    volatile CYG_WORD reserved_pci8E0;
+    volatile CYG_WORD pci_picmr1;        /* Inbound comparison mask #1 */
+    volatile CYG_WORD reserved_pci8E8;
+    volatile CYG_WORD pci_pitar0;        /* Inbound address translation #0 */
+    volatile CYG_WORD reserved_pci8F0;
+    volatile CYG_WORD pci_pibar0;        /* Inbound address base #0 */
+    volatile CYG_WORD reserved_pci8F8;
+    volatile CYG_WORD pci_picmr0;        /* Inbound comparison mask #0 */
+    volatile CYG_WORD reserved_pci900;
+    volatile CYG_WORD pci_cfg_addr;      /* Indirect access to PCI config space - address ptr */
+    volatile CYG_WORD pci_cfg_data;      /* Indirect access to PCI config space - data */
+    volatile CYG_WORD pci_int_ack;       /* Used to acknowledge PCI interrupts */
+    volatile CYG_BYTE reserved_pci0C00[0x10C00-0x1090C];
     
 /* ic */
-    volatile CYG_WORD16 ic_sicr;         /* Interrupt Configuration Register */
+    volatile CYG_WORD16 ic_sicr;         /* Interrupt Configuration Register - offset 0x10C00 */
     volatile CYG_BYTE reserved36[0x2];   /* Reserved area */
     volatile CYG_BYTE ic_sivec;          /* CP Interrupt Vector Register */
     volatile CYG_BYTE reserved36a[0x3];  /* Reserved area */

@@ -103,9 +103,16 @@ hal_hardware_init:
         
         lwi     r3,0xFFFFFFC3
         stw     r3,CYGARC_REG_IMM_SYPCR(r30)
-        lwi     r3,0x00000001
+        lwz     r3,CYGARC_REG_IMM_SCCR(r30)
+        ori     r3,r3,0x00000001        // Force baud rate clock divisor = 16
         stw     r3,CYGARC_REG_IMM_SCCR(r30)
-        lwi     r3,0x0E24C000
+#ifdef CYGHWR_HAL_POWERPC_RATTLER_PCI        
+        lwz     r3,CYGARC_REG_IMM_SIUMCR(r30)
+        lwi     r4,0x0E040000           // Set configuration bits
+        or      r3,r3,r4
+#else
+        lwi     r3,0x0E24C000           // Set configuration bits
+#endif                
         stw     r3,CYGARC_REG_IMM_SIUMCR(r30)
         li      r3,0x0000
         sth     r3,CYGARC_REG_IMM_SWSR(r30)

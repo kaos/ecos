@@ -58,6 +58,45 @@
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/hal_intr.h>
 
+// FIXME
+
+static __inline__ unsigned long
+_le32(unsigned long val)
+{
+    return (((val & 0x000000FF) << 24) |
+            ((val & 0x0000FF00) <<  8) |
+            ((val & 0x00FF0000) >>  8) |
+            ((val & 0xFF000000) >> 24));
+}
+
+static __inline__ unsigned short
+_le16(unsigned short val)
+{
+    return (((val & 0x000000FF) << 8) |
+            ((val & 0x0000FF00) >> 8));
+}
+
+#define HAL_WRITE_UINT32LE(_addr_, _val_) \
+  HAL_WRITE_UINT32(_addr_, _le32(_val_))
+#define HAL_WRITE_UINT16LE(_addr_, _val_) \
+  HAL_WRITE_UINT16(_addr_, _le16(_val_))
+#define HAL_WRITE_UINT8LE(_addr_, _val_) \
+  HAL_WRITE_UINT8(_addr_, _val_)
+#define HAL_READ_UINT32LE(_addr_, _val_)        \
+  {                                             \
+      HAL_READ_UINT32(_addr_, _val_);           \
+      _val_ = _le32(_val_);                     \
+  }
+#define HAL_READ_UINT16LE(_addr_, _val_)        \
+  {                                             \
+      HAL_READ_UINT16(_addr_, _val_);           \
+      _val_ = _le16(_val_);                     \
+  }
+#define HAL_READ_UINT8LE(_addr_, _val_)        \
+  HAL_READ_UINT8(_addr_, _val_)
+
+// FIXME
+
 // The memory map is weakly defined, allowing the application to redefine
 // it if necessary. The regions defined below are the minimum requirements.
 CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
@@ -332,6 +371,33 @@ hal_platform_init(void)
     
     // Start up system I/O
     hal_if_init();
+
+#ifdef CYGHWR_HAL_POWERPC_RATTLER_PCI
+    if ((IMM->clocks_sccr & 0x100) != 0) {
+        CYG_WORD16 pci_cfg;
+
+        HAL_WRITE_UINT32LE(&IMM->pci_cfg_addr, 0x80000004);
+        HAL_WRITE_UINT16LE(&IMM->pci_cfg_data, 0);
+        // Configure PCI address registers
+        IMM->pcimsk1 = 0xC0000000;
+        IMM->pcibr1 = 0x80000001;
+        IMM->pcimsk0 = 0xFF800000;
+        IMM->pcibr0 = 0x48000001;
+        IMM->pci_gpcr = 0;
+        IMM->pci_picmr1 = 0xF0FF0FE0;
+        IMM->pci_picmr0 = 0xF0FF0FE0;
+        // Now disable CFG_LOCK to free bus
+        HAL_WRITE_UINT32LE(&IMM->pci_cfg_addr, 0x80000044);
+        HAL_READ_UINT16LE(&IMM->pci_cfg_data, pci_cfg);
+        pci_cfg &= ~0x20;  // Turn off CFG_LOCK
+        HAL_WRITE_UINT32LE(&IMM->pci_cfg_addr, 0x80000044);
+        HAL_WRITE_UINT16LE(&IMM->pci_cfg_data, pci_cfg);
+        HAL_WRITE_UINT32LE(&IMM->pci_cfg_addr, 0x80000044);
+        HAL_READ_UINT16LE(&IMM->pci_cfg_data, pci_cfg);
+    } else {
+        diag_printf("*** Warning: PCI not responding - SCCR: %x\n", IMM->clocks_sccr);
+    }
+#endif
 }
 
 //
