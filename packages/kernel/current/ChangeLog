@@ -1,3 +1,9 @@
+2003-01-31  Nick Garnett  <nickg@calivar.com>
+
+	* cdl/kernel.cdl: 
+	* tests/fptest.c: Added this program to test interaction of FPU
+	with multiple threads.
+
 2003-01-30  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/thread.cxx: Fix potential warning and overflow with

@@ -326,7 +326,7 @@ cdl_package CYGPKG_KERNEL {
             no_define
             calculated { 
                 "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/clocktruth tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kill tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/release tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2" 
-                . ((CYGFUN_KERNEL_API_C) ? " tests/kclock0 tests/kclock1 tests/kexcept1 tests/kflag0 tests/kflag1 tests/kintr0 tests/klock tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kthread0 tests/kthread1 tests/stress_threads tests/thread_gdb tests/timeslice tests/tm_basic" : "")
+                . ((CYGFUN_KERNEL_API_C) ? " tests/kclock0 tests/kclock1 tests/kexcept1 tests/kflag0 tests/kflag1 tests/kintr0 tests/klock tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kthread0 tests/kthread1 tests/stress_threads tests/thread_gdb tests/timeslice tests/tm_basic tests/fptest" : "")
                 . ((!CYGPKG_INFRA_DEBUG && !CYGPKG_KERNEL_INSTRUMENT && CYGFUN_KERNEL_API_C) ? " tests/dhrystone" : "")
                 . ((CYGPKG_KERNEL_SMP_SUPPORT && CYGFUN_KERNEL_API_C) ? " tests/smp" : "")
                 . ((!CYGINT_HAL_TESTS_NO_CACHES && CYGFUN_KERNEL_API_C) ? " tests/kcache1 tests/kcache2" : "")
