@@ -3,6 +3,7 @@
 	* include/dns_impl.inl (setdomainname): define with const name
 	argument.
 	* include/dns.h: Ditto.
+	* doc/dns.sgml: Document const in setdomainname proto here.
 
 2003-01-10  Andrew Lunn  <andrew.lunn@ascom.ch>
 

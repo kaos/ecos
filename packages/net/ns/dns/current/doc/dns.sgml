@@ -91,7 +91,7 @@ or user code my override this address by calling
 in a domain. By default no domain will be used. Host name lookups
 should be for fully qualified names. The domain name can be set
 and retrieved using the functions:<PARA> 
-<PROGRAMLISTING>setdomainname(char *name, size_t len);
+<PROGRAMLISTING>setdomainname(const char *name, size_t len);
 getdomainname(char *name, size_t len);</PROGRAMLISTING>
 
 <PARA>Alternatively, a hard coded domain name can be set using CDL.
