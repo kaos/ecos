@@ -602,8 +602,11 @@ pppasyncstart(sc)
     int n, ndone, done, idle;
     struct mbuf *m2;
     int s;
-
     idle = 0;
+#ifdef CYGPKT_PPP_WORKAROUNDS_START_FLAG 
+    char start_flag = PPP_FLAG;
+    int start_flag_len = sizeof(start_flag);
+#endif
 
     while (1) {        
 	/*
@@ -623,7 +626,10 @@ pppasyncstart(sc)
 
 	    /* Calculate the FCS for the first mbuf's worth. */
 	    sc->sc_outfcs = pppfcs(PPP_INITFCS, mtod(m, u_char *), m->m_len);
-	    getmicrotime(&sc->sc_if.if_lastchange);
+            getmicrotime(&sc->sc_if.if_lastchange);
+#ifdef CYGPKT_PPP_WORKAROUNDS_START_FLAG
+            cyg_io_write(tp->t_handle, &start_flag, &start_flag_len);
+#endif            
 	}
 
 	for (;;) {

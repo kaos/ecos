@@ -234,6 +234,19 @@ cdl_package CYGPKG_PPP {
         
     }
 
+    cdl_component CYGPKG_PPP_WORKAROUNDS {
+        display "PPP workarounds for bugs in other implementations"
+        flavor  none
+        no_define
+
+        cdl_option CYGPKT_PPP_WORKAROUNDS_START_FLAG {
+        flavor bool
+        default_value false
+        description "This option enables a workaround to add a start
+                     flag to every packet. The RFC does not require this,
+                     but some broken PPP implementations seems to need it."
+        }
+    }
 
     cdl_component CYGPKG_PPP_OPTIONS {
         display "PPP build options"

@@ -1,3 +1,12 @@
+2005-01-16  Matt Jerdonek <maj1224@yahoo.com>
+            Andrew Lunn  <andrew.lunn@ascom.ch>
+	
+	* cdl/ppp.cdl 
+	* src/ppp_io.c (pppasyncstart): Conditionally allow the PPP daemon
+	to send a start flag at the beginning of very packet. This is not
+	required according to RFC 1662, but found to be necessary to
+	interwork with some broken implementations.
+
 2004-08-19  Oyvind Harboe <oyvind.harboe@zylin.com>
 2004-09-08  Andrew Lunn <andrew.lunn@ascom.ch>
 	
