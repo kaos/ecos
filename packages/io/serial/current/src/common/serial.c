@@ -624,6 +624,12 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
                            NULL, NULL);
         cyg_drv_dsr_unlock();
         cyg_drv_mutex_unlock(&in_cbuf->lock);
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+        // Restart receiver if it was shutdown
+        if ((chan->flow_desc.flags & CYG_SERIAL_FLOW_IN_THROTTLED) != 0) {
+            restart_rx( chan, false );
+        }
+#endif
         break;
 
     case CYG_IO_GET_CONFIG_SERIAL_ABORT:

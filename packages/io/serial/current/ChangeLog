@@ -1,3 +1,9 @@
+2003-05-21  Gary Thomas  <gary@mlbassoc.com> 	
+
+	* src/common/serial.c (serial_get_config): Restart receiver 
+	after input queue flush if it had been throttled.  Inspired
+	by David Marqvar <DAM@tt.dk>
+
 2003-03-25  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/serial.c (serial_get_config): For both INPUT_FLUSH
