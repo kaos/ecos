@@ -86,7 +86,6 @@ document, which provides information about the portability and extendability
 of RedBoot in an eCos environment.</para>
 <sect1 id="redboot-on-the-web">
 <title>More information about RedBoot on the web</title>
-<para>
 <para>The <ulink url="http://sources.redhat.com/redboot/">RedBoot Net
 Distribution web site</ulink> contains downloadable sources and documentation
 for all publically released targets, including the latest features and updates.

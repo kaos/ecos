@@ -1,6 +1,7 @@
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot.sgml: De-vendorise a little.
+	Fix extraneous <para>.
 
 	* cdl/redboot.cdl: Add doc links.
 
