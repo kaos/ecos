@@ -72,6 +72,16 @@
 
 struct flash_info flash_info;
 
+// These are the functions in the HW specific driver we need to call.
+typedef void code_fun(void*);
+
+externC code_fun flash_query;
+externC code_fun flash_erase_block;
+externC code_fun flash_program_buf;
+externC code_fun flash_read_buf;
+externC code_fun flash_lock_block;
+externC code_fun flash_unlock_block;
+
 int
 flash_init(_printf *pf)
 {
@@ -105,7 +115,6 @@ flash_dev_query(void* data)
     code_fun *_flash_query;
     int d_cache, i_cache;
 
-    externC code_fun flash_query;
     _flash_query = (code_fun*) __anonymizer(&flash_query);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
@@ -167,7 +176,6 @@ flash_erase(void *addr, int len, void **err_addr)
         return FLASH_ERR_PROTECT;
 #endif
 
-     externC code_fun flash_erase_block;
      _flash_erase_block = (code_fun*) __anonymizer(&flash_erase_block);
 
     block = (unsigned short *)((CYG_ADDRESS)addr & flash_info.block_mask);
@@ -254,7 +262,6 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         return FLASH_ERR_PROTECT;
 #endif
 
-    externC code_fun flash_program_buf;
     _flash_program_buf = (code_fun*) __anonymizer(&flash_program_buf);
 
 #ifdef CYGSEM_IO_FLASH_CHATTER
@@ -328,7 +335,6 @@ flash_read(void *_addr, void *_data, int len, void **err_addr)
         return FLASH_ERR_PROTECT;
 #endif
 
-    externC code_fun flash_read_buf;
     _flash_read_buf = (code_fun*) __anonymizer(&flash_read_buf);
 
 #ifdef CYGSEM_IO_FLASH_CHATTER
@@ -408,7 +414,6 @@ flash_lock(void *addr, int len, void **err_addr)
         return FLASH_ERR_PROTECT;
 #endif
 
-    externC code_fun flash_lock_block;
     _flash_lock_block = (code_fun*) __anonymizer(&flash_lock_block);
 
     block = (unsigned short *)((CYG_ADDRESS)addr & flash_info.block_mask);
@@ -473,7 +478,6 @@ flash_unlock(void *addr, int len, void **err_addr)
         return FLASH_ERR_PROTECT;
 #endif
 
-    externC code_fun flash_unlock_block;
     _flash_unlock_block = (code_fun*) __anonymizer(&flash_unlock_block);
 
     block = (unsigned short *)((CYG_ADDRESS)addr & flash_info.block_mask);
