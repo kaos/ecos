@@ -354,7 +354,7 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
                     if (!cbuf->blocking) {
                         *len -= size;   // number of characters actually sent
                         cbuf->waiting = false;
-                        res = size == 0 ? -EAGAIN : ENOERR;
+                        res = (*len == 0) ? -EAGAIN : ENOERR;
                         break;
                     }
 #endif // CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING

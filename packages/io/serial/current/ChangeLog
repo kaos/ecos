@@ -1,3 +1,10 @@
+2004-01-12  Dan Jakubiec <djakubiec@yahoo.com>
+
+	* src/common/serial.c: serial_write() was returning an incorrect
+	result code in non-blocking mode when output was blocked.  The
+	previous code would return ENOERR with 0 bytes written.  This
+	was fixed to return EAGAIN.
+
 2003-08-18  Jay Foster <jay@systech.com>
 
 	* src/common/serial.c: Fixed bug for XON/XOFF flow control that
