@@ -72,6 +72,10 @@ hal_variant_init(void)
         ictrl |= ICTRL_NOSERSHOW;
         CYGARC_MTSPR (ICTRL, ictrl);
     }
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
+    // Reset CPM
+    _mpc8xx_reset_cpm();
+#endif
 }
 
 //--------------------------------------------------------------------------

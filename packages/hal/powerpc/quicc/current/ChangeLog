@@ -1,3 +1,14 @@
+2003-03-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc1.c: Need to flush data cache because the serial
+	driver may set use buffers in cacheable memory.  Without this,
+	diag_printf() falls over if the serial driver is ever used.
+
+	* src/cpm.c: New file with CPM/DPRAM support.
+
+	* include/ppc8xx.h: 
+	* cdl/hal_powerpc_quicc.cdl: Split out support for CPM/DPRAM.
+
 2002-11-26  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/quicc_smc1.c: Initialize BD allocation point.  Note that it is

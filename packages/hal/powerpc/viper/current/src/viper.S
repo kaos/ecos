@@ -364,7 +364,7 @@ FUNC_START( hal_hardware_init )
 	 */
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED > 63)
 	lwi	r3,0x00420000  // Bus divide by 2
-#else        
+#else
 	lwi	r3,0x00400000
 #endif        
 	stw	r3,SCCR(r4)

@@ -12,7 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -939,7 +939,8 @@ static inline EPPC *eppc_base(void)
 
 // Function used to allocate space in shared memory area
 // typically used for buffer descriptors, etc.
-__externC unsigned short cyg_hal_allocBd(int len);
+__externC void _mpc8xx_reset_cpm(void);
+__externC unsigned short _mpc8xx_allocBd(int len);
 
 #define QUICC_BD_BASE               0x2000  // Start of shared memory
 

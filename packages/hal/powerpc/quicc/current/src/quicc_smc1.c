@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -133,45 +133,6 @@ static struct port_info ports[] = {
 #define QUICC_SMCE_RX  0x01  // Rx interrupt
 
 /*
- * Reset the communications processor
- */
-
-static short nextBd = QUICC_BD_BASE + 0x400;
-
-static void
-reset_cpm(void)
-{
-    EPPC *eppc = eppc_base();
-    int i;
-    static int init_done = 0;
-
-    if (init_done) return;
-    init_done++;
-
-    eppc->cp_cr = QUICC_CPM_CR_RESET | QUICC_CPM_CR_BUSY;
-    memset(eppc->pram, 0, 0x400);
-    for (i = 0; i < 100000; i++);
-
-    nextBd = QUICC_BD_BASE;
-
-}
-
-//
-// Allocate a chunk of memory in the shared CPM memory, typically
-// used for buffer descriptors, etc.  The length will be aligned
-// to a multiple of 8 bytes.
-//
-unsigned short
-cyg_hal_allocBd(int len)
-{
-    unsigned short bd = nextBd;
-
-    len = (len + 7) & ~7;  // Multiple of 8 bytes
-    nextBd += len;
-    return bd;
-}
-
-/*
  *  Initialize SMCX as a uart.
  *
  *  Comments below reference Motorola's "MPC860 User Manual".
@@ -190,7 +151,7 @@ cyg_hal_smcx_init_channel(struct port_info *info, int port)
     if (info->init) return;
     info->init = 1;
 
-    reset_cpm();
+    _mpc8xx_reset_cpm();
 
     switch (port) {
 #if CYGNUM_HAL_QUICC_SMC1 > 0
@@ -240,8 +201,8 @@ cyg_hal_smcx_init_channel(struct port_info *info, int port)
      *  Set pointers to buffer descriptors.
      *  (Sections 16.15.4.1, 16.15.7.12, and 16.15.7.13)
      */
-    uart_pram->rbase = cyg_hal_allocBd(sizeof(struct cp_bufdesc)*info->Rxnum + info->Rxnum);
-    uart_pram->tbase = cyg_hal_allocBd(sizeof(struct cp_bufdesc)*info->Txnum + info->Txnum);
+    uart_pram->rbase = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*info->Rxnum + info->Rxnum);
+    uart_pram->tbase = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*info->Txnum + info->Txnum);
 
     /*
      *  SDMA & LCD bus request level 5
@@ -335,6 +296,7 @@ cyg_hal_smcx_putc(void* __ch_data, cyg_uint8 ch)
     volatile struct smc_uart_pram *uart_pram = (volatile struct smc_uart_pram *)((char *)eppc + info->pram);
     volatile struct smc_regs *regs = (volatile struct smc_regs *)((char *)eppc + info->regs);
     int timeout;
+    int cache_state;
     CYGARC_HAL_SAVE_GP();
 
     /* tx buffer descriptor */
@@ -358,8 +320,14 @@ cyg_hal_smcx_putc(void* __ch_data, cyg_uint8 ch)
         bd->length = 0;
     }
 
-    bd->buffer[bd->length++] = ch;
+    bd->length = 1;
+    bd->buffer[0] = ch;
     bd->ctrl      |= QUICC_BD_CTL_Ready;
+    // Flush cache if necessary - buffer may be in cacheable memory
+    HAL_DCACHE_IS_ENABLED(cache_state);
+    if (cache_state) {
+      HAL_DCACHE_FLUSH(bd->buffer, 1);
+    }
 
 #ifdef CYGDBG_DIAG_BUF
         enable_diag_uart = 0;
@@ -619,7 +587,7 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
     if (info->init) return;
     info->init = 1;
 
-    reset_cpm();
+    _mpc8xx_reset_cpm();
 
     /*
      *  Set up the Port pins for UART operation.
@@ -706,8 +674,8 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
      *  Set pointers to buffer descriptors.
      */
     memset((void *)uart_pram, 0xFF, 0x100);
-    uart_pram->rbase = cyg_hal_allocBd(sizeof(struct cp_bufdesc)*info->Rxnum + info->Rxnum);
-    uart_pram->tbase = cyg_hal_allocBd(sizeof(struct cp_bufdesc)*info->Txnum + info->Txnum);
+    uart_pram->rbase = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*info->Rxnum + info->Rxnum);
+    uart_pram->tbase = _mpc8xx_allocBd(sizeof(struct cp_bufdesc)*info->Txnum + info->Txnum);
 
     /*
      *  SDMA & LCD bus request level 5
