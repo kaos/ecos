@@ -886,11 +886,13 @@ fis_load(int argc, char *argv[])
         mem_addr = img->mem_base;
     }
     // Load image from FLASH into RAM
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     if ((mem_addr < (CYG_ADDRESS)user_ram_start) ||
         ((mem_addr+img->data_length) >= (CYG_ADDRESS)user_ram_end)) {
         diag_printf("Not a loadable image\n");
         return;
     }
+#endif
 #ifdef CYGPKG_COMPRESS_ZLIB
     if (decompress) {
         int err;

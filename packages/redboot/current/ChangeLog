@@ -1,3 +1,8 @@
+2003-04-23  Chris Garry <cgarry@sweeneydesign.co.uk>
+	
+	* src/flash.c: Only perform RAM check in fis load command when 
+	CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS = 1
+
 2003-04-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/tftp_client.c: Arrange to ACK last good packet when closing.
