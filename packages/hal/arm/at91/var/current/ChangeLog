@@ -1,3 +1,12 @@
+2003-08-21  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+        * include/var_io.h:
+        Fixed minor typo.
+	
+2003-08-20  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* include/var_io.h: Fix typos (duplicates) from last change.
+
 2003-08-18  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
         * include/var_io.h:

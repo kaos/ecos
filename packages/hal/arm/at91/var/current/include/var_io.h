@@ -165,8 +165,8 @@
 #define AT91_PIO_PSR_RXD0     0x00008000 // Serial port #0 RxD
 #define AT91_PIO_PSR_P16      0x00010000 // PIO port #16
 #define AT91_PIO_PSR_P17      0x00020000 // PIO port #17
-#define AT91_PIO_PSR_P16      0x00040000 // PIO port #18
-#define AT91_PIO_PSR_P16      0x00080000 // PIO port #19
+#define AT91_PIO_PSR_P18      0x00040000 // PIO port #18
+#define AT91_PIO_PSR_P19      0x00080000 // PIO port #19
 #define AT91_PIO_PSR_SCK1     0x00100000 // Serial port #1 clock
 #define AT91_PIO_PSR_TXD1     0x00200000 // Serial port #1 TxD
 #define AT91_PIO_PSR_RXD1     0x00400000 // Serial port #1 RxD
@@ -402,7 +402,7 @@
 #define AT91_EBI_CSR_TDF_7  (0x7 << 9)	// Data float output time
 #define AT91_EBI_CSR_BAT    (0x1 << 12) // Byte access type
 #define AT91_EBI_CSR_CSEN   (0x1 << 13) // Chip select enable
-#define AT91_EBI_CSR_BA     (0xFFF << 24) // Base address
+#define AT91_EBI_CSR_BA     (0xFFF << 20) // Base address
 #define AT91_EBI_RCR    0x20       // Reset control
 #define AT91_EBI_RCR_RCB    0x1    // Remap command bit
 #define AT91_EBI_MCR  	0x24  	   // Memory control
