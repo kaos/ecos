@@ -1,3 +1,7 @@
+2003-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* Added the Simple Network Time Protocol (SNTP) Client
+
 2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* Move files from templates/new_net/ to templates/net/
