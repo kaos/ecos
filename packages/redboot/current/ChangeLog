@@ -2,6 +2,7 @@
 
 	* src/main.c (do_go): Add -n switch to optionally stop network
 	device. Mask interrupts on all comm channels.
+	Don't scan for -n unless ethernet configured in.
 	* doc/redboot_cmds.sgml: Update go command info.
 
 2003-04-03  Gary Thomas  <gary@mlbassoc.com>

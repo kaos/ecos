@@ -424,7 +424,7 @@ return_to_redboot(int status)
 void
 do_go(int argc, char *argv[])
 {
-    int i, cur;
+    int i, cur, num_options;
     unsigned long entry;
     unsigned long oldints;
     bool wait_time_set;
@@ -440,9 +440,13 @@ do_go(int argc, char *argv[])
               (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
               (void **)&cache_enabled, (bool *)0, "go with caches enabled");
+    num_options = 2;
+#ifdef CYGPKG_IO_ETH_DRIVERS
     init_opts(&opts[2], 'n', false, OPTION_ARG_TYPE_FLG, 
               (void **)&stop_net, (bool *)0, "go with network driver stopped");
-    if (!scan_opts(argc, argv, 1, opts, 3, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
+    num_options++;
+#endif
+    if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
     {
         return;
     }
