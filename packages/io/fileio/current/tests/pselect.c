@@ -234,6 +234,13 @@ void *pthread_entry1( void *arg)
         
     }
 
+    // If we were interrupted at just the wrong point above we may still
+    // have a SIGUSR1 signal pending that we didn't handle, and so won't
+    // have accounted for. So let's look...
+    CYG_TEST_CHECK( 0 == sigpending( &mask ), "sigpending() returned error");
+    if (1 == sigismember(&mask, SIGUSR1) )
+        pselect_eintr++;
+
     pthread_sigmask( SIG_SETMASK, &oldmask, NULL );
 
     pthread_exit(arg);
