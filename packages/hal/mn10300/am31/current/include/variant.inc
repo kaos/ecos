@@ -283,7 +283,7 @@ led_foo3:	.byte 0x00
 	mov	d0,(0,a0)	
 	mov	d0,(4,a0)
 	mov	d0,(8,a0)
-#ifndef CYG_HAL_USE_ROM_MONITOR_CYGMON
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 	# When using Cygmon, leave level 3 for GDB
 	# Ctrl-C interrupts.
 	mov	d0,(12,a0)	
@@ -304,7 +304,7 @@ led_foo3:	.byte 0x00
 
 #if !(defined(CYG_HAL_STARTUP_ROM)	 	|| \
 	defined(CYGPKG_HAL_MN10300_AM31_SIM)	|| \
-	!defined(CYG_HAL_USE_ROM_MONITOR))
+	!defined(CYGSEM_HAL_USE_ROM_MONITOR))
 
 #define CYG_HAL_MN10300_VSR_TABLE_DEFINED
 

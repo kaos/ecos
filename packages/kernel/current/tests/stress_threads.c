@@ -93,7 +93,6 @@
 #define MAX_HANDLERS 4
 #define N_LISTENERS 1
 #define N_CLIENTS 1
-#define N_THREADS (N_MAIN+MAX_HANDLERS+N_LISTENERS+N_CLIENTS)
 
 #undef STACK_SIZE
 #undef STACK_SIZE_HANDLER
@@ -107,25 +106,46 @@
 #define MAX_HANDLERS 19
 #define N_LISTENERS 4
 #define N_CLIENTS 4
-#define N_THREADS (N_MAIN+MAX_HANDLERS+N_LISTENERS+N_CLIENTS)
 #endif
 
 /* Allocate priorities in this order. This ensures that handlers
    (which are the ones using the CPU) get enough CPU time to actually
-   complete their tasks. */
-//#define P_MAIN        0                       // This is defined by libc
-#define P_MAIN_PROGRAM  1
-#define P_BASE_HANDLER  2
-#define P_BASE_LISTENER (P_BASE_HANDLER+MAX_HANDLERS)
-#define P_BASE_CLIENT   (P_BASE_LISTENER+N_LISTENERS)
-#define P_MAX           (P_BASE_CLIENT+N_CLIENTS)
+   complete their tasks. 
 
+   The empty space ensures that if libc main() thread should happen to
+   be in the priority range of the handlers, no handlers are
+   accidently reduced so much in priority to get below
+   listeners/clients. */
 
-#if (CYGNUM_KERNEL_SCHED_PRIORITIES >= (P_MAX))
+#define P_MAIN_PROGRAM    1
+#define P_MAIN_PROGRAM_E  (P_MAIN_PROGRAM+N_MAIN)
+
+#define P_BASE_HANDLER    (P_MAIN_PROGRAM_E)
+#define P_BASE_HANDLER_E  (P_BASE_HANDLER+MAX_HANDLERS)
+
+#define P_BASE_EMPTY      (P_BASE_HANDLER_E)
+#define P_BASE_EMPTY_E    (P_BASE_EMPTY+2)
+
+#define P_BASE_LISTENER   (P_BASE_EMPTY_E)
+#define P_BASE_LISTENER_E (P_BASE_LISTENER+N_LISTENERS)
+
+#define P_BASE_CLIENT     (P_BASE_LISTENER_E)
+#define P_BASE_CLIENT_E   (P_BASE_CLIENT+N_CLIENTS)
+
+#define P_MAX             (P_BASE_CLIENT_E)
+
+/* Ensure there's room for what we request */
+#if (CYGNUM_KERNEL_SCHED_PRIORITIES >= P_MAX)
 
 /* if we use the bitmap scheduler we must make sure we don't use the
    same priority more than once, so we must store those already in use */
 static volatile char priority_in_use[P_MAX];
+
+/* We may not get the priority we ask for (scheduler may decide to ignore
+   schedule hint). So keep a table of priorities actually assigned to
+   the threads. This information may come in handy for debugging - it's
+   not actively used by the code. */
+static volatile int  priority_translation[P_MAX];
 
 /* now declare (and allocate space for) some kernel objects, like the
    threads we will use */
@@ -200,7 +220,7 @@ struct s_statistics statistics;
 
 /* some function prototypes; those with the sc_ prefix are
    "statistics-collecting" versions of the cyg_ primitives */
-void sc_thread_create(
+cyg_addrword_t sc_thread_create(
     cyg_addrword_t      sched_info,             /* scheduling info (eg pri)  */
     cyg_thread_entry_t  *entry,                 /* entry point function      */
     cyg_addrword_t      entry_data,             /* entry data                */
@@ -249,9 +269,10 @@ main(void)
 
     /* initialize main thread */
     {
-        sc_thread_create(P_MAIN_PROGRAM, main_program, (cyg_addrword_t) 0,
-                         "main_program", (void *) main_stack, STACK_SIZE,
-                         &mainH, &main_thread_s);
+        priority_translation[P_MAIN_PROGRAM] =
+            sc_thread_create(P_MAIN_PROGRAM, main_program, (cyg_addrword_t) 0,
+                             "main_program", (void *) main_stack, STACK_SIZE,
+                             &mainH, &main_thread_s);
         priority_in_use[P_MAIN_PROGRAM]++;
     }
 
@@ -263,20 +284,22 @@ main(void)
     for (i = 0; i < N_LISTENERS; ++i) {
         int prio = P_BASE_LISTENER + i;
         char* name = &thread_name[prio][0];
-        sprintf(name, "listener-%02d/%02d", i, prio);
-        sc_thread_create(prio, listener_program, (cyg_addrword_t) i,
-                         name, (void *) listener_stack[i], STACK_SIZE,
-                         &listenerH[i], &listener_thread_s[i]);
+        sprintf(name, "listener-%02d", i);
+        priority_translation[prio] =
+            sc_thread_create(prio, listener_program, (cyg_addrword_t) i,
+                             name, (void *) listener_stack[i], STACK_SIZE,
+                             &listenerH[i], &listener_thread_s[i]);
         CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
         priority_in_use[prio]++;
     }
     for (i = 0; i < N_CLIENTS; ++i) {
         int prio = P_BASE_CLIENT + i;
         char* name = &thread_name[prio][0];
-        sprintf(name, "client-%02d/%02d", i, prio);
-        sc_thread_create(prio, client_program, (cyg_addrword_t) i,
-                         name, (void *) client_stack[i], STACK_SIZE,
-                         &(clientH[i]), &client_thread_s[i]);
+        sprintf(name, "client-%02d", i);
+        priority_translation[prio] =
+            sc_thread_create(prio, client_program, (cyg_addrword_t) i,
+                             name, (void *) client_stack[i], STACK_SIZE,
+                             &(clientH[i]), &client_thread_s[i]);
         CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
         priority_in_use[prio]++;
     }
@@ -477,11 +500,12 @@ void start_handler(void)
     name = &thread_name[prio][0];
     sprintf(name, "handler-%02d/%02d", handler_slot, prio);
 
-    sc_thread_create(prio, handler_program,
-                     (cyg_addrword_t) handler_slot,
-                     name, (void *) handler_stack[handler_slot],
-                     STACK_SIZE_HANDLER, &handlerH[handler_slot],
-                     &handler_thread_s[handler_slot]);
+    priority_translation[prio] =
+        sc_thread_create(prio, handler_program,
+                         (cyg_addrword_t) handler_slot,
+                         name, (void *) handler_stack[handler_slot],
+                         STACK_SIZE_HANDLER, &handlerH[handler_slot],
+                         &handler_thread_s[handler_slot]);
     cyg_thread_resume(handlerH[handler_slot]);
     ++statistics.handler_invocation_histogram[handler_slot];
 }
@@ -644,7 +668,7 @@ void death_alarm_func(cyg_handle_t alarmH, cyg_addrword_t data)
 }
 
 /* now I write the sc_ versions of the cyg_functions */
-void sc_thread_create(
+cyg_addrword_t sc_thread_create(
     cyg_addrword_t      sched_info,            /* scheduling info (eg pri)  */
     cyg_thread_entry_t  *entry,                /* entry point function      */
     cyg_addrword_t      entry_data,            /* entry data                */
@@ -656,11 +680,11 @@ void sc_thread_create(
     )
 {
     ++statistics.thread_creations;
+
     cyg_thread_create(sched_info, entry, entry_data, name,
                       stack_base, stack_size, handle, thread);
 
-    CYG_ASSERT(cyg_thread_get_priority(*handle) == (cyg_priority_t) sched_info,
-               "Didn't get requested priority!");
+    return cyg_thread_get_priority(*handle);
 }
 
 

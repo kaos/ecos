@@ -289,11 +289,11 @@ FUNC_START(__default_exception_vsr)
 
 	move	k1,sp			# K1 = original SP
 	
-#ifdef CYG_HAL_ROM_MONITOR
+#ifdef CYGSEM_HAL_ROM_MONITOR
 	# Switch to interrupt stack to handle exception
 	la	sp,__interrupt_stack
 #endif
-			
+
 	addi	sp,sp,-mips_exception_decrement
 				# space for registers + safety margin
 
@@ -301,47 +301,47 @@ FUNC_START(__default_exception_vsr)
 
 	# store GPRs
 	.set	noat
-	sw	$0,(mipsreg_regs+0*4)(sp)
-	sw	$1,(mipsreg_regs+1*4)(sp)
-	sw	$2,(mipsreg_regs+2*4)(sp)
-	sw	$3,(mipsreg_regs+3*4)(sp)
-	sw	$4,(mipsreg_regs+4*4)(sp)
-	sw	$5,(mipsreg_regs+5*4)(sp)
-	sw	$6,(mipsreg_regs+6*4)(sp)
-	sw	$7,(mipsreg_regs+7*4)(sp)
-	sw	$8,(mipsreg_regs+8*4)(sp)
-	sw	$9,(mipsreg_regs+9*4)(sp)
-	sw	$10,(mipsreg_regs+10*4)(sp)
-	sw	$11,(mipsreg_regs+11*4)(sp)
-	sw	$12,(mipsreg_regs+12*4)(sp)
-	sw	$13,(mipsreg_regs+13*4)(sp)
-	sw	$14,(mipsreg_regs+14*4)(sp)
-	sw	$15,(mipsreg_regs+15*4)(sp)
-	sw	$16,(mipsreg_regs+16*4)(sp)
-	sw	$17,(mipsreg_regs+17*4)(sp)
-	sw	$18,(mipsreg_regs+18*4)(sp)
-	sw	$19,(mipsreg_regs+19*4)(sp)
-	sw	$20,(mipsreg_regs+20*4)(sp)
-	sw	$21,(mipsreg_regs+21*4)(sp)
-	sw	$22,(mipsreg_regs+22*4)(sp)
-	sw	$23,(mipsreg_regs+23*4)(sp)
-	sw	$24,(mipsreg_regs+24*4)(sp)
-	sw	$25,(mipsreg_regs+25*4)(sp)
-#	sw	$26,(mipsreg_regs+26*4)(sp)	# == K0
-#	sw	$27,(mipsreg_regs+27*4)(sp)	# == K1
-	sw	$28,(mipsreg_regs+28*4)(sp)	# == GP
-#	sw	$29,(mipsreg_regs+29*4)(sp)	# == SP
-	sw	$30,(mipsreg_regs+30*4)(sp)	# == FP
-	sw	$31,(mipsreg_regs+31*4)(sp)	# == RA
+	sgpr	0,sp
+	sgpr	1,sp
+	sgpr	2,sp
+	sgpr	3,sp
+	sgpr	4,sp
+	sgpr	5,sp
+	sgpr	6,sp
+	sgpr	7,sp
+	sgpr	8,sp
+	sgpr	9,sp
+	sgpr	10,sp
+	sgpr	11,sp
+	sgpr	12,sp
+	sgpr	13,sp
+	sgpr	14,sp
+	sgpr	15,sp
+	sgpr	16,sp
+	sgpr	17,sp
+	sgpr	18,sp
+	sgpr	19,sp
+	sgpr	20,sp
+	sgpr	21,sp
+	sgpr	22,sp
+	sgpr	23,sp
+	sgpr	24,sp
+	sgpr	25,sp
+#	sgpr	26,sp	# == K0
+#	sgpr	27,sp	# == K1
+	sgpr	28,sp	# == GP
+#	sgpr	29,sp	# == SP
+	sgpr	30,sp	# == FP
+	sgpr	31,sp	# == RA
 	.set	at
 	
 	mfhi	a0
 	mflo	a1
-	sw	a0,mipsreg_hi(sp)
-	sw	a1,mipsreg_lo(sp)
+	shi	a0,sp
+	slo	a1,sp
 
 	# K1 contains original SP
-	sw	k1,(mipsreg_regs+29*4)(sp)	# store in reg dump	
+	ssp	k1,sp			# store in reg dump	
 	
 	# save remaining machine state registers	
 	mfc0	t0,cause
@@ -410,47 +410,47 @@ FUNC_START(__default_interrupt_vsr)
 
 	# store GPRs
 	.set	noat
-	sw	$0,(mipsreg_regs+0*4)(sp)
-	sw	$1,(mipsreg_regs+1*4)(sp)
-	sw	$2,(mipsreg_regs+2*4)(sp)
-	sw	$3,(mipsreg_regs+3*4)(sp)
-	sw	$4,(mipsreg_regs+4*4)(sp)
-	sw	$5,(mipsreg_regs+5*4)(sp)
-	sw	$6,(mipsreg_regs+6*4)(sp)
-	sw	$7,(mipsreg_regs+7*4)(sp)
-	sw	$8,(mipsreg_regs+8*4)(sp)
-	sw	$9,(mipsreg_regs+9*4)(sp)
-	sw	$10,(mipsreg_regs+10*4)(sp)
-	sw	$11,(mipsreg_regs+11*4)(sp)
-	sw	$12,(mipsreg_regs+12*4)(sp)
-	sw	$13,(mipsreg_regs+13*4)(sp)
-	sw	$14,(mipsreg_regs+14*4)(sp)
-	sw	$15,(mipsreg_regs+15*4)(sp)
-	sw	$16,(mipsreg_regs+16*4)(sp)
-	sw	$17,(mipsreg_regs+17*4)(sp)
-	sw	$18,(mipsreg_regs+18*4)(sp)
-	sw	$19,(mipsreg_regs+19*4)(sp)
-	sw	$20,(mipsreg_regs+20*4)(sp)
-	sw	$21,(mipsreg_regs+21*4)(sp)
-	sw	$22,(mipsreg_regs+22*4)(sp)
-	sw	$23,(mipsreg_regs+23*4)(sp)
-	sw	$24,(mipsreg_regs+24*4)(sp)
-	sw	$25,(mipsreg_regs+25*4)(sp)
-#	sw	$26,(mipsreg_regs+26*4)(sp)	# == K0
-#	sw	$27,(mipsreg_regs+27*4)(sp)	# == K1
-	sw	$28,(mipsreg_regs+28*4)(sp)	# == GP
-#	sw	$29,(mipsreg_regs+29*4)(sp)	# == SP
-	sw	$30,(mipsreg_regs+30*4)(sp)	# == FP
-	sw	$31,(mipsreg_regs+31*4)(sp)	# == RA
+	sgpr	0,sp
+	sgpr	1,sp
+	sgpr	2,sp
+	sgpr	3,sp
+	sgpr	4,sp
+	sgpr	5,sp
+	sgpr	6,sp
+	sgpr	7,sp
+	sgpr	8,sp
+	sgpr	9,sp
+	sgpr	10,sp
+	sgpr	11,sp
+	sgpr	12,sp
+	sgpr	13,sp
+	sgpr	14,sp
+	sgpr	15,sp
+	sgpr	16,sp
+	sgpr	17,sp
+	sgpr	18,sp
+	sgpr	19,sp
+	sgpr	20,sp
+	sgpr	21,sp
+	sgpr	22,sp
+	sgpr	23,sp
+	sgpr	24,sp
+	sgpr	25,sp
+#	sgpr	26,sp	# == K0
+#	sgpr	27,sp	# == K1
+	sgpr	28,sp	# == GP
+#	sgpr	29,sp	# == SP
+	sgpr	30,sp	# == FP
+	sgpr	31,sp	# == RA
 	.set	at
 	
 	mfhi	a0
 	mflo	a1
-	sw	a0,mipsreg_hi(sp)
-	sw	a1,mipsreg_lo(sp)
+	shi	a0,sp
+	slo	a1,sp
 
 	# K1 contains original SP
-	sw	k1,(mipsreg_regs+29*4)(sp)	# store in reg dump	
+	ssp	k1,sp			# store in reg dump	
 		
 	mfc0	t1,status
 	mfc0	t2,cachectrl
@@ -611,8 +611,8 @@ restore_state:
 	hal_fpu_load sp
 	
 	lw	t0,mipsreg_cachectrl(sp)
-	lw	t1,mipsreg_hi(sp)
-	lw	t2,mipsreg_lo(sp)
+	lhi	t1,sp
+	llo	t2,sp
 
 	mtc0	t0,cachectrl
 	mthi	t1
@@ -620,42 +620,42 @@ restore_state:
 
 	# load GPRs
 	.set	noat
-#	lw	$0,(mipsreg_regs+0*4)(sp)
-	lw	$1,(mipsreg_regs+1*4)(sp)
-	lw	$2,(mipsreg_regs+2*4)(sp)
-	lw	$3,(mipsreg_regs+3*4)(sp)
-	lw	$4,(mipsreg_regs+4*4)(sp)
-	lw	$5,(mipsreg_regs+5*4)(sp)
-	lw	$6,(mipsreg_regs+6*4)(sp)
-	lw	$7,(mipsreg_regs+7*4)(sp)
-	lw	$8,(mipsreg_regs+8*4)(sp)
-	lw	$9,(mipsreg_regs+9*4)(sp)
-	lw	$10,(mipsreg_regs+10*4)(sp)
-	lw	$11,(mipsreg_regs+11*4)(sp)
-	lw	$12,(mipsreg_regs+12*4)(sp)
-	lw	$13,(mipsreg_regs+13*4)(sp)
-	lw	$14,(mipsreg_regs+14*4)(sp)
-	lw	$15,(mipsreg_regs+15*4)(sp)
-	lw	$16,(mipsreg_regs+16*4)(sp)
-	lw	$17,(mipsreg_regs+17*4)(sp)
-	lw	$18,(mipsreg_regs+18*4)(sp)
-	lw	$19,(mipsreg_regs+19*4)(sp)
-	lw	$20,(mipsreg_regs+20*4)(sp)
-	lw	$21,(mipsreg_regs+21*4)(sp)
-	lw	$22,(mipsreg_regs+22*4)(sp)
-	lw	$23,(mipsreg_regs+23*4)(sp)
-	lw	$24,(mipsreg_regs+24*4)(sp)
-	lw	$25,(mipsreg_regs+25*4)(sp)
-#	lw	$26,(mipsreg_regs+26*4)(sp)	# == K0
-#	lw	$27,(mipsreg_regs+27*4)(sp)	# == K1
-	lw	$28,(mipsreg_regs+28*4)(sp)	# == GP
-#	lw	$29,(mipsreg_regs+29*4)(sp)	# == SP
-	lw	$30,(mipsreg_regs+30*4)(sp)	# == FP
-	lw	$31,(mipsreg_regs+31*4)(sp)	# == RA
+#	lgpr	0,sp
+	lgpr	1,sp
+	lgpr	2,sp
+	lgpr	3,sp
+	lgpr	4,sp
+	lgpr	5,sp
+	lgpr	6,sp
+	lgpr	7,sp
+	lgpr	8,sp
+	lgpr	9,sp
+	lgpr	10,sp
+	lgpr	11,sp
+	lgpr	12,sp
+	lgpr	13,sp
+	lgpr	14,sp
+	lgpr	15,sp
+	lgpr	16,sp
+	lgpr	17,sp
+	lgpr	18,sp
+	lgpr	19,sp
+	lgpr	20,sp
+	lgpr	21,sp
+	lgpr	22,sp
+	lgpr	23,sp
+	lgpr	24,sp
+	lgpr	25,sp
+#	lgpr	26,sp	# == K0
+#	lgpr	27,sp	# == K1
+	lgpr	28,sp	# == GP
+#	lgpr	29,sp	# == SP
+	lgpr	30,sp	# == FP
+	lgpr	31,sp	# == RA
 	.set	at
 
 
-#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 
         # If we have a Cygmon that wants to listen to network interrupts, then
         # the return code from the earlier call to hal_default_isr() will
@@ -685,7 +685,7 @@ restore_state:
 #endif
 	lw	k0,mipsreg_pc(sp)		# K0 = return PC
 	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
-	lw	sp,(mipsreg_regs+29*4)(sp)	# load SP
+	lsp	sp,sp				# load SP
 
 	# Invoke CPU specific mechanism for returning from this
 	# exception

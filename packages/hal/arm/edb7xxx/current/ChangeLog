@@ -1,3 +1,13 @@
+2000-01-03  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/edb7xxx_misc.c: Need to re-enable FIQ during software "refresh",
+	no matter what method is being used [implicit or explicit].
+
+1999-12-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_platform_extras.h: Map in expansion segments (used
+	for ethernet and parallel port).
+
 1999-12-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* support/Makefile: Update filenames from earlier source file change,

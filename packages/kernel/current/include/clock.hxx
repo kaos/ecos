@@ -25,7 +25,8 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
+// All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -72,7 +73,7 @@ class Cyg_Counter
     
 #endif
 
-    cyg_tick_count      counter;        // counter value
+    volatile cyg_tick_count counter;    // counter value
 
     cyg_uint32          increment;      // increment per tick
     

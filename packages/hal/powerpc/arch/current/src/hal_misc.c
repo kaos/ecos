@@ -478,7 +478,7 @@ externC void hal_MMU_init (void)
 #endif
 
 #ifdef CYGPKG_HAL_POWERPC_MBX           // Enable all caches for MBX860
-# ifndef CYG_HAL_ROM_MONITOR            // unless we are making a stub rom
+# ifndef CYGSEM_HAL_ROM_MONITOR         // unless we are making a stub rom
 #  define CYGPRI_INIT_CACHES 1
 #  define CYGPRI_ENABLE_CACHES 1
 # endif

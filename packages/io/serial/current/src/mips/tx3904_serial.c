@@ -325,7 +325,7 @@ static SERIAL_CHANNEL(tx3904_serial_channel1,
 DEVTAB_ENTRY(tx3904_serial_io0, 
              CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL0_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              tx3904_serial_init, 
              tx3904_serial_lookup,     // Serial driver may need initializing
              &tx3904_serial_channel0
@@ -336,7 +336,7 @@ DEVTAB_ENTRY(tx3904_serial_io0,
 DEVTAB_ENTRY(tx3904_serial_io1, 
              CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL1_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              tx3904_serial_init, 
              tx3904_serial_lookup,     // Serial driver may need initializing
              &tx3904_serial_channel1

@@ -1,3 +1,7 @@
+2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
+	* src/mbx.S: Depend on CYGSEM_HAL_ROM_MONITOR instead of
+	CYG_HAL_ROM_MONITOR.
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_powerpc_mbx_rom.h: 

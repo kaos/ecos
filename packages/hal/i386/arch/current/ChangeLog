@@ -1,3 +1,13 @@
+2000-01-21  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_MASK, HAL_INTERRUPT_UNMASK): 
+	Define.
+
+	(HAL_INTERRUPT_ACKNOWLEDGE): 
+	(HAL_CLOCK_RESET): 
+	Let acknowledge clear pending flag, but leave unblocking to
+	clients of the interrupt (i.e., RTC).
+
 1999-10-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/i386.ld: Add asterisks to input section names to make them more

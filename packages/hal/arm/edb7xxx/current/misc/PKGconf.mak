@@ -47,8 +47,3 @@ ifdef CYG_HAL_STARTUP_STUBS
 gdb_module.bin: gdb_module.stamp
 	$(OBJCOPY) -O binary gdb_module$(EXEEXT) gdb_module.bin
 endif
-
-
-
-
-

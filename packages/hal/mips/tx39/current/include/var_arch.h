@@ -47,7 +47,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
-#ifdef CYG_HAL_USE_ROM_MONITOR_CYGMON
+#ifdef CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 externC int
 hal_diag_irq_check(int vector);
 

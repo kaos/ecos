@@ -22,7 +22,8 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
+// All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -133,6 +134,12 @@ Cyg_Mutex::lock(void)
     // thread grabbing the mutex between the wakeup in unlock() and
     // this thread actually starting.
     
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+
+    self->count_mutex();
+
+#endif
+
     while( locked && result )
     {
         CYG_ASSERT( self != owner, "Locking mutex I already own");
@@ -182,14 +189,15 @@ Cyg_Mutex::lock(void)
         locked      = true;
         owner       = self;
 
-#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
-
-        self->count_mutex();
-
-#endif
-
         CYG_INSTRUMENT_MUTEX(LOCKED, this, 0);
     }
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+    else
+    {
+        self->uncount_mutex();
+        self->disinherit_priority();
+    }
+#endif
     
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
@@ -259,6 +267,32 @@ Cyg_Mutex::unlock(void)
     CYG_ASSERT( locked, "Unlock mutex that is not locked");
     CYG_ASSERT( owner == Cyg_Thread::self(), "Unlock mutex I do not own");
         
+    if( !queue.empty() ) {
+
+        // The queue is non-empty, so grab the next
+        // thread from it and wake it up.
+
+        Cyg_Thread *thread = queue.dequeue();
+
+        CYG_ASSERTCLASS( thread, "Bad thread pointer");
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
+
+        // Give the owner-to-be a chance to inherit from the remaining
+        // queue or the relinquishing thread:
+
+        thread->relay_priority(owner, &queue);
+
+#endif
+
+        thread->set_wake_reason( Cyg_Thread::DONE );
+        
+        thread->wake();
+
+        CYG_INSTRUMENT_MUTEX(WAKE, this, thread);
+        
+    }
+
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
 
     owner->uncount_mutex();
@@ -269,23 +303,6 @@ Cyg_Mutex::unlock(void)
     locked      = false;
     owner       = NULL;
     
-    if( !queue.empty() ) {
-
-        // The queue is non-empty, so grab the next
-        // thread from it and wake it up.
-
-        Cyg_Thread *thread = queue.dequeue();
-
-        CYG_ASSERTCLASS( thread, "Bad thread pointer");
-
-        thread->set_wake_reason( Cyg_Thread::DONE );
-        
-        thread->wake();
-
-        CYG_INSTRUMENT_MUTEX(WAKE, this, thread);
-        
-    }
-
     CYG_ASSERTCLASS( this, "Bad this pointer");    
     
     // Unlock the scheduler and maybe switch threads

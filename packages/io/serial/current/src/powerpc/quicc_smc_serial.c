@@ -157,7 +157,7 @@ static unsigned char quicc_smc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_Rx
 DEVTAB_ENTRY(quicc_smc_serial_io1, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              quicc_smc_serial_init, 
              quicc_smc_serial_lookup,     // Serial driver may need initializing
              &quicc_smc_serial_channel1
@@ -201,7 +201,7 @@ static unsigned char quicc_smc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_Rx
 DEVTAB_ENTRY(quicc_smc_serial_io2, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              quicc_smc_serial_init, 
              quicc_smc_serial_lookup,     // Serial driver may need initializing
              &quicc_smc_serial_channel2

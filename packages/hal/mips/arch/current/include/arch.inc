@@ -56,7 +56,7 @@
 #ifndef INITIAL_SR
 
 #if defined(CYG_HAL_STARTUP_RAM)
-# if defined(CYG_HAL_MIPS_SIM) || !defined(CYG_HAL_USE_ROM_MONITOR)
+# if defined(CYG_HAL_MIPS_SIM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
 #  define INITIAL_SR	0x1000ff00	/* CP0 usable, Ints enabled	*/
 # else
 #  define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
@@ -87,6 +87,8 @@
 # define mips_regsize 	4
 #endif
 
+# define mips_regsize32	4
+
 #if defined(CYGHWR_HAL_MIPS_FPU)
 # if defined(CYGHWR_HAL_MIPS_FPU_64BIT)
 #  define mips_fpuregsize 8
@@ -104,19 +106,19 @@
 #ifdef CYGHWR_HAL_MIPS_FPU
 # define mipsreg_fpureg	(mipsreg_lo+mips_regsize)
 # define mipsreg_fcr31	(mipsreg_fpureg+(mips_fpuregsize*32))
-# define mipsreg_fppad  (mipsreg_fcr31+mips_regsize)
-# define mipsreg_vector	(mipsreg_fppad+mips_regsize)
+# define mipsreg_fppad  (mipsreg_fcr31+mips_regsize32)
+# define mipsreg_vector	(mipsreg_fppad+mips_regsize32)
 #else
-# define mipsreg_vector	(mipsreg_lo+mips_regsize)
+# define mipsreg_vector	(mipsreg_lo+mips_regsize32)
 #endif
-#define	mipsreg_pc	(mipsreg_vector+mips_regsize)
-#define	mipsreg_sr	(mipsreg_pc+mips_regsize)
-#define	mipsreg_cachectrl (mipsreg_sr+mips_regsize)
-#define	mipsreg_cause	(mipsreg_cachectrl+mips_regsize)
-#define	mipsreg_badvr	(mipsreg_cause+mips_regsize)
-#define	mipsreg_prid	(mipsreg_badvr+mips_regsize)
-#define	mipsreg_config	(mipsreg_prid+mips_regsize)
-#define	mipsreg_size	(mipsreg_config+mips_regsize)
+#define	mipsreg_pc	(mipsreg_vector+mips_regsize32)
+#define	mipsreg_sr	(mipsreg_pc+mips_regsize32)
+#define	mipsreg_cachectrl (mipsreg_sr+mips_regsize32)
+#define	mipsreg_cause	(mipsreg_cachectrl+mips_regsize32)
+#define	mipsreg_badvr	(mipsreg_cause+mips_regsize32)
+#define	mipsreg_prid	(mipsreg_badvr+mips_regsize32)
+#define	mipsreg_config	(mipsreg_prid+mips_regsize32)
+#define	mipsreg_size	(mipsreg_config+mips_regsize32)
 
 #define mips_exception_decrement	(mipsreg_size*2)
 
@@ -326,6 +328,81 @@ hal_intc_translation_table:
 	.byte	3, 0, 1, 0
 	.byte	2, 0, 1, 0
 	.endm
+#endif
+
+#------------------------------------------------------------------------------
+# Register save and restore macros. These expect a pointer to a CPU save state
+# area in the register \ptr. The GPR indicated by \reg will be saved into its
+# slot in that structure.
+
+#ifdef CYGHWR_HAL_MIPS_64BIT
+
+	.macro sgpr reg,ptr
+	sd	$\reg,(mipsreg_regs+\reg*mips_regsize)(\ptr)
+	.endm
+
+	.macro lgpr reg,ptr
+	ld	$\reg,(mipsreg_regs+\reg*mips_regsize)(\ptr)
+	.endm
+
+	.macro slo reg,ptr
+	sd	\reg,(mipsreg_lo)(\ptr)
+	.endm
+
+	.macro shi reg,ptr
+	sd	\reg,(mipsreg_hi)(\ptr)
+	.endm
+
+	.macro llo reg,ptr
+	ld	\reg,(mipsreg_lo)(\ptr)
+	.endm
+
+	.macro lhi reg,ptr
+	ld	\reg,(mipsreg_hi)(\ptr)
+	.endm
+
+	.macro ssp reg,ptr
+	sd	\reg,(mipsreg_regs+29*mips_regsize)(\ptr)
+	.endm
+
+	.macro lsp reg,ptr
+	ld	\reg,(mipsreg_regs+29*mips_regsize)(\ptr)
+	.endm
+
+#else
+
+	.macro sgpr reg,ptr
+	sw	$\reg,(mipsreg_regs+\reg*mips_regsize)(\ptr)
+	.endm
+
+	.macro lgpr reg,ptr
+	lw	$\reg,(mipsreg_regs+\reg*mips_regsize)(\ptr)
+	.endm
+
+	.macro slo reg,ptr
+	sw	\reg,(mipsreg_lo)(\ptr)
+	.endm
+
+	.macro shi reg,ptr
+	sw	\reg,(mipsreg_hi)(\ptr)
+	.endm
+
+	.macro llo reg,ptr
+	lw	\reg,(mipsreg_lo)(\ptr)
+	.endm
+
+	.macro lhi reg,ptr
+	lw	\reg,(mipsreg_hi)(\ptr)
+	.endm
+
+	.macro ssp reg,ptr
+	sw	\reg,(mipsreg_regs+29*mips_regsize)(\ptr)
+	.endm
+
+	.macro lsp reg,ptr
+	lw	\reg,(mipsreg_regs+29*mips_regsize)(\ptr)
+	.endm
+
 #endif
 
 #------------------------------------------------------------------------------

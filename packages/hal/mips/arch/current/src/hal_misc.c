@@ -74,7 +74,8 @@ externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 
 externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
-#ifdef  CYGHWR_HAL_MIPS_FPU
+#if defined(CYGHWR_HAL_MIPS_FPU) && \
+    defined(CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS)
     // We may be required to emulate certain unimplemented Floating Point
     // operations
 
@@ -137,7 +138,7 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
         if( result != 0 ) return result;
     }
     
-#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 #if defined(HAL_DIAG_IRQ_CHECK)
     {
         cyg_uint32 ret;
@@ -147,7 +148,7 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
             return ret;
     }
 #endif // def HAL_DIAG_IRQ_CHECK
-#endif // def CYG_HAL_USE_ROM_MONITOR
+#endif // def CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 #endif
     
     CYG_TRACE1(true, "Interrupt: %d", vector);

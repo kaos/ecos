@@ -113,7 +113,7 @@ static SERIAL_CHANNEL(aeb_serial_channel0,
 DEVTAB_ENTRY(aeb_serial_io0, 
              CYGDAT_IO_SERIAL_ARM_AEB_SERIAL0_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              aeb_serial_init, 
              aeb_serial_lookup,     // Serial driver may need initializing
              &aeb_serial_channel0
@@ -153,7 +153,7 @@ static SERIAL_CHANNEL(aeb_serial_channel1,
 DEVTAB_ENTRY(aeb_serial_io1, 
              CYGDAT_IO_SERIAL_ARM_AEB_SERIAL1_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              aeb_serial_init, 
              aeb_serial_lookup,     // Serial driver may need initializing
              &aeb_serial_channel1

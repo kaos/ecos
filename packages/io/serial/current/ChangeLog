@@ -1,3 +1,32 @@
+2000-01-17  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/common/tty.c (tty_read): Avoid echoing "backspace/erase" at
+	start of line.
+
+2000-01-05  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/common/serial.c (serial_write): Avoid potential deadlock if
+	transmit start actually sends enough characters to signal cond wait.
+
+2000-01-03  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/serial.h: Fix namespace pollution - 
+	serial_devio => cyg_io_serial_devio
+	serial_callbacks => cyg_io_serial_callbacks
+
+	* src/mips/tx3904_serial.c: 
+	* src/mn10300/mn10300_serial.c: 
+	* src/powerpc/quicc_smc_serial.c: 
+	* src/powerpc/cogent_serial_with_ints.c: 
+	* src/sparclite/sleb_sdtr.c: 
+	* src/arm/aeb_serial.c: 
+	* src/arm/pid_serial_with_ints.c: 
+	* src/arm/edb7xxx_serial.c: 
+	* src/arm/cma230_serial.c: 
+	* src/common/haldiag.c: 
+	* src/common/serial.c: Fix namespace pollution - 
+	serial_devio => cyg_io_serial_devio
+
 1999-12-06  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm/pid_serial_with_ints.c (pid_serial_DSR): Add loop to handle

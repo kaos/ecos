@@ -49,8 +49,16 @@
 
 //--------------------------------------------------------------------------
 // Processor saved states:
-// The layout of this structure is also defined in "mips.inc", for assembly
+// The layout of this structure is also defined in "arch.inc", for assembly
 // code. Do not change this without changing that (or vice versa).
+
+#ifdef CYGHWR_HAL_MIPS_64BIT
+# define CYG_HAL_MIPS_REG CYG_WORD64
+# define CYG_HAL_MIPS_REG_SIZE 8
+#else
+# define CYG_HAL_MIPS_REG CYG_WORD32
+# define CYG_HAL_MIPS_REG_SIZE 4
+#endif
 
 #if defined(CYGHWR_HAL_MIPS_FPU)
 # if defined(CYGHWR_HAL_MIPS_FPU_64BIT)
@@ -65,9 +73,9 @@
 typedef struct 
 {
     // These are common to all saved states
-    CYG_ADDRWORD        d[32];          /* Data regs                    */
-    CYG_ADDRWORD        hi;             /* hi word of mpy/div reg       */
-    CYG_ADDRWORD        lo;             /* lo word of mpy/div reg       */
+    CYG_HAL_MIPS_REG    d[32];          /* Data regs                    */
+    CYG_HAL_MIPS_REG    hi;             /* hi word of mpy/div reg       */
+    CYG_HAL_MIPS_REG    lo;             /* lo word of mpy/div reg       */
 #ifdef CYGHWR_HAL_MIPS_FPU
     CYG_HAL_FPU_REG     f[32];          /* FPU registers                */
     CYG_ADDRWORD        fcr31;          /* FPU control/status register  */
@@ -132,24 +140,24 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 // _thread_ thread object address, passed as argument to entry point
 // _entry_ entry point address.
 // _id_ bit pattern used in initializing registers, for debugging.
-#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )        \
-{                                                                          \
-    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_)-56;                       \
-    register HAL_SavedRegisters *_regs_;                                   \
-    int _i_;                                                               \
-    _sp_ = _sp_ & 0xFFFFFFF0;                                              \
+#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )                     \
+{                                                                                       \
+    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_)-56;                                    \
+    register HAL_SavedRegisters *_regs_;                                                \
+    int _i_;                                                                            \
+    _sp_ = _sp_ & 0xFFFFFFF0;                                                           \
     _regs_ = (HAL_SavedRegisters *)(((_sp_) - sizeof(HAL_SavedRegisters))&0xFFFFFFF0);  \
-    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;         \
-    HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ );                           \
-    (_regs_)->d[29] = (CYG_WORD)(_sp_);       /* SP = top of stack      */ \
-    (_regs_)->d[04] = (CYG_WORD)(_thread_);   /* R4 = arg1 = thread ptr */ \
-    (_regs_)->lo = 0;                         /* LO = 0                 */ \
-    (_regs_)->hi = 0;                         /* HI = 0                 */ \
-    (_regs_)->d[30] = (CYG_WORD)(_sp_);       /* FP = top of stack      */ \
-    (_regs_)->d[31] = (CYG_WORD)(_entry_);    /* LR(d[31]) = entry point*/ \
-    (_regs_)->pc = (CYG_WORD)(_entry_);       /* PC = entry point       */ \
-    (_regs_)->sr  = 0x00000001;               /* SR = ls 3 bits only    */ \
-    _sparg_ = (CYG_ADDRESS)_regs_;                                         \
+    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;                      \
+    HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ );                                        \
+    (_regs_)->d[29] = (CYG_HAL_MIPS_REG)(_sp_);       /* SP = top of stack      */      \
+    (_regs_)->d[04] = (CYG_HAL_MIPS_REG)(_thread_);   /* R4 = arg1 = thread ptr */      \
+    (_regs_)->lo = 0;                                 /* LO = 0                 */      \
+    (_regs_)->hi = 0;                                 /* HI = 0                 */      \
+    (_regs_)->d[30] = (CYG_HAL_MIPS_REG)(_sp_);       /* FP = top of stack      */      \
+    (_regs_)->d[31] = (CYG_HAL_MIPS_REG)(_entry_);    /* RA(d[31]) = entry point*/      \
+    (_regs_)->pc = (CYG_WORD)(_entry_);               /* PC = entry point       */      \
+    (_regs_)->sr  = 0x00000001;                       /* SR = ls 3 bits only    */      \
+    _sparg_ = (CYG_ADDRESS)_regs_;                                                      \
 }
 
 //--------------------------------------------------------------------------
@@ -313,11 +321,6 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 //           THEY ARE HOWEVER ENOUGH TO START PROGRAMMING.
 // YOU MUST MAKE YOUR STACKS LARGER IF YOU HAVE LARGE "AUTO" VARIABLES!
 
-// We define quite large stack needs for SPARClite, for it requires 576
-// bytes (144 words) to process an interrupt and thread-switch, and
-// momentarily, but needed in case of recursive interrupts, it needs 208
-// words - if a sequence of saves to push out other regsets is interrupted.
-
 // This is not a config option because it should not be adjusted except
 // under "enough rope" sort of disclaimers.
 
@@ -327,14 +330,14 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // Stack needed for a context switch:
 #if defined(CYGHWR_HAL_MIPS_FPU)
 # if defined(CYGHWR_HAL_MIPS_FPU_64BIT)
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+12)*4)+(32*8))
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+12)*CYG_HAL_MIPS_REG_SIZE)+(32*8))
 # elif defined(CYGHWR_HAL_MIPS_FPU_32BIT)
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+12)*4)+(32*4))
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (((32+12)*CYG_HAL_MIPS_REG_SIZE)+(32*4))
 # else
 # error MIPS FPU register size not defined
 # endif
 #else
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE ((32+10)*4)
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE ((32+10)*CYG_HAL_MIPS_REG_SIZE)
 #endif
 
 

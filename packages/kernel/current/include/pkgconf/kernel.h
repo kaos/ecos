@@ -24,7 +24,8 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
+// All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -723,6 +724,18 @@
      doc ref/ecos-ref/synchronization.html#MUTEXES
  }
 
+ cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY {
+     display    "Relay enhancement to simple mutex priority inheritance"
+     parent     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+     description "
+         This option enables an extension to the simple implementation of
+         mutex priority inheritance whereby a thread releasing a mutex to a
+         waiting thread relays its own priority to the new owner if there
+         are still further threads waiting.  This can be viewed as a
+         discovered priority ceiling."
+     doc ref/ecos-ref/synchronization.html#MUTEXES
+ }
+
  cdl_option CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT {
      display    "Message box blocking put support"
      parent     CYGPKG_KERNEL_SYNCH
@@ -771,6 +784,7 @@
  */
 
 #define CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+#define CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY
 #define CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
 #define CYGNUM_KERNEL_SYNCH_MBOX_QUEUE_SIZE     10
 #define CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT

@@ -57,7 +57,7 @@
 //#define CYG_KERNEL_DIAG_LCD
 #define CYG_KERNEL_DIAG_SERIAL0 // For ROM start but see immediately below:
 
-#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 #undef CYG_KERNEL_DIAG_SERIAL0
 #undef CYG_KERNEL_DIAG_LCD
 #define CYG_KERNEL_DIAG_CYGMON
@@ -107,7 +107,7 @@ void hal_diag_led(int x)
 
 void hal_diag_init()
 {
-#if defined(CYG_HAL_USE_ROM_MONITOR)
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR)
 // If we are using the ROM monitor, it has already
 // initialized the serial line.
 #else
@@ -201,7 +201,7 @@ void hal_diag_write_char(char c)
 #endif
 {
 #ifdef CYG_KERNEL_DIAG_GDB    
-#if 0 //defined(CYG_HAL_USE_ROM_MONITOR)
+#if 0 //defined(CYGSEM_HAL_USE_ROM_MONITOR)
 
     typedef void rom_write_fn(char c);
     rom_write_fn *fn = ((rom_write_fn **)0x80000100)[63];
@@ -287,7 +287,7 @@ void hal_diag_read_char(char *c)
 {
     for(;;)
     {
-#if defined(CYG_KERNEL_DIAG_GDB) && defined(CYG_HAL_USE_ROM_MONITOR)
+#if defined(CYG_KERNEL_DIAG_GDB) && defined(CYGSEM_HAL_USE_ROM_MONITOR)
 
         typedef void rom_read_fn(char *c);
         rom_read_fn *fn = ((rom_read_fn **)0x80000100)[62];
@@ -307,7 +307,7 @@ void hal_diag_read_char(char *c)
             breakpoint();
             continue;
         }
-#elif defined(CYG_HAL_USE_ROM_MONITOR)
+#elif defined(CYGSEM_HAL_USE_ROM_MONITOR)
         if( *c == 3 )
         {
             // Ctrl-C: breakpoint.

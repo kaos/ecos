@@ -114,7 +114,7 @@ static SERIAL_CHANNEL(cma230_serial_channel0,
 DEVTAB_ENTRY(cma230_serial_io0, 
              CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_A_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              cma230_serial_init, 
              cma230_serial_lookup,     // Serial driver may need initializing
              &cma230_serial_channel0
@@ -154,7 +154,7 @@ static SERIAL_CHANNEL(cma230_serial_channel1,
 DEVTAB_ENTRY(cma230_serial_io1, 
              CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_B_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              cma230_serial_init, 
              cma230_serial_lookup,     // Serial driver may need initializing
              &cma230_serial_channel1

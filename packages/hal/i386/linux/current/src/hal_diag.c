@@ -53,6 +53,7 @@ void hal_diag_init( void )
 
 externC unsigned long cyg_hal_sys_write(int, const void*, long);
 externC unsigned long cyg_hal_sys_read(int, void*, long);
+externC unsigned long cyg_hal_sys_fdatasync(int);
 
 // Write characters to a buffer which is flushed at newline/overflow to
 // improve performance.
@@ -65,6 +66,7 @@ void hal_diag_write_char(char __c)
 
     if ('\n' == __c || 128 == __index) {
         cyg_hal_sys_write(1, &__buffer[0], __index);
+        cyg_hal_sys_fdatasync(1);
         __index = 0;
     }
 }

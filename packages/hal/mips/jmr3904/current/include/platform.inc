@@ -55,7 +55,7 @@
 
 #if	defined(CYG_HAL_STARTUP_ROM) ||			\
 	(	defined(CYG_HAL_STARTUP_RAM) &&		\
-		!defined(CYG_HAL_USE_ROM_MONITOR))
+		!defined(CYGSEM_HAL_USE_ROM_MONITOR))
 	
 	# If we are starting up from ROM, or we are starting in
 	# RAM and NOT using a ROM monitor, initialize the VSR table.
@@ -85,7 +85,7 @@
 	sw	a1,33*4(a3)
 	.endm
 	
-#elif defined(CYG_HAL_STARTUP_RAM) && defined(CYG_HAL_USE_ROM_MONITOR)
+#elif defined(CYG_HAL_STARTUP_RAM) && defined(CYGSEM_HAL_USE_ROM_MONITOR)
 
 	# Initialize the VSR table entries
 	# We only take control of the interrupt vector,
@@ -116,7 +116,7 @@
 #if defined(CYG_HAL_MIPS_SIM) ||	\
     ( defined(CYG_HAL_MIPS_TX3904) &&	\
       defined(CYG_HAL_STARTUP_RAM) &&	\
-      !defined(CYG_HAL_USE_ROM_MONITOR) \
+      !defined(CYGSEM_HAL_USE_ROM_MONITOR) \
     )
 
 ## VSR table defined in linker script

@@ -1,3 +1,13 @@
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/plf_misc.c (hal_platform_init): Rename
+	CYG_HAL_USE_ROM_MONITOR_CYGMON -> CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+	(cyg_hal_user_break): Rename CYG_HAL_USE_ROM_MONITOR_GDB_STUBS ->
+	CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs
+
+	* src/hal_diag.c: Likewise.  Rename CYG_HAL_USE_ROM_MONITOR_SLOAD
+	-> CYGSEM_HAL_USE_ROM_MONITOR_Sload throughout
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.h: 

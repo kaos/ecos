@@ -1,3 +1,13 @@
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/var_arch.h: Rename CYG_HAL_USE_ROM_MONITOR_CYGMON ->
+	CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+
+	* src/hal_diag.c: Likewise. Also CYG_HAL_USE_ROM_MONITOR -> 
+	CYGSEM_HAL_USE_ROM_MONITOR throughout
+
+	* include/pkgconf/hal_mips_tx39.h: Fix typo
+
 1999-10-26  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/variant.inc: Added implementations of hal_intc_translate

@@ -76,9 +76,24 @@
            memory access speed settings."
    }
    
+   cdl_option CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS {
+       display  "Emulate unimplemented FPU opcodes"
+       type     boolean
+       parent   CYGPKG_HAL_MIPS
+       description "
+           Enabling this option will include a hook in the exception
+           processing so that Unimplemented Operation FPU exceptions
+           may be handled. This option has no effect if there is no
+           hardware floating-point unit. Note that not all situations
+           in which an exception is raised may be handled. If not, the
+           exception will be passed on as normal through the standard
+           exception delivery mechanism."
+   }
+   
    }}CFG_DATA */
 
 #define CYGHWR_HAL_MIPS_CPU_FREQ        50
+#define CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS
 
 /* -------------------------------------------------------------------*/
 /* If either the CTRLC or BREAK support options in hal.h are set      */

@@ -22,7 +22,8 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
+// All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -313,29 +314,55 @@ void Cyg_SchedThread::inherit_priority( Cyg_Thread *thread)
     CYG_ASSERT( mutex_count > 0, "Non-positive mutex count");
     CYG_ASSERT( self != thread, "Trying to inherit from self!");
     
-    if( thread->get_priority() < priority )
+    // Compare with *current* priority in case thread has already
+    // inherited - for relay case below.
+    if( thread->get_current_priority() < priority )
     {
         cyg_priority mypri = priority;
+        cyg_bool already_inherited = priority_inherited;
 
-        if( !priority_inherited )
-        {
-            // If this is first inheritance, copy the old pri
-            // and set inherited flag. We do this after setting the
-            // pri since set_priority() is inheritance aware.
+        // If this is first inheritance, copy the old pri
+        // and set inherited flag. We clear it before setting the
+        // pri since set_priority() is inheritance aware.
+        // This is called with the sched locked, so no race conditions.
 
-            self->set_priority( thread->get_priority() );
-            priority_inherited = true,
+        priority_inherited = false;     // so that set_prio DTRT
+
+        self->set_priority( thread->get_current_priority() );            
+
+        if( !already_inherited )
             original_priority = mypri;
-        }
-        else
-        {
-            // Already in inherited state, and new pri is higher
-            // than old. Just change the pri.
-            
-            self->set_priority( thread->get_priority() );            
-        }
+
+        priority_inherited = true;      // regardless, because it is now
+
     }
 
+#endif
+}
+
+// -------------------------------------------------------------------------
+// Inherit the priority of the ex-owner thread or from the queue if it
+// has a higher priority than ours.
+
+void Cyg_SchedThread::relay_priority( Cyg_Thread *ex_owner, Cyg_ThreadQueue *pqueue)
+{
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
+
+    // A simple implementation of priority inheritance.
+    // At its simplest, this member does nothing.
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY
+
+    // If there is anyone else waiting, then the *new* owner inherits from
+    // the current one, since that is a maxima of the others waiting.
+    // (It's worth not doing if there's nobody waiting to prevent
+    // unneccessary priority skew.)  This could be viewed as a discovered
+    // priority ceiling.
+
+    if ( !pqueue->empty() )
+        inherit_priority( ex_owner );
+
+#endif
 #endif
 }
 
@@ -357,6 +384,13 @@ void Cyg_SchedThread::disinherit_priority()
     // should be negligible. The most important advantage of this
     // algorithm is that it is fast and deterministic.
     
+    // The simplest algorithm also does not cause a 2nd owner (who waited)
+    // of a mutex to inherit from 3rd, 4th &c threads that are queueing up
+    // when it is awoken.  That limitation is avoided when
+    // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY is also
+    // enabled, see above, which passes the raised priority from one thread
+    // to the next along with the mutex, like a relay baton.
+
     Cyg_Thread *self = CYG_CLASSFROMBASE(Cyg_Thread,
                                          Cyg_SchedThread,
                                          this);
@@ -376,7 +410,7 @@ void Cyg_SchedThread::disinherit_priority()
 #endif    
 }
 
-#endif
+#endif // CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE of any kind
 
 // -------------------------------------------------------------------------
 // EOF sched/sched.cxx

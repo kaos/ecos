@@ -58,48 +58,48 @@ hal_thread_switch_context:
 	# store GPRs
 	.set	noat
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
-	sw	$0,(mipsreg_regs+0*mips_regsize)(sp)
-	sw	$1,(mipsreg_regs+1*mips_regsize)(sp)
-	sw	$2,(mipsreg_regs+2*mips_regsize)(sp)
-	sw	$3,(mipsreg_regs+3*mips_regsize)(sp)
-	sw	$4,(mipsreg_regs+4*mips_regsize)(sp)
-	sw	$5,(mipsreg_regs+5*mips_regsize)(sp)
-	sw	$6,(mipsreg_regs+6*mips_regsize)(sp)
-	sw	$7,(mipsreg_regs+7*mips_regsize)(sp)
-	sw	$8,(mipsreg_regs+8*mips_regsize)(sp)
-	sw	$9,(mipsreg_regs+9*mips_regsize)(sp)
-	sw	$10,(mipsreg_regs+10*mips_regsize)(sp)
-	sw	$11,(mipsreg_regs+11*mips_regsize)(sp)
-	sw	$12,(mipsreg_regs+12*mips_regsize)(sp)
-	sw	$13,(mipsreg_regs+13*mips_regsize)(sp)
-	sw	$14,(mipsreg_regs+14*mips_regsize)(sp)
-	sw	$15,(mipsreg_regs+15*mips_regsize)(sp)
-	sw	$24,(mipsreg_regs+24*mips_regsize)(sp)
-	sw	$25,(mipsreg_regs+25*mips_regsize)(sp)
-	sw	$28,(mipsreg_regs+28*mips_regsize)(sp)	# == GP
+	sgpr	0,sp
+	sgpr	1,sp
+	sgpr	2,sp
+	sgpr	3,sp
+	sgpr	4,sp
+	sgpr	5,sp
+	sgpr	6,sp
+	sgpr	7,sp
+	sgpr	8,sp
+	sgpr	9,sp
+	sgpr	10,sp
+	sgpr	11,sp
+	sgpr	12,sp
+	sgpr	13,sp
+	sgpr	14,sp
+	sgpr	15,sp
+	sgpr	24,sp
+	sgpr	25,sp
+	sgpr	28,sp	# == GP
 #endif	
-	sw	$16,(mipsreg_regs+16*mips_regsize)(sp)
-	sw	$17,(mipsreg_regs+17*mips_regsize)(sp)	
-	sw	$18,(mipsreg_regs+18*mips_regsize)(sp)
-	sw	$19,(mipsreg_regs+19*mips_regsize)(sp)
-	sw	$20,(mipsreg_regs+20*mips_regsize)(sp)
-	sw	$21,(mipsreg_regs+21*mips_regsize)(sp)
-	sw	$22,(mipsreg_regs+22*mips_regsize)(sp)
-	sw	$23,(mipsreg_regs+23*mips_regsize)(sp)
-#	sw	$26,(mipsreg_regs+26*mips_regsize)(sp)	# == K0
-#	sw	$27,(mipsreg_regs+27*mips_regsize)(sp)	# == K1
-#	sw	$29,(mipsreg_regs+29*mips_regsize)(sp)	# == SP
-	sw	$30,(mipsreg_regs+30*mips_regsize)(sp)	# == FP
-	sw	$31,(mipsreg_regs+31*mips_regsize)(sp)	# == RA
-	sw	$31,(mipsreg_pc)(sp)		# == PC (to help with debugging)
+	sgpr	16,sp
+	sgpr	17,sp	
+	sgpr	18,sp
+	sgpr	19,sp
+	sgpr	20,sp
+	sgpr	21,sp
+	sgpr	22,sp
+	sgpr	23,sp
+#	sgpr	26,sp	# == K0
+#	sgpr	27,sp	# == K1
+#	sgpr	29,sp	# == SP
+	sgpr	30,sp	# == FP
+	sgpr	31,sp	# == RA
+	sgpr	31,sp	# == PC (to help with debugging)
 	.set	at
 	
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
 
 	mflo	t0				# save LO and HI regs
 	mfhi	t1
-	sw	t0,mipsreg_lo(sp)
-	sw	t1,mipsreg_hi(sp)
+	slo	t0,sp
+	shi	t1,sp
 	
 #endif
 
@@ -112,7 +112,7 @@ hal_thread_switch_context:
 #endif
 	
 	addi	t0,sp,mipsreg_size		# save SP in reg dump
-	sw	t0,(mipsreg_regs+29*mips_regsize)(sp)
+	ssp	t0,sp
 
 	mfc0	t1,status			# Save status register
 	sw	t1,mipsreg_sr(sp)
@@ -153,44 +153,44 @@ hal_thread_load_context:
 
 	# load GPRs
 	.set	noat
-#	lw	$0,(mipsreg_regs+0*mips_regsize)(sp)
-	lw	$4,(mipsreg_regs+4*mips_regsize)(sp)	# A0, must load for thread startup
+#	lgpr	0,sp
+	lgpr	4,sp	# A0, must load for thread startup
 #ifndef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
-	lw	$1,(mipsreg_regs+1*mips_regsize)(sp)
-	lw	$2,(mipsreg_regs+2*mips_regsize)(sp)
-	lw	$3,(mipsreg_regs+3*mips_regsize)(sp)
-	lw	$5,(mipsreg_regs+5*mips_regsize)(sp)
-	lw	$6,(mipsreg_regs+6*mips_regsize)(sp)
-	lw	$7,(mipsreg_regs+7*mips_regsize)(sp)
-	lw	$8,(mipsreg_regs+8*mips_regsize)(sp)
-	lw	$9,(mipsreg_regs+9*mips_regsize)(sp)
-	lw	$10,(mipsreg_regs+10*mips_regsize)(sp)
-	lw	$11,(mipsreg_regs+11*mips_regsize)(sp)
-	lw	$12,(mipsreg_regs+12*mips_regsize)(sp)
-	lw	$13,(mipsreg_regs+13*mips_regsize)(sp)
-	lw	$14,(mipsreg_regs+14*mips_regsize)(sp)
-	lw	$15,(mipsreg_regs+15*mips_regsize)(sp)
-	lw	$24,(mipsreg_regs+24*mips_regsize)(sp)
-	lw	$25,(mipsreg_regs+25*mips_regsize)(sp)
+	lgpr	1,sp
+	lgpr	2,sp
+	lgpr	3,sp
+	lgpr	5,sp
+	lgpr	6,sp
+	lgpr	7,sp
+	lgpr	8,sp
+	lgpr	9,sp
+	lgpr	10,sp
+	lgpr	11,sp
+	lgpr	12,sp
+	lgpr	13,sp
+	lgpr	14,sp
+	lgpr	15,sp
+	lgpr	24,sp
+	lgpr	25,sp
 #endif	
-	lw	$16,(mipsreg_regs+16*mips_regsize)(sp)
-	lw	$17,(mipsreg_regs+17*mips_regsize)(sp)
-	lw	$18,(mipsreg_regs+18*mips_regsize)(sp)
-	lw	$19,(mipsreg_regs+19*mips_regsize)(sp)
-	lw	$20,(mipsreg_regs+20*mips_regsize)(sp)
-	lw	$21,(mipsreg_regs+21*mips_regsize)(sp)
-	lw	$22,(mipsreg_regs+22*mips_regsize)(sp)
-	lw	$23,(mipsreg_regs+23*mips_regsize)(sp)
-#	lw	$26,(mipsreg_regs+26*mips_regsize)(sp)	# == K0
-#	lw	$27,(mipsreg_regs+27*mips_regsize)(sp)	# == K1
-#	lw	$28,(mipsreg_regs+28*mips_regsize)(sp)	# == GP
-#	lw	$29,(mipsreg_regs+29*mips_regsize)(sp)	# == SP
-	lw	$30,(mipsreg_regs+30*mips_regsize)(sp)	# == FP
-	lw	$31,(mipsreg_regs+31*mips_regsize)(sp)	# == RA
+	lgpr	16,sp
+	lgpr	17,sp
+	lgpr	18,sp
+	lgpr	19,sp
+	lgpr	20,sp
+	lgpr	21,sp
+	lgpr	22,sp
+	lgpr	23,sp
+#	lgpr	26,sp	# == K0
+#	lgpr	27,sp	# == K1
+#	lgpr	28,sp	# == GP
+#	lgpr	29,sp	# == SP
+	lgpr	30,sp	# == FP
+	lgpr	31,sp	# == RA
 	.set	at
 	
 	lw	a2,mipsreg_sr(sp)		# A2 = saved SR
-	lw	sp,(mipsreg_regs+29*mips_regsize)(sp)	# SP = saved SP
+	lsp	sp,sp				# SP = saved SP
 
 	hal_cpu_int_merge a2			# Merge with current SR
 	

@@ -347,7 +347,7 @@ NAME(x):                                        \
 //              read             3              newselect       142
 //              write            4              readv           145
 //              open             5              writev          146
-//              creat            8
+//              creat            8              fdatasync       148 
 //              link             9
 //              unlink          10
 //              execve          11
@@ -578,3 +578,7 @@ SYSCALL3(writev)
 //==========================================================================
 // machdep_sys_newselect()
 SYSCALL5(_newselect)
+
+//==========================================================================
+// machdep_sys_fdatasync()
+SYSCALL1(fdatasync)

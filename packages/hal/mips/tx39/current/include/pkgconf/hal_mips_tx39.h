@@ -65,7 +65,7 @@
        parent  CYGPKG_HAL_MIPS_TX39
        type    radio
        description "
-           The TMPR3904F microprocessor. This is an emedded part that in
+           The TMPR3904F microprocessor. This is an embedded part that in
            addition to the TX39 processor core has built in peripherals
            such as memory controllers, DMA controllers, serial ports and
            timers/counters."               

@@ -1,3 +1,11 @@
+2000-01-21  Jesper Skov  <jskov@cygnus.co.uk>
+        CR 902062-CR
+	* src/hal_diag.c:
+	* src/syscall-i386-linux-1.0.S: 
+	Sync after write.
+	
+	* src/hal_startup.c: Make signals NODEFER.
+
 1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_i386_linux_ram.h: New file(s).

@@ -67,8 +67,7 @@ void hal_platform_init(void)
 
 #if defined(CYGPKG_KERNEL)                      && \
     defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
-    defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+    defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
     {
         extern CYG_ADDRESS hal_virtual_vector_table[32];
         extern void patch_dbg_syscalls(void * vector);
@@ -92,7 +91,7 @@ cyg_bool cyg_hal_is_break(char *buf, int size)
 void cyg_hal_user_break( CYG_ADDRWORD *regs )
 {
 
-#if defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_GDB_STUBS)
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
 
         {
             extern CYG_ADDRESS hal_virtual_vector_table[64];        

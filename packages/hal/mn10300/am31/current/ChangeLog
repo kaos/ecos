@@ -1,3 +1,9 @@
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/variant.inc: Rename CYG_HAL_USE_ROM_MONITOR_CYGMON ->
+	CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+	Rename CYG_HAL_USE_ROM_MONITOR -> CYGSEM_HAL_USE_ROM_MONITOR
+
 1999-10-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak: Don't create extras.o here any more

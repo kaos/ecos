@@ -25,7 +25,8 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
+// All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -166,8 +167,10 @@ public:
 
 private:
 
-    // For all priority inheritance mechanisms we need to
-    // keep track of how many mutexes we have locked.
+    // For all priority inheritance mechanisms we need to keep track of how
+    // many mutexes we have locked, including one which we are waiting to
+    // lock, because we can inherit priority while sleeping just prior to
+    // wakeup.
     cyg_count32         mutex_count;
 
 public:    
@@ -193,6 +196,10 @@ public:
     // Inherit the priority of the provided thread if it
     // has higher priority than this.
     void inherit_priority( Cyg_Thread *thread);
+
+    // Relay the priority of the ex-owner thread or from the queue if it
+    // has a higher priority than ours.
+    void relay_priority( Cyg_Thread *ex_owner, Cyg_ThreadQueue *pqueue);
 
     // Lose priority inheritance
     void disinherit_priority();

@@ -208,8 +208,9 @@ tty_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
         if ((priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_BINARY) == 0) {
             if ((c == '\b') || (c == 0x7F)) {
                 size -= 2;  // erase one character + 'backspace' char
-                if (size < 0) size = 0;
-                if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_ECHO) {
+                if (size < 0) {
+                    size = 0;
+                } else if (priv->dev_info.tty_in_flags & CYG_TTY_IN_FLAGS_ECHO) {
                     clen = 3;
                     cyg_io_write(chan, "\b \b", &clen);
                 }

@@ -71,7 +71,7 @@
 # define CYGPRI_DO_PROGRAM_UPMS
 #endif
 
-#if defined(CYGPRI_RAM_START_PROGRAMS_UPMS) && defined(CYG_HAL_ROM_MONITOR)
+#if defined(CYGPRI_RAM_START_PROGRAMS_UPMS) && defined(CYGSEM_HAL_ROM_MONITOR)
 /* use old tables in a StubROM build iff RAM start will reprogram them */
 # define CYGPRI_USE_OLD_UPM_TABLES
 #endif
@@ -558,7 +558,7 @@ __upmtbl_start:
 #else // !CYGPRI_USE_OLD_UPM_TABLES: use the NEW TABLES
 
 	// for RAM startup or ROM application when NOT making a stub rom,
-	// ie. CYG_HAL_ROM_MONITOR not defined.
+	// ie. CYGSEM_HAL_ROM_MONITOR not defined.
 
 #ifdef __40MHZ
 	/* UPM contents for 40MHz clk. DRAM: EDO,4K,60ns */
@@ -611,7 +611,7 @@ __upmtbl_start:
 	.long	0xffffc007, 0xffffc007, 0xffffc007, 0xffffc007
 #endif
 #endif	// OLD/NEW TABLES == CYGPRI_USE_OLD_UPM_TABLES or not.
-	// depending on CYG_HAL_ROM_MONITOR and whether RAM
+	// depending on CYGSEM_HAL_ROM_MONITOR and whether RAM
 	// start re-initializes.
 	
 __upmtbl_end:

@@ -64,7 +64,7 @@
 
 #  if defined(CYG_HAL_STARTUP_RAM)
 
-#   if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#   if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 
      // If loaded into RAM via CYGMON we diag via
      // serial 2 using GDB protocol
@@ -72,14 +72,14 @@
 #    define CYG_KERNEL_DIAG_SERIAL2
 #    define CYG_KERNEL_DIAG_GDB
 
-#   elif defined(CYG_HAL_USE_ROM_MONITOR_SLOAD)
+#   elif defined(CYGSEM_HAL_USE_ROM_MONITOR_Sload)
 
      // If loaded into RAM via SLOAD we diag via
      // serial 1
     
 #    define CYG_KERNEL_DIAG_SERIAL1
     
-#   elif defined(CYG_HAL_USE_ROM_MONITOR_GDB_STUBS)
+#   elif defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
 
      // If loaded into RAM via GDB STUB ROM we diag via
      // serial 1 using GDB protocol
@@ -87,7 +87,7 @@
 #    define CYG_KERNEL_DIAG_SERIAL1
 #    define CYG_KERNEL_DIAG_GDB
     
-#   endif // defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#   endif // defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
     
 #  elif defined(CYG_HAL_STARTUP_ROM)
 
@@ -335,7 +335,7 @@ void led(int x)
 
 void hal_diag_init_serial2(void)
 {
-#if !defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)    
+#if !defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 
     // 16 and 22 translate to 38400 baud.
     *TIMER2_BR = 16;

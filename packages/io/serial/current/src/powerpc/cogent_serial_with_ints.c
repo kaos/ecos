@@ -130,7 +130,7 @@ static SERIAL_CHANNEL(cogent_serial_channel0,
 DEVTAB_ENTRY(cogent_serial_io0, 
              CYGDAT_IO_SERIAL_POWERPC_COGENT_SERIAL_A_NAME,
              0,                 // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              cogent_serial_init, 
              cogent_serial_lookup,     // Serial driver may need initializing
              &cogent_serial_channel0
@@ -172,7 +172,7 @@ static SERIAL_CHANNEL(cogent_serial_channel1,
 DEVTAB_ENTRY(cogent_serial_io1, 
              CYGDAT_IO_SERIAL_POWERPC_COGENT_SERIAL_B_NAME,
              0,                   // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              cogent_serial_init, 
              cogent_serial_lookup,     // Serial driver may need initializing
              &cogent_serial_channel1

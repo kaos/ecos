@@ -85,8 +85,7 @@ void hal_platform_init(void)
 #endif
         
 #if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
-    defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+    defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
     {
         patch_dbg_syscalls( (void *)(&hal_vsr_table[0]) );
     }
@@ -108,14 +107,11 @@ cyg_bool cyg_hal_is_break(char *buf, int size)
 
 void cyg_hal_user_break( CYG_ADDRWORD *regs )
 {
-#if defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
     // The following code should be at the very start of this function so
     // that it can access the RA register before it is saved and reused.
     register CYG_WORD32 ra;
     asm volatile ( "move %0,$31;" : "=r" (ra) );
-#endif    
-    
-#if defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
 
         {
             typedef void install_bpt_fn(void *epc);

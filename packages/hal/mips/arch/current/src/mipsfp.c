@@ -263,7 +263,27 @@ typedef enum {
 
 // FUNCTIONS
 
-#define issubnormal(_x_) ((_x_)->number.exponent == 0)
+#define issubnormal(_x_) ((_x_).number.exponent == 0)
+
+// These functions convert between single precision floating point numbers
+// represented in register or union form. This is required because endian-ness
+// matters when a 32-bit float is in a 64-bit register.
+
+static __inline__ void
+reg2flt( CYG_HAL_FPU_REG *fpu_reg_p, Cyg_libm_ieee_float_shape_type *flt)
+{
+#if defined(CYGHWR_HAL_MIPS_FPU_32BIT) || (CYG_BYTEORDER == CYG_LSBFIRST)
+    flt->asi32 = *(cyg_int32 *)fpu_reg_p;
+#else
+    flt->asi32 = *((cyg_int32 *)fpu_reg_p + 1);
+# endif
+} // reg2flt()
+
+static __inline__ void
+flt2reg( Cyg_libm_ieee_float_shape_type *flt, CYG_HAL_FPU_REG *fpu_reg_p )
+{
+    *fpu_reg_p = flt->asi32;
+} // flt2reg()
 
 // This function returns non-zero if the exception has been handled
 // successfully.
@@ -355,13 +375,18 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
         case DIV_INSN:
 
             if (fp64bit) {
-                Cyg_libm_ieee_double_shape_type *s1, *s2;
+                Cyg_libm_ieee_double_shape_type s1, s2;
 
-                s1 = (Cyg_libm_ieee_double_shape_type *)srcreg1;
-                s2 = (Cyg_libm_ieee_double_shape_type *)srcreg2;
+                s1.asi64 = *srcreg1;
+                s2.asi64 = *srcreg2;
 
-                if (issubnormal(s1)) {  // flush to 0 and restart
-                    s1->value=0.0;
+                if ( issubnormal( s1 ) ) {  // flush to 0 and restart
+                    // but preserve sign
+                    if (s1.number.sign)
+                        s1.value = -0.0;
+                    else
+                        s1.value = 0.0;
+                    *srcreg1 = s1.asi64;
                     handled++;
                 }
 
@@ -371,59 +396,95 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                 // get 0/0 even when the program explicitly checked for
                 // denominator != 0. That's also why we check s1 first.
 
-                else if (issubnormal(s2)) {  // flush to 0 and restart
-                    s2->value=0.0;
+                else if (  issubnormal( s2 ) ) {  // flush to 0 and restart
+                    // but preserve sign
+                    if (s2.number.sign)
+                        s2.value = -0.0;
+                    else
+                        s2.value = 0.0;
+                    *srcreg2 = s2.asi64;
                     handled++;
                 }
+
             } else { // 32-bit
-                Cyg_libm_ieee_float_shape_type *s1, *s2;
+                Cyg_libm_ieee_float_shape_type s1, s2;
 
-                s1 = (Cyg_libm_ieee_float_shape_type *)srcreg1;
-                s2 = (Cyg_libm_ieee_float_shape_type *)srcreg2;
+                reg2flt( srcreg1, &s1 );
+                reg2flt( srcreg2, &s2 );
 
-                if (issubnormal(s1)) {  // flush to 0 and restart
-                    s1->value=0.0;
+                if ( issubnormal( s1 )) {  // flush to 0 and restart
+                    // but preserve sign
+                    if (s1.number.sign)
+                        s1.value = -0.0;
+                    else
+                        s1.value = 0.0;
+                    flt2reg( &s1, srcreg1 );
                     handled++;
                 }
-                else if (issubnormal(s2)) {  // flush to 0 and restart
-                    s2->value=0.0;
+                else if ( issubnormal( s2 ) ) {  // flush to 0 and restart
+                    // but preserve sign
+                    if (s2.number.sign)
+                        s2.value = -0.0;
+                    else
+                        s2.value = 0.0;
+                    flt2reg( &s2, srcreg2 );
                     handled++;
                 }
             }
             break;
 
         case SQRT_INSN:
-            if (fp64bit) {
-                Cyg_libm_ieee_double_shape_type *d, *s;
+            if ( fp64bit ) {
+                Cyg_libm_ieee_double_shape_type d, s;
 
-                d = (Cyg_libm_ieee_double_shape_type *)dstreg;
-                s = (Cyg_libm_ieee_double_shape_type *)srcreg1;
+                d.asi64 = *dstreg;
+                s.asi64 = *srcreg1;
 
-                if (issubnormal(s)) {  // Sqrt of something tiny is 0
+                if ( issubnormal( s ) ) {  // Sqrt of something tiny is 0
                     // if this is a delay slot, we can't restart properly
-                    // so clear the source register instead
-                    if (delay_slot) 
-                        s->value=0.0; 
-                    else {
-                        d->value=0.0;
+                    // so if it is subnormal, clear the source register instead
+                    if ( delay_slot ) {
+                        // but preserve sign
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        *srcreg1 = s.asi64;
+                    } else {
+                        // but preserve sign
+                        if (s.number.sign)
+                            d.value = -0.0;
+                        else
+                            d.value = 0.0;
+                        *dstreg = d.asi64;
                         regs->pc += 4; // We've dealt with this so move on
                     }
                     handled++;
                 }
 
             } else { // 32-bit
-                Cyg_libm_ieee_float_shape_type *d, *s;
+                Cyg_libm_ieee_float_shape_type d, s;
 
-                d = (Cyg_libm_ieee_float_shape_type *)dstreg;
-                s = (Cyg_libm_ieee_float_shape_type *)srcreg1;
+                reg2flt( dstreg, &d );
+                reg2flt( srcreg1, &s );
 
-                if (issubnormal(s)) {  // Sqrt of something tiny is 0
+                if ( issubnormal( s ) ) {  // Sqrt of something tiny is 0
                     // if this is a delay slot, we can't restart properly
-                    // so clear the source register instead
-                    if (delay_slot) 
-                        s->value=0.0; 
-                    else {
-                        d->value=0.0;
+                    // so if it is subnormal, clear the source register instead
+                    if ( delay_slot ) {
+                        // but preserve sign
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        flt2reg( &s, srcreg1 );
+                    } else {
+                        // but preserve sign
+                        if (s.number.sign)
+                            d.value = -0.0;
+                        else
+                            d.value = 0.0;
+                        flt2reg( &d, dstreg );
                         regs->pc += 4; // We've dealt with this so move on
                     }
                     handled++;
@@ -433,85 +494,282 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
 
         case ABS_INSN:
             // We may as well do this right if we can
-            if (fp64bit) {
-                Cyg_libm_ieee_double_shape_type *d, *s;
+            if ( fp64bit ) {
+                Cyg_libm_ieee_double_shape_type d, s;
 
-                d = (Cyg_libm_ieee_double_shape_type *)dstreg;
-                s = (Cyg_libm_ieee_double_shape_type *)srcreg1;
+                d.asi64 = *dstreg;
+                s.asi64 = *srcreg1;
 
                 // if this is a delay slot, we can't restart properly
-                // so clear the source register instead
-                if (delay_slot) {
-                    s->value=0.0;
+                // so if it is subnormal, clear the source register instead
+                if ( delay_slot ) {
+                    if ( issubnormal( s ) ) {
+                        // The sign is still important for abs in case
+                        // there are any further operations on the same
+                        // register
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        *srcreg1 = s.asi64;
+                        handled++;
+                    }
                 } else {
-                    d->asi64 = s->asi64;
-                    d->number.sign = 0;
+                    d.asi64 = s.asi64;
+                    d.number.sign = 0;
+                    *dstreg = d.asi64;
                     regs->pc += 4;
+                    handled++;
                 }
             } else { // 32-bit
-                Cyg_libm_ieee_float_shape_type *d, *s;
+                Cyg_libm_ieee_float_shape_type d, s;
 
-                d = (Cyg_libm_ieee_float_shape_type *)dstreg;
-                s = (Cyg_libm_ieee_float_shape_type *)srcreg1;
+                reg2flt( dstreg, &d );
+                reg2flt( srcreg1, &s );
 
                 // if this is a delay slot, we can't restart properly
-                // so clear the source register instead
-                if (delay_slot) {
-                    s->value=0.0;
+                // so if it is subnormal, clear the source register instead
+                if ( delay_slot ) {
+                    if ( issubnormal( s ) ) {
+                        // The sign is still important for abs in case
+                        // there are any further operations on the same
+                        // register
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        flt2reg( &s, srcreg1 );
+                        handled++;
+                    }
                 } else {
-                    d->asi32 = s->asi32;
-                    d->number.sign = 0;
+                    d.asi32 = s.asi32;
+                    d.number.sign = 0;
+                    flt2reg( &d, dstreg );
                     regs->pc += 4;
+                    handled++;
                 }
             }
-            handled++;
+            break;
+
+        case MOV_INSN:
+            // We may as well do this right if we can
+            if ( fp64bit ) {
+                Cyg_libm_ieee_double_shape_type d, s;
+
+                d.asi64 = *dstreg;
+                s.asi64 = *srcreg1;
+
+                // if this is a delay slot, we can't restart properly
+                // so if it is subnormal, clear the source register instead
+                if ( delay_slot ) {
+                    if ( issubnormal( s ) ) {
+                        // but preserve sign
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        *srcreg1 = s.asi64;
+                        handled++;
+                    }
+                } else {
+                    d.asi64 = s.asi64;
+                    *dstreg = d.asi64;
+                    regs->pc += 4;
+                    handled++;
+                }
+            } else { // 32-bit
+                Cyg_libm_ieee_float_shape_type d, s;
+
+                reg2flt( dstreg, &d );
+                reg2flt( srcreg1, &s );
+
+                // if this is a delay slot, we can't restart properly
+                // so if it is subnormal, clear the source register instead
+                if ( delay_slot ) {
+                    if ( issubnormal( s ) ) {
+                        // The sign is still important for abs in case
+                        // there are any further operations on the same
+                        // register
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        flt2reg( &s, srcreg1 );
+                        handled++;
+                    }
+                } else {
+                    d.asi32 = s.asi32;
+                    flt2reg( &d, dstreg );
+                    regs->pc += 4;
+                    handled++;
+                }
+            }
             break;
 
         case NEG_INSN:
             // We may as well do this right if we can
-            if (fp64bit) {
-                Cyg_libm_ieee_double_shape_type *d, *s;
+            if ( fp64bit ) {
+                Cyg_libm_ieee_double_shape_type d, s;
 
-                d = (Cyg_libm_ieee_double_shape_type *)dstreg;
-                s = (Cyg_libm_ieee_double_shape_type *)srcreg1;
+                d.asi64 = *dstreg;
+                s.asi64 = *srcreg1;
 
                 // if this is a delay slot, we can't restart properly
-                // so clear the source register instead
-                if (delay_slot) {
-                    s->value=0.0;
+                // so if it is subnormal, clear the source register instead
+                if ( delay_slot ) {
+                    if ( issubnormal( s ) ) {
+                        // but preserve sign
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        *srcreg1 = s.asi64;
+                        handled++;
+                    }
                 } else {
-                    d->asi64 = s->asi64;
-                    d->number.sign = s->number.sign ? 0 : 1;
+                    d.asi64 = s.asi64;
+                    d.number.sign = s.number.sign ? 0 : 1;
+                    *dstreg = d.asi64;
                     regs->pc += 4;
+                    handled++;
                 }
             } else { // 32-bit
-                Cyg_libm_ieee_float_shape_type *d, *s;
+                Cyg_libm_ieee_float_shape_type d, s;
 
-                d = (Cyg_libm_ieee_float_shape_type *)dstreg;
-                s = (Cyg_libm_ieee_float_shape_type *)srcreg1;
+                reg2flt( dstreg, &d );
+                reg2flt( srcreg1, &s );
 
                 // if this is a delay slot, we can't restart properly
-                // so clear the source register instead
-                if (delay_slot) {
-                    s->value=0.0;
+                // so if it is subnormal, clear the source register instead
+                if ( delay_slot ) {
+                    if ( issubnormal( s ) ) {
+                        // but preserve sign
+                        if (s.number.sign)
+                            s.value = -0.0;
+                        else
+                            s.value = 0.0;
+                        flt2reg( &s, srcreg1 );
+                        handled++;
+                    }
                 } else {
-                    d->asi32 = s->asi32;
-                    d->number.sign = s->number.sign ? 0 : 1;
+                    d.asi32 = s.asi32;
+                    d.number.sign = s.number.sign ? 0 : 1;
+                    flt2reg( &d, dstreg );
                     regs->pc += 4;
+                    handled++;
                 }
             }
-            handled++;
+            break;
+
+        // We can't do much about floating-point to fixed-point arithmetic
+        // without emulating the FPU here ourselves!
+        // So simply zero denormalized numbers
+        case ROUNDL_INSN:
+        case TRUNCL_INSN:
+        case CEILL_INSN:
+        case FLOORL_INSN:
+        case ROUNDW_INSN:
+        case TRUNCW_INSN:
+        case CEILW_INSN:
+        case FLOORW_INSN:
+        case CVTS_INSN:
+        case CVTD_INSN:
+        case CVTW_INSN:
+        case CVTL_INSN:
+            
+            if ( fp64bit ) {
+                Cyg_libm_ieee_double_shape_type s;
+
+                s.asi64 = *srcreg1;
+
+                // just try and 0 the source register if it is subnormal
+                if ( issubnormal( s ) ) {
+                    // but preserve sign
+                    if (s.number.sign)
+                        s.value = -0.0;
+                    else
+                        s.value = 0.0;
+                    *srcreg1 = s.asi64;
+                    handled++;
+                }
+            } else { // 32-bit
+                Cyg_libm_ieee_float_shape_type s;
+
+                reg2flt( srcreg1, &s );
+
+                // just try and 0 the source register if it is subnormal
+                if ( issubnormal( s ) ) {
+                    // but preserve sign
+                    if (s.number.sign)
+                        s.value = -0.0;
+                    else
+                        s.value = 0.0;
+                    flt2reg( &s, srcreg1 );
+                    handled++;
+                }
+            }
             break;
 
         default:
+            // check for floating-point compare (C.cond.fmt)
+            if ( (insn & 0x30) == 0x30 ) {
+                if (fp64bit) {
+                    Cyg_libm_ieee_double_shape_type s1, s2;
+                    
+                    s1.asi64 = *srcreg1;
+                    s2.asi64 = *srcreg2;
+                    
+                    if ( issubnormal( s1 ) ) {  // flush to 0 and restart
+                        // but preserve sign
+                        if (s1.number.sign)
+                            s1.value = -0.0;
+                        else
+                            s1.value = 0.0;
+                        *srcreg1 = s1.asi64;
+                        handled++;
+                    }
+                    
+                    if (  issubnormal( s2 ) ) {  // flush to 0 and restart
+                        // but preserve sign
+                        if (s2.number.sign)
+                            s2.value = -0.0;
+                        else
+                            s2.value = 0.0;
+                        *srcreg2 = s2.asi64;
+                        handled++;
+                    }
+                    
+                } else { // 32-bit
+                    Cyg_libm_ieee_float_shape_type s1, s2;
+                    
+                    reg2flt( srcreg1, &s1 );
+                    reg2flt( srcreg2, &s2 );
+                    
+                    if ( issubnormal( s1 )) {  // flush to 0 and restart
+                        // but preserve sign
+                        if (s1.number.sign)
+                            s1.value = -0.0;
+                        else
+                            s1.value = 0.0;
+                        flt2reg( &s1, srcreg1 );
+                        handled++;
+                    }
+                    if ( issubnormal( s2 ) ) {  // flush to 0 and restart
+                        // but preserve sign
+                        if (s2.number.sign)
+                            s2.value = -0.0;
+                        else
+                            s2.value = 0.0;
+                        flt2reg( &s2, srcreg2 );
+                        handled++;
+                    }
+                } // else 
+            } // if
             break;
         } // switch
-
-        // As well as all the other opcodes in the enum, there are also all
-        // the floating point compare operations between 48 and 63
-    }
+    } // if (computational_insn && !fixedpoint)
     
-    if (handled) {
+    if ( handled != 0) {
         // We must clear the cause and flag bits before restoring FPCR31
         regs->fcr31 &= ~(FCR31_CAUSE_E | FCR31_CAUSE_V | FCR31_CAUSE_Z |
                          FCR31_CAUSE_O | FCR31_CAUSE_U | FCR31_CAUSE_I |
@@ -520,7 +778,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
 
     }
 
-    CYG_REPORT_RETVAL(handled);
+    CYG_REPORT_RETVAL( handled );
     return handled;
 } // cyg_hal_mips_process_fpe()
 

@@ -1,3 +1,11 @@
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Rename all CYG_HAL_USE_ROM_MONITOR_GDB_STUBS
+	-> CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs
+	Rename all CYG_HAL_USE_ROM_MONITOR_CYGMON -> 
+	CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+	Rename all CYG_HAL_USE_ROM_MONITOR -> CYGSEM_HAL_USE_ROM_MONITOR
+
 1999-11-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal.h (CYGSEM_HAL_INSTALL_MMU_TABLES): 

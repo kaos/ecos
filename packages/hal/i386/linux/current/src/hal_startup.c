@@ -135,6 +135,14 @@ cyg_hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 
 //-----------------------------------------------------------------------------
 // Initialization on the VSRs.
+
+// Mark signals NODEFER (i.e., allow a signal to interrupt a running
+// signal handler). This is necessary because we may switch to another
+// thread in the signal handler and thus delay (indefinitely) the
+// return of the "signal handler", postponing new signals during that
+// time.
+#define LINUX_SA_NODEFER    0x40000000
+
 struct hal_sigaction {
     void (*hal_handler)(int);
     long hal_mask;
@@ -155,13 +163,13 @@ externC void cyg_hal_isr_init(void)
     // Interrupt VSR setup
     act.hal_handler = cyg_hal_default_interrupt_vsr;
     act.hal_mask = 0;
-    act.hal_flags = 0;
+    act.hal_flags = LINUX_SA_NODEFER;
     cyg_hal_sys_sigaction(CYGNUM_HAL_INTERRUPT_RTC,  &act, &oact);
 
     // Exception VSR setup
     act.hal_handler = cyg_hal_default_exception_vsr;
     act.hal_mask = 0;
-    act.hal_flags = 0;
+    act.hal_flags = LINUX_SA_NODEFER;
     cyg_hal_sys_sigaction(CYGNUM_HAL_VECTOR_SIGSEGV, &act, &oact);
     cyg_hal_sys_sigaction(CYGNUM_HAL_VECTOR_SIGBUS,  &act, &oact);
     cyg_hal_sys_sigaction(CYGNUM_HAL_VECTOR_SIGFPE,  &act, &oact);

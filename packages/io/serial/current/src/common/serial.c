@@ -50,7 +50,7 @@ static Cyg_ErrNo serial_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len)
 static Cyg_ErrNo serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *buf, cyg_uint32 *len);
 static Cyg_ErrNo serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *buf, cyg_uint32 *len);
 
-DEVIO_TABLE(serial_devio,
+DEVIO_TABLE(cyg_io_serial_devio,
             serial_write,
             serial_read,
             serial_get_config,
@@ -60,7 +60,7 @@ DEVIO_TABLE(serial_devio,
 static void serial_init(serial_channel *chan);
 static void serial_xmt_char(serial_channel *chan);
 static void serial_rcv_char(serial_channel *chan, unsigned char c);
-SERIAL_CALLBACKS(serial_callbacks, 
+SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
                  serial_init, 
                  serial_xmt_char, 
                  serial_rcv_char);
@@ -121,9 +121,12 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
                 cbuf->waiting = true;
                 // Buffer full - wait for space
                 (funs->start_xmit)(chan);  // Make sure xmit is running
-                cbuf->pending += size;  // Have this much more to send [eventually]
-                cyg_drv_cond_wait(&cbuf->wait);
-                cbuf->pending -= size;
+                if (cbuf->waiting) {
+                    // Note: 'start_xmit' may have obviated the need to wait :-)
+                    cbuf->pending += size;  // Have this much more to send [eventually]
+                    cyg_drv_cond_wait(&cbuf->wait);
+                    cbuf->pending -= size;
+                }
                 if (cbuf->abort) {
                     // Give up!
                     cbuf->abort = false;

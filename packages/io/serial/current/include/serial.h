@@ -69,7 +69,7 @@ serial_callbacks_t _l = {                               \
     _rcv_char                                           \
 };
 
-extern serial_callbacks_t serial_callbacks;
+extern serial_callbacks_t cyg_io_serial_callbacks;
 
 typedef struct {
     unsigned char           *data;
@@ -105,7 +105,7 @@ struct serial_channel {
                        _baud, _stop, _parity, _word_length, _flags)     \
 serial_channel _l = {                                                   \
     &_funs,                                                             \
-    &serial_callbacks,                                                  \
+    &cyg_io_serial_callbacks,                                           \
     &(_dev_priv),                                                       \
     CYG_SERIAL_INFO_INIT(_baud, _stop, _parity, _word_length, _flags),  \
 };
@@ -118,7 +118,7 @@ serial_channel _l = {                                                   \
                        _in_buf, _in_buflen)                             \
 serial_channel _l = {                                                   \
     &_funs,                                                             \
-    &serial_callbacks,                                                  \
+    &cyg_io_serial_callbacks,                                           \
     &(_dev_priv),                                                       \
     CYG_SERIAL_INFO_INIT(_baud, _stop, _parity, _word_length, _flags),  \
     false,                                                              \
@@ -149,6 +149,6 @@ serial_funs _l = {                                                      \
   _stop_xmit                                                            \
 };
 
-extern cyg_devio_table_t serial_devio;
+extern cyg_devio_table_t cyg_io_serial_devio;
 
 #endif // CYGONCE_SERIAL_H

@@ -1,3 +1,58 @@
+2000-01-19  Jesper Skov  <jskov@cygnus.co.uk>
+	CR 902054
+	* tests/stress_threads.c: Don't assert requested priority =
+	allocated. Allow some flexibility of handler priorities.
+
+2000-01-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/mutex3.cxx (control_thread): Add a CYG_TEST_INIT();
+	Whoops!
+
+2000-01-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/mutex3.cxx: New test case.  It tests mutex prio
+	inheritance - or not - in a multiple thread manner, depending only
+	on delays and the clock, so it tests that scheduling does the
+	right thing, rather than simply checking reported priorities.
+
+	* tests/PKGconf.mak: Add new kernel test mutex3, put in to test
+	RELAY prio inheritance extension.
+
+2000-01-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/kernel.h: New config option added,
+	(CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE_RELAY).
+	It is a child of ..._PRIORITY_INHERITANCE_SIMPLE and is really
+	only there to turn off if you really want the old implementation.
+
+	* src/sync/mutex.cxx (unlock): Add call to
+	Cyg_SchedThread::relay_priority() when relinquishing the mutex, in
+	order to relay any raised priority to the new owner.  Also count
+	the mutex we are waiting for as well as those held for correct
+	recovery in the case of inheriting priority then being killed, for
+	example.
+
+	* include/sched.hxx (class Cyg_SchedThread::relay_priority): New
+	member function declared.
+
+	* src/sched/sched.cxx (Cyg_SchedThread::relay_priority): New
+	member function to implement pass-it-on or "discovered ceiling"
+	priority inheritance extension to the simple algorithm.  Also use
+	get_current_priority() in Cyg_SchedThread::inherit_priority() to
+	let this work.
+
+2000-01-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/clock.hxx (class Cyg_Counter::counter): make the counter
+	volatile, otherwise a busy-wait loop for the real time clock to
+	change never completes.
+
+1999-12-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/sched/sched.cxx (inherit_priority): Fix bug; inheriting a
+	2nd time would overwrite the saved initial_priority, so
+	disinheriting had no effect.
+
 1999-12-13  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/tm_basic.cxx (run_alarm_tests): Add new measurement of
@@ -2491,7 +2546,8 @@ Wed Mar 11 13:18:17 GMT 1998  Chris Provenzano  <proven@cygnus.com>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
+// All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

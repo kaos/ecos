@@ -164,6 +164,9 @@ externC void cyg_hal_default_interrupt_vsr(int vector);
 externC void cyg_hal_default_exception_vsr(int vector);
 externC int  cyg_hal_sys_sigprocmask(int, const long*, long*);
 
+// FIXME: These should use block/unblock of the signals instead of
+//        cyg_hal_interrupts_disabled.
+
 #define HAL_ENABLE_INTERRUPTS()                                            \
     CYG_MACRO_START                                                        \
     cyg_ucount8 _i_;                                                       \
@@ -205,15 +208,9 @@ externC int  cyg_hal_sys_sigprocmask(int, const long*, long*);
     (_old_) = !cyg_hal_interrupts_disabled;     \
     CYG_MACRO_END
 
-// FIXME: Must interract with the disable/enable macro.
-// --proven 19981005
-#define LINUX_SIG_UNBLOCK 1
 #define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                   \
     CYG_MACRO_START                                             \
-    long _old_, _new_;                                          \
-    _new_ = 0xffffffff;                                         \
     cyg_hal_interrupts_unhandled[_vector_] = 0;                 \
-    cyg_hal_sys_sigprocmask(LINUX_SIG_UNBLOCK, &_new_, &_old_); \
     CYG_MACRO_END
 
 #endif // ifdef CYGPKG_HAL_I386_LINUX
@@ -288,16 +285,20 @@ externC cyg_uint32 cyg_hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
 
 #ifdef CYGPKG_HAL_I386_LINUX
 
+#define LINUX_SIG_BLOCK   0
+#define LINUX_SIG_UNBLOCK 1
 #define HAL_INTERRUPT_MASK( _vector_ )                          \
     CYG_MACRO_START                                             \
-    /* Use sigblock to mask a vector */                         \
-    CYG_EMPTY_STATEMENT;                                        \
+    long _old_, _new_;                                          \
+    _new_ = 1 << (_vector_);                                    \
+    cyg_hal_sys_sigprocmask(LINUX_SIG_BLOCK, &_new_, &_old_);   \
     CYG_MACRO_END
 
 #define HAL_INTERRUPT_UNMASK( _vector_ )                        \
     CYG_MACRO_START                                             \
-    /* Use sigunblock to mask a vector */                       \
-    CYG_EMPTY_STATEMENT;                                        \
+    long _old_, _new_;                                          \
+    _new_ = 1 << (_vector_);                                    \
+    cyg_hal_sys_sigprocmask(LINUX_SIG_UNBLOCK, &_new_, &_old_); \
     CYG_MACRO_END
 
 // The native linux port doesn't have configurable interrupts.
@@ -345,8 +346,9 @@ externC int cyg_hal_sys_getitimer(int, struct hal_itimerval*);
     cyg_hal_sys_setitimer(CYGNUM_HAL_TIMER_TYPE, &new_itimerval, &old); \
     CYG_MACRO_END
 
-// The clock reinitializes itself.
-#define HAL_CLOCK_RESET( _vector_, _period_ )
+// The sigalarm runs in one-shot mode. We have to re-enable it
+#define HAL_CLOCK_RESET( _vector_, _period_ ) \
+    HAL_INTERRUPT_UNMASK( _vector_ )
 
 // This timer counts down, so subtract from set value.
 #define HAL_CLOCK_READ( _pvalue_ )                                      \

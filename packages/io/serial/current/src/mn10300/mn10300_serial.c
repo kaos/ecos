@@ -452,7 +452,7 @@ static SERIAL_CHANNEL(mn10300_serial_channel2,
 DEVTAB_ENTRY(mn10300_serial_io0, 
              CYGDAT_IO_SERIAL_MN10300_SERIAL0_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              mn10300_serial_init, 
              mn10300_serial_lookup,     // Serial driver may need initializing
              &mn10300_serial_channel0
@@ -464,7 +464,7 @@ DEVTAB_ENTRY(mn10300_serial_io0,
 DEVTAB_ENTRY(mn10300_serial_io1, 
              CYGDAT_IO_SERIAL_MN10300_SERIAL1_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              mn10300_serial_init, 
              mn10300_serial_lookup,     // Serial driver may need initializing
              &mn10300_serial_channel1
@@ -475,7 +475,7 @@ DEVTAB_ENTRY(mn10300_serial_io1,
 DEVTAB_ENTRY(mn10300_serial_io2, 
              CYGDAT_IO_SERIAL_MN10300_SERIAL2_NAME,
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              mn10300_serial_init, 
              mn10300_serial_lookup,     // Serial driver may need initializing
              &mn10300_serial_channel2

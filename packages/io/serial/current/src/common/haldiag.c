@@ -62,7 +62,7 @@ static SERIAL_FUNS(haldiag_funs,
     );
 
 static int _no_data;
-SERIAL_CHANNEL(haldiag_channel0,
+static SERIAL_CHANNEL(haldiag_channel0,
                haldiag_funs, 
                _no_data,
                CYG_SERIAL_BAUD_DEFAULT,
@@ -74,7 +74,7 @@ SERIAL_CHANNEL(haldiag_channel0,
 DEVTAB_ENTRY(haldiag_io0, 
              "/dev/haldiag",
              0,                     // Does not depend on a lower level interface
-             &serial_devio, 
+             &cyg_io_serial_devio, 
              haldiag_init, 
              0,                     // No initialization/lookup needed
              &haldiag_channel0);

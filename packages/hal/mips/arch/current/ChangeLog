@@ -1,3 +1,44 @@
+2000-01-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	* include/arch.inc: 
+	* src/vectors.S: 
+	* src/context.S: 
+	Several fixes to allow the GPRs to be saved
+	and restored as 64 bit values on some architectures. This is not
+	full 64 bit support since it only covers the GPRs, HI and LO,
+	there is more to be done in the CP0 registers (however it is a
+	start).
+
+1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/vectors.S (__default_exception_vsr): Rename
+	CYG_HAL_USE_ROM_MONITOR_CYGMON -> CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+	Rename CYG_HAL_ROM_MONITOR -> CYGSEM_HAL_ROM_MONITOR
+
+	* src/hal_misc.c (hal_default_isr): Rename CYG_HAL_USE_ROM_MONITOR_CYGMON
+	-> CYGSEM_HAL_USE_ROM_MONITOR_CygMon
+
+	* include/arch.inc: Rename CYG_HAL_USE_ROM_MONITOR ->
+	CYGSEM_HAL_USE_ROM_MONITOR
+
+1999-12-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mipsfp.c (flt2reg): New inline function to convert between
+	float union and register type
+	(reg2flt): Likewise in reverse
+	(cyg_hal_mips_process_fpe): Handle endianness correctly using the above
+	functions. Avoid possible aliasing problems with the compiler. Ensure
+	values are zeroed with the correct sign. Check for denormalized operands
+	for all remaining FPU opcodes.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Allow handling of
+	unimplemented operation FPU exceptions to be configurable
+	* include/pkgconf/hal_mips.h: Provide
+	CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS to do this
+
+	All the above required for cases 102817 and 102820
+
 1999-12-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/hal_intr.h (CYGNUM_HAL_EXCEPTION_COUNT): Ensure you can
