@@ -1,3 +1,12 @@
+2004-08-19  Oyvind Harboe <oyvind.harboe@zylin.com>
+2004-09-08  Andrew Lunn <andrew.lunn@ascom.ch>
+	
+	* windows_telnet.c: now demonstrates chat script TIMEOUT, which
+	makes connection more snappy. It also repeatably attempts at
+	connect until a connection is established instead of a single try.
+	Once a telnet session is aborted, a new one can be established.
+	Also cleaned up the indentation to make it more readable.
+
 2004-06-29	Matt Jerdonek <maj1224@yahoo.com>
 
 	* cdl/ppp.cdl:

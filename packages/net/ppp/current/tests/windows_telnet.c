@@ -70,98 +70,143 @@
 
 static char *windows_script[] =
 {
-      "",       		"CLIENTCLIENT\\c",
-      "CLIENTSERVER",	"\\c",
-    0
+     "TIMEOUT",         "2",
+     "",                "CLIENTCLIENT\\c",
+     "CLIENTSERVER",    "\\c",
+     0
 };
 
 void telnet(void)
 {
-	struct   sockaddr_in sin;
-	struct   sockaddr_in pin;
- 
-	/* get an internet domain socket */
-	int sd;
-	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) != -1) 
-	{
-		/* complete the socket structure */
-		memset(&sin, 0, sizeof(sin));
-	    sin.sin_len = sizeof(sin);
-		sin.sin_family = AF_INET;
-		sin.sin_addr.s_addr = INADDR_ANY;
-		sin.sin_port = htons(23);
-
-		/* bind the socket to the port number */
-		if (bind(sd, (struct sockaddr *) &sin, sizeof(sin)) != -1) 
-		{
-			/* show that we are willing to listen */
-			if (listen(sd, SOMAXCONN) != -1) 
-			{
-			  int sd_current;
-				/* wait for a client to talk to us */
-			    socklen_t addrlen = sizeof(pin);
-				if ((sd_current = accept(sd, (struct sockaddr *)  &pin, &addrlen)) != -1) 
-				{
-					for (;;)
-					{
-						/* get a message from the client */
-						
-						char t[256];
-						int len;
-						len=recv(sd_current, t, sizeof(t)-1, 0);
-						if (len == -1) 
-						{
-							break;
-						}
-
-						if (send(sd_current, t, len, 0)!=len)
-						  {
-						    break;
-						  }
-					}
-		    	    /* close up both sockets */
-					close(sd_current); 
-				}
-			}
-		}
-		close(sd);
-	}
-}	
+     struct   sockaddr_in sin;
+     struct   sockaddr_in pin;
+     
+     /* get an internet domain socket */
+     int sd;
+     if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+     {
+          return;
+     }
+     
+     /* complete the socket structure */
+     memset(&sin, 0, sizeof(sin));
+     sin.sin_len = sizeof(sin);
+     sin.sin_family = AF_INET;
+     sin.sin_addr.s_addr = INADDR_ANY;
+     sin.sin_port = htons(23);
+          
+     unsigned int opt = 1;
+     if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) 
+     {
+          goto out;
+     }
+     
+     /* bind the socket to the port number */
+     if (bind(sd, (struct sockaddr *) &sin, sizeof(sin)) == -1) 
+     {
+          goto out;
+     }
+     
+     /* show that we are willing to listen */
+     if (listen(sd, SOMAXCONN) == -1) 
+     {
+          goto out;
+     }
+     
+     int sd_current;
+     /* wait for a client to talk to us */
+     socklen_t addrlen = sizeof(pin);
+     if ((sd_current = accept(sd, (struct sockaddr *)  &pin, &addrlen)) == -1) 
+     {
+          goto out;
+     }
+     
+     for (;;)
+     {
+          char *prompt="eCos>";
+          int promptlen = strlen(prompt);
+           
+          if (write(sd_current, prompt, promptlen) != promptlen) 
+          {
+               goto AbortSession;
+          }
+          /* get a message from the client */
+          char dir[256];
+          int len;
+          size_t i;
+          for (i=0; i<sizeof(dir)-1; i++)
+          {
+               // returns when a full line has been collected
+               len=read(sd_current, dir+i, 1);
+               if (len != 1) 
+               {
+                    goto AbortSession;
+               }
+               if (write(sd_current, dir+i, 1)!=1)
+               {
+                    goto AbortSession;
+               }
+               
+               // ignore CR
+               if (dir[i]=='\r')
+               {
+                    i--;
+               }
+               
+               // Break out on a new line
+               if (dir[i]=='\n')
+               {
+                    break;
+               }
+               dir[i]=0;
+          }
+     }
+ AbortSession:
+     /* close up both sockets */
+     close(sd_current); 
+ out:
+     close(sd);
+}
+        
 
 
 int main(int argc, char **argv)
 {
-    cyg_ppp_options_t options;
-    cyg_ppp_handle_t ppp_handle;
-
-    // Bring up the TCP/IP network
-    init_all_network_interfaces();
-
-    // Initialize the options
-    cyg_ppp_options_init( &options );
-
-	options.script=windows_script;
-    options.baud = CYGNUM_SERIAL_BAUD_38400;
-	options.flowctl = CYG_PPP_FLOWCTL_NONE;
-	
-    // Start up PPP
-    ppp_handle = cyg_ppp_up( "/dev/ser0", &options );
-
-    // Wait for it to get running
-    if( cyg_ppp_wait_up( ppp_handle ) == 0 )
-    {
-        // Make use of PPP
-      for (;;)
-	{
-        telnet();
-	}
-
-      // never reached, but  for illustration:
-
-        // Bring PPP link down
-        cyg_ppp_down( ppp_handle );
-
-        // Wait for connection to go down.
-        cyg_ppp_wait_down( ppp_handle );
-    }
+     // Bring up the TCP/IP network
+     init_all_network_interfaces();
+     
+     for (;;)
+     {
+          cyg_ppp_options_t options;
+          cyg_ppp_handle_t ppp_handle;
+          
+          // Initialize the options
+          cyg_ppp_options_init( &options );
+          
+          options.script=windows_script;
+          options.baud = CYGNUM_SERIAL_BAUD_38400;
+          options.flowctl = CYG_PPP_FLOWCTL_NONE;
+          options.idle_time_limit = 0; // never shut down.      
+          
+          // Start up PPP
+          ppp_handle = cyg_ppp_up( "/dev/ser0", &options );
+          
+          // Wait for it to get running
+          if( cyg_ppp_wait_up( ppp_handle ) == 0 )
+          {
+               // Make use of PPP
+               for (;;)
+               {
+                    telnet();
+               }
+               
+               // never reached, but  for illustration:
+               
+               // Bring PPP link down
+               cyg_ppp_down( ppp_handle );
+               
+               // Wait for connection to go down.
+               cyg_ppp_wait_down( ppp_handle );
+          }
+     }
 }
