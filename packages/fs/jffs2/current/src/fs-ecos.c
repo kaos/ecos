@@ -647,7 +647,7 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 		// free directory entries
 		for (fd = root->jffs2_i.dents; fd; fd = next) {
 		  next=fd->next;
-		  free(fd);
+		  jffs2_free_full_dirent(fd);
 		}
 
 		free(root);
@@ -714,8 +714,9 @@ static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 			err = jffs2_create(ds.dir, ds.name, S_IRUGO|S_IXUGO|S_IWUSR|S_IFREG, &node);
 
 			if (err != 0) {
-				//Possible orphaned inode on the flash - but will be gc'd
-				return err;
+                                //Possible orphaned inode on the flash - but will be gc'd
+                          	jffs2_iput(ds.dir);
+                                return err;
 			}
 
 			err = ENOERR;

@@ -1,3 +1,10 @@
+2004-10-20  Per Hedblom  <perhedblom@abem.se>
+
+	* src/fs-ecos.c (jffs2_open): Call iput on dir node if
+	jffs2_create fails.
+	* src/fs-ecos.c (jffs2_umount): use jffs2_free_full_dirent instead
+	of free.
+
 2004-10-07  Knud Woehler <knud.woehler@microplex.de>
 
 	* src/fs-ecos.c (find_entry): jffs2_lookup may return error codes.
