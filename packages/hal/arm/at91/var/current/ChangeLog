@@ -1,3 +1,9 @@
+2003-08-06  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* src/at91_misc.c (hal_clock_reset):
+	Don't acknowledge interrupt here (this is handled
+	in Cyg_RealTimeClock::isr).
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_arm_at91.cdl:

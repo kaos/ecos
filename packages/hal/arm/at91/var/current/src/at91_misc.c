@@ -103,7 +103,6 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
     CYG_ASSERT(period < 0x10000, "Invalid clock period");
 
     HAL_READ_UINT32(timer+AT91_TC_SR, sr);  // Clear interrupt
-    HAL_INTERRUPT_ACKNOWLEDGE(CYGNUM_HAL_INTERRUPT_RTC);
 
     if (period != _period) {
         hal_clock_initialize(period);
