@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -893,6 +894,10 @@ hal_if_init(void)
     // Data entries not currently supported in eCos
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA
     CYGACC_CALL_IF_DBG_DATA_SET(0);
+#endif
+
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_VERSION
+    CYGACC_CALL_IF_MONITOR_VERSION_SET(0);
 #endif
 
     // Comm controls

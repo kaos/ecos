@@ -306,6 +306,15 @@ cdl_package CYGPKG_HAL {
                     virtual vectors to be claimed."
             }
 
+            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_VERSION {
+                display       "Claim version virtual vectors"
+                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
+                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
+                description   "
+                    This option will cause the version
+                    virtual vectors to be claimed."
+            }
+
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US {
                 display       "Claim delay_us virtual vector"
                 default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \

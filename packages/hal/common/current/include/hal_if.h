@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -357,7 +358,7 @@ __call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGNUM_CALL_IF_available_11               11
 #define CYGNUM_CALL_IF_SET_DEBUG_COMM             12
 #define CYGNUM_CALL_IF_SET_CONSOLE_COMM           13
-#define CYGNUM_CALL_IF_available_14               14
+#define CYGNUM_CALL_IF_MONITOR_VERSION            14
 #define CYGNUM_CALL_IF_DBG_SYSCALL                15
 #define CYGNUM_CALL_IF_RESET                      16
 #define CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG     17
@@ -422,6 +423,7 @@ typedef void (__call_if_delay_us_t)(cyg_int32 usecs);
 typedef void (__call_if_install_bpt_fn_t)(void *__epc);
 typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, char *__key,
                                                void *__val, int __type);
+typedef char *__call_if_monitor_version_t;
 
 #ifndef CYGACC_CALL_IF_DEFINED
 
@@ -585,6 +587,12 @@ __call_voidVV0(CYGNUM_CALL_IF_RESET, __call_if_reset_t, void)
  hal_virtual_vector_table[CYGNUM_CALL_IF_RESET]=(CYG_ADDRWORD)(_x_)
 #define CYGACC_CALL_IF_RESET_GET() \
  ((__call_if_reset_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_RESET])
+
+#define CYGACC_CALL_IF_MONITOR_VERSION() \
+ CYGACC_DATA_VV(__call_if_monitor_version_t, CYGNUM_CALL_IF_MONITOR_VERSION)
+__data_VV(CYGNUM_CALL_IF_MONITOR_VERSION, __call_if_monitor_version_t)
+#define CYGACC_CALL_IF_MONITOR_VERSION_SET(_x_) \
+ hal_virtual_vector_table[CYGNUM_CALL_IF_MONITOR_VERSION]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG() \
  CYGACC_DATA_VV(__call_if_console_interrupt_flag_t, CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG)

@@ -1,3 +1,10 @@
+2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/hal_if.c (hal_if_init): 
+	* include/hal_if.h: 
+	* cdl/hal.cdl: Allow monitor (RedBoot) version string to be exported
+	via the virtual vector table.
+
 2002-11-13  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* cdl/hal.cdl: Add CDL control over DATA cache startup mode.

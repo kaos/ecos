@@ -128,12 +128,12 @@ extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
 void
 do_version(int argc, char *argv[])
 {
-    extern char RedBoot_version[];
 #ifdef CYGPKG_IO_FLASH
     externC void _flash_info(void);
 #endif
+    char *version = CYGACC_CALL_IF_MONITOR_VERSION();
 
-    diag_printf(RedBoot_version);
+    diag_printf(version);
 #ifdef HAL_PLATFORM_CPU
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
@@ -180,6 +180,10 @@ cyg_start(void)
     struct cmd *cmd;
     int cur;
     struct init_tab_entry *init_entry;
+    extern char RedBoot_version[];
+
+    // Export version information
+    CYGACC_CALL_IF_MONITOR_VERSION_SET(RedBoot_version);
 
     // Make sure the channels are properly initialized.
     diag_init_putc(_mon_write_char);
