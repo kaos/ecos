@@ -1,3 +1,8 @@
+2003-11-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_e7t.cdl: 
+	* src/arm_e7t_flash.c: Updates to use the new 39VFXXX generic driver.
+
 2003-07-03  Chris Garry <cgarry@sweeneydesign.co.uk>
 
 	* src/arm_e7t_flash.h: 
