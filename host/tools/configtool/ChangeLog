@@ -1,3 +1,8 @@
+2003-08-13  John Dallaway  <jld@ecoscentric.com>
+
+	* configtool/common/common/build.cxx: More robust implementation for
+	use of the cygdrive prefix.
+
 2003-05-19  John Dallaway  <jld@ecoscentric.com>
 
 	* configtool/standalone/wxwin/manual/*,

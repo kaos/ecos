@@ -67,13 +67,6 @@
 // Use registry functions to find out location of /cygdrive
 #define ECOS_USE_REGISTRY 1
 
-// Don't use Reg... functions in command-line version until we know how
-// to add advapi32.lib
-#if defined(_WIN32) && !defined(__WXMSW__) && !defined(ECOS_CT)
-#undef ECOS_USE_REGISTRY
-#define ECOS_USE_REGISTRY 0
-#endif
-
 std::string makefile_header = "# eCos makefile\n\n# This is a generated file - do not edit\n\n";
 
 // This code seems to crash Tcl under Windows ME and Linux, so
@@ -151,6 +144,17 @@ std::string nospace_path (const std::string input) {
 }
 #endif
 
+// convert a Cygwin filepath to a DOS filepath
+std::string nativepath (const std::string input) {
+#ifdef __CYGWIN__
+    char buffer [MAX_PATH + 1];
+    cygwin_conv_to_win32_path (input.c_str (), buffer);
+    return buffer;
+#else
+    return input;
+#endif
+}
+
 // convert a DOS filepath to a Cygwin filepath
 std::string cygpath (const std::string input) {
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -172,12 +176,29 @@ std::string cygpath (const std::string input) {
 
 #if ECOS_USE_REGISTRY
     HKEY hKey = 0;
+    bool bPrefixFound = false;
     if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Cygnus Solutions\\Cygwin\\mounts v2",
         0, KEY_READ, &hKey))
     {
         DWORD type;
         BYTE value[256];
-        DWORD sz;
+        DWORD sz = sizeof(value);
+        if (ERROR_SUCCESS == RegQueryValueEx(hKey, "cygdrive prefix", NULL, & type, value, & sz))
+        {
+            strCygdrive = (const char*) value;
+            bPrefixFound = true;
+        }
+
+        RegCloseKey(hKey);
+    }
+
+    hKey = 0;  
+    if (!bPrefixFound && ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Cygnus Solutions\\Cygwin\\mounts v2",
+        0, KEY_READ, &hKey))
+    {
+        DWORD type;
+        BYTE value[256];
+        DWORD sz = sizeof(value);
         if (ERROR_SUCCESS == RegQueryValueEx(hKey, "cygdrive prefix", NULL, & type, value, & sz))
         {
             strCygdrive = (const char*) value;
@@ -190,7 +211,7 @@ std::string cygpath (const std::string input) {
 
 	for (unsigned int n = 0; n < path.size (); n++) { // for each char
 		if ((1 == n) && (':' == path [n])) { // if a DOS logical drive letter is present
-			output = strCygdrive + output; // convert to Cygwin notation
+			output = strCygdrive + (const char) tolower(path [0]); // convert to Cygwin notation
 		} else {
 			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
 		}
@@ -366,7 +387,11 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "export AR := $(COMMAND_PREFIX)ar\n\n");
 
 	// generate the package variables
+#if ECOS_USE_CYGDRIVE == 1
+	fprintf (stream, "export REPOSITORY := %s\n", cygpath (nativepath (info.repository)).c_str()); // double conversion to force /cygdrive/c format
+#else
 	fprintf (stream, "export REPOSITORY := %s\n", cygpath (info.repository).c_str());
+#endif
 	fprintf (stream, "PACKAGE := %s\n", info.directory.c_str ());
 	fprintf (stream, "OBJECT_PREFIX := %s\n", object_prefix.c_str ());
 	fprintf (stream, "CFLAGS := %s\n", get_flags (config, &info, "CFLAGS").c_str ());
