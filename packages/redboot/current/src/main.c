@@ -299,6 +299,10 @@ cyg_start(void)
     workspace_end -= CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE;
 #endif
 
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
+    script_timeout = CYGNUM_REDBOOT_BOOT_SCRIPT_DEFAULT_TIMEOUT;
+#endif
+
     for (init_entry = __RedBoot_INIT_TAB__; init_entry != &__RedBoot_INIT_TAB_END__;  init_entry++) {
         (*init_entry->fun)();
     }
@@ -320,9 +324,6 @@ cyg_start(void)
 # ifdef CYGDAT_REDBOOT_DEFAULT_BOOT_SCRIPT
     if (!script) {
       script = CYGDAT_REDBOOT_DEFAULT_BOOT_SCRIPT;
-#  ifndef CYGSEM_REDBOOT_FLASH_CONFIG
-      script_timeout = CYGNUM_REDBOOT_BOOT_SCRIPT_DEFAULT_TIMEOUT;
-#  endif
     }
 # endif
     if (script) {

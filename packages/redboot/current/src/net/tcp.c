@@ -475,6 +475,7 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
                   s->state = _ESTABLISHED;
                   s->ack = ntohl(tcp->seqnum) + 1;
                   s->seq = ntohl(tcp->acknum);
+		  __timer_cancel(&s->timer);
                   send_ack(s);
 		break;
 
