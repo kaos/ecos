@@ -62,10 +62,6 @@
 
 #include <cyg/infra/cyg_type.h>    // Common type definitions and support
 
-#ifdef CYGSEM_LIBC_SIGNALS_POSIX
-# include <unistd.h>               // _POSIX_* macros
-#endif
-
 
 // TYPE DEFINITIONS
 
@@ -75,48 +71,6 @@ typedef cyg_atomic sig_atomic_t;
 // Type of signal handler functions
 typedef void (*__sighandler_t)(int);
 
-#ifdef CYGSEM_LIBC_SIGNALS_POSIX
-
-// Signal sets from POSIX 1003.1 chap 3.3.3 and other chaps
-typedef cyg_uint32 sigset_t;
-
-// POSIX 1003.1 chap 3.3.1.2
-union sigval {
-    int   sival_int;    // used when application-defined value is an int
-    void *sival_ptr;    // used when application-defined value is a pointer
-};
-
-// Signal information structure passed to a __siginfoaction_t style handler
-// from POSIX 1003.1 chap 3.3.1.3
-typedef struct {
-    int si_signo;           // signal number
-    int si_code;            // cause of signal
-    union sigval si_value;  // signal value
-} siginfo_t;
-
-
-// Type of signal handler used if SA_SIGINFO is set in flags to sigaction
-// from POSIX 1003.1 chap 3.3.1.3
-typedef void (*__siginfoaction_t)(int __signo, siginfo_t *__info,
-                                  void *__context);
-
-// struct sigaction describes the action to be taken when we get a signal
-// From POSIX 1003.1 chap. 3.3.4.2
-struct sigaction {
-    sigset_t sa_mask;                   // Additional signals to be blocked
-    int sa_flags;                       // Special flags
-    union {
-        __sighandler_t sa_handler;      // signal handler
-        __siginfoaction_t sa_sigaction; // Function to call instead of
-                                        // sa_handler if SA_SIGINFO is
-                                        // set in sa_flags
-    } __sigactionhandler;
-#define sa_handler   __sigactionhandler.sa_handler
-#define sa_sigaction __sigactionhandler.sa_sigaction
-};
-
-
-#endif // ifdef CYGSEM_LIBC_SIGNALS_POSIX
 
 
 // CONSTANTS
@@ -143,9 +97,7 @@ struct sigaction {
 #define SIGEMT    7    // EMT instruction
 #define SIGFPE    8    // Floating Point Exception e.g. div by 0 (ISO C)
 #define SIGKILL   9    // Kill (cannot be caught or ignored) (POSIX)
-#if 1 // FIXME - should be #ifdef _POSIX_MEMORY_PROTECTION?
-# define SIGBUS   10   // Bus error (POSIX)
-#endif
+#define SIGBUS    10   // Bus error (POSIX)
 #define SIGSEGV   11   // Invalid memory reference (ISO C)
 #define SIGSYS    12   // Bad argument to system call (used by anything?)
 #define SIGPIPE   13   // Write on a pipe with no one to read it (POSIX)
@@ -155,30 +107,6 @@ struct sigaction {
 #define SIGUSR2   17   // Application-defined signal 2 (POSIX)
 
 #define CYGNUM_LIBC_SIGNALS 18  // Maximum signal number + 1
-
-#ifdef _POSIX_JOB_CONTROL
-# define SIGCHLD  18   // Child process terminated or stopped (POSIX)
-# define SIGCONT  19   // Continue if stopped (POSIX)
-# define SIGSTOP  20   // Stop (cannot be caught or ignored) (POSIX)
-# define SIGTSTP  21   // Interactive stop (POSIX)
-# define SIGTTIN  22   // Terminal read attempted by backgrounded
-                       // process (POSIX)
-# define SIGTTOU  23   // Terminal write attempted by backgrounded
-                       // process (POSIX)
-#undef CYGNUM_LIBC_SIGNALS
-#define CYGNUM_LIBC_SIGNALS 24
-#endif
-
-// FIXME - strictly by POSIX in 3.3.1.1 we should define SIGRTMIN/SIGRTMAX
-// But if so, to what value if it _isn't_ supported?!
-
-#ifdef CYGSEM_LIBC_SIGNALS_POSIX
-// sa_flag bits in struct sigaction
-#define SA_NOCLDSTOP 1   // Don't generate SIGCHLD when children stop
-#define SA_SIGINFO   2   // Use the __siginfoaction_t style signal
-                         // handler, instead of the single argument handler
-#endif // ifdef CYGSEM_LIBC_SIGNALS_POSIX
-
 
 // FUNCTION PROTOTYPES
 
