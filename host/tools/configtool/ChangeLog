@@ -1,3 +1,9 @@
+2003-04-10  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/docsystem.cpp: Eliminate pop-up warning when
+	attempting to create a directory under $HOME/.eCosDocs/ which already
+	exists.
+
 2003-04-07  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/appsettings.cpp,
