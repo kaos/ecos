@@ -1,3 +1,7 @@
+2005-03-14  Peter Korsgaard  <jacmetd@sunsite.dk>
+
+	* src/redboot_linux_exec.c (do_exec): Correctly set bi_size.
+
 2004-11-04  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/ppc_stub.c (__is_single_step): Removed compiler warning

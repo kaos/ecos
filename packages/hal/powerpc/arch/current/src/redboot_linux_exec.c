@@ -165,7 +165,7 @@ do_exec(int argc, char *argv[])
     memset(board_info, sizeof(*board_info), 0);
     
     board_info->bi_tag		= 0x42444944;
-    board_info->bi_size		= sizeof(board_info);
+    board_info->bi_size		= sizeof(*board_info);
     board_info->bi_revision	= 1;
     board_info->bi_bdate	= 0x06012002;
     board_info->bi_memstart	= CYGMEM_REGION_ram;
