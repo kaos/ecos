@@ -418,9 +418,9 @@ it &mdash; or it comes pre-set from the factory.
 <TITLE>TFTP</TITLE>
 <PARA>The TFTP client and server are described in
 <filename>tftp_support.h</filename>;
-
-<PARA>The TFTP client has and new and an older, depreciated, API. The
-new API works for both IPv4 and IPv6 where as the depreciated API is
+</PARA>
+<PARA>The TFTP client has and new and an older, deprecated, API. The
+new API works for both IPv4 and IPv6 where as the deprecated API is
 IPv4 only.
 </PARA>
 <PARA>
@@ -449,7 +449,7 @@ the client connects to the default TFTP port on the server. Otherwise
 the specified port is used.
 </PARA>
 <PARA> 
-The depreciated API is:
+The deprecated API is:
 <PROGRAMLISTING>int tftp_client_get(char *filename,
 		    struct sockaddr_in *server,
 		    char *buf,
@@ -464,6 +464,7 @@ int tftp_client_put(char *filename,
 		    int mode,
 		    int *err);
 </PROGRAMLISTING>
+</PARA>
 <PARA>
 The <varname>server</varname> should contain the address of the
 server to contact. If the <varname>sin_port</varname> member of the
@@ -508,6 +509,7 @@ describing the filesystem is an argument to the <function>tftpd_start</function>
 int tftp_start(int port,
                struct tftpd_fileops *ops);
 </PROGRAMLISTING>
+</PARA>
 <PARA>The first argument is the port to use for the server. If this
 port number is zero, the default TFTP port number will be used. The
 return value from <function>tftpd_start</function> is a handle which

@@ -40,6 +40,10 @@
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <cyg/infra/testcase.h>
 
 #ifdef CYGBLD_DEVS_ETH_DEVICE_H    // Get the device config if it exists
@@ -163,7 +167,7 @@ show_icmp(unsigned char *pkt, int len,
     return (from->sin_addr.s_addr == to->sin_addr.s_addr);
 }
 
-static void
+static int
 ping_host(int s, struct sockaddr_in *host)
 {
     struct icmp *icmp = (struct icmp *)pkt1;
@@ -217,6 +221,7 @@ ping_host(int s, struct sockaddr_in *host)
     }
     TNR_OFF();
     diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
+    return ok_recv;
 }
 
 #ifdef CYGPKG_NET_INET6
@@ -370,7 +375,7 @@ ping_test(struct bootp *bp)
     struct protoent *p;
     struct timeval tv;
     struct sockaddr_in host;
-    int s;
+    int s, ok_recv;
 
     if ((p = getprotobyname("icmp")) == (struct protoent *)0) {
         pexit("getprotobyname");
@@ -389,10 +394,17 @@ ping_test(struct bootp *bp)
     host.sin_len = sizeof(host);
     host.sin_addr = bp->bp_siaddr;
     host.sin_port = 0;
-    ping_host(s, &host);
+    CYG_TEST_INFO("Pinging valid host");
+    ok_recv = ping_host(s, &host);
+    // check acceptable ping level - allow 10% loss
+    CYG_TEST_PASS_FAIL( ok_recv + (NUM_PINGS/10) >= NUM_PINGS,
+                    "Good packets acceptable" );
     // Now try a bogus host
-    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
-    ping_host(s, &host);
+    CYG_TEST_INFO("Pinging bogus host");
+    host.sin_addr.s_addr = inet_addr("10.10.10.10");
+    ok_recv = ping_host(s, &host);
+    // should be 0 packets
+    CYG_TEST_PASS_FAIL( ok_recv == 0, "No packets should be received" );
 }
 
 void
@@ -401,19 +413,24 @@ net_test(cyg_addrword_t p)
 #ifdef CYGPKG_NET_INET6
     struct sockaddr_in6 ipv6router;
 #endif
+    int something_tested=0;
 
-    diag_printf("Start PING test\n");
+    CYG_TEST_INIT();
+    CYG_TEST_INFO("Start PING test");
+
     TNR_INIT();
     init_all_network_interfaces();
 #ifdef CYGHWR_NET_DRIVER_ETH0
     if (eth0_up) {
         ping_test(&eth0_bootp_data);
     }
+    something_tested++;
 #endif
 #ifdef CYGHWR_NET_DRIVER_ETH1
     if (eth1_up) {
         ping_test(&eth1_bootp_data);
     }
+    something_tested++;
 #endif
 #ifdef CYGPKG_NET_INET6
     if (cyg_net_get_ipv6_advrouter(&ipv6router)) {
@@ -423,7 +440,11 @@ net_test(cyg_addrword_t p)
     }
 #endif
     TNR_PRINT_ACTIVITY();
-    CYG_TEST_PASS_FINISH("Ping test OK");
+    if (!something_tested) {
+        CYG_TEST_NA("No interfaces found to be tested");
+    } else {
+        CYG_TEST_FINISH("Ping test");
+    }
 }
 
 void
@@ -442,3 +463,5 @@ cyg_start(void)
     cyg_thread_resume(thread_handle);  // Start it
     cyg_scheduler_start();
 }
+
+// EOF ping_test.c
