@@ -691,13 +691,13 @@ net_init(void)
                     __local_enet_addr[3],
                     __local_enet_addr[4],
                     __local_enet_addr[5]);
+
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+	redboot_dns_res_init();
+#endif
         show_addrs();
         net_io_init();
     }
-
-#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
-    redboot_dns_res_init();
-#endif
 }
 
 static char usage[] = "[-l <local_ip_address>] [-h <server_address>]";
