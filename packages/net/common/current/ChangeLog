@@ -1,3 +1,8 @@
+2004-06-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/network.h: Added a __THROW to perror so that it matches
+	what is in stdio.h. Problem pointed out by Øyvid Harboe.
+
 2004-05-04  Jay Foster <jay.foster@systech.com>
 
         * src/bootp_support.c (get_bootp_option, show_bootp):

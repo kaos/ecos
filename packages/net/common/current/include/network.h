@@ -1,3 +1,4 @@
+
 //==========================================================================
 //
 //      include/network.h
@@ -69,7 +70,7 @@ extern const char  *eth1_name;
 __externC void init_all_network_interfaces(void);
 
 __externC void     cyg_route_reinit(void);
-__externC void     perror(const char *);
+__externC void     perror(const char *) __THROW;
 __externC int      close(int);
 __externC ssize_t  read(int, void *, size_t);
 __externC ssize_t  write(int, const void *, size_t);
