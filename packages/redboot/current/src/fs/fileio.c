@@ -204,8 +204,6 @@ do_ls(int argc, char * argv[])
           return;
 
      if (!dir_set) {
-          diag_printf("getcwd\n");
-          
           getcwd(cwd,sizeof(cwd));
           dir_str = cwd;
      }

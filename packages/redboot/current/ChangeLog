@@ -1,3 +1,7 @@
+2005-01-05  David Vrabel  <dvrabel@arcom.com>
+
+	* src/fs/fileio.c (do_ls): Remove useless "getcwd" message.
+	
 2004-12-01  Andrea Michelotti  <amichelotti@atmel.com>
 
 	* main.c :
