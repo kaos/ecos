@@ -1,7 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -50,7 +50,7 @@
 #include "ecosconfig.hxx"
 
 #define TOOL_VERSION "1.3.net"
-#define TOOL_COPYRIGHT "Copyright (c) 2001 Red Hat, Inc."
+#define TOOL_COPYRIGHT "Copyright (c) 2002 Red Hat, Inc."
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static char* tool = "ecosconfig";
 
@@ -89,6 +89,7 @@ int main (int argc, char * argv []) {
     bool quiet = false;         // -q, --quiet
     bool verbose = false;       // -v, --verbose
     bool ignore_errors = false; // -i, --ignore-errors
+    bool no_updates = false;    // -n, --no-updates,
     bool help = false;          // --help
         
     // getopt() cannot easily be used here since this code has to
@@ -110,6 +111,8 @@ int main (int argc, char * argv []) {
         } else if ((0 == strcmp(arg, "-i")) || (0 == strcmp(arg, "--ignore-errors"))) {
             // Duplicate use of -i and the other flags is harmless.
             ignore_errors = true;
+        } else if ((0 == strcmp(arg, "-n")) || (0 == strcmp(arg, "--no-updates"))) {
+            no_updates = true;
         } else if (0 == strcmp(arg, "--version")) {
             version = true;
         } else if (0 == strcmp(arg, "--no-resolve")) {
@@ -206,6 +209,7 @@ int main (int argc, char * argv []) {
     printf("no_resolve is %d\n", no_resolve);
     printf("quiet is %d\n", quiet);
     printf("verbose is %d\n", verbose);
+    printf("no-updates is %d\n", no_updates);
     printf("ignore_errors is %d\n", ignore_errors);
     printf("repository is %s\n", repository.c_str());
     printf("savefile is %s\n", savefile.c_str());
@@ -275,6 +279,7 @@ int main (int argc, char * argv []) {
     cdl_exec::set_quiet_mode(quiet);
     cdl_exec::set_verbose_mode(verbose);
     cdl_exec::set_ignore_errors_mode(ignore_errors);
+    cdl_exec::set_no_updates_mode(no_updates);
     
     // Now identify and process the sub-command.
     const std::string command = argv [command_index];
@@ -442,5 +447,6 @@ void usage_message () {
     printf ("    -q, --quiet                                : reduce verbosity\n");    
     printf ("    -v, --verbose                              : increase verbosity\n");    
     printf ("    -i, --ignore-errors                        : ignore unresolved conflicts\n");
+    printf ("    -n, --no-updates                           : read-only mode, do not modify the file system\n");
     printf ("    --help                                     : display this message\n");
 }

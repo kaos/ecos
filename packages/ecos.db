@@ -173,6 +173,16 @@ package CYGPKG_DEVS_FLASH_SH_EDK7708 {
 	   on the Hitachi EDK7708 platform."
 }
 
+package CYGPKG_DEVS_FLASH_CQ7750 {
+	alias 		{ "Support for flash memory on CqREEK SH7750 board" flash_cq7750 }
+	directory	devs/flash/sh/cq7750
+	script		flash_cq7750.cdl
+	hardware
+        description "
+           This package contains hardware support for flash memory
+	   on the CqREEK SH7750 platform."
+}
+
 package CYGPKG_DEVS_FLASH_MIPS_OCELOT {
 	alias 		{ "Support for flash memory on PMC-Sierra/Ocelot board" flash_qed_ocelot }
 	directory	devs/flash/mips/ocelot
@@ -996,7 +1006,7 @@ library loader."
 }
 
 package CYGPKG_COMPRESS_ZLIB {
-        alias           { "Zlib compress/decompress" zlib_compress compress_zlib }
+        alias           { "Zlib compress/decompress" zlib_compress compress_zlib zlib }
         directory       services/compress/zlib
         script          compress_zlib.cdl
         description "
@@ -2135,13 +2145,14 @@ target sa1100mm {
 
 target iq80310 {
 	alias { "Intel IQ80310 XScale board" iq80310 }
-	packages { CYGPKG_HAL_ARM
+        packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_IQ80310
                    CYGPKG_IO_PCI
-		   CYGPKG_DEVS_ETH_ARM_IQ80310
+                   CYGPKG_DEVS_ETH_INTEL_I82559
+                   CYGPKG_DEVS_ETH_ARM_IQ80310
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
-		   CYGPKG_IO_SERIAL_ARM_IQ80310
-		   CYGPKG_DEVS_FLASH_IQ80310
+                   CYGPKG_IO_SERIAL_ARM_IQ80310
+                   CYGPKG_DEVS_FLASH_IQ80310
         }
         description "
         The iq80310 target provides the packages needed to run
@@ -2209,6 +2220,8 @@ target cq7750 {
         packages { CYGPKG_HAL_SH
                    CYGPKG_HAL_SH_SH4
                    CYGPKG_HAL_SH_SH7750_CQ7750
+		   CYGPKG_DEVS_FLASH_CQ7750
+		   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                    CYGPKG_IO_SERIAL_SH_SCIF }
         description "
            The sh7750 target provides the packages needed to run

@@ -1,7 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -43,11 +43,13 @@ public:
     static void set_quiet_mode(bool);
     static void set_verbose_mode(bool);
     static void set_ignore_errors_mode(bool);
+    static void set_no_updates_mode(bool);
     
 protected:
     static bool quiet;
     static bool verbose;
     static bool ignore_errors;
+    static bool no_updates;
     std::string repository;
     std::string savefile;
     std::string install_prefix;

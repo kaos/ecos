@@ -219,12 +219,22 @@
 	.set	__base,__base+1
 
 	// Invalid
-	.rept	0xF00 - 0xD01
+	.rept	0xE00 - 0xD01
 	.word 0
 	.set	__base,__base+1
 	.endr
 
+	// Uncached and unbuffered alias for first 256MB of SDRAM. This
+	// area can be used by device drivers for DMA operations. Buffers
+	// should be cache aligned.
+	.set	__base,0xA00
+	.rept	0xF00 - 0xE00
+	FL_SECTION_ENTRY __base,0,3,0,0,0,0
+	.set	__base,__base+1
+	.endr
+
 	// only I/O at 0xFE8xxxxx
+	.set	__base,0xF00
 	.rept	0x1000 - 0xF00
 	FL_SECTION_ENTRY __base,0,3,0,0,0,0
 	.set	__base,__base+1

@@ -1,3 +1,4 @@
+* CqREEK SH7750 FLASH driver added, contributed by Koichi Nagashima
 * EDB7xxx ethernet driver rewritten to be a generic Cirrus Logic CS8900A
   package.
 * Incorporated FTP client code (library and test) from Andrew Lunn.

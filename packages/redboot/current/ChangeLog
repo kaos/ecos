@@ -1,3 +1,10 @@
+2002-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.c (xyzModem_stream_read): BUG 57497
+	Try and detect (and remove) ^Z characters placed at end of stream.  
+	This data confuses higher processing, like the zlib decompression 
+	routines.
+
 2001-12-16  Mark Salter  <msalter@redhat.com>
 
 	* src/fs/ide.c: Add ATAPI support.
@@ -1938,7 +1945,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

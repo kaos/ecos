@@ -32,7 +32,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      gthomas
-# Contributors:   gthomas, jskov
+# Contributors:   gthomas, jskov, Koichi Nagashima
 # Date:           2001-02-20
 #
 #####DESCRIPTIONEND####
@@ -115,5 +115,14 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
             When this option is enabled, the AMD flash driver will be
             able to recognize and handle the AM29LV800
             part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_AMD_TC58FVB800 {
+        display       "Toshiba TC58FVB800 flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_AMD_VARIANTS
+        description   "
+            When this option is enabled, the AMD flash driver will be
+            able to recognize and handle the Toshiba TC58FVB800."
     }
 }

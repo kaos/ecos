@@ -1,3 +1,11 @@
+2002-01-03  Mark Salter  <msalter@redhat.com>
+
+	* cdl/iq80310_eth_drivers.cdl: Rewrite to use generic i82559 driver.
+	* include/devs_eth_iq80310.inl: New file.
+	* src/if_iq80310.c: Remove.
+	* src/if_shmem.S: Remove.
+	* include/iq80310_info.h: Remove.
+
 2001-12-20  Mark Salter  <msalter@redhat.com>
 
 	* cdl/iq80310_eth_drivers.cdl: Add "flavor data" (as pointed out by

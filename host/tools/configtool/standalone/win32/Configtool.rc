@@ -78,7 +78,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU DISCARDABLE 
+IDR_MAINFRAME MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
@@ -168,7 +168,7 @@ BEGIN
     END
 END
 
-IDR_OUTPUT_CONTEXT MENU DISCARDABLE 
+IDR_OUTPUT_CONTEXT MENU DISCARDABLE
 BEGIN
     POPUP "Popup"
     BEGIN
@@ -196,7 +196,7 @@ BEGIN
                     SS_NOPREFIX
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,21,20
     LTEXT           "Date/Time info",IDC_STATIC_DATETIME,40,23,119,8
-    LTEXT           "Copyright © 1998-2001 Red Hat, Inc.",IDC_STATIC,40,36,
+    LTEXT           "Copyright © 1998-2002 Red Hat, Inc.",IDC_STATIC,40,36,
                     170,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,8,57,201,133,
                     WS_EX_DLGMODALFRAME | WS_EX_TRANSPARENT
@@ -226,7 +226,7 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,15,100,204,10
     CONTROL         "This &browser:",IDC_RADIO_CUSTOM_BROWSER,"Button",
                     BS_AUTORADIOBUTTON,15,114,58,10
-    EDITTEXT        IDC_EDIT_BROWSER,15,132,205,14,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_EDIT_BROWSER,15,132,205,14,ES_AUTOHSCROLL |
                     WS_DISABLED
     PUSHBUTTON      "Br&owse...",IDC_BROWSE_BROWSER,170,112,50,14,
                     WS_DISABLED | WS_GROUP
@@ -237,13 +237,13 @@ BEGIN
     CONTROL         "Use descriptive &names",IDC_RADIO_DESCRIPTIVE_NAMES,
                     "Button",BS_AUTORADIOBUTTON,102,183,87,10
     GROUPBOX        "Integer items",IDC_STATIC,16,202,201,26
-    CONTROL         "&Decimal",IDC_RADIO_DECIMAL,"Button",BS_AUTORADIOBUTTON | 
+    CONTROL         "&Decimal",IDC_RADIO_DECIMAL,"Button",BS_AUTORADIOBUTTON |
                     WS_GROUP,25,213,41,10
     CONTROL         "He&xadecimal",IDC_RADIO_HEXADECIMAL,"Button",
                     BS_AUTORADIOBUTTON,102,213,57,10
     GROUPBOX        "Font",IDC_STATIC,7,244,220,31
     LTEXT           "&Window:",IDC_STATIC,18,257,29,8
-    COMBOBOX        IDC_PANECOMBO,49,255,79,67,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_PANECOMBO,49,255,79,67,CBS_DROPDOWNLIST | WS_VSCROLL |
                     WS_TABSTOP
     PUSHBUTTON      "Change &Font...",IDC_FONT,165,254,52,14
     PUSHBUTTON      "OK",IDOK,121,281,50,14
@@ -256,7 +256,7 @@ CAPTION "Header Files"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "&Close",IDOK,221,7,50,14
-    LISTBOX         IDC_LIST,7,29,264,112,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+    LISTBOX         IDC_LIST,7,29,264,112,LBS_SORT | LBS_NOINTEGRALHEIGHT |
                     WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
     LTEXT           "Double-click any item below to edit the file",
                     IDC_HEADERSTATIC,7,13,133,8
@@ -271,7 +271,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,214,25,50,14
     PUSHBUTTON      "&Browse...",IDC_FOLDER_DIALOG_BROWSE,214,43,50,14
     LTEXT           "Static",IDC_STATIC_DESC,8,7,196,46
-    COMBOBOX        IDC_FOLDER,6,61,258,57,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
+    COMBOBOX        IDC_FOLDER,6,61,258,57,CBS_DROPDOWN | CBS_AUTOHSCROLL |
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -288,7 +288,7 @@ BEGIN
     CONTROL         "Use &descriptive names",IDC_RADIO_DESCRIPTIVE_NAMES,
                     "Button",BS_AUTORADIOBUTTON,142,44,87,10
     GROUPBOX        "Integer items",IDC_STATIC,7,65,228,31
-    CONTROL         "D&ecimal",IDC_RADIO_DECIMAL,"Button",BS_AUTORADIOBUTTON | 
+    CONTROL         "D&ecimal",IDC_RADIO_DECIMAL,"Button",BS_AUTORADIOBUTTON |
                     WS_GROUP,19,79,41,10
     CONTROL         "He&xadecimal",IDC_RADIO_HEXADECIMAL,"Button",
                     BS_AUTORADIOBUTTON,142,79,57,10
@@ -302,7 +302,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS MOVEABLE PURE
 BEGIN
     "1",            ID_VIEW_PROPERTIES,     VIRTKEY, ALT, NOINVERT
     "2",            ID_VIEW_CONFLICTS,      VIRTKEY, ALT, NOINVERT
@@ -312,7 +312,7 @@ BEGIN
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
-    "P",            ID_ENABLE_EXTENSIONS,   VIRTKEY, SHIFT, CONTROL, ALT, 
+    "P",            ID_ENABLE_EXTENSIONS,   VIRTKEY, SHIFT, CONTROL, ALT,
                                                     NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDAGAIN,      VIRTKEY, NOINVERT
@@ -379,7 +379,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO DISCARDABLE
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -411,12 +411,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE DISCARDABLE
 BEGIN
     "CTres.h\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE DISCARDABLE
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -436,7 +436,7 @@ BEGIN
     "#endif\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE DISCARDABLE
 BEGIN
     "#include ""afxres.h""\r\n"
     "#include ""CTCommonres.h""\r\n"
@@ -452,15 +452,15 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     AFX_IDS_APP_TITLE       "Configuration Tool"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    IDC_RADIO_INTERNAL_BROWSER 
+    IDC_RADIO_INTERNAL_BROWSER
                             "Select the internal HTML help mechanism to display HTML-based help."
     IDC_PANECOMBO           "Selects a window for which the font is to be changed."
     IDC_FONT                "Changes the font of the chosen window."
@@ -471,7 +471,7 @@ BEGIN
     IDS_ECOS_PR_URL         "http://www.cygnus.com/ecos/ecos-pr.html"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_THERMOMETER          "."
     ID_RUN_SIM              "Runs the configuration tests\nRun Tests"
@@ -483,14 +483,14 @@ BEGIN
     ID_VIEW_OUTPUT          "Activates the output window\nOutput window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_BUILD_STOP           "Stops the build\nStop Build"
     ID_CONFIGURATION_OPTIONS "Changes configuration options\nChange options"
     ID_BUILD_TESTS          "Builds the configuration tests\nBuild tests"
-    ID_CONFIGURATION_CHECKRULES 
+    ID_CONFIGURATION_CHECKRULES
                             "Checks rules immediately\nCheck option dependency rules immediately options are changed "
-    ID_CONFIGURATION_REFRESH 
+    ID_CONFIGURATION_REFRESH
                             "Reloads configuration settings from header files\nReload configuration"
     ID_CONFIGURATION_REPOSITORY "Selects repository\nSelect repository"
     ID_VIEW_SETTINGS        "Enables you to change settings\nChange settings"
@@ -505,10 +505,10 @@ BEGIN
     ID_GNUPRO_DOCUMENTATION "Opens the GNUPro documentation page\nGNUPro Documentation"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_HELP_SUBMIT_PR       "Opens a page to submit an eCos problem report\nSubmit Problem Report"
-    ID_HELP_GNUPRO_DOCUMENTATION 
+    ID_HELP_GNUPRO_DOCUMENTATION
                             "Opens the GNUPro documentation page\nGNUPro Documentation Page"
     ID_HELP_ECOS            "Opens the eCos net release page\neCos Net Release Page"
     ID_HELP_UITRON          "Opens the µITRON specification page\nµITRON Specification"
@@ -525,18 +525,18 @@ BEGIN
     ID_VIEW_CONFLICTS       "Activates the conflicts window\nConflicts window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     IDC_BROWSE_BROWSER      "Browses for a browser to be used to display HTML-based help."
     IDC_RADIO_ASSOCIATED    "Select the default viewer to display header files."
     IDC_RADIO_CUSTOM        "Select a viewer of your choice to display header files."
-    IDC_RADIO_ASSOCIATED_BROWSER 
+    IDC_RADIO_ASSOCIATED_BROWSER
                             "Select the default browser to display HTML-based help."
-    IDC_RADIO_CUSTOM_BROWSER 
+    IDC_RADIO_CUSTOM_BROWSER
                             "Select a browser of your choice to display HTML-based help."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -546,7 +546,7 @@ BEGIN
     ID_INDICATOR_REC        "REC"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_FILE_NEW             "Creates a new document\nNew"
     ID_FILE_OPEN            "Opens an existing document\nOpen"
@@ -559,14 +559,14 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Displays full pages\nPrint Preview"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_APP_ABOUT            "Displays program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quits the application; prompts to save documents\nExit"
     ID_HELP                 "Displays help\nHelp"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_FILE_MRU_FILE1       "Opens this document"
     ID_FILE_MRU_FILE2       "Opens this document"
@@ -586,12 +586,12 @@ BEGIN
     ID_FILE_MRU_FILE16      "Opens this document"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_WINDOW_SPLIT         "Splits the active window into panes\nSplit"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_EDIT_CLEAR           "Clears the output pane\nClear"
     ID_EDIT_CLEAR_ALL       "Erases everything in the output pane\nErase All"
@@ -606,18 +606,18 @@ BEGIN
     ID_EDIT_REDO            "Redoes the previously undone action\nRedo"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Shows or hides the standard toolbar\nToggle Standard ToolBar"
     ID_VIEW_STATUS_BAR      "Shows or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     IDS_REGKEY              "Red Hat\\eCos"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_POPUP_PROPERTIES     "Displays the properties of the selected item"
     ID_EDIT_NEW_REGION      "Add a new memory region\nNew Region"
@@ -626,7 +626,7 @@ BEGIN
     ID_EDIT_PROPERTIES      "Show the properties of a memory region or section\nProperties"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_VIEW_MLTBAR          "Shows or hides the memory layout toolbar\nToggle Memory Layout ToolBar"
     ID_TOOLS_ADMINISTRATION "Performs Repository Administration Tasks\nAdminister repository"
@@ -635,7 +635,7 @@ BEGIN
     ID_EDIT_PLATFORMS       "Edits the platform list\nEdit Platforms"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     IDC_EDIT                "Specify the viewer executable to be used to display header files."
     IDC_EDIT_BROWSER        "Specify the browser executable to be used to display header files."
@@ -643,7 +643,7 @@ BEGIN
     IDC_BROWSE              "Browses for a viewer to be used to display header files."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     ID_RESOLVE_CONFLICTS    "Resolves conflicts\nResolve conflicts"
 END

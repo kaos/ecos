@@ -14,26 +14,19 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_IQ80310 current ;
     package -hardware CYGPKG_IO_PCI current ;
+    package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
     package -hardware CYGPKG_DEVS_ETH_ARM_IQ80310 current ;
     package -hardware CYGPKG_IO_SERIAL_ARM_IQ80310 current ;
+    package -hardware CYGPKG_DEVS_FLASH_IQ80310 current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
-    package CYGPKG_DEVS_FLASH_IQ80310 current ;
 };
 
 cdl_option CYGBLD_BUILD_GDB_STUBS {
     user_value 0
-};
-
-cdl_option CYGDBG_DEVS_ETH_ARM_IQ80310_CHATTER {
-    user_value 0
-};
-
-cdl_option CYGNUM_DEVS_ETH_ARM_IQ80310_DEV_COUNT {
-    user_value 1
 };
 
 cdl_option CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT {

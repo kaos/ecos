@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, jskov
+// Contributors: gthomas, jskov, Koichi Nagashima
 // Date:         2001-02-21
 // Purpose:      
 // Description:  AMD AM29xxxxx series flash device driver
@@ -67,7 +67,7 @@
 // Common device details.
 #define FLASH_Read_ID                   FLASHWORD( 0x90 )
 #define FLASH_WP_State                  FLASHWORD( 0x90 )
-#define FLASH_Reset                     FLASHWORD( 0xFF )
+#define FLASH_Reset                     FLASHWORD( 0xF0 )
 #define FLASH_Program                   FLASHWORD( 0xA0 )
 #define FLASH_Block_Erase               FLASHWORD( 0x30 )
 
@@ -314,7 +314,8 @@ flash_erase_block(void* block, unsigned int size)
         timeout = 10000000;              // how many retries?
         while (true) {
             state = *b_v;
-            if ((state & FLASH_Sector_Erase_Timer) == 0) break;
+            if ((state & FLASH_Sector_Erase_Timer)
+				== FLASH_Sector_Erase_Timer) break;
 
             if (--timeout == 0) {
                 res = FLASH_ERR_DRV_TIMEOUT;

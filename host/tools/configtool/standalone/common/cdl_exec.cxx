@@ -54,6 +54,7 @@
 bool cdl_exec::quiet            = false;
 bool cdl_exec::verbose          = false;
 bool cdl_exec::ignore_errors    = false;
+bool cdl_exec::no_updates       = false;
 
 cdl_exec::cdl_exec (const std::string repository_arg, const std::string savefile_arg,
                     const std::string install_arg, bool no_resolve_arg)
@@ -96,6 +97,12 @@ void
 cdl_exec::set_ignore_errors_mode(bool new_val)
 {
     ignore_errors = new_val;
+}
+
+void
+cdl_exec::set_no_updates_mode(bool new_val)
+{
+    no_updates = new_val;
 }
 
 // ----------------------------------------------------------------------------
@@ -156,11 +163,13 @@ bool cdl_exec::cmd_new (const std::string cdl_hardware,
 
         // Now report any conflicts which the inference engine could not report. 
         report_conflicts();
-        
+
         // A savefile should be generated/updated even if there are conflicts.
         // Otherwise the user does not have a chance to edit the savefile
         // and fix things.
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -187,7 +196,9 @@ cdl_exec::cmd_target (const std::string cdl_target)
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -214,7 +225,9 @@ cdl_exec::cmd_template (const std::string cdl_template, const std::string cdl_ve
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -244,7 +257,9 @@ cdl_exec::cmd_export (const std::string cdl_savefile)
         // configuration is conflict-free. This is different from
         // updating the savefile.
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
-            config->save (cdl_savefile, /* minimal = */ true);
+            if (!no_updates) {
+                config->save (cdl_savefile, /* minimal = */ true);
+            }
             status = true;
         }
     } catch (CdlStringException exception) {
@@ -270,7 +285,9 @@ cdl_exec::cmd_import (const std::string cdl_savefile)
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -299,7 +316,9 @@ cdl_exec::cmd_add (const std::vector<std::string> cdl_packages)
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -334,7 +353,9 @@ cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages)
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -364,7 +385,9 @@ cdl_exec::cmd_version (const std::string cdl_version, const std::vector<std::str
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }
@@ -390,9 +413,15 @@ cdl_exec::cmd_tree ()
             config->resolve_all_conflicts();
         }
         report_conflicts();
-        config->save (savefile);
-        // A build tree should only be generated if there are no conflicts.
-        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+        if (!no_updates) {
+            config->save (savefile);
+        }
+        // A build tree should only be generated if there are no conflicts,
+        // and suppressed if -n is given.
+        if (no_updates) {
+            // Do nothing
+        }
+        else if (ignore_errors || (0 == config->get_all_conflicts().size())) {
 #ifdef _MSC_VER
             char cwd [_MAX_PATH + 1];
 #else
@@ -527,7 +556,9 @@ cdl_exec::cmd_check ()
         // change.
         // However, updating the savefile is worthwhile because it
         // will now contain more accurate information about the state.
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
 
         // report current target and template
         printf ("Target: %s\n", config->get_hardware ().c_str ());
@@ -615,7 +646,9 @@ cdl_exec::cmd_resolve ()
         CdlTransactionBody::set_callback_fn(&transaction_callback);
         config->resolve_all_conflicts ();
         report_conflicts();
-        config->save (savefile);
+        if (!no_updates) {
+            config->save (savefile);
+        }
         if (ignore_errors || (0 == config->get_all_conflicts().size())) {
             status = true;
         }

@@ -1,3 +1,16 @@
+2002-01-03  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_ROM.ecm: Use generic i82559 package.
+	* misc/redboot_ROMA.ecm: Ditto.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_RAMA.ecm: Ditto.
+
+	* include/plf_io.h (CYGARC_UNCACHED_ADDRESS): New macro to return
+	uncached alias for a cached address.
+	(CYGARC_VIRT_TO_BUS): Macro to convert virtual to physical addresses.
+	* include/hal_platform_setup.h: Add uncached alias for first 128M of
+	SDRAM.
+
 2001-10-03  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/diag/io_utils.c: Switch to diag_printf from printf.

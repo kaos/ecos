@@ -1,3 +1,13 @@
+2002-01-04  Wade Jensen <Wade_Jensen@inter-tel.com>
+2002-01-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/socket.cxx (recvfrom): Set msg.msg_namelen correctly for
+	NULL fromlen.
+
+2001-12-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/io.cxx (readwrite): Add missing check for return (errors).
+
 2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/file.cxx (chdir): Don't detach from current dir if unset.

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: reposdlg.cpp,v 1.4 2001/03/19 14:53:41 julians Exp $
+// Version:     $Id: reposdlg.cpp,v 1.5 2002/01/02 14:28:55 julians Exp $
 // Purpose:
 // Description: Implementation file for ecRepositoryInfoDialog
 // Requires:
@@ -149,20 +149,14 @@ bool ecRepositoryInfoDialog::CreateHtmlInfo(wxString& info)
 {
     ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
 
-    wxString ecosLogo(wxT("ecoslogosmall.png"));
-    wxSetWorkingDirectory(wxGetApp().GetAppDir());
-
     info += wxT("<html><head><title>Repository Information</title>\n");
     info += wxT("<body bgcolor=\"#FFFFE1\">\n");
 
     info += wxT("<table width=\"100%\">");
     info += wxT("<tr><td>\n");
-    if (wxFileExists(ecosLogo))
-    {
-        wxString s;
-        s.Printf(wxT("<img src=\"%s\" align=right border=0><p>"), ecosLogo.c_str());
-        info += s;
-    }
+    wxString s;
+    s.Printf(wxT("<img src=\"memory:ecoslogosmall.png\" align=right vspace=8 border=0><p>"));
+    info += s;
     info += wxT("</td><td>\n");
     info += wxT("<font size=+2><b>Repository Information</b></font>\n");
 

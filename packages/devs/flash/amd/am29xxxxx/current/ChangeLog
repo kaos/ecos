@@ -1,3 +1,12 @@
+2002-01-03  Jonathan Larmour  <jlarmour@redhat.com>
+2001-12-20  Koichi Nagashima  <naga@r-lab.co.jp>
+
+	* cdl/flash_amd_am29xxxxx.cdl: Add support for Toshiba TC58FVB800 part.
+	* include/flash_am29xxxxx_parts.inl: Ditto.
+
+	* include/flash_am29xxxxx.inl: Fix FLASH_Reset definition.
+	Check sector erase timer correctly.
+
 2001-10-31  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx_parts.inl: Removed fix me comments -

@@ -11,7 +11,7 @@
     UsePreviousGroup=1
     AppVersion=%VERSION%
     AppVerName=eCos Configuration Tool %VERSION%
-    AppCopyright=Copyright © Red Hat Inc., 2001
+    AppCopyright=Copyright © Red Hat Inc., 2001-2002
     BackColor=$FF0000
     BackColor2=$000000
     BackColorDirection=toptobottom

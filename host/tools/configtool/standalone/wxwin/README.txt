@@ -1,5 +1,5 @@
 eCos Cross-platform Configuration Tool
-Copyright (c) Red Hat Inc., 2001
+Copyright (c) Red Hat Inc., 2001-2002
 ======================================
 
 Version 2

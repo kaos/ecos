@@ -11,7 +11,7 @@
     UsePreviousGroup=1
     AppVersion=2.09
     AppVerName=eCos Configuration Tool 2.09
-    AppCopyright=Copyright © Red Hat Inc., 2001
+    AppCopyright=Copyright © Red Hat Inc., 2001-2002
     BackColor=$FF0000
     BackColor2=$000000
     BackColorDirection=toptobottom
@@ -218,5 +218,5 @@
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe
 ;OutputFolder=v:\setup
-;CopyrightText=Copyright © Red Hat Inc., 2001
+;CopyrightText=Copyright © Red Hat Inc., 2001-2002
 

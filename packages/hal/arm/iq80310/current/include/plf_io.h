@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -195,6 +195,13 @@ externC void cyg_hal_plf_pci_init(void);
         }                                                                     \
     }                                                                         \
     CYG_MACRO_END
+
+// Some of SDRAM is aliased as uncached memory for drivers.
+#define CYGARC_UNCACHED_ADDRESS(_x_) \
+  (((((unsigned long)(_x_)) >> 28)==0xA) ? (((unsigned long)(_x_))|0x40000000) : (_x_))
+#define CYGARC_VIRT_TO_BUS(_x_) \
+  (((((unsigned long)(_x_)) >> 28)==0xA) ? (_x_) : (((unsigned long)(_x_))&~0x40000000))
+
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

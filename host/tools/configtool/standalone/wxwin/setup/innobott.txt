@@ -35,5 +35,5 @@
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe
 ;OutputFolder=v:\setup
-;CopyrightText=Copyright © Red Hat Inc., 2001
+;CopyrightText=Copyright © Red Hat Inc., 2001-2002
 

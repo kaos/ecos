@@ -1,12 +1,9 @@
-// #========================================================================
-// #
-// #    if_shmem.S
-// #
-// #    Declare a chunk of 4Kbyte aligned memory for use by bus-mastering
-// #    PCI ethernet device.
-// #
-// #========================================================================
-// ####COPYRIGHTBEGIN####
+2001-12-20  Koichi Nagashima  <naga@r-lab.co.jp>
+
+	* Cloned from EDK7708 flash package.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
 // The contents of this file are subject to the Red Hat eCos Public License 
@@ -24,36 +21,9 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
-// ####COPYRIGHTEND####
-// #========================================================================
-// ######DESCRIPTIONBEGIN####
-// #
-// # Author(s):     msalter
-// # Contributors:  msalter
-// # Date:          2000-11-03
-// # Purpose:       
-// # Description:   This file defines a chunk of aligned memory for use
-// #                by bus-mastering PCI ethernet device.
-// #
-// #####DESCRIPTIONEND####
-// #
-// #========================================================================
-
-#include <pkgconf/devs_eth_arm_iq80310.h>
-        
-#define MAX_PACKET_SIZE   1536
-#define SIZEOF_DESCRIPTOR 16
-	
-	.bss
-	.p2align(12)
-	.globl cyg_io_iq80310_i82559_shmem
-cyg_io_iq80310_i82559_shmem:
-	.rept ((MAX_PACKET_SIZE + SIZEOF_DESCRIPTOR) * \
-               (CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS + \
-                CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS))
-	.byte 0
-	.endr
+//####COPYRIGHTEND####
+//===========================================================================

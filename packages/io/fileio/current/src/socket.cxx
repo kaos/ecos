@@ -497,14 +497,14 @@ __externC ssize_t recvfrom (int s, void *buf, size_t len, int flags,
         cyg_sock_ops *ops = (cyg_sock_ops *)fp->f_xops;
 
         // Set up a message header...
-	msg.msg_name = (caddr_t)from;
-        msg.msg_namelen = *fromlen;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
-	iov.iov_base = buf;
-	iov.iov_len = len;
-	msg.msg_control = 0;
-	msg.msg_flags = flags;        
+        msg.msg_name = (caddr_t)from;
+        msg.msg_namelen = fromlen ? *fromlen : 0;
+        msg.msg_iov = &iov;
+        msg.msg_iovlen = 1;
+        iov.iov_base = buf;
+        iov.iov_len = len;
+        msg.msg_control = 0;
+        msg.msg_flags = flags;        
 
         LOCK_SOCKET( fp );
 

@@ -1,3 +1,10 @@
+2001-12-29  Bart Veer  <bartv@redhat.com>
+
+	* ecosconfig.cxx, cdl_exec.cxx, cdl_exec.hxx
+	Add new option -n to suppress modifications to the file system,
+	especially ecos.ecc. Suggested by Patrick Doyle
+	(wpd@delcomsys.com)
+
 2001-12-06  Bart Veer  <bartv@redhat.com>
 
 	* cdl_exec.cxx (report_conflicts):

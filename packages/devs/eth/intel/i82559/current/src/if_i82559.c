@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -2700,25 +2700,6 @@ pci_init_find_82559s( void )
                 CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE,
       "PCI window configured does not match PCI memory section base" );
 #endif
-    CYG_ASSERT( CYGMEM_SECTION_pci_window_SIZE ==
-                CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE,
-        "PCI window configured does not match PCI memory section size" );
-
-    if (
-#ifdef CYGARC_UNCACHED_ADDRESS
-         CYGARC_UNCACHED_ADDRESS((CYG_ADDRWORD)CYGMEM_SECTION_pci_window) !=
-#else
-         (CYG_ADDRWORD)CYGMEM_SECTION_pci_window !=
-#endif
-         CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE
-         ||
-         CYGMEM_SECTION_pci_window_SIZE !=
-         CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE ) {
-#ifdef DEBUG
-        db_printf("pci_init_find_82559s(): PCI window misconfigured\n");
-#endif
-        return 0;
-    }
 
     // First initialize the heap in PCI window'd memory
     i82559_heap_size = CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE;

@@ -125,6 +125,9 @@ static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
     cyg_fp_free( fp );
 
     CYG_CANCELLATION_POINT;
+
+    if( ret != 0 )
+        FILEIO_RETURN(ret);
  
     FILEIO_RETURN_VALUE(cnt);
 }

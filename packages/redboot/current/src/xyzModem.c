@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -56,6 +56,7 @@
 #define BSP 0x08
 #define NAK 0x15
 #define CAN 0x18
+#define EOF 0x1A  // ^Z for DOS officionados
 
 // Data & state local to the protocol
 static struct {
@@ -373,6 +374,17 @@ xyzModem_stream_read(char *buf, int size, int *err)
                         CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
                         ZM_DEBUG(zm_dprintf("ACK block %d (%d)\n", xyz.blk, __LINE__));
                         xyz.next_blk = (xyz.next_blk + 1) & 0xFF;
+                        // Data blocks can be padded with ^Z (EOF) characters
+                        // This code tries to detect and remove them
+                        if (xyz.mode != xyzModem_zmodem) {
+                            if ((xyz.bufp[xyz.len-1] == EOF) &&
+                                (xyz.bufp[xyz.len-2] == EOF) &&
+                                (xyz.bufp[xyz.len-3] == EOF)) {
+                                while (xyz.len && (xyz.bufp[xyz.len-1] == EOF)) {
+                                    xyz.len--;
+                                }
+                            }
+                        }
                         break;
                     } else if (xyz.blk == ((xyz.next_blk - 1) & 0xFF)) {
                         // Just re-ACK this so sender will get on with it

@@ -1,3 +1,11 @@
+2002-01-03  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Use generic i82559 driver for iq80310.
+
+2001-12-20  Koichi Nagashima  <naga@r-lab.co.jp>
+
+	* ecos.db: Add CqREEK SH7750 flash driver.
+
 2001-11-22  Jesper Skov  <jskov@redhat.com>
 
 	* pkgconf/rules.mak: Added HOST_CC definition. This really belongs

@@ -1,3 +1,12 @@
+2002-01-03  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82559.c (pci_init_find_82559s): Remove check that
+	assumes driver owns entire PCI window.
+
+	* cdl/intel_i82559_eth_drivers.cdl: Add
+	CYGNUM_DEVS_ETH_INTEL_I82559_MAX_TX_DESCRIPTORS and
+	CYGNUM_DEVS_ETH_INTEL_I82559_MAX_RX_DESCRIPTORS.
+
 2001-11-19  Hugo Tyson  <hmt@redhat.com>
 2001-11-19  Anssi Pulkkinen <Anssi.Pulkkinen@ascom.ch>
 
