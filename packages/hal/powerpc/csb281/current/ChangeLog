@@ -1,3 +1,8 @@
+2003-06-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/csb281.S (HW_init): Initialize SDRAM drivers to 40 Ohm (less
+	current/noise, more reliable).
+
 2003-03-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (_csb281_pci_init): Display PCI bus - disabled.

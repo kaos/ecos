@@ -105,6 +105,7 @@ HW_init:
         .long   0x80000078, _CSB281_EUMBBAR  // EUMBBAR - machine registers
         .long   0x800000A8, 0xFF141110  // PICR1 - RCS0 local, Big Endian, DEC/TB
         .long   0x800000AC, 0x08000000  // PICR2
+        .long   0x80000070, 0x0000001A  // ODCR  - SDRAM driver control
         .long   0
 10:     nop
         mflr    r3              // Pointer to initialization table
