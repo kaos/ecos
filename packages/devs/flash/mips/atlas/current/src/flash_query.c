@@ -57,13 +57,11 @@
 #include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 #define CNT 20*1000*10  // Approx 20ms
 
+int
+flash_query(unsigned char *data)  __attribute__ ((section (".2ram.flash_query")));
 int
 flash_query(unsigned char *data)
 {

@@ -54,10 +54,6 @@
 
 #include <cyg/hal/hal_arch.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 //
 // The difficulty with this operation is that the hardware does not support
@@ -69,6 +65,9 @@
 
 #define MAX_FLASH_BLOCKS 128
 
+int
+flash_unlock_block(volatile unsigned long *block, int block_size, int blocks)
+	__attribute__ ((section (".2ram.flash_unlock_block")));
 int
 flash_unlock_block(volatile unsigned long *block, int block_size, int blocks)
 {
