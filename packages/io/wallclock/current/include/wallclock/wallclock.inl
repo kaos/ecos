@@ -140,8 +140,8 @@ _simple_mkdate(time_t time,
 
 //-----------------------------------------------------------------------------
 // BCD helper macros
-#define TO_BCD(x) (((x/10)<<4) | (x%10))
-#define TO_DEC(x) (((x>>4)*10) + (x&0xf))
+#define TO_BCD(x) ((((x)/10)<<4) | ((x)%10))
+#define TO_DEC(x) ((((x)>>4)*10) + ((x)&0xf))
 
 #endif // ifndef CYGONCE_DEVS_WALLCLOCK_INL
 // EOF wallclock.inl

@@ -1,3 +1,8 @@
+2003-03-25  Michael Checky <Michael_Checky@Thermoking.com>
+
+	* include/wallclock/wallclock.inl: Added parens to TO_BCD() and TO_DEC()
+	macros so macro argument is interpreted correctly.
+
 2001-07-30  Jesper Skov  <jskov@redhat.com>
 
 	* include/wallclock/wallclock.inl (_simple_mktime): Fix assertion
