@@ -1073,7 +1073,7 @@ proc ecosadmin::filter_old_packages { old_packages } {
 
 # ----------------------------------------------------------------------------
 # Process_add_packages. This routine is responsible for installing packages
-# into the eCos repository using the gunzip and tar tools which must be on
+# into the eCos repository using the gzip and tar tools which must be on
 # the path
 #
 
@@ -1095,12 +1095,12 @@ proc ecosadmin::process_add_package { } {
 	if { $ecosadmin::extract_license_arg == 1 } {
 		# extract the license file (if any) from the specified gzipped tar archive
 		file delete $licensefile
-		catch { exec > $ecosadmin::null_device gunzip < $abs_package | tar xf - $licensefile }
+		catch { exec > $ecosadmin::null_device gzip -d < $abs_package | tar xf - $licensefile }
 		return
 	}
 
 	# extract the package data file from the specified gzipped tar archive
-	if { [ catch { exec > $ecosadmin::null_device gunzip < $abs_package | tar xf - $datafile } message ] != 0 } {
+	if { [ catch { exec > $ecosadmin::null_device gzip -d < $abs_package | tar xf - $datafile } message ] != 0 } {
 		fatal_error "extracting $datafile:\n$message"
 	}
 
@@ -1112,7 +1112,7 @@ proc ecosadmin::process_add_package { } {
 	}
 
 	# extract the remaining package contents and generate a list of extracted files
-	if { [ catch { exec gunzip < $abs_package | tar xvf - > $logfile } message ] != 0 } {
+	if { [ catch { exec gzip -d < $abs_package | tar xvf - > $logfile } message ] != 0 } {
 		file delete $logfile
 		fatal_error "extracting files:\n$message"
 	}
@@ -1202,7 +1202,7 @@ proc ecosadmin::accept_license { archivename filename } {
 	}
 
 	# extract the specified license file from the specified gzipped tar archive
-	if { [ catch { exec > $ecosadmin::null_device gunzip < $archivename | tar xf - $filename } message ] != 0 } {
+	if { [ catch { exec > $ecosadmin::null_device gzip -d < $archivename | tar xf - $filename } message ] != 0 } {
 		# no license file
 		return "y"
 	}
