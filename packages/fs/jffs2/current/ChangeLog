@@ -1,3 +1,8 @@
+2004-04-19  Oyvind Harboe <oyvind.harboe@zylin.com>
+	
+	* src/build.c: JFFS2 can now be used as a write-once, read many mode
+	for really small flash disks, e.g. configuration parameters.
+	
 2004-04-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/fs-ecos.c: Merge from public MTD - verify file position
