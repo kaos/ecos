@@ -1035,9 +1035,9 @@ The memory layout of the EB42 and EB55 is as follows:
 <programlisting>
 Physical Address Range     Description
 -----------------------    ----------------------------------
-0x00000000 - 0x00000fff    On-chip SRAM
+0x00000000 - 0x00001fff    On-chip SRAM
 0x01000000 - 0x011fffff    Flash
-0x02000000 - 0x0204ffff    RAM
+0x02000000 - 0x0203ffff    RAM
 0xffe00000 - 0xffffffff    I/O registers
 </programlisting>
 
