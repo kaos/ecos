@@ -252,18 +252,24 @@ __externC off_t lseek( int fd, off_t pos, int whence )
 //==========================================================================
 // ioctl
 
-__externC int ioctl( int fd, CYG_ADDRWORD com, CYG_ADDRWORD data )
+__externC int ioctl( int fd, CYG_ADDRWORD com, ... )
 {
     FILEIO_ENTRY();
 
     int ret;
     cyg_file *fp;
-    
+    va_list ap;
+    CYG_ADDRWORD data;
+
     fp = cyg_fp_get( fd );
 
     if( fp == NULL )
         FILEIO_RETURN(EBADF);
 
+    va_start(ap, com);
+    data = va_arg(ap, CYG_ADDRWORD);
+    va_end(ap);
+    
     LOCK_FILE( fp );
     
     ret = fp->f_ops->fo_ioctl( fp, com, data );

@@ -1,3 +1,8 @@
+2005-01-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/io.cxx (ioctl): Change ioctl to use varargs so that it works
+	on with h8300 who's compiler does not like doing it the other way.
+	
 2005-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/misc.cxx (cyg_fs_root_lookup): New function to find the mount
