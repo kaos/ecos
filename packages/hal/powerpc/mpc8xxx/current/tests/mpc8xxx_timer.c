@@ -83,7 +83,7 @@ main_thread(cyg_addrword_t param)
         if (intr_count != old_intr_count) hits++;
     }
     if (hits == (tries-1)) {
-        CYG_TEST_PASS("mpc8xxx_timer works");
+        CYG_TEST_PASS("mpc8xxx_timer OK");
     } else {
         diag_printf("tries = %d, hits = %d\n", tries, hits);
         CYG_TEST_FAIL("mpc8xxx_timer unreliable");
