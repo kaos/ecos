@@ -238,5 +238,5 @@ profile_on(void *_start, void *_end, int _bucket_size, int resolution)
     hal_enable_profile_timer(resolution);
 
     // Create a TFTP server to provide the data
-    tftp_server_id = tftpd_start(0, &profile_fileops);
+    tftp_server_id = tftpd_start(CYGNUM_PROFILE_TFTP_PORT, &profile_fileops);
 }

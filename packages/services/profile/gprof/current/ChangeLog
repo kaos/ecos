@@ -1,6 +1,9 @@
 2002-11-15  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/profile.c: 
+	* cdl/profile_gprof.cdl: Allow TFTP port number to be configured.
+
+	* src/profile.c: 
 	* include/profile.h: Add proper C++ protections.  Change timer
 	callback function to be __profile_hit() - less polluting.
 

@@ -73,6 +73,16 @@ cdl_package CYGPKG_PROFILE_GPROF {
           is platform dependent."
     }
 
+    cdl_option CYGNUM_PROFILE_TFTP_PORT {
+        display       "Port used by TFTP server for profile data"
+        flavor        data
+        default_value 0
+        description   "
+            This option sets the port number to use for the TFTP server
+            which exports the profiling data.  A value of 0 will set
+            the port to be the IETF standard port of 69/udp."
+    }
+
     cdl_option CYGPKG_PROFILE_TESTS {
         display "Profiling tests"
         flavor  data   
