@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -232,6 +233,13 @@ cf_hwr_change_state(struct cf_slot *slot, int new_state)
             do_delay(1);  // At least 10 us
             slot->state = CF_SLOT_STATE_Reset;
             ipaq_EGPIO( SA1110_EIO_CF_RESET, SA1110_EIO_CF_RESET_DISABLE);
+            do_delay(5); // At least 20 ms
+            // This is necessary for the two slot sleeve and doesn't seem to
+            // hurt on the single slot versions.  Note: only 3.3V is ever used!
+            *(volatile unsigned short *)IPAQ_CF_CTRL = IPAQ_CF_CTRL_V5_DISABLE | 
+                                                       IPAQ_CF_CTRL_V3_ENABLE | 
+                                                       IPAQ_CF_CTRL_APOE_ENABLE | 
+                                                       IPAQ_CF_CTRL_SOE_ENABLE;
             do_delay(5); // At least 20 ms
             // Wait until the card is ready to talk
             for (i = 0;  i < 10;  i++) {
