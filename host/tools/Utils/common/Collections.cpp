@@ -22,6 +22,12 @@
 // ----------------------------------------------------------------------------
 //                                                                          
 //####COPYRIGHTEND####
+
+// include winsock2.h early to eliminate fd_set warning
+#ifdef __CYGWIN__
+#include <winsock2.h>
+#endif
+
 #include "Collections.h"
 
 void String::Format (LPCTSTR  const pszFormat,...)

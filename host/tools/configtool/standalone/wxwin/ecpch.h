@@ -50,6 +50,11 @@
 #pragma warning(disable:4786)
 #endif
 
+// include winsock2.h early to eliminate fd_set warning
+#ifdef __CYGWIN__
+#include <winsock2.h>
+#endif
+
 #include "wx/wx.h"
 #include "wx/splitter.h"
 #include "wx/scrolwin.h"

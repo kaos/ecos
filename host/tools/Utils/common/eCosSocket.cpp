@@ -816,5 +816,3 @@ const String CeCosSocket::GetHostByName(LPCTSTR pszHost)
     return it->second;
   }
 }
-
-  

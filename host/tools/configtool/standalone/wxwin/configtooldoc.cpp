@@ -72,7 +72,7 @@
 #include <shlobj.h>
 #endif
 #include "wx/msw/winundef.h"
-#ifdef CreateDirectory
+#if defined(CreateDirectory) && !defined(__CYGWIN__)
 #undef CreateDirectory
 #endif
 #endif

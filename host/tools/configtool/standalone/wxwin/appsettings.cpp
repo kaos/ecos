@@ -74,7 +74,7 @@
 #ifdef __WXMSW__
 #include <windows.h>
 #include "wx/msw/winundef.h"
-#ifdef GetTempPath
+#if defined(GetTempPath) && !defined(__CYGWIN__)
 #undef GetTempPath
 #endif
 #endif

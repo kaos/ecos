@@ -1,3 +1,12 @@
+2003-01-25  John Dallaway  <jld@ecoscentric.com>
+
+	* common/Collections.cpp: #include <winsock2.h> early for Cygwin
+	builds to eliminate fd_set compiler warning
+
+	* common/eCosSocket.cpp: Add newline at end of file to eliminate
+	compiler warning
+
+
 2003-01-20  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosThreadUtils.cpp:
