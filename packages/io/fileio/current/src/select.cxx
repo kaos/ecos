@@ -162,8 +162,7 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
 
     // Compute end time
     if (tv)
-        ticks = Cyg_Clock::real_time_clock->current_value() +
-            cyg_timeval_to_ticks( tv );
+        ticks = cyg_timeval_to_ticks( tv );
     else ticks = 0;
 
     // Lock the mutex
@@ -226,11 +225,14 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
                     FILEIO_RETURN_VALUE(0);
                 }
 
+                ticks += Cyg_Clock::real_time_clock->current_value();
+                
                 if( !selwait.wait( ticks ) )
                 {
                     // A non-standard wakeup, if the current time is equal to
                     // or past the timeout, return zero. Otherwise return
                     // EINTR, since we have been released.
+
                     if( Cyg_Clock::real_time_clock->current_value() >= ticks )
                     {
                         select_mutex.unlock();
@@ -239,6 +241,8 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
                     }
                     else error = EINTR;
                 }
+
+                ticks -= Cyg_Clock::real_time_clock->current_value();
             }
             else
             {
