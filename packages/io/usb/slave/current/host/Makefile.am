@@ -92,6 +92,7 @@ usbchmod_SOURCES	= usbchmod.c
 ##    the new executable.
 ## 2) usbchmod needs to be suid root
 install-exec-hook:
+	$(mkinstalldirs) $(bindir)
 	$(INSTALL_PROGRAM) usbhost $(bindir)/usbhost_@PACKAGE_VERSION@
 	rm -f $(bindir)/usbhost
 	$(LN_S) $(bindir)/usbhost_@PACKAGE_VERSION@ $(bindir)/usbhost

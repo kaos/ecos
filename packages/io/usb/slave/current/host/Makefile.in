@@ -443,6 +443,7 @@ mostlyclean distclean maintainer-clean
 
 
 @SUPPORTED_TRUE@install-exec-hook:
+@SUPPORTED_TRUE@	$(mkinstalldirs) $(bindir)
 @SUPPORTED_TRUE@	$(INSTALL_PROGRAM) usbhost $(bindir)/usbhost_@PACKAGE_VERSION@
 @SUPPORTED_TRUE@	rm -f $(bindir)/usbhost
 @SUPPORTED_TRUE@	$(LN_S) $(bindir)/usbhost_@PACKAGE_VERSION@ $(bindir)/usbhost
