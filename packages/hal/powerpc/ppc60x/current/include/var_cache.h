@@ -11,7 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -133,7 +133,14 @@
     CYG_MACRO_END
 
 // Synchronize the contents of the cache with memory.
-#define HAL_DCACHE_SYNC()
+#define HAL_DCACHE_SYNC()                                                     \
+    CYG_MACRO_START                                                           \
+    cyg_int32 i;                                                              \
+    cyg_uint32 *__base = (cyg_uint32 *) (0);                  \
+    for (i = 0; i < (HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE); i++, __base += HAL_DCACHE_LINE_SIZE/4){ \
+        asm volatile ("lwz %%r0,0(%0)" : : "r" (__base) : "r0");      \
+    }                                                                         \
+    CYG_MACRO_END
 
 // Query the state of the data cache
 #define HAL_DCACHE_IS_ENABLED(_state_)          \
