@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):           nickg
-// Contributors:        nickg
+// Contributors:        nickg, gthomas
 // Date:                2000-05-25
 // Purpose:             Fileio device filesystem
 // Description:         This file implements a simple filesystem that interfaces
@@ -352,11 +353,6 @@ static int dev_fo_read      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
                                iov->iov_base,
                                &len);
 
-        if( -EAGAIN == err ) // must be in non-blocking mode
-        {
-            uio->uio_resid -= len;
-            return ENOERR;
-        }
         if( err < 0 ) break;
 
         uio->uio_resid -= len;
@@ -389,11 +385,6 @@ static int dev_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
                                 iov->iov_base,
                                 &len);
 
-        if( -EAGAIN == err ) // must be in non-blocking mode
-        {
-            uio->uio_resid -= len;
-            return ENOERR;
-        }
         if( err < 0 ) break;
 
         uio->uio_resid -= len;

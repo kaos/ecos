@@ -1,3 +1,8 @@
+2003-03-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/devfs.cxx: Remove unnecessary checks for -EAGAIN (should
+	no longer happen in lower layers).
+
 2003-03-08  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/pselect.c (pthread_entry1): Allow for infrequent but
