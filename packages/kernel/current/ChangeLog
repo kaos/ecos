@@ -1,3 +1,7 @@
+2002-06-05  Gary Thomas  <gary@chez-thomas.org>
+
+	* include/kapi.h: Fix prototype (to allow builds with net stack).
+
 2002-05-24  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/kernel.cdl: Fix typo.

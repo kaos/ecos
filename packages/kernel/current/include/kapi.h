@@ -357,7 +357,7 @@ void cyg_counter_set_value(
 void cyg_counter_tick(cyg_handle_t counter);
 
 /* Advance counter by multiple ticks                                         */
-void cyg_counter_multi_tick(cyg_handle_t counter, cyg_tick_count_t ticks);
+void cyg_counter_multi_tick(cyg_handle_t counter, cyg_tick_count_t _ticks);
 
 
 #define CYG_RESOLUTION_T_MEMBERS  \
