@@ -105,15 +105,17 @@ route_init()
 //        achieve a generic broadcast.  Sadly it seems that BOOTP servers will
 //        only work this way, thus the hack.
 //
-//        This version enumerates all routes and deletes them - this leaks less
+//        This version enumerates all IPv4 routes and deletes them - this leaks less
 //        store than the previous version.
 
 static int
 rt_reinit_rtdelete( struct radix_node *rn, void *vifp )
 {
     struct rtentry *rt = (struct rtentry *)rn;
-    rtrequest(RTM_DELETE, rt_key(rt), rt->rt_gateway, rt_mask(rt),
-              0, NULL);
+    if (rt->rt_ifa->ifa_addr->sa_family == AF_INET) {
+      rtrequest(RTM_DELETE, rt_key(rt), rt->rt_gateway, rt_mask(rt),
+		0, NULL);
+    }
     return (0);
 }
 

@@ -15,6 +15,7 @@
 // Copyright (C) 2002 Red Hat, Inc. All Rights Reserved.
 //
 // Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2003 Andrew Lunn
 // -------------------------------------------
 //
 //####BSDCOPYRIGHTEND####
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas, hmt
-// Contributors: gthomas, hmt
+// Contributors: gthomas, hmt, andrew.lunn@ascom.ch
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -879,13 +880,13 @@ typedef void pr_fun(char *fmt, ...);
 static void
 _mask(struct sockaddr *sa, char *buf, int _len)
 {
-    char *cp = ((char *)sa) + 4;
+    unsigned char *cp = ((char *)sa) + 4;
     int len = sa->sa_len - 4;
     int tot = 0;
 
     while (len-- > 0) {
         if (tot) *buf++ = '.';
-        buf += diag_sprintf(buf, "%d", *cp++);
+        buf += diag_sprintf(buf, "%u", *cp++);
         tot++;
     }
 
@@ -896,6 +897,28 @@ _mask(struct sockaddr *sa, char *buf, int _len)
     }
 }
 
+#ifdef CYGPKG_NET_INET6
+static void
+_mask6(struct sockaddr *sa, char *buf, int _len)
+{
+  struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *) sa;
+  int addrword = 0;
+  int bits = 0;
+  int index;
+
+  while (addrword < 4) {
+    if (sin6->sin6_addr.s6_addr32[addrword] == 0) {
+      break;
+    }
+    HAL_LSBIT_INDEX(index, sin6->sin6_addr.s6_addr32[addrword++]);
+    bits += (32-index);
+    if (index != 0) {
+      break;
+    }
+  }
+  diag_sprintf(buf, "%d", bits);
+}
+#endif
 static void
 _show_ifp(struct ifnet *ifp, pr_fun *pr)
 {
@@ -903,13 +926,21 @@ _show_ifp(struct ifnet *ifp, pr_fun *pr)
     char name[64], addr[64], netmask[64], broadcast[64];
 
     if_indextoname(ifp->if_index, name, 64);
-    (*pr)("%-8s", name);
     TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
         if (ifa->ifa_addr->sa_family != AF_LINK) {
+	    (*pr)("%-8s", name);
             getnameinfo (ifa->ifa_addr, ifa->ifa_addr->sa_len, addr, sizeof(addr), 0, 0, 0);
-            getnameinfo (ifa->ifa_dstaddr, ifa->ifa_dstaddr->sa_len, broadcast, sizeof(broadcast), 0, 0, 0);
-            _mask(ifa->ifa_netmask, netmask, 64);
-            (*pr)("IP: %s, Broadcast: %s, Netmask: %s\n", addr, broadcast, netmask);
+	    if (ifa->ifa_addr->sa_family == AF_INET) {
+	      getnameinfo (ifa->ifa_dstaddr, ifa->ifa_dstaddr->sa_len, broadcast, sizeof(broadcast), 0, 0, 0);
+	      _mask(ifa->ifa_netmask, netmask, 64);
+	      (*pr)("IP: %s, Broadcast: %s, Netmask: %s\n", addr, broadcast, netmask);
+	    }
+#ifdef CYGPKG_NET_INET6
+	    if (ifa->ifa_addr->sa_family == AF_INET6) {
+	      _mask6(ifa->ifa_netmask, netmask, 64);
+	      (*pr)("IP: %s/%s\n", addr,netmask);
+	    }
+#endif
             (*pr)("        ");
             if ((ifp->if_flags & IFF_UP)) (*pr)("UP ");
             if ((ifp->if_flags & IFF_BROADCAST)) (*pr)("BROADCAST ");
@@ -930,7 +961,7 @@ _dumpentry(struct radix_node *rn, void *vw)
 {
     struct rtentry *rt = (struct rtentry *)rn;
     struct sockaddr *dst, *gate, *netmask, *genmask;
-    char addr[32], *cp;
+    char addr[64], *cp;
     pr_fun *pr = (pr_fun *)vw;
 
     dst = rt_key(rt);
@@ -950,16 +981,27 @@ _dumpentry(struct radix_node *rn, void *vw)
             (*pr)("%-15s ", " ");
         }
         if (netmask != NULL) {
-            _mask(netmask, addr, sizeof(addr));
-            (*pr)("%-15s ", addr);
+	    if (dst->sa_family == AF_INET) {
+                _mask(netmask, addr, sizeof(addr));
+                (*pr)("%-15s ", addr);
+	    } 
+#ifdef CYGPKG_NET_INET6
+	    if (dst->sa_family == AF_INET6) {
+	      _mask6(netmask, addr, sizeof(addr));
+	      (*pr)("/%-14s ", addr);
+	    }
+#endif
         } else {
             (*pr)("%-15s ", " ");
         }
         cp = addr;
         if ((rt->rt_flags & RTF_UP)) *cp++ = 'U';
         if ((rt->rt_flags & RTF_GATEWAY)) *cp++ = 'G';
+	if ((rt->rt_flags & RTF_HOST)) *cp++ = 'H';
+	if ((rt->rt_flags & RTF_REJECT)) *cp++ = '!';
         if ((rt->rt_flags & RTF_STATIC)) *cp++ = 'S';
         if ((rt->rt_flags & RTF_DYNAMIC)) *cp++ = 'D';
+	if ((rt->rt_flags & RTF_MODIFIED)) *cp++ = 'M';
         *cp = '\0';
         (*pr)("%-8s ", addr);  // Flags
         if_indextoname(rt->rt_ifp->if_index, addr, 64);
@@ -995,3 +1037,6 @@ show_network_tables(pr_fun *pr)
 #endif // CYGPKG_NET_DRIVER_FRAMEWORK
 
 // EOF support.c
+
+
+
