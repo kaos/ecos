@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -83,7 +83,7 @@
 // Thread creation and management.
 
 // Create a thread.
-__externC int pthread_create (pthread_t *__thread,
+__externC int pthread_create (pthread_t *__pthread,
                               const pthread_attr_t *__attr,
                               void *(*__start_routine) (void *),
                               void *__arg);
@@ -100,11 +100,11 @@ __externC void pthread_exit (void *__retval) CYGBLD_ATTRIB_NORET;
 // Wait for the thread to terminate. If thread_return is not NULL then
 // the retval from the thread's call to pthread_exit() is stored at
 // *thread_return.
-__externC int pthread_join (pthread_t __thread, void **__thread_return);
+__externC int pthread_join (pthread_t __pthread, void **__thread_return);
 
 // Set the detachstate of the thread to "detached". The thread then does not
 // need to be joined and its resources will be freed when it exits.
-__externC int pthread_detach (pthread_t __thread);
+__externC int pthread_detach (pthread_t __pthread);
 
 //-----------------------------------------------------------------------------
 // Thread attribute handling.
@@ -187,12 +187,12 @@ __externC int pthread_attr_getstacksize (const pthread_attr_t *__attr,
 // Thread scheduling controls
 
 // Set scheduling policy and parameters for the thread
-__externC int pthread_setschedparam (pthread_t __thread,
+__externC int pthread_setschedparam (pthread_t __pthread,
                                      int __policy,
                                      const struct sched_param *__param);
 
 // Get scheduling policy and parameters for the thread
-__externC int pthread_getschedparam (pthread_t __thread,
+__externC int pthread_getschedparam (pthread_t __pthread,
                                      int *__policy,
                                      struct sched_param *__param);
 
@@ -278,7 +278,7 @@ __externC int pthread_setcancelstate (int __state, int *__oldstate);
 __externC int pthread_setcanceltype (int __type, int *__oldtype);
 
 // Cancel the thread.
-__externC int pthread_cancel (pthread_t __thread);
+__externC int pthread_cancel (pthread_t __pthread);
 
 // Test for a pending cancellation for the current thread and terminate
 // the thread if there is one.
@@ -312,7 +312,7 @@ __externC void pthread_cleanup_pop_inner (struct pthread_cleanup_buffer *__buffe
 // eCos-specific function to measure stack usage of the supplied thread
 
 #ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
-__externC size_t pthread_measure_stack_usage (pthread_t __thread);
+__externC size_t pthread_measure_stack_usage (pthread_t __pthread);
 #endif
 
 //-----------------------------------------------------------------------------

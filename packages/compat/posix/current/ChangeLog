@@ -1,3 +1,8 @@
+2003-03-20  Mark Salter  <msalter@redhat.com>
+
+	* include/pthread.h: Avoid conflict with recently introduced gcc
+	__thread keyword.
+
 2003-03-13  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/export.h: Only export signal-related functions if
