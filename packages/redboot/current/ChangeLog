@@ -1,5 +1,8 @@
 2003-10-09  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/flash.c (fis_create): Check whole length of image, not just 
+	effective size, when validating addresses.
+
 	* src/net/net_io.c (net_init): 
 	* include/net/net.h: Rework handling of multiple network devices.  All
 	devices will now be initialized, with either the first or the default

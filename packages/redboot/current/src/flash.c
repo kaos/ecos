@@ -701,7 +701,7 @@ fis_create(int argc, char *argv[])
 #endif
     if (flash_addr_set &&
         ((stat = flash_verify_addr((void *)flash_addr)) ||
-         (stat = flash_verify_addr((void *)(flash_addr+img_size-1))))) {
+         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
         _show_invalid_flash_address(flash_addr, stat);
         return;
     }
