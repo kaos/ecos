@@ -230,6 +230,41 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
     CYG_MACRO_END
 
 //--------------------------------------------------------------------------
+// Machine check manipulation
+#define HAL_DISABLE_MACHINE_CHECK(_old_)                \
+    CYG_MACRO_START                                     \
+    cyg_uint32 tmp1, tmp2;                              \
+    asm volatile (                                      \
+        "mfmsr  %0;"                                    \
+        "mr     %2,%0;"                                 \
+        "li     %1,0;"                                  \
+        "rlwimi %2,%1,0,19,19;"                         \
+        "mtmsr  %2;"                                    \
+        : "=r"(_old_), "=r" (tmp1), "=r" (tmp2));       \
+    CYG_MACRO_END
+
+#define HAL_ENABLE_MACHINE_CHECK()      \
+    CYG_MACRO_START                     \
+    cyg_uint32 tmp1, tmp2;              \
+    asm volatile (                      \
+        "mfmsr  %0;"                    \
+        "lis    %1,%1,0x0001;"          \
+        "rlwimi %0,%1,0,19,19;"         \
+        "mtmsr  %0;"                    \
+        : "=r" (tmp1), "=r" (tmp2));    \
+    CYG_MACRO_END
+
+#define HAL_QUERY_MACHINE_CHECK(_old_)  \
+    CYG_MACRO_START                     \
+    cyg_uint32 tmp;                     \
+    asm volatile (                      \
+        "mfmsr  %0;"                    \
+        "lis    %1,0x0001;"             \
+        "and    %0,%0,%1;"              \
+        : "=&r"(_old_), "=r" (tmp));     \
+    CYG_MACRO_END
+
+//--------------------------------------------------------------------------
 // Vector translation.
 
 #ifndef HAL_TRANSLATE_VECTOR
