@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Andrew Lunn <andrew.lunn@ascom.ch>   
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -81,6 +82,10 @@
 
 #ifdef CYGPKG_NET_DHCP
 #include <dhcp.h>
+#endif
+
+#ifdef CYGPKG_NS_DNS
+#include <pkgconf/ns_dns.h>
 #endif
 
 #ifdef CYGHWR_NET_DRIVER_ETH0
@@ -451,6 +456,26 @@ init_all_network_interfaces(void)
     ipv6_start_routing_thread();
 #endif
 
+#ifdef CYGDAT_NS_DNS_DEFAULT_SERVER
+#define _SERVER string(CYGDAT_NS_DNS_DEFAULT_SERVER)
+
+    {
+      struct in_addr server;
+      
+      inet_aton(_SERVER, &server);
+      cyg_dns_res_init(&server);
+    }
+#endif
+
+#ifdef CYGDAT_NS_DNS_DOMAINNAME_NAME
+#define _NAME string(CYGDAT_NS_DNS_DOMAINNAME_NAME)
+    {
+      char buf[] = _NAME;
+      int len = strlen(_NAME);
+      
+      setdomainname(buf,len);
+    }
+#endif
     // Open the monitor to other threads.
     in_init_all_network_interfaces = 0;
 
