@@ -223,6 +223,7 @@ extern void eth_drv_buffers_init(void);
 extern int  eth_drv_read(char *eth_hdr, char *buf, int len);
 extern void eth_drv_write(char *eth_hdr, char *buf, int len);
 extern int  eth_drv_int_vector(void);
+extern void eth_drv_stop(void);
 extern unsigned char __local_enet_addr[];
 extern struct eth_drv_sc *__local_enet_sc;
 #endif

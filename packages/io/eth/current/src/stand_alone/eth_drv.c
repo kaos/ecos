@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -86,7 +86,7 @@ int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
 #endif
 
 unsigned char      __local_enet_addr[ETHER_ADDR_LEN+2];
-struct eth_drv_sc *__local_enet_sc;
+struct eth_drv_sc *__local_enet_sc = NULL;
 
 #ifdef CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
 //
@@ -232,16 +232,17 @@ eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
     }
 }
 
-#if 0 // Not currently used.  Left in case it's needed in the future
 //
 // This [internal] function will be called to stop activity on an interface.
 //
-static void
-eth_drv_stop(struct eth_drv_sc *sc)
+void
+eth_drv_stop(void)
 {
-    (sc->funs->stop)(sc);
+    struct eth_drv_sc *sc = __local_enet_sc;
+
+    if (sc != NULL)
+        (sc->funs->stop)(sc);
 }
-#endif
 
 //
 // This [internal] function will be called to start activity on an interface.

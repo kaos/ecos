@@ -66,6 +66,10 @@
 #include <pkgconf/hal.h>
 #include <redboot.h>
 
+#ifdef CYGPKG_IO_ETH_DRIVERS
+#include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
+#endif
+
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
@@ -375,6 +379,11 @@ do_exec(int argc, char *argv[])
         diag_printf("Length required for non-standard base address\n");
         return;
     }
+
+#ifdef CYGPKG_IO_ETH_DRIVERS
+    eth_drv_stop();
+#endif
+
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_SYNC();
     HAL_ICACHE_DISABLE();
