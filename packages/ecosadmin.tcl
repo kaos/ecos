@@ -1,15 +1,9 @@
-#!/bin/sh
-# these lines restart using the tcl shell \
-  exec sh -c "if ( echo | tclsh ) 2>/dev/null ; then \
-      exec tclsh \"${0}\" ${1+${*}} ; \
-    elif ( echo | tclsh83 ) 2>/dev/null ; then \
-      exec tclsh83 \"${0}\" ${1+${*}} ; \
-    elif ( echo | cygtclsh80 ) 2>/dev/null ; then \
-      exec cygtclsh80 \"${0}\" ${1+${*}} ; \
-    else \
-      echo Could not find TCL interpreter ; \
-      exit 1 ; \
-    fi"
+#!/bin/bash
+# restart using a Tcl shell \
+    exec sh -c 'for tclshell in tclsh tclsh83 cygtclsh80 ; do \
+            ( echo | $tclshell ) 2> /dev/null && exec $tclshell "`( cygpath -w \"$0\" ) 2> /dev/null || echo $0`" "$@" ; \
+        done ; \
+        echo "ecosadmin.tcl: cannot find Tcl shell" ; exit 1' "$0" "$@"
 
 # {{{  Banner
 
@@ -467,12 +461,9 @@ proc ecosadmin::parse_arguments { argv0 argv } {
 		}
 	} 
 
-	# Under Windows it is desirable to do some checking on any directories that
-	# have been provided. Some cygwin pathnames that a user might supply are
-	# not acceptable to Tcl.
-	if { $ecosadmin::windows_host } {
-		set ecosadmin::component_repository [get_pathname_for_tcl $ecosadmin::component_repository]
-	}
+	# Convert user-specified UNIX-style Cygwin pathnames to Windows Tcl-style as necessary
+	set ecosadmin::component_repository [get_pathname_for_tcl $ecosadmin::component_repository]
+	set ecosadmin::add_package [get_pathname_for_tcl $ecosadmin::add_package]
 }
 
 #

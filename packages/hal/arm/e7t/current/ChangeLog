@@ -1,3 +1,8 @@
+2003-01-29  John Dallaway  <jld@ecoscentric.com>
+
+	* src/flash_cksum.tcl: Accommodate latest Cygwin Tcl shell
+	(tclsh83.exe)
+
 2002-10-19  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/hal_platform_setup.h (PLATFORM_SETUP1): Only define if

@@ -1,3 +1,8 @@
+2003-01-29  John Dallaway  <jld@ecoscentric.com>
+
+	* support/file2c.tcl: Accommodate latest Cygwin Tcl shell
+	(tclsh83.exe)
+
 2002-04-15  Bart Veer  <bartv@redhat.com>
 
 	* support/file2c.tcl:

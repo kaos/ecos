@@ -1,3 +1,11 @@
+2003-01-29  John Dallaway  <jld@ecoscentric.com>
+
+	* ecosadmin.tcl: Accommodate UNIX-style paths under Cygwin when
+	adding packages.
+
+	* pkgconf/fixhtml.tcl: Accommodate latest Cygwin Tcl shell
+	(tclsh83.exe)
+
 2003-01-24  Knud Woehler <knud.woehler@microplex.de>
 2003-01-24  Mark Salter  <msalter@redhat.com>
 

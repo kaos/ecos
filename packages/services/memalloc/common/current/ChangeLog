@@ -1,3 +1,8 @@
+2003-01-29  John Dallaway  <jld@ecoscentric.com>
+
+	* src/heapgen.tcl: Accommodate latest Cygwin Tcl shell
+	(tclsh83.exe)
+
 2002-05-10  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/heaptest.c (test_pat): Make failure messages clearer.

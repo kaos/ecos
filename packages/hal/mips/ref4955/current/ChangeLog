@@ -1,3 +1,8 @@
+2003-01-29  John Dallaway  <jld@ecoscentric.com>
+
+	* misc/slow_cat.tcl, misc/swap4.tcl:
+	Accommodate latest Cygwin Tcl shell (tclsh83.exe)
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 

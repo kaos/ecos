@@ -1,3 +1,8 @@
+2003-01-29  John Dallaway  <jld@ecoscentric.com>
+
+	* src/flash_cksum.tcl: Accommodate latest Cygwin Tcl shell
+	(tclsh83.exe)
+
 2002-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_aeb.cdl: Don't run cache tests.

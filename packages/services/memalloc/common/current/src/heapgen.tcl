@@ -1,16 +1,9 @@
-#!/bin/sh
-# these lines restart using the tcl shell \
-    exec sh -c "if ( echo | cygtclsh80 ) 2>/dev/null ; then \
-      exec cygtclsh80 \"${0}\" \"\`echo \\\"\\\`cygpath -w \\\"${1}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" \"\`echo \\\"\\\`cygpath -w \\\"${2}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" ; \
-    elif ( echo | tclsh ) 2>/dev/null ; then \
-      exec tclsh \"${0}\" ${1+${*}} ; \
-    else \
-      echo Could not find TCL interpreter ; \
-      exit 1 ; \
-    fi"
-
-#FIXMEFIXMEFIXME the above should use cygpath -ws, not cygpath -w but we
-#can't rely on everyone having up-to-date cygwin tools (1.1.5+)
+#!/bin/bash
+# restart using a Tcl shell \
+    exec sh -c 'for tclshell in tclsh tclsh83 cygtclsh80 ; do \
+            ( echo | $tclshell ) 2> /dev/null && exec $tclshell "`( cygpath -w \"$0\" ) 2> /dev/null || echo $0`" "$@" ; \
+        done ; \
+        echo "heapgen.tcl: cannot find Tcl shell" ; exit 1' "$0" "$@"
 
 #===============================================================================
 #
