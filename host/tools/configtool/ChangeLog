@@ -1,5 +1,8 @@
 2003-03-28  John Dallaway  <jld@ecoscentric.com>
 
+	* standalone/common/ecosconfig.cxx, standalone/wxwin/symbols.h:
+	Use a generic 2.net version string by default.
+
 	* standalone/wxwin/packagesdlg.cpp: Fix population of package lists
 	to ensure the last package is seen. [ Bugzilla 87520 ]
 
