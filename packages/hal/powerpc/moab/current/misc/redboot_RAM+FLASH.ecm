@@ -16,9 +16,16 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_POWERPC_MOAB current ;
     package -hardware CYGPKG_DEVS_FLASH_POWERPC_MOAB current ;
     package -hardware CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX current ;
+    package -hardware CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_MOAB current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_PPC405 current ;
+    package -hardware CYGPKG_DEVS_ETH_NS_DP83816 current ;
     package -hardware CYGPKG_DEVS_ETH_PHY current ;
+    package -hardware CYGPKG_IO_PCI current ;
+    package -hardware CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 current ;
+    package -hardware CYGPKG_DEVICES_WALLCLOCK_POWERPC_MOAB current ;
+    package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
+    package -hardware CYGPKG_IO_SERIAL_POWERPC_PPC405 current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -64,22 +71,35 @@ cdl_option CYGSEM_HAL_POWERPC_RESET_USES_JUMP {
 
 cdl_option CYGHWR_HAL_POWERPC_ENABLE_MMU {
     user_value 0
+    inferred_value 0
+};
+
+cdl_component CYGNUM_HAL_EEPROM_SIZE {
+    inferred_value 2048
 };
 
 cdl_component CYGBLD_BUILD_REDBOOT {
     user_value 1
 };
 
-cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
-    inferred_value 0
+cdl_option CYGBLD_REDBOOT_MAX_MEM_SEGMENTS {
+    inferred_value 2
+};
+
+cdl_option CYGSEM_REDBOOT_PLF_ESA_VALIDATE {
+    inferred_value 1
+};
+
+cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
+    user_value 0x00080000
 };
 
 cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_SIZE {
-    inferred_value 1024
+    inferred_value 2048
 };
 
 cdl_option CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA {
-    inferred_value FLASH
+    inferred_value EEPROM
 };
 
 cdl_option CYGNUM_REDBOOT_FLASH_STRING_SIZE {
@@ -120,6 +140,14 @@ cdl_option CYGBLD_ISO_DNS_HEADER {
 
 cdl_option CYGPKG_NS_DNS_BUILD {
     inferred_value 0
+};
+
+cdl_component CYGSEM_DEVS_FLASH_POWERPC_MOAB_BOOT {
+    user_value 1
+};
+
+cdl_component CYGSEM_DEVS_FLASH_POWERPC_MOAB_MAIN {
+    user_value 0
 };
 
 
