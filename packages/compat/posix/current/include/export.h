@@ -97,6 +97,7 @@ __externC void cyg_posix_function_finish();
 // manipulate the current threads signal mask. they are currently only
 // used in the implementation of cyg_pselect() in the FILEIO package.
 
+#ifdef CYGPKG_POSIX_SIGNALS
 __externC void cyg_pthread_sigmask_set (const sigset_t *set, sigset_t *oset);
 __externC cyg_bool cyg_posix_sigpending(void);
 __externC void cyg_posix_deliver_signals(const sigset_t *mask);
@@ -106,6 +107,7 @@ __externC void cyg_posix_deliver_signals(const sigset_t *mask);
 #define CYG_POSIX_SIGPENDING() cyg_posix_sigpending()
 
 #define CYG_POSIX_DELIVER_SIGNALS cyg_posix_deliver_signals
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_POSIX_EXPORT_H
