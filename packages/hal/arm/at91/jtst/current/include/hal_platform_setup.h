@@ -58,21 +58,28 @@
 
         .macro __pio_clkgen_init
         ldr     r0,=AT91_PIO
-        ldr     r1,=BIT21|BIT22|BIT23|BIT24|BIT25|BIT26|BIT27|BIT3
+        ldr     r1,=BIT21|BIT22|BIT23|BIT24|BIT25|BIT26|BIT27
         str     r1,[r0,#AT91_PIO_SODR] // set this bit must be always 1, 
                                  // otherwise resets
-        ldr     r1,=BIT21|BIT22|BIT23|BIT24|BIT25|BIT26|BIT27|BIT3
+        ldr     r1,=BIT21|BIT22|BIT23|BIT24|BIT25|BIT26|BIT27
         str     r1,[r0,#AT91_PIO_OER]  // set to output
         str     r1,[r0,#AT91_PIO_PER]  // software control
         ldr     r1,=BIT21|BIT22|BIT23|BIT24|BIT25|BIT26|BIT27
         str     r1,[r0,#AT91_PIO_CODR] // leds all on
-        ldr     r1,=BIT30
-        ldr     r1,[r0,#AT91_PIO_PDR]  // usb interrupt line in
-  // clockgen 1 is connected to timer ext clk 2
+        ldr     r1,=BIT30|BIT3
+        ldr     r1,[r0,#AT91_PIO_PDR]  // (BIT30) usb interrupt line in
+                                       // (BIT3) active watchdog reset line
         ldr     r0,=AT91_CLKGEN
         ldr     r1,=32
         str 	r1,[r0,#AT91_CLKGEN_CPTMAX0]
         str     r1,[r0,#AT91_CLKGEN_CPTMAX1]
+	ldr     r1,=128
+	str     r1,[r0,#AT91_CLKGEN_CPTMAX2] //watch dog divider1
+	ldr     r1,=1024
+	str     r1,[r0,#AT91_CLKGEN_CPTMAX3] //watch dog divider2
+	ldr     r1,=2046
+	str     r1,[r0,#AT91_CLKGEN_CPTMAX4] //watch dog divider3 (max accepted value)
+
         ldr     r1,=1
         str     r1,[r0,#AT91_CLKGEN_CLKENABLE]
 

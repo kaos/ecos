@@ -1,3 +1,8 @@
+2004-10-4  Andrea Michelotti  <amichelotti@atmel.com>
+
+	* include/hal_platform_setup.h: added generation of three
+	different clocks for watchdog.
+	
 2004-06-6  Andrea Michelotti  <amichelotti@atmel.com>
 
 	* cdl/hal_arm_at91_jtst.cdl: 
