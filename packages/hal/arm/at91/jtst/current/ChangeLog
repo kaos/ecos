@@ -1,3 +1,8 @@
+2004-10-6  Andrea Michelotti  <amichelotti@atmel.com>
+
+	* include/plf_io.h: removed SPI definitions. They are defined in
+	the variant HAL.
+
 2004-10-4  Andrea Michelotti  <amichelotti@atmel.com>
 
 	* include/hal_platform_setup.h: added generation of three

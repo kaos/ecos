@@ -98,52 +98,6 @@
 #define AT91_PDC_PTCR_RXDIS  0x2
 
 
-// SPI interface
-#define AT91_SPI_CR     0x0  // control register
-#define AT91_SPI_CR_DIS 0x2  // disable SP
-#define AT91_SPI_CR_EN  0x1  // enable SPI
-#define AT91_SPI_CR_RST 0x80 // SW reset SPI
-#define AT91_SPI_MR     0x4  // mode register
-#define AT91_SPI_RDR    0x8  // receive data register
-#define AT91_SPI_TDR    0x8  // trasmit data register
-#define AT91_SPI_SR     0x10 // status register
-#define AT91_SPI_IER    0x14 // interrupt register
-#define AT91_SPI_IDR    0x18 // interrupt disable register
-#define AT91_SPI_IMR    0x1C // interrupt mask register
-#define AT91_SPI_CSR0   0x30 // chip select 0
-#define AT91_SPI_CSR1   0x34 // chip select 1
-#define AT91_SPI_CSR2   0x38 // chip select 2
-#define AT91_SPI_CSR3   0x3C // chip select 3
-// interrupts mask
-#define AT91_SPI_INT_RDRF   0x1
-#define AT91_SPI_INT_TDRE   0x2
-#define AT91_SPI_INT_MODF   0x4
-#define AT91_SPI_INT_OVRE   0x8
-#define AT91_SPI_INT_ENDRX  0x10
-#define AT91_SPI_INT_ENDTX  0x20
-#define AT91_SPI_INT_RXBUFF 0x40
-#define AT91_SPI_INT_TXBUFF 0x80
-
-//
-#define AT91_SPI_BIT_WIDTH_8  0x0
-#define AT91_SPI_BIT_WIDTH_9  0x1
-#define AT91_SPI_BIT_WIDTH_10 0x2
-#define AT91_SPI_BIT_WIDTH_11 0x3
-#define AT91_SPI_BIT_WIDTH_12 0x4
-#define AT91_SPI_BIT_WIDTH_13 0x5
-#define AT91_SPI_BIT_WIDTH_14 0x6
-#define AT91_SPI_BIT_WIDTH_15 0x7
-#define AT91_SPI_BIT_WIDTH_16 0x8
-
-#define AT91_SPI_DATA_CHANGE_HILO 0
-#define AT91_SPI_DATA_CHANGE_LOHI 1
-
-
-#define AT91_SPI_CLK_PHASE_HI  0
-#define AT91_SPI_CLK_PHASE_LOW 1
-
-
-
 // CLOCK divider interface
 
 #define AT91_CLKGEN_CPTMAX0    0x0 //counter 0
