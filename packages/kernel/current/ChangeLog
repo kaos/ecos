@@ -1,3 +1,11 @@
+2003-10-13  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/common/clock.cxx (Cyg_Counter::tick): Changed code to deal
+	with manipulation of unsorted lists (see ChangeLogs passim). There
+	are several corner cases where the current code does not
+	work. Replaced with a more straightforward, but slightly more
+	expensive, implementation.
+
 2003-09-22  Reinhard Jessich  <Reinhard.Jessich@frequentis.com>
 
 	* src/common/clock.cxx: Removed	label/goto

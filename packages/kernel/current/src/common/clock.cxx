@@ -216,72 +216,58 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
         // possible for the function of one alarm to add or remove
         // other alarms to/from this list. Having the list shift under
         // our feet in this way could be disasterous. We solve this by
-        // detecting when the list has changed and restarting the scan
-        // from the beginning.
-        
-        Cyg_DNode_T<Cyg_Alarm> *node = alarm_list_ptr->get_head();
+        // restarting the scan from the beginning whenever we call an
+        // alarm function.
 
-        while( node != NULL )
+        cyg_bool rescan = true;
+
+        while( rescan )
         {
-            Cyg_Alarm *alarm = CYG_CLASSFROMBASE( Cyg_Alarm, Cyg_DNode, node );
-            Cyg_DNode_T<Cyg_Alarm> *next = alarm->get_next();
+            Cyg_DNode_T<Cyg_Alarm> *node = alarm_list_ptr->get_head();
 
-            CYG_ASSERTCLASS(alarm, "Bad alarm in counter list" );
+            rescan = false;
             
-            if( alarm->trigger <= counter )
+            while( node != NULL )
             {
-                Cyg_DNode *next_next, *next_prev;
-                Cyg_Alarm *head;
-                
-                alarm_list_ptr->remove(alarm);
+                Cyg_Alarm *alarm = CYG_CLASSFROMBASE( Cyg_Alarm, Cyg_DNode, node );
+                Cyg_DNode_T<Cyg_Alarm> *next = alarm->get_next();
 
-                // Save some details of the list state so we can
-                // detect if it has changed.
-                next_next = next->get_next();
-                next_prev = next->get_prev();
-                head = alarm_list_ptr->get_head();
-                
-                if( alarm->interval != 0 )
+                CYG_ASSERTCLASS(alarm, "Bad alarm in counter list" );
+
+                if( alarm->trigger <= counter )
                 {
-                    // The alarm has a retrigger interval.
-                    // Reset the trigger time and requeue
-                    // the alarm.
-                    alarm->trigger += alarm->interval;
-                    add_alarm( alarm );
-                }
-                else alarm->enabled = false;
+                    alarm_list_ptr->remove(alarm);
 
-                CYG_INSTRUMENT_ALARM( CALL, this, alarm );
-                
-                // Call alarm function
-                alarm->alarm(alarm, alarm->data);
+                    if( alarm->interval != 0 )
+                    {
+                        // The alarm has a retrigger interval.
+                        // Reset the trigger time and requeue
+                        // the alarm.
+                        alarm->trigger += alarm->interval;
+                        add_alarm( alarm );
+                    }
+                    else alarm->enabled = false;
 
-                // If that alarm function has added or removed an
-                // alarm on this list that might affect this scan,
-                // then start again from beginning. The main test here
-                // is whether the link fields of the next node have
-                // changed, implying that it may have been moved. The
-                // test against the list head detects the case where
-                // the next node was the only node in the list, when
-                // moving is would have left the links unchanged.
+                    CYG_INSTRUMENT_ALARM( CALL, this, alarm );
                 
-                if( next_next != next->get_next()           ||
-                    next_prev != next->get_prev()           ||
-                    head      != alarm_list_ptr->get_head() )
-                {
-                    node = alarm_list_ptr->get_head();
-                    continue;
+                    // Call alarm function
+                    alarm->alarm(alarm, alarm->data);
+
+                    rescan = true;
+
+                    break;
                 }
+
+                // If the next node is the head of the list, then we have
+                // looped all the way around. The node == next test
+                // catches the case where we only had one element to start
+                // with.
+                if( next == alarm_list_ptr->get_head() || node == next )
+                    node = NULL;
+                else
+                    node = next;
             }
 
-            // If the next node is the head of the list, then we have
-            // looped all the way around. The node == next test
-            // catches the case where we only had one element to start
-            // with.
-            if( next == alarm_list_ptr->get_head() || node == next )
-                node = NULL;
-            else
-                node = next;
         }
         
 #endif        
