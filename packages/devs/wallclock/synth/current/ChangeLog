@@ -1,3 +1,9 @@
+2003-10-06  Savin Zlobec <savin@elatec.si>
+
+    * cdl/wallclock_synth.cdl:
+    * src/wallclock_synth.cxx:
+    Implemented set_get mode.
+
 2003-10-02  Savin Zlobec <savin@elatec.si> 
 
     * cdl/wallclock_synth.cdl:

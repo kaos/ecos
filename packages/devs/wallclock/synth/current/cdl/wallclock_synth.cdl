@@ -57,15 +57,27 @@ cdl_package CYGPKG_DEVS_WALLCLOCK_SYNTH {
     hardware
     compile       wallclock_synth.cxx
     implements    CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS
+    implements    CYGINT_WALLCLOCK_SET_GET_MODE_SUPPORTED
     active_if     CYGIMP_WALLCLOCK_HARDWARE
 
     cdl_option CYGIMP_WALLCLOCK_HARDWARE {
         parent    CYGPKG_IO_WALLCLOCK_IMPLEMENTATION
         display       "Hardware wallclock"
-        default_value 1
+        default_value 0 
         implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
     }
 
+    cdl_option CYGDAT_DEVS_WALLCLOCK_SYNTH_FILENAME {
+        display       "Name of file wich holds system-eCos wallclock offset"
+        flavor        data
+        default_value { "\"synth.wallclock\"" }
+        active_if     CYGSEM_WALLCLOCK_SET_GET_MODE
+        description   "
+            This is the name of the file which holds the difference
+            between system and eCos wallclock. It is read at initialization 
+            and written to each time the wallclock it set."
+    }
+    
     cdl_component CYGPKG_DEVS_WALLCLOCK_SYNTH_OPTIONS {
         display "Synthetic wallclock build options"
         flavor  none

@@ -50,6 +50,7 @@
 //==========================================================================
 
 #include <pkgconf/wallclock.h>           
+#include <pkgconf/devs_wallclock_synth.h>
 
 #include <cyg/hal/hal_io.h>               
 #include <cyg/hal/hal_arch.h>
@@ -60,25 +61,53 @@
 #include <cyg/io/wallclock.hxx>          
 
 //-----------------------------------------------------------------------------
+
+#ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
+// Difference between system and eCos wallclock
+static cyg_uint32 epoch_ticks;
+static cyg_uint32 epoch_time_stamp;
+#endif
+
+//-----------------------------------------------------------------------------
 // Functions required for the hardware-driver API.
 
 // Initializes the clock
 void
 Cyg_WallClock::init_hw_seconds(void)
 {
-    // Nothing here
+#ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
+    int fd;
+
+    // Read difference between system and eCos wallclock from file
+    fd = cyg_hal_sys_open(CYGDAT_DEVS_WALLCLOCK_SYNTH_FILENAME, 
+        CYG_HAL_SYS_O_RDONLY, 0);
+   
+    if (fd > 0)
+    {
+        cyg_hal_sys_read(fd, &epoch_time_stamp, sizeof(epoch_time_stamp));
+        cyg_hal_sys_read(fd, &epoch_ticks, sizeof(epoch_ticks));
+        cyg_hal_sys_close(fd);
+    }
+#endif
 }
 
 // Returns the number of seconds elapsed since 1970-01-01 00:00:00
 cyg_uint32 
 Cyg_WallClock::get_hw_seconds(void)
 {
+    cyg_uint32 res;
     struct cyg_hal_sys_timeval  ctv;
     struct cyg_hal_sys_timezone ctz;
     
     cyg_hal_sys_gettimeofday(&ctv, &ctz);
 
-    return ctv.hal_tv_sec;    
+#ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
+    res = epoch_time_stamp + ctv.hal_tv_sec - epoch_ticks;    
+#else
+    res = ctv.hal_tv_sec;    
+#endif
+
+    return res;    
 }
 
 #ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
@@ -87,7 +116,28 @@ Cyg_WallClock::get_hw_seconds(void)
 void
 Cyg_WallClock::set_hw_seconds(cyg_uint32 secs)
 {
-    // Not supported
+    int fd;
+    struct cyg_hal_sys_timeval  ctv;
+    struct cyg_hal_sys_timezone ctz;
+
+    // System wallclock time    
+    cyg_hal_sys_gettimeofday(&ctv, &ctz);
+    
+    // Set the difference between the system and eCos wallclock
+    epoch_time_stamp = secs;
+    epoch_ticks      = ctv.hal_tv_sec;
+   
+    // Write difference to file
+    fd = cyg_hal_sys_open(CYGDAT_DEVS_WALLCLOCK_SYNTH_FILENAME, 
+        CYG_HAL_SYS_O_WRONLY | CYG_HAL_SYS_O_CREAT,
+        CYG_HAL_SYS_S_IRWXU | CYG_HAL_SYS_S_IRWXG | CYG_HAL_SYS_S_IRWXO);
+
+    if (fd > 0)
+    {
+        cyg_hal_sys_write(fd, &epoch_time_stamp, sizeof(epoch_time_stamp));
+        cyg_hal_sys_write(fd, &epoch_ticks, sizeof(epoch_ticks));
+        cyg_hal_sys_close(fd);
+    }
 }
 
 #endif // CYGSEM_WALLCLOCK_SET_GET_MODE
