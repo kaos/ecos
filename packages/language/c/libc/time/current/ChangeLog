@@ -1,3 +1,13 @@
+2003-04-24  Robert Cragie  <rcc@jennic.com>
+
+	* include/time.inl:
+	* include/timeutil.h:
+	* src/timeutil.cxx:
+	Change return type of cyg_libc_time_itoa() to cyg_ucount8.
+	* src/strftime.cxx:
+	Change return type of do_format() to cyg_count8.
+	These benign changes get around a compiler bug using or32-elf-gcc
+
 2003-03-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/strptime.cxx: Initialize time structure to a well known, valid,

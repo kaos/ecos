@@ -264,7 +264,7 @@ __asctime_r( const struct tm *__timeptr, char *__buf );
 CYGPRI_LIBC_TIME_ASCTIME_R_INLINE char *
 __asctime_r( const struct tm *__timeptr, char *__buf )
 {
-    cyg_uint8 __i;
+    cyg_ucount8 __i;
     
     // These initializers are [4] since C++ dictates you _must_ leave space
     // for the trailing '\0', even though ISO C says you don't need to!

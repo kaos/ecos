@@ -98,7 +98,7 @@ cyg_libc_time_normalize_structtm( struct tm *__timeptr );
 // The number of chars written to s is returned
 //
 
-extern cyg_uint8
+extern cyg_ucount8
 cyg_libc_time_itoa( cyg_uint8 *__s, cyg_int32 __num, cyg_uint8 __width,
                     cyg_bool __padzero );
 

@@ -77,7 +77,7 @@
 // in buf. The number of bytes written is returned, or -1 if there was no
 // space
 
-static cyg_int8
+static cyg_count8
 do_format(cyg_uint8 fmtchar, cyg_ucount32 sizeleft, char *buf,
           const struct tm *timeptr)
 {
@@ -303,7 +303,7 @@ strftime( char *s, size_t maxsize, const char *format,
     --maxsize;
 
     cyg_ucount32 i, spos;
-    cyg_int8 dof_ret;
+    cyg_count8 dof_ret;
     
     for (i=0, spos=0; (spos<maxsize) && (format[i] != '\0'); ++i) {
         if (format[i] == '%') {

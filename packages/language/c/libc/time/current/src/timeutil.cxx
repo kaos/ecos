@@ -229,7 +229,7 @@ cyg_libc_time_normalize_structtm( struct tm *timeptr )
 // but there wouldn't be much in it with only 11 chars max to convert :-/.
 // Actually FIXME: what if someone passes a width >11
 
-externC cyg_uint8
+externC cyg_ucount8
 cyg_libc_time_itoa( cyg_uint8 *s, cyg_int32 num, cyg_uint8 width,
                     cyg_bool padzero )
 {
@@ -252,7 +252,7 @@ cyg_libc_time_itoa( cyg_uint8 *s, cyg_int32 num, cyg_uint8 width,
     }
     
     // return value
-    cyg_uint8 ret=0;
+    cyg_ucount8 ret=0;
     
     // Pre-fiddle for negative numbers
     if ((num < 0) && (width > 0)) {
