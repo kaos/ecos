@@ -69,7 +69,7 @@
 //--------------------------------------------------------------------------
 
 void
-cyg_hal_plf_sci_init_channel(const channel_data_t* chan)
+cyg_hal_plf_sci_init_channel(channel_data_t* chan)
 {
     cyg_uint8 tmp;
     cyg_uint8* base = chan->base;

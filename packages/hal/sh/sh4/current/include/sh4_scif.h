@@ -91,7 +91,7 @@ typedef struct {
 
 #if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 // This one should only be used by old-stub compatibility code!
-externC void cyg_hal_plf_scif_init_channel(const channel_data_t* chan);
+externC void cyg_hal_plf_scif_init_channel(channel_data_t* chan);
 #warning "You should not be using anything but vv diag"
 #endif
 

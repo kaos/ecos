@@ -177,7 +177,7 @@ typedef struct {
     int isr_vector;
 } channel_data_t;
 
-static const channel_data_t channels[2] = {
+static channel_data_t channels[2] = {
     { (cyg_uint8*)ASB2303_SER1_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_1_RX },
     { (cyg_uint8*)ASB2303_SER0_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_0_RX },
 };

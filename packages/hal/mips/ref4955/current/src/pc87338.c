@@ -226,7 +226,7 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-static const channel_data_t channels[2] = {
+static channel_data_t channels[2] = {
     { (cyg_uint8*)CYG_DEVICE_SERIAL_SCC1, 1000, CYGNUM_HAL_INTERRUPT_DEBUG_UART},
     { (cyg_uint8*)CYG_DEVICE_SERIAL_SCC2, 1000, CYGNUM_HAL_INTERRUPT_USER_UART}
 };

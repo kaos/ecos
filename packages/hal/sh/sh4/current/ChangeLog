@@ -1,3 +1,10 @@
+2002-08-06  Gary Thomas  <gary@chez-thomas.org>
+2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
+
+	* src/sh4_scif.c: 
+	* include/sh4_scif.h: I/O channel data can't be constant - contains
+	timeout information which can be changed.
+
 2002-07-19  Larice Robert  <larice@vidisys.de>
 
 	* include/var_intr.h (CYGNUM_HAL_INTERRUPT_IRL0..3): Fixed

@@ -76,7 +76,7 @@ typedef struct {
     int isr_vector;
 } channel_data_t;
 
-static const channel_data_t channels[1] = {
+static channel_data_t channels[1] = {
     { (cyg_uint8*)0, 1000, 0}
 };
 

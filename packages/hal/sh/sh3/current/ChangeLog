@@ -1,3 +1,12 @@
+2002-08-06  Gary Thomas  <gary@chez-thomas.org>
+2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
+
+	* src/sh3_scif.c: 
+	* src/sh3_sci.c: 
+	* include/sh3_scif.h: 
+	* include/sh3_sci.h: I/O channel data can't be constant - contains
+	timeout information which can be changed.
+
 2002-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh3.cdl: Select variant 7709A by default.

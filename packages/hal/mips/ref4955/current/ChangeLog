@@ -1,3 +1,9 @@
+2002-08-06  Gary Thomas  <gary@chez-thomas.org>
+2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
+
+	* src/pc87338.c: I/O channel data can't be constant - contains
+	timeout information which can be changed.
+
 2002-05-13  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_mips_tx49_ref4955.cdl: Removed implemntation of

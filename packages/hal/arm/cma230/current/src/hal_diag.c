@@ -194,7 +194,7 @@ typedef struct {
 
 //-----------------------------------------------------------------------------
 static void
-init_serial_channel(const channel_data_t* __ch_data)
+init_serial_channel(channel_data_t* __ch_data)
 {
     cyg_uint8* base = __ch_data->base;
     cyg_uint8 lcr;
@@ -262,7 +262,7 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
     CYGARC_HAL_RESTORE_GP();
 }
 
-static const channel_data_t channels[2] = {
+static channel_data_t channels[2] = {
     { (cyg_uint8*)CMA101_DUARTA, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_A},
     { (cyg_uint8*)CMA101_DUARTB, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_B}
 };

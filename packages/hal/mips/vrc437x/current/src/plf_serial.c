@@ -95,7 +95,7 @@ typedef struct {
     int isr_vector;
 } channel_data_t;
 
-static const channel_data_t channels[2] = {
+static channel_data_t channels[2] = {
     { DUART_A, 1000, CYGNUM_HAL_INTERRUPT_DUART},
     { DUART_B, 1000, CYGNUM_HAL_INTERRUPT_DUART}
 };
