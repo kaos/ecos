@@ -365,6 +365,25 @@ cdl_package CYGPKG_HAL_I386_PC {
             This option lists the target's requirements for a valid Redboot
             configuration."
     
+        
+        cdl_component CYGPKG_REDBOOT_I386_LINUX_EXEC {
+            display        "Provide the exec command in RedBoot"
+            flavor         none
+            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
+            description    "
+                This option contains requirements for booting linux
+                from RedBoot. The component is enabled/disabled from
+                RedBoots CDL."
+            compile -library=libextras.a redboot_linux_exec.c 
+
+            cdl_option CYGHWR_REDBOOT_I386_TRAMPOLINE_ADDRESS {
+                display       "Provide the trampoline address into Linux"
+                flavor        data
+                default_value 0x7C000
+                requires      CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT
+            }
+	}
+
         cdl_component CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build RedBoot binary image"
             no_define

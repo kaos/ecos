@@ -1,3 +1,9 @@
+2005-01-22  Ian Campbell  <icampbell@arcom.com>
+
+	* cdl/hal_i386.cdl, 
+	* src/redboot_linux_exec.c: Add a new RedBoot command "exec" which 
+	executes a Linux zImage or bzImage already loaded into RAM.
+	
 2004-08-14  David Brennan <eCos@brennanhome.com>
 
 	 * cdl/hal_i386_pc.cdl: Added capability to build redboot with GRUB
