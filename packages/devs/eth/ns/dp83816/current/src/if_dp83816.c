@@ -153,8 +153,8 @@ dp83816_reset(dp83816_priv_data_t *dp)
     DP_OUT(dp->base, DP_RFCR, _RFCR_RFEN | _RFCR_AAB | _RFCR_APM);
     // Set up interrupts
     DP_IN(dp->base, DP_ISR, stat);  // Clear any current interrupts
-    DP_OUT(dp->base, DP_IMR, 0xFFFFFFFF);  // Enable them all!
-    DP_OUT(dp->base, DP_IER, 1);
+    DP_OUT(dp->base, DP_IMR, 0x00000000);  // Disable them all!
+    DP_OUT(dp->base, DP_IER, 0);
     return true;
 }
 
@@ -222,6 +222,8 @@ dp83816_stop(struct eth_drv_sc *sc)
 {
     dp83816_priv_data_t *dp = (dp83816_priv_data_t *)sc->driver_private;
 
+    DP_OUT(dp->base, DP_IMR, 0x00000000);  // Disable interrupts
+    DP_OUT(dp->base, DP_IER, 0);
     DP_OUT(dp->base, DP_CR, _CR_RXD | _CR_TXD);
 }
 
@@ -236,6 +238,8 @@ dp83816_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
     dp83816_priv_data_t *dp = (dp83816_priv_data_t *)sc->driver_private;
 
+    DP_OUT(dp->base, DP_IMR, 0xFFFFFFFF);  // Enable interrupts
+    DP_OUT(dp->base, DP_IER, 1);
     DP_OUT(dp->base, DP_CR, _CR_RXE | _CR_TXE);
 }
 
