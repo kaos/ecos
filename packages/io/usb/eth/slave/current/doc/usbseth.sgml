@@ -106,10 +106,7 @@ to a suitable network:
 <informalfigure PgWide=1>
 <mediaobject>
 <imageobject>
-<imagedata fileref="simple.eps" format="eps" Scalefit=1 Align="Center">
-</imageobject>
-<imageobject>
-<imagedata fileref="simple.gif" format="gif" Align="Center">
+<imagedata fileref="simple.png" Align="Center">
 </imageobject>
 </mediaobject>
 </informalfigure>
@@ -134,10 +131,7 @@ the peripheral.
 <informalfigure PgWide=1>
 <mediaobject>
 <imageobject>
-<imagedata fileref="tcpip.eps" format="eps" Scalefit=1 Align="Center">
-</imageobject>
-<imageobject>
-<imagedata fileref="tcpip.gif" format="gif" Align="Center">
+<imagedata fileref="tcpip.png" Align="Center">
 </imageobject>
 </mediaobject>
 </informalfigure>

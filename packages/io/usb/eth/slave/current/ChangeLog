@@ -1,3 +1,10 @@
+2003-03-23  Iztok Zupet <iz@vsr.si>
+
+	* doc/usbseth.sgml: Remove .eps and .gif and introduce .png for
+	for PDF output.
+	* doc/simple.gif, doc/tcpip.gif: Delete.
+	* doc/simple.png, doc/tcpip.png: New files to replace GIFs.
+
 2003-04-19  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdl/usbs_eth.cdl: Add per-package compiler flag support and
