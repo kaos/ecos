@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -74,6 +75,11 @@ externC void diag_write_hex( cyg_uint32 n);   /* Write hexadecimal value   */
 externC void diag_dump_buf(void *buf, CYG_ADDRWORD len);
 externC void diag_dump_buf_32bit(void *buf, CYG_ADDRWORD len);
 externC void diag_dump_buf_16bit(void *buf, CYG_ADDRWORD len);
+typedef int __printf_fun(const char *fmt, ...);
+externC void diag_vdump_buf_with_offset(__printf_fun *pf,
+                                        cyg_uint8     *p, 
+                                        CYG_ADDRWORD   s, 
+                                        cyg_uint8     *base);
 externC void diag_dump_buf_with_offset(cyg_uint8     *p, 
                                        CYG_ADDRWORD   s, 
                                        cyg_uint8     *base);

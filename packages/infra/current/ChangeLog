@@ -1,3 +1,8 @@
+2002-07-18  Gary Thomas  <gary@chez-thomas.org>
+
+	* include/diag.h: 
+	* src/diag.cxx (diag_vdump_buf_with_offset): New function.
+
 2002-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/infra.cdl: Added two options to control CFLAGS.

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -580,9 +581,10 @@ diag_vprintf(const char *fmt, va_list ap)
 }
 
 void
-diag_dump_buf_with_offset(cyg_uint8     *p, 
-                          CYG_ADDRWORD   s, 
-                          cyg_uint8     *base)
+diag_vdump_buf_with_offset(__printf_fun *pf,
+                           cyg_uint8     *p, 
+                           CYG_ADDRWORD   s, 
+                           cyg_uint8     *base)
 {
     int i, c;
     if ((CYG_ADDRWORD)s > (CYG_ADDRWORD)p) {
@@ -590,19 +592,19 @@ diag_dump_buf_with_offset(cyg_uint8     *p,
     }
     while ((int)s > 0) {
         if (base) {
-            diag_printf("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
+            (*pf)("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
         } else {
-            diag_printf("%08X: ", p);
+            (*pf)("%08X: ", p);
         }
         for (i = 0;  i < 16;  i++) {
             if (i < (int)s) {
-                diag_printf("%02X ", p[i] & 0xFF);
+                (*pf)("%02X ", p[i] & 0xFF);
             } else {
-                diag_printf("   ");
+                (*pf)("   ");
             }
-	    if (i == 7) diag_printf(" ");
+	    if (i == 7) (*pf)(" ");
         }
-        diag_printf(" |");
+        (*pf)(" |");
         for (i = 0;  i < 16;  i++) {
             if (i < (int)s) {
                 c = p[i] & 0xFF;
@@ -610,15 +612,23 @@ diag_dump_buf_with_offset(cyg_uint8     *p,
             } else {
                 c = ' ';
             }
-            diag_printf("%c", c);
+            (*pf)("%c", c);
         }
-        diag_printf("|\n");
+        (*pf)("|\n");
         s -= 16;
         p += 16;
     }
 }
 
-externC void
+void
+diag_dump_buf_with_offset(cyg_uint8     *p, 
+                          CYG_ADDRWORD   s, 
+                          cyg_uint8     *base)
+{
+    diag_vdump_buf_with_offset(diag_printf, p, s, base);
+}
+
+void
 diag_dump_buf(void *p, CYG_ADDRWORD s)
 {
    diag_dump_buf_with_offset((cyg_uint8 *)p, s, 0);
