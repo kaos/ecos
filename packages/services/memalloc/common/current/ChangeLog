@@ -1,3 +1,10 @@
+2004-06-24  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* Added cyg_memalloc_alloc_fail() fn which is invoked before 
+	return NULL from failed allocations. Useful breakpoint site.
+	Andrew Lunn wrote some of the code and pointed out various
+	wrinkles to be ironed out.
+
 2004-02-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/kapi.h: Add throw specifications throughout.

@@ -111,6 +111,9 @@ Cyg_Mempoolt<T>::alloc( cyg_int32 size )
     cyg_uint8 *ret;
     cyg_bool result = true;
     while( result && (NULL == (ret = pool.alloc( size ))) ) {
+
+	CYG_MEMALLOC_FAIL(size);
+
         self->set_sleep_reason( Cyg_Thread::WAIT );
         self->sleep();
         queue.enqueue( self );
@@ -182,6 +185,8 @@ Cyg_Mempoolt<T>::alloc( cyg_int32 size, cyg_tick_count abs_timeout )
         result = false;
             
     while( result && (NULL == (ret = pool.alloc( size ))) ) {
+	CYG_MEMALLOC_FAIL(size);
+
         self->set_sleep_reason( Cyg_Thread::TIMEOUT );
         self->sleep();
         queue.enqueue( self );
@@ -248,6 +253,9 @@ Cyg_Mempoolt<T>::try_alloc( cyg_int32 size )
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
     CYG_REPORT_RETVAL( ret );
+
+    CYG_MEMALLOC_FAIL_TEST(ret==NULL, size);
+
     return ret;
 }
     

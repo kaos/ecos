@@ -56,7 +56,7 @@ cdl_package CYGPKG_MEMALLOC {
         interface. It also contains some sample implementations."
     include_dir   cyg/memalloc
     compile       dlmalloc.cxx memfixed.cxx memvar.cxx \
-                  sepmeta.cxx
+                  sepmeta.cxx debug.c
 
 # ====================================================================
 
@@ -237,6 +237,15 @@ cdl_package CYGPKG_MEMALLOC {
             either argument 0 ). It is permitted by the standard to return
             either a NULL pointer or a unique pointer. Enabling this option
             forces a NULL pointer to be returned."
+    }       
+
+    cdl_option CYGSEM_MEMALLOC_INVOKE_OUT_OF_MEMORY {
+        display       "Breakpoint site when running out of memory"
+        default_value 0
+        description   "
+            Whenever the system runs out of memory, it invokes this function
+            before either going to sleep waiting for memory to become 
+            available or returning failure."
     }       
 
     cdl_component CYGPKG_MEMALLOC_MALLOC_ALLOCATORS {

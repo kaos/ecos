@@ -130,6 +130,23 @@ public:
 // And an opaque type for any arguments with these flags
 typedef cyg_uint16 cyg_mempool_status_flag_t;
 
+// breakpoint site for out of memory conditions
+#ifdef CYGSEM_MEMALLOC_INVOKE_OUT_OF_MEMORY
+#include <cyg/memalloc/kapi.h> // protoype for cyg_memalloc_alloc_fail
+#define CYG_MEMALLOC_FAIL_TEST( test, size )                \
+   CYG_MACRO_START                                          \
+   if ( test) {                                             \
+        cyg_memalloc_alloc_fail(__FILE__, __LINE__, size ); \
+   }                                                        \
+   CYG_MACRO_END
+#define CYG_MEMALLOC_FAIL( size)                            \
+   CYG_MACRO_START                                          \
+   cyg_memalloc_alloc_fail(__FILE__, __LINE__, size );      \
+   CYG_MACRO_END
+#else
+#define CYG_MEMALLOC_FAIL_TEST( test, size )  CYG_EMPTY_STATEMENT
+#define CYG_MEMALLOC_FAIL( size )             CYG_EMPTY_STATEMENT
+#endif        
 
 #endif /* ifndef CYGONCE_MEMALLOC_COMMON_HXX */
 /* EOF common.hxx */

@@ -374,8 +374,12 @@ Cyg_Mempool_Sepmeta_Implementation::try_alloc( cyg_int32 size )
     size = (size + alignment - 1) & -alignment;
 
     struct memdq *dq = find_free_dq( size );
-    if (NULL == dq)
+   
+
+    if (NULL == dq) {	
+	CYG_MEMALLOC_FAIL(size);
         return NULL;
+    }
 
     cyg_int32 dqsize = dq->memnext->mem - dq->mem;
 
@@ -399,8 +403,11 @@ Cyg_Mempool_Sepmeta_Implementation::try_alloc( cyg_int32 size )
 
         // first get a memdq
 
-        if ( NULL == freemetahead ) // out of metadata. 
+        if ( NULL == freemetahead ) {
+ 	    // out of metadata. 
+	    CYG_MEMALLOC_FAIL(size);
             return NULL;
+	}
 
         // FIXME: since we don't search all the way for an exact fit
         // first we may be able to find an exact fit later and therefore
@@ -496,7 +503,10 @@ Cyg_Mempool_Sepmeta_Implementation::resize_alloc( cyg_uint8 *alloc_ptr,
             prevmemsize = dq->mem - dq->memprev->mem;
         }
         if (nextmemsize + prevmemsize + currsize < newsize)
+	{
+    	    CYG_MEMALLOC_FAIL_TEST(true, newsize);
             return NULL; // can't fit it
+	}
 
         // expand forwards
         if ( nextmemsize != 0 ) {
@@ -560,8 +570,10 @@ Cyg_Mempool_Sepmeta_Implementation::resize_alloc( cyg_uint8 *alloc_ptr,
         } else {
             // if its already allocated we need to create a new free list
             // entry
-            if (NULL == freemetahead)
+            if (NULL == freemetahead) {
+		CYG_MEMALLOC_FAIL(newsize);
                 return NULL;  // can't do it
+	    }
 
             struct memdq *fdq = freemetahead;
             freemetahead = fdq->next;

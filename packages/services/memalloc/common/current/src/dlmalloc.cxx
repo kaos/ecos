@@ -215,7 +215,6 @@
 #include <cyg/infra/cyg_ass.h>         // assertions
 #include <stddef.h>                    // for size_t
 #include <cyg/memalloc/dlmalloc.hxx>
-//#include <cyg/infra/diag.h>
 
 /*
     Debugging:
@@ -1273,6 +1272,7 @@ Cyg_Mempool_dlmalloc_Implementation::try_alloc( cyg_int32 bytes )
       //diag_printf("chunksize(top)=%ld, nb=%d, remainder=%ld\n", chunksize(top),
       //            nb, remainder_size);
       MALLOC_UNLOCK;
+      CYG_MEMALLOC_FAIL(bytes);
       return NULL; /* propagate failure */
   }
 
@@ -1558,6 +1558,7 @@ Cyg_Mempool_dlmalloc_Implementation::resize_alloc( cyg_uint8 *oldmem,
 
     // couldn't resize the allocation any direction, so return failure
     MALLOC_UNLOCK;
+    CYG_MEMALLOC_FAIL(bytes);
     return NULL;
   }
 

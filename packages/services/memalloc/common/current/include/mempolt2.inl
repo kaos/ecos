@@ -116,6 +116,8 @@ Cyg_Mempolt2<T>::alloc( cyg_int32 size )
 
     Mempolt2WaitInfo waitinfo( size );
 
+    CYG_MEMALLOC_FAIL(size);
+
     self->set_wait_info( (CYG_ADDRWORD)&waitinfo );
     self->set_sleep_reason( Cyg_Thread::WAIT );
     self->sleep();
@@ -187,6 +189,9 @@ Cyg_Mempolt2<T>::alloc( cyg_int32 size, cyg_tick_count abs_timeout )
     // straight to unlock.
     
     if( Cyg_Thread::NONE == self->get_wake_reason() ) {
+
+	CYG_MEMALLOC_FAIL(size);
+
         self->set_wait_info( (CYG_ADDRWORD)&waitinfo );
         self->sleep();
         queue.enqueue( self );
@@ -251,6 +256,9 @@ Cyg_Mempolt2<T>::try_alloc( cyg_int32 size )
 
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
+
+    CYG_MEMALLOC_FAIL_TEST(ret==NULL, size);
+
     return ret;
 }
     
@@ -283,6 +291,9 @@ Cyg_Mempolt2<T>::resize_alloc( cyg_uint8 *alloc_ptr, cyg_int32 newsize,
 
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
+
+    CYG_MEMALLOC_FAIL_TEST(ret==NULL, newsize);
+
     return ret;
 }
     

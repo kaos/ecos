@@ -59,6 +59,7 @@
 #include <cyg/hal/hal_arch.h>          // HAL_LSBIT_INDEX magic asm code
 #include <cyg/memalloc/mfiximpl.hxx>
 
+
 // -------------------------------------------------------------------------
 
 inline
@@ -122,8 +123,10 @@ Cyg_Mempool_Fixed_Implementation::try_alloc( cyg_int32 size )
 {
     // size parameter is not used
     CYG_UNUSED_PARAM( cyg_int32, size );
-    if ( 0 >= freeblocks )
+    if ( 0 >= freeblocks ) {
+	CYG_MEMALLOC_FAIL(size);
         return NULL;
+    }
     cyg_int32 i = firstfree;
     cyg_uint8 *p = NULL;
     do {
@@ -172,8 +175,10 @@ Cyg_Mempool_Fixed_Implementation::resize_alloc( cyg_uint8 *alloc_ptr,
 
     if (newsize == blocksize)
         return alloc_ptr;
-    else
+    else {
+	CYG_MEMALLOC_FAIL(newsize);
         return NULL;
+    }
 } // resize_alloc()
 
 

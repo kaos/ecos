@@ -275,6 +275,8 @@ Cyg_Mempool_Variable_Implementation::try_alloc( cyg_int32 size )
     cyg_uint8 *ptr = memdq2alloc( dq );
     CYG_ASSERT( ((CYG_ADDRESS)ptr & (alignment-1)) == 0,
                 "returned memory not aligned" );
+    CYG_MEMALLOC_FAIL_TEST(ptr==NULL, size);
+
     return ptr;
 }
 
@@ -358,6 +360,8 @@ Cyg_Mempool_Variable_Implementation::resize_alloc( cyg_uint8 *alloc_ptr,
         ret = alloc_ptr;
     }
         
+    CYG_MEMALLOC_FAIL_TEST(ret==NULL, newsize);
+
     return ret;
 
 } // resize_alloc()

@@ -178,6 +178,9 @@ Cyg_Mempool_Joined<T>::try_alloc( cyg_int32 size )
     }
 
     CYG_REPORT_RETVAL( ptr );
+
+    CYG_MEMALLOC_FAIL_TEST(ptr==NULL, size);
+
     return ptr;
 } // Cyg_Mempool_Joined<T>::try_alloc()
 
@@ -214,6 +217,7 @@ Cyg_Mempool_Joined<T>::resize_alloc( cyg_uint8 *alloc_ptr, cyg_int32 newsize,
     ret = pool->resize_alloc( alloc_ptr, newsize, oldsize );
 
     CYG_REPORT_RETVAL( ret );
+
     return ret;    
 } // Cyg_Mempool_Joined<T>::resize_alloc()
 
