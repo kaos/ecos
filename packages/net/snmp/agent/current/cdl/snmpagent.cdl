@@ -63,6 +63,8 @@ cdl_package CYGPKG_SNMPAGENT {
     requires      { 0 != CYGINT_ISO_ERRNO }
     requires      { 0 != CYGINT_ISO_ERRNO_CODES }
     requires      CYGPKG_NET
+# For now we only work with the OpenBSD stack, not FreeBSD
+    requires      CYGPKG_NET_OPENBSD_STACK
     requires      CYGPKG_SNMPLIB
     description   "SNMP agent based on the UCD-SNMP project."
 
