@@ -1,3 +1,8 @@
+2004-10-13  Savin Zlobec  <savin@elatec.si> 
+
+        * src/spi_at91.c: Fixed a typo in spi_at91_transfer reported by
+        Nicolas Brouard.
+
 2004-08-31  Savin Zlobec  <savin@elatec.si> 
 
         * include/spi_at91.h:

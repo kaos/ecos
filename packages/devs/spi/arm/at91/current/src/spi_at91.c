@@ -357,7 +357,7 @@ spi_at91_transfer(cyg_spi_at91_device_t *dev,
 
         // Adjust running variables
         
-        if (NULL != rx_data);
+        if (NULL != rx_data)
             rx_data += tr_count;
         tx_data += tr_count;
         count   -= tr_count;
