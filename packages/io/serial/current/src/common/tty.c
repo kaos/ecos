@@ -195,7 +195,6 @@ tty_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
             size = 0;
         }
     }
-    *len = actually_written;
     return res;
 }
 

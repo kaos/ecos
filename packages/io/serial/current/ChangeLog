@@ -1,3 +1,9 @@
+2002-12-10  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/common/tty.c (tty_write): Only return number of characters
+	in original string which were written - don't include any CR/LF
+	expansion characters.
+
 2002-04-23  Jesper Skov  <jskov@redhat.com>
 
 	* tests/serial3.c (serial_test): Use 19200 baud rate when board
