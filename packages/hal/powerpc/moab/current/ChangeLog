@@ -1,3 +1,8 @@
+2004-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (cyg_plf_redboot_startup): Boot mode implies no
+	script, even if the user has set one.
+
 2004-08-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/moab.S: 
