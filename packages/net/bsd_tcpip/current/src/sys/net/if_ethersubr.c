@@ -60,6 +60,7 @@
 #include <sys/mbuf.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
+#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/netisr.h>
@@ -761,6 +762,9 @@ ether_ifdetach(ifp, bpf)
 #endif
 	if_detach(ifp);
 }
+
+SYSCTL_DECL(_net_link);
+SYSCTL_NODE(_net_link, IFT_ETHER, ether, CTLFLAG_RW, 0, "Ethernet");
 
 int
 ether_ioctl(ifp, command, data)
