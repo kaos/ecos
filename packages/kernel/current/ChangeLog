@@ -1,3 +1,14 @@
+2003-02-10  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/clocktruth.cxx: 
+	* tests/clockcnv.cxx: Use <cyg/infra/diag.h> for diag_printf()
+	prototype, rather than hard coding (because it was inconsistent).
+
+2003-02-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/kcache2.c (test_dcache_operation): New test to verify
+	that the DATA cache syncs properly.
+
 2003-01-31  Nick Garnett  <nickg@calivar.com>
 
 	* cdl/kernel.cdl: 
