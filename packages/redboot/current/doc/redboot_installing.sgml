@@ -857,12 +857,12 @@ in flash.  At this time, Angel will not be replaced.  Rather, RedBoot
 will be placed in the alternate half of flash.  Switch SW1 is used to
 select which monitor to boot. Once RedBoot is installed, selecting SW1
 to <literal>lower mem</literal> will choose Angel, whereas selecting
-SW1 to <literal>Upper mem</literal> will choose RedBoot.
+SW1 to <literal>upper mem</literal> will choose RedBoot.
 </para>
 <para>
 Set SW1 to <literal>lower mem</literal> and connect serial port A to a
 host computer.  Using GDB from the host and Angel on the board,
-download the RAM mode image of RedBoot to the board.
+download and run the RAM mode image of RedBoot to the board.
 <screen>
 <userinput>arm-elf-gdb redboot_RAM.elf</userinput>
 (gdb) <userinput>tar rdi s=/dev/ttyS0</userinput>
@@ -879,11 +879,6 @@ Loading section .rodata, size 0x15a0 lma 0x2028018
 Loading section .data, size 0x2e4 lma 0x20295b8
 Start address 0x2020040 , load size 39068
 Transfer rate: 6250 bits/sec, 500 bytes/write.
-(gdb)
-</screen>
-SW1 should then be set to <literal>upper mem</literal> just before starting RedBoot
-using the <command>cont</command> command.
-<screen>
 (gdb) <userinput>cont</userinput>
 Continuing.
 </screen>
@@ -918,7 +913,9 @@ Finally, program it to flash.
 <screen>
 RedBoot> <userinput>fi wr -f 0x01010000 -b %{FREEMEMLO} -l 0xe100</userinput>
 </screen>
-Press the "reset" pushbutton and RedBoot should come up on the board.
+SW1 should now be set to <literal>upper mem</literal> to select booting
+with RedBoot rather than Angel. Finally, press the "reset" pushbutton and
+RedBoot should come up on the board.
 </para>
 </sect3>
 

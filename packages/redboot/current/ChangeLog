@@ -1,3 +1,7 @@
+2003-10-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot_installing.sgml: Fix eb40 flash install instructions.
+
 2003-10-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c: 
