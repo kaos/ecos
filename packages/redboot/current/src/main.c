@@ -626,7 +626,7 @@ set_comm_baud_rate(hal_virtual_comm_table_t *chan, int rate)
 {
     int current_rate;
 
-    current_rate = CYGACC_COMM_IF_CONTROL(*chan, __COMMCTL_SETBAUD, rate);
+    current_rate = CYGACC_COMM_IF_CONTROL(*chan, __COMMCTL_GETBAUD);
     if (rate != current_rate)
         return CYGACC_COMM_IF_CONTROL(*chan, __COMMCTL_SETBAUD, rate);
 

@@ -1,3 +1,8 @@
+2004-02-11  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/main.c (set_comm_baud_rate): Get current rate with GETBAUD
+	not SETBAUD!
+
 2004-02-04  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/redboot.cdl: Do not build with "common" interrupt stack
