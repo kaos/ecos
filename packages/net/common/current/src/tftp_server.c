@@ -564,7 +564,7 @@ tftpd_server(cyg_addrword_t p)
 
     error = getaddrinfo(NULL,"tftp",&hints, &server->res);
     if (0 != error) {
-      diag_printf("TFTPD [%p] : can't get a local server address to bind to: %s\n",
+      diag_printf("TFTPD [%d] : can't get a local server address to bind to: %s\n",
 		  p, gai_strerror(error));
       return;
     }
