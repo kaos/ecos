@@ -333,13 +333,14 @@ package CYGPKG_DEVS_FLASH_EDB7XXX {
 }
 
 package CYGPKG_DEVS_FLASH_AT91 {
-	alias 		{ "FLASH memory support for Atmel AT91/EB40" flash_at91 }
+	alias 		{ "FLASH memory support for Atmel AT91/EB40 (obsolete)" flash_at91 }
 	directory	devs/flash/arm/at91
 	script		flash_at91.cdl
 	hardware
         description "
            This package contains hardware support for FLASH memory
-	   on the Atmel AT91/EB40 platform(s)."
+	   on the Atmel AT91/EB40 platform(s). This driver is obsolete,
+           use CYGPKG_DEVS_FLASH_EB40 instead!"
 }
 
 package CYGPKG_DEVS_FLASH_EB40 {
