@@ -88,9 +88,9 @@ typedef struct quicc_smc_serial_info {
     CYG_ADDRWORD          channel;                   // Which channel SMC1/SMC2
     CYG_WORD              int_num;                   // Interrupt number
     cyg_uint32            *brg;                      // Which baud rate generator
-    struct smc_uart_pram  *pram;                     // Parameter RAM pointer
-    struct smc_regs       *ctl;                      // SMC control registers
-    struct cp_bufdesc     *txbd, *rxbd;              // Next Tx,Rx descriptor to use
+    volatile struct smc_uart_pram  *pram;            // Parameter RAM pointer
+    volatile struct smc_regs       *ctl;             // SMC control registers
+    volatile struct cp_bufdesc     *txbd, *rxbd;     // Next Tx,Rx descriptor to use
     struct cp_bufdesc     *tbase, *rbase;            // First Tx,Rx descriptor
     int                   txsize, rxsize;            // Length of individual buffers
     cyg_interrupt         serial_interrupt;
@@ -249,8 +249,8 @@ quicc_smc_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config
 // Function to set up internal tables for device.
 static void
 quicc_smc_serial_init_info(quicc_smc_serial_info *smc_chan,
-                           struct smc_uart_pram *uart_pram,
-                           struct smc_regs *ctl,
+                           volatile struct smc_uart_pram *uart_pram,
+                           volatile struct smc_regs *ctl,
                            int TxBD, int TxNUM, int TxSIZE,
                            cyg_uint8 *TxBUF,
                            int RxBD, int RxNUM, int RxSIZE,
@@ -384,10 +384,10 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
     if (first_init) {
         // Set up tables since many fields are dynamic [computed at runtime]
         first_init = 0;
+#ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
         eppc->cp_cr = QUICC_SMC_CMD_Reset | QUICC_SMC_CMD_Go;  // Totally reset CP
         while (eppc->cp_cr & QUICC_SMC_CMD_Reset) ;
         TxBD = 0x2800;  // Note: this should be configurable
-#ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
         RxBD = TxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM*8;
         quicc_smc_serial_init_info(&quicc_smc_serial_info1,
                                    &eppc->pram[2].scc.pothers.smc_modem.psmc.u, // PRAM
@@ -405,6 +405,19 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
                                    12  // SI mask position
             );
         TxBD = RxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM*8;
+#else
+#ifdef CYG_HAL_POWERPC_MBX
+        // Ensure the SMC1 side is initialized first and use shared mem
+        // above where it plays:
+        diag_init();    // (pull in constructor that inits diag channel)
+        TxBD = 0x2830;  // Note: this should be inferred from the chip state
+#else
+        // there is no diag device wanting to use the QUICC, so prepare it
+        // for SMC2 use only.
+        eppc->cp_cr = QUICC_SMC_CMD_Reset | QUICC_SMC_CMD_Go;  // Totally reset CP
+        while (eppc->cp_cr & QUICC_SMC_CMD_Reset) ;
+        TxBD = 0x2800;  // Note: this should be configurable
+#endif        
 #endif
 #ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
         RxBD = TxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM*8;
@@ -428,7 +441,7 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
     (chan->callbacks->serial_init)(chan);  // Really only required for interrupt driven devices
     if (chan->out_cbuf.len != 0) {
         cyg_drv_interrupt_create(smc_chan->int_num,
-                                 99,                     // Priority - unused
+                                 CYGARC_SIU_PRIORITY_HIGH, // Priority - unused (but asserted)
                                  (cyg_addrword_t)chan,   //  Data item passed to interrupt handler
                                  quicc_smc_serial_ISR,
                                  quicc_smc_serial_DSR,
@@ -459,7 +472,7 @@ quicc_smc_serial_lookup(struct cyg_devtab_entry **tab,
 static void
 quicc_smc_serial_flush(quicc_smc_serial_info *smc_chan)
 {
-    struct cp_bufdesc *txbd = smc_chan->txbd;
+    volatile struct cp_bufdesc *txbd = smc_chan->txbd;
     if ((txbd->length > 0) && ((txbd->ctrl & QUICC_BD_CTL_Ready) == 0)) {
         txbd->ctrl |= QUICC_BD_CTL_Ready|QUICC_BD_CTL_Int;  // Signal buffer ready
         if (txbd->ctrl & QUICC_BD_CTL_Wrap) {
@@ -545,7 +558,6 @@ static void
 quicc_smc_serial_start_xmit(serial_channel *chan)
 {
     quicc_smc_serial_info *smc_chan = (quicc_smc_serial_info *)chan->dev_priv;
-    struct cp_bufdesc *txbd = smc_chan->txbd;
     if (smc_chan->txbd->length == 0) {
         // See if there is anything to put in this buffer, just to get it going
         cyg_drv_dsr_lock();
@@ -596,9 +608,9 @@ quicc_smc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t dat
     volatile struct cp_bufdesc *rxbd = smc_chan->rxbd;
     struct cp_bufdesc *rxlast;
     int i, cache_state;
+#ifdef CYGDBG_DIAG_BUF
     int _time, _stime;
     externC cyg_tick_count_t cyg_current_time(void);
-#ifdef CYGDBG_DIAG_BUF
     cyg_drv_isr_lock();
     enable_diag_uart = 0;
     HAL_CLOCK_READ(&_time);
@@ -642,7 +654,8 @@ quicc_smc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t dat
     while (ctl->smc_smce & QUICC_SMCE_RX) {
         // Receive interrupt
         ctl->smc_smce = QUICC_SMCE_RX;  // Reset interrupt state;
-        rxlast = (char *)eppc_base() + smc_chan->pram->rbptr;
+        rxlast = (struct cp_bufdesc *) (
+            (char *)eppc_base() + smc_chan->pram->rbptr );
 #ifdef CYGDBG_DIAG_BUF
         enable_diag_uart = 0;
         HAL_CLOCK_READ(&_time);
@@ -770,3 +783,5 @@ dump_buf(unsigned char *p, int s)
 }
 #endif // CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
 
+// ------------------------------------------------------------------------
+// EOF powerpc/quicc_smc_serial.c

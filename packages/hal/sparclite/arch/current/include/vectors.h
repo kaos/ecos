@@ -45,11 +45,21 @@
 //=============================================================================
 
 #define __WINSIZE 8
-#define __WINBITS 7
+
+#if __WINSIZE <= 8
+# define __WINBITS 7
+#else
+# error __WINSIZE window size probably not supported
+#endif
+
+// These should be generic to all SPARCs:
+
 #define __WINBITS_MAXIMAL 0x1f
 
-#define __WIN_INIT 7
-#define __WIM_INIT 0x80
+#define __WIN_INIT (__WINSIZE - 1)
+#define __WIM_INIT (1 << __WIN_INIT)
+
+// ------------------------------------------------------------------------
 
 #define TRAP_WUNDER     6       // Window Underflow trap number
 #define TRAP_WOVER      5       // Window Overflow trap number

@@ -113,6 +113,10 @@ static cyg_uint32 isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 
     verify_value = count_verify_table[pit_count++];
 
+#ifdef DEBUG_PRINTFS
+    diag_printf( "ISR_PIT executed %d of 5\n", pit_count );
+#endif
+
     CYG_ASSERT (count == verify_value, "Count wrong!");
 
     // End of test when count is 42. Mask interrupts and print PASS text.
@@ -156,6 +160,10 @@ static cyg_uint32 isr_tba(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 
     count = count * 3;
 
+#ifdef DEBUG_PRINTFS
+    diag_printf( "ISR_TBA executed\n" );
+#endif
+
     return Cyg_InterruptHANDLED;
 }
 
@@ -170,6 +178,10 @@ static cyg_uint32 isr_tbb(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     HAL_INTERRUPT_ACKNOWLEDGE (CYGNUM_HAL_INTERRUPT_SIU_TB_B);
 
     count = count * 8;
+
+#ifdef DEBUG_PRINTFS
+    diag_printf( "ISR_TBB executed\n" );
+#endif
 
     return Cyg_InterruptHANDLED;
 }

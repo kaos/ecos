@@ -128,8 +128,13 @@ hal_thread_load_context:
 	save	%sp, -16 * 4, %sp	! the linked list property...
 	save	%sp, -16 * 4, %sp
 	save	%sp, -16 * 4, %sp
+#if 6 < __WINSIZE
 	save	%sp, -16 * 4, %sp
+#if 7 < __WINSIZE
 	save	%sp, -16 * 4, %sp
+#endif
+#endif
+	! Fewer saves if fewer register windows.  For 8 register windows,
 	! six of these is correct; a seventh would force out the current
 	! set that was already saved manually above.  Note that minimal
 	! space is allowed on stack for locals and ins in case this
@@ -145,7 +150,14 @@ hal_thread_load_context:
 		
 	! calculate a new WIM...
 	add	%g4, 1, %g3		! required invalid window number
+#if 8 == __WINSIZE
 	and	%g3, __WINBITS, %g3	! modulo 8
+#else   // expect 5 or 6 or 7 windows
+	cmp	%g3, __WINSIZE
+	bge,a	567f			! taken: do delay slot, handle overflow
+	 mov	0, %g3			! only if .ge. above
+567:	
+#endif
 	mov	1, %g2
 	sll	%g2, %g3, %g2		! converted to a mask for the WIM
 
@@ -248,8 +260,13 @@ hal_setjmp:
 	save	%sp, -16 * 4, %sp	! the linked list property...
 	save	%sp, -16 * 4, %sp
 	save	%sp, -16 * 4, %sp
+#if 6 < __WINSIZE
 	save	%sp, -16 * 4, %sp
+#if 7 < __WINSIZE
 	save	%sp, -16 * 4, %sp
+#endif
+#endif
+	! Fewer saves if fewer register windows.  For 8 register windows,
 	! six of these is correct; a seventh would force out the current
 	! set that was already saved manually above.  Note that minimal
 	! space is allowed on stack for locals and ins in case this
@@ -293,7 +310,14 @@ hal_longjmp:
 		
 	! calculate a new WIM...
 	add	%g4, 1, %g3		! required invalid window number
+#if 8 == __WINSIZE
 	and	%g3, __WINBITS, %g3	! modulo 8
+#else   // expect 5 or 6 or 7 windows
+	cmp	%g3, __WINSIZE
+	bge,a	567f			! taken: do delay slot, handle overflow
+	 mov	0, %g3			! only if .ge. above
+567:	
+#endif
 	mov	1, %g2
 	sll	%g2, %g3, %g2		! converted to a mask for the WIM
 

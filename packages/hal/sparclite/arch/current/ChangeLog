@@ -1,3 +1,25 @@
+1999-09-29  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	[src/vectors.S: needed no change!]
+	
+	* include/vectors.h: Potentially accept a register window count
+	from the platform HAL, or according to platform selection.  Make
+	more of the dependent macros computed.
+
+	* src/vec_ivsr.S (hal_default_interrupt_vsr): Handle other register
+	window sizes correctly; particularly when handling underflow trap
+	by hand.
+
+	* src/vec_xvsr.S (hal_default_exception_vsr): Handle other register
+	window sizes correctly; particularly when handling underflow trap
+	by hand.
+
+	* src/context.S (hal_thread_load_context): Handle other register
+	window sizes correctly.
+
+	* src/icontext.c (cyg_hal_sparc_get_gdb_regs): Handle other register
+	window sizes correctly; set up initial context differently.
+
 1999-06-07  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_arch.h (hal_jmp_buf): force this to be 64-bit

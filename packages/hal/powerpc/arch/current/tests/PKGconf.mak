@@ -30,8 +30,11 @@
 
 PACKAGE       := hal_powerpc
 include ../../../../../pkgconf/pkgconf.mak
+include ../../../../../pkgconf/system.mak
 
-TESTS	      := intr0
+TESTS	      :=
+
+TESTS         += intr0
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

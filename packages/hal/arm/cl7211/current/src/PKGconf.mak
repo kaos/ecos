@@ -29,6 +29,7 @@
 #==============================================================================
 
 PACKAGE       := hal_arm_cl7211
+include ../../../../../pkgconf/system.mak
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a

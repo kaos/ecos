@@ -1,3 +1,8 @@
+1999-09-23  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (call_exception_handler): Change on 09-19 messed up
+	status register wrt breakpoints, single stepping, etc.
+
 1999-09-21  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/hal_arch.h: Remove FIXME about GDB register layout.

@@ -82,6 +82,7 @@ hal_default_exception_vsr:
 
 	! must establish a safe stack before re-enabling interrupts + traps
 	and	%l0, __WINBITS, %l7	! CWP extracted
+	! no inc/dec here, so no need for special measures for not-8-windows
 	mov	1, %l6
 	sll	%l6, %l7, %l6		! 1 << CWP
 	rd	%wim, %l5
@@ -236,6 +237,14 @@ hal_default_exception_vsr:
 
 	add	%l0, 1, %l7		! interruptee~s CWP plus noise
 	and	%l7, __WINBITS, %l7	! CWP only
+#if 8 == __WINSIZE
+	! it is in range already
+#else   // expect 5 or 6 or 7 windows
+	cmp	%l7, __WINSIZE
+	bge,a	567f			! taken: do delay slot, handle overflow
+	 mov	0, %l7			! only if .ge. above
+567:	
+#endif
 	mov	1, %l6
 	sll	%l6, %l7, %l6		! 1 << CWP
 	rd	%wim, %l5

@@ -1,3 +1,7 @@
+1999-09-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr0.c: Added some more debug output.
+
 1999-09-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_misc.c (cyg_hal_exception_handler): Catch exceptions
@@ -27,7 +31,8 @@
 	* src/vectors.S: Exception and interrupt handling were enabling
 	CPU interrupts when it wasn't safe nor warranted.
 
-1999-08-16  Bob Koninckx <bob.koninckx@mail.mech.kuleuven.ac.be>
+1999-08-16  Jesper Skov <jskov@cygnus.co.uk>
+	From Bob Koninckx <bob.koninckx@mail.mech.kuleuven.ac.be>
 
 	* src/ppc_stub.c (__clear_single_step): Clear irq_state to prevent
 	interrupt avalanche.

@@ -1,3 +1,7 @@
+1999-09-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c: Added date header and flush() calls.
+
 1999-09-16  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/tm_basic.cxx (run_mutex_tests): Must unlock mutices before

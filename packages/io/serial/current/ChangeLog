@@ -1,3 +1,13 @@
+1999-09-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/powerpc/quicc_smc_serial.c (quicc_smc_serial_init): Correct
+	value supplied for interrupt priority - it may be unused, but it
+	is asserted for range.  Initialize the diagnostic channel if on an
+	MBX and if NOT using SMC1 ourselves, to ensure that diag output
+	and built-in stubs work correctly; otherwise reset the quicc and
+	ignore SMC1 as before.  Fix various warnings, mostly about
+	casting/arg-passing/assigning away volatile.
+
 1999-08-31  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl: Define dummy crash ID.

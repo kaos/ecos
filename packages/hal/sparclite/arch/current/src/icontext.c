@@ -139,7 +139,7 @@ hal_thread_init_context(  CYG_WORD sparg,
     // this is the initial CWP and interrupt state; CWP is quite arbitrary
     // really, the WIM is set up accordingly in hal_thread_load_context().
 
-    regs->g[0] = 0x0e7; // PIL zero, ET, S, PS and CWP is 7.
+    regs->g[0] = 0x0e0 + __WIN_INIT; // PIL zero, ET, S, PS and CWP set.
 
     return (CYG_ADDRESS)sp;
 }
@@ -268,11 +268,20 @@ cyg_hal_sparc_get_gdb_regs( void *gdb_regset,
         gdb[ Y ]    = trapli->l[4];
         
         scratch = trapli->l[0];         // the PSR in the trap handler
+#if 8 == __WINSIZE
         scratch++;                      // back to interupted thread's window
-        scratch &=~ 0x38;               // clear ET and any CWP overflow
+        scratch &=~ 0x38;               // clear ET and any __WINSIZE overflow
         gdb[ PSR ]  = scratch;
         gdb[ WIM ]  = 1 << ((__WINBITS & (1 + scratch)));
-    
+#else  // 6 or 7 windows only
+        reg = (int)(scratch & __WINBITS);
+        scratch &=~ (__WINBITS_MAXIMAL | 0x20); // clear ET and  CWP
+        if ( __WINSIZE <= ++reg ) reg = 0; // back to intr'd window
+        gdb[ PSR ]  = scratch | reg;
+        if ( __WINSIZE <= ++reg ) reg = 0; // good index for WIM
+        gdb[ WIM ]  = 1 << reg;
+#endif // __WINSIZE
+        
         // Read _a_ TBR value and ignore the current trap details:
         asm volatile ( "rd %%tbr, %0" : "=r"(scratch) : );
         gdb[ TBR ]  = (scratch &~ 0xfff);
@@ -331,7 +340,13 @@ cyg_hal_sparc_get_gdb_regs( void *gdb_regset,
         
         scratch = eCos_regset->g[ 0 ];  // the PSR in the saved context
         gdb[ PSR ]  = scratch;          // return it verbatim.
+#if 8 == __WINSIZE
         gdb[ WIM ]  = 1 << ((__WINBITS & (1 + scratch)));
+#else  // 6 or 7 windows only
+        reg = (int)(scratch & __WINBITS);
+        if ( __WINSIZE <= ++reg ) reg = 0; // good index for WIM
+        gdb[ WIM ]  = 1 << reg;
+#endif // __WINSIZE
     
         // Read _a_ TBR value and ignore the current trap details:
         asm volatile ( "rd %%tbr, %0" : "=r"(scratch) : );

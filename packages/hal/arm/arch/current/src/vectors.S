@@ -479,12 +479,12 @@ call_exception_handler:
 	ldr	sp,[sp,#armreg_sp]
 
 	mrs	r0,cpsr			// move back to IRQ mode
-	bic	r0,r0,#CPSR_MODE_BITS
 	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
 	msr	cpsr,r0
         nop
         nop
 
+	bic	r0,r0,#CPSR_MODE_BITS
        	orr	r0,r0,#CPSR_IRQ_MODE
 	msr	cpsr,r0
 

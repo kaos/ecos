@@ -234,7 +234,7 @@ main(void)
     int i;
 
     CYG_TEST_INIT();
-    CYG_TEST_INFO("# Entering stress's cyg_user_start() function");
+    CYG_TEST_INFO("Stress threads test compiled on " __DATE__);
 
     cyg_mutex_init(&client_request_lock);
     cyg_mutex_init(&statistics_print_lock);
@@ -689,8 +689,10 @@ void print_statistics(int print_full)
         // After the first day, only dump stat once per day. Do print
         // a . on the hour though.
         if ((minutes > MINS_DAY) && ((minutes % MINS_DAY) != 0)) {
-            if ((minutes % MINS_HOUR) == 0)
+            if ((minutes % MINS_HOUR) == 0) {
                 printf(".");
+                fflush(stdout);
+            }
             return;
         }
 
@@ -699,6 +701,7 @@ void print_statistics(int print_full)
         if ((minutes < MINS_DAY) && (minutes > MINS_HOUR)
             && ((minutes % MINS_HOUR) != 0)) {
             printf(".");
+            fflush(stdout);
             return;
         }
     }
