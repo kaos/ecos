@@ -1,3 +1,7 @@
+2004-06-29  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/if_cs8900a.c: Added missing include of cyg_ass.h.
+
 2004-05-07  Bob Koninckx <bob.koninckx@o-3s.com>
 	* src/if_cs8900a.c: Drop "ghost" frames with zero length
 
