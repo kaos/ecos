@@ -86,7 +86,8 @@ class ecPipedProcess;
 #endif
 
 #if defined(__WXMSW__) && defined(__WXDEBUG__)
-#define ecUSE_MLT   1
+// MLT code does not build yet so ecUSE_MLT is always 0
+#define ecUSE_MLT   0
 #else
 #define ecUSE_MLT   0
 #endif
