@@ -5531,3 +5531,10 @@ package CYGPKG_FS_FAT {
 
 
 # --------------------------------------------------------------------------
+
+package CYGPKG_NET_LWIP {
+	alias		{"lwIP" lwip}
+	directory	net/lwip_tcpip
+	script		cdl/lwip_net.cdl
+	description	"Lightweight TCP/IP stack: lwIP"
+}

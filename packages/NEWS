@@ -1,3 +1,4 @@
+* Added the lwIP TCP/IP stack. 
 * Added PPP network support. Contributed by Nick Garnett of eCosCentric.
 * Added support for network under vmWare using the LANCE chipset. Contributed
   by Iztok Zupet. 
