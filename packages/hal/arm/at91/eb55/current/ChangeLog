@@ -1,3 +1,8 @@
+2003-09-30 Jani Monoses <jani@iv.ro> 
+
+	* cdl/hal_arm_at91_eb55.cdl: Interfaces are already implemented by
+	AT91 variant .cdl, do not duplicate them here.
+	
 2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/hal_platform_ints.h (HAL_PLATFORM_RESET): Actually use
