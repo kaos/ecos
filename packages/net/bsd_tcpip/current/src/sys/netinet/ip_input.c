@@ -101,7 +101,9 @@ static int	ipsendredirects = 1; /* XXX */
 int	ip_defttl = IPDEFTTL;
 static int	ip_dosourceroute = 0;
 static int	ip_acceptsourceroute = 0;
+#if defined(NFAITH) && 0 < NFAITH
 static int	ip_keepfaith = 0;
+#endif
 static int    nipq = 0;         /* total # of reass queues */
 static int    maxnipq;
 

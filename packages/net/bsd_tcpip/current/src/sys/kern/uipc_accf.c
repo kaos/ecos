@@ -60,7 +60,9 @@
 static SLIST_HEAD(, accept_filter) accept_filtlsthd =
 	SLIST_HEAD_INITIALIZER(&accept_filtlsthd);
 
+#ifdef ACCEPT_FILTER_MOD
 static int unloadable = 0;
+#endif
 
 /*
  * must be passed a malloc'd structure so we don't explode if the kld

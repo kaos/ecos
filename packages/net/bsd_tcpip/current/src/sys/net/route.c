@@ -92,6 +92,11 @@ rtable_init(table)
 			    dom->dom_rtoffset);
 }
 
+static void call_route_init( void * arg )
+{
+    route_init();
+}
+
 void
 route_init()
 {
@@ -1182,4 +1187,4 @@ rtinit(ifa, cmd, flags)
 }
 
 /* This must be before ip6_init2(), which is now SI_ORDER_MIDDLE */
-SYSINIT(route, SI_SUB_PROTO_DOMAIN, SI_ORDER_THIRD, route_init, 0);
+SYSINIT(route, SI_SUB_PROTO_DOMAIN, SI_ORDER_THIRD, call_route_init, 0);

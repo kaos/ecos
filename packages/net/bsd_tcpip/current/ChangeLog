@@ -1,3 +1,13 @@
+2003-07-24  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/netinet/in.h:
+	* src/sys/kern/uipc_accf.c:
+	* src/sys/kern/uipc_socket.c:
+	* src/sys/net/route.c:
+	* src/sys/netinet/ip_icmp.c:
+	* src/sys/netinet/ip_input.c:
+	Fixed some compiler warnings.
+
 2003-06-12  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
 
         * src/sys/netinet/ip_input.c(ip_reass):

@@ -108,7 +108,7 @@ static int somaxconn = SOMAXCONN;
 struct socket *
 soalloc(int waitok)
 {
-    struct socket *so;
+    struct socket *so = NULL;
     int maxtries = waitok ? 10 : 1;
 
     while (maxtries-- > 0) {

@@ -505,9 +505,16 @@ struct ifnet; struct mbuf;	/* forward declarations for Standard C */
 
 #ifdef _KERNEL
 
+struct ip;
+struct mbuf;
+
 int	 in_broadcast __P((struct in_addr, struct ifnet *));
 int	 in_canforward __P((struct in_addr));
 int	 in_cksum __P((struct mbuf *, int));
+u_int	 in_cksum_hdr __P((const struct ip *));
+u_short  in_cksum_skip __P((struct mbuf *, int, int));
+u_short  in_pseudo __P((u_int32_t, u_int32_t, u_int32_t));
+u_short  in_addword __P((u_short, u_short));
 int	 in_localaddr __P((struct in_addr));
 char 	*inet_ntoa __P((struct in_addr));
 

@@ -98,7 +98,8 @@ static int	log_redirect = 0;
 static int      icmplim = 200;
 #else
 
-static int      icmplim = -1;
+/* static int      icmplim = -1; */
+
 #endif 
 
 /*
