@@ -1,13 +1,13 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2001, 2002 Red Hat, Inc.
+ * Copyright (C) 2001-2003 Red Hat, Inc.
  *
- * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
+ * Created by David Woodhouse <dwmw2@redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: scan.c,v 1.101 2003/06/30 10:58:57 dwmw2 Exp $
+ * $Id: scan.c,v 1.106 2003/10/28 17:01:13 dwmw2 Exp $
  *
  */
 #include <linux/kernel.h>
@@ -116,7 +116,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		ret = jffs2_scan_eraseblock(c, jeb, buf_size?flashbuf:(flashbuf+jeb->offset), buf_size);
 
 		if (ret < 0)
-			return ret;
+			goto out;
 
 		ACCT_PARANOIA_CHECK(jeb);
 
@@ -240,17 +240,20 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		if ( !c->used_size && ((empty_blocks+bad_blocks)!= c->nr_blocks || bad_blocks == c->nr_blocks) ) {
 			printk(KERN_NOTICE "Cowardly refusing to erase blocks on filesystem with no valid JFFS2 nodes\n");
 			printk(KERN_NOTICE "empty_blocks %d, bad_blocks %d, c->nr_blocks %d\n",empty_blocks,bad_blocks,c->nr_blocks);
-			return -EIO;
+			ret = -EIO;
+			goto out;
 		}
 		jffs2_erase_pending_trigger(c);
 	}
+	ret = 0;
+ out:
 	if (buf_size)
 		kfree(flashbuf);
 #ifndef __ECOS
 	else 
 		c->mtd->unpoint(c->mtd, flashbuf, 0, c->mtd->size);
 #endif
-	return 0;
+	return ret;
 }
 
 static int jffs2_fill_scan_buf (struct jffs2_sb_info *c, unsigned char *buf,
@@ -551,7 +554,7 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 				marker_ref->next_in_ino = NULL;
 				marker_ref->next_phys = NULL;
 				marker_ref->flash_offset = ofs | REF_NORMAL;
-				marker_ref->totlen = c->cleanmarker_size;
+				marker_ref->__totlen = c->cleanmarker_size;
 				jeb->first_node = jeb->last_node = marker_ref;
 			     
 				USED_SPACE(PAD(c->cleanmarker_size));
@@ -631,6 +634,9 @@ static struct jffs2_inode_cache *jffs2_scan_make_ino_cache(struct jffs2_sb_info 
 	if (ic)
 		return ic;
 
+	if (ino > c->highest_ino)
+		c->highest_ino = ino;
+
 	ic = jffs2_alloc_inode_cache();
 	if (!ic) {
 		printk(KERN_NOTICE "jffs2_scan_make_inode_cache(): allocation of inode cache failed\n");
@@ -642,7 +648,7 @@ static struct jffs2_inode_cache *jffs2_scan_make_ino_cache(struct jffs2_sb_info 
 	ic->nodes = (void *)ic;
 	jffs2_add_ino_cache(c, ic);
 	if (ino == 1)
-		ic->nlink=1;
+		ic->nlink = 1;
 	return ic;
 }
 
@@ -682,6 +688,7 @@ static int jffs2_scan_inode_node(struct jffs2_sb_info *c, struct jffs2_erasebloc
 			       ofs, je32_to_cpu(ri->node_crc), crc);
 			/* We believe totlen because the CRC on the node _header_ was OK, just the node itself failed. */
 			DIRTY_SPACE(PAD(je32_to_cpu(ri->totlen)));
+			jffs2_free_raw_node_ref(raw);
 			return 0;
 		}
 		ic = jffs2_scan_make_ino_cache(c, ino);
@@ -694,7 +701,7 @@ static int jffs2_scan_inode_node(struct jffs2_sb_info *c, struct jffs2_erasebloc
 	/* Wheee. It worked */
 
 	raw->flash_offset = ofs | REF_UNCHECKED;
-	raw->totlen = PAD(je32_to_cpu(ri->totlen));
+	raw->__totlen = PAD(je32_to_cpu(ri->totlen));
 	raw->next_phys = NULL;
 	raw->next_in_ino = ic->nodes;
 
@@ -771,7 +778,7 @@ static int jffs2_scan_dirent_node(struct jffs2_sb_info *c, struct jffs2_eraseblo
 		return -ENOMEM;
 	}
 	
-	raw->totlen = PAD(je32_to_cpu(rd->totlen));
+	raw->__totlen = PAD(je32_to_cpu(rd->totlen));
 	raw->flash_offset = ofs | REF_PRISTINE;
 	raw->next_phys = NULL;
 	raw->next_in_ino = ic->nodes;

@@ -1,13 +1,13 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2001, 2002 Red Hat, Inc.
+ * Copyright (C) 2001-2003 Red Hat, Inc.
  *
- * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
+ * Created by David Woodhouse <dwmw2@redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodelist.h,v 1.94 2003/07/03 10:35:45 dwmw2 Exp $
+ * $Id: nodelist.h,v 1.113 2003/11/20 16:40:14 dwmw2 Exp $
  *
  */
 
@@ -59,13 +59,12 @@ struct jffs2_raw_node_ref
 		word so you know when you've got there :) */
 	struct jffs2_raw_node_ref *next_phys;
 	uint32_t flash_offset;
-	uint32_t totlen;
-	
+	uint32_t __totlen; /* This may die; use ref_totlen(c, jeb, ) below */
+};
+
         /* flash_offset & 3 always has to be zero, because nodes are
 	   always aligned at 4 bytes. So we have a couple of extra bits
-	   to play with. So we set the least significant bit to 1 to
-	   signify that the node is obsoleted by later nodes.
-	*/
+	   to play with, which indicate the node's status; see below: */ 
 #define REF_UNCHECKED	0	/* We haven't yet checked the CRC or built its inode */
 #define REF_OBSOLETE	1	/* Obsolete, can be completely ignored */
 #define REF_PRISTINE	2	/* Completely clean. GC without looking */
@@ -74,7 +73,6 @@ struct jffs2_raw_node_ref
 #define ref_offset(ref)		((ref)->flash_offset & ~3)
 #define ref_obsolete(ref)	(((ref)->flash_offset & 3) == REF_OBSOLETE)
 #define mark_ref_normal(ref)    do { (ref)->flash_offset = ref_offset(ref) | REF_NORMAL; } while(0)
-};
 
 /* 
    Used for keeping track of deletion nodes &c, which can only be marked
@@ -201,10 +199,11 @@ struct jffs2_eraseblock
 };
 
 #define ACCT_SANITY_CHECK(c, jeb) do { \
-	if (jeb->used_size + jeb->dirty_size + jeb->free_size + jeb->wasted_size + jeb->unchecked_size != c->sector_size) { \
-		printk(KERN_NOTICE "Eeep. Space accounting for block at 0x%08x is screwed\n", jeb->offset); \
+		struct jffs2_eraseblock *___j = jeb; \
+		if ((___j) && ___j->used_size + ___j->dirty_size + ___j->free_size + ___j->wasted_size + ___j->unchecked_size != c->sector_size) { \
+		printk(KERN_NOTICE "Eeep. Space accounting for block at 0x%08x is screwed\n", ___j->offset); \
 		printk(KERN_NOTICE "free 0x%08x + dirty 0x%08x + used %08x + wasted %08x + unchecked %08x != total %08x\n", \
-		jeb->free_size, jeb->dirty_size, jeb->used_size, jeb->wasted_size, jeb->unchecked_size, c->sector_size); \
+		___j->free_size, ___j->dirty_size, ___j->used_size, ___j->wasted_size, ___j->unchecked_size, c->sector_size); \
 		BUG(); \
 	} \
 	if (c->used_size + c->dirty_size + c->free_size + c->erasing_size + c->bad_size + c->wasted_size + c->unchecked_size != c->flash_size) { \
@@ -215,15 +214,46 @@ struct jffs2_eraseblock
 	} \
 } while(0)
 
+static inline void paranoia_failed_dump(struct jffs2_eraseblock *jeb)
+{
+	struct jffs2_raw_node_ref *ref;
+	int i=0;
+
+	printk(KERN_NOTICE);
+	for (ref = jeb->first_node; ref; ref = ref->next_phys) {
+		printk("%08x->", ref_offset(ref));
+		if (++i == 8) {
+			i = 0;
+			printk("\n" KERN_NOTICE);
+		}
+	}
+	printk("\n");
+}
+
+
 #define ACCT_PARANOIA_CHECK(jeb) do { \
 		uint32_t my_used_size = 0; \
 		uint32_t my_unchecked_size = 0; \
 		struct jffs2_raw_node_ref *ref2 = jeb->first_node; \
 		while (ref2) { \
+			if (unlikely(ref2->flash_offset < jeb->offset || \
+				     ref2->flash_offset > jeb->offset + c->sector_size)) { \
+				printk(KERN_NOTICE "Node %08x shouldn't be in block at %08x!\n", \
+				       ref_offset(ref2), jeb->offset); \
+				paranoia_failed_dump(jeb); \
+				BUG(); \
+			} \
 			if (ref_flags(ref2) == REF_UNCHECKED) \
-				my_unchecked_size += ref2->totlen; \
+				my_unchecked_size += ref_totlen(c, jeb, ref2); \
 			else if (!ref_obsolete(ref2)) \
-				my_used_size += ref2->totlen; \
+				my_used_size += ref_totlen(c, jeb, ref2); \
+			if (unlikely((!ref2->next_phys) != (ref2 == jeb->last_node))) { \
+				printk("ref for node at %p (phys %08x) has next_phys->%p (%08x), last_node->%p (phys %08x)\n", \
+				       ref2, ref_offset(ref2), ref2->next_phys, ref_offset(ref2->next_phys), \
+				       jeb->last_node, ref_offset(jeb->last_node)); \
+				paranoia_failed_dump(jeb); \
+				BUG(); \
+			} \
 			ref2 = ref2->next_phys; \
 		} \
 		if (my_used_size != jeb->used_size) { \
@@ -236,17 +266,61 @@ struct jffs2_eraseblock
 		} \
 	} while(0)
 
+/* Calculate totlen from surrounding nodes or eraseblock */
+static inline uint32_t __ref_totlen(struct jffs2_sb_info *c,
+				    struct jffs2_eraseblock *jeb,
+				    struct jffs2_raw_node_ref *ref)
+{
+	uint32_t ref_end;
+	
+	if (ref->next_phys)
+		ref_end = ref_offset(ref->next_phys);
+	else {
+		if (!jeb)
+			jeb = &c->blocks[ref->flash_offset / c->sector_size];
+
+		/* Last node in block. Use free_space */
+		BUG_ON(ref != jeb->last_node);
+		ref_end = jeb->offset + c->sector_size - jeb->free_size;
+	}
+	return ref_end - ref_offset(ref);
+}
+
+static inline uint32_t ref_totlen(struct jffs2_sb_info *c,
+				  struct jffs2_eraseblock *jeb,
+				  struct jffs2_raw_node_ref *ref)
+{
+	uint32_t ret;
+
+	D1(if (jeb && jeb != &c->blocks[ref->flash_offset / c->sector_size]) {
+		printk(KERN_CRIT "ref_totlen called with wrong block -- at 0x%08x instead of 0x%08x; ref 0x%08x\n",
+		       jeb->offset, c->blocks[ref->flash_offset / c->sector_size].offset, ref_offset(ref));
+		BUG();
+	})
+
+#if 1
+	ret = ref->__totlen;
+#else
+	/* This doesn't actually work yet */
+	ret = __ref_totlen(c, jeb, ref);
+	if (ret != ref->__totlen) {
+		printk(KERN_CRIT "Totlen for ref at %p (0x%08x-0x%08x) miscalculated as 0x%x instead of %x\n",
+		       ref, ref_offset(ref), ref_offset(ref)+ref->__totlen,
+		       ret, ref->__totlen);
+		if (!jeb)
+			jeb = &c->blocks[ref->flash_offset / c->sector_size];
+		paranoia_failed_dump(jeb);
+		BUG();
+	}
+#endif
+	return ret;
+}
+
+
 #define ALLOC_NORMAL	0	/* Normal allocation */
 #define ALLOC_DELETION	1	/* Deletion node. Best to allow it */
 #define ALLOC_GC	2	/* Space requested for GC. Give it or die */
-
-#define JFFS2_RESERVED_BLOCKS_BASE 3						/* Number of free blocks there must be before we... */
-#define JFFS2_RESERVED_BLOCKS_WRITE (JFFS2_RESERVED_BLOCKS_BASE + 2)		/* ... allow a normal filesystem write */
-#define JFFS2_RESERVED_BLOCKS_DELETION (JFFS2_RESERVED_BLOCKS_BASE)		/* ... allow a normal filesystem deletion */
-#define JFFS2_RESERVED_BLOCKS_GCTRIGGER (JFFS2_RESERVED_BLOCKS_BASE + 3)	/* ... wake up the GC thread */
-#define JFFS2_RESERVED_BLOCKS_GCBAD (JFFS2_RESERVED_BLOCKS_BASE + 1)		/* ... pick a block from the bad_list to GC */
-#define JFFS2_RESERVED_BLOCKS_GCMERGE (JFFS2_RESERVED_BLOCKS_BASE)		/* ... merge pages when garbage collecting */
-
+#define ALLOC_NORETRY	3	/* For jffs2_write_dnode: On failure, return -EAGAIN instead of retrying */
 
 /* How much dirty space before it goes on the very_dirty_list */
 #define VERYDIRTY(c, size) ((size) >= ((c)->sector_size / 2))
@@ -256,13 +330,13 @@ struct jffs2_eraseblock
 
 #define PAD(x) (((x)+3)&~3)
 
-static inline int jffs2_raw_ref_to_inum(struct jffs2_raw_node_ref *raw)
+static inline struct jffs2_inode_cache *jffs2_raw_ref_to_ic(struct jffs2_raw_node_ref *raw)
 {
 	while(raw->next_in_ino) {
 		raw = raw->next_in_ino;
 	}
 
-	return ((struct jffs2_inode_cache *)raw)->ino;
+	return ((struct jffs2_inode_cache *)raw);
 }
 
 static inline struct jffs2_node_frag *frag_first(struct rb_root *root)
@@ -286,7 +360,6 @@ static inline struct jffs2_node_frag *frag_first(struct rb_root *root)
 /* nodelist.c */
 D1(void jffs2_print_frag_list(struct jffs2_inode_info *f));
 void jffs2_add_fd_to_list(struct jffs2_sb_info *c, struct jffs2_full_dirent *new, struct jffs2_full_dirent **list);
-void jffs2_add_tn_to_list(struct jffs2_tmp_dnode_info *tn, struct jffs2_tmp_dnode_info **list);
 int jffs2_get_inode_nodes(struct jffs2_sb_info *c, ino_t ino, struct jffs2_inode_info *f,
 			  struct jffs2_tmp_dnode_info **tnp, struct jffs2_full_dirent **fdp,
 			  uint32_t *highest_version, uint32_t *latest_mctime,
@@ -314,8 +387,9 @@ void jffs2_dump_block_lists(struct jffs2_sb_info *c);
 
 /* write.c */
 int jffs2_do_new_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f, uint32_t mode, struct jffs2_raw_inode *ri);
-struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f, struct jffs2_raw_inode *ri, const unsigned char *data, uint32_t datalen, uint32_t flash_ofs,  uint32_t *writelen);
-struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jffs2_inode_info *f, struct jffs2_raw_dirent *rd, const unsigned char *name, uint32_t namelen, uint32_t flash_ofs,  uint32_t *writelen);
+
+struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f, struct jffs2_raw_inode *ri, const unsigned char *data, uint32_t datalen, uint32_t flash_ofs, int alloc_mode);
+struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jffs2_inode_info *f, struct jffs2_raw_dirent *rd, const unsigned char *name, uint32_t namelen, uint32_t flash_ofs, int alloc_mode);
 int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			    struct jffs2_raw_inode *ri, unsigned char *buf, 
 			    uint32_t offset, uint32_t writelen, uint32_t *retlen);
@@ -362,10 +436,10 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			   unsigned char *buf, uint32_t offset, uint32_t len);
 char *jffs2_getlink(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
-
 /* compr.c */
-unsigned char jffs2_compress(unsigned char *data_in, unsigned char *cpage_out, 
+unsigned char jffs2_compress(unsigned char *data_in, unsigned char **cpage_out, 
 			     uint32_t *datalen, uint32_t *cdatalen);
+void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig);
 int jffs2_decompress(unsigned char comprtype, unsigned char *cdata_in, 
 		     unsigned char *data_out, uint32_t cdatalen, uint32_t datalen);
 
@@ -378,12 +452,13 @@ int jffs2_do_mount_fs(struct jffs2_sb_info *c);
 
 /* erase.c */
 void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
-void jffs2_erase_pending_blocks(struct jffs2_sb_info *c);
+void jffs2_erase_pending_blocks(struct jffs2_sb_info *c, int count);
 void jffs2_erase_pending_trigger(struct jffs2_sb_info *c);
 
 #ifdef CONFIG_JFFS2_FS_NAND
 /* wbuf.c */
-int jffs2_flush_wbuf(struct jffs2_sb_info *c, int pad);
+int jffs2_flush_wbuf_gc(struct jffs2_sb_info *c, uint32_t ino);
+int jffs2_flush_wbuf_pad(struct jffs2_sb_info *c);
 int jffs2_check_nand_cleanmarker(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 int jffs2_write_nand_cleanmarker(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 int jffs2_nand_read_failcnt(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);

@@ -1,13 +1,13 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2001, 2002 Red Hat, Inc.
+ * Copyright (C) 2001-2003 Red Hat, Inc.
  *
- * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
+ * Created by David Woodhouse <dwmw2@redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: read.c,v 1.32 2003/07/15 10:11:37 dwmw2 Exp $
+ * $Id: read.c,v 1.34 2003/10/04 08:33:06 dwmw2 Exp $
  *
  */
 
@@ -16,6 +16,7 @@
 #include <linux/crc32.h>
 #include <linux/pagemap.h>
 #include <linux/mtd/mtd.h>
+#include <linux/compiler.h>
 #include "nodelist.h"
 
 int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_full_dnode *fd, unsigned char *buf, int ofs, int len)

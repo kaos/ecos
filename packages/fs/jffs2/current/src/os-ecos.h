@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: os-ecos.h,v 1.5 2003/01/21 18:14:27 dwmw2 Exp $
+ * $Id: os-ecos.h,v 1.8 2003/11/20 16:41:58 dwmw2 Exp $
  *
  */
 
@@ -233,13 +233,14 @@ int jffs2_commit_write (struct inode *d_inode, struct page *pg, unsigned start, 
 #define jffs2_cleanmarker_oob(c) (0)
 #define jffs2_write_nand_cleanmarker(c,jeb) (-EIO)
 
-#define jffs2_flush_wbuf(c, flag) do { ; } while(0)
+#define jffs2_flush_wbuf_pad(c) ({ (void)(c), 0; })
+#define jffs2_flush_wbuf_gc(c, i) ({ (void)(c), (void) i, 0; })
 #define jffs2_nand_read_failcnt(c,jeb) do { ; } while(0)
 #define jffs2_write_nand_badblock(c,jeb) do { ; } while(0)
 #define jffs2_nand_flash_setup(c) (0)
 #define jffs2_nand_flash_cleanup(c) do {} while(0)
 #define jffs2_wbuf_dirty(c) (0)
-#define jffs2_flash_writev jffs2_flash_writev
+#define jffs2_flash_writev(a,b,c,d,e,f) jffs2_flash_direct_writev(a,b,c,d,e)
 #define jffs2_wbuf_timeout NULL
 #define jffs2_wbuf_process NULL
 #else
@@ -254,5 +255,7 @@ static inline void jffs2_init_inode_info(struct jffs2_inode_info *f)
 	memset(f, 0, sizeof(*f));
 	init_MUTEX_LOCKED(&f->sem);
 }
+
+#define BUG_ON(x) do { if (unlikely(x)) BUG(); } while(0)
 
 #endif /* __JFFS2_OS_ECOS_H__ */

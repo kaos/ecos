@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: dir-ecos.c,v 1.3 2003/01/22 00:04:13 dwmw2 Exp $
+ * $Id: dir-ecos.c,v 1.4 2003/11/20 16:41:58 dwmw2 Exp $
  *
  */
 
@@ -162,7 +162,6 @@ int jffs2_mkdir (struct inode *dir_i, struct qstr *d_name, int mode, struct inod
 	struct jffs2_full_dirent *fd;
 	int namelen;
 	uint32_t alloclen, phys_ofs;
-	uint32_t writtenlen;
 	int ret;
 
 	mode |= S_IFDIR;
@@ -197,7 +196,7 @@ int jffs2_mkdir (struct inode *dir_i, struct qstr *d_name, int mode, struct inod
 	ri->data_crc = cpu_to_je32(0);
 	ri->node_crc = cpu_to_je32(crc32(0, ri, sizeof(*ri)-8));
 	
-	fn = jffs2_write_dnode(c, f, ri, NULL, 0, phys_ofs, &writtenlen);
+	fn = jffs2_write_dnode(c, f, ri, NULL, 0, phys_ofs, ALLOC_NORMAL);
 
 	jffs2_free_raw_inode(ri);
 
@@ -214,20 +213,12 @@ int jffs2_mkdir (struct inode *dir_i, struct qstr *d_name, int mode, struct inod
 	f->metadata = fn;
 	up(&f->sem);
 
-	/* Work out where to put the dirent node now. */
-	writtenlen = PAD(writtenlen);
-	phys_ofs += writtenlen;
-	alloclen -= writtenlen;
-
-	if (alloclen < sizeof(*rd)+namelen) {
-		/* Not enough space left in this chunk. Get some more */
-		jffs2_complete_reservation(c);
-		ret = jffs2_reserve_space(c, sizeof(*rd)+namelen, &phys_ofs, &alloclen, ALLOC_NORMAL);
-		if (ret) {
-			/* Eep. */
-			jffs2_clear_inode(inode);
-			return ret;
-		}
+	jffs2_complete_reservation(c);
+	ret = jffs2_reserve_space(c, sizeof(*rd)+namelen, &phys_ofs, &alloclen, ALLOC_NORMAL);
+	if (ret) {
+		/* Eep. */
+		jffs2_clear_inode(inode);
+		return ret;
 	}
 	
 	rd = jffs2_alloc_raw_dirent();
@@ -255,7 +246,7 @@ int jffs2_mkdir (struct inode *dir_i, struct qstr *d_name, int mode, struct inod
 	rd->node_crc = cpu_to_je32(crc32(0, rd, sizeof(*rd)-8));
 	rd->name_crc = cpu_to_je32(crc32(0, d_name->name, namelen));
 
-	fd = jffs2_write_dirent(c, dir_f, rd, d_name->name, namelen, phys_ofs, &writtenlen);
+	fd = jffs2_write_dirent(c, dir_f, rd, d_name->name, namelen, phys_ofs, ALLOC_NORMAL);
 	
 	jffs2_complete_reservation(c);
 	jffs2_free_raw_dirent(rd);

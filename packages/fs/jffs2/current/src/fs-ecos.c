@@ -8,7 +8,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: fs-ecos.c,v 1.9 2003/07/15 20:42:33 gthomas Exp $
+ * $Id: fs-ecos.c,v 1.11 2003/11/20 16:41:58 dwmw2 Exp $
  *
  */
 
@@ -567,7 +567,7 @@ static int jffs2_mount(cyg_fstab_entry * fste, cyg_mtab_entry * mte)
 		jffs2_sb->s_root->i_count = 1;	// Ensures the root inode is always in ram until umount
 
 		D2(printf("jffs2_mount erasing pending blocks\n"));
-		jffs2_erase_pending_blocks(c);
+		jffs2_erase_pending_blocks(c,0);
 	}
 	mte->data = (CYG_ADDRWORD) jffs2_sb;
 
@@ -1705,6 +1705,21 @@ struct inode *new_inode(struct super_block *sb)
 
 	return inode;
 }
+struct inode *ilookup(struct super_block *sb, cyg_uint32 ino)
+{
+	struct inode *inode = NULL;
+
+	D2(printf("ilookup\n"));
+	// Check for this inode in the cache
+	for (inode = sb->s_root; inode != NULL; inode = inode->i_cache_next) {
+		if (inode->i_ino == ino) {
+			inode->i_count++;
+			break;
+		}
+	}
+
+	return inode;
+}
 
 struct inode *iget(struct super_block *sb, cyg_uint32 ino)
 {
@@ -1722,12 +1737,9 @@ struct inode *iget(struct super_block *sb, cyg_uint32 ino)
 
 	D2(printf("iget\n"));
 
-	// Check for this inode in the cache
-	for (inode = sb->s_root; inode != NULL; inode = inode->i_cache_next) {
-		if (inode->i_ino == ino)
-			return inode;
-	}
-	inode = NULL;
+	inode = ilookup(sb, ino);
+	if (inode)
+		return inode;
 
 	// Not cached, so malloc it
 	inode = new_inode(sb);
@@ -1736,7 +1748,7 @@ struct inode *iget(struct super_block *sb, cyg_uint32 ino)
 
 	inode->i_ino = ino;
 	jffs2_read_inode(inode);
-
+	inode->i_count = 1;
 	return inode;
 }
 
@@ -1851,7 +1863,7 @@ cyg_bool jffs2_flash_write(struct jffs2_sb_info * c,
 }
 
 int
-jffs2_flash_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
+jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 		   unsigned long count, loff_t to, size_t * retlen)
 {
 	unsigned long i;

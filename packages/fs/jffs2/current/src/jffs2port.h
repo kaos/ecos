@@ -1,7 +1,7 @@
 #ifndef __LINUX_JFFS2PORT_H__
 #define __LINUX_JFFS2PORT_H__
 
-/* $Id: jffs2port.h,v 1.3 2003/01/21 18:13:22 dwmw2 Exp $ */
+/* $Id: jffs2port.h,v 1.4 2003/11/20 16:41:58 dwmw2 Exp $ */
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
@@ -189,7 +189,7 @@ struct jffs2_eraseblock;
 
 cyg_bool jffs2_flash_read(struct jffs2_sb_info *c, cyg_uint32 read_buffer_offset, const size_t size, size_t * return_size, char * write_buffer);
 cyg_bool jffs2_flash_write(struct jffs2_sb_info *c, cyg_uint32 write_buffer_offset, const size_t size, size_t * return_size, char * read_buffer);
-int jffs2_flash_writev(struct jffs2_sb_info *c, const struct iovec *vecs, unsigned long count, loff_t to, size_t *retlen);
+int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs, unsigned long count, loff_t to, size_t *retlen);
 cyg_bool jffs2_flash_erase(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 
 

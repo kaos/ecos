@@ -1,13 +1,13 @@
 /*
  * JFFS2 -- Journalling Flash File System, Version 2.
  *
- * Copyright (C) 2001, 2002 Red Hat, Inc.
+ * Copyright (C) 2001-2003 Red Hat, Inc.
  *
- * Created by David Woodhouse <dwmw2@cambridge.redhat.com>
+ * Created by David Woodhouse <dwmw2@redhat.com>
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: erase.c,v 1.51 2003/05/11 22:47:36 dwmw2 Exp $
+ * $Id: erase.c,v 1.57 2003/11/04 14:46:13 dwmw2 Exp $
  *
  */
 
@@ -101,7 +101,7 @@ void jffs2_erase_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb)
 	jffs2_erase_failed(c, jeb);
 }
 
-void jffs2_erase_pending_blocks(struct jffs2_sb_info *c)
+void jffs2_erase_pending_blocks(struct jffs2_sb_info *c, int count)
 {
 	struct jffs2_eraseblock *jeb;
 
@@ -118,15 +118,21 @@ void jffs2_erase_pending_blocks(struct jffs2_sb_info *c)
 			spin_unlock(&c->erase_completion_lock);
 			jffs2_mark_erased_block(c, jeb);
 
+			if (!--count) {
+				D1(printk(KERN_DEBUG "Count reached. jffs2_erase_pending_blocks leaving\n"));
+				goto done;
+			}
+
 		} else if (!list_empty(&c->erase_pending_list)) {
 			jeb = list_entry(c->erase_pending_list.next, struct jffs2_eraseblock, list);
 			D1(printk(KERN_DEBUG "Starting erase of pending block 0x%08x\n", jeb->offset));
 			list_del(&jeb->list);
 			c->erasing_size += c->sector_size;
+			c->wasted_size -= jeb->wasted_size;
 			c->free_size -= jeb->free_size;
 			c->used_size -= jeb->used_size;
 			c->dirty_size -= jeb->dirty_size;
-			jeb->used_size = jeb->dirty_size = jeb->free_size = 0;
+			jeb->wasted_size = jeb->used_size = jeb->dirty_size = jeb->free_size = 0;
 			jffs2_free_all_node_refs(c, jeb);
 			list_add(&jeb->list, &c->erasing_list);
 			spin_unlock(&c->erase_completion_lock);
@@ -143,6 +149,7 @@ void jffs2_erase_pending_blocks(struct jffs2_sb_info *c)
 	}
 
 	spin_unlock(&c->erase_completion_lock);
+ done:
 	D1(printk(KERN_DEBUG "jffs2_erase_pending_blocks completed\n"));
 
 	up(&c->erase_free_sem);
@@ -369,29 +376,30 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseb
 			.totlen =	cpu_to_je32(c->cleanmarker_size)
 		};
 
-		marker.hdr_crc = cpu_to_je32(crc32(0, &marker, je32_to_cpu(marker.totlen) - 4));
+		marker.hdr_crc = cpu_to_je32(crc32(0, &marker, sizeof(struct jffs2_unknown_node)-4));
 
-		ret = jffs2_flash_write(c, jeb->offset, je32_to_cpu(marker.totlen), &retlen, (char *)&marker);
+		/* We only write the header; the rest was noise or padding anyway */
+		ret = jffs2_flash_write(c, jeb->offset, sizeof(marker), &retlen, (char *)&marker);
 		if (ret) {
 			printk(KERN_WARNING "Write clean marker to block at 0x%08x failed: %d\n",
 			       jeb->offset, ret);
 			goto bad2;
 		}
-		if (retlen != je32_to_cpu(marker.totlen)) {
+		if (retlen != sizeof(marker)) {
 			printk(KERN_WARNING "Short write to newly-erased block at 0x%08x: Wanted %d, got %zd\n",
-			       jeb->offset, je32_to_cpu(marker.totlen), retlen);
+			       jeb->offset, sizeof(marker), retlen);
 			goto bad2;
 		}
 
 		marker_ref->next_in_ino = NULL;
 		marker_ref->next_phys = NULL;
 		marker_ref->flash_offset = jeb->offset | REF_NORMAL;
-		marker_ref->totlen = PAD(je32_to_cpu(marker.totlen));
+		marker_ref->__totlen = c->cleanmarker_size;
 			
 		jeb->first_node = jeb->last_node = marker_ref;
 			
-		jeb->free_size = c->sector_size - marker_ref->totlen;
-		jeb->used_size = marker_ref->totlen;
+		jeb->free_size = c->sector_size - c->cleanmarker_size;
+		jeb->used_size = c->cleanmarker_size;
 		jeb->dirty_size = 0;
 		jeb->wasted_size = 0;
 	}
