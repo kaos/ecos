@@ -76,7 +76,7 @@ cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
     display       "Interrupt stack size"
     flavor        data
     default_value { CYGPKG_KERNEL ? 4096 : 32768 }
-    legal_values  1024 to 1048576
+    legal_values  128 to 1048576
     description   "
         This configuration option specifies the stack size in bytes
         for the interrupt stack. Typically this should be a multiple

@@ -1,3 +1,12 @@
+2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/hal_if.c (hal_if_init): Remove kill_by_reset.
+	(kill_by_reset): Remove, unused.
+	(reset): ifdef test on HAL_PLATFORM_RESET and assert on reset failure.
+
+	* cdl/interrupts.cdl (CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE): No
+	reason to forbid people setting this quite small.
+	
 2003-06-19  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/hal_if.c (delay_us): Reorganized to cope with high frequency

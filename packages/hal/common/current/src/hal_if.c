@@ -11,6 +11,7 @@
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 // Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
+// Copyright (C) 2003 Jonathan Larmour <jlarmour@eCosCentric.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -254,7 +255,9 @@ reset(void)
     CYGARC_HAL_SAVE_GP();
     // With luck, the platform defines some magic that will cause a hardware
     // reset.
+#ifdef HAL_PLATFORM_RESET
     HAL_PLATFORM_RESET();
+#endif
 
 #ifdef HAL_PLATFORM_RESET_ENTRY
     // If that's not the case (above is an empty statement) there may
@@ -266,24 +269,10 @@ reset(void)
 #else
 #error " no RESET_ENTRY"
 #endif
-
+    CYG_FAIL("Reset failed");
     CYGARC_HAL_RESTORE_GP();
 }
 
-// This is the system's default kill signal routine. Unless overridden
-// by the application, it will cause a board reset when GDB quits the
-// connection. (The user can avoid the reset by using the GDB 'detach'
-// command instead of 'kill' or 'quit').
-static int
-kill_by_reset(int __irq_nr, void* __regs)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    reset();
-
-    CYGARC_HAL_RESTORE_GP();
-    return 0;
-}
 #endif
 
 //------------------------------------
@@ -945,7 +934,6 @@ hal_if_init(void)
     // Miscellaneous services with wrappers in this file.
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
     CYGACC_CALL_IF_RESET_SET(reset);
-    CYGACC_CALL_IF_KILL_VECTOR_SET(kill_by_reset);
 #endif
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
     CYGACC_CALL_IF_DELAY_US_SET(delay_us);
