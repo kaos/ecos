@@ -1,3 +1,10 @@
+2003-07-14  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_quicc.c (quicc_eth_init): Only flush cache if enabled.
+
+	* cdl/quicc_eth_drivers.cdl: Force serial debug messages during
+	initialization (work around startup issues with RedBoot).
+
 2003-03-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_quicc.c: Align data buffers on cache boundary.

@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -61,6 +62,9 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_QUICC {
     implements    CYGHWR_NET_DRIVER_ETH0
     include_dir   .
     include_files ; # none _exported_ whatsoever
+
+    # Debug I/O during network stack initialization is not reliable
+    requires { !CYGPKG_NET || CYGPKG_NET_FORCE_SERIAL_CONSOLE == 1 }
 
     description   "Ethernet driver for PowerPC MPC8xx boards."
     compile       -library=libextras.a if_quicc.c
