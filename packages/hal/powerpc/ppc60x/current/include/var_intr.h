@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:nickg, jskov, jlarmour, hmt
+// Contributors:nickg, jskov, jlarmour, hmt, gthomas
 // Date:        2000-04-02
 // Purpose:     Variant interrupt support
 // Description: The macros defined here provide the HAL APIs for handling
@@ -56,7 +57,17 @@
 //
 //=============================================================================
 
+// Additional trap/exceptions on PPC60x
+#define CYGNUM_HAL_VECTOR_ITLB_MISS        0x10
+#define CYGNUM_HAL_VECTOR_DTLB_LOAD_MISS   0x11
+#define CYGNUM_HAL_VECTOR_DTLB_STORE_MISS  0x12
+#define CYGNUM_HAL_VECTOR_SMI              0x13
+
+#define CYGNUM_HAL_VSR_MAX                 CYGNUM_HAL_VECTOR_SMI
+
 // No builtin interrupt controller in the PPC60x CPUs.
+
+#include <cyg/hal/plf_intr.h>  // Maybe something on the platform though
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_VAR_INTR_H

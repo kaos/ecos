@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -131,7 +132,9 @@
 #define CYGNUM_HAL_EXCEPTION_FP_ASSIST       CYGNUM_HAL_VECTOR_FP_ASSIST
 
 #define CYGNUM_HAL_EXCEPTION_MIN             CYGNUM_HAL_EXCEPTION_RESERVED_0
-#define CYGNUM_HAL_EXCEPTION_MAX             CYGNUM_HAL_VECTOR_FP_ASSIST
+#ifndef CYGNUM_HAL_EXCEPTION_MAX
+#define CYGNUM_HAL_EXCEPTION_MAX             CYGNUM_HAL_VSR_MAX
+#endif
 
 #define CYGHWR_HAL_EXCEPTION_VECTORS_DEFINED
 
@@ -401,8 +404,10 @@ externC void cyg_hal_default_exception_vsr( void );
     CYG_MACRO_END
 #endif
 
+#ifndef HAL_DELAY_US
 extern void hal_delay_us(int);
 #define HAL_DELAY_US(n) hal_delay_us(n)
+#endif
 
 // The vector used by the Real time clock
 #ifndef CYGNUM_HAL_INTERRUPT_RTC

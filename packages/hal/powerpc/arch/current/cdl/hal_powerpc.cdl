@@ -100,6 +100,12 @@ cdl_package CYGPKG_HAL_POWERPC {
         @rm target.tmp
     }
 
+    cdl_option CYGSEM_HAL_POWERPC_RESET_USES_JUMP {
+        display       "RESET vector jumps to startup"
+        default_value 0
+        description   "
+            Some platforms may need this for ROMRAM startup."
+    }
 
     cdl_option CYGSEM_HAL_POWERPC_COPY_VECTORS {
         display       "Copy exception vectors to RAM"

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -87,7 +88,7 @@ cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
     cyg_uint32 ubat, lbat;
 
     ubat = (virt & UBAT_BEPIMASK) | UBAT_VS | UBAT_VP;
-    lbat = (phys & LBAT_BRPNMASK);
+    lbat = (phys & LBAT_BRPNMASK) | LBAT_PP_RW;
     if (flags & CYGARC_MEMDESC_CI) 
         lbat |= LBAT_I;
     if (flags & CYGARC_MEMDESC_GUARDED) 

@@ -190,9 +190,14 @@
         .p2align 8
         .globl  __exception_\name
 __exception_\name:
+#ifdef CYGSEM_HAL_POWERPC_RESET_USES_JUMP        
+        bl      _start               
+#else
         lwi     r3,_start
         mtlr    r3
         blr
+#endif                
+
         .endm
         
 # Generic vector macro
@@ -310,7 +315,7 @@ _hal_hardware_init_done:
 
         # Set up exception handlers and VSR table, taking care not to
         # step on any ROM monitor''s toes.
-        hal_mon_init
+        hal_mon_init        
 
 #if defined(CYG_HAL_STARTUP_ROM)
 

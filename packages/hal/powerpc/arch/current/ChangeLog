@@ -1,3 +1,9 @@
+2002-12-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/vectors.S: 
+	* cdl/hal_powerpc.cdl: Add option to allow ROM code to simply
+	jump to the startup code, instead of using an absolute address.
+
 2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/vectors.S: Provide pointer to saved registers on interrupt.
@@ -13,6 +19,11 @@
 
 	* include/arch.inc: hal_fpu_load regs was not loading registers!
 
+2002-08-01  Gary Thomas  <gary@mlbassoc.com>
+ 
+ 	* include/hal_io.h: 
+ 	* include/hal_intr.h: Allow more variant/platform overrides.
+ 
 2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S:

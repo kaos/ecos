@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -58,6 +59,28 @@ cdl_package CYGPKG_HAL_POWERPC_PPC60x {
            The PowerPC 60x variant HAL package provides generic support
            for this processor variant. It is also necessary to
            select a specific target platform HAL package."
+
+    cdl_interface CYGINT_HAL_USE_ROM_MONITOR_UNSUPPORTED {
+        display       "ROM monitor configuration is unsupported"
+        no_define
+    }
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+        display       "Work with a ROM monitor"
+        flavor        bool
+        default_value { (CYG_HAL_STARTUP == "RAM" &&
+                        !CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS &&
+                        !CYGINT_HAL_USE_ROM_MONITOR_UNSUPPORTED &&
+                        !CYGSEM_HAL_POWERPC_COPY_VECTORS) ? 1 : 0 }
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "RAM" }
+        requires      ! CYGSEM_HAL_POWERPC_COPY_VECTORS
+        requires      ! CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        requires      ! CYGINT_HAL_USE_ROM_MONITOR_UNSUPPORTED
+        description   "
+            Allow coexistence with ROM monitor (CygMon or GDB stubs) by
+            only initializing interrupt vectors on startup, thus leaving
+            exception handling to the ROM monitor."
+    }
 
     # Note: This should be sub-variant specific to reduce memory use.
     define_proc {

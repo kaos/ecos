@@ -11,6 +11,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -43,9 +44,9 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	jskov
-## Contributors:jskov
+## Contributors:jskov, gthomas
 ## Date:	2000-02-04
-## Purpose:	MPC8xx family definitions.
+## Purpose:	PPC60x family definitions.
 ## Description:	This file contains various definitions and macros that are
 ##              useful for writing assembly code for the PPC60x CPU family.
 ## Usage:
@@ -60,11 +61,17 @@
 #include <pkgconf/hal.h>
 	
 #include <cyg/hal/arch.inc>
+#include <cyg/hal/platform.inc>
 
 ##-----------------------------------------------------------------------------
 ## PPC60x defined vectors
 
         .macro hal_extra_vectors
+        exception_vector        instruction_TLB
+        exception_vector        data_load_TLB
+        exception_vector        data_store_TLB
+        exception_vector        instruction_address_breakpoint
+        exception_vector        system_management_interrupt
         .endm
 
 ##-----------------------------------------------------------------------------

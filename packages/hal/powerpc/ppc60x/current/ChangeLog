@@ -1,3 +1,20 @@
+2002-08-01  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_misc.c (cyg_hal_map_memory): Need to set protection bits.
+
+	* include/variant.inc: Additional exceptions.  Also allow for
+	more platform specifics (like INTC lookup macro).
+
+	* include/var_regs.h: Allow for platform registers <cyg/hal/plf_regs.h>
+	Also, flush out HID0 register (used by cache control).
+
+	* include/var_intr.h: Add PPC60x additional exceptions.
+
+	* include/var_cache.h: Initial cache support.
+
+	* cdl/hal_powerpc_ppc60x.cdl: Support various ROM monitor options,
+	matching other variants.
+
 2000-06-13  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_ppc60x.cdl: Add vector table location definition.

@@ -59,13 +59,33 @@
 //
 //==========================================================================
 
+#include <cyg/hal/plf_regs.h>  // Get any platform specifics
+
 //--------------------------------------------------------------------------
 // Cache
 #define CYGARC_REG_HID0   1008
-
-#ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
-#define HID0       CYGARC_REG_HID0
-#endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+#define _HID0       CYGARC_REG_HID0
+#define _HID0_EMCP  0x80000000  // Enable machine check
+#define _HID0_EBA   0x20000000  // Enable bus address parity
+#define _HID0_EBD   0x10000000  // Enable bus data parity
+#define _HID0_BCLK  0x08000000
+#define _HID0_EICE  0x04000000
+#define _HID0_ECLK  0x02000000
+#define _HID0_PAR   0x01000000
+#define _HID0_DOZE  0x00800000
+#define _HID0_NAP   0x00400000
+#define _HID0_SLEEP 0x00200000
+#define _HID0_DPM   0x00100000
+#define _HID0_ICE   0x00008000  // Enable Instruction Cache
+#define _HID0_DCE   0x00004000  // Enable Data Cache
+#define _HID0_ILOCK 0x00002000  // Instruction Cache Lock
+#define _HID0_DLOCK 0x00001000  // Data Cache Lock
+#define _HID0_ICFI  0x00000800  // Instruction Cache [flash] Invalidate
+#define _HID0_DCFI  0x00000400  // Data Cache [flash] Invalidate
+#define _HID0_IFEM  0x00000080
+#define _HID0_FBIOB 0x00000010
+#define _HID0_ABE   0x00000008
+#define _HID0_NOOPT 0x00000001
 
 //--------------------------------------------------------------------------
 // BATs
