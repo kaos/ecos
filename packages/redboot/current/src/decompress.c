@@ -224,7 +224,6 @@ zcfree(void *opaque, void *ptr)
 
 //
 // This function is called to initialize a gzip/zlib stream.
-// Note that it also reinitializes the memory pool every time.
 //
 static int
 gzip_init(_pipe_t* p)
