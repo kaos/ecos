@@ -603,7 +603,7 @@ static int romfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
 
     if ( !disk ) {
 	// If still no address, try the FSTAB entry data word
-	mte->data = fste->data;
+	disk = (romfs_disk *)fste->data;
     }
 
     if ( !disk ) {

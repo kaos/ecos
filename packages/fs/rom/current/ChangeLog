@@ -1,3 +1,8 @@
+2003-12-11  Sandeep Kumar <sandeep@codito.com>
+
+	* src/romfs.c (romfs_mount) : function wrongly returns ENOENT even
+	if fste->data isn't NULL.
+
 2003-09-25  Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* src/romfs.c (romfs_mount): If a mount fails, make sure we leave
