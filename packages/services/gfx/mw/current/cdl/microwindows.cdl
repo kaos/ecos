@@ -60,6 +60,7 @@ cdl_package CYGPKG_MICROWINDOWS {
     requires      CYGINT_ISO_MALLOC
     requires      CYGINT_ISO_STRING_BSD_FUNCS
     requires      CYGPKG_IO_FILEIO
+    requires      CYGPKG_NET_STACK_INET
     description   "Microwindows."
 
     # Note: separating the stack implementation from the common support leads
