@@ -1,3 +1,26 @@
+1999-09-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_arch.h: Remove FIXME about GDB register layout.
+
+	* src/context.S (hal_thread_save_context): Change function prologue
+	to match APCS more closely (keeps GDB happier).
+
+1999-09-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (spurious_IRQ): Make sure interrupts are masked
+	when switching to IRQ mode.
+
+	* src/hal_misc.c (exception_handler): GDB stubs only take over
+	memory exceptions.  This allows proper handling when an application
+	has it's own IRQ/FIQ VSR.
+
+1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (handle_IRQ_or_FIQ): Allow spurious interrupts
+	to be ignored.  Some platforms (CL7xxx) have non-debounced 
+	interrupt sources which can vanish before the hardware can be
+	queried.
+
 1999-09-11  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/arm_stub.c (__computeSignal): Synchronise return value with

@@ -58,7 +58,6 @@ int __computeSignal (unsigned int trap_number)
 
 
 /* Return the trap number corresponding to the last-taken trap. */
-volatile int jifl;
 int __get_trap_number (void)
 {
     // The vector is not not part of the GDB register set so get it

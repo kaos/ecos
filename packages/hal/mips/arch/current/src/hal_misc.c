@@ -72,7 +72,7 @@ externC void *__mem_fault_handler;
 
 externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 
-externC void exception_handler(HAL_SavedRegisters *regs)
+externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
 #ifdef  CYGHWR_HAL_MIPS_FPU
     // We may be required to emulate certain unimplemented Floating Point
@@ -84,7 +84,7 @@ externC void exception_handler(HAL_SavedRegisters *regs)
         // the exception successfully. If so, we just return
 
         if ( cyg_hal_mips_process_fpe(regs) )
-            return;
+            return 0;
     }
 #endif
 
@@ -94,7 +94,7 @@ externC void exception_handler(HAL_SavedRegisters *regs)
     // and if so jump to the saved address
     if (__mem_fault_handler) {
         regs->pc = (CYG_ADDRWORD)__mem_fault_handler;
-        return; // Caught an exception inside stubs        
+        return 0; // Caught an exception inside stubs        
     }
 
     // Set the pointer to the registers of the current exception
@@ -117,7 +117,7 @@ externC void exception_handler(HAL_SavedRegisters *regs)
     CYG_FAIL("Exception!!!");
     
 #endif    
-    return;
+    return 0;
 }
 
 /*------------------------------------------------------------------------*/
@@ -137,6 +137,17 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
         if( result != 0 ) return result;
     }
     
+#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+#if defined(HAL_DIAG_IRQ_CHECK)
+    {
+        cyg_uint32 ret;
+        /* let ROM monitor handle unexpected interrupts */
+        HAL_DIAG_IRQ_CHECK(vector, ret);
+        if (ret<=0)
+            return ret;
+    }
+#endif // def HAL_DIAG_IRQ_CHECK
+#endif // def CYG_HAL_USE_ROM_MONITOR
 #endif
     
     CYG_TRACE1(true, "Interrupt: %d", vector);

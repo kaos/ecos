@@ -1,3 +1,32 @@
+1999-09-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/vectors.S (__default_exception_vsr):
+	Rename exception_handler()->cyg_hal_exception_handler()
+	After all, we will just do a jump rather than a jal into
+	cyg_hal_exception_handler()
+	(restore_state): Make the change below (by Hugo) be conditional
+	on CYG_HAL_USE_ROM_MONITOR_CYGMON.
+	Add explanatory comment about the additions for Cygmon
+
+	* src/hal_misc.c (hal_default_isr): Use new format HAL_DIAG_IRQ_CHECK()
+	and check return code is negative; if so, return
+	(cyg_hal_exception_handler): Rename from exception_handler()
+	Now return cyg_uint32, but default to returning 0 always
+
+1999-09-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	This set of changes with matching ones in jmr3904 comes from Mark
+	Salter's work to make jmr3904 CygMon talk Ethernet.
+	
+	* src/vectors.S (restore_state): Call CygMon for exceptions or
+	unhandled interrupts if CYG_HAL_USE_ROM_MONITOR.  This is why the
+	return value from the ISR is preserved.  Don't fully understand
+	this.
+
+	* src/hal_misc.c (hal_default_isr): Call into hal_diag via
+	HAL_DIAG_IRQ_CHECK if it's defined and CYG_HAL_USE_ROM_MONITOR.
+	This lets CygMon check for network interrupts &c.
+
 1999-09-09  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/arch.inc:

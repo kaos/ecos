@@ -40,7 +40,7 @@ endif
 ifdef CYG_HAL_ARM_AEB
 EXTRAS_COMPILE  += arm/aeb_serial.c
 endif
-ifdef CYG_HAL_ARM_CL7211
+ifdef CYG_HAL_ARM_EB7211
 EXTRAS_COMPILE  += arm/cl7211_serial.c
 endif
 ifdef CYG_HAL_MN10300_AM31

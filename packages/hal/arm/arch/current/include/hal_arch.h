@@ -184,8 +184,6 @@ asm volatile (" .globl  " #_label_ ";"         \
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
 
-// FIX ME!!  What does GDB expect?
-
 // GDB expects the registers in this structure:
 //   r0..r10, fp, ip, sp, lr, pc  - 4 bytes each
 //   f0..f7                       - 12 bytes each (N/A on ARM7)

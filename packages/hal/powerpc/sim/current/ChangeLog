@@ -1,3 +1,7 @@
+1999-09-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* runtime/tree: Delete. Now obsolete.
+
 1999-06-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/PKGconf.mak: Build the new file.

@@ -1,3 +1,15 @@
+1999-09-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/thread-packets.c: Fix some typos in comments.
+
+1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Add new config option to allow spurious
+	interrupts to be ignored by the HAL.
+
+	* src/generic-stub.c (__process_packet): Build in version string
+	(date/time) for stubs in ROM to be returned via 'd' packet.
+
 1999-09-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/hal.h (CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS): Rename

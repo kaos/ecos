@@ -838,6 +838,11 @@ __process_packet (char *packet)
 
     case 'd':
       /* toggle debug flag */
+#ifdef __ECOS__
+#if !defined(CYG_HAL_STARTUP_RAM)    // Only for ROM based stubs
+      strcpy(remcomOutBuffer, "eCos GDB stubs - built " __DATE__ " / " __TIME__);
+#endif
+#endif // __ECOS__
       break;
 
     case 'q':

@@ -1,3 +1,19 @@
+1999-09-20  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc_mbx.h:
+	(CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH) new config option to
+	control chip select initialization.
+	
+	* src/mbx.S: Take notice of CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH.
+
+	* misc/stubrom.perm: Reference the new option for folks who want
+	to boot from the 32-bit flash.
+
+1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc_mbx.h (CYGHWR_HAL_POWERPC_BOARD_SPEED): 
+	Missing default value (wouldn't build sans ConfigTool).
+
 1999-09-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_powerpc_mbx.h (CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED): 

@@ -8,6 +8,11 @@
 #    Where <SOURCEDIR> is the path to your source repository.
 #    (If necessary, make sure the system clock speed is set correctly in
 #     pkgconf/hal_powerpc_mbx.h:  40MHz (MPC821) versus 50MHz (MPC860) by default)
+#    If you do not have permtest, use the config tool or an editor to make
+#    the changes listed below to the relevant configuration files.
+#    If you intend to install the image into the 32-bit flash device instead of
+#    the 8-bit socketed ROM, set the option CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH
+#    in hal_powerpc_mbx.h
 # 3. Run: make
 # 4. Run: make -C hal/common/current/src/stubrom
 #

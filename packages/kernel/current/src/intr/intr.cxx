@@ -147,6 +147,8 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
 
         CYG_INSTRUMENT_INTR(CALL_DSR, intr->vector, 0);
         
+        CYG_ASSERT( intr->dsr != NULL , "No DSR defined");
+
         intr->dsr( intr->vector, 1, (CYG_ADDRWORD)intr->data );
     }
     
@@ -168,6 +170,8 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
         intr->dsr_count = 0;
         
         HAL_RESTORE_INTERRUPTS(old_intr);
+        
+        CYG_ASSERT( intr->dsr != NULL , "No DSR defined");
 
         intr->dsr( intr->vector, count, (CYG_ADDRWORD)intr->data );
         

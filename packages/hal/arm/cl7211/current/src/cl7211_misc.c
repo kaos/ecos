@@ -279,6 +279,8 @@ void hal_hardware_init(void)
 // reading the hardware a lot, since the interrupt status is split across
 // three separate registers.
 
+int hal_spurious_ints;
+
 int hal_IRQ_handler(void)
 {
     struct regmap *map = hal_interrupt_status_regmap;
@@ -291,6 +293,7 @@ int hal_IRQ_handler(void)
         }
         map++;  // Next interrupt status register
     }
+    hal_spurious_ints++;
     return CYGNUM_HAL_INTERRUPT_unused; // This shouldn't happen!
 }
 

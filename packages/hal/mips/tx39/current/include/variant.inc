@@ -157,10 +157,6 @@
 	.endm
 
 
-#if defined(CYG_HAL_STARTUP_ROM)
-
-	# Only do this in ROM configurations.
-
 	.macro hal_memc_init_dram	
 	# DRAM Configuration
 	la	v0, 0xffff8000
@@ -183,11 +179,6 @@
 	sw	v1, 0(v0)
 	.endm
 
-#else
-	.macro	hal_memc_init_dram
-	.endm	
-#endif
-
 #define CYGPKG_HAL_MIPS_MEMC_DEFINED
 		
 #endif	
@@ -201,12 +192,15 @@
 
 	# Set all ILRX registers to 0, masking all external interrupts.
 	.macro	hal_intc_init
+
+#ifndef CYG_HAL_STARTUP_RAM
 	la	v0,0xFFFFC010
 	move	v1,zero
 	sw	v1,0(v0)
 	sw	v1,4(v0)
 	sw	v1,8(v0)
 	sw	v1,12(v0)
+#endif
 	.endm
 
 	.macro	hal_intc_decode vnum

@@ -378,7 +378,7 @@ _start:
         .extern hal_MMU_init
         bl      hal_MMU_init
 
-        # Enable MMU it so we can safely enable caches.
+        # Enable MMU so we can safely enable caches.
         lwi     r3,CYG_MSR_NO_INTS              # interrupts enabled later
         sync
         mtmsr   r3

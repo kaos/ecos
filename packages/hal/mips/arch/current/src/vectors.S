@@ -377,8 +377,8 @@ FUNC_START(__default_exception_vsr)
 
 	hal_cpu_except_enable			# reenable exceptions
 		
-	.extern	exception_handler
-	j	exception_handler		# call C code
+	.extern	cyg_hal_exception_handler
+	j	cyg_hal_exception_handler	# call C code
 	move	a0,s0				# arg0 = register dump (delay slot)
 
 	# When the exception handler returns, it will
@@ -562,7 +562,7 @@ FUNC_START(__default_interrupt_vsr)
 	
 	lw	sp,mips_stack_frame_size(sp)	# sp = *sp
 	subu	sp,sp,mips_stack_frame_size	# make a null frame		
-#endif	
+#endif
 	
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 
@@ -579,7 +579,7 @@ FUNC_START(__default_interrupt_vsr)
 	# the register dump, the vector offset and the interrupt number
 	# respectively.
 
-	move	a0,v0				# put ISR result in arg0
+	move	s2,v0
 		
 	la	a1,hal_interrupt_objects	# interrupt object table
 	add	a1,a1,s1			# address of object ptr
@@ -589,11 +589,13 @@ FUNC_START(__default_interrupt_vsr)
 	
 	.extern	interrupt_end
 	jal	interrupt_end			# call into C to finish off 
-	nop					# (delay slot)
-
+	 move	a0,v0				# put ISR result in arg0
+	
+	move	v0,s2				# return value from isr
 #endif
 				
-restore_state:	
+restore_state:
+	move	k0,v0
 
 	# All done, restore CPU state and continue
 
@@ -648,7 +650,36 @@ restore_state:
 	lw	$30,(mipsreg_regs+30*4)(sp)	# == FP
 	lw	$31,(mipsreg_regs+31*4)(sp)	# == RA
 	.set	at
-	
+
+
+#if defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+
+        # If we have a Cygmon that wants to listen to network interrupts, then
+        # the return code from the earlier call to hal_default_isr() will
+        # have been negative to indicate this. So we jump into Cygmon here
+        # because Cygmon requires the processor state to be the same as when
+        # the interrupt was taken, but with k0 as the exception number.
+        
+	bgez	k0,1f
+	nop
+	# Check for new cygmon
+	sw	k0,(mipsreg_regs+26*4)(sp)	# save k0
+	la	k1,0x80000100 + 41*4		# New cygmon "magic" id
+	lw	k1,0(k1)
+	lui	k0,0x55aa
+	ori	k0,0x4321
+	bne	k0,k1,1f
+			
+	# Need to let cygmon handle this
+	la	k1,0x80000100 + 39*4		# stub entry vector
+	lw	k0,(mipsreg_regs+26*4)(sp)	# restore k0
+	lw	k1,0(k1)
+	lw	sp,(mipsreg_regs+29*4)(sp)	# restore SP
+	sll	k0,1				# clear bit 31.
+	jr	k1
+        srl	k0,1
+    1:
+#endif
 	lw	k0,mipsreg_pc(sp)		# K0 = return PC
 	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
 	lw	sp,(mipsreg_regs+29*4)(sp)	# load SP

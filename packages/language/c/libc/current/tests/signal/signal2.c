@@ -108,10 +108,19 @@ cause_memerror(void)
 
 // num must always be 0 - do it this way in case the optimizer tries to
 // get smart
-static double
+static int
 cause_fpe(int num)
 {
-    return 1.0/num;
+    double a;
+
+    a = 1.0/num;                        // Depending on FPU emulation and/or
+                                        // the FPU architecture, this may
+                                        // cause an exception.
+                                        // (float division by zero)
+
+    return ((int)a)/num;                // This may cause an exception if
+                                        // the architecture supports it.
+                                        // (integer division by zero).
 } // cause_fpe()
 
 #endif

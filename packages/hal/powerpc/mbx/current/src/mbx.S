@@ -262,9 +262,14 @@ FUNC_START( hal_hardware_init )
 #else
         lwi	r5,0xff800930
 #endif
+#ifdef CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH
+	// Then the 32-bit FLASH device is on CS0, the "ROM" is on CS7
+        stw	r3,BR7(r4)
+        stw	r5,OR7(r4)
+#else	// Boot from 8-bit ROM - the default, on CS0
         stw	r3,BR0(r4)
         stw	r5,OR0(r4)
-
+#endif
 	/* ONBOARD DRAM */
         lwi	r3,0x00000081	# 32-bit, UPMA
         lwi	r5,0xffc00400
@@ -312,9 +317,14 @@ FUNC_START( hal_hardware_init )
 #else
         lwi	r5,0xff800930
 #endif
+#ifdef CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH
+	// Then the 32-bit FLASH device is on CS0, the "ROM" is on CS7
+        stw	r3,BR0(r4)
+        stw	r5,OR0(r4)
+#else	// Boot from 8-bit ROM - so the 32-bit FLASH is on CS7
         stw	r3,BR7(r4)
         stw	r5,OR7(r4)
-	
+#endif
 	/*
 	 *  SYSTEM CLOCK CONTROL REGISTER
 	 *

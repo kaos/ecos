@@ -85,11 +85,29 @@
        # setting it to 30, for example, would not work.
    }
 
+   cdl_option CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH {
+       display          "Boot ROM is 32-bit Flash device"
+       parent           CYGPKG_HAL_POWERPC_MBX
+       type             boolean
+       description      "
+           MBX Development Boards have a socketed 8-bit ROM (AM27F040,
+           AM29F040 or similar) and a permanently soldered 32-bit flash
+           device.  Which is used for booting is link selectable (refer to
+           the MBX Series documentation from Motorola).  Enable this option
+           when booting from the 32-bit flash so that the correct memory
+           timing and access method is initialized.  This consideration
+           does apply to RAM start eCos applications as well as ROM start
+           or stub ROMs."
+   }
+
    }}CFG_DATA */
 
 #define CYGHWR_HAL_POWERPC_MBX_STARTUP       ram
 
-#define CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED   50
+#define CYGHWR_HAL_POWERPC_BOARD_SPEED       50
+
+// Normally, the 8-bit socketed ROM is used
+#undef CYGHWR_HAL_POWERPC_MBX_BOOT_32BIT_FLASH
 
 // Real-time clock/counter specifics
 

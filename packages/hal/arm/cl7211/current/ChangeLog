@@ -1,3 +1,29 @@
+1999-09-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/nand_test.c (nand_exercise): Check "read ID" function.
+
+	* misc/lcd_panel_support.c (lcd_panel_server): Reorg sampling
+	loop to use a weighted average (try and avoid bad results).
+
+	* misc/kbd_test.c (kbd_exercise): Use new kbd_getc() function.
+
+	* misc/kbd_support.c (kbd_getc): New function.
+
+	* misc/lcd_support.c: Add simple printf() code. 
+
+1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_eb7211_ram.ldi: 
+	* include/pkgconf/mlt_arm_eb7211_ram.mlt: Fix DRAM limits.
+
+1999-09-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/kbd_support.c: New file.  Also change to more or less
+	ignore interrupts since they don't work for many keys!
+
+	* misc/kbd_test.c: Move keyboard support routines to separate
+	file.
+
 1999-09-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/hal_platform_setup.h: Fix spelling error.

@@ -61,7 +61,7 @@ GROUP(libtarget.a libgcc.a)
     .text _vma_ : _lma_ \
     { stext = ABSOLUTE(.); \
     PROVIDE (__stext = ABSOLUTE(.)); \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) } \
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }\
     > _region_ \
     etext = .; PROVIDE (__etext = .);
 

@@ -165,16 +165,23 @@ volatile int free_handler_pri = 0;
 volatile int free_handler_id = -1;
 
 /* a global variable with which the client and server coordinate */
-int client_makes_request = 0;
+volatile int client_makes_request = 0;
+
+/* if this is true, clients will not make requests */
+volatile int clients_paused = 0;
+
 
 /* indicates that it's time to print out a report */
-int time_to_report = 0;
+volatile int time_to_report = 0;
 /* print status after a delay of this many secs. */
 int time_report_delay;
 
 /*** now application-specific variables ***/
 /* an array that stores whether the handler threads are in use */
-int handler_thread_in_use[MAX_HANDLERS];
+volatile int handler_thread_in_use[MAX_HANDLERS];
+/* total count of active handlers */
+volatile int handler_thread_in_use_count;
+
 
 /***** statistics-gathering variables *****/
 struct s_statistics {
@@ -204,7 +211,8 @@ void sc_thread_create(
     cyg_thread          *thread                 /* put thread here           */
     );
 
-int get_handler_slot(cyg_handle_t current_threadH);
+void start_handler(void);
+void stop_handler(int handler_id, int handler_pri);
 void perform_stressful_tasks(void);
 void permute_array(char a[], int size, int seed);
 void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
@@ -251,6 +259,7 @@ main(void)
     for (i = 0; i < MAX_HANDLERS; ++i) {
         handler_thread_in_use[i] = 0;
     }
+    handler_thread_in_use_count = 0;
     for (i = 0; i < N_LISTENERS; ++i) {
         int prio = P_BASE_LISTENER + i;
         char* name = &thread_name[prio][0];
@@ -327,34 +336,34 @@ void main_program(cyg_addrword_t data)
         } cyg_mutex_unlock(&free_handler_lock);
 
         if (-1 != handler_id) {
-            // Free the handler resources. This is done outside of the
-            // free_handler_lock to avoid deadlocks.
-            cyg_mutex_lock(&handler_slot_lock); {
-                CYG_ASSERT(1 == priority_in_use[handler_pri], 
-                           "Priority not in use!");
-                CYG_ASSERT(1 == handler_thread_in_use[handler_id], 
-                           "Handler not in use!");
-                handler_thread_in_use[handler_id]--;
-                priority_in_use[handler_pri]--;
-
-                // Finally delete the handler thread. This must be done in a
-                // loop, waiting for the call to return true. If it returns
-                // false, go to sleep for a bit, so the killed thread gets a
-                // chance to run and complete its business.
-                while (!cyg_thread_delete(handlerH[handler_id])) {
-                    cyg_thread_delay(2);
-                }
-            } cyg_mutex_unlock(&handler_slot_lock);
+            stop_handler(handler_id, handler_pri);
         }
 
-        // Print status if time.
+        // If it's time to report status or quit, set pause flag and
+        // keep looping until all handlers have stopped.
         if (time_to_report) {
-            time_to_report = 0;
-            print_statistics(0);
+            // Pause clients
+            cyg_mutex_lock(&client_request_lock); {
+                clients_paused = 1;
+            } cyg_mutex_unlock(&client_request_lock);
+
+            // When all handlers have stopped, we can print statistics
+            // knowing that all (handler allocated) resources should have
+            // been freed. That is, we should be able to determine leaks.
+            if (0 == handler_thread_in_use_count) {
+                print_statistics(0);
+
+                // We've done the printing now. Resume the system.
+                time_to_report = 0;
+                cyg_mutex_lock(&client_request_lock); {
+                    clients_paused = 0;
+                } cyg_mutex_unlock(&client_request_lock);
+            } 
         }
 
 #ifdef DEATH_TIME_LIMIT
-        // Stop test if time.
+        // Stop test if time. We don't care about resource state here
+        // since we've only run for a limited time anyway.
         if (is_dead) {
             print_statistics(1);
             CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
@@ -378,7 +387,8 @@ void client_program(cyg_addrword_t data)
 
         /* now send a request to the server */
         cyg_mutex_lock(&client_request_lock); {
-            ++client_makes_request;
+            if (0 == clients_paused)
+                client_makes_request++;
         } cyg_mutex_unlock(&client_request_lock);
 
         cyg_thread_delay(10+delay);
@@ -389,9 +399,6 @@ void client_program(cyg_addrword_t data)
    take care of the request */
 void listener_program(cyg_addrword_t data)
 {
-/*   int message = (int) data; */
-    int handler_slot;
-
     for (;;) {
         int make_request = 0;
         cyg_mutex_lock(&client_request_lock); {
@@ -401,27 +408,9 @@ void listener_program(cyg_addrword_t data)
             }
         } cyg_mutex_unlock(&client_request_lock);
         
-        if (make_request) {
-            int prio;
-            char* name;
-
-            handler_slot = get_handler_slot(listenerH[(int) data]);
-            prio = P_BASE_HANDLER+handler_slot;
-
-            name = &thread_name[prio][0];
-            sprintf(name, "handler-%02d/%02d", handler_slot, prio);
-
-            CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
-            priority_in_use[prio]++;
-            sc_thread_create(prio, handler_program,
-                             (cyg_addrword_t) handler_slot,
-                             name, (void *) handler_stack[handler_slot],
-                             STACK_SIZE_HANDLER, &handlerH[handler_slot],
-                             &handler_thread_s[handler_slot]);
-            cyg_thread_resume(handlerH[handler_slot]);
-            ++statistics.handler_invocation_histogram[handler_slot];
-        }
-
+        if (make_request)
+            start_handler();
+        
         cyg_thread_delay(2 + (rand() % 10));
     }
 }
@@ -434,7 +423,6 @@ void handler_program(cyg_addrword_t data)
 
     cyg_thread_delay(4 + (int) (0.5*log(1.0 + fabs((rand() % 1000000)))));
 
-    ++statistics.thread_exits;
     {
         // Loop until the handler id and priority can be communicated to
         // the main_program.
@@ -456,18 +444,21 @@ void handler_program(cyg_addrword_t data)
     cyg_thread_exit();
 }
 
-/* look for an available handler thread */
-int get_handler_slot(cyg_handle_t current_threadH)
+/* start a new handler */
+void start_handler(void)
 {
-    int i;
+    int prio;
+    char* name;
+    int handler_slot;
     int found = 0;
 
     while (!found) {
         cyg_mutex_lock(&handler_slot_lock); {
-            for (i = 0; i < MAX_HANDLERS; ++i) {
-                if (!handler_thread_in_use[i]) {
+            for (handler_slot = 0; handler_slot < MAX_HANDLERS;++handler_slot){
+                if (!handler_thread_in_use[handler_slot]) {
                     found = 1;
-                    handler_thread_in_use[i]++;
+                    handler_thread_in_use[handler_slot]++;
+                    handler_thread_in_use_count++;
                     break;
                 }
             }
@@ -476,10 +467,52 @@ int get_handler_slot(cyg_handle_t current_threadH)
             cyg_thread_delay(1);
     }
 
-    CYG_ASSERT(1 == handler_thread_in_use[i], "Handler usage count wrong!");
+    CYG_ASSERT(1 == handler_thread_in_use[handler_slot], 
+               "Handler usage count wrong!");
 
-    return i;
+    prio = P_BASE_HANDLER+handler_slot;
+    CYG_ASSERT(0 == priority_in_use[prio], "Priority already in use!");
+    priority_in_use[prio]++;
+
+    name = &thread_name[prio][0];
+    sprintf(name, "handler-%02d/%02d", handler_slot, prio);
+
+    sc_thread_create(prio, handler_program,
+                     (cyg_addrword_t) handler_slot,
+                     name, (void *) handler_stack[handler_slot],
+                     STACK_SIZE_HANDLER, &handlerH[handler_slot],
+                     &handler_thread_s[handler_slot]);
+    cyg_thread_resume(handlerH[handler_slot]);
+    ++statistics.handler_invocation_histogram[handler_slot];
 }
+
+/* free a locked handler thread */
+void stop_handler(int handler_id, int handler_pri)
+{
+    // Finally delete the handler thread. This must be done in a
+    // loop, waiting for the call to return true. If it returns
+    // false, go to sleep for a bit, so the killed thread gets a
+    // chance to run and complete its business.
+    while (!cyg_thread_delete(handlerH[handler_id])) {
+        cyg_thread_delay(1);
+    }
+    ++statistics.thread_exits;
+    
+    // Free the handler resources.
+    cyg_mutex_lock(&handler_slot_lock); {
+        handler_thread_in_use[handler_id]--;
+        handler_thread_in_use_count--;
+        priority_in_use[handler_pri]--;
+        CYG_ASSERT(0 == priority_in_use[handler_pri], 
+                   "Priority not in use!");
+        CYG_ASSERT(0 == handler_thread_in_use[handler_id], 
+                   "Handler not in use!");
+        CYG_ASSERT(0 <= handler_thread_in_use_count, 
+                   "Stopped more handlers than was started!");
+    } cyg_mutex_unlock(&handler_slot_lock);
+        
+}
+
 
 /* do things which will stress the system */
 void perform_stressful_tasks()
@@ -487,15 +520,12 @@ void perform_stressful_tasks()
 #define MAX_MALLOCED_SPACES 100  /* do this many mallocs at most */
 #define MALLOCED_BASE_SIZE 1    /* basic size in bytes */
     char *spaces[MAX_MALLOCED_SPACES];
-    unsigned int i;
-
-    cyg_mutex_t tmp_lock;
+    int  sizes[MAX_MALLOCED_SPACES];
+    unsigned int i, j, size;
 
     cyg_uint8 pool_space[10][100];
     cyg_handle_t mempool_handles[10];
     cyg_mempool_fix mempool_objects[10];
-
-    cyg_mutex_init(&tmp_lock);
 
     /* here I use malloc, which uses the kernel's variable memory pools.
        note that malloc/free is a bit simple-minded here: it does not
@@ -504,8 +534,17 @@ void perform_stressful_tasks()
        (although I'm about to throw in a yield()) */
     for (i = 0; i < MAX_MALLOCED_SPACES; ++i) {
         ++statistics.malloc_tries;
-/*      spaces[i] = (char *) malloc(((int)(sqrt(i*2.0))+1)*MALLOCED_BASE_SIZE); */
-        spaces[i] = (char *) malloc(((int)i*2.0+1)*MALLOCED_BASE_SIZE);
+        size = (i*2+1)*MALLOCED_BASE_SIZE;
+        spaces[i] = (char *) malloc(size);
+        sizes[i] = size;
+
+        if (spaces[i] != NULL) {
+            // Fill with a known value (differs between chunk).
+            for (j = 0; j < size; ++j) {
+                spaces[i][j] = 0x50 | ((j+i) & 0x0f);
+            }
+        }
+
         if (i % (MAX_MALLOCED_SPACES/10) == 0) {
             cyg_thread_yield();
         }
@@ -514,11 +553,17 @@ void perform_stressful_tasks()
         }
     }
 
+    cyg_thread_delay(5);
+
     /* now free it all up */
     for (i = 0; i < MAX_MALLOCED_SPACES; ++i) {
         if (spaces[i] != NULL) {
-            unsigned int j;
-            for (j = 0; j < (i*2+1)*MALLOCED_BASE_SIZE; ++j) {
+            size = sizes[i];
+            for (j = 0; j < size; ++j) {
+                // Validate chunk data.
+                if ((0x50 | ((j+i) & 0x0f)) != spaces[i][j]) {
+                    printf("Bad byte in chunk\n");
+                }
                 spaces[i][j] = 0xAA;    /* write a bit pattern */
             }
             free(spaces[i]);
@@ -526,6 +571,7 @@ void perform_stressful_tasks()
             ++statistics.malloc_failures;
         }
     }
+
     /* now allocate and then free some fixed-size memory pools; for
        now this is simple-minded because it does not have many threads
        sharing the memory pools and racing for memory. */
@@ -543,8 +589,6 @@ void perform_stressful_tasks()
             cyg_mempool_fix_delete(mempool_handles[i]);
         }
     }
-
-    cyg_mutex_destroy(&tmp_lock);
 }
 
 /* report_alarm_func() is invoked as an alarm handler, so it should be
@@ -622,7 +666,7 @@ void sc_thread_create(
 
 #define MINS_HOUR (60)
 #define MINS_DAY  (60*24)
-externC void *cyg_libc_get_pool( void );
+externC void *cyg_libc_get_malloc_pool( void );
 
 void print_statistics(int print_full)
 {
@@ -660,7 +704,8 @@ void print_statistics(int print_full)
     }
 
     printf("\nState dump %d (%d hours, %d minutes) [numbers >>%d]\n",
-           ++print_count, minutes / MINS_HOUR, minutes, shift_count);
+           ++print_count, minutes / MINS_HOUR, minutes % MINS_HOUR, 
+           shift_count);
 
     cyg_mutex_lock(&statistics_print_lock); {
         //--------------------------------
@@ -683,24 +728,18 @@ void print_statistics(int print_full)
             statistics.malloc_tries >>= 1;
             statistics.malloc_failures >>= 1;
         }
-
-        //--------------------------------
-        // System information
-#if 0
-        // We want to (occasionally) pause the test so all memory is
-        // freed. Otherwise it's hard to tell if there's a malloc
-        // leak.
-        {
-            cyg_mempool_info mem_info;
-
-            cyg_mempool_var_get_info((cyg_handle_t) cyg_libc_get_pool(), 
-                                     &mem_info);
-            printf(" Memory system: Total=0x%08x Free=0x%08x Max=0x%08x\n", 
-                   mem_info.totalmem, mem_info.freemem, mem_info.maxfree);
-        }
-#endif
-
     } cyg_mutex_unlock(&statistics_print_lock);
+
+    //--------------------------------
+    // System information
+    {
+        cyg_mempool_info mem_info;
+
+        cyg_mempool_var_get_info((cyg_handle_t) cyg_libc_get_malloc_pool(), 
+                                 &mem_info);
+        printf(" Memory system: Total=0x%08x Free=0x%08x Max=0x%08x\n", 
+               mem_info.totalmem, mem_info.freemem, mem_info.maxfree);
+    }
 
     // Dump stack status
     printf(" Stack usage:\n");

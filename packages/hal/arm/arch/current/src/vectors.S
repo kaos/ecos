@@ -480,7 +480,12 @@ call_exception_handler:
 
 	mrs	r0,cpsr			// move back to IRQ mode
 	bic	r0,r0,#CPSR_MODE_BITS
-	orr	r0,r0,#CPSR_IRQ_MODE
+	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+	msr	cpsr,r0
+        nop
+        nop
+
+       	orr	r0,r0,#CPSR_IRQ_MODE
 	msr	cpsr,r0
 
 	mov	sp,ip
@@ -578,6 +583,10 @@ handle_IRQ_or_FIQ:
 #endif
 
 	mov	r0,v1			// vector #
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS	
+        cmp     r0,#0                   // ignore spurious interrupts
+        beq     spurious_IRQ
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS        
 	ldr	r1,.hal_interrupt_data
 	ldr	r1,[r1,v1,lsl #2]	// handler data
 	ldr	r2,.hal_interrupt_handlers
@@ -587,6 +596,10 @@ handle_IRQ_or_FIQ:
 
 	mov	lr,pc			// invoke handler (call indirect
 	mov	pc,v3                   // thru v3)
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS	
+spurious_IRQ:           
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS	
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 	// If we are returning from the last nested interrupt, move back
@@ -620,6 +633,11 @@ handle_IRQ_or_FIQ:
 	ldr	sp,[sp,#armreg_sp]
 
 	mrs	r0,cpsr			// move back to IRQ mode
+	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+	msr	cpsr,r0
+        nop
+        nop
+        
 	bic	r0,r0,#CPSR_MODE_BITS
 	orr	r0,r0,#CPSR_IRQ_MODE
 	msr	cpsr,r0

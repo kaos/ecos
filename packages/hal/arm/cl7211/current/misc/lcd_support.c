@@ -41,6 +41,8 @@
 #define LAST_CHAR  0x7E
 #define FONT_HEIGHT 8
 #define FONT_WIDTH  8
+#define CURSOR_ON  0x5F
+#define CURSOR_OFF 0x20
 static char font_table[LAST_CHAR-FIRST_CHAR+1][8] =
 {
         {        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, /*   */
@@ -155,20 +157,21 @@ static char font_table[LAST_CHAR-FIRST_CHAR+1][8] =
 #define PIXEL_MASK      ((1<<PIXELS_PER_BYTE)-1)
 
 // Physical screen info
-int lcd_depth;  // Should be 1, 2, or 4
-int lcd_width  = LCD_WIDTH;
-int lcd_height = LCD_HEIGHT;
-cyg_uint8 *lcd_base = (cyg_uint8 *)0xC0000000;
+static int lcd_depth;  // Should be 1, 2, or 4
+static int lcd_width  = LCD_WIDTH;
+static int lcd_height = LCD_HEIGHT;
+static cyg_uint8 *lcd_base = (cyg_uint8 *)0xC0000000;
 
 // Virtual screen info
-int curX = 0;  // Last used position
-int curY = 0;
-int width = LCD_WIDTH / (FONT_WIDTH*NIBBLES_PER_PIXEL);
-int height = LCD_HEIGHT / (FONT_HEIGHT*SCREEN_SCALE);
-int fg = 0x0F;
-int bg = 0x00;
+static int curX = 0;  // Last used position
+static int curY = 0;
+static int width = LCD_WIDTH / (FONT_WIDTH*NIBBLES_PER_PIXEL);
+static int height = LCD_HEIGHT / (FONT_HEIGHT*SCREEN_SCALE);
+static int fg = 0x0F;
+static int bg = 0x00;
 
 // Functions
+static void lcd_drawc(cyg_int8 c, int x, int y);
 
 void
 lcd_on(int depth)
@@ -226,7 +229,7 @@ lcd_on(int depth)
 }
 
 // Clear screen
-static void
+void
 lcd_clear(void)
 {
     cyg_int8 *ptr = lcd_base;
@@ -235,6 +238,21 @@ lcd_clear(void)
         *ptr++ = 0;
     }
     curX = 0;  curY = 0;
+    lcd_drawc(CURSOR_ON, curX, curY);
+}
+
+// Position cursor
+void
+lcd_moveto(int X, int Y)
+{
+    lcd_drawc(CURSOR_OFF, curX, curY);
+    if (X < 0) X = 0;
+    if (X >= width) X = width-1;
+    curX = X;
+    if (Y < 0) Y = 0;
+    if (Y >= height) Y = height-1;
+    curY = Y;
+    lcd_drawc(CURSOR_ON, curX, curY);
 }
 
 // Render a character at position (X,Y) with current background/foreground
@@ -291,9 +309,11 @@ lcd_drawc(cyg_int8 c, int x, int y)
     }
 }
 
-static void
+// Draw one character at the current position
+void
 lcd_putc(cyg_int8 c)
 {
+    lcd_drawc(CURSOR_OFF, curX, curY);
     switch (c) {
     case '\r':
         curX = 0;
@@ -308,6 +328,7 @@ lcd_putc(cyg_int8 c)
             if (curY < 0) curY = 0;
             curX = width-1;
         }
+        break;
     default:
         lcd_drawc(c, curX, curY);
         curX++;
@@ -316,5 +337,163 @@ lcd_putc(cyg_int8 c)
             curX = 0;
         }
     } 
+    lcd_drawc(CURSOR_ON, curX, curY);
+}
+
+// Basic LCD 'printf()' support
+
+#ifndef FALSE
+#define FALSE 0
+#define TRUE  1
+#endif
+
+#include <stdarg.h>
+
+#define is_digit(c) ((c >= '0') && (c <= '9'))
+
+static int
+_cvt(unsigned long val, char *buf, long radix, char *digits)
+{
+    char temp[80];
+    char *cp = temp;
+    int length = 0;
+    if (val == 0) {
+        /* Special case */
+        *cp++ = '0';
+    } else {
+        while (val) {
+            *cp++ = digits[val % radix];
+            val /= radix;
+        }
+    }
+    while (cp != temp) {
+        *buf++ = *--cp;
+        length++;
+    }
+    *buf = '\0';
+    return (length);
+}
+
+int
+lcd_vprintf(void (*putc)(cyg_int8), const char *fmt0, va_list ap)
+{
+    char c, sign, *cp;
+    int left_prec, right_prec, zero_fill, length, pad, pad_on_right;
+    char buf[32];
+    long val;
+    while ((c = *fmt0++)) {
+        cp = buf;
+        length = 0;
+        if (c == '%') {
+            c = *fmt0++;
+            left_prec = right_prec = pad_on_right = 0;
+            if (c == '-') {
+                c = *fmt0++;
+                pad_on_right++;
+            }
+            if (c == '0') {
+                zero_fill = TRUE;
+                c = *fmt0++;
+            } else {
+                zero_fill = FALSE;
+            }
+            while (is_digit(c)) {
+                left_prec = (left_prec * 10) + (c - '0');
+                c = *fmt0++;
+            }
+            if (c == '.') {
+                c = *fmt0++;
+                zero_fill++;
+                while (is_digit(c)) {
+                    right_prec = (right_prec * 10) + (c - '0');
+                    c = *fmt0++;
+                }
+            } else {
+                right_prec = left_prec;
+            }
+            sign = '\0';
+            switch (c) {
+            case 'd':
+            case 'x':
+            case 'X':
+                val = va_arg(ap, long);
+                switch (c) {
+                case 'd':
+                    if (val < 0) {
+                        sign = '-';
+                        val = -val;
+                    }
+                    length = _cvt(val, buf, 10, "0123456789");
+                    break;
+                case 'x':
+                    length = _cvt(val, buf, 16, "0123456789abcdef");
+                    break;
+                case 'X':
+                    length = _cvt(val, buf, 16, "0123456789ABCDEF");
+                    break;
+                }
+                break;
+            case 's':
+                cp = va_arg(ap, char *);
+                length = strlen(cp);
+                break;
+            case 'c':
+                c = va_arg(ap, long /*char*/);
+                (*putc)(c);
+                continue;
+            default:
+                (*putc)('?');
+            }
+            pad = left_prec - length;
+            if (sign != '\0') {
+                pad--;
+            }
+            if (zero_fill) {
+                c = '0';
+                if (sign != '\0') {
+                    (*putc)(sign);
+                    sign = '\0';
+                }
+            } else {
+                c = ' ';
+            }
+            if (!pad_on_right) {
+                while (pad-- > 0) {
+                    (*putc)(c);
+                }
+            }
+            if (sign != '\0') {
+                (*putc)(sign);
+            }
+            while (length-- > 0) {
+                (*putc)(c = *cp++);
+                if (c == '\n') {
+                    (*putc)('\r');
+                }
+            }
+            if (pad_on_right) {
+                while (pad-- > 0) {
+                    (*putc)(' ');
+                }
+            }
+        } else {
+            (*putc)(c);
+            if (c == '\n') {
+                (*putc)('\r');
+            }
+        }
+    }
+}
+
+int
+lcd_printf(char const *fmt, ...)
+{
+	int ret;
+	va_list ap;
+
+	va_start(ap, fmt);
+	ret = lcd_vprintf(lcd_putc, fmt, ap);
+	va_end(ap);
+	return (ret);
 }
 

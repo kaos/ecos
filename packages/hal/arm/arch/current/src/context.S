@@ -67,8 +67,8 @@ name:
 	
 FUNC_START(hal_thread_switch_context)
 	mov	ip,sp			// saved stack pointer
-	sub	sp,sp,#ARMREG_SIZE	// make space for saved registers
-	stmea	sp,{r0-r10,fp,ip,lr,pc}
+        stmfd   sp!,{fp,ip,lr,pc}       // filler
+	stmfd	sp!,{r0-r10,fp,ip,lr,pc}
 	mrs	r2,cpsr
 	str	r2,[sp,#armreg_cpsr]
 	str	sp,[r1]			// return new stack pointer
@@ -90,8 +90,8 @@ FUNC_START(hal_thread_load_context)
 	msr	cpsr,r0
 	ldr	r0,[fp,#armreg_cpsr]
 	msr	spsr,r0
-	ldmfd	fp,{r0-r10,fp,sp,lr}	// also restores saved PSR
-	movs	pc,lr
+	ldmfd	fp,{r0-r10,fp,sp,lr}
+	movs	pc,lr	                // also restores saved PSR
 
 // ------------------------------------------------------------------------------
 //  HAL longjmp, setjmp implementations

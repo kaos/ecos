@@ -70,6 +70,8 @@ extern void *__mem_fault_handler;
    processing is underway.  The only vector that can't be handled this way
    is the illegal instruction vector which is used for breakpoint/single-step
    and must be maintained by the stubs at all times.
+   Note: the interrupt vectors are _not_ preempted as the stubs probably can't
+   handle them properly.
 */
 
 #define ARM_VECTORS 8
@@ -82,20 +84,17 @@ static int exception_level;
 static void
 __take_over_debug_traps(void)
 {
-    int i;
-    for (i = 0;  i < ARM_VECTORS;  i++) {
-        hold_vectors[i] = hardware_vectors[i];
-        hardware_vectors[i] = vectors[i];
-    }
+    hold_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH] = hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH];
+    hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH] = vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH];
+    hold_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA] = hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA];
+    hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA] = vectors[CYGNUM_HAL_VECTOR_ABORT_DATA];
 }
 
 static void
 __restore_debug_traps(void)
 {
-    int i;
-    for (i = 0;  i < ARM_VECTORS;  i++) {
-        hardware_vectors[i] = hold_vectors[i];
-    }
+    hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH] = hold_vectors[CYGNUM_HAL_VECTOR_ABORT_PREFETCH];
+    hardware_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA] = hold_vectors[CYGNUM_HAL_VECTOR_ABORT_DATA];
 }
 #endif
 
@@ -114,14 +113,14 @@ exception_handler(HAL_SavedRegisters *regs)
     _hal_registers = regs;
     __handle_exception();
 
+    if (--exception_level == 0) __restore_debug_traps();
+
+#elif defined(CYGPKG_KERNEL_EXCEPTIONS)
+
     // We should decode the vector and pass a more appropriate
     // value as the second argument. For now we simply pass a
     // pointer to the saved registers. We should also divert
     // breakpoint and other debug vectors into the debug stubs.
-
-    if (--exception_level == 0) __restore_debug_traps();
-
-#elif defined(CYGPKG_KERNEL_EXCEPTIONS)
 
     cyg_hal_deliver_exception( regs->vector, (CYG_ADDRWORD)regs );
 

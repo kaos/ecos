@@ -1,3 +1,31 @@
+1999-09-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c: Only avoid SERIAL0 if CYG_HAL_USE_ROM_MONITOR_CYGMON
+	since we default to assuming Cygmon
+
+	* include/variant.inc (hal_memc_init): Don't make conditional on
+	ROM startup - makes sense anyway so that users can change amount
+	of memory in system
+	(hal_memc_init_dram): Likewise
+
+	* include/var_arch.h (HAL_DIAG_IRQ_CHECK): Give extra return parameter
+	rather than relying on this being an expression which evaluates
+	
+1999-09-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	This set of changes with matching ones in arch comes from Mark
+	Salter's work to make jmr3904 CygMon talk Ethernet.
+
+	* include/variant.inc: Do not re-initialize and disable all
+	interrupts if RAM start, this stops networked CygMon working.
+	Likewise don't re-init memory.
+
+	* src/hal_diag.c: Add alternate hal_diag...() routines that talk
+	via CygMon so that ethernet debugging works.
+
+	* include/var_arch.h: If CYG_HAL_USE_ROM_MONITOR, export macro for
+	polling unknown interrupts in CygMon, HAL_DIAG_IRQ_CHECK.
+ 	
 1999-08-25  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/variant.inc: Added clock-speed dependent values for the

@@ -47,6 +47,16 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
+#ifdef CYG_HAL_USE_ROM_MONITOR_CYGMON
+externC int
+hal_diag_irq_check(int vector);
+
+#define HAL_DIAG_IRQ_CHECK(_vector_, _ret_) \
+CYG_MACRO_START                             \
+_ret_ =  hal_diag_irq_check((_vector_));    \
+CYG_MACRO_END
+#endif
+
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_VAR_ARCH_H
 // End of var_arch.h

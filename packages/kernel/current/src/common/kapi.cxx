@@ -1005,7 +1005,7 @@ externC void cyg_mutex_init(
 
 externC void cyg_mutex_destroy( cyg_mutex_t *mutex )
 {
-    // no need to do anything here
+    ((Cyg_Mutex *)mutex)->~Cyg_Mutex();
 }
 
 externC cyg_bool_t cyg_mutex_lock( cyg_mutex_t *mutex )
@@ -1045,7 +1045,7 @@ externC void cyg_cond_init(
 
 externC void cyg_cond_destroy( cyg_cond_t *cond )
 {
-    ((Cyg_Counting_Semaphore *)cond)->~Cyg_Counting_Semaphore();
+    ((Cyg_Condition_Variable *)cond)->~Cyg_Condition_Variable();
 }
 
 externC void cyg_cond_wait( cyg_cond_t *cond )

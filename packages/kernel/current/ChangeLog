@@ -1,3 +1,25 @@
+1999-09-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tm_basic.cxx (run_mutex_tests): Must unlock mutices before
+	destroying, given the change below.
+
+	* src/common/kapi.cxx (cyg_cond_destroy): Call the correct
+	destructor.  As it happens, it didn't matter because all these
+	destructors do is assert the queue is empty, and the queue is the
+	2nd word in every case.
+	(cyg_mutex_destroy): Call the destructor at all, so that
+	assertions are made.
+
+1999-09-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/intr/intr.cxx (call_pending_DSRs_inner): Add assert to check
+	for valid DSR (before trying to use it).
+
+1999-09-13  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c: Print out malloc system info.
+	(print_statistics): Fix buglet.
+
 1999-09-10  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/stress_threads.c: Print out more info. Reduce dump

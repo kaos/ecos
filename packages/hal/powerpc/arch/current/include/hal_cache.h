@@ -475,7 +475,8 @@ externC cyg_memdesc_t cyg_hal_mem_map[];
                       "r" (CYGARC_REG_IC_CMD_IA))
 
 // Synchronize the contents of the cache with memory.
-#define HAL_ICACHE_SYNC()
+#define HAL_ICACHE_SYNC()                               \
+    HAL_ICACHE_INVALIDATE_ALL()
 
 // Query the state of the instruction cache
 #define HAL_ICACHE_IS_ENABLED(_state_)                          \

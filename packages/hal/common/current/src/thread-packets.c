@@ -160,7 +160,7 @@ static char * unpack_int(char * buf, int * value)
   return buf + 8 ;
 }
 
-/* We are NOT depending upun extensive libraries */
+/* We are NOT depending upon extensive libraries */
 static int ishex(char ch,int *val)
 {
   if ((ch >= 'a') && (ch <= 'f'))
@@ -211,7 +211,7 @@ static char * pack_varlen_hex(
           n[i] = value & 0x0f ;
           value = value >> 4 ;
         }
-      i = 0 ;                  /* we had descrmented it to -1 */
+      i = 0 ;                  /* we had decrmented it to -1 */
       while (n[i] == 0 ) i++ ; /* drop leading zeroes */
       while (i++ < 8) *pkt++ = hexchars[n[i]] ; /* pack the number */
     }
@@ -336,8 +336,8 @@ static char * pack_threadid(char * pkt, threadref * id)
   return pkt ;
 } /* stub_pack_threadid */
 
-/* UNFORTUNATLY, not all ow the extended debugging system has yet been
-   converted to 64 but thread referenecces and process identifiers.
+/* UNFORTUNATELY, not all of the extended debugging system has yet been
+   converted to 64 but thread references and process identifiers.
    These routines do the conversion.
    An array of bytes is the correct treatment of an opaque identifier.
    ints have endian issues.

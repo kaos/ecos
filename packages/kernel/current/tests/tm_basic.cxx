@@ -744,6 +744,11 @@ run_mutex_tests(void)
     }
     show_times(mutex_ft, nmutexes, "Trylock [locked] mutex");
 
+    // Must unlock mutices before destroying them.
+    for (i = 0;  i < nmutexes;  i++) {
+        cyg_mutex_unlock(&test_mutexes[i]);
+    }
+
     wait_for_tick(); // Wait until the next clock tick to minimize aberations
     for (i = 0;  i < nmutexes;  i++) {
         HAL_CLOCK_READ(&mutex_ft[i].start);

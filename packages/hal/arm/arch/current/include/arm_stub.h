@@ -34,6 +34,9 @@ enum regnames {
 #define PS_C 0x20000000
 #define PS_V 0x10000000
 
+#define PS_I CPSR_IRQ_DISABLE
+#define PS_F CPSR_FIQ_DISABLE
+
 typedef enum regnames regnames_t;
 
 /* Given a trap value TRAP, return the corresponding signal. */

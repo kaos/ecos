@@ -1,3 +1,8 @@
+1999-09-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/signal/signal2.c (cause_fpe): Try both float and integer
+	division by zero.
+
 1999-09-10  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/stdlib/malloc.cxx (cyg_libc_get_malloc_pool): Added for

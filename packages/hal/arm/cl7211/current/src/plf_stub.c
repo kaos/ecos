@@ -73,6 +73,7 @@ static cyg_interrupt gdb_interrupt;
 static cyg_handle_t  gdb_interrupt_handle;
 #endif
 
+
 //-----------------------------------------------------------------------------
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 

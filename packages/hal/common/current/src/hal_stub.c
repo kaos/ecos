@@ -117,6 +117,7 @@ __set_baud_rate (int baud)
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
+
 #if (HAL_BREAKINST_SIZE == 1)
 typedef cyg_uint8 t_inst;
 #elif (HAL_BREAKINST_SIZE == 2)
@@ -161,6 +162,7 @@ cyg_hal_gdb_remove_break (target_register_t pc)
     }
     return 0;
 }
+
 
 #endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 

@@ -205,6 +205,18 @@
          of RAM needed for interrupt decoding tables and code."
  }
 
+ cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS {
+     display      "Ignore spurious [fleeting] interrupts"
+     parent       CYGPKG_HAL_COMMON_INTERRUPTS
+     description  "
+         On some hardware, interrupt sources may not be de-bounced or
+         de-glitched.  Rather than try to handle these interrupts (no
+         handling may be possible), this option allows the HAL to simply
+         ignore them.  In most cases, if the interrupt is real it will
+         reoccur in a detectable form."
+ }
+
+
  }}CFG_DATA
 
 */
@@ -214,6 +226,7 @@
 #undef  CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 #define CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
 #undef  CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+#undef  CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
 
 
 /* {{CFG_DATA
