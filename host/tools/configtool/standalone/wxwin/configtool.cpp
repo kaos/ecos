@@ -209,7 +209,7 @@ bool ecApp::OnInit()
         wxFileName platforms (m_appDir, wxT("platforms.tar"));
         platforms.Normalize();
         if (platforms.FileExists())
-            wxExecute (wxT("tar -C ") + wxFileName::GetHomeDir() + wxT(" -xf ") + platforms.GetFullPath());
+            wxExecute (wxT("tar -C ") + wxFileName::GetHomeDir() + wxT(" -xf ") + platforms.GetFullPath(), wxEXEC_SYNC);
     }
 #endif
 

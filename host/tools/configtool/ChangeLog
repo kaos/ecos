@@ -1,3 +1,12 @@
+2003-04-17  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp, standalone/wxwin/mainwin.cpp:
+	Rationalise the treatment of the build tools directory during startup
+	and when using the build tools dialog.
+
+	* standalone/wxwin/configtool.cpp: Wait for the installation of platform
+	definitions to complete on Linux.
+
 2003-04-16  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtool.cpp: Install default platform definitions

@@ -331,17 +331,23 @@ bool ecSettings::LoadConfig()
         }
     }
 
-    // look for bin/*-objcopy under the build tools directory
-    wxArrayString objcopyFiles;
-    wxString objcopyFileSpec(wxT("-objcopy"));
-#ifdef __WXMSW__
-    objcopyFileSpec += wxT(".exe");
-#endif
-    size_t objcopyCount = wxDir::GetAllFiles(m_buildToolsDir, &objcopyFiles, wxT("*") + objcopyFileSpec, wxDIR_FILES | wxDIR_DIRS);
-    for (int count=0; count < objcopyCount; count++)
+    // look for *objcopy in and under the build tools directory
+    if (! m_buildToolsDir.IsEmpty())
     {
-        wxFileName file (objcopyFiles [count]);
-        m_arstrBinDirs.Set(file.GetFullName().Left (file.GetFullName().Find(objcopyFileSpec)), file.GetPath(wxPATH_GET_VOLUME));
+        wxArrayString objcopyFiles;
+        wxString objcopyFileSpec(wxT("objcopy"));
+#ifdef __WXMSW__
+        objcopyFileSpec += wxT(".exe");
+#endif
+        size_t objcopyCount = wxDir::GetAllFiles(m_buildToolsDir, &objcopyFiles, wxT("*") + objcopyFileSpec, wxDIR_FILES | wxDIR_DIRS);
+        for (int count=0; count < objcopyCount; count++)
+        {
+            wxFileName file (objcopyFiles [count]);
+            wxString new_prefix (file.GetFullName().Left (file.GetFullName().Find(objcopyFileSpec)));
+            if ((! new_prefix.IsEmpty()) && ('-' == new_prefix.Last()))
+                new_prefix = new_prefix.Left (new_prefix.Len() - 1); // strip off trailing hyphen
+            m_arstrBinDirs.Set(new_prefix, file.GetPath(wxPATH_GET_VOLUME));
+        }
     }
 
     if (!config.Read(_("/Build/Make Options"), & m_strMakeOptions))

@@ -1220,62 +1220,64 @@ void ecMainFrame::OnBuildToolsPath(wxCommandEvent& event)
     if (!doc)
         return;
 
-    // Add all the paths from the bin dirs to the path array,
-    // making the default path the appropriate target prefix
-    wxString defaultPath;
-    const wxString strPrefix(doc->GetCurrentTargetPrefix());
+    // add the current build tools dir to the drop-down list box
     wxArrayString arstrPaths;
-
-    wxStringToStringMap& map = wxGetApp().GetSettings().GetBinDirs();
-    map.BeginFind();
-    wxString key, value;
-    bool hasDefaultDir = FALSE;
-    while (map.Next(key, value))
-    {
-        arstrPaths.Add(value);
-        if (key == strPrefix)
-            defaultPath = value;
-        if (value == wxGetApp().GetSettings().m_buildToolsDir)
-            hasDefaultDir = TRUE;
-    }
-    if (!wxGetApp().GetSettings().m_buildToolsDir.IsEmpty() && !hasDefaultDir)
-    {
+    if (!wxGetApp().GetSettings().m_buildToolsDir.IsEmpty())
         arstrPaths.Add(wxGetApp().GetSettings().m_buildToolsDir);
-    }
-    
+
+    // also add the sub-directory containing tools for the current command prefix
+    wxString value;
+    wxStringToStringMap& map = wxGetApp().GetSettings().GetBinDirs();
+    const wxString strPrefix(doc->GetCurrentTargetPrefix());
+    if (map.Find(strPrefix, value) && (wxNOT_FOUND == arstrPaths.Index(value)))
+        arstrPaths.Add(value);
+
     wxString msg;
     msg.Printf(_("Enter the location of the %s build tools\n"
-          "folder, which should contain %sgcc. You can\n"
+          "folder. You can\n"
           "type in a path or use the Browse button to\n"
           "navigate to a folder."),
-          (const wxChar*) (strPrefix.IsEmpty() ? wxString(wxT("native")) : strPrefix),
-          (const wxChar*) (strPrefix.IsEmpty() ? wxString(wxT("")) : strPrefix + wxT("-"))
-          );
+          (const wxChar*) (strPrefix.IsEmpty() ? wxString(wxT("native")) : strPrefix));
     wxString caption(_("Build Tools Path"));
 
-    ecFolderDialog dialog(defaultPath, arstrPaths, msg, this, ecID_BUILD_TOOLS_DIALOG, caption);
+    ecFolderDialog dialog(wxGetApp().GetSettings().m_buildToolsDir, arstrPaths, msg, this, ecID_BUILD_TOOLS_DIALOG, caption);
     if (dialog.ShowModal() == wxID_OK)
     {
-        ecFileName strExe;
+        wxString path (dialog.GetPath());
 
+        // look for *objcopy under the user-specified build tools directory
+        wxArrayString objcopyFiles;
+        wxString objcopyFileSpec(wxT("objcopy"));
 #ifdef __WXMSW__
-        wxString exeSuffix(wxT(".exe"));
-#else
-        wxString exeSuffix(wxEmptyString);
+        objcopyFileSpec += wxT(".exe");
 #endif
-        wxString path(dialog.GetPath());
-        strExe.Printf(wxT("%s%c%s%sgcc%s"), (const wxChar*) path, wxFILE_SEP_PATH, (const wxChar*) strPrefix,
-            (const wxChar*) strPrefix.IsEmpty() ? wxT("") : wxT("-"), (const wxChar*) exeSuffix);
+        size_t objcopyCount = wxDir::GetAllFiles(path, &objcopyFiles, wxT("*") + objcopyFileSpec, wxDIR_FILES | wxDIR_DIRS);
+        bool bPrefixFound = false;
+        for (int count=0; count < objcopyCount; count++)
+        {
+            wxFileName file (objcopyFiles [count]);
+            wxString new_prefix (file.GetFullName().Left (file.GetFullName().Find(objcopyFileSpec)));
+            if ((! new_prefix.IsEmpty()) && ('-' == new_prefix.Last()))
+                new_prefix = new_prefix.Left (new_prefix.Len() - 1); // strip off trailing hyphen 
+            if (new_prefix == strPrefix)
+                bPrefixFound = true;
+        }
 
         wxString msg;
         msg.Printf(wxT("%s does not appear to contain the build tools - use this folder anyway?"), (const wxChar*) path);
 
-        if(strExe.Exists() ||
-            (wxID_YES == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO)))
+        if(bPrefixFound ||
+            (wxYES == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO)))
         {
-            map.Set(strPrefix, path);
-            if (!hasDefaultDir)
-                wxGetApp().GetSettings().m_buildToolsDir = path;
+            for (int count=0; count < objcopyCount; count++)
+            {
+                wxFileName file (objcopyFiles [count]);
+                wxString new_prefix (file.GetFullName().Left (file.GetFullName().Find(objcopyFileSpec)));
+                if ((! new_prefix.IsEmpty()) && ('-' == new_prefix.Last()))
+                    new_prefix = new_prefix.Left (new_prefix.Len() - 1); // strip off trailing hyphen
+                map.Set(new_prefix, file.GetPath(wxPATH_GET_VOLUME));
+            }
+            wxGetApp().GetSettings().m_buildToolsDir = path;
         }
     }
 }
