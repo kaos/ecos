@@ -302,7 +302,7 @@
 
 	.macro	hal_fpu_push_ctx
 	subl	$i386reg_fpstate_size,%esp	# make space
-	fsave	i386reg_fpstate(%esp)		# save FPU state
+	fnsave	i386reg_fpstate(%esp)		# save FPU state
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
 	# Save SIMD state.
 
@@ -494,7 +494,7 @@
 	movl	0(%ecx,%ebx,4),%eax		# EAX = FPU state owner
 	cmpl	$0,%eax				# test it
 	je	1f				# skip if zero
-	fsave	i386reg_fpucontext_state(%eax)	# save state
+	fnsave	i386reg_fpucontext_state(%eax)	# save state
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
 	# Save SIMD state.
 

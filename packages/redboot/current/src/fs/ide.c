@@ -151,11 +151,240 @@ ide_read_sectors(int ctlr, int dev, cyg_uint32 start, cyg_uint8 count, cyg_uint1
     return 1;
 }
 
+// max number of sectors to xfer during a single packet command
+#define MAX_CD_XFER 16
+
+static inline int
+send_packet_command(int ctlr, int dev, cyg_uint16 len, cyg_uint16 *pkt, int pktlen)
+{
+    int i;
+    cyg_uint8 status, reason;
+
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_FEATURES, 0);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COUNT, 0);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBALOW, 0);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAMID, len & 0xff);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_LBAHI,  (len >> 8) & 0xff);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, dev << 4);
+    HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_COMMAND, 0xA0);
+
+    if (!__wait_for_drq(ctlr)) {
+	diag_printf("%s: NO DRQ for ide%d, device %d.\n",
+		    __FUNCTION__, ctlr, dev);
+	return 0;
+    }
+
+    // send packet
+    for (i = 0; i < (pktlen/sizeof(cyg_uint16)); i++)
+	HAL_IDE_WRITE_UINT16(ctlr, IDE_REG_DATA, pkt[i]);
+
+    // wait for not busy transferring packet
+    do {
+	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+	HAL_IDE_READ_UINT8(ctlr, IDE_REG_REASON, reason);
+
+	if ((status & (IDE_STAT_BSY | IDE_STAT_DRQ)) == IDE_STAT_DRQ)
+	    if (reason & IDE_REASON_COD)
+		continue;  // still wanting packet data (should timeout here)
+
+    } while (status & IDE_STAT_BSY);
+
+    return 1;
+}
+
+#define READ_COUNT(x)                                    \
+        { unsigned char tmp;                             \
+          HAL_IDE_READ_UINT8(ctlr, IDE_REG_LBAMID, tmp); \
+          (x) = tmp;                                     \
+          HAL_IDE_READ_UINT8(ctlr, IDE_REG_LBAHI, tmp);  \
+          (x) = cdcount |= (tmp << 8);                   \
+        }
+
+
+// Read the sense data
+static int
+request_sense(int ctlr, int dev, cyg_uint16 count, cyg_uint16 *buf)
+{
+    int i;
+    cyg_uint16 cdcount, pkt[6];
+    unsigned char status, *cpkt = (unsigned char *)pkt;
+
+
+    // Fill in REQUEST SENSE packet command block
+    memset(cpkt, 0, sizeof(pkt));
+    cpkt[0] = 0x03;
+    cpkt[4] = 254;  // allocation length
+	
+    if (!send_packet_command(ctlr, dev, count, pkt, sizeof(pkt)))
+	return 0;
+
+    HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+    if (!(status & IDE_STAT_DRQ)) {
+	if (status & IDE_STAT_SERVICE) {
+	    unsigned char reason;
+	    HAL_IDE_READ_UINT8(ctlr, IDE_REG_REASON, reason);
+	    diag_printf("%s: SERVICE request for ide%d, device %d, status[%02x], reason[%02x].\n",
+			__FUNCTION__, ctlr, dev, status, reason);
+	}
+	return 0;
+    }
+
+    READ_COUNT(cdcount);
+    if (cdcount != count)
+	diag_printf("%s: ide%d, dev%d: his cnt[%d] our count[%d].\n",
+		    __FUNCTION__, ctlr, dev, cdcount, count);
+
+    for(i = 0; i < (cdcount / sizeof(*buf)); i++, buf++)
+	HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *buf);
+
+    // wait for not busy transferring data
+    do {
+	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+    } while ((status & (IDE_STAT_BSY | IDE_STAT_DRQ)) == IDE_STAT_DRQ);
+
+    return cdcount;
+}
+
+// Interpret the sense data
+static int
+handle_sense(int ctlr, int dev, cyg_uint8 count, cyg_uint16 *buf)
+{
+#if 0
+    unsigned char *p = (char *)buf;
+
+    diag_printf("%s: %d bytes:\n", __FUNCTION__, count);
+    diag_printf("sense key[%02x] additional sense[%02x]\n",
+		p[2], p[12]);
+#endif
+    return 1;
+}
+
+static int
+do_packet_read(int ctlr, int dev, cyg_uint32 start, cyg_uint8 count, cyg_uint16 *buf)
+{
+    int i, retry_cnt;
+    cyg_uint16 cdcount, pkt[6], sense[127];
+    unsigned char status, *cpkt = (unsigned char *)pkt;
+
+    // get count number of whole cdrom sectors
+    while (count) {
+
+	retry_cnt = 3;
+
+	i = (count > MAX_CD_XFER) ? MAX_CD_XFER : count;
+
+    retry:
+	// Fill in READ(10) packet command block
+	memset(cpkt, 0, sizeof(pkt));
+	cpkt[0] = 0x28;  // READ(10)
+	cpkt[2] = (start >> 24) & 0xff;
+	cpkt[3] = (start >> 16) & 0xff;
+	cpkt[4] = (start >>  8) & 0xff;
+	cpkt[5] = (start >>  0) & 0xff;
+	cpkt[7] = (i >> 8) & 0xff;
+	cpkt[8] = i & 0xff;
+	
+	if (!send_packet_command(ctlr, dev, i * CDROM_SECTOR_SIZE,
+				 pkt, sizeof(pkt)))
+	    return 0;
+
+	HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+	if (!(status & IDE_STAT_DRQ)) {
+	    if (status & IDE_STAT_SERVICE) {
+		unsigned char reason;
+		int sense_count;
+		HAL_IDE_READ_UINT8(ctlr, IDE_REG_REASON, reason);
+#if 1
+		diag_printf("%s: SERVICE request for ide%d, device %d, status[%02x], reason[%02x].\n",
+			    __FUNCTION__, ctlr, dev, status, reason);
+#endif
+		sense_count = request_sense(ctlr, dev, sizeof(sense), sense);
+		if (sense_count) {
+		    handle_sense(ctlr, dev, sense_count, sense);
+		    if (retry_cnt--)
+			goto retry;
+		}
+	    }
+	    return 0;
+	}
+
+	count -= i;
+	start += i;
+
+	READ_COUNT(cdcount);
+	if (cdcount != (i * CDROM_SECTOR_SIZE))
+	    diag_printf("%s: ide%d, dev%d: his cnt[%d] our count[%d].\n",
+			__FUNCTION__, ctlr, dev,
+			cdcount, i * CDROM_SECTOR_SIZE);
+
+	for(i = 0; i < (cdcount / sizeof(*buf)); i++, buf++)
+	    HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *buf);
+
+	// wait for not busy transferring data
+	do {
+	    HAL_IDE_READ_UINT8(ctlr, IDE_REG_STATUS, status);
+	} while ((status & (IDE_STAT_BSY | IDE_STAT_DRQ)) == IDE_STAT_DRQ);
+    }
+    return 1;
+}
+
+
+static int
+ide_packet_read_sectors(int ctlr, int dev, cyg_uint32 start, cyg_uint8 count, cyg_uint16 *buf)
+{
+    int  i, extra;
+    cyg_uint32 cdstart;
+    static cyg_uint16 cdsec_buf[CDROM_SECTOR_SIZE/sizeof(cyg_uint16)];
+
+    cdstart = (start + SECTORS_PER_CDROM_SECTOR-1) / SECTORS_PER_CDROM_SECTOR;
+    
+    // align to cdrom sector boundary.
+    if (start % SECTORS_PER_CDROM_SECTOR) {
+	if (!ide_packet_read_sectors(ctlr, dev,
+				     cdstart * SECTORS_PER_CDROM_SECTOR,
+				     SECTORS_PER_CDROM_SECTOR, cdsec_buf))
+	    return 0;
+
+	i = SECTORS_PER_CDROM_SECTOR - (start % SECTORS_PER_CDROM_SECTOR);
+	if (i > count)
+	    i = count;
+	memcpy(buf, cdsec_buf + ((start % CDROM_SECTOR_SIZE) * SECTOR_SIZE),
+	       i * SECTOR_SIZE);
+
+	count -= i;
+	buf += (i * SECTOR_SIZE) / sizeof(*buf);
+	++cdstart;
+    }
+
+    extra = count % SECTORS_PER_CDROM_SECTOR;
+    count /= SECTORS_PER_CDROM_SECTOR;
+
+    if (count) {
+	do_packet_read(ctlr, dev, cdstart, count, buf);
+	buf += count * SECTORS_PER_CDROM_SECTOR * SECTOR_SIZE;
+    }
+
+    if (extra) {
+        // read cdrom sector 
+        if (!ide_packet_read_sectors(ctlr, dev,
+                                     cdstart * SECTORS_PER_CDROM_SECTOR,
+                                     extra, cdsec_buf))
+            return 0;
+	memcpy(buf, cdsec_buf, extra * SECTOR_SIZE);
+    }
+
+    return 1;
+}
+
 static int
 ide_read(struct disk *d,
 	 cyg_uint32 start_sec, cyg_uint32 *buf, cyg_uint8 nr_secs)
 {
     struct ide_priv *p = (struct ide_priv *)(d->private);
+
+    if (p->flags & IDE_DEV_PACKET)
+        return ide_packet_read_sectors(p->controller, p->drive,
+                                     start_sec, nr_secs, (cyg_uint16 *)buf);
 
     return ide_read_sectors(p->controller, p->drive,
 			    start_sec, nr_secs, (cyg_uint16 *)buf);

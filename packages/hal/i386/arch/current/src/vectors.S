@@ -465,7 +465,7 @@ __fpu_switch_vsr:
 	je	9f				# yes, nothing else to do
 	cmpl	$0,%eax				# is FPU even in use?
 	je	1f				# if not, skip save
-	fsave	i386reg_fpucontext_state(%eax)	# save FPU state
+	fnsave	i386reg_fpucontext_state(%eax)	# save FPU state
 #ifdef CYGHWR_HAL_I386_PENTIUM_SSE
 	# Save SIMD state.
 

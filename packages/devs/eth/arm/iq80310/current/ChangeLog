@@ -1,3 +1,9 @@
+2001-12-20  Mark Salter  <msalter@redhat.com>
+
+	* cdl/iq80310_eth_drivers.cdl: Add "flavor data" (as pointed out by
+	hmt@redhat.com) to CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS and
+	CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS.
+
 2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/iq80310_info.h: Remove MAX_TX_DESCRIPTORS and 

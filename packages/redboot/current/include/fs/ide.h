@@ -51,6 +51,7 @@
 #define IDE_REG_ERROR     1
 #define IDE_REG_FEATURES  1
 #define IDE_REG_COUNT     2
+#define IDE_REG_REASON    2  // ATAPI
 #define IDE_REG_LBALOW    3
 #define IDE_REG_LBAMID    4
 #define IDE_REG_LBAHI     5
@@ -60,8 +61,14 @@
 
 #define IDE_STAT_BSY      0x80
 #define IDE_STAT_DRDY     0x40
+#define IDE_STAT_SERVICE  0x10
 #define IDE_STAT_DRQ      0x08
+#define IDE_STAT_CORR     0x04
 #define IDE_STAT_ERR      0x01
+
+#define IDE_REASON_REL    0x04
+#define IDE_REASON_IO     0x02
+#define IDE_REASON_COD    0x01
 
 //
 // Drive ID offsets of interest
@@ -81,5 +88,8 @@ struct ide_priv {
 #define IDE_DEV_PRESENT  1  // Device is present
 #define IDE_DEV_PACKET   2  // Supports packet interface
 #define IDE_DEV_ADDR48   3  // Supports 48bit addressing
+
+#define CDROM_SECTOR_SIZE 2048
+#define SECTORS_PER_CDROM_SECTOR (CDROM_SECTOR_SIZE/SECTOR_SIZE)
 
 #endif // CYGONCE_REDBOOT_IDE_H

@@ -267,6 +267,18 @@ disk_parse_filename(const char *name, partition_t **part, const char **path)
 	    return 0;
 	*path = &name[5];
     }
+#ifdef CYGSEM_REDBOOT_DISK_ISO9660
+    else if (name[0] == 'c' && name[1] == 'd') {
+	// CD drives
+	kind = DISK_IDE_CDROM;
+	if (name[2] < '0' || name[2] > '9')
+	    return 0;
+	index = name[2] - '0';
+	if (name[3] != ':')
+	    return 0;
+	*path = &name[4];
+    }
+#endif
 
     if (kind) {
 	for (i = 0; i < CYGNUM_REDBOOT_MAX_DISKS; i++) {
@@ -346,7 +358,12 @@ disk_stream_open(char *filename, int *err)
 	return -1;
     }
 
-    if (file_part->systype == 0 || file_part->funs == (fs_funs_t *)0) {
+    if (file_part->disk->kind != DISK_IDE_CDROM && file_part->systype == 0) {
+	*err = diskerr_partition;
+	return -1;
+    }
+
+    if (file_part->funs == (fs_funs_t *)0) {
 	*err = diskerr_partition;
 	return -1;
     }

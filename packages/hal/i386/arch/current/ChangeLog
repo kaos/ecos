@@ -1,3 +1,8 @@
+2001-12-19  Mark Salter  <msalter@redhat.com>
+
+	* include/arch.inc: Use fnsave instead of fsave.
+	* src/vectors.S: Ditto.
+
 2001-12-11  Nick Garnett  <nickg@redhat.com>
 
 	* src/i386.ld (SECTION_rel__got): Added entry for

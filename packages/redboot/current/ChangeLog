@@ -1,3 +1,10 @@
+2001-12-16  Mark Salter  <msalter@redhat.com>
+
+	* src/fs/ide.c: Add ATAPI support.
+	* include/fs/ide.h: Add ATAPI defines.
+	* src/fs/disk.c (disk_stream_open): Fix support for IDE CDROMs.
+	(disk_parse_filename): Ditto.
+
 2001-12-12  Hugo Tyson  <hmt@redhat.com>
 
 	* cdl/redboot.cdl (CYGDBG_REDBOOT_NET_DEBUG_CONSOLE_NUMBER): New

@@ -1,3 +1,8 @@
+2001-12-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_pcnet.c (amd_pcnet_init): Fix warning.
+	(pcnet_send): Fix bad debug code.
+
 2001-12-04  Nick Garnett  <nickg@redhat.com>
 
 	* src/if_pcnet.c:

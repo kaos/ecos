@@ -91,6 +91,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_IQ80310 {
 
     cdl_option CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS {
         display       "Maximum number of RX descriptors"
+        flavor  data
         default_value { CYGPKG_REDBOOT ? 4 : 128 }
         define        MAX_RX_DESCRIPTORS
         description   "
@@ -107,6 +108,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_IQ80310 {
 
     cdl_option CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS {
         display       "Maximum number of TX descriptors"
+        flavor  data
         default_value { CYGPKG_REDBOOT ? 4 : 128 }
         define        MAX_TX_DESCRIPTORS
         description   "

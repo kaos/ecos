@@ -100,7 +100,7 @@ int pcnet_txfifo_bad = 0;
 #include CYGDAT_DEVS_ETH_AMD_PCNET_INL
 #undef  __WANT_DEVS
 
-#ifdef CYGPKG_REDBOOT
+#if defined(CYGPKG_REDBOOT) && DEBUG
 
 static void db_printf( char *fmt, ... )
 {
@@ -485,7 +485,7 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
                 cpd->esa[3], cpd->esa[4], cpd->esa[5] );
 #endif
 
-#if CYGSEM_DEVS_ETH_AMD_PCNET_FORCE_10MBPS
+#ifdef CYGSEM_DEVS_ETH_AMD_PCNET_FORCE_10MBPS
     if (get_reg(sc,PCNET_ANR_AAR) & PCNET_ANR_AAR_100) {
         cyg_uint16 anr;
 	int loop;
@@ -984,11 +984,10 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
                                 | PCNET_TD_PTR_OWN | PCNET_TD_PTR_STP | PCNET_TD_PTR_ENP);
 
 #if DEBUG & 1
-    cpd->txd = txd;
     db_printf("Last TX: LEN %04x MISC %04x PTR %08x\n", 
-                _SU16(cpd->txd, PCNET_TD_LEN),
-                _SU16(cpd->txd, PCNET_TD_MISC),
-                _SU32(cpd->txd, PCNET_TD_PTR));
+                _SU16(txd, PCNET_TD_LEN),
+                _SU16(txd, PCNET_TD_MISC),
+                _SU32(txd, PCNET_TD_PTR));
 #endif
 
     // This delay seems to be necessary on some platforms 

@@ -490,10 +490,10 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
 //--------------------------------------------------------------------------
 // Macro for finding return address. 
-#define CYGARC_HAL_GET_RETURN_ADDRESS(_x_) \
+#define CYGARC_HAL_GET_RETURN_ADDRESS(_x_, _dummy_) \
   asm volatile ( "move %0,$31;" : "=r" (_x_) )
 
-#define CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP()
+#define CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP(_dummy_)
 
 //--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_HAL_ARCH_H

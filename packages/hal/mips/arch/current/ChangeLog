@@ -1,3 +1,10 @@
+2001-12-17  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h (CYGARC_HAL_GET_RETURN_ADDRESS,
+	(CYGARC_HAL_GET_RETURN_ADDRESS_BACKUP): Added dummy arguments.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Fix warning.
+
 2001-12-04  Nick Garnett  <nickg@redhat.com>
 
 	* src/hal_misc.c: Added hal_arch_program_new_stack() to support

@@ -81,7 +81,10 @@ externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 
 externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
+#if defined(CYGHWR_HAL_MIPS_FPU) || \
+    (defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && defined(CYGPKG_HAL_EXCEPTIONS))
     int vec = regs->vector>>2;
+#endif
 
 #if defined(CYGHWR_HAL_MIPS_FPU)
     // Special handling of FPU exceptions
