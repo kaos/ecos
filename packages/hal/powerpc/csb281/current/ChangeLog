@@ -1,3 +1,8 @@
+2003-01-22  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/pkgconf/mlt_powerpc_csb281_ram.h (CYGMEM_SECTION_heap1_SIZE): 
+	Make this match the .mlt and .ldi definition.
+
 2003-01-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_ROMRAM.ecm: 
