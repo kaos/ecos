@@ -1,3 +1,8 @@
+2003-05-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ecos/support.c (_show_ifp): Display the IPv6 flag
+	information.
+
 2003-05-04  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ecos/support.c: 
@@ -6,9 +11,15 @@
 	on some hardware as the init sequence can totally foul up a
 	network [debug] connection.
 
+2003-04-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ecos/support.c (cyg_net_malloc): Honour the flag M_ZERO,
+	otherwise we end up with junk where we don't want it.
+
 2003-04-11  Michael Checky  <Michael_Checky@Thermoking.com>
 
-	* cdl/freebsd_net.cdl: Deleted the 'CYGPKG_NET_FREEBSD_STACK_BUILD_TESTS'
+	* cdl/freebsd_net.cdl: Deleted the 
+	'CYGPKG_NET_FREEBSD_STACK_BUILD_TESTS'
 	component because these tests are in the net.cdl component
 	'CYGPKG_NET_BUILD_TESTS' and selecting this option in freebsd_net.cdl
 	causes build errors.

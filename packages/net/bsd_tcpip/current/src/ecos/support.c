@@ -72,6 +72,11 @@
 #include <cyg/hal/hal_if.h>
 #include <cyg/infra/cyg_ass.h>
 
+#ifdef CYGPKG_NET_INET6
+#include <netinet/in.h>
+#include <netinet6/in6_var.h>
+#endif
+
 #if !CYGPKG_NET_DRIVER_FRAMEWORK   // Interface
 #error At least one network driver framework must be defined!
 #else
@@ -201,6 +206,9 @@ cyg_net_malloc(u_long size, int type, int flags)
         res = cyg_mempool_var_try_alloc(net_mem, size);
     } else {
         res = cyg_mempool_var_alloc(net_mem, size);
+    }
+    if ((flags & M_ZERO) && res) {
+      memset(res,0,size);
     }
     FINISH_STATS(stats_malloc);
     log(LOG_MDEBUG, "%p\n", res);
@@ -945,17 +953,32 @@ _show_ifp(struct ifnet *ifp, pr_fun *pr)
     TAILQ_FOREACH(ifa, &ifp->if_addrlist, ifa_list) {
         if (ifa->ifa_addr->sa_family != AF_LINK) {
 	    (*pr)("%-8s", name);
-            getnameinfo (ifa->ifa_addr, ifa->ifa_addr->sa_len, addr, sizeof(addr), 0, 0, 0);
+            getnameinfo (ifa->ifa_addr, ifa->ifa_addr->sa_len, addr, 
+                         sizeof(addr), 0, 0, NI_NUMERICHOST);
 	    if (ifa->ifa_addr->sa_family == AF_INET) {
-	      getnameinfo (ifa->ifa_dstaddr, ifa->ifa_dstaddr->sa_len, broadcast, sizeof(broadcast), 0, 0, 0);
+	      getnameinfo (ifa->ifa_dstaddr, ifa->ifa_dstaddr->sa_len, 
+                           broadcast, sizeof(broadcast), 
+                           0, 0, NI_NUMERICHOST);
 	      _mask(ifa->ifa_netmask, netmask, 64);
-	      (*pr)("IP: %s, Broadcast: %s, Netmask: %s\n", addr, broadcast, netmask);
+	      (*pr)("IP: %s, Broadcast: %s, Netmask: %s\n", 
+                    addr, broadcast, netmask);
 	    }
-#ifdef CYGPKG_NET_INET6
-	    if (ifa->ifa_addr->sa_family == AF_INET6) {
-	      _mask6(ifa->ifa_netmask, netmask, 64);
-	      (*pr)("IP: %s/%s\n", addr,netmask);
-	    }
+#ifdef CYGPKG_NET_INET6 
+            if (ifa->ifa_addr->sa_family == AF_INET6) {
+              struct in6_ifaddr * ifa6 = (struct in6_ifaddr *) ifa;
+              _mask6(ifa->ifa_netmask, netmask, 64);
+              (*pr)("IP: %s/%s   ", addr,netmask);
+              if (ifa6->ia6_flags & IN6_IFF_ANYCAST) (*pr) ("Anycast ");
+              if (ifa6->ia6_flags & IN6_IFF_TENTATIVE) (*pr) ("Tentative ");
+              if (ifa6->ia6_flags & IN6_IFF_DUPLICATED) (*pr) ("Duplicate ");
+              if (ifa6->ia6_flags & IN6_IFF_DETACHED) (*pr) ("Detached ");
+              if (ifa6->ia6_flags & IN6_IFF_DEPRECATED) (*pr) ("Deprecated ");
+              if (ifa6->ia6_flags & IN6_IFF_NODAD) (*pr) ("NoDAD ");
+              if (ifa6->ia6_flags & IN6_IFF_AUTOCONF) (*pr) ("AutoConf ");
+              if (ifa6->ia6_flags & IN6_IFF_TEMPORARY) (*pr) ("Tempory ");
+              if (ifa6->ia6_flags & IN6_IFF_HOME) (*pr) ("Home ");
+              (*pr) ("\n");
+            }
 #endif
             (*pr)("        ");
             if ((ifp->if_flags & IFF_UP)) (*pr)("UP ");
@@ -966,8 +989,10 @@ _show_ifp(struct ifnet *ifp, pr_fun *pr)
             if ((ifp->if_flags & IFF_MULTICAST)) (*pr)("MULTICAST ");
             if ((ifp->if_flags & IFF_ALLMULTI)) (*pr)("ALLMULTI ");
             (*pr)("MTU: %d, Metric: %d\n", ifp->if_mtu, ifp->if_metric);
-            (*pr)("        Rx - Packets: %d, Bytes: %d", ifa->if_data.ifi_ipackets, ifa->if_data.ifi_ibytes);
-            (*pr)(", Tx - Packets: %d, Bytes: %d\n", ifa->if_data.ifi_opackets, ifa->if_data.ifi_obytes);
+            (*pr)("        Rx - Packets: %d, Bytes: %d", 
+                  ifa->if_data.ifi_ipackets, ifa->if_data.ifi_ibytes);
+            (*pr)(", Tx - Packets: %d, Bytes: %d\n", 
+                  ifa->if_data.ifi_opackets, ifa->if_data.ifi_obytes);
         }
     }
 }
