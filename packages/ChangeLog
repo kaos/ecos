@@ -1,3 +1,9 @@
+2002-08-07  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* pkgconf/rules.doc: The location of the various stylesheets, etc,
+	is quite varied.  Made some changes to let it work on a Debian system,
+	but this should definitely be revisited.
+
 2002-08-06  Jonathan Larmour  <jifl@ecoscentric.com>
 
 	* ecos.db: Include AT91 watchdog driver in at91 target.

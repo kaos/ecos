@@ -59,13 +59,22 @@
 # have moved around in various releases of the tools.
 ifneq (,$(wildcard /usr/share/sgml/docbook))
   CATALOG	:= /etc/sgml/catalog
-  DSSSL_CATALOG := $(firstword $(wildcard /usr/share/sgml/docbook/dsssl-stylesheets-*/catalog))
+  ifneq (,$(wildcard /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh/catalog))
+    DSSSL_CATALOG  := /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh/catalog
+  else
+    DSSSL_CATALOG := $(firstword $(wildcard /usr/share/sgml/docbook/dsssl-stylesheets-*/catalog))
+  endif
 else
   ifneq (,$(wildcard /usr/lib/sgml/stylesheets/nwalsh-modular/catalog))
     CATALOG          := /usr/lib/sgml/CATALOG
     DSSSL_CATALOG    := /usr/lib/sgml/stylesheets/nwalsh-modular/catalog
   else
-    Error: unable to locate DocBook tools.
+    ifneq (,$(wildcard /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh/sgml.catalog))
+      CATALOG        := /usr/lib/sgml/catalog
+      DSSSL_CATALOG  := /usr/lib/sgml/stylesheet/dsssl/docbook/nwalsh/sgml.catalog
+    else
+      Error: unable to locate DocBook tools.
+    endif
   endif
 endif
 ECOS_STYLESHEET  := $(TOPLEVEL)/pkgconf/stylesheet.dsl
