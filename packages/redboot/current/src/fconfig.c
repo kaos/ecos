@@ -566,7 +566,7 @@ do_flash_config(int argc, char *argv[])
     }
     if (!need_update)
         return;
-    flash_write_config();
+    flash_write_config(true);
 }
 
 
@@ -681,7 +681,7 @@ flash_lookup_alias(char *alias, char *alias_buf)
 // Write the in-memory copy of the configuration data to the flash device.
 //
 void
-flash_write_config(void)
+flash_write_config(bool prompt)
 {
 #if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
     int stat;
@@ -692,7 +692,7 @@ flash_write_config(void)
     config->key1 = CONFIG_KEY1;  
     config->key2 = CONFIG_KEY2;
     config->cksum = cyg_crc32((unsigned char *)config, sizeof(struct _config)-sizeof(config->cksum));
-    if (verify_action("Update RedBoot non-volatile configuration")) {
+    if (!prompt || verify_action("Update RedBoot non-volatile configuration")) {
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
         memcpy(fis_work_block, fis_addr, fisdir_size);
@@ -747,6 +747,27 @@ flash_lookup_config(char *key)
 }
 
 //
+// Enumerate the keys from the configuration
+//
+bool
+flash_next_key(char *key, int keylen, int *type, int *offset)
+{
+    unsigned char *dp;
+    int len;
+
+    if (!config_ok) return false;
+    if ((*offset < 0) || (*offset >= MAX_CONFIG_DATA)) return false;
+
+    dp = &config->config_data[*offset];
+    if ((*type = CONFIG_OBJECT_TYPE(dp)) == CONFIG_EMPTY) return false;
+    if ((len = CONFIG_OBJECT_KEYLEN(dp)) > keylen) return false;        
+    memcpy(key, CONFIG_OBJECT_KEY(dp), len);
+    *offset += 4 + CONFIG_OBJECT_KEYLEN(dp) + CONFIG_OBJECT_ENABLE_KEYLEN(dp) +
+        config_length(CONFIG_OBJECT_TYPE(dp));
+    return true;
+}
+
+//
 // Retrieve a data object from the data base (in memory copy)
 //
 bool
@@ -756,6 +777,7 @@ flash_get_config(char *key, void *val, int type)
     void *val_ptr;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
     struct _config *save_config = 0;
+    bool res;
 #endif
 
     if (!config_ok) return false;
@@ -812,10 +834,60 @@ flash_get_config(char *key, void *val, int type)
         }
         else{
             diag_printf("Getting config information in READONLY mode\n");
-            return flash_get_config(key, val, type);
+            res = flash_get_config(key, val, type);
+            config = save_config;
+            return res;
         }        
     }
 #endif
+    return false;
+}
+
+//
+// Update a data object in the data base (in memory copy & backing store)
+//
+bool
+flash_set_config(char *key, void *val, int type)
+{
+    unsigned char *dp;
+    void *val_ptr;
+
+    if (!config_ok) return false;
+
+    if ((dp = flash_lookup_config(key)) != (unsigned char *)NULL) {
+        if (CONFIG_OBJECT_TYPE(dp) == type) {
+            val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
+            switch (type) {
+                // Note: the data may be unaligned in the configuration data
+            case CONFIG_BOOL:
+                memcpy(val_ptr, val, sizeof(bool));
+                break;
+            case CONFIG_INT:
+                memcpy(val_ptr, val, sizeof(unsigned long));
+                break;
+#ifdef CYGPKG_REDBOOT_NETWORKING
+            case CONFIG_IP:
+                memcpy(val_ptr, val, sizeof(in_addr_t));
+                break;
+            case CONFIG_ESA:
+                memcpy(val_ptr, val, sizeof(enet_addr_t));
+                break;
+#endif
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+	    case CONFIG_NETPORT:
+#endif
+            case CONFIG_STRING:
+            case CONFIG_SCRIPT:
+                memcpy(val_ptr, val, config_length(CONFIG_STRING));
+                break;
+            }
+        } else {
+            diag_printf("Can't set config value '%s' - wrong type\n", key);
+            return false;
+        }
+        flash_write_config(false);
+        return true;
+    }
     return false;
 }
 
@@ -878,7 +950,7 @@ flash_add_config(struct config_option *opt, bool update)
     if ((dp = flash_lookup_config(opt->key)) != (unsigned char *)NULL) {
         flash_config_insert_value(CONFIG_OBJECT_VALUE(dp), opt);
         if (update) {
-            flash_write_config();
+            flash_write_config(true);
         }
         return true;
     }
@@ -913,7 +985,7 @@ flash_add_config(struct config_option *opt, bool update)
             }
             flash_config_insert_value(dp, opt);
             if (update) {
-                flash_write_config();
+                flash_write_config(true);
             }
             return true;
         } else {

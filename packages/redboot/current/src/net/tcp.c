@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,6 +55,7 @@
 
 #include <net/net.h>
 #include <cyg/infra/diag.h>
+#include <cyg/hal/hal_if.h>
 
 #define MAX_TCP_SEGMENT (ETH_MAX_PKTLEN - (sizeof(eth_header_t) + sizeof(ip_header_t)))
 #define MAX_TCP_DATA    (MAX_TCP_SEGMENT - sizeof(tcp_header_t))
@@ -160,6 +162,10 @@ tcp_send(tcp_socket_t *s, int flags, int resend)
     tcp->checksum = htons(cksum);
 
     __ip_send(pkt, IP_PROTO_TCP, &s->his_addr);
+
+    // HACK!  If this delay is not present, then if the target system sends
+    // back data (not just an ACK), then somehow we miss it :-(
+    CYGACC_CALL_IF_DELAY_US(2*1000);
 
     BSPLOG(bsp_log("tcp_send: state[%d] flags[%s] ack[%x] data[%d].\n",
 		   s->state, flags_to_str(tcp->flags), s->ack, s->data_bytes));

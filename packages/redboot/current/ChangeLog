@@ -1,3 +1,15 @@
+2003-12-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/tcp.c (tcp_send): Add [restore] delay into TCP write
+	path.  Sadly, there seems to be some issue where some ACK packets
+	get lost unless this is present (at least on some hardware).  
+	n.b. a small delay here is definitely preferable to the horrendous
+	delays imposed by TCP retries if this condition occurs.
+
+	* src/fconfig.c: 
+	* include/flash_config.h: New functions for get/set/enumerate
+	config data which can be used via virtual vector interface.
+
 2003-12-12  Jani Monoses <jani@iv.ro>
 
 	* src/net/tcp.c: Cancel retransmission timer when SYN is acked

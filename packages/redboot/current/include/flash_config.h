@@ -87,9 +87,13 @@ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) =             \
    {#_n_,_t_,_e_,_ie_,_type_,(unsigned long)_dflt_};
 
 // Cause the in-memory configuration data to be written to flash
-void flash_write_config(void);
+void flash_write_config(bool prompt);
 // Fetch a data item from flash storage, returns 'false' if not found
 bool flash_get_config(char *key, void *val, int type);
+// Update a data item from flash storage, returns 'false' if not found
+bool flash_set_config(char *key, void *val, int type);
+// Enumerate keys from configuration
+bool flash_next_key(char *key, int keylen, int *type, int *offset);
 // Add a new data item to configuration data base.  Returns 'false'
 // if no space is available.
 bool flash_add_config(struct config_option *opt, bool update);
