@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_V85X_V850 {
     description   "
            This option enables the serial device drivers for the
            NEC V850."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   v85x_v850_serial.c
 
