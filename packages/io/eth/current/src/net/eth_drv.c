@@ -605,9 +605,9 @@ eth_drv_send(struct ifnet *ifp)
             HAL_RESTORE_INTERRUPTS(ints);
 #endif
         }
-    }
 #endif // _LOCK_WITH_ROM_MONITOR
 #undef _LOCK_WITH_ROM_MONITOR
+    }
 }
 
 //
