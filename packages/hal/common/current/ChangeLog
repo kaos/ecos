@@ -1,3 +1,13 @@
+2003-06-25  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/hal_if.c (delay_us): The first test against
+	CYGNUM_KERNEL_COUNTERS_RTC_PERIOD is now against the period
+	divided by two. By the time we get to this test we know that usecs
+	can never be > usec_per_period/2 so we can double the range of
+	period values that we can handle without overflow and use the more
+	efficient approximation. The second test is not changed since we
+	cannot make the same assumptions about the elapsed count.
+
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/generic-stub.c (crc32): Fix crctable option name typo.

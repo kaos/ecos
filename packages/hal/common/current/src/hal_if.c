@@ -187,7 +187,7 @@ delay_us(cyg_int32 usecs)
             
             if( usecs > usec_per_period/2 )
                 slice = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD/2;
-            else if( CYGNUM_KERNEL_COUNTERS_RTC_PERIOD >= 0x7FFFFFFF/usec_per_period )
+            else if( CYGNUM_KERNEL_COUNTERS_RTC_PERIOD/2 >= 0x7FFFFFFF/usec_per_period )
                 slice = usecs * ticks_per_usec;
             else
             {
