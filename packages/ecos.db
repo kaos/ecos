@@ -371,6 +371,16 @@ package CYGPKG_DEVS_FLASH_EB55 {
 	   on the Atmel AT91/EB55 platform(s)."
 }
 
+package CYGPKG_DEVS_FLASH_JTST {
+	alias 		{ "FLASH memory support for Atmel JTST" flash_jtst }
+	directory	devs/flash/arm/jtst
+	script		flash_jtst.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Atmel JTST platform(s)."
+}
+
 package CYGPKG_DEVS_FLASH_ASSABET {
 	alias 		{ "FLASH memory support for Intel SA1110 (Assabet)" flash_assabet }
 	directory	devs/flash/arm/assabet
@@ -2332,6 +2342,15 @@ package CYGPKG_HAL_ARM_AT91 {
         The at91 HAL package provides the support needed to run eCos on Atmel
         AT91 based targets."
 }
+package CYGPKG_HAL_ARM_AT91_JTST {
+	alias		{ "Atmel AT572D740 (diopsis) evaluation board (jtst)" hal_arm_at91 arm_at91_hal }
+	directory	hal/arm/at91/jtst
+	script		hal_arm_at91_jtst.cdl
+	hardware
+        description "
+	The JTST HAL package provides the support needed to run eCos on 
+        the Atmel evaluation board AT572D74-DK1."
+}
 
 package CYGPKG_HAL_ARM_AT91_EB40 {
 	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
@@ -3930,6 +3949,20 @@ target eb40 {
         description "
         The eb40 target provides the packages needed to run eCos on an Atmel
         evaluation board (EB40)."
+}
+
+target jtst {
+	alias { "Atmel Diopsis evaluation board (jtst)" at91_jtst }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91_JTST
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVS_FLASH_JTST
+                   CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+        }
+        description "
+        The jtst target provides the packages needed to run eCos on an Atmel
+        Diospsis evaluation board (jtst)."
 }
 
 target eb40a {

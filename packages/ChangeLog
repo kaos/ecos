@@ -1,3 +1,8 @@
+2004-09-16  Andrea Michelotti <amichelotti@atmel.com> 
+
+	* ecos.db: Added atmel jtst board support, based on atmel Diopsis 
+	chip which is an at91 plus a dsp.
+	
 2004-09-09  John Dallaway  <jld@ecoscentric.com>
 
 	* ecos.db: Remove CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510 and
