@@ -324,6 +324,7 @@ Cyg_ErrNo
 Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
                        cyg_ucount32 *bytes_read )
 {
+    Cyg_ErrNo read_err=ENOERR;
     CYG_ASSERTCLASS( this, "Stream object is not a valid stream!" );
     
     *bytes_read = 0;
@@ -387,9 +388,22 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
 
     position += *bytes_read;
     
+
+    // if we are unbuffered, we read as much as we can directly from the 
+    // file system at this point.
+    //
+    // unless we do this, we could end up reading byte-by-byte from the filing system
+    // due to the readbuf_char scheme.
+    if ((*bytes_read<buffer_length) && !flags.buffering) {
+        cyg_uint32 len;
+        len=buffer_length-*bytes_read;
+        read_err = cyg_stdio_read(my_device, user_buffer + *bytes_read, &len);      
+        *bytes_read+=len;
+    }
+    
     unlock_me();
 
-    return ENOERR;
+    return read_err;
 } // read()
 
 

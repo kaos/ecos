@@ -1,3 +1,10 @@
+2004-08-16  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/common/stream.cxx (read): fixed performance problem with
+	unbuffered reads. Long unbuffered i/o read requests would cause
+	one roundtrip to the underlying file system for each byte, instead
+	of a single trip as intended.
+
 2004-03-29  Kelvin Lawson <klawson@ad-holdings.co.uk>
 
 	* src/common/fopen.cxx:
