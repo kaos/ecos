@@ -806,9 +806,13 @@ handle_IRQ_or_FIQ:
         bne     10f
 #ifndef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
         mov     r0,v6                   // register frame
+# ifdef __thumb__
         ldr     r1,=hal_spurious_IRQ
         mov     lr,pc
         bx      r1
+# else
+        bl      hal_spurious_IRQ
+# endif
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
         b       spurious_IRQ
         

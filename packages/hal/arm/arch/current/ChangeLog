@@ -1,3 +1,8 @@
+2003-04-30  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/vectors.S (handle_IRQ_or_FIQ): Tweak below to be conditional on
+	__thumb__.
+
 2003-04-26  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* vectors.S (handle_IRQ_or_FIQ):
