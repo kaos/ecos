@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -53,7 +53,7 @@
 //-----------------------------------------------------------------------------
 // Enforce in-order IO for all HAL reads/writes using this macro.
 #define HAL_IO_BARRIER()                        \
-    asm volatile ( "eieio" ::: "memory")
+    asm volatile ( "eieio" : : : "memory" )
 
 //-----------------------------------------------------------------------------
 // IO Register address.
@@ -65,17 +65,17 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 // BYTE Register access.
 // Individual and vectorized access to 8 bit registers.
 
-#define HAL_READ_UINT8( _register_, _value_ )                   \
-        CYG_MACRO_START                                         \
-        ((_value_) = *((volatile CYG_BYTE *)(_register_)));     \
-        HAL_IO_BARRIER ();                                      \
-        CYG_MACRO_END
+#define HAL_READ_UINT8( _register_, _value_ )           \
+    CYG_MACRO_START                                     \
+    ((_value_) = *((volatile CYG_BYTE *)(_register_))); \
+    HAL_IO_BARRIER ();                                  \
+    CYG_MACRO_END
 
-#define HAL_WRITE_UINT8( _register_, _value_ )                  \
-        CYG_MACRO_START                                         \
-        (*((volatile CYG_BYTE *)(_register_)) = (_value_));     \
-        HAL_IO_BARRIER ();                                      \
-        CYG_MACRO_END
+#define HAL_WRITE_UINT8( _register_, _value_ )          \
+    CYG_MACRO_START                                     \
+    (*((volatile CYG_BYTE *)(_register_)) = (_value_)); \
+    HAL_IO_BARRIER ();                                  \
+    CYG_MACRO_END
 
 #define HAL_READ_UINT8_VECTOR( _register_, _buf_, _count_, _step_ )     \
     CYG_MACRO_START                                                     \
@@ -101,16 +101,16 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 // Individual and vectorized access to 16 bit registers.
     
 #define HAL_READ_UINT16( _register_, _value_ )                  \
-        CYG_MACRO_START                                         \
-        ((_value_) = *((volatile CYG_WORD16 *)(_register_)));   \
-        HAL_IO_BARRIER ();                                      \
-        CYG_MACRO_END
+    CYG_MACRO_START                                             \
+    ((_value_) = *((volatile CYG_WORD16 *)(_register_)));       \
+    HAL_IO_BARRIER ();                                          \
+    CYG_MACRO_END
 
 #define HAL_WRITE_UINT16( _register_, _value_ )                 \
-        CYG_MACRO_START                                         \
-        (*((volatile CYG_WORD16 *)(_register_)) = (_value_));   \
-        HAL_IO_BARRIER ();                                      \
-        CYG_MACRO_END
+    CYG_MACRO_START                                             \
+    (*((volatile CYG_WORD16 *)(_register_)) = (_value_));       \
+    HAL_IO_BARRIER ();                                          \
+    CYG_MACRO_END
 
 #define HAL_READ_UINT16_VECTOR( _register_, _buf_, _count_, _step_ )    \
     CYG_MACRO_START                                                     \
@@ -135,16 +135,16 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 // Individual and vectorized access to 32 bit registers.
     
 #define HAL_READ_UINT32( _register_, _value_ )                  \
-        CYG_MACRO_START                                         \
-        ((_value_) = *((volatile CYG_WORD32 *)(_register_)));   \
-        HAL_IO_BARRIER ();                                      \
-        CYG_MACRO_END
+    CYG_MACRO_START                                             \
+    ((_value_) = *((volatile CYG_WORD32 *)(_register_)));       \
+    HAL_IO_BARRIER ();                                          \
+    CYG_MACRO_END
 
 #define HAL_WRITE_UINT32( _register_, _value_ )                 \
-        CYG_MACRO_START                                         \
-        (*((volatile CYG_WORD32 *)(_register_)) = (_value_));   \
-        HAL_IO_BARRIER ();                                      \
-        CYG_MACRO_END
+    CYG_MACRO_START                                             \
+    (*((volatile CYG_WORD32 *)(_register_)) = (_value_));       \
+    HAL_IO_BARRIER ();                                          \
+    CYG_MACRO_END
 
 #define HAL_READ_UINT32_VECTOR( _register_, _buf_, _count_, _step_ )    \
     CYG_MACRO_START                                                     \

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -65,15 +65,9 @@
 
 #include <cyg/kernel/sched.inl>
 
-#include "testaux.hxx"
-
 #ifndef CYGIMP_THREAD_PRIORITY
 #error "Test requires thread priorities"
 #endif
-
-#define STACKSIZE 4096
-
-static char stack[3][STACKSIZE];
 
 static Cyg_Counting_Semaphore s0, s1, s2;
 
@@ -81,10 +75,8 @@ static volatile cyg_ucount8 q = 0;
 
 static Cyg_Thread *thread0, *thread1, *thread2;
 
-static char thread[3][sizeof(Cyg_Thread)];
-
-inline void *operator new(size_t size, void *ptr) { return ptr; };
-
+#define NTHREADS 3
+#include "testaux.hxx"
 
 static void entry0( CYG_ADDRWORD data )
 {
@@ -161,12 +153,9 @@ void thread2_main( void )
 {
     CYG_TEST_INIT();
     
-    thread0 = new((void *)&thread[0])
-            Cyg_Thread(entry0, 0, STACKSIZE, (CYG_ADDRESS)stack[0] );
-    thread1 = new((void *)&thread[1])
-            Cyg_Thread(entry1, 1, STACKSIZE, (CYG_ADDRESS)stack[1] );
-    thread2 = new((void *)&thread[2])
-            Cyg_Thread(entry2, 2, STACKSIZE, (CYG_ADDRESS)stack[2] );
+    thread0 = new_thread( entry0, 0 );
+    thread1 = new_thread( entry1, 1 );
+    thread2 = new_thread( entry2, 2 );
 
     thread0->resume();
     thread1->resume();

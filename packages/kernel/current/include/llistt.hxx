@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	llistt.hxx
+//      llistt.hxx
 //
-//	Llistt linked list template class declarations
+//      Llistt linked list template class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Define Llistt template class
-// Description:	The classes defined here provide the APIs for llistts.
-// Usage:	#include <cyg/kernel/llistt.hxx>
-//		
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Define Llistt template class
+// Description: The classes defined here provide the APIs for llistts.
+// Usage:       #include <cyg/kernel/llistt.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //

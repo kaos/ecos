@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:          1998-02-13
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-03-16
 // Purpose:     
 // Description: 
 // Usage:       
@@ -46,22 +46,24 @@
 
 
 // Include the C library? And do we want the stdio stuff?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#ifdef CYGPKG_LIBC_STDIO
 
 // INCLUDES
 
-#include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
-#include <stddef.h>                 // NULL and size_t from compiler
-#include <errno.h>                  // Error codes
-#include "clibincl/stringsupp.hxx"  // _memcpy()
-#include "clibincl/stream.hxx"      // Header for this file
-#include <cyg/devs/common/iorb.h>   // Cyg_IORB
-#include <cyg/devs/common/table.h>  // Device table
+#include <cyg/infra/cyg_type.h>    // Common project-wide type definitions
+#include <cyg/infra/cyg_ass.h>     // Assertion infrastructure
+#include <stddef.h>                // NULL and size_t from compiler
+#include <errno.h>                 // Error codes
+#include "clibincl/stringsupp.hxx" // _memcpy()
+#include "clibincl/stream.hxx"     // Header for this file
+#include "clibincl/stdiosupp.hxx"  // Stdio support functions
+#include <cyg/io/io.h>             // I/O system
+#include <cyg/io/config_keys.h>    // CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN
 
 
 // FUNCTIONS
 
-Cyg_StdioStream::Cyg_StdioStream(Cyg_Device_Table_t *dev,
+Cyg_StdioStream::Cyg_StdioStream(cyg_io_handle_t dev,
                                  OpenMode open_mode,
                                  cyg_bool append, cyg_bool binary,
                                  int buffer_mode, cyg_ucount32 buffer_size,
@@ -71,6 +73,9 @@ Cyg_StdioStream::Cyg_StdioStream(Cyg_Device_Table_t *dev,
 #endif
     
 {
+
+    CYG_CHECK_DATA_PTR(dev, "Attempt to open invalid device!");
+
 #ifdef CYGDBG_USE_ASSERTS
     magic_validity_word = 0xbadbad;
 #endif
@@ -98,11 +103,13 @@ Cyg_StdioStream::Cyg_StdioStream(Cyg_Device_Table_t *dev,
         
     
     if (flags.opened_for_write) {
+#if 0
+        // FIXME: need some replacement for this
         if (!my_device->write_blocking) {
             error = EDEVNOSUPP;
             return;
         } // if
-
+#endif
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
         flags.last_buffer_op_was_read = false;
 #endif
@@ -110,10 +117,13 @@ Cyg_StdioStream::Cyg_StdioStream(Cyg_Device_Table_t *dev,
 
 
     if (flags.opened_for_read) {
+#if 0
+        // FIXME: need some replacement for this
         if (!my_device->read_blocking) {
             error = EDEVNOSUPP;
             return;
         } // if
+#endif
 
         // NB also if opened for read AND write, then say last op was read
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
@@ -154,13 +164,14 @@ Cyg_StdioStream::Cyg_StdioStream(Cyg_Device_Table_t *dev,
     } // switch
 
     // one way of checking the buffer was set up correctly
-    if (io_buf.get_buffer_size()==-1) {
+    if (flags.buffering && io_buf.get_buffer_size()==-1) {
         error = ENOMEM;
         return;
     }
 
 #endif
 
+#if 0 // FIXME - Need to set binary mode.
     if (my_device->open) {
         error = (*my_device->open)( my_device->cookie, 
                                     binary ? CYG_DEVICE_OPEN_MODE_RAW
@@ -169,6 +180,7 @@ Cyg_StdioStream::Cyg_StdioStream(Cyg_Device_Table_t *dev,
             return; // keep error code the same
     } // if
     
+#endif
 
 #ifdef CYGDBG_USE_ASSERTS
     magic_validity_word = 0x7b4321ce;
@@ -182,7 +194,8 @@ Cyg_ErrNo
 Cyg_StdioStream::refill_read_buffer( void )
 {
     Cyg_ErrNo read_err;
-    Cyg_IORB iorb;
+    cyg_uint8 *buffer;
+    cyg_uint32 len;
 
     CYG_ASSERTCLASS( this, "Stream object is not a valid stream!" );
     
@@ -213,38 +226,39 @@ Cyg_StdioStream::refill_read_buffer( void )
     flags.last_buffer_op_was_read = true;
 
     if (flags.buffering) {
-        iorb.buffer_length = 
-            io_buf.get_buffer_addr_to_write( (cyg_uint8**)&iorb.buffer );
+        len = io_buf.get_buffer_addr_to_write( (cyg_uint8**)&buffer );
+        if (!len) { // no buffer space available
+            unlock_me();
+            return ENOERR;  // isn't an error, just needs user to read out data
+        } // if
     }
     else
 #endif
 
     if (!flags.readbuf_char_in_use) {
-        iorb.buffer_length = 1;
-        iorb.buffer = &readbuf_char;
+        len = 1;
+        buffer = &readbuf_char;
     }
-    else
-        iorb.buffer_length = 0;
-
-    if (!iorb.buffer_length) { // no buffer space available
+    else {
+        // no buffer space available
         unlock_me();
         return ENOERR;  // isn't an error, just needs user to read out data
-    } // if
+    } // else
 
-    read_err = (*my_device->read_blocking)( my_device->cookie, &iorb );
+    read_err = cyg_io_read(my_device, buffer, &len);
 
 
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
     if (flags.buffering)
-        io_buf.set_bytes_written( iorb.xferred_length );
+        io_buf.set_bytes_written( len );
     else
 #endif
-        flags.readbuf_char_in_use = iorb.xferred_length ? 1 : 0;
+        flags.readbuf_char_in_use = len ? 1 : 0;
 
     unlock_me();
 
     if (read_err == ENOERR) {
-        if (iorb.xferred_length == 0)
+        if (len == 0)
             read_err = EAGAIN;
     } // if
     
@@ -287,6 +301,8 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
         // this should really only be called after refill_read_buffer, but
         // just in case
         err = flush_output_unlocked();
+        if (ENOERR == err)
+            err = cyg_libc_stdio_flush_all_but(this);
 
         if (err != ENOERR) {
             unlock_me();
@@ -343,6 +359,8 @@ Cyg_StdioStream::read_byte( cyg_uint8 *c )
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
     if (flags.buffering)
         err = flush_output_unlocked();
+    if (ENOERR == err)
+        err = cyg_libc_stdio_flush_all_but(this);
 
     if (err != ENOERR)
         return err;
@@ -462,8 +480,9 @@ Cyg_ErrNo
 Cyg_StdioStream::flush_output_unlocked( void )
 {
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
-    Cyg_IORB iorb;
     Cyg_ErrNo write_err=ENOERR;
+    cyg_uint8 *buffer;
+    cyg_uint32 len;
 
     CYG_ASSERTCLASS( this, "Stream object is not a valid stream!" );
     
@@ -478,13 +497,19 @@ Cyg_StdioStream::flush_output_unlocked( void )
     if (io_buf.get_buffer_space_used() == 0)
         return ENOERR;
         
-    iorb.buffer_length =
-        io_buf.get_buffer_addr_to_read( (cyg_uint8 **)&iorb.buffer );
+    len = io_buf.get_buffer_addr_to_read( (cyg_uint8 **)&buffer );
     
-    CYG_ASSERT( iorb.buffer_length > 0, 
+    CYG_ASSERT( len > 0, 
                 "There should be data to read but there isn't!");
 
-    write_err = (*my_device->write_blocking)( my_device->cookie, &iorb );
+    write_err = cyg_io_write(my_device, buffer, &len);
+
+    // since we're doing a concerted flush, we tell the I/O layer to
+    // flush too, otherwise output may just sit there forever
+    if (!write_err)
+        write_err = cyg_io_get_config(my_device,
+                                      CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN,
+                                      NULL, NULL);
 
     // we've just read it all, so just wipe it out
     io_buf.drain_buffer();
@@ -530,14 +555,11 @@ Cyg_StdioStream::write( const cyg_uint8 *buffer,
 
     if (!flags.buffering) {
 #endif
-        Cyg_IORB iorb;
-        iorb.buffer = (char *)buffer;
-        iorb.buffer_length = buffer_length;
+        cyg_uint32 len = buffer_length;
 
-        write_err = (*my_device->write_blocking)( my_device->cookie,
-                                                  &iorb );
+        write_err = cyg_io_write(my_device, buffer, &len);
 
-        *bytes_written = iorb.xferred_length;
+        *bytes_written = len;
 
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
     } // if
@@ -618,6 +640,6 @@ Cyg_StdioStream::write( const cyg_uint8 *buffer,
 } // write()
 
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#endif // ifdef CYGPKG_LIBC_STDIO
 
 // EOF stream.cxx

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-08-31
 // Purpose:     
 // Description: 
@@ -44,8 +44,8 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library?
-#ifdef CYGPKG_LIBC     
+// Include atexit() ?
+#ifdef CYGFUN_LIBC_ATEXIT
 
 // INCLUDES
 
@@ -59,7 +59,7 @@
 // SYMBOLS
 
 externC int
-atexit( Cyg_atexit_fn_t ) CYGPRI_LIBC_WEAK_ALIAS("_atexit");
+atexit( Cyg_libc_atexit_fn_t ) CYGBLD_ATTRIB_WEAK_ALIAS(_atexit);
 
 
 // STATICS
@@ -69,7 +69,7 @@ atexit( Cyg_atexit_fn_t ) CYGPRI_LIBC_WEAK_ALIAS("_atexit");
 // or you can consider the next free handler slot in
 // cyg_libc_atexit_handlers.
 
-static Cyg_atexit_fn_t
+static Cyg_libc_atexit_fn_t
 cyg_libc_atexit_handlers[ CYGNUM_LIBC_ATEXIT_HANDLERS ];
 
 static cyg_ucount32 cyg_libc_atexit_handlers_count;
@@ -80,8 +80,7 @@ static cyg_ucount32 cyg_libc_atexit_handlers_count;
 externC void
 cyg_libc_invoke_atexit_handlers( void )
 {
-    CYG_REPORT_FUNCNAMETYPE( "cyg_libc_invoke_atexit_handlers",
-                             "returning" );
+    CYG_REPORT_FUNCNAME( "cyg_libc_invoke_atexit_handlers");
     CYG_REPORT_FUNCARGVOID();
     
     cyg_ucount32 i;
@@ -105,7 +104,7 @@ cyg_libc_invoke_atexit_handlers( void )
 
 
 externC int
-_atexit( Cyg_atexit_fn_t func_to_register )
+_atexit( Cyg_libc_atexit_fn_t func_to_register )
 {
     CYG_REPORT_FUNCNAMETYPE( "_atexit", "returning %d" );
     CYG_REPORT_FUNCARG1XV( func_to_register );
@@ -115,7 +114,7 @@ _atexit( Cyg_atexit_fn_t func_to_register )
 
     // have we any slots left?
     if (cyg_libc_atexit_handlers_count >=
-        sizeof(cyg_libc_atexit_handlers)/sizeof(Cyg_atexit_fn_t) ) {
+        sizeof(cyg_libc_atexit_handlers)/sizeof(Cyg_libc_atexit_fn_t) ) {
 
         CYG_REPORT_RETVAL( 1 ); 
         return 1; // failure
@@ -129,6 +128,6 @@ _atexit( Cyg_atexit_fn_t func_to_register )
 } // _atexit()
 
 
-#endif // ifdef CYGPKG_LIBC     
+#endif // ifdef CYGFUN_LIBC_ATEXIT
 
 // EOF atexit.cxx

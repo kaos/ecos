@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sched/mlqueue.cxx
+//      sched/mlqueue.cxx
 //
-//	Multi-level queue scheduler class implementation
+//      Multi-level queue scheduler class implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,19 +22,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-16
-// Purpose:	Multilevel queue scheduler class implementation
-// Description:	This file contains the implementations of
-//              Cyg_Scheduler_Implementation and Cyg_SchedThread_Implementation.
+// Author(s):    nickg
+// Contributors: nickg, jlarmour
+// Date:         1999-02-17
+// Purpose:      Multilevel queue scheduler class implementation
+// Description:  This file contains the implementations of
+//               Cyg_Scheduler_Implementation and
+//               Cyg_SchedThread_Implementation.
 //              
 //
 //####DESCRIPTIONEND####
@@ -92,14 +93,17 @@ Cyg_Scheduler_Implementation::Cyg_Scheduler_Implementation()
     CYG_REPORT_FUNCTION();
         
     queue_map   = 0;
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Choose the best thread to run next
 
-Cyg_Thread *Cyg_Scheduler_Implementation::schedule()
+Cyg_Thread *
+Cyg_Scheduler_Implementation::schedule(void)
 {
-    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCTYPE("returning thread %08x");
 
     // The run queue may _never_ be empty, there is always
     // an idle thread at the lowest priority.
@@ -116,14 +120,18 @@ Cyg_Thread *Cyg_Scheduler_Implementation::schedule()
 
     CYG_ASSERT( thread != NULL , "No threads in run queue");
 
+    CYG_REPORT_RETVAL(thread);
+
     return thread;
 }
 
 // -------------------------------------------------------------------------
 
-void Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
+void
+Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
     cyg_priority pri                            = thread->priority;
     Cyg_ThreadQueue_Implementation *queue       = &run_queue[pri];
@@ -157,14 +165,18 @@ void Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
 //    CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
     
-    queue->enqueue(thread);    
+    queue->enqueue(thread);
+    
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 
-void Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
+void
+Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
         
     CYG_ASSERT( queue_map != 0, "Run queue empty");
       
@@ -189,36 +201,44 @@ void Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
     CYG_ASSERT( queue_map != 0, "Run queue empty");
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
     CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // register thread with scheduler
 
-void Cyg_Scheduler_Implementation::register_thread(Cyg_Thread *thread)
+void
+Cyg_Scheduler_Implementation::register_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
-        
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
     // No registration necessary in this scheduler
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 
 // deregister thread
-void Cyg_Scheduler_Implementation::deregister_thread(Cyg_Thread *thread)
+void
+Cyg_Scheduler_Implementation::deregister_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
-        
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
     // No registration necessary in this scheduler    
+    CYG_REPORT_RETURN();
 }
     
 // -------------------------------------------------------------------------
 // Test the given priority for uniqueness
 
-cyg_bool Cyg_Scheduler_Implementation::unique( cyg_priority priority)
+cyg_bool
+Cyg_Scheduler_Implementation::unique( cyg_priority priority)
 {
-    CYG_REPORT_FUNCTION();
-        
+    CYG_REPORT_FUNCTYPE("returning %d");
+    CYG_REPORT_FUNCARG1("priority=%d", priority);
     // Priorities are not unique
+    CYG_REPORT_RETVAL(true);
     return true;
 }
 
@@ -227,7 +247,8 @@ cyg_bool Cyg_Scheduler_Implementation::unique( cyg_priority priority)
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
 
-void Cyg_Scheduler_Implementation::timeslice()
+void
+Cyg_Scheduler_Implementation::timeslice(void)
 {
 #ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
     CYG_REPORT_FUNCTION();
@@ -263,6 +284,7 @@ Cyg_SchedThread_Implementation::Cyg_SchedThread_Implementation
 )
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("sched_info=%08x", sched_info);
         
     // Create all threads at maximum priority
     priority = (cyg_priority)sched_info;
@@ -272,14 +294,17 @@ Cyg_SchedThread_Implementation::Cyg_SchedThread_Implementation
     next = prev = CYG_CLASSFROMBASE(Cyg_Thread,
                                     Cyg_SchedThread_Implementation,
                                     this);
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Insert thread in front of this
 
-void Cyg_SchedThread_Implementation::insert( Cyg_Thread *thread)
+void
+Cyg_SchedThread_Implementation::insert( Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
         
     thread->next        = CYG_CLASSFROMBASE(Cyg_Thread,
                                             Cyg_SchedThread_Implementation,
@@ -287,12 +312,15 @@ void Cyg_SchedThread_Implementation::insert( Cyg_Thread *thread)
     thread->prev        = prev;
     prev->next          = thread;
     prev                = thread;    
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // remove this from queue
 
-void Cyg_SchedThread_Implementation::remove()
+void
+Cyg_SchedThread_Implementation::remove(void)
 {
     CYG_REPORT_FUNCTION();
         
@@ -301,12 +329,14 @@ void Cyg_SchedThread_Implementation::remove()
     next = prev         = CYG_CLASSFROMBASE(Cyg_Thread,
                                             Cyg_SchedThread_Implementation,
                                             this);
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Yield the processor to another thread
 
-void Cyg_SchedThread_Implementation::yield()
+void
+Cyg_SchedThread_Implementation::yield(void)
 {
     CYG_REPORT_FUNCTION();
         
@@ -348,6 +378,7 @@ void Cyg_SchedThread_Implementation::yield()
     // Unlock the scheduler and switch threads
     Cyg_Scheduler::unlock();
 
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
@@ -358,6 +389,7 @@ void
 Cyg_SchedThread_Implementation::rotate_queue( cyg_priority pri )
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("priority=%d", pri);
         
     // Prevent preemption
     Cyg_Scheduler::lock();
@@ -376,6 +408,34 @@ Cyg_SchedThread_Implementation::rotate_queue( cyg_priority pri )
     // Unlock the scheduler and switch threads
     Cyg_Scheduler::unlock();
 
+    CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+// Move this thread to the head of its queue
+// (not necessarily a scheduler queue)
+
+void
+Cyg_SchedThread_Implementation::to_queue_head( void )
+{
+    CYG_REPORT_FUNCTION();
+        
+    // Prevent preemption
+    Cyg_Scheduler::lock();
+
+    Cyg_Thread *thread  = CYG_CLASSFROMBASE(Cyg_Thread,
+                                            Cyg_SchedThread_Implementation,
+                                            this);
+
+    CYG_ASSERTCLASS( thread, "Bad current thread");
+    
+    Cyg_ThreadQueue *q = thread->get_current_queue();
+    q->to_head( thread );
+
+    // Unlock the scheduler and switch threads
+    Cyg_Scheduler::unlock();
+
+    CYG_REPORT_RETURN();
 }
 
 //==========================================================================
@@ -386,13 +446,17 @@ Cyg_ThreadQueue_Implementation::Cyg_ThreadQueue_Implementation()
     CYG_REPORT_FUNCTION();
         
     queue = NULL;                       // empty queue
+
+    CYG_REPORT_RETURN();
 }
 
         
 
-void Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
+void
+Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
     if( queue == NULL ) queue = thread;
     else queue->insert(thread);
@@ -400,16 +464,20 @@ void Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
     thread->queue = CYG_CLASSFROMBASE(Cyg_ThreadQueue,
                                       Cyg_ThreadQueue_Implementation,
                                       this);
-
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 
-Cyg_Thread *Cyg_ThreadQueue_Implementation::dequeue()
+Cyg_Thread *
+Cyg_ThreadQueue_Implementation::dequeue(void)
 {
-    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCTYPE("returning thread %08x");
         
-    if( queue == NULL ) return NULL;
+    if( queue == NULL ) {
+        CYG_REPORT_RETVAL(NULL);
+        return NULL;
+    }
     
     Cyg_Thread *thread = queue;
     
@@ -427,23 +495,27 @@ Cyg_Thread *Cyg_ThreadQueue_Implementation::dequeue()
 
     thread->queue = NULL;
 
+    CYG_REPORT_RETVAL(thread);
     return thread;
 }
 
 // -------------------------------------------------------------------------
 
-Cyg_Thread *Cyg_ThreadQueue_Implementation::highpri()
+Cyg_Thread *
+Cyg_ThreadQueue_Implementation::highpri(void)
 {
-    CYG_REPORT_FUNCTION();
-        
+    CYG_REPORT_FUNCTYPE("returning thread %08x");
+    CYG_REPORT_RETVAL(queue);
     return queue;
 }
 
 // -------------------------------------------------------------------------
 
-void Cyg_ThreadQueue_Implementation::remove(Cyg_Thread *thread)
+void
+Cyg_ThreadQueue_Implementation::remove(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("thread=%08x", thread);
         
     // If the thread we want it the at the head
     // of the list, and is on its own, clear the
@@ -466,16 +538,33 @@ void Cyg_ThreadQueue_Implementation::remove(Cyg_Thread *thread)
 
     thread->Cyg_SchedThread_Implementation::remove();
 
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Rotate the front thread on the queue to the back.
 
-void Cyg_ThreadQueue_Implementation::rotate()
+void
+Cyg_ThreadQueue_Implementation::rotate(void)
 {
     CYG_REPORT_FUNCTION();
         
     queue = queue->next;
+
+    CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+// Rotate or move the thread quoted to the front.
+
+void
+Cyg_ThreadQueue_Implementation::to_head(Cyg_Thread *thread)
+{
+    CYG_REPORT_FUNCTION();
+        
+    queue = thread;
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------

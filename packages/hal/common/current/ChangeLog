@@ -1,3 +1,299 @@
+1999-04-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: GDB_BREAK support now available for ARM
+	targets.
+1999-04-16  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	* src/dummy.c:
+	New file that can always be added to libextras.a without
+	affecting image sizes.
+
+1999-04-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_stub.h: 
+	Make sure all functions have C linkage even in C++
+
+1999-04-14  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19845
+	* src/generic-stub.c (__process_packet): Reset _register pointer
+	to the exception state before attempting to set up single-step
+	magic.
+
+1999-04-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_stub.h: Added declaration for __stub_copy_registers.
+
+1999-04-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c: Use HAL_xCACHE_IS_ENABLED if defined.
+
+1999-04-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c:
+	Moved get_register and put_register here. Made them access the
+	currently selected register set.
+
+1999-03-22  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/dbg-threads-api.h: Update copyright
+
+	* src/generic-stub.c: Change Cygnus Support->Cygnus Solutions
+
+	* src/thread-packets.c: Update copyright
+
+	* src/thread-pkts.h: Update copyright
+
+1999-03-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/cache.c: Added interrupt disable and enable to cache state
+	change blocks, in line with similar changes to kcache1.
+
+1999-03-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c (hal_output_gdb_string): Use disable/restore
+	macros to make sure it works even when interruptible() is a NOP
+	function.
+
+1999-03-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h:
+	Changed include of hal_tx39_jmr3904.h to hal_tx39.h.
+
+1999-03-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/drv_api.h: 
+	* src/drv_api.c:
+	Fixed some typos in non-kernel configuration support.
+
+1999-03-04  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19367
+	* include/pkgconf/hal.h: Exclude GDB stubs on sparc.
+
+1999-02-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c: 
+	* include/generic-stub.h: 
+	Added binary download patches from libstub.
+	
+1999-02-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/drv_api.h:
+	* src/drv_api.c: 
+	Added these files to define driver API.
+
+1999-02-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h:
+	Added include of <pkgconf/hal_tx39_jmr3904.h> to get TX39 speed
+	configuration options.
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/intr.c: 
+	Rename CYGNUM_VECTOR_RTC -> CYGNUM_HAL_INTERRUPT_RTC in line with
+	HAL changes
+
+1999-02-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c: 
+	* src/generic-stub.c (__handle_exception): 
+	Only include cyg_hal_gdb_break magic when stub is configured to
+	handle GDB BREAK signals.
+
+1999-02-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c (__handle_exception): Moved special signal
+	handling here to avoid duplication for all architectures.
+
+1999-02-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/stubrom/stubrom.c: Changed set_debug_traps to initialize_stub.
+
+	* include/hal_stub.h: [added]
+	* include/generic-stub.h:
+	* src/hal_stub.c:     [added]
+	* src/board.h:        [added]
+	* src/thread-pkts.h: 
+	* src/thread-packets.c: 
+	* src/generic-stub.c: 
+	* src/PKGconf.mak: 
+	Merged in latest libstub changes. Moved most eCos specific changes
+	into hal_stub.[ch], reducing effort required for further
+	merging/integration.
+
+1999-02-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Cleaned up the MPC8xx configuration.
+
+1999-01-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Added simple MPC8xx configuration.
+
+
+1999-01-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/cache.c (time0): Waste much less time if running in a
+	simulator.  Do only 40 loops instead of 4000.
+	In consequence the nasty meddling with MAX_STRIDE depending on
+	HAL_xxx_SIM package definitions can go.
+	
+1999-01-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Renamed CYG_HAL_POWERPC_FADS to
+	CYGPKG_HAL_POWERPC_FADS.
+
+1999-01-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal.h:
+	Tidy up and update description
+	Add new CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG option to allow default
+	priority static constructors to be deferred
+	Remove all traces of non-CYG_KERNEL_USE_INIT_PRIORITY code
+	
+1999-01-21  Jesper Skov  <jskov@cygnus.co.uk>
+        Merge with FADS branch.
+	
+        1998-12-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Don't allow GDB BREAK support on FADS.
+	Define _MPC860, not _MP860.
+
+        1998-12-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h:
+	Added FADS entry from Kevin Hester <KHester@opticworks.com>.
+
+	1999-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: 
+	Add CYG_KERNEL_USE_INIT_PRIORITY for SPARCLITE.
+
+
+1999-01-18  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18823
+	* include/pkgconf/hal.h: Don't allow GDB stubs to be configured
+	for Linux target.
+
+1999-01-18  Jesper Skov  <jskov@cygnus.co.uk>
+	PR 18822
+	* include/pkgconf/hal.h: GDB_BREAK support not available for ARM
+	targets.
+	
+1999-01-14  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/stubrom/PKGconf.mak: Rename 'TESTS' to 'PROGS' due to 
+	changes in 'makrules.prv'.
+
+1999-01-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/stubrom/stubrom.c (cyg_start): Fix compiler warning.
+
+	* include/dbg-threads-api.h: Include cyg_type.h to get externC
+	definition.
+
+1999-01-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/dbg-threads-api.h: Added prototype for dbg_scheduler().
+
+1999-01-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/generic-stub.c (__output_hex_value): Change buffer size
+	[2048 was rather large] and make stack based.  Also don't
+	allow for string to exceed buffer.
+
+1999-01-13  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c (strcpy): Terminate copied string.
+
+1999-01-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr.c (CYGNUM_KERNEL_COUNTERS_RTC_PERIOD): Added RTC data
+	for Linux.
+
+Wed Dec  9 14:07:30 GMT 1998  Chris Provenzano  <proven@cygnus.com>
+
+	* include/pkgconf/hal.h: Compile the i386 linux target with
+	CYG_KERNEL_USE_INIT_PRIORITY defined.
+
+
+1999-01-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c (interruptible): Cleaned up a bit.
+
+1999-01-04  Jesper Skov  <jskov@cygnus.co.uk>
+	PR 18572
+
+	* tests/cache.c: Purge data cache before invalidating it.
+
+1998-12-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/generic-stub.c: Better handling of errors while stubs
+	are accessing memory on behalf of GDB.  Requires support for
+	GCC 'computed goto label' in top-level exception handler.
+
+1998-12-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Removed the
+	CYGARC_HAL_COMMON_EXPORT_CPU_MACROS option. Causing failures in
+	permutation tests.
+
+1998-12-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c (process_exception): Send an acknowledge char
+	on first entry so GDB doesn't timeout before resending its initial
+	packet.
+
+1998-11-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Added
+	CYGARC_HAL_COMMON_EXPORT_CPU_MACROS.
+
+1998-11-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/cache.c: Only run with stride 1 on SIMs.
+
+1998-11-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Define SIM as a 603 CPU.
+
+1998-11-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr.c:
+	Make the test do nothing if kernel real-time clock is enabled.
+	Added different timer constants for PPC SIM and HW.
+
+1998-11-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr.c: 
+	* include/pkgconf/hal.h:
+	Renamed CYG_HAL_POWERPC_MP860 to CYG_HAL_POWERPC_MPC860.
+	
+1998-11-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Made CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT a
+	sub-option of CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS.
+
+1998-11-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Allow GDB stubs to be configured for
+	MN10300 HW. Allow GDB_BREAK for all but tx39.
+
+1998-11-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Made CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT a
+	sub-option of CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS.
+
+1998-11-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c (process_packet): Flush D cache before
+	invalidating I cache.
+
+1998-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/generic-stub.c (__handle_exception): Check for breakpoints
+	set by GDB interrupt handler.
+
 1998-10-25  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/thread-packets.c: Fixed closing #endif comment.
@@ -171,7 +467,7 @@ Mon Aug 31 09:16:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

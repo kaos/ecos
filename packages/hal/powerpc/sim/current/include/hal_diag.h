@@ -25,19 +25,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:        nickg
-// Date:        1998-03-02
-// Purpose:     HAL Support for Kernel Diagnostic Routines
-// Description: Diagnostic routines for use during kernel development.
-// Usage:       #include <cyg/hal/hal_diag.h>
+// Author(s):     nickg
+// Contributors:  nickg
+// Date:          1999-03-23
+// Purpose:       HAL Support for Kernel Diagnostic Routines
+// Description:   Diagnostic routines for use during kernel development.
+// Usage:         #include <cyg/hal/hal_diag.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -46,6 +46,7 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>
+#include <cyg/hal/hal_intr.h>    // HAL_DISABLE/RESTORE_INTERRUPTS macros
 
 //-----------------------------------------------------------------------------
 // Register addresses
@@ -67,27 +68,31 @@
 #define HAL_DIAG_INIT()
 
 #define HAL_DIAG_WRITE_CHAR(_c_)                        \
-{                                                       \
+CYG_MACRO_START                                         \
     volatile unsigned char *tty_buffer =                \
         (unsigned char*)(OEA_DEV + PAL_WRITE_FIFO);     \
     volatile unsigned char *tty_status =                \
         (unsigned char*)(OEA_DEV + PAL_WRITE_STATUS);   \
+    unsigned long __state;                              \
+                                                        \
+    HAL_DISABLE_INTERRUPTS(__state)                     \
     if( _c_ != '\r' )                                   \
     {                                                   \
         while( *tty_status == 0 ) continue;             \
         *tty_buffer = _c_;                              \
     }                                                   \
-}
+    HAL_RESTORE_INTERRUPTS(__state);                    \
+CYG_MACRO_END
 
 #define HAL_DIAG_READ_CHAR(_c_)                         \
-{                                                       \
+CYG_MACRO_START                                         \
     volatile unsigned char *tty_buffer =                \
         (unsigned char*)(OEA_DEV + PAL_READ_FIFO);      \
     volatile unsigned char *tty_status =                \
         (unsigned char*)(OEA_DEV + PAL_READ_STATUS);    \
     while( *tty_status == 0 ) continue;                 \
     _c_ = *tty_buffer;                                  \
-}
+CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // end of hal_diag.h

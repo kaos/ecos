@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -60,7 +60,7 @@
 // FUNCTIONS
     
 Cyg_ErrNo
-Cyg_StdioStreamBuffer::set_buffer( cyg_ucount32 size=BUFSIZE,
+Cyg_StdioStreamBuffer::set_buffer( cyg_ucount32 size=BUFSIZ,
                                    cyg_uint8 *new_buffer=NULL )
 {
     
@@ -76,8 +76,8 @@ Cyg_StdioStreamBuffer::set_buffer( cyg_ucount32 size=BUFSIZE,
         }
         buffer_bottom = new_buffer;
     }
-    else if ( size != get_buffer_size() ) { // as long as its different from
-                                            // what we've got now
+    else if ( size != buffer_size ) { // as long as its different from
+                                      // what we've got now
         cyg_uint8 *malloced_buf;
 
         malloced_buf = (cyg_uint8 * )_malloc( size );

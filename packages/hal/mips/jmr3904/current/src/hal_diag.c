@@ -1,8 +1,8 @@
 /*=============================================================================
 //
-//	hal_diag.c
+//      hal_diag.c
 //
-//	HAL diagnostic output code
+//      HAL diagnostic output code
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-03-02
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-03-02
 // Purpose:     HAL diagnostic output
-// Description:	Implementations of HAL diagnostic output support.
+// Description: Implementations of HAL diagnostic output support.
 //
 //####DESCRIPTIONEND####
 //
@@ -115,10 +115,18 @@ void hal_diag_init()
     HAL_WRITE_UINT16( DIAG_SLDICR , 0x0000 );
     
     HAL_WRITE_UINT16( DIAG_SFCR , 0x0000 );
-    
-//    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 20 );
-    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 10 );    
-//    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 5 );    
+
+#if CYGHWR_HAL_MIPS_CPU_FREQ == 50
+//    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 20 );    // 9600 bps
+//    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 10 );    // 19200 bps
+    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 5 );     // 38400 bps
+#elif CYGHWR_HAL_MIPS_CPU_FREQ == 66
+//    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T2 | 27 );    // 9600 bps
+//    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T0 | 54 );    // 19200 bps
+    HAL_WRITE_UINT16( DIAG_SBRG , BRG_T0 | 27 );    // 38400 bps
+#else
+#error Unsupported CPU frequency
+#endif
 //hal_diag_led(0x10);
 #endif    
 }
@@ -206,15 +214,13 @@ void hal_diag_write_char(char c)
 
     if( c == '\n' || pos == sizeof(line) )
     {
-        CYG_INTERRUPT_STATE old;
-//        CYG_ADDRWORD old;        
 
         // Disable interrupts. This prevents GDB trying to interrupt us
         // while we are in the middle of sending a packet. The serial
         // receive interrupt will be seen when we re-enable interrupts
         // later.
-        
-        HAL_DISABLE_INTERRUPTS(old);
+        CYG_INTERRUPT_STATE oldstate;
+        HAL_DISABLE_INTERRUPTS(oldstate);
         
         while(1)
         {
@@ -240,12 +246,22 @@ void hal_diag_write_char(char c)
             hal_diag_write_char_serial0(hex[(csum>>4)&0xF]);
             hal_diag_write_char_serial0(hex[csum&0xF]);
 
-#if 1
+#ifndef CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
             hal_diag_read_char_serial0( &c1 );
+
+            if( c1 == '+' ) break;
+
+            // FIXME: Need to make the following use
+            // cyg_hal_is_break() and cyg_hal_user_break().
+            
+            if( c1 == 3 )
+                HAL_BREAKPOINT(_breakinst);                
+#endif // ! CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR          
+#if 0
 
             // We must ack the interrupt caused by that read to avoid
             // confusing the GDB stub ROM.
-//            HAL_INTERRUPT_ACKNOWLEDGE( CYG_VECTOR_EXTERNAL_2 );
+//            HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_SIO_0 );
             
             if( c1 == '+' ) break;
 
@@ -291,7 +307,7 @@ void hal_diag_write_char(char c)
         hal_diag_drain_serial0();
         
         // And re-enable interrupts
-        HAL_RESTORE_INTERRUPTS(old);
+        HAL_RESTORE_INTERRUPTS( oldstate );
         
     }
 #endif    

@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -33,7 +33,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm
+// Contributors:  dsm
 // Date:          1998-03-09
 // Description:
 //     Defines some convenience functions to get us going.  In
@@ -43,16 +43,27 @@
 //
 //####DESCRIPTIONEND####
 
+
+static inline void *operator new(size_t size, void *ptr) { return ptr; };
+
+
 #ifdef NTHREADS
 
-#define STACKSIZE 4096
+#ifndef STACKSIZE
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#endif
 
 static Cyg_Thread *thread[NTHREADS];
 
-static char thread_obj[NTHREADS][sizeof(Cyg_Thread)];
-static char stack[NTHREADS][STACKSIZE];
+typedef CYG_WORD64 CYG_ALIGNMENT_TYPE;
 
-static inline void *operator new(size_t size, void *ptr) { return ptr; };
+static CYG_ALIGNMENT_TYPE thread_obj[NTHREADS] [
+   (sizeof(Cyg_Thread)+sizeof(CYG_ALIGNMENT_TYPE)-1)
+     / sizeof(CYG_ALIGNMENT_TYPE)                     ];
+
+static CYG_ALIGNMENT_TYPE stack[NTHREADS] [
+   (STACKSIZE+sizeof(CYG_ALIGNMENT_TYPE)-1)
+     / sizeof(CYG_ALIGNMENT_TYPE)                     ];
 
 static int nthreads = 0;
 
@@ -62,7 +73,10 @@ static Cyg_Thread *new_thread(cyg_thread_entry *entry, CYG_ADDRWORD data) {
                "Attempt to create more than NTHREADS threads");
 
     thread[nthreads] = new( (void *)&thread_obj[nthreads] )
-        Cyg_Thread(entry, data, STACKSIZE, (CYG_ADDRESS)stack[nthreads] );
+        Cyg_Thread(CYG_SCHED_DEFAULT_INFO,
+                   entry, data, 
+                   NULL,                // no name
+                   (CYG_ADDRESS)stack[nthreads], STACKSIZE );
 
     thread[nthreads]->resume();
 

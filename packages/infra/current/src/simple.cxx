@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//	simple.cxx
+//      simple.cxx
 //
 //      Simple, non formatting trace and assert functions
 //
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-12-04
-// Purpose:	Simple Trace and assert functions
-// Description:	The functions in this file are simple implementations
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-12-04
+// Purpose:     Simple Trace and assert functions
+// Description: The functions in this file are simple implementations
 //              of the standard trace and assert functions. These do not
 //              do any printf style formatting, simply printing the string
 //              and arguments directly.
@@ -80,13 +80,13 @@
 // Functions to trim file names and function names down to printable lengths
 // (these are shared between trace and assert functions)
 
-static char *trim_file(char *file)
+static const char *trim_file(const char *file)
 {
 #if !CYG_NO_FILENAME
     if ( NULL == file )
         file = "<nofile>";
     
-    char *f = file;
+    const char *f = file;
     
     while( *f ) f++;
 
@@ -98,7 +98,7 @@ static char *trim_file(char *file)
 #endif
 }
 
-static char *trim_func(char *func)
+static const char *trim_func(const char *func)
 {
 #if !CYG_NO_FUNCNAME
     
@@ -113,12 +113,9 @@ static char *trim_func(char *func)
 
     fbuf[i++] = '(';
     fbuf[i++] = ')';
-    fbuf[i++] = 0;
+    fbuf[i  ] = 0;
 
-    while( i > 0 && fbuf[i] != ' ' ) i--;
-    if( i > 0 ) i++;
-    
-    return &fbuf[i];
+    return &fbuf[0];
 #else
     return "";
 #endif
@@ -379,8 +376,8 @@ cyg_tracemsg8( cyg_uint32 what,
 #ifdef CYGDBG_USE_ASSERTS
 
 externC void
-cyg_assert_fail( char *psz_func, char *psz_file, cyg_uint32 linenum,
-                 char *psz_msg )
+cyg_assert_fail( const char *psz_func, const char *psz_file,
+                 cyg_uint32 linenum, const char *psz_msg )
 {
     cyg_uint32 old_ints;
 

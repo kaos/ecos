@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -373,8 +373,7 @@ void task1( unsigned int arg )
 
     // all done
     if ( 0 == tests ) {
-        CYG_TEST_PASS( "N/A: no objects have create/delete enabled" );
-        CYG_TEST_EXIT( "N/A" );
+        CYG_TEST_NA( "No objects have create/delete enabled" );
     }
     else {
         CYG_TEST_EXIT( "All done" );
@@ -472,8 +471,7 @@ void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	common/thread.cxx
+//      common/thread.cxx
 //
-//	Thread class implementations
+//      Thread class implementations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-15
-// Purpose:	Thread class implementation
-// Description:	This file contains the definitions of the thread class
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-15
+// Purpose:     Thread class implementation
+// Description: This file contains the definitions of the thread class
 //              member functions that are common to all thread implementations.
 //
 //####DESCRIPTIONEND####
@@ -41,6 +41,9 @@
 //==========================================================================
 
 #include <pkgconf/kernel.h>             // kernel configuration file
+
+#include <cyg/hal/hal_arch.h>           // HAL_REORDER_BARRIER &
+                                        // CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 #include <cyg/kernel/ktypes.h>          // base kernel types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
@@ -78,7 +81,9 @@ Cyg_HardwareThread::thread_entry( Cyg_Thread *thread )
 #endif
     
     // Zero the lock
-    Cyg_Scheduler::sched_lock = 0;
+    HAL_REORDER_BARRIER ();            // Prevent the compiler from moving
+    Cyg_Scheduler::sched_lock = 0;     // the assignment into the code above.
+    HAL_REORDER_BARRIER();
 
     // Call entry point in a loop.
     
@@ -160,59 +165,6 @@ operator new(size_t size, Cyg_Thread *ptr)
 { return (void *)ptr; };
 
 // Constructor
-// This constructor is deprecated and should be replaced with the new
-// one below. Until that happens, any changes must be made to both
-// constructors.
-
-Cyg_Thread::Cyg_Thread(
-    cyg_thread_entry        *entry,     // entry point function
-    CYG_ADDRWORD            entry_data, // entry data
-    cyg_ucount32            stack_size, // stack size, 0 = use default
-    CYG_ADDRESS             stack_base  // stack base, NULL = allocate
-)
-:   Cyg_HardwareThread(entry, entry_data, stack_size, stack_base),
-    Cyg_SchedThread(this, CYG_SCHED_DEFAULT_INFO)
-#ifdef CYGFUN_KERNEL_THREADS_TIMER
-    ,timer(this)
-#endif
-{
-    CYG_REPORT_FUNCTION();
-
-    // Start the thread in suspended state.
-    state               = SUSPENDED;
-    suspend_count       = 1;
-
-    // Initialize sleep_reason which is used by kill, release
-    sleep_reason        = NONE;
-    wake_reason         = NONE;
-
-    // Assign a 16 bit id to the thread.
-    unique_id           = next_unique_id++;
-
-#ifdef CYGVAR_KERNEL_THREADS_DATA
-    // Zero all per-thread data entries.
-    for( int i = 0; i < CYGNUM_KERNEL_THREADS_DATA_MAX; i++ )
-        thread_data[i] = 0;
-#endif
-#ifdef CYGVAR_KERNEL_THREADS_NAME
-    name = 0;
-#endif
-#ifdef CYGVAR_KERNEL_THREADS_LIST
-    // Add thread to housekeeping list
-    add_to_list();
-#endif    
-    
-    Cyg_Scheduler::scheduler.register_thread(this);
-    
-    init_context(this);
-
-    CYG_REPORT_RETURN();
-}
-
-// -------------------------------------------------------------------------
-// Constructor
-// This is an alternative constructor that will become the default
-// eventually.
 
 Cyg_Thread::Cyg_Thread(
         CYG_ADDRWORD            sched_info,     // Scheduling parameter(s)
@@ -327,7 +279,7 @@ Cyg_Thread::~Cyg_Thread()
 #ifdef CYGDBG_USE_ASSERTS
 
 bool
-Cyg_Thread::check_this( cyg_assert_class_zeal zeal)
+Cyg_Thread::check_this( cyg_assert_class_zeal zeal) const
 {
 //    CYG_REPORT_FUNCTION();
 
@@ -341,6 +293,11 @@ Cyg_Thread::check_this( cyg_assert_class_zeal zeal)
     case cyg_thorough:
         if( (state & SUSPENDED) && (suspend_count == 0) ) return false;
     case cyg_quick:
+        // Check that the stackpointer is within its limits.
+        // Note: This does not check the current stackpointer value
+        // of the executing thread.
+        if( (stack_ptr > (stack_base + stack_size)) ||
+            (stack_ptr < stack_base) ) return false;
     case cyg_trivial:
     case cyg_none:
     default:
@@ -958,7 +915,7 @@ Cyg_Thread::delay( cyg_tick_count delay)
 {
     CYG_REPORT_FUNCTION();
 
-#if defined(CYGFUN_KERNEL_THREADS_TIMER) && defined(CYGVAR_KERNEL_COUNTERS_CLOCK)
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
 
     CYG_INSTRUMENT_THREAD(DELAY,this,delay);
 
@@ -1143,12 +1100,19 @@ Cyg_ThreadTimer::alarm(
 // Data definitions
 
 // stack
+#ifdef CYGNUM_HAL_STACK_SIZE_MINIMUM
+# ifdef CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE
+#  if CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_MINIMUM
 
-#ifdef CYG_HAL_MIPS
-extern char idle_thread_stack[CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE];
-#else
-char idle_thread_stack[CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE];
-#endif
+// then override the configured stack size
+#   undef CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE
+#   define CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
+
+#  endif // CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_MINIMUM
+# endif // CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE
+#endif // CYGNUM_HAL_STACK_SIZE_MINIMUM
+
+static char idle_thread_stack[CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE];
 
 // Loop counter for debugging/housekeeping
 cyg_uint32 idle_thread_loops = 1;

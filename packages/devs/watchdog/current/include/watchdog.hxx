@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	watchdog.hxx
+//      watchdog.hxx
 //
-//	Watchdog interface declaration
+//      Watchdog interface declaration
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-07-14
-// Purpose:	Watchdog declarations
-// Description:	This file defines the interface to the watchdog device
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-07-14
+// Purpose:     Watchdog declarations
+// Description: This file defines the interface to the watchdog device
 //              that provides timer based recovery from software and
 //              hardware faults.
 // Usage:       #include <cyg/devs/watchdog.hxx>

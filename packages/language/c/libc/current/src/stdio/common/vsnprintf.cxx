@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -53,10 +53,10 @@
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
-#include <cyg/devs/common/table.h>  // Device table stuff
-#include <cyg/devs/common/iorb.h>   // IORBs
-#include "clibincl/stdiosupp.hxx"   // Support functions for stdio
+#include <cyg/io/io.h>              // I/O system
+#include <cyg/io/devtab.h>          // Device table
 #include "clibincl/stream.hxx"      // Cyg_StdioStream
+#include "clibincl/stdiosupp.hxx"   // _vfnprintf() prototype
 
 
 // EXPORTED SYMBOLS
@@ -67,12 +67,12 @@ vsnprintf( char *, size_t, const char *, va_list )
 
 // FUNCTIONS
 
-
 static Cyg_ErrNo
-str_write( CYG_ADDRWORD cookie, Cyg_IORB *iorb )
+str_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len)
 {
-    cyg_uint8 **str_p = (cyg_uint8 **) cookie;
-    cyg_ucount32 i=0;
+    cyg_devtab_entry_t *dev = (cyg_devtab_entry_t *)handle;
+    cyg_uint8 **str_p = (cyg_uint8 **)dev->priv;
+    cyg_ucount32 i;
 
     // I suspect most strings passed to vsnprintf will be relatively short,
     // so we just take the simple approach rather than have the overhead
@@ -80,17 +80,22 @@ str_write( CYG_ADDRWORD cookie, Cyg_IORB *iorb )
 
     // simply copy string until we run out of user space
 
-    for (i=0; i < iorb->buffer_length; i++, (*str_p)++ )
+    for (i = 0; i < *len; i++, (*str_p)++ )
     {
-        **str_p = *((char *)iorb->buffer + i);
+        **str_p = *((cyg_uint8 *)buf + i);
     } // for
 
-    iorb->xferred_length = i;
+    *len = i;
 
     return ENOERR;
     
 } // str_write()
 
+static DEVIO_TABLE(devio_table,
+                   str_write,       // write
+                   NULL,            // read
+                   NULL,            // get_config
+                   NULL);           // set_config
 
 externC int
 _vsnprintf( char *s, size_t size, const char *format, va_list arg )
@@ -99,17 +104,13 @@ _vsnprintf( char *s, size_t size, const char *format, va_list arg )
     // construct a fake device with the address of the string we've
     // been passed as its private data. This way we can use the data
     // directly
-    struct Cyg_Device_Table_t strdev = { "strdev",
-                                         (CYG_ADDRWORD) &s,
-                                         NULL,       // open
-                                         NULL,       // read_cancel
-                                         NULL,       // write_cancel
-                                         NULL,       // read_blocking
-                                         &str_write, // write_blocking
-                                         NULL,       // read_asynchronous
-                                         NULL,       // write_asynchronous
-                                         NULL,       // close
-                                         0 };        // ioctl
+    DEVTAB_ENTRY_NO_INIT(strdev,
+                         "strdev",       // Name
+                         NULL,           // Dependent name (layered device)
+                         &devio_table,   // I/O function table
+                         NULL,           // Init
+                         NULL,           // Lookup
+                         &s);            // private
     Cyg_StdioStream my_stream( &strdev, Cyg_StdioStream::CYG_STREAM_WRITE,
                                false, false, _IONBF, 0, NULL );
     

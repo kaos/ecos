@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -109,7 +109,7 @@ static void entry0( CYG_ADDRWORD data )
 
     p1 = NULL;
     while((p2 = mempool0.try_alloc()))
-	p1 = p2;
+        p1 = p2;
     
     f1 = mempool0.get_freemem();
     CYG_TEST_CHECK(mempool0.free(p0), "Couldn't free");
@@ -131,9 +131,9 @@ static void entry0( CYG_ADDRWORD data )
     // This shouldn't have to wait
     p0 = mempool0.alloc(Cyg_Clock::real_time_clock->current_value()+100000);
     check_in_mp0(p0, 100);
-    p1 = mempool0.alloc(Cyg_Clock::real_time_clock->current_value()+2);
+    p1 = mempool0.alloc(Cyg_Clock::real_time_clock->current_value()+20);
     check_in_mp0(p1, 10);
-    p1 = mempool0.alloc(Cyg_Clock::real_time_clock->current_value()+2);
+    p1 = mempool0.alloc(Cyg_Clock::real_time_clock->current_value()+20);
     CYG_TEST_CHECK(NULL == p1, "Timed alloc unexpectedly worked");
     
     // Expect thread 1 to have run while processing previous timed

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -42,13 +42,20 @@
 
 #include <cyg/infra/testcase.h>
 
-#if defined(CYGFUN_KERNEL_API_C) && defined(CYGSEM_KERNEL_SCHED_MLQUEUE)
+#if defined(CYGFUN_KERNEL_API_C) && defined(CYGSEM_KERNEL_SCHED_MLQUEUE) &&\
+    (CYGNUM_KERNEL_SCHED_PRIORITIES > 26)
+
+#include <cyg/hal/hal_arch.h>           // for CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 // -------------------------------------------------------------------------
 
 #define THREADS                 10
 
+#ifdef CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#else
 #define STACKSIZE               (2*1024)
+#endif
 
 #define CONTROLLER_PRI_HI       0
 #define CONTROLLER_PRI_LO       25
@@ -320,7 +327,7 @@ void controller( cyg_addrword_t id )
 // again).  Change my prio to low, so that they all get to run and hit the
 // breakpoint.
 //  +++ A different one running every time, others in a mixture of
-// 	ready and sleeping states.
+//      ready and sleeping states.
     
     worker_state = WORKER_STATE_BREAK;
 
@@ -389,7 +396,7 @@ cyg_start( void )
     CYG_TEST_INIT();
     CYG_TEST_PASS_FINISH("Incorrect configuration for this test");
 }
-#endif /* def CYGFUN_KERNEL_API_C && !def CYGSEM_KERNEL_SCHED_MLQUEUE */
+#endif /* def CYGFUN_KERNEL_API_C && ... */
 
 // -------------------------------------------------------------------------
 // EOF thread_gdb.c

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	common/clock.cxx
+//      common/clock.cxx
 //
-//	Clock class implementations
+//      Clock class implementations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-15
-// Purpose:	Clock class implementation
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-15
+// Purpose:     Clock class implementation
 // Description: This file contains the definitions of the counter,
 //              clock and alarm class member functions that are common
 //              to all clock implementations.
@@ -107,7 +107,7 @@ Cyg_Counter::~Cyg_Counter()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Counter::check_this( cyg_assert_class_zeal zeal)
+bool Cyg_Counter::check_this( cyg_assert_class_zeal zeal) const
 {
     // check that we have a non-NULL pointer first
     if( this == NULL ) return false;
@@ -174,6 +174,11 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
         // Now that we have the list pointer, we can use common code for
         // both list oragnizations.
 
+#ifdef CYGIMP_KERNEL_COUNTERS_SORT_LIST
+
+        // With a sorted alarm list, we can simply pick alarms off the
+        // front of the list until we find one that is in the future.
+        
         while( *alarm_list_ptr != NULL )
         {
             Cyg_Alarm *alarm = *alarm_list_ptr;
@@ -204,7 +209,71 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
             }
             else break;
         }
+#else
 
+        // With an unsorted list, we must scan the whole list for
+        // candidates. We move the whole list to a temporary location
+        // before doing this so that we are not disturbed by new
+        // alarms being added to the list. As we consider and
+        // eliminate alarms we put them onto the done_list and at the
+        // end we then move it back to where it belongs.
+        
+        Cyg_Alarm *done_list = NULL;
+
+        Cyg_Alarm *alarm_list = *alarm_list_ptr;
+        *alarm_list_ptr = NULL;
+        
+        while( alarm_list != NULL )
+        {
+            Cyg_Alarm *alarm = alarm_list;
+
+            CYG_ASSERTCLASS(alarm, "Bad alarm in counter list" );
+            
+            // remove alarm from list
+            alarm_list = alarm->next;
+
+            if( alarm->trigger <= counter )
+            {
+                if( alarm->interval != 0 )
+                {
+                    // The alarm has a retrigger interval.
+                    // Reset the trigger time and requeue
+                    // the alarm.
+                    alarm->trigger += alarm->interval;
+                    add_alarm( alarm );
+                }
+                else alarm->enabled = false;
+
+                CYG_INSTRUMENT_ALARM( CALL, this, alarm );
+                
+                // call alarm function
+                alarm->alarm(alarm, alarm->data);
+
+                // all done, loop
+            }
+            else
+            {
+                // add unused alarm to done list.
+                alarm->next = done_list;
+                done_list = alarm;
+            }
+        }
+
+        // Transfer any alarms that might have been added to the
+        // alarm list by alarm callbacks to the done list. This
+        // happens very rarely.
+        while( *alarm_list_ptr != NULL )
+        {
+            Cyg_Alarm *alarm = *alarm_list_ptr;            
+            *alarm_list_ptr = alarm->next;
+            alarm->next = done_list;
+            done_list = alarm;
+        }
+        
+        // return done list to real list
+        *alarm_list_ptr = done_list;
+        
+#endif        
         Cyg_Scheduler::unlock();    
 
     }
@@ -287,7 +356,8 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
 #error "No CYGIMP_KERNEL_COUNTERS_x_LIST config"
 #endif
 
-
+#ifdef CYGIMP_KERNEL_COUNTERS_SORT_LIST
+        
         // Now that we have the list pointer, we can use common code for
         // both list oragnizations.
 
@@ -304,7 +374,7 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
             if( list_alarm->trigger > alarm->trigger ) break;
             else alarm_list_ptr = &list_alarm->next;
         }
-
+#endif
         // Insert the new alarm at *alarm_list_ptr
 
         alarm->next = *alarm_list_ptr;
@@ -393,7 +463,7 @@ Cyg_Clock::~Cyg_Clock()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Clock::check_this( cyg_assert_class_zeal zeal)
+bool Cyg_Clock::check_this( cyg_assert_class_zeal zeal) const
 {
     // check that we have a non-NULL pointer first
     if( this == NULL ) return false;
@@ -456,7 +526,7 @@ Cyg_Alarm::~Cyg_Alarm()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Alarm::check_this( cyg_assert_class_zeal zeal)
+bool Cyg_Alarm::check_this( cyg_assert_class_zeal zeal) const
 {
     // check that we have a non-NULL pointer first
     if( this == NULL ) return false;
@@ -577,7 +647,7 @@ Cyg_RealTimeClock Cyg_RealTimeClock::rtc CYG_INIT_PRIORITY( CLOCK );
 
 Cyg_RealTimeClock::Cyg_RealTimeClock()
     : Cyg_Clock(rtc_resolution),
-      interrupt(CYG_VECTOR_RTC, 1, (CYG_ADDRWORD)this, isr, dsr)
+      interrupt(CYGNUM_HAL_INTERRUPT_RTC, 1, (CYG_ADDRWORD)this, isr, dsr)
 {
     CYG_REPORT_FUNCTION();
 
@@ -585,10 +655,17 @@ Cyg_RealTimeClock::Cyg_RealTimeClock()
     
     interrupt.attach();
 
-    interrupt.unmask_interrupt(CYG_VECTOR_RTC);
+    interrupt.unmask_interrupt(CYGNUM_HAL_INTERRUPT_RTC);
 
     Cyg_Clock::real_time_clock = this;
 }
+
+#ifdef HAL_CLOCK_LATENCY
+cyg_tick_count total_clock_latency, total_clock_interrupts;
+cyg_int32 min_clock_latency = 0x7FFFFFFF;
+cyg_int32 max_clock_latency = 0;
+bool measure_clock_latency = false;
+#endif
 
 // -------------------------------------------------------------------------
 
@@ -596,11 +673,26 @@ cyg_uint32 Cyg_RealTimeClock::isr(cyg_vector vector, CYG_ADDRWORD data)
 {
 //    CYG_REPORT_FUNCTION();
 
+#ifdef HAL_CLOCK_LATENCY
+    if (measure_clock_latency) {
+        cyg_int32 delta;
+        HAL_CLOCK_LATENCY(&delta);
+        // Note: Ignore a latency of 0 when finding min_clock_latency.
+        if (delta > 0) {
+            // Valid delta measured
+            total_clock_latency += delta;
+            total_clock_interrupts++;
+            if (min_clock_latency > delta) min_clock_latency = delta;
+            if (max_clock_latency < delta) max_clock_latency = delta;
+        }
+    }
+#endif
+
     CYG_INSTRUMENT_CLOCK( ISR, 0, 0);
 
-    HAL_CLOCK_RESET( CYG_VECTOR_RTC, CYGNUM_KERNEL_COUNTERS_RTC_PERIOD );
+    HAL_CLOCK_RESET( CYGNUM_HAL_INTERRUPT_RTC, CYGNUM_KERNEL_COUNTERS_RTC_PERIOD );
 
-    Cyg_Interrupt::acknowledge_interrupt(CYG_VECTOR_RTC);
+    Cyg_Interrupt::acknowledge_interrupt(CYGNUM_HAL_INTERRUPT_RTC);
         
     return Cyg_Interrupt::CALL_DSR;
 }

@@ -1,3 +1,47 @@
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-03-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_diag.h (HAL_DIAG_WRITE_CHAR): 
+	Disable interrupts when doing diag output so that
+	system "freezes" while this goes on
+
+1999-03-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc_sim.h:  Take out DEVICES dependencies.
+
+1999-03-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: give all LDI files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+	* include/pkgconf/*.mlt: give all MLT files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+
+1999-02-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_stub.h: Removed.
+
+1999-02-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.mlt: New memory layout save files
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/ram.ldi: Rationalize memory layout.
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Remove LMA_EQ_VMA macro definition.
+
+1999-01-26  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/pkgconf/ram.ldi:
+	Add copyright notice.  (Though these files will later be generated
+	by a tool and so not copyright, these default setups are.)
+
 1998-10-25  Jesper Skov  <jskov@cygnus.co.uk>
 
 	
@@ -114,7 +158,7 @@ Mon Aug 17 22:18:15 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

@@ -1,3 +1,647 @@
+1999-04-19  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19861
+	* src/vectors.S (_start): Rewrote the hal_zero_bss code in
+	assembly. When compiling with -O0 the C function accesses the
+	previous stack frame upon return, causing a crash.
+
+1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/powerpc.ld: Define __bss_start/__bss_end around the BSS, and
+	__sbss_start/__sbss_end around the SBSS
+	* src/vectors.S (_start): Call C function to clear BSS.
+	* src/hal_misc.c (hal_zero_bss): Use __bss_end rather than _end when
+	clearing BSS. Clear SBSS similarly but separately since the MLT
+	may have them in non-contiguous parts of memory.
+	
+	These fix PR 19750
+
+1999-04-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Added HAL_xCACHE_IS_ENABLED macros.
+
+1999-04-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak (EXTRAS): Don't generate extras.o here any more
+	But do define EXTRAS every time for the linker script
+
+1999-04-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c:
+	Moved get_register and put_register to hal_stub.c.
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/*.ld: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-04-07  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_arch.h (CYGNUM_HAL_STACK_SIZE_xxx): Increase to more
+	realistic values.  PR 19748.
+
+1999-03-31  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19741
+	* src/vectors.S:
+	* src/ppc_stub.c (__computeSignal): 
+	Added some comments about the use of MSR/SRR1. Masked out reserved
+	bits of MSR before restoring it.
+	
+1999-03-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h: Added stack values.
+
+1999-03-22  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/ppc_stub.h: Update copyright
+
+	* src/ppc_stub.c: Update copyright
+
+1999-03-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	Use CYGNUM_HAL_STACK_SIZE_TYPICAL for the stack size instead of
+	CYGNUM_HAL_MINIMUM_STACK_SIZE.
+
+1999-03-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr0.c: 
+	* include/ppc.inc: 
+	* include/hal_arch.h:
+	Cleaned up some FIX MEs.
+
+1999-03-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc.inc: Removed exception safety margin.
+
+1999-03-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/PKGconf.mak: Remove dependence on echo '-e' switch.
+
+1999-03-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: Moved extern declarations out of function body
+	to avoid compiler warnings.
+
+1999-03-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h (CYGNUM_HAL_MINIMUM_STACK_SIZE): Increased to
+	2kB for safety.
+
+	* include/ppc.inc: Reduced exception stack frame safety gap
+	to 64 bytes.
+
+1999-03-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_arch.h (CYGNUM_HAL_MINIMUM_STACK_SIZE): 
+	Added HAL stack size definition.
+
+1999-03-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_IN_USE): Added.
+
+1999-03-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/powerpc.ld:
+	Added alignment before definition of __DEVTAB__.	
+
+1999-03-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h: Removed workaround.
+
+1999-03-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (cyg_hal_interrupt_set_level): Disable this
+	function as a temporary workaround to PR 19400.
+
+1999-03-05  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/PKGconf.mak: 
+	* src/powerpc.ld: Clean up I/O package changes.
+
+1999-03-04  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/powerpc.ld:
+	Add INPUT(libextras.a), add libextras.a to GROUP() and include
+	new section for device driver table
+
+1999-02-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h: Removed FIX ME.
+
+1999-02-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h:
+	* src/ppc_stub.c (__computeSignal): 
+	Renamed CYGNUM_HAL_HWVECTOR_DECREMENTER to
+	CYGNUM_HAL_VECTOR_DECREMENTER.
+
+1999-02-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Changed label used to access scheduler lock to one that is not
+	mangled by C++. This is intended to make support for interrupt
+	handling in non-kernel configurations easier.
+
+1999-02-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c (__computeSignal): Renamed
+	CYGNUM_HAL_VECTOR_DECREMENTER to CYGNUM_HAL_HWVECTOR_DECREMENTER.
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	Rename deliver_exception() -> cyg_hal_deliver_exception()
+
+	* include/hal_intr.h:
+	Reorganise vector/interrupt/exception names according to purpose
+	Add decoded exception vectors (decoded from PROGRAM exception)
+	QA improvements
+
+	* include/ppc_regs.h:
+	Add defines for access to SRR0 and SRR1 registers
+
+	* src/hal_intr.c:
+	Rename CYG_VECTOR_* according to hal_intr.h changes above
+	QA improvements
+
+	* src/hal_misc.c:
+	Decode PROGRAM vector using SSR1 register
+	QA improvements
+
+	* src/ppc_stub.c:
+	Rename CYG_VECTOR_* according to hal_intr.h changes above
+
+	* src/quicc_smc.c:
+	Add a FIX ME
+
+	* src/vectors.S:
+	Rename exception_handler -> cyg_hal_exception_handler
+
+	* tests/intr0.c:
+	Rename CYG_VECTOR_* -> CYGNUM_HAL_INTERRUPT_* due to hal_intr.h
+	changes above
+
+1999-02-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c (__computeSignal): Moved special GDB signal
+	handling to generic-stub.c.
+
+1999-02-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_default_isr): Always print out vector number
+	in hal_default_interrupt.
+
+1999-02-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Changed set_debug_traps to initialize_stub.
+
+	* src/ppc_stub.c: 
+	* include/ppc_stub.h: 
+	Cleaned up to only include arch specific stub code.
+
+1999-02-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c: 
+	* src/hal_misc.c: 
+	* src/hal_intr.c: 
+	* src/vectors.S: 
+	* include/ppc_regs.h: 
+	* include/hal_intr.h: 
+	* include/hal_cache.h: 
+        Cleaned up the MPC823/850 code.
+
+1999-02-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_CLOCK_LATENCY): Return 0 when the result
+	is due to a bogus timer interrupt.
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/powerpc.ld: Add LMA_EQ_VMA macro definition.
+
+1999-01-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: 
+	* src/ppc_stub.c: 
+	* src/vectors.S: 
+	* include/ppc_regs.h: 
+	* include/hal_intr.h: 
+	* include/hal_cache.h:
+	Added MPC823/850 support. Some of it needs cleaning up a bit.
+
+1999-01-22  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18879
+	* include/quicc_smc.h:
+	* src/quicc_smc.c:
+	Fix compiler warnings.
+
+1999-01-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/quicc_smc.h:
+	* src/ppc_860.h:
+	* src/quicc_smc.c:
+	Added UNSUPPORTED headers.
+
+1999-01-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (cyg_hal_invoke_constructors): 
+	Add code to deal with CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+	Tidy up and update description header
+	Shorten needlessly long lines
+
+	* src/vectors.S:
+	Remove all traces of non-CYG_KERNEL_USE_INIT_PRIORITY code
+	Tidy up and update description header
+	Shorten needlessly long lines
+
+1999-01-21  Jesper Skov  <jskov@cygnus.co.uk>
+        Merge with FADS branch.
+
+        1998-12-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_860.h: Added as private header.
+
+	* src/PKGconf.mak (COMPILE): Added quicc_smc.c.
+
+	* include/quicc_smc.h: Prefix exported names with cyg_.
+
+	* src/quicc_smc.c: Use ppc_860.h as a private header.
+	Made all but the necessary functions static. Prefixed the rest
+	with cyg_.
+	Moved the RS232 interface enabling here from hal_diag since it
+	is apparently required by both hal_stub and hal_diag.
+
+1999-01-20  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/powerpc.ld (SECTION_bss): Added align statement.
+
+1999-01-20  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Changed _STUB to _STUBS. 
+
+1999-01-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: 
+	* src/hal_misc.c (hal_enable_caches):
+	Also support HAL_STARTUP_STUB.
+	
+1999-01-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c:
+	* src/hal_intr.c: 
+	Move external declarations out of functions.
+
+1999-01-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (_start): Copy data to RAM before calling C
+	functions (or "don't initialize the MMU with random data").
+
+	* src/hal_misc.c: ROM is cache inhibited.
+
+1999-01-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/basetype.h: CYG_DOUBLE_BYTEORDER now in <infra/cyg_type.h>
+
+1999-01-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/basetype.h (CYG_DOUBLE_BYTEORDER): Define ordering
+	for words within double.
+
+1999-01-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_io.h: Fixed indentation.
+
+1999-01-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_CLOCK_RESET): Undid below change;
+	doesn't always work.
+
+1998-12-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_CLOCK_RESET): Add rather than store to
+	avoid wall-clock drift.
+
+1998-12-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Cleaned up code to use r14/r15 during
+	interrupt/exception handling, which is necessary to support
+	-msdata.
+	Put hal tables in sdata section when smaller than threshold.
+	
+1998-12-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Defined three more macros.
+
+1998-12-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Defined three more macros.
+
+1998-12-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Make the program exception jump to ROM if no GDB
+	stub was configured.
+
+1998-12-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Added HAL_ICACHE_UNLOCK_ALL and
+	HAL_DCACHE_UNLOCK_ALL for sim (unused).
+
+1998-12-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Defined cache locking macros. Changed
+	invalidate macros not to unlock.
+
+	* include/ppc_regs.h: Added some instruction cache definitions.
+
+	* src/hal_misc.c (hal_enable_caches): Unlock caches before
+	invalidating.
+
+1998-12-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_enable_caches): Don't enable caches when
+	configured for ROM.
+
+1998-12-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: TBx_W are SPR registers.
+
+	* src/vectors.S (_init_CPU, _start): Added a few sync instructions.
+
+1998-12-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h (CYGARC_REG_IMM_OR_CSNT): Fixed typo.
+
+1998-12-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: Added more definitions.
+
+1998-12-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (_init_CPU): Proper solution to the problem of
+	MMU/cache initialization.
+
+1998-12-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (_start): Map RAM before accessing it. Only
+	disable MMU just before (re)programming it.
+
+1998-12-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_intr.c:
+	* src/hal_intr.cxx:
+	* src/PKGconf.mak:
+	Renamed hal_intr.cxx to hal_intr.c.
+	
+1998-12-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/intr0.c: Improved somewhat. Also fixes PR 18440.
+
+	* src/hal_intr.cxx:
+	* src/PKGconf.mak:
+	Added hal_intr.cxx.
+
+	* include/ppc_regs.h: More register definitions.
+
+	* include/hal_intr.h: Handle decrementer in HAL_INTERRUPT_ mask
+	and configure macros.
+	Added declarations for interrupt arbiters.
+
+1998-12-02  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18425
+
+	* src/vectors.S:
+	* include/ppc_regs.h:
+	* include/hal_intr.h:
+	Prefixed remaining definitions used by hal_intr.h.
+
+	* include/hal_intr.h:
+	Added more definitions. Fixed wrong TBx_R values.
+
+1998-12-01  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/PKGconf.mak:
+	* tests/intr0.c:
+	First simple test of 860 specific interrupt handling.
+
+	* src/vectors.S (__default_interrupt_vsr): Don't shift decoded
+	vector number.
+
+	* src/hal_misc.c (hal_clear_MMU): Added.
+	(hal_MMU_init): Call hal_clear_MMU to ensure a sane MMU state.
+
+	* include/ppc_regs.h: Added even more definitions.
+
+	* include/hal_intr.h: Fixed interrupt functions to deal with
+	interleaved IRQ/LVL vectors.
+
+1998-11-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (__default_interrupt_vsr): Always call
+	cyg_hal_gdb_isr when GDB_BREAK support is enabled.
+	Added comment about nesting.
+
+1998-11-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: Added a few more definitions.
+
+	* src/vectors.S (decode_interrupt): Added 1st level arbitration
+	for MPC860.
+
+	* include/hal_intr.h: Added (properly ordered) LVL vectors.
+	Changed if/else to switch/case.
+	Added configuration of priorities/level.
+
+1998-11-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (decode_interrupt): Update the vector in the state
+	frame.
+
+1998-11-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: Added more 860 IMM registers.
+
+	* include/hal_io.h: Changed HAL_IO_BARRIER so it can be used from
+	C++.
+
+	* include/hal_intr.h: First part of 860 interrupt controller
+	support.
+
+	* src/vectors.S: 
+	* include/hal_intr.h:
+	Exchanged extern and decrementer interrupt ISR vectors to allow
+	more sensible extension.
+	
+1998-11-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: The memory map descriptor table is now weakly
+	defined so applications can override it.
+
+1998-11-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: 
+	* src/hal_misc.c (hal_map_memory):
+	Added handling of Guarded attribute.
+
+1998-11-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h: Added definition for magic constant.
+
+1998-11-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: 
+	* include/hal_arch.h: 
+	* include/ppc.inc:
+	Moved SPR definitions to ppc_regs.h.
+	
+1998-11-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: 
+	* src/ppc_stub.c: 
+	* src/hal_misc.c: 
+	Changes due to ppc_regs.h cleanup.
+
+	* src/ppc_stub.h: Added convenience definition for SP register.
+
+	* include/ppc_regs.h: Got rid of GDB register definitions.
+	Cleaned up a bit.
+
+	* include/ppc_regs.h: 
+	* include/hal_cache.h: 
+	Prefixed register names with CYGARC_REG_ to avoid name space
+	pollution.
+
+	* include/hal_arch.h: 
+	* src/context.S: 
+	Replaced magic constants in jmpbuf with defines.
+
+1998-11-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (__start): Got rid of a few magic constants.
+
+	* include/hal_intr.h (HAL_CLOCK_INITIALIZE,
+	HAL_CLOCK_RESET): Cleaned up a bit.
+
+	* include/ppc_regs.h: Added DC_ADR_ and TBU/TBL macros.
+
+	* include/hal_cache.h: Got rid of a few magic constants. 
+	Changed types in cyg_memdesc_t. 
+	* src/hal_misc.c (hal_map_memory): Changed argument types.
+
+	* include/hal_arch.h: Changed a few comments.
+
+1998-11-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Cleaned up CYG_MSR definition.
+
+	* src/hal_misc.c (mem_map): Added mapping for SIM.
+	(hal_map_memory): Added 603 BAT mapping.
+
+	* include/ppc_regs.h: Added definitions for BATs.
+
+1998-11-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_regs.h: 
+	* include/hal_cache.h: 
+	Use operand constants to pass macro values to assembly code.
+
+1998-11-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/context.S: 
+	* include/ppc.inc: 
+	* include/hal_arch.h:
+	Improved GDB thread info output by making a context switch frame
+	look like an exception/interrupt frame.
+	
+1998-11-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_intr.h: Add support for interrupt latency
+	measurements, controlled by CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY.
+
+1998-11-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc.inc: Renamed CYG_HAL_POWERPC_MP860 to
+	CYG_HAL_POWERPC_MPC860.
+
+1998-11-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* hal/powerpc/arch/current/include/hal_cache.h
+	* hal/powerpc/arch/current/include/hal_intr.h
+	* hal/powerpc/arch/current/include/ppc_regs.h
+	* hal/powerpc/arch/current/src/hal_misc.c
+	* hal/powerpc/arch/current/src/ppc_stub.c
+	* hal/powerpc/arch/current/src/vectors.S
+	Renamed CYG_HAL_POWERPC_MP860 to CYG_HAL_POWERPC_MPC860.
+
+1998-11-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S:
+	* include/hal_intr.h: 
+	Added vector translation.
+
+	* src/vectors.S: Use r14 instead of r15 in interrupt handler.
+
+1998-11-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Added memory mapping structure.
+
+	* src/hal_misc.c (hal_MMU_init): Cleaned up memory mapping.
+
+1998-11-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_enable_caches): Also disable serialization.
+
+	* include/ppc_regs.h: Added more register definitions.
+
+1998-11-06  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Don't enable MMU when target is SIM. Caches are
+	not used anyway, and there's a serious performance hit.
+	(added comment).
+
+1998-11-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h: Proper separation of SIM and MPC860 cache
+	defines.
+
+1998-11-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ppc_stub.c (cyg_hal_gdb_interrupt,
+	cyg_hal_gdb_remove_break): Add cache flushes after fiddling with
+	the program data.
+
+	* src/vectors.S (__default_interrupt_vsr,
+	__default_exception_vsr): Enable MMU on entry.
+
+1998-11-04  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Make calls to MMU init function and cache
+	enabling function. Enable MMU.
+
+	* src/hal_misc.c (hal_map_memory, hal_MMU_init,
+	hal_enable_caches): Added.
+
+	* include/ppc_regs.h: Added MMU register definitions.
+
+	* include/hal_cache.h: Enabled cache macros and made them work
+	properly.
+
+1998-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/ppc_stub.h: 
+	* src/ppc_stub.c (cyg_hal_gdb_interrupt,
+	cyg_hal_gdb_remove_break): New names for the new GDB BREAK support
+	functions.
+
+1998-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (__default_interrupt_vsr): Fill r15 before doing
+	cyg_hal_gdb_isr call, or it might be skipped.
+	cyg_hal_gdb_isr now takes PC as first argument.
+
+	* src/ppc_stub.c:
+	* src/ppc_stub.h:
+	Added proper GDB interrupt support.
+
 1998-10-27  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/vectors.S: Also save registers 13-15 in minimum context for
@@ -416,7 +1060,7 @@ Mon Aug 17 16:23:46 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

@@ -24,15 +24,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     Configuration of the standard mathematical function library
 // Description: Configuration header for mathematical function library
@@ -168,13 +168,13 @@
 
     {{CFG_DATA
         cdl_package CYGPKG_LIBM {
-            display      "Math Library"
+            display      "Math library"
             description  "ISO standard floating point mathematical library
                           containing many useful functions for mathematical
                           calculations."
             type         boolean
             requires     CYGPKG_ERROR
-	    doc          ref/ecos-ref/the-iso-standard-c-and-math-libraries.html
+            doc          ref/ecos-ref/the-iso-standard-c-and-math-libraries.html
         }
     }}CFG_DATA
 
@@ -384,11 +384,11 @@ typedef enum {
 #undef CYGSEM_LIBM_THREAD_SAFE_COMPAT_MODE
 #endif
 
-#if ( (defined(CYGSEM_LIBM_THREAD_SAFE_GAMMA_FUNCTIONS) || \
-       defined(CYGSEM_LIBM_THREAD_SAFE_COMPAT_MODE)) && \
+
+#if ( defined(CYGSEM_LIBM_THREAD_SAFE_COMPAT_MODE) && \
       !defined(CYGVAR_KERNEL_THREADS_DATA) )
-# error The kernel must have thread-specific data (CYGVAR_KERNEL_THREADS_DATA) \
-  turned on for a thread-safe math library
+# error The kernel must have thread-specific data \
+  (CYGVAR_KERNEL_THREADS_DATA) turned on for a thread-safe math library
 #endif
 
 //========================================================================

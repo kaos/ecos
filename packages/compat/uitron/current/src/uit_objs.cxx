@@ -1,8 +1,8 @@
 //===========================================================================
 //
-//	uit_objs.cxx
+//      uit_objs.cxx
 //
-//	uITRON static objects
+//      uITRON static objects
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON static system objects
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON static system objects
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -49,13 +49,15 @@
                                         // we define below, and everything
                                         // we need to specify them.
 
+#include <cyg/hal/hal_arch.h>           // for CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 // ------------------------------------------------------------------------
 // Mboxes have no initializer.
 #ifdef CYGPKG_UITRON_MBOXES
 #if 0 < CYGNUM_UITRON_MBOXES
-Cyg_Mbox		CYG_UITRON_DECL( MBOXES );
+Cyg_Mbox                CYG_UITRON_DECL( MBOXES );
 #ifdef CYGPKG_UITRON_MBOXES_CREATE_DELETE
-Cyg_Mbox		*CYG_UITRON_DECL_PTRS( MBOXES );
+Cyg_Mbox                *CYG_UITRON_DECL_PTRS( MBOXES );
 #endif
 #endif
 #endif // CYGPKG_UITRON_MBOXES
@@ -64,9 +66,9 @@ Cyg_Mbox		*CYG_UITRON_DECL_PTRS( MBOXES );
 // Flags have no initializer.
 #ifdef CYGPKG_UITRON_FLAGS
 #if 0 < CYGNUM_UITRON_FLAGS
-Cyg_Flag		CYG_UITRON_DECL( FLAGS );
+Cyg_Flag                CYG_UITRON_DECL( FLAGS );
 #ifdef CYGPKG_UITRON_FLAGS_CREATE_DELETE
-Cyg_Flag		*CYG_UITRON_DECL_PTRS( FLAGS );
+Cyg_Flag                *CYG_UITRON_DECL_PTRS( FLAGS );
 #endif
 #endif
 #endif // CYGPKG_UITRON_FLAGS
@@ -81,7 +83,7 @@ Cyg_Flag		*CYG_UITRON_DECL_PTRS( FLAGS );
 #error You must define CYGNUM_UITRON_SEMAS
 #endif
 
-Cyg_Counting_Semaphore2	CYG_UITRON_DECL( SEMAS )
+Cyg_Counting_Semaphore2 CYG_UITRON_DECL( SEMAS )
 
 #ifdef CYGDAT_UITRON_SEMA_INITIALIZERS
 // a Macro to ease the construction:
@@ -117,32 +119,44 @@ Cyg_Counting_Semaphore2 *CYG_UITRON_DECL_PTRS( SEMAS );
 #error You must define CYGNUM_UITRON_TASKS
 #endif
 
-// declare the symbols used in the initializer
-CYGDAT_UITRON_TASK_EXTERNS
-
 // a Macro to ease the construction:
-//	"name", priority, proc, stackbase, stacksize
+//      "name", priority, proc, stackbase, stacksize
 #define CYG_UIT_TASK( _name_, _prio_, _func_, _sb_, _ss_ ) \
-  Cyg_Thread( 				\
-	(CYG_ADDRWORD)(_prio_), 	\
-	(_func_), 			\
-        (CYG_ADDRWORD)0, 		\
-        _name_, 			\
-        (CYG_ADDRESS)(_sb_),		\
+  Cyg_Thread(                           \
+        (CYG_ADDRWORD)(_prio_),         \
+        (_func_),                       \
+        (CYG_ADDRWORD)0,                \
+        _name_,                         \
+        (CYG_ADDRESS)(_sb_),            \
         (cyg_ucount32)(_ss_) )
 
 #ifdef CYGPKG_UITRON_TASKS_CREATE_DELETE
 #define CYG_UIT_TASK_NOEXS( _name_, _sb_, _ss_ ) \
-  Cyg_Thread( 				\
-	(CYG_ADDRWORD)(CYG_SCHED_DEFAULT_INFO),	\
-	(cyg_thread_entry *)(0),	\
-        (CYG_ADDRWORD)0, 		\
-        _name_, 			\
-        (CYG_ADDRESS)(_sb_),		\
+  Cyg_Thread(                           \
+        (CYG_ADDRWORD)(CYG_SCHED_DEFAULT_INFO), \
+        (cyg_thread_entry *)(0),        \
+        (CYG_ADDRWORD)0,                \
+        _name_,                         \
+        (CYG_ADDRESS)(_sb_),            \
         (cyg_ucount32)(_ss_) )
 #endif
 
-Cyg_Thread	CYG_UITRON_DECL( TASKS ) =
+#ifdef CYGNUM_HAL_STACK_SIZE_TYPICAL
+# ifdef CYGNUM_UITRON_STACK_SIZE
+#  if CYGNUM_UITRON_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_TYPICAL
+
+// then override the configured stack size
+#   undef CYGNUM_UITRON_STACK_SIZE
+#   define CYGNUM_UITRON_STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+
+#  endif // CYGNUM_UITRON_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_TYPICAL
+# endif // CYGNUM_UITRON_STACK_SIZE
+#endif // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
+// declare the symbols used in the initializer
+CYGDAT_UITRON_TASK_EXTERNS
+
+Cyg_Thread      CYG_UITRON_DECL( TASKS ) =
 {
     CYGDAT_UITRON_TASK_INITIALIZERS
 };
@@ -159,7 +173,7 @@ cyg_uitron_task_initial_priorities[ CYG_UITRON_NUM( TASKS ) ];
 #endif
 
 #ifdef CYGPKG_UITRON_TASKS_CREATE_DELETE
-Cyg_Thread		*CYG_UITRON_DECL_PTRS( TASKS );
+Cyg_Thread              *CYG_UITRON_DECL_PTRS( TASKS );
 #endif
 
 // ------------------------------------------------------------------------
@@ -192,7 +206,7 @@ CYGDAT_UITRON_MEMPOOLFIXED_EXTERNS
     (cyg_uint8 *)(_a_), (cyg_int32)(_s_), (CYG_ADDRWORD) ((~7)&((_s_)/2)) )
 #endif
 
-Cyg_Mempool_Fixed	CYG_UITRON_DECL( MEMPOOLFIXED ) =
+Cyg_Mempool_Fixed       CYG_UITRON_DECL( MEMPOOLFIXED ) =
 {
     CYGDAT_UITRON_MEMPOOLFIXED_INITIALIZERS
 };
@@ -202,7 +216,7 @@ Cyg_Mempool_Fixed	CYG_UITRON_DECL( MEMPOOLFIXED ) =
 #endif
 
 #ifdef CYGPKG_UITRON_MEMPOOLFIXED_CREATE_DELETE
-Cyg_Mempool_Fixed	*CYG_UITRON_DECL_PTRS( MEMPOOLFIXED );
+Cyg_Mempool_Fixed       *CYG_UITRON_DECL_PTRS( MEMPOOLFIXED );
 #endif
 #endif // do we have fixed memory pools at all?
 #endif // CYGPKG_UITRON_MEMPOOLFIXED
@@ -245,7 +259,7 @@ Cyg_Mempool_Variable CYG_UITRON_DECL( MEMPOOLVAR ) =
 #endif
 
 #ifdef CYGPKG_UITRON_MEMPOOLVAR_CREATE_DELETE
-Cyg_Mempool_Variable	*CYG_UITRON_DECL_PTRS( MEMPOOLVAR );
+Cyg_Mempool_Variable    *CYG_UITRON_DECL_PTRS( MEMPOOLVAR );
 #endif
 #endif // do we have variable memory pools at all?
 #endif // CYGPKG_UITRON_MEMPOOLVAR
@@ -277,7 +291,7 @@ CYGDAT_UITRON_CYCLIC_EXTERNS
 
 #endif // have externs or initializers
 
-Cyg_Timer		CYG_UITRON_DECL( CYCLICS )
+Cyg_Timer               CYG_UITRON_DECL( CYCLICS )
 
 #ifdef CYGDAT_UITRON_CYCLIC_INITIALIZERS
 
@@ -322,7 +336,7 @@ CYGDAT_UITRON_ALARM_EXTERNS
 
 #endif // have externs or initializers
 
-Cyg_Timer		CYG_UITRON_DECL( ALARMS )
+Cyg_Timer               CYG_UITRON_DECL( ALARMS )
 
 #ifdef CYGDAT_UITRON_ALARM_INITIALIZERS
 

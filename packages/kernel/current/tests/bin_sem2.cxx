@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -49,15 +49,7 @@
 
 #include <cyg/kernel/sched.inl>
 
-#if defined(CYG_HAL_MIPS_SIM)
-// Reduce number of loops in simulated TX39 so that
-// it runs within the timeout.
-#define PHILO_LOOPS     100   
-#else
-
-#define PHILO_LOOPS     1000
- 
-#endif    
+static cyg_ucount16 PHILO_LOOPS = 1000;
 
 #define PHILOSOPHERS 15
 #define NTHREADS PHILOSOPHERS
@@ -67,7 +59,7 @@ static Cyg_Binary_Semaphore chopstick[PHILOSOPHERS];
 
 static char pstate[PHILOSOPHERS+1];       // state of each philosopher
 
-static cyg_ucount8 state_changes = 0;
+static cyg_ucount16 state_changes = 0;
 // state_changes keep track of number of changes to pstate so
 // we can exit after we've seen enough.
 
@@ -194,6 +186,9 @@ void Philosopher( CYG_ADDRESS id )
 void bin_sem2_main( void )
 {
     CYG_TEST_INIT();
+
+    if (cyg_test_is_simulator)
+        PHILO_LOOPS = 100;
 
     for( int i = 0; i < PHILOSOPHERS; i++ )
     {

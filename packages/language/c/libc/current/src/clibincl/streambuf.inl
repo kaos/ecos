@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -64,7 +64,7 @@
 // FUNCTIONS
     
 inline
-Cyg_StdioStreamBuffer::Cyg_StdioStreamBuffer( cyg_ucount32 size=BUFSIZE,
+Cyg_StdioStreamBuffer::Cyg_StdioStreamBuffer( cyg_ucount32 size=BUFSIZ,
                                               cyg_uint8 *new_buffer=NULL ) :
 #ifdef CYGSEM_LIBC_STDIO_DYNAMIC_SETVBUF
     buffer_bottom( NULL ),

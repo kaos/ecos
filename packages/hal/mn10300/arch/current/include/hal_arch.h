@@ -1,13 +1,12 @@
 #ifndef CYGONCE_HAL_HAL_ARCH_H
 #define CYGONCE_HAL_HAL_ARCH_H
-
-//=============================================================================
+//==========================================================================
 //
-//	hal_arch.h
+//      hal_arch.h
 //
-//	Architecture specific abstractions
+//      Architecture specific abstractions
 //
-//=============================================================================
+//==========================================================================
 //####COPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -25,26 +24,27 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
-//=============================================================================
+//==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
+// Author(s):     nickg
 // Contributors:  nickg
-// Date:        1997-09-08
-// Purpose:     Define architecture abstractions
-// Usage:       #include <cyg/hal/hal_arch.h>
-//		
+// Date:          1999-02-18
+// Purpose:       Define architecture abstractions
+// Usage:         #include <cyg/hal/hal_arch.h>
+//              
 //####DESCRIPTIONEND####
 //
-//=============================================================================
+//==========================================================================
 
+#include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Processor saved states:
 
 typedef struct HAL_SavedRegisters
@@ -74,16 +74,16 @@ typedef struct HAL_SavedRegisters
     
 } HAL_SavedRegisters;
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Exception handling function.
 // This function is defined by the kernel according to this prototype. It is
 // invoked from the HAL to deal with any CPU exceptions that the HAL does
 // not want to deal with itself. It usually invokes the kernel's exception
 // delivery mechanism.
 
-externC void deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
+externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Bit manipulation routines
 
 externC cyg_uint32 hal_lsbit_index(cyg_uint32 mask);
@@ -93,7 +93,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 
 #define HAL_MSBIT_INDEX(index, mask) index = hal_msbit_index(mask);
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Context Initialization
 // Initialize the context of a thread.
 // Arguments:
@@ -106,7 +106,8 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 #define HAL_THREAD_INIT_CONTEXT( _sp_, _thread_, _entry_, _id_ )            \
 {                                                                           \
     register HAL_SavedRegisters *_regs_;                                    \
-    _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters)*2); \
+    _regs_ = (HAL_SavedRegisters *)(((CYG_ADDRWORD)(_sp_)&(~3)) -           \
+                                    sizeof(HAL_SavedRegisters)*2);          \
     _regs_->d0    = (CYG_WORD)(_thread_);                                   \
     _regs_->d1    = (_id_)|0xddd1;                                          \
     _regs_->d2    = (_id_)|0xddd2;                                          \
@@ -123,7 +124,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     _sp_          = (CYG_ADDRESS)_regs_;                                    \
 }
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Context switch macros.
 // The arguments are pointers to locations where the stack pointer
 // of the current thread is to be stored, and from where the sp of the
@@ -134,28 +135,29 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
     __attribute__ ((noreturn));
 
 #define HAL_THREAD_SWITCH_CONTEXT(_fspptr_,_tspptr_)                    \
-        hal_thread_switch_context((CYG_ADDRESS)_tspptr_,(CYG_ADDRESS)_fspptr_);
+        hal_thread_switch_context((CYG_ADDRESS)_tspptr_,                \
+                                  (CYG_ADDRESS)_fspptr_);
 
 #define HAL_THREAD_LOAD_CONTEXT(_tspptr_)                               \
         hal_thread_load_context( (CYG_ADDRESS)_tspptr_ );
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Execution reorder barrier.
 // When optimizing the compiler can reorder code. In multithreaded systems
 // where the order of actions is vital, this can sometimes cause problems.
 // This macro may be inserted into places where reordering should not happen.
 
-#define HAL_REORDER_BARRIER() asm ( "" )
+#define HAL_REORDER_BARRIER() asm volatile ( "" : : : "memory" )
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Breakpoint support
-// HAL_BREAKPOINT() is a code sequence that will cause a breakpoint to happen if
-// executed.
-// HAL_BREAKINST is the value of the breakpoint instruction and HAL_BREAKINST_SIZE
-// is its size in bytes.
+// HAL_BREAKPOINT() is a code sequence that will cause a breakpoint to
+// happen if executed.
+// HAL_BREAKINST is the value of the breakpoint instruction and
+// HAL_BREAKINST_SIZE is its size in bytes.
 
 #define HAL_BREAKPOINT(_label_)                 \
-asm volatile (" .globl	" #_label_ ";"          \
+asm volatile (" .globl  " #_label_ ";"          \
               #_label_":"                       \
               ".byte 0xFF"                      \
     );
@@ -164,37 +166,37 @@ asm volatile (" .globl	" #_label_ ";"          \
 
 #define HAL_BREAKINST_SIZE      1
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
 
 // Translate a stack pointer as saved by the thread context macros above into
 // a pointer to a HAL_SavedRegisters structure.
-#define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )                          \
+#define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )                     \
         (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
-#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )                             \
-{                                                                               \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);                       \
-                                                                                \
-    _regval_[0]         = (_regs_)->d0;                                         \
-    _regval_[1]         = (_regs_)->d1;                                         \
-    _regval_[2]         = (_regs_)->d2;                                         \
-    _regval_[3]         = (_regs_)->d3;                                         \
-    _regval_[4]         = (_regs_)->a0;                                         \
-    _regval_[5]         = (_regs_)->a1;                                         \
-    _regval_[6]         = (_regs_)->a2;                                         \
-    _regval_[7]         = (_regs_)->a3;                                         \
-                                                                                \
-    _regval_[8]         = (CYG_ADDRWORD)(_regs_) +                              \
-                          sizeof(HAL_SavedRegisters);                           \
-    _regval_[9]         = (_regs_)->pc;                                         \
-    _regval_[10]        = (_regs_)->mdr;                                        \
-    _regval_[11]        = (_regs_)->psw;                                        \
-                                                                                \
-    _regval_[12]        = (_regs_)->lar;                                        \
-    _regval_[13]        = (_regs_)->lir;                                        \
+#define HAL_GET_GDB_REGISTERS( _aregval_ , _regs_ )                     \
+{                                                                       \
+    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);               \
+                                                                        \
+    _regval_[0]         = (_regs_)->d0;                                 \
+    _regval_[1]         = (_regs_)->d1;                                 \
+    _regval_[2]         = (_regs_)->d2;                                 \
+    _regval_[3]         = (_regs_)->d3;                                 \
+    _regval_[4]         = (_regs_)->a0;                                 \
+    _regval_[5]         = (_regs_)->a1;                                 \
+    _regval_[6]         = (_regs_)->a2;                                 \
+    _regval_[7]         = (_regs_)->a3;                                 \
+                                                                        \
+    _regval_[8]         = (CYG_ADDRWORD)(_regs_) +                      \
+                          sizeof(HAL_SavedRegisters);                   \
+    _regval_[9]         = (_regs_)->pc;                                 \
+    _regval_[10]        = (_regs_)->mdr;                                \
+    _regval_[11]        = (_regs_)->psw;                                \
+                                                                        \
+    _regval_[12]        = (_regs_)->lar;                                \
+    _regval_[13]        = (_regs_)->lir;                                \
 }
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
@@ -223,17 +225,26 @@ asm volatile (" .globl	" #_label_ ";"          \
      */                                                                 \
 }
 
-//-----------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 // HAL setjmp
+// Note: These definitions are repeated in context.S. If changes are required
+// remember to update both sets.
 
-#define HAL_JMP_BUF_SIZE 6
+#define CYGARC_JMP_BUF_SP        0
+#define CYGARC_JMP_BUF_D2        1
+#define CYGARC_JMP_BUF_D3        2
+#define CYGARC_JMP_BUF_A2        3
+#define CYGARC_JMP_BUF_A3        4
+#define CYGARC_JMP_BUF_LR        5
 
-typedef cyg_uint32 hal_jmp_buf[HAL_JMP_BUF_SIZE];
+#define CYGARC_JMP_BUF_SIZE      6
+
+typedef cyg_uint32 hal_jmp_buf[CYGARC_JMP_BUF_SIZE];
 
 externC int hal_setjmp(hal_jmp_buf env);
 externC void hal_longjmp(hal_jmp_buf env, int val);
 
-//-----------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 // Idle thread code.
 // This macro is called in the idle thread loop, and gives the HAL the
 // chance to insert code. Typical idle thread behaviour might be to halt the
@@ -244,5 +255,52 @@ externC void hal_longjmp(hal_jmp_buf env, int val);
 #define HAL_IDLE_THREAD_ACTION(_count_)
 
 //-----------------------------------------------------------------------------
+// Minimal and sensible stack sizes: the intention is that applications
+// will use these to provide a stack size in the first instance prior to
+// proper analysis.  Idle thread stack should be this big.
+
+//    THESE ARE NOT INTENDED TO BE MICROMETRICALLY ACCURATE FIGURES.
+//           THEY ARE HOWEVER ENOUGH TO START PROGRAMMING.
+// YOU MUST MAKE YOUR STACKS LARGER IF YOU HAVE LARGE "AUTO" VARIABLES!
+
+// We define quite large stack needs for SPARClite, for it requires 576
+// bytes (144 words) to process an interrupt and thread-switch, and
+// momentarily, but needed in case of recursive interrupts, it needs 208
+// words - if a sequence of saves to push out other regsets is interrupted.
+
+// This is not a config option because it should not be adjusted except
+// under "enough rope" sort of disclaimers.
+
+// Worst case stack frame size: return link + 4 args + 4 pushed registers.
+#define CYGNUM_HAL_STACK_FRAME_SIZE (40)
+
+// Stack needed for a context switch:
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (60)
+
+// Interrupt + call to ISR, interrupt_end() and the DSR
+#define CYGNUM_HAL_STACK_INTERRUPT_SIZE (128)
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
+
+// An interrupt stack which is large enough for all possible interrupt
+// conditions (and only used for that purpose) exists.  "User" stacks
+// can be much smaller
+
+#define CYGNUM_HAL_STACK_SIZE_MINIMUM (CYGNUM_HAL_STACK_CONTEXT_SIZE+      \
+                                       CYGNUM_HAL_STACK_INTERRUPT_SIZE*2+  \
+                                       CYGNUM_HAL_STACK_FRAME_SIZE*16)
+#define CYGNUM_HAL_STACK_SIZE_TYPICAL (2048)
+
+#else // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
+
+// No separate interrupt stack exists.  Make sure all threads contain
+// a stack sufficiently large.
+
+#define CYGNUM_HAL_STACK_SIZE_MINIMUM (4096)
+#define CYGNUM_HAL_STACK_SIZE_TYPICAL (4096)
+
+#endif
+
+//--------------------------------------------------------------------------
 #endif // CYGONCE_HAL_HAL_ARCH_H
-// End of hal_arch.h
+// EOF hal_arch.h

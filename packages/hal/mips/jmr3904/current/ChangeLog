@@ -1,3 +1,119 @@
+1999-04-29  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Only include the code to
+	read the '+' from GDB and test for ^C there if not installing the
+	default isr to catch these: CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR.
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_*.*: Use double underscore substitution
+	for period character in SECTION_* macro names (PR 19787)
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-03-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_tx39_jmr3904.h:
+	Added some edit-only options for controlling DRAM setup and bus
+	timeout detection. These should only be used by experts, so they
+	are not presently exported as full config options.
+
+1999-03-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char):	Backed off Gary's change.
+
+1999-03-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Don't disable all interrupts,
+	just the ones for the appropriate UART.
+
+1999-03-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char):
+	Enabled code to process ACK characters and force a breakpoint.
+	This is temporary, it needs to use cyg_hal_is_break() and
+	cyg_hal_user_break().
+
+1999-03-10  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_init):
+	Fixed names of symbols used for the frequency option.
+
+1999-03-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_diag.c: 
+	* include/pkgconf/hal_tx39_jmr3904.h:
+	Removed frequency options and made them more generic to all MIPS
+	targets. Changed names where applicable.
+
+1999-03-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: give all LDI files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+	* include/pkgconf/*.mlt: give all MLT files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+
+1999-02-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_diag.c:
+	Added support for 66MHz part.
+	Disabled handling of GDB O packet acknowledgement, this is now
+	done by hal_ctrlc_isr() which also checks for ^C.
+
+	* include/pkgconf/hal_tx39_jmr3904.h:
+	Added support for 66MHz part.
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): 
+	Rename CYG_VECTOR_EXTERNAL_2 -> CYGNUM_HAL_INTERRUPT_EXTERNAL_2
+	in line with HAL changes
+
+1999-02-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_stub.h: [removed]
+	* include/plf_stub.h: [added]
+	* src/hal_stub.c:     [removed]
+	* src/plf_stub.c:     [added]
+	* src/PKGconf.mak: 
+	Changed hal_stub to plf_stub. Moved generic HAL stub code to
+	common/.../hal_stub.c.
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.mlt: New memory layout save files
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Remove LMA_EQ_VMA macro definition.
+
+1999-01-26  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/pkgconf/ram.ldi:
+	* include/pkgconf/rom.ldi:
+	Add copyright notice.  (Though these files will later be generated
+	by a tool and so not copyright, these default setups are.)
+
+1999-01-13  John Dallaway  <jld@cygnus.co.uk>
+
+      * include/pkgconf/ram.ldi: add .rel.dyn output section
+      * include/pkgconf/rom.ldi: add .rel.dyn output section
+
+1999-01-13  John Dallaway  <jld@cygnus.co.uk>
+
+      * src/jmr3904.ld: remove for MLT
+      * src/PKGconf.mak: remove jmr3904.ld rules for MLT
+      * include/pkgconf/ram.ldi: new linker script fragment for MLT
+      * include/pkgconf/rom.ldi: new linker script fragment for MLT
+
+1998-11-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c (set_debug_traps): Call initHardware.
+	(__flush_d_cache): Added.
+
 1998-10-25  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/hal_stub.c: Fixed #endif comment.
@@ -130,7 +246,7 @@ Mon Aug 17 22:23:27 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

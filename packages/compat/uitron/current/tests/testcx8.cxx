@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -297,8 +297,7 @@ void task1( unsigned int arg )
     // all done
     CYG_TEST_EXIT( "All done" );
 #else // ! CYGPKG_UITRON_TASKS_CREATE_DELETE
-    CYG_TEST_PASS( "N/A: tasks do not have create/delete enabled" );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( "Tasks do not have create/delete enabled" );
 #endif // ! CYGPKG_UITRON_TASKS_CREATE_DELETE
     ext_tsk();
 }
@@ -378,8 +377,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

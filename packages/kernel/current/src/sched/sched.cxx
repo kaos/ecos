@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sched/sched.cxx
+//      sched/sched.cxx
 //
-//	Scheduler class implementations
+//      Scheduler class implementations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-15
-// Purpose:	Scheduler class implementation
-// Description:	This file contains the definitions of the scheduler class
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-15
+// Purpose:     Scheduler class implementation
+// Description: This file contains the definitions of the scheduler class
 //              member functions that are common to all scheduler
 //              implementations.
 //
@@ -171,8 +171,11 @@ void Cyg_Scheduler::unlock_inner()
             need_reschedule = false;        // finished rescheduling
         }
           
+        HAL_REORDER_BARRIER(); // Make sure everything above has happened
+                               // by this point
         sched_lock = 0;       // Clear the lock
-
+        HAL_REORDER_BARRIER();
+                
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS
 
         // Now check whether any DSRs got posted during the thread
@@ -181,8 +184,6 @@ void Cyg_Scheduler::unlock_inner()
         // a DSR could have been posted during a reschedule, but would
         // not be run until the _next_ time we release the sched lock.
 
-        HAL_REORDER_BARRIER();
-                
         if( Cyg_Interrupt::DSRs_pending() ) {
             sched_lock = 1;     // reclaim the lock
             continue;           // go back to head of loop
@@ -219,6 +220,13 @@ void Cyg_Scheduler::start()
     need_reschedule = false;    // finished rescheduling
     current_thread = next;      // restore current thread pointer
 
+#ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
+    // Reference the real time clock. This ensures that at least one
+    // reference to the kernel_clock.o object exists, without which
+    // the object will not be included while linking.
+    CYG_REFERENCE_OBJECT( Cyg_Clock::real_time_clock );
+#endif
+
     // Let the interrupts go
     Cyg_Interrupt::enable_interrupts();
     
@@ -231,7 +239,7 @@ void Cyg_Scheduler::start()
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Scheduler::check_this( cyg_assert_class_zeal zeal)
+bool Cyg_Scheduler::check_this( cyg_assert_class_zeal zeal) const
 {
     CYG_REPORT_FUNCTION();
         

@@ -2,9 +2,9 @@
 #define CYGONCE_COMPAT_UITRON_UIT_OBJS_HXX
 //===========================================================================
 //
-//	uit_objs.hxx
+//      uit_objs.hxx
 //
-//	uITRON static objects
+//      uITRON static objects
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -24,18 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON static system objects
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON static system objects
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -86,59 +86,59 @@
 
 #ifdef CYGPKG_UITRON_SEMAS
 extern
-Cyg_Counting_Semaphore2	CYG_UITRON_OBJS( SEMAS ) 	[];
+Cyg_Counting_Semaphore2 CYG_UITRON_OBJS( SEMAS )        [];
 #ifdef CYGPKG_UITRON_SEMAS_CREATE_DELETE
 extern
-Cyg_Counting_Semaphore2 *CYG_UITRON_PTRS( SEMAS )	[];
+Cyg_Counting_Semaphore2 *CYG_UITRON_PTRS( SEMAS )       [];
 #endif
 #endif
 #ifdef CYGPKG_UITRON_MBOXES
 extern
-Cyg_Mbox		CYG_UITRON_OBJS( MBOXES ) 	[];
+Cyg_Mbox                CYG_UITRON_OBJS( MBOXES )       [];
 #ifdef CYGPKG_UITRON_MBOXES_CREATE_DELETE
 extern
-Cyg_Mbox		*CYG_UITRON_PTRS( MBOXES ) 	[];
+Cyg_Mbox                *CYG_UITRON_PTRS( MBOXES )      [];
 #endif
 #endif
 #ifdef CYGPKG_UITRON_FLAGS
 extern
-Cyg_Flag		CYG_UITRON_OBJS( FLAGS ) 	[];
+Cyg_Flag                CYG_UITRON_OBJS( FLAGS )        [];
 #ifdef CYGPKG_UITRON_FLAGS_CREATE_DELETE
 extern
-Cyg_Flag		*CYG_UITRON_PTRS( FLAGS ) 	[];
+Cyg_Flag                *CYG_UITRON_PTRS( FLAGS )       [];
 #endif
 #endif
 // there must always be tasks
 extern
-Cyg_Thread		CYG_UITRON_OBJS( TASKS ) 	[];
+Cyg_Thread              CYG_UITRON_OBJS( TASKS )        [];
 #ifdef CYGPKG_UITRON_TASKS_CREATE_DELETE
 extern
-Cyg_Thread		*CYG_UITRON_PTRS( TASKS ) 	[];
+Cyg_Thread              *CYG_UITRON_PTRS( TASKS )       [];
 #endif
 // no endif
 #ifdef CYGPKG_UITRON_MEMPOOLFIXED
 extern
-Cyg_Mempool_Fixed	CYG_UITRON_OBJS( MEMPOOLFIXED )	[];
+Cyg_Mempool_Fixed       CYG_UITRON_OBJS( MEMPOOLFIXED ) [];
 #ifdef CYGPKG_UITRON_MEMPOOLFIXED_CREATE_DELETE
 extern
-Cyg_Mempool_Fixed	*CYG_UITRON_PTRS( MEMPOOLFIXED )[];
+Cyg_Mempool_Fixed       *CYG_UITRON_PTRS( MEMPOOLFIXED )[];
 #endif
 #endif
 #ifdef CYGPKG_UITRON_MEMPOOLVAR
 extern
-Cyg_Mempool_Variable	CYG_UITRON_OBJS( MEMPOOLVAR )	[];
+Cyg_Mempool_Variable    CYG_UITRON_OBJS( MEMPOOLVAR )   [];
 #ifdef CYGPKG_UITRON_MEMPOOLVAR_CREATE_DELETE
 extern
-Cyg_Mempool_Variable	*CYG_UITRON_PTRS( MEMPOOLVAR )	[];
+Cyg_Mempool_Variable    *CYG_UITRON_PTRS( MEMPOOLVAR )  [];
 #endif
 #endif
 #ifdef CYGPKG_UITRON_CYCLICS
 extern
-Cyg_Timer		CYG_UITRON_OBJS( CYCLICS )	[];
+Cyg_Timer               CYG_UITRON_OBJS( CYCLICS )      [];
 #endif
 #ifdef CYGPKG_UITRON_ALARMS
 extern
-Cyg_Timer		CYG_UITRON_OBJS( ALARMS )	[];
+Cyg_Timer               CYG_UITRON_OBJS( ALARMS )       [];
 #endif
 
 // ------------------------------------------------------------------------

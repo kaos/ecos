@@ -4,7 +4,7 @@
    */
 
 /* 
- * Copyright (c) 1998 Cygnus Support
+ * Copyright (c) 1998,1999 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -19,43 +19,52 @@
 
 /* The DEBUG_THREADS flag is usually set in board.h */
 
-
 #if DEBUG_THREADS  /* activate this in board.h */
 
+/* export the thread id's sent by gdb: */
+extern int _gdb_cont_thread, _gdb_general_thread ;
+
+extern char * stub_pack_Tpkt_threadid(char * pkt) ;
+
+extern long stub_get_currthread(void) ;
+extern int  stub_lock_scheduler(int lock, int kind, long id) ;
+
 extern void stub_pkt_changethread(char * inbuf,
-				 char * outbuf,
-				 int bufmax) ;
+                                 char * outbuf,
+                                 int bufmax) ;
 
 
 extern void stub_pkt_getthreadlist(char * inbuf,
-				  char * outbuf,
-				  int bufmax) ;
+                                  char * outbuf,
+                                  int bufmax) ;
 
 
 extern void stub_pkt_getthreadinfo(
-		  char * inbuf,
-		  char * outbuf,
-		  int bufmax) ;
+                  char * inbuf,
+                  char * outbuf,
+                  int bufmax) ;
 
 extern void stub_pkt_thread_alive(
-				  char * inbuf,
-				  char * outbuf,
-				  int bufmax) ;
+                                  char * inbuf,
+                                  char * outbuf,
+                                  int bufmax) ;
 
 extern void stub_pkt_currthread(
-				char * inbuf,
-				char * outbuf,
-				int bufmax) ;
+                                char * inbuf,
+                                char * outbuf,
+                                int bufmax) ;
 
-#define STUB_PKT_GETTHREADLIST(a,b,c)  { stub_pkt_getthreadlist(a,b,c);}
-#define STUB_PKT_GETTHREADINFO(a,b,c) { stub_pkt_getthreadinfo(a,b,c);}
-#define STUB_PKT_CHANGETHREAD(a,b,c) {  stub_pkt_changethread(a,b,c);}
-#define STUB_PKT_THREAD_ALIVE(a,b,c)  { stub_pkt_thread_alive(a,b,c);}
-#define STUB_PKT_CURRTHREAD(a,b,c)    { stub_pkt_currthread(a,b,c);}
+#define STUB_PKT_GETTHREADLIST(A,B,C) { stub_pkt_getthreadlist(A,B,C); }
+#define STUB_PKT_GETTHREADINFO(A,B,C) { stub_pkt_getthreadinfo(A,B,C); }
+#define STUB_PKT_CHANGETHREAD(A,B,C)  { stub_pkt_changethread(A,B,C);  }
+#define STUB_PKT_THREAD_ALIVE(A,B,C)  { stub_pkt_thread_alive(A,B,C);  }
+#define STUB_PKT_CURRTHREAD(A,B,C)    { stub_pkt_currthread(A,B,C);    }
+#define PACK_THREAD_ID(PTR)           { PTR = stub_pack_Tpkt_threadid (PTR); }
 #else
-#define STUB_PKT_GETTHREADLIST(a,b,c)  {}
-#define STUB_PKT_GETTHREADINFO(a,b,c) {}
-#define STUB_PKT_CHANGETHREAD(a,b,c)  {}
-#define STUB_PKT_THREAD_ALIVE(a,b,c)   {}
-#define STUB_PKT_CURRTHREAD(a,b,c)    {}
+#define STUB_PKT_GETTHREADLIST(A,B,C) {}
+#define STUB_PKT_GETTHREADINFO(A,B,C) {}
+#define STUB_PKT_CHANGETHREAD(A,B,C)  {}
+#define STUB_PKT_THREAD_ALIVE(A,B,C)  {}
+#define STUB_PKT_CURRTHREAD(A,B,C)    {}
+#define PACK_THREAD_ID(PTR)           {}
 #endif

@@ -2,7 +2,7 @@
 //
 //      strtok.cxx
 //
-//      ANSI standard strtok() routine 
+//      ISO standard strtok() routine 
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-19
+// Purpose:       Provide ISO C strtok() and POSIX strtok_r() routines
 // Description: 
 // Usage:       
 //
@@ -80,9 +80,6 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library? And do we want strtok() at all?
-#if defined(CYGPKG_LIBC) && defined(CYGFUN_LIBC_strtok)
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>    // Common type definitions
@@ -92,16 +89,22 @@
 #include <stddef.h>         // Compiler definitions such as size_t, NULL etc.
 #include "clibincl/stringsupp.hxx" // Useful string function support and
                                    // prototypes
-#include "clibincl/clibdata.hxx"   // C library internal data
+
+#ifdef CYGSEM_LIBC_PER_THREAD_STRTOK
+# include <pkgconf/kernel.h>       // kernel configuration
+# include <cyg/kernel/thread.hxx>  // per-thread data
+# include <cyg/kernel/thread.inl>  // per-thread data
+# include <cyg/kernel/mutex.hxx>   // mutexes
+#endif
 
 // EXPORTED SYMBOLS
 
 externC char *
-strtok( char *s1, const char *s2 ) CYGPRI_LIBC_WEAK_ALIAS("_strtok");
+strtok( char *s1, const char *s2 ) CYGBLD_ATTRIB_WEAK_ALIAS(_strtok);
 
 externC char *
 strtok_r( char *s1, const char *s2, char **lasts ) \
-    CYGPRI_LIBC_WEAK_ALIAS("_strtok_r");
+     CYGBLD_ATTRIB_WEAK_ALIAS(_strtok_r);
 
 // TRACE
 
@@ -112,6 +115,14 @@ static int strtok_trace = CYGNUM_LIBC_STRTOK_TRACE_LEVEL;
 # define TL1 (0)
 #endif
 
+// STATICS
+
+#ifdef CYGSEM_LIBC_PER_THREAD_STRTOK
+static cyg_ucount32 strtok_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static Cyg_Mutex strtok_data_mutex CYG_INIT_PRIORITY(LIBC);
+#else
+static char *cyg_libc_strtok_last;
+#endif
 
 // FUNCTIONS
 
@@ -128,9 +139,31 @@ _strtok( char *s1, const char *s2 )
         CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
     CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
 
-    CYGPRI_LIBC_INTERNAL_DATA_ALLOC_CHECK_PREAMBLE;
+#ifdef CYGSEM_LIBC_PER_THREAD_STRTOK
+    Cyg_Thread *self = Cyg_Thread::self();
 
-    lasts = CYGPRI_LIBC_INTERNAL_DATA.get_strtok_last_p();
+    // Get a per-thread data slot if we haven't got one already
+    // Do a simple test before locking and retrying test, as this is a
+    // rare situation
+    if (CYGNUM_KERNEL_THREADS_DATA_MAX==strtok_data_index) {
+        strtok_data_mutex.lock();
+        if (CYGNUM_KERNEL_THREADS_DATA_MAX==strtok_data_index) {
+
+            // the kernel just throws an assert if this doesn't work
+            // FIXME: Should use real CDL to pre-allocate a slot at compile
+            // time to ensure there are enough slots
+            strtok_data_index = self->new_data_index();
+
+        }
+        strtok_data_mutex.unlock();
+    } // if
+
+    // we have a valid index now
+
+    lasts = (char **)self->get_data_ptr(strtok_data_index);
+#else
+    lasts = &cyg_libc_strtok_last;
+#endif
 
     CYG_TRACE2( TL1, "Retrieved strtok_last address %08x containing %s",
                 lasts, *lasts );
@@ -205,7 +238,5 @@ cont:
     } // for
     // NOTREACHED
 } // _strtok_r()
-
-#endif // if defined(CYGPKG_LIBC) && defined(CYGFUN_LIBC_strtok)
 
 // EOF strtok.cxx

@@ -24,19 +24,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
 // Purpose:     
 // Description: 
-// Usage:       #include "vectors/vector_support.h"
+// Usage:         #include "vectors/vector_support.h"
 //
 //####DESCRIPTIONEND####
 //
@@ -55,6 +55,7 @@
 #include <cyg/infra/testcase.h>   // Test infrastructure
 #include <math.h>                 // Header for this package
 #include <sys/ieeefp.h>           // Cyg_libm_ieee_double_shape_type
+#include <cyg/infra/diag.h>
 
 #ifndef CYGSEM_LIBM_COMPAT_IEEE_ONLY
 # include <errno.h>                // For Cyg_ErrNo
@@ -282,6 +283,7 @@ doTestVec( CYG_ADDRESS func_ptr,
     cyg_ucount32 problems=0;
     cyg_ucount32 i;
     Cyg_libm_ieee_double_shape_type arg1, arg2, result_wanted, ret;
+    cyg_ucount32 alive_count = num_vectors / 10;
 
     if ((arg1_type != CYG_LIBM_TEST_VEC_DOUBLE) ||
         (result_type != CYG_LIBM_TEST_VEC_DOUBLE) ) {
@@ -298,6 +300,10 @@ doTestVec( CYG_ADDRESS func_ptr,
             for (i=0;
                  (i < num_vectors) && (problems < PROBLEM_THRESHOLD);
                  i++) {
+
+                if (0 == i % alive_count)
+                    CYG_TEST_STILL_ALIVE(i, "Still crunching, please wait...");
+
                 arg1.parts.msw = vectors[i].arg1_msw;
                 arg1.parts.lsw = vectors[i].arg1_lsw;
 
@@ -320,6 +326,7 @@ doTestVec( CYG_ADDRESS func_ptr,
                         (errno != vectors[i].errno_val)) {
 
                         ++problems;
+                        diag_printf("Vector #%d\n", i+1);
                         CYG_TEST_FAIL( "error not set correctly");
 
                     } // if
@@ -330,6 +337,7 @@ doTestVec( CYG_ADDRESS func_ptr,
                 if (checkErrorAcceptable( ret, result_wanted,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Result out of tolerance");
                 } // if
             } // for
@@ -346,6 +354,10 @@ doTestVec( CYG_ADDRESS func_ptr,
             for (i=0;
                  (i < num_vectors) && (problems < PROBLEM_THRESHOLD);
                  i++) {
+
+                if (0 == i % alive_count)
+                    CYG_TEST_STILL_ALIVE(i, "Still crunching, please wait...");
+
                 arg1.parts.msw = vectors[i].arg1_msw;
                 arg1.parts.lsw = vectors[i].arg1_lsw;
 
@@ -356,6 +368,7 @@ doTestVec( CYG_ADDRESS func_ptr,
                 if (checkErrorAcceptable( ret, result_wanted,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Result out of tolerance");
                 } // if
             } // for
@@ -374,6 +387,10 @@ doTestVec( CYG_ADDRESS func_ptr,
             for (i=0;
                  (i < num_vectors) && (problems < PROBLEM_THRESHOLD);
                  i++) {
+
+                if (0 == i % alive_count)
+                    CYG_TEST_STILL_ALIVE(i, "Still crunching, please wait...");
+
                 arg1.parts.msw = vectors[i].arg1_msw;
                 arg1.parts.lsw = vectors[i].arg1_lsw;
 
@@ -385,6 +402,7 @@ doTestVec( CYG_ADDRESS func_ptr,
                 if (checkErrorAcceptable( ret, result_wanted,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Result out of tolerance");
                 } // if
 
@@ -394,6 +412,7 @@ doTestVec( CYG_ADDRESS func_ptr,
                 if (checkErrorAcceptable( my_doub1, my_doub2,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Integer result out of tolerance");
                 } // if
 
@@ -413,6 +432,10 @@ doTestVec( CYG_ADDRESS func_ptr,
             for (i=0;
                  (i < num_vectors) && (problems < PROBLEM_THRESHOLD);
                  i++) {
+
+                if (0 == i % alive_count)
+                    CYG_TEST_STILL_ALIVE(i, "Still crunching, please wait...");
+
                 arg1.parts.msw = vectors[i].arg1_msw;
                 arg1.parts.lsw = vectors[i].arg1_lsw;
 
@@ -427,12 +450,14 @@ doTestVec( CYG_ADDRESS func_ptr,
                 if (checkErrorAcceptable( ret, result_wanted,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Result out of tolerance");
                 } // if
 
                 if (checkErrorAcceptable( my_doub1, arg2,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Returned double result out of "
                                    "tolerance");
                 } // if
@@ -452,6 +477,10 @@ doTestVec( CYG_ADDRESS func_ptr,
             for (i=0;
                  (i < num_vectors) && (problems < PROBLEM_THRESHOLD);
                  i++) {
+
+                if (0 == i % alive_count)
+                    CYG_TEST_STILL_ALIVE(i, "Still crunching, please wait...");
+
                 arg1.parts.msw = vectors[i].arg1_msw;
                 arg1.parts.lsw = vectors[i].arg1_lsw;
 
@@ -462,6 +491,7 @@ doTestVec( CYG_ADDRESS func_ptr,
                 if (checkErrorAcceptable( ret, result_wanted,
                                           vectors[i].tolerance) ) {
                     ++problems;
+                    diag_printf("Vector #%d\n", i+1);
                     CYG_TEST_FAIL( "Result out of tolerance");
                 } // if
             } // for

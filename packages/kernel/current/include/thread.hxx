@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	thread.hxx
+//      thread.hxx
 //
-//	Thread class declarations
+//      Thread class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define Thread class interfaces
-// Description:	The classes defined here collectively implement the
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define Thread class interfaces
+// Description: The classes defined here collectively implement the
 //              internal API used to create, configure and manage threads.
-// Usage:	#include <cyg/kernel/thread.hxx>
+// Usage:       #include <cyg/kernel/thread.hxx>
 //
 //####DESCRIPTIONEND####
 //
@@ -203,7 +203,7 @@ public:
         
         RUNNING    = 0,          // Thread is runnable or running
         SLEEPING   = 1,          // Thread is waiting for something to happen
-        COUNTSLEEP = 2,		 // Sleep in counted manner
+        COUNTSLEEP = 2,          // Sleep in counted manner
         SUSPENDED  = 4,          // Suspend count is non-zero
         CREATING   = 8,          // Thread is being created
         EXITED     = 16,         // Thread has exited
@@ -313,10 +313,12 @@ public:
 
     static void         yield();        // Yield CPU to another thread
 
-#ifdef CYGSEM_KERNEL_SCHED_MLQUEUE
-    static void		rotate_queue( cyg_priority pri );
+    static void         rotate_queue( cyg_priority pri );
                                         // Rotate that run queue
-#endif
+
+    void                to_queue_head( void );
+                                        // Move to the head of its queue
+                                        // (not necessarily a scheduler q)
 
     static Cyg_Thread   *self();        // Return current thread
 
@@ -490,7 +492,7 @@ public:
 // This defines the main API for manipulating queues of threads.
 
 class Cyg_ThreadQueue
-    : private Cyg_ThreadQueue_Implementation
+    : public Cyg_ThreadQueue_Implementation
 {
     
 public:

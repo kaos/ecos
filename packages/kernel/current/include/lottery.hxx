@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	lottery.hxx
+//      lottery.hxx
 //
-//	Lottery scheduler class declarations
+//      Lottery scheduler class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-10
-// Purpose:	Define lottery scheduler implementation
-// Description:	The classes defined here are used as base classes
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-10
+// Purpose:     Define lottery scheduler implementation
+// Description: The classes defined here are used as base classes
 //              by the common classes that define schedulers and thread
 //              things. A lottery scheduler provides each thread with a
 //              share of the processor based on the number of tickets that

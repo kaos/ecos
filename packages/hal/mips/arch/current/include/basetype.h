@@ -3,9 +3,9 @@
 
 //=============================================================================
 //
-//	basetype.h
+//      basetype.h
 //
-//	Standard types for this architecture.
+//      Standard types for this architecture.
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -37,7 +37,7 @@
 // Date:        1998-02-05
 // Purpose:     Define architecture base types.
 // Usage:       Included by <cyg/infra/cyg_types.h>, do not use directly
-//		
+//              
 //####DESCRIPTIONEND####
 //
 

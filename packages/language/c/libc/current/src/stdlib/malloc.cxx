@@ -2,7 +2,7 @@
 //
 //      malloc.cxx
 //
-//      Implementation of ANSI standard allocation routines
+//      Implementation of ISO C memory allocation routines
 //
 //========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,19 +22,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
-// Description: Implementation of ANSI standard allocation routines as per
-//              ANSI section 7.10.3
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       Provides ISO C calloc(), malloc(), realloc() and free()
+//                functions
+// Description:   Implementation of ANSI standard allocation routines as per
+//                ISO C section 7.10.3
 // Usage:       
 //
 //####DESCRIPTIONEND####
@@ -45,10 +46,7 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library?
-#ifdef CYGPKG_LIBC     
-
-// And do we want these functions?
+// Do we want these functions?
 #ifdef CYGPKG_LIBC_MALLOC
 
 // INCLUDES
@@ -58,6 +56,7 @@
 #include <cyg/infra/cyg_ass.h>     // Common assertion support
 #include <string.h>                // For memset() and memcpy()
 #include <stdlib.h>                // header for this file
+#include <pkgconf/kernel.h>        // kernel configuration
 #include <cyg/kernel/memvar.hxx>   // Kernel variable size block allocator
 
 #include "clibincl/stdlibsupp.hxx" // Additional support for stdlib stuff
@@ -66,26 +65,29 @@
 // EXPORTED SYMBOLS
 
 externC void *
-calloc( size_t, size_t ) CYGPRI_LIBC_WEAK_ALIAS("_calloc");
+calloc( size_t, size_t ) CYGBLD_ATTRIB_WEAK_ALIAS(_calloc);
 
 externC void
-free( void * ) CYGPRI_LIBC_WEAK_ALIAS("_free");
+free( void * ) CYGBLD_ATTRIB_WEAK_ALIAS(_free);
 
 externC void *
-malloc( size_t ) CYGPRI_LIBC_WEAK_ALIAS("_malloc");
+malloc( size_t ) CYGBLD_ATTRIB_WEAK_ALIAS(_malloc);
 
 externC void *
-realloc( void *, size_t ) CYGPRI_LIBC_WEAK_ALIAS("_realloc");
+realloc( void *, size_t ) CYGBLD_ATTRIB_WEAK_ALIAS(_realloc);
 
 
 // STATIC VARIABLES
 
-// the data space for the memory pool
-static cyg_uint8 pooldata[ CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE ];
+// the data space for the memory pool - can be externally overriden
+// FIXME: but should be in different file for this to work
+cyg_uint8 cyg_libc_malloc_memorypool[ CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE ] 
+             CYGBLD_ATTRIB_WEAK;
 
 // the memory pool object itself
 static Cyg_Mempool_Variable pool CYG_INIT_PRIORITY( LIBC ) =
-Cyg_Mempool_Variable( pooldata, CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE );
+Cyg_Mempool_Variable( cyg_libc_malloc_memorypool,
+                      CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE );
 
 
 // FUNCTIONS
@@ -217,7 +219,5 @@ _realloc( void *ptr, size_t size )
 } // _realloc()
 
 #endif // ifdef CYGPKG_LIBC_MALLOC
-
-#endif // ifdef CYGPKG_LIBC
 
 // EOF malloc.cxx

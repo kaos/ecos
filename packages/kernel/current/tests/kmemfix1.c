@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,6 +36,8 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <pkgconf/kernel.h>
 
 #include <cyg/kernel/kapi.h>
@@ -47,7 +49,7 @@
 #include "testaux.h"
 
 #define NTHREADS 2
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -104,7 +106,7 @@ static void entry0( cyg_addrword_t data )
 
     p1 = NULL;
     while((p2 = cyg_mempool_fix_try_alloc(mempool0)    ))
-	p1 = p2;
+        p1 = p2;
     
     cyg_mempool_fix_get_info(mempool0, &info1);
     cyg_mempool_fix_free(mempool0, p0);
@@ -127,13 +129,13 @@ static void entry0( cyg_addrword_t data )
     // This shouldn't have to wait
     p0 = cyg_mempool_fix_timed_alloc(mempool0, cyg_current_time()+100000);
     check_in_mp0(p0, 100);
-    p1 = cyg_mempool_fix_timed_alloc(mempool0, cyg_current_time()+2);
+    p1 = cyg_mempool_fix_timed_alloc(mempool0, cyg_current_time()+20);
     check_in_mp0(p1, 10);
-    p1 = cyg_mempool_fix_timed_alloc(mempool0, cyg_current_time()+2);
+    p1 = cyg_mempool_fix_timed_alloc(mempool0, cyg_current_time()+20);
     CYG_TEST_CHECK(NULL == p1, "Timed alloc unexpectedly worked");
     
     // Expect thread 1 to have run while processing previous timed
-    // allocation.  It should therefore tbe waiting.
+    // allocation.  It should therefore be waiting.
     CYG_TEST_CHECK(cyg_mempool_fix_waiting(mempool1),
                    "There should be a thread waiting");
 #endif
@@ -154,11 +156,11 @@ void kmemfix1_main( void )
     CYG_TEST_INIT();
 
     cyg_thread_create(4, entry0 , (cyg_addrword_t)0, "kmemfix1-0",
-	(void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_thread_create(4, entry1 , (cyg_addrword_t)1, "kmemfix1-1",
-    	(void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
+        (void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
     cyg_thread_resume(thread[1]);
 
     cyg_mempool_fix_create(mem[0], MEMSIZE, 100, &mempool0, &mempool_obj[0]);
@@ -180,7 +182,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

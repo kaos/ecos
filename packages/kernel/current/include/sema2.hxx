@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	sema2.hxx
+//      sema2.hxx
 //
-//	Semaphore class declarations
+//      Semaphore class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,21 +25,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define Semaphore class interfaces
-// Description:	The classes defined here provide the APIs for binary
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define Semaphore class interfaces
+// Description: The classes defined here provide the APIs for binary
 //              and counting semaphores.
-// Usage:	#include <cyg/kernel/sema2.hxx>
-//		
+// Usage:       #include <cyg/kernel/sema2.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -114,7 +114,7 @@ public:
     cyg_count32 peek();                 // Get current count value
     
     inline
-    cyg_bool	waiting()               // Is anyone waiting?
+    cyg_bool    waiting()               // Is anyone waiting?
     {
         return !queue.empty();
     }

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -43,17 +43,11 @@
 // -------------------------------------------------------------------------
 // Data for the philosophers problem
 
-#define PHILOSOPHERS    15               // number of philosophers
+#define PHILOSOPHERS    15              // number of philosophers
 #define STACKSIZE       (2*1024)        // size of thread stack
 
-// array of stacks for philosopher threads
-char thread_stack[PHILOSOPHERS][STACKSIZE];
-
-// array of threads. We use the new operator defined
-// below to make these into real threads.
-char thread[PHILOSOPHERS][sizeof(Cyg_Thread)];
-
-inline void *operator new(size_t size, void *ptr) { return ptr; };
+#define NTHREADS PHILOSOPHERS
+#include "testaux.hxx"
 
 // array of chopsticks
 Cyg_Binary_Semaphore chopstick[PHILOSOPHERS];
@@ -214,11 +208,7 @@ cyg_start( void )
         change_state(i,'T');            // starting state
 
         // Start the philosopher
-        Cyg_Thread *t = new((void *)&thread[i]) Cyg_Thread(Philosopher,
-                                                   i,
-                                                   STACKSIZE,
-                                                   CYG_ADDRESS(&thread_stack[i])
-            );
+        Cyg_Thread *t = new_thread( Philosopher, i );
 
         // resume it
         t->resume();

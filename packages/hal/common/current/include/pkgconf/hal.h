@@ -2,9 +2,9 @@
 #define CYGONCE_PKGCONF_HAL_H
 // ====================================================================
 //
-//	pkgconf/hal.h
+//      pkgconf/hal.h
 //
-//	HAL configuration file
+//      HAL configuration file
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -24,17 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-29	
-// Purpose:	To allow the user to edit HAL configuration options.
+// Author(s):    nickg, jskov
+// Contributors: nickg, jskov,
+//               jlarmour
+// Date:        1999-01-21
+// Purpose:     To allow the user to edit HAL configuration options.
 // Description:
 //
 //####DESCRIPTIONEND####
@@ -66,7 +67,7 @@
            select one target architecture and one platform for that
            architecture. There are also a number of configuration
            options that are common to all HAL packages."
-	   doc ref/ecos-ref/the-ecos-hardware-abstraction-layer-hal.html
+           doc ref/ecos-ref/the-ecos-hardware-abstraction-layer-hal.html
    }
 
    }}CFG_DATA */
@@ -271,6 +272,26 @@
    }}CFG_DATA */
 #define CYGPKG_HAL_EXCEPTIONS
 
+/* {{CFG_DATA
+
+   cdl_option CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG {
+       display     "Stop calling constructors early"
+       description "This option supports environments where some constructors
+                    must be run in the context of a thread rather than at
+                    simple system startup time. A boolean flag named
+                    cyg_hal_stop_constructors is set to 1 when constructors
+                    should no longer be invoked. It is up to some other
+                    package to deal with the rest of the constructors.
+                    In the current version this is only possible with the
+                    C library."
+       type        boolean
+       requires    CYGSEM_LIBC_INVOKE_DEFAULT_STATIC_CONSTRUCTORS
+       parent      CYGPKG_HAL_COMMON
+   }
+
+   }}CFG_DATA */
+
+#undef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
 
 /* ---------------------------------------------------------------------
  * Options related to source-level debugging and diagnostics.
@@ -293,7 +314,8 @@
      requires   !CYGPKG_HAL_POWERPC_SIM
      requires   !CYGPKG_HAL_MN10300_SIM
      requires   !CYGPKG_HAL_TX39_SIM
-     requires   !CYGPKG_HAL_MN10300_STDEVAL1
+     requires   !CYGPKG_HAL_I386_LINUX
+     requires   !CYGPKG_HAL_SPARCLITE
      description "
          This option causes a set of GDB stubs to be included into the
          system. On some target systems the GDB support will be
@@ -301,6 +323,19 @@
          other targets, especially when building a ROM-booting system,
          the necessary support has to go into the target library
          itself."
+ }
+
+ cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
+     display    "Include GDB external break support"
+     parent     CYGPKG_HAL_DEBUG
+     requires   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+     requires   !CYGPKG_HAL_TX39_JMR3904
+     requires   !CYGPKG_HAL_POWERPC_FADS
+     description "
+        This option causes the GDB stub to add a serial interrupt handler
+        which will listen for GDB break packets. This lets you stop the
+        target asynchronously when using GDB, usually by hitting Control+C
+        or pressing the STOP button."
  }
 
  cdl_option CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT {
@@ -312,23 +347,10 @@
          to support multi-threaded source level debugging."
  }
 
- cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
-     display    "Include GDB external break support"
-     parent     CYGPKG_HAL_DEBUG
-     requires   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-     description "
-        This option causes the GDB stub to add a serial interrupt handler
-        which will listen for GDB break packets. This lets you stop the
-        target asynchronously when using GDB, usually by hitting Control+C
-        or pressing the STOP button."
- }
-
- 
    }}CFG_DATA */
 
-#undef  CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#undef  CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-
+#undef   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#undef   CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 #define  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 
 /*
@@ -383,31 +405,6 @@
  * tool; they are NOT user configuration, and you should NOT edit them.
  */
 
-/*
- * Initialization options.
- *
- * WARNING: this option should not be enabled by end users. It
- * makes use of an experimental facility in g++ which has not been
- * generally distributed.
- *
- * The USE_INIT_PRIORITY option enables the use of the g++ init_priority
- * attribute which allows the order of execution of constructors of
- * static objects to be controlled. This option is not yet required by
- * the current kernel, but it will be required by future versions.
- */
-
-#undef CYG_KERNEL_USE_INIT_PRIORITY
-
-#ifdef CYG_HAL_TX39
-#define CYG_KERNEL_USE_INIT_PRIORITY
-#endif
-#ifdef CYG_HAL_MN10300
-#define CYG_KERNEL_USE_INIT_PRIORITY
-#endif
-#ifdef CYG_HAL_POWERPC
-#define CYG_KERNEL_USE_INIT_PRIORITY
-#endif
-
 /* 
  * CYG_HAL_<TARGET> and CYG_HAL_<TARGET>_<PLATFORM> are generated by
  * pkgconf, using the information from the targets file.
@@ -422,10 +419,17 @@
 #endif
 
 #ifdef CYG_HAL_POWERPC_COGENT
-# define CYG_HAL_POWERPC_MP860
+# define CYG_HAL_POWERPC_MPC8xx
+# define CYG_HAL_POWERPC_MPC860
+# undef CYG_HAL_POWERPC_MPC850
+# undef CYG_HAL_POWERPC_MPC823
+#endif
+#ifdef CYG_HAL_POWERPC_FADS
+# define CYG_HAL_POWERPC_MPC8xx
+# define CYG_HAL_POWERPC_MPC860
 #endif
 #ifdef CYG_HAL_POWERPC_SIM
-# define CYG_HAL_POWERPC_MP860
+# define CYG_HAL_POWERPC_MPC603
 #endif
 
 #ifdef CYG_HAL_TX39_JMR3904
@@ -438,6 +442,9 @@
 # define CYG_HAL_MIPS
 # define CYG_HAL_MIPS_TX39
 # define CYG_HAL_MIPS_SIM
+#endif
+#ifdef CYG_HAL_MIPS_TX39
+#include <pkgconf/hal_tx39.h>
 #endif
 
 /* -------------------------------------------------------------------*/

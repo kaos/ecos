@@ -1,8 +1,8 @@
 //===========================================================================
 //
-//	testcx5.cxx
+//      testcx5.cxx
 //
-//	uITRON "C++" test program five
+//      uITRON "C++" test program five
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	dsm
-// Contributors:	dsm
-// Date:	1998-06-12
-// Purpose:	uITRON API testing
-// Description:	
+// Author(s):   dsm
+// Contributors:        dsm
+// Date:        1998-06-12
+// Purpose:     uITRON API testing
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -330,12 +330,12 @@ void task4( unsigned int arg )
 #else // ! CYGVAR_KERNEL_COUNTERS_CLOCK   - can't test without it
 #define N_A_MSG "no CYGVAR_KERNEL_COUNTERS_CLOCK"
 #endif // ! CYGVAR_KERNEL_COUNTERS_CLOCK  - can't test without it
-#else  // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
+#else  // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
 #define N_A_MSG "no CYGFUN_KERNEL_THREADS_TIMER"
-#endif // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
-#else  // ! CYGIMP_THREAD_PRIORITY	  - can't test without it
+#endif // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
+#else  // ! CYGIMP_THREAD_PRIORITY        - can't test without it
 #define N_A_MSG "no CYGSEM_KERNEL_SCHED_MLQUEUE"
-#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE	  - can't test without it
+#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE   - can't test without it
 #else  // ! CYGPKG_UITRON
 #define N_A_MSG "uITRON Compatibility layer disabled"
 #endif // CYGPKG_UITRON
@@ -345,8 +345,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,8 +30,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm
-// Date:          1998-06-15
+// Contributors:  dsm, jlarmour
+// Date:          1999-02-16
 // Description:   Test basic exception functionality
 //####DESCRIPTIONEND####
 
@@ -76,7 +76,7 @@ static void handler1(CYG_ADDRWORD data, cyg_code number, CYG_ADDRWORD info)
     CYG_TEST_CHECK((CYG_ADDRWORD)&d0 == data, "handler given wrong data");
 
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
-    CYG_TEST_CHECK(number == CYG_EXCEPTION_MAX, "handler given wrong number");
+    CYG_TEST_CHECK(number == CYGNUM_HAL_EXCEPTION_MAX, "handler given wrong number");
 #else
     CYG_UNUSED_PARAM(cyg_code, number);
 #endif
@@ -110,14 +110,14 @@ static void entry0( CYG_ADDRWORD data )
     CYG_UNUSED_PARAM(CYG_ADDRESS, data);
 
     p->register_exception(
-        CYG_EXCEPTION_MAX, 
+        CYGNUM_HAL_EXCEPTION_MAX, 
         &handler1,
         (CYG_ADDRWORD)&d0,
         &old_handler,
         &old_data);
 
     p->register_exception(
-        CYG_EXCEPTION_MAX, 
+        CYGNUM_HAL_EXCEPTION_MAX, 
         &handler1,
         (CYG_ADDRWORD)&d0,
         &old_handler1,
@@ -128,14 +128,19 @@ static void entry0( CYG_ADDRWORD data )
     CYG_TEST_CHECK(old_data1 == (CYG_ADDRWORD)&d0,
         "register exception: old_data not those previously registered");
 
-    p->deliver_exception(CYG_EXCEPTION_MAX, (CYG_ADDRWORD)99);
+    p->deliver_exception(CYGNUM_HAL_EXCEPTION_MAX, (CYG_ADDRWORD)99);
 
     CYG_TEST_INFO("handler 1 returned");
 
-    p->deregister_exception(CYG_EXCEPTION_MAX);
-    p->deregister_exception(CYG_EXCEPTION_MAX);
+    p->deregister_exception(CYGNUM_HAL_EXCEPTION_MAX);
+    p->deregister_exception(CYGNUM_HAL_EXCEPTION_MAX);
 
-    for(n = CYG_EXCEPTION_MIN; n <= CYG_EXCEPTION_MAX; n++) {
+#ifdef CYGPKG_HAL_I386_LINUX
+    // We can't catch segmentation violation exceptions on Linux.
+    CYG_TEST_PASS_FINISH("Except 1 OK");
+#endif
+
+    for(n = CYGNUM_HAL_EXCEPTION_MIN; n <= CYGNUM_HAL_EXCEPTION_MAX; n++) {
         p->register_exception(
             n,
             handler0,
@@ -144,7 +149,7 @@ static void entry0( CYG_ADDRWORD data )
             &old_data1);
     }
 
-    CYG_TEST_INFO("Attempting to provoke exception");
+    CYG_TEST_PASS("Attempting to provoke exception");
 
     cause_exception();
 
@@ -160,12 +165,23 @@ cyg_VSR *old_vsr;
 
 void except0_main( void )
 {
+    // Use CYG_TEST_GDBCMD _before_ CYG_TEST_INIT()
+    CYG_TEST_GDBCMD("handle SIGBUS nostop");
+    CYG_TEST_GDBCMD("handle SIGSEGV nostop");
+
     CYG_TEST_INIT();
 
-#ifdef CYG_HAL_TX39_JMR3904
-    
-    HAL_VSR_SET( CYG_VECTOR_LOAD_ADDRESS, __default_exception_vsr, &old_vsr );
-
+#ifdef HAL_VSR_SET_TO_ECOS_HANDLER
+    // Reclaim the VSR off CygMon possibly
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_DATA_ACCESS, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION, NULL );
+#endif
 #endif
 
     new_thread(entry0, 0);
@@ -184,7 +200,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("NA: Exceptions disabled");
+    CYG_TEST_NA("Exceptions disabled");
 }
 #endif // def CYGPKG_KERNEL_EXCEPTIONS
 

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	thread.inl
+//      thread.inl
 //
-//	Thread class inlines
+//      Thread class inlines
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,24 +25,24 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define inlines for thread classes
-// Description:	Inline implementations of various member functions defined
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define inlines for thread classes
+// Description: Inline implementations of various member functions defined
 //              in various Thread classes. 
 // Usage:
 //              #include <cyg/kernel/thread.hxx>
 //              ...
-//		#include <cyg/kernel/thread.inl>
-//		...
+//              #include <cyg/kernel/thread.inl>
+//              ...
 
 //
 //####DESCRIPTIONEND####
@@ -62,6 +62,10 @@
 // do this, then we use that, otherwise assume a falling stack.
 inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_size)
 {
+#ifdef CYGNUM_HAL_STACK_SIZE_MINIMUM
+    CYG_ASSERT( s_size >= CYGNUM_HAL_STACK_SIZE_MINIMUM,
+                "Stack size too small");
+#endif
     stack_base = s_base;
     stack_size = s_size;
 #ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
@@ -228,13 +232,19 @@ inline void Cyg_Thread::yield()
 
 // -------------------------------------------------------------------------
 
-#ifdef CYGSEM_KERNEL_SCHED_MLQUEUE
 inline void
 Cyg_Thread::rotate_queue( cyg_priority pri )
 {
     self()->Cyg_SchedThread::rotate_queue( pri );
 }
-#endif
+
+// -------------------------------------------------------------------------
+
+inline void
+Cyg_Thread::to_queue_head( void )
+{
+    this->Cyg_SchedThread::to_queue_head();
+}
 
 // -------------------------------------------------------------------------
 

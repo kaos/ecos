@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -298,7 +298,11 @@ do_resume( void )
 #define T2_WAIT (5)
 
 #define T1_MALLOC (110)
+#ifdef CYGSEM_KERNEL_MEMORY_COALESCE
 #define T2_MALLOC (100)
+#else
+#define T2_MALLOC T1_MALLOC
+#endif
 
 VP vptmp;
 VP vp = NULL;
@@ -642,6 +646,55 @@ do_wait( WAITOP wait, WAITTYPE type )
     return E_SYS;
 }
 
+void
+check_waitstate( WAITOP wait, int waiting )
+{
+    ER ercd;
+    int waity = 0;
+    switch ( wait ) {
+    case SLEEP:
+    case DELAY:
+        return;                         // do nothing for these
+    case SEMGET: {
+        T_RSEM rsem;
+        ercd = ref_sem( &rsem, 1 );
+        waity = rsem.wtsk;
+        break;
+    }
+    case FLAGWAIT: {
+        T_RFLG rflg;
+        ercd = ref_flg( &rflg, 1 );
+        waity = rflg.wtsk;
+        break;
+    }
+    case MSGGET: {
+        T_RMBX rmbx;
+        ercd = ref_mbx( &rmbx, 1 );
+        waity = rmbx.wtsk;
+        break;
+    }
+    case MEMFIXEDGET: {
+        T_RMPF rmpf;
+        ercd = ref_mpf( &rmpf, 1 );
+        waity = rmpf.wtsk;
+        break;
+    }
+    case MEMVARGET: {
+        T_RMPL rmpl;
+        ercd = ref_mpl( &rmpl, 1 );
+        waity = rmpl.wtsk;
+        break;
+    }
+    default:
+        CYG_TEST_FAIL( "bad switch" );
+        break;
+    }
+    if ( waiting )
+        CYG_TEST_CHECK( waity, "Object has no task waiting!" );
+    else
+        CYG_TEST_CHECK( !waity, "Object had a task waiting!" );
+}
+
 // ========================================================================
 void task1( unsigned int arg )
 {
@@ -744,9 +797,11 @@ void task1( unsigned int arg )
                     // it should now have run to completion
                     break;
                 case TIMEOUT:
+                    check_waitstate( wait, 1 );
                     // wait for the timeout to occur
                     ercd = dly_tsk( T1_WAIT );
                     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
+                    check_waitstate( wait, 0 );
                     // it should now have run to completion
                     break;
                 case RELEASE:
@@ -776,11 +831,14 @@ void task1( unsigned int arg )
                     // it should now have run to completion
                     break;
                 case SUSPEND_TIMEOUT_RESUME:
+                    check_waitstate( wait, 1 );
                     // suspend the task
                     do_suspend();
+                    check_waitstate( wait, 1 );
                     // wait for the timeout to occur
                     ercd = dly_tsk( T1_WAIT );
                     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
+                    check_waitstate( wait, 0 );
                     // resume the task
                     do_resume();
                     // it should now have run to completion
@@ -823,11 +881,14 @@ void task1( unsigned int arg )
                     // it should now have terminated without running
                     break;
                 case SUSPEND_TIMEOUT_KILL:
+                    check_waitstate( wait, 1 );
                     // suspend the task
                     do_suspend();
+                    check_waitstate( wait, 1 );
                     // wait for the timeout to occur
                     ercd = dly_tsk( T1_WAIT );
                     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
+                    check_waitstate( wait, 0 );
                     // kill the task
                     ercd = ter_tsk( 2 );
                     CYG_TEST_CHECK( E_OK == ercd, "ter_tsk bad ercd" );
@@ -1002,8 +1063,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

@@ -3,9 +3,9 @@
 
 //=============================================================================
 //
-//	hal_cache.h
+//      hal_cache.h
 //
-//	HAL cache control API
+//      HAL cache control API
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -25,28 +25,29 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-02-17
-// Purpose:	Cache control API
-// Description:	The macros defined here provide the HAL APIs for handling
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-02-17
+// Purpose:     Cache control API
+// Description: The macros defined here provide the HAL APIs for handling
 //              cache control operations.
 // Usage:
-//		#include <cyg/hal/hal_cache.h>
-//		...
-//		
+//              #include <cyg/hal/hal_cache.h>
+//              ...
+//              
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
 //=============================================================================
@@ -97,6 +98,9 @@
 
 // Undo a previous lock operation
 //#define HAL_DCACHE_UNLOCK(_base_, _size_)
+
+// Unlock entire cache
+//#define HAL_DCACHE_UNLOCK_ALL()
 
 //-----------------------------------------------------------------------------
 // Data cache line control
@@ -151,6 +155,9 @@
 // Undo a previous lock operation
 //#define HAL_ICACHE_UNLOCK(_base_, _size_)
 
+// Unlock entire cache
+//#define HAL_ICACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Instruction cache line control
 
@@ -185,7 +192,7 @@
 //-----------------------------------------------------------------------------
 // Control registers
 
-#define HAL_CHCTR               ((CYG_ADDRWORD *)0x20000070)
+#define HAL_CHCTR               ((volatile CYG_ADDRWORD *)0x20000070)
 
 #define HAL_CHCTR_ICEN          0x0001
 #define HAL_CHCTR_DCEN          0x0002
@@ -197,8 +204,8 @@
 #define HAL_CHCTR_ICWMD         0x0300
 #define HAL_CHCTR_DCWMD         0x3000
 
-#define HAL_DCACHE_PURGE_WAY0   ((CYG_ADDRWORD *)0x28400000)
-#define HAL_DCACHE_PURGE_WAY1   ((CYG_ADDRWORD *)0x28401000)
+#define HAL_DCACHE_PURGE_WAY0   ((volatile CYG_BYTE *)0x28400000)
+#define HAL_DCACHE_PURGE_WAY1   ((volatile CYG_BYTE *)0x28401000)
 
 //-----------------------------------------------------------------------------
 // Global control of data cache
@@ -223,10 +230,10 @@
 #define HAL_DCACHE_INVALIDATE_ALL()             \
 {                                               \
     CYG_ADDRWORD chctr, chctr1;                 \
-    chctr1 = *HAL_CHCTR;                        \
-    HAL_DCACHE_DISABLE();                       \
+    chctr = chctr1 = *HAL_CHCTR;                \
+    chctr &= ~HAL_CHCTR_DCEN;                   \
+    *HAL_CHCTR = chctr;                         \
     while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );     \
-    chctr = *HAL_CHCTR;                         \
     chctr |= HAL_CHCTR_DCINV;                   \
     *HAL_CHCTR = chctr;                         \
     while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );     \
@@ -234,7 +241,7 @@
 }
 
 // Synchronize the contents of the cache with memory.
-#define HAL_DCACHE_SYNC()
+#define HAL_DCACHE_SYNC() HAL_DCACHE_STORE( 0, HAL_DCACHE_SIZE/HAL_DCACHE_WAYS )
 
 // Set the data cache refill burst size
 //#define HAL_DCACHE_BURST_SIZE(_size_)
@@ -260,6 +267,9 @@
 // Undo a previous lock operation
 //#define HAL_DCACHE_UNLOCK(_base_, _size_)
 
+// Unlock entire cache
+//#define HAL_DCACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Data cache line control
 
@@ -277,20 +287,20 @@
 // Write dirty cache lines to memory for the given address range.
 #define HAL_DCACHE_STORE( _base_ , _size_ )                     \
 {                                                               \
-    volatile CYG_ADDRWORD *way0 = HAL_DCACHE_PURGE_WAY0;        \
-    volatile CYG_ADDRWORD *way1 = HAL_DCACHE_PURGE_WAY1;        \
+    volatile register CYG_BYTE *way0 = HAL_DCACHE_PURGE_WAY0;   \
+    volatile register CYG_BYTE *way1 = HAL_DCACHE_PURGE_WAY1;   \
     int i;                                                      \
-    CYG_ADDRWORD chctr;                                         \
+    register CYG_ADDRWORD chctr;                                \
     chctr = *HAL_CHCTR;                                         \
     HAL_DCACHE_DISABLE();                                       \
     while( *HAL_CHCTR & HAL_CHCTR_DCBUSY );                     \
                                                                 \
     way0 += ((CYG_ADDRWORD)_base_) & 0x000007f0;                \
     way1 += ((CYG_ADDRWORD)_base_) & 0x000007f0;                \
-    for( i = 0; i < _size_ ; i += HAL_DCACHE_LINE_SIZE )        \
+    for( i = 0; i < (_size_) ; i += HAL_DCACHE_LINE_SIZE )      \
     {                                                           \
-        *way0 = 0;                                              \
-        *way1 = 0;                                              \
+        *(CYG_ADDRWORD *)way0 = 0;                              \
+        *(CYG_ADDRWORD *)way1 = 0;                              \
         way0 += HAL_DCACHE_LINE_SIZE;                           \
         way1 += HAL_DCACHE_LINE_SIZE;                           \
     }                                                           \
@@ -354,6 +364,9 @@
 // Undo a previous lock operation
 //#define HAL_ICACHE_UNLOCK(_base_, _size_)
 
+// Unlock entire cache
+//#define HAL_ICACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Instruction cache line control
 
@@ -362,6 +375,14 @@
 
 #endif
 
+//-----------------------------------------------------------------------------
+// Check that a supported configuration has actually defined some macros.
+
+#ifndef HAL_DCACHE_ENABLE
+
+#error Unsupported MN10300 configuration
+
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H

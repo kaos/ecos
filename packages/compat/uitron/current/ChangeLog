@@ -1,4 +1,113 @@
-1998-10-21  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+1999-04-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/testcx7.cxx: T2_MALLOC definition; only make it smaller
+	than the main consumer malloc if coaleasing is enabled, otherwise
+	the mempool cannot allocate blocks for the consumer for next time.
+	Fixes PR 18817 - only a random perm disable coalescence.
+
+	* tests/test7.c: Ditto.
+
+1999-04-15  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/uitron.h: Tidy display string capitalization.
+
+1999-04-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/uit_func.inl (dis_dsp): Remove bad old code which used
+	to lock the scheduler to implement dis_dsp() and ena_dsp() - which
+	also stopped the clock, for example.  Instead change the calling
+	thread's priority to 0 internally so that it cannot be preempted
+	by uITRON threads at least, whose priorities are 1--N.  Same
+	applies to loc/unl_cpu().  Save the "real" priority in a static,
+	and take notice of it everywhere relevant, such as thread and
+	system state inquiries, changing (our own) priority, checking for
+	dispatch enabled in sleeping calls, and so on.
+
+	* src/uit_func.cxx: New variable cyg_uitron_dis_dsp_old_priority
+	for holding the "real" priority of a thread whilst we change our
+	priority to zero (the highest) to prevent dispatching in dis_dsp()
+	or loc_cpu().
+
+	* include/uit_func.inl (get_tid): Return 0 for the task id if not
+	in a uITRON thread, this is better conformance to the spec.
+
+1999-03-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/uit_objs.cxx: 
+	Use CYGNUM_HAL_STACK_SIZE_TYPICAL for the stack size instead of
+	CYGNUM_HAL_MINIMUM_STACK_SIZE.
+
+1999-02-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/test1.c, tests/test2.c, tests/test3.c, tests/test4.c,
+	  tests/test5.c, tests/test6.c, tests/test7.c, tests/test8.c,
+	  tests/test9.c, tests/testcxx.cxx, tests/testcx2.cxx,
+	  tests/testcx3.cxx, tests/testcx4.cxx, tests/testcx5.cxx,
+	  tests/testcx6.cxx, tests/testcx7.cxx, tests/testcx8.cxx,
+	  tests/testcx9.cxx:
+	Change all non-applicable cases to use CYG_TEST_NA rather than
+	CYG_TEST_PASS/CYG_TEST_EXIT
+
+1999-02-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/uit_objs.cxx: Eeeek!  Previous fix was bogus: the override
+	was too late in the file to take effect.  The declaration of the
+	objects (including stacks) is moved to below the override CPP
+	runes.
+
+1999-02-12  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/uit_objs.cxx (CYG_UITRON_DECL):
+	Override CYGNUM_UITRON_STACK_SIZE if CYGNUM_HAL_MINIMUM_STACK_SIZE
+	demands it.
+
+	* include/pkgconf/uitron.h (CYGNUM_UITRON_STACK_SIZE): 
+	Document that this option can be overridden by HALs demands.
+
+1999-02-02  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18968
+	* tests/test2.c (task1): 
+	* tests/testcx2.cxx (task1): 
+	Reduce run time on SIM.
+
+1999-01-26  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18788
+	* tests/test4.c (task1): 
+	* tests/testcx4.cxx (task1): 
+	Extend timeouts when running on HW to avoid failures due to
+	overhead of GDB interaction.
+
+1999-01-25  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18576
+	* include/pkgconf/uitron.h (CYGDAT_UITRON_SEMA_INITIALIZERS): 
+	Let default initializers have values that don't cause tests to
+	fail.
+
+1998-11-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/uit_func.inl (del_xxx &c):
+	Make error returns more consistent; E_NOEXS rather than E_OBJ if
+	the object disappeared during a race.
+
+1998-11-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/uit_func.cxx (SET_UP_PTRS): 
+	PR 17999; work around codegen bug on tx39 with -Os.
+	The code is better with the fix regardless, so it's got no
+	downside.  Explicitly condition whether to run a follow-on loop
+	rather than letting the for-loop sort it out itself.
+
+1998-11-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/testcx7.cxx (check_waitstate): 
+	Add a routine to check the reported waiting state of the synch
+	object in question, and call it as necessary.  This only added to
+	the C++ version of the test for enhanced coverage, in case the
+	enquiry call perturbs the object state; having both versions
+	present is better.  This checks a very recent fix to
+	kernel...thread.cxx (1998-10-27).
+
+1998-10-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/uit_func.cxx: 
 	Provide weakly named dummies for task[1-4], which are the defaults
@@ -436,7 +545,7 @@ Fri Jul 24 13:02:46 1998  Hugo Tyson  <hmt@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
+// Author(s):     nickg
 // Contributors:  nickg
-// Date:        1998-07-14
-// Purpose:     Wallclock emulation
+// Date:          1999-03-05
+// Purpose:       Wallclock emulation
 //
 //####DESCRIPTIONEND####
 //
@@ -45,6 +45,7 @@
 
 #include <cyg/devs/wallclock.hxx>
 
+#include <cyg/kernel/ktypes.h>
 #include <cyg/kernel/sched.hxx>
 #include <cyg/kernel/clock.hxx>
 

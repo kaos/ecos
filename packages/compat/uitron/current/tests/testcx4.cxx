@@ -1,8 +1,8 @@
 //===========================================================================
 //
-//	testcx4.cxx
+//      testcx4.cxx
 //
-//	uITRON "C++" test program four
+//      uITRON "C++" test program four
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	dsm
-// Contributors:	dsm
-// Date:	1998-06-12
-// Purpose:	uITRON API testing
-// Description:	
+// Author(s):   dsm
+// Contributors:        dsm
+// Date:        1998-06-12
+// Purpose:     uITRON API testing
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -124,8 +124,17 @@ void task1( unsigned int arg )
     T_RCYC rcyc;
     T_RALM ralm;
 
+    unsigned int tm;
+
     static char foo[] = "Test message";
     VP info = (VP)foo;
+
+    // Increase times when running on HW since overhead of GDB packet
+    // acknowledgements may cause tests of timing to fail.
+    if (cyg_test_is_simulator)
+        tm = 1;
+    else
+        tm = 4;
 
     CYG_TEST_INFO( "Task 1 running" );
     ercd = get_tid( &scratch );
@@ -236,23 +245,23 @@ void task1( unsigned int arg )
     dcyc.cycatr = TA_HLNG;
     dcyc.cychdr = (FP)&hand1;
     dcyc.cycact = TCY_ON;
-    dcyc.cyctim = 50;    
+    dcyc.cyctim = 50*tm;
     
     ercd = def_cyc(3, &dcyc);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     ercd = ref_cyc(&rcyc, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     CYG_TEST_CHECK( info == rcyc.exinf, "rcyc.exinf should be info" );
-    CYG_TEST_CHECK( 45 < rcyc.lfttim, "rcyc.lfttim too small" );
-    CYG_TEST_CHECK( rcyc.lfttim <= 50, "rcyc.lfttim too big" );
+    CYG_TEST_CHECK( 45*tm < rcyc.lfttim, "rcyc.lfttim too small" );
+    CYG_TEST_CHECK( rcyc.lfttim <= 50*tm, "rcyc.lfttim too big" );
     CYG_TEST_CHECK( TCY_ON == rcyc.cycact, "rcyc.cycact should be TCY_ON" );
     ercd = act_cyc(3, TCY_OFF);
     CYG_TEST_CHECK( E_OK == ercd, "act_cyc bad ercd" );
     ercd = ref_cyc(&rcyc, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     CYG_TEST_CHECK( info == rcyc.exinf, "rcyc.exinf should be info" );
-    CYG_TEST_CHECK( 45 < rcyc.lfttim, "rcyc.lfttim too small" );
-    CYG_TEST_CHECK( rcyc.lfttim <= 50, "rcyc.lfttim too big" );
+    CYG_TEST_CHECK( 45*tm < rcyc.lfttim, "rcyc.lfttim too small" );
+    CYG_TEST_CHECK( rcyc.lfttim <= 50*tm, "rcyc.lfttim too big" );
     CYG_TEST_CHECK( TCY_OFF == rcyc.cycact, "rcyc.cycact should be TCY_OFF" );
     ercd = act_cyc(3, TCY_ON);
     CYG_TEST_CHECK( E_OK == ercd, "act_cyc bad ercd" );
@@ -263,31 +272,31 @@ void task1( unsigned int arg )
     dalm.almatr = TA_HLNG;
     dalm.almhdr = (FP)&hand2;
     dalm.tmmode = TTM_REL;
-    dalm.almtim = 120;
+    dalm.almtim = 120*tm;
 
     ercd = def_alm(3, &dalm);
     CYG_TEST_CHECK( E_OK == ercd, "def_alm bad ercd" );
     ercd = ref_alm(&ralm, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_alm bad ercd" );
     CYG_TEST_CHECK( info == ralm.exinf, "ralm.exinf should be info" );
-    CYG_TEST_CHECK( 115 < ralm.lfttim, "ralm.lfttim too small" );
-    CYG_TEST_CHECK( ralm.lfttim <= 120, "ralm.lfttim too big" );
+    CYG_TEST_CHECK( 115*tm < ralm.lfttim, "ralm.lfttim too small" );
+    CYG_TEST_CHECK( ralm.lfttim <= 120*tm, "ralm.lfttim too big" );
 
     // Expect handlers to be called at approximate times
-    // time      intercount
-    // 50  hand1   0
-    // 100 hand1   1
-    // 120 hand2   2
-    // 150 hand1   3
+    // time           intercount
+    // tm*50  hand1   0
+    // tm*100 hand1   1
+    // tm*120 hand2   2
+    // tm*150 hand1   3
 
-    ercd = dly_tsk(160);
+    ercd = dly_tsk(160*tm);
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     CYG_TEST_CHECK( 4 == intercount, "handlers not both called" );
     
     ercd = act_cyc(3, TCY_OFF);
     CYG_TEST_CHECK( E_OK == ercd, "act_cyc(off) bad ercd" );
 
-    ercd = dly_tsk(60);                 // enough for at least one tick
+    ercd = dly_tsk(60*tm);              // enough for at least one tick
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     CYG_TEST_CHECK( 4 == intercount, "cyclic not disabled" );
 
@@ -297,8 +306,8 @@ void task1( unsigned int arg )
     ercd = ref_cyc(&rcyc, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     CYG_TEST_CHECK( info == rcyc.exinf, "rcyc.exinf should be info" );
-    CYG_TEST_CHECK( 25 < rcyc.lfttim, "rcyc.lfttim too small" );
-    CYG_TEST_CHECK( rcyc.lfttim <= 35, "rcyc.lfttim too big" );
+    CYG_TEST_CHECK( 25*tm < rcyc.lfttim, "rcyc.lfttim too small" );
+    CYG_TEST_CHECK( rcyc.lfttim <= 35*tm, "rcyc.lfttim too big" );
     CYG_TEST_CHECK( TCY_ON == rcyc.cycact, "rcyc.cycact should be TCY_ON" );
 
     // now resynchronize with right now:
@@ -307,18 +316,18 @@ void task1( unsigned int arg )
     ercd = ref_cyc(&rcyc, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     CYG_TEST_CHECK( info == rcyc.exinf, "rcyc.exinf should be info" );
-    CYG_TEST_CHECK( 45 < rcyc.lfttim, "rcyc.lfttim too small" );
-    CYG_TEST_CHECK( rcyc.lfttim <= 50, "rcyc.lfttim too big" );
+    CYG_TEST_CHECK( 45*tm < rcyc.lfttim, "rcyc.lfttim too small" );
+    CYG_TEST_CHECK( rcyc.lfttim <= 50*tm, "rcyc.lfttim too big" );
     CYG_TEST_CHECK( TCY_ON == rcyc.cycact, "rcyc.cycact should be TCY_ON" );
 
     // wait a bit and check that time marches on, or even down
-    ercd = dly_tsk(10);
+    ercd = dly_tsk(10*tm);
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_cyc(&rcyc, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     CYG_TEST_CHECK( info == rcyc.exinf, "rcyc.exinf should be info" );
-    CYG_TEST_CHECK( 35 < rcyc.lfttim, "rcyc.lfttim too small" );
-    CYG_TEST_CHECK( rcyc.lfttim <= 45, "rcyc.lfttim too big" );
+    CYG_TEST_CHECK( 35*tm < rcyc.lfttim, "rcyc.lfttim too small" );
+    CYG_TEST_CHECK( rcyc.lfttim <= 45*tm, "rcyc.lfttim too big" );
     CYG_TEST_CHECK( TCY_ON == rcyc.cycact, "rcyc.cycact should be TCY_ON" );
 
     // now turn it off and re-synch with right now:
@@ -327,8 +336,8 @@ void task1( unsigned int arg )
     ercd = ref_cyc(&rcyc, 3);
     CYG_TEST_CHECK( E_OK == ercd, "ref_cyc bad ercd" );
     CYG_TEST_CHECK( info == rcyc.exinf, "rcyc.exinf should be info" );
-    CYG_TEST_CHECK( 45 < rcyc.lfttim, "rcyc.lfttim too small" );
-    CYG_TEST_CHECK( rcyc.lfttim <= 50, "rcyc.lfttim too big" );
+    CYG_TEST_CHECK( 45*tm < rcyc.lfttim, "rcyc.lfttim too small" );
+    CYG_TEST_CHECK( rcyc.lfttim <= 50*tm, "rcyc.lfttim too big" );
     CYG_TEST_CHECK( TCY_OFF == rcyc.cycact, "rcyc.cycact should be TCY_OFF" );
 
     ercd = act_cyc(3, TCY_OFF);
@@ -364,12 +373,12 @@ void task4( unsigned int arg )
 #else // ! CYGVAR_KERNEL_COUNTERS_CLOCK   - can't test without it
 #define N_A_MSG "no CYGVAR_KERNEL_COUNTERS_CLOCK"
 #endif // ! CYGVAR_KERNEL_COUNTERS_CLOCK  - can't test without it
-#else  // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
+#else  // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
 #define N_A_MSG "no CYGFUN_KERNEL_THREADS_TIMER"
-#endif // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
-#else  // ! CYGIMP_THREAD_PRIORITY	  - can't test without it
+#endif // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
+#else  // ! CYGIMP_THREAD_PRIORITY        - can't test without it
 #define N_A_MSG "no CYGSEM_KERNEL_SCHED_MLQUEUE"
-#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE	  - can't test without it
+#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE   - can't test without it
 #else  // ! CYGPKG_UITRON
 #define N_A_MSG "uITRON Compatibility layer disabled"
 #endif // CYGPKG_UITRON
@@ -379,8 +388,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -63,7 +63,7 @@
  *
  * {{CFG_DATA
    cdl_package CYGPKG_UITRON {
-       display "eCos uITRON Compatibility Layer"
+       display "eCos uITRON compatibility layer"
        type    boolean
        requires CYGPKG_KERNEL
        description "eCos supports a uITRON Compatibility Layer, providing
@@ -80,7 +80,7 @@
 // ------------------------------------------------------------------------
 /* {{CFG_DATA
    cdl_option CYGIMP_UITRON_STRICT_CONFORMANCE {
-       display "Check Strict uITRON Standards Conformance"
+       display "Check strict uITRON standards conformance"
        parent           CYGPKG_UITRON
        type             radio
        description "Require the rest of the system configuration
@@ -123,7 +123,7 @@
 
 /* {{CFG_DATA
    cdl_option CYGIMP_UITRON_INLINE_FUNCS {
-       display          "Inline Functions"
+       display          "Inline functions"
        parent           CYGPKG_UITRON
        type             boolean
        description "If compiling your application with a C++ compiler,
@@ -145,7 +145,7 @@
 
 /* {{CFG_DATA
    cdl_option CYGIMP_UITRON_CPP_OUTLINE_FUNCS {
-       display          "C++ Function Names"
+       display          "C++ function names"
        parent           CYGPKG_UITRON
        type             boolean
        description "If compiling your application with a C++ compiler,
@@ -167,7 +167,7 @@
 
 /* {{CFG_DATA
    cdl_option CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS {
-       display          "Return Error Codes for Bad Params"
+       display          "Return error codes for bad params"
        parent           CYGPKG_UITRON
        type             boolean
        description "When an application is fully debugged there is no need
@@ -296,9 +296,9 @@
 #ifdef CYGPKG_UITRON_SEMAS_ARE_INITIALIZED
 #if 0 < CYGNUM_UITRON_SEMAS
 #define CYGDAT_UITRON_SEMA_INITIALIZERS \
-        CYG_UIT_SEMA(  1 ),     \
         CYG_UIT_SEMA(  0 ),     \
-        CYG_UIT_SEMA( 99 )
+        CYG_UIT_SEMA(  0 ),     \
+        CYG_UIT_SEMA(  0 )
 #endif
 #endif // CYGPKG_UITRON_SEMAS_ARE_INITIALIZED
 
@@ -380,7 +380,7 @@
                 Waiting for all or any of a set of bits is supported."
    }
    cdl_option CYGNUM_UITRON_FLAGS {
-       display          "Number of event flags"
+       display          "Number of eventflags"
        parent           CYGPKG_UITRON_FLAGS
        type             count
        legal_values     1 to 65535
@@ -527,7 +527,10 @@
        type             count
        legal_values     128 to 0x7FFFFFFF
        description "Define a default stack size for uITRON tasks,
-                for use in the initialization options below."
+                for use in the initialization options below.
+                This will be overridden where it is used if the
+                architectural HAL requires a minimum stack size
+                to handle interrupts correctly."
    }
    cdl_option CYGDAT_UITRON_TASK_EXTERNS {
        display          "Externs for initialization"
@@ -622,7 +625,7 @@ static char stack1[ CYGNUM_UITRON_STACK_SIZE ], \
 
 /* {{CFG_DATA
    cdl_component CYGPKG_UITRON_MEMPOOLFIXED {
-       display "Fixed-Size Memorypools "
+       display "Fixed-size memorypools"
        type    boolean
        parent  CYGPKG_UITRON
        description "uITRON supports memory pools for dynamic, task-safe
@@ -636,7 +639,7 @@ static char stack1[ CYGNUM_UITRON_STACK_SIZE ], \
                 its preset fixed size and none other."
    }
    cdl_option CYGNUM_UITRON_MEMPOOLFIXED {
-       display          "Number of fixed-size memory pools"
+       display          "Number of fixed-size memorypools"
        parent           CYGPKG_UITRON_MEMPOOLFIXED
        type             count
        legal_values     1 to 65535
@@ -745,7 +748,7 @@ static char fpool1[ 2000 ], \
 
 /* {{CFG_DATA
    cdl_component CYGPKG_UITRON_MEMPOOLVAR {
-       display "Variable-Size Memorypools "
+       display "Variable-size memorypools"
        type    boolean
        parent  CYGPKG_UITRON
        description "uITRON supports memory pools for dynamic, task-safe
@@ -868,7 +871,7 @@ static char vpool1[ 2000 ], \
 
 /* {{CFG_DATA
    cdl_component CYGPKG_UITRON_ALARMS {
-       display "Alarm Handlers"
+       display "Alarm handlers"
        type    boolean
        parent  CYGPKG_UITRON
        requires CYGVAR_KERNEL_COUNTERS_CLOCK
@@ -901,7 +904,7 @@ static char vpool1[ 2000 ], \
 
 /* {{CFG_DATA
    cdl_component CYGPKG_UITRON_CYCLICS {
-       display "Cyclic Handlers"
+       display "Cyclic handlers"
        type    boolean
        parent  CYGPKG_UITRON
        requires CYGVAR_KERNEL_COUNTERS_CLOCK
@@ -950,7 +953,7 @@ static char vpool1[ 2000 ], \
                 These values may be specified here."
    }
    cdl_option CYGNUM_UITRON_VER_MAKER {
-       display          "OS Maker"
+       display          "OS maker"
        parent           CYGPKG_UITRON_VERSION
        type             count
        legal_values     0 to 0xFFFF
@@ -959,7 +962,7 @@ static char vpool1[ 2000 ], \
                 response to a get_ver() system call."
    }
    cdl_option CYGNUM_UITRON_VER_ID     {
-       display          "OS Identification"
+       display          "OS identification"
        parent           CYGPKG_UITRON_VERSION
        type             count
        legal_values     0 to 0xFFFF
@@ -968,7 +971,7 @@ static char vpool1[ 2000 ], \
                 response to a get_ver() system call."
    }
    cdl_option CYGNUM_UITRON_VER_SPVER  {
-       display          "ITRON Specification"
+       display          "ITRON specification"
        parent           CYGPKG_UITRON_VERSION
        type             count
        legal_values     0 to 0xFFFF
@@ -978,7 +981,7 @@ static char vpool1[ 2000 ], \
                 Do NOT change this value."
    }
    cdl_option CYGNUM_UITRON_VER_PRVER  {
-       display          "OS Product Version"
+       display          "OS product version"
        parent           CYGPKG_UITRON_VERSION
        type             count
        legal_values     0 to 0xFFFF
@@ -988,7 +991,7 @@ static char vpool1[ 2000 ], \
    }
    # PRNO fields in own folder
    cdl_component CYGPKG_UITRON_VERSION_PRNO {
-       display "Product Info"
+       display "Product info"
        type    dummy
        parent  CYGPKG_UITRON_VERSION
        description "The get_ver() uITRON system call returns
@@ -1036,7 +1039,7 @@ static char vpool1[ 2000 ], \
    }
    # up a level
    cdl_option CYGNUM_UITRON_VER_CPU    {
-       display          "CPU Information"
+       display          "CPU information"
        parent           CYGPKG_UITRON_VERSION
        type             count
        legal_values     0 to 0xFFFF
@@ -1045,7 +1048,7 @@ static char vpool1[ 2000 ], \
                 response to a get_ver() system call."
    }
    cdl_option CYGNUM_UITRON_VER_VAR    {
-       display          "System Variant"
+       display          "System variant"
        parent           CYGPKG_UITRON_VERSION
        type             count
        legal_values     0 to 0xFFFF

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	watchdog/mn10300.cxx
+//      watchdog/mn10300.cxx
 //
-//	Watchdog implementation for MN10300
+//      Watchdog implementation for MN10300
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,19 +22,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-07-29
-// Purpose:	Watchdog class implementation
-// Description:	Contains an implementation of the Watchdog class for use
-//              with the MN10300 hardware watchdog timer.
+// Author(s):    nickg
+// Contributors: nickg
+// Date:         1999-02-18
+// Purpose:      Watchdog class implementation
+// Description:  Contains an implementation of the Watchdog class for use
+//               with the MN10300 hardware watchdog timer.
 //
 //####DESCRIPTIONEND####
 //
@@ -86,7 +86,7 @@ Cyg_Watchdog Cyg_Watchdog::watchdog;
 
 // Interrupt object
 static Cyg_Interrupt interrupt(
-    CYG_VECTOR_WATCHDOG,
+    CYGNUM_HAL_INTERRUPT_WATCHDOG,
     0,
     0,
     watchdog_isr,
@@ -108,7 +108,8 @@ Cyg_Watchdog::Cyg_Watchdog()
 // -------------------------------------------------------------------------
 // Start the watchdog running.
 
-void Cyg_Watchdog::start()
+void
+Cyg_Watchdog::start()
 {
     CYG_REPORT_FUNCTION();
 
@@ -128,7 +129,8 @@ void Cyg_Watchdog::start()
 // Reset watchdog timer. This needs to be called regularly to prevent
 // the watchdog firing.
 
-void Cyg_Watchdog::reset()
+void
+Cyg_Watchdog::reset()
 {    
     CYG_REPORT_FUNCTION();
 
@@ -146,7 +148,8 @@ void Cyg_Watchdog::reset()
 // -------------------------------------------------------------------------
 // Trigger the watchdog as if the timer had expired.
 
-void Cyg_Watchdog::trigger()
+void
+Cyg_Watchdog::trigger()
 {
     CYG_REPORT_FUNCTION();
     
@@ -173,7 +176,8 @@ void Cyg_Watchdog::trigger()
 // Register an action routine that will be called when the timer
 // triggers.
 
-void Cyg_Watchdog::install_action( Cyg_Watchdog_Action *action )
+void
+Cyg_Watchdog::install_action( Cyg_Watchdog_Action *action )
 {
     CYG_REPORT_FUNCTION();
     
@@ -190,7 +194,8 @@ void Cyg_Watchdog::install_action( Cyg_Watchdog_Action *action )
 // -------------------------------------------------------------------------
 // Deregister a previously registered action routine.
 
-void Cyg_Watchdog::uninstall_action( Cyg_Watchdog_Action *action )
+void
+Cyg_Watchdog::uninstall_action( Cyg_Watchdog_Action *action )
 {
     CYG_REPORT_FUNCTION();
     
@@ -218,7 +223,8 @@ void Cyg_Watchdog::uninstall_action( Cyg_Watchdog_Action *action )
 // -------------------------------------------------------------------------
 // ISR and DSR
 
-cyg_uint32 watchdog_isr( cyg_vector vector, CYG_ADDRWORD data)
+cyg_uint32
+watchdog_isr( cyg_vector vector, CYG_ADDRWORD data)
 {
     CYG_REPORT_FUNCTION();
     
@@ -226,13 +232,16 @@ cyg_uint32 watchdog_isr( cyg_vector vector, CYG_ADDRWORD data)
 
     CYG_REPORT_RETURN();
 
+    // FIXME: why is this 0??? why not Cyg_Interrupt::HANDLED? - Jifl
     return 0;
 }
 
-void watchdog_dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD data)
+void
+watchdog_dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD data)
 {
 }
 
-#endif // defined(CYG_HAL_MN10300_MN103002) && !defined(CYGIMP_WATCHDOG_EMULATE)
+#endif // defined(CYG_HAL_MN10300_MN103002) &&
+       // !defined(CYGIMP_WATCHDOG_EMULATE)
 // -------------------------------------------------------------------------
 // EOF watchdog/mn10300.cxx

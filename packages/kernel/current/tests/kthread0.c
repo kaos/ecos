@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,6 +36,8 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
@@ -44,7 +46,7 @@
 
 #include "testaux.h"
 
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static char stack[STACKSIZE];
 
@@ -73,7 +75,7 @@ static bool flash( void )
 #endif
 
     cyg_thread_create(4, entry, (cyg_addrword_t)p, "kthread0",
-    	(void *)stack, STACKSIZE, &t2, &thread2 );
+        (void *)stack, STACKSIZE, &t2, &thread2 );
 
     return true;
 }
@@ -100,7 +102,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -32,9 +32,10 @@ PACKAGE       := infra
 include ../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := startup.cxx dummyxxmain.cxx \
+COMPILE       := startup.cxx prestart.cxx pkgstart.cxx userstart.cxx \
+                 dummyxxmain.cxx \
                  null.cxx simple.cxx fancy.cxx buffer.cxx \
-                 diag.c tcdiag.cxx \
+                 diag.cxx tcdiag.cxx \
                  memcpy.c memset.c \
                  delete.cxx
 

@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:          1998-02-13
 // Purpose:     
 // Description: 
@@ -53,18 +53,25 @@
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>    // Common project-wide type definitions
+#include <cyg/infra/cyg_ass.h>     // Get assertion macros, as appropriate
 #include <errno.h>                 // Cyg_ErrNo
 #include <stdio.h>                 // fpos_t and IOBUF defines
 #include "clibincl/streambuf.hxx"  // Stdio stream file buffers
-#include "clibincl/stdiosupp.hxx"  // for _setvbuf()
-#include <cyg/devs/common/table.h> // Device table for Cyg_Device_Table_t
+#include <cyg/io/io.h>             // General I/O support
 
 #ifdef CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
+#include <pkgconf/kernel.h>
 #include <cyg/kernel/mutex.hxx>    // Cyg_Mutex
 #endif
 
-// TYPE DEFINITIONS
+// FUNCTION PROTOTYPES
 
+// can't get this from stdiosupp.hxx due to potential header recursion
+externC int
+_setvbuf( FILE * /* stream */, char * /* buffer */, int /* mode */,
+          size_t /* size */ );
+
+// TYPE DEFINITIONS
 
 class Cyg_StdioStream
 {
@@ -76,7 +83,7 @@ private:
     Cyg_ErrNo error;
 
 
-    struct Cyg_Device_Table_t *my_device;
+    cyg_io_handle_t my_device;
 
 #ifdef CYGFUN_LIBC_STDIO_ungetc
     cyg_uint8 unread_char_buf;
@@ -139,9 +146,6 @@ private:
     cyg_ucount32 magic_validity_word;
 #endif
 
-    // do not permit a copy constructor (yet)
-    Cyg_StdioStream( const Cyg_StdioStream & );
-
 public:
     // different modes when constructing (i.e. opening).
     typedef enum {
@@ -179,9 +183,9 @@ public:
     // The "return code" is set by assignment to the error member of this
     // stream - use the get_error() method to check
 
-    Cyg_StdioStream( Cyg_Device_Table_t *dev, OpenMode open_mode,
+    Cyg_StdioStream( cyg_io_handle_t dev, OpenMode open_mode,
                      cyg_bool append, cyg_bool binary, int buffer_mode,
-                     cyg_ucount32 buffer_size=BUFSIZE,
+                     cyg_ucount32 buffer_size=BUFSIZ,
                      cyg_uint8 *buffer_addr=NULL );
 
     // DESTRUCTOR

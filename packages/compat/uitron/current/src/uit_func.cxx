@@ -1,8 +1,8 @@
 //===========================================================================
 //
-//	uit_func.cxx
+//      uit_func.cxx
 //
-//	uITRON compatibility functions
+//      uITRON compatibility functions
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON compatibility functions
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON compatibility functions
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -48,6 +48,8 @@
 // functions here:
 #define CYGPRI_UITRON_FUNCS_HERE_AND_NOW
 #include <cyg/compat/uitron/uit_func.h>
+
+cyg_uint32 cyg_uitron_dis_dsp_old_priority = 0;
 
 // ------------------------------------------------------------------------
 //                  STARTUP
@@ -82,16 +84,18 @@
 #endif
 
 
-#define SET_UP_PTRS( _which_ ) CYG_MACRO_START				  \
+#define SET_UP_PTRS( _which_ ) CYG_MACRO_START                            \
     for ( i = 0;                                                          \
           (i < CYGNUM_UITRON_ ## _which_ ## _INITIALLY) &&                \
           (i < CYGNUM_UITRON_ ## _which_              )    ;              \
           i++ ) {                                                         \
         CYG_UITRON_PTRS( _which_ )[ i ] = CYG_UITRON_OBJS( _which_ ) + i; \
     }                                                                     \
-    for ( /* i as is */; i < CYGNUM_UITRON_ ## _which_ ; i++ ) {          \
-        CYG_UITRON_PTRS( _which_ )[ i ] = NULL;                           \
-    }                                                                     \
+    if ( (CYGNUM_UITRON_ ## _which_ ## _INITIALLY)                        \
+          < (CYGNUM_UITRON_ ## _which_) )                                 \
+        for ( /* i as is */; i < CYGNUM_UITRON_ ## _which_ ; i++ ) {      \
+            CYG_UITRON_PTRS( _which_ )[ i ] = NULL;                       \
+        }                                                                 \
 CYG_MACRO_END
 
 void cyg_uitron_start( void )

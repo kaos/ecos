@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -105,16 +105,25 @@ FUNC_START(hal_thread_switch_context)
         .set    _reg,_reg+1
         .endr
 
-        stw     r0,0(sp)                # R0
-        stw     r5,4(sp)                # R5 = real SP, save in R1 slot
-        stw     r2,8(sp)                # R2 = TOC
+        stw     r0,ppcreg_regs+0*4(sp)  # R0
+        stw     r5,ppcreg_regs+1*4(sp)  # R5 = real SP, save in R1 slot
+        stw     r2,ppcreg_regs+2*4(sp)  # R2 = TOC
 
         # CR cannot be treated as a special register since GCC will only
         # do partial restore of CR at function exit, depending on which
         # of CR2, CR3, and CR4 have been used in the given function.
         mfcr    r5                      # save CR.
         stw     r5,ppcreg_cr(sp)
-        
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+        # Make the thread context look like an exception context if thread-
+        # aware debugging is required. This state does not need restoring.
+        mflr    r5
+        stw     r5,ppcreg_pc(sp)        # pc of caller
+        mfmsr   r5
+        stw     r5,ppcreg_msr(sp)       # msr (or PS)
+#endif
+
         save_special                    # save special regs
         
         mflr    r5                      # save LR == return link for this fn
@@ -151,13 +160,11 @@ FUNC_START(hal_thread_load_context)
         .set    _reg,_reg+1
         .endr
 
-        lwz     r0,0(sp)                # R0
-        lwz     r2,8(sp)                # R2 = TOC
-        lwz     r3,12(sp)               # load r3
-#       lwz     r4,16(sp)               # load r4
-#       lwz     r5,20(sp)               # load r5
+        lwz     r0,ppcreg_regs+0*4(sp)  # R0
+        lwz     r2,ppcreg_regs+2*4(sp)  # R2 = TOC
+        lwz     r3,ppcreg_regs+3*4(sp)  # load r3
         
-        lwz     sp,4(sp)                # finally restore true SP
+        lwz     sp,ppcreg_regs+1*4(sp)  # finally restore true SP
         
         blr                             # jump to LR
                         
@@ -165,69 +172,95 @@ FUNC_START(hal_thread_load_context)
 # HAL longjmp, setjmp implementations
 # hal_setjmp saves only to callee save registers 13-31, r1[sp],r2, cr[2-4]
 # and lr into buffer supplied in r3[arg0]
+# Note: These definitions are repeated in hal_arch.h. If changes are required
+# remember to update both sets.
+
+#define CYGARC_JMP_BUF_SP        0
+#define CYGARC_JMP_BUF_R2        1
+#define CYGARC_JMP_BUF_R13       2
+#define CYGARC_JMP_BUF_R14       3
+#define CYGARC_JMP_BUF_R15       4
+#define CYGARC_JMP_BUF_R16       5
+#define CYGARC_JMP_BUF_R17       6
+#define CYGARC_JMP_BUF_R18       7
+#define CYGARC_JMP_BUF_R19       8
+#define CYGARC_JMP_BUF_R20       9
+#define CYGARC_JMP_BUF_R21      10
+#define CYGARC_JMP_BUF_R22      11
+#define CYGARC_JMP_BUF_R23      12
+#define CYGARC_JMP_BUF_R24      13
+#define CYGARC_JMP_BUF_R25      14
+#define CYGARC_JMP_BUF_R26      15
+#define CYGARC_JMP_BUF_R27      16
+#define CYGARC_JMP_BUF_R28      17
+#define CYGARC_JMP_BUF_R29      18
+#define CYGARC_JMP_BUF_R30      19
+#define CYGARC_JMP_BUF_R31      20
+#define CYGARC_JMP_BUF_LR       21
+#define CYGARC_JMP_BUF_CR       22
+
+#define CYGARC_JMP_BUF_SIZE     23
 
 FUNC_START(hal_setjmp)
         mfcr    r5
-        stw     r5,88(r3)
+        stw     r5, CYGARC_JMP_BUF_CR*4(r3)
         mflr    r5
-        stw     r5,84(r3)
-        stw     r31,80(r3)
-        stw     r30,76(r3)
-        stw     r29,72(r3)
-        stw     r28,68(r3)
-        stw     r27,64(r3)
-        stw     r26,60(r3)
-        stw     r25,56(r3)
-        stw     r24,52(r3)
-        stw     r23,48(r3)
-        stw     r22,44(r3)
-        stw     r21,40(r3)
-        stw     r20,36(r3)
-        stw     r19,32(r3)
-        stw     r18,28(r3)
-        stw     r17,24(r3)
-        stw     r16,20(r3)
-        stw     r15,16(r3)
-        stw     r14,12(r3)
-        stw     r13,8(r3)
-        stw     r2,4(r3)        # TOC, optimize out?
-        stw     sp,0(r3)
+        stw     r5, CYGARC_JMP_BUF_LR*4(r3)
+        stw     r31,CYGARC_JMP_BUF_R31*4(r3)
+        stw     r30,CYGARC_JMP_BUF_R30*4(r3)
+        stw     r29,CYGARC_JMP_BUF_R29*4(r3)
+        stw     r28,CYGARC_JMP_BUF_R28*4(r3)
+        stw     r27,CYGARC_JMP_BUF_R27*4(r3)
+        stw     r26,CYGARC_JMP_BUF_R26*4(r3)
+        stw     r25,CYGARC_JMP_BUF_R25*4(r3)
+        stw     r24,CYGARC_JMP_BUF_R24*4(r3)
+        stw     r23,CYGARC_JMP_BUF_R23*4(r3)
+        stw     r22,CYGARC_JMP_BUF_R22*4(r3)
+        stw     r21,CYGARC_JMP_BUF_R21*4(r3)
+        stw     r20,CYGARC_JMP_BUF_R20*4(r3)
+        stw     r19,CYGARC_JMP_BUF_R19*4(r3)
+        stw     r18,CYGARC_JMP_BUF_R18*4(r3)
+        stw     r17,CYGARC_JMP_BUF_R17*4(r3)
+        stw     r16,CYGARC_JMP_BUF_R16*4(r3)
+        stw     r15,CYGARC_JMP_BUF_R15*4(r3)
+        stw     r14,CYGARC_JMP_BUF_R14*4(r3)
+        stw     r13,CYGARC_JMP_BUF_R13*4(r3)
+        stw     r2, CYGARC_JMP_BUF_R2*4(r3)        # TOC, optimize out?
+        stw     sp, CYGARC_JMP_BUF_SP*4(r3)
         li      r3,0            # return 0
         blr
 
 # hal_longjmp loads state from r3[arg0] and returns
 # and lr into buffer supplied in r3[arg0]
-        
+
 FUNC_START(hal_longjmp)
-        lwz     r5,88(r3)
+        lwz     r5,CYGARC_JMP_BUF_CR*4(r3)
         mtcr    r5
-        lwz     r5,84(r3)
+        lwz     r5,CYGARC_JMP_BUF_LR*4(r3)
         mtlr    r5
-        lwz     r31,80(r3)
-        lwz     r30,76(r3)
-        lwz     r29,72(r3)
-        lwz     r28,68(r3)
-        lwz     r27,64(r3)
-        lwz     r26,60(r3)
-        lwz     r25,56(r3)
-        lwz     r24,52(r3)
-        lwz     r23,48(r3)
-        lwz     r22,44(r3)
-        lwz     r21,40(r3)
-        lwz     r20,36(r3)
-        lwz     r19,32(r3)
-        lwz     r18,28(r3)
-        lwz     r17,24(r3)
-        lwz     r16,20(r3)
-        lwz     r15,16(r3)
-        lwz     r14,12(r3)
-        lwz     r13,8(r3)
-        lwz     r2,4(r3)
-        lwz     sp,0(r3)
+        lwz     r31,CYGARC_JMP_BUF_R31*4(r3)
+        lwz     r30,CYGARC_JMP_BUF_R30*4(r3)
+        lwz     r29,CYGARC_JMP_BUF_R29*4(r3)
+        lwz     r28,CYGARC_JMP_BUF_R28*4(r3)
+        lwz     r27,CYGARC_JMP_BUF_R27*4(r3)
+        lwz     r26,CYGARC_JMP_BUF_R26*4(r3)
+        lwz     r25,CYGARC_JMP_BUF_R25*4(r3)
+        lwz     r24,CYGARC_JMP_BUF_R24*4(r3)
+        lwz     r23,CYGARC_JMP_BUF_R23*4(r3)
+        lwz     r22,CYGARC_JMP_BUF_R22*4(r3)
+        lwz     r21,CYGARC_JMP_BUF_R21*4(r3)
+        lwz     r20,CYGARC_JMP_BUF_R20*4(r3)
+        lwz     r19,CYGARC_JMP_BUF_R19*4(r3)
+        lwz     r18,CYGARC_JMP_BUF_R18*4(r3)
+        lwz     r17,CYGARC_JMP_BUF_R17*4(r3)
+        lwz     r16,CYGARC_JMP_BUF_R16*4(r3)
+        lwz     r15,CYGARC_JMP_BUF_R15*4(r3)
+        lwz     r14,CYGARC_JMP_BUF_R14*4(r3)
+        lwz     r13,CYGARC_JMP_BUF_R13*4(r3)
+        lwz     r2, CYGARC_JMP_BUF_R2*4(r3)
+        lwz     sp, CYGARC_JMP_BUF_SP*4(r3)
         mr      r3,r4           # return r4[arg1]
         blr
-                                
-        
 
 #------------------------------------------------------------------------------
 # end of context.S

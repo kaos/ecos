@@ -3,9 +3,9 @@
 
 /*==========================================================================
 //
-//	kapi.h
+//      kapi.h
 //
-//	Native API for Kernel
+//      Native API for Kernel
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,21 +25,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg, dsm
-// Contributors:	nickg
-// Date:	1998-03-02
-// Purpose:	Native API for Kernel
-// Description:	This file describes the native API for using the kernel.
+// Author(s):   nickg, dsm
+// Contributors:        nickg
+// Date:        1998-03-02
+// Purpose:     Native API for Kernel
+// Description: This file describes the native API for using the kernel.
 //              It is essentially a set of C wrappers for the C++ class
 //              member functions.
-// Usage:	#include <cyg/kernel/kapi.h>
+// Usage:       #include <cyg/kernel/kapi.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -60,13 +60,13 @@ extern "C" {
 /* The following are derived types, they may have different                  */
 /* definitions from these depending on configuration.                        */
 
-typedef CYG_ADDRWORD cyg_addrword_t;          /* May hold pointer or word      */
-typedef cyg_addrword_t cyg_handle_t;          /* Object handle                 */
-typedef cyg_uint32   cyg_priority_t;        /* type for priorities           */
-typedef cyg_uint32   cyg_code_t;            /* type for various codes        */
-typedef cyg_uint32   cyg_vector_t;          /* Interrupt vector id           */
+typedef CYG_ADDRWORD   cyg_addrword_t;      /* May hold pointer or word      */
+typedef cyg_addrword_t cyg_handle_t;        /* Object handle                 */
+typedef cyg_uint32     cyg_priority_t;      /* type for priorities           */
+typedef cyg_int32      cyg_code_t;          /* type for various codes        */
+typedef cyg_uint32     cyg_vector_t;        /* Interrupt vector id           */
 
-typedef unsigned long long cyg_tick_count_t;
+typedef cyg_uint64 cyg_tick_count_t;
 
 typedef int cyg_bool_t;
 
@@ -132,9 +132,9 @@ void cyg_scheduler_unlock(void);
 typedef void cyg_thread_entry_t(cyg_addrword_t);
 
 void cyg_thread_create(
-    cyg_addrword_t        sched_info,             /* scheduling info (eg pri)  */
+    cyg_addrword_t      sched_info,             /* scheduling info (eg pri)  */
     cyg_thread_entry_t  *entry,                 /* entry point function      */
-    cyg_addrword_t        entry_data,             /* entry data                */
+    cyg_addrword_t      entry_data,             /* entry data                */
     char                *name,                  /* optional thread name      */
     void                *stack_base,            /* stack base, NULL = alloc  */
     cyg_ucount32        stack_size,             /* stack size, 0 = default   */
@@ -144,6 +144,7 @@ void cyg_thread_create(
     
 void cyg_thread_exit(void);
 
+void cyg_thread_delete(cyg_handle_t thread);
 
 void cyg_thread_suspend(cyg_handle_t thread);
 
@@ -151,6 +152,7 @@ void cyg_thread_resume(cyg_handle_t thread);
 
 void cyg_thread_kill(cyg_handle_t thread);
 
+void cyg_thread_release(cyg_handle_t thread);    
     
 void cyg_thread_yield(void);
 
@@ -173,6 +175,23 @@ void cyg_thread_deadline_wait(
 
 void cyg_thread_delay(cyg_tick_count_t delay);
 
+/*---------------------------------------------------------------------------*/
+/* Per-thread Data                                                           */
+
+#ifdef CYGVAR_KERNEL_THREADS_DATA
+
+cyg_ucount32 cyg_thread_new_data_index(void);
+
+void cyg_thread_free_data_index(cyg_ucount32 index);
+
+CYG_ADDRWORD cyg_thread_get_data(cyg_ucount32 index);
+
+CYG_ADDRWORD *cyg_thread_get_data_ptr(cyg_ucount32 index);
+
+void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD data);
+
+#endif
+    
 /*---------------------------------------------------------------------------*/
 /* Exception handling.                                                       */
 
@@ -197,7 +216,7 @@ void cyg_exception_clear_handler(
 void cyg_exception_call_handler(
     cyg_handle_t                thread,
     cyg_code_t                  exception_number,
-    cyg_addrword_t		exception_info
+    cyg_addrword_t              exception_info
 );
 
 
@@ -218,7 +237,7 @@ enum cyg_ISR_results
 void cyg_interrupt_create(
     cyg_vector_t        vector,         /* Vector to attach to               */
     cyg_priority_t      priority,       /* Queue priority                    */
-    cyg_addrword_t 	data,           /* Data pointer                      */
+    cyg_addrword_t      data,           /* Data pointer                      */
     cyg_ISR_t           *isr,           /* Interrupt Service Routine         */
     cyg_DSR_t           *dsr,           /* Deferred Service Routine          */
     cyg_handle_t        *handle,        /* returned handle                   */
@@ -328,7 +347,7 @@ typedef void cyg_alarm_t(cyg_handle_t alarm, cyg_addrword_t data);
 void cyg_alarm_create(
     cyg_handle_t        counter,        /* Attached to this counter          */
     cyg_alarm_t         *alarmfn,       /* Call-back function                */
-    cyg_addrword_t 	data,           /* Call-back data                    */
+    cyg_addrword_t      data,           /* Call-back data                    */
     cyg_handle_t        *handle,        /* Returned alarm object             */
     cyg_alarm           *alarm          /* put alarm here                    */    
 );
@@ -487,7 +506,7 @@ void cyg_mempool_fix_get_info(cyg_handle_t fixpool, cyg_mempool_info *info);
 
 void      cyg_semaphore_init(
     cyg_sem_t           *sem,            /* Semaphore to init                */
-    cyg_ucount32        val              /* Initial semaphore value          */
+    cyg_count32         val              /* Initial semaphore value          */
 );
 
 void cyg_semaphore_destroy( cyg_sem_t *sem );
@@ -505,7 +524,7 @@ cyg_bool_t cyg_semaphore_trywait( cyg_sem_t *sem );
 
 void cyg_semaphore_post( cyg_sem_t *sem );
 
-void cyg_semaphore_peek( cyg_sem_t *sem, cyg_ucount32 *val );
+void cyg_semaphore_peek( cyg_sem_t *sem, cyg_count32 *val );
 
 /*---------------------------------------------------------------------------*/
 /* Flags                                                                     */
@@ -564,11 +583,13 @@ void cyg_mutex_init(
 
 void cyg_mutex_destroy( cyg_mutex_t *mutex );
 
-void cyg_mutex_lock( cyg_mutex_t *mutex );
+cyg_bool_t cyg_mutex_lock( cyg_mutex_t *mutex );
 
 cyg_bool_t cyg_mutex_trylock( cyg_mutex_t *mutex );
 
 void cyg_mutex_unlock( cyg_mutex_t *mutex );
+
+void cyg_mutex_release( cyg_mutex_t *mutex );
 
 /*---------------------------------------------------------------------------*/
 /* Condition Variables                                                       */

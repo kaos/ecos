@@ -1,8 +1,8 @@
 /*==========================================================================
 //
-//	dbg_gdb.c
+//      dbg_gdb.c
 //
-//	GDB Debugging Interface
+//      GDB Debugging Interface
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-08-22
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-08-22
 // Purpose:     GDB Debugging Interface
-// Description:	Interface for calls from GDB stubs into the OS. These
+// Description: Interface for calls from GDB stubs into the OS. These
 //              currently mostly support thread awareness.
 //
 //####DESCRIPTIONEND####
@@ -54,14 +54,7 @@
 #include <cyg/kernel/sched.inl>
 
 #include <cyg/hal/hal_arch.h>
-
-#if !defined(CYG_HAL_USE_ROM_MONITOR_CYGMON) \
-    && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-// FIXME: This really needs to be handled in some other way.
 #include <cyg/hal/hal_stub.h>
-externC void __stub_copy_registers(target_register_t * dest,
-                                   target_register_t *src);
-#endif
 
 extern "C"
 {
@@ -179,8 +172,8 @@ externC int dbg_currthread_id(void)
 //--------------------------------------------------------------------------
 
 externC int dbg_threadlist(int startflag,
-		   threadref * lastthreadid,
-		   threadref * next_thread)
+                   threadref * lastthreadid,
+                   threadref * next_thread)
 {
     Cyg_Thread *thread;
     if( startflag )
@@ -256,8 +249,8 @@ static char *dbg_adddec(char *s, int x)
 //--------------------------------------------------------------------------
 
 externC int dbg_threadinfo(
-		   threadref * threadid,
-		   struct cygmon_thread_debug_info * info)
+                   threadref * threadid,
+                   struct cygmon_thread_debug_info * info)
 {
     static char statebuf[60];
     
@@ -310,9 +303,9 @@ externC int dbg_threadinfo(
 //--------------------------------------------------------------------------
 
 externC int dbg_getthreadreg(
-		     threadref * osthreadid,
-		     int regcount, /* count of registers in the array */
-		     void * regval)  /* fillin this array */
+                     threadref * osthreadid,
+                     int regcount, /* count of registers in the array */
+                     void * regval)  /* fillin this array */
 {
     Cyg_Thread *thread = dbg_get_thread(osthreadid);
 
@@ -325,10 +318,8 @@ externC int dbg_getthreadreg(
         // got that and we cannot get at it.
         return 0;
 #elif defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-        // _registers hold the state of the current thread.
-        extern target_register_t * _registers;
-
-        __stub_copy_registers ((target_register_t *)regval, _registers);
+        // registers hold the state of the current thread.
+        __stub_copy_registers ((target_register_t *)regval, registers);
 #else
         return 0;
 #endif
@@ -345,11 +336,11 @@ externC int dbg_getthreadreg(
 }
 
 //--------------------------------------------------------------------------
-		   
+                   
 externC int dbg_setthreadreg(
-			    threadref * osthreadid, 
-			    int regcount , /* number of registers */
-			    void * regval) 
+                            threadref * osthreadid, 
+                            int regcount , /* number of registers */
+                            void * regval) 
 {
     Cyg_Thread *thread = dbg_get_thread(osthreadid);
     
@@ -362,10 +353,8 @@ externC int dbg_setthreadreg(
         // got that and we cannot get at it.
         return 0;
 #elif defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-        // _registers hold the state of the current thread.
-        extern target_register_t * _registers;
-
-        __stub_copy_registers (_registers, (target_register_t *)regval);
+        // registers hold the state of the current thread.
+        __stub_copy_registers (registers, (target_register_t *)regval);
 #else
         return 0;
 #endif
@@ -378,9 +367,60 @@ externC int dbg_setthreadreg(
         HAL_SET_GDB_REGISTERS (regs, regval);
     }
     
-    
     return 1;
 }
+
+//--------------------------------------------------------------------------
+// Thread scheduler control for debugger.
+// Arguments:
+//      osthreadid      : must match currently executing thread.
+//                        Future use: change the currently executing thread.
+//      lock            : 0 == unlock scheduler, 1 == lock scheduler
+//      mode            : 0 == single-instruction step, 1 == free running
+//
+// Return values:
+// 1  == success
+// 0  == failure
+// -1 == request that the caller handle this itself
+//       (eg.by disabling interrupts)
+//
+
+externC int dbg_scheduler(
+                          threadref * osthreadid,
+                          int lock,     /* 0 == unlock, 1 == lock */
+                          int mode)     /* 0 == step,   1 == continue */
+{
+#if 0
+    /* Minimal implementation: let stub do the work.  */
+    return -1;                          // Stub will disable interrupts
+#else
+    Cyg_Thread *thread = dbg_get_thread(osthreadid);
+
+    if( thread == 0 ) return 0;         // fail
+
+    if( thread == Cyg_Scheduler::get_current_thread() )
+    {
+        // OK to proceed
+
+        if (lock)
+        {
+            Cyg_Scheduler::lock();
+        }
+        else
+        {
+            if (Cyg_Scheduler::get_sched_lock() >= 1)
+                Cyg_Scheduler::unlock_simple();
+        }
+        return 1;                       // success
+    }
+    else
+    {
+        // Cannot accept any thread other than current one
+        return 0;                       // fail
+    }
+#endif
+}
+
 
 #endif // CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
 

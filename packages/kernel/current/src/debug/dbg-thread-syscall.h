@@ -1,6 +1,6 @@
 
 /* 
- * Copyright (c) 1998 Cygnus Support
+ * Copyright (c) 1998,1999 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -28,7 +28,8 @@ enum dbg_syscall_ids
     dbg_threadlist_func,
     dbg_threadinfo_func,
     dbg_getthreadreg_func,
-    dbg_setthreadreg_func
+    dbg_setthreadreg_func,
+    dbg_scheduler_func,
   } ;
 
 
@@ -63,8 +64,14 @@ union dbg_thread_syscall_parms
     int regcount ;
     void * registers ;
   } reg_parms ;
+  struct
+  {
+    threadref * thread ;        /* 64-bit thread identifier */
+    int lock;                   /* 0 == unlock, 1 == lock */
+    int mode;                   /* 0 == short (step), 1 == continue */
+  } scheduler_parms ;
 } ;
 
 
 typedef int (*dbg_syscall_func) (enum dbg_syscall_ids id,
-				 union dbg_thread_syscall_parms  * p ) ;
+                                 union dbg_thread_syscall_parms  * p ) ;

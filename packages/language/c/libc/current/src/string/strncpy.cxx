@@ -2,7 +2,7 @@
 //
 //      strncpy.cxx
 //
-//      ANSI standard strncpy() routine
+//      ISO C standard strncpy() routine
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-02-18
 // Purpose:     
 // Description: 
 // Usage:       
@@ -43,9 +43,6 @@
 // CONFIGURATION
 
 #include <pkgconf/libc.h>   // Configuration header
-
-// Include the C library?
-#ifdef CYGPKG_LIBC     
 
 // INCLUDES
 
@@ -61,7 +58,7 @@
 
 externC char *
 strncpy( char *s1, const char *s2, size_t n ) \
-    CYGPRI_LIBC_WEAK_ALIAS("_strncpy");
+    CYGBLD_ATTRIB_WEAK_ALIAS(_strncpy);
 
 // FUNCTIONS
 
@@ -98,37 +95,25 @@ _strncpy( char *s1, const char *s2, size_t n)
     CYG_WORD *aligned_dst;
     const CYG_WORD *aligned_src;
     
-    // If SRC or DEST is unaligned, then copy bytes.
-    if (CYG_LIBC_STR_OPT_TOO_SMALL (n) || CYG_LIBC_STR_UNALIGNED2 (src, dst))
-    {
-        while (n > 0)
-        {
-            --n;
-            if ((*dst++ = *src++) == '\0')
-                break;
-        }
-        
-        while (n -- > 0)
-            *dst++ = '\0';
-        
-        CYG_REPORT_RETVAL( s1 );
+    // If SRC and DEST is aligned and count large enough, then copy words.
+    if (!CYG_LIBC_STR_UNALIGNED2 (src, dst) &&
+        !CYG_LIBC_STR_OPT_TOO_SMALL (n)) {
 
-        return s1;
-    }
-    
-    aligned_dst = (CYG_WORD *)dst;
-    aligned_src = (const CYG_WORD *)src;
-    
-    // SRC and DEST are both "CYG_WORD" aligned, try to do "CYG_WORD"
-    // sized copies.
-    while (n >= sizeof (CYG_WORD) && !CYG_LIBC_STR_DETECTNULL(*aligned_src))
-    {
-        n -= sizeof (CYG_WORD);
-        *aligned_dst++ = *aligned_src++;
-    }
-    
-    dst = (char *)aligned_dst;
-    src = (const char *)aligned_src;
+        aligned_dst = (CYG_WORD *)dst;
+        aligned_src = (CYG_WORD *)src;
+
+        // SRC and DEST are both "CYG_WORD" aligned, try to do "CYG_WORD"
+        // sized copies.
+        while (n >= sizeof (CYG_WORD) && 
+               !CYG_LIBC_STR_DETECTNULL(*aligned_src)) {
+
+            n -= sizeof (CYG_WORD);
+            *aligned_dst++ = *aligned_src++;
+        }
+
+        dst = (char *)aligned_dst;
+        src = (const char *)aligned_src;
+    } // if
     
     while (n > 0)
     {
@@ -146,7 +131,5 @@ _strncpy( char *s1, const char *s2, size_t n)
 #endif // not defined(CYGIMP_LIBC_STRING_PREFER_SMALL_TO_FAST) ||
        //     defined(__OPTIMIZE_SIZE__)
 } // _strncpy()
-
-#endif // ifdef CYGPKG_LIBC     
 
 // EOF strncpy.cxx

@@ -22,25 +22,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
+// Date:          1999-03-23
 // Description:   Contains general testcode for C library ctype functions
 //
 //
 //####DESCRIPTIONEND####
-
-// Declarations for test system:
-//
-// TESTCASE_TYPE=CYG_TEST_MODULE
-// COMPOUND_TESTCASE
 
 // INCLUDES
 
@@ -52,30 +47,22 @@
 
 // FUNCTIONS
 
-externC void
+void
 cyg_package_start( void )
 {
-#ifdef CYGPKG_LIBC
     cyg_iso_c_start();
-#else
-    (void)main(0, NULL);
-#endif
 } // cyg_package_start()
 
 
 int
 main( int argc, char *argv[] )
 {
-#ifdef CYGPKG_LIBC
     int c; // character we use as a parameter
-#endif
 
     CYG_TEST_INIT();
 
     CYG_TEST_INFO( "Starting tests from testcase " __FILE__ " for C library "
                    "<ctype.h> functions" );
-
-#ifdef CYGPKG_LIBC
 
     // Check isalnum
     c = 't';
@@ -225,11 +212,6 @@ main( int argc, char *argv[] )
 
     CYG_TEST_FINISH( "Finished tests from testcase " __FILE__ " for C library "
                      "<ctype.h> functions" );
-    
-#else // ifdef CYGPKG_LIBC
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this configuration");
-#endif
-
 } // main()
 
 // EOF ctype.c

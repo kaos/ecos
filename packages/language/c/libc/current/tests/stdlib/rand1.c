@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-20
 // Description:   Contains testcode for C library rand() function
 //
 //
@@ -54,7 +54,7 @@
 
 // HOW TO START TESTS
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
+#if defined(CYGPKG_LIBC)
 
 # define START_TEST( test ) test(0)
 
@@ -86,7 +86,7 @@ cyg_package_start( void )
 
 
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
+#if defined(CYGPKG_LIBC)
 
 static void
 test( CYG_ADDRWORD data )
@@ -104,13 +104,14 @@ test( CYG_ADDRWORD data )
             (array[ctr]==array[ctr+3]))
             hits++;
     
-    CYG_TEST_PASS_FAIL(hits <= TOLERANCE, "Simple test for rand() repetition");
+    CYG_TEST_PASS_FAIL(hits <= TOLERANCE,
+                       "Simple test for rand() repetition");
 
-    CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
-                    "rand() function");
+    CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for "
+                    "C library rand() function");
 } // test()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
+#endif // if defined(CYGPKG_LIBC)
 
 
 int
@@ -123,7 +124,7 @@ main(int argc, char *argv[])
 
     START_TEST( test );
 
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 } // main()
 
 // EOF rand1.c

@@ -2,9 +2,9 @@
 #define CYGONCE_PKGCONF_KERNEL_H
 // ====================================================================
 //
-//	pkgconf/kernel.h
+//      pkgconf/kernel.h
 //
-//	Kernel configuration file
+//      Kernel configuration file
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -24,17 +24,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-29	
-// Purpose:	To allow the user to edit kernel configuration options.
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-29      
+// Purpose:     To allow the user to edit kernel configuration options.
 // Description:
 //
 //####DESCRIPTIONEND####
@@ -415,7 +415,7 @@
           details. In addition the clock resolution numerator and
           denominator values should be updated. Typical values for
           this option would be 150000 on the MN10300 stdeval1 board,
-          15625 on the tx39 jmr3904 board, and 20625 on the powerpc
+          15625 on the tx39 jmr3904 board, and 20833 on the powerpc
           cogent board."
   }
 
@@ -512,6 +512,32 @@
      doc ref/ecos-ref/counters-clocks-and-alarms.html
  }
 
+ cdl_option CYGIMP_KERNEL_COUNTERS_SORT_LIST {
+     display            "Sort the counter list"
+     parent             CYGPKG_KERNEL_COUNTERS
+     type               bool
+     description "
+         Sorting the counter lists reduces the amount of work that
+         has to be done when a counter tick is processed, since the
+         next alarm to expire is always at the front of the list.
+         However, it makes adding an alarm to the list more expensive
+         since a search must be done for the correct place to put it.
+         Many alarms are used to implement timeouts, which seldom trigger,
+         so it is worthwhile optimizing this case. For this reason
+         sorted list are disabled by default."
+ }
+ 
+  cdl_option CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY {
+      display "Measure real-time [clock] interrupt latency"
+      parent  CYGPKG_KERNEL_COUNTERS
+      requires CYGVAR_KERNEL_COUNTERS_CLOCK
+      description "
+          Measure the interrupt latency as seen by the real-time clock
+          timer interrupt.  This requires hardware support, defined by
+          the HAL_CLOCK_LATENCY() macro."
+     doc ref/ecos-ref/counters-clocks-and-alarms.html
+  }
+
  }}CFG_DATA */
 
 #define CYGVAR_KERNEL_COUNTERS_CLOCK
@@ -522,6 +548,8 @@
 #define CYGIMP_KERNEL_COUNTERS_SINGLE_LIST
 #undef  CYGIMP_KERNEL_COUNTERS_MULTI_LIST
 #define CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE 8
+#undef  CYGIMP_KERNEL_COUNTERS_SORT_LIST
+#undef  CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
 
 /* ---------------------------------------------------------------------
  * Thread-related options
@@ -626,8 +654,11 @@
          the requirements of all interrupt handlers - these
          requirements are cumulative if nested interrupted are
          enabled. Depending on the target architecture, the stack size
-         typically has to be a multiple of eight or sixteen bytes."
-         
+         typically has to be a multiple of eight or sixteen bytes.
+         This will be overridden where it is used if the
+         architectural HAL requires a minimum stack size
+         to handle interrupts correctly."
+          
      doc ref/ecos-ref/thread-operations.html
  }
 
@@ -715,7 +746,7 @@
  cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {
      display            "Condition variable timed-wait support"
      parent             CYGPKG_KERNEL_SYNCH
-     requires           CYGVAR_KERNEL_COUNTERS_CLOCK
+     requires           CYGFUN_KERNEL_THREADS_TIMER
      description "
          This option enables the condition variable timed wait
          facility."
@@ -1000,7 +1031,7 @@
          The eCos kernel is implemented in C++, so a C++ interface
          to the kernel is always available. There is also an optional
          C API. Additional API's may be provided in future versions."
-	 doc ref/ecos-ref/kernel-apis.html
+         doc ref/ecos-ref/kernel-apis.html
  }
 
  cdl_option     CYGFUN_KERNEL_API_C {
@@ -1092,8 +1123,13 @@
 #if defined(CYG_HAL_MIPS_JMR3904)
 
 #define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       15360
-
+#if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
+# define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       15360
+#elif (CYGHWR_HAL_MIPS_CPU_FREQ == 66)
+# define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       20736
+#else
+#error Unsupported clock frequency
+#endif
 #endif
 
 #if defined(CYG_HAL_MIPS_SIM)
@@ -1103,13 +1139,27 @@
 
 #endif
 
-#if defined(CYG_HAL_POWERPC_MP860)
+#if defined(CYG_HAL_POWERPC_MPC860)
 
+// Period is busclock/16/100.
 #define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
-#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       20625
+#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       20833
 
 #endif
 
+#if defined(CYG_HAL_ARM_PID)
+#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
+#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       12500
+#endif
+#if defined(CYG_HAL_ARM_AEB)
+#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
+#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       (240000/16)
+#endif
+
+#if defined(CYG_HAL_I386_LINUX)
+#define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
+#define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       10000
+#endif
 
 #ifndef CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION
 
@@ -1133,8 +1183,8 @@
  *
  * It is hoped that these defaults are helpful rather than interfering.
  */
-#define CYGNUM_KERNEL_MAX_SUSPEND_COUNT_ASSERT 		(500)
-#define CYGNUM_KERNEL_MAX_COUNTED_WAKE_COUNT_ASSERT 	(500)
+#define CYGNUM_KERNEL_MAX_SUSPEND_COUNT_ASSERT          (500)
+#define CYGNUM_KERNEL_MAX_COUNTED_WAKE_COUNT_ASSERT     (500)
 
 /*
  * If the scheduler configuration only has a single priority level,
@@ -1210,12 +1260,13 @@
 #undef CYGVAR_KERNEL_COUNTERS_CLOCK
 #undef CYGFUN_KERNEL_THREADS_TIMER
 #undef CYGPKG_KERNEL_EXCEPTIONS
+#undef CYGSEM_KERNEL_SCHED_TIMESLICE
 #undef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE
 #undef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
 #undef CYGPKG_KERNEL_INSTRUMENT
 #undef CYGDBG_INFRA_DIAG_USE_DEVICE     // now lives in infra
 
-#define CYGDBG_KERNEL_DEBUG_GDB_INCLUDE_STUBS
+#define CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 #endif
 */

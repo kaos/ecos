@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.com
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-08-31
 // Purpose:     
 // Description: 
@@ -266,46 +266,52 @@ _setlocale( int category, const char *locale )
                 ++str;
                 token_len = strcspn( str, "#" );
                 loc = find_locale_data( str, token_len );
+
                 if (loc!=NULL) {
                     temp_collate_locale=loc;
                     str += token_len+1;
                     token_len = strcspn( str, "#" );
                     loc = find_locale_data( str, token_len );
-                } // if
-                if (loc!=NULL) {
-                    temp_ctype_locale=loc;
-                    str += token_len+1;
-                    token_len = strcspn( str, "#" );
-                    loc = find_locale_data( str, token_len );
-                } // if
-                if (loc!=NULL) {
-                    temp_monetary_locale=loc;
-                    str += token_len+1;
-                    token_len = strcspn( str, "#" );
-                    loc = find_locale_data( str, token_len );
-                } // if
-                if (loc!=NULL) {
-                    temp_numeric_locale=loc;
-                    str += token_len+1;
-                    token_len = strcspn( str, "#" );
-                    loc = find_locale_data( str, token_len );
-                } // if
-                if (loc!=NULL) {
-                    temp_time_locale=loc;
-                    str += token_len+1;
-                    token_len = strcspn( str, "#" );
-                    loc = find_locale_data( str, token_len );
-                } // if
-                if (loc!=NULL) {
-                    // if we've got this far and loc still isn't NULL,
-                    // then everything's fine, and we've matched everything
 
-                    current_collate_locale = temp_collate_locale;
-                    current_ctype_locale = temp_ctype_locale;
-                    current_monetary_locale = temp_monetary_locale;
-                    current_numeric_locale = temp_numeric_locale;
-                    current_time_locale = temp_time_locale;
+                    if (loc!=NULL) {
+                        temp_ctype_locale=loc;
+                        str += token_len+1;
+                        token_len = strcspn( str, "#" );
+                        loc = find_locale_data( str, token_len );
 
+                        if (loc!=NULL) {
+                            temp_monetary_locale=loc;
+                            str += token_len+1;
+                            token_len = strcspn( str, "#" );
+                            loc = find_locale_data( str, token_len );
+
+                            if (loc!=NULL) {
+                                temp_numeric_locale=loc;
+                                str += token_len+1;
+                                token_len = strcspn( str, "#" );
+                                loc = find_locale_data( str, token_len );
+
+                                if (loc!=NULL) {
+                                    temp_time_locale=loc;
+                                    str += token_len+1;
+                                    token_len = strcspn( str, "#" );
+                                    loc = find_locale_data( str, token_len );
+
+                                    if (loc!=NULL) {
+                      // if we've got this far and loc still isn't NULL,
+                      // then everything's fine, and we've matched everything
+                                        
+                      current_collate_locale = temp_collate_locale;
+                      current_ctype_locale = temp_ctype_locale;
+                      current_monetary_locale = temp_monetary_locale;
+                      current_numeric_locale = temp_numeric_locale;
+                      current_time_locale = temp_time_locale;
+
+                                    } // if
+                                } // if
+                            } // if
+                        } // if
+                    } // if
                 } // if
             } // if
             

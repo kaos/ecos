@@ -24,15 +24,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: Definitions specific to IEEE-754 floating-point format
@@ -55,6 +55,9 @@
                                     // including endian-ness
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST) // Big endian
+
+// Note: there do not seem to be any current machines which are Big Endian but
+// have a mixed up double layout. 
 
 typedef union 
 {
@@ -91,6 +94,7 @@ typedef union
         cyg_uint32 msw;
         cyg_uint32 lsw;
     } parts;
+
     
 } Cyg_libm_ieee_double_shape_type;
 
@@ -133,16 +137,34 @@ typedef union
 
     struct 
     {
+#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST) // Big endian
+        unsigned int fraction1:16;
+        unsigned int fraction0: 4;
+        unsigned int exponent :11;
+        unsigned int sign     : 1;
+        unsigned int fraction3:16;
+        unsigned int fraction2:16;
+#else
         unsigned int fraction3:16;
         unsigned int fraction2:16;
         unsigned int fraction1:16;
         unsigned int fraction0: 4;
         unsigned int exponent :11;
         unsigned int sign     : 1;
+#endif
     } number;
 
     struct 
     {
+#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST) // Big endian
+        unsigned int function1:16;
+        unsigned int function0:3;
+        unsigned int quiet:1;
+        unsigned int exponent: 11;
+        unsigned int sign : 1;
+        unsigned int function3:16;
+        unsigned int function2:16;
+#else
         unsigned int function3:16;
         unsigned int function2:16;
         unsigned int function1:16;
@@ -150,12 +172,18 @@ typedef union
         unsigned int quiet:1;
         unsigned int exponent: 11;
         unsigned int sign : 1;
+#endif
     } nan;
 
     struct 
     {
+#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST) // Big endian
+        cyg_uint32 msw;
+        cyg_uint32 lsw;
+#else
         cyg_uint32 lsw;
         cyg_uint32 msw;
+#endif
     } parts;
     
 } Cyg_libm_ieee_double_shape_type;

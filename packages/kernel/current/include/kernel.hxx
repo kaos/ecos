@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	kernel.hxx
+//      kernel.hxx
 //
-//	Kernel mega-include file
+//      Kernel mega-include file
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Include all kernel files
-// Description:	This file contains includes for all the kernel
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Include all kernel files
+// Description: This file contains includes for all the kernel
 //              headers. This simplifys things in the sources.
-// Usage:	#include <cyg/kernel/kernel.hxx>
+// Usage:       #include <cyg/kernel/kernel.hxx>
 //
 //####DESCRIPTIONEND####
 //

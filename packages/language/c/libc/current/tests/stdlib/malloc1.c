@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     jlarmour
+// Contributors:    jlarmour
 // Date:          1998/6/3
 // Description:   Contains testcode for C library malloc(), calloc() and
 //                free() functions
@@ -226,7 +226,7 @@ main( int argc, char *argv[] )
     free(str2);
 
 #else
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 #endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "

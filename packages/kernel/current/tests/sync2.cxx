@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -71,18 +71,18 @@ static cyg_ucount8 m0d=99, sd=2, cd0=99, cd1=99;
 static void entry0( CYG_ADDRWORD data )
 {
     for(cyg_ucount16 i=0; i<n; i++) {
-	s2.wait();
-	CHECK( 2 == sd );
-	sd = 0;
-	m0.lock(); {
-	    m0d = 0;
-	    s0.post();
-	    CHECK( 0 == m0d );
-	} m0.unlock();
+        s2.wait();
+        CHECK( 2 == sd );
+        sd = 0;
+        m0.lock(); {
+            m0d = 0;
+            s0.post();
+            CHECK( 0 == m0d );
+        } m0.unlock();
     }
     // wait for 3 explicit posts to indicate threads have stopped.
     for(cyg_ucount8 i=0; i<3; i++)
-	cs3.wait();
+        cs3.wait();
 
     CHECK( ! s0.posted() );
     CHECK( ! s1.posted() );
@@ -102,18 +102,18 @@ static void entry0( CYG_ADDRWORD data )
 static void entry1( CYG_ADDRWORD data )
 {
     for(cyg_ucount16 i=0; i<n; i++) {
-	s0.wait();
-	CHECK( 0 == sd );
-	sd = 1;
-	cd0 = 1;
-	cs1.post();
-	cd1 = 1;
-	cs1.post();
-	s1.post();
-	cs0.wait();
-	CHECK( 0 == cd0 );
-	cs0.wait();
-	CHECK( 0 == cd1 );
+        s0.wait();
+        CHECK( 0 == sd );
+        sd = 1;
+        cd0 = 1;
+        cs1.post();
+        cd1 = 1;
+        cs1.post();
+        s1.post();
+        cs0.wait();
+        CHECK( 0 == cd0 );
+        cs0.wait();
+        CHECK( 0 == cd1 );
     }
     cs3.post();
     s0.wait();
@@ -123,18 +123,18 @@ static void entry1( CYG_ADDRWORD data )
 static void entry2( CYG_ADDRWORD data )
 {
     for(cyg_ucount16 i=0; i<n; i++) {
-	s1.wait();
-	CHECK( 1 == sd );
-	sd = 2;
-	cs1.wait();
-	CHECK( 1 == cd0 );
-	cd0 = 2;
-	cs2.post();
-	s2.post();
-	cs1.wait();
-	CHECK( 1 == cd1 );
-	cd1 = 2;
-	cs2.post();
+        s1.wait();
+        CHECK( 1 == sd );
+        sd = 2;
+        cs1.wait();
+        CHECK( 1 == cd0 );
+        cd0 = 2;
+        cs2.post();
+        s2.post();
+        cs1.wait();
+        CHECK( 1 == cd1 );
+        cd1 = 2;
+        cs2.post();
     }
     cs3.post();
     s1.wait();
@@ -144,19 +144,19 @@ static void entry2( CYG_ADDRWORD data )
 static void entry3( CYG_ADDRWORD data )
 {
     for(cyg_ucount16 i=0; i < n*2; i++)  {
-	cs2.wait();
-	CHECK( 2 == cd0 || 2 == cd1 );
-	m0.lock(); {
-	    m0d = 3;
-	    if( 2 == cd0 ) 
-		cd0 = 0;
-	    else {
-		CHECK( 2 == cd1 );
-		cd1 = 0;
-	    }
-	    cs0.post();
-	    CHECK( 3 == m0d );
-	} m0.unlock();
+        cs2.wait();
+        CHECK( 2 == cd0 || 2 == cd1 );
+        m0.lock(); {
+            m0d = 3;
+            if( 2 == cd0 ) 
+                cd0 = 0;
+            else {
+                CHECK( 2 == cd1 );
+                cd1 = 0;
+            }
+            cs0.post();
+            CHECK( 3 == m0d );
+        } m0.unlock();
     }
     cs3.post();
     cs1.wait();

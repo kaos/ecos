@@ -3,9 +3,9 @@
 
 /*=============================================================================
 //
-//	diag.h
+//      diag.h
 //
-//	Diagnostic Routines for Kernel Development
+//      Diagnostic Routines for Kernel Development
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,19 +25,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-03-02
-// Purpose:	Diagnostic Routines for Kernel Development
-// Description:	Diagnostic routines for use during kernel development.
-// Usage:	#include <cyg/kernel/diag.h>
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-03-02
+// Purpose:     Diagnostic Routines for Kernel Development
+// Description: Diagnostic routines for use during kernel development.
+// Usage:       #include <cyg/kernel/diag.h>
 //
 //####DESCRIPTIONEND####
 //

@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-20
 // Description:   Contains testcode for C library strtok() function
 //
 //
@@ -53,7 +53,7 @@
 
 // HOW TO START TESTS
 
-#if defined(CYGPKG_LIBC) && defined(CYGFUN_LIBC_strtok)
+#if defined(CYGPKG_LIBC)
 
 # define START_TEST( test ) test(0)
 
@@ -78,7 +78,7 @@ cyg_package_start( void )
 } // cyg_package_start()
 
 
-#if defined(CYGPKG_LIBC) && defined(CYGFUN_LIBC_strtok)
+#if defined(CYGPKG_LIBC)
 
 // Functions to avoid having to use libc strings
 
@@ -86,8 +86,7 @@ cyg_package_start( void )
 static int
 my_strcmp(const char *s1, const char *s2)
 {
-    for ( ; *s1 == *s2 ; s1++,s2++ )
-    {
+    for ( ; *s1 == *s2 ; s1++,s2++ ) {
         if ( *s1 == '\0' )
             break;
     } // for
@@ -167,7 +166,7 @@ test( CYG_ADDRWORD data )
 
 } // test()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGFUN_LIBC_strtok)
+#endif // if defined(CYGPKG_LIBC)
 
 int
 main(int argc, char *argv[])
@@ -180,7 +179,7 @@ main(int argc, char *argv[])
 
     START_TEST( test );
 
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 } // main()
 
 

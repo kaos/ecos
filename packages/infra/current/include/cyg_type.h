@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	cyg_type.h
+//      cyg_type.h
 //
-//	Standard types, and some useful coding macros.
+//      Standard types, and some useful coding macros.
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,15 +36,14 @@
 // Contributors:  nickg
 // Date:        1997-09-08
 // Purpose:     share unambiguously sized types.
-// Description:	we typedef [cyg_][u]int8,16,32 &c for general use.
+// Description: we typedef [cyg_][u]int8,16,32 &c for general use.
 // Usage:       #include "cyg/infra/cyg_type.h"
-//		...
-//		cyg_int32 my_32bit_integer;
-//		
+//              ...
+//              cyg_int32 my_32bit_integer;
+//              
 //####DESCRIPTIONEND####
 //
 
-#include <pkgconf/infra.h>    // Configuration header for the infra package
 #include <stddef.h>           // Definition of NULL from the compiler
 
 // -------------------------------------------------------------------------
@@ -75,6 +74,9 @@
 # error You must define CYG_BYTEORDER to equal CYG_LSBFIRST or CYG_MSBFIRST
 #endif
 
+#ifndef CYG_DOUBLE_BYTEORDER
+#define CYG_DOUBLE_BYTEORDER CYG_BYTEORDER
+#endif
 
 #ifndef cyg_halint8
 # define cyg_halint8 char
@@ -100,6 +102,13 @@
 #endif
 #ifndef cyg_halcount64
 # define cyg_halcount64 long long
+#endif
+
+#ifndef cyg_haladdress
+# define cyg_haladdress cyg_uint32
+#endif
+#ifndef cyg_haladdrword
+# define cyg_haladdrword cyg_uint32
 #endif
 
 #ifndef cyg_halbool
@@ -145,10 +154,22 @@ typedef cyg_halbool bool;
 
 #define CYG_EMPTY_STATEMENT CYG_MACRO_START CYG_MACRO_END
 
-#define CYG_UNUSED_PARAM( _type_, _name_ ) CYG_MACRO_START \
-  _type_ tmp1 = _name_; \
-  _name_ = tmp1; \
+#define CYG_UNUSED_PARAM( _type_, _name_ ) CYG_MACRO_START      \
+  _type_ __tmp1 = (_name_);                                     \
+  _type_ __tmp2 = __tmp1;                                       \
+  __tmp1 = __tmp2;                                              \
 CYG_MACRO_END
+
+
+// -------------------------------------------------------------------------
+// Reference a symbol without explicitly making use of it. Ensures that
+// the object containing the symbol will be included when linking.
+
+#define CYG_REFERENCE_OBJECT(__object__)                                 \
+     CYG_MACRO_START                                                     \
+     static void *__cygvar_discard_me__ __attribute__ ((unused)) =       \
+                                                          &(__object__); \
+     CYG_MACRO_END
 
 // -------------------------------------------------------------------------
 // Define basic types for using integers in memory and structures;
@@ -201,54 +222,94 @@ typedef cyg_uint8   CYG_BYTE;
 typedef cyg_uint16  CYG_WORD16;
 typedef cyg_uint32  CYG_WORD32;
 typedef cyg_uint64  CYG_WORD64;
-typedef cyg_uint32  CYG_ADDRESS;
-typedef CYG_ADDRESS CYG_ADDRWORD;
+
+typedef cyg_haladdress  CYG_ADDRESS;
+typedef cyg_haladdrword CYG_ADDRWORD;
 
 // -------------------------------------------------------------------------
 // Constructor ordering macros.  These are added as annotations to all
 // static objects to order the constuctors appropriately.
 
-#if defined(__cplusplus) && defined(CYG_KERNEL_USE_INIT_PRIORITY)
-
-#define CYG_INIT_PRIORITY( _pri_ ) \
-    __attribute__((init_priority (CYG_INIT_##_pri_)))
-    
+#if defined(__cplusplus) && defined(__GNUC__)
+# define CYGBLD_ATTRIB_INIT_PRI( _pri_ ) __attribute__((init_priority(_pri_)))
 #else
-
-#define CYG_INIT_PRIORITY( _pri_ )
-
+// FIXME: should maybe just bomb out if this is attempted anywhere else?
+// Not sure
+# define CYGBLD_ATTRIB_INIT_PRI( _pri_ )
 #endif
+    
+// The following will be removed eventually as it doesn't allow the use of
+// e.g. pri+5 format
+#define CYG_INIT_PRIORITY( _pri_ ) CYGBLD_ATTRIB_INIT_PRI( CYG_INIT_##_pri_ )
 
-#define CYG_INIT_BEFORE( _pri_ ) (CYG_INIT_##_pri_-100)
-#define CYG_INIT_AFTER( _pri_ ) (CYG_INIT_##_pri_+100)
+#define CYGBLD_ATTRIB_INIT_BEFORE( _pri_ ) CYGBLD_ATTRIB_INIT_PRI(_pri_-100)
+#define CYGBLD_ATTRIB_INIT_AFTER( _pri_ )  CYGBLD_ATTRIB_INIT_PRI(_pri_+100)
 
 #define CYG_INIT_HAL                    10000
 #define CYG_INIT_SCHEDULER              11000
 #define CYG_INIT_INTERRUPTS             12000
-#define CYG_INIT_CLOCK                  13000
-#define CYG_INIT_IDLE_THREAD            14000
-#define CYG_INIT_THREADS                15000
+#define CYG_INIT_DRIVERS                13000
+#define CYG_INIT_CLOCK                  14000
+#define CYG_INIT_IDLE_THREAD            15000
+#define CYG_INIT_THREADS                16000
 #define CYG_INIT_KERNEL                 40000
+#define CYG_INIT_IO                     49000
 #define CYG_INIT_LIBC                   50000
-#define CYG_INIT_APPLICATION            65000
+#define CYG_INIT_APPLICATION            60000
+#define CYG_INIT_PREDEFAULT             65534
 #define CYG_INIT_DEFAULT                65535
 
 // -------------------------------------------------------------------------
+// COMPILER-SPECIFIC STUFF
+
+#ifdef __GNUC__
+// Force a 'C' routine to be called like a 'C++' contructor
+# define CYGBLD_ATTRIB_CONSTRUCTOR __attribute__((constructor))
+
 // Define a compiler-specific rune for saying a function doesn't return
+# define CYGBLD_ATTRIB_NORET __attribute__((noreturn))
 
-#ifdef __GNUC__
-# define CYGBLD_NORET __attribute__((noreturn))
-#else
-# define CYGBLD_NORET
-#endif
-
-#ifdef __GNUC__
+// How to define weak symbols - this is only relevant for ELF and a.out,
+// but that won't be a problem for eCos
 # define CYGBLD_ATTRIB_WEAK __attribute__ ((weak))
-#else
+
+// How to define alias to symbols. Just pass in the symbol itself, not
+// the string name of the symbol
+# define CYGBLD_ATTRIB_ALIAS(__symbol__) \
+        __attribute__ ((alias (#__symbol__)))
+
+// This effectively does the reverse of the previous macro. It defines
+// a name that the attributed variable or function will actually have
+// in assembler.
+# define CYGBLD_ATTRIB_ASM_ALIAS(__symbol__) \
+            __asm__ ( #__symbol__ )
+
+// Shows that a function returns the same value when given the same args, but
+// note this can't be used if there are pointer args
+# define CYGBLD_ATTRIB_CONST __attribute__((const))
+
+#else // non-GNU
+
+# define CYGBLD_ATTRIB_CONSTRUCTOR
+
+# define CYGBLD_ATTRIB_NORET
     // This intentionally gives an error only if we actually try to
     // use it.  #error would give an error if we simple can't.
 # define CYGBLD_ATTRIB_WEAK !!!-- Attribute weak not defined --!!!
+
+# define CYGBLD_ATTRIB_ALIAS(__x__) !!!-- Attribute alias not defined --!!!
+
+# define CYGBLD_ATTRIB_ASM_ALIAS(__symbol__) !!!-- Asm alias not defined --!!!
+
+# define CYGBLD_ATTRIB_CONST
+
 #endif
+
+// How to define weak aliases. Currently this is simply a mixture of the
+// above
+
+# define CYGBLD_ATTRIB_WEAK_ALIAS(__symbol__) \
+        CYGBLD_ATTRIB_WEAK CYGBLD_ATTRIB_ALIAS(__symbol__)
 
 // -------------------------------------------------------------------------
 // Label name macro. Some toolsets generate labels with initial

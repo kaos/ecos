@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,9 +32,9 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:          1998-02-13
-// Purpose:     
+// Contributors:  jlarmour
+// Date:          1999-01-19
+// Purpose:       ISO C standard I/O routines
 // Description: 
 // Usage:         #include <stdio.h>
 //
@@ -54,7 +54,6 @@
 #include <cyg/infra/cyg_type.h> // common type definitions and support
 #include <stddef.h>             // NULL and size_t from compiler
 #include <stdarg.h>             // va_list from compiler
-#include <sys/file_if.h>        // FILE definition
 
 // CONSTANTS
 
@@ -74,9 +73,9 @@
 
 // SEEK_CUR, SEEK_END and SEEK_SET are used with fseek() as position
 // anchors - ISO C standard chap. 7.9.1
-#define SEEK_CUR    (-16)
-#define SEEK_END    (-32)
-#define SEEK_SET    (-64)
+#define SEEK_SET    0
+#define SEEK_CUR    1
+#define SEEK_END    2
 
 
 // TYPE DEFINITIONS
@@ -86,12 +85,33 @@
 typedef cyg_ucount32 fpos_t;
 
 
+typedef CYG_ADDRESS FILE; // FILE is just cast to an address here. It is
+                          // uncast internally to the C library in stream.hxx
+                          // as the C++ Cyg_StdioStream class. Optional
+                          // run-time checking can be enabled to ensure that
+                          // the cast is valid, using the standard assertion
+                          // functionality
+
 // EXTERNAL VARIABLES
 
 // Default file streams for input/output. These only need to be
 // expressions, not l-values - ISO C standard chap. 7.9.1
+//
+// cyg_libc_stdio_stdin/out/err aren't really files of course,
+// but they are only named here so that we can take the address of
+// them, in which case it doesn't matter what type they point to really
+//
+// CYGPRI_LIBC_STDIO_NO_DEFAULT_STREAMS is used when initializing
+// cyg_libc_stdio_stdin/out/err privately inside the C library
 
-externC FILE *stdin, *stdout, *stderr;
+#ifndef CYGPRI_LIBC_STDIO_NO_DEFAULT_STREAMS
+extern FILE cyg_libc_stdio_stdin, cyg_libc_stdio_stdout,
+            cyg_libc_stdio_stderr; 
+
+#define stdin  (&cyg_libc_stdio_stdin)
+#define stdout (&cyg_libc_stdio_stdout)
+#define stderr (&cyg_libc_stdio_stderr)
+#endif
 
 // FUNCTION PROTOTYPES
 

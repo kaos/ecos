@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -83,25 +83,6 @@
 	.equ	sp, r1
 
 #------------------------------------------------------------------------------
-# The names of some special purpose registers
-
-	.equ	dsisr, 18
-	.equ	dar  , 19
-	.equ	dec  , 22
-	.equ	sprg0, 272
-	.equ	sprg1, 273
-	.equ	sprg2, 274
-	.equ	sprg3, 275
-	.equ	pvr  , 287
-	.equ	hid0 , 1008
-
-#ifdef CYG_HAL_POWERPC_MP860
-	.equ	ic_cst,560
-	.equ	dc_cst,568
-	.equ	der  , 149
-#endif
-
-#------------------------------------------------------------------------------
 # Some useful coding macros
 
 	# Load immediate word, has to be done with 2 instructions
@@ -110,27 +91,30 @@
 	ori	\reg,\reg,\val@L
 	.endm
 
+#ifdef CYG_HAL_POWERPC_MPC603
 	# Move from HID0 hw control register
 	.macro	mfhid0 reg
-	mfspr	\reg,hid0
+	mfspr	\reg,HID0
 	.endm
+#endif
 
 #------------------------------------------------------------------------------
 # Exception, interrupt and thread context save area layout
+# The layout of this structure is also defined in "hal_arch.h", for C
+# code. Do not change this without changing that (or vice versa).
 
-	# These first 36 words are common to all
-	# saved states
+	# These first 39 words are common to all saved states
 	.equ	ppcreg_regs,		0	# 32 integer registers
 	.equ	ppcreg_cr,		32*4
 	.equ	ppcreg_xer,		33*4
 	.equ	ppcreg_lr,		34*4
 	.equ	ppcreg_ctr,		35*4
-	.equ	ppcreg_context_size, 	36*4
+	.equ	ppcreg_msr,		36*4	# MSR at time of exception
+	.equ	ppcreg_pc,		37*4	# PC at time of exception
+	.equ	ppcreg_context_size, 	38*4
 
 	# The following are only saved on exceptions and interrupts
-	.equ	ppcreg_vector,		36*4	# exception vector
-	.equ	ppcreg_msr,		37*4	# MSR at time of exception
-	.equ	ppcreg_pc,		38*4	# PC at time of exception
+	.equ	ppcreg_vector,		38*4	# exception vector
 
 	# The following are only saved on exceptions, and are for information
 	# only. They are not restored with the rest of the state.
@@ -140,13 +124,11 @@
 	.equ	ppcreg_pvr,		42*4	# processor version
 	.equ	ppcreg_exception_size, 	43*4
 
-	# FIXME possibly need BAT and segment registers here too
-	# FIXME also decide what to do with FP state.
+        # Eventually add BATs, SRs and FP registers too.
 
 	.equ	ppc_stack_frame_size,	56	# size of a stack frame
 
-	.equ	ppc_exception_safety,	0x100	# safety net for exceptions
-	.equ	ppc_exception_decrement, ppcreg_exception_size+ppc_exception_safety
+	.equ	ppc_exception_decrement, ppcreg_exception_size
 
 
 #------------------------------------------------------------------------------

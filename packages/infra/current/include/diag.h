@@ -3,9 +3,9 @@
 
 /*=============================================================================
 //
-//	diag.h
+//      diag.h
 //
-//	Diagnostic Routines for Infra Development
+//      Diagnostic Routines for Infra Development
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,28 +25,33 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-03-02
-// Purpose:	Diagnostic Routines for Infra Development
-// Description:	Diagnostic routines for use during infra development.
-// Usage:	#include <cyg/infra/diag.h>
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-03-02
+// Purpose:     Diagnostic Routines for Infra Development
+// Description: Diagnostic routines for use during infra development.
+// Usage:       #include <cyg/infra/diag.h>
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================*/
 
+#include <pkgconf/infra.h>
 #include <cyg/infra/cyg_type.h>
 
 #ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
 #include <stdarg.h>
+#endif
+
+#ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
+#include <cyg/io/io_diag.h>
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -56,7 +61,7 @@ externC void diag_init(void);         /* Initialize, call before any others*/
 
 externC void diag_write_char(char c); /* Write single char to output       */
 
-externC void diag_write_string(char *psz); /* Write zero terminated string */
+externC void diag_write_string(const char *psz); /* Write zero terminated string */
 
 externC void diag_write_dec( cyg_int32 n);    /* Write decimal value       */
 
@@ -65,7 +70,7 @@ externC void diag_write_hex( cyg_uint32 n);   /* Write hexadecimal value   */
 
 #ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
 
-externC void diag_printf( char *fmt, ... );  /* Formatted print           */
+externC void diag_printf( const char *fmt, ... );  /* Formatted print      */
 
 #else
 
@@ -75,7 +80,7 @@ externC void diag_printf( char *fmt, ... );  /* Formatted print           */
 #warning CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG not enabled
 #warning Expect a "function declaration isn't a prototype" warning
 
-externC void diag_printf(/* char *fmt, CYG_ADDRWORD, CYG_ADDRWORD,
+externC void diag_printf(/* const char *fmt, CYG_ADDRWORD, CYG_ADDRWORD,
                          CYG_ADDRWORD, CYG_ADDRWORD, CYG_ADDRWORD,
                          CYG_ADDRWORD, CYG_ADDRWORD, CYG_ADDRWORD */);
 
@@ -85,8 +90,8 @@ externC void diag_printf(/* char *fmt, CYG_ADDRWORD, CYG_ADDRWORD,
 /* Internal Diagnostic MACROS                                                */
 
 #ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
-#define DIAG_DEVICE_START_SYNC()	diag_device_start_sync()
-#define DIAG_DEVICE_END_SYNC()		diag_device_end_sync()
+#define DIAG_DEVICE_START_SYNC()        diag_device_start_sync()
+#define DIAG_DEVICE_END_SYNC()          diag_device_end_sync()
 #else
 #define DIAG_DEVICE_START_SYNC()
 #define DIAG_DEVICE_END_SYNC()

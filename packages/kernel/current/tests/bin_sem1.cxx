@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -98,6 +98,11 @@ void bin_sem1_main( void )
     new_thread( entry0, 0);
     new_thread( entry1, 1);
     
+#ifdef CYGIMP_THREAD_PRIORITY
+    thread[0]->set_priority( 4 );
+    thread[1]->set_priority( 5 ); // make sure the threads execute as intended
+#endif
+
     Cyg_Scheduler::start();
     
     CYG_TEST_FAIL_FINISH("Not reached");

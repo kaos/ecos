@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -42,6 +42,7 @@
 
 #include <pkgconf/hal.h>
         
+#include <cyg/hal/ppc_regs.h>
 #include <cyg/hal/ppc.inc>
 
 #------------------------------------------------------------------------------
@@ -49,118 +50,75 @@
         .globl  hal_hardware_init
 hal_hardware_init:
 
-#if defined(CYG_HAL_POWERPC_COGENT) && defined(CYG_HAL_POWERPC_MP860)
+#if defined(CYG_HAL_POWERPC_COGENT) && defined(CYG_HAL_POWERPC_MPC8xx)
 
-        # Set up MP860 mapping registers for cogent
+        # Set up MPC8xx mapping registers for cogent
+
+        lwi     r3,CYGARC_REG_IMM_BASE  # base address of control registers
         
-        # MP860 time base control register
-        lwi     r3,0xff000200
-        li      r4,0x0001
-        sth     r4,0(r3)
+        # Set timebase divisor to busclock/16, pitrtc divisor to 512.
+        lwz     r4,(CYGARC_REG_IMM_SCCR - CYGARC_REG_IMM_BASE)(r3)
+        lwi     r5,(CYGARC_REG_IMM_SCCR_RTDIV | CYGARC_REG_IMM_SCCR_RTSEL | CYGARC_REG_IMM_SCCR_TBS)
+        or      r4,r4,r5
+        stw     r4,(CYGARC_REG_IMM_SCCR - CYGARC_REG_IMM_BASE)(r3)
 
+        # Enable TimeBase
+        li      r4,CYGARC_REG_IMM_TBSCR_TBE
+        sth     r4,(CYGARC_REG_IMM_TBSCR - CYGARC_REG_IMM_BASE)(r3)
 
-        lwi     r3,0xff000000   # base address of control registers
-
-        # FIXME: I do not know if the timeout is correct. works with the
-        #        below memory mappings/wait states and the PromICE.
-        lwi     r4,0x0000ff80   # Disable watchdog, enable ...
-        stw     r4,0x0004(r3)   # ...Bus Monitor, timeout after 255*8 cycles
+        # Note:  I do not know if the timeout is correct/optimal. 
+        #        Works with the above memory mappings/wait states and 
+        #        the PromICE.
+        # Disable watchdog, enable bus monitor, timeout after 255*8 cycles
+        lwi     r4,(CYGARC_REG_IMM_SYPCR_BMT_MASK | CYGARC_REG_IMM_SYPCR_BME)
+        stw     r4,(CYGARC_REG_IMM_SYPCR - CYGARC_REG_IMM_BASE)(r3)
 
         # Set CS0 to
         # base addr 0xfff00000
         # wait states 4
         # size 1M
         # Covers ROM
-        lwi     r4,0xfff00801
-        stw     r4,0x0100(r3)
-        lwi     r4,0xfff00140
-        stw     r4,0x0104(r3)
+        # Note: After a reset code is currently executing via the default
+	# mapping defined in bank 0. This bank must remain valid while
+	# it is being configured.
+        lwi     r4,(0xfff00000 | CYGARC_REG_IMM_BR_PS_16 | CYGARC_REG_IMM_BR_V)
+        stw     r4,(CYGARC_REG_IMM_BR0 - CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4,(0xfff00000 | CYGARC_REG_IMM_OR_BI | 4 << CYGARC_REG_IMM_OR_SCY_SHIFT)
+        stw     r4,(CYGARC_REG_IMM_OR0 - CYGARC_REG_IMM_BASE)(r3)
 
         # Set CS1 to
         # base addr 0x00000000
         # external ACK
         # size 64M
         # Covers DRAM and slot0
-        lwi     r4,0x00000001
-        stw     r4,0x0108(r3)
-        lwi     r4,0xfc000008
-        stw     r4,0x010c(r3)
+        lwi     r4,(0xfc000000 | CYGARC_REG_IMM_OR_SETA)
+        stw     r4,(CYGARC_REG_IMM_OR1 - CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4,(0x00000000 | CYGARC_REG_IMM_BR_PS_32 | CYGARC_REG_IMM_BR_V)
+        stw     r4,(CYGARC_REG_IMM_BR1 - CYGARC_REG_IMM_BASE)(r3)
 
         # Set CS2 to
         # base addr 0x04000000
         # external ACK
         # size 64M
         # slot1 and slot2
-        lwi     r4,0x04000001
-        stw     r4,0x0110(r3)
-        lwi     r4,0xfc000008
-        stw     r4,0x0114(r3)
+        lwi     r4,(0xfc000000 | CYGARC_REG_IMM_OR_SETA)
+        stw     r4,(CYGARC_REG_IMM_OR2 - CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4,(0x04000000 | CYGARC_REG_IMM_BR_PS_32 | CYGARC_REG_IMM_BR_V)
+        stw     r4,(CYGARC_REG_IMM_BR2 - CYGARC_REG_IMM_BASE)(r3)
 
         # Set CS3 to
         # base addr 0x0e000000
         # exernal ack
         # size 32M
         # covers IO registers
-        lwi     r4,0x0e000001
-        stw     r4,0x0118(r3)
-        lwi     r4,0xfe000108
-        stw     r4,0x011c(r3)
+        lwi     r4,(0xfe000000 | CYGARC_REG_IMM_OR_BI | CYGARC_REG_IMM_OR_SETA)
+        stw     r4,(CYGARC_REG_IMM_OR3 - CYGARC_REG_IMM_BASE)(r3)
+        lwi     r4,(0x0e000000 | CYGARC_REG_IMM_BR_PS_32 | CYGARC_REG_IMM_BR_V)
+        stw     r4,(CYGARC_REG_IMM_BR3 - CYGARC_REG_IMM_BASE)(r3)
 
-#if 0   
-        # Set up the BAT registers to cover same address spaces
-
-        # The 860 does not appear to have BAT registers.
-        
-        # ibat0
-        # base addr 0xfff00000
-        # length 1M
-        # WIMG = 0000
-        # covers ROM
-        lwi     r4,0xfff0001f
-        mtibatu 0,r4
-        lwi     r4,0xfff00002
-        mtibatl 0,r4
-        
-        # ibat1
-        # base addr 0x00000000
-        # length 256M
-        # WIMG = 0000
-        # covers DRAM and slots
-        lwi     r4,0x00001fff
-        mtibatu 1,r4
-        lwi     r4,0x00000002
-        mtibatl 1,r4
-                
-        # dbat0
-        # base addr 0xfff00000
-        # length 256M
-        # WIMG = 0101
-        # covers ROM for data access
-        lwi     r4,0xfff01fff
-        mtdbatu 0,r4
-        lwi     r4,0xfff0002a
-        mtdbatl 0,r4
-
-        # dbat1
-        # base addr 0x00000000
-        # length 256M
-        # WIMG = 0000
-        # covers DRAM and slots
-        lwi     r4,0x00001fff
-        mtdbatu 1,r4
-        lwi     r4,0x00000002
-        mtdbatl 1,r4
-                
-        # Enable translation in the MSR
-        mfmsr   r3
-        lwi     r4,0x00000030
-        or      r3,r3,r4
-        mtmsr   r3
-
-#endif
-                
 #endif  
                 
+        sync
         blr
 
 #------------------------------------------------------------------------------

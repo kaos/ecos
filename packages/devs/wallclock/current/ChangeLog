@@ -1,3 +1,69 @@
+1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/wallclock.cxx (cyg_start): Output message to show the test
+	has started
+	(wallclock_thread): Add call to CYG_TEST_STILL_ALIVE, so the user
+	can see that the test is still running.
+	Fix for PR 19870
+
+1999-04-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/wallclock.h: Add cdl_package doc attribute.
+
+1999-04-07  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19667
+	* tests/wallclock.cxx (cyg_start): 
+	Changed to use the new Cyg_Thread constructor.
+
+1999-03-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/wallclock.cxx: 
+	Use CYGNUM_HAL_STACK_SIZE_TYPICAL for the stack size instead of
+	CYGNUM_HAL_MINIMUM_STACK_SIZE.
+
+1999-03-12  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/wallclock.cxx: 
+	Deal with CYGNUM_HAL_MINIMUM_STACK_SIZE requirement.
+
+
+1999-03-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/wallclock.hxx:
+	Remove dependency on cyg/kernel/ktypes.h
+	Tidy
+
+	* src/emulate.cxx:
+	Include cyg/kernel/ktypes.h since it isn't included in wallclock.hxx
+	any more
+
+1999-03-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/wallclock.h: Make package stand-alone (no "DEVICES").
+
+1999-02-02  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18970
+	* tests/wallclock.cxx (LOOPS_SIM): Only do two loops on
+	SIM. MN10300 sim takes 1min15secs to do one loop.
+
+1999-01-26  Jesper Skov  <jskov@cygnus.co.uk>
+        (PR 18305)
+	* tests/wallclock.cxx: Removed MIPS specific hackery. Now
+	dependent on cyg_test_is_simulator state.
+
+1999-01-21  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18847
+	* tests/wallclock.cxx (LOOPS_HW): Reduce run-time to 20 seconds.
+
+1999-01-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/wallclock.cxx: Added test of cyg_test_is_simulator to
+	reduce time on simulated hardware. PR 18715.
+
+1998-12-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/wallclock.cxx: Do NOP test if kernel RTC disabled.
+
 1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/wallclock.cxx: Reduce test time on TX39 SIM.
@@ -69,7 +135,7 @@ Wed Jul 22 21:04:15 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

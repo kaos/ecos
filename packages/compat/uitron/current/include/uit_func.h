@@ -2,9 +2,9 @@
 #define CYGONCE_COMPAT_UITRON_UIT_FUNC_H
 //===========================================================================
 //
-//	uit_func.h
+//      uit_func.h
 //
-//	uITRON compatibility functions
+//      uITRON compatibility functions
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -24,18 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON compatibility functions
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON compatibility functions
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -160,7 +160,7 @@
 
 #define CYG_UIT_FUNC_EXTERN_BEGIN
 #define CYG_UIT_FUNC_EXTERN_END
-#define CYG_UIT_FUNC_INLINE		inline
+#define CYG_UIT_FUNC_INLINE             inline
 #ifndef CYGPRI_UITRON_FUNCS_HERE_AND_NOW
 #define CYGPRI_UITRON_FUNCS_HERE_AND_NOW
 #endif
@@ -168,11 +168,11 @@
 #else
 
 #ifdef CYGIMP_UITRON_CPP_OUTLINE_FUNCS
-#define CYG_UIT_FUNC_EXTERN_BEGIN	extern "C++" {
-#define CYG_UIT_FUNC_EXTERN_END		}
+#define CYG_UIT_FUNC_EXTERN_BEGIN       extern "C++" {
+#define CYG_UIT_FUNC_EXTERN_END         }
 #else
-#define CYG_UIT_FUNC_EXTERN_BEGIN	extern "C" {
-#define CYG_UIT_FUNC_EXTERN_END		}
+#define CYG_UIT_FUNC_EXTERN_BEGIN       extern "C" {
+#define CYG_UIT_FUNC_EXTERN_END         }
 #endif
 
 #define CYG_UIT_FUNC_INLINE
@@ -190,7 +190,7 @@
 
 #define CYG_UIT_FUNC_EXTERN_BEGIN
 #define CYG_UIT_FUNC_EXTERN_END
-#define CYG_UIT_FUNC_INLINE		
+#define CYG_UIT_FUNC_INLINE             
 
 #endif // !__cplusplus
 
@@ -213,162 +213,162 @@ void cyg_uitron_start( void );
 
 // - Task Management Functions
 
-ER	cre_tsk ( ID tskid, T_CTSK *pk_ctsk );
-ER	del_tsk ( ID tskid );
-ER	sta_tsk ( ID tskid, INT stacd );
-void	ext_tsk ( void );
-void	exd_tsk ( void );
-ER	ter_tsk ( ID tskid );
+ER      cre_tsk ( ID tskid, T_CTSK *pk_ctsk );
+ER      del_tsk ( ID tskid );
+ER      sta_tsk ( ID tskid, INT stacd );
+void    ext_tsk ( void );
+void    exd_tsk ( void );
+ER      ter_tsk ( ID tskid );
 
-ER	dis_dsp ( void );
-ER	ena_dsp ( void );
-ER	chg_pri ( ID tskid, PRI tskpri );
-ER	rot_rdq ( PRI tskpri );
-ER	rel_wai ( ID tskid );
-ER	get_tid ( ID *p_tskid );
-ER	ref_tsk ( T_RTSK *pk_rtsk, ID tskid );
+ER      dis_dsp ( void );
+ER      ena_dsp ( void );
+ER      chg_pri ( ID tskid, PRI tskpri );
+ER      rot_rdq ( PRI tskpri );
+ER      rel_wai ( ID tskid );
+ER      get_tid ( ID *p_tskid );
+ER      ref_tsk ( T_RTSK *pk_rtsk, ID tskid );
         
 // - Task-Dependent Synchronization Functions
         
-ER	sus_tsk ( ID tskid );
-ER	rsm_tsk ( ID tskid );
-ER	frsm_tsk ( ID tskid );
-ER	slp_tsk ( void );
-ER	tslp_tsk ( TMO tmout );
-ER	wup_tsk ( ID tskid );
-ER	can_wup ( INT *p_wupcnt, ID tskid );
+ER      sus_tsk ( ID tskid );
+ER      rsm_tsk ( ID tskid );
+ER      frsm_tsk ( ID tskid );
+ER      slp_tsk ( void );
+ER      tslp_tsk ( TMO tmout );
+ER      wup_tsk ( ID tskid );
+ER      can_wup ( INT *p_wupcnt, ID tskid );
         
 // - Synchronization and Communication Functions
         
-ER	cre_sem ( ID semid, T_CSEM *pk_csem );
-ER	del_sem ( ID semid );
-ER	sig_sem ( ID semid );
-ER	wai_sem ( ID semid );
-ER	preq_sem ( ID semid );
-ER	twai_sem ( ID semid, TMO tmout );
-ER	ref_sem ( T_RSEM *pk_rsem, ID semid );
+ER      cre_sem ( ID semid, T_CSEM *pk_csem );
+ER      del_sem ( ID semid );
+ER      sig_sem ( ID semid );
+ER      wai_sem ( ID semid );
+ER      preq_sem ( ID semid );
+ER      twai_sem ( ID semid, TMO tmout );
+ER      ref_sem ( T_RSEM *pk_rsem, ID semid );
 
-ER	cre_flg ( ID flgid, T_CFLG *pk_cflg );
-ER	del_flg ( ID flgid );
-ER	set_flg ( ID flgid, UINT setptn );
-ER	clr_flg ( ID flgid, UINT clrptn );
-ER	wai_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode );
-ER	pol_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode );
-ER	twai_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode,
+ER      cre_flg ( ID flgid, T_CFLG *pk_cflg );
+ER      del_flg ( ID flgid );
+ER      set_flg ( ID flgid, UINT setptn );
+ER      clr_flg ( ID flgid, UINT clrptn );
+ER      wai_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode );
+ER      pol_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode );
+ER      twai_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode,
               TMO tmout );
-ER	ref_flg ( T_RFLG *pk_rflg, ID flgid );
+ER      ref_flg ( T_RFLG *pk_rflg, ID flgid );
 
-ER	cre_mbx ( ID mbxid, T_CMBX* pk_cmbx );
-ER	del_mbx ( ID mbxid );
-ER	snd_msg ( ID mbxid, T_MSG *pk_msg );
-ER	rcv_msg ( T_MSG **ppk_msg, ID mbxid );
-ER	prcv_msg ( T_MSG **ppk_msg, ID mbxid );
-ER	trcv_msg ( T_MSG **ppk_msg, ID mbxid, TMO tmout );
-ER	ref_mbx ( T_RMBX *pk_rmbx, ID mbxid );
+ER      cre_mbx ( ID mbxid, T_CMBX* pk_cmbx );
+ER      del_mbx ( ID mbxid );
+ER      snd_msg ( ID mbxid, T_MSG *pk_msg );
+ER      rcv_msg ( T_MSG **ppk_msg, ID mbxid );
+ER      prcv_msg ( T_MSG **ppk_msg, ID mbxid );
+ER      trcv_msg ( T_MSG **ppk_msg, ID mbxid, TMO tmout );
+ER      ref_mbx ( T_RMBX *pk_rmbx, ID mbxid );
         
 // - Extended Synchronization and Communication Functions
         
 #if 0 // NOT SUPPORTED
-ER	cre_mbf ( ID mbfid, T_CMBF *pk_cmbf );
-ER	del_mbf ( ID mbfid );
-ER	snd_mbf ( ID mbfid, VP msg, INT msgsz );
-ER	psnd_mbf ( ID mbfid, VP msg, INT msgsz );
-ER	tsnd_mbf ( ID mbfid, VP msg, INT msgsz, TMO tmout );
-ER	rcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
-ER	prcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
-ER	trcv_mbf ( VP msg, INT *p_msgsz, ID mbfid, TMO tmout );
-ER	ref_mbf ( T_RMBF *pk_rmbf, ID mbfid );
-ER	cre_por ( ID porid, T_CPOR *pk_cpor );
-ER	del_por ( ID porid );
-ER	cal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
+ER      cre_mbf ( ID mbfid, T_CMBF *pk_cmbf );
+ER      del_mbf ( ID mbfid );
+ER      snd_mbf ( ID mbfid, VP msg, INT msgsz );
+ER      psnd_mbf ( ID mbfid, VP msg, INT msgsz );
+ER      tsnd_mbf ( ID mbfid, VP msg, INT msgsz, TMO tmout );
+ER      rcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
+ER      prcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
+ER      trcv_mbf ( VP msg, INT *p_msgsz, ID mbfid, TMO tmout );
+ER      ref_mbf ( T_RMBF *pk_rmbf, ID mbfid );
+ER      cre_por ( ID porid, T_CPOR *pk_cpor );
+ER      del_por ( ID porid );
+ER      cal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
               cmsgsz );
-ER	pcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
+ER      pcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
               cmsgsz );
-ER	tcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
+ER      tcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
               cmsgsz, TMO tmout );
-ER	acp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
+ER      acp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
               acpptn );
-ER	pacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
+ER      pacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
               acpptn );
-ER	tacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
+ER      tacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
               acpptn, TMO tmout );
-ER	fwd_por ( ID porid, UINT calptn, RNO rdvno, VP msg, INT cmsgsz
+ER      fwd_por ( ID porid, UINT calptn, RNO rdvno, VP msg, INT cmsgsz
               );
-ER	rpl_rdv ( RNO rdvno, VP msg, INT rmsgsz );
-ER	ref_por ( T_RPOR *pk_rpor, ID porid );
+ER      rpl_rdv ( RNO rdvno, VP msg, INT rmsgsz );
+ER      ref_por ( T_RPOR *pk_rpor, ID porid );
 #endif
         
 // - Interrupt Management Functions
         
 #if 0 // NOT SUPPORTED
-ER	def_int ( UINT dintno, T_DINT *pk_dint );
-void	ret_wup ( ID tskid );
+ER      def_int ( UINT dintno, T_DINT *pk_dint );
+void    ret_wup ( ID tskid );
 #endif
 #if 0
-void	ret_int ( void );
+void    ret_int ( void );
 #endif
 #define ret_int() return
-ER	loc_cpu ( void );
-ER	unl_cpu ( void );
+ER      loc_cpu ( void );
+ER      unl_cpu ( void );
 #if 0 // NOT SUPPORTED
-ER	dis_int ( UINT eintno );
-ER	ena_int ( UINT eintno );
-ER	chg_iXX ( UINT iXXXX );
-ER	ref_iXX ( UINT *p_iXXXX );
+ER      dis_int ( UINT eintno );
+ER      ena_int ( UINT eintno );
+ER      chg_iXX ( UINT iXXXX );
+ER      ref_iXX ( UINT *p_iXXXX );
 #endif
         
 // - Memorypool Management Functions
         
-ER	cre_mpl ( ID mplid, T_CMPL *pk_cmpl );
-ER	del_mpl ( ID mplid );
-ER	get_blk ( VP *p_blk, ID mplid, INT blksz );
-ER	pget_blk ( VP *p_blk, ID mplid, INT blksz );
-ER	tget_blk ( VP *p_blk, ID mplid, INT blksz, TMO tmout );
-ER	rel_blk ( ID mplid, VP blk );
-ER	ref_mpl ( T_RMPL *pk_rmpl, ID mplid );
+ER      cre_mpl ( ID mplid, T_CMPL *pk_cmpl );
+ER      del_mpl ( ID mplid );
+ER      get_blk ( VP *p_blk, ID mplid, INT blksz );
+ER      pget_blk ( VP *p_blk, ID mplid, INT blksz );
+ER      tget_blk ( VP *p_blk, ID mplid, INT blksz, TMO tmout );
+ER      rel_blk ( ID mplid, VP blk );
+ER      ref_mpl ( T_RMPL *pk_rmpl, ID mplid );
 
-ER	cre_mpf ( ID mpfid, T_CMPF *pk_cmpf );
-ER	del_mpf ( ID mpfid );
-ER	get_blf ( VP *p_blf, ID mpfid );
-ER	pget_blf ( VP *p_blf, ID mpfid );
-ER	tget_blf ( VP *p_blf, ID mpfid, TMO tmout );
-ER	rel_blf ( ID mpfid, VP blf );
-ER	ref_mpf ( T_RMPF *pk_rmpf, ID mpfid );
+ER      cre_mpf ( ID mpfid, T_CMPF *pk_cmpf );
+ER      del_mpf ( ID mpfid );
+ER      get_blf ( VP *p_blf, ID mpfid );
+ER      pget_blf ( VP *p_blf, ID mpfid );
+ER      tget_blf ( VP *p_blf, ID mpfid, TMO tmout );
+ER      rel_blf ( ID mpfid, VP blf );
+ER      ref_mpf ( T_RMPF *pk_rmpf, ID mpfid );
         
 // - Time Management Functions
         
-ER	set_tim ( SYSTIME *pk_tim );
-ER	get_tim ( SYSTIME *pk_tim );
-ER	dly_tsk ( DLYTIME dlytim );
-ER	def_cyc ( HNO cycno, T_DCYC *pk_dcyc );
-ER	act_cyc ( HNO cycno, UINT cycact );
-ER	ref_cyc ( T_RCYC *pk_rcyc, HNO cycno );
-ER	def_alm ( HNO almno, T_DALM *pk_dalm );
-ER	ref_alm ( T_RALM *pk_ralm, HNO almno );
+ER      set_tim ( SYSTIME *pk_tim );
+ER      get_tim ( SYSTIME *pk_tim );
+ER      dly_tsk ( DLYTIME dlytim );
+ER      def_cyc ( HNO cycno, T_DCYC *pk_dcyc );
+ER      act_cyc ( HNO cycno, UINT cycact );
+ER      ref_cyc ( T_RCYC *pk_rcyc, HNO cycno );
+ER      def_alm ( HNO almno, T_DALM *pk_dalm );
+ER      ref_alm ( T_RALM *pk_ralm, HNO almno );
 #if 0
-void	ret_tmr ( void );
+void    ret_tmr ( void );
 #endif
 #define ret_tmr() return
         
 // - System Management Functions
         
-ER	get_ver ( T_VER *pk_ver );
-ER	ref_sys ( T_RSYS *pk_rsys );
-ER	ref_cfg ( T_RCFG *pk_rcfg );
+ER      get_ver ( T_VER *pk_ver );
+ER      ref_sys ( T_RSYS *pk_rsys );
+ER      ref_cfg ( T_RCFG *pk_rcfg );
 #if 0 // NOT SUPPORTED
-ER	def_svc ( FN s_fncd, T_DSVC *pk_dsvc );
-ER	def_exc ( UINT exckind, T_DEXC *pk_dexc );
+ER      def_svc ( FN s_fncd, T_DSVC *pk_dsvc );
+ER      def_exc ( UINT exckind, T_DEXC *pk_dexc );
 #endif
         
 // - Network Support Functions
         
 #if 0 // NOT SUPPORTED
-ER	nrea_dat ( INT *p_reasz, VP dstadr, NODE srcnode, VP srcadr,
+ER      nrea_dat ( INT *p_reasz, VP dstadr, NODE srcnode, VP srcadr,
                INT datsz );
-ER	nwri_dat ( INT *p_wrisz, NODE dstnode, VP dstadr, VP srcadr,
+ER      nwri_dat ( INT *p_wrisz, NODE dstnode, VP dstadr, VP srcadr,
                INT datsz );
-ER	nget_nod ( NODE *p_node );
-ER	nget_ver ( T_VER *pk_ver, NODE node );
+ER      nget_nod ( NODE *p_node );
+ER      nget_ver ( T_VER *pk_ver, NODE node );
 #endif
 
 CYG_UIT_FUNC_EXTERN_END

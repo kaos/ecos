@@ -2,9 +2,9 @@
 #define CYGONCE_KERNEL_MBOXT2_INL
 //==========================================================================
 //
-//	mboxt2.inl
+//      mboxt2.inl
 //
-//	Mboxt2 mbox template class implementation
+//      Mboxt2 mbox template class implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -24,18 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Mboxt2 template implementation
-// Description:	This file contains the implementations of the mboxt2
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Mboxt2 template implementation
+// Description: This file contains the implementations of the mboxt2
 //              template classes.
 //
 //####DESCRIPTIONEND####
@@ -161,7 +161,7 @@ Cyg_Mboxt2<T,QUEUE_SIZE>::~Cyg_Mboxt2()
 
 template <class T, cyg_count32 QUEUE_SIZE>
 cyg_bool 
-Cyg_Mboxt2<T,QUEUE_SIZE>::check_this(cyg_assert_class_zeal zeal)
+Cyg_Mboxt2<T,QUEUE_SIZE>::check_this(cyg_assert_class_zeal zeal) const
 {
     if ( Cyg_Thread::DESTRUCT == Cyg_Thread::self()->get_wake_reason() )
         // then the whole thing is invalid, and we know it.

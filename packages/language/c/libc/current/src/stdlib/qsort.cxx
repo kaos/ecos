@@ -23,7 +23,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -31,7 +31,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -192,7 +192,7 @@ _qsort( void *base, size_t nmemb, size_t size, Cyg_comparison_fn_t compar )
     char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
     int d, r, swaptype, swap_cnt;
 
-    CYG_REPORT_FUNCNAMETYPE( "_qsort", "returning" );
+    CYG_REPORT_FUNCNAME( "_qsort" );
     CYG_REPORT_FUNCARG4( "base=%08x, nmemb=%d, size=%d, compar=%08x",
                          base, nmemb, size, compar );
 

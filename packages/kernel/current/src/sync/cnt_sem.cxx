@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sync/cnt_sem.cxx
+//      sync/cnt_sem.cxx
 //
-//	Counting semaphore implementation
+//      Counting semaphore implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-24
-// Purpose:	Cyg_Counting_Semaphore implementation
-// Description:	This file contains the implementations of the counting semaphore
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-24
+// Purpose:     Cyg_Counting_Semaphore implementation
+// Description: This file contains the implementations of the counting semaphore
 //              class.
 //
 //####DESCRIPTIONEND####

@@ -2,9 +2,9 @@
 #define CYGONCE_COMPAT_UITRON_UIT_FUNC_INL
 //===========================================================================
 //
-//	uit_func.inl
+//      uit_func.inl
 //
-//	uITRON compatibility functions
+//      uITRON compatibility functions
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -24,18 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON compatibility functions
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON compatibility functions
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -56,19 +56,24 @@
 #include <cyg/kernel/sched.inl>
 #include <cyg/kernel/clock.inl>
 
+
+// ------------------------------------------------------------------------
+// The variable where dis_dsp/ena_dsp state is held:
+extern cyg_uint32 cyg_uitron_dis_dsp_old_priority;
+
 // ------------------------------------------------------------------------
 // Parameter checking; either check the expression and return an error code
 // if not true, or assert the truth with a made-up message.
 
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
 // default: uitron error codes are returned
-#define CYG_UIT_PARAMCHECK( _true_, _error_ ) CYG_MACRO_START		\
-    if ( ! (_true_) ) return (_error_);					\
+#define CYG_UIT_PARAMCHECK( _true_, _error_ ) CYG_MACRO_START           \
+    if ( ! (_true_) ) return (_error_);                                 \
 CYG_MACRO_END
 #else
 // ...but they are asserted if asserts are on
-#define CYG_UIT_PARAMCHECK( _true_, _error_ ) CYG_MACRO_START		\
-    CYG_ASSERT( (_true_), "CYG_UIT_PARAMCHECK fail: " #_true_ );	\
+#define CYG_UIT_PARAMCHECK( _true_, _error_ ) CYG_MACRO_START           \
+    CYG_ASSERT( (_true_), "CYG_UIT_PARAMCHECK fail: " #_true_ );        \
 CYG_MACRO_END
 #endif // else !CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
 
@@ -81,111 +86,111 @@ CYG_MACRO_END
 //
 // Usage:
 //   INT snd_msg( ID mbxid, ... ) {
-//	Cyg_Mbox *p;
-//	CYG_UITRON_CHECK_AND_GETP_MBOXES( mbxid, p );
-//	p->...(...);
+//      Cyg_Mbox *p;
+//      CYG_UITRON_CHECK_AND_GETP_MBOXES( mbxid, p );
+//      p->...(...);
 
 // internal: plain assignment to the object pointer, from static array
-#define CYG_UIT_SPTR( _which_, _idx_, _ptr_ ) CYG_MACRO_START 		\
-	(_ptr_) =  CYG_UITRON_OBJS( _which_ ) + ((_idx_) - 1);		\
+#define CYG_UIT_SPTR( _which_, _idx_, _ptr_ ) CYG_MACRO_START           \
+        (_ptr_) =  CYG_UITRON_OBJS( _which_ ) + ((_idx_) - 1);          \
 CYG_MACRO_END
 
 // internal: plain assignment to the object pointer, from pointer array
 // with error checking.
-#define CYG_UIT_SPTR_PTR( _which_, _idx_, _ptr_ ) CYG_MACRO_START 	\
-	(_ptr_) =  CYG_UITRON_PTRS( _which_ )[ ((_idx_) - 1) ];		\
-        if ( NULL == (_ptr_) ) return E_NOEXS;				\
+#define CYG_UIT_SPTR_PTR( _which_, _idx_, _ptr_ ) CYG_MACRO_START       \
+        (_ptr_) =  CYG_UITRON_PTRS( _which_ )[ ((_idx_) - 1) ];         \
+        if ( NULL == (_ptr_) ) return E_NOEXS;                          \
 CYG_MACRO_END
 
-#define CYG_UITRON_CHECK_AND_GETP_DIRECT( _which_, _idx_, _ptr_ )	\
-CYG_MACRO_START								\
-    CYG_UIT_PARAMCHECK( 0 < (_idx_), E_ID );				\
-    CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_idx_), E_ID );	\
-    CYG_UIT_SPTR( _which_, _idx_, _ptr_ );				\
+#define CYG_UITRON_CHECK_AND_GETP_DIRECT( _which_, _idx_, _ptr_ )       \
+CYG_MACRO_START                                                         \
+    CYG_UIT_PARAMCHECK( 0 < (_idx_), E_ID );                            \
+    CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_idx_), E_ID );   \
+    CYG_UIT_SPTR( _which_, _idx_, _ptr_ );                              \
 CYG_MACRO_END
 
-#define CYG_UITRON_CHECK_AND_GETP_INDIRECT( _which_, _idx_, _ptr_ )	\
-CYG_MACRO_START								\
-    CYG_UIT_PARAMCHECK( 0 < (_idx_), E_ID );				\
-    CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_idx_), E_ID );	\
-    CYG_UIT_SPTR_PTR( _which_, _idx_, _ptr_ );				\
+#define CYG_UITRON_CHECK_AND_GETP_INDIRECT( _which_, _idx_, _ptr_ )     \
+CYG_MACRO_START                                                         \
+    CYG_UIT_PARAMCHECK( 0 < (_idx_), E_ID );                            \
+    CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_idx_), E_ID );   \
+    CYG_UIT_SPTR_PTR( _which_, _idx_, _ptr_ );                          \
 CYG_MACRO_END
 
 // As above but for handler numbers which return E_PAR when out of range
-#define CYG_UITRON_CHECK_AND_GETHDLR( _which_, _num_, _ptr_ )	        \
-CYG_MACRO_START								\
-    CYG_UIT_PARAMCHECK( 0 < (_num_), E_PAR );				\
+#define CYG_UITRON_CHECK_AND_GETHDLR( _which_, _num_, _ptr_ )           \
+CYG_MACRO_START                                                         \
+    CYG_UIT_PARAMCHECK( 0 < (_num_), E_PAR );                           \
     CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_num_), E_PAR );  \
-    CYG_UIT_SPTR( _which_, _num_, _ptr_ );				\
+    CYG_UIT_SPTR( _which_, _num_, _ptr_ );                              \
 CYG_MACRO_END
 
 // And a macro to check that creation of an object is OK
-#define CYG_UITRON_CHECK_NO_OBJ_LOCK_SCHED( _which_, _idx_ )		\
-CYG_MACRO_START								\
-    CYG_UIT_PARAMCHECK( 0 < (_idx_), E_ID );				\
-    CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_idx_), E_ID );	\
-    Cyg_Scheduler::lock();						\
-    if ( NULL != CYG_UITRON_PTRS( _which_ )[ ((_idx_) - 1) ] ) {	\
-	Cyg_Scheduler::unlock();					\
-    	return E_OBJ;							\
-    }									\
+#define CYG_UITRON_CHECK_NO_OBJ_LOCK_SCHED( _which_, _idx_ )            \
+CYG_MACRO_START                                                         \
+    CYG_UIT_PARAMCHECK( 0 < (_idx_), E_ID );                            \
+    CYG_UIT_PARAMCHECK( CYG_UITRON_NUM( _which_ ) >= (_idx_), E_ID );   \
+    Cyg_Scheduler::lock();                                              \
+    if ( NULL != CYG_UITRON_PTRS( _which_ )[ ((_idx_) - 1) ] ) {        \
+        Cyg_Scheduler::unlock();                                        \
+        return E_OBJ;                                                   \
+    }                                                                   \
 CYG_MACRO_END
 
 // define a magic new operator in order to call constructors
-#define CYG_UITRON_NEWFUNCTION( _class_ ) 				\
-inline void *operator new(size_t size, _class_ *ptr) 			\
-{ 									\
-    CYG_CHECK_DATA_PTR( ptr, "Bad pointer" ); 				\
-    return ptr; 							\
+#define CYG_UITRON_NEWFUNCTION( _class_ )                               \
+inline void *operator new(size_t size, _class_ *ptr)                    \
+{                                                                       \
+    CYG_CHECK_DATA_PTR( ptr, "Bad pointer" );                           \
+    return ptr;                                                         \
 }
 
 // now configury to support selectable create/delete support ie. an
 // array of pointers to the objects themselves.
 #ifdef CYGPKG_UITRON_TASKS_CREATE_DELETE
-#define CYG_UITRON_CHECK_AND_GETP_TASKS( _idx_, _ptr_ )			\
+#define CYG_UITRON_CHECK_AND_GETP_TASKS( _idx_, _ptr_ )                 \
     CYG_UITRON_CHECK_AND_GETP_INDIRECT( TASKS, _idx_, _ptr_ )
 #else
-#define CYG_UITRON_CHECK_AND_GETP_TASKS( _idx_, _ptr_ )			\
+#define CYG_UITRON_CHECK_AND_GETP_TASKS( _idx_, _ptr_ )                 \
     CYG_UITRON_CHECK_AND_GETP_DIRECT( TASKS, _idx_, _ptr_ )
 #endif
 
 #ifdef CYGPKG_UITRON_SEMAS_CREATE_DELETE
-#define CYG_UITRON_CHECK_AND_GETP_SEMAS( _idx_, _ptr_ )			\
+#define CYG_UITRON_CHECK_AND_GETP_SEMAS( _idx_, _ptr_ )                 \
     CYG_UITRON_CHECK_AND_GETP_INDIRECT( SEMAS, _idx_, _ptr_ )
 #else
-#define CYG_UITRON_CHECK_AND_GETP_SEMAS( _idx_, _ptr_ )			\
+#define CYG_UITRON_CHECK_AND_GETP_SEMAS( _idx_, _ptr_ )                 \
     CYG_UITRON_CHECK_AND_GETP_DIRECT( SEMAS, _idx_, _ptr_ )
 #endif
 
 #ifdef CYGPKG_UITRON_MBOXES_CREATE_DELETE
-#define CYG_UITRON_CHECK_AND_GETP_MBOXES( _idx_, _ptr_ )		\
+#define CYG_UITRON_CHECK_AND_GETP_MBOXES( _idx_, _ptr_ )                \
     CYG_UITRON_CHECK_AND_GETP_INDIRECT( MBOXES, _idx_, _ptr_ )
 #else
-#define CYG_UITRON_CHECK_AND_GETP_MBOXES( _idx_, _ptr_ )		\
+#define CYG_UITRON_CHECK_AND_GETP_MBOXES( _idx_, _ptr_ )                \
     CYG_UITRON_CHECK_AND_GETP_DIRECT( MBOXES, _idx_, _ptr_ )
 #endif
 
 #ifdef CYGPKG_UITRON_FLAGS_CREATE_DELETE
-#define CYG_UITRON_CHECK_AND_GETP_FLAGS( _idx_, _ptr_ )			\
+#define CYG_UITRON_CHECK_AND_GETP_FLAGS( _idx_, _ptr_ )                 \
     CYG_UITRON_CHECK_AND_GETP_INDIRECT( FLAGS, _idx_, _ptr_ )
 #else
-#define CYG_UITRON_CHECK_AND_GETP_FLAGS( _idx_, _ptr_ )			\
+#define CYG_UITRON_CHECK_AND_GETP_FLAGS( _idx_, _ptr_ )                 \
     CYG_UITRON_CHECK_AND_GETP_DIRECT( FLAGS, _idx_, _ptr_ )
 #endif
 
 #ifdef CYGPKG_UITRON_MEMPOOLFIXED_CREATE_DELETE
-#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLFIXED( _idx_, _ptr_ )		\
+#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLFIXED( _idx_, _ptr_ )          \
     CYG_UITRON_CHECK_AND_GETP_INDIRECT( MEMPOOLFIXED, _idx_, _ptr_ )
 #else
-#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLFIXED( _idx_, _ptr_ )		\
+#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLFIXED( _idx_, _ptr_ )          \
     CYG_UITRON_CHECK_AND_GETP_DIRECT( MEMPOOLFIXED, _idx_, _ptr_ )
 #endif
 
 #ifdef CYGPKG_UITRON_MEMPOOLVAR_CREATE_DELETE
-#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLVAR( _idx_, _ptr_ )		\
+#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLVAR( _idx_, _ptr_ )            \
     CYG_UITRON_CHECK_AND_GETP_INDIRECT( MEMPOOLVAR, _idx_, _ptr_ )
 #else
-#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLVAR( _idx_, _ptr_ )		\
+#define CYG_UITRON_CHECK_AND_GETP_MEMPOOLVAR( _idx_, _ptr_ )            \
     CYG_UITRON_CHECK_AND_GETP_DIRECT( MEMPOOLVAR, _idx_, _ptr_ )
 #endif
 
@@ -197,46 +202,46 @@ inline void *operator new(size_t size, _class_ *ptr) 			\
 // if not checking and not asserted, these are removed to avoid usused
 // variable warnings.
 #define CYG_UITRON_CHECK_TASK_CONTEXT_SELF( _self_ )     CYG_EMPTY_STATEMENT
-#define CYG_UITRON_CHECK_TASK_CONTEXT() 	         CYG_EMPTY_STATEMENT
-#define CYG_UITRON_CHECK_DISPATCH_ENABLED() 	         CYG_EMPTY_STATEMENT
+#define CYG_UITRON_CHECK_TASK_CONTEXT()                  CYG_EMPTY_STATEMENT
+#define CYG_UITRON_CHECK_DISPATCH_ENABLED()              CYG_EMPTY_STATEMENT
 #define CYG_UITRON_CHECK_DISPATCH_ENABLED_TMO( _tmout_ ) CYG_EMPTY_STATEMENT
 
 #else
 // the default:
 // Check a task is actually a uITRON task
-#define CYG_UITRON_CHECK_TASK_CONTEXT_SELF( _self_ ) CYG_MACRO_START	\
-    CYG_UIT_PARAMCHECK(       					        \
-        (&cyg_uitron_TASKS[0] <= (_self_)) &&       		        \
-        ((_self_) < &cyg_uitron_TASKS[CYGNUM_UITRON_TASKS]),  	        \
-                                  E_CTX );       			\
+#define CYG_UITRON_CHECK_TASK_CONTEXT_SELF( _self_ ) CYG_MACRO_START    \
+    CYG_UIT_PARAMCHECK(                                                 \
+        (&cyg_uitron_TASKS[0] <= (_self_)) &&                           \
+        ((_self_) < &cyg_uitron_TASKS[CYGNUM_UITRON_TASKS]),            \
+                                  E_CTX );                              \
 CYG_MACRO_END
 
-#define CYG_UITRON_CHECK_TASK_CONTEXT() CYG_MACRO_START			\
-    Cyg_Thread *self = Cyg_Thread::self();				\
-    CYG_UITRON_CHECK_TASK_CONTEXT_SELF( self );				\
+#define CYG_UITRON_CHECK_TASK_CONTEXT() CYG_MACRO_START                 \
+    Cyg_Thread *self = Cyg_Thread::self();                              \
+    CYG_UITRON_CHECK_TASK_CONTEXT_SELF( self );                         \
 CYG_MACRO_END
 
 // Check dispatching is enabled for calls which might wait
-#define CYG_UITRON_CHECK_DISPATCH_ENABLED()  CYG_MACRO_START		\
-    CYG_UIT_PARAMCHECK( 0 == Cyg_Scheduler::get_sched_lock(), E_CTX );  \
+#define CYG_UITRON_CHECK_DISPATCH_ENABLED()  CYG_MACRO_START            \
+    CYG_UIT_PARAMCHECK( 0 == cyg_uitron_dis_dsp_old_priority, E_CTX );  \
 CYG_MACRO_END
 
 #define CYG_UITRON_CHECK_DISPATCH_ENABLED_TMO(_tmout_)  CYG_MACRO_START \
-    CYG_UIT_PARAMCHECK( -1 <= (_tmout_), E_PAR );		        \
-    if ( TMO_POL != (_tmout_) )    					\
-        CYG_UITRON_CHECK_DISPATCH_ENABLED();				\
+    CYG_UIT_PARAMCHECK( -1 <= (_tmout_), E_PAR );                       \
+    if ( TMO_POL != (_tmout_) )                                         \
+        CYG_UITRON_CHECK_DISPATCH_ENABLED();                            \
 CYG_MACRO_END
 
 #endif
 
 #ifdef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
-#define CYG_UIT_PARAMCHECK_PTR( _p_ )	CYG_MACRO_START			\
-        CYG_UIT_PARAMCHECK( NADR != (_p_), E_PAR );			\
+#define CYG_UIT_PARAMCHECK_PTR( _p_ )   CYG_MACRO_START                 \
+        CYG_UIT_PARAMCHECK( NADR != (_p_), E_PAR );                     \
 CYG_MACRO_END
 #else // do check for NULL
-#define CYG_UIT_PARAMCHECK_PTR( _p_ )	CYG_MACRO_START			\
-        CYG_UIT_PARAMCHECK( NADR != (_p_), E_PAR );			\
-        CYG_UIT_PARAMCHECK( NULL != (_p_), E_PAR );			\
+#define CYG_UIT_PARAMCHECK_PTR( _p_ )   CYG_MACRO_START                 \
+        CYG_UIT_PARAMCHECK( NADR != (_p_), E_PAR );                     \
+        CYG_UIT_PARAMCHECK( NULL != (_p_), E_PAR );                     \
 CYG_MACRO_END
 #endif // !CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
 
@@ -248,25 +253,25 @@ CYG_MACRO_END
 // This macro examines context and finds out which, then executes a return
 // with the correct uITRON condition code.
 
-#define CYG_UITRON_FAIL_RETURN_SELF( _self_ ) CYG_MACRO_START		\
-    Cyg_Thread::cyg_reason reason = (_self_)->get_wake_reason();	\
-    if ( Cyg_Thread::TIMEOUT  == reason )				\
-    	return E_TMOUT;						        \
-    if ( Cyg_Thread::BREAK    == reason )				\
-        return E_RLWAI;							\
-    if ( Cyg_Thread::DESTRUCT == reason )				\
-        return E_DLT;							\
-    return E_SYS; /* if no plausible reason was found */		\
+#define CYG_UITRON_FAIL_RETURN_SELF( _self_ ) CYG_MACRO_START           \
+    Cyg_Thread::cyg_reason reason = (_self_)->get_wake_reason();        \
+    if ( Cyg_Thread::TIMEOUT  == reason )                               \
+        return E_TMOUT;                                                 \
+    if ( Cyg_Thread::BREAK    == reason )                               \
+        return E_RLWAI;                                                 \
+    if ( Cyg_Thread::DESTRUCT == reason )                               \
+        return E_DLT;                                                   \
+    return E_SYS; /* if no plausible reason was found */                \
 CYG_MACRO_END
 
-#define CYG_UITRON_FAIL_RETURN() CYG_MACRO_START			\
-    Cyg_Thread *self = Cyg_Thread::self();				\
-    CYG_UITRON_FAIL_RETURN_SELF( self );				\
+#define CYG_UITRON_FAIL_RETURN() CYG_MACRO_START                        \
+    Cyg_Thread *self = Cyg_Thread::self();                              \
+    CYG_UITRON_FAIL_RETURN_SELF( self );                                \
 CYG_MACRO_END
 
 // ------------------------------------------------------------------------
 // Interrupts disabled?
-#define CYG_UITRON_CHECK_CPU_UNLOC()					\
+#define CYG_UITRON_CHECK_CPU_UNLOC()                                    \
     CYG_UIT_PARAMCHECK( (Cyg_Interrupt::interrupts_enabled()), E_CTX )
 
 // ------------------------------------------------------------------------
@@ -328,6 +333,11 @@ del_tsk ( ID tskid )
     CYG_UITRON_CHECK_AND_GETP_TASKS( tskid, p );
     
     Cyg_Scheduler::lock();
+    // deal with the race condition here
+    if ( p != CYG_UITRON_PTRS( TASKS )[ tskid - 1 ] ) {
+        Cyg_Scheduler::unlock();
+        return E_NOEXS;
+    }
     cyg_uint32 state = p->get_state();
     if ( state & Cyg_Thread::EXITED )
         // just disconnect the pointer from its object
@@ -419,6 +429,13 @@ ter_tsk ( ID tskid )
 #endif
     }
     Cyg_Scheduler::unlock();
+#ifdef CYGIMP_THREAD_PRIORITY
+    if ( (E_OK == ret) && (0 != cyg_uitron_dis_dsp_old_priority) ) {
+        // then dispatching is disabled, so our prio is 0 too
+        Cyg_Thread::yield(); // so let the dying thread run;
+        Cyg_Thread::yield(); // no cost here of making sure.
+    }        
+#endif
     return ret;
 }
 
@@ -428,9 +445,18 @@ dis_dsp ( void )
 {
     CYG_UITRON_CHECK_TASK_CONTEXT();
     CYG_UITRON_CHECK_CPU_UNLOC();
-    // Prevent preemption
-    if ( 0 == Cyg_Scheduler::get_sched_lock() )
-        Cyg_Scheduler::lock();
+    Cyg_Scheduler::lock();
+    // Prevent preemption by going up to prio 0
+    if ( 0 == cyg_uitron_dis_dsp_old_priority ) {
+#ifdef CYGIMP_THREAD_PRIORITY
+        Cyg_Thread *p = Cyg_Thread::self();
+        cyg_uitron_dis_dsp_old_priority = p->get_priority();
+        p->set_priority( 0 );
+#else
+        cyg_uitron_dis_dsp_old_priority = 1;
+#endif
+    }
+    Cyg_Scheduler::unlock();
     return E_OK;
 }
 
@@ -440,9 +466,19 @@ ena_dsp ( void )
 {
     CYG_UITRON_CHECK_TASK_CONTEXT();
     CYG_UITRON_CHECK_CPU_UNLOC();
-    // Unlock the scheduler (if locked) and maybe switch threads
-    if ( 0 < Cyg_Scheduler::get_sched_lock() )
-        Cyg_Scheduler::unlock();
+    Cyg_Scheduler::lock();
+    // Enable dispatching (if disabled) and maybe switch threads
+    if ( 0 != cyg_uitron_dis_dsp_old_priority ) {
+        // We had prevented preemption by going up to prio 0
+#ifdef CYGIMP_THREAD_PRIORITY
+        Cyg_Thread *p = Cyg_Thread::self();
+        p->set_priority( cyg_uitron_dis_dsp_old_priority );
+        p->to_queue_head(); // to ensure we continue to run
+                            // if nobody higher pri
+#endif
+        cyg_uitron_dis_dsp_old_priority = 0;
+    }
+    Cyg_Scheduler::unlock();
     CYG_UITRON_CHECK_DISPATCH_ENABLED(); // NB: afterwards!
     return E_OK;
 }
@@ -460,6 +496,8 @@ chg_pri ( ID tskid, PRI tskpri )
     }
     else
         CYG_UITRON_CHECK_AND_GETP_TASKS( tskid, p );
+
+    CYG_UIT_PARAMCHECK( 0 < tskpri, E_PAR );
 #ifdef CYGIMP_THREAD_PRIORITY
 #if CYG_THREAD_MAX_PRIORITY < CYG_THREAD_MIN_PRIORITY
     CYG_UIT_PARAMCHECK( CYG_THREAD_MAX_PRIORITY <= tskpri &&
@@ -468,6 +506,15 @@ chg_pri ( ID tskid, PRI tskpri )
     CYG_UIT_PARAMCHECK( CYG_THREAD_MAX_PRIORITY >= tskpri &&
                         tskpri >= CYG_THREAD_MIN_PRIORITY, E_PAR );
 #endif
+    // Handle changing our own prio specially, if dispatch disabled:
+    if ( 0 != cyg_uitron_dis_dsp_old_priority ) {
+        // our actual prio is 0 now and must remain so:
+        if ( Cyg_Thread::self() == p ) {  // by whichever route p was set
+            // set the priority we will return to when dispatch is enabled:
+            cyg_uitron_dis_dsp_old_priority = (cyg_uint32)tskpri;
+            return E_OK;
+        }
+    }
     Cyg_Scheduler::lock();
     if ( (p->get_state() & (Cyg_Thread::EXITED | Cyg_Thread::CREATING)) ||
          (Cyg_Thread::EXIT == p->get_wake_reason()) )
@@ -496,9 +543,7 @@ rot_rdq ( PRI tskpri )
     CYG_UIT_PARAMCHECK( CYG_THREAD_MAX_PRIORITY >= tskpri &&
                         tskpri >= CYG_THREAD_MIN_PRIORITY, E_PAR );
 #endif
-#ifdef CYGSEM_KERNEL_SCHED_MLQUEUE
     Cyg_Thread::rotate_queue( tskpri );
-#endif
 #endif // CYGIMP_THREAD_PRIORITY got priorities at all?
     return E_OK;
 }
@@ -530,9 +575,13 @@ ER
 get_tid ( ID *p_tskid )
 {
     Cyg_Thread *self = Cyg_Thread::self();
-    CYG_UITRON_CHECK_TASK_CONTEXT_SELF( self );
     CYG_UIT_PARAMCHECK_PTR( p_tskid );
-    *p_tskid = (self - (&cyg_uitron_TASKS[0])) + 1;
+    if ( (&cyg_uitron_TASKS[0] <= (self)) &&
+        ((self) < &cyg_uitron_TASKS[CYGNUM_UITRON_TASKS]) )
+        // then I am a uITRON task
+        *p_tskid = (self - (&cyg_uitron_TASKS[0])) + 1;
+    else
+        *p_tskid = 0; // Otherwise, non-task portion
     return E_OK;
 }
 
@@ -574,6 +623,11 @@ ref_tsk ( T_RTSK *pk_rtsk, ID tskid )
 #ifdef CYGIMP_THREAD_PRIORITY
     if ( TTS_DMT == pk_rtsk->tskstat )
         pk_rtsk->tskpri = CYG_UITRON_TASK_INITIAL_PRIORITY( tskid );
+    else if ( (TTS_RUN == pk_rtsk->tskstat) && 
+              (0 != cyg_uitron_dis_dsp_old_priority) )
+        // then we are it and dispatching is disabled, so
+        // report our "real" priority - it is 0 in the kernel at the moment
+        pk_rtsk->tskpri = cyg_uitron_dis_dsp_old_priority;
     else
         pk_rtsk->tskpri = p->get_priority();
 #else
@@ -756,7 +810,7 @@ del_sem ( ID semid )
     // deal with the race condition here
     if ( p != CYG_UITRON_PTRS( SEMAS )[ semid - 1 ] ) {
         Cyg_Scheduler::unlock();
-        return E_OBJ;
+        return E_NOEXS;
     }
     CYG_UITRON_PTRS( SEMAS )[ semid - 1 ] = NULL;
     p->~Cyg_Counting_Semaphore2();
@@ -877,7 +931,7 @@ del_flg ( ID flgid )
     // deal with the race condition here
     if ( p != CYG_UITRON_PTRS( FLAGS )[ flgid - 1 ] ) {
         Cyg_Scheduler::unlock();
-        return E_OBJ;
+        return E_NOEXS;
     }
     CYG_UITRON_PTRS( FLAGS )[ flgid - 1 ] = NULL;
     p->~Cyg_Flag();
@@ -1034,7 +1088,7 @@ del_mbx ( ID mbxid )
     // deal with the race condition here
     if ( p != CYG_UITRON_PTRS( MBOXES )[ mbxid - 1 ] ) {
         Cyg_Scheduler::unlock();
-        return E_OBJ;
+        return E_NOEXS;
     }
     CYG_UITRON_PTRS( MBOXES )[ mbxid - 1 ] = NULL;
     p->~Cyg_Mbox();
@@ -1054,29 +1108,29 @@ del_mbx ( ID mbxid )
 
 #ifdef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
 // represent a NULL as NADR internally
-#define CYG_UIT_TMSG_FIXUP_IN( _p_ ) 	CYG_MACRO_START			\
-    if ( NULL == (_p_) )						\
-        (_p_) = (T_MSG *)NADR;						\
+#define CYG_UIT_TMSG_FIXUP_IN( _p_ )    CYG_MACRO_START                 \
+    if ( NULL == (_p_) )                                                \
+        (_p_) = (T_MSG *)NADR;                                          \
 CYG_MACRO_END
 
 // we get a NADR back sometimes, meaning NULL
-#define CYG_UIT_TMSG_FIXUP_OUT( _p_ )	CYG_MACRO_START			\
-    if ( NADR == (_p_) )						\
-        (_p_) = (T_MSG *)NULL;						\
+#define CYG_UIT_TMSG_FIXUP_OUT( _p_ )   CYG_MACRO_START                 \
+    if ( NADR == (_p_) )                                                \
+        (_p_) = (T_MSG *)NULL;                                          \
 CYG_MACRO_END
 
 #else
 // NULL is checked for and makes an error
-#define CYG_UIT_TMSG_FIXUP_IN( _p_ ) 	CYG_EMPTY_STATEMENT
-#define CYG_UIT_TMSG_FIXUP_OUT( _p_ )	CYG_EMPTY_STATEMENT
+#define CYG_UIT_TMSG_FIXUP_IN( _p_ )    CYG_EMPTY_STATEMENT
+#define CYG_UIT_TMSG_FIXUP_OUT( _p_ )   CYG_EMPTY_STATEMENT
 #endif
 
 // and sometimes either in status enquiries
-#define CYG_UIT_TMSG_FIXUP_ALL( _p_ )	CYG_MACRO_START			\
-    if ( NULL == (_p_) )						\
-        (_p_) = (T_MSG *)NADR;						\
-    else if ( NADR == (_p_) )						\
-        (_p_) = (T_MSG *)NULL;						\
+#define CYG_UIT_TMSG_FIXUP_ALL( _p_ )   CYG_MACRO_START                 \
+    if ( NULL == (_p_) )                                                \
+        (_p_) = (T_MSG *)NADR;                                          \
+    else if ( NADR == (_p_) )                                           \
+        (_p_) = (T_MSG *)NULL;                                          \
 CYG_MACRO_END
 
 CYG_UIT_FUNC_INLINE
@@ -1178,40 +1232,40 @@ ref_mbx ( T_RMBX *pk_rmbx, ID mbxid )
 // - Extended Synchronization and Communication Functions
         
 #if 0 // NOT SUPPORTED
-ER	cre_mbf ( ID mbfid, T_CMBF *pk_cmbf );
-ER	del_mbf ( ID mbfid );
-ER	snd_mbf ( ID mbfid, VP msg, INT msgsz );
-ER	psnd_mbf ( ID mbfid, VP msg, INT msgsz );
-ER	tsnd_mbf ( ID mbfid, VP msg, INT msgsz, TMO tmout );
-ER	rcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
-ER	prcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
-ER	trcv_mbf ( VP msg, INT *p_msgsz, ID mbfid, TMO tmout );
-ER	ref_mbf ( T_RMBF *pk_rmbf, ID mbfid );
-ER	cre_por ( ID porid, T_CPOR *pk_cpor );
-ER	del_por ( ID porid );
-ER	cal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
+ER      cre_mbf ( ID mbfid, T_CMBF *pk_cmbf );
+ER      del_mbf ( ID mbfid );
+ER      snd_mbf ( ID mbfid, VP msg, INT msgsz );
+ER      psnd_mbf ( ID mbfid, VP msg, INT msgsz );
+ER      tsnd_mbf ( ID mbfid, VP msg, INT msgsz, TMO tmout );
+ER      rcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
+ER      prcv_mbf ( VP msg, INT *p_msgsz, ID mbfid );
+ER      trcv_mbf ( VP msg, INT *p_msgsz, ID mbfid, TMO tmout );
+ER      ref_mbf ( T_RMBF *pk_rmbf, ID mbfid );
+ER      cre_por ( ID porid, T_CPOR *pk_cpor );
+ER      del_por ( ID porid );
+ER      cal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
               cmsgsz );
-ER	pcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
+ER      pcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
               cmsgsz );
-ER	tcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
+ER      tcal_por ( VP msg, INT *p_rmsgsz, ID porid, UINT calptn, INT
               cmsgsz, TMO tmout );
-ER	acp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
+ER      acp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
               acpptn );
-ER	pacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
+ER      pacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
               acpptn );
-ER	tacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
+ER      tacp_por ( RNO *p_rdvno, VP msg, INT *p_cmsgsz, ID porid, UINT
               acpptn, TMO tmout );
-ER	fwd_por ( ID porid, UINT calptn, RNO rdvno, VP msg, INT cmsgsz
+ER      fwd_por ( ID porid, UINT calptn, RNO rdvno, VP msg, INT cmsgsz
               );
-ER	rpl_rdv ( RNO rdvno, VP msg, INT rmsgsz );
-ER	ref_por ( T_RPOR *pk_rpor, ID porid );
+ER      rpl_rdv ( RNO rdvno, VP msg, INT rmsgsz );
+ER      ref_por ( T_RPOR *pk_rpor, ID porid );
 #endif
         
 // - Interrupt Management Functions
         
 #if 0 // NOT SUPPORTED
-ER	def_int ( UINT dintno, T_DINT *pk_dint );
-void	ret_wup ( ID tskid );
+ER      def_int ( UINT dintno, T_DINT *pk_dint );
+void    ret_wup ( ID tskid );
 #endif
 
 CYG_UIT_FUNC_INLINE
@@ -1219,9 +1273,19 @@ ER
 loc_cpu ( void )
 {
     CYG_UITRON_CHECK_TASK_CONTEXT();
+    Cyg_Scheduler::lock();
+    // Prevent preemption by going up to prio 0
+    if ( 0 == cyg_uitron_dis_dsp_old_priority ) {
+#ifdef CYGIMP_THREAD_PRIORITY
+        Cyg_Thread *p = Cyg_Thread::self();
+        cyg_uitron_dis_dsp_old_priority = p->get_priority();
+        p->set_priority( 0 );
+#else
+        cyg_uitron_dis_dsp_old_priority = 1;
+#endif
+    }
     Cyg_Interrupt::disable_interrupts();
-    if ( 0 == Cyg_Scheduler::get_sched_lock() )
-        Cyg_Scheduler::lock();
+    Cyg_Scheduler::unlock();
     return E_OK;
 }
 
@@ -1230,17 +1294,27 @@ ER
 unl_cpu ( void )
 {
     CYG_UITRON_CHECK_TASK_CONTEXT();
+    Cyg_Scheduler::lock();
+    // Enable dispatching (if disabled) and maybe switch threads
+    if ( 0 != cyg_uitron_dis_dsp_old_priority ) {
+        // We had prevented preemption by going up to prio 0
+#ifdef CYGIMP_THREAD_PRIORITY
+        Cyg_Thread *p = Cyg_Thread::self();
+        p->set_priority( cyg_uitron_dis_dsp_old_priority );
+#endif
+        cyg_uitron_dis_dsp_old_priority = 0;
+    }
     Cyg_Interrupt::enable_interrupts();
-    if ( 0 < Cyg_Scheduler::get_sched_lock() )
-        Cyg_Scheduler::unlock();
+    Cyg_Scheduler::unlock();
+    CYG_UITRON_CHECK_DISPATCH_ENABLED(); // NB: afterwards!
     return E_OK;
 }
 
 #if 0 // NOT SUPPORTED
-ER	dis_int ( UINT eintno );
-ER	ena_int ( UINT eintno );
-ER	chg_iXX ( UINT iXXXX );
-ER	ref_iXX ( UINT *p_iXXXX );
+ER      dis_int ( UINT eintno );
+ER      ena_int ( UINT eintno );
+ER      chg_iXX ( UINT iXXXX );
+ER      ref_iXX ( UINT *p_iXXXX );
 #endif
         
 // - Memorypool Management Functions
@@ -1286,7 +1360,7 @@ del_mpl ( ID mplid )
     // deal with the race condition here
     if ( p != CYG_UITRON_PTRS( MEMPOOLVAR )[ mplid - 1 ] ) {
         Cyg_Scheduler::unlock();
-        return E_OBJ;
+        return E_NOEXS;
     }
     CYG_UITRON_PTRS( MEMPOOLVAR )[ mplid - 1 ] = NULL;
     p->~Cyg_Mempool_Variable();
@@ -1436,7 +1510,7 @@ del_mpf ( ID mpfid )
     // deal with the race condition here
     if ( p != CYG_UITRON_PTRS( MEMPOOLFIXED )[ mpfid - 1 ] ) {
         Cyg_Scheduler::unlock();
-        return E_OBJ;
+        return E_NOEXS;
     }
     CYG_UITRON_PTRS( MEMPOOLFIXED )[ mpfid - 1 ] = NULL;
     p->~Cyg_Mempool_Fixed();
@@ -1711,16 +1785,16 @@ get_ver ( T_VER *pk_ver )
 {
     CYG_UIT_PARAMCHECK_PTR( pk_ver );
 
-    pk_ver->maker	= CYGNUM_UITRON_VER_MAKER;
-    pk_ver->id		= CYGNUM_UITRON_VER_ID;
-    pk_ver->spver	= CYGNUM_UITRON_VER_SPVER;
-    pk_ver->prver	= CYGNUM_UITRON_VER_PRVER;
-    pk_ver->prno[0]	= CYGNUM_UITRON_VER_PRNO_0;
-    pk_ver->prno[1]	= CYGNUM_UITRON_VER_PRNO_1;
-    pk_ver->prno[2]	= CYGNUM_UITRON_VER_PRNO_2;
-    pk_ver->prno[3]	= CYGNUM_UITRON_VER_PRNO_3;
-    pk_ver->cpu		= CYGNUM_UITRON_VER_CPU;
-    pk_ver->var		= CYGNUM_UITRON_VER_VAR;
+    pk_ver->maker       = CYGNUM_UITRON_VER_MAKER;
+    pk_ver->id          = CYGNUM_UITRON_VER_ID;
+    pk_ver->spver       = CYGNUM_UITRON_VER_SPVER;
+    pk_ver->prver       = CYGNUM_UITRON_VER_PRVER;
+    pk_ver->prno[0]     = CYGNUM_UITRON_VER_PRNO_0;
+    pk_ver->prno[1]     = CYGNUM_UITRON_VER_PRNO_1;
+    pk_ver->prno[2]     = CYGNUM_UITRON_VER_PRNO_2;
+    pk_ver->prno[3]     = CYGNUM_UITRON_VER_PRNO_3;
+    pk_ver->cpu         = CYGNUM_UITRON_VER_CPU;
+    pk_ver->var         = CYGNUM_UITRON_VER_VAR;
    
     return E_OK;
 }
@@ -1735,7 +1809,7 @@ ref_sys ( T_RSYS *pk_rsys )
         pk_rsys->sysstat = TSS_LOC;
     else
         pk_rsys->sysstat =
-            (Cyg_Scheduler::get_sched_lock() == 0) ? TSS_TSK : TSS_DDSP;
+            (0 == cyg_uitron_dis_dsp_old_priority) ? TSS_TSK : TSS_DDSP;
     return E_OK;
 }
 
@@ -1749,19 +1823,19 @@ ref_cfg ( T_RCFG *pk_rcfg )
 }
 
 #if 0 // NOT SUPPORTED
-ER	def_svc ( FN s_fncd, T_DSVC *pk_dsvc );
-ER	def_exc ( UINT exckind, T_DEXC *pk_dexc );
+ER      def_svc ( FN s_fncd, T_DSVC *pk_dsvc );
+ER      def_exc ( UINT exckind, T_DEXC *pk_dexc );
 #endif
         
 // - Network Support Functions
         
 #if 0 // NOT SUPPORTED
-ER	nrea_dat ( INT *p_reasz, VP dstadr, NODE srcnode, VP srcadr,
+ER      nrea_dat ( INT *p_reasz, VP dstadr, NODE srcnode, VP srcadr,
                INT datsz );
-ER	nwri_dat ( INT *p_wrisz, NODE dstnode, VP dstadr, VP srcadr,
+ER      nwri_dat ( INT *p_wrisz, NODE dstnode, VP dstadr, VP srcadr,
                INT datsz );
-ER	nget_nod ( NODE *p_node );
-ER	nget_ver ( T_VER *pk_ver, NODE node );
+ER      nget_nod ( NODE *p_node );
+ER      nget_ver ( T_VER *pk_ver, NODE node );
 #endif
 
 // ========================================================================

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -95,12 +95,12 @@ static void check_priorities_inherited()
 
 static void entry0( CYG_ADDRWORD data )
 {
-    s0.wait();			// wait until t2 has gained m0.lock
+    s0.wait();                  // wait until t2 has gained m0.lock
     check_priorities_normal();
     m0.lock(); {
         check_priorities_normal();
-	CHECK( 2 == m0d );
-	m0d = 0;
+        CHECK( 2 == m0d );
+        m0d = 0;
     } m0.unlock();
     check_priorities_normal();
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
@@ -118,7 +118,7 @@ static void entry1( CYG_ADDRWORD data )
     // mechanism when scheduler does not guarantee to schedule threads
     // in strict priority order.
     for ( volatile cyg_ucount32 i=0; i < 100000; i++ )
-	; // math is hard
+        ; // math is hard
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE
     // thread0 should have stopped by this point
@@ -134,20 +134,20 @@ static void entry1( CYG_ADDRWORD data )
 void entry2( CYG_ADDRWORD data )
 {
     m0.lock(); {
-	CHECK( 9 == m0d );
+        CHECK( 9 == m0d );
         check_priorities_normal();
-	s0.post();		// Now I have lock on m0, wake t0 then t1 
+        s0.post();              // Now I have lock on m0, wake t0 then t1 
         check_priorities_inherited();
-	s1.post();
+        s1.post();
         check_priorities_inherited();
-	m0d = 2;
+        m0d = 2;
     } m0.unlock();
     check_priorities_normal();
     m0.lock(); {
         check_priorities_normal();
-	CHECK( 0 == m0d );
-	m0d = 21;
-	s2.wait();		// never posted
+        CHECK( 0 == m0d );
+        m0d = 21;
+        s2.wait();              // never posted
     } m0.unlock();
 }
 

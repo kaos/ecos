@@ -2,9 +2,9 @@
 #define CYGONCE_PKGCONF_WATCHDOG_H
 // ====================================================================
 //
-//	pkgconf/watchdog.h
+//      pkgconf/watchdog.h
 //
-//	Watchdog configuration file
+//      Watchdog configuration file
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -24,17 +24,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-07-29	
-// Purpose:	To allow the user to edit watchdog config options.
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-07-29      
+// Purpose:     To allow the user to edit watchdog config options.
 // Description:
 //####DESCRIPTIONEND####
 //
@@ -47,7 +47,6 @@
 
    cdl_package CYGPKG_DEVICES_WATCHDOG {
        display  "Watchdog device"
-       parent   CYGPKG_DEVICES
        requires CYGVAR_KERNEL_COUNTERS_CLOCK
        description "
            The watchdog device allows applications to make use of a
@@ -61,6 +60,7 @@
            either the hardware or the software, and the application's
            action routine should perform an appropriate reset
            operation."
+       doc ref/ecos-ref/p-cygpkg-devices-watchdog.html
    }
 
    }}CFG_DATA */

@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -37,6 +37,8 @@ TESTS         := ctype/ctype                                          \
                                                                       \
                  setjmp/setjmp                                        \
                                                                       \
+                 signal/signal1 signal/signal2                        \
+                                                                      \
                  stdio/sprintf1 stdio/sprintf2 stdio/sscanf           \
                  stdio/stdiooutput                                    \
                                                                       \
@@ -44,7 +46,8 @@ TESTS         := ctype/ctype                                          \
                  stdlib/bsearch stdlib/div stdlib/getenv              \
                  stdlib/labs stdlib/ldiv stdlib/qsort stdlib/malloc1  \
                  stdlib/malloc2 stdlib/malloc3 stdlib/rand1           \
-                 stdlib/rand2 stdlib/rand3 stdlib/realloc stdlib/srand\
+                 stdlib/rand2 stdlib/rand3 stdlib/rand4               \
+		 stdlib/realloc stdlib/srand                          \
                  stdlib/strtol stdlib/strtoul                         \
                                                                       \
                  string/memchr string/memcmp1 string/memcmp2          \
@@ -59,7 +62,10 @@ TESTS         := ctype/ctype                                          \
                  string/strstr string/strtok string/strxfrm1          \
                  string/strxfrm2                                      \
                                                                       \
-                 time/clock
+                 time/asctime time/clock time/ctime time/gmtime       \
+                 time/localtime time/mktime time/strftime time/time
 
+
+strftime.c-CFLAGS += -Wno-format
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst

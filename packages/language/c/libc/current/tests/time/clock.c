@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy
+// Contributors:  ctarpy, jlarmour
+// Date:          1999-03-05
 // Description:   Contains testcode for C library clock() function
 //
 //
@@ -51,10 +51,21 @@
 #include <cyg/infra/testcase.h>
 #include <sys/cstartup.h>          // C library initialisation
 
+#define RUN_TEST 1
+
+// This test is bound to fail on Linux -- we don't have exclusive access
+// to the CPU.
+#if defined(CYGPKG_HAL_I386_LINUX)
+#undef RUN_TEST
+#define RUN_TEST 0
+#endif
+
 
 // HOW TO START TESTS
 
-#if defined(CYGPKG_LIBC)
+#if RUN_TEST
+
+#include <cyg/hal/hal_cache.h>
 
 # define START_TEST( test ) test(0)
 
@@ -72,7 +83,7 @@
 #define MAX_TIMEOUT 1000000
 
 // Percentage error before we declare fail: range 0 - 100
-#define TOLERANCE 20
+#define TOLERANCE 40
 
 
 // FUNCTIONS
@@ -81,15 +92,11 @@
 externC void
 cyg_package_start( void )
 {
-#ifdef CYGPKG_LIBC
     cyg_iso_c_start();
-#else
-    (void)main(0, NULL);
-#endif
 } // cyg_package_start()
 
 
-#ifdef CYGPKG_LIBC
+#if RUN_TEST
 
 static int
 my_abs(int i)
@@ -103,20 +110,21 @@ test( CYG_ADDRWORD data )
 {
     unsigned long ctr, ctr2, err;
     clock_t clock_init;
-    clock_t clock_first, clock_second, clock_third;
+    clock_t clock_first=0, clock_second=0, clock_third=0;
+
+    // First disable the instruction cache - it may affect the timing loops
+    // below
+    HAL_ICACHE_DISABLE();
 
     // This waits for a clock tick, to ensure that we are at the
     // start of a clock period. Then sit in a tight loop to get
     // the clock period. Repeat this, and make sure that it the
     // two timed periods are acceptably close.
 
-    CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C library "
-                  "clock() function");
-
     err = 101;
     clock_init = clock();
     
-    if (clock_init == -1)  // unimplemented is just as valid
+    if (clock_init == (clock_t)-1)  // unimplemented is just as valid
     {
         CYG_TEST_PASS_FINISH( "clock() returns -1, meaning unimplemented");
     } // if
@@ -146,7 +154,7 @@ test( CYG_ADDRWORD data )
                 if ((clock_third=clock()) > clock_second)
                     break; // Hit the next clock pulse
             } // for
-            if (ctr < MAX_TIMEOUT)
+            if (ctr2 < MAX_TIMEOUT)
             {
                 err = (100 * my_abs(ctr-ctr2)) / ctr;
             } // if (ctr < MAX_TIMEOUT)
@@ -183,7 +191,7 @@ main(int argc, char *argv[])
 
     START_TEST( test );
 
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 
 } // main()
 

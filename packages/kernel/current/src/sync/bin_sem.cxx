@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sync/bin_sem.cxx
+//      sync/bin_sem.cxx
 //
-//	Binary semaphore implementation
+//      Binary semaphore implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-24
-// Purpose:	Cyg_Binary_Semaphore implementation
-// Description:	This file contains the implementations of the binary semaphore
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-24
+// Purpose:     Cyg_Binary_Semaphore implementation
+// Description: This file contains the implementations of the binary semaphore
 //              class.
 //
 //####DESCRIPTIONEND####

@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     jlarmour
+// Contributors:  jlarmour
 // Date:          1998/8/31
 // Description:   Contains testcode for C library realloc() function
 //
@@ -44,8 +44,12 @@
 
 // INCLUDES
 
-#include <pkgconf/libc.h> // config header for C library so we can know size
-                          // of malloc pool
+#include <pkgconf/system.h> // Overall system configuration
+#include <pkgconf/libc.h>   // config header for C library so we can know
+                            // size of malloc pool
+#ifdef CYGPKG_KERNEL
+# include <pkgconf/kernel.h> // CYGSEM_KERNEL_MEMORY_COALESCE
+#endif
 #include <stdlib.h>
 #include <cyg/infra/testcase.h>
 #include <sys/cstartup.h>          // C library initialisation
@@ -64,7 +68,8 @@ cyg_package_start( void )
 } // cyg_package_start()
 
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 
 static const char alphabet[]="abcdefghijklmnopqrstuvwxyz{-}[]#';:@~!$^&*()"
                              "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -109,12 +114,16 @@ fill_with_alphabet( char *buf, int size, int offset )
     return compare_with_alphabet( buf, size, offset); // be sure
 } // fill_with_alphabet()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) &&
+       //    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
+
 
 int
 main( int argc, char *argv[] )
 {
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
+
     char *str;
     int size = CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE/2;
 #endif
@@ -124,7 +133,8 @@ main( int argc, char *argv[] )
     CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C library "
                   "realloc() function");
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 
     str = (char *)realloc( NULL, size );
     CYG_TEST_PASS_FAIL( str != NULL, "realloc doing only allocation");
@@ -164,8 +174,10 @@ main( int argc, char *argv[] )
 
 
 #else
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+    CYG_TEST_NA("Testing is not applicable to this configuration");
+#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) &&
+       //    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
+
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "realloc() function");

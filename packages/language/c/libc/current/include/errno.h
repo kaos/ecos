@@ -4,7 +4,7 @@
 //
 //      errno.h
 //
-//      ANSI error code routines
+//      ISO C errno variable and constants
 //
 //========================================================================
 //####COPYRIGHTBEGIN####
@@ -24,19 +24,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       This file provides the errno variable (or more strictly
+//                expression) and the E* error codes required by ISO C
+//                and POSIX 1003.1
 // Description: 
-// Usage:       #include <errno.h>
+// Usage:         #include <errno.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -45,9 +47,6 @@
 // CONFIGURATION
 
 #include <pkgconf/libc.h>          // Configuration header
-
-// Include the C library?
-#ifdef CYGPKG_LIBC
 
 // INCLUDES
 
@@ -58,8 +57,8 @@
 
 #ifdef CYGSEM_LIBC_PER_THREAD_ERRNO
 
-externC Cyg_ErrNo *
-cyg_get_errno_p( void );
+externC Cyg_ErrNo * const
+cyg_libc_get_errno_p( void ) CYGBLD_ATTRIB_CONST;
 
 #endif // ifdef CYGSEM_LIBC_PER_THREAD_ERRNO
 
@@ -67,7 +66,7 @@ cyg_get_errno_p( void );
 
 #ifdef CYGSEM_LIBC_PER_THREAD_ERRNO
 
-# define errno (*cyg_get_errno_p())  // Global error status
+# define errno (*cyg_libc_get_errno_p())  // Global error status
 
 #else
 
@@ -75,8 +74,6 @@ externC Cyg_ErrNo errno;            // Global error status
 
 #endif // ifdef CYGSEM_LIBC_PER_THREAD_ERRNO
 
-
-#endif // ifdef CYGPKG_LIBC     
 
 #endif // CYGONCE_LIBC_ERRNO_H multiple inclusion protection
 

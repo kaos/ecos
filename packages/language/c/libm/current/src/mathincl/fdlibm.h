@@ -24,20 +24,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-02-09
 // Purpose:     
-// Description: Internal implementation-specific header for math library
-//              based on fdlibm
-// Usage:       From within this package, #include "mathincl/fdlibm.h"
+// Description:   Internal implementation-specific header for math library
+//                based on fdlibm
+// Usage:         From within this package, #include "mathincl/fdlibm.h"
 //
 //####DESCRIPTIONEND####
 //
@@ -71,19 +71,10 @@
 
 // MACRO DEFINITIONS
 
-
-#if (CYG_BYTEORDER == CYG_LSBFIRST) // little endian
-#define CYG_LIBM_HI(x)  (*(1+(cyg_int32*)&(x)))
-#define CYG_LIBM_LO(x)  (*(cyg_int32*)&(x))
-#define CYG_LIBM_HIp(x) (*(1+(cyg_int32*)(x)))
-#define CYG_LIBM_LOp(x) (*(cyg_int32*)(x))
-#else                               // big endian
-#define CYG_LIBM_HI(x)  (*(cyg_int32*)&(x))
-#define CYG_LIBM_LO(x)  (*(1+(cyg_int32*)&(x)))
-#define CYG_LIBM_HIp(x) (*(cyg_int32*)(x))
-#define CYG_LIBM_LOp(x) (*(1+(cyg_int32*)(x)))
-#endif
-
+#define CYG_LIBM_HI(__x)  (*cyg_libm_hi(&__x))
+#define CYG_LIBM_LO(__x)  (*cyg_libm_lo(&__x))
+#define CYG_LIBM_HIp(__x) (*cyg_libm_hi(__x))
+#define CYG_LIBM_LOp(__x) (*cyg_libm_lo(__x))
 
 // REPLACEMENTS FOR STUFF FROM MATH.H DUE TO CONFIG OPTION
 
@@ -110,6 +101,24 @@ matherr( struct exception * );    // User-overridable error handling - see
                                   // <pkgconf/libm.h> for a discussion
 #endif // ifdef CYGSYM_LIBM_NO_XOPEN_SVID_NAMESPACE_POLLUTION
 
+
+// INLINE FUNCTIONS
+
+static __inline__ cyg_uint32 *
+cyg_libm_hi(double *__x)
+{
+    Cyg_libm_ieee_double_shape_type *__y;
+    __y = (Cyg_libm_ieee_double_shape_type *)__x;
+    return &__y->parts.msw;
+}
+
+static __inline__ cyg_uint32 *
+cyg_libm_lo(double *__x)
+{
+    Cyg_libm_ieee_double_shape_type *__y;
+    __y = (Cyg_libm_ieee_double_shape_type *)__x;
+    return &__y->parts.lsw;
+}
 
 
 // FUNCTION PROTOTYPES

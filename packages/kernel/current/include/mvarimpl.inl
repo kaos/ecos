@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mvarimpl.inl
+//      mvarimpl.inl
 //
-//	Memory pool with variable block class declarations
+//      Memory pool with variable block class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-23
-// Purpose:	Define Mvarimpl class interface
-// Description:	Inline class for constructing a variable block allocator
-// Usage:	#include <cyg/kernel/mvarimpl.hxx>
-//	       	#include <cyg/kernel/mvarimpl.inl>	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-23
+// Purpose:     Define Mvarimpl class interface
+// Description: Inline class for constructing a variable block allocator
+// Usage:       #include <cyg/kernel/mvarimpl.hxx>
+//              #include <cyg/kernel/mvarimpl.inl>      
 //
 //####DESCRIPTIONEND####
 //
@@ -194,8 +194,8 @@ Cyg_Mempool_Variable_Implementation::free( cyg_uint8 *p, cyg_int32 size )
     struct memdq *idq;
     
     for (idq = hdq->next; idq != hdq; idq = idq->next) {
-        if (idq < dq)
-	    break;
+        if (idq->next > dq)
+            break;
     }
     dq->size = size;
     if (idq != hdq) {
@@ -205,21 +205,21 @@ Cyg_Mempool_Variable_Implementation::free( cyg_uint8 *p, cyg_int32 size )
         dq->next->prev = dq;
     } else {
         dq->next = idq;
-	dq->prev = idq->prev;
-	idq->prev = dq;
-	dq->prev->next = dq;
+        dq->prev = idq->prev;
+        idq->prev = dq;
+        dq->prev->next = dq;
     }
     // Now do coalescing
     if ((char *)dq + dq->size == (char *)dq->next) {
-    	dq->size += dq->next->size;
+        dq->size += dq->next->size;
         dq->next = dq->next->next;
-	dq->next->prev = dq;
+        dq->next->prev = dq;
     }
     if ((char *)dq->prev + dq->prev->size == (char *)dq) {
         dq->prev->size += dq->size;
-	dq->prev->next = dq->next;
-	dq->next->prev = dq->prev;
-	dq = dq->prev;
+        dq->prev->next = dq->next;
+        dq->next->prev = dq->prev;
+        dq = dq->prev;
     }   
 #else
     dq->prev = hdq;

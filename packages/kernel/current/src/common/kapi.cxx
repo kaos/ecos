@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	common/kapi.cxx
+//      common/kapi.cxx
 //
-//	C API Implementation
+//      C API Implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg, dsm
-// Contributors:	nickg
-// Date:	1998-03-02
-// Purpose:	C API Implementation
-// Description:	C++ implementation of the C API
+// Author(s):   nickg, dsm
+// Contributors:        nickg
+// Date:        1998-03-02
+// Purpose:     C API Implementation
+// Description: C++ implementation of the C API
 //              
 //
 //####DESCRIPTIONEND####
@@ -134,9 +134,9 @@ externC void cyg_scheduler_unlock(void)
 /* Thread operations */
 
 externC void cyg_thread_create(
-    cyg_addrword_t        sched_info,             /* scheduling info (eg pri)  */
+    cyg_addrword_t      sched_info,             /* scheduling info (eg pri)  */
     cyg_thread_entry_t  *entry,                 /* entry point function      */
-    cyg_addrword_t        entry_data,             /* entry data                */
+    cyg_addrword_t      entry_data,             /* entry data                */
     char                *name,                  /* optional thread name      */
     void                *stack_base,            /* stack base, NULL = alloc  */
     cyg_ucount32        stack_size,             /* stack size, 0 = default   */
@@ -151,8 +151,8 @@ externC void cyg_thread_create(
         (cyg_thread_entry *)entry,
         (CYG_ADDRWORD) entry_data,
         name,
-	(CYG_ADDRWORD) stack_base,
-	stack_size
+        (CYG_ADDRWORD) stack_base,
+        stack_size
         );
     t=t;
     
@@ -163,6 +163,14 @@ externC void cyg_thread_create(
 externC void cyg_thread_exit()
 {
     Cyg_Thread::exit();
+}
+
+externC void cyg_thread_delete( cyg_handle_t thread )
+{
+    Cyg_Thread *th = (Cyg_Thread *)thread;
+    if( th->get_state() != Cyg_Thread::EXITED )
+        th->kill();
+    th->~Cyg_Thread();    
 }
 
 externC void cyg_thread_suspend(cyg_handle_t thread)
@@ -186,6 +194,11 @@ externC void cyg_thread_resume(cyg_handle_t thread)
 externC void cyg_thread_kill( cyg_handle_t thread)
 {
     ((Cyg_Thread *)thread)->kill();    
+}
+
+externC void cyg_thread_release( cyg_handle_t thread)
+{
+    ((Cyg_Thread *)thread)->release();    
 }
 
 externC void cyg_thread_yield()
@@ -226,6 +239,37 @@ externC void cyg_thread_delay(cyg_tick_count_t delay)
     Cyg_Thread::self()->delay(delay);
 }
 
+/*---------------------------------------------------------------------------*/
+/* Per-thread data                                                           */
+
+#ifdef CYGVAR_KERNEL_THREADS_DATA
+
+externC cyg_ucount32 cyg_thread_new_data_index()
+{
+        return Cyg_Thread::new_data_index();
+}
+
+externC void cyg_thread_free_data_index(cyg_ucount32 index)
+{
+        Cyg_Thread::free_data_index(index);
+}
+
+externC CYG_ADDRWORD cyg_thread_get_data(cyg_ucount32 index)
+{
+        return Cyg_Thread::get_data(index);
+}
+
+externC CYG_ADDRWORD *cyg_thread_get_data_ptr(cyg_ucount32 index)
+{
+        return Cyg_Thread::get_data_ptr(index);
+}
+
+externC void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD 
+data)
+{
+        Cyg_Thread::self()->set_data(index, data);
+}
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Exception handling.                                                       */
@@ -234,9 +278,9 @@ externC void cyg_thread_delay(cyg_tick_count_t delay)
 externC void cyg_exception_set_handler(
     cyg_code_t                  exception_number,
     cyg_exception_handler_t     *new_handler,
-    cyg_addrword_t                new_data,
+    cyg_addrword_t              new_data,
     cyg_exception_handler_t     **old_handler,
-    cyg_addrword_t                *old_data
+    cyg_addrword_t              *old_data
 )
 {
     Cyg_Thread::register_exception(
@@ -260,7 +304,7 @@ externC void cyg_exception_clear_handler(
 externC void cyg_exception_call_handler(
     cyg_handle_t                thread,
     cyg_code_t                  exception_number,
-    cyg_code_t                  error_code
+    cyg_addrword_t              error_code
 )
 {
     Cyg_Thread *t = (Cyg_Thread *)thread;
@@ -275,7 +319,7 @@ externC void cyg_exception_call_handler(
 externC void cyg_interrupt_create(
     cyg_vector_t        vector,         /* Vector to attach to               */
     cyg_priority_t      priority,       /* Queue priority                    */
-    cyg_addrword_t        data,           /* Data pointer                      */
+    cyg_addrword_t      data,           /* Data pointer                      */
     cyg_ISR_t           *isr,           /* Interrupt Service Routine         */
     cyg_DSR_t           *dsr,           /* Deferred Service Routine          */
     cyg_handle_t        *handle,        /* returned handle                   */
@@ -489,7 +533,7 @@ externC cyg_tick_count_t cyg_current_time(void)
 externC void cyg_alarm_create(
     cyg_handle_t        counter,        /* Attached to this counter          */
     cyg_alarm_t         *alarmfn,       /* Call-back function                */
-    cyg_addrword_t        data,           /* Call-back data                    */
+    cyg_addrword_t      data,           /* Call-back data                    */
     cyg_handle_t        *handle,        /* Returned alarm object             */
     cyg_alarm           *alarm          /* put alarm here                    */
 )
@@ -498,8 +542,8 @@ externC void cyg_alarm_create(
 
     Cyg_Alarm *t = new((void *)alarm) Cyg_Alarm (
         (Cyg_Counter *)counter,
-	(cyg_alarm_fn *)alarmfn,
-	(CYG_ADDRWORD)data
+        (cyg_alarm_fn *)alarmfn,
+        (CYG_ADDRWORD)data
     );
     t=t;
 
@@ -520,8 +564,8 @@ externC void cyg_alarm_initialize(
 )
 {
     ((Cyg_Alarm *)alarm)->initialize(
-	(cyg_tick_count)trigger,
-	(cyg_tick_count)interval);
+        (cyg_tick_count)trigger,
+        (cyg_tick_count)interval);
 }
 
 externC void cyg_alarm_enable( cyg_handle_t alarm )
@@ -635,7 +679,7 @@ externC void cyg_mempool_var_create(
 
     Cyg_Mempool_Variable *t = new((void *)var) Cyg_Mempool_Variable (
         (cyg_uint8 *)base,
-	size
+        size
     );
     t=t;
 
@@ -728,7 +772,7 @@ externC void cyg_mempool_fix_create(
 
     Cyg_Mempool_Fixed *t = new((void *)fix) Cyg_Mempool_Fixed (
         (cyg_uint8 *)base,
-	size,
+        size,
         blocksize
     );
     t=t;
@@ -807,7 +851,7 @@ externC void cyg_mempool_fix_get_info(
 
 externC void      cyg_semaphore_init(
     cyg_sem_t           *sem,            /* Semaphore to init                */
-    cyg_ucount32        val              /* Initial semaphore value          */
+    cyg_count32         val              /* Initial semaphore value          */
 )
 {
     CYG_ASSERT_SIZES( cyg_sem_t, Cyg_Counting_Semaphore );
@@ -847,7 +891,7 @@ externC void cyg_semaphore_post( cyg_sem_t *sem )
     ((Cyg_Counting_Semaphore *)sem)->post();
 }
 
-externC void cyg_semaphore_peek( cyg_sem_t *sem, cyg_ucount32 *val )
+externC void cyg_semaphore_peek( cyg_sem_t *sem, cyg_count32 *val )
 {
     CYG_CHECK_DATA_PTR( val, "Bad val parameter" );
 
@@ -950,9 +994,9 @@ externC void cyg_mutex_destroy( cyg_mutex_t *mutex )
     // no need to do anything here
 }
 
-externC void cyg_mutex_lock( cyg_mutex_t *mutex )
+externC cyg_bool_t cyg_mutex_lock( cyg_mutex_t *mutex )
 {
-    ((Cyg_Mutex *)mutex)->lock();
+    return ((Cyg_Mutex *)mutex)->lock();
 }
 
 externC cyg_bool_t cyg_mutex_trylock( cyg_mutex_t *mutex )
@@ -963,6 +1007,11 @@ externC cyg_bool_t cyg_mutex_trylock( cyg_mutex_t *mutex )
 externC void cyg_mutex_unlock( cyg_mutex_t *mutex )
 {
     ((Cyg_Mutex *)mutex)->unlock();
+}
+
+externC void cyg_mutex_release( cyg_mutex_t *mutex )
+{
+    ((Cyg_Mutex *)mutex)->release();
 }
 
 /*---------------------------------------------------------------------------*/

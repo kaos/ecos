@@ -2,9 +2,9 @@
 #define CYGONCE_PKGCONF_HAL_TX39_JMR3904_H
 // ====================================================================
 //
-//	pkgconf/hal_tx39_jmr3904.h
+//      pkgconf/hal_tx39_jmr3904.h
 //
-//	HAL configuration file
+//      HAL configuration file
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -24,17 +24,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	        bartv
-// Contributors:	bartv
-// Date:	        1998-09-02	
-// Purpose:	        To allow the user to edit HAL configuration options.
+// Author(s):           bartv
+// Contributors:        bartv
+// Date:                1998-09-02      
+// Purpose:             To allow the user to edit HAL configuration options.
 // Description:
 //
 //####DESCRIPTIONEND####
@@ -76,9 +76,31 @@
            eCos application be blown into EPROMs or equivalent
            technology."
    }
-   
+                
    }}CFG_DATA */
+
 #define CYGHWR_HAL_TX39_JMR3904_STARTUP         ram
+
+/* -------------------------------------------------------------------*/
+/* Manually edited configuration option, these should only be touched */
+/* by experts who understand the consequences.                        */
+
+/* DRAM Configuration */
+/* for 16MByte (4MBit (x4bit) x 8)           0x08024030               */
+/* for 4MByte (1MBit (x4bit) x 8)            0x08013020               */
+/* for 8MByte (1MBit (x4bit) x 8 x 2 banks)  0x08013020               */
+
+#define CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT  0x08024030  // 16MByte
+//#define CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT 0x08013020 // 4 or 8MByte
+
+/* Bus Timeout Detection */
+
+/* Note: If you enable this option the caches are disabled by default.
+ *  If you enable caches in your code, Spurious Bus Time Outs might
+ *  fire.
+ */
+
+// #define CYGHWR_HAL_TX39_JMR3904_ENABLE_TOE
 
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_TX39_JMR3904_H */

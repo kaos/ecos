@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     ctarpy, jlarmour
+// Contributors:    jlarmour
 // Date:          1998/6/3
 // Description:   Contains testcode for C library strcoll() function
 //

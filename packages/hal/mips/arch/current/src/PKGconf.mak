@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -34,9 +34,9 @@ include ../../../../../pkgconf/pkgconf.mak
 LIBRARY       := libtarget.a
 COMPILE       := hal_misc.c context.S mips-stub.c
 OTHER_OBJS    :=
-OTHER_TARGETS := vectors.stamp
-OTHER_DEPS    := $(PACKAGE)_vectors.d
-OTHER_CLEAN   := vectors.clean
+OTHER_TARGETS := vectors.stamp ldscript.stamp
+OTHER_DEPS    := $(PACKAGE)_vectors.d ldscript.d
+OTHER_CLEAN   := vectors.clean ldscript.clean
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 
@@ -51,4 +51,16 @@ vectors.clean:
 $(PACKAGE)_vectors.o: $(BUILD_TREE)/pkgconf/pkgconf.mak \
     $(BUILD_TREE)/pkgconf/makevars $(PACKAGE_RULES_FILE)
 
+.PHONY: ldscript.clean
 
+ldscript.stamp: tx39.ld
+	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
+	@echo > ldscript.d
+	@echo $@ ':' $< '\' >> ldscript.d
+	@tail -n +2 ldscript.tmp >> ldscript.d
+	@rm ldscript.tmp
+	$(TOUCH) $@
+
+ldscript.clean:
+	$(RM) -f $(PREFIX)/lib/target.ld
+	$(RM) -f ldscript.stamp

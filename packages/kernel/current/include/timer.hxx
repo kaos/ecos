@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	timer.hxx
+//      timer.hxx
 //
-//	Timer handler class declaration(s)
+//      Timer handler class declaration(s)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	dsm
-// Contributors:	dsm
-// Date:	1998-06-10
-// Purpose:	Define Timer class interfaces
-// Description:	This file defines the Timer class which is derived from
+// Author(s):   dsm
+// Contributors:        dsm
+// Date:        1998-06-10
+// Purpose:     Define Timer class interfaces
+// Description: This file defines the Timer class which is derived from
 //              the Alarm class to support uITRON type functionality
 // Usage:       #include <cyg/kernel/timer.hxx>
 //

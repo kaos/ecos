@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	flag.cxx
+//      flag.cxx
 //
-//	Flag class implementation
+//      Flag class implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-11
-// Purpose:	Flag implementation
-// Description:	This file contains the implementations of the flag class
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-11
+// Purpose:     Flag implementation
+// Description: This file contains the implementations of the flag class
 //
 //####DESCRIPTIONEND####
 //
@@ -91,7 +91,7 @@ Cyg_Flag::~Cyg_Flag()
 
 #ifdef CYGDBG_USE_ASSERTS
 cyg_bool 
-Cyg_Flag::check_this(cyg_assert_class_zeal zeal)
+Cyg_Flag::check_this(cyg_assert_class_zeal zeal) const
 {
     CYG_REPORT_FUNCTION();
         

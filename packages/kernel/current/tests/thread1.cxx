@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -53,18 +53,22 @@
 
 #include <cyg/infra/testcase.h>
 
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+
 #include <cyg/kernel/sched.inl>
 #include <cyg/kernel/thread.inl>
 
 #include "testaux.hxx"
 
+#ifdef CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#else
 #define STACKSIZE 2000
+#endif
 
 static char stack[2][STACKSIZE];
 
 static char thread[2][sizeof(Cyg_Thread)];
-
-inline void *operator new(size_t size, void *ptr) { return ptr; };
 
 static Cyg_Thread *pt0,*pt1;
 static cyg_uint16 uid0,uid1;
@@ -80,7 +84,7 @@ static void entry0( CYG_ADDRWORD data )
     pt1->resume();
 
     do {
-	pt0->delay(1);
+        pt0->delay(1);
     } while( Cyg_Thread::RUNNING == pt1->get_state() );
     
     CHECK( Cyg_Thread::SLEEPING == pt1->get_state() );
@@ -105,7 +109,7 @@ static void entry1( CYG_ADDRWORD data )
     pt1->sleep();
     pt1->suspend();
 
-    Cyg_Thread::exit();		// no guarantee this will be called
+    Cyg_Thread::exit();         // no guarantee this will be called
 }
 
 void thread1_main( void )
@@ -113,9 +117,15 @@ void thread1_main( void )
     CYG_TEST_INIT();
 
     pt0 = new((void *)&thread[0])
-            Cyg_Thread(entry0, 222, STACKSIZE, (CYG_ADDRESS)stack[0] );
+            Cyg_Thread(CYG_SCHED_DEFAULT_INFO,
+                       entry0, 222, 
+                       "thread 0",
+                       (CYG_ADDRESS)stack[0], STACKSIZE );
     pt1 = new((void *)&thread[1])
-            Cyg_Thread(entry1, 333, STACKSIZE, (CYG_ADDRESS)stack[1] );
+            Cyg_Thread(CYG_SCHED_DEFAULT_INFO,
+                       entry1, 333, 
+                       "thread 1",
+                       (CYG_ADDRESS)stack[1], STACKSIZE );
 
     CYG_ASSERTCLASS( pt0, "error" );
     CYG_ASSERTCLASS( pt1, "error" );
@@ -133,5 +143,16 @@ cyg_start( void )
 {
     thread1_main();
 }
+
+#else // ifdef CYGFUN_KERNEL_THREADS_TIMER
+
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA("Kernel threads timer disabled");
+}
+
+#endif // ifdef CYGFUN_KERNEL_THREADS_TIMER
 
 // EOF thread1.cxx

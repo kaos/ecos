@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -53,12 +53,19 @@
 
 #include <cyg/infra/testcase.h>
 
+#if defined(CYGFUN_KERNEL_THREADS_TIMER) && \
+    defined(CYGVAR_KERNEL_COUNTERS_CLOCK)
+
 #include <cyg/kernel/sched.inl>
 
 // -------------------------------------------------------------------------
 // Data for the test
 
+#ifdef CYGNUM_HAL_STACK_SIZE_TYPICAL
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#else
 #define STACKSIZE       (2*1024)        // size of thread stack
+#endif
 
 char thread_stack[STACKSIZE];
 
@@ -71,13 +78,11 @@ Cyg_Thread *th;
 
 #define EPOCH 900000000U
 
-#if defined(CYG_HAL_MIPS_SIM)
-// Reduce time in simulated TX39 so that it runs within the timeout.
-#define LOOPS 3
-#else
-#define LOOPS 30
-#endif
+// MN10300 sim takes 1min15secs to do one loop on 300MHz PII.
+#define LOOPS_SIM       2
+#define LOOPS_HW        20
 
+cyg_int32 loops = LOOPS_HW;
 cyg_tick_count one_sec;
 
 // -------------------------------------------------------------------------
@@ -90,8 +95,10 @@ void wallclock_thread( CYG_ADDRWORD id )
 
     Cyg_WallClock::wallclock->set_current_time( EPOCH );
 
-    for( int i = 0; i < LOOPS; i++ )
+    for( int i = 0; i < loops; i++ )
     {
+        CYG_TEST_STILL_ALIVE(i, "tick...");
+
         wtime = Cyg_WallClock::wallclock->get_current_time();
 
         if(wtime != EPOCH+i)
@@ -113,15 +120,21 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
+
+    CYG_TEST_INFO("Starting wallclock test");
+
+    if( cyg_test_is_simulator ) loops = LOOPS_SIM;
     
     Cyg_Clock::cyg_resolution res = Cyg_Clock::real_time_clock->get_resolution();
     
     one_sec = ( res.divisor * 1000000000LL ) / res.dividend ;
     
-    th = new((void *)&thread) Cyg_Thread(wallclock_thread,
+    th = new((void *)&thread) Cyg_Thread(CYG_SCHED_DEFAULT_INFO,
+                                         wallclock_thread,
                                          0,
-                                         STACKSIZE,
-                                         (CYG_ADDRESS)thread_stack
+                                         "wallclock_thread",
+                                         (CYG_ADDRESS)thread_stack,
+                                         STACKSIZE
         );
 
     th->resume();
@@ -130,6 +143,17 @@ cyg_start( void )
     Cyg_Scheduler::scheduler.start();
 
 }
+
+#else // if defined(CYGFUN_KERNEL_THREADS_TIMER) etc...
+
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_PASS_FINISH("N/A: Kernel real-time clock/threads timer disabled");
+}
+
+#endif // if defined(CYGFUN_KERNEL_THREADS_TIMER) etc...
 
 // -------------------------------------------------------------------------
 // EOF wallclock.cxx

@@ -6,7 +6,7 @@
  */
 
 /* 
- * Copyright (c) 1998 Cygnus Support
+ * Copyright (c) 1998,1999 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -18,6 +18,8 @@
  * the new terms are clearly indicated on the first page of each file where
  * they apply.
  */
+
+#include <cyg/infra/cyg_type.h>         /* externC */
 
 #define has_thread_void       0 
 #define has_thread_current    1
@@ -47,9 +49,9 @@ extern int dbg_currthread_id(void);
 
 /* get the first or next member of the list of known threads */
 extern int dbg_threadlist(int startflag,
-			  threadref * lastthreadid,
-			  threadref * next_thread
-			  ) ;
+                          threadref * lastthreadid,
+                          threadref * next_thread
+                          ) ;
 
 /* return 1 if next_threadid has been filled in with a value */
 /* return 0 if there are none or no more */
@@ -65,19 +67,19 @@ struct cygmon_thread_debug_info
 {
   threadref thread_id ;
   int context_exists ; /* To the point where examining its state,
-			 registers and stack makes sense to GDB */
+                         registers and stack makes sense to GDB */
   char * thread_display ; /* As shown in thread status window, name, state */
   char * unique_thread_name ; /* human readable identifier, window label */
   char * more_display ;   /* more detailed info about thread.
-			  priority, queuedepth, state, stack usage, statistics */
+                          priority, queuedepth, state, stack usage, statistics */
 } ;
 
 
 
 
 extern int dbg_threadinfo(
-			  threadref * threadid,
-			  struct cygmon_thread_debug_info * info) ;
+                          threadref * threadid,
+                          struct cygmon_thread_debug_info * info) ;
 
 /* Return 1 if threadid is defined and info copied, 0 otherwise */
 
@@ -89,9 +91,9 @@ have already been assigned.
 */
 
 extern int dbg_getthreadreg(
-			    threadref * osthreadid, 
-			    int regcount, /* count of registers in the array */
-			    void * regval) ; /* fillin this array */
+                            threadref * osthreadid, 
+                            int regcount, /* count of registers in the array */
+                            void * regval) ; /* fillin this array */
 
 
 /* The O.S. should scan through this list of registers which are in
@@ -101,8 +103,17 @@ by osthreadid. Return 0 if the threadis does not map to a known
 process or other error. Return 1 if the setting is successful.  */
 
 extern int dbg_setthreadreg(
-			    threadref * osthreadid, 
-			    int regcount , /* number of registers */
-			    void * regval) ;
+                            threadref * osthreadid, 
+                            int regcount , /* number of registers */
+                            void * regval) ;
+
+/* Control over OS scheduler. With the scheduler locked it should not
+   perform any rescheduling in response to interrupts.  */
+externC int dbg_scheduler(
+                          threadref * osthreadid,
+                          int lock,     /* 0 == unlock, 1 == lock */
+                          int mode);    /* 0 == step,   1 == continue */
+
+
 
 #endif /* DBG_THREADS_API_INCLUDED */

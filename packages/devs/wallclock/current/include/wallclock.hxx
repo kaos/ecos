@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	wallclock.hxx
+//      wallclock.hxx
 //
-//	Wallclock interface declaration
+//      Wallclock interface declaration
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,29 +25,28 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-07-14
-// Purpose:	Wall Clock declarations
-// Description:	This file defines the interface to the wall clock device
-//              that provides real time stamps. This is either an interface
-//              to a hardware RTC like the Dallas DS12887, or it is emulated
-//              using the kernel clock.
-// Usage:       #include <cyg/devs/wallclock.hxx>
+// Author(s):     nickg
+// Contributors:  nickg
+// Date:          1999-03-05
+// Purpose:       Wall Clock declarations
+// Description:   This file defines the interface to the wall clock device
+//                that provides real time stamps. This is either an interface
+//                to a hardware RTC like the Dallas DS12887, or it is emulated
+//                using the kernel clock.
+// Usage:         #include <cyg/devs/wallclock.hxx>
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#include <cyg/kernel/ktypes.h>
-#include <cyg/infra/cyg_ass.h>            // assertion macros
+#include <cyg/infra/cyg_type.h>
 
 // -------------------------------------------------------------------------
 // Wallclock class

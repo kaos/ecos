@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/8/31
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-03-03
 // Description:   Contains testcode for C library atexit() function
 //
 //
@@ -63,11 +63,7 @@ static int failed;
 externC void
 cyg_package_start( void )
 {
-#ifdef CYGPKG_LIBC
     cyg_iso_c_start();
-#else
-    (void)main(0, NULL);
-#endif
 } // cyg_package_start()
 
 
@@ -108,15 +104,12 @@ myfun3( void )
 int
 main( int argc, char *argv[] )
 {
-#ifdef CYGPKG_LIBC
-#endif
-
     CYG_TEST_INIT();
 
     CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C "
                   "library atexit() function");
 
-#if defined(CYGPKG_LIBC)
+#if defined(CYGFUN_LIBC_ATEXIT)
 
     // we only have one test in us! We can only exit once :-)
 
@@ -131,12 +124,12 @@ main( int argc, char *argv[] )
 
     return 0;
 #else
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "
                     "library atexit() function");
 
-#endif // if defined(CYGPKG_LIBC)
+#endif // if defined(CYGFUN_LIBC_ATEXIT)
 
 } // main()
 

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -66,7 +66,11 @@
 
 // -------------------------------------------------------------------------
 
+#include <pkgconf/system.h>             // for CYGPKG... and STARTUP
+
 #include <pkgconf/kernel.h>
+
+#include <cyg/infra/cyg_type.h>
 
 #include "cyg/hal/dbg-threads-api.h"
 #include "dbg-thread-syscall.h" 
@@ -74,9 +78,9 @@
 // -------------------------------------------------------------------------
 
 static int dbg_thread_syscall_rmt(
-		       enum dbg_syscall_ids id,
-		       union dbg_thread_syscall_parms * p
-		       )
+                       enum dbg_syscall_ids id,
+                       union dbg_thread_syscall_parms * p
+                       )
 {
   switch (id)
     {
@@ -91,23 +95,28 @@ static int dbg_thread_syscall_rmt(
       break ;
     case dbg_threadlist_func :
       return dbg_threadlist(p->threadlist_parms.startflag,
-			    p->threadlist_parms.lastid,
-			    p->threadlist_parms.nextthreadid) ;
+                            p->threadlist_parms.lastid,
+                            p->threadlist_parms.nextthreadid) ;
       break ;
     case dbg_threadinfo_func :
       return dbg_threadinfo(p->info_parms.ref,
-			    p->info_parms.info
-			    ) ;
+                            p->info_parms.info
+                            ) ;
       break ;
     case dbg_getthreadreg_func :
       return dbg_getthreadreg(p->reg_parms.thread,
-			      p->reg_parms.regcount,
-			      p->reg_parms.registers) ;
+                              p->reg_parms.regcount,
+                              p->reg_parms.registers) ;
       break ;
     case dbg_setthreadreg_func :
       return dbg_setthreadreg(p->reg_parms.thread,
-			      p->reg_parms.regcount,
-			      p->reg_parms.registers) ;
+                              p->reg_parms.regcount,
+                              p->reg_parms.registers) ;
+      break ;
+    case dbg_scheduler_func :
+      return dbg_scheduler(p->scheduler_parms.thread,
+                           p->scheduler_parms.lock,
+                           p->scheduler_parms.mode) ;
       break ;
 #endif /* CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT */      
     default :
@@ -121,9 +130,9 @@ static int dbg_thread_syscall_rmt(
 
 #ifdef CYG_HAL_TX39
 static int dbg_thread_syscall_rmt_1(
-		       enum dbg_syscall_ids id,
-		       union dbg_thread_syscall_parms * p
-		       )
+                       enum dbg_syscall_ids id,
+                       union dbg_thread_syscall_parms * p
+                       )
 {
 
   register long gp_save;
@@ -145,15 +154,37 @@ static int dbg_thread_syscall_rmt_1(
 
 // -------------------------------------------------------------------------
 
+#define DBG_SYSCALL_THREAD_VEC_NUM 15
+
+#ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
+
+#ifdef CYG_HAL_SPARCLITE_SLEB
+# include <cyg/hal/hal_cygm.h>
+# ifdef CYG_HAL_USE_ROM_MONITOR_CYGMON
+// then we support talking to CygMon...
+#  undef DBG_SYSCALL_THREAD_VEC_NUM
+#  define DBG_SYSCALL_THREAD_VEC_NUM BSP_VEC_MT_DEBUG
+# endif
+// otherwise this code is wrong for SPARClite but also not used.
+#endif
+
+#endif
+
 void patch_dbg_syscalls(void * vector)
 {
    dbg_syscall_func * f ;
    f = vector ;
+
+#ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
+
 #ifdef CYG_HAL_TX39
-   *f = dbg_thread_syscall_rmt_1 ;
+   f[DBG_SYSCALL_THREAD_VEC_NUM] = dbg_thread_syscall_rmt_1 ;
 #else   
-   *f = dbg_thread_syscall_rmt ;
-#endif   
+   f[DBG_SYSCALL_THREAD_VEC_NUM] = dbg_thread_syscall_rmt ;
+#endif
+
+#endif
+
 }
 
 // -------------------------------------------------------------------------

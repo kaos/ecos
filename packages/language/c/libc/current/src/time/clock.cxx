@@ -2,7 +2,7 @@
 //
 //      clock.cxx
 //
-//      ANSI standard clock() routine defined in section 7.12.2.1
+//      ISO C date and time implementation for clock()
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,22 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
-// Description: 
+// Author(s):    jlarmour
+// Contributors: jlarmour
+// Date:         1999-03-05
+// Purpose:      Provides an implementation of the ISO C function clock()
+//               from ISO C section 7.12.2.1
+// Description:  This file uses the kernel real time clock to determine
+//               the complete running time of the system - since we only
+//               have one task, even though there are perhaps multiple threads
+//               that is still the running time of the "program"
 // Usage:       
 //
 //####DESCRIPTIONEND####
@@ -44,55 +48,42 @@
 
 #include <pkgconf/libc.h>    // Configuration header
 
-#ifdef CYGPKG_KERNEL
+#ifdef CYGSEM_LIBC_TIME_CLOCK_WORKING
 # include <pkgconf/kernel.h> // Kernel config header
 #endif
 
-// Include the C library?
-#ifdef CYGPKG_LIBC     
-
 // INCLUDES
 
-#include <cyg/infra/cyg_type.h>  // Common type definitions and support
-#include <cyg/infra/cyg_trac.h>  // Tracing support
-#include <cyg/infra/cyg_ass.h>   // Assertion support
-#include <stddef.h>              // NULL and size_t from compiler
+#include <cyg/infra/cyg_type.h>    // Common type definitions and support
+#include <cyg/infra/cyg_ass.h>     // Assertion infrastructure
+#include <cyg/infra/cyg_trac.h>    // Tracing infrastructure
 
-#include <time.h>                // Header for all time-related functions
-#include "clibincl/timesupp.hxx" // Support for time functions
+#include <time.h>                  // Header for all time-related functions
 
-#if defined(CYGFUN_KERNEL_THREADS_TIMER) && \
-    defined(CYGVAR_KERNEL_COUNTERS_CLOCK)
-# include <cyg/kernel/clock.hxx>  // Kernel clock definitions
-# include <cyg/kernel/clock.inl>  // Kernel clock inline functions
+#ifdef CYGSEM_LIBC_TIME_CLOCK_WORKING
+# include <cyg/kernel/clock.hxx>   // Kernel clock definitions
+# include <cyg/kernel/clock.inl>   // Kernel clock inline functions
 #endif
 
 
 // TRACE
 
-# if defined(CYGDBG_USE_TRACING) && defined(CYGNUM_LIBC_CLOCK_TRACE_LEVEL)
-static int clock_trace = CYGNUM_LIBC_CLOCK_TRACE_LEVEL;
+# if defined(CYGDBG_USE_TRACING) && defined(CYGNUM_LIBC_TIME_CLOCK_TRACE_LEVEL)
+static int clock_trace = CYGNUM_LIBC_TIME_CLOCK_TRACE_LEVEL;
 #  define TL1 (0 < clock_trace)
 # else
 #  define TL1 (0)
 # endif
 
-
-// EXPORTED SYMBOLS
-
-externC clock_t
-clock( void ) CYGPRI_LIBC_WEAK_ALIAS("_clock");
-
 // FUNCTIONS
 
-clock_t
-_clock( void )
+externC clock_t
+__clock( void )
 {
-    CYG_REPORT_FUNCNAMETYPE( "_clock", "returning clock tick %d" );
+    CYG_REPORT_FUNCNAMETYPE( "__clock", "returning clock tick %d" );
     CYG_REPORT_FUNCARGVOID();
 
-    // Only if the kernel has clock device support
-#if defined(CYGFUN_KERNEL_THREADS_TIMER) && defined(CYGVAR_KERNEL_COUNTERS_CLOCK)
+#ifdef CYGSEM_LIBC_TIME_CLOCK_WORKING
     cyg_tick_count curr_clock;            // kernel clock value
     Cyg_Clock::cyg_resolution resolution; // kernel clock resolution
     clock_t clocks;
@@ -118,13 +109,17 @@ _clock( void )
     CYG_REPORT_RETVAL( clocks );
     return clocks;
 
-#else
+#else // i.e. ifndef CYGSEM_LIBC_TIME_CLOCK_WORKING
     CYG_REPORT_RETVAL( -1 );
     return (clock_t) -1;
 #endif
 
-} // _clock()
+} // __clock()
 
-#endif // ifdef CYGPKG_LIBC     
+
+// SYMBOL DEFINITIONS
+
+externC clock_t
+clock( void ) CYGBLD_ATTRIB_WEAK_ALIAS(__clock);
 
 // EOF clock.cxx

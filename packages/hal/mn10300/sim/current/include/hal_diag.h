@@ -3,9 +3,9 @@
 
 /*=============================================================================
 //
-//	hal_diag.h
+//      hal_diag.h
 //
-//	HAL Support for Kernel Diagnostic Routines
+//      HAL Support for Kernel Diagnostic Routines
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -25,19 +25,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-03-02
-// Purpose:	HAL Support for Kernel Diagnostic Routines
-// Description:	Diagnostic routines for use during kernel development.
-// Usage:	#include <cyg/hal/hal_diag.h>
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-03-02
+// Purpose:     HAL Support for Kernel Diagnostic Routines
+// Description: Diagnostic routines for use during kernel development.
+// Usage:       #include <cyg/hal/hal_diag.h>
 //
 //####DESCRIPTIONEND####
 //

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	mbox.cxx
+//      mbox.cxx
 //
-//	Mbox mbox template class implementation
+//      Mbox mbox template class implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-11
-// Purpose:	Mbox implementation
-// Description:	This file contains the implementations of the mbox class
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-11
+// Purpose:     Mbox implementation
+// Description: This file contains the implementations of the mbox class
 //
 //####DESCRIPTIONEND####
 //
@@ -86,7 +86,7 @@ Cyg_Mbox::~Cyg_Mbox()
 
 #ifdef CYGDBG_USE_ASSERTS
 cyg_bool 
-Cyg_Mbox::check_this(cyg_assert_class_zeal zeal)
+Cyg_Mbox::check_this(cyg_assert_class_zeal zeal) const
 {
     return m.check_this(zeal);
 }
@@ -124,7 +124,7 @@ Cyg_Mbox::tryget()
     return p;
 }
 
-#ifdef	CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
+#ifdef  CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
 cyg_bool
 Cyg_Mbox::put( void *item )
 {

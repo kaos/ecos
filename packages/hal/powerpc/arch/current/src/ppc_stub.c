@@ -1,6 +1,6 @@
 /* ppc_stub.c - helper functions for stub, generic to all PowerPC processors
  * 
- * Copyright (c) 1998 Cygnus Support
+ * Copyright (c) 1998,1999 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -19,44 +19,16 @@
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-#ifdef CYG_HAL_POWERPC_SIM
-#error "GDB Stub support not implemented for PPC SIM"
-#endif
+#define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+#include <cyg/hal/ppc_regs.h>
 
 #include <cyg/hal/hal_stub.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
-#include <cyg/hal/ppc_regs.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
-
-#define	SIGHUP	1	/* hangup */
-#define	SIGINT	2	/* interrupt */
-#define	SIGQUIT	3	/* quit */
-#define	SIGILL	4	/* illegal instruction (not reset when caught) */
-#define	SIGTRAP	5	/* trace trap (not reset when caught) */
-#define	SIGIOT	6	/* IOT instruction */
-#define	SIGABRT 6	/* used by abort, replace SIGIOT in the future */
-#define	SIGEMT	7	/* EMT instruction */
-#define	SIGFPE	8	/* floating point exception */
-#define	SIGKILL	9	/* kill (cannot be caught or ignored) */
-#define	SIGBUS	10	/* bus error */
-#define	SIGSEGV	11	/* segmentation violation */
-#define	SIGSYS	12	/* bad argument to system call */
-#define	SIGPIPE	13	/* write on a pipe with no one to read it */
-#define	SIGALRM	14	/* alarm clock */
-#define	SIGTERM	15	/* software termination signal from kill */
-
-/* Saved registers. */
-
-HAL_SavedRegisters *_hal_registers;
-
-target_register_t * _registers; /* A pointer to the current set of registers */
-target_register_t registers[NUMREGS];
-target_register_t alt_registers[NUMREGS] ; /* Thread or saved process state */
-
 
 /* Given a trap value TRAP, return the corresponding signal. */
 
@@ -64,27 +36,30 @@ int __computeSignal (unsigned int trap_number)
 {
     switch (trap_number)
     {
-    case CYG_VECTOR_MACHINE_CHECK:
+    case CYGNUM_HAL_VECTOR_MACHINE_CHECK:
         /* Machine check */
-    case CYG_VECTOR_DSI:
+    case CYGNUM_HAL_VECTOR_DSI:
         /* Data access */
         return SIGSEGV;
       
-    case CYG_VECTOR_ISI:
+    case CYGNUM_HAL_VECTOR_ISI:
         /* Instruction access (Ifetch) */
-    case CYG_VECTOR_ALIGNMENT:
+    case CYGNUM_HAL_VECTOR_ALIGNMENT:
         /* Data access */
         return SIGBUS;
                     
-    case CYG_VECTOR_INTERRUPT:
+    case CYGNUM_HAL_VECTOR_INTERRUPT:
         /* External interrupt */
       return SIGINT;
 
-    case CYG_VECTOR_TRACE:
+    case CYGNUM_HAL_VECTOR_TRACE:
         /* Instruction trace */
         return SIGTRAP;
       
-    case CYG_VECTOR_PROGRAM:
+    case CYGNUM_HAL_VECTOR_PROGRAM:
+        // The register PS contains the value of SRR1 at the time of
+        // exception entry. Bits 11-15 contain information about the
+        // cause of the exception. Bits 16-31 the PS (MSR) state.
         switch ((get_register (PS) >> 17) & 0xf){
         case 1:                         /* trap */
             return SIGTRAP;
@@ -97,50 +72,50 @@ int __computeSignal (unsigned int trap_number)
             return SIGTERM;
         }            
 
-    case CYG_VECTOR_RESERVED_A:
-    case CYG_VECTOR_RESERVED_B:
+    case CYGNUM_HAL_VECTOR_RESERVED_A:
+    case CYGNUM_HAL_VECTOR_RESERVED_B:
         return SIGILL;
 
-    case CYG_VECTOR_FP_UNAVAILABLE:
+    case CYGNUM_HAL_VECTOR_FP_UNAVAILABLE:
         /* FPU disabled */
-    case CYG_VECTOR_FP_ASSIST:
+    case CYGNUM_HAL_VECTOR_FP_ASSIST:
         /* FPU assist */
         return SIGFPE;
 
-    case CYG_VECTOR_DECREMENTER:
+    case CYGNUM_HAL_VECTOR_DECREMENTER:
         /* Decrementer alarm */
         return SIGALRM;
 
-    case CYG_VECTOR_SYSTEM_CALL:
+    case CYGNUM_HAL_VECTOR_SYSTEM_CALL:
         /* System call */
         return SIGSYS;
 
-#ifdef CYG_HAL_POWERPC_MP860
-    case CYG_VECTOR_SW_EMUL:
+#if defined(CYG_HAL_POWERPC_MPC8xx)
+    case CYGNUM_HAL_VECTOR_SW_EMUL:
         /* A SW_EMUL is generated instead of PROGRAM for illegal
            instructions. */
         return SIGILL;
 
-    case CYG_VECTOR_DATA_BP:
-    case CYG_VECTOR_INSTRUCTION_BP:
-    case CYG_VECTOR_PERIPHERAL_BP:
-    case CYG_VECTOR_NMI:
+    case CYGNUM_HAL_VECTOR_DATA_BP:
+    case CYGNUM_HAL_VECTOR_INSTRUCTION_BP:
+    case CYGNUM_HAL_VECTOR_PERIPHERAL_BP:
+    case CYGNUM_HAL_VECTOR_NMI:
         /* Developer port debugging exceptions. */
         return SIGTRAP;
 
-    case CYG_VECTOR_ITLB_MISS:
-    case CYG_VECTOR_DTLB_MISS:
+    case CYGNUM_HAL_VECTOR_ITLB_MISS:
+    case CYGNUM_HAL_VECTOR_DTLB_MISS:
         /* Software reload of TLB required. */
         return SIGTRAP;
 
-    case CYG_VECTOR_ITLB_ERROR:
+    case CYGNUM_HAL_VECTOR_ITLB_ERROR:
         /* Invalid instruction access. */
         return SIGBUS;
 
-    case CYG_VECTOR_DTLB_ERROR:
+    case CYGNUM_HAL_VECTOR_DTLB_ERROR:
         /* Invalid data access. */
         return SIGSEGV;
-#endif
+#endif // defined(CYG_HAL_POWERPC_MPC8xx)
         
     default:
         return SIGTERM;
@@ -156,21 +131,6 @@ int __get_trap_number (void)
     // directly from the save context.
     return _hal_registers->vector >> 8;
 }
-
-// Return the currently-saved value corresponding to register REG of
-// the exception context.
-target_register_t get_register (regnames_t reg)
-{
-    return registers[reg];
-}
-
-// Store VALUE in the register corresponding to WHICH in the exception
-// context.
-void put_register (regnames_t which, target_register_t value)
-{
-    registers[which] = value;
-}
-
 
 /* Set the currently-saved pc register value to PC. This also updates NPC
    as needed. */
@@ -191,7 +151,7 @@ void set_pc (target_register_t pc)
 
 static target_register_t irq_state;
 
-void single_step (void)
+void __single_step (void)
 {
     target_register_t msr = get_register (PS);
 
@@ -206,7 +166,7 @@ void single_step (void)
 
 /* Clear the single-step state. */
 
-void clear_single_step (void)
+void __clear_single_step (void)
 {
     target_register_t msr = get_register (PS);
 
@@ -222,10 +182,14 @@ void clear_single_step (void)
 }
 
 
-void install_breakpoints (void)
+void __install_breakpoints (void)
 {
     /* NOP since single-step HW exceptions are used instead of
        breakpoints. */
+}
+
+void __clear_breakpoints (void)
+{
 }
 
 
@@ -235,7 +199,7 @@ void install_breakpoints (void)
 int
 __is_breakpoint_function ()
 {
-    return get_register (PC) == (target_register_t)&_breakinst;
+    return get_register (PC) == (target_register_t)&CYG_LABEL_NAME(breakinst);
 }
 
 
@@ -246,58 +210,6 @@ __is_breakpoint_function ()
 void __skipinst (void)
 {
     put_register (PC, get_register (PC) + 4);
-}
-
-
-/* Write the 'T' packet in BUFFER. SIGVAL is the signal the program
-   received. */
-
-void __build_t_packet (int sigval, char *buf)
-{
-    target_register_t addr;
-    char *ptr = buf;
-    target_register_t *sp;
-
-    sp = (target_register_t *) get_register (SP);
-
-    *ptr++ = 'T';
-    *ptr++ = __tohex (sigval >> 4);
-    *ptr++ = __tohex (sigval);
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
-    // Include thread ID if thread manipulation is required.
-    {
-        int id;
-        
-        *ptr++ = 't';
-        *ptr++ = 'h';
-        *ptr++ = 'r';
-        *ptr++ = 'e';
-        *ptr++ = 'a';
-        *ptr++ = 'd';
-        *ptr++ = ':';
-
-        id = dbg_currthread_id ();
-        ptr = __mem2hex((char *)&id, ptr, sizeof(id), 0);
-        *ptr++ = ';';
-    }
-#endif
-
-
-    *ptr++ = __tohex (PC >> 4);
-    *ptr++ = __tohex (PC);
-    *ptr++ = ':';
-    addr = get_register (PC);
-    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
-    *ptr++ = ';';
-
-    *ptr++ = __tohex (SP >> 4);
-    *ptr++ = __tohex (SP);
-    *ptr++ = ':';
-    ptr = __mem2hex((char *)&sp, ptr, sizeof(sp), 0);
-    *ptr++ = ';';
-    
-    *ptr++ = 0;
 }
 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -43,6 +43,7 @@
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
 //-----------------------------------------------------------------------------
@@ -59,10 +60,13 @@ typedef struct
     cyg_uint32   lr;                    // Link Reg
     cyg_uint32   ctr;                   // Count Reg
 
-    // These are only saved for exceptions and interrupts
-    cyg_uint32   vector;                // Vector number
+    // These are saved for exceptions and interrupts, but may also
+    // be saved in a context switch if thread-aware debugging is enabled.
     cyg_uint32   msr;                   // Machine State Reg
     cyg_uint32   pc;                    // Program Counter
+
+    // These are only saved for exceptions and interrupts
+    cyg_uint32   vector;                // Vector number
 
     // These are only saved for exceptions, and are not restored
     // when continued.
@@ -71,8 +75,7 @@ typedef struct
     cyg_uint32   dsisr;                 // DSISR
     cyg_uint32   pvr;                   // Processor Version
 
-    // maybe add BATs, and SRs too
-    // maybe also add FP registers
+    // Eventually add BATs, SRs and FP registers too.
 } HAL_SavedRegisters;
 
 //-----------------------------------------------------------------------------
@@ -82,7 +85,7 @@ typedef struct
 // not want to deal with itself. It usually invokes the kernel's exception
 // delivery mechanism.
 
-externC void deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
+externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 
 //-----------------------------------------------------------------------------
 // Bit manipulation macros
@@ -101,28 +104,33 @@ externC void deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
     asm ( "cntlzw %1,%0" : "=r" (mask) : "r" (index) );
 
 //-----------------------------------------------------------------------------
+// eABI
+#define CYGARC_PPC_STACK_FRAME_SIZE     56      // size of a stack frame
+
+//-----------------------------------------------------------------------------
 // Context Initialization
 // Initialize the context of a thread.
 // Arguments:
-// _sp_ name of variable containing current sp, will be written with new sp
+// _sparg_ name of variable containing current sp, will be written with new sp
 // _thread_ thread object address, passed as argument to entry point
 // _entry_ entry point address.
 // _id_ bit pattern used in initializing registers, for debugging.
 
-#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )         \
-    CYG_MACRO_START                                                         \
-    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_)-56;                        \
-    register HAL_SavedRegisters *_regs_;                                    \
-    int _i_;                                                                \
-    _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters));   \
-    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;          \
-    (_regs_)->d[01] = (CYG_WORD)(_sp_);        /* SP = top of stack      */ \
-    (_regs_)->d[03] = (CYG_WORD)(_thread_);    /* R3 = arg1 = thread ptr */ \
-    (_regs_)->cr = 0;                          /* CR = 0                 */ \
-    (_regs_)->xer = 0;                         /* XER = 0                */ \
-    (_regs_)->lr = (CYG_WORD)(_entry_);        /* LR = entry point       */ \
-    (_regs_)->ctr = 0;                         /* CTR = 0                */ \
-    _sparg_ = (CYG_ADDRESS)_regs_;                                          \
+#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )           \
+    CYG_MACRO_START                                                           \
+    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_)-CYGARC_PPC_STACK_FRAME_SIZE; \
+    register HAL_SavedRegisters *_regs_;                                      \
+    int _i_;                                                                  \
+    _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters));     \
+    for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;            \
+    (_regs_)->d[01] = (CYG_WORD)(_sp_);        /* SP = top of stack      */   \
+    (_regs_)->d[03] = (CYG_WORD)(_thread_);    /* R3 = arg1 = thread ptr */   \
+    (_regs_)->cr = 0;                          /* CR = 0                 */   \
+    (_regs_)->xer = 0;                         /* XER = 0                */   \
+    (_regs_)->lr = (CYG_WORD)(_entry_);        /* LR = entry point       */   \
+    (_regs_)->pc = (CYG_WORD)(_entry_);        /* set PC for thread dbg  */   \
+    (_regs_)->ctr = 0;                         /* CTR = 0                */   \
+    _sparg_ = (CYG_ADDRESS)_regs_;                                            \
     CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
@@ -211,14 +219,39 @@ asm volatile (" .globl  " #_label_ ";"          \
 
 //-----------------------------------------------------------------------------
 // HAL setjmp
+// Note: These definitions are repeated in context.S. If changes are required
+// remember to update both sets.
 
-#define HAL_JMP_BUF_SIZE 23
+#define CYGARC_JMP_BUF_SP        0
+#define CYGARC_JMP_BUF_R2        1
+#define CYGARC_JMP_BUF_R13       2
+#define CYGARC_JMP_BUF_R14       3
+#define CYGARC_JMP_BUF_R15       4
+#define CYGARC_JMP_BUF_R16       5
+#define CYGARC_JMP_BUF_R17       6
+#define CYGARC_JMP_BUF_R18       7
+#define CYGARC_JMP_BUF_R19       8
+#define CYGARC_JMP_BUF_R20       9
+#define CYGARC_JMP_BUF_R21      10
+#define CYGARC_JMP_BUF_R22      11
+#define CYGARC_JMP_BUF_R23      12
+#define CYGARC_JMP_BUF_R24      13
+#define CYGARC_JMP_BUF_R25      14
+#define CYGARC_JMP_BUF_R26      15
+#define CYGARC_JMP_BUF_R27      16
+#define CYGARC_JMP_BUF_R28      17
+#define CYGARC_JMP_BUF_R29      18
+#define CYGARC_JMP_BUF_R30      19
+#define CYGARC_JMP_BUF_R31      20
+#define CYGARC_JMP_BUF_LR       21
+#define CYGARC_JMP_BUF_CR       22
 
-typedef cyg_uint32 hal_jmp_buf[HAL_JMP_BUF_SIZE];
+#define CYGARC_JMP_BUF_SIZE     23
+
+typedef cyg_uint32 hal_jmp_buf[CYGARC_JMP_BUF_SIZE];
 
 externC int hal_setjmp(hal_jmp_buf env);
 externC void hal_longjmp(hal_jmp_buf env, int val);
-
 
 //-----------------------------------------------------------------------------
 // Idle thread code.
@@ -231,7 +264,63 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define HAL_IDLE_THREAD_ACTION(_count_) hal_idle_thread_action(_count_)
 
 //-----------------------------------------------------------------------------
+// Minimal and sensible stack sizes: the intention is that applications
+// will use these to provide a stack size in the first instance prior to
+// proper analysis.  Idle thread stack should be this big.
+
+//    THESE ARE NOT INTENDED TO BE MICROMETRICALLY ACCURATE FIGURES.
+//           THEY ARE HOWEVER ENOUGH TO START PROGRAMMING.
+// YOU MUST MAKE YOUR STACKS LARGER IF YOU HAVE LARGE "AUTO" VARIABLES!
+ 
+// This is not a config option because it should not be adjusted except
+// under "enough rope" sort of disclaimers.
+ 
+// Stack frame overhead per call. The PPC ABI defines regs 13..31 as callee
+// saved. callee saved variables are irrelevant for us as they would contain
+// automatic variables, so we only count the caller-saved regs here
+// So that makes r0..r12 + cr, xer, lr, ctr:
+#define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 17)
+
+// Stack needed for a context switch (ppcref_context_size from ppc.inc) 
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 38)
+
+// Interrupt + call to ISR, interrupt_end() and the DSR
+#define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
+    ((43*4 /* sizeof(HAL_SavedRegisters) */) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+
+// We have lots of registers so no particular amount is added in for
+// typical local variable usage.
+
+// We define a minimum stack size as the minimum any thread could ever
+// legitimately get away with. We can throw asserts if users ask for less
+// than this. Allow enough for three interrupt sources - clock, serial and
+// one other
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
+
+// An interrupt stack which is large enough for all possible interrupt
+// conditions (and only used for that purpose) exists.  "User" stacks
+// can therefore be much smaller
+
+# define CYGNUM_HAL_STACK_SIZE_MINIMUM \
+         (16*CYGNUM_HAL_STACK_FRAME_SIZE + 2*CYGNUM_HAL_STACK_INTERRUPT_SIZE)
+
+#else
+
+// No separate interrupt stack exists.  Make sure all threads contain
+// a stack sufficiently large
+# define CYGNUM_HAL_STACK_SIZE_MINIMUM                  \
+        (((2+3)*CYGNUM_HAL_STACK_INTERRUPT_SIZE) +      \
+         (16*CYGNUM_HAL_STACK_FRAME_SIZE))
+#endif
+
+// Now make a reasonable choice for a typical thread size. Pluck figures
+// from thin air and say 30 call frames with an average of 16 words of
+// automatic variables per call frame
+#define CYGNUM_HAL_STACK_SIZE_TYPICAL                \
+        (CYGNUM_HAL_STACK_SIZE_MINIMUM +             \
+         30 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4)))
+
+//-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_ARCH_H
 // End of hal_arch.h
-
-

@@ -24,42 +24,36 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-08-27
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-03-23
 // Purpose:     
 // Description: 
-// Usage:       #include <sys/cstartup.h>
+// Usage:         #include <sys/cstartup.h>
 //
 //####DESCRIPTIONEND####
 //
 //===========================================================================
 
-// CONFIGURATION
-
-#include <pkgconf/libc.h>       // Configuration header
-
-// Include the C library?
-#ifdef CYGPKG_LIBC     
-
-// INCLUDES
-
-#include <cyg/infra/cyg_type.h>    // Common type definitions and support
-
 // FUNCTION PROTOTYPES
 
-externC void
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void
 cyg_iso_c_start( void );
 
-
-#endif // ifdef CYGPKG_LIBC
+#ifdef __cplusplus
+}
+#endif
 
 #endif CYGONCE_LIBC_CSTARTUP_H multiple inclusion protection
 

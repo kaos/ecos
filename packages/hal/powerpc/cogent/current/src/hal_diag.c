@@ -22,38 +22,35 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg, jskov
-// Contributors:        nickg
-// Date:        1998-03-02
-// Purpose:     HAL diagnostic output
-// Description: Implementations of HAL diagnostic output support.
+// Author(s):    nickg, jskov
+// Contributors: nickg, jskov
+// Date:         1999-03-23
+// Purpose:      HAL diagnostic output
+// Description:  Implementations of HAL diagnostic output support.
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_powerpc_cogent.h> // CYGHWR_HAL_POWERPC_COGENT_DIAG_PORT
 
-#include <cyg/infra/cyg_type.h>         // base types
-#include <cyg/infra/cyg_trac.h>         // tracing macros
-#include <cyg/infra/cyg_ass.h>          // assertion macros
-
-#include <cyg/hal/hal_io.h>             // IO macros
-#include <cyg/hal/hal_diag.h>
+#include <cyg/hal/hal_diag.h>           // our header.
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-#include <cyg/hal/hal_stub.h>           // __output_gdb_string
+#include <cyg/hal/hal_stub.h>           // hal_output_gdb_string
 #endif
 
-#include <cyg/hal/ppc_regs.h>
-
+#include <cyg/infra/cyg_type.h>         // base types, externC
+#include <cyg/hal/hal_io.h>             // IO macros
+#include <cyg/hal/hal_intr.h>           // Interrupt macros
 
 //-----------------------------------------------------------------------------
 // Select default diag channel to use
@@ -70,151 +67,151 @@
 
 #endif
 
+// Always use LCD when building a GDB stub ROM.
+#ifdef CYG_HAL_STARTUP_STUBS
+#undef CYG_KERNEL_DIAG_SERIAL
+#undef CYG_KERNEL_DIAG_ROMART
+
+#define CYG_KERNEL_DIAG_LCD
+#endif
+
+// Assumption: all diagnostic output must be GDB packetized unless
+// this is a ROM (i.e.  totally stand-alone) system.
+#ifdef CYG_HAL_STARTUP_ROM
+#define HAL_DIAG_USES_HARDWARE
+#endif
+
+
 //-----------------------------------------------------------------------------
-// Cogent board specific 16550 code.
+// Serial diag functions.
+#ifdef CYG_KERNEL_DIAG_SERIAL
 
-#if defined(CYG_KERNEL_DIAG_SERIAL)
+// Include the serial driver.
+#define CYG_CMA_PORT CYGHWR_HAL_POWERPC_COGENT_DIAG_PORT
+#include <cma_ser.inl>
 
-//-----------------------------------------------------------------------------
-// From serial_16550.h
-#define CYG_DEVICE_SERIAL_RS232_T1_VALUE_B38400         0x00
-#define CYG_DEVICE_SERIAL_RS232_T2_VALUE_B38400         0x06
-
-// FIXME: This is the base address of the B-channel on the PowerPC
-// Cogent board.
-#define CYG_DEVICE_SERIAL_RS232_16550_BASE      0xe900007
-
-
-// Define the serial registers.
-#define CYG_DEVICE_SERIAL_RS232_16550_RBR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x00)
-    // receiver buffer register, read, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_THR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x00)
-    // transmitter holding register, write, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_DLL \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x00)
-    // divisor latch (LS), read/write, dlab = 1
-#define CYG_DEVICE_SERIAL_RS232_16550_IER \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x08)
-    // interrupt enable register, read/write, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_DLM \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x08)
-    // divisor latch (MS), read/write, dlab = 1
-#define CYG_DEVICE_SERIAL_RS232_16550_IIR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x10)
-    // interrupt identification register, read, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_FCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x10)
-    // fifo control register, write, dlab = 0
-#define CYG_DEVICE_SERIAL_RS232_16550_AFR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x10)
-    // alternate function register, read/write, dlab = 1
-#define CYG_DEVICE_SERIAL_RS232_16550_LCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x18)
-    // line control register, read/write
-#define CYG_DEVICE_SERIAL_RS232_16550_MCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x20)
-    // modem control register, read/write
-#define CYG_DEVICE_SERIAL_RS232_16550_LSR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x28)
-    // line status register, read
-#define CYG_DEVICE_SERIAL_RS232_16550_MSR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x30)
-    // modem status register, read
-#define CYG_DEVICE_SERIAL_RS232_16550_SCR \
-    ((volatile cyg_uint8 *) CYG_DEVICE_SERIAL_RS232_16550_BASE + 0x38)
-    // scratch pad register
-
-// FIXME: Naming convention?
-// The interrupt enable register bits.
-#define SIO_IER_ERDAI   0x01            // enable received data available irq
-#define SIO_IER_ETHREI  0x02            // enable THR empty interrupt
-#define SIO_IER_ELSI    0x04            // enable receiver line status irq
-#define SIO_IER_EMSI    0x08            // enable modem status interrupt
-
-// The interrupt identification register bits.
-#define SIO_IIR_IP      0x01            // 0 if interrupt pending
-#define SIO_IIR_ID_MASK 0x0e            // mask for interrupt ID bits
-
-// The line status register bits.
-#define SIO_LSR_DR      0x01            // data ready
-#define SIO_LSR_OE      0x02            // overrun error
-#define SIO_LSR_PE      0x04            // parity error
-#define SIO_LSR_FE      0x08            // framing error
-#define SIO_LSR_BI      0x10            // break interrupt
-#define SIO_LSR_THRE    0x20            // transmitter holding register empty
-#define SIO_LSR_TEMT    0x40            // transmitter register empty
-#define SIO_LSR_ERR     0x80            // any error condition
-
-// The modem status register bits.
-#define SIO_MSR_DCTS  0x01              // delta clear to send
-#define SIO_MSR_DDSR  0x02              // delta data set ready
-#define SIO_MSR_TERI  0x04              // trailing edge ring indicator
-#define SIO_MSR_DDCD  0x08              // delta data carrier detect
-#define SIO_MSR_CTS   0x10              // clear to send
-#define SIO_MSR_DSR   0x20              // data set ready
-#define SIO_MSR_RI    0x40              // ring indicator
-#define SIO_MSR_DCD   0x80              // data carrier detect
-
-// The line control register bits.
-#define SIO_LCR_WLS0   0x01             // word length select bit 0
-#define SIO_LCR_WLS1   0x02             // word length select bit 1
-#define SIO_LCR_STB    0x04             // number of stop bits
-#define SIO_LCR_PEN    0x08             // parity enable
-#define SIO_LCR_EPS    0x10             // even parity select
-#define SIO_LCR_SP     0x20             // stick parity
-#define SIO_LCR_SB     0x40             // set break
-#define SIO_LCR_DLAB   0x80             // divisor latch access bit
+#ifdef HAL_DIAG_USES_HARDWARE
 
 void hal_diag_init(void)
 {
-#if !defined(CYGDBG_KERNEL_DEBUG_GDB_INCLUDE_STUBS)
-    cyg_uint8 lcr;
-
-    // 8-1-no parity.
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR,
-                     SIO_LCR_WLS0 | SIO_LCR_WLS1);
-
-    // Set speed to 38400.
-    HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
-    lcr |= SIO_LCR_DLAB;
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_DLL,
-                     CYG_DEVICE_SERIAL_RS232_T2_VALUE_B38400);
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_DLM,
-                     CYG_DEVICE_SERIAL_RS232_T1_VALUE_B38400);
-    lcr &= ~SIO_LCR_DLAB;
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
-#endif
+    hal_cma_init_serial();
 }
 
-void hal_diag_write_char(char c)
+void hal_diag_write_char(char __c)
 {
-#if !defined(CYGDBG_KERNEL_DEBUG_GDB_INCLUDE_STUBS)
-    cyg_uint8 lsr;
-
-    do {
-        HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LSR, lsr);
-    } while ((lsr & SIO_LSR_THRE) == 0);
-
-    HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_THR, c);
-#else
-    __output_gdb_string (&c, 1);
-#endif
+    hal_cma_put_char(__c);
 }
 
 void hal_diag_read_char(char *c)
 {
-    cyg_uint8 lsr;
-
-    do {
-        HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LSR, lsr);
-    } while ((lsr & SIO_LSR_DR) == 0);
-
-    HAL_READ_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_RBR, *c);
+    *c = (char) hal_cma_get_char();
 }
+
+#else  // ifdef HAL_DIAG_USES_HARDWARE
+
+// Initialize diag port
+void hal_diag_init(void)
+{
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+    // assume GDB channel is already set up.
+    if (0) hal_cma_init_serial();       // avoids compiler warning
+#else
+    hal_cma_init_serial();
 #endif
+      
+}
+
+void 
+hal_diag_write_char_serial( char c )
+{
+    unsigned long __state;
+    HAL_DISABLE_INTERRUPTS(__state);
+    hal_cma_put_char(c);
+    HAL_RESTORE_INTERRUPTS(__state);
+}
+
+void
+hal_diag_read_char(char *c)
+{
+    *c = (char) hal_cma_get_char();
+}
+
+void 
+hal_diag_write_char(char c)
+{
+
+    static char line[100];
+    static int pos = 0;
+
+    // No need to send CRs
+    if( c == '\r' ) return;
+
+    line[pos++] = c;
+
+    if( c == '\n' || pos == sizeof(line) )
+    {
+        CYG_INTERRUPT_STATE old;
+
+        // Disable interrupts. This prevents GDB trying to interrupt us
+        // while we are in the middle of sending a packet. The serial
+        // receive interrupt will be seen when we re-enable interrupts
+        // later.
+        
+        HAL_DISABLE_INTERRUPTS(old);
+        
+        while(1)
+        {
+            char c1;
+            static char hex[] = "0123456789ABCDEF";
+            cyg_uint8 csum = 0;
+            int i;
+        
+            hal_diag_write_char_serial('$');
+            hal_diag_write_char_serial('O');
+            csum += 'O';
+            for( i = 0; i < pos; i++ )
+            {
+                char ch = line[i];
+                char h = hex[(ch>>4)&0xF];
+                char l = hex[ch&0xF];
+                hal_diag_write_char_serial(h);
+                hal_diag_write_char_serial(l);
+                csum += h;
+                csum += l;
+            }
+            hal_diag_write_char_serial('#');
+            hal_diag_write_char_serial(hex[(csum>>4)&0xF]);
+            hal_diag_write_char_serial(hex[csum&0xF]);
+
+            // Wait for the ACK character '+' from GDB here and handle
+            // receiving a ^C instead.
+            hal_diag_read_char(&c1);
+
+            if( c1 == '+' )
+                break;              // a good acknowledge
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            if( 3 == c1 ) {
+                // Ctrl-C: breakpoint.
+                cyg_hal_gdb_interrupt(
+                    (target_register_t)__builtin_return_address(0));
+                break;
+            }
+#endif
+            // otherwise, loop round again
+        }
+        
+        pos = 0;
+
+        // And re-enable interrupts
+        HAL_RESTORE_INTERRUPTS(old);
+        
+    }
+}
+
+#endif // ifdef HAL_DIAG_USES_HARDWARE
+
+#endif // ifdef CYG_KERNEL_DIAG_SERIAL
 
 //-----------------------------------------------------------------------------
 // Cogent board specific LCD code
@@ -273,13 +270,19 @@ static int lcd_linepos = 0;
 
 static void lcd_dis(int add, char *string);
 
+externC void diag_write_string (const char*);
+
 void hal_diag_init()
 {
     cyg_uint8 stat;
     int i;
     
     // wait for not busy
+    // Note: It seems that the LCD isn't quite ready to process commands
+    // when it clears the BUSY flag. Reading the status address an extra
+    // time seems to give it enough breathing room.
     do { HAL_READ_UINT8 (LCD_STAT, stat); } while (stat & LCD_STAT_BUSY);
+    HAL_READ_UINT8 (LCD_STAT, stat);
 
     // configure the lcd for 8 bits/char, 2 lines
     // and 5x7 dot matrix
@@ -287,6 +290,7 @@ void hal_diag_init()
 
     // wait for not busy
     do { HAL_READ_UINT8 (LCD_STAT, stat); } while (stat & LCD_STAT_BUSY);
+    HAL_READ_UINT8 (LCD_STAT, stat);
 
     // turn the LCD display on
     HAL_WRITE_UINT8 (LCD_CMD, LCD_CMD_DON);
@@ -303,12 +307,11 @@ void hal_diag_init()
     lcd_dis( LCD_LINE1, lcd_line[1] );
 
 
-#if defined(CYG_HAL_ROM_MONITOR)
+#ifdef CYG_HAL_STARTUP_STUBS
     // It's handy to have the LCD initialized at reset when using it
-       for debugging output.
+    // for debugging output.
     {
-        extern void diag_write_string (const char*);
-        diag_write_string ("eCos ROM " __TIME__ "\n");
+        diag_write_string ("eCos ROM   " __TIME__ "\n");
         diag_write_string (__DATE__ "\n");
     }
 #endif
@@ -321,18 +324,19 @@ static void lcd_dis(int add, char *string)
     cyg_uint8 stat;
     int i;
 
+    // wait for not busy (see Note in hal_diag_init above)
+    do { HAL_READ_UINT8 (LCD_STAT, stat); } while (stat & LCD_STAT_BUSY);
+    HAL_READ_UINT8 (LCD_STAT, stat);
+
+    // write the address
+    HAL_WRITE_UINT8 (LCD_CMD, (LCD_CMD_ADD + add));
+
     // write the string out to the display stopping when we reach 0
     for (i = 0; *string != '\0'; i++)
     {
         // wait for not busy
         do { HAL_READ_UINT8 (LCD_STAT, stat); } while (stat & LCD_STAT_BUSY);
-
-        // write the address
-        HAL_WRITE_UINT8 (LCD_CMD, (LCD_CMD_ADD + add));
-        add++;
-
-        // wait for not busy
-        do { HAL_READ_UINT8 (LCD_STAT, stat); } while (stat & LCD_STAT_BUSY);
+        HAL_READ_UINT8 (LCD_STAT, stat);
 
         // write the data
         HAL_WRITE_UINT8 (LCD_DATA, *string++);
@@ -341,11 +345,13 @@ static void lcd_dis(int add, char *string)
 
 void hal_diag_write_char(char c)
 {
+    unsigned long __state;
     int i;
     
     // ignore CR
     if( c == '\r' ) return;
     
+    HAL_DISABLE_INTERRUPTS(__state)
     if( c == '\n' )
     {
         lcd_dis( LCD_LINE0, &lcd_line[lcd_curline^1][0] );
@@ -358,19 +364,18 @@ void hal_diag_write_char(char c)
         for( i = 0; i < LCD_LINE_LENGTH; i++ )
             lcd_line[lcd_curline][i] = ' ';
 
+        HAL_RESTORE_INTERRUPTS(__state);
         return;
     }
 
-    // Truncate long lines
-    if( lcd_linepos >= LCD_LINE_LENGTH ) return;
+    // Only allow to be output if there is room on the LCD line
+    if( lcd_linepos < LCD_LINE_LENGTH )
+        lcd_line[lcd_curline][lcd_linepos++] = c;
 
-    lcd_line[lcd_curline][lcd_linepos++] = c;
+    HAL_RESTORE_INTERRUPTS(__state);
 }
 
-char hal_diag_read_char(void)
-{
-    return 0;
-}
+void hal_diag_read_char(char* c) {}
 
 #endif
 
@@ -386,7 +391,7 @@ char hal_diag_read_char(void)
 #endif
 
 // Add this to the LoadICE config file: ailoc 20 19200
-// FIXME: I couldn't get this to work. jskov
+// Note: I couldn't get this to work. jskov
 
 #define PROMICE_BUS_SIZE        16
 #define PROMICE_BURST_SIZE      1
@@ -427,7 +432,10 @@ static void ai_write_char(cyg_uint8 data)
 {
     volatile cyg_uint8 junk;
     int i;
+    unsigned long __state;
     
+    HAL_DISABLE_INTERRUPTS(__state)
+
     // Wait for tda == 0
     while( (AI->status & PROMICE_STATUS_TDA) == PROMICE_STATUS_TDA )
         continue;
@@ -449,6 +457,8 @@ static void ai_write_char(cyg_uint8 data)
 
     // Send stop bit
     junk = AI->one;
+
+    HAL_RESTORE_INTERRUPTS(__state);
 
     // all done
 }

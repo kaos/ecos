@@ -1,3 +1,69 @@
+1999-04-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/watchdog.cxx: The 'keep alive' message was interfering
+	with the watchdog measurement.  Some rearrangement fixes this.
+
+1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/watchdog.cxx: 
+	Restrict number of loops, and number of seconds per loop when we
+	detect we are in a simulator. Do this instead of changing the
+	value of one_sec in the simulator, since this invalidates the test
+	somewhat.
+	Output occasional messages to reassure the user that the test is
+	still running.
+	Fix for PR 19865
+
+1999-04-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/watchdog.cxx (cyg_start): Added workaround for PR 17974.
+
+1999-04-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h: Add cdl_package doc attribute.
+
+1999-04-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/watchdog.cxx: PR 19773 - Loop over first test for better 
+	coverage. Print some additional messages, especially if failure 
+	detected.  Reset watchdog after installing handler.
+	(watchdog_thread): Capture fail time before printing message.
+
+1999-04-07  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19667
+	* tests/watchdog.cxx (cyg_start): 
+	Changed to use the new Cyg_Thread constructor.
+
+1999-03-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/watchdog.cxx: 
+	Use CYGNUM_HAL_STACK_SIZE_TYPICAL for the stack size instead of
+	CYGNUM_HAL_MINIMUM_STACK_SIZE.
+
+1999-03-12  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/watchdog.cxx: 
+	Deal with CYGNUM_HAL_MINIMUM_STACK_SIZE requirement.
+
+1999-03-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h: Make package stand-alone (no "DEVICES")
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mn10300.cxx: 
+	Change CYG_VECTOR_WATCHDOG to CYGNUM_HAL_INTERRUPT_WATCHDOG in line
+	with HAL changes.
+	General QA improvements
+
+1999-02-03  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19034
+	* tests/watchdog.cxx: Reduced run-time on SIM.
+
+1998-12-17  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/watchdog.cxx: Do NOP test if kernel RTC disabled.
+
 1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/watchdog.cxx (cyg_start): Reduce test time on TX39 SIM.
@@ -98,7 +164,7 @@ Tue Aug 18 16:51:24 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

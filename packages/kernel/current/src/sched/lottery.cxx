@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sched/lottery.cxx
+//      sched/lottery.cxx
 //
-//	Lottery scheduler class implementation
+//      Lottery scheduler class implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-16
-// Purpose:	Lottery scheduler class implementation
-// Description:	This file contains the implementations of
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-16
+// Purpose:     Lottery scheduler class implementation
+// Description: This file contains the implementations of
 //              Cyg_Scheduler_Implementation and
 //              Cyg_SchedThread_Implementation.
 //              
@@ -156,7 +156,7 @@ Cyg_Thread *Cyg_Scheduler_Implementation::schedule()
     }
 
     CYG_TRACE3( CYG_ENABLE_TRACE,
-	"seed %08x ticket %d thread %08x",
+        "seed %08x ticket %d thread %08x",
         rand_seed, tick, thread);
 
     // If the thread has any compensation tickets, take them away since

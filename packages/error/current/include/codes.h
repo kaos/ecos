@@ -24,18 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	jlarmour@cygnus.co.uk
-// Contributors:	jlarmour@cygnus.co.uk
-// Date:	1998-06-11
-// Purpose:	To provide a common set of error codes
-// Description:	This provides a common set of error codes that all packages can
+// Author(s):   jlarmour
+// Contributors:        jlarmour
+// Date:        1998-06-11
+// Purpose:     To provide a common set of error codes
+// Description: This provides a common set of error codes that all packages can
 //              agree on. It doesn't preclude them defining their own error
 //              return system, but this is a preferable system to use to help
 //              error support be as general as possible.
@@ -43,7 +43,7 @@
 //              We try and conform to the ANSI/POSIX error code format, namely
 //              starting with the character 'E'
 //
-// Usage:	#include <cyg/error/codes.h>
+// Usage:       #include <cyg/error/codes.h>
 //
 //              Example:
 //              
@@ -62,7 +62,7 @@
 // CONFIGURATION
 
 #include <pkgconf/error.h>          // Configuration header
-#include <cyg/infra/cyg_type.h>	    // externC
+#include <cyg/infra/cyg_type.h>     // externC
 
 // Include the error package?
 #ifdef CYGPKG_ERROR

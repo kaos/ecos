@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -40,12 +40,37 @@
 #include <cyg/infra/testcase.h>
 
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_intr.h>
+
+// -------------------------------------------------------------------------
+// If the HAL does not supply this, we supply our own version
+
+#ifndef HAL_DCACHE_PURGE_ALL
+
+static cyg_uint8 dca[HAL_DCACHE_SIZE + HAL_DCACHE_LINE_SIZE*2];
+
+#define HAL_DCACHE_PURGE_ALL()                                          \
+CYG_MACRO_START                                                         \
+    volatile cyg_uint8 *addr = &dca[HAL_DCACHE_LINE_SIZE];              \
+    volatile cyg_uint8 tmp = 0;                                         \
+    int i;                                                              \
+    for( i = 0; i < HAL_DCACHE_SIZE; i += HAL_DCACHE_LINE_SIZE )        \
+    {                                                                   \
+        tmp = addr[i];                                                  \
+    }                                                                   \
+CYG_MACRO_END
+
+#endif
 
 // -------------------------------------------------------------------------
 
 #define MAXSIZE 1<<18
 
 volatile char m[MAXSIZE];
+
+#ifndef MAX_STRIDE
+#define MAX_STRIDE 64
+#endif
 
 // -------------------------------------------------------------------------
 
@@ -57,8 +82,11 @@ static void time0(register cyg_uint32 stride)
     register char c;
 
 //    count0 = current_time();
+    k = 0;
+    if ( cyg_test_is_simulator )
+        k = 3960;
 
-    for(k=0; k<4000;k++) {
+    for(; k<4000;k++) {
         for(j=0; j<(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE); j++) {
             c=m[stride*j];
         }
@@ -75,7 +103,7 @@ void time1(void)
 {
     cyg_uint32 i;
 
-    for(i=1; i<65; i+=i) {
+    for(i=1; i<=MAX_STRIDE; i+=i) {
         time0(i);
     }
 }
@@ -86,43 +114,58 @@ void time1(void)
 
 static void entry0( void )
 {
+    register CYG_INTERRUPT_STATE oldints;
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_DISABLE();
     HAL_DCACHE_DISABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
     CYG_TEST_INFO("Dcache off Icache off");
     time1();
 
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_DISABLE();
     HAL_DCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
     CYG_TEST_INFO("Dcache on  Icache off");
     time1();
 
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_DISABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
     CYG_TEST_INFO("Dcache off Icache on");
     time1();
 
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_ENABLE();
-    CYG_TEST_INFO("Dcache on Icache on");
+    HAL_RESTORE_INTERRUPTS(oldints);
+    CYG_TEST_INFO("Dcache on  Icache on");
     time1();
 
-
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_DISABLE();
     HAL_DCACHE_DISABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
     CYG_TEST_INFO("Dcache off Icache off");
     time1();
 
-    
     CYG_TEST_PASS_FINISH("End of test");
 }
 

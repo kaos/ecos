@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	memvar.cxx
+//      memvar.cxx
 //
-//	Memory pool with variable block class declarations
+//      Memory pool with variable block class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,19 +22,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	dsm
-// Contributors:	dsm
-// Date:	1998-05-22
-// Description:	
-// Usage:	#include <cyg/kernel/memvar.hxx>
-//		
+// Author(s):   dsm
+// Contributors:        dsm
+// Date:        1998-05-22
+// Description: 
+// Usage:       #include <cyg/kernel/memvar.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -63,7 +63,7 @@
 
 #ifdef CYGDBG_USE_ASSERTS
 cyg_bool
-Cyg_Mempool_Variable::check_this(cyg_assert_class_zeal zeal)
+Cyg_Mempool_Variable::check_this(cyg_assert_class_zeal zeal) const
 {
     CYG_REPORT_FUNCTION();
     // check that we have a non-NULL pointer first

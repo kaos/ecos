@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,6 +36,8 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
@@ -45,7 +47,7 @@
 #include "testaux.h"
 
 #define NTHREADS 2
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -86,7 +88,7 @@ static void entry0( cyg_addrword_t data )
 
 static void entry1( cyg_addrword_t data )
 {
-    cyg_ucount32 val;
+    cyg_count32 val;
 
     cyg_semaphore_peek(&s1, &val);
     CHECK( 2 == val);
@@ -125,11 +127,11 @@ void ksem1_main( void )
     cyg_semaphore_init( &s2, 0);
 
     cyg_thread_create(4, entry0 , (cyg_addrword_t)0, "ksem1-0",
-	(void *)stack[0], STACKSIZE,&thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE,&thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_thread_create(4, entry1 , (cyg_addrword_t)1, "ksem1-1",
-	(void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
+        (void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
     cyg_thread_resume(thread[1]);
 
     cyg_scheduler_start();
@@ -149,7 +151,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

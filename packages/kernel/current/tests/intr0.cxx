@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,8 +30,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm
-// Date:          1998-06-15
+// Contributors:  dsm, jlarmour
+// Date:          1999-02-16
 // Description:   Very basic test of interrupt objects
 // Options:
 //     CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
@@ -50,6 +50,9 @@
 
 static cyg_ISR isr0, isr1;
 static cyg_DSR dsr0, dsr1;
+
+static char intr0_obj[sizeof(Cyg_Interrupt)];
+static char intr1_obj[sizeof(Cyg_Interrupt)];
 
 static cyg_uint32 isr0(cyg_vector vector, CYG_ADDRWORD data)
 {
@@ -100,28 +103,38 @@ void intr0_main( void )
     CHECK(flash());
     CHECK(flash());
 
-    Cyg_Interrupt intr0 = 
-	Cyg_Interrupt( 1 % (CYG_ISR_COUNT), 1, (CYG_ADDRWORD)777, isr0, dsr0 );
-    
-    Cyg_Interrupt intr1 = 
-	Cyg_Interrupt( 15 % (CYG_ISR_COUNT), 1, 888, isr1, dsr1 );
-    
+    // Make sure the chosen levels are not already in use.
+    int in_use;
+    cyg_vector lvl1 = 1 % (CYGNUM_HAL_ISR_COUNT);
+    HAL_INTERRUPT_IN_USE( lvl1, in_use );
+    Cyg_Interrupt* intr0 = NULL;
+    if (!in_use)
+        intr0 = new((void *)&intr0_obj[0]) Cyg_Interrupt( lvl1, 1, (CYG_ADDRWORD)777, isr0, dsr0 );
+     
+    cyg_vector lvl2 = 15 % (CYGNUM_HAL_ISR_COUNT);
+    HAL_INTERRUPT_IN_USE( lvl2, in_use );
+    Cyg_Interrupt* intr1 = NULL;
+    if (!in_use && lvl1 != lvl2)
+        intr1 = new((void *)&intr1_obj[0]) Cyg_Interrupt( lvl2, 1, 888, isr1, dsr1 );
 
     // Check these functions at least exist
-
     Cyg_Interrupt::enable_interrupts();
     Cyg_Interrupt::disable_interrupts();
 
-    intr0.attach();
-    intr1.attach();
-    intr0.detach();
-    intr1.detach();
+    if (intr0)
+        intr0->attach();
+    if (intr1)
+        intr1->attach();
+    if (intr0)
+        intr0->detach();
+    if (intr1)
+        intr1->detach();
 
     // If this attaching interrupt replaces the previous interrupt
     // instead of adding to it we could be in a big mess if the
     // vector is being used by something important.
-	
-    cyg_vector v = 11 % CYG_VSR_COUNT;
+        
+    cyg_vector v = 11 % CYGNUM_HAL_VSR_COUNT;
     cyg_VSR *old_vsr, *new_vsr;
     Cyg_Interrupt::set_vsr( v, vsr0, &old_vsr );
     Cyg_Interrupt::get_vsr( v, &new_vsr );
@@ -133,7 +146,7 @@ void intr0_main( void )
 
     Cyg_Interrupt::set_vsr( v, new_vsr );
     new_vsr = NULL;
-    Cyg_Interrupt::get_vsr( v, &new_vsr );	
+    Cyg_Interrupt::get_vsr( v, &new_vsr );      
     CHECK( vsr0 == new_vsr );
 
     Cyg_Interrupt::set_vsr( v, old_vsr );
@@ -141,11 +154,18 @@ void intr0_main( void )
     new_vsr = NULL;
     Cyg_Interrupt::get_vsr( v, &new_vsr );
     CHECK( old_vsr == new_vsr );
-	
+        
     CHECK( NULL != vsr0 );
 
-    cyg_vector v1 = 6 % CYG_ISR_COUNT;
-    
+    cyg_vector v1;
+#ifdef CYGPKG_HAL_TX39    
+    // This can be removed when PR 17831 is fixed
+    if ( cyg_test_is_simulator )
+        v1 = 12 % CYGNUM_HAL_ISR_COUNT;
+    else /* NOTE TRAILING ELSE... */
+#endif
+    v1 = 6 % CYGNUM_HAL_ISR_COUNT;
+
     Cyg_Interrupt::mask_interrupt(v1);
     Cyg_Interrupt::unmask_interrupt(v1);
 

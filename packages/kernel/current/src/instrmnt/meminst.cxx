@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	instrmnt/meminst.cxx
+//      instrmnt/meminst.cxx
 //
-//	Memory buffer instrumentation functions
+//      Memory buffer instrumentation functions
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-10-27
-// Purpose:	Instrumentation functions
-// Description:	The functions in this file are implementations of the
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-10-27
+// Purpose:     Instrumentation functions
+// Description: The functions in this file are implementations of the
 //              standard instrumentation functions that place records
 //              into a memory buffer.
 //

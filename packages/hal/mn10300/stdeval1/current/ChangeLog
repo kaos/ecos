@@ -1,3 +1,82 @@
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-03-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Backed off Gary's change.
+
+1999-03-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Don't disable all interrupts
+	in this routine, just the appropriate one from the UART.
+
+1999-03-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: give all LDI files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+	* include/pkgconf/*.mlt: give all MLT files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): 
+	Rename CYG_VECTOR_EXTERNAL_2 -> CYGNUM_HAL_INTERRUPT_EXTERNAL_2
+
+	* src/plf_stub.c:
+	Rename CYG_VECTOR_* -> CYGNUM_HAL_INTERRUPT_* in line with
+	arch/hal_intr.h changes
+
+1999-02-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_stub.h: [removed]
+	* include/plf_stub.h: [added]
+	* src/hal_stub.c:     [removed]
+	* src/plf_stub.c:     [added]
+	* src/PKGconf.mak: 
+	Changed hal_stub to plf_stub. Moved generic HAL stub code to
+	common/.../hal_stub.c.
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.mlt: New memory layout save files
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Remove LMA_EQ_VMA macro definition.
+
+1999-01-26  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/pkgconf/ram.ldi:
+	* include/pkgconf/rom.ldi:
+	Add copyright notice.  (Though these files will later be generated
+	by a tool and so not copyright, these default setups are.)
+
+1999-01-13  John Dallaway  <jld@cygnus.co.uk>
+
+      * include/pkgconf/rom.ldi: use FOLLOWING () macro
+
+1999-01-12  John Dallaway  <jld@cygnus.co.uk>
+
+      * src/stdeval1.ld: remove for MLT
+      * src/PKGconf.mak: remove stdeval1.ld rules for MLT
+      * include/pkgconf/ram.ldi: new linker script fragment for MLT
+      * include/pkgconf/rom.ldi: new linker script fragment for MLT
+
+1998-11-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_stub.c (cyg_hal_gdb_isr, interruptible, serial_init):
+	Added GDB break support.
+
+1998-11-06  Jesper Skov  <jskov@lassi.cygnus.co.uk>
+
+	* include/hal_stub.h: 
+	* src/hal_stub.c: 
+	Added GDB stub.
+
+	* src/PKGconf.mak: Added stub to the object list.
+
 1998-10-19  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal_mn10300_stdeval1.h: Undid 1998-10-16 change.
@@ -109,7 +188,7 @@ Mon Aug 17 22:20:05 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       Implements ISO C fopen() function
 // Description: 
 // Usage:       
 //
@@ -45,29 +45,26 @@
 #include <pkgconf/libc.h>   // Configuration header
 
 
-// Include the C library? And do we want the stdio stuff? And fopen()?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO) && \
-    defined(CYGPKG_LIBC_STDIO_OPEN)
+// Do we want the stdio stuff? And fopen()?
+#if defined(CYGPKG_LIBC_STDIO) && defined(CYGPKG_LIBC_STDIO_OPEN)
 
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <errno.h>                  // Error codes
-#include <cyg/devs/common/iorb.h>   // Cyg_IORB
-#include <cyg/devs/common/table.h>  // Device table
+#include <cyg/io/io.h>              // I/O system 
 #include <stdio.h>                  // header for fopen()
 #include "clibincl/stdlibsupp.hxx"  // _malloc()
 #include "clibincl/stringsupp.hxx"  // _strncmp() and _strcmp()
-#include "clibincl/clibdata.hxx"    // C library private data
+#include "clibincl/stdiofiles.hxx"  // C library files
 #include "clibincl/stream.hxx"      // C library streams
-#include "clibincl/stdiosupp.hxx"   // support for stdio
 
 
 // EXPORTED SYMBOLS
 
 externC FILE *
-fopen( const char *, const char * ) CYGPRI_LIBC_WEAK_ALIAS("_fopen");
+fopen( const char *, const char * ) CYGBLD_ATTRIB_WEAK_ALIAS(_fopen);
 
 
 // FUNCTIONS
@@ -127,43 +124,38 @@ process_mode( const char *mode, Cyg_StdioStream::OpenMode *rw,
 externC FILE *
 _fopen( const char *filename, const char *mode )
 {
-    struct Cyg_Device_Table_t *dev;
+    cyg_io_handle_t dev;
     Cyg_StdioStream *curr_stream;
     int i;
     Cyg_ErrNo err;
     Cyg_StdioStream::OpenMode open_mode;
     cyg_bool binary, append;
 
-    CYGPRI_LIBC_INTERNAL_DATA_ALLOC_CHECK_PREAMBLE;
-
-    dev = Cyg_libc_stdio_find_filename( filename );
+    err = cyg_io_lookup( filename, &dev );
 
     // if not found
-    if (!dev) {
-        *CYGPRI_LIBC_INTERNAL_DATA.get_errno_p() = ENOENT;
+    if (err != ENOERR) {
+        errno = ENOENT;
         return NULL;
     } // if
 
     // process_mode returns true on error
     if (process_mode( mode, &open_mode, &binary, &append )) {
-        *CYGPRI_LIBC_INTERNAL_DATA.get_errno_p() = EINVAL;
+        errno = EINVAL;
         return NULL;
     } // if
 
-#ifdef CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
-    CYGPRI_LIBC_INTERNAL_DATA.files_lock.lock();
-#endif // CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
+    Cyg_libc_stdio_files::lock();
 
     // find an empty slot
     for (i=0; i < FOPEN_MAX; i++) {
-        curr_stream = CYGPRI_LIBC_INTERNAL_DATA.get_file_stream(i);
+        curr_stream = Cyg_libc_stdio_files::get_file_stream(i);
         if (curr_stream == NULL)
             break;
     } // for
 
     if (i == FOPEN_MAX) { // didn't find an empty slot
-        *CYGPRI_LIBC_INTERNAL_DATA.get_errno_p() = EMFILE;
-
+        errno = EMFILE;
         return NULL;
     } // if
 
@@ -174,7 +166,7 @@ _fopen( const char *filename, const char *mode )
                                        _IONBF );
 
     if (curr_stream == NULL) {
-        *CYGPRI_LIBC_INTERNAL_DATA.get_errno_p() = ENOMEM;
+        errno = ENOMEM;
         return NULL;
     } // if
 
@@ -182,29 +174,24 @@ _fopen( const char *filename, const char *mode )
     // it puts any error in its own error flag
     if (( err=curr_stream->get_error() )) {
 
-#ifdef CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
-        CYGPRI_LIBC_INTERNAL_DATA.files_lock.unlock();
-#endif // CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
+        Cyg_libc_stdio_files::unlock();
         
         _free( curr_stream );
 
-        *CYGPRI_LIBC_INTERNAL_DATA.get_errno_p() = err;
+        errno = err;
 
         return NULL;
 
     } // if
 
-    CYGPRI_LIBC_INTERNAL_DATA.set_file_stream(i, curr_stream);
+    Cyg_libc_stdio_files::set_file_stream(i, curr_stream);
         
-#ifdef CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
-    CYGPRI_LIBC_INTERNAL_DATA.files_lock.unlock();
-#endif // CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
+    Cyg_libc_stdio_files::unlock();
 
     return (FILE *)(curr_stream);
 
 } // _fopen()
         
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO) && 
-       //    defined(CYGPKG_LIBC_STDIO_OPEN)
+#endif // defined(CYGPKG_LIBC_STDIO) && defined(CYGPKG_LIBC_STDIO_OPEN)
 
 // EOF fopen.cxx

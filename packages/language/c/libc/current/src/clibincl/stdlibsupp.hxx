@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -128,21 +128,21 @@ _realloc( void * /* ptr */, size_t /* size */ );
 // 7.10.4 Communication with the environment
 
 externC void
-_abort( void ) CYGPRI_LIBC_NORETURN;
+_abort( void ) CYGBLD_ATTRIB_NORET;
 
 externC int
-_atexit( Cyg_atexit_fn_t /* func_to_register */ );
+_atexit( Cyg_libc_atexit_fn_t /* func_to_register */ );
 
 // The "real" names for exit() and _exit() are different for obvious name
 // clash issues
 
 externC void
-__libc_exit( int /* status */ ) CYGPRI_LIBC_NORETURN;
+__libc_exit( int /* status */ ) CYGBLD_ATTRIB_NORET;
 
 // POSIX 1003.1 section 3.2.2 "Terminate a process"
 
 externC void
-__libc__exit( int /* status */ ) CYGPRI_LIBC_NORETURN;
+__libc__exit( int /* status */ ) CYGBLD_ATTRIB_NORET;
 
 externC char *
 _getenv( const char * /* name */ );
@@ -169,14 +169,8 @@ _qsort( void * /* first_object */, size_t /* num_objects */,
 externC int
 _abs( int /* val */ );
 
-externC div_t
-_div( int /* numerator */, int /* denominator */ );
-
 externC long
 _labs( long /* val */ );
-
-externC ldiv_t
-_ldiv( long /* numerator */, long /* denominator */ );
 
 //========================================================================
 

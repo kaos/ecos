@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -61,20 +61,13 @@
 
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
 
-#if defined(CYG_HAL_MIPS_SIM)
-// Reduce time in simulated TX39 so that
-// it runs within the timeout.
-#define TEST_DELAY     1000000000ll
-#else
-
-#define TEST_DELAY     5000000000ll
-
-#endif    
 
 #define NTHREADS 1
 #include "testaux.hxx"
 
 static cyg_uint32 ticks;     // Number of ticks thread[0] will delay for
+
+static cyg_uint64 TEST_DELAY;
 
 static void entry0( CYG_ADDRWORD data )
 {
@@ -86,6 +79,12 @@ static void entry0( CYG_ADDRWORD data )
 void clock1_main( void )
 {
     CYG_TEST_INIT();
+
+    if (cyg_test_is_simulator) {
+        TEST_DELAY = 100000000ll;
+    } else {
+        TEST_DELAY = 3000000000ll;
+    }
 
     new_thread(entry0, (CYG_ADDRWORD)&thread_obj[0]);
 
@@ -111,7 +110,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH( "N/A: Kernel real-time clock disabled");
+    CYG_TEST_NA( "Kernel real-time clock disabled");
 }
 
 #endif // def CYGVAR_KERNEL_COUNTERS_CLOCK

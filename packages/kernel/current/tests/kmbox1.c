@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,6 +36,8 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
@@ -45,7 +47,7 @@
 #include "testaux.h"
 
 #define NTHREADS 2
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -110,7 +112,7 @@ static void entry0( cyg_addrword_t data )
     CYG_TEST_CHECK(2==q++, "bad synchronization");
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
-    CYG_TEST_CHECK(NULL==cyg_mbox_timed_get(m0, cyg_current_time()+2),
+    CYG_TEST_CHECK(NULL==cyg_mbox_timed_get(m0, cyg_current_time()+10),
                    "unexpectedly found message");
     CYG_TEST_CHECK(3==q++, "bad synchronization");
     // Allow t1 to run as this get times out
@@ -125,7 +127,7 @@ static void entry0( cyg_addrword_t data )
     // m0 now contains ( 6 ... 6 )
     CYG_TEST_CHECK(10==q++, "bad synchronization");
     cyg_mbox_put(m1, (void*)4);                   // wake t1
-    CYG_TEST_CHECK(!cyg_mbox_timed_put(m0, (void*)8, cyg_current_time()+2),
+    CYG_TEST_CHECK(!cyg_mbox_timed_put(m0, (void*)8, cyg_current_time()+10),
                    "timed put() unexpectedly worked");
     CYG_TEST_CHECK(12==q++, "bad synchronization");
     // m0 still contains ( 6 ... 6 )
@@ -144,16 +146,16 @@ static void entry1( cyg_addrword_t data )
     CYG_TEST_CHECK(1==q++, "bad synchronization");
     cyg_mbox_PUT(m0, (void *)3);                  // wake t0
 
-#ifdef CYGFUN_KERNEL_THREADS_TIMER
+#if defined(CYGFUN_KERNEL_THREADS_TIMER)
     CYG_TEST_INFO("Testing timed functions");
-    CYG_TEST_CHECK(7==(cyg_count8)cyg_mbox_timed_get(m0,cyg_current_time()+4),
+    CYG_TEST_CHECK(7==(cyg_count8)cyg_mbox_timed_get(m0,cyg_current_time()+20),
                    "timed get()");
     CYG_TEST_CHECK(4==q++, "bad synchronization");
 #ifdef CYGMTH_MBOX_PUT_CAN_WAIT
     CYG_TEST_CHECK(4==(cyg_count8)cyg_mbox_get(m1));
 
     CYG_TEST_CHECK(11==q++, "bad synchronization");
-    thread[0]->delay(4);    // allow t0 to reach put on m1
+    thread[0]->delay(20);    // allow t0 to reach put on m1
     CYG_TEST_CHECK(14==q++, "bad synchronization");
     CYG_TEST_CHECK(cyg_mbox_waiting_to_put(m0), "waiting_to_put()");
     do {
@@ -171,11 +173,11 @@ void kmbox1_main( void )
     CYG_TEST_INIT();
 
     cyg_thread_create(4, entry0 , (cyg_addrword_t)0, "kmbox1-0",
-    	(void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_thread_create(4, entry1 , (cyg_addrword_t)1, "kmbox1-1",
-    	(void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
+        (void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
     cyg_thread_resume(thread[1]);
 
     cyg_mbox_create( &m0, &mbox0 );
@@ -197,7 +199,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

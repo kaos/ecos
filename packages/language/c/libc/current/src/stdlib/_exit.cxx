@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       Provides POSIX 1003.1 _exit() function
 // Description: 
 // Usage:       
 //
@@ -42,10 +42,7 @@
 
 // CONFIGURATION
 
-#include <pkgconf/libc.h>   // Configuration header
-
-// Include the C library?
-#ifdef CYGPKG_LIBC     
+#include <pkgconf/libc.h>          // C library configuration header
 
 // INCLUDES
 
@@ -56,6 +53,7 @@
                                    // (like this one)
 #include "clibincl/stdlibsupp.hxx" // Support for stdlib functions
 #ifdef CYGPKG_KERNEL
+# include <pkgconf/kernel.h>       // kernel configuration
 # include <cyg/kernel/thread.hxx>  // eCos kernel for thread termination
 # include <cyg/kernel/thread.inl>  // and
 # include <cyg/kernel/sched.hxx>   // for stopping the scheduler
@@ -66,7 +64,7 @@
 // SYMBOLS
 
 externC void
-_exit( int ) CYGPRI_LIBC_WEAK_ALIAS("__libc__exit") CYGPRI_LIBC_NORETURN;
+_exit( int ) CYGBLD_ATTRIB_WEAK_ALIAS(__libc__exit) CYGBLD_ATTRIB_NORET;
 
 // FUNCTIONS
 
@@ -101,7 +99,5 @@ __libc__exit( int status )
     CYG_REPORT_RETURN();
 } // _exit()
 
-
-#endif // ifdef CYGPKG_LIBC     
 
 // EOF _exit.cxx

@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -31,7 +31,7 @@
 PACKAGE       := hal_powerpc
 include ../../../../../pkgconf/pkgconf.mak
 
-TESTS	      := 
+TESTS	      := intr0
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

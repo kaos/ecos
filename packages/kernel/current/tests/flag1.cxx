@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -92,7 +92,7 @@ static void entry0( CYG_ADDRWORD data )
     f2.wait(0x2, Cyg_Flag::OR);    
     CYG_TEST_CHECK(20==q,"bad synchronization");
     f2.wait(0x10, Cyg_Flag::AND, 
-            Cyg_Clock::real_time_clock->current_value()+20);
+            Cyg_Clock::real_time_clock->current_value()+80);
     CYG_TEST_CHECK(21==q++,"bad synchronization");
 #endif
     f0.wait(1, Cyg_Flag::OR);
@@ -136,7 +136,7 @@ static void entry1( CYG_ADDRWORD data )
     CYG_TEST_CHECK(!f0.waiting(), "waiting()");
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
-    thread[1]->delay(10); // allow other threads to reach wait on f1
+    thread[1]->delay(40); // allow other threads to reach wait on f1
     CYG_TEST_CHECK(f1.waiting(), "waiting() not true");
     f1.setbits();                       // wake one of t0,t2
     CYG_TEST_CHECK(f1.waiting(), "waiting() not true");
@@ -152,7 +152,7 @@ static void entry1( CYG_ADDRWORD data )
     f2.setbits(0x2);                    // synchronize with t0,t2
     CYG_TEST_CHECK(20==q,"bad synchronization");
     f2.wait(0x20, Cyg_Flag::AND,
-            Cyg_Clock::real_time_clock->current_value()+10);
+            Cyg_Clock::real_time_clock->current_value()+40);
     CYG_TEST_CHECK(22==q++,"bad synchronization");
 #endif
 
@@ -169,7 +169,7 @@ static void entry2( CYG_ADDRWORD data )
     f2.wait(0x2, Cyg_Flag::OR);
     CYG_TEST_CHECK(20==q,"bad synchronization");
     CYG_TEST_CHECK(0==f2.wait(0x40, Cyg_Flag::AND,
-                              Cyg_Clock::real_time_clock->current_value()+5),
+                              Cyg_Clock::real_time_clock->current_value()+20),
                    "timed wait() wrong");
     CYG_TEST_CHECK(20==q++,"bad synchronization");
     // Now wake t0 before it times out

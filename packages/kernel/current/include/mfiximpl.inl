@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mfiximpl.inl
+//      mfiximpl.inl
 //
-//	Memory pool with fixed block class declarations
+//      Memory pool with fixed block class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-23
-// Purpose:	Define Mfiximpl class interface
-// Description:	Inline class for constructing a fixed block allocator
-// Usage:	#include <cyg/kernel/mfiximpl.hxx>
-//	       	#include <cyg/kernel/mfiximpl.inl>	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-23
+// Purpose:     Define Mfiximpl class interface
+// Description: Inline class for constructing a fixed block allocator
+// Usage:       #include <cyg/kernel/mfiximpl.hxx>
+//              #include <cyg/kernel/mfiximpl.inl>      
 //
 //####DESCRIPTIONEND####
 //
@@ -55,12 +55,14 @@ Cyg_Mempool_Fixed_Implementation::Cyg_Mempool_Fixed_Implementation(
     cyg_int32 i;
     bitmap = (cyg_uint32 *)base;
     blocksize = alloc_unit;
-    numblocks = size / blocksize;
-    top = base + size;
 
     CYG_ASSERT( blocksize > 0, "Bad blocksize" );
     CYG_ASSERT( size > 2, "Bad blocksize" );
     CYG_ASSERT( blocksize < size, "blocksize, size bad" );
+
+    numblocks = size / blocksize;
+    top = base + size;
+
     CYG_ASSERT( numblocks >= 2, "numblocks bad" );
 
     i = (numblocks + 31)/32;        // number of words to map blocks

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	except.hxx
+//      except.hxx
 //
-//	Exception handling declarations
+//      Exception handling declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,21 +25,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-04-09
-// Purpose:	Define exception interfaces
-// Description:	The classes defined here collectively implement the
-//              internal API used to register, manage and deliver
-//              exceptions.
-// Usage:	#include <cyg/kernel/thread.hxx>
+// Author(s):    nickg
+// Contributors: nickg, jlarmour
+// Date:         1999-02-16
+// Purpose:      Define exception interfaces
+// Description:  The classes defined here collectively implement the
+//               internal API used to register, manage and deliver
+//               exceptions.
+// Usage:        #include <cyg/kernel/thread.hxx>
 //
 //####DESCRIPTIONEND####
 //
@@ -62,7 +62,7 @@ typedef void cyg_exception_handler(
 // Exception delivery interface. This function is exported to the HAL which
 // invokes it for all exceptions that it is not able to handle itself.
 
-externC void deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
+externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 
 // -------------------------------------------------------------------------
 // Exception control class. Depending on the configuration there is either
@@ -74,9 +74,9 @@ class Cyg_Exception_Control
 {
 
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
-    cyg_exception_handler   *exception_handler[CYG_EXCEPTION_COUNT];
+    cyg_exception_handler   *exception_handler[CYGNUM_HAL_EXCEPTION_COUNT];
     
-    CYG_ADDRWORD            exception_data[CYG_EXCEPTION_COUNT];
+    CYG_ADDRWORD            exception_data[CYGNUM_HAL_EXCEPTION_COUNT];
 #else
     cyg_exception_handler   *exception_handler; // Handler function
     

@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:          1998-02-13
 // Purpose:     
 // Description: 
@@ -62,7 +62,7 @@
 
 #ifdef CYGDBG_USE_ASSERTS
 inline bool
-Cyg_StdioStream::check_this( cyg_assert_class_zeal zeal )
+Cyg_StdioStream::check_this( cyg_assert_class_zeal zeal ) const
 {
     // check that it has the magic word set meaning it is valid.
     if ( magic_validity_word != 0x7b4321ce )
@@ -131,9 +131,8 @@ Cyg_StdioStream::~Cyg_StdioStream()
 
     flush_output_unlocked();
 
-    if (my_device->close) {
-        (*my_device->close)( my_device->cookie );  // @@@ discard error?
-    } // if
+    // Currently there is no I/O function defined for "close"
+    // Add such a call if this is ever defined.
 
     unlock_me();
 
@@ -282,6 +281,8 @@ Cyg_StdioStream::set_error( Cyg_ErrNo errno_to_set )
     } // if
     
     errno = error = errno_to_set;
+
+    unlock_me();
 } // set_error()
 
 

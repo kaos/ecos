@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: This file implements the buffer class used by Cyg_StdioStream
@@ -72,7 +72,7 @@ private:
     cyg_bool call_free;  // should we free the old buffer if set_buffer is
                          // called?
 #else 
-    cyg_uint8 buffer_bottom[BUFSIZE];
+    cyg_uint8 buffer_bottom[BUFSIZ];
 #endif
 
     cyg_ucount32 buffer_size;
@@ -81,9 +81,6 @@ private:
 
     cyg_uint8 *current_buffer_position;
 
-    // do not permit a copy constructor
-    Cyg_StdioStreamBuffer( const Cyg_StdioStreamBuffer & );
-
 public:
 
     // CONSTRUCTORS
@@ -91,7 +88,7 @@ public:
     // You can change the size, or even supply your own buffer, although
     // this only has an effect with dynamic buffers. Otherwise it is
     // silently ignored
-    Cyg_StdioStreamBuffer( cyg_ucount32 size=BUFSIZE,
+    Cyg_StdioStreamBuffer( cyg_ucount32 size=BUFSIZ,
                            cyg_uint8 *new_buffer=NULL );
 
 
@@ -105,7 +102,7 @@ public:
     // only has an effect with dynamic buffers, although EINVAL is returned
     // in that case. ENOMEM may also be returned
     Cyg_ErrNo
-    set_buffer( cyg_ucount32 size=BUFSIZE, cyg_uint8 *new_buffer=NULL );
+    set_buffer( cyg_ucount32 size=BUFSIZ, cyg_uint8 *new_buffer=NULL );
 
     // Find out how much buffer space is in use
     cyg_ucount32

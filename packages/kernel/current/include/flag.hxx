@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	flag.hxx
+//      flag.hxx
 //
-//	Flag object class declarations
+//      Flag object class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Define Flag class interfaces
-// Description:	The classes defined here provide the APIs for flags.
-// Usage:	#include <cyg/kernel/flag.hxx>
-//		
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Define Flag class interfaces
+// Description: The classes defined here provide the APIs for flags.
+// Usage:       #include <cyg/kernel/flag.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -83,10 +83,10 @@ private:
     class FlagWaitInfo
     {
     public:
-        Cyg_FlagValue	allmask;        // these are separate words to
-        Cyg_FlagValue	anymask;        // save time in wakeup.
-        Cyg_FlagValue	value_out;      // return the value that satisfied
-        cyg_bool	do_clear;
+        Cyg_FlagValue   allmask;        // these are separate words to
+        Cyg_FlagValue   anymask;        // save time in wakeup.
+        Cyg_FlagValue   value_out;      // return the value that satisfied
+        cyg_bool        do_clear;
 
         FlagWaitInfo() { value_out = 0; }
     };

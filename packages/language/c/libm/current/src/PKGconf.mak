@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -30,6 +30,7 @@
 
 PACKAGE       := libm
 include ../../../../../pkgconf/pkgconf.mak
+include ../../../../../pkgconf/system.mak
 
 LIBRARY       := libtarget.a
 COMPILE       := misc/matherr.c misc/standard.c misc/compatmode.cxx         \
@@ -69,6 +70,58 @@ COMPILE       := misc/matherr.c misc/standard.c misc/compatmode.cxx         \
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=
+
+ifdef CYG_HAL_ARM
+# Work-around for PR 19698
+s_atan.c-CFLAGS += -O1
+s_ceil.c-CFLAGS += -O1
+s_copysign.c-CFLAGS += -O1
+s_cos.c-CFLAGS += -O1
+s_expm1.c-CFLAGS += -O1
+s_fabs.c-CFLAGS += -O1
+s_finite.c-CFLAGS += -O1
+s_floor.c-CFLAGS += -O1
+s_frexp.c-CFLAGS += -O1
+s_isnan.c-CFLAGS += -O1
+s_ldexp.c-CFLAGS += -O1
+s_rint.c-CFLAGS += -O1
+s_scalbn.c-CFLAGS += -O1
+s_sin.c-CFLAGS += -O1
+s_tan.c-CFLAGS += -O1
+s_modf.c-CFLAGS += -O1
+s_tanh.c-CFLAGS += -O1
+s_asinh.c-CFLAGS += -O1
+s_cbrt.c-CFLAGS += -O1
+s_erf.c-CFLAGS += -O1
+s_ilogb.c-CFLAGS += -O1
+s_log1p.c-CFLAGS += -O1
+s_logb.c-CFLAGS += -O1
+s_nextafter.c-CFLAGS += -O1
+s_significand.c-CFLAGS += -O1
+
+e_fmod.c-CFLAGS += -O1
+w_fmod.c-CFLAGS += -O1
+e_acos.c-CFLAGS += -O1
+e_acosh.c-CFLAGS += -O1
+e_asin.c-CFLAGS += -O1
+e_atan2.c-CFLAGS += -O1
+e_atanh.c-CFLAGS += -O1
+e_exp.c-CFLAGS += -O1
+e_fmod.c-CFLAGS += -O1
+e_hypot.c-CFLAGS += -O1
+e_j0.c-CFLAGS += -O1
+e_j1.c-CFLAGS += -O1
+e_jn.c-CFLAGS += -O1
+e_lgamma_r.c-CFLAGS += -O1
+e_log.c-CFLAGS += -O1
+e_log10.c-CFLAGS += -O1
+e_pow.c-CFLAGS += -O1
+e_rem_pio2.c-CFLAGS += -O1
+e_remainder.c-CFLAGS += -O1
+e_sqrt.c-CFLAGS += -O1
+k_cos.c-CFLAGS += -O1
+k_tan.c-CFLAGS += -O1
+endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 

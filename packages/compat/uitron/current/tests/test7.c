@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -287,7 +287,11 @@ do_resume( void )
 #define T2_WAIT (5)
 
 #define T1_MALLOC (110)
+#ifdef CYGSEM_KERNEL_MEMORY_COALESCE
 #define T2_MALLOC (100)
+#else
+#define T2_MALLOC T1_MALLOC
+#endif
 
 VP vptmp;
 VP vp = NULL;
@@ -991,8 +995,7 @@ void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sched/bitmap.cxx
+//      sched/bitmap.cxx
 //
-//	Bitmap scheduler class implementation
+//      Bitmap scheduler class implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-16
-// Purpose:	Bitmap scheduler class implementation
-// Description:	This file contains the implementations of
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-16
+// Purpose:     Bitmap scheduler class implementation
+// Description: This file contains the implementations of
 //              Cyg_Scheduler_Implementation and Cyg_SchedThread_Implementation.
 //              
 //
@@ -219,6 +219,8 @@ Cyg_ThreadQueue_Implementation::Cyg_ThreadQueue_Implementation()
     CYG_REPORT_FUNCTION();
         
     wait_queue = 0;                       // empty queue
+
+    CYG_REPORT_RETURN();
 }
 
 

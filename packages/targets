@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -94,11 +94,6 @@ target mn10300 {
 	startup		{ ram rom }
 	packages	{
             CYGPKG_HAL_MN10300_STDEVAL1
-            CYGPKG_DEVICES_GDB
-            CYGPKG_DEVICES_SERIAL_RS232_COMMON
-            CYGPKG_DEVICES_SERIAL_RS232_MN10300
-            CYGPKG_DEVICES_WALLCLOCK
-            CYGPKG_DEVICES_WATCHDOG
         }
 			
     }
@@ -107,8 +102,6 @@ target mn10300 {
 	startup		{ ram }
 	packages	{
             CYGPKG_HAL_MN10300_SIM
-            CYGPKG_DEVICES_WALLCLOCK
-            CYGPKG_DEVICES_WATCHDOG
         }
     }
 }
@@ -134,10 +127,6 @@ target tx39 {
 	startup		{ ram rom }
 	packages	{
 	    CYGPKG_HAL_TX39_JMR3904
-	    CYGPKG_DEVICES_SERIAL_RS232_COMMON
-	    CYGPKG_DEVICES_SERIAL_RS232_TX39
-	    CYGPKG_DEVICES_WALLCLOCK
-	    CYGPKG_DEVICES_WATCHDOG
         }
     }
     platform	sim {
@@ -145,8 +134,6 @@ target tx39 {
 	startup		{ ram }
         packages	{
 	    CYGPKG_HAL_TX39_SIM
-            CYGPKG_DEVICES_WALLCLOCK
-            CYGPKG_DEVICES_WATCHDOG
         }
     }
 }
@@ -169,11 +156,16 @@ target powerpc {
 
     platform cogent {
         alias		{ "Cogent board" }
-	startup		{ ram rom }
+	startup		{ ram rom stubs }
 	packages	{
 	    CYGPKG_HAL_POWERPC_COGENT
-            CYGPKG_DEVICES_WALLCLOCK
-            CYGPKG_DEVICES_WATCHDOG
+	}
+    }
+    platform fads {
+        alias		{ "FADS board" }
+	startup		{ ram rom }
+	packages	{
+	    CYGPKG_HAL_POWERPC_FADS
 	}
     }
     platform sim {
@@ -181,9 +173,102 @@ target powerpc {
 	startup		{ ram }
 	packages	{
 	    CYGPKG_HAL_POWERPC_SIM
-            CYGPKG_DEVICES_WALLCLOCK
-            CYGPKG_DEVICES_WATCHDOG
 	}
     }
 }
 
+target i386 {
+    alias		{ i386 i486 i586 i86 ix86 }
+    command_prefix  	i686-pc-linux-gnu
+    packages		{ CYGPKG_HAL_I386 }
+    cflags {
+        ERRFLAGS        "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+        CXXERRFLAGS     "-Woverloaded-virtual"
+        DBGFLAGS        "-g -O2"
+        LANGFLAGS       "-ffunction-sections -fdata-sections"
+        CXXLANGFLAGS    "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+        LDLANGFLAGS     "-nostartfiles -nostdlib -Wl,--gc-sections"
+    }
+
+    platform linux {
+        alias		{ "Linux" }
+	startup		{ ram }
+	packages	{ 
+                CYGPKG_HAL_I386_LINUX
+        }
+
+    }
+}
+
+target arm {
+    alias	        { ARM arm-elf }
+    command_prefix	arm-elf
+    packages		{ CYGPKG_HAL_ARM }
+    hal			hal/arm/arch
+
+    platform pid {
+        alias		{ "ARM PID7 development board" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_PID
+	}
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7tdmi"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
+    platform aeb {
+        alias		{ "ARM Eval Board (AEB)" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_AEB
+	}
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7di"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
+}
+
+target sparclite {
+    alias	        { SPARClite sparclite-elf }
+    command_prefix	sparclite-elf
+    packages		{ CYGPKG_HAL_SPARCLITE }
+    hal			hal/sparclite/arch
+
+    cflags {
+        ARCHFLAGS       "-msoft-float -mcpu=sparclite"
+        ERRFLAGS        "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+        CXXERRFLAGS     "-Woverloaded-virtual"
+        DBGFLAGS        "-g -O2"
+        LANGFLAGS       "-ffunction-sections -fdata-sections"
+        CXXLANGFLAGS    "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+        LDLANGFLAGS     "-Wl,--gc-sections -Wl,-static"
+    }
+
+    platform sim {
+	alias		{ "Simulator" }
+	startup		{ ram }
+	packages	{
+	    CYGPKG_HAL_SPARCLITE_SIM
+	}
+    }
+
+    platform sleb {
+	alias		{ "SPARClite Evaluation Board" }
+	startup		{ ram rom }
+	packages	{
+	    CYGPKG_HAL_SPARCLITE_SLEB
+	}
+    }
+}

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	sched.inl
+//      sched.inl
 //
-//	Scheduler class inlines
+//      Scheduler class inlines
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,25 +25,25 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define inlines for scheduler classes
-// Description:	Inline functions for the scheduler classes. These are
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define inlines for scheduler classes
+// Description: Inline functions for the scheduler classes. These are
 //              not defined in the header so that we have the option
 //              of making them non-inline.
 // Usage:
 //              #include <cyg/kernel/sched.hxx>
 //              ...
-//		#include <cyg/kernel/sched.inl>
-//		...
+//              #include <cyg/kernel/sched.inl>
+//              ...
 //
 //####DESCRIPTIONEND####
 //
@@ -62,6 +62,8 @@ inline void Cyg_Scheduler::lock()
     // the scheduler lock is strictly nesting. Even if we are interrupted
     // partway through the increment, the lock will be returned to the same
     // value before we are resumed/rescheduled.
+
+    HAL_REORDER_BARRIER();
 
     sched_lock++;
 
@@ -83,10 +85,30 @@ inline void Cyg_Scheduler::unlock()
 
     HAL_REORDER_BARRIER();
     
-    register cyg_ucount32 lock = sched_lock - 1;
+    cyg_ucount32 __lock = sched_lock - 1;
     
-    if( lock == 0 ) unlock_inner();
-    else sched_lock = lock;
+    if( __lock == 0 ) unlock_inner();
+    else sched_lock = __lock;
+
+    HAL_REORDER_BARRIER();
+}
+
+inline void Cyg_Scheduler::unlock_simple()
+{
+    // This function decrements the lock, but does not call unlock_inner().
+    // Therefore does not immediately allow another thread to run:
+    // merely makes it possible for some other thread to run at some
+    // indeterminate future time.  This is mainly for use by
+    // debuggers, it should not normally be used anywhere else.
+
+    CYG_INSTRUMENT_SCHED(UNLOCK,sched_lock,0);
+
+    HAL_REORDER_BARRIER();
+        
+    if (sched_lock > 0)
+        sched_lock = sched_lock - 1;
+
+    HAL_REORDER_BARRIER();
 }
 
 

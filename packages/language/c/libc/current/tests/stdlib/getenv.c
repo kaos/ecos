@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     jlarmour
+// Contributors:    jlarmour
 // Date:          1998/8/31
 // Description:   Contains testcode for C library getenv() function
 //
@@ -70,6 +70,7 @@ cyg_package_start( void )
 #endif
 } // cyg_package_start()
 
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_ENVIRONMENT)
 static int
 my_strcmp(const char *s1, const char *s2)
 {
@@ -81,12 +82,12 @@ my_strcmp(const char *s1, const char *s2)
 
     return (*s1 - *s2);
 } // my_strcmp()
-
+#endif
 
 int
 main( int argc, char *argv[] )
 {
-#ifdef CYGPKG_LIBC
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_ENVIRONMENT)
     char *str;
 
     char *env1[] = { NULL };
@@ -104,48 +105,53 @@ main( int argc, char *argv[] )
                   "library getenv() function");
 
 #if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_ENVIRONMENT)
+
     // Check 1
+    str = getenv("ThisIsAVeryUnlikelyName");
+    CYG_TEST_PASS_FAIL( str==NULL, "Simple getenv() default environ" );
+
+    // Check 2
     environ = (char **)&env1;
     str = getenv("wibble");
     CYG_TEST_PASS_FAIL( str==NULL, "Simple getenv() with empty environ" );
     
-    // Check 2
+    // Check 3
     environ = (char **)&env2;
     str = getenv("WIBBLE");
     CYG_TEST_PASS_FAIL( (str != NULL) && !my_strcmp(str, "fred"),
                         "Simple getenv()" );
 
-    // Check 3
+    // Check 4
     str = getenv("wibble");
     CYG_TEST_PASS_FAIL( str==NULL,
                         "Simple getenv() for something not in the "
                         "environment" );
 
-    // Check 4
+    // Check 5
     environ = (char **)&env3;
     str = getenv("PATH");
     CYG_TEST_PASS_FAIL( (str!= NULL) &&
                         !my_strcmp(str,"/usr/local/bin:/usr/bin"),
                         "Multiple string environment" );
 
-    // Check 5
+    // Check 6
     str = getenv("PATh");
     CYG_TEST_PASS_FAIL( str==NULL, "getenv() for something not in the "
                         "environment for multiple string environment" );
 
-    // Check 6
+    // Check 7
     str = getenv("home");
     CYG_TEST_PASS_FAIL( (str != NULL) && !my_strcmp(str, "hatstand"),
                         "Case-sensitive environment names" );
 
-    // Check 7
+    // Check 8
     str = getenv("TEST");
     CYG_TEST_PASS_FAIL( (str != NULL) && !my_strcmp(str, "1234=5678"),
                         "environment value containing '='" );
 
     
 #else
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 #endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_ENVIRONMENT)
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "

@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -94,7 +94,19 @@ _hal_thread_load_context:
 ## HAL longjmp(), setjmp() implementations
 ## These implementations omit the usual movm [d2,d3,a2,a3],(sp)
 ## Which is the first instruction of all C compiled functions.	
+## Note: These definitions are repeated in hal_arch.h. If changes are required
+## remember to update both sets.
 
+#define CYGARC_JMP_BUF_SP        0
+#define CYGARC_JMP_BUF_D2        1
+#define CYGARC_JMP_BUF_D3        2
+#define CYGARC_JMP_BUF_A2        3
+#define CYGARC_JMP_BUF_A3        4
+#define CYGARC_JMP_BUF_LR        5
+
+#define CYGARC_JMP_BUF_SIZE      6
+
+        
 	# This just preserves the callee save registers 
 	# namely a2,a3,d2,d3
 	# setjmp cannot use movm to do this as we need to keep 
@@ -102,14 +114,14 @@ _hal_thread_load_context:
 	.globl _hal_setjmp
 _hal_setjmp:			# d0=env
 	mov	d0,a0		# env
-	mov	d2,(4,a0)
-	mov	d3,(8,a0)
-	mov	a2,(12,a0)
-	mov	a3,(16,a0)
+	mov	d2,(CYGARC_JMP_BUF_D2*4,a0)
+	mov	d3,(CYGARC_JMP_BUF_D3*4,a0)
+	mov	a2,(CYGARC_JMP_BUF_A2*4,a0)
+	mov	a3,(CYGARC_JMP_BUF_A3*4,a0)
 	mov	mdr,d1		# link saved by call (also in (0,sp))
-	mov	d1,(20,a0)	
+	mov	d1,(CYGARC_JMP_BUF_LR*4,a0)	
 	mov	sp,a1
-	mov	a1,(0,a0)	# a1==(caller''s sp)
+	mov	a1,(CYGARC_JMP_BUF_SP*4,a0) # a1==(caller''s sp)
 	clr	d0		# return 0
 	ret	[],0
 
@@ -118,13 +130,13 @@ _hal_setjmp:			# d0=env
 	.globl _hal_longjmp
 _hal_longjmp:
 	mov	d0,a0
-	mov	(4,a0),d2
-	mov	(8,a0),d3
-	mov	(12,a0),a2
-	mov	(16,a0),a3
-	mov	(20,a0),d0
+	mov	(CYGARC_JMP_BUF_D2*4,a0),d2
+	mov	(CYGARC_JMP_BUF_D3*4,a0),d3
+	mov	(CYGARC_JMP_BUF_A2*4,a0),a2
+	mov	(CYGARC_JMP_BUF_A3*4,a0),a3
+	mov	(CYGARC_JMP_BUF_LR*4,a0),d0
 ##	mov	d0,mdr
-	mov	(0,a0),a1	# stashed (caller''s sp)
+	mov	(CYGARC_JMP_BUF_SP*4,a0),a1 # stashed (caller''s sp)
 	mov	a1,sp
 	mov	d0,(0,sp)	# put link on stack
 	mov	d1,d0		# return arg1

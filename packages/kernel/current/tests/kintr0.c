@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,8 +30,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm
-// Date:          1998-06-15
+// Contributors:  dsm, jlarmour
+// Date:          1999-02-16
 // Description:   Very basic test of interrupt objects
 // Options:
 //     CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
@@ -105,36 +105,57 @@ static void vsr0()
 
 void kintr0_main( void )
 {
-    cyg_vector_t v = 11 % CYG_VSR_COUNT;
-    cyg_vector_t v1 = 6 % CYG_ISR_COUNT;
+    cyg_vector_t v = 11 % CYGNUM_HAL_VSR_COUNT;
+    cyg_vector_t v1;
+    cyg_vector_t lvl1 = 1 % (CYGNUM_HAL_ISR_COUNT);
+    cyg_vector_t lvl2 = 15 % (CYGNUM_HAL_ISR_COUNT);
+    int in_use;
+
     cyg_VSR_t *old_vsr, *new_vsr;
 
     CYG_TEST_INIT();
+ 
+#ifdef CYGPKG_HAL_TX39    
+    // This can be removed when PR 17831 is fixed
+    if ( cyg_test_is_simulator )
+        v1 = 12 % CYGNUM_HAL_ISR_COUNT;
+    else /* NOTE TRAILING ELSE... */
+#endif
+    v1 = 6 % CYGNUM_HAL_ISR_COUNT;
 
     CHECK(flash());
     CHECK(flash());
 
-    cyg_interrupt_create(1 % (CYG_ISR_COUNT), 1, (cyg_addrword_t)777,
-                         isr0, dsr0, &intr0, &intr_obj[0]);
+    // Make sure the chosen levels are not already in use.
+    HAL_INTERRUPT_IN_USE( lvl1, in_use );
+    intr0 = 0;
+    if (!in_use)
+        cyg_interrupt_create(lvl1, 1, (cyg_addrword_t)777, isr0, dsr0, 
+                             &intr0, &intr_obj[0]);
     
-    cyg_interrupt_create(15 % (CYG_ISR_COUNT), 1, 888,
-                         isr1, dsr1, &intr1, &intr_obj[1]);
-    
+    HAL_INTERRUPT_IN_USE( lvl2, in_use );
+    intr1 = 0;
+    if (!in_use && lvl1 != lvl2)
+        cyg_interrupt_create(lvl2, 1, 888, isr1, dsr1, &intr1, &intr_obj[1]);
 
     // Check these functions at least exist
 
     cyg_interrupt_enable();
     cyg_interrupt_disable();
 
-    cyg_interrupt_attach(intr0);
-    cyg_interrupt_attach(intr1);
-    cyg_interrupt_detach(intr0);
-    cyg_interrupt_detach(intr1);
+    if (intr0)
+        cyg_interrupt_attach(intr0);
+    if (intr1)
+        cyg_interrupt_attach(intr1);
+    if (intr0)
+        cyg_interrupt_detach(intr0);
+    if (intr1)
+        cyg_interrupt_detach(intr1);
 
     // If this attaching interrupt replaces the previous interrupt
     // instead of adding to it we could be in a big mess if the
     // vector is being used by something important.
-	
+        
     cyg_interrupt_get_vsr( v, &old_vsr );
     cyg_interrupt_set_vsr( v, vsr0 );
     cyg_interrupt_get_vsr( v, &new_vsr );
@@ -147,7 +168,7 @@ void kintr0_main( void )
 
     cyg_interrupt_set_vsr( v, new_vsr );
     new_vsr = NULL;
-    cyg_interrupt_get_vsr( v, &new_vsr );	
+    cyg_interrupt_get_vsr( v, &new_vsr );       
     CHECK( vsr0 == new_vsr );
 
     cyg_interrupt_set_vsr( v, old_vsr );
@@ -155,7 +176,7 @@ void kintr0_main( void )
     new_vsr = NULL;
     cyg_interrupt_get_vsr( v, &new_vsr );
     CHECK( old_vsr == new_vsr );
-	
+        
     CHECK( NULL != vsr0 );
 
     cyg_interrupt_mask(v1);
@@ -177,7 +198,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

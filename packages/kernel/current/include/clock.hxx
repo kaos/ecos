@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	clock.hxx
+//      clock.hxx
 //
-//	Clock and Alarm class declaration(s)
+//      Clock and Alarm class declaration(s)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define Clock and Alarm class interfaces
-// Description:	The classes defined here collectively implement the
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define Clock and Alarm class interfaces
+// Description: The classes defined here collectively implement the
 //              internal API used to create, configure and manage Counters,
 //              Clocks and Alarms.
 // Usage:       #include <cyg/kernel/clock.hxx>

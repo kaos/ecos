@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mboxt.hxx
+//      mboxt.hxx
 //
-//	Mboxt (Message Box/Mailbox) class declarations
+//      Mboxt (Message Box/Mailbox) class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,21 +25,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Define Mboxt class interfaces
-// Description:	The classes defined here provide the APIs for mboxtes.
-// Usage:	#include <cyg/kernel/mboxt.hxx>
-//		#include <cyg/kernel/mboxt.inl>
-//		
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Define Mboxt class interfaces
+// Description: The classes defined here provide the APIs for mboxtes.
+// Usage:       #include <cyg/kernel/mboxt.hxx>
+//              #include <cyg/kernel/mboxt.inl>
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -68,12 +68,12 @@ private:
     Cyg_ThreadQueue     put_threadq;    // Queue of waiting threads
 #endif
     static const
-    cyg_count32		size = QUEUE_SIZE;
-    T			itemqueue[ QUEUE_SIZE ];
+    cyg_count32         size = QUEUE_SIZE;
+    T                   itemqueue[ QUEUE_SIZE ];
                                         // queue of items
     // private utility functions
     // wake up a thread from some queue
-    inline void 	wakeup_waiter( Cyg_ThreadQueue &q );
+    inline void         wakeup_waiter( Cyg_ThreadQueue &q );
 
 public:
 
@@ -82,22 +82,22 @@ public:
     Cyg_Mboxt();                        // Constructor
     ~Cyg_Mboxt();                       // Destructor
         
-    cyg_bool	get( T &ritem );        // get an item; wait if none
+    cyg_bool    get( T &ritem );        // get an item; wait if none
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
-    cyg_bool	get( T &ritem, cyg_tick_count abs_timeout );
+    cyg_bool    get( T &ritem, cyg_tick_count abs_timeout );
 #endif
-    cyg_bool	tryget( T &ritem );     // just one attempt
+    cyg_bool    tryget( T &ritem );     // just one attempt
 
-    cyg_bool	peek_item( T &ritem );  // get next item without
+    cyg_bool    peek_item( T &ritem );  // get next item without
                                         // removing it
 
 #ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
-    cyg_bool	put( const T item );    // put an item; wait if full
+    cyg_bool    put( const T item );    // put an item; wait if full
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
-    cyg_bool	put( const T item, cyg_tick_count abs_timeout );
+    cyg_bool    put( const T item, cyg_tick_count abs_timeout );
 #endif
 #endif
-    cyg_bool	tryput( const T item ); // fails if Q full
+    cyg_bool    tryput( const T item ); // fails if Q full
 
     inline
     cyg_count32 peek()                  // Get current count value
@@ -106,13 +106,13 @@ public:
     }
 
     inline
-    cyg_bool	waiting_to_get()        // Any threads waiting?
+    cyg_bool    waiting_to_get()        // Any threads waiting?
     {
         return ! get_threadq.empty();
     }
 
     inline
-    cyg_bool	waiting_to_put()        // Any threads waiting?
+    cyg_bool    waiting_to_put()        // Any threads waiting?
     {
 #ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
         return ! put_threadq.empty();

@@ -22,26 +22,22 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  ctarpy, jlarmour
+// Date:          1999-03-23
 // Description:   Contains testcode for C library rand() function. This tests
 //                that random numbers are distributed well between 0 and
 //                RAND_MAX
 //
 //
 //####DESCRIPTIONEND####
-
-// Declarations for test system:
-//
-// TESTCASE_TYPE=CYG_TEST_MODULE
 
 
 // CONFIGURATION
@@ -56,24 +52,24 @@
 #include <sys/cstartup.h>          // C library initialisation
 
 
-// HOW TO START TESTS
-
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
-
-# define START_TEST( test ) test(0)
-
-#else
-
-# define START_TEST( test ) CYG_EMPTY_STATEMENT
-
-#endif // if defined(CYGPKG_LIBC)
-
-
 // CONSTANTS
 
-#define NUM_BUCKETS 1024           // how many categories to define
-#define TEST_LENGTH 100000         // how many samples to take
-#define BUCKET_DIFF_TOLERANCE 4    // how much the buckets can vary at the end
+#define NUM_BUCKETS 1000     // how many categories to define
+#define TEST_LENGTH 200000   // how many samples to take - careful
+                             // when reducing this since it also reduces
+                             // BUCKET_DIFF_TOLERANCE below. If you reduce
+                             // it too low, BUCKET_DIFF_TOLERANCE will need
+                             // a fudge factor
+
+#define BUCKET_SIZE    (RAND_MAX / NUM_BUCKETS)  // number space allocated
+                                                 // to bucket from 0..RAND_MAX
+#define NUM_PER_BUCKET (TEST_LENGTH/NUM_BUCKETS) // Expected number that went
+                                                 // into each bucket at end
+
+// how much the buckets can vary at the end.
+#define BUCKET_DIFF_TOLERANCE (NUM_PER_BUCKET/4) // allowed to vary 25%
+
+
 
 // FUNCTIONS
 
@@ -81,70 +77,27 @@
 externC void
 cyg_package_start( void )
 {
-#ifdef CYGPKG_LIBC
     cyg_iso_c_start();
-#else
-    (void)main(0, NULL);
-#endif
 } // cyg_package_start()
 
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
-
-static int
+static __inline__ int
 my_abs(int i)
 {
     return (i < 0) ? -i : i;
 } // my_abs()
 
-static void
-test( CYG_ADDRWORD data )
-{
-    static cyg_uint8 rand_bucket[NUM_BUCKETS]; // divide the space from
-                                               // 0..RAND_MAX into
-                                               // NUM_BUCKETS categories
-    cyg_ucount32 count;                        // loop variable
-    int r;                                     // temp for rand() variable
-    cyg_ucount32 sum;                          // sum of bucket contents
-    cyg_ucount32 average;                      // average of bucket contents
-
-    // initialise all buckets to 0 - do it ourselves rather than rely on memset
-    for ( count=0; count < NUM_BUCKETS; ++count )
-    {
-        rand_bucket[ count ] = 0;
-    } // for
-
-    for ( count=0; count < TEST_LENGTH; ++count )
-    {
-        r = rand();
-        ++rand_bucket[ r % NUM_BUCKETS ];
-    } // for
-
-    for ( sum=0, count=0; count < NUM_BUCKETS; ++count )
-    {
-        sum += rand_bucket[ count ];
-    } // for
-
-    average = sum / NUM_BUCKETS;
-
-    for ( count=0; count < NUM_BUCKETS; ++count )
-    {
-        if ( my_abs(rand_bucket[count] - average) > BUCKET_DIFF_TOLERANCE )
-            break;
-    } // for
-
-    CYG_TEST_PASS_FAIL( (count >= NUM_BUCKETS), "even distribution of rand()");
-
-    CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
-                    "rand() function");
-} // test()
-
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
-
-
 int
 main(int argc, char *argv[])
 {
+    // divide the space from 0..RAND_MAX into NUM_BUCKETS categories *BUT*
+    // RAND_MAX / NUM_BUCKETS may not divide exactly so we leave space for
+    // the bits left over, in case there are any! So we add 1.
+
+    static cyg_uint8 rand_bucket[NUM_BUCKETS+1];    
+    cyg_ucount32 count;                        // loop variable
+    int r;                                     // temp for rand() variable
+
     CYG_TEST_INIT();
 
     CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C library "
@@ -153,9 +106,45 @@ main(int argc, char *argv[])
     CYG_TEST_INFO("This test tests the distribution of random numbers and");
     CYG_TEST_INFO("may take some time");
 
-    START_TEST( test );
+    for ( count=0; count < TEST_LENGTH; ++count ) {
+        r = rand();
+        ++rand_bucket[ r / BUCKET_SIZE ];
+        if ((count%10000)==0)
+            CYG_TEST_STILL_ALIVE(count, "Still testing...");
+    } // for
 
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this configuration");
+    for ( count=0; count < NUM_BUCKETS; ++count ) {
+        cyg_ucount32 diff;
+
+        diff = my_abs( rand_bucket[count] - NUM_PER_BUCKET );
+        if ( diff > BUCKET_DIFF_TOLERANCE )
+            break;
+    } // for
+
+    // if the previous loop completed, we may want to check the "extra"
+    // bucket (see the comment at the top) that may have some bits in if
+    // RAND_MAX doesn't split into NUM_BUCKETS evenly. The number of random
+    // digits that fell into that bucket would be expected to be proportional
+    // to the ratio of the remainder of (RAND_MAX % NUM_BUCKETS) to
+    // NUM_BUCKETS. 
+    if (count == NUM_BUCKETS) {
+        cyg_ucount32 rem;
+        cyg_ucount32 last_bucket_expected;
+        cyg_ucount32 diff;
+
+        rem = RAND_MAX % NUM_BUCKETS;
+
+        last_bucket_expected = (rem * NUM_PER_BUCKET) / BUCKET_SIZE;
+
+        diff = my_abs(last_bucket_expected - rand_bucket[count]);
+        CYG_TEST_PASS_FAIL(diff <= BUCKET_DIFF_TOLERANCE,
+                           "Upper bound fencepost test");
+    }
+    CYG_TEST_PASS_FAIL( (count >= NUM_BUCKETS),
+                        "even distribution of rand()");
+
+    CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for "
+                    "C library rand() function");
 } // main()
 
 

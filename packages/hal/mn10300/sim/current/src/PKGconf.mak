@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -32,25 +32,11 @@ PACKAGE       := hal_mn10300_sim
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c sim.S
+COMPILE       := hal_diag.c
 OTHER_OBJS    :=
-OTHER_TARGETS := ldscript.stamp
-OTHER_CLEAN   := ldscript.clean
-OTHER_DEPS    := ldscript.d
+OTHER_TARGETS :=
+OTHER_CLEAN   :=
+OTHER_DEPS    :=
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
-
-.PHONY: ldscript.clean
-
-ldscript.stamp: sim.ld
-	$(CC) -E -P -Wp,-MD,ldscript.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
-	@echo -e "\n$@ : $< \\" > ldscript.d
-	@tail -n +2 ldscript.tmp >> ldscript.d
-	@rm ldscript.tmp
-	$(TOUCH) $@
-
-ldscript.clean:
-	$(RM) -f $(PREFIX)/lib/target.ld
-	$(RM) -f ldscript.stamp
-
 

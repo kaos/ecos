@@ -22,19 +22,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	jlarmour@cygnus.co.uk
-// Contributors:	jlarmour@cygnus.co.uk
-// Date:	1998-06-11
-// Purpose:	To provide the strerror() implementation
-// Description:	This implements strerror() as described in ANSI chap 7.11.6.2
-// Usage:	See <cyg/error/codes.h>
+// Author(s):   jlarmour
+// Contributors:        jlarmour
+// Date:        1998-06-11
+// Purpose:     To provide the strerror() implementation
+// Description: This implements strerror() as described in ANSI chap 7.11.6.2
+// Usage:       See <cyg/error/codes.h>
 //
 //####DESCRIPTIONEND####
 //

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mempolt2.inl
+//      mempolt2.inl
 //
-//	Mempolt2 (Memory pool template) class declarations
+//      Mempolt2 (Memory pool template) class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,23 +25,23 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Define Mempolt2 class interface
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Define Mempolt2 class interface
 
 // Description: The class defined here provides the APIs for thread-safe,
 //              kernel-savvy memory managers; make a class with the
 //              underlying allocator as the template parameter.
-// Usage:	#include <cyg/kernel/mempolt2.hxx>
-//		
+// Usage:       #include <cyg/kernel/mempolt2.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -395,7 +395,7 @@ Cyg_Mempolt2<T>::get_allocation_size( cyg_uint8 *ptr )
 
 template <class T>
 inline cyg_bool
-Cyg_Mempolt2<T>::check_this(cyg_assert_class_zeal zeal)
+Cyg_Mempolt2<T>::check_this(cyg_assert_class_zeal zeal) const
 {
     CYG_REPORT_FUNCTION();
         

@@ -1,3 +1,202 @@
+1999-04-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/infra.h: Add cdl_package doc attribute.
+
+1999-04-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/cyg_type.h: Added new init priority for IO devices.
+
+	* include/diag.h: 
+	* src/diag.cxx: 
+	Use device for diag if configured so.
+
+1999-03-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/diag.cxx (diag_vprintf): Support '%%' printf modifier.
+
+1999-03-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Add CYGBLD_ATTRIB_CONST and tidy define indentation
+
+1999-03-04  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/diag.h:
+	Added a #include for <pkgconf/infra.h> so that the header file
+	can correctly check for CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
+
+1999-02-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Added CYGBLD_ATTRIB_ASM_ALIAS() macro to supply an alias for a
+	variable while it is being defined.
+
+1999-02-24  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/cyg_type.h (CYG_INIT_APPLICATION): Add CYG_INIT_DRIVERS
+	priority
+
+	* src/tcdiag.cxx (cyg_test_output): Re-include angle brackets
+	for CYG_TEST_GDBCMD command
+
+1999-02-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/testcase.h (CYG_TEST_NA): 
+	Add call to cyg_test_exit()
+
+1999-02-22  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/cyg_type.h: 
+	Add CYGBLD_ATTRIB_INIT_PRI/BEFORE/AFTER macros.
+	Remove CYG_INIT_BEFORE/AFTER as they were unusable
+
+	* include/testcase.h:
+	* src/tcdiag.cxx:
+	Add CYGNUM_TEST_NA() macro for not applicable state
+	Don't need to call diag_init() any more from cyg_test_init()
+
+	* src/diag.c:
+	* src/diag.cxx: 
+	Rename diag.c to diag.cxx
+	Add dummy constructor object to do initialization right after the
+	HAL has started. Needed to get asserts working correctly at
+	constructor time, and for CYGNUM_TEST_GDBCMD to work as intended
+	(i.e. before calling CYG_TEST_INIT())
+
+1999-02-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/tcdiag.cxx (cyg_test_output): Remove angle brackets round
+	GDBCMD output
+
+1999-02-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/fancy.cxx (trim_func): 
+	* src/simple.cxx (trim_func):
+	* src/buffer.cxx (trim_func):
+	Don't delete bits before a space as it may not always be a
+	type, if using CYG_FUNCNAME rather than relying on
+	__PRETTY_FUNCTION__
+
+	* src/tcdiag.cxx (cyg_test_output): 
+	Add new GDBCMD output and do some tidying vis a vis coding standards
+	etc.
+
+	* include/testcase.h:
+	Do some tidying vis a vis coding standards etc.
+
+1999-02-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/cyg_type.h (CYGBLD_ATTRIB_CONSTRUCTOR): 
+	New macro, used to define a 'C' routine to be run with 'C++'
+	constructors.
+
+1999-01-26  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/cyg_type.h (CYGBLD_ATTRIB_NORET):
+	Updated the non-GNUC version of the macro
+
+1999-01-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Remove all traces of CYG_KERNEL_USE_INIT_PRIORITY option - now
+	compulsory. Consequently can remove include of pkgconf/infra.h.
+	Add CYG_INIT_PREDEFAULT priority for
+	CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG implementation.
+	Change CYGBLD_NORET to CYGBLD_ATTRIB_NORET
+	Add CYGBLD_ATTRIB_ALIAS and CYGBLD_ATTRIB_WEAK_ALIAS macros
+
+	* include/cyg_ass.h: 
+	* include/testcase.h
+	Change CYGBLD_NORET to CYGBLD_ATTRIB_NORET
+
+	* src/startup.cxx:
+	Split up into smaller files to make GDB happier when debuggin
+
+	* src/pkgstart.cxx:
+	* src/prestart.cxx:
+	* src/userstart.cxx:
+	New files with contents originally from startup.cxx
+
+1999-01-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/cyg_type.h (CYG_REFERENCE_OBJECT): 
+	Make this work with no overhead, although it doesn't work with
+	anything other than objects with constructors. I _believe_ this
+	is the only relevant situation though. Bite me.
+	Fix for PR 18782
+
+1999-01-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/cyg_type.h (CYG_REFERENCE_SYMBOL): Added.
+
+1999-01-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/cyg_type.h: Default handling of 'CYG_DOUBLE_BYTEORDER'
+
+1999-01-13  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/cyg_type.h (CYG_UNUSED_PARAM): Don't assign to the
+	unused parameter; it might be a macro constant.
+
+1999-01-11  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/tcdiag.cxx (cyg_test_output): 
+	* include/testcase.h:
+	Use const where appropriate in cyg_test_output()
+
+1999-01-06  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/cyg_trac.h (CYG_REPORT_FUNCARG8):
+	Removed spurious comma so that the macro actually compiles.
+
+1998-12-24  Bart Veer  <bartv@cygnus.co.uk>
+
+	* src/simple.cxx: 
+	* src/null.cxx: 
+	* src/fancy.cxx: 
+	* src/diag.c: 
+	* src/buffer.cxx: 
+	* include/diag.h:
+	In the assertion support, use const where appropriate.
+	
+1998-12-24  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/cyg_ass.h:
+	The prototype for cyg_assert_fail() is now always present.
+	const is used wherever appropriate.
+	A number of additional assertion macros are now defined.
+	Host-specific assertion support has been added.
+	Some minor tweaks for greater consistency in macro usage.
+
+1998-12-21  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/cyg_type.h:
+	Allow for platforms where pointers are not 32 bits wide.
+	
+1998-12-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/testcase.h (cyg_test_is_simulator): 
+	* src/tcdiag.cxx (cyg_test_is_simulator): 
+	Change the type to int so that all gdb's understand it.
+	(it was impossible to assign to from the prompt as a bool)
+
+1998-12-09  Bart Veer  <bartv@cygnus.co.uk>
+
+	* include/testcase.h:
+	Hide a __noreturn__ attribute inside a macro so that the
+	header file can be used for host-side code.
+
+1998-11-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/memset.c (_memset): Use type casted pointer to avoid
+	compiler warning.
+
+Mon Oct 26 21:20:13 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/buffer.cxx: 
+	Make write_thread_id() conditional on CYGDBG_USE_ASSERTS as that's
+	the only time it is used. This silences a compiler warning
+
 Mon Oct 26 19:40:48 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/memset.c, src/memcpy.c:
@@ -273,7 +472,7 @@ Tue Aug 25 11:47:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

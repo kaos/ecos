@@ -1,3 +1,57 @@
+1999-04-15  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/libm.h: Tidy display string capitalization.
+
+1999-04-07  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19442
+	* tests/vectors/vector_support.h: Make an occasional chirp to keep
+	the testing infra interested.
+
+1999-04-06  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/PKGconf.mak: More brute-force fix for ARM compiler
+	problems - PR 19772
+1999-03-31  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/libm.h: Remove unnecessary define
+	Fix for PR 19423
+
+1999-03-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/PKGconf.mak: Add special compile options to work around ARM
+	compiler bugs.
+
+1999-02-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/mathincl/fdlibm.h: 
+	Change definition of CYG_LIBM_HI/CYG_LIBM_LO to use inline
+	function
+	Fix for PR 18859
+
+1999-01-28  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/misc/signgam.cxx: 
+	* src/misc/compatmode.cxx: 
+	Include <pkgconf/kernel.h> if we use kernel header files
+
+1999-01-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/vectors/vector_support.h (doTestVec): Makes more
+	sense to output vector number than array index
+
+	* src/double/portable-api/s_ceil.c: Fix comment s/+inf/-inf/
+
+1999-01-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/vectors/vector_support.h (doTestVec): 
+	Add output to let you know which vectors failed
+
+1999-01-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/mathincl/fdlibm.h: 
+	* include/sys/ieeefp.h: Add different structure layouts for
+	machines that have doubles that aren't pure big/little endian.
+
 Fri Oct 23 19:27:04 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/vectors/vector_support.h (START_TEST): 
@@ -569,7 +623,7 @@ Fri Jun  5 07:07:03 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

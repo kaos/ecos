@@ -3,9 +3,9 @@
 
 /*=============================================================================
 //
-//	kapidata.h
+//      kapidata.h
 //
-//	Native API data structures
+//      Native API data structures
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,22 +25,22 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-03-13
-// Purpose:	Native API data structures
-// Description:	This file defines the structures used in the native API. The
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-03-13
+// Purpose:     Native API data structures
+// Description: This file defines the structures used in the native API. The
 //              sizes of these structures are dependent on the system
 //              configuration and must be kept in step with their real
 //              counterparts in the C++ headers.
-// Usage:	included by kapi.h
+// Usage:       included by kapi.h
 //
 //####DESCRIPTIONEND####
 //
@@ -163,9 +163,9 @@ struct cyg_alarm
 typedef struct
 {
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
-    cyg_exception_handler_t *exception_handler[CYG_EXCEPTION_COUNT];
+    cyg_exception_handler_t *exception_handler[CYGNUM_HAL_EXCEPTION_COUNT];
     
-    CYG_ADDRWORD            exception_data[CYG_EXCEPTION_COUNT];
+    CYG_ADDRWORD            exception_data[CYGNUM_HAL_EXCEPTION_COUNT];
 #else
     cyg_exception_handler_t *exception_handler; // Handler function
     
@@ -300,7 +300,7 @@ struct cyg_mbox
 #ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
     cyg_threadqueue     put_threadq;    /* Queue of waiting threads          */
 #endif
-    void *		itemqueue[ CYGNUM_KERNEL_SYNCH_MBOX_QUEUE_SIZE ];
+    void *              itemqueue[ CYGNUM_KERNEL_SYNCH_MBOX_QUEUE_SIZE ];
 };
 
 /*---------------------------------------------------------------------------*/

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -50,32 +50,23 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
 
-#if defined(CYG_HAL_MIPS_SIM)
 
-// Reduce time in simulated TX39 so that
-// it runs within the timeout.
+static cyg_uint64 TEST_DELAY;
 
-#define TEST_DELAY     1000000000ll
-    
-#else
-
-#define TEST_DELAY     5000000000ll
-
-#endif    
-
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK) \
-    && defined(CYGFUN_KERNEL_THREADS_TIMER)
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
 
 #ifdef CYGFUN_KERNEL_API_C
 
 #include "testaux.h"
 
 #define NTHREADS 1
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -113,8 +104,14 @@ void kclock1_main( void )
 {
     CYG_TEST_INIT();
 
+    if (cyg_test_is_simulator) {
+        TEST_DELAY = 100000000ll;
+    } else {
+        TEST_DELAY = 3000000000ll;
+    }
+
     cyg_thread_create(4, entry0 , (cyg_addrword_t)0, "kclock1",
-    	(void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_scheduler_start();
@@ -126,19 +123,19 @@ cyg_start( void )
     kclock1_main();
 }
 
-#else // def CYGFUN_KERNEL_API_C
+#else  // def CYGFUN_KERNEL_API_C
 #define N_A_MSG "Kernel C API layer disabled"
 #endif // def CYGFUN_KERNEL_API_C
-#else // def CYGVAR_KERNEL_COUNTERS_CLOCK && CYGFUN_KERNEL_THREADS_TIMER
-#define N_A_MSG "Kernel real-time clock/threads timer disabled"
-#endif // def CYGVAR_KERNEL_COUNTERS_CLOCK && CYGFUN_KERNEL_THREADS_TIMER
+#else  // def CYGFUN_KERNEL_THREADS_TIMER
+#define N_A_MSG "Kernel threads timer disabled"
+#endif // def CYGFUN_KERNEL_THREADS_TIMER
 
 #ifdef N_A_MSG
 externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("N/A: " N_A_MSG);
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG
 

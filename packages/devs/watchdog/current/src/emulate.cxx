@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	watchdog/emulate.cxx
+//      watchdog/emulate.cxx
 //
-//	Watchdog implementation emulation
+//      Watchdog implementation emulation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-07-29
-// Purpose:	Watchdog class implementation
-// Description:	Contains an implementation of the Watchdog class for use
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-07-29
+// Purpose:     Watchdog class implementation
+// Description: Contains an implementation of the Watchdog class for use
 //              when there is no hardware watchdog timer. Instead it is
 //              emulated using an Alarm object.
 //

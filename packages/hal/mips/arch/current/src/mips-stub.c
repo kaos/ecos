@@ -1,6 +1,6 @@
 /* mips-stub.c - helper functions for stub, generic to all MIPS processors
  * 
- * Copyright (c) 1998 Cygnus Support
+ * Copyright (c) 1998,1999 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -15,40 +15,17 @@
 
 #include <stddef.h>
 
-#include "cyg/hal/hal_stub.h"
+#include <pkgconf/hal.h>
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-#include "cyg/hal/hal_arch.h"
+#include <cyg/hal/hal_stub.h>
+
+#define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include <cyg/hal/mips-regs.h>
+
+#include <cyg/hal/hal_arch.h>
 #include <cyg/hal/mips_opcode.h>
-
-#define	SIGHUP	1	/* hangup */
-#define	SIGINT	2	/* interrupt */
-#define	SIGQUIT	3	/* quit */
-#define	SIGILL	4	/* illegal instruction (not reset when caught) */
-#define	SIGTRAP	5	/* trace trap (not reset when caught) */
-#define	SIGIOT	6	/* IOT instruction */
-#define	SIGABRT 6	/* used by abort, replace SIGIOT in the future */
-#define	SIGEMT	7	/* EMT instruction */
-#define	SIGFPE	8	/* floating point exception */
-#define	SIGKILL	9	/* kill (cannot be caught or ignored) */
-#define	SIGBUS	10	/* bus error */
-#define	SIGSEGV	11	/* segmentation violation */
-#define	SIGSYS	12	/* bad argument to system call */
-#define	SIGPIPE	13	/* write on a pipe with no one to read it */
-#define	SIGALRM	14	/* alarm clock */
-#define	SIGTERM	15	/* software termination signal from kill */
-
-
-/* Saved registers. */
-
-HAL_SavedRegisters *_hal_registers;
- 
-target_register_t * _registers; /* A pointer to the current set of registers */
-target_register_t registers[NUMREGS];
-target_register_t alt_registers[NUMREGS] ; /* Thread or saved process state */
-
 
 /* Given a trap value TRAP, return the corresponding signal. */
 
@@ -105,28 +82,12 @@ int __computeSignal (unsigned int trap_number)
     }
 }
 
-
 /* Return the trap number corresponding to the last-taken trap. */
 
 int __get_trap_number (void)
 {
   return (get_register (CAUSE) & CAUSE_EXCMASK) >> CAUSE_EXCSHIFT;
 }
-
-// Return the currently-saved value corresponding to register REG of
-// the exception context.
-target_register_t get_register (regnames_t reg)
-{
-    return registers[reg];
-}
-
-// Store VALUE in the register corresponding to WHICH in the exception
-// context.
-void put_register (regnames_t which, target_register_t value)
-{
-    registers[which] = value;
-}
-
 
 /* Set the currently-saved pc register value to PC. This also updates NPC
    as needed. */
@@ -156,14 +117,14 @@ static struct
    This may be done by setting breakpoints or setting a single step flag
    in the saved user registers, for example. */
 
-void single_step (void)
+void __single_step (void)
 {
   InstFmt inst;
   t_inst *pc = (t_inst *) get_register (PC);
 
-  instrBuffer.targetAddr = pc + 1;		/* set default */
+  instrBuffer.targetAddr = pc + 1;              /* set default */
 
-  inst.word = *pc;				/* read the next instruction  */
+  inst.word = *pc;                              /* read the next instruction  */
 
 //diag_printf("pc %08x %08x\n",pc,inst.word);
  
@@ -208,7 +169,7 @@ void single_step (void)
     case OP_JAL:
       instrBuffer.targetAddr =
         (t_inst *)((inst.JType.target<<2)
-		   + ((get_register (PC) + 4)&0xf0000000));
+                   + ((get_register (PC) + 4)&0xf0000000));
       break;
 
     case OP_BEQ:
@@ -216,7 +177,7 @@ void single_step (void)
       if (get_register (inst.IType.rs) == get_register (inst.IType.rt))
         instrBuffer.targetAddr =
           (t_inst *)(((signed short)inst.IType.imm<<2)
-		     + (get_register (PC) + 4));
+                     + (get_register (PC) + 4));
       else
         instrBuffer.targetAddr = (t_inst *)(get_register (PC) + 8);
       break;
@@ -225,7 +186,7 @@ void single_step (void)
       if (get_register (inst.IType.rs) != get_register (inst.IType.rt))
         instrBuffer.targetAddr =
           (t_inst *)(((signed short)inst.IType.imm<<2)
-		     + (get_register (PC) + 4));
+                     + (get_register (PC) + 4));
       else
         instrBuffer.targetAddr = (t_inst *)(get_register (PC) + 8);
       break;
@@ -246,7 +207,7 @@ void single_step (void)
         instrBuffer.targetAddr = (t_inst *)(get_register (PC) + 8);
       break;
 
-#if 0	/* no floating point support at the moment */
+#if 0   /* no floating point support at the moment */
     case OP_COP1:
       if (inst.RType.rs == OP_BC)
           switch (inst.RType.rt) {
@@ -278,7 +239,7 @@ void single_step (void)
 
 /* Clear the single-step state. */
 
-void clear_single_step (void)
+void __clear_single_step (void)
 {
 //diag_printf("clear_ss ta %08x\n",instrBuffer.targetAddr);
   if (instrBuffer.targetAddr != NULL)
@@ -290,7 +251,7 @@ void clear_single_step (void)
 }
 
 
-void install_breakpoints ()
+void __install_breakpoints ()
 {
 //diag_printf("install_bpt ta %08x\n",instrBuffer.targetAddr);
   if (instrBuffer.targetAddr != NULL)
@@ -302,6 +263,10 @@ void install_breakpoints ()
     }
 }
 
+void __clear_breakpoints (void)
+{
+}
+
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */
@@ -309,7 +274,7 @@ void install_breakpoints ()
 int
 __is_breakpoint_function ()
 {
-  return get_register (PC) == (target_register_t)&_breakinst;
+    return get_register (PC) == (target_register_t)&CYG_LABEL_NAME(breakinst);
 }
 
 
@@ -319,60 +284,7 @@ __is_breakpoint_function ()
 
 void __skipinst (void)
 {
-  put_register (PC, get_register (PC) + 4);
-}
-
-
-/* Write the 'T' packet in BUFFER. SIGVAL is the signal the program
-   received. */
-
-void __build_t_packet (int sigval, char *buf)
-{
-  target_register_t addr;
-  char *ptr = buf;
-  target_register_t *sp;
-
-  sp = (target_register_t *) get_register (SP);
-
-  *ptr++ = 'T';
-  *ptr++ = __tohex (sigval >> 4);
-  *ptr++ = __tohex (sigval);
-
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
-    // Include thread ID if thread manipulation is required.
-    {
-        int id;
-        extern int dbg_currthread_id(void); // FIXME: get from header instead
-
-        *ptr++ = 't';
-        *ptr++ = 'h';
-        *ptr++ = 'r';
-        *ptr++ = 'e';
-        *ptr++ = 'a';
-        *ptr++ = 'd';
-        *ptr++ = ':';
-
-        id = dbg_currthread_id ();
-        ptr = __mem2hex((char *)&id, ptr, sizeof(id), 0);
-        *ptr++ = ';';
-    }
-#endif
-
-  *ptr++ = __tohex (PC >> 4);
-  *ptr++ = __tohex (PC);
-  *ptr++ = ':';
-  addr = get_register (PC);
-  ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
-  *ptr++ = ';';
-
-  *ptr++ = __tohex (SP >> 4);
-  *ptr++ = __tohex (SP);
-  *ptr++ = ':';
-  ptr = __mem2hex((char *)&sp, ptr, sizeof(sp), 0);
-  *ptr++ = ';';
-
-  *ptr++ = 0;
+    put_register (PC, get_register (PC) + 4);
 }
 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

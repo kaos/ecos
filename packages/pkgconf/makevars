@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -257,20 +257,23 @@ INCLUDE_PATH :=
 # perform most of the build operations.
 
 $(PACKAGE)_%.o : %.c
-	$(CC)  -c $(INCLUDE_PATH) $(CFLAGS) -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
-	@echo -e "\\n$@ : $< \\\\" > $(@:.o=.d)
+	$(CC)  -c $(INCLUDE_PATH) $(CFLAGS) $($(notdir $<)-CFLAGS)  -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
+	@echo > $(@:.o=.d)
+	@echo $@ ':' $< '\' >> $(@:.o=.d)
 	@$(TAIL) -n +2 $(@:.o=.tmp) >> $(@:.o=.d)
 	@$(RM) $(@:.o=.tmp)
 
 $(PACKAGE)_%.o : %.cxx
-	$(CXX) -c $(INCLUDE_PATH) $(CXXFLAGS) -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
-	@echo -e "\\n$@ : $< \\\\" > $(@:.o=.d)
+	$(CXX) -c $(INCLUDE_PATH) $(CXXFLAGS) $($(notdir $<)-CXXFLAGS) -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
+	@echo > $(@:.o=.d)
+	@echo $@ ':' $< '\' >> $(@:.o=.d)
 	@$(TAIL) -n +2 $(@:.o=.tmp) >> $(@:.o=.d)
 	@$(RM) $(@:.o=.tmp)
 
 $(PACKAGE)_%.o : %.S
 	$(CXX)  -c $(INCLUDE_PATH) $(CFLAGS) -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
-	@echo -e "\\n$@ : $< \\\\" > $(@:.o=.d)
+	@echo > $(@:.o=.d)
+	@echo $@ ':' $< '\' >> $(@:.o=.d)
 	@$(TAIL) -n +2 $(@:.o=.tmp) >> $(@:.o=.d)
 	@$(RM) $(@:.o=.tmp)
 

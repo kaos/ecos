@@ -2,9 +2,9 @@
 #define CYGONCE_PKGCONF_WALLCLOCK_H
 // ====================================================================
 //
-//	pkgconf/wallclock.h
+//      pkgconf/wallclock.h
 //
-//	Wallclock configuration file
+//      Wallclock configuration file
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -24,17 +24,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-07-29	
-// Purpose:	To allow the user to edit wallclock config options.
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-07-29      
+// Purpose:     To allow the user to edit wallclock config options.
 // Description:
 //####DESCRIPTIONEND####
 //
@@ -47,7 +47,6 @@
 
    cdl_package CYGPKG_DEVICES_WALLCLOCK {
        display  "Wallclock device"
-       parent   CYGPKG_DEVICES
        requires CYGVAR_KERNEL_COUNTERS_CLOCK
        description "
            The wallclock device provides real time stamps, as opposed
@@ -57,6 +56,7 @@
            interacting with a suitable clock chip, or it may be
            emulated by using the kernel timers.
        "
+       doc ref/ecos-ref/p-cygpkg-devices-wallclock.html
    }
 
    }}CFG_DATA */

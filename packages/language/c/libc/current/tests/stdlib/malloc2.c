@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     jlarmour
+// Contributors:  jlarmour
 // Date:          1998/6/3
 // Description:   Contains testcode to stress-test C library malloc(),
 //                calloc() and free() functions
@@ -45,12 +45,15 @@
 
 // INCLUDES
 
-#include <pkgconf/libc.h> // config header for C library so we can know size
-                          // of malloc pool
+#include <pkgconf/system.h> // Overall system configuration
+#include <pkgconf/libc.h>   // config header for C library so we can know
+                            // size of malloc pool
 #include <stdlib.h>
 #include <cyg/infra/testcase.h>
 #include <sys/cstartup.h>          // C library initialisation
-
+#ifdef CYGPKG_KERNEL
+# include <pkgconf/kernel.h>  // CYGSEM_KERNEL_MEMORY_COALESCE
+#endif
 
 // CONSTANTS
 
@@ -58,7 +61,8 @@
 
 // GLOBALS
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 static int problem=0;
 #endif
 
@@ -76,7 +80,8 @@ cyg_package_start( void )
 } // cyg_package_start()
 
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 
 static void *
 safe_malloc( size_t size )
@@ -159,12 +164,15 @@ fill_with_data( char *buf, int size )
 
 } // fill_with_data()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) &&
+       //    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 
 int
 main( int argc, char *argv[] )
 {
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
+
     char *str1, *str2, *str3;
     int j;
 #endif
@@ -174,7 +182,8 @@ main( int argc, char *argv[] )
     CYG_TEST_INFO("Starting stress tests from testcase " __FILE__ " for C "
                   "library malloc(), calloc() and free() functions");
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) && \
+    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 
     if ( CYGNUM_LIBC_MALLOC_MEMPOOL_SIZE < 300 )
     {
@@ -229,8 +238,9 @@ main( int argc, char *argv[] )
         CYG_TEST_PASS("Stress test completed successfully");
 
 #else
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC)
+    CYG_TEST_NA("Testing is not applicable to this configuration");
+#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_MALLOC) &&
+       //    defined(CYGSEM_KERNEL_MEMORY_COALESCE)
 
     
     CYG_TEST_FINISH("Finished stress tests from testcase " __FILE__ " for C "

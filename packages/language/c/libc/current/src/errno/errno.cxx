@@ -22,18 +22,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
-// Description: 
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-20
+// Purpose:       Provide the errno variable
+// Description:   This file either provides the errno variable directly,
+//                or if thread-safe, using a kernel per-thread data
+//                access function
 // Usage:       
 //
 //####DESCRIPTIONEND####
@@ -44,9 +46,6 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library?
-#ifdef CYGPKG_LIBC
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>   // Common project-wide type definitions
@@ -54,7 +53,10 @@
 #include <errno.h>                // Header for this file
 
 #ifdef CYGSEM_LIBC_PER_THREAD_ERRNO
-# include "clibincl/clibdata.hxx"  // C library internal data
+# include <pkgconf/kernel.h>       // kernel configuration
+# include <cyg/kernel/thread.hxx>  // per-thread data
+# include <cyg/kernel/thread.inl>  // per-thread data
+# include <cyg/kernel/mutex.hxx>   // mutexes
 #endif
 
 // GLOBAL VARIABLES
@@ -73,22 +75,47 @@ static int errno_trace = CYGNUM_LIBC_ERRNO_TRACE_LEVEL;
 #  define TL1 (0)
 # endif
 
+// STATICS
+
+static cyg_ucount32 errno_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static Cyg_Mutex errno_data_mutex CYG_INIT_PRIORITY(LIBC);
+
 // FUNCTIONS
 
-Cyg_ErrNo *
-cyg_get_errno_p( void )
+Cyg_ErrNo * const
+cyg_libc_get_errno_p( void )
 {
     Cyg_ErrNo *errno_p;
 
-    CYG_REPORT_FUNCNAMETYPE( "cyg_get_errno_p", "&errno is %d");
+    CYG_REPORT_FUNCNAMETYPE( "cyg_libc_get_errno_p", "&errno is %d");
 
     // set up the thread data, allocating if necessary (even though the
     // user _shouldn't_ read errno before its set, we can't stop them - and
     // ANSI prescribes it has a sensible value (0) before its set too anyway.
 
-    CYGPRI_LIBC_INTERNAL_DATA_ALLOC_CHECK_PREAMBLE;
+    Cyg_Thread *self = Cyg_Thread::self();
 
-    errno_p = CYGPRI_LIBC_INTERNAL_DATA.get_errno_p();
+    // Get a per-thread data slot if we haven't got one already
+    // Do a simple test before locking and retrying test, as this is a
+    // rare situation
+    if (CYGNUM_KERNEL_THREADS_DATA_MAX==errno_data_index) {
+        errno_data_mutex.lock();
+        if (CYGNUM_KERNEL_THREADS_DATA_MAX==errno_data_index) {
+
+            // the kernel just throws an assert if this doesn't work
+            // FIXME: Should use real CDL to pre-allocate a slot at compile
+            // time to ensure there are enough slots
+            errno_data_index = self->new_data_index();
+            
+            // errno is initialised to 0 at program startup - ANSI 7.1.4
+            self->set_data(errno_data_index, 0);
+        }
+        errno_data_mutex.unlock();
+    } // if
+
+    // we have a valid index now
+
+    errno_p = (Cyg_ErrNo *)self->get_data_ptr(errno_data_index);
 
     CYG_TRACE1( TL1, "errno is %d", *errno_p );
 
@@ -96,11 +123,8 @@ cyg_get_errno_p( void )
     
     // return the internal data's errno
     return errno_p;
-} // cyg_get_errno_p()
+} // cyg_libc_get_errno_p()
 
-
-#endif // ifndef CYGSEM_LIBC_PER_THREAD_ERRNO
-
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#endif // ifdef CYGSEM_LIBC_PER_THREAD_ERRNO
 
 // EOF errno.cxx

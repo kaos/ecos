@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -129,7 +129,7 @@ void kclock0_main(void)
 
     CHECK( 0xffffffff == cyg_counter_current_value(counter0) );
 
-    cyg_counter_tick(counter0);	// Overflows 32 bits
+    cyg_counter_tick(counter0); // Overflows 32 bits
     
     CHECK( 0x100000000ULL == cyg_counter_current_value(counter0) );
 
@@ -153,55 +153,55 @@ void kclock0_main(void)
     cyg_alarm_initialize(alarm2, 21,2);
     CHECK( 0x00 == called );
 
-    cyg_counter_tick(counter0);		/* 12 a0 */
+    cyg_counter_tick(counter0);         /* 12 a0 */
     CHECK( 0x01 == called );
 
     cyg_alarm_initialize(alarm1, 13,0);
-    cyg_counter_tick(counter0);		/* 13 a1 */
+    cyg_counter_tick(counter0);         /* 13 a1 */
     CHECK( 0x03 == called );
 
     cyg_alarm_initialize(alarm1, 17,0);
-    cyg_counter_tick(counter0);		/* 14 */
+    cyg_counter_tick(counter0);         /* 14 */
     CHECK( 0x03 == called );
 
-    cyg_counter_tick(counter0);		/* 15 a0 */
+    cyg_counter_tick(counter0);         /* 15 a0 */
     CHECK( 0x02 == called );
 
-    cyg_counter_tick(counter0);		/* 16 */
-    cyg_counter_tick(counter0);		/* 17 a1 */
+    cyg_counter_tick(counter0);         /* 16 */
+    cyg_counter_tick(counter0);         /* 17 a1 */
     CHECK( 0x00 == called );
 
-    cyg_counter_tick(counter0);		/* 18 a0 */
+    cyg_counter_tick(counter0);         /* 18 a0 */
     CHECK( 0x01 == called );
 
-    cyg_counter_tick(counter0);		/* 19 */
-    cyg_counter_tick(counter0);		/* 20 */
-    cyg_counter_tick(counter0);		/* 21 a0 a2 */
+    cyg_counter_tick(counter0);         /* 19 */
+    cyg_counter_tick(counter0);         /* 20 */
+    cyg_counter_tick(counter0);         /* 21 a0 a2 */
     CHECK( 0x14 == called );
 
-    cyg_counter_tick(counter0); 	/* 22 */
-    cyg_counter_tick(counter0); 	/* 23 a2 */
+    cyg_counter_tick(counter0);         /* 22 */
+    cyg_counter_tick(counter0);         /* 23 a2 */
     CHECK( 0x00 == called );
     
     cyg_alarm_disable(alarm2);  
 
-    cyg_counter_tick(counter0);		/* 24 a0 */
-    cyg_counter_tick(counter0);		/* 25 */
+    cyg_counter_tick(counter0);         /* 24 a0 */
+    cyg_counter_tick(counter0);         /* 25 */
     CHECK( 0x01 == called );
     
     cyg_alarm_enable(alarm2);           /* a2 (enabled at 25) */
     CHECK( 0x15 == called );
 
-    cyg_counter_tick(counter0);		/* 26 */
+    cyg_counter_tick(counter0);         /* 26 */
     CHECK( 0x15 == called );
     
-    cyg_counter_tick(counter0);		/* 27 a0 a2 */
-    cyg_counter_tick(counter0);		/* 28 */
+    cyg_counter_tick(counter0);         /* 27 a0 a2 */
+    cyg_counter_tick(counter0);         /* 28 */
     CHECK( 0x00 == called );
     
-    cyg_counter_tick(counter0);		/* 29 a2 */
-    cyg_counter_tick(counter0);		/* 30 a0 */
-    cyg_counter_tick(counter0);		/* 31 a2 */
+    cyg_counter_tick(counter0);         /* 29 a2 */
+    cyg_counter_tick(counter0);         /* 30 a0 */
+    cyg_counter_tick(counter0);         /* 31 a2 */
     CHECK( 0x01 == called );
 
     res0.dividend = 100;
@@ -256,7 +256,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("N/A: " N_A_MSG);
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG
 

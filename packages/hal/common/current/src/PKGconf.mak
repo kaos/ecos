@@ -1,10 +1,10 @@
-#===============================================================================
+#==============================================================================
 #
 #    makefile
 #
 #    hal/common/src
 #
-#===============================================================================
+#==============================================================================
 #####COPYRIGHTBEGIN####
 #
 # -------------------------------------------
@@ -22,21 +22,31 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
-#===============================================================================
+#==============================================================================
 
 PACKAGE       := hal
 include ../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := generic-stub.c thread-packets.c
+COMPILE       := generic-stub.c thread-packets.c hal_stub.c drv_api.c
 
 OTHER_OBJS    :=
-OTHER_TARGETS :=
-OTHER_CLEAN   :=
+OTHER_TARGETS := libextras.stamp
+OTHER_DEPS    := hal_dummy.d
+OTHER_CLEAN   := libextras.clean
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 
+.PHONY: libextras.clean
+
+libextras.stamp: hal_dummy.o
+	$(AR) crs $(PREFIX)/lib/libextras.a $<
+	@$(TOUCH) $@
+
+libextras.clean:
+	$(RM) hal_dummy.o
+	$(RM) libextras.stamp

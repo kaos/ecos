@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	memfixed.hxx
+//      memfixed.hxx
 //
-//	Memory pool with fixed block class declarations
+//      Memory pool with fixed block class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-23
-// Purpose:	Define Memfixed class interface
-// Description:	Inline class for constructing a fixed block allocator
-// Usage:	#include <cyg/kernel/memfixed.hxx>
-//		
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-23
+// Purpose:     Define Memfixed class interface
+// Description: Inline class for constructing a fixed block allocator
+// Usage:       #include <cyg/kernel/memfixed.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //

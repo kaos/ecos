@@ -1,8 +1,8 @@
 /*==========================================================================
 //
-//	stubrom.c
+//      stubrom.c
 //
-//	GDB Stub ROM main
+//      GDB Stub ROM main
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-06-02
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-06-02
 // Purpose:     GDB Stub ROM main
-// Description:	Main program for GDB stub ROM. It simply set the debug
+// Description: Main program for GDB stub ROM. It simply set the debug
 //              traps and then breakpoints so we can talk to GDB.
 //
 //####DESCRIPTIONEND####
@@ -44,7 +44,8 @@
 
 void cyg_start (void)
 {
-    set_debug_traps();
+
+    initialize_stub();
 
     for(;;) breakpoint();
     

@@ -1,8 +1,8 @@
 //===========================================================================
 //
-//	test2.c
+//      test2.c
 //
-//	uITRON "C" test program two
+//      uITRON "C" test program two
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON API testing
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON API testing
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -137,6 +137,10 @@ void task1( unsigned int arg )
     VP blfptr = (VP)foo;
     VP blkptr = (VP)foo;
 
+    int delay = 10;
+    if (cyg_test_is_simulator)
+        delay = 3;
+
     CYG_TEST_INFO( "Task 1 running" );
     ercd = get_tid( &scratch );
     CYG_TEST_CHECK( E_OK == ercd, "get_tid bad ercd" );
@@ -146,7 +150,7 @@ void task1( unsigned int arg )
     intercom = 1;
     ercd = sta_tsk( 2, 222 );
     CYG_TEST_CHECK( E_OK == ercd, "sta_tsk bad ercd" );
-    ercd = dly_tsk( 10 );
+    ercd = dly_tsk( delay );
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
 
     // Semaphores; all the illegal argument combinations first
@@ -164,9 +168,9 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_ID == ercd, "preq_sem bad ercd !E_ID" );
     ercd = preq_sem( 99 );
     CYG_TEST_CHECK( E_ID == ercd, "preq_sem bad ercd !E_ID" );
-    ercd = twai_sem( -6, 10 );
+    ercd = twai_sem( -6, delay );
     CYG_TEST_CHECK( E_ID == ercd, "twai_sem bad ercd !E_ID" );
-    ercd = twai_sem( 99, 10 );
+    ercd = twai_sem( 99, delay );
     CYG_TEST_CHECK( E_ID == ercd, "twai_sem bad ercd !E_ID" );
     ercd = twai_sem( 2, -999 );
     CYG_TEST_CHECK( E_PAR == ercd, "twai_sem bad ercd !E_PAR" );
@@ -186,7 +190,7 @@ void task1( unsigned int arg )
     // check the waitable functions versus dispatch disable
     ercd = preq_sem( 2 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "preq_sem bad ercd !E_TMOUT" );
-    ercd = twai_sem( 2, 10 );
+    ercd = twai_sem( 2, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_sem bad ercd !E_TMOUT" );
     ercd = twai_sem( 2, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_sem(POL) bad ercd !E_TMOUT" );
@@ -195,7 +199,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = wai_sem( 2 );
     CYG_TEST_CHECK( E_CTX == ercd, "wai_sem bad ercd !E_CTX" );
-    ercd = twai_sem( 2, 10 );
+    ercd = twai_sem( 2, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "twai_sem bad ercd !E_CTX" );
     ercd = twai_sem( 2, TMO_FEVR );
     CYG_TEST_CHECK( E_CTX == ercd, "twai_sem(FEVR) bad ercd !E_CTX" );
@@ -208,7 +212,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "ena_dsp bad ercd" );
     ercd = preq_sem( 2 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "preq_sem bad ercd !E_TMOUT" );
-    ercd = twai_sem( 2, 10 );
+    ercd = twai_sem( 2, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_sem bad ercd !E_TMOUT" );
     ercd = twai_sem( 2, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_sem(POL) bad ercd !E_TMOUT" );
@@ -249,14 +253,14 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "ref_sem bad ercd" );
     CYG_TEST_CHECK( 0 == sem_info.wtsk, "sem.wtsk should be 0" );
     CYG_TEST_CHECK( 1 == sem_info.semcnt, "semcnt should be 1" );
-    ercd = twai_sem( 2, 10 );
+    ercd = twai_sem( 2, delay );
     CYG_TEST_CHECK( E_OK == ercd, "wai_sem bad ercd" );
     ercd = ref_sem( &sem_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_sem bad ercd" );
     CYG_TEST_CHECK( 0 == sem_info.wtsk, "sem.wtsk should be 0" );
     CYG_TEST_CHECK( 0 == sem_info.semcnt, "semcnt should be 0" );
     intercom = 0;
-    ercd = dly_tsk( 10 );
+    ercd = dly_tsk( delay );
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     intercom = 1;
     ercd = ref_sem( &sem_info, 2 );
@@ -273,7 +277,7 @@ void task1( unsigned int arg )
 #else // old, non-uITRON semantics
     CYG_TEST_CHECK( 1 == sem_info.semcnt, "semcnt should be 1" );
 #endif
-    ercd = dly_tsk( 10 );               // let task 2 pick up the signal
+    ercd = dly_tsk( delay );               // let task 2 pick up the signal
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_sem( &sem_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_sem bad ercd" );
@@ -320,21 +324,21 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_PAR == ercd, "pol_flg bad ercd !E_PAR" );
     ercd = pol_flg( &flagptn, 2, 0, TWF_ANDW );
     CYG_TEST_CHECK( E_PAR == ercd, "pol_flg bad ercd !E_PAR" );
-    ercd = twai_flg( &flagptn, -6, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( &flagptn, -6, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_ID == ercd, "twai_flg bad ercd !E_ID" );
-    ercd = twai_flg( &flagptn, 99, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( &flagptn, 99, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_ID == ercd, "twai_flg bad ercd !E_ID" );
 #ifndef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
-    ercd = twai_flg( NULL, 2, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( NULL, 2, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "twai_flg bad ercd !E_PAR" );
 #endif
-    ercd = twai_flg( NADR, 2, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( NADR, 2, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "twai_flg bad ercd !E_PAR" );
-    ercd = twai_flg( &flagptn, 2, 7, 34657, 10 );
+    ercd = twai_flg( &flagptn, 2, 7, 34657, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "twai_flg bad ercd !E_PAR" );
     ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, -999 );
     CYG_TEST_CHECK( E_PAR == ercd, "twai_flg bad ercd !E_PAR" );
-    ercd = twai_flg( &flagptn, 2, 0, TWF_ANDW, 10 );
+    ercd = twai_flg( &flagptn, 2, 0, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "twai_flg bad ercd !E_PAR" );
     ercd = ref_flg( &flg_info, -6 );
     CYG_TEST_CHECK( E_ID == ercd, "ref_flg bad ercd !E_ID" );
@@ -352,7 +356,7 @@ void task1( unsigned int arg )
     // check the waitable functions versus dispatch disable
     ercd = pol_flg( &flagptn, 2, 7, TWF_ANDW );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pol_flg bad ercd !E_TMOUT" );
-    ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_flg bad ercd !E_TMOUT" );
     ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_flg(POL) bad ercd !E_TMOUT" );
@@ -361,7 +365,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = wai_flg( &flagptn, 2, 7, TWF_ANDW );
     CYG_TEST_CHECK( E_CTX == ercd, "wai_flg bad ercd !E_CTX" );
-    ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "twai_flg bad ercd !E_CTX" );
     ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, TMO_FEVR );
     CYG_TEST_CHECK( E_CTX == ercd, "twai_flg(FEVR) bad ercd !E_CTX" );
@@ -374,7 +378,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "ena_dsp bad ercd" );
     ercd = pol_flg( &flagptn, 2, 7, TWF_ANDW );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pol_flg bad ercd !E_TMOUT" );
-    ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, 10 );
+    ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_flg bad ercd !E_TMOUT" );
     ercd = twai_flg( &flagptn, 2, 7, TWF_ANDW, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "twai_flg(POL) bad ercd !E_TMOUT" );
@@ -386,7 +390,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( 0 == flg_info.wtsk, "flg.wtsk should be non0" );
     CYG_TEST_CHECK( 0 == flg_info.flgptn, "flgptn should be 0" );
     intercom = 0;
-    ercd = dly_tsk( 10 );               // let task 2 start waiting
+    ercd = dly_tsk( delay );               // let task 2 start waiting
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     intercom = 1;
     ercd = ref_flg( &flg_info, 2 );
@@ -395,7 +399,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( 0 == flg_info.flgptn, "flgptn should be 0" );
     ercd = set_flg( 2, 0x5555 );
     CYG_TEST_CHECK( E_OK == ercd, "sig_flg bad ercd" );
-    ercd = dly_tsk( 10 );
+    ercd = dly_tsk( delay );
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_flg( &flg_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_flg bad ercd" );
@@ -403,7 +407,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( 0x5555 == flg_info.flgptn, "flgptn should be 0x5555" );
     ercd = clr_flg( 2, 0xF0F0 );
     CYG_TEST_CHECK( E_OK == ercd, "clr_flg bad ercd" );
-    ercd = dly_tsk( 10 );
+    ercd = dly_tsk( delay );
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_flg( &flg_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_flg bad ercd" );
@@ -411,7 +415,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( 0x5050 == flg_info.flgptn, "flgptn should be 0x5050" );
     ercd = set_flg( 2, 0xFFFF );
     CYG_TEST_CHECK( E_OK == ercd, "sig_flg bad ercd" );
-    ercd = dly_tsk( 10 );
+    ercd = dly_tsk( delay );
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_flg( &flg_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_flg bad ercd" );
@@ -452,17 +456,17 @@ void task1( unsigned int arg )
 #endif
     ercd = prcv_msg( NADR, 2 );
     CYG_TEST_CHECK( E_PAR == ercd, "prcv_msg bad ercd !E_PAR" );
-    ercd = trcv_msg( &rxptr, -6, 10 );
+    ercd = trcv_msg( &rxptr, -6, delay );
     CYG_TEST_CHECK( E_ID == ercd, "trcv_msg bad ercd !E_ID" );
-    ercd = trcv_msg( &rxptr, 99, 10 );
+    ercd = trcv_msg( &rxptr, 99, delay );
     CYG_TEST_CHECK( E_ID == ercd, "trcv_msg bad ercd !E_ID" );
     ercd = trcv_msg( &rxptr, 2, -999 );
     CYG_TEST_CHECK( E_PAR == ercd, "trcv_msg bad ercd !E_PAR" );
 #ifndef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
-    ercd = trcv_msg( NULL, 2, 10 );
+    ercd = trcv_msg( NULL, 2, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "trcv_msg bad ercd !E_PAR" );
 #endif
-    ercd = trcv_msg( NADR, 2, 10 );
+    ercd = trcv_msg( NADR, 2, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "trcv_msg bad ercd !E_PAR" );
     ercd = ref_mbx( &mbx_info, -6 );
     CYG_TEST_CHECK( E_ID == ercd, "ref_mbx bad ercd !E_ID" );
@@ -480,7 +484,7 @@ void task1( unsigned int arg )
     // check the waitable functions versus dispatch disable
     ercd = prcv_msg( &rxptr, 2 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "prcv_msg bad ercd !E_TMOUT" );
-    ercd = trcv_msg( &rxptr, 2, 10 );
+    ercd = trcv_msg( &rxptr, 2, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "trcv_msg bad ercd !E_TMOUT" );
     ercd = trcv_msg( &rxptr, 2, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "trcv_msg(POL) bad ercd !E_TMOUT" );
@@ -489,7 +493,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = rcv_msg( &rxptr, 2 );
     CYG_TEST_CHECK( E_CTX == ercd, "rcv_msg bad ercd !E_CTX" );
-    ercd = trcv_msg( &rxptr, 2, 10 );
+    ercd = trcv_msg( &rxptr, 2, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "trcv_msg bad ercd !E_CTX" );
     ercd = trcv_msg( &rxptr, 2, TMO_FEVR );
     CYG_TEST_CHECK( E_CTX == ercd, "trcv_msg(FEVR) bad ercd !E_CTX" );
@@ -502,7 +506,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "ena_dsp bad ercd" );
     ercd = prcv_msg( &rxptr, 2 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "prcv_msg bad ercd !E_TMOUT" );
-    ercd = trcv_msg( &rxptr, 2, 10 );
+    ercd = trcv_msg( &rxptr, 2, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "trcv_msg bad ercd !E_TMOUT" );
     ercd = trcv_msg( &rxptr, 2, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "trcv_msg(POL) bad ercd !E_TMOUT" );
@@ -514,7 +518,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( 0 == mbx_info.wtsk, "mbx.wtsk should be 0" );
     CYG_TEST_CHECK( NADR == mbx_info.pk_msg, "mbx peek should be NADR" );
     intercom = 0;
-    ercd = dly_tsk( 10 );               // let task 2 start waiting
+    ercd = dly_tsk( delay );               // let task 2 start waiting
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     intercom = 1;
     ercd = ref_mbx( &mbx_info, 2 );
@@ -531,7 +535,7 @@ void task1( unsigned int arg )
 #else // old, non-uITRON semantics
     CYG_TEST_CHECK( msgptr == mbx_info.pk_msg, "mbx peek should be msgptr" );
 #endif
-    ercd = dly_tsk( 10 );
+    ercd = dly_tsk( delay );
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_mbx( &mbx_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_mbx bad ercd" );
@@ -591,17 +595,17 @@ void task1( unsigned int arg )
 #endif
     ercd = pget_blf( NADR, 2 );
     CYG_TEST_CHECK( E_PAR == ercd, "pget_blf bad ercd !E_PAR" );
-    ercd = tget_blf( &blfptr, -6, 10 );
+    ercd = tget_blf( &blfptr, -6, delay );
     CYG_TEST_CHECK( E_ID == ercd, "tget_blf bad ercd !E_ID" );
-    ercd = tget_blf( &blfptr, 99, 10 );
+    ercd = tget_blf( &blfptr, 99, delay );
     CYG_TEST_CHECK( E_ID == ercd, "tget_blf bad ercd !E_ID" );
     ercd = tget_blf( &blfptr, 2, -999 );
     CYG_TEST_CHECK( E_PAR == ercd, "tget_blf bad ercd !E_PAR" );
 #ifndef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
-    ercd = tget_blf( NULL, 2, 10 );
+    ercd = tget_blf( NULL, 2, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "tget_blf bad ercd !E_PAR" );
 #endif
-    ercd = tget_blf( NADR, 2, 10 );
+    ercd = tget_blf( NADR, 2, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "tget_blf bad ercd !E_PAR" );
     ercd = ref_mpf( &mpf_info, -6 );
     CYG_TEST_CHECK( E_ID == ercd, "ref_mpf bad ercd !E_ID" );
@@ -621,7 +625,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "pget_blf bad ercd" );
     ercd = rel_blf( 2, blfptr );
     CYG_TEST_CHECK( E_OK == ercd, "rel_blf bad ercd" );
-    ercd = tget_blf( &blfptr, 2, 10 );
+    ercd = tget_blf( &blfptr, 2, delay );
     CYG_TEST_CHECK( E_OK == ercd, "tget_blf bad ercd" );
     ercd = dis_dsp();
     CYG_TEST_CHECK( E_OK == ercd, "dis_dsp bad ercd" );
@@ -630,7 +634,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = get_blf( &blfptr, 2 );
     CYG_TEST_CHECK( E_CTX == ercd, "get_blf bad ercd !E_CTX" );
-    ercd = tget_blf( &blfptr, 2, 10 );
+    ercd = tget_blf( &blfptr, 2, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "tget_blf bad ercd !E_CTX" );
 #endif // we can test bad param error returns
     ercd = ena_dsp();
@@ -639,7 +643,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "pget_blf bad ercd" );
     ercd = rel_blf( 2, blfptr );
     CYG_TEST_CHECK( E_OK == ercd, "rel_blf bad ercd" );
-    ercd = tget_blf( &blfptr, 2, 10 );
+    ercd = tget_blf( &blfptr, 2, delay );
     CYG_TEST_CHECK( E_OK == ercd, "tget_blf bad ercd" );
     ercd = rel_blf( 2, blfptr );
     CYG_TEST_CHECK( E_OK == ercd, "rel_blf bad ercd" );
@@ -649,7 +653,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blf bad ercd !E_TMOUT" );
     ercd = pget_blf( &blfptr, 2 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blf bad ercd !E_TMOUT" );
-    ercd = tget_blf( &blfptr, 2, 10 );
+    ercd = tget_blf( &blfptr, 2, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "tget_blf bad ercd !E_TMOUT" );
     ercd = tget_blf( &blfptr, 2, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "tget_blf(POL) bad ercd !E_TMOUT" );
@@ -658,7 +662,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = get_blf( &blfptr, 2 );
     CYG_TEST_CHECK( E_CTX == ercd, "get_blf bad ercd !E_CTX" );
-    ercd = tget_blf( &blfptr, 2, 10 );
+    ercd = tget_blf( &blfptr, 2, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "tget_blf bad ercd !E_CTX" );
     ercd = tget_blf( &blfptr, 2, TMO_FEVR );
     CYG_TEST_CHECK( E_CTX == ercd, "tget_blf(FEVR) bad ercd !E_CTX" );
@@ -669,7 +673,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "ena_dsp bad ercd" );
     ercd = pget_blf( &blfptr, 2 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blf bad ercd !E_TMOUT" );
-    ercd = tget_blf( &blfptr, 2, 10 );
+    ercd = tget_blf( &blfptr, 2, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blf bad ercd !E_TMOUT" );
     ercd = tget_blf( &blfptr, 2, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "tget_blf(POL) bad ercd !E_TMOUT" );
@@ -681,7 +685,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( 0 == mpf_info.wtsk, "mpf.wtsk should be 0" );
     CYG_TEST_CHECK( 0 == mpf_info.frbcnt, "mpf.frbcnt should be 0" );
     intercom = 0;
-    ercd = dly_tsk( 10 );               // let task 2 start waiting
+    ercd = dly_tsk( delay );               // let task 2 start waiting
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     intercom = 1;
     ercd = ref_mpf( &mpf_info, 2 );
@@ -698,7 +702,7 @@ void task1( unsigned int arg )
 #else // old, non-uITRON semantics
     CYG_TEST_CHECK( 0 != mpf_info.frbcnt, "mpf.frbcnt should be non0" );
 #endif
-    ercd = dly_tsk( 10 );               // let task 2 start waiting
+    ercd = dly_tsk( delay );               // let task 2 start waiting
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_mpf( &mpf_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_mpf bad ercd" );
@@ -743,17 +747,17 @@ void task1( unsigned int arg )
 #endif
     ercd = pget_blk( NADR, 2, 100 );
     CYG_TEST_CHECK( E_PAR == ercd, "pget_blk bad ercd !E_PAR" );
-    ercd = tget_blk( &blkptr, -6, 100, 10 );
+    ercd = tget_blk( &blkptr, -6, 100, delay );
     CYG_TEST_CHECK( E_ID == ercd, "tget_blk bad ercd !E_ID" );
-    ercd = tget_blk( &blkptr, 99, 100, 10 );
+    ercd = tget_blk( &blkptr, 99, 100, delay );
     CYG_TEST_CHECK( E_ID == ercd, "tget_blk bad ercd !E_ID" );
     ercd = tget_blk( &blkptr, 2, 100, -999 );
     CYG_TEST_CHECK( E_PAR == ercd, "tget_blk bad ercd !E_PAR" );
 #ifndef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
-    ercd = tget_blk( NULL, 2, 100, 10 );
+    ercd = tget_blk( NULL, 2, 100, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "tget_blk bad ercd !E_PAR" );
 #endif
-    ercd = tget_blk( NADR, 2, 100, 10 );
+    ercd = tget_blk( NADR, 2, 100, delay );
     CYG_TEST_CHECK( E_PAR == ercd, "tget_blk bad ercd !E_PAR" );
     ercd = ref_mpl( &mpl_info, -6 );
     CYG_TEST_CHECK( E_ID == ercd, "ref_mpl bad ercd !E_ID" );
@@ -773,7 +777,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "pget_blk bad ercd" );
     ercd = rel_blk( 2, blkptr );
     CYG_TEST_CHECK( E_OK == ercd, "rel_blk bad ercd" );
-    ercd = tget_blk( &blkptr, 2, 100, 10 );
+    ercd = tget_blk( &blkptr, 2, 100, delay );
     CYG_TEST_CHECK( E_OK == ercd, "tget_blk bad ercd" );
     ercd = dis_dsp();
     CYG_TEST_CHECK( E_OK == ercd, "dis_dsp bad ercd" );
@@ -782,7 +786,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = get_blk( &blkptr, 2, 100 );
     CYG_TEST_CHECK( E_CTX == ercd, "get_blk bad ercd !E_CTX" );
-    ercd = tget_blk( &blkptr, 2, 100, 10 );
+    ercd = tget_blk( &blkptr, 2, 100, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "tget_blk bad ercd !E_CTX" );
 #endif // we can test bad param error returns
     ercd = ena_dsp();
@@ -791,7 +795,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "pget_blk bad ercd" );
     ercd = rel_blk( 2, blkptr );
     CYG_TEST_CHECK( E_OK == ercd, "rel_blk bad ercd" );
-    ercd = tget_blk( &blkptr, 2, 100, 10 );
+    ercd = tget_blk( &blkptr, 2, 100, delay );
     CYG_TEST_CHECK( E_OK == ercd, "tget_blk bad ercd" );
     ercd = rel_blk( 2, blkptr );
     CYG_TEST_CHECK( E_OK == ercd, "rel_blk bad ercd" );
@@ -801,7 +805,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blk bad ercd !E_TMOUT" );
     ercd = pget_blk( &blkptr, 2, 100 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blk bad ercd !E_TMOUT" );
-    ercd = tget_blk( &blkptr, 2, 100, 10 );
+    ercd = tget_blk( &blkptr, 2, 100, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "tget_blk bad ercd !E_TMOUT" );
     ercd = tget_blk( &blkptr, 2, 100, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "tget_blk(POL) bad ercd !E_TMOUT" );
@@ -810,7 +814,7 @@ void task1( unsigned int arg )
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = get_blk( &blkptr, 2, 100 );
     CYG_TEST_CHECK( E_CTX == ercd, "get_blk bad ercd !E_CTX" );
-    ercd = tget_blk( &blkptr, 2, 100, 10 );
+    ercd = tget_blk( &blkptr, 2, 100, delay );
     CYG_TEST_CHECK( E_CTX == ercd, "tget_blk bad ercd !E_CTX" );
     ercd = tget_blk( &blkptr, 2, 100, TMO_FEVR );
     CYG_TEST_CHECK( E_CTX == ercd, "tget_blk(FEVR) bad ercd !E_CTX" );
@@ -821,7 +825,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( E_OK == ercd, "ena_dsp bad ercd" );
     ercd = pget_blk( &blkptr, 2, 100 );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blk bad ercd !E_TMOUT" );
-    ercd = tget_blk( &blkptr, 2, 100, 10 );
+    ercd = tget_blk( &blkptr, 2, 100, delay );
     CYG_TEST_CHECK( E_TMOUT == ercd, "pget_blk bad ercd !E_TMOUT" );
     ercd = tget_blk( &blkptr, 2, 100, TMO_POL );
     CYG_TEST_CHECK( E_TMOUT == ercd, "tget_blk(POL) bad ercd !E_TMOUT" );
@@ -834,7 +838,7 @@ void task1( unsigned int arg )
     CYG_TEST_CHECK( mpl_info.maxsz <= mpl_info.frsz,
                     "mpl.maxsz not < mpl.frsz" );
     intercom = 0;
-    ercd = dly_tsk( 10 );               // let task 2 start waiting
+    ercd = dly_tsk( delay );               // let task 2 start waiting
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     intercom = 1;
     ercd = ref_mpl( &mpl_info, 2 );
@@ -845,7 +849,7 @@ void task1( unsigned int arg )
     ercd = ref_mpl( &mpl_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_mpl bad ercd" );
     CYG_TEST_CHECK( 0 == mpl_info.wtsk, "mpl.wtsk should be 0" );
-    ercd = dly_tsk( 10 );               // let task 2 start waiting
+    ercd = dly_tsk( delay );               // let task 2 start waiting
     CYG_TEST_CHECK( E_OK == ercd, "dly_tsk bad ercd" );
     ercd = ref_mpl( &mpl_info, 2 );
     CYG_TEST_CHECK( E_OK == ercd, "ref_mpl bad ercd" );
@@ -933,12 +937,12 @@ void task4( unsigned int arg )
 #else // ! CYGVAR_KERNEL_COUNTERS_CLOCK   - can't test without it
 #define N_A_MSG "no CYGVAR_KERNEL_COUNTERS_CLOCK"
 #endif // ! CYGVAR_KERNEL_COUNTERS_CLOCK  - can't test without it
-#else  // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
+#else  // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
 #define N_A_MSG "no CYGFUN_KERNEL_THREADS_TIMER"
-#endif // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
-#else  // ! CYGIMP_THREAD_PRIORITY	  - can't test without it
+#endif // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
+#else  // ! CYGIMP_THREAD_PRIORITY        - can't test without it
 #define N_A_MSG "no CYGSEM_KERNEL_SCHED_MLQUEUE"
-#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE	  - can't test without it
+#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE   - can't test without it
 #else  // ! CYGPKG_UITRON
 #define N_A_MSG "uITRON Compatibility layer disabled"
 #endif // CYGPKG_UITRON
@@ -948,8 +952,7 @@ void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

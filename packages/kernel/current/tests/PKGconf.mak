@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -30,14 +30,23 @@
 
 PACKAGE       := kernel
 include ../../../pkgconf/pkgconf.mak
+include ../../../pkgconf/system.mak
 
 TESTS	      := bin_sem0 bin_sem1 bin_sem2 clock0 clock1 cnt_sem0 cnt_sem1 \
-		 except1 flag0 flag1 intr0\
+		 except1 flag0 flag1 intr0 \
 	         kclock0 kclock1 kexcept1 kintr0 kmbox1 kmemfix1 kmemvar1 \
-		 kmutex0 kmutex1 ksched1 ksem0 ksem1 kcache1 kflag0 kflag1 \
+		 kmutex0 kmutex1 ksched1 ksem0 ksem1 kflag0 kflag1 \
 		 kthread0 kthread1 mbox1 memfix1 memfix2 memvar1 memvar2\
-		 mutex0 mutex1 sched1 sync2 sync3 \
-		 thread0 thread1 thread2 release kill thread_gdb
+		 mutex0 mutex1 mutex2 sched1 sync2 sync3 \
+		 thread0 thread1 thread2 release kill thread_gdb \
+		 tm_basic
+ifndef CYG_HAL_ARM
+TESTS	+= kcache1 kcache2
+endif
+
+ifndef CYGPKG_HAL_ARM_AEB
+TESTS   += stress_threads
+endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

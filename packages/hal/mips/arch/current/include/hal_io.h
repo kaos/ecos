@@ -3,9 +3,9 @@
 
 //=============================================================================
 //
-//	hal_io.h
+//      hal_io.h
 //
-//	HAL device IO register support.
+//      HAL device IO register support.
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -25,24 +25,24 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-02-17
-// Purpose:	Define IO register support
-// Description:	The macros defined here provide the HAL APIs for handling
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-02-17
+// Purpose:     Define IO register support
+// Description: The macros defined here provide the HAL APIs for handling
 //              device IO control registers.
 //              
 // Usage:
-//		#include <cyg/hal/hal_io.h>
-//		...
-//		
+//              #include <cyg/hal/hal_io.h>
+//              ...
+//              
 //
 //####DESCRIPTIONEND####
 //

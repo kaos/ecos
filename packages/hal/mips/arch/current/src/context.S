@@ -21,7 +21,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -177,24 +177,41 @@ hal_thread_load_context:
 
 #------------------------------------------------------------------------------
 # HAL longjmp, setjmp implementations
-# hal_setjmp saves only to callee save registers 13-31, r1[sp],r2
-# and lr into buffer supplied in r3[arg0]
+# hal_setjmp saves only to callee save registers 16-23, 28, 30, 31[ra], 29[sp]
+# into buffer supplied in a0[arg0]
+# Note: These definitions are repeated in hal_arch.h. If changes are required
+# remember to update both sets.
+
+#define CYGARC_JMP_BUF_SP        0
+#define CYGARC_JMP_BUF_R16       1
+#define CYGARC_JMP_BUF_R17       2
+#define CYGARC_JMP_BUF_R18       3
+#define CYGARC_JMP_BUF_R19       4
+#define CYGARC_JMP_BUF_R20       5
+#define CYGARC_JMP_BUF_R21       6
+#define CYGARC_JMP_BUF_R22       7
+#define CYGARC_JMP_BUF_R23       8
+#define CYGARC_JMP_BUF_R28       9
+#define CYGARC_JMP_BUF_R30      10
+#define CYGARC_JMP_BUF_R31      11
+
+#define CYGARC_JMP_BUF_SIZE     12
 
 	.globl	hal_setjmp
 	.ent	hal_setjmp
 hal_setjmp:
-	sw	$31,44(a0)	# ra (link)
-	sw	$30,40(a0)
-	sw	$28,36(a0)	# gp, optimize out?
-	sw	$23,32(a0)
-	sw	$22,28(a0)
-	sw	$21,24(a0)
-	sw	$20,20(a0)
-	sw	$19,16(a0)
-	sw	$18,12(a0)
-	sw	$17,8(a0)
-	sw	$16,4(a0)
-	sw	sp,0(a0)	# $29
+	sw	$31,CYGARC_JMP_BUF_R31*4(a0)	# ra (link)
+	sw	$30,CYGARC_JMP_BUF_R30*4(a0)
+	sw	$28,CYGARC_JMP_BUF_R28*4(a0)	# gp, optimize out?
+	sw	$23,CYGARC_JMP_BUF_R23*4(a0)
+	sw	$22,CYGARC_JMP_BUF_R22*4(a0)
+	sw	$21,CYGARC_JMP_BUF_R21*4(a0)
+	sw	$20,CYGARC_JMP_BUF_R20*4(a0)
+	sw	$19,CYGARC_JMP_BUF_R19*4(a0)
+	sw	$18,CYGARC_JMP_BUF_R18*4(a0)
+	sw	$17,CYGARC_JMP_BUF_R17*4(a0)
+	sw	$16,CYGARC_JMP_BUF_R16*4(a0)
+	sw	sp,CYGARC_JMP_BUF_SP*4(a0)	# $29
 	li	v0,0
 	jr	ra
 	nop			# delay slot
@@ -203,18 +220,18 @@ hal_setjmp:
 	.globl	hal_longjmp
 	.ent	hal_longjmp
 hal_longjmp:	
-	lw	$31,44(a0)	# ra (link)
-	lw	$30,40(a0)
-	lw	$28,36(a0)	# gp, optimize out?
-	lw	$23,32(a0)
-	lw	$22,28(a0)
-	lw	$21,24(a0)
-	lw	$20,20(a0)
-	lw	$19,16(a0)
-	lw	$18,12(a0)
-	lw	$17,8(a0)
-	lw	$16,4(a0)
-	lw	sp,0(a0)	# $29
+	lw	$31,CYGARC_JMP_BUF_R31*4(a0)	# ra (link)
+	lw	$30,CYGARC_JMP_BUF_R30*4(a0)
+	lw	$28,CYGARC_JMP_BUF_R28*4(a0)	# gp, optimize out?
+	lw	$23,CYGARC_JMP_BUF_R23*4(a0)
+	lw	$22,CYGARC_JMP_BUF_R22*4(a0)
+	lw	$21,CYGARC_JMP_BUF_R21*4(a0)
+	lw	$20,CYGARC_JMP_BUF_R20*4(a0)
+	lw	$19,CYGARC_JMP_BUF_R19*4(a0)
+	lw	$18,CYGARC_JMP_BUF_R18*4(a0)
+	lw	$17,CYGARC_JMP_BUF_R17*4(a0)
+	lw	$16,CYGARC_JMP_BUF_R16*4(a0)
+	lw	sp,CYGARC_JMP_BUF_SP*4(a0)	# $29
 	move	v0,a1
 	jr	ra
 	nop			# delay slot
@@ -223,5 +240,3 @@ hal_longjmp:
 	
 #------------------------------------------------------------------------------
 # end of context.S
-
-	

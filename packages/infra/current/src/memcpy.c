@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-06-04
 // Purpose:     This file implements the ANSI memcpy() function
-// Description:	This file implements the memcpy() function defined in ANSI para
+// Description: This file implements the memcpy() function defined in ANSI para
 //              7.11.2.1. This is implemented in the kernel rather than the
 //              C library due to it being required by gcc whether or not the
 //              C library has been configured in.

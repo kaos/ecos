@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
+// Author(s):    jlarmour
+// Contributors: jlarmour
+// Date:         1999-03-04
 // Purpose:     
 // Description: 
 // Usage:       
@@ -46,43 +46,31 @@
 
 
 // Include the C library? And do we want the stdio stuff?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#ifdef CYGPKG_LIBC_STDIO
 
 // INCLUDES
 
-#include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
-#include <stddef.h>                 // NULL and size_t from compiler
-#include <cyg/devs/common/table.h>  // Device table
-#include "clibincl/stringsupp.hxx"  // _strncmp() and _strcmp()
-#include "clibincl/stdiosupp.hxx"   // Header for this file
+#include <cyg/infra/cyg_type.h>    // Common project-wide type definitions
+#include <stddef.h>                // NULL and size_t from compiler
+#include <cyg/io/io.h>             // I/O system
+#include "clibincl/stringsupp.hxx" // _strncmp() and _strcmp()
+#include "clibincl/stdiosupp.hxx"  // Header for this file
 
+externC void cyg_io_init(void);
 
-struct Cyg_Device_Table_t *
+cyg_io_handle_t
 Cyg_libc_stdio_find_filename( const char *filename )
 {
-    int i;
-    struct Cyg_Device_Table_t *dev=NULL;
-
-    // Find the "file" in the device table
-    if ( _strncmp( filename, "/dev/", 5) )
-    {
-        return NULL;
-    } // if
-
-    // match the bit after the "/dev/"
-    for (i=0; (Cyg_Device_Table[i].name != NULL); i++ )
-    {
-        if ( !_strcmp( &filename[5], Cyg_Device_Table[i].name) )
-        {
-            dev=&Cyg_Device_Table[i];
-            break;
-        }
-    } // for
-
-    return dev; // dev will still be NULL if the filename wasn't found
+    cyg_io_handle_t dev=NULL;
+    // FIXME - Remove this call to 'cyg_io_init()' when contructor
+    // priority bug PR 19285 is fixed
+    cyg_io_init();
+    cyg_io_lookup(filename, &dev);
+    
+    return dev;
 } // Cyg_libc_stdio_find_filename()
 
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#endif // ifdef CYGPKG_LIBC_STDIO
 
 // EOF stdiosupp.cxx

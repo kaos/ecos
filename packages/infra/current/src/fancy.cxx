@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//	fancy.cxx
+//      fancy.cxx
 //
 //      Fancy formatting trace and assert functions
 //
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-12-04
-// Purpose:	Fancy Trace and assert functions
-// Description:	The functions in this file are fancy implementations of the
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-12-04
+// Purpose:     Fancy Trace and assert functions
+// Description: The functions in this file are fancy implementations of the
 //              standard trace and assert functions. These do printf
 //              style formatting, printing the string and arguments.
 //
@@ -66,15 +66,15 @@
 // Local Configuration: hack me!
 
 // these are generally:
-//	if 0, feature is disabled
-//	if 1, feature is enabled, printing is default width
-//	if >1, field is padded up to that width if necessary
-//		(not truncated ever)
+//      if 0, feature is disabled
+//      if 1, feature is enabled, printing is default width
+//      if >1, field is padded up to that width if necessary
+//              (not truncated ever)
 
-#define CYG_FILENAME	20
-#define CYG_THREADID	0 // DO NOT SET IF NO KERNEL
-#define CYG_LINENUM  	4
-#define CYG_FUNCNAME 	100
+#define CYG_FILENAME    20
+#define CYG_THREADID    0 // DO NOT SET IF NO KERNEL
+#define CYG_LINENUM     4
+#define CYG_FUNCNAME    100
 #define CYG_DIAG_PRINTF 1
 #define CYG_FUNC_INDENT 2
 
@@ -146,20 +146,21 @@ write_whattracepost( cyg_uint32 what )
 }
 #endif // CYGDBG_USE_TRACING
 
-static char *trim_file(char *file)
+static const char *trim_file(const char *file)
 {
 #if CYG_FILENAME
     if ( NULL == file )
         file = "<nofile>";
 
 #if 1 == CYG_FILENAME
-    char *f = file;
+    const char *f = file;
     while( *f ) f++;
     while( *f != '/' && f != file ) f--;
     return f==file?f:(f+1);
 #else
     static char fbuf2[100];
-    char *f = file, *g = fbuf2;
+    const char *f = file;
+    char *g = fbuf2;
     while( *f ) f++;
     while( *f != '/' && f != file ) f--;
     if ( f > file ) f++;
@@ -173,7 +174,7 @@ static char *trim_file(char *file)
 #endif
 }
 
-static char *trim_func(char *func)
+static const char *trim_func(const char *func)
 {
 #if CYG_FUNCNAME
     static char fbuf[CYG_FBUF_SIZE];
@@ -188,8 +189,7 @@ static char *trim_func(char *func)
     fbuf[i++] = '(';
     fbuf[i++] = ')';
     fbuf[i  ] = 0;
-    while( i > 0 && fbuf[i] != ' ' ) i--;
-    if( i > 0 ) i++;
+    i=0;
 #if 1 == CYG_FUNCNAME
     return &fbuf[i];
 #else
@@ -475,8 +475,8 @@ cyg_tracemsg8( cyg_uint32 what,
 #ifdef CYGDBG_USE_ASSERTS
 
 externC void
-cyg_assert_fail( char *psz_func, char *psz_file, cyg_uint32 linenum,
-                 char *psz_msg )
+cyg_assert_fail( const char *psz_func, const char *psz_file,
+                 cyg_uint32 linenum, const char *psz_msg )
 {
     cyg_uint32 old_ints;
 

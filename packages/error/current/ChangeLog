@@ -1,3 +1,7 @@
+1999-04-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/error.h: Add cdl_package doc attribute.
+
 1998-09-11  Bart Veer  <bartv@cygnus.co.uk>
 
 	* include/pkgconf/error.h:
@@ -32,7 +36,7 @@ Wed Aug 12 11:04:27 BST 1998  Chris Provenzano  <proven@cygnus.com>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -53,10 +53,10 @@
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
-#include <cyg/devs/common/table.h>  // Device table stuff
-#include <cyg/devs/common/iorb.h>   // IORBs
-#include "clibincl/stdiosupp.hxx"   // Support functions for stdio
+#include <cyg/io/io.h>              // I/O system
+#include <cyg/io/devtab.h>          // Device table
 #include "clibincl/stream.hxx"      // Cyg_StdioStream
+#include "clibincl/stdiosupp.hxx"   // _vsscanf() prototype
 
 
 // EXPORTED SYMBOLS
@@ -68,16 +68,17 @@ vsscanf( const char *, const char *, va_list )
 // FUNCTIONS
 
 static Cyg_ErrNo
-str_read( CYG_ADDRWORD cookie, Cyg_IORB *iorb )
+str_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len)
 {
-    cyg_uint8 **str_p = (cyg_uint8 **) cookie;
+    cyg_devtab_entry_t *dev = (cyg_devtab_entry_t *)handle;
+    cyg_uint8 *str_p = (cyg_uint8 *)dev->priv;
     cyg_ucount32 i;
 
-    // we set *str_p to NULL further down when the string has finished being
+    // we set str_p to NULL further down when the string has finished being
     // read
-    if (*str_p == NULL)
+    if (str_p == NULL)
     {
-        iorb->xferred_length = 0;
+        *len = 0;
         return ENOERR;
     } // if
 
@@ -86,25 +87,31 @@ str_read( CYG_ADDRWORD cookie, Cyg_IORB *iorb )
     // of calling memcpy etc.
 
     // copy string until run out of user space, or we reach its end
-    for (i=0; (i < iorb->buffer_length) ; ++i)
+    for (i = 0; i < *len ; ++i)
     {
-        *((char *)iorb->buffer + i) = **str_p;
+        *((cyg_uint8 *)buf + i) = *str_p;
 
-        if (**str_p == '\0')
+        if (*str_p++ == '\0')
         {
-            *str_p = NULL;
+            str_p = NULL;
             ++i;
             break;
         } // if
 
-        ++(*str_p);
     } // for
 
-    iorb->xferred_length = i;
+    *len = i;
+    dev->priv = (void *)str_p;
 
     return ENOERR;
     
 } // str_read()
+
+static DEVIO_TABLE(devio_table,
+                   NULL,            // write
+                   str_read,        // read
+                   NULL,            // get_config
+                   NULL);           // set_config
 
 
 externC int
@@ -113,17 +120,13 @@ _vsscanf( const char *s, const char *format, va_list arg )
     // construct a fake device with the address of the string we've
     // been passed as its private data. This way we can use the data
     // directly
-    struct Cyg_Device_Table_t strdev = { "strdev",
-                                         (CYG_ADDRWORD) &s,
-                                         NULL,       // open
-                                         NULL,       // read_cancel
-                                         NULL,       // write_cancel
-                                         &str_read,  // read_blocking
-                                         NULL,       // write_blocking
-                                         NULL,       // read_asynchronous
-                                         NULL,       // write_asynchronous
-                                         NULL,       // close
-                                         0 };        // ioctl
+    DEVTAB_ENTRY_NO_INIT(strdev,
+                         "strdev",       // Name
+                         NULL,           // Dependent name (layered device)
+                         &devio_table,   // I/O function table
+                         NULL,           // Init
+                         NULL,           // Lookup
+                         (void *)s);     // private
     Cyg_StdioStream my_stream( &strdev, Cyg_StdioStream::CYG_STREAM_READ,
                                false, false, _IONBF, 0, NULL );
     

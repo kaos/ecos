@@ -1,0 +1,217 @@
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_*.*: Use double underscore substitution
+	for period character in SECTION_* macro names (PR 19787)
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-03-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/linux.S: Added comment.
+	Doh! Managed to break compilation with a comment...	
+
+1999-03-16  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19483
+	* src/linux.S (cyg_hal_hardware_init): Fiddled some more with the
+	bits to no avail.
+
+	* src/hal_startup.c: 
+	Renamed hal_ to cyg_hal_.
+	Added exception handling.
+
+1999-03-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_startup.c (cyg_hal_isr_init): Initialize ISR table with
+	pointers to default ISR routine.
+
+1999-03-12  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19486
+	* src/linux.S (cyg_hal_hardware_init): Only enable zero divide
+	exceptions. 
+
+1999-03-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_startup.c: 
+	* src/entry.c:
+	Renamed hal_isr_init to cyg_hal_isr_init.
+	
+	* src/hal_startup.c: Also catch SIGFPE.
+
+	* src/entry.c: Call cyg_hal_hardware_init.
+
+	* src/linux.S:     [added]
+	* src/PKGconf.mak: 
+	Added file to hold startup assembly code.
+
+1999-03-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: add copyright notices
+
+1999-03-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: give all LDI files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+	* include/pkgconf/*.mlt: give all MLT files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+
+1999-02-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_startup.c: 
+	Changed label used to access scheduler lock to one that is not
+	mangled by C++. This is intended to make support for interrupt
+	handling in non-kernel configurations easier.
+
+1999-02-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/syscall-i386-linux-1.0.S: Added copyright header.
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_startup.c: 
+	Rename hal_interrupts_deffered -> hal_interrupts_deferred
+	Rename CYG_ISR/VSR_* -> CYGNUM_HAL_ISR/VSR_* in line with HAL changes
+	Rename CYG_VECTOR_RTC -> CYGNUM_HAL_INTERRUPT_RTC
+
+	* src/syscall-i386-linux-1.0.S:
+	Add a FIX ME
+
+1999-02-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/ram.mlt: New memory layout save file
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Remove LMA_EQ_VMA macro definition.
+
+1999-01-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h: Changed CDL type back to radio
+	to get consistent ConfigTool output.
+
+1999-01-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/ram.ldi: Commented out the rel_got change.
+
+1999-01-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/ram.ldi: Added rel.got section.
+
+1999-01-22  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_startup.c: Moved external declarations into top-level
+	scope to avoid compiler warning.
+
+1999-01-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h: Removed startup
+	config. Changed linux entry to dummy instead of bool.
+
+1999-01-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h: Added config for real-time
+	timer.
+
+1999-01-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_diag.c: Removed hal_diag_write_line.
+
+	* src/entry.c: Removed main/argv stuff.
+
+1999-01-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_i386_linux.h: Added.
+
+1999-01-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_startup.c (hal_default_vsr): 
+	* src/linux.ld (cyg_hal_sched_lock): 
+	Added C-symbol reference to the scheduler lock.
+
+1999-01-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_startup.c (hal_default_vsr): Allow interrupt disable
+	count to be bigger than 1.
+
+1999-01-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/linux.ld: Added fix me. Remember to clean up.
+
+	* src/hal_startup.c: Removed bogus include statement.
+	Added CYGPKG_KERNEL config handling.
+
+	* src/hal_diag.c: Removed bogus include statements and functions.
+
+1999-01-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_startup.c (hal_isr_init): Use CYG_VECTOR_RTC rather than
+	hardcoded value.
+
+1999-01-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/syscall-i386-linux-1.0.S:
+	* src/hal_diag.c: 
+	* src/PKGconf.mak:
+	Removed tabs & fixed comment style.
+
+1999-01-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/PKGconf.mak: Cleaned up.
+
+	* src/entry.c: Added (from proven's crtbegin.c).
+
+	* src/linux.ld: Added.
+
+	* src/hal_startup.cxx: (Deleted)
+	* src/hal_startup.c:   (Added)
+	Changed code to C, cleaned up.
+
+1999-01-06  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_diag.c: Fixed warnings. Output chars in batches to avoid
+	problems with pkgtest - also improves performance.
+
+1999-01-06  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/syscall-i386-linux-1.0.S: Set behavior to match __ELF__.
+
+1998-12-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/syscall-i386-linux-1.0.S: 
+	* src/hal_startup.cxx: 
+	Fixed compiler warnings.
+
+Fri Dec  4 13:49:03 GMT 1998
+
+	* src/syscall-i386-linux-1.0.S: Fix to work with Bart's latest tools.
+	For some reason it doesn't define __ELF__ but, we really don't care.
+
+Mon Nov  9 15:18:11 GMT 1998   Chris Provenzano  <proven@cygnus.com>
+
+        Initial i386 linux port.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

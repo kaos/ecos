@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-08-31
 // Purpose:     
 // Description: 
@@ -61,7 +61,7 @@
 // SYMBOLS
 
 externC void
-exit( int ) CYGPRI_LIBC_WEAK_ALIAS("__libc_exit") CYGPRI_LIBC_NORETURN;
+exit( int ) CYGBLD_ATTRIB_WEAK_ALIAS(__libc_exit) CYGBLD_ATTRIB_NORET;
 
 // FUNCTIONS
 
@@ -75,12 +75,12 @@ __libc_exit( int status )
     // and flush stdio buffers. Anything else is for _exit() (aka
     // __libc__exit() within the implementation)
 
+#ifdef CYGFUN_LIBC_ATEXIT
     // we start with the atexit handlers
     cyg_libc_invoke_atexit_handlers();
+#endif
 
-// we only need to flush stdio if we have buffered I/O.
-#if defined(CYGPKG_LIBC_STDIO) && \
-    defined(CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO)
+#ifdef CYGSEM_LIBC_EXIT_CALLS_FFLUSH
 
     int rc;
 
@@ -89,8 +89,6 @@ __libc_exit( int status )
 
     CYG_TRACE2( rc != 0, "fflush() returned non-zero. It returned %d and "
                 "errno indicates the error: %s", rc, strerror(errno) );
-
-    
 #endif
 
     __libc__exit( status );

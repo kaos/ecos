@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -75,6 +75,8 @@ _memchr( const void *s, int c, size_t n )
 #if defined(CYGIMP_LIBC_STRING_PREFER_SMALL_TO_FAST) || defined(__OPTIMIZE_SIZE__)
     const unsigned char *src = (const unsigned char *) s;
     
+    c &= 0xff;
+
     while (n--)
     {
         if (*src == c)
@@ -92,6 +94,8 @@ _memchr( const void *s, int c, size_t n )
     CYG_WORD buffer;
     CYG_WORD mask;
     cyg_ucount8 i;
+
+    c &= 0xff;
     
     // If the size is small, or src is unaligned, then 
     // use the bytewise loop.  We can hope this is rare.

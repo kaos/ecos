@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,41 +30,52 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm
-// Date:          1998-03-17
+// Contributors:  dsm, jlarmour
+// Date:          1999-02-16
 // Description:   Test harness implementation that uses the infrastructure
 //                diag channel.  This is intended for manual testing.
 // 
 //####DESCRIPTIONEND####
 
-#include <pkgconf/system.h>
-#include <pkgconf/infra.h>
+#include <cyg/infra/cyg_type.h>        // base types
+#include <cyg/infra/diag.h>            // HAL polled output
+#include <cyg/infra/testcase.h>        // what we implement
 
-#include <cyg/infra/cyg_type.h>         // base types
-#include <cyg/infra/diag.h>             // HAL polled output
-#include <cyg/infra/testcase.h>         // what we implement
+int cyg_test_is_simulator = 0;         // infrastructure changes as necessary
 
-void cyg_test_init()
+externC void
+cyg_test_init(void)
 {
-    diag_init();
+    // currently nothing
 }
 
-void cyg_test_output(int status, char *msg, int line, char *file)
+externC void
+cyg_test_output(Cyg_test_code status, const char *msg, int line,
+                const char *file)
 {
-    char *st = "UNKNOWN STATUS:";
+    char *st;
 
     switch (status) {
-    case 0:
+    case CYGNUM_TEST_FAIL:
         st = "FAIL:";
         break;
-    case 1:
+    case CYGNUM_TEST_PASS:
         st = "PASS:";
         break;
-    case 2:
+    case CYGNUM_TEST_EXIT:
         st = "EXIT:";
         break;
-    case 3:
+    case CYGNUM_TEST_INFO:
         st = "INFO:";
+        break;
+    case CYGNUM_TEST_GDBCMD:
+        st = "GDB:";
+        break;
+    case CYGNUM_TEST_NA:
+        st = "NOTAPPLICABLE:";
+        break;
+    default:
+        st = "UNKNOWN STATUS:";
         break;
     }
 
@@ -72,17 +83,18 @@ void cyg_test_output(int status, char *msg, int line, char *file)
     diag_write_char('<');
     diag_write_string(msg);
     diag_write_char('>');
-    if( 0 == status ) {
-	diag_write_string(" Line: ");
-	diag_write_dec(line);
-	diag_write_string(", File: ");
-	diag_write_string(file);
+    if( CYGNUM_TEST_FAIL == status ) {
+        diag_write_string(" Line: ");
+        diag_write_dec(line);
+        diag_write_string(", File: ");
+        diag_write_string(file);
     }
     diag_write_char('\n');
 }
 
 // This is an appropriate function to set a breakpoint on
-void cyg_test_exit()
+externC void
+cyg_test_exit(void)
 {
     for(;;)
         ;

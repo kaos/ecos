@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -111,7 +111,7 @@ static void entry0( CYG_ADDRWORD data )
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
     CYG_TEST_CHECK(NULL==m0.get(
-        Cyg_Clock::real_time_clock->current_value() + 2),
+        Cyg_Clock::real_time_clock->current_value() + 10),
                    "unexpectedly found message");
     CYG_TEST_CHECK(3==q++, "bad synchronization");
     // Allow t1 to run as this get times out
@@ -147,13 +147,13 @@ static void entry1( CYG_ADDRWORD data )
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
     CYG_TEST_INFO("Testing timed functions");
     CYG_TEST_CHECK(7==(cyg_count8)m0.get(
-        Cyg_Clock::real_time_clock->current_value() + 4), "timed get()");
+        Cyg_Clock::real_time_clock->current_value() + 20), "timed get()");
     CYG_TEST_CHECK(4==q++, "bad synchronization");
 #ifdef CYGMTH_MBOX_PUT_CAN_WAIT
     CYG_TEST_CHECK(4==(cyg_count8)m1.get());
 
     CYG_TEST_CHECK(11==q++, "bad synchronization");
-    thread[0]->delay(4);    // allow t0 to reach put on m1
+    thread[0]->delay(20);    // allow t0 to reach put on m1
     CYG_TEST_CHECK(14==q++, "bad synchronization");
     CYG_TEST_CHECK(m0.waiting_to_put(), "waiting_to_put()");
     do {

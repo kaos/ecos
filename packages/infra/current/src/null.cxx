@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	null.cxx
+//      null.cxx
 //
-//	Null trace and assert functions
+//      Null trace and assert functions
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-15
-// Purpose:	Trace and assert functions
-// Description:	The functions in this file are null implementations of the
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-15
+// Purpose:     Trace and assert functions
+// Description: The functions in this file are null implementations of the
 //              standard trace and assert functions. These can be used to
 //              eliminate all trace and assert messages without recompiling.
 //
@@ -54,8 +54,8 @@
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
 externC void
-cyg_assert_fail( char *psz_func, char *psz_file, cyg_uint32 linenum,
-                 char *psz_msg )
+cyg_assert_fail( const char *psz_func, const char *psz_file,
+                 cyg_uint32 linenum, const char *psz_msg )
 {
     for(;;);
 };
@@ -123,8 +123,8 @@ cyg_tracemsg8( cyg_uint32 what,
 #ifdef CYGDBG_USE_ASSERTS
 
 externC void
-cyg_assert_fail( char *psz_func, char *psz_file, cyg_uint32 linenum,
-                 char *psz_msg )
+cyg_assert_fail( const char *psz_func, const char *psz_file,
+                 cyg_uint32 linenum, const char *psz_msg )
 {
     for(;;);
 };

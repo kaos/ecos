@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -72,6 +72,7 @@
        description "Common types and useful macros.
                 Tracing and assertion facilities.
                 Package startup options." 
+       doc ref/ecos-ref/p-cygpkg-infra.html
    }
    }}CFG_DATA */
 
@@ -125,12 +126,12 @@
  */
 /* {{CFG_DATA
    cdl_component CYGPKG_INFRA_DEBUG {
-       display 		"Asserts & Tracing"
-       type    		boolean
-       parent		CYGPKG_INFRA
+       display          "Asserts & Tracing"
+       type             boolean
+       parent           CYGPKG_INFRA
        description "The eCos source code contains a significant amount of
-		internal debugging support, in the form of assertions and
-		tracing.
+                internal debugging support, in the form of assertions and
+                tracing.
                 Assertions check at runtime that various conditions are as
                 expected; if not, execution is halted.
                 Tracing takes the form of text messages that are output
@@ -161,26 +162,26 @@
  */
 /* {{CFG_DATA
    cdl_component CYGDBG_USE_ASSERTS {
-       display 		"Use asserts"
-       type    		boolean
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Use asserts"
+       type             boolean
+       parent           CYGPKG_INFRA_DEBUG
        description "If this option is defined, asserts in the code
-       		are tested.
+                are tested.
                 Assert functions (CYG_ASSERT()) are defined in
                 'include/cyg/infra/cyg_ass.h' within the 'install' tree.
                 If it is not defined, these result in no additional
                 object code and no checking of the asserted conditions."
    }
    cdl_component CYGDBG_USE_TRACING {
-       display 		"Use tracing"
-       type    		boolean
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Use tracing"
+       type             boolean
+       parent           CYGPKG_INFRA_DEBUG
        description "If this option is defined, tracing operations
-		result in output or logging, depending on other options.
+                result in output or logging, depending on other options.
                 This may have adverse effects on performance, if the time
                 taken to output message overwhelms the available CPU
                 power or output bandwidth.
-		Trace functions (CYG_TRACE())are defined in
+                Trace functions (CYG_TRACE())are defined in
                 'include/cyg/infra/cyg_trac.h' within the 'install' tree.
                 If it is not defined, these result in no additional
                 object code and no trace information."
@@ -215,29 +216,29 @@
  */
 /* {{CFG_DATA
    cdl_option CYGDBG_INFRA_DEBUG_PRECONDITIONS {
-       display 		"Preconditions"
-       type    		boolean
-       parent		CYGDBG_USE_ASSERTS
+       display          "Preconditions"
+       type             boolean
+       parent           CYGDBG_USE_ASSERTS
        description "This option allows individual control of preconditions.
-       		A precondition is one type of assert, which it is
+                A precondition is one type of assert, which it is
                 useful to control separately from more general asserts.
                 The function is CYG_PRECONDITION(condition,msg)."
    }
    cdl_option CYGDBG_INFRA_DEBUG_POSTCONDITIONS {
-       display 		"Postconditions"
-       type    		boolean
-       parent		CYGDBG_USE_ASSERTS
+       display          "Postconditions"
+       type             boolean
+       parent           CYGDBG_USE_ASSERTS
        description "This option allows individual control of postconditions.
-       		A postcondition is one type of assert, which it is
+                A postcondition is one type of assert, which it is
                 useful to control separately from more general asserts.
                 The function is CYG_POSTCONDITION(condition,msg)."
    }
    cdl_option CYGDBG_INFRA_DEBUG_LOOP_INVARIANTS {
-       display 		"Loop invariants"
-       type    		boolean
-       parent		CYGDBG_USE_ASSERTS
+       display          "Loop invariants"
+       type             boolean
+       parent           CYGDBG_USE_ASSERTS
        description "This option allows individual control of loop invariants.
-       		A loop invariant is one type of assert, which it is
+                A loop invariant is one type of assert, which it is
                 useful to control separately from more general asserts,
                 particularly since a loop invariant is typically evaluated
                 a great many times when used correctly.
@@ -260,11 +261,11 @@
  */
 /* {{CFG_DATA
    cdl_option CYGDBG_INFRA_DEBUG_FUNCTION_REPORTS {
-       display 		"Trace function reports"
-       type    		boolean
-       parent		CYGDBG_USE_TRACING
+       display          "Trace function reports"
+       type             boolean
+       parent           CYGDBG_USE_TRACING
        description "This option allows individual control of
-       		function entry/exit tracing, independent of
+                function entry/exit tracing, independent of
                 more general tracing output.
                 This may be useful to remove clutter from a
                 trace log."
@@ -283,34 +284,34 @@
  */
 /* {{CFG_DATA
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_NULL {
-       display 		"Null output"
-       type    		radio
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Null output"
+       type             radio
+       parent           CYGPKG_INFRA_DEBUG
        description "A null output module which is useful when
-       		debugging interactively; the output routines
+                debugging interactively; the output routines
                 can be breakpointed rather than have them actually
-		'print' something."
+                'print' something."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_SIMPLE {
-       display 		"Simple output"
-       type    		radio
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Simple output"
+       type             radio
+       parent           CYGPKG_INFRA_DEBUG
        description "An output module which produces simple output
-       		from tracing and assertion events."
+                from tracing and assertion events."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_FANCY {
-       display 		"Fancy output"
-       type    		radio
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Fancy output"
+       type             radio
+       parent           CYGPKG_INFRA_DEBUG
        description "An output module which produces fancy output
-       		from tracing and assertion events."
+                from tracing and assertion events."
    }
    cdl_component CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER {
-       display 		"Buffered tracing"
-       type    		radio
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Buffered tracing"
+       type             radio
+       parent           CYGPKG_INFRA_DEBUG
        description "An output module which buffers output
-       		from tracing and assertion events. The stored
+                from tracing and assertion events. The stored
                 messages are output when an assert fires, or
                 cyg_trace_output() is called.
                 Of course, there will only be stored messages
@@ -318,44 +319,44 @@
                 is enabled above."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_BUFFER_SIZE {
-       display 		"Trace buffer size"
-       type    		count
+       display          "Trace buffer size"
+       type             count
        legal_values     5 to 65535
-       parent		CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
+       parent           CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
        description "The size of the trace buffer. This counts the number
                     of trace records stored. When the buffer fills it
                     either wraps, stops recording, or generates output."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_BUFFER_WRAP {
-       display 		"Wrap trace buffer when full"
-       type    		radio
-       parent		CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
+       display          "Wrap trace buffer when full"
+       type             radio
+       parent           CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
        description "When the trace buffer has filled with records it
                     starts again at the beginning. Hence only the last
                     CYGDBG_INFRA_DEBUG_TRACE_BUFFER_SIZE messages will
                     be recorded."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_BUFFER_HALT {
-       display 		"Halt trace buffer when full"
-       type    		radio
-       parent		CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
+       display          "Halt trace buffer when full"
+       type             radio
+       parent           CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
        description "When the trace buffer has filled with records it
                     stops recording. Hence only the first
                     CYGDBG_INFRA_DEBUG_TRACE_BUFFER_SIZE messages will
                     be recorded."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_BUFFER_PRINT {
-       display 		"Print trace buffer when full"
-       type    		radio
-       parent		CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
+       display          "Print trace buffer when full"
+       type             radio
+       parent           CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
        description "When the trace buffer has filled with records it
                     prints the contents of the buffer. The buffer is then
                     emptied and the system continues."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_BUFFER_PRINT_ON_ASSERT {
-       display 		"Print trace buffer on assert fail"
-       type    		bool
-       parent		CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
+       display          "Print trace buffer on assert fail"
+       type             bool
+       parent           CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER
        description "When an assertion fails the trace buffer will be printed to
                     the default diagnostic device."
    }
@@ -395,34 +396,34 @@
 
 /* {{CFG_DATA
    cdl_option CYGDBG_INFRA_DEBUG_ASSERT_MESSAGE {
-       display 		"Use assert text"
-       type    		boolean
-       parent		CYGDBG_USE_ASSERTS
+       display          "Use assert text"
+       type             boolean
+       parent           CYGDBG_USE_ASSERTS
        description "All assertions within eCos contain a text message
-		which should give some information about the condition
-		being tested.
+                which should give some information about the condition
+                being tested.
                 These text messages will end up being embedded in the
                 application image and hence there is a significant penalty
                 in terms of image size.
                 It is possible to suppress the use of these messages by
-		disabling this option.
+                disabling this option.
                 This results in smaller code size, but there is less
-		human-readable information if an assertion actually gets
-		triggered."
+                human-readable information if an assertion actually gets
+                triggered."
    }
    cdl_option CYGDBG_INFRA_DEBUG_TRACE_MESSAGE {
-       display 		"Use trace text"
-       type    		boolean
-       parent		CYGDBG_USE_TRACING
+       display          "Use trace text"
+       type             boolean
+       parent           CYGDBG_USE_TRACING
        description "All trace calls within eCos contain a text message
-		which should give some information about the circumstances.
+                which should give some information about the circumstances.
                 These text messages will end up being embedded in the
                 application image and hence there is a significant penalty
                 in terms of image size.
                 It is possible to suppress the use of these messages by
-		disabling this option.
+                disabling this option.
                 This results in smaller code size, but there is less
-		human-readable information available in the trace output,
+                human-readable information available in the trace output,
                 possibly only filenames and line numbers."
    }
    }}CFG_DATA */
@@ -439,18 +440,18 @@
  */
 /* {{CFG_DATA
    cdl_option CYGDBG_INFRA_DEBUG_FUNCTION_PSEUDOMACRO {
-       display 		"Use function names"
-       type    		boolean
-       parent		CYGPKG_INFRA_DEBUG
+       display          "Use function names"
+       type             boolean
+       parent           CYGPKG_INFRA_DEBUG
        description "All trace and assert calls within eCos contain a
-       		reference to the builtin macro '__PRETTY_FUNCTION__',
+                reference to the builtin macro '__PRETTY_FUNCTION__',
                 which evaluates to a string containing
                 the name of the current function.
                 This is useful when reading a trace log.
                 It is possible to suppress the use of the function name
-		by disabling this option.
+                by disabling this option.
                 This results in smaller code size, but there is less
-		human-readable information available in the trace output,
+                human-readable information available in the trace output,
                 possibly only filenames and line numbers."
    }
    }}CFG_DATA */
@@ -480,43 +481,43 @@
 
 /* {{CFG_DATA
    cdl_component CYGPKG_INFRA_STARTUP {
-       display 		"Startup options"
-       type    		dummy
-       parent		CYGPKG_INFRA
+       display          "Startup options"
+       type             dummy
+       parent           CYGPKG_INFRA
        description "Some packages require a startup routine to be called.
-       		This can be carried out by application code, by supplying
+                This can be carried out by application code, by supplying
                 a routine called cyg_package_start() which calls the
                 appropriate package startup routine(s).
                 Alternatively, this routine can be constructed automatically
                 and configured to call the startup routines of your choice."
-	   doc ref/ecos-ref/c-library-startup.html
+           doc ref/ecos-ref/c-library-startup.html
    }
    cdl_option CYGSEM_START_ISO_C_COMPATIBILITY {
-       display 		"Start ISO C library"
-       type    		boolean
-       parent		CYGPKG_INFRA_STARTUP
-       requires		CYGPKG_LIBC
+       display          "Start ISO C library"
+       type             boolean
+       parent           CYGPKG_INFRA_STARTUP
+       requires         CYGPKG_LIBC
        description "Generate a call to initialize the ISO C library
-		(libc) within the system version of cyg_package_start().
-		This enables compatibility with ISO C, in particular in
-		eCos it creates a thread that invokes the function main()
-		which the user must supply.
+                (libc) within the system version of cyg_package_start().
+                This enables compatibility with ISO C, in particular in
+                eCos it creates a thread that invokes the function main()
+                which the user must supply.
                 It does this by invoking the function cyg_iso_c_start().
                 If this is disabled, and you want to use the C library, you
                 call cyg_iso_c_start() from your own cyg_package_start()
                 or cyg_userstart()."
    }
    cdl_option CYGSEM_START_UITRON_COMPATIBILITY {
-       display 		"Start uITRON subsystem"
-       type    		boolean
-       parent		CYGPKG_INFRA_STARTUP
-       requires		CYGPKG_UITRON
+       display          "Start uITRON subsystem"
+       type             boolean
+       parent           CYGPKG_INFRA_STARTUP
+       requires         CYGPKG_UITRON
        description "Generate a call to initialize the
-       		uITRON compatibility subsystem
+                uITRON compatibility subsystem
                 within the system version of cyg_package_start().
-		This enables compatibility with uITRON.
-		You must configure uITRON with the correct tasks before
-		starting the uItron subsystem.
+                This enables compatibility with uITRON.
+                You must configure uITRON with the correct tasks before
+                starting the uItron subsystem.
                 If this is disabled, and you want to use uITRON,
                 you must call cyg_uitron_start() from your own
                 cyg_package_start() or cyg_userstart()."

@@ -1,13 +1,12 @@
 #ifndef CYGONCE_HAL_HAL_INTR_H
 #define CYGONCE_HAL_HAL_INTR_H
-
-//=============================================================================
+//==========================================================================
 //
-//	hal_intr.h
+//      hal_intr.h
 //
-//	HAL Interrupt and clock support
+//      HAL Interrupt and clock support
 //
-//=============================================================================
+//==========================================================================
 //####COPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -25,34 +24,33 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
-//=============================================================================
+//==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-02-17
-// Purpose:	Define Interrupt support
-// Description:	The macros defined here provide the HAL APIs for handling
-//              interrupts and the clock.
-//              
+// Author(s):    nickg
+// Contributors: nickg, jlarmour
+// Date:         1999-02-18
+// Purpose:      Define Interrupt support
+// Description:  The macros defined here provide the HAL APIs for handling
+//               interrupts and the clock.
 // Usage:
-//		#include <cyg/hal/hal_intr.h>
-//		...
-//		
+//               #include <cyg/hal/hal_intr.h>
+//               ...
+//              
 //
 //####DESCRIPTIONEND####
 //
-//=============================================================================
+//==========================================================================
 
 #include <cyg/infra/cyg_type.h>
 
 #include <pkgconf/hal.h>
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 
 // The MN10300 has a somewhat complex interrupt structure. Besides the
 // reset and NMI vectors there are seven maskable interrupt vectors
@@ -76,344 +74,353 @@
 // 7*4 = 1228 bytes for the tables.
 // 
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Interrupt vectors.
 
 // The level-specific hardware vectors
-#define CYG_VECTOR_0                    0
-#define CYG_VECTOR_1                    1
-#define CYG_VECTOR_2                    2
-#define CYG_VECTOR_3                    3
-#define CYG_VECTOR_4                    4
-#define CYG_VECTOR_5                    5
-#define CYG_VECTOR_6                    6
-#define CYG_VECTOR_NMI                  7
-#define CYG_VECTOR_TRAP                 8
+// These correspond to VSRs and are the values to use for HAL_VSR_GET/SET
+#define CYGNUM_HAL_VECTOR_0                    0
+#define CYGNUM_HAL_VECTOR_1                    1
+#define CYGNUM_HAL_VECTOR_2                    2
+#define CYGNUM_HAL_VECTOR_3                    3
+#define CYGNUM_HAL_VECTOR_4                    4
+#define CYGNUM_HAL_VECTOR_5                    5
+#define CYGNUM_HAL_VECTOR_6                    6
+#define CYGNUM_HAL_VECTOR_NMI                  7
+#define CYGNUM_HAL_VECTOR_TRAP                 8
 
-#define CYG_VSR_MIN                     0
-#define CYG_VSR_MAX                     8
-#define CYG_VSR_COUNT                   9
+#define CYGNUM_HAL_VSR_MIN                     0
+#define CYGNUM_HAL_VSR_MAX                     8
+#define CYGNUM_HAL_VSR_COUNT                   9
 
-#define CYG_EXCEPTION_MIN               0
-#define CYG_EXCEPTION_MAX               3
-#define CYG_EXCEPTION_COUNT             4
+// Exception vectors. These are the values used when passed out to an
+// external exception handler using cyg_hal_deliver_exception()
+
+#define CYGNUM_HAL_EXCEPTION_NMI               0
+#define CYGNUM_HAL_EXCEPTION_DATA_ACCESS       \
+          CYGNUM_HAL_INTERRUPT_SYSTEM_ERROR
+#define CYGNUM_HAL_EXCEPTION_TRAP              3
+
+#define CYGNUM_HAL_EXCEPTION_MIN               0
+#define CYGNUM_HAL_EXCEPTION_MAX               3
+#define CYGNUM_HAL_EXCEPTION_COUNT             4
 
 
 #if defined(CYG_HAL_MN10300_MN103000)
 
 // The decoded interrupts
 
-#define CYG_VECTOR_NMIRQ                0
-#define CYG_VECTOR_WATCHDOG             1
-#define CYG_VECTOR_SYSTEM_ERROR         2
-#define CYG_VECTOR_RESERVED_3           3
+#define CYGNUM_HAL_INTERRUPT_NMIRQ                0
+#define CYGNUM_HAL_INTERRUPT_WATCHDOG             1
+#define CYGNUM_HAL_INTERRUPT_SYSTEM_ERROR         2
+#define CYGNUM_HAL_INTERRUPT_RESERVED_3           3
 
-#define CYG_VECTOR_RESERVED_4           4
-#define CYG_VECTOR_RESERVED_5           5
-#define CYG_VECTOR_RESERVED_6           6
-#define CYG_VECTOR_RESERVED_7           7
+#define CYGNUM_HAL_INTERRUPT_RESERVED_4           4
+#define CYGNUM_HAL_INTERRUPT_RESERVED_5           5
+#define CYGNUM_HAL_INTERRUPT_RESERVED_6           6
+#define CYGNUM_HAL_INTERRUPT_RESERVED_7           7
 
-#define CYG_VECTOR_TIMER_0              8
-#define CYG_VECTOR_TIMER_1              9
-#define CYG_VECTOR_TIMER_2              10
-#define CYG_VECTOR_TIMER_3              11
+#define CYGNUM_HAL_INTERRUPT_TIMER_0              8
+#define CYGNUM_HAL_INTERRUPT_TIMER_1              9
+#define CYGNUM_HAL_INTERRUPT_TIMER_2              10
+#define CYGNUM_HAL_INTERRUPT_TIMER_3              11
 
-#define CYG_VECTOR_TIMER_4              12
-#define CYG_VECTOR_TIMER_5              13
-#define CYG_VECTOR_TIMER_6              14
-#define CYG_VECTOR_TIMER_7              15
+#define CYGNUM_HAL_INTERRUPT_TIMER_4              12
+#define CYGNUM_HAL_INTERRUPT_TIMER_5              13
+#define CYGNUM_HAL_INTERRUPT_TIMER_6              14
+#define CYGNUM_HAL_INTERRUPT_TIMER_7              15
 
-#define CYG_VECTOR_TIMER_8              16
-#define CYG_VECTOR_TIMER_8_COMPARE_A    17
-#define CYG_VECTOR_TIMER_8_COMPARE_B    18
-#define CYG_VECTOR_RESERVED_19          19
+#define CYGNUM_HAL_INTERRUPT_TIMER_8              16
+#define CYGNUM_HAL_INTERRUPT_TIMER_8_COMPARE_A    17
+#define CYGNUM_HAL_INTERRUPT_TIMER_8_COMPARE_B    18
+#define CYGNUM_HAL_INTERRUPT_RESERVED_19          19
 
-#define CYG_VECTOR_TIMER_9              20
-#define CYG_VECTOR_TIMER_9_COMPARE_A    21
-#define CYG_VECTOR_TIMER_9_COMPARE_B    22
-#define CYG_VECTOR_RESERVED_23          23
+#define CYGNUM_HAL_INTERRUPT_TIMER_9              20
+#define CYGNUM_HAL_INTERRUPT_TIMER_9_COMPARE_A    21
+#define CYGNUM_HAL_INTERRUPT_TIMER_9_COMPARE_B    22
+#define CYGNUM_HAL_INTERRUPT_RESERVED_23          23
 
-#define CYG_VECTOR_TIMER_10             24
-#define CYG_VECTOR_TIMER_10_COMPARE_A   25
-#define CYG_VECTOR_TIMER_10_COMPARE_B   26
-#define CYG_VECTOR_TIMER_10_COMPARE_C   27
+#define CYGNUM_HAL_INTERRUPT_TIMER_10             24
+#define CYGNUM_HAL_INTERRUPT_TIMER_10_COMPARE_A   25
+#define CYGNUM_HAL_INTERRUPT_TIMER_10_COMPARE_B   26
+#define CYGNUM_HAL_INTERRUPT_TIMER_10_COMPARE_C   27
 
-#define CYG_VECTOR_TIMER_11             28
-#define CYG_VECTOR_TIMER_11_COMPARE_A   29
-#define CYG_VECTOR_TIMER_11_COMPARE_B   30
-#define CYG_VECTOR_TIMER_11_COMPARE_C   31
+#define CYGNUM_HAL_INTERRUPT_TIMER_11             28
+#define CYGNUM_HAL_INTERRUPT_TIMER_11_COMPARE_A   29
+#define CYGNUM_HAL_INTERRUPT_TIMER_11_COMPARE_B   30
+#define CYGNUM_HAL_INTERRUPT_TIMER_11_COMPARE_C   31
 
-#define CYG_VECTOR_TIMER_12             32
-#define CYG_VECTOR_TIMER_12_COMPARE_A   33
-#define CYG_VECTOR_TIMER_12_COMPARE_B   34
-#define CYG_VECTOR_TIMER_12_COMPARE_C   35
+#define CYGNUM_HAL_INTERRUPT_TIMER_12             32
+#define CYGNUM_HAL_INTERRUPT_TIMER_12_COMPARE_A   33
+#define CYGNUM_HAL_INTERRUPT_TIMER_12_COMPARE_B   34
+#define CYGNUM_HAL_INTERRUPT_TIMER_12_COMPARE_C   35
 
-#define CYG_VECTOR_TIMER_11_COMPARE_D   36
-#define CYG_VECTOR_TIMER_12_COMPARE_D   37
-#define CYG_VECTOR_RESERVED_38          38
-#define CYG_VECTOR_RESERVED_39          39
+#define CYGNUM_HAL_INTERRUPT_TIMER_11_COMPARE_D   36
+#define CYGNUM_HAL_INTERRUPT_TIMER_12_COMPARE_D   37
+#define CYGNUM_HAL_INTERRUPT_RESERVED_38          38
+#define CYGNUM_HAL_INTERRUPT_RESERVED_39          39
 
-#define CYG_VECTOR_DMA0                 40
-#define CYG_VECTOR_RESERVED_41          41
-#define CYG_VECTOR_RESERVED_42          42
-#define CYG_VECTOR_RESERVED_43          43
+#define CYGNUM_HAL_INTERRUPT_DMA0                 40
+#define CYGNUM_HAL_INTERRUPT_RESERVED_41          41
+#define CYGNUM_HAL_INTERRUPT_RESERVED_42          42
+#define CYGNUM_HAL_INTERRUPT_RESERVED_43          43
 
-#define CYG_VECTOR_DMA1                 44
-#define CYG_VECTOR_RESERVED_45          45
-#define CYG_VECTOR_RESERVED_46          46
-#define CYG_VECTOR_RESERVED_47          47
+#define CYGNUM_HAL_INTERRUPT_DMA1                 44
+#define CYGNUM_HAL_INTERRUPT_RESERVED_45          45
+#define CYGNUM_HAL_INTERRUPT_RESERVED_46          46
+#define CYGNUM_HAL_INTERRUPT_RESERVED_47          47
 
-#define CYG_VECTOR_DMA2                 48
-#define CYG_VECTOR_RESERVED_49          49
-#define CYG_VECTOR_RESERVED_50          50
-#define CYG_VECTOR_RESERVED_51          51
+#define CYGNUM_HAL_INTERRUPT_DMA2                 48
+#define CYGNUM_HAL_INTERRUPT_RESERVED_49          49
+#define CYGNUM_HAL_INTERRUPT_RESERVED_50          50
+#define CYGNUM_HAL_INTERRUPT_RESERVED_51          51
 
-#define CYG_VECTOR_DMA3                 52
-#define CYG_VECTOR_RESERVED_53          53
-#define CYG_VECTOR_RESERVED_54          54
-#define CYG_VECTOR_RESERVED_55          55
+#define CYGNUM_HAL_INTERRUPT_DMA3                 52
+#define CYGNUM_HAL_INTERRUPT_RESERVED_53          53
+#define CYGNUM_HAL_INTERRUPT_RESERVED_54          54
+#define CYGNUM_HAL_INTERRUPT_RESERVED_55          55
 
-#define CYG_VECTOR_SERIAL_0_RX          56
-#define CYG_VECTOR_SERIAL_0_TX          57
-#define CYG_VECTOR_RESERVED_58          58
-#define CYG_VECTOR_RESERVED_59          59
+#define CYGNUM_HAL_INTERRUPT_SERIAL_0_RX          56
+#define CYGNUM_HAL_INTERRUPT_SERIAL_0_TX          57
+#define CYGNUM_HAL_INTERRUPT_RESERVED_58          58
+#define CYGNUM_HAL_INTERRUPT_RESERVED_59          59
 
-#define CYG_VECTOR_SERIAL_1_RX          60
-#define CYG_VECTOR_SERIAL_1_TX          61
-#define CYG_VECTOR_RESERVED_62          62
-#define CYG_VECTOR_RESERVED_63          63
+#define CYGNUM_HAL_INTERRUPT_SERIAL_1_RX          60
+#define CYGNUM_HAL_INTERRUPT_SERIAL_1_TX          61
+#define CYGNUM_HAL_INTERRUPT_RESERVED_62          62
+#define CYGNUM_HAL_INTERRUPT_RESERVED_63          63
 
-#define CYG_VECTOR_EXTERNAL_0           64
-#define CYG_VECTOR_RESERVED_65          65
-#define CYG_VECTOR_RESERVED_66          66
-#define CYG_VECTOR_RESERVED_67          67
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_0           64
+#define CYGNUM_HAL_INTERRUPT_RESERVED_65          65
+#define CYGNUM_HAL_INTERRUPT_RESERVED_66          66
+#define CYGNUM_HAL_INTERRUPT_RESERVED_67          67
 
-#define CYG_VECTOR_EXTERNAL_1           68
-#define CYG_VECTOR_RESERVED_69          69
-#define CYG_VECTOR_RESERVED_70          70
-#define CYG_VECTOR_RESERVED_71          71
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_1           68
+#define CYGNUM_HAL_INTERRUPT_RESERVED_69          69
+#define CYGNUM_HAL_INTERRUPT_RESERVED_70          70
+#define CYGNUM_HAL_INTERRUPT_RESERVED_71          71
 
-#define CYG_VECTOR_EXTERNAL_2           72
-#define CYG_VECTOR_RESERVED_73          73
-#define CYG_VECTOR_RESERVED_74          74
-#define CYG_VECTOR_RESERVED_75          75
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_2           72
+#define CYGNUM_HAL_INTERRUPT_RESERVED_73          73
+#define CYGNUM_HAL_INTERRUPT_RESERVED_74          74
+#define CYGNUM_HAL_INTERRUPT_RESERVED_75          75
 
-#define CYG_VECTOR_EXTERNAL_3           76
-#define CYG_VECTOR_RESERVED_77          77
-#define CYG_VECTOR_RESERVED_78          78
-#define CYG_VECTOR_RESERVED_79          79
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_3           76
+#define CYGNUM_HAL_INTERRUPT_RESERVED_77          77
+#define CYGNUM_HAL_INTERRUPT_RESERVED_78          78
+#define CYGNUM_HAL_INTERRUPT_RESERVED_79          79
 
-#define CYG_VECTOR_EXTERNAL_4           80
-#define CYG_VECTOR_RESERVED_81          81
-#define CYG_VECTOR_RESERVED_82          82
-#define CYG_VECTOR_RESERVED_83          83
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_4           80
+#define CYGNUM_HAL_INTERRUPT_RESERVED_81          81
+#define CYGNUM_HAL_INTERRUPT_RESERVED_82          82
+#define CYGNUM_HAL_INTERRUPT_RESERVED_83          83
 
-#define CYG_VECTOR_EXTERNAL_5           84
-#define CYG_VECTOR_RESERVED_85          85
-#define CYG_VECTOR_RESERVED_86          86
-#define CYG_VECTOR_RESERVED_87          87
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_5           84
+#define CYGNUM_HAL_INTERRUPT_RESERVED_85          85
+#define CYGNUM_HAL_INTERRUPT_RESERVED_86          86
+#define CYGNUM_HAL_INTERRUPT_RESERVED_87          87
 
-#define CYG_VECTOR_EXTERNAL_6           88
-#define CYG_VECTOR_RESERVED_89          89
-#define CYG_VECTOR_RESERVED_90          90
-#define CYG_VECTOR_RESERVED_91          91
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_6           88
+#define CYGNUM_HAL_INTERRUPT_RESERVED_89          89
+#define CYGNUM_HAL_INTERRUPT_RESERVED_90          90
+#define CYGNUM_HAL_INTERRUPT_RESERVED_91          91
 
-#define CYG_VECTOR_EXTERNAL_7           92
-#define CYG_VECTOR_RESERVED_93          93
-#define CYG_VECTOR_RESERVED_94          94
-#define CYG_VECTOR_RESERVED_95          95
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_7           92
+#define CYGNUM_HAL_INTERRUPT_RESERVED_93          93
+#define CYGNUM_HAL_INTERRUPT_RESERVED_94          94
+#define CYGNUM_HAL_INTERRUPT_RESERVED_95          95
 
-#define CYG_VECTOR_AD_CONVERSION        96
-#define CYG_VECTOR_RESERVED_97          97
-#define CYG_VECTOR_RESERVED_98          98
-#define CYG_VECTOR_RESERVED_99          99
+#define CYGNUM_HAL_INTERRUPT_AD_CONVERSION        96
+#define CYGNUM_HAL_INTERRUPT_RESERVED_97          97
+#define CYGNUM_HAL_INTERRUPT_RESERVED_98          98
+#define CYGNUM_HAL_INTERRUPT_RESERVED_99          99
 
-#define CYG_ISR_MIN                     0
-#define CYG_ISR_MAX                     99
+#define CYGNUM_HAL_ISR_MIN                     0
+#define CYGNUM_HAL_ISR_MAX                     99
 
-#define CYG_ISR_COUNT                   100
+#define CYGNUM_HAL_ISR_COUNT                   100
 
 #elif defined(CYG_HAL_MN10300_MN103002) 
 
 // The decoded interrupts
 
-#define CYG_VECTOR_NMIRQ                0
-#define CYG_VECTOR_WATCHDOG             1
-#define CYG_VECTOR_SYSTEM_ERROR         2
-#define CYG_VECTOR_RESERVED_3           3
+#define CYGNUM_HAL_INTERRUPT_NMIRQ                0
+#define CYGNUM_HAL_INTERRUPT_WATCHDOG             1
+#define CYGNUM_HAL_INTERRUPT_SYSTEM_ERROR         2
+#define CYGNUM_HAL_INTERRUPT_RESERVED_3           3
 
-#define CYG_VECTOR_RESERVED_4           4
-#define CYG_VECTOR_RESERVED_5           5
-#define CYG_VECTOR_RESERVED_6           6
-#define CYG_VECTOR_RESERVED_7           7
+#define CYGNUM_HAL_INTERRUPT_RESERVED_4           4
+#define CYGNUM_HAL_INTERRUPT_RESERVED_5           5
+#define CYGNUM_HAL_INTERRUPT_RESERVED_6           6
+#define CYGNUM_HAL_INTERRUPT_RESERVED_7           7
 
-#define CYG_VECTOR_TIMER_0              8
-#define CYG_VECTOR_RESERVED_9           9
-#define CYG_VECTOR_RESERVED_10          10
-#define CYG_VECTOR_RESERVED_11          11
+#define CYGNUM_HAL_INTERRUPT_TIMER_0              8
+#define CYGNUM_HAL_INTERRUPT_RESERVED_9           9
+#define CYGNUM_HAL_INTERRUPT_RESERVED_10          10
+#define CYGNUM_HAL_INTERRUPT_RESERVED_11          11
 
-#define CYG_VECTOR_TIMER_1              12
-#define CYG_VECTOR_RESERVED_13          13
-#define CYG_VECTOR_RESERVED_14          14
-#define CYG_VECTOR_RESERVED_15          15
+#define CYGNUM_HAL_INTERRUPT_TIMER_1              12
+#define CYGNUM_HAL_INTERRUPT_RESERVED_13          13
+#define CYGNUM_HAL_INTERRUPT_RESERVED_14          14
+#define CYGNUM_HAL_INTERRUPT_RESERVED_15          15
 
-#define CYG_VECTOR_TIMER_2              16
-#define CYG_VECTOR_RESERVED_17          17
-#define CYG_VECTOR_RESERVED_18          18
-#define CYG_VECTOR_RESERVED_19          19
+#define CYGNUM_HAL_INTERRUPT_TIMER_2              16
+#define CYGNUM_HAL_INTERRUPT_RESERVED_17          17
+#define CYGNUM_HAL_INTERRUPT_RESERVED_18          18
+#define CYGNUM_HAL_INTERRUPT_RESERVED_19          19
 
-#define CYG_VECTOR_TIMER_3              20
-#define CYG_VECTOR_RESERVED_21          21
-#define CYG_VECTOR_RESERVED_22          22
-#define CYG_VECTOR_RESERVED_23          23
+#define CYGNUM_HAL_INTERRUPT_TIMER_3              20
+#define CYGNUM_HAL_INTERRUPT_RESERVED_21          21
+#define CYGNUM_HAL_INTERRUPT_RESERVED_22          22
+#define CYGNUM_HAL_INTERRUPT_RESERVED_23          23
 
-#define CYG_VECTOR_TIMER_4              24
-#define CYG_VECTOR_RESERVED_25          25
-#define CYG_VECTOR_RESERVED_26          26
-#define CYG_VECTOR_RESERVED_27          27
+#define CYGNUM_HAL_INTERRUPT_TIMER_4              24
+#define CYGNUM_HAL_INTERRUPT_RESERVED_25          25
+#define CYGNUM_HAL_INTERRUPT_RESERVED_26          26
+#define CYGNUM_HAL_INTERRUPT_RESERVED_27          27
 
-#define CYG_VECTOR_TIMER_5              28
-#define CYG_VECTOR_RESERVED_29          29
-#define CYG_VECTOR_RESERVED_30          30
-#define CYG_VECTOR_RESERVED_31          31
+#define CYGNUM_HAL_INTERRUPT_TIMER_5              28
+#define CYGNUM_HAL_INTERRUPT_RESERVED_29          29
+#define CYGNUM_HAL_INTERRUPT_RESERVED_30          30
+#define CYGNUM_HAL_INTERRUPT_RESERVED_31          31
 
-#define CYG_VECTOR_TIMER_6              32
-#define CYG_VECTOR_RESERVED_33          33
-#define CYG_VECTOR_RESERVED_34          34
-#define CYG_VECTOR_RESERVED_35          35
+#define CYGNUM_HAL_INTERRUPT_TIMER_6              32
+#define CYGNUM_HAL_INTERRUPT_RESERVED_33          33
+#define CYGNUM_HAL_INTERRUPT_RESERVED_34          34
+#define CYGNUM_HAL_INTERRUPT_RESERVED_35          35
 
-#define CYG_VECTOR_TIMER_6_COMPARE_A    36
-#define CYG_VECTOR_RESERVED_37          37
-#define CYG_VECTOR_RESERVED_38          38
-#define CYG_VECTOR_RESERVED_39          39
+#define CYGNUM_HAL_INTERRUPT_TIMER_6_COMPARE_A    36
+#define CYGNUM_HAL_INTERRUPT_RESERVED_37          37
+#define CYGNUM_HAL_INTERRUPT_RESERVED_38          38
+#define CYGNUM_HAL_INTERRUPT_RESERVED_39          39
 
-#define CYG_VECTOR_TIMER_6_COMPARE_B    40
-#define CYG_VECTOR_RESERVED_41          41
-#define CYG_VECTOR_RESERVED_42          42
-#define CYG_VECTOR_RESERVED_43          43
+#define CYGNUM_HAL_INTERRUPT_TIMER_6_COMPARE_B    40
+#define CYGNUM_HAL_INTERRUPT_RESERVED_41          41
+#define CYGNUM_HAL_INTERRUPT_RESERVED_42          42
+#define CYGNUM_HAL_INTERRUPT_RESERVED_43          43
 
-#define CYG_VECTOR_RESERVED_44          44
-#define CYG_VECTOR_RESERVED_45          45
-#define CYG_VECTOR_RESERVED_46          46
-#define CYG_VECTOR_RESERVED_47          47
+#define CYGNUM_HAL_INTERRUPT_RESERVED_44          44
+#define CYGNUM_HAL_INTERRUPT_RESERVED_45          45
+#define CYGNUM_HAL_INTERRUPT_RESERVED_46          46
+#define CYGNUM_HAL_INTERRUPT_RESERVED_47          47
 
-#define CYG_VECTOR_DMA0                 48
-#define CYG_VECTOR_RESERVED_49          49
-#define CYG_VECTOR_RESERVED_50          50
-#define CYG_VECTOR_RESERVED_51          51
+#define CYGNUM_HAL_INTERRUPT_DMA0                 48
+#define CYGNUM_HAL_INTERRUPT_RESERVED_49          49
+#define CYGNUM_HAL_INTERRUPT_RESERVED_50          50
+#define CYGNUM_HAL_INTERRUPT_RESERVED_51          51
 
-#define CYG_VECTOR_DMA1                 52
-#define CYG_VECTOR_RESERVED_53          53
-#define CYG_VECTOR_RESERVED_54          54
-#define CYG_VECTOR_RESERVED_55          55
+#define CYGNUM_HAL_INTERRUPT_DMA1                 52
+#define CYGNUM_HAL_INTERRUPT_RESERVED_53          53
+#define CYGNUM_HAL_INTERRUPT_RESERVED_54          54
+#define CYGNUM_HAL_INTERRUPT_RESERVED_55          55
 
-#define CYG_VECTOR_DMA2                 56
-#define CYG_VECTOR_RESERVED_57          57
-#define CYG_VECTOR_RESERVED_58          58
-#define CYG_VECTOR_RESERVED_59          59
+#define CYGNUM_HAL_INTERRUPT_DMA2                 56
+#define CYGNUM_HAL_INTERRUPT_RESERVED_57          57
+#define CYGNUM_HAL_INTERRUPT_RESERVED_58          58
+#define CYGNUM_HAL_INTERRUPT_RESERVED_59          59
 
-#define CYG_VECTOR_DMA3                 60
-#define CYG_VECTOR_RESERVED_61          61
-#define CYG_VECTOR_RESERVED_62          62
-#define CYG_VECTOR_RESERVED_63          63
+#define CYGNUM_HAL_INTERRUPT_DMA3                 60
+#define CYGNUM_HAL_INTERRUPT_RESERVED_61          61
+#define CYGNUM_HAL_INTERRUPT_RESERVED_62          62
+#define CYGNUM_HAL_INTERRUPT_RESERVED_63          63
 
-#define CYG_VECTOR_SERIAL_0_RX          64
-#define CYG_VECTOR_RESERVED_65          65
-#define CYG_VECTOR_RESERVED_66          66
-#define CYG_VECTOR_RESERVED_67          67
+#define CYGNUM_HAL_INTERRUPT_SERIAL_0_RX          64
+#define CYGNUM_HAL_INTERRUPT_RESERVED_65          65
+#define CYGNUM_HAL_INTERRUPT_RESERVED_66          66
+#define CYGNUM_HAL_INTERRUPT_RESERVED_67          67
 
-#define CYG_VECTOR_SERIAL_0_TX          68
-#define CYG_VECTOR_RESERVED_69          69
-#define CYG_VECTOR_RESERVED_70          70
-#define CYG_VECTOR_RESERVED_71          71
+#define CYGNUM_HAL_INTERRUPT_SERIAL_0_TX          68
+#define CYGNUM_HAL_INTERRUPT_RESERVED_69          69
+#define CYGNUM_HAL_INTERRUPT_RESERVED_70          70
+#define CYGNUM_HAL_INTERRUPT_RESERVED_71          71
 
-#define CYG_VECTOR_SERIAL_1_RX          72
-#define CYG_VECTOR_RESERVED_73          73
-#define CYG_VECTOR_RESERVED_74          74
-#define CYG_VECTOR_RESERVED_75          75
+#define CYGNUM_HAL_INTERRUPT_SERIAL_1_RX          72
+#define CYGNUM_HAL_INTERRUPT_RESERVED_73          73
+#define CYGNUM_HAL_INTERRUPT_RESERVED_74          74
+#define CYGNUM_HAL_INTERRUPT_RESERVED_75          75
 
-#define CYG_VECTOR_SERIAL_1_TX          76
-#define CYG_VECTOR_RESERVED_77          77
-#define CYG_VECTOR_RESERVED_78          78
-#define CYG_VECTOR_RESERVED_79          79
+#define CYGNUM_HAL_INTERRUPT_SERIAL_1_TX          76
+#define CYGNUM_HAL_INTERRUPT_RESERVED_77          77
+#define CYGNUM_HAL_INTERRUPT_RESERVED_78          78
+#define CYGNUM_HAL_INTERRUPT_RESERVED_79          79
 
-#define CYG_VECTOR_SERIAL_2_RX          80
-#define CYG_VECTOR_RESERVED_81          81
-#define CYG_VECTOR_RESERVED_82          82
-#define CYG_VECTOR_RESERVED_83          83
+#define CYGNUM_HAL_INTERRUPT_SERIAL_2_RX          80
+#define CYGNUM_HAL_INTERRUPT_RESERVED_81          81
+#define CYGNUM_HAL_INTERRUPT_RESERVED_82          82
+#define CYGNUM_HAL_INTERRUPT_RESERVED_83          83
 
-#define CYG_VECTOR_SERIAL_2_TX          84
-#define CYG_VECTOR_RESERVED_85          85
-#define CYG_VECTOR_RESERVED_86          86
-#define CYG_VECTOR_RESERVED_87          87
+#define CYGNUM_HAL_INTERRUPT_SERIAL_2_TX          84
+#define CYGNUM_HAL_INTERRUPT_RESERVED_85          85
+#define CYGNUM_HAL_INTERRUPT_RESERVED_86          86
+#define CYGNUM_HAL_INTERRUPT_RESERVED_87          87
 
-#define CYG_VECTOR_RESERVED_88          88
-#define CYG_VECTOR_RESERVED_89          89
-#define CYG_VECTOR_RESERVED_90          90
-#define CYG_VECTOR_RESERVED_91          91
+#define CYGNUM_HAL_INTERRUPT_RESERVED_88          88
+#define CYGNUM_HAL_INTERRUPT_RESERVED_89          89
+#define CYGNUM_HAL_INTERRUPT_RESERVED_90          90
+#define CYGNUM_HAL_INTERRUPT_RESERVED_91          91
 
-#define CYG_VECTOR_EXTERNAL_0           92
-#define CYG_VECTOR_RESERVED_93          93
-#define CYG_VECTOR_RESERVED_94          94
-#define CYG_VECTOR_RESERVED_95          95
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_0           92
+#define CYGNUM_HAL_INTERRUPT_RESERVED_93          93
+#define CYGNUM_HAL_INTERRUPT_RESERVED_94          94
+#define CYGNUM_HAL_INTERRUPT_RESERVED_95          95
 
-#define CYG_VECTOR_EXTERNAL_1           96
-#define CYG_VECTOR_RESERVED_97          97
-#define CYG_VECTOR_RESERVED_98          98
-#define CYG_VECTOR_RESERVED_99          99
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_1           96
+#define CYGNUM_HAL_INTERRUPT_RESERVED_97          97
+#define CYGNUM_HAL_INTERRUPT_RESERVED_98          98
+#define CYGNUM_HAL_INTERRUPT_RESERVED_99          99
 
-#define CYG_VECTOR_EXTERNAL_2           100
-#define CYG_VECTOR_RESERVED_101         101
-#define CYG_VECTOR_RESERVED_102         102
-#define CYG_VECTOR_RESERVED_103         103
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_2           100
+#define CYGNUM_HAL_INTERRUPT_RESERVED_101         101
+#define CYGNUM_HAL_INTERRUPT_RESERVED_102         102
+#define CYGNUM_HAL_INTERRUPT_RESERVED_103         103
 
-#define CYG_VECTOR_EXTERNAL_3           104
-#define CYG_VECTOR_RESERVED_105         105
-#define CYG_VECTOR_RESERVED_106         106
-#define CYG_VECTOR_RESERVED_107         107
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_3           104
+#define CYGNUM_HAL_INTERRUPT_RESERVED_105         105
+#define CYGNUM_HAL_INTERRUPT_RESERVED_106         106
+#define CYGNUM_HAL_INTERRUPT_RESERVED_107         107
 
-#define CYG_VECTOR_EXTERNAL_4           108
-#define CYG_VECTOR_RESERVED_109         109
-#define CYG_VECTOR_RESERVED_110         110
-#define CYG_VECTOR_RESERVED_111         111
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_4           108
+#define CYGNUM_HAL_INTERRUPT_RESERVED_109         109
+#define CYGNUM_HAL_INTERRUPT_RESERVED_110         110
+#define CYGNUM_HAL_INTERRUPT_RESERVED_111         111
 
-#define CYG_VECTOR_EXTERNAL_5           112
-#define CYG_VECTOR_RESERVED_113         113
-#define CYG_VECTOR_RESERVED_114         114
-#define CYG_VECTOR_RESERVED_115         115
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_5           112
+#define CYGNUM_HAL_INTERRUPT_RESERVED_113         113
+#define CYGNUM_HAL_INTERRUPT_RESERVED_114         114
+#define CYGNUM_HAL_INTERRUPT_RESERVED_115         115
 
-#define CYG_VECTOR_EXTERNAL_6           116
-#define CYG_VECTOR_RESERVED_117         117
-#define CYG_VECTOR_RESERVED_118         118
-#define CYG_VECTOR_RESERVED_119         119
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_6           116
+#define CYGNUM_HAL_INTERRUPT_RESERVED_117         117
+#define CYGNUM_HAL_INTERRUPT_RESERVED_118         118
+#define CYGNUM_HAL_INTERRUPT_RESERVED_119         119
 
-#define CYG_VECTOR_EXTERNAL_7           120
-#define CYG_VECTOR_RESERVED_121         121
-#define CYG_VECTOR_RESERVED_122         122
-#define CYG_VECTOR_RESERVED_123         123
+#define CYGNUM_HAL_INTERRUPT_EXTERNAL_7           120
+#define CYGNUM_HAL_INTERRUPT_RESERVED_121         121
+#define CYGNUM_HAL_INTERRUPT_RESERVED_122         122
+#define CYGNUM_HAL_INTERRUPT_RESERVED_123         123
 
-#define CYG_ISR_MIN                     0
-#define CYG_ISR_MAX                     123
+#define CYGNUM_HAL_ISR_MIN                     0
+#define CYGNUM_HAL_ISR_MAX                     123
 
-#define CYG_ISR_COUNT                   (3+((CYG_ISR_MAX+1)/4))
+#define CYGNUM_HAL_ISR_COUNT                   (3+((CYGNUM_HAL_ISR_MAX+1)/4))
 
 #endif
 
 // The vector used by the Real time clock
 
 #ifdef CYG_HAL_MN10300_SIM
-#  define CYG_VECTOR_RTC                  CYG_VECTOR_TIMER_5
-//# define CYG_VECTOR_RTC                  CYG_VECTOR_EXTERNAL_1
+#  define CYGNUM_HAL_INTERRUPT_RTC           CYGNUM_HAL_INTERRUPT_TIMER_5
+//# define CYGNUM_HAL_INTERRUPT_RTC          CYGNUM_HAL_INTERRUPT_EXTERNAL_1
 #else
 # ifdef CYG_HAL_MN10300_MN103000
-#  define CYG_VECTOR_RTC                  CYG_VECTOR_TIMER_8
+#  define CYGNUM_HAL_INTERRUPT_RTC           CYGNUM_HAL_INTERRUPT_TIMER_8
 # endif
 # ifdef CYG_HAL_MN10300_MN103002
-#  define CYG_VECTOR_RTC                  CYG_VECTOR_TIMER_5
+#  define CYGNUM_HAL_INTERRUPT_RTC           CYGNUM_HAL_INTERRUPT_TIMER_5
 # endif
 #endif
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Timer control registers.
 
 // On simulator we use simulated external interrupt
@@ -459,26 +466,26 @@
 
 #endif
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Static data used by HAL
 
 // ISR tables
-externC volatile CYG_ADDRESS    hal_interrupt_handlers[CYG_ISR_COUNT];
-externC volatile CYG_ADDRWORD   hal_interrupt_data[CYG_ISR_COUNT];
-externC volatile CYG_ADDRESS    hal_interrupt_objects[CYG_ISR_COUNT];        
+externC volatile CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
+externC volatile CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
+externC volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
 
 // VSR table
-externC volatile CYG_ADDRESS    hal_vsr_table[CYG_VSR_COUNT];
+externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 
 // MN10300 interrupt control registers, mapped by linker script.
 externC volatile cyg_uint16     mn10300_interrupt_control[0x300/2];
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Interrupt state storage
 
 typedef cyg_uint32 CYG_INTERRUPT_STATE;
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Interrupt control macros
 
 #define HAL_DISABLE_INTERRUPTS(_old_)   \
@@ -520,7 +527,7 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
             : "=d"(_old_)               \
             );
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Translate a vector number into an ISR table index.
 // If we have chained interrupts we have just a single ISR per priority
 // level. On the MN103000 there are several interrupts per controller,
@@ -530,16 +537,21 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
-#define HAL_TRANSLATE_VECTOR(_vector_,_index_)                  \
-{                                                               \
-    /* ICRs are 16 bit regs at 32 bit spacing */                \
-    cyg_ucount16 _ix_ = ((_vector_)>>2)<<1;                     \
-                                                                \
-    /* read the appropriate interrupt control register */       \
-    cyg_uint16 _icr_ = mn10300_interrupt_control[_ix_];         \
-                                                                \
-    /* extract interrupt priority level */                      \
-    _index_ = (_icr_ >> 12) & 0x7;                              \
+#define HAL_TRANSLATE_VECTOR(_vector_,_index_)                             \
+{                                                                          \
+    if( _vector_ <= CYGNUM_HAL_INTERRUPT_SYSTEM_ERROR )                    \
+        (_index_) = (_vector_);                                            \
+    else                                                                   \
+    {                                                                      \
+        /* ICRs are 16 bit regs at 32 bit spacing */                       \
+        cyg_ucount16 _ix_ = ((_vector_)>>2)<<1;                            \
+                                                                           \
+        /* read the appropriate interrupt control register */              \
+        cyg_uint16 _icr_ = mn10300_interrupt_control[_ix_];                \
+                                                                           \
+        /* extract interrupt priority level */                             \
+        _index_ = CYGNUM_HAL_INTERRUPT_RESERVED_3 + ((_icr_ >> 12) & 0x7); \
+    }                                                                      \
 }
 
 #else
@@ -550,20 +562,29 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 
 #elif defined(CYG_HAL_MN10300_MN103002)
 
-//#define HAL_TRANSLATE_VECTOR(_vector_,_index_) _index_ = ((_vector_)>>2)
-
-#define HAL_TRANSLATE_VECTOR(_vector_,_index_)                          \
-              _index_ = (((_vector_)<=CYG_VECTOR_SYSTEM_ERROR) ?        \
-                         (_vector_) :                                   \
-                         (((_vector_)>>2)+CYG_VECTOR_RESERVED_3))
+#define HAL_TRANSLATE_VECTOR(_vector_,_index_)                             \
+              _index_ = (((_vector_)<=CYGNUM_HAL_INTERRUPT_SYSTEM_ERROR) ? \
+                         (_vector_) :                                      \
+                         (((_vector_)>>2)+CYGNUM_HAL_INTERRUPT_RESERVED_3))
 
 #endif
 
 #endif
 
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Interrupt and VSR attachment macros
+
+#define HAL_INTERRUPT_IN_USE( _vector_, _state_)                          \
+    CYG_MACRO_START                                                       \
+    cyg_uint32 _index_;                                                   \
+    HAL_TRANSLATE_VECTOR ((_vector_), _index_);                           \
+                                                                          \
+    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)NULL )            \
+        (_state_) = 0;                                                    \
+    else                                                                  \
+        (_state_) = 1;                                                    \
+    CYG_MACRO_END
 
 #define HAL_INTERRUPT_ATTACH( _vector_, _isr_, _data_, _object_ )       \
 {                                                                       \
@@ -601,7 +622,7 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
     hal_vsr_table[_vector_] = (CYG_ADDRESS)_vsr_;
 
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Interrupt controller access
 // Read interrupt control registers back after writing to them. This
 // ensures that the written value is not sitting in the store buffers
@@ -659,19 +680,20 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 
 #define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )      \
 {                                                               \
-    cyg_vector _v_ = _vector_;                                  \
-    /* adjust vector to bit offset in EXTMD */                  \
-    _v_ -= CYG_VECTOR_EXTERNAL_0;                               \
-    _v_ >>= 1;                                                  \
-                                                                \
+    cyg_uint32 _v_ = _vector_;                                  \
     cyg_uint16 _val_ = 0;                                       \
+    cyg_uint16 _reg_;                                           \
+                                                                \
+    /* adjust vector to bit offset in EXTMD */                  \
+    _v_ -= CYGNUM_HAL_INTERRUPT_EXTERNAL_0;                     \
+    _v_ >>= 1;                                                  \
                                                                 \
     /* set bits according to requirements */                    \
     if( _up_ ) _val_ |= 1;                                      \
     if( !(_level_) ) _val_ |= 2;                                \
                                                                 \
     /* get EXTMD */                                             \
-    cyg_uint16 _reg_ = mn10300_interrupt_control[0x180>>1];     \
+    _reg_ = mn10300_interrupt_control[0x180>>1];                \
                                                                 \
     /* clear old value and set new */                           \
     _reg_ &= ~(3<<_v_);                                         \
@@ -698,7 +720,7 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
     _icr_ = mn10300_interrupt_control[_index_];                 \
 }
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------------
 // Clock control
 
 
@@ -807,7 +829,17 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
                                                                         \
     *(_pvalue_) = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD - ((t5<<16) + t4);  \
 }
+
+// FIXME: above line should not use CYGNUM_KERNEL_COUNTERS_RTC_PERIOD since
+// this means the HAL gets configured by kernel options even when the
+// kernel is disabled!
+
 #endif // CYG_HAL_MN10300_SIM
-//-----------------------------------------------------------------------------
+
+#ifdef CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
+#define HAL_CLOCK_LATENCY(_pvalue_) HAL_CLOCK_READ(_pvalue_)
+#endif
+
+//--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_INTR_H
-// End of hal_intr.h
+// EOF hal_intr.h

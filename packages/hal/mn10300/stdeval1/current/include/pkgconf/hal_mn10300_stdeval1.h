@@ -2,9 +2,9 @@
 #define CYGONCE_PKGCONF_HAL_MN10300_STDEVAL1_H
 // ====================================================================
 //
-//	pkgconf/hal_mn10300_stdeval1.h
+//      pkgconf/hal_mn10300_stdeval1.h
 //
-//	HAL configuration file
+//      HAL configuration file
 //
 // ====================================================================
 //####COPYRIGHTBEGIN####
@@ -24,17 +24,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 // ====================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	        bartv
-// Contributors:	bartv
-// Date:	        1998-09-02	
-// Purpose:	        To allow the user to edit HAL configuration options.
+// Author(s):           bartv
+// Contributors:        bartv
+// Date:                1998-09-02      
+// Purpose:             To allow the user to edit HAL configuration options.
 // Description:
 //
 //####DESCRIPTIONEND####

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mlqueue.hxx
+//      mlqueue.hxx
 //
-//	Multi-Level Queue scheduler class declarations
+//      Multi-Level Queue scheduler class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-10
-// Purpose:	Define multilevel queue scheduler implementation
-// Description:	The classes defined here are used as base classes
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-10
+// Purpose:     Define multilevel queue scheduler implementation
+// Description: The classes defined here are used as base classes
 //              by the common classes that define schedulers and thread
 //              things. The MLQ scheduler in various configurations
 //              provides standard FIFO, round-robin and single priority
@@ -122,6 +122,9 @@ protected:
     cyg_bool            empty();
 
     void                rotate();       // Rotate the queue
+
+    void                to_head(Cyg_Thread *thread);
+
 };
 
 inline cyg_bool Cyg_ThreadQueue_Implementation::empty()
@@ -236,6 +239,10 @@ protected:
 
     static void rotate_queue( cyg_priority pri );
                                         // Rotate that run queue
+
+    void to_queue_head( void );         // Move this thread to the head
+                                        // of its queue (not necessarily
+                                        // a scheduler queue)
 };
 
 // -------------------------------------------------------------------------

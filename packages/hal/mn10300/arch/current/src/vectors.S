@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -236,7 +236,7 @@ _start:
 	
 	# Clear BSS
 	mov	__bss_start,a0
-	mov	_end,a1
+	mov	__bss_end,a1
 
 	cmp	a0,a1
 	beq	8f
@@ -295,7 +295,18 @@ _start:
 	.extern _cyg_hal_invoke_constructors
 	call    _cyg_hal_invoke_constructors,[],0
 
-	# Call cyg_start
+	.extern _cyg_hal_enable_caches
+	call    _cyg_hal_enable_caches,[],0
+
+	.extern _cyg_hal_debug_init
+	call    _cyg_hal_debug_init,[],0
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        .extern _initialize_stub
+        call    _initialize_stub,[],0
+#endif
+
+       	# Call cyg_start
 	clr	d0
 	mov	d0,(4,sp)
 
@@ -341,14 +352,14 @@ _start:
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 	
-	.extern	__18Cyg_Scheduler_Base.sched_lock
-
+	.extern	cyg_scheduler_sched_lock
+	
 	# Increment the scheduler lock
 			
 	.macro increment_sched_lock reg=d0
-	mov	(__18Cyg_Scheduler_Base.sched_lock),\reg
+	mov	(cyg_scheduler_sched_lock),\reg
 	inc	\reg
-	mov	\reg,(__18Cyg_Scheduler_Base.sched_lock)
+	mov	\reg,(cyg_scheduler_sched_lock)
 	.endm
 
 #else
@@ -364,10 +375,10 @@ _start:
 	
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
-#define CYG_ISR_TABLE_SIZE	7
-	
 #if defined(CYG_HAL_MN10300_MN103000)
 
+#define CYG_ISR_TABLE_SIZE	7
+		
 	# decode the interrupt
 	.macro  decode_interrupt dreg,areg,dreg1
 	mov	_mn10300_interrupt_control,\areg
@@ -384,6 +395,8 @@ _start:
 	
 #elif defined(CYG_HAL_MN10300_MN103002)	
 
+#define CYG_ISR_TABLE_SIZE	10
+	
 	# decode the interrupt
 	.macro  decode_interrupt dreg,areg,dreg1
 	mov	_mn10300_interrupt_control,\areg
@@ -391,6 +404,7 @@ _start:
 	mov	(0,a2),\dreg			# dreg = vector priority
 	mov	\dreg1,(0,a2)			# store real vector in saved state
 	asl	2,\dreg				# dreg = byte index of isr
+	add	12,\dreg			# skip NMI vectors
 	.endm
 		
 #endif
@@ -470,7 +484,7 @@ __default_interrupt_vsr:
 	# call. On the MN103000 this needs to be shifted right by
 	# two to derive the vector. On the MN103002 this correponds
 	# exactly to the vector used to attach it.
-	
+
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
 
 	# Call cyg_instrument to record that this interrupt is being raised.
@@ -483,6 +497,18 @@ __default_interrupt_vsr:
 	add	16,sp				# pop space
 	
 #endif		
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+        .extern _cyg_hal_gdb_isr
+        add     -16,sp                          # make space for return link + args
+        mov     (0,a2),d0                       # d0 = vector
+        mov     (56,a2),d1                      # d1 = pc
+        calls   _cyg_hal_gdb_isr                # call GDB isr function
+        cmp     0x00,d0                         # Call ISR proper?
+        beq     2f                              # (d0 is 0 when skipping
+                                                #  to avoid DSR call)
+        add     16,sp                           # pop space
+#endif
 	
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 
@@ -519,6 +545,12 @@ __default_interrupt_vsr:
 	# D3 is defined to be saved across procedure calls, and
 	# should still contain the vector byte index. Similarly,
 	# A2 should still point to the saved machine state.
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+        # If interrupt was caused by GDB, the ISR call above
+        # is skipped by jumping here.
+2:
+#endif
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
@@ -579,7 +611,11 @@ hal_lsbit_table:
 ##-----------------------------------------------------------------------------
 ## Default NMI VSR
 
-	.globl	_exception_handler
+#define NMICR	0x34000100
+#define DCR	0x20000030
+#define ISR	0x20000034
+
+	.globl	_cyg_hal_exception_handler
 	
 	.text
 	.globl	__default_nmi_vsr
@@ -588,19 +624,62 @@ __default_nmi_vsr:
 	# We come here with all the registers saved
 	# on the stack.
 
+	# Decode the cause of the NMI and cancel all the bits in all
+	# the registers. We need to clear any bits set in the ISR and
+	# then clear any bits set in the NMICR. Note that we can only 
+	# access the ISR if the DCR:DE bit is set. 
+	
+	movhu	(NMICR),d0			# D0 = NMI Control register
+
+	movhu	(DCR),d1			# D1 = Debug Control Register
+	mov	d1,d2				# D2 = copy of DCR
+	movhu	(ISR),d3			# D3 = Interrupt Status Register
+	
+	or	0x0010,d1			# Set DE bit
+	movhu	d1,(DCR)			
+
+	movhu	d3,(ISR)			# clear ISR bits
+
+	movhu	d2,(DCR)			# restore DCR to original value
+
+	movhu	d0,(NMICR)			# clear NMI bits
+	and	0x7,d0				# LS 3 bits only
+
+	mov	hal_lsbit_table,a0		
+	movbu	(d0,a0),d1			# D1 = NMI code
+						## 0 = NMI
+						## 1 = Watchdog
+						## 2 = System Error
+
+	
+	# It appears that there is an undocumented extra bit
+	# in the PSW that masks the delivery of NMIs. It is in
+	# the upper 16 bits of the register that we cannot access
+	# directly. So, to clear it, we must set up a fake interrupt
+	# state and do an RTI to load the PSW. We need to do this if
+	# we are going to be able to set breakpoints in NMI handlers.
+	# Note that the AM33 has a documented NMID at bit 17 of the
+	# extended PSW (along with instructions to access it).
+	
+	mov	PSW,d3				# D3 = PSW
+	and	0xFFFF,d3
+	mov	1f,d2				# D2 = Next PC
+	movm	[d2,d3],(sp)			# Push
+	rti					# and load into CPU
+1:	
+	
 	mov	sp,a1				# a1 = saved state
 	mov	a1,d0				# d0 = arg1 = saved state
 
 	add	-16,sp				# return link + args
-	mov	0,d1				# 0 == NMI trap
 	mov	d1,(16,sp)			# save in spare save slot
 
-	calls	_exception_handler		# call C code
+	calls	_cyg_hal_exception_handler	# call C code
 	add	16,sp				# pop args
 	movm	(sp),[d2,d3,a2,a3,other]	# pop all registers
 	add	4,sp
 	rti
-	
+
 ##-----------------------------------------------------------------------------
 ## Default TRAP VSR
 
@@ -614,7 +693,7 @@ __default_trap_vsr:
 	add	-8,sp				# return link + arg
 	mov	3,d1				# 3 == TRAP trap
 	mov	d1,(0,sp)			# save in spare save slot
-	calls	_exception_handler		# call C code
+	calls	_cyg_hal_exception_handler	# call C code
 	add	8,sp				# pop args
 	movm	(sp),[d2,d3,a2,a3,other]	# pop all registers
 	add	4,sp

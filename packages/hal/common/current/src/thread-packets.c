@@ -1,6 +1,8 @@
+// Define __ECOS__; allows all eCos specific additions to be easily identified.
+#define __ECOS__
 
 /* 
- * Copyright (c) 1998 Cygnus Support
+ * Copyright (c) 1998,1999 Cygnus Solutions
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -13,35 +15,49 @@
  * they apply.
  */
 
+// #ifdef __ECOS__
 #include <pkgconf/hal.h>
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT) \
     && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+// #endif // __ECOS__
 
 /* FIXME: Scan this module for correct sizes of fields in packets */
-#define DEBUG_THREADS 1
-#include "cyg/hal/dbg-threads-api.h"
+
+#ifdef __ECOS__
+#include <cyg/hal/dbg-threads-api.h>
+#else  // __ECOS__
+#include "dbg-threads-api.h"
+#endif // __ECOS__
 
 /* This file should ALWAYS define debug thread support */
 /* Dont include the object in the link if you dont need the support */
 /* This is NOT the internal unit debug flag, it is a feature control */
 #if defined(DEBUG_THREADS)
 #undef DEBUG_THREADS
-#define DEBUG_THREADS 1
 #endif
 
-#define UNIT_TEST 0
-#define GDB_MOCKUP 0
+#define DEBUG_THREADS 1
+#define UNIT_TEST     0
+#define GDB_MOCKUP    0
 
 
 #define STUB_BUF_MAX 300 /* for range checking of packet lengths */
      
 #include "thread-pkts.h"
 
+#ifdef __ECOS__
 // Use HAL rather than board.h in eCos
-#define PKT_DEBUG 0
 #include <cyg/hal/hal_stub.h>
-//#include "board.h"
+#else  // __ECOS__
+#include "board.h"
+#endif // __ECOS__
+
+/*
+ * Export the continue and "general" (context) thread IDs from GDB.
+ */
+int _gdb_cont_thread ;
+int _gdb_general_thread ;
 
 #if !defined(PKT_DEBUG)
 #define PKT_DEBUG 0
@@ -73,16 +89,24 @@ extern target_register_t alt_registers[NUMREGS] ;
     /* Thread or saved process state */
 
 
-void __stub_copy_registers(
-			   target_register_t * dest,
-			   target_register_t *src
-			   )
+static void stub_copy_registers(
+                           target_register_t * dest,
+                           target_register_t *src
+                           )
 {
   target_register_t * limit ;
   limit = dest + NUMREGS ;
 
   while (dest < limit)  *dest++ = *src++ ;
 }
+
+#ifdef __ECOS__
+void __stub_copy_registers(target_register_t * dest,
+                           target_register_t *src)
+{
+    stub_copy_registers(dest, src);
+}
+#endif // __ECOS__
 
 extern int stubhex(char ch) ;
 
@@ -164,13 +188,13 @@ static char * pack_hex_byte(char * pkt, unsigned char byte)
   return pkt ;
 } /* pack_hex_byte */
 
-#if 0 // Currenly unused by eCos stub.
+#ifndef __ECOS__
 /* ---- STUB_PACK_VARLEN_HEX ------------------------------------- */
 /* Format a variable length stream of hex bytes */
 
 static char * pack_varlen_hex(
-		       char * pkt,
-		       unsigned int value)
+                       char * pkt,
+                       unsigned int value)
 {
   int i ;
   static unsigned char n[8] ;
@@ -183,17 +207,18 @@ static char * pack_varlen_hex(
     {
       i = 8 ;
       while (i-- >= 0 )  /* unpack nibbles into a char array */
-	{
-	  n[i] = value & 0x0f ;
-	  value = value >> 4 ;
-	}
+        {
+          n[i] = value & 0x0f ;
+          value = value >> 4 ;
+        }
       i = 0 ;                  /* we had descrmented it to -1 */
       while (n[i] == 0 ) i++ ; /* drop leading zeroes */
       while (i++ < 8) *pkt++ = hexchars[n[i]] ; /* pack the number */
     }
   return pkt ;
 } /* pack_varlen_hex */
-#endif
+#endif // !__ECOS__
+
 
 /* ------ STUB_UNPACK_VARLEN_HEX --------------------------------  */
 /* Parse a stream of hex bytes which may be of variable length     */
@@ -205,8 +230,8 @@ static char * pack_varlen_hex(
 /* We assume some non-hex delimits them */
 
 char * unpack_varlen_hex(
-			      char * buff,    /* packet to parse */
-			      int * result)
+                              char * buff,    /* packet to parse */
+                              int * result)
 {
   int nibble ;
   int retval ;
@@ -273,13 +298,18 @@ static char * pack_raw_string(char * pkt,char * string)
 }
 
 static char * pack_string(
-			  char * pkt,
-			  char * string)
+                          char * pkt,
+                          char * string)
 {
   char ch ;
+#ifdef __ECOS__
   int len = 0;
   char *s = string;
   while( *s++ ) len++;
+#else  // __ECOS__
+  int len ;
+  len = strlen(string) ;
+#endif // __ECOS
   if (len > 200 ) len = 200 ; /* Bigger than most GDB packets, junk??? */
   pkt = pack_hex_byte(pkt,len) ;
   while (len-- > 0)
@@ -352,9 +382,9 @@ void copy_threadref(threadref * dest, threadref * src)
 
 
 int threadmatch(
-		threadref * dest ,
-		threadref * src
-		)
+                threadref * dest ,
+                threadref * src
+                )
 {
   unsigned char * srcp, * destp ;
   int i , result ;
@@ -364,7 +394,7 @@ int threadmatch(
   result = 1 ;
   while (i-- > 0 ) result &= (*srcp++ == *destp++) ? 1 : 0 ;
   return result ;
-} /* threadmatch */	      
+} /* threadmatch */           
 
 
 
@@ -383,11 +413,11 @@ char * stub_pack_Tpkt_threadid(char * pkt)
     {
       pkt = pack_raw_string(pkt,Tpkt_threadtag) ;
       if (fmt)
-	pkt = pack_threadid(pkt,&thread) ;
+        pkt = pack_threadid(pkt,&thread) ;
       else
-	  /* Until GDB lengthens its thread ids, we have to MASH
-	     the threadid into somthing shorter. PLEASE FIX GDB */
-	  pkt = pack_int(pkt,threadref_to_int(&thread)) ;
+          /* Until GDB lengthens its thread ids, we have to MASH
+             the threadid into somthing shorter. PLEASE FIX GDB */
+          pkt = pack_int(pkt,threadref_to_int(&thread)) ;
       *pkt++ = ';'  ; /* terminate variable length int */
       *pkt = '\0' ; /* Null terminate to allow string to be printed, no++ */
     }
@@ -395,11 +425,20 @@ char * stub_pack_Tpkt_threadid(char * pkt)
   return pkt ;
 } /* stub_pack_Tpkt_threadid */
 
+long stub_get_currthread (void)
+{
+  threadref thread ;
+  
+  if (dbg_currthread(&thread))
+    return threadref_to_int(&thread) ;
+  else
+    return 0 ;
+}
 
 void stub_pkt_currthread(
-				char * inbuf,
-				char * outbuf,
-				int bufmax)
+                                char * inbuf,
+                                char * outbuf,
+                                int bufmax)
 {
   threadref thread ;
   char * base_out ;
@@ -407,9 +446,9 @@ void stub_pkt_currthread(
   
   if (dbg_currthread(&thread))
     {
-      *outbuf++ = 'q' ;
-      *outbuf++ = 'P' ; /* FIXME: Is this a reasanable code */
-      outbuf = pack_threadid(outbuf,&thread) ; /* Long form */
+      *outbuf++ = 'Q' ;
+      *outbuf++ = 'C' ; /* FIXME: Is this a reasanable code */
+      outbuf = pack_int(outbuf, threadref_to_int(&thread)) ; /* Short form */
     }
   else outbuf = stub_pack_nak(outbuf) ;
   *outbuf = '\0' ; /* terminate response packet */
@@ -419,25 +458,34 @@ void stub_pkt_currthread(
 /* ----- STUB_PKT_THREAD_ALIVE --------------------------------- */
 /* Answer the thread alive query */
 
+static int thread_alive (int id)
+{
+  threadref thread ;
+  struct cygmon_thread_debug_info info ;
+
+  int_to_threadref(&thread, id) ;
+  if (dbg_threadinfo(&thread, &info) &&
+      info.context_exists)
+    return 1 ;
+  else
+    return 0 ;
+}
+
 void stub_pkt_thread_alive(char * inbuf,
-			   char * outbuf,
-			   int bufmax)
+                           char * outbuf,
+                           int bufmax)
 {
   char * prebuf = inbuf ;
   int result ;
-  threadref thread ;
-  struct cygmon_thread_debug_info info ;
   
   if (prebuf != (inbuf = unpack_varlen_hex(inbuf,&result)))
     {
-      int_to_threadref(&thread,result) ;
-                 /* pack old format into internal format */
-      if ((dbg_threadinfo(&thread,&info))
-	 && info.context_exists)
-	  { outbuf = stub_pack_ack(outbuf) ;
-	    *outbuf = '\0' ;
-	    return ;
-	  }
+      if (thread_alive(result))
+        {
+          outbuf = stub_pack_ack(outbuf) ;
+          *outbuf = '\0' ;
+          return ;
+        }
     }
   outbuf = stub_pack_nak(outbuf) ;
   *outbuf = '\0' ; /* terminate the response message */
@@ -453,19 +501,19 @@ void stub_pkt_thread_alive(char * inbuf,
    call the function to change registers. Also, there is no
    forced context switch.
      'p' - New format, long long threadid, no special cases
-     'c' - Old format, id for continue,32 bit threadid max, possably less
-           -1 contimue means continue all threads
+     'c' - Old format, id for continue, 32 bit threadid max, possably less
+                       -1 means continue all threads
      'g' - Old Format, id for general use (other than continue)
 
      replies:
           OK for success
-	  ENN for error
+          ENN for error
    */
 
 void stub_pkt_changethread(
-			   char * inbuf,
-			   char * outbuf,
-			   int bufmax)
+                           char * inbuf,
+                           char * outbuf,
+                           int bufmax)
 {
   threadref id ;
   int idefined = -1 ;
@@ -480,34 +528,41 @@ void stub_pkt_changethread(
       inbuf = unpack_threadid(inbuf,&id) ; /* even if startflag */
       break ;  
     case 'c' : /* old format , specify thread for continue */
-      outbuf = stub_pack_nak(outbuf) ; /* Not supported */
-      break ; 
+      if (inbuf[0] == '-' && inbuf[1] == '1')   /* Hc-1 */
+        _gdb_cont_thread = 0 ;
+      else
+        inbuf = unpack_varlen_hex(inbuf, &_gdb_cont_thread) ;
+
+      if (_gdb_cont_thread == 0 ||              /* revert to any old thread */
+          thread_alive(_gdb_cont_thread))       /* specified thread is alive */
+        outbuf = stub_pack_ack(outbuf) ;
+      else
+        outbuf = stub_pack_nak(outbuf) ;
+      break ;
     case 'g' : /* old format, specify thread for general operations */
       /* OLD format: parse a variable length hex string */
       /* OLD format consider special thread ids */
       {
-	int oldthreadid ;
-	inbuf = unpack_varlen_hex(inbuf,&oldthreadid) ;
-	int_to_threadref(&id,oldthreadid) ; 
-        switch (oldthreadid)
-	  {
-	  case  0 : /* pick a thread, any thread */
-	    idefined = 2 ; /* select original interrupted context */
-	    break ;
-	  case -1 : /* all threads */
-	    idefined = 2 ;
-	    break ;
-	  default :
-	    idefined = 1 ; /* select the specified thread */
-	    break ;
-	  }
+        inbuf = unpack_varlen_hex(inbuf, &_gdb_general_thread) ;
+        int_to_threadref(&id, _gdb_general_thread) ;
+        switch (_gdb_general_thread)
+          {
+          case  0 : /* pick a thread, any thread */
+            idefined = 2 ; /* select original interrupted context */
+            break ;
+          case -1 : /* all threads */
+            idefined = 2 ;
+            break ;
+          default :
+            idefined = 1 ; /* select the specified thread */
+            break ;
+          }
       }
       break ;
     default:
       outbuf = stub_pack_nak(outbuf) ;
       break ;
     } /* handle various packet formats */
-      
 
   switch (idefined)
     {
@@ -520,24 +575,27 @@ void stub_pkt_changethread(
       break ;
     case 1 :
       /* copy the saved registers into the backup registers */
-      __stub_copy_registers(alt_registers,registers) ;
+      stub_copy_registers(alt_registers,registers) ;
       /* The OS will now update the values it has in a saved process context*/
       if (dbg_getthreadreg(&id,NUMREGS,&alt_registers[0]))
-	{
-	  /* switch the registers pointer */
-	  _registers = &alt_registers[0] ;
-	  outbuf = stub_pack_ack(outbuf) ; 
-	}
+        {
+          /* switch the registers pointer */
+          _registers = &alt_registers[0] ;
+          outbuf = stub_pack_ack(outbuf) ; 
+        }
       else
-	  outbuf = stub_pack_nak(outbuf) ;
+          outbuf = stub_pack_nak(outbuf) ;
       break ;
-    case 2 : break ; /* switch to interrupted context */
+    case 2 :
+      /* switch to interrupted context */ 
+      outbuf = stub_pack_ack(outbuf) ;
+      break ;
     default:
       outbuf = stub_pack_nak(outbuf) ;
       break ;
     }
   *outbuf = '\0' ; /* Terminate response pkt */
-} /* stub_pkt-changethread */
+} /* stub_pkt_changethread */
 
 
 /* ---- STUB_PKT_GETTHREADLIST ------------------------------- */
@@ -548,8 +606,8 @@ void stub_pkt_changethread(
    */
 
 void stub_pkt_getthreadlist(char * inbuf,
-			    char * outbuf,
-			    int bufmax)
+                            char * outbuf,
+                            int bufmax)
 {
   char * count_ptr ;
   char * done_ptr ;
@@ -585,16 +643,16 @@ void stub_pkt_getthreadlist(char * inbuf,
       result = dbg_threadlist(start_flag,&lastthread,&nextthread) ;
       start_flag = 0 ; /* redundent but effective */
       if (!result)
-	{ *done_ptr = '1' ;   /* pack the done flag */
-	  break ;
-	}
+        { *done_ptr = '1' ;   /* pack the done flag */
+          break ;
+        }
 #if 0 /* DEBUG */
       if (threadmatch(&lastthread,&nextthread))
-	{
-	  output_string("FAIL: Threadlist, not incrementing\n") ;
-	  *done_ptr = '1' ;
-	  break ;
-	}
+        {
+          output_string("FAIL: Threadlist, not incrementing\n") ;
+          *done_ptr = '1' ;
+          break ;
+        }
 #endif      
       count++ ;
       outbuf = pack_threadid(outbuf,&nextthread) ;
@@ -616,17 +674,17 @@ Encoding:
  'Q':8,'P':8,mask:16
 
  Mask Fields
-	threadid:1,        # always request threadid 
-	context_exists:2,
-	display:4,          
-	unique_name:8,
-	more_display:16
+        threadid:1,        # always request threadid 
+        context_exists:2,
+        display:4,          
+        unique_name:8,
+        more_display:16
  */  
 
 void stub_pkt_getthreadinfo(
-			    char * inbuf,
-			    char * outbuf,
-			    int bufmax)
+                            char * inbuf,
+                            char * outbuf,
+                            int bufmax)
 {
   int mask ;
   int result ;
@@ -654,26 +712,26 @@ void stub_pkt_getthreadinfo(
       outbuf = pack_int(outbuf,mask) ;
       outbuf = pack_threadid(outbuf,&info.thread_id) ; /* echo threadid */
       if (mask & 2)   /* context-exists */
-	{
-	  outbuf = pack_int(outbuf,2) ; /* tag */
-	  outbuf = pack_hex_byte(outbuf,2) ; /* length */
-	  outbuf = pack_hex_byte(outbuf,info.context_exists) ;
-	}
+        {
+          outbuf = pack_int(outbuf,2) ; /* tag */
+          outbuf = pack_hex_byte(outbuf,2) ; /* length */
+          outbuf = pack_hex_byte(outbuf,info.context_exists) ;
+        }
       if ((mask & 4)  && info.thread_display)/* display */
-	{
-	  outbuf = pack_int(outbuf,4) ; /* tag */
-	  outbuf = pack_string(outbuf,info.thread_display) ;
-	}
+        {
+          outbuf = pack_int(outbuf,4) ; /* tag */
+          outbuf = pack_string(outbuf,info.thread_display) ;
+        }
       if ((mask & 8) && info.unique_thread_name) /* unique_name */
-	{
-	  outbuf = pack_int(outbuf,8) ;
-	  outbuf = pack_string(outbuf,info.unique_thread_name) ;
-	}
+        {
+          outbuf = pack_int(outbuf,8) ;
+          outbuf = pack_string(outbuf,info.unique_thread_name) ;
+        }
       if ((mask & 16) && info.more_display)  /* more display */
-	{
-	  outbuf = pack_int(outbuf,16) ; /* tag 16 */
-	  outbuf = pack_string(outbuf,info.more_display) ;
-	}
+        {
+          outbuf = pack_int(outbuf,16) ; /* tag 16 */
+          outbuf = pack_string(outbuf,info.more_display) ;
+        }
     }
   else
     {
@@ -683,7 +741,15 @@ void stub_pkt_getthreadinfo(
   *outbuf = '\0' ;
 } /* stub_pkt_getthreadinfo */
 
+int stub_lock_scheduler(int lock,       /* 0 to unlock, 1 to lock */
+                        int mode,       /* 0 for step,  1 for continue */
+                        long id)        /* current thread */
+{
+  threadref thread;
 
+  int_to_threadref(&thread, id) ;
+  return dbg_scheduler(&thread, lock, mode) ;
+}
 
 
 #if GDB_MOCKUP
@@ -703,8 +769,8 @@ static char * unpack_short(char * buf,int * value)
 }
 
 static char * pack_short(
-		  char * buf,
-		  unsigned int value)
+                  char * buf,
+                  unsigned int value)
 {
   buf = pack_hex_byte(buf,(value >> 8) & 0xff) ;
   buf = pack_hex_byte(buf,(value & 0xff)) ;
@@ -721,15 +787,15 @@ static char * pack_short(
 
 
 /* ----- PACK_SETTHREAD_REQUEST ------------------------------------- */
-/* 	Encoding: ??? decode gdb/remote.c
-	'Q':8,'p':8,idefined:8,threadid:32 ;
-	*/
+/*      Encoding: ??? decode gdb/remote.c
+        'Q':8,'p':8,idefined:8,threadid:32 ;
+        */
 
 char * pack_setthread_request(
-		       char * buf,
-		       char fmt,   /* c,g or, p */
-		       int idformat ,
-		       threadref *  threadid )
+                       char * buf,
+                       char fmt,   /* c,g or, p */
+                       int idformat ,
+                       threadref *  threadid )
 {
   *buf++ = fmt ;
   
@@ -755,11 +821,11 @@ char * pack_setthread_request(
 
 
 char * pack_threadlist_request(
-			       char * pkt,
-			       int startflag,
-			       int threadcount,
-			       threadref * nextthread 
-			       )
+                               char * pkt,
+                               int startflag,
+                               int threadcount,
+                               threadref * nextthread 
+                               )
 {
   *pkt++ = 'q' ;
   *pkt++ = 'L' ;
@@ -777,10 +843,10 @@ char * pack_threadlist_request(
 /* Encoding:   'q':8,'M':8,count:16,done:8,argthreadid:64,(threadid:64)* */
 
 int parse_threadlist_response(
-			      char * pkt,
-			      threadref * original_echo,
-			      threadref * resultlist,
-			      int * doneflag)
+                              char * pkt,
+                              threadref * original_echo,
+                              threadref * resultlist,
+                              int * doneflag)
 {
   char * limit ;
   int count, resultcount , done ;
@@ -789,7 +855,7 @@ int parse_threadlist_response(
   /* assume the 'q' and 'M chars have been stripped */
   PKT_TRACE("parse-threadlist-response ",pkt) ;
   limit = pkt + (STUB_BUF_MAX - BUFTHREADIDSIZ) ; /* done parse past here */
-  pkt = unpack_byte(pkt,&count)  ; ;  /* count field */
+  pkt = unpack_byte(pkt,&count)  ;                /* count field */
   pkt = unpack_nibble(pkt,&done) ;
   /* The first threadid is the argument threadid */
   pkt = unpack_threadid(pkt,original_echo) ; /* should match query packet */
@@ -825,9 +891,9 @@ struct gdb_ext_thread_info
 /* Encoding:  'Q':8,'P':8,mask:32,threadid:64 */
 
 char * pack_threadinfo_request(char * pkt,
-				int mode,
-				threadref * id 
-				)
+                                int mode,
+                                threadref * id 
+                                )
 {
   *pkt++ = 'Q' ;
   *pkt++ = 'P' ;
@@ -840,9 +906,9 @@ char * pack_threadinfo_request(char * pkt,
 
 
 static char * unpack_string(
-			    char * src,
-			    char * dest,
-			    int length)
+                            char * src,
+                            char * dest,
+                            int length)
 {
   while (length--) *dest++ = *src++ ;
   *dest = '\0' ;
@@ -855,7 +921,9 @@ void output_threadid(char * title,threadref * ref)
   char hexid[20] ;
   pack_threadid(&hexid[0],ref) ; /* Convert threead id into hex */
   hexid[16] = 0 ;
-  output_string(title) ; output_string(&hexid[0]) ; output_string("\n");
+  output_string(title) ; 
+  output_string(&hexid[0]) ; 
+  output_string("\n") ;
 }
 
 /* ------ REMOTE_UPK_THREAD_INFO_RESPONSE ------------------------------- */
@@ -870,9 +938,9 @@ void output_threadid(char * title,threadref * ref)
 
 
 int remote_upk_thread_info_response(
-			       char * pkt,
-			       threadref * expectedref ,
-			       struct gdb_ext_thread_info * info)
+                               char * pkt,
+                               threadref * expectedref ,
+                               struct gdb_ext_thread_info * info)
 {
   int mask, length ;
   unsigned int tag ;
@@ -909,55 +977,55 @@ int remote_upk_thread_info_response(
       pkt = unpack_int(pkt,&tag) ;            /* tag */
       pkt = unpack_byte(pkt,&length) ;   /* length */
       if (! (tag & mask))  /* tags out of synch with mask */
-	{
-	  output_string("FAIL: threadinfo tag mismatch\n") ;
-	  retval = 0 ;
-	  break ;
-	}
+        {
+          output_string("FAIL: threadinfo tag mismatch\n") ;
+          retval = 0 ;
+          break ;
+        }
       if (tag == TAG_THREADID)
-	{
-	  output_string("unpack THREADID\n") ;
-	  if (length != 16)
-	    {
-	      output_string("FAIL: length of threadid is not 16\n") ;
-	      retval = 0 ;
-	      break ;
-	    }
-	  pkt = unpack_threadid(pkt,&ref) ;
-	  mask = mask & ~ TAG_THREADID ;
-	  continue ;
-	}
+        {
+          output_string("unpack THREADID\n") ;
+          if (length != 16)
+            {
+              output_string("FAIL: length of threadid is not 16\n") ;
+              retval = 0 ;
+              break ;
+            }
+          pkt = unpack_threadid(pkt,&ref) ;
+          mask = mask & ~ TAG_THREADID ;
+          continue ;
+        }
       if (tag == TAG_EXISTS)
-	{
-	  info->active = stub_unpack_int(pkt,length) ;
-	  pkt += length ;
-	  mask = mask & ~(TAG_EXISTS) ;
-	  if (length > 8)
-	    {
-	      output_string("FAIL: 'exists' length too long\n");
-	      retval = 0 ;
-	      break ;
-	    }
-	  continue ;
-	}
+        {
+          info->active = stub_unpack_int(pkt,length) ;
+          pkt += length ;
+          mask = mask & ~(TAG_EXISTS) ;
+          if (length > 8)
+            {
+              output_string("FAIL: 'exists' length too long\n") ;
+              retval = 0 ;
+              break ;
+            }
+          continue ;
+        }
       if (tag == TAG_THREADNAME)
-	{
-	  pkt = unpack_string(pkt,&info->shortname[0],length) ;
-	  mask = mask & ~TAG_THREADNAME ;
-	  continue ;
-	}
+        {
+          pkt = unpack_string(pkt,&info->shortname[0],length) ;
+          mask = mask & ~TAG_THREADNAME ;
+          continue ;
+        }
       if (tag == TAG_DISPLAY)
-	{ 
-	  pkt = unpack_string(pkt,&info->display[0],length) ;
-	  mask = mask & ~TAG_DISPLAY ;
-	  continue ;
-	}
+        { 
+          pkt = unpack_string(pkt,&info->display[0],length) ;
+          mask = mask & ~TAG_DISPLAY ;
+          continue ;
+        }
       if (tag == TAG_MOREDISPLAY)
-	{ 
-	  pkt = unpack_string(pkt,&info->more_display[0],length) ;
-	  mask = mask & ~TAG_MOREDISPLAY ;
-	  continue ;
-	}
+        { 
+          pkt = unpack_string(pkt,&info->more_display[0],length) ;
+          mask = mask & ~TAG_MOREDISPLAY ;
+          continue ;
+        }
       output_string("FAIL: unknown info tag\n") ;
       break ; /* Not a tag we know about */
     }
@@ -965,7 +1033,7 @@ int remote_upk_thread_info_response(
 } /* parse-thread_info_response */
 
 
-/* ---- REMOTE_PACK-CURRTHREAD_REQUEST ---------------------------- */
+/* ---- REMOTE_PACK_CURRTHREAD_REQUEST ---------------------------- */
 /* This is a request to emit the T packet */
 
 /* FORMAT: 'q':8,'C' */
@@ -976,7 +1044,7 @@ char * remote_pack_currthread_request(char * pkt )
   *pkt++ = 'C' ;
   *pkt = '\0' ;
   return pkt ;
-} /* remote_pack-currthread_request */
+} /* remote_pack_currthread_request */
 
 
 /* ------- REMOTE_UPK_CURTHREAD_RESPONSE ----------------------- */
@@ -984,8 +1052,8 @@ char * remote_pack_currthread_request(char * pkt )
 
 
 int remote_upk_currthread_response(
-			       char * pkt,
-			       threadref * ref )  /* Parse a T packet */
+                               char * pkt,
+                               int *thr )  /* Parse a T packet */
 {
   int retval = 0 ;
   PKT_TRACE("upk-currthreadresp ",pkt) ;
@@ -1000,23 +1068,23 @@ int remote_upk_currthread_response(
 
   /* Unpack as a t packet */
   while (((ch = *pkt++) != ':')    /* scan for : thread */
-	 && (ch != '\0'))          /* stop at end of packet */
+         && (ch != '\0'))          /* stop at end of packet */
 
     {
       found = 0 ;
       i = 0 ;
       while ((ch = *pkt++) == threadtag[i++]) ;
       if (i == 8) /* string match "thread" */
-	{
-	  pkt = unpack_varlen_hex(pkt,&quickid) ;
-	  retval = 1;
-	  break ;
-	}
+        {
+          pkt = unpack_varlen_hex(pkt,&quickid) ;
+          retval = 1;
+          break ;
+        }
       retval = 0 ;
     }
   }
 #else
-  pkt = unpack_threadid(pkt,ref) ;
+  pkt = unpack_threadid(pkt, thr) ;
   retval = 1 ;
 #endif  
   return retval ;
@@ -1030,9 +1098,9 @@ int remote_upk_currthread_response(
 
 
 char * remote_upk_simple_ack(
-			     char * buf,
-			     int * pkflag,
-			     int * errcode)
+                             char * buf,
+                             int * pkflag,
+                             int * errcode)
 {
   int lclerr = 0 ;
   char ch = *buf++ ;
@@ -1054,8 +1122,8 @@ char * remote_upk_simple_ack(
 /* -------- PACK_THREADALIVE_REQUEST ------------------------------- */
 
 char * pack_threadalive_request(
-			 char * buf,
-			 threadref * threadid)
+                         char * buf,
+                         threadref * threadid)
 {
   *buf++ = 'T' ;
   buf = pack_threadid(buf,threadid) ;
@@ -1098,10 +1166,11 @@ void display_thread_info(struct gdb_ext_thread_info * info)
 static int currthread_test(threadref * thread)
 {
   int result ;
+  int threadid ;
   output_string("TEST: currthread\n") ;
   remote_pack_currthread_request(test_req) ;
   stub_pkt_currthread(test_req+2,t_response,STUB_BUF_MAX) ;
-  result = remote_upk_currthread_response(t_response+2,thread) ;
+  result = remote_upk_currthread_response(t_response+2, &threadid) ;
   if (result)
     {
       output_string("PASS getcurthread\n") ;
@@ -1228,48 +1297,48 @@ static int threadlist_test(void)
   while (! done)
     {
       if (loopcount++ > 10)
-	{
-	  result = 0 ;
-	  output_string("FAIL: Threadlist test -infinite loop-\n") ;
-	  break ;
-	}
+        {
+          result = 0 ;
+          output_string("FAIL: Threadlist test -infinite loop-\n") ;
+          break ;
+        }
       pack_threadlist_request(test_req,startflag,TLRSIZ,&nextthread) ;
       startflag = 0 ; /* clear for later iterations */
       stub_pkt_getthreadlist(test_req+2,t_response,STUB_BUF_MAX);
       result_count = parse_threadlist_response(t_response+2,
-					       &echo_nextthread,
-					       &test_threadlist[0],&done) ;
+                                               &echo_nextthread,
+                                               &test_threadlist[0],&done) ;
       if (! threadmatch(&echo_nextthread,&nextthread))
-	{
-	  output_string("FAIL: threadlist did not echo arg thread\n");
-	  result = 0 ;
-	  break ;
-	}
+        {
+          output_string("FAIL: threadlist did not echo arg thread\n");
+          result = 0 ;
+          break ;
+        }
       if (result_count <= 0)
-	{
-	  if (done != 0)
-	      { output_string("FAIL threadlist_test, failed to get list");
-	        result = 0 ;
-	      }
-	  break ;
-	}
+        {
+          if (done != 0)
+              { output_string("FAIL threadlist_test, failed to get list");
+                result = 0 ;
+              }
+          break ;
+        }
       if (result_count > TLRSIZ)
-	{
-	  output_string("FAIL: threadlist response longer than requested\n") ;
-	  result = 0 ;
-	  break ;
-	}
+        {
+          output_string("FAIL: threadlist response longer than requested\n") ;
+          result = 0 ;
+          break ;
+        }
       /* Setup to resume next batch of thread references , set nestthread */
       copy_threadref(&nextthread,&test_threadlist[result_count-1]) ;
       /* output_threadid("last-of-batch",&nextthread) ; */
       i = 0 ;
       while (result_count--)
-	  {
-	    if (0)  /* two display alternatives */
-	      output_threadid("truncatedisplay",&test_threadlist[i++]) ;
-	    else
-	      get_and_display_threadinfo(&test_threadlist[i++]) ; 
-	  }
+          {
+            if (0)  /* two display alternatives */
+              output_threadid("truncatedisplay",&test_threadlist[i++]) ;
+            else
+              get_and_display_threadinfo(&test_threadlist[i++]) ; 
+          }
 
     }
   if (!result)
@@ -1300,4 +1369,6 @@ int test_thread_support(void)
 } /* test-thread_support */
 #endif /* UNIT_TEST */
 
+// #ifdef __ECOS__
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT...
+// #endif // __ECOS__

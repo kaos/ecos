@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,9 +30,9 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:          1998-02-13
-// Purpose:     
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       Provides ISO C freopen() function
 // Description:   Implementation of C library freopen() function as per
 //                ISO C standard chap. 7.9.5.4
 // Usage:       
@@ -45,29 +45,23 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-
-// Include the C library? And do we want the stdio stuff? And we only want
-// freopen if we have fopen()
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO) && \
-    defined(CYGPKG_LIBC_STDIO_OPEN)
+// Do we want the stdio stuff? And we only want freopen() if we have fopen()
+#if defined(CYGPKG_LIBC_STDIO) && defined(CYGPKG_LIBC_STDIO_OPEN)
 
 
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
 #include <stddef.h>                 // NULL and size_t from compiler
-#include <errno.h>                  // Error codes
 #include <stdio.h>                  // header for freopen()
-#include "clibincl/stream.hxx"      // C libray streams
-#include "clibincl/clibdata.hxx"    // C library private data
 #include "clibincl/stdiosupp.hxx"   // support for stdio
 
 
 // EXPORTED SYMBOLS
 
 externC FILE *
-freopen( const char *, const char *, FILE * )
-    CYGPRI_LIBC_WEAK_ALIAS("_freopen");
+freopen( const char *, const char *, FILE * ) 
+    CYGBLD_ATTRIB_WEAK_ALIAS(_freopen);
 
 
 // FUNCTIONS
@@ -76,10 +70,9 @@ freopen( const char *, const char *, FILE * )
 externC FILE *
 _freopen( const char *, const char *, FILE * )
 {
-    return NULL;  // Returning NULL is valid!
+    return NULL;  // Returning NULL is valid! FIXME
 } // _freopen()
         
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO) && 
-       //    defined(CYGPKG_LIBC_STDIO_OPEN)
+#endif // if defined(CYGPKG_LIBC_STDIO) && defined(CYGPKG_LIBC_STDIO_OPEN)
 
 // EOF freopen.cxx

@@ -1,3 +1,296 @@
+1999-04-26  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Temporary workaround - add a .PRECIOUS for libextras.a
+
+1999-04-16  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Remove the phony target "packages". This is no longer useful and
+	was causing problems, extras.o was not always rebuilt when it
+	should because of a dependency on a phony target.
+	
+	* pkgconf.tcl:
+	Simplify the rules for extras.o, based on the assumption that
+	libextras.a will always exist. This is now guaranteed via
+	hal/common/src/dummy.c
+
+1999-04-15  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf/makrules.src (build):
+	Remove partial comment - I cannot remember what is was meant to
+	say.
+
+1999-04-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* pkgconf.tcl: Recreate extras.o when necessary after all other builds
+	have completed. Create a dummy one, if there's no libextras.a
+
+1999-04-14  Bart Veer  <bartv@cygnus.co.uk>
+
+	* packages:
+	Move serial devices to the end of the file so that the reparenting
+	below the HAL packages works as intended.
+
+1999-04-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgrelease.tcl: Report 'not within region' messages.
+
+1999-03-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgrelease.tcl: Supress incomplete NEWS file.
+
+1999-03-22  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* packages
+	* targets
+	Don't let CYGPKG_DEVICES_WALLCLOCK and CYGPKG_DEVICES_WATCHDOG be
+	hardware-specific since they have emulation modes.
+	Instead make them ubiquitous with default state enabled
+
+	* Recursively *.h, *.hxx, *.c, *.cxx, *.inl:
+	Detabify
+
+1999-03-22  John Lane  <jlane@cygnus.co.uk>
+
+	* Recursively *.h, *.hxx, *.c, *.cxx, *.inl:
+	Update all copyright messages to be copyright 1999 too
+	Strip all e-mail addresses down to user names within the DESCRIPTION header
+
+1999-03-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf/makevars: Allow variables of the type 'fn-CFLAGS'
+	and 'fn-CXXFLAGS' to provide singular option override for the
+	given file name.
+
+1999-03-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/makevars: Remove dependence on echo '-e' switch.
+
+1999-03-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* targets (sparclite, sleb): add rom startup.
+
+1999-03-09  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	The generated pkgconf/pkgconf.mak file now defines variables
+	TARGET, PLATFORM and STARTUP.
+
+1999-03-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* packages, targets: Replace hardware attribute due to
+	unforseen problems (undo most recent change).
+
+1999-03-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* packages: Remove the hardware attribute from the WALLCLOCK
+	and WATCHDOG packages.
+	* targets: Remove the dependency of each platform on the
+	WALLCLOCK and WATCHDOG packages since these are no longer
+        hardware packages.
+
+1999-03-05  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Remove old DEVICES package requirements.
+	Add WALLCLOCK, WATCHDOG for all platforms.
+
+1999-03-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	These changes merged from 'ecos-new_devs-19990216-branch'
+
+	(1999-02-18  Gary Thomas  <gthomas@cygnus.co.uk>)
+
+	* packages: Change include directory paths for I/O files.
+
+	(1999-02-16  Gary Thomas  <gthomas@cygnus.co.uk>)
+
+	* pkgconf/makrules.src: 
+	* pkgconf/makrules.tst: 
+	* packages: Rework I/O [device drivers] sub-system.
+
+1999-03-04  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Added new command-line arguments --debug and --nodebug
+	
+	* pkgconf.tcl:
+	Revert previous change. cygpath may not be available in
+	customer releases of eCos.
+
+	* pkgconf.tcl:
+	Under Windows the external cygpath utility is now used to
+	perform pathname translations. This eliminates the need for
+	pkgconf.tcl to know about or make guesses about the mount
+	table.
+
+	* pkgrelease.tcl:
+	Added NEWS to the list of special files.
+
+1999-03-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf.tcl: Point to renamed *.ldi and *.h memory
+	layout files with unique names.
+
+1999-03-03  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/makrules.tst:
+	Ignore test link errors only when IGNORE_LINK_ERRORS is
+	defined.
+
+1999-03-02  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	tclsh 8.0 patchlevel 0 had problems accessing a namespace
+	array variable when a command was running inside a safe
+	interpreter. Prefixing the array variable with :: avoids
+	the problem and is still legal Tcl code.
+
+1999-02-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* targets (sleb): 
+	* packages (CYGPKG_HAL_SPARCLITE_SLEB): 
+	Add SPARClite evaluation board (sleb).
+
+
+1999-02-22  Mark Galassi  <rosalia@cygnus.com>
+
+	* NEWS: small addition.
+
+1999-02-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* NEWS: Added some more entries, fleshed out some.
+
+1999-02-19  Mark Galassi  <rosalia@cygnus.com>
+
+	* NEWS: added the NEWS file.  It's rather sparse for now.
+
+1999-02-12  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgrelease.tcl: Report 'region is full' message count.
+
+1999-02-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgrelease.tcl: Report ignored linker error count.
+
+1999-02-11  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgconf/makrules.tst: Ignore linker errors while building tests.
+
+1999-02-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* targets: Set sparclite optimization -O2, enable selective
+	linking, &c &c.
+
+1999-02-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Remove options now that math problems have been addressed.
+
+1999-02-10  John Dallaway  <jld@cygnus.co.uk>
+
+	* pkgrelease.tcl: Suppress generation of prebuilts for stubs startup
+
+1999-02-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* packages: Define HAL and RS232 packages in alphabetical order
+	for presentation by the configuration tool.
+
+1999-02-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Add compiler options to work-around math code problems.
+	
+1999-01-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* targets: be explicit about -msoft-float -mcpu=sparclite FAOD.
+
+
+1999-01-21  Jesper Skov  <jskov@cygnus.co.uk>
+ 
+	* targets:
+	* packages:
+ 	Added FADS entries from Kevin Hester <KHester@opticworks.com>.
+
+1999-01-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgrelease.tcl: Add "--customers_file=xxx" option to allow customer
+	data-base file to be overidden on command line.  This is really just
+	for ease of testing new, exciting customer setups.
+
+1999-01-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: Add ARM/PID serial driver
+
+1999-01-20  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Changes ppc target 'stub' to 'stubs'.
+
+1999-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* targets: added -finit-priority to CXXLANGFLAGS for sparclite.
+
+
+1999-01-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Added 'stub' startup.
+
+1999-01-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Add new memory layout 'stubs' for GDB/stubs layout.
+
+1999-01-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf.tcl: Add new misc file 'system.mak' which contains
+	the same info as <pkgconf/system.h> except suitable for makefiles.
+
+1999-01-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* packages: add SPARClite HAL info
+	* targets: add SPARClite info
+	* hal/sparclite/*...: initial checkin.
+
+
+1999-01-14  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* pkgconf/makrules.prv: Rename 'TESTS' to 'PROGS' which makes
+	more sense based on how these rules are used.
+
+	* pkgconf.tcl: Add support for 'misc' subdirectories.
+
+1999-01-14  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Changed x86 tools prefix to i686-pc-linux-gnu.
+
+1999-01-13  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* packages: Added aliases to i386 linux entry.
+
+1999-01-06  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Cleaned up i386 entry.
+
+Mon Nov  9 15:05:30 GMT 1998  Chris Provenzano <proven@cygnus.com>
+
+	Initial i386 linux port.
+
+	* packages, targets: Added target i386 platform linux.
+
+
+1999-01-11  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl: Provide interim support for the MLT
+
+1998-12-17  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Make compiler options platform specific
+	for ARM (AEB-1 vs PID)
+
+1998-12-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: Add new AEB-1 platform
+
+	* targets: Support new selective linking for ARM.
+	Also add AEB-1 platform.
+
 1998-10-23  Jesper Skov  <jskov@cygnus.co.uk>
         PR 17959
 
@@ -271,7 +564,7 @@ Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mempoolt.hxx
+//      mempoolt.hxx
 //
-//	Mempoolt (Memory pool template) class declarations
+//      Mempoolt (Memory pool template) class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,23 +25,23 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Define Mempoolt class interface
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Define Mempoolt class interface
 
 // Description: The class defined here provides the APIs for thread-safe,
 //              kernel-savvy memory managers; make a class with the
 //              underlying allocator as the template parameter.
-// Usage:	#include <cyg/kernel/mempoolt.hxx>
-//		
+// Usage:       #include <cyg/kernel/mempoolt.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //

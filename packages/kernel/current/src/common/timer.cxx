@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	common/timer.cxx
+//      common/timer.cxx
 //
-//	Timer class implementations
+//      Timer class implementations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	dsm
-// Contributors:	dsm
-// Date:	1998-06-11
-// Purpose:	Clock class implementation
-// Description:	This file implements the Timer class which is derived from
+// Author(s):   dsm
+// Contributors:        dsm
+// Date:        1998-06-11
+// Purpose:     Clock class implementation
+// Description: This file implements the Timer class which is derived from
 //              the Alarm class to support uITRON type functionality
 //
 //####DESCRIPTIONEND####
@@ -95,8 +95,12 @@ Cyg_Timer::initialize(
 void
 Cyg_Timer::activate(cyg_uint32 action)  // (DISABLE | ENABLE) [|RESET]
 {
-    if(!(action & ENABLE))
-        disable();
+    // we must also disable the alarm when resetting it so as to remove it
+    // from its queue, so that the enable afterwards places it on the right
+    // queue instead of assuming that, being enabled, it's already there.
+    // (if not enabling, the behaviour is unchanged and correct)
+    if(!(action & ENABLE) || (action & RESET) )
+        disable(); // otherwise, the enable below does nothing...
 
     if((action & RESET))
     {
@@ -106,7 +110,7 @@ Cyg_Timer::activate(cyg_uint32 action)  // (DISABLE | ENABLE) [|RESET]
     }
 
     if((action & ENABLE)) {
-        enable();
+        enable(); // ...when it should put the timer on a new queue.
     }
 }
 

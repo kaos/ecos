@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:          1998-02-13
 // Purpose:     
 // Description: 
@@ -55,8 +55,9 @@
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdarg.h>                 // va_list from compiler
 #include <stdio.h>                  // Main standard I/O header
-#include <cyg/devs/common/table.h>  // Device table
-
+#include <cyg/io/devtab.h>          // Device table
+#include "clibincl/stream.hxx"      // Cyg_StdioStream
+#include <errno.h>                  // Cyg_ErrNo
 
 // FUNCTION PROTOTYPES
 
@@ -64,9 +65,11 @@
 
 // Miscellaneous support functions
 
-extern struct Cyg_Device_Table_t *
+externC cyg_io_handle_t
 Cyg_libc_stdio_find_filename( const char *filename );
 
+externC Cyg_ErrNo
+cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream );
 
 //========================================================================
 

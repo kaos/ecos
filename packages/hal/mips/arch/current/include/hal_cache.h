@@ -3,9 +3,9 @@
 
 //=============================================================================
 //
-//	hal_cache.h
+//      hal_cache.h
 //
-//	HAL cache control API
+//      HAL cache control API
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -25,28 +25,29 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-02-17
-// Purpose:	Cache control API
-// Description:	The macros defined here provide the HAL APIs for handling
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-02-17
+// Purpose:     Cache control API
+// Description: The macros defined here provide the HAL APIs for handling
 //              cache control operations.
 // Usage:
-//		#include <cyg/hal/hal_cache.h>
-//		...
-//		
+//              #include <cyg/hal/hal_cache.h>
+//              ...
+//              
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
 //=============================================================================
@@ -101,6 +102,9 @@
 // Undo a previous lock operation
 //#define HAL_DCACHE_UNLOCK(_base_, _size_)
 
+// Unlock entire cache
+//#define HAL_DCACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Data cache line control
 
@@ -154,6 +158,9 @@
 // Undo a previous lock operation
 //#define HAL_ICACHE_UNLOCK(_base_, _size_)
 
+// Unlock entire cache
+//#define HAL_ICACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Instruction cache line control
 
@@ -203,10 +210,10 @@
 // Disable the data cache
 #define HAL_DCACHE_DISABLE()                    \
 {                                               \
-    asm volatile ("mfc0 $2,$3;"                  \
+    asm volatile ("mfc0 $2,$3;"                 \
                   "la   $3,0xFFFFFFEF;"         \
                   "and  $2,$2,$3;"              \
-                  "mtc0 $2,$3;"                  \
+                  "mtc0 $2,$3;"                 \
                   :                             \
                   :                             \
                   : "$2", "$3"                  \
@@ -215,17 +222,20 @@
 }
 
 // Invalidate the entire cache
-// We do this by reading a word from each line to invalidate the current
-// cache contents.
+// The TX39 only has hit-invalidate on the DCACHE, not
+// index-invalidate, so we cannot just empty the cache out without
+// knowing what is in it. This is annoying. So, the best we can do is
+// fill the cache with data that is unlikely to be there
+// otherwise. Hence we read bytes from the ROM space since this is
+// most likely to be code, and will not get out of sync even if it is not.
 #define HAL_DCACHE_INVALIDATE_ALL()                                             \
 {                                                                               \
-    extern char __ram_data_start;                                               \
-    CYG_WORD *addr = (CYG_WORD *)&__ram_data_start;                             \
-    CYG_WORD sum = 0;                                                           \
+    CYG_BYTE volatile *addr = (CYG_BYTE *)(0x9fc00000);                         \
+    CYG_BYTE volatile tmp = 0;                                                  \
     int i;                                                                      \
-    for( i = 0; i < HAL_DCACHE_SIZE; i += HAL_DCACHE_LINE_SIZE )                \
+    for( i = 0; i < (HAL_DCACHE_SIZE*2); i += HAL_DCACHE_LINE_SIZE )            \
     {                                                                           \
-        sum += addr[i];                                                         \
+        tmp = addr[i];                                                          \
     }                                                                           \
 }
 
@@ -267,6 +277,9 @@
                  );                             \
 }
 
+// Unlock entire cache
+#define HAL_DCACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Data cache line control
 
@@ -286,7 +299,7 @@
     HAL_DCACHE_DISABLE();                                               \
     for( ; _addr_ <= _addr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )    \
     {                                                                   \
-        asm volatile ("cache 17,0(%0)" : : "r"(addr) );                 \
+        asm volatile ("cache 17,0(%0)" : : "r"(_addr_) );               \
     }                                                                   \
     HAL_DCACHE_ENABLE();                                                \
 }
@@ -338,11 +351,11 @@
 // Invalidate the entire cache
 #define HAL_ICACHE_INVALIDATE_ALL()                                             \
 {                                                                               \
-    register CYG_ADDRESS addr;                                                  \
+    register CYG_ADDRESS _addr_;                                                \
     HAL_ICACHE_DISABLE();                                                       \
-    for( addr = 0; addr < HAL_ICACHE_SIZE; addr += HAL_ICACHE_LINE_SIZE )       \
+    for( _addr_ = 0; _addr_ < HAL_ICACHE_SIZE; _addr_ += HAL_ICACHE_LINE_SIZE ) \
     {                                                                           \
-        asm volatile ("cache 0,0(%0)" : : "r"(addr) );                          \
+        asm volatile ("cache 0,0(%0)" : : "r"(_addr_) );                        \
     }                                                                           \
     HAL_ICACHE_ENABLE();                                                        \
 }
@@ -379,6 +392,9 @@
                  );                             \
 }
 
+// Unlock entire cache
+#define HAL_ICACHE_UNLOCK_ALL()
+
 //-----------------------------------------------------------------------------
 // Instruction cache line control
 
@@ -390,10 +406,19 @@
     HAL_ICACHE_DISABLE();                                               \
     for( ; _addr_ <= _addr_+_size_; _addr_ += HAL_ICACHE_LINE_SIZE )    \
     {                                                                   \
-        asm volatile ("cache 0,0(%0)" : : "r"(addr) );                  \
+        asm volatile ("cache 0,0(%0)" : : "r"(_addr_) );                \
     }                                                                   \
     HAL_ICACHE_ENABLE();                                                \
 }
+
+#endif
+
+//-----------------------------------------------------------------------------
+// Check that a supported configuration has actually defined some macros.
+
+#ifndef HAL_DCACHE_ENABLE
+
+#error Unsupported MIPS configuration
 
 #endif
 

@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	memvar.hxx
+//      memvar.hxx
 //
-//	Memory pool with variable block class declarations
+//      Memory pool with variable block class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	dsm
-// Contributors:	dsm
-// Date:	1998-05-21
-// Purpose:	Define Memvar class interface
-// Description:	Inline class for constructing a variable block allocator
-// Usage:	#include <cyg/kernel/memvar.hxx>
-//		
+// Author(s):   dsm
+// Contributors:        dsm
+// Date:        1998-05-21
+// Purpose:     Define Memvar class interface
+// Description: Inline class for constructing a variable block allocator
+// Usage:       #include <cyg/kernel/memvar.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //

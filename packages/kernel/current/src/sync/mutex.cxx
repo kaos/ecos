@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	sync/mutex.cxx
+//      sync/mutex.cxx
 //
-//	Mutex and condition variable implementation
+//      Mutex and condition variable implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,19 +22,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-10-21
-// Purpose:	Mutex implementation
-// Description:	This file contains the implementations of the mutex
-//              and condition variable classes.
+// Author(s):    nickg
+// Contributors: nickg, jlarmour
+// Date:         1999-02-17
+// Purpose:      Mutex implementation
+// Description:  This file contains the implementations of the mutex
+//               and condition variable classes.
 //
 //####DESCRIPTIONEND####
 //
@@ -63,6 +63,8 @@ Cyg_Mutex::Cyg_Mutex()
         
     locked      = false;
     owner       = NULL;
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
@@ -74,13 +76,15 @@ Cyg_Mutex::~Cyg_Mutex()
         
     CYG_ASSERT( owner == NULL, "Deleting mutex with owner");
     CYG_ASSERT( queue.empty(), "Deleting mutex with waiting threads");
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Mutex::check_this( cyg_assert_class_zeal zeal)
+bool
+Cyg_Mutex::check_this( cyg_assert_class_zeal zeal) const
 {
 //    CYG_REPORT_FUNCTION();
         
@@ -109,9 +113,10 @@ bool Cyg_Mutex::check_this( cyg_assert_class_zeal zeal)
 // -------------------------------------------------------------------------
 // Lock and/or wait
 
-cyg_bool Cyg_Mutex::lock()
+cyg_bool
+Cyg_Mutex::lock(void)
 {
-    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCTYPE("returning %d");
 
     cyg_bool result = true;
     Cyg_Thread *self = Cyg_Thread::self();
@@ -128,7 +133,7 @@ cyg_bool Cyg_Mutex::lock()
     // thread grabbing the mutex between the wakeup in unlock() and
     // this thread actually starting.
     
-    while( locked )
+    while( locked && result )
     {
         CYG_ASSERT( self != owner, "Locking mutex I already own");
         
@@ -191,15 +196,18 @@ cyg_bool Cyg_Mutex::lock()
 
     CYG_ASSERTCLASS( this, "Bad this pointer");    
 
+    CYG_REPORT_RETVAL(result);
+
     return result;
 }
 
 // -------------------------------------------------------------------------
 // Try to lock and return success
 
-cyg_bool Cyg_Mutex::trylock()
+cyg_bool
+Cyg_Mutex::trylock(void)
 {
-    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCTYPE("returning %d");
         
     CYG_ASSERTCLASS( this, "Bad this pointer");
     
@@ -230,13 +238,15 @@ cyg_bool Cyg_Mutex::trylock()
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
     
+    CYG_REPORT_RETVAL(result);
     return result;    
 }
 
 // -------------------------------------------------------------------------
 // unlock
 
-void Cyg_Mutex::unlock()
+void
+Cyg_Mutex::unlock(void)
 {
     CYG_REPORT_FUNCTION();
         
@@ -281,6 +291,44 @@ void Cyg_Mutex::unlock()
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
 
+    CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+// Release all waiting threads.
+
+void Cyg_Mutex::release()
+{
+    CYG_REPORT_FUNCTION();
+
+    // Prevent preemption
+    Cyg_Scheduler::lock();
+
+    CYG_INSTRUMENT_MUTEX(RELEASE, this, 0);
+
+    CYG_ASSERTCLASS( this, "Bad this pointer");
+        
+    while( !queue.empty() )
+    {
+        // The queue is non-empty, so grab each
+        // thread from it and release it.
+
+        Cyg_Thread *thread = queue.dequeue();
+
+        CYG_ASSERTCLASS( thread, "Bad thread pointer");
+
+        thread->release();
+
+        CYG_INSTRUMENT_MUTEX(RELEASED, this, thread);
+        
+    }
+
+    CYG_ASSERTCLASS( this, "Bad this pointer");    
+    
+    // Unlock the scheduler and maybe switch threads
+    Cyg_Scheduler::unlock();
+
+    CYG_REPORT_RETURN();
 }
 
 //==========================================================================
@@ -295,6 +343,8 @@ Cyg_Condition_Variable::Cyg_Condition_Variable(
     mutex       = &mx;
 
     CYG_ASSERTCLASS( mutex, "Invalid mutex argument");
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
@@ -305,48 +355,67 @@ Cyg_Condition_Variable::~Cyg_Condition_Variable()
     CYG_REPORT_FUNCTION();
         
     CYG_ASSERT( queue.empty(), "Deleting condvar with waiting threads");
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 
 #ifdef CYGDBG_USE_ASSERTS
 
-bool Cyg_Condition_Variable::check_this( cyg_assert_class_zeal zeal)
+bool
+Cyg_Condition_Variable::check_this( cyg_assert_class_zeal zeal) const
 {
-    CYG_REPORT_FUNCTION();
+    bool result = true;
+
+    CYG_REPORT_FUNCTYPE("returning %d");
+    CYG_REPORT_FUNCARG1("zeal = %d", zeal);
         
     // check that we have a non-NULL pointer first
-    if( this == NULL ) return false;
-    
-    switch( zeal )
-    {
-    case cyg_system_test:
-    case cyg_extreme:
-    case cyg_thorough:
-        if( !mutex->check_this(zeal) ) return false;
-    case cyg_quick:
-    case cyg_trivial:
-    case cyg_none:
-    default:
-        break;
-    };
+    if( this == NULL )
+        result = false;
+    else {
+        
+        switch( zeal )
+        {
+        case cyg_system_test:
+        case cyg_extreme:
+        case cyg_thorough:
+            if( !mutex->check_this(zeal) )
+                result = false;
+        case cyg_quick:
+        case cyg_trivial:
+        case cyg_none:
+        default:
+            break;
+        }
+    }
 
-    return true;
+    CYG_REPORT_RETVAL(result);
+    return result;
 }
 
 #endif
 
 // -------------------------------------------------------------------------
 // Wait for condition to be true    
+// Note: if this function is entered with the scheduler locked (e.g. to
+// suspend DSR processing) then there is no need to take the lock.  Also
+// in this case, exit with the scheduler locked, which allows this function
+// to be used in a totally thread-safe manner.
 
-void Cyg_Condition_Variable::wait()
+void
+Cyg_Condition_Variable::wait(void)
 {
     CYG_REPORT_FUNCTION();
         
     Cyg_Thread *self = Cyg_Thread::self();
 
-    // Prevent preemption
-    Cyg_Scheduler::lock();
+    cyg_int32 current_lock = Cyg_Scheduler::get_sched_lock();
+
+    if (current_lock == 0) 
+        // Prevent preemption
+        Cyg_Scheduler::lock();
 
     CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_ASSERTCLASS( mutex, "Corrupt mutex");
@@ -388,18 +457,29 @@ void Cyg_Condition_Variable::wait()
     // atomically relative to other threads, to avoid races, it is not
     // necessary for us to re-acquire the mutex in the same atomic
     // action. Hence we can do it after unlocking the scheduler.
-
-    mutex->lock();
+    // We need to loop here in case the thread is released while waiting
+    // for the mutex. It is essential that we exit this function with the
+    // mutex claimed.
+    
+    while ( !mutex->lock() )
+        continue;
 
     CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_ASSERTCLASS( mutex, "Corrupt mutex");
     CYG_ASSERT( mutex->owner == self, "Not mutex owner");
+
+    CYG_REPORT_RETURN();
+
+    if (current_lock)
+        // Reacquire the DSR pseudo lock
+        Cyg_Scheduler::lock();
 }
 
 // -------------------------------------------------------------------------
 // Wake one thread
 
-void Cyg_Condition_Variable::signal()
+void
+Cyg_Condition_Variable::signal(void)
 {
     CYG_REPORT_FUNCTION();
         
@@ -434,12 +514,14 @@ void Cyg_Condition_Variable::signal()
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
 
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Set cond true, wake all threads
 
-void Cyg_Condition_Variable::broadcast()
+void
+Cyg_Condition_Variable::broadcast(void)
 {
     CYG_REPORT_FUNCTION();
         
@@ -472,16 +554,20 @@ void Cyg_Condition_Variable::broadcast()
     
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();    
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Optional timed wait on a CV
 
-#if defined(CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT) && defined(CYGFUN_KERNEL_THREADS_TIMER)
+#if defined(CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT)
 
-cyg_bool Cyg_Condition_Variable::wait( cyg_tick_count timeout )
+cyg_bool
+Cyg_Condition_Variable::wait( cyg_tick_count timeout )
 {
-    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCTYPE("returning %d");
+    CYG_REPORT_FUNCARG1("timeout = %d", timeout);
         
     CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_ASSERTCLASS( mutex, "Corrupt mutex");
@@ -547,10 +633,15 @@ cyg_bool Cyg_Condition_Variable::wait( cyg_tick_count timeout )
     // necessary for us to re-acquire the mutex in the same atomic
     // action. Hence we can do it after unlocking the scheduler.
 
-    mutex->lock();
+    // FIXME: what if we woke up above due to TIMEOUT/DESTRUCT/BREAK?
+    // In that situation is it correct to not lock the mutex?
+    if (false != result)
+        result = mutex->lock();
 
     CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_ASSERTCLASS( mutex, "Corrupt mutex");
+
+    CYG_REPORT_RETVAL(result);
     
     return result;
 }

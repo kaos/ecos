@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     ctarpy, jlarmour
+// Contributors:    jlarmour
 // Date:          1998/6/3
 // Description:   Contains testcode for C library sscanf() function
 //
@@ -212,7 +212,7 @@ test( CYG_ADDRWORD data )
     CYG_TEST_PASS_FAIL(ret == 5, "Combinations #2 return code");
 
 
-#ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
+#ifdef CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT
 
 // How much _relative_ error do we allow?
 #define FLT_TOLERANCE 1.0e-3
@@ -293,7 +293,7 @@ test( CYG_ADDRWORD data )
 
 #else
     CYG_TEST_PASS("Floating point tests skipped - not configured");
-#endif // ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
+#endif // ifdef CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT
 
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
@@ -314,7 +314,7 @@ main(int argc, char *argv[])
 
     START_TEST( test );
 
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 } // main()
 
 

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -48,7 +48,7 @@
 
 #include "testaux.hxx"
 
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static char stack[STACKSIZE];
 
@@ -71,7 +71,10 @@ static bool flash( void )
 
     CYG_ASSERTCLASS(&t1, "error");
 #endif
-    Cyg_Thread t2( entry, (CYG_ADDRWORD)p, STACKSIZE, (CYG_ADDRESS)stack );
+    Cyg_Thread t2( CYG_SCHED_DEFAULT_INFO,
+                   entry, (CYG_ADDRWORD)p, 
+                   "thread t2",
+                   (CYG_ADDRESS)stack, STACKSIZE );
 
     CYG_ASSERTCLASS(&t2, "error");
 

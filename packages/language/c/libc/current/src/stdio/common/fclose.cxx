@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       Implements ISO C fclose() function
 // Description: 
 // Usage:       
 //
@@ -45,10 +45,8 @@
 #include <pkgconf/libc.h>   // Configuration header
 
 
-// Include the C library? And do we want the stdio stuff? And we can't have
-// fclose() without fopen()
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO) && \
-    defined(CYGPKG_LIBC_STDIO_OPEN)
+// Do we want the stdio stuff? And we can't have fclose() without fopen()
+#if defined(CYGPKG_LIBC_STDIO) && defined(CYGPKG_LIBC_STDIO_OPEN)
 
 // INCLUDES
 
@@ -57,7 +55,7 @@
 #include <errno.h>                  // Error codes
 #include <stdio.h>                  // header for fclose()
 #include "clibincl/stdlibsupp.hxx"  // _free()
-#include "clibincl/clibdata.hxx"    // C library private data
+#include "clibincl/stdiofiles.hxx"  // C library files
 #include "clibincl/stream.hxx"      // C libray streams
 #include "clibincl/stdiosupp.hxx"   // support for stdio
 
@@ -65,7 +63,7 @@
 // EXPORTED SYMBOLS
 
 externC int
-fclose( FILE * ) CYGPRI_LIBC_WEAK_ALIAS("_fclose");
+fclose( FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(_fclose);
 
 
 // FUNCTIONS
@@ -77,14 +75,12 @@ _fclose( FILE *stream )
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     int i;
 
-#ifdef CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
-    Cyg_CLibInternalData::files_lock.lock();
-#endif // CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
+    Cyg_libc_stdio_files::lock();
 
     // find the stream in the table
     for (i=0; i < FOPEN_MAX; i++)
     {
-        if (real_stream == Cyg_CLibInternalData::get_file_stream(i))
+        if (real_stream == Cyg_libc_stdio_files::get_file_stream(i))
             break;
     } // for
 
@@ -94,7 +90,8 @@ _fclose( FILE *stream )
 
         return EOF;
     } // if
-
+    
+    // FIXME: should use delete?
     // Explicitly call destructor - this flushes the output too
     real_stream->~Cyg_StdioStream();
 
@@ -102,17 +99,14 @@ _fclose( FILE *stream )
     _free(real_stream);
 
     // and mark the stream available for use
-    Cyg_CLibInternalData::set_file_stream(i, NULL);
+    Cyg_libc_stdio_files::set_file_stream(i, NULL);
         
-#ifdef CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
-    Cyg_CLibInternalData::files_lock.unlock();
-#endif // CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS
+    Cyg_libc_stdio_files::unlock();
 
     return 0;
 
 } // _fclose()
         
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO) && 
-       //    defined(CYGPKG_LIBC_STDIO_OPEN)
+#endif // if defined(CYGPKG_LIBC_STDIO) && defined(CYGPKG_LIBC_STDIO_OPEN)
 
 // EOF fclose.cxx

@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
+// Date:          1999-02-03
 // Description:   Contains testcode for C library ldiv() function
 //
 //
@@ -41,11 +41,6 @@
 //
 // TESTCASE_TYPE=CYG_TEST_MODULE
 // COMPOUND_TESTCASE
-
-
-// CONFIGURATION
-
-#include <pkgconf/libc.h>   // Configuration header
 
 // INCLUDES
 
@@ -59,28 +54,21 @@
 externC void
 cyg_package_start( void )
 {
-#ifdef CYGPKG_LIBC
     cyg_iso_c_start();
-#else
-    (void)main(0, NULL);
-#endif
 } // cyg_package_start()
 
 
 int
 main( int argc, char *argv[] )
 {
-#ifdef CYGPKG_LIBC
     long num, denom;
     ldiv_t result;
-#endif
 
     CYG_TEST_INIT();
 
     CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C library "
                   "ldiv() function");
 
-#ifdef CYGPKG_LIBC
     num = 10232;
     denom = 43;
     result = ldiv(num, denom);
@@ -93,12 +81,35 @@ main( int argc, char *argv[] )
     CYG_TEST_PASS_FAIL( (result.quot==2) && (result.rem==232),
                         "ldiv( 4232, 2000 )");
 
-
     num = 20;
     denom = 20;
     result = ldiv(num, denom);
     CYG_TEST_PASS_FAIL( (result.quot==1) && (result.rem==0),
                    "ldiv( 20, 20 )");
+
+    num = -5;
+    denom = 4;
+    result = ldiv(num, denom);
+    CYG_TEST_PASS_FAIL( (result.quot==-1) && (result.rem==-1),
+                        "ldiv( -5, 4 )");
+
+    num = 5;
+    denom = -4;
+    result = ldiv(num, denom);
+    CYG_TEST_PASS_FAIL( (result.quot==-1) && (result.rem==1),
+                        "ldiv( 5, -4 )");
+
+    num = -5;
+    denom = -3;
+    result = ldiv(num, denom);
+    CYG_TEST_PASS_FAIL( (result.quot==1) && (result.rem==-2),
+                        "ldiv( -5, -3 )");
+
+    num = -7;
+    denom = -7;
+    result = ldiv(num, denom);
+    CYG_TEST_PASS_FAIL( (result.quot==1) && (result.rem==0),
+                        "ldiv( -7, -7 )");
 
     num = 90123456;
     denom = 12345678;
@@ -111,10 +122,6 @@ main( int argc, char *argv[] )
     result = ldiv(num, denom);
     CYG_TEST_PASS_FAIL( (result.quot==732711) && (result.rem==3),
                         "ldiv( 90123456, 123 )");
-
-#else // ifndef CYGPKG_LIBC
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
-#endif // ifndef CYGPKG_LIBC
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "ldiv() function");

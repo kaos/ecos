@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	ktypes.h
+//      ktypes.h
 //
-//	Standard types used in the kernel and its interfaces
+//      Standard types used in the kernel and its interfaces
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,11 +36,11 @@
 // Contributors:  nickg
 // Date:        1997-09-08
 // Purpose:     Define kernel specific types
-// Description:	Kernel specific types
+// Description: Kernel specific types
 // Usage:       #include <cyg/kernel/ktypes.h>
-//		...
-//		cyg_priority priority; // etc
-//		
+//              ...
+//              cyg_priority priority; // etc
+//              
 //####DESCRIPTIONEND####
 //
 //==========================================================================

@@ -24,19 +24,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-03-17
 // Purpose:     
 // Description: 
-// Usage:       #include <stdlib.h>
+// Usage:         #include <stdlib.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -46,9 +46,6 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library?
-#ifdef CYGPKG_LIBC     
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h> // Common type definitions and support
@@ -57,12 +54,14 @@
 
 // CONSTANTS
 
-// as described in ANSI para 7.10
+// as described in ISO para 7.10
 
 // codes to pass to exit()
 
-#define EXIT_SUCCESS  0     // Successful exit status
-#define EXIT_FAILURE  1     // Failing exit status
+// Successful exit status - must be zero (POSIX 1003.1 8.1)
+#define EXIT_SUCCESS  0
+// Failing exit status - must be non-zero (POSIX 1003.1 8.1)
+#define EXIT_FAILURE  1
 
 // Maximum value returned by rand()
 
@@ -100,7 +99,7 @@ typedef int (*Cyg_comparison_fn_t)(const void * /* object1 */,
                                    const void * /* object2 */);
 
 // Similarly, type of function used by atexit()
-typedef void (*Cyg_atexit_fn_t)( void );
+typedef void (*Cyg_libc_atexit_fn_t)( void );
 
 
 // FUNCTION PROTOTYPES
@@ -168,21 +167,24 @@ realloc( void * /* ptr */, size_t /* size */ );
 // 7.10.4 Communication with the environment
 
 externC void
-abort( void ) CYGPRI_LIBC_NORETURN;
+abort( void ) CYGBLD_ATTRIB_NORET;
 
 externC int
-atexit( Cyg_atexit_fn_t /* func_to_register */ );
+atexit( Cyg_libc_atexit_fn_t /* func_to_register */ );
 
 externC void
-exit( int /* status */ ) CYGPRI_LIBC_NORETURN;
+exit( int /* status */ ) CYGBLD_ATTRIB_NORET;
 
 /* POSIX 1003.1 section 3.2.2 "Terminate a process" */
 
 externC void
-_exit( int /* status */ ) CYGPRI_LIBC_NORETURN;
+_exit( int /* status */ ) CYGBLD_ATTRIB_NORET;
 
 externC char *
 getenv( const char * /* name */ );
+
+externC int
+system( const char * /* command */ );
 
 
 //========================================================================
@@ -204,26 +206,42 @@ qsort( void * /* first_object */, size_t /* num_objects */,
 // 7.10.6 Integer arithmetic functions
 
 externC int
-abs( int /* val */ );
+abs( int /* val */ ) CYGBLD_ATTRIB_CONST;
 
 externC div_t
-div( int /* numerator */, int /* denominator */ );
+div( int /* numerator */, int /* denominator */ ) CYGBLD_ATTRIB_CONST;
 
 externC long
-labs( long /* val */ );
+labs( long /* val */ ) CYGBLD_ATTRIB_CONST;
 
 externC ldiv_t
-ldiv( long /* numerator */, long /* denominator */ );
+ldiv( long /* numerator */, long /* denominator */ ) CYGBLD_ATTRIB_CONST;
 
 //========================================================================
+
+// NON-STANDARD FUNCTIONS
+
+/////////////////////
+// cyg_libc_itoa() //
+/////////////////////
+//
+// This converts num to a string and puts it into s padding with
+// "0"'s if padzero is set, or spaces otherwise if necessary.
+// The number of chars written to s is returned
+//
+
+externC cyg_uint8
+cyg_libc_itoa( cyg_uint8 *__s, cyg_int32 __num, cyg_uint8 __width,
+               cyg_bool __padzero );
+
+//========================================================================
+
 
 // INLINE FUNCTIONS
 
 #ifdef CYGIMP_LIBC_STDLIB_INLINES
 #include <stdlib.inl>
 #endif
-
-#endif // ifdef CYGPKG_LIBC     
 
 #endif // CYGONCE_LIBC_STDLIB_H multiple inclusion protection
 

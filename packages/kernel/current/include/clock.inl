@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	clock.inl
+//      clock.inl
 //
-//	Clock and Alarm class inlines
+//      Clock and Alarm class inlines
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-30
-// Purpose:	Define Clock and Alarm class inlines
-// Description:	Define inline functions for counter, clock and alarm
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-30
+// Purpose:     Define Clock and Alarm class inlines
+// Description: Define inline functions for counter, clock and alarm
 //              classes.
 // Usage:       #include <cyg/kernel/clock.hxx>
 //              #include <cyg/kernel/clock.inl>

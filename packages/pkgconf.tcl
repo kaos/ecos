@@ -24,7 +24,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -139,6 +139,8 @@ namespace eval pkgconf {
     variable defaults_arg 0;            # Do not use the values from the save file.
     variable use_links_arg 0;           # Make use of symbolic links.
     variable use_copies_arg 0;          # The inverse.
+    variable debug_arg 0;               # --debug, control infrastructure options
+    variable nodebug_arg 0;             # --nodebug, ditto
     
     # Details of all known packages. These come out of the packages file.
     # The variable known_packages is a simple list, and the rest of the
@@ -175,6 +177,7 @@ namespace eval pkgconf {
                                         # files, the path to those header files
                                         # relative to either the component repository
                                         # or the build tree.
+    variable misc_dirs;                 # Ditto for package misc directories.
     variable tests_dirs;                # Ditto for package tests directories.
     variable src_dirs;                  # Ditto for src directories.
 
@@ -478,6 +481,10 @@ if { 0 } {
 # Similarly it is desirable to allow users to control compiler flags, e.g.
 #     DBGFLAGS="-Wall -Werror"
 #
+# --debug can be used to set appropriate debug options in the
+# infrastructure. This should probably be --enable-debug, but that
+# could cause confusion. There is also a --nodebug option.
+#
 # A new argument is --nw, to disable the GUI environment. Other new
 # arguments are:
 #   --targets and --packages to display the appropriate details
@@ -571,6 +578,14 @@ proc pkgconf::parse_arguments { argv0 argv } {
 	    }
 	    if { [regexp -- {^-?-copyhdrs$} $args($i)] == 1 } {
 		set pkgconf::use_copies_arg 1
+		continue
+	    }
+	    if { [regexp -- {^-?-debug$} $args($i)] == 1 } {
+		set pkgconf::debug_arg 1
+		continue
+	    }
+	    if { [regexp -- {^-?-nodebug$} $args($i)] == 1 } {
+		set pkgconf::nodebug_arg 1
 		continue
 	    }
 
@@ -783,6 +798,8 @@ proc pkgconf::parse_arguments { argv0 argv } {
 	puts "defaults_arg is            $pkgconf::defaults_arg"
 	puts "use_links_arg is           $pkgconf::use_links_arg"
 	puts "use_copies_arg is          $pkgconf::use_copies_arg"
+	puts "debug_arg is               $pkgconf::debug_arg"
+	puts "nodebug_arg is             $pkgconf::nodebug_arg"
 	foreach i [array names pkgconf::version_args] {
 	    puts "Package $i needs version $pkgconf::version_args($i)"
 	}
@@ -851,10 +868,10 @@ proc pkgconf::read_packages { } {
     # The following two commands are made accessible to the slave
     # interpreter and are responsible for updating the actual data.
     proc set_package_data { name value } {
-	set pkgconf::package_data($name) $value
+	set ::pkgconf::package_data($name) $value
     }
     proc add_known_package { name } {
-	lappend pkgconf::known_packages $name
+	lappend ::pkgconf::known_packages $name
     }
 
     # Create the parser, add the aliased commands, and then define
@@ -1093,21 +1110,20 @@ proc pkgconf::read_targets { } {
     ASSERT { $pkgconf::known_compiler_flags != "" }
     
     proc add_known_target { name } {
-	
-	lappend pkgconf::known_targets $name
-	set pkgconf::target_data($name,alias)           $name
-	set pkgconf::target_data($name,prefix)          ""
-	set pkgconf::target_data($name,known_platforms) ""
-	set pkgconf::target_data($name,packages)        ""
+	lappend ::pkgconf::known_targets $name
+	set ::pkgconf::target_data($name,alias)           $name
+	set ::pkgconf::target_data($name,prefix)          ""
+	set ::pkgconf::target_data($name,known_platforms) ""
+	set ::pkgconf::target_data($name,packages)        ""
     }
     proc add_known_platform { arch name } {
-	lappend pkgconf::target_data($arch,known_platforms) $name
-	set pkgconf::target_data($arch,$name,alias)         ""
-	set pkgconf::target_data($arch,$name,startup)       ""
-	set pkgconf::target_data($arch,$name,packages)      ""
+	lappend ::pkgconf::target_data($arch,known_platforms) $name
+	set ::pkgconf::target_data($arch,$name,alias)         ""
+	set ::pkgconf::target_data($arch,$name,startup)       ""
+	set ::pkgconf::target_data($arch,$name,packages)      ""
     }
     proc set_target_data { name value } {
-	set pkgconf::target_data($name) $value
+	set ::pkgconf::target_data($name) $value
     }
 
     set parser [interp create -safe]
@@ -3701,7 +3717,8 @@ proc pkgconf::update_compiler_flags { } {
 # 1) Update build tree
 # 2) Make 
 # 3) Make tests
-# 4) Make clean
+# 4) Make misc
+# 5) Make clean
 #
 # The make buttons should be disabled if the build tree is out of date.
 # This is controlled by the variable build_tree_needs_update, which
@@ -3755,6 +3772,7 @@ proc pkgconf::nbpage_build_initialise { win } {
     button $win.tree  -text "Update tree" -command pkgconf::nbpage_build_update_tree
     button $win.make  -text "Make"        -command pkgconf::nbpage_build_make
     button $win.tests -text "Make tests"  -command pkgconf::nbpage_build_tests
+    button $win.misc  -text "Make misc"  -command pkgconf::nbpage_build_misc
     button $win.clean -text "Make clean"  -command pkgconf::nbpage_build_clean
 
     if { ($config_data(target) == "" ) || ($config_data(platform) == "") || ($config_data(startup) == "") } {
@@ -3763,12 +3781,14 @@ proc pkgconf::nbpage_build_initialise { win } {
     if { $build_tree_needs_update } {
 	$win.make  configure -state disabled
 	$win.tests configure -state disabled
+	$win.misc configure -state disabled
 	$win.clean configure -state disabled
     }
     grid   $win.tree  -row 0 -column 0 -sticky we -padx 5 -pady 5
     grid   $win.make  -row 1 -column 0 -sticky we -padx 5 -pady 5
     grid   $win.tests -row 2 -column 0 -sticky we -padx 5 -pady 5
-    grid   $win.clean -row 3 -column 0 -sticky we -padx 5 -pady 5
+    grid   $win.misc  -row 3 -column 0 -sticky we -padx 5 -pady 5
+    grid   $win.clean -row 4 -column 0 -sticky we -padx 5 -pady 5
 
     message $win.treemsg -anchor w -justify left -width 300 -text \
 	    "Create or update the build and install trees."
@@ -3777,12 +3797,16 @@ proc pkgconf::nbpage_build_initialise { win } {
     message $win.testsmsg -anchor w -justify left -width 300 -text \
 	    "Build the test executables for the current configuration. These executables will be\
 	    placed in the install tree."
+    message $win.miscmsg -anchor w -justify left -width 300 -text \
+	    "Build the misc executables for the current configuration. These executables will be\
+	    placed in the misc directory."
     message $win.cleanmsg -anchor w -justify left -width 300 -text \
 	    "Perform a clean-up operation in the build and install trees."
     grid $win.treemsg  -row 0 -column 1 -sticky we
     grid $win.makemsg  -row 1 -column 1 -sticky we
     grid $win.testsmsg -row 2 -column 1 -sticky we
-    grid $win.cleanmsg -row 3 -column 1 -sticky we
+    grid $win.miscmsg  -row 3 -column 1 -sticky we
+    grid $win.cleanmsg -row 4 -column 1 -sticky we
     grid columnconfigure $win 1 -weight 1
 }
 
@@ -3801,6 +3825,7 @@ proc pkgconf::nbpage_build_enter { win } {
     if { $build_tree_needs_update } {
 	$build_frame.grid.make  configure -state disabled
 	$build_frame.grid.tests configure -state disabled
+	$build_frame.grid.misc configure -state disabled
 	$build_frame.grid.clean configure -state disabled
 
 	set_status_line "The build tree must be updated before this configuration can be built."
@@ -3890,6 +3915,16 @@ proc pkgconf::nbpage_build_tests { } {
     output_add_text \
 	    "Building test executables.\nBuild tree is $build_tree\nInstall tree is $config_data(prefix)\n"
     run_command pkgconf::nbpage_build_handle_output make -C $build_tree tests
+}
+
+proc pkgconf::nbpage_build_misc { } {
+
+    variable build_tree
+    variable config_data
+    nbpage_build_control_buttons 0
+    output_add_text \
+	    "Building misc executables.\nBuild tree is $build_tree\nInstall tree is $config_data(prefix)\n"
+    run_command pkgconf::nbpage_build_handle_output make -C $build_tree misc
 }
 
 proc pkgconf::nbpage_build_clean { } {
@@ -4263,6 +4298,8 @@ proc pkgconf::handle_command_output { pipe callback } {
 #       across PKGconf.mak. If this tests directory has any subdirectories
 #       then these must be created as well.
 #
+#    d) similarly for any 'misc' directories
+#
 # 3) create the install directory tree, complete with lib, include, and tests
 #    directories, and the include/pkgconf sub-directory. Additional
 #    sub-directories within include need not be generated at this point,
@@ -4330,7 +4367,9 @@ proc pkgconf::locate_files { dir { pattern "*"} } {
     # Eliminate the pathnames from all of these files
     set filenames ""
     foreach file $filelist {
-	lappend filenames [file tail $file]
+	if { [string range $file end end] != "~" } {
+	    lappend filenames [file tail $file]
+        }
     }
 
     # Eliminate any obviously spurious entries.
@@ -4798,6 +4837,14 @@ proc pkgconf::process_package { name dir } {
 	    process_package_tests $name $testsdir
 	} 
     }
+
+    set miscdir [file join $dir "misc"]
+    if { [file isdir [file join $pkgconf::component_repository $miscdir]] } {
+	if { [file isfile [file join $pkgconf::component_repository $miscdir PKGconf.mak]] } {
+	    lappend pkgconf::misc_dirs $miscdir
+	    process_package_misc $miscdir
+	} 
+    }
 }
 
 # ----------------------------------------------------------------------------
@@ -4930,6 +4977,8 @@ proc pkgconf::process_package_includes { name dir } {
 "
 include [get_pathname_for_make [file join [get_dotdots_pkgconf $dir] "pkgconf.mak"]]
 
+include [get_pathname_for_make [file join [get_dotdots_pkgconf $dir] "system.mak"]]
+
 HEADERS := $pkg_inc_files
 TARGETS := \$(foreach hdr,\$(HEADERS),\$(PREFIX)/include/$pkg_incdir/\$(hdr))
 .PHONY  : build clean
@@ -5017,6 +5066,74 @@ proc pkgconf::process_package_tests { name dir } {
 	    file copy -force -- [file join $srcdir $makefile] $destname
 	    make_writable $destname
 	}
+    }
+}
+
+# ----------------------------------------------------------------------------
+# Processing the misc directory is just like the src directory.
+#
+proc pkgconf::process_package_misc { dir } {
+
+    set miscdir  [file join $pkgconf::component_repository $dir]
+    set destdir [file join $pkgconf::build_tree $dir]
+    
+    file mkdir $destdir
+    set subdirs [locate_all_subdirs $miscdir]
+    foreach subdir $subdirs {
+	if { [is_empty_directory [file join $miscdir $subdir] ] } {
+	    continue
+	}
+	file mkdir [file join $destdir $subdir]
+    }
+
+    set makefiles [locate_all_files $miscdir "PKGconf.mak"]
+    foreach makefile $makefiles {
+	set destname [file join $destdir [file dirname $makefile] "makefile"]
+
+	if { ([file isfile $destname] == 0) || $pkgconf::force_arg } {
+	    file copy -force -- [file join $miscdir $makefile] $destname
+	    make_writable $destname
+	}
+    }
+}
+
+# }}}
+# {{{  Package debug options            
+
+# ----------------------------------------------------------------------
+# Enable appropriate debug options in various packages. Currently the
+# only option that is affected is CYGPKG_INFRA_DEBUG in pkgconf/infra.h
+
+proc pkgconf::enable_package_debug_options { } {
+
+    report "Enabling debug-related options"
+
+    set fd [open [file join $pkgconf::build_tree "pkgconf" "infra.h"] "r"]
+    set data [read $fd]
+    close $fd
+
+    if { [regexp -- {undef[ ]+CYGPKG_INFRA_DEBUG} $data] } {
+	regsub -- {undef[ ]+CYGPKG_INFRA_DEBUG} $data {define CYGPKG_INFRA_DEBUG} data
+	set fd [open [file join $pkgconf::build_tree "pkgconf" "infra.h"] "w"]
+	puts $fd $data
+	close $fd
+    }
+}
+
+# Or the inverse.
+proc pkgconf::disable_package_debug_options { } {
+
+    report "Disabling debug-related options"
+
+    set fd [open [file join $pkgconf::build_tree "pkgconf" "infra.h"] "r"]
+    set data [read $fd]
+    close $fd
+
+    if { [regexp -- {define[ ]+CYGPKG_INFRA_DEBUG} $data] } {
+	regsub -- {define[ ]+CYGPKG_INFRA_DEBUG} $data {undef CYGPKG_INFRA_DEBUG} data
+	set fd [open [file join $pkgconf::build_tree "pkgconf" "infra.h"] "w"]
+	puts $fd $data
+	close $fd
     }
 }
 
@@ -5326,6 +5443,12 @@ proc pkgconf::produce_misc_files { } {
 	puts $file "COMPONENT_REPOSITORY\t\t:= [get_pathname_for_make $pkgconf::component_repository]"
 	puts $file "BUILD_TREE\t\t\t:= [get_pathname_for_make $pkgconf::build_tree]"
 
+	# Provide details of target etc. so that packages can specify
+	# per-target files.
+	puts $file "TARGET\t\t\t\t:= $pkgconf::config_data(target)"
+	puts $file "PLATFORM\t\t\t:= $pkgconf::config_data(platform)"
+	puts $file "STARTUP\t\t\t\t:= $pkgconf::config_data(startup)"
+	
 	# The prefix (i.e. install directory) should default to somewhere
 	# relative to the build tree.
 	set prefix $pkgconf::config_data(prefix)
@@ -5433,9 +5556,45 @@ endif"
 	    }
 	}
 
+	# Additions for the MLT
+	puts $file "\n"
+	puts $file "#define CYGHWR_MEMORY_LAYOUT_LDI <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].ldi>"
+	puts $file "#define CYGHWR_MEMORY_LAYOUT_H   <pkgconf/mlt_[set pkgconf::config_data(target)]_[set pkgconf::config_data(platform)]_[set pkgconf::config_data(startup)].h>"
+	
 	puts $file "\
 \n#endif  /* CYGONCE_PKGCONF_SYSTEM_H */ 		
 /* EOF $filename */"
+	close $file
+    }
+
+    # 'system.mak' has the same basic information, but in a form
+    # that can be used by makefile fragments.
+
+    if { $config_changed != 0 } {
+
+	set filename [file join "pkgconf" "system.mak"]
+	set file [open [file join $pkgconf::build_tree $filename] "w"]
+	puts $file \
+"#
+# File $filename
+#
+# This file is generated automatically by the pkgconf program.
+# It should not be edited. Any changes to this file may be
+# overwritten by pkgconf.
+#
+"
+        puts $file "CYG_HAL_[string toupper $pkgconf::config_data(target)]=1"
+        puts $file \
+	    "CYG_HAL_[string toupper $pkgconf::config_data(target)]_[string toupper $pkgconf::config_data(platform)]=1"
+        puts $file "CYG_HAL_STARTUP_[string toupper $pkgconf::config_data(startup)]=1"
+        puts $file ""
+        set current_packages [get_current_packages]
+        foreach pkg $pkgconf::known_packages {
+	    if { [lsearch -exact $current_packages $pkg] != -1 } {
+		puts $file "$pkg=1"
+	    }
+	}
+	puts $file "\n# /* EOF $filename */"
 	close $file
     }
 
@@ -5497,19 +5656,31 @@ proc pkgconf::produce_makefile { } {
     puts $makefile \
 "
 include pkgconf/pkgconf.mak
-.PHONY: default build clean tests headers"
+.PHONY: default build clean tests headers
+.PRECIOUS: $(PREFIX)/lib/libextras.a"
 
-    puts $makefile "\nbuild: headers"
+    puts $makefile "\nbuild: $(PREFIX)/lib/extras.o"
+    puts $makefile "\t@echo Build finished."
+
+    puts $makefile "\n$(PREFIX)/lib/extras.o: $(PREFIX)/lib/libextras.a"
+    puts $makefile "\t$(LD) --whole-archive $(PREFIX)/lib/libextras.a -r -o $(PREFIX)/lib/extras.o"
+    
+    puts $makefile "\n$(PREFIX)/lib/libextras.a: headers"
     foreach src_dir $pkgconf::src_dirs {
 	puts $makefile "\t\$(MAKE) -C $src_dir"
     }
-    puts $makefile "\t@echo Build finished."
     
     puts $makefile "\ntests: build"
     foreach tests_dir $pkgconf::tests_dirs {
 	puts $makefile "\t\$(MAKE) -C $tests_dir"
     }
     puts $makefile "\t@echo Tests build finished."
+    
+    puts $makefile "\nmisc: build"
+    foreach misc_dir $pkgconf::misc_dirs {
+	puts $makefile "\t\$(MAKE) -C $misc_dir"
+    }
+    puts $makefile "\t@echo Misc build finished."
     
     puts $makefile \
 "\nlibobjs := \$(wildcard \$(PREFIX)/lib/*)
@@ -5520,6 +5691,9 @@ endif
 \tmake -C pkgconf clean"
     foreach src_dir $pkgconf::src_dirs {
 	puts $makefile "\t\$(MAKE) -C $src_dir clean"
+    }
+    foreach misc_dir $pkgconf::misc_dirs {
+	puts $makefile "\t\$(MAKE) -C $misc_dir clean"
     }
     foreach tests_dir $pkgconf::tests_dirs {
 	puts $makefile "\t\$(MAKE) -C $tests_dir clean"
@@ -5574,6 +5748,7 @@ proc pkgconf::produce_build_tree { } {
     # tree, and related variables.
     set pkgconf::inc_dirs               ""
     set pkgconf::src_dirs               ""
+    set pkgconf::misc_dirs              ""
     set pkgconf::tests_dirs             ""
     set pkgconf::install_inc_dirs       "pkgconf"
     set pkgconf::install_inc_files      ""
@@ -5603,6 +5778,14 @@ proc pkgconf::produce_build_tree { } {
 	    process_package $pkg $dirname
 	}
 
+	# If this is a debug build (according to the --debug command line
+	# option), update the appropriate packages.
+	if {$pkgconf::debug_arg != 0} {
+	    enable_package_debug_options
+	} elseif {$pkgconf::nodebug_arg != 0} {
+	    disable_package_debug_options
+	}
+	
 	# The install tree must exist before the misc files are generated.
 	# See get_pathname_for_make for details.
 	produce_install_tree

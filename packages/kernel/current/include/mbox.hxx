@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mbox.hxx
+//      mbox.hxx
 //
-//	Plain (void *) Mbox (Message Box/Mailbox) class declarations
+//      Plain (void *) Mbox (Message Box/Mailbox) class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-02-10
-// Purpose:	Define Mbox class interfaces
-// Description:	The classes defined here provide the APIs for mboxes.
-// Usage:	#include <cyg/kernel/mbox.hxx>
-//		
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-02-10
+// Purpose:     Define Mbox class interfaces
+// Description: The classes defined here provide the APIs for mboxes.
+// Usage:       #include <cyg/kernel/mbox.hxx>
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -83,22 +83,22 @@ public:
     Cyg_Mbox();                         // Constructor
     ~Cyg_Mbox();                        // Destructor
         
-    void *	get();                  // get an item; wait if none
+    void *      get();                  // get an item; wait if none
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
-    void *	get( cyg_tick_count timeout );
+    void *      get( cyg_tick_count timeout );
 #endif
-    void *	tryget();               // just one attempt
+    void *      tryget();               // just one attempt
 
-    void * 	peek_item();            // Get next item to be returned
+    void *      peek_item();            // Get next item to be returned
                                         // without removing it
 
 #ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT   // then we support it too
-    cyg_bool	put( void *item );      // put an item; wait if full
+    cyg_bool    put( void *item );      // put an item; wait if full
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
-    cyg_bool	put( void *item, cyg_tick_count timeout );
+    cyg_bool    put( void *item, cyg_tick_count timeout );
 #endif
 #endif
-    cyg_bool	tryput( void *item );   // fails if Q full
+    cyg_bool    tryput( void *item );   // fails if Q full
 
     inline
     cyg_count32 peek()                  // Get current count value
@@ -107,12 +107,12 @@ public:
     }
 
     inline
-    cyg_bool	waiting_to_get()        // Any threads waiting to get?
+    cyg_bool    waiting_to_get()        // Any threads waiting to get?
     {
         return m.waiting_to_get();
     }
     inline
-    cyg_bool	waiting_to_put()        // Any threads waiting to put?
+    cyg_bool    waiting_to_put()        // Any threads waiting to put?
     {
         return m.waiting_to_put();
     }

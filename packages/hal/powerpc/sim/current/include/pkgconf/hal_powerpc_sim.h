@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -50,8 +50,6 @@
        type     radio
        parent   CYGPKG_HAL_POWERPC
        platform sim
-       requires !CYGPKG_DEVICES_GDB
-       requires !CYGPKG_DEVICES_SERIAL_RS232_COMMON
        description "
            The minimal simulator HAL package is provided for use when
            only a simple simulation of the processor architecture is

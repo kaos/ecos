@@ -24,7 +24,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -39,7 +39,7 @@ VPATH        := . $(COMPONENT_REPOSITORY)/$($(PACKAGE)_DIR)/$(WHEREAMI)
 
 # The object files and the dependency files can be deduced mainly
 # from the list of tests.
-STAMPS       := $(foreach target,$(TESTS),$(target).stamp)
+STAMPS       := $(foreach target,$(PROGS),$(target).stamp)
 OBJECTS      := $(STAMPS:.stamp=.o)
 OBJECTS	     := $(foreach obj,$(OBJECTS),$(dir $(obj))$(PACKAGE)_$(notdir $(obj)))
 DEPS	     := $(OBJECTS:.o=.d) $(OTHER_DEPS)	     
@@ -62,12 +62,12 @@ DEPS	     := $(OBJECTS:.o=.d) $(OTHER_DEPS)
 INCLUDE_PATH := $(INCLUDE_PATH) -I$(PREFIX)/include $(foreach dir,$(VPATH),-I$(dir))
 
 # These rules cause mostof the work to be done.
-build: $(STAMPS) $(OTHER_TESTS)
+build: $(STAMPS) $(OTHER_PROGS)
 ifneq ($(strip $(DEPS)),)
 	@$(CAT) $(DEPS) > makefile.deps
 endif
 
-clean: $(foreach test,$(TESTS),$(test).clean) $(OTHER_CLEAN)
+clean: $(foreach test,$(PROGS),$(test).clean) $(OTHER_CLEAN)
 	@$(RM) makefile.deps
 ifneq ($(strip $(DEPS)),)
 	@$(RM) $(DEPS)

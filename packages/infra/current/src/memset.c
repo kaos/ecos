@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-06-04
 // Purpose:     This file implements the ANSI memset() function
 // Description: This file implements the memset() function defined in ANSI para
@@ -81,8 +81,8 @@ _memset( void *s, int c, size_t n )
 
     if (n != 0)
     {
-        CYG_CHECK_DATA_PTR( s, "s is not a valid pointer!" );
-        CYG_CHECK_DATA_PTR( s+n-1, "s+n-1 is not a valid address!" );
+        CYG_CHECK_DATA_PTR( char_ptr, "s is not a valid pointer!" );
+        CYG_CHECK_DATA_PTR( (&char_ptr[n-1]), "s+n-1 is not a valid address!" );
     }
 #endif
 

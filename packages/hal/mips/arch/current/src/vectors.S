@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -69,7 +69,30 @@
 #elif defined(CYG_HAL_STARTUP_ROM)
 # define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
 #endif
-							
+
+## ROM timing characteristics dependent on the clock speed.
+		
+#if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
+#define ROM_CCR0_INIT	0x00000420
+#define DRAM_DREFC_INIT	0x00000180
+#elif (CYGHWR_HAL_MIPS_CPU_FREQ == 66)
+#define ROM_CCR0_INIT	0x00000520
+#define DRAM_DREFC_INIT	0x00000200
+#else
+#error Unsupported clock frequency		
+#endif
+
+## DRAM configuration dependent on the DRAM device used.
+      ## for 16MByte (4MBit (x4bit) x 8)           0x08024030
+      ## for 4MByte (1MBit (x4bit) x 8)            0x08013020
+      ## for 8MByte (1MBit (x4bit) x 8 x 2 banks)  0x08013020
+
+#if defined CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT
+#define DRAM_CONFIG_INIT CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT
+#else
+#define DRAM_CONFIG_INIT 0x08024030
+#endif
+
 ##-----------------------------------------------------------------------------
 ## Hardware supplied vectors
 	
@@ -152,31 +175,77 @@ _start:
 	# These mappings need to be set up before we
 	# can use the stack and make calls to other
 	# functions
-		
+
+	# If we have been started from Cygmon, it should have
+	# already done a lot of this, but it should do no harm
+	# to reinitialize the following registers.
+			
 	# SCS0,1 base addr of ISA & PCI
 	la	a0,0xffffe010
 	la	a1,0x20201410
 	sw	a1,0(a0)	
 
 	la	a0,0xffffe014
-	la	a1,0x0000fcfc
+	la	a1,0xfffffcfc
 	sw	a1,0(a0)	
 
 	# ROM configuration
+	.set	at
 	la	a0,0xffff9000
-	la	a1,0x1fc00400
+	lw	a1,0(a0)
+	and	a1,a1,0xffff0004	# keep hardware defaults
+	or	a1,ROM_CCR0_INIT	# install our values
 	sw	a1,0(a0)	
+	.set	noat
 
 	# SRAM config
 	la	a0,0xffff9100
 	la	a1,0x00000000
 	sw	a1,0(a0)	
 
+	# ISA bus setup
+	la	a0,0xb2100000
+	la	a1,4
+	sb	a1,0(a0)	
+	
+	# Clear IMR (to cope with JMON)
+	la	a0,0xffffc004
+	la	a1,0x00000000
+	sw	a1,0(a0)
+
+#if defined(CYG_HAL_STARTUP_ROM)
+
+	# Only do this in ROM configurations.
+	
+	# DRAM Configuration
+	la	a0, 0xffff8000
+	la	a1, DRAM_CONFIG_INIT
+	sw	a1, 0(a0)
+	
+	# DBMR0
+	la	a0, 0xffff8004
+	la	a1, 0x00000000	
+	sw	a1, 0(a0)
+	
+	# DWR0
+	la	a0, 0xffff8008
+	la	a1, 0x00000000
+	sw	a1, 0(a0)
+	
+        # DREFC - Depends on clock requency
+	la	a0, 0xffff8800
+	la	a1, DRAM_DREFC_INIT
+	sw	a1, 0(a0)
+
+#endif
+
+	# Set up PIO0 for output
 	la	a0,0xfffff500
 	la	a1,0xff
 	sb	a1,0(a0)
 	la	a1,0
 	sb	a1,4(a0)	
+				
 #endif	
 	
 	# Load Global Pointer register.
@@ -263,7 +332,21 @@ _start:
 
 	.extern cyg_hal_invoke_constructors
 	jal     cyg_hal_invoke_constructors
+	nop
+
+	.extern cyg_hal_enable_caches
+	jal     cyg_hal_enable_caches
+	nop
+
+	.extern cyg_hal_debug_init
+	jal     cyg_hal_debug_init
+	nop
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        .extern initialize_stub
+        jal     initialize_stub
         nop
+#endif
 
 	# Call cyg_start	
 	
@@ -475,8 +558,8 @@ __default_interrupt_vsr:
 	la	gp,_gp
 	
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT			
-	.extern	_18Cyg_Scheduler_Base$sched_lock
-	la	v0,_18Cyg_Scheduler_Base$sched_lock
+	.extern	cyg_scheduler_sched_lock
+	la	v0,cyg_scheduler_sched_lock
 	lw	a0,0(v0)
 	addi	a0,a0,1
 	sw	a0,0(v0)
@@ -546,7 +629,9 @@ __default_interrupt_vsr:
 	lw	a1,0(a1)			# Data pointer
 
 	move	a0,s2				# pass interrupt number
-	
+
+	move	a2,s0				# arg3 = saved register dump
+		
 	jalr	t2				# call ISR via t2
 	nop					# (delay slot)
 
@@ -687,16 +772,6 @@ __interrupt_stack_base:
 __interrupt_stack:
 
 	.long	0,0,0,0,0,0,0,0	
-
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT	
-	
-	.globl	idle_thread_stack
-idle_thread_stack:
-	.rept	CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE
-	.byte	0
-	.endr
-	
-#endif
 	
 ##-----------------------------------------------------------------------------
 ## VSR table.

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//	common/except.cxx
+//      common/except.cxx
 //
-//	Exception handling implementation
+//      Exception handling implementation
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,19 +22,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-04-09
-// Purpose:	Exception handling implementation
-// Description:	This file contains the code that registers and delivers
-//              exceptions.
+// Author(s):    nickg
+// Contributors: nickg, jlarmour
+// Date:         1999-02-16
+// Purpose:      Exception handling implementation
+// Description:  This file contains the code that registers and delivers
+//               exceptions.
 //
 //####DESCRIPTIONEND####
 //
@@ -62,13 +62,18 @@
 // Null exception handler. This is used to capture exceptions that are
 // not caught by user supplied handlers.
 
-void cyg_null_exception_handler(
+void
+cyg_null_exception_handler(
     CYG_ADDRWORD        data,                   // user supplied data
     cyg_code            exception_number,       // exception being raised
     CYG_ADDRWORD        exception_info          // any exception specific info
     )
 {
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG3("data=%08x, exception=%d, info=%08x", data,
+                        exception_number, exception_info);
     CYG_TRACE1( 1, "Uncaught exception: %d", exception_number);
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
@@ -76,9 +81,10 @@ void cyg_null_exception_handler(
 
 Cyg_Exception_Control::Cyg_Exception_Control()
 {
+    CYG_REPORT_FUNCTION();
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
 
-    for( int i = 0; i < CYG_EXCEPTION_COUNT ; i++ )
+    for( int i = 0; i < CYGNUM_HAL_EXCEPTION_COUNT ; i++ )
         exception_handler[i] = cyg_null_exception_handler,
             exception_data[i] = 0;
 #else
@@ -87,7 +93,7 @@ Cyg_Exception_Control::Cyg_Exception_Control()
     exception_data = 0;
     
 #endif
-
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
@@ -97,7 +103,8 @@ Cyg_Exception_Control::Cyg_Exception_Control()
 // also returns the old values of the exception handler and data to allow
 // chaining to be implemented.
 
-void Cyg_Exception_Control::register_exception(
+void
+Cyg_Exception_Control::register_exception(
     cyg_code                exception_number,       // exception number
     cyg_exception_handler   handler,                // handler function
     CYG_ADDRWORD            data,                   // data argument
@@ -106,10 +113,14 @@ void Cyg_Exception_Control::register_exception(
     )
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG5("exception=%d, handler func=%08x, data=%08x, "
+                        "space for old handler=%08x,space for old data=%08x",
+                        exception_number, handler, data, old_handler,
+                        old_data);
 
-    CYG_ASSERT( exception_number <= CYG_EXCEPTION_MAX,
+    CYG_ASSERT( exception_number <= CYGNUM_HAL_EXCEPTION_MAX,
                 "Out of range exception number");
-    CYG_ASSERT( exception_number >= CYG_EXCEPTION_MIN,
+    CYG_ASSERT( exception_number >= CYGNUM_HAL_EXCEPTION_MIN,
                 "Out of range exception number");
 
 
@@ -119,11 +130,13 @@ void Cyg_Exception_Control::register_exception(
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
 
     if( old_handler != NULL )
-        *old_handler = exception_handler[exception_number];
+        *old_handler = exception_handler[exception_number -
+                                        CYGNUM_HAL_EXCEPTION_MIN];
     if( old_data != NULL )
-        *old_data = exception_data[exception_number];
-    exception_handler[exception_number] = handler;
-    exception_data[exception_number] = data;
+        *old_data = exception_data[exception_number - 
+                                  CYGNUM_HAL_EXCEPTION_MIN];
+    exception_handler[exception_number - CYGNUM_HAL_EXCEPTION_MIN] = handler;
+    exception_data[exception_number - CYGNUM_HAL_EXCEPTION_MIN] = data;
     
 #else
     
@@ -135,28 +148,31 @@ void Cyg_Exception_Control::register_exception(
     exception_data = data;
     
 #endif
-    
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Exception deregistation. Revert the handler for the exception number
 // to the default.
 
-void Cyg_Exception_Control::deregister_exception(
+void
+Cyg_Exception_Control::deregister_exception(
     cyg_code                exception_number        // exception number
     )
 {
     CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("exception number=%d", exception_number);
 
-    CYG_ASSERT( exception_number <= CYG_EXCEPTION_MAX,
+    CYG_ASSERT( exception_number <= CYGNUM_HAL_EXCEPTION_MAX,
                 "Out of range exception number");
-    CYG_ASSERT( exception_number >= CYG_EXCEPTION_MIN,
+    CYG_ASSERT( exception_number >= CYGNUM_HAL_EXCEPTION_MIN,
                 "Out of range exception number");
 
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
 
-    exception_handler[exception_number] = cyg_null_exception_handler;
-    exception_data[exception_number] = 0;
+    exception_handler[exception_number - CYGNUM_HAL_EXCEPTION_MIN] = 
+        cyg_null_exception_handler;
+    exception_data[exception_number - CYGNUM_HAL_EXCEPTION_MIN] = 0;
     
 #else
     
@@ -164,29 +180,35 @@ void Cyg_Exception_Control::deregister_exception(
     exception_data = 0;
     
 #endif
-    
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Exception delivery. Call the appropriate exception handler.
 
-void Cyg_Exception_Control::deliver_exception(
+void
+Cyg_Exception_Control::deliver_exception(
     cyg_code            exception_number,       // exception being raised
     CYG_ADDRWORD        exception_info          // exception specific info
     )
 {
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG2("exception number=%d, exception info=%08x",
+                        exception_number, exception_info);
+
     cyg_exception_handler *handler = NULL;
     CYG_ADDRWORD data = 0;
 
-    CYG_ASSERT( exception_number <= CYG_EXCEPTION_MAX,
+    CYG_ASSERT( exception_number <= CYGNUM_HAL_EXCEPTION_MAX,
                 "Out of range exception number");
-    CYG_ASSERT( exception_number >= CYG_EXCEPTION_MIN,
+    CYG_ASSERT( exception_number >= CYGNUM_HAL_EXCEPTION_MIN,
                 "Out of range exception number");
     
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
 
-    handler = exception_handler[exception_number];
-    data = exception_data[exception_number];
+    handler = exception_handler[exception_number - CYGNUM_HAL_EXCEPTION_MIN];
+    data = exception_data[exception_number - CYGNUM_HAL_EXCEPTION_MIN];
     
 #else
     
@@ -200,16 +222,20 @@ void Cyg_Exception_Control::deliver_exception(
     // just go ahead and call it.
     
     handler( data, exception_number, exception_info );
-    
+
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
 // Exception delivery function called from the HAL as a result of a
 // hardware exception being raised.
 
-externC void deliver_exception( CYG_WORD code, CYG_ADDRWORD data )
+externC void
+cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data )
 {
-    Cyg_Thread::self()->deliver_exception( code, data );
+    CYG_REPORT_FUNCTION();
+    Cyg_Thread::self()->deliver_exception( (cyg_code)code, data );
+    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------
@@ -218,13 +244,14 @@ externC void deliver_exception( CYG_WORD code, CYG_ADDRWORD data )
 
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_GLOBAL
 
-Cyg_Exception_Control Cyg_Thread::exception_control;
+Cyg_Exception_Control Cyg_Thread::exception_control 
+                                              CYG_INIT_PRIORITY(INTERRUPTS);
 
 #endif
 
 // -------------------------------------------------------------------------
 
-#endif
+#endif // ifdef CYGPKG_KERNEL_EXCEPTIONS
 
 // -------------------------------------------------------------------------
 // EOF common/except.cxx

@@ -3,9 +3,9 @@
 
 //=============================================================================
 //
-//	basetype.h
+//      basetype.h
 //
-//	Standard types for this architecture.
+//      Standard types for this architecture.
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -25,7 +25,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -33,11 +33,11 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:  nickg
+// Contributors:nickg
 // Date:        1997-09-08
 // Purpose:     Define architecture base types.
 // Usage:       Included by "cyg_type.h", do not use directly
-//		
+//              
 //####DESCRIPTIONEND####
 //
 //=============================================================================
@@ -45,7 +45,14 @@
 //-----------------------------------------------------------------------------
 // Characterize the architecture
 
-#define CYG_BYTEORDER           CYG_LSBFIRST    // Big endian
+#define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
+
+//-----------------------------------------------------------------------------
+// MN10300 usually uses labels with underscores. Some labels generated
+// by the linker also have underscores, so there's no need to add one
+// when accessing those labels from C code.
+
+#define CYG_LABEL_NAME(_name_) _name_
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

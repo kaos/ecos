@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
+// Date:          1999-02-12
 // Description:   Contains testcode for C library abs() function
 //
 //
@@ -58,27 +58,20 @@
 externC void
 cyg_package_start( void )
 {
-#ifdef CYGPKG_LIBC
     cyg_iso_c_start();
-#else
-    (void)main(0, NULL);
-#endif
 } // cyg_package_start()
 
 
 int
 main( int argc, char *argv[] )
 {
-#ifdef CYGPKG_LIBC
     int x;
-#endif
 
     CYG_TEST_INIT();
 
     CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C "
                   "library abs() function");
 
-#ifdef CYGPKG_LIBC
     // Check 1
     x = 5;
     CYG_TEST_PASS_FAIL( abs(x) == 5, "abs(5)");
@@ -106,10 +99,6 @@ main( int argc, char *argv[] )
     // Check 7
     x = -INT_MAX;
     CYG_TEST_PASS_FAIL( abs(x) == INT_MAX, "abs(-INT_MAX)");
-
-#else // ifndef CYGPKG_LIBC
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
-#endif // ifndef CYGPKG_LIBC
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "
                     "library abs() function");

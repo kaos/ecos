@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,11 +30,13 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm
-// Date:          1998-06-15
+// Contributors:  dsm, jlarmour
+// Date:          1999-02-16
 // Description:   Test basic exception functionality
 //####DESCRIPTIONEND####
 */
+
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 #include <cyg/kernel/kapi.h>
 
@@ -49,7 +51,7 @@
 #include "testaux.h"
 
 #define NTHREADS 1
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -80,7 +82,7 @@ static void handler1(cyg_addrword_t data, cyg_code_t number, cyg_addrword_t info
     CYG_TEST_CHECK((cyg_addrword_t)&d0 == data, "handler given wrong data");
 
 #ifdef CYGSEM_KERNEL_EXCEPTIONS_DECODE
-    CYG_TEST_CHECK(number == CYG_EXCEPTION_MAX, "handler given wrong number");
+    CYG_TEST_CHECK(number == CYGNUM_HAL_EXCEPTION_MAX, "handler given wrong number");
 #else
     CYG_UNUSED_PARAM(cyg_code_t, number);
 #endif
@@ -113,14 +115,14 @@ static void entry0( CYG_ADDRWORD data )
     CYG_UNUSED_PARAM(CYG_ADDRESS, data);
 
     cyg_exception_set_handler(
-        CYG_EXCEPTION_MAX, 
+        CYGNUM_HAL_EXCEPTION_MAX, 
         &handler1,
         (cyg_addrword_t)&d0,
         &old_handler,
         &old_data);
 
     cyg_exception_set_handler(
-        CYG_EXCEPTION_MAX, 
+        CYGNUM_HAL_EXCEPTION_MAX, 
         &handler1,
         (cyg_addrword_t)&d0,
         &old_handler1,
@@ -133,15 +135,20 @@ static void entry0( CYG_ADDRWORD data )
 
     cyg_exception_call_handler(
         cyg_thread_self(),
-        CYG_EXCEPTION_MAX,
+        CYGNUM_HAL_EXCEPTION_MAX,
         (cyg_addrword_t)99);
 
     CYG_TEST_INFO("handler 1 returned");
 
-    cyg_exception_clear_handler(CYG_EXCEPTION_MAX);
-    cyg_exception_clear_handler(CYG_EXCEPTION_MAX);
+    cyg_exception_clear_handler(CYGNUM_HAL_EXCEPTION_MAX);
+    cyg_exception_clear_handler(CYGNUM_HAL_EXCEPTION_MAX);
 
-    for(n = CYG_EXCEPTION_MIN; n <= CYG_EXCEPTION_MAX; n++) {
+#ifdef CYGPKG_HAL_I386_LINUX
+    // We can't catch segmentation violation exceptions on Linux.
+    CYG_TEST_PASS_FINISH("Except 1 OK");
+#endif
+
+    for(n = CYGNUM_HAL_EXCEPTION_MIN; n <= CYGNUM_HAL_EXCEPTION_MAX; n++) {
         cyg_exception_set_handler(
             n,
             handler0,
@@ -150,7 +157,7 @@ static void entry0( CYG_ADDRWORD data )
             &old_data1);
     }
 
-    CYG_TEST_INFO("Attempting to provoke exception");
+    CYG_TEST_PASS("Attempting to provoke exception");
 
     cause_exception();
 
@@ -165,16 +172,27 @@ extern void __default_exception_vsr(void);
 
 void except0_main( void )
 {
+    // Use CYG_TEST_GDBCMD _before_ CYG_TEST_INIT()
+    CYG_TEST_GDBCMD("handle SIGBUS nostop");
+    CYG_TEST_GDBCMD("handle SIGSEGV nostop");
+
     CYG_TEST_INIT();
 
-#ifdef CYG_HAL_TX39_JMR3904
-
-    cyg_interrupt_set_vsr( CYG_VECTOR_LOAD_ADDRESS, __default_exception_vsr );
-    
+#ifdef HAL_VSR_SET_TO_ECOS_HANDLER
+    // Reclaim the VSR off CygMon possibly
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_DATA_ACCESS, NULL );
 #endif
-   
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION, NULL );
+#endif
+#endif
+
     cyg_thread_create(4, entry0 , (cyg_addrword_t)0, "kexcept1",
-    	(void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_scheduler_start();
@@ -200,7 +218,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH( "N/A: " N_A_MSG);
+    CYG_TEST_NA( N_A_MSG);
 }
 #endif // N_A_MSG
 

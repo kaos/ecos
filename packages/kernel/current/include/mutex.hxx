@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	mutex.hxx
+//      mutex.hxx
 //
-//	Mutex class declarations
+//      Mutex class declarations
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,21 +25,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define Mutex class interfaces
-// Description:	The classes defined here provide the APIs for mutexes
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define Mutex class interfaces
+// Description: The classes defined here provide the APIs for mutexes
 //              and condition variables.
 // Usage:       #include <cyg/kernel/mutex.hxx>
-//		
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -76,6 +76,8 @@ public:
     cyg_bool    trylock();              // try to lock and return success
 
     void        unlock();               // unlock
+
+    void        release();              // release all waiting threads
     
 };
 

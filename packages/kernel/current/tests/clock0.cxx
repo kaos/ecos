@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -131,7 +131,7 @@ void clock0_main(void)
     CHECK( 0xfffffffc == counter0.current_value_lo() );
     CHECK( 0 == counter0.current_value_hi() );
 
-    counter0.tick( 0x13 );	// Overflows 32 bits
+    counter0.tick( 0x13 );      // Overflows 32 bits
     
     CHECK( 0x10000000fULL == counter0.current_value() );
     CHECK( 0xf == counter0.current_value_lo() );
@@ -184,47 +184,47 @@ void clock0_main(void)
     alarm2.initialize(21,2);
     CHECK( 0x00 == called );
 
-    counter0.tick();		// 12 a0
+    counter0.tick();            // 12 a0
     CHECK( 0x01 == called );
 
     alarm1.initialize(13,0);
-    counter0.tick();		// 13 a1
+    counter0.tick();            // 13 a1
     CHECK( 0x03 == called );
 
     alarm1.initialize(17,0);
-    counter0.tick();		// 14
+    counter0.tick();            // 14
     CHECK( 0x03 == called );
 
-    counter0.tick();		// 15 a0
+    counter0.tick();            // 15 a0
     CHECK( 0x02 == called );
 
-    counter0.tick(2);		// 17 a1
+    counter0.tick(2);           // 17 a1
     CHECK( 0x00 == called );
 
-    counter0.tick();		// 18 a0
+    counter0.tick();            // 18 a0
     CHECK( 0x01 == called );
 
-    counter0.tick(3);		// 21 a0 a2
+    counter0.tick(3);           // 21 a0 a2
     CHECK( 0x14 == called );
 
-    counter0.tick(2);		// 23 a2
+    counter0.tick(2);           // 23 a2
     CHECK( 0x00 == called );
     
     alarm2.disable();  
 
-    counter0.tick(2);		// 25 a0(24)
+    counter0.tick(2);           // 25 a0(24)
     CHECK( 0x01 == called );
     
     alarm2.enable();            // a2 (enabled at 25)
     CHECK( 0x15 == called );
 
-    counter0.tick();		// 26
+    counter0.tick();            // 26
     CHECK( 0x15 == called );
     
-    counter0.tick(2);		// 28 a0(27) a2(27)
+    counter0.tick(2);           // 28 a0(27) a2(27)
     CHECK( 0x00 == called );
     
-    counter0.tick(3);		// 31 a0(30) a2(29 31)
+    counter0.tick(3);           // 31 a0(30) a2(29 31)
     CHECK( 0x01 == called );
 
     Cyg_Clock::cyg_resolution res0;
@@ -265,7 +265,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH( "N/A: Kernel real-time clock disabled");
+    CYG_TEST_NA( "Kernel real-time clock disabled");
 }
 
 #endif // def CYGVAR_KERNEL_COUNTERS_CLOCK

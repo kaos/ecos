@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	errors.h
+//      errors.h
 //
-//	Error values from kernel
+//      Error values from kernel
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,18 +25,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-10-07
-// Purpose:	Define error codes
-// Description:	Error codes returned by various bits of the kernel.
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-10-07
+// Purpose:     Define error codes
+// Description: Error codes returned by various bits of the kernel.
 // Usage:       #include <cyg/kernel/errors.h>
 //
 //####DESCRIPTIONEND####

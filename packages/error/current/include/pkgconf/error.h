@@ -24,15 +24,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-06-11
 // Purpose:     To configure the Common error package
 // Description: Does any necessary configuration of the Common error package
@@ -65,6 +65,7 @@
                           POSIX style naming e.g. EINVAL etc. This package
                           also provides the standard strerror() function to
                           convert error codes to textual representation."
+            doc           ref/ecos-ref/p-cygpkg-error.html
             type         bool
         }
 

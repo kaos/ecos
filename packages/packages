@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -123,11 +123,39 @@ package CYGPKG_ERROR {
 	include_dir	cyg/error
 }
 
-package CYGPKG_DEVICES	{
-	alias		{ "Common Device Code" devices devices_common }
-	directory	devs/common
-	default_value	1
-	include_dir	cyg/devs/common
+package CYGPKG_HAL_ARM {
+	alias		{ "ARM common HAL" hal_arm arm_hal arm_arch_hal }
+	directory	hal/arm/arch
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_ARM_PID {
+	alias		{ "Arm Development board support" hal_arm_pid arm_pid_hal }
+	directory	hal/arm/pid
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_ARM_AEB {
+	alias		{ "Arm evaulation board (AEB-1) support" hal_arm_aeb arm_aeb_hal }
+	directory	hal/arm/aeb
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_I386 {
+	alias		{ "i386 common HAL" hal_i386 i386_hal i386_arch_hal }
+	directory	hal/i386/arch
+	include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_I386_LINUX {
+	alias		{ "Linux Synthetic target support" hal_i386_linux }
+	directory	hal/i386/linux
+	include_dir	cyg/hal
+	hardware
 }
 
 package CYGPKG_HAL_MN10300 {
@@ -147,6 +175,55 @@ package CYGPKG_HAL_MN10300_STDEVAL1 {
 package CYGPKG_HAL_MN10300_SIM {
 	alias		{ "MN10300 simulator support" hal_mn10300_sim mn10300_sim_hal }
 	directory	hal/mn10300/sim
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC {
+	alias		{ "PowerPC common HAL" hal_powerpc powerpc_hal powerpc_arch_hal }
+	directory	hal/powerpc/arch
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC_COGENT {
+	alias		{ "PowerPC Cogent board support" hal_powerpc_cogent powerpc_cogent_hal }
+	directory	hal/powerpc/cogent
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC_FADS {
+	alias		{ "PowerPC Motorola FADS board support" hal_powerpc_fads powerpc_fads_hal }
+	directory	hal/powerpc/fads
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_POWERPC_SIM {
+	alias		{ "PowerPC simulator support" hal_powerpc_sim powerpc_sim_hal }
+	directory	hal/powerpc/sim
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_SPARCLITE {
+	alias		{ "SPARClite common HAL" hal_sparclite sparclite_hal sparclite_arch_hal }
+	directory	hal/sparclite/arch
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_SPARCLITE_SLEB {
+	alias		{ "SPARClite Evaluation Board support" hal_sparclite_sleb sparclite_sleb_hal }
+	directory	hal/sparclite/sleb
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_SPARCLITE_SIM {
+	alias		{ "SPARClite ERC32 simulator support" hal_sparclite_sim sparclite_sim_hal }
+	directory	hal/sparclite/sim
         include_dir	cyg/hal
 	hardware
 }
@@ -172,71 +249,31 @@ package CYGPKG_HAL_TX39_SIM {
 	hardware
 }
 
-package CYGPKG_HAL_POWERPC {
-	alias		{ "PowerPC common HAL" hal_powerpc powerpc_hal powerpc_arch_hal }
-	directory	hal/powerpc/arch
-        include_dir	cyg/hal
-	hardware
-}
-
-package CYGPKG_HAL_POWERPC_COGENT {
-	alias		{ "PowerPC Cogent board support" hal_powerpc_cogent powerpc_cogent_hal }
-	directory	hal/powerpc/cogent
-        include_dir	cyg/hal
-	hardware
-}
-
-package CYGPKG_HAL_POWERPC_SIM {
-	alias		{ "PowerPC simulator support" hal_powerpc_sim powerpc_sim_hal }
-	directory	hal/powerpc/sim
-        include_dir	cyg/hal
-	hardware
-}
-
-
-package CYGPKG_DEVICES_GDB {
-	alias		{ "GDB Pseudo Device" devices_gdb device_gdb }
-	directory	devs/gdb
+package CYGPKG_IO	{
+	alias		{ "Common I/O Code" io io_common }
+	directory	io/common
 	default_value	1
-	include_dir	cyg/devs/gdb
-	hardware
+	include_dir	cyg/io
 }
 
-package CYGPKG_DEVICES_SERIAL_RS232_COMMON {
-	alias		{ "Common Serial Device Code" devices_serial_rs232_common }
-	directory	devs/serial/rs232/common
-	include_dir	cyg/devs/serial/rs232/common
-	hardware
+
+package CYGPKG_IO_SERIAL	{
+	alias		{ "Serial Device Drivers" io_serial io_serial_common }
+	directory	io/serial
+	default_value	1
+	include_dir	cyg/io
 }
 
 package CYGPKG_DEVICES_WALLCLOCK {
 	alias		{ "Wallclock Device Code" wallclock devices_wallclock device_wallclock }
 	directory	devs/wallclock
+	default_value	1
 	include_dir	cyg/devs
-	hardware
 }
 
 package CYGPKG_DEVICES_WATCHDOG {
 	alias		{ "Watchdog Device Code" watchdog devices_watchdog device_watchdog }
 	directory	devs/watchdog
+	default_value	1
 	include_dir	cyg/devs
-	hardware
 }
-
-package CYGPKG_DEVICES_SERIAL_RS232_TX39 {
-	alias		{ "TX39 Serial Device Code" devices_serial_rs232_tx39 }
-	directory	devs/serial/rs232/tx39
-	include_dir	cyg/devs/serial/rs232/tx39
-	hardware
-}
-
-package CYGPKG_DEVICES_SERIAL_RS232_MN10300 {
-	alias		{ "MN10300 Serial Device Code" devices_serial_rs232_mn10300 }
-	directory	devs/serial/rs232/mn10300
-	include_dir	cyg/devs/serial/rs232/mn10300
-	hardware
-}
-
-
-
-

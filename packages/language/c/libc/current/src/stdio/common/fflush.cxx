@@ -22,17 +22,17 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:          1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-21
+// Purpose:       Provides ISO C fflush() function
 // Description: 
 // Usage:       
 //
@@ -44,9 +44,8 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-
-// Include the C library? And do we want the stdio stuff?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+// Do we want the stdio stuff?
+#ifdef CYGPKG_LIBC_STDIO
 
 // INCLUDES
 
@@ -55,61 +54,71 @@
 #include <errno.h>                  // Error codes
 #include <stdio.h>                  // header for fflush()
 #include "clibincl/stream.hxx"      // C library streams
-#include "clibincl/clibdata.hxx"    // C library private data
+#include "clibincl/stdiofiles.hxx"  // C library files
 #include "clibincl/stdiosupp.hxx"   // support for stdio
 
 
 // EXPORTED SYMBOLS
 
 externC int
-fflush( FILE * ) CYGPRI_LIBC_WEAK_ALIAS("_fflush");
+fflush( FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(_fflush);
 
 
 // FUNCTIONS
 
+// flush all but one stream
+externC Cyg_ErrNo
+cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
+{
+    cyg_bool files_flushed[FOPEN_MAX] = { false }; // sets all to 0
+    cyg_bool loop_again;
+    cyg_ucount32 i;
+    Cyg_ErrNo err=ENOERR;
+    Cyg_StdioStream *stream;
+
+    do {
+        loop_again = false;
+        
+        for (i=0; (i<FOPEN_MAX) && !err; i++) {
+            if (files_flushed[i] == false) {
+                
+                stream = Cyg_libc_stdio_files::get_file_stream(i);
+                
+                if ((stream == NULL) || (stream == not_this_stream)) {
+                    // if it isn't a valid stream, set its entry in the
+                    // list of files flushed since we don't want to
+                    // flush it
+                    // Ditto if its the one we're meant to miss
+                    
+                    files_flushed[i] = true;
+                } // if
+                else {
+                    // valid stream
+                    
+                    if ( stream->trylock_me() ) {
+                        err = stream->flush_output_unlocked();
+                        stream->unlock_me();
+                        files_flushed[i] = true;
+                    } // if
+                    else
+                        loop_again = true;
+                } // else
+            } // if
+        } // for
+    } // do
+    while(loop_again && !err);
+    
+    return err;
+} // cyg_libc_stdio_flush_all_but()
 
 externC int
 _fflush( FILE *stream )
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
-    int i;
-    Cyg_ErrNo err=ENOERR;
+    Cyg_ErrNo err;
 
     if (stream == NULL) {  // tells us to flush ALL streams
-        cyg_bool files_flushed[FOPEN_MAX] = { false }; // sets all to 0
-        cyg_bool loop_again;
-
-        do {
-            loop_again = false;
-
-            for (i=0; (i<FOPEN_MAX) && !err; i++) {
-                if (files_flushed[i] == false) {
-
-                    real_stream = Cyg_CLibInternalData::get_file_stream(i);
-                    
-                    if (real_stream == NULL) {
-                        // if it isn't a valid stream, set its entry in the
-                        // list of files flushed since we don't want to
-                        // flush it
-
-                        files_flushed[i] = true;
-                    } // if
-                    else {
-                        // valid stream
-                        
-                        if ( real_stream->trylock_me() ) {
-                            err = real_stream->flush_output_unlocked();
-                            real_stream->unlock_me();
-                            files_flushed[i] = true;
-                        } // if
-                        else
-                            loop_again = true;
-                    } // else
-                } // if
-            } // for
-        } // do
-        while(loop_again && !err);
-
+        err = cyg_libc_stdio_flush_all_but(NULL);
     } // if
     else {
         err = real_stream->flush_output();
@@ -124,6 +133,6 @@ _fflush( FILE *stream )
 
 } // _fflush()
         
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_STDIO)
+#endif // ifdef CYGPKG_LIBC_STDIO
 
 // EOF fflush.cxx

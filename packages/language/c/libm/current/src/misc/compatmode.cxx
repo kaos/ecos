@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour@cygnus.co.uk
-// Contributors:  jlarmour@cygnus.co.uk
+// Author(s):   jlarmour
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: Contains the accessor functions to get and set the standards
@@ -56,6 +56,7 @@
 #include <math.h>                  // Main header for math library
 
 #ifdef CYGSEM_LIBM_THREAD_SAFE_COMPAT_MODE
+# include <pkgconf/kernel.h>        // Kernel configuration
 # include <cyg/kernel/thread.hxx>   // Kernel thread header
 # include <cyg/kernel/thread.inl>   // and its associated inlines
 # include <cyg/kernel/mutex.hxx>    // We need mutexes too

@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,6 +36,8 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
@@ -46,7 +48,7 @@
 
 
 #define NTHREADS 3
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -194,15 +196,15 @@ void kflag1_main( void )
 #endif
 
     cyg_thread_create( 1, entry0 , (cyg_addrword_t)0, "kflag1-0", 
-	(void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_thread_create( 1, entry1 , (cyg_addrword_t)1, "kflag1-1", 
-	(void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
+        (void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
     cyg_thread_resume(thread[1]);
 
     cyg_thread_create( 1, entry2 , (cyg_addrword_t)2, "kflag1-2", 
-	(void *)stack[2], STACKSIZE, &thread[2], &thread_obj[2]);
+        (void *)stack[2], STACKSIZE, &thread[2], &thread_obj[2]);
     cyg_thread_resume(thread[2]);
 
     cyg_scheduler_start();
@@ -221,7 +223,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

@@ -1,3 +1,351 @@
+1999-04-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: Added vector decoding to the below.
+
+1999-04-30  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/hal_misc.c (hal_init_ctrlc_intr): Chain onto the old value
+	of the ISR when attaching the ctrl-c ISR; this allows chained
+	interrupts to work (otherwise a stack-wrecking interrupt loop
+	occurs).
+
+1999-04-29  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_tx39.h (CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR): 
+	New config option, on by default.
+
+	* src/hal_misc.c (hal_ctrlc_isr): Enable these features on
+	CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR new config option.
+
+1999-04-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_intr.h: Don't sync TRR if platform sim - it doesn't need
+	it
+
+	* include/pkgconf/hal_tx39.h: 
+	Allow CYGARC_TX39_PR19846 to override
+	CYGHWR_HAL_MIPS_TX3904_TRR_REQUIRES_SYNC so that we can do something
+	sensible in the simulators
+	
+	Related to PR 19846
+
+1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/tx39.ld: Define __bss_end at the end of the BSS
+	* src/hal_misc.c (hal_zero_bss): Stop at __bss_end rather than _end
+	when clearing BSS
+	These fix PR 19750
+
+1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c:
+	* src/vectors.S:
+	Separate parts of cyg_hal_invoke_constructors() out into new functions
+	cyg_hal_enable_caches() and cyg_hal_debug_init() so that
+	cyg_hal_invoke_constructors() can be called again safely if
+	necessary
+	Related fix to that of PR19642
+
+1999-04-14  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak (EXTRAS): Don't generate extras.o here any more
+	But do define EXTRAS every time for the linker script
+
+1999-04-13  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_CLOCK_READ): 
+	Add workaround for tx39 bug - needs to sync and wait for the
+	write buffer to clear before reading the clock.
+	Submitted by akira.yokosawa@toshiba.co.jp
+
+	* include/pkgconf/hal_tx39.h
+	(CYGHWR_HAL_MIPS_TX3904_TRR_REQUIRES_SYNC): Define this by default
+	to implement above
+
+1999-04-12  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_VSR_SET_TO_ECOS_HANDLER): Added.
+	(HAL_VSR_SET): Cast types to CYG_ADDRESS to prevent warnings
+
+	Part of fix for PRs 19731/19607
+
+1999-04-09  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/mips-stub.c: 
+	Moved get_register and put_register to hal_stub.c.
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/*.ld: Use double underscore substitution for period
+	character in SECTION_* macro names (PR 19787)
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/*.ld: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-03-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_cache.h: Added include of hal.h and a test that a
+	valid set of macros have been added.
+	Also moved address used in HAL_DCACHE_INVALIDATE_ALL() to
+	0x9fc00000, which is the cached ROM space.
+
+1999-03-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Added options to allow different settings for DRAM initialization.
+	Fixed some ifdef bugs. 
+
+	* src/hal_misc.c (cyg_hal_invoke_constructors):
+	Added ifdefs to control enabling and disabling of timeout
+	exceptions.
+
+	* include/pkgconf/hal_tx39.h:
+	Added translations from the user friendly CPU speed settings into
+	the real CPU frequencies in Hz.
+
+	* include/hal_intr.h:
+	Added HAL_TX39_DEBUG_TOE_ENABLE() and ...DISABLE, to switch
+	timeout exceptions on and off.
+
+1999-03-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h:
+	Modified stack size definitions to be more accurate.
+
+1999-03-22  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/mips-regs.h: Update copyright
+
+	* include/mips-stub.h: Update copyright
+
+	* src/mips-stub.c: Update copyright
+
+1999-03-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	Use CYGNUM_HAL_STACK_SIZE_TYPICAL for the stack size instead of
+	CYGNUM_HAL_MINIMUM_STACK_SIZE.
+
+1999-03-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (cyg_hal_user_break): Remove #warning - it doesn't
+	really provide any useful info, and may unnecessarily worry a user
+	since it fires in normal situations
+
+1999-03-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/PKGconf.mak: Remove dependence on echo '-e' switch.
+
+1999-03-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: Removed definition of idle thread stack. 
+
+1999-03-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_cache.h:
+	Changed implementation of HAL_DCACHE_INVALIDATE_ALL() to read from
+	ROM space rather than RAM. This fixes PR 19510.
+
+1999-03-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: Modified ROMC and SCS settings in line with
+	Toshiba's suggestions for compatibility with other CPU variants.
+
+1999-03-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_arch.h: Add definition for 'CYGNUM_HAL_MINIMUM_STACK_SIZE'
+
+1999-03-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c:
+	Disabled use of stand-alone ^C detection interrupt. This is now
+	done in the serial driver. Added cyg_hal_is_break() and
+	cyg_hal_user_break() to detect and provoke ^C processing. These
+	are used by the serial driver and will one day interact with the
+	BSP/Cygmon/GDB stubs to do the right thing.
+
+1999-03-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_intr.h (HAL_INTERRUPT_IN_USE): Added.
+
+1999-03-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_tx39.h: 
+	* src/vectors.S:
+	Changed names used to control CPU frequency into something more
+	generic. Moved definition into hal_tx39.h from hal_tx39_jmr3904.h.
+
+1999-03-09  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19370
+	* src/hal_misc.c (cyg_hal_invoke_constructors): Changed
+	constructor loop.
+
+1999-03-05  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/tx39.ld: 
+	* src/PKGconf.mak: Clean up I/O package changes.
+
+1999-03-04  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/tx39.ld: 
+	Add INPUT(libextras.a), include libextras.a in GROUP() and include 
+	new __DEVTAB__ section for new device drivers
+
+1999-02-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Changed label used to access scheduler lock to one that is not
+	mangled by C++. This is intended to make support for interrupt
+	handling in non-kernel configurations easier.
+	Added some code to initialize DRAM in ROM-only configurations.
+
+1999-02-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c: 
+	Added support for SIGINT-causing magic breakpoint. This involves
+	passing a third, hidden argument to hal_ctrlc_isr() which is a
+	pointer to the saved CPU state.
+	
+	* src/vectors.S:
+	Added support for 66MHz part (untested).
+	Added support for SIGINT-causing magic breakpoint to allow
+	continuation after ^C. This also relies on CYGMON changes.
+
+1999-02-20  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	Rename deliver_exception() -> cyg_hal_deliver_exception()
+	QA improvements
+
+	* include/hal_intr.h:
+	Reorganise vector/interrupt/exception names according to purpose
+	QA improvements
+
+	* src/hal_misc.c:
+	Rename deliver_exception() -> cyg_hal_deliver_exception()
+	Rename CYG_VECTOR_SIO_0 -> CYGNUM_HAL_INTERRUPT_SIO_0
+
+1999-02-16  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Added call to initialize_stub.
+
+	* src/mips-stub.c: 
+	* include/mips-stub.h:
+	Cleaned up to only include arch specific stub code.
+
+	* include/hal_arch.h (HAL_BREAKPOINT): Added SIM breakpoint code
+	from (now dead) jmr3904/.../hal_stub.c.
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/mips.ld: Rename to tx39.ld since this is the target name
+        * src/PKGconf.mak: Process tx39.ld instead of mips.ld
+
+1999-02-05  John Dallaway  <jld@cygnus.co.uk>
+
+	* src/mips.ld: Add LMA_EQ_VMA macro definition.
+
+1999-02-03  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_misc.c: 
+	* include/hal_cache.h:
+	Moved nested external declarations into top-level scope to avoid
+	compiler warnings.
+
+1999-02-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_cache.h :
+	In HAL_ICACHE_INVALIDATE_ALL() and HAL_ICACHE_INVALIDATE(), fixed
+	typos in passing arguments to asm sections.
+	Fixes PR 18951.
+
+1999-01-26  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/mips.ld:
+	Add copyright notice.  (Though these files will later be generated
+	by a tool and so not copyright, these default setups are.)
+
+1999-01-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (cyg_hal_invoke_constructors): 
+	Add code to deal with CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+	Tidy up and update description header
+	Shorten needlessly long lines
+	Remove all traces of non-CYG_KERNEL_USE_INIT_PRIORITY code
+
+1999-01-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mips.ld:
+	Provide alternate definition of macro SECTION_rom_vectors() for
+	RAM startup (CYG_HAL_STARTUP_RAM) so that minimal sim testing
+	works.  Note: this is an instance where two definitions (of
+	identical "API") of a macro occur in the prototype <target>.ld
+	file; the MLT is required not to be confused by this.
+
+1999-01-15  John Dallaway  <jld@cygnus.co.uk>
+
+      * src/mips.ld: add section macro for .vsr_table
+
+1999-01-13  John Dallaway  <jld@cygnus.co.uk>
+
+      * src/mips.ld: add section macro for .rel.dyn
+
+1999-01-13  John Dallaway  <jld@cygnus.co.uk>
+
+      * src/mips.ld: new linker script for MLT
+      * src/PKGconf.mak: add mips.ld rules for MLT
+
+1999-01-13  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/basetype.h: CYG_DOUBLE_BYTEORDER now in <infra/cyg_type.h>
+
+1999-01-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/basetype.h (CYG_DOUBLE_BYTEORDER): Define ordering
+	for words within doubles.
+
+1999-01-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_cache.h: 
+	Modified HAL_DCACHE_INVALIDATE_ALL() to correctly touch all cache
+	lines twice to ensure that the cache and memory are
+	consistent. This is the best we can do without direct support for
+	invalidation.
+	
+	* src/hal_misc.c: Altered call to patch_dbg_syscalls() to pass
+	pointer to base of vector rather than a single vector entry.
+
+1998-12-15  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18543
+
+	* include/hal_cache.h (HAL_DCACHE_INVALIDATE): Fixed variable
+	name.
+
+1998-12-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_arch.h: 
+	* src/context.S (hal_setjmp, hal_longjump):
+	Added CYGARC definitions for jmpbuf entries.
+	Corrected jmpbuf size.
+
+1998-12-10  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_cache.h (HAL_DCACHE_UNLOCK_ALL,
+	HAL_ICACHE_UNLOCK_ALL): Added.
+
+1998-11-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/mips-regs.h:
+	* src/mips-stub.c:
+	Added use of CYGARC_HAL_COMMON_EXPORT_CPU_MACROS.
+
+1998-11-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/hal_intr.h: Add support for interrupt latency
+	measurements, controlled by CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY.
+
 1998-10-27  Jesper Skov  <jskov@cygnus.co.uk>
         PR 18033
 
@@ -241,7 +589,7 @@ Tue Aug 25 02:33:59 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####

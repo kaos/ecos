@@ -1,0 +1,65 @@
+1999-04-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/iosys.c (cyg_io_set_config): Only dereference len if non-NULL
+	(cyg_io_get_config): Ditto
+	(cyg_io_read): Ditto
+	(cyg_io_write): Ditto
+	Fix for PR 19856
+
+1999-04-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/ioinit.cxx: Use new device IO init priority.
+
+	* src/io_diag.c:      [added]
+	* include/io_diag.h:  [added]
+	* src/PKGconf.mak:
+	Added io_diag functionality.
+
+1999-03-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/config_keys.h (CYG_IO_GET_CONFIG_SERIAL_ABORT): 
+	New funtion which aborts (cancels) any pending I/O on a channel.
+
+1999-03-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/io.h: Add 'CYGDBG_IO_INIT' for control of
+	init messages.
+
+1999-03-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/io.h: Improve CDL description.
+
+1999-03-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/io.h:
+	Changed include files used to permit non-kernel configurations to
+	be built.
+
+1999-02-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* serial/current/src/common/tty.c (tty_set_config): 
+	Fix problem when passing through to lower level driver.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

@@ -1,10 +1,10 @@
-/*=============================================================================
+/*==========================================================================
 //
-//	hal_misc.c
+//      hal_misc.c
 //
-//	HAL miscellaneous functions
+//      HAL miscellaneous functions
 //
-//=============================================================================
+//==========================================================================
 //####COPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -22,23 +22,23 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
-//=============================================================================
+//==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-11-12
-// Purpose:	HAL miscellaneous functions
-// Description: This file contains miscellaneous functions provided by the
-//              HAL.
+// Author(s):    nickg
+// Contributors: nickg, jlarmour
+// Date:         1999-02-18
+// Purpose:      HAL miscellaneous functions
+// Description:  This file contains miscellaneous functions provided by the
+//               HAL.
 //
 //####DESCRIPTIONEND####
 //
-//===========================================================================*/
+//========================================================================*/
 
 #include <pkgconf/hal.h>
 
@@ -50,24 +50,57 @@
 
 #include <cyg/hal/hal_cache.h>
 
-/*---------------------------------------------------------------------------*/
+#if 0
+void trace( CYG_ADDRWORD tag, CYG_ADDRWORD a1, CYG_ADDRWORD a2)
+{
+    CYG_ADDRWORD **pp = (CYG_ADDRWORD **)0x48100000;
+    CYG_ADDRWORD *ix = (CYG_ADDRWORD *)0x4810000C;
+    CYG_ADDRWORD *p = *pp;
+    *p++ = tag;
+    *ix = *ix + 1;
+    *p++ = *ix;
+    *p++ = a1;
+    *p++ = a2;
+    *pp = p;
+}
+#endif
+
+/*------------------------------------------------------------------------*/
+
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+cyg_bool cyg_hal_stop_constructors;
+#endif
 
 void
-cyg_hal_invoke_constructors (void)
+cyg_hal_invoke_constructors(void)
 {
     typedef void (*pfunc) (void);
     extern pfunc _CTOR_LIST__[];
     extern pfunc _CTOR_END__[];
-    pfunc *p;
+
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+    static pfunc *p = &_CTOR_END__[-1];
     
-#ifdef CYG_KERNEL_USE_INIT_PRIORITY
+    cyg_hal_stop_constructors = 0;
+    for (; p >= _CTOR_LIST__; p--) {
+        (*p) ();
+        if (cyg_hal_stop_constructors) {
+            p--;
+            break;
+        }
+    }
+#else
+    pfunc *p;
+
     for (p = &_CTOR_END__[-1]; p >= _CTOR_LIST__; p--)
         (*p) ();
-#else
-    for (p = _CTOR_LIST__; p != _CTOR_END__; p++)
-        (*p) ();
-#endif        
+#endif
 
+} // cyg_hal_invoke_constructors()
+
+void
+cyg_hal_enable_caches(void)
+{
 #ifdef CYG_HAL_MN10300_STDEVAL1    
 
     // On the real hardware we also enable the cache.
@@ -85,23 +118,29 @@ cyg_hal_invoke_constructors (void)
 
 #endif
 
-#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
+} // cyg_hal_enable_caches()
+
+void
+cyg_hal_debug_init(void)
+{
+#if defined(CYGPKG_KERNEL)                      && \
+    defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
     defined(CYG_HAL_USE_ROM_MONITOR)            && \
     defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
     {
         extern CYG_ADDRESS hal_virtual_vector_table[32];
         extern void patch_dbg_syscalls(void * vector);
-#define DBG_SYSCALL_VEC_NUM 15
-        patch_dbg_syscalls( (void *)(&hal_virtual_vector_table[DBG_SYSCALL_VEC_NUM]) );
+        patch_dbg_syscalls( (void *)(&hal_virtual_vector_table[0]) );
     }
 #endif
 
 }
 
-/*---------------------------------------------------------------------------*/
-/* Determine the index of the ls bit of the supplied mask.                   */
+/*------------------------------------------------------------------------*/
+/* Determine the index of the ls bit of the supplied mask.                */
 
-cyg_uint32 hal_lsbit_index(cyg_uint32 mask)
+cyg_uint32
+hal_lsbit_index(cyg_uint32 mask)
 {
     cyg_uint32 n = mask;
 
@@ -120,10 +159,11 @@ cyg_uint32 hal_lsbit_index(cyg_uint32 mask)
     return tab[n>>26];
 }
 
-/*---------------------------------------------------------------------------*/
-/* Determine the index of the ms bit of the supplied mask.                   */
+/*------------------------------------------------------------------------*/
+/* Determine the index of the ms bit of the supplied mask.                */
 
-cyg_uint32 hal_msbit_index(cyg_uint32 mask)
+cyg_uint32
+hal_msbit_index(cyg_uint32 mask)
 {
     cyg_uint32 x = mask;    
     cyg_uint32 w;
@@ -144,61 +184,60 @@ cyg_uint32 hal_msbit_index(cyg_uint32 mask)
 
 }
 
-/*---------------------------------------------------------------------------*/
-/* First level C exception handler.                                          */
+/*------------------------------------------------------------------------*/
+/* First level C exception handler.                                       */
 
-void exception_handler(HAL_SavedRegisters *regs)
+externC void __handle_exception (void);
+
+externC HAL_SavedRegisters *_hal_registers;
+
+void
+cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+
+    // Set the pointer to the registers of the current exception
+    // context. At entry the GDB stub will expand the
+    // HAL_SavedRegisters structure into a (bigger) register array.
+    _hal_registers = regs;
+
+    __handle_exception();
+
+#elif defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)
+    
+    CYG_WORD vector = regs->vector;
+
+    if( vector == CYGNUM_HAL_INTERRUPT_WATCHDOG )
+    {
+        // Special case the watchdog timer exception, look for an
+        // ISR for it and call it if present. Otherwise pass on to
+        // the exception system.
+        
+        cyg_uint32 (*isr)(CYG_ADDRWORD,CYG_ADDRWORD);
+        cyg_uint32 index;
+
+        HAL_TRANSLATE_VECTOR( CYGNUM_HAL_INTERRUPT_WATCHDOG, index );
+        
+        isr = (cyg_uint32 (*)(CYG_ADDRWORD,CYG_ADDRWORD))
+            (hal_interrupt_handlers[index]);
+
+        if( isr != 0 )
+        {
+            isr(CYGNUM_HAL_INTERRUPT_WATCHDOG,
+                hal_interrupt_data[CYGNUM_HAL_INTERRUPT_WATCHDOG]
+                );
+            return;
+        }
+    }
+
+#if defined(CYGPKG_HAL_EXCEPTIONS)
+
     // We should decode the vector and pass a more appropriate
     // value as the second argument. For now we simply pass a
     // pointer to the saved registers. We should also divert
     // breakpoint and other debug vectors into the debug stubs.
 
-#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)
-    
-    CYG_WORD vector = regs->vector;
-
-    if( vector == 0 )
-    {
-        // An NMI vector, decode it from the NMIGR
-    
-        cyg_uint32 nmigr = mn10300_interrupt_control[0];
-
-        // Write back to clear interrupt bits
-        mn10300_interrupt_control[0] = nmigr;
-    
-        if( nmigr & 0x0002 )
-        {
-            // Special case the watchdog timer exception, look for an
-            // ISR for it and call it if present. Otherwise pass on to
-            // the exception system.
-        
-            cyg_uint32 (*isr)(CYG_ADDRWORD,CYG_ADDRWORD);
-            cyg_uint32 index;
-
-            HAL_TRANSLATE_VECTOR( CYG_VECTOR_WATCHDOG, index );
-        
-            isr = (cyg_uint32 (*)(CYG_ADDRWORD,CYG_ADDRWORD))
-                (hal_interrupt_handlers[index]);
-
-            if( isr != 0 )
-            {
-                isr(CYG_VECTOR_WATCHDOG,
-                    hal_interrupt_data[CYG_VECTOR_WATCHDOG]
-                    );
-                return;
-            }
-            vector = CYG_VECTOR_WATCHDOG;
-        }
-        // Check for system error
-        else if( nmigr & 0x0004 ) vector = CYG_VECTOR_SYSTEM_ERROR; 
-
-        // otherwise it is an NMI and vector is correct.
-    }
-    
-#if defined(CYGPKG_HAL_EXCEPTIONS)
-
-    deliver_exception( vector, (CYG_ADDRWORD)regs );
+    cyg_hal_deliver_exception( vector, (CYG_ADDRWORD)regs );
 
 #endif
 
@@ -207,5 +246,5 @@ void exception_handler(HAL_SavedRegisters *regs)
     return;
 }
 
-/*---------------------------------------------------------------------------*/
-/* End of hal_misc.c                                                         */
+/*------------------------------------------------------------------------*/
+/* End of hal_misc.c                                                      */

@@ -22,15 +22,15 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
 // Date:          1998/6/3
 // Description:   Contains testcode for C library strncpy() function
 //
@@ -84,6 +84,23 @@ static int my_strlen(const char *s)
 } // my_strlen()
 
 
+static int my_strncmp(const char *s1, const char *s2, size_t n)
+{
+    if (n==0)
+        return 0;
+    
+    while (n-- != 0 && *s1 == *s2)
+    {
+        if (n == 0 || *s1 == '\0' || *s2 == '\0')
+            break;
+        s1++;
+        s2++;
+    }
+    
+    return (*s1 - *s2);
+} // my_strncmp()
+
+
 static int my_strcmp(const char *s1, const char *s2)
 {
     for ( ; *s1 == *s2 ; s1++,s2++ )
@@ -108,7 +125,8 @@ static char *my_strcpy(char *s1, const char *s2)
 #endif // ifdef CYGPKG_LIBC
 
 
-int main( int argc, char *argv[] )
+int
+main( int argc, char *argv[] )
 {
 #ifdef CYGPKG_LIBC
     char x[300];
@@ -127,7 +145,8 @@ int main( int argc, char *argv[] )
     // Check 1
     my_strcpy(x, "Nine rings for men doomed to die");
     ret = strncpy(y, "Nine rings for men doomed to die", my_strlen(x));
-    CYG_TEST_PASS_FAIL( (my_strcmp(x, y) == 0), "Simple copy" );
+    CYG_TEST_PASS_FAIL( (my_strncmp(x, y, my_strlen(x)) == 0),
+                        "Simple copy" );
     // Check return value
     CYG_TEST_PASS_FAIL( (y == ret), "Simple copy return value" );
 
@@ -144,7 +163,8 @@ int main( int argc, char *argv[] )
     my_strcpy(x, "");
     my_strcpy(y, "Seven rings for the dwarves in their halls of stone");
     ret = strncpy(y, x, 0);
-    if (my_strcmp(y, "Seven rings for the dwarves in their halls of stone") == 0)
+    if (my_strcmp(y, "Seven rings for the dwarves "
+                     "in their halls of stone") == 0)
         CYG_TEST_PASS("Copy 0 characters");
     else
         CYG_TEST_FAIL("Copy 0 characters");
@@ -153,7 +173,7 @@ int main( int argc, char *argv[] )
 
 
 #else // ifndef CYGPKG_LIBC
-    CYG_TEST_PASS("Testing is not applicable to this configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 #endif // ifndef CYGPKG_LIBC
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "

@@ -2,9 +2,9 @@
 #define CYGONCE_COMPAT_UITRON_UIT_TYPE_H
 //===========================================================================
 //
-//	uit_type.h
+//      uit_type.h
 //
-//	uITRON specific data types as required by the API
+//      uITRON specific data types as required by the API
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -24,18 +24,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON specific data types as required by the API
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON specific data types as required by the API
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -57,7 +57,7 @@
 //
 // ***  General-Purpose Data Types ***************************************
 
-typedef cyg_int8    B;		// signed 8-bit integer
+typedef cyg_int8    B;          // signed 8-bit integer
 typedef cyg_int16   H;          // signed 16-bit integer
 typedef cyg_int32   W;          // signed 32-bit integer
 typedef cyg_uint8   UB;         // unsigned 8-bit integer
@@ -82,22 +82,22 @@ typedef CYG_ADDRWORD FP;        // program start address
 // names are used for data types which appear frequently and/or have
 // special meanings.
 
-typedef cyg_int32  INT;	// Signed integer (bit width of processor)
+typedef cyg_int32  INT; // Signed integer (bit width of processor)
 typedef cyg_uint32 UINT;   // Unsigned integer (bit width of processor)
 typedef cyg_int32  BOOL;   // Boolean value.  TRUE (1) or FALSE (0).
 typedef cyg_uint16 FN;     // Function code.  Signed integer.  Maximum 2 bytes.
-typedef INT	   ID;     // Object ID number (???id)
-typedef INT	   BOOL_ID;// Boolean value or ID number
-typedef INT	   HNO;    // Handler number
-typedef INT	   RNO;    // Rendezvous number
-typedef INT	   NODE;   // Node Number.  Usually a signed integer.
-typedef UINT	   ATR;    // Object or handler attribute.  An unsigned integer.
-typedef INT	   ER;     // Error code.  A signed integer.
-typedef INT	   PRI;    // Task priority.  A signed integer.
-typedef UB	   T_MSG;  // Message packet data structure used for mailboxes
-typedef INT	   TMO;    // Timeout value.  A signed integer.
+typedef INT        ID;     // Object ID number (???id)
+typedef INT        BOOL_ID;// Boolean value or ID number
+typedef INT        HNO;    // Handler number
+typedef INT        RNO;    // Rendezvous number
+typedef INT        NODE;   // Node Number.  Usually a signed integer.
+typedef UINT       ATR;    // Object or handler attribute.  An unsigned integer.
+typedef INT        ER;     // Error code.  A signed integer.
+typedef INT        PRI;    // Task priority.  A signed integer.
+typedef UB         T_MSG;  // Message packet data structure used for mailboxes
+typedef INT        TMO;    // Timeout value.  A signed integer.
                            // TMO_POL = 0 indicates polling,
-			   // while TMO_FEVR = -1 indicates wait forever.
+                           // while TMO_FEVR = -1 indicates wait forever.
 
 typedef cyg_uint64 CYGTM;
 typedef CYGTM      SYSTIME;// Data types used for specifying times.
@@ -518,7 +518,7 @@ enum {
                 INT       frbcnt;   /* free block count */
             /* additional information may be included depending on the
                implementation */
-                INT	  numbcnt;  /* total number of blocks */
+                INT       numbcnt;  /* total number of blocks */
                 INT       bsize;    /* block size */
 
         } T_RMPF;

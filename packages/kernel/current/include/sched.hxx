@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	sched.hxx
+//      sched.hxx
 //
-//	Scheduler class declaration(s)
+//      Scheduler class declaration(s)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define Scheduler class interfaces
-// Description:	These class definitions supply the internal API
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define Scheduler class interfaces
+// Description: These class definitions supply the internal API
 //              used to scheduler threads. 
-// Usage:	#include <cyg/kernel/sched.hxx>
+// Usage:       #include <cyg/kernel/sched.hxx>
 //
 //####DESCRIPTIONEND####
 //
@@ -62,8 +62,9 @@ protected:
     // The following variables are implicit in the API, but are
     // not publically visible.
 
-    static volatile cyg_ucount32 sched_lock;    // lock counter
-
+    static volatile cyg_ucount32 sched_lock         // lock counter
+                    CYGBLD_ATTRIB_ASM_ALIAS( cyg_scheduler_sched_lock );
+    
     static Cyg_Thread   *current_thread;        // current running thread
 
     static cyg_bool     need_reschedule;        // set when schedule needed
@@ -112,9 +113,12 @@ public:
     // claim the preemption lock
     static void             lock();         
 
-    // release the preemption lock
+    // release the preemption lock and possibly reschedule
     static void             unlock();
 
+    // release the preemption lock without rescheduling
+    static void             unlock_simple();
+    
     // return a pointer to the current thread
     static Cyg_Thread       *get_current_thread();
 

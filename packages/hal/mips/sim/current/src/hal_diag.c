@@ -1,8 +1,8 @@
 /*=============================================================================
 //
-//	hal_diag.c
+//      hal_diag.c
 //
-//	HAL diagnostic output code
+//      HAL diagnostic output code
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1998-03-02
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1998-03-02
 // Purpose:     HAL diagnostic output
-// Description:	Implementations of HAL diagnostic output support.
+// Description: Implementations of HAL diagnostic output support.
 //
 //####DESCRIPTIONEND####
 //

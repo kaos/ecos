@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -36,6 +36,8 @@
 //####DESCRIPTIONEND####
 */
 
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
+
 #include <pkgconf/kernel.h>
 
 #include <cyg/kernel/kapi.h>
@@ -47,7 +49,7 @@
 #include "testaux.h"
 
 #define NTHREADS 2
-#define STACKSIZE 4096
+#define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 static cyg_handle_t thread[NTHREADS];
 
@@ -162,11 +164,11 @@ void kmemvar1_main( void )
     CYG_TEST_INIT();
 
     cyg_thread_create(4, entry0 , (cyg_addrword_t)0, "kmemvar1-0",
-	(void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
+        (void *)stack[0], STACKSIZE, &thread[0], &thread_obj[0]);
     cyg_thread_resume(thread[0]);
 
     cyg_thread_create(4, entry1 , (cyg_addrword_t)1, "kmemvar1-1",
-	(void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
+        (void *)stack[1], STACKSIZE, &thread[1], &thread_obj[1]);
     cyg_thread_resume(thread[1]);
 
     cyg_mempool_var_create(mem[0], MEMSIZE, &mempool0, &mempool_obj[0]);
@@ -188,7 +190,7 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Kernel C API layer disabled");
+    CYG_TEST_NA("Kernel C API layer disabled");
 }
 #endif /* def CYGFUN_KERNEL_API_C */
 

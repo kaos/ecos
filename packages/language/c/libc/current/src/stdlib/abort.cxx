@@ -22,18 +22,19 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
-// Description: 
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1999-02-18
+// Purpose:       Implement the ISO C abort() function from 7.10.4.1
+// Description:   This implements abort() simply by raising SIGABRT as
+//                required by ISO C
 // Usage:       
 //
 //####DESCRIPTIONEND####
@@ -44,9 +45,6 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library?
-#ifdef CYGPKG_LIBC     
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h> // Common type definitions and support
@@ -54,14 +52,30 @@
 
 #include <stdlib.h>             // Header for all stdlib functions
                                 // (like this one)
+#ifdef CYGPKG_LIBC_SIGNALS
+# include <signal.h>
+#endif
 
 // FUNCTIONS
 
 externC void
-abort( void )
+__abort( void )
 {
-    CYG_REPORT_FUNCNAME( "abort" );
+    CYG_REPORT_FUNCNAME( "__abort" );
     
+#ifdef CYGPKG_LIBC_SIGNALS
+    int rc;
+    
+    rc = raise(SIGABRT);
+    
+    CYG_TRACE1(1, "raise(SIGABRT) returned!!! rc=%d", rc);
+
+    CYG_FAIL("raise(SIGABRT) returned");
+
+#endif
+
+    // ISO C clearly says that abort() cannot return to its caller
+
     // loop forever
     for (;;)
         CYG_EMPTY_STATEMENT;
@@ -69,7 +83,8 @@ abort( void )
     CYG_REPORT_RETURN();
 } // abort()
 
+// EXPORTED SYMBOLS
 
-#endif // ifdef CYGPKG_LIBC     
+externC void abort(void) CYGBLD_ATTRIB_WEAK_ALIAS(__abort);
 
 // EOF abort.cxx

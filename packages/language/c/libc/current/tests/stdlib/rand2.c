@@ -22,16 +22,16 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     ctarpy@cygnus.co.uk, jlarmour@cygnus.co.uk
-// Contributors:    jlarmour@cygnus.co.uk
-// Date:          1998/6/3
+// Author(s):     ctarpy, jlarmour
+// Contributors:  jlarmour
+// Date:          1999-01-20
 // Description:   Contains testcode for C library rand() function
 //
 //
@@ -55,7 +55,7 @@
 
 // HOW TO START TESTS
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
+#if defined(CYGPKG_LIBC)
 
 # define START_TEST( test ) test(0)
 
@@ -79,7 +79,7 @@ cyg_package_start( void )
 } // cyg_package_start()
 
 
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
+#if defined(CYGPKG_LIBC)
 
 static void
 test( CYG_ADDRWORD data )
@@ -91,21 +91,18 @@ test( CYG_ADDRWORD data )
 
     // Test that rand starts with the seed as CYGNUM_LIBC_RAND_SEED
     
-    for ( count=0; count < 100; ++count )
-    {
+    for ( count=0; count < 100; ++count ) {
         rand_data1[count] = rand();
     } // for
 
     // set seed to CYGNUM_LIBC_RAND_SEED
     srand(CYGNUM_LIBC_RAND_SEED);
 
-    for ( count=0; count < 100; ++count )
-    {
+    for ( count=0; count < 100; ++count ) {
         rand_data2[count] = rand();
     } // for
 
-    for ( count=0; count < 100; ++count )
-    {
+    for ( count=0; count < 100; ++count ) {
         if (rand_data1[count] != rand_data2[count])
             ++fail;
     } // for
@@ -117,7 +114,7 @@ test( CYG_ADDRWORD data )
                     "library rand() function");
 } // test()
 
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
+#endif // if defined(CYGPKG_LIBC)
 
 
 int
@@ -130,8 +127,7 @@ main(int argc, char *argv[])
 
     START_TEST( test );
 
-    CYG_TEST_PASS_FINISH("Testing is not applicable to this "
-                         "configuration");
+    CYG_TEST_NA("Testing is not applicable to this configuration");
 } // main()
 
 

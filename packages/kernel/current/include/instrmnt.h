@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	instrmnt.hxx
+//      instrmnt.hxx
 //
-//	Kernel Instrumentation mechanism
+//      Kernel Instrumentation mechanism
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,20 +25,20 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-10-24
-// Purpose:	Define kernel instrumentation
-// Description:	A set of definitions and macros used to implement an
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-10-24
+// Purpose:     Define kernel instrumentation
+// Description: A set of definitions and macros used to implement an
 //              instrumentation interface for the kernel.
-// Usage:	#include <cyg/kernel/instrmnt.hxx>
+// Usage:       #include <cyg/kernel/instrmnt.hxx>
 //
 //####DESCRIPTIONEND####
 //
@@ -72,11 +72,15 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #ifdef CYGPKG_KERNEL_INSTRUMENT
 
-#define CYG_INSTRUMENT(_type_,_arg1_,_arg2_) cyg_instrument(_type_, CYG_ADDRWORD(_arg1_), CYG_ADDRWORD(_arg2_))
+#define CYG_INSTRUMENT(_type_,_arg1_,_arg2_) cyg_instrument(_type_, (CYG_ADDRWORD)(_arg1_), (CYG_ADDRWORD)(_arg2_))
 
 #else   // ifdef CYGPKG_KERNEL_INSTRUMENT
 
-#define CYG_INSTRUMENT(_type_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT(_type_,_arg1_,_arg2_)                    \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif  // ifdef CYGPKG_KERNEL_INSTRUMENT
 
@@ -141,6 +145,8 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_EVENT_MUTEX_TRY          4
 #define CYG_INSTRUMENT_EVENT_MUTEX_UNLOCK       5
 #define CYG_INSTRUMENT_EVENT_MUTEX_WAKE         6
+#define CYG_INSTRUMENT_EVENT_MUTEX_RELEASE      7
+#define CYG_INSTRUMENT_EVENT_MUTEX_RELEASED     8
 
 // Condition variable events
 #define CYG_INSTRUMENT_EVENT_CONDVAR_WAIT       1
@@ -181,13 +187,13 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_EVENT_ALARM_INTERVAL     6
 
 // Mboxt events
-#define CYG_INSTRUMENT_EVENT_MBOXT_WAIT		1
-#define CYG_INSTRUMENT_EVENT_MBOXT_GET		2
-#define CYG_INSTRUMENT_EVENT_MBOXT_GOT		3
-#define CYG_INSTRUMENT_EVENT_MBOXT_TIMEOUT	4
-#define CYG_INSTRUMENT_EVENT_MBOXT_WAKE		5
-#define CYG_INSTRUMENT_EVENT_MBOXT_TRY		6
-#define CYG_INSTRUMENT_EVENT_MBOXT_PUT		7
+#define CYG_INSTRUMENT_EVENT_MBOXT_WAIT         1
+#define CYG_INSTRUMENT_EVENT_MBOXT_GET          2
+#define CYG_INSTRUMENT_EVENT_MBOXT_GOT          3
+#define CYG_INSTRUMENT_EVENT_MBOXT_TIMEOUT      4
+#define CYG_INSTRUMENT_EVENT_MBOXT_WAKE         5
+#define CYG_INSTRUMENT_EVENT_MBOXT_TRY          6
+#define CYG_INSTRUMENT_EVENT_MBOXT_PUT          7
 
 
 
@@ -231,7 +237,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_SCHED(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_SCHED(_event_,_arg1_,_arg2_)             \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -245,7 +255,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_THREAD(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_THREAD(_event_,_arg1_,_arg2_)            \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -259,7 +273,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_INTR(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_INTR(_event_,_arg1_,_arg2_)              \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -273,7 +291,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_MUTEX(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_MUTEX(_event_,_arg1_,_arg2_)             \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -287,7 +309,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_CONDVAR(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_CONDVAR(_event_,_arg1_,_arg2_)           \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -301,7 +327,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_BINSEM(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_BINSEM(_event_,_arg1_,_arg2_)            \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -315,7 +345,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_CNTSEM(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_CNTSEM(_event_,_arg1_,_arg2_)            \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -329,7 +363,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_CLOCK(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_CLOCK(_event_,_arg1_,_arg2_)             \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -343,7 +381,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_ALARM(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_ALARM(_event_,_arg1_,_arg2_)             \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -357,7 +399,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_MBOXT(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_MBOXT(_event_,_arg1_,_arg2_)             \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 
@@ -371,7 +417,11 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 #else
 
-#define CYG_INSTRUMENT_USER(_event_,_arg1_,_arg2_)
+#define CYG_INSTRUMENT_USER(_event_,_arg1_,_arg2_)              \
+    CYG_MACRO_START                                             \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg1_));     \
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, (CYG_ADDRWORD)(_arg2_));     \
+    CYG_MACRO_END
 
 #endif
 

@@ -1,8 +1,8 @@
 //===========================================================================
 //
-//	test1.c
+//      test1.c
 //
-//	uITRON "C" test program one
+//      uITRON "C" test program one
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,18 +22,18 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	hmt
-// Contributors:	hmt
-// Date:	1998-03-13
-// Purpose:	uITRON API testing
-// Description:	
+// Author(s):   hmt
+// Contributors:        hmt
+// Date:        1998-03-13
+// Purpose:     uITRON API testing
+// Description: 
 //
 //####DESCRIPTIONEND####
 //
@@ -88,12 +88,12 @@ INT scratch = 0;
 
 #ifndef CYGSEM_KERNEL_SCHED_TIMESLICE
 #define TIMESLICEMSG "Assuming no kernel timeslicing"
-#define TSGO()		(1)
-#define TSRELEASE() 	CYG_EMPTY_STATEMENT
-#define TSSTOP()    	CYG_EMPTY_STATEMENT
-#define TSLOCK()	CYG_EMPTY_STATEMENT
-#define TSUNLOCK()	CYG_EMPTY_STATEMENT
-#define ICWAIT( _i_ )	CYG_EMPTY_STATEMENT
+#define TSGO()          (1)
+#define TSRELEASE()     CYG_EMPTY_STATEMENT
+#define TSSTOP()        CYG_EMPTY_STATEMENT
+#define TSLOCK()        CYG_EMPTY_STATEMENT
+#define TSUNLOCK()      CYG_EMPTY_STATEMENT
+#define ICWAIT( _i_ )   CYG_EMPTY_STATEMENT
 
 #else
 // Now follow some nasty bodges to control the scheduling when basically it
@@ -110,26 +110,26 @@ INT scratch = 0;
 
 #define TIMESLICEMSG "Assuming kernel timeslicing ENABLED"
 volatile int ts_interlock = 0;
-#define TSGO()		(ts_interlock)
-#define TSRELEASE() 	ts_interlock = 1
-#define TSSTOP()    	ts_interlock = 0
+#define TSGO()          (ts_interlock)
+#define TSRELEASE()     ts_interlock = 1
+#define TSSTOP()        ts_interlock = 0
 
-#define TSLOCK()	CYG_MACRO_START 				\
-    ER ercd2 = dis_dsp();						\
-    CYG_TEST_CHECK( E_OK == ercd2, "dis_dsp (TSLOCK) bad ercd2" );	\
+#define TSLOCK()        CYG_MACRO_START                                 \
+    ER ercd2 = dis_dsp();                                               \
+    CYG_TEST_CHECK( E_OK == ercd2, "dis_dsp (TSLOCK) bad ercd2" );      \
 CYG_MACRO_END
 
-#define TSUNLOCK()	CYG_MACRO_START 				\
-    ER ercd3 = ena_dsp();						\
-    CYG_TEST_CHECK( E_OK == ercd3, "ena_dsp (TSUNLOCK) bad ercd3" );	\
+#define TSUNLOCK()      CYG_MACRO_START                                 \
+    ER ercd3 = ena_dsp();                                               \
+    CYG_TEST_CHECK( E_OK == ercd3, "ena_dsp (TSUNLOCK) bad ercd3" );    \
 CYG_MACRO_END
 
-#define ICWAIT( _i_ )	CYG_MACRO_START 				\
-    int loops;								\
-    for ( loops = 3; (0 < loops) || ((_i_) > intercount); loops-- ) {	\
-	ER ercd4 = rot_rdq( 0 ); /* yield */				\
-        CYG_TEST_CHECK( E_OK == ercd4, "rot_rdq (ICWAIT) bad ercd4" );	\
-    }	       								\
+#define ICWAIT( _i_ )   CYG_MACRO_START                                 \
+    int loops;                                                          \
+    for ( loops = 3; (0 < loops) || ((_i_) > intercount); loops-- ) {   \
+        ER ercd4 = rot_rdq( 0 ); /* yield */                            \
+        CYG_TEST_CHECK( E_OK == ercd4, "rot_rdq (ICWAIT) bad ercd4" );  \
+    }                                                                   \
 CYG_MACRO_END
 #endif // CYGSEM_KERNEL_SCHED_TIMESLICE
 
@@ -784,10 +784,10 @@ out:
 #endif // ! CYGVAR_KERNEL_COUNTERS_CLOCK  - can't test without it
 #else  // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
 #define N_A_MSG "no CYGFUN_KERNEL_THREADS_TIMER"
-#endif // ! CYGFUN_KERNEL_THREADS_TIMER	  - can't test without it
-#else  // ! CYGIMP_THREAD_PRIORITY	  - can't test without it
+#endif // ! CYGFUN_KERNEL_THREADS_TIMER   - can't test without it
+#else  // ! CYGIMP_THREAD_PRIORITY        - can't test without it
 #define N_A_MSG "no CYGSEM_KERNEL_SCHED_MLQUEUE"
-#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE	  - can't test without it
+#endif // ! CYGSEM_KERNEL_SCHED_MLQUEUE   - can't test without it
 #else  // ! CYGPKG_UITRON
 #define N_A_MSG "uITRON Compatibility layer disabled"
 #endif // CYGPKG_UITRON
@@ -797,8 +797,7 @@ void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS( "N/A: " N_A_MSG );
-    CYG_TEST_EXIT( "N/A" );
+    CYG_TEST_NA( N_A_MSG );
 }
 #endif // N_A_MSG defined ie. we are N/A.
 

@@ -1,0 +1,376 @@
+1999-04-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_cache.h (HAL_[DI]CACHE_IS_ENABLED): 
+	Implement these macros.
+
+1999-04-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/halboot.si: Use 10 wait states for access to the 86940
+	on CS1; it seems to make the Reliability Difference(tm).
+
+1999-04-08  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/slebtime.cxx: Add CYG_INIT_PRIORITY( APPLICATION ) to the
+	two static thread objects so that the test works even when libc
+	steals away the default constructors.  Unfortunately this also
+	means switching to an assignment constructor instead of a call.
+
+1999-04-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to
+	avoid padded output sections (PR 19787)
+
+1999-04-07  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_hwio.h: New file: define accessors for 86940 via
+	alternate address space 4, register names and all that... just a
+	paste out of previous hal_diag.h - it was the wrong place, but
+	that's how it evolved.
+
+	* include/hal_diag.h: Include hal_hwio.h to get accessors for
+	86940 et al.  Do not define them here, it was the wrong place.
+
+	* include/hal_clock.h: 
+	* include/hal_xpic.h:
+	Include hal_hwio.h instead of hal_diag.h	
+
+1999-04-07  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/slebintr.c (checkallbut): This is a more informative
+	version of the test when it fails: this is still under
+	investigation somewhat, and running the more verbose version
+	nightly will be useful.	
+
+1999-03-30  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/slebintr.c (start): After some thought, the timing code in
+	here could cause the test to take arbitrarily long; so some safety
+	features added.  Normally the test loop is very fast, but with
+	cache effects and instrumentation and -O0 it could take ages; this
+	could explain the occasional timeouts we have seen for this test.
+
+1999-03-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_cache.h: 
+	Implement the cache control macros: at least
+	for x in ( D I )
+	    HAL_xCACHE_ENABLE/DISABLE
+	    HAL_xCACHE_INVALIDATE_ALL, HAL_xCACHE_SYNC
+	in the first instance.  kcache1 reports sensible numbers too!
+	
+1999-03-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/slebintr.c (HAL_CLOCK_READ): If there is no kernel, the
+	clock is not initialized, so looking at it is useless for a clue.
+	So provide a dummy so we perform a "few" loops when there's no
+	kernel. If there is no kernel, cyg_user_start() is never called,
+	main gets in and steals the CPU.  So we hang.  So if there is no
+	kernel, define cyg_start() instead to wrest control.  Also very
+	much weaken the looping count check; kernel instrumentation, for
+	example, is more than enough to slow the world down too much.
+
+	* tests/slebstak.c (cyg_[user_]start):
+	If there is no kernel, cyg_user_start() is never called, main gets
+	in and steals the CPU.  So we hang.  So if there is no kernel,
+	define cyg_start() instead to wrest control.
+
+	* tests/slebtime.cxx: 
+	Make this build when no kernel present; include of testcase &c
+	was the wrong side of the ifdef.  Doh!
+
+1999-03-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_priv.c (hal_clock_initialize): Oh dear, the clock was
+	only running half the speed it should have; this will make the
+	tm_basic figures look bad, maybe.  It _appeared_ right because of
+	spurious interrupts, making two ISRs per tick, which covered the
+	error beautifully.  So, the initialization is now corrected, now
+	that the interrupt management is better dealt with.
+
+	* include/hal_xpic.h (HAL_INTERRUPT_ACKNOWLEDGE): Loop until
+	either the interrupt has stopped being asserted by the
+	prioritization latch (CLIRL) or the source has actually re-flagged
+	the interrupt, so that repeated, fast interrupts will re-interrupt
+	rather than causing a loop here.  This is to prevent spurious
+	double interrupts caused by HAL_INTERRUPT_ACKNOWLEDGE() not taking
+	effect before the CPU re-enabled interrupts; this had been
+	covering the clock bug as well as confusing the serial system.
+
+	Also placed a HAL_INTERRUPT_ACKNOWLEDGE() in
+	HAL_INTERRUPT_CONFIGURE() since the doc implies it is necessary
+	when changing that stuff; a spurious interrupt may be latched.
+	
+1999-03-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_xpic.h (HAL_INTERRUPT_CONFIGURE): 
+	Implement this functionality, since Gary wanted to experiment with
+	it.  Also add HAL_INTERRUPT_QUERY_INFO (platform specific) to read
+	back the settings of a particular interrupt source.
+
+	* tests/slebintr.c: NEW FILE: test case for the above new macros.
+	* tests/slebstak.c: NEW FILE: tests the register save/restore code
+		by carrying out lots of factorial calculations.
+	* tests/slebtime.c: NEW FILE: tests HAL clocks for sanity; prints
+		useful diagnostics.  Most useful when a human observes, if
+		it goes wrong this test is more likely to report a timeout
+		than a failure.
+
+	* tests/sleb.c: FILE DELETED - moved to slebstak.c
+	
+	* tests/PKGconf.mak (TESTS): Reflect above changes.
+
+1999-03-23  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sleb.h: Modify display string
+	for consistency.
+
+1999-03-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Precisely undo the
+	previous change: we disable interrupts to prevent the clock
+	advancing during the time taken to output to GDB.
+
+1999-03-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char_serial): Do not disable
+	interrupts while calling the CygMon write-line routine; CygMon is
+	better now and can cope with interrupts there.
+
+1999-03-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_sparclite_sleb_rom.mlt: Regenerate using
+	the eCos configuration tool to resolve errors.
+
+1999-03-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/mlt_sparclite_sleb_rom.mlt: 
+	* include/pkgconf/mlt_sparclite_sleb_rom.ldi: 
+	Move the start of RAM up 512 bytes; it is now at 0x04000200.  This
+	is to leave space for the trampoline code ie. RAM trap vector
+	handler to live in RAM as is required.  NB the vector must be on a
+	4k boundary; its location is determined by rounding down the start
+	of "normal" RAM ie. the symbol ".data".  So if the start of RAM
+	isn't on a 4k boundary, or the trampoline code gets > 4k, there
+	will be trouble.
+
+	* include/halboot.si: Copy trampoline code into RAM base during
+	startup, and deal with associated caching issues.
+
+	* src/hal_priv.c (LED): Add this tidier macro and some extra LED
+	debug during start for help with ROM start.
+
+	* include/pkgconf/hal_sparclite_sleb.h
+	(CYGHWR_HAL_SPARCLITE_SLEB_STARTUP): Add this define and its
+	associated notCDL for the GUI Config tool.
+
+1999-03-16  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/mlt_sparclite_sleb_rom.ldi:
+	* include/pkgconf/mlt_sparclite_sleb_rom.mlt:
+	New files, linker script fragment and MLT doc for ROM startup.
+	
+	* include/halboot.si: Only copy real instructions into the vector
+	if RAM startup.  Delete lots of obsolete debugging "printout".
+	Size RAM dynamically.  Set up chip selects, wait states, refresh
+	timing, system services, caches, buffers, burst mode access, ...
+	In other words complete hardware initialization.	
+
+	* include/hal_cpu.h: new file, taken directly from CygMon sources,
+	which defines various MB8683x internal registers which are used in
+	the initialization in halboot.si.
+
+	* include/hal_diag.h (HAL_SPARC_86940_PRS_ODIV2): Add lots more
+	definition of the MB86940 companion I/O chip, editted from CygMon
+	sources.  This should move into a proper IO file later.
+	Also, in the non-CYG_KERNEL_DIAG_GDB case where we write output to
+	the serial line in clear, do perform initialization.
+
+	* src/hal_diag.c (hal_diag_init): Properly initialize the serial
+	line when not using GDB encoding (if GDB coding is in use, then we
+	have CygMon).
+
+	* include/hal_clock.h (HAL_CLOCK_INITIALIZE): Initialize the clock
+	more cleanly and correctly, as CygMon does: so ticks are actually
+	centiSeconds, pretty much.  Actual init routine is in hal_priv.c.
+
+	* src/hal_priv.c (hal_clock_initialize): Properly initialize the
+	system clock to centiSeconds.
+
+1999-03-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_priv.c (hal_board_prestart): 
+	Link in the multi-thread aware debugging routine if
+	CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT.
+	
+1999-03-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_priv.c (hal_board_prestart): If playing nice with
+	CygMon, unmask and pass through interrupt 14 (Ethernet
+	controller).  Install and unmask interrupt 15 (NMI button)
+	likewise.
+
+	* src/hal_cygm.S (hal_nmi_handler): Add new handler for the NMI
+	interrupt (like a PIN number) INT15, the button near the serial
+	connector on the board.  The handler must wait for the interrupt
+	to go away, then acknowledge it to prevent CygMon getting in a
+	loop.
+
+	* include/halboot.si: Set IRC channel 14 (Ethernet controller)
+	interrupt to active low so that we can pass such events on to
+	CygMon.  Tidy up comments and ifdefs.
+
+	* include/hal_cygm.h (BSP_NOTVEC_BSP_COMM_PROCS): Define the
+	CygMon vector table entry that isn't a vector, but is a pointer to
+	struct tree with IO functions therein.
+
+	* src/hal_diag.c (hal_diag_write_char et al): Add variants of
+	these routines to use IO functions provided by CygMon if thus
+	configured.  Also tidied up direct GDB-ized serial output, which
+	is selected by CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT within
+	CYG_KERNEL_DIAG_GDB now.
+
+	* include/pkgconf/hal_sparclite_sleb.h: Add definition for
+	CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT, disabled by default.  More
+	comments too.
+
+1999-03-04  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/*.ldi: give all LDI files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+	* include/pkgconf/*.mlt: give all MLT files unique names so
+        that they can co-exist in an eCos build tree (PR 19184)
+
+1999-02-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	These log entries from 1999-02-22 to 1999-02-24 were executed in
+	a branch; this change is a merge of that branch into the trunk.
+
+1999-02-25  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): 
+	Wait for the GDB protocol ack character '+' after sending a line
+	of output as a $O packet; this prevents mismatches of the GDB
+	protocol when a breakpoint is hit temporally near such output.
+	This has the side effect that we must deal with seeing a ^C
+	character instead of the '+', whence we must bounce into CygMon's
+	BREAK vector using a trap.  Hence the next change...
+
+	* src/hal_cygm.S (hal_user_trap_to_cygmon_vsr): 
+	Add additional "bounce to cygmon" capability such that user trap
+	2, "ta 2" trap type 130, does the same as "ta 1" ie. a breakpoint,
+	but first it advances the PC and NPC so that you can continue at
+	the instruction after.  This is so that a voluntary inline
+	breakpoint can be implemented as "ta 2; nop; nop; nop" (nops just
+	for paranoia).
+
+1999-02-24  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_diag.h: 
+	Make hal_diag_init() and hal_diag_write_char() prototypes be extern "C"
+	for C++ files so they don't get name mangled
+
+1999-02-24  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sleb.h: Add MB8683x board
+	designation to description field.
+
+1999-02-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sleb.h: 
+	Non-CDLoptions, but #defines nontheless,
+	CYG_HAL_USE_ROM_MONITOR_CYGMON and CYG_KERNEL_DIAG_GDB are defined
+	here to control whether we cooperate with CygMon, and if so, do we
+	encapsulate out output in GDB $O packets, respectively.
+
+	* include/hal_cygm.h: 
+	New file to describe the CygMon vectors we call to cooperate with
+	CygMon and GDB.  When cooperating, we install VSRs in some slots
+	that demux into CygMon's vector table, and in most slots we just
+	patch in the appropriate value from CygMon's vector table so that
+	CygMon is called directly.
+
+	* include/hal_xpic.h: 
+	Document the interrupt sources on the SLEB.
+
+	* include/hal_diag.h (HAL_DIAG_WRITE_CHAR): 
+	Call routines in hal_diag.c to perform encapsulation, or not,
+	depending on CYG_KERNEL_DIAG_GDB.
+
+	* src/hal_cygm.S: New file, demuxer trampolines for user trap and
+	no-fp/no-cp VSRs to bounce into CygMon.
+	
+	* src/hal_diag.c: New file, routines to perform encapsulation of
+	output in GDB $O packets if required by CYG_KERNEL_DIAG.
+	
+	* src/hal_priv.c (hal_board_prestart):
+	If CYG_HAL_USE_ROM_MONITOR_CYGMON, install either CygMon's vectors
+	or demuxer trampolines into our VSRs during startup.
+
+	* src/PKGconf.mak (COMPILE): Add new files hal_cygm.S hal_diag.c
+
+1999-02-23  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sleb.h: Revise capitalization
+	of CDL strings.
+
+1999-02-23  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sleb.h: Specify correct platform
+	for cdl_package CYGPKG_HAL_SPARCLITE_SLEB.
+
+1999-02-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/ram.mlt: 
+	* include/pkgconf/ram.ldi: 
+	All a lot more constraints on alignment: sections must be
+	word-aligned at least for the network loader to accept them.
+	I hope I have correctly modified the .mlt file; it's not exactly
+	self documenting.
+
+1999-02-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_cache.h: New file
+	* include/hal_clock.h: New file
+	* include/hal_diag.h: New file
+	* include/hal_xpic.h: New file
+	* include/halboot.si: New file
+	* include/pkgconf/hal_sparclite_sleb.h: New file
+	* include/pkgconf/ram.ldi: New file
+	* include/pkgconf/ram.mlt: New file
+	* src/PKGconf.mak: New file
+	* src/hal_priv.c: New file
+	* tests/PKGconf.mak: New file
+	* tests/sleb.c: New file
+
+	Initial checkin of the hardware platform port for SPARClite:
+	platform is sleb: SPARClite Evaluation Board.
+
+	The structure here mirrors that in the sim directory, and in fact
+	was cloned from it after the change of 1999-02-08 for MLT
+	compliance.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================
+
+//EOF ChangeLog

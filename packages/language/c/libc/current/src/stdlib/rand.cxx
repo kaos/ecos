@@ -2,7 +2,7 @@
 //
 //      rand.cxx
 //
-//      ANSI and POSIX 1003.1 standard random number generation functions
+//      ISO and POSIX 1003.1 standard random number generation functions
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -22,20 +22,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
-// Date:        1998-02-13
-// Purpose:     
-// Description: This implements rand() and srand() of section 7.10.2.1 of
-//              the ANSI standard. Also rand_r() defined in section 8.3.8
-//              of the POSIX 1003.1 standard
+// Author(s):     jlarmour
+// Contributors:  jlarmour
+// Date:          1990-01-20
+// Purpose:       Provides ISO C rand() and srand() functions, along with
+//                POSIX 1003.1 rand_r() function
+// Description:   This implements rand() and srand() of section 7.10.2.1 of
+//                the ISO C standard. Also rand_r() defined in section 8.3.8
+//                of the POSIX 1003.1 standard
 // Usage:       
 //
 //####DESCRIPTIONEND####
@@ -46,9 +47,6 @@
 
 #include <pkgconf/libc.h>   // Configuration header
 
-// Include the C library?
-#if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>    // Common type definitions and support
@@ -57,8 +55,13 @@
 #include <stdlib.h>                // Header for all stdlib functions
                                    // (like this one)
 #include "clibincl/stdlibsupp.hxx" // Support for stdlib functions
-#include "clibincl/clibdata.hxx"   // Header for thread-specific data such
-                                   // as random seed
+
+#ifdef CYGSEM_LIBC_PER_THREAD_RAND
+# include <pkgconf/kernel.h>       // kernel configuration
+# include <cyg/kernel/thread.hxx>  // per-thread data
+# include <cyg/kernel/thread.inl>  // per-thread data
+# include <cyg/kernel/mutex.hxx>   // mutexes
+#endif
 
 // TRACE
 
@@ -73,34 +76,68 @@ static int rand_trace = CYGNUM_LIBC_RAND_TRACE_LEVEL;
 // EXPORTED SYMBOLS
 
 externC int
-rand( void ) CYGPRI_LIBC_WEAK_ALIAS("_rand");
+rand( void ) CYGBLD_ATTRIB_WEAK_ALIAS(_rand);
 
 externC int
-rand_r( unsigned int *seed ) CYGPRI_LIBC_WEAK_ALIAS("_rand_r");
+rand_r( unsigned int *seed ) CYGBLD_ATTRIB_WEAK_ALIAS(_rand_r);
 
 externC void
-srand( unsigned int seed ) CYGPRI_LIBC_WEAK_ALIAS("_srand");
+srand( unsigned int seed ) CYGBLD_ATTRIB_WEAK_ALIAS(_srand);
 
+
+// STATICS
+
+#ifdef CYGSEM_LIBC_PER_THREAD_RAND
+static cyg_ucount32 rand_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
+static Cyg_Mutex rand_data_mutex CYG_INIT_PRIORITY(LIBC);
+#else
+static unsigned int cyg_libc_rand_seed = CYGNUM_LIBC_RAND_SEED;
+#endif
 
 // FUNCTIONS
 
 int
 _rand( void )
 {
-    Cyg_CLibInternalData::Cyg_rand_seed_t *seed_p;
+    unsigned int *seed_p;
     int retval;
 
     CYG_REPORT_FUNCNAMETYPE( "_rand", "returning %d" );
 
-    CYGPRI_LIBC_INTERNAL_DATA_ALLOC_CHECK_PREAMBLE;
-
     // get seed for this thread (if relevant )
-    seed_p = CYGPRI_LIBC_INTERNAL_DATA.get_rand_seed_p();
+#ifdef CYGSEM_LIBC_PER_THREAD_RAND
+    Cyg_Thread *self = Cyg_Thread::self();
+
+    // Get a per-thread data slot if we haven't got one already
+    // Do a simple test before locking and retrying test, as this is a
+    // rare situation
+    if (CYGNUM_KERNEL_THREADS_DATA_MAX==rand_data_index) {
+        rand_data_mutex.lock();
+        if (CYGNUM_KERNEL_THREADS_DATA_MAX==rand_data_index) {
+
+            // the kernel just throws an assert if this doesn't work
+            // FIXME: Should use real CDL to pre-allocate a slot at compile
+            // time to ensure there are enough slots
+            rand_data_index = self->new_data_index();
+            
+            // Initialize seed
+            self->set_data(rand_data_index, CYGNUM_LIBC_RAND_SEED);
+        }
+        rand_data_mutex.unlock();
+    } // if
+
+    // we have a valid index now
+
+    seed_p = (unsigned int *)self->get_data_ptr(rand_data_index);
+#else
+    seed_p = &cyg_libc_rand_seed;
+#endif
 
     CYG_TRACE2( TL1, "Retrieved seed address %08x containing %d",
                 seed_p, *seed_p );
+    CYG_CHECK_DATA_PTR( seed_p, "Help! Returned address of seed is invalid!" );
 
-    retval = _rand_r( (unsigned int *) seed_p );
+    retval = _rand_r( seed_p );
 
     CYG_REPORT_RETVAL( retval );
 
@@ -118,9 +155,55 @@ _rand_r( unsigned int *seed )
 
     CYG_CHECK_DATA_PTR( seed, "pointer to seed invalid!" );
 
+#if defined(CYGIMP_LIBC_RAND_SIMPLEST)
+
+    // This algorithm sucks in the lower bits
+
     *seed = (*seed * 1103515245) + 12345; // permutate seed
     
     retval = (int)( *seed & RAND_MAX );
+
+#elif defined(CYGIMP_LIBC_RAND_SIMPLE1)
+
+    // The above algorithm sucks in the lower bits, so we shave them off
+    // and repeat a couple of times to make it up
+
+    unsigned int s=*seed;
+    unsigned int uret;
+
+    s = (s * 1103515245) + 12345; // permutate seed
+    // Only use top 11 bits
+    uret = s & 0xffe00000;
+    
+    s = (s * 1103515245) + 12345; // permutate seed
+    // Only use top 14 bits
+    uret += (s & 0xfffc0000) >> 11;
+    
+    s = (s * 1103515245) + 12345; // permutate seed
+    // Only use top 7 bits
+    uret += (s & 0xfe000000) >> (11+14);
+    
+    retval = (int)(uret & RAND_MAX);
+    *seed = s;
+
+#elif defined(CYGIMP_LIBC_RAND_KNUTH1)
+
+// This is the code supplied in Knuth Vol 2 section 3.6 p.185 bottom
+
+#define MM 2147483647    // a Mersenne prime
+#define AA 48271         // this does well in the spectral test
+#define QQ 44488         // (long)(MM/AA)
+#define RR 3399          // MM % AA; it is important that RR<QQ
+
+    *seed = AA*(*seed % QQ) - RR*(unsigned int)(*seed/QQ);
+    if (*seed < 0)
+        *seed += MM;
+
+    retval = (int)( *seed & RAND_MAX );
+
+#else
+# error No valid implementation for rand()!
+#endif
 
     CYG_REPORT_RETVAL( retval );
 
@@ -132,28 +215,39 @@ _rand_r( unsigned int *seed )
 void
 _srand( unsigned int seed )
 {
-    Cyg_CLibInternalData::Cyg_rand_seed_t *seed_p;
-
-    CYG_REPORT_FUNCNAMETYPE( "_srand", "returning %d" );
+    CYG_REPORT_FUNCNAME( "_srand" );
 
     CYG_REPORT_FUNCARG1DV( (int)seed );
 
-    CYGPRI_LIBC_INTERNAL_DATA_ALLOC_CHECK_PREAMBLE;
-
     // get seed for this thread ( if relevant )
-    seed_p = CYGPRI_LIBC_INTERNAL_DATA.get_rand_seed_p();
+#ifdef CYGSEM_LIBC_PER_THREAD_RAND
+    Cyg_Thread *self = Cyg_Thread::self();
 
-    CYG_CHECK_DATA_PTR( seed_p, "Help! Returned address of seed is invalid!" );
-    
-    CYG_TRACE1( TL1, "Retrieved seed address %08x", seed_p );
+    // Get a per-thread data slot if we haven't got one already
+    // Do a simple test before locking and retrying test, as this is a
+    // rare situation
+    if (CYGNUM_KERNEL_THREADS_DATA_MAX==rand_data_index) {
+        rand_data_mutex.lock();
+        if (CYGNUM_KERNEL_THREADS_DATA_MAX==rand_data_index) {
 
-    *seed_p = (Cyg_CLibInternalData::Cyg_rand_seed_t) seed;
+            // the kernel just throws an assert if this doesn't work
+            // FIXME: Should use real CDL to pre-allocate a slot at compile
+            // time to ensure there are enough slots
+            rand_data_index = self->new_data_index();
+
+        }
+        rand_data_mutex.unlock();
+    } // if
+
+    // we have a valid index now
+
+    self->set_data(rand_data_index, (CYG_ADDRWORD) seed);
+#else
+    cyg_libc_rand_seed = seed;
+#endif
 
     CYG_REPORT_RETURN();
 
 } // _srand()
-
-
-#endif // if defined(CYGPKG_LIBC) && defined(CYGPKG_LIBC_RAND)
 
 // EOF rand.cxx

@@ -22,7 +22,7 @@
 # September 30, 1998.
 # 
 # The Initial Developer of the Original Code is Cygnus.  Portions created
-# by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+# by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 # -------------------------------------------
 #
 #####COPYRIGHTEND####
@@ -30,8 +30,12 @@
 
 PACKAGE       := hal
 include ../../../../pkgconf/pkgconf.mak
+include ../../../../pkgconf/system.mak
 
-TESTS	      := cache intr context
+TESTS	      := intr context
+ifndef CYG_HAL_ARM_AEB
+TESTS	      += cache
+endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

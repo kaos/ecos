@@ -24,7 +24,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jlarmour
-// Contributors:  jlarmour@cygnus.co.uk
+// Contributors:  jlarmour
 // Date:        1998-02-13
 // Purpose:     
 // Description: 
@@ -69,9 +69,12 @@ CYGPRI_LIBC_INLINE void
 setbuf( FILE *stream, char *buf )
 {
     if (buf == NULL)
-        setvbuf( stream, NULL, _IOFBF, BUFSIZE );
+        setvbuf( stream, NULL, _IONBF, BUFSIZ );
     else
-        setvbuf( stream, buf, _IONBF, BUFSIZE );
+        // NB: Should use full buffering by default ordinarily, but in
+        // the current system we're always connected to an interactive
+        // terminal, so use line buffering
+        setvbuf( stream, buf, _IOLBF, BUFSIZ );
 
 } // setbuf()
 

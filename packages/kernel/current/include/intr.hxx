@@ -3,9 +3,9 @@
 
 //==========================================================================
 //
-//	intr.hxx
+//      intr.hxx
 //
-//	Interrupt class declaration(s)
+//      Interrupt class declaration(s)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -25,21 +25,21 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	nickg
-// Contributors:	nickg
-// Date:	1997-09-09
-// Purpose:	Define Interrupt class interfaces
-// Description:	The classes defined here provide the APIs for handling
+// Author(s):   nickg
+// Contributors:        nickg
+// Date:        1997-09-09
+// Purpose:     Define Interrupt class interfaces
+// Description: The classes defined here provide the APIs for handling
 //              interrupts.
 // Usage:       #include "intr.hxx"
-//		
+//              
 //
 //####DESCRIPTIONEND####
 //
@@ -87,6 +87,9 @@ externC void interrupt_end(
     HAL_SavedRegisters  *ctx
     );
 
+externC void cyg_interrupt_post_dsr( CYG_ADDRWORD intr_obj );
+externC void cyg_interrupt_call_pending_DSRs( void );
+
 // -------------------------------------------------------------------------
 // Interrupt class. This both represents each interrupt and provides a static
 // interface for controlling the interrupt hardware.
@@ -98,6 +101,8 @@ class Cyg_Interrupt
     friend void interrupt_end( cyg_uint32,
                                Cyg_Interrupt *,
                                HAL_SavedRegisters *);
+    friend void cyg_interrupt_post_dsr( CYG_ADDRWORD intr_obj );
+    friend void cyg_interrupt_call_pending_DSRs( void );
     
     cyg_vector          vector;         // Interrupt vector
 
@@ -118,8 +123,14 @@ class Cyg_Interrupt
 
                                         // Call any pending DSRs
     static void         call_pending_DSRs();
+    static void         call_pending_DSRs_inner();
+
+    // DSR handling interface called by the scheduler and HAL 
+    // interrupt arbiters.
 
     void                post_dsr();     // Post the DSR for this interrupt
+
+
     
     // Data structures for handling DSR calls.  We implement two DSR
     // handling mechanisms, a list based one and a table based
@@ -166,9 +177,11 @@ class Cyg_Interrupt
     static cyg_uint32 chain_isr(cyg_vector vector, CYG_ADDRWORD data);    
 
     // Table of interrupt chains
-    static Cyg_Interrupt *chain_list[CYG_ISR_COUNT];
+    static Cyg_Interrupt *chain_list[CYGNUM_HAL_ISR_COUNT];
     
 #endif
+
+    static cyg_int32 disable_counter;   // Disable level counter
     
 public:
 
@@ -221,9 +234,7 @@ public:
     // Are interrupts enabled at the CPU?
     static inline cyg_bool interrupts_enabled()
     {
-        CYG_WORD result;                // needs to be register sized
-        HAL_QUERY_INTERRUPTS( result );
-        return (0 != result);
+        return (0 == disable_counter);
     }
     
     // Get the vector for the following calls

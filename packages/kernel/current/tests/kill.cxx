@@ -22,7 +22,7 @@
 // September 30, 1998.
 // 
 // The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998 Cygnus Solutions.  All Rights Reserved.
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 // -------------------------------------------
 //
 //####COPYRIGHTEND####
@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     nickg
-// Contributors:    nickg
+// Contributors:  nickg
 // Date:          1998-04-24
 // Description:   Tests the functionality of thread kill() and
 //                reinitalize().
@@ -46,11 +46,27 @@
 
 #include <cyg/infra/testcase.h>
 
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+
 #include <cyg/kernel/sched.inl>
 
 #define NTHREADS 3
 
 #include "testaux.hxx"
+
+#ifdef CYGPKG_HAL_I386_LINUX
+// On the synthetic target the delay needs to be a bit bigger to avoid
+// potential problems due to timing inaccuracy and scheduling of Linux
+// tasks.
+int delay_ticks = 5;
+#else
+// if we delayed for just one tick, there's a good chance the clock may
+// roll over immediately, giving a negligible practical delay. So always use
+// a value greater than 1
+int delay_ticks = 2;
+#endif
+
+
 
 static Cyg_Binary_Semaphore s0, s1;
 
@@ -80,7 +96,7 @@ static void entry1( CYG_ADDRWORD data )
 
     thread1_state = 1;
     
-    self->delay(1);
+    self->delay(delay_ticks);
 
     if( thread2_state != 1 )
         CYG_TEST_FAIL_FINISH("Thread2 in wrong state");        
@@ -95,7 +111,7 @@ static void entry1( CYG_ADDRWORD data )
 
     thread1_state = 4;
     
-    self->delay(1);
+    self->delay(delay_ticks);
 
     thread1_state = 5;
     thread2_state = 0;
@@ -103,14 +119,14 @@ static void entry1( CYG_ADDRWORD data )
     thread[2]->reinitialize();
     thread[2]->resume();
 
-    self->delay(1);
+    self->delay(delay_ticks);
 
     if( thread2_state != 1 )
         CYG_TEST_FAIL_FINISH("Thread2 in wrong state");        
     
     thread1_state = 6;
 
-    self->delay(1);
+    self->delay(delay_ticks);
 
     if( thread2_state != 2 )
         CYG_TEST_FAIL_FINISH("Thread2 in wrong state");        
@@ -158,5 +174,16 @@ cyg_start( void )
 {
     release_main();
 }
+
+#else // ifdef CYGFUN_KERNEL_THREADS_TIMER
+
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA("Kernel threads timer disabled");
+}
+
+#endif // ifdef CYGFUN_KERNEL_THREADS_TIMER
    
 // EOF kill.cxx
