@@ -1,3 +1,14 @@
+2003-06-04  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* src/at91_misc.c (hal_hardware_init): Make sure the AIC internal
+	priority level stack is flushed.
+	(hal_IRQ_handler): Calculate active interrupt by dummy read from
+	the IVR, which has the side-effect of updating ISR with the
+	current interrupt source number.
+	(hal_interrupt_acknowledge): Write to ICCR is not needed, as
+	interrupt deassertion is taken care of by read of IVR in
+	hal_IRQ_handler.
+
 2003-05-27  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* include/var_io.h: Add missing USART register defines.

@@ -159,14 +159,17 @@ void hal_delay_us(cyg_int32 usecs)
 
 void hal_hardware_init(void)
 {
+    unsigned i;
+
     // Set up eCos/ROM interfaces
     hal_if_init();
 
     // Reset all interrupts
     HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_IDCR, 0xFFFFFFFF);  
 
-    // Make sure interrupt controller is happy
-    HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_EOI, 0xFFFFFFFF);  
+    // Flush internal priority level stack
+    for (i = 0; i < 8; ++i)
+        HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_EOI, 0xFFFFFFFF);
 }
 
 // -------------------------------------------------------------------------
@@ -176,16 +179,12 @@ void hal_hardware_init(void)
 int hal_IRQ_handler(void)
 {
     cyg_uint32 irq_num;
-    cyg_uint32 ipr, imr;
+    cyg_uint32 ivr;
     
-//    HAL_READ_UINT32(AT91_AIC+AT91_AIC_ISR, irq_num);
+    // Calculate active interrupt (updates ISR)
+    HAL_READ_UINT32(AT91_AIC+AT91_AIC_IVR, ivr);
 
-    HAL_READ_UINT32(AT91_AIC+AT91_AIC_IPR, ipr);        
-    HAL_READ_UINT32(AT91_AIC+AT91_AIC_IMR, imr);        
-
-    ipr &= imr;
-
-    HAL_LSBIT_INDEX( irq_num, ipr );
+    HAL_READ_UINT32(AT91_AIC+AT91_AIC_ISR, irq_num);
     
     return irq_num;
 }
@@ -215,9 +214,6 @@ void hal_interrupt_acknowledge(int vector)
     CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
                vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
 
-    HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_ICCR, (1<<vector));
-
-    // FIXME - This isn't 100% correct
     HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_EOI, 0xFFFFFFFF);  
 }
 
