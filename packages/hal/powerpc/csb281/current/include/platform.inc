@@ -11,7 +11,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -68,10 +68,10 @@
         lwi     \dreg,_CSB281_EPIC_IACK         # if external, get vector
         li      r0,0            
         lwbrx   \dreg,r0,\dreg                  # EPIC is little endian!
-        lwi     r3,_CSB281_EPIC_EOI             # clear interrupt?
-        stw     r0,0(r3)
         cmpi    0,\dreg,0xFF                    # spurious interrupt?
         beq     restore_state
+        lwi     r3,_CSB281_EPIC_EOI             # clear interrupt?
+        stw     r0,0(r3)
 0:      stw     \dreg,CYGARC_PPCREG_VECTOR(\state) # update vector in state frame.
         slwi    \dreg,\dreg,2                   # convert to byte offset.
         .endm                              

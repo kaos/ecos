@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -83,56 +83,6 @@ FUNC_END(_led)
 #------------------------------------------------------------------------------
                 
 FUNC_START( hal_hardware_init )
-
-#if 0 // Seem to be 860 specific
-                
-#define CACHE_UNLOCKALL		0x0a00
-#define CACHE_DISABLE		0x0400
-#define CACHE_INVALIDATEALL	0x0c00
-#define CACHE_ENABLE		0x0200
-#define CACHE_ENABLEBIT		0x8000
-
-#define CACHE_FORCEWRITETHROUGH 0x0100
-#define CACHE_NOWRITETHROUGH    0x0300
-#define CACHE_CLEAR_LE_SWAP     0x0700
-
-	# DATA CACHE
-	mfspr	r3,CYGARC_REG_DC_CST		/* clear error bits */
-        lis     r3,CACHE_UNLOCKALL
-	sync
-        mtspr   CYGARC_REG_DC_CST,r3		/* unlock all lines */
-	
-        lis     r3,CACHE_INVALIDATEALL
-	sync
-        mtspr   CYGARC_REG_DC_CST,r3		/* invalidate all lines */
-
-	lis	r3,CACHE_DISABLE
-	sync
-	mtspr	CYGARC_REG_DC_CST,r3            /* disable */
-	
-	lis	r3,CACHE_FORCEWRITETHROUGH
-	sync
-	mtspr	CYGARC_REG_DC_CST,r3            /* set force-writethrough mode */
-
-	lis	r3,CACHE_CLEAR_LE_SWAP
-	sync
-	mtspr	CYGARC_REG_DC_CST,r3            /* clear little-endian swap mode */
-	/* (dunno what this is, but it sounds like a bad thing) */
-	
-	# INSTRUCTION CACHE (no writeback modes)
-	mfspr	r3,CYGARC_REG_IC_CST		/* clear error bits */
-        lis     r3,CACHE_UNLOCKALL
-        mtspr   CYGARC_REG_IC_CST,r3		/* unlock all lines */
-	isync
-        lis     r3,CACHE_INVALIDATEALL
-        mtspr   CYGARC_REG_IC_CST,r3		/* invalidate all lines */
-        isync
-	lis	r3,CACHE_DISABLE
-	mtspr	CYGARC_REG_IC_CST,r3            /* disable */
-	isync
-	
-	sync
-#endif
                 
         // Basic hardware initialization
         mflr    r31
@@ -178,8 +128,8 @@ HW_init:
 #ifdef CYG_HAL_STARTUP_ROMRAM
         // Copy image from ROM to RAM
         mflr    r3              
-        lwi     r4,0xFFF00000
-        lwi     r5,0x000FFFFF   // ROM/FLASH base
+        lwi     r4,0xFF000000
+        lwi     r5,0x00FFFFFF   // ROM/FLASH base
         and     r3,r3,r5        // segment relative
         lwi     r6,_hal_hardware_init_done
         mtlr    r6

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -59,6 +59,7 @@
 
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_diag.h>
+#include <cyg/hal/hal_misc.h>           // cyg_hal_is_break()
 #include <cyg/hal/hal_intr.h>           // Interrupt macros
 #include <cyg/hal/drv_api.h>
 
@@ -102,6 +103,7 @@
 #define CYG_DEV_SERIAL_LSR   0x05 // line status register, read
 #define CYG_DEV_SERIAL_MSR   0x06 // modem status register, read
 #define CYG_DEV_SERIAL_SCR   0x07 // scratch pad register
+#define CYG_DEV_SERIAL_DCR   0x11 // device control (UART vs DUART)
 
 // The interrupt enable register bits.
 #define SIO_IER_ERDAI   0x01            // enable received data available irq
@@ -146,9 +148,12 @@
 #define SIO_LCR_DLAB   0x80             // divisor latch access bit
 
 // The FIFO control register
-#define SIO_FCR_FCR0   0x01             // enable xmit and rcvr fifos
-#define SIO_FCR_FCR1   0x02             // clear RCVR FIFO
-#define SIO_FCR_FCR2   0x04             // clear XMIT FIFO
+#define SIO_FCR_FEN    0x01             // enable xmit and rcvr fifos
+#define SIO_FCR_RFR    0x02             // clear RCVR FIFO
+#define SIO_FCR_TFR    0x04             // clear XMIT FIFO
+
+// DUART control
+#define SIO_DCR_SDM    0x01             // Special DUART mode
 
 
 //-----------------------------------------------------------------------------
@@ -163,14 +168,16 @@ static void
 init_serial_channel(const channel_data_t* __ch_data)
 {
     cyg_uint8* base = __ch_data->base;
-    cyg_uint8 lcr;
+    cyg_uint8 lcr, iir;
 
     HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_IER, 0);
 
     // Disable and clear FIFOs (need to enable to clear).
-    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR,
-                    (SIO_FCR_FCR0 | SIO_FCR_FCR1 | SIO_FCR_FCR2));
-    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR, 0);
+    HAL_READ_UINT8(base+CYG_DEV_SERIAL_IIR, iir);
+    if ((iir & 0xC0) == 0) {
+        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR, (SIO_FCR_FEN | SIO_FCR_RFR | SIO_FCR_TFR));
+        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR, 0);
+    }
 
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_LCR, SIO_LCR_WLS0 | SIO_LCR_WLS1);
@@ -188,24 +195,18 @@ init_serial_channel(const channel_data_t* __ch_data)
     lcr &= ~SIO_LCR_DLAB;
     HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_LCR, lcr);
 
-#if 0 // Necessary?
-    {
-        // Special initialization for ST16C552 on CMA102
-        cyg_uint8 mcr;
-        
-        HAL_READ_UINT8(base+CYG_DEV_SERIAL_MCR_A, mcr);
-        mcr |= 8;
-        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_MCR_A, mcr);
-
-        HAL_READ_UINT8(base+CYG_DEV_SERIAL_MCR_B, mcr);
-        mcr |= 8;
-        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_MCR_B, mcr);
-    }
-#endif
+    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_DCR, SIO_DCR_SDM);
 
     // Enable FIFOs (and clear them).
-    HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR,
-                    (SIO_FCR_FCR0 | SIO_FCR_FCR1 | SIO_FCR_FCR2));
+    if ((iir & 0xC0) == 0) {
+        HAL_WRITE_UINT8(base+CYG_DEV_SERIAL_FCR, (SIO_FCR_FEN | SIO_FCR_RFR | SIO_FCR_TFR));
+    }
+}
+
+static void
+cyg_hal_plf_serial_error(void *__ch_data, cyg_uint8 lsr)
+{
+    // Ignore?
 }
 
 static cyg_bool
@@ -215,6 +216,9 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     cyg_uint8 lsr;
 
     HAL_READ_UINT8(base+CYG_DEV_SERIAL_LSR, lsr);
+    if ((lsr & SIO_LSR_ERR) != 0) {
+        cyg_hal_plf_serial_error(__ch_data, lsr);
+    }
     if ((lsr & SIO_LSR_DR) == 0)
         return false;
 

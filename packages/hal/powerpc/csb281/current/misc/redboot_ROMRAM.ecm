@@ -38,10 +38,6 @@ cdl_component CYGSEM_DEVS_ETH_CSB281_ETH0_SET_ESA {
     user_value 1
 };
 
-cdl_option CYGDBG_DEVS_ETH_INTEL_I82559_CHATTER {
-    user_value 0 0
-};
-
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
     user_value 4096
 };
@@ -67,11 +63,15 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
 };
 
 cdl_option CYGSEM_HAL_ROM_MONITOR {
-    inferred_value 0
+    inferred_value 1
+};
+
+cdl_option CYGSEM_HAL_POWERPC_RESET_USES_JUMP {
+    user_value 1
 };
 
 cdl_component CYG_HAL_STARTUP {
-    user_value RAM
+    user_value ROMRAM
 };
 
 cdl_component CYGBLD_BUILD_REDBOOT {

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -72,6 +72,10 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
     CYGARC_MEMDESC_NOCACHE( 0x70000000, 0x10000000 ), // FLASH region, LCD, PS/2
     CYGARC_MEMDESC_NOCACHE( 0xf0000000, 0x10000000 ), // PCI space, LEDS, control
     CYGARC_MEMDESC_CACHE(   CYGMEM_REGION_ram, CYGMEM_REGION_ram_SIZE ), // Main memory
+// Main memory, mapped non-cacheable for PCI use
+    CYGARC_MEMDESC_NOCACHE_PA(CYGMEM_SECTION_pci_window, 
+                              CYGARC_PHYSICAL_ADDRESS(CYGMEM_SECTION_pci_window), 
+                              CYGMEM_SECTION_pci_window_SIZE),
 
     CYGARC_MEMDESC_TABLE_END
 };
@@ -81,7 +85,7 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
 void
 hal_platform_init(void)
 {
-    cyg_uint32 bcsr, gcr, frr, eicr;
+    cyg_uint32 bcsr, gcr, frr, eicr, iack;
     int vec;
 
     // Initialize I/O interfaces
@@ -101,13 +105,20 @@ hal_platform_init(void)
         HAL_INTERRUPT_CONFIGURE(vec, 0, 0);  // Default to low-edge
         HAL_INTERRUPT_SET_LEVEL(vec, 0x0F);  // Priority
     }
+    vec = (frr & 0x0FFF0000) >> 16;  // Number of interrupt sources
+    while (vec-- > 0) {
+        HAL_READ_UINT32LE(_CSB281_EPIC_IACK, iack);  
+        HAL_WRITE_UINT32LE(_CSB281_EPIC_EOI, 0);
+    }
     HAL_WRITE_UINT32LE(_CSB281_EPIC_PCTPR, 1); // Enables interrupts
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
     // Reset peripherals
     HAL_READ_UINT32(_CSB281_BCSR, bcsr);
     HAL_WRITE_UINT32(_CSB281_BCSR, _zero_bit(bcsr, _CSB281_BCSR_PRESET));
     HAL_WRITE_UINT32(_CSB281_BCSR, _one_bit(bcsr, _CSB281_BCSR_PRESET));
     _csb281_i2c_init();
     _csb281_fs6377_init();
+#endif
     _csb281_pci_init();
 }
 

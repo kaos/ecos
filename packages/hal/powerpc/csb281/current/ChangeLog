@@ -1,3 +1,27 @@
+2003-01-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_error): New function - fixed
+	some random [timing?] problems with getc().
+
+	* src/csb281.S: Fix ROMRAM startup.  Minor cleanups.
+
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: Update.
+
+	* include/pkgconf/mlt_powerpc_csb281_romram.mlt: 
+	* include/pkgconf/mlt_powerpc_csb281_romram.ldi: 
+	* include/pkgconf/mlt_powerpc_csb281_romram.h: Fix RAM size.
+
+	* src/hal_aux.c: 
+	* include/plf_io.h: Define uncached, separately mapped, PCI space.
+
+2003-01-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (hal_platform_init): Need to clear all interrupt
+	sources - very manually - reset doesn't do this.
+
+	* include/platform.inc: Don't run EOI cycle for spurious interrupts.
+
 2002-12-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c: 

@@ -6,7 +6,7 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0, LENGTH = 0x800000
+    ram : ORIGIN = 0, LENGTH = 0x1F00000
 }
 
 SECTIONS

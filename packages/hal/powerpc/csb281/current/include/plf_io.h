@@ -12,7 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -65,8 +65,10 @@
 //
 // PCI support
 //
-#define CYGARC_PHYSICAL_ADDRESS(x) (x)
-#define CYGARC_UNCACHED_ADDRESS(x) (x)
+#define _EOM (CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE)
+#define _PCI_MAP 0x80000000
+#define CYGARC_PHYSICAL_ADDRESS(x) (((x) >= _PCI_MAP) ? ((x) & 0x0FFFFFFF) : (x))
+#define CYGARC_UNCACHED_ADDRESS(x) ((x) + _PCI_MAP)
 
 // Restrict device [slot] space
 #define CYG_PCI_MAX_BUS                       1  // Only one BUS
@@ -84,8 +86,8 @@
 #define HAL_PCI_PHYSICAL_MEMORY_BASE              0  // Address maps are 1-1
 #define HAL_PCI_PHYSICAL_IO_BASE                  0
 
-// [hard-wired] shared memory segment
-#define CYGMEM_SECTION_pci_window                 CYGMEM_REGION_ram_SIZE  // "end" of RAM
+// shared memory segment
+#define CYGMEM_SECTION_pci_window                 CYGARC_UNCACHED_ADDRESS(CYGMEM_REGION_ram_SIZE)
 #define CYGMEM_SECTION_pci_window_SIZE            0x00100000
 
 // Initialize the PCI environment

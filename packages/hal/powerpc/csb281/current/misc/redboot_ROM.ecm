@@ -25,6 +25,7 @@ cdl_configuration eCos {
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
     package -template CYGPKG_NS_DNS current ;
+    package -template CYGPKG_CRC current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
 };
@@ -49,7 +50,7 @@ cdl_option CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM {
     inferred_value 0
 };
 
-cdl_option CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP {
+cdl_component CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP {
     user_value 0
 };
 
