@@ -285,11 +285,12 @@ unset_tag( struct bootp *ppkt,
 static int
 bring_half_up(const char *intf, struct ifreq *ifrp )
 {
-    int s;
+    int s = -1;
     int one = 1;
 
     struct sockaddr_in *addrp;
     struct ecos_rtentry route;
+    int retcode = false;
 
     // Ensure clean slate
     cyg_route_reinit();  // Force any existing routes to be forgotten
@@ -297,12 +298,12 @@ bring_half_up(const char *intf, struct ifreq *ifrp )
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
         perror("socket");
-        return false;
+        goto out;
     }
 
     if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one))) {
         perror("setsockopt");
-        return false;
+        goto out;
     }
 
     addrp = (struct sockaddr_in *) &ifrp->ifr_addr;
@@ -315,30 +316,30 @@ bring_half_up(const char *intf, struct ifreq *ifrp )
     strcpy(ifrp->ifr_name, intf);
     if (ioctl(s, SIOCSIFADDR, ifrp)) { /* set ifnet address */
         perror("SIOCSIFADDR");
-        return false;
+        goto out;
     }
 
     if (ioctl(s, SIOCSIFNETMASK, ifrp)) { /* set net addr mask */
         perror("SIOCSIFNETMASK");
-        return false;
+        goto out;
     }
 
     /* the broadcast address is 255.255.255.255 */
     memset(&addrp->sin_addr, 255, sizeof(addrp->sin_addr));
     if (ioctl(s, SIOCSIFBRDADDR, ifrp)) { /* set broadcast addr */
         perror("SIOCSIFBRDADDR");
-        return false;
+        goto out;
     }
 
     ifrp->ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING;
     if (ioctl(s, SIOCSIFFLAGS, ifrp)) { /* set ifnet flags */
         perror("SIOCSIFFLAGS up");
-        return false;
+        goto out;
     }
 
     if (ioctl(s, SIOCGIFHWADDR, ifrp) < 0) { /* get MAC address */
         perror("SIOCGIFHWADDR 1");
-        return false;
+        goto out;
     }
 
     // Set up routing
@@ -362,13 +363,15 @@ bring_half_up(const char *intf, struct ifreq *ifrp )
     if (ioctl(s, SIOCADDRT, &route)) { /* add route */
         if (errno != EEXIST) {
             perror("SIOCADDRT 3");
-            return false;
+            goto out;
         }
     }
+    retcode = true;
+ out:
+    if (s != -1) 
+      close(s);
 
-    close(s);
-
-    return true;
+    return retcode;
 }
 
 
@@ -473,9 +476,9 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
         tag = 0xffffffff;
 
     if ( 0xffffffff == tag ) {
-        lease->expiry = 0xffffffffffffffff;
-        lease->t2     = 0xffffffffffffffff;
-        lease->t1     = 0xffffffffffffffff;
+        lease->expiry = 0xffffffff;
+        lease->t2     = 0xffffffff;
+        lease->t1     = 0xffffffff;
         return; // it's an infinite lease, hurrah!
     }
 
@@ -593,7 +596,7 @@ do_dhcp(const char *intf, struct bootp *res,
 {
     struct ifreq ifr;
     struct sockaddr_in cli_addr, broadcast_addr, server_addr, rx_addr;
-    int s, addrlen;
+    int s = -1, addrlen;
     int one = 1;
     unsigned char mincookie[] = {99,130,83,99,255} ;
     struct timeval tv;
@@ -638,12 +641,12 @@ do_dhcp(const char *intf, struct bootp *res,
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
         perror("socket");
-        return false;
+        goto out;
     }
 
     if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one))) {
         perror("setsockopt");
-        return false;
+        goto out;
     }
 
     memset((char *) &cli_addr, 0, sizeof(cli_addr));
@@ -666,15 +669,15 @@ do_dhcp(const char *intf, struct bootp *res,
 
     if(bind(s, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
         perror("bind error");
-        return false;
+        goto out;
     }
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
         perror("setsockopt SO_REUSEADDR");
-        return false;
+        goto out;
     }
     if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
         perror("setsockopt SO_REUSEPORT");
-        return false;
+        goto out;
     }
     
     // Now, we can launch into the DHCP state machine.  I think this will
@@ -687,7 +690,7 @@ do_dhcp(const char *intf, struct bootp *res,
     strcpy(&ifr.ifr_name[0], intf);
     if (ioctl(s, SIOCGIFHWADDR, &ifr) < 0) {
         perror("SIOCGIFHWADDR 2");
-        return false;
+        goto out;
     }
 
     // Choose from scratch depending on ifr_hwaddr...[]
@@ -956,7 +959,8 @@ do_dhcp(const char *intf, struct bootp *res,
 
             // All done with socket
             close(s);
-
+            s = -1;
+            
             // Re-initialize the interface with the new state
             if ( DHCPSTATE_BOUND != oldstate ) {
                 // Then need to go down and up
@@ -967,7 +971,7 @@ do_dhcp(const char *intf, struct bootp *res,
                     if (!init_net(intf, res)) {
                         do_dhcp_down_net( intf, res, pstate, lease );
                         *pstate = DHCPSTATE_FAILED;
-                        return false;
+                        goto out;
                     }
                 }
             }
@@ -1204,6 +1208,8 @@ do_dhcp(const char *intf, struct bootp *res,
         case DHCPSTATE_BOOTP_FALLBACK:
             // All done with socket
             close(s);
+            s = -1;
+            
             // And no lease should have become active, but JIC
             no_lease( lease );
             // Re-initialize the interface with the new state
@@ -1216,7 +1222,7 @@ do_dhcp(const char *intf, struct bootp *res,
                     if (!init_net(intf, res)) {
                         do_dhcp_down_net( intf, res, pstate, lease );
                         *pstate = DHCPSTATE_FAILED;
-                        return false;
+                        goto out;
                     }
                 }
             }
@@ -1292,7 +1298,10 @@ do_dhcp(const char *intf, struct bootp *res,
             return false;
         }
     }
-    /* NOTREACHED */
+out:
+    if (s != -1) 
+      close (s);
+    
     return false;
 }
 
@@ -1306,7 +1315,8 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
 {
     struct sockaddr_in *addrp;
     struct ifreq ifr;
-    int s;
+    int s = -1;
+    int retcode = false;
 
     // Ensure clean slate
     cyg_route_reinit();  // Force any existing routes to be forgotten
@@ -1314,7 +1324,7 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
         perror("socket");
-        return false;
+        goto out;
     }
 
     addrp = (struct sockaddr_in *) &ifr.ifr_addr;
@@ -1335,7 +1345,7 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
         strcpy(ifr.ifr_name, intf);
         if (ioctl(s, SIOCGIFADDR, &ifr)) {
             perror("SIOCGIFADDR 1");
-            return false;
+            goto out;
         }
     }
 
@@ -1352,6 +1362,7 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
       s6 = socket(AF_INET6, SOCK_DGRAM, 0);
       if (s6 < 0) {
         perror("socket AF_INET6");
+        close (s);
         return false;
       }
       // Now delete the ipv6 addr
@@ -1372,16 +1383,19 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
     ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
     if (ioctl(s, SIOCSIFFLAGS, &ifr)) { /* set ifnet flags */
         perror("SIOCSIFFLAGS down");
-        return false;
+        goto out;
     }
-
-    // All done with socket
-    close(s);
-
+    retcode = true;
+ 
     if ( 0 != *pstate ) // preserve initial state
         *pstate = DHCPSTATE_INIT;
 
-    return true;
+    
+ out:
+    if (s != -1)
+      close(s);
+    
+    return retcode;
 }
 
 // ------------------------------------------------------------------------

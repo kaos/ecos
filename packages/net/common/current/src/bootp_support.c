@@ -86,12 +86,12 @@ do_bootp(const char *intf, struct bootp *recv)
     struct ifreq ifr;
     struct sockaddr_in cli_addr, serv_addr, bootp_server_addr;
     struct ecos_rtentry route;
-    int s, addrlen;
+    int s=-1, addrlen;
     int one = 1;
     struct bootp bootp_xmit;
     unsigned char mincookie[] = {99,130,83,99,255} ;
     struct timeval tv;
-    cyg_bool_t retcode = true;
+    cyg_bool_t retcode = false;
 
     // Ensure clean slate
     cyg_route_reinit();  // Force any existing routes to be forgotten
@@ -99,12 +99,12 @@ do_bootp(const char *intf, struct bootp *recv)
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
         perror("socket");
-        return false;
+        goto out;
     }
 
     if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one))) {
         perror("setsockopt");
-        return false;
+        goto out;
     }
 
     addrp = (struct sockaddr_in *) &ifr.ifr_addr;
@@ -117,30 +117,30 @@ do_bootp(const char *intf, struct bootp *recv)
     strcpy(ifr.ifr_name, intf);
     if (ioctl(s, SIOCSIFADDR, &ifr)) {
         perror("SIOCSIFADDR");
-        return false;
+        goto out;
     }
 
     if (ioctl(s, SIOCSIFNETMASK, &ifr)) {
         perror("SIOCSIFNETMASK");
-        return false;
+        goto out;
     }
 
     /* the broadcast address is 255.255.255.255 */
     memset(&addrp->sin_addr, 255, sizeof(addrp->sin_addr));
     if (ioctl(s, SIOCSIFBRDADDR, &ifr)) {
         perror("SIOCSIFBRDADDR");
-        return false;
+        goto out;
     }
 
     ifr.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING;
     if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
         perror("SIOCSIFFLAGS");
-        return false;
+        goto out;
     }
 
     if (ioctl(s, SIOCGIFHWADDR, &ifr) < 0) {
         perror("SIOCGIFHWADDR");
-        return false;
+        goto out;
     }
 
     // Set up routing
@@ -162,7 +162,7 @@ do_bootp(const char *intf, struct bootp *recv)
     if (ioctl(s, SIOCADDRT, &route)) {
         if (errno != EEXIST) {
             perror("SIOCADDRT 3");
-            return false;
+            goto out;
         }
     }
 
@@ -173,15 +173,15 @@ do_bootp(const char *intf, struct bootp *recv)
     
     if(bind(s, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
         perror("bind error");
-        return false;
+        goto out;
     }
     if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
         perror("setsockopt SO_REUSEADDR");
-        return false;
+        goto out;
     }
     if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one))) {
         perror("setsockopt SO_REUSEPORT");
-        return false;
+        goto out;
     }
     
     memset((char *) &serv_addr, 0, sizeof(serv_addr));
@@ -193,7 +193,7 @@ do_bootp(const char *intf, struct bootp *recv)
     bzero(&bootp_xmit, sizeof(bootp_xmit));
     if (ioctl(s, SIOCGIFHWADDR, &ifr) < 0) {
         perror("SIOCGIFHWADDR");
-        return false;
+        goto out;
     }
     bootp_xmit.bp_htype = HTYPE_ETHERNET;
     bootp_xmit.bp_hlen = IFHWADDRLEN;
@@ -207,13 +207,16 @@ do_bootp(const char *intf, struct bootp *recv)
     if(sendto(s, &bootp_xmit, sizeof(struct bootp), 0, 
               (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("sendto error");
-        return false;
+        goto out;
     }
 
     tv.tv_sec = 5;
     tv.tv_usec = 0;
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
+    
+    // Everything passed here is a success.
+    retcode = true;
+    
     addrlen = sizeof(bootp_server_addr);
     if (recvfrom(s, recv, sizeof(struct bootp), 0,
                  (struct sockaddr *)&bootp_server_addr, &addrlen) < 0) {
@@ -239,11 +242,12 @@ do_bootp(const char *intf, struct bootp *recv)
     ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
     if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
         perror("SIOCSIFFLAGS");
-        return false;
     }
 
+ out:
     // All done with socket
-    close(s);
+    if (s != -1)
+      close(s);
     return retcode;
 }
 
@@ -433,21 +437,22 @@ init_net(const char *intf, struct bootp *bp)
 {
     struct sockaddr_in *addrp;
     struct ifreq ifr;
-    int s;
+    int s=-1;
     int one = 1;
     struct ecos_rtentry route;
     struct in_addr netmask, gateway;
     unsigned int length;
-
+    int retcode = false;
+    
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
         perror("socket");
-        return false;
+        goto out;
     }
 
     if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one))) {
         perror("setsockopt");
-        return false;
+        goto out;
     }
 
     addrp = (struct sockaddr_in *) &ifr.ifr_addr;
@@ -462,7 +467,7 @@ init_net(const char *intf, struct bootp *bp)
     strcpy(ifr.ifr_name, intf);
     if (ioctl(s, SIOCSIFADDR, &ifr)) {
         perror("SIOCIFADDR");
-        return false;
+        goto out;
     }
 
     length = sizeof(addrp->sin_addr);
@@ -470,14 +475,14 @@ init_net(const char *intf, struct bootp *bp)
         netmask = addrp->sin_addr;
         if (ioctl(s, SIOCSIFNETMASK, &ifr)) {
             perror("SIOCSIFNETMASK");
-            return false;
+            goto out;
         }
         // Must do this again so that [sub]netmask (and so default route)
         // is taken notice of.
         addrp->sin_addr = bp->bp_yiaddr;  // The address BOOTP gave us
         if (ioctl(s, SIOCSIFADDR, &ifr)) {
             perror("SIOCIFADDR 2");
-            return false;
+            goto out;
         }
     }
 
@@ -485,7 +490,7 @@ init_net(const char *intf, struct bootp *bp)
     if (get_bootp_option(bp, TAG_IP_BROADCAST, &addrp->sin_addr,&length)) {
         if (ioctl(s, SIOCSIFBRDADDR, &ifr)) {
             perror("SIOCSIFBRDADDR");
-            return false;
+            goto out;
         }
         // Do not re-set the IFADDR after this; doing *that* resets the
         // BRDADDR to the default!
@@ -494,7 +499,7 @@ init_net(const char *intf, struct bootp *bp)
     ifr.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING;
     if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
         perror("SIOCSIFFLAGS");
-        return false;
+        goto out;
     }
 
     // Set up routing
@@ -526,12 +531,13 @@ init_net(const char *intf, struct bootp *bp)
                   inet_ntoa(((struct sockaddr_in *)&route.rt_gateway)->sin_addr));
                 if (errno != EEXIST) {
                     perror("SIOCADDRT 3");
-                    return false;
+                    goto out;
                 }
             }
         }
     }
-    close(s);
+    retcode = true;
+    
 #ifdef CYGINT_ISO_DNS
     {
 #define MAX_IP_ADDR_LEN 16
@@ -588,7 +594,10 @@ init_net(const char *intf, struct bootp *bp)
         }
     }
 #endif /* CYGNUM_NET_SNTP_UNICAST_MAXDHCP */
-    return true;
+ out:
+    if (s != -1) 
+      close(s);
+    return retcode;
 }
 
 #ifdef INET6
@@ -596,15 +605,16 @@ extern const struct in6_addr in6mask128;
 cyg_bool_t
 init_net_IPv6(const char *intf, struct bootp *bp, char *prefix)
 {
-    int s;
+    int s =-1 ;
     struct in6_aliasreq in6_addr;
     char in6_ip[128];
+    int retcode = false;
 
     // Set up non link-layer address
     s = socket(AF_INET6, SOCK_DGRAM, 0);
     if (s < 0) {
         perror("socket IPv6");
-        return false;
+        goto out;
     }
     bzero(&in6_addr, sizeof(in6_addr));
     diag_sprintf(in6_ip, "%s::%s", prefix, inet_ntoa(bp->bp_yiaddr));
@@ -612,7 +622,7 @@ init_net_IPv6(const char *intf, struct bootp *bp, char *prefix)
     in6_addr.ifra_addr.sin6_family = AF_INET6;
     if (!inet_pton(AF_INET6, in6_ip, (char *)&in6_addr.ifra_addr.sin6_addr)) {
         diag_printf("Can't set IPv6 address: %s\n", in6_ip);
-        return false;
+        goto out;
     }
     in6_addr.ifra_prefixmask.sin6_len = sizeof(struct sockaddr_in6);
     in6_addr.ifra_prefixmask.sin6_family = AF_INET6;
@@ -622,10 +632,13 @@ init_net_IPv6(const char *intf, struct bootp *bp, char *prefix)
     in6_addr.ifra_lifetime.ia6t_pltime = ND6_INFINITE_LIFETIME;
     if (ioctl(s, SIOCAIFADDR_IN6, &in6_addr)) {
         perror("SIOCAIFADDR_IN6");
-        return false;
+        goto out;
     }
-    close(s);
-    return true;
+    retcode = true;
+ out:
+    if (s != -1) 
+      close(s);
+    return retcode;
 }
 #endif
 
