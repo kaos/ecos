@@ -55,6 +55,7 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/devs_eth_arm_ebsa285.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_arch.h>
@@ -71,8 +72,11 @@
 
 // ------------------------------------------------------------------------
 
-#define nDEBUG_82559
-#define DEBUG
+#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_CHATTER
+#define notDEBUG_82559 // This one prints stuff as packets come and go
+#define DEBUG          // Startup printing mainly
+#define DEBUG_EE       // Some EEPROM specific retries &c
+#endif
 
 #define nKEEP_STATISTICS
 #define nDISPLAY_STATISTICS
@@ -86,22 +90,22 @@
 // I/O access macros as inlines for type safety
 
 static inline void OUTB(cyg_uint8 value, cyg_uint32 io_address)
-{   *((cyg_uint8 *)io_address) = value;    }
+{   *((volatile cyg_uint8 *)io_address) = value;    }
 
 static inline void OUTW(cyg_uint16 value, cyg_uint32 io_address)
-{   *((cyg_uint16 *)io_address) = value;   }
+{   *((volatile cyg_uint16 *)io_address) = value;   }
 
 static inline void OUTL(cyg_uint32 value, cyg_uint32 io_address)
-{   *((cyg_uint32 *)io_address) = value;   }
+{   *((volatile cyg_uint32 *)io_address) = value;   }
 
 static inline cyg_uint8 INB(cyg_uint32 io_address)
-{   return *((cyg_uint8 *)io_address);     }
+{   return *((volatile cyg_uint8 *)io_address);     }
 
 static inline cyg_uint16 INW(cyg_uint32 io_address)
-{   return *((cyg_uint16 *)io_address);    }
+{   return *((volatile cyg_uint16 *)io_address);    }
 
 static inline cyg_uint32 INL(cyg_uint32 io_address)
-{   return *((cyg_uint32 *)io_address);    }
+{   return *((volatile cyg_uint32 *)io_address);    }
 
 #define VIRT_TO_BUS( _x_ ) virt_to_bus((cyg_uint32)(_x_))
 static inline cyg_uint32 virt_to_bus(cyg_uint32 p_memory)
@@ -179,8 +183,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define EE_SHIFT_CLK	0x01            // EEPROM shift clock.
 #define EE_CS		0x02            // EEPROM chip select.
 #define EE_DATA_WRITE	0x04            // EEPROM chip data in.
-#define EE_WRITE_0	0x01
-#define EE_WRITE_1	0x05
 #define EE_DATA_READ	0x08            // EEPROM chip data out.
 #define EE_ENB		(0x4800 | EE_CS)
 
@@ -188,11 +190,21 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define eeprom_delay(usec)		udelay(usec);
 
 // The EEPROM commands include the always-set leading bit.
-// (and require the local variable "addr_len", usually 6 or 8)
-#define EE_WRITE_CMD	(5 << addr_len)
-#define EE_READ_CMD	(6 << addr_len)
-#define EE_ERASE_CMD	(7 << addr_len)
-#define EE_WRITE_EN_CMD (19 << (addr_len-2))
+#define EE_WRITE_CMD(a)     (5 << (a))
+#define EE_READ_CMD(a)	    (6 << (a))
+#define EE_ERASE_CMD(a)	    (7 << (a))
+#define EE_WRITE_EN_CMD(a)  (19 << ((a)-2))
+#define EE_WRITE_DIS_CMD(a) (16 << ((a)-2))
+#define EE_ERASE_ALL_CMD(a) (18 << ((a)-2))
+
+#define EE_TOP_CMD_BIT(a)      ((a)+2) // Counts down to zero
+#define EE_TOP_DATA_BIT        (15)    // Counts down to zero
+
+#define EEPROM_ENABLE_DELAY (10) // Delay at chip select
+
+#define EEPROM_SK_DELAY  (2) // Delay between clock edges *and* data
+                             // read or transition; 3 of these per bit.
+#define EEPROM_DONE_DELAY (100) // Delay when all done
 
 
 // ------------------------------------------------------------------------
@@ -532,9 +544,9 @@ static void ResetRxRing(struct i82559* p_i82559);
 static void InitTxRing(struct i82559* p_i82559);
 static void ResetTxRing(struct i82559* p_i82559);
 
-static int write_enable_eeprom(long ,  int );
+#ifdef CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
 static void program_eeprom(cyg_uint32 , cyg_uint32 , cyg_uint8 * );
-
+#endif
 static int eth_set_promiscuous_mode(struct i82559* p_i82559);
 
 // debugging/logging only:
@@ -548,7 +560,8 @@ void dump_packet(cyg_uint8 *p_buffer, int length);
 // utilities
 // ------------------------------------------------------------------------
 
-static inline void wait_for_cmd_done(long scb_ioaddr)
+static // inline
+void wait_for_cmd_done(long scb_ioaddr)
 {
     register int CSRstatus;
     register int wait = 0x100000;
@@ -654,6 +667,86 @@ static void *pciwindow_mem_alloc(int size)
 
 // ------------------------------------------------------------------------
 //
+//                       GET EEPROM SIZE
+//
+// ------------------------------------------------------------------------
+static int get_eeprom_size(long ioaddr)
+{
+    unsigned short retval = 0;
+    int ee_addr = ioaddr + SCBeeprom;
+    int i, addrbits;
+
+    // Should already be not-selected, but anyway:
+    OUTW(EE_ENB & ~EE_CS, ee_addr);
+    eeprom_delay(EEPROM_ENABLE_DELAY);
+    OUTW(EE_ENB, ee_addr);
+    eeprom_delay(EEPROM_ENABLE_DELAY);
+    
+    // Shift the read command bits out.
+    for (i = 2; i >= 0; i--) {
+        short dataval = (6 & (1 << i)) ? EE_DATA_WRITE : 0;
+        OUTW(EE_ENB | dataval               , ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        OUTW(EE_ENB | dataval               , ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+    }
+    // Now clock out address zero, looking for the dummy 0 data bit
+    for ( i = 1; i <= 12; i++ ) {
+        OUTW(EE_ENB               , ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        OUTW(EE_ENB | EE_SHIFT_CLK, ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        OUTW(EE_ENB               , ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        retval = INW(ee_addr) & EE_DATA_READ;
+        if ( 0 == retval )
+            break; // The dummy zero est arrive'
+    }
+
+#ifdef DEBUG_EE
+    os_printf( "eeprom data bits %d (ioaddr %x)\n", i, ee_addr );
+#endif
+    if ( 6 != i && 8 != i ) {
+#ifdef DEBUG_EE
+        os_printf( "*****EEPROM data bits not 6 or 8*****\n" );
+#endif
+        i = 6;
+    }
+    addrbits = i;
+
+    // clear the dataval, leave the clock low to read in the data regardless
+    OUTW(EE_ENB, ee_addr);
+    eeprom_delay(1);
+    
+    retval = INW(ee_addr);
+    if ( (EE_DATA_READ & retval) != 0 ) {
+#ifdef DEBUG_EE
+        os_printf( "Size EEPROM: Dummy data bit not 0, reg %x\n" , retval );
+#endif
+    }
+    eeprom_delay(1);
+    
+    for (i = EE_TOP_DATA_BIT; i >= 0; i--) {
+        OUTW(EE_ENB | EE_SHIFT_CLK, ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        retval = INW(ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+        OUTW(EE_ENB, ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
+    }
+    
+    // Terminate the EEPROM access.
+    OUTW(EE_ENB & ~EE_CS, ee_addr);
+    eeprom_delay(EEPROM_DONE_DELAY);
+    
+    return addrbits;
+}
+
+
+// ------------------------------------------------------------------------
+//
 //                       READ EEPROM
 //
 // ------------------------------------------------------------------------
@@ -661,35 +754,69 @@ static int read_eeprom(long ioaddr, int location, int addr_len)
 {
     unsigned short retval = 0;
     int ee_addr = ioaddr + SCBeeprom;
-    int read_cmd = location | EE_READ_CMD;
-    int i;
-    
+    int read_cmd = location | EE_READ_CMD(addr_len);
+    int i, tries = 10;
+
+ try_again:
+    // Should already be not-selected, but anyway:
     OUTW(EE_ENB & ~EE_CS, ee_addr);
-    eeprom_delay(1);
+    eeprom_delay(EEPROM_ENABLE_DELAY);
     OUTW(EE_ENB, ee_addr);
-    eeprom_delay(1);
+    eeprom_delay(EEPROM_ENABLE_DELAY);
     
-    // Shift the read command bits out.
-    for (i = 12; i >= 0; i--) {
+    // Shift the read command bits out, changing only one bit per time.
+    for (i = EE_TOP_CMD_BIT(addr_len); i >= 0; i--) {
         short dataval = (read_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
-        OUTW(EE_ENB | dataval, ee_addr);
-        eeprom_delay(1);
+        OUTW(EE_ENB | dataval               , ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
         OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
-        eeprom_delay(1);
+        eeprom_delay(EEPROM_SK_DELAY);
+        OUTW(EE_ENB | dataval               , ee_addr);
+        eeprom_delay(EEPROM_SK_DELAY);
     }
+
+    // clear the dataval, leave the clock low
     OUTW(EE_ENB, ee_addr);
     eeprom_delay(1);
     
-    for (i = 15; i >= 0; i--) {
+    retval = INW(ee_addr);
+    // This should show a zero in the data read bit to confirm that the
+    // address transfer is compelete.  If not, go to the start and try
+    // again!
+    if ( (0 != (retval & EE_DATA_READ)) && (tries-- > 0) ) {
+    // Terminate the EEPROM access.
+        OUTW(EE_ENB & ~EE_CS, ee_addr);
+        eeprom_delay(EEPROM_DONE_DELAY);
+#ifdef DEBUG_EE
+        os_printf( "Warning: Retrying EEPROM read word %d, address %x, try %d\n",
+                   location,  ee_addr, tries+1 );
+#endif
+        goto try_again;
+    }
+
+    // This fires with one device on one of the customer boards!
+    // (but is OK on all other h/w.  Worrying huh.)
+    if ( (EE_DATA_READ & retval) != 0 ) {
+#ifdef DEBUG_EE
+        os_printf( "Read EEPROM: Dummy data bit not 0, reg %x\n" , retval );
+#endif
+    }
+    eeprom_delay(1);
+    retval = 0;
+
+    for (i = EE_TOP_DATA_BIT; i >= 0; i--) {
         OUTW(EE_ENB | EE_SHIFT_CLK, ee_addr);
-        eeprom_delay(1);
+        eeprom_delay(EEPROM_SK_DELAY);
         retval = (retval << 1) | ((INW(ee_addr) & EE_DATA_READ) ? 1 : 0);
+        eeprom_delay(EEPROM_SK_DELAY);
         OUTW(EE_ENB, ee_addr);
-        eeprom_delay(1);
+        eeprom_delay(EEPROM_SK_DELAY);
     }
     
     // Terminate the EEPROM access.
     OUTW(EE_ENB & ~EE_CS, ee_addr);
+    eeprom_delay(EEPROM_DONE_DELAY);
+    
     return retval;
 }
 
@@ -730,7 +857,9 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
     p_i82559 = (struct i82559 *)(sc->driver_private);
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "Bad device private pointer %x\n", sc->driver_private );
+#endif
         return 0;
     }
 
@@ -739,7 +868,9 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
     if ( 0 == initialized++ ) {
         // then this is the first time ever:
         if ( ! pci_init_find_82559s() ) {
+#ifdef DEBUG
             os_printf( "pci_init_find_82559s failed" );
+#endif
             return 0;
         }
     }
@@ -777,7 +908,9 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
     
     if (count < 0) {
         // Test timed out.
+#ifdef DEBUG
         os_printf("Self test failed\n");
+#endif
         return (0);
     }
 #ifdef DEBUG
@@ -793,13 +926,16 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
 #endif
 
     // read eeprom and get 82559's mac address
-    addr_length = (read_eeprom(ioaddr, 0, 6) == 0xffff) ? 8 : 6;
+    addr_length = get_eeprom_size(ioaddr);
     // (this is the length of the *EEPROM*s address, not MAC address)
 
     for (checksum = 0, i = 0, count = 0; count < 64; count++) {
         cyg_uint16 value;
         // read word from eeprom
         value = read_eeprom(ioaddr, count, addr_length);
+#ifdef DEBUG_EE
+        // os_printf( "%2d: %04x\n", count, value );
+#endif
         checksum += value;
         if (count < 3) {
             mac_address[i++] = value & 0xFF;
@@ -816,13 +952,17 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
 
     if ((checksum & 0xFFFF) != 0xBABA)  {
         // selftest verified checksum, verify again
+#ifdef DEBUG_EE
         os_printf( "Warning: Invalid EEPROM checksum %04X for device %d\n",
                    checksum, p_i82559->index);
+#endif
     } else {
         p_i82559->mac_addr_ok = 1;
+#ifdef DEBUG_EE
+        os_printf("Valid EEPROM checksum\n");
+#endif
     }
 #ifdef DEBUG
-    os_printf("Valid EEPROM checksum\n");
     os_printf("MAC Address = %02X %02X %02X %02X %02X %02X\n",
               mac_address[0], mac_address[1], mac_address[2], mac_address[3],
               mac_address[4], mac_address[5]);
@@ -851,8 +991,6 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
     return (1);
 }
 
-
-
 // ------------------------------------------------------------------------
 //
 //  Function : i82559_start
@@ -872,14 +1010,18 @@ static void i82559_start( struct eth_drv_sc *sc,
     p_i82559 = (struct i82559 *)sc->driver_private;
     
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_start: Bad device pointer %x\n", p_i82559 );
+#endif
         return;
     }
 
     if ( ! p_i82559->mac_addr_ok ) {
+#ifdef DEBUG
         os_printf("i82559_start %d: invalid MAC address, "
                   "can't bring up interface\n",
                   p_i82559->index );
+#endif
         return;
     }
 
@@ -934,7 +1076,6 @@ static void i82559_start( struct eth_drv_sc *sc,
 #endif
 }
 
-
 // ------------------------------------------------------------------------
 //
 //  Function : BringDown82559
@@ -948,7 +1089,9 @@ static void i82559_stop( struct eth_drv_sc *sc )
     p_i82559 = (struct i82559 *)sc->driver_private;
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_stop: Bad device pointer %x\n", p_i82559 );
+#endif
         return;
     }
    
@@ -1117,7 +1260,9 @@ static void i82559_recv( struct eth_drv_sc *sc,
     p_i82559 = (struct i82559 *)sc->driver_private;
     
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_recv: Bad device pointer %x\n", p_i82559 );
+#endif
         return;
     }
 
@@ -1349,7 +1494,9 @@ i82559_can_send(struct eth_drv_sc *sc)
     p_i82559 = (struct i82559 *)sc->driver_private;
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_send: Bad device pointer %x\n", p_i82559 );
+#endif
         return 0;
     }
     
@@ -1381,7 +1528,9 @@ i82559_send(struct eth_drv_sc *sc,
     p_i82559 = (struct i82559 *)sc->driver_private;
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_send: Bad device pointer %x\n", p_i82559 );
+#endif
         return;
     }
 
@@ -1401,8 +1550,10 @@ i82559_send(struct eth_drv_sc *sc,
 #ifdef KEEP_STATISTICS
         statistics[p_i82559->index].tx_dropped++;
 #endif
+#ifdef DEBUG_82559
         os_printf( "i82559_send: Queue full, device %x, key %x\n",
                    p_i82559, key );
+#endif
     }
     else {
         struct eth_drv_sg *last_sg;
@@ -1527,7 +1678,9 @@ static cyg_uint32 eth_isr(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint32 ioaddr;
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_isr: Bad device pointer %x\n", p_i82559 );
+#endif
         return 0;
     }
 
@@ -1642,7 +1795,9 @@ pci_init_find_82559s( void )
 
     // allocate memory to be used in ioctls later
     if (mem_reserved_ioctl != (void*)0) {
+#ifdef DEBUG
         db_printf("pci_init_find_82559s() called > once\n");
+#endif
         return 0;
     }
 
@@ -1657,6 +1812,7 @@ pci_init_find_82559s( void )
 #ifdef DEBUG
     db_printf("Finished cyg_pci_init();\n");
 #endif
+
     devid = CYG_PCI_NULL_DEVID;
 
     for (device_index = 0; device_index < MAX_82559; device_index++) {
@@ -1779,13 +1935,17 @@ pci_init_find_82559s( void )
             else {
                 p_i82559->found = 0;
                 p_i82559->active = 0;
+#ifdef DEBUG
                 db_printf("Failed to configure device %d\n",device_index);
+#endif
             }
         }
         else {
             p_i82559->found = 0;
             p_i82559->active = 0;
+#ifdef DEBUG
             db_printf("eth%d not found\n", device_index);
+#endif
         }
     }
 
@@ -1795,31 +1955,13 @@ pci_init_find_82559s( void )
         cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
     }
 
+    // Now a delay to ensure the hardware has "come up" before you try to
+    // use it.  Yes, really, the full 2 seconds.  It's only really
+    // necessary if DEBUG is off - otherwise all that printout wastes
+    // enough time.  No kidding.
+    udelay( 2000000 );
     return 1;
 }
-
-
-// ------------------------------------------------------------------------
-// We use this as a templete when writing a new MAC address into the
-// eeproms. The MAC address in the first few bytes is over written
-// with the correct MAC address and then the whole lot is programmed
-// into the serial EEPROM. The checksum is calculated on the fly and
-// sent instead of the last two bytes.
-
-static char eeprom_burn[126] = { 
-  0x00, 0x90, 0x27, 0x8c, 0x57, 0x82, 0x03, 0x02, 0x00, 0x00, 0x01,
-  0x02, 0x01, 0x47, 0x00, 0x00, 0x13, 0x72, 0x06, 0x83, 0xa2, 0x40,
-  0x0c, 0x00, 0x86, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28, 0x01, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00 
-};
 
 // ------------------------------------------------------------------------
 //
@@ -1835,8 +1977,10 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     volatile CONFIG_CMD_STRUCT *ccs;
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "eth_set_promiscuos_mode: Bad device pointer %x\n",
                    p_i82559 );
+#endif
         return -1;
     }
 
@@ -1903,6 +2047,42 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
 }
 
 // ------------------------------------------------------------------------
+// We use this as a templete when writing a new MAC address into the
+// eeproms. The MAC address in the first few bytes is over written
+// with the correct MAC address and then the whole lot is programmed
+// into the serial EEPROM. The checksum is calculated on the fly and
+// sent instead of the last two bytes.
+// The values are copied from the Intel EtherPro10/100+ &c devices
+// in the EBSA boards.
+
+#ifdef CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
+
+#define ee00 0x00, 0x00 // shorthand
+
+static char eeprom_burn[126] = { 
+/* halfword addresses! */
+/*  0: */  0x00, 0x90,   0x27, 0x8c,       0x57, 0x82,   0x03, 0x02,
+/*  4: */     ee00   ,   0x01, 0x02,       0x01, 0x47,      ee00   ,
+/*  8: */  0x13, 0x72,   0x06, 0x83,       0xa2, 0x40,   0x0c, 0x00,
+/*  C: */  0x86, 0x80,      ee00   ,          ee00   ,      ee00   ,
+/* 10: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 14: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 18: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 1C: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 20: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 24: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 28: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 2C: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 30: */  0x28, 0x01,      ee00   ,          ee00   ,      ee00   ,
+/* 34: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 38: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
+/* 3C: */     ee00   ,      ee00   ,          ee00   
+};
+#undef ee00
+
+#endif
+
+// ------------------------------------------------------------------------
 //
 //  Function : eth_set_mac_address
 //
@@ -1911,28 +2091,26 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
 // ------------------------------------------------------------------------
 static int eth_set_mac_address(struct i82559* p_i82559, char *addr)
 {
+#ifdef CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
+    int checksum, i, count;
+    // (this is the length of the *EEPROM*s address, not MAC address)
     int addr_length;
-  
+#endif
     cyg_uint32  ioaddr;
     volatile CONFIG_CMD_STRUCT *ccs;
   
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "eth_set_mac_address : Bad device pointer %x\n",
                    p_i82559 );
+#endif
         return -1;
     }
 
     ioaddr = p_i82559->io_address;      
     
     wait_for_cmd_done(ioaddr); 
-    // load cu base address = 0 */ 
-    OUTL(0, ioaddr + SCBPointer);       
-    // 32 bit linear addressing used
-                                        
-    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
-    // wait for SCB command complete
-    wait_for_cmd_done(ioaddr); 
-    
+
     ccs = (CONFIG_CMD_STRUCT *)mem_reserved_ioctl;
     if (ccs == (void*)0)
         return 2;
@@ -1956,140 +2134,181 @@ static int eth_set_mac_address(struct i82559* p_i82559, char *addr)
     // Next delay seems to be required, otherwise,
     // cb_ok/cb_complete won't be set later.
 
-    udelay(100);
+    udelay(1000);
     wait_for_cmd_done(ioaddr);   
   
     // now check for result ...
     if ( (!ccs->cb_entry.cb_ok) || (!ccs->cb_entry.cb_complete) )
         return 3;
   
+#ifdef CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
+
+    addr_length = get_eeprom_size( ioaddr );
+
     // now set this address in the device eeprom ....
     (void)memcpy(eeprom_burn,addr,6);
-    eeprom_burn[20] &= 0xfe;   
-    eeprom_burn[20] |= p_i82559->index;   
 
-    addr_length=6; // eeprom address word length in bits ...
-    program_eeprom(ioaddr,addr_length,eeprom_burn);
+    // No idea what these were for...
+    // eeprom_burn[20] &= 0xfe;   
+    // eeprom_burn[20] |= p_i82559->index;   
+        
+    program_eeprom( ioaddr, addr_length, eeprom_burn );
    
-    // now update netword stack ...
-    // FIXME - no feedback to stack when MAC changes
-
     // update 82559 driver data structure ...
-    (void)memcpy((char *)(p_i82559->mac_address),addr,6);
+    udelay( 100000 );
+
+    // by reading EEPROM to get the mac address back
+    for (checksum = 0, i = 0, count = 0; count < 64; count++) {
+        cyg_uint16 value;
+        // read word from eeprom
+        value = read_eeprom(ioaddr, count, addr_length);
+        checksum += value;
+        if (count < 3) {
+            p_i82559->mac_address[i++] = value & 0xFF;
+            p_i82559->mac_address[i++] = (value >> 8) & 0xFF;
+        }
+    }
+    
+#ifdef DEBUG
+    os_printf("MAC Address = %02X %02X %02X %02X %02X %02X\n",
+              p_i82559->mac_address[0], p_i82559->mac_address[1],
+              p_i82559->mac_address[2], p_i82559->mac_address[3],
+              p_i82559->mac_address[4], p_i82559->mac_address[5]);
+#endif
+
     p_i82559->mac_addr_ok = 1;
-    return 0;
+
+    for ( i = 0, count = 0; i < 6; i++ )
+        if ( p_i82559->mac_address[i] != addr[i] )
+            count++;
+
+    if ( count ) {
+#ifdef DEBUG
+        os_printf( "Warning: MAC Address read back wrong!  %d bytes differ.\n",
+                   count );
+#endif
+        p_i82559->mac_addr_ok = 0;
+    }
+
+    // If the EEPROM checksum is wrong, the MAC address read from the
+    // EEPROM is probably wrong as well. In that case, we don't set
+    // mac_addr_ok.
+    if ((checksum & 0xFFFF) != 0xBABA)  {
+#ifdef DEBUG
+        os_printf( "Warning: Invalid EEPROM checksum %04X for device %d\n",
+                   checksum, p_i82559->index);
+#endif
+        p_i82559->mac_addr_ok = 0;
+    }
+#else
+    p_i82559->mac_addr_ok = 1;
+#endif // ! CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
+
+    return p_i82559->mac_addr_ok ? 0 : 1;
 }
 
+#ifdef CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
 // ------------------------------------------------------------------------
-//
-//  Function : write_enable_eeprom
-//
+static void
+write_eeprom(long ioaddr, int location, int addr_len, unsigned short value)
+{
+    int ee_addr = ioaddr + SCBeeprom;
+    int write_cmd = location | EE_WRITE_CMD(addr_len); 
+    int i;
+    
+    OUTW(EE_ENB & ~EE_CS, ee_addr);
+    eeprom_delay( 100 );
+    OUTW(EE_ENB, ee_addr);
+    eeprom_delay( 100 );
+
+//    os_printf("\n write_eeprom : write_cmd : %x",write_cmd);  
+//    os_printf("\n addr_len : %x  value : %x ",addr_len,value);  
+
+    /* Shift the write command bits out. */
+    for (i = (addr_len+2); i >= 0; i--) {
+        short dataval = (write_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
+        OUTW(EE_ENB | dataval, ee_addr);
+        eeprom_delay(100);
+        OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
+        eeprom_delay(150);
+    }
+    OUTW(EE_ENB, ee_addr);
+        
+    for (i = 15; i >= 0; i--) {
+        short dataval = (value & (1 << i)) ? EE_DATA_WRITE : 0;
+        OUTW(EE_ENB | dataval, ee_addr);
+        eeprom_delay(100);
+        OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
+        eeprom_delay(150);
+    }
+
+    /* Terminate the EEPROM access. */
+    OUTW(EE_ENB & ~EE_CS, ee_addr);
+    eeprom_delay(150000); // let the write take effect
+}
+
 // ------------------------------------------------------------------------
 static int write_enable_eeprom(long ioaddr,  int addr_len)
 {
     int ee_addr = ioaddr + SCBeeprom;
-    int write_en_cmd = EE_WRITE_EN_CMD; 
+    int write_en_cmd = EE_WRITE_EN_CMD(addr_len); 
     int i;
-  
-    OUTW(EE_ENB & ~EE_CS, ee_addr);
-    eeprom_delay(1);
-    OUTW(EE_ENB, ee_addr);
-    eeprom_delay(1);
 
-  
+    OUTW(EE_ENB & ~EE_CS, ee_addr);
+    OUTW(EE_ENB, ee_addr);
+
+#ifdef DEBUG_82559
+    os_printf("write_en_cmd : %x",write_en_cmd);
+#endif
+
     // Shift the wr/er enable command bits out.
     for (i = (addr_len+2); i >= 0; i--) {
-        short dataval = (write_en_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
-        OUTW(EE_ENB | dataval, ee_addr);
-        eeprom_delay(1);
-        OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
-        eeprom_delay(1);
+	short dataval = (write_en_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
+	OUTW(EE_ENB | dataval, ee_addr);
+	eeprom_delay(100);
+	OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
+	eeprom_delay(150);
     }
 
     // Terminate the EEPROM access.
     OUTW(EE_ENB & ~EE_CS, ee_addr);
-    eeprom_delay(1);
-    return 0;
+    eeprom_delay(EEPROM_DONE_DELAY);
 }
 
+
 // ------------------------------------------------------------------------
-//
-//  Function : write_eeprom
-//
-//  Return : 0 = It worked.
-//           1 = It failed.
-// ------------------------------------------------------------------------
-static int write_eeprom(long ioaddr, int location,
-                 int addr_len, unsigned short value)
+static void
+program_eeprom(cyg_uint32 ioaddr, cyg_uint32 eeprom_size, cyg_uint8 *data)
 {
-    unsigned short retval = 0;
-    int ee_addr = ioaddr + SCBeeprom;
-    int write_cmd = location | EE_WRITE_CMD; 
-    int i;
-  
-    OUTW(EE_ENB & ~EE_CS, ee_addr);
-    eeprom_delay(1);
-    OUTW(EE_ENB, ee_addr);
-    eeprom_delay(1);
+  cyg_uint32 i;
+  cyg_uint16 checksum = 0;
+  cyg_uint16 value;
 
-    // Shift the write command bits out.
-    for (i = (addr_len+2); i >= 0; i--) {
-        short dataval = (write_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
-        OUTW(EE_ENB | dataval, ee_addr);
-        eeprom_delay(1);
-        OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
-        eeprom_delay(1);
-    }
-    OUTW(EE_ENB, ee_addr);
-    eeprom_delay(1);
-    
-    for (i = 15; i >= 0; i--) {
-        short dataval = (value & (1 << i)) ? EE_DATA_WRITE : 0;
-        OUTW(EE_ENB | dataval, ee_addr);
-        eeprom_delay(1);
-        OUTW(EE_ENB | dataval | EE_SHIFT_CLK, ee_addr);
-        eeprom_delay(1);
-    }
+  // First enable erase/write operations on the eeprom.
+  // This is done through the EWEN instruction.
+  write_enable_eeprom( ioaddr, eeprom_size );
 
-    // Terminate the EEPROM access.
-    OUTW(EE_ENB & ~EE_CS, ee_addr);
-    eeprom_delay(10000);
-    return retval;
+  for (i=0 ; i< 63 ; i++) {
+    value = ((unsigned short *)data)[i];
+    checksum += value;
+#ifdef DEBUG_82559
+    os_printf("\n i : %x ... value to be written : %x",i,value);
+#endif
+    write_eeprom( ioaddr, i, eeprom_size, value);
+#ifdef DEBUG_82559
+    os_printf("\n val read : %x ",read_eeprom(ioaddr,i,eeprom_size));
+#endif
+  }
+  value = 0xBABA - checksum;
+#ifdef DEBUG_82559
+  os_printf("\n i : %x ... checksum adjustment val to be written : %x",i,value);
+#endif
+  write_eeprom( ioaddr, i, eeprom_size, value );
 }
 
 // ------------------------------------------------------------------------
-//
-//  Function : Program EEPROM
-//  Parameters : ioaddr
-//               addr_length in bits (8 or 6)
-//               char[128] data to program
-//  Return : void
-// ------------------------------------------------------------------------
-static void program_eeprom(cyg_uint32 ioaddr,
-                    cyg_uint32 eeprom_size,
-                    cyg_uint8 * data)
-{
-    cyg_uint32 i;
-    cyg_uint16 checksum = 0;
-    cyg_uint16 value;
-    cyg_uint16 * cyg_uint16_data = (cyg_uint16 *) data;
+#endif // ! CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM
 
-    // first enable erase/write operations on the eeprom ...
-    // this is done through the EWEN instruction ...
-
-    write_enable_eeprom(ioaddr,eeprom_size);
-  
-    // Now write the bytes, except the checksum
-    for (i=0 ; i< 63 ; i++) {
-        value = ((unsigned short*)cyg_uint16_data)[i];
-        checksum += value;
-        write_eeprom(ioaddr,i,eeprom_size,value);
-    }
-  
-    // Work out the checksum and program it
-    value = 0xBABA - checksum;
-    write_eeprom(ioaddr,i,eeprom_size,value);
-}
 
 // ------------------------------------------------------------------------
 //
@@ -2100,13 +2319,15 @@ static void program_eeprom(cyg_uint32 ioaddr,
 static int eth_get_mac_address(struct i82559* p_i82559, char *addr)
 {
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "eth_get_mac_address : Bad device pointer %x\n",
                    p_i82559 );
+#endif
         return -1;
     }
 
     memcpy( addr, (char *)(&p_i82559->mac_address[0]), 6 );
-    return (0);
+    return 0;
 }
 #endif
 // ------------------------------------------------------------------------
@@ -2122,9 +2343,16 @@ static int i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
     p_i82559 = (struct i82559 *)sc->driver_private;
 
     IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
         os_printf( "i82559_ioctl/control: Bad device pointer %x\n", p_i82559 );
+#endif
         return -1;
     }
+
+#ifdef DEBUG
+    db_printf( "i82559_ioctl: device eth%d at %x; key is 0x%x, data at %x[%d]\n",
+               p_i82559->index, p_i82559, key, data, data_length );
+#endif
 
     switch ( key ) {
 
@@ -2132,14 +2360,12 @@ static int i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
     case ETH_DRV_SET_MAC_ADDRESS:
         if ( 6 != data_length )
             return -2;
-        eth_set_mac_address( p_i82559, data );
-        return 0;
+        return eth_set_mac_address( p_i82559, data );
 #endif
 
 #ifdef ETH_DRV_GET_MAC_ADDRESS
     case ETH_DRV_GET_MAC_ADDRESS:
-        eth_get_mac_address( p_i82559, data );
-        return 0;
+        return eth_get_mac_address( p_i82559, data );
 #endif
 
     default:
@@ -2167,7 +2393,6 @@ void dump_txcb(TxCB *p_txcb)
     os_printf("threshold = %d ", p_txcb->tx_threshold);
     os_printf("tbd number = %d\n", p_txcb->tbd_number);
 }
-
 
 // This is intended to be the body of a THREAD that prints stuff every 10
 // seconds or so:

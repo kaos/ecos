@@ -251,6 +251,7 @@
 	.endm
 #else
 	.macro	hal_cpu_eret pc,sr
+        .set mips3
 	mtc0	\pc,epc				# put PC in EPC
 	nop
 	nop
@@ -262,6 +263,7 @@
 	sync					# settle things down
 	eret					# return
 	nop					# just to be safe
+        .set mips0
 	.endm
 #endif	
 	

@@ -1,4 +1,4 @@
-// eCos memory layout - Mon Apr 03 20:58:39 2000
+// eCos memory layout - Wed May 10 18:37:59 2000
 
 // This is a generated file - do not edit
 
@@ -31,7 +31,7 @@ SECTIONS
     SECTION_sdata (ram, ALIGN (0x8), FOLLOWING (.dynamic))
     SECTION_lit8 (ram, ALIGN (0x8), FOLLOWING (.sdata))
     SECTION_lit4 (ram, ALIGN (0x8), FOLLOWING (.lit8))
-    SECTION_sbss (ram, ALIGN (0x8), FOLLOWING (.lit4))
-    SECTION_bss (ram, ALIGN (0x8), FOLLOWING (.sbss))
+    SECTION_sbss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTIONS_END
 }

@@ -1,3 +1,9 @@
+2000-05-10  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt: Fix mistake in last
+	change: bss/sbss shouldn't be relocated
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi: Regenerate
+
 2000-04-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.ldi: 

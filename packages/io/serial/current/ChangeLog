@@ -1,3 +1,11 @@
+2000-05-08  Jesper Skov  <jskov@redhat.com>
+
+    	* cdl/io_serial.cdl: active_if CYGPKG_IO
+
+2000-05-05  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/common/serial.c (serial_get_config): Tidy below change a little
+
 2000-05-05  Grant Edwards  <grante@visi.com>
 
 	* src/common/serial.c (serial_get_config): Support

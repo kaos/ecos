@@ -1,3 +1,20 @@
+2000-05-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ebsa285_eth_drivers.cdl: Added export of the test header
+	below, and config opts for controlling EEPROM writing and all the
+	status chatter as the device starts up.
+
+	* src/if_ebsa285.c: Reworked the code for reading and setting the
+	EEPROM that holds the MAC address.  This is very ugly, but now
+	more reliable.  Also tidied up printing cruft with neater
+	configury, and made it an option (for safety) whether it's
+	possible to write the EEPROM at all.
+
+	* tests/test_net_realtime.h: New file - it is intended to be used
+	by networking tests to verify that latency is not compromised by
+	the stack and driver.  It's very platform specific, hence the
+	location in here.  This is a preliminary version only.
+
 2000-04-27  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c: A serious re-write.  This cuts out a lot of

@@ -53,10 +53,43 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
     # yes, there should be two of these "implement"s
     implements    CYGHWR_NET_DRIVERS
     implements    CYGHWR_NET_DRIVERS
-    include_dir   .
-#    include_files ; # none _exported_ whatsoever
+    include_dir   cyg/devs/eth
+
+    # none exported about the *device* but this one is used by other tests:
+    include_files tests/test_net_realtime.h
+    # and tell them that it is available
+    define_proc {
+        puts $::cdl_header \
+       "#define CYGTST_DEVS_ETH_TEST_NET_REALTIME <cyg/devs/eth/tests/test_net_realtime.h>"
+	puts $::cdl_system_header \
+       "#define CYGBLD_DEVS_ETH_DEVICE_H <pkgconf/devs_eth_arm_ebsa285.h>"
+    }
+
     description   "Ethernet driver for Intel EBSA285 with PRO/100+ boards."
     compile       -library=libextras.a if_ebsa285.c
+
+    cdl_option CYGDBG_DEVS_ETH_ARM_EBSA285_CHATTER {
+	display "Prints ethernet device status info during startup"
+	default_value 0
+	description   "
+	    The ethernet device initialization code can print lots of info
+	    to confirm that it has found the devices on the PCI bus, read
+	    the MAC address from EEPROM correctly, and so on, and also
+	    displays the mode (10/100MHz, half/full duplex) of the
+	    connection."
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM {
+	display "SIOCSIFHWADDR records MAC address in EEPROM"
+	default_value 0
+	description   "
+	    The ioctl() socket call with operand SIOCSIFHWADDR sets the
+	    interface hardware address - the MAC address or ethernet
+	    address.  This option causes the new MAC address to be written
+	    into the EEPROM associated with the interface, so that the new
+	    MAC address is permanently recorded.  Doing this should be a
+	    carefully chosen decision, hence this option."
+    }
 
     cdl_component CYGPKG_DEVS_ETH_ARM_EBSA285_OPTIONS {
         display "Intel EBSA285 with PRO/100+ ethernet driver build options"
@@ -75,6 +108,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
                 global flags."
         }
     }
+
 }
 
 # EOF ebsa285_eth_drivers.cdl

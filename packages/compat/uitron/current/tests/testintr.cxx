@@ -785,8 +785,14 @@ attach_isr( unsigned int (*isr)(unsigned int, unsigned int) )
     HAL_INTERRUPT_MASK( CYGNUM_HAL_INTERRUPT_RTC );
     HAL_DISABLE_INTERRUPTS(old_ints);
     prtc->interrupt.detach();
+#ifndef CYGIMP_KERNEL_INTERRUPTS_CHAIN
+    // Only check that the vector was cleared when there's a specific
+    // vector for the RTC.  In chain mode, other interrupt handlers
+    // may prevent the shared vector from being cleared when detaching
+    // the RTC ISR, and this assertion fails.
     HAL_INTERRUPT_IN_USE( CYGNUM_HAL_INTERRUPT_RTC, inuse );
     CYG_TEST_CHECK( !inuse, "Failed to detach clock ISR" );
+#endif
     uit_intr = Cyg_Interrupt( 
         CYGNUM_HAL_INTERRUPT_RTC,       // Vector to attach to
         1,                              // Queue priority
@@ -811,8 +817,11 @@ detach_isr( unsigned int (*isr)(unsigned int, unsigned int) )
     HAL_INTERRUPT_MASK( CYGNUM_HAL_INTERRUPT_RTC );
     HAL_DISABLE_INTERRUPTS(old_ints);
     uit_intr.detach();
+#ifndef CYGIMP_KERNEL_INTERRUPTS_CHAIN
+    // See comment above in attach_isr.
     HAL_INTERRUPT_IN_USE( CYGNUM_HAL_INTERRUPT_RTC, inuse );
     CYG_TEST_CHECK( !inuse, "Failed to detach my ISR" );
+#endif
     prtc->interrupt.attach();
     HAL_INTERRUPT_IN_USE( CYGNUM_HAL_INTERRUPT_RTC, inuse );
     CYG_TEST_CHECK( inuse, "Failed to attach clock ISR" );

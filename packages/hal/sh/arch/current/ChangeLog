@@ -1,3 +1,8 @@
+2000-05-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh.cdl: Make sure CPU variant definition ends up in
+	system.h
+
 2000-04-26  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_mk_defs.c: Added some caching data.

@@ -95,6 +95,8 @@ cdl_package CYGPKG_HAL_SH {
         display       "SH 7708 microprocessor"
         implements    CYGINT_HAL_SH_VARIANT
         default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_SH_7708
         description "
             The SH3 7708 microprocessor. This is an embedded part that in
             addition to the SH3 processor core has built in peripherals

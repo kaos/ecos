@@ -244,7 +244,7 @@ main( int argc, char *argv[] )
     state = 3;
 
 #if 0
-#elif defined(CYGPKG_HAL_SH_EDK7708)
+#elif defined(CYGPKG_HAL_SH_7708)
     CYG_TEST_PASS("Test 3 not applicable to sh 7708");
 #elif defined(CYGPKG_HAL_MN10300)
     CYG_TEST_PASS("Test 3 not applicable to mn10300");

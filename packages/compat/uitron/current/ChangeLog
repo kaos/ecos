@@ -1,3 +1,8 @@
+2000-05-08  Jesper Skov  <jskov@redhat.com>
+
+	* tests/testintr.cxx (attach_isr, detach_isr): Don't check for
+	clean vector after a detach when chaining is enabled.
+
 2000-03-28  Jesper Skov  <jskov@redhat.com>
 
 	* tests/testintr.cxx: Synchronize with clock before making timer

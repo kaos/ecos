@@ -86,7 +86,6 @@ package CYGPKG_IO_SERIAL {
            This package contains drivers for basic I/O services on
            serial devices."
 }
-
 package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     alias 	      { "Intel EBSA285 serial driver"
                         devs_serial_arm_ebsa285 ebsa285_serial_driver }
@@ -293,8 +292,6 @@ eCos supports a uITRON Compatibility Layer, providing full Level S
 many Level E (Extended) features. uITRON is the premier Japanese
 embedded RTOS standard."
 }
-
-
 package CYGPKG_LIBC {
 	alias		{ "C library" libc clib clibrary }
 	directory	language/c/libc
@@ -328,7 +325,6 @@ on the POSIX style naming e.g. EINVAL etc. This package also provides
 the standard strerror() function to convert error codes to textual
 representation."
 }
-
 package CYGPKG_CYGMON {
     alias           { "CygMon support via eCos" cygmon }
     directory       cygmon
@@ -370,7 +366,6 @@ package CYGPKG_HAL_ARM_AEB {
 The aeb HAL package provides the support needed to run eCos on a ARM
 AEB-1 eval board."
 }
-
 package CYGPKG_HAL_ARM_EBSA285 {
 	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
 	directory	hal/arm/ebsa285
@@ -424,7 +419,6 @@ package CYGPKG_HAL_SH_EDK7708 {
            eCos on a Hitachi SH3 EDK7708 board."
 }
 
-
 # --------------------------------------------------------------------------
 # i386 packages
 package CYGPKG_HAL_I386 {
@@ -449,7 +443,6 @@ package CYGPKG_HAL_I386_LINUX {
     	    support needed to run eCos binaries on top of the i386
     	    Linux kernel."
 }
-
 package CYGPKG_HAL_I386_PC {
 	alias		{ "i386 PC target" hal_i386_pc }
 	directory	hal/i386/pc
@@ -529,7 +522,6 @@ package CYGPKG_HAL_POWERPC_PPC60x {
            for this processor variant. It is also necessary to
            select a specific target platform HAL package."
 }
-
 package CYGPKG_HAL_POWERPC_COGENT {
 	alias		{ "Cogent CMA286/287 board" hal_powerpc_cogent powerpc_cogent_hal }
 	directory	hal/powerpc/cogent
@@ -549,7 +541,6 @@ package CYGPKG_HAL_POWERPC_FADS {
             The FADS HAL package provides the support needed to run
             eCos on a Motorola FADS board equipped with a PowerPC processor."
 }
-
 package CYGPKG_HAL_POWERPC_MBX {
 	alias		{ "Motorola MBX860/821 board" hal_powerpc_mbx powerpc_mbx_hal }
 	directory	hal/powerpc/mbx
@@ -651,7 +642,6 @@ package CYGPKG_HAL_MIPS_VR4300 {
            for this processor architecture. It is also necessary to
            select a specific target platform HAL package."
 }
-
 package CYGPKG_HAL_MIPS_VR4300_VRC4373 {
 	alias		{ "NEC VRC4373 board" hal_vrc4373 vrc4373_hal }
 	directory	hal/mips/vrc4373
@@ -714,7 +704,6 @@ package CYGPKG_HAL_MN10300_AM31_STDEVAL1 {
            an accurate simulation of the full hardware including I/O
            devices."
 }
-
 package CYGPKG_HAL_MN10300_AM33 {
 	alias		{ "MN10300 AM33 variant HAL" hal_mn10300_am33 mn10300_am33_hal }
 	directory	hal/mn10300/am33
@@ -738,7 +727,6 @@ package CYGPKG_HAL_MN10300_AM33_STB {
 }
 
 # ==========================================================================
-
 # --------------------------------------------------------------------------
 # ARM targets
 
@@ -763,7 +751,6 @@ target aeb {
 The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
 }
-
 target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
 	packages { CYGPKG_HAL_ARM
@@ -798,7 +785,6 @@ target cma230 {
 The cma230 target provides the packages needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
     }
-
 # --------------------------------------------------------------------------
 # SH targets
 
@@ -815,8 +801,6 @@ target sh7708 {
            eCos on a Hitachi EDK/SH7708 board."
 }
 
-
-
 # --------------------------------------------------------------------------
 # i386 targets
 target linux {
@@ -829,7 +813,6 @@ target linux {
     	    packages needed to run eCos binaries on top of the i386
     	    Linux kernel."
 }
-
 target pc {
         alias		{ "i386 PC target" }
 	packages        { CYGPKG_HAL_I386
@@ -868,7 +851,6 @@ target sparclite_sim {
 
 # --------------------------------------------------------------------------
 # PowerPC targets
-
 target cma28x {
         alias		{ "Cogent CMA286/287 board" cma286 cma287 }
 	packages        { CYGPKG_HAL_POWERPC
@@ -891,7 +873,6 @@ target fads {
             The fads target provides the packages needed to run
             eCos on a Motorola MPC8xxFADS board."
 }
-
 target mbx {
         alias		{ "Motorola MBX860/821 board" mbx860 mbx821 }
 	packages        { CYGPKG_HAL_POWERPC
@@ -992,7 +973,6 @@ target stdeval1 {
            be used when running in the full simulator, since the simulator provides an
            accurate simulation of the hardware including I/O devices."
 }
-
 target stb {
         alias		{ "Matsushita STB board" }
 	packages        { CYGPKG_HAL_MN10300

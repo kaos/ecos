@@ -297,18 +297,18 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
             *len = sizeof(cyg_serial_buf_info_t);
             p = (cyg_serial_buf_info_t *)xbuf;
             
-            p->rx_bufsize = chan->in_cbuf.len;
+            p->rx_bufsize = in_cbuf->len;
             if (p->rx_bufsize) {
-                p->rx_count = chan->in_cbuf.put - chan->in_cbuf.get;
+                p->rx_count = in_cbuf->put - in_cbuf->get;
                 if (p->rx_count < 0) 
                     p->rx_count += p->rx_bufsize;
             }
             else
                 p->rx_count = 0;
             
-            p->tx_bufsize = chan->out_cbuf.len;
+            p->tx_bufsize = out_cbuf->len;
             if (p->tx_bufsize) {
-                p->tx_count = chan->out_cbuf.put - chan->out_cbuf.get;
+                p->tx_count = out_cbuf->put - out_cbuf->get;
                 if (p->tx_count < 0) 
                     p->tx_count += p->tx_bufsize;
             }

@@ -1,3 +1,10 @@
+2000-05-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/arch.inc: Force assembler into MIPS3 mode before using
+	eret.
+
+	* include/basetype.h: Fix comments.
+
 2000-03-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/mips-stub.h: Make C++ safe
