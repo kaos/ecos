@@ -313,6 +313,28 @@ cdl_package CYGPKG_NET {
                 This option adds the TAG_DHCP_CLIENTID option to the DHCP/BOOTP
                 requests.  It uses the interface MAC address for the identifier."
         }
+
+        cdl_option CYGNUM_NET_DHCP_MIN_RETRY_TIME {
+            display "DHCP minimum retry time"
+            flavor        data
+            legal_values  0 to 100
+            default_value 100
+            description "
+               This option allows the application to specify the
+               minimum number of seconds for DHCP discovery. If DHCP
+               discovery fails, the action to be taken is application
+               specific. Multiple discovery attempts are made during
+               the time specified with each subsequent attempt having
+               a longer timeout. Attempts begin at approximately 1, 5,
+               15, 35, and 65 seconds with the last attempt timing out
+               after the total of 125 seconds. A new attempt will not
+               begin if the minimum time has been reached. Although,
+               an attempt in progress will run past the minimum time
+               specified. For example: Specifying 30 seconds would
+               timeout at 35 seconds. Specifying 70 seconds has the
+               same effect as specifying 100 seconds where it would
+               run for the total of 125 seconds."  
+        } 
     }
 
     cdl_component CYGPKG_NET_IPV6_ROUTING {

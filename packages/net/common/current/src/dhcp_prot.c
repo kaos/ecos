@@ -407,7 +407,8 @@ static inline int next_timeout( struct timeval *ptv, struct timeout_state *pstat
         pstate->countdown = 2; // later fast retries
         ptv->tv_sec = 0;
     }
-    return pstate->secs < 100; // If longer, too many tries...
+    // If longer, too many tries...
+    return pstate->secs < CYGNUM_NET_DHCP_MIN_RETRY_TIME; 
 }
 
 // ------------------------------------------------------------------------

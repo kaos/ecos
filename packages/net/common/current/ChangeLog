@@ -1,3 +1,8 @@
+2004-02-27     Robert Chenault <robertchenault@yahoo.com>
+
+        * cdl/net.cdl:
+	* src/dhcp_prot.c: Added CYGNUM_NET_DHCP_MIN_RETRY_TIME
+
 2004-02-17	Matt Jerdonek <maj1224@yahoo.com>
 
 	* src/dhcp_prot.c: Fix initialization of DHCP sec field
