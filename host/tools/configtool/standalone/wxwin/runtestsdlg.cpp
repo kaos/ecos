@@ -988,7 +988,7 @@ void ecRunTestsOutputDialog::CreateControls( wxPanel *parent)
 {
     wxSizer *item0 = new wxBoxSizer( wxVERTICAL );
 
-    wxTextCtrl *item1 = new wxTextCtrl( parent, ecID_RUN_TESTS_OUTPUT_TEXT, "", wxDefaultPosition, wxSize(80,40), wxTE_MULTILINE );
+    wxTextCtrl *item1 = new wxTextCtrl( parent, ecID_RUN_TESTS_OUTPUT_TEXT, "", wxDefaultPosition, wxSize(80,40), wxTE_MULTILINE|wxTE_READONLY|wxTE_RICH|wxCLIP_CHILDREN );
     item0->Add( item1, 1, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     // Add context-sensitive help

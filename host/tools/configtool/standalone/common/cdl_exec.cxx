@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -477,13 +478,13 @@ cdl_exec::cmd_tree ()
             status = true;
 #ifdef __CYGWIN__
             char buf[100];
-            strcpy(buf, "mount.exe -f x: /ecos-x");
+            strcpy(buf, "mount.exe -f -t -u x: /ecos-x");
             //printf("Cwd_win32: %s\n", cwd_win32);
 
             if ( cwd_win32[1] == ':' )
             {
-                buf[13] = cwd_win32[0];
-                buf[22] = cwd_win32[0];
+                buf[19] = tolower(cwd_win32[0]);
+                buf[28] = tolower(cwd_win32[0]);
                 system(buf);
             }
 
@@ -491,8 +492,8 @@ cdl_exec::cmd_tree ()
 
             if ( repository[1] == ':' )
             {
-                buf[13] = repository[0];
-                buf[22] = repository[0];
+                buf[19] = tolower(repository[0]);
+                buf[28] = tolower(repository[0]);
                 system(buf);
             }
             if ( !install_prefix.empty() )
@@ -500,8 +501,8 @@ cdl_exec::cmd_tree ()
                 //printf("Install prefix: %s\n", install_prefix.c_str());
                 if ( install_prefix[1] == ':' )
                 {
-                    buf[13] = install_prefix[0];
-                    buf[22] = install_prefix[0];
+                    buf[19] = tolower(install_prefix[0]);
+                    buf[28] = tolower(install_prefix[0]);
                     system(buf);
                 }
             }

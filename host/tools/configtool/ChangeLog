@@ -1,3 +1,12 @@
+2003-05-01  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/common/cdl_exec.cxx: Generate Cygwin text-mode mounts
+	explicitly since text-mode is no longer the default.
+
+	* standalone/wxwin/runtestsdlg.cpp: Use the rich edit control under
+	Windows to eliminate a 64k limit on the length of text in the test
+        output window and make the window read-only.
+
 2003-04-25  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/docsystem.cpp: Accommodate the latest HTML doc
