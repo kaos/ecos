@@ -1,3 +1,10 @@
+2003-10-09  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/net_io.c (net_init): 
+	* include/net/net.h: Rework handling of multiple network devices.  All
+	devices will now be initialized, with either the first or the default
+	device actually used for I/O.
+
 2003-10-06  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/net_io.c: 

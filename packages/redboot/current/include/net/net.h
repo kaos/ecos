@@ -65,6 +65,7 @@
 extern bool net_debug;
 #ifdef CYGPKG_IO_ETH_DRIVERS
 #  include <pkgconf/io_eth_drivers.h>
+#  include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
 # ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
 extern int cyg_io_eth_net_debug;
 # endif
@@ -349,9 +350,9 @@ typedef struct _tcp_socket {
 } tcp_socket_t;
 
 /*
- * Our address.
+ * Address information for local device
  */
-extern enet_addr_t __local_enet_addr;
+#define __local_enet_addr __local_enet_sc->sc_arpcom.esa
 extern ip_addr_t   __local_ip_addr;
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
 extern ip_addr_t   __local_ip_gate;

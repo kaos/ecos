@@ -54,7 +54,6 @@
 //==========================================================================
 
 #include <redboot.h>
-#include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
 #include <net/net.h>
 #include <cyg/hal/hal_misc.h>   // Helper functions
 #include <cyg/hal/hal_if.h>     // HAL I/O interfaces
@@ -649,11 +648,25 @@ net_devindex(char *name)
     return -1;
 }
 
+static void
+show_eth_info(void)
+{
+    diag_printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
+                __local_enet_sc->dev_name,
+                __local_enet_addr[0],
+                __local_enet_addr[1],
+                __local_enet_addr[2],
+                __local_enet_addr[3],
+                __local_enet_addr[4],
+                __local_enet_addr[5]);
+}
+
 void
 net_init(void)
 {
     cyg_netdevtab_entry_t *t;
     unsigned index;
+    struct eth_drv_sc *primary_net = (struct eth_drv_sc *)0;
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
     char *default_devname;
     int default_index;
@@ -698,39 +711,27 @@ net_init(void)
     eth_drv_buffers_init();
     __pktbuf_init();
 
-    // Initialize network device.
-    // Try default device first, then others
-#ifdef CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE
-    default_devname = net_devname(CYGNUM_REDBOOT_DEFAULT_NETWORK_DEVICE);
-#endif
-
+    // Initialize network device(s).
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
     default_index = net_devindex(default_devname);
     if (default_index < 0)
 	default_index = 0;
-    if ((t = net_devtab_entry(default_index)) != NULL) {
-	if (t->init(t))
+#endif
+    for (index = 0; (t = net_devtab_entry(index)) != NULL; index++) {
+	if (t->init(t)) {
             t->status = CYG_NETDEVTAB_STATUS_AVAIL;
-	else
-#endif
-	{
-	    for (index = 0; (t = net_devtab_entry(index)) != NULL; index++) {
+            if (primary_net == (struct eth_drv_sc *)0) {
+                primary_net = __local_enet_sc;
+            }
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-		if (index == default_index)
-		    continue;
+            if (index == default_index) {
+                primary_net = __local_enet_sc;
+            }
 #endif
-		if (t->init(t)) {
-		    t->status = CYG_NETDEVTAB_STATUS_AVAIL;
-		    break; // stop after first good device found
-		} else {
-		    // What to do if device init fails?
-		    t->status = 0;  // Device not [currently] available
-		}
-	    }
-	}
-#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+        }
     }
-#endif
+    __local_enet_sc = primary_net;
+
     if (!__local_enet_sc) {
         diag_printf("No network interfaces found\n");
         return;
@@ -743,14 +744,7 @@ net_init(void)
             // Is it an unset address, or has it been set to a static addr
             if (__local_ip_addr[0] == 0 && __local_ip_addr[1] == 0 &&
                 __local_ip_addr[2] == 0 && __local_ip_addr[3] == 0) {
-                diag_printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
-                            __local_enet_sc->dev_name,
-                            __local_enet_addr[0],
-                            __local_enet_addr[1],
-                            __local_enet_addr[2],
-                            __local_enet_addr[3],
-                            __local_enet_addr[4],
-                            __local_enet_addr[5]);
+                show_eth_info();
                 diag_printf("Can't get BOOTP info for device!\n");
             } else {
                 diag_printf("Can't get BOOTP info, using default IP address\n");
@@ -766,14 +760,7 @@ net_init(void)
         }
     }
     if (have_net) {
-        diag_printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
-                    __local_enet_sc->dev_name,
-                    __local_enet_addr[0],
-                    __local_enet_addr[1],
-                    __local_enet_addr[2],
-                    __local_enet_addr[3],
-                    __local_enet_addr[4],
-                    __local_enet_addr[5]);
+        show_eth_info();
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
         flash_get_IP("bootp_server_ip", &my_bootp_info.bp_siaddr);
