@@ -64,7 +64,6 @@ cdl_package CYGPKG_IO_SERIAL_ARM_XSCALE_IOP310 {
     description   "
            This option enables the serial device drivers for the
            Xscale board using the IOP310 chipset."
-    doc           redirect/ecos-device-drivers.html
 
     # FIXME: This really belongs in the GENERIC_16X5X package
     cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED {
