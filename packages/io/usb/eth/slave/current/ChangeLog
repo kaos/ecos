@@ -1,3 +1,12 @@
+2002-07-26  David Smith  <dsmith@redhat.com>
+
+	* host/ecos_usbeth.c (ecos_usbeth_probe):
+	Two changes to the code that checks to see if this is the correct
+	driver for the USB peripheral that was just loaded.  Fixed a bug
+	that was comparing the product id of the peripheral to the vendor
+	id.  Supports multiple implementations (vendor id/product id sets)
+	so that the same driver could be used for several devices.
+
 2001-07-10  Bart Veer  <bartv@redhat.com>
 
 	* doc/usbseth.sgml, doc/*.html:

@@ -408,11 +408,23 @@ ecos_usbeth_probe(struct usb_device* usbdev, unsigned int interface_id)
     unsigned char       dummy[1];
     int                 tx_endpoint = -1;
     int                 rx_endpoint = -1;
-    
-    if ((usbdev->descriptor.idVendor  != ecos_usbeth_implementations[0].vendor) ||
-        (usbdev->descriptor.idProduct != ecos_usbeth_implementations[0].vendor)) {
+    const ecos_usbeth_impl*   impl;
+    int                 found_impl = 0;
+
+    // See if this is the correct driver for this USB peripheral.
+    impl = ecos_usbeth_implementations;
+    while (impl->name != NULL) {
+        if ((usbdev->descriptor.idVendor  != impl->vendor) ||
+            (usbdev->descriptor.idProduct != impl->id)) {
+            found_impl = 1;
+            break;
+        }
+        impl++;
+    }
+    if (! found_impl) {
         return (void*) 0;
     }
+
     // For now only support USB-ethernet peripherals consisting of a single
     // configuration, with a single interface, with two bulk endpoints.
     if ((1 != usbdev->descriptor.bNumConfigurations)  ||
