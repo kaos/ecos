@@ -71,10 +71,48 @@
            latter typically requires that the eCos application be blown
            into EPROMs or equivalent technology."
    }
+ 
+   cdl_option CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING {
+       display          "Multiple Vector Trapping (MVT)"
+       parent           CYGPKG_HAL_SPARCLITE_SLEB
+       type             boolean
+       description      "
+           Use Multiple Vector Trapping (MVT) rather than Single Vector
+           Trapping (SVT); SVT is a feature of SPARClite CPUs which saves
+           code RAM at a cost of perhaps slower interrupt and trap dispatch
+           time, depending on cache behavior.  This includes speed of
+           handling register window underflow and overflow, a feature of
+           deep function call stacks on SPARC.  MVT requires 4kB of code
+           space for trap vectors; in contrast SVT uses fewer than 20
+           instructions for trap decoding."
+   }
+
+   cdl_option CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM {
+       display          "Copy vectors to RAM"
+       parent           CYGPKG_HAL_SPARCLITE_SLEB
+       type             boolean
+       description      "
+           Copy the vectors and trap code out of the executable image
+           to separate RAM.  With ROM startup, performance might be gained
+           by copying the vectors into RAM; this includes the code for
+           handling register window under/overflow.  Enable this with
+           RAM startup to simulate the code and data sizes of an eventual
+           ROM image.  Note: if MVT is not selected with ROM start, the
+           trap code (including register window handling) is copied
+           to RAM regardless; that code is small."
+   }
                 
    }}CFG_DATA */
 
 #define CYGHWR_HAL_SPARCLITE_SLEB_STARTUP         ram
+
+// Use SVT by default on SLEBs...
+#undef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+// ...so minimal trampoline code is copied anyway; if MVT do not copy:
+#undef CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
+
+// This is true for SPARClite:
+#define CYGHWR_HAL_SPARCLITE_HAS_ASR17
 
 /* -------------------------------------------------------------------*/
 // The following are NOT config options for now: support for the native

@@ -1,3 +1,7 @@
+1999-10-15  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Removed AEB rev C change. Was bogus.
+
 1999-10-06  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl: Run tests on AEB rev C as well.
@@ -126,6 +130,7 @@
 	obsolete CDL parenting structure).
 	Add support for Motorola PowerPC QUICC/SMC.
 
+	* src/arm/cma230_serial.c: 
 	* src/arm/cl7211_serial.c: 
 	* src/arm/aeb_serial.c: 
 	* src/arm/pid_serial_with_ints.c: Use #include to get 'diag_printf()'
@@ -135,6 +140,13 @@
 
 	* src/arm/cl7211_serial.c (cl7211_serial_start_xmit): Fix race which
 	cause xmitter to get stuck.
+
+1999-06-04  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Disable testing at 115200
+	for Cogent CMA230 (ARM).
+
+	* src/arm/cma230_serial.c: Fix interrupt for port B.
 
 1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -149,6 +161,13 @@
 	due to transmission being disabled.
 	Fix for PR 20047
 	
+1999-05-26  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h: 
+	* tests/ser_test_protocol.inl: Add Cogent CMA230 setup.
+	
+	* src/arm/cma230_serial.c: Make names compatible with Cogent
+	PowerPC board.
 
 1999-05-26  Gary Thomas  <gthomas@cygnus.co.uk>
 

@@ -1,3 +1,39 @@
+1999-10-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (not_window_overflow): Actually the dispatcher
+	into exception VSRs.  Bugfix: wrong number was placed in %l3 for
+	call to xvsr, so for *some* types of trap, including user traps
+	other than those handled directly in-HAL, a vector way off the end
+	of the array would be used.  Apparently those other types of trap
+	never happen, but just in case...
+
+1999-10-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S: Optionally implement Multiple (rather than
+	Single) Vector Trapping.  The config options to control this are
+	in the platform HAL because some SPARCs do not support SVT, where
+	it is optional the platform says so.  This demands a variable
+	sized region be reserved for trampoline code or the vectors in
+	RAM, which is done via section .ram_vectors, defined herein.
+
+	* src/sparclite.ld: Define SECTION_ram_vectors(...) to deal with
+	the new .ram_vectors section.  This is to provide a variable sized
+	area at the start of RAM to hold either trampoline code when SVT
+	is selected, or a fill 4k + handlers of vectors when MVT is
+	selected.  Previously this was bodged by pretending RAM starts at
+	0x4000200 in ROM startup builds.
+	(comment from the example .ldi files...)
+	The ram_vectors section is to allow some free space to copy
+	vectors into from the ROM.  This is required to be variable size
+	to accomodate SVT or MVT; 80 bytes vs 4kB.  Copying is not
+	necessary with MVT, but it is optional because it may offer
+	performance gains.  Copying is required for SVT because the
+	(aligned) start of ROM contains initialization instructions.  RAM
+	copy is used rather than leave a big gap in the ROM to get an
+	aligned address for the trampoline code.  For RAM startup,
+	ram_vectors will usually be of size zero, unless MVT and copying
+	are enabled for memory estimation reasons.
+
 1999-09-29  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	[src/vectors.S: needed no change!]

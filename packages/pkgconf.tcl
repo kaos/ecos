@@ -5552,8 +5552,8 @@ proc pkgconf::produce_misc_files { } {
 
 	puts $file "
 PACKAGE_RULES_FILE := \$(wildcard \$(BUILD_TREE)/pkgconf/\$(PACKAGE).mak)
-ifneq ($(PACKAGE_RULES_FILE),)
-include $(PACKAGE_RULES_FILE)
+ifneq (\$(PACKAGE_RULES_FILE),)
+include \$(PACKAGE_RULES_FILE)
 endif"
 
 	puts $file "\ninclude \$(BUILD_TREE)/pkgconf/makevars"
@@ -5713,13 +5713,13 @@ proc pkgconf::produce_makefile { } {
 include pkgconf/pkgconf.mak
 .PHONY: default build clean tests headers"
 
-    puts $makefile "\nbuild: $(PREFIX)/lib/extras.o"
+    puts $makefile "\nbuild: \$(PREFIX)/lib/extras.o"
     puts $makefile "\t@echo Build finished."
 
-    puts $makefile "\n$(PREFIX)/lib/extras.o: $(PREFIX)/lib/libextras.a"
-    puts $makefile "\t$(CC) $(ARCHFLAGS) $(LDARCHFLAGS) -nostdlib -Wl,-r -Wl,--whole-archive $(PREFIX)/lib/libextras.a -o $(PREFIX)/lib/extras.o"
+    puts $makefile "\n\$(PREFIX)/lib/extras.o: \$(PREFIX)/lib/libextras.a"
+    puts $makefile "\t\$(CC) \$(ARCHFLAGS) \$(LDARCHFLAGS) -nostdlib -Wl,-r -Wl,--whole-archive \$(PREFIX)/lib/libextras.a -o \$(PREFIX)/lib/extras.o"
     
-    puts $makefile "\n$(PREFIX)/lib/libextras.a: headers"
+    puts $makefile "\n\$(PREFIX)/lib/libextras.a: headers"
     foreach src_dir $pkgconf::src_dirs {
 	puts $makefile "\t\$(MAKE) -C $src_dir"
     }

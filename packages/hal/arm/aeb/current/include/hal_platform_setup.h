@@ -55,8 +55,15 @@
 
 #ifdef CYGHWR_HAL_ARM_AEB_REVISION_C
 // AEB rev C has 256kB of memory. Cache is working (set cachable)
+#if 0
 #define AEB_SRAM .long	0xFFFFA008,0x00008000,0x00048000,0x00007c04
 #define AEB_BAD  .long	0xFFFFA00C,0x00048000,0x01000000,0x00000000
+#else
+// FIXME: There is a cache problem of some sort. Either eCos or the
+// chip. Leave cache disabled till I find the time to fix it. Jesper
+#define AEB_SRAM .long	0xFFFFA008,0x00008000,0x00048000,0x00007804
+#define AEB_BAD  .long	0xFFFFA00C,0x00048000,0x01000000,0x00000000
+#endif
 #else
 // AEB rev B has 128kB of memory. Cache is broken (clear cachable)
 #define AEB_SRAM .long	0xFFFFA008,0x00008000,0x00028000,0x00007804

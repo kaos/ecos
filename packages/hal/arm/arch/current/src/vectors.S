@@ -116,11 +116,18 @@ PTR(start) // This is copied to 0x28 for bootup // 0x40
 	   // location 0x40 is used for storing DRAM size if known
 	   // for some platforms.
 
+// Other vectors
+	.balign 16      // Should be at 0x50
+	.balign 32
+
 	.text	
 // Startup code which will get the machine into supervisor mode
 	.global	reset_vector
 	.type	reset_vector,function
 reset_vector:
+	PLATFORM_SETUP1		// Early stage platform initialization
+				// which can set DRAM size at 0x40
+				// see <cyg/hal/hal_platform_setup.h>
 
 #if defined(CYG_HAL_STARTUP_RAM) && \
     !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
@@ -130,16 +137,14 @@ reset_vector:
 	beq	start
 #endif
 
-	PLATFORM_SETUP1		// Early stage platform initialization
-				// which can set DRAM size at 0x40
-				// see <cyg/hal/hal_platform_setup.h>
 	// We cannot access any LED registers until after PLATFORM_SETUP1
 	LED 7
 
 	mov	r0,#0		// move vectors
 	// We cannot perform a store until after PLATFORM_SETUP1
 	str	r0, [r0,#0x40]  // DRAM size to zero => unknown
-	ldr	r1,.__exception_handlers
+
+        ldr	r1,=__exception_handlers
 #ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 	// Wait with this if stubs are included (see further down).
 	ldr	r2,[r1,#0x04]	// undefined instruction
@@ -149,6 +154,8 @@ reset_vector:
 #endif
 	ldr	r2,[r1,#0x08]	// software interrupt
 	str	r2,[r0,#0x08]
+
+
 #if defined(CYG_HAL_STARTUP_RAM)
 // Ugly hack to get into supervisor mode
 	ldr	r2,[r1,#0x40]
@@ -295,7 +302,7 @@ init_done:
 
 //
 // Exception handlers
-// Assmumption: get here from a Supervisor context [mode]
+// Assumption: get here from a Supervisor context [mode]
 //
 	.code	32
 undefined_instruction:

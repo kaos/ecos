@@ -48,13 +48,31 @@
    {{CFG_DATA
 
    cdl_package CYGPKG_HAL_ARM_PID {
-       display  "ARM PID7 evaluation board"
+       display  "ARM PID evaluation board"
        type     radio
        parent   CYGPKG_HAL_ARM
-       platform pid
        description "
            The pid HAL package provides the support needed to run
-           eCos on a ARM PID7 eval board."
+           eCos on an ARM PID eval board."
+   }
+
+   cdl_option CYGHWR_HAL_ARM_PID_ARM7 {
+       display       "ARM PID evaluation board with ARM7 CPU"
+       parent        CYGPKG_HAL_ARM_PID
+       platform      pid
+       type          radio
+       description      "
+            The PID board comes with an ARM7 CPU as standard."
+   }
+
+   cdl_option CYGHWR_HAL_ARM_PID_ARM9 {
+       display       "ARM PID evaluation board with ARM9 CPU"
+       parent        CYGPKG_HAL_ARM_PID
+       platform      pid9
+       type          radio
+       description      "
+            The PID board can be upgraded to use an ARM9 CPU. This
+            option enables extra ARM9 compiler optimizations."
    }
 
    cdl_option CYGHWR_HAL_ARM_PID_STARTUP {

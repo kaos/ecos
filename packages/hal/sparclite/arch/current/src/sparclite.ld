@@ -77,6 +77,13 @@ GROUP(libtarget.a libgcc.a)
     { FORCE_OUTPUT; *(.gcc_except_table) } \
     > _region_
 
+#define SECTION_ram_vectors(_region_, _vma_, _lma_) \
+    .ram_vectors _vma_ : _lma_ \
+    { __ram_vectors_start = ABSOLUTE(.); \
+    KEEP (*(.ram_vectors)) \
+    __ram_vectors_end = ABSOLUTE(.); } \
+    > _region_
+
 #define SECTION_data(_region_, _vma_, _lma_) \
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); \

@@ -232,6 +232,24 @@ target arm {
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
     }
+
+    platform pid9 {
+        alias		{ "ARM PID9 development board" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_PID
+	}
+	base_platform pid
+        cflags {
+            ARCHFLAGS        "-mcpu=arm9"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
     platform aeb {
         alias		{ "ARM Eval Board (AEB)" }
 	startup		{ ram rom stubs }
@@ -292,6 +310,22 @@ target arm {
 	}
         cflags {
             ARCHFLAGS        "-mcpu=arm7tdmi -D__CL7211"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
+    platform cma230 {
+        alias		{ "Cogent CMA230" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_CMA230
+	}
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7tdmi"
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"

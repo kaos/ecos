@@ -1,3 +1,9 @@
+1999-10-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/thread-packets.c (stub_pkt_currthread): Fix typo in comment.
+
+	* src/generic-stub.c: Reorg to expose register get/set functions.
+
 1999-09-21  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/thread-packets.c: Fix some typos in comments.

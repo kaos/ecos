@@ -1,3 +1,9 @@
+1999-10-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sim.h: Add define of
+	CYGHWR_HAL_SPARCLITE_HAS_ASR17 for arch HAL to DTRT with SVT
+	(anticipating cores with no SVT at all, so no %asr17)
+
 1999-04-08  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/*.ldi: Revised SECTION_* macro arguments to

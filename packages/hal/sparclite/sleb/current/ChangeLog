@@ -1,3 +1,42 @@
+1999-10-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_sparclite_sleb_ram.mlt,
+	  include/pkgconf/mlt_sparclite_sleb_rom.mlt:
+
+	Fix .mlt files to match the latest .ldi files. ROM startup
+	requires latest config tool which contains fix for PR 19799.
+
+1999-10-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal_sparclite_sleb.h: Add CDL and
+	[un]definitions for handling optional Multiple Vector Trapping and
+	optional copy of vectors into RAM - when it is optional.  Also
+	define CYGHWR_HAL_SPARCLITE_HAS_ASR17 so that the arch HAL
+	self-configures correctly.
+
+	* include/halboot.si: Copy trampoline code into section
+	.ram_vectors at __ram_vectors_start if so configured.
+
+	* include/pkgconf/mlt_sparclite_sleb_ram.ldi: 
+	* include/pkgconf/mlt_sparclite_sleb_ram.mlt: 
+	* include/pkgconf/mlt_sparclite_sleb_rom.ldi: 
+	* include/pkgconf/mlt_sparclite_sleb_rom.mlt: 
+	Link in new variable size, sometimes 0 size, ram_vectors section;
+	this does away with the need to fib about the size of RAM, it was
+	previously defined to start at 0x4000200 to reserve a bit for
+	trampoline code.
+	(comment from the example .ldi files...)
+	The ram_vectors section is to allow some free space to copy
+	vectors into from the ROM.  This is required to be variable size
+	to accomodate SVT or MVT; 80 bytes vs 4kB.  Copying is not
+	necessary with MVT, but it is optional because it may offer
+	performance gains.  Copying is required for SVT because the
+	(aligned) start of ROM contains initialization instructions.  RAM
+	copy is used rather than leave a big gap in the ROM to get an
+	aligned address for the trampoline code.  For RAM startup,
+	ram_vectors will usually be of size zero, unless MVT and copying
+	are enabled for memory estimation reasons.
+
 1999-06-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/slebtime.cxx (entry2): Fix a dumb fencepost prob in some

@@ -1,3 +1,12 @@
+1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_pid.h: Added ARM9 options.
+
+1999-10-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c: Force diag channel to be "raw" if it is
+	not the same as the GDB port (RAM based applications only).
+
 1999-08-16  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_pid.h:

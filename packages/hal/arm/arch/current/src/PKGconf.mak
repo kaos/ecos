@@ -46,7 +46,7 @@ $(PACKAGE)_context.o $(PACKAGE)_vectors.o: arm.inc
 
 arm.inc: hal_mk_defs.c ../include/hal_arch.h
 	$(CC) ${CFLAGS} $(INCLUDE_PATH) -S $<
-	grep -w 'equ' hal_mk_defs.s | sed -e's/#//' >arm.inc
+	grep -w 'equ' hal_mk_defs.s | sed -e 's/#//' >arm.inc
 	$(RM) hal_mk_defs.s
 
 vectors.stamp: $(PACKAGE)_vectors.o

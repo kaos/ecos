@@ -61,6 +61,12 @@
 #define HAL_DIAG_USES_HARDWARE
 #endif
 
+#ifndef HAL_DIAG_USES_HARDWARE
+#if (CYGHWR_HAL_ARM_PID_DIAG_PORT != CYGHWR_HAL_ARM_PID_GDB_PORT)
+#define HAL_DIAG_USES_HARDWARE
+#endif
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* From serial_16550.h */
 #if CYGHWR_HAL_ARM_PID_DIAG_PORT==0

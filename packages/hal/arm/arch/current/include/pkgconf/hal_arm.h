@@ -73,6 +73,7 @@
    }}CFG_DATA */
 #undef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_ARM_H */
 /* EOF hal_arm.h */

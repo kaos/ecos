@@ -152,6 +152,13 @@ package CYGPKG_HAL_ARM_CL7211 {
 }
 
 
+package CYGPKG_HAL_ARM_CMA230 {
+	alias		{ "Cogent CMA230 (ARM7TDMI)" hal_arm_cma230 arm_cma230_hal }
+	directory	hal/arm/cma230
+        include_dir	cyg/hal
+	hardware
+}
+
 package CYGPKG_HAL_I386 {
 	alias		{ "i386 common HAL" hal_i386 i386_hal i386_arch_hal }
 	directory	hal/i386/arch

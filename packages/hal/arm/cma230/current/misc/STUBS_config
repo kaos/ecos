@@ -1,0 +1,28 @@
+#! /bin/sh
+
+tcl $1/pkgconf.tcl                                         \
+  --target=arm --platform=cma230 --startup=stubs                      \
+  --disable CYGPKG_KERNEL --disable CYGPKG_UITRON                     \
+  --disable CYGPKG_LIBC --disable CYGPKG_LIBM                         \
+  --disable CYGPKG_ERROR --disable CYGPKG_IO                          \
+  --disable CYGPKG_IO_SERIAL --disable CYGPKG_DEVICES_WALLCLOCK       \
+  --disable CYGPKG_DEVICES_WATCHDOG
+
+patch <<END_OF_PATCH -p0
+--- pkgconf/hal.h~      Wed Mar 10 13:08:58 1999
++++ pkgconf/hal.h       Thu Mar 11 15:53:16 1999
+@@ -382,10 +382,10 @@
+ 
+    }}CFG_DATA */
+ 
+-#undef   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
++#define   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+ #undef   CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+-#define  CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+-#define  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
++#undef  CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
++#undef  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+ 
+ /*
+  * NOTE:
+END_OF_PATCH

@@ -88,7 +88,7 @@ static char stack[NTHREADS][STACKSIZE];
 #define MAX_STRIDE 64
 #endif
 
-volatile char m[(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE)*MAX_STRIDE+1];
+volatile char m[(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE)*MAX_STRIDE];
 
 // -------------------------------------------------------------------------
 

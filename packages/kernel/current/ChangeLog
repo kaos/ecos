@@ -1,3 +1,11 @@
+1999-10-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/kcache1.c: Fix array size.
+
+	* src/sched/bitmap.cxx (add_thread): 
+	* src/sched/mlqueue.cxx (add_thread): 
+	Check for valid thread priority.
+
 
 1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
 

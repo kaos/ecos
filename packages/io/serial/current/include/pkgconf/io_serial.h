@@ -481,6 +481,108 @@
 #define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BAUD 38400
 #define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BUFSIZE 128
 
+/* ----------------------------------------------------------------------------
+   {{CFG_DATA
+   cdl_component CYGPKG_IO_SERIAL_ARM_CMA230 {
+       display "Cogent ARM/CMA230 serial device drivers"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_HAL_ARM_CMA230
+       description "
+           This option enables the serial device drivers for the Cogent ARM/CMA230."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_component CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_A {
+       display "Cogent ARM/CMA230 serial port A driver"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_ARM_CMA230
+       description "
+           This option includes the serial device driver for the Cogent ARM/CMA230 port A."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_A_NAME {
+       display "Device name for Cogent ARM/CMA230 serial port A"
+       type    string
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_A
+       description "
+           This option specifies the device name for the Cogent ARM/CMA230 port A."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_A_BAUD {
+       display "Baud rate for the Cogent ARM/CMA230 serial port A driver"
+       type    enum
+       legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
+       parent CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_A
+       description "
+           This option specifies the default baud rate (speed) for the Cogent ARM/CMA230 port A."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_A_BUFSIZE {
+       display "Buffer size for the Cogent ARM/CMA230 serial port A driver"
+       type    count
+       legal_values 0 to 8192
+       parent CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_A
+       description "
+           This option specifies the size of the internal buffers used for the Cogent ARM/CMA230 port A."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_component CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_B {
+       display "Cogent ARM/CMA230 serial port B driver"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_ARM_CMA230
+       description "
+           This option includes the serial device driver for the Cogent ARM/CMA230 port B."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_B_NAME {
+       display "Device name for Cogent ARM/CMA230 serial port B"
+       type    string
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_B
+       description "
+           This option specifies the device name for the Cogent ARM/CMA230 port B."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_B_BAUD {
+       display "Baud rate for the Cogent ARM/CMA230 serial port B driver"
+       type    enum
+       legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
+       parent CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_B
+       description "
+           This option specifies the default baud rate (speed) for the Cogent ARM/CMA230 port B."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_B_BUFSIZE {
+       display "Buffer size for the Cogent ARM/CMA230 serial port B driver"
+       type    count
+       legal_values 0 to 8192
+       parent CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_B
+       description "
+           This option specifies the size of the internal buffers used for the Cogent ARM/CMA230 port B."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   }}CFG_DATA */
+#undef  CYGPKG_IO_SERIAL_ARM_CMA230
+#undef  CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_A
+#define CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_A_NAME "/dev/ser1"
+#define CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_A_BAUD 38400
+#define CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_A_BUFSIZE 128
+#undef  CYGPKG_IO_SERIAL_ARM_CMA230_SERIAL_B
+#define CYGDAT_IO_SERIAL_ARM_CMA230_SERIAL_B_NAME "/dev/ser2"
+#define CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_B_BAUD 38400
+#define CYGNUM_IO_SERIAL_ARM_CMA230_SERIAL_B_BUFSIZE 128
 
 
 /* ----------------------------------------------------------------------------

@@ -484,6 +484,7 @@ externC void hal_MMU_init (void)
 # endif
 #endif
 
+
 // Do not enable caches for the FADS port pro tem; the memory mapping is
 // not set up.
 

@@ -402,4 +402,5 @@ void __skipinst (void)
 }
 
 
+
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS

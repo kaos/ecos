@@ -53,9 +53,12 @@
 
 	
 #ifdef CYG_HAL_STARTUP_RAM
+	! Hit the entry point instructions in situ
+#ifndef CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
+	! *unless* we are going to copy into a different RAM area anyway:
 	! copy the real instructions into the vector:	
 	rd	%tbr, %g1
-	andn	%g1, 0xfff, %g1		! clear non-address bits					
+	andn	%g1, 0xfff, %g1		! clear non-address bits
 	set	real_vector_instructions, %l0
 	ld	[ %l0 ], %l1
 	st	%l1, [ %g1 ]		! into the vector
@@ -74,6 +77,7 @@
 	nop
 	nop
 	nop				! should be enough
+#endif // !CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
 #endif // CYG_HAL_STARTUP_RAM
 	
 
@@ -359,16 +363,17 @@
 
 // NOTE that here, the frame pointer is set up to the top of RAM minus a
 // little bit with the size of RAM at %fp (%i6)
-
-#ifdef CYG_HAL_STARTUP_ROM
+#ifdef CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
 
 	led	0x58
 	
-	! copy the trampoline code into the base of RAM
+	! copy the trampoline code into the base of RAM (__ram_vectors_start)
 	! including the two ~rogue~ instructions...
-	.extern .data
-	sethi	%hi(.data), %l0		! get the start of RAM
-	andn	%l0, 0xfff, %l0
+
+	.extern __ram_vectors_start
+	! Using the true address here for the copy makes a badly-aligned
+	! __ram_vectors less likely to hide as an obscure failure:
+	set     __ram_vectors_start, %l0 ! get the start of RAM
 	set	rom_vectors, %l1	! get the start of the trampoline
 	set	rom_vectors_end, %l2	! ...and its end.
 33:
@@ -382,7 +387,7 @@
 
 	led	0x59
 
-	sethi	%hi(.data), %g1		! get the start of RAM
+	sethi	%hi(__ram_vectors_start), %g1	! get the start of RAM
 	andn	%g1, 0xfff, %g1
 	set	real_vector_instructions, %l0
 	ld	[ %l0 ], %l1
@@ -412,10 +417,10 @@
 	led	0x5c
 	
 	! and (re)set the tbr, finally.
-	sethi	%hi(.data), %g1
+	sethi	%hi(__ram_vectors_start), %g1
 	andn	%g1, 0xfff, %g1
 	wr	%g1, %tbr		! Traps are at RAM start
-	nop
+	nop				! (__ram_vectors_start)
 	nop
 	nop
 	
@@ -425,7 +430,7 @@
 
 	led	0x5f
 
-#endif // CYG_HAL_STARTUP_ROM
+#endif // CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM (was CYG_HAL_STARTUP_ROM)
 
 	! turn on caches - copied from the book	
 #define	set_size	64

@@ -1,3 +1,16 @@
+1999-10-14  Jesper Skov  <jskov@cygnus.co.uk>
+        From James Ingham <jingham@cygnus.com>:
+	* src/PKGconf.mak: Make sed invocation Solaris safe.
+
+1999-10-11  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S (reset_vector): Always execute PLATFORM_SETUP1.
+
+1999-10-08  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/arm.ld (SECTION_bss): Make *(.bss*) rather than just .bss, to
+	cater for nickc's BSS gc improvements.
+
 1999-09-23  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (call_exception_handler): Change on 09-19 messed up

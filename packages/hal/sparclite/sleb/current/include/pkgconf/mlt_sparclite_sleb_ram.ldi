@@ -26,6 +26,17 @@
 //####COPYRIGHTEND####
 //===========================================================================
 
+
+// The ram_vectors section is to allow some free space to copy vectors into
+// from the ROM.  This is required to be variable size to accomodate SVT or
+// MVT; 80 bytes vs 4kB.  Copying is not necessary with MVT, but it is
+// optional because it may offer performance gains.  Copying is required
+// for SVT because the (aligned) start of ROM contains initialization
+// instructions.  RAM copy is used rather than leave a big gap in the ROM
+// to get an aligned address for the trampoline code.  For RAM startup,
+// ram_vectors will usually be of size zero, unless MVT and copying are
+// enabled for memory estimation reasons.
+
 MEMORY
 {
     ram : ORIGIN = 0x04010000, LENGTH = 0x3f0000
@@ -34,7 +45,8 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_rom_vectors (ram, 0x4010000, LMA_EQ_VMA)
+    SECTION_ram_vectors (ram, 0x4010000, LMA_EQ_VMA)
+    SECTION_rom_vectors (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x8), LMA_EQ_VMA)

@@ -1,3 +1,16 @@
+1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* targets: Added pid9 target.
+
+1999-10-14  Bart Veer  <bartv@cygnus.co.uk>
+
+	* pkgconf.tcl:
+	Some occurrences of $ in constant strings were not
+	backslash-quoted. With older versions of Tcl this did not cause
+	problems, but Tcl 8.2.1 appears to have been fixed and now
+	attempts variable substitution. Appropriate backslashes have been
+	added. 
+
 1999-10-06  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Added AEB rev C target.
@@ -69,6 +82,11 @@
 1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* NEWS: Added Kernel/Debugging entry.
+
+1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: 
+	* targets: Add Cogent CMA230 (ARM 7TDMI)
 
 1999-05-18  Gary Thomas  <gthomas@cygnus.co.uk>
 

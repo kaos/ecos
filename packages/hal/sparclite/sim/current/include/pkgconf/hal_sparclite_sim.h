@@ -62,6 +62,11 @@
    
    }}CFG_DATA */
 
+
+/* -------------------------------------------------------------------*/
+// This is true for SPARClite:
+#define CYGHWR_HAL_SPARCLITE_HAS_ASR17
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_SPARCLITE_SIM_H */
 /* EOF hal_sparclite_sim.h */

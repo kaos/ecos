@@ -818,6 +818,106 @@ __handle_exception (void)
 
 int   (*_get_trace_register_hook) (regnames_t, target_register_t *);
 
+void
+stub_format_registers(char *ptr)
+{
+    int regnum;
+
+    for (regnum = 0; regnum < NUMREGS_GDB; regnum++) {
+        /* We need to compensate for the value offset within the
+           register. */
+        char dummyDat[32];
+        target_register_t addr;
+        char *vptr;
+        int  reg_valid = 1;
+
+#ifdef TARGET_HAS_LARGE_REGISTERS
+        if (sizeof (target_register_t) < REGSIZE (regnum)) {
+            get_register_as_bytes (regnum, dummyDat);
+            vptr = dummyDat;
+        } else
+#endif
+        {
+            if (_get_trace_register_hook)
+                reg_valid = _get_trace_register_hook (regnum, &addr);
+            else
+                addr = get_register (regnum);
+
+            vptr = ((char *) &addr);
+            if (sizeof (addr) > REGSIZE(regnum)) {
+                /* May need to cope with endian-ness */
+
+#if !defined(__LITTLE_ENDIAN__) && !defined(_LITTLE_ENDIAN)
+                vptr += sizeof (addr) - REGSIZE (regnum);
+#endif
+            } else if (sizeof (addr) < REGSIZE (regnum)) {
+                int off = REGSIZE (regnum) - sizeof (addr);
+                int x;
+
+                for (x = 0; x < off; x++)
+                    dummyDat[x] = 0;
+                memcpy (dummyDat + off, &addr, sizeof (addr));
+                vptr = dummyDat;
+            }
+        }
+        if (reg_valid) {      /* we have a valid reg value */
+            ptr = __mem2hex (vptr, ptr, REGSIZE (regnum), 0);
+        } else {
+            /* Trace component returned a failure code.
+               This means that the register value is not available.
+               We'll fill it with 'x's, and GDB will understand.  */
+            memset (ptr, 'x', 2 * REGSIZE (regnum));
+            ptr += 2 * REGSIZE (regnum);
+        }
+    }
+}
+
+void
+stub_update_registers(char *in_ptr, char *out_ptr)
+{
+    char *ptr = &in_ptr[1];
+    int x;
+    int sr = 0, er = NUMREGS_GDB;
+
+    if (*in_ptr == 'P') {
+        target_register_t regno;
+
+        if (__hexToInt (&ptr, &regno) && (*ptr++ == '=')) {
+
+            sr = regno;
+            er = regno + 1;
+        } else {
+            strcpy (out_ptr, "P01");
+            return;
+        }
+    }
+
+    for (x = sr; x < er; x++) {
+        target_register_t value = 0;
+        char *vptr;
+
+#ifdef TARGET_HAS_LARGE_REGISTERS
+        if (sizeof (target_register_t) < REGSIZE (x)) {
+            char dummyDat [32];
+
+            __hex2mem (ptr, dummyDat, REGSIZE (x), 0);
+            put_register_as_bytes (x, dummyDat);
+        } else 
+#endif
+        {
+            vptr = ((char *) &value);
+#if !defined(__LITTLE_ENDIAN__) && !defined(_LITTLE_ENDIAN)
+            vptr += sizeof (value) - REGSIZE (x);
+#endif
+            __hex2mem (ptr, vptr, REGSIZE (x), 0);
+            put_register (x, value);
+        }
+        ptr += REGSIZE (x) * 2;
+    }
+
+    strcpy (out_ptr, "OK");
+}
+
 int
 __process_packet (char *packet)
 {
@@ -858,64 +958,7 @@ __process_packet (char *packet)
     case 'g':           /* return the value of the CPU registers */
       {
         char *ptr = remcomOutBuffer;
-        int regnum;
-
-        for (regnum = 0; regnum < NUMREGS_GDB; regnum++)
-          {
-            /* We need to compensate for the value offset within the
-               register. */
-            char dummyDat[32];
-            target_register_t addr;
-            char *vptr;
-            int  reg_valid = 1;
-
-#ifdef TARGET_HAS_LARGE_REGISTERS
-            if (sizeof (target_register_t) < REGSIZE (regnum))
-              {
-                get_register_as_bytes (regnum, dummyDat);
-                vptr = dummyDat;
-              }
-            else
-#endif
-              {
-                if (_get_trace_register_hook)
-                  reg_valid = _get_trace_register_hook (regnum, &addr);
-                else
-                  addr = get_register (regnum);
-
-                vptr = ((char *) &addr);
-                if (sizeof (addr) > REGSIZE(regnum))
-                  {
-                    /* May need to cope with endian-ness */
-
-#if !defined(__LITTLE_ENDIAN__) && !defined(_LITTLE_ENDIAN)
-                    vptr += sizeof (addr) - REGSIZE (regnum);
-#endif
-                  }
-                else if (sizeof (addr) < REGSIZE (regnum))
-                  {
-                    int off = REGSIZE (regnum) - sizeof (addr);
-                    int x;
-
-                    for (x = 0; x < off; x++)
-                      dummyDat[x] = 0;
-                    memcpy (dummyDat + off, &addr, sizeof (addr));
-                    vptr = dummyDat;
-                  }
-              }
-            if (reg_valid)      /* we have a valid reg value */
-              {
-                ptr = __mem2hex (vptr, ptr, REGSIZE (regnum), 0);
-              }
-            else
-              {
-                /* Trace component returned a failure code.
-                   This means that the register value is not available.
-                   We'll fill it with 'x's, and GDB will understand.  */
-                memset (ptr, 'x', 2 * REGSIZE (regnum));
-                ptr += 2 * REGSIZE (regnum);
-              }
-          }
+        stub_format_registers(ptr);
         break;
       }
 
@@ -967,54 +1010,9 @@ __process_packet (char *packet)
     case 'P':
     case 'G':      /* set the value of the CPU registers - return OK */
       {
-        int x;
-        int sr = 0, er = NUMREGS_GDB;
-        char *ptr = &packet[1];
-
-        if (packet[0] == 'P')
-          {
-            target_register_t regno;
-
-            if (__hexToInt (&ptr, &regno)
-                && (*ptr++ == '='))
-              {
-                sr = regno;
-                er = regno + 1;
-              }
-            else
-              {
-                strcpy (remcomOutBuffer, "P01");
-                break;
-              }
-          }
-
-        for (x = sr; x < er; x++)
-          {
-            target_register_t value = 0;
-            char *vptr;
-
-#ifdef TARGET_HAS_LARGE_REGISTERS
-            if (sizeof (target_register_t) < REGSIZE (x))
-              {
-                char dummyDat [32];
-
-                __hex2mem (ptr, dummyDat, REGSIZE (x), 0);
-                put_register_as_bytes (x, dummyDat);
-              }
-            else
-#endif
-              {
-                vptr = ((char *) &value);
-#if !defined(__LITTLE_ENDIAN__) && !defined(_LITTLE_ENDIAN)
-                vptr += sizeof (value) - REGSIZE (x);
-#endif
-                __hex2mem (ptr, vptr, REGSIZE (x), 0);
-                put_register (x, value);
-              }
-            ptr += REGSIZE (x) * 2;
-          }
-
-        strcpy (remcomOutBuffer, "OK");
+        char *in_ptr = &packet[0];
+        char *out_ptr = remcomOutBuffer;
+        stub_update_registers(in_ptr, out_ptr);
         break;
       }
 

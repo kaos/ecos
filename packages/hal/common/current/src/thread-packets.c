@@ -447,7 +447,7 @@ void stub_pkt_currthread(
   if (dbg_currthread(&thread))
     {
       *outbuf++ = 'Q' ;
-      *outbuf++ = 'C' ; /* FIXME: Is this a reasanable code */
+      *outbuf++ = 'C' ; /* FIXME: Is this a reasonable code */
       outbuf = pack_int(outbuf, threadref_to_int(&thread)) ; /* Short form */
     }
   else outbuf = stub_pack_nak(outbuf) ;

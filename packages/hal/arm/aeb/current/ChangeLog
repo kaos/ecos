@@ -1,3 +1,12 @@
+1999-10-12  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_aeb.h: Add CT config of revision.
+	aebC instead of aebc.
+
+1999-10-08  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_platform_setup.h: Disable cache for now.
+
 1999-10-07  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_aeb.h:

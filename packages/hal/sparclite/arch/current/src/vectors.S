@@ -51,6 +51,9 @@
 #include <pkgconf/system.h>	
 #include <pkgconf/hal.h>
 
+#include <pkgconf/hal_sparclite.h>
+#include CYGBLD_HAL_PLATFORM_H		// Platform config file
+
 #ifdef CYGPKG_KERNEL
 # include <pkgconf/kernel.h>
 #else
@@ -63,12 +66,61 @@
 #define BOOTUPSTACK_IS_INTERRUPTSTACK
 #endif
 	
+//#define CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+
+#ifndef CYGHWR_HAL_SPARCLITE_HAS_ASR17
+#ifndef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+#error Single Vector Trapping (SVT) demands ASR17 
+#endif
+#endif
+	
+#ifdef CYG_HAL_STARTUP_ROM
+# ifndef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+
+! ROM startup and Single Vector Trapping demands a copy to RAM.
+! Otherwise it may be configured in, but it is not required.
+	
+#  ifndef CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
+#   define CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
+#  endif
+
+# endif
+#endif
+
 !------------------------------------------------------------------------
 
 #include <cyg/hal/vectors.h>
 
 #define DELAYS_AFTER_WRPSR_SAME_WINDOW
 #define DELAYS_AFTER_WRWIM
+
+!------------------------------------------------------------------------
+
+#ifdef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+
+	.macro	VECTOR_EXCEPTION
+	.p2align 4
+	rd	%tbr, %l3
+	rd	%psr, %l0
+	ba	__entry_exception
+	 and	%l3, TT_MASK, %l4
+	.endm
+	
+	.macro	VECTOR_INTERRUPT level
+	.p2align 4
+	rd	%psr, %l0
+	mov	\level << 2, %l5
+	ba	__entry_interrupt
+	 mov	\level << 4, %l4
+	.endm
+	
+	.macro	VECTOR_CODE_WIM name
+	.p2align 4
+	ba	__entry_\name
+	 rd	%wim, %l0
+	.endm
+	
+#endif // CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
 
 !------------------------------------------------------------------------
 ! The start of the code; this is the entry point:
@@ -84,6 +136,63 @@ reset_vector:
 	b	genuine_reset
 	nop
 	! usually drop through to:
+#ifdef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+	ba	__entry_exception	! reset becomes an exception
+	 and	%l3, TT_MASK, %l4	! once we are running
+	
+	VECTOR_EXCEPTION	 	!   1
+	VECTOR_EXCEPTION	 	!   2
+	VECTOR_EXCEPTION	 	!   3
+	VECTOR_EXCEPTION	 	!   4
+	
+	VECTOR_CODE_WIM wover	 	!   5 window overflow
+	VECTOR_CODE_WIM wunder		!   6 window underflow
+	VECTOR_EXCEPTION		!   7
+	VECTOR_EXCEPTION		!   8
+	VECTOR_EXCEPTION		!   9
+
+	VECTOR_EXCEPTION		!  10
+	VECTOR_EXCEPTION		!  11
+	VECTOR_EXCEPTION		!  12
+	VECTOR_EXCEPTION		!  13
+	VECTOR_EXCEPTION		!  14
+	
+	VECTOR_EXCEPTION		!  15
+	VECTOR_EXCEPTION		!  16
+	VECTOR_INTERRUPT  1		!  17 interrupt_level_1
+	VECTOR_INTERRUPT  2		!  18 interrupt_level_2
+	VECTOR_INTERRUPT  3		!  19 interrupt_level_3
+	
+	VECTOR_INTERRUPT  4		!  20 interrupt_level_4
+	VECTOR_INTERRUPT  5		!  21 interrupt_level_5
+	VECTOR_INTERRUPT  6		!  22 interrupt_level_6
+	VECTOR_INTERRUPT  7		!  23 interrupt_level_7
+	VECTOR_INTERRUPT  8		!  24 interrupt_level_8
+	
+	VECTOR_INTERRUPT  9		!  25 interrupt_level_9
+	VECTOR_INTERRUPT 10		!  26 interrupt_level_10
+	VECTOR_INTERRUPT 11		!  27 interrupt_level_11
+	VECTOR_INTERRUPT 12		!  28 interrupt_level_12
+	VECTOR_INTERRUPT 13		!  29 interrupt_level_13
+	
+	VECTOR_INTERRUPT 14		!  30 interrupt_level_14
+	VECTOR_INTERRUPT 15		!  31 interrupt_level_15
+	VECTOR_EXCEPTION		!  32
+	VECTOR_EXCEPTION		!  33
+	VECTOR_EXCEPTION		!  34
+
+	VECTOR_EXCEPTION		!  35
+	VECTOR_EXCEPTION		!  36
+	VECTOR_EXCEPTION		!  37
+	VECTOR_EXCEPTION		!  38
+	VECTOR_EXCEPTION		!  39
+	
+	.rept 216			! 40-255 is 216 of them
+	VECTOR_EXCEPTION		! whichever
+	.endr
+#endif // CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+
+#ifndef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
 real_vector:
 	! here,locals have been set up as follows:
 	! %l0 = psr
@@ -97,6 +206,8 @@ real_vector:
 interrupt:
 	and	%l3, 0x0f0, %l4		! get an interrupt number out
 	srl	%l4, 2, %l5		! to a word address offset
+#endif // !CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+__entry_interrupt:
 	sethi	%hi(hal_vsr_table), %l6
 	or	%l6, %lo(hal_vsr_table), %l6
 	ld	[ %l6 + %l5 ], %l6	! get vector in %l6
@@ -105,6 +216,7 @@ interrupt:
 					! interrupts and exceptions/traps
 					! have the same API to VSRs
 
+#ifndef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
 not_an_interrupt:
 	and	%l3, TT_MASK, %l4
 	cmp	%l4, (TRAP_WUNDER << TT_SHL)
@@ -123,6 +235,8 @@ window_underflow:
 					! (CWP is unchanged)
 	! the following instructions delay enough; no need for NOPs
 	rd	%wim, %l0		! get the wim
+#endif // !CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+__entry_wunder:	
 	sll	%l0, 1, %l3		! Rotate wim left
 	srl	%l0, __WINSIZE-1, %l0
 	wr	%l0, %l3, %wim		! Install the new wim
@@ -151,6 +265,7 @@ window_underflow:
 	jmp	%l1
 	rett	%l2
 
+#ifndef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
 not_window_underflow:
 	bne,a	not_window_overflow
 	srl	%l4, 4, %l4		! (if taken)
@@ -165,6 +280,8 @@ window_overflow:
         				! (CWP is unchanged)
 	! the following instructions delay enough; no need for NOPs
 	rd	%wim, %l0
+#endif // !CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+__entry_wover:	
 	mov	%g1, %l3		! Save g1, we use it to hold the wim
 	srl	%l0, 1, %g1		! Rotate wim right
 	sll	%l0, __WINSIZE-1, %l0
@@ -190,6 +307,11 @@ window_overflow:
 	jmpl	%l1,  %g0
 	rett	%l2
 
+#ifdef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+	// ADDITIONAL code to provide an entry point:
+__entry_exception:
+	srl	%l4, 4, %l4
+#endif // CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
 not_window_overflow:
 	! from here on in, %l4 is the trap number in clear
 	cmp	%l4, 128 
@@ -214,9 +336,11 @@ not_window_overflow:
 	or	%l6, %lo(hal_vsr_table), %l6
 	ld	[ %l6 + %l5 ], %l6	! get vector in %l6
 	jmp	%l6			! and go there
-	or	%l4, 16, %l3		! vector number into %l3: so that
+	srl	%l5, 2, %l3		! vector number into %l3: so that
 					! interrupts and exceptions/traps
 					! have the same API to VSRs
+	! NB that~s eCos vector number not TRAP number above.
+	
 	! and that is the end of the pre-vector trap handler	
 
 	.global rom_vectors_end
@@ -247,7 +371,13 @@ genuine_reset:				! set psr, mask interrupts & traps
 	nop
 	nop
 	nop
+#ifdef CYGHWR_HAL_SPARCLITE_HAS_ASR17
+#ifdef CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+	wr	%g0, 0, %asr17		! Multiple vector trapping
+#else
 	wr	%g0, 1, %asr17		! Single vector trapping
+#endif // !CYGHWR_HAL_SPARCLITE_MULTIPLE_VECTOR_TRAPPING
+#endif // CYGHWR_HAL_SPARCLITE_HAS_ASR17
 	nop
 	nop
 	nop
@@ -394,4 +524,17 @@ cyg_interrupt_stack:
 	.long	0,0,0,0,0,0,0,0		! here be secret state stored
 #endif
 
+!------------------------------------------------------------------------
+! Define a section that reserves space at the start of RAM for the
+! vectors to be copied into, for ROM start only.
+	
+	.section ".ram_vectors","awx",@nobits
+#ifdef CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
+	! need a space at base of RAM for copied vector/trampoline code
+	.align 0x1000
+	.space 8			! for fencepost errors
+	.space (rom_vectors_end - rom_vectors)
+#endif // CYGIMP_HAL_SPARCLITE_COPY_VECTORS_TO_RAM
+
+!------------------------------------------------------------------------
 ! end of vectors.S

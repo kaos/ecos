@@ -136,6 +136,10 @@ Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     cyg_priority pri                            = thread->priority;
     Cyg_ThreadQueue_Implementation *queue       = &run_queue[pri];
 
+    CYG_ASSERT((CYG_THREAD_MIN_PRIORITY >= pri) 
+               && (CYG_THREAD_MAX_PRIORITY <= pri),
+               "Priority out of range!");
+
     // If the thread is on some other queue, remove it
     // here.
     if( thread->queue != NULL )

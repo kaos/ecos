@@ -108,7 +108,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_bss(_region_,  _vma_, _lma_) \
     .bss _vma_ : _lma_ \
     { __bss_start = ABSOLUTE (.); \
-    *(.scommon) *(.dynbss) *(.bss) *(COMMON) \
+    *(.scommon) *(.dynbss) *(.bss*) *(COMMON) \
     __bss_end = ABSOLUTE (.); } \
     > _region_
 

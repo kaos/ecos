@@ -49,11 +49,31 @@
        display  "ARM AEB-1 evaluation board"
        type     radio
        parent   CYGPKG_HAL_ARM
-       platform aeb
        description "
            The aeb HAL package provides the support needed to run
            eCos on a ARM AEB-1 eval board."
    }
+
+   cdl_option CYGHWR_HAL_ARM_AEB_REVISION_B {
+       display       "AEB board revision B"
+       parent        CYGPKG_HAL_ARM_AEB
+       platform      aeb
+       type          radio
+       description      "
+            The AEB-1 eval board revision B has 128kB of memory and a flawed
+            CPU which means caches must be disabled."
+   }
+
+   cdl_option CYGHWR_HAL_ARM_AEB_REVISION_C {
+       display       "AEB board revision C"
+       parent        CYGPKG_HAL_ARM_AEB
+       platform      aebC
+       type          radio
+       description      "
+            The AEB-1 eval board revision C has 256kB of memory and can
+            run with caches enabled."
+   }
+
 
    cdl_option CYGHWR_HAL_ARM_AEB_STARTUP {
        display          "Startup type"
