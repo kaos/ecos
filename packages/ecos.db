@@ -888,27 +888,6 @@ package CYGPKG_IO_SERIAL_ARM_AIM711 {
     description       "ARM Industral Module AIM 711 serial device drivers"
 }
 
-package CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510 {
-    alias             { "AIM 711 S3C4510 serial device driver"
-                        devs_serial_arm_aim711_s3c4510 aim711_s3c4510_serial_driver }
-    hardware
-    directory         devs/serial/arm/aim711
-    script            ser_arm_aim711_s3c4510.cdl
-    description       "ARM Industral Module AIM 711 serial device driver
-                       for the internal serial interface of the S3C4510"
-}
-
-package CYGPKG_IO_SERIAL_ARM_AIM711_16X5X {
-    alias             { "ARM AIM711 16x5x serial device driver"
-                        devs_serial_arm_aim711_16x5x aim711_16x5x_serial_driver }
-    hardware
-    directory         devs/serial/arm/aim711
-    script            ser_arm_aim711_16x5x.cdl
-    description       "ARM Industral Module AIM 711 serial device driver
-                       for the external 16550 device using the generic 
-                       16x5x driver"
-}
-
 package CYGPKG_IO_SERIAL_ARM_INTEGRATOR {
     alias             { "ARM INTEGRATOR serial device drivers"
                         devs_serial_arm_integrator integrator_serial_driver }
@@ -4382,9 +4361,7 @@ target aim711 {
                    CYGPKG_DEVS_ETH_ARM_KS32C5000
                    CYGPKG_IO_SERIAL_ARM_AIM711
                    CYGPKG_IO_SERIAL_ARM_S3C4510
-                   CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510
                    CYGPKG_IO_SERIAL_GENERIC_16X5X
-                   CYGPKG_IO_SERIAL_ARM_AIM711_16X5X
                    CYGPKG_DEVICES_WALLCLOCK_ARM_AIM711
                    CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 
                }

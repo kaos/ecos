@@ -40,9 +40,9 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      Lars.Lindqvist@combitechsystems.com
-# Contributors:   jlarmour
-# Date:           2001-10-19
+# Author(s):      Lars.Lindqvist@combitechsystems.com, rcassebohm
+# Contributors:   jlarmour, rcassebohm
+# Date:           2004-09-09
 #
 #####DESCRIPTIONEND####
 #
@@ -54,9 +54,9 @@ cdl_package CYGPKG_IO_SERIAL_ARM_AIM711 {
 
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
+    active_if     CYGPKG_HAL_ARM_AIM711
 
     include_dir   cyg/io
-    include_files ; # none _exported_ whatsoever
     description   "
            This package contains serial device drivers for the
            ARM Industrial Module AIM 711."
@@ -65,13 +65,215 @@ cdl_package CYGPKG_IO_SERIAL_ARM_AIM711 {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"
         puts $::cdl_system_header "#ifndef CYGDAT_IO_SERIAL_DEVICE_HEADER"
         puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_arm_aim711.h>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_INL <cyg/io/ser_arm_aim711_16x5x.inl>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG <pkgconf/io_serial_arm_aim711.h>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_ARM_S3C4510_INL <cyg/io/ser_arm_aim711_s3c4510.inl>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_ARM_S3C4510_CFG <pkgconf/io_serial_arm_aim711.h>"
         puts $::cdl_system_header "#endif"
         puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
         puts $::cdl_header "#include <pkgconf/system.h>";
         puts $::cdl_header "#include <pkgconf/io_serial_arm_s3c4510.h>";
         puts $::cdl_header "#include <pkgconf/io_serial_generic_16x5x.h>";
-        puts $::cdl_header "#include CYGDAT_IO_SERIAL_ARM_S3C4510_CFG";
-        puts $::cdl_header "#include CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG";
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_16X5X {
+        display       "ARM Industrial Module AIM 711 16x5x serial device drivers"
+
+        parent        CYGPKG_IO_SERIAL_DEVICES
+        active_if     CYGPKG_IO_SERIAL
+        active_if     CYGPKG_HAL_ARM_AIM711
+        default_value 1
+
+        requires      CYGPKG_ERROR
+        description   "
+               This package contains serial device drivers for the
+               ARM Industrial Module AIM 711 for the 16550 serial
+               interface on board."
+
+        # FIXME: This really belongs in the GENERIC_16X5X package
+        cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED {
+            display   "Generic 16x5x serial driver required"
+        }
+
+        cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_16X5X_SERIAL0 {
+            display       "AIM 711 16X5X serial port 0 driver (COM1)"
+            flavor        bool
+            default_value 1
+            description   "
+                This option includes the serial device driver for the AIM 711 16X5X 
+                port 0, which is COM1 on the AIM 711."
+
+            implements    CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
+            implements    CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+            implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
+
+            cdl_option CYGDAT_IO_SERIAL_ARM_AIM711_16X5X_SERIAL0_NAME {
+                display       "Device name for the AIM 711 16X5X serial port 0 driver (COM1)"
+                flavor        data
+                default_value {"\"/dev/ser1\""}
+                description   "
+                    This option sets the name of the serial device for the AIM 711 
+                    16X5X port 0 (COM1)."
+            }
+
+            cdl_option CYGNUM_IO_SERIAL_ARM_AIM711_16X5X_SERIAL0_BAUD {
+                display       "Baud rate for the AIM 711 16X5X serial port 0 driver"
+                flavor        data
+                legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                              4800 7200 9600 14400 19200 38400 57600 115200 230400
+                }
+                default_value 38400
+                description   "
+                    This option specifies the default baud rate (speed) for the 
+                    AIM 711 16X5X port 0."
+            }
+
+            cdl_option CYGNUM_IO_SERIAL_ARM_AIM711_16X5X_SERIAL0_BUFSIZE {
+                display       "Buffer size for the AIM 711 16X5X serial port 0 driver"
+                flavor        data
+                legal_values  0 to 8192
+                default_value 128
+                description   "
+                    This option specifies the size of the internal buffers used for
+                    the AIM 711 16X5X port 0."
+            }
+        }
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510 {
+        display       "ARM Industrial Module AIM 711 S3C4510 serial device drivers"
+
+        parent        CYGPKG_IO_SERIAL_DEVICES
+        active_if     CYGPKG_IO_SERIAL
+        active_if     CYGPKG_HAL_ARM_AIM711
+        default_value 1
+
+        requires      CYGPKG_ERROR
+        description   "
+               This package contains serial device drivers for the
+               ARM Industrial Module AIM 711 for the internal serial
+               interface of the S3C4510."
+
+        # FIXME: This really belongs in the SERIAL_ARM_S3C4510 package
+        cdl_interface CYGINT_IO_SERIAL_ARM_S3C4510_REQUIRED {
+            display   "Generic s3c4510 serial driver required"
+        }
+
+        cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL0 {
+            display       "AIM 711 S3C4510 serial port 0 driver (service adapter)"
+            flavor        bool
+            default_value 1
+            description   "
+                This option includes the serial device driver for the AIM 711 S3C4510 
+                port 0, which is on the AIM 711 the port on the service adapter."
+
+            implements    CYGINT_IO_SERIAL_ARM_S3C4510_REQUIRED
+
+            cdl_option CYGDAT_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL0_NAME {
+                display       "Device name for the AIM 711 S3C4510 serial port 0 driver (service adapter)"
+                flavor        data
+                default_value {"\"/dev/ser0\""}
+                description   "
+                    This option sets the name of the serial device for the AIM 711 
+                    S3C4510 port 0 (service adapter)."
+            }
+
+            cdl_option CYGNUM_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL0_BAUD {
+                display       "Baud rate for the AIM 711 S3C4510 serial port 0 driver"
+                flavor        data
+                legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                              4800 7200 9600 14400 19200 38400 57600 115200 230400
+                }
+                default_value 38400
+                description   "
+                    This option specifies the default baud rate (speed) for the 
+                    AIM 711 S3C4510 port 0."
+            }
+
+            cdl_option CYGNUM_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL0_BUFSIZE {
+                display       "Buffer size for the AIM 711 S3C4510 serial port 0 driver"
+                flavor        data
+                legal_values  0 to 8192
+                default_value 128
+                description   "
+                    This option specifies the size of the internal buffers used for
+                    the AIM 711 S3C4510 port 0."
+            }
+        }
+
+        cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL1 {
+            display       "AIM 711 S3C4510 serial port 1 driver (COM2)"
+            flavor        bool
+            default_value 1
+            description   "
+                This option includes the serial device driver for the AIM 711 
+                S3C4510 port 1, which is the COM2 on the AIM 711."
+
+            implements    CYGINT_IO_SERIAL_ARM_S3C4510_REQUIRED
+
+            cdl_option CYGDAT_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL1_NAME {
+                display       "Device name for the AIM 711 S3C4510 serial port 1 driver (COM2)"
+                flavor        data
+                default_value {"\"/dev/ser2\""}
+                description   "
+                    This option specifies the name of serial device for the 
+                    AIM 711 S3C4510 port 1 (COM2)."
+            }
+
+            cdl_option CYGNUM_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL1_BAUD {
+                display       "Baud rate for the AIM 711 S3C4510 serial port 1 driver"
+                flavor        data
+                legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                              4800 7200 9600 14400 19200 38400 57600 115200 230400
+                }
+                default_value 38400
+                description   "
+                    This option specifies the default baud rate (speed) for the 
+                    AIM 711 S3C4510 port 1."
+            }
+
+            cdl_option CYGNUM_IO_SERIAL_ARM_AIM711_S3C4510_SERIAL1_BUFSIZE {
+                display       "Buffer size for the AIM 711 S3C4510 serial port 1 driver"
+                flavor        data
+                legal_values  0 to 8192
+                default_value 128
+                description   "
+                    This option specifies the size of the internal buffers used 
+                    for the AIM 711 S3C4510 port 1."
+            }
+        }
+    }
+
+    cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_OPTIONS {
+        display "Serial device driver build options"
+        flavor  none
+        description   "
+        Package specific build options including control over
+        compiler flags used only in building this package,
+        and details of which tests are built."
+
+
+        cdl_option CYGPKG_IO_SERIAL_ARM_AIM711_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these serial device drivers. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_IO_SERIAL_ARM_AIM711_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building these serial device drivers. These flags are removed from
+                the set of global flags if present."
+        }
     }
 
     cdl_component CYGPKG_IO_SERIAL_ARM_AIM711_TESTING {

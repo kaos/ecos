@@ -1,3 +1,9 @@
+2004-09-09  John Dallaway  <jld@ecoscentric.com>
+
+	* ecos.db: Remove CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510 and
+        CYGPKG_IO_SERIAL_ARM_AIM711_16X5X which are now CDL components.
+        [ patch from Roland Cassebohm ]
+
 2004-09-05  Mark Salter  <msalter@redhat.com>
 
 	* ecos.db: Add new frv packages.

@@ -1,3 +1,12 @@
+2004-09-09  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/ser_arm_aim711.cdl: Implement CYGPKG_IO_SERIAL_ARM_AIM711_S3C4510 and
+        CYGPKG_IO_SERIAL_ARM_AIM711_16X5X as CDL components rather than packages.
+        [ patch from Roland Cassebohm ]
+
+	* cdl/ser_arm_aim711_16x5x.cdl, cdl/ser_arm_aim711_s3c4510.cdl: Remove obsolete
+        files.
+
 2003-10-30  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
 
 	* New package.
