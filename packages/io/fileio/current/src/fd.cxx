@@ -54,10 +54,12 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
 
+#ifdef CYGPKG_KERNEL
+#include <pkgconf/kernel.h>
 #include <cyg/kernel/ktypes.h>         // base kernel types
+#endif
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 

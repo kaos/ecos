@@ -1,3 +1,8 @@
+2003-11-28  David Woodhouse  <dwmw2@redhat.com>
+
+	* include/fileio.h, include/sockio.h, src/dir.cxx, src/fd.cxx,
+	src/io.cxx: Don't include kernel headers if no kernel support.
+
 2003-10-23  Savin Zlobec  <savin@elatec.si>
 
 	* src/io.cxx: Added cyg_fs_fsetinfo and cyg_fs_fgetinfo functions.

@@ -59,7 +59,6 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
 
 #include <cyg/infra/cyg_type.h>
