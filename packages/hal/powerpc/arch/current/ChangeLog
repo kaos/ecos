@@ -1,3 +1,9 @@
+2004-04-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_arch.h (HAL_SET_GDB_FLOATING_POINT_REGISTERS): Make
+	absolutely safe with respect to strict-aliasing.
+	(HAL_SET_GDB_FLOATING_POINT_REGISTERS): Ditto.
+
 2004-04-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/hal_arch.h: 

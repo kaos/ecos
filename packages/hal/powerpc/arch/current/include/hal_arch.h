@@ -13,6 +13,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2004 Gary Thomas
+// Copyright (C) 2004 Jonathan Larmour <jifl@eCosCentric.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -270,7 +271,12 @@ typedef struct {
 // GDB ordered array.    
 #define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
     CYG_MACRO_START                                             \
-    GDB_Registers *_gdb_ = (GDB_Registers *)((void *)(_aregval_));      \
+    union __gdbreguniontype {                                   \
+      __typeof__(_aregval_) _aregval2_;                         \
+      GDB_Registers *_gdbr;                                     \
+    } __gdbregunion;                                            \
+    __gdbregunion._aregval2_ = (_aregval_);                     \
+    GDB_Registers *_gdb_ = __gdbregunion._gdbr;                 \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
@@ -288,7 +294,12 @@ typedef struct {
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
 #define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
     CYG_MACRO_START                                             \
-    GDB_Registers *_gdb_ = (GDB_Registers *)((void *)(_aregval_));      \
+    union __gdbreguniontype {                                   \
+      __typeof__(_aregval_) _aregval2_;                         \
+      GDB_Registers *_gdbr;                                     \
+    } __gdbregunion;                                            \
+    __gdbregunion._aregval2_ = (_aregval_);                     \
+    GDB_Registers *_gdb_ = __gdbregunion._gdbr;                 \
     int _i_;                                                    \
                                                                 \
     for( _i_ = 0; _i_ < 32; _i_++ )                             \
