@@ -1,3 +1,9 @@
+2002-08-16  Gary Thomas  <gthomas@ecoscentric.com> (on behalf of)
+2002-08-16  Louis Hamilton <hamilton@redhat.com>	
+
+	* src/ipv6_routing_thread.c: General improvements (from Red Hat)
+	for better compliance.
+
 2002-08-14  Jonathan Larmour  <jifl@ecoscentric.com>
 
 	* src/getserv.c: Include errno.h as errno is used.
