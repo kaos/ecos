@@ -69,7 +69,7 @@ cdl_package CYGPKG_HTTPD {
         delivering arbitrary web content."
 
     compile httpd.c 
-    compile -library=libextras.a init.cxx monitor.c
+    compile -library=libextras.a init.cxx
     
     cdl_option CYGNUM_HTTPD_SERVER_PORT {
         display "HTTP port"

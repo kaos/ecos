@@ -1,3 +1,7 @@
+2003-04-23  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+	* cdl/httpd.cdl: Only build monitor in CDL option.
+
 2003-03-17  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/monitor.c (cyg_monitor_network): Added monitoring of Mbufs
