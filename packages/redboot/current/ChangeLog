@@ -1,3 +1,10 @@
+2004-12-01  Andrea Michelotti  <amichelotti@atmel.com>
+
+	* main.c :
+	* mfill.c: 
+	* mcmp.c : Changes required for use with GCC v4 - cast as lvalue
+	is no longer supported.
+
 2004-11-09  Ian Campbell  <icampbell@arcom.com>
 
 	* cdl/redboot.cdl, doc/redboot_cmds.sgml, src/iomem.c: Add support

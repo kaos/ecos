@@ -240,6 +240,7 @@ static void error_handler(void)
 //
 // This is the main entry point for RedBoot
 //
+
 void
 cyg_start(void)
 {
@@ -324,6 +325,7 @@ cyg_start(void)
 #endif
 
 #ifdef CYGSEM_REDBOOT_PLF_STARTUP
+
     cyg_plf_redboot_startup();
 #endif
     do_version(0,0);
@@ -392,8 +394,7 @@ cyg_start(void)
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 
                 // set up a temporary context that will take us to the trampoline
-                HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end,
-                                        breakpoint, trampoline, 0);
+                HAL_THREAD_INIT_CONTEXT(workspace_end,breakpoint, trampoline,0);
 
                 // switch context to trampoline (get GDB stubs started)
                 HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);
@@ -594,7 +595,7 @@ do_go(int argc, char *argv[])
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     // set up a temporary context that will take us to the trampoline
-    HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end, entry, trampoline, 0);
+    HAL_THREAD_INIT_CONTEXT(workspace_end, entry, trampoline, 0);
 
     // switch context to trampoline
     HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);

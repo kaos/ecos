@@ -90,42 +90,46 @@ do_mcmp(int argc, char *argv[])
         diag_printf("usage: mcmp -s <addr> -d <addr> -l <length> [-1|-2|-4]\n");
         return;
     }
-    // No checks here    
+
+    
+
     if (set_8bit) {
-        // Compare 8 bits at a time
+        cyg_uint8 *s = (cyg_uint8 *)src_base;
+        cyg_uint8 *d = (cyg_uint8 *)dst_base;
         while ((len -= sizeof(cyg_uint8)) >= 0) {
-            if (*((cyg_uint8 *)src_base)++ != *((cyg_uint8 *)dst_base)++) {
-                ((cyg_uint8 *)src_base)--;
-                ((cyg_uint8 *)dst_base)--;
+            if (*s++ != *d++) {
+                s--;
+                d--;
                 diag_printf("Buffers don't match - %p=0x%02x, %p=0x%02x\n",
-                            src_base, *((cyg_uint8 *)src_base),
-                            dst_base, *((cyg_uint8 *)dst_base));
+                            s, *s, d, *d);
                 return;
             }
+
         }
     } else if (set_16bit) {
-        // Compare 16 bits at a time
-        while ((len -= sizeof(cyg_uint16)) >= 0) {
-            if (*((cyg_uint16 *)src_base)++ != *((cyg_uint16 *)dst_base)++) {
-                ((cyg_uint16 *)src_base)--;
-                ((cyg_uint16 *)dst_base)--;
+	cyg_uint16 *s = (cyg_uint16 *)src_base;
+	cyg_uint16 *d = (cyg_uint16 *)dst_base;
+	while ((len -= sizeof(cyg_uint16)) >= 0) {
+            if (*s++ != *d++) { 
+                s--;
+                d--;
                 diag_printf("Buffers don't match - %p=0x%04x, %p=0x%04x\n",
-                            src_base, *((cyg_uint16 *)src_base),
-                            dst_base, *((cyg_uint16 *)dst_base));
+                            s, *s, d, *d);
                 return;
             }
-        }
+
+	}
     } else {
-        // Default - 32 bits
-        while ((len -= sizeof(cyg_uint32)) >= 0) {
-            if (*((cyg_uint32 *)src_base)++ != *((cyg_uint32 *)dst_base)++) {
-                ((cyg_uint32 *)src_base)--;
-                ((cyg_uint32 *)dst_base)--;
-                diag_printf("Buffers don't match - %p=0x%08x, %p=0x%08x\n",
-                            src_base, *((cyg_uint32 *)src_base),
-                            dst_base, *((cyg_uint32 *)dst_base));
-                return;
-            }
-        }
+      cyg_uint32 *s = (cyg_uint32 *)src_base;
+      cyg_uint32 *d = (cyg_uint32 *)dst_base;
+      while ((len -= sizeof(cyg_uint32)) >= 0) {
+	if (*s++ != *d++) {
+	  s--;
+	  d--;
+	  diag_printf("Buffers don't match - %p=0x%08x, %p=0x%08x\n",
+		      s, *s, d, *d);
+	  return;
+	}
+      }
     }
 }
