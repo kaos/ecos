@@ -180,6 +180,35 @@
 #include <cyg/io/eth/eth_drv_stats.h>
 #include CYGDAT_DEVS_ETH_INTEL_I82559_INL
 
+#include <cyg/hal/hal_if.h>
+
+// Use with care!  Local variable defined!
+#define START_CONSOLE()                                                                 \
+{   /* NEW BLOCK */                                                                     \
+    int _cur_console =                                                                  \
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);      \
+    {                                                                                   \
+        int i;                                                                          \
+        if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,                 \
+                                          "info_console_force", &i,                     \
+                                          CYGNUM_FLASH_CFG_OP_CONFIG_BOOL ) ) {         \
+            if ( i ) {                                                                  \
+                if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,         \
+                                                  "info_console_number", &i,            \
+                                                  CYGNUM_FLASH_CFG_OP_CONFIG_INT ) ) {  \
+                    /* Then i is the console to force it to: */                         \
+                    CYGACC_CALL_IF_SET_CONSOLE_COMM( i );                               \
+                }                                                                       \
+            }                                                                           \
+        }                                                                               \
+    }
+
+#define END_CONSOLE()                                   \
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(_cur_console);      \
+}   /* END BLOCK */
+
+void CheckRxRing(struct i82559* p_i82559, char * func, int line);
+
 // ------------------------------------------------------------------------
 // Check on the environment.
 // 
@@ -227,8 +256,24 @@ static struct {
 } missed_interrupt = { 0,0,0, 0,0, 0, 0 };
 #endif
 
-#define os_printf diag_printf
-#define db_printf diag_printf
+int 
+console_printf(const char *fmt, ...)
+{
+    va_list ap;
+    int ret;
+    
+    START_CONSOLE();
+
+    va_start(ap, fmt);
+    ret = diag_vprintf(fmt, ap);
+    va_end(ap);
+    
+    END_CONSOLE();
+    return (ret);
+}
+
+#define os_printf console_printf
+#define db_printf console_printf
 
 // ------------------------------------------------------------------------
 //
@@ -1366,7 +1411,7 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
     cyg_uint8 mac_address[ETHER_ADDR_LEN];
 
 #ifdef DEBUG
-    db_printf("intel_i82559_init\n");
+    //    db_printf("intel_i82559_init\n");
 #endif
 
     sc = (struct eth_drv_sc *)(ndp->device_instance);
@@ -1561,11 +1606,15 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
     InitRxRing(p_i82559);
     InitTxRing(p_i82559);
 
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
+
     // Initialize upper level driver
     if ( p_i82559->mac_addr_ok )
         (sc->funs->eth_drv->init)(sc, &(p_i82559->mac_address[0]) );
     else
         (sc->funs->eth_drv->init)(sc, NULL );
+
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
 
     return (1);
 }
@@ -1666,6 +1715,7 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
 #endif
 
     i82559_restart(p_i82559);
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
 }
 
 static void i82559_restart(struct i82559 *p_i82559)
@@ -1766,6 +1816,7 @@ i82559_stop( struct eth_drv_sc *sc )
 
     ResetRxRing( p_i82559 );
     ResetTxRing( p_i82559 );
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
 }
 
 
@@ -1794,6 +1845,7 @@ InitRxRing(struct i82559* p_i82559)
     WRITEMEM32(p_rfd+RFD_LINK,
                      HAL_CTOLE32(VIRT_TO_BUS(p_i82559->rx_ring[0])));
 
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
     ResetRxRing( p_i82559 );
 }
 
@@ -1820,6 +1872,14 @@ ResetRxRing(struct i82559* p_i82559)
           cyg_uint32 link;
           p_rfd2 = p_i82559->rx_ring[ ( i ? (i-1) : (MAX_RX_DESCRIPTORS-1) ) ];
           READMEM32(p_rfd2 + RFD_LINK, link);
+	  if (!(HAL_LE32TOC(link) == VIRT_TO_BUS(p_rfd))) {
+            START_CONSOLE();
+	    diag_printf("Bad link eth%d %p %p %d %p\n",
+			p_i82559->index,
+			HAL_LE32TOC(link), VIRT_TO_BUS(p_rfd),
+			i, __builtin_return_address(0));
+            END_CONSOLE();
+	  }
           CYG_ASSERT( HAL_LE32TOC(link) == VIRT_TO_BUS(p_rfd), 
                       "rfd linked list broken" );
         }
@@ -1832,6 +1892,42 @@ ResetRxRing(struct i82559* p_i82559)
     p_i82559->next_rx_descriptor = 0;
     // And set an end-of-list marker in the previous one.
     WRITEMEM32(p_rfd + RFD_STATUS, RFD_STATUS_EL);
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
+}
+
+// ------------------------------------------------------------------------
+//
+//  Function : CheckRxRing
+//
+// ------------------------------------------------------------------------
+void
+CheckRxRing(struct i82559* p_i82559, char * func, int line)
+{
+    RFD *p_rfd;
+    int i;
+    RFD *p_rfd2;
+    cyg_uint32 link;
+    
+    //    console_printf("%s:%d(eth%d)\n",func,line,p_i82559->index);
+
+    for ( i = 0; i < MAX_RX_DESCRIPTORS; i++ ) {
+      p_rfd = p_i82559->rx_ring[i];
+      if (! ((cyg_uint8 *)p_rfd >= i82559_heap_base))
+	console_printf("rfd under: %s:%d\n", func, line);
+      if (! ((cyg_uint8 *)p_rfd <  i82559_heap_free)) 
+	console_printf("rfd over: %s:%d\n", func, line );
+      
+      p_rfd2 = p_i82559->rx_ring[ ( i ? (i-1) : (MAX_RX_DESCRIPTORS-1) ) ];
+      READMEM32(p_rfd2 + RFD_LINK, link);
+      if (!(HAL_LE32TOC(link) == VIRT_TO_BUS(p_rfd))) {
+	console_printf("Bad link eth%d %p %p %d %p: %s:%d\n",
+		       p_i82559->index,
+		       HAL_LE32TOC(link), VIRT_TO_BUS(p_rfd),
+		       i, __builtin_return_address(0),
+		       func,line);
+	CYG_ASSERT(HAL_LE32TOC(link) == VIRT_TO_BUS(p_rfd),"Bad Link");
+      }
+    }
 }
 
 // ------------------------------------------------------------------------
@@ -1852,6 +1948,8 @@ PacketRxReady(struct i82559* p_i82559)
 
     ndp = (struct cyg_netdevtab_entry *)(p_i82559->ndp);
     sc = (struct eth_drv_sc *)(ndp->device_instance);
+
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
 
     CHECK_NDP_SC_LINK();
 
@@ -1918,12 +2016,16 @@ PacketRxReady(struct i82559* p_i82559)
         CYG_ASSERT( (cyg_uint8 *)p_rfd >= i82559_heap_base, "rfd under" );
         CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
 
+	CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
+
 #ifdef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
 	// Can't deliver more than one packet in polled standalone mode
 	break;
 #endif
     }
 
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
+    
     // See if the RU has gone idle (usually because of out of resource
     // condition) and restart it if needs be.
     ints = Mask82559Interrupt(p_i82559);
@@ -1988,6 +2090,8 @@ i82559_recv( struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len )
     CYG_ASSERT( rxstatus16 & RFD_STATUS_LO_C, "No complete frame 2" );
     READMEM16(p_rfd + RFD_STATUS_HI, rxstatus16 );
     CYG_ASSERT( rxstatus16 & RFD_STATUS_HI_EL, "No marked frame 2" );
+
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
     
     if ( 0 == (rxstatus & RFD_STATUS_C) )
         return;
@@ -2105,6 +2209,7 @@ ResetTxRing(struct i82559* p_i82559)
     wait_for_cmd_done(ioaddr,WAIT_CU);
     OUTL(0, ioaddr + SCBPointer);
     OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
 }
 
 // ------------------------------------------------------------------------
@@ -2124,6 +2229,7 @@ TxMachine(struct i82559* p_i82559)
     tx_descriptor_active = p_i82559->tx_descriptor_active;
     ioaddr = p_i82559->io_address;  
     
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
     // See if the CU is idle when we think it isn't; this is the only place
     // tx_descriptor_active is advanced. (Also recovers from a dropped intr)
     if ( p_i82559->tx_in_progress ) {
@@ -2177,6 +2283,7 @@ TxMachine(struct i82559* p_i82559)
         OUTW(CU_START, ioaddr + SCBCmd);
         p_i82559->tx_in_progress = 1;
     }
+    CheckRxRing(p_i82559,__FUNCTION__,__LINE__);
 }
 
 // ------------------------------------------------------------------------

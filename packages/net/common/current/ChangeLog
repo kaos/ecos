@@ -1,3 +1,9 @@
+2003-10-09  Eric Doenges <Eric.Doenges@DynaPel.com>
+
+        * src/tftp_client.c: Changed the code so that if the last packet
+	is received out of sequence we don't close the connection but wait
+	for the missing packets.
+ 
 2003-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/bridge.c: Build the test when we have the bridge

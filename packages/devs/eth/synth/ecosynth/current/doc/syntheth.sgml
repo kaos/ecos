@@ -363,6 +363,15 @@ address will be used each time and the dhcpd daemon will not be able
 to reissue the same IP address.
     </para>
     <para>
+Host daemons like dhcpd, ntpd, radvd etc are started at boot
+time. Since the tap device does not exists at this point in time it is
+not possible for these daemons to bind to the tap device. A simple
+solution is to use the program
+<command>install/bin/mktap</command>. This takes one parameter, the
+name of the tap device it should create. eg,
+<literal>tap3</literal>. 
+    </para>
+    <para>
 An alternative approach would be to set up the Linux box as a network
 bridge, using commands like <command>brctl</command> to connect the
 virtual network interface <varname>tap3</varname> to a physical

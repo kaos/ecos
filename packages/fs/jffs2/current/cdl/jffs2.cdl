@@ -4,7 +4,7 @@
 #
 #      JFFS2 Filesystem configuration data
 #
-#      $Id: jffs2.cdl,v 1.5 2003/07/15 20:42:32 gthomas Exp $
+#      $Id: jffs2.cdl,v 1.8 2003/07/15 20:45:32 gthomas Exp $
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
@@ -81,7 +81,7 @@ cdl_package CYGPKG_FS_JFFS2 {
 	no_define
 	# We add -D__ECOS to trigger eCos-specific code in places.
 	# We add -Werror because I find it useful.
-	default_value { "-D__ECOS -nostdinc -iwithprefix include -Werror" }
+	default_value { "-D__ECOS -nostdinc -iwithprefix include " }
 	description   "
 	    This option modifies the set of compiler flags for
             building the JFFS2 package.
@@ -110,7 +110,7 @@ cdl_package CYGPKG_FS_JFFS2 {
 	display "JFFS2 FS tests"
 	flavor  data
 	no_define
-	calculated { "tests/fileio1.c" }
+	calculated { "tests/fileio1.c tests/jffs2_exerciser.c" }
             description   "
                 This option specifies the set of tests for the JFFS2 FS package."
         }

@@ -238,6 +238,11 @@ int tftp_client_get(char *filename,
 		  }
 		}
 		last_good_block++;
+	      } else {
+                // To prevent an out-of-sequence last packet from
+                // terminating transmission prematurely, set
+                // actual_len to a full size packet.
+		actual_len = SEGSIZE;
 	      }
 	      // Send out the ACK
 	      hdr->th_opcode = htons(ACK);
@@ -248,6 +253,7 @@ int tftp_client_get(char *filename,
 		*err = TFTP_NETERR;
 		goto out;
 	      }
+              // A short packet marks the end of the file.
 	      if ((actual_len >= 0) && (actual_len < SEGSIZE)) {
 		// End of data
 		close(s);
