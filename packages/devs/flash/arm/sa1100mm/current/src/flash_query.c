@@ -55,13 +55,12 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 #define CNT 20*1000*10  // Approx 200ms
 
+int
+flash_query(unsigned char *data) 
+	__attribute__ ((section (".2ram.flash_query")));
 int
 flash_query(unsigned char *data)
 {
