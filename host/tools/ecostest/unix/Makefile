@@ -27,7 +27,7 @@ CXX=g++
 
 ifeq ($(shell uname), SunOS)
 # SunOS
-LIBS :=  -lpthread -lsocket -lxnet -lstdc++
+LIBS :=  -lpthread -lsocket -lxnet -lstdc++ -lposix4
 else
 # Linux
 LIBS :=  -lpthread -efence -lstdc++

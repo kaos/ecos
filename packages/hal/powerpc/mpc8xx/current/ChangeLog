@@ -1,3 +1,14 @@
+2000-06-19  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_regs.h: 
+	* include/variant.inc: 
+	* src/var_misc.c:
+	Make caches default to off when the MMU is disabled.
+
+2000-06-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_intr.c (hal_call_isr): Use driver API definitions.
+
 2000-06-14  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_mpc8xx.cdl: Proper ROM_MONITOR hack.

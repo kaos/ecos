@@ -153,6 +153,36 @@ test( CYG_ADDRWORD data )
     tm2 = gmtime(&t);
     CYG_TEST_PASS_FAIL(!cmp_structtm(&tm1, tm2), "gmtime test #4");
 
+    tm1.tm_sec = 59;
+    tm1.tm_min = 59;
+    tm1.tm_hour = 23;
+    tm1.tm_mday = 31;
+    tm1.tm_mon = 4;
+    tm1.tm_wday = 3;
+    tm1.tm_yday = 151;
+    tm1.tm_year = 100;
+    tm1.tm_isdst = 0;
+
+    t = (time_t)959817599;
+
+    tm2 = gmtime(&t);
+    CYG_TEST_PASS_FAIL(!cmp_structtm(&tm1, tm2), "gmtime test #5");
+
+    tm1.tm_sec = 0;
+    tm1.tm_min = 0;
+    tm1.tm_hour = 0;
+    tm1.tm_mday = 1;
+    tm1.tm_mon = 5;
+    tm1.tm_wday = 4;
+    tm1.tm_yday = 152;
+    tm1.tm_year = 100;
+    tm1.tm_isdst = 0;
+
+    t = (time_t)959817600;
+
+    tm2 = gmtime(&t);
+    CYG_TEST_PASS_FAIL(!cmp_structtm(&tm1, tm2), "gmtime test #6");
+
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "gmtime() function");
 } // test()

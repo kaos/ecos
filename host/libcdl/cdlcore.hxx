@@ -985,6 +985,10 @@ class Cdl {
         }
     };
 
+    // Split a version string into major, minor and release numbers.
+    static void         split_version_string(const std::string&, std::string& /* major */,
+                                             std::string& /* minor */, std::string& /* release */);
+    
     // It is occasionally useful to take a full CDL name such as CYGPKG_KERNEL
     // and turn it into a short form, i.e. kernel.
     static std::string  get_short_form(const std::string&);

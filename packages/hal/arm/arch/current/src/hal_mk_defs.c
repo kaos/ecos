@@ -51,6 +51,7 @@
 # include <pkgconf/kernel.h>
 # include <cyg/kernel/instrmnt.h>
 #endif
+#include <cyg/hal/hal_if.h>
 
 /*
  * This program is used to generate definitions needed by
@@ -102,6 +103,9 @@ main(void)
     DEFINE(CPSR_MODE_BITS, CPSR_MODE_BITS);
     DEFINE(CPSR_INITIAL, CPSR_INITIAL);
     DEFINE(CPSR_THREAD_INITIAL, CPSR_THREAD_INITIAL);
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+    DEFINE(CYGNUM_CALL_IF_TABLE_SIZE, CYGNUM_CALL_IF_TABLE_SIZE);
+#endif
 }
 
 

@@ -289,15 +289,23 @@ eth_drv_send(struct ifnet *ifp)
             total_len += len;
             sg_list[sg_len].buf = (CYG_ADDRESS)data;
             sg_list[sg_len].len = len;
-            sg_len++;
+            if ( len )
+                sg_len++;
             if (net_debug) {
-                diag_printf("xmit %d bytes at %x\n", len, data);
-                diag_dump_buf(data, len);
+                diag_printf("xmit %d bytes at %x sg[%d]\n", len, data, sg_len);
+                if ( 1 & net_debug )
+                    diag_dump_buf(data, len);
+            }
+            if ( MAX_ETH_DRV_SG < sg_len ) {
+                diag_printf("too many mbufs to tx, %d > %d\n", sg_len, MAX_ETH_DRV_SG );
+                sg_len = 0;
+                break; // drop it on the floor
             }
         }
 
         // Tell hardware to send this packet
-        (sc->funs->send)(sc, sg_list, sg_len, total_len, (unsigned long)m0);
+        if ( sg_len )
+            (sc->funs->send)(sc, sg_list, sg_len, total_len, (unsigned long)m0);
     }
 
     cyg_scheduler_unlock();  // Allow DSRs to run
@@ -402,7 +410,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     if (net_debug) {
         for (i = 0;  i < sg_len;  i++) {
             if (sg_list[i].buf) {
-                diag_dump_buf((void *)sg_list[i].buf, sg_list[i].len);
+                diag_printf("rx %d bytes at %x sg[%d]\n", sg_list[i].len, sg_list[i].buf, i);
+                if ( 1 & net_debug )
+                    diag_dump_buf((void *)sg_list[i].buf, sg_list[i].len);
             }
         }
     }
@@ -430,3 +440,4 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     ether_input(ifp, eh, m);
 }
 
+// EOF eth_drv.c

@@ -51,9 +51,7 @@
 # include <pkgconf/kernel.h>
 # include <cyg/kernel/instrmnt.h>
 #endif
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
 #include <cyg/hal/hal_if.h>
-#endif
 
 /*
  * This program is used to generate definitions needed by

@@ -838,6 +838,7 @@ bool mem_map::add_relative_sections_to_list (list <mem_region>::iterator region,
     mem_location * new_section_location = (location_type == initial_location ? new_section->initial_location : new_section->final_location);
     list <mem_section_view>::iterator insertion_point = section_view;
     ++insertion_point;
+    bool no_relocation = true;
 
     while (new_section_location->following_section != NULL)
     {
@@ -848,14 +849,18 @@ bool mem_map::add_relative_sections_to_list (list <mem_region>::iterator region,
 		const bool section_relocates = new_section->relocates;
         new_section = new_section_view.section;
         new_section_view.section_location = (new_section->relocates ? location_type : fixed_location);
-        if ((new_section_view.section_location == fixed_location) && (location_type == final_location) && (! section_view->section->relocates) && (! section_relocates))
+        if ((new_section_view.section_location == fixed_location) && (location_type == final_location) && (! section_view->section->relocates) && (! section_relocates) && no_relocation)
         {
-            // section already added to the view
+            // section already added to the view so add nothing but
+            // increment insertion point for following sections
+            TRACE (_T("Skipping section %s %s location (relative) preceding %s\n"), CString (new_section_location->following_section->name.c_str()), location_type == initial_location ? _T("initial") : _T("final"), ((insertion_point != region->section_view_list.end ()) && (insertion_point->section != NULL)) ? CString (insertion_point->section->name.c_str()) : _T("(null)"));
+            ++insertion_point;
         }
         else
         {
-			TRACE (_T("Inserting section %s %s location (relative) preceding %s\n"), CString (new_section_location->following_section->name.c_str()), location_type == initial_location ? _T("initial") : _T("final"), ((insertion_point != region->section_view_list.end ()) && (insertion_point->section != NULL)) ? CString (insertion_point->section->name.c_str()) : _T("(null)"));
+            TRACE (_T("Inserting section %s %s location (relative) preceding %s\n"), CString (new_section_location->following_section->name.c_str()), location_type == initial_location ? _T("initial") : _T("final"), ((insertion_point != region->section_view_list.end ()) && (insertion_point->section != NULL)) ? CString (insertion_point->section->name.c_str()) : _T("(null)"));
             region->section_view_list.insert (insertion_point, new_section_view);
+            no_relocation = no_relocation && ! new_section_view.section->relocates;
         }
         new_section_location = (location_type == initial_location ? new_section->initial_location : new_section->final_location);
     }    

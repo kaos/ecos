@@ -69,6 +69,10 @@
 
 #include <cyg/infra/cyg_type.h>
 
+externC void cyg_hal_plf_serial_init(void);
+externC void cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch);
+externC cyg_uint8 cyg_hal_plf_serial_getc(void* __ch_data);
+
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 
 #include <cyg/hal/hal_if.h>
@@ -76,12 +80,6 @@
 #define HAL_DIAG_INIT() hal_if_diag_init()
 #define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
 #define HAL_DIAG_READ_CHAR(_c_) hal_if_diag_read_char(&_c_)
-
-#ifndef CYGPRI_CONSOLE_PROCS_HANDLED
-# define HAL_PLF_DIAG_RAW_INIT() cyg_quicc_init_smc1()
-# define HAL_PLF_DIAG_RAW_WRITE_CHAR(_c_) cyg_quicc_smc1_uart_putchar(_c_)
-# define HAL_PLF_DIAG_RAW_READ_CHAR(_c_) (_c_) = cyg_quicc_smc1_uart_rcvchar()
-#endif
 
 #else // everything by steam
 

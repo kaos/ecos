@@ -1,3 +1,21 @@
+2000-06-18  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_cl7111_ram.ldi: 
+	* include/pkgconf/mlt_arm_cl7111_ram.mlt: 
+	* include/pkgconf/mlt_arm_cl7111_rom.ldi: 
+	* include/pkgconf/mlt_arm_cl7111_rom.mlt: 
+	* include/pkgconf/mlt_arm_edb7209_rom.ldi: 
+	* include/pkgconf/mlt_arm_edb7209_rom.mlt: 
+	* include/pkgconf/mlt_arm_edb7211_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7211_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7211_rom.ldi: 
+	* include/pkgconf/mlt_arm_edb7211_rom.mlt: 
+	* include/pkgconf/mlt_arm_edb7212_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7212_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7212_rom.ldi: 
+	* include/pkgconf/mlt_arm_edb7212_rom.mlt: 
+	Incorporate new fixed vectors (used on all ARM platforms).
+
 2000-04-07  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_edb7xxx.cdl: Fix build of i2s audio test.

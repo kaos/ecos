@@ -330,7 +330,8 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
 {
     Cyg_Interrupt *p = *(Cyg_Interrupt **)data;
     register cyg_uint32 isr_ret = 0;
-    
+    register cyg_uint32 isr_chain_ret = 0;
+
     CYG_INSTRUMENT_INTR(CHAIN_ISR, vector, 0);
 
     while( p != NULL )
@@ -338,6 +339,8 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
         if( p->vector == vector )
         {
             isr_ret = p->isr(vector, p->data);
+
+            isr_chain_ret |= isr_ret;
 
             if( isr_ret & Cyg_Interrupt::CALL_DSR ) p->post_dsr();
 
@@ -348,7 +351,7 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
     }
 
 #ifdef HAL_DEFAULT_ISR
-    if( (isr_ret & Cyg_Interrupt::HANDLED) == 0 )
+    if( (isr_chain_ret & (Cyg_Interrupt::HANDLED|Cyg_Interrupt::CALL_DSR)) == 0 )
     {
         // If we finished the loop for some reason other than that an
         // ISR has handled the interrupt, call any default ISR to either

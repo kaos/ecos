@@ -55,10 +55,16 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_v85x_v850.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_v85x_v850_ceb.h>"
+        puts $::cdl_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS 1"
+        puts $::cdl_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL 0"
+        puts $::cdl_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL 0"
+        puts $::cdl_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL 0"
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -154,8 +160,9 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGBLD_BUILD_COMMON_GDB_STUBS
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-            requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
             requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
             requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
             no_define

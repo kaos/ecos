@@ -1709,7 +1709,7 @@ void CConfigToolDoc::OnFileExport()
 
 void CConfigToolDoc::OnFileImport()
 {
-  CFileDialog dlg (TRUE, NULL, NULL, OFN_PATHMUSTEXIST | OFN_HIDEREADONLY, _T("eCos Minimal Configurations (*.ecm)|*.ecm||"), AfxGetMainWnd ());
+  CFileDialog dlg (TRUE, _T("ecm"), NULL, OFN_PATHMUSTEXIST | OFN_HIDEREADONLY, _T("eCos Minimal Configurations (*.ecm)|*.ecm||"), AfxGetMainWnd ());
   TCHAR szBuffer [MAX_PATH * 16] = _T("");
   dlg.m_ofn.lpstrFile = szBuffer;
   dlg.m_ofn.nMaxFile = MAX_PATH * 16;

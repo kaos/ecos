@@ -1,3 +1,15 @@
+2000-06-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/eth_drv.c (eth_drv_send): Do not consume an SG entry for
+	zero length data; tolerate overflow of the SG.  Before this, pings
+	of 6000 bytes crashed the system!
+
+	You can now set net_debug to 2 to get quieter output; 1 gives the
+	whole packet dump as before.
+
+	* include/eth_drv.h (MAX_ETH_DRV_SG): Make this 16 so that an MTU
+	made of all mbufs will not overflow.
+
 2000-03-28  Gary Thomas  <gthomas@redhat.com>
 
 	* src/eth_drv.c (eth_drv_recv): Tolerate running out of MBUFs

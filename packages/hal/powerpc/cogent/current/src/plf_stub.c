@@ -42,18 +42,29 @@
 
 #include <pkgconf/hal.h>
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
 #include <cyg/hal/hal_stub.h>
+#include <cyg/hal/hal_if.h>
 
-//----------------------------------------------------------------------------
-// Include the serial driver.
-#define CYG_CMA_STUB
-#define CYG_CMA_PUBLIC
-#define CYG_CMA_PORT CYGHWR_HAL_POWERPC_COGENT_GDB_PORT
-#define CYG_CMA_NAME_PREFIX hal_cma_stub_
-#include <cma_ser.inl>
+#define L1 "eCos ROM   " __TIME__ "\n"
+#define L2 __DATE__ "\n"
 
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+void
+hal_plf_stub_init(void)
+{
+#if defined(CYGSEM_HAL_ROM_MONITOR) && defined(CYGSEM_HAL_VIRTUAL_VECTOR)
+    // Put stub build date on the LCD.
+    hal_virtual_comm_table_t* comm;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+    CYGACC_CALL_IF_SET_CONSOLE_COMM()(2);
+
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_WRITE(*comm)(CYGACC_COMM_IF_CH_DATA(*comm), L1, strlen(L1));
+    CYGACC_COMM_IF_WRITE(*comm)(CYGACC_COMM_IF_CH_DATA(*comm), L2, strlen(L2));
+
+    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+#endif
+}
+
 //-----------------------------------------------------------------------------
 // End of plf_stub.c

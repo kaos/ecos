@@ -279,6 +279,7 @@ bool cdl_exec::cmd_list () {
 		std::sort (packages.begin (), packages.end ());
 		for (unsigned int package = 0; package < packages.size (); package++) {
 			const std::vector<std::string> & aliases = pkgdata->get_package_aliases (packages [package]);
+			printf ("Package %s (%s):\n aliases:", packages [package].c_str (), aliases [0].c_str ());
 			for (unsigned int alias = 1; alias < aliases.size (); alias++) {
 				printf (" %s", aliases [alias].c_str ());
 			}

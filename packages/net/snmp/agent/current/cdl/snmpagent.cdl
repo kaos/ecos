@@ -1,0 +1,287 @@
+# ====================================================================
+#
+#      snmpagent.cdl
+#
+#      SNMP agent configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      hmt
+# Original data:  hmt
+# Contributors:   gthomas
+# Date:           2000-05-30
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_SNMPAGENT {
+    display       "SNMP agent"
+    parent        CYGPKG_NET
+#    doc           doc/index.html
+    include_dir   ucd-snmp
+    requires      CYGPKG_IO
+    requires      CYGPKG_LIBC
+    requires      CYGPKG_ERROR
+    requires      CYGPKG_NET
+    requires      CYGPKG_SNMPLIB
+    description   "SNMP agent based on the UCD-SNMP project."
+
+    compile					\
+		agent_read_config.c		\
+		agent_registry.c		\
+		agent_trap.c			\
+		kernel.c			\
+		mib_modules.c			\
+		snmp_agent.c			\
+		snmp_vars.c			\
+		snmpd.c				\
+                snmptask.c			\
+		mibgroup/mibII/system_mib.c	\
+		mibgroup/mibII/sysORTable.c	\
+		mibgroup/mibII/snmp_mib.c	\
+		mibgroup/mibII/icmp.c		\
+		mibgroup/mibII/interfaces.c	\
+		mibgroup/mibII/ip.c		\
+		mibgroup/mibII/tcp.c		\
+		mibgroup/mibII/udp.c		\
+		mibgroup/util_funcs.c		\
+		mibgroup/mibII/dot3.c		\
+
+
+
+# Turns out the agent does not need to read the MIBs at all.
+# It is all part of the library startup; I had been misled by
+# debug/error messages.  But that part of the lib is not used.
+#
+#		 rofs/EtherLike-MIB.c		\
+#		 rofs/IANAifType-MIB.c		\
+#		 rofs/IF-MIB.c			\
+#		 rofs/IP-MIB.c			\
+#		 rofs/RFC-1215.c			\
+#		 rofs/SNMPv2-CONF.c		\
+#		 rofs/SNMPv2-MIB.c		\
+#		 rofs/SNMPv2-SMI.c		\
+#		 rofs/SNMPv2-TC.c		\
+#		 rofs/SNMPv2-TM.c		\
+#		 rofs/TCP-MIB.c			\
+#		 rofs/UDP-MIB.c
+
+#    compile	-library=libextras.a  rofs/snmprofs.c
+
+#		 mibgroup/mibII/interfaces.c	\
+#		 mibgroup/mibII/icmp.c		\
+#		 mibgroup/mibII/ip.c		\
+#		 mibgroup/mibII/snmp_mib.c	\
+#		 mibgroup/mibII/sysORTable.c	\
+#		 mibgroup/mibII/system_mib.c	\
+#		 mibgroup/mibII/tcp.c		\
+#		 mibgroup/mibII/udp.c		\
+#		 mibgroup/util_funcs.c		\
+#
+
+# these from MIBII that I think I might need later
+#		mibgroup/mibII/ipv6.c		\
+#		mibgroup/mibII/route_write.c	\
+#		mibgroup/mibII/var_route.c	\
+# AT group is deprecated
+#		mibgroup/mibII/at.c		\
+# SNMPv3 view access control
+#		mibgroup/mibII/vacm_vars.c	\
+
+
+# here is the full list
+#    compile \
+#		 dlmods/dlmod_mib.c			\
+#		 dlmods/example.c			\
+#		 mibgroup/agentx/client.c		\
+#		 mibgroup/agentx/master.c		\
+#		 mibgroup/agentx/master_admin.c		\
+#		 mibgroup/agentx/master_request.c	\
+#		 mibgroup/agentx/protocol.c		\
+#		 mibgroup/agentx/subagent.c		\
+#		 mibgroup/examples/example.c		\
+#		 mibgroup/examples/ucdDemoPublic.c	\
+#		 mibgroup/examples/ucdDemoPublic.cmds	\
+#		 mibgroup/examples/ucdDemoPublic.conf	\
+#		 mibgroup/host/hr_device.c		\
+#		 mibgroup/host/hr_disk.c			\
+#		 mibgroup/host/hr_filesys.c		\
+#		 mibgroup/host/hr_network.c		\
+#		 mibgroup/host/hr_other.c		\
+#		 mibgroup/host/hr_partition.c		\
+#		 mibgroup/host/hr_print.c		\
+#		 mibgroup/host/hr_proc.c			\
+#		 mibgroup/host/hr_storage.c		\
+#		 mibgroup/host/hr_swinst.c		\
+#		 mibgroup/host/hr_swrun.c		\
+#		 mibgroup/host/hr_system.c		\
+#		 mibgroup/host/hr_utils.c		\
+#		 mibgroup/mibII/interfaces.c		\
+#		 mibgroup/mibII/at.c			\
+#		 mibgroup/mibII/icmp.c			\
+#		 mibgroup/mibII/ip.c			\
+#		 mibgroup/mibII/ipv6.c			\
+#		 mibgroup/mibII/route_write.c		\
+#		 mibgroup/mibII/snmp_mib.c		\
+#		 mibgroup/mibII/sysORTable.c		\
+#		 mibgroup/mibII/system_mib.c		\
+#		 mibgroup/mibII/tcp.c			\
+#		 mibgroup/mibII/udp.c			\
+#		 mibgroup/mibII/vacm_vars.c		\
+#		 mibgroup/mibII/var_route.c		\
+#		 mibgroup/misc/ipfwacc.c			\
+#		 mibgroup/misc/dlmod.c			\
+#		 mibgroup/smux/snmp_bgp.c		\
+#		 mibgroup/smux/smux.c			\
+#		 mibgroup/smux/snmp_ospf.c		\
+#		 mibgroup/smux/snmp_rip2.c		\
+#		 mibgroup/snmpv3/snmpEngine.c		\
+#		 mibgroup/snmpv3/snmpMPDStats.c		\
+#		 mibgroup/snmpv3/usmStats.c		\
+#		 mibgroup/snmpv3/usmUser.c		\
+#		 mibgroup/target/snmpTargetAddrEntry.c	\
+#		 mibgroup/target/snmpTargetParamsEntry.c	\
+#		 mibgroup/ucd-snmp/diskio.c		\
+#		 mibgroup/ucd-snmp/disk.c		\
+#		 mibgroup/ucd-snmp/errormib.c		\
+#		 mibgroup/ucd-snmp/extensible.c		\
+#		 mibgroup/ucd-snmp/file.c		\
+#		 mibgroup/ucd-snmp/hpux.c		\
+#		 mibgroup/ucd-snmp/loadave.c		\
+#		 mibgroup/ucd-snmp/memory.c		\
+#		 mibgroup/ucd-snmp/memory_freebsd2.c	\
+#		 mibgroup/ucd-snmp/memory_netbsd1.c	\
+#		 mibgroup/ucd-snmp/memory_solaris2.c	\
+#		 mibgroup/ucd-snmp/pass.c		\
+#		 mibgroup/ucd-snmp/pass_persist.c	\
+#		 mibgroup/ucd-snmp/proc.c		\
+#		 mibgroup/ucd-snmp/registry.c		\
+#		 mibgroup/ucd-snmp/versioninfo.c		\
+#		 mibgroup/ucd-snmp/vmstat.c		\
+#		 mibgroup/ucd-snmp/vmstat_freebsd2.c	\
+#		 mibgroup/ucd-snmp/vmstat_netbsd1.c	\
+#		 mibgroup/ucd-snmp/vmstat_solaris2.c	\
+#		 mibgroup/header_complex.c		\
+#		 mibgroup/kernel_sunos5.c		\
+#		 mibgroup/util_funcs.c			\
+
+
+    cdl_component CYGPKG_SNMPAGENT_SYSTEM_MIB {
+        display "System MIB defaults"
+        flavor  none
+	no_define
+	description "
+	    These options control the default values for items in the
+            system MIB.  The symbols are used as initializers for C char
+            arrays; therefore you must include \"double-quotes\" in the
+            defined value to get the correct results."
+
+	cdl_option CYGDAT_NET_SNMPAGENT_SYS_CONTACT {
+	    display "Contact address"
+	    flavor  data
+	    default_value { "\"nobody@nowhere.net\"" }
+	    description   "
+	        This specifies the value returned for the sysContact field
+                of the System MIB (via the symbol SYS_CONTACT in the UCD
+	        sources)."
+	}
+
+	cdl_option CYGDAT_NET_SNMPAGENT_SYS_LOC {
+	    display "System location"
+	    flavor  data
+	    default_value { "\"<unset>\"" }
+	    description   "
+	        This specifies the value returned for the sysLocation field
+                of the System MIB (via the symbol SYS_LOC in the UCD
+	        sources)"
+	}
+
+	cdl_option CYGDAT_NET_SNMPAGENT_VERS_DESC {
+	    display "Version description"
+	    flavor  data
+	    default_value { "\"ucd-snmp-4.1.2/Red Hat eCos\"" }
+	    description   "
+	        This specifies the value returned for the sysDescr field
+                of the System MIB (via the symbol VERS_DESC in the UCD
+	        sources)"
+	}
+
+	cdl_option CYGDAT_NET_SNMPAGENT_SYS_NAME {
+	    display "System name "
+	    flavor  data
+	    default_value { "\"eCos\"" }
+	    description   "
+	        This specifies the value returned for the sysName field
+                of the System MIB (via the symbol SYS_NAME in the UCD
+	        sources)"
+	}
+    }
+
+    cdl_component CYGPKG_SNMPAGENT_OPTIONS {
+        display "SNMP agent build options"
+        flavor  none
+	no_define
+
+        cdl_option CYGPKG_SNMPAGENT_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "-D_KERNEL -D__ECOS -DIN_UCD_SNMP_SOURCE=1 -I$(PREFIX)/include/ucd-snmp" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the SNMP agent package.
+	        These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_SNMPAGENT_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the SNMP agent package. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_SNMPAGENT_TESTS {
+            display "SNMP agent tests"
+            flavor  data
+            no_define
+            calculated { 
+		"tests/snmpping"
+            }
+            description   "
+                This option specifies the set of tests for the eCos SMNP agent."
+        }
+    }
+}
+
+# EOF snmpagent.cdl

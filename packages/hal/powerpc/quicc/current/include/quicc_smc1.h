@@ -45,9 +45,12 @@
 //
 //=============================================================================
 
-extern void cyg_quicc_smc1_uart_putchar(char ch);
-extern int  cyg_quicc_smc1_uart_rcvchar(void);
-extern void cyg_quicc_init_smc1(void);
+#include <cyg/infra/cyg_type.h>
+#include <cyg/hal/quicc/ppc8xx.h>             // FIXME: bad, but need eppc_base
+
+externC void cyg_hal_plf_serial_init(void);
+externC void cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch);
+externC cyg_uint8 cyg_hal_plf_serial_getc(void* __ch_data);
 
 //--------------------------------------------------------------------------
 // Control-C support.

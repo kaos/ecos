@@ -295,27 +295,37 @@ cdl_package CYGPKG_NET {
 	no_define
 	default_value 0
 	description   "
-	This option enables the building of the network tests
-	which at this time are just demos."
+	This option enables the building of additional network tests
+	which at this time are just demos; otherwise only loopback
+	interface tests will be built."
 
 	cdl_option CYGPKG_NET_TESTS {
 	    display "Networking tests"
 	    flavor  data
 	    no_define
 	    calculated { CYGPKG_NET_BUILD_TESTS ? \
-                              "tests/mbuf_test \
-                              tests/socket_test \
-                              tests/ftp_test \
-                              tests/server_test \
-                              tests/nc_test_master \
-                              tests/nc_test_slave \
-			      tests/tftp_client_test \
-			      tests/tftp_server_test \
-                              tests/tcp_echo \
-			      tests/set_mac_address \
-			      tests/flood \
-                              tests/ping_test"
-	    : "" }
+		    "tests/mbuf_test \
+		    tests/socket_test \
+		    tests/ftp_test \
+		    tests/server_test \
+		    tests/nc_test_master \
+		    tests/nc_test_slave \
+		    tests/tftp_client_test \
+		    tests/tftp_server_test \
+		    tests/tcp_echo \
+		    tests/set_mac_address \
+		    tests/flood \
+		    tests/ping_test \
+		    tests/ping_lo_test \
+		    tests/tcp_lo_test \
+		    tests/udp_lo_test \
+		    tests/tcp_lo_select"
+	    :
+	            "tests/ping_lo_test \
+		    tests/tcp_lo_test \
+		    tests/udp_lo_test \
+		    tests/tcp_lo_select"
+	}
 	    description   "
 	    This option specifies the set of tests
 	    for the networking package."

@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, sorin@netappi.com ("Sorin Babeanu"), hmt
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -70,6 +70,8 @@
 #include <cyg/infra/diag.h>
 #include <cyg/kernel/kapi.h>
 
+#include <stdio.h>    // for 'sprintf()'
+
 #include <bootp.h>
 #include <network.h>
 #include <arpa/inet.h>
@@ -87,6 +89,97 @@ const char  *eth1_name = "eth1";
 
 #define _string(s) #s
 #define string(s) _string(s)
+
+
+#ifdef CYGPKG_NET_NLOOP
+#if 0 < CYGPKG_NET_NLOOP
+//  
+//   Initialize loopback interface  ----------   Added by sorin@netappi.com 
+//
+cyg_bool_t init_loopback_interface(int lo)
+{
+    struct sockaddr_in *addrp;
+    struct ifreq ifr;
+    int s;
+    int one = 1;
+    struct ecos_rtentry route;
+    struct in_addr netmask, gateway;
+
+    //diag_printf("Init_loopback_interface\n");
+    s = socket(AF_INET, SOCK_DGRAM, 0); 
+    if (s < 0) {
+        perror("socket");
+        return false;
+    }
+    if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one))) {
+        perror("setsockopt");
+        return false;
+    }
+
+    addrp = (struct sockaddr_in *) &ifr.ifr_addr;
+    memset(addrp, 0, sizeof(*addrp));
+    addrp->sin_family = AF_INET;
+    addrp->sin_len = sizeof(*addrp);
+    addrp->sin_port = 0;
+    // Make an address 127.0.<lo>.1 to manage multiple loopback ifs.
+    // (There is normally only 1, so it's the standard 127.0.0.1)
+    addrp->sin_addr.s_addr = htonl((0x100 * lo) + INADDR_LOOPBACK) ; 
+
+    // Init the one we were told to
+    sprintf(ifr.ifr_name, "lo%d", lo);
+
+    if (ioctl(s, SIOCSIFADDR, &ifr)) {
+        perror("SIOCIFADDR");
+        return false;
+    }
+    
+#if 1 < CYGPKG_NET_NLOOP
+    // We cheat to make different nets for multiple loopback devs
+    addrp->sin_addr.s_addr = netmask.s_addr = htonl(IN_CLASSC_NET);
+#else
+    // 
+    addrp->sin_addr.s_addr = netmask.s_addr = htonl(IN_CLASSA_NET);
+#endif
+    if (ioctl(s, SIOCSIFNETMASK, &ifr)) {
+        perror("SIOCSIFNETMASK");
+        return false;
+    }
+    ifr.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING;
+    if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
+        perror("SIOCSIFFLAGS");
+        return false;
+    }
+
+    gateway.s_addr = htonl(INADDR_LOOPBACK);  
+    memset(&route, 0, sizeof(route));
+    addrp->sin_family = AF_INET;
+    addrp->sin_port = 0;
+    addrp->sin_addr.s_addr = htonl((0x100 * lo) + INADDR_LOOPBACK) & netmask.s_addr;
+    memcpy(&route.rt_dst, addrp, sizeof(*addrp));
+    addrp->sin_addr = netmask;
+    memcpy(&route.rt_genmask, addrp, sizeof(*addrp));
+    addrp->sin_addr = gateway;
+    memcpy(&route.rt_gateway, addrp, sizeof(*addrp));
+    
+    route.rt_dev = ifr.ifr_name;
+    route.rt_flags = RTF_UP|RTF_GATEWAY;
+    route.rt_metric = 0;
+
+    if (ioctl(s, SIOCADDRT, &route)) {
+        diag_printf("Route - dst: %s", inet_ntoa(((struct sockaddr_in *)&route.rt_dst)->sin_addr));
+        diag_printf(", mask: %s", inet_ntoa(((struct sockaddr_in *)&route.rt_genmask)->sin_addr));
+        diag_printf(", gateway: %s\n", inet_ntoa(((struct sockaddr_in *)&route.rt_gateway)->sin_addr));
+        if (errno != EEXIST) {
+            perror("SIOCADDRT 3");
+            return false;
+        }
+    }
+    close(s);
+    return true;
+}
+#endif
+#endif
+
 
 #if defined(CYGHWR_NET_DRIVER_ETH0_ADDRS_IP) \
  || defined(CYGHWR_NET_DRIVER_ETH1_ADDRS_IP)
@@ -152,6 +245,18 @@ build_bootp_record(struct bootp *bp,
 void
 init_all_network_interfaces(void)
 {
+    static volatile int in_init_all_network_interfaces = 0;
+
+    cyg_scheduler_lock();
+    while ( in_init_all_network_interfaces ) {
+        // Another thread is doing this...
+        cyg_scheduler_unlock();
+        cyg_thread_delay( 10 );
+        cyg_scheduler_lock();
+    }
+    in_init_all_network_interfaces = 1;
+    cyg_scheduler_unlock();
+
 #ifdef CYGHWR_NET_DRIVER_ETH0
     if ( ! eth0_up ) { // Make this call idempotent
 #ifdef CYGHWR_NET_DRIVER_ETH0_BOOTP
@@ -222,4 +327,19 @@ init_all_network_interfaces(void)
     }
 #endif
 #endif
+
+#ifdef CYGPKG_NET_NLOOP
+#if 0 < CYGPKG_NET_NLOOP
+    {
+        static int loop_init = 0;
+        int i;
+        if ( 0 == loop_init++ )
+            for ( i = 0; i < CYGPKG_NET_NLOOP; i++ )
+                init_loopback_interface( i );
+    }
+#endif
+#endif
+
+    // Open the monitor to other threads.
+    in_init_all_network_interfaces = 0;
 }

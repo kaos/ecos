@@ -99,6 +99,14 @@
         mtspr   CYGARC_REG_IC_CST,r3
         isync
 
+        # Default caching to off when MMU is disabled
+        mfspr   r3,CYGARC_REG_MI_CTR
+        oris    r3,r3,(CYGARC_REG_MI_CTR_CIDEF)@h
+        mtspr   CYGARC_REG_MI_CTR,r3
+        mfspr   r3,CYGARC_REG_MD_CTR
+        oris    r3,r3,(CYGARC_REG_MD_CTR_CIDEF)@h
+        mtspr   CYGARC_REG_MD_CTR,r3
+        
         # Set up MSR (disable MMU for now)
         lwi     r3,(CYG_MSR & ~(MSR_IR | MSR_DR))
         sync

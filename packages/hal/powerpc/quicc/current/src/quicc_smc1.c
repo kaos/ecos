@@ -38,7 +38,9 @@
 // Description:  Serial IO for MBX boards which connect their debug channel
 //               to SMC1; or any QUICC user who wants to use SMC1.
 // Usage:
-// 
+// Notes:        The driver hooks itself up on procs channel 0. This should
+//               probably be made configurable, allowing the platform
+//               to specify location.
 //
 //####DESCRIPTIONEND####
 //
@@ -48,6 +50,8 @@
 #include <pkgconf/hal_powerpc_quicc.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_cache.h>
+
+#include <cyg/hal/hal_arch.h>
 
 #ifdef CYGPKG_HAL_POWERPC_MPC860
 
@@ -73,6 +77,12 @@
 
 #define Rxbuf    ((volatile char *)eppc + 0x2810)
 #define Txbuf    ((volatile char *)eppc + 0x2820)
+
+// SMC Events (interrupts)
+#define QUICC_SMCE_BRK 0x10  // Break received
+#define QUICC_SMCE_BSY 0x04  // Busy - receive buffer overrun
+#define QUICC_SMCE_TX  0x02  // Tx interrupt
+#define QUICC_SMCE_RX  0x01  // Rx interrupt
 
 
 /*
@@ -207,13 +217,14 @@ init_smc1_uart(void)
 extern int enable_diag_uart;
 #endif // CYGDBG_DIAG_BUF
 
-void
-cyg_quicc_smc1_uart_putchar(char ch)
+void 
+cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 ch)
 {
     volatile struct cp_bufdesc *bd, *first;
-    EPPC *eppc = eppc_base();
+    EPPC *eppc = (EPPC*) __ch_data;
     volatile struct smc_uart_pram *uart_pram = &eppc->pram[2].scc.pothers.smc_modem.psmc.u;
     int timeout;
+    CYGARC_HAL_SAVE_GP();
 
     /* tx buffer descriptor */
     bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->tbptr);
@@ -269,19 +280,21 @@ cyg_quicc_smc1_uart_putchar(char ch)
     while (bd->ctrl & QUICC_BD_CTL_Ready) ;  // Wait until buffer free
     bd->length = 0;
 #ifdef CYGDBG_DIAG_BUF
-        enable_diag_uart = 1;
+    enable_diag_uart = 1;
 #endif // CYGDBG_DIAG_BUF
+
+    CYGARC_HAL_RESTORE_GP();
 }
 
-
-int
-cyg_quicc_smc1_uart_rcvchar(void)
+cyg_uint8
+cyg_hal_plf_serial_getc(void* __ch_data)
 {
     volatile struct cp_bufdesc *bd;
     char ch;
-    EPPC *eppc = eppc_base();
+    EPPC *eppc = (EPPC*) __ch_data;
     volatile struct smc_uart_pram *uart_pram = &eppc->pram[2].scc.pothers.smc_modem.psmc.u;
     int cache_state;
+    CYGARC_HAL_SAVE_GP();
 
     /* rx buffer descriptor */
     bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->rbptr);
@@ -299,7 +312,38 @@ cyg_quicc_smc1_uart_rcvchar(void)
         HAL_DCACHE_INVALIDATE(bd->buffer, uart_pram->mrblr);  // Make sure no stale data
     }
 
+    CYGARC_HAL_RESTORE_GP();
     return ch;
+}
+
+static void
+cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
+                         cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        cyg_hal_plf_serial_putc(__ch_data, *__buf++);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        *__buf++ = cyg_hal_plf_serial_getc(__ch_data);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static int
+cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
+{
+    // Do nothing (yet).
+    return 0;
 }
 
 /*
@@ -308,7 +352,7 @@ cyg_quicc_smc1_uart_rcvchar(void)
  * in _bsp_board_init().
  */
 void
-cyg_quicc_init_smc1(void)
+cyg_hal_plf_serial_init(void)
 {
     volatile EPPC *eppc = eppc_base();
     int i;
@@ -324,6 +368,28 @@ cyg_quicc_init_smc1(void)
     for (i = 0; i < 100000; i++);
 
     init_smc1_uart();
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+    {
+        // Setup procs in the vector table
+        hal_virtual_comm_table_t* comm;
+        int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+        // Set channel 0
+        CYGACC_CALL_IF_SET_CONSOLE_COMM()(0);// Should be configurable!
+        comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+        CYGACC_COMM_IF_CH_DATA_SET(*comm, eppc_base());
+        CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+        CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+        CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+        CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+        CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+
+        // Restore original console
+        CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+    }
+#endif
 }
 
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // the below should be removed
@@ -385,6 +451,7 @@ hal_ctrlc_isr_init(void)
     HAL_INTERRUPT_UNMASK(CYGHWR_HAL_GDB_PORT_VECTOR);
 }
 
+
 cyg_uint32
 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
@@ -392,30 +459,30 @@ hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     struct cp_bufdesc *bd;
     char ch;
 
-    eppc->smc_regs[0].smc_smce = 0xff;
+    if (eppc->smc_regs[0].smc_smce & QUICC_SMCE_RX) {
 
-    /* rx buffer descriptors */
-    bd = (struct cp_bufdesc *)((char *)eppc_base() + Rxbd);
+        eppc->smc_regs[0].smc_smce = QUICC_SMCE_RX;
 
-    if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
+        /* rx buffer descriptors */
+        bd = (struct cp_bufdesc *)((char *)eppc_base() + Rxbd);
 
-        // then there be a character waiting
-        ch = bd->buffer[0];
-        bd->length = 1;
-        bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
-
-        if( cyg_hal_is_break( &ch , 1 ) )
-            cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
+        if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
+            
+            // then there be a character waiting
+            ch = bd->buffer[0];
+            bd->length = 1;
+            bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
+        
+            if( cyg_hal_is_break( &ch , 1 ) )
+                cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
+        }
 
         // Interrupt handled. Acknowledge it.
         eppc->cpmi_cisr = 0x10;
         return CYG_ISR_HANDLED;
     }
 
-    eppc->cpmi_cisr = 0x10; // acknowledge the Rx event anyway
-                            // in case it was left over from polled reception
-
-    // Not a serial interrupt
+    // Not a serial interrupt.
     return 0;
 }
 #endif

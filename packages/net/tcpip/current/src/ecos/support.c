@@ -65,9 +65,13 @@
 
 #include <machine/cpu.h>
 
+#include <pkgconf/net.h>
+
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/kernel/kapi.h>
+
+#include <cyg/infra/cyg_ass.h>
 
 #include <netdev.h>
 
@@ -249,6 +253,9 @@ cyg_net_mbuf_alloc(int type, int flags)
         res = cyg_mempool_fix_alloc(net_mbufs);
     }
     FINISH_STATS(stats_mbuf_alloc);
+    // Check that this nastiness works OK
+    CYG_ASSERT( dtom(res) == res, "dtom failed, base of mbuf" );
+    CYG_ASSERT( dtom((char *)res + MSIZE/2) == res, "dtom failed, mid mbuf" );
     return (res);
 }
 
@@ -274,6 +281,7 @@ cyg_net_cluster_alloc(void)
 static void
 cyg_kmem_init(void)
 {
+    unsigned char *p;
     diag_printf("Network stack using %d bytes for misc space\n", NET_MEMPOOL_SIZE);
     diag_printf("                    %d bytes for mbufs\n", NET_MBUFS_SIZE);
     diag_printf("                    %d bytes for mbuf clusters\n", NET_CLUSTERS_SIZE);
@@ -281,8 +289,10 @@ cyg_kmem_init(void)
                            NET_MEMPOOL_SIZE,
                            &net_mem,
                            &net_mem_pool);
-    cyg_mempool_fix_create(&net_mbufs_area,
-                           NET_MBUFS_SIZE,
+    // Align the mbufs on MSIZE boudaries so that dtom() can work.
+    p = (unsigned char *)(((long)(&net_mbufs_area) + MSIZE - 1) & ~(MSIZE-1));
+    cyg_mempool_fix_create(p,
+                           ((&(net_mbufs_area[NET_MBUFS_SIZE])) - p) & ~(MSIZE-1),
                            MSIZE,
                            &net_mbufs,
                            &net_mbufs_pool);
@@ -568,6 +578,8 @@ cyg_netint(cyg_addrword_t param)
 //
 extern void cyg_do_net_init(void);  // Linker magic to execute this function as 'init'
 extern void ifinit(void);
+extern void loopattach(int);
+
 void
 cyg_net_init(void)
 {
@@ -604,6 +616,12 @@ cyg_net_init(void)
             t->status = 0;  // Device not [currently] available
         }
     }
+    // And attack the loopback interface
+#ifdef CYGPKG_NET_NLOOP
+#if 0 < CYGPKG_NET_NLOOP
+    loopattach(0);
+#endif
+#endif
     // Start up the network processing
     ifinit();
     domaininit();

@@ -53,6 +53,8 @@
 #include <cyg/hal/hal_intr.h>           // Interrupt handling
 #include <cyg/hal/v850_common.h>        // Hardware definitions
 
+#include <cyg/hal/hal_if.h>             // ROM monitor interfaces
+
 extern void show_hex4(unsigned long val);
 extern void show_hex1(unsigned long val);
 extern void show_8bit_reg(void *addr);
@@ -62,6 +64,7 @@ void
 cyg_hal_platform_hardware_init(void)
 {
     int i;
+    hal_if_init();  // Initialize GDB[ROM]/eCos interfaces
     show_led(' ');
     show_led(' ');
 }
@@ -222,6 +225,37 @@ show_led(int p)
     for (j = 0;  j < DELAY*3;  j++) {
         *led = 0;
     }
+}
+
+void 
+FAIL(char *m)
+{
+    static char *fail_reason;
+    fail_reason = m;
+#if 0
+    while (1) {
+        show_led('~');
+        show_hex4(m);
+        show_led('/');
+    }
+#else
+    diag_printf("FAIL: %s\n", m);
+#endif
+}
+
+void 
+ALERT(char *m)
+{
+    static char *alert_reason;
+    alert_reason = m;
+#if 0
+    show_led('~');
+    show_led('~');
+    show_hex4(m);
+    show_led('/');
+#else
+    diag_printf("ALERT: %s\n", m);
+#endif
 }
 
 //

@@ -846,7 +846,7 @@ Cdl::is_interactive(void)
 }
 
 //}}}
-//{{{  Cdl::compare_versions()                                  
+//{{{  version support()                                        
 
 // ----------------------------------------------------------------------------
 // Packages may need to impose constraints on which versions of other
@@ -1011,6 +1011,49 @@ Cdl::compare_versions(std::string arg1, std::string arg2)
     }
 
     // Not reachable.
+}
+
+// ----------------------------------------------------------------------------
+// Given a version string, extract major, minor and release numbers.
+// Some or all of these may be absent. Basically the code just
+// iterates through the string looking for sequences of numbers.
+
+static void
+version_extract_number(const std::string& version, unsigned int& index, std::string& result)
+{
+    CYG_REPORT_FUNCNAME("version_extract_number");
+
+    // The calling code is expected to supply a sensible default.
+    // Search for a digit
+    for ( ; index < version.size(); index++) {
+        if (isdigit(version[index])) {
+            break;
+        }
+    }
+    if (index != version.size()) {
+        result = "";
+        if ((index > 0) && ('-' == version[index-1])) {
+            result = "-";
+        }
+        do {
+            result += version[index++];
+        } while ((index < version.size()) && isdigit(version[index]));
+    }
+    
+    CYG_REPORT_RETURN();
+}
+
+void
+Cdl::split_version_string(const std::string& version, std::string& major, std::string& minor, std::string& release)
+{
+    CYG_REPORT_FUNCNAME("CdlMisc::split_version_string");
+
+    unsigned int index = 0;
+    version_extract_number(version, index, major);
+    version_extract_number(version, index, minor);
+    version_extract_number(version, index, release);
+    
+    CYG_REPORT_RETURN();
 }
 
 //}}}

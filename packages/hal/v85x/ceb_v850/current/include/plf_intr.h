@@ -115,6 +115,9 @@
 // The vector used by the Real time clock.
 #define CYGNUM_HAL_INTERRUPT_RTC               CYGNUM_HAL_VECTOR_INTTM10
 
+// Vector used to detect ^C
+#define CYGHWR_HAL_GDB_PORT_VECTOR             CYGNUM_HAL_VECTOR_INTCSI1
+
 // Mapping from interrupt numbers to hardware registers
 #define CYG_HAL_V85X_INTERRUPT_CONTROL_REGISTERS        \
     (volatile unsigned char *)V850_REG_WDTIC,           \
@@ -147,6 +150,15 @@
     (volatile unsigned char *)V850_REG_DMAIC1,          \
     (volatile unsigned char *)V850_REG_DMAIC2,          \
     (volatile unsigned char *)V850_REG_WTIC
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+
+extern struct Hal_SavedRegisters *hal_saved_interrupt_state;
+extern void hal_ctrlc_isr_init(void);
+extern cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+#define HAL_CTRLC_ISR(_v_,_d_)   hal_ctrlc_isr(_v_, _d_)
+#endif
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

@@ -233,6 +233,19 @@ package CYGPKG_NET_ETH_DRIVERS {
         description     "Platform independent ethernet support."
 }
 
+package CYGPKG_SNMPLIB {
+	alias 		{ "SNMP library" snmplib }
+	directory	net/snmp/lib
+	script		snmplib.cdl
+        description     "UCD SNMP library."
+}
+
+package CYGPKG_SNMPAGENT {
+	alias 		{ "SNMP agent" snmpagent }
+	directory	net/snmp/agent
+	script		snmpagent.cdl
+        description     "UCD SNMP agent."
+}
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
 	hardware
@@ -268,7 +281,7 @@ package CYGPKG_IO_PCI	{
 }
 
 package CYGPKG_IO_WALLCLOCK {
-	alias		{ "Wallclock device framework" wallclock devices_wallclock device_wallclock }
+        alias           { "Wallclock device framework" wallclock io_wallclock devices_wallclock device_wallclock }
 	directory	io/wallclock
 	script          wallclock.cdl
         description "

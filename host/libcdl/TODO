@@ -95,6 +95,13 @@ Minor
 20) make version comparison completely case insensitive, to avoid
     problems on some file systems.
 
+21) configure magic to cope with Debian TCL organization.
+    See http://sourceware.cygnus.com/ml/ecos-discuss/2000-06/msg00094.html
+
+22) add version number #define's to pkgconf/system.h, to allow
+    application code to adapt to different versions of a package.
+    http://sourceware.cygnus.com/ml/ecos-discuss/2000-06/msg00140.html
+
 Intermediate
 ------------
 

@@ -62,18 +62,9 @@ externC void init_thread_syscall(void * vector);
 externC CYG_ADDRWORD hal_interrupt_handlers[];
 externC CYG_ADDRWORD hal_vsr_table[];
 
-
-//--------------------------------------------------------------------------
-// Configuration control for the services in this feil.
-#if	defined(CYG_HAL_STARTUP_ROM) ||			\
-	(	defined(CYG_HAL_STARTUP_RAM) &&		\
-		!defined(CYGSEM_HAL_USE_ROM_MONITOR))
-# define CYGPRI_IMPLEMENTS_IF_SERVICES
-#endif
-
 //--------------------------------------------------------------------------
 // Implementations and function wrappers for monitor services
-#ifdef CYGPRI_IMPLEMENTS_IF_SERVICES
+#ifdef CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 static void
 reset(void)
@@ -117,20 +108,41 @@ nop_service(void)
 //----------------------------------
 // Comm controls
 
-static hal_virtual_comm_table_t comm_channels[CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS];
+static hal_virtual_comm_table_t comm_channels[CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+1];
+
+
 
 static int
 set_debug_comm(int __comm_id)
 {
-    static int __selected_id;
+    static int __selected_id = CYGNUM_CALL_IF_SET_COMM_ID_EMPTY;
 
-    CYG_ASSERT(-1 == __comm_id
-               || __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS,
+    CYG_ASSERT(__comm_id >= CYGNUM_CALL_IF_SET_COMM_ID_MANGLER
+               && __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS,
                "Invalid channel");
 
-    if (-1 == __comm_id)
+    switch (__comm_id) {
+    case CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT:
+        if (__selected_id > 0)
+            return __selected_id-1;
+        if (__selected_id == 0)
+            return CYGNUM_CALL_IF_SET_COMM_ID_MANGLER;
         return __selected_id;
 
+    case CYGNUM_CALL_IF_SET_COMM_ID_EMPTY:
+        CYGACC_CALL_IF_DEBUG_PROCS_SET(0);
+        __selected_id = __comm_id;
+        return 1;
+
+    case CYGNUM_CALL_IF_SET_COMM_ID_MANGLER:
+        __comm_id = 0;
+        break;
+
+    default:
+        __comm_id++;                    // skip mangler entry
+        break;
+    }
+    
     __selected_id = __comm_id;
     
     CYGACC_CALL_IF_DEBUG_PROCS_SET(comm_channels[__comm_id]);
@@ -141,78 +153,40 @@ set_debug_comm(int __comm_id)
 static int
 set_console_comm(int __comm_id)
 {
-    static int __selected_id;
+    static int __selected_id = CYGNUM_CALL_IF_SET_COMM_ID_EMPTY;
 
-    CYG_ASSERT(-1 == __comm_id
-               || __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS,
+    CYG_ASSERT(__comm_id >= CYGNUM_CALL_IF_SET_COMM_ID_MANGLER
+               && __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS,
                "Invalid channel");
 
-    if (-1 == __comm_id)
+    switch (__comm_id) {
+    case CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT:
+        if (__selected_id > 0)
+            return __selected_id-1;
+        if (__selected_id == 0)
+            return CYGNUM_CALL_IF_SET_COMM_ID_MANGLER;
         return __selected_id;
 
+    case CYGNUM_CALL_IF_SET_COMM_ID_EMPTY:
+        CYGACC_CALL_IF_CONSOLE_PROCS_SET(0);
+        __selected_id = __comm_id;
+        return 1;
+
+    case CYGNUM_CALL_IF_SET_COMM_ID_MANGLER:
+        __comm_id = 0;
+        break;
+
+    default:
+        __comm_id++;                    // skip mangler entry
+        break;
+    }
+    
     __selected_id = __comm_id;
     
     CYGACC_CALL_IF_CONSOLE_PROCS_SET(comm_channels[__comm_id]);
 
     return 1;
 }
-
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-//----------------------------------
-// eCos debug procedure wrappers
-static void
-debug_write(void* __ch_data, const cyg_uint8* __buf, cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        HAL_STUB_PLATFORM_PUT_CHAR(*__buf++);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static void
-debug_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        *__buf++ = HAL_STUB_PLATFORM_GET_CHAR();
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-
-static void
-debug_putc(void* __ch_data, cyg_uint8 __ch)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    HAL_STUB_PLATFORM_PUT_CHAR(__ch);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static cyg_uint8
-debug_getc(void* __ch_data)
-{
-    cyg_uint8 __ch;
-    CYGARC_HAL_SAVE_GP();
-
-    __ch = HAL_STUB_PLATFORM_GET_CHAR();
-
-    CYGARC_HAL_RESTORE_GP();
-    return __ch;
-}
-
-static int
-debug_control(void *__ch_data, __comm_control_cmd_t __func, ...)
-{
-    // Do nothing (yet).
-    return 0;
-}
-#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 //----------------------------------
 // Cache functions
@@ -239,65 +213,6 @@ flush_dcache(void *__p, int __nbytes)
 
 #endif
 
-#if !defined(CYGPRI_CONSOLE_PROCS_HANDLED) \
-    && defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
-// --------------------
-// Console wrapper functions. These are used for pumping data to the device
-// via low-level functions provided by the platform HAL. Mangling has
-// happened (if applicable) by the time the stream hits this code.
-static void
-console_write(void* __ch_data, const cyg_uint8* __buf, cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        HAL_PLF_DIAG_RAW_WRITE_CHAR(*__buf++);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static void
-console_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    while(__len-- > 0)
-        HAL_PLF_DIAG_RAW_READ_CHAR(*__buf++);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-
-static void
-console_putc(void* __ch_data, cyg_uint8 __ch)
-{
-    CYGARC_HAL_SAVE_GP();
-
-    HAL_PLF_DIAG_RAW_WRITE_CHAR(__ch);
-
-    CYGARC_HAL_RESTORE_GP();
-}
-
-static cyg_uint8
-console_getc(void* __ch_data)
-{
-    cyg_uint8 __ch;
-    CYGARC_HAL_SAVE_GP();
-
-    HAL_PLF_DIAG_RAW_READ_CHAR(__ch);
-
-    CYGARC_HAL_RESTORE_GP();
-    return __ch;
-}
-
-static int
-console_control(void *__ch_data, __comm_control_cmd_t __func, ...)
-{
-    // Do nothing (yet).
-    return 0;
-}
-#endif
-
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 //-----------------------------------------------------------------------------
 // Console IO functions that adhere to the virtual vector table semantics in
@@ -310,22 +225,17 @@ console_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 void 
 hal_if_diag_init(void)
 {
-#ifndef CYGPRI_CONSOLE_PROCS_HANDLED
-    // Set up console procs for the channel and initialize it.
-    hal_virtual_comm_table_t* comm;
-    // Hook console wrappers up on the diag channel
-    CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-
-    CYGACC_COMM_IF_WRITE_SET(*comm, console_write);
-    CYGACC_COMM_IF_READ_SET(*comm, console_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, console_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, console_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, console_control);
-    
-    // Init device.
-    HAL_PLF_DIAG_RAW_INIT();
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+    cyg_hal_plf_comms_init();
 #endif
+
+    // Set console channel. This should only be done when the console channel
+    // differs from the debug channel to prevent removing the debug agent's
+    // mangler procs.
+    if (CYGACC_CALL_IF_SET_DEBUG_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT)
+        != CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL)
+
+        CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
 }
 
 void 
@@ -334,10 +244,10 @@ hal_if_diag_write_char(char c)
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     
     if (__chan)
-        CYGACC_COMM_IF_PUTC(*__chan)(*__chan, c);
+        CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), c);
     else {
         __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-        CYGACC_COMM_IF_PUTC(*__chan)(*__chan, c);
+        CYGACC_COMM_IF_PUTC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), c);
     }
 }
 
@@ -347,10 +257,10 @@ hal_if_diag_read_char(char *c)
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     
     if (__chan)
-        *c = CYGACC_COMM_IF_GETC(*__chan)(*__chan);
+        *c = CYGACC_COMM_IF_GETC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan));
     else {
         __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-        *c = CYGACC_COMM_IF_GETC(*__chan)(*__chan);
+        *c = CYGACC_COMM_IF_GETC(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan));
     }
 }
 #endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
@@ -364,9 +274,8 @@ void
 hal_if_init(void)
 {
     // Set up services provided by monitors
-#ifdef CYGPRI_IMPLEMENTS_IF_SERVICES
+#ifdef CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
     {
-        hal_virtual_comm_table_t* comm;
         int i, j;
         // Initialize tables with the NOP service.
         // This should only be done for service routine entries - data
@@ -374,7 +283,7 @@ hal_if_init(void)
         for (i = 0; i < CYGNUM_CALL_IF_TABLE_SIZE; i++)
             hal_virtual_vector_table[i] = (CYG_ADDRWORD) &nop_service;
 
-        for (j = 0; j < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS; j++)
+        for (j = 0; j < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+1; j++)
             for (i = 0; i < CYGNUM_COMM_IF_TABLE_SIZE; i++)
                 comm_channels[j][i] = (CYG_ADDRWORD) &nop_service;
 
@@ -401,23 +310,12 @@ hal_if_init(void)
         CYGACC_CALL_IF_FLUSH_ICACHE_SET(flush_icache);
         CYGACC_CALL_IF_FLUSH_DCACHE_SET(flush_dcache);
 
-        // Clear console procs entry. If platform has been to
-        // configured to use a separate console port, it will be set
-        // up later (hal_diag_init). Alternatively (if this is a stub)
-        // it will be initialized with the output mangler
-        // (O-packetizer for GDB) which uses the debug comms.
-        CYGACC_CALL_IF_CONSOLE_PROCS_SET(0);
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        // Hook debug wrappers up on the debug channel
-        set_debug_comm(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
-        comm = CYGACC_CALL_IF_DEBUG_PROCS();
-        CYGACC_COMM_IF_WRITE_SET(*comm, debug_write);
-        CYGACC_COMM_IF_READ_SET(*comm, debug_read);
-        CYGACC_COMM_IF_PUTC_SET(*comm, debug_putc);
-        CYGACC_COMM_IF_GETC_SET(*comm, debug_getc);
-        CYGACC_COMM_IF_CONTROL_SET(*comm, debug_control);
-#endif
+        // Clear console procs entry. If platform has been configured
+        // to use a separate console port, it will be set up later
+        // (hal_diag_init). Alternatively (if this is a stub) it will
+        // be initialized with the output mangler (O-packetizer for
+        // GDB) which uses the debug comms.
+        set_console_comm(CYGNUM_CALL_IF_SET_COMM_ID_EMPTY);
 
         // Data entries not currently supported in eCos
         CYGACC_CALL_IF_CPU_DATA_SET(0);

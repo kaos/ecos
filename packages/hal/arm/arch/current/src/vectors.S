@@ -169,7 +169,35 @@ PTR(FIQ)                                        // 0x3c
 PTR(start) // This is copied to 0x28 for bootup // 0x40
            // location 0x40 is used for storing DRAM size if known
            // for some platforms.
+        
+//
+// "Vectors" - fixed location data items
+//    This section contains any data which might be shared between
+// an eCos application and any other environment, e.g. the debug
+// ROM.                        
+//
+        .section ".fixed_vectors"
+        // Interrupt/exception VSR pointers
+        .globl  hal_vsr_table
+hal_vsr_table:
+        .rept   8               
+        .long   0
+        .endr
 
+        .globl  hal_dram_size
+hal_dram_size:  
+        .long   0        
+
+        .balign 16
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+        // Vectors used to communicate between eCos and ROM environments
+        .globl  hal_virtual_vector_table
+hal_virtual_vector_table:
+        .rept   CYGNUM_CALL_IF_TABLE_SIZE
+        .long   0
+        .endr
+#endif
+        
         .balign 32
         
 // Other vectors - this may include "fixed" locations
@@ -203,7 +231,8 @@ warm_reset:
         mov     r0,#0           // move vectors
         // We cannot perform a store until after PLATFORM_SETUP1
 #ifndef CYGPKG_HAL_ARM_EBSA285  // EBSA285 sets the DRAM size above
-        str     r0, [r0,#0x40]  // DRAM size to zero => unknown
+        ldr     r1,=hal_dram_size
+        str     r0, [r1]        // DRAM size to zero => unknown
 #endif
 
         ldr     r1,=__exception_handlers
@@ -355,6 +384,14 @@ start:
         str     r2,[r0,#0x04]
         ldr     r2,[r1,#0x24]   
         str     r2,[r0,#0x24]
+#endif
+        
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        .extern hal_ctrlc_isr_init
+        bl      hal_ctrlc_isr_init
+#endif
 #endif
 
         LED 2
@@ -676,6 +713,20 @@ handle_IRQ_or_FIQ:
         ARM_MODE(r0,10)
 
         mov     r0,v1                   // vector #
+
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        // If we are supporting Ctrl-C interrupts from GDB, we must squirrel
+        // away a pointer to the save interrupt state here so that we can
+        // plant a breakpoint at some later time.
+
+       .extern  hal_saved_interrupt_state
+        ldr     r2,=hal_saved_interrupt_state
+        str     v6,[r2]
+#endif
+#endif        
+
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS     
         cmp     r0,#0                   // ignore spurious interrupts
         beq     spurious_IRQ

@@ -118,7 +118,8 @@
 externC void hal_pc_interrupt_attach(CYG_ADDRWORD vector, CYG_ADDRESS isr,
 			CYG_ADDRWORD parameter, void * object) ;
 #define HAL_INTERRUPT_ATTACH(_vector_, _isr_, _data_, _object_) \
-		hal_pc_interrupt_attach(_vector_, (CYG_ADDRESS)_isr_, _data_, _object_)
+		hal_pc_interrupt_attach(_vector_, (CYG_ADDRESS)_isr_, \
+                                        (CYG_ADDRWORD)_data_, _object_)
 
 #define HAL_ENABLE_INTERRUPTS()                 \
 CYG_MACRO_START                                 \

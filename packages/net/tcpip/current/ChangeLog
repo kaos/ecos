@@ -1,3 +1,53 @@
+2000-06-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ecos/support.c (cyg_net_mbuf_alloc, cyg_kmem_init): Align
+	the mbuf pool to MSIZE [128] bytes.  That way dtom() works, nasty
+	though it is.  That's needed for ip reassembly in ip_input.c, when
+	dealing with large icmp-layer packets eg. ping -s 2000 ...
+
+2000-06-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/lib/libkern/libkern.h: Do not define assert multiple
+	times; guarded by __ECOS.
+
+	* include/sys/param.h (MAX,MIN): Only define if undef.
+
+2000-06-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Build the new tests; in fact build them
+	unconditionally.
+
+	* src/lib/network_support.c (init_all_network_interfaces):
+	Initialize loopback device[s] using init_loopback_interface(),
+	providing a sensible default route et al.  Multiple devs: lo1 will
+	be 127.0.*1*.1, and so on; class C netmasks will be used.
+
+	init_all_network_interfaces() is also made thread-safe as well as
+	idempotent, so other threads (or daemons) can call it to make sure
+	the net is up.
+
+	* src/ecos/support.c (cyg_net_init): Add a call to loopattach() if
+	there are indeed loopback dev(s) configured.  This does the
+	equivalent of the init of a device from the table, but simpler.
+
+	* tests/udp_lo_test.c (udp_server): New testcase...
+	* tests/tcp_lo_select.c (tcp_server): New testcase...
+	* tests/tcp_lo_test.c (tcp_client): New testcase...
+	* tests/ping_lo_test.c (net_test): New testcase, unconditionally
+	built loopback device test.  Will run on platforms with no network
+	interfaces.
+
+2000-06-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/bootp.h: Remove RCS id tag
+	* include/netinet/ip_auth.h: Ditto
+	* include/netinet/ip_fil.h: Ditto
+	* include/netinet/ip_fil_compat.h: Ditto
+	* include/netinet/ip_frag.h: Ditto
+	* include/netinet/ip_nat.h: Ditto
+	* include/netinet/ip_proxy.h: Ditto
+	* include/netinet/ip_state.h: Ditto
+
 2000-06-08  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/netinet/ip_var.h: Export ipforwarding as well as

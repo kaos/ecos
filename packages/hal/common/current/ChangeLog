@@ -1,3 +1,40 @@
+2000-06-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c: Fixed clients of vector procs tables to pass
+	in the correct arguments. Hook O-packetizer up on procs slot
+	reserved for IO mangler. Install mangler when necessary.
+
+	* src/hal_if.c: Extended set procs functions to allow temporarily
+	switching console procs in a safe manner. Removed debug and
+	console wrappers - all IO happens via drivers hooked up in tables
+	rather than through hardwired macros. Proper initialization of
+	console proc entry. Fixed clients of vector procs tables to pass
+	in the correct arguments. Stub now does its own vector table
+	initialization. Added special procs slot for IO manglers.
+
+	* include/hal_if.h: Define special IDs used by the set procs
+	functions. PROCS_HANDLED removed since the procs table will now
+	always service any port.
+
+2000-06-19  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: Revert change below - GUARANTEED can exist
+	with STUBS defined.
+
+2000-06-18  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: Use of virtual vector functions for diagnostic
+	output must be disabled when building with stubs.  Note: this
+	lets stubs be built for platforms with guaranteed virtual 
+	vector support.
+
+2000-06-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h: All vector-dependant features hidden when
+	config option not enabled.
+
+	* src/hal_if.c (hal_if_init): Fix warning.
+
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_if.h: Added console-include decision logic.

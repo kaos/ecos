@@ -51,6 +51,7 @@
 #include <cyg/hal/dbg-threads-api.h>
 #include <cyg/hal/dbg-thread-syscall.h>
 
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 //--------------------------------------------------------------------------
 typedef int (*bsp_handler_t)(int __irq_nr, void *__regs);
@@ -187,6 +188,20 @@ externC CYG_ADDRWORD hal_virtual_vector_table[CYGNUM_CALL_IF_TABLE_SIZE];
 // (except INSTALL_BPT_FN since it's so high).
 #define CYGNUM_CALL_IF_TABLE_VERSION              CYGNUM_CALL_IF_LAST_ENTRY
 
+
+
+// These are special debug/console procs IDs
+// QUERY_CURRENT will cause the ID of the currently selected proc ID to be
+//               returned.
+// EMPTY         this is the ID used for an empty procs table (i.e, NULL
+//               pointer)
+// MANGLER       selects the procs space reserved for the console mangler
+//               allowing the application to temporarily disable mangling
+//               or temporarily switch in different console procs.
+#define CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT -1
+#define CYGNUM_CALL_IF_SET_COMM_ID_EMPTY         -2
+#define CYGNUM_CALL_IF_SET_COMM_ID_MANGLER       -3
+
 // The below is a (messy) attempt at adding some type safety to the
 // above array. At the same time, the accessors allow the
 // implementation to be easily changed in the future (both tag->data
@@ -314,6 +329,13 @@ typedef void (*__call_if_install_bpt_fn_t)(void *__epc);
 #define CYGACC_CALL_IF_INSTALL_BPT_FN_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN]=(CYG_ADDRWORD)(_x_)
 
+//--------------------------------------------------------------------------
+// Diag wrappers.
+externC void hal_if_diag_init(void);
+externC void hal_if_diag_write_char(char c);
+externC void hal_if_diag_read_char(char *c);
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 //--------------------------------------------------------------------------
 // Functions provided by the HAL interface.
@@ -321,23 +343,13 @@ externC void hal_if_init(void);
 
 
 //--------------------------------------------------------------------------
-// Diag wrappers.
-externC void hal_if_diag_init(void);
-externC void hal_if_diag_write_char(char c);
-externC void hal_if_diag_read_char(char *c);
-
-//--------------------------------------------------------------------------
-// Determining if console code needs to be included, or if it will be
-// provided by via the vector table:
-//
-// The console channel is already handled if (a) stubs are included and the
-// console and debug channels are the same, or (b) the console channel is
-// the same as the ROM monitor debug channel.
-#if (defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) \
-     && (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL)) \
-    || (defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs) \
-        && (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL == CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL))
-# define CYGPRI_CONSOLE_PROCS_HANDLED
+// Configuration control for the interface services.
+// When this is set, code should initialize the vector table wherever
+// appropriate.
+#if	defined(CYG_HAL_STARTUP_ROM) ||			\
+	(	defined(CYG_HAL_STARTUP_RAM) &&		\
+		!defined(CYGSEM_HAL_USE_ROM_MONITOR))
+# define CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 #endif
 
 //-----------------------------------------------------------------------------

@@ -1,3 +1,9 @@
+2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/<yournamehere>.cdl: Remove the comment on the empty
+	include_files directive; the tools now support this correctly.
+	This keeps internal include files internal.
+
 2000-04-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/ser_sparclite_sleb.cdl: Change the parent from CYGPKG_IO_SERIAL

@@ -61,8 +61,6 @@
  * provided that this notice is preserved and due credit is given
  * to the original author and the contributors.
  *
- * $Id: ip_auth.h,v 1.3 2000/06/16 16:44:26 jlarmour Exp $
- *
  */
 
 #ifndef	_NETINET_IP_AUTH_H__

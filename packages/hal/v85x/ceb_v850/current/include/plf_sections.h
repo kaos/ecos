@@ -42,4 +42,5 @@
 //==========================================================================
 
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .); \
-  PROVIDE(_hal_vsr_table = 0x00FC0260);
+  PROVIDE(_hal_vsr_table = 0x00FC0260); \
+  PROVIDE(_hal_virtual_vector_table = 0x00FC0300);

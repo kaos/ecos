@@ -53,21 +53,20 @@
 #include <cyg/hal/hal_intr.h>           // interrupt macros
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_diag.h>
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#include <cyg/hal/drv_api.h>
-#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
-#define CYG_DEVICE_SERIAL_INT CYGNUM_HAL_VECTOR_INTCSI1
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+#include <cyg/hal/hal_stub.h>           // target_register_t
+#include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
+#include <cyg/hal/hal_if.h>             // Calling interface definitions
+#include <cyg/hal/hal_misc.h>           // Helper functions
+#include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 #endif
 
 #include <cyg/hal/v850_common.h>        // hardware registers, etc.
 
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
 // totally stand-alone) system.
-
-#ifdef CYGSEM_HAL_ROM_MONITOR
-#define CYG_HAL_STARTUP_ROM
-#undef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#endif
 
 #if defined(CYG_HAL_STARTUP_ROM) && !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 #define HAL_DIAG_USES_HARDWARE
@@ -95,37 +94,6 @@
 
 /*---------------------------------------------------------------------------*/
 // CEB-v850
-
-void 
-FAIL(char *m)
-{
-    static char *fail_reason;
-    fail_reason = m;
-#if 0
-    while (1) {
-        show_led('~');
-        show_hex4(m);
-        show_led('/');
-    }
-#else
-    diag_printf("FAIL: %s\n", m);
-#endif
-}
-
-void 
-ALERT(char *m)
-{
-    static char *alert_reason;
-    alert_reason = m;
-#if 0
-    show_led('~');
-    show_led('~');
-    show_hex4(m);
-    show_led('/');
-#else
-    diag_printf("ALERT: %s\n", m);
-#endif
-}
 
 // Actually send character down the wire
 void
@@ -155,8 +123,6 @@ hal_diag_read_serial(char *c)
     return true;
 }
 
-#ifdef HAL_DIAG_USES_HARDWARE
-
 void hal_diag_init(void)
 {
     static int init = 0;
@@ -176,25 +142,13 @@ void hal_diag_init(void)
     *txstat = 0x47;
 }
 
-#ifdef DEBUG_DIAG
-#ifndef CYG_HAL_STARTUP_ROM
-#define DIAG_BUFSIZE 2048
-static char diag_buffer[DIAG_BUFSIZE];
-static int diag_bp = 0;
-#endif
-#endif
+#ifdef HAL_DIAG_USES_HARDWARE
 
 void hal_diag_write_char(char c)
 {
     CYG_INTERRUPT_STATE old;
     HAL_DISABLE_INTERRUPTS(old);
     hal_diag_init();
-#ifdef DEBUG_DIAG
-#ifndef CYG_HAL_STARTUP_ROM
-    diag_buffer[diag_bp++] = c;
-    if (diag_bp == sizeof(diag_buffer)) diag_bp = 0;
-#endif
-#endif
     hal_diag_write_char_serial(c);
     HAL_RESTORE_INTERRUPTS(old);
 }
@@ -205,16 +159,6 @@ void hal_diag_read_char(char *c)
 }
 
 #else // HAL_DIAG relies on GDB
-
-// Initialize diag port
-void hal_diag_init(void)
-{
-    char *msg = "eCos 1.3.x - " __DATE__ "\n\r";
-    static int init = 0;
-    if (init) return;
-    init++;
-    while (*msg) hal_diag_write_char(*msg++);
-}
 
 void 
 hal_diag_read_char(char *c)
@@ -289,7 +233,7 @@ hal_diag_write_char(char c)
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && \
     defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-            cyg_drv_interrupt_acknowledge(CYG_DEVICE_SERIAL_INT);
+            cyg_drv_interrupt_acknowledge(CYGHWR_HAL_GDB_PORT_VECTOR);
             if( c1 == 3 ) {
                 // Ctrl-C: breakpoint.
 #if 0  // FIXME - __builtin_return_address() doesn't work
@@ -308,11 +252,36 @@ hal_diag_write_char(char c)
         // And re-enable interrupts
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
-        hal_diag_write_char_break();   // FIXME
+#if 1  // FIXME - __builtin_return_address() doesn't work
+        hal_diag_write_char_break();
+#endif
 #else
         HAL_RESTORE_INTERRUPTS(old);
 #endif
     }
+}
+#endif  // USE HARDWARE
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+
+struct Hal_SavedRegisters *hal_saved_interrupt_state;
+
+void
+hal_ctrlc_isr_init(void)
+{
+    HAL_INTERRUPT_UNMASK(CYGHWR_HAL_GDB_PORT_VECTOR);
+}
+
+cyg_uint32
+hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+{
+    volatile unsigned char *RxDATA = (volatile unsigned char *)V850_REG_RXS0;
+    unsigned char ch;
+    ch = (char)*RxDATA;
+    if( cyg_hal_is_break( &ch , 1 ) )
+        cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
+    return CYG_ISR_HANDLED;
 }
 #endif
 

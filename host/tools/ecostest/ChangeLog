@@ -1,3 +1,15 @@
+2000-06-19  John Dallaway  <jld@redhat.com>
+
+	* unix/Makefile:
+
+	Link with -lposix4 under Solaris for sched_yield().
+
+2000-06-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* common/eCosTestDownloadFilter.cpp: Remove RCS id tags
+	* common/eCosTestMonitorFilter.cpp: Ditto
+	* common/eCosTestSerialFilter.cpp: Ditto
+
 2000-06-15  John Dallaway  <jld@redhat.com>
 
 	* common/eCosTest.cpp:

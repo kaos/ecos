@@ -1,6 +1,6 @@
-// eCos memory layout - Wed Nov 24 15:29:29 1999
+// eCos memory layout - Tue Jun 20 10:13:16 2000
 
-// This is a generated file - changes will be lost if ConfigTool(MLT) is run
+// This is a generated file - do not edit
 
 #include <cyg/infra/cyg_type.h>
 #include <stddef.h>
@@ -8,3 +8,15 @@
 #define CYGMEM_REGION_ram (0)
 #define CYGMEM_REGION_ram_SIZE (0x800000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
+extern char CYG_LABEL_NAME (_reserved_vectors) [];
+#define CYGMEM_SECTION_reserved_vectors (CYG_LABEL_NAME (_reserved_vectors))
+#define CYGMEM_SECTION_reserved_vectors_SIZE (0x3000)
+extern char CYG_LABEL_NAME (_reserved_vsr_table) [];
+#define CYGMEM_SECTION_reserved_vsr_table (CYG_LABEL_NAME (_reserved_vsr_table))
+#define CYGMEM_SECTION_reserved_vsr_table_SIZE (0x200)
+extern char CYG_LABEL_NAME (_reserved_virtual_table) [];
+#define CYGMEM_SECTION_reserved_virtual_table (CYG_LABEL_NAME (_reserved_virtual_table))
+#define CYGMEM_SECTION_reserved_virtual_table_SIZE (0x100)
+extern char CYG_LABEL_NAME (_reserved_for_rom) [];
+#define CYGMEM_SECTION_reserved_for_rom (CYG_LABEL_NAME (_reserved_for_rom))
+#define CYGMEM_SECTION_reserved_for_rom_SIZE (0xcd00)

@@ -19,8 +19,8 @@ SECTIONS
     SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_mmu_tables (rom, ALIGN (0x4000), LMA_EQ_VMA)
-    __reserved = 0; . = __reserved + 0x1000;
-    SECTION_data (ram, ALIGN (0x4), FOLLOWING (.mmu_tables))
+    SECTION_fixed_vectors (ram, 0x20, LMA_EQ_VMA)
+    SECTION_data (ram, 0x1000, FOLLOWING (.mmu_tables))
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTIONS_END
 }

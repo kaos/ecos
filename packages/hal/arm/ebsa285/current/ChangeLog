@@ -1,3 +1,17 @@
+2000-06-19  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h: 
+	'hal_dram_size' is now a properly defined variable (no more
+	fixed 0x40 stuff).
+
+2000-06-18  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi: 
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi: 
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt: 
+	Incorporate new fixed vectors (used on all ARM platforms).
+
 2000-02-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
         * include/pkgconf/mlt_arm_ebsa285_ram.h:

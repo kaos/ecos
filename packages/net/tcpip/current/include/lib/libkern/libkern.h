@@ -174,6 +174,7 @@ abs(j)
 }
 #endif
 
+#ifndef __ECOS
 #ifdef NDEBUG						/* tradition! */
 #define	assert(e)	((void)0)
 #else
@@ -209,10 +210,13 @@ abs(j)
 			    __assert("debugging ", __FILE__, __LINE__, "e"))
 #endif
 #endif
+#endif
 
 /* Prototypes for non-quad routines. */
+#ifndef __ECOS
 void	 __assert __P((const char *, const char *, int, const char *))
 	    __attribute__ ((__noreturn__));
+#endif
 int	 bcmp __P((const void *, const void *, size_t));
 int	 ffs __P((int));
 int	 locc __P((int, char *, u_int));

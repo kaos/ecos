@@ -1,3 +1,11 @@
+2000-06-22  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added io_wallclock alias.
+
+	2000-06-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* ecos.db: Add CYGPKG_SNMPLIB and CYGPKG_SNMPAGENT.
+
 2000-06-05  John Dallaway  <jld@redhat.com>
 
 	* ecos.db:

@@ -1,3 +1,49 @@
+2000-06-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_stub.c: Provide plf stub init which prints build date
+	on LCD for ROM monitor configs.
+
+	* src/cma_ser.inl: [deleted]
+	* src/hal_diag.c: 
+	* include/plf_stub.h: 
+	* include/hal_diag.h: 
+	* cdl/hal_powerpc_cogent.cdl: 
+	Added LCD as the 3rd comms channel. Cleanups to support full procs
+	table.
+
+2000-06-20  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_cogent_ram.h: 
+	* include/pkgconf/mlt_powerpc_cogent_ram.mlt: 
+	* include/pkgconf/mlt_powerpc_cogent_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.h: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.mlt: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.ldi: 
+	Updated.
+
+2000-06-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_stub.c:
+	* src/cma_ser.inl: Removed BREAK handling.
+
+	* include/plf_stub.h: Changed to virtual vector style.
+
+	* src/plf_misc.c:
+	* include/plf_intr.h: Added ctrlc handling.
+
+	* src/hal_diag.c: 
+	* include/hal_diag.h: virtual vector changes.
+
+	* hal_aux.c renamed to plf_misc.c
+
+	* cdl/hal_powerpc_cogent.cdl: Added virtual vector options.
+
+	* include/pkgconf/mlt_powerpc_cogent_rom.ldi: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.mlt: 
+	* include/pkgconf/mlt_powerpc_cogent_ram.ldi: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.mlt: 
+	Added space for virtual table.
+
 2000-06-13  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_intr.h: Added.

@@ -167,7 +167,15 @@
 #define MD_DRAM1        826             // data MMU RAM read 1
 
 #define MD_RPN_CHANGED  0x00000100      // page changed
+
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+
+#define CYGARC_REG_MI_CTR         784
+#define CYGARC_REG_MI_CTR_CIDEF   0x20000000
+
+#define CYGARC_REG_MD_CTR         792
+#define CYGARC_REG_MD_CTR_CIDEF   0x20000000
+#define CYGARC_REG_MD_CTR_WTDEF   0x10000000
 
 //--------------------------------------------------------------------------
 // Internal Memory Map.

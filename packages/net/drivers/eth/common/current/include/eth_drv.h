@@ -79,7 +79,10 @@ struct eth_drv_sg {
     CYG_ADDRESS  buf;
     CYG_ADDRWORD len;
 };
-#define MAX_ETH_DRV_SG 8
+
+// This is 16 to ensure that an MTU made of mbufs (not clusters) will fit.
+// 1600 is more that the MTU of 1500; it must be right.
+#define MAX_ETH_DRV_SG 16
 
 struct eth_drv_sc;
 

@@ -218,8 +218,8 @@ int main (int argc, char * argv []) {
 		if (command_index + 2 == argc) {
 			status = exec.cmd_target (argv [command_index + 1]);
 		} else {
+			status = false;
 			usage_message ();
-			return -1;
 		}
 
 	} else if ("template" == command) {
@@ -236,16 +236,16 @@ int main (int argc, char * argv []) {
 		if (command_index + 2 == argc) {
 			status = exec.cmd_export (argv [command_index + 1]);
 		} else {
+			status = false;
 			usage_message ();
-			return -1;
 		}
 
 	} else if ("import" == command) {
 		if (command_index + 2 == argc) {
 			status = exec.cmd_import (argv [command_index + 1]);
 		} else {
+			status = false;
 			usage_message ();
-			return -1;
 		}
 
 	} else {

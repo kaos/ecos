@@ -54,13 +54,13 @@
 #include <cyg/hal/ppc_stub.h>           // architecture stub support
 
 //----------------------------------------------------------------------------
-// Define serial stuff. All comes from the quicc_smc1.c file.
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-#include <cyg/hal/quicc/quicc_smc1.h>
+externC void cyg_hal_plf_comms_init(void);
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()     cyg_quicc_init_smc1()
-#define HAL_STUB_PLATFORM_GET_CHAR()        cyg_quicc_smc1_uart_rcvchar()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)       cyg_quicc_smc1_uart_putchar((c))
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
 
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
 #define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT

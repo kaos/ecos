@@ -713,6 +713,8 @@ CdlValue::CdlValue(CdlValueFlavor flavor_arg)
     
     cdlvalue_cookie         = CdlValue_Magic;
     CYGDBG_MEMLEAK_CONSTRUCTOR();
+
+    // This cannot happen until after the object is valid.
     set_flavor(flavor_arg);
         
     CYG_POSTCONDITION_THISC();
@@ -870,44 +872,65 @@ CdlValue::set_flavor(CdlValueFlavor flavor_arg)
     flavor = flavor_arg;
     switch(flavor) {
       case CdlValueFlavor_None :
-      {
-        // All value sources are enabled, but "default" remains the only valid one.
-        enabled[CdlValueSource_Default]       = true;
-        enabled[CdlValueSource_Inferred]      = true;
-        enabled[CdlValueSource_Wizard]        = true;
-        enabled[CdlValueSource_User]          = true;
-        break;
-      }
+        {
+            // All value sources are enabled, but "default" remains
+            // the only valid one. All data parts are set to "1",
+            // although that should not really matter.
+            enabled[CdlValueSource_Default]     = true;
+            enabled[CdlValueSource_Inferred]    = true;
+            enabled[CdlValueSource_Wizard]      = true;
+            enabled[CdlValueSource_User]        = true;
+            
+            CdlSimpleValue simple_val((cdl_int) 1);
+            values[CdlValueSource_Default]      = simple_val;
+            values[CdlValueSource_Inferred]     = simple_val;
+            values[CdlValueSource_Wizard]       = simple_val;
+            values[CdlValueSource_User]         = simple_val;
+            break;
+        }
           
       case CdlValueFlavor_Bool :
-      {
-        // All value sources start out as disabled.
-        enabled[CdlValueSource_Default]       = false;
-        enabled[CdlValueSource_Inferred]      = false;
-        enabled[CdlValueSource_Wizard]        = false;
-        enabled[CdlValueSource_User]          = false;
-        break;
-      }
+        {
+            // All value sources start out as disabled, but with a
+            // constant data part of 1. Users can only control the
+            // boolean part. This is consistent with header file
+            // generation: no #define is generated for disabled
+            // options, but if the option is enabled then the data
+            // part will be used for the value.
+            enabled[CdlValueSource_Default]     = false;
+            enabled[CdlValueSource_Inferred]    = false;
+            enabled[CdlValueSource_Wizard]      = false;
+            enabled[CdlValueSource_User]        = false;
+
+            CdlSimpleValue simple_val(cdl_int(1));
+            values[CdlValueSource_Default]      = simple_val;
+            values[CdlValueSource_Inferred]     = simple_val;
+            values[CdlValueSource_Wizard]       = simple_val;
+            values[CdlValueSource_User]         = simple_val;
+            break;
+        }
           
       case CdlValueFlavor_BoolData :
-      {
-        // All value sources start out as disabled.
-        enabled[CdlValueSource_Default]       = false;
-        enabled[CdlValueSource_Inferred]      = false;
-        enabled[CdlValueSource_Wizard]        = false;
-        enabled[CdlValueSource_User]          = false;
-        break;
-      }
+        {
+            // All value sources start out as disabled, just like
+            // booleans. Nothing is known about the data part.
+            enabled[CdlValueSource_Default]       = false;
+            enabled[CdlValueSource_Inferred]      = false;
+            enabled[CdlValueSource_Wizard]        = false;
+            enabled[CdlValueSource_User]          = false;
+            break;
+        }
           
       case CdlValueFlavor_Data :
-      {
-        // All value sources start out as enabled.
-        enabled[CdlValueSource_Default]       = true;
-        enabled[CdlValueSource_Inferred]      = true;
-        enabled[CdlValueSource_Wizard]        = true;
-        enabled[CdlValueSource_User]          = true;
-        break;
-      }
+        {
+            // All value sources start out as enabled, and cannot be
+            // changed. Nothing is known about the data part.
+            enabled[CdlValueSource_Default]       = true;
+            enabled[CdlValueSource_Inferred]      = true;
+            enabled[CdlValueSource_Wizard]        = true;
+            enabled[CdlValueSource_User]          = true;
+            break;
+        }
 
       default :
         break;
@@ -3751,58 +3774,57 @@ CdlValuableBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, 
             data += '\n';
         }
 
-        // Only display the various values if the user actually has some
-        // control over them. Otherwise just display the current value in a comment.
+        if (CdlValueFlavor_None == this->get_flavor()) {
+            data += indent_string + "# There is no associated value.\n";
+        } else if (this->has_property(CdlPropertyId_Calculated)) {
+            CdlProperty_Expression expr = this->get_calculated_expression();
+            data += indent_string + "# Calculated value: " +
+                CdlInterpreterBody::extend_comment(expr->get_original_string(), indentation, 4) + '\n';
+            data += CdlInterpreterBody::multiline_comment(follow_expr_references(expr, expr), indentation, 4);
+        } else {
+            data += indent_string + "# This value cannot be modified here.\n";
+        }
+        
+        // Output the flavor. This clutters up the savefile a bit.
+        // However it is necessary so that the user can distinguish
+        // between bool, booldata and data items
+        switch(this->get_flavor()) {
+          case CdlValueFlavor_Bool:
+            data += indent_string + "# Flavor: bool\n";
+            break;
+          case CdlValueFlavor_BoolData:
+            data += indent_string + "# Flavor: booldata\n";
+            break;
+          case CdlValueFlavor_Data:
+            data += indent_string + "# Flavor: data\n";
+            break;
+          default:
+            break;
+        }
+            
+        // If the value is not modifiable, just list the current value.
+        // This is not in a form that allows users to change it easily.
         if (!modifiable) {
-
-            if (CdlValueFlavor_None == this->get_flavor()) {
-                data += indent_string + "# There is no associated value.\n";
-            } else if (this->has_property(CdlPropertyId_Calculated)) {
-                CdlProperty_Expression expr = this->get_calculated_expression();
-                data += indent_string + "# Calculated value: " +
-                    CdlInterpreterBody::extend_comment(expr->get_original_string(), indentation, 4) + '\n';
-                data += CdlInterpreterBody::multiline_comment(follow_expr_references(expr, expr), indentation, 4);
-            } else {
-                data += indent_string + "# This value cannot be modified here.\n";
-            }
-
             switch(this->get_flavor()) {
-            case CdlValueFlavor_None :
+              case CdlValueFlavor_None :
                 break;
-            case CdlValueFlavor_Bool :
+              case CdlValueFlavor_Bool :
                 data += indent_string + "# Current value: " + (this->is_enabled() ? one : zero) + '\n';
                 break;
-            case CdlValueFlavor_BoolData :
+              case CdlValueFlavor_BoolData :
                 data += indent_string + "# Current value: " + (this->is_enabled() ? one : zero) + " " +
                     CdlInterpreterBody::extend_comment(this->get_value(), indentation, 4) + '\n';
                 break;
-            case CdlValueFlavor_Data :
+              case CdlValueFlavor_Data :
                 data += indent_string + "# Current_value: " +
                     CdlInterpreterBody::extend_comment(this->get_value(), indentation, 4) + '\n';
                 break;
-            default:
+              default:
                 break;
             }
         
         } else if (CdlValueFlavor_None != this->get_flavor()) {
 
-            // Output the flavor. This clutters up the savefile a bit.
-            // However it is necessary so that the user can distinguish
-            // between bool, booldata and data items
-            switch(this->get_flavor()) {
-            case CdlValueFlavor_Bool:
-                data += indent_string + "# Flavor: bool\n";
-                break;
-            case CdlValueFlavor_BoolData:
-                data += indent_string + "# Flavor: booldata\n";
-                break;
-            case CdlValueFlavor_Data:
-                data += indent_string + "# Flavor: data\n";
-                break;
-            default:
-                break;
-            }
-        
             // If there is a user value, output it. Otherwise output
             // a comment that allows users to edit the user value conveniently.
             // It is assumed that the user will want a value similar to the

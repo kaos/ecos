@@ -11,8 +11,8 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    __reserved = 0; . = __reserved + 0x8000;
-    SECTION_rom_vectors (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_fixed_vectors (ram, 0x20, LMA_EQ_VMA)
+    SECTION_rom_vectors (ram, 0x8000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x4), LMA_EQ_VMA)

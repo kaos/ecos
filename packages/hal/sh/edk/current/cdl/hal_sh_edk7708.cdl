@@ -41,7 +41,7 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_SH_EDK7708 {
-    display       "Hitachi SH3 EDK7708 evaluation board"
+    display       "Hitachi EDK/SH7708 board"
     parent        CYGPKG_HAL_SH
     define_header hal_sh_edk7708.h
     include_dir   cyg/hal

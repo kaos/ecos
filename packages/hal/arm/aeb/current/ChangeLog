@@ -1,3 +1,19 @@
+2000-06-21  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/flash_cksum.tcl: Fix quoting when invoking TCL interpreter 
+
+2000-06-18  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_aebC_ram.ldi: 
+	* include/pkgconf/mlt_arm_aebC_ram.mlt: 
+	* include/pkgconf/mlt_arm_aebC_rom.ldi: 
+	* include/pkgconf/mlt_arm_aebC_rom.mlt: 
+	* include/pkgconf/mlt_arm_aeb_ram.ldi: 
+	* include/pkgconf/mlt_arm_aeb_ram.mlt: 
+	* include/pkgconf/mlt_arm_aeb_rom.ldi: 
+	* include/pkgconf/mlt_arm_aeb_rom.mlt: 
+	Incorporate new fixed vectors (used on all ARM platforms).
+
 2000-06-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/flash_cksum.tcl: Make sure it invokes the interpreter correctly

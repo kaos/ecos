@@ -1114,6 +1114,143 @@ CdlBuildLoadableBody::update_all_build_info(CdlBuildInfo& build_info) const
 //}}}
 
 //}}}
+//{{{  Version number #define's         
+
+// ----------------------------------------------------------------------------
+// Given a package xxxPKG_A_B_C with a version V1_2_3, generate additional
+// #define's of the form:
+//
+//   #define xxxNUM_A_B_C_VERSION_MAJOR 1
+//   #define xxxNUM_A_B_C_VERSION_MINOR 2
+//   #define xxxNUM_A_B_C_VERSION_RELEASE 3
+//
+// The goal here is to allow application code to cope with API
+// changes (which of course should be a rare event but cannot be
+// eliminated completely). C preprocessor #if statements are
+// essentially limited to numerical values, so there is no easy
+// way of coping with V1_2_3 at the preprocessor level. However it
+// is possible to cope with VERSION_NUMBER #define's.
+//
+// Note that only application code and third party packages are
+// affected. 
+//
+// These #define's go into system.h, alongside the main definition of
+// the package. There seems to be little point in putting them in the
+// package's own configuration header.
+//
+// There are three problems. First, what should be done for packages
+// which do not follow the naming conventions? Given a completely
+// random package rather than something like xxxPKG_..., what symbol
+// names should be used? Basically, if the package does not follow the
+// naming convention then there is no safe way of generating new
+// symbols. Any names that are chosen might clash. Of course even for
+// packages that do follow the naming convention a clash is still
+// possible, just a lot less likely.
+//
+// Conclusion: if a package does not follow the naming convention, do
+// not generate version #define's for it.
+//
+// Second, what happens if a different version numbering scheme is
+// used? For example the release number might be absent. Version
+// numbering schemes might change between releases, but application
+// code may still check the #define's.
+//
+// Third and related, what should happen for "current" and anoncvs? Do
+// we want to look at what other versions are installed and bump one
+// of the numbers?
+//
+// Conclusion: the version #define's always have to be generated,
+// even if they are not present in the version string, to allow
+// application code to test these symbols anyway. A safe default is
+// necessary, and -1 is probably the best bet. For example, if
+// the version is bumped from 1.3.287 to 1.4 then the release number
+// for the latter is set to -1. Another possible default would be
+// 0, but that could cause problems for packages that start counting
+// from 0 (not a common practice, but...)
+//
+// This leaves the question of what to do about "current". Chances are
+// that "current" comes from anoncvs and is always more recent than
+// any official release, so when comparing versions "current" should
+// always be greater than anything else. This can be achieved by using
+// a sufficiently large number for the major version. In practice
+// it is cleaner to have another #define to indicate the current
+// version, and then define package versions to match, i.e.:
+//
+//   #define CYGNUM_VERSION_CURRENT 0x7fffff00
+//   ...
+//   #define xxxNUM_A_B_C_VERSION_MAJOR   CYGNUM_VERSION_CURRENT
+//   #define xxxNUM_A_B_C_VERSION_MINOR   -1
+//   #define xxxNUM_A_B_C_VERSION_RELEASE -1
+//
+// All comparisons should now work sensibly. Leaving a little bit
+// of slack for VERSION_CURRENT seems like a good precaution.
+
+static void
+system_h_add_version_header(Tcl_Channel system_h)
+{
+    CYG_REPORT_FUNCNAME("system_h_add_version_header");
+    Tcl_Write(system_h, "#define CYGNUM_VERSION_CURRENT 0x7fffff00\n", -1);
+    CYG_REPORT_RETURN();
+}
+
+static void
+system_h_add_package_versioning(Tcl_Channel system_h, std::string name, std::string value)
+{
+    CYG_REPORT_FUNCNAME("system_h_add_package_versioning");
+
+    char name_buf[256];
+    char line_buf[512];
+    
+    // The first thing to check is that the package name can be used
+    // as the basis for the version symbols.
+    bool ok = false;
+    unsigned int i;
+    for (i = 0; i < name.size(); i++) {
+        if ('_' == name[i]) {
+            if (3 < i) {
+                if ((name[i-3] == 'P') && (name[i-2] == 'K') && (name[i-1] == 'G')) {
+                    ok = true;
+                }
+            }
+            break;
+        }
+    }
+    if (name.size() >= 256) {
+        ok = false;
+    }
+    if (!ok) {
+        CYG_REPORT_RETURN();
+        return;
+    }
+
+    strcpy(name_buf, name.c_str());
+    
+    // Change from xxxPKG to xxxNUM
+    name_buf[i - 3] = 'N';
+    name_buf[i - 2] = 'U';
+    name_buf[i - 1] = 'M';
+
+    // Now determine the version strings.
+    std::string major   = "-1";
+    std::string minor   = "-1";
+    std::string release = "-1";
+    if ("current" == value) {
+        major   = "CYGNUM_VERSION_CURRENT";
+    } else {
+        Cdl::split_version_string(value, major, minor, release);
+    }
+
+    sprintf(line_buf, "#define %s_VERSION_MAJOR %s\n", name_buf, major.c_str());
+    Tcl_Write(system_h, line_buf, -1);
+    sprintf(line_buf, "#define %s_VERSION_MINOR %s\n", name_buf, minor.c_str());
+    Tcl_Write(system_h, line_buf, -1);
+    sprintf(line_buf, "#define %s_VERSION_RELEASE %s\n", name_buf, release.c_str());
+    Tcl_Write(system_h, line_buf, -1);
+    
+    CYG_REPORT_RETURN();
+}
+
+//}}}
 //{{{  CdlDefinableBody                 
 
 //{{{  Basics                                           
@@ -1467,6 +1604,11 @@ CdlDefinableBody::generate_config_header(Tcl_Channel this_hdr, Tcl_Channel syste
             if (Cdl::is_valid_c_preprocessor_symbol(tmp)) {
                 tmp = "#define "+ tmp + "\n";
                 Tcl_Write(chan, const_cast<char*>(tmp.c_str()), -1);
+            }
+            
+            // For loadables, add additional version information to system_h
+            if (dynamic_cast<CdlConstLoadable>((CdlConstNode)this) == loadable) {
+                system_h_add_package_versioning(system_h, name, value);
             }
         }
     }
@@ -1956,11 +2098,14 @@ CdlToplevelBody::generate_config_headers(std::string directory)
         sprintf(local_buf, banner_format, "SYSTEM_H", "SYSTEM_H", "system.h");
         Tcl_Write(system_h, local_buf, -1);
 
+        // Add generic version information
+        system_h_add_version_header(system_h);
+        
         // The rest of system.h will be filled in by the following loop.
         //
-        // Next, walk down the previously constructed headers vector,
-        // create appropriate files, and let each DefineLoadable fill
-        // in the file for itself.
+        // Walk down the previously constructed headers vector, create
+        // appropriate files, and let each DefineLoadable fill in the
+        // file for itself.
         std::vector<std::pair<CdlDefineLoadable, std::string> >::iterator outer_i;
         std::vector<std::pair<CdlDefineLoadable, std::string> >::iterator inner_i;
         for (outer_i = headers.begin(); outer_i != headers.end(); outer_i++) {

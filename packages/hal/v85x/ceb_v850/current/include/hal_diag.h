@@ -34,12 +34,12 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:        nickg
-// Date:        1998-03-02
-// Purpose:     HAL Support for Kernel Diagnostic Routines
-// Description: Diagnostic routines for use during kernel development.
-// Usage:       #include <cyg/hal/hal_diag.h>
+// Author(s):    nickg
+// Contributors: nickg, gthomas
+// Date:         1998-03-02
+// Purpose:      HAL Support for Kernel Diagnostic Routines
+// Description:  Diagnostic routines for use during kernel development.
+// Usage:        #include <cyg/hal/hal_diag.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -52,19 +52,38 @@
 /*---------------------------------------------------------------------------*/
 /* functions implemented in hal_diag.c                                       */
 
+
 externC void hal_diag_init(void);
-
 externC void hal_diag_write_char(char c);
-
 externC void hal_diag_read_char(char *c);
 
 /*---------------------------------------------------------------------------*/
 
-#define HAL_DIAG_INIT() hal_diag_init()
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 
+#include <cyg/hal/hal_if.h>
+
+#define HAL_DIAG_INIT()          hal_if_diag_init()
+#define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
+#define HAL_DIAG_READ_CHAR(_c_)  hal_if_diag_read_char(&_c_)
+
+#ifndef CYGPRI_CONSOLE_PROCS_HANDLED
+externC void hal_plf_init_serial(void);
+externC void hal_plf_write_char(int);
+externC int  hal_plf_get_char(void);
+
+# define HAL_PLF_DIAG_RAW_INIT()          hal_plf_init_serial()
+# define HAL_PLF_DIAG_RAW_WRITE_CHAR(_c_) hal_plf_write_char(_c_)
+# define HAL_PLF_DIAG_RAW_READ_CHAR(_c_)  (_c_) = hal_plf_get_char()
+#endif
+
+#else
+
+#define HAL_DIAG_INIT()          hal_diag_init()
 #define HAL_DIAG_WRITE_CHAR(_c_) hal_diag_write_char(_c_)
+#define HAL_DIAG_READ_CHAR(_c_)  hal_diag_read_char(&_c_)
 
-#define HAL_DIAG_READ_CHAR(_c_) hal_diag_read_char(&_c_)
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* end of hal_diag.h                                                         */

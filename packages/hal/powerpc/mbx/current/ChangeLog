@@ -1,3 +1,18 @@
+2000-06-22  John Dallaway  <jld@redhat.com>
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt:
+
+	Synchronize with mlt_powerpc_mbx_rom.ldi.
+
+2000-06-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Provide comms_init function, initializing the
+	serial device. Changed quicc calls to provide eppc_base.
+
+	* include/plf_stub.h: 
+	* include/hal_diag.h:
+	Changed defines to match new procs table handling of IO.
+
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/pkgconf/mlt_powerpc_mbx_rom.h: 

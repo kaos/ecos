@@ -46,11 +46,7 @@
 #include <cyg/hal/ppc_regs.h>
 
 #include <cyg/hal/hal_intr.h>           // hal_interrupt_x tables
-
-// These are the Cyg_Interrupt::HANDLED/CALL_DSR values.
-#define Cyg_InterruptHANDLED  1
-#define Cyg_InterruptCALL_DSR 2
-
+#include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 
 typedef cyg_uint32 cyg_ISR(cyg_uint32 vector, CYG_ADDRWORD data);
 
@@ -69,12 +65,12 @@ hal_call_isr (cyg_uint32 vector)
     isr_ret = (*isr) (vector, data);
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
-    if (isr_ret & Cyg_InterruptCALL_DSR) {
+    if (isr_ret & CYG_ISR_CALL_DSR) {
         cyg_interrupt_post_dsr (hal_interrupt_objects[vector]);
     }
 #endif
 
-    return isr_ret & ~Cyg_InterruptCALL_DSR;
+    return isr_ret & ~CYG_ISR_CALL_DSR;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,8 +103,7 @@ hal_arbitration_isr_tb (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (tbscr & CYGARC_REG_IMM_TBSCR_REFA) {
         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SIU_TB_A);
 
-        CYG_ASSERT (isr_ret & Cyg_InterruptHANDLED, 
-                    "Interrupt not handled");
+        CYG_ASSERT (isr_ret & CYG_ISR_HANDLED, "Interrupt not handled");
 
 #ifndef CYGSEM_HAL_COMMON_INTERRUPTS_CHECK_ALL_SOURCES
         return isr_ret;
@@ -118,8 +113,7 @@ hal_arbitration_isr_tb (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (tbscr & CYGARC_REG_IMM_TBSCR_REFB) {
         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SIU_TB_B);
 
-        CYG_ASSERT (isr_ret & Cyg_InterruptHANDLED, 
-                    "Interrupt not handled");
+        CYG_ASSERT (isr_ret & CYG_ISR_HANDLED, "Interrupt not handled");
 
 #ifndef CYGSEM_HAL_COMMON_INTERRUPTS_CHECK_ALL_SOURCES
         return isr_ret;
@@ -143,8 +137,7 @@ hal_arbitration_isr_pit (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (piscr & CYGARC_REG_IMM_PISCR_PS) {
         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SIU_PIT);
 
-        CYG_ASSERT (isr_ret & Cyg_InterruptHANDLED, 
-                    "Interrupt not handled");
+        CYG_ASSERT (isr_ret & CYG_ISR_HANDLED, "Interrupt not handled");
 
 #ifndef CYGSEM_HAL_COMMON_INTERRUPTS_CHECK_ALL_SOURCES
         return isr_ret;
@@ -170,8 +163,7 @@ hal_arbitration_isr_rtc (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (rtcsc & CYGARC_REG_IMM_RTCSC_SEC) {
         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SIU_RTC_SEC);
 
-        CYG_ASSERT (isr_ret & Cyg_InterruptHANDLED, 
-                    "Interrupt not handled");
+        CYG_ASSERT (isr_ret & CYG_ISR_HANDLED, "Interrupt not handled");
 
 #ifndef CYGSEM_HAL_COMMON_INTERRUPTS_CHECK_ALL_SOURCES
         return isr_ret;
@@ -181,8 +173,7 @@ hal_arbitration_isr_rtc (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (rtcsc & CYGARC_REG_IMM_RTCSC_ALR) {
         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SIU_RTC_ALR);
 
-        CYG_ASSERT (isr_ret & Cyg_InterruptHANDLED, 
-                    "Interrupt not handled");
+        CYG_ASSERT (isr_ret & CYG_ISR_HANDLED, "Interrupt not handled");
 
 #ifndef CYGSEM_HAL_COMMON_INTERRUPTS_CHECK_ALL_SOURCES
         return isr_ret;
@@ -206,8 +197,7 @@ hal_arbitration_isr_cpm (CYG_ADDRWORD vector, CYG_ADDRWORD data)
     if (civr) {
         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_CPM_LAST - civr);
 
-        CYG_ASSERT (isr_ret & Cyg_InterruptHANDLED, 
-                    "Interrupt not handled");
+        CYG_ASSERT (isr_ret & CYG_ISR_HANDLED, "Interrupt not handled");
 
 #ifndef CYGSEM_HAL_COMMON_INTERRUPTS_CHECK_ALL_SOURCES
         return isr_ret;

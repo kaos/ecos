@@ -94,26 +94,24 @@
 // Static data used by HAL
 
 // ISR tables
-externC volatile CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
-externC volatile CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
-externC volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
+externC CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
+externC CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
+externC CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
 
 // VSR table
-//externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
+externC CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_COUNT];
 
-// actually, it is immediately after the hardware vectors
-#define hal_vsr_table ((volatile CYG_ADDRESS *)(0x20))
-
-// and followed by a DRAM size variable used during bootup.  This is in a
-// fixed location so that it can be shared between an eCos Stub ROM and a
-// RAM start eCos app.  Ie. so that RAM startup code knows DRAM size.
-// If this variable is zero, RAM size is unknown/is the default.
-#define hal_dram_size (*(CYG_WORD *)(0x40))
+// Platform setup memory size (0 if unknown by hardware)
+externC CYG_ADDRWORD   hal_dram_size;
 
 //--------------------------------------------------------------------------
 // Default ISR
-
+// The #define is used to test whether this routine exists, and to allow
+// code outside the HAL to call it.
+ 
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+
+#define HAL_DEFAULT_ISR hal_default_isr
 
 //--------------------------------------------------------------------------
 // Interrupt state storage

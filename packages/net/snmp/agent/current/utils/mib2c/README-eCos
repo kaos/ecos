@@ -1,0 +1,9 @@
+
+perl -I~/perl.pl/nsPerl5.005_03/lib/site/i686-linux mib2c interfaces
+
+to get the SNMP module on-path.
+
+setenv MIBS ALL
+
+and place mibs in /usr/local/share/snmp/mibs/
+

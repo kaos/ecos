@@ -1,3 +1,18 @@
+2000-06-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S: Changes for virtual vector support.
+	(hal_virtual_vector_table): Need to protect if virtual vector
+	stuff not defined.
+
+	* src/hal_mk_defs.c: Add symbols for virtual vector table.
+
+	* src/hal_misc.c (hal_arch_default_isr): New function.  Used in
+	place of 'hal_default_isr' if virtual vector support is enabled.
+
+	* include/hal_intr.h: "Fixed" items now exported in 'vectors.S'
+
+	* src/vectors.S: Add notion of "fixed vectors" to all platforms.
+
 2000-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_arch.h (CYGARC_HAL_SAVE_GP, CYGARC_HAL_RESTORE_GP):

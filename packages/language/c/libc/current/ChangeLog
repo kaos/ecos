@@ -1,3 +1,14 @@
+2000-06-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/time.inl (__gmtime_r): Don't save leap year status when
+	calculating tm_wday
+
+2000-06-17  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* tests/time/gmtime.c (test): Add a couple more test cases
+
+	* include/time.inl (__gmtime_r): Deal with boundary case correctly
+
 2000-05-25  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/clibincl/stream.inl (set_error): If the error is EEOF, set

@@ -133,7 +133,7 @@
 #define CALL_MEMINIT_CODE                                                 \
         mov     r10, lr       /* preserve lr */                           ;\
         bl      __mem285_init                                             ;\
-        mov     r1, #0x40     /* [see hal_intr.h] */                      ;\
+        ldr     r1, =hal_dram_size  /* [see hal_intr.h] */                ;\
         str     r0, [ r1 ]    /* store the top of memory address */       ;\
         mov     lr, r10       /* in hal_dram_size for future use */       ;\
         

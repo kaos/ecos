@@ -18,9 +18,8 @@ SECTIONS
     SECTION_rodata1 (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x4), LMA_EQ_VMA)
-    __reserved_vectors = 0; . = __reserved_vectors + 0x1000;
-    __reserved_not_mapped = 0x1000; . = __reserved_not_mapped + 0x7000;
-    SECTION_data (ram, ALIGN (0x4), FOLLOWING (.gcc_except_table))
+    SECTION_fixed_vectors (ram, 0x20, LMA_EQ_VMA)
+    SECTION_data (ram, 0x8000, FOLLOWING (.gcc_except_table))
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTIONS_END
 }

@@ -403,7 +403,7 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
     // generate the makefile contents
 	fprintf (stream, ".PHONY: default build clean tests headers\n\n");
 
-	fprintf (stream, "build: headers\n");
+	fprintf (stream, "build: headers $(PREFIX)/include/pkgconf/ecos.mak\n");
 	for (make = 0; make < info_make_vector.size (); make++) { // for each make
 		if (info_make_vector [make].loadable->makes [info_make_vector [make].make].priority < 100) { // if priority higher than default complilation
 			fprintf (stream, "\t$(MAKE) -r -C %s %s\n", info_make_vector [make].loadable->directory.c_str (), resolve_tokens (info_make_vector [make].loadable->makes [info_make_vector [make].make].target).c_str ());
@@ -440,6 +440,11 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
 		fprintf (stream, "\t$(MAKE) -r -C %s $@\n", source_path.c_str ());
 	}
 	fprintf (stream, "\t@echo $@ finished\n\n");
+
+	fprintf (stream, "$(PREFIX)/include/pkgconf/ecos.mak: makefile\n");
+	fprintf (stream, "\t@echo 'ECOS_GLOBAL_CFLAGS = %s' > $@\n", get_flags (config, NULL, "CFLAGS").c_str ());
+	fprintf (stream, "\t@echo 'ECOS_GLOBAL_LDFLAGS = %s' >> $@\n", get_flags (config, NULL, "LDFLAGS").c_str ());
+	fprintf (stream, "\t@echo 'ECOS_COMMAND_PREFIX = $(COMMAND_PREFIX)' >> $@\n\n");
 
 	// close the makefile
 	return (0 == fclose (stream));

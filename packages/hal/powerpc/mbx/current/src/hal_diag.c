@@ -58,6 +58,20 @@
 #include <cyg/hal/ppc_regs.h>
 #include <cyg/hal/quicc/quicc_smc1.h>
 
+
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+    initialized = 1;
+
+    cyg_hal_plf_serial_init();
+}
+
+
 #if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 
 //-----------------------------------------------------------------------------
@@ -108,17 +122,23 @@ dump_diag_buf(int start, int len)
 
 #if defined(CYG_KERNEL_DIAG_SERIAL)
 
+EPPC *eppc;
+
 void hal_diag_init(void)
 {
     static int init = 0;
     if (init) return;
     init++;
+
+    // hardwired base
+    eppc = eppc_base();
+
     // init the actual serial port
-    cyg_quicc_init_smc1();
+    cyg_hal_plf_serial_init();
 #ifndef CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
 #ifndef CYG_HAL_STARTUP_ROM
     // We are talking to GDB; ack the "go" packet!
-    cyg_quicc_smc1_uart_putchar('+');
+    cyg_hal_plf_serial_putc(eppc, '+');
 #endif
 #endif
 }
@@ -127,7 +147,7 @@ void hal_diag_write_char_serial( char c )
 {
     unsigned long __state;
     HAL_DISABLE_INTERRUPTS(__state);
-    cyg_quicc_smc1_uart_putchar(c);
+    cyg_hal_plf_serial_putc(eppc, c);
     HAL_RESTORE_INTERRUPTS(__state);
 }
 
@@ -203,7 +223,7 @@ void hal_diag_write_char(char c)
             // Wait for the ACK character '+' from GDB here and handle
             // receiving a ^C instead.  This is the reason for this clause
             // being a loop.
-            c = cyg_quicc_smc1_uart_rcvchar();
+            c = cyg_hal_plf_serial_getc(eppc);
 
             if( c == '+' )
                 break;              // a good acknowledge
@@ -236,7 +256,7 @@ void hal_diag_write_char(char c)
 
 void hal_diag_read_char(char *c)
 {
-    *c = cyg_quicc_smc1_uart_rcvchar();
+    *c = cyg_hal_plf_serial_getc(eppc);
 }
 
 #endif // CYG_KERNEL_DIAG_SERIAL

@@ -96,7 +96,7 @@ int
 cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys, 
                     cyg_int32 size, cyg_uint8 flags)
 {
-    cyg_uint32 epn, rpn, ctr, twc;
+    cyg_uint32 epn, rpn, twc, ctr = 0;
     int max_tlbs;
 
 #if defined(CYGPKG_HAL_POWERPC_MPC860)
@@ -148,6 +148,10 @@ cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
         id++;
     }
 
+    // Make caches default disabled when MMU is disabled.
+    CYGARC_MTSPR (MI_CTR, ctr | CYGARC_REG_MI_CTR_CIDEF);
+    CYGARC_MTSPR (MD_CTR, ctr | CYGARC_REG_MD_CTR_CIDEF);
+
     return id;
 }
 
@@ -158,7 +162,7 @@ cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
 void
 cyg_hal_clear_MMU (void)
 {
-    cyg_uint32 ctr;
+    cyg_uint32 ctr = 0;
     int id;
     int max_tlbs;
 
@@ -174,7 +178,7 @@ cyg_hal_clear_MMU (void)
 
     for (id = 0; id < max_tlbs; id++) {
         ctr = id << MI_CTR_INDX_SHIFT;
-
+        
         // Instruction TLBs.
         CYGARC_MTSPR (MI_TWC, 0);
         CYGARC_MTSPR (MI_CTR, ctr);
@@ -186,6 +190,10 @@ cyg_hal_clear_MMU (void)
         CYGARC_MTSPR (MD_EPN, 0);
         CYGARC_MTSPR (MD_RPN, 0);
     }
+
+    // Make caches default disabled when MMU is disabled.
+    CYGARC_MTSPR (MI_CTR, ctr | CYGARC_REG_MI_CTR_CIDEF);
+    CYGARC_MTSPR (MD_CTR, ctr | CYGARC_REG_MD_CTR_CIDEF);
 }
 
 //--------------------------------------------------------------------------

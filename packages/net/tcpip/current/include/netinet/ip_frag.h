@@ -62,7 +62,6 @@
  * to the original author and the contributors.
  *
  * @(#)ip_frag.h	1.5 3/24/96
- * $Id: ip_frag.h,v 1.3 2000/06/16 16:44:26 jlarmour Exp $
  */
 
 #ifndef	_NETINET_IP_FRAG_H__

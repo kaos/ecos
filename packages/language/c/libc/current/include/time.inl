@@ -414,8 +414,7 @@ __gmtime_r( const time_t *__timer, struct tm *__result )
     // Day of the year. We know _tim is +ve now
     CYG_ASSERT(_tim >= 0,
                "Number of seconds since start of year is negative!");
-    // assign tm_mday as well for further below
-    __result->tm_mday = __result->tm_yday = _tim / CYGNUM_LIBC_TIME_SECSPERDAY;
+    __result->tm_yday = _tim / CYGNUM_LIBC_TIME_SECSPERDAY;
 
     // Day of the week. Normalize to be 0..6, and note that it might
     // be negative, so we have to deal with the modulus being
@@ -425,7 +424,9 @@ __gmtime_r( const time_t *__timer, struct tm *__result )
     // Month and Day of the month
 
     _months_p = cyg_libc_time_month_lengths[
-        cyg_libc_time_year_is_leap(1900 + __result->tm_year)];
+        cyg_libc_time_year_is_leap(1900 + __result->tm_year) ? 1 : 0 ];
+
+    __result->tm_mday = __result->tm_yday+1;
 
     for (__result->tm_mon = 0;
          __result->tm_mday > _months_p[__result->tm_mon];
@@ -435,10 +436,6 @@ __gmtime_r( const time_t *__timer, struct tm *__result )
 
     } // for
 
-    // The month day is now in the range 0..30
-    // We move it to 1..31
-    ++__result->tm_mday;
-    
     _tim -= __result->tm_yday*CYGNUM_LIBC_TIME_SECSPERDAY;
 
     // hours, mins secs

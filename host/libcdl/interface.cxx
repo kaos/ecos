@@ -231,12 +231,17 @@ CdlInterfaceBody::parse_interface(CdlInterpreter interp, int argc, char** argv)
             new_interface->CdlBuildableBody::check_properties(interp);
             new_interface->CdlDefinableBody::check_properties(interp);
 
-            // A few properties do not make sense for interfaces.
-            // Start with the value-related ones. Interfaces always
-            // have the flavor Data.
+            // The flavor "none" makes no sense for interfaces.
+            // The flavor "bool" makes very little sense, but may be useful
+            // in weird cases. Both booldata and data make sense.
+            // The default flavor is "data", because interfaces are
+            // essentially just counters.
             if (new_interface->has_property(CdlPropertyId_Flavor)) {
-                CdlParse::report_error(interp, "", "An interface should not have a `flavor' property.");
+                if (CdlValueFlavor_None == new_interface->get_flavor()) {
+                    CdlParse::report_error(interp, "", "An interface should not have the `none' flavor.");
+                }
             }
+            
             // Interfaces cannot be modified directly by the user, so
             // there is no point in entry_proc, check_proc, dialog or
             // wizard
@@ -342,16 +347,21 @@ CdlInterfaceBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation,
         if (!minimal) {
             const std::vector<CdlReferrer>& referrers = this->get_referrers();
             std::vector<CdlReferrer>::const_iterator ref_i;
+            int real_referrers = 0;
             for (ref_i = referrers.begin(); ref_i != referrers.end(); ref_i++) {
                 CdlNode     node = ref_i->get_source();
                 CdlProperty prop = ref_i->get_source_property();
 
                 CdlValuable valuable = dynamic_cast<CdlValuable>(node);
                 if ((0 != valuable) && (CdlPropertyId_Implements == prop->get_property_name())) {
+                    real_referrers++;
                     data += std::string(indentation, ' ') + "    # Implemented by " + valuable->get_name() + ", " +
                         (valuable->is_active()  ? "active"  : "inactive") + ", " +
                         (valuable->is_enabled() ? "enabled" : "disabled") + '\n';
                 }
+            }
+            if (0 == real_referrers) {
+                data += std::string(indentation, ' ') + "    # No options implement this inferface\n";
             }
         }
         interp->write_data(chan, data);
@@ -469,10 +479,43 @@ CdlInterfaceBody::recalculate(CdlTransaction transaction)
             }
         }
     }
-    if (count != old_value.get_integer_value()) {
-        CdlValue new_value = old_value;
-        new_value.set_integer_value(count, CdlValueSource_Default);
-        transaction->set_whole_value(this, old_value, new_value);
+
+    // What to do with the count depends on the flavor.
+    switch(this->get_flavor()) {
+      case CdlValueFlavor_Bool :
+        {
+            bool new_bool = (count > 0);
+            if (new_bool != old_value.is_enabled()) {
+                CdlValue new_value = old_value;
+                new_value.set_enabled(new_bool, CdlValueSource_Default);
+                transaction->set_whole_value(this, old_value, new_value);
+            }
+            break;
+        }
+      case CdlValueFlavor_BoolData:
+        {
+            // The only thing that actually needs checking is the count value.
+            // Iff that has changed then the boolean part may need changing as well.
+            if (count != old_value.get_integer_value()) {
+                CdlValue new_value = old_value;
+                new_value.set_enabled_and_value(count > 0, count, CdlValueSource_Default);
+                transaction->set_whole_value(this, old_value, new_value);
+            }
+
+            break;
+        }
+      case CdlValueFlavor_Data:
+        {
+            if (count != old_value.get_integer_value()) {
+                CdlValue new_value = old_value;
+                new_value.set_integer_value(count, CdlValueSource_Default);
+                transaction->set_whole_value(this, old_value, new_value);
+            }
+            break;
+        }
+          
+      default:
+        break;
     }
     
     CYG_REPORT_RETURN();

@@ -1,10 +1,57 @@
+2000-06-22  John Dallaway  <jld@redhat.com>
+
+	* standalone/common/cdl_exec.cxx:
+
+	Modify cdl_list() to restore printf line which
+	mysteriously disappeared some time ago.
+
+2000-06-20  John Dallaway  <jld@redhat.com>
+
+	* common/common/build.cxx:
+
+	Modify generate_toplevel_makefile() to make the generated
+	makefile fragment more generic.
+	
+2000-06-19  John Dallaway  <jld@redhat.com>
+
+	* common/common/build.cxx:
+
+	Modify generate_toplevel_makefile() to generate a rule
+	to export global flags and command prefix as a makefile
+	fragment for optional use by application developers.
+
+2000-06-19  John Dallaway  <jld@redhat.com>
+
+	* common/win32/CTCommon.rc:
+
+	Replace OK/Cancel buttons with 'Close' button in the
+	Build Options dialog.
+
+	* common/win32/CTCommonDoc.cpp:
+
+	Modify OnFileImport() to specify a default file extension
+	for the File Import dialog box.
+
+	* common/win32/memmap.cpp:
+
+	Modify add_relative_sections_to_list() to skip sections
+	which have already been added and track whether sections
+	should be skipped.
+
+	* standalone/common/ecosconfig.cxx:
+
+	Modify main() to return error codes in a consistent manner.
+
+	* standalone/win32/Configtool.rc:
+
+	Update engineering team list.
+
 2000-06-15  John Dallaway  <jld@redhat.com>
 
 	* standalone/win32/ConfigToolDoc.cpp:
 
 	Modify RunTests() to check for simulator platforms and
 	inhibit prompting for hardware reset as appropriate.
-
 
 	* standalone/win32/Configtool.dsp,
 	  standalone/win32/ecosconfig.dsp:

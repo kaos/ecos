@@ -59,43 +59,34 @@
 #include <cyg/hal/ppc_stub.h>           // architecture stub support
 
 //----------------------------------------------------------------------------
-// Define serial stuff.
-externC void hal_cma_stub_init_serial( void );
-externC int  hal_cma_stub_get_char( void );
-externC void hal_cma_stub_put_char( int c );
-externC int  hal_cma_stub_interruptible( int state );
-externC void hal_cma_stub_init_break_irq( void );
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-// Only define init function if no serial driver is used on the same port.
-#if ((CYGHWR_HAL_POWERPC_COGENT_GDB_PORT == 0                   \
-      && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT_SERIAL_A)) ||  \
-     (CYGHWR_HAL_POWERPC_COGENT_GDB_PORT == 1                   \
-      && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT_SERIAL_B)))
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       CYG_EMPTY_STATEMENT
-#else
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_cma_stub_init_serial()
-#endif
+externC void cyg_hal_plf_comms_init(void);
 
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_cma_stub_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_cma_stub_put_char((c))
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE       (&hal_cma_stub_interruptible)
+#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
 #define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    hal_cma_stub_init_break_irq()
 
 //----------------------------------------------------------------------------
 // Stub initializer.
-#ifdef CYGSEM_HAL_ROM_MONITOR
-extern void diag_init (void);
-# define HAL_STUB_PLATFORM_INIT()              diag_init()
-#else
-# define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
-#endif
+//----------------------------------------------------------------------------
+// Stub initializer.
+extern void hal_plf_stub_init( void );
+#define HAL_STUB_PLATFORM_INIT()              hal_plf_stub_init();
+
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 //----------------------------------------------------------------------------
 // Reset.
+// The Cogent does not have a watchdog (not one we can easily use for this
+// purpose anyway).
 #define HAL_STUB_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
 
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#define HAL_STUB_PLATFORM_RESET_ENTRY 0xfff00100
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H

@@ -49,7 +49,7 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_COGENT {
 
     requires      CYGPKG_ERROR
     include_dir   cyg/io
-#    include_files ; # none _exported_ whatsoever
+    include_files ; # none _exported_ whatsoever
     description   "
            This option enables the serial device drivers for the
            Cogent PowerPC."

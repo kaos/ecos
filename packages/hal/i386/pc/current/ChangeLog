@@ -1,3 +1,8 @@
+2000-06-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_intr.h: Added cast to _data_ argument in
+	HAL_INTERRUPT_ATTACH() to prevent compiler errors.
+
 2000-03-23  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* doc/RELEASENOTES.txt: Added this file to contain release notes.
