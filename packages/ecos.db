@@ -462,6 +462,16 @@ package CYGPKG_DEVS_FLASH_ARM_EXCALIBUR {
 	   on the Altera Excalibur platform."
 }
 
+package CYGPKG_DEVS_FLASH_ARM_SMDK2410 {
+        alias           { "FLASH memory support for Samsung ARM9/SMDK2410 board" flash_smdk2410 }
+        directory       devs/flash/arm/smdk2410
+        script          flash_smdk2410.cdl
+        hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the Samsung smdk2410 platform."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_INNOVATOR {
 	alias 		{ "FLASH memory support for the Innovator" flash_innovator }
 	directory	devs/flash/arm/innovator
@@ -799,6 +809,15 @@ package CYGPKG_IO_SERIAL_ARM_AAED2000 {
     directory	      devs/serial/arm/aaed2000
     script	      ser_arm_aaed2000.cdl
     description       "Agilent AAED2000 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_SMDK2410 {
+    alias             { "Samsung ARM9/SMDK2410 board serial device drivers"
+                        devs_serial_arm_smdk2410 smdk2410_serial_driver }
+    hardware
+    directory         devs/serial/arm/smdk2410
+    script            ser_arm_smdk2410.cdl        
+    description       "Samsung ARM9/SMDK2410 board serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_ARM_EDB7XXX {
@@ -2168,6 +2187,16 @@ package CYGPKG_HAL_ARM_ARM9_EXCALIBUR {
         description "
         The Excalibur HAL package provides the support needed to run
         eCos on an Altera Excalibur ARM9 board."
+}
+
+package CYGPKG_HAL_ARM_ARM9_SMDK2410 {
+        alias           { "Samsung ARM9/SMDK2410 development board" hal_arm_arm9_smdk2410 }
+        directory       hal/arm/arm9/smdk2410
+        script          hal_arm_arm9_smdk2410.cdl
+        hardware
+        description "
+        The SMDK2410 HAL package provides the support needed to run
+        eCos on Samsung SMDK2410 and S3c2410x (ARM9) based development boards."
 }
 
 package CYGPKG_HAL_ARM_ARM9_INNOVATOR {
@@ -3619,6 +3648,20 @@ target excalibur_arm9 {
         description "
         The Excalibur target provides the packages needed to run
         eCos on an Altera Excalibur board."
+}
+
+target smdk2410 {
+        alias { "Samsung ARM9/SMDK2410 development board" smdk2410 s3c2410x }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_ARM9
+                   CYGPKG_HAL_ARM_ARM9_SMDK2410
+                   CYGPKG_IO_SERIAL_ARM_SMDK2410
+                   CYGPKG_DEVS_FLASH_ARM_SMDK2410
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+        }
+        description "
+        The SMDK2410 target provides the packages needed to run eCos on 
+        Samsung S3c2410x (ARM920T) based development boards (SMDK2410)."
 }
 
 target innovator {
