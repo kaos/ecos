@@ -90,9 +90,12 @@ testing.
 
 Much of the host-side software has a dependency on Tcl. This is not
 supplied with the sources since many users will already have a
-suitable installation, for example it is shipped as standard with
-all major Linux distributions. Any release of Tcl from 8.0 onwards
-should  be usable.
+suitable installation, for example it is shipped as standard with all
+major Linux distributions. The generic host-side software should work
+with any release of Tcl from 8.0 onwards. The package-specific
+software requires a more recent version, 8.3 or later. If no suitable
+Tcl installation is available then the configure step will still
+succeed but some of the package-specific software will not be built.
 
 There are two main approaches to building the host-side software:
 
@@ -217,6 +220,13 @@ A list of all the command-line options can be obtained by running
    to specify a different version using --with-tcl-version, e.g.:
 
    $ <path>configure --with-tcl=/usr/local/scriptics --with-tcl-version=8.1 <args>
+
+   It may be necessary to specify --with-tcl-version if there are
+   multiple installs in different locations. For example the
+   system may have a default install in /usr and a more up to date
+   install in /usr/local/tcl8.4. To use the latter it will usually
+   be necessary to specify both --with-tcl=/usr/local/tcl8.4 and
+   --with-tcl-version=8.4.
 
 Following the configure step the build tree should be set up
 correctly. All that remains is the actual build and install:

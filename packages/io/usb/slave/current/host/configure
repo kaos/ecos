@@ -1545,10 +1545,11 @@ fi
     ecos_tcl_incdir=""
     ecos_tcl_libdir=""
     ecos_tk_libs=""
+    ecos_tk_libdir=""
 
                 
     echo $ac_n "checking for Tcl version""... $ac_c" 1>&6
-echo "configure:1552: checking for Tcl version" >&5
+echo "configure:1553: checking for Tcl version" >&5
     # Check whether --with-tcl-version or --without-tcl-version was given.
 if test "${with_tcl_version+set}" = set; then
   withval="$with_tcl_version"
@@ -1570,7 +1571,7 @@ fi
     echo "$ac_t""${ecos_tcl_version}" 1>&6
 
         echo $ac_n "checking for Tcl installation""... $ac_c" 1>&6
-echo "configure:1574: checking for Tcl installation" >&5
+echo "configure:1575: checking for Tcl installation" >&5
 
     # Check whether --with-tcl-header or --without-tcl-header was given.
 if test "${with_tcl_header+set}" = set; then
@@ -1666,7 +1667,8 @@ fi
             { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
         else
             . ${ecos_tcl_libdir}/tclConfig.sh
-            ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
+                                                                                                                                                ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
+            ecos_LDADD="${ecos_LDADD} -L${ecos_tcl_libdir}"
         fi
 
         possible_tk_libdir=`echo ${ecos_tcl_libdir} | sed -e 's,tcl,tk,'`
@@ -1684,7 +1686,7 @@ fi
             { echo "configure: error: unable to locate Tk config file tkConfig.sh" 1>&2; exit 1; }
         else
             . ${ecos_tk_libdir}/tkConfig.sh
-            ecos_tk_libs="-ltk${ecos_tcl_version} ${TK_LIBS}"
+            ecos_tk_libs="-L${ecos_tk_libdir} -ltk${ecos_tcl_version} ${TK_LIBS}"
                                     for lib in ${TCL_LIBS} ; do
                 ecos_tk_libs=`echo ${ecos_tk_libs} | sed -e "s!${lib}!!"`
             done

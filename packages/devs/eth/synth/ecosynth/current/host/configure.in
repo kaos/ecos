@@ -62,7 +62,6 @@ case "${host}" in
     i[[34567]]86-*-linux-gnu* ) SUPPORTED="yes";;
     * ) SUPPORTED="no"
 esac
-AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
 
 if test "${SUPPORTED}" = "yes" ; then
     AC_PROG_CC
@@ -71,19 +70,10 @@ if test "${SUPPORTED}" = "yes" ; then
     AC_EXEEXT
     ECOS_PROG_MSVC
     ECOS_PROG_STANDARD_COMPILER_FLAGS
-
-    ECOS_PATH_TCL
-    dnl Check that the version of tk is sufficiently recent.
-    dnl For example the text widget's tag -elide facility was
-    dnl added between 8.2 and 8.3. Initial development of
-    dnl the synthetic target used 8.3.1
-    if test "${TK_MAJOR_VERSION}" = "8" ; then
-        if test ${TK_MINOR_VERSION} -lt 3 ; then
-            AC_MSG_ERROR([The synthetic target ethernet support requires at least version 8.3 of Tcl/Tk])
-        fi
-    fi
     ECOS_PACKAGE_DIRS
 fi
+
+AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
 
 dnl There is no real need for a config.h file at this time, since the code
 dnl is specific to x86 Linux. This may change in future.

@@ -1,3 +1,10 @@
+2002-09-22  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/configure.in:
+	If the installed version of Tcl is too old, issue a warning and
+	suppress the build, rather than fail. Other bits of the system,
+	e.g. the generic host-side tools, can still be built.
+	
 2002-09-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/ecosynth.c:

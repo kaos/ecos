@@ -405,6 +405,7 @@ AC_DEFUN(ECOS_PATH_TCL, [
     ecos_tcl_incdir=""
     ecos_tcl_libdir=""
     ecos_tk_libs=""
+    ecos_tk_libdir=""
 
     dnl Look for the version of Tcl. If none is specified, default to
     dnl 8.0 under VC++ and cygwin, nothing under Unix. A version has to be
@@ -501,7 +502,19 @@ AC_DEFUN(ECOS_PATH_TCL, [
             AC_MSG_ERROR(unable to locate Tcl config file tclConfig.sh)
         else
             . ${ecos_tcl_libdir}/tclConfig.sh
+            dnl Arguably if ecos_tcl_version is not set then it should be
+            dnl here using TCL_VERSION, tying executables to a specific
+            dnl release. That avoids problems if the system has multiple
+            dnl Tcl installations, e.g. the system install plus a more
+            dnl recent private install. However it would introduce a
+            dnl problem if the system install gets upgraded, executables
+            dnl would still try to use the old version and would need
+            dnl to be rebuilt.
+            dnl
+            dnl For now, do not set ecos_tcl_version automatically. The
+            dnl user can override this.
             ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
+            ecos_LDADD="${ecos_LDADD} -L${ecos_tcl_libdir}"
         fi
 
         possible_tk_libdir=`echo ${ecos_tcl_libdir} | sed -e 's,tcl,tk,'`
@@ -511,7 +524,7 @@ AC_DEFUN(ECOS_PATH_TCL, [
             AC_MSG_ERROR(unable to locate Tk config file tkConfig.sh)
         else
             . ${ecos_tk_libdir}/tkConfig.sh
-            ecos_tk_libs="-ltk${ecos_tcl_version} ${TK_LIBS}"
+            ecos_tk_libs="-L${ecos_tk_libdir} -ltk${ecos_tcl_version} ${TK_LIBS}"
             dnl Remove any library duplicates. It is not quite clear why,
             dnl but they seem to cause problems.
             for lib in ${TCL_LIBS} ; do

@@ -1943,7 +1943,7 @@ fi
             { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
         else
             . ${ecos_tcl_libdir}/tclConfig.sh
-            ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
+                                                                                                                                                ecos_LIBS="${ecos_LIBS} -ltcl${ecos_tcl_version} ${TCL_LIBS}"
             ecos_LDADD="${ecos_LDADD} -L${ecos_tcl_libdir}"
         fi
 
@@ -1962,7 +1962,7 @@ fi
             { echo "configure: error: unable to locate Tk config file tkConfig.sh" 1>&2; exit 1; }
         else
             . ${ecos_tk_libdir}/tkConfig.sh
-            ecos_tk_libs="-ltk${ecos_tcl_version} ${TK_LIBS}"
+            ecos_tk_libs="-L${ecos_tk_libdir} -ltk${ecos_tcl_version} ${TK_LIBS}"
                                     for lib in ${TCL_LIBS} ; do
                 ecos_tk_libs=`echo ${ecos_tk_libs} | sed -e "s!${lib}!!"`
             done
@@ -1971,7 +1971,6 @@ fi
 
     echo "$ac_t""-I${ecos_tcl_incdir} -L${ecos_tcl_libdir}" 1>&6
 
-    
     
 
 
@@ -2146,7 +2145,6 @@ s%@MSVC_FALSE@%$MSVC_FALSE%g
 s%@ecos_infra_incdir@%$ecos_infra_incdir%g
 s%@ecos_infra_libdir@%$ecos_infra_libdir%g
 s%@ecos_tk_libs@%$ecos_tk_libs%g
-s%@ecos_tk_libdir@%$ecos_tk_libdir%g
 
 CEOF
 EOF
