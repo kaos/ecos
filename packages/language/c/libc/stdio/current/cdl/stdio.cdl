@@ -58,7 +58,6 @@ cdl_package CYGPKG_LIBC_STDIO {
     include_dir   cyg/libc/stdio
     parent        CYGPKG_LIBC
     requires      CYGPKG_IO
-    requires      CYGPKG_IO_SERIAL_HALDIAG
     requires      CYGPKG_LIBC_I18N
     implements    CYGINT_ISO_STDIO_FILETYPES
     implements    CYGINT_ISO_STDIO_FILEACCESS
@@ -67,6 +66,8 @@ cdl_package CYGPKG_LIBC_STDIO {
     implements    CYGINT_ISO_STDIO_DIRECT_IO
     implements    CYGINT_ISO_STDIO_ERROR
     implements    CYGINT_ISO_STDIO_STREAMS
+    requires      { (CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE == "\"/dev/ttydiag\"" ? \
+                  CYGPKG_IO_SERIAL_HALDIAG : 1) }
     requires      { CYGBLD_ISO_STDIO_FILETYPES_HEADER == \
                     "<cyg/libc/stdio/stdio.h>" }
     requires      { CYGBLD_ISO_STDIO_FILEACCESS_HEADER == \
