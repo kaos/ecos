@@ -1,3 +1,9 @@
+2003-09-22  Reinhard Jessich  <Reinhard.Jessich@frequentis.com>
+
+	* src/common/clock.cxx: Removed	label/goto
+	add_alarm_unlock_return to get rid of compiler error when
+	CYGIMP_KERNEL_COUNTERS_SORT_LIST is enabled.
+
 2003-09-01  Bart Veer  <bartv@ecoscentric.com>
 
 	* doc/kernel.sgml: fix typo, cyg_thread vs. cyg_thread_t

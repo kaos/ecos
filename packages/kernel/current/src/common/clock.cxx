@@ -384,7 +384,7 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
             if( list_alarm->trigger > alarm->trigger )
             {
                 alarm_list_ptr->insert( list_alarm, alarm );
-                goto add_alarm_unlock_return;
+                return;
             }
 
             list_alarm = list_alarm->get_next();
@@ -393,15 +393,9 @@ void Cyg_Counter::add_alarm( Cyg_Alarm *alarm )
         // a lower or equal alarm time was not found, so drop through
         // so it is added to the list tail
     }
-    alarm_list_ptr->add_tail( alarm );
-
- add_alarm_unlock_return:
-#else    
-    
-    alarm_list_ptr->add_tail( alarm );
-        
 #endif
 
+    alarm_list_ptr->add_tail( alarm );
 }
 
 // -------------------------------------------------------------------------
