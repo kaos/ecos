@@ -115,4 +115,30 @@ cdl_package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
             able to recognize and handle the 28F320S3
             part in the family."
     }
+
+    cdl_option CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_Z4 {
+        display       "Sharp LH28F016SCT-Z4 flash memory support"
+        default_value 0
+        implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
+        implements    CYGINT_DEVS_FLASH_INTEL_VARIANTS
+        description   "
+            When this option is enabled, the Intel flash driver will be
+            able to recognize and handle the Sharp LH28F016SCT-Z4
+            part.  Although this part is not an Intel part, the driver
+            is implemented using the same command status definitions."
+
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_95 {
+        display       "Sharp LH28F016SCT-95 flash memory support"
+        default_value 0
+        implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
+        implements    CYGINT_DEVS_FLASH_INTEL_VARIANTS
+        description   "
+            When this option is enabled, the Intel flash driver will be
+            able to recognize and handle the Sharp LH28F016SCT-95
+            part.  Although this part is not an Intel part, the driver
+            is implemented using the same command status definitions."
+
+    }
 }

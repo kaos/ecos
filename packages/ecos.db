@@ -453,6 +453,26 @@ package CYGPKG_DEVS_FLASH_MBX {
 	   on the Motorola PowerPC/860 MBX platform."
 }
 
+package CYGPKG_DEVS_FLASH_TS6 {
+	alias 		{ "FLASH memory support for Delphi Communication Systems, Inc. TigerSHARC6 Board" flash_ts6 }
+	directory	devs/flash/powerpc/ts6
+	script		flash_ts6.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Delphi Communication Systems TigerSHARC6 platform."
+}
+
+package CYGPKG_DEVS_FLASH_VADS {
+	alias 		{ "FLASH memory support for Motorola MPC8260 Voyager ADS board" flash_vads }
+	directory	devs/flash/powerpc/vads
+	script		flash_vads.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Motorola MPC8260 Voyager ADS platform."
+}
+
 package CYGPKG_DEVS_FLASH_CME555 {
 	alias 		{ "FLASH memory support for Axiom's CME555" flash_cme555 }
 	directory	devs/flash/powerpc/cme555
@@ -744,6 +764,17 @@ package CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
     directory	      devs/serial/powerpc/quicc
     script	      ser_quicc_smc.cdl	
     description       "PowerPC QUICC/SMC serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_POWERPC_QUICC2_SCC {
+    alias             { "PowerPC VADS QUICC2/SCC serial device drivers"
+                        devs_serial_quicc2_scc quicc2_scc_serial_driver
+                        devs_serial_powerpc_quicc2_scc
+                        devs_serial_powerpc_quicc2 quicc2_serial_driver }
+    hardware
+    directory	      devs/serial/powerpc/quicc2
+    script	      ser_quicc2_scc.cdl	
+    description       "PowerPC VADS QUICC2/SCC serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_SPARCLITE_SLEB {
@@ -1187,6 +1218,14 @@ package CYGPKG_DEVS_ETH_POWERPC_MBX {
 	directory	devs/eth/powerpc/mbx
 	script		mbx_eth_drivers.cdl
         description     "Ethernet driver specifics for Motorola MBX PowerPC (MPC8xx) based boards."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_QUICC2 {
+	alias 		{ "QUICC2 ethernet driver" quicc_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/quicc2
+	script		quicc2_eth_drivers.cdl
+        description     "Fast ethernet driver for PowerPC QUICC2 (MPC8260) based boards."
 }
 
 package CYGPKG_DEVS_ETH_POWERPC_FEC {
@@ -2414,6 +2453,17 @@ package CYGPKG_HAL_POWERPC {
     	    package."
 }
 
+package CYGPKG_HAL_POWERPC_MPC8260 {
+	alias		{ "PowerPC MPC8260 variant HAL" hal_mpc8260 }
+	directory	hal/powerpc/mpc8260/
+	script		hal_powerpc_mpc8260.cdl
+	hardware
+        description "
+           The PowerPC MPC8260 PowerQUICCII variant HAL package provides 
+           support for this processor variant. It is also necessary to
+           select a specific target platform HAL package."
+}
+
 package CYGPKG_HAL_POWERPC_MPC8xx {
 	alias		{ "PowerPC 8xx variant HAL" hal_mpc8xx mpc8xx_hal mpc8xx_arch_hal }
 	directory	hal/powerpc/mpc8xx/
@@ -2525,6 +2575,28 @@ package CYGPKG_HAL_POWERPC_ADDER {
         description "
             The ADDER HAL package provides the support needed to run
             eCos on a A&M ADDER board equipped with a PowerPC processor."
+}
+
+package CYGPKG_HAL_POWERPC_TS6 {
+	alias		{ "Delphi TigerSHARC-6 board" hal_powerpc_ts6 powerpc_ts6_hal }
+	directory	hal/powerpc/ts6
+	script		hal_powerpc_ts6.cdl
+	hardware
+        description "
+            The TS6 HAL package provides the support needed to run
+            eCos on a Delphi TigerSHARC-6 board equipped with a
+            PowerPC processor."
+}
+
+package CYGPKG_HAL_POWERPC_VADS {
+	alias		{ "Motorola MPC8260 VADS board" hal_powerpc_vads powerpc_vads_hal }
+	directory	hal/powerpc/vads
+	script		hal_powerpc_vads.cdl
+	hardware
+        description "
+            The VADS HAL package provides the support needed to run
+            eCos on a Motorola MPC8260 VADS board equipped with a
+            PowerPC processor."
 }
 
 package CYGPKG_HAL_QUICC {
@@ -3723,6 +3795,36 @@ target mbx {
         description "
             The mbx target provides the packages needed to run
             eCos on a Motorola MBX860 or MBX821 board."
+}
+
+target ts6 {
+        alias		{ "Delphi TigerSHARC-6 board" Pleiades sixpack }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8260
+                          CYGPKG_HAL_POWERPC_TS6
+                          CYGPKG_DEVS_ETH_POWERPC_QUICC2
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC2_SCC
+                          CYGPKG_DEVS_FLASH_TS6
+                          CYGPKG_DEVS_FLASH_INTEL_28FXXX
+        }
+        description "
+            The ts6 target provides the packages needed to run
+            eCos on a Delphi TigerSHARC-6 board."
+}
+
+target vads {
+        alias		{ "Motorola MPC8260 VADS board" }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8260
+                          CYGPKG_HAL_POWERPC_VADS
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC2_SCC
+                          CYGPKG_DEVS_ETH_POWERPC_QUICC2
+                          CYGPKG_DEVS_FLASH_VADS
+                          CYGPKG_DEVS_FLASH_INTEL_28FXXX
+        }
+        description "
+            The vads target provides the packages needed to run
+            eCos on a Motorola MPC8260 VADS board."
 }
 
 target viper {

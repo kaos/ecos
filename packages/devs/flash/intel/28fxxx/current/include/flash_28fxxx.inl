@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -533,6 +534,108 @@ flash_unlock_block(void* block, int block_size, int blocks)
     int timeout = 5000000;
     volatile flash_data_t* b_p = (flash_data_t*) block;
     volatile flash_data_t *b_v;
+
+#if (defined(CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_Z4) || defined(CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_95) )
+    // The Sharp device follows all the same rules as the Intel 28x part,
+    // except that the unlocking mechanism unlocks all blocks at once.  This
+    // is the way the Strata part seems to work.  I will replace the 
+    // flash_unlock_block function with one similar to the Strata function.
+    // As the Sharp part does not have the bootlock characteristics, I
+    // will ignore them.
+//
+// The difficulty with this operation is that the hardware does not support
+// unlocking single blocks.  However, the logical layer would like this to
+// be the case, so this routine emulates it.  The hardware can clear all of
+// the locks in the device at once.  This routine will use that approach and
+// then reset the regions which are known to be locked.
+//
+
+#define MAX_FLASH_BLOCKS (flash_dev_info->block_count * CYGNUM_FLASH_SERIES)
+
+    unsigned char is_locked[MAX_FLASH_BLOCKS];
+    int i;
+
+    // Get base address and map addresses to virtual addresses
+#ifdef DEBUG
+    d_print("\nNow inside low level driver\n");
+#endif
+    ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
+    block = FLASH_P2V(block);
+
+    // Clear any error conditions
+    ROM[0] = FLASH_Clear_Status;
+
+    // Get current block lock state.  This needs to access each block on
+    // the device so currently locked blocks can be re-locked.
+    b_p = ROM;
+    for (i = 0;  i < blocks;  i++) {
+        b_v = FLASH_P2V( b_p );
+        *b_v = FLASH_Read_ID;
+        if (b_v == block) {
+            is_locked[i] = 0;
+        } else {
+            if(b_v[2]){ /* it is possible that one of the interleaved devices
+                         * is locked, but others are not.  Coming out of this
+                         * function, if one was locked, all will be locked.
+                         */
+                is_locked[i] = 1;
+            }else{
+                is_locked[i] = 0;
+            }
+        }
+#ifdef DEBUG
+#endif
+        b_p += block_size / sizeof(*b_p);
+    }
+    ROM[0] = FLASH_Reset;
+#ifdef DEBUG
+    for (i = 0;  i < blocks;  i++) {
+        d_print("\nblock %d  %s", i,
+                is_locked[i] ? "LOCKED" : "UNLOCKED");
+    }
+    d_print("\n");
+#endif
+
+    // Clears all lock bits
+    ROM[0] = FLASH_Clear_Lock;
+    ROM[0] = FLASH_Clear_Lock_Confirm;  // Confirmation
+    timeout = 5000000;
+    while(((state = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
+        if (--timeout == 0) break;
+    }
+
+    // Restore the lock state
+    b_p = ROM;
+    for (i = 0;  i < blocks;  i++) {
+        b_v = FLASH_P2V( b_p );
+        if (is_locked[i]) {
+            *b_v = FLASH_Set_Lock;
+            *b_v = FLASH_Set_Lock_Confirm;  // Confirmation
+            timeout = 5000000;
+            while(((state = ROM[0]) & FLASH_Status_Ready)
+                  != FLASH_Status_Ready) {
+                if (--timeout == 0){
+                    res = FLASH_ERR_DRV_TIMEOUT;
+                    break;
+                }
+            }
+            if (FLASH_ErrorLock == (state & FLASH_ErrorLock))
+                res = FLASH_ERR_LOCK;
+            
+            if (res != FLASH_ERR_OK)
+                break;
+
+        }
+        b_p += block_size / sizeof(*b_p);
+    }
+
+    // Restore ROM to "normal" mode
+    ROM[0] = FLASH_Reset;
+
+    return res;
+
+#else // not CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_Z4
+
     cyg_bool bootblock;
     int len, len_ix = 1;
 
@@ -656,6 +759,7 @@ flash_unlock_block(void* block, int block_size, int blocks)
     // Restore ROM to "normal" mode
     ROM[0] = FLASH_Reset;
 #endif
+#endif // #CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_Z4
 }
 #endif // CYGHWR_IO_FLASH_BLOCK_LOCKING
 

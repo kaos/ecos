@@ -56,6 +56,33 @@
 //==========================================================================
 
 #if CYGNUM_FLASH_WIDTH == 8
+#ifdef CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_Z4
+    {   // LH28F016SCT_Z4
+        device_id  : FLASHWORD(0xA0),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        buffered_w : false,
+        locking    : true,
+        bootblock  : false,
+        banked     : false
+    },
+#endif
+
+#ifdef CYGHWR_DEVS_FLASH_SHARP_LH28F016SCT_95
+    {   // LH28F016SCT_95
+        device_id  : FLASHWORD(0xAA),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        buffered_w : false,
+        locking    : true,
+        bootblock  : false,
+        banked     : false
+    },
+#endif
 
 #else // 16 bit devices
 

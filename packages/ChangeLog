@@ -1,3 +1,9 @@
+2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
+2002-12-12  Patrick Doyle <wpd@delcomsys.com>
+
+	* ecos.db: Add packages for MPC8260 based systems - VADS
+	and TS6 (Delphi Communications).	
+
 2002-12-10  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* ecos.db: Enable serial devices for A&M 'adder' platform.
