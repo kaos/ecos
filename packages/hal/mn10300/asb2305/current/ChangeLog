@@ -1,3 +1,10 @@
+2002-11-14  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_mn10300_am33_asb2305.cdl: Remove RedBoot exec option. Now
+	provided in generic AM33 code. Ditto for RTC support.
+	* src/plf_misc.c: hal_delay_us now provided by AM33 package.
+	* src/redboot_cmds.c: Remove.
+
 2002-08-02  Andrew Lunn <Andrew.Lunn@ascom.ch>
 
 	* cdl/hal_mn10300_am33_asb2305.cdl: Redboot exec command can now

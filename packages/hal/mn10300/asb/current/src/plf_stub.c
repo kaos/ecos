@@ -62,6 +62,11 @@
 //---------------------------------------------------------------------------
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+
+#define ASB2303_SER0_BASE      0xD4002000
+#define _SERIAL_RXR      0x09
+#define SERIAL0_RXR      ((volatile cyg_uint8 *) (ASB2303_SER0_BASE + _SERIAL_RXR))
+
 // This ISR is called from the interrupt handler. This should only
 // happen when there is no serial driver, so the code shouldn't mess
 // anything up.
@@ -91,6 +96,7 @@ int cyg_hal_gdb_isr(cyg_uint32 vector, target_register_t pc)
     return 1;
 }
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 int hal_asb_interruptible(int state)
 {
     if (state) {
@@ -111,6 +117,7 @@ void hal_asb_init_break_irq( void )
     HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SERIAL_0_RX)
     HAL_ENABLE_INTERRUPTS();
 }
+#endif
 #endif
 
 //-----------------------------------------------------------------------------

@@ -513,6 +513,7 @@ CYG_MACRO_END
 
 //--------------------------------------------------------------------------
 // Clock control.
+extern cyg_uint32 __hal_period__;
 
 #define HAL_CLOCK_INITIALIZE( _period_ )                                \
 {                                                                       \
@@ -532,6 +533,8 @@ CYG_MACRO_END
                                                                         \
     *timer4_md = 0x40;                                                  \
     *timer4_md = 0x80;                                                  \
+                                                                        \
+    __hal_period__ = _period_;                                          \
 }
 
 #define HAL_CLOCK_RESET( _vector_, _period_ )
@@ -552,12 +555,12 @@ CYG_MACRO_END
         t4 = *timer4_cr;                                                \
     } while( t5 != *timer5_cr );                                        \
                                                                         \
-    *(_pvalue_) = CYGNUM_KERNEL_COUNTERS_RTC_PERIOD - ((t5<<16) + t4);  \
+    *(_pvalue_) = __hal_period__ - ((t5<<16) + t4);                     \
 }
 
-// FIXME: above line should not use CYGNUM_KERNEL_COUNTERS_RTC_PERIOD since
-// this means the HAL gets configured by kernel options even when the
-// kernel is disabled!
+extern void hal_delay_us(cyg_int32 usecs);
+
+#define HAL_DELAY_US(n)          hal_delay_us(n);
 
 
 //--------------------------------------------------------------------------

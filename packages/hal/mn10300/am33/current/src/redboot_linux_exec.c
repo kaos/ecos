@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      redboot_cmds.c
+//      redboot_linux_exec.c
 //
-//      ASB2305 [platform] specific RedBoot commands
+//      AM33 Linux specific RedBoot exec command
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -41,7 +41,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    dhowells
-// Contributors: gthomas, jskov
+// Contributors: gthomas, jskov, msalter
 // Date:         2001-07-19
 // Purpose:      
 // Description:  
@@ -102,12 +102,12 @@ do_exec(int argc, char *argv[])
         return;
     }
     if (cmd_line_set) {
-	memcpy((char*)0x8C001000,"cmdline:",8);
-        strncpy((char*)0x8C001008,cmd_line,256);
-	*(char*)(0x8C001008+256) = 0;
+	memcpy((char*)CYGHWR_REDBOOT_AM33_LINUX_CMD_ADDRESS,"cmdline:",8);
+        strncpy((char*)CYGHWR_REDBOOT_AM33_LINUX_CMD_ADDRESS+8,cmd_line,256);
+	*(char*)(CYGHWR_REDBOOT_AM33_LINUX_CMD_ADDRESS+8+256) = 0;
     }
     else {
-	*(char*)(0x8C001000+256) = 0;
+	*(char*)(CYGHWR_REDBOOT_AM33_LINUX_CMD_ADDRESS+256) = 0;
     }
 
     if (wait_time_set) {
@@ -129,4 +129,4 @@ do_exec(int argc, char *argv[])
     (*entry)();
 }
 
-// EOF redboot_cmds.c
+// EOF redboot_linux_exec.c

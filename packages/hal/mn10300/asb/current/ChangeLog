@@ -1,3 +1,14 @@
+2002-11-14  Mark Salter  <msalter@redhat.com>
+
+	* src/plf_misc.c: Don't mess with TBR.
+	* src/plf_stub.c: Tweak for RedBoot support.
+	* src/ser_asb.c:  Calculate baudrate divisor based on IOCLK. Register
+	getc_timeout_set handler.
+	* include/pkgconf/mlt*: Updated for flash support and adjusted RAM
+	addresses
+	* include/platform.inc: Always place boot flash at 0x80000000 and
+	system flash at 0x84000000.
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 

@@ -81,6 +81,68 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
 
     compile       var_misc.c variant.S
 
+    cdl_option CYGHWR_HAL_MN10300_PROCESSOR_OSC {
+        display       "Processor Oscillator input"
+        flavor        data
+        legal_values  16666667 to 33333333
+        default_value { CYGHWR_HAL_MN10300_PROCESSOR_OSC_DEFAULT ?
+                        CYGHWR_HAL_MN10300_PROCESSOR_OSC_DEFAULT : 25000000}
+        description   "
+           The MN10300 processor can run at various frequencies. These
+           values are expressed in Hz.  Note that there are several
+           steppings of the MN10300 rated to run at different maximum
+           frequencies.  Check the specs to make sure that your
+           particular processor can run at the rate you select here."
+    }
+
+    # Real-time clock/counter specifics
+    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
+        display       "Real-time clock constants."
+        description   "
+            The NUMERATOR divided by the DENOMINATOR gives the number of
+            nanoseconds per tick. The PERIOD is the divider to be programmed
+            into a hardware timer that is driven from an appropriate hardware
+            clock, such that the timer overflows once per tick (normally
+            generating a CPU interrupt to mark the end of a tick). The tick
+            rate is typically 100Hz.
+            The clock is generated with onboard 16-bit timers TM4 and TM5
+            cascaded together to form a 32-bit timer."
+        flavor none
+
+        cdl_option CYGHWR_HAL_MN10300_IOCLK_SPEED {
+            display          "Processor I/O clock speed (Hz)"
+            flavor           data
+            calculated       CYGHWR_HAL_MN10300_PROCESSOR_OSC
+            description      "
+                The processor I/O clock speed, from which onboard timers can
+                draw their sources."
+        }
+
+        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+            display       "Real-time clock numerator"
+            flavor        data
+            calculated    (1000 * 1000 * 1000)
+        }
+
+        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+            display       "Real-time clock denominator"
+            flavor        data
+            calculated    100
+            description   "
+              This option selects the heartbeat rate for the real-time clock.
+              The rate is specified in ticks per second.  Change this value
+              with caution - too high and your system will become saturated
+              just handling clock interrupts, too low and some operations
+              such as thread scheduling may become sluggish."
+        }
+
+        cdl_option CYGNUM_HAL_RTC_PERIOD {
+            display       "Real-time clock divisor"
+            flavor        data
+            calculated    (CYGHWR_HAL_MN10300_IOCLK_SPEED / CYGNUM_HAL_RTC_DENOMINATOR)
+        }
+    }
+
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/mn10300_am33.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
@@ -106,4 +168,37 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
             without turning off CPU data caching."
     }
 
+    cdl_component CYGPKG_REDBOOT_MN10300_AM33_OPTIONS {
+        display       "Redboot for AM33 options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        cdl_component CYGPKG_REDBOOT_AM33_LINUX_EXEC {
+            display        "Provide the exec command in RedBoot"
+            flavor         none
+            parent         CYGPKG_REDBOOT_MN10300_AM33_OPTIONS
+            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
+            description    "
+                This option contains requirements for booting linux
+                from RedBoot. The component is enabled/disabled from
+                RedBoots CDL."
+            compile -library=libextras.a redboot_linux_exec.c
+
+            cdl_option CYGHWR_REDBOOT_AM33_LINUX_CMD_ADDRESS {
+                display       "Base address of linux kernel command line"
+                flavor        data
+                default_value 0x8C001000
+                description   "
+                   This is the base address of the area of memory used to
+                   pass a command line to the Linux kernel. This should be
+                   chosen to avoid overlap with the kernel and any ramdisk
+                   image."
+            }
+        }
+    }
 }

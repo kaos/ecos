@@ -68,6 +68,8 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
+    requires CYGSEM_HAL_UNCACHED_FLASH_ACCESS == 1;
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_mn10300_am33.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_mn10300_am33_asb.h>"
@@ -87,49 +89,78 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB {
             Currently only ROM startup type is supported."
     }
 
-    cdl_option CYGHWR_HAL_MN10300_AM33_ASB_DIAG_PORT {
-        display          "Diagnostic Serial Port"
+    cdl_component CYG_HAL_ROM_SLOT {
+        display       "ROM slot in which residing"
+        flavor        data
+        legal_values  {"BootPROM" "SysFlash"}
+        default_value {"BootPROM"}
+        no_define
+        define -file system.h CYG_HAL_ROM_SLOT
+        description   "
+            This specifies which ROM slot the program resides in (and is booted
+            from."
+    }
+
+    cdl_option CYGHWR_HAL_MN10300_PROCESSOR_OSC_DEFAULT {
+        display       "Processor clock rate"
+        calculated    33333333
+        flavor        data
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
+        display      "Default console channel."
+        flavor       data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        calculated   0
+    }
+ 
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   2
+    }
+ 
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
         flavor data
-        legal_values     0 1
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
         default_value    0
         description      "
-           The ASB2303 board has two serial ports. This option
-           chooses which of these ports will be used for diagnostic output.
-           At present only port 0 is supported."
-   }
+            This option chooses which port will be used to connect to a host
+            running GDB."
+     }
+ 
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+         display          "Diagnostic serial port"
+         active_if        CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
+         flavor data
+         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+         default_value    CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT
+         description      "
+            The ASB2303 board has two serial ports.  This option
+            chooses which port will be used for diagnostic output."
+     }
 
-   cdl_option CYGHWR_HAL_MN10300_AM33_ASB_DIAG_BAUD {
-       display          "Diagnostic Serial Port Baud Rate"
-       flavor data
-       legal_values     9600 19200 38400 115200
-       default_value    38400
-       define           CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
-       description      "
-           This option selects the baud rate used for the diagnostic port.
-           Note: this should match the value chosen for the GDB port if the
-           diagnostic and GDB port are the same."
-   }
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
+        display       "Diagnostic serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 115200
+        description   "
+            This option selects the baud rate used for the diagnostic port.
+            Note: this should match the value chosen for the GDB port if the
+            diagnostic and GDB port are the same."
+    }
 
-   cdl_option CYGHWR_HAL_MN10300_AM33_ASB_GDB_PORT {
-       display          "GDB Serial Port"
-       flavor data
-       legal_values     0 1
-       default_value    0
-       description      "
-           The ASB2303 board has two separate serial ports.  This option
-           chooses which of these ports will be used to connect to a host
-           running GDB.
-           At present only port 0 is supported."
-   }
-
-   cdl_option CYGHWR_HAL_MN10300_AM33_ASB_GDB_BAUD {
-       display          "GDB Serial Port Baud Rate"
-       flavor data
-       legal_values     9600 19200 38400 115200
-       default_value    38400
-       description      "
-           This option controls the baud rate used for the GDB connection."
-   }
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
+        display       "GDB serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 115200
+        description   "
+            This option selects the baud rate used for the GDB port."
+    }
 
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
@@ -206,49 +237,22 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB {
             This option determines the number of breakpoints supported by the HAL."
     }
 
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
-        display      "Number of communication channels on the board"
-        flavor       data
-        calculated   1
-    }
-
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
-        display          "Debug serial port"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The ASB2303 board has two serial ports.  Currently,
-           only the first serial port is supported. This option
-           chooses which port will be used to connect to a host
-           running GDB."
-    }
- 
-     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
-        display          "Diagnostic serial port"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The ASB2303 board has two serial ports. Currently,
-           only the first serial port is supported. This option
-           chooses which port will be used for diagnostic output."
-     }
-
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
         flavor data
         no_define
-        calculated { CYG_HAL_STARTUP == "RAM" ? "mn10300_am33_asb_ram" : \
-	                                        "mn10300_am33_asb_rom" }
+        calculated { CYG_HAL_STARTUP  == "RAM"      ? "mn10300_am33_asb_ram" : \
+                     CYG_HAL_ROM_SLOT == "BootPROM" ? "mn10300_am33_asb_rom" : \
+                                                      "mn10300_am33_asb_flash" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mn10300_am33_asb_ram.ldi>" : \
-                                                    "<pkgconf/mlt_mn10300_am33_asb_rom.ldi>" }
+            calculated { CYG_HAL_STARTUP == "RAM"       ? "<pkgconf/mlt_mn10300_am33_asb_ram.ldi>" : \
+                         CYG_HAL_ROM_SLOT == "BootPROM" ? "<pkgconf/mlt_mn10300_am33_asb_rom.ldi>" : \
+                                                          "<pkgconf/mlt_mn10300_am33_asb_flash.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -256,16 +260,31 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB {
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-            calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mn10300_am33_asb_ram.h>" : \
-                                                    "<pkgconf/mlt_mn10300_am33_asb_rom.h>" }
+            calculated { CYG_HAL_STARTUP == "RAM"       ? "<pkgconf/mlt_mn10300_am33_asb_ram.h>" : \
+                         CYG_HAL_ROM_SLOT == "BootPROM" ? "<pkgconf/mlt_mn10300_am33_asb_rom.h>" : \
+                                                          "<pkgconf/mlt_mn10300_am33_asb_flash.h>" }
         }
+    }
+
+    cdl_option CYGSEM_HAL_ROM_MONITOR {
+        display       "Behave as a ROM monitor"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        requires      { CYG_HAL_STARTUP == "ROM" }
+        description   "
+            Enable this option if this program is to be used as a ROM monitor,
+            i.e. applications will be loaded into RAM on the board, and this
+            ROM monitor may process exceptions or interrupts generated from the
+            application. This enables features such as utilizing a separate
+            interrupt stack when exceptions are generated."
     }
 
     cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
         display       "Work with a ROM monitor"
         flavor        booldata
-        legal_values  { "Generic" "CygMon" "GDB_stubs" }
-        default_value { CYG_HAL_STARTUP == "RAM" ? "CygMon" : 0 }
+        legal_values  { "Generic" "GDB_stubs" }
+        default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
         parent        CYGPKG_HAL_ROM_MONITOR
         requires      { CYG_HAL_STARTUP == "RAM" }
         description   "
@@ -278,45 +297,30 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB {
             instead allow an installed ROM monitor to handle them. This is
             the most basic support which is likely to be common to most
             implementations of ROM monitor.
-            \"CygMon\" provides support for the Cygnus ROM Monitor.
-            And finally, \"GDB_stubs\" provides support when GDB stubs are
-            included in the ROM monitor or boot ROM."
+             \"GDB_stubs\" provides support when GDB stubs are included in
+             the ROM monitor or boot ROM."
     }
 
-    cdl_option CYGSEM_HAL_ROM_MONITOR {
-        display       "Behave as a ROM monitor"
-        flavor        bool
-        default_value 1
-        parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYG_HAL_STARTUP == "ROM" }
-        description   "
-            Enable this option if this program is to be used as a ROM monitor,
-            i.e. applications will be loaded into RAM on the board, and this
-            ROM monitor may process exceptions or interrupts generated from the
-            application. This enables features such as utilizing a separate
-            interrupt stack when exceptions are generated."
-    }
-
-    cdl_component CYGPKG_CYGMON_HAL_OPTIONS {
-        display       "CygMon HAL options"
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display       "Redboot HAL options"
         flavor        none
         no_define
-        parent        CYGPKG_CYGMON
-        active_if     CYGPKG_CYGMON
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
         description   "
-            This option also lists the target's requirements for a valid CygMon
+            This option lists the target's requirements for a valid Redboot
             configuration."
-
-        cdl_option CYGBLD_BUILD_CYGMON_BIN {
-            display       "Build CygMon ROM binary image"
-            active_if     CYGBLD_BUILD_CYGMON
+            
+        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build Redboot ROM binary image"
+            active_if     CYGBLD_BUILD_REDBOOT
             default_value 1
             no_define
-            description "This option enables the conversion of the CygMon ELF
+            description "This option enables the conversion of the Redboot ELF
                          image to a binary image suitable for ROM programming."
     
             make -priority 325 {
-                <PREFIX>/bin/cygmon.bin : <PREFIX>/bin/cygmon.elf
+                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
                 $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 
                 $(OBJCOPY) -O srec $< $(@:.bin=.srec)
                 $(OBJCOPY) -O binary $< $@

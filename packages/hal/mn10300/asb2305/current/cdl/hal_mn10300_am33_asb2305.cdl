@@ -101,48 +101,6 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             from."
     }
 
-    # Real-time clock/counter specifics
-    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
-        display       "Real-time clock constants."
-        description   "
-            The NUMERATOR divided by the DENOMINATOR gives the number of
-            nanoseconds per tick. The PERIOD is the divider to be programmed
-            into a hardware timer that is driven from an appropriate hardware
-            clock, such that the timer overflows once per tick (normally
-            generating a CPU interrupt to mark the end of a tick). The tick
-            rate is typically 100Hz.
-            The clock is generated with onboard 16-bit timers TM4 and TM5
-            cascaded together to form a 32-bit timer."
-        flavor none
-
-        cdl_option CYGHWR_HAL_MN10300_IOCLK_SPEED {
-            display          "Processor I/O clock speed (Hz)"
-            flavor           data
-            calculated       (25 * 1000 * 1000)
-            description      "
-                The processor I/O clock speed, from which onboard timers can
-                draw their sources."
-        }
-
-        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
-            display       "Real-time clock numerator"
-            flavor        data
-            calculated    (1000 * 1000 * 1000)
-        }
-
-        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
-            display       "Real-time clock denominator"
-            flavor        data
-            calculated    100
-        }
-
-        cdl_option CYGNUM_HAL_RTC_PERIOD {
-            display       "Real-time clock divisor"
-            flavor        data
-            calculated    (CYGHWR_HAL_MN10300_IOCLK_SPEED * CYGNUM_HAL_RTC_NUMERATOR) / (1000000000 * CYGNUM_HAL_RTC_DENOMINATOR)
-        }
-    }
-
     cdl_option CYGHWR_HAL_MN10300_AM33_ASB_DIAG_PORT {
         display          "Diagnostic Serial Port"
         flavor data
@@ -374,19 +332,6 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             This option lists the target's requirements for a valid Redboot
             configuration."
             
-        cdl_component CYGPKG_REDBOOT_HAL_LINUX_EXEC {
-            display       "Provide the exec command in RedBoot"
-            flavor        none
-            no_define
-            parent        CYGPKG_REDBOOT_HAL_OPTIONS
-            active_if     CYGBLD_BUILD_REDBOOT_WITH_EXEC
-            description "
-                This option contains requirements for booting linux
-                from RedBoot. The component is enabled/disabled from
-                RedBoots CDL."
-            compile -library=libextras.a redboot_cmds.c
-        }
-
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
             active_if     CYGBLD_BUILD_REDBOOT

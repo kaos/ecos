@@ -105,76 +105,17 @@
 
 #define SIO_INT_ENABLE  0x11
 
-// These values are calculated based on the MN103E010 LSI Manual
-#define PRESCALAR_BASE_1200          198
-#define PRESCALAR_BASE_2400          198
-#define PRESCALAR_BASE_4800          198
-#define PRESCALAR_BASE_9600          198
-#define PRESCALAR_BASE_96002         198
-#define PRESCALAR_BASE_14400         66
-#define PRESCALAR_BASE_19200         0
-#define PRESCALAR_BASE_38400         0
-#define PRESCALAR_BASE_56000         0
-#define PRESCALAR_BASE_57600         0
-#define PRESCALAR_BASE_115200        0
-#define PRESCALAR_BASE_230400        0
-
-#define TIMER_BASE_1200              15
-#define TIMER_BASE_2400              7
-#define TIMER_BASE_4800              3
-#define TIMER_BASE_9600              1
-#define TIMER_BASE_96002             2
-#define TIMER_BASE_14400             3
-#define TIMER_BASE_19200             198
-#define TIMER_BASE_38400             99
-#define TIMER_BASE_56000             68
-#define TIMER_BASE_57600             66
-#define TIMER_BASE_115200            33
-#define TIMER_BASE_230400            16
-
 #define TMR_ENABLE                   0x80
 #define TMR_SRC_IOCLOCK              0x00
 #define TMR_SRC_TMR0_UNDERFLOW       0x04
 
-#define PRESCALAR_MODE_1200          (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define PRESCALAR_MODE_2400          (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define PRESCALAR_MODE_4800          (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define PRESCALAR_MODE_9600          (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define PRESCALAR_MODE_96002         (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define PRESCALAR_MODE_14400         (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define PRESCALAR_MODE_19200         0
-#define PRESCALAR_MODE_38400         0
-#define PRESCALAR_MODE_56000         0
-#define PRESCALAR_MODE_57600         0
-#define PRESCALAR_MODE_115200        0
-#define PRESCALAR_MODE_230400        0
-
-#define TIMER_MODE_1200              (TMR_ENABLE | TMR_SRC_TMR0_UNDERFLOW)
-#define TIMER_MODE_2400              (TMR_ENABLE | TMR_SRC_TMR0_UNDERFLOW)
-#define TIMER_MODE_4800              (TMR_ENABLE | TMR_SRC_TMR0_UNDERFLOW)
-#define TIMER_MODE_9600              (TMR_ENABLE | TMR_SRC_TMR0_UNDERFLOW)
-#define TIMER_MODE_96002             (TMR_ENABLE | TMR_SRC_TMR0_UNDERFLOW)
-#define TIMER_MODE_14400             (TMR_ENABLE | TMR_SRC_TMR0_UNDERFLOW)
-#define TIMER_MODE_19200             (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define TIMER_MODE_38400             (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define TIMER_MODE_56000             (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define TIMER_MODE_57600             (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define TIMER_MODE_115200            (TMR_ENABLE | TMR_SRC_IOCLOCK)
-#define TIMER_MODE_230400            (TMR_ENABLE | TMR_SRC_IOCLOCK)
-
-#define BAUD_CASE(num)                                   \
-    case num:                                            \
-        prescalar_base_value = PRESCALAR_BASE_ ## num;   \
-        prescalar_mode_value = PRESCALAR_MODE_ ## num;   \
-        timer_base_value = TIMER_BASE_ ## num;           \
-        timer_mode_value = TIMER_MODE_ ## num;           \
-        break;
 
 //-----------------------------------------------------------------------------
 typedef struct {
     cyg_uint8* base;
     cyg_int32 msec_timeout;
     int isr_vector;
+    cyg_int32 baud_rate;
 } channel_data_t;
 
 static channel_data_t channels[2] = {
@@ -185,17 +126,27 @@ static channel_data_t channels[2] = {
 //-----------------------------------------------------------------------------
 // Set the baud rate
 
+static cyg_uint32
+baud_divisor(int baud, int prescaler)
+{
+    cyg_uint32 divisor;
+
+    // divisor == INT(IOCLK/baud/8 + 0.5)
+    divisor = CYGHWR_HAL_MN10300_IOCLK_SPEED * 10;
+    divisor /= (baud / 100);
+    divisor /= prescaler;
+    divisor /= 8;
+    divisor += 500;
+    divisor /= 1000;
+    return divisor;
+}
+
 static int
 cyg_hal_plf_serial_set_baud(cyg_uint8* port, cyg_uint32 baud_rate)
 {
-    volatile cyg_uint8 *prescalar_base_reg = 0, prescalar_base_value = 0;
-    volatile cyg_uint8 *prescalar_mode_reg = 0, prescalar_mode_value = 0;
-    volatile cyg_uint8 *timer_base_reg = 0,     timer_base_value = 0;
-    volatile cyg_uint8 *timer_mode_reg = 0,     timer_mode_value = 0;
-
-    // Always use TMR0 as the prescalar
-    prescalar_base_reg = TIMER0_BR;
-    prescalar_mode_reg = TIMER0_MD;
+    volatile cyg_uint8 *timer_base_reg;
+    volatile cyg_uint8 *timer_mode_reg;
+    cyg_uint32 divisor, prescaler;
 
     if (port == (cyg_uint8*)ASB2303_SER0_BASE)
     {
@@ -213,28 +164,41 @@ cyg_hal_plf_serial_set_baud(cyg_uint8* port, cyg_uint32 baud_rate)
 
     switch (baud_rate)
     {
-        BAUD_CASE(1200);
-        BAUD_CASE(2400);
-        BAUD_CASE(4800);
-        BAUD_CASE(9600);
-        BAUD_CASE(96002);
-        BAUD_CASE(14400);
-        BAUD_CASE(19200);
-        BAUD_CASE(38400);
-        BAUD_CASE(56000);
-        BAUD_CASE(57600);
-        BAUD_CASE(115200);
-        BAUD_CASE(230400);
+    case 1200:
+    case 2400:
+    case 4800:
+    case 9600:
+    case 19200:
+    case 38400:
+    case 57600:
+    case 115200:
+    case 230400:
+	break;
 
     default:
         // Unknown baud.  Don't change anything
         return -1;
     }
 
-    HAL_WRITE_UINT8(prescalar_base_reg, prescalar_base_value);
-    HAL_WRITE_UINT8(prescalar_mode_reg, prescalar_mode_value);
-    HAL_WRITE_UINT8(timer_base_reg,     timer_base_value);
-    HAL_WRITE_UINT8(timer_mode_reg,     timer_mode_value);
+    for (prescaler = 1; prescaler <= 256; prescaler++) {
+	divisor = baud_divisor(baud_rate, prescaler);
+	if (divisor <= 256)
+	    break;
+    }
+    --divisor;
+    --prescaler;
+
+    if (prescaler) {
+	HAL_WRITE_UINT8(TIMER0_BR, prescaler);
+	HAL_WRITE_UINT8(TIMER0_MD, TMR_ENABLE | TMR_SRC_IOCLOCK);
+    } else {
+	HAL_WRITE_UINT8(TIMER0_BR, 0);
+	HAL_WRITE_UINT8(TIMER0_MD, 0);
+    }
+
+    HAL_WRITE_UINT8(timer_base_reg, divisor);
+    HAL_WRITE_UINT8(timer_mode_reg, TMR_ENABLE |
+		    (prescaler ? TMR_SRC_TMR0_UNDERFLOW : TMR_SRC_IOCLOCK));
 
     return 0;
 }
@@ -357,7 +321,6 @@ cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     CYGARC_HAL_RESTORE_GP();
 }
 
-#if 0
 cyg_bool
 cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
 {
@@ -385,7 +348,6 @@ cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
     CYGARC_HAL_RESTORE_GP();
     return res;
 }
-#endif
 
 static int
 cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
@@ -525,10 +487,10 @@ cyg_hal_plf_serial_init(void)
 
     // Init channels
     cyg_hal_plf_serial_init_channel((void*)&channels[0]);
-    cyg_hal_plf_serial_set_baud(channels[0].base, CYGHWR_HAL_MN10300_AM33_ASB_DIAG_BAUD);
+    cyg_hal_plf_serial_set_baud(channels[0].base, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
 
     cyg_hal_plf_serial_init_channel((void*)&channels[1]);
-    cyg_hal_plf_serial_set_baud(channels[1].base, CYGHWR_HAL_MN10300_AM33_ASB_GDB_BAUD);
+    cyg_hal_plf_serial_set_baud(channels[1].base, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
     
     // Setup procs in the vector table
 
@@ -542,9 +504,7 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-#if 0
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-#endif
 
     // Set channel 1
     CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
@@ -556,9 +516,7 @@ cyg_hal_plf_serial_init(void)
     CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
     CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
     CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-#if 0
     CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-#endif
 
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);

@@ -59,11 +59,15 @@
 
 #include <cyg/hal/hal_cache.h>
 
+#include <cyg/hal/hal_intr.h>           // HAL_CLOCK_READ
+
 /*------------------------------------------------------------------------*/
 /* Variant specific initialization routine.                               */
 
 void hal_variant_init(void)
 {
+    // Let the timer run at a default rate (for delays)
+    HAL_CLOCK_INITIALIZE(CYGNUM_HAL_RTC_PERIOD);
 }
 
 /*------------------------------------------------------------------------*/
@@ -102,6 +106,41 @@ void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
         HAL_DCACHE_ENABLE();
 }
 #endif
+
+/*------------------------------------------------------------------------*/
+/* Clock functions.                                                       */
+
+cyg_uint32 __hal_period__;
+
+// Delay for some usecs.
+void
+hal_delay_us(cyg_int32 delay)
+{
+#define _TICKS_PER_USEC (CYGHWR_HAL_MN10300_PROCESSOR_OSC/1000000)
+    cyg_uint32 now, prev, diff, usecs;
+
+    diff = usecs = 0;
+    HAL_CLOCK_READ(&prev);
+
+    while (delay > usecs) {
+	HAL_CLOCK_READ(&now);
+
+	if (now < prev)
+	    diff += (now + (__hal_period__ - prev));
+	else
+	    diff += (now - prev);
+
+	prev = now;
+
+	if (diff >= _TICKS_PER_USEC) {
+	    usecs += (diff / _TICKS_PER_USEC);
+	    diff %= _TICKS_PER_USEC;
+	}
+    }
+}
+
+
+
 
 #ifdef CYGPKG_CYGMON
 /*------------------------------------------------------------------------*/

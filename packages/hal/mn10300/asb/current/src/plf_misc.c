@@ -142,6 +142,7 @@ void hal_platform_init(void)
     }
 #endif    
 
+#if 0
     // Make sure the TBR points at the base of ROM
     {
         #define TBR 0xC0000024
@@ -159,6 +160,7 @@ void hal_platform_init(void)
         mTBR_val = (mTBR_val & 0x00FFFFFF) | (CYGMEM_REGION_rom & 0xFF000000);
         HAL_WRITE_UINT32(mTBR, mTBR_val);
     }
+#endif
 }
 
 /*------------------------------------------------------------------------*/

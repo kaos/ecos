@@ -492,6 +492,17 @@ package CYGPKG_DEVS_FLASH_MN10300_STB {
            This package contains hardware support for FLASH memory
 	   on the Matsushita MN10300 STB platform (SRAM2 socket)."
 }
+
+package CYGPKG_DEVS_FLASH_MN10300_ASB2303 {
+	alias 		{ "FLASH memory support for Matsushita ASB2303" flash_asb2303 }
+	directory	devs/flash/mn10300/asb2303
+	script		flash_asb2303.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Matsushita MN10300 ASB2303 platform (system flash socket)."
+}
+
 package CYGPKG_DEVS_FLASH_MN10300_ASB2305 {
 	alias 		{ "FLASH memory support for Matsushita ASB2305" flash_asb2305 }
 	directory	devs/flash/mn10300/asb2305
@@ -3907,6 +3918,8 @@ target asb {
 	packages        { CYGPKG_HAL_MN10300
                           CYGPKG_HAL_MN10300_AM33_ASB
                           CYGPKG_HAL_MN10300_AM33
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_FLASH_MN10300_ASB2303
         }
         description "
            The asb target provides the packages needed to run

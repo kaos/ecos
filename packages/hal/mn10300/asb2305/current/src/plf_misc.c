@@ -172,31 +172,6 @@ void hal_platform_init(void)
 }
 
 /*------------------------------------------------------------------------*/
-/* microsecond resolution delay    */
-void cyg_plf_hal_delay_us(cyg_int32 usecs)
-{
-	cyg_uint8 last, val;
-
-#define TM0MD 0xD4003000
-#define TM0BR 0xD4003010
-#define TM0BC 0xD4003020
-
-	HAL_WRITE_UINT8(TM0BR,25); // IOCLK is 25MHz
-	HAL_WRITE_UINT8(TM0MD,0x40); // stop and load
-	HAL_WRITE_UINT8(TM0MD,0x80); // set source to be IOCLK and go
-
-	HAL_READ_UINT8(TM0BC,last);
-	for (; usecs>0;) {
-		HAL_READ_UINT8(TM0BC,val);
-		if (val==last) continue;
-		if (val>last)
-			usecs--; // count the underflows
-		last = val;
-	}
-	HAL_WRITE_UINT8(TM0MD,0x00); // stop
-}
-
-/*------------------------------------------------------------------------*/
 /* Functions to support the detection and execution of a user provoked    */
 /* program break. These are usually called from interrupt routines.       */
 
