@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov, tdrury
-// Contributors: jskov, nickg
+// Contributors: jskov, nickg,jlarmour
 // Date:         2002-07-08
 // Purpose:      
 // Description:  
@@ -52,13 +52,13 @@
 //==========================================================================
 
 
-// There's a single AT49LV16X4 on the EB55 board.
+// There's a single AT49BV1604A on the EB55 board.
 
-#define CYGPKG_DEVS_FLASH_ATMEL_AT49LV1614
+#define CYGHWR_DEVS_FLASH_ATMEL_AT49BV1604A
 #define CYGNUM_FLASH_INTERLEAVE	(1)
+#define CYGNUM_FLASH_WIDTH      (16)
 #define CYGNUM_FLASH_SERIES	(1)
-// skip plane A of the flash and start with plane B
-#define CYGNUM_FLASH_BASE 	(0x01010000u)
+#define CYGNUM_FLASH_BASE 	(0x01000000u)
 
 #include "cyg/io/flash_at49xxxx.inl"
 
