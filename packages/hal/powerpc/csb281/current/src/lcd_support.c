@@ -100,6 +100,7 @@ lcd_fb(int row, int col)
 void
 lcd_on(bool enable)
 {
+#if 0 // The on/off code is not stable
     static bool on = false;
 
     if (enable) {
@@ -111,6 +112,7 @@ lcd_on(bool enable)
         (*lcd.off)();
         on = false;
     }
+#endif
 }
 
 // Initialize LCD hardware

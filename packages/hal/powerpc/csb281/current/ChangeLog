@@ -1,3 +1,7 @@
+2003-02-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/lcd_support.c (lcd_on): Enable/disable is still not stable.
+
 2003-02-25  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/lcd_support.c (lcd_on): Fix enable/disable code.
