@@ -1,3 +1,8 @@
+2003-09-30  Eric Doenges <Eric.Doengea@DynaPel.com>
+
+	* cdl/memalloc.cdl, src/dlmalloc.cxx: Make the minimum memory
+	alignment a configuration option for Doug Lea's memory allocator.
+
 2003-02-05  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/memjoin.inl: Don't use default arg in definition.

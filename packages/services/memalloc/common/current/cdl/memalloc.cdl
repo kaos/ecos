@@ -184,6 +184,18 @@ cdl_package CYGPKG_MEMALLOC {
                     to use some macro equivalents, which some people report
                     are faster in some circumstances."
            }
+
+           cdl_option CYGNUM_MEMALLOC_ALLOCATOR_DLMALLOC_ALIGNMENT {
+                display       "Minimum alignment of allocated blocks"
+                flavor        data
+                legal_values  3 to 10
+                default_value 3
+                description   "
+                    This option controls the minimum alignment that the
+                    allocated memory blocks are aligned on, specified as
+                    2^N. Note that using large mininum alignments can lead
+                    to excessive memory wastage."
+           }
         }
 
         cdl_component CYGPKG_MEMALLOC_ALLOCATOR_SEPMETA {

@@ -495,6 +495,11 @@ typedef struct Cyg_Mempool_dlmalloc_Implementation::malloc_chunk* mchunkptr;
 /*  sizes, alignments */
 
 #define SIZE_SZ                (sizeof(INTERNAL_SIZE_T))
+
+#ifdef CYGNUM_MEMALLOC_ALLOCATOR_DLMALLOC_ALIGNMENT
+#define MALLOC_ALIGNMENT (1<<(CYGNUM_MEMALLOC_ALLOCATOR_DLMALLOC_ALIGNMENT))
+#endif
+
 #ifndef MALLOC_ALIGNMENT
 #define MALLOC_ALIGN           8
 #define MALLOC_ALIGNMENT       (SIZE_SZ + SIZE_SZ)
