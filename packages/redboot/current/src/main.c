@@ -286,18 +286,15 @@ cyg_start(void)
 #ifdef CYGMEM_SECTION_heap1
     workspace_start = (unsigned char *)CYGMEM_SECTION_heap1;
     workspace_end = (unsigned char *)(CYGMEM_SECTION_heap1+CYGMEM_SECTION_heap1_SIZE);
-    workspace_size = CYGMEM_SECTION_heap1_SIZE;
 #else
     workspace_start = (unsigned char *)CYGMEM_REGION_ram;
     workspace_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
-    workspace_size = CYGMEM_REGION_ram_SIZE;
 #endif
 
     if ( ram_end < workspace_end ) {
         // when *less* SDRAM is installed than the possible maximum,
         // but the heap1 region remains greater...
         workspace_end = ram_end;
-        workspace_size = workspace_end - workspace_start;
     }
 
     // Nothing has ever been loaded into memory
