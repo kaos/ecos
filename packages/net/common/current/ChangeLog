@@ -1,3 +1,9 @@
+2003-10-12  Jay Foster  <jay@systech.com>
+ 
+ 	* cdl/net.cdl: Added configuration interface for
+	CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE and
+	CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL.
+
 2003-10-09  Eric Doenges <Eric.Doenges@DynaPel.com>
 
         * src/tftp_client.c: Changed the code so that if the last packet

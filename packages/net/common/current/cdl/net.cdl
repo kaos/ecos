@@ -246,6 +246,28 @@ cdl_package CYGPKG_NET {
             when necessary, but it does not need to be as high as the
             network thread itself."
         }
+
+        cdl_option CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE {
+            display "Replace DHCP request options"
+            flavor  booldata
+            default_value 0
+            active_if CYGOPT_NET_DHCP_DHCP_THREAD
+            description "
+                This option replaces the default list of requested
+                options in the DHCP/BOOTP request list.  These are a
+                comma separated list of TAG_xxx values."
+        }
+
+        cdl_option CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL {
+            display "Additional DHCP request options"
+            flavor  booldata
+            default_value 0
+            active_if CYGOPT_NET_DHCP_DHCP_THREAD
+            description " 
+                This option adds additional options to the list of
+                requested options in the DHCP/BOOTP request list.
+                These are a comma separated list of TAG_xxx values."
+        }
     }
 
     cdl_component CYGPKG_NET_IPV6_ROUTING {
