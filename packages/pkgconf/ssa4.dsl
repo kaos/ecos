@@ -66,36 +66,45 @@
 ]>
 
 <style-sheet>
-
-<!--
-;; ====================
-;; customize the html stylesheet
-;; ====================
--->
-<style-specification id="html" use="docbook">
+<style-specification id="print" use="docbook">
 <style-specification-body> 
 
-;; .html files please. 
-(define %html-ext% ".html")
+;; ====================
+;; customize the print (PDF) A4 stylesheet
+;; ====================
 
-;; Boring admonitions
+;; Set the paper parameters as per other eCos documentation
+(define %page-width%   210mm)
+(define %page-height%  297mm)
+(define %left-margin%  0.75in)
+(define %right-margin% 0.75in)
+
+;; Assume that we are only producing books, a reasonable assumption
+;; given the primary author :-)
+(define %two-side% #t)
+
+;; Use 12pt
+;;(define %visual-acuity% "presbyopic")
+
+;; Do not use graphics in admonitions, our documentation is supposed
+;; to look boring :-(
 (define %admon-graphics% #f)
 
-;; Nicely decorated program listing (in boxes)
-(define %shade-verbatim% #t)
-(define ($shade-verbatim-attr$)
-  (list
-   (list "BORDER" "5")
-   (list "BGCOLOR" "#E0E0F0")
-   (list "WIDTH" "70%")))
+;; Justified text please.
+(define %default-quadding% 'justify)
 
-;; Use ID attributes as name for component HTML files?
-(define %use-id-as-filename% #t)
+;; A separate page for each man page please.
+(define %refentry-new-page% #t)
+
+;; The component writer's guide man pages do not describe functions
+(define %refentry-functions% #f)
+
+;; Program listings should use smaller font to fit on page width
+(define %verbatim-size-factor% 0.84)
+
 
 </style-specification-body>
 </style-specification>
-
 <external-specification id="docbook" document="docbook.dsl">
-
 </style-sheet>
 

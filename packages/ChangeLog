@@ -1,3 +1,13 @@
+2003-03-23  Iztok Zupet  <iz@vsr.si>
+
+	* pkgconf/rules.doc: Use three stylesheets instead of one.
+	One for HTML the other for PDF-letter and the third one for PDF-A4
+	format. (Stylesheets do not support two printable targets in 
+	same stylesheet). Added copyfiles to PDF targets.
+	* pkgconf/ssletter.dsl: New file.
+	* pkgconf/ssa4.dsl: New file.
+	* pkgconf/stylesheet.dsl: remove print stylesheet.
+
 2003-04-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* ecos.db: Shorten some long target names to stop them overrunning

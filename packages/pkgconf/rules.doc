@@ -77,7 +77,10 @@ else
     endif
   endif
 endif
-ECOS_STYLESHEET  := $(TOPLEVEL)/pkgconf/stylesheet.dsl
+
+A4_STYLESHEET  := $(TOPLEVEL)/pkgconf/ssa4.dsl
+LETTER_STYLESHEET  := $(TOPLEVEL)/pkgconf/ssletter.dsl
+HTML_STYLESHEET  := $(TOPLEVEL)/pkgconf/stylesheet.dsl
 FIXHTML          := $(TOPLEVEL)/pkgconf/fixhtml.tcl
 
 # The files that will be generated:
@@ -88,6 +91,9 @@ ifeq (,$(MAIN_PDF))
  MAIN_PDF         := $(subst .sgml,.pdf,$(MAIN_SGML))
 endif
 
+MAIN_PDFA4        := $(subst .pdf,-a4.pdf,$(MAIN_PDF))
+MAIN_PDFLETTER    := $(subst .pdf,-letter.pdf,$(MAIN_PDF))
+
 # Rules for generating pictures
 GIFS := $(foreach x,$(PICTURES),$(x).gif)
 EPS  := $(foreach x,$(PICTURES),$(x).eps)
@@ -95,6 +101,9 @@ PNGS :=$(foreach x,$(PICTURES),$(x).png)
 
 %.gif: %.fig
 	convert -crop 0x0 $< $@
+
+%.png: %.fig
+	fig2dev -L png $< $@
 
 %.eps: %.fig
 	convert -crop 0x0 $< $@
@@ -118,18 +127,26 @@ check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
 # can be ignored.
 html: copyfiles $(MAIN_HTML)
 
-$(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(ECOS_STYLESHEET) $(FIXHTML)
-	jade -t sgml -i html -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#html $<
+$(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(HTML_STYLESHEET) $(FIXHTML)
+	jade -t sgml -i html -c $(DSSSL_CATALOG) -d $(HTML_STYLESHEET)#html $<
 	tclsh $(FIXHTML)
 
 # PDF files can be generated in a similar fashion.
-pdf: $(MAIN_PDF)
+pdfa4: copyfiles $(MAIN_PDFA4)
 
-$(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(ECOS_STYLESHEET)
-	jade -o $(subst .pdf,.tex,$(MAIN_PDF)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#print $<
-	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDF))
-	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDF))
-	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDF))
+$(MAIN_PDFA4):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(A4_STYLESHEET)
+	jade -o $(subst .pdf,.tex,$(MAIN_PDFA4)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(A4_STYLESHEET)#print $<
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFA4))
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFA4))
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFA4))
+
+pdfletter: copyfiles $(MAIN_PDFLETTER)
+
+$(MAIN_PDFLETTER):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(LETTER_STYLESHEET)
+	jade -o $(subst .pdf,.tex,$(MAIN_PDFLETTER)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(LETTER_STYLESHEET)#print $<
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFLETTER))
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFLETTER))
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDFLETTER))
 
 #$(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(EPS) $(ECOS_STYLESHEET)
 #	jade -o $(subst .sgml,.tex,$(MAIN_SGML)) -t tex -V tex-backend -d $(ECOS_STYLESHEET)#print $<
@@ -141,5 +158,4 @@ $(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(ECOS_STYLESHEET)
 
 # Clean. For now assume that all .html, .gif etc files are generated
 clean:
-	rm -rf *.html *.tex *.dvi *.aux *.log *.out *.ps *.pdf *.gif *.eps
-
+	rm -rf *.html *.tex *.dvi *.aux *.log *.out *.ps *.pdf *.gif *.eps *.png
