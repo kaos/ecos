@@ -50,7 +50,7 @@
 cdl_package CYGPKG_HTTPD {
     display       "HTTP Daemon"
     parent        CYGPKG_NET
-#    doc           doc/index.html
+    doc           ref/net-httpd.html
     include_dir   cyg/httpd
     requires      CYGPKG_IO
     requires      { 0 != CYGINT_ISO_STDLIB_STRCONV }
