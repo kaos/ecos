@@ -231,7 +231,7 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
             display "ADDER tests"
             flavor  data
             no_define
-            calculated { "tests/addertime" }
+            default_value { "" }
             description   "
                 This option specifies the set of tests for the ADDER HAL."
         }
