@@ -64,7 +64,7 @@ static Cyg_ErrNo tty_lookup(struct cyg_devtab_entry **tab,
                                const char *name);
 static Cyg_ErrNo tty_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len);
 static Cyg_ErrNo tty_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len);
-static Cyg_ErrNo tty_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
+static cyg_bool  tty_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
 static Cyg_ErrNo tty_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *buf, cyg_uint32 *len);
 static Cyg_ErrNo tty_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *buf, cyg_uint32 *len);
 

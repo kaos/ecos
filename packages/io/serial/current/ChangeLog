@@ -1,3 +1,9 @@
+2003-09-02  Eric Doenges <Eric.Doenges@DynaPel.com>
+
+	* src/common/tty.c: Make tty_select prototype match implementation.
+	* src/common/termiostty.c: Make termios_select prototype match 
+	implementation.
+
 2003-09-02  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/serial.c: Make serial_select prototype match

@@ -90,7 +90,7 @@ static Cyg_ErrNo
 termios_write(cyg_io_handle_t handle, const void *buf, cyg_uint32 *len);
 static Cyg_ErrNo
 termios_read(cyg_io_handle_t handle, void *buf, cyg_uint32 *len);
-static Cyg_ErrNo
+static cyg_bool
 termios_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info);
 static Cyg_ErrNo 
 termios_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *buf,
