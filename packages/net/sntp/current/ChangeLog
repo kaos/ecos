@@ -1,3 +1,9 @@
+2003-09-29  Dan Jakubiec  <firstname.lastname@systech.com>
+
+	* src/sntp.c: Added support for SNTP unicast mode.
+	* src/sntp.h: Added support for SNTP unicast mode.
+	* src/sntp.cdl: Added support for SNTP unicast mode.
+
 2003-05-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sntp.c: Added support for IPv6 multicast NTP packets.

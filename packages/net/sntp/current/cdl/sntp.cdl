@@ -67,6 +67,17 @@ cdl_package CYGPKG_NET_SNTP {
         flavor  none
         no_define
 
+        cdl_option CYGPKG_NET_SNTP_UNICAST {
+            display "Enable SNTP client unicast support"
+            flavor  bool
+            default_value 0
+            description   "
+                This option enables SNTP unicast mode in
+                for the SNTP client.  This mode will send
+                SNTP requests to NTP/SNTP servers in
+                addition to listening for SNTP broadcasts."
+        }
+
         cdl_option CYGPKG_NET_SNTP_CFLAGS_ADD {
             display "Additional compiler flags"
             flavor  data

@@ -50,7 +50,11 @@
 //
 //=============================================================================
 
+#include <pkgconf/net_sntp.h>
 #include <cyg/infra/cyg_type.h>
+
+/* General Definitions */
+#define NTP_UDP_PORT            123
 
 // Multicast address used by IPv6
 #define IN6ADDR_NTP_MULTICAST \
@@ -60,5 +64,9 @@
 /* Call this function to start the SNTP Client */
 __externC void 
 cyg_sntp_start(void);
+
+#ifdef CYGPKG_NET_SNTP_UNICAST
+__externC void cyg_sntp_set_servers(struct sockaddr *server_list, cyg_uint32 num_servers);
+#endif
 
 #endif
