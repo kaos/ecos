@@ -1,3 +1,16 @@
+2003-05-11  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/monitor.c (cyg_monitor_network): Added IPv6 information to
+	the display of network information.
+	* tests/httpd1.c: New file: Simple program to actually run the 
+	server so we can test it.
+	* cdl/httpd.cdl: Added the test program.
+
+2003-05-10  Andrew Lunn   <andrew.lunn@ascom,ch>
+
+	* src/httpd.c: Added support for serving content over IPv6,
+	* doc/httpd.sgml: Added comment about IPv6.
+
 2003-04-23  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
 	* cdl/httpd.cdl: Only build monitor in CDL option.

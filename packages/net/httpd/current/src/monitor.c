@@ -10,6 +10,7 @@
  * This file is part of eCos, the Embedded Configurable Operating
  * System.
  * Copyright (C) 2002 Nick Garnett.
+ * Copyright (C) 2003 Andrew Lunn
  * 
  * eCos is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -43,7 +44,7 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    nickg@calivar.com
- *  Contributors: nickg@calivar.com
+ *  Contributors: nickg@calivar.com, andrew.lunn@ascom.ch
  *  Date:         2002-10-14
  *  Purpose:      
  *  Description:  
@@ -87,10 +88,11 @@
 #include <sys/ioctl.h>
 #include <sys/errno.h>
 #include <sys/time.h>
-
+#include <netdb.h>
 #define _KERNEL
 
 #include <net/if.h>
+#include <ifaddrs.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
@@ -106,6 +108,14 @@
 #include <netinet/icmp_var.h>
 #include <netinet/udp_var.h>
 #include <netinet/tcp_var.h>
+#ifdef CYGPKG_NET_INET6
+#include <netinet/ip6.h>
+#include <net/if_var.h>
+#include <netinet6/ip6_var.h>
+#include <netinet6/in6_var.h>
+#include <netinet/icmp6.h>
+#endif
+
 
 #include <sys/mbuf.h>
 
@@ -677,24 +687,9 @@ CYG_HTTPD_TABLE_ENTRY( cyg_monitor_memory_entry,
 static cyg_bool cyg_monitor_network( FILE * client, char *filename,
                                      char *formdata, void *arg )
 {
-    struct ifconf ifconf;
-    char conf[256];
-    int err;
-    int sock;
+    struct ifaddrs *iflist, *ifp;
 
-    /* Start by opening a socket and getting a list of all the
-     * interfaces present.
-     */
-    {
-        memset( conf, 0, sizeof(conf) );
-    
-        sock = socket( AF_INET, SOCK_DGRAM, 0 );
-    
-        ifconf.ifc_len = sizeof(conf);
-        ifconf.ifc_buf = (caddr_t)conf;
-
-        err = ioctl( sock, SIOCGIFCONF, &ifconf );
-    }
+    getifaddrs(&iflist);
     
     html_begin(client);
 
@@ -708,116 +703,71 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
 
         html_table_begin( client, "border" );
         {
+            char addr[64];
             int i;
-            struct ifreq *ifrp;
-            struct sockaddr *sa;
-            
+            ifp = iflist;
+
             html_table_header( client, "Interface", "" );
             html_table_header( client, "Status", "" );
 
-            ifrp = ifconf.ifc_req;
-            
-            while( ifconf.ifc_len && ifrp->ifr_name[0] )
+            while( ifp != (struct ifaddrs *)NULL) 
             {
-                struct ifreq ifreq = *ifrp;
-
-                /* For some reason we get two entries for each
-                 * interface in the list: one with an AF_INET address
-                 * and one with an AF_LINK address. We are currently
-                 * only interested in the AF_INET ones.
-                 */
-                
-                if( ifrp->ifr_addr.sa_family == AF_INET )
+                if (ifp->ifa_addr->sa_family != AF_LINK) 
                 {
-                
-                    html_table_row_begin(client, "" );
-                    {
+                  
+                  html_table_row_begin(client, "" );
+                  {
                         html_table_data_begin( client, "" );
-                        fprintf( client, "%s", ifrp->ifr_name);
+                        fprintf( client, "%s", ifp->ifa_name);
 
                         html_table_data_begin( client, "" );                        
                         html_table_begin( client, "" );
                         {
-                            struct ether_drv_stats ethstats;
-
                             /* Get the interface's flags and display
                              * the interesting ones.
                              */
                             
-                            if( ioctl( sock, SIOCGIFFLAGS, &ifreq ) >= 0 )
-                            {
-                                html_table_row_begin(client, "" );
-                                fprintf( client, "<td>Flags<td>\n" );
-                                for( i = 0; i < 16; i++ )
-                                {
-                                    switch( ifreq.ifr_flags & (1<<i) )
-                                    {
-                                    default: break;
-                                    case IFF_UP: fputs( " UP", client ); break;
-                                    case IFF_BROADCAST: fputs( " BROADCAST", client ); break;
-                                    case IFF_DEBUG: fputs( " DEBUG", client ); break;
-                                    case IFF_LOOPBACK: fputs( " LOOPBACK", client ); break;
-                                    case IFF_PROMISC: fputs( " PROMISCUOUS", client ); break;
-                                    case IFF_RUNNING: fputs( " RUNNING", client ); break;
-                                    case IFF_SIMPLEX: fputs( " SIMPLEX", client ); break;
-                                    case IFF_MULTICAST: fputs( " MULTICAST", client ); break;
-                                    }
-                                }
-                                html_table_row_end( client );                
-                            }
-
-                            /* Get the interface's address and display it. */
-                            if( ioctl( sock, SIOCGIFADDR, &ifreq ) >= 0 )
-                            {
-                                struct sockaddr_in *inaddr =
-                                    (struct sockaddr_in *)&ifreq.ifr_addr;
-
-                                html_table_row_begin(client, "" );
-                                fprintf( client, "<td>Address<td>%s\n",
-                                         inet_ntoa(inaddr->sin_addr));
-                                html_table_row_end( client );
-                            }
-
-                            /* If there's a netmask, show that. */
-                            if( ioctl( sock, SIOCGIFNETMASK, &ifreq ) >= 0 )
-                            {
-                                struct sockaddr_in *inaddr =
-                                    (struct sockaddr_in *)&ifreq.ifr_addr;
-
-                                html_table_row_begin(client, "" );
-                                fprintf( client, "<td>Mask<td>%s\n",
-                                         inet_ntoa(inaddr->sin_addr));
-                                html_table_row_end( client );
-                            }
-
-                            /* If there's a broadcast address, show that. */
-                            if( ioctl( sock, SIOCGIFBRDADDR, &ifreq ) >= 0 )
-                            {
-                                struct sockaddr_in *inaddr =
-                                    (struct sockaddr_in *)&ifreq.ifr_broadaddr;
-
-                                html_table_row_begin(client, "" );
-                                fprintf( client, "<td>Broadcast Address<td>%s\n",
-                                         inet_ntoa(inaddr->sin_addr));
-                                html_table_row_end( client );
-                            }
-
-                            /* If the ethernet driver collects
-                             * statistics, fetch those and show some
-                             * of them.
-                             */
+                            html_table_row_begin(client, "" );
+                            fprintf( client, "<td>Flags<td>\n" );
+                            for( i = 0; i < 16; i++ )
+                              {
+                                switch( ifp->ifa_flags & (1<<i) )
+                                  {
+                                  default: break;
+                                  case IFF_UP: fputs( " UP", client ); break;
+                                  case IFF_BROADCAST: fputs( " BROADCAST", client ); break;
+                                  case IFF_DEBUG: fputs( " DEBUG", client ); break;
+                                  case IFF_LOOPBACK: fputs( " LOOPBACK", client ); break;
+                                  case IFF_PROMISC: fputs( " PROMISCUOUS", client ); break;
+                                  case IFF_RUNNING: fputs( " RUNNING", client ); break;
+                                  case IFF_SIMPLEX: fputs( " SIMPLEX", client ); break;
+                                  case IFF_MULTICAST: fputs( " MULTICAST", client ); break;
+                                  }
+                              }
+                            html_table_row_end( client );                
                             
-                            ethstats.ifreq = ifreq;
-                            if( ioctl( sock, SIOCGIFSTATS, &ethstats ) >= 0 )
+                            html_table_row_begin(client, "" );
+                            getnameinfo(ifp->ifa_addr, sizeof(*ifp->ifa_addr),
+                                        addr, sizeof(addr), NULL, 0, NI_NUMERICHOST);
+                            fprintf( client, "<td>Address<td>%s\n", addr);
+                            html_table_row_end( client );
+                            
+                            if (ifp->ifa_netmask) 
                             {
-                                fprintf( client, "<tr><td>Hardware<td>%s</tr>\n",
-                                         ethstats.description );
-                                fprintf( client, "<tr><td>Packets Received<td>%d</tr>\n",
-                                         ethstats.rx_count );
-                                fprintf( client, "<tr><td>Packets Sent<td>%d</tr>\n",
-                                         ethstats.tx_count );
-                                fprintf( client, "<tr><td>Interrupts<td>%d</tr>\n",
-                                         ethstats.interrupts );
+                              html_table_row_begin(client, "" );
+                              getnameinfo(ifp->ifa_netmask, sizeof(*ifp->ifa_netmask),
+                                          addr, sizeof(addr), NULL, 0, NI_NUMERICHOST);
+                              fprintf( client, "<td>Mask<td>%s\n", addr); 
+                              html_table_row_end( client );
+                            }
+
+                            if (ifp->ifa_broadaddr) 
+                            {
+                              html_table_row_begin(client, "" );
+                              getnameinfo(ifp->ifa_broadaddr, sizeof(*ifp->ifa_broadaddr),
+                                          addr, sizeof(addr), NULL, 0, NI_NUMERICHOST);
+                              fprintf( client, "<td>Broadcast<td>%s\n", addr); 
+                              html_table_row_end( client );
                             }
                         }
                         html_table_end( client );   
@@ -825,22 +775,7 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
                     html_table_row_end( client );
 
                 }
-
-                /* Scan the addresses, even if we are not interested
-                 * in this interface, since we must skip to the next.
-                 */
-                do
-                {
-                    sa = &ifrp->ifr_addr;
-                    if (sa->sa_len <= sizeof(*sa)) {
-                        ifrp++;
-                    } else {
-                        ifrp=(struct ifreq *)(sa->sa_len + (char *)sa);
-                        ifconf.ifc_len -= sa->sa_len - sizeof(*sa);
-                    }
-                    ifconf.ifc_len -= sizeof(*ifrp);
-
-                } while (!ifrp->ifr_name[0] && ifconf.ifc_len);
+                ifp = ifp->ifa_next;
             }
         }
         html_table_end( client );
@@ -857,8 +792,14 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
         html_para_begin( client, "" );
         html_table_begin( client, "border");
         {
-            html_table_header( client, "IP", "" );
-            html_table_header( client, "ICMP", "" );
+            html_table_header( client, "IPv4", "" );
+#ifdef CYGPKG_NET_INET6
+            html_table_header( client, "IPv6", "" );
+#endif            
+            html_table_header( client, "ICMPv4", "" );
+#ifdef CYGPKG_NET_INET6
+            html_table_header( client, "ICMPv6", "" );
+#endif            
             html_table_header( client, "UDP", "" );
             html_table_header( client, "TCP", "" );
 
@@ -892,10 +833,35 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
                              ipstat.ips_rawout );
                     fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Fragmented",
                              ipstat.ips_fragmented );
-                    
                 }
                 html_table_end( client );
+#ifdef CYGPKG_NET_INET6
+                html_table_data_begin( client, "valign=\"top\"" );                        
+                html_table_begin( client, "" );
+                {
 
+                    fprintf( client, "<tr><td><b>%s:</b><td></tr>\n", "Received" );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Total",
+                             ip6stat.ip6s_total );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Bad",
+                             ip6stat.ip6s_tooshort+
+                             ip6stat.ip6s_toosmall
+                        );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Reassembled",
+                             ip6stat.ip6s_reassembled );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Delivered",
+                             ip6stat.ip6s_delivered );
+
+                    fprintf( client, "<tr><td><b>%s:</b><td></tr>\n", "Sent" );                    
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Total",
+                             ip6stat.ip6s_localout );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Raw",
+                             ip6stat.ip6s_rawout );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Fragmented",
+                             ip6stat.ip6s_fragmented );
+                }
+                html_table_end( client );
+#endif
                 html_table_data_begin( client, "valign=\"top\"" );                        
                 html_table_begin( client, "" );
                 {
@@ -955,6 +921,65 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
                 }
                 html_table_end( client );
 
+#ifdef CYGPKG_NET_INET6
+                html_table_data_begin( client, "valign=\"top\"" );                        
+                html_table_begin( client, "" );
+                {
+
+                    fprintf( client, "<tr><td><b>%s:</b><td></tr>\n", "Received" );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "ECHO",
+                             icmp6stat.icp6s_inhist[ICMP_ECHO] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "ECHO REPLY",
+                             icmp6stat.icp6s_inhist[ICMP_ECHOREPLY] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "UNREACH",
+                             icmp6stat.icp6s_inhist[ICMP_UNREACH] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "REDIRECT",
+                             icmp6stat.icp6s_inhist[ICMP_REDIRECT] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Other",
+                             icmp6stat.icp6s_inhist[ICMP_SOURCEQUENCH]+
+                             icmp6stat.icp6s_inhist[ICMP_ROUTERADVERT]+
+                             icmp6stat.icp6s_inhist[ICMP_ROUTERSOLICIT]+
+                             icmp6stat.icp6s_inhist[ICMP_TIMXCEED]+
+                             icmp6stat.icp6s_inhist[ICMP_PARAMPROB]+
+                             icmp6stat.icp6s_inhist[ICMP_TSTAMP]+
+                             icmp6stat.icp6s_inhist[ICMP_TSTAMPREPLY]+
+                             icmp6stat.icp6s_inhist[ICMP_IREQ]+
+                             icmp6stat.icp6s_inhist[ICMP_IREQREPLY]+
+                             icmp6stat.icp6s_inhist[ICMP_MASKREQ]+
+                             icmp6stat.icp6s_inhist[ICMP_MASKREPLY]
+                        );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Bad",
+                             icmp6stat.icp6s_badcode+
+                             icmp6stat.icp6s_tooshort+
+                             icmp6stat.icp6s_checksum+
+                             icmp6stat.icp6s_badlen
+                        );
+
+                    fprintf( client, "<tr><td><b>%s:</b><td></tr>\n", "Sent" );                    
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "ECHO",
+                             icmp6stat.icp6s_outhist[ICMP_ECHO] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "ECHO REPLY",
+                             icmp6stat.icp6s_outhist[ICMP_ECHOREPLY] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "UNREACH",
+                             icmp6stat.icp6s_outhist[ICMP_UNREACH] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "REDIRECT",
+                             icmp6stat.icp6s_outhist[ICMP_REDIRECT] );
+                    fprintf( client, "<tr><td>%s<td>%lld</tr>\n", "Other",
+                             icmp6stat.icp6s_inhist[ICMP_SOURCEQUENCH]+                             
+                             icmp6stat.icp6s_outhist[ICMP_ROUTERADVERT]+
+                             icmp6stat.icp6s_outhist[ICMP_ROUTERSOLICIT]+
+                             icmp6stat.icp6s_outhist[ICMP_TIMXCEED]+
+                             icmp6stat.icp6s_outhist[ICMP_PARAMPROB]+
+                             icmp6stat.icp6s_outhist[ICMP_TSTAMP]+
+                             icmp6stat.icp6s_outhist[ICMP_TSTAMPREPLY]+
+                             icmp6stat.icp6s_outhist[ICMP_IREQ]+
+                             icmp6stat.icp6s_outhist[ICMP_IREQREPLY]+
+                             icmp6stat.icp6s_outhist[ICMP_MASKREQ]+
+                             icmp6stat.icp6s_outhist[ICMP_MASKREPLY]
+                        );
+                }
+                html_table_end( client );
+#endif
                 html_table_data_begin( client, "valign=\"top\"" );                        
                 html_table_begin( client, "" );
                 {
@@ -1106,9 +1131,8 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
     html_body_end(client);
 
     html_end(client);
-
-    close( sock );
     
+    freeifaddrs(iflist);
     return 1;
     
 }

@@ -10,6 +10,7 @@
  * This file is part of eCos, the Embedded Configurable Operating
  * System.
  * Copyright (C) 2002 Nick Garnett.
+ * Copyright (C) 2003 Andrew Lunn.
  * 
  * eCos is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by
@@ -43,7 +44,7 @@
  * #####DESCRIPTIONBEGIN####
  * 
  *  Author(s):    nickg@calivar.com
- *  Contributors: nickg@calivar.com
+ *  Contributors: nickg@calivar.com, Andrew.lunn@ascom.ch
  *  Date:         2002-10-14
  *  Purpose:      
  *  Description:  
@@ -87,6 +88,10 @@
 static struct sockaddr_in server_address;
 
 static int server_socket = -1;
+#ifdef CYGPKG_NET_INET6
+static int server_socket6 = -1;
+static struct sockaddr_in6 server_address6;
+#endif
 
 /* ================================================================= */
 /* Thread stacks, etc.
@@ -143,12 +148,117 @@ static cyg_bool match( char *name, char *pattern )
     return false;
 }
 
+
+/* ================================================================= */
+/* Main processing function                                          */
+/*                                                                   */
+/* Reads the HTTP header, look it up in the table and calls the      */
+/* handler.                                                          */
+static void cyg_httpd_process( int client_socket, struct sockaddr *client_address ) {
+  
+  int calen = sizeof(*client_address);
+  int nlc = 0;
+  char request[CYGNUM_HTTPD_SERVER_BUFFER_SIZE];
+  FILE *client;
+  cyg_httpd_table_entry *entry = cyg_httpd_table;
+  char *filename;
+  char *formdata = NULL;
+  char *p;
+  cyg_bool success = false;
+  char name[64];
+  char port[10];
+
+  getnameinfo(client_address, calen, name, sizeof(name), 
+              port, sizeof(port), NI_NUMERICHOST|NI_NUMERICSERV);
+  HTTPD_DIAG("Connection from %s[%s]\n",name,port);
+  
+  /* Convert the file descriptor to a C library FILE object so
+   * we can use fprintf() and friends on it.
+   */
+  client = fdopen( client_socket, "r+");
+  
+  /* We are really only interested in the first line.
+   */
+  fgets( request, sizeof(request), client );
+  
+  HTTPD_DIAG("Request >%s<\n", request );
+  
+  /* Absorb the rest of the header. We nibble it away a
+   * character at a time like this to avoid having to define
+   * another buffer to read lines into. If we ever need to take
+   * more interest in the header fields, we will need to be a
+   * lot more sophisticated than this.
+   */
+  do{
+    int c = getc( client );
+    HTTPD_DIAG("%c",c);
+    if( c == '\n' )
+      nlc++;
+    else if( c != '\r' )
+      nlc = 0;
+  } while(nlc < 2);
+  
+  /* Extract the filename and any form data being returned.
+   * We know that the "GET " request takes 4 bytes.
+   * TODO: handle POST type requests as well as GET's.
+   */
+  
+  filename = p = request+4;
+  
+  /* Now scan the filename until we hit a space or a '?'. If we
+   * end on a '?' then the rest is a form request. Put NULs at
+   * the end of each string.
+   */
+  while( *p != ' ' && *p != '?' )
+    p++;
+  if( *p == '?' )
+    formdata = p+1;
+  *p = 0;
+  
+  if( formdata != NULL )
+    {
+      while( *p != ' ' )
+        p++;
+      *p = 0;
+    }
+  
+  HTTPD_DIAG("Request filename >%s< formdata >%s<\n",filename,formdata?formdata:"-NULL-");
+  
+  HTTPD_DIAG("table: %08x...%08x\n",cyg_httpd_table, cyg_httpd_table_end);
+  
+  /* Now scan the table for a matching entry. If we find one
+   * call the handler routine. If that returns true then we
+   * terminate the scan, otherwise we keep looking.
+   */
+  while( entry != cyg_httpd_table_end )
+    {
+      HTTPD_DIAG("try %08x: %s\n", entry, entry->pattern);
+      
+      if( match( filename, entry->pattern ) )
+        {
+          if( (success = entry->handler( client, filename, formdata, entry->arg )) )
+            break;
+        }
+      
+      entry++;
+    }
+  
+  /* If we failed to find a match in the table, send a "not
+   * found" response.
+   * TODO: add an optional fallback to go look for files in
+   * some filesystem, somewhere.
+   */
+  if( !success )
+    cyg_httpd_send_html( client, NULL, NULL, cyg_httpd_not_found );
+
+  fclose(client);
+}
+
 /* ================================================================= */
 /* Main HTTP server
  *
- * This just loops, collects client connections, reads the HTTP
- * header, look it up in the table and calls the handler.
- */
+ * This just loops, collects client connections, and calls the main
+ * process function on the connects*/
 
 static void cyg_httpd_server( cyg_addrword_t arg )
 {
@@ -156,108 +266,36 @@ static void cyg_httpd_server( cyg_addrword_t arg )
     {
         int err;
         int client_socket;
-        struct sockaddr_in client_address;
-        int calen;
-        int nlc = 0;
-        char request[CYGNUM_HTTPD_SERVER_BUFFER_SIZE];
-        FILE *client;
-        cyg_httpd_table_entry *entry = cyg_httpd_table;
-        char *filename;
-        char *formdata = NULL;
-        char *p;
-        cyg_bool success = false;
+        struct sockaddr client_address;
+        int calen = sizeof(client_address);
+        fd_set readfds;
+        int n;
 
         /* Wait for a connection.
          */
-        client_socket = accept( server_socket, (struct sockaddr *)&client_address, &calen );
-        
-        HTTPD_DIAG("Connection from %08x[%d]\n",client_address.sin_addr.s_addr,
-                   client_address.sin_port);
-
-        /* Convert the file descriptor to a C library FILE object so
-         * we can use fprintf() and friends on it.
-         */
-        client = fdopen( client_socket, "r+");
-
-        /* We are really only interested in the first line.
-         */
-        fgets( request, sizeof(request), client );
-
-        HTTPD_DIAG("Request >%s<\n", request );
-        
-        /* Absorb the rest of the header. We nibble it away a
-         * character at a time like this to avoid having to define
-         * another buffer to read lines into. If we ever need to take
-         * more interest in the header fields, we will need to be a
-         * lot more sophisticated than this.
-         */
-        do{
-            int c = getc( client );
-            HTTPD_DIAG("%c",c);
-            if( c == '\n' )
-                nlc++;
-            else if( c != '\r' )
-                nlc = 0;
-        } while(nlc < 2);
-
-        /* Extract the filename and any form data being returned.
-         * We know that the "GET " request takes 4 bytes.
-         * TODO: handle POST type requests as well as GET's.
-         */
-
-        filename = p = request+4;
-
-        /* Now scan the filename until we hit a space or a '?'. If we
-         * end on a '?' then the rest is a form request. Put NULs at
-         * the end of each string.
-         */
-        while( *p != ' ' && *p != '?' )
-            p++;
-        if( *p == '?' )
-            formdata = p+1;
-        *p = 0;
-
-        if( formdata != NULL )
-        {
-            while( *p != ' ' )
-                p++;
-            *p = 0;
+        FD_ZERO(&readfds);
+        FD_SET(server_socket, &readfds);
+#ifdef CYGPKG_NET_INET6
+        FD_SET(server_socket6, &readfds);
+        n = (server_socket > server_socket6 ? server_socket : server_socket6) + 1;
+#else
+        n = server_socket + 1;
+#endif
+        select(n,&readfds,NULL,NULL,NULL);
+        if (FD_ISSET(server_socket, &readfds)) {
+          client_socket = accept( server_socket, &client_address, &calen );
+          cyg_httpd_process(client_socket, &client_address);
+          err = close( client_socket );
+          CYG_ASSERT( err == 0, "fclose() returned error");        
         }
-
-        HTTPD_DIAG("Request filename >%s< formdata >%s<\n",filename,formdata?formdata:"-NULL-");
-
-        HTTPD_DIAG("table: %08x...%08x\n",cyg_httpd_table, cyg_httpd_table_end);
-
-        /* Now scan the table for a matching entry. If we find one
-         * call the handler routine. If that returns true then we
-         * terminate the scan, otherwise we keep looking.
-         */
-        while( entry != cyg_httpd_table_end )
-        {
-            HTTPD_DIAG("try %08x: %s\n", entry, entry->pattern);
-            
-            if( match( filename, entry->pattern ) )
-            {
-                if( (success = entry->handler( client, filename, formdata, entry->arg )) )
-                    break;
-            }
-
-            entry++;
+#ifdef CYGPKG_NET_INET6
+        if (FD_ISSET(server_socket6, &readfds)) {
+          client_socket = accept( server_socket6, &client_address, &calen );
+          cyg_httpd_process(client_socket, &client_address);
+          err = close( client_socket );
+          CYG_ASSERT( err == 0, "fclose(AF_INET6) returned error");        
         }
-
-        /* If we failed to find a match in the table, send a "not
-         * found" response.
-         * TODO: add an optional fallback to go look for files in
-         * some filesystem, somewhere.
-         */
-        if( !success )
-            cyg_httpd_send_html( client, NULL, NULL, cyg_httpd_not_found );
-
-        /* All done, close the connection
-         */
-        err = fclose( client );
-        CYG_ASSERT( err == 0, "fclose() returned error");        
-        
+#endif            
     } while(1);
 }
 
@@ -288,7 +326,12 @@ static void cyg_httpd_init(cyg_addrword_t arg)
     server_address.sin_len = sizeof(server_address);
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(CYGNUM_HTTPD_SERVER_PORT);
-
+#ifdef CYGPKG_NET_INET6
+    server_address6.sin6_family = AF_INET6;
+    server_address6.sin6_len = sizeof(server_address6);
+    server_address6.sin6_addr = in6addr_any;
+    server_address6.sin6_port = htons(CYGNUM_HTTPD_SERVER_PORT);
+#endif 
     /* Get the network going. This is benign if the application has
      * already done this.
      */
@@ -305,7 +348,17 @@ static void cyg_httpd_init(cyg_addrword_t arg)
 
     err = listen( server_socket, SOMAXCONN );
     CYG_ASSERT( err == 0, "listen() returned error" );
+#ifdef CYGPKG_NET_INET6
+    server_socket6 = socket( AF_INET6, SOCK_STREAM, IPPROTO_TCP );
+    CYG_ASSERT( server_socket6 > 0, "Socket AF_INET6 create failed");
 
+    err = bind( server_socket6, (struct sockaddr *)&server_address6,
+                sizeof(server_address6) );
+    CYG_ASSERT( err == 0, "bind(AF_INET6) returned error");
+
+    err = listen( server_socket6, SOMAXCONN );
+    CYG_ASSERT( err == 0, "listen(AF_INET6) returned error" );
+#endif
     /* If we are configured to have more than one server thread,
      * create them now.
      */
@@ -428,7 +481,7 @@ __externC void cyg_formdata_parse( char *data, char *list[], int size )
 
     list[i] = p;
     
-    while( *p != 0 && i < size-1 )
+    while( p && *p != 0 && i < size-1 )
     {
         if( *p == '&' )
         {

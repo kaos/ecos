@@ -40,7 +40,7 @@
 #
 # Author(s):      nickg
 # Original data:  nickg
-# Contributors:   
+# Contributors:   andrew Lunn
 # Date:           2002-10-15
 #
 #####DESCRIPTIONEND####
@@ -150,6 +150,17 @@ cdl_package CYGPKG_HTTPD {
         compile -library=libextras.a monitor.c        
     }
     
+    cdl_component CYGPKG_HTTPD_TESTS {
+        display "HTTPD tests"
+        flavor  data
+        no_define
+        calculated { 
+	    "tests/httpd1"
+        }
+        description   "
+                This option causes the building of a simple test server."
+    }
+
     cdl_component CYGPKG_HTTPD_OPTIONS {
         display "HTTP server build options"
         flavor  none
