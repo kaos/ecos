@@ -44,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    dmoseley
-// Contributors: dmoseley
+// Contributors: dmoseley, michael anburaj <michaelanburaj@hotmail.com>
 // Date:         2000-06-06
 // Purpose:      Atlas platform IO support
 // Description: 
@@ -56,6 +56,8 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_misc.h>
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/plf_intr.h>
 
 #ifdef __ASSEMBLER__
 #define HAL_REG(x)              x
@@ -453,7 +455,30 @@ externC void cyg_hal_plf_pci_init(void);
 // INTC# or INTD#) to the associated CPU interrupt (i.e., HAL vector).
 #define HAL_PCI_TRANSLATE_INTERRUPT( __bus, __devfn, __vec, __valid)          \
     CYG_MACRO_START                                                           \
-    __valid = false;                                                          \
+    cyg_uint8 __req;                                                          \
+    HAL_PCI_CFG_READ_UINT8(__bus, __devfn, CYG_PCI_CFG_INT_PIN, __req);       \
+    if (0 != __req) {                                                         \
+        CYG_ADDRWORD __translation[4] = {                                     \
+            CYGNUM_HAL_INTERRUPT_INTA,                                        \
+            CYGNUM_HAL_INTERRUPT_INTB,                                        \
+            CYGNUM_HAL_INTERRUPT_INTC,                                        \
+            CYGNUM_HAL_INTERRUPT_INTD};                                       \
+                                                                              \
+        /* The PCI #INT lines for different device numbers are wired like this: */     \
+        /*                                                             */     \
+        /* Int. Ctrl.     PCI_A     PCI_B    PCI_C   PCI_D             */     \
+        /* Device no.                                                  */     \
+        /* 0, 4, ..28     INTC#     INTD#    INTA#   INTB#             */     \
+        /* 1, 5, ..29     INTD#     INTA#    INTB#   INTC#             */     \
+        /* 2, 6, ..30     INTA#     INTB#    INTC#   INTD#             */     \
+        /* 3, 7, ..31     INTB#     INTC#    INTD#   INTA#             */     \
+                                                                              \
+        __vec = __translation[(((__req+1)+CYG_PCI_DEV_GET_DEV(__devfn))&3)];  \
+        __valid = true;                                                       \
+    } else {                                                                  \
+        /* Device will not generate interrupt requests. */                    \
+        __valid = false;                                                      \
+    }                                                                         \
     CYG_MACRO_END
 
 

@@ -1,3 +1,9 @@
+2003-09-28  Michael Anburaj <michaelanburaj@hotmail.com>
+
+	* include/plf_io.h: Fixed implementation of
+         HAL_PCI_TRANSLATE_INTERRUPT
+	* include/plf_intr.h: Applied assembly safe fix
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_mips_atlas.cdl:

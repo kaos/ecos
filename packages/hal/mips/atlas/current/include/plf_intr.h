@@ -45,7 +45,7 @@
 //
 // Author(s):    nickg
 // Contributors: nickg, jskov,
-//               gthomas, jlarmour, dmoseley
+//               gthomas, jlarmour, dmoseley, michael anburaj <michaelanburaj@hotmail.com>
 // Date:         2000-06-06
 // Purpose:      Define Interrupt support
 // Description:  The macros defined here provide the HAL APIs for handling
@@ -62,8 +62,7 @@
 
 #include <pkgconf/hal.h>
 
-#include <cyg/infra/cyg_type.h>
-#include <cyg/hal/plf_io.h>
+// First an assembly safe part
 
 //--------------------------------------------------------------------------
 // Interrupt vectors.
@@ -111,6 +110,12 @@
 #define CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED
 
 #endif
+
+
+//--------------------------------------------------------------------------
+#ifndef __ASSEMBLER__
+
+#include <cyg/infra/cyg_type.h>
 
 //--------------------------------------------------------------------------
 // Interrupt controller access.
@@ -232,6 +237,8 @@ extern void hal_atlas_reset( void );
 #define HAL_PLATFORM_RESET_ENTRY 0xbfc00000
 
 #endif // CYGHWR_HAL_RESET_DEFINED
+
+#endif // __ASSEMBLER__
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
