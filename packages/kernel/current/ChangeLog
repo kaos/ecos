@@ -1,3 +1,8 @@
+2004-12-15  Sergei Organov <osv@topconrd.ru>
+
+	* cdl/scheduler.cdl: Correct the description of
+	CYGIMP_KERNEL_SCHED_SORTED_QUEUES
+	
 2004-09-24  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/sched/mlqueue.cxx (enqueue): Fix bug in sorted queue

@@ -156,13 +156,13 @@ cdl_component CYGNUM_KERNEL_SCHED_PRIORITIES {
 
         
     cdl_option CYGIMP_KERNEL_SCHED_SORTED_QUEUES {
-        display       "Dequeue oldest threads first"
+        display       "Dequeue highest priority threads first"
         flavor        bool
         default_value 0
         description   "
             With this option enabled, threads queued in a thread queue
-            will be dequeued in priority order, rather than last in,
-            first out (LIFO). Threads of equal priority are dequeued
+            will be dequeued in priority order, rather than first in,
+            first out (FIFO). Threads of equal priority are dequeued
             oldest first. The only exception is the scheduler run 
             queues where order is less important as each is already
             sorted by priority. Note that this makes the thread queueing
