@@ -302,7 +302,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_sdata(_region_, _vma_, _lma_)                 \
   .sdata _vma_ : _lma_                                        \
     {                                                         \
-      FORCE_OUTPUT; *(.sdata) *(.sdata.*) *(.gnulinkonce.s*)  \
+      FORCE_OUTPUT; *(.sdata) *(.sdata.*) *(.gnu.linkonce.s*) \
     } > _region_
 
 #define SECTION_lit8(_region_, _vma_, _lma_)    \

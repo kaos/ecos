@@ -1,3 +1,8 @@
+2003-04-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_mips32.ld:
+        Fix .gnulinkonce.s -> .gnu.linkonce.s typo.
+
 2003-02-27  Nick Garnett  <nickg@calivar.com>
 
 	* cdl/hal_mips_mips32.cdl: Changed CYGPKG_HAL_MIPS_GDB_REPORT_CP0
