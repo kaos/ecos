@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -91,6 +91,26 @@ struct cf_slot {
 #define CF_CISTPL_CFTABLE_ENTRY 0x1B
 #define CF_CISTPL_MANFID        0x20
 #define CF_CISTPL_FUNCID        0x21
+
+// Configuration register offsets
+#define CF_CONFIG_COR           0x00
+#define CF_CONFIG_CCSR          0x02
+#define CF_CONFIG_PRR           0x04
+#define CF_CONFIG_SCR           0x06
+#define CF_CONFIG_ESR           0x08
+#define CF_CONFIG_IOBASE_0      0x0a
+#define CF_CONFIG_IOBASE_1      0x0c
+#define CF_CONFIG_IOBASE_2      0x0e
+#define CF_CONFIG_IOBASE_3      0x10
+#define CF_CONFIG_IOSIZE        0x12
+
+// Configuration Option Register bits
+#define CF_COR_FUNC_ENA         0x01
+#define CF_COR_ADDR_DECODE      0x02
+#define CF_COR_IREQ_ENA         0x04
+#define CF_COR_LEVEL_REQ        0x40
+#define CF_COR_SOFT_RESET       0x80
+
 
 #define CF_MAX_IO_ADDRS      8
 struct cf_io_space {    
