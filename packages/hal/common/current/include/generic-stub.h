@@ -347,6 +347,13 @@ extern void __install_breakpoint_list (void);
 extern void __clear_breakpoint_list (void);
 extern int __display_breakpoint_list (void (*print_func)(target_register_t));
 
+/* 'Z' packet types */
+#define ZTYPE_SW_BREAKPOINT        0
+#define ZTYPE_HW_BREAKPOINT        1
+#define ZTYPE_HW_WATCHPOINT_WRITE  2
+#define ZTYPE_HW_WATCHPOINT_READ   3
+#define ZTYPE_HW_WATCHPOINT_ACCESS 4
+
 #endif /* ASM */
 
 #ifdef __cplusplus

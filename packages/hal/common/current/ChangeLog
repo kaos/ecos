@@ -1,3 +1,12 @@
+2002-08-29  Mark Salter  <msalter@redhat.com>
+
+	* include/generic-stub.h: Add defines for Z packet types.
+	* src/bplist-dynamic.c: Add support for deferred hardware breakpoint
+	and watchpoint insertion/deletion. This gets around gdb problem where
+	gdb tries accessing watched memory before removing watchpoint.
+	* src/generic-stub.c (__process_packet): Ditto.
+	* include/hal_stub.h: Ditto.
+
 2002-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal.cdl: Don't build tests that are not applicable with the

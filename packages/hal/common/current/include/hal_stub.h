@@ -212,6 +212,18 @@ extern int __set_breakpoint (target_register_t addr, target_register_t len);
 #ifndef __remove_breakpoint
 extern int __remove_breakpoint (target_register_t addr, target_register_t len);
 #endif
+#ifndef __set_hw_breakpoint
+extern int __set_hw_breakpoint (target_register_t addr, target_register_t len);
+#endif
+#ifndef __remove_hw_breakpoint
+extern int __remove_hw_breakpoint (target_register_t addr, target_register_t len);
+#endif
+#ifndef __set_hw_watchpoint
+extern int __set_hw_watchpoint (target_register_t addr, target_register_t len, int ztype);
+#endif
+#ifndef __remove_hw_watchpoint
+extern int __remove_hw_watchpoint (target_register_t addr, target_register_t len, int ztype);
+#endif
 
 /* Install the standard set of trap handlers for the stub. */
 extern void __install_traps (void);

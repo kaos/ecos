@@ -1523,7 +1523,7 @@ __process_packet (char *packet)
 
 		switch (ztype)
 		  {
-		    case 0:
+		    case ZTYPE_SW_BREAKPOINT:
 		      /* sw breakpoint */
 		      if (is_Z)
 			err = __set_breakpoint(addr,length);
@@ -1534,21 +1534,27 @@ __process_packet (char *packet)
 		      else
 			strcpy (__remcomOutBuffer, "E02");
 		      break;
-		    case 1:
-		      /* hw breakpoint */
-#ifdef HAL_STUB_HW_BREAKPOINT
-		      if (!HAL_STUB_HW_BREAKPOINT(is_Z, (void *)addr, length))
+		    case ZTYPE_HW_BREAKPOINT:
+#if defined(HAL_STUB_HW_BREAKPOINT_LIST_SIZE) && (HAL_STUB_HW_BREAKPOINT_LIST_SIZE > 0)
+		      if (is_Z)
+			err = __set_hw_breakpoint(addr, length);
+		      else
+			err = __remove_hw_breakpoint(addr, length);
+		      if (!err)
 			strcpy (__remcomOutBuffer, "OK");
 		      else
 #endif
 			strcpy (__remcomOutBuffer, "E02");
 		      break;
-		    case 2:
-		    case 3:
-		    case 4:
-		      /* hw watchpoint */
-#ifdef HAL_STUB_HW_WATCHPOINT
-		      if (!HAL_STUB_HW_WATCHPOINT(is_Z, (void *)addr, length, ztype))
+		    case ZTYPE_HW_WATCHPOINT_WRITE:
+		    case ZTYPE_HW_WATCHPOINT_READ:
+		    case ZTYPE_HW_WATCHPOINT_ACCESS:
+#if defined(HAL_STUB_HW_WATCHPOINT_LIST_SIZE) && (HAL_STUB_HW_WATCHPOINT_LIST_SIZE > 0)
+		      if (is_Z)
+			err = __set_hw_watchpoint(addr, length, ztype);
+		      else
+			err = __remove_hw_watchpoint(addr, length, ztype);
+		      if (!err)
 			strcpy (__remcomOutBuffer, "OK");
 		      else
 #endif

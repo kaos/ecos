@@ -167,6 +167,176 @@ __remove_breakpoint (target_register_t addr, target_register_t len)
   return 0;
 }
 
+#if defined(HAL_STUB_HW_BREAKPOINT_LIST_SIZE) && (HAL_STUB_HW_BREAKPOINT_LIST_SIZE > 0)
+#ifndef HAL_STUB_HW_BREAKPOINT
+#error "Must define HAL_STUB_HW_BREAKPOINT"
+#endif
+struct hw_breakpoint_list {
+  target_register_t  addr;
+  target_register_t  len;
+  char used;
+  char installed;
+};
+static struct hw_breakpoint_list hw_bp_list [HAL_STUB_HW_BREAKPOINT_LIST_SIZE];
+
+int
+__set_hw_breakpoint (target_register_t addr, target_register_t len)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_BREAKPOINT_LIST_SIZE; i++)
+    {
+      if (hw_bp_list[i].used == 0)
+	{
+	  hw_bp_list[i].addr = addr;
+	  hw_bp_list[i].len = len;
+	  hw_bp_list[i].used = 1;
+	  hw_bp_list[i].installed = 0;
+	  return 0;
+	}
+    }
+  return -1;
+}
+
+int
+__remove_hw_breakpoint (target_register_t addr, target_register_t len)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_BREAKPOINT_LIST_SIZE; i++)
+    {
+      if (hw_bp_list[i].used && hw_bp_list[i].addr == addr
+	  && hw_bp_list[i].len == len)
+	{
+	  if (hw_bp_list[i].installed)
+	    HAL_STUB_HW_BREAKPOINT(0, (void *)addr, (int)len);
+	  hw_bp_list[i].used = 0;
+	  return 0;
+	}
+    }
+  return -1;
+}
+
+static void
+__install_hw_breakpoint_list (void)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_BREAKPOINT_LIST_SIZE; i++)
+    {
+      if (hw_bp_list[i].used && hw_bp_list[i].installed == 0)
+	{
+	  HAL_STUB_HW_BREAKPOINT(1, (void *)hw_bp_list[i].addr,
+				 (int)hw_bp_list[i].len);
+	  hw_bp_list[i].installed = 1;
+	}
+    }
+}
+
+static void
+__clear_hw_breakpoint_list (void)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_BREAKPOINT_LIST_SIZE; i++)
+    {
+      if (hw_bp_list[i].used && hw_bp_list[i].installed)
+	{
+	  HAL_STUB_HW_BREAKPOINT(0, (void *)hw_bp_list[i].addr,
+				 (int)hw_bp_list[i].len);
+	  hw_bp_list[i].installed = 0;
+	}
+    }
+}
+#endif // HAL_STUB_HW_BREAKPOINT_LIST_SIZE
+
+#if defined(HAL_STUB_HW_WATCHPOINT_LIST_SIZE) && (HAL_STUB_HW_WATCHPOINT_LIST_SIZE > 0)
+#ifndef HAL_STUB_HW_WATCHPOINT
+#error "Must define HAL_STUB_HW_WATCHPOINT"
+#endif
+struct hw_watchpoint_list {
+  target_register_t  addr;
+  target_register_t  len;
+  int ztype;
+  char used;
+  char installed;
+};
+static struct hw_watchpoint_list hw_wp_list [HAL_STUB_HW_WATCHPOINT_LIST_SIZE];
+
+int
+__set_hw_watchpoint (target_register_t addr, target_register_t len, int ztype)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_WATCHPOINT_LIST_SIZE; i++)
+    {
+      if (hw_wp_list[i].used == 0)
+	{
+	  hw_wp_list[i].addr = addr;
+	  hw_wp_list[i].len = len;
+	  hw_wp_list[i].ztype = ztype;
+	  hw_wp_list[i].used = 1;
+	  hw_wp_list[i].installed = 0;
+	  return 0;
+	}
+    }
+  return -1;
+}
+
+int
+__remove_hw_watchpoint (target_register_t addr, target_register_t len, int ztype)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_WATCHPOINT_LIST_SIZE; i++)
+    {
+      if (hw_wp_list[i].used && hw_wp_list[i].addr == addr
+	  && hw_wp_list[i].len == len && hw_wp_list[i].ztype == ztype )
+	{
+	  if (hw_wp_list[i].installed)
+	    HAL_STUB_HW_WATCHPOINT(0, (void *)addr, (int)len, ztype);
+	  hw_wp_list[i].used = 0;
+	  return 0;
+	}
+    }
+  return -1;
+}
+
+static void
+__install_hw_watchpoint_list (void)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_WATCHPOINT_LIST_SIZE; i++)
+    {
+      if (hw_wp_list[i].used && hw_wp_list[i].installed == 0)
+	{
+	  HAL_STUB_HW_WATCHPOINT(1, (void *)hw_wp_list[i].addr,
+				 (int)hw_wp_list[i].len, hw_wp_list[i].ztype);
+	  hw_wp_list[i].installed = 1;
+	}
+    }
+}
+
+static void
+__clear_hw_watchpoint_list (void)
+{
+  int i;
+
+  for (i = 0; i < HAL_STUB_HW_WATCHPOINT_LIST_SIZE; i++)
+    {
+      if (hw_wp_list[i].used && hw_wp_list[i].installed)
+	{
+	  HAL_STUB_HW_WATCHPOINT(0, (void *)hw_wp_list[i].addr,
+				 (int)hw_wp_list[i].len, hw_wp_list[i].ztype);
+	  hw_wp_list[i].installed = 0;
+	}
+    }
+}
+#endif // HAL_STUB_HW_WATCHPOINT_LIST_SIZE
+
+
+
 void
 __install_breakpoint_list (void)
 {
@@ -188,6 +358,12 @@ __install_breakpoint_list (void)
 	}
       l = l->next;
     }
+#if defined(HAL_STUB_HW_BREAKPOINT_LIST_SIZE) && (HAL_STUB_HW_BREAKPOINT_LIST_SIZE > 0)
+  __install_hw_breakpoint_list();
+#endif
+#if defined(HAL_STUB_HW_WATCHPOINT_LIST_SIZE) && (HAL_STUB_HW_WATCHPOINT_LIST_SIZE > 0)
+  __install_hw_watchpoint_list();
+#endif
   HAL_ICACHE_SYNC();
 }
 
@@ -208,6 +384,12 @@ __clear_breakpoint_list (void)
 	}
       l = l->next;
     }
+#if defined(HAL_STUB_HW_BREAKPOINT_LIST_SIZE) && (HAL_STUB_HW_BREAKPOINT_LIST_SIZE > 0)
+  __clear_hw_breakpoint_list();
+#endif
+#if defined(HAL_STUB_HW_WATCHPOINT_LIST_SIZE) && (HAL_STUB_HW_WATCHPOINT_LIST_SIZE > 0)
+  __clear_hw_watchpoint_list();
+#endif
   HAL_ICACHE_INVALIDATE_ALL();
 }
 
@@ -224,7 +406,6 @@ __display_breakpoint_list (void (*print_func)(target_register_t))
 
   return 0;
 }
-
 #else  // (CYGNUM_HAL_BREAKPOINT_LIST_SIZE == 0) or UNDEFINED
 
 #include <cyg/hal/hal_stub.h>           // Our header

@@ -86,6 +86,9 @@ extern int   cyg_hal_plf_hw_breakpoint(int setflag, void *addr, int len);
 extern int   cyg_hal_plf_hw_watchpoint(int setflag, void *addr, int len, int type);
 extern int   cyg_hal_plf_is_stopped_by_hardware(void **paddr);
 
+#define HAL_STUB_HW_BREAKPOINT_LIST_SIZE 2
+#define HAL_STUB_HW_WATCHPOINT_LIST_SIZE 1
+
 #define HAL_STUB_HW_BREAKPOINT(f,a,l)      cyg_hal_plf_hw_breakpoint((f),(a),(l))
 #define HAL_STUB_HW_WATCHPOINT(f,a,l,t)    cyg_hal_plf_hw_watchpoint((f),(a),(l),(t))
 #define HAL_STUB_IS_STOPPED_BY_HARDWARE(p) cyg_hal_plf_is_stopped_by_hardware(&(p))
