@@ -84,6 +84,11 @@ void Pure::impure_fun1()
     diag_printf("%s(%d) called\n",__PRETTY_FUNCTION__,instance);
 }
 
+inline void Pure::inline_fun1()
+{
+    diag_printf("%s(%d) called\n",__PRETTY_FUNCTION__,instance);
+}
+
 //==========================================================================
 
 class Derived : public Pure
@@ -168,11 +173,6 @@ cyg_start( void )
 }
 
 //==========================================================================
-
-void Pure::inline_fun1()
-{
-    diag_printf("%s(%d) called\n",__PRETTY_FUNCTION__,instance);
-}
 
 #else
 

@@ -1,3 +1,7 @@
+2004-04-16  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/cxxsupp.cxx: Allow inline function to be correctly inlined.
+
 2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/cyg_type.h: added CYG_ATTRIB_ALIGN_MAX and
