@@ -1,3 +1,8 @@
+2003-02-25  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/usbs.sgml: Declare as <part> not <reference> to get
+	correct TOC numbering.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/usbs.cdl: Update doc links.

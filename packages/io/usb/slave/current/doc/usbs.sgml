@@ -36,7 +36,8 @@
 
 <!-- }}} -->
 
-<reference id="io-usb-slave">
+<part id="io-usb-slave">
+<!-- reference id="io-usb-slave" -->
   <title>eCos USB Slave Support</title>
 
 <!-- {{{ Intro                          -->
@@ -3535,4 +3536,5 @@ target-side USB hardware.
 
 <!-- }}} -->
 
-</reference>
+</part>
+<!-- /reference -->
