@@ -73,14 +73,12 @@
 struct flash_info flash_info;
 
 int
-flash_init(void *work_space, int work_space_size, _printf *pf)
+flash_init(_printf *pf)
 {
     int err;
 
     if (flash_info.init) return FLASH_ERR_OK;
     flash_info.pf = pf; // Do this before calling into the driver
-    flash_info.work_space = work_space;
-    flash_info.work_space_size = work_space_size;
     if ((err = flash_hwr_init()) != FLASH_ERR_OK) {
         return err;
     }

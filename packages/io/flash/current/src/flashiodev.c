@@ -63,11 +63,7 @@
 
 #define MIN(x,y) ((x)<(y) ? (x) : (y))
 
-// 1 per devtab entry, so only 1 for now
-//static char flashiodev_workspaces[1][FLASH_MIN_WORKSPACE];
-
 struct flashiodev_priv_t{
-	char workspace[FLASH_MIN_WORKSPACE];
 	char *start;
 	char *end;
 };
@@ -80,8 +76,7 @@ static bool
 flashiodev_init( struct cyg_devtab_entry *tab )
 {
     struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
-    char *ws = dev->workspace;
-    int stat = flash_init( ws, FLASH_MIN_WORKSPACE, &dummy_printf );
+    int stat = flash_init( &dummy_printf );
     if ( stat == 0 ) {
 #ifdef CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1
         CYG_ADDRESS		flash_base;

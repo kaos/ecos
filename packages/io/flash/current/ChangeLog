@@ -1,5 +1,12 @@
 2003-11-20  Jani Monoses  <jani@iv.ro>
 
+	* src/flash.c: 
+	* src/flashiodev.c: 
+	* include/flash.h: Remove references to work_space and work_space_size
+	since they are no longer used.
+
+2003-11-20  Jani Monoses  <jani@iv.ro>
+
 	* cdl/io_flash.cdl:
 	* src/flash.c: Remove handling of CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
 	now that all flash drivers use ELF sections to specify which parts

@@ -61,7 +61,7 @@ typedef int _printf(const char *fmt, ...);
 
 #define FLASH_MIN_WORKSPACE CYGNUM_FLASH_WORKSPACE_SIZE  // Space used by FLASH code
 
-externC int flash_init(void *work_space, int work_space_length, _printf *pf);
+externC int flash_init(_printf *pf);
 externC int flash_erase(void *base, int len, void **err_address);
 externC int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
 externC int flash_read(void *flash_base, void *ram_base, int len, void **err_address);
@@ -113,8 +113,6 @@ typedef struct {
 #ifdef _FLASH_PRIVATE_
 
 struct flash_info {
-    void *work_space;
-    int   work_space_size;
     int   block_size;   // Assuming fixed size "blocks"
     int   blocks;       // Number of blocks
     int   buffer_size;  // Size of write buffer (only defined for some devices)
