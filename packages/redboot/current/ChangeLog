@@ -1,3 +1,9 @@
+2003-10-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c (fis_delete): 'fconfig' data only shows up in FIS if
+	the data is stored in FLASH - account for this.  Also, make sure 
+	FLASH gets initialized if built without 'fconfig' enabled.
+
 2003-10-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/fconfig.c: 

@@ -818,7 +818,7 @@ fis_delete(int argc, char *argv[])
 #ifdef CYGOPT_REDBOOT_FIS_REDBOOT_POST
     num_reserved++;
 #endif
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
     num_reserved++;
 #endif
 #if 1 // And the descriptor for the descriptor table itself
@@ -1233,12 +1233,13 @@ do_flash_init(void)
 static void
 _do_flash_init(void)
 {
+    static int init_done = 0;
+    if (init_done) return;
+    init_done = 1;
     do_flash_init();
 }
 
-#ifndef CYGOPT_REDBOOT_FLASH_CONFIG
 RedBoot_init(_do_flash_init, RedBoot_INIT_FIRST);
-#endif
 
 static void
 do_fis(int argc, char *argv[])
