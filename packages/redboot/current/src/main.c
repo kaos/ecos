@@ -218,7 +218,10 @@ _mon_write_char(char c, void **param)
 // Handle illegal memory accesses (and other abort conditions)
 //
 static hal_jmp_buf error_jmpbuf;
-externC void* volatile __mem_fault_handler;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+externC 
+#endif
+  void* volatile __mem_fault_handler;
 
 static void error_handler(void)
 {
@@ -290,7 +293,7 @@ cyg_start(void)
     }
 
     // Nothing has ever been loaded into memory
-    entry_address = NO_MEMORY;
+    entry_address = (unsigned long)NO_MEMORY;
 
     bist();
 

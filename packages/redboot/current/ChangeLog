@@ -1,3 +1,8 @@
+2004-01-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/main.c: Fix build problem if GDB stubs are not included.
+	Minor warning cleanup (cast on NO_MEMORY).
+
 2003-12-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/tcp.c (tcp_send): Add [restore] delay into TCP write
