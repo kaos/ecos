@@ -206,7 +206,7 @@ cyg_hal_clear_MMU (void)
     CYGARC_MTSPR (MD_CTR, ctr | CYGARC_REG_MD_CTR_CIDEF);
 }
 
-#ifdef CYGPKG_PROFILE
+#ifdef CYGPKG_PROFILE_GPROF
 //--------------------------------------------------------------------------
 //
 // Profiling support - uses a separate high-speed timer
@@ -215,7 +215,7 @@ cyg_hal_clear_MMU (void)
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/quicc/ppc8xx.h>
-#include <cyg/infra/profile.h>
+#include <cyg/profile/profile.h>
 
 // Can't rely on Cyg_Interrupt class being defined.
 #define Cyg_InterruptHANDLED 1

@@ -1,6 +1,6 @@
 # ====================================================================
 #
-#      profile.cdl
+#      profile_gprof.cdl
 #
 #      cpu load measurements
 #
@@ -49,13 +49,14 @@
 #
 # ====================================================================
 
-cdl_package CYGPKG_PROFILE {
+cdl_package CYGPKG_PROFILE_GPROF {
     display       "Gather runtime profile statistics"
     requires      CYGPKG_NET
-    requires      CYGPKG_MEMALLOC
-    requires      { CYGPKG_PROFILE_TIMER != 0 }
+    requires      CYGPKG_NET_TFTP
+    requires      CYGPKG_MEMALLOC   
+    requires      { CYGINT_PROFILE_HAL_TIMER != 0 }
 
-    include_dir   cyg/infra
+    include_dir   cyg/profile
     
     compile profile.c
 
@@ -65,7 +66,7 @@ cdl_package CYGPKG_PROFILE {
     once it has been initialized.  The data collected is exported via
     a TFTP connection to the target."
 
-    cdl_interface     CYGPKG_PROFILE_TIMER {
+    cdl_interface     CYGINT_PROFILE_HAL_TIMER {
         display   "High resolution timer, implemented by platform"
         description "
 	  Profiling requires access to a high resolution timer which

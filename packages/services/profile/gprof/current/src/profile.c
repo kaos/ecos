@@ -49,14 +49,14 @@
 //####DESCRIPTIONEND####
 //
 //===========================================================================
-#include <pkgconf/profile.h>
+#include <pkgconf/profile_gprof.h>
 
 #include <stdlib.h>
 #include <cyg/infra/diag.h>
 #include <network.h>
 #include <tftp_support.h>
-#include <cyg/infra/profile.h>
-#include <cyg/infra/gmon_out.h>
+#include <cyg/profile/profile.h>
+#include <cyg/profile/gmon_out.h>
 
 static int num_buckets;
 static unsigned short *profile;

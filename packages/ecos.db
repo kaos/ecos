@@ -1582,12 +1582,13 @@ and 10 second. All loads are returned as a percentage, ie 0-100.
 This is only a rough measure."
 }     
 
-package CYGPKG_PROFILE {
-        alias           { "Application profile support" profile }
-        directory       services/profile
-        script          profile.cdl
+package CYGPKG_PROFILE_GPROF {
+        alias           { "Application profile support" profile_gprof gprof_profile }
+        directory       services/profile/gprof
+        script          profile_gprof.cdl
         description "
-This package instruments applications to collect profiling data."
+This package instruments applications to collect profiling data,
+using a methodology compatible with the gprof utility."
 }     
                                    
 package CYGPKG_UITRON {

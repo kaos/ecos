@@ -60,7 +60,7 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8xx {
            for this processor variant. It is also necessary to
            select a specific target platform HAL package."
 
-    implements CYGPKG_PROFILE_TIMER
+    implements CYGINT_PROFILE_HAL_TIMER
 
     cdl_interface CYGINT_HAL_USE_ROM_MONITOR_UNSUPPORTED {
         display       "ROM monitor configuration is unsupported"
