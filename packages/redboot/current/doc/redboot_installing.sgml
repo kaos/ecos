@@ -778,18 +778,23 @@ description of the associated modes.</para>
 
 <?Pub _newpage>
 <sect1 id="at91">
-<title>ARM/ARM7 Atmel AT91 Evaluation Board (EB40)</title>
+<title>ARM/ARM7 Atmel AT91 Evaluation Boards (EBXX)</title>
 <sect2>
 <title>Overview</title>
-<para><indexterm><primary>Atmel AT91/EB40</primary>
+<para><indexterm><primary>Atmel AT91/EBXX</primary>
 <secondary>installing and testing</secondary></indexterm><indexterm><primary>
-installing and testing</primary><secondary>Atmel AT91/EB40
-</secondary></indexterm>RedBoot supports both serial ports.
-The default serial port settings are 38400,8,N,1. RedBoot
-also supports minimal flash management on the EB40.
-However, since the flash device (AT29LV1024) is so small (only the upper 64K is
-available for general use), only the simple flash write command 'fis
-write' is supported.</para>
+installing and testing</primary><secondary>Atmel AT91/EBXX
+</secondary></indexterm>
+RedBoot support is available for the EB40, EB40A, EB42 and EB55
+boards. By default all these boards are shipped with only 256Kbytes of
+RAM. To minimize the amount of RAM used by RedBoot, only very basic
+flash management is provided, comprising of just the <command>fis
+erase</command> and <command>fis write</command> commands.
+</para>
+<para>
+RedBoot supports both serial ports.
+The default serial port settings are 38400,8,N,1. 
+</para>
 
 <para>The following RedBoot configurations are supported:
 
@@ -834,20 +839,32 @@ write' is supported.</para>
 <sect2>
 <title>Initial Installation Method </title>
 <para>
-This development board comes with ARM's debug tool, Angel, installed in flash.
-At this time, Angel will not be replaced.  Rather, RedBoot will be placed in
-the alternate half of flash.  Switch SW1 is used which monitor to boot.  Selecting
-SW1 to "lower mem" will choose Angel.  Select SW1 to "Upper mem" for RedBoot once
-it has been installed.
+RedBoot installation is essentially the same for all boards, however
+the details differ slightly. Please make sure you follow the
+directions from the correct section below. Any errors could result in
+an unusable board.
+</para>
+
+<sect3>
+<title>Installing RedBoot on the EB40</title>
+<para>
+This development board comes with ARM's debug tool, Angel, installed
+in flash.  At this time, Angel will not be replaced.  Rather, RedBoot
+will be placed in the alternate half of flash.  Switch SW1 is used to
+select which monitor to boot.  Selecting SW1 to <literal>lower mem</literal> will
+choose Angel.  Select SW1 to <literal>Upper mem</literal> for RedBoot once it has been
+installed.
 </para>
 <para>
-Set SW1 to "lower mem" and connect serial port A to a host computer.  Using GDB
-from the host and Angel on the board, download the RAM mode image of RedBoot
-to the board. SW1 should then be set to "upper mem" just before starting RedBoot using
-the 'cont' command. Once RedBoot is started, the Angel session must be interrupted (on
-Linux this can be done using ^Z).  Follow this by connecting to the board using
-minicom at 38400-8N1.  At this point, RedBoot will be running on the board in
-RAM.  Now, download the ROMRAM mode image and program it to flash.
+Set SW1 to <literal>lower mem</literal> and connect serial port A to a
+host computer.  Using GDB from the host and Angel on the board,
+download the RAM mode image of RedBoot to the board. SW1 should then
+be set to <literal>upper mem</literal> just before starting RedBoot
+using the <command>cont</command> command. Once RedBoot is started,
+the Angel session must be interrupted (on Linux this can be done using
+^Z).  Follow this by connecting to the board using minicom at
+38400-8N1.  At this point, RedBoot will be running on the board in
+RAM.  Now, download the ROM mode image and program it to flash.
 <screen>
 <userinput>arm-elf-gdb redboot_RAM.elf</userinput>
 (gdb) <userinput>tar rdi s=/dev/ttyS0</userinput>
@@ -865,7 +882,7 @@ Loading section .data, size 0x2e4 lma 0x20295b8
 Start address 0x2020040 , load size 39068
 Transfer rate: 6250 bits/sec, 500 bytes/write.
 </screen>
-At this point, set SW1 to "upper mem".
+At this point, set SW1 to <literal>upper mem</literal>.
 <screen>
 (gdb) <userinput>cont</userinput>
 Continuing.
@@ -886,13 +903,79 @@ FLASH: 0x01010000 - 0x01020000, 256 blocks of 0x00000100 bytes each.
 
 RedBoot> <userinput>load -m ymodem -b %{FREEMEMLO}</userinput>
 </screen>
-Use minicom to send the file redboot_ROMRAM.srec via YModem.
+Use minicom to send the file redboot_ROM.srec via YModem.
 <screen>
 RedBoot> <userinput>fi wr -f 0x01010000 -b %{FREEMEMLO} -l 0xe100</userinput>
 </screen>
 Press the "reset" pushbutton and RedBoot
 should come up on the board.
 </para>
+</sect3>
+
+<sect3>
+<title>Installing RedBoot on the EB40A, EB42 or EB55</title>
+<para>
+These development boards come with ARM's debug tool, Angel, installed
+in flash.  At this time, Angel will not be replaced.  Rather, RedBoot
+will be placed in the alternate half of flash.  Jumper JP1 is used to
+select which monitor to boot.  Setting JP1 to <literal>STD</literal>
+will choose Angel.  Set JP1 to <literal>USER</literal> for RedBoot
+once it has been installed.
+</para>
+<para>
+Set JP1 to <literal>STD</literal> and connect serial port A to a host
+computer.  Using GDB from the host and Angel on the board, download
+the RAM mode image of RedBoot to the board. Start RedBoot using the
+'cont' command. Once RedBoot is started, the Angel session must be
+interrupted (on Linux this can be done using ^Z).  Follow this by
+connecting to the board using minicom at 38400-8N1.  At this point,
+RedBoot will be running on the board in RAM.  Now, download the ROM
+mode image and program it to flash.
+<screen>
+<userinput>arm-elf-gdb redboot_RAM.elf</userinput>
+(gdb) <userinput>tar rdi s=/dev/ttyS0</userinput>
+Angel Debug Monitor (serial) 1.04 (Advanced RISC Machines SDT 2.5) for AT91EB55 (2.20)
+Angel Debug Monitor rebuilt on Feb 03 2002 at 16:10:20
+Serial Rate:   9600
+Connected to ARM RDI target.
+(gdb) <userinput>set $cpsr=0xd3</userinput>
+(gdb) <userinput>load</userinput>
+Loading section .rom_vectors, size 0x40 lma 0x2008000
+Loading section .text, size 0xb0b8 lma 0x2008040
+Loading section .rodata, size 0x1c27 lma 0x20130f8
+Loading section .data, size 0x5f0 lma 0x2014d20
+Start address 0x2008040, load size 54031
+Transfer rate: 6264 bits/sec, 500 bytes/write.
+(gdb) <userinput>cont</userinput>
+Continuing.
+</screen>
+At this point, suspend the GDB session (use Ctrl-Z) and start a
+terminal emulator:
+<screen>
+RedBoot> <userinput>version</userinput>
+
+RedBoot(tm) bootstrap and debug environment [ROM]                               
+Non-certified release, version UNKNOWN - built 16:58:52, May  7 2003            
+                                                                                
+Platform: Atmel AT91/EB55 (ARM7TDMI)                                            
+Copyright (C) 2000, 2001, 2002, Red Hat, Inc.                                   
+                                                                                
+RAM: 0x02000000-0x02040000, 0x020068a8-0x0203f000 available                     
+FLASH: 0x01010000 - 0x01200000, 31 blocks of 0x00010000 bytes each.
+
+RedBoot> <userinput>load -m ymodem -b %{FREEMEMLO}</userinput>
+</screen>
+Use minicom to send the file redboot_ROM.srec via YModem.
+<screen>
+RedBoot> <userinput>fi wr -f 0x01100000 -b %{FREEMEMLO} -l 0x10000</userinput>
+</screen>
+Set JP1 to the <literal>USER</literal> setting,
+press the "reset" pushbutton and RedBoot
+should come up on the board.
+</para>
+</sect3>
+
+
 </sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
@@ -900,7 +983,11 @@ should come up on the board.
 </sect2>
 <sect2>
 <title>Memory Maps </title>
-<para>This processor has no MMU, so the only memory map is for physical addresses.
+<para>This processor has no MMU, so the only memory map is for
+physical addresses.
+</para>
+<para>
+The memory layout of the EB40 is as follows:
 <programlisting>
 Physical Address Range     Description
 -----------------------    ----------------------------------
@@ -908,9 +995,38 @@ Physical Address Range     Description
 0x01000000 - 0x0101ffff    Flash
 0x02000000 - 0x0207ffff    RAM
 0xffe00000 - 0xffffffff    I/O registers
+</programlisting>
 
-The flash based RedBoot image occupies virtual addresses 0x01010000 - 0x0101dfff
-</programlisting></para>
+The flash based RedBoot image occupies virtual addresses 0x01010000 - 0x0101dfff.
+</para>
+
+<para>
+The memory layout of the EB40A is as follows:
+<programlisting>
+Physical Address Range     Description
+-----------------------    ----------------------------------
+0x00000000 - 0x0003ffff    On-chip SRAM
+0x01000000 - 0x011fffff    Flash
+0x02000000 - 0x02ffffff    External SRAM (optional)
+0xffe00000 - 0xffffffff    I/O registers
+</programlisting>
+
+The flash based RedBoot image occupies virtual addresses 0x01100000 - 0x0110ffff.
+</para>
+
+<para>
+The memory layout of the EB42 and EB55 is as follows:
+<programlisting>
+Physical Address Range     Description
+-----------------------    ----------------------------------
+0x00000000 - 0x00000fff    On-chip SRAM
+0x01000000 - 0x011fffff    Flash
+0x02000000 - 0x0204ffff    RAM
+0xffe00000 - 0xffffffff    I/O registers
+</programlisting>
+
+The flash based RedBoot image occupies virtual addresses 0x01100000 - 0x0110ffff.
+</para>
 
 </sect2>
 <sect2>
@@ -920,10 +1036,23 @@ The flash based RedBoot image occupies virtual addresses 0x01010000 - 0x0101dfff
 needed for building RedBoot according to the procedure described in
 <xref linkend="Rebuilding-Redboot">:
 <programlisting>
-export TARGET=eb40
 export ARCH_DIR=arm
-export PLATFORM_DIR=at91
+
+export TARGET=eb40
+export PLATFORM_DIR=at91/eb40
+
+export TARGET=eb40a
+export PLATFORM_DIR=at91/eb40a
+
+export TARGET=eb42
+export PLATFORM_DIR=at91/eb42
+
+export TARGET=eb55
+export PLATFORM_DIR=at91/eb55
 </programlisting>
+
+Use just one of the <literal>TARGET</literal> and
+<literal>PLATFORM_DIR</literal> variable pairs only.
 </para>
 
 <para>The names of configuration files are listed above with the

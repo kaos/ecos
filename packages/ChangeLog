@@ -1,3 +1,8 @@
+2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
+
+	* ecos.db: Added packages and targets for Atmel AT91 boards: EB40,
+	EB40A, EB42 and EB55.
+
 2003-05-05  John Dallaway  <jld@ecoscentric.com>
 
 	* pkgconf/rules.doc: Build PNG images (not GIFs) for HTML docs.

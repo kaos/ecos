@@ -192,6 +192,16 @@ package CYGPKG_DEVS_FLASH_ATMEL_AT29CXXXX {
            flash memory devices."
 }
 
+package CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX {
+	alias 		{ "Support for Atmel AT49xxxx flash memory" flash_atmel_at49xxxx }
+	directory	devs/flash/atmel/at49xxxx
+	script		flash_atmel_at49xxxx.cdl
+	hardware
+        description "
+           This package contains hardware support for Atmel AT49xxxx
+           flash memory devices."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_PID {
 	alias 		{ "Support for flash memory on ARM/PID board" flash_arm_pid }
 	directory	devs/flash/arm/pid
@@ -320,6 +330,36 @@ package CYGPKG_DEVS_FLASH_AT91 {
         description "
            This package contains hardware support for FLASH memory
 	   on the Atmel AT91/EB40 platform(s)."
+}
+
+package CYGPKG_DEVS_FLASH_EB40A {
+	alias 		{ "FLASH memory support for Atmel AT91/EB40A" flash_eb40a }
+	directory	devs/flash/arm/eb40a
+	script		flash_eb40a.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Atmel AT91/EB40A platform(s)."
+}
+
+package CYGPKG_DEVS_FLASH_EB42 {
+	alias 		{ "FLASH memory support for Atmel AT91/EB42" flash_eb42 }
+	directory	devs/flash/arm/eb42
+	script		flash_eb42.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Atmel AT91/EB42 platform(s)."
+}
+
+package CYGPKG_DEVS_FLASH_EB55 {
+	alias 		{ "FLASH memory support for Atmel AT91/EB55" flash_eb55 }
+	directory	devs/flash/arm/eb55
+	script		flash_eb55.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Atmel AT91/EB55 platform(s)."
 }
 
 package CYGPKG_DEVS_FLASH_ASSABET {
@@ -1999,13 +2039,54 @@ package CYGPKG_HAL_ARM_INTEGRATOR {
 }
 
 package CYGPKG_HAL_ARM_AT91 {
-	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
-	directory	hal/arm/at91
+	alias		{ "Atmel AT91 variant HAL" hal_arm_at91 arm_at91_hal }
+	directory	hal/arm/at91/var
 	script		hal_arm_at91.cdl
 	hardware
         description "
-The at91 HAL package provides the support needed to run eCos on an Atmel
-evaluation board (EB40)."
+        The at91 HAL package provides the support needed to run eCos on Atmel
+        AT91 based targets."
+}
+
+package CYGPKG_HAL_ARM_AT91_EB40 {
+	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
+	directory	hal/arm/at91/eb40
+	script		hal_arm_at91_eb40.cdl
+	hardware
+        description "
+	The eb40 HAL package provides the support needed to run eCos on an Atmel
+	evaluation board (EB40)."
+}
+
+
+package CYGPKG_HAL_ARM_AT91_EB40A {
+	alias		{ "Atmel evaluation board (EB40A)" hal_arm_at91_eb40a arm_at91_eb40a_hal }
+	directory	hal/arm/at91/eb40a
+	script		hal_arm_at91_eb40a.cdl
+	hardware
+        description "
+	The eb40a HAL package provides the support needed to run eCos on an Atmel
+	evaluation board (EB40A)."
+}
+
+package CYGPKG_HAL_ARM_AT91_EB42 {
+	alias		{ "Atmel evaluation board (EB42)" hal_arm_at91_eb42 arm_at91_eb42_hal }
+	directory	hal/arm/at91/eb42
+	script		hal_arm_at91_eb42.cdl
+	hardware
+        description "
+	The eb42 HAL package provides the support needed to run eCos on an Atmel
+	evaluation board (EB42)."
+}
+
+package CYGPKG_HAL_ARM_AT91_EB55 {
+	alias		{ "Atmel evaluation board (EB55)" hal_arm_at91_eb55 arm_at91_eb55_hal }
+	directory	hal/arm/at91/eb55
+	script		hal_arm_at91_eb55.cdl
+	hardware
+        description "
+	The eb55 HAL package provides the support needed to run eCos on an Atmel
+	evaluation board (EB55)."
 }
 
 package CYGPKG_HAL_ARM_EBSA285 {
@@ -3237,10 +3318,6 @@ package CYGPKG_HAL_CALM32_CORE {
 	directory	hal/calmrisc32/core/
 	script		hal_calm32_core.cdl
 	hardware
-        description "
-           The CalmRISC32 Core architecture HAL package provides generic support
-           for this processor architecture. It is also necessary to
-           select a specific target platform HAL package."
 }
 
 package CYGPKG_HAL_CALM32_CEB {
@@ -3384,18 +3461,64 @@ target integrator_arm9 {
         module installed."
 }
 
-target at91 {
-	alias { "Atmel evaluation board (EB40)" eb40 }
+target eb40 {
+	alias { "Atmel evaluation board (EB40)" at91 at91_eb40 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91_EB40
                    CYGPKG_DEVS_FLASH_AT91
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
         }
         description "
-The aeb target provides the packages needed to run eCos on an Atmel
-evaluation board (EB40)."
+        The eb40 target provides the packages needed to run eCos on an Atmel
+        evaluation board (EB40)."
 }
+
+target eb40a {
+	alias { "Atmel evaluation board (EB40A)" at91_eb40a }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91_EB40A
+                   CYGPKG_DEVS_FLASH_EB40A
+                   CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AT91
+        }
+        description "
+	The eb40a target provides the packages needed to run eCos on an Atmel
+	evaluation board (EB40A)."
+}
+
+target eb42 {
+	alias { "Atmel evaluation board (EB42)" at91_eb42 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91_EB42
+                   CYGPKG_DEVS_FLASH_EB42
+                   CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                   CYGPKG_IO_SERIAL_ARM_AT91
+        }
+        description "
+	The eb42 target provides the packages needed to run eCos on an Atmel
+	evaluation board (EB42)."
+}
+
+target eb55 {
+	alias { "Atmel evaluation board (EB55)" at91_eb55 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_AT91
+                   CYGPKG_HAL_ARM_AT91_EB55
+                   CYGPKG_DEVS_FLASH_EB55
+                   CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                   CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AT91
+        }
+        description "
+	The eb55 target provides the packages needed to run eCos on an Atmel
+	evaluation board (EB55)."
+}
+
 
 target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
