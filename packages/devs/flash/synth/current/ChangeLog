@@ -1,3 +1,8 @@
+2003-11-20  Jani Monoses <jani@iv.ro>
+	
+	tests/flash1.c: Update flash_init() call to reflect
+	new prototype.
+	
 2002-01-23  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/flash_synth.cdl: Add CYGMEM_FLASH_SYNTH_BASE to allow

@@ -87,7 +87,7 @@ void cyg_user_start(void)
 
     CYG_TEST_INIT();
   
-    ret=flash_init(NULL,0,(_printf *)diag_printf);
+    ret=flash_init((_printf *)diag_printf);
   
     CYG_TEST_PASS_FAIL((ret == FLASH_ERR_OK),"flash_init");
 
