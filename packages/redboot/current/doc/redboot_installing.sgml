@@ -1150,8 +1150,12 @@ must start a GDB session setting a remote target and load and run the
 <command>jtstflashd.elf</command> diopsis application. This is a
 daemon that listens on JTST serial port 1. On the PC side you must use
 the <command>jtstflash.exe</command> (both linux and windows PC are
-supported) to flash the image on JTST.
-</para>
+supported) to flash the image on JTST. The sources for win32 and 
+linux/cygwin versions of this host tool can be found in the support
+directory of the jtst hal. The binaries can be found along with the
+binaries for redboot on the eCos website at 
+<ulink url="http://ecos.sourceware.org/ecos/boards/redbootbins/at91jtst/index.html">
+http://ecos.sourceware.org/ecos/boards/redbootbins/at91jtst/</ulink>
 <para>
 When the jtstflashd.elf is started, the user should open the jumper
 JP5 to write in the second half (512Kbytes) of the flash, in this way

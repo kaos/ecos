@@ -1,3 +1,8 @@
+2004-10-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* doc/redboot_installing.sgml: Added links to the tools for the
+	Atmel AT91 JTST board.
+
 2004-09-27  Mark Salter  <msalter@redhat.com>
 
 	* src/fs/ide.c (ide_presence_detect): New function.
