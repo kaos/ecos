@@ -1,0 +1,382 @@
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     memalloc.sgml                                                  -->
+<!--                                                                 -->
+<!--     eCos memory allocation support                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- ####COPYRIGHTBEGIN####                                          -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+<!-- Copyright (C) 2005 Andrew Lunn                                  -->
+<!-- This material may be distributed only subject to the terms      -->
+<!-- and conditions set forth in the Open Publication License, v1.0  -->
+<!-- or later (the latest version is presently available at          -->
+<!-- http://www.opencontent.org/openpub/)                            -->
+<!-- Distribution of the work or derivative of the work in any       -->
+<!-- standard (paper) book form is prohibited unless prior           -->
+<!-- permission obtained from the copyright holder                   -->
+<!-- =============================================================== -->
+<!--                                                                 -->      
+<!-- ####COPYRIGHTEND####                                            -->
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!-- This explains the memory allocation functions which were        -->
+<!-- origionally part of the KAPI, but there moved a long long time  -->
+<!-- ago. I used the old documentation as a basis, so credit should  -->
+<!-- realy go to somebody else                                       -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<PART id="services-memalloc-common">
+<TITLE>Memory Allocation</TITLE>
+<CHAPTER id="memalloc">
+<TITLE>eCos Memory Pools</TITLE>
+<SECT1 id="ecos-memory-pools">
+<TITLE>eCos Memory pools</TITLE>
+
+<PARA>
+  There are three sorts of memory pools. A variable size memory pool
+  is for allocating blocks of any size. A fixed size memory pool, has
+  the block size specified when the pool is created and only provides
+  blocks of that size. Both of these pools must be explicitly created.
+  The third type is the traditional heap which can be accessed using
+  malloc and friends.</PARA>
+
+  <refentry id="variable-pools">
+  
+    <refmeta>
+    <refentrytitle>Variable Size Allocation Pools</refentrytitle>
+    </refmeta>
+
+      <refnamediv>
+      <refname>cyg_mempool_var_create</refname>
+      <refname>cyg_mempool_var_delete</refname>
+      <refname>cyg_mempool_var_alloc</refname>
+      <refname>cyg_mempool_var_timed_alloc</refname>
+      <refname>cyg_mempool_var_try_alloc</refname>
+      <refname>cyg_mempool_var_free</refname>
+      <refname>cyg_mempool_var_waiting</refname>
+      <refname>cyg_mempool_var_get_info</refname>
+      <refpurpose>Variable Size Allocation Pools</refpurpose>
+    </refnamediv>
+
+    <refsynopsisdiv>
+      <funcsynopsis>
+        <funcsynopsisinfo>
+#include &lt;cyg/kernel/kapi.h&gt;
+        </funcsynopsisinfo>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_var_create</function></funcdef>
+          <paramdef>void* <parameter>base</parameter></paramdef>
+          <paramdef>cyg_uint32 <parameter>size</parameter></paramdef>
+          <paramdef>cyg_handle_t* <parameter>varpool</parameter></paramdef>
+          <paramdef>cyg_mempool_var* <parameter>var</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_var_delete</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void* <function>cyg_mempool_var_alloc</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+          <paramdef>cyg_uint32 <parameter>size</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void* <function>cyg_mempool_var_timed_alloc</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+          <paramdef>cyg_uint32 <parameter>size</parameter></paramdef>
+          <paramdef>cyg_tick_count_t <parameter>abstime</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void* <function>cyg_mempool_var_try_alloc</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+          <paramdef>cyg_uint32 <parameter>size</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_var_free</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+          <paramdef>void* <parameter>p</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>cyg_bool_t <function>cyg_mempool_var_waiting</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_var_get_info</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>varpool</parameter></paramdef>
+          <paramdef>cyg_mempool_info* <parameter>info</parameter></paramdef>
+        </funcprototype>
+      </funcsynopsis>
+    </refsynopsisdiv>
+
+    <refsect1 id="memalloc-variable-description"><title>Description</title>
+
+      <para>
+      The variable size memory pool functions are used for allocating
+      blocks of any size. Before memory can be allocated the pool must
+      first be created by calling
+      <function>cyg_mempool_var_create()</function>. The parameter
+      <parameter>base</parameter> is a point to the bottom of the
+      memory area to be used by the pool and
+      <parameter>size</parameter> is the size of the memory area in
+      bytes. It also takes a pointer to a
+      <structname>cyg_mempool_var</structname> data structure which is
+      typically statically allocated, and may be part of a larger data
+      structure. It should be noted that some memory is take from the
+      pool for book keeping purposes. If a memory pool is no longer
+      required and there are not threads waiting to allocate memory
+      from it, it can be destroyed with
+      <function>cyg_mempool_var_delete()</function>.  
+      </para>
+
+      <para>
+      Memory can be allocated from the pool using a number of
+      functions. They all take the
+      paramters<parameter>varpool</parameter>which indicates which
+      pool should be used and the <parameter>size</parameter>which
+      indicates who big a memory area should be
+      allocated. <function>cyg_mempool_var_alloc()</function> will
+      block until the memory becomes
+      available. <function>cyg_mempool_tryalloc()</function>will try
+      not block if no memory is available and will return
+      <literal>NULL</literal>. Otherwise a pointer to the allocated
+      memory will be returned.
+      <function>cyg_mempool_var_timed_alloc()</function> will block if
+      memory is not available and wait for memory to become available
+      until the time<parameter>abstime</parameter> is reached. It will
+      then return <literal>NULL</literal>.
+      </para>
+
+      <para>
+      Allocated memory can be freed using the function <function>cyg_mempool_var_free()</function>.
+      </para>
+      
+      <para>
+      Lastly it is possible to query information about the pool using
+      the function
+      <function>cyg_mempool_var_get_info()</function>. This takes a
+      pointer to the structure <structname>cyg_mempool_info</structname> which is:
+      <programlisting>
+typedef struct {
+    cyg_int32 totalmem;
+    cyg_int32 freemem;
+    void      *base;
+    cyg_int32 size;
+    cyg_int32 blocksize;
+    cyg_int32 maxfree;
+} cyg_mempool_info;
+      </programlisting>
+     </para>
+   </refsect1> 
+  </refentry>
+  <refentry id="fixed-pools">
+  
+    <refmeta>
+    <refentrytitle>Fixed Size Allocation Pools</refentrytitle>
+    </refmeta>
+
+      <refnamediv>
+      <refname>cyg_mempool_fix_create</refname>
+      <refname>cyg_mempool_fix_delete</refname>
+      <refname>cyg_mempool_fix_alloc</refname>
+      <refname>cyg_mempool_fix_timed_alloc</refname>
+      <refname>cyg_mempool_fix_try_alloc</refname>
+      <refname>cyg_mempool_fix_free</refname>
+      <refname>cyg_mempool_fix_waiting</refname>
+      <refname>cyg_mempool_fix_get_info</refname>
+      <refpurpose>Fixed Size Allocation Pools</refpurpose>
+    </refnamediv>
+
+    <refsynopsisdiv>
+      <funcsynopsis>
+        <funcsynopsisinfo>
+#include &lt;cyg/kernel/kapi.h&gt;
+        </funcsynopsisinfo>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_fix_create</function></funcdef>
+          <paramdef>void* <parameter>base</parameter></paramdef>
+          <paramdef>cyg_uint32 <parameter>size</parameter></paramdef>
+          <paramdef>cyg_uint32 <parameter>blocksize</parameter></paramdef>
+          <paramdef>cyg_handle_t* <parameter>fixpool</parameter></paramdef>
+          <paramdef>cyg_mempool_var* <parameter>var</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_fix_delete</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void* <function>cyg_mempool_fix_alloc</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void* <function>cyg_mempool_fix_timed_alloc</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+          <paramdef>cyg_tick_count_t <parameter>abstime</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void* <function>cyg_mempool_fix_try_alloc</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_fix_free</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+          <paramdef>void* <parameter>p</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>cyg_bool_t <function>cyg_mempool_fix_waiting</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>cyg_mempool_fix_get_info</function></funcdef>
+          <paramdef>cyg_handle_t <parameter>fixpool</parameter></paramdef>
+          <paramdef>cyg_mempool_info* <parameter>info</parameter></paramdef>
+        </funcprototype>
+      </funcsynopsis>
+    </refsynopsisdiv>
+
+    <refsect1 id="memalloc-fixed-description"><title>Description</title>
+
+      <para>
+      The fixed size memory pool functions are used for allocating
+      blocks of the same size. The allocation and free functions are
+      more efficient than the variable size pools, but are naturally
+      limited to being only able to allocate blocks of a sized
+      size. Before memory can be allocated the pool must first be
+      created by calling
+      <function>cyg_mempool_fix_create()</function>.  
+
+      The parameter <parameter>base</parameter> is a point to the
+      bottom of the memory area to be used by the pool and
+      <parameter>size</parameter> is the size of the memory area in
+      bytes. <parameter>blocksize</parameter> indicates the size of
+      each allocation in bytes. The function also takes a pointer to a
+      <structname>cyg_mempool_fix</structname> data structure which is
+      typically statically allocated, and may be part of a larger data
+      structure. It should be noted that some memory is take from the
+      pool for book keeping purposes. If a memory pool is no longer
+      required and there are not threads waiting to allocate memory
+      from it, it can be destroyed with
+      <function>cyg_mempool_fix_delete()</function>.  
+      </para>
+
+      <para>
+      Memory can be allocated from the pool using a number of
+      functions. They all take the
+      paramter<parameter>fixpool</parameter>which indicates which pool
+      should be used. <function>cyg_mempool_fix_alloc()</function>
+      will block until the memory becomes
+      available. <function>cyg_mempool_tryalloc()</function>will try
+      not block if no memory is available and will return
+      <literal>NULL</literal>. Otherwise a pointer to the allocated
+      memory will be returned.
+      <function>cyg_mempool_fix_timed_alloc()</function> will block if
+      memory is not available and wait for memory to become available
+      until the time<parameter>abstime</parameter> is reached. It will
+      then return <literal>NULL</literal>.  </para>
+
+      <para>
+      Allocated memory can be freed using the function <function>cyg_mempool_fix_free()</function>.
+      </para>
+      
+      <para>
+      Lastly it is possible to query information about the pool using
+      the function
+      <function>cyg_mempool_fix_get_info()</function>. This takes a
+      pointer to the structure <structname>cyg_mempool_info</structname> which is:
+      <programlisting>
+typedef struct {
+    cyg_int32 totalmem;
+    cyg_int32 freemem;
+    void      *base;
+    cyg_int32 size;
+    cyg_int32 blocksize;
+    cyg_int32 maxfree;
+} cyg_mempool_info;
+      </programlisting>
+     </para>
+   </refsect1> 
+ </refentry>
+
+ <refentry id="malloc-pools">
+ 
+    <refmeta>
+    <refentrytitle>stdlib malloc Pools</refentrytitle>
+    </refmeta>
+
+      <refnamediv>
+      <refname>malloc</refname>
+      <refname>calloc</refname>
+      <refname>free</refname>
+      <refname>realloc</refname>
+      <refname>mallinfo</refname>
+      <refpurpose>stdlib malloc pool</refpurpose>
+      </refnamediv>
+
+    <refsynopsisdiv>
+      <funcsynopsis>
+        <funcsynopsisinfo>
+#include &lt;stdlib.h&gt;
+        </funcsynopsisinfo>
+        <funcprototype>
+          <funcdef>void *<function>malloc</function></funcdef>
+          <paramdef>size_t <parameter>size</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void *<function>calloc</function></funcdef>
+          <paramdef>size_t <parameter>size</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void <function>free</function></funcdef>
+          <paramdef>void *<parameter>ptr</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>void *<function>realloc</function></funcdef>
+          <paramdef>void *<parameter>ptr</parameter></paramdef>
+          <paramdef>size_t <parameter>size</parameter></paramdef>
+        </funcprototype>
+        <funcprototype>
+          <funcdef>struct mallinfo <function>mallinfo</function></funcdef>
+          <void>
+        </funcprototype>
+       </funcsynopsis>
+    </refsynopsisdiv>
+
+    <refsect1 id="memalloc-stdlib-description"><title>Description</title>
+
+      <para>
+      eCos provides the standard library functions used for allocating
+      memory from the heap. <function>malloc()</function> allocates a
+      block of memory of
+      <parameter>size</parameter> bytes. <function>calloc()</function>
+      performs the same, but also sets the memory to zero. The
+      function <function>free()</function> returns a block to the
+      pool. <function>realloc</function> resizes a block of
+      memory. Lastly, <function>mallinfo()</function> returns
+      information about the heap, as described by the structure
+      <structname>mallinfo</structname>:
+
+      <programlisting>
+struct mallinfo {
+    int arena;    /* total size of memory arena */
+    int ordblks;  /* number of ordinary memory blocks */
+    int smblks;   /* number of small memory blocks */
+    int hblks;    /* number of mmapped regions */
+    int hblkhd;   /* total space in mmapped regions */
+    int usmblks;  /* space used by small memory blocks */
+    int fsmblks;  /* space available for small memory blocks */
+    int uordblks; /* space used by ordinary memory blocks */
+    int fordblks; /* space free for ordinary blocks */
+    int keepcost; /* top-most, releasable (via malloc_trim) space */
+    int maxfree;  /* (NON-STANDARD EXTENSION) size of largest free block */
+};
+      </programlisting>
+     </para>
+   </refsect1> 
+ </refentry>
+</CHAPTER> 
+</PART>

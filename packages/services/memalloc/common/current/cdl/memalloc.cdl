@@ -54,6 +54,7 @@ cdl_package CYGPKG_MEMALLOC {
         This package provides memory allocator infrastructure required for
         dynamic memory allocators, including the ISO standard malloc
         interface. It also contains some sample implementations."
+    doc           ref/memalloc.html
     include_dir   cyg/memalloc
     compile       dlmalloc.cxx memfixed.cxx memvar.cxx \
                   sepmeta.cxx debug.c

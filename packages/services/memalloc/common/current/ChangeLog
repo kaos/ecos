@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/memalloc.cdl: Added reference to documentation
+	* doc/memalloc.sgml: Basic user documentation.
+
 2004-10-04  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* src/dlmalloc.cxx (resize_alloc): No longer invoke
