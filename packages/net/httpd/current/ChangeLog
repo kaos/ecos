@@ -1,3 +1,11 @@
+2003-06-09  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/httpd.c: Fixed a problem with closing the client socket --
+	it was being done twice.
+	Tidied up the formatting a little.
+
+	* src/monitor.c: Fixed some compiler warnings.
+
 2003-05-11  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/monitor.c (cyg_monitor_network): Added IPv6 information to

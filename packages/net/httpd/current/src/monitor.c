@@ -170,8 +170,8 @@ static void draw_navbar( FILE *client )
  */
 
 static char monitor_index_blurb[] =
-"<p>This is the eCos System Monitor. It presents a simple web monitor
-and control interface for eCos systems.\n"
+"<p>This is the eCos System Monitor. It presents a simple web monitor"
+"and control interface for eCos systems.\n"
 "<p>Use the navigation bar at the bottom of each page to explore."
 ;
 
@@ -321,15 +321,15 @@ CYG_HTTPD_TABLE_ENTRY( cyg_monitor_show_threads,
  */
 
 static char thread_edit_blurb[] =
-"<p>This table contains an entry for each property of the thread
-that you can edit. The properties are:\n"
-"<p><b>State:</b> Change thread's state. The <em>Suspend</em> button
-will suspend the thread. The <em>Run</em> button will undo any previous
-suspends. The <em>Release</em> button will release the thread out of
-any sleep it is currently in.\n"
+"<p>This table contains an entry for each property of the thread"
+"that you can edit. The properties are:\n"
+"<p><b>State:</b> Change thread's state. The <em>Suspend</em> button"
+"will suspend the thread. The <em>Run</em> button will undo any previous"
+"suspends. The <em>Release</em> button will release the thread out of"
+"any sleep it is currently in.\n"
 "<p><b>Priority:</b> Change the thread's priority.\n"
-"<p>Once the new state has been selected, press the <em>Submit</em>
-button to make the change, or <em>Reset</em> to clear it."
+"<p>Once the new state has been selected, press the <em>Submit</em>"
+"button to make the change, or <em>Reset</em> to clear it."
 ;
 
 static cyg_bool cyg_monitor_thread_edit( FILE * client, char *filename,
@@ -1180,9 +1180,9 @@ static cyg_uint32 instrument_flags[(CYG_INSTRUMENT_CLASS_MAX>>8)+1];
 #endif
 
 static char cyg_monitor_instrument_blurb1[] =
-"<p>Use the checkboxes to enable the events to be recorded. Click
-the <em>Submit</em> button to start recording. Click the <em>Clear</em>
-button to clear all instrumentation and to stop recording."
+"<p>Use the checkboxes to enable the events to be recorded. Click"
+"the <em>Submit</em> button to start recording. Click the <em>Clear</em>"
+"button to clear all instrumentation and to stop recording."
 ;
 
 static cyg_bool cyg_monitor_instrument( FILE * client, char *filename,
