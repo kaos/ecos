@@ -1,3 +1,7 @@
+2003-02-10  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/signal3.c (main): Reorg code so it builds with older GCC.
+
 2003-01-31  Nick Garnett  <nickg@calivar.com>
 
 	* src/time.cxx (alarm_action): Added call to

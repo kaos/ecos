@@ -92,6 +92,9 @@ int main (int argc, char **argv)
     int ret_val;
     sigset_t set;
     int sig;
+    struct itimerspec timerValue;	// Timeout value on eCos
+    timer_t timer1;			// Timer
+    struct sigevent sev;
 
     CYG_TEST_INIT();
 
@@ -114,9 +117,6 @@ int main (int argc, char **argv)
     //--------------------------------------------------------------------
     // <start of timer initialization section>
     //--------------------------------------------------------------------
-    struct itimerspec timerValue;	// Timeout value on eCos
-    timer_t timer1;			// Timer
-    struct sigevent sev;
 	
     // Notification type --- Deliver the signal
     sev.sigev_notify                = SIGEV_SIGNAL;
