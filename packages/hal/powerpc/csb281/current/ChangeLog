@@ -1,3 +1,7 @@
+2003-03-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (_csb281_pci_init): Display PCI bus - disabled.
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.

@@ -276,6 +276,31 @@ _csb281_pci_init(void)
         cyg_pci_configure_bus(0, &next_bus);
     }
 
+    if (0){
+        cyg_uint8 devfn;
+        cyg_pci_device_id devid;
+        cyg_pci_device dev_info;
+        int i;
+
+        devid = CYG_PCI_DEV_MAKE_ID(next_bus-1, 0) | CYG_PCI_NULL_DEVFN;
+        while (cyg_pci_find_next(devid, &devid)) {
+            devfn = CYG_PCI_DEV_GET_DEVFN(devid);
+            cyg_pci_get_device_info(devid, &dev_info);
+
+            diag_printf("\n");
+            diag_printf("Bus:        %d\n", CYG_PCI_DEV_GET_BUS(devid));
+            diag_printf("PCI Device: %d\n", CYG_PCI_DEV_GET_DEV(devfn));
+            diag_printf("PCI Func  : %d\n", CYG_PCI_DEV_GET_FN(devfn));
+            diag_printf("Vendor Id : 0x%08X\n", dev_info.vendor);
+            diag_printf("Device Id : 0x%08X\n", dev_info.device);
+            for (i = 0; i < dev_info.num_bars; i++) {
+                diag_printf("  BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
+                diag_printf(" probed size 0x%08x / CPU addr 0x%08x\n",
+                            dev_info.base_size[i], dev_info.base_map[i]);
+            }
+        }
+    }
+
     // Configure interrupts (high level)?
     HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_PCI0, 1, 1);
     HAL_INTERRUPT_CONFIGURE(CYGNUM_HAL_INTERRUPT_PCI1, 1, 1);
