@@ -1,10 +1,11 @@
 2003-10-13  Jay Foster  <jay@systech.com>
 
-	* include/dhcp.h: Added prototype for dhcp_set_hostname().
-	* src/dhcp_prot.c (set_default_dhcp_tags): Added TAG_HOST_NAME and
-      TAG_DHCP_CLIENTID DHCP/BOOTP option support.
-	* cdl/net.cdl: Added host name (CYGOPT_NET_DHCP_OPTION_HOST_NAME) and
-      MAC address client ID (CYGOPT_NET_DHCP_OPTION_DHCP_CLIENTID_MAC) support.
+        * include/dhcp.h: Added prototype for dhcp_set_hostname().
+        * src/dhcp_prot.c (set_default_dhcp_tags): Added TAG_HOST_NAME and
+        TAG_DHCP_CLIENTID DHCP/BOOTP option support.
+        * cdl/net.cdl: Added host name (CYGOPT_NET_DHCP_OPTION_HOST_NAME) and
+        MAC address client ID (CYGOPT_NET_DHCP_OPTION_DHCP_CLIENTID_MAC) 
+        support.
 
 2003-10-12  Jay Foster  <jay@systech.com>
  
