@@ -4368,8 +4368,8 @@ target sh4_202_md {
 
 # --------------------------------------------------------------------------
 # i386 targets
-target pc {
-        alias		{ "i386 PC target" }
+target pc_i82559 {
+        alias		{ "i386 PC target with i82559 ethernet" pc }
 	packages        { CYGPKG_HAL_I386
                           CYGPKG_HAL_I386_GENERIC
                           CYGPKG_HAL_I386_PC
@@ -4383,13 +4383,13 @@ target pc {
                           CYGPKG_DEVICES_WALLCLOCK_I386_PC
         }
         description "
-    	    The pc target provides the 
+    	    The pc_i82559 target provides the 
     	    packages needed to run eCos binaries on a standard i386
-    	    PC motherboard."
+    	    PC motherboard with an Intel 82559 based ethernet interface."
 }
 
-target pc_giga {
-        alias		{ "i386 PC target with Gigabit ethernet" }
+target pc_i82544 {
+        alias		{ "i386 PC target with i82544 gigabit ethernet" pc_giga }
 	packages        { CYGPKG_HAL_I386
                           CYGPKG_HAL_I386_GENERIC
                           CYGPKG_HAL_I386_PC
@@ -4403,9 +4403,9 @@ target pc_giga {
                           CYGPKG_DEVICES_WALLCLOCK_I386_PC
         }
         description "
-    	    The pc target provides the packages needed to run eCos binaries
+    	    The pc_i82544 target provides the packages needed to run eCos binaries
             on a standard i386 PC motherboard with an Intel 82543/82544 based
-            Gigabit ethernet interface."
+            gigabit ethernet interface."
 }
 
 target pc_vmWare {
@@ -4423,7 +4423,7 @@ target pc_vmWare {
                           CYGPKG_DEVICES_WALLCLOCK_I386_PC
         }
         description "
-    	    The pc target provides the packages needed to run eCos binaries
+    	    The pc_vmWare target provides the packages needed to run eCos binaries
             on a standard i386 PC under wmWare."
 }
 
@@ -5415,7 +5415,7 @@ package CYGPKG_DEVS_ETH_SH_DREAMCAST_RLTK8139 {
 }
 
 target pc_rltk8139 {
-        alias		{ "i386 PC target using Realtek 8139 networking" }
+        alias		{ "i386 PC target with RTL8139 ethernet" }
 	packages        { CYGPKG_HAL_I386
                           CYGPKG_HAL_I386_GENERIC
                           CYGPKG_HAL_I386_PC
@@ -5429,7 +5429,7 @@ target pc_rltk8139 {
                           CYGPKG_DEVICES_WALLCLOCK_I386_PC
         }
         description "
-    	    The pc target provides the packages needed to run eCos binaries 
+    	    The pc_rltk8139 target provides the packages needed to run eCos binaries 
             on a standard i386 PC motherboard, using a Realtek 8139 network card."
 }
 
