@@ -446,7 +446,7 @@ _flash_program_buf(void* addr, void* data, int len)
     f_s2 = FLASH_P2V(BANK + FLASH_Setup_Addr2);
 
     while (len > 0) {
-        int state;
+        flash_data_t state;
 
         addr_v = FLASH_P2V(addr_p++);
 

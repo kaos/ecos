@@ -1,3 +1,9 @@
+2002-07-24  Gary Thomas  <gary@chez-thomas.org>
+2002-07-24  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>
+	
+	* include/flash_am29xxxxx.inl (_flash_program_buf): Fix data
+	type for 'state' - needs to be flash_data_t.
+
 2002-06-20  Gary Thomas  <gary@chez-thomas.org>
 
 	* include/flash_am29xxxxx.inl: Add cache disable/enable code
