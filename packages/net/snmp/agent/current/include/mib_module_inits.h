@@ -119,7 +119,15 @@ init_snmp_mib();                        // { mib2 11 }
 
 //  init_at(); // #3 is deprecated
 
-//  init_vacm_vars();
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
+init_snmpEngine();
+init_usmStats();
+init_usmUser();
+#ifdef CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT
+init_vacm_vars();
+#endif
+#endif
+
 //  init_memory();
 //  init_vmstat();
 //  init_proc();
@@ -132,8 +140,6 @@ init_snmp_mib();                        // { mib2 11 }
 //  init_errormib();
 //  init_registry();
 //  init_file();
-//  init_snmpEngine();
 //  init_snmpMPDStats();
-//  init_usmStats();
-//  init_usmUser();
 //  init_var_route();
+

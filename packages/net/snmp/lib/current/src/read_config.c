@@ -93,6 +93,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * read_config.c
  */
 
+#include <pkgconf/snmplib.h>
 #include <config.h>
 
 #include <stdio.h>
@@ -390,6 +391,7 @@ void read_config(const char *filename,
 		 struct config_line *line_handler,
 		 int when)
 {
+#ifdef CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT
 
   FILE *ifile;
   char line[STRINGMAX], token[STRINGMAX], tmpbuf[STRINGMAX];
@@ -460,6 +462,7 @@ void read_config(const char *filename,
 	}
     }
   fclose(ifile);
+#endif
   return;
 
 }  /* end read_config() */
@@ -546,7 +549,7 @@ read_premib_configs (void)
 void
 read_config_files (int when)
 {
-#ifndef ECOSFIXME_NEEDFILESYSTEM
+#ifdef CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT
 
   int i, j;
   char configfile[300];
@@ -596,6 +599,7 @@ read_config_files (int when)
        * then we read all the configuration files we can, starting with
        * the oldest first.
        */
+#ifdef CYGPKG_SNMPLIB_PERSISTENT_FILESYSTEM
       if (strncmp(cptr2, PERSISTENT_DIRECTORY,
                   strlen(PERSISTENT_DIRECTORY)) == 0 ||
           (getenv("SNMP_PERSISTENT_FILE") != NULL &&
@@ -614,6 +618,7 @@ read_config_files (int when)
           }
         }
       }
+#endif
       sprintf(configfile,"%s/%s.conf",cptr2, ctmp->fileHeader);
       read_config (configfile, ltmp, when);
       sprintf(configfile,"%s/%s.local.conf",cptr2, ctmp->fileHeader);
@@ -623,10 +628,12 @@ read_config_files (int when)
     free(envconfpath);
   }
   
+#ifdef CYGPKG_SNMPLIB_PERSISTENT_FILESYSTEM
   if (config_errors) {
     snmp_log(LOG_ERR, "ucd-snmp: %d errors in config file\n", config_errors);
 /*    exit(1); */
   }
+#endif
 #endif
 }
 
@@ -668,7 +675,7 @@ void read_config_print_usage(const char *lead)
 void
 read_config_store(const char *type, const char *line)
 {
-#ifdef PERSISTENT_DIRECTORY
+#ifdef CYGPKG_SNMPLIB_PERSISTENT_FILESYSTEM
   char file[512], *filep;
   FILE *fout;
 #ifdef PERSISTENT_MASK

@@ -668,7 +668,9 @@ in_a_view(oid		  *name,      /* IN - name of var, OUT - name matched */
   switch (pdu->version) {
   case SNMP_VERSION_1:
   case SNMP_VERSION_2c:
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
   case SNMP_VERSION_3:
+#endif
     snmp_call_callbacks(SNMP_CALLBACK_APPLICATION, SNMPD_CALLBACK_ACM_CHECK,
                         &view_parms);
     return view_parms.errorcode;
@@ -693,7 +695,9 @@ check_access(struct snmp_pdu *pdu)      /* IN - pdu being checked */
   switch (pdu->version) {
   case SNMP_VERSION_1:
   case SNMP_VERSION_2c:
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
   case SNMP_VERSION_3:
+#endif
     snmp_call_callbacks(SNMP_CALLBACK_APPLICATION,
                         SNMPD_CALLBACK_ACM_CHECK_INITIAL,
                         &view_parms);

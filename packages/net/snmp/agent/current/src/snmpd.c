@@ -204,7 +204,9 @@ typedef long    fd_mask;
 #include "m2m.h"
 #include "snmp_vars.h"
 #include "agent_read_config.h"
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include "snmpv3.h"
+#endif
 #include "callback.h"
 #include "snmp_alarm.h"
 #include "default_store.h"
@@ -218,7 +220,9 @@ typedef long    fd_mask;
 #include "snmp_debug.h"
 #include "mib_modules.h"
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include "snmpusm.h"
+#endif
 #include "tools.h"
 #include "lcd_time.h"
 

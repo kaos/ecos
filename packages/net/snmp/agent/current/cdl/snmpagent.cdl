@@ -89,6 +89,7 @@ cdl_package CYGPKG_SNMPAGENT {
                 mibgroup/snmpv3/usmStats.c      \
                 mibgroup/snmpv3/usmUser.c       \
                 mibgroup/snmpv3/snmpEngine.c    \
+                mibgroup/mibII/vacm_vars.c	\
 
 
 
@@ -285,6 +286,15 @@ cdl_package CYGPKG_SNMPAGENT {
                 the set of global flags if present."
         }
 
+        cdl_option CYGPKG_SNMPAGENT_V3_SUPPORT {
+            display "SNMPv3 support package"
+            flavor  bool
+            default_value 1
+            description   "
+                Enabling this option includes SNMPv3 functionality as per
+                the implementation in UCD-SNMP-4.1.2"
+        }
+
         cdl_component CYGPKG_SNMPAGENT_TESTS {
             display "SNMP agent tests"
             flavor  data
@@ -308,6 +318,7 @@ cdl_package CYGPKG_SNMPAGENT {
             cdl_option CYGSEM_SNMPAGENT_TESTS_SNMPv3 {
                 display "SNMP agent test for SNMP version 3"
                 flavor  bool
+                active_if CYGPKG_SNMPAGENT_V3_SUPPORT
                 default_value 1
                 description   "
                     This option controls the tests for the eCos SMNP agent.

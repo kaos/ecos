@@ -127,7 +127,11 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define USING_MIBII_UDP_MODULE 1
  
 /* Define if compiling with the mibII/vacm_vars module files.  */
-//#define USING_MIBII_VACM_VARS_MODULE 1
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
+#ifdef CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT
+#define USING_MIBII_VACM_VARS_MODULE 1
+#endif
+#endif
  
 /* Define if compiling with the ucd-snmp/memory module files.  */
 //#define USING_UCD_SNMP_MEMORY_MODULE 1
@@ -165,17 +169,19 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* Define if compiling with the ucd-snmp/file module files.  */
 //#define USING_UCD_SNMP_FILE_MODULE 1
  
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 /* Define if compiling with the snmpv3/snmpEngine module files.  */
-//#define USING_SNMPV3_SNMPENGINE_MODULE 1
+#define USING_SNMPV3_SNMPENGINE_MODULE 1
  
 /* Define if compiling with the snmpv3/snmpMPDStats module files.  */
 //#define USING_SNMPV3_SNMPMPDSTATS_MODULE 1
  
 /* Define if compiling with the snmpv3/usmStats module files.  */
-//#define USING_SNMPV3_USMSTATS_MODULE 1
+#define USING_SNMPV3_USMSTATS_MODULE 1
  
 /* Define if compiling with the snmpv3/usmUser module files.  */
-//#define USING_SNMPV3_USMUSER_MODULE 1
+#define USING_SNMPV3_USMUSER_MODULE 1
+#endif
  
 /* Define if compiling with the util_funcs module files.  */
 #define USING_UTIL_FUNCS_MODULE 1

@@ -53,7 +53,7 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    Andrew.Lunn@ascom.ch, Manu.Sharma@ascom.ch
+// Author(s):    Andrew.Lunn@ascom.ch, Manu.Sharma@ascom.com
 // Contributors: hmt
 // Date:         2001-05-29
 // Purpose:      Port of UCD-SNMP distribution to eCos.
@@ -99,6 +99,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _MIBGROUP_USMSTATS_H
 #define _MIBGROUP_USMSTATS_H
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
+
 /* we use header_generic and checkmib from the util_funcs module */
 
 config_require(util_funcs)
@@ -118,5 +120,6 @@ config_add_mib(SNMP-USER-BASED-SM-MIB)
 extern void           init_usmStats(void);
 extern FindVarMethod  var_usmStats;
 
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 #endif /* _MIBGROUP_USMSTATS_H */

@@ -171,11 +171,13 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 // PING test code
 
 #include <network.h>
+#include <stdio.h>
 
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
 #include <pkgconf/snmpagent.h>
 
+#include <unistd.h>
 
 #ifdef  CYGSEM_SNMPAGENT_TESTS_SNMPv3
 #include <ucd-snmp/config.h>
@@ -455,11 +457,96 @@ void snmp_do_reinit( void )
 {
     diag_printf( "SNMP re-init function\n" );
 #ifdef  CYGSEM_SNMPAGENT_TESTS_SNMPv3
-    init_usmUser();             /* MIBs to support SNMPv3             */
-    init_usmStats();
-    init_snmpEngine();
+    // Initialisation for USM is now invoked from mib_module_inits.h
+    //init_usmUser();             /* MIBs to support SNMPv3             */
+    //init_usmStats();
+    //init_snmpEngine();
     usm_parse_create_usmUser(NULL, "root MD5 md5passwd DES DESpasswd");
 #endif //  CYGSEM_SNMPAGENT_TESTS_SNMPv3
+}
+
+int create_snmpd_conf (void) {
+#ifdef CYGSEM_SNMPAGENT_TESTS_SNMPv3
+#ifdef CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT 
+#ifdef CYGPKG_FS_RAM
+  int c;
+  FILE *fd;
+
+  diag_printf ("\nStarting creation of snmpd.conf\n");
+
+  /* Mount RAM-FS */
+  if (mount ("", "/", "ramfs") != 0) {
+    diag_printf ("File system mount failed; errno=%d \n", errno);
+    return -1;
+  }
+  
+  if (mkdir ("/etc", 0) != 0) {
+    diag_printf ("mkdir (etc) failed;  errno=%d\n", errno);
+    return -1;
+  } 
+
+  if (chdir ("/etc") != 0) {
+    diag_printf ("... Change-dir (etc) failed; errno=%d\n", errno);
+    return -1;
+  } else { 
+    diag_printf ("chdir-etc done\n");
+  }
+
+  if (mkdir ("snmp", 0) != 0) {
+    diag_printf ("mkdir failed (snmp);  errno=%d\n", errno);
+    return -1;
+  } else {
+    diag_printf ("mkdir-snmp done\n");
+  }
+
+  if (chdir ("snmp") != 0) {
+    diag_printf ("... Change-dir (snmp) failed; errno=%d\n", errno);
+    return -1;
+  } else { 
+    diag_printf ("... Change-dir (snmp) done \n");
+  }
+
+  /* Open File & Write to it  */
+  if ((fd = fopen( "snmpd.conf", "w" )) == NULL) {
+    diag_printf ("fopen failed\n");
+    return -1;
+  }
+
+  fprintf (fd, "#        sec.name     source       community\n");
+  fprintf (fd, "com2sec   public     default       crux\n");
+  fprintf (fd, "com2sec   root       default       crux\n");
+  fprintf (fd, "#                 sec.model   sec.name\n");
+  fprintf (fd, "group     public    v1        public\n");
+  fprintf (fd, "group     public    v2c       public\n");
+  fprintf (fd, "group     public    usm       root\n");
+  fprintf (fd, "view      all  included  .1\n");
+  fprintf (fd, "access    public    \"\"   any  noauth    exact     all  none none\n");
+  fprintf (fd, "\n\n");
+
+  if (fclose (fd)) {
+    diag_printf ("fclose failed\n");
+    return -1;
+  }
+
+  /* Read Back */
+  fd = fopen( "/etc/snmp/snmpd.conf", "r" );
+  if (fd == NULL) { 
+    diag_printf ("fopen failed\n");
+    return -1;
+  }
+
+  while ((c=fgetc (fd)) != EOF) {
+    diag_printf ("%c", c);
+  }
+
+  if (fclose (fd))  {
+    diag_printf ("fclose failed\n");
+    return -1;
+  }
+#endif
+#endif
+#endif
+  return 0;
 }
 
 void
@@ -494,6 +581,9 @@ net_test(cyg_addrword_t p)
 
         snmpd_reinit_function = snmp_do_reinit;
 
+        if (create_snmpd_conf ()) {
+          CYG_TEST_FAIL_EXIT("create_snmpd_conf() error\n");
+        }
         cyg_net_snmp_init();
     }
     do {

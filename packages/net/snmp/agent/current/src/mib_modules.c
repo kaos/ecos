@@ -121,7 +121,9 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "m2m.h"
 #include "snmp_vars.h"
 #include "agent_read_config.h"
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include "snmpv3.h"
+#endif
 #include "callback.h"
 #include "snmp_alarm.h"
 #include "default_store.h"

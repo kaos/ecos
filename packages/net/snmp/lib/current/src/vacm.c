@@ -97,6 +97,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <config.h>
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -553,3 +554,4 @@ int vacm_is_configured(void) {
     return 1;
 }
 
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */

@@ -114,6 +114,20 @@ udp           { mib2 7 }
 dot3          { mib2 10 7 } == { transmission 7 } &ldquo;EtherLike MIB&rdquo;
 snmp          { mib2 11 }
 </PROGRAMLISTING>
+<PARA>
+On inclusion of SNMPv3 support packages, the following MIBs are added to the
+default set of MIBs enumerated above : 
+</PARA>
+<PROGRAMLISTING>
+snmpEngine    { snmpFrameworkMIBObjects 1 }  SNMP-FRAMEWORK-MIB, as described in
+                                             RFC-2571 for support of SNMPv3
+                                             framework.
+
+usmStats      {           usmMIBObjects 1 }  SNMP-USER-BASED-SM-MIB, as 
+usmUser       {           usmMIBObjects 2 }  specified in RFC-2574 for support 
+                                             of user based security model in 
+                                             SNMPv3 management domains.
+</PROGRAMLISTING>
 </SECT1>
 <SECT1 id="net-snmp-ecos-changes">
 <TITLE>Changes to eCos sources</TITLE>
@@ -145,7 +159,7 @@ information; if the exported information is missing, SNMP will report zero
 values for such data (in the dot3 MIB).
 </PARA>
 <PARA>
-The interface chipset has an ID which is an OID; not all latest greatest
+The interface chipset has an ID which is an OID; not all the latest greatest
 devices are listed in the abailable database, so new chipsets may need to
 be added to the client MIB, if not defined in those from UCD.
 </PARA>
@@ -241,6 +255,95 @@ started automatically in normal eCos startup -
 it is up to the application to start the agent when it is ready,
 at least after the network interfaces are both &lsquo;up&rsquo;.
 </PARA>
+<SECT2 id="net-snmp-version-usage">
+<TITLE>Version usage (v1, v2 or v3)</TITLE>
+<PARA>
+The default build supports all three versions of the SNMP protocol, but without
+any dispatcher functionality (rfc 2571, section 3.1.1.2). This has the
+following implications :
+</PARA>
+<PARA> 1. There is no community authentication for v1 and v2c.</PARA>
+<PARA>2. Security provided by v3 can be bypassed by using v1/v2c protocol.</PARA>
+<PARA>
+To provide the dispatcher with rfc 2571 type functionality, it is required to
+setup security models and access profiles. This can be provided in the normal
+Unix style by writing the required configurations in <LITERAL>snmpd.conf</LITERAL> 
+file. Application code may setup profiles in <LITERAL>snmpd.conf</LITERAL> and 
+optionally set the environment variable <LITERAL>SNMPCONFPATH</LITERAL> to 
+point to the file if it is not in the usual location. The whole concept works
+in the usual way as with the standard UCD-SNMP distribution.
+</PARA>
+<SECT2 id="Traps">
+<TITLE>Traps</TITLE>
+<PARA>
+The support of <LITERAL>trapsink</LITERAL> command in  
+<ulink url="net-snmp-snmpd.conf.html"> snmpd.conf</ulink> file is not tested 
+and may have problems in working as expected. Moreover, in systems that do not 
+filesystem support, there is no way to configure a trap-session in conventional
+way.
+</PARA>
+<PARA>
+For reasons mentioned above, applications need to initialize their own trap
+sessions and pass it the details of trap-sink. The following is a small sample
+for initializing a v1 trap session :
+</PARA>
+<PROGRAMLISTING>
+typedef struct trap {
+        unsigned char ip [4];
+        unsigned int  port;
+        unsigned char community [256];
+}
+
+trap            trapsink;
+unsinged char   sink [16]; 
+
+...
+...
+
+if (trapsink.ip != 0) {
+        sprintf (sink, "%d.%d.%d.%d",
+                 trapsink[0], trapsink[1], trapsink[2], trapsink[3]);
+        if (create_trap_session (sink,
+                trapsink.port,
+                (char *)trapsink.community,
+                SNMP_VERSION_1,
+                SNMP_MSG_TRAP) == 0) {
+                log_error ("Creation of trap session failed \n");
+        }
+}
+</PROGRAMLISTING>
+</SECT2>
+<SECT2 id="net-snmp-snmpd-conf">
+<TITLE><LITERAL>snmpd.conf</LITERAL> file</TITLE>
+<PARA>
+Using snmpd.conf requires the inclusion of one of the file-system packages
+(eg. CYGPKG_RAMFS) and CYGPKG_FILEIO. With these two packages included, the
+SNMP sub-system will read the snmpd.conf file from the location specified in
+<LITERAL>SNMPCONFPATH</LITERAL>, or the standard builtin locations, and use
+these profiles. Only the profiles specified in the <LITERAL>ACCESS-CONTROL</LITERAL>
+section of <ulink url="net-snmp-snmpd.conf.html">snmpd.conf</ulink> file have 
+been tested and shown to work. Other profiles which have been implemented in 
+<LITERAL>UCD-SNMP-4.1.2</LITERAL>'s <LITERAL>snmpd.conf</LITERAL> may not work
+because the sole purpose of adding support for the snmpd.conf file has been to
+setup <LITERAL>ACCESS-CONTROL</LITERAL> models.
+</PARA>
+<PARA>
+At startup, the SNMP module tries to look for file <FILENAME>snmp.conf</FILENAME>. 
+If this file is not available, the module successively looks for files
+<FILENAME>snmpd.conf</FILENAME>, <FILENAME>snmp.local.conf</FILENAME> and 
+<FILENAME>snmpd.local.conf</FILENAME> at location pointed to by <LITERAL>
+SNMPCONFPATH</LITERAL> environment variable. In case <LITERAL>SNMPCONFPATH
+</LITERAL> is not defined, the search sequence is carried out in default directories.
+The default directories are :<FILENAME>/usr/share/snmp</filename>, <filename>
+/usr/local/share/snmp</filename> and <filename>$(HOME)/.snmp</filename>.
+The configurations read from these files are used to control both, SNMP 
+applications and the SNMP agent; in the usual UNIX fashion.
+</PARA>
+<PARA>
+The inclusion of snmpd.conf support is enabled by default when suitable 
+filesystems and FILEIO packages are active.
+</PARA>
+</SECT2>
 </SECT1>
 <SECT1 id="net-snmp-test-cases">
 <TITLE>Test cases</TITLE>
@@ -285,6 +388,28 @@ end</PROGRAMLISTING>
 <PARA>
 Leave to run for a couple of days or so to test stability.
 </PARA>
+<PARA>
+The test program can also test snmpd.conf support. It tries to build a minimal
+snmpd.conf file on a RAM filesystem and passes it to the snmp sub-system. With
+this profile on target, the following snmp[cmd] (cmd=walk, get, set) should
+work :
+</PARA>
+<PROGRAMLISTING>
+snmp[cmd] -v1 $IP crux $OID
+snmp[cmd] -v2 $IP crux $OID
+snmp[cmd] -v3 $IP -u root -L noAuthNoPriv $OID
+snmp[cmd] -v3 $IP -u root -L authNoPriv -A MD5 -a md5passwd $OID
+</PROGRAMLISTING>
+<PARA>
+The following commands would however fail since they violate the access model :
+</PARA>
+<PROGRAMLISTING>
+snmp[cmd] $IP public $OID
+snmp[cmd] -v1 $IP public $OID
+snmp[cmd] -v2c $IP public $OID
+snmp[cmd] -v3 $IP -u no_user -L noAuthNoPriv $OID
+snmp[cmd] -v3 $IP -u root -L authNoPriv -A MD5 -a badpasswd $OID
+</PROGRAMLISTING>
 </SECT1>
 <SECT1 id="net-snmp-clients-and-package-use">
 <TITLE>SNMP clients and package use</TITLE>
@@ -328,26 +453,36 @@ commented out and made to return empty lists or say &ldquo;no
 data here.&rdquo;
 </PARA>
 <PARA>
-Specifically,
+Specifically the following files have omitted/unimplemented code :
+</PARA>
+<PARA>
 <filename>PACKAGES/net/snmp/lib/VERSION/src/parse.c</filename>
+</PARA>
+<PARA>
 contains code to enumerate MIB files discovered in the system
 MIB directories (&ldquo;<filename>/usr/share/snmp/mibs</filename>&rdquo;),
 and read them all in, building data structures that are used by
 client programs to interrogate an agent.  This is not required in
 an agent, so the routine which enumerates the directories returns
-an empty list.</para>
-<PARA><filename>PACKAGES/net/snmp/lib/VERSION/src/read_config.c</filename>
-contains two systems, the first reads various configuration
-files (&ldquo;<filename>/usr/share/snmp/snmp.conf</filename>&rdquo;,
-&ldquo;<filename>/usr/share/snmp/snmpd.conf</filename>&rdquo;,
-&ldquo;<filename>/usr/local/share/snmp/snmpd.local.conf</filename>&rdquo; and
-the like) to control both the SNMP applications and the agent in
-the usual UNIX fashion.  The second system contains code to record persistent
-data as files in a directory (typically &ldquo;<filename>/var/ucd-snmp/</filename>&rdquo;)
-thus preserving state permanently.  Neither of these is supported
-because there is no filesystem present; as required, a cleaner interface
-to permit application code to manage persistent data will be developed
-in consultation with customers.
+an empty list.
+</PARA>
+<PARA>
+<filename>PACKAGES/net/snmp/lib/VERSION/src/read_config.c</filename>
+contains two systems:
+</PARA>
+<PARA>
+The first tries to read the configuration file as described in
+<ulink url="net-snmp-configuring-ecos.html">snmpd.conf file</ulink> section and 
+the second system contains code to record persistent data as files in a
+directory (typically <filename>/var/ucd-snmp</filename>) thus preserving the 
+state permanently.
+</PARA>
+<PARA>
+The first part is partially implemented to support multiple profiles and enables
+dispatcher functionality as discussed in <xref linkend="net-snmp-version-usage">.
+The second part is not supported at all in the default implementation. As required, 
+a cleaner interface to permit application code to manage persistent data will be 
+developed in consultation with customers.
 </PARA>
 </SECT1>
 <SECT1 id="net-snmp-mib-compiler">
@@ -447,5 +582,7 @@ and so on; add your new MIB as follows:
 and this should work correctly.
 </PARA>
 </SECT1>
+
+&net-snmp-agent-snmp-manpages-sgml
 </CHAPTER>
 </PART>

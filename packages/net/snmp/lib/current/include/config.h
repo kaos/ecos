@@ -174,7 +174,11 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 /* PERSISTENT_DIRECTORY: If defined, the library is capabile of saving
    persisant information to this directory in the form of configuration
    lines: PERSISTENT_DIRECTORY/NAME.persistent.conf */
-//#define PERSISTENT_DIRECTORY "/var/ucd-snmp"
+#ifdef CYGPKG_SNMPLIB_PERSISTENT_FILESYSTEM
+#define PERSISTENT_DIRECTORY "/var/ucd-snmp"
+#else
+#define PERSISTENT_DIRECTORY "/dev/null"
+#endif
 
 /* PERSISTENT_MASK: the umask permissions to set up the persistent files with */
 //#define PERSISTENT_MASK 077

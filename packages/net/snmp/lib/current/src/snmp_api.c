@@ -197,14 +197,18 @@ SOFTWARE.
 #include "mib.h"
 #include "system.h"
 #include "int64.h"
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include "snmpv3.h"
+#endif
 #include "read_config.h"
 #include "snmp_debug.h"
 #include "callback.h"
-#include "snmpusm.h"
 #include "tools.h"
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
+#include "snmpusm.h"
 #include "keytools.h"
 #include "lcd_time.h"
+#endif
 #include "snmp_alarm.h"
 #include "snmp_logging.h"
 #include "default_store.h"
@@ -356,6 +360,7 @@ static const char *api_errors[-SNMPERR_MAX+1] = {
     "Out of memory (malloc failure)",	   /* SNMPERR_MALLOC */
 };
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 static const char * usmSecLevelName[] =
 	{
 		"BAD_SEC_LEVEL",
@@ -363,6 +368,7 @@ static const char * usmSecLevelName[] =
 		"authNoPriv",
 		"authPriv"
 	};
+#endif
 
 /*
  * Multiple threads may changes these variables.
@@ -396,11 +402,14 @@ int snmp_build (struct snmp_session *, struct snmp_pdu *, u_char *, size_t *);
 static int snmp_parse (void *, struct snmp_session *, struct snmp_pdu *, u_char *, size_t);
 static void * snmp_sess_pointer (struct snmp_session *);
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 static void snmpv3_calc_msg_flags (int, int, u_char *);
 static int snmpv3_verify_msg (struct request_list *, struct snmp_pdu *);
 static int snmpv3_build_probe_pdu (struct snmp_pdu **);
 static int snmpv3_build (struct snmp_session *, struct snmp_pdu *, 
 			     u_char *, size_t *);
+#endif
+
 static int snmp_parse_version (u_char *, size_t);
 static int snmp_resend_request (struct session_list *slp, 
 				struct request_list *rp, 
@@ -693,7 +702,9 @@ init_snmp(const char *type)
   snmp_init_statistics();
   register_mib_handlers();
   register_default_handlers();
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
   init_snmpv3(type);
+#endif
   init_snmp_alarm();
 
   read_premib_configs();
@@ -785,7 +796,9 @@ _sess_copy( struct snmp_session *in_session)
     struct snmp_session *session;
     char *cp;
     u_char *ucp;
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
     size_t i;
+#endif
 
     in_session->s_snmp_errno = 0;
     in_session->s_errno = 0;
@@ -872,6 +885,7 @@ _sess_copy( struct snmp_session *in_session)
     }
     session->community = ucp;	/* replace pointer with pointer to new data */
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
     if (session->securityLevel <= 0)
       session->securityLevel = ds_get_int(DS_LIBRARY_ID, DS_LIB_SECLEVEL);
 
@@ -1013,6 +1027,7 @@ _sess_copy( struct snmp_session *in_session)
         return NULL;
       }
     }
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
     if (session->retries == SNMP_DEFAULT_RETRIES)
 	session->retries = DEFAULT_RETRIES;
@@ -1060,8 +1075,10 @@ _sess_open(struct snmp_session *in_session)
 #ifdef HAVE_GETHOSTBYNAME
     struct hostent *hp;
 #endif
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
     struct snmp_pdu *pdu, *response;
     int status;
+#endif
     size_t i, addr_size;
     char *cp = NULL;
 
@@ -1279,6 +1296,9 @@ _sess_open(struct snmp_session *in_session)
        we must probe it - this must be done after the session is
        created and inserted in the list so that the response can
        handled correctly */
+
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
+
     if (session->version == SNMP_VERSION_3) {
       if (session->securityEngineIDLen == 0 &&
           (session->securityEngineIDLen & SNMP_FLAGS_DONT_PROBE) !=
@@ -1334,6 +1354,7 @@ _sess_open(struct snmp_session *in_session)
 	  return NULL;
       }
     }
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 
     return (void *)slp;
@@ -1352,6 +1373,7 @@ snmp_sess_open(struct snmp_session *pss)
 
 
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 /* create_user_from_session(struct snmp_session *session):
 
    creates a user in the usm table from the information in a session
@@ -1458,6 +1480,7 @@ create_user_from_session(struct snmp_session *session)
 
 
 }  /* end create_user_from_session() */
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 /*
  * Close the input session.  Frees all data allocated for the session,
@@ -1566,6 +1589,7 @@ snmp_close_sessions( void )
     return 1;
 }
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 static int
 snmpv3_build_probe_pdu (struct snmp_pdu **pdu)
 {
@@ -1967,6 +1991,7 @@ snmpv3_packet_build(struct snmp_pdu *pdu, u_char *packet, size_t *out_length,
     return result;
 
 }  /* end snmpv3_packet_build() */
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 
 /*
@@ -1989,8 +2014,10 @@ _snmp_build(struct snmp_session *session,
     session->s_snmp_errno = 0;
     session->s_errno = 0;
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
     if (pdu->version == SNMP_VERSION_3)
       return snmpv3_build(session, pdu, packet, out_length);
+#endif
 
     switch (pdu->command) {
 	case SNMP_MSG_RESPONSE:
@@ -2319,6 +2346,7 @@ snmp_parse_version (u_char *data, size_t length)
 }
 
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 int
 snmpv3_parse(
      struct snmp_pdu	 *pdu,
@@ -2659,6 +2687,8 @@ snmpv3_get_report_type(struct snmp_pdu *pdu)
   return rpt_type;
 }
 
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
+
 /*
  * Parses the packet received on the input session, and places the data into
  * the input pdu.  length is the length of the input packet.
@@ -2738,6 +2768,7 @@ _snmp_parse(void * sessp,
 	result = snmp_pdu_parse(pdu, data, &length);
         break;
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
     case SNMP_VERSION_3:
       result = snmpv3_parse(pdu, data, &length, NULL);
       DEBUGMSGTL(("snmp_parse",
@@ -2776,6 +2807,7 @@ _snmp_parse(void * sessp,
 	}
       }
       break;
+#endif
     case SNMPERR_BAD_VERSION:
       ERROR_MSG("error parsing snmp message version");
       snmp_increment_statistic(STAT_SNMPINASNPARSEERRS);
@@ -3049,6 +3081,8 @@ snmp_pdu_parse(struct snmp_pdu *pdu, u_char  *data, size_t *length) {
 
    returns pointer to begining of PDU or NULL on error.
 */
+
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 u_char *
 snmpv3_scopedPDU_parse(struct snmp_pdu *pdu,
 			u_char  *cp,
@@ -3121,6 +3155,7 @@ snmpv3_scopedPDU_parse(struct snmp_pdu *pdu,
 
   return data;
 }
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 /*
  * Sends the input pdu on the session after calling snmp_build to create
@@ -3649,14 +3684,17 @@ _sess_read(void *sessp,
     }
 
     if (pdu->flags & UCD_MSG_FLAG_RESPONSE_PDU) {
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
       /* call USM to free any securityStateRef supplied with the message */
       if (pdu->securityStateRef) {
         usm_free_usmStateReference(pdu->securityStateRef);
         pdu->securityStateRef = NULL;
       }
+#endif
       for(rp = isp->requests; rp; orp = rp, rp = rp->next_request) {
         snmp_callback callback;
         void *magic;
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
         if (pdu->version == SNMP_VERSION_3) {
           /* msgId must match for V3 messages */
           if (rp->message_id != pdu->msgid) continue;
@@ -3664,8 +3702,11 @@ _sess_read(void *sessp,
            * if not, no further processing */
           if (!snmpv3_verify_msg(rp,pdu)) break;
         } else {
+#endif
           if (rp->request_id != pdu->reqid) continue;
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
         }
+#endif
         if (rp->callback) {
           callback = rp->callback;
           magic = rp->cb_data;
@@ -3687,8 +3728,11 @@ _sess_read(void *sessp,
                 break;
               }
             } else {
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
               if (SNMPV3_IGNORE_UNAUTH_REPORTS) break;
+#endif
             }
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
             /* handle engineID discovery - */
             if (!sp->securityEngineIDLen && pdu->securityEngineIDLen) {
               sp->securityEngineID = (u_char *)malloc(pdu->securityEngineIDLen);
@@ -3702,6 +3746,7 @@ _sess_read(void *sessp,
                 sp->contextEngineIDLen = pdu->securityEngineIDLen;
               }
             }
+#endif
           }
           /* successful, so delete request */
           if (isp->requests == rp){
@@ -3731,11 +3776,13 @@ _sess_read(void *sessp,
           /* MTR snmp_res_unlock(MT_LIBRARY_ID, MT_LIB_SESSION); */
         }	
     }
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
     /* call USM to free any securityStateRef supplied with the message */
     if (pdu->securityStateRef && pdu->command == SNMP_MSG_TRAP2) {
       usm_free_usmStateReference(pdu->securityStateRef);
       pdu->securityStateRef = NULL;
     }
+#endif
     snmp_free_pdu(pdu);
     return 0;
 }

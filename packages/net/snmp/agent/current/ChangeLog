@@ -1,3 +1,50 @@
+2003-02-03  Andrew Lunn <andrew.lunn@ascom.ch>
+
+        * doc/prepare-manpages.sh: New file. Convert from man to sgml.
+        * doc/manpages/snmpd.conf.5: New file: Manual page for snmpd.conf.
+        * doc/snmp-manpages.sgml: New file. The converted man page
+        * doc/snmp.sgml: Updated documentation which includes the man page.
+
+2003-02-03  Manu Sharma <manu.sharma@ascom.com>
+
+        * cdl/snmpagent.cdl,
+        * include/mib_module_config.h,
+        * include/mib_module_dot_conf.h,
+        * include/mib_module_inits.h,
+        * include/mib_module_shutdown.h,
+        * include/snmpEngine.h,
+        * include/usmStats.h,
+        * include/usmUser.h,
+        * include/vacm_vars.h,
+        * src/agent_registry.c,:
+        * src/mib_modules.c,
+        * src/snmp_vars.c,
+        * src/snmpd.c,
+        * src/mibgroup/mibII/vacm_vars.c,
+        * src/mibgroup/snmpv3/snmpEngine.c,
+        * src/mibgroup/snmpv3/usmStats.c,
+        * src/mibgroup/snmpv3/usmUser.c,
+        * tests/snmpping.c : Support to conditionally implement SNMPv3 
+        features, based on definition of CYGPKG_SNMPAGENT_V3_SUPPORT.
+
+2002-11-11  Manu Sharma <manu.sharma@ascom.com>
+
+        * src/mibgroup/mibII/vacm_vars.c:
+        * include/vacm_vars.h: Imported from the UCD-SNMP-4.1.2.  These
+          are required to support VACM features, based on a snmpd.conf file.
+
+        * cdl/snmpagent.cdl : Compile vacm_vars.c
+
+        * include/mib_module_inits.h : Initialization of vacm and usm related 
+          functions. The usm related functionality are no longer required to
+          be initialized by application code.
+
+        * tests/snmpping.c : Code to create a basic snmpd.conf file and
+          enable its usage. This conditional on
+          CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT and require the ramfs package
+
+        * doc/snmp.sgml: Documentation for above changes.
+
 2002-08-14  David Smith  <dsmith@redhat.com>
 
 	* src/agent_trap.c (send_enterprise_trap_vars):

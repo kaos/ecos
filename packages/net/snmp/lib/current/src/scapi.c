@@ -96,6 +96,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <config.h>
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include <sys/types.h>
 #if HAVE_WINSOCK_H
 #include <winsock.h>
@@ -452,7 +453,7 @@ sc_hash(oid *hashtype, size_t hashtypelen, u_char *buf, size_t buf_len,
   }
   if (*MAC_len > 16)
     *MAC_len = 16;
-  return SNMPERR_SUCCESS;
+  return (rval);
 
 #endif /* USE_OPENSSL */
 }
@@ -816,3 +817,4 @@ sc_decrypt_quit:
 			}
 #endif /* USE_OPENSSL */
 
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */

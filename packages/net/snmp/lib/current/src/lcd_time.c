@@ -98,6 +98,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <config.h>
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include <sys/types.h>
 #if HAVE_WINSOCK_H
 #include <winsock.h>
@@ -645,3 +646,5 @@ dump_etimelist(void)
 
 }  /* end dump_etimelist() */
 #endif /* SNMP_TESTING_CODE */
+
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */

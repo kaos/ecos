@@ -95,6 +95,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <config.h>
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include <stdio.h>
 #include <sys/types.h>
 #if TIME_WITH_SYS_TIME
@@ -845,3 +846,5 @@ snmpv3_set_engineBootsAndTime(int boots, int ttime) {
   snmpv3starttime.tv_sec -= ttime;
 }
 #endif
+
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */

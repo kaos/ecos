@@ -427,6 +427,7 @@ dump_chunk(const char *debugtoken, const char *title, const u_char *buf, int siz
  * FIX	Use something other than sprint_hexstring which doesn't add 
  *	trailing spaces and (sometimes embedded) newlines...
  */
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #ifdef SNMP_TESTING_CODE
 char *
 dump_snmpEngineID(const u_char *estring, size_t *estring_len)
@@ -597,6 +598,7 @@ dump_snmpEngineID_quit:
 #undef eb
 }  /* end dump_snmpEngineID() */
 #endif /* SNMP_TESTING_CODE */
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 
 /*

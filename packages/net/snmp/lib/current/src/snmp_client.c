@@ -246,13 +246,17 @@ snmp_synch_input(int op,
     state->waiting = 0;
     if (op == RECEIVED_MESSAGE) {
       if (pdu->command == SNMP_MSG_REPORT) {
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 	rpt_type = snmpv3_get_report_type(pdu);
 	if (SNMPV3_IGNORE_UNAUTH_REPORTS || 
 	    rpt_type == SNMPERR_NOT_IN_TIME_WINDOW) 
 	  state->waiting = 1;
+	session->s_snmp_errno = rpt_type;
+#else
+	session->s_snmp_errno = SNMPERR_UNSUPPORTED_SEC_LEVEL;
+#endif
 	state->pdu = NULL;
 	state->status = STAT_ERROR;
-	session->s_snmp_errno = rpt_type;
         SET_SNMP_ERROR(rpt_type);
       } else if (pdu->command == SNMP_MSG_RESPONSE) {
 	/* clone the pdu to return to snmp_synch_response */
@@ -371,6 +375,7 @@ _clone_pdu_header(struct snmp_pdu *pdu)
                                     sizeof(oid)*pdu->enterprise_length)
      ||  snmp_clone_mem((void **)&newpdu->community, pdu->community,
                                     pdu->community_len)
+#ifdef SNMPERR_UNSUPPORTED_SEC_LEVEL
      ||  snmp_clone_mem((void **)&newpdu->contextEngineID, pdu->contextEngineID,
                                     pdu->contextEngineIDLen)
      ||  snmp_clone_mem((void **)&newpdu->securityEngineID, pdu->securityEngineID,
@@ -379,6 +384,7 @@ _clone_pdu_header(struct snmp_pdu *pdu)
                                     pdu->contextNameLen)
      ||  snmp_clone_mem((void **)&newpdu->securityName, pdu->securityName,
                                     pdu->securityNameLen)
+#endif
        )
     {
         snmp_free_pdu(newpdu); return 0;

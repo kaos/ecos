@@ -53,7 +53,7 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    Andrew.Lunn@ascom.ch, Manu.Sharma@ascom.ch
+// Author(s):    Andrew.Lunn@ascom.ch, Manu.Sharma@ascom.com
 // Contributors: hmt
 // Date:         2001-05-29
 // Purpose:      Port of UCD-SNMP distribution to eCos.
@@ -94,6 +94,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #include <config.h>
+
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include <stdlib.h>
 
 #if HAVE_STRING_H
@@ -1172,3 +1174,4 @@ write_usmUserStatus(
 
 }  /* end write_usmUserStatus() */
 
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */

@@ -104,6 +104,30 @@ cdl_package CYGPKG_SNMPLIB {
 	    activity, often enough to make your SNMP client time out."
     }
 
+    cdl_component CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT {
+      display       "SNMP file-system options"
+      description "
+          This option enables file-system dependent functionality, 
+          eg snmp.conf"
+
+      active_if     CYGPKG_IO_FILEIO 
+      active_if     { CYGINT_IO_FILEIO_FS > 0 }
+
+      flavor        bool
+      default_value 1
+
+      cdl_option CYGPKG_SNMPLIB_PERSISTENT_FILESYSTEM {
+        display "Persistent filesystem support"
+        flavor  bool
+        default_value 0
+        description "
+            This option enables functions that would require a
+            persistent file-system to be available. This
+            would be required if a system needs to save backups
+            of the snmpd.conf files."
+      }
+    }
+
     cdl_component CYGPKG_SNMPLIB_OPTIONS {
         display "SNMP library build options"
         flavor  none

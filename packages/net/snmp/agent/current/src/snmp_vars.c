@@ -199,8 +199,10 @@ PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 #include "mibincl.h"
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include "snmpv3.h"
 #include "snmpusm.h"
+#endif
 #include "system.h"
 #include "kernel.h"
 #include "snmp_vars.h"
@@ -308,7 +310,9 @@ init_agent (const char *app)
   /* we handle alarm signals ourselves in the select loop */
   ds_set_boolean(DS_LIBRARY_ID, DS_LIB_ALARM_DONT_USE_SIG, 1);
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
   usm_set_reportErrorOnUnknownID(1);
+#endif
 
 #ifdef CAN_USE_NLIST
   init_kmem("/dev/kmem");

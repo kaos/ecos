@@ -1,3 +1,32 @@
+2003-02-03  Manu Sharma <manu.sharma@ascom.com>
+
+        * include/transform_oids.h,
+        * src/keytools.c,
+        * src/lcd_time.c,
+        * src/scapi.c,
+        * src/snmp_api.c,
+        * src/snmp_client.c,
+        * src/snmpusm.c,
+        * src/snmpv3.c,
+        * src/tools.c,
+        * src/vacm.c : Support to conditionally implement SNMPv3 features, 
+        based on definition of CYGPKG_SNMPAGENT_V3_SUPPORT.
+
+2002-12-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * cdl/snmplib.cdl: Make use of the CYGINT_IO_FILEIO_FS interface
+        to determine if there are any filesystems in the system.
+        
+2002-11-11  Manu Sharma <manu.sharma@ascom.com>
+
+        * cdl/snmplib.cdl: Added new component
+          CYGPKG_SNMPLIB_FILESYSTEM_SUPPORT to support usage of the
+          snmpd.conf file based agent configuration.
+
+        * src/read_config.c: Include functions that read the snmpd.conf
+          file and setup the infrastructure based on configurations in
+          this file.
+
 2002-02-01  Gary Thomas  <gthomas@redhat.com>
 
 	* src/system.c: 

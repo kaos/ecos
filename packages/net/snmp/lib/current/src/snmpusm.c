@@ -104,6 +104,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <config.h>
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #include <sys/types.h>
 #if HAVE_WINSOCK_H
 #include <winsock.h>
@@ -2840,3 +2841,5 @@ usm_set_user_password(struct usmUser *user, const char *token, char *line)
     }
   }
 }  /* end usm_set_password() */
+
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */

@@ -93,6 +93,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <config.h>
 
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 #if HAVE_WINSOCK_H
 #include <winsock.h>
 #endif
@@ -277,4 +278,5 @@ write_engineTime(
   return SNMP_ERR_NOERROR;
 }
 
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 #endif /* SNMP_TESTING_CODE */

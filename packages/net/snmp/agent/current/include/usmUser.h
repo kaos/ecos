@@ -53,7 +53,7 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    Andrew.Lunn@ascom.ch, Manu.Sharma@ascom.ch
+// Author(s):    Andrew.Lunn@ascom.ch, Manu.Sharma@ascom.com
 // Contributors: hmt
 // Date:         2001-05-29
 // Purpose:      Port of UCD-SNMP distribution to eCos.
@@ -96,6 +96,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #ifndef _MIBGROUP_USMUSER_H
 #define _MIBGROUP_USMUSER_H
+
+#ifdef CYGPKG_SNMPAGENT_V3_SUPPORT
 
 #include "callback.h"
 #include "snmpusm.h"
@@ -146,5 +148,7 @@ WriteMethod write_usmUserPrivKeyChange;
 WriteMethod write_usmUserPublic;
 WriteMethod write_usmUserStorageType;
 WriteMethod write_usmUserStatus;
+
+#endif /* CYGPKG_SNMPAGENT_V3_SUPPORT */
 
 #endif /* _MIBGROUP_USMUSER_H */
