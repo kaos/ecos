@@ -5,6 +5,10 @@
 
 2003-09-26  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/flash.c (fis_free, fis_find_free): 
+	Fix some problems introduced with the new FLASH interfaces (used by 
+	NAND devices)
+
 	* src/fconfig.c: Honor FLASH/FIS configury.
 
 	* src/net/bootp.c: 

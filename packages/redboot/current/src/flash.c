@@ -493,19 +493,19 @@ fis_list(int argc, char *argv[])
 static void
 fis_free(int argc, char *argv[])
 {
-    unsigned long *fis_ptr, *fis_end;
+    unsigned long *fis_ptr, *fis_end, flash_data;
     unsigned long *area_start;
     void *err_addr;
 
     // Do not search the area reserved for pre-RedBoot systems:
-    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)fis_work_block + 
+    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
                                 CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
                                 CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
     fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
     area_start = fis_ptr;
     while (fis_ptr < fis_end) {
-        if (*fis_ptr != (unsigned long)0xFFFFFFFF) {
+        flash_read(fis_ptr, &flash_data, sizeof(unsigned long), (void **)&err_addr);
+        if (flash_data != (unsigned long)0xFFFFFFFF) {
             if (area_start != fis_ptr) {
                 // Assume that this is something
                 diag_printf("  0x%08lX .. 0x%08lX\n",
@@ -514,7 +514,8 @@ fis_free(int argc, char *argv[])
             // Find next blank block
             area_start = fis_ptr;
             while (area_start < fis_end) {
-                if (*area_start == (unsigned long)0xFFFFFFFF) {
+                flash_read(area_start, &flash_data, sizeof(unsigned long), (void **)&err_addr);
+                if (flash_data == (unsigned long)0xFFFFFFFF) {
                     break;
                 }
                 area_start += flash_block_size / sizeof(CYG_ADDRESS);
@@ -534,19 +535,19 @@ fis_free(int argc, char *argv[])
 static bool
 fis_find_free(CYG_ADDRESS *addr, unsigned long length)
 {
-    unsigned long *fis_ptr, *fis_end;
+    unsigned long *fis_ptr, *fis_end, flash_data;
     unsigned long *area_start;
     void *err_addr;
 
     // Do not search the area reserved for pre-RedBoot systems:
-    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)fis_work_block + 
+    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
                                 CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
                                 CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
     fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
     area_start = fis_ptr;
     while (fis_ptr < fis_end) {
-        if (*fis_ptr != (unsigned long)0xFFFFFFFF) {
+        flash_read(fis_ptr, &flash_data, sizeof(unsigned long), (void **)&err_addr);
+        if (flash_data != (unsigned long)0xFFFFFFFF) {
             if (area_start != fis_ptr) {
                 // Assume that this is something
                 if ((fis_ptr-area_start) >= (length/sizeof(unsigned))) {
@@ -557,7 +558,8 @@ fis_find_free(CYG_ADDRESS *addr, unsigned long length)
             // Find next blank block
             area_start = fis_ptr;
             while (area_start < fis_end) {
-                if (*area_start == (unsigned long)0xFFFFFFFF) {
+                flash_read(area_start, &flash_data, sizeof(unsigned long), (void **)&err_addr);
+                if (flash_data == (unsigned long)0xFFFFFFFF) {
                     break;
                 }
                 area_start += flash_block_size / sizeof(CYG_ADDRESS);
