@@ -72,7 +72,7 @@
 // around.
 #define CYGSEM_HAL_ROM_RESET_USES_JUMP
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 #define PLATFORM_SETUP1                                                    \
         ldr     r1,=KS32C_IOPMOD                                          ;\
         ldr     r2,=0xff /* set led display to output */                  ;\
