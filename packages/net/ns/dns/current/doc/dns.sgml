@@ -59,7 +59,7 @@ first entry.</PARA>
 </LISTITEM>
 <LISTITEM>
 <PARA>The code has been made thread safe. ie multiple threads
-may can 
+may call 
 <FUNCTION>gethostbyname()</FUNCTION>
  without causing problems to the hostent structure returned. What
 is not safe is one thread using both 
@@ -73,16 +73,33 @@ to the other function.</PARA>
 <PARA>To initialise the DNS client the following function must be
 called:</PARA>
 <PROGRAMLISTING>#include &lt;network.h&gt;
-int cyg_dns_res_init(struct in_addr &ast;dns_server)</PROGRAMLISTING>
+int cyg_dns_res_init(struct in_addr *dns_server)</PROGRAMLISTING>
 <PARA>where dns_server is the address of the DNS server
 the client should query. On Error this function returns -1, otherwise
 0 for success. If lookups are attemped before this function has
 been called, they will fail and return NULL.</PARA>
+
+<PARA>A default, hard coded, server may be specified in the CDL option
+<literal>CYGDAT_NS_DNS_DEFAULT_SERVER</literal>. The use of this is
+controlled by <literal>CYGPKG_NS_DNS_DEFAULT</literal>. If this is
+enabled, <literal>init_all_network_interfaces</literal> will
+initialize the resolver with the hard coded address. The DHCP client
+or user code my override this address by calling
+<literal>cyg_dns_res_init</literal> again. </PARA>
+
 <PARA>The DNS client understands the concepts of the target being
 in a domain. By default no domain will be used. Host name lookups
 should be for fully qualified names. The domain name can be set
-using the function <function>setdomainname()</function>.
-Once set, the DNS client will first perform a lookup with the domain
+and retrieved using the functions:<PARA> 
+<PROGRAMLISTING>setdomainname(char *name, size_t len);
+getdomainname(char *name, size_t len);</PROGRAMLISTING>
+
+<PARA>Alternatively, a hard coded domain name can be set using CDL.
+The boolean <literal>CYGPKG_NS_DNS_DOMAINNAME</literal> enables this
+and the domain name is taken from
+<literal>CYGPKG_NS_DNS_DOMAINNAME_NAME</literal>.</PARA>
+
+<PARA>Once set, the DNS client will first perform a lookup with the domain
 name appended. If this fails it will then perform a second lookup
 without the appended domain name. </PARA>
 </SECT1>

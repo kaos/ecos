@@ -88,7 +88,7 @@ dns_test(cyg_addrword_t p)
 
     getdomainname(dn,sizeof(dn));
     diag_printf("INFO:<DHCP said domain name is %s>\n",dn);
-    CYG_TEST_CHECK(!strncmp(dn,_DNS_IP,sizeof(_DNS_IP)),
+    CYG_TEST_CHECK(!strncmp(dn,_LOOKUP_DOMAINNAME,sizeof(_LOOKUP_DOMAINNAME)),
                    "DHCP got the wrong domainname");
     
     /* Expect _LOOKUP_IP as the answer. This is a CNAME lookup */
@@ -111,7 +111,7 @@ dns_test(cyg_addrword_t p)
         diag_printf("FAIL:<Asked for " _LOOKUP_HOSTNAME ". No answer: %s>\n", hstrerror(h_errno));
     }
 
-    CYG_TEST_FINISH("dns1 test completed");
+    CYG_TEST_FINISH("dns2 test completed");
 }
 
 void

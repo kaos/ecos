@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Andrew Lunn <andrew.lunn@ascom.ch>   
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -42,7 +43,7 @@
 #
 # Author(s):      jskov
 # Original data:  jskov
-# Contributors:
+# Contributors:   andrew.lunn@ascom.ch
 # Date:           2001-09-18
 #
 #####DESCRIPTIONEND####
@@ -68,6 +69,44 @@ cdl_package CYGPKG_NS_DNS {
         compile       dns.c
     }
 
+    cdl_component CYGPKG_NS_DNS_DEFAULT {
+        display       "Provide a hard coded default server address"
+        flavor        bool
+        active_if     CYGPKG_NS_DNS_BUILD     
+        default_value 0
+        description   "     
+            This option controls the use of a default, hard coded DNS 
+            server. When this is enabled, the IP address in the CDL 
+            option CYGDAT_NS_DNS_DEFAULT_SERVER is used in
+            init_all_network_interfaces() to start the resolver using 
+            the specified server. The DHCP client or user code may 
+            override this by restarting the resolver."
+
+        cdl_option CYGDAT_NS_DNS_DEFAULT_SERVER {
+            display       "IP address of the default DNS server"
+            flavor        data
+            default_value { "192.168.1.1" }
+        }
+    }
+    cdl_component CYGPKG_NS_DNS_DOMAINNAME {
+        display       "Provide a hard coded default domain name"
+        flavor        bool
+        active_if     CYGPKG_NS_DNS_BUILD     
+        default_value 0
+        description   "     
+            This option controls the use of a default, hard coded
+            domain name to be used when querying a DNS server. When
+            this is enabled, the name in the CDL option
+            CYGDAT_NS_DNS_DOMAINNAME_NAME is used in
+            init_all_network_interfaces() to set the domain name as
+            accessed by getdomainname()."
+
+        cdl_option CYGDAT_NS_DNS_DOMAINNAME_NAME {
+            display       "Domain name for this device"
+            flavor        data
+            default_value { "default.domain.com" }
+        }
+    }
     cdl_component CYGPKG_NS_DNS_OPTIONS {
         display "DNS support build options"
         flavor  none
@@ -108,3 +147,5 @@ cdl_package CYGPKG_NS_DNS {
             This option specifies the set of tests for the DNS package."
     }
 }
+
+# EOF dns.cdl

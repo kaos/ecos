@@ -1,3 +1,21 @@
+2003-01-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/dns.cdl: Added the ability to hard code a domain name.
+	Inspired by Motoya Kurotsu.
+	* doc/dns.sgml: Documentation for this.
+	
+2003-01-10  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>
+
+        * tests/dns2.c: Verify domain name from the DHCP server with
+	_LOOKUP_DOMAINNAME, not _DNS_IP which is the address of the DNS
+	server.
+
+2003-01-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/dns.cdl: Added the ability to hard code a DNS server
+	address into the image which is used as the default.
+	* doc/dns.sgml: Documentation for this.
+
 2002-10-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/dns.cdl: Move CYGBLD_ISO_DNS_HEADER requires in with
