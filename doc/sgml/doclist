@@ -22,6 +22,7 @@ net/snmp/agent/current/doc/snmp.sgml
 net/snmp/agent/current/doc/snmp-manpages.sgml
 net/httpd/current/doc/httpd.sgml
 net/ftpclient/current/doc/ftpclient.sgml
+net/sntp/current/doc/sntp.sgml
 services/crc/current/doc/crc.sgml
 services/cpuload/current/doc/cpuload.sgml
 services/profile/gprof/current/doc/profile.sgml

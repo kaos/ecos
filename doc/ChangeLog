@@ -1,3 +1,8 @@
+2003-02-25  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/doclist: Added the simple network time protocol client
+	documentation.
+	
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* sgml/doclist: Reorder in a slightly more logical order with
