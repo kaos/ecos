@@ -45,8 +45,10 @@
 
 #include "redboot.h"
 
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 // GDB interface functions
 extern void ungetDebugChar(char c);
+#endif
 
 void 
 mon_write_char(char c)
@@ -242,6 +244,7 @@ gets(char *buf, int buflen, int timeout)
                 ptr--;
             }
             break;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         case '+':
         case '$':
             if (ptr == buf) {
@@ -250,6 +253,7 @@ gets(char *buf, int buflen, int timeout)
                 return _GETS_GDB;
             }
             // Fall through - accept '$' at other than start of line
+#endif
         default:
             if (console_echo) {
                 mon_write_char(c);

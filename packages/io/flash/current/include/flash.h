@@ -47,9 +47,11 @@
 #include <pkgconf/io_flash.h>
 #include <cyg/hal/hal_cache.h>
 
+typedef int _printf(char* fmt, ...);
+
 #define FLASH_MIN_WORKSPACE 0x10000  // Space used by FLASH code
 
-externC int flash_init(void *work_space, int work_space_length);
+externC int flash_init(void *work_space, int work_space_length, _printf *pf);
 externC int flash_erase(void *base, int len, void **err_address);
 externC int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
 externC void flash_dev_query(void *data);
@@ -62,8 +64,6 @@ externC int flash_get_limits(void *base, void **start, void **end);
 externC int flash_get_block_info(int *block_size, int *blocks);
 externC bool flash_code_overlaps(void *start, void *end);
 externC char *flash_errmsg(int err);
-
-externC int printf(char* fmt, ...);
 
 #define FLASH_ERR_OK              0x00  // No error - operation complete
 #define FLASH_ERR_INVALID         0x01  // Invalid FLASH address
@@ -92,6 +92,7 @@ struct flash_info {
     unsigned long block_mask;
     void *start, *end;  // Address range
     int   init;
+    _printf *pf;
 };
 
 externC struct flash_info flash_info;

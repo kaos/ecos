@@ -1,3 +1,10 @@
+2001-06-08  Gary Thomas  <gthomas@redhat.com>
+
+	* support/dl_edb7xxx.c: Change use of 'CharReady()' which seems
+	to be unreliable on Windows/CygWin.  These changes should make
+	this program work on Windows when built via CygWin.  Suggested
+	by Lewin A.R.W. Edwards <larwe@larwe.com>.
+
 2001-05-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_platform_setup.h: Use correct 7209 define.

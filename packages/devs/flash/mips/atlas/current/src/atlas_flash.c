@@ -82,7 +82,7 @@ flash_hwr_init(void)
         flash_info.end = (void *)0x9e000000;
         return FLASH_ERR_OK;
     } else {
-        printf("Can't identify FLASH, sorry\n");
+        (*flash_info.pf)("Can't identify FLASH, sorry\n");
         diag_dump_buf(data, sizeof(data));
         return FLASH_ERR_HWR;
     }
@@ -93,7 +93,7 @@ int
 flash_hwr_map_error(int err)
 {
     if (err & 0x007E007E) {
-        printf("Err = %x\n", err);
+        (*flash_info.pf)("Err = %x\n", err);
         if (err & 0x00100010) {
             return FLASH_ERR_PROGRAM;
         } else 

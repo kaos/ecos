@@ -12,6 +12,10 @@
 #include <stdio.h>
 #include "bootcode.h"
 
+#ifndef _WIN32
+#define CHAR_READY_IS_RELIABLE
+#endif
+
 #define DEFAULT_PORT "/dev/ttyS1"
 extern char ReceiveChar(long);
 extern void SendChar(long, char);
@@ -199,10 +203,12 @@ main(int argc, char *argv[])
     //
     // Empty out the input queue.
     //
+#ifdef CHAR_READY_IS_RELIABLE
     while(CharReady(lPort))
     {
         cChar = ReceiveChar(lPort);
     }
+#endif
 
     //
     // Tell the user to reset the board.
@@ -284,7 +290,11 @@ main(int argc, char *argv[])
         //
         // See if there is a character waiting to be read.
         //
+#ifdef CHAR_READY_IS_RELIABLE
         if(CharReady(lPort))
+#else
+        if (1)
+#endif
         {
             //
             // Read the character.
@@ -304,10 +314,12 @@ main(int argc, char *argv[])
     //
     // Empty out the input queue.
     //
+#ifdef CHAR_READY_IS_RELIABLE
     while(CharReady(lPort))
     {
         cChar = ReceiveChar(lPort);
     }
+#endif
 
     //
     // Send the program flash command.

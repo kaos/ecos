@@ -1,3 +1,7 @@
+2001-06-11  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/eth_drivers.cdl: Make debug default for RedBoot.
+
 2001-05-22  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/eth_drivers.cdl: New option: CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS

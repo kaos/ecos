@@ -1,3 +1,15 @@
+2001-06-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl: Make debug output an option. Include DHCP.
+
+	* src/lib/dhcp_prot.c: DHCP_CHATTER -> CYGDBG_NET_DHCP_CHATTER
+
+	* src/ecos/support.c (cyg_kmem_init): Only print debug output if
+	requested.
+
+	* cdl/net.cdl: Make requirements on other eCos features more
+	abstract.
+
 2001-05-09  Robin Farine <acnrf@dial.eunet.ch>
 2001-05-09  Hugo Tyson  <hmt@redhat.com>
 

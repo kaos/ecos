@@ -27,7 +27,7 @@ findversion()
 {
 	echo "#include <stdio.h>" > /tmp/ctver.c
 	echo "#include \"symbols.h\"" >> /tmp/ctver.c
-	echo "int main() { printf(\"%.1f\", ecCONFIGURATION_TOOL_VERSION); }" >> /tmp/ctver.c
+	echo "int main() { printf(\"%.2f\", ecCONFIGURATION_TOOL_VERSION); }" >> /tmp/ctver.c
 	gcc /tmp/ctver.c -I$CONFIGTOOLDIR -o /tmp/ctver
     VERSION=`/tmp/ctver`
 	rm -f /tmp/ctver /tmp/ctver.c

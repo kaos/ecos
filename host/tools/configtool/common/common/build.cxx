@@ -121,6 +121,11 @@ std::string nospace_path (const std::string input) {
 }
 #endif
 
+// Two methods of generating Cygwin filenames
+// CYGWIN_USE_CYGDRIVE = 1: use e.g. /cygdrive/c/, but this can have problems with mkdir -p
+// CYGWIN_USE_CYGDRIVE = 0: use e.g. //c/, but this is deprecated in new versions of Cygwin
+#define CYGWIN_USE_CYGDRIVE 0
+
 // convert a DOS filepath to a Cygwin filepath
 std::string cygpath (const std::string input) {
 #ifdef _WIN32
@@ -134,6 +139,8 @@ std::string cygpath (const std::string input) {
 	cygwin_conv_to_posix_path (path.c_str (), buffer);
 	output = buffer;
 #else
+
+#if CYGWIN_USE_CYGDRIVE
     std::string strCygdrive("/cygdrive");
 
     HKEY hKey = 0;
@@ -159,6 +166,16 @@ std::string cygpath (const std::string input) {
 			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
 		}
 	}
+#else
+	for (unsigned int n = 0; n < path.size (); n++) { // for each char
+		if ((1 == n) && (':' == path [n])) { // if a DOS logical drive letter is present
+			output = "//" + output; // convert to Cygwin notation
+		} else {
+			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
+		}
+	}
+#endif
+    // CYGWIN_USE_CYGDRIVE
 #endif
 	return output;
 #else

@@ -79,7 +79,7 @@ flash_hwr_init(void)
         flash_info.end = (void *)(0x41000000+(num_regions*region_size));
         return FLASH_ERR_OK;
     } else {
-        printf("Can't identify FLASH, sorry\n");
+        (*flash_info.pf)("Can't identify FLASH, sorry\n");
         diag_dump_buf(data, sizeof(data));
         return FLASH_ERR_HWR;
     }

@@ -717,7 +717,7 @@ static void cyg_sock_unlock( cyg_file *fp )
     if( fp->f_syncmode & CYG_SYNCMODE_SOCK_NETSTACK )
         nstab_lock[ns-&nstab[0]].unlock();
 
-    cyg_file_lock( fp, fp->f_syncmode>>CYG_SYNCMODE_SOCK_SHIFT);
+    cyg_file_unlock( fp, fp->f_syncmode>>CYG_SYNCMODE_SOCK_SHIFT);
 }
 
 

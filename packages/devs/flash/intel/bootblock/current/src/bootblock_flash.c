@@ -71,12 +71,12 @@ flash_hwr_init(void)
     HAL_ICACHE_INVALIDATE_ALL(); // is also required to avoid old contents
     stat = (*_flash_query)(data);
 #if DEBUG
-    printf("stat = %x\n", stat);
+    (*flash_info.pf)("stat = %x\n", stat);
     dump_buf(data, sizeof(data));
 #endif
 
     if (data[0] != FLASH_Intel_code) {
-        printf("Not Intel = %x\n", data[0]);
+        (*flash_info.pf)("Not Intel = %x\n", data[0]);
         return FLASH_ERR_HWR;
     }
 
@@ -88,7 +88,7 @@ flash_hwr_init(void)
         num_regions = 32; // (only use one for now)*4;             // 4 devices in serial, each having 32 regions
         region_size = 0x10000;
     } else {
-        printf("Unknown device type: %x\n", data[1]);
+        (*flash_info.pf)("Unknown device type: %x\n", data[1]);
         return FLASH_ERR_HWR;
     }
 
@@ -111,7 +111,7 @@ int
 flash_hwr_map_error(int err)
 {
     if (err & 0x007E007E) {
-        printf("Err = %x\n", err);
+        (*flash_info.pf)("Err = %x\n", err);
         if (err & 0x00400040) {
             return FLASH_ERR_ERASE_SUSPEND;
         } else 

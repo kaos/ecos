@@ -51,7 +51,6 @@
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
-
 // When this flag is set, do not actually jump to the relocated code.
 // This can be used for running the function in place (RAM startup only),
 // allowing calls to diag_printf() and similar.
@@ -64,7 +63,7 @@
 struct flash_info flash_info;
 
 int
-flash_init(void *work_space, int work_space_size)
+flash_init(void *work_space, int work_space_size, _printf *pf)
 {
     int err;
 
@@ -76,6 +75,7 @@ flash_init(void *work_space, int work_space_size)
     }
     flash_info.block_mask = ~(flash_info.block_size-1);
     flash_info.init = 1;
+    flash_info.pf = pf;
     return FLASH_ERR_OK;
 }
 
@@ -190,7 +190,7 @@ flash_erase(void *addr, int len, void **err_addr)
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
-    printf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
+    (*flash_info.pf)("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(block, end_addr);
@@ -203,11 +203,11 @@ flash_erase(void *addr, int len, void **err_addr)
             break;
         }
         block += flash_info.block_size / sizeof(*block);
-        printf(".");
+        (*flash_info.pf)(".");
     }
     FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
-    printf("\n");
+    (*flash_info.pf)("\n");
     return (stat);
 }
 
@@ -242,8 +242,8 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     }
 #endif
 
-    printf("... Program from %p-%p at %p: ", (void*)data, 
-           (void*)(((unsigned long)data)+len), (void*)addr);
+    (*flash_info.pf)("... Program from %p-%p at %p: ", (void*)data, 
+                     (void*)(((unsigned long)data)+len), (void*)addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(addr, addr+len);
@@ -257,21 +257,21 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
 #ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM
         if (memcmp(addr, data, size) != 0) {
             stat = 0x0BAD;
-            printf("V");
+            (*flash_info.pf)("V");
         }
 #endif
         if (stat) {
             *err_addr = (void *)addr;
             break;
         }
-        printf(".");
+        (*flash_info.pf)(".");
         len -= size;
         addr += size/sizeof(*addr);
         data += size/sizeof(*data);
     }
     FLASH_Disable(addr, addr+len);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
-    printf("\n");
+    (*flash_info.pf)("\n");
     return (stat);
 }
 
@@ -309,7 +309,7 @@ flash_lock(void *addr, int len, void **err_addr)
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
-    printf("... Lock from %p-%p: ", block, end_addr);
+    (*flash_info.pf)("... Lock from %p-%p: ", block, end_addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(block, end_addr);
@@ -321,11 +321,11 @@ flash_lock(void *addr, int len, void **err_addr)
             break;
         }
         block += flash_info.block_size / sizeof(*block);
-        printf(".");
+        (*flash_info.pf)(".");
     }
     FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
-    printf("\n");
+    (*flash_info.pf)("\n");
     return (stat);
 }
 
@@ -361,7 +361,7 @@ flash_unlock(void *addr, int len, void **err_addr)
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
-    printf("... Unlock from %p-%p: ", block, end_addr);
+    (*flash_info.pf)("... Unlock from %p-%p: ", block, end_addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(block, end_addr);
@@ -373,11 +373,11 @@ flash_unlock(void *addr, int len, void **err_addr)
             break;
         }
         block += flash_info.block_size / sizeof(*block);
-        printf(".");
+        (*flash_info.pf)(".");
     }
     FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
-    printf("\n");
+    (*flash_info.pf)("\n");
     return (stat);
 }
 #endif

@@ -1,3 +1,8 @@
+2001-06-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: 
+	* include/flash.h: Remove dependency on printf() via user functions.
+
 2001-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_dev.h (FLASH_P2V): Use CYG_ADDRWORD instead of int.

@@ -1,3 +1,7 @@
+2001-06-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/strata.c: Remove dependency on printf() via user functions.
+
 2001-06-07  Hugo Tyson  <hmt@redhat.com>
 
 	* src/strata.c (flash_hwr_init): If we find a flash device that is

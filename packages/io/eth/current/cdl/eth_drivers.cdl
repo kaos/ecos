@@ -156,7 +156,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         cdl_option CYGSEM_IO_ETH_DRIVERS_DEBUG {
             display          "Print driver debug information"
             flavor           bool
-            default_value    0
+            default_value    { 0 != CYGPKG_REDBOOT }
             description      "
                Selecting this option will enable the stand-alone driver to print
                lots of information.  Useful only when getting a low-level hardware

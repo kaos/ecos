@@ -156,7 +156,11 @@ static pthread_t thread_id_cookie = THREAD_ID_COOKIE_INC;
 //-----------------------------------------------------------------------------
 // Main thread.
 
-static char main_stack[CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE];
+#define MAIN_DEFAULT_STACK_SIZE \
+  (CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE < PTHREAD_STACK_MIN \
+              ? PTHREAD_STACK_MIN : CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE)
+
+static char main_stack[MAIN_DEFAULT_STACK_SIZE];
 
 // Thread ID of main thread.
 static pthread_t main_thread;
@@ -412,8 +416,8 @@ externC void cyg_posix_pthread_start( void )
 
     pthread_attr_init( &attr );
     pthread_attr_setinheritsched( &attr, PTHREAD_EXPLICIT_SCHED );
-    pthread_attr_setstackaddr( &attr, &main_stack[CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE] );
-    pthread_attr_setstacksize( &attr, CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE );
+    pthread_attr_setstackaddr( &attr, &main_stack[sizeof(main_stack)] );
+    pthread_attr_setstacksize( &attr, sizeof(main_stack) );
     pthread_attr_setschedpolicy( &attr, SCHED_RR );
     pthread_attr_setschedparam( &attr, &schedparam );
     
@@ -1177,7 +1181,7 @@ externC int pthread_attr_setstacksize (pthread_attr_t *attr,
     
     PTHREAD_CHECK(attr);
 
-    CYG_ASSERT( stacksize > PTHREAD_STACK_MIN, "Inadequate stack size supplied");
+    CYG_ASSERT( stacksize >= PTHREAD_STACK_MIN, "Inadequate stack size supplied");
     
     // Reject inadequate stack sizes
     if( stacksize < PTHREAD_STACK_MIN )

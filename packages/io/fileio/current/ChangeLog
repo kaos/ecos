@@ -1,3 +1,14 @@
+2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/fio.h (FILEIO_ENTRY): Don't use CYG_MACRO_START/END around
+	tracing macros.
+	Reported by Richard Panton.
+
+2001-06-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/socket.cxx (cyg_sock_unlock): Fix cyg_file_lock->cyg_file_unlock
+	thinko.
+
 2001-03-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/file.cxx (open): Check for required/valid open mode.

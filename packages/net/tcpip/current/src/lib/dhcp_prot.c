@@ -41,8 +41,6 @@
 //
 //========================================================================*/
 
-#define nDHCP_CHATTER // report as we go along?
-
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
 
@@ -512,7 +510,7 @@ do_dhcp(const char *intf, struct bootp *res,
 
             set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_INIT sending:\n" );
             show_bootp( intf, xmit );
 #endif            
@@ -554,7 +552,7 @@ do_dhcp(const char *intf, struct bootp *res,
                 break;
             }
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_SELECTING received:\n" );
             diag_printf( "...rx_addr is family %d, addr %08x, port %d\n",
                          rx_addr.sin_family,
@@ -605,7 +603,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // And this will be a new one:
             set_fixed_tag( xmit, TAG_DHCP_REQ_IP, ntohl(xmit->bp_yiaddr.s_addr), 4 );
             
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_REQUESTING sending:\n" );
             show_bootp( intf, xmit );
 #endif            
@@ -637,7 +635,7 @@ do_dhcp(const char *intf, struct bootp *res,
                 break;
             }
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_REQUEST_RECV received:\n" );
             diag_printf( "...rx_addr is family %d, addr %08x, port %d\n",
                          rx_addr.sin_family,
@@ -725,7 +723,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // Set unicast address to *server*
             server_addr.sin_addr.s_addr = res->bp_siaddr.s_addr;
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_RENEWING sending:\n" );
             diag_printf( "UNICAST to family %d, addr %08x, port %d\n",
                          server_addr.sin_family,
@@ -765,7 +763,7 @@ do_dhcp(const char *intf, struct bootp *res,
                 break;
             }
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_RENEW_RECV received:\n" );
             diag_printf( "...rx_addr is family %d, addr %08x, port %d\n",
                          rx_addr.sin_family,
@@ -821,7 +819,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // And this will be a new one:
             set_fixed_tag( xmit, TAG_DHCP_REQ_IP, ntohl(xmit->bp_yiaddr.s_addr), 4 );
             
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_REBINDING sending:\n" );
             show_bootp( intf, xmit );
 #endif            
@@ -854,7 +852,7 @@ do_dhcp(const char *intf, struct bootp *res,
                 break;
             }
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_REBIND_RECV received:\n" );
             diag_printf( "...rx_addr is family %d, addr %08x, port %d\n",
                          rx_addr.sin_family,
@@ -952,7 +950,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // Set unicast address to *server*
             server_addr.sin_addr.s_addr = res->bp_siaddr.s_addr;
 
-#ifdef DHCP_CHATTER
+#ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_DO_RELEASE sending:\n" );
             diag_printf( "UNICAST to family %d, addr %08x, port %d\n",
                          server_addr.sin_family,

@@ -1,3 +1,14 @@
+2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Don't reset the board
+	straight away with a 'r' packet. Let a 'k' packet do it instead.
+
+	* src/hal_stub.c (__install_traps): Remove redundant comment.
+
+2001-06-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/hal_if.c (delay_us): Revert below change of 2001-05-17
+
 2001-06-05  Hugo Tyson  <hmt@redhat.com>
 
 	* src/hal_if.c (cyg_hal_diag_mangler_gdb_putc): The nesting of

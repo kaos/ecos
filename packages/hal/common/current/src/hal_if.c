@@ -146,7 +146,6 @@ delay_us(cyg_int32 usecs)
     // 1us on most CPUs running between 30-100MHz [depends on how many
     // instructions this compiles to, how many dispatch units can be
     // used for the simple loop, actual CPU frequency, etc]
-#warning No HAL_DELAY_US() macro available, using loop
     while (usecs-- > 0) {
         int i;
         for (i = 0; i < 10; i++);

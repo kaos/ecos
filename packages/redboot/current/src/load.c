@@ -356,11 +356,13 @@ do_load(int argc, char *argv[])
             return;
         }
     }
+#ifdef CYGPKG_REDBOOT_NETWORKING
     if ((mode == MODE_TFTP) && !filename) {
         printf("File name missing\n");
         printf("usage: load %s\n", usage);
         return;
     }
+#endif
     if (base_addr_set &&
         ((base < (unsigned long)user_ram_start) ||
          (base > (unsigned long)user_ram_end))) {

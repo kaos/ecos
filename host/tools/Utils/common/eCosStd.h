@@ -45,7 +45,41 @@
 #if !defined(AFX_STDAFX_H__F20BA9C4_CFD5_11D2_BF75_00A0C949ADAC__INCLUDED_)
 #define AFX_STDAFX_H__F20BA9C4_CFD5_11D2_BF75_00A0C949ADAC__INCLUDED_
 
-#ifdef _WIN32
+#if defined(__GNUWIN32__)
+  #include <winsock.h>
+
+#if 0
+  #include <termios.h>
+  #include <unistd.h>
+  #include <sys/wait.h>
+  #include <dirent.h>
+  #include <sys/file.h>
+
+  #include <sys/socket.h> // socket etc...
+  #include <netinet/in.h> // inet_addr
+  #include <arpa/inet.h>  // inet_addr
+  #include <netdb.h>      // gethostbyname
+#endif
+  #include <sys/timeb.h>
+  #include <signal.h>
+  #define cPathsep '/'
+
+  #include <malloc.h>     // malloc   
+  #include <stdlib.h>     // atoi
+  #include <errno.h>
+  #define WOULDBLOCK EWOULDBLOCK
+
+  #include "wcharunix.h"
+  #include <sys/time.h>
+
+  #define _stat stat
+
+  typedef long long Time;
+  #define MODE_TEXT
+
+  #include <windows.h>
+
+#elif defined(_WIN32)
   #ifdef _UNICODE
     #ifndef UNICODE
       #define UNICODE         // UNICODE is used by Windows headers

@@ -1,3 +1,14 @@
+2001-06-11  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx.inl: Traverse by incrementing
+	driver-global pointer variable.
+
+2001-06-11  David Howells  <dhowells@redhat.com>
+
+	* include/flash_am29xxxxx.inl: actually traverse the list of
+	supported devices, rather than checking the first entry several
+	times
+
 2001-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx_parts.inl: New file with just part

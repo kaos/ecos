@@ -53,6 +53,7 @@
 // So we remember which ports have been used
 static int get_port = 7700;
 
+#if 0 // No longer used
 //
 // Read a file from a host into a local buffer.  Returns the
 // number of bytes actually read, or (-1) if an error occurs.
@@ -176,6 +177,7 @@ tftp_get(char *filename,
         }
     }
 }
+#endif
 
 static struct {
     bool open;
@@ -228,8 +230,10 @@ tftp_stream_open(char *filename,
         server->sin_port = htons(TFTP_PORT);
     }
 
-    // Send request
-    if (__udp_sendto(tftp_stream.data, sizeof(tftp_stream.data), 
+    // Send request - note: RFC 1350 (TFTP rev 2) indicates that this should be
+    // only as long as required to hold the request, with the nul terminator.
+    // Some servers silently go to lunch if the request is not the correct size.
+    if (__udp_sendto(tftp_stream.data, cp-(char *)hdr, 
                      server, &tftp_stream.local_addr) < 0) {
         // Problem sending request
         *err = TFTP_NETERR;

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.h,v 1.12 2001/04/24 10:07:01 julians Exp $
+// Version:     $Id: configtooldoc.h,v 1.13 2001/06/11 14:22:31 julians Exp $
 // Purpose:
 // Description: Header file for ecConfigToolDoc
 // Requires:
@@ -81,6 +81,7 @@ public:
     virtual bool OnSaveDocument(const wxString& filename);
     virtual bool OnNewDocument() { return TRUE; }
     virtual bool OnCloseDocument() ;
+    virtual bool Save(); // Overridden only to correct bug in wxWindows, docview.cpp
 
 //// Error and other handlers
     static void CdlLoadErrorHandler(std::string message);

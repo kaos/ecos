@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.28 2001/05/02 13:56:39 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.30 2001/06/11 14:49:49 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -68,8 +68,9 @@
 
 #ifdef __WXMSW__
 #include <windows.h>
-#include <htmlhelp.h>
+#ifndef __GNUWIN32__
 #include <shlobj.h>
+#endif
 #include "wx/msw/winundef.h"
 #ifdef CreateDirectory
 #undef CreateDirectory
@@ -145,6 +146,21 @@ bool ecConfigToolDoc::OnCloseDocument()
     }
 }
 
+bool ecConfigToolDoc::Save()
+{
+    bool ret = FALSE;
+
+    if (!IsModified() && m_savedYet) return TRUE;
+    if (m_documentFile == wxT("") || !m_savedYet)
+        ret = SaveAs();
+    else
+        ret = OnSaveDocument(m_documentFile);
+    if ( ret )
+        SetDocumentSaved(TRUE);
+    return ret;
+}
+
+
 bool ecConfigToolDoc::OnCreate(const wxString& path, long flags)
 {
     wxGetApp().m_currentDoc = this;
@@ -191,8 +207,12 @@ bool ecConfigToolDoc::OnCreate(const wxString& path, long flags)
             // m_memoryMap.set_map_size (0xFFFFFFFF); // set the maximum memory map size
             // NewMemoryLayout (CFileName (m_strPackagesDir, m_strMemoryLayoutFolder, _T("include\\pkgconf")));
 
+            // Why should we generate the names at this point, when we only have a temporary filename?
+            // Don't do it!
+#if 0
             wxGetApp().SetStatusText(wxT("Updating build information..."), FALSE);
             UpdateBuildInfo();
+#endif
         }
     }
     return success;
@@ -966,11 +986,12 @@ void ecConfigToolDoc::SelectHardware (const wxString& newTemplate)
 
 void ecConfigToolDoc::SelectPackages ()
 {
+    // Crashes the Cygwin 1.0 compiler
+#ifndef __CYGWIN10__
     ecPackagesDialog dlg(wxGetApp().GetTopWindow());
     
     // This map holds the ecConfigItem pointers for the packages loaded before the dialog is invoked.
     // We cannot use Find(), which traverses all items - potentially those that have been removed
-    //CMapStringToPtr arLoadedPackages;
     wxHashTable arLoadedPackages(wxKEY_STRING);
     
     wxBeginBusyCursor();
@@ -1065,6 +1086,7 @@ void ecConfigToolDoc::SelectPackages ()
             RegenerateData();
         }
     }
+#endif
 }
 
 

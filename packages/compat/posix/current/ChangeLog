@@ -1,3 +1,13 @@
+2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pthread.cxx (pthread_attr_setstacksize): Correct stack
+	size assertion.
+
+2001-06-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pthread.cxx (MAIN_DEFAULT_STACK_SIZE): Define to use at
+	least PTHREAD_STACK_MIN for main_stack.
+
 2001-05-01  Nick Garnett  <nickg@cygnus.co.uk>
 
 	[x86 branch]

@@ -1,3 +1,49 @@
+2001-06-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.c (xyzModem_get_hdr): More resilient header scan,
+	improves error handling capability by avoiding "early" aborts.
+
+	* src/load.c (do_load): Only check TFTP arguments if networking.
+
+	* src/flash.c: Reorg to support new config option (below).
+
+	* cdl/redboot.cdl: New option CYGOPT_REDBOOT_FIS used to enable
+	FIS oriented commands.  Other flash commands, e.g. 'fis write',
+	still exist even if disabled.
+
+	* src/main.c (do_dump): 'dump' with no arguments will now "continue"
+	dumping from where the last command left off.
+
+2001-06-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (cyg_start): 
+	* src/io.c (gets): 
+	* cdl/redboot.cdl: Support RedBoot without GDB stubs.  Later
+	versions may also support alternate debug environments.
+
+2001-06-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/net_io.c (net_io_putc): Flush data on '\n'.
+
+2001-06-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* doc/redboot.ebsa285: Remove, obsolete.
+	* doc/redboot.edb7xxx: Ditto.
+	* doc/users_guide: Ditto.
+
+2001-06-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_create): Remove default for "-s" - too dangerous!
+
+	* include/net/tftp.h: Make sure packet size is valid (was one byte
+	too long).
+
+	* src/net/tftp_client.c (tftp_stream_open): Fix problem when using
+	Windows (3Com at least) servers.
+
+	* src/flash.c: Remove dependency on printf() via user function
+	in flash drivers, provided at 'init' time.
+
 2001-06-08  Gary Thomas  <gthomas@redhat.com>
 
 	* src/parse.c (parse): Check for 'argv[]' overruns.

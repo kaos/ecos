@@ -113,14 +113,14 @@ cdl_package CYGPKG_HAL_I386 {
     
     cdl_component CYGHWR_HAL_I386_FPU {
 	display       "Enable I386 FPU support"
-	default_value 0
+	default_value 1
 	description   "This component enables support for the
 	              I386 floating point unit."
 
 	cdl_option CYGHWR_HAL_I386_FPU_SWITCH_LAZY {
 	    display       "Use lazy FPU state switching"
 	    flavor        bool
-	    default_value 0
+	    default_value 1
 
 	    description "
 	                This option enables lazy FPU state switching.

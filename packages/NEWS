@@ -2,9 +2,9 @@
 * C library now supports multiple locales with multibyte character set support,
   and the possibility of plugging in more. Current locales supported
   are now C, C-SJIS, C-EUCJP and C-JIS.
-* Major reorganization of x86 HAL. Support for RedBoot added. i82559
-  ethernet driver added (Intel Etherexpress). Synthetic HAL redesigned
-  and moved to separate hal/synth hierarchy.
+* Major reorganization of x86 HAL. Support for RedBoot and PCI added, based on
+  Fabrice Gautier's patches. i82559 ethernet driver added (Intel Etherexpress).
+  Synthetic HAL redesigned and moved to separate hal/synth hierarchy.
 * Added ethernet drivers for SMSC lan91cxx 
 * Added driver for Motorola PowerPC 8xxT "Fast Ethernet Controller".
 * Added support for Analogue & Micro "viper" - PowerPC 860T based

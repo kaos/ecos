@@ -1390,7 +1390,8 @@ __process_packet (char *packet)
       __putpacket (remcomOutBuffer);
       hal_flush_output();
 #endif
-      __reset ();
+      /* With the next 'k' packet, reset the board */
+      __process_exit_vec = &__reset;
       break;
 
     case 'H':

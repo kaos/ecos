@@ -73,32 +73,32 @@ flash_hwr_init(void)
     volatile int *cp = 0xE0000000;
     // See if the data cache is working
     *cp = 0x12345678;
-    printf("ROM cache:\n");
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("ROM cache:\n");
+    (*flash_info.pf)("cache test = %x\n", *cp);
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_DCACHE_DISABLE();
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     *cp = 0xDEADDEAD;
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     HAL_DCACHE_ENABLE();
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     cp = 0x00100000;
     // See if the data cache is working
     *cp = 0x12345678;
-    printf("RAM cache:\n");
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("RAM cache:\n");
+    (*flash_info.pf)("cache test = %x\n", *cp);
     HAL_DCACHE_DISABLE();
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     *cp = 0xDEADDEAD;
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     HAL_DCACHE_ENABLE();
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     }
 #endif
 
     stat = (*_flash_query)(data);
 #if 0
-    printf("stat = %x\n", stat);
+    (*flash_info.pf)("stat = %x\n", stat);
     dump_buf(data, sizeof(data));
 #endif
 
@@ -107,21 +107,21 @@ flash_hwr_init(void)
     volatile int cache_test;
     volatile int *cp = 0xE0000000;
     // See if the data cache is working
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     *cp = 0x56781234;
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_DCACHE_DISABLE();
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     *cp = 0xDEADDEAD;
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     HAL_DCACHE_ENABLE();
-    printf("cache test = %x\n", *cp);
+    (*flash_info.pf)("cache test = %x\n", *cp);
     }
 #endif
 
     if (data[0] != FLASH_Intel_code) {
-        printf("Not Intel = %x\n", data[0]);
+        (*flash_info.pf)("Not Intel = %x\n", data[0]);
         return FLASH_ERR_HWR;
     }
 
@@ -129,7 +129,7 @@ flash_hwr_init(void)
         num_regions = 64*2;
         region_size = 0x20000;
     } else {
-        printf("Unknown device type: %x\n", data[1]);
+        (*flash_info.pf)("Unknown device type: %x\n", data[1]);
         return FLASH_ERR_HWR;
     }
 
@@ -146,7 +146,7 @@ int
 flash_hwr_map_error(int err)
 {
     if (err & 0x007E007E) {
-        printf("Err = %x\n", err);
+        (*flash_info.pf)("Err = %x\n", err);
         if (err & 0x00100010) {
             return FLASH_ERR_PROGRAM;
         } else 

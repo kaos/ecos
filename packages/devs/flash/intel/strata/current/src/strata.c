@@ -145,7 +145,7 @@ flash_hwr_init(void)
             x = (~(CYGNUM_FLASH_BASE_MASK)) + 1; // expected device size
             x += (unsigned int)flash_info.start;
             if ( x < (unsigned int)flash_info.end ) { // 2nd sanity check
-                printf("\nFLASH: Oversized device!  End addr %p changed to %p\n",
+                (*flash_info.pf)("\nFLASH: Oversized device!  End addr %p changed to %p\n",
                        flash_info.end, (void *)x );
                 flash_info.end = (void *)x;
             }
@@ -155,7 +155,7 @@ flash_hwr_init(void)
         return FLASH_ERR_OK;
     }
  flash_type_unknown:
-    printf("Can't identify FLASH, sorry, man %x, dev %x, id [%4s] stat %x\n",
+    (*flash_info.pf)("Can't identify FLASH, sorry, man %x, dev %x, id [%4s] stat %x\n",
            qp->manuf_code, qp->device_code, qp->id, stat );
     diag_dump_buf(qp, sizeof(data));
     return FLASH_ERR_HWR;
@@ -166,7 +166,7 @@ int
 flash_hwr_map_error(int err)
 {
     if (err & FLASH_ErrorMask) {
-        printf("Err = %x\n", err);
+        (*flash_info.pf)("Err = %x\n", err);
         if (err & FLASH_ErrorProgram)
             return FLASH_ERR_PROGRAM;
         else if (err & FLASH_ErrorErase)

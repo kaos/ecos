@@ -210,24 +210,24 @@ cleanall:	clean cleanecc cleanwx
 releasect:
 	echo "#include <stdio.h>" > /tmp/ctver.c
 	echo "#include \"symbols.h\"" >> /tmp/ctver.c
-	echo "int main() { printf(\"%.1f\", ecCONFIGURATION_TOOL_VERSION); }" >> /tmp/ctver.c
+	echo "int main() { printf(\"%.2f\", ecCONFIGURATION_TOOL_VERSION); }" >> /tmp/ctver.c
 	cc /tmp/ctver.c -I$(CTDIR) -o /tmp/ctver
 	chmod a+x $(CTDIR)/setup/maketarball.sh
 	$(CTDIR)/setup/maketarball.sh $(ECOSDIR)/.. $(CTBUILDDIR) /tmp/ctdeliver `/tmp/ctver`
-	rm -f /tmp/ctver /tmp/ctver.c
+#	rm -f /tmp/ctver /tmp/ctver.c
 
 # Installs the binary and associated files in the correct place for local running
 installbinary: releasect
-	cp /tmp/ctdeliver/configtool/configtool $(LOCALBINDIR)/configtool-`date -I`
-	mv /tmp/ctdeliver/configtool/README.txt /tmp/ctdeliver/configtool/README-configtool.txt
+	cp /tmp/ctdeliver/configtool-`/tmp/ctver`/configtool $(LOCALBINDIR)/configtool-`date -I`
+	mv /tmp/ctdeliver/configtool-`/tmp/ctver`/README.txt /tmp/ctdeliver/configtool-`/tmp/ctver`/README-configtool.txt
 	rm -f $(LOCALBINDIR)/configtool
 	ln -s $(LOCALBINDIR)/configtool-`date -I` $(LOCALBINDIR)/configtool
-	cp -r /tmp/ctdeliver/configtool/* $(LOCALBINDIR)
+	cp -r /tmp/ctdeliver/configtool-`/tmp/ctver`/* $(LOCALBINDIR)
 
 # Copies an archive to a suitable place for people to grab
 installtarball: releasect
 	mkdir -p $(LOCALARCHIVEDIR)/`date -I`
-	cp /tmp/ctdeliver/configtool*.tgz $(LOCALARCHIVEDIR)/`date -I`
+	cp /tmp/ctdeliver/configtool*.tar.?z* $(LOCALARCHIVEDIR)/`date -I`
 
 ### GUI Configtool files
 

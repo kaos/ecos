@@ -255,9 +255,11 @@ static void
 cyg_kmem_init(void)
 {
     unsigned char *p;
+#ifdef CYGPKG_NET_DEBUG
     diag_printf("Network stack using %d bytes for misc space\n", NET_MEMPOOL_SIZE);
     diag_printf("                    %d bytes for mbufs\n", NET_MBUFS_SIZE);
     diag_printf("                    %d bytes for mbuf clusters\n", NET_CLUSTERS_SIZE);
+#endif
     cyg_mempool_var_create(&net_mempool_area,
                            NET_MEMPOOL_SIZE,
                            &net_mem,

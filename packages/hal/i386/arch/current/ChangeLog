@@ -1,3 +1,9 @@
+2001-06-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_i386.cdl: Default to enabling FPU support since gcc assumes
+	a hardware FPU anyway. Also default to lazy FPU switching since
+	this is cheapest in the modal case.
+
 2001-05-01  Nick Garnett  <nickg@cygnus.co.uk>
 
 	[x86 branch]	

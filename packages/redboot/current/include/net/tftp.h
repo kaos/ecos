@@ -93,6 +93,7 @@
 
 /*
  * Trivial File Transfer Protocol (IEN-133)
+ * Now, rev 2 - RFC 1350
  */
 #define	SEGSIZE		512		/* data segment size */
 
@@ -112,7 +113,7 @@ struct	tftphdr {
 		short	tu_code;	/* error code */
 		char	tu_stuff[1];	/* request packet stuff */
 	} __attribute__ ((packed)) th_u;
-	char	th_data[1];		/* data or error string */
+	char	th_data[0];		/* data or error string */
 } __attribute__ ((packed));
 
 #define	th_block	th_u.tu_block

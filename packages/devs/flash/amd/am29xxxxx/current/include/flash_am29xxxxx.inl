@@ -55,6 +55,7 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/devs_flash_amd_am29xxxxx.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
@@ -184,6 +185,7 @@ flash_hwr_init(void)
     for (i = 0; i < NUM_DEVICES; i++) {
         if (flash_dev_info->device_id == id[1])
             break;
+        flash_dev_info++;
     }
 
     // Did we find the device? If not, return error.

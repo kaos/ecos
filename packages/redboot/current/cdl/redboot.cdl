@@ -56,8 +56,13 @@ cdl_package CYGPKG_REDBOOT {
         display "Build Redboot ROM ELF image"
         default_value 0
         requires CYGPKG_INFRA
-        requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+# Someday the tools will handle this
+#        requires { CYGINT_HAL_DEBUG_GDB_STUBS implies CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
+#        requires { CYGINT_HAL_DEBUG_GDB_STUBS implies CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT }
+#
+        requires { !CYGINT_HAL_DEBUG_GDB_STUBS || CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
+        requires { !CYGINT_HAL_DEBUG_GDB_STUBS || CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT }
+#
         requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
         requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
         requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
@@ -229,9 +234,22 @@ cdl_package CYGPKG_REDBOOT {
               executes before RedBoot."
         }
 
+        cdl_option CYGOPT_REDBOOT_FIS {
+            display         "RedBoot Flash Image System support"
+            default_value   1
+            description "
+                This option enables the Flash Image System commands
+                and support within RedBoot.  If disabled, simple Flash
+                access commands such as \"fis write\" will still exist.
+                This option would be disabled for targets that need simple
+                FLASH manipulation, but do not have the need or space for
+                complete image management."
+        }
+
         cdl_component CYGPKG_REDBOOT_FIS_CONTENTS {
             display       "Flash Image System default directory contents"
-            calculated 1
+            active_if     CYGOPT_REDBOOT_FIS
+            calculated    1
 
             cdl_option CYGOPT_REDBOOT_FIS_RESERVED_BASE {
                 display         "Pseudo-file to describe reserved area"

@@ -19,13 +19,13 @@ VERSION=$4
 
 dotar()
 {
-    rm -f -r $DEST/configtool
-    rm -f $DEST/configtool-*.tgz
+    rm -f -r $DEST/configtool*
+    rm -f $DEST/configtool-*.*
 
-    mkdir -p $DEST/configtool
-    mkdir -p $DEST/configtool/manual
-    mkdir -p $DEST/configtool/manual/pix
-    cd $DEST/configtool
+    mkdir -p $DEST/configtool-$VERSION
+    mkdir -p $DEST/configtool-$VERSION/manual
+    mkdir -p $DEST/configtool-$VERSION/manual/pix
+    cd $DEST/configtool-$VERSION
 
     cp $SRC/*.htm .
     cp $SRC/*.png .
@@ -33,16 +33,20 @@ dotar()
     cp $SRC/README.txt .
     cp "$ECOSDIR/ecc/release/eCos Install/Setup Files/Uncompressed Files/Disk1/license.txt" .
     cp $BINARYSRC/configtool .
-    cp $CONFIGTOOLDIR/manual/*.html $CONFIGTOOLDIR/manual/*.css $CONFIGTOOLDIR/manual/*.gif $DEST/configtool/manual
-    cp $CONFIGTOOLDIR/manual/pix/*.gif $DEST/configtool/manual/pix
+    cp $CONFIGTOOLDIR/manual/*.html $CONFIGTOOLDIR/manual/*.css $CONFIGTOOLDIR/manual/*.gif manual
+    cp $CONFIGTOOLDIR/manual/pix/*.gif manual/pix
 
     strip configtool
 
     if [ "$UPX" != "0" ]; then
         upx configtool
     fi
+
+    cd ..
     
-    tar cvfz $DEST/configtool-$VERSION.tgz *
+    tar cvf $DEST/configtool-$VERSION-i386.tar configtool-$VERSION/*
+    gzip -c $DEST/configtool-$VERSION-i386.tar > $DEST/configtool-$VERSION-i386.tar.gz
+    bzip2 -c $DEST/configtool-$VERSION-i386.tar > $DEST/configtool-$VERSION-i386.tar.bz2
 }
 
 dobuild()

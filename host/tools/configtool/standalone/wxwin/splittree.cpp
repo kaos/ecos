@@ -6,9 +6,25 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     8/7/2000
-// RCS-ID:      $Id: splittree.cpp,v 1.5 2001/05/01 17:18:47 julians Exp $
+// RCS-ID:      $Id: splittree.cpp,v 1.7 2001/06/11 14:49:49 julians Exp $
 // Copyright:   (c) Julian Smart
-// Licence:     wxWindows licence
+//
+// This program is part of the eCos host tools.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
 /////////////////////////////////////////////////////////////////////////////
 
 // ============================================================================
@@ -313,19 +329,8 @@ void wxRemotelyScrolledTreeCtrl::CalcTreeSize(const wxTreeItemId& id, wxRect& re
     if (GetBoundingRect(id, itemSize))
     {
         rect = CombineRectangles(rect, itemSize);
-#if 0
-        wxString msg;
-        wxString name = GetItemText(id);
-        msg.Printf("Item rect for %s (%d) is %dx%d, %dx%d", (const wxChar*) name, g_count, itemSize.x, itemSize.y, itemSize.width, itemSize.height);
-        wxLogDebug(msg);
-        g_count ++;
-#endif
     }
-    else
-    {
-        //wxLogDebug("Couldn't get size.");
-    }
-    
+
     long cookie;
     wxTreeItemId childId = GetFirstChild(id, cookie);
     while (childId != 0)
@@ -439,7 +444,7 @@ void wxTreeCompanionWindow::OnPaint(wxPaintEvent& event)
             dc.DrawLine(0, cy, clientSize.x, cy);
         }
     }
-    if (m_treeCtrl->GetBoundingRect(lastH, itemRect))
+    if (lastH.IsOk() && m_treeCtrl->GetBoundingRect(lastH, itemRect))
     {
         cy = itemRect.GetBottom();
         dc.DrawLine(0, cy, clientSize.x, cy);

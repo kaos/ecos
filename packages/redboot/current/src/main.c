@@ -52,10 +52,13 @@
 #include CYGHWR_MEMORY_LAYOUT_H
 
 #include <cyg/hal/hal_tables.h>
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #ifdef CYGBLD_HAL_PLATFORM_STUB_H
 #include CYGBLD_HAL_PLATFORM_STUB_H
 #else
 #include <cyg/hal/plf_stub.h>
+#endif
 #endif
 
 #ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
@@ -69,8 +72,10 @@
 // Builtin Self Test (BIST)
 externC void bist(void);
 
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 // GDB interfaces
 extern void breakpoint(void);
+#endif
 
 // CLI command processing (defined in this file)
 RedBoot_cmd("version", 
@@ -275,6 +280,7 @@ cyg_start(void)
         if (res == _GETS_TIMEOUT) {
             // No input arrived
         } else {
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
             if (res == _GETS_GDB) {
 		int dbgchan;
                 hal_virtual_comm_table_t *__chan;
@@ -296,7 +302,9 @@ cyg_start(void)
 #endif
 		dbgchan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 		CYGACC_CALL_IF_SET_CONSOLE_COMM(dbgchan);
-            } else {
+            } else 
+#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+            {
 #ifdef CYGSEM_REDBOOT_FLASH_ALIASES
                 expand_aliases(line, sizeof(line));
 #endif
@@ -384,6 +392,7 @@ do_dump(int argc, char *argv[])
     struct option_info opts[2];
     unsigned long base, len;
     bool base_set, len_set;
+    static unsigned long _base, _len;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&base, (bool *)&base_set, "base address");
@@ -393,13 +402,22 @@ do_dump(int argc, char *argv[])
         return;
     }
     if (!base_set) {
-        printf("Dump what [location]?\n");
-        return;
+        if (_base == 0) {
+            printf("Dump what [location]?\n");
+            return;
+        }
+        base = _base;
+        if (!len_set) {
+            len = _len;
+            len_set = true;
+        }
     }
     if (!len_set) {
         len = 32;
     }
     dump_buf((void *)base, len);
+    _base = base + len;
+    _len = len;
 }
 
 void

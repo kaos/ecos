@@ -1,0 +1,7 @@
+ToDo List for Configuration Tool 2.x
+====================================
+
+- implement Memory Layout Tool
+- debug Run Tests Dialog
+- List packages in alphabetical order in the Packages dialog
+

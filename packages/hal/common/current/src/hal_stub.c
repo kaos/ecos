@@ -433,8 +433,6 @@ __install_traps (void)
 {
     // Set signal handling vector so we can treat 'C<signum>' as 'c'.
     __process_signal_vec = &cyg_hal_process_signal;
-    // Set exit vector to reset vector. This will allow automatic reset on
-    // some platforms.
     __process_exit_vec = &handle_exception_exit;
 
     __cleanup_vec = &handle_exception_cleanup;

@@ -46,9 +46,11 @@ cdl_package CYGPKG_NET {
     include_dir   .
     requires      CYGPKG_IO
     requires      CYGPKG_ISOINFRA
-    requires      CYGPKG_LIBC_TIME
-    requires      CYGPKG_ERROR
-    requires      CYGPKG_MEMALLOC
+    requires      CYGINT_ISO_C_TIME_TYPES
+    requires      CYGINT_ISO_STRERROR
+    requires      CYGINT_ISO_ERRNO
+    requires      CYGINT_ISO_ERRNO_CODES
+    requires      CYGINT_ISO_MALLOC
     description   "Basic networking support, including TCP/IP."
 
     cdl_interface     CYGPKG_NET_DRIVER_FRAMEWORK {
@@ -379,6 +381,20 @@ cdl_package CYGPKG_NET {
         description   "
             This option controls the number of pending network events
         used by the networking code."
+    }
+
+    cdl_component CYGPKG_NET_DEBUG {
+        display       "Debug output"
+        default_value 0 
+        description   "
+                This component controls whether there is diagnostic output
+                for stack operations. Options within this component allow
+                even more verbose output for certain areas."
+
+        cdl_option CYGDBG_NET_DHCP_CHATTER {
+                display       "Extra debug output for DHCP"
+                default_value 0
+        }
     }
 
     cdl_component CYGPKG_NET_OPTIONS {

@@ -298,8 +298,8 @@ template <class T> class Cyg_CList_T
 {
 public:
 
-    Cyg_CList_T<T>() {};
-    ~Cyg_CList_T<T>() {};
+    Cyg_CList_T() {};
+    ~Cyg_CList_T() {};
 
     T *get_head()
     {
@@ -341,8 +341,8 @@ template <class T> class Cyg_DNode_T
 {
 public:
 
-    Cyg_DNode_T<T>() {};
-    ~Cyg_DNode_T<T>() {};
+    Cyg_DNode_T() {};
+    ~Cyg_DNode_T() {};
 
     T *get_next() { return CYG_CLASSFROMBASE( T, Cyg_DNode, Cyg_DNode::get_next() ); };
     T *get_prev() { return CYG_CLASSFROMBASE( T, Cyg_DNode, Cyg_DNode::get_prev() ); };

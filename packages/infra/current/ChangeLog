@@ -1,3 +1,9 @@
+2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/clist.hxx (Cyg_DNode_T): Don't qualify constructor or
+	destructor with <T>.
+	(Cyg_CList_T): Ditto.
+
 2001-02-23  Robin Farine  <acnrf@dial.eunet.ch>
 
 	* include/cyg_type.h: Do alignment consistency check.

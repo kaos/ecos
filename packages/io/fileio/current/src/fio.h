@@ -92,10 +92,8 @@
 
 // Handle entry to a fileio package function. 
 #define FILEIO_ENTRY()                          \
-CYG_MACRO_START                                 \
     CYG_REPORT_FUNCTYPE( "returning %d" );      \
     CYG_FILEIO_FUNCTION_START();                \
-CYG_MACRO_END
 
 // Do a fileio package defined return. This requires the error code
 // to be placed in errno, and if it is non-zero, -1 returned as the

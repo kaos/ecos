@@ -69,7 +69,7 @@ flash_hwr_init(void)
 
     stat = (*_flash_query)(info);
 #if 0
-    printf("stat = %x\n", stat);
+    (*flash_info.pf)("stat = %x\n", stat);
     dump_buf(info, sizeof(info));
 #endif
 
@@ -86,7 +86,7 @@ int
 flash_hwr_map_error(int err)
 {
     if (err & 0x007E007E) {
-        printf("Err = %x\n", err);
+        (*flash_info.pf)("Err = %x\n", err);
         if (err & 0x00100010) {
             return FLASH_ERR_PROGRAM;
         } else 
