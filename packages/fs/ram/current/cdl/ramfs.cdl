@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_FS_RAM {
     display        "RAM filesystem"
-    doc            doc/index.html
+    doc            ref/fileio.html
     include_dir    cyg/ramfs
 
     requires       CYGPKG_IO_FILEIO
