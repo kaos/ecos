@@ -1,3 +1,9 @@
+2003-09-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/bootp.c (__bootp_find_local_ip): Forgot to unregister
+	UDP handler - could cause serious problems later!  Also, fix
+	problem with retries after DHCP discovery phase.
+
 2003-09-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/bootp.c (__bootp_find_local_ip): Handle retries on DHCP 

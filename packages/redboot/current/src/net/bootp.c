@@ -221,8 +221,8 @@ __bootp_find_local_ip(bootp_header_t *info)
             dhcpState = DHCP_DISCOVER;
             break;
         case DHCP_OFFER:
-        case DHCP_REQUEST:
             retry = MAX_RETRIES;
+        case DHCP_REQUEST:
             AddOption(p,dhcpCookie);
             AddOption(p,dhcpRequest);
             AddOption(p,dhcpRequestIP);
@@ -286,6 +286,7 @@ __bootp_find_local_ip(bootp_header_t *info)
                     }
                     p += optlen;
                 }
+		__udp_remove_listener(IPPORT_BOOTPC);
                 return 0;
             }
 #else
