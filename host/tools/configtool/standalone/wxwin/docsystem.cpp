@@ -606,7 +606,7 @@ bool ecHtmlIndexer::DoIndexDocs(const wxString& reposDir, wxString& projectFile,
     // packaged version doesn't
     if (wxDirExists(docDir + sep + wxT("html")))
         docDir = docDir + sep + wxString(wxT("html"));
-    
+
     wxString projectDir = FindIndexFilesDir(reposDir);
 
     projectFile = projectDir + sep + wxT("eCos.hhp");
@@ -710,7 +710,7 @@ bool ecHtmlIndexer::DoIndexDocs(const wxString& reposDir, wxString& projectFile,
         node = node->Next();
     }
     
-    CreateHHCPackagesSection(wxT("Packages"), wxEmptyString, stream, docDir);
+//    CreateHHCPackagesSection(wxT("Packages"), wxEmptyString, stream, docDir);
     
     CreateHHCWriteFooter(stream);
 
@@ -932,9 +932,9 @@ bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, b
         wxArrayString tutorials;
 
         wxString sep(wxFILE_SEP_PATH);
-        
+
         wxString docDir(reposDir + sep + wxString(wxT("doc"))) ;
-        
+
         // The CVS repository has an HTML subdirectory, but the
         // packaged version doesn't
         if (wxDirExists(docDir + sep + wxT("html")))
@@ -945,7 +945,7 @@ bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, b
 
         wxLogNull log;
         wxDir dir(docDir);
-        
+
         if (dir.IsOpened())
         {
             wxString filename;
@@ -954,12 +954,12 @@ bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, b
             {
                 if (filename != wxT(".") && filename != wxT(".."))
                     tutorials.Add(filename);
-                
+
                 cont = dir.GetNext(& filename);
             }
         }
 
-        AddStartSection(wxT("Getting Started with eCos"), wxT(""));
+//        AddStartSection(wxT("Getting Started with eCos"), wxT(""));
         size_t i;
         for (i = 0; i < tutorials.GetCount(); i++)
         {
@@ -969,36 +969,41 @@ bool ecHtmlIndexer::IndexDocs(const wxString& reposDir, wxString& projectFile, b
             // Use a more friendly name than just the directory if it's available
             AddIndexByList(TranslateTutorialDirectory(tutorial), tutorialRelativePath, tutorialRelativePath);
         }
-        AddEndSection();
+//        AddEndSection();
 
-        AddIndexByList(wxT("eCos User's Guide"), wxT("guides/ecos-user-guide.html"), wxT("guides/ecos-user-guide.html"));
-        AddIndexByList(wxT("RedBoot User's Guide"), wxT("redboot/redboot.html"), wxT("redboot/redboot.html"));
-        AddIndexByList(wxT("eCos Component Writer's Guide"), wxT("cdl/cdl-guide.html"), wxT("cdl/cdl-guide.html"));       
-        AddIndexByList(wxT("eCos Reference Manual"), wxT("ref/ecos-reference-manual.html"), wxT("ref/ecos-reference-manual.html"));
-        AddIndexByList(wxT("eCos-EL/IX Compatibility Guide"), wxT("ecos-elix/elix-compatibility.html"), wxT("ecos-elix/elix-compatibility.html"));
+        AddIndexByList(wxT("User Guide"), wxT("user-guide/ecos-user-guide.html"), wxT("user-guide/ecos-user-guide.html"));
+//        AddIndexByList(wxT("RedBoot User's Guide"), wxT("redboot/redboot.html"), wxT("redboot/redboot.html"));
+#ifdef __WXGTK__
+        // FIXME: wxHtmlParser (version 2.4.0) doesn't like the eCos Reference HTML on Linux so just index the initial page for now
+        AddIndexItem(wxT("eCos Reference"), wxT("ref/ecos-ref.html"));
+#else
+        AddIndexByList(wxT("eCos Reference"), wxT("ref/ecos-ref.html"), wxT("ref/ecos-ref.html"));
+#endif
+        AddIndexByList(wxT("Component Writer's Guide"), wxT("cdl-guide/cdl-guide.html"), wxT("cdl-guide/cdl-guide.html"));
+//        AddIndexByList(wxT("eCos-EL/IX Compatibility Guide"), wxT("ecos-elix/elix-compatibility.html"), wxT("ecos-elix/elix-compatibility.html"));
 
         //// TOOLCHAIN REFERENCE MANUALS
-        AddStartSection(wxT("GNUPro Toolkit Reference Manual"));
+//        AddStartSection(wxT("GNUPro Toolkit Reference Manual"));
         // Start at indent 1 to avoid a spurious level
-        AddIndexByClass(wxT("ARM"), wxT("ref/gnupro-ref/arm/ARM_COMBO_front.html"), wxT("ref/gnupro-ref/arm/ARM_COMBOTOC.html"), 1);
-        AddIndexByClass(wxT("Fujitsu SPARClite"), wxT("ref/gnupro-ref/sparclite/index.html"), wxT("ref/gnupro-ref/sparclite/index.html"), 1);
-        AddIndexByClass(wxT("Matsushita MN10300"), wxT("ref/gnupro-ref/mn10300/am33_front.html"), wxT("ref/gnupro-ref/mn10300/am33toc.html"), 1);
-        AddIndexByClass(wxT("PowerPC"), wxT("ref/gnupro-ref/powerpc/index.html"), wxT("ref/gnupro-ref/powerpc/index.html"));
-        AddIndexByClass(wxT("Toshiba MIPS TX39"), wxT("/gnupro-ref/tx39/index.html"), wxT("/gnupro-ref/tx39/index.html"));
-        
+//        AddIndexByClass(wxT("ARM"), wxT("ref/gnupro-ref/arm/ARM_COMBO_front.html"), wxT("ref/gnupro-ref/arm/ARM_COMBOTOC.html"), 1);
+//        AddIndexByClass(wxT("Fujitsu SPARClite"), wxT("ref/gnupro-ref/sparclite/index.html"), wxT("ref/gnupro-ref/sparclite/index.html"), 1);
+//        AddIndexByClass(wxT("Matsushita MN10300"), wxT("ref/gnupro-ref/mn10300/am33_front.html"), wxT("ref/gnupro-ref/mn10300/am33toc.html"), 1);
+//        AddIndexByClass(wxT("PowerPC"), wxT("ref/gnupro-ref/powerpc/index.html"), wxT("ref/gnupro-ref/powerpc/index.html"));
+//        AddIndexByClass(wxT("Toshiba MIPS TX39"), wxT("/gnupro-ref/tx39/index.html"), wxT("/gnupro-ref/tx39/index.html"));
+
         // Don't parse HTML, just add this item, if the page exists.
         // Presumably the HTML can't be parsed for some reason.
-        AddIndexItem(wxT("Toshiba MIPS TX49"), wxT("ref/gnupro-ref/tx49/tx49_ref.html"));
-        
-        AddIndexByClass(wxT("Hitachi SuperH"), wxT("ref/gnupro-ref/sh/SH_front.html"), wxT("ref/gnupro-ref/sh/SHTOC.html"), 1);
-        
-        AddIndexItem(wxT("NEC V850"), wxT("ref/gnupro-ref/v850/v850_ref_3.html"));
-        AddIndexByClass(wxT("NEC VR4300"), wxT("ref/gnupro-ref/vr4300/Vr43REF_front.html"), wxT("ref/gnupro-ref/vr4300/Vr43REFTOC.html"), 1);
-        AddEndSection();
+//        AddIndexItem(wxT("Toshiba MIPS TX49"), wxT("ref/gnupro-ref/tx49/tx49_ref.html"));
+
+//        AddIndexByClass(wxT("Hitachi SuperH"), wxT("ref/gnupro-ref/sh/SH_front.html"), wxT("ref/gnupro-ref/sh/SHTOC.html"), 1);
+
+//        AddIndexItem(wxT("NEC V850"), wxT("ref/gnupro-ref/v850/v850_ref_3.html"));
+//        AddIndexByClass(wxT("NEC VR4300"), wxT("ref/gnupro-ref/vr4300/Vr43REF_front.html"), wxT("ref/gnupro-ref/vr4300/Vr43REFTOC.html"), 1);
+//        AddEndSection();
     }
 
     DoIndexDocs(reposDir, projectFile, force);
-    
+
     return TRUE;
 }
 

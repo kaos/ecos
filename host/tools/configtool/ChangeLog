@@ -1,3 +1,8 @@
+2003-04-25  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/docsystem.cpp: Accommodate the latest HTML doc
+	structure.
+
 2003-04-24  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/mainwin.cpp: Fix behaviour of user tools warning
