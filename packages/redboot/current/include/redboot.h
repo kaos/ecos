@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -64,7 +65,6 @@
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
 #include <net/net.h>
-#include <net/tftp_support.h>
 #include <net/bootp.h>
 // Determine an IP address for this node, using BOOTP
 extern int __bootp_find_local_ip(bootp_header_t *info);
@@ -149,9 +149,45 @@ externC char *flash_lookup_alias(char *alias, char *alias_buf);
 #endif
 externC void expand_aliases(char *line, int len);
 
-typedef int (*getc_t)(void);
-typedef void (*terminate_t)(int method, getc_t get_c);
+//
+// Stream I/O support
+//
 
+typedef struct {
+    char *filename;
+    struct load_io_entry *mode;
+    int   chan;
+#ifdef CYGPKG_REDBOOT_NETWORKING
+    struct sockaddr_in *server;
+#endif
+} connection_info_t;
+
+typedef struct {
+    int   (*open)(connection_info_t *info, int *err);    
+    void  (*close)(int *err);    
+    void  (*terminate)(bool abort, int (*getc)(void));    
+    int   (*read)(char *buf, int size, int *err);    
+    char *(*error)(int err);
+} getc_io_funcs_t;
+
+#define GETC_IO_FUNCS(_label_, _open_, _close_, _terminate_, _read_, _error_)   \
+getc_io_funcs_t _label_ = {                                                     \
+    _open_, _close_, _terminate_, _read_, _error_                               \
+};
+
+struct load_io_entry {
+    char            *mode;
+    getc_io_funcs_t *funcs;    
+    bool             can_verbose;
+    bool             need_filename;
+} CYG_HAL_TABLE_TYPE;
+#define _RedBoot_load(_mode_,_funcs_,_verbose_,_filename_)              \
+struct load_io_entry _load_tab_##_funcs_##_mode_                        \
+   CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_load,_funcs_##_mode) =         \
+     { #_mode_, &_funcs_, _verbose_, _filename_ }; 
+#define RedBoot_load(_mode_,_funcs_,_verbose_,_filename_)               \
+   _RedBoot_load(_mode_,_funcs_,_verbose_,_filename_)
+ 
 #ifdef CYGPKG_COMPRESS_ZLIB
 // Decompression support
 typedef struct _pipe {
@@ -231,7 +267,7 @@ struct idle_tab_entry _idle_tab_##_p_##_f_                              \
 // This function called when changing idle/not - mostly used by I/O
 // to support idle when timeout, etc.
 void do_idle(bool state);
- 
+
 // Option processing support
 
 struct option_info {
@@ -255,12 +291,6 @@ externC void init_opts(struct option_info *opts, char flag, bool takes_arg,
 externC bool scan_opts(int argc, char *argv[], int first, 
                        struct option_info *opts, int num_opts, 
                        void **def_arg, int def_arg_type, char *def_descr);
-
-externC int redboot_getc(void);
-externC void redboot_getc_init(int (*fun)(char *, int, int *), 
-                               int verbose, int decompress);
-externC void redboot_getc_rewind(void);
-externC void redboot_getc_close(void);
 
 #ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
 #define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \

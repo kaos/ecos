@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -62,132 +63,6 @@
 // So we remember which ports have been used
 static int get_port = 7700;
 
-#if 0 // No longer used
-//
-// Read a file from a host into a local buffer.  Returns the
-// number of bytes actually read, or (-1) if an error occurs.
-// On error, *err will hold the reason.
-//
-int
-tftp_get(char *filename,
-         struct sockaddr_in *server,
-         char *buf,
-         int len,
-         int mode,
-         int *err)
-{
-    int res = 0;
-    int actual_len, data_len, recv_len;
-    struct sockaddr_in local_addr, from_addr;
-    char data[SEGSIZE+sizeof(struct tftphdr)];
-    struct tftphdr *hdr = (struct tftphdr *)data;
-    char *cp, *fp;
-    struct timeval timeout;
-    int last_good_block = 0;
-    int total_timeouts = 0;
-
-    *err = 0;  // Just in case
-
-    // Create initial request
-    hdr->th_opcode = htons(RRQ);  // Read file
-    cp = (char *)&hdr->th_stuff;
-    fp = filename;
-    while (*fp) *cp++ = *fp++;
-    *cp++ = '\0';
-    if (mode == TFTP_NETASCII) {
-        fp = "NETASCII";
-    } else if (mode == TFTP_OCTET) {
-        fp = "OCTET";
-    } else {
-        *err = TFTP_INVALID;
-        return -1;
-    }
-    while (*fp) *cp++ = *fp++;
-    *cp++ = '\0';
-
-    memset((char *)&local_addr, 0, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    local_addr.sin_port = htons(get_port++);
-
-    if (server->sin_port == 0) {
-        server->sin_port = htons(TFTP_PORT);
-    }
-
-    // Send request
-    if (__udp_sendto(data, sizeof(data), server, &local_addr) < 0) {
-        // Problem sending request
-        *err = TFTP_NETERR;
-        return -1;
-    }
-
-    // Read data
-    fp = buf;
-    while (true) {
-        timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
-        timeout.tv_usec = 0;
-        recv_len = sizeof(data);
-        if ((data_len = __udp_recvfrom(&data[0], recv_len, &from_addr, &local_addr,  &timeout)) < 0) {
-            // No data, try again
-            if ((++total_timeouts > TFTP_TIMEOUT_MAX) || (last_good_block == 0)) {
-                // Timeout - no data received
-                *err = TFTP_TIMEOUT;
-                return -1;
-            }
-            // Try resending last ACK
-            hdr->th_opcode = htons(ACK);
-            hdr->th_block = htons(last_good_block);
-            if (__udp_sendto(data, 4 /* FIXME */, &from_addr, &local_addr) < 0) {
-                // Problem sending request
-                *err = TFTP_NETERR;
-                return -1;
-            }
-        } else {
-            if (ntohs(hdr->th_opcode) == DATA) {
-                actual_len = 0;
-                if (ntohs(hdr->th_block) == (last_good_block+1)) {
-                    // Consume this data
-                    cp = hdr->th_data;
-                    data_len -= 4;  /* Sizeof TFTP header */
-                    actual_len = data_len;
-                    res += actual_len;
-                    while (data_len-- > 0) {
-                        if (len-- > 0) {
-                            *fp++ = *cp++;
-                        } else {
-                            // Buffer overflow
-                            *err = TFTP_TOOLARGE;
-                            return -1;
-                        }
-                    }
-                    last_good_block++;
-                }
-                // Send out the ACK
-                hdr->th_opcode = htons(ACK);
-                hdr->th_block = htons(last_good_block);
-                if (__udp_sendto(data, 4 /* FIXME */, &from_addr, &local_addr) < 0) {
-                    // Problem sending ACK
-                    *err = TFTP_NETERR;
-                    return -1;
-                }
-                if ((actual_len >= 0) && (actual_len < SEGSIZE)) {
-                    // End of data
-                    return res;
-                }
-            } else 
-            if (ntohs(hdr->th_opcode) == ERROR) {
-                *err = ntohs(hdr->th_code);
-                return -1;
-            } else {
-                // What kind of packet is this?
-                *err = TFTP_PROTOCOL;
-                return -1;
-            }
-        }
-    }
-}
-#endif
-
 static struct {
     bool open;
     int  total_timeouts;
@@ -199,9 +74,7 @@ static struct {
 } tftp_stream;
 
 int
-tftp_stream_open(char *filename,
-                 struct sockaddr_in *server,
-                 int mode,
+tftp_stream_open(connection_info_t *info,
                  int *err)
 {
     struct tftphdr *hdr = (struct tftphdr *)tftp_stream.data;
@@ -216,17 +89,12 @@ tftp_stream_open(char *filename,
     // Create initial request
     hdr->th_opcode = htons(RRQ);  // Read file
     cp = (char *)&hdr->th_stuff;
-    fp = filename;
+    fp = info->filename;
     while (*fp) *cp++ = *fp++;
     *cp++ = '\0';
-    if (mode == TFTP_NETASCII) {
-        fp = "NETASCII";
-    } else if (mode == TFTP_OCTET) {
-        fp = "OCTET";
-    } else {
-        *err = TFTP_INVALID;
-        return -1;
-    }
+    // Since this is used for downloading data, OCTET (binary) is the
+    // only mode that makes sense.
+    fp = "OCTET";
     while (*fp) *cp++ = *fp++;
     *cp++ = '\0';
 
@@ -235,15 +103,15 @@ tftp_stream_open(char *filename,
     tftp_stream.local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     tftp_stream.local_addr.sin_port = htons(get_port++);
 
-    if (server->sin_port == 0) {
-        server->sin_port = htons(TFTP_PORT);
+    if (info->server->sin_port == 0) {
+        info->server->sin_port = htons(TFTP_PORT);
     }
 
     // Send request - note: RFC 1350 (TFTP rev 2) indicates that this should be
     // only as long as required to hold the request, with the nul terminator.
     // Some servers silently go to lunch if the request is not the correct size.
     if (__udp_sendto(tftp_stream.data, cp-(char *)hdr, 
-                     server, &tftp_stream.local_addr) < 0) {
+                     info->server, &tftp_stream.local_addr) < 0) {
         // Problem sending request
         *err = TFTP_NETERR;
         return -1;
@@ -269,11 +137,10 @@ tftp_stream_open(char *filename,
     }
 }
 
-int
+void
 tftp_stream_close(int *err)
 {
     tftp_stream.open = false;
-    return 0;
 }
 
 int
@@ -382,3 +249,11 @@ tftp_error(int err)
     }
     return errmsg;
 }
+
+//
+// RedBoot interface
+//
+GETC_IO_FUNCS(tftp_io, tftp_stream_open, tftp_stream_close,
+              0, tftp_stream_read, tftp_error);
+RedBoot_load(tftp, tftp_io, true, true);
+

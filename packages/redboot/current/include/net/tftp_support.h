@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -83,17 +84,17 @@
  * Client support
  */
 
-extern int   tftp_get(char *, struct sockaddr_in *, char *, int, int, int *);
-extern char *tftp_error(int err);
-
-extern int   tftp_stream_open(char *file, struct sockaddr_in *server, int mode, int *err);
+extern int   tftp_stream_open(connection_info_t *info, int *err);
 extern int   tftp_stream_read(char *buf, int len, int *err);
-extern int   tftp_stream_close(int *err);
+extern void  tftp_stream_close(int *err);
+extern char *tftp_error(int err);
 
 #define TFTP_TIMEOUT_PERIOD 5
 #define TFTP_TIMEOUT_MAX   15
 #define TFTP_RETRIES_MAX    5
 
 #define TFTP_PORT           69
+
+extern getc_io_funcs_t tftp_io;
 
 #endif // _TFTP_SUPPORT_H_

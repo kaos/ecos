@@ -1,3 +1,16 @@
+2002-07-01  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/net/tftp_client.c: 
+	* src/net/http_client.c: 
+	* src/fs/disk.c: 
+	* src/xyzModem.h: 
+	* src/xyzModem.c: 
+	* src/load.c: 
+	* include/net/tftp_support.h: 
+	* include/net/http.h: 
+	* include/redboot.h: 
+	* cdl/redboot.cdl: Make 'load' command stream I/O table driven.
+
 2002-05-31  Jesper Skov  <jskov@redhat.com>
 
 	* doc/redboot_installing.sgml: Updated the remaining installation

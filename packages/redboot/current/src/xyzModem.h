@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -72,10 +73,12 @@
 #define xyzModem_close 1
 #define xyzModem_abort 2
 
-int   xyzModem_stream_open(char *filename, int mode, int chan, int *err);    
+int   xyzModem_stream_open(connection_info_t *info, int *err);    
 void  xyzModem_stream_close(int *err);    
 void  xyzModem_stream_terminate(int method, int (*getc)(void));    
 int   xyzModem_stream_read(char *buf, int size, int *err);    
 char *xyzModem_error(int err);
+
+extern getc_io_funcs_t xyzModem_io;
 
 #endif // _XYZMODEM_H_

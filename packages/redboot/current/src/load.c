@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -58,13 +59,43 @@
 #ifdef CYGPKG_REDBOOT_DISK
 #include <fs/disk.h>
 #endif
+#ifdef CYGPKG_REDBOOT_NETWORKING
+#include <net/tftp_support.h>
 #ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
 #include <net/http.h>
 #endif
+#endif
+
+static char usage[] = "[-r] [-v] "
+#ifdef CYGPKG_COMPRESS_ZLIB
+                      "[-d] "
+#endif
+                      "[-h <host>] [-m <varies>] "
+#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
+                      "[-c <channel_number>] "
+#endif
+                      "\n        [-b <base_address>] <file_name>";
+
+// Exported CLI function
+RedBoot_cmd("load", 
+            "Load a file", 
+            usage,
+            do_load 
+    );
+
+//
+// Stream I/O support
+//
+
+// Table describing the various I/O methods
+CYG_HAL_TABLE_BEGIN( __RedBoot_LOAD_TAB__, RedBoot_load );
+CYG_HAL_TABLE_END( __RedBoot_LOAD_TAB_END__, RedBoot_load );
+extern struct load_io_entry __RedBoot_LOAD_TAB__[], __RedBoot_LOAD_TAB_END__;
 
 // Buffers, data used by redboot_getc
 #define BUF_SIZE 256
 struct {
+    getc_io_funcs_t *io;
     int (*fun)(char *, int len, int *err);
     unsigned char  buf[BUF_SIZE];
     unsigned char *bufp;
@@ -77,35 +108,152 @@ struct {
 #endif
 } getc_info;
 
-static char usage[] = "[-r] [-v] "
-#ifdef CYGPKG_COMPRESS_ZLIB
-                      "[-d] "
-#endif
-                      "[-h <host>] [-m {TFTP "
-#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
-                      "| HTTP"
-#endif
-#ifdef xyzModem_zmodem
-                      "| {x|y|z}MODEM"
-#else
-                      "| {x|y}MODEM"
-#endif
-#ifdef CYGPKG_REDBOOT_DISK
-                      " | disk"
-#endif
-#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
-                      " -c <channel_number>"
-#endif
-                      "}]\n        [-b <base_address>] <file_name>";
+typedef int (*getc_t)(void);
 
-// Exported CLI function
-RedBoot_cmd("load", 
-            "Load a file", 
-            usage,
-            do_load 
-    );
+//
+// Read the next data byte from the stream.
+// Returns:
+//    >= 0 - actual data
+//      -1 - error or EOF, status in getc_info.err
+//
+static int 
+redboot_getc(void)
+{
+    static char spin[] = "|/-\\|-";
+    if (getc_info.avail < 0) {
+      return -1;
+    }
+    if (getc_info.avail == 0) {
+        if (getc_info.verbose) {
+            diag_printf("%c\b", spin[getc_info.tick++]);
+            if (getc_info.tick >= sizeof(spin)) {
+                getc_info.tick = 0;
+            }
+        }
+        if (getc_info.len < BUF_SIZE) {
+            // No more data available
+            if (getc_info.verbose) diag_printf("\n");
+            return -1;
+        }
+        getc_info.bufp = getc_info.buf;
+        getc_info.len = (*getc_info.fun)(getc_info.bufp, BUF_SIZE, &getc_info.err);
+        if ((getc_info.avail = getc_info.len) <= 0) {
+            if (getc_info.verbose) diag_printf("\n");
+            return -1;
+        }
+    }
+    getc_info.avail--;
+    return *getc_info.bufp++;
+}
+
+#ifdef CYGPKG_COMPRESS_ZLIB
+//
+// Called to fetch a new chunk of data and decompress it
+//
+static int 
+_decompress_stream(char *buf, int len, int *err)
+{
+    _pipe_t* p = &getc_info.load_pipe;
+    int res, total;
+
+    total = 0;
+    while (len > 0) {
+        if (p->in_avail == 0) {
+            p->in_buf = &getc_info._buffer[0];
+            res = (*getc_info.raw_fun)(p->in_buf, CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER, 
+                                       &getc_info.err);
+            if ((p->in_avail = res) <= 0) {
+                // No more data
+                return total;
+            }
+        }
+        p->out_buf = buf;
+        p->out_size = 0;
+        p->out_max = len;
+        res = (*_dc_inflate)(p);
+        if (res != 0) {
+            *err = res;
+            return total;
+        }        
+        len -= p->out_size;
+        buf += p->out_size;
+        total += p->out_size;
+    }
+    return total;
+}
+#endif
+
+static int
+redboot_getc_init(connection_info_t *info, getc_io_funcs_t *funcs, 
+                  int verbose, int decompress)
+{
+    int res;
+
+    res = (funcs->open)(info, &getc_info.err);    
+    if (res < 0) {
+        diag_printf("Can't load '%s': %s\n", info->filename, (funcs->error)(getc_info.err));
+            return res;
+    }
+    getc_info.io = funcs;
+    getc_info.fun = funcs->read;
+    getc_info.avail = 0;
+    getc_info.len = BUF_SIZE;
+    getc_info.verbose = verbose;
+    getc_info.decompress = decompress;
+    getc_info.tick = 0;
+#ifdef CYGPKG_COMPRESS_ZLIB
+    if (decompress) {
+        _pipe_t* p = &getc_info.load_pipe;
+        p->out_buf = &getc_info.buf[0];
+        p->out_size = 0;
+        p->in_avail = 0;
+        getc_info.raw_fun = getc_info.fun;
+        getc_info.fun = _decompress_stream;
+        getc_info.err = (*_dc_init)(p);
+        if (0 != getc_info.err && p->msg) {
+            diag_printf("open decompression error: %s\n", p->msg);
+        }
+    }
+#endif
+    return 0;
+}
+
+static void
+redboot_getc_rewind(void)
+{
+    getc_info.bufp = getc_info.buf;
+    getc_info.avail = getc_info.len;
+}
+
+static void
+redboot_getc_terminate(bool abort)
+{
+    if (getc_info.io->terminate) {
+        (getc_info.io->terminate)(abort, redboot_getc);
+    }
+}
+
+static void
+redboot_getc_close(void)
+{
+    (getc_info.io->close)(&getc_info.err);
+#ifdef CYGPKG_COMPRESS_ZLIB
+    if (getc_info.decompress) {
+        _pipe_t* p = &getc_info.load_pipe;
+        int err = getc_info.err;
+        if (0 != err && p->msg) {
+            diag_printf("decompression error: %s\n", p->msg);
+        }
+        err = (*_dc_close)(p, getc_info.err);
+    }
+#endif
+}
 
 #ifdef CYGSEM_REDBOOT_ELF
+//
+// Support function - used to read bytes into a buffer
+// Returns the number of bytes read (stops short on errors)
+//
 static int
 _read(int (*getc)(void), unsigned char *buf, int len)
 {
@@ -124,8 +272,11 @@ _read(int (*getc)(void), unsigned char *buf, int len)
 }
 #endif
 
+//
+// Load an ELF [binary] image 
+//
 static unsigned long
-load_elf_image(getc_t getc, terminate_t terminate, unsigned long base)
+load_elf_image(getc_t getc, unsigned long base)
 {
 #ifdef CYGSEM_REDBOOT_ELF
     Elf32_Ehdr ehdr;
@@ -218,16 +369,9 @@ load_elf_image(getc_t getc, terminate_t terminate, unsigned long base)
             while (len-- > 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
                 if ((addr < user_ram_start) || (addr > user_ram_end)) {
-                    // Only if there is no need to stop the download before printing
-                    // output can we ask confirmation questions.
-                    if (terminate) {
-                        (*terminate)(xyzModem_abort, getc);
-                        diag_printf("*** Warning! Attempt to load ELF data to address: %p\nRedBoot does not believe this is in RAM\nUse TFTP for a chance to override this.\n",(void*)addr);
-                    } else {
-                        if (!verify_action("Attempt to load ELF data to address: %p\n"
-                                           "RedBoot does not believe this is in RAM", (void*)addr))
-                            return 0;
-                    }
+                    redboot_getc_terminate(true);
+                    diag_printf("*** Abort! Attempt to load ELF data to address: %p which is not in RAM\n", (void*)addr);
+                    return 0;
                 }
 #endif
                 if ((ch = (*getc)()) < 0) {
@@ -294,9 +438,8 @@ _hex2(int (*getc)(void), int len, long *sum)
 // Because of this, "base" probably only makes sense for a set of
 // data which has only one section, e.g. a ROM image.
 //
-#define MAX_LINE 80
 static unsigned long
-load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
+load_srec_image(getc_t getc, unsigned long base)
 {
     int  c;
     long offset = 0, count, sum, val, cksum;
@@ -310,7 +453,7 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
     while ((c = (*getc)()) > 0) {
         // Start of line
         if (c != 'S') {
-	    if (terminate) (*terminate)(xyzModem_abort, getc);
+            redboot_getc_terminate(true);
             diag_printf("Invalid S-record at offset %p, input: %c\n", 
                    (void *)offset, c);
             return 0;
@@ -319,7 +462,7 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
         offset += 2;
         sum = 0;
         if ((count = _hex2(getc, 1, &sum)) < 0) {
-	    if (terminate) (*terminate)(xyzModem_abort, getc);
+            redboot_getc_terminate(true);
             diag_printf("Bad S-record count at offset %p\n", (void *)offset);
             return 0;
         }
@@ -348,14 +491,9 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
             if ((addr < user_ram_start) || (addr > user_ram_end)) {
 	      // Only if there is no need to stop the download before printing
 	      // output can we ask confirmation questions.
-	      if (terminate) {
-		(*terminate)(xyzModem_abort, getc);
-		diag_printf("*** Warning! Attempt to load S-record to address: %p\nRedBoot does not believe this is in RAM\nUse TFTP for a chance to override this.\n",(void*)addr);
-	      } else {
-                if (!verify_action("Attempt to load S-record data to address: %p\n"
-                                   "RedBoot does not believe this is in RAM", (void*)addr))
-                    return 0;
-	      }
+                redboot_getc_terminate(true);
+		diag_printf("*** Abort! Attempt to load S-record to address: %p, which is not in RAM\n",(void*)addr);
+                return 0;
             }
 #endif
             count -= ((type-'1'+2)+1);
@@ -369,7 +507,7 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
             sum = sum & 0xFF;
             cksum = (~cksum & 0xFF);
             if (cksum != sum) {
-		if (terminate) (*terminate)(xyzModem_abort, getc);
+                redboot_getc_terminate(true);
                 diag_printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
                        (unsigned long)base_addr, sum, cksum);
                 return 0;
@@ -385,7 +523,7 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
             offset += ('9'-type+2);
             // Save entry address
             entry_address = (unsigned long)addr;
-	    if (terminate) (*terminate)(xyzModem_close, getc);
+            redboot_getc_terminate(false);
             if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
             diag_printf("Entry point: %p, address range: %p-%p\n", 
                    (void*)entry_address, (void *)lowest_address, (void *)highest_address);
@@ -396,7 +534,7 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
 
             return highest_address;
         default:
-	    if (terminate) (*terminate)(xyzModem_abort, getc);
+            redboot_getc_terminate(true);
             diag_printf("Invalid S-record at offset 0x%lx, type: %x\n", 
                    (unsigned long)offset, type);
             return 0;
@@ -407,138 +545,19 @@ load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
 }
 
 //
-// Stream I/O support
+// 'load' CLI command processing
+//   -b - specify a load [base] address
+//   -m - specify an I/O stream/method
+//   -c - Alternate serial I/O channel
+#ifdef CYGPKG_COMPRESS_ZLIB
+//   -d - Decompress data [packed via 'zlib']
+#endif
 //
-int
-redboot_getc(void)
-{
-    static char spin[] = "|/-\\|-";
-    if (getc_info.avail < 0) {
-      return -1;
-    }
-    if (getc_info.avail == 0) {
-        if (getc_info.verbose) {
-            diag_printf("%c\b", spin[getc_info.tick++]);
-            if (getc_info.tick >= sizeof(spin)) {
-                getc_info.tick = 0;
-            }
-        }
-        if (getc_info.len < BUF_SIZE) {
-            // No more data available
-            if (getc_info.verbose) diag_printf("\n");
-            return -1;
-        }
-        getc_info.bufp = getc_info.buf;
-        getc_info.len = (*getc_info.fun)(getc_info.bufp, BUF_SIZE, &getc_info.err);
-        if ((getc_info.avail = getc_info.len) <= 0) {
-            if (getc_info.verbose) diag_printf("\n");
-            return -1;
-        }
-    }
-    getc_info.avail--;
-    return *getc_info.bufp++;
-}
-
-#ifdef CYGPKG_COMPRESS_ZLIB
-// Called to fetch a new chunk of data and decompress it
-int 
-_decompress_stream(char *buf, int len, int *err)
-{
-    _pipe_t* p = &getc_info.load_pipe;
-    int res, total;
-
-    total = 0;
-    while (len > 0) {
-        if (p->in_avail == 0) {
-            p->in_buf = &getc_info._buffer[0];
-            res = (*getc_info.raw_fun)(p->in_buf, CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER, 
-                                       &getc_info.err);
-            if ((p->in_avail = res) <= 0) {
-                // No more data
-                return total;
-            }
-        }
-        p->out_buf = buf;
-        p->out_size = 0;
-        p->out_max = len;
-        res = (*_dc_inflate)(p);
-        if (res != 0) {
-            *err = res;
-            return total;
-        }        
-        len -= p->out_size;
-        buf += p->out_size;
-        total += p->out_size;
-    }
-    return total;
-}
-#endif
-
-void
-redboot_getc_init(int (*fun)(char *, int, int *), 
-                  int verbose, int decompress)
-{
-    getc_info.avail = 0;
-    getc_info.len = BUF_SIZE;
-    getc_info.fun = fun;
-    getc_info.verbose = verbose;
-    getc_info.decompress = decompress;
-    getc_info.tick = 0;
-#ifdef CYGPKG_COMPRESS_ZLIB
-    if (decompress) {
-        _pipe_t* p = &getc_info.load_pipe;
-        int err;
-        p->out_buf = &getc_info.buf[0];
-        p->out_size = 0;
-        p->in_avail = 0;
-        getc_info.fun = _decompress_stream;
-        getc_info.raw_fun = fun;
-        err = (*_dc_init)(p);
-        if (0 != err && p->msg) {
-            diag_printf("open decompression error: %s\n", p->msg);
-        }
-    }
-#endif
-}
-
-void
-redboot_getc_rewind(void)
-{
-    getc_info.bufp = getc_info.buf;
-    getc_info.avail = getc_info.len;
-}
-
-void
-redboot_getc_close(void)
-{
-#ifdef CYGPKG_COMPRESS_ZLIB
-    if (getc_info.decompress) {
-        _pipe_t* p = &getc_info.load_pipe;
-        int err = getc_info.err;
-        if (0 != err && p->msg) {
-            diag_printf("decompression error: %s\n", p->msg);
-        }
-        err = (*_dc_close)(p, getc_info.err);
-    }
-#endif
-}
-
-#define MODE_TFTP   0
-#define MODE_XMODEM xyzModem_xmodem  // 1
-#define MODE_YMODEM xyzModem_ymodem  // 2
-#ifdef xyzModem_zmodem
-#define MODE_ZMODEM xyzModem_zmodem  // 3
-#endif
-#define MODE_DISK   4
-#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
-#define MODE_HTTP   5
-#endif
-
 void 
 do_load(int argc, char *argv[])
 {
     int res, num_options;
-    int i, err, mode;
+    int i, err;
     bool verbose, raw;
     bool base_addr_set, mode_str_set;
     char *mode_str;
@@ -557,7 +576,9 @@ do_load(int argc, char *argv[])
     char type[4];
     char *filename = 0;
     struct option_info opts[7];
-    terminate_t terminate = NULL;
+    connection_info_t info;
+    getc_io_funcs_t *io;
+    struct load_io_entry *io_tab;
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memset((char *)&host, 0, sizeof(host));
@@ -565,11 +586,6 @@ do_load(int argc, char *argv[])
     host.sin_family = AF_INET;
     host.sin_addr = my_bootp_info.bp_siaddr;
     host.sin_port = 0;
-#endif
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    mode = MODE_TFTP;
-#else
-    mode = MODE_YMODEM;
 #endif
 
     init_opts(&opts[0], 'v', false, OPTION_ARG_TYPE_FLG, 
@@ -616,77 +632,45 @@ do_load(int argc, char *argv[])
         }
     }
 #endif
-    if (mode_str_set) {
-        if (strncasecmp(&mode_str[1], "modem", strlen(&mode_str[1])) == 0) {
-            switch (_tolower(mode_str[0])) {
-            case 'x':
-                mode = MODE_XMODEM;
-                break;
-            case 'y':
-                mode = MODE_YMODEM;
-                break;
-#ifdef xyzModem_zmodem
-            case 'z':
-                mode = MODE_ZMODEM;
-                break;
-#endif
-            default:
-                diag_printf("Invalid 'mode': %s\n", mode_str);
-                return;
-            }
-            // When using a serial download type, override verbose
-            // setting: spinner interferes with the protocol.
-            verbose = false;
-#ifdef CYGPKG_REDBOOT_DISK
-	} else if (strcasecmp(mode_str, "disk") == 0) {
-            mode = MODE_DISK;
-#endif
-#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
-	} else if (strcasecmp(mode_str, "http") == 0) {
-            mode = MODE_HTTP;
-#endif
-#ifdef CYGPKG_REDBOOT_NETWORKING
-        } else if (strcasecmp(mode_str, "tftp") == 0) {
-            mode = MODE_TFTP;
-            if (!have_net) {
-                diag_printf("TFTP mode requires a working network\n");
-                return;
-            }
-#endif
-        } else {
-            diag_printf("Invalid 'mode': %s\n", mode_str);
-            return;
-        }
-    }
-#if defined(CYGPKG_REDBOOT_NETWORKING) || defined(CYGPKG_REDBOOT_DISK)
-    if ((mode == MODE_TFTP || mode == MODE_DISK) && !filename) {
-        diag_printf("File name missing\n");
-        diag_printf("usage: load %s\n", usage);
+    if (chan >= CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
+        diag_printf("Invalid I/O channel: %d\n", chan);
         return;
     }
-#endif
-#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
-    if (chan_set) {
-        if ((mode != MODE_XMODEM) && 
-#ifdef MODE_ZMODEM
-            (mode != MODE_ZMODEM) && 
-#endif
-            (mode != MODE_YMODEM)) {
-#ifdef xyzModem_zmodem
-            diag_printf("I/O channel can only be used with {xyz}Modem\n");
-#else
-            diag_printf("I/O channel can only be used with {xy}Modem\n");
-#endif
+    if (mode_str_set) {
+        io = (getc_io_funcs_t *)NULL;
+        for (io_tab = __RedBoot_LOAD_TAB__; 
+             io_tab != &__RedBoot_LOAD_TAB_END__;  io_tab++) {
+            if (strncasecmp(&mode_str[0], io_tab->mode, strlen(&mode_str[0])) == 0) {
+                io = io_tab->funcs;
+                break;
+            }
+        }
+        if (!io) {
+            diag_printf("Invalid 'mode': %s.  Valid modes are:", mode_str);
+            for (io_tab = __RedBoot_LOAD_TAB__; 
+                 io_tab != &__RedBoot_LOAD_TAB_END__;  io_tab++) {
+                diag_printf(" %s", io_tab->mode);
+            }
+            diag_printf("\n");
+        }
+        if (!io) {
             return;
         }
-        if (chan >= CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
-            diag_printf("Invalid I/O channel: %d\n", chan);
+        verbose &= io_tab->can_verbose;
+        if (io_tab->need_filename && !filename) {
+            diag_printf("File name required\n");
+            diag_printf("usage: load %s\n", usage);
             return;
         }
     } else {
-        chan = -1;
-    }
+        io_tab = (struct load_io_entry *)NULL;  // Default
+#ifdef CYGPKG_REDBOOT_NETWORKING
+        io = &tftp_io;
+#else
+        io = &xyzModem_io;
+        verbose = false;
 #endif
+    }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     if (base_addr_set &&
         ((base < (unsigned long)user_ram_start) ||
@@ -699,74 +683,31 @@ do_load(int argc, char *argv[])
         diag_printf("Raw load requires a memory address\n");
         return;
     }
+    info.filename = filename;
+    info.chan = chan;
+    info.mode = io_tab;
 #ifdef CYGPKG_REDBOOT_NETWORKING
-    if (mode == MODE_TFTP) {
-        res = tftp_stream_open(filename, &host, TFTP_OCTET, &err);    
-        if (res < 0) {
-            diag_printf("Can't load '%s': %s\n", filename, tftp_error(err));
-            return;
-        }
-        redboot_getc_init(tftp_stream_read, verbose, decompress);
-    }
+    info.server = &host;
 #endif
-#ifdef CYGPKG_REDBOOT_DISK
-    else if (mode == MODE_DISK) {
-        res = disk_stream_open(filename, &err);
-        if (res < 0) {
-
-            diag_printf("Can't load '%s': %s\n", filename, disk_error(err));
-            return;
-        }
-        redboot_getc_init(disk_stream_read, verbose, decompress);
-    }
-#endif
-#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
-    else if (mode == MODE_HTTP) {
-        res = http_stream_open(filename, &host, &err);
-        if (res < 0) {
-
-            diag_printf("Can't load '%s': %s\n", filename, http_error(err));
-            return;
-        }
-        redboot_getc_init(http_stream_read, verbose, decompress);
-    }
-#endif
-    else {
-        res = xyzModem_stream_open(filename, mode, chan, &err);
-        if (res < 0) {
-            diag_printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
-            return;
-        }
-        // Suppress verbosity when using xyz modem download
-        redboot_getc_init(xyzModem_stream_read, 0 && verbose, decompress);
-
-        terminate = xyzModem_stream_terminate;
+    res = redboot_getc_init(&info, io, verbose, decompress);
+    if (res < 0) {
+        return;
     }
 
+    // Stream open, process the data
     if (raw) {
-        bool continue_load = false;
         unsigned char *mp = (unsigned char *)base;
         err = 0;
         while ((res = redboot_getc()) >= 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-            if (!continue_load && mp >= user_ram_end) {
+            if (mp >= user_ram_end) {
                 // Only if there is no need to stop the download
                 // before printing output can we ask confirmation
                 // questions.
-                if (terminate) {
-                    (*terminate)(xyzModem_abort, redboot_getc);
-                    diag_printf("*** Warning! RAW data spills over limit of user RAM at %p\nRedBoot does not believe this is in RAM\nUse TFTP for a chance to override this.\n",(void*)mp);
-                    err = -1;
-                    break;
-                } else {
-                    if (!verify_action("RAW data spills over limit of user RAM at %p\n"
-                                       "Continuing may cause a hang or crash", (void*)mp)) {
-                        err = -1;
-                        break;
-                    }
-                    // Don't ask again
-                    continue_load = true;
-                }
+                redboot_getc_terminate(true);
+                diag_printf("*** Abort! RAW data spills over limit of user RAM at %p\n",(void*)mp);
+                err = -1;
+                break;
             }
 #endif
             *mp++ = res;
@@ -778,6 +719,7 @@ do_load(int argc, char *argv[])
         load_address_end = end;
         entry_address = base;           // best guess
 
+        redboot_getc_terminate(false);
         if (0 == err)
             diag_printf("Raw file loaded %p-%p, assumed entry at %p\n", 
                         (void *)base, (void *)end, (void*)base);
@@ -794,36 +736,16 @@ do_load(int argc, char *argv[])
             redboot_getc_rewind();  // Restore header to stream
             // Treat data as some sort of executable image
             if (strncmp(&type[1], "ELF", 3) == 0) {
-                end = load_elf_image(redboot_getc, terminate, base);
+                end = load_elf_image(redboot_getc, base);
             } else if ((type[0] == 'S') &&
                        ((type[1] >= '0') && (type[1] <= '9'))) {
-		end = load_srec_image(redboot_getc, terminate, base);
+		end = load_srec_image(redboot_getc, base);
             } else {
                 diag_printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
             }
         }
     }
 
-    switch (mode) {
-#ifdef CYGPKG_REDBOOT_DISK
-      case MODE_DISK:
-        disk_stream_close(&err);
-	break;
-#endif
-#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
-      case MODE_HTTP:
-        http_stream_close(&err);
-	break;
-#endif
-#ifdef CYGPKG_REDBOOT_NETWORKING
-      case MODE_TFTP:
-        tftp_stream_close(&err);
-	break;
-#endif
-      default:
-        xyzModem_stream_close(&err);
-	break;
-    }
     redboot_getc_close();  // Clean up
     return;
 }

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -356,9 +357,10 @@ static void *fileptr;
 static partition_t *file_part;
 
 externC int 
-disk_stream_open(char *filename, int *err)
+disk_stream_open(connection_info_t *info, int *err)
 {
     const char *filepath;
+    char *filename = info->filename;
 
     // The filename is in <disk>:<path> format.
     // Convert to a partition and path.
@@ -425,3 +427,9 @@ disk_error(int err)
     }
 }
 
+//
+// RedBoot interface
+//
+GETC_IO_FUNCS(disk_io, disk_stream_open, disk_stream_close,
+              0, disk_stream_read, disk_error);
+RedBoot_load(disk, disk_io, true, true);

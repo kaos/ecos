@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -151,8 +152,8 @@ cdl_package CYGPKG_REDBOOT {
                      This is handled by a rule in the target CDL."
 
         compile main.c crc.c
-        compile misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c alias.c
-        compile -library=libextras.a load.c
+        compile misc_funs.c io.c parse.c ticks.c syscall.c alias.c
+        compile -library=libextras.a load.c xyzModem.c 
 
         make -priority 320 {
             <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
@@ -169,8 +170,8 @@ cdl_package CYGPKG_REDBOOT {
         default_value 1
         compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
         compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c
-        compile net/tftp_client.c net/net_io.c net/inet_addr.c
-        compile -library=libextras.a net/ping.c
+        compile net/net_io.c net/inet_addr.c
+        compile -library=libextras.a net/ping.c net/tftp_client.c 
         description "This option includes networking support in RedBoot."
         define_proc {
             puts $::cdl_system_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS 1"
@@ -188,7 +189,7 @@ cdl_package CYGPKG_REDBOOT {
             display          "Support HTTP for download"
             flavor           bool
             default_value    1
-            compile          net/http_client.c
+            compile          -library=libextras.a net/http_client.c
             description      "
                 This option enables the use of the HTTP protocol for download"
         }

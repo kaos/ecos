@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,9 +56,9 @@
 #ifndef _HTTP_H_
 #define _HTTP_H_
 
-extern int   http_stream_open(char *file, struct sockaddr_in *server, int *err);
+extern int   http_stream_open(connection_info_t *info, int *err);
 extern int   http_stream_read(char *buf, int len, int *err);
-extern int   http_stream_close(int *err);
+extern void  http_stream_close(int *err);
 extern char *http_error(int err);
 
 #define HTTP_NOERR    0   // No error
@@ -65,4 +66,5 @@ extern char *http_error(int err);
 #define HTTP_OPEN     2   // Problems opening connection
 #define HTTP_IO       3   // Misc I/O problems
 
+extern getc_io_funcs_t http_io;
 #endif // _HTTP_H_

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -79,19 +80,17 @@ min(int a, int b)
 }
 
 int
-http_stream_open(char *filename,
-                 struct sockaddr_in *server,
-                 int *err)
+http_stream_open(connection_info_t *info, int *err)
 {
     int res;
     struct _stream *s = &http_stream;
 
-    server->sin_port = 80;  // HTTP port
-    if ((res = __tcp_open(&s->sock, server, get_port++, 5000, err)) < 0) {
+    info->server->sin_port = 80;  // HTTP port
+    if ((res = __tcp_open(&s->sock, info->server, get_port++, 5000, err)) < 0) {
         *err = HTTP_OPEN;
         return -1;
     }
-    diag_sprintf(s->data, "GET %s HTTP 1.0\r\n\r\n", filename);
+    diag_sprintf(s->data, "GET %s HTTP 1.0\r\n\r\n", info->filename);
     __tcp_write_block(&s->sock, s->data, strlen(s->data));    
     s->avail = 0;
     s->open = true;
@@ -99,7 +98,7 @@ http_stream_open(char *filename,
     return 0;
 }
 
-int
+void
 http_stream_close(int *err)
 {    
     struct _stream *s = &http_stream;
@@ -108,7 +107,6 @@ http_stream_close(int *err)
         __tcp_close(&s->sock);
         s->open = false;    
     }
-    return 0;
 }
 
 int
@@ -234,3 +232,10 @@ http_error(int err)
     }
     return errmsg;
 }
+
+//
+// RedBoot interface
+//
+GETC_IO_FUNCS(http_io, http_stream_open, http_stream_close,
+              0, http_stream_read, http_error);
+RedBoot_load(http, http_io, true, true);

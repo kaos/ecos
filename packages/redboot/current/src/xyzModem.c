@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -316,7 +317,7 @@ xyzModem_get_hdr(void)
 }
 
 int 
-xyzModem_stream_open(char *filename, int mode, int chan, int *err)
+xyzModem_stream_open(connection_info_t *info, int *err)
 {
     int console_chan, stat;
     int retries = xyzModem_MAX_RETRIES;
@@ -324,7 +325,7 @@ xyzModem_stream_open(char *filename, int mode, int chan, int *err)
 
 //    ZM_DEBUG(zm_out = zm_out_start);
 #ifdef xyzModem_zmodem
-    if (mode == xyzModem_zmodem) {
+    if (info->mode == xyzModem_zmodem) {
         *err = xyzModem_noZmodem;
         return -1;
     }
@@ -332,8 +333,8 @@ xyzModem_stream_open(char *filename, int mode, int chan, int *err)
 
     // Set up the I/O channel.  Note: this allows for using a different port in the future
     console_chan = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    if (chan >= 0) {
-        CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);
+    if (info->chan >= 0) {
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(info->chan);
     } else {
         CYGACC_CALL_IF_SET_CONSOLE_COMM(console_chan);
     }
@@ -344,7 +345,7 @@ xyzModem_stream_open(char *filename, int mode, int chan, int *err)
     xyz.crc_mode = true;
     xyz.at_eof = false;
     xyz.tx_ack = false;
-    xyz.mode = mode;
+    xyz.mode = info->mode;
     xyz.total_retries = 0;
     xyz.total_SOH = 0;
     xyz.total_STX = 0;
@@ -498,12 +499,11 @@ xyzModem_stream_close(int *err)
 
 // Need to be able to clean out the input buffer, so have to take the
 // getc
-void xyzModem_stream_terminate(int method, int (*getc)(void))
+void xyzModem_stream_terminate(bool abort, int (*getc)(void))
 {
   int c;
 
-  switch (method) {
-    case xyzModem_abort:
+  if (abort) {
       ZM_DEBUG(zm_dprintf("!!!! TRANSFER ABORT !!!!\n"));
       switch (xyz.mode) {
 	case xyzModem_xmodem:
@@ -529,7 +529,7 @@ void xyzModem_stream_terminate(int method, int (*getc)(void))
 #endif
 	break;
       }
-    default:
+  } else {
       ZM_DEBUG(zm_dprintf("Engaging cleanup mode...\n"));
       // Consume any trailing crap left in the inbuffer from
       // previous recieved blocks. Since very few files are an exact multiple
@@ -542,7 +542,6 @@ void xyzModem_stream_terminate(int method, int (*getc)(void))
       // time to get control again after their file transfer program
       // exits.
       CYGACC_CALL_IF_DELAY_US((cyg_int32)250000);
-      break;
   }
 }
 
@@ -579,3 +578,11 @@ xyzModem_error(int err)
         break;
     }
 }
+
+//
+// RedBoot interface
+//
+GETC_IO_FUNCS(xyzModem_io, xyzModem_stream_open, xyzModem_stream_close,
+              xyzModem_stream_terminate, xyzModem_stream_read, xyzModem_error);
+RedBoot_load(xmodem, xyzModem_io, false, false);
+RedBoot_load(ymodem, xyzModem_io, false, false);
