@@ -206,5 +206,65 @@ cyg_hal_clear_MMU (void)
     CYGARC_MTSPR (MD_CTR, ctr | CYGARC_REG_MD_CTR_CIDEF);
 }
 
+#ifdef CYGPKG_PROFILE
+//--------------------------------------------------------------------------
+//
+// Profiling support - uses a separate high-speed timer
+//
+
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_intr.h>
+#include <cyg/hal/quicc/ppc8xx.h>
+#include <cyg/infra/profile.h>
+
+// Can't rely on Cyg_Interrupt class being defined.
+#define Cyg_InterruptHANDLED 1
+
+#define PIT_IRQ_LEVEL 4
+#define PIT_IRQ CYGNUM_HAL_INTERRUPT_SIU_LVL4
+#define ID_PIT       34512
+
+
+// Periodic timer ISR.
+static cyg_uint32 
+isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data, HAL_SavedRegisters *regs)
+{
+
+    HAL_INTERRUPT_ACKNOWLEDGE (CYGNUM_HAL_INTERRUPT_SIU_PIT);
+    profile_hit(regs->pc);
+
+    return Cyg_InterruptHANDLED;
+}
+
+void
+hal_enable_profile_timer(int resolution)
+{
+    // Run periodic timer interrupt for profile 
+    cyg_uint16 piscr;
+    int period = resolution / 100;
+
+    // Attach pit arbiter.
+    HAL_INTERRUPT_ATTACH (PIT_IRQ,
+                          &hal_arbitration_isr_pit, ID_PIT, 0);
+    HAL_INTERRUPT_UNMASK (PIT_IRQ);
+
+    // Attach pit isr.
+    HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_PIT, &isr_pit,
+                          ID_PIT, 0);
+    HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_PIT, PIT_IRQ_LEVEL);
+    HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_PIT);
+
+
+    // Set period.
+    HAL_WRITE_UINT32 (CYGARC_REG_IMM_PITC, 
+                      (2*period) << CYGARC_REG_IMM_PITC_COUNT_SHIFT);
+
+    // Enable.
+    HAL_READ_UINT16 (CYGARC_REG_IMM_PISCR, piscr);
+    piscr |= CYGARC_REG_IMM_PISCR_PTE;
+    HAL_WRITE_UINT16 (CYGARC_REG_IMM_PISCR, piscr);
+}
+#endif
+
 //--------------------------------------------------------------------------
 // End of var_misc.c

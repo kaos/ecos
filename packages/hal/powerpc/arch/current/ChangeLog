@@ -1,3 +1,8 @@
+2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/vectors.S: Provide pointer to saved registers on interrupt.
+	This is necessary for profiling support.
+
 2002-11-13  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/hal_misc.c (hal_enable_caches): Support new CDL options for

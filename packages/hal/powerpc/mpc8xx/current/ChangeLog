@@ -1,3 +1,8 @@
+2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/var_misc.c: 
+	* cdl/hal_powerpc_mpc8xx.cdl: Add support for profiling.
+
 2002-11-13  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/var_cache.h (HAL_DCACHE_WRITE_MODE): Define for support
