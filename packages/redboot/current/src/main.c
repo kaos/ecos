@@ -385,6 +385,7 @@ do_go(int argc, char *argv[])
     int  wait_time, res;
     struct option_info opts[1];
     char line[8];
+    hal_virtual_comm_table_t *__chan = CYGACC_CALL_IF_CONSOLE_PROCS();
 
     entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
@@ -412,6 +413,8 @@ do_go(int argc, char *argv[])
             script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
     }
+    CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_ENABLE_LINE_FLUSH);
+
     fun = (code_fun *)entry;
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_SYNC();

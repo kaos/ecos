@@ -1,3 +1,8 @@
+2002-09-11  Mark Salter  <msalter@redhat.com>
+
+	* src/main.c (do_go): Turn on line flushes before jumping to function.
+	* src/net/net_io.c (net_io_control): Support flushes at end of lines.
+
 2002-09-03  Yoshinori Sato <qzb04471@nifty.ne.jp>
 2002-09-03  Mark Salter  <msalter@redhat.com>
 

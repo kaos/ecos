@@ -150,6 +150,15 @@ typedef enum {
      */
     __COMMCTL_FLUSH_OUTPUT,
 
+    /*
+     * Forces driver to enable or disable flushes when a newline is
+     * seen in the output stream. Flushing at line boundaries occurs
+     * in the driver, not necessarily any hardware FIFO, etc. Line
+     * buffering is optional and may only be available in some drivers.
+     */
+    __COMMCTL_ENABLE_LINE_FLUSH,
+    __COMMCTL_DISABLE_LINE_FLUSH,
+
 } __comm_control_cmd_t;
 
 

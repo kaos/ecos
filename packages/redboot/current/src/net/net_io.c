@@ -148,6 +148,7 @@ static unsigned char *in_bufp;
 static int out_buflen = 0;
 static unsigned char out_buf[1024];
 static unsigned char *out_bufp;
+static bool flush_output_lines = false;
 
 // Functions in this module
 static void net_io_flush(void);
@@ -303,6 +304,7 @@ net_io_putc(void* __ch_data, cyg_uint8 c)
         hash_count = 0;
     }
     if ((++out_buflen == sizeof(out_buf)) ||
+        (flush_output_lines && c == '\n') ||
         (have_hash && (++hash_count == 3))) {
         net_io_flush();
         have_dollar = false;
@@ -410,6 +412,12 @@ net_io_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     case __COMMCTL_FLUSH_OUTPUT:
         net_io_flush();
         break;
+    case __COMMCTL_ENABLE_LINE_FLUSH:
+	flush_output_lines = true;
+	break;
+    case __COMMCTL_DISABLE_LINE_FLUSH:
+	flush_output_lines = false;
+	break;
     default:
         break;
     }
