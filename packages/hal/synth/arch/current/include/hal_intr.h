@@ -244,7 +244,7 @@ externC cyg_uint32      hal_clock_read(void);
 externC void            cyg_hal_sys_exit(int); 
 #define HAL_PLATFORM_RESET()                                    \
     CYG_MACRO_START                                             \
-    cyg_hal_sys_exit(0)                                         \
+    cyg_hal_sys_exit(0);                                        \
     CYG_MACRO_END
 
 // ----------------------------------------------------------------------------

@@ -1,7 +1,15 @@
+2004-08-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_intr.h (HAL_PLATFORM_RESET): Added missing ;
+
 2004-08-04  Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
 	* include/hal_io.h: Add cyg_hal_sys_mkdir() system call
 	* include/hal_intr.h: Add HAL_PLATFORM_RESET() macro
+
+2004-07-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/synth.ld: Added the 2ram section needed for flash devices
 
 2004-06-21  Alexander Neundorf <alexander.neundorf@jenoptik.com>
 
