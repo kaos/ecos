@@ -1,3 +1,9 @@
+
+2003-11-30  Bob Koninckx  <bob.koninckx@fmtc.be>
+
+    * include/var_intr.h: Added definitions for maximum/minimum interrupt
+      priorites on SIU/IMB3
+
 2002-11-11  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
     * include/var_regs.h: Removed double definitions for ICTRL, ICTRL_SERSHOW

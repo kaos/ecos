@@ -295,6 +295,12 @@ hal_mpc5xx_remove_arbitration_isr(cyg_uint32 apriority);
 #define CYGNUM_HAL_ISR_MIN      CYGNUM_HAL_INTERRUPT_DECREMENTER
 #define CYGNUM_HAL_ISR_MAX      CYGNUM_HAL_INTERRUPT_IMB3_MIOS_MDASM31
 
+#define CYGARC_SIU_PRIORITY_HIGH                 7 // Maximum interrupt priority on SIU 
+#define CYGARC_SIU_PRIORITY_LOW                  0 // Minimum interrupt prioeirt on SIU
+#define CYGARC_IMB3_PRIORITY_HIGH               31 // Maximum interrupt priority on IMB3
+#define CYGARC_IMB3_PRIORITY_LOW                 0 // Minimum interrupt priority on IMB3
+
+
 //--------------------------------------------------------------------------
 // Interrupt controller access
 static __inline__ void
