@@ -54,6 +54,7 @@ cdl_package CYGPKG_LIBC_TIME {
                        "<cyg/libc/time/time.h>" }
     requires      CYGPKG_ISOINFRA
     requires      CYGINT_ISO_DIV
+    requires      CYGINT_ISO_ABS
 
     compile       asctime.cxx       asctime_r.cxx    clock.cxx      \
                   ctime.cxx         ctime_r.cxx      difftime.cxx   \

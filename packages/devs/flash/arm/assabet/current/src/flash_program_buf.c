@@ -66,7 +66,7 @@ flash_program_buf(volatile unsigned long *addr, unsigned long *data, int len)
         HAL_DCACHE_DISABLE();
     }
 
-    ROM = (volatile unsigned long *)((unsigned long)addr & 0xFF800000);
+    ROM = (volatile unsigned long *)((unsigned long)addr & 0xFE000000);
 
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;

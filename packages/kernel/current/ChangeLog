@@ -1,3 +1,27 @@
+2000-10-30  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/synch.cdl: Replaced CYGINT_KERNEL_SCHEDULER_CAN_YIELD with
+	CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES.
+	* cdl/scheduler.cdl:
+	CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL requires
+	CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES.
+
+	* tests/thread2.cxx: Use new option.
+	* tests/klock.c: Same.
+	* src/common/thread.cxx: Same.
+	* src/common/clock.cxx: Same.
+
+	* include/bitmap.hxx: Leave unique priority setting to CDL.
+	* include/mlqueue.hxx: Same.
+	* include/sched.hxx: Let CDL do sanity check of config.
+
+2000-10-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/scheduler.cdl: Added CYGINT_KERNEL_SCHEDULER_CAN_YIELD
+
+	* tests/klock.c: Avoid use of disabled features. Require scheduler
+	that can yield.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/bin_sem0.cxx:

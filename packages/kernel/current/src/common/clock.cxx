@@ -923,7 +923,7 @@ void Cyg_RealTimeClock::dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD 
     rtc->tick( count );
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
-#if    0 == CYG_SCHED_UNIQUE_PRIORITIES
+#if    0 == CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
 
     // If timeslicing is enabled, call the scheduler to
     // handle it. But not if we have unique priorities.

@@ -1,3 +1,8 @@
+2000-10-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/testaux.hxx: Prototype cyg_hal_invoke_constructors()
+	[ Forgot to check this in at the same time as below ]
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/dlmalloc1.cxx:

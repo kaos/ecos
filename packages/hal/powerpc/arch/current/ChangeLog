@@ -1,3 +1,8 @@
+2000-10-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/powerpc.ld: Match multiple sections where relevant (.bss*,
+	.sbss*, .sdata*, etc.)
+
 2000-10-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_misc.c: Update __mem_fault_handler declaration.

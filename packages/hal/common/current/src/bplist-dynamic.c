@@ -44,7 +44,7 @@
 //=========================================================================
 
 #include <pkgconf/system.h>
-#include CYGBLD_HAL_PLATFORM_H
+#include <pkgconf/hal.h>
 
 #if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0) && defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 

@@ -1,3 +1,7 @@
+2000-10-30  Gary Thomas  <gthomas@redhat.com>
+
+	* include/eth_drv.h: Fix compile error in stand-alone mode.
+
 2000-10-17  Hugo Tyson  <hmt@redhat.com>
 2000-10-10  Andrew Lunn <Andrew.Lunn@ascom.ch>
 	* cdl/eth_drivers.cdl: Add configury to disable the warnings about

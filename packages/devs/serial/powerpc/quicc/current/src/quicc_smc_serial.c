@@ -613,7 +613,7 @@ quicc_smc_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
     serial_channel *chan = (serial_channel *)data;
     quicc_smc_serial_info *smc_chan = (quicc_smc_serial_info *)chan->dev_priv;
     cyg_drv_interrupt_mask(smc_chan->int_num);
-    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+    return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Cause DSR to be run
 }
 
 // Serial I/O - high level interrupt handler (DSR)

@@ -1,3 +1,22 @@
+2000-10-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/time.inl: Ensure POSIX *_r functions can be accessed by
+	non-POSIX implementation even when CYGFUN_LIBC_TIME_POSIX is off.
+
+	* src/asctime_r.cxx: No need to make conditional on posix CDL option - 
+	we may want to define an internal-only function.
+	* src/ctime_r.cxx: Ditto
+	* src/gmtime_r.cxx: Ditto
+	* src/localtime_r.cxx: Ditto
+
+	* cdl/time.cdl: abs() is also a requirement
+
+	* src/clock.cxx (clock): Always use unsigned long longs for temp
+	variables (and make sure it's used), rather than making
+	assumptions about clock_t.
+
+	* tests/clock.c: Rewrite
+
 2000-07-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* cdl/time.cdl: Add CYGINT_ISO_DIV dependency

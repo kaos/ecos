@@ -992,8 +992,11 @@ int
 __process_packet (char *packet)
 {
   int  is_binary = 0;
-  remcomOutBuffer[0] = 0;
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE)
+  int is_Z = 0;
+#endif
 
+  remcomOutBuffer[0] = 0;
   switch (packet[0])
     {
     case '?':
@@ -1008,6 +1011,7 @@ __process_packet (char *packet)
 
 #ifdef __ECOS__
 #if !defined(CYG_HAL_STARTUP_RAM)    // Only for ROM based stubs
+#if 0 // Disable to avoid conflict with stub-breakpoint z/Z-packets
     case 'z':
         /* report IO buffer sizes so download can achieve optimal
            download speed */
@@ -1017,6 +1021,7 @@ __process_packet (char *packet)
         remcomOutBuffer[i] = 0;
         break;
     }
+#endif
     case 'd':
       /* toggle debug flag */
       strcpy(remcomOutBuffer, "eCos GDB stubs" 
@@ -1304,6 +1309,79 @@ __process_packet (char *packet)
         __set_baud_rate (baudrate);
         break;
       }
+
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
+    case 'Z':
+      is_Z = 1;
+    case 'z':
+      {
+	char *ptr = &packet[1];
+	target_register_t ztype, addr, length;
+	int err;
+
+	if (__hexToInt (&ptr, &ztype) && *(ptr++) == ',')
+	  {
+	    if (__hexToInt (&ptr, &addr))
+	      {
+		if (*(ptr++) == ',')
+		  {
+		      /* When there is a comma, there must be a length */
+		      if  (!__hexToInt (&ptr, &length))
+			{
+			  strcpy (remcomOutBuffer, "E02");
+			  break;
+			}
+		  }
+		else
+		  length = 0;
+
+		switch (ztype)
+		  {
+		    case 0:
+		      /* sw breakpoint */
+		      if (is_Z)
+			err = __set_breakpoint(addr);
+		      else
+			err = __remove_breakpoint(addr);
+		      if (!err)
+			strcpy (remcomOutBuffer, "OK");
+		      else
+			strcpy (remcomOutBuffer, "E02");
+		      break;
+#ifdef HAL_STUB_HW_BREAKPOINT
+		    case 1:
+		      /* hw breakpoint */
+		      if (!HAL_STUB_HW_BREAKPOINT(is_Z, (void *)addr, length))
+			strcpy (remcomOutBuffer, "OK");
+		      else
+			strcpy (remcomOutBuffer, "E02");
+		      break;
+#endif
+#ifdef HAL_STUB_HW_WATCHPOINT
+		    case 2:
+		    case 3:
+		    case 4:
+			{
+		      /* hw watchpoint */
+		      if (!HAL_STUB_HW_WATCHPOINT(is_Z, (void *)addr, length, ztype))
+			strcpy (remcomOutBuffer, "OK");
+		      else
+			strcpy (remcomOutBuffer, "E02");
+			}
+		      break;
+
+		      // FIXME   !!Test only!!
+		    case 5:
+		      addr = (target_register_t)HAL_STUB_HW_STOPPED_DATA_ADDRESS();
+		      __mem2hex ((char *)&addr, remcomOutBuffer, sizeof(target_register_t), 0);
+		      break;
+#endif
+		  }
+	      }
+	  }
+	break;
+      }
+#endif // Z packet support
     default:
       __process_target_packet (packet, remcomOutBuffer, 300);
       break;

@@ -52,6 +52,9 @@
 
 #include <cyg/hal/hal_tables.h>
 
+// Builtin Self Test (BIST)
+externC void bist(void);
+
 // GDB interfaces
 extern void breakpoint(void);
 
@@ -107,6 +110,8 @@ cyg_start(void)
 
     ram_start = (unsigned char *)CYGMEM_REGION_ram;
     ram_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
+
+    bist();
 
     printf("\nRedBoot(tm) debug environment - built %s, %s\n", __TIME__, __DATE__);
 #ifdef HAL_PLATFORM_CPU
@@ -273,4 +278,14 @@ do_go(int argc, char *argv[])
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
     (*fun)();
+}
+
+// 
+// [Null] Builtin [Power On] Self Test
+//
+void bist(void) CYGBLD_ATTRIB_WEAK;
+
+void
+bist(void) 
+{
 }

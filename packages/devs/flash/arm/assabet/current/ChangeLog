@@ -1,3 +1,10 @@
+2000-10-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash_unlock_block.c (flash_unlock_block): 
+	* src/flash_lock_block.c (flash_lock_block): 
+	* src/flash_program_buf.c (flash_program_buf): 
+	* src/flash_erase_block.c (flash_erase_block): Support up to 32M FLASH.
+
 2000-09-10  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash_unlock_block.c: 

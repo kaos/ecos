@@ -423,8 +423,10 @@ tftpd_server(cyg_addrword_t p)
     struct tftphdr *hdr = (struct tftphdr *)data;
 
 #ifndef CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS
+#ifndef CYGPKG_NET_AUTOTEST // cut the chatter if automated testing
     // Otherwise routine printfs fail the test - interrupts disabled too long.
     diag_printf("TFTPD [%x]: port %d\n", p, server->port);
+#endif // !CYGPKG_NET_AUTOTEST
 #endif
 
     // Set up port
@@ -456,7 +458,9 @@ tftpd_server(cyg_addrword_t p)
             close(s);
 #ifdef CYGSEM_TFTP_SERVER_MULTITHREADED
 #ifndef CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS
+#ifndef CYGPKG_NET_AUTOTEST // cut the chatter if automated testing
             diag_printf("TFTPD [%x]: waiting to bind to service port\n", p);
+#endif // !CYGPKG_NET_AUTOTEST
 #endif
             // Wait until the socket is free...
             cyg_semaphore_wait( &tftp_server_sem );
@@ -481,9 +485,11 @@ tftpd_server(cyg_addrword_t p)
             diag_printf("TFTPD [%x]: can't read request\n", p);
         } else {
 #ifndef CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS
+#ifndef CYGPKG_NET_AUTOTEST // cut the chatter if automated testing
             diag_printf("TFTPD [%x]: received %x from %s:%d\n", p,
                         ntohs(hdr->th_opcode), inet_ntoa(from_addr.sin_addr),
                         from_addr.sin_port);
+#endif // !CYGPKG_NET_AUTOTEST
 #endif
             switch (ntohs(hdr->th_opcode)) {
             case WRQ:

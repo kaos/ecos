@@ -1,3 +1,5 @@
+#ifndef _FIS_H_
+#define _FIS_H_
 //==========================================================================
 //
 //      fis.h
@@ -49,7 +51,12 @@ struct fis_image_desc {
     unsigned long mem_base;      // Address in memory where it executes
     unsigned long size;          // Length of image
     unsigned long entry_point;   // Execution entry point
-    unsigned char _pad[256-40];
+    unsigned long data_length;   // Length of actual data
+    unsigned char _pad[256-(16+7*sizeof(unsigned long))];
     unsigned long desc_cksum;    // Checksum over image descriptor
     unsigned long file_cksum;    // Checksum over image data
 };
+
+struct fis_image_desc *fis_lookup(char *name);
+
+#endif // _FIS_H_

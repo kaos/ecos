@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   gthomas
-// Contributors:nickg, gthomas
+// Contributors:nickg, gthomas, dmoseley
 //              Travis C. Furrer <furrer@mit.edu>
 // Date:        2000-05-08
 // Purpose:     HAL diagnostic output
@@ -94,19 +94,22 @@ init_channel(channel_data_t* __ch_data)
     base->utsr0 = SA11X0_UART_RX_IDLE | SA11X0_UART_RX_BEGIN_OF_BREAK |
                   SA11X0_UART_RX_END_OF_BREAK;
 
-#if 0 // later
-    if (SA11X0_UART1_BASE == __ch_data) {
+    if (SA11X0_UART1_BASE == (volatile unsigned long *)base) {
+        cyg_uint32 pdr, afr, par;
+
+        HAL_READ_UINT32(SA11X0_GPIO_PIN_DIRECTION, pdr);
+        HAL_READ_UINT32(SA11X0_GPIO_ALTERNATE_FUNCTION, afr);
+        HAL_READ_UINT32(SA11X0_PPC_PIN_ASSIGNMENT, par);
 
         //Set pin 14 as an output (Tx) and pin 15 as in input (Rx).
-        base->gpdr = (*SA11X0_REG_GPDR | SA11X0_GPIO_14) & ~SA11X0_GPIO_15;
+        HAL_WRITE_UINT32(SA11X0_GPIO_PIN_DIRECTION, ((pdr | SA11X0_GPIO_PIN_14) & ~SA11X0_GPIO_PIN_15));
 
         // Use GPIO 14 & 15 pins for serial port 1.
-        base->gafr |= SA11X0_GPIO_14 | SA11X0_GPIO_15;
+        HAL_WRITE_UINT32(SA11X0_GPIO_ALTERNATE_FUNCTION, afr | SA11X0_GPIO_PIN_14 | SA11X0_GPIO_PIN_15);
 
         // Pin reassignment for serial port 1.
-        base->ppar |= SA11X0_UART_PIN_REASSIGNMENT_MASK;
+        HAL_WRITE_UINT32(SA11X0_PPC_PIN_ASSIGNMENT, par | SA11X0_PPC_UART_PIN_REASSIGNMENT_MASK);
     }
-#endif
 
     // Set UART to 8N1 (8 data bits, no partity, 1 stop bit)
     base->utcr0 = SA11X0_UART_PARITY_DISABLED | SA11X0_UART_STOP_BITS_1 |

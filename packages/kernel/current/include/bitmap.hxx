@@ -73,7 +73,6 @@ typedef cyg_ucount32 cyg_sched_bitmap;
 // Customize the scheduler
 
 #define CYGIMP_THREAD_PRIORITY  1
-#define CYG_SCHED_UNIQUE_PRIORITIES 1
 
 #define CYG_THREAD_MIN_PRIORITY (CYGNUM_KERNEL_SCHED_BITMAP_SIZE-1)
 #define CYG_THREAD_MAX_PRIORITY 0

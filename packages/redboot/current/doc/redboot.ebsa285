@@ -144,7 +144,10 @@ previous systems.
        The IP and server info comes from BOOTP, which is how this RedBoot
        will start up if the flash does not contain good config info.
 
-   % minicom -o ttyS0
+   % minicom -o
+ 
+   Be sure to check that minicom is set to use the correct serial port and
+   with the correct port settings (normally 38400-N-1, no flow control)
 
    $c#63
    RedBoot(tm) debug environment - built 07:45:57, Aug  7 2000

@@ -369,6 +369,11 @@ extern pktbuf_t *__pktbuf_alloc(int nbytes);
  */
 extern void __pktbuf_free(pktbuf_t *pkt);
 
+/*
+ * Dump packet structures (debug, in case of running out)
+ */
+extern void __pktbuf_dump(void);
+
 
 /*
  * Install handlers for ethernet packets.
@@ -407,6 +412,12 @@ extern void __arp_handler(pktbuf_t *pkt);
  */
 extern int __arp_request(ip_addr_t *ip_addr, enet_addr_t *eth_addr);
 
+/*
+ * Lookup an address from the local ARP cache.  If not found,
+ * then call 'arp_request' to find it.  [Basically just a cached
+ * version of 'arp_request']
+ */
+extern int __arp_lookup(ip_addr_t *host, ip_route_t *rt);
 
 /*
  * Do a one's complement checksum.

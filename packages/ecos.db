@@ -144,6 +144,7 @@ package CYGPKG_DEVS_FLASH_ASSABET {
 	   on the Intel StrongARM SA-1110 Assabet platform."
 }
 
+
 package CYGPKG_DEVS_FLASH_MBX {
 	alias 		{ "FLASH memory support for Motorola PowerPC/860 MBX" flash_mbx }
 	directory	devs/flash/powerpc/mbx
@@ -162,6 +163,7 @@ package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     script	      ser_arm_ebsa285.cdl	
     description       "Intel StrongARM/EBSA285 serial device drivers"
 }
+
 
 package CYGPKG_IO_SERIAL_ARM_SA11X0 {
     alias 	      { "Intel StrongARM SA11x0 serial driver"
@@ -766,7 +768,6 @@ package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
         The BRUTUS HAL package provides the support needed to run
         eCos on a Intel StrongARM SA1110 evaulation board (brutus)."
 }
-
 package CYGPKG_HAL_ARM_EDB7XXX {
 	alias		{ "Cirrus Logic development board" hal_arm_edb7xxx arm_edb7xxx_hal }
 	directory	hal/arm/edb7xxx
@@ -785,6 +786,7 @@ package CYGPKG_HAL_ARM_CMA230 {
 The cma230 HAL package provides the support needed to run eCos on a Cogent 
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
 }
+
 
 # --------------------------------------------------------------------------
 # SH packages

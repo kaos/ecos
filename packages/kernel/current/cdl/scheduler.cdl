@@ -46,6 +46,14 @@ cdl_interface CYGINT_KERNEL_SCHEDULER {
     requires 1 == CYGINT_KERNEL_SCHEDULER
 }
 
+cdl_interface CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES {
+    display  "Non-zero if the active schedule only has unique priorities"
+    description "
+        Not all schedulers allow mutiple threads to use the same
+        priority. That property is signalled via this option, allowing
+        scheduler and tests to behave accordingly."
+}
+
 # FIXME: The two below options must be mutually exclusive
 cdl_option CYGSEM_KERNEL_SCHED_MLQUEUE {
     display       "Multi-level queue scheduler"
@@ -63,6 +71,7 @@ cdl_option CYGSEM_KERNEL_SCHED_BITMAP {
     display       "Bitmap scheduler"
     default_value 0
     implements    CYGINT_KERNEL_SCHEDULER
+    implements    CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
     description   "
         The bitmap scheduler supports multiple priority levels but
         only one thread can exist at each priority level. This means

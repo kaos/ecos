@@ -1,3 +1,7 @@
+2000-10-27  Jesper Skov  <jskov@redhat.com>
+
+	* tests/signal2.c (cause_illegal_access): Don't loop forever.
+
 2000-10-16  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/sigsetjmp.h (sigsetjmp): Various fixes to make portable

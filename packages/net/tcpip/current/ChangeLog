@@ -1,3 +1,8 @@
+2000-10-24  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/tftp_server.c (tftpd_server): Cut down the chatter to
+	nothing (unless there's an error) if running automated testing.
+
 2000-10-17  Hugo Tyson  <hmt@redhat.com>
 2000-10-10  Andrew Lunn <Andrew.Lunn@ascom.ch>
 

@@ -782,6 +782,9 @@ hal_hw_init:
         # Call platform specific hardware initialization
         # This may include memory controller initialization. It is not
         # safe to access RAM until after this point.
+        # Note that caches must not be enabled until after this point,
+        # since we may be fiddling the FRQCR which cannot be safely done
+        # by code in burst/cachable memory (errata SH7-184e).
         hal_hardware_init
 
         # Now copy necessary bits to RAM and jump to the VMA base

@@ -1,3 +1,9 @@
+2000-10-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/edb7211_redboot_ROM.cfg: Ensure CYGSEM_HAL_ROM_MONITOR is
+	enabled
+	* misc/edb7212_redboot_ROM.cfg: Ditto
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_arm_cl7111_ram.mlt:

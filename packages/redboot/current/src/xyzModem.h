@@ -1,10 +1,10 @@
-//========================================================================
+//==========================================================================
 //
-//      gmtime_r.cxx
+//      xyzModem.h
 //
-//      POSIX 1003.1 date and time implementation for gmtime_r()
+//      RedBoot stream handler for xyzModem protocol
 //
-//========================================================================
+//==========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -28,31 +28,39 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//========================================================================
+//==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     jlarmour
-// Contributors:  jlarmour
-// Date:          1999-02-26
-// Purpose:       Provide implementation of POSIX 1003.1 gmtime()
-// Description:   This file provides the linkable symbol version of gmtime_r()
-// Usage:         
+// Author(s):    gthomas
+// Contributors: gthomas
+// Date:         2000-07-14
+// Purpose:      
+// Description:  
+//              
+// This code is part of RedBoot (tm).
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================
+//==========================================================================
 
-// CONFIGURATION
+#ifndef _XYZMODEM_H_
+#define _XYZMODEM_H_
 
-#include <pkgconf/libc_time.h>          // C library configuration
+#define xyzModem_xmodem 1
+#define xyzModem_ymodem 2
+#define xyzModem_zmodem 3
 
-// The following lines allow gmtime_r() to be included non-inline which
-// actually defines it as a function here
-#define CYGPRI_LIBC_TIME_GMTIME_R_INLINE
-#ifndef CYGIMP_LIBC_TIME_GMTIME_R_INLINE
-# define CYGIMP_LIBC_TIME_GMTIME_R_INLINE
-#endif
+#define xyzModem_access   -1
+#define xyzModem_noZmodem -2
+#define xyzModem_timeout  -3
+#define xyzModem_eof      -4
+#define xyzModem_cancel   -5
+#define xyzModem_frame    -6
+#define xyzModem_cksum    -7
+#define xyzModem_sequence -8
 
-#include <time.h>                  // Main date and time definitions
+int xyzModem_stream_open(char *filename, int mode, int *err);    
+int xyzModem_stream_read(char *buf, int size, int *err);    
+char *xyzModem_error(int err);
 
-// EOF gmtime_r.cxx
+#endif // _XYZMODEM_H_

@@ -1,4 +1,57 @@
+2000-10-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/udp.c: 
+	* src/net/pktbuf.c: 
+	* src/net/net_io.c: 
+	* src/net/enet.c: 
+	* include/net/net.h: Minor cleanups to remove warnings.
+
+	* cdl/redboot.cdl: Support threads in all but RAM mode.  Note:
+	this should allow thread support in ROM and FLOPPY startup mode.
+
+2000-10-27  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.c (xyzModem_stream_open): Add extra delay during
+	startup - to give the sender time to get started.
+
+	* src/flash.c (fis_load): Add "-c" option to show checksum of
+	image after loading.
+	(fis_list): Add "-c" to display stored checksums.
+
+2000-10-26  Mark Salter  <msalter@redhat.com>
+
+	* src/load.c (do_load): Move some local variable declarations
+	needed by xyzmodem support so they can be used when redboot
+	networking not enabled.
+
+2000-10-26  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: Improve CDL so CYGSEM_HAL_ROM_MONITOR can
+	be correctly infered (when building ROM versions).	
+
+	* cdl/redboot.cdl:
+	* src/load.c: Add support for xyzModem serial download.
+
+	* src/xyzModem.h: 
+	* src/xyzModem.c: New file(s).
+
+2000-10-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: 
+	* cdl/redboot.cdl: Add new option which supports keeping all
+	important RedBoot data "locked" in FLASH.
+
 2000-10-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_lookup): New exported function.
+	(fis_load): Add memory load option. Also checksum data after copy.
+
+	* include/fis.h: Add 'data_length' member.  
+	Prototype for 'fis_lookup()'.
+
+	* src/main.c (bist): New [weak] function.  Provide hook for
+	platform specific "builtin tests".  This will be overridden by
+	platform based functions.
 
 	* cdl/redboot.cdl: 
 	* src/main.c (cyg_start): 

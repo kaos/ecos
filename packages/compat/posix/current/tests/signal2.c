@@ -99,7 +99,7 @@ cause_illegal_access(void)
     {
         x = *(volatile int *)(p);
         p += (CYG_ADDRESS)0x100000;
-    } while( p != 0 );
+    } while( p != &jbuf );
 
 } // cause_unaligned_access()
 

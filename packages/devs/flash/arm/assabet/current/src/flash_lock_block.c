@@ -58,7 +58,7 @@ flash_lock_block(volatile unsigned long *block)
     int timeout = 5000000;
     int cache_on;
 
-    ROM = (volatile unsigned long *)((unsigned long)block & 0xFF800000);
+    ROM = (volatile unsigned long *)((unsigned long)block & 0xFE000000);
 
     HAL_DCACHE_IS_ENABLED(cache_on);
     if (cache_on) {

@@ -40,7 +40,7 @@
 //    + check highest priority running thread is always running
 //    + check next highest runs when highest suspended
 //    + check several threads of equal priority share time
-//      (only !CYG_SCHED_UNIQUE_PRIORITIES)
+//      (only !CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES)
 //    + check other threads are starved
 //    + check setting priority dynamically causes a thread to
 //      become/stay current/non-current
@@ -48,7 +48,7 @@
 //     check yield
 //     check can set threads with min and max priority
 // Options:
-//    CYG_SCHED_UNIQUE_PRIORITIES
+//    CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
 //    CYGIMP_THREAD_PRIORITY
 //    CYGNUM_KERNEL_SCHED_PRIORITIES
 //    CYGSEM_KERNEL_SCHED_BITMAP
@@ -108,7 +108,8 @@ static void entry1( CYG_ADDRWORD data )
     CHECK( 6 == thread1->get_priority() );
     CHECK( 7 == thread2->get_priority() );
     q = 100;
-#if !(CYG_SCHED_UNIQUE_PRIORITIES) && defined(CYGSEM_KERNEL_SCHED_TIMESLICE)
+#if !(CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES) \
+    && defined(CYGSEM_KERNEL_SCHED_TIMESLICE)
     thread2->set_priority(6);
     CHECK( 6 == thread1->get_priority() );
     CHECK( 6 == thread2->get_priority() );
@@ -136,7 +137,8 @@ static void entry2( CYG_ADDRWORD data )
     CHECK( 11 == q++ );
     thread2->set_priority(7);
 
-#if !(CYG_SCHED_UNIQUE_PRIORITIES) && defined(CYGSEM_KERNEL_SCHED_TIMESLICE)
+#if !(CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES) \
+    && defined(CYGSEM_KERNEL_SCHED_TIMESLICE)
     CHECK( 6 == thread1->get_priority() );
     CHECK( 6 == thread2->get_priority() );
 

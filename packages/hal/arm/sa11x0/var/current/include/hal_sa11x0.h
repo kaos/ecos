@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, dmoseley
 // Date:         2000-04-04
 // Purpose:      Platform register definitions
 // Description:  
@@ -664,34 +664,34 @@
 /*
  * SA-1100 GPIO Register Definitions
  */
-#define SA11X0_GPIO_PIN_0                        BIT0
-#define SA11X0_GPIO_PIN_1                        BIT1
-#define SA11X0_GPIO_PIN_2                        BIT2
-#define SA11X0_GPIO_PIN_3                        BIT3
-#define SA11X0_GPIO_PIN_4                        BIT4
-#define SA11X0_GPIO_PIN_5                        BIT5
-#define SA11X0_GPIO_PIN_6                        BIT6
-#define SA11X0_GPIO_PIN_7                        BIT7
-#define SA11X0_GPIO_PIN_8                        BIT8
-#define SA11X0_GPIO_PIN_9                        BIT9
-#define SA11X0_GPIO_PIN_10                       BIT10
-#define SA11X0_GPIO_PIN_11                       BIT11
-#define SA11X0_GPIO_PIN_12                       BIT12
-#define SA11X0_GPIO_PIN_13                       BIT13
-#define SA11X0_GPIO_PIN_14                       BIT14
-#define SA11X0_GPIO_PIN_15                       BIT15
-#define SA11X0_GPIO_PIN_16                       BIT16
-#define SA11X0_GPIO_PIN_17                       BIT17
-#define SA11X0_GPIO_PIN_18                       BIT18
-#define SA11X0_GPIO_PIN_19                       BIT19
-#define SA11X0_GPIO_PIN_20                       BIT20
-#define SA11X0_GPIO_PIN_21                       BIT21
-#define SA11X0_GPIO_PIN_22                       BIT22
-#define SA11X0_GPIO_PIN_23                       BIT23
-#define SA11X0_GPIO_PIN_24                       BIT24
-#define SA11X0_GPIO_PIN_25                       BIT25
-#define SA11X0_GPIO_PIN_26                       BIT26
-#define SA11X0_GPIO_PIN_27                       BIT27
+#define SA11X0_GPIO_PIN_0                        (1 << 0)
+#define SA11X0_GPIO_PIN_1                        (1 << 1)
+#define SA11X0_GPIO_PIN_2                        (1 << 2)
+#define SA11X0_GPIO_PIN_3                        (1 << 3)
+#define SA11X0_GPIO_PIN_4                        (1 << 4)
+#define SA11X0_GPIO_PIN_5                        (1 << 5)
+#define SA11X0_GPIO_PIN_6                        (1 << 6)
+#define SA11X0_GPIO_PIN_7                        (1 << 7)
+#define SA11X0_GPIO_PIN_8                        (1 << 8)
+#define SA11X0_GPIO_PIN_9                        (1 << 9)
+#define SA11X0_GPIO_PIN_10                       (1 << 10)
+#define SA11X0_GPIO_PIN_11                       (1 << 11)
+#define SA11X0_GPIO_PIN_12                       (1 << 12)
+#define SA11X0_GPIO_PIN_13                       (1 << 13)
+#define SA11X0_GPIO_PIN_14                       (1 << 14)
+#define SA11X0_GPIO_PIN_15                       (1 << 15)
+#define SA11X0_GPIO_PIN_16                       (1 << 16)
+#define SA11X0_GPIO_PIN_17                       (1 << 17)
+#define SA11X0_GPIO_PIN_18                       (1 << 18)
+#define SA11X0_GPIO_PIN_19                       (1 << 19)
+#define SA11X0_GPIO_PIN_20                       (1 << 20)
+#define SA11X0_GPIO_PIN_21                       (1 << 21)
+#define SA11X0_GPIO_PIN_22                       (1 << 22)
+#define SA11X0_GPIO_PIN_23                       (1 << 23)
+#define SA11X0_GPIO_PIN_24                       (1 << 24)
+#define SA11X0_GPIO_PIN_25                       (1 << 25)
+#define SA11X0_GPIO_PIN_26                       (1 << 26)
+#define SA11X0_GPIO_PIN_27                       (1 << 27)
 
 #define SA11X0_GPIO_PIN_LEVEL                    SA11X0_REGISTER(0x10040000)
 #define SA11X0_GPIO_PIN_DIRECTION                SA11X0_REGISTER(0x10040004)

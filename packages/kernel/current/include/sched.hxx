@@ -95,9 +95,6 @@ protected:
 # ifndef CYGIMP_THREAD_PRIORITY
 #  error Priority inversion protocols will not work without priorities!!!
 # endif
-# if CYG_SCHED_UNIQUE_PRIORITIES
-#  error Priority inversion protocols need non-unique priorities!!!
-# endif
 #endif
 
 // -------------------------------------------------------------------------

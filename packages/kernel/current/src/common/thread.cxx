@@ -841,7 +841,7 @@ Cyg_Thread::set_priority( cyg_priority new_priority )
 
     Cyg_Scheduler::scheduler.deregister_thread(this);
     
-#if CYG_SCHED_UNIQUE_PRIORITIES
+#if CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
 
     // Check that there are no other threads at this priority.
     // If so, leave is as it is.
@@ -851,7 +851,7 @@ Cyg_Thread::set_priority( cyg_priority new_priority )
     if( Cyg_Scheduler::scheduler.unique(new_priority) )
         priority = new_priority;
 
-#else // !CYG_SCHED_UNIQUE_PRIORITIES
+#else // !CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_SIMPLE
 
@@ -874,7 +874,7 @@ Cyg_Thread::set_priority( cyg_priority new_priority )
 
 #endif
     
-#endif // CYG_SCHED_UNIQUE_PRIORITIES
+#endif // CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
 
     Cyg_Scheduler::scheduler.register_thread(this);
     

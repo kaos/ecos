@@ -1,3 +1,9 @@
+2000-10-25  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/hal_diag.c: Added UART1 support for SA1100 targets.
+
+	* include/hal_sa11x0.h: Added GPIO bit definitions.
+
 2000-07-14  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_diag.h (HAL_DELAY_US): Define.

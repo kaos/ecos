@@ -46,8 +46,6 @@
 
 #include <pkgconf/libc_time.h>          // C library configuration
 
-#ifdef CYGFUN_LIBC_TIME_POSIX
-
 // INCLUDES
 
 #include <cyg/infra/cyg_type.h>    // Common type definitions and support
@@ -60,7 +58,5 @@
 #endif
 
 #include <time.h>                  // Main date and time definitions
-
-#endif // ifdef CYGFUN_LIBC_TIME_POSIX
 
 // EOF asctime_r.cxx

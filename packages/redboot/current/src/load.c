@@ -44,15 +44,17 @@
 //==========================================================================
 
 #include <redboot.h>
+#include <xyzModem.h>
 
 // Buffer used by redboot_getc
 getc_info_t getc_info;
 
+static char usage[] = "[-r] [-v] [-h <host>] [-m {TFTP | xyzMODEM}] [-b <base_address>] <file_name>";
 
 // Exported CLI function
 RedBoot_cmd("load", 
             "Load a file", 
-            "[-v] [-r] [-b <mem_addr>] <file_name>",
+            usage,
             do_load 
     );
 
@@ -240,18 +242,19 @@ redboot_getc_rewind(void)
 }
 
 #define MODE_TFTP   0
-#define MODE_ZMODEM 1
+#define MODE_XMODEM xyzModem_xmodem
+#define MODE_YMODEM xyzModem_ymodem
+#define MODE_ZMODEM xyzModem_zmodem
 
 void 
 do_load(int argc, char *argv[])
 {
     int res, num_options;
-    int mode;
+    int i, err, mode;
     bool verbose, raw;
     bool base_addr_set, mode_str_set;
     char *mode_str;
 #ifdef CYGPKG_REDBOOT_NETWORKING
-    int i, err;
     struct sockaddr_in host;
     bool hostname_set;
     char *hostname;
@@ -259,7 +262,6 @@ do_load(int argc, char *argv[])
     unsigned long base = 0;
     char type[4];
     char *filename = 0;
-    char *usage = "usage: load <file_name> [-r] [-v] [-h <host>] [-m {TFTP | ZMODEM}] [-b <base_address>]\n";
     struct option_info opts[5];
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
@@ -272,7 +274,7 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_NETWORKING
     mode = MODE_TFTP;
 #else
-    mode = MODE_ZMODEM;
+    mode = MODE_YMODEM;
 #endif
 
     init_opts(&opts[0], 'v', false, OPTION_ARG_TYPE_FLG, 
@@ -282,7 +284,7 @@ do_load(int argc, char *argv[])
     init_opts(&opts[2], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&base, (bool *)&base_addr_set, "load address");
     init_opts(&opts[3], 'm', true, OPTION_ARG_TYPE_STR, 
-              (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP or ZMODEM)");
+              (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP or xyzMODEM)");
     num_options = 4;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     init_opts(&opts[4], 'h', true, OPTION_ARG_TYPE_STR, 
@@ -302,8 +304,21 @@ do_load(int argc, char *argv[])
     }
 #endif
     if (mode_str_set) {
-        if (strcmpci(mode_str, "zmodem") == 0) {
-            mode = MODE_ZMODEM;
+        if (strncmpci(&mode_str[1], "modem", strlen(&mode_str[1])) == 0) {
+            switch (tolower(mode_str[0])) {
+            case 'x':
+                mode = MODE_XMODEM;
+                break;
+            case 'y':
+                mode = MODE_YMODEM;
+                break;
+            case 'z':
+                mode = MODE_ZMODEM;
+                break;
+            default:
+                printf("Invalid 'mode': %s\n", mode_str);
+                return;
+            }
 #ifdef CYGPKG_REDBOOT_NETWORKING
         } else if (strcmpci(mode_str, "tftp") == 0) {
             mode = MODE_TFTP;
@@ -319,7 +334,7 @@ do_load(int argc, char *argv[])
     }
     if ((mode == MODE_TFTP) && !filename) {
         printf("File name missing\n");
-        printf(usage);
+        printf("usage: load %s\n", usage);
         return;
     }
 #ifdef CYGPKG_REDBOOT_NETWORKING
@@ -330,44 +345,46 @@ do_load(int argc, char *argv[])
             return;
         }
         redboot_getc_init(tftp_stream_read, verbose);
-        for (i = 0;  i < sizeof(type);  i++) {
-            if ((res = redboot_getc()) < 0) {
-                err = getc_info.err;
-                break;
-            } 
-            type[i] = res;
-        }
-        if (res < 0) {
-            printf("Error reading header via TFTP: %s\n", tftp_error(err));
-            tftp_stream_close(&err);
-            return;
-        }
     }
 #endif
-    if (mode == MODE_ZMODEM) {
-        printf("Sorry, zmodem download not yet available\n");
-        return;
-    }
-    redboot_getc_rewind();  // Restore header to stream
-    if (raw) {
-        if (!base_addr_set) {
-            printf("Raw load requires a memory address\n");
-        } else {
-            unsigned char *mp = (unsigned char *)base;
-            while ((res = redboot_getc()) >= 0) {
-                *mp++ = res;
-            }
-            printf("Raw file loaded %p-%p\n", (void *)base, (void *)mp);
+    else {
+        res = xyzModem_stream_open(filename, mode, &err);    
+        if (res < 0) {
+            printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
+            return;
         }
-    } else {
-        // Treat data as some sort of executable image
-        if (strncmp(&type[1], "ELF", 3) == 0) {
-            load_elf_image(redboot_getc);
-        } else if ((type[0] == 'S') &&
-                   ((type[1] >= '0') && (type[1] <= '9'))) {
-            load_srec_image(redboot_getc, base);
+        redboot_getc_init(xyzModem_stream_read, verbose);
+    }
+    // Read initial header - to determine file [image] type
+    for (i = 0;  i < sizeof(type);  i++) {
+        if ((res = redboot_getc()) < 0) {
+            err = getc_info.err;
+            break;
+        } 
+        type[i] = res;
+    }
+    if (res >= 0) {
+        redboot_getc_rewind();  // Restore header to stream
+        if (raw) {
+            if (!base_addr_set) {
+                printf("Raw load requires a memory address\n");
+            } else {
+                unsigned char *mp = (unsigned char *)base;
+                while ((res = redboot_getc()) >= 0) {
+                    *mp++ = res;
+                }
+                printf("Raw file loaded %p-%p\n", (void *)base, (void *)mp);
+            }
         } else {
-            printf("Unrecognized image type: %lx\n", *(unsigned long *)type);
+            // Treat data as some sort of executable image
+            if (strncmp(&type[1], "ELF", 3) == 0) {
+                load_elf_image(redboot_getc);
+            } else if ((type[0] == 'S') &&
+                       ((type[1] >= '0') && (type[1] <= '9'))) {
+                load_srec_image(redboot_getc, base);
+            } else {
+                printf("Unrecognized image type: %lx\n", *(unsigned long *)type);
+            }
         }
     }
 #ifdef CYGPKG_REDBOOT_NETWORKING

@@ -193,6 +193,7 @@ asm volatile (" .code 16;"                               \
 
 # define HAL_BREAKINST           HAL_BREAKINST_THUMB
 # define HAL_BREAKINST_SIZE      HAL_BREAKINST_THUMB_SIZE
+# define HAL_BREAKINST_TYPE      cyg_uint16
 #else // __thumb__
 
 #define HAL_BREAKPOINT(_label_)                   \
@@ -204,6 +205,7 @@ asm volatile (" .globl  " #_label_ ";"            \
 //#define HAL_BREAKINST           {0xFE, 0xDE, 0xFF, 0xE7}
 #define HAL_BREAKINST            HAL_BREAKINST_ARM
 #define HAL_BREAKINST_SIZE       HAL_BREAKINST_ARM_SIZE
+#define HAL_BREAKINST_TYPE       cyg_uint32
 #endif // __thumb__
 
 //--------------------------------------------------------------------------

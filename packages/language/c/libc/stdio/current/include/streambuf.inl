@@ -61,6 +61,7 @@
 #include <stdio.h>                       // fpos_t and iobuf defines
 #include <stdlib.h>                      // free()
 #include <cyg/libc/stdio/streambuf.hxx>  // header for this file, just in case
+#include <limits.h>                      // INT_MAX
 
 // FUNCTIONS
     
@@ -129,7 +130,9 @@ Cyg_StdioStreamBuffer::set_bytes_read( cyg_ucount32 bytes )
 
     current_buffer_position += bytes;
 
-    CYG_ASSERT( (current_buffer_position <= buffer_top),
+    // INT_MAX is used by some callers to mean infinite.
+    CYG_ASSERT( (current_buffer_position <= buffer_top)
+                || (get_buffer_size() == INT_MAX),
                 "read too many bytes from buffer" );
 
     if (current_buffer_position == buffer_max)
@@ -154,7 +157,9 @@ Cyg_StdioStreamBuffer::set_bytes_written( cyg_ucount32 bytes )
 {
     buffer_top += bytes;
 
-    CYG_ASSERT( (buffer_top <= &buffer_bottom[ get_buffer_size() ]),
+    // INT_MAX is used by some callers to mean infinite.
+    CYG_ASSERT( (buffer_top <= &buffer_bottom[ get_buffer_size() ])
+                || (get_buffer_size() == INT_MAX),
                 "wrote too many bytes into buffer" );
 } // set_bytes_written()
 

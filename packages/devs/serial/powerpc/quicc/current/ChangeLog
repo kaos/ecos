@@ -1,3 +1,8 @@
+2000-10-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/quicc_smc_serial.c (quicc_smc_serial_ISR): Return with
+	CYG_ISR_HANDLED (reported by Daniel Lind)
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/quicc_smc_serial.c (quicc_smc_serial_set_config): Now use keys

@@ -73,7 +73,7 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_rodata1(_region_, _vma_, _lma_)        \
     .rodata1 _vma_ : _lma_                                            \
-    { FORCE_OUTPUT; *(.rodata1) }             \
+    { FORCE_OUTPUT; *(.rodata1*) }             \
     > _region_
 
 #define SECTION_rodata(_region_, _vma_, _lma_) \
@@ -111,8 +111,8 @@ GROUP(libtarget.a libgcc.a)
       /* We want the small data sections together, so single-instruction */   \
       /* offsets can access them all, and initialized data all before    */   \
       /* uninitialized, so we can shorten the on-disk segment size.      */   \
-    __SDATA_START__ = ABSOLUTE(.); *(.sdata)                                  \
-    __SDATA2_START__ = ABSOLUTE(.); *(.sdata2) }                              \
+    __SDATA_START__ = ABSOLUTE(.); *(.sdata*)                                 \
+    __SDATA2_START__ = ABSOLUTE(.); *(.sdata2*) }                             \
     > _region_                                                                \
     __rom_data_start = LOADADDR(.data);                                       \
     __ram_data_end = .; PROVIDE(__ram_data_end = .);                          \
@@ -121,16 +121,16 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_sbss(_region_, _vma_, _lma_)                     \
     .sbss _vma_ : _lma_                                                         \
     { __sbss_start = ABSOLUTE (.);                                        \
-    __SBSS_START__ = ABSOLUTE(.); *(.sbss) __SBSS_END__ = ABSOLUTE(.);    \
-    __SBSS2_START__ = ABSOLUTE(.); *(.sbss2) __SBSS2_END__ = ABSOLUTE(.); \
-    *(.scommon)                                                           \
+    __SBSS_START__ = ABSOLUTE(.); *(.sbss*) __SBSS_END__ = ABSOLUTE(.);   \
+    __SBSS2_START__ = ABSOLUTE(.); *(.sbss2*) __SBSS2_END__ = ABSOLUTE(.);\
+    *(.scommon*)                                                          \
     __sbss_end = ABSOLUTE (.); }                                          \
     > _region_
 
 #define SECTION_bss(_region_, _vma_, _lma_)                      \
     .bss _vma_ : _lma_                                                          \
     { __bss_start = ABSOLUTE (.);                       \
-      FORCE_OUTPUT; *(.dynbss) *(.bss) *(COMMON)        \
+      FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(COMMON)      \
       __bss_end = ABSOLUTE (.); }                       \
     > _region_
 

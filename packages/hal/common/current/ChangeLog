@@ -1,3 +1,24 @@
+2000-10-27  Mark Salter  <msalter@redhat.com>
+
+	* src/generic-stub.c: Fixed preprocessor warning.
+
+2000-10-27  Gary Thomas  <gthomas@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Remove warnings when
+	hardware breakpoint support (Z packet) not enabled.
+
+2000-10-26  Mark Salter  <msalter@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Add Z packet support.
+
+	* src/bplist-dynamic.c: Include <pkgconf/hal.h> to pick up
+	CYGNUM_HAL_BREAKPOINT_LIST_SIZE.
+
+2000-10-24  Jesper Skov  <jskov@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Disable buffer size
+	z-packet.
+
 2000-10-23  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_stub.c: Made __mem_fault_handler pointer volatile.

@@ -1,3 +1,20 @@
+2000-10-27  Mark Salter  <msalter@redhat.com>
+
+	* src/arm_stub.c: Removed uneccesary include.
+
+	* src/vectors.S (start): Fix use of registers which may have
+	been destroyed by an LED macro.
+
+2000-10-26  Mark Salter  <msalter@redhat.com>
+
+	* src/arm_stub.c (__computeSignal): Add hook for platforms to
+	check for hw watchpoint/breakpoint events.
+	(__install_breakpoints): Support HAL breakpoint list.
+	(__clear_breakpoints): Ditto.
+
+	* include/hal_arch.h (HAL_BREAKINST_TYPE): Define. Needed by
+	hw watchpoint/breakpoint support in stub.
+
 2000-10-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_misc.c: Update __mem_fault_handler declaration.

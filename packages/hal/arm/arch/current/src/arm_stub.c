@@ -77,6 +77,11 @@
 
 int __computeSignal (unsigned int trap_number)
 {
+    // Check to see if we stopped because of a hw watchpoint/breakpoint.
+#ifdef HAL_STUB_IS_STOPPED_BY_HARDWARE
+    if (HAL_STUB_IS_STOPPED_BY_HARDWARE(trap_number))
+	return SIGTRAP;
+#endif
     // should also catch CYGNUM_HAL_VECTOR_UNDEF_INSTRUCTION here but we
     // can't tell the different between a real one and a breakpoint :-(
     switch (trap_number) {
@@ -494,12 +499,17 @@ void __clear_single_step (void)
 
 void __install_breakpoints (void)
 {
-//    FIXME();
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
+    /* Install the breakpoints in the breakpoint list */
+    __install_breakpoint_list();
+#endif
 }
 
 void __clear_breakpoints (void)
 {
-//    FIXME();
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
+    __clear_breakpoint_list();
+#endif
 }
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a

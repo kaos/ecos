@@ -238,15 +238,22 @@ cyg_libc_time_setdst( Cyg_libc_time_dst __state )
 // the string to return into __buf
 //
 
+#ifdef CYGFUN_LIBC_TIME_POSIX
+# define __asctime_r asctime_r
+#else
+// prototype internal function
+__externC char *
+__asctime_r( const struct tm *__timeptr, char *__buf );
+#endif
+
 #ifdef CYGIMP_LIBC_TIME_ASCTIME_R_INLINE
 
-#include <stdio.h>                  // for sprintf()
 #include <cyg/libc/time/timeutil.h> // for cyg_libc_time_{day,month}_name
                                     // and cyg_libc_time_itoa()
 #include <string.h>                 // for memcpy()
 
 CYGPRI_LIBC_TIME_ASCTIME_R_INLINE char *
-asctime_r( const struct tm *__timeptr, char *__buf )
+__asctime_r( const struct tm *__timeptr, char *__buf )
 {
     cyg_uint8 __i;
     
@@ -335,12 +342,20 @@ asctime_r( const struct tm *__timeptr, char *__buf )
 // the result in the space occupied by __result
 //
 
+#ifdef CYGFUN_LIBC_TIME_POSIX
+# define __gmtime_r gmtime_r
+#else
+// prototype internal function
+__externC struct tm *
+__gmtime_r( const time_t *__timer, struct tm *__result );
+#endif
+
 #ifdef CYGIMP_LIBC_TIME_GMTIME_R_INLINE
 
 #include <cyg/libc/time/timeutil.h>   // for cyg_libc_time_month_lengths
 
 CYGPRI_LIBC_TIME_GMTIME_R_INLINE struct tm *
-gmtime_r( const time_t *__timer, struct tm *__result )
+__gmtime_r( const time_t *__timer, struct tm *__result )
 {
     time_t _tim;
     const cyg_uint8 *_months_p;
@@ -452,12 +467,20 @@ gmtime_r( const time_t *__timer, struct tm *__result )
 // stores the result in the space occupied by __result
 //
 
+#ifdef CYGFUN_LIBC_TIME_POSIX
+# define __localtime_r localtime_r 
+#else
+// prototype internal function
+__externC struct tm *
+__localtime_r( const time_t *__timer, struct tm *__result );
+#endif
+
 #ifdef CYGIMP_LIBC_TIME_LOCALTIME_R_INLINE
 
 #include <cyg/libc/time/timeutil.h>  // for cyg_libc_time_normalize_structtm()
 
 CYGPRI_LIBC_TIME_LOCALTIME_R_INLINE struct tm *
-localtime_r( const time_t *__timer, struct tm *__result )
+__localtime_r( const time_t *__timer, struct tm *__result )
 {
     time_t __stdoffset, __dstoffset;
     CYG_REPORT_FUNCNAMETYPE("localtime_r", "returning %08x");
@@ -466,7 +489,7 @@ localtime_r( const time_t *__timer, struct tm *__result )
     CYG_REPORT_FUNCARG2("*__timer=%d, __result is at %08x",
                         *__timer, __result);
 
-    gmtime_r(__timer, __result);
+    __gmtime_r(__timer, __result);
 
     // Adjust for STD/DST
     __result->tm_isdst = cyg_libc_time_getzoneoffsets(&__stdoffset,
@@ -498,10 +521,18 @@ localtime_r( const time_t *__timer, struct tm *__result )
 // to store the returned string
 //
 
+#ifdef CYGFUN_LIBC_TIME_POSIX
+# define __ctime_r ctime_r 
+#else
+// prototype internal function
+__externC char *
+__ctime_r( const time_t *__timer, char *__buf );
+#endif
+
 #ifdef CYGIMP_LIBC_TIME_CTIME_R_INLINE
 
 CYGPRI_LIBC_TIME_CTIME_R_INLINE char *
-ctime_r( const time_t *__timer, char *__buf )
+__ctime_r( const time_t *__timer, char *__buf )
 {
     struct tm _mytm;
 
@@ -512,9 +543,9 @@ ctime_r( const time_t *__timer, char *__buf )
 
     CYG_REPORT_FUNCARG2("*__timer = %d, __buf=%08x", *__timer, __buf);
 
-    localtime_r( __timer, &_mytm );
+    __localtime_r( __timer, &_mytm );
 
-    asctime_r(&_mytm, __buf);
+    __asctime_r(&_mytm, __buf);
 
     CYG_REPORT_RETVAL(__buf);
 
@@ -677,7 +708,7 @@ asctime( const struct tm *__timeptr )
     // paranoia
     CYG_CHECK_DATA_PTR(__timeptr, "__timeptr is not a valid pointer!");
 
-    (void)asctime_r( __timeptr, cyg_libc_time_asctime_buf );
+    (void)__asctime_r( __timeptr, cyg_libc_time_asctime_buf );
 
     CYG_REPORT_RETVAL(cyg_libc_time_asctime_buf);
 
@@ -705,7 +736,7 @@ gmtime( const time_t *__timer )
     CYG_CHECK_DATA_PTR(__timer, "__timer is not a valid pointer!");
     CYG_REPORT_FUNCARG1("*__timer=%d", *__timer);
 
-    gmtime_r(__timer, &cyg_libc_time_gmtime_buf);
+    __gmtime_r(__timer, &cyg_libc_time_gmtime_buf);
 
     CYG_REPORT_RETVAL(&cyg_libc_time_gmtime_buf);
 
@@ -733,7 +764,7 @@ localtime( const time_t *__timer )
     CYG_CHECK_DATA_PTR(__timer, "__timer is not a valid pointer!");
     CYG_REPORT_FUNCARG1("*__timer=%d", *__timer);
 
-    localtime_r(__timer, &cyg_libc_time_localtime_buf);
+    __localtime_r(__timer, &cyg_libc_time_localtime_buf);
 
     CYG_REPORT_RETVAL(&cyg_libc_time_localtime_buf);
 

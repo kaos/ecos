@@ -54,14 +54,20 @@
 
 // Ethernet device driver for MPC8xx QUICC
 
-#include <pkgconf/net.h>
+#include <pkgconf/system.h>
 #include <pkgconf/devs_eth_powerpc_quicc.h>
 
+#ifdef CYGPKG_NET
+#include <pkgconf/net.h>
+#endif
+
 #include <cyg/infra/cyg_type.h>
-#include <cyg/hal/hal_arch.h>
 #include <cyg/infra/diag.h>
-#include <cyg/hal/drv_api.h>
+
+#include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
+#include <cyg/hal/hal_intr.h>
+#include <cyg/hal/drv_api.h>
 
 #include <netdev.h>
 #include <eth_drv.h>
@@ -94,11 +100,11 @@ NETDEVTAB_ENTRY(quicc_netdev,
                 quicc_eth_init, 
                 &quicc_eth0_sc);
 
+extern int _mbx_fetch_VPD(int, void *, int);
+
 static cyg_interrupt quicc_eth_interrupt;
 static cyg_handle_t  quicc_eth_interrupt_handle;
 static void          quicc_eth_int(struct eth_drv_sc *data);
-
-extern int _mbx_fetch_VPD(int, void *, int);
 
 // This ISR is called when the ethernet interrupt occurs
 static int
@@ -164,7 +170,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     // Shut down ethernet, in case it is already running
     scc->scc_gsmr_l &= ~(QUICC_SCC_GSML_ENR | QUICC_SCC_GSML_ENT);
 
-    bzero((void *)enet_pram, sizeof(*enet_pram));
+    memset((void *)enet_pram, 0, sizeof(*enet_pram));
 
     TxBD = 0x2C00;  // FIXME
     RxBD = TxBD + CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM * sizeof(struct cp_bufdesc);
@@ -395,7 +401,11 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
             txbd++;
         }
         if (txbd == txfirst) {
+#ifdef CYGPKG_NET
             panic ("No free xmit buffers");
+#else
+            printf("QUICC Ethernet: No free xmit buffers\n");
+#endif
         }
     }
     // Remember the next buffer to try
@@ -410,7 +420,7 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     txbd->length = total_len;
     bp = txbd->buffer;
     for (i = 0;  i < sg_len;  i++) {
-        bcopy((void *)sg_list[i].buf, (void *)bp, sg_list[i].len);
+        memcpy((void *)bp, (void *)sg_list[i].buf, sg_list[i].len);
         bp += sg_list[i].len;
     }
     // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
@@ -471,7 +481,7 @@ quicc_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     }
     for (i = 0;  i < sg_len;  i++) {
         if (sg_list[i].buf != 0) {
-            bcopy(bp, (void *)sg_list[i].buf, sg_list[i].len);
+            memcpy((void *)sg_list[i].buf, bp, sg_list[i].len);
             bp += sg_list[i].len;
         }
     }

@@ -43,6 +43,7 @@
 //
 //==========================================================================
 
+#include <redboot.h>
 #include <net/net.h>
 
 #define MAX_PKTBUF CYGNUM_REDBOOT_NETWORKING_MAX_PKTBUF

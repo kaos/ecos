@@ -60,14 +60,11 @@ cdl_package CYGPKG_REDBOOT {
         requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
         requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
         requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
-
-        requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
-        requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
         requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
             no_define
-            active_if { CYG_HAL_STARTUP == "ROM" }
+            active_if { CYG_HAL_STARTUP != "RAM" }
             requires  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
         }
 
@@ -77,7 +74,7 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
-	compile printf.c misc_funs.c io.c parse.c ticks.c
+	compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c
         compile -library=libextras.a load.c
 
         make -priority 320 {
@@ -161,6 +158,17 @@ cdl_package CYGPKG_REDBOOT {
               include such items as the node IP address or startup scripts."
         }
 
+        cdl_option CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL {
+            display       "Keep all RedBoot FLASH data blocks locked."
+            flavor        bool
+            default_value 1
+            active_if     { CYGHWR_IO_FLASH_BLOCK_LOCKING != 0 }
+            description "
+              When this option is enabled, RedBoot will keep configuration
+              data and the FIS directory blocks implicitly locked.  While
+              this is somewhat safer, it does add overhead during updates."
+        }
+
         cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION {
             display       "Resolution (in ms) for script timeout value."
             flavor        data
@@ -182,5 +190,13 @@ cdl_package CYGPKG_REDBOOT {
               scripts, when they are enabled."
         }
     }
+
+    cdl_option CYGPRI_REDBOOT_ROM_MONITOR {
+        active_if    { CYG_HAL_STARTUP == "ROM" }
+        requires     CYGSEM_HAL_ROM_MONITOR
+        calculated   1
+        no_define
+    }
+
 }
 

@@ -1,8 +1,8 @@
 /*=================================================================
 //
-//        kthread1.c
+//        klock.c
 //
-//        Kernel C API Thread test 1
+//        Kernel lock test
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -47,6 +47,8 @@
 
 #ifdef CYGFUN_KERNEL_API_C
 
+#if (CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES == 0)
+
 //==========================================================================
 
 #include "testaux.h"
@@ -83,8 +85,6 @@ volatile static int thread1_state = 0;
 
 static void entry0( cyg_addrword_t data )
 {
-    void *mbret;
-
     CHECK( 222 == (int)data );
 
     // Do everything with the scheduler locked.
@@ -100,6 +100,7 @@ static void entry0( cyg_addrword_t data )
     cyg_thread_resume(pt1);
     thread0_state = 2;
 
+#ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
     cyg_cond_wait( &cv );
     thread0_state = 3;
 
@@ -107,9 +108,11 @@ static void entry0( cyg_addrword_t data )
     
     cyg_cond_broadcast( &cv );
     thread0_state = 4;
+#endif
 
     cyg_mutex_unlock( &mx );
     thread0_state = 5;
+
 
     // --------------------------------------------------
     // Semaphore test
@@ -134,13 +137,18 @@ static void entry0( cyg_addrword_t data )
     // --------------------------------------------------
     // Message box test
 
-    mbret = cyg_mbox_get( mbh );
-    CYG_TEST_CHECK( mbret == (void *)0xAAAAAAAA , "bad result from cyg_mbox_timed_get()");
-    thread0_state = 10;
+#ifdef  CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
+    {
+      void *mbret;
 
-    cyg_mbox_put( mbh, (void *)0xBBBBBBBB );
-    thread0_state = 11;
-    
+      mbret = cyg_mbox_get( mbh );
+      CYG_TEST_CHECK( mbret == (void *)0xAAAAAAAA , "bad result from cyg_mbox_timed_get()");
+      thread0_state = 10;
+      
+      cyg_mbox_put( mbh, (void *)0xBBBBBBBB );
+      thread0_state = 11;
+    }
+#endif
     // --------------------------------------------------    
     
     thread0_state = 999;
@@ -151,7 +159,7 @@ static void entry0( cyg_addrword_t data )
     
     CYG_TEST_CHECK( thread0_state == 999, "thread 0 not in exit state");
     CYG_TEST_CHECK( thread1_state == 999, "thread 1 not in exit state");
-    CYG_TEST_PASS_FINISH("Kernel C API Thread 1 OK");    
+    CYG_TEST_PASS_FINISH("Kernel lock test OK");    
 }
 
 //==========================================================================
@@ -159,7 +167,6 @@ static void entry0( cyg_addrword_t data )
 static void entry1( cyg_addrword_t data )
 {
     cyg_bool res;
-    void *mbret;
     
     CHECK( 333 == (int)data );
 
@@ -168,7 +175,7 @@ static void entry1( cyg_addrword_t data )
 
     // --------------------------------------------------
     // Mutex test
-    
+#ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
     cyg_mutex_lock( &mx );
     thread1_state = 1;
 
@@ -183,6 +190,7 @@ static void entry1( cyg_addrword_t data )
 
     cyg_mutex_unlock( &mx );
     thread1_state = 4;
+#endif
 
     // --------------------------------------------------
     // Semaphore test
@@ -211,14 +219,17 @@ static void entry1( cyg_addrword_t data )
     
     // --------------------------------------------------
     // Message box test
+#ifdef  CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
+    {
+      void *mbret;
+      cyg_mbox_timed_put( mbh, (void *)0xAAAAAAAA, cyg_current_time()+10 );
+      thread1_state = 10;
 
-    cyg_mbox_timed_put( mbh, (void *)0xAAAAAAAA, cyg_current_time()+10 );
-    thread1_state = 10;
-
-    mbret = cyg_mbox_timed_get( mbh, cyg_current_time()+10);
-    CYG_TEST_CHECK( mbret == (void *)0xBBBBBBBB , "bad result from cyg_mbox_timed_get()");
-    thread1_state = 9;
-    
+      mbret = cyg_mbox_timed_get( mbh, cyg_current_time()+10);
+      CYG_TEST_CHECK( mbret == (void *)0xBBBBBBBB , "bad result from cyg_mbox_timed_get()");
+      thread1_state = 9;
+    }
+#endif    
     // --------------------------------------------------
     
     thread1_state = 999;
@@ -261,20 +272,22 @@ cyg_start( void )
 
 //==========================================================================
 
+#else /* CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES == 0 */
+# define NA_MSG "Schedule has unique priorities"
+#endif
+
 #else /* def CYGFUN_KERNEL_API_C */
+# define NA_MSG "Kernel C API layer disabled"
+#endif
 
-//==========================================================================
-
+#ifdef NA_MSG
 externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_NA("Kernel C API layer disabled");
+    CYG_TEST_NA(NA_MSG);
 }
+#endif
 
 //==========================================================================
-
-#endif /* def CYGFUN_KERNEL_API_C */
-
-//==========================================================================
-/* EOF kthread1.c */
+/* EOF klock.c */

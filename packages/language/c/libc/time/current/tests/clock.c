@@ -42,36 +42,36 @@
 // CONFIGURATION
 
 #include <pkgconf/libc_time.h>   // Configuration header
+#include <pkgconf/system.h>
+#include <pkgconf/isoinfra.h>
+
+#include <cyg/infra/testcase.h>
+
+// This test is bound to fail on Linux -- we don't have exclusive access
+// to the CPU.
+
+#if defined(CYGPKG_HAL_I386_LINUX)
+# define NA_MSG "Cannot run on synthetic target"
+#elif !defined(CYGINT_ISO_MAIN_STARTUP)
+# define NA_MSG "Requires main() startup"
+#endif
+
+#ifdef NA_MSG
+void
+cyg_start(void)
+{
+    CYG_TEST_NA( NA_MSG );
+}
+
+#else
+
 
 // INCLUDES
 
 #include <time.h>
-#include <cyg/infra/testcase.h>
-
-#define RUN_TEST 1
-
-// This test is bound to fail on Linux -- we don't have exclusive access
-// to the CPU.
-#if defined(CYGPKG_HAL_I386_LINUX)
-#undef RUN_TEST
-#define RUN_TEST 0
-#endif
-
-
-// HOW TO START TESTS
-
-#if RUN_TEST
-
+#include <cyg/infra/diag.h>
 #include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_intr.h>
-
-# define START_TEST( test ) test(0)
-
-#else
-
-# define START_TEST( test ) CYG_EMPTY_STATEMENT
-
-#endif
 
 
 // CONSTANTS
@@ -81,12 +81,13 @@
 #define MAX_TIMEOUT 1000000
 
 // Percentage error before we declare fail: range 0 - 100
-#define TOLERANCE 40
+#define TOLERANCE 25
+
+// Number of samples to take
+#define SAMPLES 30
 
 
 // FUNCTIONS
-
-#if RUN_TEST
 
 static int
 my_abs(int i)
@@ -95,12 +96,49 @@ my_abs(int i)
 } // my_abs()
 
 
-static void
-test( CYG_ADDRWORD data )
+// Clock measurement is done in a separate function so that alignment
+// constraints are deterministic - some processors may perform better
+// in loops that are better aligned, so by making it always the same
+// function, this is prevented.
+// FIXME: how do we guarantee the compiler won't inline this on -O3?
+static unsigned long
+clock_loop( const int timeout, clock_t prevclock, clock_t *newclock )
 {
-    unsigned long ctr, ctr2, err;
-    clock_t clock_init;
-    clock_t clock_first=0, clock_second=0, clock_third=0;
+    clock_t c=0;
+    long i;
+
+    for (i=0; i<timeout; i++) {
+        c = clock();
+        if ( c != prevclock )
+            break; // Hit the next clock pulse
+    }
+    
+    if (i==timeout)
+        CYG_TEST_FAIL_FINISH("No change in clock state!");
+
+    // it should not overflow in the lifetime of this test
+    if (c < prevclock)
+        CYG_TEST_FAIL_FINISH("Clock decremented!");
+
+    *newclock = c;
+
+    return i;
+} // clock_loop()
+
+// both of these get zeroed out
+static unsigned long ctrs[SAMPLES];
+static clock_t clocks[SAMPLES];
+
+int
+main(int argc, char *argv[])
+{
+    unsigned long mean=0, sum=0;
+    int i;
+
+    CYG_TEST_INIT();
+
+    CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C library "
+                  "clock() function");
 
     // First disable the caches - they may affect the timing loops
     // below - especially if tracing or assertions are enabled, causing
@@ -123,78 +161,59 @@ test( CYG_ADDRWORD data )
     // the clock period. Repeat this, and make sure that it the
     // two timed periods are acceptably close.
 
-    err = 101;
-    clock_init = clock();
+    clocks[0] = clock();
     
-    if (clock_init == (clock_t)-1)  // unimplemented is just as valid
+    if (clocks[0] == (clock_t)-1)  // unimplemented is potentially valid.
     {
+#ifdef CYGSEM_LIBC_TIME_CLOCK_WORKING
+        CYG_TEST_FAIL_FINISH( "clock() returns -1, meaning unimplemented");
+#else
         CYG_TEST_PASS_FINISH( "clock() returns -1, meaning unimplemented");
-    } // if
-    
-    for (ctr = 0; ctr<MAX_TIMEOUT; ctr++)
-    {
-        if ((clock_first=clock()) > clock_init)
-            break; // Hit the next clock pulse
-    }
-    if (ctr < MAX_TIMEOUT)
-    {
-        // We hit a clock pulse, rather than a timeout
-        // Now we are at the beginning of a pulse, so time until the
-        // next one in order to get a measure of the length.
-        for (ctr = 0; ctr<MAX_TIMEOUT; ctr++)
-        {
-            if ((clock_second=clock()) > clock_first)
-                break; // Hit the next clock pulse
-        } // for
-        if (ctr < MAX_TIMEOUT)
-        {
-            // We hit a clock pulse, rather than a timeout. ctr contains
-            // the number of loops/tick. Measure this again, and see if
-            // the two results are acceptably close.
-            for (ctr2 = 0; ctr2<MAX_TIMEOUT; ctr2++)
-            {
-                if ((clock_third=clock()) > clock_second)
-                    break; // Hit the next clock pulse
-            } // for
-            if (ctr2 < MAX_TIMEOUT)
-            {
-                err = (100 * my_abs(ctr-ctr2)) / ctr;
-            } // if (ctr < MAX_TIMEOUT)
-            else
-            {
-                CYG_TEST_FAIL_FINISH("No change in clock state!");
-            } // else (ctr < MAX_TIMEOUT)
-        } // if (ctr < MAX_TIMEOUT)
-        else
-        {
-            CYG_TEST_FAIL_FINISH("No change in clock state!");
-        } // else (ctr < MAX_TIMEOUT)
-
-    } // if (ctr < MAX_TIMEOUT)
-    else
-    {
-        CYG_TEST_FAIL_FINISH("No change in clock state!");
-    } // else (ctr < MAX_TIMEOUT)
-
-    CYG_TEST_PASS_FAIL(err < TOLERANCE, "clock() stability");
-
-    CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
-                    "clock() function");
-} // test()
 #endif
+    } // if
 
-int
-main(int argc, char *argv[])
-{
-    CYG_TEST_INIT();
+    // record clocks in a tight consistent loop to avoid random variations
+    for (i=1; i<SAMPLES; i++) {
+        ctrs[i] = clock_loop( MAX_TIMEOUT, clocks[i-1], &clocks[i] );
+    }
 
-    CYG_TEST_INFO("Starting tests from testcase " __FILE__ " for C library "
-                  "clock() function");
+    for (i=0;i<SAMPLES;i++) {
+        // output what we got - useful for diagnostics of occasional
+        // test failures
+        diag_printf("clocks[%d] = %d, ctrs[%d] = %d\n", i, clocks[i],
+                    i, ctrs[i]);
 
-    START_TEST( test );
+        // Now we work out the error etc.
+        // We ignore ctrs[0] because it's always 0
+        // We ignore ctrs[1] because it will always be odd since it was
+        // the first measurement taken at the start of the looping, and
+        // the initial clock measurement (in clocks[0]) was not treated as
+        // part of the loop and therefore can't be considered to take the same
+        // time.
+        if (i>=2) {
+            sum += ctrs[i];
+        }
+    }
 
-    CYG_TEST_NA("Testing is not applicable to this configuration");
+    // deduce out the average
+    mean = sum / (SAMPLES-2);
+
+    // now go through valid results and compare against average
+    for (i=2;i<SAMPLES;i++) {
+        unsigned long err;
+
+        err = (100 * my_abs(ctrs[i]-mean)) / mean;
+        if (err > TOLERANCE) {
+            diag_printf("mean=%d, ctrs[%d]=%d, err=%d\n", mean, i, ctrs[i],
+                        err);
+            CYG_TEST_FAIL_FINISH("clock() within tolerance");
+        }
+    }
+
+    CYG_TEST_PASS_FINISH("clock() stable");
 
 } // main()
+
+#endif // ifndef NA_MSG
 
 // EOF clock.c

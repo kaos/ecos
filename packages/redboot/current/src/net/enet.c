@@ -43,7 +43,9 @@
 //
 //==========================================================================
 
+#include <redboot.h>
 #include <net/net.h>
+#include <eth_drv.h>       // Logical driver interfaces
 
 #define ENET_STATS 1
 
@@ -79,7 +81,7 @@ __enet_poll(void)
             return;
         }
 
-        if ((pkt->pkt_bytes = eth_drv_read(&eth_hdr, (char *)pkt->buf,
+        if ((pkt->pkt_bytes = eth_drv_read((char *)&eth_hdr, (char *)pkt->buf,
                                            ETH_MAX_PKTLEN)) > 0) {
 #if ENET_STATS
             ++num_received;
@@ -138,7 +140,7 @@ __enet_send(pktbuf_t *pkt, enet_addr_t *dest, int eth_type)
     memcpy(&eth_hdr.source, __local_enet_addr, sizeof(enet_addr_t));
     eth_hdr.type = htons(eth_type);
 
-    eth_drv_write(&eth_hdr, (const char *)pkt->buf, pkt->pkt_bytes);
+    eth_drv_write((char *)&eth_hdr, (char *)pkt->buf, pkt->pkt_bytes);
 #if ENET_STATS
     ++num_transmitted;
 #endif

@@ -70,7 +70,7 @@ local_cmd_entry("init",
     );
 local_cmd_entry("list",
                 "Display contents of FLASH Image System [FIS]",
-                "",
+                "[-c]",
                 fis_list,
                 FIS_cmds
     );
@@ -108,7 +108,7 @@ local_cmd_entry("delete",
     );
 local_cmd_entry("load",
                 "Load image from FLASH Image System [FIS] into RAM",
-                "name",
+                "[-b <memory_load_address>] [-c] name",
                 fis_load,
                 FIS_cmds
     );
@@ -129,6 +129,38 @@ extern struct cmd __FIS_cmds_TAB__[], __FIS_cmds_TAB_END__;
 static void *flash_start, *flash_end;
 static int block_size, blocks;
 static void *fis_work_block;
+
+// Simple XOR style checksum
+static unsigned long
+_cksum(unsigned long *buf, int len)
+{
+    unsigned long cksum = 0;
+
+    // Round 'len' up to multiple of longwords
+    len = (len + (sizeof(unsigned long)-1)) / sizeof(unsigned long);   
+    while (len-- > 0) {
+        cksum ^= *buf++;
+    }
+    return cksum;
+}
+
+struct fis_image_desc *
+fis_lookup(char *name)
+{
+    int i;
+    void *fis_addr;
+    struct fis_image_desc *img;
+
+    fis_addr = (void *)((unsigned long)flash_end - block_size);
+    memcpy(fis_work_block, fis_addr, block_size);
+    img = (struct fis_image_desc *)fis_work_block;
+    for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
+        if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
+            return img;
+        }
+    }
+    return (struct fis_image_desc *)0;
+}
 
 static void
 fis_usage(char *why)
@@ -205,6 +237,10 @@ fis_init(int argc, char *argv[])
     img->mem_base = (unsigned long)fis_base;
     img->size = block_size;
     img++;  img_count++;
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Insure [quietly] that the directory is unlocked before trying to update
+    flash_unlock((void *)fis_base, block_size, (void **)&err_addr);
+#endif
     if ((stat = flash_erase(fis_base, block_size, (void **)&err_addr)) != 0) {
             printf("   initialization failed %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
     } else {
@@ -214,6 +250,10 @@ fis_init(int argc, char *argv[])
                    err_addr, stat, flash_errmsg(stat));
         }
     }
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Insure [quietly] that the directory is locked after the update
+    flash_lock((void *)fis_base, block_size, (void **)&err_addr);
+#endif
 }
 
 static void
@@ -221,13 +261,25 @@ fis_list(int argc, char *argv[])
 {
     struct fis_image_desc *img;
     int i;
+    bool show_cksums = false;
+    struct option_info opts[1];
+
+    init_opts(&opts[0], 'c', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&show_cksums, (bool *)0, "display checksums");
+    if (!scan_opts(argc, argv, 2, opts, 1, 0, 0, ""))
+    {
+        return;
+    }
 
     img = (struct fis_image_desc *)((unsigned long)flash_end - block_size);    
-    printf("Name              FLASH addr   Mem addr    Length    Entry point\n");
+    printf("Name              FLASH addr   %s    Length      Entry point\n",
+           show_cksums ? "Checksum" : "Mem addr");
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if (img->name[0] != (unsigned char)0xFF) {
-            printf("%-16s  0x%08lX   0x%08lX  0x%06lX  0x%08lX\n", img->name, 
-                   img->flash_base, img->mem_base, img->size, img->entry_point);
+            printf("%-16s  0x%08lX   0x%08lX  0x%08lX  0x%08lX\n", img->name, 
+                   img->flash_base, 
+                   show_cksums ? img->file_cksum : img->mem_base, 
+                   img->size, img->entry_point);
         }
     }
 }
@@ -440,6 +492,12 @@ fis_create(int argc, char *argv[])
     img->mem_base = exec_addr_set ? exec_addr : (flash_addr_set ? flash_addr : mem_addr);
     img->entry_point = entry_addr_set ? entry_addr : (unsigned long)entry_address;  // Hope it's been set
     img->size = length;
+    img->data_length = img_size;
+    img->file_cksum = _cksum((unsigned long *)mem_addr, img_size);
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Insure [quietly] that the directory is unlocked before trying to update
+    flash_unlock((void *)fis_addr, block_size, (void **)&err_addr);
+#endif
     if ((stat = flash_erase((void *)fis_addr, block_size, (void **)&err_addr)) != 0) {
         printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
         // Don't try to program if the erase failed
@@ -449,6 +507,10 @@ fis_create(int argc, char *argv[])
             printf("Error programming at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
         }
     }
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Insure [quietly] that the directory is locked after the update
+    flash_lock((void *)fis_addr, block_size, (void **)&err_addr);
+#endif
 }
 
 static void
@@ -605,6 +667,10 @@ fis_delete(int argc, char *argv[])
     if ((stat = flash_erase((void *)img->flash_base, img->size, (void **)&err_addr)) != 0) {
         printf("Error erasing at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
     }
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Insure [quietly] that the directory is unlocked before trying to update
+    flash_unlock((void *)fis_addr, block_size, (void **)&err_addr);
+#endif
     // Update directory
     memset(img, 0xFF, sizeof(*img));
     if ((stat = flash_erase((void *)fis_addr, block_size, (void **)&err_addr)) != 0) {
@@ -616,45 +682,56 @@ fis_delete(int argc, char *argv[])
             printf("Error programming at %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
         }
     }
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+    // Insure [quietly] that the directory is locked after the update
+    flash_lock((void *)fis_addr, block_size, (void **)&err_addr);
+#endif
 }
 
 static void
 fis_load(int argc, char *argv[])
 {
     char *name;
-    int i;
-    void *fis_addr;
     struct fis_image_desc *img;
-    bool slot_found;
+    unsigned long mem_addr;
+    bool mem_addr_set = false;
+    bool show_cksum = false;
+    struct option_info opts[2];
 
-    if (!scan_opts(argc, argv, 2, 0, 0, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
+    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
+    init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&show_cksum, (bool *)0, "display checksum");
+    if (!scan_opts(argc, argv, 2, opts, 2, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
         return;
     }
-
-    slot_found = false;
-    fis_addr = (void *)((unsigned long)flash_end - block_size);
-    memcpy(fis_work_block, fis_addr, block_size);
-    img = (struct fis_image_desc *)fis_work_block;
-    for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
-        if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
-            slot_found = true;
-            break;
-        }
-    }
-    if (!slot_found) {
+    if ((img = fis_lookup(name)) == (struct fis_image_desc *)0) {
         printf("No image '%s' found\n", name);
         return;
     }
+    if (!mem_addr_set) {
+        mem_addr = img->mem_base;
+    }
     // Load image from FLASH into RAM
-    if ((img->mem_base < (unsigned long)ram_start) ||
-        ((img->mem_base+img->size) >= (unsigned long)ram_end)) {
+    if ((mem_addr < (unsigned long)ram_start) ||
+        ((mem_addr+img->size) >= (unsigned long)ram_end)) {
         printf("Not a loadable image\n");
         return;
     }
-    memcpy((void *)img->mem_base, (void *)img->flash_base, img->size);
+    memcpy((void *)mem_addr, (void *)img->flash_base, img->size);
     entry_address = (unsigned long *)img->entry_point;
+    if (img->file_cksum) {
+        unsigned long cksum = _cksum((unsigned long *)mem_addr, img->data_length);
+        if (cksum != img->file_cksum) {
+            printf("** Warning - checksum failure.  stored: %08lx, computed: %08lx\n",
+                   img->file_cksum, cksum);
+        }
+        if (show_cksum) {
+            printf("Checksum: %08lx\n", cksum);
+        }
+    }
 }
 
 static bool
@@ -672,7 +749,7 @@ do_flash_init(void)
         }
         flash_get_limits((void *)0, (void **)&flash_start, (void **)&flash_end);
         flash_get_block_info(&block_size, &blocks);
-        printf("FLASH: %p - %p, %d blocks of %p bytes ea.\n", 
+        printf("FLASH: %p - %p, %d blocks of %p bytes each.\n", 
                flash_start, flash_end, blocks, (void *)block_size);
         fis_work_block = (unsigned char *)(ram_end-FLASH_MIN_WORKSPACE-block_size);
     }
@@ -904,7 +981,7 @@ get_config(struct config_option *opt, int offset, bool list_only)
 // over time.
 
 static unsigned long
-_cksum(unsigned long *buf, int len)
+_fconfig_cksum(unsigned long *buf, int len)
 {
     unsigned long cksum = 0;
     int shift = 0;
@@ -993,9 +1070,13 @@ do_flash_config(int argc, char *argv[])
  done:
     if (!need_update) return;
     config.key1 = CONFIG_KEY1;  config.key2 = CONFIG_KEY2;
-    config.cksum = _cksum((unsigned long *)&config, sizeof(config)-sizeof(config.cksum));
+    config.cksum = _fconfig_cksum((unsigned long *)&config, sizeof(config)-sizeof(config.cksum));
     cfg_base = (void *)((unsigned long)flash_end - (2*block_size));
     if (verify_action("Update RedBoot non-volatile configuration")) {
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+        // Insure [quietly] that the config page is unlocked before trying to update
+        flash_unlock((void *)cfg_base, block_size, (void **)&err_addr);
+#endif
         if ((stat = flash_erase(cfg_base, block_size, (void **)&err_addr)) != 0) {
             printf("   initialization failed %p: %x(%s)\n", err_addr, stat, flash_errmsg(stat));
         } else {
@@ -1005,6 +1086,10 @@ do_flash_config(int argc, char *argv[])
                        err_addr, stat, flash_errmsg(stat));
             }
         }
+#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
+        // Insure [quietly] that the config data is locked after the update
+        flash_lock((void *)cfg_base, block_size, (void **)&err_addr);
+#endif
     }
 }
 
@@ -1072,7 +1157,7 @@ load_flash_config(void)
     if (!do_flash_init()) return;
     cfg_base = (void *)((unsigned long)flash_end - (2*block_size));
     memcpy(&config, cfg_base, sizeof(config));
-    if ((_cksum((unsigned long *)&config, sizeof(config)-sizeof(config.cksum)) != config.cksum) ||
+    if ((_fconfig_cksum((unsigned long *)&config, sizeof(config)-sizeof(config.cksum)) != config.cksum) ||
         (config.key1 != CONFIG_KEY1)|| (config.key2 != CONFIG_KEY2)) {
         printf("FLASH configuration checksum error or invalid key\n");
         memset(&config, 0, sizeof(config));

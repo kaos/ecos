@@ -47,8 +47,6 @@
 
 #include <pkgconf/libc_time.h>          // C library configuration
 
-#ifdef CYGFUN_LIBC_TIME_POSIX
-
 // The following lines allow localtime_r() to be included non-inline which
 // actually defines it as a function here
 #define CYGPRI_LIBC_TIME_LOCALTIME_R_INLINE
@@ -57,7 +55,5 @@
 #endif
 
 #include <time.h>                  // Main date and time definitions
-
-#endif // ifdef CYGFUN_LIBC_TIME_POSIX
 
 // EOF localtime_r.cxx

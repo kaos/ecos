@@ -1,3 +1,6 @@
+* FLASH driver added for PowerPC/MBX
+* sigsetjmp() and siglongjmp() added
+* A choice of getcwd() implementations have been added
 * SH serial driver cleanup. SCIF driver added. SCI and SCIF drivers are
   now separate packages. SCIF driver uses full FIFO and can utilize
   DMA for transmit operations.

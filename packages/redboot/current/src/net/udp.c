@@ -43,7 +43,7 @@
 //
 //==========================================================================
 
-
+#include <redboot.h>
 #include <net/net.h>
 
 #ifdef UDP_STATS
@@ -192,7 +192,7 @@ __udp_sendto(char *data, int len, struct sockaddr_in *server,
 {
     ip_route_t rt;
 
-    if (__arp_lookup(&server->sin_addr, &rt) < 0) {
+    if (__arp_lookup((ip_addr_t *)&server->sin_addr, &rt) < 0) {
         printf("%s: Can't find address of server\n", __FUNCTION__);
         return -1;
     } else {

@@ -1,3 +1,7 @@
+2000-10-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_quicc.c: Changes to compile in stand-alone mode.
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_quicc.c (quicc_eth_init): Work with new fast net

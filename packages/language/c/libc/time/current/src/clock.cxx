@@ -89,6 +89,7 @@ clock( void )
     cyg_tick_count curr_clock;            // kernel clock value
     Cyg_Clock::cyg_resolution resolution; // kernel clock resolution
     clock_t clocks;
+    unsigned long long temp;
 
     CYG_TRACE0( TL1, "getting clock resolution" );
     
@@ -103,11 +104,14 @@ clock( void )
 
     CYG_TRACE1( TL1, "got clock value %d", curr_clock );
     
-    // scale the value so that clock()/CLOCKS_PER_SEC works - clock_t
-    // should be big enough to cope
-    clocks = ((clock_t)curr_clock * resolution.dividend) / 
-      (resolution.divisor * (1000000000 / CLOCKS_PER_SEC));
-
+    // scale the value so that clock()/CLOCKS_PER_SEC works
+    // We use an unsigned long long to avoid overflow as the dividend
+    // and divisors tend to be huge
+    temp = (1000000000 / CLOCKS_PER_SEC);
+    temp *= resolution.divisor;
+    temp = (unsigned long long)curr_clock * resolution.dividend / temp;
+    clocks = (clock_t)temp;
+    
     CYG_REPORT_RETVAL( clocks );
     return clocks;
 

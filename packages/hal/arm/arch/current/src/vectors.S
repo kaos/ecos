@@ -309,6 +309,8 @@ start:
 
 #if defined(CYG_HAL_STARTUP_ROM)
         // Set up reset vector
+        mov     r0,#0
+        ldr     r1,.__exception_handlers
         ldr     r2,[r1,#0x00]    // reset vector intstruction
         str     r2,[r0,#0x00]
         ldr     r2,=warm_reset

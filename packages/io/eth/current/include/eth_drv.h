@@ -77,6 +77,9 @@
 #include <net/bpf.h>
 #include <net/bpfdesc.h>
 #endif
+
+#else // !CYGPKG_NET
+#include <cyg/hal/drv_api.h>
 #endif
 
 struct eth_drv_sg {

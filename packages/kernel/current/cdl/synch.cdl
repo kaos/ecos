@@ -47,6 +47,7 @@ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
     legal_values { "SIMPLE" }
     default_value { "SIMPLE" }
     active_if    { CYGSEM_KERNEL_SCHED_MLQUEUE }
+    requires     { CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES == 0 }
     description "
         This component controls the protocols used to protect mutexes against
         priority inversion. If this option is enabled it defines which

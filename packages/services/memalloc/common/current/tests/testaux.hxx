@@ -1,5 +1,5 @@
-#ifndef CYGONCE_KERNEL_TESTS_TESTAUX_HXX
-#define CYGONCE_KERNEL_TESTS_TESTAUX_HXX
+#ifndef CYGONCE_MEMALLOC_TESTS_TESTAUX_HXX
+#define CYGONCE_MEMALLOC_TESTS_TESTAUX_HXX
 
 //==========================================================================
 //
@@ -48,6 +48,13 @@
 
 static inline void *operator new(size_t size, void *ptr) { return ptr; };
 
+
+#include <pkgconf/hal.h>
+
+#ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+externC void
+cyg_hal_invoke_constructors();
+#endif
 
 #ifdef NTHREADS
 

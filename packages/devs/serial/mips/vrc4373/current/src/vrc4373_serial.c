@@ -473,7 +473,7 @@ vrc4373_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
             chan = vrc4373_chans[0];  // Hardware channel A
             vrc4373_int(chan, stat>>3);  // Handle interrupt
         } else if (stat & (RR3_BExt | RR3_BTxIP | RR3_BRxIP)) {
-            chan = vrc4373_chans[1];  // Hardware channel A
+            chan = vrc4373_chans[1];  // Hardware channel B
             vrc4373_int(chan, stat);  // Handle interrupt
         } else {
             // No more interrupts, all done

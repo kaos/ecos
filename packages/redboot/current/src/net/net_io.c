@@ -44,6 +44,7 @@
 //==========================================================================
 
 #include <redboot.h>
+#include <eth_drv.h>            // Logical driver interfaces
 #include <net/net.h>
 #include <cyg/hal/hal_misc.h>   // Helper functions
 #include <cyg/hal/hal_if.h>     // HAL I/O interfaces

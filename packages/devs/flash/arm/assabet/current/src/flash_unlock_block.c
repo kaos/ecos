@@ -75,7 +75,7 @@ flash_unlock_block(volatile unsigned long *block, int block_size, int blocks)
         HAL_DCACHE_DISABLE();
     }
 
-    ROM = (volatile unsigned long *)((unsigned long)block & 0xFF800000);
+    ROM = (volatile unsigned long *)((unsigned long)block & 0xFE000000);
 
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;
