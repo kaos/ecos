@@ -1,3 +1,7 @@
+2004-01-09  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/fs-ecos.c: Fixed inode reference counting in jffs2_ops_link().
+
 2004-01-05  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
         * cdl/jffs2.cdl: Re-added CYGPKG_FS_JFFS2_CFLAGS_REMOVE that had been
