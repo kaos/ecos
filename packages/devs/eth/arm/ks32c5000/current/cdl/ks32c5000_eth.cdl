@@ -155,10 +155,49 @@ cdl_package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
             description   "This option specifies the MII address of the PHY"
         }
 
+        cdl_component CYGPKG_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA {
+        display         "RedBoot manages ESA initialization data"
+        flavor          bool
+        default_value   0
+    
+        active_if     CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+        active_if     (CYGPKG_REDBOOT || CYGSEM_HAL_USE_ROM_MONITOR)
+
+        description   "Enabling this option will allow the ethernet
+        station address to be acquired from RedBoot's configuration data,
+        stored in flash memory.  It can be overridden individually by the
+        'Set the ethernet station address' option for each interface."
+
+            cdl_component CYGPKG_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA_VARS {
+                display        "Export RedBoot command to set ESA in FLASH config"
+                flavor         none
+                no_define
+    
+                description "
+                This component contains options which, when enabled, allow
+                RedBoot to support the setting of the ESA in the FLASH
+                configuration. This can then subsequently be accessed by
+                applications using virtual vector calls if those applications
+                are also built with
+                CYGPKG_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA enabled."
+    
+                cdl_option CYGSEM_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA_ETH0 {
+                    display         "RedBoot manages ESA for eth0"
+                    flavor          bool
+                    default_value   1
+                    active_if       CYGSEM_REDBOOT_FLASH_CONFIG
+                    active_if       CYGPKG_REDBOOT_NETWORKING
+                }
+            }
+        }
+
         cdl_option CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR {
-            display "Ethernet address for eth0"
+            display "Ethernet station (MAC) address for eth0"
             flavor  data
             default_value {"0x08, 0x88, 0x12, 0x34, 0x56, 0x78"}
+            description   "The default ethernet station address. This is the
+                           MAC address used when no value is found in the
+                           RedBoot FLASH configuration field."
         }
 
         cdl_option  CYGPKG_DEVS_ETH_ARM_KS32C5000_CFLAGS_ADD {

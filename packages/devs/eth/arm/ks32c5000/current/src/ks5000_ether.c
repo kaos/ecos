@@ -55,14 +55,18 @@
 #include <pkgconf/devs_eth_arm_ks32c5000.h>
 #include <pkgconf/io_eth_drivers.h>
 
+#include <errno.h>
 #if defined(CYGPKG_IO)
 #include <pkgconf/io.h>
 #include <cyg/io/io.h>
 #include <cyg/io/devtab.h>
-#else
-// need to provide fake values for errno
-#define EIO 1
-#define EINVAL 2
+#endif
+// need to provide fake values for errno?
+#ifndef EIO
+# define EIO 1
+#endif
+#ifndef EINVAL
+# define EINVAL 2
 #endif
 
 #include <cyg/infra/cyg_type.h>  // Common type definitions and support
@@ -77,7 +81,7 @@
 #include <pkgconf/redboot.h>
 #endif
 
-#if !defined(CYGPKG_NET)
+#ifndef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 #define cyg_drv_interrupt_unmask(v) /* noop */
 #define cyg_drv_interrupt_mask(v)   /* noop */
 #define cyg_drv_isr_lock()          /* noop */
@@ -122,6 +126,42 @@
 #else
 #define SoftwareCRC 0
 #endif
+
+// --------------------------------------------------------------
+// RedBoot configuration options for managing ESAs for us
+
+// Decide whether to have redboot config vars for it...
+#if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && defined(CYGPKG_REDBOOT_NETWORKING)
+#include <redboot.h>
+#include <flash_config.h>
+
+#ifdef CYGSEM_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA_ETH0
+RedBoot_config_option("Network hardware address [MAC] for eth0",
+                      eth0_esa_data,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_ESA, 0);
+#endif
+
+#endif  // CYGPKG_REDBOOT_NETWORKING && CYGSEM_REDBOOT_FLASH_CONFIG
+
+// and initialization code to read them
+// - independent of whether we are building RedBoot right now:
+#ifdef CYGPKG_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA
+
+#include <cyg/hal/hal_if.h>
+
+#ifndef CONFIG_ESA
+#define CONFIG_ESA (6)
+#endif
+
+#define CYGHWR_DEVS_ETH_ARM_KS32C5000_GET_ESA( mac_address, ok )                 \
+CYG_MACRO_START                                                                  \
+    ok = CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,              \
+                                      "eth0_esa_data", mac_address, CONFIG_ESA); \
+CYG_MACRO_END
+
+#endif // CYGPKG_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA
+
 
 #if CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
 // functions to read/write Phy chip registers via MII interface
@@ -182,8 +222,11 @@ typedef struct
 } MAC_FRAME;
 
 #if defined(CYGPKG_NET)
-static cyg_drv_mutex_t txMutex;
 struct ether_drv_stats ifStats;
+#endif
+
+#if defined(CYGINT_IO_ETH_INT_SUPPORT_REQUIRED)
+static cyg_drv_mutex_t txMutex;
 #endif
 
 typedef struct
@@ -477,7 +520,7 @@ static void initFreeList(void)
 
 static int ks32c5000_eth_buffer_send(tEthBuffer *buf)
 {
-#if defined(CYGPKG_NET)  
+#if defined(CYGINT_IO_ETH_INT_SUPPORT_REQUIRED)
   while (!configDone)
     cyg_thread_delay(10);
 #endif
@@ -659,7 +702,6 @@ static int EthInit(U08* mac_address)
   CAMCON = CAMConfigVar;
   
   // set up our MAC address
-
   if (mac_address)
     {
       *((volatile U32*)CAM_BaseAddr) = 
@@ -1124,11 +1166,18 @@ ks32c5000_priv_data_t ks32c5000_priv_data;
 #define eth_drv_init(sc,enaddr)  ((sc)->funs->eth_drv->init)(sc, enaddr)
 #define eth_drv_recv(sc,len)  ((sc)->funs->eth_drv->recv)(sc, len)
 
-static unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
-
 static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 {
+  unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
   struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
+  bool ok;
+
+#ifdef CYGHWR_DEVS_ETH_ARM_KS32C5000_GET_ESA
+  // Get MAC address from RedBoot configuration variables
+  CYGHWR_DEVS_ETH_ARM_KS32C5000_GET_ESA(&myMacAddr[0], ok);
+  // If this call fails myMacAddr is unchanged and MAC address from CDL is used
+#endif
+
   debug1_printf("ks32c5000_eth_init()\n");
   debug1_printf("  MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",myMacAddr[0],myMacAddr[1],myMacAddr[2],myMacAddr[3],myMacAddr[4],myMacAddr[5]);
 #if defined(CYGPKG_NET)  
@@ -1383,3 +1432,5 @@ NETDEVTAB_ENTRY(ks32c5000_netdev,
                 "ks32c5000", 
                 ks32c5000_eth_init, 
                 &ks32c5000_sc);
+
+// EOF ks5000_ether.c

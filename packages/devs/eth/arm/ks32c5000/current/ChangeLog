@@ -1,3 +1,18 @@
+2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/ks5000_ether.c: Some tidies of the previous changes.
+	* cdl/ks32c5000_eth.cdl: Clarify option description and rename
+	CYGVAR_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA_ETH0 to
+	CYGSEM_DEVS_ETH_ARM_KS32C5000_REDBOOT_HOLDS_ESA_ETH0.
+
+2003-05-26  Chris Garry  <cgarry@sweeneydesign.co.uk>
+	
+	* cdl/ks32c5000_eth.cdl: Added support for MAC address to be used
+	from RedBoot's FLASH configuration data.
+	* src/ks5000_ether.c: Updated driver to work with LWIP stack as
+	well as the BSD stack. Added support for MAC address to be used
+	from RedBoot's FLASH configuration data.
+
 2003-04-08  Michael Checky  <Michael_Checky@Thermoking.com>
 
 	* cdl/ks32c5000_eth.cdl: CYGINT_DEVS_ETH_ARM_KS32C5000_PHY can now
