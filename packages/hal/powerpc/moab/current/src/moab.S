@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002, 2003, 2004 Gary Thomas
+## Copyright (C) 2002, 2003, 2004, 2005 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -99,6 +99,47 @@ FUNC_START( hal_hardware_init )
         mflr    r30                        // Save return address
 
 #ifndef CYG_HAL_STARTUP_RAM
+
+        // Basic chip configuration
+        lwi     r3,MOAB_DCR_CPC0_CR0
+        mtdcr   DCR_CPC0_CR0,r3
+        li      r3,0x00000000
+        mtdcr   DCR_CPC0_CR1,r3
+
+        lwi     r3,0x60606000            // Edge conditioning register
+        mtdcr   DCR_CPC0_ECR,r3
+
+        // Boot ROM access
+        li      r3,DCR_EBC0_B0AP          // BOOT FLASH at 0xFFExxxxx, R/W
+        lwi     r4,0x05010480
+        mtdcr   DCR_EBC0_CFGADDR,r3
+        mtdcr   DCR_EBC0_CFGDATA,r4
+        li      r3,DCR_EBC0_B0CR
+        lwi     r4,0xFFE38000
+        mtdcr   DCR_EBC0_CFGADDR,r3
+        mtdcr   DCR_EBC0_CFGDATA,r4
+
+        // GPIO
+        //   GPIO 13 - I - media present
+        //   GPIO 14 - O - main flash ALE
+        //   GPIO 15 - O - main flash CLE
+        //   GPIO 16 - O/x - watchdog 
+        //   GPIO 17 - O - NAND CE
+        //   GPIO 24 - O - heartbeat LED
+        lwi     r4,GPIO_OR              // Leave NAND not-selected, heartbeat off
+        lwi     r3,0x00004080
+        stw     r3,0(r4)
+        lwi     r4,GPIO_TCR             // Tri-state control - enables outputs
+        lwi     r3,0x0003C080           // ... with watchdog enabled
+        stw     r3,0(r4)
+        
+        li      r3,DCR_SDRAM0_CFG          // See if SDRAM already configured
+        mtdcr   DCR_SDRAM0_CFGADDR,r3        
+        mfdcr   r4,DCR_SDRAM0_CFGDATA
+        lwi     r3,MOAB_DCR_SDRAM0_CFG        
+        and     r4,r4,r3
+        cmpw    r3,r4
+        beq     sdram_ok
         
         li      r3,0x00000000              // Make sure nothing is cacheable
         mticcr  r3
@@ -111,37 +152,6 @@ FUNC_START( hal_hardware_init )
         addi    r3,r3,16
         cmpw    r3,r4
         bne     10b
-
-        // Basic chip configuration
-        lwi     r3,MOAB_DCR_CPC0_CR0
-        mtdcr   DCR_CPC0_CR0,r3
-        li      r3,0x00000000
-        mtdcr   DCR_CPC0_CR1,r3
-
-        lwi     r3,0x60606000            // Edge conditioning register
-        mtdcr   DCR_CPC0_ECR,r3
-
-        // GPIO
-        //   GPIO 13 - I - media present
-        //   GPIO 14 - O - main flash ALE
-        //   GPIO 15 - O - main flash CLE
-        //   GPIO 16 - I - watchdog ?
-        //   GPIO 17 - O - NAND CE
-        //   GPIO 24 - O - heartbeat LED
-        lwi     r4,GPIO_OR              // Leave NAND not-selected, heartbeat off
-        lwi     r3,0x00004080
-        stw     r3,0(r4)
-        lwi     r4,GPIO_TCR             // Tri-state control - enables outputs
-        lwi     r3,0x00034080
-        stw     r3,0(r4)
-        
-        li      r3,DCR_SDRAM0_CFG          // See if SDRAM already configured
-        mtdcr   DCR_SDRAM0_CFGADDR,r3        
-        mfdcr   r4,DCR_SDRAM0_CFGDATA
-        lwi     r3,MOAB_DCR_SDRAM0_CFG        
-        and     r4,r4,r3
-        cmpw    r3,r4
-        beq     sdram_ok
         
         // DRAM controller
         li      r3,DCR_SDRAM0_CFG            // Turn off controller to allow changes
@@ -182,14 +192,6 @@ FUNC_START( hal_hardware_init )
 
 sdram_ok:               
         // Bus controller
-        li      r3,DCR_EBC0_B0AP          // BOOT FLASH at 0xFFExxxxx, R/W
-        lwi     r4,0x7F8FFE80
-        mtdcr   DCR_EBC0_CFGADDR,r3
-        mtdcr   DCR_EBC0_CFGDATA,r4
-        li      r3,DCR_EBC0_B0CR
-        lwi     r4,0xFFE38000
-        mtdcr   DCR_EBC0_CFGADDR,r3
-        mtdcr   DCR_EBC0_CFGDATA,r4
         li      r3,DCR_EBC0_B1AP          // MAIN FLASH at 0xCxxxxxxx, R/W
         lwi     r4,MOAB_DCR_EBC0_B1AP
         mtdcr   DCR_EBC0_CFGADDR,r3
@@ -208,7 +210,10 @@ sdram_ok:
         mtdcr   DCR_OCM0_DSCNTL,r3
         
         lwi     r4,GPIO_OR              // Turn heartbeat LED off
-        lwi     r3,0x00004080
+        lwi     r3,0x0000C080
+        stw     r3,0(r4)
+        lwi     r4,GPIO_TCR             // Tri-state control - enables outputs
+        lwi     r3,0x00034080           // ... with watchdog disabled
         stw     r3,0(r4)
         
 #endif  // ROM or ROMRAM startup

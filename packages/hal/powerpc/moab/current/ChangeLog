@@ -1,3 +1,8 @@
+2005-02-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/moab.S: Rework startup sequence - faster and works better
+	on all boards (including some that wouldn't come up at all).
+
 2004-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (cyg_plf_redboot_startup): Boot mode implies no
