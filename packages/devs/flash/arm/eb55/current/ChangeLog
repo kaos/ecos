@@ -1,3 +1,8 @@
+2004-11-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/flash_eb55.cdl: Enable the hardware bug workaround in the
+	generic flash driver
+
 2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/eb55_flash.c: Generic Atmel driver now supports boot blocks.

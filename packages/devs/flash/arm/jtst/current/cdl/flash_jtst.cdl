@@ -57,7 +57,8 @@ cdl_package CYGPKG_DEVS_FLASH_JTST {
     parent        CYGPKG_IO_FLASH
     active_if     CYGPKG_IO_FLASH
     requires      CYGPKG_HAL_ARM_AT91
-
+    requires      CYGHWR_DEVS_FLASH_ATMEL_AT49XXXX_ERASE_BUG_WORKAROUND
+        
     compile       jtst_flash.c
 
     # Arguably this should do in the generic package

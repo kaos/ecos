@@ -189,6 +189,15 @@
     },
 #endif
 
+#if defined(CYGHWR_DEVS_FLASH_ATMEL_AT49BV1604A) || \
+    defined(CYGHWR_DEVS_FLASH_ATMEL_AT49BV1614A) || \
+    defined(CYGHWR_DEVS_FLASH_ATMEL_AT49LV1614A)
+#ifndef CYGHWR_DEVS_FLASH_ATMEL_AT49XXXX_ERASE_BUG_WORKAROUND
+#warning This flash device contains a hardware bug and you have not
+#warning enabled the workaround for it. See the CDL file.
+#endif
+#endif
+
 #endif // ifndef CYGONCE_DEVS_FLASH_ATMEL_AT49XXXX_PARTS_INL
 
 // EOF flash_at49xxxx_parts.inl
