@@ -58,7 +58,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 typedef struct {
     char        serial[20+1];      // serial number
     char        firmware_rev[8+1]; // firmware revision
@@ -78,9 +78,9 @@ typedef struct {
 } cyg_disk_partition_t;
 
 typedef struct {
+    cyg_disk_partition_t *partitions;    // partition table
+    int                   partitions_num;// partition table size
     cyg_disk_identify_t   ident;         // identify data
-    cyg_disk_partition_t  partitions[4]; // partitions
-    cyg_addrword_t        devs[4];       // device instances
     cyg_uint32            block_size;    // block size
     cyg_uint32            blocks_num;    // number of blocks on disk
     cyg_bool              connected;     // true if device connected

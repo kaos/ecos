@@ -56,8 +56,6 @@
 #include <cyg/infra/cyg_ass.h>      // assertion support
 #include <cyg/infra/diag.h>         // diagnostic output
 
-#include <stdlib.h>  // malloc 
-
 // ---------------------------------------------------------------------------
 
 //#define DEBUG 1
@@ -172,7 +170,7 @@ read_partition(cyg_uint8            *data,
 
     READ_CHS(&data[5], c, h, s);
     CHS_TO_LBA(&info->ident, c, h, s, part->end);
-
+    
     READ_DWORD(&data[12], part->size);
 }
 
@@ -188,7 +186,7 @@ read_mbr(disk_channel *chan)
     Cyg_ErrNo res = ENOERR;
     int i;
  
-    for (i = 0; i < MBR_PART_NUM; i++)
+    for (i = 0; i < info->partitions_num; i++)
         info->partitions[i].type = 0x00;    
    
     res = (funs->read)(chan, (void *)buf, 512, 0);
@@ -197,9 +195,14 @@ read_mbr(disk_channel *chan)
 
     if (MBR_SIG_BYTE0 == buf[MBR_SIG_ADDR+0] && MBR_SIG_BYTE1 == buf[MBR_SIG_ADDR+1])
     {
+        int npart;
+
         D(("disk MBR found\n")); 
  
-        for (i = 0; i < MBR_PART_NUM; i++)
+        npart = info->partitions_num < MBR_PART_NUM ? 
+            info->partitions_num : MBR_PART_NUM;
+
+        for (i = 0; i < npart; i++)
         {
             cyg_disk_partition_t *part = &info->partitions[i];
             
@@ -231,14 +234,10 @@ disk_init(struct cyg_devtab_entry *tab)
     {
         info->connected = false;
 
-        // clear devices array (one per partition)
-        // and partition data
-        for (i = 0; i < MBR_PART_NUM; i++)
-        {
-            info->devs[i] = (cyg_addrword_t) 0;
+        // clear partition data
+        for (i = 0; i < info->partitions_num; i++)
             info->partitions[i].type = 0x00;
-        }
-        
+
         chan->init = true;
     }
     return true;
@@ -294,22 +293,11 @@ disk_disconnected(struct cyg_devtab_entry *tab)
     info->connected = false;
     chan->valid     = false;
      
-    // clear partition data and invalidate 
-    // any allocated devices
-    for (i = 0; i < MBR_PART_NUM; i++)
+    // clear partition data and invalidate partition devices 
+    for (i = 0; i < info->partitions_num; i++)
     {
-        info->partitions[i].type = 0x00;
-
-        if (0 != info->devs[i])
-        {
-            struct cyg_devtab_entry *dtab;
-            disk_channel            *dchan;
-
-            dtab  = (struct cyg_devtab_entry *)info->devs[i];
-            dchan = (disk_channel *) dtab->priv;
-            
-            dchan->valid = false;
-        }
+        info->partitions[i].type  = 0x00;
+        chan->pdevs_chan[i].valid = false;
     }
 
     
@@ -329,10 +317,22 @@ disk_lookup(struct cyg_devtab_entry **tab,
     disk_channel            *new_chan;
     int dev_num;
     
-    if (!info->connected || name[0] < '0' || name[0] > '4' || '\0' != name[1])
+    if (!info->connected)
         return -EINVAL;
 
-    dev_num = name[0] - '0';
+    dev_num = 0;
+
+    while ('\0' != *name)
+    {
+        if (*name < '0' || *name > '9')
+            return -EINVAL;
+
+        dev_num = 10 * dev_num + (*name - '0');
+        name++;
+    }
+   
+    if (dev_num > info->partitions_num)
+        return -EINVAL;
 
     D(("disk lookup dev number = %d\n", dev_num)); 
 
@@ -346,30 +346,9 @@ disk_lookup(struct cyg_devtab_entry **tab,
         D(("disk NO partition for dev\n")); 
         return -EINVAL;
     }
-    
-    if (0 == info->devs[dev_num-1])
-    {
-        D(("disk creating new devtab entry\n")); 
 
-        // alloc mem for new device
-        new_tab = (struct cyg_devtab_entry *)
-            malloc(sizeof(struct cyg_devtab_entry));
-        if (NULL == new_tab)
-            return -ENOMEM;        
-
-        // alloc mem for new device private data
-        new_chan = (disk_channel *)malloc(sizeof(disk_channel));
-        if (NULL == new_chan)
-        {
-            free(new_tab);
-            return -ENOMEM;
-        }
-    }
-    else
-    {
-        new_tab  = (struct cyg_devtab_entry *) info->devs[dev_num-1]; 
-        new_chan = (disk_channel *) new_tab->priv;   
-    }
+    new_tab  = &chan->pdevs_dev[dev_num-1];
+    new_chan = &chan->pdevs_chan[dev_num-1];
     
     // copy device data from parent
     *new_tab  = **tab; 
@@ -377,9 +356,8 @@ disk_lookup(struct cyg_devtab_entry **tab,
 
     new_tab->priv = (void *)new_chan;
 
-    // set partition ptr and put this device into devices array    
+    // set partition ptr
     new_chan->partition = &info->partitions[dev_num-1];
-    chan->info->devs[dev_num-1] = (cyg_addrword_t) new_tab;
 
     // return device tab 
     *tab = new_tab;

@@ -106,6 +106,8 @@ struct disk_channel {
     void                    *dev_priv;    // device private data
     cyg_disk_info_t         *info;        // disk info 
     cyg_disk_partition_t    *partition;   // partition data 
+    struct cyg_devtab_entry *pdevs_dev;   // partition devs devtab ents 
+    disk_channel            *pdevs_chan;  // partition devs disk chans 
     cyg_bool                 mbr_support; // true if disk has MBR
     cyg_bool                 valid;       // true if device valid 
     cyg_bool                 init;        // true if initialized
@@ -115,14 +117,23 @@ struct disk_channel {
 #define DISK_CHANNEL(_l,                                              \
                      _funs,                                           \
                      _dev_priv,                                       \
-                     _mbr_supp)                                       \
-cyg_disk_info_t _l##_disk_info;                                       \
-disk_channel _l = {                                                   \
+                     _mbr_supp,                                       \
+                     _max_part_num)                                   \
+static struct cyg_devtab_entry _l##_part_dev[_max_part_num];          \
+static disk_channel            _l##_part_chan[_max_part_num];         \
+static cyg_disk_partition_t    _l##_part_tab[_max_part_num];          \
+static cyg_disk_info_t         _l##_disk_info = {                     \
+    _l##_part_tab,                                                    \
+    _max_part_num                                                     \
+};                                                                    \
+static disk_channel _l = {                                            \
     &(_funs),                                                         \
     &cyg_io_disk_callbacks,                                           \
     &(_dev_priv),                                                     \
     &(_l##_disk_info),                                                \
     NULL,                                                             \
+    _l##_part_dev,                                                    \
+    _l##_part_chan,                                                   \
     _mbr_supp,                                                        \
     false,                                                            \
     false                                                             \
