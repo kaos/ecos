@@ -1,3 +1,7 @@
+2003-02-28  Gary Thomas  <gary@mind.be>
+
+	* cdl/hal_arm_xscale_uE250.cdl: Fix machine type - used by Linux.	
+
 2003-02-26  Gary Thomas  <gary@mind.be>
 
 	* misc/redboot_ROM.ecm: 
