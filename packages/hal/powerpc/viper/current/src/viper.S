@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -258,15 +259,31 @@ FUNC_START( hal_hardware_init )
 	 */
 
 //        
-// PTX field is (System Clock in MHz * Refresh rate in us) / Prescale
+// PTA field is (System Clock in MHz * Refresh rate in us) / Prescale
 // e.g.  ((14*3.6864)*62.5)/32 => 100.8 => 101        
 //                
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)
-	lwi	r3,0x5E802114   // PTX = 94
+#define PLPRCR_PTX 0x00C // (47MHz/3.6864MHz)-1
+#define MAMR_PTA 94        
 #endif        
 #if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 51)
-	lwi	r3,0x65802114   // PTX = 101
+#define PLPRCR_PTX 0x00D // (51.6MHz/3.6864MHz)-1
+#define MAMR_PTA 101
 #endif        
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 55)
+#define PLPRCR_PTX 0x00E // (55.3MHz/3.6864MHz)-1
+#define MAMR_PTA 108
+#endif        
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 59)
+#define PLPRCR_PTX 0x00F // (58.9MHz/3.6864MHz)-1
+#define MAMR_PTA 116
+#endif        
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 63)
+#define PLPRCR_PTX 0x010 // (62.7MHz/3.6864MHz)-1
+#define MAMR_PTA 123
+#endif        
+//#define MAMR_PTA (((((((PLPRCR_PTX+1)*3686400)*625)/10000000)+31)/32)&0xFF)
+        lwi     r3,0x00802114|(MAMR_PTA<<24)
         stw	r3,MAMR(r4)
         stw	r3,MBMR(r4)
 
@@ -366,14 +383,7 @@ FUNC_START( hal_hardware_init )
 // 	Field FIOPD (bit 26) = 0
 // 	Field Reserved (bits 27-31) = 0
 	 */
-#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)
-	/*  MF    (0:11)  = 0x00C = 12 = (47MHz/3.6864MHz)-1 */
-	lwi	r3,0x00C04000
-#endif        
-#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 51)
-	/*  MF    (0:11)  = 0x00D = 13 = (51.6MHz/3.6864MHz)-1 */
-	lwi	r3,0x00D04000
-#endif        
+	lwi	r3,0x04000|(PLPRCR_PTX<<20)
 	stw	r3,PLPRCR(r4)
 
 	LED(0xE0)
