@@ -938,7 +938,6 @@ spurious_IRQ:
         str     r1,[r2]
         ldreq   sp,[sp]         // This should be the saved stack pointer
 #endif
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
         // The return value from the handler (in r0) will indicate whether a 
         // DSR is to be posted. Pass this together with a pointer to the
         // interrupt object we have just used to the interrupt tidy up routine.
@@ -956,7 +955,6 @@ spurious_IRQ:
                                 // threads and call scheduler
         ARM_MODE(r1,10)
 17:
-#endif
 
 //      mov     r0,sp
 //      bl      show_frame_out
