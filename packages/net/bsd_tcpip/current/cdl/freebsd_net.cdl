@@ -216,6 +216,15 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
             compile \
               sys/kern/kern_sysctl.c
         } 
+        cdl_option CYGPKG_NET_RANDOM_PORTS {
+            display       "Random source ports"
+            flavor        bool
+            default_value 0
+            description   "
+                This option enables support for random source ports when the source
+            port is not specified.  This option is useful when connecting
+            through firewalls."
+        }                 
     }
 
     cdl_option CYGPKG_NET_NGIF {

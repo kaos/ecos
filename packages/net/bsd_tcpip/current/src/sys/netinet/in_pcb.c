@@ -283,6 +283,10 @@ in_pcbbind(inp, nam, p)
 			/*
 			 * counting down
 			 */
+			 
+#ifdef CYGPKG_NET_RANDOM_PORTS
+			*lastport = first - (arc4random() % (first - last));
+#endif				 
 			count = first - last;
 
 			do {
@@ -300,6 +304,9 @@ in_pcbbind(inp, nam, p)
 			/*
 			 * counting up
 			 */
+#ifdef CYGPKG_NET_RANDOM_PORTS
+			*lastport = first + (arc4random() % (last - first));
+#endif				 
 			count = last - first;
 
 			do {

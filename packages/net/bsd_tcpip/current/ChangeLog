@@ -1,3 +1,10 @@
+2005-03-10	Matt Jerdonek	<maj1224@yahoo.com>
+
+	* cdl/freebsd_net.cdl:
+	* src/sys/netinet/in_pcb.c: add option to randomly pick
+	source port.  This option is useful when connecting
+	through firewalls.
+
 2004-12-24  Motoya Kurotsu  <kurotsu@allied-telesis.co.jp>
 
 	* src/sys/kern/kern_sysctl.c: set mutex_init to one to prevent
