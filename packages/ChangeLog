@@ -1,3 +1,7 @@
+2003-11-09  Gary Thomas  <gary@mlbassoc.com>
+
+	* ecos.db: Add serial I/O package for Motorola MPC8xxx (QUICC-II)
+
 2003-11-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * ecos.db: Modified the e7t to use the new 39VFXXX flash driver

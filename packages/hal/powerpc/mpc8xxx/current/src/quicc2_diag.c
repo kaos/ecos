@@ -62,22 +62,6 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/mpc8xxx.h>            // Needed for IMMR structure
 
-struct cp_bufdesc {
-    volatile unsigned short ctrl;	/* status/control register */
-    volatile unsigned short length;	/* buffer length */
-    volatile char  	    *buffer;	/* buffer pointer */
-};
-
-// Buffer descriptor control bits
-#define _BD_CTL_Ready          0x8000  // Buffer contains data (tx) or is empty (rx)
-#define _BD_CTL_Wrap           0x2000  // Last buffer in list
-#define _BD_CTL_Int            0x1000  // Generate interrupt when empty (tx) or full (rx)
-#define _BD_CTL_Last           0x0800  // Last buffer in a sequence
-#define _BD_CTL_MASK           0xB000  // User settable bits
-
-#define SCCE_Rx 0x0001                 // Rx buffer interrupt
-#define SMCE_Rx 0x0001                 // Rx buffer interrupt
-
 #define PORT_IS_SMC 1
 #define PORT_IS_SCC 0
 

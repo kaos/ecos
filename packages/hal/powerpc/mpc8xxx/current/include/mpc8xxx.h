@@ -66,32 +66,6 @@
 #define DPRAM_SMC2_OFFSET 0x2100
 #define DPRAM_BD_OFFSET   0x2200
 
-/*--------------------------*/
-/* Buffer Descriptor Format */
-/*--------------------------*/
-
-typedef struct BufferDescriptor 
-
-{
-   CYG_WORD16  bd_cstatus;     /* control and status */
-   CYG_WORD16  bd_length;      /* transfer length */
-   volatile CYG_BYTE   *bd_addr;        /* buffer address */
-
-} BD;
-
-
-/*-------------------------------*/
-/* Buffer Descriptor Ring format */
-/*-------------------------------*/
-
-typedef struct BufferDescRings 
-
-{
-    BD RxBD;    /* Rx BD ring */
-    BD TxBD;    /* Tx BD ring */
-
-} BDRINGS;
-
 #define _Packed 
 #define _PackedType __attribute__((packed))
 
@@ -1363,6 +1337,29 @@ extern volatile t_PQ2IMM  *IMM;   /* IMM base pointer */
 
 
 #define  ALL_ONES    0xFFFF
+
+struct cp_bufdesc {
+    volatile unsigned short ctrl;	/* status/control register */
+    volatile unsigned short length;	/* buffer length */
+    volatile char  	    *buffer;	/* buffer pointer */
+};
+
+// Buffer descriptor control bits
+#define _BD_CTL_Ready          0x8000  // Buffer contains data (tx) or is empty (rx)
+#define _BD_CTL_Wrap           0x2000  // Last buffer in list
+#define _BD_CTL_Int            0x1000  // Generate interrupt when empty (tx) or full (rx)
+#define _BD_CTL_Last           0x0800  // Last buffer in a sequence
+#define _BD_CTL_MASK           0xB000  // User settable bits
+
+//
+// Event masks
+//
+#define SCCE_Bsy 0x0004                 // Rx error
+#define SCCE_Tx  0x0002                 // Tx buffer interrupt
+#define SCCE_Rx  0x0001                 // Rx buffer interrupt
+#define SMCE_Bsy 0x0004                 // Rx error
+#define SMCE_Tx  0x0002                 // Tx buffer interrupt
+#define SMCE_Rx  0x0001                 // Rx buffer interrupt
 
 //
 // Routines which help manage the CPM

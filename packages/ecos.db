@@ -918,6 +918,15 @@ package CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
     description       "PowerPC QUICC/SMC serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_POWERPC_MPC8XXX {
+    alias             { "PowerPC MPC8XXX (QUICC-II) serial device drivers"
+                        devs_serial_powerpc_mpc8xxx mpc8xxx_serial_driver }
+    hardware
+    directory	      devs/serial/powerpc/mpc8xxx
+    script	      ser_mpc8xxx.cdl	
+    description       "PowerPC MPC8XXX (QUICC-II) serial device drivers"
+}
+
 package CYGPKG_IO_SERIAL_POWERPC_QUICC2_SCC {
     alias             { "PowerPC VADS QUICC2/SCC serial device drivers"
                         devs_serial_quicc2_scc quicc2_scc_serial_driver
@@ -5177,6 +5186,7 @@ target rattler {
                           CYGPKG_DEVS_ETH_POWERPC_FCC
                           CYGPKG_DEVS_ETH_POWERPC_RATTLER
                           CYGPKG_DEVS_ETH_PHY
+                          CYGPKG_IO_SERIAL_POWERPC_MPC8XXX
         }
         description "
             The rattler target provides the packages needed to run
