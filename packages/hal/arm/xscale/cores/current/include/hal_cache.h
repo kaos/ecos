@@ -185,7 +185,7 @@ CYG_MACRO_END
 #define HAL_DCACHE_ENABLE()                                             \
 CYG_MACRO_START                                                         \
     asm volatile (                                                      \
-        "mrc  p15,0,r1,c7,c10,4;"   /* drain write buffer */            \
+        "mcr  p15,0,r1,c7,c10,4;"   /* drain write buffer */            \
         "mrc  p15,0,r1,c1,c0,0;"                                        \
         "orr  r1,r1,#0x0007;"  /* enable DCache (also ensures the */    \
                                /* MMU and alignment faults are    */    \

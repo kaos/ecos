@@ -1,3 +1,7 @@
+2004-09-23  Knud Woehler  <knud.woehler@microplex.de>
+
+	* include/hal_cache.h (HAL_DCACHE_ENABLE): Typo fixed.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_xscale.h: Add CYGARC_HAL_MMU_OFF_X.
