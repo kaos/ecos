@@ -301,7 +301,7 @@ _hal_hardware_init_done:
 
 #if !defined(CYG_HAL_STARTUP_ROM) && defined(CYGSEM_HAL_POWERPC_COPY_VECTORS)
         lwi     r3,rom_vectors-4
-        lwi     r4,(CYGHWR_HAL_POWERPC_VECTOR_BASE - 4)
+        lwi     r4,((CYGHWR_HAL_POWERPC_VECTOR_BASE)-4)
         lwi     r5,rom_vectors_end-4
 0:      lwzu    r0,4(r3)
         stwu    r0,4(r4)
