@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -60,7 +60,9 @@
 #include <fs/disk.h>
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
+#ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD
 #include <net/tftp_support.h>
+#endif
 #ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
 #include <net/http.h>
 #endif
@@ -679,7 +681,14 @@ do_load(int argc, char *argv[])
     } else {
         io_tab = (struct load_io_entry *)NULL;  // Default
 #ifdef CYGPKG_REDBOOT_NETWORKING
+#ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD
         io = &tftp_io;
+#elif CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+        io = &http_io;
+#else
+        io = &xyzModem_io;
+        verbose = false;
+#endif
 #else
         io = &xyzModem_io;
         verbose = false;

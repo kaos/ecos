@@ -1,3 +1,9 @@
+2003-03-28  Gary Thomas  <gary@mlbassoc.com>  inspired by
+2003-03-28  Jani Monoses <jani@iv.ro>	
+
+	* src/load.c: 
+	* cdl/redboot.cdl: Make TFTP download protocol optional.
+
 2003-03-20  Mark Salter  <msalter@redhat.com>
 
 	* include/flash_config.h (CONFIG_NETPORT): New config option.

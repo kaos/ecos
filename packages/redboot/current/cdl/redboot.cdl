@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002 Gary Thomas
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -214,7 +214,7 @@ cdl_package CYGPKG_REDBOOT {
             compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
             compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c
             compile net/net_io.c net/inet_addr.c
-            compile -library=libextras.a net/ping.c net/tftp_client.c 
+            compile -library=libextras.a net/ping.c
             description "This option includes networking support in RedBoot."
             define_proc {
                 puts $::cdl_system_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS 1"
@@ -226,6 +226,15 @@ cdl_package CYGPKG_REDBOOT {
                 default_value    0
                 description      "
                     This option is overriden by the configuration stored in flash."
+            }
+    
+            cdl_option CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD {
+                display          "Support TFTP for download"
+                flavor           bool
+                default_value    1
+                compile          -library=libextras.a net/tftp_client.c
+                description      "
+                    This option enables the use of the TFTP protocol for download"
             }
     
             cdl_option CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD {
