@@ -32,6 +32,7 @@
 #include <sys/socket.h>           // PF_xxx
 #include <netinet/in.h>           // IPPROTO_xx
 #include <net/netdb.h>
+#include <netdb.h>                // DNS support routines
 #include <errno.h>
 #include <cyg/infra/cyg_ass.h>
 
@@ -46,6 +47,8 @@ static int
 _getaddr(struct addrinfo *ai, const char *node, 
          const struct addrinfo *hints, int family, int port)
 {
+    struct hostent *_hent;
+
     switch (family) {
     case AF_INET:
     {
@@ -54,7 +57,6 @@ _getaddr(struct addrinfo *ai, const char *node,
         ai->ai_addr = (struct sockaddr *)sa;
         ai->ai_addrlen = sizeof(*sa);
         if (ai->ai_addr == (struct sockaddr *)NULL) {
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
             return EAI_MEMORY;
         }
         sa->sin_family = AF_INET;
@@ -67,10 +69,14 @@ _getaddr(struct addrinfo *ai, const char *node,
                 sa->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
             }
         } else {
-            // For now, only numeric "presentation" addresses supported
-            if (!inet_pton(AF_INET, (char *)node, (char *)&sa->sin_addr.s_addr)) {
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
-                return EAI_FAIL;  // Couldn't resolve name
+            _hent = gethostbyname(node);
+            if (_hent) {
+                memcpy(&sa->sin_addr.s_addr, _hent->h_addr, sizeof(struct in_addr));
+            } else {
+                // For now, only numeric "presentation" addresses supported
+                if (!inet_pton(AF_INET, (char *)node, (char *)&sa->sin_addr.s_addr)) {
+                    return EAI_FAIL;  // Couldn't resolve name
+                }
             }
         }
     }
@@ -83,7 +89,6 @@ _getaddr(struct addrinfo *ai, const char *node,
         ai->ai_addr = (struct sockaddr *)sa;
         ai->ai_addrlen = sizeof(*sa);
         if (ai->ai_addr == (struct sockaddr *)NULL) {
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
             return EAI_MEMORY;
         }
         sa->sin6_family = AF_INET6;
@@ -98,7 +103,6 @@ _getaddr(struct addrinfo *ai, const char *node,
         } else {
             // For now, only numeric "presentation" addresses supported
             if (!inet_pton(AF_INET6, (char *)node, (char *)&sa->sin6_addr)) {
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
                 return EAI_FAIL;  // Couldn't resolve name
             }
         }
@@ -130,7 +134,6 @@ getaddrinfo(const char *nodename, const char *servname,
     }
     // Prevalidate parameters
     if ((nodename == (char *)NULL) && (servname == (char *)NULL)) {
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
         return EAI_NONAME;
     }
     switch (hints->ai_family) {
@@ -144,13 +147,11 @@ getaddrinfo(const char *nodename, const char *servname,
         break;
 #endif
     default:
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
         return EAI_FAMILY;
     }
     // Allocate the first/primary result
     *res = ai = (struct addrinfo *)calloc(1, sizeof(struct addrinfo));
     if (ai == (struct addrinfo *)NULL) {
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
         return EAI_MEMORY;
     }
     // Handle request
@@ -171,16 +172,14 @@ getaddrinfo(const char *nodename, const char *servname,
             break;
         default:
             freeaddrinfo(ai);
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
             return EAI_SOCKTYPE;
         }
         // See if this is just a port #
-        if ((port = strtol(servname, 0, 0)) > 0) {
+        if ((port = strtol(servname, 0, 0)) >= 0) {
             ai->ai_socktype = hints->ai_socktype;
             if (hints->ai_socktype == 0) {
                 // Need to have complete binding type/port
                 freeaddrinfo(ai);
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
                 return EAI_SERVICE;
             }
         } else {
@@ -195,7 +194,6 @@ getaddrinfo(const char *nodename, const char *servname,
             }
             if (serv == (struct servent *)NULL) {
                 freeaddrinfo(ai);
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
                 return EAI_SERVICE;
             }
             port = ntohs(serv->s_port);      
@@ -203,7 +201,6 @@ getaddrinfo(const char *nodename, const char *servname,
         proto = getprotobyname(protoname);
         if (hints->ai_protocol && (hints->ai_protocol != proto->p_proto)) {
             freeaddrinfo(ai);
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
             return EAI_SOCKTYPE;
         }
         ai->ai_protocol = proto->p_proto;
@@ -222,7 +219,6 @@ getaddrinfo(const char *nodename, const char *servname,
         struct addrinfo *nai = (struct addrinfo *)calloc(1, sizeof(struct addrinfo));
         if (nai == (struct addrinfo *)NULL) {
             freeaddrinfo(ai);
-            diag_printf("Error at %s.%d\n", __FUNCTION__, __LINE__);
             return EAI_MEMORY;
         }
         ai->ai_next = nai;
