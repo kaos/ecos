@@ -83,16 +83,16 @@ void cyg_mempool_var_create(
     cyg_int32       size,               /* size of memory in bytes        */
     cyg_handle_t    *handle,            /* returned handle of memory pool */
     cyg_mempool_var *var                /* space to put pool structure in */
-    );
+    ) __THROW;
 
 /* Delete variable size memory pool */
-void cyg_mempool_var_delete(cyg_handle_t varpool);
+void cyg_mempool_var_delete(cyg_handle_t varpool) __THROW;
 
 #ifdef CYGSEM_MEMALLOC_ALLOCATOR_VARIABLE_THREADAWARE
 
 /* Allocates a block of length size.  This waits if the memory is not
    currently available.  */
-void *cyg_mempool_var_alloc(cyg_handle_t varpool, cyg_int32 size);
+void *cyg_mempool_var_alloc(cyg_handle_t varpool, cyg_int32 size) __THROW;
 
 # ifdef CYGFUN_KERNEL_THREADS_TIMER
 
@@ -102,7 +102,7 @@ void *cyg_mempool_var_alloc(cyg_handle_t varpool, cyg_int32 size);
 void *cyg_mempool_var_timed_alloc(
     cyg_handle_t     varpool,
     cyg_int32        size,
-    cyg_tick_count_t abstime);
+    cyg_tick_count_t abstime) __THROW;
 
 # endif
 #endif
@@ -111,14 +111,14 @@ void *cyg_mempool_var_timed_alloc(
    available. */
 void *cyg_mempool_var_try_alloc(
     cyg_handle_t varpool,
-    cyg_int32    size);
+    cyg_int32    size) __THROW;
 
 /* Frees memory back into variable size pool. */
-void cyg_mempool_var_free(cyg_handle_t varpool, void *p);
+void cyg_mempool_var_free(cyg_handle_t varpool, void *p) __THROW;
 
 /* Returns true if there are any threads waiting for memory in the
    given memory pool. */
-cyg_bool_t cyg_mempool_var_waiting(cyg_handle_t varpool);
+cyg_bool_t cyg_mempool_var_waiting(cyg_handle_t varpool) __THROW;
 
 typedef struct {
     cyg_int32 totalmem;
@@ -131,7 +131,7 @@ typedef struct {
 
 /* Puts information about a variable memory pool into the structure
    provided. */
-void cyg_mempool_var_get_info(cyg_handle_t varpool, cyg_mempool_info *info);
+void cyg_mempool_var_get_info(cyg_handle_t varpool, cyg_mempool_info *info) __THROW;
 
 /* Create a fixed size memory pool */
 void cyg_mempool_fix_create(
@@ -140,15 +140,15 @@ void cyg_mempool_fix_create(
     cyg_int32       blocksize,          // size of allocation in bytes
     cyg_handle_t    *handle,            // handle of memory pool
     cyg_mempool_fix *fix                // space to put pool structure in
-    );
+    ) __THROW;
 
 /* Delete fixed size memory pool */
-void cyg_mempool_fix_delete(cyg_handle_t fixpool);
+void cyg_mempool_fix_delete(cyg_handle_t fixpool) __THROW;
 
 #ifdef CYGSEM_MEMALLOC_ALLOCATOR_FIXED_THREADAWARE
 /* Allocates a block.  This waits if the memory is not
    currently available.  */
-void *cyg_mempool_fix_alloc(cyg_handle_t fixpool);
+void *cyg_mempool_fix_alloc(cyg_handle_t fixpool) __THROW;
 
 # ifdef CYGFUN_KERNEL_THREADS_TIMER
 
@@ -157,24 +157,24 @@ void *cyg_mempool_fix_alloc(cyg_handle_t fixpool);
    available. */
 void *cyg_mempool_fix_timed_alloc(
     cyg_handle_t     fixpool,
-    cyg_tick_count_t abstime);
+    cyg_tick_count_t abstime) __THROW;
 
 # endif
 #endif
 
 /* Allocates a block.  NULL is returned if no memory is available. */
-void *cyg_mempool_fix_try_alloc(cyg_handle_t fixpool);
+void *cyg_mempool_fix_try_alloc(cyg_handle_t fixpool) __THROW;
 
 /* Frees memory back into fixed size pool. */
-void cyg_mempool_fix_free(cyg_handle_t fixpool, void *p);
+void cyg_mempool_fix_free(cyg_handle_t fixpool, void *p) __THROW;
 
 /* Returns true if there are any threads waiting for memory in the
    given memory pool. */
-cyg_bool_t cyg_mempool_fix_waiting(cyg_handle_t fixpool);
+cyg_bool_t cyg_mempool_fix_waiting(cyg_handle_t fixpool) __THROW;
 
 /* Puts information about a variable memory pool into the structure
    provided. */
-void cyg_mempool_fix_get_info(cyg_handle_t fixpool, cyg_mempool_info *info);
+void cyg_mempool_fix_get_info(cyg_handle_t fixpool, cyg_mempool_info *info) __THROW;
 
 
 
