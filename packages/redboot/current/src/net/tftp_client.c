@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -191,12 +191,13 @@ tftp_stream_read(char *buf,
                 // Out of data
                 break;
             }
-            timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
+            timeout.tv_sec = (tftp_stream.last_good_block == 0) ? 10*TFTP_TIMEOUT_PERIOD : TFTP_TIMEOUT_PERIOD;
             timeout.tv_usec = 0;
             recv_len = sizeof(tftp_stream.data);
             if ((data_len = __udp_recvfrom(&tftp_stream.data[0], recv_len, &tftp_stream.from_addr, 
                                            &tftp_stream.local_addr,  &timeout)) < 0) {
                 // No data, try again
+                diag_printf("TFTP timed out %d/%d\n", tftp_stream.total_timeouts+1, TFTP_TIMEOUT_MAX);
                 if ((++tftp_stream.total_timeouts > TFTP_TIMEOUT_MAX) || 
                     (tftp_stream.last_good_block == 0)) {
                     // Timeout - no data received

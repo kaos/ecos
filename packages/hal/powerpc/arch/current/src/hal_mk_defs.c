@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -156,6 +157,9 @@ main(void)
     // Variant definitions - want these to be included instead.
 #ifdef CYGARC_VARIANT_DEFS
     CYGARC_VARIANT_DEFS
+#endif
+#ifdef CYGARC_PLATFORM_DEFS
+    CYGARC_PLATFORM_DEFS
 #endif
 
     // Memory layout values (since these aren't "asm"-safe)

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -59,6 +60,14 @@
 
 extern void hal_platform_IRQ_init(void);
 
+//
+// Sadly, the IBM PPC40x family of devices are only related by number
+// and not always by functionality.  In particular, the 403 has a
+// completely different interrupt controller than the 405.  For now
+// at least, these differences are controlled by CDL within this file.
+//
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_403)
 
 static cyg_uint32 exier_mask[] = {
     0x00000000, // Unused
@@ -295,6 +304,186 @@ externC void
 hal_ppc40x_interrupt_set_level(int vector, int level)
 {
 }
+#endif // CYGHWR_HAL_POWERPC_PPC4XX_403
+
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+
+cyg_uint32 _hold_tcr = 0;  // Shadow of hardware register
+
+externC void
+hal_variant_IRQ_init(void)
+{
+#ifndef HAL_PLF_INTERRUPT_INIT
+    // Ensure all interrupts masked (disabled) & cleared
+    CYGARC_MTDCR(DCR_UIC0_ER, 0);
+    CYGARC_MTDCR(DCR_UIC0_CR, 0);
+    CYGARC_MTDCR(DCR_UIC0_PR, 0xFFFFE000);
+    CYGARC_MTDCR(DCR_UIC0_TR, 0);
+    CYGARC_MTDCR(DCR_UIC0_VCR, 0);  // Makes vector identification easy
+    CYGARC_MTDCR(DCR_UIC0_SR, 0xFFFFFFFF);
+#else
+    HAL_PLF_INTERRUPT_INIT();
+#endif
+
+    // Disable timers
+    CYGARC_MTSPR(SPR_TCR, 0);
+
+    // Let the platform do any overrides
+    hal_platform_IRQ_init();
+}
+
+externC void 
+hal_ppc40x_interrupt_mask(int vector)
+{
+    cyg_uint32 exier, tcr;
+
+    switch (vector) {
+    case CYGNUM_HAL_INTERRUPT_first...CYGNUM_HAL_INTERRUPT_last:
+#ifndef HAL_PLF_INTERRUPT_MASK
+        CYGARC_MFDCR(DCR_UIC0_ER, exier);
+        exier &= ~(1<<(31-(vector-CYGNUM_HAL_INTERRUPT_405_BASE)));
+        CYGARC_MTDCR(DCR_UIC0_ER, exier);
+#else
+        HAL_PLF_INTERRUPT_MASK(vector);
+#endif
+        break;
+    case CYGNUM_HAL_INTERRUPT_VAR_TIMER:
+        CYGARC_MFSPR(SPR_TCR, tcr);
+        tcr = _hold_tcr;
+        tcr &= ~TCR_PIE;
+        CYGARC_MTSPR(SPR_TCR, tcr);
+        _hold_tcr = tcr;
+        break;
+    case CYGNUM_HAL_INTERRUPT_FIXED_TIMER:
+        CYGARC_MFSPR(SPR_TCR, tcr);
+        tcr = _hold_tcr;
+        tcr &= ~TCR_FIE;
+        CYGARC_MTSPR(SPR_TCR, tcr);
+        _hold_tcr = tcr;
+        break;
+    case CYGNUM_HAL_INTERRUPT_WATCHDOG_TIMER:
+        CYGARC_MFSPR(SPR_TCR, tcr);
+        tcr = _hold_tcr;
+        tcr &= ~TCR_WIE;
+        CYGARC_MTSPR(SPR_TCR, tcr);
+        _hold_tcr = tcr;
+        break;
+    default:
+    }
+}
+
+externC void 
+hal_ppc40x_interrupt_unmask(int vector)
+{
+    cyg_uint32 exier, tcr;
+
+    switch (vector) {
+    case CYGNUM_HAL_INTERRUPT_first...CYGNUM_HAL_INTERRUPT_last:
+#ifndef HAL_PLF_INTERRUPT_UNMASK
+        CYGARC_MFDCR(DCR_UIC0_ER, exier);
+        exier |= (1<<(31-(vector-CYGNUM_HAL_INTERRUPT_405_BASE)));
+        CYGARC_MTDCR(DCR_UIC0_ER, exier);
+#else
+        HAL_PLF_INTERRUPT_UNMASK(vector);
+#endif
+        break;
+    case CYGNUM_HAL_INTERRUPT_VAR_TIMER:
+        CYGARC_MFSPR(SPR_TCR, tcr);
+        tcr = _hold_tcr;
+        tcr |= TCR_PIE;
+        CYGARC_MTSPR(SPR_TCR, tcr);
+        _hold_tcr = tcr;
+        break;
+    case CYGNUM_HAL_INTERRUPT_FIXED_TIMER:
+        CYGARC_MFSPR(SPR_TCR, tcr);
+        tcr = _hold_tcr;
+        tcr |= TCR_FIE;
+        CYGARC_MTSPR(SPR_TCR, tcr);
+        _hold_tcr = tcr;
+        break;
+    case CYGNUM_HAL_INTERRUPT_WATCHDOG_TIMER:
+        CYGARC_MFSPR(SPR_TCR, tcr);
+        tcr = _hold_tcr;
+        tcr |= TCR_WIE;
+        CYGARC_MTSPR(SPR_TCR, tcr);
+        _hold_tcr = tcr;
+        break;
+    default:
+    }
+}
+
+externC void 
+hal_ppc40x_interrupt_acknowledge(int vector)
+{
+    switch (vector) {
+    case CYGNUM_HAL_INTERRUPT_first...CYGNUM_HAL_INTERRUPT_last:
+#ifndef HAL_PLF_INTERRUPT_ACKNOWLEDGE
+        CYGARC_MTDCR(DCR_UIC0_SR, (1<<(31-(vector-CYGNUM_HAL_INTERRUPT_405_BASE))));
+#else
+        HAL_PLF_INTERRUPT_ACKNOWLEDGE(vector);
+#endif
+        break;
+    case CYGNUM_HAL_INTERRUPT_VAR_TIMER:
+        CYGARC_MTSPR(SPR_TSR, TSR_PIS);  // clear & acknowledge interrupt
+        break;
+    case CYGNUM_HAL_INTERRUPT_FIXED_TIMER:
+        CYGARC_MTSPR(SPR_TSR, TSR_FIS);  // clear & acknowledge interrupt
+        break;
+    case CYGNUM_HAL_INTERRUPT_WATCHDOG_TIMER:
+        CYGARC_MTSPR(SPR_TSR, TSR_WIS);  // clear & acknowledge interrupt
+        break;
+    default:
+    }
+}
+
+// Note: These functions are only [well] defined for "external" interrupts
+externC void 
+hal_ppc40x_interrupt_configure(int vector, int level, int dir)
+{
+#ifndef HAL_PLF_INTERRUPT_CONFIGURE
+    cyg_uint32 mask, new_state, iocr;
+
+    if ((vector >= CYGNUM_HAL_INTERRUPT_IRQ0) &&
+        (vector <= CYGNUM_HAL_INTERRUPT_IRQ6)) {
+        mask = (1<<(31-(vector-CYGNUM_HAL_INTERRUPT_405_BASE)));
+        // Set polarity
+        if (dir) {
+            // High true
+            new_state = mask;
+        } else {
+            // Low true
+            new_state = 0;
+        }
+        CYGARC_MFDCR(DCR_UIC0_PR, iocr);
+        iocr = (iocr & ~mask) | new_state;
+        CYGARC_MTDCR(DCR_UIC0_PR, iocr);
+        // Set edge/level
+        if (level == 0) {
+            // Edge triggered
+            new_state = mask;
+        } else {
+            // Level triggered
+            new_state = 0;
+        }
+        CYGARC_MFDCR(DCR_UIC0_TR, iocr);
+        iocr = (iocr & ~mask) | new_state;
+        CYGARC_MTDCR(DCR_UIC0_TR, iocr);
+    }
+#else
+    HAL_PLF_INTERRUPT_CONFIGURE(vector, level, dir);
+#endif
+}
+
+externC void 
+hal_ppc40x_interrupt_set_level(int vector, int level)
+{
+#ifndef HAL_PLF_INTERRUPT_SET_LEVEL
+    // Nothing to do for UIC
+#else
+    HAL_PLF_INTERRUPT_SET_LEVEL(vector, level);
+#endif
+}
+#endif // CYGHWR_HAL_POWERPC_PPC4XX_405
 
 // -------------------------------------------------------------------------
 // EOF var_intr.c

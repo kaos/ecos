@@ -1,3 +1,10 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* ecos.db: 
+	New platform - TAMS MOAB (PowerPC 405GPr)
+	New NAND FLASH drivers - Toshiba 58CXXX
+	New RTC driver - Dallas DS1307
+
 2003-08-22  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
 	* ecos.db: Add new VNC server package.

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -104,6 +105,7 @@ void wallclock_thread( CYG_ADDRWORD id )
     cyg_uint32 base;
     cyg_uint32 wtime;
     cyg_tick_count ticks;
+    cyg_bool ok = true;
 
     CYG_TEST_INFO("Testing accuracy of wallclock (10 seconds silence)");
 
@@ -128,7 +130,7 @@ void wallclock_thread( CYG_ADDRWORD id )
         if(wtime != base+i)
         {
             diag_printf("offset %d, read %d, expected %d\n", i, wtime, base+i);
-            CYG_TEST_FAIL_FINISH( "Clock out of sync" );
+            ok = false;
         }
 
         // then calculate how much the above took so the delay
@@ -172,7 +174,10 @@ void wallclock_thread( CYG_ADDRWORD id )
         }
     }
 
-    CYG_TEST_PASS_FINISH("Wallclock OK");
+    if (ok)
+        CYG_TEST_PASS_FINISH("Wallclock OK");
+    else
+        CYG_TEST_FAIL_FINISH( "Clock out of sync" );
     
 }
 

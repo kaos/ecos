@@ -1,3 +1,8 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/wallclock.cxx: Allow test to complete, even if it looses sync.
+	This is useful to determine how much drift is present.
+
 2003-03-25  Michael Checky <Michael_Checky@Thermoking.com>
 
 	* include/wallclock/wallclock.inl: Added parens to TO_BCD() and TO_DEC()

@@ -138,10 +138,24 @@ cdl_package CYGPKG_REDBOOT {
               to list previous commands. Also enables history expansion via '!'
               character similar to bash shell."
         }
+
+        cdl_option CYGBLD_REDBOOT_MAX_MEM_SEGMENTS {
+            display        "Number of unique RAM segments on platform"
+            flavor         data
+            default_value  1
+            description  "
+              Change this option to be the number of memory segments which are
+              supported by the platform.  If the value is greater than 1, then
+              a platform specific function must provide information about the
+              additional segments."
+        }
     
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
             display       "Include support gzip/zlib decompression"
             active_if     CYGPKG_COMPRESS_ZLIB
+## FIXME!
+            requires      { !CYGSEM_IO_FLASH_READ_INDIRECT }
+## FIXME!
             no_define
             default_value 1
             implements    CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC
@@ -425,6 +439,18 @@ cdl_package CYGPKG_REDBOOT {
               and query the baud rate on the selected console."     
         }
     
+        cdl_option CYGSEM_REDBOOT_PLF_STARTUP {
+            display       "Run a platform specific startup function."
+            flavor        bool
+            default_value 0
+            description   "
+              If this option is enabled then RedBoot will execute a platform
+              specific startup function before entering into its command line
+              processing.  This allows the platform to perform any special
+              setups before RedBoot actually starts running.  Note: the entire
+              RedBoot environment will already be initialized at this point."
+        }
+    
         cdl_option CYGPKG_REDBOOT_MAX_CMD_LINE {
             display       "Maximum command line length"
             flavor        data
@@ -485,39 +511,6 @@ cdl_package CYGPKG_REDBOOT {
               to manage images in FLASH memory.  These images can be loaded
               into memory for execution or executed in place."
             compile -library=libextras.a flash.c
-    
-            cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
-                display       "Minimum image size"
-                flavor        data
-                default_value 0x20000
-                description "
-                  This option controls the minimum length of images kept by
-                  the FIS.  In particular, it should be large enough to hold
-                  the RedBoot primary image itself, as well as be a natural
-                  multiple of the FLASH erase block size."
-            }
-    
-            cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
-                display       "Offset from start of FLASH to RedBoot boot image"
-                flavor        data
-                default_value CYGNUM_REDBOOT_FLASH_RESERVED_BASE
-                requires      { CYGNUM_REDBOOT_FLASH_RESERVED_BASE <= \
-                                CYGBLD_REDBOOT_FLASH_BOOT_OFFSET }
-                description "
-                  This option controls where the RedBoot boot image is located
-                  relative to the start of FLASH."
-            }
-    
-            cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_BASE {
-                display       "Size of reserved area at start of FLASH"
-                flavor        data
-                default_value 0
-                description "
-                  This option reserves an area at the start of FLASH where RedBoot
-                  will never interfere; it is expected that this area contains
-                  (non-RedBoot-based) POST code or some other boot monitor that
-                  executes before RedBoot."
-            }
     
             cdl_option CYGOPT_REDBOOT_FIS {
                 display         "RedBoot Flash Image System support"
@@ -628,89 +621,38 @@ cdl_package CYGPKG_REDBOOT {
                       to reduce this value in order to get more slots in
                       the FIS directory."
                 }
-            }
     
-            cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
-                display       "Keep RedBoot configuration data in FLASH"
-                flavor        bool
-                default_value 1
-                description "
-                  When this option is enabled, RedBoot will keep configuration
-                  data in a separate block of FLASH memory.  This data will
-                  include such items as the node IP address or startup scripts."
-    
-                cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_SIZE {
-                    display       "Length of configuration data in FLASH"
+                cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
+                    display       "Minimum image size"
                     flavor        data
-                    default_value 4096
+                    default_value 0x20000
                     description "
-                      This option is used to control the amount of memory and FLASH
-                      to be used for configuration options (persistent storage)."
+                      This option controls the minimum length of images kept by
+                      the FIS.  In particular, it should be large enough to hold
+                      the RedBoot primary image itself, as well as be a natural
+                      multiple of the FLASH erase block size."
                 }
-    
-                cdl_option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG {
-                    display       "Merged config data and FIS directory"
-                    flavor        bool              
-                    active_if     CYGOPT_REDBOOT_FIS
+        
+                cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
+                    display       "Offset from start of FLASH to RedBoot boot image"
+                    flavor        data
+                    default_value CYGNUM_REDBOOT_FLASH_RESERVED_BASE
+                    requires      { CYGNUM_REDBOOT_FLASH_RESERVED_BASE <= \
+                                    CYGBLD_REDBOOT_FLASH_BOOT_OFFSET }
+                    description "
+                      This option controls where the RedBoot boot image is located
+                      relative to the start of FLASH."
+                }
+        
+                cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_BASE {
+                    display       "Size of reserved area at start of FLASH"
+                    flavor        data
                     default_value 0
                     description "
-                      If this option is set, then the FIS directory and FLASH 
-                      configuration database will be stored in the same physical
-                      FLASH block."
-                }
-    
-                cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK {
-                    display       "Which block of flash to use" 
-                    flavor         data
-                    default_value  (-2)
-                    description "
-                      Which block of flash should hold the configuration 
-                      information. Positive numbers are absolute block numbers. 
-                      Negative block numbers count backwards from the last block.
-                      eg 2 means block 2, -2 means the last but one block."
-                }
-    
-                cdl_option CYGSEM_REDBOOT_FLASH_ALIASES {
-                    display       "Support simple macros/aliases in FLASH"
-                    flavor        bool
-                    default_value 1
-                    description "
-                      This option is used to allow support for simple text-based
-                      macros (aliases).  These aliases are kept in the FLASH
-                      configuration data (persistent storage)."
-                }
-    
-                cdl_option CYGNUM_REDBOOT_FLASH_STRING_SIZE {
-                    display       "Length of strings in FLASH configuration data"
-                    flavor        data
-                    default_value 128
-                    description "
-                      This option is used to control the amount of memory and FLASH
-                      to be used for string configuration options (persistent storage)."
-                }
-    
-                cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE {
-                    display       "Length of configuration script(s) in FLASH"
-                    flavor        data
-                    default_value 512
-                    description "
-                      This option is used to control the amount of memory and FLASH
-                      to be used for configuration options (persistent storage)."
-                }
-    
-                cdl_option CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK {
-                    display       "Fallback to read-only FLASH configuration"
-                    flavor        bool
-                    default_value 1
-                    description "
-                      This option will cause the configuration information to
-                      revert to the readonly information stored in the FLASH.
-                      The option only takes effect after 
-                        1) the config_ok flag has been set to be true,
-                           indicating that at one time the copy in RAM was valid;
-                      and
-                        2) the information in RAM has been verified to be invalid"
-                      
+                      This option reserves an area at the start of FLASH where RedBoot
+                      will never interfere; it is expected that this area contains
+                      (non-RedBoot-based) POST code or some other boot monitor that
+                      executes before RedBoot."
                 }
             }
     
@@ -750,6 +692,104 @@ cdl_package CYGPKG_REDBOOT {
                 description "
                   This option is used to interpret ARM Flash System information
                   blocks."
+            }
+        }
+    
+        cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
+            display       "Keep RedBoot configuration data in FLASH"
+            flavor        bool
+            default_value 1
+            compile       fconfig.c
+            description "
+              When this option is enabled, RedBoot will keep configuration
+              data in a separate block of FLASH memory.  This data will
+              include such items as the node IP address or startup scripts."
+
+            cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_SIZE {
+                display       "Length of configuration data in FLASH"
+                flavor        data
+                default_value 4096
+                description "
+                  This option is used to control the amount of memory and FLASH
+                  to be used for configuration options (persistent storage)."
+            }
+
+            cdl_option CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA {
+                display       "Style of media used for persistent data storage"
+                flavor        data
+                legal_values  { "FLASH" "EEPROM" }
+                default_value { "FLASH" }
+#                requires      { ((CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") && CYGOPT_REDBOOT_FIS) ||
+#                                ((CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "EEPROM") && !CYGOPT_REDBOOT_FIS) }
+                description "
+                  Persistent data storage can either be held in 'norma' FLASH
+                  or some other device (represented by the 'EEPROM' choice).
+                  The different styles utilize different access methods."
+            }
+
+            cdl_option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG {
+                display       "Merged config data and FIS directory"
+                flavor        bool              
+                active_if     { CYGOPT_REDBOOT_FIS && (CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") }
+                default_value 0
+                description "
+                  If this option is set, then the FIS directory and FLASH 
+                  configuration database will be stored in the same physical
+                  FLASH block."
+            }
+
+            cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK {
+                display       "Which block of flash to use" 
+                flavor         data
+                default_value  (-2)
+                description "
+                  Which block of flash should hold the configuration 
+                  information. Positive numbers are absolute block numbers. 
+                  Negative block numbers count backwards from the last block.
+                  eg 2 means block 2, -2 means the last but one block."
+            }
+
+            cdl_option CYGSEM_REDBOOT_FLASH_ALIASES {
+                display       "Support simple macros/aliases in FLASH"
+                flavor        bool
+                default_value 1
+                description "
+                  This option is used to allow support for simple text-based
+                  macros (aliases).  These aliases are kept in the FLASH
+                  configuration data (persistent storage)."
+            }
+
+            cdl_option CYGNUM_REDBOOT_FLASH_STRING_SIZE {
+                display       "Length of strings in FLASH configuration data"
+                flavor        data
+                default_value 128
+                description "
+                  This option is used to control the amount of memory and FLASH
+                  to be used for string configuration options (persistent storage)."
+            }
+
+            cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE {
+                display       "Length of configuration script(s) in FLASH"
+                flavor        data
+                default_value 512
+                description "
+                  This option is used to control the amount of memory and FLASH
+                  to be used for configuration options (persistent storage)."
+            }
+
+            cdl_option CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK {
+                display       "Fallback to read-only FLASH configuration"
+                flavor        bool
+                default_value { (CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") }
+                description "
+                  This option will cause the configuration information to
+                  revert to the readonly information stored in the FLASH.
+                  The option only takes effect after 
+                    1) the config_ok flag has been set to be true,
+                       indicating that at one time the copy in RAM was valid;
+                  and
+                    2) the information in RAM has been verified to be invalid"
+                  
             }
         }
     
@@ -854,6 +894,16 @@ cdl_package CYGPKG_REDBOOT {
                   This option is used to set the default timeout for startup
                   scripts, when they are enabled."
             }
+        }
+    
+        cdl_option CYGSEM_REDBOOT_RTC {
+            display      "Support RTC for time & date functions"
+            active_if    { CYGPKG_IO_WALLCLOCK }
+            default_value 1
+            description  "
+              When this option is enabled, RedBoot will support commands to
+              query and set the real time clock (time and date)"
+            compile -library=libextras.a time_date.cxx
         }
     
         cdl_option CYGPRI_REDBOOT_ROM_MONITOR {

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -68,10 +69,10 @@ static char *
 lookup_alias(char *alias, char *alias_buf)
 {
     if (0 == strcasecmp("FREEMEMLO", alias)) {
-        diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)user_ram_start + 0x03ff) & ~0x03ff);
+        diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)mem_segments[0].start + 0x03ff) & ~0x03ff);
         return alias_buf;
     } else if (0 == strcasecmp("FREEMEMHI", alias)) {
-        diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)user_ram_end) & ~0x03ff);
+        diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)mem_segments[0].end) & ~0x03ff);
         return alias_buf;
     }
 

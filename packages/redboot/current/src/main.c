@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -142,10 +142,25 @@ extern struct idle_tab_entry __RedBoot_IDLE_TAB__[], __RedBoot_IDLE_TAB_END__;
 extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
 #endif
 
+// 
+// [Null] Builtin [Power On] Self Test
+//
+void bist(void) CYGBLD_ATTRIB_WEAK;
 
+void
+bist(void) 
+{
+}
+
+//
+// 'version' command
+//
 void
 do_version(int argc, char *argv[])
 {
+#if CYGBLD_REDBOOT_MAX_MEM_SEGMENTS > 1
+    int seg;
+#endif
 #ifdef CYGPKG_REDBOOT_FLASH
     externC void _flash_info(void);
 #endif
@@ -156,14 +171,26 @@ do_version(int argc, char *argv[])
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
     diag_printf("Copyright (C) 2000, 2001, 2002, Red Hat, Inc.\n\n");
-    diag_printf("RAM: %p-%p, %p-%p available\n", 
-                (void*)ram_start, (void*)ram_end,
-                (void*)user_ram_start, (void *)user_ram_end);
+    diag_printf("RAM: %p-%p, ", (void*)ram_start, (void*)ram_end);
+    diag_printf("[%p-%p]", mem_segments[0].start, mem_segments[0].end);
+#if CYGBLD_REDBOOT_MAX_MEM_SEGMENTS > 1
+    for (seg = 1;  seg < CYGBLD_REDBOOT_MAX_MEM_SEGMENTS;  seg++) {
+        if (mem_segments[seg].start != NO_MEMORY) {
+            diag_printf("[%p-%p]", mem_segments[seg].start, mem_segments[seg].end);
+        }
+    }
+#endif
+    diag_printf(" available\n");
 #ifdef CYGPKG_REDBOOT_FLASH
     _flash_info();
 #endif
 }
 
+//
+// This function is called when RedBoot is idle (waiting for user
+// input).  It will call any registered "idle" routines, e.g. scan
+// for incoming network connections, blank an LCD screen, etc.
+//
 void
 do_idle(bool is_idle)
 {
@@ -199,6 +226,9 @@ cyg_start(void)
     int cur;
     struct init_tab_entry *init_entry;
     extern char RedBoot_version[];
+#if CYGBLD_REDBOOT_MAX_MEM_SEGMENTS > 1
+    int seg;
+#endif
 
     // Export version information
     CYGACC_CALL_IF_MONITOR_VERSION_SET(RedBoot_version);
@@ -245,6 +275,9 @@ cyg_start(void)
         workspace_size = workspace_end - workspace_start;
     }
 
+    // Nothing has ever been loaded into memory
+    entry_address = NO_MEMORY;
+
     bist();
 
 #ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
@@ -256,9 +289,17 @@ cyg_start(void)
         (*init_entry->fun)();
     }
 
-    user_ram_start = workspace_start;
-    user_ram_end = workspace_end;
+    mem_segments[0].start = workspace_start;
+    mem_segments[0].end = workspace_end;
+#if CYGBLD_REDBOOT_MAX_MEM_SEGMENTS > 1
+    for (seg = 1;  seg < CYGBLD_REDBOOT_MAX_MEM_SEGMENTS;  seg++) {
+        cyg_plf_memory_segment(seg, &mem_segments[seg].start, &mem_segments[seg].end);
+    }
+#endif
 
+#ifdef CYGSEM_REDBOOT_PLF_STARTUP
+    cyg_plf_redboot_startup();
+#endif
     do_version(0,0);
 
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
@@ -435,6 +476,11 @@ return_to_redboot(int status)
     CYGARC_HAL_RESTORE_GP();
 }
 
+#if 0
+externC _get_cache_contents(unsigned char *buf);
+unsigned char _hold_cache_contents[2][256*2*8];
+#endif
+
 void
 do_go(int argc, char *argv[])
 {
@@ -464,6 +510,10 @@ do_go(int argc, char *argv[])
 #endif
     if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
     {
+        return;
+    }
+    if (entry == (unsigned long)NO_MEMORY) {
+        diag_printf("No entry point known - aborted\n");
         return;
     }
     if (wait_time_set) {
@@ -504,6 +554,9 @@ do_go(int argc, char *argv[])
 #endif
 	
     HAL_DISABLE_INTERRUPTS(oldints);
+#if 0
+    _get_cache_contents(CYGARC_UNCACHED_ADDRESS(&_hold_cache_contents[0][0]));
+#endif
     HAL_DCACHE_SYNC();
     if (!cache_enabled) {
 	HAL_ICACHE_DISABLE();
@@ -512,7 +565,13 @@ do_go(int argc, char *argv[])
     }
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
-
+#if 0
+    _get_cache_contents(CYGARC_UNCACHED_ADDRESS(&_hold_cache_contents[1][0]));
+    diag_printf("Cache before flush/invalidate\n");
+    diag_dump_buf(&_hold_cache_contents[0][0], sizeof(_hold_cache_contents[0]));
+    diag_printf("Cache after flush/invalidate\n");
+    diag_dump_buf(&_hold_cache_contents[1][0], sizeof(_hold_cache_contents[1]));
+#endif
     // set up a temporary context that will take us to the trampoline
     HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end, entry, trampoline, 0);
 
@@ -659,12 +718,20 @@ do_baud_rate(int argc, char *argv[])
 }
 #endif
 
-// 
-// [Null] Builtin [Power On] Self Test
 //
-void bist(void) CYGBLD_ATTRIB_WEAK;
-
-void
-bist(void) 
+// Validate an address to see if it is within any known RAM area
+//
+bool
+valid_address(unsigned char *addr)
 {
+    int seg;
+
+    for (seg = 0;  seg < CYGBLD_REDBOOT_MAX_MEM_SEGMENTS;  seg++) {
+        if (mem_segments[seg].start != NO_MEMORY) {
+            if ((addr >= mem_segments[seg].start) && (addr < mem_segments[seg].end)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -210,16 +211,18 @@ flash_erase(void *addr, int len, void **err_addr)
         end_addr = (unsigned short *) ((CYG_ADDRESS) flash_info.end - 1);
     }
 
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
+#endif
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(block, end_addr);
     while (block < end_addr) {
         // Supply the blocksize for a gross check for erase success
+#if !defined(CYGSEM_IO_FLASH_READ_INDIRECT)
         int i;
         unsigned char *dp;
         bool erased = true;
-        unsigned short *tmp_block;
 
         dp = (unsigned char *)block;
         for (i = 0;  i < flash_info.block_size;  i++) {
@@ -228,6 +231,11 @@ flash_erase(void *addr, int len, void **err_addr)
                 break;
             }
         }
+#else
+        bool erased = false;
+#endif
+        unsigned short *tmp_block;
+
         if (!erased) {
             stat = (*_flash_erase_block)(block, flash_info.block_size);
             stat = flash_hwr_map_error(stat);
@@ -246,11 +254,15 @@ flash_erase(void *addr, int len, void **err_addr)
         else{
             block = tmp_block;
         }
+#ifdef CYGSEM_IO_FLASH_CHATTER
         (*flash_info.pf)(".");
+#endif
     }
     FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("\n");
+#endif
     return (stat);
 }
 
@@ -291,8 +303,10 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     }
 #endif
 
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("... Program from %p-%p at %p: ", (void*)data, 
                      (void*)(((CYG_ADDRESS)data)+len), (void*)addr);
+#endif
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable((unsigned short*)addr, (unsigned short *)(addr+len));
@@ -314,22 +328,123 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         if (0 == stat) // Claims to be OK
             if (memcmp(addr, data, size) != 0) {                
                 stat = 0x0BAD;
+#ifdef CYGSEM_IO_FLASH_CHATTER
                 (*flash_info.pf)("V");
+#endif
             }
 #endif
         if (stat) {
             *err_addr = (void *)addr;
             break;
         }
+#ifdef CYGSEM_IO_FLASH_CHATTER
         (*flash_info.pf)(".");
+#endif
         len -= size;
         addr += size/sizeof(*addr);
         data += size/sizeof(*data);
     }
     FLASH_Disable((unsigned short*)addr, (unsigned short *)(addr+len));
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("\n");
+#endif
     return (stat);
+}
+
+int
+flash_read(void *_addr, void *_data, int len, void **err_addr)
+{
+#ifdef CYGSEM_IO_FLASH_READ_INDIRECT
+    int stat = 0;
+    int size;
+    typedef int code_fun(void *, void *, int, unsigned long, int);
+    code_fun *_flash_read_buf;
+    unsigned char *addr = (unsigned char *)_addr;
+    unsigned char *data = (unsigned char *)_data;
+    CYG_ADDRESS tmp;
+    int d_cache, i_cache;
+
+    if (!flash_info.init) {
+        return FLASH_ERR_NOT_INIT;
+    }
+
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+    if (plf_flash_query_soft_wp(addr,len))
+        return FLASH_ERR_PROTECT;
+#endif
+
+#ifdef CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
+    {
+        CYG_ADDRESS code_len;
+        extern char flash_read_buf[], flash_read_buf_end[];
+        // Copy 'read' code to RAM for execution
+        code_len = (CYG_ADDRESS)&flash_read_buf_end - (CYG_ADDRESS)&flash_read_buf;
+        _flash_read_buf = (code_fun *)flash_info.work_space;
+        memcpy(_flash_read_buf, &flash_read_buf, code_len);
+    }
+#else
+    {
+        externC code_fun flash_read_buf;
+        _flash_read_buf = (code_fun*) __anonymizer(&flash_read_buf);
+    }
+#endif
+
+#ifdef CYGSEM_IO_FLASH_CHATTER
+    (*flash_info.pf)("... Read from %p-%p at %p: ", (void*)data, 
+                     (void*)(((CYG_ADDRESS)data)+len), (void*)addr);
+#endif
+
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+    FLASH_Enable((unsigned short*)addr, (unsigned short *)(addr+len));
+    while (len > 0) {
+        size = len;
+        if (size > flash_info.block_size) size = flash_info.block_size;
+
+        tmp = (CYG_ADDRESS)addr & ~flash_info.block_mask;
+        if (tmp) {
+                tmp = flash_info.block_size - tmp;
+                if (size>tmp) size = tmp;
+
+        }
+
+        stat = (*_flash_read_buf)(addr, data, size, 
+                                     flash_info.block_mask, flash_info.buffer_size);
+        stat = flash_hwr_map_error(stat);
+#ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM_
+        if (0 == stat) // Claims to be OK
+            if (memcmp(addr, data, size) != 0) {                
+                stat = 0x0BAD;
+#ifdef CYGSEM_IO_FLASH_CHATTER
+                (*flash_info.pf)("V");
+#endif
+            }
+#endif
+        if (stat) {
+            *err_addr = (void *)addr;
+            break;
+        }
+#ifdef CYGSEM_IO_FLASH_CHATTER
+        (*flash_info.pf)(".");
+#endif
+        len -= size;
+        addr += size/sizeof(*addr);
+        data += size/sizeof(*data);
+    }
+    FLASH_Disable((unsigned short*)addr, (unsigned short *)(addr+len));
+    HAL_FLASH_CACHES_ON(d_cache, i_cache);
+#ifdef CYGSEM_IO_FLASH_CHATTER
+    (*flash_info.pf)("\n");
+#endif
+    return (stat);
+#else // CYGSEM_IO_FLASH_READ_INDIRECT
+    // Direct access to FLASH memory is possible - just move the requested bytes
+    if (!flash_info.init) {
+        return FLASH_ERR_NOT_INIT;
+    }
+    memcpy(_data, _addr, len);
+    return FLASH_ERR_OK;
+#endif
 }
 
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
@@ -376,7 +491,9 @@ flash_lock(void *addr, int len, void **err_addr)
         end_addr = (unsigned short *) ((CYG_ADDRESS) flash_info.end - 1);
     }
 
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("... Lock from %p-%p: ", block, end_addr);
+#endif
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(block, end_addr);
@@ -398,11 +515,15 @@ flash_lock(void *addr, int len, void **err_addr)
         else{
             block = tmp_block;
         }
+#ifdef CYGSEM_IO_FLASH_CHATTER
         (*flash_info.pf)(".");
+#endif
     }
     FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("\n");
+#endif
     return (stat);
 }
 
@@ -448,7 +569,9 @@ flash_unlock(void *addr, int len, void **err_addr)
         end_addr = (unsigned short *) ((CYG_ADDRESS) flash_info.end - 1);
     }
 
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("... Unlock from %p-%p: ", block, end_addr);
+#endif
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     FLASH_Enable(block, end_addr);
@@ -469,11 +592,15 @@ flash_unlock(void *addr, int len, void **err_addr)
         else{
             block = tmp_block;
         }
+#ifdef CYGSEM_IO_FLASH_CHATTER
         (*flash_info.pf)(".");
+#endif
     }
     FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
+#ifdef CYGSEM_IO_FLASH_CHATTER
     (*flash_info.pf)("\n");
+#endif
     return (stat);
 }
 #endif

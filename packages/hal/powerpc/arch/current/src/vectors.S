@@ -297,7 +297,7 @@ _start:
         # safe to access RAM until after this point.
         bl      hal_hardware_init	# this is platform dependent
         .globl  _hal_hardware_init_done
-_hal_hardware_init_done:                
+_hal_hardware_init_done:
 
 #if !defined(CYG_HAL_STARTUP_ROM) && defined(CYGSEM_HAL_POWERPC_COPY_VECTORS)
         lwi     r3,rom_vectors-4
@@ -474,11 +474,13 @@ cyg_hal_default_exception_vsr:
         stw     r3,CYGARC_PPCREG_WALL_TAIL(sp)
 #endif
 
+#ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
         # Enable MMU.
         lwi     r3,CYG_MSR
         sync
         mtmsr   r3
         sync
+#endif        
                 
         mfspr   r3,SPRG1                # save original R3
         stw     r3,CYGARC_PPCREG_REGS+3*4(sp)
@@ -621,11 +623,13 @@ cyg_hal_default_interrupt_vsr:
         stw     r3,CYGARC_PPCREG_WALL_TAIL(sp)
 #endif
 
+#ifdef CYGHWR_HAL_POWERPC_ENABLE_MMU
         # Enable MMU.
         lwi     r3,CYG_MSR
         sync
         mtmsr   r3
         sync
+#endif        
 
         mfspr   r3,SPRG1                # save original R3
         stw     r3,CYGARC_PPCREG_REGS+3*4(sp)

@@ -12,6 +12,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Jonathan Larmour
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -70,6 +71,7 @@
 #define FLASH_Read_ID_Exit              FLASHWORD( 0xF0 )
 #define FLASH_Program                   FLASHWORD( 0xA0 )
 #define FLASH_Sector_Erase              FLASHWORD( 0x30 )
+#define FLASH_Chip_Erase                FLASHWORD( 0x10 )
 
 #define FLASH_Busy                      FLASHWORD( 0x40 ) // "Toggle" bit, I/O 6
 #define FLASH_InverseData               FLASHWORD( 0x80 ) // I/O 7, Inverse data
@@ -105,6 +107,7 @@ typedef struct flash_dev_info {
     cyg_uint32   base_mask;
     cyg_uint32   device_size;
     cyg_bool     bootblock;
+    cyg_bool     chip_erase;
     cyg_uint32   bootblocks[64];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
 #ifdef NOTYET // FIXME: not supported yet (use am29xxxxx for template)
     cyg_bool     banked;
@@ -307,7 +310,16 @@ flash_erase_block(void* block, unsigned int size)
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Erase;
         ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
         ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-        *b_p = FLASH_Sector_Erase;
+        if (flash_dev_info->chip_erase) {
+            // Can only erase the entire device!
+            if (b_p == ROM) {
+                ROM[FLASH_Setup_Addr1] = FLASH_Chip_Erase;
+            } else {
+                res = FLASH_ERR_DRV_VERIFY;
+            }
+        } else {
+            *b_p = FLASH_Sector_Erase;
+        }
 
         size -= len;  // This much has been erased
 

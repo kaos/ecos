@@ -95,6 +95,7 @@ package CYGPKG_IO_SERIAL {
            This package contains drivers for basic I/O services on
            serial devices."
 }
+
 package CYGPKG_IO_PCMCIA {
 	alias 		{ "PCMCIA & Compact Flash support" pcmcia io_pcmcia cf }
 	directory	io/pcmcia
@@ -690,6 +691,17 @@ package CYGPKG_DEVS_FLASH_SYNTH {
     description   "
         FLASH memory device support for Synthetic target"
 }
+
+package CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX {
+	alias 		{ "Support for Toshiba TC58xxx flash memory" flash_toshiba_tc58xxx }
+	directory	devs/flash/toshiba/tc58xxx
+	script		flash_toshiba_tc58xxx.cdl
+	hardware
+        description "
+           This package contains hardware support for Toshiba TC58xxx
+           NAND flash memory devices."
+}
+
 package CYGPKG_DEVS_FLASH_FRV_FRV400 {
         alias           { "Fujitsu FRV400 FLASH memory support" flash_frv400 }
         directory       devs/flash/frv/frv400
@@ -914,6 +926,14 @@ package CYGPKG_IO_SERIAL_POWERPC_QUICC2_SCC {
     directory	      devs/serial/powerpc/quicc2
     script	      ser_quicc2_scc.cdl	
     description       "PowerPC VADS QUICC2/SCC serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_POWERPC_PPC405 {
+    alias             { "PowerPC PPC405GP serial device drivers" devs_serial_ppc405 }
+    hardware
+    directory	      devs/serial/powerpc/ppc405
+    script	      ser_powerpc_ppc405.cdl	
+    description       "PowerPC PPC405GP serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_SPARCLITE_SLEB {
@@ -1438,6 +1458,14 @@ package CYGPKG_DEVS_ETH_POWERPC_FCC {
         description     "Fast ethernet driver for PowerPC MPCxxx based boards."
 }
 
+package CYGPKG_DEVS_ETH_POWERPC_PPC405 {
+	alias 		{ "PPC405 ethernet driver" ppc405_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/ppc405
+	script		ppc405_eth_drivers.cdl
+        description     "Ethernet driver for PowerPC 405GP based boards."
+}
+
 package CYGPKG_DEVS_ETH_POWERPC_VIPER {
 	alias 		{ "A&M Viper ethernet driver" viper_eth_driver }
 	hardware
@@ -1662,6 +1690,16 @@ package CYGPKG_DEVICES_WALLCLOCK_MPC5xx {
         description "
            This package provides a wallclock driver implementation for the
            Motorola mpc5xx CPU's RTC module."
+}
+
+package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307 {
+	alias		{ "Wallclock driver for Dallas 1307" devices_wallclock_ds1307 device_wallclock_ds1307 }
+	directory	devs/wallclock/dallas/ds1307
+	script          wallclock_ds1307.cdl
+	hardware
+        description "
+           This package provides a driver implementation for 
+           the Dallas 1307 wallclock."
 }
 
 package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1742 {
@@ -5023,6 +5061,70 @@ target rattler {
             The rattler target provides the packages needed to run
             eCos on an Analogue & Micro Rattler (MPC8250) board."
 }
+
+##-------------------------------------------------------------------------------------------
+## TAMS MOAB (PowerPC 405GPr) packages
+##
+package CYGPKG_HAL_POWERPC_MOAB {
+	alias		{ "TAMS PowerPC 405GP board" hal_powerpc_moab }
+	directory	hal/powerpc/moab
+	script		hal_powerpc_moab.cdl
+	hardware
+        description "
+            The MOAB HAL package provides the support needed to run
+            eCos on a TAMS PowerPC 405GP board."
+}
+
+package CYGPKG_DEVS_FLASH_POWERPC_MOAB {
+	alias 		{ "FLASH memory support for MOAB" flash_moab }
+	directory	devs/flash/powerpc/moab
+	script		flash_moab.cdl
+	hardware
+        description "
+           This package contains hardware support for both the boot FLASH 
+           and NAND (main) memory on the MOAB platform."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_MOAB {
+        alias           { "TAMS PowerPC 405GP ethernet support" moab_eth_driver }
+        hardware
+        directory       devs/eth/powerpc/moab
+        script          moab_eth_drivers.cdl
+        description     "Ethernet driver specifics for TAMS MOAB (PPC405GP) based boards."
+}
+
+package CYGPKG_DEVICES_WALLCLOCK_POWERPC_MOAB {
+         alias          { "MOAB RTC device" devs_wallclock_moab_ds1307 moab_rtc }
+         hardware
+         directory      devs/wallclock/powerpc/moab
+         script         moab_wallclock_drivers.cdl
+         description    "
+            RTC driver for MOAB (PowerPC PPC405GPr) using a
+            Dallas DS1307 RTC."
+}
+
+target moab {
+	alias		{ "TAMS PowerPC 405GPr" moab405GPr }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_PPC40x
+                          CYGPKG_HAL_POWERPC_MOAB
+                          CYGPKG_DEVS_FLASH_POWERPC_MOAB
+                          CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+                          CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX
+                          CYGPKG_DEVS_ETH_POWERPC_MOAB
+                          CYGPKG_DEVS_ETH_POWERPC_PPC405
+                          CYGPKG_DEVS_ETH_PHY
+                          CYGPKG_IO_PCI
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307
+                          CYGPKG_DEVICES_WALLCLOCK_POWERPC_MOAB
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+                          CYGPKG_IO_SERIAL_POWERPC_PPC405
+        }
+        description "
+            The moab target provides the packages needed to run
+            eCos on the TAMS MOAB (405GPr) board."
+}
+##-------------------------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 

@@ -12,6 +12,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Jonathan Larmour
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -83,6 +84,22 @@
 // #define CYGNUM_FLASH_WIDTH           : Width of devices on platform
 // #define CYGNUM_FLASH_BASE            : Address of first device
 // And select one of the below device variants
+
+#if defined(CYGPKG_DEVS_FLASH_ATMEL_AT49LV040)
+//
+// Note: this device is not terribly useful for anything other than a bootstrap device
+// as it is only 512KB and has only one erase block.
+//
+    {   // AT49LV040
+        device_id  : FLASHWORD(0x13),
+        block_size : 0x80000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 1,
+        device_size: 0x80000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x80000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        chip_erase : true
+    },
+#endif
 
 #if defined(CYGHWR_DEVS_FLASH_ATMEL_AT49LV8011) || \
     defined(CYGHWR_DEVS_FLASH_ATMEL_AT49BV8011)

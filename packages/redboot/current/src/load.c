@@ -375,7 +375,7 @@ load_elf_image(getc_t getc, unsigned long base)
             // Copy data into memory
             while (len-- > 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-                if ((addr < user_ram_start) || (addr > user_ram_end)) {
+                if (!valid_address(addr)) {
                     redboot_getc_terminate(true);
                     diag_printf("*** Abort! Attempt to load ELF data to address: %p which is not in RAM\n", (void*)addr);
                     return 0;
@@ -502,7 +502,7 @@ load_srec_image(getc_t getc, unsigned long base)
                 lowest_address = (unsigned long)(addr - addr_offset);
             }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-            if ((addr < user_ram_start) || (addr > user_ram_end)) {
+            if (!valid_address(addr)) {
 	      // Only if there is no need to stop the download before printing
 	      // output can we ask confirmation questions.
                 redboot_getc_terminate(true);
@@ -707,9 +707,7 @@ do_load(int argc, char *argv[])
         diag_printf("Using default protocol (%s)\n", which);
     }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-    if (base_addr_set &&
-        ((base < (unsigned long)user_ram_start) ||
-         (base > (unsigned long)user_ram_end))) {
+    if (base_addr_set && !valid_address(base)) {
         if (!verify_action("Specified address (%p) is not believed to be in RAM", (void*)base))
             return;
         spillover_ok = true;
@@ -736,7 +734,7 @@ do_load(int argc, char *argv[])
         err = 0;
         while ((res = redboot_getc()) >= 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-            if (mp >= user_ram_end && !spillover_ok) {
+            if (!valid_address(mp) && !spillover_ok) {
                 // Only if there is no need to stop the download
                 // before printing output can we ask confirmation
                 // questions.

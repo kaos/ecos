@@ -1,3 +1,10 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/flash_at49xxxx_parts.inl: Add support for AT49LV040
+
+	* include/flash_at49xxxx.inl: Support devices which need "chip erase"
+	as opposed to "sector erase" operations.
+
 2003-08-08  Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* include/flash_at49xxxx.inl: the program/erase completion had a

@@ -94,4 +94,13 @@ bool flash_get_config(char *key, void *val, int type);
 // if no space is available.
 bool flash_add_config(struct config_option *opt, bool update);
 
+// Internal structure used to hold config data
+struct _config {
+    unsigned long len;
+    unsigned long key1;
+    unsigned char config_data[MAX_CONFIG_DATA-(4*4)];
+    unsigned long key2;
+    unsigned long cksum;
+};
+
 #endif // _FLASH_CONFIG_H_

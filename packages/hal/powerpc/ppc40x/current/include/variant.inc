@@ -2,15 +2,16 @@
 #define CYGONCE_HAL_VARIANT_INC
 ##=============================================================================
 ##
-##	variant.inc
+##    variant.inc
 ##
-##	PPC40x family assembler header file
+##    PPC40x family assembler header file
 ##
 ##=============================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002, 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -42,23 +43,23 @@
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
-## Author(s): 	jskov
-## Contributors:jskov, gthomas
-## Date:	2000-08-27
-## Purpose:	MPCxxx family definitions.
-## Description:	This file contains various definitions and macros that are
-##              useful for writing assembly code for the PPC40x CPU family.
+## Author(s):     jskov
+## Contributors:  jskov, gthomas
+## Date:          2000-08-27
+## Purpose:       PPC40x family support
+## Description:   This file contains various definitions and macros that are
+##                useful for writing assembly code for the PPC40x CPU family.
 ## Usage:
-##		#include <cyg/hal/variant.inc>
-##		...
-##		
+##        #include <cyg/hal/variant.inc>
+##        ...
+##        
 ##
 ######DESCRIPTIONEND####
 ##
 ##=============================================================================
 
 #include <pkgconf/hal.h>
-	
+    
 #undef CYG_MSR_COMMON
 #define CYG_MSR_COMMON (MSR_ME | MSR_RI)
 
@@ -74,17 +75,17 @@
         .p2align 8
         .globl  __exception_\name
 __exception_\name:
-	# Variable timer interrupt
+    # Variable timer interrupt
         mtspr   SPRG1,r3                     # stash some work registers away
         mtspr   SPRG2,r4                    
         li      r4,0x1000                    # vector offset
-	b	0f
-	# Fixed timer interrupt
+        b       0f
+    # Fixed timer interrupt
         mtspr   SPRG1,r3                     # stash some work registers away
         mtspr   SPRG2,r4                    
         li      r4,0x1010                    # vector offset
-	b	0f
-	# Watchdog timer interrupt
+        b       0f
+    # Watchdog timer interrupt
         mtspr   SPRG1,r3                     # stash some work registers away
         mtspr   SPRG2,r4                    
         li      r4,0x1020                    # vector offset
@@ -93,29 +94,29 @@ __exception_\name:
         lwz     r3,0(r3)                     # address of vsr
         mflr    r5                           # save link register
         mtlr    r3                           # put vsr address into it
-	mr	r3,r4			     # original vector
+        mr      r3,r4                        # original vector
         mfcr    r4                           # stash CR
         blr                                  # go to common code
         .endm
 
         .macro hal_extra_vectors
-	timer_vector		ppc40x_timers
-	exception_vector	data_TLB_miss
-	exception_vector	instr_TLB_miss
-	exception_vector	reserved_01300
-	exception_vector	reserved_01400
-	exception_vector	reserved_01500
-	exception_vector	reserved_01600
-	exception_vector	reserved_01700
-	exception_vector	reserved_01800
-	exception_vector	reserved_01900
-	exception_vector	reserved_01A00
-	exception_vector	reserved_01B00
-	exception_vector	reserved_01C00
-	exception_vector	reserved_01D00
-	exception_vector	reserved_01E00
-	exception_vector	reserved_01F00
-	exception_vector	ppc40x_debug
+         timer_vector        ppc40x_timers   // 0x1000
+         exception_vector    data_TLB_miss   // 0x1100
+         exception_vector    instr_TLB_miss  // 0x1200
+         exception_vector    reserved_01300
+         exception_vector    reserved_01400
+         exception_vector    reserved_01500
+         exception_vector    reserved_01600
+         exception_vector    reserved_01700
+         exception_vector    reserved_01800
+         exception_vector    reserved_01900
+         exception_vector    reserved_01A00
+         exception_vector    reserved_01B00
+         exception_vector    reserved_01C00
+         exception_vector    reserved_01D00
+         exception_vector    reserved_01E00
+         exception_vector    reserved_01F00
+         exception_vector    ppc40x_debug
         .endm
 
 ##-----------------------------------------------------------------------------
@@ -124,11 +125,11 @@ __exception_\name:
 ## Initialize CPU to a post-reset state, ensuring the ground doesn''t
 ## shift under us while we try to set things up.
         
-        .macro hal_cpu_init
+         .macro hal_cpu_init
         # Set up MSR (disable MMU for now)
         lwi     r3,(CYG_MSR & ~(MSR_IR | MSR_DR))
         sync
-	mfmsr	r4
+        mfmsr   r4
         mtmsr   r3
         sync
         .endm
@@ -139,6 +140,7 @@ __exception_\name:
 #ifndef CYGPKG_HAL_PPC_MON_DEFINED
 
 #if     defined(CYG_HAL_STARTUP_ROM) ||                 \
+        defined(CYG_HAL_STARTUP_ROMRAM) || \
         (       defined(CYG_HAL_STARTUP_RAM) &&         \
                 !defined(CYGSEM_HAL_USE_ROM_MONITOR))
 
@@ -162,11 +164,11 @@ __exception_\name:
         cmplw   r3,r5                   # compare
         blt     1b                      # loop if not yet done
 2:
-
-	# Ensure that the vectors will come from 0x0000
-	lwi	r4,0
-	mtspr	SPR_EVPR,r4
 #endif
+
+        # Ensure that the vectors will come from 0x0000
+        lwi     r4,0
+        mtspr   SPR_EVPR,r4
 
         # Next initialize the VSR table. This happens whether the
         # vectors were copied to RAM or not.
@@ -196,6 +198,11 @@ __exception_\name:
         # the rest are left to the ROM for now...
 
         .macro  hal_mon_init
+
+        # Ensure that the vectors will come from 0x0000
+        lwi     r4,0
+        mtspr   SPR_EVPR,r4
+
         lwi     r3,cyg_hal_default_interrupt_vsr
         lwi     r4,hal_vsr_table
         stw     r3,CYGNUM_HAL_VECTOR_INTERRUPT*4(r4)
@@ -219,10 +226,10 @@ __exception_\name:
 
 ##-----------------------------------------------------------------------------
 ## PPC40x exception state handling
-        .macro	hal_variant_save regs
+        .macro    hal_variant_save regs
         .endm
 
-        .macro	hal_variant_load regs
+        .macro    hal_variant_load regs
         .endm
 
 ##-----------------------------------------------------------------------------
@@ -235,31 +242,40 @@ __exception_\name:
 
 ## Decode the EXISR appropriately
 
+#ifndef CYGPKG_HAL_POWERPC_INTC_DEFINED
 #define CYGPKG_HAL_POWERPC_INTC_DEFINED
         # decode the interrupt
-	# the interrupt vector will be 0x500 or 0x10x0
-	# 0x0500 = external, must be decoded via EXISR
-	# 0x10X0 = timer, X is the timer type
-	# r3 used as scratch
-	.macro  hal_intc_decode dreg,state
+        # the interrupt vector will be 0x500 or 0x10x0
+        # 0x0500 = external, must be decoded via hardware (e.g. EXISR)
+        # 0x10X0 = timer, X is the timer type
+        # r3 used as scratch
+        .macro  hal_intc_decode dreg,state
         lwz     \dreg,CYGARC_PPCREG_VECTOR(\state) # retrieve vector number,
-	extrwi.	\dreg,\dreg,1,19		# isolate bit 19
-	beq	0f				# timer interrupt = 1
+        extrwi. \dreg,\dreg,1,19        # isolate bit 19
+        beq     0f                      # timer interrupt = 1
         lwz     \dreg,CYGARC_PPCREG_VECTOR(\state) # retrieve vector number,
-	extrwi	\dreg,\dreg,2,26		# isolate bits 26-27
-	addi	\dreg,\dreg,CYGNUM_HAL_INTERRUPT_VAR_TIMER # FIXME
-	b	1f
-0:	mfdcr	r3,DCR_EXISR			# Interrupt status register
-	lwi	\dreg,0x8FF0001F		# significant bits
-	and	\dreg,\dreg,r3
-	cntlzw	r3,\dreg			# find highest "1" bit
-	slwi	r3,r3,2
-	lwi	\dreg,EXISR_TAB			# convert bit # to signal #
-	lwzx	\dreg,\dreg,r3
+        extrwi  \dreg,\dreg,2,26        # isolate bits 26-27
+        addi    \dreg,\dreg,CYGNUM_HAL_INTERRUPT_VAR_TIMER # FIXME
+        b       1f
+#if defined(CYGHWR_HAL_POWERPC_PPC4XX_403)
+0:      mfdcr   r3,DCR_EXISR            # Interrupt status register
+        lwi     \dreg,0x8FF0001F        # significant bits
+        and     \dreg,\dreg,r3
+        cntlzw  r3,\dreg                # find highest "1" bit
+        slwi    r3,r3,2
+        lwi     \dreg,EXISR_TAB         # convert bit # to signal #
+        lwzx    \dreg,\dreg,r3
+#elif defined(CYGHWR_HAL_POWERPC_PPC4XX_405) || defined(CYGHWR_HAL_POWERPC_PPC4XX_405GP)
+0:      mfdcr   r3,DCR_UIC0_MSR          # Status register
+        cntlzw  \dreg,r3                # find highest "1" bit
+        addi    \dreg,\dreg,2
+#else
+#error "No interrupt handling for variant"                
+#endif
 1:      stw     \dreg,CYGARC_PPCREG_VECTOR(\state) # update vector in state frame.
-        slwi    \dreg,\dreg,2                   # convert to byte offset.
+        slwi    \dreg,\dreg,2                      # convert to byte offset.
         .endm                              
-
+#endif
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_VARIANT_INC

@@ -154,7 +154,7 @@ cdl_package CYGPKG_HAL_POWERPC {
 
     cdl_option CYGHWR_HAL_POWERPC_ENABLE_MMU {
         display       "Enable MMU"
-        calculated    { !CYGHWR_HAL_POWERPC_DISABLE_MMU }
+        default_value { !CYGHWR_HAL_POWERPC_DISABLE_MMU }
         description   "
             Some platforms do not want the MMU enabled."
     }

@@ -1,3 +1,29 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ppc405_pci.c: New file - basic support for PCI on PPC 405GP
+
+	* src/hal_diag.c: New file - diagnostic I/O support (previously
+	was defined by platforms).  Note: only for 405GP based devices.
+
+2002-11-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_intr.c: 
+	* include/variant.inc: 
+	* include/var_intr.h: Better variant/platform support (platforms can
+	override most all default behaviour).
+
+2002-11-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/var_cache.h: Cache sizes differ based on CPU.
+
+	* include/var_intr.h: 
+	* include/var_regs.h:
+	* src/var_intr.c: Split interrupt control based on CPU type since
+	403 uses a different controller than the 405 family.
+
+	* cdl/hal_powerpc_ppc40x.cdl: Add 403/405/405GP controls.  Also,
+	enable ROM monitor support (GDB).
+
 2002-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_intr.c: Fixed warning.
@@ -66,6 +92,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

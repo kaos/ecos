@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -105,6 +106,27 @@ cdl_package CYGPKG_IO_FLASH {
             locking (write-protection) of individual blocks."
     }
 
+    cdl_option CYGSEM_IO_FLASH_READ_INDIRECT {
+        display       "Hardware cannot support direct access to FLASH memory"
+        flavor        bool
+        default_value 0
+        requires      { !CYGSEM_IO_FLASH_VERIFY_PROGRAM }
+        description   "
+            This option will be asserted by devices which cannot support
+            direct access to the FLASH memory contents (e.g. EEPROM or NAND
+            devices).  In these cases, the driver must provide an appropriate
+            hardware access function."
+    }
+
+    cdl_option CYGSEM_IO_FLASH_CHATTER {
+        display          "Display status messages during flash operations"
+        flavor           bool
+        default_value    1
+        description      "
+           Selecting this option will cause the drivers to print status
+           messages as various flash operations are undertaken."
+    }
+
     cdl_option CYGSEM_IO_FLASH_VERIFY_PROGRAM {
         display          "Verify data programmed to flash"
         flavor           bool
@@ -113,6 +135,7 @@ cdl_package CYGPKG_IO_FLASH {
            Selecting this option will cause verification of data
            programmed to flash."
     }
+
     cdl_option CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT {
         display          "Platform has flash soft DIP switch write-protect"
         flavor           bool
@@ -122,6 +145,7 @@ cdl_package CYGPKG_IO_FLASH {
            dipswitch to be read by software to determine whether the flash is
            write-protected or not."
     }
+
     cdl_component CYGPKG_IO_FLASH_BLOCK_DEVICE {
         display         "Instantiate in I/O block device API"
         flavor          bool

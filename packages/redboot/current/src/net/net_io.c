@@ -119,7 +119,7 @@ RedBoot_config_option("Gateway IP address",
 #endif
 RedBoot_config_option("Default server IP address",
                       bootp_server_ip,
-                      "bootp", false,
+                      ALWAYS_ENABLED, true,
                       CONFIG_IP,
                       0
     );
@@ -685,8 +685,6 @@ net_init(void)
         flash_get_IP("bootp_my_ip_mask", &__local_ip_mask);
         flash_get_IP("bootp_my_gateway_ip", &__local_ip_gate);
 #endif
-        flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr,
-                         CONFIG_IP);
     }
 #endif
 # ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
@@ -777,6 +775,9 @@ net_init(void)
                     __local_enet_addr[4],
                     __local_enet_addr[5]);
 
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+        flash_get_IP("bootp_server_ip", &my_bootp_info.bp_siaddr);
+#endif
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
 	redboot_dns_res_init();
 #endif

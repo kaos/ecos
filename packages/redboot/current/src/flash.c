@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -63,23 +64,6 @@
 
 // Round a quantity up
 #define _rup(n,s) ((((n)+(s-1))/s)*s)
-
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-#include <flash_config.h>
-
-// Configuration data, saved in FLASH, used to set/update RedBoot
-// normal "configuration" data items.
-static struct _config {
-    unsigned long len;
-    unsigned long key1;
-    unsigned char config_data[MAX_CONFIG_DATA-(4*4)];
-    unsigned long key2;
-    unsigned long cksum;
-} *config, *backup_config;
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
-static struct _config  *readonly_config;
-#endif
-#endif
 
 #ifdef CYGOPT_REDBOOT_FIS
 // Image management functions
@@ -178,18 +162,17 @@ RedBoot_nested_cmd("fis",
     );
 
 // Local data used by these routines
-static void *flash_start, *flash_end;
-static int flash_block_size, flash_num_blocks;
+void *flash_start, *flash_end;
+int flash_block_size, flash_num_blocks;
 #ifdef CYGOPT_REDBOOT_FIS
-static void *fis_work_block;
-static void *fis_addr;
-static int fisdir_size;  // Size of FIS directory.
+void *fis_work_block;
+void *fis_addr;
+int fisdir_size;  // Size of FIS directory.
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-static void *cfg_base;   // Location in Flash of config data
-static int   cfg_size;   // Length of config data - rounded to Flash block size
-// Prototypes for local functions
-static unsigned char *flash_lookup_config(char *key);
+extern void *cfg_base;   // Location in Flash of config data
+extern int   cfg_size;   // Length of config data - rounded to Flash block size
+extern struct _config *config;
 #endif
 
 static void
@@ -212,7 +195,9 @@ fis_lookup(char *name, int *num)
 {
     int i;
     struct fis_image_desc *img;
+    void *err_addr;
 
+    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
     img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && 
@@ -224,7 +209,7 @@ fis_lookup(char *name, int *num)
     return (struct fis_image_desc *)0;
 }
 
-static void
+void
 fis_update_directory(void)
 {
     int stat;
@@ -324,7 +309,7 @@ fis_init(int argc, char *argv[])
     img++;
     redboot_flash_start += redboot_image_size;
 #endif
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
     // And a descriptor for the configuration data
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot config");
@@ -402,7 +387,9 @@ fis_init(int argc, char *argv[])
         erase_start = redboot_flash_start; // high water of created images
         // Now the empty bits between the end of Redboot and the cfg and dir 
         // blocks. 
-#if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
+#if defined(CYGSEM_REDBOOT_FLASH_CONFIG) && \
+    defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH) && \
+    !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
         if (fis_addr > cfg_base) {
           erase_size = (CYG_ADDRESS)cfg_base - erase_start; // the gap between HWM and config data
         } else {
@@ -456,6 +443,7 @@ fis_list(int argc, char *argv[])
     bool show_cksums = false;
     bool show_datalen = false;
     struct option_info opts[2];
+    void *err_addr;
 
 #ifdef CYGHWR_REDBOOT_ARM_FLASH_SIB
     // FIXME: this is somewhat half-baked
@@ -477,7 +465,8 @@ fis_list(int argc, char *argv[])
     {
         return;
     }
-    img = (struct fis_image_desc *) fis_addr;
+    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    img = (struct fis_image_desc *) fis_work_block;
     // Let diag_printf do the formatting in both cases, rather than counting
     // cols by hand....
     diag_printf("%-16s  %-10s  %-10s  %-10s  %-s\n",
@@ -506,9 +495,11 @@ fis_free(int argc, char *argv[])
 {
     unsigned long *fis_ptr, *fis_end;
     unsigned long *area_start;
+    void *err_addr;
 
     // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
+    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_ptr = (unsigned long *)((CYG_ADDRESS)fis_work_block + 
                                 CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
                                 CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
     fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
@@ -545,9 +536,11 @@ fis_find_free(CYG_ADDRESS *addr, unsigned long length)
 {
     unsigned long *fis_ptr, *fis_end;
     unsigned long *area_start;
+    void *err_addr;
 
     // Do not search the area reserved for pre-RedBoot systems:
-    fis_ptr = (unsigned long *)((CYG_ADDRESS)flash_start + 
+    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_ptr = (unsigned long *)((CYG_ADDRESS)fis_work_block + 
                                 CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
                                 CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
     fis_end = (unsigned long *)(CYG_ADDRESS)flash_end;
@@ -623,7 +616,7 @@ fis_create(int argc, char *argv[])
         return;
     }
 
-    memcpy(fis_work_block, fis_addr, fisdir_size);
+    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
     defaults_assumed = false;
     if (name) {
         // Search existing files to acquire defaults for params not specified:
@@ -779,7 +772,12 @@ fis_create(int argc, char *argv[])
         img->size = length;
         img->data_length = img_size;
 #ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
-        img->file_cksum = cyg_crc32((unsigned char *)flash_addr, img_size);
+        if (!no_copy) {
+            img->file_cksum = cyg_crc32((unsigned char *)mem_addr, img_size);
+        } else {
+            // No way to compute this, sorry
+            img->file_cksum = 0;
+        }
 #endif
         fis_update_directory();
     }
@@ -825,7 +823,6 @@ fis_delete(int argc, char *argv[])
     num_reserved++;
 #endif
 
-    memcpy(fis_work_block, fis_addr, fisdir_size);
     img = fis_lookup(name, &i);
     if (img) {
         if (i < num_reserved) {
@@ -864,6 +861,7 @@ fis_load(int argc, char *argv[])
 #ifdef CYGPKG_COMPRESS_ZLIB
     bool decompress = false;
 #endif
+    void *err_addr;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
@@ -881,7 +879,6 @@ fis_load(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
-    memcpy(fis_work_block, fis_addr, fisdir_size);
     if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
         diag_printf("No image '%s' found\n", name);
         return;
@@ -891,9 +888,8 @@ fis_load(int argc, char *argv[])
     }
     // Load image from FLASH into RAM
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-    if ((mem_addr < (CYG_ADDRESS)user_ram_start) ||
-        ((mem_addr+img->data_length) >= (CYG_ADDRESS)user_ram_end)) {
-        diag_printf("Not a loadable image\n");
+    if (!valid_address((void *)mem_addr)) {
+        diag_printf("Not a loadable image - try using -b ADDRESS option\n");
         return;
     }
 #endif
@@ -927,11 +923,11 @@ fis_load(int argc, char *argv[])
         load_address_end = (unsigned long)p->out_buf;
 
     	// Reload fis directory
-	memcpy(fis_work_block, fis_addr, fisdir_size);
+        flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
     } else // dangling block
 #endif
     {
-        memcpy((void *)mem_addr, (void *)img->flash_base, img->data_length);
+        flash_read((void *)img->flash_base, (void *)mem_addr, img->data_length, (void **)&err_addr);
 
         // Set load address/top
         load_address = mem_addr;
@@ -949,6 +945,7 @@ fis_load(int argc, char *argv[])
         if (cksum != img->file_cksum) {
             diag_printf("** Warning - checksum failure.  stored: 0x%08lx, computed: 0x%08lx\n",
                         img->file_cksum, cksum);
+            entry_address = NO_MEMORY;
         }
     }
 #endif
@@ -1105,7 +1102,6 @@ fis_lock(int argc, char *argv[])
     /* Get parameters from image if specified */
     if (name) {
         struct fis_image_desc *img;
-	memcpy(fis_work_block, fis_addr, fisdir_size);
         if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
             diag_printf("No image '%s' found\n", name);
             return;
@@ -1152,7 +1148,6 @@ fis_unlock(int argc, char *argv[])
 
     if (name) {
         struct fis_image_desc *img;
-	memcpy(fis_work_block, fis_addr, fisdir_size);
         if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
             diag_printf("No image '%s' found\n", name);
             return;
@@ -1178,7 +1173,7 @@ fis_unlock(int argc, char *argv[])
 #endif
 
 // This is set non-zero if the FLASH subsystem has successfully been initialized
-static int __flash_init = 0;
+int __flash_init = 0;
 
 void
 _flash_info(void)
@@ -1188,10 +1183,11 @@ _flash_info(void)
            flash_start, (CYG_ADDRWORD)flash_end + 1, flash_num_blocks, (void *)flash_block_size);
 }
 
-static bool
+bool
 do_flash_init(void)
 {
     int stat;
+    void *err_addr;
 
     if (!__flash_init) {
         if ((stat = flash_init((void *)(workspace_end-FLASH_MIN_WORKSPACE), 
@@ -1224,7 +1220,7 @@ do_flash_init(void)
             fis_addr = (void *)((CYG_ADDRESS)flash_start + 
                                 (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
         }
-		memcpy(fis_work_block, fis_addr, flash_block_size);
+        flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
 #endif
         __flash_init = 1;
     }
@@ -1262,908 +1258,5 @@ do_fis(int argc, char *argv[])
     }
     fis_usage("unrecognized command");
 }
-
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-
-static bool config_ok;
-
-#define CONFIG_KEY1    0x0BADFACE
-#define CONFIG_KEY2    0xDEADDEAD
-
-#define CONFIG_DONE    0
-#define CONFIG_ABORT  -1
-#define CONFIG_CHANGED 1
-#define CONFIG_OK      2
-#define CONFIG_BACK    3
-#define CONFIG_BAD     4
-
-// Note: the following options are related.  If 'boot_script' is false, then
-// the other values are used in the configuration.  Because of the way
-// that configuration tables are generated, they should have names which
-// are related.  The configuration options will show up lexicographically
-// ordered, thus the peculiar naming.
-RedBoot_config_option("Run script at boot",
-                      boot_script,
-                      ALWAYS_ENABLED, true,
-                      CONFIG_BOOL,
-                      false
-    );
-RedBoot_config_option("Boot script",
-                      boot_script_data,
-                      "boot_script", true,
-                      CONFIG_SCRIPT,
-                      ""
-    );
-// Some preprocessor magic for building the [constant] prompt string
-#define __cat(s1,c2,s3) s1 #c2 s3
-#define _cat(s1,c2,s3) __cat(s1,c2,s3)
-RedBoot_config_option(_cat("Boot script timeout (",
-                           CYGNUM_REDBOOT_BOOT_SCRIPT_TIMEOUT_RESOLUTION,
-                           "ms resolution)"),
-                      boot_script_timeout,
-                      "boot_script", true,
-                      CONFIG_INT,
-                      0
-    );
-#undef __cat
-#undef _cat
-
-#ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
-RedBoot_config_option("Console baud rate",
-                      console_baud_rate,
-                      ALWAYS_ENABLED, true,
-                      CONFIG_INT,
-                      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
-    );
-#endif
-
-CYG_HAL_TABLE_BEGIN( __CONFIG_options_TAB__, RedBoot_config_options);
-CYG_HAL_TABLE_END( __CONFIG_options_TAB_END__, RedBoot_config_options);
-
-extern struct config_option __CONFIG_options_TAB__[], __CONFIG_options_TAB_END__[];
-
-// 
-// Layout of config data
-// Each data item is variable length, with the name, type and dependencies
-// encoded into the object.
-//  offset   contents
-//       0   data type
-//       1   length of name (N)
-//       2   enable sense
-//       3   length of enable key (M)
-//       4   key name
-//     N+4   enable key
-//   M+N+4   data value
-//
-
-#define CONFIG_OBJECT_TYPE(dp)          (dp)[0]
-#define CONFIG_OBJECT_KEYLEN(dp)        (dp)[1]
-#define CONFIG_OBJECT_ENABLE_SENSE(dp)  (dp)[2]
-#define CONFIG_OBJECT_ENABLE_KEYLEN(dp) (dp)[3]
-#define CONFIG_OBJECT_KEY(dp)           ((dp)+4)
-#define CONFIG_OBJECT_ENABLE_KEY(dp)    ((dp)+4+CONFIG_OBJECT_KEYLEN(dp))
-#define CONFIG_OBJECT_VALUE(dp)         ((dp)+4+CONFIG_OBJECT_KEYLEN(dp)+CONFIG_OBJECT_ENABLE_KEYLEN(dp))
-
-#define LIST_OPT_LIST_ONLY (1)
-#define LIST_OPT_NICKNAMES (2)
-#define LIST_OPT_FULLNAMES (4)
-#define LIST_OPT_DUMBTERM  (8)
-
-static void config_init(void);
-
-static int
-get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
-{
-    char line[256], hold_line[256], *sp, *lp;
-    int ret;
-    bool hold_bool_val, new_bool_val, enable;
-    unsigned long hold_int_val, new_int_val;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    in_addr_t hold_ip_val, new_ip_val;
-    enet_addr_t hold_esa_val;
-    int esa_ptr;
-    char *esp;
-#endif
-    void *val_ptr;
-    int type;
-
-    if (CONFIG_OBJECT_ENABLE_KEYLEN(dp)) {
-        flash_get_config(CONFIG_OBJECT_ENABLE_KEY(dp), &enable, CONFIG_BOOL);
-        if (((bool)CONFIG_OBJECT_ENABLE_SENSE(dp) && !enable) ||
-            (!(bool)CONFIG_OBJECT_ENABLE_SENSE(dp) && enable)) {
-            return CONFIG_OK;  // Disabled field
-        }
-    }
-    lp = line;  *lp = '\0';
-    val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
-    if (LIST_OPT_NICKNAMES & list_opt)
-        diag_printf("%s: ", CONFIG_OBJECT_KEY(dp));
-    if (LIST_OPT_FULLNAMES & list_opt) {
-        if (title != (char *)NULL) {
-            diag_printf("%s: ", title);
-        } else {
-            diag_printf("%s: ", CONFIG_OBJECT_KEY(dp));
-        }
-    }
-    switch (type = CONFIG_OBJECT_TYPE(dp)) {
-    case CONFIG_BOOL:
-        memcpy(&hold_bool_val, val_ptr, sizeof(bool));
-        lp += diag_sprintf(lp, "%s", hold_bool_val ? "true" : "false");
-        break;
-    case CONFIG_INT:
-        memcpy(&hold_int_val, val_ptr, sizeof(unsigned long));
-        lp += diag_sprintf(lp, "%ld", hold_int_val);
-        break;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    case CONFIG_IP:
-        lp += diag_sprintf(lp, "%s", inet_ntoa((in_addr_t *)val_ptr));
-        if (0 == strcmp("0.0.0.0", line) && !(LIST_OPT_LIST_ONLY & list_opt)) {
-            // then we have a deeply unhelpful starting text - kill it off
-            // (unless we are just listing all values)
-            lp = line;  *lp = '\0';
-        }
-        break;
-    case CONFIG_ESA:
-        for (esa_ptr = 0;  esa_ptr < sizeof(enet_addr_t);  esa_ptr++) {
-            lp += diag_sprintf(lp, "0x%02X", ((unsigned char *)val_ptr)[esa_ptr]);
-            if (esa_ptr < (sizeof(enet_addr_t)-1)) lp += diag_sprintf(lp, ":");
-        }
-        break;
-#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-    case CONFIG_NETPORT:
-        lp += diag_sprintf(lp, "%s", (unsigned char *)val_ptr);
-        break;
-#endif
-#endif
-    case CONFIG_STRING:
-        lp += diag_sprintf(lp, "%s", (unsigned char *)val_ptr);
-        break;
-    case CONFIG_SCRIPT:
-        diag_printf("\n");
-        sp = lp = (unsigned char *)val_ptr;
-        while (*sp) {
-            while (*lp != '\n') lp++;
-            *lp = '\0';
-            diag_printf(".. %s\n", sp);
-            *lp++ = '\n';
-            sp = lp;
-        }
-        break;
-    }
-    if (LIST_OPT_LIST_ONLY & list_opt) {
-        diag_printf("%s\n", line);
-        return CONFIG_OK;
-    }
-    if (type != CONFIG_SCRIPT) {
-        if (NULL != newvalue) {
-            ret = strlen(newvalue);
-            if (ret > sizeof(line))
-                return CONFIG_BAD;
-            strcpy(hold_line, line); // Hold the old value for comparison
-            strcpy(line, newvalue);
-            diag_printf("Setting to %s\n", newvalue);
-        } else {
-            // read from terminal
-            strcpy(hold_line, line);
-            if (LIST_OPT_DUMBTERM & list_opt) {
-                diag_printf( (CONFIG_STRING == type ?
-                              "%s > " :
-                              "%s ? " ), line);
-                *line = '\0';
-            }
-            ret = _rb_gets_preloaded(line, sizeof(line), 0);
-        }
-        if (ret < 0) return CONFIG_ABORT;
-        // empty input - leave value untouched (else DNS goes away for a
-        // minute to try to look it up) but we must accept empty value for strings.
-        if (0 == line[0] && CONFIG_STRING != type) return CONFIG_OK; 
-        if (strcmp(line, hold_line) == 0) return CONFIG_OK;  // Just a CR - leave value untouched
-        lp = &line[strlen(line)-1];
-        if (*lp == '.') return CONFIG_DONE;
-        if (*lp == '^') return CONFIG_BACK;
-    }
-    switch (type) {
-    case CONFIG_BOOL:
-        memcpy(&hold_bool_val, val_ptr, sizeof(bool));
-        if (!parse_bool(line, &new_bool_val)) {
-            return CONFIG_BAD;
-        }
-        if (hold_bool_val != new_bool_val) {
-            memcpy(val_ptr, &new_bool_val, sizeof(bool));
-            return CONFIG_CHANGED;
-        } else {
-            return CONFIG_OK;
-        }
-        break;
-    case CONFIG_INT:
-        memcpy(&hold_int_val, val_ptr, sizeof(unsigned long));
-        if (!parse_num(line, &new_int_val, 0, 0)) {
-            return CONFIG_BAD;
-        }
-        if (hold_int_val != new_int_val) {
-            memcpy(val_ptr, &new_int_val, sizeof(unsigned long));
-            return CONFIG_CHANGED;
-        } else {
-            return CONFIG_OK;
-        }
-        break;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    case CONFIG_IP:
-        memcpy(&hold_ip_val.s_addr, &((in_addr_t *)val_ptr)->s_addr, sizeof(in_addr_t));
-        if (!_gethostbyname(line, &new_ip_val)) {
-            return CONFIG_BAD;
-        }
-        if (hold_ip_val.s_addr != new_ip_val.s_addr) {
-            memcpy(val_ptr, &new_ip_val, sizeof(in_addr_t));
-            return CONFIG_CHANGED;
-        } else {
-            return CONFIG_OK;
-        }
-        break;
-    case CONFIG_ESA:
-        memcpy(&hold_esa_val, val_ptr, sizeof(enet_addr_t));
-        esp = line;
-        for (esa_ptr = 0;  esa_ptr < sizeof(enet_addr_t);  esa_ptr++) {
-            unsigned long esa_byte;
-            if (!parse_num(esp, &esa_byte, &esp, ":")) {
-                memcpy(val_ptr, &hold_esa_val, sizeof(enet_addr_t));
-                return CONFIG_BAD;
-            }
-            ((unsigned char *)val_ptr)[esa_ptr] = esa_byte;
-        }
-        return CONFIG_CHANGED;
-        break;
-#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-    case CONFIG_NETPORT:
-	if (strlen(line) >= MAX_STRING_LENGTH || net_devindex(line) < 0) {
-	    int index;
-	    const char *name;
-	    diag_printf("Sorry, Port name must be one of:\n");
-	    for (index = 0; (name = net_devname(index)) != NULL; index++)
-		diag_printf("    %s\n", name);
-            return CONFIG_BAD;
-	}
-        strcpy((unsigned char *)val_ptr, line);
-	break;
-#endif
-#endif
-    case CONFIG_SCRIPT:
-        // Assume it always changes
-        sp = (unsigned char *)val_ptr;
-        diag_printf("Enter script, terminate with empty line\n");
-        while (true) {
-            *sp = '\0';
-            diag_printf(">> ");
-            ret = _rb_gets(line, sizeof(line), 0);
-            if (ret < 0) return CONFIG_ABORT;
-            if (strlen(line) == 0) break;
-            lp = line;
-            while (*lp) {
-                *sp++ = *lp++;
-            }
-            *sp++ = '\n';
-        }
-        break;
-    case CONFIG_STRING:
-        if (strlen(line) >= MAX_STRING_LENGTH) {
-            diag_printf("Sorry, value is too long\n");
-            return CONFIG_BAD;
-        }
-        strcpy((unsigned char *)val_ptr, line);
-        break;
-    }
-    return CONFIG_CHANGED;
-}
-
-//
-// Manage configuration information with the FLASH
-//
-
-static int
-config_length(int type)
-{
-    switch (type) {
-    case CONFIG_BOOL:
-        return sizeof(bool);
-    case CONFIG_INT:
-        return sizeof(unsigned long);
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    case CONFIG_IP:
-        return sizeof(in_addr_t);
-    case CONFIG_ESA:
-        // Would like this to be sizeof(enet_addr_t), but that causes much
-        // pain since it fouls the alignment of data which follows.
-        return 8;
-#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-    case CONFIG_NETPORT:
-        return MAX_STRING_LENGTH;
-#endif
-#endif
-    case CONFIG_STRING:
-        return MAX_STRING_LENGTH;
-    case CONFIG_SCRIPT:
-        return MAX_SCRIPT_LENGTH;
-    default:
-        return 0;
-    }
-}
-
-static cmd_fun do_flash_config;
-RedBoot_cmd("fconfig",
-            "Manage configuration kept in FLASH memory",
-            "[-i] [-l] [-n] [-f] [-d] | [-d] nickname [value]",
-            do_flash_config
-    );
-
-static void
-do_flash_config(int argc, char *argv[])
-{
-    bool need_update = false;
-    struct config_option *optend = __CONFIG_options_TAB_END__;
-    struct config_option *opt = __CONFIG_options_TAB__;
-    struct option_info opts[5];
-    bool list_only;
-    bool nicknames;
-    bool fullnames;
-    bool dumbterminal;
-    int list_opt = 0;
-    unsigned char *dp;
-    int len, ret;
-    char *title;
-    char *onlyone = NULL;
-    char *onevalue = NULL;
-    bool doneone = false;
-    bool init = false;
-
-    if (!__flash_init) {
-        diag_printf("Sorry, no FLASH memory is available\n");
-        return;
-    }
-    memcpy(backup_config, config, sizeof(struct _config));
-    script = (unsigned char *)0;
-
-    init_opts(&opts[0], 'l', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&list_only, (bool *)0, "list configuration only");
-    init_opts(&opts[1], 'n', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&nicknames, (bool *)0, "show nicknames");
-    init_opts(&opts[2], 'f', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&fullnames, (bool *)0, "show full names");
-    init_opts(&opts[3], 'i', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&init, (bool *)0, "initialize configuration database");
-    init_opts(&opts[4], 'd', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&dumbterminal, (bool *)0, "dumb terminal: no clever edits");
-
-    // First look to see if we are setting or getting a single option
-    // by just quoting its nickname
-    if ( (2 == argc && '-' != argv[1][0]) ||
-         (3 == argc && '-' != argv[1][0] && '-' != argv[2][0])) {
-        // then the command was "fconfig foo [value]"
-        onlyone = argv[1];
-        onevalue = (3 == argc) ? argv[2] : NULL;
-        list_opt = LIST_OPT_NICKNAMES;
-    }
-    // Next see if we are setting or getting a single option with a dumb
-    // terminal invoked, ie. no line editing.
-    else if (3 == argc &&
-             '-' == argv[1][0] && 'd' == argv[1][1] && 0 == argv[1][2] && 
-             '-' != argv[2][0]) {
-        // then the command was "fconfig -d foo"
-        onlyone = argv[2];
-        onevalue = NULL;
-        list_opt = LIST_OPT_NICKNAMES | LIST_OPT_DUMBTERM;
-    }
-    else {
-        if (!scan_opts(argc, argv, 1, opts, 5, 0, 0, ""))
-            return;
-        list_opt |= list_only ? LIST_OPT_LIST_ONLY : 0;
-        list_opt |= nicknames ? LIST_OPT_NICKNAMES : LIST_OPT_FULLNAMES;
-        list_opt |= fullnames ? LIST_OPT_FULLNAMES : 0;
-        list_opt |= dumbterminal ? LIST_OPT_DUMBTERM : 0;
-    }
-
-    if (init && verify_action("Initialize non-volatile configuration")) {
-        config_init();
-        need_update = true;
-    }
-
-    dp = &config->config_data[0];
-    while (dp < &config->config_data[sizeof(config->config_data)]) {
-        if (CONFIG_OBJECT_TYPE(dp) == CONFIG_EMPTY) {
-            break;
-        }
-        len = 4 + CONFIG_OBJECT_KEYLEN(dp) + CONFIG_OBJECT_ENABLE_KEYLEN(dp) + 
-            config_length(CONFIG_OBJECT_TYPE(dp));
-        // Provide a title for well known [i.e. builtin] objects
-        title = (char *)NULL;
-        opt = __CONFIG_options_TAB__;
-        while (opt != optend) {
-            if (strcmp(opt->key, CONFIG_OBJECT_KEY(dp)) == 0) {
-                title = opt->title;
-                break;
-            }
-            opt++;
-        }
-        if ( onlyone && 0 != strcmp(CONFIG_OBJECT_KEY(dp), onlyone) )
-            ret = CONFIG_OK; // skip this entry
-        else {
-            doneone = true;
-            ret = get_config(dp, title, list_opt, onevalue); // do this opt
-        }
-        switch (ret) {
-        case CONFIG_DONE:
-            goto done;
-        case CONFIG_ABORT:
-            memcpy(config, backup_config, sizeof(struct _config));
-            return;
-        case CONFIG_CHANGED:
-            need_update = true;
-        case CONFIG_OK:
-            dp += len;
-            break;
-        case CONFIG_BACK:
-            dp = &config->config_data[0];
-            continue;
-        case CONFIG_BAD:
-            // Nothing - make him do it again
-            diag_printf ("** invalid entry\n");
-            onevalue = NULL; // request a good value be typed in - or abort/whatever
-        }
-    }
-
- done:
-    if (NULL != onlyone && !doneone) {
-#ifdef CYGSEM_REDBOOT_ALLOW_DYNAMIC_FLASH_CONFIG_DATA
-        if (verify_action("** entry '%s' not found - add", onlyone)) {
-            struct config_option opt;
-            diag_printf("Trying to add value\n");
-        }
-#else
-        diag_printf("** entry '%s' not found", onlyone);
-#endif
-    }
-    if (!need_update)
-        return;
-    flash_write_config();
-}
-
-
-#ifdef CYGSEM_REDBOOT_FLASH_ALIASES
-static cmd_fun do_alias;
-RedBoot_cmd("alias",
-            "Manage aliases kept in FLASH memory",
-            "name [value]",
-            do_alias
-    );
-
-static void
-make_alias(char *alias, char *name)
-{
-    diag_sprintf(alias, "alias/%s", name);
-}
-
-static void
-do_alias(int argc, char *argv[])
-{
-    char name[80];
-    char *val;
-    struct config_option opt;
-
-    switch (argc) {
-    case 2:
-        make_alias(name, argv[1]);
-        if (flash_get_config(name, &val, CONFIG_STRING)) {
-            diag_printf("'%s' = '%s'\n", argv[1], val);
-        } else {
-            diag_printf("'%s' not found\n", argv[1]);
-        }
-        break;
-    case 3:
-        if (strlen(argv[2]) >= MAX_STRING_LENGTH) {
-            diag_printf("Sorry, value is too long\n");
-            break;
-        }
-        make_alias(name, argv[1]);
-        opt.type = CONFIG_STRING;
-        opt.enable = (char *)0;
-        opt.enable_sense = 1;
-        opt.key = name;
-        opt.dflt = (CYG_ADDRESS)argv[2];
-        flash_add_config(&opt, true);
-        break;
-    default:
-        diag_printf("usage: alias name [value]\n");
-    }
-}
-
-// Lookup an alias. First try plain string aliases. If that fails try
-// other types so allowing access to all configured values. This allows
-// for alias (macro) expansion of normal 'fconfig' data, such as the
-// board IP address.
-char *
-flash_lookup_alias(char *alias, char *alias_buf)
-{
-    char name[80];
-    char *val;
-    unsigned char * dp;
-    void *val_ptr;
-    int type;
-    bool hold_bool_val;
-    long hold_long_val;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    int esa_ptr;
-#endif
-
-    make_alias(name, alias);
-    if (flash_get_config(name, &val, CONFIG_STRING)) {
-        return val;
-    } else {
-        dp = flash_lookup_config(alias);
-        if (dp) {
-            val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
-            switch (type = CONFIG_OBJECT_TYPE(dp)) {
-            case CONFIG_BOOL:
-                memcpy(&hold_bool_val, val_ptr, sizeof(bool));
-                diag_sprintf(alias_buf, "%s", hold_bool_val ? "true" : "false");
-                break;
-            case CONFIG_INT:
-                memcpy(&hold_long_val, val_ptr, sizeof(unsigned long));
-                diag_sprintf(alias_buf,"%ld", hold_long_val);
-                break;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-            case CONFIG_IP:
-                diag_sprintf(alias_buf,"%s", inet_ntoa((in_addr_t *)val_ptr));
-                break;
-            case CONFIG_ESA:
-                for (esa_ptr = 0;  esa_ptr < sizeof(enet_addr_t);  esa_ptr++) {
-                    diag_sprintf(alias_buf+(3*esa_ptr), "0x%02X", ((unsigned char *)val_ptr)[esa_ptr]);
-                    if (esa_ptr < (sizeof(enet_addr_t)-1)) diag_printf(":");
-                }
-                break;
-#endif
-            case CONFIG_SCRIPT:
-                return (char *) val_ptr;
-                break;
-            default:
-                return (char *)NULL;
-            }
-            return alias_buf;
-        } 
-        return (char *)NULL;
-    }
-}
-
-#endif //  CYGSEM_REDBOOT_FLASH_ALIASES
-
-//
-// Write the in-memory copy of the configuration data to the flash device.
-//
-void
-flash_write_config(void)
-{
-#ifndef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-    int stat;
-    void *err_addr;
-#endif
-
-    config->len = sizeof(struct _config);
-    config->key1 = CONFIG_KEY1;  
-    config->key2 = CONFIG_KEY2;
-    config->cksum = cyg_crc32((unsigned char *)config, sizeof(struct _config)-sizeof(config->cksum));
-    if (verify_action("Update RedBoot non-volatile configuration")) {
-#ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-        memcpy(fis_work_block, fis_addr, fisdir_size);
-        fis_update_directory();
-#else //  CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
-        // Insure [quietly] that the config page is unlocked before trying to update
-        flash_unlock((void *)cfg_base, cfg_size, (void **)&err_addr);
-#endif
-        if ((stat = flash_erase(cfg_base, cfg_size, (void **)&err_addr)) != 0) {
-            diag_printf("   initialization failed at %p: %s\n", err_addr, flash_errmsg(stat));
-        } else {
-            if ((stat = flash_program(cfg_base, (void *)config, sizeof(struct _config), 
-                                      (void **)&err_addr)) != 0) {
-                diag_printf("Error writing config data at %p: %s\n", 
-                            err_addr, flash_errmsg(stat));
-            }
-        }
-#ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
-        // Insure [quietly] that the config data is locked after the update
-        flash_lock((void *)cfg_base, cfg_size, (void **)&err_addr);
-#endif
-#endif
-    }
-}
-
-//
-// Find the configuration entry for a particular key
-//
-static unsigned char *
-flash_lookup_config(char *key)
-{
-    unsigned char *dp;
-    int len;
-
-    if (!config_ok) return (unsigned char *)NULL;
-
-    dp = &config->config_data[0];
-    while (dp < &config->config_data[sizeof(config->config_data)]) {
-        len = 4 + CONFIG_OBJECT_KEYLEN(dp) + CONFIG_OBJECT_ENABLE_KEYLEN(dp) +
-            config_length(CONFIG_OBJECT_TYPE(dp));
-        if (strcmp(key, CONFIG_OBJECT_KEY(dp)) == 0) {
-            return dp;
-        }
-        dp += len;
-    }
-//    diag_printf("Can't find config data for '%s'\n", key);
-    return false;
-}
-
-//
-// Retrieve a data object from the data base (in memory copy)
-//
-bool
-flash_get_config(char *key, void *val, int type)
-{
-    unsigned char *dp;
-    void *val_ptr;
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
-    struct _config *save_config = 0;
-#endif
-
-    if (!config_ok) return false;
-
-    if ((dp = flash_lookup_config(key)) != (unsigned char *)NULL) {
-        if (CONFIG_OBJECT_TYPE(dp) == type) {
-            val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
-            switch (type) {
-                // Note: the data may be unaligned in the configuration data
-            case CONFIG_BOOL:
-                memcpy(val, val_ptr, sizeof(bool));
-                break;
-            case CONFIG_INT:
-                memcpy(val, val_ptr, sizeof(unsigned long));
-                break;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-            case CONFIG_IP:
-                memcpy(val, val_ptr, sizeof(in_addr_t));
-                break;
-            case CONFIG_ESA:
-                memcpy(val, val_ptr, sizeof(enet_addr_t));
-                break;
-#endif
-#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-	    case CONFIG_NETPORT:
-#endif
-            case CONFIG_STRING:
-            case CONFIG_SCRIPT:
-                // Just return a pointer to the script/line
-                *(unsigned char **)val = (unsigned char *)val_ptr;
-                break;
-            }
-        } else {
-            diag_printf("Request for config value '%s' - wrong type\n", key);
-        }
-        return true;
-    }
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
-    // Did not find key. Is configuration data valid?
-    // Check to see if the config data is valid, if not, revert to 
-    // readonly mode, by setting config to readonly_config.  We
-    // will set it back before we leave this function.
-    if ( (config != readonly_config) && ((cyg_crc32((unsigned char *)config, 
-               sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
-        (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2))) {
-        save_config = config;
-        config = readonly_config;
-        if ((cyg_crc32((unsigned char *)config, 
-                       sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
-            (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
-            diag_printf("FLASH configuration checksum error or invalid key\n");
-            config = save_config;
-            return false;
-        }
-        else{
-            diag_printf("Getting config information in READONLY mode\n");
-            return flash_get_config(key, val, type);
-        }        
-    }
-#endif
-    return false;
-}
-
-//
-// Copy data into the config area
-//
-static void
-flash_config_insert_value(unsigned char *dp, struct config_option *opt)
-{
-    switch (opt->type) {
-        // Note: the data may be unaligned in the configuration data
-    case CONFIG_BOOL:
-        memcpy(dp, (void *)&opt->dflt, sizeof(bool));
-        break;
-    case CONFIG_INT:
-        memcpy(dp, (void *)&opt->dflt, sizeof(unsigned long));
-        break;
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    case CONFIG_IP:
-        memcpy(dp, (void *)&opt->dflt, sizeof(in_addr_t));
-        break;
-    case CONFIG_ESA:
-        memcpy(dp, (void *)opt->dflt, sizeof(enet_addr_t));
-        break;
-#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
-    case CONFIG_NETPORT:
-	// validate dflt and if not acceptable use first port
-        {
-	    int index;
-	    const char *name;
-	    for (index = 0; (name = net_devname(index)) != NULL; index++)
-		if (!strcmp((char *)opt->dflt, name))
-		    break;
-	    if (name == NULL)
-		name = net_devname(0);
-	    memcpy(dp, name, strlen(name) + 1);
-        }
-        break;
-#endif
-#endif
-    case CONFIG_STRING:
-        memcpy(dp, (void *)opt->dflt, config_length(CONFIG_STRING));
-        break;
-    case CONFIG_SCRIPT:
-        break;
-    }
-}
-
-//
-// Add a new option to the database
-//
-bool
-flash_add_config(struct config_option *opt, bool update)
-{
-    unsigned char *dp, *kp;
-    int len, elen, size;
-
-    // If data item is already present, just update it
-    // Note: only the data value can be thusly changed
-    if ((dp = flash_lookup_config(opt->key)) != (unsigned char *)NULL) {
-        flash_config_insert_value(CONFIG_OBJECT_VALUE(dp), opt);
-        if (update) {
-            flash_write_config();
-        }
-        return true;
-    }
-    // Add the data item
-    dp = &config->config_data[0];
-    size = 0;
-    while (size < sizeof(config->config_data)) {
-        if (CONFIG_OBJECT_TYPE(dp) == CONFIG_EMPTY) {
-            kp = opt->key;
-            len = strlen(kp) + 1;
-            size += len + 2 + 2 + config_length(opt->type);
-            if (opt->enable) {
-                elen = strlen(opt->enable) + 1;
-                size += elen;
-            } else {
-                elen = 0;
-            }
-            if (size > sizeof(config->config_data)) {
-                break;
-            }
-            CONFIG_OBJECT_TYPE(dp) = opt->type; 
-            CONFIG_OBJECT_KEYLEN(dp) = len;
-            CONFIG_OBJECT_ENABLE_SENSE(dp) = opt->enable_sense;
-            CONFIG_OBJECT_ENABLE_KEYLEN(dp) = elen;
-            dp = CONFIG_OBJECT_KEY(dp);
-            while (*kp) *dp++ += *kp++;
-            *dp++ = '\0';    
-            if (elen) {
-                kp = opt->enable;
-                while (*kp) *dp++ += *kp++;
-                *dp++ = '\0';    
-            }
-            flash_config_insert_value(dp, opt);
-            if (update) {
-                flash_write_config();
-            }
-            return true;
-        } else {
-            len = 4 + CONFIG_OBJECT_KEYLEN(dp) + CONFIG_OBJECT_ENABLE_KEYLEN(dp) +
-                config_length(CONFIG_OBJECT_TYPE(dp));
-            dp += len;
-            size += len;
-        }
-    }
-    diag_printf("No space to add '%s'\n", opt->key);
-    return false;
-}
-
-//
-// Reset/initialize configuration data - used only when starting from scratch
-//
-static void
-config_init(void)
-{
-    // Well known option strings
-    struct config_option *optend = __CONFIG_options_TAB_END__;
-    struct config_option *opt = __CONFIG_options_TAB__;
-
-    memset(config, 0, sizeof(struct _config));
-    while (opt != optend) {
-        if (!flash_add_config(opt, false)) {
-            return;
-        }
-        opt++;
-    }
-    config_ok = true;
-}
-
-//
-// Attempt to get configuration information from the FLASH.
-// If available (i.e. good checksum, etc), initialize "known"
-// values for later use.
-//
-static void
-load_flash_config(void)
-{
-    bool use_boot_script;
-
-    config_ok = false;
-    script = (unsigned char *)0;
-    if (!do_flash_init()) return;
-    config = (struct _config *)(workspace_end-sizeof(struct _config));
-    backup_config = (struct _config *)((CYG_ADDRESS)config-sizeof(struct _config));
-    workspace_end = (unsigned char *)backup_config;
-    cfg_size = (flash_block_size > sizeof(struct _config)) ? 
-        sizeof(struct _config) : 
-        _rup(sizeof(struct _config), flash_block_size);
-#ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-    cfg_size = _rup(cfg_size, sizeof(struct fis_image_desc));
-    if ((flash_block_size-cfg_size) < 8*sizeof(struct fis_image_desc)) {
-        // Too bad this can't be checked at compile/build time
-        diag_printf("Sorry, FLASH config exceeds available space in FIS directory\n");
-        return;
-    }
-    fisdir_size = flash_block_size - cfg_size;
-    cfg_base = (void *)(((CYG_ADDRESS)fis_addr + flash_block_size) - cfg_size);
-#else
-    if (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK < 0) {
-        cfg_base = (void *)((CYG_ADDRESS)flash_end + 1 -
-           _rup(_rup((-CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*flash_block_size), cfg_size), flash_block_size));
-    } else {
-        cfg_base = (void *)((CYG_ADDRESS)flash_start + 
-           _rup(_rup((CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*flash_block_size), cfg_size), flash_block_size));
-    }
-#endif
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
-    readonly_config = cfg_base;
-#endif
-    memcpy(config, cfg_base, sizeof(struct _config));
-    if ((cyg_crc32((unsigned char *)config, 
-                   sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
-        (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
-        diag_printf("FLASH configuration checksum error or invalid key\n");
-        config_init();
-        return;
-    }
-    config_ok = true;
-    flash_get_config("boot_script", &use_boot_script, CONFIG_BOOL);
-    if (use_boot_script) {
-        flash_get_config("boot_script_data", &script, CONFIG_SCRIPT);
-        flash_get_config("boot_script_timeout", &script_timeout, CONFIG_INT);
-    }
-#ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
-    if (flash_get_config("console_baud_rate", &console_baud_rate, CONFIG_INT)) {
-        extern int set_console_baud_rate(int);
-        set_console_baud_rate(console_baud_rate);
-    }
-#endif
-}
-
-RedBoot_init(load_flash_config, RedBoot_INIT_FIRST);
-
-#endif // CYGSEM_REDBOOT_FLASH_CONFIG
 
 // EOF flash.c

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -63,6 +64,7 @@ typedef int _printf(const char *fmt, ...);
 externC int flash_init(void *work_space, int work_space_length, _printf *pf);
 externC int flash_erase(void *base, int len, void **err_address);
 externC int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
+externC int flash_read(void *flash_base, void *ram_base, int len, void **err_address);
 externC void flash_dev_query(void *data);
 #ifdef CYGHWR_IO_FLASH_BLOCK_LOCKING
 externC int flash_lock(void *base, int len, void **err_address);

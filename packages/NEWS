@@ -1,3 +1,6 @@
+* New port to TAMS MOAB (PowerPC 405GPr) development board
+* FLASH layer can now support NAND devices
+* RedBoot 'fconfig' data can now be stored in either FLASH or EEPROM
 * VNC server (remote access graphic system), contributed by
   Chris Garry  <cgarry@sweeneydesign.co.uk>
 * New port to Analogue & Micro Rattler (Motorola MPC8250)

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -333,6 +334,27 @@ pc_serial_init(struct cyg_devtab_entry *tab)
 {
     serial_channel *chan = (serial_channel *)tab->priv;
     pc_serial_info *ser_chan = (pc_serial_info *)chan->dev_priv;
+
+#ifdef CYG_IO_SERIAL_GENERIC_16X5X_BAUD_GENERATOR
+    // Fill in baud rate table - used for platforms where this cannot
+    // be determined statically
+    int baud_idx, baud_val;
+    if (select_baud[0] == 9999) {
+        // Table not yet initialized
+        // Assumes that 'select_baud' looks like this:
+        //   static int select_baud[] = {
+        //       9999,  -- marker
+        //       50,    -- first baud rate
+        //       110,   -- second baud rate
+        // etc.
+        for (baud_idx = 1;  baud_idx < sizeof(select_baud)/sizeof(select_baud[0]);  baud_idx++) {
+            baud_val = CYG_IO_SERIAL_GENERIC_16X5X_BAUD_GENERATOR(select_baud[baud_idx]);
+            select_baud[baud_idx] = baud_val;
+        }
+        select_baud[0] = 0;
+    }
+#endif
+
 #ifdef CYGDBG_IO_INIT
     diag_printf("16x5x SERIAL init - dev: %x.%d\n", 
                 ser_chan->base, ser_chan->int_num);

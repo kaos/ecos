@@ -1,3 +1,13 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/vectors.S: Respect initial MMU settings when handling interrupts
+	and exceptions.  Previously, the code would always reenable the MMU,
+	even if it wasn't on when the interrupt occurred.
+
+	* include/hal_io.h: Allow variants to provide I/O definitions
+
+	* cdl/hal_powerpc.cdl: Allow override of CYGHWR_HAL_POWERPC_ENABLE_MMU
+
 2003-08-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c: New file - architecture level
@@ -51,6 +61,10 @@
 
 	* src/vectors.S: Provide pointer to saved registers on interrupt.
 	This is necessary for profiling support.
+	
+2002-11-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_mk_defs.c: Allow platforms to provide their own definitions.
 
 2002-11-13  Gary Thomas  <gthomas@ecoscentric.com>
 

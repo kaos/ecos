@@ -1,3 +1,10 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c: 
+	* include/flash.h: 
+	* cdl/io_flash.cdl: Add support for NAND (indirectly accessed)
+	devices.  This includes a generic "flash_read_buf()" function.
+
 2003-04-14  Jani Monoses  <jani@iv.ro>
 
 	* include/flash_dev.h: Include <cyg/infra/cyg_type.h> 

@@ -82,7 +82,12 @@ EXTERN int argc;
 #define MAX_ARGV 16
 EXTERN char *argv[MAX_ARGV];
 EXTERN unsigned char *ram_start, *ram_end;
-EXTERN unsigned char *user_ram_start, *user_ram_end;
+EXTERN struct _mem_segment {
+    unsigned char *start, *end;
+} mem_segments[CYGBLD_REDBOOT_MAX_MEM_SEGMENTS];
+#define NO_MEMORY (unsigned char *)0xFFFFFFFF
+EXTERN bool valid_address(unsigned char *addr);
+EXTERN void cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end);
 EXTERN unsigned char *workspace_start, *workspace_end;
 EXTERN unsigned long workspace_size;
 
@@ -118,6 +123,10 @@ EXTERN int console_baud_rate;
 
 #ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
 EXTERN unsigned char *fis_zlib_common_buffer;
+#endif
+
+#ifdef CYGSEM_REDBOOT_PLF_STARTUP
+EXTERN void cyg_plf_redboot_startup(void);
 #endif
 
 // Prototypes

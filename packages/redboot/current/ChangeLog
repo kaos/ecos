@@ -1,3 +1,27 @@
+2003-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/net/tftp_client.c: Make timeout on very first transaction really
+	long - again since some servers are just slow/ill mannered.
+
+	* src/net/net_io.c: Allow default server IP to be always enabled, thus
+	it can override what is provided by BOOTP/DHCP (since some DHCP servers
+	don't provide this properly).
+
+	* src/time_date.cxx: New file - support "date" command for platforms
+	with battery backed up clocks.
+
+	* src/fconfig.c: New file - split out from flash.c
+
+	* src/main.c: 
+	* src/load.c: 
+	* src/flash.c: 
+	* src/alias.c: 
+	* include/redboot.h: 
+	* cdl/redboot.cdl: Support multiple "RAM" segments (known writable
+	memory).  Also rearrange FLASH & FCONFIG, separating them as much
+	as possible and supporting FCONFIG data stored in some other sort
+	of device, like EEPROM.
+
 2003-09-09  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (flash_config_insert_value): Default value was
