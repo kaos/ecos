@@ -1,3 +1,11 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/testfs.c: Fixed compiler warnigs for passing wrong types
+	to diag_printf.
+	* tests/fileio1.c: Ditto
+	* tests/select.c: Ditto
+
+
 2005-02-24  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/fileio.h: Only include kapi.h when

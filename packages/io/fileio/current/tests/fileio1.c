@@ -83,7 +83,7 @@
 //==========================================================================
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf("<INFO>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
+diag_printf("<INFO>: " #_fn "() returned %ld %s\n", (long)_res, _res<0?strerror(errno):"");
 
 //==========================================================================
 
@@ -133,7 +133,7 @@ static void listdir( char *name, int statp )
             }
             else
             {
-                diag_printf(" [mode %08x nlink %d size %d]",
+                diag_printf(" [mode %08x nlink %d size %ld]",
                             sbuf.st_mode,sbuf.st_nlink,sbuf.st_size);
             }
         }
