@@ -78,6 +78,7 @@ static int jffs2_fo_dirlseek(struct CYG_FILE_TAG *fp, off_t * pos, int whence);
 
 static int jffs2_read_inode (struct _inode *inode);
 static void jffs2_clear_inode (struct _inode *inode);
+static int jffs2_truncate_file (struct _inode *inode);
 
 //==========================================================================
 // Filesystem table entries
@@ -738,18 +739,20 @@ static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 		return EISDIR;
 	}
 
-#ifdef CYGOPT_FS_JFFS2_WRITE
+             // If the O_TRUNC bit is set we must clean out the file data.
 	if (mode & O_TRUNC) {
-		struct jffs2_inode_info *f = JFFS2_INODE_INFO(node);
-		struct jffs2_sb_info *c = JFFS2_SB_INFO(node->i_sb);
-		// If the O_TRUNC bit is set we must clean out the file data.
-
-		node->i_size = 0;
-		jffs2_truncate_fraglist(c, &f->fragtree, 0);
-		// Update file times
-		node->i_ctime = node->i_mtime = cyg_timestamp();
-	}
+#ifdef CYGOPT_FS_JFFS2_WRITE
+             err = jffs2_truncate_file(node);
+             if (err) {
+                  jffs2_iput(node);
+                  return err;
+             }
+#else
+             jffs2_iput(node);
+             return EROFS;
 #endif
+        }
+        
 	// Initialise the file object
 	file->f_flag |= mode & CYG_FILE_MODE_MASK;
 	file->f_type = CYG_FILE_TYPE_FILE;
@@ -1318,6 +1321,74 @@ static int jffs2_extend_file (struct _inode *inode, struct jffs2_raw_inode *ri,
 	inode->i_size = offset;
 	up(&f->sem);
 	return 0;
+}
+
+// jffs2_fo_open()
+// Truncate a file
+static int jffs2_truncate_file (struct _inode *inode)
+{
+     struct jffs2_inode_info *f = JFFS2_INODE_INFO(inode);
+     struct jffs2_sb_info *c = JFFS2_SB_INFO(inode->i_sb);
+     struct jffs2_full_dnode *new_metadata, * old_metadata;
+     struct jffs2_raw_inode *ri;
+     uint32_t phys_ofs, alloclen;
+     int err;
+     
+     ri = jffs2_alloc_raw_inode();
+     if (!ri) {
+          return ENOMEM;
+     }
+     err = jffs2_reserve_space(c, sizeof(*ri), &phys_ofs, &alloclen, ALLOC_NORMAL);
+     
+     if (err) {
+          jffs2_free_raw_inode(ri);
+          return err;
+     }
+     down(&f->sem);
+     ri->magic = cpu_to_je16(JFFS2_MAGIC_BITMASK);
+     ri->nodetype = cpu_to_je16(JFFS2_NODETYPE_INODE);
+     ri->totlen = cpu_to_je32(sizeof(*ri));
+     ri->hdr_crc = cpu_to_je32(crc32(0, ri, sizeof(struct jffs2_unknown_node)-4));
+     
+     ri->ino = cpu_to_je32(inode->i_ino);
+     ri->version = cpu_to_je32(++f->highest_version);
+     
+     ri->uid = cpu_to_je16(inode->i_uid);
+     ri->gid = cpu_to_je16(inode->i_gid);
+     ri->mode = cpu_to_jemode(inode->i_mode);
+     ri->isize = cpu_to_je32(0);
+     ri->atime = cpu_to_je32(inode->i_atime);
+     ri->mtime = cpu_to_je32(cyg_timestamp());
+     ri->offset = cpu_to_je32(0);
+     ri->csize = ri->dsize = cpu_to_je32(0);
+     ri->compr = JFFS2_COMPR_NONE;
+     ri->node_crc = cpu_to_je32(crc32(0, ri, sizeof(*ri)-8));
+     ri->data_crc = cpu_to_je32(0);
+     new_metadata = jffs2_write_dnode(c, f, ri, NULL, 0, 
+                                      phys_ofs, ALLOC_NORMAL);
+     if (IS_ERR(new_metadata)) {
+          jffs2_complete_reservation(c);
+          jffs2_free_raw_inode(ri);
+          up(&f->sem);
+          return PTR_ERR(new_metadata);
+     }
+     
+     /* It worked. Update the inode */
+     inode->i_mtime = cyg_timestamp();
+     inode->i_size = 0;
+     old_metadata = f->metadata;
+     jffs2_truncate_fraglist (c, &f->fragtree, 0);
+     f->metadata = new_metadata;
+     if (old_metadata) {
+          jffs2_mark_node_obsolete(c, old_metadata->raw);
+          jffs2_free_full_dnode(old_metadata);
+     }
+     jffs2_free_raw_inode(ri);
+     
+     up(&f->sem);
+     jffs2_complete_reservation(c);
+     
+     return 0;
 }
 
 static int jffs2_fo_write(struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
