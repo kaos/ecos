@@ -790,7 +790,7 @@ fis_create(int argc, char *argv[])
         _show_invalid_flash_address(flash_addr, stat);
         return;
     }
-    if (flash_addr_set && flash_addr & (flash_block_size-1)) {
+    if (flash_addr_set && ((flash_addr & (flash_block_size-1)) != 0)) {
         diag_printf("Invalid FLASH address: %p\n", (void *)flash_addr);
         diag_printf("   must be 0x%x aligned\n", flash_block_size);
         return;
@@ -838,6 +838,26 @@ fis_create(int argc, char *argv[])
             }
         }
     } else {
+#ifdef CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS
+        // Make sure that any FLASH address specified directly is truly free
+        if (flash_addr_set && !no_copy) {
+            struct free_chunk chunks[CYGDAT_REDBOOT_FIS_MAX_FREE_CHUNKS];
+            int idx, num_chunks;
+            bool is_free = false;
+
+            num_chunks = find_free(chunks);
+            for (idx = 0;  idx < num_chunks;  idx++) {
+                if ((flash_addr >= chunks[idx].start) && 
+                    ((flash_addr+length-1) <= chunks[idx].end)) {
+                    is_free = true;
+                }
+            }
+            if (!is_free) {
+                diag_printf("Invalid FLASH address - not free!\n");
+                return;
+            }
+        }
+#endif
         // If not image by that name, try and find an empty slot
         img = (struct fis_image_desc *)fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
