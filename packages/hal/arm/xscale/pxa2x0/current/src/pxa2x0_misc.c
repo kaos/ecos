@@ -109,7 +109,7 @@ void
 _pxa2x0_set_GPIO_mode(int bit, int mode, int dir)
 {
     int bank = bit / 32;
-    unsigned long *gpdr, *gafr;
+    unsigned volatile long *gpdr, *gafr;
 
     gpdr = &PXA2X0_GPDR0[bank];
     gafr = &PXA2X0_GAFR0_L[(bit&0x30)>>4];
