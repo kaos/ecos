@@ -1,3 +1,15 @@
+2003-07-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/linux/init.h: 
+	* include/linux/vmalloc.h: New dummy files so that jffs2 will
+	compile.
+
+2003-07-27  Michael Checky  <Michael_Checky@ThermoKing.com>
+            Andrew Lunn <andrew.lunn@ascom.ch>
+	
+ 	* include/linux/kernel.h: Changed the #define IS_ERR to work correctly
+ 	negative error values returned by the jffs2 code.
+
 2003-06-10  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/linux/stat.h: Removed #defines which has been added to 

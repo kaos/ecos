@@ -4,9 +4,9 @@
 
 #define jiffies 100
 
-#define ERR_PTR(err) (void*)(err)
-#define PTR_ERR(err) (cyg_int32)(err)
-#define IS_ERR(err) (err==NULL)
+#define ERR_PTR(err) ((void*)(err))
+#define PTR_ERR(err) ((cyg_int32)(err))
+#define IS_ERR(err) ((unsigned long)err > (unsigned long)-1000L)
 
 #define CURRENT_TIME cyg_timestamp()
 
@@ -26,3 +26,7 @@
 
 
 #endif /* __LINUX_KERNEL_H__ */
+
+
+
+
