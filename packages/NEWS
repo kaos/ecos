@@ -1,3 +1,5 @@
+* Added support for network under vmWare using the LANCE chipset. Contributed
+  by Iztok Zupet. 
 * Added support for FAT12/16 filesystems. Contributed by
   Savin Zlobec of Elatec Engineering.
 * Support for Spanning Tree Protocol in the old OpenBSD stack

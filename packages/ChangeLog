@@ -1,3 +1,8 @@
+2004-02-27  Iztok Zupet  <iz@elsis.si>
+
+        * ecos.db: Added the LANCEPCI packages and support for the vmWare
+	target
+
 2004-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* ecos.db: Include CYGPKG_DEVS_ETH_ARM_KS32C5000 in snds100 and

@@ -1364,6 +1364,14 @@ package CYGPKG_DEVS_ETH_AMD_PCNET {
         description     "Ethernet driver for AMD PCNET controller."
 }
 
+package CYGPKG_DEVS_ETH_AMD_LANCEPCI {
+	alias 		{ "AMD Lance PCI ethernet driver" lancepci_eth_driver }
+	hardware
+	directory	devs/eth/amd/lancepci
+	script		amd_lancepci_eth_drivers.cdl
+        description     "Ethernet driver for AMD Lance PCI controller (vmWare)."
+}
+
 package CYGPKG_DEVS_ETH_MIPS_MIPS32_MALTA {
 	alias 		{ "MIPS Malta board ethernet driver" malta_eth_driver }
 	hardware
@@ -1629,6 +1637,15 @@ package CYGPKG_DEVS_ETH_I386_PC_I82544 {
 	directory	devs/eth/i386/pc/i82544
 	script		i386_pc_i82544_eth_drivers.cdl
         description     "Ethernet driver for standard PC with Intel 82544 Gigabit NIC."
+}
+
+package CYGPKG_DEVS_ETH_I386_PC_LANCEPCI {
+	alias 		{ "Standard PC with AMD Lance PCI device"
+			   devs_eth_i386_pc_lancepci pc_ether_lancepci }
+	hardware
+	directory	devs/eth/i386/pc/lancepci
+	script		i386_pc_lancepci_eth_drivers.cdl
+        description     "Ethernet driver for standard PC with AMD Lance NIC (vmWare)."
 }
 
 package CYGPKG_DEVS_ETH_MIPS_ATLAS {
@@ -4380,6 +4397,25 @@ target pc_giga {
     	    The pc target provides the packages needed to run eCos binaries
             on a standard i386 PC motherboard with an Intel 82543/82544 based
             Gigabit ethernet interface."
+}
+
+target pc_vmWare {
+        alias		{ "i386 PC target (vmWare)" }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_GENERIC
+                          CYGPKG_HAL_I386_PC
+                          CYGPKG_HAL_I386_PCMB
+			  CYGPKG_IO_PCI
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+	                  CYGPKG_IO_SERIAL_I386_PC
+			  CYGPKG_DEVS_ETH_AMD_LANCEPCI
+			  CYGPKG_DEVS_ETH_I386_PC_LANCEPCI
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
+                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
+        }
+        description "
+    	    The pc target provides the packages needed to run eCos binaries
+            on a standard i386 PC under wmWare."
 }
 
 # --------------------------------------------------------------------------
