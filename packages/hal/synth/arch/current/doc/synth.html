@@ -3,9 +3,6 @@
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
 <!-- http://www.opencontent.org/openpub/).                           -->
-<!-- Distribution of substantively modified versions of this         -->
-<!-- document is prohibited without the explicit permission of the   -->
-<!-- copyright holder.                                               -->
 <!-- Distribution of the work or derivative of the work in any       -->
 <!-- standard (paper) book form is prohibited unless prior           -->
 <!-- permission is obtained from the copyright holder.               -->
@@ -16,7 +13,7 @@
 ><meta name="MSSmartTagsPreventParsing" content="TRUE">
 <META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
 "><LINK
 REL="HOME"
 TITLE="eCos Synthetic Target"
@@ -25,8 +22,8 @@ REL="PREVIOUS"
 TITLE="eCos Synthetic Target"
 HREF="hal-synth-arch.html"><LINK
 REL="NEXT"
-TITLE="System Calls"
-HREF="synth-syscalls.html"></HEAD
+TITLE="Installation"
+HREF="synth-install.html"></HEAD
 ><BODY
 CLASS="REFENTRY"
 BGCOLOR="#FFFFFF"
@@ -37,6 +34,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -54,6 +52,7 @@ ALIGN="left"
 VALIGN="bottom"
 ><A
 HREF="hal-synth-arch.html"
+ACCESSKEY="P"
 >Prev</A
 ></TD
 ><TD
@@ -66,7 +65,8 @@ WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="synth-syscalls.html"
+HREF="synth-install.html"
+ACCESSKEY="N"
 >Next</A
 ></TD
 ></TR
@@ -76,9 +76,7 @@ ALIGN="LEFT"
 WIDTH="100%"></DIV
 ><H1
 ><A
-NAME="SYNTH"
->Overview</A
-></H1
+NAME="SYNTH">Overview</H1
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
@@ -86,7 +84,7 @@ NAME="AEN6"
 ></A
 ><H2
 >Name</H2
->Overview&nbsp;--&nbsp;The eCos synthetic target</DIV
+>The eCos synthetic target&nbsp;--&nbsp;Overview</DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
@@ -106,13 +104,13 @@ hardware. Such boards have a number of things in common:
 TYPE="1"
 ><LI
 ><P
->Obviously there has to be at least one processor to do the work.
-Usually this will be a 32-bit processor, but it can be smaller or
-larger. Processor speed will vary widely, depending on the expected
-needs of the application. However usually the exact processor being
-used does not matter very much for most of the development process:
-the use of languages such as C or C++ means that the compiler will
-handle those details.
+>Obviously there has to be at least one processor to do the work. Often
+this will be a 32-bit processor, but it can be smaller or larger.
+Processor speed will vary widely, depending on the expected needs of
+the application. However the exact processor being used tends not to
+matter very much for most of the development process: the use of
+languages such as C or C++ means that the compiler will handle those
+details.
       </P
 ></LI
 ><LI
@@ -161,17 +159,51 @@ Instead of running the embedded application being developed on a
 target board of some sort, it can be run as a Linux process. The
 processor will be the PC's own processor, for example an x86, and the
 memory will be the process' address space. Some I/O facilities can be
-emulated through system calls. For example clock hardware can be
-emulated by setting up a <TT
+emulated directly through system calls. For example clock hardware can
+be emulated by setting up a <TT
 CLASS="LITERAL"
 >SIGALRM</TT
-> signal, which will
-cause the process to be interrupted at regular intervals. This
-emulation of real hardware will not be particularly accurate, for
-example the number of cpu cycles available to the eCos application
-between clock ticks will vary widely depending on what else is running
-on the PC, but for much development work it will be good enough.
+> signal, which
+will cause the process to be interrupted at regular intervals. This
+emulation of real hardware will not be particularly accurate, the
+number of cpu cycles available to the eCos application between clock
+ticks will vary widely depending on what else is running on the PC,
+but for much development work it will be good enough.
     </P
+><P
+>Other I/O facilities are provided through an I/O auxiliary process,
+ecosynth, that gets spawned by the eCos application during startup.
+When an eCos device driver wants to perform some I/O operation, for
+example send out an ethernet packet, it sends a request to the I/O
+auxiliary. That is an ordinary Linux application so it has ready
+access to all normal Linux I/O facilities. To emulate a device
+interrupt the I/O auxiliary can raise a <TT
+CLASS="LITERAL"
+>SIGIO</TT
+>
+signal within the eCos application. The HAL's interrupt subsystem
+installs a signal handler for this, which will then invoke the
+standard eCos ISR/DSR mechanisms. The I/O auxiliary is based around
+Tcl scripting, making it easy to extend and customize. It should be
+possible to configure the synthetic target so that its I/O
+functionality is similar to what will be available on the final target
+hardware for the application being developed.
+    </P
+><DIV
+CLASS="INFORMALFIGURE"
+><A
+NAME="AEN25"><P
+></P
+><DIV
+CLASS="MEDIAOBJECT"
+><P
+><IMG
+SRC="overview.gif"
+ALIGN="CENTER"></P
+></DIV
+><P
+></P
+></DIV
 ><P
 >A key requirement for synthetic target code is that the embedded
 application must not be linked with any of the standard Linux
@@ -209,12 +241,20 @@ arguments on to the stack and executes the trap instruction. The Linux
 kernel cannot tell the difference, so it will perform the I/O
 operation requested by the synthetic target. With appropriate
 knowledge of what system calls are available, this makes it possible
-to emulate the required I/O facilities. For example diagnostic output
-can be achieved by a <TT
+to emulate the required I/O facilities. For example, spawning the
+ecosynth I/O auxiliary involves system calls
+<TT
+CLASS="FUNCTION"
+>cyg_hal_sys_fork</TT
+> and
+<TT
+CLASS="FUNCTION"
+>cyg_hal_sys_execve</TT
+>, and sending a request to the
+auxiliary uses <TT
 CLASS="FUNCTION"
 >cyg_hal_sys_write</TT
-> system
-call using file descriptor 1, which corresponds to stdout.
+>.
     </P
 ><P
 >In many ways developing for the synthetic target is no different from
@@ -268,125 +308,13 @@ simulator or special tools. This will be much faster and somewhat
 simpler than using an architectural simulator, but no attempt is made
 to accurately match the behaviour of a real embedded target.
     </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->Support for emulating standard hardware such as ethernet is not yet
-available in the current release of the eCos synthetic target code,
-but is planned for future versions. Emulating application-specific
-custom hardware is rather more difficult since there is no way of
-knowing just what strange hardware a particular application might
-need, but the I/O mechanisms planned should allow for
-application-specific extensions.
-    </P
-></BLOCKQUOTE
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SYNTH-TOOLS"
-></A
-><H2
->Toolchain</H2
-><P
->When developing eCos applications for a normal embedded target it is
-necessary to use a suitable cross-compiler and related tools such as
-the linker. Developing for the synthetic target is easier because you
-can just use the standard GNU tools (gcc, g++, ld, &#8230;) which
-were provided with your Linux distribution, or which you used to build
-your own Linux setup. Any reasonably recent version of the tools, for
-example gcc 2.96(Red Hat) as shipped with Red Hat Linux 7, should be
-sufficient.
-    </P
-><P
->There is one important limitation when using these tools: current gdb
-will not support debugging of eCos threads on the synthetic target. As
-far as gdb is concerned a synthetic target application is also
-indistinguishable from a normal Linux application, so it assumes that
-any threads will be created by calls to the Linux
-<TT
-CLASS="FUNCTION"
->pthread_create</TT
-> function provided by the C
-library. Obviously this is not the case since the application is never
-linked with that library. Therefore gdb never notices the eCos thread
-mechanisms and assumes the application is single-threaded. Fixing this
-is possible but would involve non-trivial changes to gdb.
-    </P
-><P
->Theoretically it is possible to develop synthetic target applications
-on, for example, a PC running Windows and then run the resulting
-executables on another machine that runs Linux. This is rarely useful:
-if a Linux machine is available then usually that machine will also be
-used for building ecos and the application. However, if for some
-reason it is necessary or desirable to build on another machine then
-this requires a suitable cross-compiler and related tools. If the
-application will be running on a typical PC with an x86 processor then
-a suitable configure triplet would be
-<TT
-CLASS="USERINPUT"
-><B
->i686-pc-linux-gnu</B
-></TT
->. The installation
-instructions for the various GNU tools should be consulted for further
-information. 
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SYNTH-HARDWARE"
-></A
-><H2
->Hardware Preparation</H2
-><P
->Preparing a real embedded target for eCos development can be tricky.
-Often the first step is to install suitable firmware, usually RedBoot.
-This means creating and building a special configuration for eCos with
-the RedBoot template, then somehow updating the target's flash chips
-with the resulting RedBoot image. Typically it will also be necessary
-to get a working serial connection, and possibly set up ethernet as
-well. Although usually none of the individual steps are particularly
-complicated, there are plenty of ways in which things can go wrong and
-it can be hard to figure out what is actually happening. Of course
-some board manufacturers make life easier for their developers by
-shipping hardware with RedBoot preinstalled, but even then it is still
-necessary to set up communication between host and target.
-    </P
-><P
->None of this is applicable to the synthetic target. Instead you can
-just build a normal eCos configuration, link your application with the
-resulting libraries, and you end up with an executable that you can
-run directly on your Linux machine or via gdb. A useful side effect of
-this is that application development can start before any real
-embedded hardware is actually available.
-    </P
-><P
->Typically the memory map for a synthetic target application will be
-set up such that there is a read-only ROM region containing all the
-code and constant data, and a read-write RAM region for the data. The
-default locations and sizes of these regions depend on the specific
-platform being used for development. Note that the application always
-executes out of ROM: on a real embedded target much of the development
-would involve running RedBoot firmware there, with application code
-and data loaded into RAM; usually this would change for the final
-system; the firmware would be removed; and the application itself
-would execute from ROM and perform the appropriate hardware
-initialization. Therefore the synthetic target actually emulates the
-behaviour of the final system, not the development environment.
-    </P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -398,6 +326,7 @@ ALIGN="left"
 VALIGN="top"
 ><A
 HREF="hal-synth-arch.html"
+ACCESSKEY="P"
 >Prev</A
 ></TD
 ><TD
@@ -406,6 +335,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="hal-synth-arch.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -413,7 +343,8 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="synth-syscalls.html"
+HREF="synth-install.html"
+ACCESSKEY="N"
 >Next</A
 ></TD
 ></TR
@@ -432,7 +363,7 @@ VALIGN="top"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->System Calls</TD
+>Installation</TD
 ></TR
 ></TABLE
 ></DIV

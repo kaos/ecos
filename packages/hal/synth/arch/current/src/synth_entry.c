@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -99,6 +100,8 @@ cyg_hal_invoke_constructors (void)
 // startup.
 
 externC void    cyg_start( void );
+externC void    synth_hardware_init(void);
+externC void    synth_hardware_init2(void);
 
 void _linux_entry( void )
 {
@@ -135,9 +138,9 @@ void _linux_entry( void )
     // "Initialize any global pointer register". There is no such register.
 
     // Perform platform-specific initialization. Actually, all Linux
-    // platforms can share this. It involves setting up signal handlers
-    // and so on.
-    hal_synthetic_target_init();
+    // platforms can share this. It involves setting up signal handlers,
+    // starting the I/O auxiliary, and so on.
+    synth_hardware_init();
 
     // This is not a ROM startup, so no need to worry about copying the
     // .data section.
@@ -149,6 +152,14 @@ void _linux_entry( void )
     // Invoke the C++ constructors.
     cyg_hal_invoke_constructors();
 
+    // Once the C++ constructors have been invoked, a second stage
+    // of hardware initialization is desirable. At this point all
+    // eCos device drivers should have been initialized so the
+    // I/O auxiliary will have loaded the appropriate support
+    // scripts, and the auxiliary can now map the window(s) on to
+    // the display and generally operate normally.
+    synth_hardware_init2();
+    
     // "Call cyg_start()". OK.
     cyg_start();
 

@@ -11,6 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -199,17 +200,33 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 #define CYG_HAL_SYS_SIGINT               2
 #define CYG_HAL_SYS_SIGQUIT              3
 #define CYG_HAL_SYS_SIGILL               4
+#define CYG_HAL_SYS_SIGTRAP              5
+#define CYG_HAL_SYS_SIGABRT              6
 #define CYG_HAL_SYS_SIGBUS               7
 #define CYG_HAL_SYS_SIGFPE               8
+#define CYG_HAL_SYS_SIGKILL              9
+#define CYG_HAL_SYS_SIGUSR1             10
 #define CYG_HAL_SYS_SIGSEGV             11
+#define CYG_HAL_SYS_SIGUSR2             12
 #define CYG_HAL_SYS_SIGPIPE             13
 #define CYG_HAL_SYS_SIGALRM             14
 #define CYG_HAL_SYS_SIGTERM             15
+#define CYG_HAL_SYS_SIGSTKFLT           16
 #define CYG_HAL_SYS_SIGCHLD             17
 #define CYG_HAL_SYS_SIGCONT             18
 #define CYG_HAL_SYS_SIGSTOP             19
 #define CYG_HAL_SYS_SIGTSTP             20
+#define CYG_HAL_SYS_SIGTTIN             21
+#define CYG_HAL_SYS_SIGTTOU             22
+#define CYG_HAL_SYS_SIGURG              23
+#define CYG_HAL_SYS_SIGXCPU             24
+#define CYG_HAL_SYS_SIGXFSZ             25
+#define CYG_HAL_SYS_SIGVTALRM           26
+#define CYG_HAL_SYS_SIGPROF             27
+#define CYG_HAL_SYS_SIGWINCH            28
 #define CYG_HAL_SYS_SIGIO               29
+#define CYG_HAL_SYS_SIGPWR              30
+#define CYG_HAL_SYS_SIGSYS              31
 
 #define CYG_HAL_SYS_SA_NOCLDSTOP        0x00000001
 #define CYG_HAL_SYS_SA_NOCLDWAIT        0x00000002
@@ -317,6 +334,13 @@ struct cyg_hal_sys_itimerval {
     struct cyg_hal_sys_timeval  hal_it_value;
 };
 
+// System calls and related constants, or rather the subset that is
+// needed internally.
+#define CYG_HAL_SYS_R_OK    0x04
+#define CYG_HAL_SYS_W_OK    0x02
+#define CYG_HAL_SYS_X_OK    0x01
+#define CYG_HAL_SYS_F_OK    0x00
+
 /* lseek whence flags */
 #define CYG_HAL_SYS_SEEK_SET        0       /* Seek from beginning of file.  */
 #define CYG_HAL_SYS_SEEK_CUR        1       /* Seek from current position.  */
@@ -399,6 +423,13 @@ externC int             cyg_hal_sys_setitimer(int,
 externC int             cyg_hal_sys_gettimeofday(struct cyg_hal_sys_timeval*,
                                                  struct cyg_hal_sys_timezone*);
 
+externC int             cyg_hal_sys_access(const char*, int);
+externC int             cyg_hal_sys_fork(void);
+externC int             cyg_hal_sys_execve(const char*, const char* [], const char* []);
+externC int             cyg_hal_sys_pipe(int []);
+externC int             cyg_hal_sys_close(int);
+externC int             cyg_hal_sys_dup2(int, int);
+ 
 // The actual implementation appears to return the new brk() value.
 externC void*           cyg_hal_sys_brk(void*);
 
@@ -416,8 +447,35 @@ extern const char**     cyg_hal_sys_environ;
 
 // ----------------------------------------------------------------------------
 // Interaction between the application and the auxiliary.
-// Not yet available, but there is a hardware-initialization routine.
-externC void hal_synthetic_target_init(void);
+
+// Is the  auxiliary actually in use/available? This flag should be tested by
+// device drivers prior to attempting any communication with the auxiliary.
+extern cyg_bool synth_auxiliary_running;
+ 
+// The fundamental I/O operation: sending a request to the auxiliary and
+// optionally getting back a reply. A null pointer for the response field
+// indicates that no reply is expected. 
+externC void synth_auxiliary_xchgmsg(int /* devid */, int /* request */,
+                                     int /* arg1  */, int /* arg2 */,
+                                     const unsigned char* /* txdata */, int /* txlen */,
+                                     int* /* response */,
+                                     unsigned char* /* rxdata */,  int* /* actual_rxlen */,
+                                     int /* rxlen */);
+
+// Request that the auxiliary instantiates a given device, loading appropriate
+// support code as required. This function takes the following arguments:
+// 1) the location of the package that should provide this device, e.g.
+//    devs/eth/synth
+// 2) the version of that package currently being used, e.g. "current"
+// 3) the name of the device, e.g. "ethernet". This identifies the
+//    Tcl script that should be loaded to handle requests for this device.
+// 4) the name of the device instance, e.g. "eth0".
+// 5) device-specific initialization data. 
+externC int  synth_auxiliary_instantiate(const char*, const char*, const char*, const char*, const char*);
+
+// Support for generating strings
+#define SYNTH_MAKESTRING1(a) #a
+#define SYNTH_MAKESTRING(a)  SYNTH_MAKESTRING1(a)
  
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_IO_H

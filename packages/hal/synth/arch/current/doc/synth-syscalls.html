@@ -3,9 +3,6 @@
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
 <!-- http://www.opencontent.org/openpub/).                           -->
-<!-- Distribution of substantively modified versions of this         -->
-<!-- document is prohibited without the explicit permission of the   -->
-<!-- copyright holder.                                               -->
 <!-- Distribution of the work or derivative of the work in any       -->
 <!-- standard (paper) book form is prohibited unless prior           -->
 <!-- permission is obtained from the copyright holder.               -->
@@ -16,17 +13,17 @@
 ><meta name="MSSmartTagsPreventParsing" content="TRUE">
 <META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
 "><LINK
 REL="HOME"
 TITLE="eCos Synthetic Target"
 HREF="hal-synth-arch.html"><LINK
 REL="PREVIOUS"
-TITLE="Overview"
-HREF="synth.html"><LINK
+TITLE="The Console Device"
+HREF="synth-console.html"><LINK
 REL="NEXT"
-TITLE="Porting"
-HREF="synth-porting.html"></HEAD
+TITLE="Writing New Devices - target"
+HREF="synth-new-target.html"></HEAD
 ><BODY
 CLASS="REFENTRY"
 BGCOLOR="#FFFFFF"
@@ -37,6 +34,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -53,7 +51,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="bottom"
 ><A
-HREF="synth.html"
+HREF="synth-console.html"
+ACCESSKEY="P"
 >Prev</A
 ></TD
 ><TD
@@ -66,7 +65,8 @@ WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
 ><A
-HREF="synth-porting.html"
+HREF="synth-new-target.html"
+ACCESSKEY="N"
 >Next</A
 ></TD
 ></TR
@@ -76,13 +76,11 @@ ALIGN="LEFT"
 WIDTH="100%"></DIV
 ><H1
 ><A
-NAME="SYNTH-SYSCALLS"
->System Calls</A
-></H1
+NAME="SYNTH-SYSCALLS">System Calls</H1
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN51"
+NAME="AEN483"
 ></A
 ><H2
 >Name</H2
@@ -90,21 +88,17 @@ NAME="AEN51"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN54"
-></A
-><H2
+NAME="AEN486"><H2
 >Synopsis</H2
 ><DIV
 CLASS="FUNCSYNOPSIS"
 ><A
-NAME="AEN55"
-></A
-><P
+NAME="AEN487"><P
 ></P
 ><TABLE
-BORDER="0"
-BGCOLOR="#E0E0E0"
-WIDTH="100%"
+BORDER="5"
+BGCOLOR="#E0E0F0"
+WIDTH="70%"
 ><TR
 ><TD
 ><PRE
@@ -118,7 +112,7 @@ CLASS="FUNCSYNOPSISINFO"
 ><CODE
 ><CODE
 CLASS="FUNCDEF"
->int cyg_hal_sys_xyz</CODE
+>int cyg_hal_sys_xyzzy</CODE
 >(...);</CODE
 ></P
 ><P
@@ -281,6 +275,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -291,7 +286,8 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="synth.html"
+HREF="synth-console.html"
+ACCESSKEY="P"
 >Prev</A
 ></TD
 ><TD
@@ -300,6 +296,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="hal-synth-arch.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -307,7 +304,8 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="synth-porting.html"
+HREF="synth-new-target.html"
+ACCESSKEY="N"
 >Next</A
 ></TD
 ></TR
@@ -316,7 +314,7 @@ HREF="synth-porting.html"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Overview</TD
+>The Console Device</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"
@@ -326,7 +324,7 @@ VALIGN="top"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Porting</TD
+>Writing New Devices - target</TD
 ></TR
 ></TABLE
 ></DIV

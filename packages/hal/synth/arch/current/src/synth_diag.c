@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -65,17 +66,25 @@
 #include <cyg/infra/cyg_ass.h>
 
 //-----------------------------------------------------------------------------
-
-// When the auxiliary exists, hal_diag_init() will need to contact it and
-// get hold of a suitable console device.
+// If the auxiliary exists, hal_diag_init() will try to contact it and
+// instantiate a console device. Subsequent console writes will be
+// redirected to that device, as long as the auxiliary is up and running.
+// If the auxiliary is not being used or has exited, console writes
+// will instead go to stdout.
 //
-// When interacting with stdin/stdout, arguably there should be some
-// manipulation of tty settings e.g. to support single character
-// input. However it is not clear which settings would be preferable
-// to the default.
+// This code also contains an implementation of hal_diag_read_char()
+// which is probably not very useful. Currently it works by reading
+// from stdin, but no attempt is made to set the tty into raw mode
+// or anything like that. 
+
+static int auxiliary_console_id = -1;
 
 void hal_diag_init( void )
 {
+    if (synth_auxiliary_running) {
+        auxiliary_console_id = synth_auxiliary_instantiate("hal/synth/arch", SYNTH_MAKESTRING(CYGPKG_HAL_SYNTH), "console",
+                                                      (const char*) 0, (const char*) 0);
+    }
 }
 
 // Output a single character.
@@ -86,39 +95,53 @@ void hal_diag_init( void )
 // I/O intensive facilities like unbuffered tracing). Therefore
 // this code will buffer lines up to 128 characters before
 // doing the I/O.
+//
+// NOTE: one problem is that there is no support for flushing buffers
+// at this level. Therefore if say C library stdio ends up mapped to
+// HAL diagnostics I/O then functions like fflush() and setvbuf() will
+// not behave the way they should. There is no simple workaround at
+// this level, the required information is not available.
 
 void hal_diag_write_char(char c)
 {
     static int  diag_index = 0;
-    static char diag_buffer[128];
+    static unsigned char diag_buffer[128];
 
     CYG_ASSERT(diag_index < 128, "Diagnostic buffer overflow");
     
-    diag_buffer[diag_index++] = c;
+    diag_buffer[diag_index++] = (unsigned char) c;
     if (('\n' == c) || (128 == diag_index)) {
-        int     written;
-        char*   next    = diag_buffer;
+        if ((-1 != auxiliary_console_id) && synth_auxiliary_running) {
+            synth_auxiliary_xchgmsg(auxiliary_console_id, 0, 0, 0, diag_buffer, diag_index, (int *) 0, (unsigned char*) 0, (int *)0, 0);
+            diag_index = 0;
+        } else {
+            int     written;
+            char*   next    = diag_buffer;
 
-        while (diag_index > 0) {
-            written = cyg_hal_sys_write(1, next, diag_index);
-            if (written > 0) {
-                diag_index -= written;
-                next       += written;
-            } else if ((-CYG_HAL_SYS_EINTR != written) && (-CYG_HAL_SYS_EAGAIN != written)) {
-                CYG_FAIL("Unexpected error writing to stdout.");
-                diag_index = 0;
-                break;
+            while (diag_index > 0) {
+                written = cyg_hal_sys_write(1, next, diag_index);
+                if (written > 0) {
+                    diag_index -= written;
+                    next       += written;
+                } else if ((-CYG_HAL_SYS_EINTR != written) && (-CYG_HAL_SYS_EAGAIN != written)) {
+                    CYG_FAIL("Unexpected error writing to stdout.");
+                    diag_index = 0;
+                    break;
+                }
             }
+            CYG_ASSERT(0 == diag_index, "All data should have been written out");
+            diag_index = 0;
+            cyg_hal_sys_fdatasync(1);
         }
-        CYG_ASSERT(0 == diag_index, "All data should have been written out");
-        diag_index = 0;
-        cyg_hal_sys_fdatasync(1);
     }
 }
 
-// Diagnostic input. It is not clear that this is actually useful. The
-// read syscall will get woken up by the itimer alarm, but we don't
-// want to stop reading if that's the case
+// Diagnostic input. It is not clear that this is actually useful,
+// input would normally go to gdb rather than to the application. If
+// keyboard input really is required then that should be handled via a
+// suitable device driver interacting with the auxiliary, not at the
+// HAL level. The read syscall will get woken up by the itimer alarm,
+// but we don't want to stop reading if that's the case
 
 void hal_diag_read_char(char *c)
 {

@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -50,32 +51,34 @@
 // sigprocmask handling.
 //
 // In the synthetic target interrupts and exceptions are based around
-// POSIX sighandlerals. When the clock ticks a SIGALRM signal is raised.
+// POSIX sighandlers. When the clock ticks a SIGALRM signal is raised.
 // When the I/O auxiliary wants to raise some other interrupt, it
 // sends a SIGIO signal. When an exception occurs this results in
 // signals like SIGILL and SIGSEGV. This implies an implementation
-// where the VSR is the signal handler. Disabling interrupts then
-// means using sigprocmask() to block certain signals, and enabling
-// interrupts means unblocking those signals.
+// where the VSR is the signal handler. Disabling interrupts would
+// then mean using sigprocmask() to block certain signals, and
+// enabling interrupts means unblocking those signals.
 //
 // However there are a few problems. One of these is performance: some
 // bits of the system such as buffered tracing make very extensive use
 // of enabling and disabling interrupts, so making a sigprocmask
 // system call each time adds a lot of overhead. More seriously, there
 // is a subtle discrepancy between POSIX signal handling and hardware
-// interrupts. It is expected that signal handlers return, and then
-// the system automatically passes control back to the foreground thread.
+// interrupts. Signal handlers are expected to return, and then the
+// system automatically passes control back to the foreground thread.
 // In the process, the sigprocmask is manipulated before invoking the
 // signal handler and restored afterwards. Interrupt handlers are
 // different: it is quite likely that an interrupt results in another
-// eCos thread being activated, so the signal handler does not actually
-// return until the interrupted thread gets another chance to run.
+// eCos thread being activated, so the signal handler does not
+// actually return until the interrupted thread gets another chance to
+// run. 
 //
-// The second problem can be addressed by making the sigprocmask part of
-// the thread state, saving and restoring it as part of a context switch.
-// This matches quite nicely onto typical real hardware, where there might
-// be a flag inside some control register that controls whether or not
-// interrupts are enabled. However this adds further to the overhead.
+// The second problem can be addressed by making the sigprocmask part
+// of the thread state, saving and restoring it as part of a context
+// switch (c.f. siglongjmp()). This matches quite nicely onto typical
+// real hardware, where there might be a flag inside some control
+// register that controls whether or not interrupts are enabled.
+// However this adds more system calls to context switch overhead.
 //
 // The alternative approach is to implement interrupt enabling and
 // disabling in software. The sigprocmask is manipulated only once,
@@ -93,14 +96,14 @@
 // interrupts. This is not currently implemented.
 //
 // At first glance it might seem that an interrupt stack could be
-// implemented trivially using sigaltstack. This does not quite work.
-// The problem is that signal handlers do not always return
-// immediately, so the system does not get a chance to clean up the
-// signal handling stack. A separate interrupt stack is possible but
-// would have to be implemented here, in software, e.g. by having the
-// signal handler invoke the VSR on that stack. Unfortunately the
-// system may have pushed quite a lot of state on to the current stack
-// already when raising the signal, so things could get messy.
+// implemented trivially using sigaltstack. This does not quite work:
+// signal handlers do not always return immediately, so the system
+// does not get a chance to clean up the signal handling stack. A
+// separate interrupt stack is possible but would have to be
+// implemented here, in software, e.g. by having the signal handler
+// invoke the VSR on that stack. Unfortunately the system may have
+// pushed quite a lot of state on to the current stack already when
+// raising the signal, so things could get messy.
 
 // ----------------------------------------------------------------------------
 #include <pkgconf/hal.h>
@@ -114,10 +117,13 @@
 #endif
 
 #include <cyg/infra/cyg_type.h>         // base types
+#include <cyg/infra/diag.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_io.h>
 #include <cyg/infra/cyg_ass.h>          // Assertions are safe in the synthetic target
+
+#include "synth_protocol.h"
 
 // ----------------------------------------------------------------------------
 // Statics.
@@ -138,10 +144,10 @@ static volatile cyg_bool_t  synth_sigalrm_pending       = false;
 static void (*synth_VSR)(void)                          = (void (*)(void)) 0;
 
 // The current ISR status and mask registers, or rather software
-// emulations there of. These are not static since
-// application-specific VSRs may want to examine/manipulate these.
-// They are also not exported in any header file, forcing people
-// writing such VSRs to know what they are doing.
+// emulations thereof. These are not static since application-specific
+// VSRs may want to examine/manipulate these. They are also not
+// exported in any header file, forcing people writing such VSRs to
+// know what they are doing.
 volatile cyg_uint32 synth_pending_isrs      = 0;
 volatile cyg_uint32 synth_masked_isrs       = 0xFFFFFFFF;
 
@@ -171,12 +177,18 @@ synth_default_isr(cyg_vector_t vector, cyg_addrword_t data)
     return CYG_ISR_HANDLED;
 }
 
-// The VSR is invoked under the following circumstances:
+// The VSR is invoked
+//  1) directly by a SIGALRM or SIGIO signal handler, if interrupts
+//     were enabled.
+//  2) indirectly by hal_enable_interrupts(), if a signal happened
+//     while interrupts were disabled. hal_enable_interrupts()
+//     will have re-invoked the signal handler.
 //
-//  1) interrupts were globally enabled, but are now disabled.
-//  2) there are pending ISRs which are not masked off
+// On entry interrupts are disabled, and there should be one or more
+// pending ISRs which are not masked off.
 //
-// The implementation is as per the HAL specification, where applicable.
+// The implementation is as per the HAL specification, where
+// applicable.
 
 static void
 synth_default_vsr(void)
@@ -192,8 +204,8 @@ synth_default_vsr(void)
     // synchronously via enable_interrupts.
 
     // Increment the kernel scheduler lock, if the kernel is present.
-    // This prevents any attempts at context switching while interrupt
-    // handling is in progress.
+    // This prevents context switching while interrupt handling is in
+    // progress.
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
     cyg_scheduler_lock();
 #endif
@@ -207,17 +219,20 @@ synth_default_vsr(void)
     // Decode the actual external interrupt being delivered. This is
     // determined from the pending and masked variables. Only one isr
     // source can be handled here, since interrupt_end must be invoked
-    // with details of that interrupt.
+    // with details of that interrupt. Multiple pending interrupts
+    // will be handled by a recursive call 
     HAL_LSBIT_INDEX(isr_vector, (synth_pending_isrs & ~synth_masked_isrs));
     CYG_ASSERT((CYGNUM_HAL_ISR_MIN <= isr_vector) && (isr_vector <= CYGNUM_HAL_ISR_MAX), "ISR vector must be valid");
-    
+
     isr_result = (*synth_isr_handlers[isr_vector].isr)(isr_vector, synth_isr_handlers[isr_vector].data);
 
     // Do not switch back from the interrupt stack, there isn't one.
     
     // Interrupts were not enabled before, so they must be enabled
     // now. This may result in a recursive invocation if other IRQs
-    // are still pending.
+    // are still pending. The ISR should have either acknowledged or
+    // masked the current interrupt source, to prevent a recursive
+    // call for the current interrupt.
     hal_enable_interrupts();
 
     // Now call interrupt_end() with the result of the isr and the
@@ -225,7 +240,7 @@ synth_default_vsr(void)
     // a context switch to another thread. In the latter case, when
     // the current thread is reactivated we end up back here. The
     // third argument should be a pointer to the saved state, but that
-    // is only relevant for thread-aware debugging which is not
+    // is only relevant for thread-aware debugging which is not yet
     // supported by the synthetic target.
     {
         extern void interrupt_end(cyg_uint32, CYG_ADDRESS, HAL_SavedRegisters*);
@@ -238,7 +253,7 @@ synth_default_vsr(void)
 
 // Enabling interrupts. If a SIGALRM or SIGIO arrived at an inconvenient
 // time, e.g. when already interacting with the auxiliary, then these
-// will have been left pending and must be servied now. Next, enabling
+// will have been left pending and must be serviced now. Next, enabling
 // interrupts means checking the interrupt pending and mask registers
 // and seeing if the VSR should be invoked.
 void
@@ -262,7 +277,7 @@ hal_enable_interrupts(void)
     // is to raise a signal, e.g. SIGUSR1. That way all interrupts
     // come in via the system's signal handling mechanism, and
     // it might be possible to do something useful with saved contexts
-    // etc.
+    // etc., facilitating thread-aware debugging.
     if (0 != (synth_pending_isrs & ~synth_masked_isrs)) {
         hal_interrupts_enabled = false;
         (*synth_VSR)();
@@ -457,11 +472,12 @@ synth_exception_sighandler(int sig)
 // handler for CYGNUM_HAL_INTERRUPT_RTC, but it depends on the HAL
 // for low-level manipulation of the clock hardware.
 //
-// There is a problem with HAL_CLOCK_READ(). The obvious implementation
-// would use getitimer(), but that has the wrong behaviour: it is intended
-// for fairly coarse intervals and works in terms of system clock ticks,
-// as opposed to a fine-grained implementation that actually examines the
-// system clock. Instead it is necessary to use gettimeofday(). 
+// There is a problem with HAL_CLOCK_READ(). The obvious
+// implementation would use getitimer(), but that has the wrong
+// behaviour: it is intended for fairly coarse intervals and works in
+// terms of system clock ticks, as opposed to a fine-grained
+// implementation that actually examines the system clock. Instead use
+// gettimeofday().
 
 static struct cyg_hal_sys_timeval synth_clock   = { 0, 0 };
 
@@ -470,7 +486,8 @@ hal_clock_initialize(cyg_uint32 period)
 {
     struct cyg_hal_sys_itimerval    timer;
 
-    // Needed for hal_clock_read()
+    // Needed for hal_clock_read(), if HAL_CLOCK_READ() is used before
+    // the first clock interrupt.
     cyg_hal_sys_gettimeofday(&synth_clock, (struct cyg_hal_sys_timezone*) 0);
     
     // The synthetic target clock resolution is in microseconds. A typical
@@ -508,7 +525,8 @@ synth_alrm_sighandler(int sig)
     // A timer signal means that IRQ 0 needs attention.
     synth_pending_isrs |= 0x01;
 
-    // If any of the pending interrupts are not masked, invoke the VSR
+    // If any of the pending interrupts are not masked, invoke the
+    // VSR. That will reenable interrupts.
     if (0 != (synth_pending_isrs & ~synth_masked_isrs)) {
         (*synth_VSR)();
     } else {
@@ -548,6 +566,22 @@ hal_clock_read(void)
 // there may already be ongoing communication with the auxiliary.
 // Instead some volatile flags are used to keep track of which signals
 // were raised while interrupts were disabled. 
+//
+// It might be better to perform the interaction with the auxiliary
+// as soon as possible, i.e. either in the SIGIO handler or when the
+// current communication completes. That way the mask of pending
+// interrupts would remain up to date even when interrupts are
+// disabled, thus allowing applications to run in polled mode.
+
+// A little utility called when the auxiliary has been asked to exit,
+// implicitly affecting this application as well. The sole purpose
+// of this function is to put a suitably-named function on the stack
+// to make it more obvious from inside gdb what is happening.
+static void
+synth_io_handle_shutdown_request_from_auxiliary(void)
+{
+    cyg_hal_sys_exit(0);
+}
 
 static void
 synth_io_sighandler(int sig)
@@ -564,7 +598,28 @@ synth_io_sighandler(int sig)
 
     // Update the interrupt status "register" to match pending interrupts
     // Contact the auxiliary to find out what interrupts are currently pending there.
-    CYG_FAIL("SIGIO should not occur until the auxiliary is implemented");
+    // If there is no auxiliary at present, e.g. because it has just terminated
+    // and things are generally somewhat messy, ignore it.
+    //
+    // This code also deals with the case where the user has requested program
+    // termination. It would be wrong for the auxiliary to just exit, since the
+    // application could not distinguish that case from a crash. Instead the
+    // auxiliary can optionally return an additional byte of data, and if that
+    // byte actually gets sent then that indicates pending termination.
+    if (synth_auxiliary_running) {
+        int             result;
+        int             actual_len;
+        unsigned char   dummy[1];
+        synth_auxiliary_xchgmsg(SYNTH_DEV_AUXILIARY, SYNTH_AUXREQ_GET_IRQPENDING, 0, 0,
+                                (const unsigned char*) 0, 0,        // The auxiliary does not need any additional data
+                                &result, dummy, &actual_len, 1);
+        synth_pending_isrs |= result;
+        if (actual_len) {
+            // The auxiliary has been asked to terminate by the user. This
+            // request has now been passed on to the eCos application.
+            synth_io_handle_shutdown_request_from_auxiliary();
+        }
+    }
 
     // If any of the pending interrupts are not masked, invoke the VSR
     if (0 != (synth_pending_isrs & ~synth_masked_isrs)) {
@@ -579,33 +634,17 @@ synth_io_sighandler(int sig)
 }
 
 // ----------------------------------------------------------------------------
-// SIGPIPE and SIGCHLD are special, related to the auxiliary process.
-static void
-synth_pipe_sighandler(int sig)
-{
-    CYG_ASSERT(CYG_HAL_SYS_SIGPIPE == sig, "The right signal handler should be invoked");
-    CYG_FAIL("The auxiliary is not yet implemented");
-}
-
-static void
-synth_chld_sighandler(int sig)
-{
-    CYG_ASSERT(CYG_HAL_SYS_SIGCHLD == sig, "The right signal handler should be invoked");
-    CYG_FAIL("The auxiliary is not yet implemented");
-}
-
-// ----------------------------------------------------------------------------
 // Here we define an action to do in the idle thread. For the
-// synthetic architecture it makes no sense to spin eating processor
-// time that other processes could make use of. Instead we call
-// select. The itimer will still go off and kick the scheduler back
-// into life so giving up an escape path from the select. There is one
-// problem: in some configurations, e.g. when preemption is disabled,
-// the idle thread must yield continuously rather than blocking.
+// synthetic target it makes no sense to spin eating processor time
+// that other processes could make use of. Instead we call select. The
+// itimer will still go off and kick the scheduler back into life,
+// giving us an escape path from the select. There is one problem: in
+// some configurations, e.g. when preemption is disabled, the idle
+// thread must yield continuously rather than blocking.
 void
 hal_idle_thread_action(cyg_uint32 loop_count)
 {
-#ifndef CYGIMP_IDLE_THREAD_YIELD
+#ifndef CYGIMP_HAL_IDLE_THREAD_SPIN
     cyg_hal_sys__newselect(0,
                            (struct cyg_hal_sys_fd_set*) 0,
                            (struct cyg_hal_sys_fd_set*) 0,
@@ -614,11 +653,583 @@ hal_idle_thread_action(cyg_uint32 loop_count)
 #endif
     CYG_UNUSED_PARAM(cyg_uint32, loop_count);
 }
+
+// ----------------------------------------------------------------------------
+// The I/O auxiliary.
+//
+// I/O happens via an auxiliary process. During startup this code attempts
+// to locate and execute a program ecosynth which should be installed in
+// ../libexec/ecosynth relative to some directory on the search path.
+// Subsequent I/O operations involve interacting with this auxiliary.
+
+#define MAKESTRING1(a) #a
+#define MAKESTRING2(a) MAKESTRING1(a)
+#define AUXILIARY       "../libexec/ecos/hal/synth/arch/" MAKESTRING2(CYGPKG_HAL_SYNTH) "/ecosynth"
+
+// Is the auxiliary up and running?
+cyg_bool    synth_auxiliary_running   = false;
+
+// The pipes to and from the auxiliary.
+static int  to_aux      = -1;
+static int  from_aux    = -1;
+
+// Attempt to start up the auxiliary. Note that this happens early on
+// during system initialization so it is "known" that the world is
+// still simple, e.g. that no other files have been opened.
+static void
+synth_start_auxiliary(void)
+{
+#define BUFSIZE 256
+    char        filename[BUFSIZE];
+    const char* path = 0;
+    int         i, j;
+    cyg_bool    found   = false;
+    int         to_aux_pipe[2];
+    int         from_aux_pipe[2];
+    int         child;
+    int         aux_version;
+#if 1
+    // Check for a command line argument -io. Only run the auxiliary if this
+    // argument is provided, i.e. default to traditional behaviour.
+    for (i = 1; i < cyg_hal_sys_argc; i++) {
+        const char* tmp = cyg_hal_sys_argv[i];
+        if ('-' == *tmp) {
+            // Arguments beyond -- are reserved for use by the application,
+            // and should not be interpreted by the HAL itself or by ecosynth.
+            if (('-' == tmp[1]) && ('\0' == tmp[2])) {
+                break;
+            }
+            tmp++;
+            if ('-' == *tmp) {
+                // Do not distinguish between -io and --io
+                tmp++;
+            }
+            if (('i' == tmp[0]) && ('o' == tmp[1]) && ('\0' == tmp[2])) {
+                found = 1;
+                break;
+            }
+        }
+    }
+    if (!found) {
+        return;
+    }
+#else
+    // Check for a command line argument -ni or -nio. Always run the
+    // auxiliary unless this argument is given, i.e. default to full
+    // I/O support.
+    for (i = 1; i < cyg_hal_sys_argc; i++) {
+        const char* tmp = cyg_hal_sys_argv[i];
+        if ('-' == *tmp) {
+            if (('-' == tmp[1]) && ('\0' == tmp[2])) {
+                break;
+            }
+            tmp++;
+            if ('-' == *tmp) {
+                tmp++;
+            }
+            if ('n' == *tmp) {
+                tmp++;
+                if ('i' == *tmp) {
+                    tmp++;
+                    if ('\0' == *tmp) {
+                        found = 1;  // -ni or --ni
+                        break;
+                    }
+                    if (('o' == *tmp) && ('\0' == tmp[1])) {
+                        found = 1;  // -nio or --nio
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if (found) {
+        return;
+    }
+#endif
+    
+    // The auxiliary must be found relative to the current search path,
+    // so look for a PATH= environment variable.
+    for (i = 0; (0 == path) && (0 != cyg_hal_sys_environ[i]); i++) {
+        const char *var = cyg_hal_sys_environ[i];
+        if (('P' == var[0]) && ('A' == var[1]) && ('T' == var[2]) && ('H' == var[3]) && ('=' == var[4])) {
+            path = var + 5;
+        }
+    }
+    if (0 == path) {
+        // Very unlikely, but just in case.
+        path = ".:/bin:/usr/bin";
+    }
+
+    found = 0;
+    while (!found && ('\0' != *path)) {         // for every entry in the path
+        char *tmp = AUXILIARY;
+        
+        j = 0;
+
+        // As a special case, an empty string in the path corresponds to the
+        // current directory.
+        if (':' == *path) {
+            filename[j++] = '.';
+        } else {
+            while ((j < BUFSIZE) && ('\0' != *path) && (':' != *path)) {
+                filename[j++] = *path++;
+            }
+            // If not at the end of the search path, move on to the next entry.
+            if ('\0' != *path) {
+                while ((':' != *path) && ('\0' != *path)) {
+                    path++;
+                }
+                if (':' == *path) {
+                    path++;
+                }
+            }
+        }
+        // Now append a directory separator, and then the name of the executable.
+        if (j < BUFSIZE) {
+            filename[j++] = '/';
+        }
+        while ((j < BUFSIZE) && ('\0' != *tmp)) {
+            filename[j++] = *tmp++;
+        }
+        // If there has been a buffer overflow, skip this entry.
+        if (j == BUFSIZE) {
+            filename[BUFSIZE-1] = '\0';
+            diag_printf("Warning: buffer limit reached while searching PATH for the I/O auxiliary.\n");
+            diag_printf("       : skipping current entry.\n");
+        } else {
+            // filename now contains a possible match for the auxiliary.
+            filename[j++]    = '\0';
+            if (0 == cyg_hal_sys_access(filename, CYG_HAL_SYS_X_OK)) {
+                found = true;
+            }
+        }
+    }
+#undef BUFSIZE
+
+    if (!found) {
+        diag_printf("Error: unable to find the I/O auxiliary program on the current search PATH\n");
+        diag_printf("     : please install the appropriate host-side tools.\n");
+        cyg_hal_sys_exit(1);
+    }
+
+    // An apparently valid executable exists (or at the very least it existed...),
+    // so create the pipes that will be used for communication.
+    if ((0 != cyg_hal_sys_pipe(to_aux_pipe)) ||
+        (0 != cyg_hal_sys_pipe(from_aux_pipe))) {
+        diag_printf("Error: unable to set up pipes for communicating with the I/O auxiliary.\n");
+        cyg_hal_sys_exit(1);
+    }
+    
+    // Time to fork().
+    child = cyg_hal_sys_fork();
+    if (child < 0) {
+        diag_printf("Error: failed to fork() process for the I/O auxiliary.\n");
+        cyg_hal_sys_exit(1);
+    } else if (child == 0) {
+        cyg_bool    found_dotdot;
+        // There should not be any problems rearranging the file descriptors as desired...
+        cyg_bool    unexpected_error = 0;
+        
+        // In the child process. Close unwanted file descriptors, then some dup2'ing,
+        // and execve() the I/O auxiliary. The auxiliary will inherit stdin,
+        // stdout and stderr from the eCos application, so that functions like
+        // printf() work as expected. In addition fd 3 will be the pipe from
+        // the eCos application and fd 4 the pipe to the application. It is possible
+        // that the eCos application was run from some process other than a shell
+        // and hence that file descriptors 3 and 4 are already in use, but that is not
+        // supported. One possible workaround would be to close all file descriptors
+        // >= 3, another would be to munge the argument vector passing the file
+        // descriptors actually being used.
+        unexpected_error |= (0 != cyg_hal_sys_close(to_aux_pipe[1]));
+        unexpected_error |= (0 != cyg_hal_sys_close(from_aux_pipe[0]));
+        
+        if (3 != to_aux_pipe[0]) {
+            if (3 == from_aux_pipe[1]) {
+                // Because to_aux_pipe[] was set up first it should have received file descriptors 3 and 4.
+                diag_printf("Internal error: file descriptors have been allocated in an unusual order.\n");
+                cyg_hal_sys_exit(1);
+            } else {
+                unexpected_error |= (3 != cyg_hal_sys_dup2(to_aux_pipe[0], 3));
+                unexpected_error |= (0 != cyg_hal_sys_close(to_aux_pipe[0]));
+            }
+        }
+        if (4 != from_aux_pipe[1]) {
+            unexpected_error |= (4 != cyg_hal_sys_dup2(from_aux_pipe[1], 4));
+            unexpected_error |= (0 != cyg_hal_sys_close(from_aux_pipe[1]));
+        }
+        if (unexpected_error) {
+            diag_printf("Error: internal error in auxiliary process, failed to manipulate pipes.\n");
+            cyg_hal_sys_exit(1);
+        }
+        // The arguments passed to the auxiliary are mostly those for
+        // the synthetic target application, except for argv[0] which
+        // is replaced with the auxiliary's pathname. The latter
+        // currently holds at least one ../, and cleaning this up is
+        // useful.
+        //
+        // If the argument vector contains -- then that and subsequent
+        // arguments are not passed to the auxiliary. Instead such
+        // arguments are reserved for use by the application.
+        do {
+            int len;
+            for (len = 0; '\0' != filename[len]; len++)
+                ;
+            found_dotdot = false;
+            for (i = 0; i < (len - 4); i++) {
+                if (('/' == filename[i]) && ('.' == filename[i+1]) && ('.' == filename[i+2]) && ('/' == filename[i+3])) {
+                    j = i + 3;
+                    for ( --i; (i >= 0) && ('/' != filename[i]); i--) {
+                        CYG_EMPTY_STATEMENT;
+                    }
+                    if (i >= 0) {
+                        found_dotdot = true;
+                        do {
+                            i++; j++;
+                            filename[i] = filename[j];
+                        } while ('\0' != filename[i]);
+                    }
+                }
+            }
+        } while(found_dotdot);
+        
+        cyg_hal_sys_argv[0] = filename;
+
+        for (i = 1; i < cyg_hal_sys_argc; i++) {
+            const char* tmp = cyg_hal_sys_argv[i];
+            if (('-' == tmp[0]) && ('-' == tmp[1]) && ('\0' == tmp[2])) {
+                cyg_hal_sys_argv[i] = (const char*) 0;
+                break;
+            }
+        }
+        cyg_hal_sys_execve(filename, cyg_hal_sys_argv, cyg_hal_sys_environ);
+
+        // An execute error has occurred. Report this here, then exit. The
+        // parent will detect a close on the pipe without having received
+        // any data, and it will assume that a suitable diagnostic will have
+        // been displayed already.
+        diag_printf("Error: failed to execute the I/O auxiliary.\n");
+        cyg_hal_sys_exit(1);
+    } else {
+        int     rc;
+        char    buf[1];
+        
+        // Still executing the eCos application.
+        // Do some cleaning-up.
+        to_aux      = to_aux_pipe[1];
+        from_aux    = from_aux_pipe[0];
+        if ((0 != cyg_hal_sys_close(to_aux_pipe[0]))  ||
+            (0 != cyg_hal_sys_close(from_aux_pipe[1]))) {
+            diag_printf("Error: internal error in main process, failed to manipulate pipes.\n");
+            cyg_hal_sys_exit(1);
+        }
+
+        // It is now a good idea to block until the auxiliary is
+        // ready, i.e. give it a chance to read in its configuration
+        // files, load appropriate scripts, pop up windows, ... This
+        // may take a couple of seconds or so. Once the auxiliary is
+        // ready it will write a single byte down the pipe. This is
+        // the only time that the auxiliary will write other than when
+        // responding to a request.
+        do {
+            rc = cyg_hal_sys_read(from_aux, buf, 1);
+        } while (-CYG_HAL_SYS_EINTR == rc);
+
+        if (1 != rc) {
+            // The auxiliary has not started up successfully, so exit
+            // immediately. It should have generated appropriate
+            // diagnostics.
+            cyg_hal_sys_exit(1);
+        }
+    }
+
+    // At this point the auxiliary is up and running. It should not
+    // generate any interrupts just yet since none of the devices have
+    // been initialized. Remember that the auxiliary is now running,
+    // so that the initialization routines for those devices can
+    // figure out that they should interact with the auxiliary rather
+    // than attempt anything manually.
+    synth_auxiliary_running   = true;
+
+    // Make sure that the auxiliary is the right version.
+    synth_auxiliary_xchgmsg(SYNTH_DEV_AUXILIARY, SYNTH_AUXREQ_GET_VERSION, 0, 0,
+                            (const unsigned char*) 0, 0,
+                            &aux_version, (unsigned char*) 0, (int*) 0, 0);
+    if (SYNTH_AUXILIARY_PROTOCOL_VERSION != aux_version) {
+        synth_auxiliary_running = false;
+        diag_printf("Error: an incorrect version of the I/O auxiliary is installed\n"
+                    "    Expected version %d, actual version %d\n"
+                    "    Installed binary is %s\n",
+                    SYNTH_AUXILIARY_PROTOCOL_VERSION, aux_version, filename);
+        cyg_hal_sys_exit(1);
+    }
+}
+
+// Write a request to the I/O auxiliary, and optionally get back a
+// reply. The dev_id is 0 for messages intended for the auxiliary
+// itself, for example a device instantiation or a request for the
+// current interrupt sate. Otherwise it identifies a specific device.
+// The request code is specific to the device, and the two optional
+// arguments are specific to the request.
+void
+synth_auxiliary_xchgmsg(int devid, int reqcode, int arg1, int arg2,
+                        const unsigned char* txdata, int txlen,
+                        int* result, 
+                        unsigned char* rxdata, int* actual_rxlen, int rxlen)
+{
+    unsigned char   request[SYNTH_REQUEST_LENGTH];
+    unsigned char   reply[SYNTH_REPLY_LENGTH];
+    int             rc;
+    int             reply_rxlen;
+    cyg_bool_t      old_isrstate;
+
+    CYG_ASSERT(devid >= 0, "A valid device id should be supplied");
+    CYG_ASSERT((0 == txlen) || ((const unsigned char*)0 != txdata), "Data transmits require a transmit buffer");
+    CYG_ASSERT((0 == rxlen) || ((unsigned char*)0 != rxdata), "Data receives require a receive buffer");
+    CYG_ASSERT((0 == rxlen) || ((int*)0 != result), "If a reply is expected then space must be allocated");
+
+    // I/O interactions with the auxiliary must be atomic: a context switch in
+    // between sending the header and the actual data would be bad.
+    HAL_DISABLE_INTERRUPTS(old_isrstate);
+
+    // The auxiliary should be running for the duration of this
+    // exchange. However the auxiliary can disappear asynchronously,
+    // so it is not possible for higher-level code to be sure that the
+    // auxiliary is still running.
+    //
+    // If the auxiliary disappears during this call then usually this
+    // will cause a SIGCHILD or SIGPIPE, both of which result in
+    // termination. The exception is when the auxiliary decides to
+    // shut down stdout for some reason without exiting - that has to
+    // be detected in the read loop.
+    if (synth_auxiliary_running) {
+        request[SYNTH_REQUEST_DEVID_OFFSET + 0]     = (devid >>  0) & 0x0FF;
+        request[SYNTH_REQUEST_DEVID_OFFSET + 1]     = (devid >>  8) & 0x0FF;
+        request[SYNTH_REQUEST_DEVID_OFFSET + 2]     = (devid >> 16) & 0x0FF;
+        request[SYNTH_REQUEST_DEVID_OFFSET + 3]     = (devid >> 24) & 0x0FF;
+        request[SYNTH_REQUEST_REQUEST_OFFSET + 0]   = (reqcode >>  0) & 0x0FF;
+        request[SYNTH_REQUEST_REQUEST_OFFSET + 1]   = (reqcode >>  8) & 0x0FF;
+        request[SYNTH_REQUEST_REQUEST_OFFSET + 2]   = (reqcode >> 16) & 0x0FF;
+        request[SYNTH_REQUEST_REQUEST_OFFSET + 3]   = (reqcode >> 24) & 0x0FF;
+        request[SYNTH_REQUEST_ARG1_OFFSET + 0]      = (arg1 >>  0) & 0x0FF;
+        request[SYNTH_REQUEST_ARG1_OFFSET + 1]      = (arg1 >>  8) & 0x0FF;
+        request[SYNTH_REQUEST_ARG1_OFFSET + 2]      = (arg1 >> 16) & 0x0FF;
+        request[SYNTH_REQUEST_ARG1_OFFSET + 3]      = (arg1 >> 24) & 0x0FF;
+        request[SYNTH_REQUEST_ARG2_OFFSET + 0]      = (arg1 >>  0) & 0x0FF;
+        request[SYNTH_REQUEST_ARG2_OFFSET + 1]      = (arg1 >>  8) & 0x0FF;
+        request[SYNTH_REQUEST_ARG2_OFFSET + 2]      = (arg1 >> 16) & 0x0FF;
+        request[SYNTH_REQUEST_ARG2_OFFSET + 3]      = (arg1 >> 24) & 0x0FF;
+        request[SYNTH_REQUEST_TXLEN_OFFSET + 0]     = (txlen >>  0) & 0x0FF;
+        request[SYNTH_REQUEST_TXLEN_OFFSET + 1]     = (txlen >>  8) & 0x0FF;
+        request[SYNTH_REQUEST_TXLEN_OFFSET + 2]     = (txlen >> 16) & 0x0FF;
+        request[SYNTH_REQUEST_TXLEN_OFFSET + 3]     = (txlen >> 24) & 0x0FF;
+        request[SYNTH_REQUEST_RXLEN_OFFSET + 0]     = (rxlen >>  0) & 0x0FF;
+        request[SYNTH_REQUEST_RXLEN_OFFSET + 1]     = (rxlen >>  8) & 0x0FF;
+        request[SYNTH_REQUEST_RXLEN_OFFSET + 2]     = (rxlen >> 16) & 0x0FF;
+        request[SYNTH_REQUEST_RXLEN_OFFSET + 3]     = ((rxlen >> 24) & 0x0FF) | (((int*)0 != result) ? 0x080 : 0);
+
+        // sizeof(synth_auxiliary_request) < PIPE_BUF (4096) so a single write should be atomic,
+        // subject only to incoming clock or SIGIO or child-related signals.
+        do {
+            rc = cyg_hal_sys_write(to_aux, (const void*) &request, SYNTH_REQUEST_LENGTH);
+        } while (-CYG_HAL_SYS_EINTR == rc);
+
+        // Is there any more data to be sent?
+        if (0 < txlen) {
+            int sent    = 0;
+            CYG_LOOP_INVARIANT(synth_auxiliary_running, "The auxiliary cannot just disappear");
+        
+            while (sent < txlen) {
+                rc = cyg_hal_sys_write(to_aux, (const void*) &(txdata[sent]), txlen - sent);
+                if (-CYG_HAL_SYS_EINTR == rc) {
+                    continue;
+                } else if (rc < 0) {
+                    diag_printf("Internal error: unexpected result %d when sending buffer to auxiliary.\n", rc);
+                    diag_printf("              : this application is exiting immediately.\n");
+                    cyg_hal_sys_exit(1);
+                } else {
+                    sent += rc;
+                }
+            }
+            CYG_ASSERT(sent <= txlen, "Amount of data sent should not exceed requested size");
+        }
+
+        // The auxiliary can now process this entire request. Is a reply expected?
+        if ((int*)0 != result) {
+            // The basic reply is also only a small number of bytes, so should be atomic.
+            do {
+                rc = cyg_hal_sys_read(from_aux, (void*) &reply, SYNTH_REPLY_LENGTH);
+            } while (-CYG_HAL_SYS_EINTR == rc);
+            if (rc <= 0) {
+                if (rc < 0) {
+                    diag_printf("Internal error: unexpected result %d when receiving data from auxiliary.\n", rc);
+                } else {
+                    diag_printf("Internal error: EOF detected on pipe from auxiliary.\n");
+                }
+                diag_printf("              : this application is exiting immediately.\n");
+                cyg_hal_sys_exit(1);
+            }
+            CYG_ASSERT(SYNTH_REPLY_LENGTH == rc, "The correct amount of data should have been read");
+
+            // Replies are packed in Tcl and assumed to be two 32-bit
+            // little-endian integers.
+            *result   = (reply[SYNTH_REPLY_RESULT_OFFSET + 3] << 24) |
+                (reply[SYNTH_REPLY_RESULT_OFFSET + 2] << 16) |
+                (reply[SYNTH_REPLY_RESULT_OFFSET + 1] <<  8) |
+                (reply[SYNTH_REPLY_RESULT_OFFSET + 0] <<  0);
+            reply_rxlen = (reply[SYNTH_REPLY_RXLEN_OFFSET + 3] << 24) |
+                (reply[SYNTH_REPLY_RXLEN_OFFSET + 2] << 16) |
+                (reply[SYNTH_REPLY_RXLEN_OFFSET + 1] <<  8) |
+                (reply[SYNTH_REPLY_RXLEN_OFFSET + 0] <<  0);
+        
+            CYG_ASSERT(reply_rxlen <= rxlen, "The auxiliary should not be sending more data than was requested.");
+        
+            if ((int*)0 != actual_rxlen) {
+                *actual_rxlen  = reply_rxlen;
+            }
+            if (reply_rxlen) {
+                int received = 0;
+            
+                while (received < reply_rxlen) {
+                    rc = cyg_hal_sys_read(from_aux, (void*) &(rxdata[received]), reply_rxlen - received);
+                    if (-CYG_HAL_SYS_EINTR == rc) {
+                        continue;
+                    } else if (rc <= 0) {
+                        if (rc < 0) {
+                            diag_printf("Internal error: unexpected result %d when receiving data from auxiliary.\n", rc);
+                        } else {
+                            diag_printf("Internal error: EOF detected on pipe from auxiliary.\n");
+                        }
+                        diag_printf("              : this application is exiting immediately.\n");
+                    } else {
+                        received += rc;
+                    }
+                }
+                CYG_ASSERT(received == reply_rxlen, "Amount received should be exact");
+            }
+        }
+    }
+
+    HAL_RESTORE_INTERRUPTS(old_isrstate);
+}
+
+// Instantiate a device. This takes arguments such as
+// devs/eth/synth/ecosynth, current, ethernet, eth0, and 200x100 If
+// the package and version are NULL strings then the device being
+// initialized is application-specific and does not belong to any
+// particular package.
+int
+synth_auxiliary_instantiate(const char* pkg, const char* version, const char* devtype, const char* devinst, const char* devdata)
+{
+    int         result = -1;
+    char        buf[512 + 1];
+    const char* str;
+    int         index;
+
+    CYG_ASSERT((const char*)0 != devtype, "Device instantiations must specify a valid device type");
+    CYG_ASSERT((((const char*)0 != pkg) && ((const char*)0 != version)) || \
+               (((const char*)0 == pkg) && ((const char*)0 == version)), "If a package is specified then the version must be supplied as well");
+    
+    index = 0;
+    str = pkg;
+    if ((const char*)0 == str) {
+        str = "";
+    }
+    while ( (index < 512) && ('\0' != *str) ) {
+        buf[index++] = *str++;
+    }
+    if (index < 512) buf[index++] = '\0';
+    str = version;
+    if ((const char*)0 == str) {
+        str = "";
+    }
+    while ((index < 512) && ('\0' != *str) ) {
+        buf[index++] = *str++;
+    }
+    if (index < 512) buf[index++] = '\0';
+    for (str = devtype; (index < 512) && ('\0' != *str); ) {
+        buf[index++] = *str++;
+    }
+    if (index < 512) buf[index++] = '\0';
+    if ((const char*)0 != devinst) {
+        for (str = devinst; (index < 512) && ('\0' != *str); ) {
+            buf[index++] = *str++;
+        }
+    }
+    if (index < 512) buf[index++] = '\0';
+    if ((const char*)0 != devdata) {
+        for (str = devdata; (index < 512) && ('\0' != *str); ) {
+            buf[index++] = *str++;
+        }
+    }
+    if (index < 512) {
+        buf[index++] = '\0';
+    } else {
+        diag_printf("Internal error: buffer overflow constructing instantiate request for auxiliary.\n");
+        diag_printf("              : this application is exiting immediately.\n");
+        cyg_hal_sys_exit(1);
+    }
+
+    if (synth_auxiliary_running) {
+        synth_auxiliary_xchgmsg(SYNTH_DEV_AUXILIARY, SYNTH_AUXREQ_INSTANTIATE, 0, 0,
+                                buf, index,
+                                &result, 
+                                (unsigned char*) 0, (int *) 0, 0);
+    }
+    return result;
+}
+
+// ----------------------------------------------------------------------------
+// SIGPIPE and SIGCHLD are special, related to the auxiliary process.
+//
+// A SIGPIPE can only happen when the application is writing to the
+// auxiliary, which only happens inside synth_auxiliary_xchgmsg() (this
+// assumes that no other code is writing down a pipe, e.g. to interact
+// with a process other than the standard I/O auxiliary). Either the
+// auxiliary has explicitly closed the pipe, which it is not supposed
+// to do, or more likely it has exited. Either way, there is little
+// point in continuing - unless we already know that the system is
+// shutting down.
+static void
+synth_pipe_sighandler(int sig)
+{
+    CYG_ASSERT(CYG_HAL_SYS_SIGPIPE == sig, "The right signal handler should be invoked");
+    if (synth_auxiliary_running) {
+        synth_auxiliary_running   = false;
+        diag_printf("Internal error: communication with the I/O auxiliary has been lost.\n");
+        diag_printf("              : this application is exiting immediately.\n");
+        cyg_hal_sys_exit(1);
+    }
+}
+
+// Similarly it is assumed that there will be no child processes other than
+// the auxiliary. Therefore a SIGCHLD indicates that the auxiliary has
+// terminated unexpectedly. This is bad: normal termination involves
+// the application exiting and the auxiliary terminating in response,
+// not the other way around.
+//
+// As a special case, if it is known that the auxiliary is not currently
+// usable then the signal is ignored. This copes with the situation where
+// the auxiliary has just been fork()'d but has failed to initialize, or
+// alternatively where the whole system is in the process of shutting down
+// cleanly and it happens that the auxiliary got there first.
+static void
+synth_chld_sighandler(int sig)
+{
+    CYG_ASSERT(CYG_HAL_SYS_SIGCHLD == sig, "The right signal handler should be invoked");
+    if (synth_auxiliary_running) {
+        synth_auxiliary_running   = false;
+        diag_printf("Internal error: the I/O auxiliary has terminated unexpectedly.\n");
+        diag_printf("              : this application is exiting immediately.\n");
+        cyg_hal_sys_exit(1);
+    }
+}
+
 // ----------------------------------------------------------------------------
 // Initialization
 
 void
-hal_synthetic_target_init(void)
+synth_hardware_init(void)
 {
     struct cyg_hal_sys_sigaction action;
     struct cyg_hal_sys_sigset_t  blocked;
@@ -676,8 +1287,8 @@ hal_synthetic_target_init(void)
         CYG_FAIL("Failed to install signal handler for SIGIO");
     }
 
-    // Now install handlers for the various exceptions. For now these
-    // also operate with unchanged sigprocmasks, allowing nested
+    // Install handlers for the various exceptions. For now these also
+    // operate with unchanged sigprocmasks, allowing nested
     // exceptions. It is not clear that this is entirely a good idea,
     // but in practice these exceptions will usually be handled by gdb
     // anyway.
@@ -704,13 +1315,45 @@ hal_synthetic_target_init(void)
         CYG_FAIL("Failed to install signal handler for SIGPIPE");
     }
     action.hal_handler = &synth_chld_sighandler;
+    action.hal_flags  |= CYG_HAL_SYS_SA_NOCLDSTOP | CYG_HAL_SYS_SA_NOCLDWAIT;
     if (0 != cyg_hal_sys_sigaction(CYG_HAL_SYS_SIGCHLD,  &action, (struct cyg_hal_sys_sigaction*) 0)) {
         CYG_FAIL("Failed to install signal handler for SIGCHLD");
     }
+
+    // Start up the auxiliary process.
+    synth_start_auxiliary();
     
     // All done. At this stage interrupts are still disabled, no ISRs
     // have been installed, and the clock is not yet ticking.
     // Exceptions can come in and will be processed normally. SIGIO
     // and SIGALRM could come in, but nothing has yet been done
     // to make that happen.
+}
+
+// Second-stage hardware init. This is called after all C++ static
+// constructors have been run, which should mean that all device
+// drivers have been initialized and will have performed appropriate
+// interactions with the I/O auxiliary. There should now be a
+// message exchange with the auxiliary to let it know that there will
+// not be any more devices, allowing it to remove unwanted frames,
+// run the user's mainrc.tcl script, and so on. Also this is the
+// time that the various toplevels get mapped on to the display.
+//
+// This request blocks until the auxiliary is ready. The return value
+// indicates whether or not any errors occurred on the auxiliary side,
+// and that those errors have not been suppressed using --keep-going
+
+void
+synth_hardware_init2(void)
+{
+    if (synth_auxiliary_running) {
+        int result;
+        synth_auxiliary_xchgmsg(SYNTH_DEV_AUXILIARY, SYNTH_AUXREQ_CONSTRUCTORS_DONE,
+                               0, 0, (const unsigned char*) 0, 0,
+                               &result,
+                               (unsigned char*) 0, (int*) 0, 0);
+        if ( !result ) {
+            cyg_hal_sys_exit(1);
+        }
+    }
 }

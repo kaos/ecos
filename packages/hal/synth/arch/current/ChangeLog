@@ -1,3 +1,13 @@
+2002-09-15  Bart Veer  <bartv@ecoscentric.com>
+
+	*  include/hal_io.h
+	   cdl/hal_synth.cdl
+	   src/synth_entry.c, src/synth_intr.c, src/synth_diag.c,
+	   src/synth_protocol.h
+	   doc/*
+	   host/*
+	   Add support for I/O via an I/O auxiliary
+
 2002-08-04  Bart Veer  <bartv@tymora.demon.co.uk>
 
 	* include/hal_io.h: added argv/argv/environ definitions

@@ -3,9 +3,6 @@
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
 <!-- http://www.opencontent.org/openpub/).                           -->
-<!-- Distribution of substantively modified versions of this         -->
-<!-- document is prohibited without the explicit permission of the   -->
-<!-- copyright holder.                                               -->
 <!-- Distribution of the work or derivative of the work in any       -->
 <!-- standard (paper) book form is prohibited unless prior           -->
 <!-- permission is obtained from the copyright holder.               -->
@@ -16,14 +13,14 @@
 ><meta name="MSSmartTagsPreventParsing" content="TRUE">
 <META
 NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
 "><LINK
 REL="HOME"
 TITLE="eCos Synthetic Target"
 HREF="hal-synth-arch.html"><LINK
 REL="PREVIOUS"
-TITLE="System Calls"
-HREF="synth-syscalls.html"></HEAD
+TITLE="Writing New Devices - host"
+HREF="synth-new-host.html"></HEAD
 ><BODY
 CLASS="REFENTRY"
 BGCOLOR="#FFFFFF"
@@ -34,6 +31,7 @@ ALINK="#0000FF"
 ><DIV
 CLASS="NAVHEADER"
 ><TABLE
+SUMMARY="Header navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -50,7 +48,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="bottom"
 ><A
-HREF="synth-syscalls.html"
+HREF="synth-new-host.html"
+ACCESSKEY="P"
 >Prev</A
 ></TD
 ><TD
@@ -70,17 +69,15 @@ ALIGN="LEFT"
 WIDTH="100%"></DIV
 ><H1
 ><A
-NAME="SYNTH-PORTING"
->Porting</A
-></H1
+NAME="SYNTH-PORTING">Porting</H1
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN92"
+NAME="AEN1049"
 ></A
 ><H2
 >Name</H2
->Porting&nbsp;--&nbsp;The eCos synthetic target</DIV
+>Porting&nbsp;--&nbsp;Adding support for other hosts</DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
@@ -96,7 +93,7 @@ straightforward, for example a port to Linux on a processor other than
 an x86. Porting to Unix or Unix-like operating systems other than
 Linux may be possible, but would involve more effort. Porting to a
 completely different operating system such as Windows would be very
-difficult. The text below completes the eCos Porting Guide.
+difficult. The text below complements the eCos Porting Guide.
     </P
 ></DIV
 ><DIV
@@ -128,12 +125,11 @@ to update the toplevel <TT
 CLASS="FILENAME"
 >ecos.db</TT
 > database with an
-entry for the new HAL package, and a new target entry will be needed
-as well.
+entry for the new HAL package, and a new target entry will be needed.
     </P
 ><P
->Obviously a different processor will have different register sets
-and calling conventions, so the code for saving and restoring thread
+>Obviously a different processor will have different register sets and
+calling conventions, so the code for saving and restoring thread
 contexts and for implementing <TT
 CLASS="FUNCTION"
 >setjmp</TT
@@ -142,20 +138,21 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >longjmp</TT
 > will need to be updated. The exact way of
-performing Linux system calls will also vary: on i386linux this
-usually involves pushing some registers on the stack and then
-executing an <TT
+performing Linux system calls will vary: on x86 linux this usually
+involves pushing some registers on the stack and then executing an
+<TT
 CLASS="LITERAL"
 >int&nbsp;0x080</TT
-> trap instruction, but
-on a different processor the arguments might be passed in registers
-instead and certainly a different trap instruction will be used. The
-startup code is also written in assembler, but needs to do little more
-than jump to the main <TT
+> trap instruction, but on a different
+processor the arguments might be passed in registers instead and
+certainly a different trap instruction will be used. The startup code
+is written in assembler, but needs to do little more than extract the
+process' argument and environment variables and then jump to the main
+<TT
 CLASS="FUNCTION"
 >linux_entry</TT
-> function
-provided by the architectural synthetic target HAL package.
+> function provided by the
+architectural synthetic target HAL package.
     </P
 ><P
 >The header file <TT
@@ -164,7 +161,7 @@ CLASS="FILENAME"
 > provided by the
 architectural HAL package provides various structure definitions,
 function prototypes, and macros related to system calls. These are
-correct for i386linux, but there may be problems on other processors.
+correct for x86 linux, but there may be problems on other processors.
 For example a structure field that is currently defined as a 32-bit
 number may in fact may be a 64-bit number instead.
     </P
@@ -185,7 +182,10 @@ but usually eCos applications can and should ignore those.
 ><P
 >Other HAL functionality such as interrupt handling, diagnostics, and
 the system clock are provided by the architectural HAL package and
-should work on different processors with few if any changes.
+should work on different processors with few if any changes. There may
+be some problems in the code that interacts with the I/O auxiliary
+because of lurking assumptions about endianness or the sizes of
+various data types.
     </P
 ><P
 >When porting to other processors, a number of sources of information
@@ -205,11 +205,11 @@ NAME="SYNTH-PORTING-UNIX"
 >Other Unix Platforms</H2
 ><P
 >Porting to a Unix or Unix-like operating system other than Linux would
-be somewhat more involved. The first requirement involves toolchains:
-the GNU compilers, gcc and g++, must definitely be used; use of other
-GNU tools such as the linker may be needed as well, because eCos
-depends on functionality such as prioritizing C++ static constructors,
-and other linkers may not implement this or may implement it in a
+be somewhat more involved. The first requirement is toolchains: the
+GNU compilers, gcc and g++, must definitely be used; use of other GNU
+tools such as the linker may be needed as well, because eCos depends
+on functionality such as prioritizing C++ static constructors, and
+other linkers may not implement this or may implement it in a
 different and incompatible way. A closely related requirement is the
 use of ELF format for binary executables: if the operating system
 still uses an older format such as COFF then there are likely to be
@@ -241,6 +241,16 @@ simple system calls, and instead wrapper functions will need to be
 implemented at the variant HAL level.
     </P
 ><P
+>The generic I/O auxiliary code should be fairly portable to other Unix
+platforms. However some of the device drivers may contain code that is
+specific to Linux, for example the <TT
+CLASS="LITERAL"
+>PF_PACKET</TT
+> socket
+address family and the ethertap virtual tunnelling interface. These
+may prove quite difficult to port.
+    </P
+><P
 >The remaining porting task is to implement one or more platform HAL
 packages, one per processor type that is supported. This should
 involve much the same work as a port to <A
@@ -255,39 +265,6 @@ However there is still a good chance that the GNU C library will have
 been ported already, so its source code may contain much useful
 information. 
     </P
-><DIV
-CLASS="CAUTION"
-><P
-></P
-><TABLE
-CLASS="CAUTION"
-BORDER="1"
-WIDTH="100%"
-><TR
-><TD
-ALIGN="CENTER"
-><B
->Caution</B
-></TD
-></TR
-><TR
-><TD
-ALIGN="LEFT"
-><P
->Users should be aware that future enhancements to the synthetic target
-code, especially in areas related to I/O, may be much more closely
-tied to Linux. For example access to ethernet facilities might be
-implemented using the <TT
-CLASS="LITERAL"
->PF_PACKET</TT
-> socket address
-family, or the virtual tunnelling interface. Porting such code to
-other Unix operating systems may prove rather more difficult.
-    </P
-></TD
-></TR
-></TABLE
-></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
@@ -348,6 +325,7 @@ CLASS="NAVFOOTER"
 ><HR
 ALIGN="LEFT"
 WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
 WIDTH="100%"
 BORDER="0"
 CELLPADDING="0"
@@ -358,7 +336,8 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="synth-syscalls.html"
+HREF="synth-new-host.html"
+ACCESSKEY="P"
 >Prev</A
 ></TD
 ><TD
@@ -367,6 +346,7 @@ ALIGN="center"
 VALIGN="top"
 ><A
 HREF="hal-synth-arch.html"
+ACCESSKEY="H"
 >Home</A
 ></TD
 ><TD
@@ -380,7 +360,7 @@ VALIGN="top"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->System Calls</TD
+>Writing New Devices - host</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"
