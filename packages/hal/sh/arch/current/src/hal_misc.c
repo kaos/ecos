@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -214,20 +215,32 @@ hal_delay_us(int usecs)
     volatile unsigned char *tstr = (volatile unsigned char *)CYGARC_REG_TSTR;
     volatile unsigned long *tcnt = (volatile unsigned long *)CYGARC_REG_TCNT1;
     volatile unsigned long *tcor = (volatile unsigned long *)CYGARC_REG_TCOR1;
-    unsigned long clocks_per_us = (CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED+(CYGHWR_HAL_SH_TMU_PRESCALE_0-1))/CYGHWR_HAL_SH_TMU_PRESCALE_0;  // Rounded up
-    int diff, diff2;
-    cyg_uint32 val1, val2;
+    volatile unsigned short *tcr = (volatile unsigned short *)CYGARC_REG_TCR1;
+    unsigned long clocks_per_us = (((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED/1000000) +
+                                    (CYGHWR_HAL_SH_TMU_PRESCALE_0-1))               /
+                                   CYGHWR_HAL_SH_TMU_PRESCALE_0);
+    volatile int diff, diff2;
+    volatile cyg_uint32 val1, val2;
 
+    *tcr = (( 4==CYGHWR_HAL_SH_TMU_PRESCALE_0) ? CYGARC_REG_TCR_TPSC_4 :
+            (16==CYGHWR_HAL_SH_TMU_PRESCALE_0) ? CYGARC_REG_TCR_TPSC_16:
+            (64==CYGHWR_HAL_SH_TMU_PRESCALE_0) ? CYGARC_REG_TCR_TPSC_64:
+                                                 CYGARC_REG_TCR_TPSC_256);
+
+    *tcnt = 0x0FFFFFFF;
+    *tcor = 0x0FFFFFFF;
+    
     _tstr = *tstr;
     *tstr |= CYGARC_REG_TSTR_STR1;  // Enable channel 1
     while (usecs-- > 0) {
         diff = 0;
+        val1 = *tcnt;
         while (diff < clocks_per_us) {
-            val1 = *tcnt;
             while ((val2 = *tcnt) == val1) ;
-            diff2 = val2 - val1;
+            diff2 = val1 - val2;
             if (diff2 < 0) diff2 += *tcor;
             diff += diff2;
+            val1 = val2;
         }
     }
     *tstr = _tstr;                  // Restore timer to previous state

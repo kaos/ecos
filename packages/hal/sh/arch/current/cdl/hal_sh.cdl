@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      jskov
-# Original data:  jskov
+# Original data:  jskov, nickg
 # Contributors:
 # Date:           1999-10-29
 #
@@ -128,6 +129,17 @@ cdl_package CYGPKG_HAL_SH {
         cdl_option CYGHWR_HAL_SH_NO_FPU {
             display       "Variant has no FPU support"
             calculated    !CYGHWR_HAL_SH_FPU
+        }
+
+        cdl_option CYGHWR_HAL_SH_FPU_REGS {
+            display       "Variant FPU register count"
+            flavor        data
+            active_if     CYGHWR_HAL_SH_FPU
+            default_value 16
+            legal_values  { 16 32 }
+            description   "Number of FPU registers present. The SH3 has
+                           16 registers in one bank. The SH4 has 32
+                           registers in two banks."
         }
 
         cdl_option CYGHWR_HAL_SH_BIGENDIAN {

@@ -3,6 +3,60 @@
 	* include/hal_intr_excevt.h: 
 	* include/hal_intr_vecs.h: hal_delay_us() is a C function.
 
+2003-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/hal_sh.cdl: CYGHWR_HAL_SH_FPU_REGS is only needed if there's an
+	FPU.
+
+	* include/hal_var_bank.h (HAL_THREAD_INIT_CONTEXT_FPU): Use FPSCR
+	init value from HAL register definitions.
+
+2003-09-19  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_sh.cdl: Specify default CDL values for sh4_202_md target.
+
+2003-09-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/hal_var_bank.h (HAL_THREAD_INIT_CONTEXT_FPU): Changed
+	initial value of fpscr to do round-to-nearest rather than
+	round-to-zero.
+
+2003-09-08  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/vectors.S (cyg_hal_default_exception_vsr): Added code to
+	switch to interrupt stack when fielding exceptions from RedBoot or
+	some other ROM monitor. Without this we get potential stack
+	overflows when debugging via the network.
+
+2003-09-05  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/hal_arch.h:
+	* include/hal_var_bank.h:
+	* include/hal_var_bank.inc:
+	* src/context.S:
+	Added support for floating point state save and restore and GDB 
+
+	* src/hal_misc.c (hal_delay_us): Fixed implementation of this
+	routine so that it actually works.
+
+	* src/hal_syscall.c:
+	Added support for all supportable syscalls.
+
+	* src/sh_stub.c:
+	Added check in __is_bsp_syscall() for trap 34 traps using the TRA
+	register.
+
+	* src/vectors.S: Set startup stack size to the same as the
+	interrupt stack size. In some configurations of RedBoot the
+	previous value was too small.
+	
+	* include/sh_stub.h:
+	Fixed HAL_STUB_PLATFORM_STUBS_FIXUP() to only rewind for a
+	breakpoint. Traps are not rewound.
+	
+	* cdl/hal_sh.cdl: Added option for SH architecture FP register
+	count.
+
 2003-07-29  Gary Thomas  <gary@mlbassoc.com> on behalf of
 2003-07-29  Yoshinori Sato <ysato@users.sourceforge.jp>	
 

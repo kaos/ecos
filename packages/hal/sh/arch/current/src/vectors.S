@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):    jskov
-## Contributors: jskov, gthomas
+## Contributors: jskov, gthomas, nickg
 ## Date:         1999-05-01
 ## Purpose:      SH exception vectors
 ## Description:  This file defines the code placed into the exception
@@ -111,21 +112,45 @@ _cyg_hal_default_exception_vsr_bp_safe:
 	# the decoded exception number
 	hal_exception_translate
 
+        mov      r15,r4                 ! R4 = register dump
+        
+#if (defined(CYGSEM_HAL_ROM_MONITOR) || defined(CYGPKG_REDBOOT)) && \
+    defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
+
+        mov.l   $cyg_interrupt_stack_base,r0
+        mov.l   $cyg_interrupt_stack,r1
+        cmp/hi  r15,r0                  ! if r0 > r15 or
+        bt      2f
+        cmp/hi  r1,r15                  ! if r15 > r1
+        bf      1f
+2:      mov     r1,r15                  ! change to supervisor stack
+1:      mov.l   r4,@-r15                ! save old stack pointer
+
+#endif
+        
         # The entire CPU state is now stashed on the stack,
         # call into C to do something with it.
 
-        mov      r15,r4                 ! R4 = register dump
-
-        mov.l   $restore_state,r0       ! get return link
-        lds     r0,pr                   ! to procedure register
-
         mov.l   $cyg_hal_exception_handler,r0
-        jmp     @r0                     ! call C code, r4 = registers
+        jsr     @r0                     ! call C code, r4 = registers
          nop
 
+#if (defined(CYGSEM_HAL_ROM_MONITOR) || defined(CYGPKG_REDBOOT)) && \
+    defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
+
+        # If we are returning from the last nested exception, move back
+        # to the thread stack. 
+        # Since we have arranged for the top of stack location to
+        # contain the sp we need to go back to here, just pop it off
+        # and put it in SP.
+
+        mov.l   @r15,r15
+#endif
+        
+        bra     restore_state
+         nop
+        
         .align  2
-$restore_state:
-        .long   restore_state
         SYM_PTR_REF(cyg_hal_exception_handler)
 
 #---------------------------------------------------------------------------
@@ -589,10 +614,10 @@ SYM_DEF(cyg_interrupt_stack)
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
 
-#ifdef CYGSEM_HAL_ROM_MONITOR
+#if defined(CYGSEM_HAL_ROM_MONITOR) || defined(CYGPKG_REDBOOT)
   // Enough space for stub to handle downloads. If using thread capabilities
   // it will be using the RAM application's stack.
-# define STARTUP_STACK_SIZE 1024
+# define STARTUP_STACK_SIZE CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 #else
 # ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
    // Enough space to run constructors.

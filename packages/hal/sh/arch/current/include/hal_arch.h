@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -44,7 +45,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, nickg
 // Date:        1999-04-24
 // Purpose:     Define architecture abstractions
 // Usage:       #include <cyg/hal/hal_arch.h>
@@ -169,11 +170,15 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 10)
 
 // Stack needed for a context switch (shreg_context_size from sh.inc)
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 21)
+#ifndef CYGHWR_HAL_SH_FPU
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 24)
+#else
+#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * (26 + CYGHWR_HAL_SH_FPU_REGS))
+#endif
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
-    ((24*4 /* sizeof(HAL_SavedRegisters) */) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+    (CYGNUM_HAL_STACK_CONTEXT_SIZE + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 // We define a minimum stack size as the minimum any thread could ever
 // legitimately get away with. We can throw asserts if users ask for less

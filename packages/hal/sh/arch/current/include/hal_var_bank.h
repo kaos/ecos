@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, nickg
 // Date:        2002-01-11
 // Purpose:     Architecture abstractions for variants with banked registers
 //              
@@ -60,6 +61,13 @@ typedef struct
     cyg_uint32   r[16];                 // Data regs
     cyg_uint32   macl;                  // Multiply and accumulate - low
     cyg_uint32   mach;                  // Multiply and accumulate - high
+
+#ifdef CYGHWR_HAL_SH_FPU
+    cyg_uint32  fr[CYGHWR_HAL_SH_FPU_REGS]; // Floating point registers
+    cyg_uint32  fpul;                   // Floating point comm reg
+    cyg_uint32  fpscr;                  // Floating point status/control reg
+#endif
+    
     cyg_uint32   pr;                    // Procedure Reg
     cyg_uint32   sr;                    // Status Reg
     cyg_uint32   pc;                    // Program Counter
@@ -86,6 +94,20 @@ typedef struct
 // _entry_ entry point address.
 // _id_ bit pattern used in initializing registers, for debugging.
 
+#ifdef CYGHWR_HAL_SH_FPU
+#include <cyg/hal/sh_regs.h>
+#define HAL_THREAD_INIT_CONTEXT_FPU( _regs_ )           \
+{                                                       \
+    int _i_;                                            \
+    (_regs_)->fpul = 0;                                 \
+    (_regs_)->fpscr = CYG_FPSCR;                        \
+    for( _i_ = 0; _i_ < CYGHWR_HAL_SH_FPU_REGS; _i_++ ) \
+        (_regs_)->fr[_i_] = 0;                          \
+}
+#else
+#define HAL_THREAD_INIT_CONTEXT_FPU( _regs_ )
+#endif
+
 #define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )           \
     CYG_MACRO_START                                                           \
     register CYG_WORD _sp_ = (CYG_WORD)_sparg_;                               \
@@ -101,8 +123,9 @@ typedef struct
     (_regs_)->mach = 0;                        /* MACH = 0               */   \
     (_regs_)->macl = 0;                        /* MACL = 0               */   \
     (_regs_)->pr = (CYG_WORD)(_entry_);        /* PR = entry point       */   \
-    (_regs_)->sr = 0;                          /* SR = enable interrupts */   \
+    (_regs_)->sr = 0x70000000;                 /* SR = enable interrupts */   \
     (_regs_)->pc = (CYG_WORD)(_entry_);        /* set PC for thread dbg  */   \
+    HAL_THREAD_INIT_CONTEXT_FPU( _regs_ );     /* Init FPU state         */   \
     _sparg_ = (CYG_ADDRESS)_regs_;                                            \
     CYG_MACRO_END
 
@@ -114,6 +137,29 @@ typedef struct
 #define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )  \
         (_regs_) = (HAL_SavedRegisters *)(_sp_)
 
+#ifdef CYGHWR_HAL_SH_FPU
+#define HAL_GET_GDB_REGISTERS_FPU( _regval_, _regs_ )   \
+{                                                       \
+    _regval_[23] = (_regs_)->fpul;                      \
+    _regval_[24] = (_regs_)->fpscr;                     \
+                                                        \
+    for( _i_ = 0; _i_ < 16; _i_++ )                     \
+        _regval_[25+_i_] = (_regs_)->fr[_i_];           \
+}
+
+#define HAL_SET_GDB_REGISTERS_FPU( _regs_, _regval_ )   \
+{                                                       \
+    (_regs_)->fpul = _regval_[23];                      \
+    (_regs_)->fpscr = _regval_[24];                     \
+                                                        \
+    for( _i_ = 0; _i_ < 16; _i_++ )                     \
+        (_regs_)->fr[_i_] = _regval_[25+_i_];           \
+}
+#else
+#define HAL_GET_GDB_REGISTERS_FPU( _regval_, _regs_ )
+#define HAL_SET_GDB_REGISTERS_FPU( _regs_, _regval_ )
+#endif
+
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
 #define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
@@ -121,7 +167,14 @@ typedef struct
     CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
     int _i_;                                                    \
                                                                 \
-    for( _i_ = 0; _i_ < 16; _i_++ )                             \
+    for( _i_ = 0; _i_ < 8; _i_++ )                              \
+    {                                                           \
+        _regval_[_i_] = (_regs_)->r[_i_];                       \
+        _regval_[43+_i_] = (_regs_)->r[_i_];                    \
+        _regval_[51+_i_] = 0;                                   \
+    }                                                           \
+                                                                \
+    for( /* _i_ = 8 */ ; _i_ < 16; _i_++ )                      \
         _regval_[_i_] = (_regs_)->r[_i_];                       \
                                                                 \
     _regval_[16] = (_regs_)->pc;                                \
@@ -132,7 +185,8 @@ typedef struct
     _regval_[21] = (_regs_)->macl;                              \
     _regval_[22] = (_regs_)->sr;                                \
                                                                 \
-    /* 23-51 not used atm. */                                   \
+    HAL_GET_GDB_REGISTERS_FPU( _regval_, _regs_ );              \
+                                                                \
     CYG_MACRO_END
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
@@ -151,6 +205,9 @@ typedef struct
     (_regs_)->mach = _regval_[20];                              \
     (_regs_)->macl = _regval_[21];                              \
     (_regs_)->sr = _regval_[22];                                \
+                                                                \
+    HAL_SET_GDB_REGISTERS_FPU( _regs_, _regval_ );              \
+                                                                \
     CYG_MACRO_END
 
 //--------------------------------------------------------------------------

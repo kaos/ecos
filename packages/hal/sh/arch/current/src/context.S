@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):   jskov
-## Contributors:jskov
+## Contributors:jskov, nickg
 ## Date:        1999-05-01
 ## Purpose:     SH context switch code
 ## Description: This file contains implementations of the thread context 
@@ -98,6 +99,48 @@ FUNC_START(hal_thread_switch_context)
         mov.l   r1,@-r15
 
         sts.l   pr,@-r15                ! return address
+
+#ifdef CYGHWR_HAL_SH_FPU
+        sts.l   fpscr,@-r15
+        sts.l   fpul,@-r15
+#if CYGHWR_HAL_SH_FPU_REGS == 32
+        frchg
+        fmov.s  fr15,@-r15
+        fmov.s  fr14,@-r15
+        fmov.s  fr13,@-r15
+        fmov.s  fr12,@-r15
+        fmov.s  fr11,@-r15
+        fmov.s  fr10,@-r15
+        fmov.s  fr9,@-r15
+        fmov.s  fr8,@-r15
+        fmov.s  fr7,@-r15
+        fmov.s  fr6,@-r15
+        fmov.s  fr5,@-r15
+        fmov.s  fr4,@-r15
+        fmov.s  fr3,@-r15
+        fmov.s  fr2,@-r15
+        fmov.s  fr1,@-r15
+        fmov.s  fr0,@-r15
+        frchg
+#endif          
+        fmov.s  fr15,@-r15
+        fmov.s  fr14,@-r15
+        fmov.s  fr13,@-r15
+        fmov.s  fr12,@-r15
+        fmov.s  fr11,@-r15
+        fmov.s  fr10,@-r15
+        fmov.s  fr9,@-r15
+        fmov.s  fr8,@-r15
+        fmov.s  fr7,@-r15
+        fmov.s  fr6,@-r15
+        fmov.s  fr5,@-r15
+        fmov.s  fr4,@-r15
+        fmov.s  fr3,@-r15
+        fmov.s  fr2,@-r15
+        fmov.s  fr1,@-r15
+        fmov.s  fr0,@-r15
+#endif
+        
         sts.l   macl,@-r15              ! macl
         sts.l   mach,@-r15              ! mach
         mov.l   r0,@-r15                ! saved r15 (entry sp)
@@ -153,6 +196,48 @@ FUNC_START(hal_thread_load_context)
 
         lds.l   @r0+,mach               ! mach
         lds.l   @r0+,macl               ! macl
+
+#ifdef CYGHWR_HAL_SH_FPU
+        fmov.s  @r0+,fr0
+        fmov.s  @r0+,fr1
+        fmov.s  @r0+,fr2
+        fmov.s  @r0+,fr3
+        fmov.s  @r0+,fr4
+        fmov.s  @r0+,fr5
+        fmov.s  @r0+,fr6
+        fmov.s  @r0+,fr7
+        fmov.s  @r0+,fr8
+        fmov.s  @r0+,fr9
+        fmov.s  @r0+,fr10
+        fmov.s  @r0+,fr11
+        fmov.s  @r0+,fr12
+        fmov.s  @r0+,fr13
+        fmov.s  @r0+,fr14
+        fmov.s  @r0+,fr15
+#if CYGHWR_HAL_SH_FPU_REGS == 32
+        frchg
+        fmov.s  @r0+,fr0
+        fmov.s  @r0+,fr1
+        fmov.s  @r0+,fr2
+        fmov.s  @r0+,fr3
+        fmov.s  @r0+,fr4
+        fmov.s  @r0+,fr5
+        fmov.s  @r0+,fr6
+        fmov.s  @r0+,fr7
+        fmov.s  @r0+,fr8
+        fmov.s  @r0+,fr9
+        fmov.s  @r0+,fr10
+        fmov.s  @r0+,fr11
+        fmov.s  @r0+,fr12
+        fmov.s  @r0+,fr13
+        fmov.s  @r0+,fr14
+        fmov.s  @r0+,fr15
+        frchg
+#endif                  
+        lds.l   @r0+,fpul
+        lds.l   @r0+,fpscr
+#endif
+        
         lds.l   @r0+,pr                 ! pr
 
         mov     r3,r15                  ! update stack pointer

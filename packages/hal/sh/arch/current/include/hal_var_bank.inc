@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):    jskov
-## Contributors: jskov
+## Contributors: jskov, nickg
 ## Date:         2002-01-11
 ## Purpose:      SH support code for variants using register banks
 ##
@@ -207,6 +208,50 @@ $hal_vsr_table_int:
         mov.l   r0,@-r15                ! SR
 
         sts.l   pr,@-r15                ! PR
+
+#ifdef CYGHWR_HAL_SH_FPU
+        sts.l   fpscr,@-r15
+        sts.l   fpul,@-r15
+        mov.l   3f,r0                   ! set FPSCR to known value
+        lds     r0,fpscr
+#if CYGHWR_HAL_SH_FPU_REGS == 32
+        frchg
+        fmov.s  fr15,@-r15
+        fmov.s  fr14,@-r15
+        fmov.s  fr13,@-r15
+        fmov.s  fr12,@-r15
+        fmov.s  fr11,@-r15
+        fmov.s  fr10,@-r15
+        fmov.s  fr9,@-r15
+        fmov.s  fr8,@-r15
+        fmov.s  fr7,@-r15
+        fmov.s  fr6,@-r15
+        fmov.s  fr5,@-r15
+        fmov.s  fr4,@-r15
+        fmov.s  fr3,@-r15
+        fmov.s  fr2,@-r15
+        fmov.s  fr1,@-r15
+        fmov.s  fr0,@-r15        
+        frchg
+#endif          
+        fmov.s  fr15,@-r15
+        fmov.s  fr14,@-r15
+        fmov.s  fr13,@-r15
+        fmov.s  fr12,@-r15
+        fmov.s  fr11,@-r15
+        fmov.s  fr10,@-r15
+        fmov.s  fr9,@-r15
+        fmov.s  fr8,@-r15
+        fmov.s  fr7,@-r15
+        fmov.s  fr6,@-r15
+        fmov.s  fr5,@-r15
+        fmov.s  fr4,@-r15
+        fmov.s  fr3,@-r15
+        fmov.s  fr2,@-r15
+        fmov.s  fr1,@-r15
+        fmov.s  fr0,@-r15
+#endif
+
         sts.l   mach,@-r15              ! mach
         sts.l   macl,@-r15              ! macl
 
@@ -234,6 +279,7 @@ $hal_vsr_table_int:
 	 nop
         .align  2        
 1:	.long   CYG_SR
+3:      .long   CYG_FPSCR
         # ------------------------------------------------------------
         # Register bank has changed now. 
 2:
@@ -285,6 +331,48 @@ $hal_vsr_table_int:
 
         lds.l   @r0+,macl               ! macl
         lds.l   @r0+,mach               ! mach
+
+#ifdef CYGHWR_HAL_SH_FPU
+        fmov.s  @r0+,fr0
+        fmov.s  @r0+,fr1
+        fmov.s  @r0+,fr2
+        fmov.s  @r0+,fr3
+        fmov.s  @r0+,fr4
+        fmov.s  @r0+,fr5
+        fmov.s  @r0+,fr6
+        fmov.s  @r0+,fr7
+        fmov.s  @r0+,fr8
+        fmov.s  @r0+,fr9
+        fmov.s  @r0+,fr10
+        fmov.s  @r0+,fr11
+        fmov.s  @r0+,fr12
+        fmov.s  @r0+,fr13
+        fmov.s  @r0+,fr14
+        fmov.s  @r0+,fr15
+#if CYGHWR_HAL_SH_FPU_REGS == 32
+        frchg
+        fmov.s  @r0+,fr0
+        fmov.s  @r0+,fr1
+        fmov.s  @r0+,fr2
+        fmov.s  @r0+,fr3
+        fmov.s  @r0+,fr4
+        fmov.s  @r0+,fr5
+        fmov.s  @r0+,fr6
+        fmov.s  @r0+,fr7
+        fmov.s  @r0+,fr8
+        fmov.s  @r0+,fr9
+        fmov.s  @r0+,fr10
+        fmov.s  @r0+,fr11
+        fmov.s  @r0+,fr12
+        fmov.s  @r0+,fr13
+        fmov.s  @r0+,fr14
+        fmov.s  @r0+,fr15
+        frchg
+#endif                  
+        lds.l   @r0+,fpul
+        lds.l   @r0+,fpscr
+#endif
+
         lds.l   @r0+,pr                 ! PR
 
         mov.l   @r0+,r2
@@ -303,7 +391,6 @@ $hal_vsr_table_int:
          nop
         .align  2        
 1:	.long   CYG_SR_BANK1
-
 	.endm
 
 #---------------------------------------------------------------------------
@@ -313,11 +400,12 @@ $hal_vsr_table_int:
         mov.l   @r0,r4
         mov     #-5,r0                  ! divide cause by 0x20
         shld    r0,r4
-        mov     #CYGARC_SHREG_EVENT,r0
+        mov.l   3f,r0
 	bra     2f
          mov.l   r4,@(r0,r15)            ! store decoded vector number back
 	.align  2
 1:	.long   CYGARC_REG_EXCEVT
+3:      .long   CYGARC_SHREG_EVENT
 2:	
 	.endm
 

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov, Ben Lee, Steve Chamberlain
+// Contributors: jskov, Ben Lee, Steve Chamberlain, nickg
 // Date:         1999-05-18
 // Description:  GDB Stub support for sh CPU.
 //
@@ -127,7 +128,12 @@ __get_trap_number(void)
 #if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
 int __is_bsp_syscall(void) 
 {
-    if (_hal_registers->event == 34)
+#if defined(CYGARC_REG_TRA)    
+    if (_hal_registers->event == 11 &&
+        (*(CYG_WORD *)CYGARC_REG_TRA) == (34<<2))
+#else
+    if (_hal_registers->event == 34 )
+#endif
         return 1;
     else
         return 0;

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   msalter
-// Contributors:msalter, jskov
+// Contributors:msalter, jskov, nickg
 // Date:        2002-02-28
 // Purpose:     
 // Description: 
@@ -98,6 +99,10 @@ extern int __do_syscall(int func,		// syscall function number
 #define _shnewlib_SYS_pipe        42
 #define _shnewlib_SYS_execve      59
 
+#define _shnewlib_SYS_argc        172 /* == 0xAC, for Argument Count :-) */
+#define _shnewlib_SYS_argnlen     173
+#define _shnewlib_SYS_argn        174
+
 #define _shnewlib_SYS_utime       201 /* not really a system call */
 #define _shnewlib_SYS_wait        202 /* nor is this */
 
@@ -114,6 +119,9 @@ hal_syscall_handler(void)
     arg4 = *(unsigned int *)(get_register(SP));
 
     switch (func) {
+    case _shnewlib_SYS_exit:
+        func = SYS_exit;
+        break;
     case _shnewlib_SYS_read:
         func = SYS_read;
         break;
@@ -129,8 +137,36 @@ hal_syscall_handler(void)
     case _shnewlib_SYS_lseek:
         func = SYS_lseek;
         break;
+    case _shnewlib_SYS_unlink:
+        func = SYS_unlink;
+        break;
+    case _shnewlib_SYS_getpid:
+        func = SYS_getpid;
+        break;
+    case _shnewlib_SYS_fstat:
+        func = SYS_fstat;
+        break;
+    case _shnewlib_SYS_chdir:
+        func = SYS_chdir;
+        break;
+    case _shnewlib_SYS_stat:
+        func = SYS_stat;
+        break;
+    case _shnewlib_SYS_chmod:
+        func = SYS_chmod;
+        break;
+    case _shnewlib_SYS_time:
+        func = SYS_time;
+        break;
+    case _shnewlib_SYS_isatty:
+        func = SYS_isatty;
+        break;
     case _shnewlib_SYS_utime:
         func = SYS_utime;
+    case _shnewlib_SYS_argc:
+        put_register( R0, 0 );
+        put_register( R1, 0 );
+        return 0;
     default:
         return SIGTRAP;
     }
