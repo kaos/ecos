@@ -51,7 +51,7 @@
 
 #include <cyg/kernel/diag.h>
 
-#include <cyg/io/wallclock.hxx>
+#include <cyg/io/wallclock.hxx>         // The WallClock API
 
 #include <cyg/infra/testcase.h>
 
@@ -78,8 +78,6 @@ char thread[sizeof(Cyg_Thread)];
 
 Cyg_Thread *th;
 
-#define EPOCH 900000000U
-
 // MN10300 sim takes 1min15secs to do one loop on 300MHz PII.
 #define LOOPS_SIM       2
 #define LOOPS_HW        10
@@ -93,6 +91,7 @@ cyg_tick_count one_sec;
 
 void wallclock_thread( CYG_ADDRWORD id )
 {
+    cyg_uint32 base;
     cyg_uint32 wtime;
     cyg_tick_count ticks;
 
@@ -100,15 +99,25 @@ void wallclock_thread( CYG_ADDRWORD id )
 
     // Check clock only every other second since the call itself may
     // take about a second.
-    Cyg_WallClock::wallclock->set_current_time( EPOCH );
+
+    // Start by synchronizing to next wallclock increment, then wait for
+    // a bit to get away from the exact time of the increment (or minor
+    // inaccuracies in the HW clock will cause failures).
+    wtime = Cyg_WallClock::wallclock->get_current_time();
+    do {
+        base = Cyg_WallClock::wallclock->get_current_time();
+    } while (base == wtime);
+    th->delay( one_sec/10 );
+
     for( int i = 0; i < loops; i += 2 )
     {
         // Make a note of the time
         ticks = Cyg_Clock::real_time_clock->current_value();
 
         wtime = Cyg_WallClock::wallclock->get_current_time();
-        if(wtime != EPOCH+i)
+        if(wtime != base+i)
         {
+            diag_printf("offset %d, read %d, expected %d\n", i, wtime, base+i);
             CYG_TEST_FAIL_FINISH( "Clock out of sync" );
         }
 
@@ -118,21 +127,30 @@ void wallclock_thread( CYG_ADDRWORD id )
 
         th->delay( 2*one_sec - ticks );
     }
-    
+
     if ( ! cyg_test_is_simulator ) {
         CYG_TEST_INFO("Tick output. Two seconds between each output.");
 
-        Cyg_WallClock::wallclock->set_current_time( EPOCH );
+        // Start by synchronizing to next wallclock increment, then
+        // wait for a bit to get away from the exact time of the
+        // increment (or minor inaccuracies in the HW clock will cause
+        // failures).
+        wtime = Cyg_WallClock::wallclock->get_current_time();
+        do {
+            base = Cyg_WallClock::wallclock->get_current_time();
+        } while (base == wtime);
+        th->delay( one_sec/10 );
+
         for( int i = 0; i < loops; i += 2 )
         {
             // Make a note of the time
             ticks = Cyg_Clock::real_time_clock->current_value();
             
             wtime = Cyg_WallClock::wallclock->get_current_time();
-            if(wtime != EPOCH+i)
+            if(wtime != base+i)
             {
                 diag_printf("wallclock drift: saw %d expected %d\n", 
-                            wtime, EPOCH+i);
+                            wtime, base+i);
             }
             CYG_TEST_STILL_ALIVE(i, "2xtick...");
             

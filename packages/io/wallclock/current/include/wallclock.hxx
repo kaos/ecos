@@ -85,10 +85,9 @@ private:
     // epoch base is factored out, so the driver can use any base
     // desired (see the emulated device).
 
-#ifndef CYGSEM_WALLCLOCK_SET_GET_MODE
-    // Called to initialize the hardware clock to a known sane state.
+    // Called to initialize the hardware clock to a known sane state, or
+    // simply to make sure it can be accessed in set-get mode.
     void init_hw_seconds( void );
-#endif
 
     // Returns the number of seconds elapsed since 1970-01-01 00:00:00.
     // (or any desired epoch when in init-get mode)
@@ -99,48 +98,6 @@ private:
     void set_hw_seconds( cyg_uint32 secs );
 #endif
 };
-
-#ifdef __CYGBLD_DRIVER_PRIVATE
-
-// -------------------------------------------------------------------------
-// Some helper functions
-
-// This function is from the Linux kernel.
-//
-// Converts Gregorian date to seconds since 1970-01-01 00:00:00.
-// Assumes input in normal date format, i.e. 1980-12-31 23:59:59
-// => year=1980, mon=12, day=31, hour=23, min=59, sec=59.
-//
-// This algorithm was first published by Gauss (I think).
-//
-// WARNING: this function will overflow on 2106-02-07 06:28:16 on
-// machines were long is 32-bit! (However, as time_t is signed, we
-// will already get problems at other places on 2038-01-19 03:14:08)
-static cyg_uint32
-_simple_mktime(cyg_uint32 year, cyg_uint32 mon,
-		     cyg_uint32 day, cyg_uint32 hour,
-		     cyg_uint32 min, cyg_uint32 sec)
-{
-	if (0 >= (int) (mon -= 2)) {	/* 1..12 -> 11,12,1..10 */
-		mon += 12;	/* Puts Feb last since it has leap day */
-		year -= 1;
-	}
-	return (((
-		(cyg_uint32)(year/4 - year/100 + year/400 + 367*mon/12 + day) +
-		year*365 - 719499
-		)*24 + hour /* now have hours */
-		)*60 + min /* now have minutes */
-		)*60 + sec; /* finally seconds */
-}
-
-//-----------------------------------------------------------------------------
-// BCD helper macros
-#define TO_BCD(x) (((x/10)<<4) | (x%10))
-#define TO_DEC(x) (((x>>4)*10) + (x&0xf))
-
-
-// -------------------------------------------------------------------------
-#endif // __CYGBLD_DRIVER_PRIVATE
 
 #endif // ifndef CYGONCE_DEVS_WALLCLOCK_HXX
 // EOF wallclock.hxx

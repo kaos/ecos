@@ -43,14 +43,13 @@
 #include <pkgconf/kernel.h>             // Kernel config
 #include <pkgconf/wallclock.h>          // Wallclock device config
 
+#include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/infra/cyg_type.h>         // Common type definitions and support
 
-#define __CYGBLD_DRIVER_PRIVATE
 #include <cyg/io/wallclock.hxx>         // The WallClock API
+#include <cyg/io/wallclock/wallclock.inl> // Helpers
 
 #include <cyg/hal/sh_regs.h>            // RTC register definitions
-
-#include <cyg/hal/hal_io.h>             // IO macros
 
 #include <cyg/infra/diag.h>             // For debugging
 

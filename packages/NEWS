@@ -1,3 +1,8 @@
+* Hitachi SH3 CqREEK (cq7708) platform HAL support added
+  Contributed by Haruki Kashiwaya [Still untested, serial not imported]
+* Watchdog reworked much like wallclock.
+  Common code and API in io/watchdog, simpler (smaller) low-level drivers in
+  devs/watchdog/<arch>.
 * IO serial driver
   The common serial driver has been extended with a configurable option for
   a non-blocking read/write mode. It has also been given some new callbacks

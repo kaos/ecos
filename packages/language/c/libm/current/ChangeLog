@@ -1,6 +1,11 @@
+2000-05-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/sys/ieeefp.h: Undo below change.
+
 2000-05-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/sys/ieeefp.h: Support FPU double-LE layout in BE mode.
+	Fix paste bug.
 
 2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 

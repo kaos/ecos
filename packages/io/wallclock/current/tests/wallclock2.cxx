@@ -52,7 +52,7 @@
 #if defined(CYGSEM_LIBC_TIME_CLOCK_WORKING)
 
 #include <time.h>
-#include <cyg/io/wallclock.hxx>
+#include <cyg/io/wallclock.hxx>         // The WallClock API
 
 // -------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@
 externC int
 main (void )
 {
-    time_t now, test;
+    time_t now, test, test2;
 
     CYG_TEST_INIT();
 
@@ -76,9 +76,18 @@ main (void )
     // Check that set/get works
     Cyg_WallClock::wallclock->set_current_time( 0 );
     test = (time_t) Cyg_WallClock::wallclock->get_current_time();
+    // 2000.03.01 00:00:00 UTC
+    Cyg_WallClock::wallclock->set_current_time( 951868800 );
+    test2 = (time_t) Cyg_WallClock::wallclock->get_current_time();
+    // Should test 2100 and 2400 leap year calculations as well, but 
+    // these would overflow with today's time_t.
     Cyg_WallClock::wallclock->set_current_time( now );
-    CYG_TEST_PASS_FAIL(0 == test, "Can set WallClock to epoch");
-    
+    CYG_TEST_PASS_FAIL(2 >= test,  // each operation can take one second
+                       "Can set WallClock to epoch");
+    CYG_TEST_PASS_FAIL(951868800+2 > test2 &&
+                       951868800 <= test2,
+                       "WallClock date conversion Y2K safe");
+
     // Test that the wallclock and libc use same epoch.
     test = (time_t) 0;
     CYG_TEST_PASS_FAIL(!strcmp(ctime(&test), "Thu Jan 01 00:00:00 1970\n"),

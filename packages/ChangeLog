@@ -1,3 +1,19 @@
+2000-05-31  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added CqREEK platform HAL (contributed by Haruki
+	Kashiwaya).
+
+2000-05-31  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Moved watchdog drivers around. Common code in
+	io/watchdog, low-level drivers in devs/watchdog/<arch>.
+	CYGPKG_DEVICES_WATCHDOG is now called CYGPKG_IO_WATCHDOG and
+	targets include individual hardware drivers.
+
+2000-05-26  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added dallas 1742 wallclock driver package.
+
 2000-04-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* ecos.db: CYGPKG_IO_SERIAL should not be "hardware" now that it

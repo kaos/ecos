@@ -1,3 +1,25 @@
+2000-05-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/wallclock/wallclock.inl (_simple_mktime): Replaced
+	expression with algorithm.
+
+	* tests/wallclock2.cxx: Test wallclock's conversion functions for
+	Y2K safety.
+
+2000-05-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/wallclock/wallclock.inl:
+	(_simple_mkdate): Rewritten.
+
+	* src/wallclock.cxx: 
+	* include/wallclock.hxx: low-level driver may need init call also
+	in set-get mode. Split helper functions out in new .inl header.
+	
+	* cdl/wallclock.cdl: Added set-get/init-get option.
+
+	* tests/wallclock2.cxx: Allow HW calls to take one second.
+	* tests/wallclock.cxx: Don't set clock.
+
 2000-04-19  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/wallclock.cxx: Construct after kernel RTC since the

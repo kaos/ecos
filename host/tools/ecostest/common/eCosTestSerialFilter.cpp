@@ -51,7 +51,7 @@
 
 #include "eCosStd.h"
 
-#define SER_FILTER_VER "$Id: eCosTestSerialFilter.cpp,v 1.9 2000/05/26 13:46:34 jlarmour Exp $"
+#define SER_FILTER_VER "$Id: eCosTestSerialFilter.cpp,v 1.10 2000/06/02 17:35:00 jlarmour Exp $"
 #include "eCosTestSerialFilter.h"
 #include "eCosThreadUtils.h"
 

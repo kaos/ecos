@@ -43,6 +43,7 @@
 cdl_package CYGPKG_IO_WALLCLOCK {
     display       "Wallclock device"
     include_dir   cyg/io
+
     define_header wallclock.h
     description   "
         The wallclock device provides real time stamps, as opposed
@@ -63,6 +64,34 @@ cdl_package CYGPKG_IO_WALLCLOCK {
         display       "Number of wallclock implementations"
         no_define
         requires      1 == CYGINT_WALLCLOCK_IMPLEMENTATIONS
+    }
+
+    cdl_interface CYGINT_WALLCLOCK_SET_GET_MODE_SUPPORTED {
+        display       "Wallclock driver supports set/get mode"
+        no_define
+    }
+
+    cdl_option CYGSEM_WALLCLOCK_MODE {
+        display       "Wallclock mode"
+        flavor        data
+        legal_values  { "init_get" "set_get" }
+        default_value { CYGINT_WALLCLOCK_SET_GET_MODE_SUPPORTED ? \
+                        "set_get" : "init_get" }
+        requires      { CYGINT_WALLCLOCK_SET_GET_MODE_SUPPORTED || \
+                        CYGSEM_WALLCLOCK_MODE == "init_get" }
+        no_define
+        description   "
+            The wallclock driver can be used in one of two
+            modes. Set/get mode allows time to be kept during power
+            off (assuming there's a battery backed clock). Init/get
+            mode is slightly smaller and can be used when there is no
+            battery backed clock - in this mode time 0 is the time of
+            the board power up."
+    }
+
+    cdl_option CYGSEM_WALLCLOCK_SET_GET_MODE {
+        display     "Wallclock set/get mode"
+        calculated  { CYGSEM_WALLCLOCK_MODE == "set_get" ? 1 : 0 }
     }
 
     cdl_component CYGPKG_IO_WALLCLOCK_IMPLEMENTATION {

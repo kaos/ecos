@@ -262,10 +262,61 @@ package CYGPKG_DEVICES_WALLCLOCK_SH3 {
            Hitachi SH3 CPU's RTC module."
 }
 
+package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1742 {
+	alias		{ "Wallclock driver for Dallas 1742" devices_wallclock_ds1742 device_wallclock_ds1742 }
+	directory	devs/wallclock/dallas/ds1742
+	script          wallclock_ds1742.cdl
+	hardware
+        description "
+           This package provides a driver implementation for 
+           the Dallas 1742 wallclock."
+}
 
-package CYGPKG_DEVICES_WATCHDOG {
-	alias		{ "Watchdog device code" watchdog devices_watchdog device_watchdog }
-	directory	devs/watchdog
+
+
+package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
+	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
+	directory	devs/watchdog/arm/aeb
+	script          watchdog_aeb.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           ARM/AEB board."
+}
+
+package CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285 {
+	alias		{ "Watchdog driver for ARM/EBSA285 board" devices_watchdog_ebsa285 device_watchdog_ebsa285 }
+	directory	devs/watchdog/arm/ebsa285
+	script          watchdog_ebsa285.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           ARM/EBSA285 board."
+}
+
+package CYGPKG_DEVICES_WATCHDOG_MN10300_MN10300 {
+	alias		{ "Watchdog driver for MN10300 chip" devices_watchdog_mn10300 device_watchdog_mn10300 }
+	directory	devs/watchdog/mn10300/mn10300
+	script          watchdog_mn10300.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           MN10300 chip."
+}
+
+package CYGPKG_DEVICES_WATCHDOG_SH_SH3 {
+	alias		{ "Watchdog driver for the Hitachi SH3 chip" devices_watchdog_sh3 device_watchdog_sh3 }
+	directory	devs/watchdog/sh/sh3
+	script          watchdog_sh3.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           Hitachi SH3 chip."
+}
+
+package CYGPKG_IO_WATCHDOG {
+	alias		{ "Watchdog IO device" watchdog io_watchdog }
+	directory	io/watchdog
         script          watchdog.cdl
         description "
            This package provides a watchdog device."
@@ -419,6 +470,17 @@ package CYGPKG_HAL_SH_EDK7708 {
            The edk HAL package provides the support needed to run
            eCos on a Hitachi SH3 EDK7708 board."
 }
+
+package CYGPKG_HAL_SH_SH7708_CQ7708 {
+        alias           { "CqREEK Hitachi SH7708 board" hal_sh_cq sh_cq_hal }
+        directory       hal/sh/cq7708
+        script          hal_sh_sh7708_cq7708.cdl
+        hardware
+        description "
+           The cq HAL package provides the support needed to run
+           eCos on a Hitachi SH3 CqREEK board."
+}
+
 
 # --------------------------------------------------------------------------
 # i386 packages
@@ -747,6 +809,7 @@ target aeb {
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_AEB
 	           CYGPKG_IO_SERIAL_ARM_AEB
+                   CYGPKG_DEVICES_WATCHDOG_ARM_AEB
         }
         description "
 The aeb target provides the packages needed to run eCos on an ARM
@@ -759,6 +822,7 @@ target ebsa285 {
                    CYGPKG_IO_PCI
 		   CYGPKG_DEVS_ETH_ARM_EBSA285
 		   CYGPKG_IO_SERIAL_ARM_EBSA285
+                   CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285
         }
         description "
         The ebsa285 target provides the packages needed to run
@@ -795,11 +859,23 @@ target sh7708 {
                       CYGPKG_HAL_SH_EDK7708
                       CYGPKG_DEVICES_WALLCLOCK_SH3 
 	              CYGPKG_IO_SERIAL_SH_EDK7708
+                      CYGPKG_DEVICES_WATCHDOG_SH_SH3
         }
 	enable      { CYGPKG_HAL_SH_7708 }
         description "
            The sh7708 target provides the packages needed to run
            eCos on a Hitachi EDK/SH7708 board."
+}
+
+target cq7708 {
+        alias { "CqREEK SH7708 Evaluation board" cq7708 }
+        packages { CYGPKG_HAL_SH
+                   CYGPKG_HAL_SH_SH7708_CQ7708
+        }
+        enable      { CYGPKG_HAL_SH_7708 }
+        description "
+           The cq7708 target provides the packages needed to run
+           eCos on a CqREEK Hitachi SH7708 board."
 }
 
 # --------------------------------------------------------------------------
@@ -967,6 +1043,7 @@ target stdeval1 {
                           CYGPKG_HAL_MN10300_AM31_STDEVAL1 
                           CYGPKG_HAL_MN10300_AM31 
                           CYGPKG_IO_SERIAL_MN10300
+                          CYGPKG_DEVICES_WATCHDOG_MN10300_MN10300
         }
         description "
            The stdeval1 target provides the packages needed to run
@@ -980,6 +1057,7 @@ target stb {
                           CYGPKG_HAL_MN10300_AM33_STB
                           CYGPKG_HAL_MN10300_AM33
                           CYGPKG_IO_SERIAL_MN10300
+                          CYGPKG_DEVICES_WATCHDOG_MN10300_MN10300
         }
         description "
            The stb target provides the packages needed to run

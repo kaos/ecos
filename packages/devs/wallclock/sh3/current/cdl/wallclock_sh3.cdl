@@ -47,9 +47,6 @@ cdl_package CYGPKG_DEVICES_WALLCLOCK_SH3 {
     requires      CYGPKG_HAL_SH
     hardware
     compile       wallclock_sh3.cxx
-    define_proc {
-        puts $::cdl_header "#undef CYGSEM_WALLCLOCK_SET_GET_MODE"
-    }
     implements    CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS
     active_if     CYGIMP_WALLCLOCK_HARDWARE
 

@@ -1,3 +1,10 @@
+2000-05-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/wallclock_sh3.cdl: CYGSEM_WALLCLOCK_SET_GET_MODE moved to IO
+	package.
+
+	* src/wallclock_sh3.cxx: Get helpers from new file.
+
 2000-04-06  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/wallclock_sh3.cdl: Only active when wallclock is.

@@ -89,11 +89,9 @@ Cyg_WallClock::Cyg_WallClock()
     // install instance pointer
     wallclock = &wallclock_instance;
 
-#ifndef CYGSEM_WALLCLOCK_SET_GET_MODE
-    // Since set_hw_seconds is not going to write to the hardware
-    // clock, initialize it to a sane state now.
+    // Always allow low-level driver to initialize clock, even though it
+    // may not be necessary for set-get mode.
     init_hw_seconds();
-#endif
 }
 
 //-----------------------------------------------------------------------------

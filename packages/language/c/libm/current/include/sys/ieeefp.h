@@ -61,8 +61,6 @@
 // Note: there do not seem to be any current machines which are Big Endian but
 // have a mixed up double layout. 
 
-#if (CYG_BYTEORDER == CYG_MSBFIRST) // Big endian
-
 typedef union 
 {
     cyg_int32 asi32[2];
@@ -73,26 +71,17 @@ typedef union
     
     struct 
     {
-#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST)
         unsigned int sign : 1;
         unsigned int exponent: 11;
         unsigned int fraction0:4;
         unsigned int fraction1:16;
         unsigned int fraction2:16;
         unsigned int fraction3:16;
-#else
-        unsigned int fraction2:16;
-        unsigned int fraction3:16;
-        unsigned int sign : 1;
-        unsigned int exponent: 11;
-        unsigned int fraction0:4;
-        unsigned int fraction1:16;
-#endif        
+        
     } number;
     
     struct 
     {
-#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST)
         unsigned int sign : 1;
         unsigned int exponent: 11;
         unsigned int quiet:1;
@@ -100,30 +89,17 @@ typedef union
         unsigned int function1:16;
         unsigned int function2:16;
         unsigned int function3:16;
-#else
-        unsigned int function2:16;
-        unsigned int function3:16;
-        unsigned int sign : 1;
-        unsigned int exponent: 11;
-        unsigned int quiet:1;
-        unsigned int function0:3;
-        unsigned int function1:16;
-#endif
     } nan;
     
     struct 
     {
-#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST)
         cyg_uint32 msw;
         cyg_uint32 lsw;
-#else
-        cyg_uint32 lsw;
-        cyg_uint32 msw;
-#endif
     } parts;
 
     
 } Cyg_libm_ieee_double_shape_type;
+
 
 typedef union
 {
