@@ -1,4 +1,4 @@
-<!DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+<!-- DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN" -->
 
 <!-- {{{ Banner                         -->
 
@@ -135,7 +135,7 @@ hardware for the application being developed.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="overview.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="synth-io-overview.gif" format="gif" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -1283,7 +1283,7 @@ can be used by other scripts.
   <refsynopsisdiv>
     <funcsynopsis>
       <funcsynopsisinfo>
-#include &lt;cyg/hal/hal_io.h
+#include &lt;cyg/hal/hal_io.h&gt;
       </funcsynopsisinfo>
       <funcprototype>
         <funcdef>int <function>cyg_hal_sys_xyzzy</function></funcdef>
@@ -1395,7 +1395,7 @@ GNU C library sources.
   <refsynopsisdiv>
     <funcsynopsis>
       <funcsynopsisinfo>
-#include &lt;cyg/hal/hal_io.h
+#include &lt;cyg/hal/hal_io.h&gt;
       </funcsynopsisinfo>
 
       <funcprototype>
