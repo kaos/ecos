@@ -59,6 +59,7 @@
 #include <tftp_support.h>     // TFTPD structures
 #include <cyg/kernel/kapi.h>
 #include <stdlib.h>           // For malloc
+#include <fcntl.h>
 
 #define nCYGOPT_NET_TFTP_SERVER_INSTRUMENT
 #ifdef CYGOPT_NET_TFTP_SERVER_INSTRUMENT
@@ -264,7 +265,7 @@ tftpd_write_file(struct tftp_server *server,
 	freeaddrinfo(res);
         return;
     }
-    if ((fd = (server->ops->open)(hdr->th_stuff, O_WRONLY)) < 0) {
+    if ((fd = (server->ops->open)(hdr->th_stuff, O_WRONLY|O_TRUNC|O_CREAT)) < 0) {
         tftpd_send_error(s,reply,TFTP_ENOTFOUND,from_addr, from_len);
         close(s);
 	freeaddrinfo(res);

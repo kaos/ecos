@@ -1,3 +1,10 @@
+2004-04-19  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/tftp_server.c: files are now created with the
+	O_CREAT|O_TRUNC|O_WRONLY so it is possible to write to
+	non-existing files and that overwriting a larger file with
+	a smaller file does not leave a garbage at the end.
+
 2004-04-19  John Dallaway  <jld@ecoscentric.com>
 
 	* doc/tcpip.sgml: Remove reference to RedBoot documentation
