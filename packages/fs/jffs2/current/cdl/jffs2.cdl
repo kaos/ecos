@@ -200,6 +200,17 @@ cdl_package CYGPKG_FS_JFFS2 {
             to the set of global flags."
         }
 
+     cdl_option CYGPKG_FS_JFFS2_CFLAGS_REMOVE {
+         display "Suppressed compiler flags"
+         flavor  data
+         no_define
+         default_value { "" }
+         description   "
+             This option modifies the set of compiler flags for
+             building the JFFS2 package. These flags are removed from
+             the set of global flags if present."
+     }
+
     # ----------------------------------------------------------------
     # Tests
 

@@ -1,3 +1,8 @@
+2004-01-05  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+        * cdl/jffs2.cdl: Re-added CYGPKG_FS_JFFS2_CFLAGS_REMOVE that had been
+	removed by previous change.
+
 2003-11-26  David Woodhouse  <dwmw2@redhat.com>
 
 	JFFS2 cleanup and import of newer code. Remove last vestiges of
