@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -557,6 +558,22 @@ void hal_interrupt_configure(int vector, int level, int up)
 void hal_interrupt_set_level(int vector, int level)
 {
     // No interrupts are configurable on this hardware
+}
+
+#define _CYGHWR_LAYOUT_ONLY
+#include <cyg/hal/hal_platform_setup.h>
+
+unsigned long
+_edb7xxx_physical_address(unsigned long addr)
+{
+    unsigned long res;
+
+    if (addr < DRAM_LA_END) {
+        res = addr + DRAM_PA;
+    } else {
+        res = addr | 0xC0000000;
+    }
+    return res;
 }
 
 /*------------------------------------------------------------------------*/

@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,7 +55,13 @@
 //
 //===========================================================================*/
 
+#include <pkgconf/hal.h>
+#include <pkgconf/system.h>
+#include CYGBLD_HAL_PLATFORM_H
 #include <cyg/hal/hal_edb7xxx.h>
+
+extern unsigned long _edb7xxx_physical_address(unsigned long addr);
+#define CYGARC_PHYSICAL_ADDRESS(x) _edb7xxx_physical_address((unsigned long) x)
 
 #endif // CYGONCE_HAL_ARM_EDB7XXX_PLF_IO_H
 // EOF plf_io.h

@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -123,7 +124,7 @@
 #define IO_LA_END        0x8000f000
 #define IO_PA            0x80000000
 
-
+#ifndef _CYGHWR_LAYOUT_ONLY
 // Define startup code [macros]
 #if defined(CYGSEM_HAL_INSTALL_MMU_TABLES)
 
@@ -553,6 +554,7 @@ _phys_store_end:
 
 #define PLATFORM_SETUP1
 #endif
+#endif //_CYGHWR_LAYOUT_ONLY
 
 /*---------------------------------------------------------------------------*/
 /* end of hal_platform_setup.h                                               */

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -306,13 +307,15 @@ do_exec(int argc, char *argv[])
     /* Next ATAG_MEM. */
     params->hdr.size = (sizeof(struct tag_mem32) + sizeof(struct tag_header))/sizeof(long);
     params->hdr.tag = ATAG_MEM;
-    params->u.mem.start = CYGARC_PHYSICAL_ADDRESS(CYGMEM_REGION_ram);
     /* Round up so there's only one bit set in the memory size.
      * Don't double it if it's already a power of two, though.
      */
     params->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);
     if (params->u.mem.size < CYGMEM_REGION_ram_SIZE)
 	    params->u.mem.size <<= 1;
+    params->u.mem.start = CYGARC_PHYSICAL_ADDRESS(CYGMEM_REGION_ram);
+    // Linux doesn't like physical RAM to start on odd boundary 
+    params->u.mem.start &= ~(params->u.mem.size-1);
     params = (struct tag *)((long *)params + params->hdr.size);
     if (ramdisk_addr_set) {
         params->hdr.size = (sizeof(struct tag_initrd) + sizeof(struct tag_header))/sizeof(long);

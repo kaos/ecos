@@ -1,3 +1,12 @@
+2003-02-06  Gary Thomas  <gary@mind.be>
+
+	* misc/edb7312_redboot_ROMRAM.ecm: 
+	* src/edb7xxx_misc.c: 
+	* include/plf_io.h: 
+	* include/hal_platform_setup.h: 
+	* cdl/hal_arm_edb7xxx.cdl: Add support for booting Linux by defining
+	CYGARC_PHYSICAL_ADDRESS().
+
 2002-12-06  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* misc/edb7312_redboot_ROMRAM.ecm: 

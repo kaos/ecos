@@ -1,3 +1,7 @@
+2003-02-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/redboot_linux_exec.c: Make sure RAM description is sane.
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code

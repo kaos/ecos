@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Gary Thomas <gary@mind.be>
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -70,7 +71,11 @@ CL-PS7111 and EP7xxx based development boards."
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_edb7xxx.h>"
+        puts $::cdl_header "#define HAL_PLATFORM_MACHINE_TYPE  131"
+        puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0x00001f00"
     }
+
+    requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xC0038000 }
 
     cdl_option CYGHWR_HAL_ARM_EDB7XXX_VARIANT {
         display       "Cirrus Logic processor variant"
