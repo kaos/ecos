@@ -164,11 +164,17 @@ static __inline__ void
 throttle_rx( serial_channel *chan, cyg_bool force )
 {
     serial_funs *funs = chan->funs;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    cyg_uint32 prev_flags = chan->flow_desc.flags;
+#endif
 
     chan->flow_desc.flags |= CYG_SERIAL_FLOW_IN_THROTTLED;
 #ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
-    // send an xoff
-    if ( force || chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX ) {
+    // send an xoff if not already done (throttled)
+    if ( force ||
+        ((chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX) &&
+         (0==(prev_flags & CYG_SERIAL_FLOW_IN_THROTTLED))) ) {
+        CYG_ASSERT(force||(chan->flow_desc.xchar=='\0')||(chan->flow_desc.xchar==CYGDAT_IO_SERIAL_FLOW_CONTROL_XOFF_CHAR), "xchar already set (XOFF)");
         chan->flow_desc.xchar = CYGDAT_IO_SERIAL_FLOW_CONTROL_XOFF_CHAR;
         // Make sure xmit is running so we can send it
         (funs->start_xmit)(chan); 
@@ -193,11 +199,17 @@ static __inline__ void
 restart_rx( serial_channel *chan, cyg_bool force )
 {
     serial_funs *funs = chan->funs;
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    cyg_uint32 prev_flags = chan->flow_desc.flags;
+#endif
 
     chan->flow_desc.flags &= ~CYG_SERIAL_FLOW_IN_THROTTLED;
 #ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
-    // send an xon
-    if ( force || chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX ) {
+    // send an xon, if we haven't already
+    if ( force ||
+        ((chan->config.flags & CYGNUM_SERIAL_FLOW_XONXOFF_RX) &&
+         (prev_flags & CYG_SERIAL_FLOW_IN_THROTTLED)) ) {
+        CYG_ASSERT(force||(chan->flow_desc.xchar=='\0')||(chan->flow_desc.xchar==CYGDAT_IO_SERIAL_FLOW_CONTROL_XON_CHAR), "xchar already set (XON)");
         chan->flow_desc.xchar = CYGDAT_IO_SERIAL_FLOW_CONTROL_XON_CHAR;
         (funs->start_xmit)(chan);  // Make sure xmit is running so we can send it
     }
@@ -265,7 +277,7 @@ serial_init(serial_channel *chan)
         // But make sure it is at least 35 below buffer size, to allow
         // for 16 byte fifos, twice, plus some latency before s/w flow
         // control can kick in. This doesn't apply to h/w flow control
-        // as it is near-instaneous
+        // as it is near-instantaneous
         if ( (cbuf->len - cbuf->high_water) < 35 )
             cbuf->high_water = cbuf->len - 35;
         // and just in case...
@@ -312,7 +324,7 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
         // Non interrupt driven (i.e. polled) operation
         while (size-- > 0) {
 #ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
-            while ( ( 0 == (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) ) &&
+            while ( ( 0 != (chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED) ) ||
                     ((funs->putc)(chan, *buf) == false) ) 
                 ;  // Ignore full, keep trying
 #else
@@ -1112,6 +1124,14 @@ serial_data_xmt_req(serial_channel *chan, int space,
 
     CYG_ASSERT(false == cbuf->block_mode_xfer_running,
                "Attempting new block transfer while another is running");
+
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    // if we're meant to be throttled, just stop and leave
+    if ( chan->flow_desc.flags & CYG_SERIAL_FLOW_OUT_THROTTLED ) {
+        (chan->funs->stop_xmit)(chan);  // Stop transmitting for now
+        return CYG_XMT_EMPTY;
+    }
+#endif
 
     // Available data (G = get, P = put, x = data, . = empty)
     //  0:        no data

@@ -1,3 +1,14 @@
+2003-08-18  Jay Foster <jay@systech.com>
+
+	* src/common/serial.c: Fixed bug for XON/XOFF flow control that
+	would cause multiple XON (or XOFF) characters to be sent for a
+	single flow control state transition.
+	Fixed bug in serial_write() that would cause output data to be
+	discarded if using polled mode with flow control, and output
+	was blocked due to flow control.
+	Fixed bug in serial_data_xmt_req() that would not stop sending
+	data when output was flow controlled off (hardware flow control).
+
 2003-09-02  Eric Doenges <Eric.Doenges@DynaPel.com>
 
 	* src/common/tty.c: Make tty_select prototype match implementation.
