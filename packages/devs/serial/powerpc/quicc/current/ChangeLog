@@ -1,3 +1,8 @@
+2004-01-24  Philip Soeberg <ecos@soeberg.net>
+
+	* src/quicc_smc_serial.c(quicc_sxx_serial_init): SCC3 support 
+	for MPC8XX_823.
+	
 2003-10-13  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc_serial.c: Add some I/O barriers to make sure that

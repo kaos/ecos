@@ -737,6 +737,10 @@ quicc_sxx_serial_init(struct cyg_devtab_entry *tab)
                                    0x0030, // PortA mask
                                    0x0000, // PortB mask
                                    0x0000, // PortC mask
+#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_823)
+                                   0x0000, // PortA mask
+                                   0x00C0, // PortB mask
+                                   0x0000, // PortC mask
 #else
 #error "Cannot route SCC3"
 #endif
