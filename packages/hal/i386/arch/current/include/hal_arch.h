@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   proven
-// Contributors:proven
+// Contributors:proven, pjo, nickg
 // Date:        1998-10-05
 // Purpose:     Define architecture abstractions
 // Usage:       #include <cyg/hal/hal_arch.h>
@@ -46,6 +46,8 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
+
+#include <cyg/hal/i386_stub.h>
 
 //-----------------------------------------------------------------------------
 // Processor saved states. This structure is also defined in i386.inc for
@@ -98,8 +100,12 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
     /* Cyg_HardwareThread::thread_entry expects one argument at stack */  \
     /* offset 4 (_thread_). The (0xDEADBEEF) entry is the return addr */  \
     /* for thread_entry (which is never used).                        */  \
+    *(--_sp_) = (CYG_WORD)(0);                                            \
+    *(--_sp_) = (CYG_WORD)(0);                                            \
+    *(--_sp_) = (CYG_WORD)(0);                                            \
+    *(--_sp_) = (CYG_WORD)(0);                                            \
     *(--_sp_) = (CYG_WORD)(_thread_);                                     \
-    *(--_sp_) = (CYG_WORD)(0xDEADBEEF);                                   \
+    *(--_sp_) = (CYG_WORD)(0);                                            \
     *(--_sp_) = (CYG_WORD)(_entry_);                                      \
                                                                           \
     _regs_ = (HAL_SavedRegisters *)                                       \
@@ -143,11 +149,16 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // HAL_BREAKINST is the value of the breakpoint instruction and 
 // HAL_BREAKINST_SIZE is its size in bytes.
 
-// #define HAL_BREAKPOINT(_label_)                 
+#define HAL_BREAKPOINT(_label_)                 \
+CYG_MACRO_START                                 \
+    asm volatile (" .globl  " #_label_ ";"      \
+                  #_label_":"                   \
+                  "int $3"                      \
+        );                                      \
+CYG_MACRO_END
 
-// #define HAL_BREAKINST           
-
-// #define HAL_BREAKINST_SIZE      
+#define HAL_BREAKINST                    0xCC
+#define HAL_BREAKINST_SIZE               1
 
 //-----------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
@@ -159,10 +170,16 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
-#define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )
+
+externC void hal_get_gdb_registers(target_register_t *, HAL_SavedRegisters *);
+externC void hal_set_gdb_registers(HAL_SavedRegisters *, target_register_t *);
+
+#define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ ) \
+		hal_get_gdb_registers((target_register_t *)(_aregval_), (_regs_))
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
-#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )
+#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ ) \
+		hal_set_gdb_registers((_regs_), (target_register_t *)(_aregval_))
 
 //-----------------------------------------------------------------------------
 // HAL setjmp
@@ -212,7 +229,7 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
-    ((6*4 /* sizeof(HAL_SavedRegisters) */) + 2 * CYGNUM_HAL_STACK_FRAME_SIZE)
+    ((6*4*2 /* 2*sizeof(HAL_SavedRegisters) */) + 4 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 // We have lots of registers so no particular amount is added in for
 // typical local variable usage.
@@ -222,7 +239,7 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // than this. Allow enough for three interrupt sources - clock, serial and
 // one other
 
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
+#if 0 // defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
 
 // An interrupt stack which is large enough for all possible interrupt
 // conditions (and only used for that purpose) exists.  "User" stacks
@@ -235,14 +252,17 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
 // No separate interrupt stack exists.  Make sure all threads contain
 // a stack sufficiently large
+
 # define CYGNUM_HAL_STACK_SIZE_MINIMUM                  \
-        (((2+3)*CYGNUM_HAL_STACK_INTERRUPT_SIZE) +      \
+        (((2+3+10)*CYGNUM_HAL_STACK_INTERRUPT_SIZE) +   \
          (2*CYGNUM_HAL_STACK_FRAME_SIZE))
+
 #endif
 
 // Now make a reasonable choice for a typical thread size. Pluck figures
 // from thin air and say 15 call frames with an average of 16 words of
 // automatic variables per call frame
+
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL                \
         (CYGNUM_HAL_STACK_SIZE_MINIMUM +             \
          15 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4)))

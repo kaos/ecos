@@ -477,7 +477,7 @@ cyg_hal_default_exception_vsr:
         slwi    \dreg,\dreg,2                   # convert to word offset.
         .endm                              
 
-#endif // CYGPKG_HAL_POWERPC_MPC8xx
+#endif // CYGPKG_HAL_POWERPC_INTC_DEFINED
 
 #---------------------------------------------------------------------------
 # Common interrupt handling code.

@@ -1,3 +1,21 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c (hal_diag_write_char): Check that write call is
+	successful.
+
+2000-02-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc: Added missed copyright notice.
+
+2000-02-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc: 
+	* include/var_intr.h: 
+	* include/plf_intr.h: 
+	These files added to make this HAL consistent with PC
+	version. They also contains some code moved out of the
+	architecture HAL.
+	
 2000-01-21  Jesper Skov  <jskov@cygnus.co.uk>
         CR 902062-CR
 	* src/hal_diag.c:

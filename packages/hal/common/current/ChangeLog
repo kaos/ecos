@@ -1,3 +1,7 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_stub.h: fixed endian definitions.
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/pkgconf/hal.h: Added CYGSEM_HAL_ROM_MONITOR

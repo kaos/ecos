@@ -47,7 +47,7 @@
 
 #include <pkgconf/io.h>
 #include <cyg/io/file.h>
-#include <sys/errno.h>
+#include <cyg/error/codes.h>
 
 struct file fds[CYGPKG_IO_NFILE];
 
@@ -95,4 +95,3 @@ getfp(int fd, struct file **fp)
     *fp = f;
     return 0;
 }
-

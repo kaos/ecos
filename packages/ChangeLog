@@ -2,12 +2,6 @@
 
 	* targets: Fix up some accidental reversions
 
-2000-02-10  Nick Garnett  <nickg@cygnus.co.uk>
-
-	* targets: 
-	* packages: 
-	Added appropriate entries for i386 PC target.
-
 2000-02-07  Jesper Skov  <jskov@redhat.com>
 
 	* targets:

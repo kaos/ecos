@@ -51,7 +51,7 @@
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-#ifdef CYG_HAL_ARM_SIM
+#ifdef CYGPKG_HAL_ARM_SIM
 #error "GDB Stub support not implemented for ARM SIM"
 #endif
 

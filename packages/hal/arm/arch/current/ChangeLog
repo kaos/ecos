@@ -1,3 +1,7 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/arm_stub.c: CYG_HAL_ARM -> CYGPKG_HAL_ARM
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S (reset_platform):

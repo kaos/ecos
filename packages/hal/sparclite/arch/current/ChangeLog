@@ -1,3 +1,9 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: 
+	* src/hal_boot.c: 
+	CYG_HAL_SPARCLITE_ > CYGPKG_HAL_SPARCELITE_
+
 1999-10-15  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/vectors.S (not_window_overflow): Actually the dispatcher

@@ -1,8 +1,10 @@
+#ifndef CYGONCE_HAL_I386_STUB_H
+#define CYGONCE_HAL_I386_STUB_H
 //==========================================================================
 //
-//      var_intr.c
+//      i386_stub.h
 //
-//      PowerPC variant interrupt handlers
+//      i386/PC GDB stub support
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -31,25 +33,59 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    jskov
-// Contributors: jskov
-// Date:         2000-02-11
-// Purpose:      PowerPC variant interrupt handlers
-// Description:  This file contains code to handle interrupt related issues
-//               on the PowerPC variant.
+// Author(s):    pjo
+// Contributors: pjo, nickg
+// Date:         1999-10-15
+// Purpose:      i386/PC GDB stub support
+// Description:  Definitions for the GDB stubs. Most of this comes from
+//               the original libstub code.
+//              
+// Usage:
+//               #include <cyg/hal/plf_intr.h>
+//               ...
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-#include <pkgconf/hal.h>
-#include <cyg/infra/cyg_type.h>
 
-externC void
-hal_variant_IRQ_init(void)
-{
-    // No special init required for 60x series.
-}
+#define NUMREGS 				(16)
+#define REGSIZE(x)				(((x) < CS)? 4 : 2)
 
-// -------------------------------------------------------------------------
-// EOF var_intr.c
+
+enum regnames
+{	EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI,
+	PC /* also known as eip */,
+	PS /* also known as eflags */,
+	CS, SS, DS, ES, FS, GS
+};
+
+typedef enum regnames regnames_t ;
+typedef unsigned long target_register_t ;
+
+#define PS_C			0x00000001
+#define PS_Z			0x00000040
+#define PS_V			0x00000080
+#define PS_T			0x00000100
+
+#define SP				(ESP)
+#define EIP				(PC)
+
+
+/* Find out what our last trap was. */
+extern int __get_trap_number(void) ;
+
+/* Given a trap number, compute the signal code for it. */
+extern int __computeSignal(unsigned int trap_number) ;
+
+/* Enable single stepping after the next user resume instruction. */
+extern void __single_step(void) ;
+extern void __clear_single_step(void) ;
+
+extern void __install_breakpoints(void) ;
+extern void __clear_breakpoints(void) ;
+
+
+//---------------------------------------------------------------------------
+#endif /* CYGONCE_HAL_I386_STUB_H */
+// End of i386_stub.h

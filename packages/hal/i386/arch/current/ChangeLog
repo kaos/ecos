@@ -1,3 +1,27 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/i386_stub.c: CYG_HAL_I386 -> CYGPKG_HAL_I386
+
+2000-02-10  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_arch.h: Merged PC platform support changes
+	contributed by Patrick O'Grady (pjo)(patrick@softprocess.com).
+
+	* include/hal_intr.h: Moved Linux specific support out to its own
+	var_intr.h.
+
+	* src/context.S: Added FP switch code from pjo, suitably
+	protected.
+
+	* src/PKGconf.mak: Added i386_stub.c to COMPILE list.
+
+	* src/i386_stub.c:
+	* include/arch.inc: Files added.
+
+	* src/hal_misc.c: Added hal_zero_bss().
+
+	* src/vectors.S: Added PC support code.
+
 2000-01-21  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/hal_intr.h (HAL_INTERRUPT_MASK, HAL_INTERRUPT_UNMASK): 

@@ -1,8 +1,11 @@
+#ifndef CYGONCE_HAL_MEM_H
+#define CYGONCE_HAL_MEM_H
+
 //=============================================================================
 //
-//      hal_diag.c
+//      hal_mem.h
 //
-//      HAL diagnostic output code
+//      HAL memory control API
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -31,73 +34,66 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   proven
-// Contributors:proven
-// Date:        1998-10-05
-// Purpose:     HAL diagnostic output
-// Description: Implementations of HAL diagnostic output support.
+// Author(s):   nickg
+// Contributors:nickg, jskov, hmt
+// Date:        2000-02-11
+// Purpose:     Memory control API
+// Description: The macros defined here provide the HAL APIs for handling
+//              simple memory management operations.
+// Usage:
+//              #include <cyg/hal/hal_mem.h>
+//              ...
+//              
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#include <cyg/infra/cyg_type.h>
 
-#include <cyg/infra/cyg_type.h>         // base types
+//=============================================================================
+// Memory mapping
+typedef struct {
+    CYG_ADDRESS  virtual_addr;
+    CYG_ADDRESS  physical_addr;
+    cyg_int32    size;
+    cyg_uint8    flags;
+} cyg_memdesc_t;
 
-#include <cyg/hal/hal_diag.h>
+// each variant HAL must provide these functions for mapping/clearing
+// (simple BAT/TLB) memory mappings.
+externC int
+cyg_hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys, 
+                    cyg_int32 size, cyg_uint8 flags);
+externC void
+cyg_hal_clear_MMU (void);
 
-//-----------------------------------------------------------------------------
+// each platform HAL must provide one of these to describe how memory
+// should be mapped/cached, ideally weak aliased so that apps can override:
+externC cyg_memdesc_t cyg_hal_mem_map[];
 
-void hal_diag_init( void )
-{
-}
+#define CYGARC_MEMDESC_CI       1       // cache inhibit
+#define CYGARC_MEMDESC_GUARDED  2       // guarded
 
-externC unsigned long cyg_hal_sys_write(int, const void*, long);
-externC unsigned long cyg_hal_sys_read(int, void*, long);
-externC unsigned long cyg_hal_sys_fdatasync(int);
+// these macros should ease that task, and ease any future extension of the
+// structure (physical == virtual addresses):
+#define CYGARC_MEMDESC_CACHE( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), 0 }
 
-// Write characters to a buffer which is flushed at newline/overflow to
-// improve performance.
-void hal_diag_write_char(char __c)
-{
-    static cyg_int32 __index = 0;
-    static cyg_uint8 __buffer[128];
+#define CYGARC_MEMDESC_NOCACHE( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_CI }
 
-    __buffer[__index++] = __c;
+#define CYGARC_MEMDESC_CACHEGUARD( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_GUARDED }
 
-    if ('\n' == __c || 128 == __index) {
-        cyg_int32 __written;
-        cyg_uint8* __p = __buffer;
+#define CYGARC_MEMDESC_NOCACHEGUARD( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_GUARDED|CYGARC_MEMDESC_CI }
 
-        while (__index > 0) {
-            __written = cyg_hal_sys_write(1, __p, __index);
-            if (__written > 0) {
-                __index -= __written;
-                __p += __written;
-            }
-        }
-        cyg_hal_sys_fdatasync(1);
-        __index = 0;
-    }
-}
-
-// Hmm... we need the definition of EINTR, which normally lives in
-// <asm/errno.h> on linux. But we can't get at that here, so we just
-// hard-code it. The burden of binary compatibility means x86 linux will
-// never change it.
-#define x86_linux_EINTR 4
-
-void hal_diag_read_char(char *c)
-{
-    int rc;
-
-    // The read syscall will get woken up by the itimer alarm, but we don't
-    // want to stop reading if that's the case
-    do {
-        rc = cyg_hal_sys_read(0, c, 1);
-    } while (-x86_linux_EINTR == rc);
-}
+#define CYGARC_MEMDESC_TABLE_END      {0, 0, 0, 0}
+#define CYGARC_MEMDESC_TABLE          cyg_memdesc_t cyg_hal_mem_map[]
+#define CYGARC_MEMDESC_EMPTY_TABLE    { CYGARC_MEMDESC_TABLE_END }
 
 //-----------------------------------------------------------------------------
-// End of hal_diag.c
+#endif // ifndef CYGONCE_HAL_MEM_H
+// End of hal_mem.h

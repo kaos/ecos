@@ -1,4 +1,11 @@
+2000-02-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/hal_powerpc_mpc8xx.h: Added simple config for
+	1st level arbiter.
+
 2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c: Moved MMU functions here.
 
 	* src/var_intr.c (Cyg_InterruptHANDLED): Mask out CALL_DSR flag
 	before return.

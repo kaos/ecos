@@ -163,7 +163,7 @@ Cyg_Mempool_Variable_Implementation::alloc( cyg_int32 size )
     return alloced + sizeof(struct memdq);
 }
 
-// As no coalescing is done, free is simply a matter of using the
+// When no coalescing is done, free is simply a matter of using the
 // freed memory as an element of the free list linking it in at the
 // start.
     
@@ -199,7 +199,6 @@ Cyg_Mempool_Variable_Implementation::free( cyg_uint8 *p, cyg_int32 size )
         if (idq->next > dq)
             break;
     }
-    dq->size = size;
     if (idq != hdq) {
         dq->prev = idq;
         dq->next = idq->next;
@@ -211,13 +210,13 @@ Cyg_Mempool_Variable_Implementation::free( cyg_uint8 *p, cyg_int32 size )
         idq->prev = dq;
         dq->prev->next = dq;
     }
-    // Now do coalescing
-    if ((char *)dq + dq->size == (char *)dq->next) {
+    // Now do coalescing, but leave the head of the list alone.
+    if (dq->next != hdq && (char *)dq + dq->size == (char *)dq->next) {
         dq->size += dq->next->size;
         dq->next = dq->next->next;
         dq->next->prev = dq;
     }
-    if ((char *)dq->prev + dq->prev->size == (char *)dq) {
+    if (dq->prev != hdq && (char *)dq->prev + dq->prev->size == (char *)dq) {
         dq->prev->size += dq->size;
         dq->prev->next = dq->next;
         dq->next->prev = dq->prev;

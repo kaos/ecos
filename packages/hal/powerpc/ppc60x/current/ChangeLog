@@ -1,5 +1,9 @@
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
+	* src/var_intr.c: include cyg_type header.
+
+	* src/var_misc.c (hal_clear_MMU): Moved MMU functions here.
+
 	* src/PKGconf.mak (COMPILE):
 	Added var_intr.c
 

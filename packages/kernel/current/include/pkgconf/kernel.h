@@ -710,7 +710,7 @@
  # NOTE: the requires statement is only valid for the current kernel.
  # Priority inheritance is possible in other schedulers as well
  # but is not yet implemented.
- cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE {
+ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INHERITANCE_SIMPLE {
      display    "Simple mutex priority inheritance"
      requires   CYGSEM_KERNEL_SCHED_MLQUEUE
      parent     CYGPKG_KERNEL_SYNCH

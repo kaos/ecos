@@ -1,5 +1,12 @@
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
+	* include/hal_cache.h: 
+	* include/hal_mem.h: 
+	Moved memory mapping definition to new file.
+
+	* include/hal_cache.h: Deleted 60x macros.
+
+	* src/hal_misc.c: Moved MMU functions to variant files.
 
 	* src/hal_intr.c (hal_IRQ_init): Moved code to MPC8xx variant
 	directory.

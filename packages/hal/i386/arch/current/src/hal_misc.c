@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: proven
+// Contributors: proven, pjo
 // Date:        1999-02-20
 // Purpose:     HAL miscellaneous functions
 // Description: This file contains miscellaneous functions provided by the
@@ -47,6 +47,25 @@
 #include <cyg/infra/cyg_type.h>
 
 #include <cyg/hal/hal_arch.h>
+
+void hal_zero_bss(void)
+{	extern char _end ;
+	extern char __bss_start ;
+
+	asm(
+		"movl %0, %%ecx;"           /* Get the address of _end */
+		"movl %1, %%edi;"           /* Address of __bss_start */
+		"subl %%edi, %%ecx;"        /* Number of bytes in %ecx */
+		"addl $3, %%ecx;"           /* Round up to the next 32-bits */
+		"shr $2, %%ecx;"            /* Divide by 4: we'll fill 32-bit words. */
+		"xorl %%eax, %%eax;"        /* Store zeros. */
+		"rep
+		stosl"                      /* Fill the region. */
+	:	/* No outputs. */
+	:	"g" (&_end), "g" (&__bss_start)
+	:	"ecx", "edi", "eax"
+	);
+}
 
 //---------------------------------------------------------------------------
 

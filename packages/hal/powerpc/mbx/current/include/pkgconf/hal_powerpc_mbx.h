@@ -52,7 +52,7 @@
        type     radio
        parent   CYGPKG_HAL_POWERPC
        requires CYGPKG_HAL_QUICC
-       requires CYGPKG_HAL_POWERPC_MPC860
+       requires CYGPKG_HAL_POWERPC_MPC8xx
        platform mbx
        description "
            The MBX HAL package provides the support needed to run

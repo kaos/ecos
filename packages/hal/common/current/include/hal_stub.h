@@ -75,9 +75,13 @@ extern "C" {
 
 #define __set_mem_fault_trap(x) ({__mem_fault = 0; x(); __mem_fault;})
 
-#if (CYG_BYTEORDER==CYG_LSBFIRST) && \
-    (!defined(__LITTLE_ENDIAN__) || !defined(_LITTLE_ENDIAN))
-# define __LITTLE_ENDIAN__
+#if (CYG_BYTEORDER==CYG_LSBFIRST)
+# if !defined(__LITTLE_ENDIAN__)
+#  define __LITTLE_ENDIAN__
+# endif
+# if !defined(_LITTLE_ENDIAN)
+#  define _LITTLE_ENDIAN
+# endif
 #endif
 
 //----------------------------------------------------------------------------

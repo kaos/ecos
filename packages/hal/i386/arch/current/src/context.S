@@ -32,7 +32,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):   jskov
-## Contributors:jskov
+## Contributors:jskov, pjo, nickg
 ## Date:        1999-01-20
 ## Purpose:     i386 context switch code
 ## Description: This file contains implementations of the thread context 
@@ -72,7 +72,7 @@ FUNC_START(hal_thread_switch_context)
 
         # Make room on the stack for the context
         movl    %esp,%ecx               # keep original SP
-        sub     $i386reg_context_size,%esp
+        sub	$i386reg_context_size,%esp
 
         # Save next context ptr in this context. Necessary because
         # hal_thread_load_context expects to find the ptr on the stack,
@@ -102,6 +102,13 @@ FUNC_START(hal_thread_switch_context)
 # %eax, %ecx, and %edx are ours to abuse.
         
 FUNC_START(hal_thread_load_context)
+
+#ifdef CYGHWR_HAL_I386_FPU	
+	movl	%cr0, %eax
+	orl	$0x8, %eax
+	movl	%eax, %cr0
+#endif
+	
         movl    i386reg_next_context(%esp),%eax # get new context ptr
         movl    (%eax),%eax
         

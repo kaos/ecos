@@ -1,3 +1,11 @@
+2000-02-17  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* include/pkgconf/hal_powerpc_fads.h: Fix PPC8xx -> MPC8xx typo
+
+2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_aux.c: Cleaned up includes.
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h: 

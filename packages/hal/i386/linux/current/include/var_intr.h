@@ -1,8 +1,12 @@
+#ifndef CYGONCE_HAL_VAR_INTR_H
+#define CYGONCE_HAL_VAR_INTR_H
+
 //==========================================================================
 //
-//      var_intr.c
+//      var_intr.h
 //
-//      PowerPC variant interrupt handlers
+//      i386/Linux Interrupt and clock support
+//
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -31,25 +35,30 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    jskov
-// Contributors: jskov
-// Date:         2000-02-11
-// Purpose:      PowerPC variant interrupt handlers
-// Description:  This file contains code to handle interrupt related issues
-//               on the PowerPC variant.
+// Author(s):    proven
+// Contributors: proven, jskov, pjo
+// Date:         1999-10-15
+// Purpose:      Define Interrupt support
+// Description:  The macros defined here provide the HAL APIs for handling
+//               interrupts and the clock.
+//              
+// Usage:
+//               #include <cyg/hal/var_intr.h>
+//               ...
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_i386.h>
 #include <cyg/infra/cyg_type.h>
+#include <cyg/hal/plf_intr.h>
 
-externC void
-hal_variant_IRQ_init(void)
-{
-    // No special init required for 60x series.
-}
+//---------------------------------------------------------------------------
 
-// -------------------------------------------------------------------------
-// EOF var_intr.c
+// Nothing in here at present, 
+
+//---------------------------------------------------------------------------
+#endif // ifndef CYGONCE_HAL_VAR_INTR_H
+// End of var_intr.h

@@ -116,7 +116,7 @@ void  __gccmain(void) {}
 /*------------------------------------------------------------------------*/
 /*   CYG_HAL_START - pre-main-entrypoint                                  */
 
-#ifdef CYG_HAL_SPARCLITE_SLEB
+#ifdef CYGPKG_HAL_SPARCLITE_SLEB
 #define SLEB_LED (*(volatile char *)(0x02000003))
 #define LED( _x_ ) SLEB_LED = (char)(0xff & ~(_x_))
 #else

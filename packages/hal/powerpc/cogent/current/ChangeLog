@@ -1,3 +1,7 @@
+2000-02-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_aux.c: Cleaned up includes.
+
 2000-02-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h:

@@ -64,13 +64,36 @@
  
    cdl_option CYGPKG_HAL_POWERPC_MPC860 {
        display "MPC860 microprocessor"
-       parent  CYGPKG_HAL_POWERPC_MPC860
+       parent  CYGPKG_HAL_POWERPC_MPC8xx
        type    radio
        description "
            The MPC860 microprocessor. This is an embedded part that in
            addition to the PowerPC processor core has built in peripherals
            such as memory controllers, DMA controllers, serial ports and
            timers/counters."               
+
+
+        cdl_component CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE {
+            display       "Enable CPM interrupts"
+            paernt        CYGPKG_HAL_POWERPC_MPC860
+            type          boolean
+            description   "
+                This option causes the CPM interrupt arbiter to be attached
+                at startup, and CPM interrupts are enabled. Enabling CPM
+                level interrupt arbitration and handling must still be
+                done by the application code. See intr0.c test for an
+                example."
+
+            cdl_component CYGSEM_HAL_POWERPC_MPC860_CPM_LVL {
+                display       "CPM interrupt level on the SIU"
+                type          count
+                legal_values  0 to 7
+                parent        CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
+                description   "
+                    This option selects which SIU level the CPM interrupts
+                    should be routed to."
+            }
+        }
    }
 
  }}CFG_DATA */
@@ -84,6 +107,10 @@
 #undef  CYGHWR_HAL_POWERPC_FPU          // We have no FPU
 #define CYGPKG_HAL_POWERPC_MSBFIRST     // Big-endian CPU
 #define CYGSEM_HAL_USE_ROM_MONITOR
+
+// CPM options
+#define CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
+#define CYGSEM_HAL_POWERPC_MPC860_CPM_LVL 7
 
 //----------------------------------------------------------------------
 #endif  // CYGONCE_PKGCONF_HAL_POWERPC_MPC8XX_H

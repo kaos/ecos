@@ -59,6 +59,7 @@
     defined(CYGPKG_HAL_EXCEPTIONS)
 # include <cyg/hal/hal_intr.h>           // HAL interrupts/exceptions
 #endif
+#include <cyg/hal/hal_mem.h>            // HAL memory handling
 
 //---------------------------------------------------------------------------
 // Functions used during initialization.
@@ -249,218 +250,24 @@ hal_idle_thread_action( cyg_uint32 count )
 
 //---------------------------------------------------------------------------
 // Use MMU resources to map memory regions.  
-// Takes and returns an int used to ID the MMU resource to use. This ID
-// is increased as resources are used and should be used for subsequent
-// invocations.
-static int
-hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys, 
-                cyg_int32 size, cyg_uint8 flags)
-{
-#ifdef CYGPKG_HAL_POWERPC_MPC603
-    {
-        // Use BATs to map the memory.
-        cyg_uint32 ubat, lbat;
-
-        ubat = (virt & UBAT_BEPIMASK) | UBAT_VS | UBAT_VP;
-        lbat = (phys & LBAT_BRPNMASK);
-        if (flags & CYGARC_MEMDESC_CI) 
-            lbat |= LBAT_I;
-        if (flags & CYGARC_MEMDESC_GUARDED) 
-            lbat |= LBAT_G;
-        
-        // There are 4 BATs, size is programmable.
-        while (id < 4 && size > 0) {
-            cyg_uint32 blk_size = 128*1024;
-            cyg_uint32 bl = 0;
-            while (blk_size < 256*1024*1024 && blk_size < size) {
-                blk_size *= 2;
-                bl = (bl << 1) | 1;
-            }
-            ubat = (ubat & ~UBAT_BLMASK) | (bl << 2);
-
-            switch (id) {
-            case 0:
-                CYGARC_MTSPR (IBAT0U, ubat);
-                CYGARC_MTSPR (IBAT0L, lbat);
-                CYGARC_MTSPR (DBAT0U, ubat);
-                CYGARC_MTSPR (DBAT0L, lbat);
-                break;
-            case 1:
-                CYGARC_MTSPR (IBAT1U, ubat);
-                CYGARC_MTSPR (IBAT1L, lbat);
-                CYGARC_MTSPR (DBAT1U, ubat);
-                CYGARC_MTSPR (DBAT1L, lbat);
-                break;
-            case 2:
-                CYGARC_MTSPR (IBAT2U, ubat);
-                CYGARC_MTSPR (IBAT2L, lbat);
-                CYGARC_MTSPR (DBAT2U, ubat);
-                CYGARC_MTSPR (DBAT2L, lbat);
-                break;
-            case 3:
-                CYGARC_MTSPR (IBAT3U, ubat);
-                CYGARC_MTSPR (IBAT3L, lbat);
-                CYGARC_MTSPR (DBAT3U, ubat);
-                CYGARC_MTSPR (DBAT3L, lbat);
-                break;
-            }
-
-            size -= blk_size;
-            id++;
-        }
-    }
-#endif
-
-
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-    {
-        // The MPC8xx CPUs do not have BATs. Fortunately we don't
-        // currently use the MMU, so we can simulate BATs by using the
-        // TLBs.
-
-        cyg_uint32 epn, rpn, ctr, twc;
-        int max_tlbs;
-
-#if defined(CYGPKG_HAL_POWERPC_MPC860)
-        // There are 32 TLBs.
-        max_tlbs = 32;
-#endif
-#if defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
-        // There are 8 TLBs.
-        max_tlbs = 8;
-#endif
-
-        epn = (virt & MI_EPN_EPNMASK) | MI_EPN_EV;
-        rpn = ((phys & MI_RPN_RPNMASK) 
-               | MI_RPN_PPRWRW | MI_RPN_LPS | MI_RPN_SH | MI_RPN_V);
-        if (flags & CYGARC_MEMDESC_CI) 
-            rpn |= MI_RPN_CI;
-
-        twc = MI_TWC_PS8MB | MI_TWC_V;
-        if (flags & CYGARC_MEMDESC_GUARDED) 
-            twc |= MI_TWC_G;
-
-        // Ignore attempts to use more than max_tlbs.
-        while (id < max_tlbs && size > 0) {
-            ctr = id << MI_CTR_INDX_SHIFT;
-
-            // Instruction TLB.
-            CYGARC_MTSPR (MI_TWC, twc);
-            CYGARC_MTSPR (MI_CTR, ctr);
-            CYGARC_MTSPR (MI_EPN, epn);
-            CYGARC_MTSPR (MI_RPN, rpn);
-
-            // Data TLB.
-            {
-                cyg_uint32 drpn;
-
-                // Need to mark data page as changed or an exception
-                // will be generated on first write to the page.
-                drpn = rpn | MD_RPN_CHANGED;
-
-                CYGARC_MTSPR (MD_TWC, twc);
-                CYGARC_MTSPR (MD_CTR, ctr);
-                CYGARC_MTSPR (MD_EPN, epn);
-                CYGARC_MTSPR (MD_RPN, drpn);
-            }
-
-            // Move to next 8MB block.
-            size -= 8*1024*1024;
-            epn  += 8*1024*1024;
-            rpn  += 8*1024*1024;
-            id++;
-        }
-    }
-#endif
-
-    return id;
-}
-
-
-// Initialize MMU to a sane (NOP) state.
-static void
-hal_clear_MMU (void)
-{
-#ifdef CYGPKG_HAL_POWERPC_MPC603
-    {
-        cyg_uint32 ubat, lbat;
-
-        // Initialize BATs with 0 -- VS&VP are unset, making all matches fail
-        ubat = 0;
-        lbat = 0;
-
-        CYGARC_MTSPR (IBAT0U, ubat);
-        CYGARC_MTSPR (IBAT0L, lbat);
-        CYGARC_MTSPR (DBAT0U, ubat);
-        CYGARC_MTSPR (DBAT0L, lbat);
-        CYGARC_MTSPR (IBAT1U, ubat);
-        CYGARC_MTSPR (IBAT1L, lbat);
-        CYGARC_MTSPR (DBAT1U, ubat);
-        CYGARC_MTSPR (DBAT1L, lbat);
-        CYGARC_MTSPR (IBAT2U, ubat);
-        CYGARC_MTSPR (IBAT2L, lbat);
-        CYGARC_MTSPR (DBAT2U, ubat);
-        CYGARC_MTSPR (DBAT2L, lbat);
-        CYGARC_MTSPR (IBAT3U, ubat);
-        CYGARC_MTSPR (IBAT3L, lbat);
-        CYGARC_MTSPR (DBAT3U, ubat);
-        CYGARC_MTSPR (DBAT3L, lbat);
-    }
-#endif
-
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-    {
-        // Initialize TLBs with 0, Valid bits unset.
-
-        cyg_uint32 ctr;
-        int id;
-        int max_tlbs;
-
-#if defined(CYGPKG_HAL_POWERPC_MPC860)
-        // There are 32 TLBs.
-        max_tlbs = 32;
-#endif
-#if defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
-        // There are 8 TLBs.
-        max_tlbs = 8;
-#endif
-
-        CYGARC_MTSPR (M_CASID, 0);
-
-        for (id = 0; id < max_tlbs; id++) {
-            ctr = id << MI_CTR_INDX_SHIFT;
-
-            // Instruction TLBs.
-            CYGARC_MTSPR (MI_TWC, 0);
-            CYGARC_MTSPR (MI_CTR, ctr);
-            CYGARC_MTSPR (MI_EPN, 0);
-            CYGARC_MTSPR (MI_RPN, 0);
-            // Data TLBs.
-            CYGARC_MTSPR (MD_TWC, 0);
-            CYGARC_MTSPR (MD_CTR, ctr);
-            CYGARC_MTSPR (MD_EPN, 0);
-            CYGARC_MTSPR (MD_RPN, 0);
-        }
-    }
-#endif
-}
-
-// NB this demands that the platform HAL has provided an
+// This relies that the platform HAL providing an
 //          externC cyg_memdesc_t cyg_hal_mem_map[];
-// as detailed in hal_cache.h:
-externC void hal_MMU_init (void)
+// as detailed in hal_cache.h, and the variant HAL providing the
+// MMU mapping/clear functions.
+externC void
+hal_MMU_init (void)
 {
     int id = 0;
     int i  = 0;
 
-    hal_clear_MMU ();
+    cyg_hal_clear_MMU ();
 
     while (cyg_hal_mem_map[i].size) {
-        id = hal_map_memory (id, 
-                             cyg_hal_mem_map[i].virtual_addr,
-                             cyg_hal_mem_map[i].physical_addr,
-                             cyg_hal_mem_map[i].size,
-                             cyg_hal_mem_map[i].flags);
+        id = cyg_hal_map_memory (id, 
+                                 cyg_hal_mem_map[i].virtual_addr,
+                                 cyg_hal_mem_map[i].physical_addr,
+                                 cyg_hal_mem_map[i].size,
+                                 cyg_hal_mem_map[i].flags);
         i++;
     }
 }

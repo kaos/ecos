@@ -1,3 +1,15 @@
+2000-02-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h:
+	Added configury for PC serial device drivers.
+
+	* src/i386/pc_serial.c:
+	* src/i386/pc_serial.h:
+	Added these files to implement PC serial line drivers.
+
+	* tests/ser_test_protocol.inl:
+	Added support for PC serial line testing.
+	
 2000-02-11  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh/sh_sci_7708.inl (DEVTAB_ENTRY): 

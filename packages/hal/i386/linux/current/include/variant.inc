@@ -1,10 +1,12 @@
-#==============================================================================
-#
-#    makefile
-#
-#    hal/i386/arch/src
-#
-#==============================================================================
+#ifndef CYGONCE_HAL_VARIANT_INC
+#define CYGONCE_HAL_VARIANT_INC
+##=============================================================================
+##
+##      variant.inc
+##
+##      Linux synthetic target variant support
+##
+##=============================================================================
 #####COPYRIGHTBEGIN####
 #                                                                          
 # -------------------------------------------                              
@@ -28,39 +30,27 @@
 # -------------------------------------------                              
 #                                                                          
 #####COPYRIGHTEND####
-#==============================================================================
+##=============================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):   jskov
+## Contributors:jskov, pjo, nickg
+## Date:        1999-01-07
+## Purpose:     Linux synthetic target variant support
+## Description: This file contains any i386 variant specific assembler macros 
+##		needed to run eCos on a Linux synthetic target. It is here mainly
+##		to retain compatibility with other HALs.
+##
+##
+######DESCRIPTIONEND####
+##
+##=============================================================================
 
-PACKAGE       := hal_i386
-include ../../../../../pkgconf/pkgconf.mak
 
-LIBRARY       := libtarget.a
-COMPILE       := hal_misc.c context.S i386_stub.c
-OTHER_OBJS    := 
-OTHER_TARGETS := vectors.stamp ldscript.stamp
-OTHER_DEPS    := $(PACKAGE)_vectors.d ldscript.d
-OTHER_CLEAN   := vectors.clean ldscript.clean
+#include <pkgconf/hal.h>
+#include <cyg/hal/i386.inc>
+//#include <cyg/hal/platform.inc>
 
-include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
-
-.PHONY: ldscript.clean
-
-vectors.stamp: $(PACKAGE)_vectors.o
-	$(CP) $< $(PREFIX)/lib/vectors.o
-	@$(TOUCH) $@
-
-vectors.clean:
-	$(RM) $(PREFIX)/lib/vectors.o $(PACKAGE)_vectors.o
-	$(RM) vectors.stamp
-
-ldscript.stamp: i386.ld
-	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
-	@echo > ldscript.d
-	@echo $@ ':' $< '\' >> ldscript.d
-	@tail +2 ldscript.tmp >> ldscript.d
-	@rm ldscript.tmp
-	$(TOUCH) $@
-
-ldscript.clean:
-	$(RM) -f $(PREFIX)/lib/target.ld
-	$(RM) -f ldscript.stamp
-
+##=============================================================================
+#endif // ifndef CYGONCE_HAL_VARIANT_INC
+## end of variant.inc

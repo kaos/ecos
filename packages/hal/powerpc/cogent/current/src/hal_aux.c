@@ -42,15 +42,7 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-
-#include <cyg/infra/cyg_type.h>         // base types
-#include <cyg/infra/cyg_trac.h>         // tracing macros
-#include <cyg/infra/cyg_ass.h>          // assertion macros
-
-#include <cyg/hal/hal_io.h>             // IO macros
-#include <cyg/hal/hal_diag.h>
-#include <cyg/hal/hal_intr.h>           // Interrupt macros
-#include <cyg/hal/hal_cache.h>          // Cache macros
+#include <cyg/hal/hal_mem.h>            // HAL memory definitions
 
 // The memory map is weakly defined, allowing the application to redefine
 // it if necessary. The regions defined below are the minimum requirements.

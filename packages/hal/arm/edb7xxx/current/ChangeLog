@@ -1,3 +1,8 @@
+2000-02-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_platform_setup.h:
+	CYG_HAL_ARM -> CYGPKG_HAL_ARM
+
 2000-02-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* tests/dram_test.c: Include proper testing infrastructure to
