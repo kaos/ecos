@@ -1,3 +1,8 @@
+2002-07-19  Larice Robert  <larice@vidisys.de>
+
+	* include/var_intr.h (CYGNUM_HAL_INTERRUPT_IRL0..3): Fixed
+	interrupt vector definitions for SH4 when INTC used in IRL mode.
+
 2002-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh4.cdl: Select variant 7750 by default.
