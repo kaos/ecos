@@ -1,3 +1,9 @@
+2004-02-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fcc.c: 
+	* src/fcc.h: Only process error-free packets.  Inspired by
+	Christoph Csebits.
+
 2004-02-03  Christoph Csebits <christoph.csebits@frequentis.com>
 
         * src/if_fcc.c (fcc_eth_can_send): Fix: check also if

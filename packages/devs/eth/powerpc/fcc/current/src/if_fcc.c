@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -519,16 +519,20 @@ fcc_eth_RxEvent(struct eth_drv_sc *sc)
     //    if (cache_state) {
     //      HAL_DCACHE_INVALIDATE(rxbd->buffer, rxbd->length); 
     //    }
-    (sc->funs->eth_drv->recv)(sc, rxbd->length);
+    if ((rxbd->ctrl & FCC_BD_Rx_ERRORS) == 0) {
+        (sc->funs->eth_drv->recv)(sc, rxbd->length);
 #if 1 // Coherent caches?
-    if (cache_state) {
-      HAL_DCACHE_FLUSH(rxbd->buffer, rxbd->length); 
-    }
+        if (cache_state) {
+            HAL_DCACHE_FLUSH(rxbd->buffer, rxbd->length); 
+        }
 #endif
-    rxbd->ctrl |= FCC_BD_Rx_Empty;
+    }
+    // Reset control flags to known [empty] state, clearing error bits
     if (rxbd->ctrl & FCC_BD_Rx_Wrap) {
+      rxbd->ctrl = FCC_BD_Rx_Empty | FCC_BD_Rx_Int | FCC_BD_Rx_Wrap;
       rxbd = qi->rbase;
     } else {
+      rxbd->ctrl = FCC_BD_Rx_Empty | FCC_BD_Rx_Int;
       rxbd++;
     }
   }

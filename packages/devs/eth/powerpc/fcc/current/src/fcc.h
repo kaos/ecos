@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -123,6 +123,7 @@
 #define FCC_BD_Rx_CR         0x0004  // CRC error
 #define FCC_BD_Rx_OV         0x0002  // Overrun
 #define FCC_BD_Rx_TR         0x0001  // Frame truncated. late collision
+#define FCC_BD_Rx_ERRORS     (FCC_BD_Rx_LG|FCC_BD_Rx_NO|FCC_BD_Rx_SH|FCC_BD_Rx_CR|FCC_BD_Rx_OV|FCC_BD_Rx_TR)
 
 #define FCC_BD_Tx_Ready      0x8000  // Frame ready
 #define FCC_BD_Tx_Pad        0x4000  // Pad short frames
