@@ -1,3 +1,15 @@
+2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/doclist: Added ipsec packages documentation
+	* sgml/makemakefile: Added another set of man pages to the kludge.
+
+2003-11-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/user-guide/programming.sgml: Suggest Unix users may prefer
+	ecosconfig rather than the GUI.
+	* sgml/user-guide/makefile: Listed the other .sgml files so
+	dependency checking works
+	
 2003-09-11  Gary Thomas  <gary@mlbassoc.com>
 
 	* sgml/doclist: Add ethernet PHY documentation.

@@ -302,7 +302,12 @@ Configuration Tool on Windows and Linux Quick Start</TITLE>
 
 <PARA><!-- <conditionaltext> --> 
 
-Note that the use of the <application>Configuration Tool</application>
+This section described the GUI based configuration tool. This
+tool is probably more suited to users who prefer GUI's. The next
+section describes a CLI based tool which Unix users may
+prefer. </PARA>
+
+<PARA>Note that the use of the <application>Configuration Tool</application>
 is described in detail in <XREF
 LINKEND="THE-ECOS-CONFIGURATION-TOOL">.</PARA>
 
@@ -426,9 +431,11 @@ do not need to build the tests it is unnecessary.</PARA>
 Ecosconfig on Windows and Linux Quick Start</TITLE>
 
 <PARA>As an alternative to using the graphical
-<application>Configuration Tool</application>, it is still possible to
+<application>Configuration Tool</application>, it is possible to
 configure and build a kernel by editing a configuration file manually
-and using the <command>ecosconfig</command> command. </PARA>
+and using the <command>ecosconfig</command> command. Users with a Unix
+background may find this tool more suitable than the GUI tool
+described in the previous section.</PARA>
 
 <para>
 Manual configuration and the <command>ecosconfig</command> command are

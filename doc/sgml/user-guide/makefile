@@ -46,7 +46,9 @@ TOPLEVEL   := ../../../packages
 MAIN_SGML  := user-guide.sgml
 MAIN_HTML  := ecos-user-guide.html
 MAIN_PDF   := ecos-user-guide.pdf
-OTHER_SGML :=
+OTHER_SGML := config-tool.sgml configuration.sgml ecos-license.sgml installation.sgml \
+	      introduction.sgml programming-concepts-techniques.sgml \
+	      programming.sgml real-time-characterization.sgml target-setup.sgml
 PICTURES   :=
 
 include $(TOPLEVEL)/pkgconf/rules.doc

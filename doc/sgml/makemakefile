@@ -209,7 +209,11 @@ for i in `cat ${doclist}`; do
   if (test ! -z $line); then
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
    # special kludge
-   if [ "`basename $i`" != "tcpip-manpages.sgml" -a "`basename $i`" != "snmp-manpages.sgml" -a "`basename $i`" != "porting.sgml" ]; then
+   if [ "`basename $i`" != "tcpip-manpages.sgml" -a \
+	"`basename $i`" != "snmp-manpages.sgml" -a \
+	"`basename $i`" != "libipsec.sgml" -a \
+	"`basename $i`" != "libipsec-manpages.sgml" -a \
+	"`basename $i`" != "porting.sgml" ]; then
      echo "&$entityi;" >> ecos-ref.sgml
    fi
   fi
