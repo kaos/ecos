@@ -61,6 +61,7 @@ cdl_package CYGPKG_CPULOAD {
        and 10 second. All loads are returned as a percentage, ie 0-100.
        This is only a rough measure. Any clever power management, sleep 
        modes etc, will cause these results to be wrong."
+    doc           ref/services-cpuload.html
 
     cdl_option CYGPKG_CPULOAD_TESTS {
         display "CPU load measurement tests"
