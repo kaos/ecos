@@ -202,6 +202,9 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
                 }
             }
         }
+
+        if( error )
+            break;
         
         if (num)
         {

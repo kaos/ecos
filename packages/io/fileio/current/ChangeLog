@@ -1,3 +1,8 @@
+2004-07-23 Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/select.cxx: now correctly returns from select() on
+	e.g. closed file pointers.
+
 2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/fileio1.c: include stdio.h for rename() prototype.
