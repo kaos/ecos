@@ -1,3 +1,29 @@
+2003-02-12  Nick Garnett  <nickg@calivar.com>
+
+	* user-guide.sgml: 
+	* config-tool.sgml: 
+	* configuration.sgml: 
+	Files extensively modified to bring them up to date. Essentially
+	the old Tutorial document has been merged in with the User Guide
+	to give a single document from which to start with eCos.
+	
+	* introduction.sgml: 
+	* installation.sgml: 
+	* programming.sgml: 	
+	* programming-concepts-techniques.sgml: 
+	* target-setup.sgml: 
+	* real-time-characterization.sgml: 
+	New files containing both fresh text and text merged in from the
+	old tutorial, which is now obsolete.
+
+	* pix/templates01.png:
+	* pix/ARMStartup01.png:
+	* pix/build-lib01.png:
+	* pix/build-tests01.png:
+	* pix/twothreads2.png:
+	Graphics copied here from old tutorial.
+
+	
 2002-10-15  Iztok Zupet <iz@vsr.si>
 
 	* user-guide.sgml: pictures (gif==>png)

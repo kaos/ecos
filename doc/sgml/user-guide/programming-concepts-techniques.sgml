@@ -30,10 +30,10 @@
 <!-- }}} -->
 
 <PART id="ecos-programming-concepts-and-techniques">
-<TITLE>eCos Programming Concepts and Techniques</TITLE>
+<TITLE><productname>eCos</productname> Programming Concepts and Techniques</TITLE>
 <PARTINTRO id="programming-partintro">
-<PARA>Programming with eCos is somewhat different from programming
-      in more traditional environments. eCos is a configurable open
+<PARA>Programming with <productname>eCos</productname> is somewhat different from programming
+      in more traditional environments. <productname>eCos</productname> is a configurable open
       source system, and you are able to configure and build a system
       specifically to meet the needs of your application. </PARA>
 <PARA>Various different directory hierarchies are involved in
@@ -48,34 +48,34 @@
 <SECT1 id="cdl-concepts-about">
 <TITLE>About this chapter</TITLE>
 <PARA>This chapter serves as a brief introduction to the
-	concepts involved in eCos (Embedded Configurable Operating
+	concepts involved in <productname>eCos</productname> (Embedded Configurable Operating
 	System).  It describes the configuration architecture and the
 	underlying technology to a level required for the embedded
-	systems developer to configure eCos.  It does not describe in
+	systems developer to configure <productname>eCos</productname>.  It does not describe in
 	detail aspects such as how to write reusable components for
-	eCos: this information is given in the <EMPHASIS>CDL
-	  Writer&rsquo;s Guide</EMPHASIS>.</PARA>
+	<productname>eCos</productname>: this information is given in the <citetitle>Component
+	  Writer&rsquo;s Guide</citetitle>.</PARA>
 <SECT2>
 <TITLE>Background</TITLE>
 <PARA>Software solutions for the embedded space place
 	  particularly stringent demands on the developer, typically
 	  represented as requirements for small memory footprint, high
 	  performance and robustness.  These demands are addressed in
-	  eCos by providing the ability to perform compile-time
+	  <productname>eCos</productname> by providing the ability to perform compile-time
 	  specialization: the developer can tailor the operating
 	  system to suit the needs of the application.  In order to
-	  make this process manageable, eCos is built in the context
+	  make this process manageable, <productname>eCos</productname> is built in the context
 	  of a Configuration Infrastructure: a set of tools including
-	  a <EMPHASIS>Configuration Tool</EMPHASIS> and a formal
+	  a <application>Configuration Tool</application> and a formal
 	  description of the process of configuration by means of a
 	  <EMPHASIS>Component Definition Language</EMPHASIS>.</PARA>
 </SECT2>
 <SECT2>
 <TITLE>Configurations</TITLE>
-<PARA>eCos is tailored at source level (that is, before
-	    compilation or assembly) in order to create an eCos
+<PARA><productname>eCos</productname> is tailored at source level (that is, before
+	    compilation or assembly) in order to create an <productname>eCos</productname>
 	    <EMPHASIS>configuration</EMPHASIS>. In concrete terms, an
-	    eCos configuration takes the form of a configuration save
+	    <productname>eCos</productname> configuration takes the form of a configuration save
 	    file (with extension .ecc) and set of files used to build
 	    user applications (including, when built, a library file
 	    against which the application is linked). </PARA>
@@ -83,7 +83,7 @@
 </SECT1>
 <SECT1 id="cdl-component-repository">
 <TITLE>Component Repository</TITLE>
-<PARA>eCos is shipped in source in the form of a
+<PARA><productname>eCos</productname> is shipped in source in the form of a
 	  <EMPHASIS>component repository</EMPHASIS> - a directory
 	  hierarchy that contains the sources and other files which
 	  are used to build a configuration. The component repository
@@ -97,15 +97,15 @@
 	  this purpose is the <EMPHASIS>Component Definition
 	    Language</EMPHASIS> (CDL).  CDL defines the relationships
 	  between components and other information used by tools such
-	  as the eCos<APPLICATION>Configuration Tool</APPLICATION>.
+	  as the <productname>eCos</productname><APPLICATION>Configuration Tool</APPLICATION>.
 	  CDL is generally formulated by the writers of components: it
 	  is not necessary to write or understand CDL in order for the
-	  embedded systems developer to construct an eCos
+	  embedded systems developer to construct an <productname>eCos</productname>
 	  configuration. </PARA>
 </SECT1>
 <SECT1 id="cdl-packages">
 <TITLE>Packages</TITLE>
-<PARA>The building blocks of an eCos configuration are called
+<PARA>The building blocks of an <productname>eCos</productname> configuration are called
 	  <EMPHASIS>packages</EMPHASIS>. Packages are the units of
 	  software distribution.  A set of core packages (such as
 	  kernel, C library and math library) is provided by Red Hat:
@@ -117,8 +117,8 @@
 repository at any given time.</PARA>
 <PARA>Packages are organized in a tree hierarchy.  Each package
 is either at the top-level or is the child of another package.</PARA>
-<PARA>The eCos Administration Tool can be used to add or remove
-packages from the component repository.  The eCos <APPLICATION>Configuration Tool</APPLICATION> can be used to include or exclude packages from the configuration
+<PARA>The <productname>eCos</productname> <application> Package Administration Tool</application> can be used to add or remove
+packages from the component repository.  The <productname>eCos</productname> <APPLICATION>Configuration Tool</APPLICATION> can be used to include or exclude packages from the configuration
 being built.</PARA>
 </SECT1>
 <SECT1 id="cdl-configuration-items">
@@ -127,15 +127,15 @@ being built.</PARA>
 	  individual entities that form a configuration.  Each item
 	  corresponds to the setting of a C pre-processor macro (for
 	  example,
-	  CYGHWR_HAL_ARM_PID_GDB_BAUD). 
-	  The code of eCos itself is written to test such preprocessor
+	  <literal>CYGHWR_HAL_ARM_PID_GDB_BAUD</literal>). 
+	  The code of <productname>eCos</productname> itself is written to test such pre-processor
 	  macros so as to tailor the code.  User code can do
 	  likewise.</PARA>
 <PARA>Configuration items come in the following flavors:</PARA>
 <ITEMIZEDLIST>
 <LISTITEM>
 <PARA><EMPHASIS>None</EMPHASIS>: such entities serve only as
-placeholders in the hierarchy, allowing other entities to be grouped
+place holders in the hierarchy, allowing other entities to be grouped
 more easily.</PARA>
 </LISTITEM>
 <LISTITEM>
@@ -248,8 +248,8 @@ that a particular package is related to specific hardware</entry></row>
 	  </tgroup>
 	</table>
 
-<PARA>A complete description of properties is contained in the <EMPHASIS>CDL
-Writer&rsquo;s Guide</EMPHASIS>.</PARA>
+<PARA>A complete description of properties is contained in the <citetitle>Component
+Writer&rsquo;s Guide</citetitle>.</PARA>
 </SECT2>
 <SECT2>
 <TITLE>Inactive Items</TITLE>
@@ -273,7 +273,7 @@ on an expression involving other items. </PARA>
 	  <EMPHASIS>conflict</EMPHASIS>, which must be resolved in
 	  order to ensure a consistent configuration. Conflict
 	  resolution can be performed manually or with the assistance
-	  of the eCos tools.  Conflicts come in the following
+	  of the <productname>eCos</productname> tools.  Conflicts come in the following
 	  flavors:</PARA>
 <ITEMIZEDLIST>
 <LISTITEM>
@@ -307,32 +307,37 @@ be resolved by reference to the CDL writer.</PARA>
 <TITLE>Templates</TITLE>
 <PARA>A <EMPHASIS>template</EMPHASIS> is a saved configuration
 	  - that is, a set of packages and configuration item
-	  settings.  Templates are provided with eCos to allow you to
+	  settings.  Templates are provided with <productname>eCos</productname> to allow you to
 	  get started quickly by instantiating (copying) a saved
 	  configuration corresponding to one of a number of common
-	  scenarios; for example, a basic eCos configuration template
+	  scenarios; for example, a basic <productname>eCos</productname> configuration template
 	  is supplied that contains the infrastructure, kernel, C and
 	  math libraries, plus their support packages.</PARA>
 </SECT1>
 </CHAPTER>
 <CHAPTER id="component-repo-and-working-dirs">
 <TITLE>The Component Repository and Working Directories</TITLE>
-<PARA>Each of the file trees involved in eCos development has a
+<PARA>Each of the file trees involved in <productname>eCos</productname> development has a
 	different role. </PARA>
 <SECT1 id="component-repo">
 <TITLE>Component Repository</TITLE>
-<PARA>The eCos <FIRSTTERM>component repository</FIRSTTERM>
+<PARA>The <productname>eCos</productname> <FIRSTTERM>component repository</FIRSTTERM>
 	  contains directories for all the packages that are shipped
-	  with eCos or provided by third parties.</PARA>
+	  with <productname>eCos</productname> or provided by third parties.</PARA>
 <PARA>The component repository should not be modified as part of
 application development. </PARA>
+<!--
+<para>
+XXXXX We may want to change this picture XXXXX
+</para>
+-->
 <FIGURE>
 <TITLE>Component repository</TITLE>
 <GRAPHIC ENTITYREF="graphic30"></GRAPHIC>
 </FIGURE>
 <SECT2>
 <TITLE>Purpose</TITLE>
-<PARA>The component respository is the master copy of source code
+<PARA>The component repository is the master copy of source code
 for all system and third party components. It also contains some
 files needed to administer and build the system, such as <command>ecosadmin.tcl</command>.</PARA>
 </SECT2>
@@ -340,7 +345,7 @@ files needed to administer and build the system, such as <command>ecosadmin.tcl<
 <TITLE>How is it modified?</TITLE>
 <PARA>You modify it by importing new versions of packages from a
 distribution or removing existing packages. These activities are
-undertaken using the <EMPHASIS>eCos Package Administration Tool</EMPHASIS>.</PARA>
+undertaken using the <productname>eCos</productname> <application>Package Administration Tool</application>.</PARA>
 </SECT2>
 <SECT2>
 <TITLE>When is it edited manually?</TITLE>
@@ -348,7 +353,7 @@ undertaken using the <EMPHASIS>eCos Package Administration Tool</EMPHASIS>.</PAR
 as determined by the component maintainer.</PARA>
 </SECT2>
 <SECT2>
-<TITLE>User applications</TITLE>
+<TITLE>User Applications</TITLE>
 <PARA>User application source code should <EMPHASIS>not</EMPHASIS> go
 into the component repository.</PARA>
 </SECT2>
@@ -359,20 +364,20 @@ into the component repository.</PARA>
 <TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/doc/ref/ecos-ref.html</FILENAME></TERM>
 <LISTITEM>
 <PARA>The top level HTML file for the
-		  <PRODUCTNAME>eCos</PRODUCTNAME><EMPHASIS>Reference
-		    Manual</EMPHASIS>. </PARA>
+		  <citetitle><PRODUCTNAME>eCos</PRODUCTNAME> Reference
+		    Manual</citetitle>. </PARA>
 </LISTITEM>
 </VARLISTENTRY>
 <VARLISTENTRY>
-<TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/prebuilt/pid/tests/kernel/v1_3_x/tests/thread_gdb.exe</FILENAME></TERM>
+<TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/prebuilt/pid/tests/kernel/<replaceable>&Version;</replaceable>/tests/thread_gdb.exe</FILENAME></TERM>
 <LISTITEM>
 <PARA></PARA>
 </LISTITEM>
 </VARLISTENTRY>
 <VARLISTENTRY>
-<TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/prebuilt/linux/tests/kernel/v1_3_x/tests/thread_gdb.exe</FILENAME></TERM>
+<TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/prebuilt/linux/tests/kernel/<replaceable>&Version;</replaceable>/tests/thread_gdb.exe</FILENAME></TERM>
 <LISTITEM>
-<PARA>Prebuilt tests for the supported platforms, and
+<PARA>Pre-built tests for the supported platforms, and
 		  the synthetic Linux target.</PARA>
 </LISTITEM>
 </VARLISTENTRY>
@@ -390,7 +395,7 @@ from a distribution or remove existing packages.</para>
 </LISTITEM>
 </VARLISTENTRY>
 <VARLISTENTRY>
-<TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/packages/language/c/libm/<REPLACEABLE>&Version;</REPLACEABLE>/src/double/portable-api/s_tanh.c</FILENAME></TERM>
+<TERM><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/packages/language/c/libm/<replaceable>&Version;</replaceable>/src/double/portable-api/s_tanh.c</FILENAME></TERM>
 <LISTITEM>
 <para>Implementation of the hyperbolic tangent function in the standard
 math library.</para>
@@ -432,7 +437,7 @@ by the <FILENAME>makefile</FILENAME>.</para>
 <TITLE>Examples of files in this hierarchy</TITLE>
 <VARIABLELIST>
 <VARLISTENTRY>
-<TERM><FILENAME><REPLACEABLE>ecos-work/language/c/libc/</REPLACEABLE>v1_3_x/src</FILENAME></TERM>
+<TERM><FILENAME>ecos-work/language/c/libc/<replaceable>&Version;</replaceable>/src</FILENAME></TERM>
 <LISTITEM>
 <PARA>The directory in which object files for
 		  the C library are built.</PARA>
@@ -446,7 +451,7 @@ by the <FILENAME>makefile</FILENAME>.</para>
 <PARA>The <FIRSTTERM>install tree</FIRSTTERM> is the location
 	  for all files needed for application development. The
 	  <filename>libtarget.a</filename> library, which contains the
-	    custom-built eCos kernel and other components, is placed
+	    custom-built <productname>eCos</productname> kernel and other components, is placed
 	    in the install tree, along with all packages&rsquo; public
 	    header files. If you build the tests, the test executable
 	    programs will also be placed in the install
@@ -461,7 +466,7 @@ by the <FILENAME>makefile</FILENAME>.</para>
 <TITLE>Purpose</TITLE>
 <PARA>The install tree is where the custom-built
 	    <FILENAME>libtarget.a</FILENAME> library, which contains
-	    the eCos kernel and other components, is located. The
+	    the <productname>eCos</productname> kernel and other components, is located. The
 	    install tree is also the location for all the header files
 	    that are part of a published interface for their
 	    component. </PARA>
@@ -475,7 +480,7 @@ by the <FILENAME>makefile</FILENAME>.</para>
 <SECT2>
 <TITLE>When is it edited manually?</TITLE>
 <PARA>Where a memory layout requires modification without
-	    use of the eCos Configuration Tool, the memory layout
+	    use of the <productname>eCos</productname> <application>Configuration Tool</application>, the memory layout
 	    files must be edited directly in the install tree. These
 	    files are located at
 	    <FILENAME>install/include/pkgconf/mlt_*.*</FILENAME>. 
@@ -523,8 +528,8 @@ by the <FILENAME>makefile</FILENAME>.</para>
 </SECT1>
 <SECT1 id="repository-app-build-tree">
 <TITLE>Application Build Tree</TITLE>
-<PARA>This tree is not part of eCos itself: it is the
-	  directory in which eCos end users write their own
+<PARA>This tree is not part of <productname>eCos</productname> itself: it is the
+	  directory in which <productname>eCos</productname> end users write their own
 	  applications.</PARA>
 <PARA>Example applications and their
 	  <FILENAME>Makefile</FILENAME> are located in the component
@@ -534,86 +539,85 @@ by the <FILENAME>makefile</FILENAME>.</para>
 	</PARA>
 <PARA>There is no imposed format on this directory, but there
 	  are certain compiler and linker flags that must be used to
-	  compile an eCos application. The basic set of flags is shown
+	  compile an <productname>eCos</productname> application. The basic set of flags is shown
 	  in the example <FILENAME>Makefile</FILENAME>, and additional
 	  details can be found in <xref linkend="compiler-and-linker-options">. </PARA>
 </SECT1>
 </CHAPTER>
 <CHAPTER id="compiler-and-linker-options">
 <TITLE>Compiler and Linker Options</TITLE>
-<PARA>eCos is built using the GNU C and C++ compilers.
-	The versions of the tools <EMPHASIS>Red Hat</EMPHASIS> has
-	prepared for this release have some enhancements, such as
-	constructor priority ordering and selective linking, which
-	will eventually become part of the standard distribution.
-      </PARA>
-<PARA>Some <EMPHASIS>GCC</EMPHASIS> options are required for eCos,
+
+    <PARA><productname>eCos</productname> is built using
+      the GNU C and C++ compilers. <productname>eCos</productname> relies on certain features of these
+      tools such as constructor priority ordering and selective linking
+      which are not part of other toolchains.
+    </PARA>
+    
+<PARA>Some <application>GCC</application> options are required for <productname>eCos</productname>,
 and others can be useful. This chapter gives a brief description
-of the required options as well as some recommended eCos-specific options.
-All other <EMPHASIS>GCC</EMPHASIS> options (described in the <EMPHASIS>GNUPro</EMPHASIS> manuals)
+of the required options as well as some recommended <productname>eCos</productname>-specific options.
+All other <application>GCC</application> options (described in the <application>GCC</application> manuals)
 are available. </PARA>
 <SECT1 id="compiling-c-app">
 <TITLE>Compiling a C Application</TITLE>
 <PARA>The following command lines demonstrate the
 	  <EMPHASIS>minimum</EMPHASIS> set of options required to
-	  compile and link an eCos program written in C. </PARA>
+	  compile and link an <productname>eCos</productname> program written in C. </PARA>
 <NOTE>
 <PARA>Remember that when this manual shows
-	    <COMMAND>gcc</COMMAND> you should type the full name of
-	    the cross compile,e.g. <COMMAND>mn10300-elf-gcc</COMMAND>,
-	    <COMMAND>mips-tx39-elf-gcc</COMMAND>,
-	    <COMMAND>powerpc-eabi-gcc</COMMAND>,
-	    <COMMAND>sparclite-elf-gcc</COMMAND>,
-	    <COMMAND>arm-elf-gcc</COMMAND>,
-	    <COMMAND>mips64vr4300-elf-gcc</COMMAND>,
+	    <COMMAND><replaceable>TARGET-</replaceable>gcc</COMMAND>
+	    you should use the full name of the cross compiler,
+	    e.g. <COMMAND>i386-elf-gcc</COMMAND>,
+	    <COMMAND>arm-elf-gcc</COMMAND>, or
 	    <COMMAND>sh-elf-gcc</COMMAND>. When compiling for the
-	    synthetic Linux target, use the native gcc which must have
-	    the features required by eCos.</PARA>
+	    synthetic Linux target, use the native
+	    <command>gcc</command> which must have the features
+	    required by <productname>eCos</productname>.</PARA>
 </NOTE>
-<SCREEN>$ gcc -c  -I<EMPHASIS>INSTALL_DIR</EMPHASIS>/include file.c
-$ gcc -o program file.o -L<EMPHASIS>INSTALL_DIR</EMPHASIS>/lib -Ttarget.ld -nostdlib</SCREEN>
+<SCREEN>
+$ <replaceable>TARGET-</replaceable>gcc -c  -I<EMPHASIS>INSTALL_DIR</EMPHASIS>/include file.c
+$ <replaceable>TARGET-</replaceable>gcc -o program file.o -L<EMPHASIS>INSTALL_DIR</EMPHASIS>/lib -Ttarget.ld -nostdlib
+</SCREEN>
 <NOTE>
 <PARA>Certain targets may require extra options, for example
 	    the SPARClite architectures require the option
 	    <OPTION>-mcpu=sparclite</OPTION>. Examine the
-	    <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/packages/targets</FILENAME> 
-	    file or
 	    <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/examples/Makefile</FILENAME> 
 	    or the &ldquo;Global compiler flags&rdquo; option
 	    (CYGBLD_GLOBAL_CFLAGS) in your generated
-	    eCos configuration) to see if any extra options are
+	    <productname>eCos</productname> configuration) to see if any extra options are
 	    required, and if so, what they are. </PARA>
 <PARA>The following command lines use some other options
 	    which are recommended because they use the
 	<!-- <index></index> -->selective linking feature:</PARA>
-<SCREEN>$ gcc -c  -I<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/include -I. -ffunction-sections -fdata-sections -g -O2 file.c
-$ gcc -o program file.o -ffunction-sections -fdata-sections -Wl,--gc-sections -g -O2 -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld -nostdlib</SCREEN>
+<SCREEN>$ <replaceable>TARGET-</replaceable>gcc -c  -I<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/include -I. -ffunction-sections -fdata-sections -g -O2 file.c
+$ <replaceable>TARGET-</replaceable>gcc -o program file.o -ffunction-sections -fdata-sections -Wl,--gc-sections -g -O2 \
+          -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld -nostdlib
+</SCREEN>
+        
 </NOTE>
 </SECT1>
 <SECT1 id="compiling-cpp-app">
 <TITLE>Compiling a C++ Application</TITLE>
 <PARA>The following command lines demonstrate the
 	  <EMPHASIS>minimum</EMPHASIS> set of options required to
-	  compile and link an eCos program written in C++.
+	  compile and link an <productname>eCos</productname> program written in C++.
 	</PARA>
 <NOTE>
 <PARA>Remember that when this manual shows
-	    <COMMAND>g++</COMMAND> you should type the full
-	    name of the cross compiler:
-	    <COMMAND>mn10300-elf-g++</COMMAND>,
-	    <COMMAND>mips-tx39-elf-g++</COMMAND>,
-	    <COMMAND>powerpc-eabi-g++</COMMAND>,
-	    <COMMAND>sparclite-elf-g++</COMMAND>,
-	    <COMMAND>arm-elf-g++</COMMAND>,
-	    <COMMAND>mips64vr4300-elf-g++</COMMAND>, or
-	    <COMMAND>sh-elf-g++</COMMAND>. When compiling
-	    for the synthetic Linux target, use the native
-	    <command>g++</command> which must
-	    have the features required by eCos. </PARA>
-<SCREEN>$ g++ -c  -I<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/include -fno-rtti -fno-exceptions file.cxx
-$ g++ -o program file.o -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld -nostdlib
-	</SCREEN>
+	    <COMMAND><replaceable>TARGET-</replaceable>g++</COMMAND>
+	    you should use the full name of the cross compiler,
+	    e.g. <COMMAND>i386-elf-g++</COMMAND>,
+	    <COMMAND>arm-elf-g++</COMMAND>, or
+	    <COMMAND>sh-elf-g++</COMMAND>. When compiling for the
+	    synthetic Linux target, use the native
+	    <command>g++</command> which must have the features
+	    required by <productname>eCos</productname>.</PARA>
 </NOTE>
+<SCREEN>$ <replaceable>TARGET-</replaceable>g++ -c  -I<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/include -fno-rtti -fno-exceptions file.cxx
+$ <replaceable>TARGET-</replaceable>g++ -o program file.o -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld -nostdlib
+</SCREEN>
+
 <NOTE>
 <PARA>Certain targets may require extra options,
 	    for example the SPARClite architectures require the option 
@@ -622,34 +626,37 @@ $ g++ -o program file.o -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld
 	    file or <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/examples/Makefile</FILENAME>
 	    or the &ldquo;Global compiler flags&rdquo; option
 	    (CYGBLD_GLOBAL_CFLAGS) in your generated
-	    eCos configuration) to see if any extra options are
+	    <productname>eCos</productname> configuration) to see if any extra options are
 	    required, and if so, what they are.</PARA>
 <PARA>The following command lines use some other options
 	    which are recommended because they use the
 	    <FIRSTTERM>selective linking</FIRSTTERM> feature:</PARA>
-<SCREEN>$ g++ -c  -I<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/include -I. -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -g -O2 file.cxx
-$ g++ -o program file.o -W1,--gc-sections -g -O2 -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld  -nostdlib</SCREEN>
+<SCREEN>
+$ <replaceable>TARGET-</replaceable>g++ -c -I<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/include -I. -ffunction-sections -fdata-sections -fno-rtti \
+          -fno-exceptions -finit-priority -g -O2 file.cxx
+$ <replaceable>TARGET-</replaceable>g++ -o program file.o -W1,--gc-sections -g -O2 -L<REPLACEABLE>INSTALL_DIR</REPLACEABLE>/lib -Ttarget.ld  -nostdlib</SCREEN>
 </NOTE>
 </SECT1>
 </CHAPTER>
+  
 <CHAPTER id="debugging-techniques">
 <TITLE>Debugging Techniques</TITLE>
-<PARA>eCos applications and components can be debugged in
+<PARA><productname>eCos</productname> applications and components can be debugged in
 	traditional ways, with printing statements and debugger
 	single-stepping, but there are situations in which these
 	techniques cannot be used. One example of this is when a
 	program is getting data at a high rate from a real-time
 	source, and cannot be slowed down or interrupted.</PARA>
-<PARA>eCos&rsquo;s infrastructure module provides a
+<PARA><productname>eCos</productname>&rsquo;s infrastructure module provides a
 	<EMPHASIS>tracing</EMPHASIS> formalism, allowing the
 	kernel&rsquo;s tracing macros to be configured in many useful
-	ways. eCos&rsquo;s kernel provides <FIRSTTERM>instrumentation
+	ways. <productname>eCos</productname>&rsquo;s kernel provides <FIRSTTERM>instrumentation
 	  buffers</FIRSTTERM> which also collect specific
 	(configurable) data about the system&rsquo;s history and
 	performance.</PARA>
 <SECT1 id="tracing">
 <TITLE>Tracing</TITLE>
-<PARA>To use eCos&rsquo;s tracing facilities you must first
+<PARA>To use <productname>eCos</productname>&rsquo;s tracing facilities you must first
 	  configure your system to use <FIRSTTERM>tracing</FIRSTTERM>.
 	  You should enable the Asserts and Tracing component
 	  (<OPTION>CYGPKG_INFRA_DEBUG</OPTION>) and the
@@ -660,12 +667,11 @@ $ g++ -o program file.o -W1,--gc-sections -g -O2 -L<REPLACEABLE>INSTALL_DIR</REP
 	  <FILENAME><REPLACEABLE>BUILD_DIR</REPLACEABLE>/pkgconf/infra.h 
 	  </FILENAME> manually.</PARA>
 <PARA>You should then examine all the tracing-related options in
-the <EMPHASIS>Package: Infrastructure</EMPHASIS> chapter of the <PRODUCTNAME>eCos</PRODUCTNAME><EMPHASIS> Reference
-Manual</EMPHASIS>. One useful set of configuration options are: <EMPHASIS>CYGDBG_INFRA_DEBUG_FUNCTION_REPORTS</EMPHASIS> and <EMPHASIS>CYGDBG_INFRA_DEBUG_TRACE_MESSAGE</EMPHASIS>,
+the <citetitle>Package: Infrastructure</citetitle> chapter of the <citetitle><PRODUCTNAME>eCos</PRODUCTNAME> Reference
+Manual</citetitle>. One useful set of configuration options are: <literal>CYGDBG_INFRA_DEBUG_FUNCTION_REPORTS</literal> and <literal>CYGDBG_INFRA_DEBUG_TRACE_MESSAGE</literal>,
 which are both enabled by default when tracing is enabled.</PARA>
 <PARA>The following &ldquo;Hello world with tracing&rdquo; shows
-the output from running the hello world program (from the programming
-tutorial in <EMPHASIS>Getting Started with eCos</EMPHASIS>) that was
+the output from running the hello world program (from <xref linkend="ecos-hello-world">) that was
 built with tracing enabled: </PARA>
 <EXAMPLE>
 <TITLE>Hello world with tracing</TITLE>
@@ -774,21 +780,22 @@ Idle Thread          pri =  31 state = R      id =   1
 </ITEMIZEDLIST>
 <PARA>Information about the events is stored in an
 	  <FIRSTTERM>event record</FIRSTTERM>. The structure that
-	  defines this record has type struct
-	  Instrument_Record: </PARA>
+	  defines this record has type <type>struct
+	  Instrument_Record</type>:
+</PARA>
 <PARA>The list of records is stored in an array called <TYPE>instrument_buffer</TYPE>
 which you can let the kernel provide or you can provide yourself
-by setting the configuration option <EMPHASIS>CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER</EMPHASIS>. </PARA>
+by setting the configuration option <literal>CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER</literal>. </PARA>
 <PARA>To write a program that examines the instrumentation
 	  buffers: </PARA>
 <ORDEREDLIST>
 <LISTITEM>
-<PARA>Enable instrumentation buffers in the eCos kernel configuration.
-The component macro is <REPLACEABLE>CYGPKG_KERNEL_INSTRUMENT</REPLACEABLE>.</PARA>
+<PARA>Enable instrumentation buffers in the <productname>eCos</productname> kernel configuration.
+The component macro is <literal>CYGPKG_KERNEL_INSTRUMENT</literal>.</PARA>
 </LISTITEM>
 <LISTITEM>
 <PARA>To allocate the buffers yourself, enable the configuration
-option <EMPHASIS>CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER</EMPHASIS>. </PARA>
+option <literal>CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER</literal>. </PARA>
 </LISTITEM>
 <LISTITEM>
 <PARA>Include the header file 
@@ -829,7 +836,7 @@ functions
 <LISTITEM>
 <PARA>Examine the buffer. For now you need to look at the data
 in there (the example program below shows how to do that), and future
-versions of eCos will include a host-side tool to help you understand
+versions of <productname>eCos</productname> will include a host-side tool to help you understand
 the data. </PARA>
 </LISTITEM>
 </ORDEREDLIST>
@@ -839,7 +846,7 @@ the data. </PARA>
 	    <FILENAME>examples</FILENAME> directory.
 	  </PARA>
 <PROGRAMLISTING>
-/* this is a program which uses eCos instrumentation buffers; it needs
+/* this is a program which uses <productname>eCos</productname> instrumentation buffers; it needs
  to be linked with a kernel which was compiled with support for
  instrumentation */
 
@@ -891,11 +898,15 @@ int main(void)
 }</PROGRAMLISTING>
 </EXAMPLE>
 <PARA>Here is how you could compile and run this program in the <filename>examples</filename> directory,
-using (for example) the MN10300 compiler: </PARA>
-<SCREEN>$ make XCC=mn10300-elf-gcc PKG_INSTALL_DIR=/tmp/ecos-work-mn10300/install instrument-test
-mn10300-elf-gcc -c -o instrument-test.o -g -Wall -I/tmp/ecos-work-mn10300/install/include -ffunction-sections -fdata-sections instrument-test.c
-mn10300-elf-gcc -nostartfiles -L/tmp/ecos-work-mn10300/install/lib -W1,--gc-sections -o instrument-test instrument-test.o -Ttarget.ld -nostdlib
-$ mn10300-elf-run --board=stdeval1 instrument-test</SCREEN>
+using (for example) the MN10300 simulator target: </PARA>
+<SCREEN>
+$ make XCC=mn10300-elf-gcc PKG_INSTALL_DIR=/tmp/ecos-work-mn10300/install instrument-test
+mn10300-elf-gcc -c -o instrument-test.o -g -Wall -I/tmp/ecos-work-mn10300/install/include \
+        -ffunction-sections -fdata-sections instrument-test.c
+mn10300-elf-gcc -nostartfiles -L/tmp/ecos-work-mn10300/install/lib -W1,--gc-sections -o \
+        instrument-test instrument-test.o -Ttarget.ld -nostdlib
+$ mn10300-elf-run --board=stdeval1 instrument-test
+</SCREEN>
 <EXAMPLE>
 <TITLE>Instrument buffer output</TITLE>
 <PARA>Here is the output of the

@@ -36,30 +36,31 @@
 	<COMMAND>ecosconfig</COMMAND> (the command line tool that
 	manipulates configurations and constructs build trees) and on
 	managing a source repository across multiple versions of
-	eCos. </PARA>
+	<productname>eCos</productname>. </PARA>
 </PARTINTRO>
 <CHAPTER id="manual-configuration">
 <TITLE>Manual Configuration</TITLE>
-<PARA>eCos developers using a Windows NT host will generally use
-	the graphical Configuration Tool for configuring an eCos
-	system and building the target library. At present there is no
-	equivalent to this tool available for developers using a UNIX
-	host, so command line tools have to be used instead. These
-	command line tools can also be used for batch operations on
-	all platforms, for example as part of a nightly rebuild
-	procedure.
+
+    <PARA><productname>eCos</productname> developers will generally use the graphical
+      Configuration Tool for configuring an <productname>eCos</productname> system and building
+      the target library. However, some user prefer to use command
+      line tools. These command line tools can also be used for batch
+      operations on all platforms, for example as part of a nightly
+      rebuild and testing procedure.
     </PARA>
+
 <PARA>In the current release of the system the command line tools
       do not provide exactly the same functionality as the graphical
       tool. Most importantly, there is no facility to resolve
       configuration conflicts interactively.</PARA>
-<PARA>The eCos configuration system, both graphical and command
+<PARA>The <productname>eCos</productname> configuration system, both graphical and command
       line tools, are under constant development and enhancement.
       Developers should note that the procedures described may change
       considerably in future releases. </PARA>
+
 <SECT1 id="directory-tree-structure">
 <TITLE>Directory Tree Structure</TITLE>
-<PARA>When building eCos there are three main directory trees to
+<PARA>When building <productname>eCos</productname> there are three main directory trees to
 	consider: the source tree, the build tree, and the install
 	tree.</PARA>
 <PARA>The source tree, also known as the component repository,
@@ -73,17 +74,18 @@
 	  result from compiling the system sources for this
 	  configuration. </PARA>
 <PARA>The install tree is usually located in the <filename>install</filename> subdirectory
-of the build tree. Once an eCos system has been built, the install
+of the build tree. Once an <productname>eCos</productname> system has been built, the install
 tree contains all the files needed for application development including
 the header files and the target library. By making copies of the
 install tree after a build it is possible to separate application
 development and system configuration, which may be desirable for
 some organizations. </PARA>
 </SECT1>
+
 <SECT1 id="creating-build-tree">
 <TITLE>Creating the Build Tree</TITLE>
 <PARA>Generating a build tree is a non-trivial operation and
-	  should not be attempted manually. Instead, eCos is shipped
+	  should not be attempted manually. Instead, <productname>eCos</productname> is shipped
 	  with a tool called <COMMAND>ecosconfig</COMMAND> that should
 	  be used to create a build tree.</PARA>
 <PARA>Usually <command>ecosconfig</command> will be
@@ -99,7 +101,7 @@ as the target platform and the packages that should be used.</PARA>
 <PARA>The <command>ecosconfig</command> tool is also
 used subsequently to generate a build tree for a configuration.
 Once a build tree exists, it is possible to run <command>ecosconfig</command> again
-inside the same build tree. This will be neccessary if your wish
+inside the same build tree. This will be necessary if your wish
 to change some of the configuration options.</PARA>
 <PARA><COMMAND>ecosconfig</COMMAND> does not generate
 the top-level directory of the build tree; you must do this
@@ -125,11 +127,11 @@ $ cd ecos-work</SCREEN>
 <VARLISTENTRY>
 <TERM><OPTION>--config=&lt;file&gt;</OPTION></TERM>
 <LISTITEM>
-<PARA>Specifies an eCos configuration save file for
+<PARA>Specifies an <productname>eCos</productname> configuration save file for
 		  use by the tool. By default, the file
 		  <filename>ecos.ecc</filename> in the
 		  current directory is used. Developers may prefer to
-		  use a common location for all their eCos
+		  use a common location for all their <productname>eCos</productname>
 		  configurations rather than keep the configuration
 		  information in the base of the build tree.</PARA>
 </LISTITEM>
@@ -163,8 +165,8 @@ $ cd ecos-work</SCREEN>
 <LISTITEM>
 <PARA>Disables the implicit resolution of conflicts
 		  while manipulating the configuration data.
-		  developers may prefer to reslove conflicts by
-		  editing the eCos configuration save file
+		  developers may prefer to resolve conflicts by
+		  editing the <productname>eCos</productname> configuration save file
 		  manually.</PARA>
 </LISTITEM>
 </VARLISTENTRY>
@@ -206,9 +208,11 @@ Display less information.
 The <OPTION>--config</OPTION>, <OPTION>--prefix</OPTION> and
 <OPTION>--srcdir</OPTION> qualifiers can also be written with two arguments,
 for example:
+</para>
 <SCREEN>
 ecosconfig --srcdir <REPLACEABLE>&lt;dir&gt;</REPLACEABLE> ...
 </SCREEN>
+<para>
 This simplifies filename completion with some shells.
 </PARA>
 </SECT2>
@@ -222,7 +226,7 @@ This simplifies filename completion with some shells.
 <TERM><COMMAND>list</COMMAND></TERM>
 <LISTITEM>
 <PARA>Lists the available packages, targets and
-		  templates as installed in the eCos repository.
+		  templates as installed in the <productname>eCos</productname> repository.
 		  Aliases and package versions are also
 		  reported.</PARA>
 </LISTITEM>
@@ -230,7 +234,7 @@ This simplifies filename completion with some shells.
 <VARLISTENTRY>
 <TERM><COMMAND>new &lt;target&gt; [&lt;template&gt; [&lt;version&gt;]]</COMMAND></TERM>
 <LISTITEM>
-<PARA>Creates a new eCos configuration for
+<PARA>Creates a new <productname>eCos</productname> configuration for
 		  the specified target hardware and saves it. A
 		  software template may also be specified. By default,
 		  the template named &lsquo;default&rsquo; is used. If
@@ -242,7 +246,7 @@ This simplifies filename completion with some shells.
 <TERM><COMMAND>target &lt;target&gt;</COMMAND></TERM>
 <LISTITEM>
 <PARA>Changes the target hardware selection
-		  for the eCos configuration. This has the effect of
+		  for the <productname>eCos</productname> configuration. This has the effect of
 		  unloading packages supporting the target selected
 		  previously and loading the packages which support
 		  the new hardware. This command will be used
@@ -253,7 +257,7 @@ This simplifies filename completion with some shells.
 <VARLISTENTRY>
 <TERM><COMMAND>template &lt;template&gt; [&lt;version&gt;]</COMMAND></TERM>
 <LISTITEM>
-<PARA>Changes the template selection for the eCos
+<PARA>Changes the template selection for the <productname>eCos</productname>
 		  configuration. This has the effect of unloading
 		  packages specified by the template selected
 		  previously and loading the packages specified by the
@@ -264,7 +268,7 @@ This simplifies filename completion with some shells.
 <VARLISTENTRY>
 <TERM><COMMAND>remove &lt;packages&gt;</COMMAND></TERM>
 <LISTITEM>
-<PARA>Removes the specified packages from the eCos
+<PARA>Removes the specified packages from the <productname>eCos</productname>
 		  configuration. This command will be used typically
 		  when the template on which a configuration is based
 		  contains packages which are not required.</PARA>
@@ -273,7 +277,7 @@ This simplifies filename completion with some shells.
 <VARLISTENTRY>
 <TERM><COMMAND>add &lt;packages&gt;</COMMAND></TERM>
 <LISTITEM>
-<PARA>Adds the specified packages to the eCos configuration. This
+<PARA>Adds the specified packages to the <productname>eCos</productname> configuration. This
 command will be used typically when the template on which a
 configuration is based does not contain all the packages which are
 required.For example, add-on packages provided by third parties will
@@ -285,7 +289,7 @@ explicitly. </PARA>
 <TERM><COMMAND>version &lt;version&gt; &lt;packages&gt;</COMMAND></TERM>
 <LISTITEM>
 <PARA>Selects the specified version of a
-		  number of packages in the eCos configuration. By
+		  number of packages in the <productname>eCos</productname> configuration. By
 		  default, the most recent version of each package is
 		  used. This command will be used typically when an
 		  older version of a package is required.</PARA>
@@ -324,7 +328,7 @@ explicitly. </PARA>
 <TERM><COMMAND>resolve</COMMAND></TERM>
 <LISTITEM>
 <PARA>Resolves conflicts identified in the
-		  current eCos configuration by invoking an inference
+		  current <productname>eCos</productname> configuration by invoking an inference
 		  capability. Resolved conflicts are reported, but not
 		  all conflicts may be resolvable. This command will
 		  be used typically following manual editing of the
@@ -334,7 +338,7 @@ explicitly. </PARA>
 <VARLISTENTRY>
 <TERM><COMMAND>export &lt;file&gt;</COMMAND></TERM>
 <LISTITEM>
-<PARA>Exports a minimal eCos configurastion
+<PARA>Exports a minimal <productname>eCos</productname> configuration
 		  save file with the specified name. This file
 		  contains only those options which do not have their
 		  default value. Such files are used typically to
@@ -345,7 +349,7 @@ explicitly. </PARA>
 <VARLISTENTRY>
 <TERM><COMMAND>import &lt;file&gt;</COMMAND></TERM>
 <LISTITEM>
-<PARA>Imports a minimal eCos configuration
+<PARA>Imports a minimal <productname>eCos</productname> configuration
 		  save file with the specified name. The values of
 		  those options specified in the file are applied to
 		  the current configuration.</PARA>
@@ -354,9 +358,9 @@ explicitly. </PARA>
 <VARLISTENTRY>
 <TERM><COMMAND>tree</COMMAND></TERM>
 <LISTITEM>
-<PARA>Generates a build tree based on the current eCos
+<PARA>Generates a build tree based on the current <productname>eCos</productname>
 		  configuration. This command will be used typically
-		  just before building eCos.Normally a build tree can
+		  just before building <productname>eCos</productname>.Normally a build tree can
 only be generated if if the configuration has no unresolved
 conflicts, but <OPTION>--ignore-errors</OPTION> can be used to override
 this.</PARA>
@@ -374,9 +378,9 @@ library can no longer provide these functions. Each package describes constraint
 be several resolution options. For example, it would be possible to add the math library package back to the
 configuration, or to disable the <FUNCTION>strtod()</FUNCTION> and <FUNCTION>atof()</FUNCTION> functions.</PARA>
 <PARA>
-The eCos configuration tools will report any conflicts in the current configuration. If there are any such conflicts
-then the configuration is usually unsafe and it makes no sense to build and run eCos in such circumstances. In fact,
-any attempt at building eCos is likely to fail. In exceptional cases it is possible to override this by using e.g. the
+The <productname>eCos</productname> configuration tools will report any conflicts in the current configuration. If there are any such conflicts
+then the configuration is usually unsafe and it makes no sense to build and run <productname>eCos</productname> in such circumstances. In fact,
+any attempt at building <productname>eCos</productname> is likely to fail. In exceptional cases it is possible to override this by using e.g. the
 <OPTION>--ignore-errors</OPTION> qualifier with ecosconfig. 
 </PARA>
 <PARA>
@@ -474,16 +478,16 @@ $ ecosconfig --srcdir /home/bartv/ecc/ecc --ignore-errors tree
 C CYGFUN_LIBC_strtod, "requires" constraint not satisfied: CYGPKG_LIBM 
 $ make 
 </SCREEN>
-In this case eCos will fail to build. In other cases of unresolved conflicts eCos may build, but may not run. In
+In this case <productname>eCos</productname> will fail to build. In other cases of unresolved conflicts <productname>eCos</productname> may build, but may not run. In
 general all conflicts should be resolved by editing the <FILENAME>ecos.ecc</FILENAME> file, by letting the inference engine make appropriate
-changes, or by other means, before any attempt is made to build or run eCos. 
+changes, or by other means, before any attempt is made to build or run <productname>eCos</productname>. 
 </PARA>
 </SECT1>
 <SECT1 id="building-the-system">
 <TITLE>Building the System</TITLE>
 <PARA>Once a build tree has been generated with
 	  <COMMAND>ecosconfig</COMMAND>, <!-- <index></index>
-	  -->building eCos is straightforward:</PARA>
+	  -->building <productname>eCos</productname> is straightforward:</PARA>
 <SCREEN>$ make</SCREEN>
 <PARA>The build tree contains the subdirectories, makefiles,
 	  and everything else that is needed to generate the default
@@ -516,13 +520,13 @@ use: </PARA>
 bulk of what is left consists of configuration header files that
 you may have edited and hence should not be deleted automatically.
 However, it is possible to rebuild the system at any time without
-reinvoking <COMMAND>ecosconfig</COMMAND>, just by
+re-invoking <COMMAND>ecosconfig</COMMAND>, just by
 running <COMMAND>make</COMMAND> again. </PARA>
 <PARA>Under exceptional circumstances it may be necessary to run <COMMAND>make
 clean</COMMAND> for other reasons, such as when a new release
 of the toolchain is installed. The toolchain includes a number of
 header files which are closely tied to the compiler, for example <filename>limits.h</filename>,
-and these header files are not and should not be duplicated by eCos.
+and these header files are not and should not be duplicated by <productname>eCos</productname>.
 The makefiles perform header file dependency analysis, so that when
 a header file is changed all affected sources will be rebuilt during
 the next <COMMAND>make</COMMAND>. This is very useful
@@ -536,7 +540,7 @@ it is necessary to do a <COMMAND>make clean</COMMAND> first. </PARA>
 </SECT1>
 <SECT1 id="ecos-packages">
 <TITLE>Packages</TITLE>
-<PARA>eCos is a component architecture. The system comes as a
+<PARA><productname>eCos</productname> is a component architecture. The system comes as a
 	  number of <!-- <index></index> -->packages which can be
 	  enabled or disabled as required, and new packages can be
 	  added as they become available. Unfortunately, the packages
@@ -557,14 +561,14 @@ it is necessary to do a <COMMAND>make clean</COMMAND> first. </PARA>
 <PARA>By default, <!-- <index></index> --><command>ecosconfig</command> will
 include all packages that are appropriate for the specified hardware
 in the configuration. The common <!-- <index></index> -->HAL package and
-the eCos infrastructure must be present in every configuration. In
+the <productname>eCos</productname> infrastructure must be present in every configuration. In
 addition, it is always necessary to have one architectural HAL package
 and one platform HAL package. Other packages are optional, and can
 be added or removed from a configuration as required.</PARA>
 <PARA>The application may not require all of the packages; for example,
 it might not need the &micro;ITRON compatibility
 package, or the floating point support provided by the math library.
-There is a slight overhead when eCos is built because the packages
+There is a slight overhead when <productname>eCos</productname> is built because the packages
 will get compiled, and there is also a small disk space penalty.
 However, any unused facilities will get stripped out at link-time,
 so having redundant packages will not affect the final executable. </PARA>
@@ -572,7 +576,7 @@ so having redundant packages will not affect the final executable. </PARA>
 <SECT1 id="coarse-grained-configuration">
 <TITLE>Coarse-grained Configuration</TITLE>
 <PARA>Coarse-grained <!-- <index></index> -->configuration of
-	  an eCos system means making configuration changes using the
+	  an <productname>eCos</productname> system means making configuration changes using the
 	  <COMMAND>ecosconfig</COMMAND> tool. These changes
 	  include: </PARA>
 <ORDEREDLIST>
@@ -590,7 +594,7 @@ so having redundant packages will not affect the final executable. </PARA>
 </LISTITEM>
 </ORDEREDLIST>
 <PARA>Whenever <COMMAND>ecosconfig</COMMAND> generates or
-	  updates an eCos configuration, it generates a configuration
+	  updates an <productname>eCos</productname> configuration, it generates a configuration
 	  save file.</PARA>
 <PARA>Suppose that the configuration was first created using
 	  the following command line: </PARA>
@@ -611,15 +615,15 @@ the <COMMAND>remove</COMMAND> command: </PARA>
 for example: </PARA>
 <SCREEN>$ ecosconfig remove uitron libm</SCREEN>
 <PARA>If this turns out to have been a mistake then you can
-	  reenable one or more packages with the
+	  re-enable one or more packages with the
 	  <COMMAND>add</COMMAND> command: </PARA>
 <SCREEN>$ ecosconfig add libm</SCREEN>
 <PARA>Changing the desired version for a package is also
 	  straightforward:</PARA>
-<SCREEN>$ ecosconfig version v1_3_1 kernel</SCREEN>
+<SCREEN>$ ecosconfig version v2_1 kernel</SCREEN>
 <PARA>It is necessary to regenerate the build tree and header
 	  files following any changes to the configuration before
-	  rebuilding eCos:</PARA>
+	  rebuilding <productname>eCos</productname>:</PARA>
 <SCREEN>$ ecosconfig tree</SCREEN>
 </SECT1>
 <SECT1 id="fine-grained-configuration">
@@ -650,38 +654,38 @@ or by invoking the inference engine using the <COMMAND>resolve</COMMAND> command
 list all conflicts which can be resolved and save the resulting changes
 to the configuration.</PARA>
 <PARA>It is necessary to regenerate the build tree and header files
-following any changes to the configuration before rebuilding eCos:</PARA>
+following any changes to the configuration before rebuilding <productname>eCos</productname>:</PARA>
 <SCREEN>$ ecosconfig tree</SCREEN>
 <PARA>All the configuration options and their descriptions are listed
-in the <EMPHASIS>eCos Reference Manual</EMPHASIS>. </PARA>
+in the <citetitle><productname>eCos</productname> Reference Manual</citetitle>. </PARA>
 </SECT1>
 <SECT1 id="editing-an-ecos-savefile">
-<TITLE>Editing an eCos Savefile</TITLE>
-<PARA>The eCos configuration information is held in a single
+<TITLE>Editing an <productname>eCos</productname> Savefile</TITLE>
+<PARA>The <productname>eCos</productname> configuration information is held in a single
 	  savefile, typically <FILENAME>ecos.ecc</FILENAME>, which can
 	  be generated by either the GUI configuration tool or by the
-	  command line <EMPHASIS>ecosconfig</EMPHASIS> tool. The file
+	  command line <command>ecosconfig</command> tool. The file
 	  normally exists at the top level of the build tree. It is a
 	  text file, allowing the various configurations options to be
 	  edited inside a suitable text editor or by other programs or
 	  scripts, as well as in the GUI config tool.</PARA>
-<PARA>An eCos savefile is actually a script in the <EMPHASIS>Tcl</EMPHASIS> programming
+<PARA>An <productname>eCos</productname> savefile is actually a script in the <EMPHASIS>Tcl</EMPHASIS> programming
 language, so any modifications to the file need to preserve Tcl
 syntax. For most configuration options, any modifications will be
 trivial and there is no need to worry about Tcl syntax. For example,
 changing a 1 to a 0 to disable an option.  For more complicated
-options, for example<EMPHASIS> CYGDAT_UITRON_TASK_EXTERNS
-, </EMPHASIS>which involves some lines of C code, more care has
+options, for example<literal> CYGDAT_UITRON_TASK_EXTERNS</literal>,
+which involves some lines of C code, more care has
 to be taken. If an edited savefile is no longer a valid Tcl script
 then the configuration tools will be unable to read back the data
 for further processing, for example to generate a build tree. An
 outline of Tcl syntax is given below. One point worth noting here
 is that a line that begins with a &ldquo;#&rdquo; is
-usually a comment, and the bulk of an eCos savefile actually consists
+usually a comment, and the bulk of an <productname>eCos</productname> savefile actually consists
 of such comments, to make it easier to edit.</PARA>
 <SECT2>
 <TITLE>Header</TITLE>
-<PARA>An eCos savefile begins with a header, which typically
+<PARA>An <productname>eCos</productname> savefile begins with a header, which typically
 	    looks something like this:</PARA>
 <SCREEN># eCos saved configuration
 # ---- commands -------------------------------------------------------- 
@@ -745,7 +749,7 @@ to remove an existing one then the appropriate tools should be used
 for this, for example:</PARA>
 <PROGRAMLISTING>$ ecosconfig remove CYGPKG_LIBM</PROGRAMLISTING>
 <PARA>There are two fields which can be edited. Configurations have
-a name; in this case eCos. They can also have a description, which
+a name; in this case <productname>eCos</productname>. They can also have a description, which
 is some arbitrary text. The configuration tools do not make use
 of these fields, they exist so that users can store additional information
 about a configuration.</PARA>
@@ -770,7 +774,7 @@ about a configuration.</PARA>
 <PARA>When editing a configuration you may end up with something
 that is invalid. Any problems in the configuration will be reported
 in the conflicts section. In this case there are two conflicts.
-The option <EMPHASIS>CYGNUM_LIBC_TIME_DST_DEFAULT_OFFSET</EMPHASIS> has
+The option <literal>CYGNUM_LIBC_TIME_DST_DEFAULT_OFFSET</literal> has
 been given an illegal value: typically this would be fixed by searching
 for the definition of that option later on in the savefile and modifying
 the value. The second conflict is more interesting, an unsatisfied <EMPHASIS>requires</EMPHASIS> constraint.
@@ -779,20 +783,20 @@ in, say, the kernel, can have an impact elsewhere; in this case
 the C library. The various dependencies between the options are
 specified by the component developers and checked by the configuration
 system. In this case there are two obvious ways in which the conflict could
-be resolved: re-enabling <EMPHASIS>CYGFUN_KERNEL_THREADS_TIMER</EMPHASIS>,
-or disabling <EMPHASIS>CYGSEM_LIBC_TIME_CLOCK_WORKING</EMPHASIS>.
+be resolved: re-enabling <literal>CYGFUN_KERNEL_THREADS_TIMER</literal>,
+or disabling <literal>CYGSEM_LIBC_TIME_CLOCK_WORKING</literal>.
 Both of these options will be listed later on in the file.</PARA>
 <PARA>Some care has to be taken when modifying configuration options,
 to avoid introducing new conflict. For instance it is possible that
 there might be other options in the system which have a dependency
-on <EMPHASIS>CYGSEM_LIBC_TIME_CLOCK_WORKING</EMPHASIS>,
+on <literal>CYGSEM_LIBC_TIME_CLOCK_WORKING</literal>,
 so disabling that option may not be the best way to resolve the
 conflict. Details of all such dependencies are provided in the appropriate
 places in the savefile.</PARA>
 <PARA>It is not absolutely required that a configuration be conflict-free
-before generating a build tree and building eCos. It is up to the
+before generating a build tree and building <productname>eCos</productname>. It is up to the
 developers of each component to decide what would happen if an attempt
-is made to build eCos while there are still conflicts. In serious
+is made to build <productname>eCos</productname> while there are still conflicts. In serious
 cases there is likely to be a compile-time failure, or possibly
 a link-time failure. In less serious cases the system may build
 happily and the application can be linked with the resulting library,
@@ -845,7 +849,7 @@ cdl_option CYGSEM_KERNEL_SCHED_BITMAP ...
 	    programs or scripts to analyze the savefile and readily
 	    determine the hierarchy. It could also be used by a
 	    sufficiently powerful editor to support structured editing
-	    of eCos savefiles. The information is not used by the
+	    of <productname>eCos</productname> savefiles. The information is not used by the
 	    configuration tools themselves since they obtain the
 	    hierarchy from the original CDL scripts.</PARA>
 <PARA>Each configurable entity is preceded by a comment, of
@@ -893,7 +897,7 @@ cdl_option CYGIMP_IDLE_THREAD_YIELD {
 }; 
 
 </SCREEN>
-<PARA>For <EMPHASIS>CYGIMP_IDLE_THREAD_YIELD</EMPHASIS> the
+<PARA>For <literal>CYGIMP_IDLE_THREAD_YIELD</literal> the
 savefile lists the expression that must be satisfied if the option
 is to be active, followed by the current value of all entities that
 are referenced in the expression, and finally the result of evaluating
@@ -1290,7 +1294,7 @@ future releases of the configuration system.</PARA>
 <PARA>Following the value-related fields for a given option, any <EMPHASIS>requires</EMPHASIS> constraints belonging
 to this option will be listed. These constraints are only effective
 if the option is active and, for bool and booldata flavors, enabled.
-If some aspect of eCos functionality is inactive or disabled then
+If some aspect of <productname>eCos</productname> functionality is inactive or disabled then
 it cannot impose any constraints on the rest of the system. As usual,
 the full expression will be listed followed by the current values
 of all options that are referenced and the result of evaluating
@@ -1324,7 +1328,7 @@ way on this one. The savefile provides this information:</PARA>
 </SECT2>
 <SECT2>
 <TITLE>Tcl Syntax</TITLE>
-<PARA>eCos savefiles are implemented as Tcl scripts, and are read
+<PARA><productname>eCos</productname> savefiles are implemented as Tcl scripts, and are read
 in by running the data through a standard Tcl interpreter that has
 been extended with a small number of additional commands such as <LITERAL>cdl_option</LITERAL> and <LITERAL>cdl_configuration</LITERAL>.
 In many cases this is an implementation detail that can be safely
@@ -1414,7 +1418,7 @@ it treats all subsequent data up to but not including the closing
 quote as part of the current argument. The quote marks are removed
 by the interpreter, so the second argument passed to the <LITERAL>set</LITERAL> command
 is just <LITERAL>Hello world</LITERAL> without the
-quote characters. This can be significant in the context of eCos savefiles.
+quote characters. This can be significant in the context of <productname>eCos</productname> savefiles.
 For instance, consider the following configuration option:</PARA>
 <SCREEN>
 
@@ -1448,10 +1452,10 @@ so the following <LITERAL>#define</LITERAL> would
 be generated in the configuration header file:</PARA>
 <PROGRAMLISTING>#define CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE /dev/ttydiag </PROGRAMLISTING>
 <PARA>This is likely to cause a compile-time failure when building
-eCos.</PARA>
+<productname>eCos</productname>.</PARA>
 <PARA>A quoted argument continues until the closing quote character
 is encountered, which means that it can span multiple lines. This
-can also be encountered in eCos savefiles, for instance, in the <EMPHASIS>CYGDAT_UITRON_MEMPOOLVAR_EXTERNS</EMPHASIS> example
+can also be encountered in <productname>eCos</productname> savefiles, for instance, in the <literal>CYGDAT_UITRON_MEMPOOLVAR_EXTERNS</literal> example
 mentioned earlier. Newline or semicolon characters do not terminate
 the current command in such cases.</PARA>
 <PARA>The Tcl interpreter supports much the same forms of backslash
@@ -1484,7 +1488,7 @@ result of performing command substitution performs further special
 characters such as square brackets then these will not be treated
 specially.</PARA>
 <PARA>Command line substitution is very unlikely to prove useful
-in the context of an eCos savefile, but it is part of the Tcl language
+in the context of an <productname>eCos</productname> savefile, but it is part of the Tcl language
 and hence cannot be easily suppressed while reading in a savefile.
 As a result care has to be taken when savefile data involves square
 brackets. Consider the following:</PARA>
@@ -1520,7 +1524,7 @@ is used in Tcl scripts to perform variable substitution:</PARA>
 <PROGRAMLISTING>set x [expr 6 * 9] 
 puts &ldquo;The answer is $x&rdquo; </PROGRAMLISTING>
 <PARA>Variable substitution, like command substitution, is very
-unlikely to prove useful in the context of an eCos savefile. Should
+unlikely to prove useful in the context of an <productname>eCos</productname> savefile. Should
 it be necessary to have a <literal>$</literal> character
 in configuration data then again a backslash escape needs to be
 used.</PARA>
@@ -1533,7 +1537,7 @@ used.</PARA>
 single argument, just like quotes. The difference is that variable,
 command and backslash substitution do not occur inside braces (with
 the sole exception of backslash substitution at the end of a line).
-So, for example, the <EMPHASIS>CYGDAT_UITRON_MEMPOOL_EXTERNFIXED_EXTERNS</EMPHASIS> value
+So, for example, the <literal>CYGDAT_UITRON_MEMPOOL_EXTERNFIXED_EXTERNS</literal> value
 could be written as:</PARA>
 <PROGRAMLISTING>cdl_option CYGDAT_UITRON_MEMPOOLFIXED_EXTERNS {
      ...
@@ -1602,7 +1606,7 @@ a closing brace by itself, which is also an error. Fortunately this
 sequence of events is very unlikely to occur when editing generated
 savefiles.</PARA>
 <PARA>This should be sufficient information about Tcl to allow for
-safe editing of eCos savefiles. Further information is available
+safe editing of <productname>eCos</productname> savefiles. Further information is available
 from a wide variety of sources, for example the book <EMPHASIS>Tcl
 and the Tk Toolkit </EMPHASIS>by John K Ousterhout.</PARA>
 </SECT2>
@@ -1612,45 +1616,45 @@ and the Tk Toolkit </EMPHASIS>by John K Ousterhout.</PARA>
 <PARA>For many users, controlling the packages and
 	  manipulating the available configuration options will be
 	  sufficient to create an embedded operating system that meets
-	  the application's requirements. However, since eCos is
+	  the application's requirements. However, since <productname>eCos</productname> is
 	  shipped entirely in source form, it is possible to go
-	  further when necessary: you can edit the eCos <!--
+	  further when necessary: you can edit the <productname>eCos</productname> <!--
 	  <index></index> -->sources themselves. This requires some
-	  understanding of the way the eCos build system works.
+	  understanding of the way the <productname>eCos</productname> build system works.
 	</PARA>
 <PARA>The most obvious place to edit the source code is directly
 in the <!-- <index></index> -->component repository. For example, you could
-edit the file <filename>kernel/v1_3_x/src/sync/mutex.cxx</filename>
+edit the file <filename>kernel/<replaceable>&Version;</replaceable>/src/sync/mutex.cxx</filename>
 to change the way kernel mutexes work, or possibly just to add some
 extra diagnostics or assertions. Once the file has been edited,
 it is possible to invoke <command>make</command> at
 the top level of the build tree and the target library will be rebuilt
 as required. A small optimization is possible: the build tree is
 largely a mirror of the component repository, so it too will contain
-a subdirectory <filename>kernel/v1_3_x</filename>;
+a subdirectory <filename>kernel/<replaceable>&Version;</replaceable></filename>;
 if make is invoked in this directory
 then it will only check for changes to the kernel sources, which
 is a bit more efficient than checking for changes throughout the component
 repository. </PARA>
 <PARA>Editing a file in the component repository is fine if this
-tree is used for only one eCos configuration. If the repository
+tree is used for only one <productname>eCos</productname> configuration. If the repository
 is used for several different configurations, however, and especially
 if it is shared by multiple users, then making what may be experimental
 changes to the master sources would be a bad idea. The build system provides
 an alternative. It is possible to make a copy of the file in the
 build tree, in other words copy <filename>mutex.cxx</filename> from
-the <filename>kernel/v1_3_x/src/sync</filename> directory
-in the component repository to <filename>kernel/v1_3_x/src/sync</filename> in
+the <filename>kernel/<replaceable>&Version;</replaceable>/src/sync</filename> directory
+in the component repository to <filename>kernel/<replaceable>&Version;</replaceable>/src/sync</filename> in
 the build tree, and edit the file in the build tree. When <command>make</command> is
 invoked it will pick up local copies of any of the sources in preference
 to the master versions in the component repository. Once you have
-finished modifying the eCos sources you can install the final version
+finished modifying the <productname>eCos</productname> sources you can install the final version
 back in the component repository. If the changes were temporary
 in nature and only served to aid the debugging process, then you
 can discard the modified version of the sources. </PARA>
 <PARA>The situation is slightly more complicated for the header
 files that a package may export, such as the C library&rsquo;s <filename>stdio.h</filename> header
-file, which can be found in the directory <filename>language/c/libc/v1_3_x/include</filename>.
+file, which can be found in the directory <filename>language/c/libc/<replaceable>&Version;</replaceable>/include</filename>.
 If such a header file is changed, either directly in the component
 repository or after copying it to the build tree, then <command>make</command> must
 be invoked at the top level of the build tree. In cases like this
@@ -1659,14 +1663,14 @@ may depend on the contents of <filename>stdio.h</filename>. </PARA>
 </SECT1>
 <SECT1 id="modifying-the-memory-layout">
 <TITLE>Modifying the Memory Layout</TITLE>
-<PARA>Each eCos platform package is supplied with linker script
+<PARA>Each <productname>eCos</productname> platform package is supplied with linker script
 fragments which describe the location of memory regions on the evaluation
 board and the location of memory sections within these regions.
 The correct linker script fragment is selected and included in the
-eCos linker script <!-- <index></index> --><filename>target.ld</filename> when
-eCos is built.</PARA>
+<productname>eCos</productname> linker script <!-- <index></index> --><filename>target.ld</filename> when
+<productname>eCos</productname> is built.</PARA>
 <PARA>It is not necessary to <!-- <index></index> -->modify the default memory
-layouts in order to start development with eCos. However, it will
+layouts in order to start development with <productname>eCos</productname>. However, it will
 be necessary to edit a linker script fragment when the memory map
 of the evaluation board is changed. For example, if additional memory
 is added, the linker must be notified that the new memory is available
@@ -1675,7 +1679,7 @@ the corresponding memory region. Where the available memory is non-contiguous,
 it may be necessary to declare a new memory region and reassign
 certain linker output sections to the new region.</PARA>
 <PARA>Linker script fragments and memory layout header files should
-be <!-- <index></index> -->edited within the eCos install tree. They are
+be <!-- <index></index> -->edited within the <productname>eCos</productname> install tree. They are
 located at <filename>include/pkgconf/mlt_*.*</filename>.
 Where multiple start-up types are in use, it will be necessary to
 edit multiple linker script fragments and header files. The information
@@ -1683,7 +1687,7 @@ provided in the header file and the corresponding linker script
 fragment must always match. A typical linker script fragment is
 shown below:</PARA>
 <EXAMPLE><!-- <index></index> -->
-<TITLE>eCos linker script fragment</TITLE>
+<TITLE><productname>eCos</productname> linker script fragment</TITLE>
 <PROGRAMLISTING>MEMORY
 {
  rom : ORIGIN = 0x40000000, LENGTH = 0x80000
@@ -1771,25 +1775,25 @@ ordered as follows: </PARA>
 </ORDEREDLIST>
 <PARA>In order to maintain compatibility with linker script
 	  fragments and header files exported by the
-	  eCos <APPLICATION>Configuration Tool</APPLICATION>, the use
+	  <productname>eCos</productname> <APPLICATION>Configuration Tool</APPLICATION>, the use
 	  of other expressions within these files is not
 	  recommended.</PARA>
 <PARA>Note that the names of the linker output sections will vary
 between target architectures. A description of these sections can
-be found in the specific <EMPHASIS>GNUPro Toolkit Reference manual</EMPHASIS> for
+be found in the specific <productname>GCC</productname> documentation for
 your architecture.</PARA>
 </SECT1>
 </CHAPTER>
 <CHAPTER id="managing-package-repository">
 <TITLE>Managing the <!-- <index></index> -->Package Repository</TITLE>
-<PARA>A source distribution of eCos consists of a number of
+<PARA>A source distribution of <productname>eCos</productname> consists of a number of
 	packages, such as the kernel, the C library, and the
 	&micro;ITRON subsystems. These are
 	individually versioned in the tree structure of the source
 	code, to support distribution on a per-package basis and to
 	support third party packages whose versioning systems might be
-	different. The <EMPHASIS>eCos</EMPHASIS> <EMPHASIS>Package
-	  Administration Tool</EMPHASIS> is used to manage the
+	different. The <productname>eCos</productname> <application>Package
+	  Administration Tool</application> is used to manage the
 	installation and removal of packages from a variety of sources
 	with potentially multiple versions.</PARA>
 <PARA>The presence of the version information in the source tree
@@ -1798,8 +1802,8 @@ your architecture.</PARA>
 	<EMPHASIS>SourceSafe</EMPHASIS>. To work
 	in this way, you can rename all the version components to some
 	common name (such as &ldquo;current&rdquo;) thus unifying the
-	structure of source trees from distinct eCos releases.</PARA>
-<PARA>The eCos build system will treat any such name as just another
+	structure of source trees from distinct <productname>eCos</productname> releases.</PARA>
+<PARA>The <productname>eCos</productname> build system will treat any such name as just another
 version of the package(s), and support building in exactly the same
 way. However, performing this rename invalidates any existing build
 trees that referred to the versioned source tree, so do the rename
@@ -1807,33 +1811,39 @@ first, before any other work, and do a complete rebuild afterwards.</PARA>
 <SECT1 id="package-installation">
 <TITLE>Package Installation</TITLE>
 <PARA>Package installation and removal is performed using the
-	  <EMPHASIS>eCos Package Adminstration Tool</EMPHASIS>. This
+	  <productname>eCos</productname> <application>Package Administration Tool</application>. This
 	  tool is a Tcl script named
 	<command>ecosadmin.tcl</command> which allows
-	  the user to add new eCos packages and new versions of
-	  existing packages to an eCos repository. Such packages must
-	  be distributed as a single file in the eCos package
+	  the user to add new <productname>eCos</productname> packages and new versions of
+	  existing packages to an <productname>eCos</productname> repository. Such packages must
+	  be distributed as a single file in the <productname>eCos</productname> package
 	  distribution format. Unwanted packages may also be removed
 	  from the repository using this tool. A graphical version of
 	  the tool is provided as part of the
-	  <EMPHASIS>eCos</EMPHASIS> <EMPHASIS>Developer&rsquo;s
-	    Kit</EMPHASIS>.</PARA>
+	  <productname>eCos</productname> <application>Configuration Tool</application>.</PARA>
 <SECT2>
-<TITLE>Using the Administration Tool</TITLE>
-<PARA>The graphical version of the <EMPHASIS>eCos Package Administration
-Tool</EMPHASIS>, provided as part of the <EMPHASIS>eCos Developer's
-Kit</EMPHASIS>, provides functions equivalent to the command-line
+<TITLE>Using the Administration Tool</TITLE> <PARA>The graphical
+version of the <productname>eCos</productname> <application>Package
+Administration Tool</application>, provided as part of the
+<productname>eCos</productname> <application>Configuration
+Tool</application>, provides functions equivalent to the command-line
 version for those who prefer a Windows-based interface.</PARA>
 <PARA>It may be invoked in one of two ways:</PARA>
 <ITEMIZEDLIST>
 <LISTITEM>
 <PARA>from the <GUIMENU>start menu</GUIMENU> (by default
-		<GUIMENUITEM>Start-&gt;Programs-&gt;Red Hat
+		<GUIMENUITEM>Start-&gt;Programs-&gt;
 		  eCos-&gt;Package Administration
 		  Tool</GUIMENUITEM>)</PARA>
+<!--
+<para>
+XXXXX What is the Windows menu structure now? XXXXX
+</para>
+-->
+            
 </LISTITEM>
 <LISTITEM>
-<PARA>from the eCos <APPLICATION>Configuration
+<PARA>from the <productname>eCos</productname> <APPLICATION>Configuration
 		  Tool</APPLICATION> via the
 		<GUIMENUITEM>Tools-&gt;Administration</GUIMENUITEM>
 		menu item</PARA>
@@ -1843,8 +1853,8 @@ version for those who prefer a Windows-based interface.</PARA>
 <PARA>The main window of the tool displays the packages which are
 currently installed in the form of a tree. The installed versions
 of each package may be examined by expanding the tree.</PARA>
-<PARA>Packages may be added to the eCos repository by clicking on
-the <EMPHASIS>Add</EMPHASIS> button. The eCos package distribution
+<PARA>Packages may be added to the <productname>eCos</productname> repository by clicking on
+the <EMPHASIS>Add</EMPHASIS> button. The <productname>eCos</productname> package distribution
 file to be added is then selected via a <EMPHASIS>File Open</EMPHASIS> dialog
 box.</PARA>
 <PARA>Packages may be removed by selecting a package in the tree
@@ -1856,7 +1866,7 @@ selected version of the package will be removed.</PARA>
 <SECT2>
 <TITLE>Using the command line</TITLE>
 <PARA>The <command>ecosadmin.tcl</command>
-	    script is located in the base of the eCos repository. Use
+	    script is located in the base of the <productname>eCos</productname> repository. Use
 	    a command of the following form under versions of
 	    UNIX:</PARA>
 <SCREEN>$ tclsh ecosadmin.tcl &lt;command&gt;</SCREEN>
@@ -1869,14 +1879,14 @@ at the Cygwin command line prompt:</PARA>
 <TERM><COMMAND>add &lt;file&gt;</COMMAND></TERM>
 <LISTITEM><!-- <index></index> -->
 <PARA>Adds the packages contained with the specified package distribution
-file to the eCos repository and updates the package database accordingly.
-By convention, eCos package distribution files are given the <filename>.epk</filename> suffix.</PARA>
+file to the <productname>eCos</productname> repository and updates the package database accordingly.
+By convention, <productname>eCos</productname> package distribution files are given the <filename>.epk</filename> suffix.</PARA>
 </LISTITEM>
 </VARLISTENTRY>
 <VARLISTENTRY>
 <TERM><COMMAND>remove &lt;package&gt; [ --version=&lt;version&gt; ]</COMMAND></TERM><!-- <index></index> -->
 <LISTITEM>
-<PARA>Removes the specified package from the eCos
+<PARA>Removes the specified package from the <productname>eCos</productname>
 		  repository and updates the package database
 		  accordingly. Where the optional version qualifier is
 		  used, only the specified version of the package is
@@ -1895,46 +1905,41 @@ By convention, eCos package distribution files are given the <filename>.epk</fil
 </VARIABLELIST>
 <PARA>Note that is is possible to remove critical packages
 	    such as the common HAL package using this tool. Users
-	    should take care to avoid such errors since core eCos
+	    should take care to avoid such errors since core <productname>eCos</productname>
 	    packages may only be re-installed in the context of a
-	    complete re-installation of eCos.</PARA>
+	    complete re-installation of <productname>eCos</productname>.</PARA>
 </SECT2>
 </SECT1>
 <SECT1 id="package-structure">
 <TITLE>Package Structure</TITLE>
-<PARA>The files in an installed eCos source tree are organized in
+<PARA>The files in an installed <productname>eCos</productname> source tree are organized in
 a natural tree structure, grouping together files which work together
 into <EMPHASIS>Packages</EMPHASIS>. For example, the kernel files
 are all together in: </PARA>
 <SIMPLELIST>
-<MEMBER><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/v1_3_x/include/</FILENAME></MEMBER>
-<MEMBER>	    <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/v1_3_x/src/</FILENAME></MEMBER>
-<MEMBER>	<FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/v1_3_x/tests/</FILENAME></MEMBER>
+<MEMBER><FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/<replaceable>&Version;</replaceable>/include/</FILENAME></MEMBER>
+<MEMBER>	    <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/<replaceable>&Version;</replaceable>/src/</FILENAME></MEMBER>
+<MEMBER>	<FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/<replaceable>&Version;</replaceable>/tests/</FILENAME></MEMBER>
 </SIMPLELIST>
 <PARA>and &micro;ITRON compatibility layer files are in:
 	</PARA>
 <SIMPLELIST>
-<MEMBER>	    <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/compat/uitron/v1_3_x/include/</FILENAME></MEMBER>
-<MEMBER>	<FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/compat/uitron/v1_3_x/src/</FILENAME></MEMBER>
-<MEMBER>	<FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/compat/uitron/v1_3_x/tests/</FILENAME></MEMBER>
+<MEMBER>	    <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/compat/uitron/<replaceable>&Version;</replaceable>/include/</FILENAME></MEMBER>
+<MEMBER>	<FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/compat/uitron/<replaceable>&Version;</replaceable>/src/</FILENAME></MEMBER>
+<MEMBER>	<FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/compat/uitron/<replaceable>&Version;</replaceable>/tests/</FILENAME></MEMBER>
 </SIMPLELIST>
 <PARA>The feature of these names which is of interest here is
-	  the v1_3_x near the end. If you start using
-	  eCos after the Version 1.2 release, you might see a
-	  different name here, e.g. v1_4 for version 1.4; if
-	  you received pre-release Beta versions you might have seen
-	  v0_2 or v0_3 for versions 0.2 and 0.3. </PARA>
-<PARA>It may seem odd to place a version number deep in the
+	  the <replaceable>&Version;</replaceable> near the end. It may seem odd to place a version number deep in the
 	  path, rather than having something like
-	  <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/v1_3_x/...everything...</FILENAME></PARA>
-<PARA>or leaving it up to you to choose a different
+	  <FILENAME><REPLACEABLE>BASE_DIR</REPLACEABLE>/<replaceable>&Version;</replaceable>/...everything...</FILENAME>
+          or leaving it up to you to choose a different
 	  install-place when a new release of the system arrives.
 	</PARA>
 <PARA>There is a rationale for this organization: as
 	  indicated, the kernel and the
 	  &micro;ITRON compatibility subsystem
 	  are examples of software packages. For the first few
-	  releases of eCos, all the Red Hat packages will move along
+	  releases of <productname>eCos</productname>, all the packages will move along
 	  in step, i.e. Release 1.3.x will feature Version
 	  1.3.x of every package, and so forth. But in future,
 	  especially when third party packages become available, it is
@@ -1943,21 +1948,21 @@ are all together in: </PARA>
 	  a selection of packages with different version numbers, and
 	  even differing versioning <EMPHASIS>schemes</EMPHASIS>. A
 	  Tcl script <command>ecosadmin.tcl</command> is
-	  provided in the eCos repository to manage the installation
+	  provided in the <productname>eCos</productname> repository to manage the installation
 	  and removal of packages in this way.</PARA>
 <PARA>Many users will have their own source code control system,
 version control system or equivalent, and will want to use it with
-eCos sources. In that case, since a new release of eCos comes with
+<productname>eCos</productname> sources. In that case, since a new release of <productname>eCos</productname> comes with
 different pathnames for all the source files, a bit of work is necessary
 to import a new release into your source repository. </PARA>
 <PARA>One way of handling the import is to rename all the version
 parts to some common name, for example &ldquo;current&rdquo;,
 and continue to work. &ldquo;current&rdquo; is suggested because <command>ecosconfig</command> recognizes
-it and places it first in any list of versions. In the future, Red
-Hat may provide a tool to help with this, or an option in the install
+it and places it first in any list of versions. In the future, we
+may provide a tool to help with this, or an option in the install
 wizard. Alternatively, in a POSIX shell environment (Linux or Cygwin
 on Windows) use the following command: </PARA>
-<SCREEN>find . -name v1_3_x -type d -printf 'mv &percnt;p &percnt;h/current\n' | sh</SCREEN>
+<SCREEN>find . -name <replaceable>&Version;</replaceable> -type d -printf 'mv &percnt;p &percnt;h/current\n' | sh</SCREEN>
 <PARA>Having carried out such a renaming operation, your
 	  source tree will now look like this: </PARA>
 <SCREEN><REPLACEABLE>BASE_DIR</REPLACEABLE>/kernel/current/include/
@@ -1970,12 +1975,12 @@ on Windows) use the following command: </PARA>
 	</SCREEN>
 <PARA>which is a suitable format for import into your own
 	  source code control system. When you get a subsequent
-	  release of eCos, do the same thing and use your own source
+	  release of <productname>eCos</productname>, do the same thing and use your own source
 	  code control system to manage the new source base, by
 	  importing the new version from </PARA>
 <SCREEN><REPLACEABLE>NEW_BASE_DIR</REPLACEABLE>/kernel/current/include/</SCREEN>
 <PARA>and so on. </PARA>
-<PARA>The eCos build tool will now offer only the
+<PARA>The <productname>eCos</productname> build tool will now offer only the
 	  &ldquo;current&rdquo; version of each package; select this
 	  for the packages you wish to use. </PARA>
 <PARA>Making such a change has implications for any build
