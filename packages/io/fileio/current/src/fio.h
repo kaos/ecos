@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -98,11 +99,27 @@
 
 #define CYG_FILEIO_FUNCTION_FINISH() CYG_POSIX_FUNCTION_FINISH()
 
+#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) \
+        CYG_PTHREAD_SIGMASK_SET( __set, __oset )
+
+#define CYG_FILEIO_SIGPENDING() CYG_POSIX_SIGPENDING()
+
+#define CYG_FILEIO_DELIVER_SIGNALS( __mask ) \
+        CYG_POSIX_DELIVER_SIGNALS( __mask )
+
 #else
 
 #define CYG_FILEIO_FUNCTION_START() CYG_EMPTY_STATEMENT
 
 #define CYG_FILEIO_FUNCTION_FINISH() CYG_EMPTY_STATEMENT
+
+#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) CYG_EMPTY_STATEMENT
+
+#define CYG_FILEIO_SIGPENDING() (0)
+
+#define CYG_FILEIO_DELIVER_SIGNALS( __mask ) CYG_EMPTY_STATEMENT
+
+typedef int sigset_t;
 
 #endif
 

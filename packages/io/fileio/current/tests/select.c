@@ -103,7 +103,7 @@
 //--------------------------------------------------------------------------
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf("<INFO>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
+diag_printf("INFO: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
 
 //--------------------------------------------------------------------------
 // Thread stack.
@@ -147,25 +147,28 @@ static char sbuf3[TEST_BUFSIZE];
 void show_fdsets( char *s, int nfd, fd_set *rd, fd_set *wr, fd_set *ex )
 {
     int i;
-    diag_printf("INFO:<%s nfd %d",s,nfd);
+    diag_printf("INFO:<%s nfd %d ",s,nfd);
 
     if( rd )
     {
-        diag_printf("rd: ");
+        diag_printf("rd: [");
         for( i = 0; i < nfd ; i++ )
             if( FD_ISSET( i, rd ) ) diag_printf("%d ",i);
-    }
+        diag_printf("] ");        
+    }    
     if( wr )
     {
-        diag_printf("wr: ");                
+        diag_printf("wr: [");                
         for( i = 0; i < nfd ; i++ )
             if( FD_ISSET( i, wr ) ) diag_printf("%d ",i);
+        diag_printf("] ");        
     }
     if( ex )
     {
-        diag_printf("ex: ");                
+        diag_printf("ex: [");                
         for( i = 0; i < nfd ; i++ )
             if( FD_ISSET( i, ex ) ) diag_printf("%d ",i);
+        diag_printf("] ");                
     }
 
     diag_printf(">\n");

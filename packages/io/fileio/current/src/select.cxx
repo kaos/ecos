@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -137,8 +138,9 @@ externC cyg_tick_count cyg_timeval_to_ticks( const struct timeval *tv )
 //==========================================================================
 // Select API function
 
-__externC int
-select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
+static int
+cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
+           struct timeval *tv, const sigset_t *mask)
 {
     FILEIO_ENTRY();
 
@@ -150,7 +152,8 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
     cyg_tick_count ticks;
     int mode_type[] = {CYG_FREAD, CYG_FWRITE, 0};
     cyg_uint32 wake_count;
-    
+    sigset_t oldmask;
+
     FD_ZERO(&in_res);
     FD_ZERO(&out_res);
     FD_ZERO(&ex_res);
@@ -207,60 +210,131 @@ select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
             if (out) FD_COPY( &out_res, out );
             if (ex)  FD_COPY( &ex_res, ex );
             select_mutex.unlock();
+            CYG_FILEIO_DELIVER_SIGNALS( mask );
             FILEIO_RETURN_VALUE(num);
         }
 
         Cyg_Scheduler::lock();
 
-        if( wake_count == selwake_count )
+        // Switch to the supplied signal mask. This will permit delivery
+        // of any signals that might terminate this select operation.
+        
+        CYG_FILEIO_SIGMASK_SET( mask, &oldmask );
+    
+        do
         {
-            // Nothing found, see if we want to wait
-            if (tv)
+
+            // We need to see if any signals have been posted while we
+            // were testing all those files. The handlers will not
+            // have run because we have ASRs inhibited but the signal
+            // will have been set pending.
+
+            if( CYG_FILEIO_SIGPENDING() )
             {
-                if (ticks == 0)
+                // There are pending signals so we need to terminate
+                // the select operation and return EINTR. Handlers for
+                // the pending signals will be called just before we
+                // return.
+
+                error = EINTR;
+                break;
+            }
+            
+            if( wake_count == selwake_count )
+            {
+                // Nothing found, see if we want to wait
+                if (tv)
                 {
                     // Special case of "poll"
-                    select_mutex.unlock();
-                    Cyg_Scheduler::unlock();
-                    FILEIO_RETURN_VALUE(0);
-                }
-
-                ticks += Cyg_Clock::real_time_clock->current_value();
-                
-                if( !selwait.wait( ticks ) )
-                {
-                    // A non-standard wakeup, if the current time is equal to
-                    // or past the timeout, return zero. Otherwise return
-                    // EINTR, since we have been released.
-
-                    if( Cyg_Clock::real_time_clock->current_value() >= ticks )
+                    if (ticks == 0)
                     {
-                        select_mutex.unlock();
-                        Cyg_Scheduler::unlock();
-                        FILEIO_RETURN_VALUE(0);
+                        error = EAGAIN;
+                        break;
                     }
-                    else error = EINTR;
+
+                    ticks += Cyg_Clock::real_time_clock->current_value();
+                
+                    if( !selwait.wait( ticks ) )
+                    {
+                        // A non-standard wakeup, if the current time is equal to
+                        // or past the timeout, return zero. Otherwise return
+                        // EINTR, since we have been released.
+
+                        if( Cyg_Clock::real_time_clock->current_value() >= ticks )
+                        {
+                            error = EAGAIN;
+                            break;
+                        }
+                        else error = EINTR;
+                    }
+
+                    ticks -= Cyg_Clock::real_time_clock->current_value();
                 }
-
-                ticks -= Cyg_Clock::real_time_clock->current_value();
-            }
-            else
-            {
-                // Wait forever (until something happens)
+                else
+                {
+                    // Wait forever (until something happens)
             
-                if( !selwait.wait() )
-                    error = EINTR;
+                    if( !selwait.wait() )
+                        error = EINTR;
+                }
             }
-        }
 
+        } while(0);
+
+        CYG_FILEIO_SIGMASK_SET( &oldmask, NULL );
+        
         Cyg_Scheduler::unlock();
         
     } // while(!error)
 
     select_mutex.unlock();
  
+    // If the error code is EAGAIN, this means that a timeout has
+    // happened. We return zero in that case, rather than a proper
+    // error code.
+    // If the error code is EINTR, then a signal may be pending
+    // delivery. Call back into the POSIX package to handle it.
+    
+    if( error == EAGAIN )
+        FILEIO_RETURN_VALUE(0);
+    else if( error == EINTR )
+        CYG_FILEIO_DELIVER_SIGNALS( mask );
+
     FILEIO_RETURN(error);
 }
+
+// -------------------------------------------------------------------------
+// Select API function
+
+__externC int
+select(int nfd, fd_set *in, fd_set *out, fd_set *ex, struct timeval *tv)
+{
+	return cyg_pselect(nfd, in, out, ex, tv, NULL);
+}
+
+// -------------------------------------------------------------------------
+// Pselect API function
+//
+// This is derived from the POSIX-200X specification.
+
+#ifdef CYGPKG_POSIX
+
+__externC int
+pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
+	const struct timespec *ts, const sigset_t *sigmask)
+{
+	struct timeval tv;
+
+	if (ts != NULL)
+        {
+            tv.tv_sec = ts->tv_sec;
+            tv.tv_usec = ts->tv_nsec/1000;
+        }
+
+	return cyg_pselect(nfd, in, out, ex, &tv, sigmask);
+}
+
+#endif
 
 //==========================================================================
 // Select support functions.

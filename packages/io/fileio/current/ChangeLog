@@ -1,3 +1,20 @@
+2002-11-10  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/fio.h: Added macros to deal with signal handling. These will
+	call into the POSIX package if it is present, but are null if it
+	is not.
+
+	* src/select.cxx: Renamed original select() to cyg_pselect() and
+	added select() and pselect() routine from POSIX-200X to call
+	it. Reorganized code a little and added calls to macros to deal
+	with signal delivery and detection.
+
+	* cdl/fileio.cdl: 
+	* tests/pselect.c: New test added to verify the signal masking and
+	delivery behaviour of pselect().
+
+	* tests/select.c: Fixed up some printfs to make it a little tidier.
+
 2002-11-03  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/io.cxx: 
