@@ -291,6 +291,11 @@ do_exec(int argc, char *argv[])
     struct tag *params = (struct tag *)CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS;
     extern char __tramp_start__[], __tramp_end__[];
 
+    // Check to see if a valid image has been loaded
+    if (entry_address == (unsigned long)NO_MEMORY) {
+        diag_printf("Can't execute Linux - invalid entry address\n");
+        return;
+    }
     // Default physical entry point for Linux is kernel base.
     entry = (unsigned long)CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS;
 
@@ -314,10 +319,6 @@ do_exec(int argc, char *argv[])
               (void **)&ramdisk_size, (bool *)&ramdisk_size_set, "ramdisk_size");
     if (!scan_opts(argc, argv, 1, opts, 6, (void *)&entry, OPTION_ARG_TYPE_NUM, "[physical] starting address"))
     {
-        return;
-    }
-    if (entry == (unsigned long)NO_MEMORY) {
-        diag_printf("Can't execute Linux - invalid entry address\n");
         return;
     }
 
