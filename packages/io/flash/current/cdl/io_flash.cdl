@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2003 Gary Thomas
+## Copyright (C) 2003, 2004 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -193,6 +193,66 @@ cdl_package CYGPKG_IO_FLASH {
 					default_value { "\"jffs2\"" }	
 				}
             }        
+        }
+    }
+
+    cdl_component CYGPKG_IO_FLASH_OPTIONS {
+        display "Flash device driver build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_IO_FLASH_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the flash device drivers. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_IO_FLASH_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the flash device drivers. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_component CYGPKG_IO_FLASH_TESTS {
+            display "Flash device driver tests"
+            flavor  data
+            no_define
+            calculated { "tests/flash1" }
+            description   "
+                This option specifies the set of tests for the flash device drivers."
+
+            cdl_option CYGNUM_IO_FLASH_TEST_OFFSET {
+                display         "Start offset from flash base"
+                flavor          data
+                default_value   0x100000
+                description     "
+                    This gives the offset from the base of flash where tests
+                    can be run.  It is important to set this correctly, as an
+                    incorrect value could allow the tests to write over critical
+                    portions of the FLASH device and possibly render the target
+                    board totally non-functional."
+            }
+            cdl_option CYGNUM_IO_FLASH_TEST_LENGTH {
+                display         "Length"
+                flavor          data
+                default_value   0x100000
+                description     "
+                    This gives the length of the region of flash used for testing."
+            }
         }
     }
 }
