@@ -1,3 +1,8 @@
+2002-07-18  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/quicc_smc1.c (cyg_hal_scc1_init_channel): Fix init which
+	failed from power-up - wrong channel in CP command!
+
 2002-07-11  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/quicc_smc1.c: 

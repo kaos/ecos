@@ -245,7 +245,7 @@ cyg_hal_smc1_init_channel(struct port_info *info)
     /*
      *  Init Rx & Tx params for SMC1
      */
-    eppc->cp_cr = 0x91;
+    eppc->cp_cr = QUICC_CPM_CR_INIT_TXRX | QUICC_CPM_SMC1 | QUICC_CPM_CR_BUSY;
 
     info->irq = 0;  // Interrupts not enabled
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // remove below
@@ -650,7 +650,7 @@ cyg_hal_scc1_init_channel(struct port_info *info)
     /*
      *  Init Rx & Tx params for SCC1
      */
-    eppc->cp_cr = 0x41;
+    eppc->cp_cr = QUICC_CPM_CR_INIT_TXRX | QUICC_CPM_SCC1 | QUICC_CPM_CR_BUSY;
 
     /*
      *  Clear any previous events. Mask interrupts.
