@@ -1005,7 +1005,7 @@ load_flash_config(void)
                    sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
         (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
         diag_printf("**Warning** FLASH configuration checksum error or invalid key\n");
-        diag_printf("Use 'fconfig -i' to [re]intialize database\n");
+        diag_printf("Use 'fconfig -i' to [re]initialize database\n");
         config_init();
         return;
     }
