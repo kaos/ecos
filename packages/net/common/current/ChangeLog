@@ -1,3 +1,7 @@
+2003-01-04  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/tcpip.sgml: Use new entity name for tcpip manpages.
+
 2002-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/multi_lo_select.c: Need the io_fileio.h header file

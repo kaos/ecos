@@ -476,5 +476,5 @@ app, which is why managing the DHCP state in an application aware
 thread is actually better, just far less convenient for testing.</PARA>
 </SECT1>
 </CHAPTER>
-    &net-common-current-doc-tcpip-manpages-sgml;
+    &net-common-tcpip-manpages-sgml;
 </PART>
