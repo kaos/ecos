@@ -159,7 +159,7 @@ static int
 cs8900a_int_vector(struct eth_drv_sc *sc)
 {
     cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
-    return (cpd->interrupt) ? 1 : 0;
+    return (cpd->interrupt);
 }
 
 static bool 
@@ -264,16 +264,14 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
         // Get ESA from EEPROM - via the PP_IA registers
         cyg_uint16 esa_word;
         for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
-#if(CYG_BYTEORDER == CYG_LSBFIRST)
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
             esa_word = get_reg(base, PP_IA+i);
             cpd->esa[i] = (esa_word & 0xFF);
             cpd->esa[i+1] = (esa_word >> 8) & 0xFF;
-#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+#else
             esa_word = get_reg(base, PP_IA+CYG_SWAP16(i));
             cpd->esa[i+1] = (esa_word & 0xFF);
             cpd->esa[i] = (esa_word >> 8) & 0xFF;
-#else
-# error You must define CYG_BYTEORDER to equal CYG_LSBFIRST or CYG_MSBFIRST
 #endif
         }
         esa_configured = true;
@@ -287,17 +285,17 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 
     // Tell the chip what ESA to use
     for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
-#if(CYG_BYTEORDER == CYG_LSBFIRST)
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
         put_reg(base, PP_IA+i, cpd->esa[i] | (cpd->esa[i+1] << 8));
-#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+#else
         put_reg(base, PP_IA+CYG_SWAP16(i), cpd->esa[i+1] | (cpd->esa[i] << 8));
 #endif
     }
     // Set logical address mask
     for (i = 0;  i < 8;  i += 2) {
-#if(CYG_BYTEORDER == CYG_LSBFIRST)
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
         put_reg(base, PP_LAF+i, 0xFFFF);
-#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+#else
         put_reg(base, PP_LAF+CYG_SWAP16(i), 0xFFFF);
 #endif
     }
@@ -438,7 +436,7 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #endif
 
     // Start the xmit sequence
-#if(CYG_BYTEORDER == CYG_MSBFIRST)      
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
     total_len = CYG_SWAP16(total_len);
 #endif
         
@@ -472,12 +470,12 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         if (len > 0) {
             /* Finish the last word. */
             if (odd_byte) {
-#if(CYG_BYTEORDER == CYG_LSBFIRST)                              
-                // Add data to the most significant byte
-                saved_data |= ((cyg_uint16)*data++) << 8;
-#elif(CYG_BYTEORDER == CYG_MSBFIRST)
-                // Add data to the least significant byte
+// This new byte must get on the bus _after_ the last saved odd byte, it therefore
+// belongs in the MSB of the CS8900a
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED                            
                 saved_data |= *data++;
+#else
+                saved_data |= ((cyg_uint16)*data++) << 8;
 #endif
                 HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
                 len--;
@@ -487,7 +485,13 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
                 /* Aligned on 16-bit boundary, so output contiguous words. */
                 sdata = (cyg_uint16 *)data;
                 while (len > 1) {
+					// Make sure data get on the bus in Big Endian format
+#if((CYG_BYTEORDER == CYG_MSBFIRST) && defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED) || \
+    (CYG_BYTEORDER == CYG_LSBFIRST) && !defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED ))
                     HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, *sdata++);
+#else
+                    HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, CYG_SWAP16(*sdata++));
+#endif
                     len -= sizeof(cyg_uint16);
                 }
                 data = (cyg_uint8 *)sdata;
@@ -495,7 +499,9 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
                 /* Not 16-bit aligned, so byte copy */
                 while (len > 1) {
                     saved_data = (cyg_uint16)*data++;   // reuse saved_data
-#if CYG_BYTEORDER == CYG_MSBFIRST
+					// Make sure data get on the bus in Big Endian format, the first byte belongs in the
+					// LSB of the CS8900A
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
                     saved_data =  ((cyg_uint16)*data++) | (saved_data << 8);
 #else
                     saved_data |= ((cyg_uint16)*data++) << 8;
@@ -507,7 +513,9 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
             /* Save last byte, if necessary. */
             if (len == 1) {
                 saved_data = (cyg_uint16)*data;
-#if CYG_BYTEORDER == CYG_MSBFIRST				
+// This _last_ byte must get on the bus _first_, it therefore belongs in the LSB of
+// the CS8900a
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
                 saved_data = (saved_data << 8);
 #endif
                 odd_byte = true;
@@ -534,7 +542,7 @@ cs8900a_RxEvent(struct eth_drv_sc *sc)
     HAL_READ_UINT16(base+CS8900A_RTDATA, stat);
     HAL_READ_UINT16(base+CS8900A_RTDATA, len);
 
-#if(CYG_BYTEORDER == CYG_MSBFIRST)
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
     len = CYG_SWAP16(len);
 #endif
         
@@ -566,13 +574,18 @@ cs8900a_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
         while (mlen >= sizeof(*data)) {
             HAL_READ_UINT16(base+CS8900A_RTDATA, val);
             if (data) {
+#if((CYG_BYTEORDER == CYG_MSBFIRST) && defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED) || \
+    (CYG_BYTEORDER == CYG_LSBFIRST) && !defined(CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED ))
                 *data++ = val;
+#else
+                *data++ = CYG_SWAP16(val);
+#endif
             }
             mlen -= sizeof(*data);
         }
         if (mlen) {
             HAL_READ_UINT16(base+CS8900A_RTDATA, val);
-#if(CYG_BYTEORDER == CYG_LSBFIRST)                      
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED 
             // last odd byte will be in the LSB
             cval = (cyg_uint8)(val);
 #elif(CYG_BYTEORDER == CYG_MSBFIRST)

@@ -1,3 +1,14 @@
+2004-04-19  Bob Koninckx <bob.koninckx@o-3s.com>
+	* src/if_cs8900a.c: function cs8900a_int_vector, return the vector
+	instead of a boolean.
+
+2004-04-08  Bob Koninckx <bob.koninckx@o-3s.com>
+	* cdl/cl_cs8900a_eth_drivers.cdl
+	* include/if_cs8900a.c
+	* src/if_cs8900a.c: Made hardware swapping or software swapping of
+    data bytes (mostly relevant to big endian machines) a configuration
+    option
+
 2003-11-05  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
 
 	* src/if_cs8900a.c: Fix handling of odd bytes on big endian machines

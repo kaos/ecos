@@ -167,27 +167,25 @@ typedef struct cs8900a_priv_data {
 # define CS8900A_PDATA  (6*CS8900A_step)
 #endif
 
-#if(CYG_BYTEORDER == CYG_LSBFIRST)
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
 #define ISQ_RxEvent     0x0004
 #define ISQ_TxEvent     0x0008
 #define ISQ_BufEvent    0x000C
 #define ISQ_RxMissEvent 0x0010
 #define ISQ_TxColEvent  0x0012
 #define ISQ_EventMask   0x003F
-#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+#else
 #define ISQ_RxEvent     0x0400
 #define ISQ_TxEvent     0x0800
 #define ISQ_BufEvent    0x0C00
 #define ISQ_RxMissEvent 0x1000
 #define ISQ_TxColEvent  0x1200
 #define ISQ_EventMask   0x3F00
-#else
-# error You must define CYG_BYTEORDER to equal CYG_LSBFIRST or CYG_MSBFIRST
 #endif
 
 // ------------------------------------------------------------------------
 // Registers available via "page pointer" (indirect access)
-#if(CYG_BYTEORDER == CYG_LSBFIRST)
+#ifndef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
 
 #define PP_ChipID    0x0000  // Chip identifier - must be 0x630e
 #define PP_ChipRev   0x0002  // Chip revision, model codes
@@ -310,7 +308,7 @@ typedef struct cs8900a_priv_data {
 #define PP_LAF       0x0150  // Logical address filter (6 bytes)
 #define PP_IA        0x0158  // Individual address (MAC)
 
-#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+#else
 
 #define PP_ChipID    0x0000  // Chip identifier - must be 0x0e63
 #define PP_ChipRev   0x0200  // Chip revision, model codes
@@ -433,8 +431,6 @@ typedef struct cs8900a_priv_data {
 #define PP_LAF       0x5001  // Logical address filter (6 bytes)
 #define PP_IA        0x5801  // Individual address (MAC)
 
-#else
-# error You must define CYG_BYTEORDER to equal CYG_LSBFIRST or CYG_MSBFIRST
 #endif
 
 // ------------------------------------------------------------------------

@@ -68,6 +68,29 @@ cdl_package CYGPKG_DEVS_ETH_CL_CS8900A {
         puts $::cdl_header "#include CYGDAT_DEVS_ETH_CL_CS8900A_CFG";
     }
 
+	cdl_option CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED {
+	    display "Byte swapped data bus"
+		flavor  bool
+		default_value 0
+		description   "
+		    From the application note AN205 from Cirrus Logic ...The CS8900a
+			assumes a litte-endian ISA type system. However, network byte order
+			is always big-endian.Therefore to minimize software manipulation of
+			frame data in ISA systems, the CS8900 byte-swaps frame data
+			internally. The control and status registers are not byte-swapped.
+			In a big-endian system you can either byte-swap the network data
+			(to reverse the byte swapping done internally to the CS8900) in
+			software or you can do it in hardware (byte swap the data lines to
+			the chip). Byte swapping the data lines is much more efficient; you
+	        will only need to byte swap the control/status/counter values in
+			software and not the frame data. (Most of the read/writes to the chip
+			are frame data.) Since network byte order is always big endian, this
+		    scheme works without special support on the other end of the network...
+			Normally, you won't need to check this option unless you are using a
+			CS8900a ethernet controller with a big endian machine and hardware
+			that has been designed with the cs8900a in mind."
+    }
+
     cdl_component CYGPKG_DEVS_ETH_CL_CS8900A_OPTIONS {
         display "Cirrus Logic ethernet driver build options"
         flavor  none
