@@ -1,3 +1,12 @@
+2004-10-04  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* src/dlmalloc.cxx (resize_alloc): No longer invoke
+	 cyg_memalloc_alloc_fail() on failure to resize. It is not an out
+	 of memory condition, it just means the current memory allocation
+	 could not be expanded. realloc() will try allocating a completely
+	 new block of memory and only if that fails do we have an out of
+	 memory condition.
+
 2004-10-01  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	* heapgen.tcl: place the CYGBLD_ATTRIB_INIT_PRI such that it

@@ -1558,7 +1558,6 @@ Cyg_Mempool_dlmalloc_Implementation::resize_alloc( cyg_uint8 *oldmem,
 
     // couldn't resize the allocation any direction, so return failure
     MALLOC_UNLOCK;
-    CYG_MEMALLOC_FAIL(bytes);
     return NULL;
   }
 
