@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   proven
-// Contributors:proven, jskov
+// Contributors:proven, jskov, jlarmour
 // Date:        1999-01-06
 // Purpose:     Entry point for Linux synthetic target.
 //
@@ -40,18 +40,29 @@
 //
 //=========================================================================
 
+#include <pkgconf/system.h>
 #include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_ass.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 externC void cyg_hal_isr_init( void );
 externC void cyg_hal_invoke_constructors( void );
 externC void cyg_start( void );
 externC void cyg_hal_hardware_init( void );
+externC void *cyg_hal_sys_brk(void *newbrk);
 
 void _linux_entry( void )
 {
+    void *oldbrk=NULL;
+    void *newbrk=(void *)(CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE);
     // Should get argc argv
     cyg_hal_hardware_init();
     cyg_hal_isr_init();
+    // unconditionally set memory regino to the size specified in the
+    // memory layout
+    oldbrk = cyg_hal_sys_brk(newbrk);
+    // should check 
+    CYG_ASSERT( oldbrk>=newbrk, "brk() failed" );
     cyg_hal_invoke_constructors();
     cyg_start();
 }

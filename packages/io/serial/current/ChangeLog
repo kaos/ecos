@@ -153,6 +153,10 @@
 
 	* tests/ser_test_protocol.inl: Rename NEC V85x drivers.
 
+2000-05-25  Jesper Skov  <jskov@redhat.com>
+
+	* tests/ser_test_protocol.inl: Added rules for REF4955.
+
 2000-05-08  Jesper Skov  <jskov@redhat.com>
 
     	* cdl/io_serial.cdl: active_if CYGPKG_IO

@@ -232,7 +232,7 @@ hal_pc_irq:
 	movl	(%ebx, %ecx, 4), %edx
 	# regs is left from the push of ebp above;
 	pushl	%edx
-	pushl	%eax
+	pushl	%esi         # the old eax was saved in esi before hal_intc_ack
 	call	interrupt_end
 	addl	$8, %esp
 #endif /* CYGFUN_HAL_COMMON_KERNEL_SUPPORT */

@@ -1,3 +1,22 @@
+2000-11-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/stdio.h: Make FILE array type larger to be more resistant
+	against small data sections.
+	Lose the cyg_libc_stdio_stdin/out/err definitions with macros for
+	stdin/stdout/err since it can cause problems with libgcc exception
+	code. Instead just make these extern FILE *s.
+	* src/common/stderr.cxx:
+	* src/common/stdin.cxx:
+	* src/common/stdout.cxx:
+	Define objects with init priority corresponding to order the fd's
+	should be allocated where applicable.
+	Define actual stdin, stdout, stderr externally visible constants to
+	point to the streams.
+
+	* cdl/stdio.cdl: Support CYGINT_ISO_STDIO_STREAMS interface
+
+	* src/common/fopen.cxx (fdopen): return f as intended
+
 2000-10-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/streambuf.inl: Adjust assertions to cope with buffers

@@ -21,3 +21,20 @@ This is the eCos stubs configuration. It is used when building eCos GDB stubs." 
 cdl_option CYGBLD_BUILD_GDB_STUBS {
     user_value 1 ;
 };
+
+cdl_option CYGBLD_ISO_ERRNO_CODES_HEADER {
+    inferred_value 1 <cyg/error/codes.h>
+};
+
+cdl_option CYGBLD_ISO_ERRNO_HEADER {
+    inferred_value 1 <cyg/error/errno.h>
+};
+
+cdl_option CYGBLD_ISO_STRERROR_HEADER {
+    inferred_value 1 <cyg/error/strerror.h>
+};
+
+cdl_option CYGSEM_ERROR_PER_THREAD_ERRNO {
+    inferred_value 0
+};
+

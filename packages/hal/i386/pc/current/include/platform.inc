@@ -65,8 +65,7 @@
 
 	sectorsPerTrack = 18
 	bytesPerSector = 512
-	bytesPerTrack = sectorsPerTrack * bytesPerSector
-	dptLength = 3 /* words. */
+	esPerSector = 32	/* = 512/16 */
 
 	cld				/* always count up. */
 
@@ -78,9 +77,9 @@
 	andl 	$0xF000, %eax
 	movw 	%ax, %ss
 
-	/* Ask the BIOS for info about the amount of RAM available.  We push these
-	onto the stack for later use.
-	*/
+	/* Ask the BIOS for info about the amount of RAM available.  We push
+         * these onto the stack for later use.
+	 */
 	
 	xorl 	%eax, %eax
 	movb 	$0x88, %ah		/* Get the amount of extended memory. */
@@ -93,35 +92,63 @@
 	shl	$10, %eax
 	pushl	%eax
 
-
-	/* Read the rest of the image to _start.  This code works by reading a track
-	at a time...
+	/* reset floppy */
+	movb $0,%ah
+	movb $0,%dl
+	int $0x13
+	jc _error
+	
+	/* Read the rest of the image to _start.  This code works by reading
+	   only one sector at a time to avoid "buffer cross 64k boundary" fatal
+	   problem... This is slow but should work in almost all situations.
+	   _start should be aligned on a 512 bytes boundary to be sure.
 	*/
 	
-	movl	$_edata, %eax
-	movl	$_start, %ebx		/* Our destination address. */
-	subl	%ebx, %eax		/* Number of bytes in the image. */
-	movl	$1, %ecx		/* Track/sector to read from (starts at 1). */
-
-0:
-	cmpl	$0, %eax
-	jle	1f
-
-	pushl	%eax			/* Save the number of bytes we want. */
-	pushl	%ebx			/* Save our current address. */
-	pushl	%ecx			/* Save our disk location. */
-
-	/* Read in a track with head 0. */
-	
-	movl	%ebx, %eax		/* Put our address into ES:BX. */
-	shr	$4, %eax
+	/* destination pointer es:bx */
+	/* With correct alignement, bx should be 0 and es should be a multiple
+         * of 32. If not it may cause the "buffer cross 64k boundary" problem
+         * (cf above)
+	 */   
+	movl	$_start,%eax
+	movw	%ax,%bx
+	andw	$0xF,%bx
+	shrl	$4,%eax
 	movw	%ax, %es
-	andl	$0xF, %ebx
-	movw	$0, %dx			/* Disk 0, head 0 */
-	movb	$0x02, %ah
-	movb	$sectorsPerTrack, %al	/* Read the entire track. */
+
+	/* initials head/track/sector */
+	movw	$0,%dx
+	movw	$1,%cx
+	
+	xorl	%edi,%edi
+	jmp	_loadsector
+
+_nextsector:
+	addw	$esPerSector, %di	/* advance buffer pointer */
+	shll	$4,%edi
+	cmpl	$_edata,%edi
+	jg	_endload	/* next sector ? */
+	shrl	$4,%edi
+	movw	%di,%es
+	incb	%cl
+        cmpb	$sectorsPerTrack, %cl 
+        jbe	_loadsector	/* next head ?*/
 	movb	$1, %cl
-	int	$0x13			/* CX points to our track/sector. */
+        incb	%dh    
+        cmpb	$1, %dh
+        je	_loadsector	/* next track ? */
+        movb	$0, %dh
+        incb	%ch    
+
+_loadsector:
+
+	pushw	%es
+	movw	$0x0201, %ax
+	int	$0x13
+	popw	%di
+	jc _error
+
+	movw	$(0x0E*256+'.'), %ax	/* print a dot */
+	int	$0x10
 
 	/* So go ahead and resume execution at the real starting address.  This
 	only serves to move us quickly to the real starting location; and has
@@ -129,52 +156,13 @@
 	reading the first track, then we limit ourselves to reading images of
 	30k bytes max before overwriting ourselves at 0x7C00.
 	*/
-	
-	ljmp	$0, $2f
+
+	ljmp $0,$_nextsector	
+
+_error:		/* halt on error */
+	cli
 	hlt
-
-	.align 4
-2:
-
-	popl	%ecx
-	popl	%ebx
-	popl	%eax
-
-	/* Add our length to the address. */
-	addl	$bytesPerTrack, %ebx
-	subl	$bytesPerTrack, %eax
-
-	/* Maybe read in a track with head 1. */
-	cmpl	$0, %eax
-	jle	1f
-
-	pushl	%eax			/* Save the number of bytes we want. */
-	pushl	%ebx			/* Save our current address. */
-	pushl	%ecx
-
-	movl	%ebx, %eax		/* Put our address into ES:BX. */
-	shr	$4, %eax
-	movw	%ax, %es
-	andl	$0xF, %ebx
-	movw	$0x0100, %dx		/* Disk 0, head 1 */
-	movb	$0x02, %ah
-	movb	$sectorsPerTrack, %al	/* Read the entire track. */
-	movb	$1, %cl
-	int	$0x13			/* CX points to our track/sector. */
-
-	popl	%ecx
-	popl	%ebx
-	popl	%eax
-
-	/* Add our length to the address. */
-	addl	$bytesPerTrack, %ebx
-	subl	$bytesPerTrack, %eax
-
-	/* Move to the next track. */
-	addb	$0x1, %ch
-
-	jmp 0b
-
+	jmp _start
 	/* Write the 0x55/0xAA signature at the end of the first
 	block.  Without this signature the BIOS won't consider this
 	block to be bootable.  
@@ -184,10 +172,11 @@
 	.byte	0x55
 	.byte	0xAA
 
-
+_endload:
 1:
 
-	/* Lets be nice and wait for the diskette drive motor to go off before continuing. */
+	/* Lets be nice and wait for the diskette drive motor to go off
+         * before continuing. */
 	
 	movw	$0x40, %ax
 	movw	%ax, %es
@@ -250,7 +239,9 @@ gdtStart:
 	.byte	0xCF
 	.byte	0x00
 
-	/* Selector 0x18 == shorter code: faults any code access 0xF0000000-0xFFFFFFFF. */
+	/* Selector 0x18 == shorter code: faults any code 
+         * access 0xF0000000-0xFFFFFFFF.
+         */
 	.word	0xFFFF
 	.word	0x0000
 	.byte	0x00
@@ -292,8 +283,8 @@ gdtEnd:
 	popfl
 
 /* Save the standard and extended memory lengths into some static variables...
-	I'm predicting that someone is going to break our way of passing a pointer
-	to this structure...  may as well avoid that problem now.
+	I'm predicting that someone is going to break our way of passing a
+        pointer to this structure...  may as well avoid that problem now.
 */
 	.data
 	.align	4
@@ -312,7 +303,7 @@ pc_extended_memory_size:
 /* _pc_entry() takes a pointer to our startup array (which only has standard
 	and extended memory sizes in it, on the stack).
 */
-	movl	%esp, %ebx		/* They are the last parameters on the stack. */
+	movl	%esp, %ebx	/* They are the last parameters on the stack. */
 	pushl	%ebx
 
 #endif /* CYG_HAL_STARTUP_FLOPPY */
@@ -323,8 +314,9 @@ pc_extended_memory_size:
 	vector 15.
 	*/
 	
-	/* Save the standard and extended memory lengths into some static variables...
-	*/
+	/* Save the standard and extended memory lengths into some static
+         * variables...
+	 */
 	.data
 	.align	4
 	.globl	pc_standard_memory_size

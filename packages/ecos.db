@@ -124,6 +124,16 @@ package CYGPKG_DEVS_FLASH_EBSA285 {
 	   on the StrongARM EBSA-285 platform."
 }
 
+package CYGPKG_DEVS_FLASH_SA1100MM {
+	alias 		{ "FLASH memory support for StrongARM SA1100 Multimedia" flash_sa1100mm }
+	directory	devs/flash/arm/sa1100mm
+	script		flash_sa1100mm.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the StrongARM SA1100 Multimedia platform."
+}
+
 package CYGPKG_DEVS_FLASH_EDB7XXX {
 	alias 		{ "FLASH memory support for Cirrus Logic EDB7xxx" flash_edb7xxx }
 	directory	devs/flash/arm/edb7xxx
@@ -249,6 +259,15 @@ package CYGPKG_IO_SERIAL_TX39_JMR3904 {
     description       "TX39 JMR3904 serial device drivers"
 }
 
+
+package CYGPKG_IO_SERIAL_MIPS_REF4955 {
+    alias             { "TX49 REF4955 serial device drivers"
+                        devs_serial_mips_ref4955 ref4955_serial_driver }
+    hardware
+    directory	      devs/serial/mips/ref4955
+    script	      ser_mips_ref4955.cdl	
+    description       "TX49 REF4955 serial device drivers"
+}
 
 package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
     alias             { "VRC4373 serial device drivers"
@@ -460,6 +479,15 @@ package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1742 {
            the Dallas 1742 wallclock."
 }
 
+package CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955 {
+	alias		{ "Wallclock driver for REF4955 board" devices_wallclock_ref4955 device_wallclock_ref4955 }
+	directory	devs/wallclock/mips/ref4955
+	script          wallclock_ref4955.cdl
+	hardware
+        description "
+           This package provides a wallclock driver implementation for the
+           Toshiba REF4955 board."
+}
 
 
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
@@ -768,6 +796,17 @@ package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
         The BRUTUS HAL package provides the support needed to run
         eCos on a Intel StrongARM SA1110 evaulation board (brutus)."
 }
+
+package CYGPKG_HAL_ARM_SA11X0_SA1100MM {
+	alias		{ "Intel SA1100 Multimedia eval board" hal_arm_sa11x0_sa1100mm }
+	directory	hal/arm/sa11x0/sa1100mm
+	script		hal_arm_sa11x0_sa1100mm.cdl
+	hardware
+        description "
+        The MULTIMEDIA HAL package provides the support needed to run
+        eCos on a Intel StrongARM SA1110 Multimedia evaluation board."
+}
+
 package CYGPKG_HAL_ARM_EDB7XXX {
 	alias		{ "Cirrus Logic development board" hal_arm_edb7xxx arm_edb7xxx_hal }
 	directory	hal/arm/edb7xxx
@@ -798,17 +837,37 @@ package CYGPKG_HAL_SH {
 	description "
            The SH (SuperH) architecture HAL package provides generic
            support for this processor architecture. It is also
-           necessary to select a specific target platform HAL
-           package."
+           necessary to select variant and target platform HAL
+           packages."
+}
+
+package CYGPKG_HAL_SH_SH3 {
+    alias         { "SH3 architecture" hal_sh_sh3 }
+    directory     hal/sh/sh3
+    script        hal_sh_sh3.cdl
+    hardware
+    description   "
+        The SH3 (SuperH 3) variant HAL package provides generic
+        support for SH3 variant CPUs."
+}
+
+package CYGPKG_HAL_SH_SH4 {
+    alias         { "SH4 architecture" hal_sh_sh4 }
+    directory     hal/sh/sh4
+    script        hal_sh_sh4.cdl
+    hardware
+    description   "
+        The SH4 (SuperH 4) variant HAL package provides generic
+        support for SH4 variant CPUs."
 }
 
 package CYGPKG_HAL_SH_EDK7708 {
 	alias		{ "Hitachi SH7708 board" hal_sh_edk sh_edk_hal }
-	directory	hal/sh/edk
+	directory	hal/sh/edk7708
 	script		hal_sh_edk7708.cdl
 	hardware
         description "
-           The edk HAL package provides the support needed to run
+           This SH HAL package provides the support needed to run
            eCos on a Hitachi SH3 EDK7708 board."
 }
 package CYGPKG_HAL_SH_SH7708_CQ7708 {
@@ -817,10 +876,19 @@ package CYGPKG_HAL_SH_SH7708_CQ7708 {
         script          hal_sh_sh7708_cq7708.cdl
         hardware
         description "
-           The cq HAL package provides the support needed to run
+           This SH HAL package provides the support needed to run
            eCos on a CqREEK SH7708 board."
 }
 
+package CYGPKG_HAL_SH_SH7750_CQ7750 {
+	alias		{ "CqREEK SH7750 board" hal_sh_cqsh4 sh_cqsh4_hal }
+	directory	hal/sh/cq7750
+	script		hal_sh_sh7750_cq7750.cdl
+	hardware
+        description "
+           This SH HAL package provides the support needed to run
+           eCos on a CqREEK SH7750 board."
+}
 
 # --------------------------------------------------------------------------
 # i386 packages
@@ -922,6 +990,17 @@ package CYGPKG_HAL_POWERPC_PPC60x {
 	hardware
         description "
            The PowerPC 60x variant HAL package provides generic support
+           for this processor variant. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_POWERPC_PPC40x {
+	alias		{ "PowerPC 40x variant HAL" hal_ppc40x ppc40x_hal ppc40x_arch_hal }
+	directory	hal/powerpc/ppc40x/
+	script		hal_powerpc_ppc40x.cdl
+	hardware
+        description "
+           The PowerPC 40x variant HAL package provides generic support
            for this processor variant. It is also necessary to
            select a specific target platform HAL package."
 }
@@ -1036,6 +1115,27 @@ package CYGPKG_HAL_MIPS_TX39_JMR3904 {
            `target sim --board=jmr3904' should be used from inside gdb."
 }
 
+
+package CYGPKG_HAL_MIPS_TX49 {
+	alias		{ "TX49 chip HAL" hal_tx49 tx49_hal tx49_arch_hal }
+	directory	hal/mips/tx49/
+	script		hal_mips_tx49.cdl
+	hardware
+        description "
+           The TX49 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_TX49_REF4955 {
+	alias		{ "Toshiba TX4955 reference platform" hal_tx49_ref4955 tx49_ref4955_hal }
+	directory	hal/mips/ref4955
+	script		hal_mips_tx49_ref4955.cdl
+	hardware
+	description "
+           The REF4955 HAL package should be used when targetting the
+           actual hardware."
+}
 
 
 package CYGPKG_HAL_MIPS_VR4300 {
@@ -1231,6 +1331,19 @@ target brutus {
         eCos on an Intel StrongARM SA1100 evaluation board."
 }
 
+target sa1100mm {
+	alias { "Intel StrongARM SA1100 Multimedia board" sa1100mm }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_SA11X0
+                   CYGPKG_HAL_ARM_SA11X0_SA1100MM
+		   CYGPKG_IO_SERIAL_ARM_SA11X0
+        }
+        description "
+        The sa1100mm target provides the packages needed to run
+        eCos on an Intel StrongARM SA1100 Multimedia evaluation board."
+}
+
+
 target edb7xxx {
         alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
 	packages	{ CYGPKG_HAL_ARM
@@ -1259,6 +1372,7 @@ CMA230 (ARM7TDMI) or CMA222 (ARM710T) board."
 target sh7708 {
 	alias       { "Hitachi EDK/SH7708 board" edk7708 }
 	packages    { CYGPKG_HAL_SH
+                      CYGPKG_HAL_SH_SH3
                       CYGPKG_HAL_SH_EDK7708
                       CYGPKG_DEVICES_WALLCLOCK_SH3 
 	              CYGPKG_IO_SERIAL_SH_SCI
@@ -1273,6 +1387,7 @@ target sh7708 {
 target cq7708 {
         alias { "CqREEK SH7708 board" cq7708 }
         packages { CYGPKG_HAL_SH
+                   CYGPKG_HAL_SH_SH3
                    CYGPKG_HAL_SH_SH7708_CQ7708
 	           CYGPKG_IO_SERIAL_SH_SCI
 	           CYGPKG_IO_SERIAL_SH_CQ7708
@@ -1280,6 +1395,17 @@ target cq7708 {
         description "
            The cq7708 target provides the packages needed to run
            eCos on a CqREEK SH7708 board."
+}
+
+target cq7750 {
+        alias { "CqREEK SH7750 board" cqsh4 }
+        packages { CYGPKG_HAL_SH
+                   CYGPKG_HAL_SH_SH4
+                   CYGPKG_HAL_SH_SH7750_CQ7750
+                   CYGPKG_IO_SERIAL_SH_SCIF }
+        description "
+           The sh7750 target provides the packages needed to run
+           eCos on a CqREEK SH7750 board."
 }
 
 # --------------------------------------------------------------------------
@@ -1414,6 +1540,21 @@ target tx39_sim {
            use any of the eCos device drivers when the simulator
            is running in this mode."
 }
+target ref4955 {
+        alias		{ "Toshiba TX4955 reference platform" tx49 }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_TX49
+                          CYGPKG_HAL_MIPS_TX49_REF4955
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+                          CYGPKG_IO_SERIAL_MIPS_REF4955
+                          CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1742
+        }
+        description "
+           The ref4955 target provides the packages needed to run
+           eCos on a Toshiba TX4955 reference platform."
+}
+
 target vrc4373 {
         alias		{ "NEC VRC4373 board" }
 	packages        { CYGPKG_HAL_MIPS

@@ -1,6 +1,19 @@
+2000-11-01  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added cq7750 target and SH3/SH4 variant packages. Moved
+	EDK7708 package.
+
+2000-10-25  Drew Moseley  <dmoseley@redhat.com>
+
+	* ecos.db: Add support for SA1100 Multimedia
+
 2000-10-20  Gary Thomas  <gthomas@redhat.com>
 
 	* ecos.db: Add FLASH drivers for PowerPC/MBX.
+
+2000-10-20  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Include FLASH drivers for all Cirrus Logic targets.
 
 2000-09-15  Jesper Skov  <jskov@redhat.com>
 
@@ -9,6 +22,7 @@
 2000-09-14  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added generic 16x5x driver package.
+	* ecos.db: Use generic 16x5x driver for REF4955.
 
 2000-09-06  Jesper Skov  <jskov@redhat.com>
 
@@ -98,6 +112,10 @@
 
 	* ecos.db: Add CYGPKG_SNMPLIB and CYGPKG_SNMPAGENT.
 
+2000-06-06  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Removed REF4955 watchdog. Isn't supported on the board.
+
 2000-06-05  John Dallaway  <jld@redhat.com>
 
 	* ecos.db:
@@ -128,9 +146,18 @@
 
 	* ecos.db: Tidy V850-related display strings.
 
+2000-05-25  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added REF4955 serial driver package.
+	Added wallclock driver package.
+	
 2000-05-16  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* ecos.db: Fixed naming bug in CYGPKG_LIBC_SETJMP entry.
+
+2000-05-10  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added tx49 related packages.
 
 2000-04-26  Jesper Skov  <jskov@redhat.com>
 

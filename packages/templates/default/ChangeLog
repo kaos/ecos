@@ -1,3 +1,7 @@
+2000-11-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* current.ect: Update inferred values for stdio streams header
+
 2000-08-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* current.ect: Update inferred values for current CDL

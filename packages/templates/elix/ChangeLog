@@ -1,3 +1,7 @@
+2000-11-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* current.ect: Update values for current CDL
+
 2000-10-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* current.ect: CYGPKG_NET_ETH_DRIVERS has been renamed to

@@ -1,0 +1,145 @@
+# ====================================================================
+#
+#      hal_sh_sh4.cdl
+#
+#      SH4 architectural HAL package configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Original data:  jskov
+# Contributors:
+# Date:           1999-10-29
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_SH_SH4 {
+    display       "SH4 architecture"
+    parent        CYGPKG_HAL_SH
+    hardware
+    include_dir   cyg/hal
+    define_header hal_sh_sh4.h
+    description   "
+        The SH4 (SuperH 4) architecture HAL package provides generic
+        support for this processor architecture. It is also
+        necessary to select a specific target platform HAL
+        package."
+
+    compile        sh4_scif.c var_misc.c variant.S
+
+    define_proc {
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H   <pkgconf/hal_sh_sh4.h>"
+    }
+
+    # The "-o file" is a workaround for CR100958 - without it the
+    # output file would end up in the source directory under CygWin.
+    # n.b. grep does not behave itself under win32
+    make -priority 1 {
+        <PREFIX>/include/cyg/hal/sh4_offsets.inc : <PACKAGE>/src/var_mk_defs.c
+        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,sh4_offsets.tmp -o var_mk_defs.tmp -S $<
+        fgrep .equ var_mk_defs.tmp | sed s/#// > $@
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail +2 sh4_offsets.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm sh4_offsets.tmp var_mk_defs.tmp
+    }
+
+    # CPU variant supported
+    cdl_component CYGPKG_HAL_SH_7750 {
+        display       "SH 7750 microprocessor"
+        parent        CYGPKG_HAL_SH_CPU
+        implements    CYGINT_HAL_SH_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_SH_7750
+        description "
+            The SH4 7750 microprocessor. This is an embedded part that in
+            addition to the SH4 processor core has built in peripherals
+            such as memory controllers, DMA controllers, serial ports and
+            timers/counters."               
+        define_proc {
+            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7750.h>"
+        }
+    }
+
+    cdl_component CYGHWR_HAL_SH_CLOCK_SETTINGS {
+        display          "SH on-chip generic clock controls"
+        description      "
+            The various clocks used by the system are controlled by
+            these options, some of which are derived from platform
+            settings."
+        flavor        none
+        no_define
+
+        cdl_option CYGHWR_HAL_SH_TMU_PRESCALE_0 {
+            display       "TMU counter 0 prescaling"
+            description   "
+                The peripheral clock is driving the counter used for
+                the real-time clock, prescaled by this factor."
+            flavor        data
+            legal_values  { 4 16 64 256 }
+            default_value 4
+        }
+
+        cdl_option CYGHWR_HAL_SH_PLL1_OUTPUT {
+            display    "The clock output from PLL1"
+            no_define
+            flavor     data
+            calculated { CYGHWR_HAL_SH_OOC_XTAL * CYGHWR_HAL_SH_OOC_PLL_1 }
+        }
+
+        cdl_option CYGHWR_HAL_SH_PROCESSOR_SPEED {
+            display          "Processor clock speed (MHz)"
+            flavor           data
+            calculated       { CYGHWR_HAL_SH_PLL1_OUTPUT / CYGHWR_HAL_SH_OOC_DIVIDER_IFC }
+            description      "
+                The core (CPU, cache and MMU) speed is computed from
+                the input clock speed and the IFC divider setting."
+        }
+
+        cdl_option CYGHWR_HAL_SH_BOARD_SPEED {
+            display          "Platform bus clock speed (MHz)"
+            flavor           data
+            calculated       { CYGHWR_HAL_SH_PLL1_OUTPUT / CYGHWR_HAL_SH_OOC_DIVIDER_BFC }
+            description      "
+                The bus speed is computed from
+                the input clock speed and the BFC divider setting."
+        }
+
+        cdl_option CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED {
+            display          "Processor on-chip peripheral clock speed (MHz)"
+            flavor           data
+            calculated       { CYGHWR_HAL_SH_PLL1_OUTPUT / CYGHWR_HAL_SH_OOC_DIVIDER_PFC }
+            description      "
+                The peripheral speed is computed from the input clock
+                speed and the PFC divider setting."
+        }
+    }
+}

@@ -47,6 +47,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/posix.h>
+#include <pkgconf/isoinfra.h>
 
 #include <cyg/kernel/ktypes.h>          // base kernel types
 #include <cyg/infra/cyg_trac.h>         // tracing macros
@@ -78,6 +79,13 @@ CYG_MACRO_START                                 \
     if( err != 0 ) __retval = -1, errno = err;  \
     CYG_REPORT_RETVAL( __retval );              \
     return __retval;                            \
+CYG_MACRO_END
+
+// Similarly for functions that have valid non-zero returns
+#define SIGNAL_RETURN_VALUE(val)                \
+CYG_MACRO_START                                 \
+    CYG_REPORT_RETVAL( val );                   \
+    return val;                                 \
 CYG_MACRO_END
 
 // Range check on a signal value.
@@ -148,6 +156,12 @@ externC void cyg_posix_signal_start()
     {
         siginfo[i].next = siginfo_next;
         siginfo_next = &siginfo[i];
+    }
+    
+    // initialize all signal actions to SIG_DFL
+    for ( unsigned int i=0; i<(sizeof(sigstate)/sizeof(signal_state)); i++ )
+    {
+        sigstate[i].sa.sa_handler = SIG_DFL;
     }
 
     // Clear the pending signal set
@@ -283,8 +297,7 @@ cyg_bool cyg_deliver_signals()
         signal_state *ss = &sigstate[signo];
         sigset_t sigbit = 1L<<signo;
 
-        if( ss->sa.sa_handler != SIG_DFL &&
-            ss->sa.sa_handler != SIG_IGN )
+        if( ss->sa.sa_handler != SIG_IGN )
         {
             sigset_t oldmask = self->sigmask;
             siginfo_t lsi;
@@ -348,12 +361,23 @@ cyg_bool cyg_deliver_signals()
             if( ss->sa.sa_flags & SA_SIGINFO )
             {
                 // A sigaction delivery
-                
+                CYG_CHECK_FUNC_PTR( ss->sa.sa_sigaction,
+                                    "Bad sa_sigaction signal handler" );
                 ss->sa.sa_sigaction( signo, &lsi, NULL );
             }
+            if ( ss->sa.sa_handler == SIG_DFL )
+            {
+                // FIXME: should do something better here
+#if CYGINT_ISO_EXIT
+                _exit( -signo );
+#endif
+                CYG_FAIL("Unhandled POSIX signal");
+            }            
             else
             {
                 // This is a standard signal delivery.
+                CYG_CHECK_FUNC_PTR( ss->sa.sa_handler,
+                                    "Bad sa_handler signal handler" );
 
                 ss->sa.sa_handler( signo );
             }
@@ -386,14 +410,18 @@ static void sigalrm_action( Cyg_Alarm *alarm, CYG_ADDRWORD data )
     sigalrm_pending = true;
     sigemptyset( &mask );
     sigaddset( &mask, SIGALRM );
+    // Wake up any threads in sigsuspend() and sigwait() in case they
+    // are waiting for an alarm, and would have SIGALRM masked
+    signal_sigwait.broadcast();
+    
     cyg_posix_pthread_release_thread( &mask );
 }
 
 // -------------------------------------------------------------------------
-// signal ASR function. This is called from the general POSIX ASR to
-// deal with any signal related issues.
+// Check for SIGALRMs. This is called from the ASR and sigtimedwait()
+// as alarms need to be handled as a special case.
 
-externC void cyg_posix_signal_asr(pthread_info *self)
+static __inline__ void check_sigalarm(void)
 {
     // If there is a pending SIGALRM, generate it
     if( sigalrm_pending )
@@ -409,12 +437,20 @@ externC void cyg_posix_signal_asr(pthread_info *self)
         // generate the signal
         cyg_sigqueue( &sev, SI_USER );
     }
+}
+
+// -------------------------------------------------------------------------
+// signal ASR function. This is called from the general POSIX ASR to
+// deal with any signal related issues.
+
+externC void cyg_posix_signal_asr(pthread_info *self)
+{
+    check_sigalarm();
 
     // Now call cyg_deliver_signals() to see if we can
     // handle any signals now.
     
     cyg_deliver_signals();
-
 }
 
 //==========================================================================
@@ -560,7 +596,7 @@ externC int sigaction  (int sig, const struct sigaction *act,
 // -------------------------------------------------------------------------
 // Queue signal to process with value.
 
-externC int sigqueue  (pid_t pid, int sig, const union sigval value)
+externC int sigqueue (pid_t pid, int sig, const union sigval value)
 {
     SIGNAL_ENTRY();
 
@@ -715,7 +751,7 @@ externC int sigwaitinfo  (const sigset_t *set, siginfo_t *info)
 
     int ret = sigtimedwait( set, info, NULL );
     
-    SIGNAL_RETURN(ret);
+    SIGNAL_RETURN_VALUE(ret);
 }
 
 // -------------------------------------------------------------------------
@@ -757,6 +793,10 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
             }
         }
         else signal_sigwait.wait();
+        
+        // Special case check for SIGALRM since the fact SIGALRM is masked
+        // would have prevented it being set pending in the alarm handler.
+        check_sigalarm();
     }
 
     if( err == 0 )
@@ -821,7 +861,10 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
     
     signal_mutex.unlock();
     
-    SIGNAL_RETURN(err);
+    if (err)
+        SIGNAL_RETURN(err);
+    else
+        SIGNAL_RETURN_VALUE( info->si_signo );
 }
 
 //==========================================================================

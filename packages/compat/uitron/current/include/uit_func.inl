@@ -463,7 +463,7 @@ ter_tsk ( ID tskid )
         p->force_resume(); // let it run
         p->kill(); // and set prio high so it runs RIGHT NOW!!
 #ifdef CYGIMP_THREAD_PRIORITY
-#if CYG_SCHED_UNIQUE_PRIORITIES != 0
+#if CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES != 0
         // see if we are already at prio 0:
         if ( 0 == cyg_uitron_dis_dsp_old_priority )
             // then dispatch is enabled, we are not at prio 0
@@ -475,7 +475,7 @@ ter_tsk ( ID tskid )
     }
     Cyg_Scheduler::unlock();
 #ifdef CYGIMP_THREAD_PRIORITY
-#if CYG_SCHED_UNIQUE_PRIORITIES == 0
+#if CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES == 0
     if ( (E_OK == ret) && (0 != cyg_uitron_dis_dsp_old_priority) ) {
         // then dispatching is disabled, so our prio is 0 too
         Cyg_Thread::yield(); // so let the dying thread run;

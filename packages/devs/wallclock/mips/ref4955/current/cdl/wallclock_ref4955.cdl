@@ -1,0 +1,93 @@
+# ====================================================================
+#
+#      wallclock_ref4955.cdl
+#
+#      eCos wallclock for REF4955 driver configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Contributors:   jskov
+# Date:           2000-05-25
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955 {
+    parent        CYGPKG_IO_WALLCLOCK
+    active_if     CYGPKG_IO_WALLCLOCK
+    display       "REF4955 wallclock driver"
+    requires      CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1742
+    requires      CYGPKG_HAL_MIPS_TX49_REF4955
+    hardware
+    compile       wallclock_ref4955.cxx
+    implements    CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS
+    implements    CYGINT_WALLCLOCK_SET_GET_MODE_SUPPORTED
+    active_if     CYGIMP_WALLCLOCK_HARDWARE
+
+    cdl_option CYGIMP_WALLCLOCK_HARDWARE {
+        parent    CYGPKG_IO_WALLCLOCK_IMPLEMENTATION
+        display       "Hardware wallclock"
+        default_value 1
+        implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
+    }
+
+    cdl_component CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955_OPTIONS {
+        display "REF4955 wallclock build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the wallclock device. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the wallclock device. These flags are removed from
+                the set of global flags if present."
+        }
+
+    }
+}

@@ -149,6 +149,7 @@ cdl_package CYGPKG_ISOINFRA {
 
         cdl_interface CYGINT_ISO_STDIO_FILETYPES {
             display       "Number of implementations of stdio file types"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_FILETYPES }
         }
 
@@ -158,8 +159,23 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_interface CYGINT_ISO_STDIO_STREAMS {
+            display       "Stdio standard streams implementations"
+            flavor        booldata
+            requires      { 1 >= CYGINT_ISO_STDIO_STREAMS }
+        }
+
+        cdl_option CYGBLD_ISO_STDIO_STREAMS_HEADER {
+            display       "Stdio standard streams implementation header"
+            description   "This header file must define stdin, stdout
+                           and stderr."
+            flavor        booldata
+            default_value 0
+        }
+
         cdl_interface CYGINT_ISO_STDIO_FILEOPS {
             display       "Number of implementations of stdio file operations"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_FILEOPS }
         }
     
@@ -176,6 +192,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_STDIO_FILEACCESS {
             display       "Number of implementations of stdio file access \
                           functionals"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_FILEACCESS }
         }
     
@@ -191,6 +208,7 @@ cdl_package CYGPKG_ISOINFRA {
 
         cdl_interface CYGINT_ISO_STDIO_FORMATTED_IO {
             display       "Number of implementations of stdio formatted I/O"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_FORMATTED_IO }
         }
     
@@ -202,6 +220,7 @@ cdl_package CYGPKG_ISOINFRA {
 
         cdl_interface CYGINT_ISO_STDIO_CHAR_IO {
             display       "Number of implementations of stdio character I/O"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_CHAR_IO }
         }
     
@@ -213,6 +232,7 @@ cdl_package CYGPKG_ISOINFRA {
 
         cdl_interface CYGINT_ISO_STDIO_DIRECT_IO {
             display       "Number of implementations of stdio direct I/O"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_DIRECT_IO }
         }
     
@@ -224,6 +244,7 @@ cdl_package CYGPKG_ISOINFRA {
 
         cdl_interface CYGINT_ISO_STDIO_FILEPOS {
             display       "Number of implementations of stdio file positioning"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_FILEPOS }
         }
     
@@ -235,6 +256,7 @@ cdl_package CYGPKG_ISOINFRA {
 
         cdl_interface CYGINT_ISO_STDIO_ERROR {
             display       "Number of implementations of stdio error handling"
+            flavor        booldata
             requires      { 1 >= CYGINT_ISO_STDIO_ERROR }
         }
     

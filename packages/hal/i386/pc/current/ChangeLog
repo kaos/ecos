@@ -1,3 +1,8 @@
+2000-11-02  Fabrice Gautier <Fabrice_Gautier@sdesigns.com>
+
+        * src/platform.inc (hal_cpu_init): Load image from floppy one
+        sector at a time to avoid "DMA access across 64k boundary" error.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_i386_pc_floppy.mlt:

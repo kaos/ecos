@@ -1,3 +1,9 @@
+2000-10-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/powerpc.ld: Use .sdata.* rather than .sdata* so that .sdata2
+	doesn't get matched so that the linker script symbols are still valid.
+	Ditto for .sbss*.
+
 2000-10-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/powerpc.ld: Match multiple sections where relevant (.bss*,

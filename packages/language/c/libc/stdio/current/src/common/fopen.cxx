@@ -242,6 +242,7 @@ externC FILE *fdopen( int fd, const char *mode )
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)f;
     fpos_t pos = 0;
     real_stream->set_position( pos, SEEK_CUR );
+    return f;
 }
 
 #endif // def CYGPKG_LIBC_STDIO_FILEIO

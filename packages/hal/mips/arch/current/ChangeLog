@@ -54,6 +54,7 @@
 
         * include/mips-stub.h: Change vr4300 register sizes to use 32-bit
         target_register_t, and tell the generic stub to use sign extension.
+ 	Ditto for tx49
 	* include/hal_cache.h (_HAL_ASM_SET_MIPS_ISA): Don't use pasting
 	when it doesn't result in a preprocessing token. Just use string
 	concatenation.
@@ -143,6 +144,10 @@
 
 	* src/vectors.S: Allow warm-start to be treated like cold-start if
 	platform requires it.
+
+2000-05-11  Jesper Skov  <jskov@redhat.com>
+
+	* include/mips-stub.h: Added register size for TX49.
 
 2000-05-10  Jesper Skov  <jskov@redhat.com>
 

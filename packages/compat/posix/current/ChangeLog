@@ -1,3 +1,25 @@
+2000-11-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/signal.cxx (sigtimedwait): return signal number on success,
+	not 0
+	(SIGNAL_RETURN_VALUE): New macro for returning from functions with
+	valid non-zero returns
+	(sigwaitinfo): Pass on sigtimedwait result with SIGNAL_RETURN_VALUE
+	macro as it may return the signal number.
+
+2000-11-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/signal.cxx (sigtimedwait): Check for SIGALRMs as a special
+	case when looping as it won't have been set pending if it was
+	masked.
+	(check_sigalarm): New function extracted from the posix signal ASR
+	(sigalrm_action): Unconditionally wake up threads waiting in sigwait
+	so that they can check for pending SIGALRMs even if they were
+	masked.
+	(cyg_deliver_signals): Handle SIG_DFL signals properly, and check
+	for bad signal handlers.
+	(cyg_posix_signal_start): Initialize default signal actions to SIG_DFL
+
 2000-10-27  Jesper Skov  <jskov@redhat.com>
 
 	* tests/signal2.c (cause_illegal_access): Don't loop forever.

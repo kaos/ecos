@@ -53,6 +53,7 @@
 #endif
 
 #include <cyg/hal/arch.inc>
+#include <cyg/hal/variant.inc>
 #include <cyg/hal/sh_regs.h>
 #include <cyg/hal/sh_offsets.inc>
 
@@ -65,22 +66,6 @@
 
 #undef __DEBUG
         
-#===========================================================================
-# SR initialization value
-# zero all bits except:
-# MD = Processor operation mode field (privileged mode)
-# I0-3 = Mask out all interrupts but NMI.
-#
-# When saving or restoring the state of an exception or interrupt, the bit
-# CYGARC_REG_SR_RB is also set, switching the register bank. When this bit
-# is set, interrupts must be disabled.
-#
-# Note: We could also use the BL bit to prevent interrupts, but that would
-#       also prevent the use of breakpoints.
-
-#define CYG_SR (CYGARC_REG_SR_MD|CYGARC_REG_SR_IMASK)
-#define CYG_SR_BANK1 (CYGARC_REG_SR_MD|CYGARC_REG_SR_IMASK|CYGARC_REG_SR_RB)
-
 #===========================================================================
 # Start by defining the exceptions vectors.
         .section ".vectors","ax"
@@ -124,7 +109,7 @@ __exception:
         mov     #1,r7
 #endif
 
-        mov     #CYGARC_REG_EXCEVT,r1
+        mov.l   $nCYGARC_REG_EXCEVT,r1
         mov.l   @r1,r1
         shlr2   r1
         shlr    r1                      ! divide cause by 0x08
@@ -160,7 +145,7 @@ _cyg_hal_default_exception_vsr:
 #ifdef __DEBUG
         mov.l   $exc_state_marker,r0
         mov.l   r0,@-r15
-        mov     #CYGARC_REG_EXCEVT,r0
+        mov.l   $nCYGARC_REG_EXCEVT,r0
         mov.l   @r0,r0
         mov.l   r0,@-r15
 #endif
@@ -213,7 +198,7 @@ _cyg_hal_default_exception_vsr:
         .globl  _cyg_hal_default_exception_vsr_bp_safe
 _cyg_hal_default_exception_vsr_bp_safe:
 #endif
-        mov     #CYGARC_REG_EXCEVT,r0
+        mov.l   $nCYGARC_REG_EXCEVT,r0
         mov.l   @r0,r4
         mov     #-5,r0                  ! divide cause by 0x20
         shld    r0,r4
@@ -257,7 +242,7 @@ __tlb_miss:
         mov      #2,r7
 #endif
 
-        mov     #CYGARC_REG_EXCEVT,r1
+        mov.l   $nCYGARC_REG_EXCEVT,r1
         mov.l   @r1,r1
         shlr2   r1
         shlr    r1                      ! divide cause by 0x08
@@ -269,6 +254,8 @@ __tlb_miss:
         .align   2
 $_hal_vsr_table2:
         .long    _hal_vsr_table
+$nCYGARC_REG_EXCEVT:
+        .long   CYGARC_REG_EXCEVT
 
 #---------------------------------------------------------------------------
 # Interrupt entry
@@ -279,7 +266,7 @@ __interrupt:
 #ifdef CYGHWR_HAL_SH_IRQ_HANDLE_SPURIOUS_INTERRUPTS
         # A spurious interrupt with INTEVT=0 may be caused by
         # clearing of BL. Those interrupts need to be ignored.
-        mov     #CYGARC_REG_INTEVT,r0
+        mov.l   $nCYGARC_REG_INTEVT,r0
         mov.l   @r0,r0
         cmp/eq  #0,r0
         bf      1f
@@ -415,31 +402,13 @@ $_cyg_instrument:
 1:
 #endif
 
-        # Decode the interrupt vector
-#ifdef CYGARC_SH_MOD_INTC_V2
-        mov.l   $nCYGARC_REG_INTEVT2,r0
-#else
-        mov     #CYGARC_REG_INTEVT,r0
-#endif
-        mov.l   @r0,r4
-        mov     #-5,r0                  ! divide cause by 0x20
-        shld    r0,r4
-        add     #-14,r4                 ! adjust so NMI becomes 0
+        # Decode the interrupt vector, and find ISR index
+	hal_intc_decode r0,r4
 
         mov     #CYGARC_SHREG_EVENT,r0
         mov.l   r4,@(r0,r8)             ! store decoded vector number back
                                         ! to saved state.
-
-        // Find ISR index.
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
-#define CYG_ISR_TABLE_SIZE    1
-        mov     #0,r9                   ! only one ISR in the table
-#else //  CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
-#define CYG_ISR_TABLE_SIZE    CYGNUM_HAL_ISR_COUNT
-        mov     r4,r9
-        shll2   r9                      ! get from vector number to ISR index
-#endif //  CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
-
+	hal_intc_translate r4,r9
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
@@ -640,7 +609,9 @@ $nCYG_SR2:
         .long   CYG_SR
 $nCYG_SR_BANK1:
         .long   CYG_SR_BANK1
-#ifdef CYGARC_SH_MOD_INTC_V2
+$nCYGARC_REG_INTEVT:
+        .long   CYGARC_REG_INTEVT
+#ifdef CYGARC_REG_INTEVT2
 $nCYGARC_REG_INTEVT2:
         .long   CYGARC_REG_INTEVT2
 #endif
@@ -675,54 +646,8 @@ $_interrupt_end:
 #---------------------------------------------------------------------------
 # Platform initialization (reset)
 __reset_platform:               
-        # Initialize CPU
-        mov.l   $nCYG_SR,r1             ! Put CPU in a well-known state
-        ldc     r1,sr
-        mov     #0,r0
-        mov     #CYGARC_REG_CCR,r1      ! Disable cache
-        mov.l   r0,@r1
-        mov     #CYGARC_REG_MMUCR,r1    ! Disable MMU
-        mov.l   r0,@r1
-        mov     #CYGARC_REG_BBRA,r1     ! Disable UBC Channel A
-        mov.w   r0,@r1
-        mov     #CYGARC_REG_BBRB,r1     ! Disable UBC Channel B
-        mov.w   r0,@r1
-        mov     #CYGARC_REG_BRCR,r1     ! Reset UBC common register
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_TSTR,r1     ! Disable timers
-        mov.b   r0,@r1
-        mov.l   $CYGARC_REG_IPRA,r1     ! Disable interrupt request sources
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_IPRB,r1
-        mov.w   r0,@r1
-#ifdef CYGARC_SH_MOD_INTC_V2
-        mov.l   $CYGARC_REG_IPRC,r1
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_IPRD,r1
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_IPRE,r1
-        mov.w   r0,@r1
-#ifdef CYGARC_SH_MOD_INTC_V3
-        mov.l   $CYGARC_REG_IPRF,r1
-        mov.w   r0,@r1
-#endif
-	mov.w   $nCYG_ICR1_INIT,r0
-        mov.l   $CYGARC_REG_ICR1,r1     ! Set interrupt controller to IRQ mode
-        mov.w   r0,@r1
-#endif
-	mov.w	$nCYG_WTCSR,r0          ! Clear watchdog
-	mov	#CYGARC_REG_WTCSR,r1
-	mov.w	r0,@r1
+	hal_post_reset_init	
 
-        # Initialize VBR if necessary
-#if     !defined(CYG_HAL_STARTUP_RAM) ||                \
-        (       defined(CYG_HAL_STARTUP_RAM) &&         \
-                !defined(CYGSEM_HAL_USE_ROM_MONITOR))
-        mov.l   $__reset,r1             ! Set VBR
-        ldc     r1,vbr
-#endif
-
-        
 #ifdef __DEBUG
         mov     #0,r0
         mov     #1,r1
@@ -740,45 +665,7 @@ __reset_platform:
         mov     #13,r13
         mov     #14,r14
 #endif
-
-         bra    hal_hw_init
-          nop
-
-$nCYG_WTCSR:
-	.word	0xa500		! clear all CSR bits
-
-	.align	2
-
-$nCYG_SR:
-        .long   CYG_SR
-$CYGARC_REG_TSTR:
-        .long   CYGARC_REG_TSTR
-$CYGARC_REG_IPRA:
-        .long   CYGARC_REG_IPRA
-$CYGARC_REG_IPRB:
-        .long   CYGARC_REG_IPRB
-#ifdef CYGARC_SH_MOD_INTC_V2
-$CYGARC_REG_IPRC:
-        .long   CYGARC_REG_IPRC
-$CYGARC_REG_IPRD:
-        .long   CYGARC_REG_IPRD
-$CYGARC_REG_IPRE:
-        .long   CYGARC_REG_IPRE
-$CYGARC_REG_ICR1:
-        .long   CYGARC_REG_ICR1
-#endif
-#ifdef CYGARC_SH_MOD_INTC_V2
-$CYGARC_REG_IPRF:
-        .long   CYGARC_REG_IPRF
-$nCYG_ICR1_INIT:
-	.word	CYGARC_REG_ICR1_INIT
-	.align	2
-#endif
-$__reset:
-        .long   __reset
-	
-hal_hw_init:
-        
+       
         # Call platform specific hardware initialization
         # This may include memory controller initialization. It is not
         # safe to access RAM until after this point.
@@ -895,7 +782,7 @@ _complete_setup:
 #         nop
         
         # Enable caches
-        mov.l    $_cyg_hal_enable_caches,r1
+        mov.l    $_cyg_var_enable_caches,r1
         jsr      @r1
          nop
 
@@ -950,8 +837,8 @@ $__bss_end:
         .long   __bss_end
 $_cyg_hal_invoke_constructors:
         .long   _cyg_hal_invoke_constructors
-$_cyg_hal_enable_caches:
-        .long   _cyg_hal_enable_caches
+$_cyg_var_enable_caches:
+        .long   _cyg_var_enable_caches
 $_hal_variant_init:
         .long   _hal_variant_init
 $_hal_platform_init:
@@ -972,151 +859,6 @@ $_hal_ctrlc_isr_init:
 #endif
 
 #---------------------------------------------------------------------------
-# Cache operations
-# These need to be written in assembly to ensure they do not rely on data
-# in cachable space (i.e., code must use registers exclusively, not the stack).
-
-# This macro must be used at the top of each cache function. It ensures
-# that the code gets executed from a shadow region where caching is disabled
-# (0xA0000000).
-        .macro GOTO_NONCACHED_SHADOW
-        mova    10f,r0
-        mov.l   $MASK,r1
-        and     r1,r0
-        mov.l   $BASE,r1
-        or      r1,r0
-        jmp     @r0
-         nop
-        .align  2
-10:
-        .endm
-
-        .globl _cyg_hal_cache_enable
-_cyg_hal_cache_enable:
-        GOTO_NONCACHED_SHADOW
-        mov     #CYGARC_REG_CCR,r1
-        mov.l   @r1,r0
-        or      #CYGARC_REG_CCR_CE,r0
-        mov.l   r0,@r1
-        nop
-        rts
-         nop
-
-        .globl _cyg_hal_cache_disable
-_cyg_hal_cache_disable:
-        GOTO_NONCACHED_SHADOW
-        mov     #CYGARC_REG_CCR,r1
-        mov.l   @r1,r0
-        mov     #CYGARC_REG_CCR_CE,r2
-        not     r2,r2
-        and     r2,r0
-        mov.l   r0,@r1
-        nop
-        rts
-         nop
-        
-        .globl _cyg_hal_cache_invalidate_all
-_cyg_hal_cache_invalidate_all:
-        GOTO_NONCACHED_SHADOW
-        mov     #CYGARC_REG_CCR,r1
-        mov.l   @r1,r0
-        or      #CYGARC_REG_CCR_CF,r0
-        mov.l   r0,@r1
-        nop                             ! Nothing in the docs suggest we need
-        nop                             ! nops here, but without them, the
-        nop                             ! CPU crashes.
-        rts
-         nop
-
-        .globl _cyg_hal_cache_sync
-_cyg_hal_cache_sync:
-        GOTO_NONCACHED_SHADOW
-        mov.l   $CYGARC_REG_CACHE_ADDRESS_FLUSH,r0
-        mov.l   $CYGARC_REG_CACHE_ADDRESS_BASE,r1
-        mov.l   $CYGARC_REG_CACHE_ADDRESS_TOP,r2
-        mov.l   $CYGARC_REG_CACHE_ADDRESS_STEP,r3
-1:      cmp/hi  r1,r2
-        bf      2f
-        mov.l   r0,@r1
-        bra     1b        
-         add     r3,r1                  ! delay slot!
-2:      nop
-        rts
-         nop
-
-	! r4 = base
-	! r5 = size
-        .globl _cyg_hal_cache_sync_region
-_cyg_hal_cache_sync_region:
-        GOTO_NONCACHED_SHADOW
-	mov.l   10f,r0
-	and	r4,r0		! array index
-        mov.l   11f,r1
-	add	r0,r1           ! base (aligned, A set)
-
-	! make sure top is aligned to start of _next_ cache line
-	mov	r1,r0
-	add     r5,r0		! top (non-aligned)
-	add	#2*HAL_UCACHE_LINE_SIZE-1,r0
-	mov.l	13f,r2
-	and	r0,r2
-
-        mov.l   $CYGARC_REG_CACHE_ADDRESS_STEP,r3
-        mov.l   12f,r5
-1:      cmp/hi  r1,r2
-        bf      3f
-	mov	r4,r0		! create address tag
-	and	r5,r0
-	mov.l   r0,@r1          ! store tag in array, causing (sync+)invalidate
-		                ! if the tag matches any of the lines
-        add     r3,r4		! inc address tag
-        bra     1b        
-         add     r3,r1          ! inc array index, delay slot!
-3:      nop
-        rts
-         nop
-
-	.align 2
-10:	.long	((HAL_UCACHE_SIZE/HAL_UCACHE_WAYS)-1)&~0xf ! mask
-11:	.long   CYGARC_REG_CACHE_ADDRESS_BASE|CYGARC_REG_CACHE_ADDRESS_ADDRESS
-12:	.long	CYGARC_REG_CACHE_ADDRESS_TAG_Mask
-13:	.long   ~(HAL_UCACHE_LINE_SIZE-1)
-	
-        .globl _cyg_hal_cache_write_mode
-_cyg_hal_cache_write_mode:
-        GOTO_NONCACHED_SHADOW
-        # Mode argument in r4.
-        # Read current state and mask out the two caching mode bits
-        mov     #CYGARC_REG_CCR,r1
-        mov.l   @r1,r3
-        mov     #CYGARC_REG_CCR_CB|CYGARC_REG_CCR_WT,r2
-	and	r2,r4
-        not     r2,r2
-        and     r2,r3
-        # Or in the new settings and restore to CCR
-        or      r4,r3
-        mov.l   r3,@r1
-        nop
-        rts
-         nop
-
-        .align  2
-$CYGARC_REG_CACHE_ADDRESS_FLUSH:
-        .long   CYGARC_REG_CACHE_ADDRESS_FLUSH
-$CYGARC_REG_CACHE_ADDRESS_BASE:
-        .long   CYGARC_REG_CACHE_ADDRESS_BASE
-$CYGARC_REG_CACHE_ADDRESS_TOP:
-        .long   CYGARC_REG_CACHE_ADDRESS_TOP
-$CYGARC_REG_CACHE_ADDRESS_STEP:
-        .long   CYGARC_REG_CACHE_ADDRESS_STEP
-
-
-$MASK:
-        .long   0x1fffffff              ! mask off top 3 bits
-$BASE:
-        .long   0xa0000000              ! base of non-cachable memory
-        
-#---------------------------------------------------------------------------
 # Interrupt vector tables.
 # These tables contain the isr, data and object pointers used to deliver
 # interrupts to user code.
@@ -1124,6 +866,11 @@ $BASE:
         .data
 
         .extern _hal_default_isr
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+#define CYG_ISR_TABLE_SIZE    1
+#else
+#define CYG_ISR_TABLE_SIZE    CYGNUM_HAL_ISR_COUNT
+#endif
 
         .globl  _hal_interrupt_handlers
 _hal_interrupt_handlers:

@@ -168,7 +168,7 @@ main( int argc, char *argv[] )
     CYG_TEST_PASS_FAIL( fill_with_alphabet( str, size/4, 1 ),
                         "reallocation quarter size usability");
 
-    CYG_TEST_PASS_FAIL( realloc( str, size*100 ) == NULL,
+    CYG_TEST_PASS_FAIL( realloc( str, size*4 ) == NULL,
                         "reallocing allocation that is too large" );
     CYG_TEST_PASS_FAIL( compare_with_alphabet( str, size/4, 1 ),
                         "Checking old contents maintained despite failure" );

@@ -1,3 +1,11 @@
+* Added a port to the Toshiba MIPS TX49 chip, with the REF4955 reference
+  platform. This includes serial device driver and wallclock device driver
+  support.
+* PowerPC 40x variant support added.
+* Added SH4 support. Split SH architecture HAL into variants in the process.
+* Added SH4/CQ7750 platform support [still untested]
+* Port to Intel SA1100 Multimedia evalulation board added, including FLASH
+  driver and RedBoot support 
 * FLASH driver added for PowerPC/MBX
 * sigsetjmp() and siglongjmp() added
 * A choice of getcwd() implementations have been added

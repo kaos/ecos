@@ -1,3 +1,8 @@
+2000-10-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_intr.h: Added.
+	* include/plf_cache.h: Added.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.h:

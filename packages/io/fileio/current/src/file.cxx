@@ -47,6 +47,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
+#include <pkgconf/isoinfra.h>
 
 #include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
@@ -54,6 +55,7 @@
 
 #include <string.h>                    // string functions
 #include <dirent.h>
+#include <stdio.h>                     // stdin, stdout, stderr
 
 #include "fio.h"                       // Private header
 
@@ -167,6 +169,14 @@ static Cyg_Mutex getcwd_lock CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
 __externC int open( const char *path, int oflag, ... )
 {
     FILEIO_ENTRY();
+
+    // we want to be sure we pull in stdin/out/err, so they can be
+    // assigned to fds 0, 1 and 2
+#ifdef CYGINT_ISO_STDIO_STREAMS
+    CYG_REFERENCE_OBJECT(stdin);
+    CYG_REFERENCE_OBJECT(stdout);
+    CYG_REFERENCE_OBJECT(stderr);
+#endif
 
     CYG_CANCELLATION_POINT;
 

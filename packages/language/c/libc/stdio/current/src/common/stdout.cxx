@@ -64,12 +64,18 @@
 #include <cyg/libc/stdio/stdiofiles.hxx>  // C library files
 #include <cyg/libc/stdio/stdiosupp.hxx>   // Cyg_libc_stdio_find_filename()
 
+// CONSTANTS
+
+// add 1 to the priority to allow it to be the fd 1 if necessary
+#define PRIO (CYG_INIT_LIBC+1)
+
 // STATICS
 
 Cyg_StdioStream
-cyg_libc_stdio_stdout CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC) = Cyg_StdioStream( 
+cyg_libc_stdio_stdout CYGBLD_ATTRIB_INIT_PRI(PRIO) = Cyg_StdioStream(
     Cyg_libc_stdio_find_filename(CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE,
-                                 Cyg_StdioStream::CYG_STREAM_WRITE, false, false),
+                                 Cyg_StdioStream::CYG_STREAM_WRITE,
+                                 false, false),
     Cyg_StdioStream::CYG_STREAM_WRITE, false, false, _IOLBF );
 
 // CLASSES
@@ -86,6 +92,10 @@ public:
 
 // And here's an instance of the class just to make the code run
 static cyg_libc_dummy_stdout_init_class cyg_libc_dummy_stdout_init
-                                         CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC);
+                                             CYGBLD_ATTRIB_INIT_PRI(PRIO);
+
+// and finally stdout itself
+__externC Cyg_StdioStream * const stdout;
+Cyg_StdioStream * const stdout=&cyg_libc_stdio_stdout;
 
 // EOF stdout.cxx

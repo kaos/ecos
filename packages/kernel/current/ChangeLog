@@ -300,6 +300,10 @@
 	* src/debug/dbg-thread-demux.c: Use generic HAL feature to allow
 	ROM/RAM intercalling.
 
+2000-06-06  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kcache1.c (entry0): Skip invalidate tests on TX49. Too slow.
+
 2000-05-30  Gary Thomas  <gthomas@redhat.com>
 
 	* tests/dhrystone.c: Increase number of test loops for faster
@@ -343,6 +347,10 @@
 	(Cyg_ThreadQueue_Implementation::set_thread_queue): Add
 	(Cyg_SchedulerThreadQueue_Implementation::enqueue): Add, like old
 	one, except make it FIFO instead of LIFO by inserting at end of queue
+
+2000-05-16  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c: More loops on the TX49
 
 2000-05-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
 

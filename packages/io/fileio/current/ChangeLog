@@ -1,3 +1,15 @@
+2000-11-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/io.cxx (readwrite): Ensure we call FILEIO_RETURN_VALUE() to
+	get correct cleanup
+	(fpathconf): Ditto
+	(lseek): Ditto
+
+	* src/file.cxx (open): If applicable, refer to stdin, stdout and stderr
+	here to ensure they are pulled in, in case selective linking would
+	otherwise eliminate them. This is to ensure they get allocated to
+	fd's 0, 1 and 2.
+
 2000-10-13  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/io.cxx (readwrite): Merged both read() and write() functions

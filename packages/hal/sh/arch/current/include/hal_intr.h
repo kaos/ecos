@@ -51,13 +51,14 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include CYGBLD_HAL_CPU_MODULES_H       // INTC module selection
+
+#include <cyg/hal/var_intr.h>
 
 // More include statements below. First part of this file must be
 // usable for both assembly and C files, so only use defines here.
 
 //--------------------------------------------------------------------------
-// SH3 exception vectors. These correspond to VSRs and are the values
+// SH exception vectors. These correspond to VSRs and are the values
 // to use for HAL_VSR_GET/SET
 //
 // Note that exceptions are decoded - there is a VSR slot for each exception
@@ -72,27 +73,29 @@
 #define CYGNUM_HAL_VECTOR_TLBERROR_WRITE         6 // TLB prot violation s
 #define CYGNUM_HAL_VECTOR_DATA_ACCESS            7 // address error (load)
 #define CYGNUM_HAL_VECTOR_DATA_WRITE             8 // address error (store)
-// define CYGNUM_HAL_VECTOR_RESERVED_9           9
-// define CYGNUM_HAL_VECTOR_RESERVED_10         10
+// RESERVED 9-10
 #define CYGNUM_HAL_VECTOR_TRAP                  11 // unconditional trap
 #define CYGNUM_HAL_VECTOR_ILLEGAL_INSTRUCTION   12 // reserved instruction
 #define CYGNUM_HAL_VECTOR_ILLEGAL_SLOT_INSTRUCTION  13 
                                            // illegal instruction in delay slot
-// define CYGNUM_HAL_VECTOR_RESERVED_14         14
+#define CYGNUM_HAL_VECTOR_NMI                   14 // NMI
 #define CYGNUM_HAL_VECTOR_INSTRUCTION_BP        15 // user breakpoint
-
-#define CYG_VECTOR_IS_INTERRUPT(v)   \
-    (CYGNUM_HAL_VECTOR_INSTRUCTION_BP < (v))
 
 #define CYGNUM_HAL_VECTOR_INTERRUPT             16 // all interrupts
 
+#ifndef CYG_VECTOR_IS_INTERRUPT
+# define CYG_VECTOR_IS_INTERRUPT(v) (CYGNUM_HAL_VECTOR_INSTRUCTION_BP < (v))
+#endif
+
 #define CYGNUM_HAL_VSR_MIN                   CYGNUM_HAL_VECTOR_POWERON
-#define CYGNUM_HAL_VSR_MAX                   CYGNUM_HAL_VECTOR_INTERRUPT
+#ifndef CYGNUM_HAL_VSR_MAX
+# define CYGNUM_HAL_VSR_MAX                  CYGNUM_HAL_VECTOR_INTERRUPT
+#endif
 #define CYGNUM_HAL_VSR_COUNT                 ( CYGNUM_HAL_VSR_MAX + 1 )
 
-#define CYGNUM_HAL_VSR_EXCEPTION_COUNT       (CYGNUM_HAL_VECTOR_INSTRUCTION_BP-CYGNUM_HAL_VECTOR_POWERON+1)
-
-
+#ifndef CYGNUM_HAL_VSR_EXCEPTION_COUNT
+# define CYGNUM_HAL_VSR_EXCEPTION_COUNT       (CYGNUM_HAL_VECTOR_INSTRUCTION_BP-CYGNUM_HAL_VECTOR_POWERON+1)
+#endif
 
 // The decoded interrupts.
 #define CYGNUM_HAL_INTERRUPT_NMI             0
@@ -128,74 +131,24 @@
 #define CYGNUM_HAL_INTERRUPT_REF_RCMI        30
 #define CYGNUM_HAL_INTERRUPT_REF_ROVI        31
 
-#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_REF_ROVI
+#ifndef CYGNUM_HAL_ISR_MAX
+# define CYGNUM_HAL_ISR_MAX                  CYGNUM_HAL_INTERRUPT_REF_ROVI
+#endif
 
-//----------------------------------------------------------------------------
-// Additional vectors provided by INTC V2
-
-//#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME
-#define CYGNUM_HAL_INTERRUPT_RESERVED_5C0    32
-#define CYGNUM_HAL_INTERRUPT_HUDI_HUDI       33
-#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ0        34
-#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ1        35
-#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ2        36
-#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ3        37
-#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ4        38
-#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ5        39
-#define CYGNUM_HAL_INTERRUPT_RESERVED_6C0    40
-#define CYGNUM_HAL_INTERRUPT_RESERVED_6E0    41
-#define CYGNUM_HAL_INTERRUPT_PINT_PINT07     42
-#define CYGNUM_HAL_INTERRUPT_PINT_PINT8F     43
-#define CYGNUM_HAL_INTERRUPT_RESERVED_740    44
-#define CYGNUM_HAL_INTERRUPT_RESERVED_760    45
-#define CYGNUM_HAL_INTERRUPT_RESERVED_780    46
-#define CYGNUM_HAL_INTERRUPT_RESERVED_7A0    47
-#define CYGNUM_HAL_INTERRUPT_RESERVED_7C0    48
-#define CYGNUM_HAL_INTERRUPT_RESERVED_7E0    59
-#define CYGNUM_HAL_INTERRUPT_DMAC_DEI0       50
-#define CYGNUM_HAL_INTERRUPT_DMAC_DEI1       51
-#define CYGNUM_HAL_INTERRUPT_DMAC_DEI2       52
-#define CYGNUM_HAL_INTERRUPT_DMAC_DEI3       53
-#define CYGNUM_HAL_INTERRUPT_IRDA_ERI1       54
-#define CYGNUM_HAL_INTERRUPT_IRDA_RXI1       55
-#define CYGNUM_HAL_INTERRUPT_IRDA_BRI1       56
-#define CYGNUM_HAL_INTERRUPT_IRDA_TXI1       57
-#define CYGNUM_HAL_INTERRUPT_SCIF_ERI2       58
-#define CYGNUM_HAL_INTERRUPT_SCIF_RXI2       59
-#define CYGNUM_HAL_INTERRUPT_SCIF_BRI2       60
-#define CYGNUM_HAL_INTERRUPT_SCIF_TXI2       61
-#define CYGNUM_HAL_INTERRUPT_ADC_ADI         62
-
-#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME
-
-#undef  CYGNUM_HAL_ISR_MAX
-#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_ADC_ADI
-
-#endif // CYGARC_SH_MOD_INTC_V2
-
-//----------------------------------------------------------------------------
-// Additional vectors provided by INTC V3
-
-//#ifdef CYGARC_SH_MOD_INTC_V3 // FIXME
-#define CYGNUM_HAL_INTERRUPT_LCDC_LCDI       63
-#define CYGNUM_HAL_INTERRUPT_PCC_PCC0        64
-#define CYGNUM_HAL_INTERRUPT_PCC_PCC1        65
-
-#ifdef CYGARC_SH_MOD_INTC_V3 // FIXME
-
-#undef  CYGNUM_HAL_ISR_MAX
-#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_PCC_PCC1
-
-#endif // CYGARC_SH_MOD_INTC_V3
-
-// CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_NMI
-#define CYGNUM_HAL_ISR_COUNT                 ( CYGNUM_HAL_ISR_MAX + 1 )
+#define CYGNUM_HAL_ISR_COUNT                 ( CYGNUM_HAL_ISR_MAX - CYGNUM_HAL_ISR_MIN + 1 )
 
+// The vector used by the Real time clock
+#ifndef CYGNUM_HAL_INTERRUPT_RTC
+# define CYGNUM_HAL_INTERRUPT_RTC             CYGNUM_HAL_INTERRUPT_TMU0_TUNI0
+#endif
+
+//--------------------------------------------------------------------------
 // Exception vectors. These are the values used when passed out to an
 // external exception handler using cyg_hal_deliver_exception()
 
-// The exception indexes are EXPEVT/0x20
+// The exception indexes are EXPEVT/0x20. Variants may define additional
+// exception vectors.
 
 #define CYGNUM_HAL_EXCEPTION_POWERON                0 // power-on
 #define CYGNUM_HAL_EXCEPTION_RESET                  1 // reset
@@ -206,22 +159,20 @@
 #define CYGNUM_HAL_EXCEPTION_TLBERROR_WRITE         6 // TLB prot violation s
 #define CYGNUM_HAL_EXCEPTION_DATA_ACCESS            7 // address error (load)
 #define CYGNUM_HAL_EXCEPTION_DATA_WRITE             8 // address error (store)
-// define CYGNUM_HAL_EXCEPTION_RESERVED_9           9
-// define CYGNUM_HAL_EXCEPTION_RESERVED_10         10
 #define CYGNUM_HAL_EXCEPTION_TRAP                  11 // unconditional trap
 #define CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION   12 // reserved instruction
 #define CYGNUM_HAL_EXCEPTION_ILLEGAL_SLOT_INSTRUCTION  13 
                                            // illegal instruction in delay slot
-// define CYGNUM_HAL_EXCEPTION_RESERVED_14         14
 #define CYGNUM_HAL_EXCEPTION_INSTRUCTION_BP        15 // user breakpoint
 
 #define CYGNUM_HAL_EXCEPTION_MIN          CYGNUM_HAL_EXCEPTION_POWERON
-#define CYGNUM_HAL_EXCEPTION_MAX          CYGNUM_HAL_EXCEPTION_INSTRUCTION_BP
+
+#ifndef CYGNUM_HAL_EXCEPTION_MAX
+# define CYGNUM_HAL_EXCEPTION_MAX         CYGNUM_HAL_EXCEPTION_INSTRUCTION_BP
+#endif
+
 #define CYGNUM_HAL_EXCEPTION_COUNT           \
                  ( CYGNUM_HAL_EXCEPTION_MAX - CYGNUM_HAL_EXCEPTION_MIN + 1 )
-
-// The vector used by the Real time clock
-#define CYGNUM_HAL_INTERRUPT_RTC             CYGNUM_HAL_INTERRUPT_TMU0_TUNI0
 
 #ifndef __ASSEMBLER__
 

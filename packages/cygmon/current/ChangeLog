@@ -1,3 +1,7 @@
+2000-11-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/cygmon.cdl: Improve cygmon.elf make dependencies
+
 2000-10-17  Drew Moseley  <dmoseley@redhat.com>
 
 	* misc/utils.c: Fix a typo.  Also make sure we are ignoring the

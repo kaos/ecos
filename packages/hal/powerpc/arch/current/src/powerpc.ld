@@ -111,7 +111,7 @@ GROUP(libtarget.a libgcc.a)
       /* We want the small data sections together, so single-instruction */   \
       /* offsets can access them all, and initialized data all before    */   \
       /* uninitialized, so we can shorten the on-disk segment size.      */   \
-    __SDATA_START__ = ABSOLUTE(.); *(.sdata*)                                 \
+    __SDATA_START__ = ABSOLUTE(.); *(.sdata.*)                                 \
     __SDATA2_START__ = ABSOLUTE(.); *(.sdata2*) }                             \
     > _region_                                                                \
     __rom_data_start = LOADADDR(.data);                                       \
@@ -121,7 +121,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_sbss(_region_, _vma_, _lma_)                     \
     .sbss _vma_ : _lma_                                                         \
     { __sbss_start = ABSOLUTE (.);                                        \
-    __SBSS_START__ = ABSOLUTE(.); *(.sbss*) __SBSS_END__ = ABSOLUTE(.);   \
+    __SBSS_START__ = ABSOLUTE(.); *(.sbss.*) __SBSS_END__ = ABSOLUTE(.);   \
     __SBSS2_START__ = ABSOLUTE(.); *(.sbss2*) __SBSS2_END__ = ABSOLUTE(.);\
     *(.scommon*)                                                          \
     __sbss_end = ABSOLUTE (.); }                                          \

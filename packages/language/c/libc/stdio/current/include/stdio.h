@@ -91,30 +91,19 @@ typedef cyg_ucount32 fpos_t;
 // The array size is irrelevant other than being more than 8, and is present
 // to stop references to FILEs being marked as able to be put in the small
 // data section. We can't just mark it as in the ".data" section as on some
-// targets it may actually be ".common". Maybe this doesn't matter?
-// FIXME: This doesn't work if things are larger than 16 are put in sdata,
-// e.g. on mips by specifying -G 32
-typedef CYG_ADDRESS FILE[16];
+// targets it may actually be ".common".
+typedef CYG_ADDRESS FILE[9999];
 
 // EXTERNAL VARIABLES
 
 // Default file streams for input/output. These only need to be
 // expressions, not l-values - ISO C standard chap. 7.9.1
 //
-// cyg_libc_stdio_stdin/out/err aren't really files of course,
-// but they are only named here so that we can take the address of
-// them, in which case it doesn't matter what type they point to really
-//
 // CYGPRI_LIBC_STDIO_NO_DEFAULT_STREAMS is used when initializing
-// cyg_libc_stdio_stdin/out/err privately inside the C library
+// stdin/out/err privately inside the C library
 
 #ifndef CYGPRI_LIBC_STDIO_NO_DEFAULT_STREAMS
-extern FILE cyg_libc_stdio_stdin, cyg_libc_stdio_stdout,
-            cyg_libc_stdio_stderr;
-
-#define stdin  (&cyg_libc_stdio_stdin)
-#define stdout (&cyg_libc_stdio_stdout)
-#define stderr (&cyg_libc_stdio_stderr)
+__externC FILE *stdin, *stdout, *stderr;
 #endif
 
 // FUNCTION PROTOTYPES

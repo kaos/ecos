@@ -1,3 +1,9 @@
+2000-11-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S (hal_pc_irq): Use correct register for ISR return value
+	when calling interrupt_end()
+	Thanks to Phil Hinton for reporting.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S (_start): call constructors after initializing

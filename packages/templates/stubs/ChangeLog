@@ -1,3 +1,8 @@
+2000-11-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* current.ect: Add inferred values for CDL that confuses the
+	config tool inference engine at present.
+
 2000-07-20  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* current.ect: Added ISOINFRA package.

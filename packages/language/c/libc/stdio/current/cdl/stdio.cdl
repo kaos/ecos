@@ -56,6 +56,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     implements    CYGINT_ISO_STDIO_CHAR_IO
     implements    CYGINT_ISO_STDIO_DIRECT_IO
     implements    CYGINT_ISO_STDIO_ERROR
+    implements    CYGINT_ISO_STDIO_STREAMS
     requires      { CYGBLD_ISO_STDIO_FILETYPES_HEADER == \
                     "<cyg/libc/stdio/stdio.h>" }
     requires      { CYGBLD_ISO_STDIO_FILEACCESS_HEADER == \
@@ -67,6 +68,8 @@ cdl_package CYGPKG_LIBC_STDIO {
     requires      { CYGBLD_ISO_STDIO_DIRECT_IO_HEADER == \
                     "<cyg/libc/stdio/stdio.h>" }
     requires      { CYGBLD_ISO_STDIO_ERROR_HEADER == \
+                    "<cyg/libc/stdio/stdio.h>" }
+    requires      { CYGBLD_ISO_STDIO_STREAMS_HEADER == \
                     "<cyg/libc/stdio/stdio.h>" }
     requires      CYGPKG_ISOINFRA
     requires      CYGINT_ISO_ERRNO_CODES

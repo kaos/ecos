@@ -1,0 +1,117 @@
+2000-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Enable div-by-zero FPU exceptions.
+
+2000-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Enable the cache after clearing it.
+
+2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
+ 
+        * include/var_arch.h: tx49 GDB stubs now use 32-bits internally to
+        represent registers
+
+2000-08-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/mips_tx49.ld: Use HAL table sections instead of devtab sections
+
+2000-06-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_cache.h: Define HAL_ICACHE_INVALIDATE_ALL which
+	disables cache during operation.
+
+2000-05-25  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx49.cdl: Use FPU double-LE layout in 32bit mode.
+
+2000-05-24  Jesper Skov  <jskov@redhat.com>
+
+	* src/mips_tx49.ld: Application contructors run after eCos
+	constructors.
+
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Flush all ways of cache on startup.
+
+	* include/var_cache.h: 
+	* cdl/hal_mips_tx49.cdl: Comment cleanups.
+
+	* include/var_cache.h: Cleaned up. Use arch macros.
+
+2000-05-18  Jesper Skov  <jskov@redhat.com>
+
+	* src/mips_tx49.ld: Exclude libgcc constructors from CTOR list.
+
+	* cdl/hal_mips_tx49.cdl: Set cache size to 32kB.
+
+2000-05-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/mips_tx49.ld (hal_virtual_vector_table): Added.
+
+2000-05-16  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx49.cdl: Platform can select FPU mode.
+
+2000-05-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: 
+	* include/var_cache.h:
+	The cache-enable bits must be 0 to enable. Enable
+	caching/writeback for kseg0.
+	
+	* src/variant.S: 
+	* include/var_arch.h: 
+	Cleanup.
+
+	* include/variant.inc: Copied in various stuff from VR4300 file.
+
+	* include/var_cache.h: Cleanup. Added enabled macros.
+
+	* cdl/hal_mips_tx49.cdl: Cleanup. Enable FPU.
+
+2000-05-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/mips_tx49.ld: Workaround minor tool problem.
+
+	* src/variant.S: Emptied.
+
+	* src/mips_tx49.ld: Move vsr to avoid conflict with 'other'
+	exception entry having vectors in RAM.
+
+	* include/var_arch.h: GDB expects 64 bit registers.
+
+	* cdl/hal_mips_tx49.cdl: Add (disabled) 64 bit related options.
+
+	* src/mips_tx49.ld: Workaround for linker buglet.
+
+	* include/var_cache.h: Minor tweaks.
+
+2000-05-09  Jesper Skov  <jskov@redhat.com>
+
+	* Cloned from hal/mips/tx39
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

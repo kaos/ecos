@@ -131,7 +131,7 @@ void __single_step (void)
     // The address of the instruction to execute.
     HAL_WRITE_UINT32(CYGARC_REG_BARA, get_register(PC));
     // Match entire address.
-#ifdef CYGARC_SH_MOD_UBC_V1
+#if (CYGARC_SH_MOD_UBC == 1)
     HAL_WRITE_UINT8(CYGARC_REG_BAMRA, CYGARC_REG_BAMRA_BARA_UNMASKED);
 #else
     HAL_WRITE_UINT32(CYGARC_REG_BAMRA, 0xffffffff);
@@ -140,7 +140,7 @@ void __single_step (void)
     HAL_WRITE_UINT16(CYGARC_REG_BRCR, CYGARC_REG_BRCR_PCBA);
     // Stop on IFETCH/READ
     HAL_WRITE_UINT16(CYGARC_REG_BBRA, 
-#ifdef CYGARC_SH_MOD_UBC_V3
+#if (CYGARC_SH_MOD_UBC == 3)
                      CYGARC_REG_BBRA_CPU| // Match on CPU cycle
 #endif
                      CYGARC_REG_BBRA_IFETCH|CYGARC_REG_BBRA_READ);

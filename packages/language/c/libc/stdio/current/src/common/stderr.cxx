@@ -64,12 +64,18 @@
 #include <cyg/libc/stdio/stdiofiles.hxx>  // C library files
 #include <cyg/libc/stdio/stdiosupp.hxx>   // Cyg_libc_stdio_find_filename()
 
+// CONSTANTS
+
+// add 2 to the priority to allow it to be the fd 2 if necessary
+#define PRIO (CYG_INIT_LIBC+2)
+
 // STATICS
 
 Cyg_StdioStream
-cyg_libc_stdio_stderr CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC) = Cyg_StdioStream( 
+cyg_libc_stdio_stderr CYGBLD_ATTRIB_INIT_PRI(PRIO) = Cyg_StdioStream(
     Cyg_libc_stdio_find_filename(CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE,
-                                 Cyg_StdioStream::CYG_STREAM_WRITE, false, false),
+                                 Cyg_StdioStream::CYG_STREAM_WRITE,
+                                 false, false),
     Cyg_StdioStream::CYG_STREAM_WRITE, false, false, _IONBF, 0, NULL );
 
 // CLASSES
@@ -86,6 +92,10 @@ public:
 
 // And here's an instance of the class just to make the code run
 static cyg_libc_dummy_stderr_init_class cyg_libc_dummy_stderr_init
-                                         CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC);
+                                             CYGBLD_ATTRIB_INIT_PRI(PRIO);
+
+// and finally stderr itself
+__externC Cyg_StdioStream * const stderr;
+Cyg_StdioStream * const stderr=&cyg_libc_stdio_stderr;
 
 // EOF stderr.cxx

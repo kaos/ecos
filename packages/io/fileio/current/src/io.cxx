@@ -126,8 +126,7 @@ static ssize_t readwrite( int fd, void *buf, size_t len, int direction )
 
     CYG_CANCELLATION_POINT;
  
-    CYG_REPORT_RETVAL(cnt);
-    return cnt;
+    FILEIO_RETURN_VALUE(cnt);
 }
 
 //==========================================================================
@@ -200,8 +199,7 @@ __externC off_t lseek( int fd, off_t pos, int whence )
     if( ret != 0 )
         FILEIO_RETURN(ret);
     
-    CYG_REPORT_RETVAL(pos);
-    return pos;
+    FILEIO_RETURN_VALUE(pos);
 }
 
 //==========================================================================
@@ -347,8 +345,7 @@ __externC long fpathconf( int fd, int name )
     if( ret != 0 )
         FILEIO_RETURN(ret);
 
-    CYG_REPORT_RETVAL(info.value);
-    return info.value;
+    FILEIO_RETURN_VALUE(info.value);
 }
 
 //==========================================================================

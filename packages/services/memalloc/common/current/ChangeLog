@@ -1,3 +1,8 @@
+2000-11-01  Jesper Skov  <jskov@redhat.com>
+
+	* tests/realloc.c (main): Use reasonable factor when making too
+	large realloc (targets with 64MB would cause an overflow).
+
 2000-10-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/testaux.hxx: Prototype cyg_hal_invoke_constructors()

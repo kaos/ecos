@@ -1,3 +1,26 @@
+2000-10-31  Jesper Skov  <jskov@redhat.com>
+
+
+	* include/mod_7707a.h: Moved to SH3 HAL.
+	* include/mod_7708.h: Same.
+	* include/mod_7709a.h: Same.
+	* include/mod_7729.h: Same.
+	* include/sh3_sci.h: Same.
+	* include/sh3_scif.h: Same.
+	* src/sh3_sci.c: Same.
+	* src/sh3_scif.c: Same.
+
+	* include/hal_cache.h: Moved SH3 code out to new SH3 HAL.
+	* cdl/hal_sh.cdl: Same.
+	* include/hal_intr.h: Same.
+	* include/sh_regs.h: Same.
+	* src/hal_misc.c: Same.
+	* src/hal_mk_defs.c: Same.
+
+	* src/vectors.S: Changed to support SH4. Moved CPU post-reset init
+	code to variant HALs. Moved interrupt decoding to variant HAL
+	macros. Moved cache code to variant HALs.
+
 2000-10-24  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S (hal_hw_init): Added errata comment.
