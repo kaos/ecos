@@ -1,3 +1,7 @@
+2004-08-16  Peter Korsgaard <jacmet@sunsite.dk>
+
+	* src/monitor.c: Added missing spaces in multi-line HTML strings.
+
 2004-03-09  Nick Garnett  <nickg@calivar.com>
 
 	* include/httpd.h: 
