@@ -124,29 +124,49 @@ static __call_if_flash_fis_op_fn_t flash_fis_op;
 static cyg_bool
 flash_fis_op( int op, char *name, void *val)
 {
-	cyg_bool res = false;
-	struct fis_image_desc *fis;
-	int num;
+    cyg_bool res = false;
+    struct fis_image_desc *fis;
+    int num;
 
-	CYGARC_HAL_SAVE_GP();
-	fis = fis_lookup(name, &num);
-	if(fis != NULL)
-	{
-		switch ( op ) {
-		case CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE:
-			*(CYG_ADDRESS *)val = fis->flash_base; 
-			res = true;
-			break;
-		case CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE:
-			*(unsigned long *)val = fis->size;
-			res = true;
-			break;
-		default:
-			break;
-		}
-	}
-	CYGARC_HAL_RESTORE_GP();
-	return res;
+    CYGARC_HAL_SAVE_GP();
+    fis = fis_lookup(name, &num);
+    if(fis != NULL)
+    {
+        switch ( op ) {
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE:
+            *(CYG_ADDRESS *)val = fis->flash_base; 
+            res = true;
+            break;
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE:
+            *(unsigned long *)val = fis->size;
+            res = true;
+            break;
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_MEM_BASE:
+            *(CYG_ADDRESS *)val = fis->mem_base;
+            res = true;
+            break;
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_ENTRY_POINT:
+            *(CYG_ADDRESS *)val = fis->entry_point;
+            res = true;
+            break;
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_DATA_LENGTH:
+            *(unsigned long *)val = fis->data_length;
+            res = true;
+            break;
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_DESC_CKSUM:
+            *(unsigned long *)val = fis->desc_cksum;
+            res = true;
+            break;
+        case CYGNUM_CALL_IF_FLASH_FIS_GET_FILE_CKSUM:
+            *(unsigned long *)val = fis->file_cksum;
+            res = true;
+            break;
+        default:
+            break;
+        }
+    }
+    CYGARC_HAL_RESTORE_GP();
+    return res;
 }
 #endif
 

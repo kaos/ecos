@@ -1,3 +1,9 @@
+2003-09-04  Patrick Doyle  <wpd@dtccom.com>
+
+	* include/hal_if.h: 
+	* src/hal_if.c (flash_fis_op): Added support for the rest of the
+	FIS operations.
+
 2003-08-06  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
 
 	* src/drv_api.c: Added definition of cyg_interrupt_post_dsr() for

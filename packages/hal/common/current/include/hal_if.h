@@ -655,8 +655,14 @@ __call_voidVV1(CYGNUM_CALL_IF_MONITOR_RETURN, __call_if_monitor_return_t, void, 
 __call_VV3(CYGNUM_CALL_IF_FLASH_FIS_OP, __call_if_flash_fis_op_fn_t, cyg_bool, int, char *, void *)
 #define CYGACC_CALL_IF_FLASH_FIS_OP_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_FIS_OP]=(CYG_ADDRWORD)(_x_)
-#define CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE (0)
-#define CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE		(1)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE  (0)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE        (1)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_MEM_BASE    (2)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_ENTRY_POINT (3)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_DATA_LENGTH (4)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_DESC_CKSUM  (5)
+#define CYGNUM_CALL_IF_FLASH_FIS_GET_FILE_CKSUM  (6)
+
 
 // These need to be kept uptodate with the (unadorned) masters
 // in RedBoot's flash_config.h:
