@@ -68,25 +68,6 @@ int cyg_dev_flash_synth_flashfd;
 /* Holds the base address of the mmap'd region */
 flash_t *cyg_dev_flash_synth_base;
 
-/* Helper function. The Linux system call cannot pass 6 parameters. Instead
-   a structure is filled in and passed as one parameter */
-static int 
-cyg_hal_sys_do_mmap(void *addr, unsigned long length, unsigned long prot, 
-                    unsigned long flags, unsigned long fd, unsigned long off)
-{
-
-    struct cyg_hal_sys_mmap_args args;
-  
-    args.addr = (unsigned long) addr;
-    args.len = length;
-    args.prot = prot = prot;
-    args.flags = flags;
-    args.fd = fd;
-    args.offset = off;
-
-    return (cyg_hal_sys_mmap(&args));
-}           
-
 int
 flash_hwr_init(void)
 {
@@ -126,7 +107,7 @@ flash_hwr_init(void)
     if ( cyg_dev_flash_synth_flashfd <= 0 ) {
         return FLASH_ERR_HWR;
     }
-    cyg_dev_flash_synth_base = (flash_t *)cyg_hal_sys_do_mmap( 
+    cyg_dev_flash_synth_base = (flash_t *)cyg_hal_sys_mmap( 
 #ifdef CYGMEM_FLASH_SYNTH_BASE
                 CYGMEM_FLASH_SYNTH_BASE,
 #else

@@ -1,3 +1,7 @@
+2004-12-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/synth.c: Moved cyg_hal_sys_mmap into the HAL.
+
 2003-11-20  Jani Monoses <jani@iv.ro>
 	
 	tests/flash1.c: Update flash_init() call to reflect
