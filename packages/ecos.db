@@ -212,6 +212,16 @@ package CYGPKG_DEVS_FLASH_ARM_PID {
 	   on the ARM PID platform."
 }
 
+package CYGPKG_DEVS_FLASH_ARM_E7T {
+    alias       { "FLASH memory support for the ARM Evaluator-7T" flash_e7t }
+    directory   devs/flash/arm/e7t
+    script      flash_e7t.cdl
+    hardware
+        description "
+           This package contains hardware support for FLASH memory
+       on the ARM Evaluator-7T platform."
+}
+
 package CYGPKG_DEVS_FLASH_SH_EDK7708 {
 	alias 		{ "Support for flash memory on Hitachi/EDK7708 board" flash_sh_edk7708 }
 	directory	devs/flash/sh/edk7708
@@ -470,6 +480,16 @@ package CYGPKG_DEVS_FLASH_STRATA {
         description "
            This package contains generic hardware support for Intel
 	   StrataFLASH memory devices."
+}
+
+package CYGPKG_DEVS_FLASH_SST_39VF400 {
+    alias       { "Support for SST 39VF400 flash memory" flash_sst_39vf4000 }
+    directory   devs/flash/sst/39vf400
+    script      flash_sst_39vf400.cdl
+    hardware
+        description "
+           This package contains hardware support for SST 39VF400
+           flash memory devices."
 }
 
 package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
@@ -3435,15 +3455,18 @@ The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
 }
 
-target e7t {
+ target e7t {
 	alias { "ARM Evaluator7T board (AEB-2)" aeb2 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_E7T
+               CYGPKG_DEVS_FLASH_ARM_E7T
+               CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+               CYGPKG_DEVS_FLASH_SST_39VF400
 	           CYGPKG_IO_SERIAL_ARM_E7T
         }
         description "
-The e7t target provides the packages needed to run eCos on an ARM
-Evaluator7T board (aka AEB-2)."
+ The e7t target provides the packages needed to run eCos on an ARM
+ Evaluator7T board (aka AEB-2)."
 }
 
 target integrator_arm7 {
