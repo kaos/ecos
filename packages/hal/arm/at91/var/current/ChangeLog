@@ -1,3 +1,12 @@
+2004-02-18  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* cdl/hal_arm_at91.cdl: Define CYGNUM_HAL_ARM_AT91_CLOCK_SPEED with
+	a default_value so it can be overridden in the platform HAL.
+	* src/hal_diag.c (cyg_hal_plf_serial_control): Properly terminate
+	variable argument processing.
+	* include/hal_diag.h: prototype for hal_at91_set_leds() to avoid
+	compiler warning.
+	
 2004-02-12  Jani Monoses <jani@iv.ro>
 
 	* cdl/hal_arm_at91.cdl: Put configuration options common to all

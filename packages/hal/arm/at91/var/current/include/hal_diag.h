@@ -68,6 +68,8 @@
 // LED
 externC void hal_diag_led(int mask);
 
+externC void hal_at91_set_leds(int mask);
+
 //-----------------------------------------------------------------------------
 // delay
 

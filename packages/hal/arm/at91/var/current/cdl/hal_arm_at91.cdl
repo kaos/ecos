@@ -128,7 +128,7 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
     cdl_option CYGNUM_HAL_ARM_AT91_CLOCK_SPEED {
         display       "CPU clock speed"
         flavor        data
-        calculated    {CYGHWR_HAL_ARM_AT91 == "R40008" ? 66000000: 32768000}
+        default_value {CYGHWR_HAL_ARM_AT91 == "R40008" ? 66000000 : 32768000}
     }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {

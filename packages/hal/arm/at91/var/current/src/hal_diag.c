@@ -229,19 +229,13 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         ret = chan->isr_vector;
         break;
     case __COMMCTL_SET_TIMEOUT:
-    {
-        va_list ap;
-
-        va_start(ap, __func);
-
         ret = chan->msec_timeout;
         chan->msec_timeout = va_arg(ap, cyg_uint32);
-
-        va_end(ap);
-    }        
     default:
         break;
     }
+
+    va_end(ap);
     CYGARC_HAL_RESTORE_GP();
     return ret;
 }
