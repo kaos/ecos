@@ -983,11 +983,11 @@ fis_load(int argc, char *argv[])
     bool mem_addr_set = false;
     bool show_cksum = false;
     struct option_info opts[3];
-#ifdef CYGPKG_REDBOOT_FIS_CRC_CHECK
+#if defined(CYGSEM_REDBOOT_FIS_CRC_CHECK)
     unsigned long cksum;
 #endif
     int num_options;
-#ifdef CYGPRI_REDBOOT_ZLIB_FLASH
+#if defined(CYGPRI_REDBOOT_ZLIB_FLASH) ||  defined(CYGSEM_REDBOOT_FIS_CRC_CHECK)
     bool decompress = false;
 #endif
     void *err_addr;
@@ -1066,7 +1066,7 @@ fis_load(int argc, char *argv[])
     }
     entry_address = (unsigned long)img->entry_point;
 
-#ifdef CYGPKG_REDBOOT_FIS_CRC_CHECK
+#ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
     cksum = cyg_crc32((unsigned char *)mem_addr, img->data_length);
     if (show_cksum) {
         diag_printf("Checksum: 0x%08lx\n", cksum);

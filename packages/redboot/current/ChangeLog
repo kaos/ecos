@@ -1,3 +1,8 @@
+2004-05-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c (fis_load): CRC check on load was broken (the CDL
+	option changed names)
+
 2004-04-29  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot_epilogue.sgml: Comment out </part> to reflect change
