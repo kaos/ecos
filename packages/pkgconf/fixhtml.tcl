@@ -87,7 +87,9 @@ foreach file $files {
 
 	    # The DSSSL has the annoying habit of splitting tags over several lines.
 	    # This should sort things out.
-	    regsub -all "\n>" $data ">\n" data
+            # REMOVED by jifl: doing this can add newlines in tags like
+            # <literallayout>, <screen>, and/or <programlisting>
+	    # regsub -all "\n>" $data ">\n" data
 	    
 	    # Add a copyright banner
 	    set data "[set copyright_banner]\n[set data]"
@@ -98,6 +100,17 @@ foreach file $files {
 	    regsub -all "&hellip;" $data "\\&#8230;" data
 	    regsub -all "&ldquo;"  $data "\\&#8220;" data
 	    regsub -all "&rdquo;"  $data "\\&#8221;" data
+	    regsub -all "&lsqb;"   $data "\\&#0091;" data
+	    regsub -all "&rsqb;"   $data "\\&#0093;" data
+	    regsub -all "&lcub;"   $data "\\&#0123;" data
+	    regsub -all "&rcub;"   $data "\\&#0125;" data
+	    regsub -all "&lsquo;"  $data "\\&#8216;" data
+	    regsub -all "&rsquo;"  $data "\\&#8217;" data
+	    regsub -all "&trade;"  $data "\\&#8482;" data
+	    regsub -all "&ast;"    $data "\\&#0042;" data
+	    regsub -all "&lowbar;" $data "\\&#0095;" data
+	    regsub -all "&sol;"    $data "\\&#0047;" data
+	    regsub -all "&equals;" $data "\\&#0061;" data
 
 	    # Now write the data back to the file. Do not bother to
 	    # keep an old version lying around, the html files can be

@@ -134,16 +134,59 @@
 #ifndef CYGPKG_HAL_MIPS_INTC_DECODE_DEFINED
 	.macro	hal_intc_decode vnum
 
+	mfc0	v1,status		# get status register (interrupt mask)
+	mfc0	v0,cause		# get cause register
+	and	v0,v0,v1		# apply interrupt mask
+	andi	v1,v0,0x400		# test FPGA interrupt
+	bnez	v1,0f
+	 srl	v0,v0,10		# shift interrupt bits down
+	andi	v0,v0,0x3f		# isolate 6 interrupt bits
+	la	v1,hal_intc_translation_table
+	add	v0,v0,v1		# index into table
+	b	1f
+	 lb	\vnum,0(v0)		# pick up vector number
+    0:
 	lw	v0,HAL_ATLAS_INTSTATUS	# Get interrupt status reg
 	clz	v1,v0			# count leading zeros into v1
 	la	v0,31			# v0 = 31
 	sub	\vnum,v0,v1		# vnum = 31-v1 == vector number	
+    1:
 	.endm
 
+#ifndef CYGPKG_HAL_MIPS_INTC_TRANSLATE_DEFINED
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+	.macro	hal_intc_translate inum,vnum
+	move	\vnum,zero			# Just vector zero is supported
+	.endm
+#else			
+	.macro	hal_intc_translate inum,vnum
+	move	\vnum,\inum			# Vector == interrupt number
+	.endm
+#endif
+#endif
+
 	.macro	hal_intc_decode_data
+hal_intc_translation_table:	
+	.byte	20, 20, 20, 20
+	.byte	21, 21, 21, 21
+	.byte	22, 22, 22, 22
+	.byte	22, 22, 22, 22
+	.byte	23, 23, 23, 23
+	.byte	23, 23, 23, 23
+	.byte	23, 23, 23, 23
+	.byte	23, 23, 23, 23
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
+	.byte	24, 24, 24, 24
 	.endm
 
 #define CYGPKG_HAL_MIPS_INTC_DECODE_DEFINED
+#define CYGPKG_HAL_MIPS_INTC_DEFINED
 
 // We also define our own interrupt tables in platform.S...
 #define CYG_HAL_MIPS_ISR_TABLES_DEFINED

@@ -299,6 +299,9 @@
 // Disable the instruction cache
 #define HAL_ICACHE_DISABLE()     HAL_UCACHE_DISABLE()
 
+// Is the cache turned on?
+#define HAL_ICACHE_IS_ENABLED(_state_) HAL_UCACHE_IS_ENABLED(_state_)
+
 // Invalidate the entire cache
 #define HAL_ICACHE_INVALIDATE_ALL()  HAL_UCACHE_INVALIDATE_ALL()
 

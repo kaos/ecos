@@ -1,3 +1,57 @@
+2001-05-09  Robin Farine <acnrf@dial.eunet.ch>
+2001-05-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/dhcp_prot.c (do_dhcp): In DHCPSTATE_INIT case, create a
+	new xid.  Servers apparantly can use *only* this to distinguish
+	machines, even with different MAC addresses!  Therefore we use
+	both the most sensitive randomizer available (arc4random()) which
+	in reality uses a finegrain clock, and salt the value further with
+	the MAC address itself.  Thanks again Robin.
+
+	* src/ecos/support.c (arc4random): Make arc4random not always be a
+	multiple of 256; stir the clock into the low bits also.
+
+2001-05-09  Robin Farine <acnrf@dial.eunet.ch>
+2001-05-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sys/net/if_bridge.c: Patch from Robin; the route aging
+	process took twice as long to timeout because an entry requires
+	*two* executions of bridge_rtage() to actually get removed.
+	Record the timeout over 2 to fix that and also define
+	BRIDGE_RTABLE_TIMEOUT as 300s that the standard specifies as
+	default aging time.
+
+2001-05-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/getserv.c (setreturned): New routine to set up a copy of
+	the service data with the port converted to network order like the
+	API demands.  It's this way to make the initialization of the
+	table most readable.  
+	(services[]): Added an entry for snmp.
+	(getservbyname): Use setreturned() to return adjusted info.
+	(getservbyport): Use setreturned() to return adjusted info and
+	compare with host-ordered version of the port.
+
+	* src/lib/tftp_client.c (tftp_get): 
+	(tftp_put): Do not convert to net order from
+	the getserv structure; it's already net order.
+
+	* src/lib/tftp_server.c (tftpd_server): Convert the socket into
+	host order; it's network order in the getserv API.
+
+	* tests/ftp_test.c (ftp_test): Do not convert to net order from
+	the getserv structure; it's already net order.
+
+	* tests/tftp_client_test.c (PUTFILE): Changed the names of the
+	test files to be fully qualified, this makes the test work with
+	more server machines.  /tftpboot/tftp_get and /tftpboot/tftp_put.
+	
+2001-04-24  Bart Veer  <bartv@redhat.com>
+
+	* cdl/net.cdl:
+	Prevent multiple device drivers from implementing the
+	same eth0/eth1 device.
+
 2001-03-30  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/net.cdl (CYGPKG_NET_SYSCTL): Comment out - currently unsupported.

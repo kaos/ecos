@@ -436,7 +436,8 @@ tftpd_server(cyg_addrword_t p)
             diag_printf("TFTPD: can't get TFTP service information\n");
             return;
         }
-        server->port = server_info->s_port;
+        // Network order in info; host order in server:
+        server->port = ntohs( server_info->s_port );
     }
 
     while (true) {

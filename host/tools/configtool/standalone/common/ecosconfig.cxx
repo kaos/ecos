@@ -1,7 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -53,6 +53,30 @@
 #define TOOL_COPYRIGHT "Copyright (c) 2001 Red Hat, Inc."
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static char* tool = "ecosconfig";
+
+// When running under cygwin there may be confusion between cygwin and
+// Windows paths. Some paths will be passed on to the Tcl library,
+// which sometimes will accept a cygwin path and sometimes not. This
+// does not affect the VC++ build which only accepts Windows paths,
+// and obviously it does not affect any Unix platfom.
+#ifdef __CYGWIN__
+static std::string
+translate_path(std::string& path)
+{
+    std::string result;
+    char buffer [MAXPATHLEN + 1];
+    if ("" == path) {
+        result = path;
+    } else {
+        cygwin_conv_to_win32_path (path.c_str (), buffer);
+        result = std::string(buffer);
+    }
+    return result;
+}
+# define TRANSLATE_PATH(a) translate_path(a)
+#else
+# define TRANSLATE_PATH(a) (a)
+#endif
 
 int main (int argc, char * argv []) {
 
@@ -241,18 +265,9 @@ int main (int argc, char * argv []) {
         }
     }
 
-#ifdef __CYGWIN__
-    // convert cygwin paths to win32 paths
-    char buffer [MAXPATHLEN + 1];
-    cygwin_conv_to_win32_path (repository.c_str (), buffer);
-    repository = buffer;
-    cygwin_conv_to_win32_path (savefile.c_str (), buffer);
-    savefile = buffer;
-    if (! install_prefix.empty ()) { // cygwin_conv_to_win32_path() does not copy an empty string
-        cygwin_conv_to_win32_path (install_prefix.c_str (), buffer);
-        install_prefix = buffer;
-    }
-#endif
+    repository          = TRANSLATE_PATH(repository);
+    savefile            = TRANSLATE_PATH(savefile);
+    install_prefix      = TRANSLATE_PATH(install_prefix);
 
     // Initialize the cdl_exec code (not quite sure why this needs a
     // separate object rather than just a bunch of statics). 
@@ -366,7 +381,9 @@ int main (int argc, char * argv []) {
     } else if ("export" == command) {
         // Usage: ecosconfige export <filename>
         if (command_index + 1 == argc) {
-            status = exec.cmd_export (argv [command_index]);
+            std::string filename = std::string(argv[command_index]);
+            filename = TRANSLATE_PATH(filename);
+            status = exec.cmd_export(filename);
         } else {
             usage_message ();
         }
@@ -374,7 +391,9 @@ int main (int argc, char * argv []) {
     } else if ("import" == command) {
         // Usage: ecosconfig import <filename>
         if (command_index + 1 == argc) {
-            status = exec.cmd_import (argv [command_index]);
+            std::string filename = std::string(argv[command_index]);
+            filename = TRANSLATE_PATH(filename);
+            status = exec.cmd_import(filename);
         } else {
             usage_message ();
         }

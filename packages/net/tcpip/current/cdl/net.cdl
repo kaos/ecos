@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -481,6 +481,7 @@ cdl_package CYGPKG_NET {
 
     cdl_interface CYGHWR_NET_DRIVER_ETH0 {
         display "Does the hardware provide an 'eth0' device?"
+	requires { CYGHWR_NET_DRIVER_ETH0 <= 1 }
     }
 
     cdl_component CYGHWR_NET_DRIVER_ETH0_SETUP_OPTIONS {
@@ -592,6 +593,7 @@ cdl_package CYGPKG_NET {
 
     cdl_interface CYGHWR_NET_DRIVER_ETH1 {
         display "Does the hardware provide an 'eth1' device?"
+	requires { CYGHWR_NET_DRIVER_ETH1 <= 1 }
     }
 
     cdl_component CYGHWR_NET_DRIVER_ETH1_SETUP_OPTIONS {

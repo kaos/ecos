@@ -1,3 +1,10 @@
+* Added driver for Motorola PowerPC 8xxT "Fast Ethernet Controller".
+* Added support for Analogue & Micro "viper" - PowerPC 860T based
+  board.  Currently this is only alpha since full test farm testing
+  has not yet been started.  Includes RedBoot, Flash and FEC ethernet.
+* RedBoot and eCos ported to Bright Star Engineering nanoEngine
+  StrongARM SA1110 board, including Flash, watchdog, serial, ethernet
+  drivers and PCI support.
 * Added support for ARM Evaluator7T (e7t) board.
 * Ported to Compaq StrongARM SA1110 PocketPC (iPAQ), including keypad,
   touch screen, watchdog, FLASH, PCMCIA and Compact Flash drivers.

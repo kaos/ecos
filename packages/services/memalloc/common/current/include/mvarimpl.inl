@@ -143,9 +143,13 @@ Cyg_Mempool_Variable_Implementation::Cyg_Mempool_Variable_Implementation(
     CYG_REPORT_FUNCTION();
 
     CYG_ASSERT( align > 0, "Bad alignment" );
-    CYG_ASSERT( size > 0, "Bad size" );
     CYG_ASSERT(0!=align ,"align is zero");
     CYG_ASSERT(0==(align & align-1),"align not a power of 2");
+
+    if ((unsigned)size < sizeof(struct memdq)) {
+        bottom = NULL;
+        return;
+    }
 
     obase=base;
     osize=size;
@@ -208,6 +212,12 @@ Cyg_Mempool_Variable_Implementation::try_alloc( cyg_int32 size )
     cyg_uint8 *alloced;
 
     CYG_REPORT_FUNCTION();
+
+    //  Allow uninitialised (zero sized) heaps because they could exist as a
+    //  quirk of the MLT setup where a dynamically sized heap is at the top of
+    //  memory.
+    if (NULL == bottom)
+        return NULL;
 
     size = roundup(size);
 

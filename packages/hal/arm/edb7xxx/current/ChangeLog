@@ -1,3 +1,12 @@
+2001-05-01  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/edb7212_redboot_ROM.ecm: 
+	* misc/edb7212_redboot.ecm: 
+	* misc/edb7211_redboot_ROM.ecm: 
+	* misc/edb7211_redboot.ecm: RedBoot rebuilt & configs updated.
+
+	* include/hal_cache.h (HAL_ICACHE_IS_ENABLED): Add.
+
 2001-04-16  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_edb7xxx.cdl: Add CDL to describe CPU family.

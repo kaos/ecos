@@ -1,3 +1,11 @@
+2001-04-27  Mark Salter  <msalter@redhat.com>
+
+	* include/platform.inc (hal_intc_decode): Recognize all external
+	interrupts.
+	* include/plf_intr.h: Add external interrupts to list of supported
+	interrupts.
+	* src/platform.S: Allocate space for new interrupt vectors.
+
 2001-03-09  Jesper Skov  <jskov@redhat.com>
 
 	* src/redboot_cmds.c: Added (linux) exec command.

@@ -278,9 +278,23 @@ hal_mmu_init(void)
     for (i = CYGHWR_HAL_ARM_NANO_PCI_MEM_MAP_BASE >> 20;
          i < ((CYGHWR_HAL_ARM_NANO_PCI_MEM_MAP_BASE+CYGHWR_HAL_ARM_NANO_PCI_MEM_MAP_SIZE) >> 20); 
          i++) {
-        // Find the actual real address as above...
+#ifndef CYG_HAL_STARTUP_ROM
+        // RAM start - common code below must go via uncached pointer
+        int *p_hdsize = (int *)(((cyg_uint32)&hal_dram_size) | (0xC00u *SZ_1M));
+#endif // not CYG_HAL_STARTUP_ROM - RAM start only
+        // Find the actual real address as above if already mapped:
         cyg_uint32 phys = hal_virt_to_phys_address( ((cyg_uint32)i) << 20 );
         int j = phys >> 20;
+        if ( ! ( 0xc00 < j && j < 0xe00 ) ) {
+            // Not in physical SDRAM so yet mapped - so steal some from the main area.
+            int k = (*p_hdsize) >> 20; // Top MegaByte
+            k--;
+            phys = hal_virt_to_phys_address( ((cyg_uint32)k) << 20 );
+            j = phys >> 20;
+            CYG_ASSERT( 0xc00 < j && j < 0xe00, "Top Mb physical address not in SDRAM" );
+            (*p_hdsize) = (k << 20); // We just stole 1Mb.
+            *(ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS(ttb_base, k)) = 0; // smash the old entry
+        }
         CYG_ASSERT( 0xc00 < j && j < 0xe00, "PCI physical address not in SDRAM" );
         ARM_MMU_SECTION(ttb_base, j, i,
                         ARM_UNCACHEABLE, ARM_UNBUFFERABLE,
@@ -350,10 +364,15 @@ hal_arm_mem_real_region_top( cyg_uint8 *regionend )
     // Also, we must check for the top of the heap having moved.  This is
     // because the heap does not abut the top of memory.
 #ifdef CYGMEM_SECTION_heap1
+    else
     if ( regionend ==
          ((cyg_uint8 *)CYGMEM_SECTION_heap1 + CYGMEM_SECTION_heap1_SIZE) ) {
         // hal_dram_size excludes the PCI window on this platform.
         if ( regionend > (cyg_uint8 *)CYGMEM_REGION_ram + hal_dram_size )
+            // Only report if the heap shrank; if it abuts RAMtop, the
+            // previous test will have caught it already.  If RAM enlarged,
+            // but the heap did not abut RAMtop then there is likely
+            // something in the way, so don't trample it.
             regionend = (cyg_uint8 *)CYGMEM_REGION_ram + hal_dram_size;
     }
 #endif

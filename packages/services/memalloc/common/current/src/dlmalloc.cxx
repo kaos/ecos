@@ -964,8 +964,14 @@ Cyg_Mempool_dlmalloc_Implementation::Cyg_Mempool_dlmalloc_Implementation(
         correction = 0;
     }
 
-    top = (mchunkptr)(base + correction);
-    set_head(top, arenasize | PREV_INUSE);
+    // too small to be useful?
+    if ( correction + 2*MALLOC_ALIGNMENT > (unsigned) size )
+        // help catch errors. Don't fail now.
+        arenabase = NULL; 
+    else {
+        top = (mchunkptr)(base + correction);
+        set_head(top, arenasize | PREV_INUSE);
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -1033,6 +1039,11 @@ Cyg_Mempool_dlmalloc_Implementation::try_alloc( cyg_int32 bytes )
   mbinptr q;                         /* misc temp */
 
   INTERNAL_SIZE_T nb;
+
+  /*  Allow uninitialised (zero sized) heaps because they could exist as a
+   *  quirk of the MLT setup where a dynamically sized heap is at the top of
+   *  memory. */
+  if (NULL==arenabase) return NULL;
 
   if ((long)bytes < 0) return 0;
 

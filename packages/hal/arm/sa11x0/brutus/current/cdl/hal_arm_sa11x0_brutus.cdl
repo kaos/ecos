@@ -248,7 +248,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
         }
 
         cdl_option CYGPKG_HAL_ARM_SA11X0_BRUTUS_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

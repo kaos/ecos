@@ -392,7 +392,6 @@ net_io_isr(void *__ch_data, int* __ctrlc,
 {
     char ch;
 
-    cyg_drv_interrupt_acknowledge(__vector);
     *__ctrlc = 0;
     if (net_io_getc_nonblock(__ch_data, &ch)) {
         if (ch == 0x03) {

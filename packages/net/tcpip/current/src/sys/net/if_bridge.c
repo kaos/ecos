@@ -156,7 +156,7 @@
  * Timeout (in seconds) for entries learned dynamically
  */
 #ifndef BRIDGE_RTABLE_TIMEOUT
-#define BRIDGE_RTABLE_TIMEOUT	240
+#define BRIDGE_RTABLE_TIMEOUT	300
 #endif
 
 extern int ifqmaxlen;
@@ -269,7 +269,7 @@ bridgeattach(unused)
 
 	for (i = 0; i < CYGNUM_NET_BRIDGES; i++) {
 		bridgectl[i].sc_brtmax = BRIDGE_RTABLE_MAX;
-		bridgectl[i].sc_brttimeout = BRIDGE_RTABLE_TIMEOUT;
+		bridgectl[i].sc_brttimeout = (BRIDGE_RTABLE_TIMEOUT * hz) / 2;
 		LIST_INIT(&bridgectl[i].sc_iflist);
 		ifp = &bridgectl[i].sc_if;
 		sprintf(ifp->if_xname, "bridge%d", i);
@@ -529,13 +529,13 @@ bridge_ioctl(ifp, cmd, data)
 		if ((error = suser(prc->p_ucred, &prc->p_acflag)) != 0)
 			break;
 #endif
-		sc->sc_brttimeout = bcacheto->ifbct_time;
+		sc->sc_brttimeout = (bcacheto->ifbct_time * hz) / 2;
 		untimeout(bridge_rtage, sc);
 		if (bcacheto->ifbct_time != 0)
 			timeout(bridge_rtage, sc, sc->sc_brttimeout);
 		break;
 	case SIOCBRDGGTO:
-		bcacheto->ifbct_time = sc->sc_brttimeout;
+		bcacheto->ifbct_time = (2 * sc->sc_brttimeout) / hz;
 		break;
 	case SIOCSIFFLAGS:
 		if ((ifp->if_flags & IFF_UP) == IFF_UP)
@@ -798,7 +798,7 @@ bridge_init(sc)
 	splx(s);
 
 	if (sc->sc_brttimeout != 0)
-		timeout(bridge_rtage, sc, sc->sc_brttimeout * hz);
+		timeout(bridge_rtage, sc, sc->sc_brttimeout);
 }
 
 /*
@@ -1569,7 +1569,7 @@ bridge_rtage(vsc)
 	splx(s);
 
 	if (sc->sc_brttimeout != 0)
-		timeout(bridge_rtage, sc, sc->sc_brttimeout * hz);
+		timeout(bridge_rtage, sc, sc->sc_brttimeout);
 }
 
 /*

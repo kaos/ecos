@@ -1,3 +1,18 @@
+2001-05-02  Hugo Tyson  <hmt@redhat.com>
+
+	* src/dlmalloc.cxx (Cyg_Mempool_dlmalloc_Implementation): Fix
+	previous change; "top" is a pseudo variable via a NULL pointer if
+	the heap is not initialized, so you can't use it as a flag for "no
+	mem here"; and a typo, the comparison was reversed.  The two hid
+	each other, so the check for "no mem here" usually said "OK".
+
+2001-05-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/mvarimpl.inl (try_alloc): Allow zero sized heaps.
+	(Cyg_Mempool_Variable_Implementation): Ditto.
+	* src/dlmalloc.cxx (try_alloc): Ditto.
+	(Cyg_Mempool_dlmalloc_Implementation): Ditto.
+
 2001-04-12  Hugo Tyson  <hmt@redhat.com>
 
 	* include/memjoin.inl (resize_alloc): Fix typo so it compiles.

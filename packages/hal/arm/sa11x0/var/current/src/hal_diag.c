@@ -76,6 +76,7 @@ typedef struct {
     volatile struct sa11x0_serial* base;
     cyg_int32 msec_timeout;
     int isr_vector;
+    int baud_rate;
 } channel_data_t;
 
 /*---------------------------------------------------------------------------*/
@@ -119,7 +120,7 @@ init_channel(channel_data_t* __ch_data)
                   SA11X0_UART_DATA_BITS_8;
 
     // Set the desired baud rate.
-    brd = SA11X0_UART_BAUD_RATE_DIVISOR(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
+    brd = SA11X0_UART_BAUD_RATE_DIVISOR(__ch_data->baud_rate);
     base->utcr1 = (brd >> 8) & SA11X0_UART_H_BAUD_RATE_DIVISOR_MASK;
     base->utcr2 = brd & SA11X0_UART_L_BAUD_RATE_DIVISOR_MASK;
 
@@ -179,10 +180,12 @@ cyg_hal_plf_serial_getc(void* __ch_data)
 
 static channel_data_t ser_channels[] = {
 #if CYGHWR_HAL_ARM_SA11X0_UART1 != 0
-    { (volatile struct sa11x0_serial*)SA11X0_UART1_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART1 },
+    { (volatile struct sa11x0_serial*)SA11X0_UART1_BASE, 1000, 
+      CYGNUM_HAL_INTERRUPT_UART1, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 #if CYGHWR_HAL_ARM_SA11X0_UART3 != 0
-    { (volatile struct sa11x0_serial*)SA11X0_UART3_BASE, 1000, CYGNUM_HAL_INTERRUPT_UART3 },
+    { (volatile struct sa11x0_serial*)SA11X0_UART3_BASE, 1000, 
+      CYGNUM_HAL_INTERRUPT_UART3, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD },
 #endif
 };
 
@@ -236,10 +239,20 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 {
     static int irq_state = 0;
     channel_data_t* chan = (channel_data_t*)__ch_data;
-    int ret = 0;
+    int ret = -1;
+    va_list ap;
+
     CYGARC_HAL_SAVE_GP();
+    va_start(ap, __func);
 
     switch (__func) {
+    case __COMMCTL_GETBAUD:
+        ret = chan->baud_rate;
+        break;
+    case __COMMCTL_SETBAUD:
+        chan->baud_rate = va_arg(ap, cyg_int32);
+        init_channel(chan);
+        break;
     case __COMMCTL_IRQ_ENABLE:
         irq_state = 1;
 
@@ -259,19 +272,13 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         ret = chan->isr_vector;
         break;
     case __COMMCTL_SET_TIMEOUT:
-    {
-        va_list ap;
-
-        va_start(ap, __func);
-
         ret = chan->msec_timeout;
         chan->msec_timeout = va_arg(ap, cyg_uint32);
-
-        va_end(ap);
-    }        
+        break;
     default:
         break;
     }
+    va_end(ap);
     CYGARC_HAL_RESTORE_GP();
     return ret;
 }

@@ -96,7 +96,7 @@ ftp_test(struct bootp *bp)
     // Set up host address
     host.sin_family = AF_INET;
     host.sin_addr = bp->bp_siaddr;
-    host.sin_port = htons(sent->s_port);
+    host.sin_port = sent->s_port; // Network order already
     if (connect(s, (struct sockaddr *)&host, sizeof(host)) < 0) {
         pexit("connect");
     }

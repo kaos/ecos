@@ -183,7 +183,7 @@ gets(char *buf, int buflen, int timeout)
     static char last_ch = '\0';
 
     while (true) {
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
         if (script && *script) {
             c = *script++;
             do_idle(false);
@@ -320,18 +320,18 @@ verify_action(char *fmt, ...)
 {
     va_list ap;
     char ans[8];
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
     unsigned char *hold_script = script;
 #endif
 
     va_start(ap, fmt);
     vprintf(fmt, ap);
     printf(" - are you sure (y/n)? ");
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
     script = (unsigned char *)0;
 #endif
     gets(ans, sizeof(ans), 0);
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
     script = hold_script;
 #endif
     return ((ans[0] == 'y') || (ans[0] == 'Y'));

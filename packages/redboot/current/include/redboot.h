@@ -87,9 +87,12 @@ EXTERN bootp_header_t my_bootp_info;
 EXTERN int gdb_port;
 #endif
 
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
 EXTERN unsigned char *script;
 EXTERN int script_timeout;
+#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+EXTERN int console_baud_rate;
+#endif
 #endif
 
 // Prototypes

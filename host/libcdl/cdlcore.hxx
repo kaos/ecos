@@ -15,7 +15,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -1577,7 +1577,7 @@ class CdlEvalContext {
     CdlProperty         property;
     CdlToplevel         toplevel;
 
-    CdlEvalContext(CdlTransaction, CdlNode, CdlProperty, CdlToplevel = 0);
+    CdlEvalContext(CdlTransaction, CdlNode = 0, CdlProperty = 0, CdlToplevel = 0);
     ~CdlEvalContext();
     
     bool                check_this(cyg_assert_class_zeal = cyg_quick) const;
@@ -2128,6 +2128,7 @@ enum CdlExprOp {
     CdlExprOp_And               = 32,   // x && y
     CdlExprOp_Or                = 33,   // x || y
     CdlExprOp_Cond              = 34,   // x ? a : b
+    CdlExprOp_StringConcat      = 35    // x . y
 };
 
 // ----------------------------------------------------------------------------
@@ -2137,15 +2138,75 @@ enum CdlExprOp {
 // as std::string do not mix, and the amount of memory involved is
 // not big enough to really worry about.
 
+#define CdlFunction_MaxArgs     3
 struct CdlSubexpression {
 
-    CdlExprOp      op;
-    CdlSimpleValue constants;           // String, integer or double constant
-    int         reference_index;        // iff CdlExprOp_Reference
+    CdlExprOp           op;
+    CdlSimpleValue      constants;              // String, integer or double constant
+    int                 reference_index;        // iff CdlExprOp_Reference
 
-    int         lhs_index;              // for all non-constant operators
-    int         rhs_index;              // for binary and ternary operators only
-    int         rrhs_index;             // only for ternary operators.
+    int                 lhs_index;              // for all non-constant operators
+    int                 rhs_index;              // for binary and ternary operators only
+    int                 rrhs_index;             // only for ternary operators.
+    
+    int                 func;                   // iff CdlExprOp_Function
+    int                 args[CdlFunction_MaxArgs];
+};
+
+//}}}
+//{{{  CdlFunction                      
+
+// ----------------------------------------------------------------------------
+// Generic support for function parsing, evaluation, and inference. The
+// implementation is extensible so that functions can be added to the
+// core via static constructors.
+
+class CdlFunction {
+    
+    friend class CdlTest;
+    
+  public:
+    CdlFunction(const char* /* name */, int /* no_args */,
+                void (*)(CdlExpression, const CdlSubexpression&),
+                void (*)(CdlEvalContext&, CdlExpression, const CdlSubexpression&, CdlSimpleValue&),
+                bool (*)(CdlTransaction, CdlExpression, unsigned int, bool, int),
+                bool (*)(CdlTransaction, CdlExpression, unsigned int, CdlSimpleValue&, int)
+                );
+    ~CdlFunction();
+    
+    static bool         is_function(std::string, int&);
+    static std::string  get_name(int);
+    static int          get_args_count(int);
+
+    static void         check(CdlExpression, const CdlSubexpression&);
+    static void         eval(CdlEvalContext&, CdlExpression, const CdlSubexpression&, CdlSimpleValue&);
+    static bool         infer_bool(CdlTransaction, CdlExpression, unsigned int, bool, int);
+    static bool         infer_value(CdlTransaction, CdlExpression, unsigned int, CdlSimpleValue&, int);
+
+    static void         (*null_check)(CdlExpression, const CdlSubexpression&);
+    static bool         (*null_infer_bool)(CdlTransaction, CdlExpression, unsigned int, bool, int);
+    static bool         (*null_infer_value)(CdlTransaction, CdlExpression, unsigned int, CdlSimpleValue&, int);
+    
+  protected:
+
+  private:
+    // Keep track of all functions in the system
+    static std::vector<CdlFunction*>    all_functions;
+
+    // Each function object is given a unique id during initialization
+    static int          next_id;
+    int                 id;
+
+    // Provided by the constructor
+    const char*         name;
+    int                 number_args;
+    void                (*check_fn)(CdlExpression, const CdlSubexpression&);
+    void                (*eval_fn)(CdlEvalContext&, CdlExpression, const CdlSubexpression&, CdlSimpleValue&);
+    bool                (*infer_bool_fn)(CdlTransaction, CdlExpression, unsigned int, bool, int);
+    bool                (*infer_value_fn)(CdlTransaction, CdlExpression, unsigned int, CdlSimpleValue&, int);
+    
+    // The default constructor is illegal
+    CdlFunction();
 };
 
 //}}}
@@ -2225,6 +2286,7 @@ class CdlExpressionBody {
     // by list and goal expressions.
     void eval(CdlEvalContext&, CdlSimpleValue&);
     void eval_internal(CdlEvalContext&, CdlSimpleValue&);
+    void eval_subexpression(CdlEvalContext&, int, CdlSimpleValue&);
     
     // The full original expression is useful for diagnostics purposes
     std::string get_original_string() const;
@@ -2375,6 +2437,27 @@ class CdlGoalExpressionBody : private CdlExpressionBody {
         CdlGoalExpressionBody_Invalid = 0,
         CdlGoalExpressionBody_Magic   = 0x5a58bb24
     } cdlgoalexpressionbody_cookie;
+};
+
+//}}}
+//{{{  CdlInfer                         
+
+// ----------------------------------------------------------------------------
+// A utility class related to inference. This exports the main functions
+// needed, allowing e.g. per-function inference routines from func.cxx to
+// interact with the main inference engine.
+
+class CdlInfer {
+  public:
+    static bool make_active(CdlTransaction, CdlNode, int /* level */);
+    static bool make_inactive(CdlTransaction, CdlNode, int /* level */);
+    static bool set_valuable_value(CdlTransaction, CdlValuable, CdlSimpleValue&, int /* level */);
+    static bool set_valuable_bool(CdlTransaction, CdlValuable, bool, int /* level */);
+    static bool subexpr_value(CdlTransaction, CdlExpression, unsigned int /* index */, CdlSimpleValue& goal, int /* level */);
+    static bool subexpr_bool(CdlTransaction, CdlExpression, unsigned int /* index */, bool, int /* level */);
+
+  private:
+    CdlInfer();
 };
 
 //}}}

@@ -1,3 +1,22 @@
+2001-05-07  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: 
+	Disable CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED since most
+	installations will now use RedBoot.
+
+2001-05-05  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot_ROM_40.ecm: 
+	* misc/redboot_RAM_40.ecm: New configuration - 40MHz boards.
+
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: Update for latest RedBoot, include compression.
+
+	* src/hal_diag.c: 
+	* include/plf_stub.h: 
+	* include/plf_intr.h: 
+	* cdl/hal_powerpc_mbx.cdl: Fix copyrights.
+
 2001-03-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_mbx.cdl: Does not guarantee virtual vector
@@ -503,7 +522,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

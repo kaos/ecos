@@ -1,3 +1,11 @@
+2001-05-02  Hugo Tyson  <hmt@redhat.com>
+
+	* include/devs_eth_nano.inl: Because we now arrange PCI window
+	memory distant from normal RAM, it can be scattered in physical
+	RAM.  So define CYGHWR_DEVS_ETH_INTEL_I82559_PCIMEM_DISCONTIGUOUS.
+	This is not really needed by default with only 1Mb of PCI window,
+	but the overhead is small.
+
 2001-03-15  Hugo Tyson  <hmt@redhat.com>
 
 	* cdl/nano_eth_drivers.cdl: New component defined here because

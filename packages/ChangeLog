@@ -1,3 +1,11 @@
+2001-04-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add generic 16x5x driver to iq80310 target.
+
+2001-04-24  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add missing dependency on StrataFlash driver for Assabet.
+
 2001-04-03  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db:

@@ -1,3 +1,31 @@
+2001-05-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/hal_if.c (delay_us): Warn if using default
+
+2001-05-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/interrupts.cdl (CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE):
+	Default stack size to 32K for non-kernel configs, and describe
+	why.
+
+2001-05-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_if.c (hal_ctrlc_check): Only return 'true' if the ISR/DSR
+	actually processes a ^C.  Otherwise, interrupts/date can be lost on
+	a shared channel (like an ethernet device).
+
+2001-04-30  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: Add configury to control initial cache behaviour.
+
+2001-04-30  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/hal.cdl: Add tests/cpp1.c to the tests list.
+
+	* tests/cpp1.c: New test, to test for regressions in the tools.
+	This one is for a CPP bug in the XScale tools where '+' binds too
+	strongly following a ')' because it is mistaken for unary plus.
+
 2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/dbg-threads-api.h: Add dbg_thread_id() function prototype.

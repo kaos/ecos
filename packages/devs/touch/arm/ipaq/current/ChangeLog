@@ -1,3 +1,7 @@
+2001-04-24  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/touch_ipaq.cdl: Add dependency on file I/O package.
+
 2001-03-06  Gary Thomas  <gthomas@redhat.com>
 
 	* src/ipaq_ts.c: Fully interrupt driven mode, including select()

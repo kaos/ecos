@@ -343,7 +343,7 @@ int cyg_net_get_mem_stats( int which, cyg_mempool_info *p )
         default:
             return 0;
         }
-    return p;
+    return (int)p;
 }
 
 int
@@ -384,10 +384,10 @@ arc4random(void)
 {
     cyg_uint32 res;
     static unsigned long seed = 0xDEADB00B;
-    HAL_CLOCK_READ(&res);  // Not so bad...
-    seed = ((seed & 0x07F00FF) << 7) ^
-        (seed & 0xF80FF00) ^ 
-        (res << 13);
+    HAL_CLOCK_READ(&res);  // Not so bad... (but often 0..N where N is small)
+    seed = ((seed & 0x007F00FF) << 7) ^
+        ((seed & 0x0F80FF00) >> 8) ^ // be sure to stir those low bits
+        (res << 13) ^ (res >> 9);    // using the clock too!
     return (int)seed;
 }
 

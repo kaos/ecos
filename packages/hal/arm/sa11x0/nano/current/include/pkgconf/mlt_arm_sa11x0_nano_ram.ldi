@@ -6,7 +6,8 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0, LENGTH = 0x2000000
+    ram : ORIGIN = 0, LENGTH = 0xf00000
+    fixed : ORIGIN = 0xfa00000, LENGTH = 0x100000
 }
 
 SECTIONS
@@ -23,6 +24,6 @@ SECTIONS
     SECTION_data (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
-    CYG_LABEL_DEFN(__pci_window) = 0x1e00000; . = CYG_LABEL_DEFN(__pci_window) + 0x100000;
+    CYG_LABEL_DEFN(__pci_window) = 0xfa00000; . = CYG_LABEL_DEFN(__pci_window) + 0x100000;
     SECTIONS_END
 }

@@ -102,6 +102,13 @@ RedBoot_cmd("reset",
             do_reset 
     );
 #endif
+#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+RedBoot_cmd("baudrate", 
+            "Set/Query the system console baud rate", 
+            "[-b <rate>]",
+            do_baud_rate
+    );
+#endif
 
 // Define table boundaries
 CYG_HAL_TABLE_BEGIN( __RedBoot_INIT_TAB__, RedBoot_inits );
@@ -170,7 +177,7 @@ cyg_start(void)
     console_selected = false;
 #endif
     console_echo = true;
-    CYGACC_CALL_IF_DELAY_US(2*100000);
+    CYGACC_CALL_IF_DELAY_US((cyg_int32)2*100000);
 
     ram_start = (unsigned char *)CYGMEM_REGION_ram;
     ram_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
@@ -212,11 +219,19 @@ cyg_start(void)
     user_ram_end = workspace_end;
     do_version(0,0);
 
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-    // Give the guy a chance to abort any boot script
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
+# ifdef CYGDAT_REDBOOT_DEFAULT_BOOT_SCRIPT
+    if (!script) {
+      script = CYGDAT_REDBOOT_DEFAULT_BOOT_SCRIPT;
+#  ifndef CYGSEM_REDBOOT_FLASH_CONFIG
+      script_timeout = CYGNUM_REDBOOT_BOOT_SCRIPT_DEFAULT_TIMEOUT;
+#  endif
+    }
+# endif
     if (script) {
+        // Give the guy a chance to abort any boot script
         unsigned char *hold_script = script;
-        int script_timeout_ms = script_timeout * CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION;
+        int script_timeout_ms = script_timeout * CYGNUM_REDBOOT_BOOT_SCRIPT_TIMEOUT_RESOLUTION;
         printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                script_timeout_ms/1000, script_timeout_ms%1000);
         script = (unsigned char *)0;
@@ -278,6 +293,7 @@ void
 do_caches(int argc, char *argv[])
 {
     unsigned long oldints;
+    int dcache_on, icache_on;
 
     if (argc == 2) {
         if (strcmpci(argv[1], "on") == 0) {
@@ -298,7 +314,9 @@ do_caches(int argc, char *argv[])
             printf("Invalid cache mode: %s\n", argv[1]);
         }
     } else {
-        printf("caches ?\n");
+        HAL_DCACHE_IS_ENABLED(dcache_on);
+        HAL_ICACHE_IS_ENABLED(icache_on);
+        printf("Data cache: %s, Instruction cache: %s\n", dcache_on?"On":"Off", icache_on?"On":"Off");
     }
 }
 
@@ -343,8 +361,7 @@ do_dump(int argc, char *argv[])
               (void **)&base, (bool *)&base_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void **)&len, (bool *)&len_set, "length");
-    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, ""))
-    {
+    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, "")) {
         return;
     }
     if (!base_set) {
@@ -372,8 +389,7 @@ do_cksum(int argc, char *argv[])
               (void **)&base, (bool *)&base_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void **)&len, (bool *)&len_set, "length");
-    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, ""))
-    {
+    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, "")) {
         return;
     }
     if (!base_set || !len_set) {
@@ -447,6 +463,53 @@ do_reset(int argc, char *argv[])
     CYGACC_CALL_IF_DELAY_US(50000);
     HAL_PLATFORM_RESET();
     printf("!! oops, RESET not working on this platform\n");
+}
+#endif
+
+#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+
+void
+set_console_baud_rate(int rate)
+{
+    hal_virtual_comm_table_t *__chan;
+    int ret;
+
+    if (rate != CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD) {
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+        __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+        ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SETBAUD, rate);
+        if (ret <= 0) {
+            printf("Failed\n");
+        }
+    }
+}
+
+void
+do_baud_rate(int argc, char *argv[])
+{
+    int new_rate, ret;
+    bool new_rate_set;
+    hal_virtual_comm_table_t *__chan;
+    struct option_info opts[1];
+
+    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&new_rate, (bool *)&new_rate_set, "new baud rate");
+    if (!scan_opts(argc, argv, 1, opts, 1, 0, 0, "")) {
+        return;
+    }
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+    if (new_rate_set) {
+        set_console_baud_rate(new_rate);
+    } else {
+        ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);
+        printf("Baud rate = ");
+        if (ret <= 0) {
+            printf("unknown\n");
+        } else {
+            printf("%d\n", ret);
+        }
+    }
 }
 #endif
 

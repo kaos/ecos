@@ -1,3 +1,10 @@
+2001-04-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/uit_objs.cxx: Workaround xscale tools preprocessor bug
+	by avoiding determining the stack size with the preprocessor.
+	* cdl/tasks.cdl (CYGDAT_UITRON_TASK_EXTERNS and 
+	CYGDAT_UITRON_TASK_INITIALISERS): Ditto
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* include/uit_func.inl: CYG_SCHED_UNIQUE_PRIORITIES changed to

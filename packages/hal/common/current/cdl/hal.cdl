@@ -109,6 +109,37 @@ cdl_package CYGPKG_HAL {
         }
     }
 
+    cdl_component CYGPKG_HAL_CACHE_CONTROL {
+        display       "Explicit control over cache behaviour"
+        flavor        none
+        no_define
+        description   "
+            These options let the default behaviour of the caches 
+            be easily configurable."
+
+        cdl_option CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP {
+            display       "Enable DATA cache on startup"
+            default_value 1
+            description   "
+                Enabling this option will cause the data cache to be enabled
+                as soon as practicable when eCos starts up.  One would choose
+                to disable this if the data cache cannot safely be turned on,
+                such as a case where the cache(s) require additional platform
+                specific setup."
+        }
+
+        cdl_option CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP {
+            display       "Enable INSTRUCTION cache on startup"
+            default_value 1
+            description   "
+                Enabling this option will cause the instruction cache to be enabled
+                as soon as practicable when eCos starts up.  One would choose
+                to disable this if the instruction cache cannot safely be turned on,
+                such as a case where the cache(s) require additional platform
+                specific setup."
+        }
+    }
+
     cdl_component CYGPKG_HAL_DEBUG {
         display       "Source-level debugging support"
         flavor        none
@@ -385,7 +416,7 @@ cdl_package CYGPKG_HAL {
         display "Common HAL tests"
         flavor  data
         no_define
-        calculated { "tests/cache tests/context tests/intr" }
+        calculated { "tests/cache tests/context tests/intr tests/cpp1.c" }
         description   "
             This option specifies the set of tests for the common HAL."
     }

@@ -762,7 +762,7 @@ diff -uNr /work2/iPAQ/HandHelds.org/cvs/linux/kernel/drivers/mtd/redboot.c drive
 +++ drivers/mtd/redboot.c	Fri Mar 23 20:11:37 2001
 @@ -0,0 +1,148 @@
 +/*
-+ * $Id: elinux.patch,v 1.1 2001/04/03 17:46:51 jlarmour Exp $
++ * $Id: redboot.c,v 1.2 2001/03/14 13:19:47 dwmw2 Exp $
 + *
 + * Parse RedBoot-style Flash Image System (FIS) tables and
 + * produce a Linux partition array to match.

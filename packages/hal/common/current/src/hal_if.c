@@ -146,6 +146,7 @@ delay_us(cyg_int32 usecs)
     // 1us on most CPUs running between 30-100MHz [depends on how many
     // instructions this compiles to, how many dispatch units can be
     // used for the simple loop, actual CPU frequency, etc]
+#warning No HAL_DELAY_US() macro available, using loop
     while (usecs-- > 0) {
         int i;
         for (i = 0; i < 10; i++);
@@ -768,9 +769,10 @@ hal_ctrlc_check(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     }
     if (vector == gdb_vector) {
         isr_ret = CYGACC_COMM_IF_DBG_ISR(*__chan, &ctrlc, vector, data);
-        if (ctrlc)
+        if (ctrlc) {
             cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
-        return true;
+            return true;
+        }
     }
     return false;
 }

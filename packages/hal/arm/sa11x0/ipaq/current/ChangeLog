@@ -1,3 +1,18 @@
+2001-05-16  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h: Always init UART3.  Add support
+	for deep sleep/resume.  Note: this has only been tested from
+	Linux.  Support for sleep/resume will have to come later for eCos.
+
+2001-04-30  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_platform_setup.h (CYGSEM_HAL_ROM_RESET_USES_JUMP): 
+	Explicitly defined to handle strange startup situations.
+
+2001-04-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_sa11x0_ipaq.cdl: Remove redundant -Wl,-N from link flags
+
 2001-04-18  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_platform_setup.h: Clean up Compaq startup mode which

@@ -24,7 +24,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -43,8 +43,10 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 SUBDIRS          =
 
-## Pick up an appropriate header file search path from configure
-INCLUDES = -I@cyg_ac_infra_incdir@ -I@cyg_ac_cdl_incdir@ -I@cyg_ac_tcl_incdir@ -I@win_srcdir@/../../common/common
+## Pick up compiler flags etc. from configury
+INCLUDES        = -I@cyg_ac_infra_incdir@ -I@cyg_ac_cdl_incdir@ -I@cyg_ac_tcl_incdir@ -I@win_srcdir@/../../common/common
+AM_CFLAGS	= @cyg_CFLAGS@
+AM_CXXFLAGS	= @cyg_CXXFLAGS@
 
 if MSVC
 LIBS    = @cyg_ac_cdl_libraries@ @cyg_ac_infra_libraries@ @cyg_ac_tcl_libs@ \

@@ -1,3 +1,8 @@
+2001-05-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_ceb_v850.cdl: Change default tools to v850e-elf, and
+	compile with -mv850 flag
+
 2001-04-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_v85x_ceb_v850.cdl: Embryonic attempt at diag output via

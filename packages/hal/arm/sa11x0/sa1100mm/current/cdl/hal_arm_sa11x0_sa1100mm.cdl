@@ -255,7 +255,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_SA1100MM {
         }
 
         cdl_option CYGPKG_HAL_ARM_SA11X0_SA1100MM_CFLAGS_REMOVE {
-            display "Supressed compiler flags"
+            display "Suppressed compiler flags"
             flavor  data
             no_define
             default_value { "" }

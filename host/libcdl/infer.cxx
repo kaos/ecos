@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -60,90 +60,30 @@
 
 //}}}
 
-//{{{  Illegal value resolution                 
-
-// ----------------------------------------------------------------------------
-// This is not yet implemented.
-
-bool
-CdlConflict_IllegalValueBody::inner_resolve(CdlTransaction transaction, int level)
-{
-    CYG_REPORT_FUNCNAMETYPE("CdlConflict_IllegalValue::inner_resolve", "result %d");
-    CYG_REPORT_FUNCARG3XV(this, transaction, level);
-    CYG_PRECONDITION_THISC();
-    CYG_PRECONDITION_CLASSC(transaction);
-
-    CYG_UNUSED_PARAM(CdlTransaction, transaction);
-    
-    CYG_REPORT_RETVAL(false);
-    return false;
-}
-
-//}}}
-//{{{  Requires resolution                      
+//{{{  CdlInfer class                           
 
 //{{{  Description                              
 
 // ----------------------------------------------------------------------------
-// The entry point for this code is
-// CdlConflict_RequiresBody::resolve(). "this" is a requires conflict
-// that needs to be resolved, if possible. There are twos argument: a
-// sub-transaction, which should be filled in with the solution if
-// possible; and a recursion level indicator, 0 if this is a top-level
-// inference engine invocation rather than a recursive one. There are
-// additional static parameters inference_recursion_limit and
-// inference_override which control details of the inference process.
+// The following functions provide the main entry points for inference.
 //
-// There are three ways in which a "requires" conflict can be
-// eliminated:
-// 1) change the terms in the expression so that the "requires" property
-//    evaluates to true.
-// 2) disable the source node so that the "requires" property is ignored.
-// 3) or make the source node inactive, with the same effect.
-//
-// The 1st approach is generally better, but may involve changing user
-// settings in situations where the 2nd or 3rd would be ok. Anyway
-// there is clearly a need for some OR logic right from the start.
-//
-// As an example of what is involved in an inference, consider the
-// simple case of a "requires XXX" property. This constraint may not
-// be satisfied because XXX is disabled,  because XXX is inactive,
-// or both.
-//
-// Assume for simplicity that XXX is already active. The inference
-// engine can now figure out that XXX must be enabled (it must be
-// of type bool or booldata, or else the conflict would not have
-// arisen). This is achieved by creating a sub-transaction,
-// enabling XXX in that sub-transaction, propagating the
-// sub-transaction and performing further inference. The inference
-// is successfull if no new conflicts are introduced.
-//
-// However, even if a solution is found it is not necessarily
-// acceptable without user confirmation, subject to
-// inference_override. This is handled in part by the transaction
-// class itself, in the resolve() and user_confirmation_required()
-// members. In cases where the inference engine can choose between
-// several alternatives it needs to consider this issue for each one.
-// 
-// There are a number of key entry points:
-//
-// 1) bool infer_make_active(CdlTransaction, CdlValuable, level)
+// 1) bool CdlInfer::make_active(CdlTransaction, CdlValuable, level)
 //    Do whatever it takes to make the valuable active in
 //    a clean sub-transaction, if possible.
-// 2) bool infer_make_inactive(CdlTransaction, CdlValuable, level)
+// 2) bool CdlInfer::make_inactive(CdlTransaction, CdlValuable, level)
 //    Do whatever it takes to make the valuable inactive.
-// 3) bool infer_set_valuable_value(CdlTransaction, CdlValuable, CdlSimpleValue&, level)
+// 3) bool CdlInfer::set_valuable_value(CdlTransaction, CdlValuable, CdlSimpleValue&, level)
 //    Try to set the valuable to the specified value, taking into
 //    account the different flavors.
-// 4) bool infer_set_valuable_bool(CdlTransaction, CdlValuable, bool, level)
+// 4) bool CdlInfer::set_valuable_bool(CdlTransaction, CdlValuable, bool, level)
 //    Similar to (3) but deals with the boolean aspect of the valuable
 //    rather than the data part.
-// 5) bool infer_subexpr(CdlTransaction, CdlExpression, int index, CdlSimpleValue& goal, level)
+// 5) bool CdlInfer::subexpr(CdlTransaction, CdlExpression, int index, CdlSimpleValue& goal, level)
 //    Process a sub-expression and try to make it evaluate to the
 //    goal.
-// 6) bool infer_subexpr_bool(CdlTransaction, CdlExpression, int index, bool goal, level)
+// 6) bool CdlInfer::subexpr_bool(CdlTransaction, CdlExpression, int index, bool goal, level)
 //    Ditto but only deal with boolean goals. If the expression starts to
-//    involve arithmetic etc. then we need to move to infer_subexpr()
+//    involve arithmetic etc. then we need to move to CdlInfer::subexpr()
 //
 //    As might be expected, the sub-expression handlers contain a big
 //    switch statement and calls into various auxiliary functions when
@@ -156,18 +96,7 @@ CdlConflict_IllegalValueBody::inner_resolve(CdlTransaction transaction, int leve
 // desired condition is already satisfied.
 
 //}}}
-//{{{  Forward declarations                     
-
-// ----------------------------------------------------------------------------
-static bool infer_make_active(CdlTransaction, CdlNode, int);
-static bool infer_make_inactive(CdlTransaction, CdlNode, int);
-static bool infer_set_valuable_value(CdlTransaction, CdlValuable, CdlSimpleValue&, int);
-static bool infer_set_valuable_bool(CdlTransaction, CdlValuable, bool, int);
-static bool infer_subexpr_value(CdlTransaction, CdlExpression, unsigned int, CdlSimpleValue&, int);
-static bool infer_subexpr_bool(CdlTransaction, CdlExpression, unsigned int, bool, int);
-
-//}}}
-//{{{  infer_make_active()                      
+//{{{  CdlInfer::make_active()                  
 
 // ----------------------------------------------------------------------------
 // Making a node active. This requires the following conditions to be
@@ -176,10 +105,10 @@ static bool infer_subexpr_bool(CdlTransaction, CdlExpression, unsigned int, bool
 // 2) if the parent has flavor bool or booldata, it must be enabled
 // 3) any active_if properties 
 
-static bool
-infer_make_active(CdlTransaction transaction, CdlNode node, int level)
+bool
+CdlInfer::make_active(CdlTransaction transaction, CdlNode node, int level)
 {
-    CYG_REPORT_FUNCNAMETYPE("infer_make_active", "result %d");
+    CYG_REPORT_FUNCNAMETYPE("CdlInfer::make_active", "result %d");
     CYG_REPORT_FUNCARG3XV(transaction, node, level);
     CYG_PRECONDITION_CLASSC(transaction);
     CYG_PRECONDITION_CLASSC(node);
@@ -194,7 +123,7 @@ infer_make_active(CdlTransaction transaction, CdlNode node, int level)
     CdlContainer parent = node->get_parent();
     CYG_ASSERT_CLASSC(parent);
     if (!transaction->is_active(parent)) {
-        if (!infer_make_active(transaction, parent, level)) {
+        if (!CdlInfer::make_active(transaction, parent, level)) {
             CYG_REPORT_RETVAL(result);
             return result;
         }
@@ -205,7 +134,7 @@ infer_make_active(CdlTransaction transaction, CdlNode node, int level)
         CdlValueFlavor flavor = parent_valuable->get_flavor();
         if (((CdlValueFlavor_Bool == flavor) || (CdlValueFlavor_BoolData == flavor)) &&
             !parent_valuable->is_enabled(transaction)) {
-            if (!infer_set_valuable_bool(transaction, parent_valuable, true, level)) {
+            if (!CdlInfer::set_valuable_bool(transaction, parent_valuable, true, level)) {
                 CYG_REPORT_RETVAL(result);
                 return result;
             }
@@ -223,7 +152,7 @@ infer_make_active(CdlTransaction transaction, CdlNode node, int level)
             try {
                 if (!(*goal_i)->eval(context)) {
                     CdlExpression expr = (*goal_i)->get_expression();
-                    if (!infer_subexpr_bool(transaction, expr, expr->first_subexpression, true, level)) {
+                    if (!CdlInfer::subexpr_bool(transaction, expr, expr->first_subexpression, true, level)) {
                         CYG_REPORT_RETVAL(result);
                         return result;
                     }
@@ -242,7 +171,7 @@ infer_make_active(CdlTransaction transaction, CdlNode node, int level)
 }
 
 //}}}
-//{{{  infer_make_inactive()                    
+//{{{  CdlInfer::make_inactive()                
 
 // ----------------------------------------------------------------------------
 // Making a node inactive can be done in three ways:
@@ -252,10 +181,10 @@ infer_make_active(CdlTransaction transaction, CdlNode node, int level)
 // 3) if there are any active_if properties, they could be considered
 //    as well. For now this possibility is ignored.
 
-static bool
-infer_make_inactive(CdlTransaction transaction, CdlNode node, int level)
+bool
+CdlInfer::make_inactive(CdlTransaction transaction, CdlNode node, int level)
 {
-    CYG_REPORT_FUNCNAMETYPE("infer_make_inactive", "result %d");
+    CYG_REPORT_FUNCNAMETYPE("CdlInfer::make_inactive", "result %d");
     CYG_REPORT_FUNCARG3XV(transaction, node, level);
     CYG_PRECONDITION_CLASSC(transaction);
     CYG_PRECONDITION_CLASSC(node);
@@ -282,7 +211,7 @@ infer_make_inactive(CdlTransaction transaction, CdlNode node, int level)
             // A sub-transaction is needed because an alternative approach is
             // possible later on.
             CdlTransaction subtransaction = transaction->make(transaction->get_conflict());
-            if (infer_set_valuable_bool(subtransaction, parent_valuable, false, level)) {
+            if (CdlInfer::set_valuable_bool(subtransaction, parent_valuable, false, level)) {
                 subtransaction->commit();
                 delete subtransaction;
                 result = true;
@@ -296,7 +225,7 @@ infer_make_inactive(CdlTransaction transaction, CdlNode node, int level)
     }
 
     // It is not possible to disable the parent. How about making it inactive?
-    if (infer_make_inactive(transaction, parent, level)) {
+    if (CdlInfer::make_inactive(transaction, parent, level)) {
         result = true;
         CYG_REPORT_RETVAL(result);
         return result;
@@ -309,16 +238,16 @@ infer_make_inactive(CdlTransaction transaction, CdlNode node, int level)
 }
 
 //}}}
-//{{{  infer_set_valuable_value()               
+//{{{  CdlInfer::set_valuable_value()           
 
 // ----------------------------------------------------------------------------
 // Deal with the value part of a valuable. The valuable is known to exist
 // and be active, so this code only deals with the actual value part.
 
-static bool
-infer_set_valuable_value(CdlTransaction transaction, CdlValuable valuable, CdlSimpleValue& goal, int level)
+bool
+CdlInfer::set_valuable_value(CdlTransaction transaction, CdlValuable valuable, CdlSimpleValue& goal, int level)
 {
-    CYG_REPORT_FUNCNAMETYPE("infer_set_valuable_value", "result %d");
+    CYG_REPORT_FUNCNAMETYPE("CdlInfer::set_valuable_value", "result %d");
     CYG_REPORT_FUNCARG3XV(transaction, valuable, level);
     CYG_PRECONDITION_CLASSC(transaction);
     CYG_PRECONDITION_CLASSC(valuable);
@@ -395,17 +324,17 @@ infer_set_valuable_value(CdlTransaction transaction, CdlValuable valuable, CdlSi
 }
 
 //}}}
-//{{{  infer_set_valuable_bool()                
+//{{{  CdlInfer::set_valuable_bool()            
 
 // ----------------------------------------------------------------------------
 // Deal with the boolean part of a valuable. It is assumed that active vs.
 // inactive is dealt with elsewhere so this code only needs to worry
 // about the valuable itself.
 
-static bool
-infer_set_valuable_bool(CdlTransaction transaction, CdlValuable valuable, bool goal, int level)
+bool
+CdlInfer::set_valuable_bool(CdlTransaction transaction, CdlValuable valuable, bool goal, int level)
 {
-    CYG_REPORT_FUNCNAMETYPE("infer_set_valuable_bool", "result %d");
+    CYG_REPORT_FUNCNAMETYPE("CdlInfer::set_valuable_bool", "result %d");
     CYG_REPORT_FUNCARG4XV(transaction, valuable, goal, level);
     CYG_PRECONDITION_CLASSC(transaction);
     CYG_PRECONDITION_CLASSC(valuable);
@@ -477,8 +406,70 @@ infer_set_valuable_bool(CdlTransaction transaction, CdlValuable valuable, bool g
 }
 
 //}}}
-//{{{  infer_subexpr()                          
+//{{{  infer_choose()                           
 
+// ----------------------------------------------------------------------------
+// Given two sub-transactions which may or may not have succeeded, pick the
+// preferred one. This happens for many binary operators.
+
+static bool
+infer_choose2(CdlTransaction lhs_transaction, bool lhs_result, CdlTransaction rhs_transaction, bool rhs_result)
+{
+    CYG_REPORT_FUNCNAMETYPE("infer_choose2", "result %d");
+    CYG_REPORT_FUNCARG4XV(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
+    bool result = false;
+    
+    if (lhs_result && !rhs_result) {
+        // Only the lhs succeeded.
+        rhs_transaction->cancel();
+        lhs_transaction->commit();
+        result = true;
+    } else if (!lhs_result && rhs_result) {
+        // Only the rhs succeeded.
+        lhs_transaction->cancel();
+        rhs_transaction->commit();
+        result = true;
+    } else if (lhs_result && rhs_result) {
+        // Both sides succeeded. Next check for user_confirmation.
+        bool lhs_confirm_needed = lhs_transaction->user_confirmation_required();
+        bool rhs_confirm_needed = rhs_transaction->user_confirmation_required();
+        if (lhs_confirm_needed && !rhs_confirm_needed) {
+            lhs_transaction->cancel();
+            rhs_transaction->commit();
+            result = true;
+        } else if (!lhs_confirm_needed && rhs_confirm_needed) {
+            rhs_transaction->cancel();
+            lhs_transaction->commit();
+            result = true;
+        } else {
+            // Neither or both of the two sides need user confirmation, so they
+            // are equal in that respect
+            if (lhs_transaction->is_preferable_to(rhs_transaction)) {
+                rhs_transaction->cancel();
+                lhs_transaction->commit();
+                result = true;
+            } else {
+                lhs_transaction->cancel();
+                rhs_transaction->commit();
+                result = true;
+            }
+        }
+    } else {
+        // Neither side succeeded.
+        lhs_transaction->cancel();
+        rhs_transaction->cancel();
+    }
+    
+    // Zero or one of these transactions will have been committed,
+    // neither is still necessary.
+    delete lhs_transaction;
+    delete rhs_transaction;
+
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+//}}}
 //{{{  infer_handle_reference()                 
 
 // ----------------------------------------------------------------------------
@@ -508,12 +499,12 @@ infer_handle_reference_bool(CdlTransaction transaction, CdlValuable valuable, bo
     // and be either enabled or have a non-zero value.
     if (goal) {
         if (!transaction->is_active(valuable)) {
-            if (!infer_make_active(transaction, valuable, level)) {
+            if (!CdlInfer::make_active(transaction, valuable, level)) {
                 CYG_REPORT_RETVAL(result);
                 return result;
             }
         }
-        if (infer_set_valuable_bool(transaction, valuable, true, level)) {
+        if (CdlInfer::set_valuable_bool(transaction, valuable, true, level)) {
             result = true;
         }
 
@@ -531,7 +522,7 @@ infer_handle_reference_bool(CdlTransaction transaction, CdlValuable valuable, bo
         // needed. Disabling is generally preferred to making inactive.
         CdlTransaction value_transaction    = transaction->make(transaction->get_conflict());
         CdlTransaction inactive_transaction = 0;
-        bool value_result = infer_set_valuable_bool(value_transaction, valuable, false, level);
+        bool value_result = CdlInfer::set_valuable_bool(value_transaction, valuable, false, level);
         if (value_result && !value_transaction->user_confirmation_required()) {
             value_transaction->commit();
             delete value_transaction;
@@ -542,7 +533,7 @@ infer_handle_reference_bool(CdlTransaction transaction, CdlValuable valuable, bo
         }
 
         inactive_transaction = transaction->make(transaction->get_conflict());
-        bool inactive_result = infer_make_inactive(inactive_transaction, valuable, level);
+        bool inactive_result = CdlInfer::make_inactive(inactive_transaction, valuable, level);
         if (!inactive_result) {
             if (value_result) {
                 // Changing the value is the only solution.
@@ -599,7 +590,7 @@ infer_handle_reference_bool(CdlTransaction transaction, CdlValuable valuable, bo
 // the goal is 0 then we could try to make the valuable inactive, but
 // this possibility is ignored for now in case it leads to unexpected
 // behaviour. If it is active then we try to set the value, using
-// infer_set_valuable_value().
+// CdlInfer::set_valuable_value().
 
 static bool
 infer_handle_reference_value(CdlTransaction transaction, CdlValuable valuable, CdlSimpleValue& goal, int level)
@@ -621,7 +612,7 @@ infer_handle_reference_value(CdlTransaction transaction, CdlValuable valuable, C
                 result = true;
             }
         } else {
-            result = infer_set_valuable_value(transaction, valuable, goal, level);
+            result = CdlInfer::set_valuable_value(transaction, valuable, goal, level);
         }
     }
     
@@ -766,7 +757,7 @@ infer_handle_logical_NOT_bool(CdlTransaction transaction, CdlExpression expr, un
 {
     CYG_REPORT_FUNCNAMETYPE("infer_handle_logical_NOT_bool", "result %d");
 
-    bool result = infer_subexpr_bool(transaction, expr, index, !goal, level);
+    bool result = CdlInfer::subexpr_bool(transaction, expr, index, !goal, level);
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -782,7 +773,7 @@ infer_handle_logical_NOT_value(CdlTransaction transaction, CdlExpression expr, u
         new_goal = true;
     }
 
-    bool result = infer_subexpr_bool(transaction, expr, index, new_goal, level);
+    bool result = CdlInfer::subexpr_bool(transaction, expr, index, new_goal, level);
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -811,8 +802,8 @@ infer_handle_AND_bool(CdlTransaction transaction, CdlExpression expr, unsigned i
         // the solutions overlap in conflicting ways.
         // NOTE: this leaves the transaction argument in an indeterminate
         // state. Care has to be taken in the calling code.
-        if (infer_subexpr_bool(transaction, expr, lhs, true, level) &&
-            infer_subexpr_bool(transaction, expr, rhs, true, level)) {
+        if (CdlInfer::subexpr_bool(transaction, expr, lhs, true, level) &&
+            CdlInfer::subexpr_bool(transaction, expr, rhs, true, level)) {
             result = true;
         }
     } else {
@@ -821,54 +812,10 @@ infer_handle_AND_bool(CdlTransaction transaction, CdlExpression expr, unsigned i
         // for a more informed choice.
         CdlTransaction lhs_transaction = transaction->make(transaction->get_conflict());
         CdlTransaction rhs_transaction = transaction->make(transaction->get_conflict());
-        bool lhs_result = infer_subexpr_bool(lhs_transaction, expr, lhs, false, level);
-        bool rhs_result = infer_subexpr_bool(rhs_transaction, expr, rhs, false, level);
+        bool lhs_result = CdlInfer::subexpr_bool(lhs_transaction, expr, lhs, false, level);
+        bool rhs_result = CdlInfer::subexpr_bool(rhs_transaction, expr, rhs, false, level);
 
-        if (lhs_result && !rhs_result) {
-            // Only the lhs succeeded.
-            rhs_transaction->cancel();
-            lhs_transaction->commit();
-            result = true;
-        } else if (!lhs_result && rhs_result) {
-            // Only the rhs succeeded.
-            lhs_transaction->cancel();
-            rhs_transaction->commit();
-            result = true;
-        } else if (lhs_result && rhs_result) {
-            // Both sides succeeded. Next check for user_confirmation.
-            bool lhs_confirm_needed = lhs_transaction->user_confirmation_required();
-            bool rhs_confirm_needed = rhs_transaction->user_confirmation_required();
-            if (lhs_confirm_needed && !rhs_confirm_needed) {
-                lhs_transaction->cancel();
-                rhs_transaction->commit();
-                result = true;
-            } else if (!lhs_confirm_needed && rhs_confirm_needed) {
-                rhs_transaction->cancel();
-                lhs_transaction->commit();
-                result = true;
-            } else {
-                // Neither or both of the two sides need user confirmation, so they
-                // are equal in that respect
-                if (lhs_transaction->is_preferable_to(rhs_transaction)) {
-                    rhs_transaction->cancel();
-                    lhs_transaction->commit();
-                    result = true;
-                } else {
-                    lhs_transaction->cancel();
-                    rhs_transaction->commit();
-                    result = true;
-                }
-            }
-        } else {
-            // Neither side succeeded.
-            lhs_transaction->cancel();
-            rhs_transaction->cancel();
-        }
-
-        // Zero or one of these transactions will have been committed,
-        // neither is still necessary.
-        delete lhs_transaction;
-        delete rhs_transaction;
+        result = infer_choose2(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
     }
 
     CYG_REPORT_RETVAL(result);
@@ -915,59 +862,16 @@ infer_handle_OR_bool(CdlTransaction transaction, CdlExpression expr, unsigned in
         // for a more informed choice.
         CdlTransaction lhs_transaction = transaction->make(transaction->get_conflict());
         CdlTransaction rhs_transaction = transaction->make(transaction->get_conflict());
-        bool lhs_result = infer_subexpr_bool(lhs_transaction, expr, lhs, true, level);
-        bool rhs_result = infer_subexpr_bool(rhs_transaction, expr, rhs, true, level);
+        bool lhs_result = CdlInfer::subexpr_bool(lhs_transaction, expr, lhs, true, level);
+        bool rhs_result = CdlInfer::subexpr_bool(rhs_transaction, expr, rhs, true, level);
 
-        if (lhs_result && !rhs_result) {
-            // Only the lhs succeeded.
-            rhs_transaction->cancel();
-            lhs_transaction->commit();
-            result = true;
-        } else if (!lhs_result && rhs_result) {
-            // Only the rhs succeeded.
-            lhs_transaction->cancel();
-            rhs_transaction->commit();
-            result = true;
-        } else if (lhs_result && rhs_result) {
-            // Both sides succeeded. Next check for user_confirmation.
-            bool lhs_confirm_needed = lhs_transaction->user_confirmation_required();
-            bool rhs_confirm_needed = rhs_transaction->user_confirmation_required();
-            if (lhs_confirm_needed && !rhs_confirm_needed) {
-                lhs_transaction->cancel();
-                rhs_transaction->commit();
-                result = true;
-            } else if (!lhs_confirm_needed && rhs_confirm_needed) {
-                rhs_transaction->cancel();
-                lhs_transaction->commit();
-                result = true;
-            } else {
-                // Neither or both of the two sides need user confirmation, so they
-                // are equal in that respect
-                if (lhs_transaction->is_preferable_to(rhs_transaction)) {
-                    rhs_transaction->cancel();
-                    lhs_transaction->commit();
-                    result = true;
-                } else {
-                    lhs_transaction->cancel();
-                    rhs_transaction->commit();
-                    result = true;
-                }
-            }
-        } else {
-            // Neither side succeeded
-            lhs_transaction->cancel();
-            rhs_transaction->cancel();
-        }
+        result = infer_choose2(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
         
-        // Zero or one of these transactions will have been committed,
-        // neither is still necessary.
-        delete lhs_transaction;
-        delete rhs_transaction;
     } else {
         
         // !(A || B) -> !A && !B
-        if (infer_subexpr_bool(transaction, expr, lhs, false, level) &&
-            infer_subexpr_bool(transaction, expr, rhs, false, level)) {
+        if (CdlInfer::subexpr_bool(transaction, expr, lhs, false, level) &&
+            CdlInfer::subexpr_bool(transaction, expr, rhs, false, level)) {
             result = true;
         }
     }
@@ -995,18 +899,18 @@ infer_handle_OR_value(CdlTransaction transaction, CdlExpression expr, unsigned i
 //{{{  infer_handle_Equal()                     
 
 // ----------------------------------------------------------------------------
-// Handle expressions of the form A == B. If B is constant then this
-// corresponds to an infer_subexpr_value() for A. Alternatively if
-// A is constant then this corresponds to an infer_subexpr_value() for B.
+// Handle expressions of the form A == B. This can be achieved either by
+// evaluating B and trying to assign the result to A, or vice versa. There
+// is a problem if assigning to one side has a side effect on the other, e.g.
 //
-// There are other possibilities. If B has a calculated value then that
-// could be treated as if it were a constant. We could try two
-// sub-transactions, either setting A to the current value of subexpr B,
-// or vice versa. And so on.
+//   requires { xyzzy == (xyzzy + 3) }
+//
+// This has to be guarded against by reevaluating the expression.
+//
+// At present this code only copes with equality, not inequality.
 
 static bool
-infer_handle_equal_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs,
-                        bool goal, int level)
+infer_handle_equal_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs, bool goal, int level)
 {
     CYG_REPORT_FUNCNAMETYPE("infer_handle_equal_bool", "result %d");
     CYG_REPORT_FUNCARG4XV(transaction, expr, lhs, rhs);
@@ -1015,24 +919,47 @@ infer_handle_equal_bool(CdlTransaction transaction, CdlExpression expr, unsigned
     CYG_PRECONDITIONC(lhs != rhs);
 
     bool result = false;
-    
-    CdlSubexpression& lhs_subexpr = expr->sub_expressions[lhs];
-    CdlSubexpression& rhs_subexpr = expr->sub_expressions[rhs];
-    
-    // For now we can only deal with equality, not inequality.
     if (goal) {
-        if ((CdlExprOp_StringConstant  == lhs_subexpr.op) ||
-            (CdlExprOp_IntegerConstant == lhs_subexpr.op) ||
-            (CdlExprOp_DoubleConstant  == lhs_subexpr.op)) {
-
-            result = infer_subexpr_value(transaction, expr, rhs, lhs_subexpr.constants, level);
-                
-        } else if ((CdlExprOp_StringConstant  == rhs_subexpr.op) ||
-                   (CdlExprOp_IntegerConstant == rhs_subexpr.op) ||
-                   (CdlExprOp_DoubleConstant  == rhs_subexpr.op)) {
-
-            result = infer_subexpr_value(transaction, expr, lhs, rhs_subexpr.constants, level);
+        
+        // We need two sub-transactions, The lhs_transaction is for evaluating the lhs
+        // and trying to update the rhs. 
+        CdlTransaction  lhs_transaction = transaction->make(transaction->get_conflict());
+        bool            lhs_result = false;
+        try {
+            CdlSimpleValue  lhs_value;
+            CdlEvalContext  lhs_context(lhs_transaction);
+            expr->eval_subexpression(lhs_context, lhs, lhs_value);
+            lhs_result = CdlInfer::subexpr_value(lhs_transaction, expr, rhs, lhs_value, level);
+            if (lhs_result) {
+                CdlSimpleValue check;
+                expr->eval_subexpression(lhs_context, lhs, check);
+                if (lhs_value != check) {
+                    lhs_result = false;
+                }
+            }
+        } catch (...) {
+            lhs_result = false;
         }
+        
+        CdlTransaction  rhs_transaction = transaction->make(transaction->get_conflict());
+        bool            rhs_result = false;
+        try {
+            CdlSimpleValue  rhs_value;
+            CdlEvalContext  rhs_context(rhs_transaction);
+            expr->eval_subexpression(rhs_context, rhs, rhs_value);
+            rhs_result = CdlInfer::subexpr_value(rhs_transaction, expr, lhs, rhs_value, level);
+            if (rhs_result) {
+                CdlSimpleValue check;
+                expr->eval_subexpression(rhs_context, rhs, check);
+                if (rhs_value != check) {
+                    rhs_result = false;
+                }
+            }
+        } catch (...) {
+            rhs_result = false;
+        }
+
+        result = infer_choose2(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
     }
     
     CYG_REPORT_RETVAL(result);
@@ -1040,13 +967,82 @@ infer_handle_equal_bool(CdlTransaction transaction, CdlExpression expr, unsigned
 }
 
 //}}}
-//{{{  infer_subexpr_bool()                     
+//{{{  infer_handle_numerical_equal()           
 
 // ----------------------------------------------------------------------------
+// Handle expressions of the form A == B, where the comparison has to be
+// numerical in basis. This is used primarily for operators like <=
+// and >.
+
 static bool
-infer_subexpr_bool(CdlTransaction transaction, CdlExpression expr, unsigned int index, bool goal, int level)
+infer_handle_numerical_equal_bool(CdlTransaction transaction, CdlExpression expr, unsigned int lhs, unsigned int rhs, bool goal, int level)
 {
-    CYG_REPORT_FUNCNAMETYPE("infer_subexpr_bool", "result %d");
+    CYG_REPORT_FUNCNAMETYPE("infer_handle_numerical_equal_bool", "result %d");
+    CYG_REPORT_FUNCARG4XV(transaction, expr, lhs, rhs);
+    CYG_PRECONDITION_CLASSC(transaction);
+    CYG_PRECONDITION_CLASSC(expr);
+    CYG_PRECONDITIONC(lhs != rhs);
+
+    bool result = false;
+    if (goal) {
+        
+        // We need two sub-transactions, The lhs_transaction is for evaluating the lhs
+        // and trying to update the rhs. 
+        CdlTransaction  lhs_transaction = transaction->make(transaction->get_conflict());
+        bool            lhs_result = false;
+        try {
+            CdlSimpleValue  lhs_value;
+            CdlEvalContext  lhs_context(lhs_transaction);
+            expr->eval_subexpression(lhs_context, lhs, lhs_value);
+            if (lhs_value.has_integer_value() || lhs_value.has_double_value()) {
+                lhs_result = CdlInfer::subexpr_value(lhs_transaction, expr, rhs, lhs_value, level);
+                if (lhs_result) {
+                    CdlSimpleValue check;
+                    expr->eval_subexpression(lhs_context, lhs, check);
+                    if (lhs_value != check) {
+                        lhs_result = false;
+                    }
+                }
+            }
+        } catch (...) {
+            lhs_result = false;
+        }
+        
+        CdlTransaction  rhs_transaction = transaction->make(transaction->get_conflict());
+        bool            rhs_result = false;
+        try {
+            CdlSimpleValue  rhs_value;
+            CdlEvalContext  rhs_context(rhs_transaction);
+            expr->eval_subexpression(rhs_context, rhs, rhs_value);
+            if (rhs_value.has_integer_value() || rhs_value.has_double_value()) {
+                rhs_result = CdlInfer::subexpr_value(rhs_transaction, expr, lhs, rhs_value, level);
+                if (rhs_result) {
+                    CdlSimpleValue check;
+                    expr->eval_subexpression(rhs_context, rhs, check);
+                    if (rhs_value != check) {
+                        rhs_result = false;
+                    }
+                }
+            }
+        } catch (...) {
+            rhs_result = false;
+        }
+
+        result = infer_choose2(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
+    }
+    
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+//}}}
+//{{{  CdlInfer::subexpr_bool()                 
+
+// ----------------------------------------------------------------------------
+bool
+CdlInfer::subexpr_bool(CdlTransaction transaction, CdlExpression expr, unsigned int index, bool goal, int level)
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlInfer::subexpr_bool", "result %d");
     CYG_REPORT_FUNCARG5XV(transaction, expr, index, goal, level);
     CYG_PRECONDITION_CLASSC(transaction);
     CYG_PRECONDITION_CLASSC(expr);
@@ -1097,7 +1093,41 @@ infer_subexpr_bool(CdlTransaction transaction, CdlExpression expr, unsigned int 
       case CdlExprOp_Equal :
           result = infer_handle_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
           break;
+
+      case CdlExprOp_NotEqual :
+          result = infer_handle_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, !goal, level);
+          break;
+
+          // <= is satisfied by a numerical equality. However the inverse relation > cannot be handled that way
+          // The other comparison operators are much the same.
+      case CdlExprOp_LessEqual :
+          if (goal) {
+              result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
+          }
+          break;
+
+      case CdlExprOp_LessThan :
+          if (!goal) {
+              result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
+          }
+          break;
           
+      case CdlExprOp_GreaterEqual :
+          if (goal) {
+              result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
+          }
+          break;
+
+      case CdlExprOp_GreaterThan :
+          if (!goal) {
+              result = infer_handle_numerical_equal_bool(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, true, level);
+          }
+          break;
+          
+      case CdlExprOp_Function :
+          result = CdlFunction::infer_bool(transaction, expr, index, goal, level);
+          break;
+              
       default:
           // No other inferences are implemented at this stage.
           break;
@@ -1108,12 +1138,12 @@ infer_subexpr_bool(CdlTransaction transaction, CdlExpression expr, unsigned int 
 }
 
 //}}}
-//{{{  infer_subexpr_value()                    
+//{{{  CdlInfer::subexpr_value()                
 
-static bool
-infer_subexpr_value(CdlTransaction transaction, CdlExpression expr, unsigned int index, CdlSimpleValue& goal, int level)
+bool
+CdlInfer::subexpr_value(CdlTransaction transaction, CdlExpression expr, unsigned int index, CdlSimpleValue& goal, int level)
 {
-    CYG_REPORT_FUNCNAMETYPE("infer_subexpr_value", "result %d");
+    CYG_REPORT_FUNCNAMETYPE("CdlInfer::subexpr_value", "result %d");
     CYG_REPORT_FUNCARG4XV(transaction, expr, index, level);
     CYG_PRECONDITION_CLASSC(transaction);
     CYG_PRECONDITION_CLASSC(expr);
@@ -1161,6 +1191,10 @@ infer_subexpr_value(CdlTransaction transaction, CdlExpression expr, unsigned int
           result = infer_handle_AND_value(transaction, expr, subexpr.lhs_index, subexpr.rhs_index, goal, level);
           break;
 
+      case CdlExprOp_Function :
+          result = CdlFunction::infer_value(transaction, expr, index, goal, level);
+          break;
+        
       default:
           // No other inferences are implemented at this stage.
           break;
@@ -1173,9 +1207,57 @@ infer_subexpr_value(CdlTransaction transaction, CdlExpression expr, unsigned int
 //}}}
 
 //}}}
-//{{{  CdlConflict_Requires::inner_resolve()    
+//{{{  Illegal value resolution                 
 
 // ----------------------------------------------------------------------------
+// This is not yet implemented.
+
+bool
+CdlConflict_IllegalValueBody::inner_resolve(CdlTransaction transaction, int level)
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlConflict_IllegalValue::inner_resolve", "result %d");
+    CYG_REPORT_FUNCARG3XV(this, transaction, level);
+    CYG_PRECONDITION_THISC();
+    CYG_PRECONDITION_CLASSC(transaction);
+
+    CYG_UNUSED_PARAM(CdlTransaction, transaction);
+    
+    CYG_REPORT_RETVAL(false);
+    return false;
+}
+
+//}}}
+//{{{  Requires resolution                      
+
+// ----------------------------------------------------------------------------
+// The entry point for this code is
+// CdlConflict_RequiresBody::resolve(). "this" is a requires conflict
+// that needs to be resolved, if possible. There are twos argument: a
+// sub-transaction, which should be filled in with the solution if
+// possible; and a recursion level indicator, 0 if this is a top-level
+// inference engine invocation rather than a recursive one. There are
+// additional static parameters inference_recursion_limit and
+// inference_override which control details of the inference process.
+//
+// As an example of what is involved in an inference, consider the
+// simple case of a "requires XXX" property. This constraint may not
+// be satisfied because XXX is disabled,  because XXX is inactive,
+// or both.
+//
+// Assume for simplicity that XXX is already active. The inference
+// engine can now figure out that XXX must be enabled (it must be
+// of type bool or booldata, or else the conflict would not have
+// arisen). This is achieved by creating a sub-transaction,
+// enabling XXX in that sub-transaction, propagating the
+// sub-transaction and performing further inference. The inference
+// is successfull if no new conflicts are introduced.
+//
+// However, even if a solution is found it is not necessarily
+// acceptable without user confirmation, subject to
+// inference_override. This is handled in part by the transaction
+// class itself, in the resolve() and user_confirmation_required()
+// members. In cases where the inference engine can choose between
+// several alternatives it needs to consider this issue for each one.
 // Resolving a requires conflict. There are three ways of tackling
 // this problem, in order of preference:
 //
@@ -1214,7 +1296,7 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
     CdlTransaction preferred_transaction = 0;
     
     expr_transaction     = transaction->make(this);
-    if (!infer_subexpr_bool(expr_transaction, expr, expr->first_subexpression, true, level)) {
+    if (!CdlInfer::subexpr_bool(expr_transaction, expr, expr->first_subexpression, true, level)) {
         // No luck here.
         expr_transaction->cancel();
         delete expr_transaction;
@@ -1241,7 +1323,7 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
 
     if ((CdlValueFlavor_Bool == valuable->get_flavor()) || (CdlValueFlavor_BoolData == valuable->get_flavor())) {
         disable_transaction = transaction->make(this);
-        if (!infer_set_valuable_bool(disable_transaction, valuable, false, level)) {
+        if (!CdlInfer::set_valuable_bool(disable_transaction, valuable, false, level)) {
             // No luck here either.
             disable_transaction->cancel();
             delete disable_transaction;
@@ -1277,7 +1359,7 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
     // approach does not if e.g. there are dependencies between two nodes in the
     // same container, or if the source of the conflict is not boolean.
     inactive_transaction = transaction->make(this);
-    if (!infer_make_inactive(inactive_transaction, valuable, level)) {
+    if (!CdlInfer::make_inactive(inactive_transaction, valuable, level)) {
         inactive_transaction->cancel();
         delete inactive_transaction;
         inactive_transaction = 0;
@@ -1318,7 +1400,5 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
     CYG_REPORT_RETVAL(result);
     return result;
 }
-
-//}}}
 
 //}}}

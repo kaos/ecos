@@ -1,3 +1,30 @@
+2001-05-16  Bart Veer  <bartv@redhat.com>
+
+	* Makefile.am: use new compiler flag support
+
+	* configure, Makefile.in, testsuite/Makefile.in: regenerate
+	
+2001-05-14  Bart Veer  <bartv@redhat.com>
+
+	* func.cxx (get_args_count): Avoid compiler warning.
+	* func.cxx (is_substr_find): fix VC++ build problem (patch
+	provided by Julian) 
+
+2001-04-27  Bart Veer  <bartv@redhat.com>
+
+	* doc/language.sgml:
+	Added documentation on functions
+
+	* func.cxx, Makefile.am, Makefile.in:
+	New module for function support inside expressions
+
+	* expr.cxx
+	Add support for functions and the string concatenation operator. 
+
+	* infer.cxx
+	Clean-up, add support for functions, and implement more inference
+	functionalitity generally.
+
 2001-04-19  Bart Veer  <bartv@redhat.com>
 
 	* doc/*.sgml, *.html:

@@ -106,10 +106,10 @@ cdl_option CYGDAT_UITRON_TASK_EXTERNS {
                     extern \"C\" void task2( unsigned int ); \\\n\
                     extern \"C\" void task3( unsigned int ); \\\n\
                     extern \"C\" void task4( unsigned int ); \\\n\
-                    static char stack1[ CYGNUM_UITRON_STACK_SIZE ], \\\n\
-                    stack2[ CYGNUM_UITRON_STACK_SIZE ], \\\n\
-                    stack3[ CYGNUM_UITRON_STACK_SIZE ], \\\n\
-                    stack4[ CYGNUM_UITRON_STACK_SIZE ];"}
+                    static char stack1[ MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ], \\\n\
+                    stack2[ MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ], \\\n\
+                    stack3[ MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ], \\\n\
+                    stack4[ MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ];"}
     description   "
         Task initializers may refer to external objects
         such as memory for stack or functions to call.
@@ -125,10 +125,10 @@ cdl_option CYGDAT_UITRON_TASK_EXTERNS {
 cdl_option CYGDAT_UITRON_TASK_INITIALIZERS {
     display       "Static initializers"
     flavor        data
-    default_value {"CYG_UIT_TASK( \"t1\", 1, task1, &stack1, CYGNUM_UITRON_STACK_SIZE ), \\\n\
-                    CYG_UIT_TASK( \"t2\", 2, task2, &stack2, CYGNUM_UITRON_STACK_SIZE ), \\\n\
-                    CYG_UIT_TASK( \"t3\", 3, task3, &stack3, CYGNUM_UITRON_STACK_SIZE ), \\\n\
-                    CYG_UIT_TASK( \"t4\", 4, task4, &stack4, CYGNUM_UITRON_STACK_SIZE ),"}
+    default_value {"CYG_UIT_TASK( \"t1\", 1, task1, &stack1, MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ), \\\n\
+                    CYG_UIT_TASK( \"t2\", 2, task2, &stack2, MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ), \\\n\
+                    CYG_UIT_TASK( \"t3\", 3, task3, &stack3, MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ), \\\n\
+                    CYG_UIT_TASK( \"t4\", 4, task4, &stack4, MAX(CYGNUM_UITRON_STACK_SIZE, CYGNUM_HAL_STACK_SIZE_MINIMUM) ),"}
     description   "
         Tasks must be statically
         initialized: enter a list of initializers

@@ -1,3 +1,15 @@
+2001-04-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (__exception_handlers): Platforms must explicitly 
+	define CYGSEM_HAL_ROM_RESET_USES_JUMP if required.
+
+2001-04-27  Hugo Tyson  <hmt@redhat.com>
+
+	* src/vectors.S: Platforms without CYGHWR_HAL_ARM_HAS_MMU defined
+	require that the reset jump be straight up to ROM.  So you can't
+	just use a local branch.  This is needed to make RedBoot in the
+	EBSA285 work, for example.
+
 2001-04-19  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm.cdl: Fix typo for ARM9 systems.

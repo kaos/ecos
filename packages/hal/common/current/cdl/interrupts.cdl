@@ -66,7 +66,7 @@ cdl_option CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK {
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
     display       "Interrupt stack size"
     flavor        data
-    default_value 4096
+    default_value { CYGPKG_KERNEL ? 4096 : 32768 }
     legal_values  1024 to 1048576
     description   "
         This configuration option specifies the stack size in bytes
@@ -79,7 +79,10 @@ cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
         be processed on this stack. The exact memory requirements
         will vary from application to application, and will depend
         heavily on whether or not other interrupt-related options,
-        for example nested interrupts, are enabled."
+        for example nested interrupts, are enabled. On most targets,
+        in a configuration with no kernel this stack will also be
+        the stack used to invoke the application, and must obviously
+        be appropriately large in that case."
 }
 
 cdl_option CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING {

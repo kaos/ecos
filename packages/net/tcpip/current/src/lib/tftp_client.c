@@ -130,7 +130,7 @@ tftp_get(char *filename,
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr = server->sin_addr;
     if (server->sin_port == 0) {
-        server_addr.sin_port = htons(server_info->s_port);
+        server_addr.sin_port = server_info->s_port; // Network order already
     } else {
         server_addr.sin_port = server->sin_port;
     }
@@ -280,7 +280,7 @@ tftp_put(char *filename,
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr = server->sin_addr;
     if (server->sin_port == 0) {
-        server_addr.sin_port = htons(server_info->s_port);
+        server_addr.sin_port = server_info->s_port; // Network order already
     } else {
         server_addr.sin_port = server->sin_port;
     }

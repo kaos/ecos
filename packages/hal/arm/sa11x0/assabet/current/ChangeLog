@@ -1,3 +1,8 @@
+2001-04-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Remove redundant -Wl,-N from link
+	flags
+
 2001-04-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/lcd_support.c: Frame pointer was right before.

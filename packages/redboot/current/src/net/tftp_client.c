@@ -45,6 +45,7 @@
 
 // TFTP client support
 
+#include <redboot.h>     // have_net
 #include <net/net.h>
 #include <net/tftp.h>
 #include <net/tftp_support.h>
@@ -195,7 +196,7 @@ tftp_stream_open(char *filename,
     static int get_port = 7700;
     char test_buf;
 
-    if (tftp_stream.open) {
+    if (!have_net || tftp_stream.open) {
         *err = TFTP_INVALID;  // Already open
         return -1;
     }

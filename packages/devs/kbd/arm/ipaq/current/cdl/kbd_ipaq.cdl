@@ -42,6 +42,8 @@
 cdl_package CYGPKG_DEVS_KBD_IPAQ {
     display     "Keypad driver for iPAQ"
     include_dir cyg/io
+
+    active_if   CYGPKG_FILEIO
     requires    CYGPKG_IO
     requires    CYGFUN_KERNEL_API_C
     requires    CYGPKG_HAL_ARM_SA11X0_IPAQ

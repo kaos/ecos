@@ -1,3 +1,10 @@
+2001-04-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/strata.c: Be more careful when enable/flush/disable caches.
+
+	* src/flash_erase_block.c (flash_erase_block): Boot block devices
+	may require additional erase commands to erase entire 'block'.
+
 2001-03-21  Hugo Tyson  <hmt@redhat.com>
 
 	* src/strata.h (FLASH_Write_Buffer): Do not define this if

@@ -11,7 +11,7 @@ dnl ====================================================================
 dnl####COPYRIGHTBEGIN####
 dnl                                                                         
 dnl ----------------------------------------------------------------------------
-dnl Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+dnl Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
 dnl
@@ -77,12 +77,10 @@ AC_DEFUN(CYG_AC_PROG_MSVC,[
 
 dnl ====================================================================
 dnl Set up sensible flags for the various different compilers. This
-dnl is achieved by redefining CC and CXX. 
-dnl
-dnl A better way of doing this sort of thing would be to detect
-dnl arguments to add and remove to the set of compiler flags, and
-dnl then update CFLAGS and CXXFLAGS (or even better, the AM
-dnl versions of those flags?)
+dnl is achieved by manipulating AM-CFLAGS and AM-CXXFLAGS via a subst,
+dnl plus undoing the setting of CFLAGS and CXXFLAGS done by
+dnl the AC_PROC_CC and AC_PROG_CXX macros. Note that this relies
+dnl on knowing about the internals of those macros.
 dnl
 dnl There is no point in checking the cache, this macro does
 dnl not do any feature tests.
@@ -120,22 +118,40 @@ AC_DEFUN(CYG_AC_PROG_STANDARD_COMPILER_FLAGS, [
       esac])
     fi
 
+    dnl Now we know what the user is after.
     if test "${GCC}" = "yes" ; then
-        CC="$CC -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
-        CXX="$CXX -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
+        cyg_CFLAGS="-pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
+        cyg_CXXFLAGS="-pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
     elif test "${MSVC}" = "yes" ; then
-        CC="$CC -nologo -W3"
-        CXX="$CXX -nologo -W3 -GR -GX"
-        if test "${cygflags_enable_debug}" = "yes" ; then
-            CC="$CC -MDd -Zi"
-            CXX="$CXX -MDd -Zi"
-        else
-            CC="$CC -MD -O2"
-            CXX="$CXX -MD -O2"
-        fi
+        cyg_CFLAGS="-nologo -W3"
+        cyg_CXXFLAGS="-nologo -W3 -GR -GX"
     else
         AC_MSG_ERROR("default flags for ${CC} are not known")
     fi
+
+    dnl Choose between debugging and optimization.
+    if test "${cygflags_enable_debug}" = "yes" ; then
+        if test "${GCC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -g -O0"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -g -O0"
+        elif test "${MSVC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -MDd -Zi"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -MDd -Zi"
+        fi
+    else
+        if test "${GCC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -O0"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -O0"
+        elif test "${MSVC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -MD -O2"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -MD -O2"
+        fi
+    fi
+
+    CFLAGS="${ac_save_CFLAGS}"
+    CXXFLAGS="${ac_save_CXXFLAGS}"
+    AC_SUBST(cyg_CFLAGS)
+    AC_SUBST(cyg_CXXFLAGS)
     AC_MSG_RESULT(done)
 ])
 
@@ -345,34 +361,46 @@ AC_SUBST(cyg_ac_tcl_version)
 dnl Where is the Tcl installation? By default assume Tcl is already
 dnl installed in the same place as the eCos host-side.
 
-AC_ARG_WITH(tcl,[ --with-tcl-header=<path>        location of Tcl header])
-AC_ARG_WITH(tcl,[ --with-tcl-lib=<path>        location of Tcl libraries])
+AC_ARG_WITH(tcl,[ --with-tcl-header=<path> location of Tcl header])
+AC_ARG_WITH(tcl,[ --with-tcl-lib=<path>    location of Tcl libraries])
 AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries])
 
 AC_MSG_CHECKING(for Tcl installation)
 
-tcl_incdirs="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl$cyg_ac_tcl_version /usr/include"
-AC_FIND_FILE(tcl.h, $tcl_incdirs, cyg_ac_tcl_incdir)
+dnl If using VC++ then there are no sensible default directories
+dnl to search for a Tcl installation. Instead the user must
+dnl supply either --with-tcl, or both --with-tcl-header and
+dnl --with-tcl-lib.
+dnl
+dnl Also when using VC++ there is no tclConfig.sh file to
+dnl consult about which libraries are needed. Instead that
+dnl information is hard-wired here.
 
-dnl Sanity check, make sure that there is a tcl.h header file.
-dnl If not then there is no point in proceeding.
-if test \! -r ${cyg_ac_tcl_incdir}/tcl.h ; then
-  AC_MSG_ERROR(unable to locate Tcl header file tcl.h)
-fi
-
-tcl_libdirs="${with_tcl_lib} ${with_tcl}/lib ${prefix}/lib /usr/lib/tcl$cyg_ac_tcl_version /usr/lib"
-AC_FIND_FILE(tclConfig.sh, $tcl_libdirs, cyg_ac_tcl_libdir)
-
-AC_MSG_RESULT(${cyg_ac_tcl_libdir})
-
-dnl If using VC++ then there is no tclConfig.sh file, so the
-dnl library information has to be hard-wired. Otherwise ther
-dnl should be a tclConfig.sh file containing the necessary information.
 if test "${MSVC}" = "yes" ; then
+  if test "${with_tcl_header+set}" = set; then
+    cyg_ac_tcl_incdir=${with_tcl_header}
+  else
+    if test "${with_tcl+set}" = set; then
+      cyg_ac_tcl_incdir="${with_tcl}/include"
+    else
+      AC_MSG_ERROR(You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-header=<path>)
+    fi
+  fi
+  if test "${with_tcl_lib+set}" = set; then
+    cyg_ac_tcl_libdir=${with_tcl_lib}
+  else
+    if test "${with_tcl+set}" = set; then
+      cyg_ac_tcl_libdir="${with_tcl}/lib"
+    else
+      AC_MSG_ERROR(You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-lib=<path>)
+    fi
+  fi
   cyg_ac_tcl_libs="tcl${cyg_ac_tcl_version}.lib"
-  CYG_AC_MSVC_PATH(cyg_ac_tcl_incdir)
-  CYG_AC_MSVC_PATH(cyg_ac_tcl_libdir)
 else
+  tcl_incdirs="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl$cyg_ac_tcl_version /usr/include"
+  AC_FIND_FILE(tcl.h, $tcl_incdirs, cyg_ac_tcl_incdir)
+  tcl_libdirs="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl$cyg_ac_tcl_version /usr/lib"
+  AC_FIND_FILE(tclConfig.sh, $tcl_libdirs, cyg_ac_tcl_libdir)
   if test \! -r ${cyg_ac_tcl_libdir}/tclConfig.sh ; then
     AC_MSG_ERROR(unable to locate Tcl config file tclConfig.sh)
   else
@@ -380,6 +408,19 @@ else
     cyg_ac_tcl_libs="-ltcl${cyg_ac_tcl_version} ${TCL_LIBS}"
   fi
 fi
+
+dnl Sanity check, make sure that there is a tcl.h header file.
+dnl If not then there is no point in proceeding.
+if test \! -r ${cyg_ac_tcl_incdir}/tcl.h ; then
+  AC_MSG_ERROR(unable to locate Tcl header file tcl.h)
+fi
+
+if test "${MSVC}" = "yes" ; then
+  CYG_AC_MSVC_PATH(cyg_ac_tcl_incdir)
+  CYG_AC_MSVC_PATH(cyg_ac_tcl_libdir)
+fi
+
+AC_MSG_RESULT(${cyg_ac_tcl_libdir})
 
 AC_SUBST(cyg_ac_tcl_incdir)
 AC_SUBST(cyg_ac_tcl_libdir)

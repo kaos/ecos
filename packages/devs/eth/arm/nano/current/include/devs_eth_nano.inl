@@ -108,6 +108,9 @@ CYG_MACRO_END
 #define CYGHWR_INTEL_I82559_PCI_VIRT_TO_BUS( _x_ ) \
   (((cyg_uint32)(_x_)) - CYGHWR_HAL_ARM_NANO_PCI_MEM_MAP_BASE + cyg_pci_window_real_base)
 
+// support SDRAM with gaps in it cos of the way PCI window is laid out.
+#define CYGHWR_DEVS_ETH_INTEL_I82559_PCIMEM_DISCONTIGUOUS
+
 // --------------------------------------------------------------
 // Construct the two interfaces
 

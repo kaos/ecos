@@ -56,6 +56,7 @@
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_Compaq) || defined(CYG_HAL_STARTUP_WinCE)
 #define PLATFORM_SETUP1 _platform_setup1
 #define CYGHWR_HAL_ARM_HAS_MMU
+#define CYGSEM_HAL_ROM_RESET_USES_JUMP
 #if defined(CYG_HAL_STARTUP_WinCE)
 #define UNMAPPED(x) (x)+SA11X0_RAM_BANK0_BASE
 #endif
@@ -92,7 +93,6 @@
 
 //#define DEBUG_INIT
 
-#ifdef DEBUG_INIT
         .macro  InitUART3
 #define EGPIOBase 0x49000000
 #define EGPIO_BITSY_RS232_ON     (1 << 7)   /* UART3 transceiver force on.  Active high. */
@@ -230,7 +230,6 @@
         PutHex2 r2
         PutHex2 \h
         .endm
-#endif // DEBUG_INIT        
         
 // This macro represents the initial startup code for the platform        
         .macro  _platform_setup1
@@ -268,6 +267,11 @@ hexR6:
 54:             
 #endif // DEBUG_INIT
 
+        // Disable all interrupts
+        ldr     r1,=SA11X0_ICMR
+        mov     r0,#0
+        str     r0,[r1]
+
         // Make sure MMU is OFF
 	mov r0,#0xE0000000	// Force cache writeback by reloading
 	add r2,r0,#0x4000	// cache from the zeros bank
@@ -284,8 +288,8 @@ hexR6:
 	mcr p15,0,r0,c1,c0,0	// Write MMU control register
 	nop; nop; nop; nop
 
-#ifdef DEBUG_INIT        
         InitUART3
+#ifdef DEBUG_INIT        
         mov     r7,#5
 05:     PutC    '\n'
         PutC    '\r'
@@ -422,6 +426,17 @@ dram_table:
         ldr     r1,=SA11X0_PWR_MGR_SLEEP_STATUS
         ldr     r2,=SA11X0_PERIPHERAL_CONTROL_HOLD
         str     r2,[r1]
+
+        // Wakeup (via power/resume button)
+        ldr     r1,=SA11X0_RESET_STATUS
+        ldr     r2,[r1]
+        cmp     r2,#SA11X0_SLEEP_MODE_RESET
+        bne     45f
+        ldr     r1,=SA11X0_PWR_MGR_SCRATCHPAD
+        ldr     r1,[r1]
+        mov     pc,r1
+        nop
+45:     nop        
 
         // Set up a stack [for calling C code]
         ldr     r1,=__startup_stack

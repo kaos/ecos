@@ -166,7 +166,6 @@ crc32(unsigned char *s, int len)
 {
   int i;
   unsigned long crc32val;
-  unsigned long length;
   
   crc32val = 0;
   for (i = 0;  i < len;  i++) {

@@ -80,7 +80,8 @@ static unsigned char quicc_eth_txbufs[CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM]
                                      [CYGNUM_DEVS_ETH_POWERPC_QUICC_BUFSIZE];
 
 static struct quicc_eth_info quicc_eth0_info;
-static unsigned char enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x79, 0xB8};
+static unsigned char _default_enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x79, 0xB8};
+static unsigned char enaddr[6];
 #ifdef CYGPKG_REDBOOT
 #include <pkgconf/redboot.h>
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
@@ -92,6 +93,12 @@ RedBoot_config_option("Network hardware address [MAC]",
                       CONFIG_ESA, 0
     );
 #endif
+#endif
+
+// For fetching the ESA from RedBoot
+#include <cyg/hal/hal_if.h>
+#ifndef CONFIG_ESA
+#define CONFIG_ESA 6
 #endif
 
 ETH_DRV_SC(quicc_eth0_sc,
@@ -114,26 +121,32 @@ NETDEVTAB_ENTRY(quicc_netdev,
 
 extern int _mbx_fetch_VPD(int, void *, int);
 
+#ifdef CYGPKG_NET
 static cyg_interrupt quicc_eth_interrupt;
 static cyg_handle_t  quicc_eth_interrupt_handle;
+#endif
 static void          quicc_eth_int(struct eth_drv_sc *data);
 
+#ifdef CYGPKG_NET
 // This ISR is called when the ethernet interrupt occurs
 static int
 quicc_eth_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
 {
     cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
+#endif
 
 // Deliver function (ex-DSR) handles the ethernet [logical] processing
 static void
 quicc_eth_deliver(struct eth_drv_sc * sc)
 {
     quicc_eth_int(sc);
+#ifdef CYGPKG_NET
     // Allow interrupts to happen again
-    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+#endif
 }
 
 //
@@ -154,21 +167,23 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     int TxBD, RxBD;
     int cache_state;
     int i;
+    bool esa_ok;
 
     // Fetch the board address from the VPD
 #define VPD_ETHERNET_ADDRESS 0x08
     if (_mbx_fetch_VPD(VPD_ETHERNET_ADDRESS, enaddr, sizeof(enaddr)) == 0) {
 #if defined(CYGPKG_REDBOOT) && \
     defined(CYGSEM_REDBOOT_FLASH_CONFIG)
-        flash_get_config("quicc_esa", enaddr, CONFIG_ESA);
+        esa_ok = flash_get_config("quicc_esa", enaddr, CONFIG_ESA);
 #else
-        enet_pram = &eppc->pram[0].enet_scc;
-        ap = &enaddr[sizeof(enaddr)];
-        ep = (unsigned char *)&enet_pram->paddr_h;
-        for (i = 0;  i < sizeof(enaddr);  i++) {
-            *ap++ = *--ep;
-        }
+        esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
+                                             "quicc_esa", enaddr, CONFIG_ESA);
 #endif
+        if (!esa_ok) {
+            // Can't figure out ESA
+            diag_printf("QUICC_ETH - Warning! ESA unknown\n");
+            memcpy(&enaddr, &_default_enaddr, sizeof(enaddr));
+        }
     }
 
     // Ensure consistent state between cache and what the QUICC sees
@@ -176,6 +191,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     HAL_DCACHE_SYNC();
     HAL_DCACHE_DISABLE();
 
+#ifdef CYGPKG_NET
     // Set up to handle interrupts
     cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_CPM_SCC1,
                              CYGARC_SIU_PRIORITY_HIGH,
@@ -187,6 +203,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     cyg_drv_interrupt_attach(quicc_eth_interrupt_handle);
     cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+#endif
 
     qi->pram = enet_pram = &eppc->pram[0].enet_scc;
     qi->ctl = scc = &eppc->scc_regs[0];  // Use SCC1
@@ -356,6 +373,7 @@ quicc_eth_stop(struct eth_drv_sc *sc)
 {
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile struct scc_regs *scc = qi->ctl;
+
     // Disable the device!
     scc->scc_gsmr_l &= ~(QUICC_SCC_GSML_ENR | QUICC_SCC_GSML_ENT);
 }
@@ -371,6 +389,7 @@ quicc_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile struct scc_regs *scc = qi->ctl;
+
     // Enable the device!
     scc->scc_gsmr_l |= QUICC_SCC_GSML_ENR | QUICC_SCC_GSML_ENT;
 }
@@ -402,6 +421,7 @@ quicc_eth_can_send(struct eth_drv_sc *sc)
 {
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile struct cp_bufdesc *txbd = qi->txbd;
+
     return ((txbd->ctrl & QUICC_BD_CTL_Ready) == 0);
 }
 
@@ -415,6 +435,8 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     volatile struct cp_bufdesc *txbd, *txfirst;
     volatile char *bp;
     int i, txindex, cache_state;
+    unsigned int ctrl;
+
     // Find a free buffer
     txbd = txfirst = qi->txbd;
     while (txbd->ctrl & QUICC_BD_CTL_Ready) {
@@ -453,8 +475,12 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         HAL_DCACHE_INVALIDATE(txbd->buffer, txbd->length);  // Make sure no stale data
     }
     // Send it on it's way
-    txbd->ctrl |= QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int | 
-        QUICC_BD_TX_PAD | QUICC_BD_TX_LAST | QUICC_BD_TX_TC;
+    ctrl = txbd->ctrl & ~QUICC_BD_TX_PAD;
+    if (txbd->length < IEEE_8023_MIN_FRAME) {
+        ctrl |= QUICC_BD_TX_PAD;
+    }
+    txbd->ctrl = ctrl | QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int | 
+        QUICC_BD_TX_LAST | QUICC_BD_TX_TC;
 }
 
 //
@@ -469,6 +495,7 @@ quicc_eth_RxEvent(struct eth_drv_sc *sc)
 {
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile struct cp_bufdesc *rxbd;
+
     rxbd = qi->rnext;
     while ((rxbd->ctrl & (QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int)) == QUICC_BD_CTL_Int) {
         qi->rxbd = rxbd;  // Save for callback
@@ -497,6 +524,7 @@ quicc_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     unsigned char *bp;
     int i, cache_state;
+
     bp = (unsigned char *)qi->rxbd->buffer;
     // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
@@ -517,6 +545,7 @@ quicc_eth_TxEvent(struct eth_drv_sc *sc, int stat)
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile struct cp_bufdesc *txbd;
     int txindex;
+
     txbd = qi->tnext;
     while ((txbd->ctrl & (QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int)) == QUICC_BD_CTL_Int) {
         txindex = ((unsigned long)txbd - (unsigned long)qi->tbase) / sizeof(*txbd);
@@ -541,6 +570,7 @@ quicc_eth_int(struct eth_drv_sc *sc)
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile struct scc_regs *scc = qi->ctl;
     unsigned short scce;
+
     while ((scce = (scc->scc_scce & QUICC_SCCE_INTS)) != 0) {
         if ((scce & (QUICC_SCCE_TXE | QUICC_SCCE_TX)) != 0) {
             quicc_eth_TxEvent(sc, scce);

@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -84,11 +84,16 @@
 #define CYGNUM_HAL_INTERRUPT_INTC               17
 #define CYGNUM_HAL_INTERRUPT_INTD               18
 #define CYGNUM_HAL_INTERRUPT_SERR               19
+#define CYGNUM_HAL_INTERRUPT_HW1                20
+#define CYGNUM_HAL_INTERRUPT_HW2                21
+#define CYGNUM_HAL_INTERRUPT_HW3                22
+#define CYGNUM_HAL_INTERRUPT_HW4                23
+#define CYGNUM_HAL_INTERRUPT_HW5                24
 
 // Min/Max ISR numbers and how many there are
 #define CYGNUM_HAL_ISR_MIN                     0
-#define CYGNUM_HAL_ISR_MAX                     19
-#define CYGNUM_HAL_ISR_COUNT                   20
+#define CYGNUM_HAL_ISR_MAX                     24
+#define CYGNUM_HAL_ISR_COUNT                   25
 
 #define CYGNUM_HAL_INTERRUPT_DEBUG_UART        CYGNUM_HAL_INTERRUPT_SER
 

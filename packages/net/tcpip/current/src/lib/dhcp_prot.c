@@ -393,11 +393,9 @@ do_dhcp(const char *intf, struct bootp *res,
         // either explicit init state or the beginning of time or retry
         if ( ! bring_half_up( intf, &ifr ) )
             return false;
+
         *pstate = DHCPSTATE_INIT;
-        xid = (cyg_uint32)res + (cyg_uint32)(0xffffffff & cyg_current_time());
     }
-    else
-        xid = res->bp_xid; // use what's there already
 
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
@@ -444,6 +442,8 @@ do_dhcp(const char *intf, struct bootp *res,
 
     reset_timeout( &tv, &timeout_scratch );
 
+    xid = res->bp_xid; // default to what's there already;
+
     while ( 1 ) {
 
         // If we are active rather than in the process of shutting down,
@@ -485,6 +485,15 @@ do_dhcp(const char *intf, struct bootp *res,
             if (ioctl(s, SIOCGIFHWADDR, &ifr) < 0) { /* get MAC address */
                 perror("SIOCGIFHWADDR 2");
                 return false;
+            }
+
+            // generates a new XID
+            {
+                unsigned char* xp = (unsigned char*)&xid;
+
+                *xp++ = ifr.ifr_hwaddr.sa_data[5];
+                *xp++ = ifr.ifr_hwaddr.sa_data[4];
+                *((cyg_uint16*)xp) = (cyg_uint16)(arc4random() & 0xffff);
             }
 
             // Fill in the BOOTP request - DHCPDISCOVER packet

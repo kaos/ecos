@@ -281,6 +281,16 @@ package CYGPKG_DEVS_FLASH_MBX {
 	   on the Motorola PowerPC/860 MBX platform."
 }
 
+package CYGPKG_DEVS_FLASH_VIPER {
+	alias 		{ "FLASH memory support for A&M Viper PowerPC/8xx" flash_viper }
+	directory	devs/flash/powerpc/viper
+	script		flash_viper.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the A&M PowerPC/8xx VIPER platform."
+}
+
 package CYGPKG_DEVS_FLASH_ATLAS {
 	alias 		{ "FLASH memory support for MIPS Atlas" flash_atlas }
 	directory	devs/flash/mips/atlas
@@ -608,6 +618,15 @@ package CYGPKG_SNMPAGENT {
         description     "UCD SNMP agent."
 }
 
+package CYGPKG_NET_AUTOTEST {
+	alias 		{ "Network Autotesting" autotest net_autotest }
+	directory	net/autotest
+	script		net_autotest.cdl
+        description     "
+	Automated network testing support. 
+	***Red Hat internal use only***"
+}
+
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
 	hardware
@@ -631,6 +650,14 @@ package CYGPKG_DEVS_ETH_POWERPC_QUICC {
 	directory	devs/eth/powerpc/quicc
 	script		quicc_eth_drivers.cdl
         description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_FEC {
+	alias 		{ "FEC ethernet driver" fec_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/fec
+	script		fec_eth_drivers.cdl
+        description     "Ethernet driver for PowerPC FEC (MPC8xxT) based boards."
 }
 
 package CYGPKG_DEVS_ETH_INTEL_I82559 {
@@ -1341,6 +1368,16 @@ package CYGPKG_HAL_POWERPC_MBX {
             eCos on a Motorola MBX board equipped with a PowerPC processor."
 }
 
+package CYGPKG_HAL_POWERPC_VIPER {
+	alias		{ "A&M Viper PPC860 board" hal_powerpc_viper powerpc_viper_hal }
+	directory	hal/powerpc/viper
+	script		hal_powerpc_viper.cdl
+	hardware
+        description "
+            The VIPER HAL package provides the support needed to run
+            eCos on a A&M VIPER board equipped with a PowerPC processor."
+}
+
 package CYGPKG_HAL_QUICC {
 	alias		{ "Motorola MBX860/821 QUICC support" hal_quicc quicc_hal quicc }
 	directory	hal/powerpc/quicc
@@ -1684,6 +1721,7 @@ target assabet {
                    CYGPKG_HAL_ARM_SA11X0_ASSABET
 		   CYGPKG_IO_SERIAL_ARM_SA11X0
 		   CYGPKG_DEVS_PCMCIA_ASSABET
+                   CYGPKG_DEVS_FLASH_STRATA
 		   CYGPKG_DEVS_FLASH_ASSABET
                    CYGPKG_IO_USB
                    CYGPKG_IO_USB_SLAVE
@@ -1762,6 +1800,7 @@ target iq80310 {
                    CYGPKG_HAL_ARM_IQ80310
                    CYGPKG_IO_PCI
 		   CYGPKG_DEVS_ETH_ARM_IQ80310
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
 		   CYGPKG_IO_SERIAL_ARM_IQ80310
 		   CYGPKG_DEVS_FLASH_IQ80310
         }
@@ -1921,6 +1960,21 @@ target mbx {
         description "
             The mbx target provides the packages needed to run
             eCos on a Motorola MBX860 or MBX821 board."
+}
+
+target viper {
+        alias		{ "A&M Viper PPC860 board" viper860 }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx
+                          CYGPKG_HAL_POWERPC_VIPER
+                          CYGPKG_HAL_QUICC 
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+                          CYGPKG_DEVS_ETH_POWERPC_FEC
+                          CYGPKG_DEVS_FLASH_VIPER
+        }
+        description "
+            The viper target provides the packages needed to run
+            eCos on a A&M Viper PPC860 board."
 }
 
 target psim {

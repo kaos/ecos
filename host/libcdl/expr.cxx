@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -82,19 +82,31 @@ CdlEvalContext::CdlEvalContext(CdlTransaction transaction_arg, CdlNode node_arg,
     CYG_REPORT_FUNCARG4XV(this, transaction_arg, node_arg, property_arg);
 
     transaction = transaction_arg;
-    node        = node_arg;
+    
+    if ((0 == property_arg) && (0 != transaction)) {
+        CdlConflict conflict = transaction->get_conflict();
+        if (0 != conflict) {
+            property_arg = conflict->get_property();
+        }
+    }
     property    = property_arg;
+    
+    if ((0 == node_arg) && (0 != transaction)) {
+        CdlConflict conflict = transaction->get_conflict();
+        if (0 != conflict) {
+            node_arg = conflict->get_node();
+        }
+    }
+    node        = node_arg;
+    
     if (0 == toplevel_arg) {
         if (0 != transaction) {
-            toplevel = transaction->get_toplevel();
+            toplevel_arg = transaction->get_toplevel();
         } else if (0 != node) {
-            toplevel = node->get_toplevel();
-        } else {
-            toplevel = toplevel_arg;
+            toplevel_arg = node->get_toplevel();
         }
-    } else {
-        toplevel = toplevel_arg;
     }
+    toplevel = toplevel_arg;
     
     cdlevalcontext_cookie = CdlEvalContext_Magic;
     CYGDBG_MEMLEAK_CONSTRUCTOR();
@@ -219,7 +231,11 @@ enum token {
     T_BitOr             = 26,   // |
     T_And               = 27,   // &&
     T_Or                = 28,   // ||
-    T_Colon             = 29    // : (in a conditional)
+    T_Colon             = 29,   // : (in a conditional)
+    T_StringConcat      = 30,   // .
+    T_Function          = 31,   // is_substr etc.
+    T_Comma             = 32    // , (inside a function)
+    
 };
 
 //}}}
@@ -236,6 +252,7 @@ static std::string      current_reference       = "";
 static cdl_int          current_int             = 0;
 static double           current_double          = 0.0;
 static CdlValueFormat   current_format          = CdlValueFormat_Default;
+static int              current_function_id     = 0;
 
 //}}}
 //{{{  Character access                 
@@ -345,8 +362,8 @@ token_to_binary_expr_op()
       case T_BitOr:             result = CdlExprOp_BitOr; break;
       case T_And:               result = CdlExprOp_And; break;
       case T_Or:                result = CdlExprOp_Or; break;
-
-      default: result = CdlExprOp_Invalid; break;
+      case T_StringConcat:      result = CdlExprOp_StringConcat; break;
+      default:                  result = CdlExprOp_Invalid; break;
     }
     
     CYG_REPORT_RETVAL(result);
@@ -379,7 +396,7 @@ token_to_expr_op()
         case T_Tilde:           result = CdlExprOp_BitNot; break;
         case T_Questionmark:
         case T_Colon:           result = CdlExprOp_Cond; break; // best guess
-            
+        case T_Function:        result = CdlExprOp_Function; break;
         case T_OpenBracket:
         case T_CloseBracket:
         case T_Invalid:
@@ -441,6 +458,8 @@ token_to_string()
       case T_And:               result = "and operator &&"; break;
       case T_Or:                result = "or operator ||"; break;
       case T_Colon:             result = "colon"; break;
+      case T_StringConcat:      result = "string concatenation operator ."; break;
+      case T_Function:          result = std::string("function call ") + CdlFunction::get_name(current_function_id); break;
       case T_Invalid:
       default:                  result = "<invalid token>"; break;
     }
@@ -722,21 +741,22 @@ process_number()
 }
 
 //}}}
-//{{{  process_reference()              
+//{{{  process_alphanumeric()           
 
-// The start of a reference has been detected.
-// A reference name must be a valid C preprocessor name, so the
-// only characters allowed are underscore, upper and lower case
-// characters, and digits. The first character cannot be a digit,
-// but that has been checked already.
+// The start of an alphanumeric sequence has been detected. This may
+// be a reference, a function call, or an operator like eq or to. All
+// such sequences must be a valid C preprocessor name, so the only
+// characters allowed are underscore, upper and lower case characters,
+// and digits. The first character cannot be a digit, but that has
+// been checked already.
 //
 // Some care has to be taken with locale's, the C library may decide
 // that a character is a letter even though the same character is not
 // valid as far as the preprocessor is concerned.
 static void
-process_reference()
+process_alphanumeric()
 {
-    CYG_REPORT_FUNCNAME("process_reference");
+    CYG_REPORT_FUNCNAME("process_alphanumeric");
 
     do {
        current_reference += (char) current_char;
@@ -745,9 +765,39 @@ process_reference()
              (('a' <= current_char) && (current_char <= 'z')) ||
              (('A' <= current_char) && (current_char <= 'Z')));
 
-    current_token = T_Reference;
-
     CYG_REPORT_RETURN();
+}
+
+//}}}
+//{{{  process_special()                
+
+// Usually an alphanumeric sequence of characters is a reference, e.g.
+// CYGPKG_KERNEL. However there are only so many special characters
+// available so some operators are implemented as a sequence, e.g. 
+// "to". CDL also supports functions like is_substr().
+//
+// The data will have been collected into the current_reference string
+// by a call to process_alphanumeric().
+
+static bool
+process_special()
+{
+    CYG_REPORT_FUNCNAMETYPE("process_special", "special %d");
+    bool result = false;
+    
+    if ("to" == current_reference) {
+        current_token  = T_Range;
+        result = true;
+    } else if (CdlFunction::is_function(current_reference.c_str(), current_function_id)) {
+        current_token           = T_Function;
+        result = true;
+    }
+
+    if (result) {
+        current_reference = "";
+    }
+    CYG_REPORT_RETVAL(result);
+    return result;
 }
 
 //}}}
@@ -770,6 +820,7 @@ next_token()
     current_int         = 0;
     current_double      = 0.0;
     current_format      = CdlValueFormat_Default;
+    current_function_id = 0;
 
     // Skip leading white space. This includes newlines, tabs, etc,
     // consider the case of:
@@ -931,10 +982,21 @@ next_token()
           next_char();
           break;
 
+      case '.':
+          current_token = T_StringConcat;
+          next_char();
+          break;
+
+      case ',':
+          current_token = T_Comma;
+          next_char();
+          break;
+        
       default:
           // String constants have been handled already. The only
-          // valid tokens that are left are numbers, references and
-          // the rang eoperator.
+          // valid tokens that are left are numbers, references,
+          // "specials" such as the range and string equality
+          // operators, and functions.
           //
           // Numbers should begin with a digit (plus and minus are
           // tokenized separately).
@@ -948,11 +1010,8 @@ next_token()
           } else if (('_' == current_char) ||
                      (('a' <= current_char) && (current_char <= 'z')) ||
                      (('A' <= current_char) && (current_char <= 'Z'))) {
-              process_reference();
-              if ("to" == current_reference) {
-                  current_reference = "";
-                  current_token  = T_Range;
-              } else {
+              process_alphanumeric();
+              if (!process_special()) {
                   current_token = T_Reference;
               }
           } else {
@@ -1009,13 +1068,13 @@ initialise_tokenisation(std::string data, int index)
 //   <eq>           ::= <comp>   [<eq op>     <comp>]          == !=
 //   <comp>         ::= <shift>  [<comp op>   <shift>]         < <= > >=
 //   <shift>        ::= <add>    [<shift op>  <add>]           << >>
-//   <add>          ::= <mult>   [<add op>    <mult>]          + -
+//   <add>          ::= <mult>   [<add op>    <mult>]          + - .
 //   <mult>         ::= <unary>  [<mult op>   <unary>]         * / %
 //   <unary>        ::= -<unary> | +<unary> | !<unary> | *<unary> | ?<unary> |
 //                      ~<unary> |
 //                      <string constant> | <integer constant> |
 //                      <double constant> | <reference> |
-//                      ( <expression> )
+//                      ( <expression> ) | <function>
 //
 // There are separate functions for each of these terms.
 
@@ -1064,6 +1123,52 @@ current_subexpression(CdlExpression expr)
 }
 
 static void
+parse_function(CdlExpression expr)
+{
+    CYG_REPORT_FUNCNAME("parse_function");
+    CYG_REPORT_FUNCARG1XV(expr);
+    CYG_PRECONDITION_CLASSC(expr);
+
+    CdlSubexpression subexpr;
+    subexpr.op          = CdlExprOp_Function;
+    subexpr.func        = current_function_id;
+
+    int number_of_args  = CdlFunction::get_args_count(current_function_id);
+    CYG_ASSERTC((0 < number_of_args) && (number_of_args <= CdlFunction_MaxArgs));
+    std::string name    = current_reference;
+
+    // check for the opening bracket: xyzzy(arg1, arg2)
+    next_token();
+    if (T_OpenBracket != current_token) {
+        throw CdlParseException(std::string("Expected opening bracket after function ") + name + "\n" + get_error_location());
+    }
+    next_token();
+
+    int i;
+    for (i = 0; i < number_of_args; i++) {
+        parse_expression(expr);
+        subexpr.args[i] = expr->first_subexpression;
+        if (i < (number_of_args - 1)) {
+            if (T_Comma != current_token) {
+                throw CdlParseException(std::string("Expected comma between arguments in function ") +
+                                        name + "\n" + get_error_location());
+            }
+            next_token();
+        }
+    }
+    if (T_CloseBracket != current_token) {
+        throw CdlParseException(std::string("Expected closing bracket after function ") + name + "\n" + get_error_location());
+    }
+    next_token();
+    
+    // Allow the function implementation to check its arguments if it is so inclined.
+    CdlFunction::check(expr, subexpr);
+    
+    push_subexpression(expr, subexpr);
+    CYG_REPORT_RETURN();
+}
+
+static void
 parse_unary(CdlExpression expr)
 {
     CYG_REPORT_FUNCNAME("parse_operand");
@@ -1077,6 +1182,12 @@ parse_unary(CdlExpression expr)
       {
         // This warrants a special case
         throw CdlParseException("End of expression reached when expecting an operand.\n" + get_error_location());
+      }
+
+      case T_Function :
+      {
+          parse_function(expr);
+          break;
       }
       
       case T_Reference :
@@ -1247,10 +1358,14 @@ parse_add(CdlExpression expr)
     CYG_REPORT_FUNCNAME("parse_add");
     
     parse_multiply(expr);
-    while ((T_Plus == current_token) || (T_Minus == current_token)) {
+    while ((T_Plus == current_token)  ||
+           (T_Minus == current_token) ||
+           (T_StringConcat == current_token)) {
 
         CdlSubexpression subexpr;
-        subexpr.op = (T_Plus == current_token) ? CdlExprOp_Add : CdlExprOp_Subtract;
+        subexpr.op = (T_Plus == current_token) ? CdlExprOp_Add :
+                     (T_Minus == current_token) ? CdlExprOp_Subtract :
+                     CdlExprOp_StringConcat;
         subexpr.lhs_index = expr->first_subexpression;
         
         next_token();
@@ -1317,7 +1432,8 @@ parse_equals(CdlExpression expr)
     CYG_REPORT_FUNCNAME("parse_equals");
     
     parse_comparison(expr);
-    while ((T_Equal == current_token) || (T_NotEqual == current_token)) {
+    while ((T_Equal == current_token) ||
+           (T_NotEqual == current_token)) {
 
         CdlSubexpression subexpr;
         subexpr.op = (T_Equal == current_token) ? CdlExprOp_Equal : CdlExprOp_NotEqual;
@@ -1533,6 +1649,11 @@ evaluate_subexpr(CdlEvalContext& context, CdlExpression expr, int subexpr_index,
     case CdlExprOp_DoubleConstant :
     {
         result = subexpr.constants;
+        break;
+    }
+    case CdlExprOp_Function :
+    {
+        CdlFunction::eval(context, expr, subexpr, result);
         break;
     }
     case CdlExprOp_Reference :
@@ -2045,6 +2166,16 @@ evaluate_subexpr(CdlEvalContext& context, CdlExpression expr, int subexpr_index,
         }
         break;
     }
+    case CdlExprOp_StringConcat :
+    {
+        // a . b
+        CdlSimpleValue lhs;
+        CdlSimpleValue rhs;
+        evaluate_subexpr(context, expr, subexpr.lhs_index, lhs);
+        evaluate_subexpr(context, expr, subexpr.rhs_index, rhs);
+        result = lhs.get_value() + rhs.get_value();
+        break;
+    }
 
     default:
         break;
@@ -2063,6 +2194,19 @@ CdlExpressionBody::eval_internal(CdlEvalContext& context, CdlSimpleValue& result
     CYG_PRECONDITION_CLASSOC(context);
 
     evaluate_subexpr(context, this, first_subexpression, result);
+    
+    CYG_REPORT_RETURN();
+}
+
+void
+CdlExpressionBody::eval_subexpression(CdlEvalContext& context, int index, CdlSimpleValue& result)
+{
+    CYG_REPORT_FUNCNAME("CdlExpression::eval_subexpression)");
+    CYG_REPORT_FUNCARG4XV(this, &context, index, &result);
+    CYG_INVARIANT_THISC(CdlExpressionBody);
+    CYG_PRECONDITION_CLASSOC(context);
+
+    evaluate_subexpr(context, this, index, result);
     
     CYG_REPORT_RETURN();
 }

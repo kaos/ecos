@@ -1,3 +1,17 @@
+2001-05-16  Bart Veer  <bartv@redhat.com>
+
+	* ecosconfig.cxx: clean up cygwin->windows path translations
+
+	* Makefile.am: use new compiler flag support
+
+	* configure, Makefile.in, testsuite/Makefile.in: regenerate
+
+2001-04-27  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx (cdl_exec::cmd_new):
+	Make sure transactions get cleaned up properly if a CDL script
+	fails to load.
+
 2000-07-07  Bart Veer  <bartv@redhat.com>
 
 	* cdl_exec.cxx (transaction_callback):

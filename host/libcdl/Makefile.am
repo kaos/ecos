@@ -9,7 +9,7 @@
 ######COPYRIGHTBEGIN####
 ##                                                                          
 ## ----------------------------------------------------------------------------
-## Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 ##
 ## This file is part of the eCos host tools.
 ##
@@ -44,8 +44,10 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 SUBDIRS          = testsuite
 
-## Pick up an appropriate header file search path from configure
-INCLUDES = @INCLUDES@
+## Pick up compiler flags etc. from configury
+INCLUDES        = @INCLUDES@
+AM_CFLAGS	= @cyg_CFLAGS@
+AM_CXXFLAGS	= @cyg_CXXFLAGS@
 
 ## This package exports its interface via cdl.hxx
 include_HEADERS = cdlcore.hxx cdl.hxx
@@ -59,6 +61,7 @@ include_HEADERS = cdlcore.hxx cdl.hxx
 
 sources := interp.cxx	    \
            expr.cxx         \
+           func.cxx	    \
            refer.cxx        \
            cdlmisc.cxx      \
            conflict.cxx     \
@@ -121,6 +124,10 @@ cdl_headers     := $(cdlcore_headers) cdl.hxx
 interp.$(OBJEXT)    : Makefile $(cdlcore_headers) $(infra_headers)
 
 expr.$(OBJEXT)      : Makefile $(cdlcore_headers) $(infra_headers)
+
+infer.$(OBJEXT)     : Makefile $(cdlcore_headers) $(infra_headers)
+
+func.$(OBJEXT)      : Makefile $(cdlcore_headers) $(infra_headers)
 
 refer.$(OBJEXT)     : Makefile $(cdlcore_headers) $(infra_headers)
 

@@ -65,16 +65,26 @@ flash_hwr_init(void)
     typedef int code_fun(unsigned char *);
     code_fun *_flash_query;
     int code_len, stat, num_regions, region_size, buffer_size;
+    int icache_on, dcache_on;
+
+    HAL_DCACHE_IS_ENABLED(dcache_on);
+    HAL_ICACHE_IS_ENABLED(icache_on);
 
     // Copy 'program' code to RAM for execution
     code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
     _flash_query = (code_fun *)flash_info.work_space;
     memcpy(_flash_query, &flash_query, code_len);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+    if (dcache_on) {
+        HAL_DCACHE_SYNC();  // Should guarantee this code will run
+    }
+    if (icache_on) {
+        HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+    }
 
     stat = (*_flash_query)((unsigned char *)&data);
-    HAL_ICACHE_ENABLE();
+    if (icache_on) {
+        HAL_ICACHE_ENABLE();
+    }
 
     qp = &data;
     if ( (qp->manuf_code == FLASH_Intel_code)

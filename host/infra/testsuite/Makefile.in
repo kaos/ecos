@@ -73,6 +73,8 @@ OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
+cyg_CFLAGS = @cyg_CFLAGS@
+cyg_CXXFLAGS = @cyg_CXXFLAGS@
 cyg_ac_tcl_incdir = @cyg_ac_tcl_incdir@
 cyg_ac_tcl_libdir = @cyg_ac_tcl_libdir@
 cyg_ac_tcl_libs = @cyg_ac_tcl_libs@
@@ -88,7 +90,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 EXPECT = `if test -f $(top_builddir)/../expect/expect; then echo $(top_builddir)/../expect/expect; else echo expect; fi`
 RUNTEST = `if test -f $(top_srcdir)/../dejagnu/runtest; then echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi`

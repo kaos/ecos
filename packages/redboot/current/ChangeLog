@@ -1,3 +1,50 @@
+2001-05-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/net/tftp_client.c: include redboot.h for have_net.
+
+2001-05-17  Dennis Ehlin  <Dennis.Ehlin@ecs.ericsson.se>
+	(with minor mods by jlarmour@redhat.com)
+	
+	* cdl/redboot.cdl: Split boot script functionality into separate
+	component. Rename some options not to be specific to FLASH.
+	Add default boot script option.
+	* src/main.c (cyg_start): Use default boot script if none provided
+	in FLASH (or indeed no FLASH). Support renamed CDL options.
+	* src/io.c (gets): Support renamed CDL options.
+	(verify_action): Ditto.
+	* src/flash.c: Ditto.
+	* include/redboot.h: Ditto.
+
+2001-05-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/crc.c (crc32): Remove unused variable/warning.
+
+	* src/main.c (set_console_baud_rate, do_baud_rate): 
+	* src/flash.c: 
+	* include/redboot.h: 
+	* cdl/redboot.cdl: Add support for variable, settable, console
+	baud rate.
+
+	* src/net/tftp_client.c (tftp_stream_open): Don't try if no network.
+
+2001-05-10  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: Can't build RedBoot without virtual vectors.
+
+2001-05-09  Mark Salter  <msalter@redhat.com>
+
+	* src/main.c (cyg_start): Cast CYGACC_CALL_IF_DELAY_US argument
+	to a cyg_int32. Needed when sizeof(int) < sizeof(cyg_int32).
+
+2001-05-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/net_io.c (net_io_isr): Interrupt acknowledgement
+	should rightly be done by the driver 'delivery' routine, not here.
+
+2001-04-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_caches): Display cache state if no arguments.
+
 2001-04-13  Gary Thomas  <gthomas@redhat.com>
 
 	* src/net/ping.c (do_ping): Tidy message.

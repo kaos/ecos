@@ -928,7 +928,9 @@ fis_load(int argc, char *argv[])
     bool mem_addr_set = false;
     bool show_cksum = false;
     struct option_info opts[3];
+#ifdef CYGPKG_REDBOOT_FIS_CRC_CHECK
     unsigned long cksum;
+#endif
     int num_options;
     bool decompress = false;
 
@@ -1069,7 +1071,7 @@ static bool config_ok;
 #define CONFIG_BACK    3
 #define CONFIG_BAD     4
 
-// Note: the following options are related.  If 'bootp' is false, then
+// Note: the following options are related.  If 'boot_script' is false, then
 // the other values are used in the configuration.  Because of the way
 // that configuration tables are generated, they should have names which
 // are related.  The configuration options will show up lexicographically
@@ -1090,7 +1092,7 @@ RedBoot_config_option("Boot script",
 #define __cat(s1,c2,s3) s1 #c2 s3
 #define _cat(s1,c2,s3) __cat(s1,c2,s3)
 RedBoot_config_option(_cat("Boot script timeout (",
-                           CYGNUM_REDBOOT_FLASH_SCRIPT_TIMEOUT_RESOLUTION,
+                           CYGNUM_REDBOOT_BOOT_SCRIPT_TIMEOUT_RESOLUTION,
                            "ms resolution)"),
                       boot_script_timeout,
                       "boot_script", true,
@@ -1099,6 +1101,15 @@ RedBoot_config_option(_cat("Boot script timeout (",
     );
 #undef __cat
 #undef _cat
+
+#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+RedBoot_config_option("Console baud rate",
+                      console_baud_rate,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_INT,
+                      CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
+    );
+#endif
 
 CYG_HAL_TABLE_BEGIN( __CONFIG_options_TAB__, RedBoot_config_options);
 CYG_HAL_TABLE_END( __CONFIG_options_TAB_END__, RedBoot_config_options);
@@ -1387,7 +1398,7 @@ do_flash_config(int argc, char *argv[])
             }
             opt++;
         }
-        if ( onlyone && 0 != strcmp(opt->key, onlyone) )
+        if ( onlyone && 0 != strcmp(CONFIG_OBJECT_KEY(dp), onlyone) )
             ret = CONFIG_OK; // skip this entry
         else {
             doneone = true;
@@ -1414,8 +1425,16 @@ do_flash_config(int argc, char *argv[])
     }
 
  done:
-    if (NULL != onlyone && !doneone)
-        printf("** entry '%s' not found\n", onlyone);
+    if (NULL != onlyone && !doneone) {
+#ifdef CYGSEM_REDBOOT_ALLOW_DYNAMIC_FLASH_CONFIG_DATA
+        if (verify_action("** entry '%s' not found - add", onlyone)) {
+            struct config_option opt;
+            printf("Trying to add value\n");
+        }
+#else
+        printf("** entry '%s' not found", onlyone);
+#endif
+    }
     if (!need_update)
         return;
     flash_write_config();
@@ -1627,6 +1646,12 @@ load_flash_config(void)
         flash_get_config("boot_script_data", &script, CONFIG_SCRIPT);
         flash_get_config("boot_script_timeout", &script_timeout, CONFIG_INT);
     }
+#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+    if (flash_get_config("console_baud_rate", &console_baud_rate, CONFIG_INT)) {
+        extern void set_console_baud_rate(int);
+        set_console_baud_rate(console_baud_rate);
+    }
+#endif
 }
 
 RedBoot_init(load_flash_config, RedBoot_INIT_FIRST);

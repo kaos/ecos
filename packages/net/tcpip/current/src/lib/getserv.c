@@ -56,12 +56,37 @@
 #include <sys/param.h>
 #include <netdb.h>
 
+// These must return the port in network byte order.
+//
+// This means treated as a short, because it's a port, despite the types in
+// the API and the struct being ints.
+// 
+// The argument to getservbyport() is also network byte order, so that code
+// must change to flip before comparing.
+
 static struct servent services[] = {
-    { "ftp",      0, 21, "tcp" },
-    { "ftp-data", 0, 20, "tcp" },
-    { "tftp",     0, 69, "udp" },
-    { NULL,       0,  0, NULL  }
+    { "ftp",      0,   21 , "tcp" },
+    { "ftp-data", 0,   20 , "tcp" },
+    { "tftp",     0,   69 , "udp" },
+    { "snmp",     0,  161 , "udp" },
+
+    { NULL,       0,     0       , NULL  }
 };
+
+// Note that this contains no interlocking between clients of the
+// interface; but this is completely typical of such APIs.
+
+static struct servent *
+setreturned( struct servent *p )
+{
+    static struct servent returned;
+
+    returned.s_name     = p->s_name;
+    returned.s_aliases  = p->s_aliases;
+    returned.s_port     = htons(p->s_port); // return in net order
+    returned.s_proto    = p->s_proto;
+    return &returned;
+}
 
 struct servent *
 getservbyname(const char *name, const char *proto)
@@ -70,7 +95,7 @@ getservbyname(const char *name, const char *proto)
     while (p->s_name) {
         if ((strcmp(name, p->s_name) == 0) &&
             (strcmp(proto, p->s_proto) == 0)) {
-            return p;
+            return setreturned(p);
         }
         p++;
     }
@@ -82,10 +107,11 @@ struct servent *
 getservbyport(const int num, const char *proto)
 {
     struct servent *p = services;
+    int port = ntohs(num);
     while (p->s_name) {
-        if ((p->s_port == num) &&
+        if ((p->s_port == port) &&
             (strcmp(proto, p->s_proto) == 0)) {
-            return p;
+            return setreturned(p);
         }
         p++;
     }

@@ -50,9 +50,6 @@
 #include <cyg/hal/hal_iq80310.h>        // Platform specific hardware definitions
 #include <cyg/hal/hal_mmu.h>            // MMU definitions
 
-// Avoid mapping problems
-#undef CYG_HAL_ROM_RESET_USES_JUMP
-
 // Define macro used to diddle the LEDs during early initialization.
 // Can use r0+r1.  Argument in \x.
 #define CYGHWR_LED_MACRO                 \

@@ -139,11 +139,11 @@ bool cdl_exec::cmd_new (const std::string cdl_hardware,
 
         // The hardware and template should be loaded in a single transaction.
         // Validating the target name etc. can be left to libcdl.
-        CdlTransaction transact = CdlTransactionBody::make(config);
-        config->set_hardware(transact, resolve_hardware_alias(cdl_hardware), &diagnostic_handler, &diagnostic_handler);
-        config->set_template(transact, cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
-        transact->body();
-        delete transact;
+        CdlLocalTransaction transact(config);
+        config->set_hardware(transact.get(), resolve_hardware_alias(cdl_hardware), &diagnostic_handler, &diagnostic_handler);
+        config->set_template(transact.get(), cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
+        transact.body();
+        transact.destroy();
 
         // Unless inference has been suppressed, make sure that the
         // inference engine gets invoked and that its results get

@@ -23,7 +23,7 @@
 #
 # The Initial Developer of the Original Code is Red Hat.
 # Portions created by Red Hat are
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.
 # -------------------------------------------
 #
@@ -554,19 +554,19 @@ FUNC_END(read_spd_value)
 
 	.globl	hal_interrupt_handlers
 hal_interrupt_handlers:
-	.rept	20
+	.rept	25
 	.long	hal_default_isr
 	.endr
 
 	.globl	hal_interrupt_data
 hal_interrupt_data:
-	.rept	20
+	.rept	25
 	.long	0
 	.endr
 
 	.globl	hal_interrupt_objects
 hal_interrupt_objects:
-	.rept	20
+	.rept	25
 	.long	0
 	.endr
 

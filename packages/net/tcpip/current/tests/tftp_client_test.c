@@ -77,8 +77,8 @@ pexit(char *s)
 
 static char buf[32*1024];
 
-#define GETFILE "tftp_get"
-#define PUTFILE "tftp_put"
+#define GETFILE "/tftpboot/tftp_get"
+#define PUTFILE "/tftpboot/tftp_put"
 
 static void
 tftp_test(struct bootp *bp)

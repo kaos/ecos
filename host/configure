@@ -35,9 +35,9 @@ ac_help="$ac_help
 ac_help="$ac_help
  --with-tcl-version=<vsn> version of Tcl to be used"
 ac_help="$ac_help
- --with-tcl-header=<path>        location of Tcl header"
+ --with-tcl-header=<path> location of Tcl header"
 ac_help="$ac_help
- --with-tcl-lib=<path>        location of Tcl libraries"
+ --with-tcl-lib=<path>    location of Tcl libraries"
 ac_help="$ac_help
  --with-tcl=<path>        location of Tcl header and libraries"
 
@@ -1414,22 +1414,38 @@ fi
 
     fi
 
-    if test "${GCC}" = "yes" ; then
-        CC="$CC -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
-        CXX="$CXX -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
+        if test "${GCC}" = "yes" ; then
+        cyg_CFLAGS="-pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs"
+        cyg_CXXFLAGS="-pipe -Wall -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Woverloaded-virtual"
     elif test "${MSVC}" = "yes" ; then
-        CC="$CC -nologo -W3"
-        CXX="$CXX -nologo -W3 -GR -GX"
-        if test "${cygflags_enable_debug}" = "yes" ; then
-            CC="$CC -MDd -Zi"
-            CXX="$CXX -MDd -Zi"
-        else
-            CC="$CC -MD -O2"
-            CXX="$CXX -MD -O2"
-        fi
+        cyg_CFLAGS="-nologo -W3"
+        cyg_CXXFLAGS="-nologo -W3 -GR -GX"
     else
         { echo "configure: error: "default flags for ${CC} are not known"" 1>&2; exit 1; }
     fi
+
+        if test "${cygflags_enable_debug}" = "yes" ; then
+        if test "${GCC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -g -O0"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -g -O0"
+        elif test "${MSVC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -MDd -Zi"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -MDd -Zi"
+        fi
+    else
+        if test "${GCC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -O0"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -O0"
+        elif test "${MSVC}" = "yes" ; then
+            cyg_CFLAGS="${cyg_CFLAGS} -MD -O2"
+            cyg_CXXFLAGS="${cyg_CXXFLAGS} -MD -O2"
+        fi
+    fi
+
+    CFLAGS="${ac_save_CFLAGS}"
+    CXXFLAGS="${ac_save_CXXFLAGS}"
+    
+    
     echo "$ac_t""done" 1>&6
 
 
@@ -1582,7 +1598,7 @@ fi
 
 
 echo $ac_n "checking for Tcl version""... $ac_c" 1>&6
-echo "configure:1586: checking for Tcl version" >&5
+echo "configure:1602: checking for Tcl version" >&5
 # Check whether --with-tcl-version or --without-tcl-version was given.
 if test "${with_tcl_version+set}" = set; then
   withval="$with_tcl_version"
@@ -1627,10 +1643,32 @@ fi
 
 
 echo $ac_n "checking for Tcl installation""... $ac_c" 1>&6
-echo "configure:1631: checking for Tcl installation" >&5
+echo "configure:1647: checking for Tcl installation" >&5
 
-tcl_incdirs="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl$cyg_ac_tcl_version /usr/include"
 
+if test "${MSVC}" = "yes" ; then
+  if test "${with_tcl_header+set}" = set; then
+    cyg_ac_tcl_incdir=${with_tcl_header}
+  else
+    if test "${with_tcl+set}" = set; then
+      cyg_ac_tcl_incdir="${with_tcl}/include"
+    else
+      { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-header=<path>" 1>&2; exit 1; }
+    fi
+  fi
+  if test "${with_tcl_lib+set}" = set; then
+    cyg_ac_tcl_libdir=${with_tcl_lib}
+  else
+    if test "${with_tcl+set}" = set; then
+      cyg_ac_tcl_libdir="${with_tcl}/lib"
+    else
+      { echo "configure: error: You must specify a Tcl installation with either --with-tcl=<path> or --with-tcl-lib=<path>" 1>&2; exit 1; }
+    fi
+  fi
+  cyg_ac_tcl_libs="tcl${cyg_ac_tcl_version}.lib"
+else
+  tcl_incdirs="${with_tcl_header} ${with_tcl}/include ${prefix}/include /usr/include/tcl$cyg_ac_tcl_version /usr/include"
+  
 cyg_ac_tcl_incdir=NO
 for i in $tcl_incdirs;
 do
@@ -1643,13 +1681,8 @@ do
   done
 done
 
-
-if test \! -r ${cyg_ac_tcl_incdir}/tcl.h ; then
-  { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
-fi
-
-tcl_libdirs="${with_tcl_lib} ${with_tcl}/lib ${prefix}/lib /usr/lib/tcl$cyg_ac_tcl_version /usr/lib"
-
+  tcl_libdirs="${with_tcl_lib} ${with_tcl}/lib ${libdir} ${prefix}/lib /usr/lib/tcl$cyg_ac_tcl_version /usr/lib"
+  
 cyg_ac_tcl_libdir=NO
 for i in $tcl_libdirs;
 do
@@ -1662,11 +1695,19 @@ do
   done
 done
 
+  if test \! -r ${cyg_ac_tcl_libdir}/tclConfig.sh ; then
+    { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
+  else
+    . ${cyg_ac_tcl_libdir}/tclConfig.sh
+    cyg_ac_tcl_libs="-ltcl${cyg_ac_tcl_version} ${TCL_LIBS}"
+  fi
+fi
 
-echo "$ac_t""${cyg_ac_tcl_libdir}" 1>&6
+if test \! -r ${cyg_ac_tcl_incdir}/tcl.h ; then
+  { echo "configure: error: unable to locate Tcl header file tcl.h" 1>&2; exit 1; }
+fi
 
 if test "${MSVC}" = "yes" ; then
-  cyg_ac_tcl_libs="tcl${cyg_ac_tcl_version}.lib"
   
     
     
@@ -1683,14 +1724,9 @@ if test "${MSVC}" = "yes" ; then
       cyg_ac_tcl_libdir=`cygpath -w ${cyg_ac_tcl_libdir} | tr \\\\\\\\ /`
     fi
 
-else
-  if test \! -r ${cyg_ac_tcl_libdir}/tclConfig.sh ; then
-    { echo "configure: error: unable to locate Tcl config file tclConfig.sh" 1>&2; exit 1; }
-  else
-    . ${cyg_ac_tcl_libdir}/tclConfig.sh
-    cyg_ac_tcl_libs="-ltcl${cyg_ac_tcl_version} ${TCL_LIBS}"
-  fi
 fi
+
+echo "$ac_t""${cyg_ac_tcl_libdir}" 1>&6
 
 
 
@@ -1699,9 +1735,6 @@ fi
 
 
 ECOS_DIRS="infra libcdl"
-
-
-
 
 
 
@@ -1883,6 +1916,8 @@ s%@OBJEXT@%$OBJEXT%g
 s%@EXEEXT@%$EXEEXT%g
 s%@MSVC_TRUE@%$MSVC_TRUE%g
 s%@MSVC_FALSE@%$MSVC_FALSE%g
+s%@cyg_CFLAGS@%$cyg_CFLAGS%g
+s%@cyg_CXXFLAGS@%$cyg_CXXFLAGS%g
 s%@cyg_ac_tcl_version@%$cyg_ac_tcl_version%g
 s%@cyg_ac_tcl_incdir@%$cyg_ac_tcl_incdir%g
 s%@cyg_ac_tcl_libdir@%$cyg_ac_tcl_libdir%g

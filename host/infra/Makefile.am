@@ -9,7 +9,7 @@
 ######COPYRIGHTBEGIN####
 ##                                                                          
 ## ----------------------------------------------------------------------------
-## Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+## Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 ##
 ## This file is part of the eCos host tools.
 ##
@@ -73,6 +73,10 @@ libcyginfra_a_SOURCES = assert.cxx    \
                         trace.cxx     \
                         checkdata.cxx \
                         testcase.cxx
+
+## Pick up compiler flags etc. from configury
+AM_CFLAGS	= @cyg_CFLAGS@
+AM_CXXFLAGS	= @cyg_CXXFLAGS@
 
 if MSVC
 all-local: cyginfra.lib

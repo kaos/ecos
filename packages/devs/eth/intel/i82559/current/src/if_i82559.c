@@ -135,6 +135,7 @@
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/infra/diag.h>
+#include <cyg/hal/hal_if.h>
 #include <cyg/hal/drv_api.h>
 #include <netdev.h>
 #include <eth_drv.h>
@@ -143,7 +144,6 @@
 #include <pkgconf/net.h>
 #include <net/if.h>  /* Needed for struct ifnet */
 #else
-#include <cyg/hal/hal_if.h>
 #define diag_printf printf
 #endif
 
@@ -919,11 +919,10 @@ wait_for_cmd_done(long scb_ioaddr, cmd_wait_t type)
 
 // ------------------------------------------------------------------------
 
-externC void hal_delay_us(int);
 static void
 udelay(int delay)
 {
-    hal_delay_us(delay);
+    CYGACC_CALL_IF_DELAY_US(delay);
 }
 
 // ------------------------------------------------------------------------

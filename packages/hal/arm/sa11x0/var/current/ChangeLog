@@ -1,3 +1,7 @@
+2001-05-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c: Allow baud rate to be settable.
+
 2001-04-16  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0.cdl: Add CDL to describe CPU family.

@@ -57,10 +57,6 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
     inferred_value 0
 };
 
-cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_DIAG {
-    user_value 1
-};
-
 cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
     inferred_value 0 0
 };

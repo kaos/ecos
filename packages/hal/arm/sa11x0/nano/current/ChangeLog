@@ -1,3 +1,28 @@
+2001-05-02  Hugo Tyson  <hmt@redhat.com>
+
+	* src/nano_misc.c (hal_mmu_init): Set up PCI memory in the new
+	location, where it will not already be mapped by the default
+	layout.  This requires "stealing" RAM from the linear layout.
+	It's done this way so that a RAM app will work OK atop an
+	old-style RedBoot with the old PCI window area set up.
+	(hal_arm_mem_real_region_top): Better comments, and a safety
+	check; do not repeat the test for boundary movement.
+	
+	* include/pkgconf/mlt_arm_sa11x0_nano_ram.ldi: 
+	* include/pkgconf/mlt_arm_sa11x0_nano_ram.h: 
+	* include/pkgconf/mlt_arm_sa11x0_nano_ram.mlt: 
+	* include/pkgconf/mlt_arm_sa11x0_nano_post.ldi: 
+	* include/pkgconf/mlt_arm_sa11x0_nano_post.h: 
+	* include/pkgconf/mlt_arm_sa11x0_nano_post.mlt: 
+	Add "fixed" region to contain PCI window at 0xfa00000 (250Mb),
+	well away from normal memory.  Adjust ram region size to 15Mb - a
+	smaller possible memory installation, with the 1Mb default PCI
+	window removed.
+
+2001-04-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_sa11x0_nano.cdl: Remove redundant -Wl,-N from link flags
+
 2001-04-12  Hugo Tyson  <hmt@redhat.com>
 
 	* src/nano_misc.c (hal_arm_mem_real_region_top): Also report

@@ -73,6 +73,8 @@ OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
+cyg_CFLAGS = @cyg_CFLAGS@
+cyg_CXXFLAGS = @cyg_CXXFLAGS@
 cyg_ac_infra_incdir = @cyg_ac_infra_incdir@
 cyg_ac_infra_libdir = @cyg_ac_infra_libdir@
 cyg_ac_tcl_incdir = @cyg_ac_tcl_incdir@
@@ -85,39 +87,18 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 SUBDIRS = testsuite
 
 INCLUDES = @INCLUDES@
+AM_CFLAGS = @cyg_CFLAGS@
+AM_CXXFLAGS = @cyg_CXXFLAGS@
 
 include_HEADERS = cdlcore.hxx cdl.hxx
 
-sources := interp.cxx	    \
-           expr.cxx         \
-           refer.cxx        \
-           cdlmisc.cxx      \
-           conflict.cxx     \
-           property.cxx     \
-           parse.cxx        \
-           base.cxx         \
-           value.cxx        \
-           build.cxx	    \
-           dialog.cxx       \
-           wizard.cxx       \
-           interface.cxx    \
-           transact.cxx     \
-           infer.cxx        \
-           database.cxx     \
-           config.cxx       \
-           package.cxx      \
-           component.cxx    \
-           option.cxx
+sources := interp.cxx	               expr.cxx                    func.cxx	               refer.cxx                   cdlmisc.cxx                 conflict.cxx                property.cxx                parse.cxx                   base.cxx                    value.cxx                   build.cxx	               dialog.cxx                  wizard.cxx                  interface.cxx               transact.cxx                infer.cxx                   database.cxx                config.cxx                  package.cxx                 component.cxx               option.cxx
 
 
 noinst_LIBRARIES = libcdl.a
 libcdl_a_SOURCES = $(sources)
 
-infra_headers := $(cyg_ac_infra_incdir)/cyg/infra/cyg_ass.h  \
-                 $(cyg_ac_infra_incdir)/cyg/infra/cyg_trac.h \
-                 $(cyg_ac_infra_incdir)/pkgconf/infra.h      \
-                 $(cyg_ac_infra_incdir)/pkgconf/hostinfra.h  \
-                 $(cyg_ac_infra_incdir)/cyg/infra/cyg_type.h
+infra_headers := $(cyg_ac_infra_incdir)/cyg/infra/cyg_ass.h                   $(cyg_ac_infra_incdir)/cyg/infra/cyg_trac.h                  $(cyg_ac_infra_incdir)/pkgconf/infra.h                       $(cyg_ac_infra_incdir)/pkgconf/hostinfra.h                   $(cyg_ac_infra_incdir)/cyg/infra/cyg_type.h
 
 
 cdlcore_headers := cdlconfig.h cdlcore.hxx
@@ -134,12 +115,12 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libcdl_a_LIBADD = 
-libcdl_a_OBJECTS =  interp.$(OBJEXT) expr.$(OBJEXT) refer.$(OBJEXT) \
-cdlmisc.$(OBJEXT) conflict.$(OBJEXT) property.$(OBJEXT) parse.$(OBJEXT) \
-base.$(OBJEXT) value.$(OBJEXT) build.$(OBJEXT) dialog.$(OBJEXT) \
-wizard.$(OBJEXT) interface.$(OBJEXT) transact.$(OBJEXT) infer.$(OBJEXT) \
-database.$(OBJEXT) config.$(OBJEXT) package.$(OBJEXT) \
-component.$(OBJEXT) option.$(OBJEXT)
+libcdl_a_OBJECTS =  interp.$(OBJEXT) expr.$(OBJEXT) func.$(OBJEXT) \
+refer.$(OBJEXT) cdlmisc.$(OBJEXT) conflict.$(OBJEXT) property.$(OBJEXT) \
+parse.$(OBJEXT) base.$(OBJEXT) value.$(OBJEXT) build.$(OBJEXT) \
+dialog.$(OBJEXT) wizard.$(OBJEXT) interface.$(OBJEXT) \
+transact.$(OBJEXT) infer.$(OBJEXT) database.$(OBJEXT) config.$(OBJEXT) \
+package.$(OBJEXT) component.$(OBJEXT) option.$(OBJEXT)
 AR = ar
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -153,7 +134,7 @@ acconfig.h acinclude.m4 aclocal.m4 config.h.in configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libcdl_a_SOURCES)
 OBJECTS = $(libcdl_a_OBJECTS)
@@ -519,6 +500,10 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 interp.$(OBJEXT)    : Makefile $(cdlcore_headers) $(infra_headers)
 
 expr.$(OBJEXT)      : Makefile $(cdlcore_headers) $(infra_headers)
+
+infer.$(OBJEXT)     : Makefile $(cdlcore_headers) $(infra_headers)
+
+func.$(OBJEXT)      : Makefile $(cdlcore_headers) $(infra_headers)
 
 refer.$(OBJEXT)     : Makefile $(cdlcore_headers) $(infra_headers)
 

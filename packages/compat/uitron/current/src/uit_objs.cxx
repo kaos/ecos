@@ -51,7 +51,7 @@
                                         // we define below, and everything
                                         // we need to specify them.
 
-#include <cyg/hal/hal_arch.h>           // for CYGNUM_HAL_STACK_SIZE_TYPICAL
+#include <cyg/hal/hal_arch.h>           // for CYGNUM_HAL_STACK_SIZE_MINIMUM
 
 // ------------------------------------------------------------------------
 // Mboxes have no initializer.
@@ -143,6 +143,13 @@ Cyg_Counting_Semaphore2 *CYG_UITRON_DECL_PTRS( SEMAS );
         (cyg_ucount32)(_ss_) )
 #endif
 
+// FIXME: Xscale tools currently in use have a preprocessor bug causing
+// the below #ifs to be misinterpreted. Therefore a *temporary*
+// workaround is included to define a MAX macro, and change
+// CYGDAT_UITRON_TASK_EXTERNS and CYGDAT_UITRON_TASK_INITIALISERS in
+// the CDL to use it.
+#ifdef XSCALECPPFIXEDSOMETIME
+
 #ifdef CYGNUM_HAL_STACK_SIZE_MINIMUM
 # ifdef CYGNUM_UITRON_STACK_SIZE
 #  if CYGNUM_UITRON_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_MINIMUM
@@ -154,6 +161,10 @@ Cyg_Counting_Semaphore2 *CYG_UITRON_DECL_PTRS( SEMAS );
 #  endif // CYGNUM_UITRON_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_MINIMUM
 # endif // CYGNUM_UITRON_STACK_SIZE
 #endif // CYGNUM_HAL_STACK_SIZE_MINIMUM
+
+#else
+#define MAX(_x_,_y_) ((_x_) > (_y_) ? (_x_) : (_y_))
+#endif
 
 // declare the symbols used in the initializer
 CYGDAT_UITRON_TASK_EXTERNS

@@ -55,10 +55,11 @@
 int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 {
     volatile flash_t *ROM;
-    flash_t stat;
+    flash_t stat = 0;
     int timeout = 50000;
     int cache_on;
-    int len;
+    int len, block_len, erase_block_size;
+    volatile flash_t *eb;
 
     HAL_DCACHE_IS_ENABLED(cache_on);
     if (cache_on) {
@@ -68,17 +69,35 @@ int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 
     // Get base address and map addresses to virtual addresses
     ROM = FLASH_P2V(CYGNUM_FLASH_BASE_MASK & (unsigned int)block);
-    block = FLASH_P2V(block);
+    eb = block = FLASH_P2V(block);
+    block_len = block_size;
+
+#ifdef CYGOPT_FLASH_IS_BOOTBLOCK
+#define BLOCKSIZE (0x10000*CYGNUM_FLASH_DEVICES)
+#define ERASE_BLOCKSIZE (0x2000*CYGNUM_FLASH_DEVICES)
+    if ((eb - ROM) < BLOCKSIZE) {
+// FIXME - Handle 'boot' blocks
+        erase_block_size = ERASE_BLOCKSIZE;
+    } else {
+        erase_block_size = block_size;
+    }
+#else
+    erase_block_size = block_size;
+#endif
 
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;
 
     // Erase block
-    ROM[0] = FLASH_Block_Erase;
-    *block = FLASH_Confirm;
-    timeout = 5000000;
-    while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
-        if (--timeout == 0) break;
+    while (block_len > 0) {
+        ROM[0] = FLASH_Block_Erase;
+        *eb = FLASH_Confirm;
+        timeout = 5000000;
+        while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
+            if (--timeout == 0) break;
+        }
+        block_len -= erase_block_size;
+        eb = FLASH_P2V((unsigned int)eb + erase_block_size);
     }
 
     // Restore ROM to "normal" mode
