@@ -54,7 +54,7 @@ cdl_package CYGPKG_LIBC_I18N {
         This package provides internationalization functions specified by the
         ISO C standard - ISO/IEC 9899:1990. These include locale-related
         functionality and <ctype.h> functionality."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     include_dir   cyg/libc/i18n
     parent        CYGPKG_LIBC
     implements    CYGINT_ISO_LOCALE
