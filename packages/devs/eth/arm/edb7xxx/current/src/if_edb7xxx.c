@@ -114,7 +114,8 @@ ETH_DRV_SC(edb7xxx_sc,
            cs8900_can_send,
            cs8900_send,
            cs8900_recv,
-           cs8900_int);
+           cs8900_int,
+           cs8900_int_vector);
 
 NETDEVTAB_ENTRY(edb7xxx_netdev, 
                 "edb7xxx", 
@@ -147,6 +148,12 @@ cs8900_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     // Allow interrupts to happen again
     cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_EINT3);
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_EINT3);
+}
+
+static int
+cs8900_int_vector(struct eth_drv_sc *sc)
+{
+    return (CYGNUM_HAL_INTERRUPT_EINT3);
 }
 
 static bool 

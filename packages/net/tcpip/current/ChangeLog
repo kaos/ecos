@@ -1,3 +1,15 @@
+2000-08-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/sys/net/if.c (ifioctl): Support the two new ioctl() keys; at
+	this level, the struct ifreq at the head of the data area must be
+	filled to select an interface.
+
+	* include/sys/sockio.h (SIOCGIFSTATSUD): Add two new eCos-only
+	ioctl() keys, SIOCGIFSTATSUD and SIOCGIFSTATS, for reading
+	statistical information out of ethernet devices, for SNMP. This
+	should allow SNMP (a) to not explode, (b) to get useful info out
+	of other device implementations than this one.
+
 2000-08-17  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/ecos/timeout.c (timeout): Rework the timeout system to

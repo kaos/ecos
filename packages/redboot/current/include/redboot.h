@@ -123,7 +123,7 @@ extern void        cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix);
 #define RedBoot_cmd(_s_,_h_,_u_,_f_) cmd_entry(_s_,_h_,_u_,_f_,RedBoot_commands)
 #define _cmd_entry(_s_,_h_,_u_,_f_,_n_)                                   \
 cmd_fun _f_;                                                      \
-struct cmd _cmd_tab_##_f_ CYG_HAL_TABLE_ENTRY(_n_) = {_s_, _h_, _u_, _f_};
+struct cmd _cmd_tab_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(_n_,_f_) = {_s_, _h_, _u_, _f_};
 #define cmd_entry(_s_,_h_,_u_,_f_,_n_)                                   \
 extern _cmd_entry(_s_,_h_,_u_,_f_,_n_)
 #define local_cmd_entry(_s_,_h_,_u_,_f_,_n_)                             \
@@ -136,7 +136,7 @@ static _cmd_entry(_s_,_h_,_u_,_f_,_n_)
 typedef void void_fun(void);
 typedef void_fun *void_fun_ptr;
 #define _RedBoot_init(_f_,_p_)                                          \
-void_fun_ptr _init_tab_##_p_##_f_ CYG_HAL_TABLE_ENTRY(RedBoot_inits) = _f_; 
+void_fun_ptr _init_tab_##_p_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_inits,_f_) = _f_; 
 #define RedBoot_init(_f_,_p_) _RedBoot_init(_f_,_p_)
 
 
@@ -151,8 +151,9 @@ struct option_info {
     char *name;
 };
 
-#define OPTION_ARG_TYPE_NUM 0
-#define OPTION_ARG_TYPE_STR 1
+#define OPTION_ARG_TYPE_NUM 0    // Numeric data
+#define OPTION_ARG_TYPE_STR 1    // Generic string
+#define OPTION_ARG_TYPE_FLG 2    // Flag only
 
 extern void init_opts(struct option_info *opts, char flag, bool takes_arg, 
                       int arg_type, void **arg, bool *arg_set, char *name);

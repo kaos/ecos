@@ -64,8 +64,12 @@ flash_hwr_init(void)
     _flash_query = (code_fun *)flash_info.work_space;
     memcpy(_flash_query, &flash_query, code_len);
     HAL_DCACHE_SYNC();  // Should guarantee this code will run
+    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
 
     stat = (*_flash_query)(data);
+
+    HAL_ICACHE_ENABLE();
+
     if ((data[0] == FLASH_Intel_code) && (data[4] == FLASH_28F008SA)) {
         num_regions = 16;
         region_size = 0x40000;

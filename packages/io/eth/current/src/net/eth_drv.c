@@ -210,6 +210,21 @@ eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
         }
         break;
 
+#ifdef SIOCGIFSTATS
+    case SIOCGIFSTATS:
+#ifdef SIOCGIFSTATSUD
+    case SIOCGIFSTATSUD:
+#endif
+        // Get interface statistics:
+        if ((sc->funs->control)(sc, (cmd == SIOCGIFSTATS)
+                                ? ETH_DRV_GET_IF_STATS
+                                : ETH_DRV_GET_IF_STATS_UD,
+                                data, 0 ) ) {
+            error = EINVAL;
+        }
+        break;
+#endif // SIOCGIFSTATS
+
     case SIOCSIFFLAGS:
         if ((ifp->if_flags & IFF_UP) == 0 &&
             (ifp->if_flags & IFF_RUNNING) != 0) {

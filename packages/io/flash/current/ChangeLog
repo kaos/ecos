@@ -1,3 +1,10 @@
+2000-08-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/flash.c (flash_program): Add HAL_ICACHE_DISABLE/ENABLE pairs
+	around calls to RAM copy of programming/erasing function - this is
+	necessary to get reliable operation on EBSA285 and similar.
+	Otherwise, what is in the instruction cache might be run instead.
+
 2000-08-14  Gary Thomas  <gthomas@redhat.com>
 
 	* include/flash.h: Add block size mask for finding block boundaries.

@@ -47,6 +47,8 @@
 #include <net/net.h>
 #include <cyg/hal/hal_misc.h>   // Helper functions
 #include <cyg/hal/hal_if.h>     // HAL I/O interfaces
+#include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_intr.h>
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 #include <flash_config.h>
@@ -285,28 +287,27 @@ net_io_getc_timeout(void* __ch_data, cyg_uint8* ch)
 static int
 net_io_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 {
+    static int vector = 0;
     int ret = 0;
-    int old_console;
+    static int irq_state = 0;
 
     CYGARC_HAL_SAVE_GP();
 
     switch (__func) {
     case __COMMCTL_IRQ_ENABLE:
-        old_console = start_console();
-        printf("%s.%d\n", __FUNCTION__, __LINE__);
-        end_console(old_console);
+        irq_state = 1;
+        if (vector == 0) {
+            vector = eth_drv_int_vector();
+        }
+        HAL_INTERRUPT_UNMASK(vector); 
         break;
     case __COMMCTL_IRQ_DISABLE:
-        old_console = start_console();
-        printf("%s.%d\n", __FUNCTION__, __LINE__);
-        end_console(old_console);
-        ret = 0;
+        ret = irq_state;
+        irq_state = 0;
+        HAL_INTERRUPT_MASK(vector);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
-        old_console = start_console();
-        printf("%s.%d\n", __FUNCTION__, __LINE__);
-        end_console(old_console);
-        ret = 0;
+        ret = vector;
         break;
     case __COMMCTL_SET_TIMEOUT:
     {
@@ -328,13 +329,18 @@ net_io_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 
 static int
 net_io_isr(void *__ch_data, int* __ctrlc, 
-                     CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
+           CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
 {
-    int old_console;
+    char ch;
 
-    old_console = start_console();
-    printf("%s.%d\n", __FUNCTION__, __LINE__);
-    end_console(old_console);
+    cyg_drv_interrupt_acknowledge(__vector);
+    *__ctrlc = 0;
+    if (net_io_getc_nonblock(__ch_data, &ch)) {
+        if (ch == 0x03) {
+            *__ctrlc = 1;
+        }
+    }
+    return CYG_ISR_HANDLED;
 }
 
 // TEMP

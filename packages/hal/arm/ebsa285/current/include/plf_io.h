@@ -65,6 +65,13 @@
 #define EBSA_CSR_IO_PCI_ADDR  0
 #define EBSA_CSR_IO_PCI_SIZE  0x80
 
+// Incidentally I now understand why it's necessary to force PCI reset
+// (2000-08-07) - with RedBoot in ROM, the RAM app was unconditionally
+// reinitializing the PCI bus when it was already initialized, without
+// resetting it.  We cannot play the same game here as with
+// hal_platform_setup.h - I tried - because otherwise the net cannot
+// re-initialize itself; the scan for devices fails.
+
 // Initialize the PCI bus.
 #define HAL_PCI_INIT()                                                   \
     CYG_MACRO_START                                                      \

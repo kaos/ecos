@@ -73,8 +73,24 @@
 // divided into further macros to make it easier to manage what's enabled
 // when.
 
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined(CYG_HAL_STARTUP_ROM) ||                     \
+    defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) ||      \
+    !defined(CYGSEM_HAL_USE_ROM_MONITOR)
+
 // Dependence on ROM/RAM start removed when meminit code fixed up.
+// But it re-emerged when RedBoot's desire to live over RAM app
+// initialization asserted itself.
+//
+// The correct thing is to re-initialize everything if any of:
+//  o You are in ROM (duh!)
+//  o You include your own stubs (ergo rule the world)
+//  o You do not cooperate with a ROM Monitor
+//
+// [The latter two probably mean the same thing, but this way also lets us
+//  support a standalone RAM startup app with no stubs in it. ]
+// Hence the more complex conditional above.  See comments in the ChangeLog
+// and plf_io.h wrt initializing the PCI bus world.
+
 #define PLATFORM_SETUP1                         \
         PLATFORM_FLUSH_DISABLE_CACHES           \
         INIT_XBUS_ACCESS                        \

@@ -187,107 +187,12 @@ void update_statistics(struct i82559* p_i82559);
 
 #ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
 #define ETH_STATS_INIT( p ) \
-        int _tmp;           \
         update_statistics( (struct i82559 *)((p)->driver_private) )
-
 #else
-#define ETH_STATS_INIT( p )  int _tmp  // otherwise do nothing
+#define ETH_STATS_INIT( p ) // otherwise do nothing
 #endif
 
 #define CYGDAT_DEVS_ETH_DESCRIPTION "Intel EtherPRO 10/100+ (i82559)"
-
-//#define ETH_DEV_IFTYPE( p )		// handled in if.c
-
-//#define ETH_DEV_IFMTU( p )		// handled in if.c
-
-// 100,000,000 or 10,000,000 - or twice that if duplex
-#define ETH_DEV_IFSPEED( p )                            \
-(_tmp = i82559_status((p)),                             \
-  ((GEN_STATUS_100MBPS & _tmp) ? 100 : 10) * 1000000)
-
-#define ETH_DEV_FULLDUPLEX( p )                         \
-(_tmp = i82559_status((p)),                             \
-  ((GEN_STATUS_FDX & _tmp) ? 1 : 0) )
-
-#define ETH_DEV_IFADMINSTATUS( p )                              \
-(_tmp = i82559_status((p)),                                     \
- (((GEN_STATUS_LINK & _tmp) ? 1 : 2)) ) // 1 is up, 2 is down
-
-#define ETH_DEV_IFOPERSTATUS( p )                               \
-(_tmp = i82559_status((p)),                                     \
- (((GEN_STATUS_LINK & _tmp) ? 1 : 2)) ) // 1 is up, 2 is down
-
-#define ETH_DEV_IFOUTQLEN( p )	MAX_TX_DESCRIPTORS
-
-#ifdef KEEP_STATISTICS
-
-#define ETH_DEV_IFOUTDISCARDS( p ) \
- (statistics[ ((struct i82559 *)((p)->driver_private))->index \
-     ].tx_dropped)
-
-#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
-#define ETH_DEV_STATSALIGNMENTERRORS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].rx_align_errors)
-
-#define ETH_DEV_STATSFCSERRORS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].rx_crc_errors)
-
-#define ETH_DEV_STATSSINGLECOLLISIONFRAMES( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_single_collisions)
-
-#define ETH_DEV_STATSMULTIPLECOLLISIONFRAMES( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_mult_collisions)
-
-//#define ETH_DEV_STATSSQETESTERRORS( p ) \ 
-// (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \ 
-//     ].)
-
-#define ETH_DEV_STATSDEFERREDTRANSMISSIONS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_deferred)
-
-#define ETH_DEV_STATSLATECOLLISIONS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_late_collisions)
-
-#define ETH_DEV_STATSEXCESSIVECOLLISIONS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_max_collisions)
-
-#define ETH_DEV_STATSINTERNALMACTRANSMITERRORS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_underrun) // TX UNDERRUNS listed here
-
-#define ETH_DEV_STATSCARRIERSENSEERRORS( p ) \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].tx_carrier_loss)
-
-//#define ETH_DEV_STATSFRAMETOOLONGS( p ) \ 
-// (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \ 
-//     ].)
-
-#define ETH_DEV_STATSINTERNALMACRECEIVEERRORS( p ) ( \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].rx_overrun_errors)          +                                \
- (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
-     ].rx_resource_errors) ) // RX OVERRUNS + RX RESOURCE ERRORS counted
-
-//#define ETH_DEV_STATSSYMBOLERRORS( p ) \ 
-// (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \ 
-//     ].)
-
-#endif // CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
-
-#endif // KEEP_STATISTICS
-
-// This identifies the chip (as best we can; there is no number for 82559
-// yet, so I claim to be an 82558 pro tem.
-// This is { dot3ChipSetIntel 5 } == { dot3ChipSets 2 5 } ==  { dot3 8 2 5}
-// dot3 is { transmission 7 }.
 
 #define ETH_DEV_DOT3STATSETHERCHIPSET 1,3,6,1,2,1,10,7,8,2,5
 

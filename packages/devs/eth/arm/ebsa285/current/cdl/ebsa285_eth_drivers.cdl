@@ -65,8 +65,6 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
        "#define CYGTST_DEVS_ETH_TEST_NET_REALTIME <cyg/devs/eth/tests/test_net_realtime.h>"
 	puts $::cdl_system_header \
        "#define CYGBLD_DEVS_ETH_DEVICE_H <pkgconf/devs_eth_arm_ebsa285.h>"
-	puts $::cdl_header \
-       "#define CYGBLD_DEVS_ETH_INFO_H <cyg/devs/eth/ebsa285_info.h>"
     }
 
     description   "Ethernet driver for Intel EBSA285 with PRO/100+ boards."

@@ -116,6 +116,7 @@ bool cf_parse_config(unsigned char *buf, int len, struct cf_config *config);
 struct cf_slot *cf_get_slot(int indx);
 void cf_change_state(struct cf_slot *slot, int desired_state);
 void cf_register_handler(struct cf_slot *, void (*handler)(void *), void *);
+void cf_clear_interrupt(struct cf_slot *);
 void cf_init(void);
 
 #endif // CYGONCE_PCMCIA_H

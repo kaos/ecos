@@ -1,3 +1,8 @@
+2000-08-22  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* doc/fileio.txt: Add Nick's text description of plug-in filesystems
+ 	and sockets here for now.
+
 2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/fileio.h: Added CYG_FAPPEND flag for preservation in

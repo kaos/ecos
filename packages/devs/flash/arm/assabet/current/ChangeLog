@@ -1,38 +1,8 @@
-2000-08-23  Gary Thomas  <gthomas@redhat.com>
+2000-08-24  Gary Thomas  <gthomas@redhat.com>
 
-	* src/if_sc_lpe.c: Add new function to return interrupt vector
-	used by interface.  Also, handle interrupts from interface even
-	if there is no kernel (CF callback).
-
-2000-08-03  Gary Thomas  <gthomas@redhat.com>
-
-	* src/if_sc_lpe.c: Ensure DSR locked while initializing hardware.
-
-	* cdl/cf_eth_drivers.cdl: Ethernet driver package hierarchy changed.
-
-2000-07-26  Gary Thomas  <gthomas@redhat.com>
-
-	* src/if_sc_lpe.c: Update for new eth_drv interfaces (via *sc).
-
-2000-07-18  Gary Thomas  <gthomas@redhat.com>
-
-	* src/if_sc_lpe.c (sc_lpe_RxEvent): Handle case where chip gets lost
-	and keeps returning the same input packet (hardware bug?).
-
-2000-07-16  Gary Thomas  <gthomas@redhat.com>
-
-	* src/if_sc_lpe.c (sc_lpe_card_handler): Add initialization message and
-	timeout when running stand-alone.
-
-2000-07-15  Gary Thomas  <gthomas@redhat.com>
-
-	* src/if_sc_lpe.c: CF interrupts are now handled by the slot handler,
-	not directly in this code.
-
-2000-07-14  Gary Thomas  <gthomas@redhat.com>
-
-	* cdl/cf_eth_drivers.cdl: 
-	* src/if_sc_lpe.c: Support building in eCos and stand-alone modes.
+	* src/flash_query.c: 
+	* src/flash_erase_block.c: 
+	* src/flash.h: FLASH support for Intel SA1110 Assabet.
 
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -59,6 +29,3 @@
 //                                                                          
 //####COPYRIGHTEND####
 //===========================================================================
-	
-	
-

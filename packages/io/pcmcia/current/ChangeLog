@@ -1,3 +1,9 @@
+2000-08-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pcmcia.c: 
+	* include/pcmcia.h: Export new function to forceably clear interrupts
+	on a card [slot].  Use in non-kernel environments.
+
 2000-07-16  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/io_pcmcia.cdl: 

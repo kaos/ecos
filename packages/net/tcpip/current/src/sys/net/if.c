@@ -804,6 +804,12 @@ ifioctl(so, cmd, data, p)
 			return (error);
 #endif
 		/* FALLTHROUGH */
+#ifdef SIOCGIFSTATS
+        case SIOCGIFSTATS:
+#ifdef SIOCGIFSTATSUD
+        case SIOCGIFSTATSUD:
+#endif
+#endif // SIOCGIFSTATS
 	case SIOCGIFMEDIA:
 		if (ifp->if_ioctl == 0)
 			return (EOPNOTSUPP);

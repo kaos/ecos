@@ -1,3 +1,8 @@
+2000-08-24  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/pid_serial_with_ints.c (pid_serial_DSR): Remove accidental
+	OVERRUNERR check duplication
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/pid_serial_with_ints.c: Throughout, add support for line status

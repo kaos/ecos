@@ -303,9 +303,18 @@ scan_opts(int argc, char *argv[], int first,
     }
     opt = opts;
     for (j = 0;  j < num_opts;  j++, opt++) {
-        *opt->arg_set = false;
+        if (opt->arg_set) {
+            *opt->arg_set = false;
+        }
         if (!opt->takes_arg) {
-            *(int *)opt->arg = 0;
+            switch (opt->arg_type) {
+            case OPTION_ARG_TYPE_NUM:
+                *(int *)opt->arg = 0;
+                break;
+            case OPTION_ARG_TYPE_FLG:
+                *(bool *)opt->arg = false;
+                break;
+            }
         }
     }
     for (i = first;  i < argc;  i++) {
@@ -315,7 +324,7 @@ scan_opts(int argc, char *argv[], int first,
             opt = opts;
             for (j = 0;  j < num_opts;  j++, opt++) {
                 if (c == opt->flag) {
-                    if (*opt->arg_set) {
+                    if (opt->arg_set && *opt->arg_set) {
                         printf("%s alread set\n", opt->name);
                         ret = false;
                     }
@@ -339,7 +348,14 @@ scan_opts(int argc, char *argv[], int first,
                         }
                         *opt->arg_set = true;
                     } else {
-                        *(int *)opt->arg = *(int *)opt->arg + 1;
+                        switch (opt->arg_type) {
+                        case OPTION_ARG_TYPE_NUM:
+                            *(int *)opt->arg = *(int *)opt->arg + 1;
+                            break;
+                        case OPTION_ARG_TYPE_FLG:
+                            *(bool *)opt->arg = true;
+                            break;
+                        }
                     }
                     flag_ok = true;
                     break;

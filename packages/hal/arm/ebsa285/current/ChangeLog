@@ -1,3 +1,18 @@
+2000-08-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_platform_setup.h: Initialize the world if you are
+	blowing away previous state rather than only in ROM start.  This
+	makes it possible to create a standalone RAM app that will work
+	with either RedBoot in ROM or old-style GDB stubs, or any other
+	loader you might find.
+
+	Incidentally I now understand why Gary found it necessary to force
+	PCI reset (2000-08-07) - with RedBoot in ROM, the RAM app was
+	unconditionally reinitializing the PCI bus when it was already
+	initialized, without resetting it.  We cannot play the same game
+	here as with hal_platform_setup.h - I tried - because otherwise
+	the net cannot re-initialize itself; the scan for devices fails.
+
 2000-08-16  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_platform_setup.h (CYGHWR_LED_MACRO): Use an address

@@ -422,3 +422,13 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         dump_buf(sg_list[0].buf, sg_list[0].len);
     }
 }
+
+//
+// Determine the interrupt vector used by an interface
+//
+int
+eth_drv_int_vector(void)
+{
+    struct eth_drv_sc *sc = __local_enet_sc;
+    return sc->funs->int_vector(sc);
+}

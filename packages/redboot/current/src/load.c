@@ -48,7 +48,7 @@
 // Exported CLI function
 RedBoot_cmd("load", 
             "Load a file", 
-            "[-raw] [-b <mem_addr>]]",
+            "[-v] [-r] [-b <mem_addr>] <file_name>",
             do_load 
     );
 
@@ -113,15 +113,15 @@ load_srec_image(int (*getc)(void), unsigned long base)
         lp = line;  len = 0;
         // Start of line
         if (c != 'S') {
-            printf("Invalid S-record at offset 0x%lx, input: %c\n", 
-                   (unsigned long)offset, c);
+            printf("Invalid S-record at offset %p, input: %c\n", 
+                   (void *)offset, c);
             return;
         }
         type = (*getc)();
         offset += 2;
         sum = 0;
         if ((count = _hex2(getc, 1, &sum)) < 0) {
-            printf("Bad S-record count at offset 0x%lx\n", (unsigned long)offset);
+            printf("Bad S-record count at offset %p\n", (void *)offset);
             return;
         }
         offset += 1;
@@ -136,7 +136,7 @@ load_srec_image(int (*getc)(void), unsigned long base)
             if (first_addr) {
                 if (base) {
                     addr_offset = (unsigned long)base - (unsigned long)addr;
-                    printf("Address offset = %lx\n", (unsigned long)addr_offset);
+                    printf("Address offset = %p\n", (void *)addr_offset);
                 } else {
                     addr_offset = 0;                    
                 }
@@ -213,7 +213,7 @@ getc(void)
         }
         getc_info.bufp = getc_info.buf;
         getc_info.len = (*getc_info.fun)(getc_info.bufp, BUF_SIZE, &getc_info.err);
-        if ((getc_info.avail = getc_info.len) < 0) {
+        if ((getc_info.avail = getc_info.len) <= 0) {
             if (getc_info.verbose) printf("\n");
             return -1;
         }
@@ -245,18 +245,21 @@ getc_rewind(void)
 void 
 do_load(int argc, char *argv[])
 {
-    int i, res, err;
+    int i, res, err, num_options;
     int mode;
-    int verbose = 0;
-    bool raw = false;
-    bool base_addr_set = false;
+    bool verbose, raw;
+    bool base_addr_set, mode_str_set;
+    char *mode_str;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     struct sockaddr_in host;
+    bool hostname_set;
+    char *hostname;
 #endif
     unsigned long base = 0;
     char type[4];
     char *filename = 0;
     char *usage = "usage: load <file_name> [-r] [-v] [-h <host>] [-m {TFTP | ZMODEM}] [-b <base_address>]\n";
+    struct option_info opts[5];
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memset((char *)&host, 0, sizeof(host));
@@ -270,78 +273,47 @@ do_load(int argc, char *argv[])
 #else
     mode = MODE_ZMODEM;
 #endif
-    for (i = 1;  i < argc;  i++) {
-        if (argv[i][0] == '-') {
-            // Option
-            switch (argv[i][1]) {
-            case 'v':
-                verbose++;
-                break;
-            case 'r':
-                raw = true;
-                break;
+
+    init_opts(&opts[0], 'v', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&verbose, 0, "verbose");
+    init_opts(&opts[1], 'r', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&raw, 0, "load raw data");
+    init_opts(&opts[2], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&base, (bool *)&base_addr_set, "load address");
+    init_opts(&opts[3], 'm', true, OPTION_ARG_TYPE_STR, 
+              (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP or ZMODEM)");
+    num_options = 4;
 #ifdef CYGPKG_REDBOOT_NETWORKING
-            case 'h':
-                if ((i+1) >= argc) {
-                    printf("Invalid option: %s\n", argv[i]);
-                    printf(usage);
-                    return;
-                }
-                if (!inet_aton(argv[i+1], (in_addr_t *)&host)) {
-                    printf("Invalid IP address: %s\n", argv[i+1]);
-                    return;
-                }
-                i++;  // Skip parameter
-                break;
+    init_opts(&opts[4], 'h', true, OPTION_ARG_TYPE_STR, 
+              (void **)&hostname, (bool *)&hostname_set, "host name (IP address)");
+    num_options = 5;
 #endif
-            case 'm':
-                if ((i+1) >= argc) {
-                    printf("Invalid option: %s\n", argv[i]);
-                    printf(usage);
-                    return;
-                }
-                if (strcmpci(argv[i+1], "zmodem") == 0) {
-                    mode = MODE_ZMODEM;
+    if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&filename, OPTION_ARG_TYPE_STR, "file name"))
+    {
+        return;
+    }
 #ifdef CYGPKG_REDBOOT_NETWORKING
-                } else if (strcmpci(argv[i+1], "tftp") == 0) {
-                    mode = MODE_TFTP;
-                    if (!have_net) {
-                        printf("TFTP mode requires a working network\n");
-                        return;
-                    }
+    if (hostname_set) {
+        if (!inet_aton(hostname, (in_addr_t *)&host)) {
+            printf("Invalid IP address: %s\n", hostname);
+            return;
+        }
+    }
 #endif
-                } else {
-                    printf("Invalid 'mode': %s\n", argv[i+1]);
-                    return;
-                }
-                i++;  // Skip parameter
-                break;
-            case 'b':
-                if ((i+1) >= argc) {
-                    printf("Invalid option: %s\n", argv[i]);
-                    printf(usage);
-                    return;
-                }
-                if (!parse_num(argv[i+1], &base, 0, 0)) {
-                    printf("Invalid offset: %s\n", argv[i+1]);
-                    printf(usage);
-                    return;
-                }
-                base_addr_set = true;
-                i++;  // Skip parameter
-                break;
-            default:
-                printf("Invalid option: %s\n", argv[i]);
-                printf(usage);
+    if (mode_str_set) {
+        if (strcmpci(mode_str, "zmodem") == 0) {
+            mode = MODE_ZMODEM;
+#ifdef CYGPKG_REDBOOT_NETWORKING
+        } else if (strcmpci(mode_str, "tftp") == 0) {
+            mode = MODE_TFTP;
+            if (!have_net) {
+                printf("TFTP mode requires a working network\n");
                 return;
             }
+#endif
         } else {
-            if (filename) {
-                printf("Only one file name allowed\n");
-                printf(usage);
-                return;
-            }
-            filename = argv[i];
+            printf("Invalid 'mode': %s\n", mode_str);
+            return;
         }
     }
     if ((mode == MODE_TFTP) && !filename) {

@@ -1,3 +1,10 @@
+2000-08-24  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.mlt:
+	* include/pkgconf/mlt_arm_sa11x0_assabet_ram.ldi: Expand reserved space.
+
+	* src/assabet_misc.c (hal_mmu_init): Increase ROM space to 32M.
+
 2000-07-14  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0_assabet.cdl: Add rules for building RedBoot.

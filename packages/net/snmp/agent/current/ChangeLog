@@ -1,3 +1,15 @@
+2000-08-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable): A little further
+	diddling; have a bool to say whether the dot3 info is filled in.
+
+2000-08-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable):
+	* src/mibgroup/mibII/interfaces.c (var_ifTable): Use new ioctl()
+	interface to get information out of ethernet devices.  If the
+	ioctl call is not supported, we just get default values.
+
 2000-08-16  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/snmpd.c (snmpd): Remove call to

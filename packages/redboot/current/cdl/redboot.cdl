@@ -60,9 +60,11 @@ cdl_package CYGPKG_REDBOOT {
 #        requires { CYG_HAL_STARTUP == "ROM" }
         requires CYGPKG_INFRA
         requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+        requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+#        requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
         requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
-#        requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+        requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
+        requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
 
         no_define
         description "This option enables the building of the Redboot ELF image.

@@ -56,6 +56,7 @@ static struct cf_slot cf_slots[CF_NUM_SLOTS];
 // Implementation routines
 void cf_hwr_init(struct cf_slot *slot);
 void cf_hwr_change_state(struct cf_slot *slot, int desired_state);
+void cf_hwr_clear_interrupt(struct cf_slot *slot);
 
 bool
 cf_get_CIS(struct cf_slot *slot, unsigned char id, 
@@ -281,5 +282,14 @@ cf_register_handler(struct cf_slot *slot,
 {
     slot->irq_handler.handler = handler;
     slot->irq_handler.param = param;
+}
+
+//
+// Allow interrupt function to acknowledge interrupt
+//
+void
+cf_clear_interrupt(struct cf_slot *slot)
+{
+    cf_hwr_clear_interrupt(slot);
 }
 

@@ -57,7 +57,7 @@ flash_init(void *work_space, int work_space_size)
 
     if (flash_info.init) return FLASH_ERR_OK;
     flash_info.work_space = work_space;
-    flash_info.work_space_size = flash_info.work_space_size;
+    flash_info.work_space_size = work_space_size;
     if ((err = flash_hwr_init()) != FLASH_ERR_OK) {
         return err;
     }
@@ -121,6 +121,7 @@ flash_erase(void *addr, int len, void **err_addr)
     _flash_erase_block = (code_fun *)flash_info.work_space;
     memcpy(_flash_erase_block, &flash_erase_block, code_len);
     HAL_DCACHE_SYNC();  // Should guarantee this code will run
+    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
 
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
@@ -137,6 +138,7 @@ flash_erase(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
+    HAL_ICACHE_ENABLE();
     printf("\n");
     return (stat);
 }
@@ -161,6 +163,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     _flash_program_buf = (code_fun *)flash_info.work_space;
     memcpy(_flash_program_buf, &flash_program_buf, code_len);
     HAL_DCACHE_SYNC();  // Should guarantee this code will run
+    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
 
     printf("... Program from %p-%p at %p: ", data, ((unsigned long)data)+len, addr);
 
@@ -178,6 +181,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         addr += size/sizeof(*addr);
         data += size/sizeof(*data);
     }
+    HAL_ICACHE_ENABLE();
     printf("\n");
     return (stat);
 }

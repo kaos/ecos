@@ -119,6 +119,9 @@
 #define	SIOCGIFHWADDR	_IOWR('i', 15, struct ifreq)	/* get MAC address */
 #ifdef __ECOS
 #define	SIOCSIFHWADDR	 _IOW('i',101, struct ifreq)	/* set MAC address */
+/* NB these two take a struct ifreq followed by the useful data */
+#define SIOCGIFSTATSUD  _IOWR('i',102, struct ifreq)    /* get uptodate if stats */
+#define SIOCGIFSTATS    _IOWR('i',103, struct ifreq)    /* get interface stats */
 #endif
 #define	SIOCSIFDSTADDR	 _IOW('i', 14, struct ifreq)	/* set p-p address */
 #define	OSIOCGIFDSTADDR	_IOWR('i', 15, struct ifreq)	/* get p-p address */

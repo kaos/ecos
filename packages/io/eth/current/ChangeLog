@@ -1,3 +1,29 @@
+2000-08-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/eth_drv_stats.h (ether_drv_stats): A little further
+	diddling; have a bool to say whether the dot3 info is filled in.
+
+2000-08-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/net/eth_drv.c (eth_drv_ioctl): Implement ioctl() calls.
+	sockio.h numbers SIOCGIFSTATS and SIOCGIFSTATSUD map to
+	ETH_DRV_GET_IF_STATS and ETH_DRV_GET_IF_STATS_UD respectively.
+
+	* include/eth_drv.h (ETH_DRV_GET_IF_STATS_UD): Add new device
+	interface ioctl() numbers, to get the struct below filled in.
+	Also pull in the definition include file (below).
+
+	* include/eth_drv_stats.h (ether_drv_stats): New file: Define
+	common structure for ether devices to return stats info to higher
+	up, via an ioctl() call.  SNMP uses this.
+
+2000-08-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c: 
+	* include/eth_drv.h: Low level drivers now need to export a 
+	function which returns the interrupt vector used by that interface.
+	This allows outside code to determine this in a portable fashion.
+
 2000-08-16  Gary Thomas  <gthomas@redhat.com>
 
 	* src/stand_alone/eth_drv.c: 

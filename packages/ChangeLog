@@ -1,3 +1,7 @@
+2000-08-24  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add FLASH driver for Intel Assabet.
+
 2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* ecos.db: Added CYGPKG_FS_RAM package.

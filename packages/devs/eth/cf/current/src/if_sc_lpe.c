@@ -92,7 +92,8 @@ ETH_DRV_SC(sc_lpe_sc,
            sc_lpe_can_send,
            sc_lpe_send,
            sc_lpe_recv,
-           sc_lpe_int
+           sc_lpe_int,
+           sc_lpe_int_vector
     );
 
 NETDEVTAB_ENTRY(sc_lpe_netdev, 
@@ -583,5 +584,12 @@ sc_lpe_int(struct eth_drv_sc *sc)
             sc_lpe_BufEvent(sc, isr);
         }
     }
+    cf_clear_interrupt(dp->slot);
 }
 
+static int
+sc_lpe_int_vector(struct eth_drv_sc *sc)
+{
+    struct sc_lpe_priv_data *dp = (struct sc_lpe_priv_data *)sc->driver_private;
+    return dp->slot->int_num;
+}

@@ -46,6 +46,7 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_arch.h>           // Register state info
 #include <cyg/hal/hal_intr.h>           // HAL interrupt macros
+#include <cyg/hal/drv_api.h>
 
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>   // Configuration header
@@ -123,29 +124,29 @@ cf_hwr_init(struct cf_slot *slot)
         int_init = 1;
 #ifdef CYGPKG_KERNEL
         // Set up interrupts
-        cyg_interrupt_create(SA1110_CF_DETECT,
-                             99,                     // Priority - what goes here?
-                             (cyg_addrword_t) slot,  //  Data item passed to interrupt handler
-                             (cyg_ISR_t *)cf_detect_isr,
-                             (cyg_DSR_t *)cf_detect_dsr,
-                             &cf_detect_interrupt_handle,
-                             &cf_detect_interrupt);
-        cyg_interrupt_attach(cf_detect_interrupt_handle);
-        cyg_interrupt_configure(SA1110_CF_DETECT, true, true);  // Detect either edge
-        cyg_interrupt_acknowledge(SA1110_CF_DETECT);
-        cyg_interrupt_unmask(SA1110_CF_DETECT);
-        cyg_interrupt_create(SA1110_CF_IRQ,
-                             99,                     // Priority - what goes here?
-                             (cyg_addrword_t) slot,  //  Data item passed to interrupt handler
-                             (cyg_ISR_t *)cf_irq_isr,
-                             (cyg_DSR_t *)cf_irq_dsr,
-                             &cf_irq_interrupt_handle,
-                             &cf_irq_interrupt);
-        cyg_interrupt_attach(cf_irq_interrupt_handle);
-        cyg_interrupt_configure(SA1110_CF_IRQ, false, false);  // Falling edge
-        cyg_interrupt_acknowledge(SA1110_CF_IRQ);
-        cyg_interrupt_unmask(SA1110_CF_IRQ);
+        cyg_drv_interrupt_create(SA1110_CF_DETECT,
+                                 99,                     // Priority - what goes here?
+                                 (cyg_addrword_t) slot,  //  Data item passed to interrupt handler
+                                 (cyg_ISR_t *)cf_detect_isr,
+                                 (cyg_DSR_t *)cf_detect_dsr,
+                                 &cf_detect_interrupt_handle,
+                                 &cf_detect_interrupt);
+        cyg_drv_interrupt_attach(cf_detect_interrupt_handle);
+        cyg_drv_interrupt_configure(SA1110_CF_DETECT, true, true);  // Detect either edge
+        cyg_drv_interrupt_acknowledge(SA1110_CF_DETECT);
+        cyg_drv_interrupt_unmask(SA1110_CF_DETECT);
+        cyg_drv_interrupt_create(SA1110_CF_IRQ,
+                                 99,                     // Priority - what goes here?
+                                 (cyg_addrword_t) slot,  //  Data item passed to interrupt handler
+                                 (cyg_ISR_t *)cf_irq_isr,
+                                 (cyg_DSR_t *)cf_irq_dsr,
+                                 &cf_irq_interrupt_handle,
+                                 &cf_irq_interrupt);
+        cyg_drv_interrupt_attach(cf_irq_interrupt_handle);
+        cyg_drv_interrupt_acknowledge(SA1110_CF_IRQ);
+        cyg_drv_interrupt_unmask(SA1110_CF_IRQ);
 #endif
+        cyg_drv_interrupt_configure(SA1110_CF_IRQ, false, false);  // Falling edge
     }
     slot->attr = (unsigned char *)0x38000000;
     slot->attr_length = 0x200;
@@ -235,4 +236,14 @@ cf_hwr_change_state(struct cf_slot *slot, int new_state)
             }
         }
     }
+}
+
+//
+// Acknowledge interrupt (used in non-kernel environments)
+//
+void
+cf_hwr_clear_interrupt(struct cf_slot *slot)
+{
+    // Clear interrupt [edge indication]
+    cyg_drv_interrupt_acknowledge(SA1110_CF_IRQ);
 }

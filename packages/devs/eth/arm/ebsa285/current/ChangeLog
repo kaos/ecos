@@ -1,3 +1,26 @@
+2000-08-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (i82559_ioctl): A little further diddling; have
+	a bool to say whether the dot3 info is filled in.
+
+2000-08-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ebsa285_eth_drivers.cdl: Do not export a symbol for the
+	device info file (include/ebsa285_info.h) since nobody needs
+	(portably) to include it now.
+
+	* src/if_ebsa285.c (i82559_ioctl): Handle new ioctl calls
+	ETH_DRV_GET_IF_STATS_UD and ETH_DRV_GET_IF_STATS to get loads of
+	statistical information out.  _UD means update.  The nonUD one can
+	be used instead mostly, if we find the performance hit too large.
+	This should allow SNMP (a) to not explode, (b) to get useful info
+	out of other device implementations than this one.
+
+	* include/ebsa285_info.h: Remove all the macro cruft for feature
+	detecting of lots of individual statistics; we now just have a
+	catch-all struct that SNMP uses, defined in the common ether
+	driver environment.
+
 2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c (PacketRxReady): Put back the check for very

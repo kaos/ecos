@@ -1,3 +1,11 @@
+2000-08-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ebsa285_flash.c (flash_hwr_init): Add
+	HAL_ICACHE_DISABLE/ENABLE pairs around calls to RAM copy of query
+	function - this is necessary to get reliable operation on EBSA285
+	and similar.  Otherwise, what is in the instruction cache might be
+	run instead.
+
 2000-08-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/ebsa285_flash.c (flash_code_overlaps): 

@@ -63,16 +63,18 @@ RedBoot_cmd("fis",
             "{cmds}",
             do_fis
     );
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 RedBoot_cmd("fconfig",
             "Manage configuration kept in FLASH memory",
-            "",
+            "[-l]",
             do_flash_config
     );
+#endif
 
 // Internal commands
 local_cmd_entry("init",
                 "Initialize FLASH Image System [FIS]",
-                "",
+                "[-f]",
                 fis_init,
                 FIS_cmds
     );
@@ -141,14 +143,15 @@ fis_init(int argc, char *argv[])
     void *cfg_base;
 #endif
     bool full_init = false;
+    struct option_info opts[1];
 
-    if (argc > 2) {
-        if (strcmp(argv[2], "-f") != 0) {
-            fis_usage("bad parameter");
-            return;
-        }
-        full_init = true;
+    init_opts(&opts[0], 'f', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&full_init, (bool *)0, "full initialization, erases all of flash");
+    if (!scan_opts(argc, argv, 2, opts, 1, 0, 0, ""))
+    {
+        return;
     }
+
     if (!verify_action("About to initialize [format] FLASH image system")) {
         printf("** Aborted\n");
         return;
@@ -331,7 +334,6 @@ fis_create(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
-
 
     if (!mem_addr_set || !length_set || !name) {
         fis_usage("required parameter missing");
@@ -646,7 +648,7 @@ CYG_HAL_TABLE_END( __CONFIG_options_TAB_END__, RedBoot_config_options);
 extern struct config_option __CONFIG_options_TAB__[], __CONFIG_options_TAB_END__[];
 
 static int
-get_config(struct config_option *opt, int offset)
+get_config(struct config_option *opt, int offset, bool list_only)
 {
     char line[80], *sp, *lp;
     int ret;
@@ -702,6 +704,10 @@ get_config(struct config_option *opt, int offset)
             sp = lp;
         }
         break;
+    }
+    if (list_only) {
+        printf("\n");
+        return CONFIG_OK;
     }
     if (opt->type != CONFIG_SCRIPT) {
         ret = gets(line, sizeof(line), 0);    
@@ -842,13 +848,22 @@ do_flash_config(int argc, char *argv[])
     struct config_option *opt = __CONFIG_options_TAB__;
     struct _config hold_config;
     int offset = sizeof(unsigned long);
+    struct option_info opts[1];
+    bool list_only;
 
     if (!do_flash_init()) return;
     memcpy(&hold_config, &config, sizeof(config));
     script = (unsigned char *)0;
 
+    init_opts(&opts[0], 'l', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&list_only, (bool *)0, "list configuration only");
+    if (!scan_opts(argc, argv, 1, opts, 1, 0, 0, ""))
+    {
+        return;
+    }
+
     while (opt != optend) {
-        ret = get_config(opt, offset);
+        ret = get_config(opt, offset, list_only);
         switch (ret) {
         case CONFIG_DONE:
             goto done;

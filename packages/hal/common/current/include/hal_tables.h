@@ -90,6 +90,11 @@ __xstring(CYG_LABEL_DEFN(_label)) ":\n"                                         
         CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data)
 #endif
 
+#ifndef CYG_HAL_TABLE_QUALIFIED_ENTRY
+#define CYG_HAL_TABLE_QUALIFIED_ENTRY( _name, _qual ) \
+        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data.##_qual)
+#endif
+
 /*------------------------------------------------------------------------*/
 /* EOF hal_tables.h                                                       */
 #endif // CYGONCE_HAL_TABLES_H

@@ -78,7 +78,9 @@
 #error "Need PCI package here"
 #endif
 
-#include CYGBLD_DEVS_ETH_INFO_H // some state we must export
+// Exported statistics and the like
+#include <cyg/devs/eth/ebsa285_info.h>
+#include <eth_drv_stats.h>
 
 // ------------------------------------------------------------------------
 
@@ -406,7 +408,8 @@ ETH_DRV_SC(ebsa285_sc0,
            i82559_can_send,
            i82559_send,
            i82559_recv,
-           i82559_poll);
+           i82559_poll,
+           i82559_int_vector);
 
 NETDEVTAB_ENTRY(ebsa285_netdev0, 
                 "ebsa285-0", 
@@ -426,7 +429,8 @@ ETH_DRV_SC(ebsa285_sc1,
            i82559_can_send,
            i82559_send,
            i82559_recv,
-           i82559_poll);
+           i82559_poll,
+           i82559_int_vector);
 
 NETDEVTAB_ENTRY(ebsa285_netdev1, 
                 "ebsa285-1", 
@@ -1776,6 +1780,15 @@ void i82559_poll(struct eth_drv_sc *sc)
     eth_mux_dsr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, 1, (cyg_addrword_t)p_i82559 );
 }
 
+// Determine interrupt vector used by a device
+int
+i82559_int_vector(struct eth_drv_sc *sc)
+{
+    struct i82559 *p_i82559;
+    p_i82559 = (struct i82559 *)sc->driver_private;
+    return (p_i82559->vector);
+}
+
 // ------------------------------------------------------------------------
 //
 //  Function : pci_init_find_82559s
@@ -2388,6 +2401,88 @@ static int i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
 #ifdef ETH_DRV_GET_MAC_ADDRESS
     case ETH_DRV_GET_MAC_ADDRESS:
         return eth_get_mac_address( p_i82559, data );
+#endif
+
+#ifdef ETH_DRV_GET_IF_STATS_UD
+    case ETH_DRV_GET_IF_STATS_UD: // UD == UPDATE
+        ETH_STATS_INIT( sc );    // so UPDATE the statistics structure
+#endif
+        // drop through
+#ifdef ETH_DRV_GET_IF_STATS
+    case ETH_DRV_GET_IF_STATS:
+#endif
+#if defined(ETH_DRV_GET_IF_STATS) || defined (ETH_DRV_GET_IF_STATS_UD)
+    {
+        struct ether_drv_stats *p = (struct ether_drv_stats *)data;
+        int i;
+        static unsigned char my_chipset[]
+            = { ETH_DEV_DOT3STATSETHERCHIPSET };
+
+        strcpy( p->description, CYGDAT_DEVS_ETH_DESCRIPTION );
+        CYG_ASSERT( 48 > strlen(p->description), "Description too long" );
+
+        for ( i = 0; i < SNMP_CHIPSET_LEN; i++ )
+            if ( 0 == (p->snmp_chipset[i] = my_chipset[i]) )
+                break;
+
+        i = i82559_status( sc );
+
+        if ( !( i & GEN_STATUS_LINK) ) {
+            p->operational = 2;         // LINK DOWN
+            p->duplex = 1;              // UNKNOWN
+            p->speed = 0;
+        }
+        else {
+            p->operational = 3;            // LINK UP
+            p->duplex = (i & GEN_STATUS_FDX) ? 3 : 2; // 2 = SIMPLEX, 3 = DUPLEX
+            p->speed = ((i & GEN_STATUS_100MBPS) ? 100 : 10) * 1000000;
+        }
+
+#ifdef KEEP_STATISTICS
+        {
+            I82559_COUNTERS *pc = &i82559_counters[ p_i82559->index ];
+            STATISTICS      *ps = &statistics[      p_i82559->index ];
+
+            // Admit to it...
+            p->supports_dot3        = true;
+
+            // Those commented out are not available on this chip.
+
+            p->tx_good              = pc->tx_good             ;
+            p->tx_max_collisions    = pc->tx_max_collisions   ;
+            p->tx_late_collisions   = pc->tx_late_collisions  ;
+            p->tx_underrun          = pc->tx_underrun         ;
+            p->tx_carrier_loss      = pc->tx_carrier_loss     ;
+            p->tx_deferred          = pc->tx_deferred         ;
+            //p->tx_sqetesterrors   = pc->tx_sqetesterrors    ;
+            p->tx_single_collisions = pc->tx_single_collisions;
+            p->tx_mult_collisions   = pc->tx_mult_collisions  ;
+            p->tx_total_collisions  = pc->tx_total_collisions ;
+            p->rx_good              = pc->rx_good             ;
+            p->rx_crc_errors        = pc->rx_crc_errors       ;
+            p->rx_align_errors      = pc->rx_align_errors     ;
+            p->rx_resource_errors   = pc->rx_resource_errors  ;
+            p->rx_overrun_errors    = pc->rx_overrun_errors   ;
+            p->rx_collisions        = pc->rx_collisions       ;
+            p->rx_short_frames      = pc->rx_short_frames     ;
+            //p->rx_too_long_frames = pc->rx_too_long_frames  ;
+            //p->rx_symbol_errors   = pc->rx_symbol_errors    ;
+        
+            p->interrupts           = ps->interrupts          ;
+            p->rx_count             = ps->rx_count            ;
+            p->rx_deliver           = ps->rx_deliver          ;
+            p->rx_resource          = ps->rx_resource         ;
+            p->rx_restart           = ps->rx_restart          ;
+            p->tx_count             = ps->tx_count            ;
+            p->tx_complete          = ps->tx_complete         ;
+            p->tx_dropped           = ps->tx_dropped          ;
+        }
+#endif // KEEP_STATISTICS
+
+        p->tx_queue_len = MAX_TX_DESCRIPTORS;
+
+        return 0; // OK
+    }
 #endif
 
     default:

@@ -69,7 +69,7 @@ struct config_option {
 
 #define RedBoot_config_option(_t_,_n_,_e_,_ie_,_type_)                                  \
 struct config_option _config_option_##_n_                                               \
-CYG_HAL_TABLE_ENTRY(RedBoot_config_options) = {#_n_,_t_,/*&_v_,*/_e_,_ie_,_type_};
+CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_config_options,_n_) = {#_n_,_t_,_e_,_ie_,_type_};
 
 void flash_get_config(char *key, void *val, int type);
 

@@ -98,16 +98,10 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 // Get info about the device
 #include <pkgconf/system.h>
 
-#include <eth_drv.h>
-
-#ifdef CYGBLD_DEVS_ETH_DEVICE_H
-#include CYGBLD_DEVS_ETH_DEVICE_H
-#endif
-
-#ifdef CYGBLD_DEVS_ETH_INFO_H
-#include CYGBLD_DEVS_ETH_INFO_H
-#endif
-
+// These two two acquire all the statistics.
+#include <eth_drv_stats.h>
+#include <sys/sockio.h>
+ 
 /* 
  * dot3_variables_oid:
  *   this is the top level oid that we want to register under.  This
@@ -208,22 +202,21 @@ void init_dot3(void)
  */
 unsigned char *
 var_dot3StatsTable(struct variable *vp,
-    	    oid     *name,
-    	    size_t  *length,
-    	    int     exact,
-    	    size_t  *var_len,
-    	    WriteMethod **write_method)
+            oid     *name,
+            size_t  *length,
+            int     exact,
+            size_t  *var_len,
+            WriteMethod **write_method)
 {
     static long long_ret;
-    struct eth_drv_sc *sc;
-#ifdef ETH_DEV_DOT3STATSETHERCHIPSET
-    static oid etherobjid[] = { ETH_DEV_DOT3STATSETHERCHIPSET };
-#endif
     static oid nullobjid[] = { 0,0 };
-
+    static oid etherobjid[ SNMP_CHIPSET_LEN ];
+ 
     register struct ifnet *ifp;
     int interface_count = 0;
-
+    int supports_dot3 = 0, i;
+    struct ether_drv_stats x;
+    
     for (ifp = ifnet.tqh_first; ifp != 0; ifp = ifp->if_list.tqe_next)
         interface_count++;
         
@@ -240,167 +233,118 @@ var_dot3StatsTable(struct variable *vp,
     if ( ! ifp )
         return NULL;
 
-    if ( IFT_LOOP == ifp->if_type ) {
+    /* If its an ethernet call the IOCTL and see if the device supports
+       dot3. If it does it will return all the values needed */
+    if ( IFT_ETHER == ifp->if_type ) {
+        bzero( &x, sizeof( x ) );      
+        if ( NULL != ifp->if_ioctl ) {
+            if (!(*ifp->if_ioctl)(ifp, SIOCGIFSTATSUD, (caddr_t)&x)) {
+                supports_dot3 = x.supports_dot3;
+            }
+        }
+    }
+    
+    if ( (IFT_LOOP == ifp->if_type ) ||
+         (IFT_PROPVIRTUAL == ifp->if_type ) ||
+         (!supports_dot3)) {
         switch(vp->magic) {
         case DOT3STATSINDEX:
             long_ret = name[(*length)-1];
             return (unsigned char *) &long_ret;
-
+            
         case DOT3STATSETHERCHIPSET:
             *var_len = sizeof(nullobjid);
             return (unsigned char *) nullobjid;
-
+            
         case DOT3STATSDUPLEXSTATUS:
             long_ret = 1;
             return (unsigned char *) &long_ret;
-                
+            
         default:
             long_ret = 0; // a dummy value for most of them
             return (unsigned char *) &long_ret;
         }
     }
-
-    sc = ifp->if_softc;
-    // Otherwise, assume it is ethernet...
-    {
-#ifdef ETH_STATS_INIT
-        ETH_STATS_INIT( sc );
-#endif
-
-        switch(vp->magic) {
-        case DOT3STATSINDEX:
-            long_ret = name[(*length)-1];
-            return (unsigned char *) &long_ret;
-
-        case DOT3STATSALIGNMENTERRORS:
-#ifdef  ETH_DEV_STATSALIGNMENTERRORS
-            long_ret = ETH_DEV_STATSALIGNMENTERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
     
-        case DOT3STATSFCSERRORS:
-#ifdef  ETH_DEV_STATSFCSERRORS
-            long_ret = ETH_DEV_STATSFCSERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSSINGLECOLLISIONFRAMES:
-#ifdef  ETH_DEV_STATSSINGLECOLLISIONFRAMES
-            long_ret = ETH_DEV_STATSSINGLECOLLISIONFRAMES( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSMULTIPLECOLLISIONFRAMES:
-#ifdef  ETH_DEV_STATSMULTIPLECOLLISIONFRAMES
-            long_ret = ETH_DEV_STATSMULTIPLECOLLISIONFRAMES( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSSQETESTERRORS:
-#ifdef  ETH_DEV_STATSSQETESTERRORS
-            long_ret = ETH_DEV_STATSSQETESTERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSDEFERREDTRANSMISSIONS:
-#ifdef  ETH_DEV_STATSDEFERREDTRANSMISSIONS
-            long_ret = ETH_DEV_STATSDEFERREDTRANSMISSIONS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSLATECOLLISIONS:
-#ifdef  ETH_DEV_STATSLATECOLLISIONS
-            long_ret = ETH_DEV_STATSLATECOLLISIONS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSEXCESSIVECOLLISIONS:
-#ifdef  ETH_DEV_STATSEXCESSIVECOLLISIONS
-            long_ret = ETH_DEV_STATSEXCESSIVECOLLISIONS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSINTERNALMACTRANSMITERRORS:
-#ifdef  ETH_DEV_STATSINTERNALMACTRANSMITERRORS
-            long_ret = ETH_DEV_STATSINTERNALMACTRANSMITERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSCARRIERSENSEERRORS:
-#ifdef  ETH_DEV_STATSCARRIERSENSEERRORS
-            long_ret = ETH_DEV_STATSCARRIERSENSEERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSFRAMETOOLONGS:
-#ifdef  ETH_DEV_STATSFRAMETOOLONGS
-            long_ret = ETH_DEV_STATSFRAMETOOLONGS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSINTERNALMACRECEIVEERRORS:
-#ifdef  ETH_DEV_STATSINTERNALMACRECEIVEERRORS
-            long_ret = ETH_DEV_STATSINTERNALMACRECEIVEERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSETHERCHIPSET:
-#ifdef ETH_DEV_DOT3STATSETHERCHIPSET
-            *var_len = sizeof(etherobjid);
-            return (unsigned char *) etherobjid;
-#else
-            *var_len = sizeof(nullobjid);
-            return (unsigned char *) nullobjid;
-#endif
-    
-        case DOT3STATSSYMBOLERRORS:
-#ifdef  ETH_DEV_STATSSYMBOLERRORS
-            long_ret = ETH_DEV_STATSSYMBOLERRORS( sc );
-#else
-            long_ret = 0;
-#endif
-            return (unsigned char *) &long_ret;
-    
-        case DOT3STATSDUPLEXSTATUS:
-#ifdef  ETH_DEV_FULLDUPLEX
-            if ( ETH_DEV_FULLDUPLEX( sc ) )
-                long_ret = 3; // fullDuplex
-            else
-                long_ret = 2; // halfDuplex
-#else
-            long_ret = 1; // Unknown
-#endif
-            return (unsigned char *) &long_ret;
-    
-        default:
-            ERROR_MSG("");
+    /* If we got here, the device does support dot3 */
+    switch(vp->magic) {
+    case DOT3STATSINDEX:
+        long_ret = name[(*length)-1];
+        return (unsigned char *) &long_ret;
+      
+    case DOT3STATSALIGNMENTERRORS:
+        long_ret = x.rx_align_errors;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSFCSERRORS:
+        long_ret = x.rx_crc_errors;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSSINGLECOLLISIONFRAMES:
+        long_ret = x.tx_single_collisions;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSMULTIPLECOLLISIONFRAMES:
+        long_ret = x.tx_mult_collisions;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSSQETESTERRORS:
+        long_ret = x.tx_sqetesterrors;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSDEFERREDTRANSMISSIONS:
+        long_ret = x.tx_deferred;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSLATECOLLISIONS:
+        long_ret = x.tx_late_collisions;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSEXCESSIVECOLLISIONS:
+        long_ret = x.tx_max_collisions;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSINTERNALMACTRANSMITERRORS:
+        long_ret = x.tx_underrun;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSCARRIERSENSEERRORS:
+        long_ret = x.tx_carrier_loss;
+        return (unsigned char *) &long_ret;
+      
+    case DOT3STATSFRAMETOOLONGS:
+        long_ret = x.rx_too_long_frames;
+        return (unsigned char *) &long_ret;
+      
+    case DOT3STATSINTERNALMACRECEIVEERRORS:
+        long_ret = x.rx_overrun_errors +
+            x.rx_resource_errors;
+        return (unsigned char *) &long_ret;
+      
+    case DOT3STATSSYMBOLERRORS:
+        long_ret = x.rx_symbol_errors;
+        return (unsigned char *) &long_ret;
+        
+    case DOT3STATSETHERCHIPSET:
+        i = 0;
+        while ( i < sizeof(etherobjid) ) {
+            if ( 0 == (etherobjid[i] = x.snmp_chipset[i]) )
+                break;
+            i++;
         }
+        *var_len = i;
+        return (unsigned char *) etherobjid;
+        
+    case DOT3STATSDUPLEXSTATUS:
+        long_ret = x.duplex;
+        if ( 1 > long_ret || 3 < long_ret )
+            long_ret = 1;
+        return (unsigned char *) &long_ret;
+      
+    default:
+        ERROR_MSG("");
+        return NULL;
     }
-    return NULL;
 }
 
 
@@ -412,11 +356,11 @@ var_dot3StatsTable(struct variable *vp,
  */
 unsigned char *
 var_dot3ControlTable(struct variable *vp,
-    	    oid     *name,
-    	    size_t  *length,
-    	    int     exact,
-    	    size_t  *var_len,
-    	    WriteMethod **write_method)
+            oid     *name,
+            size_t  *length,
+            int     exact,
+            size_t  *var_len,
+            WriteMethod **write_method)
 {
     /* variables we may use later */
     static long long_ret;
@@ -449,11 +393,11 @@ var_dot3ControlTable(struct variable *vp,
  */
 unsigned char *
 var_dot3PauseTable(struct variable *vp,
-    	    oid     *name,
-    	    size_t  *length,
-    	    int     exact,
-    	    size_t  *var_len,
-    	    WriteMethod **write_method)
+            oid     *name,
+            size_t  *length,
+            int     exact,
+            size_t  *var_len,
+            WriteMethod **write_method)
 {
     /* variables we may use later */
     static long long_ret;

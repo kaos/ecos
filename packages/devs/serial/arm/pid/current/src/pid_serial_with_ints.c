@@ -388,10 +388,6 @@ pid_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
                     stat.which = CYGNUM_SERIAL_STATUS_BREAK;
                     (chan->callbacks->indicate_status)(chan, &stat );
                 }
-                if ( lsr & LSR_OE ) {
-                    stat.which = CYGNUM_SERIAL_STATUS_OVERRUNERR;
-                    (chan->callbacks->indicate_status)(chan, &stat );
-                }
             }
             break;
 

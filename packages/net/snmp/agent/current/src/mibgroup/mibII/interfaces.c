@@ -98,15 +98,10 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 // Get info about the device
 #include <pkgconf/system.h>
 
+// These two two acquire all the statistics.
 #include <eth_drv.h>
-
-#ifdef CYGBLD_DEVS_ETH_DEVICE_H
-#include CYGBLD_DEVS_ETH_DEVICE_H
-#endif
-
-#ifdef CYGBLD_DEVS_ETH_INFO_H
-#include CYGBLD_DEVS_ETH_INFO_H
-#endif
+#include <eth_drv_stats.h>
+#include <sys/sockio.h>
 
 /* 
  * interfaces_variables_oid:
@@ -266,40 +261,84 @@ var_ifTable(struct variable *vp,
 {
 
 
-  /* variables we may use later */
-  static long long_ret;
-  static unsigned char string[SPRINT_MAX_LEN];
-  static oid objid[MAX_OID_LEN];
+    /* variables we may use later */
+    static long long_ret;
+    static unsigned char string[SPRINT_MAX_LEN];
+    static oid objid[MAX_OID_LEN];
 //  static struct counter64 c64;
-
-  register struct ifnet *ifp;
-  int interface_count = 0;
-
-  for (ifp = ifnet.tqh_first; ifp != 0; ifp = ifp->if_list.tqe_next)
-      interface_count++;
+    
+    register struct ifnet *ifp;
+    int interface_count = 0;
+    
+    for (ifp = ifnet.tqh_first; ifp != 0; ifp = ifp->if_list.tqe_next)
+        interface_count++;
         
-  /* 
-   * This assumes that the table is a 'simple' table.
-   *	See the implementation documentation for the meaning of this.
-   *	You will need to provide the correct value for the TABLE_SIZE parameter
-   *
-   * If this table does not meet the requirements for a simple table,
-   *	you will need to provide the replacement code yourself.
-   *	Mib2c is not smart enough to write this for you.
-   *    Again, see the implementation documentation for what is required.
-   */
-  if ( header_simple_table( vp,name,length,exact,var_len,write_method,
-                            interface_count)
-       == MATCH_FAILED )
-      return NULL;
+    /* 
+     * This assumes that the table is a 'simple' table.
+     *	See the implementation documentation for the meaning of this.
+     *	You will need to provide the correct value for the TABLE_SIZE parameter
+     *
+     * If this table does not meet the requirements for a simple table,
+     * you will need to provide the replacement code yourself.
+     * Mib2c is not smart enough to write this for you.
+     * Again, see the implementation documentation for what is required.
+     */
+    if ( header_simple_table( vp,name,length,exact,var_len,write_method,
+                              interface_count)
+         == MATCH_FAILED )
+        return NULL;
+    
+    for ( interface_count = name[ (*length)-1 ], ifp = ifnet.tqh_first;
+          interface_count > 1 && ifp != 0;
+          interface_count-- )
+        ifp = ifp->if_list.tqe_next;
 
-  for ( interface_count = name[ (*length)-1 ], ifp = ifnet.tqh_first;
-        interface_count > 1 && ifp != 0;
-        interface_count-- )
-      ifp = ifp->if_list.tqe_next;
+    if ( ! ifp )
+        return NULL;
 
-  if ( ! ifp )
-      return NULL;
+    if ( IFT_ETHER == ifp->if_type &&
+         ((IFDESCR == vp->magic) ||
+          (IFSPEED == vp->magic) ||
+          (IFOUTDISCARDS == vp->magic) ||
+          (IFOUTQLEN == vp->magic) )
+        ) {
+        // then acquire up to date information and deal with the relevent
+        // keys (only):
+        int i = -1;
+        struct ether_drv_stats x;
+        bzero( &x, sizeof( x ) );
+
+        // Call the ioctl to get all the info.
+        // (We KNOW it's an ether dev here, it should have an ioctl())
+        if ( NULL != ifp->if_ioctl )
+            i = (*ifp->if_ioctl)(ifp, SIOCGIFSTATSUD, (caddr_t)&x);
+
+        switch(vp->magic) {
+        case IFDESCR:
+            if ( i || 0 == x.description[0] ) 
+                strcpy( string, "<Ethernet, details not available>" );
+            else
+                strcpy( string, x.description );
+            *var_len = strlen(string);
+            return (unsigned char *) string;
+
+        case IFSPEED:
+            long_ret = x.speed;
+            return (unsigned char *) &long_ret;
+
+        case IFOUTDISCARDS:
+            long_ret = x.tx_dropped;
+            return (unsigned char *) &long_ret;
+
+        case IFOUTQLEN:
+            long_ret = x.tx_queue_len;
+            return (unsigned char *) &long_ret;
+
+        default:
+            CYG_FAIL( "Bad magic; shouldn't be in here" );
+            break;
+        }
+    }
 
     switch(vp->magic) {
     
@@ -308,14 +347,16 @@ var_ifTable(struct variable *vp,
         return (unsigned char *) &long_ret;
         
     case IFDESCR:
-        if ( IFT_LOOP == ifp->if_type )
+        switch ( ifp->if_type ) {
+        case IFT_LOOP:
             strcpy( string, "(Loopback device)" );
-        else {
-#ifdef CYGDAT_DEVS_ETH_DESCRIPTION
-            strcpy( string, CYGDAT_DEVS_ETH_DESCRIPTION );
-#else
-            strcpy( string, "Some shy Ethernet adaptor" );
-#endif
+            break;
+        case IFT_PROPVIRTUAL:
+            strcpy( string, "(Proprietary Virtual/Internal)" );
+            break;
+        default:
+            strcpy( string, "Some shy network adaptor" );
+            break;
         }
         *var_len = strlen(string);
         return (unsigned char *) string;
@@ -331,25 +372,17 @@ var_ifTable(struct variable *vp,
     case IFSPEED:
         if ( IFT_LOOP == ifp->if_type )
             long_ret = 0;
-        else {
-#ifdef ETH_DEV_IFSPEED
-            struct eth_drv_sc *sc = ifp->if_softc;
-#ifdef ETH_STATS_INIT
-            ETH_STATS_INIT( sc );
-#endif
-            long_ret = ETH_DEV_IFSPEED( sc );
-#else
+        else
             long_ret = ifp->if_baudrate;
-#endif
-        }
         return (unsigned char *) &long_ret;
 
     case IFPHYSADDRESS: {
-        if ( IFT_LOOP == ifp->if_type )
-            bzero( string, ETHER_ADDR_LEN );
+        if ( IFT_ETHER == ifp->if_type ) {
+            struct arpcom *ac = (struct arpcom *)ifp;
+            bcopy(&ac->ac_enaddr, string, ETHER_ADDR_LEN);
+        }
         else {
-            struct eth_drv_sc *sc = ifp->if_softc;
-            bcopy(&sc->sc_arpcom.ac_enaddr, string, ETHER_ADDR_LEN);
+            bzero( string, ETHER_ADDR_LEN );
         }
         *var_len = ETHER_ADDR_LEN;
         return (unsigned char *) string;
@@ -404,15 +437,7 @@ var_ifTable(struct variable *vp,
         return (unsigned char *) &long_ret;
 
     case IFOUTDISCARDS:
-        if ( IFT_LOOP == ifp->if_type )
-            long_ret = 0;
-        else {
-#ifdef ETH_DEV_IFOUTDISCARDS
-            long_ret = ETH_DEV_IFOUTDISCARDS( (struct eth_drv_sc *)(ifp->if_softc) );
-#else
-            long_ret = 0;
-#endif
-        }
+        long_ret = 0; // ETHER case dealt with above
         return (unsigned char *) &long_ret;
 
     case IFOUTERRORS:
@@ -420,15 +445,7 @@ var_ifTable(struct variable *vp,
         return (unsigned char *) &long_ret;
 
     case IFOUTQLEN:
-        if ( IFT_LOOP == ifp->if_type )
-            long_ret = 0;
-        else {
-#ifdef ETH_DEV_IFOUTQLEN
-            long_ret = ETH_DEV_IFOUTQLEN( (struct eth_drv_sc *)(ifp->if_softc) );
-#else
-            long_ret = 0;
-#endif
-        }
+        long_ret = 0; // ETHER case dealt with above
         return (unsigned char *) &long_ret;
 
     case IFSPECIFIC:

@@ -85,7 +85,8 @@ ETH_DRV_SC(quicc_eth0_sc,
            quicc_eth_can_send,
            quicc_eth_send,
            quicc_eth_recv,
-           quicc_eth_int);
+           quicc_eth_int,
+           quicc_eth_int_vector);
 
 NETDEVTAB_ENTRY(quicc_netdev, 
                 "quicc_eth", 
@@ -514,4 +515,13 @@ quicc_eth_int(struct eth_drv_sc *sc)
         }
         scc->scc_scce = scce;  // Reset the bits we handled
     }
+}
+
+//
+// Interrupt vector
+//
+static int          
+quicc_eth_int_vector(struct eth_drv_sc *sc)
+{
+    return (CYGNUM_HAL_INTERRUPT_CPM_SCC1);
 }
