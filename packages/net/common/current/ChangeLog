@@ -1,3 +1,9 @@
+2003-01-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/nc_test_slave.c: Improve handling of UDP buffer space - try
+	to minimize amount of "idle" time when this occurs.  Since this test
+	is just for show, these changes just make the numbers "look" better.
+
 2003-01-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/network_support.c (init_all_network_interfaces): Define buf

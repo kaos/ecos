@@ -210,25 +210,36 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
             }
         }
         if (need_send) {
+            int retries = 10;
+            bool sent = false;
+            int res;
+
             tdp = (struct nc_test_data *)out_buf;
             tdp->key1 = htonl(NC_TEST_DATA_KEY1);
             tdp->key2 = htonl(NC_TEST_DATA_KEY2);
             tdp->seq = htonl(seq);
             td_len = ntohl(req->buflen) + sizeof(struct nc_test_data);
             tdp->len = htonl(td_len);
-            if (sendto(s, tdp, td_len, 0, 
-                       (struct sockaddr *)&test_chan_master, sizeof(test_chan_master)) < 0) {
-                perror("sendto");
+            while (!sent && (--retries >= 0)) {
+                res = sendto(s, tdp, td_len, 0, 
+                             (struct sockaddr *)&test_chan_master, sizeof(test_chan_master));
+                if (res > 0) {
+                    sent = true;
+                    break;
+                }
                 if (errno == ENOBUFS) {
                     // Saturated the system
-                    test_delay(10);   // Time for 200 500 byte 10-baseT packets 
+                    test_delay(1);   // Time for 200 500 byte 10-baseT packets 
                 } else {
                     // What else to do?
                     close(s);
                     return;
                 }
-            } else {
+            }
+            if (sent) {
                 nsent++;
+            } else {
+                perror("sendto");
             }
         }
         seq++;
@@ -240,7 +251,7 @@ do_udp_test(int s1, struct nc_request *req, struct sockaddr_in *master)
     results.nrecvd = htonl(nrecvd);
     if (sendto(s, &results, sizeof(results), 0, 
                (struct sockaddr *)&test_chan_master, sizeof(test_chan_master)) < 0) {
-        perror("sendto");
+        perror("sendto results");
     }
     close(s);
 }
