@@ -238,7 +238,7 @@ isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data, HAL_SavedRegisters *regs)
     return Cyg_InterruptHANDLED;
 }
 
-void
+int
 hal_enable_profile_timer(int resolution)
 {
     // Run periodic timer interrupt for profile 
@@ -265,6 +265,8 @@ hal_enable_profile_timer(int resolution)
     HAL_READ_UINT16 (CYGARC_REG_IMM_PISCR, piscr);
     piscr |= CYGARC_REG_IMM_PISCR_PTE;
     HAL_WRITE_UINT16 (CYGARC_REG_IMM_PISCR, piscr);
+
+    return resolution;
 }
 #endif
 

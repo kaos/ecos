@@ -221,29 +221,38 @@ void hal_delay_us(cyg_int32 usecs)
 // Can't rely on Cyg_Interrupt class being defined.
 #define Cyg_InterruptHANDLED 1
 
+static int  profile_period  = 0;
+
 // Profiling timer ISR
 static cyg_uint32 
 profile_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data, HAL_SavedRegisters *regs)
 {
+    // Load new match value
+    *SA11X0_OSMR1 = *SA11X0_OSCR + profile_period;
+    // Clear any pending interrupt
+    *SA11X0_OSSR = SA11X0_OSSR_TIMER1;
     HAL_INTERRUPT_ACKNOWLEDGE(CYGNUM_HAL_INTERRUPT_TIMER1);
     __profile_hit(regs->pc);
     return Cyg_InterruptHANDLED;
 }
 
-void
+int
 hal_enable_profile_timer(int resolution)
 {
     // Run periodic timer interrupt for profile 
     // The resolution is specified in us, the hardware generates 3.6864
     // ticks/us
-    int period = (resolution*36864) / 10000;
+    profile_period = (resolution*36864) / 10000;
 
     // Attach ISR.
     HAL_INTERRUPT_ATTACH(CYGNUM_HAL_INTERRUPT_TIMER1, &profile_isr, 0x1111, 0);
     HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_TIMER1);
 
-    // Set period.
-    *SA11X0_OSMR1 = period;
+    // Set period and enable timer interrupts
+    *SA11X0_OSMR1 = *SA11X0_OSCR + profile_period;
+    *SA11X0_OIER |= SA11X0_OIER_TIMER1;
+
+    return resolution;
 }
 #endif
 
