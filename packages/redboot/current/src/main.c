@@ -215,6 +215,18 @@ _mon_write_char(char c, void **param)
 }
 
 //
+// Handle illegal memory accesses (and other abort conditions)
+//
+static hal_jmp_buf error_jmpbuf;
+externC void* volatile __mem_fault_handler;
+
+static void error_handler(void)
+{
+    hal_longjmp(error_jmpbuf, 1);
+}
+
+
+//
 // This is the main entry point for RedBoot
 //
 void
@@ -395,7 +407,14 @@ cyg_start(void)
                 } else {
                     while (strlen(command) > 0) {                    
                         if ((cmd = parse(&command, &argc, &argv[0])) != (struct cmd *)0) {
-                            (cmd->fun)(argc, argv);
+                            // Try to handle aborts - messy because of the stack unwinding...
+                            __mem_fault_handler = error_handler;
+                            if (hal_setjmp(error_jmpbuf)) {
+                                diag_printf("** command abort - illegal memory access?\n");
+                            } else {
+                                (cmd->fun)(argc, argv);
+                            }
+                            __mem_fault_handler = 0;
                         } else {
                             diag_printf("** Error: Illegal command: \"%s\"\n", argv[0]);
                         }

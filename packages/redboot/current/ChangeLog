@@ -1,3 +1,8 @@
+2003-10-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/main.c (cyg_start): Try to catch illegal memory accesses and
+	other abort conditions during command execution.
+
 2003-10-17  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/load.c: Only examine loadable segments when scanning to determine
