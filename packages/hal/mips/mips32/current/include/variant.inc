@@ -7,29 +7,38 @@
 ##	MIPS 32/64 family assembler header file
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -104,29 +113,31 @@
 	# RAM and NOT using a ROM monitor, initialize the VSR table.
 
 	.macro	hal_mon_init
-	la	a0,__default_interrupt_vsr
+        # Set default exception VSR for all vectors
+        ori     a0,zero,16  # CYGNUM_HAL_VSR_COUNT
 	la	a1,__default_exception_vsr
-	la	a3,hal_vsr_table
+	la	a2,hal_vsr_table
+1:      sw      a1,0(a2)
+        addi    a2,a2,4
+        addi    a0,a0,-1
+        bne     a0,zero,1b
+         nop
 
-	sw	a0,0(a3)
-	sw	a1,1*4(a3)
-	sw	a1,2*4(a3)
-	sw	a1,3*4(a3)
-	sw	a1,4*4(a3)
-	sw	a1,5*4(a3)
-	sw	a1,6*4(a3)
-	sw	a1,7*4(a3)
-	sw	a1,8*4(a3)
-	sw	a1,9*4(a3)
-	sw	a1,10*4(a3)
-	sw	a1,11*4(a3)
-	sw	a1,12*4(a3)
-	sw	a1,13*4(a3)
-	sw	a1,14*4(a3)
-	sw	a1,15*4(a3)
-
-	sw	a1,32*4(a3)
- 	sw	a1,33*4(a3)
+        # Now set special VSRs
+       	la	a0,hal_vsr_table
+        # Set interrupt VSR
+	la	a1,__default_interrupt_vsr
+        sw      a1,0*4(a0)  # CYGNUM_HAL_VECTOR_INTERRUPT
+        # Add special handler on breakpoint vector to allow GDB and
+        # GCC to both use 'break' without conflicts.
+	la	a1,__break_vsr_springboard
+	sw	a1,9*4(a0)  # CYGNUM_HAL_VECTOR_BREAKPOINT
+        # Set exception handler on special vectors
+        # FIXME: Should use proper definitions
+	la	a1,__default_exception_vsr
+	sw	a1,32*4(a0)             # debug
+	sw	a1,33*4(a0)             # utlb
+	sw	a1,34*4(a0)             # nmi
 	.endm
 	
 #elif defined(CYG_HAL_STARTUP_RAM) && defined(CYGSEM_HAL_USE_ROM_MONITOR)

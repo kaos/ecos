@@ -5,29 +5,38 @@
 //      Stand-alone network logical I/O support for RedBoot
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -44,7 +53,7 @@
 //==========================================================================
 
 #include <redboot.h>
-#include <eth_drv.h>            // Logical driver interfaces
+#include <cyg/io/eth/eth_drv.h>            // Logical driver interfaces
 #include <net/net.h>
 #include <cyg/hal/hal_misc.h>   // Helper functions
 #include <cyg/hal/hal_if.h>     // HAL I/O interfaces
@@ -89,6 +98,20 @@ RedBoot_config_option("Default server IP address",
                       bootp_server_ip,
                       "bootp", false,
                       CONFIG_IP,
+                      0
+    );
+
+// Note: the following options are related too.
+RedBoot_config_option("Force console for special debug messages",
+                      info_console_force, 
+                      ALWAYS_ENABLED, true,
+                      CONFIG_BOOL,
+                      false
+    );
+RedBoot_config_option("Console number for special debug messages",
+                      info_console_number, 
+                      "info_console_force", true,
+                      CONFIG_INT,
                       0
     );
 #endif
@@ -413,9 +436,21 @@ net_io_isr(void *__ch_data, int* __ctrlc,
 int 
 start_console(void)
 {
-    int cur_console;
-    cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGDBG_REDBOOT_NET_DEBUG_CONSOLE_NUMBER);
+    int cur_console =
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+    int i = 0;
+    if ( flash_get_config( "info_console_force", &i, CONFIG_BOOL) )
+        if ( i )
+            if ( ! flash_get_config( "info_console_number", &i, CONFIG_INT) )
+                i = 0; // the default, if that call failed.
+    if ( i )
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+    else
+#endif
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
+
     return cur_console;
 }
 
@@ -518,8 +553,8 @@ RedBoot_idle(net_io_test, RedBoot_IDLE_NETIO);
 //
 // Network initialization
 //
-#include <eth_drv.h>
-#include <netdev.h>
+#include <cyg/io/eth/eth_drv.h>
+#include <cyg/io/eth/netdev.h>
 #include <cyg/hal/hal_tables.h>
 
 // Define table boundaries
@@ -527,6 +562,17 @@ CYG_HAL_TABLE_BEGIN( __NETDEVTAB__, netdev );
 CYG_HAL_TABLE_END( __NETDEVTAB_END__, netdev );
 
 RedBoot_init(net_init, RedBoot_INIT_LAST);
+
+static void
+show_addrs(void)
+{
+    diag_printf("IP: %s", inet_ntoa((in_addr_t *)&__local_ip_addr));
+    diag_printf(", Default server: %s", inet_ntoa(&my_bootp_info.bp_siaddr));
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+    show_dns();
+#endif
+    diag_printf("\n");
+}
 
 void
 net_init(void)
@@ -540,7 +586,7 @@ net_init(void)
     use_bootp = true;
 #endif
 #ifdef CYGDBG_REDBOOT_NET_DEBUG
-    net_debug = CYGDBG_REDBOOT_NET_DEBUG;
+    net_debug = true;
 #else
     net_debug = false;
 #endif
@@ -622,9 +668,7 @@ net_init(void)
                     __local_enet_addr[3],
                     __local_enet_addr[4],
                     __local_enet_addr[5]);
-
-        diag_printf("IP: %s", inet_ntoa((in_addr_t *)&__local_ip_addr));
-        diag_printf(", Default server: %s\n", inet_ntoa(&my_bootp_info.bp_siaddr));
+        show_addrs();
         net_io_init();
     }
 
@@ -632,3 +676,68 @@ net_init(void)
     redboot_dns_res_init();
 #endif
 }
+
+static char usage[] = "[-l <local_ip_address>] [-h <server_address>]";
+
+// Exported CLI function
+static void do_ip_addr(int argc, char *argv[]);
+RedBoot_cmd("ip_address", 
+            "Set/change IP addresses", 
+            usage,
+            do_ip_addr
+    );
+
+void 
+do_ip_addr(int argc, char *argv[])
+{
+    struct option_info opts[3];
+    char *ip_addr, *host_addr;
+    bool ip_addr_set, host_addr_set;
+    struct sockaddr_in host;
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+    char *dns_addr;
+    bool dns_addr_set;
+#endif
+    int num_opts;
+
+    init_opts(&opts[0], 'l', true, OPTION_ARG_TYPE_STR, 
+              (void **)&ip_addr, (bool *)&ip_addr_set, "local IP address");
+    init_opts(&opts[1], 'h', true, OPTION_ARG_TYPE_STR, 
+              (void **)&host_addr, (bool *)&host_addr_set, "default server address");
+    num_opts = 2;
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+    init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_STR, 
+              (void **)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
+    num_opts++;
+#endif
+    if (!scan_opts(argc, argv, 1, opts, num_opts, 0, 0, "")) {
+        return;
+    }
+    if (ip_addr_set) {
+        if (!_gethostbyname(ip_addr, (in_addr_t *)&host)) {
+            diag_printf("Invalid local IP address: %s\n", ip_addr);
+            return;
+        }
+        // Of course, each address goes in its own place :-)
+        memcpy(&__local_ip_addr, &host.sin_addr, sizeof(host.sin_addr));
+    }
+    if (host_addr_set) {
+        if (!_gethostbyname(host_addr, (in_addr_t *)&host)) {
+            diag_printf("Invalid server address: %s\n", host_addr);
+            return;
+        }
+        my_bootp_info.bp_siaddr = host.sin_addr;
+    }
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+    if (dns_addr_set) {
+        set_dns(dns_addr);
+    }
+#endif
+    show_addrs();
+    if (!have_net) {
+        have_net = true;
+        net_io_init();
+    }
+}
+
+// EOF net_io.c

@@ -1,0 +1,59 @@
+<PART ID="net-ns-dns">
+<TITLE>DNS for eCos and RedBoot</TITLE>
+<PARTINTRO>
+<PARA>
+<productname>eCos</productname> and
+<productname>RedBoot</productname>
+can both use the DNS package to perform network name lookups.
+</PARA>
+</PARTINTRO>
+<CHAPTER id="net-ns-dns-api">
+<TITLE>DNS</TITLE>
+<SECT1 id="net-ns-dns-api1">
+<TITLE>DNS API</TITLE>
+<PARA>The DNS client uses the normal BSD API for performing lookups:
+<function>gethostbyname()</function> and
+<FUNCTION>gethostbyaddr()</FUNCTION>.
+</PARA>
+<PARA>There are a few restrictions:</PARA>
+<ITEMIZEDLIST>
+<LISTITEM>
+<PARA>Only IPv4 is supported, ie IPv6 addresses cannot be looked
+up.</PARA>
+</LISTITEM>
+<LISTITEM>
+<PARA>If the DNS server returns multiple authoritive records
+for a host name, the hostent will only contain a record for the
+first entry.</PARA>
+</LISTITEM>
+<LISTITEM>
+<PARA>The code has been made thread safe. ie multiple threads
+may can 
+<FUNCTION>gethostbyname()</FUNCTION>
+ without causing problems to the hostent structure returned. What
+is not safe is one thread using both 
+<FUNCTION>gethostbyname()</FUNCTION>
+ and 
+<FUNCTION>gethostbyaddr()</FUNCTION>.
+A call to one will destroy the results from the previous call
+to the other function.</PARA>
+</LISTITEM>
+</ITEMIZEDLIST>
+<PARA>To initialise the DNS client the following function must be
+called:</PARA>
+<PROGRAMLISTING>#include &lt;network.h&gt;
+int cyg_dns_res_init(struct in_addr &ast;dns_server)</PROGRAMLISTING>
+<PARA>where dns_server is the address of the DNS server
+the client should query. On Error this function returns -1, otherwise
+0 for success. If lookups are attemped before this function has
+been called, they will fail and return NULL.</PARA>
+<PARA>The DNS client understands the concepts of the target being
+in a domain. By default no domain will be used. Host name lookups
+should be for fully qualified names. The domain name can be set
+using the function <function>setdomainname()</function>.
+Once set, the DNS client will first perform a lookup with the domain
+name appended. If this fails it will then perform a second lookup
+without the appended domain name. </PARA>
+</SECT1>
+</CHAPTER>
+</PART>

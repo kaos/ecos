@@ -1,0 +1,112 @@
+2002-05-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/netinet6/in6.h: Fixed warnings.
+
+2002-04-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sys/netinet6/nd6.c: Make debug (on) default.
+
+	* include/netinet/tcp_debug.h: Fully conditionalize debug facility.
+
+2002-04-17  Gary Thomas  <gthomas@redhat.com>
+
+	* include/sys/socket.h: Remove definitions only used by sysctl
+	since their presence could be misleading.
+
+	* src/ecos/support.c (STACK_SIZE): Remove [debug/testing] bloat.
+
+2002-03-30  Gary Thomas  <gthomas@redhat.com>
+
+	* include/machine/types.h: [Placeholder] needed for some compilers.
+
+2002-03-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sys/netinet/ip_icmp.c: 
+	* include/sys/param.h: 
+	* include/netinet/icmp_var.h: Export status structure for SNMP.
+
+	* cdl/freebsd_net.cdl: Augment log facilities to what SNMP uses.
+
+2002-03-27  Gary Thomas  <gthomas@redhat.com>
+
+	* include/sys/param.h (log): Remove warning.
+
+2002-03-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ecos/support.c (zinit): Add more record keeping (and debug
+	prints) for zones.
+
+	* src/ecos/timeout.c (do_timeout): Don't reset ACTIVE when running
+	a timeout (since it confuses the TCP timer code).
+
+2002-03-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sys/netinet/in_cksum.c (in_addword): Changed to use uint32 since
+	uint64 was wasteful (and failed on some architectures!)
+
+2002-03-20  Gary Thomas  <gthomas@redhat.com>
+
+	* include/sys/socket.h: Force struct sockaddr to be at least as
+	big as IPv4 or IPv6 sockets.  Possibly this could be a little
+	cleaner, but at least now it's safe for programs to use sockaddr
+	variables in either environment.
+
+2002-03-11  Hugo Tyson  <hmt@redhat.com> 
+
+	[Case 107110]
+
+	* src/sys/netinet/in.c (in_control): SIOCSIFADDR switch entry
+	moved to before the scan for this same address being in the list
+	already, along with Add and Delete (SIOCAIFADDR,SIOCDIFADDR) arms.
+	It falls through into the same alloc-if-needed code anyway.
+	Thus repeatedly setting the same address does not leak store.
+
+	* src/sys/net/route.c (route_reinit): Rewrite to delete all routes
+	individually rather than en-masse (leaking store).
+	(rt_reinit_rtdelete): New function; callback for individual
+	deletion.
+	(rtioctl): Do not pass in a "route **" to return a pointer to the
+	route removed or added; this results in an extra reference, by the
+	returned pointer, and so a storeleak.
+	(rtrequest): RTM_DELETE arm: do not free a gateway route if the
+	gateway pointer is the same as the route itself - it gets freed
+	*again* at the end of the routine if you do.  Just dec the refcnt.
+
+2002-03-08  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sys/net/if_loop.c (loioctl): Force IFF_LOOPBACK setting.
+
+	* src/sys/kern/uipc_mbuf.c: Remove some warnings [from munging].
+
+	* src/ecos/support.c (cyg_net_init): Identify init messages.
+
+	* include/sys/param.h (nstab,nstab_end): These are not defined
+	within the network package and thus should not be munged.
+
+	* include/net/if.h: Add "IFF_LOOPBACK" to set of flags which
+	cannot be changed outside the kernel.  Note: this is a change
+	from the "normal" BSD code.  It was done to keep old code
+	working, but it may break some new code.
+
+2002-03-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sys/kern/uipc_mbuf.c: Work over for the namespace changes.
+
+	* include/sys/param.h: Complete namespace munging; privatize
+	all kernel symbols via "cyg_" prefix.
+
+2002-02-05  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/freebsd_net.cdl: Position this package below CYGPKG_NET
+	ie. the common networking package.  Only affects the view in the
+	GUI CT, no big deal.
+
+#####ECOSPDCOPYRIGHTBEGIN####
+#
+# Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
+# All Rights Reserved.
+#
+# Permission is granted to use, copy, modify and redistribute this
+# file.
+#
+#####ECOSPDCOPYRIGHTEND####

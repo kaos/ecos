@@ -1,9 +1,398 @@
+2002-05-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_baud_rate): Improve safety by asking for verification
+	after actually changing the rate, before updating fconfig data.  This
+	reduces the chance of making a "brick" by setting a bad baud rate.
+
+	* src/flash.c (load_flash_config): Fix set_console_baud_rate prototype.
+
+	* src/io.c (verify_action_with_timeout): 
+	* include/redboot.h: New function verify_action_with_timeout().
+	Returns false if no response within XX ms (or ^C).
+
+2002-05-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_help): 
+	* src/flash.c: 
+	* include/redboot.h: Support nested command structures, like "fis",
+	better.
+
+2002-05-17  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_rebuilding.sgml: Rewrote update procedure to become
+	truly generic. Some minor tweaks.
+
+	* doc/redboot_cmds.sgml: Added id to cksum command.
+
+	* src/shex.c (load_shex_image): Set entry address to be base
+	address.
+	* src/load.c (do_load): Same.
+
+	* src/flash.c (fis_create): Infer correct exec and entry
+	addresses.
+
+	* src/load.c (load_elf_image): Save load_address/end.
+
+	* src/flash.c: Made fis lock/unlock support optional image name
+	instead of addresses. Made a few places of the code use fis_lookup
+	instead of scanning the table by steam.
+	(do_flash_config): Update flash after configuration has been
+	initialized.
+
+2002-05-16  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_cmds.sgml: Updated text on cksum to show the new
+	output format.
+
+	* src/xyzModem.c (xyzModem_stream_read): Fix build breakage.
+
+	* doc/redboot.sgml: Some minor tweaks.
+
+	* src/alias.c (lookup_alias): Renamed freemem aliases.
+
+2002-05-15  Jesper Skov  <jskov@redhat.com>
+
+	* src/io.c (verify_action): Replaced 'are you sure' with
+	'continue'.
+	* doc/redboot.sgml: Same.
+
+	* src/xyzModem.c: Let Y-modem load correct length. Don't remove
+	assumed padding bytes since they may well be actual data. Don't
+	read anything after the EOF package is received.
+	Disabled the Y-modem header stuff again; it still needs the
+	padding culling code. So in the end, only the EOF-package read
+	was at fault.
+
+	* src/main.c: Tweak cksum output.
+
+	* src/flash.c (fis_create): language tweaks.
+
+	* src/main.c: Always call expand_aliases - leave it to that
+	function to look for flash aliases when appropriate.
+
+	* src/flash.c: Moved basic alias expansion into separate file.
+	* src/alias.c: New file. Always provide FREE_LOW & FREE_HIGH
+	aliases, but also call flash_lookup_alias when defined.
+
+	* include/redboot.h: Added declarations for alias functions. Added
+	getc_t and terminate_t types.
+
+	* src/load.c: Use getc_t/terminate_t types. Made raw load abort if
+	user tries to load a file too big for memory.
+
+	* cdl/redboot.cdl: Compile alias.c.
+
+2002-05-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/version.c: Clarify comments.
+
+2002-05-14  Gary Thomas  <gthomas@redhat.com>
+
+	* include/redboot.h: 
+	* src/net/net_io.c: 
+	* src/net/dns.c: Merge generic "ip" command with "dns" for
+	more homogenous interface.
+
+2002-05-13  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: Disable CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP
+	by default, since its use is currently unclear.
+
+	* src/flash.c (load_flash_config): Check for adequate FIS space
+	was incorrect [when FIS directory and FCONFIG are combined].
+	(fis_lookup): Image name lookup is case insensitive.
+
+2002-05-10  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: Lots of restructuring in support of combined
+	FIS and FCONFIG data.
+
+	* cdl/redboot.cdl: 
+	Add new option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
+	to allow FIS directory and FCONFIG data to share the same
+	physical FLASH block.
+
+2002-05-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (load_flash_config): Adjust fconfig database
+	address - necessary if FLASH blocks are very small.
+
+2002-05-02  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c: Rework how decompression is done (with changes
+	noted below).  Now turning on decompression works by pushing
+	the decompress code into the stream I/O.
+
+	* src/flash.c (fis_load): 
+	* src/decompress.c (gzip_inflate): 
+	* include/redboot.h: Make decompression code more generalized.
+
+2002-05-01  Gary Thomas  <gthomas@redhat.com>
+
+	* include/elf.h: New file.
+
+	* cdl/redboot.cdl: 
+	* src/load.c (load_elf_image): Support [simple] ELF images.
+
+2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+
+	* src/xyzModem.c (xyzModem_stream_terminate): Increase time for
+	cleanup from 100ms to 250ms.
+
+2002-04-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/syscall.c (__do_syscall): Rename EIO to NEWLIB_EIO to
+	pre-empt any potential conflict. Add definition of 
+	NEWLIB_ENOSYS and use it in place of ENOSYS.
+
+2002-04-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* doc/redboot.sgml: Document iq80321 switch settings.
+
+	* include/redboot.h: Add gettimeofday, rename, isatty and system
+	syscall numbers.
+	
+	* src/syscall.c (__do_syscall): Handle above new syscalls in a
+	"default" way.
+	Take new extra signal argument.
+	When required, handle file I/O syscalls, by passing into HAL.
+
+2002-04-21  Paul Fine  <pfine@delcomsys.com>
+
+	* src/flash.c (flash_get_config, load_flash_config): Save a
+	pointer to the configuration structure in FLASH.  If
+	flash_get_config fails to find a config item, check to make sure
+	that the config structure in RAM has not been trashed.  If it has
+	been trashed, set the pointer to the "readonly" version in FLASH
+	and try to read the config item again.
+	
+	* cdl/redboot.cdl (CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK):
+	Added this flash config option to control the readonly fallback in
+	flash.c
+
+2002-04-16  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+2002-04-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/xyzModem.c: Don't return ACKs too early.
+
+2002-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/bootp.c: Readjust timeouts - more, shorter.  Better response.
+
+2002-04-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/bootp.c: Increase timeouts for slower networks.
+
+2002-04-11  Nick Garnett  <nickg@redhat.com>
+
+	* doc/redboot.sgml: Changed some misplaced <term>s into
+	<literal>s.
+
+2002-04-08  Nick Garnett  <nickg@redhat.com>
+
+	* doc/redboot.sgml: Added full LED code desription, revised memory
+	layout and miscellaneous other fixes for 80321.
+
+2002-04-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_mfill): 
+	(do_mcmp): New routines for fill/compare random buffers.
+
+	* cdl/redboot.cdl: CDL to control mfill, mcmp, cksum commands.
+
+	* src/net/net_io.c (do_ip_addr): 
+	* doc/redboot.sgml: Add new command 'ip_addr', used to set/show the
+	local and host [server] addresses.
+
+2002-04-02  Jesper Skov  <jskov@redhat.com>
+
+	* redboot.sgml: excalibur: Updated memory map details, added
+	information about REDBOOT startup mode.
+
+2002-03-07  Mark Salter  <msalter@redhat.com>
+
+	* src/net/tcp.c: Fix missing acks of resent segments pointed out
+	by Hendrik Ruijter.
+
+2002-03-06  Nick Garnett  <nickg@redhat.com>
+
+	* doc/redboot.sgml: Added Integrator details.
+
+2002-03-06  Mark Salter  <msalter@redhat.com>
+
+	* src/net/tcp.c (__tcp_handler): Slight rework of Hendrik Ruijter's
+	fix for FIN_WAIT_1 to TIME_WAIT transition.
+
+2002-03-06  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot.sgml: Updated iq80310 details.
+	Updated iq80321 details.
+	Updated e7t details.
+	
+2002-03-05  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot.sgml: Updated ebsa285 details.
+	Updated ipaq details.
+	Updated edb7312 details.
+
+2002-03-05  Gary Thomas  <gthomas@redhat.com>
+2002-02-25  Hendrik Ruijter  <Hendrik.Ruijter@axis.com>
+
+	* include/net/net.h: Add 'reuse' flag.
+
+	* src/net/tcp.c 
+	(tcp_send): Adjust socket close time to allow for faster re-use.
+	(__tcp_handler): State transitions to TIME_WAIT on active close 
+	when FIN,ACK received simultaneously.
+	(__tcp_so_reuseaddr): New function - select fast re-use.
+
+2002-03-05  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot.sgml: Add something about updating RedBoot on
+	platforms using ROMRAM-startup type RedBoot. Also mention that fis
+	create can get some of its information from the fis directory.
+	Updated assabet details.
+
+2002-03-01  Mark Salter  <msalter@redhat.com>
+
+	* redboot.sgml: Add diag docs and switch setting info for 80321.
+
+2002-02-28  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (do_flash_config): Add "-d" to the help info.
+
+	* doc/redboot.sgml: Docuement the "-d" option for dumb terminals
+	with fconfig - so you're not forced to use line editing.
+
+2002-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/syscall.c: Moved SYS_ value definitions to the header file.
+	* include/redboot.h: Same.
+
+2002-02-27  David Howells  <dhowells@redhat.com>
+
+	* sgml/redboot.sgml: Removed extraneous </para>.
+
+2002-02-26  David Howells  <dhowells@redhat.com>
+
+	* doc/redboot.sgml: Updated the ASB2305 notes to be more complete
+	with respect to having two flash chips.
+
+2002-02-19  Mark Salter  <msalter@redhat.com>
+
+	* src/net/net_io.c (net_io_init): Remove ISR installation. This
+	was wrong way to fix problem.
+
+2002-02-15  Mark Salter  <msalter@redhat.com>
+
+	* src/net/net_io.c (net_io_init): Install default ISR for ethernet.
+
+2002-02-14  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/fs/disk.c (disk_stream_read): Modified to return the number
+	of bytes read instead of -1 when such number is less than was
+	requested.
+	
+2002-02-06  Mark Salter  <msalter@redhat.com>
+
+	* src/syscall.c (sys_write): Call __flush after last __putc.
+	(__flush): New function to flush console output.
+
+2002-02-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/net/net_io.c (net_init): Set use_bootp and net_debug defaults
+	properly.
+
+2002-01-31  Gary Thomas  <gthomas@redhat.com>
+
+	* src/fs/ide.c (ide_packet_read_sectors): Pass errors on read.
+	(ide_init): Ignore ATAPI devices that are not CDROM (like ZIP).
+
+2002-01-30  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/net_io.c (start_console): Pick up config items to choose
+	a console for special debug messages.  If it's not set, select
+	channel 0 regardless, like it used to.
+	(info_console_force, info_console_number): New fconfig options to
+	control this channel *plus* forcing application special debug out
+	to a particular serial.   This is crucial for debugging debugging
+	itself, or debugging a networked app over the network when you're
+	liable to get such messages popping out from the app as well as
+	from RedBoot.
+
+	* cdl/redboot.cdl (CYGDBG_REDBOOT_NET_DEBUG_CONSOLE_NUMBER):
+	Option deleted, because this is now controlled by fconfig items.
+
+2002-01-25  Hugo Tyson  <hmt@redhat.com>
+
+	* src/syscall.c (sys_profile_reset): New routine - doesn't do
+	much, just NULLs the callback.  Useful placeholder in case more is
+	needed in future, eg. reset the clock also.
+	(__do_syscall): Calls the reset on syscall 2003.
+
+2002-01-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (do_flash_config): Enable a "dumb terminal" mode for
+	fconfig, which does not pre-fill the buffer for editing, but
+	merely prompts for a new value (or RET for old, for non-string
+	values).  This is because telnet/kermit-like network terminal apps
+	are not by default configured to pass all characters through.
+
+2002-01-18  Hugo Tyson  <hmt@redhat.com>
+
+	* src/syscall.c (sys_timer_ticks): Change this to a cyg_uint64 to
+	give better range for times() sanity in case we run the hardware
+	clock ticking at a faster rate, or want to last > 8 days.
+
+2002-01-16  Hugo Tyson  <hmt@redhat.com>
+
+	* src/syscall.c (sys_profile_frequency): Change frequency that is
+	passed around to signed, so that we can enquire using -ve values.
+	Re-order the logic a little so as to permit enquiries which do not
+	modify what's set up in the hardware.  Adjust the times() counter
+	when its HZ rate changes so it tells the truth.
+
+2002-01-15  David Woodhouse  <dwmw2@cambridge.redhat.com>
+
+	* src/flash.c: Better default for 'fis cr' - if we're programming
+	an existing flash image, take img_size from the last-loaded image
+	but length from the one that's already on the flash.
+	
+2002-01-14  David Woodhouse  <dwmw2@cambridge.redhat.com>
+
+	* src/main.c: Useful defaults for cksum command.
+	* src/flash.c: Useful defaults for fis create command.
+	* src/load.c: Slight cleanup of file type detection.
+	
+2002-01-14  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/cksum.c: Added volatile keyword to union members to
+	prevent compiler optimization messing things up.
+
+2002-01-10  Hugo Tyson  <hmt@redhat.com>
+
+	* src/syscall.c (sys_timer_isr): Add CYGARC_HAL_SAVE_GP(); and
+	CYGARC_HAL_RESTORE_GP(); around the callback invocation to protect
+	ourselves from whatever the app routine might do along those lines.
+
 2002-01-10  Hugo Tyson  <hmt@redhat.com>
 
 	* src/syscall.c (sys_timer_ticks): Explicitly initialize this.
+	(sys_timer_isr): Call periodic callback function, with PC and SP
+	of interrupted context, if set.
+	(sys_profile_call_back): New routine to support
+	gprof profiling of GNUPro/newlib apps via BSP_SYSCALLS.  Sets the
+	periodic callback function, returning the old value.
+	(sys_profile_frequency): Ditto, sets the frequency of the call, if
+	possible, or zero => a mere inquiry.
+	(sys_timer_init, sys_times): Be prepared for a dynamic non-default
+	clock rate.
+	(__do_syscall): Handle new case arms.
 
 	* cdl/redboot.cdl (CYGSEM_REDBOOT_BSP_SYSCALLS): Changed to a
 	component; want to add stuff in here later.
+	(CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF): New option
+	to control inclusion of histogram profiling callback syscalls.
 
 2002-01-10  Jesper Skov  <jskov@redhat.com>
 
@@ -325,6 +714,41 @@
 
 	* src/flash.c (_expand_aliases): Properly null terminate expanded 
 	string - failed if alias was at end of line.
+
+2001-09-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/dns.c: Include tracing header.
+
+2001-09-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/dns.c: Removed errno hacks.
+	Reduce size of string buffers. Make sure they suffice (or fail).
+
+	* include/redboot.h: Added DNS h_errno definitions.
+
+	* include/redboot.h: Fix for building on targets wo network.
+
+	* src/load.c (do_load): Make sure host can be reached - and print
+	appropriate error message if not.
+
+	* src/net/net_io.c (net_init): Call DNS init when appropriate.
+
+	* src/net/inet_addr.c (inet_aton): Made s argument const.
+
+	* src/net/dns.c: Added UDP driven DNS support.
+
+	* src/net/bootp.c: Fixed warnings.
+
+	* src/flash.c: Replaced inet_aton with _gethostbyname.
+	* src/load.c: Same.
+	* src/net/ping.c: Same.
+
+	* include/net/net.h: Fix warning.
+
+	* include/redboot.h: Added DNS stuff, including some string
+	helpers.
+
+	* cdl/redboot.cdl: Added DNS support options.
 
 2001-09-14  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -1942,27 +2366,36 @@
 	* cdl/redboot.cdl: New file(s).
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

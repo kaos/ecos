@@ -70,22 +70,10 @@ dtime(void)
 }
 
 // Number of loops to run.
-#if defined(CYGPKG_HAL_ARM_AEB) || defined(CYGPKG_HAL_ARM_PID)
-#define PASSES 100000
-#elif defined(CYGPKG_HAL_ARM_EBSA285)
-#define PASSES 1000000
-#elif defined(CYGPKG_HAL_ARM_SA11X0)
-#define PASSES 1000000
-#elif defined(CYGPKG_HAL_ARM_CMA230)
-#define PASSES 100000
-#elif defined(CYGPKG_HAL_V85X_V850_CEB)
-#define PASSES 20000
-#elif defined(CYGPKG_HAL_MIPS_TX49_REF4955)
-#define PASSES 1000000
-#elif defined(CYGPKG_HAL_POWERPC_MPC8xx)
-#define PASSES 250000
+#if defined(CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES)
+# define PASSES CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES
 #else
-#define PASSES 400000
+# define PASSES 400000
 #endif
 
 // Used in the code below to mark changes to the code.

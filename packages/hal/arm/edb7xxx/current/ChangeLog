@@ -1,17 +1,190 @@
+2002-05-07  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: 
+	Standardize CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT usage.
+
+2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/i2s_audio_fiq.S:
+	Don't use .file as it can confuse debugging since the .file
+	doesn't contain the path and therefore the debugger will never
+	know where it lives! This conflicts with using -Wa,--gstabs.
+
+2002-03-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/edb7312_redboot_RAM.ecm: memalloc package no longer required.
+	* misc/edb7312_redboot_ROM.ecm: Ditto.
+	* misc/edb7312_redboot_ROMRAM.ecm: Ditto.
+
+2002-03-21  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_edb7xxx.h: Include the package config file too; some
+	versions need to be told their clock setup to select
+	initialization constants in this file.  It remains
+	assembler-clean, no problem.
+
+2002-03-05  Jesper Skov  <jskov@redhat.com>
+
+	* misc/edb7312_redboot_RAM.ecm: Added memalloc package.
+	* misc/edb7312_redboot_ROM.ecm: Same.
+
+2002-03-04  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_platform_setup.h (IO_LA_END): Set IO_LA_END (IO
+	logical address space end) higher so that we can readback the
+	value of the PLL Multiplier at 0x8000a5a8 - just for debugging.
+
+	* src/edb7xxx_misc.c (hal_hardware_init): Add more nops after
+	setting PLL Multiplier for 90MHz.
+
+	* cdl/hal_arm_edb7xxx.cdl: Change default timer tick rate for
+	faster version.
+
+2002-03-01  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Add 90317 to legal_values for
+	CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK.
+
+	* include/hal_edb7xxx.h (EP7312_PLL_MR): Define additional
+	register and contents for 90Mhz operation.  Redefine baud rate
+	calculator for 90Mhz operation.
+
+	* src/edb7xxx_misc.c (hal_hardware_init): If the CPU clock speed
+	is 90317, set the PLL multiplier register to gear-up 22.5%, and
+	add some waitstates to all the memory access so it still works.
+
+2002-02-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lcd_support.c (idle): Only [re]enable LCD if being used
+	as the console device.  This keeps it from coming on when there
+	is serial line activity [just an anoyance].
+
+2002-02-01  Hugo Tyson  <hmt@redhat.com>
+
+	* misc/edb7312_redboot_ROMRAM.ecm: 
+	* misc/edb7312_redboot_ROM.ecm: 
+	* misc/edb7312_redboot_RAM.ecm: CYGBLD_REDBOOT_MIN_IMAGE_SIZE set
+	to 0x40000 to contain the size of RedBoot.
+
+2002-01-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_edb7xxx.h: Add extra useful definitions for the 7312.
+
+2002-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/plf_io.h: Added.
+
+2002-01-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/edb7312_redboot_ROM.ecm: Fix
+	CYGPKG_DEVS_FLASH_STRATA_EDB7XXX -> CYGPKG_DEVS_FLASH_EDB7XXX
+
 2001-12-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* misc/edb7212_redboot.ecm:
 	* misc/edb7212_redboot_ROM.ecm:
+	* misc/edb7312_redboot_RAM.ecm:
+	* misc/edb7312_redboot_ROM.ecm:
+	* misc/edb7312_redboot_ROMRAM.ecm:
 	Fix target descriptions to be edb7xxx.
+
+2001-11-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/edb7xxx_misc.c (hal_hardware_init): Set clock speed.
+
+2001-11-10  Gary Thomas  <gthomas@redhat.com>
+
+	* src/edb7xxx_misc.c (hal_clock_reset): DRAM refresh not needed.
+
+2001-11-06  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_edb7312_romram.mlt: 
+	* include/pkgconf/mlt_arm_edb7312_romram.ldi: 
+	* include/pkgconf/mlt_arm_edb7312_romram.h: 
+	* include/pkgconf/mlt_arm_edb7312_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7312_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7312_ram.h: New ROMRAM setup.
+
+2001-10-14  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/edb7312_redboot_ROMRAM.ecm: 
+	* misc/edb7312_redboot_RAM.ecm: Update for new FLASH driver layout.
 
 2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_arm_edb7xxx.cdl: Clarify package description strings.
 
+2001-10-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/edb7xxx_misc.c: 
+	* include/hal_platform_ints.h: 
+	* include/hal_edb7xxx.h: EP7312 has slightly different peripherals.
+
+2001-10-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/edb7xxx_misc.c: Fix sly problem on EDB7312 only which 
+	caused RESET vector to be destroyed.
+
+2001-10-03  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/edb7312_redboot_ROMRAM.ecm: 
+	* include/pkgconf/mlt_arm_edb7312_romram.mlt: 
+	* include/pkgconf/mlt_arm_edb7312_romram.ldi: 
+	* include/pkgconf/mlt_arm_edb7312_romram.h: New files.
+
+	* include/pkgconf/mlt_arm_edb7312_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7312_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7312_ram.h: 
+	* include/hal_platform_setup.h: 
+	* cdl/hal_arm_edb7xxx.cdl: Add support for ROMRAM startup mode.
+	Currently only tested on EDB7312.
+
+2001-09-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lcd_support.c: Reorg - comm init also initializes display.
+	Don't export the comm if no keyboard.  Lots of little changes
+	trying to get keyboard initialization correct.  Works sometimes.
+
+	* src/edb7xxx_misc.c (hal_hardware_init): Change PS/2 timing.
+	Also, LCD comm channel now initializes LCD display.
+
+	* cdl/hal_arm_edb7xxx.cdl: Change LCD defaults to landscape mode
+	with Red Hat logo at top.
+
+2001-09-29  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: 
+	* src/edb7xxx_misc.c (hal_hardware_init): 
+	* include/lcd_support.h: 
+	* src/lcd_support.c: 
+	* src/font.h: 
+	* src/banner.xpm: New file(s).  Adding LCD/keyboard console.
+
 2001-09-26  Gary Thomas  <gthomas@redhat.com
 
 	* cdl/hal_arm_edb7xxx.cdl: Implement CYGINT_HAL_SUPPORTS_MMU_TABLES
 	to show that this HAL uses MMU tables.
+
+2001-09-25  Gary Thomas  <gthomas@redhat.com>
+
+	* support/io.c: 
+	* support/download_file.c: 
+	* support/dl_edb7xxx.c: Change around internal functions (add
+	some flexibility).
+
+	* include/hal_platform_setup.h: Rewrote most of this code as
+	assembly macros which are easier to conditionalize.  Now supports
+	EDB7312 as well.
+
+	* src/edb7xxx_misc.c (hal_hardware_init):
+	* include/pkgconf/mlt_arm_edb7312_rom.mlt: 
+	* include/pkgconf/mlt_arm_edb7312_rom.ldi: 
+	* include/pkgconf/mlt_arm_edb7312_rom.h: 
+	* include/pkgconf/mlt_arm_edb7312_ram.mlt: 
+	* include/pkgconf/mlt_arm_edb7312_ram.ldi: 
+	* include/pkgconf/mlt_arm_edb7312_ram.h: 
+	* include/hal_edb7xxx.h: 
+	* cdl/hal_arm_edb7xxx.cdl: Add support for EDB7312 platform.
 
 2001-07-25  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -914,27 +1087,36 @@
 	* include/pkgconf/hal_arm_cl7211.h: Move RTC setup here.
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

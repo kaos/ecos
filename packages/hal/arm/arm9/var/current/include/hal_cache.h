@@ -8,29 +8,38 @@
 //      HAL cache control API
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//
+//####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
-// The contents of this file are subject to the Red Hat eCos Public License
-// Version 1.1 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://www.redhat.com/
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
 //
-// The Original Code is eCos - Embedded Configurable Operating System,
-// released September 30, 1998.
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
 //
-// The Initial Developer of the Original Code is Red Hat.
-// Portions created by Red Hat are
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
 // -------------------------------------------
-//
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -123,6 +132,23 @@
 # define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP  0x10
 # define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT 0x40
 
+#elif defined(CYGPKG_HAL_ARM_ARM9_ARM966E)
+# define HAL_ICACHE_SIZE                 0
+# define HAL_ICACHE_LINE_SIZE            0
+# define HAL_ICACHE_WAYS                 0
+# define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+
+# define HAL_DCACHE_SIZE                 0
+# define HAL_DCACHE_LINE_SIZE            0
+# define HAL_DCACHE_WAYS                 0
+# define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+
+# define HAL_WRITE_BUFFER                32
+
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP  0
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT 0
+
 #else
 # error "No cache details defined"
 #endif
@@ -132,6 +158,8 @@
 
 //-----------------------------------------------------------------------------
 // Global control of Instruction cache
+
+#if HAL_ICACHE_SIZE != 0
 
 // FIXME: disable/enable instruction streaming?
 
@@ -211,6 +239,16 @@ CYG_MACRO_START                                                 \
     HAL_ICACHE_INVALIDATE_ALL(); /* forget all we know */       \
 CYG_MACRO_END
 
+#else
+
+#define HAL_ICACHE_ENABLE()
+#define HAL_ICACHE_DISABLE()
+#define HAL_ICACHE_IS_ENABLED(_state_) ((_state_) = 0)
+#define HAL_ICACHE_INVALIDATE_ALL()
+#define HAL_ICACHE_SYNC()
+
+#endif
+
 // Set the instruction cache refill burst size
 //#define HAL_ICACHE_BURST_SIZE(_size_)
 
@@ -232,6 +270,8 @@ CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // Global control of data cache
+
+#if HAL_DCACHE_SIZE != 0
 
 // Enable the data cache
 #define HAL_DCACHE_ENABLE()                                             \
@@ -332,6 +372,17 @@ CYG_MACRO_END
 #else
 # error "Don't know how to sync Dcache"
 #endif
+
+#else
+
+#define HAL_DCACHE_ENABLE()
+#define HAL_DCACHE_DISABLE()
+#define HAL_DCACHE_IS_ENABLED(_state_) ((_state_) = 0)
+#define HAL_DCACHE_INVALIDATE_ALL()
+#define HAL_DCACHE_SYNC()
+
+#endif
+
 
 // Set the data cache refill burst size
 //#define HAL_DCACHE_BURST_SIZE(_size_)
@@ -444,11 +495,11 @@ CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // Virtual<->Physical translations
-
+#ifndef HAL_VIRT_TO_PHYS_ADDRESS
 extern cyg_uint32 hal_virt_to_phys_address(cyg_uint32 phys);
 #define HAL_VIRT_TO_PHYS_ADDRESS(_va, _pa) \
    _pa = hal_virt_to_phys_address(_va)
-
+#endif
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H
 // End of hal_cache.h

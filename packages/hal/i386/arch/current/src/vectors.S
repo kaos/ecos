@@ -5,29 +5,38 @@
 ##      x86 exception vectors
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -57,7 +66,7 @@
 
 #==============================================================================
 
-    .file   "vectors.S"
+//    .file   "vectors.S"
 
 #==============================================================================
 # Real startup code. We jump here from the various reset vectors to set up the
@@ -77,6 +86,8 @@ _start:
 	hal_timer_init
 
 	# Loading the stack pointer seems appropriate now.
+	# In SMP systems, this may not be the interrupt stack we 
+	# actually need to use for this CPU. We fix that up later.
 	
 	movl	$__interrupt_stack, %esp
 
@@ -134,6 +145,22 @@ _start:
 	.extern cyg_hal_invoke_constructors
 	call	cyg_hal_invoke_constructors
 
+#ifdef CYGPKG_HAL_SMP_SUPPORT 
+	
+	# Now move SP to actual interrupt stack we will use for this
+	# processor.
+	hal_init_istack	%esp
+
+#ifndef CYG_HAL_STARTUP_RAM
+	# Only start other CPUs when we are the original boot executable.
+	# RAM executables are loaded via RedBoot, so only FLOPPY and ROM 
+	# startups count here.
+	
+	.extern cyg_hal_smp_cpu_start_all
+	call cyg_hal_smp_cpu_start_all
+#endif
+		
+#endif
 		
 	.extern cyg_start
 	call	cyg_start
@@ -142,6 +169,147 @@ _start:
 1:	hlt
 	jmp	1b
 
+##-----------------------------------------------------------------------------
+## SMP entry point
+
+#if defined(CYGPKG_HAL_SMP_SUPPORT)
+	.extern cyg_hal_smp_startup
+	.global cyg_hal_smp_start
+cyg_hal_smp_start:
+
+	# Finalize CPU init?
+	# Interrupts?
+	
+#	hal_cpu_init
+#	hal_intc_init
+	
+	hal_init_istack %esp
+
+	# Init flags register
+	pushl	$0
+	popfl
+	
+	hal_fpu_cpu_init
+
+	call	cyg_hal_smp_startup
+1:	
+	jmp	1b	
+
+#ifdef CYG_HAL_STARTUP_RAM	
+	.align	4, 0xFF	
+gdtStart:
+	/* Selector 0x00 == invalid. */
+	.word	0x0000
+	.word	0x0000
+	.byte	0x00
+	.byte	0x00
+	.byte	0x00
+	.byte	0x00
+
+	/* Selector 0x08 == code. */
+	.word	0xFFFF
+	.word	0x0000
+	.byte	0x00
+	.byte	0x9B
+	.byte	0xCF
+	.byte	0x00
+
+	/* Selector 0x10 == data. */
+	.word	0xFFFF
+	.word	0x0000
+	.byte	0x00
+	.byte	0x93
+	.byte	0xCF
+	.byte	0x00
+
+	/* Selector 0x18 == shorter code: faults any code 
+         * access 0xF0000000-0xFFFFFFFF.
+         */
+	.word	0xFFFF
+	.word	0x0000
+	.byte	0x00
+	.byte	0x9B
+	.byte	0xC7
+	.byte	0x00
+
+	/* Selector 0x20 == data; faults any access 0xF0000000-0xFFFFFFFF. */
+	.word	0xFFFF
+	.word	0x0000
+	.byte	0x00
+	.byte	0x93
+	.byte	0xC7
+	.byte	0x00
+
+	.align	4, 0xFF
+gdtEnd:
+#endif	// CYG_HAL_STARTUP_RAM	
+	
+##-----------------------------------------------------------------------------
+## Slave processor startup code
+## This code is copied into low RAM, at 0x2000 and is the destination of the
+## startup interrupt that is sent to get the slaves running.
+
+	.data
+	.code16
+	
+	.global cyg_hal_slave_trampoline
+	.global cyg_hal_slave_trampoline_end
+cyg_hal_slave_trampoline:
+slave_base = .
+	cld				/* always count up. */	
+	cli				/* disable interrupts */
+
+	# Load up selector registers
+	# Set DS == CS
+	movw	%cs,%ax
+	movw	%ax,%ds
+
+	# load GDTR
+	lgdt	slave_gdt - slave_base
+	lidt	slave_idt - slave_base
+
+	/* Switch to protected mode. */
+	movl	%cr0,%eax
+	orb	$1, %al
+	movl	%eax,%cr0
+	ljmp	$8, $3f-slave_base+0x2000
+
+	hlt
+
+	.align	4, 0xFF
+slave_gdt:
+	.word	gdtEnd - gdtStart
+#	.word	39
+	.long	gdtStart
+
+	.align	4, 0xFF
+slave_idt:
+	.extern idtStart
+	.word	0x07FF		# space for 256 entries
+	.long	idtStart
+	
+	.code32
+
+3:
+
+	# Load up selector registers
+	movw	$0x10, %ax
+	movw	%ax, %ds
+	movw	%ax, %ss
+	movw	%ax, %es
+	movw	%ax, %fs
+	movw	%ax, %gs
+
+	# Go to real HAL entry point
+	movl	$cyg_hal_smp_start,%eax
+	jmp	*%eax
+	
+cyg_hal_slave_trampoline_end:	
+
+	.text
+
+#endif // defined(CYGPKG_HAL_SMP_SUPPORT)
+		
 #==============================================================================
 # Default exception VSR
 
@@ -198,6 +366,45 @@ __default_exception_vsr:
         # adjust ESP by 16 for the state stored before the pusha
         add     $16,i386reg_esp(%edi)
 		
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && defined(CYGPKG_HAL_SMP_SUPPORT)
+
+	.extern cyg_hal_smp_cpu_sync
+	.extern cyg_hal_smp_cpu_sync_flag
+	.extern cyg_hal_smp_vsr_sync_flag
+			
+	# An SMP ROM monitor needs to suspend all other CPUs when
+	# taking an exception.
+
+1:		
+	lock btsl $0,cyg_hal_smp_vsr_sync_flag	# test serialization bit
+	jnc	9f				# if it was zero we are first here
+
+	# Some other CPU is already handling an exception. We need to spin until
+	# released.
+	
+	hal_smp_cpu %eax		# get CPU index
+	movl	$cyg_hal_smp_cpu_sync,%ebx
+	movl	$cyg_hal_smp_cpu_sync_flag,%ecx
+	lock incl 0(%ecx,%eax,4)	# inc cpu sync flag
+2:
+	cmpl    $0,0(%ebx,%eax,4)	# test sync location
+	je	2b			# loop while value is zero
+
+	lock decl 0(%ecx,%eax,4)	# dec cpu sync flag
+
+	# Jump to return from this VSR. If the exception was genuine,
+	# we will re-execute the cause and come back here. If it was
+	# just a duplicate, or a halt NMI, we will continue as if
+	# nothing had happened.
+	
+	 jmp	__default_exception_vsr_return
+
+9:	
+	# Stop all other CPUs	
+	.extern cyg_hal_smp_halt_other_cpus
+	call	cyg_hal_smp_halt_other_cpus
+
+#endif			
 
 	hal_fpu_push_exc_annex
 	
@@ -209,6 +416,16 @@ __default_exception_vsr:
 	
 	hal_fpu_pop_exc_annex
 		
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && defined(CYGPKG_HAL_SMP_SUPPORT)
+
+	.extern cyg_hal_smp_release_other_cpus
+	call	cyg_hal_smp_release_other_cpus
+
+	lock btrl $0,cyg_hal_smp_vsr_sync_flag	# clear serialization bit
+		
+__default_exception_vsr_return:
+
+#endif		
 
 	hal_fpu_pop_exc		# restore FPU state
 
@@ -649,6 +866,33 @@ hal_pc_irq_\idx:
 	hal_pc_irq_handler 45
 	hal_pc_irq_handler 46
 	hal_pc_irq_handler 47
+#ifdef CYGPKG_HAL_SMP_SUPPORT
+
+	# Extra interrupt vectors for IOAPIc routed PCI and
+	# other interrupt sources
+	hal_pc_irq_handler 48
+	hal_pc_irq_handler 49
+	hal_pc_irq_handler 50
+	hal_pc_irq_handler 51
+	hal_pc_irq_handler 52
+	hal_pc_irq_handler 53
+	hal_pc_irq_handler 54
+	hal_pc_irq_handler 55
+	hal_pc_irq_handler 56
+	hal_pc_irq_handler 57
+	hal_pc_irq_handler 58
+	hal_pc_irq_handler 59
+	hal_pc_irq_handler 60
+	hal_pc_irq_handler 61
+	hal_pc_irq_handler 62
+	hal_pc_irq_handler 63
+
+	# Inter-CPU interrupts start at 64
+	hal_pc_irq_handler 64
+	hal_pc_irq_handler 65
+	hal_pc_irq_handler 66
+	hal_pc_irq_handler 67
+#endif		
 
 
 	# default vsr entries: pop the vector code from the stack and return.
@@ -667,10 +911,11 @@ __syscall_tramp:
 # Initial and interrupt stack
 
 #ifndef CYG_HAL_I386_INTERRUPT_STACK_DEFINED
-	        
+
 	.bss
 
-	
+#ifndef CYGPKG_HAL_SMP_SUPPORT	
+
 	.balign 16
 	.global cyg_interrupt_stack_base
 cyg_interrupt_stack_base:
@@ -684,7 +929,30 @@ cyg_interrupt_stack:
 __interrupt_stack:
         
         .long   0,0,0,0,0,0,0,0
-#endif
+
+#else // CYGPKG_HAL_SMP_SUPPORT		
+
+__interrupt_stack_vector:
+	.rept CYGPKG_HAL_SMP_CPU_MAX
+	.long 0
+	.endr
+		
+	.balign 16
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
+__interrupt_stack_base:
+__interrupt_stack_first:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+	.byte 0
+	.endr
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
+__interrupt_stack:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE*(CYGPKG_HAL_SMP_CPU_MAX-1)
+	.byte 0
+	.endr
+	
+#endif // CYGPKG_HAL_SMP_SUPPORT	
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 	.global __stub_stack_base
@@ -697,9 +965,10 @@ __stub_stack_base:
 __stub_stack:
         
         .long   0,0,0,0,0,0,0,0
-#endif
+#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-
+	
+#endif // CYG_HAL_I386_INTERRUPT_STACK_DEFINED
 		
 #------------------------------------------------------------------------------
 # end of vectors.S

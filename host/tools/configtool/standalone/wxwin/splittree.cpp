@@ -6,7 +6,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     8/7/2000
-// RCS-ID:      $Id: splittree.cpp,v 1.7 2001/06/11 14:49:49 julians Exp $
+// RCS-ID:      $Id: splittree.cpp,v 1.9 2002/02/28 18:30:35 julians Exp $
 // Copyright:   (c) Julian Smart
 //
 // This program is part of the eCos host tools.
@@ -77,7 +77,11 @@ END_EVENT_TABLE()
 
 wxRemotelyScrolledTreeCtrl::wxRemotelyScrolledTreeCtrl(wxWindow* parent, wxWindowID id, const wxPoint& pt,
                                                        const wxSize& sz, long style):
-wxTreeCtrl(parent, id, pt, sz, style)
+    wxTreeCtrl(parent, id, pt, sz, style
+#if wxVERSON_NUMBER > 2301
+	       & ~wxTR_ROW_LINES
+#endif	       
+	       )
 {
     m_companionWindow = NULL;
 }
@@ -481,6 +485,10 @@ IMPLEMENT_CLASS(wxThinSplitterWindow, wxSplitterWindow)
 
 BEGIN_EVENT_TABLE(wxThinSplitterWindow, wxSplitterWindow)
 EVT_SIZE(wxThinSplitterWindow::OnSize)
+// Not in older versions of wxWindows, unfortunately
+#if 0
+EVT_SPLITTER_DOUBLECLICKED(-1, wxThinSplitterWindow::OnDoubleClickSash)
+#endif
 END_EVENT_TABLE()
 
 wxThinSplitterWindow::wxThinSplitterWindow(wxWindow* parent, wxWindowID id,

@@ -8,29 +8,38 @@
 //      Architecture specific abstractions
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -47,34 +56,7 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
-
-//-----------------------------------------------------------------------------
-// Processor saved states:
-// The layout of this structure is also defined in "sh.inc", for assembly
-// code. Do not change this without changing that (or vice versa).
-
-typedef struct 
-{
-    // These are common to all saved states
-    cyg_uint32   r[16];                 // Data regs
-    cyg_uint32   mach;                  // Multiply and accumulate - high
-    cyg_uint32   macl;                  // Multiply and accumulate - low
-    cyg_uint32   pr;                    // Procedure Reg
-    cyg_uint32   sr;                    // Status Reg
-    cyg_uint32   pc;                    // Program Counter
-
-    // This marks the limit of state saved during a context switch and
-    // is used to calculate necessary stack allocation for context switches.
-    // It would probably be better to have a union instead...
-    cyg_uint32   context_size[0];
-
-    // These are only saved on interrupts
-    cyg_uint32   vbr;                   // Vector Base Register
-    cyg_uint32   gbr;                   // Global Base Register
-
-    // These are only saved on interrupts
-    cyg_uint32   event;                 // EXPEVT or INTEVT
-} HAL_SavedRegisters;
+#include CYGBLD_HAL_VAR_EXCEPTION_MODEL_H
 
 //-----------------------------------------------------------------------------
 // Exception handling function.
@@ -95,30 +77,6 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 
 #define HAL_MSBIT_INDEX(index, mask) index = hal_msbit_index(mask);
 
-//-----------------------------------------------------------------------------
-// Context Initialization
-// Initialize the context of a thread.
-// Arguments:
-// _sparg_ name of variable containing current sp, will be written with new sp
-// _thread_ thread object address, passed as argument to entry point
-// _entry_ entry point address.
-// _id_ bit pattern used in initializing registers, for debugging.
-
-#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )           \
-    CYG_MACRO_START                                                           \
-    register HAL_SavedRegisters *_regs_;                                      \
-    int _i_;                                                                  \
-    _regs_ = (HAL_SavedRegisters *)((_sparg_) - sizeof(HAL_SavedRegisters));  \
-    for( _i_ = 0; _i_ < 16; _i_++ ) (_regs_)->r[_i_] = (_id_)|_i_;            \
-    (_regs_)->r[15] = (CYG_WORD)(_regs_);      /* SP = top of stack      */   \
-    (_regs_)->r[04] = (CYG_WORD)(_thread_);    /* R4 = arg1 = thread ptr */   \
-    (_regs_)->mach = 0;                        /* MACH = 0               */   \
-    (_regs_)->macl = 0;                        /* MACL = 0               */   \
-    (_regs_)->pr = (CYG_WORD)(_entry_);        /* PR = entry point       */   \
-    (_regs_)->sr = 0;                          /* SR = enable interrupts */   \
-    (_regs_)->pc = (CYG_WORD)(_entry_);        /* set PC for thread dbg  */   \
-    _sparg_ = (CYG_ADDRESS)_regs_;                                            \
-    CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // Context switch macros.
@@ -156,59 +114,12 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
     CYG_MACRO_START                                     \
     HAL_ENABLE_INTERRUPTS();                            \
     asm volatile (" .globl " #_label_ ";" #_label_ ": " \
-                  " trapa #0xc3;nop;nop;nop");          \
+                  " trapa #0x20;nop;nop;nop");          \
     CYG_MACRO_END
 
-#define HAL_BREAKINST           0xc3c3
+#define HAL_BREAKINST           0xc320
 
 #define HAL_BREAKINST_SIZE      2
-
-//-----------------------------------------------------------------------------
-// Thread register state manipulation for GDB support.
-
-// Translate a stack pointer as saved by the thread context macros above into
-// a pointer to a HAL_SavedRegisters structure.
-#define HAL_THREAD_GET_SAVED_REGISTERS( _sp_, _regs_ )  \
-        (_regs_) = (HAL_SavedRegisters *)(_sp_)
-
-// Copy a set of registers from a HAL_SavedRegisters structure into a
-// GDB ordered array.    
-#define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ )              \
-    CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ < 16; _i_++ )                             \
-        _regval_[_i_] = (_regs_)->r[_i_];                       \
-                                                                \
-    _regval_[16] = (_regs_)->pc;                                \
-    _regval_[17] = (_regs_)->pr;                                \
-    _regval_[18] = (_regs_)->gbr;                               \
-    _regval_[19] = (_regs_)->vbr;                               \
-    _regval_[20] = (_regs_)->mach;                              \
-    _regval_[21] = (_regs_)->macl;                              \
-    _regval_[22] = (_regs_)->sr;                                \
-                                                                \
-    /* 23-51 not used atm. */                                   \
-    CYG_MACRO_END
-
-// Copy a GDB ordered array into a HAL_SavedRegisters structure.
-#define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ )             \
-    CYG_MACRO_START                                             \
-    CYG_ADDRWORD *_regval_ = (CYG_ADDRWORD *)(_aregval_);       \
-    int _i_;                                                    \
-                                                                \
-    for( _i_ = 0; _i_ < 16; _i_++ )                             \
-        (_regs_)->r[_i_] = _regval_[_i_];                       \
-                                                                \
-    (_regs_)->pc = _regval_[16];                                \
-    (_regs_)->pr = _regval_[17];                                \
-    (_regs_)->gbr  = _regval_[18];                              \
-    (_regs_)->vbr  = _regval_[19];                              \
-    (_regs_)->mach = _regval_[20];                              \
-    (_regs_)->macl = _regval_[21];                              \
-    (_regs_)->sr = _regval_[22];                                \
-    CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // HAL setjmp
@@ -299,13 +210,6 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // code in ROM to code in RAM or vice versa).
 #define CYGARC_HAL_SAVE_GP()
 #define CYGARC_HAL_RESTORE_GP()
-
-
-//--------------------------------------------------------------------------
-// CPU address space translation macros
-#define CYGARC_BUS_ADDRESS(x)       ((CYG_ADDRWORD)(x) & 0x1fffffff)
-#define CYGARC_CACHED_ADDRESS(x)    (CYGARC_BUS_ADDRESS(x)|0x80000000)
-#define CYGARC_UNCACHED_ADDRESS(x)  (CYGARC_BUS_ADDRESS(x)|0xa0000000)
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_ARCH_H

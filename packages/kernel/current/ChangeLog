@@ -1,3 +1,86 @@
+2002-05-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/kapidata.h (CYG_HARDWARETHREAD_MEMBERS): entry_point
+	should be a pointer to function not an addrword (which may be
+	different).
+	(cyg_reason_t): Define cyg_reason_t as an enum not an int.
+	(struct cyg_mutex_t): Define mutex protocol as an enum not a cyg_uint32.
+	Define locked member as a cyg_atomic, not a cyg_bool.
+
+2002-05-09  Nick Garnett  <nickg@redhat.com>
+
+	* tests/timeslice.c: Modified test thread to accumulate run time
+	by reading HAL clock, and to detect and record changes of CPU. The
+	previous version of this code reported varying results - probably
+	as a consequence of cache effects.
+
+	* include/instrmnt.h: Fixed left-over debug edit to MLQ
+	instrumentation enable code.
+
+2002-04-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/kapi.h: Added cyg_alarm_get_times and
+	cyg_counter_multi_tick.
+	* src/common/kapi.cxx: Same. Er, fix oversight.
+	* doc/kernel.sgml: Doc update.
+
+2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+
+	* src/sync/flag.cxx: Don't set default args in func definitions.
+
+2002-04-24  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c: Moved platform max number of passes to CDL in
+	HALs.
+
+2002-04-23  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c: Allow platform to define max number of passes
+	via CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES.
+
+2002-04-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/kapi.h: Use NORET attributes from cyg_type.h.
+	* include/sched.hxx (class Cyg_Scheduler): Ditto.
+
+2002-04-08  Nick Garnett  <nickg@redhat.com>
+
+	* src/sync/mutex.cxx: Added IF_PROTOCOL_ACTIVE macro to condition
+	use of the mutex counter. This means that a mutex that is not
+	configured to participate in a priority inversion protocol does not
+	count for operation of that protocol. 
+
+2002-03-04  Lars Viklund <lars.viklund@axis.com>
+
+	* include/kapidata.h (CYG_SCHEDTHREAD_ASR_MEMBER): 
+	asr_inhibit is cyg_ucount32 - must match
+
+2002-02-13  Hugo Tyson  <hmt@redhat.com>
+
+	* doc/kernel.sgml: NEW FILE: Correct reference to uITRON doc.
+
+2002-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kexcept1.c: Fix warning.
+
+2002-01-24  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kcache1.c (time0DI): Disable interrupts around the
+	sync+invalidate process.
+	* tests/kcache2.c: Same.
+
+2002-01-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/intr/intr.cxx (mask_interrupt): Disable interrupts.
+	(unmask_interrupt): Ditto.
+	(mask_interrupt_intunsafe): New function to avoid disabled interrupts.
+	(unmask_interrupt_intunsafe): Ditto.
+	* include/intr.hxx (class Cyg_Interrupt): Declare above new funcs.
+	* src/common/kapi.cxx (cyg_interrupt_unmask_intunsafe): Above
+	replicated to KAPI.
+	(cyg_interrupt_mask_intunsafe): Ditto.
+	* include/kapi.h: Ditto.
+
 2002-01-07  Nick Garnett  <nickg@redhat.com>
 
 	* tests/except1.cxx: 
@@ -4060,27 +4143,36 @@ Wed Mar 11 13:18:17 GMT 1998  Chris Provenzano  <proven@cygnus.com>
 	options. This is generated at configure and modified by non_arch.sh
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                      
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

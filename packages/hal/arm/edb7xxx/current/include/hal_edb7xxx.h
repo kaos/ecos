@@ -8,29 +8,38 @@
 //      HAL Support for Kernel Diagnostic Routines
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -48,6 +57,10 @@
 // Note: these defintions match the documentation, thus no attempt is made
 // to sanitise (mangle) the names.  Also, care should be taken to keep this
 // clean for use in assembly code (no "C" constructs).
+
+// Comment above notwithstanding, this is needed for the clock UART_DIVISOR
+// selection below.
+#include <pkgconf/hal_arm_edb7xxx.h>
 
 #define PADR    0x80000000 // Port A data register
 #define PBDR    0x80000001 // Port B data register
@@ -107,6 +120,19 @@
 #define SYSCON3_CLKCTL(n) (n<<1) // Processor block speed ((n+1)*18.432)MHz
 #if defined(__EDB7209)
 #define SYSCON3_I2SSEL    (1<<3) // Enable i2s instead of ssi#2
+#define SYSCON3_FASTWAKE  (1<<8) // Determines wakeup in relationship
+                                 //    to the 4 kHZ or 8 Hz clock
+#define SYSCON3_DAIEN     (1<<9) // Enables the DAI
+#endif
+#if defined(__EDB7312) || defined(__EDB7209)
+#define SYSCON3_ADCCKNSEN    (1<<4)  // Determines on which edge ADC
+                                     // data is transmitted and read
+                                     // in relationship to ADCCLK
+#if defined(__EDB7312)
+#define SYSCON3_DAISEL    (1<<3)  // Enable DAI instead of SSI
+#define SYSCON3_128FS     (1<<9)  // Select DAI frame size
+#define SYSCON3_ENPD67    (1<<10) // Configures Port D bits 6 and 7
+#endif
 #endif
 
 #define SYSFLG1 0x80000140 // System flags #1
@@ -134,6 +160,11 @@
 #define SYSFLG1_VERID    (3<<30) // Board version
 
 #define SYSFLG2 0x80001140 // System flags #2
+
+#ifdef __EDB7312
+#define SDCONF 0x80002300  // SDRAM configuration
+#define SDRFOR 0x80002340  // SDRAM refresh
+#endif
 
 #define INTSR1  0x80000240 // Interrupt status register #1
 #define INTSR1_EXTFIQ  (1<<0)  // External fast interrupt
@@ -169,6 +200,9 @@
 #if defined(__EDB7209)
 #define INTSR3_I2SINT (1<<0) // I2S interface interrupt
 #endif
+#if defined(__EDB7312)
+#define INTSR3_DAIINT (1<<0) // DAI interface interrupt
+#endif
 #define INTMR3  0x80002280 // Interrupt mask #3
 
 #define UARTDR1 0x80000480 // UART #1 data register
@@ -188,6 +222,11 @@
 #define UBLCR_WRDLEN8 (3<<17)
 #define UART_DIVISOR  230400
 #define UART_BITRATE(baud) ((UART_DIVISOR/(baud))-1)
+#if 90317 == CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK
+#undef UART_DIVISOR
+// The speed enhancement is 22.5%
+#define UART_DIVISOR  (230400 * 1225/1000)
+#endif
 
 #define MEMCFG1 0x80000180 // Memory configuration register #1
 #define MEMCFG2 0x800001C0 // Memory configuration register #2
@@ -255,7 +294,10 @@
 #define MCSR    0x80002100 // MCP status register
 #endif
 
-#if defined(__EDB7209)
+#if defined(__EDB7209) || \
+defined(__EDB7312) || \
+1
+
 #define I2S_CTL         0x80002000 // I2S (Audio interface) control
 #define I2S_CTL_FLAG    0x0404     // Magic
 #define I2S_CTL_EN      (1<<16)    // Enable interface
@@ -264,7 +306,9 @@
 #define I2S_CTL_LCRM    (1<<20)    // Left channel receive interrupt
 #define I2S_CTL_RCTM    (1<<21)    // Right channel transmit interrupt
 #define I2S_CTL_RCRM    (1<<22)    // Right channel receive interrupt
+#if defined(__EDB7209)
 #define I2S_CTL_LBM     (1<<23)    // Loop-back mode
+#endif
 #define I2S_RIGHT_FIFO  0x80002040 // Right channel FIFO access
 #define I2S_LEFT_FIFO   0x80002080 // Left channel FIFO access
 #define I2S_FIFO_CTL    0x800020C0 // FIFO control
@@ -286,6 +330,68 @@
 #define I2S_STAT_LCTNF  (1<<10)    // Left channel transmit FIFO not full
 #define I2S_STAT_LCRNE  (1<<11)    // Left channel receive FIFO not empty
 #define I2S_STAT_FIFO   (1<<12)    // A FIFO operation has completed
+#endif
+
+#ifdef __EDB7312
+// If DAI_ headers wishes to be used instead (for consistency)
+#define DAI_CTL       I2S_CTL
+#define DAI_CTL_FLAG  I2S_CTL_FLAG
+#define DAI_CTL_EN    I2S_CTL_EN
+#define DAI_CTL_ECS   I2S_CTL_ECS
+#define DAI_CTL_LCTM  I2S_CTL_LCTM
+#define DAI_CTL_LCRM  I2S_CTL_LCRM
+#define DAI_CTL_RCTM  I2S_CTL_RCTM
+#define DAI_CTL_RCRM  I2S_CTL_RCRM
+
+#define DAI_RIGHT_FIFO  I2S_RIGHT_FIFO
+#define DAI_LEFT_FIFO   I2S_LEFT_FIFO
+
+#define DAI_FIFO_CTL                I2S_FIFO_CTL
+#define DAI_FIFO_CTL_RIGHT_ENABLE   I2S_FIFO_CTL_RIGHT_ENABLE
+#define DAI_FIFO_CTL_RIGHT_DISABLE  I2S_FIFO_CTL_RIGHT_DISABLE
+#define DAI_FIFO_CTL_LEFT_ENABLE    I2S_FIFO_CTL_LEFT_ENABLE
+#define DAI_FIFO_CTL_LEFT_DISABLE   I2S_FIFO_CTL_LEFT_DISABLE
+
+#define DAI_STAT        I2S_STAT
+#define DAI_STAT_RCTSR  I2S_STAT_RCTSR
+#define DAI_STAT_RCRSR  I2S_STAT_RCRSR
+#define DAI_STAT_LCTSR  I2S_STAT_LCTSR
+#define DAI_STAT_LCRSR  I2S_STAT_LCRSR
+#define DAI_STAT_RCTUR  I2S_STAT_RCTUR
+#define DAI_STAT_RCROR  I2S_STAT_RCROR
+#define DAI_STAT_LCTUR  I2S_STAT_LCTUR
+#define DAI_STAT_LCROR  I2S_STAT_LCROR
+#define DAI_STAT_RCTNF  I2S_STAT_RCTNF
+#define DAI_STAT_RCRNE  I2S_STAT_RCRNE
+#define DAI_STAT_LCTNF  I2S_STAT_LCTNF
+#define DAI_STAT_LCRNE  I2S_STAT_LCRNE
+#define DAI_STAT_FIFO   I2S_STAT_FIFO
+
+// Additional 7312 register
+#define DAI_MODE        0x80002600  // I2S mode control register
+#define DAI_MODE_I2SF64  (1<<0)     // Frame size
+#define DAI_MODE_CLKEN   (1<<1)     // Enable audio clock generator
+#define DAI_MODE_CLKSRC  (1<<2)     // Select audio clock source
+#define DAI_MODE_MCLK    (1<<3)     // Enables MCLK (BUZ) (256 frame size)
+#define DAI_MODE_LBM     (1<<5)     // Loopback mode
+
+#define DAI_MODE_AUDDIV_MASK  0x7F00  // Mask for the frequency divisor
+                                      //    for the sample frequency and
+                                      //    bit clock
+
+#define SYSCON3_I2SSEL SYSCON3_DAISEL  // Backward compatiblity
+                                       //    for sample i2s_audio_fiq.s
+
+#define INTSR3_I2SINT INTSR3_DAIINT  // Backward compatiblity
+                                     //    for sample i2s_audio_fiq.s
+
+
+// Further additional 7312 register for special 90MHz variant:
+// PLL_Multiplier_Register 0x80002610  - the location of the PLL multiplier register
+// Value_For_90_MHz_Operation 0x31000000
+#define EP7312_PLL_MR            0x80002610
+#define EP7312_PLL_MR_FOR_90MHz  0x31000000
+
 #endif
 
 #define LEDFLSH 0x800022C0 // LED flash control

@@ -8,8 +8,13 @@ cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_
 cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value };
 
 cdl_configuration eCos {
+    package -template CYGPKG_NS_DNS current ;
     package -template CYGPKG_COMPRESS_ZLIB current ;
     package -template CYGPKG_IO_FLASH current;
     package -template CYGPKG_IO_ETH_DRIVERS current;
 };
 
+
+cdl_option CYGBLD_ISO_DNS_HEADER {
+    inferred_value 1 <cyg/ns/dns/dns.h>
+};

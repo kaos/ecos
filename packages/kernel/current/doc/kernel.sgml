@@ -1,0 +1,3716 @@
+<part ID="kernel">
+  <title>The eCos kernel</title>
+<chapter id="ecos-kernel-overview">
+<TITLE>eCos kernel overview</TITLE>
+<PARA>This is an overview of the internal workings of the
+	<EMPHASIS>eCos</EMPHASIS>
+	<!-- <index></index> -->kernel. </PARA>
+<SECT1 id="kernel-scheduler">
+<TITLE><!-- <xref> -->The scheduler</TITLE>
+<PARA>At the core of the kernel is the <!-- <index></index> -->scheduler.
+This defines the way in which threads are run, and provides the mechanisms
+by which they may synchronize. It also controls the means by which interrupts
+affect thread execution. No single scheduler can cover all possible system
+configurations. For different purposes we will need to cover several scheduling
+polices. In this release two schedulers are provided (described
+in more detail in <xref linkend="sched-subdirectory">):</PARA>
+<ITEMIZEDLIST>
+<LISTITEM>
+<PARA>a <EMPHASIS>bitmap scheduler</EMPHASIS> </PARA>
+</LISTITEM>
+<LISTITEM>
+<PARA>a <EMPHASIS>multi-level queue scheduler</EMPHASIS>
+	    </PARA>
+</LISTITEM>
+</ITEMIZEDLIST>
+<PARA>At present the system will only support a single scheduler
+at any one time. Future systems may allow multiple schedulers to
+co-exist, but this will be hidden behind the scheduler API in the
+current release. </PARA>
+<PARA>To make scheduling safe we need a mechanism to protect the
+scheduler data structures from concurrent access. The traditional
+approach to this is to disable interrupts during the critical regions.
+Unfortunately this increases the maximum interrupt dispatch latency,
+which is to be avoided in any real-time system. </PARA>
+<PARA>The mechanisms chosen for <EMPHASIS>eCos</EMPHASIS> is to
+maintain a counter, <!-- <index></index> --><VARNAME>Scheduler::sched_lock</VARNAME>
+that, if non-zero, prevents any rescheduling. The current thread
+can claim the lock by calling <!-- <index></index> --><FUNCTION>Scheduler::lock()</FUNCTION>.
+This increments the counter and prevents any further scheduling.
+The function <!-- <index></index> --><FUNCTION>Scheduler::unlock()</FUNCTION>
+decrements the counter and if it returns to zero, allows scheduling
+to continue. </PARA>
+<PARA>For this to work in the presence of interrupts, it is necessary
+for the <!-- <index></index> -->Interrupt Service Routines (ISR) to defer
+any scheduler-oriented operations until the lock is about to go
+zero. We do this by splitting the work of an ISR into two parts,
+with the second part, the <!-- <index></index> -->Deferred Service Routine
+(DSR), being queued until the scheduler decides it is safe to run.
+This is covered in more detail in <xref linkend="interrupts"> and
+	  <xref linkend="interrupt-and-exception-handlers">. </PARA>
+<PARA>On a uni-processor,
+	  <FUNCTION>Scheduler::lock()</FUNCTION> is a simple increment
+	  of <VARNAME>Scheduler::sched_lock</VARNAME>. It does
+	  not need to be a read-modify-write cycle since the lock is
+	  strictly nested. The mere fact that the current thread is
+	  running implies that the lock has not been claimed by
+	  another thread, so it is always claimable. </PARA>
+<PARA><FUNCTION>Scheduler::unlock()</FUNCTION> is generic to
+	  all scheduler implementations. </PARA>
+</SECT1>
+<SECT1 id="thread-synchronization">
+<TITLE>Thread <!-- <index></index> -->
+synchronization</TITLE>
+<PARA>To allow threads to cooperate and compete for resources,
+	  it is necessary to provide mechanisms for synchronization
+	  and communication. The classic synchronization mechanisms
+	  are mutexes/condition variables and semaphores. These
+	  are provided in the <EMPHASIS>eCos</EMPHASIS> kernel,
+	  together with other synchronization/communication
+	  mechanisms that are common in real-time systems, such as
+	  event flags and message queues. </PARA>
+<PARA>One of the problems that must be dealt with in any real-time
+systems is <!-- <index></index> -->priority inversion. This is where a high
+priority thread is (wrongly) prevented from continuing by one at
+lower priority. The normal example is of a high priority thread
+waiting at a mutex already held by a low priority thread. If the
+low priority thread is preempted by a medium priority thread then
+priority inversion has occurred since the high priority thread is
+prevented from continuing by an unrelated thread of lower priority.</PARA>
+<PARA>This problem got much attention recently when the Mars Pathfinder
+mission had to reset the computers on the ground exploration robot
+repeatedly because a priority inversion problem would cause it to
+hang. </PARA>
+<PARA>There are several solutions to this problem. The simplest
+is to employ a <!-- <index></index> -->priority ceiling protocol where all
+threads that acquire the mutex have their priority boosted to some
+predetermined value. This has a number of disadvantages: it requires
+the maximum priority of the threads using the mutex to be known
+in advance; if the ceiling priority is too high it acts as a global
+lock disabling all scheduling and it is pessimistic, taking action
+to prevent the problem even when it does not arise. </PARA>
+<PARA>A better solution is to use <!-- <index></index> -->priority inheritance
+protocol. Here, the priority of the thread that owns the mutex is boosted
+to equal that of the highest priority thread that is waiting for
+it. This technique does not require prior knowledge of the priorities
+of the threads that are going to use the mutex, and the priority
+of the owning thread is only boosted when a higher priority thread
+is waiting. This reduces the effect on the scheduling of other threads,
+and is more optimistic than the priority ceiling protocol. A disadvantage
+of this mechanism is that the cost of each synchronization call
+is increased since the inheritance protocol must be obeyed each
+time. </PARA>
+<PARA>A third approach to priority inversion is to recognize that
+relative thread priorities have been poorly chosen and thus the
+system in which it occurs is faulty. In this case the kernel needs
+the ability to detect when priority inversion has taken place, and
+to raise an exception when it occurs to aid debugging. Then this
+code is removed from the shipping version. </PARA>
+<PARA>The current <EMPHASIS>eCos</EMPHASIS> release provides a relatively
+simple implementation of <!-- <index></index> -->mutex priority inheritance.
+This implementation will only work in the multi-level queue scheduler,
+and it does not handle the rare case of nested mutexes completely correctly.
+However it is both fast and deterministic. Mutex priority inheritance
+can be disabled if the application does not require it. This will
+reduce both code size and data space. </PARA>
+<PARA>Future releases will provide alternative implementations of
+mutex priority inheritance, and application developers will be able
+to choose the implementation appropriate to their application. </PARA>
+</SECT1>
+<SECT1 id="exceptions">
+<TITLE>Exceptions</TITLE>
+<PARA>An exception is a synchronous event caused by the execution
+of a thread. These include both the machine exceptions raised by
+hardware (such as divide-by-zero, memory fault and illegal instruction)
+and machine exceptions raised by software (such as deadline overrun).
+The standard C&plus;&plus; exception mechanism is too expensive
+to use for this, and in any case has the wrong semantics for the exception
+handling in an RTOS. </PARA>
+<PARA>The simplest, and most flexible, mechanism for <!-- <index></index> -->exception
+handling is to call a function. This function needs context in which
+to work, so access to some working data is required. The function
+may also need to be handed some data about the exception raised:
+at least the exception number and some optional parameters. </PARA>
+<PARA>The exception handler receives a data argument which is a
+value that was registered with the handler and points to context
+information. It also receives an exception_number which
+identifies the exception taken, and an error code which contains
+any additional information (such as a memory fault address) needed
+to handle the exception. Returning from the function will allow
+the thread to continue. </PARA>
+<PARA>Exception handlers may be either global or per-thread, or
+both, depending on configuration options. If exceptions are per-thread,
+it is necessary to have an exception handler attached to each thread. </PARA>
+</SECT1>
+<SECT1 id="interrupts">
+<TITLE><!-- <xref> -->Interrupts</TITLE>
+<PARA>Interrupts are asynchronous events caused by external devices.
+They may occur at any time and are not associated in any way with
+the thread that is currently running. </PARA>
+<PARA>The <!-- <index></index> -->handling of interrupts is one of the more
+complex areas in RTOS design, largely because it is the least well
+defined. The ways in which interrupt vectors are named, how interrupts
+are delivered to the software and how interrupts are masked are
+all highly architecture- (and in some cases board-) specific. The
+approach taken in <emphasis>eCos</emphasis> is to provide a generalized mechanism
+with sufficient hooks for system-specific code to be inserted where
+needed. </PARA>
+<PARA>Let us start by considering the issue of interrupt vectors.
+Hardware support differs greatly here: from the Intel Architecture
+and the 680X0 having support for vectoring individual interrupts
+to their own vectors, to most RISC architectures that only have
+a single vector. In the first case it is possible to attach an ISR directly
+to the vector and know that it need only concern itself with the
+device in question. In the second case it is necessary to determine
+which device is actually interrupting and then vector to the correct
+ISR. Where there is an external interrupt controller, it will be
+possible to query that and provide what is essentially a software
+implementation of hardware vectoring. Otherwise the actual hardware devices
+must be tested, by calling the ISRs in turn and letting them make
+the determination. Since it is possible for two devices to interrupt
+simultaneously, it is necessary to call all ISRs each time an interrupt
+occurs. </PARA>
+<PARA>Interrupt masking has a similar variety of support. Most processors
+have a simple interrupt mask bit in a status register. The 680X0
+has seven levels of masking. Any board with a interrupt controller
+can be programmed to provide similar multi-level masking. It is
+necessary to keep the interrupt masking mechanism simple and efficient,
+and use only architectural support. The cost of manipulating an
+on-board interrupt controller may be too high. However, individual
+device drivers may want access to their individual mask bits in
+the interrupt controller, so support for this must be provided. </PARA>
+<PARA>Most of the infrastructure necessary for a (somewhat) portable
+treatment of interrupts is implemented in the <EMPHASIS>eCos</EMPHASIS> Hardware
+Abstraction Layer (HAL), which is documented in <xref linkend="the-ecos-hardware-abstraction-layer">. </PARA>
+</SECT1>
+<SECT1 id="counters-clocks-alarms-and-timers">
+<TITLE>Counters, clocks, alarms and timers</TITLE>
+<PARA>If the hardware provides a periodic clock or timer, it will
+be used to drive timing-related features of the system. Many CPU
+architectures now have built in timer registers that can provide
+a periodic interrupt. This should be used to drive these features
+where possible. Otherwise an external timer/clock chip
+must be used. </PARA>
+<PARA>We draw a distinction between Counters, Clocks, Alarms and
+Timers. A <!-- <index></index> -->Counter maintains a monotonically increasing
+counter that is driven by some source of ticks. A <!-- <index></index> -->Clock
+is a counter driven by a regular source of ticks (i.e. it counts
+time). Clocks have a <FIRSTTERM>resolution</FIRSTTERM> associated with them.
+A default system Clock is driven by the periodic interrupt described
+above, and tracks real-time. Other interrupt sources may drive other
+Counters that may or may not track real-time at different resolutions.
+Some Counters may be driven by aperiodic events and thus have no relation
+to real-time at all. </PARA>
+<PARA>An <!-- <index></index> -->Alarm is attached to a Counter and provides
+a mechanism for generating single-shot or periodic events based
+on the counter's value. A <!-- <index></index> -->Timer is simply
+an Alarm that is attached to a Clock. </PARA>
+<PARA>The system (including the kernel) represents time in units
+of <EMPHASIS>ticks</EMPHASIS>. These are clock-specific time units
+and are usually the period of the timer interrupt, or a multiple
+thereof. Conversion of ticks into conventional time and date units
+should occur only when required via library functions. Equivalence
+between Clock time and real-time can be made with an <!-- <index></index> -->RTC
+(real-time clock), <!-- <index></index> -->NTP (network time protocol) or
+user input. </PARA>
+<PARA>The representation of the current tick count needs to be 64
+bit. This requires either compiler support for 64 bit integers,
+or assembly code. Even at the extreme of a 1 ns tick (ticks will
+typically be &gt;1ms), this gives a 584 year rollover period. </PARA>
+<PARA>The Clock API and configuration options that affect clock,
+counter and alarm behavior are described in detail in <xref linkend="counters-clocks-and-alarms">. </PARA>
+</SECT1>
+</CHAPTER>
+<CHAPTER id="tour-of-kernel-sources">
+<TITLE>A tour of the kernel sources</TITLE>
+<PARA>This description takes the form of a tour around the
+	sources explaining their structure and describing the
+	functionality of each component. </PARA>
+<PARA>The kernel is divided into two basic parts, the largely machine
+independent parts in <filename>packages/kernel/&versiondir;</FILENAME>,
+and the architecture- and platform-specific parts that comprise
+the Hardware Abstraction Layer (HAL) in <filename>packages/hal</filename>.
+These will be described separately. Also note that the HAL is described
+in great detail in its own chapter (<xref
+	  linkend="the-ecos-hardware-abstraction-layer">). </PARA>
+<SECT1 id="kernel-headers">
+<TITLE><!-- <index></index> -->Kernel headers</TITLE>
+<PARA>Kernel header files (in <FILENAME>packages/kernel/&versiondir;/include</FILENAME>)
+provide external interfaces and configuration control for the various
+kernel objects. In general there is an include file for each major
+kernel class. Those header files having to do with configuration
+live in the <FILENAME>pkgconf</FILENAME> subdirectory. </PARA>
+<PARA>The base name of a header file and the source file that implements
+it are usually the same. So, for example, the member functions defined
+in <FILENAME>sched.hxx</FILENAME> are implemented in <FILENAME>sched.cxx</FILENAME>.
+For a number of classes there are also header files that define
+inline functions, for example <FILENAME>sched.inl</FILENAME>. </PARA>
+<PARA>There are some kernel objects that are implemented using C&plus;&plus; templates
+to allow code re-use in future; it is not intended that these template
+classes be used generally by applications. The appropriate concrete
+kernel classes should be used instead. </PARA>
+<PARA>Now we examine the files one by one for reference: </PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>include/bitmap.hxx</FILENAME></TERM>
+<LISTITEM>
+<PARA>Bitmap scheduler definition. See source file
+		  <FILENAME>sched/bitmap.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/clock.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/clock.inl</FILENAME>
+	    </TERM>
+<LISTITEM>
+<PARA>Counter, clock and alarm functions. See source
+		file
+		<FILENAME>common/clock.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/diag.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Diagnostic routines. See source file
+		  <FILENAME>trace/diag.c</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/errors.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Kernel error codes. See source file
+		  <FILENAME>common/except.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/except.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Exception handling.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/flag.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Flag synchronization objects. See source file
+		  <FILENAME>sync/flag.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/instrmnt.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Instrumentation. See source file
+		  <FILENAME>instrmnt/meminst.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/intr.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Interrupts. See source file
+		  <FILENAME>intr/intr.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/kapi.h</FILENAME></TERM>
+<TERM><FILENAME>include/kapidata.h</FILENAME>
+	    </TERM>
+<LISTITEM>
+<PARA>Native 'C' API to the kernel. See source
+file
+		  <FILENAME>common/kapi.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/ktypes.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Kernel types.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/llistt.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>A simple doubly linked-list template class used elsewhere
+in the kernel.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/lottery.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Lottery scheduler implementation. (Not used). See source file
+		  <FILENAME>sched/lottery.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/mbox.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mboxt.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mboxt2.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mboxt.inl</FILENAME></TERM>
+<TERM><FILENAME>include/mboxt2.inl</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Message boxes. See source file <FILENAME>sync/mbox.cxx</FILENAME>; <FILENAME>mboxt.hxx</FILENAME> and <FILENAME>mboxt2.hxx</FILENAME> and <FILENAME>mboxt.inl</FILENAME> and <FILENAME>mboxt2.inl</FILENAME> implement
+the underlying template function.</PARA>
+<NOTE>
+<PARA>The files with a 2 suffix are used by default and
+	    provide precise &micro;ITRON semantics.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/memfixed.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mempoolt.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mempolt2.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mempoolt.inl</FILENAME></TERM>
+<TERM><FILENAME>include/mempolt2.inl</FILENAME></TERM>
+<TERM><FILENAME>include/mfiximpl.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mfiximpl.inl</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Fixed-block allocation memory pools. See source file <FILENAME>mem/memfixed.cxx</FILENAME>;
+mempoolt[2] and mfiximpl are a thread-safety template
+function and underlying memory manager respectively.</PARA>
+<NOTE>
+<PARA>The files with a 2 suffix are used by default and provide
+		  precise &micro;ITRON semantics.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/memvar.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mempoolt.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mempolt2.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mempoolt.inl</FILENAME></TERM>
+<TERM><FILENAME>include/mempolt2.inl</FILENAME></TERM>
+<TERM><FILENAME>include/mvarimpl.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/mvarimpl.inl</FILENAME>
+ 	</TERM>
+<LISTITEM>
+<PARA>Variable-block allocation memory pools. See source file <FILENAME>mem/memvar.cxx</FILENAME>;
+mempoolt[2] and mvar are a thread-safety template
+function and underlying memory manager respectively.</PARA>
+<NOTE>
+<PARA>The files with a 2 suffix are used by default and provide
+	    precise &micro;ITRON semantics.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/mlqueue.hxx</FILENAME>
+	    </TERM>
+<LISTITEM>
+
+<PARA>Multi-level queue scheduler. See source file
+		<FILENAME>sched/mlqueue.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/mutex.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>Mutexes. See source file
+		<FILENAME>sync/mutex.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/sched.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/sched.inl</FILENAME>
+ 	</TERM>
+<LISTITEM>
+<PARA>General scheduler functions. See source file
+		<FILENAME>sched/sched.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/sema.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/sema2.hxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+<PARA>Semaphores. See source files <FILENAME>sync/cnt_sem.cxx</FILENAME> and <FILENAME>sync/bin_sem.cxx</FILENAME> for
+		counting or binary semaphores respectively.</PARA>
+<NOTE>
+<PARA>The file with a 2 suffix is used by default
+		  and provides precise &micro;ITRON
+		  semantics.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>include/thread.hxx</FILENAME></TERM>
+<TERM><FILENAME>include/thread.inl</FILENAME>
+ 	</TERM>
+<LISTITEM>
+<PARA>Threads, regardless of scheduler. See
+		<FILENAME>common/thread.cxx</FILENAME></PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT1>
+<SECT1 id="kernel-source-files">
+<TITLE><!-- <index></index> -->	  Kernel source files</TITLE>
+<PARA>The kernel source directory (<FILENAME>packages/kernel/&versiondir;/src</FILENAME>)
+is divided into a number of sub-directories each containing the
+source files for a particular kernel subsystem. These sources divide
+into two classes: those that are generic to all configurations,
+and those that are specific to a particular configuration. </PARA>
+<SECT2 id="sched-subdirectory">
+<TITLE><!-- <index></index> --><!-- <xref> -->Sched subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>sched/sched.cxx</FILENAME>
+	      </TERM>
+<LISTITEM>
+<PARA>		</PARA>
+<PARA>This contains the implementation of the base
+		  scheduler classes. The most important function here
+		  is
+		  <FUNCTION>Cyg_Scheduler::unlock_inner()</FUNCTION>
+		  which runs DSRs and performs any rescheduling and
+		  thread switching.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sched/bitmap.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the bitmap scheduler implementation. It represents
+each runnable thread with a bit in a bitmap. Each thread must have
+a unique priority and there is a strict upper limit on the number
+of threads allowed.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sched/mlqueue.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the multi-level queue scheduler implementation.
+It implements a number of thread priorities and is capable of timeslicing
+between threads at the same priority. This scheduler can also support
+priority inheritance.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sched/lottery.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains a lottery scheduler implementation. This implements
+a CPU share scheduler based on threads holding a number of lottery
+tickets. At the start of each time quantum, a random number is generated
+and the thread holding the matching ticket is scheduled. Compensation
+tickets and ticket donation allow fair sharing for I/O
+bound threads and an equivalent mechanism to priority
+		inheritance.</PARA>
+<NOTE>
+<PARA>This scheduler is experimental, and is meant to
+	      test the behavior of other parts of the kernel with a
+	      non-orthodox scheduler. It is not meant to be used for
+	      real applications. It is currently under development and
+	      is incomplete and unusable.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->	    Common subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>common/thread.cxx</FILENAME>
+	      </TERM>
+<LISTITEM>
+<PARA>		</PARA>
+<PARA>This implements the basic thread classes. The
+		  functions in this file implement the basic thread
+		  controls to sleep and wake threads, change
+		  priorities and delay and time-out. Also defined here
+		  is the idle thread that runs when there is nothing
+		  else to do.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>common/clock.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This implements the counter, clock and alarm functions. Also
+defined here is the system real-time clock that is used to drive
+timeslicing, delays and time-outs.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>common/kapi.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This implements a C API to the basic kernel
+		functions.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>common/memcpy.c</FILENAME></TERM>
+<TERM><FILENAME>common/memset.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+<PARA>Standard ANSI memcpy and memset operations; these are here
+because the compiler may invoke them for structure operations regardless
+of the presence of a C library.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->	  Interrupt subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>intr/intr.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This implements the Interrupt class. Most of this code is
+concerned with posting and calling DSRs. The remainder of the interrupt
+handling code is machine specific and is in <FILENAME>hal_intr.cxx</FILENAME> in
+the HAL directory.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Synchronization subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>sync/mutex.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the implementation of mutexes and condition
+variables. Mutexes can optionally be configured to use a priority
+inheritance mechanism supplied by the scheduler.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sync/cnt_sem.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the implementation of counting
+		semaphores.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sync/cnt_sem2.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the alternate implementation of counting semaphores
+which implements precise &micro;ITRON
+		semantics.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sync/bin_sem.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the implementation of binary
+		semaphores.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sync/mbox.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains wrapper functions for a message box of (void *)
+values. The implementation is the template defined in <FILENAME>include/mboxt.hxx</FILENAME> which <FILENAME>include/mboxt.inl</FILENAME> implements
+in turn. Message boxes exist in the kernel specifically to support &micro;ITRON
+compatibility.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>sync/flag.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the implementation of flag objects. Flag objects
+exist in the kernel specifically to support &micro;ITRON
+compatibility.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Memory management subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>mem/memfixed.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the wrapper functions for a fixed-block allocation
+memory manager. The actual implementation is in two parts: <FILENAME>include/mfiximpl.hxx</FILENAME> implements
+the fixed-block memory management algorithms, and template <FILENAME>include/mempoolt.hxx</FILENAME> implements
+thread safety and waiting for memory management classes. These are combined
+in <FILENAME>memfixed.cxx</FILENAME>. Memory pools exist
+in the kernel specifically to support &micro;ITRON
+compatibility.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>mem/memvar.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains the wrapper functions for a variable-block allocation
+memory manager. The actual implementation is in two parts: <FILENAME>include/mvarimpl.hxx</FILENAME> implements
+the variable-block memory management algorithms, and template <FILENAME>include/mempoolt.hxx</FILENAME> implements
+thread safety and waiting for memory management classes. These are combined
+in <FILENAME>memvar.cxx</FILENAME>. Memory pools exist
+in the kernel specifically to support &micro;ITRON
+compatibility.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Instrumentation subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>instrmnt/meminst.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains an implementation of the instrumentation mechanism
+that stores instrumentation records in a circular buffer in memory.
+The size of this buffer is configurable. The instrumentation flags
+mechanism allows the generation of instrumentation records to be
+controlled on a per-record basis. The header file <FILENAME>cyg/kernel/instrmnt.h</FILENAME> contains
+macros to generate instrumentation records in various places, and
+may be configured to only generate instrumentation records where
+required.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>instrmnt/nullinst.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains an implementation of the instrumentation mechanism
+that does nothing. By substituting its object file <FILENAME>nullinst.o</FILENAME> for <FILENAME>meminst.o</FILENAME> in
+a build, the instrumentation mechanism may be disabled without
+		recompiling.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Trace subdirectory</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>trace/simple.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains an implementation of the trace and assert mechanisms
+that output textual messages via a set of externally defined functions.
+These are currently supplied by the code in <FILENAME>trace/diag.c</FILENAME> but
+may be supplied by a device driver in the future.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>trace/fancy.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains a (fancier) implementation of the trace and
+assert mechanisms that output textual messages via a set of externally
+defined functions. These are currently supplied by the code in <FILENAME>trace/diag.c</FILENAME> but
+may be supplied by a device driver in the future.</PARA>
+<PARA>This more elaborate view was introduced mainly to validate
+the trace and assertion macros during development. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>trace/null.cxx</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains an implementation of the trace and assert mechanisms
+that do nothing. By substituting its object file <FILENAME>null.o</FILENAME> for <FILENAME>simple.o</FILENAME> in
+a build, the trace mechanisms may be disabled without
+		recompiling.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>trace/diag.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains a number of diagnostic routines that use the
+HAL supplied diagnostic output mechanism to format and print strings
+and numbers. There is currently no formatted output.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>trace/tcdiag.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This contains an implementation of the testing internal API
+which uses the kernel's diagnostic routines to perform
+output.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Sload subdirectory</TITLE>
+<PARA>This contains the sources of a simple S-Record loader that
+may be used in a ROM for various microprocessor development boards
+to download code via a serial port.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->HAL source files</TITLE>
+<PARA>The HAL is divided into architecture- and platform-specific
+files. For each architecture supported, there is an <FILENAME>arch</FILENAME> directory,
+containing files generic to that architecture, and a <FILENAME>platform</FILENAME> directory,
+containing files specific to each platform supported.</PARA>
+<PARA>Amongst the architectures supported are: the PowerPC, the
+Tx39 and the MN10300. To find the code corresponding to each architecture,
+substitute &ldquo;powerpc&rdquo;, &ldquo;mips&rdquo; and &ldquo;mn10300&rdquo;,
+respectively, for &ldquo;ARCH&rdquo; in the following file
+descriptions. Similarly substitute the appropriate platform name
+representing your development board for &ldquo;PLATFORM&rdquo;.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Architecture files</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/include/basetype.h</FILENAME></TERM>
+<LISTITEM>
+
+<PARA>This file is used to define the base architecture configuration
+such as endianness and word size.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/include/hal_arch.h</FILENAME></TERM>
+<LISTITEM>
+
+<PARA>This file contains macros that implement various architecture-specific
+functions. The most important macros here are the thread context
+initialization and switch macros that are used to implement
+		multithreading.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/include/hal_intr.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains the HAL support for interrupt management
+and clock support.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/include/hal_io.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains the HAL support for accessing hardware
+registers. It provides a portable API that allows more generic device
+drivers to be written.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/include/hal_cache.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains macros to control any caches that may be
+present.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/include/ARCH_stub.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains architectural information for a GDB stub,
+such as the register layout in a GDB packet.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/src/vectors.S</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This is an assembly code file that contains the code to handle
+interrupt and exception vectors. Since system reset can also be
+considered an exception, this is handled here also. Interrupts are
+currently handled by placing a stub routine in the hardware vector
+which calls a Vector Service Routine via an indirection table. There
+is a API to allow user-defined VSRs to be installed. The default
+VSR reads the interrupt controller registers and decodes the interrupt
+source into an offset into a further table of interrupt service
+routines. It also handles interrupt cleanup, which may result in
+the execution of deferred service routines (DSRs) and the preemption of
+the current thread.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/src/context.S</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>If present, this is an assembly code file that contains the
+code to support thread contexts. The routines to switch between
+various contexts, as well as initialize a thread context may be
+present in this file.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/src/hal_misc.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains the implementation of various miscellaneous
+HAL routines that are needed by the kernel or C&plus;&plus;
+		runtime.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/src/ARCH_stub.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains the architectural part of a GDB stub. This
+deals with CPU-specific details of the stub, such as the setting
+of breakpoints and translating exception data into signals that
+GDB understands.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/arch/&versiondir;/src/ARCH.ld</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file is the linker script. During preprocessing it includes
+linker script fragments that define the memory
+		layout.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Platform files</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/PLATFORM/&versiondir;/include/hal_diag.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains the definitions of macros that support
+the HAL diagnostic output mechanism.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/PLATFORM/&versiondir;/include/plf_stub.h</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains a set of macros that allow the common GDB
+stub code to access the platform-specific minimal serial driver
+functions.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/PLATFORM/&versiondir;/src/hal_diag.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contain the implementation of the HAL diagnostic
+output mechanism.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/PLATFORM/&versiondir;/src/plf_stub.c</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This file contains a minimal serial driver for the target
+platform that is used by the GDB stub.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><FILENAME>ARCH/PLATFORM/&versiondir;/src/PLATFORM.S</FILENAME>
+ 	</TERM>
+<LISTITEM>
+
+<PARA>This is an assembler file that contains any platform-specific
+code. It often contains platform initialization code called from
+vectors.S.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+</SECT1>
+</chapter>
+<CHAPTER id="requirements-for-programs">
+<TITLE>Requirements for programs</TITLE>
+<PARA><EMPHASIS>eCos</EMPHASIS> <!-- <index></index> -->programs do not have
+to satisfy any unusual requirements, but there are always some differences
+between a program written for a real-time operating system as opposed
+to one written for a time sharing, virtual memory system like UNIX
+or Windows NT.</PARA>
+<PARA>This chapter contains checklist of things to remember when
+writing <EMPHASIS>eCos</EMPHASIS> programs. </PARA>
+<SECT1 id="cyg-user-start">
+<TITLE><!-- <index></index> -->cyg_user_start()</TITLE>
+<PARA>The entry point for <EMPHASIS>eCos</EMPHASIS> user programs
+is usually <FUNCTION>cyg_user_start()</FUNCTION> instead
+of <FUNCTION>main()</FUNCTION>, although <FUNCTION>main()</FUNCTION> <EMPHASIS>can</EMPHASIS> be
+used if the ISO C library package is selected. Complete detail on
+the start-up sequence is given in <xref linkend="system-start-up">. </PARA>
+</SECT1>
+<SECT1 id="necessary-headers">
+<TITLE>Necessary headers</TITLE>
+<PARA>Any program which uses <EMPHASIS>eCos</EMPHASIS> system calls
+must have the following line at the top of the file:</PARA>
+<PROGRAMLISTING>#include &lt;cyg/kernel/kapi.h&gt;<!-- <index></index> --></PROGRAMLISTING>
+<PARA>and the programmer must make sure that <FILENAME>cyg/kernel/kapi.h</FILENAME> is
+available in the compiler include path. This can be done by setting
+the <EMPHASIS>C_INCLUDE_PATH</EMPHASIS> environment
+variable or by including the <EMPHASIS>-I </EMPHASIS>flag on the compiler
+command line. </PARA>
+</SECT1>
+<SECT1 id="necessary-link-instructions">
+<TITLE>Necessary link instructions</TITLE>
+<PARA>The <EMPHASIS>eCos</EMPHASIS> configuration and building process
+(described in <EMPHASIS>Getting Started with </EMPHASIS><PRODUCTNAME>eCos</PRODUCTNAME> and <PRODUCTNAME>eCos</PRODUCTNAME><EMPHASIS> User's
+Guide</EMPHASIS>) builds a single library, <FILENAME>libtarget.a</FILENAME>,
+which contains the selected <EMPHASIS>eCos</EMPHASIS> components.
+The <FILENAME>libtarget.a</FILENAME> library does <EMPHASIS>not</EMPHASIS> contain
+any user libraries: If you put some of your source in libraries,
+you will have to explicitly include those libraries in the linking instruction. </PARA>
+<PARA>You also need to link to the <EMPHASIS>GNU C Compiler</EMPHASIS> runtime
+support library (<FILENAME>libgcc.a</FILENAME>).</PARA>
+<PARA>You should <EMPHASIS>not</EMPHASIS> link to the standard C&plus;&plus; library.
+This can be achieved with the <EMPHASIS>-nostdlib</EMPHASIS> option.</PARA>
+<PARA>You should only link to <FILENAME>libtarget.a</FILENAME> and <FILENAME>libgcc.a</FILENAME> using
+the linker script <FILENAME>target.ld</FILENAME> provided
+with <EMPHASIS>eCos</EMPHASIS>. The command line for linking should
+look like </PARA>
+<screen>
+gcc [options] [object files] -Ttarget.ld -nostdlib
+</screen>
+</SECT1>
+<SECT1 ID="INTERRUPT-AND-EXCEPTION-HANDLERS">
+<TITLE><!-- <xref> -->Interrupt and exception handlers</TITLE>
+<PARA>In <EMPHASIS>eCos</EMPHASIS> a distinction is made between
+	      <EMPHASIS>exceptions</EMPHASIS> and
+	      <EMPHASIS>interrupts</EMPHASIS>.</PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM><!-- <index></index> -->exceptions 	</TERM>
+<LISTITEM>
+
+<PARA>are the result of some action by the currently executing code.
+Examples of exceptions are divide by zero, illegal instruction,
+bad memory access, etc.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM><!-- <index></index> -->interrupts 	</TERM>
+<LISTITEM>
+
+<PARA>are the result of a signal source which is conceptually asynchronous
+with the currently executing code. Examples of interrupts sources
+are the real-time clock, external and on chip peripherals and so
+forth. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<PARA>This distinction is made in the <EMPHASIS>eCos</EMPHASIS> hardware
+abstraction layer (HAL) to provide a cleaner and more portable mechanism
+for installing interrupt handlers and exception handlers. Individual hardware
+platforms can have different ways of naming and handling interrupts, which
+is why this abstraction layer was chosen. </PARA>
+<PARA>Interrupts and exceptions are both associated with <!-- <index></index> -->vectors,
+which are labeled by vector numbers (<xref
+	      linkend="exception-handling"> and <xref
+	      linkend="interrupt-handling">).</PARA>
+<PARA>There are distinct spaces for exception and interrupt vectors.
+These are called &ldquo;exception vector numbers&rdquo; and &ldquo;interrupt
+vector numbers&rdquo;. System calls which install exception handlers
+use the exception vector number, and the system calls which install
+interrupt handlers use the interrupt vector number to specify which interrupt
+or exception should be handled by the handler.</PARA>
+<PARA>The details of the vector layout depend on the microprocessor
+and interrupt controller, and are documented in the relevant API
+sections.</PARA>
+<PARA>Interrupt handlers are actually a <EMPHASIS>pair</EMPHASIS> of
+functions, one of which (the <EMPHASIS>interrupt service routine</EMPHASIS>,
+or ISR) is executed immediately and runs with that interrupt disabled.
+Since interrupts are disabled for the duration of the ISR, the ISR
+should be very brief and should not use any system services.</PARA>
+<PARA>After the ISR exits, but before the kernel scheduler is invoked
+again, a <EMPHASIS>delayed service routine</EMPHASIS> (DSR) will
+be invoked. It executes with scheduling disabled, but with interrupts
+enabled, so that further invocations of the same DSR can be queued.
+The DSR can use some producer-side system calls, but it should be carefully
+crafted to avoid using any call that might put its thread to sleep.
+One of the few examples of safe calls is <!-- <index></index> --><FUNCTION>cyg_semaphore_post()</FUNCTION>;
+the non-blocking versions of some system calls are also safe. A
+call that is unsafe is <!-- <index></index> --><FUNCTION>cyg_mutex_lock()</FUNCTION>,
+since it will block if the mutex is already locked by another thread.</PARA>
+<PARA>Finally, <EMPHASIS>eCos</EMPHASIS> has a formalism for installing <EMPHASIS>low
+level handlers</EMPHASIS> which bypass the kernel mechanisms described
+above. A program can install a <!-- <index></index> --><FIRSTTERM>vector service routine</firstterm> (VSR)
+which will be invoked instead of the kernel's usual exception
+or interrupt handling. The VSR will typically be written in assembly language. </PARA>
+<PARA>VSRs are associated with vector numbers in the exception space,
+just like exception handlers (although there are some variations &mdash; architectures
+in which there are no exceptions in the <EMPHASIS>eCos</EMPHASIS> sense).
+The main difference between VSRs and exception handlers is that
+VSRs bypass the kernel's usual mechanisms. </PARA>
+</SECT1>
+<SECT1 id="memory-allocation">
+<TITLE><!-- <index></index> -->Memory allocation</TITLE>
+<PARA>Most <EMPHASIS>eCos</EMPHASIS> system calls expect you to
+pass the address of pre-allocated memory for the objects created
+in that system call. This is frequently the preferred way of doing things
+for embedded applications, where programmers want to allocate all
+memory statically and have fine control over that resource.</PARA>
+<PARA>In contrast, some <EMPHASIS>eCos</EMPHASIS> system calls also
+allow a NULL pointer to be passed. In such a case the kernel will allocate
+the memory or select default size. This feature is not supported
+in the current release, and a warning flag is placed in the documentation
+for those routines (like
+	  <FUNCTION>cyg_thread_create()</FUNCTION>). </PARA>
+<PARA><EMPHASIS>eCos</EMPHASIS> provides dynamic memory allocation,
+based on <EMPHASIS>memory pools</EMPHASIS>, a useful and flexible
+approach to memory management inspired by the &micro;ITRON
+compatibility layer. These are described in <xref linkend="memory-pools">.</PARA>
+<PARA>If you configure your system to use the Standard C Library
+you can also use the standard <FUNCTION>malloc()</FUNCTION> library
+call. </PARA>
+</SECT1>
+<SECT1 id="assertions-and-bad-param-handling">
+<TITLE>Assertions and bad parameter handling</TITLE>
+<PARA>This section describes how the <EMPHASIS>eCos</EMPHASIS> kernel
+and basic packages behave when system calls are invoked with bad parameters.</PARA>
+<PARA>In <EMPHASIS>eCos</EMPHASIS>, the basic kernel assertion behavior
+is configuration-dependent.</PARA>
+<PARA>By default, <!-- <index></index> -->assertions are turned off in the
+kernel. If the kernel is configured to turn them <EMPHASIS>on</EMPHASIS>, the
+kernel will make basic assertions, such as checking for invalid
+parameters when system calls are invoked. If an assertion fails,
+the kernel will print a message to the diagnostic output channel
+and stop executing.</PARA>
+<PARA>If the kernel is configured with assertions disabled (usually
+when the application has been thoroughly debugged), it will not
+do any checking. </PARA>
+<PARA>The configuration sections referenced above also describe
+the use of preconditions, postconditions and loop invariants. These
+are no different from ordinary assertions, but they are used in
+specialized circumstances, and the programmer would wish to select
+their presence individually. </PARA>
+</SECT1>
+</CHAPTER>
+<CHAPTER id="system-start-up">
+<TITLE><!-- <xref> -->System start-up</TITLE>
+<PARA>We describe here the steps performed by
+	<EMPHASIS>eCos</EMPHASIS> upon start-up, mentioning how a
+	programmer can introduce custom start-up routines. </PARA>
+<SECT1 id="system-startup-hal">
+<TITLE>System start-up &mdash; the HAL</TITLE>
+<PARA>The HAL (Hardware Abstraction Layer, see <xref linkend="the-ecos-hardware-abstraction-layer">)
+is the <EMPHASIS>eCos</EMPHASIS> package which contains all <!-- <index></index> -->start-up
+code. Its start-up procedure is outlined in detail in <xref linkend="hal-startup">, but the main steps
+can be summarized here:</PARA>
+<ORDEREDLIST>
+<LISTITEM>
+<PARA>	      The HAL initializes the hardware, coordinates with
+	      the ROM monitor, and performs diagnostics.</PARA>
+</LISTITEM>
+<LISTITEM>
+<PARA>The HAL invokes all static and global
+	      C&plus;&plus; constructors. </PARA>
+</LISTITEM>
+<LISTITEM>
+<PARA>The HAL jumps to 
+	    <FUNCTION>cyg_start()</FUNCTION>,
+	    which has the following prototype:</PARA>
+<PROGRAMLISTING>void cyg_start( void )</PROGRAMLISTING>
+</LISTITEM>
+</ORDEREDLIST>
+</SECT1>
+<SECT1 id="system-startup-cyg-start">
+<TITLE>System start-up &mdash; cyg_start()</TITLE>
+<PARA><!-- <index></index> --><FUNCTION>cyg_start()</FUNCTION>
+	is the core 
+of the <!-- <index></index> -->start-up mechanism. The default definition
+is in <FILENAME>infra/current/src/startup.cxx</FILENAME></PARA>
+<PARA>It calls, in turn, </PARA>
+<PROGRAMLISTING>cyg_prestart()
+cyg_package_start()
+cyg_user_start()</PROGRAMLISTING>
+<PARA>and then starts the <EMPHASIS>eCos</EMPHASIS> scheduler if
+the system has been configured to have a kernel and scheduler.</PARA>
+<PARA>You can override the default <FUNCTION>cyg_start()</FUNCTION> routine
+by providing your own function by the same name with the following prototype: </PARA>
+<PROGRAMLISTING>void cyg_start( void )</PROGRAMLISTING>
+<WARNING>
+<PARA>Overriding <FUNCTION>cyg_start()</FUNCTION>
+	    should rarely, if ever, be done. The functions
+	    <FUNCTION>cyg_prestart()</FUNCTION> and
+	    <FUNCTION>cyg_user_start()</FUNCTION>
+	    described just below allow enough flexibility for
+	    installing user initialization code safely for almost all
+	    applications.</PARA>
+</WARNING>
+<NOTE>
+<PARA>	    If you are supplying your own definition of this function
+	    from a C&plus;&plus; file, make sure it has
+	    &ldquo;C&rdquo; linkage.
+	    </PARA>
+</NOTE>
+</SECT1>
+<SECT1 id="system-startup-cyg-prestart">
+<TITLE>System startup &mdash; cyg_prestart()</TITLE>
+<PARA>The default <!-- <index></index>
+	  --><FUNCTION>cyg_prestart()</FUNCTION> function does
+	  not do anything; it is meant to be overwritten if the
+	  programmer needs to do any initialization
+	  <EMPHASIS>before</EMPHASIS> other system level
+	  initialization.</PARA>
+<PARA>You can override the default
+	  <FUNCTION>cyg_prestart()</FUNCTION> routine by
+	  providing your own function by the same name with the
+	  following prototype: </PARA>
+<PROGRAMLISTING>void cyg_prestart( void )</PROGRAMLISTING>
+<NOTE>
+<PARA>	    If you are supplying your own definition of this function
+	    from a C&plus;&plus; file, make sure it has
+	    &ldquo;C&rdquo; linkage.</PARA>
+</NOTE>
+</SECT1>
+<SECT1 id="system-startup-cyg-package-start">
+<TITLE>System startup &mdash; cyg_package_start()</TITLE>
+<PARA>The <!-- <index></index> -->
+	  <FUNCTION>cyg_package_start()</FUNCTION>
+	  allows individual packages to do their initialization before
+	  the main user program is invoked.</PARA>
+<PARA>Two of the packages shipped with this release of <EMPHASIS>eCos</EMPHASIS> have
+code in the default <FUNCTION>cyg_package_start()</FUNCTION>;
+the &micro;ITRON and the ISO standard C
+library compatibility packages (<xref linkend="compat-uitron-microitron-api"> and
+	  <xref linkend="c-and-math-library-overview">). </PARA>
+<PARA>The infrastructure package has configuration options CYGSEM_START_UITRON_COMPATIBILITY
+and CYGSEM_START_ISO_C_COMPATIBILITY
+which control specialized initialization.</PARA>
+<PARA>You can override the default <FUNCTION>cyg_package_start()</FUNCTION> routine
+by providing your own function by the same name with the following prototype: </PARA>
+<PROGRAMLISTING>void cyg_package_start( void )</PROGRAMLISTING>
+<PARA>but you should be careful to initialize the default packages
+(if you are using them). An example user-supplied function might
+look like:</PARA>
+<PROGRAMLISTING>	void cyg_package_start(void)
+	{
+ #ifdef CYGSEM_START_UITRON_COMPATABILITY
+	cyg_uitron_start(); /* keep the &micro;ITRON initialization */
+ #endif
+	my_package_start(); /* make sure I initialize my package */
+	}</PROGRAMLISTING>
+<NOTE>
+<PARA>If you are supplying your own definition of this function
+from a C&plus;&plus; file, make sure it has &ldquo;C&rdquo; linkage.</PARA>
+</NOTE>
+</SECT1>
+<SECT1 id="system-startup-cyg-user-start">
+<TITLE>System startup &mdash; cyg_user_start()</TITLE>
+<PARA>This is the normal entry point for your code. Although a
+	  default empty version is provided by
+	  <EMPHASIS>eCos</EMPHASIS>, this is a good place to set up
+	  your threads (<xref linkend="thread-operations">).</PARA>
+<PARA>If you are not including the ISO standard C library
+	  package then there will not be a
+	  <FUNCTION>main()</FUNCTION> function, so it becomes
+	  mandatory to provide this function (<xref linkend="c-library-startup">).</PARA>
+<PARA>To set up your own <!-- <index></index> --><FUNCTION>cyg_user_start()</FUNCTION>
+function, create a function by that name with the following prototype:</PARA>
+<PROGRAMLISTING>void cyg_user_start( void )</PROGRAMLISTING>
+<PARA>When you return control from
+	  <FUNCTION>cyg_user_start()</FUNCTION>,
+	  <FUNCTION>cyg_start()</FUNCTION> will
+then invoke the scheduler, and any threads you created and resumed
+in <FUNCTION>cyg_user_start()</FUNCTION> will
+be executed. The preferred approach is to allow the scheduler to
+be started automatically, rather than to start it explicitly in <FUNCTION>cyg_user_start()</FUNCTION>. </PARA>
+<CAUTION>
+<PARA>Remember that 
+<FUNCTION>cyg_user_start()</FUNCTION>
+ is invoked before the scheduler (and frequently the scheduler is
+invoked as the last step in 
+<FUNCTION>cyg_user_start()</FUNCTION>), so it should not use any
+	  kernel services that require the scheduler.</PARA>
+</CAUTION>
+<NOTE>
+<PARA>	    If you are supplying your own definition of this function
+	    from a C&plus;&plus; file, make sure it has
+	    &ldquo;C&rdquo; linkage.</PARA>
+</NOTE>
+</SECT1>
+</CHAPTER>
+<CHAPTER id="native-kernel-c-language-api">
+<TITLE>Native kernel C language API</TITLE>
+<PARA>The <EMPHASIS>eCos</EMPHASIS> kernel, like many other
+	real-time kernels, is a library to which the programmer links
+	an application. System calls resemble library API calls, and
+	there is no trap mechanism to switch from user to system mode.
+      </PARA>
+<PARA>We present here the <EMPHASIS>eCos</EMPHASIS> <!-- <index></index> -->kernel
+API and the APIs for other kernels provided as compatibility layers
+on top of eC<EMPHASIS>os</EMPHASIS>. </PARA>
+<PARA>Since this API sits on top of a configurable system, the semantics
+are only weakly defined. The exact semantics and even the API itself
+depend on the configuration. For example if returned error codes
+were supported this would change the prototype of the functions.
+The semantics given in this chapter describe the default configuration.</PARA>
+<PARA>As mentioned above, all source files which use the kernel
+C API should have the following <computeroutput>#include</computeroutput> statement:</PARA>
+<PROGRAMLISTING>#include &lt;cyg/kernel/kapi.h&gt;</PROGRAMLISTING>
+<PARA>at the head of the file. </PARA>
+<SECT1 id="kapi-types">
+<TITLE>Types used in programming eCos</TITLE>
+<PARA>We now describe the types defined for use with <EMPHASIS>eCos</EMPHASIS>.
+These are available to programs that include <filename>kapi.h</filename>.
+</PARA>
+<PARA>Most of these types are meant to be <EMPHASIS>opaque</EMPHASIS> &mdash; in
+other words, programmers do not need to know (and probably should
+not know) how they are defined. But the types that are numeric are
+marked, since it can be useful to use comparison operators.</PARA>
+<PARA>The definitions for these types can be found in the installed
+tree, in the file <filename>include/cyg/kernel/kapi.h</filename>. </PARA>
+<PARA>The <EMPHASIS>eCos</EMPHASIS> kernel uses the following naming
+convention for types: </PARA>
+<ITEMIZEDLIST>
+<LISTITEM>
+<PARA>Types that can be treated as completely opaque usually
+have _t suffix.</PARA>
+</LISTITEM>
+<LISTITEM>
+<PARA>Types for which it is necessary to know the implementation
+do not have a _t suffix.</PARA>
+</LISTITEM>
+</ITEMIZEDLIST>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_addrword_t</TITLE>
+<PARA>A type which is large enough to store the larger of an address
+and a machine word. This is used for convenience when a function
+is passed data which could be either a pointer to a block of data
+or a single word. </PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_handle_t</TITLE>
+<PARA>A <EMPHASIS>handle</EMPHASIS> is a variable used to refer
+to <EMPHASIS>eCos</EMPHASIS> system objects (such as a thread or
+an alarm). Most <EMPHASIS>eCos</EMPHASIS> system calls that create
+system objects will return a handle that is used to access that
+object from then on.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_priority_t</TITLE>
+<PARA>A numeric type used to represent the priority of a thread,
+or the priority of an interrupt level. A lower number means a higher
+(i.e. more important) priority thread. </PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_code_t</TITLE>
+<PARA>A numeric type used for various error or status codes, such
+as exception numbers.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_vector_t</TITLE>
+<PARA>A numeric type used to identify an interrupt vector. Its value
+is called the interrupt vector <EMPHASIS>id</EMPHASIS>. This type
+is used for both ISR vector ids and VSR vector ids.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_tick_count_t</TITLE>
+<PARA>A numeric type used to count counter ticks. The resolution
+and other details regarding tick quantities depend on the configuration,
+but this is a 64 bit type, and no matter what configuration is chosen
+it should still last for centuries before it overflows.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_bool_t</TITLE>
+<PARA>A boolean type whose values can be false (0) or true (1).</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_thread_entry_t</TITLE>
+<PARA>A function type for functions that are entry points for threads.
+It is used in the thread creation call <FUNCTION>cyg_thread_create()</FUNCTION>.</PARA>
+<PARA>To help write thread entry point functions, here is how cyg_thread_entry_t
+is defined:</PARA>
+<PROGRAMLISTING>typedef void cyg_thread_entry_t(void *);</PROGRAMLISTING>
+<PARA>Examples of thread functions can be found in the programming
+tutorial in <EMPHASIS>Getting Started with </EMPHASIS><PRODUCTNAME>eCos</PRODUCTNAME>. </PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_exception_handler_t</TITLE>
+<PARA>A function type used for installing exception handlers. It
+is defined as: </PARA>
+<PROGRAMLISTING>typedef void cyg_exception_handler_t(
+ cyg_addrword_t data,
+ cyg_code_t exception_number,
+ cyg_addrword_t info
+);</PROGRAMLISTING>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_thread, <!-- <index></index> -->
+cyg_interrupt, <!-- <index></index> -->
+cyg_counter, <!-- <index></index> -->
+cyg_clock, <!-- <index></index> -->
+cyg_alarm, <!-- <index></index> -->
+cyg_mbox, <!-- <index></index> -->
+cyg_mempool_var, and <!-- <index></index> -->
+cyg_mempool_fix</TITLE>
+<PARA>These types are of the appropriate size to contain the memory
+used by the respective kernel objects. These types are only used
+in the corresponding create call where the programmer allocates
+the memory for the object and passes the address to the kernel.
+After creation the provided handle is used to reference the object.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_mempool_info</TITLE>
+<PARA>Contains information about a memory pool. </PARA>
+<PROGRAMLISTING>typedef struct {
+ cyg_int32 totalmem;
+ cyg_int32 freemem;
+ void *base;
+ cyg_int32 size;
+ cyg_int32 blocksize;
+ cyg_int32 maxfree; // The largest free block
+} cyg_mempool_info;</PROGRAMLISTING>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_sem_t, <!-- <index></index> -->
+cyg_mutex_t, and <!-- <index></index> -->
+cyg_cond_t</TITLE>
+<PARA>These types are of the appropriate size to contain the memory
+used by their respective kernel objects. These objects are always
+referred to by a pointer to an object of this type.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_VSR_t, <!-- <index></index> -->
+cyg_ISR_t, and <!-- <index></index> -->
+cyg_DSR_t</TITLE>
+<PARA>These are function types used when vector, interrupt and delayed
+service routines are installed. </PARA>
+<PROGRAMLISTING>typedef void cyg_VSR_t();
+typedef cyg_uint32 cyg_ISR_t(cyg_vector_t vector, 
+                             cyg_addrword_t data);
+typedef void cyg_DSR_t(cyg_uint32 vector, 
+                       cyg_ucount32 count,
+	               cyg_addrword_t data);</PROGRAMLISTING>
+</SECT2>
+<SECT2 id="cyg-resolution-t">
+<TITLE><!-- <index></index> --><!-- <xref> -->cyg_resolution_t</TITLE>
+<PARA>Stores the resolution of a clock. The resolution is defined
+to be (dividend/divisor) nanoseconds per tick. </PARA>
+<PROGRAMLISTING>
+	typedef struct { cyg_uint32 dividend; cyg_uint32 divisor; }
+	cyg_resolution_t;</PROGRAMLISTING>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->cyg_alarm_t</TITLE>
+<PARA>The function type used for alarm handlers. </PARA>
+<PROGRAMLISTING>
+typedef void cyg_alarm_t(cyg_handle_t alarm,
+                         cyg_addrword_t data);</PROGRAMLISTING>
+</SECT2>
+</SECT1>
+<SECT1 id="thread-operations">
+<TITLE><!-- <index></index> --><!-- <xref> -->Thread operations</TITLE>
+<PROGRAMLISTING>void cyg_scheduler_start( void )</PROGRAMLISTING>
+<PARA>Starts the scheduler with the threads that have been created.
+It never returns. The scheduler has been chosen at configuration
+time. <EMPHASIS>eCos</EMPHASIS> currently ships with three schedulers:
+a bitmap scheduler, a multi-level scheduler (selected by default),
+and an experimental &ldquo;lottery&rdquo; scheduler which
+is currently incomplete and unusable.</PARA>
+<PARA>The configuration tool can be used to select between schedulers.
+The configuration options are 
+CYGSEM_SCHED_BITMAP, CYGSEM_SCHED_MLQUEUE
+ and CYGSEM_SCHED_LOTTERY.</PARA>
+<NOTE>
+<PARA>	    Interrupts are not enabled until the scheduler has been
+	    started with
+	    <FUNCTION>cyg_scheduler_start()</FUNCTION>.</PARA>
+</NOTE>
+<PROGRAMLISTING>void cyg_scheduler_lock( void )</PROGRAMLISTING>
+<PARA>Locks the scheduler so that a context switch cannot occur.
+This can be used to protect data shared between a thread and a DSR,
+or between multiple threads, by surrounding the critical region
+with <FUNCTION>cyg_scheduler_lock()</FUNCTION> and <FUNCTION>cyg_scheduler_unlock()</FUNCTION>. </PARA>
+<PROGRAMLISTING>void cyg_scheduler_unlock( void )</PROGRAMLISTING>
+<PARA>Unlocks the scheduler so that context switching can
+	  occur again.</PARA>
+<PROGRAMLISTING>
+void <!-- <index></index> -->cyg_thread_create( 
+    cyg_addrword_t sched_info,
+    cyg_thread_entry_t *entry,
+    cyg_addrword_t entry_data,
+    char *name,
+    void *stack_base,
+    cyg_ucount32 stack_size,
+    cyg_handle_t *handle,
+    cyg_thread *thread )</PROGRAMLISTING>
+<PARA>Creates a thread in a suspended state. The thread will not
+run until it has been resumed with <FUNCTION>cyg_thread_resume()</FUNCTION> and
+the scheduler has been started with <FUNCTION>cyg_scheduler_start()</FUNCTION>.</PARA>
+<PARA>Here is a description of the parameters of
+	  <FUNCTION>cyg_thread_create()</FUNCTION>:</PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>sched_info</TERM>
+<LISTITEM>
+
+<PARA>Information to be passed to the scheduler. For almost all
+schedulers this is a simple priority value, and you can simply pass
+a non-negative integer when you create the thread. Even when this
+holds, some schedulers may have restrictions on how priorities can
+be used. For example, the bitmap scheduler can onlyhave one thread at
+each priority, so if an already-occupied priority slot is quoted,
+the next free slot of lower priority is chosen.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>entry 	</TERM>
+<LISTITEM>
+
+<PARA>A user-supplied function: it is a routine that begins execution
+of the new thread. This function takes a single argument of type
+cyg_addrword_t, which is usually a pointer to
+a block of data, which allows <FUNCTION>cyg_scheduler_start()</FUNCTION> to
+pass data to this particular thread.</PARA>
+<PARA>Here is a typedef for the entry function: </PARA>
+<PROGRAMLISTING>typedef void cyg_thread_entry_t(cyg_addrword_t);</PROGRAMLISTING>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>entry_data 	</TERM>
+<LISTITEM>
+
+<PARA>A data value passed to the entry function. This may be either
+a machine word datum or the address of a block of
+	  data.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>name 	</TERM>
+<LISTITEM>
+
+<PARA>A C string with the name of this thread.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>stack_base 	</TERM>
+<LISTITEM>
+
+<PARA>The address of the stack base. If this value is NULL then
+	  <FUNCTION>cyg_thread_create()</FUNCTION> will choose a stack
+	  base.</PARA>
+<NOTE>
+<PARA>Passing a stack base of NULL is not supported in
+		  this release. You must pass a real address for the
+		  stack base.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>stack_size</TERM>
+<LISTITEM>
+
+<PARA>The size of the stack for this thread. If this is 0, the default
+stack size will be used for this thread.</PARA>
+<NOTE>
+<PARA>Passing a stack size of 0 is not supported in this release.
+	    You must pass a real stack size.</PARA>
+</NOTE>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>handle 	</TERM>
+<LISTITEM>
+
+<PARA><FUNCTION>cyg_thread_create()</FUNCTION> returns
+the thread handle in this location.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>thread 	</TERM>
+<LISTITEM>
+
+<PARA>The thread housekeeping information is placed in the memory
+pointed to by this parameter. If this pointer is NULL then the memory
+will be allocated. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<NOTE>
+<PARA>Passing a NULL value for the thread data structure
+	    address is not supported in this release. You must pass a
+	    valid address. </PARA>
+</NOTE>
+<PROGRAMLISTING>void cyg_thread_exit( void )</PROGRAMLISTING>
+<PARA>Exits the current thread. At present this simply puts the
+thread into suspended state.</PARA>
+<PROGRAMLISTING>void cyg_thread_suspend ( cyg_handle_t thread )</PROGRAMLISTING>
+<PARA>Suspends the thread. A thread may be suspended multiple times,
+in which case it will need to be resumed the same number of times
+before it will run.  A thread can suspend itself; the effect will
+be that the call does not return until some other thread has resumed
+it.  Obviously this can only be done once!</PARA>
+<PARA>It is OK for a thread to suspend other threads with the scheduler
+locked; it will continue to run until the scheduler is unlocked.
+ However, a thread suspending itself with the scheduler locked is
+in danger of causing problems within the system because a suspended
+thread has been removed from its run-queue, even if it continues
+to execute!  The problematic situation cannot be detected because
+it is OK for a DSR (ie.  alarm function for example) to suspend
+a thread - possibly the current thread if that is what happened
+to be running, and DSRs run with the scheduler locked.</PARA>
+<PARA>If you see an assert referring to something like "Queue map
+bit not set for pri" it is likely that this means a thread has suspended
+itself with the scheduler locked.  The simplest workaround is: never
+let a thread suspend itself; look for that behaviour in your code. </PARA>
+<PROGRAMLISTING>
+void cyg_thread_resume ( cyg_handle_t thread )
+</PROGRAMLISTING>
+<PARA>Resumes <emphasis>thread</emphasis>. If a thread has been suspended multiple times
+it will need to be resumed the same number of times before it will
+run. Threads are created in a suspended state and must be resumed
+before they will run.</PARA>
+<PROGRAMLISTING>void cyg_thread_yield ( void )</PROGRAMLISTING>
+<PARA>Yields control to the next runnable thread of equal
+	  priority. If no such thread exists, then this function has
+	  no effect.</PARA>
+<PROGRAMLISTING>void cyg_thread_kill ( cyg_handle_t thread )</PROGRAMLISTING>
+<PARA>Kills <emphasis>thread</emphasis>.</PARA>
+<PROGRAMLISTING>cyg_bool_t cyg_thread_delete( cyg_handle_t thread)</PROGRAMLISTING>
+<PARA>Kills <EMPHASIS>thread</EMPHASIS> and deletes it from the
+scheduler. If necessary, it will kill <EMPHASIS>thread</EMPHASIS>
+	  first using <FUNCTION>cyg_thread_kill( thread )</FUNCTION>.
+If <EMPHASIS>thread</EMPHASIS> does not terminate in response to
+the kill message, this function returns false, indicating failure.</PARA>
+<PARA>This function differs from <FUNCTION>cyg_thread_kill()</FUNCTION> (or
+calling <FUNCTION>cyg_thread_exit()</FUNCTION>
+for the current thread) by deregistering the thread from the
+scheduler. As a result, the thread handle, thread stack and space
+passed for the thread housekeeping information can then be reused.
+This is not the case if just <FUNCTION>cyg_thread_kill()</FUNCTION> or <FUNCTION>cyg_thread_exit()</FUNCTION> is
+invoked for the thread.</PARA>
+<NOTE>
+<PARA><FUNCTION>cyg_thread_delete()</FUNCTION>
+ only deregisters the thread from the scheduler, it does not free
+up any resources that had been allocated by the thread such as dynamic
+memory, nor does it unlock any synchronization objects owned by
+the thread. This is the responsibility of the programmer. Additionally,
+unlike 
+<FUNCTION>cyg_thread_kill()</FUNCTION>, the 
+<FUNCTION>cyg_thread_delete()</FUNCTION>
+ function cannot be self-referencing.</PARA>
+</NOTE>
+<NOTE>
+<PROGRAMLISTING>// Delete another thread. This must be done in a loop, waiting
+// for the call to return true. If it returns false, go to sleep
+// for a while, so that the killed thread gets a chance to run
+// and complete its business.
+while (!cyg_thread_delete(&lt;thread_handle&gt;) {
+    cyg_thread_delay(1);</PROGRAMLISTING>
+</NOTE>
+<PROGRAMLISTING> cyg_handle_t cyg_thread_self( void )</PROGRAMLISTING>
+<PARA>Returns the handle of the current thread.</PARA>
+<PROGRAMLISTING>void cyg_thread_release ( cyg_handle_t thread )</PROGRAMLISTING>
+<PARA>Break the thread out of any wait it is currently in.
+	  Exactly how the thread returns from the wait operation, and
+	  how, if at all, the break is indicated, depends on the
+	  synchronization object it was waiting on.</PARA>
+<PROGRAMLISTING>cyg_ucount32 cyg_thread_new_data_index ( void )</PROGRAMLISTING>
+<PARA>Allocates a new per-thread data index from those still
+	  available. If no more indexes are available, and assertions
+	  are enabled, an assertion will be raised.</PARA>
+<PROGRAMLISTING>void cyg_thread_free_data_index ( cyg_ucount32 index )</PROGRAMLISTING>
+<PARA>Return the per-thread data index to the pool.</PARA>
+<PROGRAMLISTING>CYG_ADDRWORD cyg_thread_get_data( cyg_ucount32 index )</PROGRAMLISTING>
+<PARA>Retrieve the per-thread data at the given index for the current
+thread.</PARA>
+<PROGRAMLISTING>CYG_ADDRWORD *cyg_thread_get_data_ptr( cyg_ucount32 index )</PROGRAMLISTING>
+<PARA>Return a pointer to the per-thread data at the given index
+for the current thread. This should be used with some care since
+in some future implementation the per-thread data may be managed
+by a dynamic mechanism that might invalidate this pointer at any
+time. This pointer should only be considered valid until the next call
+to the per-thread data functions.</PARA>
+<PROGRAMLISTING>void cyg_thread_set_data( cyg_ucount32 index, CYG_ADDRWORD data )</PROGRAMLISTING>
+<PARA>Store the data in the per-thread data for the current thread
+at the given index.</PARA>
+</SECT1>
+<SECT1 id="priority-manipulation">
+<TITLE><!-- <index></index> -->Priority manipulation</TITLE>
+<PROGRAMLISTING>void cyg_thread_set_priority( cyg_handle_t thread, cyg_priority_t priority )</PROGRAMLISTING>
+<PARA>Sets the priority of the given thread to the given value.
+The smaller the value, the higher the priority of the thread.</PARA>
+<PARA>Allowed priorities range between 1 and 64. The values of these
+parameters are configuration-dependent because they depend on which
+scheduler has been selected, and what value has been configured
+for the CYGNUM_KERNEL_SCHED_PRIORITIES
+configuration parameter (<xref linkend="thread-operations">).</PARA>
+<PARA>There is always an idle thread, owned by the kernel, running
+at CYG_THREAD_MIN_PRIORITY. Because of
+this, ordinary threads should never be run at the lowest priority. </PARA>
+<PROGRAMLISTING>cyg_priority_t cyg_thread_get_priority( cyg_handle_t thread )</PROGRAMLISTING>
+<PARA>Returns the priority of the given thread.</PARA>
+<PROGRAMLISTING>void cyg_thread_delay( cyg_tick_count_t delay )</PROGRAMLISTING>
+<PARA>Puts the current thread to sleep for <emphasis>delay</emphasis> ticks. In a default
+configuration there are approximately 100 ticks a second. The actual
+length of the ticks is given by the resolution of the real-time
+clock. <xref linkend="counters-clocks-and-alarms"> for more
+information on counter resolution. </PARA>
+</SECT1>
+<SECT1 id="exception-handling">
+<TITLE><!-- <index></index> --><!-- <xref> -->Exception handling</TITLE>
+<PARA>Exception handlers can be installed to deal with various system-level
+exceptions, such as alignment errors, resets, timers and so forth.
+Exception handling is a configurable feature of <EMPHASIS>eCos</EMPHASIS> and
+is enabled by default.</PARA>
+<PARA>The range of values for the exception_number parameter
+in the functions below is hardware-dependent, as are the individual
+exceptions. See <filename>hal/ARCH/arch/&versiondir;/include/hal_intr</filename> for
+the exception vector definitions specific to a given architecture. </PARA>
+<PARA>The exception handler is a function of the following type: </PARA>
+<PROGRAMLISTING>typedef void cyg_exception_handler_t(
+ cyg_addrword_t data,
+ cyg_code_t exception_number,
+ cyg_addrword_t info
+);</PROGRAMLISTING>
+<PARA>cyg_exception_handler_t is the
+type used for functions which are called as a result of an exception.
+It is used in the function <FUNCTION>cyg_exception_set_handler()</FUNCTION>. </PARA>
+<PROGRAMLISTING>void cyg_exception_set_handler(
+  cyg_code_t exception_number,
+  cyg_exception_handler_t *new_handler,
+  cyg_addrword_t new_data, cyg_exception_handler_t **old_handler,
+  void **old_data
+)</PROGRAMLISTING>
+<PARA>Replace current exception handler. This may apply to either
+the thread, or to a global exception handler, according to how exception
+handling was configured (global or per-thread). The exception may
+be ignored, or used to specify a particular handler.</PARA>
+<PROGRAMLISTING>void cyg_exception_call_handler (
+  cyg_handle_t thread,
+  cyg_code_t exception_number,
+  cyg_addrword_t exception_info
+)</PROGRAMLISTING>
+<PARA>Invoke exception handler for the given exception number. The
+exception handler will be invoked with <emphasis>exception_info</emphasis> as
+its third argument.</PARA>
+</SECT1>
+<SECT1 id="interrupt-handling">
+<TITLE><!-- <index></index> --><!-- <xref> -->Interrupt handling</TITLE>
+<PARA>Interrupt handling is by nature machine-specific. The <EMPHASIS>eCos</EMPHASIS> kernel
+aims to provide efficiency and flexibility in this area, while maintaining
+a very low interrupt latency. To allow the programmer direct access
+to hardware, the semantics and the interface can vary from one architecture
+to another.</PARA>
+<PARA>The interrupt vectors for a given architecture are defined
+in <filename>hal/ARCH/arch/&versiondir;/include/hal_intr.h</filename> where
+also special semantics and caveats of the interrupt capabilities
+would be described.</PARA>
+<PROGRAMLISTING>typedef void cyg_VSR_t();
+typedef cyg_uint32 cyg_ISR_t(cyg_vector_t vector,
+ cyg_addrword_t data);
+typedef void cyg_DSR_t(cyg_vector_t vector,
+ cyg_ucount32 count,
+ cyg_addrword_t data);
+
+enum cyg_ISR_results
+{
+ CYG_ISR_HANDLED = 1, /* Interrupt was handled */
+ CYG_ISR_CALL_DSR = 2 /* Schedule DSR */
+}; </PROGRAMLISTING>
+<PROGRAMLISTING>void cyg_interrupt_create(
+  cyg_vector_t vector,
+  cyg_priority_t priority,
+  cyg_addrword_t data,
+  cyg_ISR_t *isr,
+  cyg_DSR_t *dsr,
+  cyg_handle_t *handle,
+  cyg_interrupt *intr
+)</programlisting>
+<PARA>Creates an interrupt object and returns a handle to it. The
+object contains information about which interrupt vector to use
+and the ISR and DSR that will be called after the interrupt object
+is attached. The interrupt object will be allocated in the memory
+passed in the <emphasis>intr</emphasis> parameter. The interrupt object is not immediately attached;
+it must be attached with the <FUNCTION>cyg_interrupt_attach()</FUNCTION> call.</PARA>
+<PROGRAMLISTING>void cyg_interrupt_delete(
+  cyg_handle_t interrupt
+)</programlisting>
+<PARA>Detaches the <emphasis>interrupt</emphasis> from the vector and frees the corresponding
+memory.</PARA>
+<PROGRAMLISTING>void cyg_interrupt_attach(
+  cyg_handle_t interrupt
+)</programlisting>
+<PARA>Attaches <emphasis>interrupt</emphasis>. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_detach(
+  cyg_handle_t interrupt
+)</programlisting>
+<PARA>Detaches <emphasis>interrupt</emphasis>. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_get_vsr(
+  cyg_vector_t vector,
+  cyg_VSR_t **vsr
+)</programlisting>
+<PARA>Returns a pointer to the VSR currently installed on <emphasis>vector
+</emphasis>. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_set_vsr(
+  cyg_vector_t vector,
+  cyg_VSR_t *vsr
+)</programlisting>
+<PARA>Sets the current VSR on <emphasis>vector</emphasis>. A VSR directly attaches to
+the hardware interrupt vector and needs to be written in assembler.</PARA>
+<PROGRAMLISTING>void cyg_interrupt_disable( void )</programlisting>
+<PARA>Disables all interrupts.</PARA>
+<PROGRAMLISTING>void cyg_interrupt_enable( void )</programlisting>
+<PARA>Enables all interrupts.</PARA>
+<PROGRAMLISTING>void cyg_interrupt_mask(
+  cyg_vector_t vector
+)</programlisting>
+<PARA>Programs the interrupt controller to stop delivery of interrupts
+on <emphasis>vector</emphasis>. On some architectures this will also disable all lower
+priority interrupts while on others they remain enabled. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_mask_intunsafe(
+  cyg_vector_t vector
+)</programlisting>
+<PARA>Programs the interrupt controller to stop delivery of interrupts
+on <emphasis>vector</emphasis>. On some architectures this will also disable all lower
+priority interrupts while on others they remain enabled.
+This version differs from cyg_drv_interrupt_unmask in not being interrupt
+safe.</PARA>
+<PROGRAMLISTING>void cyg_interrupt_unmask(
+  cyg_vector_t vector
+)</programlisting>
+<PARA>Programs the interrupt controller to allow delivery of interrupts
+on the given interrupt vector. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_unmask_intunsafe(
+  cyg_vector_t vector
+)</programlisting>
+<PARA>Programs the interrupt controller to allow delivery of interrupts
+on the given interrupt vector.
+This version differs from cyg_drv_interrupt_unmask in not being interrupt
+safe. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_acknowledge(
+  cyg_vector_t vector
+)</programlisting>
+<PARA>Should be used from inside an ISR to acknowledge receipt of
+the interrupt. The interrupt must be acknowledged. If an interrupt
+is not acknowledged, the interrupt may trigger immediately after
+the ISR returns, causing the ISR to be called again in a loop. </PARA>
+<PROGRAMLISTING>void cyg_interrupt_configure(
+  cyg_vector_t vector,
+  cyg_bool_t level,
+  cyg_bool_t up )</programlisting>
+<PARA>On some interrupt controllers the way an interrupt is detected
+may be configured. The <emphasis>level</emphasis> parameter chooses between level- or
+edge-triggered interrupts. The <emphasis>up</emphasis> parameter chooses between high
+and low level for level triggered interrupts or rising and falling
+edges for edge triggered interrupts. </PARA>
+</SECT1>
+<SECT1 id="counters-clocks-and-alarms">
+<TITLE><!-- <xref> -->Counters, clocks and alarms</TITLE>
+<SECT2>
+<TITLE><!-- <index></index> -->Counters</TITLE>
+<PARA>The counter objects provided by the kernel provide an abstraction
+of the clock facility that is generally provided. Application code
+can associate alarms with counters, where an alarm is identified
+by the number of ticks until it triggers, the action to be taken
+on triggering, and whether or not the alarm should be repeated. </PARA>
+<PARA>There are two different implementations of the counter objects.
+The first stores all alarms in a single linked list. The alternative
+implementation uses a table of linked lists, with the size of the
+table being a separate configurable option. A single list is more
+efficient in terms of memory usage and is generally adequate when
+the application only makes use of a small number of alarms. For
+more complicated operations it is better to have a table of lists
+since this reduces the amount of computation whenever the timer
+goes off. Assuming a table size of 8 (the default value) on average
+the timer code will only need to check 1/8 of the pending
+alarms instead of all of them.</PARA>
+<PARA>The configuration options which select the counter implementation
+are CYGIMP_KERNEL_COUNTERS_MULTI_LIST
+(&ldquo;Option: Implement counters using a table of lists&rdquo;) 
+and CYGIMP_KERNEL_COUNTERS_SINGLE_LIST
+(&ldquo;Option: Implement counters using a single list&rdquo;). </PARA>
+<PARA>The following functions can be used to create and manipulate
+counters:</PARA>
+<PROGRAMLISTING>void cyg_counter_create(
+  cyg_handle_t *counter,
+  cyg_counter *the_counter
+)</programlisting>
+<PARA>Creates a new counter and places it in the space pointed to
+by <emphasis>counter</emphasis>. A counter stores a value that is incremented by <FUNCTION>cyg_counter_tick()</FUNCTION>.
+Alarms may be attached to counters, and the alarms will trigger
+when the counter reaches a specified value.</PARA>
+<PROGRAMLISTING>void cyg_counter_delete(
+  cyg_handle_t counter
+)</programlisting>
+<PARA>Deletes the given counter and frees the corresponding memory.</PARA>
+<PROGRAMLISTING>cyg_tick_count_t cyg_counter_current_value(
+  cyg_handle_t counter
+)</programlisting>
+<PARA>Returns the current value of the given counter.</PARA>
+<PROGRAMLISTING>void cyg_counter_set_value(
+  cyg_handle_t counter,
+  cyg_tick_count_t new_value
+)</programlisting>
+<PARA>Sets the counter's value to new_value.</PARA>
+<PROGRAMLISTING>void cyg_counter_tick(
+  cyg_handle_t counter
+)</programlisting>
+<PARA>Advances the counter by one tick.</PARA>
+<PROGRAMLISTING>void cyg_counter_multi_tick(
+  cyg_handle_t counter
+  cyg_tick_count_t ticks
+)</programlisting>
+<PARA>Advances the counter by multiple ticks.</PARA>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Clocks</TITLE>
+<PARA>Clocks are counters which are associated with a stream
+	    of ticks that represent time periods. Clocks have a
+	    resolution associated with them, whereas counters do not.
+	  </PARA>
+<PARA>The most frequently used clock is the <EMPHASIS>real-time
+clock</EMPHASIS> which serves two special purposes. First, it is
+necessary to support clock and alarm related functions such as <FUNCTION>cyg_thread_delay()</FUNCTION>.
+Second, it is needed to implement timeslicing in the mlqueue and
+lottery schedulers. If the application does not require either of
+these facilities, then it is possible to disable the real-time clock
+support completely. It is also possible to disable just timeslicing
+with the configuration option CYGSEM_KERNEL_SCHED_TIMESLICE,
+or just the clock and alarm functions, using the option CYGFUN_KERNEL_THREADS_TIMER..</PARA>
+<PARA>The real-time clock is available if the configuration option CYGVAR_KERNEL_COUNTERS_CLOCK
+ is defined. </PARA>
+<PARA>Clock resolution is stored in variables of type cyg_resolution_t
+(<xref linkend="cyg-resolution-t">).</PARA>
+<PROGRAMLISTING>void  <FUNCTION>cyg_clock_create</FUNCTION>(
+  cyg_resolution_t resolution,
+  cyg_handle_t *handle,
+  cyg_clock *clock )</PROGRAMLISTING>
+<PARA>Creates a clock object with the given <emphasis>resolution</emphasis> and places
+it in the space pointed to by <emphasis>clock</emphasis>. A clock is a counter driven
+by a regular source of ticks. For example the system real-time clock
+is driven by a clock interrupt.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_clock_delete</FUNCTION>( cyg_handle_t clock )</programlisting>
+<PARA>Deletes a clock object and frees the associated memory.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_clock_to_counter</FUNCTION>( </PROGRAMLISTING>
+<PROGRAMLISTING>cyg_handle_t clock,
+  cyg_handle_t *counter
+)</PROGRAMLISTING>
+<PARA>Converts a clock handle to a counter handle. The counter functions
+can then be used with the counter handle.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_clock_set_resolution</FUNCTION>(
+  cyg_handle_t clock,
+  cyg_resolution_t resolution
+)</PROGRAMLISTING>
+<PARA>Changes the resolution of a given clock object.</PARA>
+<PROGRAMLISTING>cyg_resolution_t <FUNCTION>cyg_clock_get_resolution</FUNCTION>( 
+  cyg_handle_t clock )</PROGRAMLISTING>
+<PARA>Returns the resolution of clock. </PARA>
+<PROGRAMLISTING>cyg_handle <FUNCTION>cyg_real_time_clock</FUNCTION>( void )</PROGRAMLISTING>
+<PARA>Returns a handle to the system-supplied real-time clock.</PARA>
+<PROGRAMLISTING>cyg_tick_count_t <FUNCTION>cyg_current_time</FUNCTION>( void )</PROGRAMLISTING>
+<PARA>Returns the real-time clock's counter. This is equivalent
+to executing the code:</PARA>
+<PROGRAMLISTING> cyg_clock_to_counter(cyg_real_time_clock(), &amp;h),
+ cyg_counter_current_value(h); </PROGRAMLISTING>
+</SECT2>
+<SECT2>
+<TITLE><!-- <index></index> -->Alarms</TITLE>
+<PROGRAMLISTING>typedef void cyg_alarm_t(cyg_handle_t alarm, cyg_addrword_t data);</PROGRAMLISTING>
+<PARA>cyg_alarm_t is the type used for functions
+which are used to handle alarm events. It is used in the function <FUNCTION>cyg_alarm_create()</FUNCTION>. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_alarm_create</FUNCTION>(
+  cyg_handle_t <EMPHASIS>counter,</EMPHASIS>
+  cyg_alarm_t *<EMPHASIS>alarm_fn,</EMPHASIS>
+  cyg_addrword_t <EMPHASIS>data,</EMPHASIS>
+  cyg_handle_t *<EMPHASIS>handle,</EMPHASIS>
+  cyg_alarm *<EMPHASIS>alarm )</EMPHASIS></PROGRAMLISTING>
+<PARA>Creates an alarm object. The alarm is attached to the <parameter>counter
+</parameter> and is created in the memory pointed to by <parameter>alarm
+</parameter>. When the alarm triggers, the handler function <parameter>
+alarmfn</parameter> is called and is passed <parameter>data</parameter>
+as a parameter. The alarm handler executes in the context of the
+function that incremented the counter and thus triggered the alarm.</PARA>
+<NOTE>
+<PARA>If the alarm is associated with the real-time
+	      clock, the alarm handler <parameter>alarmfn</parameter>
+              will be invoked by the
+	      delayed service routine (DSR) that services the
+	      real-time clock. This means that real-time clock alarm
+	      handlers (which are possibly the most frequently used)
+	      must follow the rules of behavior for DSRs. These rules
+	      are outlined in <XREF LINKEND="INTERRUPT-AND-EXCEPTION-HANDLERS">.</PARA>
+</NOTE>
+<PROGRAMLISTING>void <FUNCTION>cyg_alarm_delete</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>alarm )</EMPHASIS></PROGRAMLISTING>
+<PARA>Disables the alarm, detaches from the counter, invalidates
+handles, and frees memory if it was dynamically allocated by <FUNCTION>cyg_alarm_create()</FUNCTION>.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_alarm_initialize</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>alarm,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>trigger,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>interval
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Initialize an alarm. This sets it to trigger at the tick with
+value <parameter>trigger</parameter>. When an alarm triggers, this event is
+dealt with by calling the <parameter>alarmfn</parameter> parameter which was
+passed when the alarm was created using <FUNCTION>cyg_alarm_create()</FUNCTION>.
+If <parameter>interval</parameter> is non-zero, then after the alarm has
+triggered it will set itself to trigger again after <parameter>interval
+</parameter> ticks. Otherwise, if <parameter>interval</parameter> is zero, the
+alarm will be disabled automatically once it has triggered. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_alarm_get_times</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>alarm,</EMPHASIS>
+  cyg_tick_count_t *<EMPHASIS>trigger,</EMPHASIS>
+  cyg_tick_count_t *<EMPHASIS>interval
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Returns the trigger and interval parameters of the alarm.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_alarm_enable</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>alarm )</EMPHASIS></PROGRAMLISTING>
+<PARA>Enables an alarm that has been disabled by calling <FUNCTION>cyg_alarm_disable()</FUNCTION>. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_alarm_disable</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>alarm )</EMPHASIS></PROGRAMLISTING>
+<PARA>Disables an alarm. After an alarm is disabled it will not
+be triggered unless it is subsequently re-enabled by calling <FUNCTION>cyg_alarm_enable()</FUNCTION> or
+is reinitialized by calling <FUNCTION>cyg_alarm_initialize()</FUNCTION>.</PARA>
+<PARA>Note, though, that if a periodic alarm that has been disabled
+is re-enabled without reinitializing it will be in phase with the <EMPHASIS>original</EMPHASIS> sequence
+of alarms. If it is <EMPHASIS>reinitialized</EMPHASIS>, the new
+sequence of alarms will be in phase with the moment in which <FUNCTION>cyg_alarm_initialize()</FUNCTION> was
+called. </PARA>
+</SECT2>
+</SECT1>
+<SECT1 id="synchronization">
+<TITLE>Synchronization</TITLE>
+<SECT2>
+<TITLE>Semaphores</TITLE>
+<PARA>The <!-- <index></index> -->semaphores defined by the type cyg_sem_t
+are counting semaphores. These objects are not referred to by handles,
+but rather by the pointer to the variable in which the semaphore
+is created.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_semaphore_init</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem,</EMPHASIS>
+  cyg_ucount32 <EMPHASIS>val )</EMPHASIS></PROGRAMLISTING>
+<PARA>Initializes a semaphore. The initial semaphore count is set
+to <parameter>val</parameter>.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_semaphore_destroy</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Destroys a semaphore. This must not be done while there are
+any threads waiting on it. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_semaphore_wait</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>If the semaphore count is zero, the current thread will wait
+on the semaphore. If the count is non-zero, it will be decremented
+and the thread will continue running. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_semaphore_trywait</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>A non-blocking version of <FUNCTION>cyg_semaphore_wait()</FUNCTION>.
+This attempts to decrement the semaphore count. If the count is
+positive, then the semaphore is decremented and <constant>true</constant>
+is returned. If the count is zero then the semaphore remains unchanged, and
+<constant>false</constant> is returned, but the current thread continues to
+run. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_semaphore_timed_wait</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>abstime
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>A time-out version of <FUNCTION>cyg_semaphore_wait()</FUNCTION>.
+This attempts to decrement the semaphore count. If the count is
+positive, then the semaphore is decremented and <constant>true</constant> is returned.
+If the count is zero, it will wait for the semaphore to increment.
+If however the <parameter>abstime</parameter> time-out is reached first, it will return
+<constant>false</constant> without changing state, and the current thread will continue
+to run.</PARA>
+<PARA>The <parameter>cyg_tick_count_t</parameter> parameter
+is an absolute time. If a relative time is required, you should
+use <FUNCTION>cyg_current_time</FUNCTION> with
+an offset. For example, to time out 200 ticks from the present you
+would use:</PARA>
+<PROGRAMLISTING>cyg_semaphore_timed_wait(&amp;sem, cyg_current_time() &plus; 200);</PROGRAMLISTING>
+<PARA><FUNCTION>cyg_semaphore_timed_wait()</FUNCTION> is
+only available if the configuration option CYGFUN_KERNEL_THREADS_TIMER
+ is set. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_semaphore_post</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>If there are threads waiting on this semaphore this will wake
+exactly one of them. Otherwise it simply increments the semaphore
+count.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_semaphore_peek</FUNCTION>( 
+  cyg_sem_t *<EMPHASIS>sem,</EMPHASIS>
+  cyg_count32 *<EMPHASIS>val )</EMPHASIS></PROGRAMLISTING>
+<PARA>Returns the current semaphore count in the variable pointed
+to by <parameter>val</parameter>. </PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <xref> -->Mutexes</TITLE>
+<PARA><!-- <index></index> -->Mutexes (mutual exclusion locks) are used in
+a similar way to semaphores. A mutex only has two states, locked
+and unlocked. Mutexes are used to protect accesses to shared data
+or resources. When a thread locks a mutex it becomes the owner.
+Only the mutex's owner may unlock it. While a mutex remains
+locked, the owner should not lock it again, as the behavior is undefined
+and probably dangerous. </PARA>
+<PARA>If non-owners try to lock the mutex, they will be suspended
+until the mutex is available again, at which point they will own
+the mutex. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mutex_init</FUNCTION>( 
+  cyg_mutex_t *<EMPHASIS>mutex
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Initializes a mutex. It is initialized in the unlocked state. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mutex_destroy</FUNCTION>( 
+  cyg_mutex_t *<EMPHASIS>mutex
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Destroys a mutex. A mutex should not be destroyed in the locked
+state, as the behavior is undefined. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mutex_lock</FUNCTION>( 
+  cyg_mutex_t *<EMPHASIS>mutex
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Changes the nutex from the unlocked state to the locked state.
+When this happens the mutex becomes owned by the current thread.
+If the mutex is locked, the current thread will wait until the mutex
+becomes unlocked before performing this operation. The result of
+this function will be TRUE if the mutex has been locked, or FALSE
+if it has not. A FALSE result can result if the thread has been
+released from its wait by a call to <FUNCTION>cyg_thread_release()</FUNCTION> or <FUNCTION>cyg_mutex_release()</FUNCTION>.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mutex_unlock</FUNCTION>( 
+  cyg_mutex_t *<EMPHASIS>mutex
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Changes the mutex from the locked state to the unlocked state.
+This function may only be called by the thread which locked the
+mutex, and should not be called on an unlocked mutex. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mutex_release</FUNCTION>( 
+  cyg_mutex_t *<EMPHASIS>mutex
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Release all threads waiting on the mutex pointed to by the
+mutex argument. These threads will return from cyg_mutex_lock()
+with a FALSE result and will not have claimed the mutex. This function
+has no effect on any thread that may have the mutex claimed.</PARA>
+<PROGRAMLISTING>void cyg_mutex_set_protocol( 
+  cyg_mutex_t *<parameter>mutex</parameter>,
+  enum cyg_mutex_protocol <parameter>protocol</parameter>)</PROGRAMLISTING>
+<PARA>As described in the Thread Synchronization section, eCos's
+mutex can use a number of schemes when dealing with priority inversion.
+This function is used to set the protocol for the mutex. <parameter>protocol
+</parameter> may take one of 3 values: CYG_MUTEX_NONE, CYG_MUTEX_INHERIT,
+CYG_MUTEX_CEILING. The first indicates no inversion
+protocol will be used. The second uses the SIMPLE inversion protocol,
+and the last uses the ceiling protocol.</PARA>
+<PROGRAMLISTING>void cyg_mutex_set_ceiling( 
+  cyg_mutex_t *<parameter>mutex</parameter>,
+  cyg_priority_t <parameter>priority</parameter>)</PROGRAMLISTING>
+<PARA>When using the ceiling inversion protocol, this function allows
+the ceiling thread priority of an obtained mutex to be set. </PARA>
+<PROGRAMLISTING>cyg_priority_t cyg_thread_get_current_priority( 
+  cyg_handle_t <parameter>thread</parameter>)</PROGRAMLISTING>
+<PARA>Returns the current thread priority. If the thread is running
+at a higher priority than normal due to priority inversion, this
+functions returns the inverted priority, whereas 
+<function>cyg_thread_get_priority()</function> returns
+the normal priority.</PARA>
+</SECT2>
+<SECT2>
+<TITLE><!-- <xref> -->Condition Variables</TITLE>
+<PARA><!-- <index></index> -->Condition variables are a synchronization mechanism
+which (used with a mutex) grants several threads mutually exclusive
+access to shared data and to broadcast availability of that data
+to all the other threads.</PARA>
+<PARA>A typical example of the use of condition variables is when
+one thread (the producer) is producing data and several other (consumer)
+threads are waiting for that data to be ready. The consumers will
+wait by invoking <FUNCTION>cyg_cond_wait()</FUNCTION>.
+The producer will lock access to the data with a mutex, and when
+it has generated enough data for the other processes to consume,
+it will invoke <FUNCTION>cyg_cond_broadcast()</FUNCTION> to
+wake up the consumers. The <EMPHASIS>Getting Started with </EMPHASIS><PRODUCTNAME>eCos</PRODUCTNAME> book
+has example programs which use condition variables to implement
+a simple message passing system between threads. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_cond_init</FUNCTION>( 
+  cyg_cond_t *<EMPHASIS>cond,</EMPHASIS>
+  cyg_mutex_t *<EMPHASIS>mutex
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Initializes the condition variable. A condition variable is
+attached to a specific mutex. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_cond_destroy</FUNCTION>( 
+  cyg_cond_t *<EMPHASIS>cond
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Destroys the condition variable <parameter>cond</parameter>. This must not be done
+on a condition variable which is in use. After it has been destroyed,
+it may be subsequently reinitialized. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_cond_wait</FUNCTION>( 
+  cyg_cond_t *<EMPHASIS>cond
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Causes the current thread to wait on the condition variable,
+while simultaneously unlocking the corresponding mutex. <FUNCTION>cyg_cond_wait()</FUNCTION> may
+be called by a thread which has the corresponding mutex locked.</PARA>
+<PARA>The thread can only be awakened by a call to <FUNCTION>cyg_cond_signal()</FUNCTION> or <FUNCTION>cyg_cond_broadcast()</FUNCTION> on
+the same condition variable. When the thread is awakened, the mutex
+will be reclaimed before this function proceeds. Since it may have
+to wait for this, <FUNCTION>cyg_cond_wait()</FUNCTION> should
+only be used in a loop since the condition may become false in the meantime.
+This is shown in the following example: </PARA>
+<PROGRAMLISTING>extern cyg_mutex_t mutex;
+extern cyg_cond_t cond;
+
+cyg_mutex_lock( &amp;mutex );
+...
+
+while( condition_not_true )
+{
+ cyg_cond_wait( &amp;cond );
+}
+
+...
+
+cyg_mutex_unlock( &amp;mutex );
+</programlisting>
+<programlisting>
+  cyg_bool_t <FUNCTION>cyg_cond_timed_wait</FUNCTION>( 
+  cyg_cond_t *<EMPHASIS>cond,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>abstime
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>A time-out version of <FUNCTION>cyg_cond_wait()</FUNCTION> which
+waits for a signal or broadcast. If a signal or broadcast is received
+it returns <constant>true</constant>, but if one is not received by 
+<parameter>abstime</parameter>, it returns <constant>false</constant>.</PARA>
+<PARA>The <parameter>cyg_tick_count_t</parameter> parameter
+is an absolute time. If a relative time is required, you should
+use <FUNCTION>cyg_current_time</FUNCTION> with
+an offset. For example, to time out 200 ticks from the present you
+would use:</PARA>
+<PROGRAMLISTING>cyg_cond_timed_wait(&amp;sem, cyg_current_time() &plus; 200);</PROGRAMLISTING>
+<PARA><FUNCTION>cyg_cond_timed_wait()</FUNCTION> is
+only available if the configuration option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
+ is set. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_cond_signal</FUNCTION>( 
+  cyg_cond_t *<EMPHASIS>cond
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Wakes up at least one thread which is waiting on the condition
+variable. When a thread is awakened it will become the owner of
+the mutex. <FUNCTION>cyg_cond_signal()</FUNCTION> may
+be called by the thread which currently owns the mutex to which
+the condition variable is attached. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_cond_broadcast</FUNCTION>( 
+  cyg_cond_t *<EMPHASIS>cond
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Wakes <EMPHASIS>all</EMPHASIS> the threads waiting on the
+condition variable. Each time a thread is awakened it will become
+the current owner of the mutex. </PARA>
+</SECT2>
+</SECT1>
+<SECT1 id="memory-pools">
+<TITLE><!-- <xref> -->Memory pools</TITLE>
+<PARA>There are two sorts of <!-- <index></index> -->memory pools. A variable
+size memory pool is for allocating blocks of any size. A fixed size
+memory pool, has the block size specified when the pool is created
+and only provides blocks of that size.</PARA>
+<PARA>Blocking, non-blocking and &ldquo;blocking with time-out&rdquo; versions
+of these calls are provided. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_var_create</FUNCTION>( 
+  void *<EMPHASIS>base,</EMPHASIS>
+  cyg_int32 <EMPHASIS>size,</EMPHASIS>
+  cyg_handle_t *<EMPHASIS>handle,</EMPHASIS>
+  cyg_mempool_var *<EMPHASIS>var
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Creates a variable size memory pool. The parameters are:</PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>base 	</TERM>
+<LISTITEM>
+
+<PARA>base of memory to use for pool</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>size 	</TERM>
+<LISTITEM>
+
+<PARA>size of memory pool in bytes</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>handle 	</TERM>
+<LISTITEM>
+
+<PARA>returned handle of memory pool</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>var 	</TERM>
+<LISTITEM>
+
+<PARA>space to put pool structure in</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_var_delete</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Deletes the variable size memory pool <parameter>varpool</parameter>.
+</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mempool_var_alloc</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool,</EMPHASIS>
+  cyg_int32 <EMPHASIS>size )</EMPHASIS></PROGRAMLISTING>
+<PARA>Allocates a block of length <parameter>size</parameter>. This will
+block until the memory becomes available.</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mempool_var_timed_alloc</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool,</EMPHASIS>
+  cyg_int32 <EMPHASIS>size,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>abstime
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Allocates a block of length <parameter>size</parameter>. If the requested
+amount of memory is not available, it will wait until <parameter>abstime
+</parameter> before giving up and returning <constant>NULL</constant>.</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mempool_var_try_alloc</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool,</EMPHASIS>
+  cyg_int32 <EMPHASIS>size )</EMPHASIS></PROGRAMLISTING>
+<PARA>Allocates a block of length <parameter>size</parameter>. 
+<constant>NULL</constant> is returned if not enough is available.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_var_free</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool,</EMPHASIS>
+  void *<EMPHASIS>p )</EMPHASIS></PROGRAMLISTING>
+<PARA>Frees memory back into variable size pool <parameter>varpool</parameter>.
+</PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mempool_var_waiting</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Returns true if any threads are waiting for memory in 
+<parameter>varpool</parameter>.</PARA>
+<PROGRAMLISTING>typedef struct {
+ cyg_int32 totalmem;
+ cyg_int32 freemem;
+ void *base;
+ cyg_int32 size;
+ cyg_int32 blocksize;
+ cyg_int32 maxfree; // The largest free block
+} cyg_mempool_info;
+</programlisting><programlisting>
+  void <FUNCTION>cyg_mempool_var_get_info</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>varpool,</EMPHASIS>
+  cyg_mempool_info *<EMPHASIS>info
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Puts information about a variable memory pool into the structure
+provided.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_fix_create</FUNCTION>( 
+  void *<EMPHASIS>base,</EMPHASIS>
+  cyg_int32 <EMPHASIS>size,</EMPHASIS>
+  cyg_int32 <EMPHASIS>blocksize,</EMPHASIS>
+  cyg_handle_t *<EMPHASIS>handle,</EMPHASIS>
+  cyg_mempool_fix *<EMPHASIS>fix
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Create a fixed size memory pool. This function takes the following
+parameters:</PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>base 	</TERM>
+<LISTITEM>
+
+<PARA>base of memory to use for pool</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>size 	</TERM>
+<LISTITEM>
+
+<PARA>size of total space requested</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>blocksize 	</TERM>
+<LISTITEM>
+
+<PARA>size of individual elements</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>handle 	</TERM>
+<LISTITEM>
+
+<PARA>returned handle of memory pool</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>fix 	</TERM>
+<LISTITEM>
+
+<PARA>space to put pool structure in</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_fix_delete</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Deletes the given fixed size memory pool.</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mempool_fix_alloc</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Allocates a block. If the memory is not available immediately,
+this blocks until the memory becomes available.</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mempool_fix_timed_alloc</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>abstime
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Allocates a block. If the memory is not already available,
+it will try until <parameter>abstim</parameter>e before giving up and
+returning a <constant>NULL</constant>.</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mempool_fix_try_alloc</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Allocates a block. NULL is returned if no memory is available.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_fix_free</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool,</EMPHASIS>
+  void *<EMPHASIS>p )</EMPHASIS></PROGRAMLISTING>
+<PARA>Frees memory back into fixed size pool.</PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mempool_fix_waiting</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Returns true if there are any threads waiting for memory in
+the given memory pool.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mempool_fix_get_info</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>fixpool,</EMPHASIS>
+  cyg_mempool_info *<EMPHASIS>info
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Puts information about a variable memory pool into the structure
+provided.</PARA>
+<PARA>The fixed size memory pool simply returns blocks of memory
+of exactly the blocksize requested. If the pool is being used to
+allocate memory for a type that has alignment constraints (such
+as 4-byte alignment), then it is up to the user to align the memory
+appropriately for the type in question. Alternatively, choose a blocksize
+that is an exact multiple of the required alignment.</PARA>
+<PARA>The memory available from the memory pools will not be the
+same size as the memory supplied to it. Some of the memory is used
+for internal data structures of the allocator. <function>cyg_mempool_fix_get_info()</function> and <function>cyg_mempool_var_get_info()</function> may
+be used to determine the available memory.</PARA>
+</SECT1>
+<SECT1 id="message-boxes">
+<TITLE><!-- <index></index> -->Message boxes</TITLE>
+<PARA>Message boxes are a primitive mechanism for exchanging messages
+between threads, inspired by the &micro;ITRON
+specification. A message box can be created with <FUNCTION>cyg_mbox_create()</FUNCTION> before
+the scheduler is started, and two threads in a typical producer/consumer relationship
+can access it. One thread, the producer, will use <FUNCTION>cyg_mbox_put()</FUNCTION> to
+make data available to the consumer thread which uses <FUNCTION>cyg_mbox_get()</FUNCTION> to
+access the data. </PARA>
+<PARA>The size of the internal message queue is configured by the 
+&ldquo;Message box queue size&rdquo; ( CYGNUM_KERNEL_SYNCH_MBOX_QUEUE_SIZE )
+configuration option. The default value is 10. </PARA>
+<PARA>Blocking, non-blocking and &ldquo;blocking with time-out&rdquo; versions
+of these calls are provided. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mbox_create</FUNCTION>( 
+  cyg_handle_t *<EMPHASIS>handle,</EMPHASIS>
+  cyg_mbox *<EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Creates a message box using the space provided in the mbox
+parameter, and returns a handle for future access to that message
+box.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_mbox_delete</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Deletes the given message box. </PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mbox_get</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Waits for a message to be available, then retrieves it and
+returns the address of the data. </PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mbox_timed_get</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>timeout
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Waits for a message to be available, but times out if <parameter>timeout
+</parameter>time passes. This version of the function is only available if the
+configuration option CYGFUN_KERNEL_THREADS_TIMER
+is turned on. </PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mbox_tryget</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Checks to see if a message is ready. If no message is available
+it returns immediately with a return value of <constant>NULL</constant>.
+If a message is available it retrieves it and returns the address of the data.
+</PARA>
+<PROGRAMLISTING>void *<FUNCTION>cyg_mbox_peek_item</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Checks to see if a message is ready, and if one is available
+returns the address of the data <EMPHASIS>without</EMPHASIS> removing
+the message from the queue. If no message is available it returns
+<constant>NULL</constant>. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mbox_put</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox,</EMPHASIS>
+  void *<EMPHASIS>item )</EMPHASIS></PROGRAMLISTING>
+<PARA>Places a message in the given message box. If the queue is
+full it will block until the message can be sent. It returns <constant>true
+</constant>if the message was successfully sent, and <constant>false</constant>
+if the message was not sent and its sleep was awakened by the kernel before
+the message could be sent. </PARA>
+<PARA>The <FUNCTION>cyg_mbox_put()</FUNCTION> function
+is only available if the CYGMTH_MBOXT_PUT_CAN_WAIT configuration
+has been selected. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mbox_timed_put</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox,</EMPHASIS>
+  void *<EMPHASIS>item,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>abstime
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>A time-out version of <FUNCTION>cyg_mbox_put()</FUNCTION>.
+This will try to place the message in the given message box. If
+the queue is full, it will wait until <parameter>abstime</parameter> before
+giving up and returning <constant>false</constant>. </PARA>
+<PARA>The <FUNCTION>cyg_mbox_timed_put()</FUNCTION> function
+is only available if the both the CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
+and CYGFUN_KERNEL_THREADS_TIMER configuration
+have been selected. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mbox_tryput</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox,</EMPHASIS>
+  void *<EMPHASIS>item )</EMPHASIS></PROGRAMLISTING>
+<PARA>Tries to place a message in the given message box. It returns
+<constant>true</constant> if the message was successfully sent, and 
+<constant>false</constant> if the message
+could not be sent immediately, usually because the queue was full. </PARA>
+<PROGRAMLISTING>cyg_count32 <FUNCTION>cyg_mbox_peek</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Takes a peek at the queue and returns the number of messages
+waiting in it. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mbox_waiting_to_get</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Queries the kernel to see if other processes are waiting to
+receive a message in the given message box. Returns <constant>true</constant>
+if other processes are waiting, <constant>false</constant> otherwise. </PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_mbox_waiting_to_put</FUNCTION>( 
+  cyg_handle_t <EMPHASIS>mbox )</EMPHASIS></PROGRAMLISTING>
+<PARA>Queries the kernel to see if <EMPHASIS>other</EMPHASIS> processes
+are waiting to send a message in the given message box. Returns
+<constant>true</constant> if other processes are waiting, <constant>false
+</constant> otherwise. </PARA>
+</SECT1>
+<SECT1 id="flags">
+<TITLE>Flags</TITLE>
+<PARA>Flags are a <!-- <index></index> -->synchronization mechanism which
+allow a thread to wait for a single condition or a combination of
+conditions. The conditions are represented by bits in a 32 bit word. Flags
+are inspired by the <!-- <index></index> -->&micro;ITRON specification.</PARA>
+<PARA>Flags are of type cyg_flag_t, which are
+32 bit words, and routines are provided to set or mask some bits
+in the flag value. </PARA>
+<PARA>A &ldquo;consumer side&rdquo; thread can wait for a &ldquo;producer
+side&rdquo; thread to set the entire collection of bits, or any
+subset of them.</PARA>
+<PARA>When a thread sets some bits in a flag, all threads whose
+requirements are now satisfied are woken up; thus flags have broadcast
+semantics. A variation on the wait call can specify that the flag
+value be cleared when the wait call is satisfied, in which case
+the setting of bits would not be a broadcast. </PARA>
+<PARA>Blocking, non-blocking, and &ldquo;blocking with time-out&rdquo; versions
+of the wait calls are provided. </PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_flag_init</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Initializes a flag variable.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_flag_destroy</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Destroys a flag variable.</PARA>
+<PROGRAMLISTING>void <FUNCTION>cyg_flag_setbits</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag,</EMPHASIS>
+  cyg_flag_value_t <EMPHASIS>value
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Sets the bits in <parameter>flag</parameter> which are set in
+<parameter>value</parameter>.</PARA>
+<PARA>A side effect of <FUNCTION>cyg_flag_setbits()</FUNCTION> is
+that the kernel wakes up any waiting threads whose requirements
+are now satisfied. </PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>flag 	</TERM>
+<LISTITEM>
+
+<PARA>A pointer to the flag whose bits are being set. The new setting
+of <parameter>flag</parameter> will be
+<literal>*flag -&gt; (*flag | value)</literal>.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>value 	</TERM>
+<LISTITEM>
+
+<PARA>A word whose 1 bits will also be set in
+		*<parameter>flag</parameter>. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<PROGRAMLISTING>void <FUNCTION>cyg_flag_maskbits</FUNCTION>( 
+cyg_flag_t *<EMPHASIS>flag,</EMPHASIS>
+cyg_flag_value_t <EMPHASIS>value</EMPHASIS>
+)
+	</PROGRAMLISTING>
+<PARA>Clear the bits in the given <parameter>flag</parameter> which are zero
+in the <parameter>value</parameter>. This cannot result in new threads being
+eligible for awakening.</PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>flag 	</TERM>
+<LISTITEM>
+
+<PARA>A pointer to the flag whose bits are being cleared. The new
+setting of <parameter>flag</parameter> will be
+<literal>*flag -&gt; (*flag &amp; value)</literal>.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>value 	</TERM>
+<LISTITEM>
+
+<PARA>A word whose 0 bits will also be cleared in
+		*<parameter>flag</parameter>. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<PARA>We now describe the <FUNCTION>cyg_flag_wait()</FUNCTION>,
+which frequently uses the following macros: </PARA>
+<PROGRAMLISTING> #define CYG_FLAG_WAITMODE_AND ((cyg_flag_mode_t)0)
+ #define CYG_FLAG_WAITMODE_OR  ((cyg_flag_mode_t)2)
+ #define CYG_FLAG_WAITMODE_CLR ((cyg_flag_mode_t)1)
+</programlisting>
+<programlisting>
+  cyg_flag_value_t <FUNCTION>cyg_flag_wait</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag,</EMPHASIS>
+  cyg_flag_value_t <EMPHASIS>pattern,</EMPHASIS>
+  cyg_flag_mode_t <EMPHASIS>mode
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Wait for all the bits which are one in <parameter>pattern</parameter> to
+be set in the <parameter>flag</parameter> value (if <parameter>mode</parameter>
+is <constant>CYG_FLAG_WAITMODE_AND</constant>)
+or for any of the bits which are one in <parameter>pattern</parameter> to be
+set in the <parameter>flag</parameter> value (if mode is 
+<constant>CYG_FLAG_WAITMODE_OR</constant>).</PARA>
+<PARA>When <FUNCTION>cyg_flag_wait()</FUNCTION> returns,
+meaning that the condition is met, the flag value which succeeded
+is returned from the call; in other circumstances (such as a bad
+value for <parameter>mode</parameter> or <parameter>pattern</parameter>), zero
+is returned to indicate the error.</PARA>
+<PARA>If the mode is one of those above plus <constant>CYG_FLAG_WAITMODE_CLR
+</constant>, the whole of the flag value is cleared to zero when the condition
+is met. </PARA>
+<PARA><FUNCTION>cyg_flag_wait()</FUNCTION> takes
+the following parameters: </PARA>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>flag 	</TERM>
+<LISTITEM>
+
+<PARA>The value of the flag (set by the thread that called <FUNCTION>cyg_flag_setbits()</FUNCTION> or <FUNCTION>cyg_flag_maskbits()</FUNCTION>)
+is placed in here.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>pattern 	</TERM>
+<LISTITEM>
+
+<PARA>The set of bits which, if set, will cause the calling thread
+to be woken up. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>mode 	</TERM>
+<LISTITEM>
+
+<PARA>A parameter which modifies the conditions for wake-up. It
+can take the following values: </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>CYG_FLAG_WAITMODE_AND 	</TERM>
+<LISTITEM>
+
+<PARA>Only wake up if <EMPHASIS>all</EMPHASIS> the bits in <parameter>mask
+</parameter>are set in the flag.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>CYG_FLAG_WAITMODE_OR 	</TERM>
+<LISTITEM>
+
+<PARA>Wake up if <EMPHASIS>any</EMPHASIS> of the bits in <parameter>mask
+</parameter> are set in the flag. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>CYG_FLAG_WAITMODE_AND &plus;
+		  CYG_FLAG_WAITMODE_CLR </TERM>
+<TERM>CYG_FLAG_WAITMODE_OR &plus; CYG_FLAG_WAITMODE_CLR
+	</TERM>
+<LISTITEM>
+<PARA>		Like CYG_FLAG_WAITMODE_AND and
+CYG_FLAG_WAITMODE_OR, but the entire
+flag is cleared to zero when the condition is met, whereas normally
+the value of the flag is unchanged. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+<PARA>Waiting threads are queued depending on the semantics of the
+underlying scheduler. In release &version;, this means that, if
+the multi-level queue scheduler is selected, queueing is in FIFO
+ordering, while the bitmap scheduler supports thread priority ordered
+queueing. When some flag value bits become signalled by a call to <FUNCTION>cyg_flag_setbits()</FUNCTION>,
+the queue is scanned in order, and each waiting thread in turn is
+awoken or re-queued depending on its request. When a thread is awoken,
+if it made the wait call with CYG_FLAG_WAITMODE_CLR,
+the flag value is cleared to zero, and the scan of queued threads
+is terminated. </PARA>
+<PROGRAMLISTING>cyg_flag_value_t <FUNCTION>cyg_flag_timed_wait</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag,</EMPHASIS>
+  cyg_flag_value_t <EMPHASIS>pattern,</EMPHASIS>
+  cyg_flag_mode_t <EMPHASIS>mode,</EMPHASIS>
+  cyg_tick_count_t <EMPHASIS>abstime
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>A time-out version of <FUNCTION>cyg_flag_wait()</FUNCTION>.
+This waits for the condition required by <parameter>pattern</parameter>
+and <parameter>mode</parameter> to be met, or until the <parameter>abstime
+</parameter> time-out is reached, whichever is first.
+If the time-out is reached first, zero is returned. This call is
+only available if the configuration option <constant>CYGFUN_KERNEL_THREADS_TIMER
+</constant> is enabled. </PARA>
+<PROGRAMLISTING>cyg_flag_value_t <FUNCTION>cyg_flag_poll</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag,</EMPHASIS>
+  cyg_flag_value_t <EMPHASIS>pattern,</EMPHASIS>
+  cyg_flag_mode_t <EMPHASIS>mode
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>A non-blocking version of <FUNCTION>cyg_flag_wait()</FUNCTION>.
+If the condition required by <parameter>pattern</parameter> and <parameter>
+mode</parameter> is met, the flag value
+is returned, otherwise zero is returned. The flag value may be cleared
+in the event of success by specifying CYG_FLAG_WAITMODE_CLR
+in the <parameter>mode</parameter>, as usual. </PARA>
+<PROGRAMLISTING>cyg_flag_value_t <FUNCTION>cyg_flag_peek</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Returns the current flag value.</PARA>
+<PROGRAMLISTING>cyg_bool_t <FUNCTION>cyg_flag_waiting</FUNCTION>( 
+  cyg_flag_t *<EMPHASIS>flag
+)</EMPHASIS></PROGRAMLISTING>
+<PARA>Returns true if there are threads waiting on this flag.</PARA>
+</SECT1>
+</CHAPTER>
+<CHAPTER id="ecos-interrupt-model">
+<TITLE>eCos <!-- <index></index> -->Interrupt Model</TITLE>
+<PARA>This chapter describes the <EMPHASIS>eCos</EMPHASIS>
+	interrupt model in detail. </PARA>
+<PARA>Interrupt handling is an important part of most real-time
+	systems. Timely handling of interrupt sources is important.
+	This can be severely impacted by certain activities that must
+	be considered atomic (i.e. uninterruptible). Typically these
+	activities are executed with interrupts disabled. In order to
+	keep such activities to a minimum and allow for the smallest
+	possible interrupt latencies, <EMPHASIS>eCos</EMPHASIS> uses a
+	split interrupt handling scheme. In this scheme, interrupt
+	handling is separated into two parts. The first part is known
+	as the <!-- <index></index> -->Interrupt Service Routine or
+	ISR. The second part is the <!-- <index></index> -->Deferred
+	Service Routine or DSR. This separation explicitly allows for
+	the DSRs to be run with interrupts enabled, thus allowing
+	other potentially higher priority interrupts to occur and be
+	processed while processing a lower priority interrupt. </PARA>
+<PARA>In order for this model to work, the ISR should run
+	quickly. If the service requirements for the interrupt are
+	small, the interrupt can be completely handled by the ISR and
+	no DSR is required. However, if servicing the interrupt is
+	more complex, a DSR should be used. The DSR will be run at
+	some later time, at the point when thread scheduling is
+	allowed. Postponing the execution of DSRs until this time
+	allows for simple synchronization methods to be used by the
+	kernel. </PARA>
+<PARA>Further, this controlled calling &mdash; when thread scheduling
+is allowed &mdash; means that DSRs can interact with the kernel,
+for example by signalling that an asynchronous operation has completed. </PARA>
+<PARA>In order to allow DSRs to run with interrupts enabled, the
+ISR for a particular interrupt source (or the hardware) must arrange
+that that interrupt will not recur until the DSR has completed.
+In some cases, this is how the hardware works. Once an interrupt
+is delivered another interrupt will not occur until re-enabled.
+In the general case, however, it is up to the ISR to enforce this
+behavior. Typically the ISR will "mask" the interrupt source, thus
+preventing its recurrence. The DSR will then unmask the interrupt
+when it has been serviced thus allowing new occurrences of the interrupt
+to be delivered when they happen. </PARA>
+<PARA>Alternatively, if an ISR is doing very little per interrupt,
+for example transferring one byte from memory to an IO device, it
+may only be necessary to interact with the rest of the system when
+a "transfer" is complete. In such a case an ISR could execute many
+times and only when it reaches the end of a buffer does it need
+to request execution of its DSR. </PARA>
+<PARA>If the interrupt source is "bursty", it may be OK for several
+interrupts and calls to the ISR to occur before a requested DSR
+has been executed; the kernel maintains counts for posted DSRs,
+and in such a case the DSR will eventually be called with a parameter
+that tells it how many ISRs requested that the DSR be called. Care
+is needed to get the interrupt code right for such a situation,
+for one call to the DSR is required to do the work of several. </PARA>
+<PARA>As mentioned above, the DSR will execute at some later time.
+Depending on the state of the system, it may be executed at a much
+later time. There are periods during certain kernel operations where
+thread scheduling is disabled, and hence DSRs are not allowed to
+operate. These periods have been purposefully made as limited as
+possible in the <EMPHASIS>eCos</EMPHASIS> kernel, but they still
+exist. In addition, user threads have the ability to suspend scheduling
+as well, thus affecting the possible DSR execution latency. If a
+DSR cannot be executed sufficiently quickly, the interrupt source
+may actually overrun. This would be considered a system failure. </PARA>
+<PARA>One of the problems system designers face is how much stack
+space to allow each thread in the system. <EMPHASIS>eCos</EMPHASIS> does
+not dictate the size of thread stacks, it is left to the user when
+the thread is created. The size of the stack depends on the thread
+requirements as well as some fixed overhead required by the system.
+In this case, the overhead is enough stack space to hold a complete
+thread state (the actual amount depends on the CPU architecture).
+Guidelines for the minimum stack requirements are provided by the HAL
+using the symbol <literal>CYGNUM_HAL_STACK_SIZE_MINIMUM</literal>. </PARA>
+<PARA>A potential problem with this scheme is with nested interrupts.
+Since interrupts are reenabled during the DSR portion of servicing
+an interrupt, there is the possibility of a new interrupt (hopefully
+from a separate source) arriving while this processing takes place.
+When this new interrupt is serviced some state information about
+the interrupted processing will be saved on the stack. The amount
+of this information again depends on the CPU architecture and in
+some cases it is substantial. This implies that any given stack
+would need enough space to potentially hold "N" interrupt frames.
+In a realtime system with many threads this is an untenable situation.
+To solve this problem, <EMPHASIS>eCos</EMPHASIS> allows for a separate
+interrupt stack to be used while processing interrupts. This stack
+needs to be large enough to support "N" nested interrupts, but each
+individual thread stack only needs the overhead of a single interrupt
+state. This is because the thread state is kept on the thread's
+own stack, including information about any interrupt that caused
+the thread to be scheduled. This is a much better situation in the
+end, however, since only the interrupt stack need be large enough
+to handle the potential interrupt servicing needs. </PARA>
+<PARA><EMPHASIS>eCos</EMPHASIS> allows for the use of the interrupt
+stack to be totally configurable. The user can elect to not use
+a separate interrupt stack. This requires making all thread stacks large
+enough but does reduce the overhead of switching stacks while processing interrupts.
+On the other hand, if memory is tight, then choosing a separate
+interrupt stack would be warranted at the cost of a few machine
+cycles during the processing of each interrupt. </PARA>
+<PARA>Not all target HALs support this feature from day one anyway;
+however common configuration features such as this may still be
+presented in the config tool, and present in include files, even
+if the actual target selected does not support the feature at this
+time. </PARA>
+<PARA>The following problem with the interrupt system has been observed.
+On the mn10300 simulator, interrupts were occurring immediately
+after they were re-enabled in the DSR. This should really be considered
+a case of interrupt overrun since there is no possibility of useful [or
+any] processing between the time an interrupt has been
+serviced and an subsequent interrupt occurs, hence the system is totally
+saturated. The problem came about because the stack was overflowing.
+It was a user [thread] stack that overflowed because
+DSR processing was taking place on the thread stack. Analysis of
+this problem led to a rework of how interrupts are processed, in
+particular the use of a separate interrupt stack during interrupt
+processing (both ISR and DSR parts). The overflow can still happen,
+but now it is restricted to only the interrupt stack. The system
+designer can make accommodations for this by making a suitably large
+interrupt stack if it is known that the "overrun" is finite, e.g.
+in the case of a serial device, this could be the depth of some
+FIFO. In any case, overrun should be avoided, but having only a
+single stack that needs to suffer multiple interrupt frames allows
+for this failure to be detected simply. </PARA>
+<PARA>Of course, it is only worthwhile having a separate interrupt
+stack if you are using an <EMPHASIS>eCos</EMPHASIS> configuration
+that has a scheduler and multiple threads. If there is no kernel,
+then the C library arranges to call <FUNCTION>main()</FUNCTION>,
+or your application may be entered from <FUNCTION>cyg_user_start()</FUNCTION>,
+on the startup stack. It runs on the only stack there is in the
+system. Depending on the design of the particular HAL for your target
+platform, it is natural to re-use the startup stack as the interrupt
+stack as soon as the scheduler is running. Since this is only sensible
+if there is a kernel, HALs typically only implement the separate interrupt
+stack if the kernel is present. </PARA>
+</CHAPTER>
+<CHAPTER id="real-time-characterization">
+<TITLE><!-- <index></index> -->Real-time Characterization</TITLE>
+<PARA>When building a real-time system, care must be taken to
+	ensure that the system will be able to perform properly within
+	the constraints of that system. One of these constraints may
+	be how fast certain operations can be performed. Another might
+	be how deterministic the overall behavior of the system is.
+	Lastly the memory footprint (size) and unit cost may be
+	important. </PARA>
+<PARA>One of the major problems encountered while evaluating a
+	system will be how to compare it with possible alternatives.
+	Most manufacturers of real-time systems publish performance
+	numbers, ostensibly so that users can compare the different
+	offerings. However, what these numbers mean and how they were
+	gathered is often not clear. The values are typically measured
+	on a particular piece of hardware, so in order to truly
+	compare, one must obtain measurements for exactly the same set
+	of hardware that were gathered in a similar fashion. </PARA>
+<PARA>Two major items need to be present in any given set of
+	measurements. First, the raw values for the various
+	operations; these are typically quite easy to measure and will
+	be available for most systems. Second, the determinacy of the
+	numbers; in other words how much the value might change
+	depending on other factors within the system. This value is
+	affected by a number of factors: how long interrupts might be
+	masked, whether or not the function can be interrupted, even
+	very hardware-specific effects such as cache locality and
+	pipeline usage. It is very difficult to measure the
+	determinacy of any given operation, but that determinacy is
+	fundamentally important to proper overall characterization of
+	a system. </PARA>
+<PARA>In the discussion and numbers that follow, three key measurements
+are provided. The first measurement is an estimate of the interrupt
+latency: this is the length of time from when a hardware interrupt
+occurs until its <!-- <index></index> -->Interrupt Service Routine (ISR)
+is called. The second measurement is an estimate of overall interrupt
+overhead: this is the length of time average interrupt processing takes,
+as measured by the real-time clock interrupt (other interrupt sources
+will certainly take a different amount of time, but this data cannot
+be easily gathered). The third measurement consists of the timings
+for the various kernel primitives. </PARA>
+<SECT1 id="real-time-char-methodology"><!-- <index></index> -->
+<TITLE>Methodology</TITLE>
+<PARA>Key operations in the kernel were measured by using a
+	  simple test program which exercises the various kernel
+	  primitive operations. A hardware timer, normally the one
+	  used to drive the real-time clock, was used for these
+	  measurements. In most cases this timer can be read with
+	  quite high resolution, typically in the range of a few
+	  microseconds. For each measurement, the operation was
+	  repeated a number of times. Time stamps were obtained
+	  directly before and after the operation was performed. The
+	  data gathered for the entire set of operations was then
+	  analyzed, generating average (mean), maximum and minimum
+	  values. The sample variance (a measure of how close most
+	  samples are to the mean) was also calculated. The cost of
+	  obtaining the real-time clock timer values was also
+	  measured, and was subtracted from all other times. </PARA>
+<PARA>Most <!-- <index></index> -->kernel functions can be measured separately.
+In each case, a reasonable number of iterations are performed. Where
+the test case involves a kernel object, for example creating a task,
+each iteration is performed on a different object. There is also
+a set of tests which measures the interactions between multiple
+tasks and certain kernel primitives. Most functions are tested in
+such a way as to determine the variations introduced by varying
+numbers of objects in the system. For example, the mailbox tests
+measure the cost of a 'peek' operation when the
+mailbox is empty, has a single item, and has multiple items present.
+In this way, any effects of the state of the object or how many
+items it contains can be determined. </PARA>
+<PARA>There are a few things to consider about these measurements.
+Firstly, they are quite micro in scale and only measure the operation
+in question. These measurements do not adequately describe how the
+timings would be perturbed in a real system with multiple interrupting
+sources. Secondly, the possible aberration incurred by the real-time
+clock (system heartbeat tick) is explicitly avoided. Virtually all
+kernel functions have been designed to be interruptible. Thus the times
+presented are typical, but best case, since any particular function
+may be interrupted by the clock tick processing. This number is
+explicitly calculated so that the value may be included in any deadline
+calculations required by the end user. Lastly, the reported measurements
+were obtained from a system built with all options at their default
+values. Kernel instrumentation and asserts are also disabled for
+these measurements. Any number of configuration options can change
+the measured results, sometimes quite dramatically. For example,
+mutexes are using priority inheritance in these measurements. The
+numbers will change if the system is built with priority inheritance
+on mutex variables turned off. </PARA>
+<PARA>The final value that is measured is an estimate of interrupt
+latency. This particular value is not explicitly calculated in the
+test program used, but rather by instrumenting the kernel itself.
+The raw number of timer ticks that elapse between the time the timer
+generates an interrupt and the start of the timer ISR is kept in
+the kernel. These values are printed by the test program after all
+other operations have been tested. Thus this should be a reasonable
+estimate of the interrupt latency over time. </PARA>
+</SECT1>
+<SECT1 id="real-time-char-using-measurements">
+<TITLE>Using these Measurements</TITLE>
+<PARA>These measurements can be used in a number of ways. The
+	  most typical use will be to compare different real-time
+	  kernel offerings on similar hardware, another will be to
+	  estimate the cost of implementing a task using eCos
+	  (applications can be examined to see what effect the kernel
+	  operations will have on the total execution time). Another
+	  use would be to observe how the tuning of the kernel affects
+	  overall operation. </PARA>
+</SECT1>
+<SECT1 id="real-time-char-influences-on-performance">
+<TITLE>Influences on Performance</TITLE><!-- <index></index> -->
+<PARA>A number of factors can affect real-time performance in
+	  a system. One of the most common factors, yet most difficult
+	  to characterize, is the effect of device drivers and
+	  interrupts on system timings. Different device drivers will
+	  have differing requirements as to how long interrupts are
+	  suppressed, for example. The eCos system has been designed
+	  with this in mind, by separating the management of
+	  interrupts (ISR handlers) and the processing required by the
+	  interrupt (<!-- <index></index> -->DSR&mdash;Deferred
+	  Service Routine&mdash; handlers). However, since there is so
+	  much variability here, and indeed most device drivers will
+	  come from the end users themselves, these effects cannot be
+	  reliably measured. Attempts have been made to measure the
+	  overhead of the single interrupt that eCos relies on, the
+	  real-time clock timer. This should give you a reasonable
+	  idea of the cost of executing interrupt handling for
+	  devices. </PARA>
+</SECT1>
+<SECT1 id="real-time-char-measured-items">
+<TITLE>Measured Items</TITLE>
+<PARA>This section describes the various <!-- <index></index>
+	  -->tests and the numbers presented. All tests use the C
+	  kernel API (available by way of
+	  <FILENAME>cyg/kernel/kapi.h</FILENAME>). There is a
+	  single main thread in the system that performs the various
+	  tests. Additional threads may be created as part of the
+	  testing, but these are short lived and are destroyed between
+	  tests unless otherwise noted. The terminology &ldquo;lower
+	  priority&rdquo; means a priority that is less important, not
+	  necessarily lower in numerical value. A higher priority
+	  thread will run in preference to a lower priority thread
+	  even though the priority value of the higher priority thread
+	  may be numerically less than that of the lower priority
+	  thread. </PARA>
+<SECT2><!-- <index></index> -->
+<TITLE>Thread Primitives</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Create thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_create()</FUNCTION> 
+		  call. Each call creates a totally new thread. The
+		  set of threads created by this test will be reused
+		  in the subsequent thread primitive tests. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Yield thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_yield()</FUNCTION> 
+		  call. For this test, there are no other runnable
+		  threads, thus the test should just measure the
+		  overhead of trying to give up the CPU. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Suspend &lsqb;suspended&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_suspend()</FUNCTION> 
+		  call. A thread may be suspended multiple times; each
+		  thread is already suspended from its initial
+		  creation, and is suspended again. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Resume thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_resume()</FUNCTION> 
+		  call. All of the threads have a suspend count of 2,
+		  thus this call does not make them runnable. This
+		  test just measures the overhead of resuming a
+		  thread. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Set priority</TERM>
+<LISTITEM>
+<PARA>		  This test measures the
+		  <FUNCTION>cyg_thread_set_priority()</FUNCTION> 
+		  call. Each thread, currently suspended, has its
+		  priority set to a new value. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Get priority</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_get_priority()</FUNCTION> 
+		  call. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Kill &lsqb;suspended&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_kill()</FUNCTION>
+		  call. Each thread in the set is killed. All threads
+		  are known to be suspended before being killed.
+		</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Yield &lsqb;no other&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_yield()</FUNCTION> 
+		  call again. This is to demonstrate that the
+		  <FUNCTION>cyg_thread_yield()</FUNCTION> 
+		  call has a fixed overhead, regardless of whether
+		  there are other threads in the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Resume &lsqb;suspended low priority&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_resume()</FUNCTION> 
+		  call again. In this case, the thread being resumed
+		  is lower priority than the main thread, thus it will
+		  simply become ready to run but not be granted the
+		  CPU. This test measures the cost of making a thread
+		  ready to run. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Resume &lsqb;runnable low priority&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_resume()</FUNCTION> 
+		  call again. In this case, the thread being resumed
+		  is lower priority than the main thread and has
+		  already been made runnable, so in fact the resume
+		  call has no effect. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Suspend &lsqb;runnable&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_suspend()</FUNCTION> 
+		  call again. In this case, each thread has already
+		  been made runnable (by previous tests). </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Yield &lsqb;only low priority&rsqb; thread 	</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_yield()</FUNCTION> 
+		  call. In this case, there are many other runnable
+		  threads, but they are all lower priority than the
+		  main thread, thus no thread switches will take
+		  place. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Suspend &lsqb;runnable-&gt;not runnable&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_suspend()</FUNCTION> 
+		  call again. The thread being suspended will become
+		  non-runnable by this action. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Kill &lsqb;runnable&rsqb; thread</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		    <FUNCTION>cyg_thread_kill()</FUNCTION> 
+		    call again. In this case, the thread being killed
+		    is currently runnable, but lower priority than the
+		    main thread. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Resume &lsqb;high priority&rsqb; thread 	</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_thread_resume()</FUNCTION> 
+		  call. The thread being resumed is higher priority
+		  than the main thread, thus a thread switch will take
+		  place on each call. In fact there will be two thread
+		  switches; one to the new higher priority thread and
+		  a second back to the test thread. The test thread
+		  exits immediately. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Thread switch</TERM>
+<LISTITEM>
+<PARA>This test attempts to measure the cost of
+		  switching from one thread to another. Two equal
+		  priority threads are started and they will each
+		  yield to the other for a number of iterations. A
+		  time stamp is gathered in one thread before the
+		  <FUNCTION>cyg_thread_yield()</FUNCTION> 
+		  call and after the call in the other thread. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Scheduler Primitives</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Scheduler lock</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_scheduler_lock()</FUNCTION> 
+		  call. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Scheduler unlock &lsqb;0 threads&rsqb; 	</TERM>
+<LISTITEM>
+<PARA>This test measures the
+		  <FUNCTION>cyg_scheduler_unlock()</FUNCTION> 
+		  call. There are no other threads in the system and
+		  the unlock happens immediately after a lock so there
+		  will be no pending DSR&rsquo;s to run. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Scheduler unlock &lsqb;1 suspended thread&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_scheduler_unlock()</FUNCTION> call.
+There is one other thread in the system which is currently suspended. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Scheduler unlock &lsqb;many suspended threads&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_scheduler_unlock()</FUNCTION> call.
+There are many other threads in the system which are currently suspended. The
+purpose of this test is to determine the cost of having additional
+threads in the system when the scheduler is activated by way of
+		  <FUNCTION>cyg_scheduler_unlock()</FUNCTION>. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Scheduler unlock &lsqb;many low priority threads&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_scheduler_unlock()</FUNCTION> call.
+There are many other threads in the system which are runnable but
+are lower priority than the main thread. The purpose of this test
+is to determine the cost of having additional threads in the system
+when the scheduler is activated by way of <FUNCTION>cyg_scheduler_unlock()</FUNCTION>.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Mutex Primitives</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Init mutex</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mutex_init()</FUNCTION> call.
+A number of separate mutex variables are created. The purpose of
+this test is to measure the cost of creating a new mutex and introducing
+it to the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Lock &lsqb;unlocked&rsqb; mutex</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mutex_lock()</FUNCTION> call.
+The purpose of this test is to measure the cost of locking a mutex
+which is currently unlocked. There are no other threads executing
+in the system while this test runs. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Unlock &lsqb;locked&rsqb; mutex</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mutex_unlock()</FUNCTION> call.
+The purpose of this test is to measure the cost of unlocking a mutex
+which is currently locked. There are no other threads executing
+in the system while this test runs. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Trylock &lsqb;unlocked&rsqb; mutex</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mutex_trylock()</FUNCTION> call.
+The purpose of this test is to measure the cost of locking a mutex
+which is currently unlocked. There are no other threads executing
+in the system while this test runs. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Trylock &lsqb;locked&rsqb; mutex</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mutex_trylock()</FUNCTION> call.
+The purpose of this test is to measure the cost of locking a mutex
+which is currently locked. There are no other threads executing
+in the system while this test runs. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Destroy mutex</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mutex_destroy()</FUNCTION> call.
+The purpose of this test is to measure the cost of deleting a mutex
+from the system. There are no other threads executing in the system
+while this test runs. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Unlock/Lock mutex</TERM>
+<LISTITEM>
+<PARA>This test attempts to measure the cost of unlocking a mutex
+for which there is another higher priority thread waiting. When
+the mutex is unlocked, the higher priority waiting thread will immediately
+take the lock. The time from when the unlock is issued until after
+the lock succeeds in the second thread is measured, thus giving
+the round-trip or circuit time for this type of synchronizer. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Mailbox Primitives</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Create mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_create()</FUNCTION> call.
+A number of separate mailboxes is created. The purpose of this test
+is to measure the cost of creating a new mailbox and introducing
+it to the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Peek &lsqb;empty&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_peek()</FUNCTION> call.
+An attempt is made to peek the value in each mailbox, which is currently empty.
+The purpose of this test is to measure the cost of checking a mailbox
+for a value without blocking. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Put &lsqb;first&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_put()</FUNCTION> call.
+One item is added to a currently empty mailbox. The purpose of this
+test is to measure the cost of adding an item to a mailbox. There
+are no other threads currently waiting for mailbox items to
+		  arrive. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Peek &lsqb;1 msg&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_peek()</FUNCTION> call.
+An attempt is made to peek the value in each mailbox, which contains
+a single item. The purpose of this test is to measure the cost of
+checking a mailbox which has data to deliver. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Put &lsqb;second&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_put()</FUNCTION> call.
+A second item is added to a mailbox. The purpose of this test is
+to measure the cost of adding an additional item to a mailbox. There
+are no other threads currently waiting for mailbox items to
+		  arrive. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Peek &lsqb;2 msgs&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_peek()</FUNCTION> call.
+An attempt is made to peek the value in each mailbox, which contains
+two items. The purpose of this test is to measure the cost of checking
+a mailbox which has data to deliver. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Get &lsqb;first&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_get()</FUNCTION> call.
+The first item is removed from a mailbox that currently contains
+two items. The purpose of this test is to measure the cost of obtaining
+an item from a mailbox without blocking. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Get &lsqb;second&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_get()</FUNCTION> call.
+The last item is removed from a mailbox that currently contains
+one item. The purpose of this test is to measure the cost of obtaining
+an item from a mailbox without blocking. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tryput &lsqb;first&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_tryput()</FUNCTION> call.
+A single item is added to a currently empty mailbox. The purpose
+of this test is to measure the cost of adding an item to a
+		  mailbox. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Peek item &lsqb;non-empty&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_peek_item()</FUNCTION> call.
+A single item is fetched from a mailbox that contains a single item.
+The purpose of this test is to measure the cost of obtaining an
+item without disturbing the mailbox. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tryget &lsqb;non-empty&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_tryget()</FUNCTION> call.
+A single item is removed from a mailbox that contains exactly one
+item. The purpose of this test is to measure the cost of obtaining
+one item from a non-empty mailbox. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Peek item &lsqb;empty&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_peek_item()</FUNCTION> call.
+An attempt is made to fetch an item from a mailbox that is empty.
+The purpose of this test is to measure the cost of trying to obtain
+an item when the mailbox is empty. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tryget &lsqb;empty&rsqb; mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_tryget()</FUNCTION> call.
+An attempt is made to fetch an item from a mailbox that is empty.
+The purpose of this test is to measure the cost of trying to obtain
+an item when the mailbox is empty. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Waiting to get mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_waiting_to_get()</FUNCTION> call.
+The purpose of this test is to measure the cost of determining how
+many threads are waiting to obtain a message from this
+		  mailbox. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Waiting to put mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_waiting_to_put()</FUNCTION> call.
+The purpose of this test is to measure the cost of determining how
+many threads are waiting to put a message into this mailbox. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Delete mbox</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_mbox_delete()</FUNCTION> call.
+The purpose of this test is to measure the cost of destroying a
+mailbox and removing it from the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Put/Get mbox</TERM>
+<LISTITEM>
+<PARA>In this round-trip test, one thread is sending data to a mailbox
+that is being consumed by another thread. The time from when the
+data is put into the mailbox until it has been delivered to the
+waiting thread is measured. Note that this time will contain a thread
+switch. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Semaphore Primitives</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Init semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_init()</FUNCTION> call.
+A number of separate semaphore objects are created and introduced
+to the system. The purpose of this test is to measure the cost of
+creating a new semaphore. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Post &lsqb;0&rsqb; semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_post()</FUNCTION> call.
+Each semaphore currently has a value of 0 and there are no other
+threads in the system. The purpose of this test is to measure the
+overhead cost of posting to a semaphore. This cost will differ if
+there is a thread waiting for the semaphore. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Wait &lsqb;1&rsqb; semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_wait()</FUNCTION> call.
+The semaphore has a current value of 1 so the call is non-blocking.
+The purpose of the test is to measure the overhead of &ldquo;taking&rdquo; a
+semaphore. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Trywait &lsqb;0&rsqb; semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_trywait()</FUNCTION> call.
+The semaphore has a value of 0 when the call is made. The purpose
+of this test is to measure the cost of seeing if a semaphore can
+be &ldquo;taken&rdquo; without blocking. In this case, the
+answer would be no. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Trywait &lsqb;1&rsqb; semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_trywait()</FUNCTION> call.
+The semaphore has a value of 1 when the call is made. The purpose
+of this test is to measure the cost of seeing if a semaphore can
+be &ldquo;taken&rdquo; without blocking. In this case, the
+answer would be yes. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Peek semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_peek()</FUNCTION> call.
+The purpose of this test is to measure the cost of obtaining the
+current semaphore count value. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Destroy semaphore</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_semaphore_destroy()</FUNCTION> call.
+The purpose of this test is to measure the cost of deleting a semaphore
+from the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Post/Wait semaphore</TERM>
+<LISTITEM>
+<PARA>In this round-trip test, two threads are passing control back
+and forth by using a semaphore. The time from when one thread calls <FUNCTION>cyg_semaphore_post()</FUNCTION> until
+the other thread completes its <FUNCTION>cyg_semaphore_wait()</FUNCTION> is
+measured. Note that each iteration of this test will involve a thread
+switch. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Counters</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Create counter</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_create()</FUNCTION> call.
+A number of separate counters are created. The purpose of this test
+is to measure the cost of creating a new counter and introducing
+it to the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Get counter value</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_current_value()</FUNCTION> call.
+The current value of each counter is obtained. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Set counter value</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_set_value()</FUNCTION> call.
+Each counter is set to a new value. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tick counter</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_tick()</FUNCTION> call.
+Each counter is &ldquo;ticked&rdquo; once. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Delete counter</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_delete()</FUNCTION> call.
+Each counter is deleted from the system. The purpose of this test
+is to measure the cost of deleting a counter object.</PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+<SECT2><!-- <index></index> -->
+<TITLE>Alarms</TITLE>
+<VARIABLELIST>
+<VARLISTENTRY>
+<TERM>Create alarm</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_alarm_create()</FUNCTION> call.
+A number of separate alarms are created, all attached to the same
+counter object. The purpose of this test is to measure the cost
+of creating a new counter and introducing it to the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Initialize alarm</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_alarm_initialize()</FUNCTION> call.
+Each alarm is initialized to a small value. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Disable alarm</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_alarm_disable()</FUNCTION> call.
+Each alarm is explicitly disabled. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Enable alarm</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_alarm_enable()</FUNCTION> call.
+Each alarm is explicitly enabled. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Delete alarm</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_alarm_delete()</FUNCTION> call.
+Each alarm is destroyed. The purpose of this test is to measure
+the cost of deleting an alarm and removing it from the system. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tick counter &lsqb;1 alarm&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_tick()</FUNCTION> call.
+A counter is created that has a single alarm attached to it. The
+purpose of this test is to measure the cost of &ldquo;ticking&rdquo; a
+counter when it has a single attached alarm. In this test, the alarm
+is not activated (fired). </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tick counter &lsqb;many alarms&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_tick()</FUNCTION> call.
+A counter is created that has multiple alarms attached to it. The
+purpose of this test is to measure the cost of &ldquo;ticking&rdquo; a
+counter when it has many attached alarms. In this test, the alarms
+are not activated (fired). </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tick &amp; fire counter &lsqb;1 alarm&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_tick()</FUNCTION> call.
+A counter is created that has a single alarm attached to it. The
+purpose of this test is to measure the cost of &ldquo;ticking&rdquo; a
+counter when it has a single attached alarm. In this test, the alarm
+is activated (fired). Thus the measured time will include the overhead
+of calling the alarm callback function. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Tick &amp; fire counter &lsqb;many alarms&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test measures the <FUNCTION>cyg_counter_tick()</FUNCTION> call.
+A counter is created that has multiple alarms attached to it. The
+purpose of this test is to measure the cost of &ldquo;ticking&rdquo; a
+counter when it has many attached alarms. In this test, the alarms
+are activated (fired). Thus the measured time will include the overhead
+of calling the alarm callback function. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Alarm latency &lsqb;0 threads&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test attempts to measure the latency in calling an alarm
+callback function. The time from the clock interrupt until the alarm
+function is called is measured. In this test, there are no threads
+that can be run, other than the system idle thread, when the clock
+interrupt occurs (all threads are suspended). </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Alarm latency &lsqb;2 threads&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test attempts to measure the latency in calling an alarm
+callback function. The time from the clock interrupt until the alarm
+function is called is measured. In this test, there are exactly
+two threads which are running when the clock interrupt occurs. They
+are simply passing back and forth by way of the <FUNCTION>cyg_thread_yield()</FUNCTION> call.
+The purpose of this test is to measure the variations in the latency
+when there are executing threads. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+<VARLISTENTRY>
+<TERM>Alarm latency &lsqb;many threads&rsqb;</TERM>
+<LISTITEM>
+<PARA>This test attempts to measure the
+		  latency in calling an alarm callback function. The
+		  time from the clock interrupt until the alarm
+		  function is called is measured. In this test, there
+		  are a number of threads which are running when the
+		  clock interrupt occurs. They are simply passing back
+		  and forth by way of the
+		  <FUNCTION>cyg_thread_yield()</FUNCTION> 
+		  call. The purpose of this test is to measure the
+		  variations in the latency when there are many
+		  executing threads. </PARA>
+</LISTITEM>
+</VARLISTENTRY>
+</VARIABLELIST>
+</SECT2>
+</SECT1>
+<SECT1 id="real-time-char-sample-numbers"><!-- <index></index> -->
+<TITLE>Sample Numbers</TITLE>
+<PARA>For sample results, see  Appendix 1 of <EMPHASIS>Getting
+	    Started with eCos</EMPHASIS></PARA>
+</SECT1>
+</CHAPTER>
+</part>

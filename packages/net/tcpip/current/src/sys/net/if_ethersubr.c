@@ -5,29 +5,6 @@
 //     
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -631,6 +608,9 @@ ether_input(ifp, eh, m)
 	int s, llcfound = 0;
 	register struct llc *l;
 	struct arpcom *ac = (struct arpcom *)ifp;
+#ifdef __ECOS
+	unsigned int sched_what;
+#endif
 
 	if ((ifp->if_flags & IFF_UP) == 0) {
 		m_freem(m);
@@ -681,14 +661,22 @@ decapsulate:
 	switch (etype) {
 #ifdef INET
 	case ETHERTYPE_IP:
+#ifdef __ECOS
+		sched_what = NETISR_IP;
+#else
 		schednetisr(NETISR_IP);
+#endif
 		inq = &ipintrq;
 		break;
 
 	case ETHERTYPE_ARP:
 		if (ifp->if_flags & IFF_NOARP)
 			goto dropanyway;
+#ifdef __ECOS
+		sched_what = NETISR_ARP;
+#else
 		schednetisr(NETISR_ARP);
+#endif
 		inq = &arpintrq;
 		break;
 
@@ -704,25 +692,41 @@ decapsulate:
 	 * Schedule IPv6 software interrupt for incoming IPv6 packet.
 	 */
 	case ETHERTYPE_IPV6:
+#ifdef __ECOS
+		sched_what = NETISR_IPV6;
+#else
 		schednetisr(NETISR_IPV6);
+#endif
 		inq = &ip6intrq;
 		break;
 #endif /* INET6 */
 #ifdef IPX
 	case ETHERTYPE_IPX:
+#ifdef __ECOS
+		sched_what = NETISR_IPX;
+#else
 		schednetisr(NETISR_IPX);
+#endif
 		inq = &ipxintrq;
 		break;
 #endif
 #ifdef NS
 	case ETHERTYPE_NS:
+#ifdef __ECOS
+		sched_what = NETISR_NS;
+#else
 		schednetisr(NETISR_NS);
+#endif
 		inq = &nsintrq;
 		break;
 #endif
 #ifdef NETATALK
 	case ETHERTYPE_AT:
+#ifdef __ECOS
+		sched_what = NETISR_ATALK;
+#else
 		schednetisr(NETISR_ATALK);
+#endif
 		inq = &atintrq1;
 		break;
 	case ETHERTYPE_AARP:
@@ -753,7 +757,11 @@ decapsulate:
 			    ntohs(l->llc_snap_ether_type) == ETHERTYPE_AT) {
 				inq = &atintrq2;
 				m_adj(m, AT_LLC_SIZE);
+#ifdef __ECOS
+				sched_what = NETISR_ATALK;
+#else
 				schednetisr(NETISR_ATALK);
+#endif
 				break;
 			}
 
@@ -805,7 +813,11 @@ decapsulate:
 					if (argo_debug[D_ETHER])
 						printf("clnp packet");
 #endif
+#ifdef __ECOS
+					sched_what = NETISR_ISO;
+#else
 					schednetisr(NETISR_ISO);
+#endif
 					inq = &clnlintrq;
 					break;
 				}
@@ -863,7 +875,11 @@ decapsulate:
 #ifdef LLC_DEBUG
 			printf("llc packet\n");
 #endif /* LLC_DEBUG */
+#ifdef __ECOS
+			sched_what = NETISR_CCITT;
+#else
 			schednetisr(NETISR_CCITT);
+#endif
 			inq = &llcintrq;
 			break;
 #endif /* CCITT */
@@ -881,6 +897,9 @@ decapsulate:
 	} else
 		IF_ENQUEUE(inq, m);
 	splx(s);
+#ifdef __ECOS
+	schednetisr(sched_what);
+#endif
 }
 
 /*

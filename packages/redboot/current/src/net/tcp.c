@@ -5,29 +5,38 @@
 //      Stand-alone TCP networking support for RedBoot
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -152,10 +161,60 @@ tcp_send(tcp_socket_t *s, int flags, int resend)
     BSPLOG(bsp_log("tcp_send: state[%d] flags[%s] ack[%x] data[%d].\n",
 		   s->state, flags_to_str(tcp->flags), s->ack, s->data_bytes));
 
-    if (s->state == _TIME_WAIT)
-	__timer_set(&s->timer, 120000, do_close, s);
+    if (s->state == _TIME_WAIT) {
+        // If 'reuse' is set on socket, close after 1 second, otherwise 2 minutes
+        __timer_set(&s->timer, s->reuse ? 1000 : 120000, do_close, s);
+    }
     else if ((tcp->flags & (TCP_FLAG_FIN | TCP_FLAG_SYN)) || s->data_bytes)
 	__timer_set(&s->timer, 1000, do_retrans, s);
+}
+
+static pktbuf_t ack_pkt;
+static word     ack_buf[ETH_MIN_PKTLEN/sizeof(word)];
+
+/*
+ * Send an ack.
+ */
+static void
+send_ack(tcp_socket_t *s)
+{
+    tcp_header_t *tcp;
+    ip_header_t  *ip;
+    unsigned short cksum;
+
+    ack_pkt.buf = ack_buf;
+    ack_pkt.bufsize = sizeof(ack_buf);
+    ack_pkt.ip_hdr = ip = (ip_header_t *)ack_buf;
+    ack_pkt.tcp_hdr = tcp = (tcp_header_t *)(ip + 1);
+    ack_pkt.pkt_bytes = sizeof(tcp_header_t);
+
+    /* tcp header */
+    tcp->hdr_len = 5;
+    tcp->reserved = 0;
+    tcp->seqnum = htonl(s->seq);
+    tcp->acknum = htonl(s->ack);
+    tcp->checksum = 0;
+
+    tcp->src_port = htons(s->our_port);
+    tcp->dest_port = htons(s->his_port);
+    tcp->flags = TCP_FLAG_ACK;
+
+    tcp->window = htons(MAX_TCP_DATA);
+    tcp->urgent = 0;
+
+    /* fill in some pseudo-header fields */
+    memcpy(ip->source, __local_ip_addr, sizeof(ip_addr_t));
+    memcpy(ip->destination, s->his_addr.ip_addr, sizeof(ip_addr_t));
+    ip->protocol = IP_PROTO_TCP;
+
+    /* another pseudo-header field */
+    ip->length = htons(sizeof(tcp_header_t));
+
+    /* compute tcp checksum */
+    cksum = __sum((word *)tcp, sizeof(*tcp), __pseudo_sum(ip));
+    tcp->checksum = htons(cksum);
+
+    __ip_send(&ack_pkt, IP_PROTO_TCP, &s->his_addr);
 }
 
 
@@ -414,7 +473,6 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 		    s->his_port = ntohs(tcp->src_port);
 		    memcpy(s->his_addr.ip_addr, r->ip_addr, sizeof(ip_addr_t));
 		    s->data_bytes = 0;
-		    s->ack_pending = 0;
 
 		    BSPLOG(bsp_log("SYN from %d.%d.%d.%d:%d (seq %x)\n",
 			       s->his_addr.ip_addr[0],s->his_addr.ip_addr[1],
@@ -472,20 +530,8 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 		/*
 		 * Send an ack if neccessary.
 		 */
-		if (s->ack != ack || s->ack_pending) {
-		    /*
-		     * we can't send an ack if our write packet is holding outgoing
-		     * data pending an incoming ack.
-		     */
-		    if (s->data_bytes == 0) {
-			BSPLOG(bsp_log("Sending ack: new[%x] old[%x]\n",
-				       s->ack, ack));
-			__timer_cancel(&s->timer);
-			tcp_send(s, TCP_FLAG_ACK, 0);
-			s->ack_pending = 0;
-		    } else
-			s->ack_pending = 1;
-		}
+		if (s->ack != ack || pkt->pkt_bytes > (tcp->hdr_len << 2))
+		    send_ack(s);
 		break;
 
 	      case _LAST_ACK:
@@ -509,18 +555,27 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 			    BSPLOG(bsp_log("_FIN_WAIT_1 --> _TIME_WAIT\n"));
 			    s->ack++;
 			    s->state = _TIME_WAIT;
-			    tcp_send(s, TCP_FLAG_ACK, 0);
+			    send_ack(s);
 			} else {
 			    s->state = _FIN_WAIT_2;
 			    BSPLOG(bsp_log("_FIN_WAIT_1 --> _FIN_WAIT_2\n"));
 			}
+                        break; /* All done for now */
 		    }
 		}
+                /* At this point, no ACK for FIN has been seen, so check for
+                   simultaneous close */
 		if (tcp->flags & TCP_FLAG_FIN) {
 		    BSPLOG(bsp_log("_FIN_WAIT_1 --> _CLOSING\n"));
 		    __timer_cancel(&s->timer);
 		    s->ack++;
 		    s->state = _CLOSING;
+                    /* FIN is resent so the timeout and retry for this packet
+                       will also take care of timeout and resend of the
+                       previously sent FIN (which got us to FIN_WAIT_1). While
+                       not technically correct, resending FIN only causes a
+                       duplicate FIN (same sequence number) which should be
+                       ignored by the other end. */
 		    tcp_send(s, TCP_FLAG_FIN | TCP_FLAG_ACK, 0);
 		}
 		break;
@@ -531,7 +586,7 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 		    BSPLOG(bsp_log("_FIN_WAIT_2 --> _TIME_WAIT\n"));
 		    s->ack++;
 		    s->state = _TIME_WAIT;
-		    tcp_send(s, TCP_FLAG_ACK, 0);
+		    send_ack(s);
 		}
 		break;
 
@@ -602,6 +657,15 @@ __tcp_listen(tcp_socket_t *s, word port)
     return 0;
 }
 
+/*
+ * SO_REUSEADDR, no 2MSL.
+ */
+void
+__tcp_so_reuseaddr(tcp_socket_t *s)
+{
+//    BSPLOG(bsp_log("__tcp_so_reuseaddr.\n"));
+    s->reuse = 0x01;
+}
 
 /*
  * Block while waiting for all data to be transmitted.

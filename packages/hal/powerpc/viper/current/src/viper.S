@@ -5,29 +5,38 @@
 ##      VIPER board hardware setup
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -58,7 +67,9 @@
 
 //#define CYGPRI_RAM_START_PROGRAMS_UPMS
 
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGPRI_RAM_START_PROGRAMS_UPMS)
+#if defined(CYG_HAL_STARTUP_ROM) \
+ || defined(CYG_HAL_STARTUP_ROMRAM) \
+ || defined(CYGPRI_RAM_START_PROGRAMS_UPMS)
 # define CYGPRI_DO_PROGRAM_UPMS
 #endif
 
@@ -79,11 +90,11 @@
 	
 #------------------------------------------------------------------------------
 
-// LED macro uses r3, r5: r4 left alone
+// LED macro uses r23, r25: r4 left alone
 #define LED( x ) \
-	lwi	r5,0xFA100018;         \
-	lwi	r3,(x);                \
-	stb	r3,0(r5)
+	lwi	r25,0xFA100018;         \
+	lwi	r23,(x);                \
+	stb	r23,0(r25)
 	
 #------------------------------------------------------------------------------
                 
@@ -94,7 +105,7 @@ FUNC_START( hal_hardware_init )
 	
 	lwi     r4,CYGARC_REG_IMM_BASE  # base address of control registers
 	mtspr	CYGARC_REG_IMMR,r4
-
+	
 	LED( 0 )			# turn all LEDs off
 	
 #define CACHE_UNLOCKALL		0x0a00
@@ -145,11 +156,22 @@ FUNC_START( hal_hardware_init )
 	sync
 	
 	LED( 0x01 )
+	
 	/*
 	 * SIU Initialization.
 	 */
 	lwi	r3,0x00610400
         stw	r3,SIUMCR(r4)
+	
+#ifdef CYG_HAL_STARTUP_ROMRAM
+// Need to set the PC into the FLASH (ROM) before the address map changes
+	lwi	r3,10f
+        lwi     r5,0xFE000000
+	or	r3,r3,r5
+	mtctr	r3
+	bctr
+10:	
+#endif	
 
 	/*
 	 * Enable bus monitor. Disable Watchdog timer.
@@ -244,21 +266,21 @@ FUNC_START( hal_hardware_init )
 
        	/* BOOT ROM */
         lwi	r3,0xFE000401	# 8-bit, GPCM
-        lwi	r5,0xFFF00744   # 4 wait states (~100ns timing)
+        lwi	r5,0xFFF00774   # 7 wait states
         stw	r3,BR0(r4)
         stw	r5,OR0(r4)
+
+	/* Misc I/O, 16 bit port */
+        lwi	r3,0xFA100801
+        lwi	r5,0xFFFF8730
+        stw	r3,BR2(r4)
+        stw	r5,OR2(r4)
 
 	/* ONBOARD DRAM */
         lwi	r3,0x00000081	# 32-bit, UPMA
         lwi	r5,0xFF800E00
         stw	r3,BR1(r4)
         stw	r5,OR1(r4)
-
-	/* Misc I/O, 8 bit port */
-        lwi	r3,0xFA100801
-        lwi	r5,0xFFFF8730
-        stw	r3,BR2(r4)
-        stw	r5,OR2(r4)
 
 	/* DRAM DIMM BANK1 */
         lwi	r3,0x00000080	# 32-bit, UPMA, INVALID
@@ -334,11 +356,17 @@ FUNC_START( hal_hardware_init )
 // 	Field FIOPD (bit 26) = 0
 // 	Field Reserved (bits 27-31) = 0
 	 */
-	/*  MF    (0:11)  = 0x4c4 = 1220 = (40MHz/32.768KHz) */
+	/*  MF    (0:11)  = 0x00C = 12 = (47MHz/3.6864MHz)-1 */
 	lwi	r3,0x00C04000
 	stw	r3,PLPRCR(r4)
 
-//#if defined(CYG_HAL_STARTUP_ROM)
+	LED(0xE0)
+	lwi	r3,0x10000
+	mtctr	r3
+10:	nop
+	bdnz	10b
+	LED(0xE1)
+
 	/* SDRAM Initialization Sequence, UPMA, CS1 */
 	li	r3,0
 	stw	r3,MAR(r4)
@@ -354,10 +382,7 @@ FUNC_START( hal_hardware_init )
 
        	lwi	r3,0x80002116;	/* run MRS pattern from loc 22 (0x16) */
    	stw	r3,MCR(r4)
-//#endif //  defined(CYG_HAL_STARTUP_ROM)
 
-	LED( 0x04 )
-        
 	# mask interrupt sources in the SIU
 	lis	r2,0
 	lwi	r3,CYGARC_REG_IMM_SIMASK
@@ -373,7 +398,7 @@ FUNC_START( hal_hardware_init )
 	lwi	r3,CYGARC_REG_IMM_TBSCR
 	sth	r2,0(r3)
 
-	LED( 8 ) # turn red led off
+	LED( 8 ) 
 
 #ifdef CYG_HAL_STARTUP_ROM
 	# move return address to where the ROM is
@@ -383,6 +408,28 @@ FUNC_START( hal_hardware_init )
 	oris	r3,r3,CYGMEM_REGION_rom>>16
 	mtlr	r3
 #endif
+
+#ifdef CYG_HAL_STARTUP_ROMRAM
+        // Copy image from ROM to RAM
+        LED(0x10)
+        mflr    r3              
+        lwi     r4,0xFE000000
+        lwi     r5,0x01FFFFFF   // ROM/FLASH base
+        and     r3,r3,r5        // segment relative
+        lwi     r6,_hal_hardware_init_done
+        mtlr    r6
+        sub     r6,r3,r6        // Absolute address
+        add     r6,r6,r4        // FLASH address
+        lwi     r7,0            // where to copy to
+        lwi     r8,__ram_data_end
+10:     lwz     r5,0(r6)
+        stw     r5,0(r7)
+        addi    r6,r6,4
+        addi    r7,r7,4
+        cmplw   r7,r8
+        bne     10b
+        LED(0x20)
+#endif                
 
 	blr
 FUNC_END( hal_hardware_init )
@@ -422,8 +469,20 @@ __upmtbl_end:
 FUNC_START(hal_viper_set_led)
 	lwi	r4,0xFA100018
 	stb	r3,0(r4)
+	lwi	r5,_hold_led
+	stw	r3,0(r5)
 	blr
 FUNC_END(hal_viper_set_led)
+	.data
+_hold_led:	
+	.long	0
+	.text	
+	
+FUNC_START(hal_viper_get_led)
+	lwi	r5,_hold_led
+	lwz	r3,0(r5)
+	blr
+FUNC_END(hal_viper_get_led)
 	
 FUNC_START(hal_viper_flash_led)
 	lwi	r4,0xFA100018

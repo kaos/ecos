@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: settingsdlg.h,v 1.6 2001/04/24 16:34:55 julians Exp $
+// Version:     $Id: settingsdlg.h,v 1.7 2002/02/07 18:22:14 julians Exp $
 // Purpose:
 // Description: Header file for ecSettingsDialog
 // Requires:
@@ -139,6 +139,7 @@ public:
     void OnUpdateBrowserText(wxUpdateUIEvent& event);
     void OnBrowseForViewer(wxCommandEvent& event);
     void OnBrowseForBrowser(wxCommandEvent& event);
+    void OnShowAssociatedViewerInfo(wxCommandEvent& event);
 
     DECLARE_EVENT_TABLE()
 };
@@ -152,6 +153,7 @@ public:
 #define ecID_VIEWER_DIALOG_DOC_THIS 10014
 #define ecID_VIEWER_DIALOG_BROWSE_DOC 10015
 #define ecID_VIEWER_DIALOG_DOC_TEXT 10016
+#define ecID_VIEWER_DIALOG_ASSOC_INFO 10017
 
 /* Path options dialog
  */

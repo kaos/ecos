@@ -1,3 +1,69 @@
+2002-04-11  Nick Garnett  <nickg@redhat.com>
+
+	* doc/fileio.sgml: Added a section on writing a new
+	filesystem. This probably still needs more work, but it's better
+	than nothing.
+
+2002-04-05  Nick Garnett  <nickg@redhat.com>
+
+	* src/devfs.cxx: Changed test for EAGAIN in dev_fo_read() and
+	dev_fo_write() to negate value first. 
+
+2002-03-07  Nick Garnett  <nickg@redhat.com>
+
+	* doc/fileio.sgml: Added this file to contain documentation on
+	this package.
+
+2002-02-04  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/socket.c (main): 
+	* tests/select.c (main): sin_len field must be set.
+
+2002-01-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/fileio.cdl: Actually, don't bother to build testfs.c at all.
+
+2002-01-29  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/fileio.cdl: Added CYGPKG_FILEIO_BUILD_TESTS option and made
+	building of testfs dependant on it.
+
+2002-01-25  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/inode.h: New API defining a common generic inode type.
+	* src/inocache.cxx: Implement the inode cache functions.
+	* cdl/fileio.cdl: (Configurably) build it.
+
+2002-01-23  David Woodhouse  <dwmw2@redhat.com>
+2002-01-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/fileio.cdl: Remove select compilation and support to new
+	CYGFUN_IO_FILEIO_SELECT option conditional on the kernel
+	Ditto for DEVS and CYGPKG_IO_FILEIO_DEVFS_SUPPORT.
+	Make CYGPKG_IO_FILEIO_SOCKET_SUPPORT also conditional on kernel.
+	* src/fio.h: Define FILEIO_MUTEX_LOCK() and FILEIO_MUTEX_UNLOCK()
+	so that code doesn't need to care whether the kernel is included or
+	not.
+	* src/fd.cxx: Conditionalize mutex usage throughout on CYGPKG_KERNEL,
+	and FILEIO_MUTEX_LOCK()/UNLOCK().
+	* src/file.cxx: Ditto.
+	* src/misc.cxx: Ditto.
+	(cyg_timestamp): Only use Cyg_Clock implementation if CYGPKG_KERNEL.
+
+2002-01-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/misc.cxx: Initialize fileio_initializer at prio CYG_INIT_IO_FS
+	so it happens after the devices it depends on.
+	* src/file.cxx (getcwd_lock): Ditto.
+	* src/select.cxx (select_mutex): ditto.
+	(selwait): ditto.
+	* src/fd.cxx (fdlock): ditto
+	(file_lock): ditto.
+	* src/dir.cxx (readdir): Use FILEIO_RETURN_VALUE on exit.
+	(readdir_r): Ditto.
+	* src/devfs.cxx (dev_stat): Don't use handle for st_dev - it will
+	probably be truncated.
+
 2002-01-04  Wade Jensen <Wade_Jensen@inter-tel.com>
 2002-01-04  Jonathan Larmour  <jlarmour@redhat.com>
 

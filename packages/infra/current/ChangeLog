@@ -1,3 +1,61 @@
+2002-04-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx (diag_dump_buf_with_offset): Fix pad for short lines.
+
+2002-04-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx: Return proper length result for sprintf() functions.
+
+2002-04-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cyg_type.h: Allow HALs to override certain attrib macros.
+
+2002-02-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx (diag_snprintf): 
+	* include/diag.h: Change function signature on diag_snprintf()
+	to match snprintf() found in stdio.
+
+2002-02-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cyg_trac.h: Make message type of trace functions be
+	const char * to help avoid warnings with callers.
+	* src/null.cxx: Reflect that in actual functions.
+	* src/fancy.cxx: Ditto.
+	* src/simple.cxx: Ditto.
+	* src/buffer.cxx: Ditto.
+
+2002-01-31  Hugo Tyson  <hmt@redhat.com>
+
+	* src/tcdiag.cxx (cyg_assert_msg): Enable this function
+	universally; given the extra usefulness it now has (see below)
+	it's worth always having around by default in asserted builds.
+	It can be disabled with CYGDBG_INFRA_DEBUG_ASSERT_MESSAGE = 0.
+
+2002-01-30  Hugo Tyson  <hmt@redhat.com>
+
+	* src/tcdiag.cxx (cyg_assert_msg): Collect from RedBoot flash
+	config, whether or not to dump to a specific console.
+
+2002-01-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx (diag_snprintf): 
+	* include/diag.h: New function diag_snprintf().
+
+2002-01-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cyg_type.h: Define CYG_INIT_IO_FS used by filesystems
+	so that they init *after* the devices they depend on.
+
+2002-01-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/tcdiag.cxx (cyg_test_exit): Work around problem with recent
+	SH tools that isn't likely to get fixed soon.
+
+2002-01-17  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* src/diag.cxx (diag_check_string): enlarge valid string length to 2048
+
 2001-12-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/diag.cxx: Added functions to do memory dump in 16 and 32 bit
@@ -768,29 +826,38 @@ Tue Aug 25 11:47:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 	kernel/ktypes.h.
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
 	
 	

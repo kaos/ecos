@@ -1,33 +1,42 @@
 //==========================================================================
 //
-//      eth_drv.c
+//      src/stand_alone/eth_drv.c
 //
 //      Stand-alone hardware independent networking support for RedBoot
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -51,8 +60,8 @@
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_if.h>
-#include <eth_drv.h>
-#include <netdev.h>
+#include <cyg/io/eth/eth_drv.h>
+#include <cyg/io/eth/netdev.h>
 #include <string.h>
 
 // High-level ethernet driver
@@ -90,7 +99,41 @@ struct eth_drv_sc *__local_enet_sc;
 // tres degolas :-(
 //
 extern char __local_ip_addr[4]; 
-#endif
+#endif // PASS_PACKETS
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+//
+// Another horrible hack: In order to do the above passing on of
+// application packets safely - and passing on completion events for
+// pending transmissions (which is not conditional) - we must lock the
+// application scheduler before calling into it.  There are several reasons
+// for this: a) We are likely running on a RedBoot special debug stack and
+// so the application's stack checking fires; b) we could even get
+// descheduled if the arrival of a packet causes a higher priority thread
+// to awaken!
+
+#include <cyg/hal/dbg-threads-api.h>
+
+// Use with care!  Local variable defined!
+# define    LOCK_APPLICATION_SCHEDULER()                                \
+{   /* NEW BLOCK */                                                     \
+    threadref currthread;                                               \
+    int threadok;                                                       \
+    threadok = dbg_currthread( &currthread );                           \
+    if ( threadok ) {                                                   \
+        threadok = dbg_scheduler( &currthread, 1, 1 ); /* lock */       \
+    }
+
+# define  UNLOCK_APPLICATION_SCHEDULER()                        	\
+    if ( threadok ) {                                           	\
+        dbg_scheduler( &currthread, 0, 1 ); /* unlock */        	\
+    }                                                           	\
+}   /* END BLOCK */
+
+#else
+# define    LOCK_APPLICATION_SCHEDULER() CYG_EMPTY_STATEMENT
+# define  UNLOCK_APPLICATION_SCHEDULER() CYG_EMPTY_STATEMENT
+#endif // GDB_THREAD_SUPPORT
 
 //
 // Buffer 'get' support.  The problem is that this function only gets
@@ -314,11 +357,13 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
             end_console(old_console);
         }
 #endif
+        LOCK_APPLICATION_SCHEDULER();
         if (sc->funs->eth_drv_old) {
             (sc->funs->eth_drv_old->tx_done)(sc, key, status);
         } else {
             (sc->funs->eth_drv->tx_done)(sc, key, status);
         }
+        UNLOCK_APPLICATION_SCHEDULER();
     }
     CYGARC_HAL_RESTORE_GP();
 }
@@ -470,7 +515,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
             eth_drv_copy_recv_buf = buf;
             // This calls into the 'other' driver, giving it a chance to
             // do something with this data (since it wasn't for us)
+            LOCK_APPLICATION_SCHEDULER();
             (sc->funs->eth_drv_old->recv)(sc, total_len);
+            UNLOCK_APPLICATION_SCHEDULER();
             sc->funs->recv = hold_recv;
         }
     }

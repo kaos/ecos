@@ -9,7 +9,6 @@
 #else
 // Function declarations (prevents compiler warnings)
 int stubhex (unsigned char ch);
-static void getpacket (char *buffer);
 static void unlock_thread_scheduler (void);
 static uint32 crc32 (target_addr_t mem, int len, uint32 crc);
 #endif
@@ -220,8 +219,8 @@ stubhex (ch)
   return -1;
 }
 
-static void
-getpacket (buffer)
+void
+__getpacket (buffer)
      char *buffer;
 {
     struct gdb_packet packet;
@@ -351,8 +350,8 @@ __putpacket (buffer)
   while ((readDebugChar () & 0x7f) != '+');
 }
 
-static char remcomInBuffer[BUFMAX];
-static char remcomOutBuffer[BUFMAX];
+char __remcomInBuffer[BUFMAX];
+char __remcomOutBuffer[BUFMAX];
 
 /* Indicate to caller of mem2hex or hex2mem that there has been an
    error.  */
@@ -885,7 +884,7 @@ int processing_breakpoint_function = 0;
 void
 __handle_exception (void)
 {
-  int sigval;
+  int sigval = 0;
 
 #ifdef TARGET_HAS_NEXT_STEP
   if (! __next_step_done ())
@@ -905,14 +904,15 @@ __handle_exception (void)
 #if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
   // Temporary support for gnupro bsp SWIs
   if (__is_bsp_syscall())
-    {
-      if (hal_syscall_handler() == 0)
-	{
+  {
+      sigval = hal_syscall_handler();
+      if (0 == sigval)
+      {
 	  if (__init_vec != NULL)
-	    __init_vec ();
+              __init_vec ();
 	  return;
-	}
-    }
+      }
+  }
 #endif
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
@@ -920,8 +920,12 @@ __handle_exception (void)
   if (cyg_hal_gdb_break) {
       cyg_hal_gdb_break = 0;
       sigval = SIGINT;
-  } else
+  }
 #endif
+   
+  // Only compute sigval if it wasn't already computed (in
+  // hal_syscall_handler or as a result of a GDB async break)
+  if (0 == sigval)
       sigval = __computeSignal (__get_trap_number ());
 
 #else  // __ECOS__
@@ -1149,16 +1153,16 @@ __process_packet (char *packet)
   int is_Z = 0;
 #endif
 
-  remcomOutBuffer[0] = 0;
+  __remcomOutBuffer[0] = 0;
   switch (packet[0])
     {
     case '?':
       {
         int sigval = __computeSignal (__get_trap_number ());
-        remcomOutBuffer[0] = 'S';
-        remcomOutBuffer[1] = hexchars[(sigval >> 4) & 0xf];
-        remcomOutBuffer[2] = hexchars[sigval & 0xf];
-        remcomOutBuffer[3] = 0;
+        __remcomOutBuffer[0] = 'S';
+        __remcomOutBuffer[1] = hexchars[(sigval >> 4) & 0xf];
+        __remcomOutBuffer[2] = hexchars[sigval & 0xf];
+        __remcomOutBuffer[3] = 0;
         break;
       }
 
@@ -1170,14 +1174,14 @@ __process_packet (char *packet)
            download speed */
     {
         int i;
-        i = __intToHex (remcomOutBuffer, BUFMAX, 32);
-        remcomOutBuffer[i] = 0;
+        i = __intToHex (__remcomOutBuffer, BUFMAX, 32);
+        __remcomOutBuffer[i] = 0;
         break;
     }
 #endif
     case 'd':
       /* toggle debug flag */
-      strcpy(remcomOutBuffer, GDB_stubs_version);
+      strcpy(__remcomOutBuffer, GDB_stubs_version);
       break;
 #endif
 #endif // __ECOS__
@@ -1195,7 +1199,7 @@ __process_packet (char *packet)
     case 'p':		/* return the value of  a single CPU register */
     case 'g':           /* return the value of the CPU registers */
       {
-        stub_format_registers(&packet[0], remcomOutBuffer);
+        stub_format_registers(&packet[0], __remcomOutBuffer);
         break;
       }
 
@@ -1205,7 +1209,7 @@ __process_packet (char *packet)
         if (packet[1] == '\0')
           {
             __free_program_args ();
-            strcpy (remcomOutBuffer, "OK");
+            strcpy (__remcomOutBuffer, "OK");
           }
         else 
           {
@@ -1238,12 +1242,12 @@ __process_packet (char *packet)
                   break;
               }
             if (*ptr == '\0')
-              strcpy (remcomOutBuffer, "OK");
+              strcpy (__remcomOutBuffer, "OK");
             else
-              strcpy (remcomOutBuffer, "E01");
+              strcpy (__remcomOutBuffer, "E01");
           }
 #else
-        strcpy (remcomOutBuffer, "E01");
+        strcpy (__remcomOutBuffer, "E01");
 #endif
       }
       break;
@@ -1252,7 +1256,7 @@ __process_packet (char *packet)
     case 'G':      /* set the value of the CPU registers - return OK */
       {
         char *in_ptr = &packet[0];
-        char *out_ptr = remcomOutBuffer;
+        char *out_ptr = __remcomOutBuffer;
         stub_update_registers(in_ptr, out_ptr);
         break;
       }
@@ -1268,13 +1272,13 @@ __process_packet (char *packet)
             && *ptr++ == ','
             && __hexToInt (&ptr, &length))
           {
-	    if (__mem2hex_safe (addr, remcomOutBuffer, length))
+	    if (__mem2hex_safe (addr, __remcomOutBuffer, length))
               break;
 
-            strcpy (remcomOutBuffer, "E03");
+            strcpy (__remcomOutBuffer, "E03");
           }
         else
-          strcpy (remcomOutBuffer, "E01");
+          strcpy (__remcomOutBuffer, "E01");
         break;
       }
 
@@ -1297,7 +1301,7 @@ __process_packet (char *packet)
           {
             /* GDB sometimes sends an impossible length */
             if (length < 0 || length >= BUFMAX)
-              strcpy (remcomOutBuffer, "E01");
+              strcpy (__remcomOutBuffer, "E01");
                 
             else if (is_binary)
               {
@@ -1321,20 +1325,20 @@ __process_packet (char *packet)
                     addr += i;
                   }
                 if (length <= 0)
-                  strcpy (remcomOutBuffer, "OK");
+                  strcpy (__remcomOutBuffer, "OK");
                 else
-                  strcpy (remcomOutBuffer, "E03");
+                  strcpy (__remcomOutBuffer, "E03");
               }
             else
               {
                 if (__hex2mem_safe (ptr, addr, length) != NULL)
-                  strcpy (remcomOutBuffer, "OK");
+                  strcpy (__remcomOutBuffer, "OK");
                 else
-                  strcpy (remcomOutBuffer, "E03");
+                  strcpy (__remcomOutBuffer, "E03");
               }
           }
         else
-          strcpy (remcomOutBuffer, "E02");
+          strcpy (__remcomOutBuffer, "E02");
         break;
       }
 
@@ -1425,12 +1429,18 @@ __process_packet (char *packet)
       }
 
     case 'D' :     /* detach */
-      __putpacket (remcomOutBuffer);
+      __putpacket (__remcomOutBuffer);
       /* fall through */
     case 'k' :      /* kill the program */
 #ifdef __ECOS__
       hal_flush_output();
 #endif
+#ifdef CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
+      {   // Reset the timer to default and cancel any callback
+          extern void sys_profile_reset(void);
+          sys_profile_reset();
+      }
+#endif // CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
       __process_exit_vec ();
       return -1;
 
@@ -1440,10 +1450,10 @@ __process_packet (char *packet)
       break;
 
     case 'H':
-      STUB_PKT_CHANGETHREAD (packet+1, remcomOutBuffer, 300) ;
+      STUB_PKT_CHANGETHREAD (packet+1, __remcomOutBuffer, 300) ;
       break ;
     case 'T' :
-      STUB_PKT_THREAD_ALIVE (packet+1, remcomOutBuffer, 300) ;
+      STUB_PKT_THREAD_ALIVE (packet+1, __remcomOutBuffer, 300) ;
       break ;
     case 'B':
       /* breakpoint */
@@ -1458,11 +1468,11 @@ __process_packet (char *packet)
               __remove_breakpoint (addr,0);
             else
               __set_breakpoint (addr,0);
-            strcpy (remcomOutBuffer, "OK");
+            strcpy (__remcomOutBuffer, "OK");
           }
         else
           {
-            strcpy (remcomOutBuffer, "E01");
+            strcpy (__remcomOutBuffer, "E01");
           }
         break;
       }
@@ -1474,7 +1484,7 @@ __process_packet (char *packet)
         char *ptr = &packet[1];
         if (!__hexToInt (&ptr, &baudrate))
           {
-            strcpy (remcomOutBuffer, "B01");
+            strcpy (__remcomOutBuffer, "B01");
             break;
           }
 
@@ -1502,7 +1512,7 @@ __process_packet (char *packet)
 		      /* When there is a comma, there must be a length */
 		      if  (!__hexToInt (&ptr, &length))
 			{
-			  strcpy (remcomOutBuffer, "E02");
+			  strcpy (__remcomOutBuffer, "E02");
 			  break;
 			}
 		  }
@@ -1520,18 +1530,18 @@ __process_packet (char *packet)
 		      else
 			err = __remove_breakpoint(addr,length);
 		      if (!err)
-			strcpy (remcomOutBuffer, "OK");
+			strcpy (__remcomOutBuffer, "OK");
 		      else
-			strcpy (remcomOutBuffer, "E02");
+			strcpy (__remcomOutBuffer, "E02");
 		      break;
 		    case 1:
 		      /* hw breakpoint */
 #ifdef HAL_STUB_HW_BREAKPOINT
 		      if (!HAL_STUB_HW_BREAKPOINT(is_Z, (void *)addr, length))
-			strcpy (remcomOutBuffer, "OK");
+			strcpy (__remcomOutBuffer, "OK");
 		      else
 #endif
-			strcpy (remcomOutBuffer, "E02");
+			strcpy (__remcomOutBuffer, "E02");
 		      break;
 		    case 2:
 		    case 3:
@@ -1539,10 +1549,10 @@ __process_packet (char *packet)
 		      /* hw watchpoint */
 #ifdef HAL_STUB_HW_WATCHPOINT
 		      if (!HAL_STUB_HW_WATCHPOINT(is_Z, (void *)addr, length, ztype))
-			strcpy (remcomOutBuffer, "OK");
+			strcpy (__remcomOutBuffer, "OK");
 		      else
 #endif
-			strcpy (remcomOutBuffer, "E02");
+			strcpy (__remcomOutBuffer, "E02");
 		      break;
 		  }
 	      }
@@ -1550,21 +1560,29 @@ __process_packet (char *packet)
 	break;
       }
 #endif // Z packet support
+#ifdef CYGPKG_HAL_GDB_FILEIO // File I/O over the GDB remote protocol
+    case 'F':
+    {
+        extern void cyg_hal_gdbfileio_process_F_packet( char *, char *);
+        cyg_hal_gdbfileio_process_F_packet( packet, __remcomOutBuffer );
+        return -1;
+    }
+#endif
     default:
-      __process_target_packet (packet, remcomOutBuffer, 300);
+      __process_target_packet (packet, __remcomOutBuffer, 300);
       break;
     }
 
   /* reply to the request */
-  __putpacket (remcomOutBuffer);
+  __putpacket (__remcomOutBuffer);
   return 0;
 }
 
 static void
 send_t_packet (int sigval)
 {
-  __build_t_packet (sigval, remcomOutBuffer);
-  __putpacket (remcomOutBuffer);
+  __build_t_packet (sigval, __remcomOutBuffer);
+  __putpacket (__remcomOutBuffer);
 }
 
 /*
@@ -1581,8 +1599,8 @@ process_exception (int sigval)
     send_t_packet (sigval);
 
   do {
-    getpacket (remcomInBuffer);
-    status = __process_packet (remcomInBuffer);
+    __getpacket (__remcomInBuffer);
+    status = __process_packet (__remcomInBuffer);
   } while (status == 0);
 
   if (status < 0)
@@ -1594,11 +1612,11 @@ process_exception (int sigval)
 void
 __send_exit_status (int status)
 {
-  remcomOutBuffer[0] = 'W';
-  remcomOutBuffer[1] = hexchars[(status >> 4) & 0xf];
-  remcomOutBuffer[2] = hexchars[status & 0xf];
-  remcomOutBuffer[3] = 0;
-  __putpacket (remcomOutBuffer);
+  __remcomOutBuffer[0] = 'W';
+  __remcomOutBuffer[1] = hexchars[(status >> 4) & 0xf];
+  __remcomOutBuffer[2] = hexchars[status & 0xf];
+  __remcomOutBuffer[3] = 0;
+  __putpacket (__remcomOutBuffer);
 }
 
 /* Read up to MAXLEN bytes from the remote GDB client, and store in DEST
@@ -1622,14 +1640,14 @@ __get_gdb_input (target_register_t dest, int maxlen, int block)
   buf[2] = block ? '0' : '1';
   buf[3] = 0;
   __putpacket (buf);
-  getpacket (remcomInBuffer);
-  if (remcomInBuffer[0] != 'I')
+  __getpacket (__remcomInBuffer);
+  if (__remcomInBuffer[0] != 'I')
     return -1;
-  len = stubhex (remcomInBuffer[1]) * 16 + stubhex (remcomInBuffer[2]);
+  len = stubhex (__remcomInBuffer[1]) * 16 + stubhex (__remcomInBuffer[2]);
   for (i = 0; i < len; i++)
     {
-      d = stubhex (remcomInBuffer[3 + i * 2]) * 16;
-      d |=  stubhex (remcomInBuffer[3 + i * 2 + 1]);
+      d = stubhex (__remcomInBuffer[3 + i * 2]) * 16;
+      d |=  stubhex (__remcomInBuffer[3 + i * 2 + 1]);
       __write_mem_safe (&d, (void *)(dest + i), 1);
     }
   /* Write the trailing \0. */
@@ -1755,11 +1773,11 @@ ungetDebugChar (int c)
 void
 __kill_program (int sigval)
 {
-  remcomOutBuffer[0] = 'X';
-  remcomOutBuffer[1] = hexchars[(sigval >> 4) & 15];
-  remcomOutBuffer[2] = hexchars[sigval & 15];
-  remcomOutBuffer[3] = 0;
-  __putpacket (remcomOutBuffer);
+  __remcomOutBuffer[0] = 'X';
+  __remcomOutBuffer[1] = hexchars[(sigval >> 4) & 15];
+  __remcomOutBuffer[2] = hexchars[sigval & 15];
+  __remcomOutBuffer[3] = 0;
+  __putpacket (__remcomOutBuffer);
 }
 
 #define MAX_ARG_COUNT 20
@@ -1904,7 +1922,7 @@ crc32 (target_addr_t mem, int len, uint32 crc)
 static void
 process_query (char *pkt)
 {
-  remcomOutBuffer[0] = '\0';
+  __remcomOutBuffer[0] = '\0';
 #ifdef __ECOS__
   if ('C' == pkt[0] &&
       'R' == pkt[1] &&
@@ -1926,19 +1944,19 @@ process_query (char *pkt)
           our_crc = crc32 (startmem, length, 0xffffffff);
           if (__mem_fault)
             {
-              strcpy (remcomOutBuffer, "E01");
+              strcpy (__remcomOutBuffer, "E01");
             }
           else
             {
-              int numb = __intToHex (remcomOutBuffer + 1, our_crc, 32);
-              remcomOutBuffer[0] = 'C';
-              remcomOutBuffer[numb + 1] = 0;
+              int numb = __intToHex (__remcomOutBuffer + 1, our_crc, 32);
+              __remcomOutBuffer[0] = 'C';
+              __remcomOutBuffer[numb + 1] = 0;
             }
         }
       return;
     }
 #ifdef CYG_HAL_STUB_PROCESS_QUERY
-  else if (CYG_HAL_STUB_PROCESS_QUERY (pkt, remcomOutBuffer, sizeof(remcomOutBuffer)))
+  else if (CYG_HAL_STUB_PROCESS_QUERY (pkt, __remcomOutBuffer, sizeof(__remcomOutBuffer)))
     return;
 #endif
   else
@@ -1950,16 +1968,16 @@ process_query (char *pkt)
       switch (ch)
         {
         case 'L' : /* threadlistquery */
-          STUB_PKT_GETTHREADLIST (subpkt, remcomOutBuffer, 300);
+          STUB_PKT_GETTHREADLIST (subpkt, __remcomOutBuffer, 300);
           break ;
         case 'P' : /* Thread or process information request */
-          STUB_PKT_GETTHREADINFO (subpkt, remcomOutBuffer, 300);
+          STUB_PKT_GETTHREADINFO (subpkt, __remcomOutBuffer, 300);
           break ;
         case 'C' : /* current thread query */
-          STUB_PKT_CURRTHREAD(subpkt, remcomOutBuffer, sizeof(remcomOutBuffer));
+          STUB_PKT_CURRTHREAD(subpkt, __remcomOutBuffer, sizeof(__remcomOutBuffer));
           break;
         default:
-          __process_target_query (pkt, remcomOutBuffer, 300);
+          __process_target_query (pkt, __remcomOutBuffer, 300);
           break ;
         }
     }
@@ -1973,7 +1991,7 @@ process_set (char *pkt)
   char ch ;
   
 #ifdef CYG_HAL_STUB_PROCESS_SET
-  if (CYG_HAL_STUB_PROCESS_SET (pkt, remcomOutBuffer, sizeof(remcomOutBuffer)))
+  if (CYG_HAL_STUB_PROCESS_SET (pkt, __remcomOutBuffer, sizeof(__remcomOutBuffer)))
     return;
 #endif
 
@@ -1984,10 +2002,10 @@ process_set (char *pkt)
       /* reserve the packet id even if support is not present */
       /* Dont strip the 'p' off the header, there are several variations of
          this packet */
-      STUB_PKT_CHANGETHREAD (pkt, remcomOutBuffer, 300) ;
+      STUB_PKT_CHANGETHREAD (pkt, __remcomOutBuffer, 300) ;
       break ;
     default:
-      __process_target_set (pkt, remcomOutBuffer, 300);
+      __process_target_set (pkt, __remcomOutBuffer, 300);
       break ;
     }
 }

@@ -1,0 +1,601 @@
+<!DOCTYPE part  PUBLIC "-//OASIS//DTD DocBook V3.1//EN">
+
+<!-- {{{ Banner                         -->
+
+<!-- =============================================================== -->
+<!--                                                                 -->
+<!--     synth.sgml                                                  -->
+<!--                                                                 -->
+<!--     Synthetic target architectural documentation.               -->
+<!--                                                                 -->
+<!-- =============================================================== -->
+####ECOSGPLCOPYRIGHTBEGIN####
+ -------------------------------------------
+ This file is part of eCos, the Embedded Configurable Operating System.
+ Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+
+ eCos is free software; you can redistribute it and/or modify it under
+ the terms of the GNU General Public License as published by the Free
+ Software Foundation; either version 2 or (at your option) any later version.
+
+ eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+ WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with eCos; if not, write to the Free Software Foundation, Inc.,
+ 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
+ As a special exception, if other files instantiate templates or use macros
+ or inline functions from this file, or you compile this file and link it
+ with other works to produce a work based on this file, this file does not
+ by itself cause the resulting work to be covered by the GNU General Public
+ License. However the source code for this file must still be made available
+ in accordance with section (3) of the GNU General Public License.
+
+ This exception does not invalidate any other reasons why a work based on
+ this file might be covered by the GNU General Public License.
+
+ Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+ at http://sources.redhat.com/ecos/ecos-license
+ -------------------------------------------
+####ECOSGPLCOPYRIGHTEND####
+<!-- =============================================================== -->
+<!-- #####DESCRIPTIONBEGIN####                                       -->
+<!--                                                                 -->
+<!-- Author(s):   bartv                                              -->
+<!-- Contact(s):  bartv                                              -->
+<!-- Date:        2002/02/24                                         -->
+<!-- Version:     0.01                                               -->
+<!--                                                                 -->
+<!-- ####DESCRIPTIONEND####                                          -->
+<!-- =============================================================== -->
+
+<!-- }}} -->
+
+<part id="hal-synth-arch"><title>eCos Synthetic Target</title>
+
+<!-- {{{ Overview                       -->
+
+<refentry id="synth">
+  <refmeta>
+    <refentrytitle>Overview</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Overview</refname>
+    <refpurpose>The eCos synthetic target</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="synth-description"><title>Description</title>
+    <para>
+Usually eCos runs on either a custom piece of hardware, specially
+designed to meet the needs of a specific application, or on a
+development board of some sort that is available before the final
+hardware. Such boards have a number of things in common:
+    </para>
+    <orderedlist>
+      <listitem><para>
+Obviously there has to be at least one processor to do the work.
+Usually this will be a 32-bit processor, but it can be smaller or
+larger. Processor speed will vary widely, depending on the expected
+needs of the application. However usually the exact processor being
+used does not matter very much for most of the development process:
+the use of languages such as C or C++ means that the compiler will
+handle those details.
+      </para></listitem>
+      <listitem><para>
+There needs to be memory for code and for data. A typical system will
+have two different types of memory. There will be some non-volatile
+memory such as flash, EPROM or masked ROM. There will also be some
+volatile memory such as DRAM or SRAM. Often the code for the final
+application will reside in the non-volatile memory and all of the RAM
+will be available for data. However updating non-volatile memory
+requires a non-trivial amount of effort, so for much of the
+development process it is more convenient to burn suitable firmware,
+for example RedBoot, into the non-volatile memory and then use that to
+load the application being debugged into RAM, alongside the
+application data and a small area reserved for use by the firmware.
+      </para></listitem>
+      <listitem><para>
+The platform must provide certain mimimal I/O facilities. Most eCos
+configurations require a clock signal of some sort. There must also be
+some way of outputting diagnostics to the user, often but not always 
+via a serial port. Unless special debug hardware is being used, source
+level debugging will require bidirectional communication between a
+host machine and the target hardware, usually via a serial port or an
+ethernet device.
+      </para></listitem>
+      <listitem><para>
+All the above is not actually very useful yet because there is no way
+for the embedded device to interact with the rest of the world, except
+by generating diagnostics. Therefore an embedded device will have
+additional I/O hardware. This may be fairly standard hardware such as
+an ethernet or USB interface, or special hardware designed
+specifically for the intended application, or quite often some
+combination. Standard hardware such as ethernet or USB may be
+supported by eCos device drivers and protocol stacks, whereas the
+special hardware will be driven directly by application code.
+      </para></listitem>
+    </orderedlist>
+    <para>
+Much of the above can be emulated on a typical PC running Linux.
+Instead of running the embedded application being developed on a
+target board of some sort, it can be run as a Linux process. The
+processor will be the PC's own processor, for example an x86, and the
+memory will be the process' address space. Some I/O facilities can be
+emulated through system calls. For example clock hardware can be
+emulated by setting up a <literal>SIGALRM</literal> signal, which will
+cause the process to be interrupted at regular intervals. This
+emulation of real hardware will not be particularly accurate, for
+example the number of cpu cycles available to the eCos application
+between clock ticks will vary widely depending on what else is running
+on the PC, but for much development work it will be good enough.
+    </para>
+    <para>
+A key requirement for synthetic target code is that the embedded
+application must not be linked with any of the standard Linux
+libraries such as the GNU C library: that would lead to a confusing
+situation where both eCos and the Linux libraries attempted to provide
+functions such as <function>printf</function>. Instead the synthetic
+target support must be implemented directly on top of the Linux
+kernels' system call interface. For example, the kernel provides a
+system call for write operations. The actual function
+<function>write</function> is implemented in the system's C library,
+but all it does is move its arguments on to the stack or into certain
+registers and then execute a special trap instruction such as
+<literal>int&nbsp;0x80</literal>. When this instruction is executed
+control transfers into the kernel, which will validate the arguments
+and perform the appropriate operation. Now, a synthetic target
+application cannot be linked with the system's C library. Instead it
+contains a function <function>cyg_hal_sys_write</function> which, like
+the C library's <function>write</function> function, pushes its
+arguments on to the stack and executes the trap instruction. The Linux
+kernel cannot tell the difference, so it will perform the I/O
+operation requested by the synthetic target. With appropriate
+knowledge of what system calls are available, this makes it possible
+to emulate the required I/O facilities. For example diagnostic output
+can be achieved by a <function>cyg_hal_sys_write</function> system
+call using file descriptor 1, which corresponds to stdout.
+    </para>
+    <para>
+In many ways developing for the synthetic target is no different from
+developing for real embedded targets. eCos must be configured
+appropriately: selecting a suitable target such as
+<userinput>i386linux</userinput> will cause the configuration system
+to load the appropriate packages for this hardware; this includes an
+architectural HAL package and a platform-specific package; the
+architectural package contains generic code applicable to all Linux
+platforms, whereas the platform package is for specific Linux
+implementations such as the x86 version and contains any
+processor-specific code. Selecting this target will also bring in some
+device driver packages. Other aspects of the configuration such as
+which API's are supported are determined by the template, by adding
+and removing packages, and by fine-grained configuration.
+    </para>
+    <para>
+In other ways developing for the synthetic target can be much easier
+than developing for a real embedded target. For example there is no
+need to worry about building and installing suitable firmware on the
+target hardware, and then downloading and debugging the actual
+application over a serial line or a similar connection. Instead an
+eCos application built for the synthetic target is mostly
+indistinguishable from an ordinary Linux program. It can be run simply
+by typing the name of the executable file at a shell prompt.
+Alternatively you can debug the application using whichever version of
+gdb is provided by your Linux distribution. There is no need to build
+or install special toolchains. Essentially using the synthetic target
+means that the various problems associated with real embedded hardware
+can be bypassed for much of the development process.
+    </para>
+    <para>
+The eCos synthetic target provides emulation, not simulation. It is
+possible to run eCos in suitable architectural simulators but that
+involves a rather different approach to software development. For
+example, when running eCos on the psim PowerPC simulator you need
+appropriate cross-compilation tools that allow you to build PowerPC
+executables. These are then loaded into the simulator which interprets
+every instruction and attempts to simulate what would happen if the
+application were running on real hardware. This involves a lot of
+processing overhead, but depending on the functionality provided by
+the simulator it can give very accurate results. When developing for
+the synthetic target the executable is compiled for the PC's own
+processor and will be executed at full speed, with no need for a
+simulator or special tools. This will be much faster and somewhat
+simpler than using an architectural simulator, but no attempt is made
+to accurately match the behaviour of a real embedded target.
+    </para>
+    <note><para>
+Support for emulating standard hardware such as ethernet is not yet
+available in the current release of the eCos synthetic target code,
+but is planned for future versions. Emulating application-specific
+custom hardware is rather more difficult since there is no way of
+knowing just what strange hardware a particular application might
+need, but the I/O mechanisms planned should allow for
+application-specific extensions.
+    </para></note>
+  </refsect1>
+
+  <refsect1 id="synth-tools"><title>Toolchain</title>
+    <para>
+When developing eCos applications for a normal embedded target it is
+necessary to use a suitable cross-compiler and related tools such as
+the linker. Developing for the synthetic target is easier because you
+can just use the standard GNU tools (gcc, g++, ld, &hellip;) which
+were provided with your Linux distribution, or which you used to build
+your own Linux setup. Any reasonably recent version of the tools, for
+example gcc 2.96(Red Hat) as shipped with Red Hat Linux 7, should be
+sufficient.
+    </para>
+    <para>
+There is one important limitation when using these tools: current gdb
+will not support debugging of eCos threads on the synthetic target. As
+far as gdb is concerned a synthetic target application is also
+indistinguishable from a normal Linux application, so it assumes that
+any threads will be created by calls to the Linux
+<function>pthread_create</function> function provided by the C
+library. Obviously this is not the case since the application is never
+linked with that library. Therefore gdb never notices the eCos thread
+mechanisms and assumes the application is single-threaded. Fixing this
+is possible but would involve non-trivial changes to gdb.
+    </para>
+    <para>
+Theoretically it is possible to develop synthetic target applications
+on, for example, a PC running Windows and then run the resulting
+executables on another machine that runs Linux. This is rarely useful:
+if a Linux machine is available then usually that machine will also be
+used for building ecos and the application. However, if for some
+reason it is necessary or desirable to build on another machine then
+this requires a suitable cross-compiler and related tools. If the
+application will be running on a typical PC with an x86 processor then
+a suitable configure triplet would be
+<userinput>i686-pc-linux-gnu</userinput>. The installation
+instructions for the various GNU tools should be consulted for further
+information. 
+    </para>
+  </refsect1>
+
+  <refsect1 id="synth-hardware"><title>Hardware Preparation</title>
+    <para>
+Preparing a real embedded target for eCos development can be tricky.
+Often the first step is to install suitable firmware, usually RedBoot.
+This means creating and building a special configuration for eCos with
+the RedBoot template, then somehow updating the target's flash chips
+with the resulting RedBoot image. Typically it will also be necessary
+to get a working serial connection, and possibly set up ethernet as
+well. Although usually none of the individual steps are particularly
+complicated, there are plenty of ways in which things can go wrong and
+it can be hard to figure out what is actually happening. Of course
+some board manufacturers make life easier for their developers by
+shipping hardware with RedBoot preinstalled, but even then it is still
+necessary to set up communication between host and target.
+    </para>
+    <para>
+None of this is applicable to the synthetic target. Instead you can
+just build a normal eCos configuration, link your application with the
+resulting libraries, and you end up with an executable that you can
+run directly on your Linux machine or via gdb. A useful side effect of
+this is that application development can start before any real
+embedded hardware is actually available.
+    </para>
+    <para>
+Typically the memory map for a synthetic target application will be
+set up such that there is a read-only ROM region containing all the
+code and constant data, and a read-write RAM region for the data. The
+default locations and sizes of these regions depend on the specific
+platform being used for development. Note that the application always
+executes out of ROM: on a real embedded target much of the development
+would involve running RedBoot firmware there, with application code
+and data loaded into RAM; usually this would change for the final
+system; the firmware would be removed; and the application itself
+would execute from ROM and perform the appropriate hardware
+initialization. Therefore the synthetic target actually emulates the
+behaviour of the final system, not the development environment.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ System calls                   -->
+
+<refentry id="synth-syscalls">
+  <refmeta>
+    <refentrytitle>System Calls</refentrytitle>
+  </refmeta>
+
+  <refnamediv>
+    <refname>cyg_hal_sys_xyz</refname>
+    <refpurpose>Access Linux system facilities</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis>
+      <funcsynopsisinfo>
+#include &lt;cyg/hal/hal_io.h
+      </funcsynopsisinfo>
+      <funcprototype>
+        <funcdef>int <function>cyg_hal_sys_xyz</function></funcdef>
+        <varargs>
+      </funcprototype>
+    </funcsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="synth-syscalls-description"><title>Description</title>
+    <para>
+On a real embedded target eCos interacts with the hardware by peeking
+and poking various registers, manipulating special regions of memory,
+and so on. The synthetic target does not access hardware directly.
+Instead I/O and other operations are emulated by making appropriate
+Linux system calls. The HAL package exports a number of functions
+which allow other packages, or even application code, to make these
+same system calls. However this facility must be used with care: any
+code which calls, for example, <function>cyg_hal_sys_write</function>
+will only ever run on the synthetic target; that functionality is
+obviously not provided on any real hardware because there is no
+underlying Linux kernel to implement it.
+    </para>
+    <para>
+The synthetic target only provides a subset of the available system
+calls, specifically those calls which have proved useful to implement
+I/O emulation. This subset can be extended fairly easily if necessary.
+All of the available calls, plus associated data structures and
+macros, are defined in the header file <filename
+class="headerfile">cyg/hal/hal_io.h</filename>. There is a simple
+convention: given a Linux system call such as
+<function>open</function>, the synthetic target will prefix
+<literal>cyg_hal_sys</literal> and provide a function with that name.
+The second argument to the <function>open</function> system call is
+a set of flags such as <constant>O_RDONLY</constant>, and the header
+file will define a matching constant
+<constant>CYG_HAL_SYS_O_RDONLY</constant>. There are also data
+structures such as <structname>cyg_hal_sys_sigset_t</structname>,
+matching the Linux data structure <structname>sigset_t</structname>.
+    </para>
+    <para>
+In most cases the functions provided by the synthetic target behave as
+per the documentation for the Linux system calls, and section 2 of the
+Linux man pages can be consulted for more information. There is one
+important difference: typically the documentation will say that a
+function returns <literal>-1</literal> to indicate an error, with the
+actual error code held in <varname>errno</varname>; the actual
+underlying system call and hence the
+<function>cyg_hal_sys_xyz</function> provided by eCos instead returns
+a negative number to indicate an error, with the absolute value of
+that number corresponding to the error code; usually it is the C
+library which handles this and manipulates errno, but of course
+synthetic target applications are not linked with that Linux library.
+    </para>
+    <para>
+However, there are some exceptions. The Linux kernel has evolved over
+the years, and some of the original system call interfaces are no
+longer appropriate. For example the original
+<function>select</function> system call has been superseded by
+<function>_newselect</function>, and that is what the
+<function>select</function> function in the C library actually uses.
+The old call is still available to preserve binary compatibility but,
+like the C library, eCos makes use of the new one because it provides
+the appropriate functionality. In an attempt to reduce confusion the
+eCos function is called <function>cyg_hal_sys__newselect</function>,
+in other words it matches the official system call naming scheme. The
+authoritive source of information on such matters is the Linux kernel
+sources themselves, and especially its header files.
+    </para>
+    <para>
+eCos packages and applications should never
+<literal>#include</literal> Linux header files directly. For example,
+doing a <literal>#include&nbsp;&lt;/usr/include/fcntl.h&gt;</literal>
+to access additional macros or structure definitions, or alternatively
+manipulating the header file search path, will lead to problems
+because the Linux header files are likely to duplicate and clash with
+definitions in the eCos headers. Instead the appropriate functionality
+should be extracted from the Linux headers and moved into either
+<filename class="headerfile">cyg/hal/hal_io.h</filename> or into
+application code, with suitable renaming to avoid clashes with eCos
+names. Users should be aware that large-scale copying may involve
+licensing complications.
+    </para>
+    <para>
+Adding more system calls is usually straightforward and involves
+adding one or more lines to the platform-specific file in the
+appropriate platform HAL, for example
+<filename>syscall-i386-linux-1.0.S</filename>. However it is necessary
+to do some research first about the exact interface implemented by the
+system call, because of issues such as old system calls that have been
+superseded. The required information can usually be found fairly
+easily by searching through the Linux kernel sources and possibly the
+GNU C library sources.
+    </para>
+  </refsect1>
+</refentry>
+
+<!-- }}} -->
+<!-- {{{ Porting                        -->
+
+<refentry id="synth-porting">
+  <refmeta>
+    <refentrytitle>Porting</refentrytitle>
+  </refmeta>
+  <refnamediv>
+    <refname>Porting</refname>
+    <refpurpose>The eCos synthetic target</refpurpose>
+  </refnamediv>
+
+  <refsect1 id="synth-porting-description"><title>Description</title>
+    <para>
+The initial development effort of the eCos synthetic target happened
+on x86 Linux machines. Porting to other platforms involves addressing
+a number of different issues. Some ports should be fairly
+straightforward, for example a port to Linux on a processor other than
+an x86. Porting to Unix or Unix-like operating systems other than
+Linux may be possible, but would involve more effort. Porting to a
+completely different operating system such as Windows would be very
+difficult. The text below completes the eCos Porting Guide.
+    </para>
+  </refsect1>
+
+  <refsect1 id="synth-porting-linux"><title>Other Linux Platforms</title>
+    <para>
+Porting the synthetic target to a Linux platform that uses a processor
+other than x86 should be straightforward. The simplest approach is to
+copy the existing <filename class="directory">i386linux</filename>
+directory tree in the <filename class="directory">hal/synth</filename>
+hierarchy, then rename and edit the ten or so files in this package.
+Most of the changes should be pretty obvious, for example on a 64-bit
+processor some new data types will be needed in the
+<filename>basetype.h</filename> header file. It will also be necessary
+to update the toplevel <filename>ecos.db</filename> database with an
+entry for the new HAL package, and a new target entry will be needed
+as well.
+    </para>
+    <para>
+Obviously a different processor will have different register sets
+and calling conventions, so the code for saving and restoring thread
+contexts and for implementing <function>setjmp</function> and
+<function>longjmp</function> will need to be updated. The exact way of
+performing Linux system calls will also vary: on i386linux this
+usually involves pushing some registers on the stack and then
+executing an <literal>int&nbsp;0x080</literal> trap instruction, but
+on a different processor the arguments might be passed in registers
+instead and certainly a different trap instruction will be used. The
+startup code is also written in assembler, but needs to do little more
+than jump to the main <function>linux_entry</function> function
+provided by the architectural synthetic target HAL package.
+    </para>
+    <para>
+The header file <filename>hal_io.h</filename> provided by the
+architectural HAL package provides various structure definitions,
+function prototypes, and macros related to system calls. These are
+correct for i386linux, but there may be problems on other processors.
+For example a structure field that is currently defined as a 32-bit
+number may in fact may be a 64-bit number instead.
+    </para>
+    <para>
+The synthetic target's memory map is defined in two files in the
+<filename class="directory">include/pkgconf</filename> subdirectory.
+For x86 the default memory map involves eight megabytes of read-only
+memory for the code at location 0x1000000 and another eight megabytes
+for data at 0x2000000. These address ranges may be reserved for other
+purposes on the new architecture, so may need changing. There may be
+some additional areas of memory allocated by the system for other
+purposes, for example the startup stack and any environment variables,
+but usually eCos applications can and should ignore those.
+    </para>
+    <para>
+Other HAL functionality such as interrupt handling, diagnostics, and
+the system clock are provided by the architectural HAL package and
+should work on different processors with few if any changes.
+    </para>
+    <para>
+When porting to other processors, a number of sources of information
+are likely to prove useful. Obviously the Linux kernel sources and
+header files constitute the ultimate authority on how things work at
+the system call level. The GNU C library sources may also prove very
+useful: for a normal Linux application it is the C library that
+provides the startup code and the system call interface.
+    </para>
+  </refsect1>
+
+  <refsect1 id="synth-porting-unix"><title>Other Unix Platforms</title>
+    <para>
+Porting to a Unix or Unix-like operating system other than Linux would
+be somewhat more involved. The first requirement involves toolchains:
+the GNU compilers, gcc and g++, must definitely be used; use of other
+GNU tools such as the linker may be needed as well, because eCos
+depends on functionality such as prioritizing C++ static constructors,
+and other linkers may not implement this or may implement it in a
+different and incompatible way. A closely related requirement is the
+use of ELF format for binary executables: if the operating system
+still uses an older format such as COFF then there are likely to be
+problems because they do not provide the flexibility required by eCos.
+    </para>
+    <para>
+In the architectural HAL there should be very little code that is
+specific to Linux. Instead the code should work on any operating
+system that provides a reasonable implementation of the POSIX
+standard. There may be some problems with program startup, but those
+could be handled at the architectural level. Some changes may also be
+required to the exception handling code. However one file which will
+present a problem is <filename>hal_io.h</filename>, which contains
+various structure definitions and macros used with the system call
+interface. It is likely that many of these definitions will need
+changing, and it may well be appropriate to implement variant HAL
+packages for the different operating systems where this information
+can be separated out. Another possible problem is that the generic
+code assumes that system calls such as
+<function>cyg_hal_sys_write</function> are available. On an operating
+system other than Linux it is possible that some of these are not
+simple system calls, and instead wrapper functions will need to be
+implemented at the variant HAL level.
+    </para>
+    <para>
+The remaining porting task is to implement one or more platform HAL
+packages, one per processor type that is supported. This should
+involve much the same work as a port to <link
+linkend="synth-porting-linux">another processor running Linux</link>.
+    </para>
+    <para>
+When using other Unix operating systems the kernel source code may not
+be available, which would make any porting effort more challenging.
+However there is still a good chance that the GNU C library will have
+been ported already, so its source code may contain much useful
+information. 
+    </para>
+    <caution><para>
+Users should be aware that future enhancements to the synthetic target
+code, especially in areas related to I/O, may be much more closely
+tied to Linux. For example access to ethernet facilities might be
+implemented using the <literal>PF_PACKET</literal> socket address
+family, or the virtual tunnelling interface. Porting such code to
+other Unix operating systems may prove rather more difficult.
+    </para></caution>
+  </refsect1>
+
+  <refsect1 id="synth-porting-other"><title>Windows Platforms</title>
+    <para>
+Porting the current synthetic target code to some version of Windows
+or to another non-Unix platform is likely to prove very difficult. The
+first hurdle that needs to be crossed is the file format for binary
+executables: current Windows implementations do not use ELF, instead
+they use their own format PE which is a variant of the rather old and
+limited COFF format. It may well prove easier to first write an ELF
+loader for Windows executables, rather than try to get eCos to work
+within the constraints of PE. Of course that introduces new problems,
+for example existing source-level debuggers will still expect
+executables to be in PE format.
+    </para>
+    <para>
+Under Linux a synthetic target application is not linked with the
+system's C library or any other standard system library. That would
+cause confusion, for example both eCos and the system's C library
+might try to define the <function>printf</function> function, and
+introduce complications such as working with shared libraries. For
+much the same reasons, a synthetic target application under Windows
+should not be linked with any Windows DLL's. If an ELF loader has been
+specially written then this may not be much of a problem.
+    </para>
+    <para>
+The next big problem is the system call interface. Under Windows
+system calls are generally made via DLL's, and it is not clear that
+the underlying trap mechanism is well-documented or consistent between
+different releases of Windows.
+    </para>
+    <para>
+The current code depends on the operating system providing an
+implementation of POSIX signal handling. This is used for I/O
+purposes, for example <literal>SIGALRM</literal> is used for the
+system clock, and for exceptions. It is not known what equivalent
+functionality is available under Windows.
+    </para>
+    <para>
+Given the above problems a port of the synthetic target to Windows may
+or may not be technically feasible, but it would certainly require a
+very large amount of effort.
+    </para>
+  </refsect1>
+
+</refentry>
+
+<!-- }}} -->
+
+</part>

@@ -382,6 +382,10 @@ bool CProperties::LoadFromFile(LPCTSTR pszFileName)
         if(_TCHAR('\n')==buf[nLen-1]){
           buf[--nLen]=_TCHAR('\0');
         }
+        // Remove trailing '\r'
+        if(_TCHAR('\r')==buf[nLen-1]){
+          buf[--nLen]=_TCHAR('\0');
+        }
         
         // Check for continuation lines
         if(_TCHAR('\\')==buf[nLen-1]){

@@ -5,29 +5,38 @@
 //      ROM/RAM interfacing functions
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -393,11 +402,91 @@ cyg_hal_diag_mangler_gdb_getc(void* __ch_data)
     return __ch;
 }
 
+static char __mangler_line[100];
+static int  __mangler_pos = 0;
+
+static void
+cyg_hal_diag_mangler_gdb_flush(void* __ch_data)
+{
+    CYG_INTERRUPT_STATE old;
+    hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+
+    // Nothing to do if mangler buffer is empty.
+    if (__mangler_pos == 0)
+        return;
+
+    // Disable interrupts. This prevents GDB trying to interrupt us
+    // while we are in the middle of sending a packet. The serial
+    // receive interrupt will be seen when we re-enable interrupts
+    // later.
+#if defined(CYG_HAL_STARTUP_ROM) \
+    || !defined(CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION)
+    HAL_DISABLE_INTERRUPTS(old);
+#else
+    CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
+#endif
+        
+#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
+    // Only wait 500ms for data to arrive - avoid "stuck" connections
+    CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT);
+#endif
+
+    while(1)
+    {
+	static const char hex[] = "0123456789ABCDEF";
+	cyg_uint8 csum = 0, c1;
+	int i;
+        
+	CYGACC_COMM_IF_PUTC(*__chan, '$');
+	CYGACC_COMM_IF_PUTC(*__chan, 'O');
+	csum += 'O';
+	for( i = 0; i < __mangler_pos; i++ )
+        {
+	    char ch = __mangler_line[i];
+	    char h = hex[(ch>>4)&0xF];
+	    char l = hex[ch&0xF];
+	    CYGACC_COMM_IF_PUTC(*__chan, h);
+	    CYGACC_COMM_IF_PUTC(*__chan, l);
+	    csum += h;
+	    csum += l;
+	}
+	CYGACC_COMM_IF_PUTC(*__chan, '#');
+	CYGACC_COMM_IF_PUTC(*__chan, hex[(csum>>4)&0xF]);
+	CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
+
+    nak:
+#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
+	if (CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, &c1) == 0) {
+	    c1 = '-';
+	    if (tries && (--tries == 0)) c1 = '+';
+	}
+#else
+	c1 = CYGACC_COMM_IF_GETC(*__chan);
+#endif
+
+	if( c1 == '+' ) break;
+
+	if( cyg_hal_is_break( &c1 , 1 ) ) {
+	    // Caller's responsibility to react on this.
+	    CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(1);
+	    break;
+	}
+	if( c1 != '-' ) goto nak;
+    }
+
+    __mangler_pos = 0;
+    // And re-enable interrupts
+#if defined(CYG_HAL_STARTUP_ROM) \
+    || !defined(CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION)
+    HAL_RESTORE_INTERRUPTS(old);
+#else
+    CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
+#endif
+}
+
 static void
 cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
 {
-    static char line[100];
-    static int pos = 0;
 #if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
     int tries = CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES;
 #endif
@@ -407,81 +496,10 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
 
     CYGARC_HAL_SAVE_GP();
 
-    line[pos++] = c;
+    __mangler_line[__mangler_pos++] = c;
 
-    if( c == '\n' || pos == sizeof(line) )
-    {
-        CYG_INTERRUPT_STATE old;
-        hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_DEBUG_PROCS();
-
-        // Disable interrupts. This prevents GDB trying to interrupt us
-        // while we are in the middle of sending a packet. The serial
-        // receive interrupt will be seen when we re-enable interrupts
-        // later.
-#if defined(CYG_HAL_STARTUP_ROM) \
-    || !defined(CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION)
-        HAL_DISABLE_INTERRUPTS(old);
-#else
-        CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
-#endif
-        
-#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
-        // Only wait 500ms for data to arrive - avoid "stuck" connections
-        CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT);
-#endif
-
-        while(1)
-        {
-            static const char hex[] = "0123456789ABCDEF";
-            cyg_uint8 csum = 0, c1;
-            int i;
-        
-            CYGACC_COMM_IF_PUTC(*__chan, '$');
-            CYGACC_COMM_IF_PUTC(*__chan, 'O');
-            csum += 'O';
-            for( i = 0; i < pos; i++ )
-            {
-                char ch = line[i];
-                char h = hex[(ch>>4)&0xF];
-                char l = hex[ch&0xF];
-                CYGACC_COMM_IF_PUTC(*__chan, h);
-                CYGACC_COMM_IF_PUTC(*__chan, l);
-                csum += h;
-                csum += l;
-            }
-            CYGACC_COMM_IF_PUTC(*__chan, '#');
-            CYGACC_COMM_IF_PUTC(*__chan, hex[(csum>>4)&0xF]);
-            CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
-
-        nak:
-#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
-            if (CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, &c1) == 0) {
-                c1 = '-';
-                if (tries && (--tries == 0)) c1 = '+';
-            }
-#else
-            c1 = CYGACC_COMM_IF_GETC(*__chan);
-#endif
-
-            if( c1 == '+' ) break;
-
-            if( cyg_hal_is_break( &c1 , 1 ) ) {
-                // Caller's responsibility to react on this.
-                CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(1);
-                break;
-            }
-            if( c1 != '-' ) goto nak;
-        }
-
-        pos = 0;
-        // And re-enable interrupts
-#if defined(CYG_HAL_STARTUP_ROM) \
-    || !defined(CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION)
-        HAL_RESTORE_INTERRUPTS(old);
-#else
-        CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
-#endif
-    }
+    if( c == '\n' || __mangler_pos == sizeof(__mangler_line) )
+	cyg_hal_diag_mangler_gdb_flush(__ch_data);
 
     CYGARC_HAL_RESTORE_GP();
 }
@@ -514,7 +532,12 @@ static int
 cyg_hal_diag_mangler_gdb_control(void *__ch_data, 
                                  __comm_control_cmd_t __func, ...)
 {
-    // Do nothing (yet).
+    CYGARC_HAL_SAVE_GP();
+
+    if (__func == __COMMCTL_FLUSH_OUTPUT)
+	cyg_hal_diag_mangler_gdb_flush(__ch_data);
+
+    CYGARC_HAL_RESTORE_GP();
     return 0;
 }
 

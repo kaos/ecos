@@ -4,6 +4,8 @@ To-Do List for Configuration Tool 2.x
 - Implement Memory Layout Tool.
 
 - Verify Run Tests Dialog works for TCP/IP mode on Linux.
+  There's a problem under Windows too, apparently (2002-02-13),
+  whereby everything is greyed out.
 
 - Importing more than one package at a time can cause conflicts
   whereas importing one at a time causes no conflicts.
@@ -35,3 +37,7 @@ To-Do List for Configuration Tool 2.x
   o optionally, the ability to hide inactive and/or calculated options
     and/or interfaces. They add a lot to visual clutter, but we do require the
     user to be _able_ to view them if need be.
+
+- List controls: sometimes it's not possible to scroll horizontally to see
+  all of a label, for example in the Properties window. Need to set the
+  column width according to the maximum size of labels in that column.

@@ -52,6 +52,8 @@
 	Converted INITIAL_SR to INITIAL_SR_PLF to work with architecture
 	and variant HALs.
 
+	* src/platform.S: Added VRC4375 setup.
+	
 	* src/plf_serial.c: File added to implement serial IO in a vector
 	compatible manner.
 		

@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -2267,7 +2267,9 @@ CdlTransactionBody::save_solution()
 // ----------------------------------------------------------------------------
 // Can a solution be applied without e.g. overwriting a user value with
 // an inferred value. There is a setting inference_override which controls
-// this.
+// this. Making a previously enabled option inactive also requires
+// user confirmation, thus preventing the inference engine from disabling
+// entire components.
 bool
 CdlTransactionBody::user_confirmation_required() const
 {
@@ -2284,6 +2286,17 @@ CdlTransactionBody::user_confirmation_required() const
         if (old_value.get_source() > CdlTransactionBody::inference_override) {
             result = true;
             break;
+        }
+    }
+    std::set<CdlNode>::const_iterator val_j;
+    for (val_j = deactivated.begin(); val_j != deactivated.end(); val_j++) {
+        CdlValuable valuable = dynamic_cast<CdlValuable>(*val_j);
+        if (0 != valuable) {
+            const CdlValue& old_value = parent->get_whole_value(valuable);
+            if ((old_value.get_source() > CdlTransactionBody::inference_override) && old_value.is_enabled()) {
+                result = true;
+                break;
+            }
         }
     }
   

@@ -1,3 +1,103 @@
+2002-05-08  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Removed special SH2 SCIF driver. The changes have been
+	merged into the SH3 (now generic SH) driver.
+2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+
+	* ecos.db: Add H8/300 serial driver.
+
+2002-04-25  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+	* ecos.db: Add ports to Wuerz Elektronik and Axiom Manufacturing
+	MPC555 based eval boards.
+
+2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+
+	* ecos.db: Add H8/300 port.
+
+
+2002-04-15  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Changed integrator target to integrator_arm7. Tidied up
+	descriptions a little too.
+
+2002-04-09  Jesper Skov  <jskov@redhat.com>
+
+	* pkgconf/rules.mak: Allow building of .cpp files. Not supported
+	by makefile generator yet, though.
+
+	* ecos.db: Added SDL and SMPEG packages.
+
+2002-03-26  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added microwindows package.
+
+2002-03-18  Hugo Tyson  <hmt@redhat.com>
+
+	* ecos.db: Add CYGPKG_HAL_SPARC_ERC32 and target sparc_erc32 -
+	also contributed by Jiri Gaisler <jiri@gaisler.com>.
+
+2002-03-15  Hugo Tyson  <hmt@redhat.com>
+
+	* ecos.db: Add CYGPKG_HAL_SPARC, CYGPKG_HAL_SPARC_LEON, target
+	sparc_leon contributed by Jiri Gaisler <jiri@gaisler.com>.  See
+	<http://www.gaisler.com> for information about the TSIM simulator
+	and Leon project per se.
+
+2002-03-10  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add keyboard driver.
+
+2002-03-09  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add touch screen driver for Aglient AAED-2000.
+
+2002-03-08  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Fix Integrator aliases.
+
+2002-03-06  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Added new target: integrator_arm9 for ARM9 based
+	integrator boards.
+	Renamed CYGPKG_DEVS_FLASH_INTEGRATOR to
+	CYGPKG_DEVS_FLASH_ARM_INTEGRATOR for consistency with other
+	packages.
+
+2002-02-18  Jesper Skov  <jskov@redhat.com>
+
+        * ecos.db: Added SH2 etherc package.
+
+2002-02-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* pkgconf/rules.mak: Fix the below fix which had too _few_ backslashes!
+
+2002-02-04  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add [contributed] port to CerfCube & CerfPDA.
+
+2002-02-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* pkgconf/rules.mak: Fix bug with too many backslashes in sed.
+
+2002-01-29  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Added CYGPKG_IO_SERIAL_ARM_IQ80321.
+
+2002-01-28  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Split network support into generic and stack
+	implementations.  Move BSD based stack to one implementation.
+
+	Add FreeBSD based (new) stack as another.
+2002-01-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add JFFS2 package.
+
+2002-01-21  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add Intel 82544 ethernet for iq80321.
+
 2002-01-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add synthetic flash driver package, and add it to the
@@ -10,6 +110,22 @@
 2001-12-20  Koichi Nagashima  <naga@r-lab.co.jp>
 
 	* ecos.db: Add CqREEK SH7750 flash driver.
+
+2001-12-12  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add XScale "Verde" (IOP80320) and IQ80321 packages.
+
+2001-12-06  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Change names on i82544 package so they don't clash with
+	the i82559 package.
+
+2001-11-27  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Added Intel i82543/82544 Gigabit ethernet card packages
+	and a pc_giga target. This latter is a temporary measure until we
+	work out how best to support targets that can have a variety of
+	different hardware configurations.
 
 2001-11-22  Jesper Skov  <jskov@redhat.com>
 
@@ -26,6 +142,14 @@
 
 	* ecos.db: edb7xxx target now uses generic CS8900A driver.
 
+2001-11-07  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added generic CS8900A package to AAED2000 template.
+
+2001-11-06  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add malta_mips64_5kc target.
+
 2001-11-02  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added CS8900A package.
@@ -34,6 +158,10 @@
 
 	* ecos.db: Added ARM Integrator target including HAL, serial driver, 
 	eth driver and flash driver packages.
+
+2001-10-30  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added AAED2000 packages.
 
 2001-10-19  Lars Lindqvist  <Lars.Lindqvist@combitechsystems.com>
 2001-10-19  Jonathan Larmour  <jlarmour@redhat.com>
@@ -44,10 +172,41 @@
 
 	* ecos.db: Clarify Cirrus Logic related packages' descriptions.
 
+2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Remove separate CYGPKG_DEVS_FLASH_STRATA_EDB7XXX package,
+	and instead use a consolidated CYGPKG_DEVS_FLASH_EDB7XXX package.
+
+2001-09-27  Hugo Tyson  <hmt@redhat.com>
+
+	* ecos.db: Add CYGPKG_DEVS_ETH_INTEL_I21143 and
+	CYGPKG_DEVS_ETH_MIPS_VRC4375, and add them to the target vrc4375.
+
+2001-09-26  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add FLASH support for Fujitsu FR-V 400.
+
+2001-09-24  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added DNS package.
+
+2001-09-25  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add support for new Cogent [Cirrus Logic] EDB7312 platform.
+
+2001-09-20  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Adding network driver for Fujitsu FR-V 400.
+
 2001-09-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add i386 PC wallclock driver package, and include it
 	in the PC target.
+
+2001-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add support for Fujitsu FRV family, including initial
+	target of frv400 (MB93091 eval board).
 
 2001-09-13  Jesper Skov  <jskov@redhat.com>
 
@@ -58,10 +217,25 @@
 	* ecos.db:
 	Added FLASH support for VRC437X based boards.
 
+2001-09-07  Nick Garnett  <nickg@redhat.com>
+
+	* ecos.db: Added VRC4375 and VRC437X packages, added vrc4375
+	target and reorganized vrc4373 target to match.
+
+2001-08-17  Jesper Skov  <jskov@redhat.com>
+	[from branch]
+	* ecos.db: Added flash package for excalibur.
+	Added excalibur platform.
+
 2001-07-31  Bart Veer  <bartv@redhat.com>
 
 	* pkgconf/rules.mak:
 	Fix header file dependencies for testcases.
+
+2001-07-30  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add Samsung SNDS-100 evaulation board.  Mostly based
+	on contribution from Grant Edwards <grante@visi.com>
 
 2001-07-30  Jesper Skov  <jskov@redhat.com>
 
@@ -72,6 +246,11 @@
 
 	* ecos.db: Add flexanet HAL, eth driver, flash driver and target.
 	Contributed by Jordi Colomer <jco@ict.es>
+
+2001-07-27  David Howells  <dhowells@redhat.com>
+
+	* ecos.db: Added ASB2305 platform, and it's serial and flash
+	support.
 
 2001-07-24  Gary Thomas  <gthomas@redhat.com>
 
@@ -92,10 +271,17 @@
 	* pkconf/rules.mak: worked around Cygwin mkdir problem
       by introducing a HOST variable and testing for HOST=CYGWIN.
 
+2001-07-10  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added se7751.
+	Added ether package.
+	
 2001-07-06  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added wallclock driver for DS12887. Moved SH3 wallclock
 	driver into SH directory.
+	Added wallclock and watchdog drivers to hs7729pci.
+
 2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Clarify edb7xxx description.
@@ -118,9 +304,17 @@
 	packages in those targets which can use them.
 	Make CYGPKG_DEVS_ETH_CF have hardware attribute.
 
+2001-06-19  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added serial packages for SE77x9.
+
 2001-06-13  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added DP83902A driver.
+
+2001-06-12  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added SE77x9 support packages.
 
 2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -147,10 +341,30 @@
 
 	* ecosadmin.tcl (set_value): Only warn if packages are missing.
 
+2001-05-31  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added VIA Rhine ethernet driver. Use on HS7729PCI.
+
+2001-05-30  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added PCI package to HS7729PCI.
+
+2001-05-28  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added flash package to HS7729PCI target.
+
+2001-05-25  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added HS7729PCI target.
+
 2001-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Ocelot now uses generic AMD flash driver.
 	Removed AMD29F040B driver.
+
+2001-05-01  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add calmrisc16
 
 2001-04-30  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -183,6 +397,15 @@
 
 	* ecos.db: Added new Intel 28Fxxx package. Only supports flash
 	file at the moment.
+        Added flash support to Malta. Also enable PCI.
+
+2001-03-20  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added Malta board.
+
+2001-03-16  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add calmrisc32.
 
 2001-03-16  Jesper Skov  <jskov@redhat.com>
 
@@ -344,6 +567,10 @@
 
 	* ecos.db: Add FLASH driver for Intel Assabet.
 
+2000-08-22  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* ecos.db: Don't use set_value for asb
+
 2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* ecos.db: Added CYGPKG_FS_RAM package.
@@ -366,6 +593,10 @@
 2000-08-14  Gary Thomas  <gthomas@redhat.com>
 
 	* ecos.db: Add flash driver for EDB7xxx.
+
+2000-08-10  Drew Moseley  <dmoseley@redhat.com>
+
+	* ecos.db: Added asb packages.
 
 2000-08-10  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -1814,27 +2045,36 @@ Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
 	project 
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

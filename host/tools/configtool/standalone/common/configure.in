@@ -6,29 +6,28 @@ dnl
 dnl	configtool/standalone/common
 dnl
 dnl ====================================================================
-dnl###COPYRIGHTBEGIN####
-dnl                                                                          
-dnl -------------------------------------------                              
-dnl The contents of this file are subject to the Red Hat eCos Public License 
-dnl Version 1.1 (the "License"); you may not use this file except in         
-dnl compliance with the License.  You may obtain a copy of the License at    
-dnl http://www.redhat.com/                                                   
-dnl                                                                          
-dnl Software distributed under the License is distributed on an "AS IS"      
-dnl basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-dnl License for the specific language governing rights and limitations under 
-dnl the License.                                                             
-dnl                                                                          
-dnl The Original Code is eCos - Embedded Configurable Operating System,      
-dnl released September 30, 1998.                                             
-dnl                                                                          
-dnl The Initial Developer of the Original Code is Red Hat.                   
-dnl Portions created by Red Hat are                                          
-dnl Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-dnl All Rights Reserved.                                                     
-dnl -------------------------------------------                              
-dnl                                                                          
-dnl####COPYRIGHTEND####
+dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
+dnl -------------------------------------------
+dnl Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+dnl
+dnl This file is part of the eCos host tools.
+dnl
+dnl This program is free software; you can redistribute it and/or modify it
+dnl under the terms of the GNU General Public License as published by the Free
+dnl Software Foundation; either version 2 of the License, or (at your option)
+dnl any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful, but WITHOUT
+dnl ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+dnl FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+dnl more details.
+dnl
+dnl You should have received a copy of the GNU General Public License along with
+dnl this program; if not, write to the Free Software Foundation, Inc.,
+dnl 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+dnl
+dnl -------------------------------------------
+dnl ####ECOSHOSTGPLCOPYRIGHTEND####
 dnl ====================================================================
 dnl#####DESCRIPTIONBEGIN####
 dnl

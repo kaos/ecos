@@ -5,43 +5,52 @@
 //        Interrupt test 0
 //
 //=================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     jskov
-// Contributors:  jskov
+// Contributors:  jskov, gthomas
 // Date:          1998-12-01
 // Description:   Simple test of MPC860 interrupt handling when the
 //                kernel has not been configured. Uses timer interrupts.
 // Options:
 //####DESCRIPTIONEND####
 
-//#define DEBUG_PRINTFS
+// #define DEBUG_PRINTFS
 #ifdef DEBUG_PRINTFS
-extern diag_printf( char *format, ... );
+#include <cyg/infra/diag.h>
 #endif
 
 #include <pkgconf/hal.h>
@@ -53,9 +62,10 @@ extern diag_printf( char *format, ... );
 
 #include <cyg/infra/testcase.h>
 
+#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 #ifdef CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
 
-#undef CHECK(b)
+#undef CHECK
 #define CHECK(b) CYG_TEST_CHECK(b,#b)
 
 // Can't rely on Cyg_Interrupt class being defined.
@@ -69,8 +79,20 @@ extern diag_printf( char *format, ... );
 #ifdef CYGPKG_HAL_POWERPC_MBX
 #define TB_PERIOD (PIT_PERIOD*384)      // PTA period is 15.36 uS
 #else
-#define TB_PERIOD (PIT_PERIOD*32)       // assuming 512/16 divisors
+// This value is based on the relationship between the PIT clock
+// and the TB clock.  This is set in the SCCR register and the
+// default value seems to be that the TB runs 128 times faster
+// than the PIT.  Of course, this doesn't match the documentation :-(
+// Also, the basis for this is hardware strappable (set at reset time)
+// so the value chosen below is a guess which works on the 860 platforms
+// we have seen, other than the Motorola MBX860.
+#define TB_PERIOD (PIT_PERIOD*128)       // assuming 512/4 divisors
 #endif
+
+#define PIT_IRQ_LEVEL 4
+#define PIT_IRQ CYGNUM_HAL_INTERRUPT_SIU_LVL4
+#define TB_IRQ_LEVEL 5
+#define TB_IRQ CYGNUM_HAL_INTERRUPT_SIU_LVL5
 
 #define ID_RTC_SEC   12345
 #define ID_RTC_ALR   23451
@@ -141,7 +163,20 @@ static cyg_uint32 isr_pit(CYG_ADDRWORD vector, CYG_ADDRWORD data)
                      tbr_actual_table[3],
                      tbr_actual_table[4] );
 #endif
+	if (5 == pit_count) {
+#ifndef CYGPKG_HAL_POWERPC_MBX
+            if (42 != count) {
+#else
+            if ((42 != count) && (49 != count)) {
+#endif
+                CYG_TEST_INFO("TB/PIT ratio does not match");
+            }
+	}
+#ifndef CYGPKG_HAL_POWERPC_MBX
         if (42 == count && 5 == pit_count)
+#else
+        if (((42 == count) || (49 == count)) && (5 == pit_count))
+#endif
             CYG_TEST_PASS_FINISH("Intr 0 OK");
         else
             CYG_TEST_FAIL_FINISH("Intr 0 Failed.");
@@ -163,7 +198,7 @@ static cyg_uint32 isr_tba(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     count = count * 3;
 
 #ifdef DEBUG_PRINTFS
-    diag_printf( "ISR_TBA executed\n" );
+    diag_printf( "ISR_TBA executed, count now %d\n", count );
 #endif
 
     return Cyg_InterruptHANDLED;
@@ -182,7 +217,7 @@ static cyg_uint32 isr_tbb(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     count = count * 8;
 
 #ifdef DEBUG_PRINTFS
-    diag_printf( "ISR_TBB executed\n" );
+    diag_printf( "ISR_TBB executed, count now %d\n", count );
 #endif
 
     return Cyg_InterruptHANDLED;
@@ -190,7 +225,18 @@ static cyg_uint32 isr_tbb(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 
 void intr0_main( void )
 {
+#ifndef CYGPKG_HAL_POWERPC_MBX
+    unsigned long sccr = *(volatile unsigned long *)CYGARC_REG_IMM_SCCR;
+#endif
+    int tb_period = TB_PERIOD;
     CYG_TEST_INIT();
+
+#ifndef CYGPKG_HAL_POWERPC_MBX
+#ifdef DEBUG_PRINTFS
+    diag_printf("sccr = %x\n", sccr);
+#endif
+    if (sccr & 0x01000000) tb_period /= 4;
+#endif
 
 #if 0
     // The A.3 revision of the CPU I'm using at the moment generates a
@@ -208,14 +254,14 @@ void intr0_main( void )
         cyg_uint16 piscr;
 
         // Attach pit arbiter.
-        HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_LVL1, 
+        HAL_INTERRUPT_ATTACH (PIT_IRQ,
                               &hal_arbitration_isr_pit, ID_PIT, 0);
-        HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_LVL1);
+        HAL_INTERRUPT_UNMASK (PIT_IRQ);
 
         // Attach pit isr.
         HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_PIT, &isr_pit,
                               ID_PIT, 0);
-        HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_PIT, 1);
+        HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_PIT, PIT_IRQ_LEVEL);
         HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_PIT);
 
 
@@ -238,31 +284,31 @@ void intr0_main( void )
         cyg_uint32 tbl;
 
         // Attach tb arbiter.
-        HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_LVL2, 
+        HAL_INTERRUPT_ATTACH (TB_IRQ, 
                               &hal_arbitration_isr_tb, ID_TBA, 0);
-        HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_LVL2);
+        HAL_INTERRUPT_UNMASK (TB_IRQ);
 
         // Attach tb isrs.
         HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_TB_A, &isr_tba,
                               ID_TBA, 0);
         HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SIU_TB_B, &isr_tbb,
                               ID_TBB, 0);
-        HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_TB_A, 2);
+        HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_TB_A, TB_IRQ_LEVEL);
         HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_TB_A);
         HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_TB_B);
 
         // Set reference A & B registers.
         CYGARC_MFTB (TBL_R, tbl);
-        tbl += TB_PERIOD*3;
+        tbl += tb_period*3;
         HAL_WRITE_UINT32 (CYGARC_REG_IMM_TBREF0, tbl);
-        tbl += TB_PERIOD*4;
+        tbl += tb_period*4;
         HAL_WRITE_UINT32 (CYGARC_REG_IMM_TBREF1, tbl);
 
 #ifdef DEBUG_PRINTFS
         diag_printf( "TB initial %d, !1 %d !2 %d\n",
-                     tbl - 7*TB_PERIOD,
-                     tbl - 4*TB_PERIOD,
-                     tbl - 0*TB_PERIOD );
+                     tbl - 7*tb_period,
+                     tbl - 4*tb_period,
+                     tbl - 0*tb_period );
 #endif
         // Enable.
         HAL_READ_UINT16 (CYGARC_REG_IMM_TBSCR, tbscr);
@@ -294,5 +340,14 @@ cyg_start( void )
 }
 
 #endif // ifdef CYGSEM_HAL_POWERPC_MPC860_CPM_ENABLE
+#else
+
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_PASS_FINISH("N/A: CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN enabled");
+}
+#endif // ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
 // EOF intr0.c

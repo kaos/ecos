@@ -5,29 +5,38 @@
 //      PowerPC MPC8xxT fast ethernet (FEC)
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -67,6 +76,7 @@ struct fec_bd {
 
 #define FEC_BD_Tx_Ready  0x8000  // Frame ready
 #define FEC_BD_Tx_Wrap   0x2000  // Last buffer in ring
+#define FEC_BD_Tx_Intr   0x1000  // Generate interrupt
 #define FEC_BD_Tx_Last   0x0800  // Last buffer in frame
 #define FEC_BD_Tx_TC     0x0400  // Send CRC after data
 #define FEC_BD_Tx_DEF    0x0200
@@ -77,12 +87,15 @@ struct fec_bd {
 #define FEC_BD_Tx_UN     0x0002  // Underrun
 #define FEC_BD_Tx_CSL    0x0001  // Carrier sense lost
 
+#define FEC_BD_Tx_STATS  0x03FF  // Status mask
+
 struct fec_eth_info {
     volatile struct fec        *fec;
     volatile struct fec_bd     *txbd, *rxbd;     // Next Tx,Rx descriptor to use
     struct fec_bd              *tbase, *rbase;   // First Tx,Rx descriptor
     struct fec_bd              *tnext, *rnext;   // Next descriptor to check for interrupt
     int                         txsize, rxsize;  // Length of individual buffers
+    int                         txactive;        // Count of active Tx buffers
     unsigned long               txkey[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
 };
 
@@ -167,6 +180,10 @@ struct fec {
 #define PHY_BMCR_FULL_DUPLEX 0x0100
 #define PHY_BMCR_COLL_TEST   0x0080
 
+#define PHY_BMSR             0x01    // Status register
+#define PHY_BMSR_AUTO_NEG    0x0020  
+#define PHY_BMSR_LINK        0x0004
+
 #define IEEE_8023_MAX_FRAME         1518    // Largest possible ethernet frame
-#define IEEE_8023_MIN_FRAME           64    // Smallest possible ethernet frame
+#define IEEE_8023_MIN_FRAME           60    // Smallest possible ethernet frame
 

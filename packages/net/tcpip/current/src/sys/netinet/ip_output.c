@@ -5,29 +5,6 @@
 //     
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -161,6 +138,10 @@ extern int ipsec_esp_network_default_level;
 extern int pfkeyv2_acquire(struct tdb *, int);
 #endif
 
+#ifndef RAMDOM_IP_ID
+u_short ip_id;
+#endif
+
 /*
  * IP output.  The packet in mbuf chain m contains a skeletal IP
  * header (with len, off, ttl, proto, tos, src, dst).
@@ -232,8 +213,11 @@ ip_output(m0, va_alist)
 	if ((flags & (IP_FORWARDING|IP_RAWOUTPUT)) == 0) {
 		ip->ip_v = IPVERSION;
 		ip->ip_off &= IP_DF;
+#ifdef RANDOM_IP_ID
 		ip->ip_id = ip_randomid();
-		HTONS(ip->ip_id);
+#else
+		ip->ip_id = htons(ip_id++);
+#endif
 		ip->ip_hl = hlen >> 2;
 		ipstat.ips_localout++;
 	} else {

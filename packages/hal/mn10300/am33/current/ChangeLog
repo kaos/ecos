@@ -26,6 +26,10 @@
 
 	* src/var_misc.c: Added Cygmon support.
 
+	* include/variant.inc: Added AM33/2.00 support.
+	* src/mn10300_am33.ld: Ditto.
+	* src/var_misc.c: Ditto.
+
 	* include/var_intr.h: Added Cygmon support.
 
 	* include/var_arch.h: Added some PSW bitmasks.

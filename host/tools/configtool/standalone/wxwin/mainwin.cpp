@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.53 2001/09/03 17:18:18 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.57 2002/02/28 18:30:35 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -311,13 +311,13 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     viewMenu->Append(ecID_TOGGLE_PROPERTIES, _("&Properties\tAlt+1"), _("Shows or hides the properties window"), TRUE);
     viewMenu->Append(ecID_TOGGLE_OUTPUT, _("&Output\tAlt+2"), _("Shows the output window"), TRUE);
     viewMenu->Append(ecID_TOGGLE_SHORT_DESCR, _("&Short Description\tAlt+3"), _("Shows or hides the short description window"), TRUE);
+
+    viewMenu->Append(ecID_TOGGLE_CONFLICTS, _("&Conflicts\tAlt+4"), _("Shows or hides the conflicts window"), TRUE);
 #if ecUSE_MLT
-    viewMenu->Append(ecID_TOGGLE_MEMORY, _("&Memory Layout\tAlt+4"), _("Shows or hides the memory layout window"), TRUE);
+    viewMenu->Append(ecID_TOGGLE_MEMORY, _("&Memory Layout\tAlt+5"), _("Shows or hides the memory layout window"), TRUE);
+    //viewMenu->Enable(ecID_TOGGLE_MEMORY, FALSE);
 #endif
 
-    //viewMenu->Enable(ecID_TOGGLE_MEMORY, FALSE);
-
-    viewMenu->Append(ecID_TOGGLE_CONFLICTS, _("&Conflicts\tAlt+5"), _("Shows or hides the conflicts window"), TRUE);
     // Not clear what these do, so let's not have them.
     //viewMenu->Append(ecID_VIEW_NEXT, _("&Next\tAlt+F6"), _("Selects the next visible pane"));
     //viewMenu->Append(ecID_VIEW_PREVIOUS, _("&Previous\tShift+Alt+F6"), _("Selects the previous visible pane"));
@@ -468,15 +468,16 @@ void ecMainFrame::CreateWindows()
     
     // Create a composite widget to represent the scrolling config window
     m_scrolledWindow = new ecSplitterScrolledWindow(m_configSashWindow, ecID_SCROLLED_WINDOW, wxDefaultPosition,
-        wxDefaultSize, wxNO_BORDER | wxCLIP_CHILDREN | wxVSCROLL);
+        wxSize(400, 100), wxNO_BORDER | wxCLIP_CHILDREN | wxVSCROLL);
     m_splitter = new wxThinSplitterWindow(m_scrolledWindow, ecID_SPLITTER_WINDOW, wxDefaultPosition,
-        wxDefaultSize, wxSP_3DBORDER | wxCLIP_CHILDREN /* | wxSP_LIVE_UPDATE */);
+        wxSize(400, 100), wxSP_3DBORDER | wxCLIP_CHILDREN /* | wxSP_LIVE_UPDATE */);
     m_splitter->SetSashSize(2);
     m_tree = new ecConfigTreeCtrl(m_splitter, ecID_TREE_CTRL, wxDefaultPosition,
-        wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxNO_BORDER );
+        wxSize(200, 100), wxTR_HAS_BUTTONS | wxTR_NO_LINES | wxNO_BORDER );
     m_valueWindow = new ecValueWindow(m_splitter, ecID_VALUE_WINDOW, wxDefaultPosition,
-        wxDefaultSize, wxNO_BORDER);
+        wxSize(200, 100), wxNO_BORDER);
     m_splitter->SplitVertically(m_tree, m_valueWindow);
+    m_splitter->SetMinimumPaneSize(100);
     //m_splitter->AdjustScrollbars();
     m_splitter->SetSashPosition(wxGetApp().GetSettings().m_configPaneWidth);
     m_scrolledWindow->SetTargetWindow(m_tree);  
@@ -1417,12 +1418,7 @@ void ecMainFrame::OnUpdatePackages(wxUpdateUIEvent& event)
 
 void ecMainFrame::OnUpdateRunTests(wxUpdateUIEvent& event)
 {
-#ifdef __WXDEBUG__
     event.Enable(wxGetApp().GetConfigToolDoc() != NULL && !wxGetApp().GetConfigToolDoc()->GetInstallTree().IsEmpty() && (wxGetApp().m_pipedProcess == NULL));
-#else
-    // TODO: Not implemented yet
-    event.Enable( FALSE );
-#endif
 }
 
 void ecMainFrame::OnUpdateChooseRepository(wxUpdateUIEvent& event)

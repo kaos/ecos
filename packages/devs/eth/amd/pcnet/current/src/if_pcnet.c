@@ -5,29 +5,38 @@
 //      Ethernet device driver for AMD PCNET compatible controllers
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -68,8 +77,8 @@
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_if.h>             // delays
 #include <string.h>
-#include <netdev.h>
-#include <eth_drv.h>
+#include <cyg/io/eth/netdev.h>
+#include <cyg/io/eth/eth_drv.h>
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>
 #include <cyg/kernel/kapi.h>
@@ -991,6 +1000,7 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #endif
 
     // This delay seems to be necessary on some platforms 
+    // (Malta 5kc for example).
     // Why it is needed is not clear, but removing it or
     // reducing it cause transmission failures in RedBoot (at least).
     CYGACC_CALL_IF_DELAY_US(100);
@@ -1024,6 +1034,13 @@ pcnet_TxEvent(struct eth_drv_sc *sc, int stat)
     cyg_uint32 pkt_stat;
 
     DEBUG_FUNCTION();
+
+    if (0 == cpd->tx_ring_owned) {
+#if DEBUG & 1
+        db_printf("%s: got TX completion when no outstanding packets\n", __FUNCTION__);
+#endif
+        return;
+    }
 
     INCR_STAT( tx_complete );
 
@@ -1231,7 +1248,7 @@ pcnet_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     DEBUG_FUNCTION();
 
-    rxd = cpd->rx_ring + cpd->rxpacket*PCNET_TD_SIZE;
+    rxd = cpd->rx_ring + cpd->rxpacket*PCNET_RD_SIZE;
     buf = cpd->rx_buffers + cpd->rxpacket*_BUF_SIZE;
 
     INCR_STAT( rx_deliver );

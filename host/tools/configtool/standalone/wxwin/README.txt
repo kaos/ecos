@@ -382,6 +382,10 @@ Examples:
   Please see the FAQ for what to do if the wxWindows file
   dcclient.cpp fails to compile.
 
+  For more recent versions of wxWindows, you have to pass --static to wx-config.
+  If you get a lot of GTK+-related link errors, check the beginning of the makefile
+  and make sure WXCONFIGFLAGS=--static.
+
 
 Building the Configuration Tool under Windows
 =============================================

@@ -452,7 +452,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 		fprintf (stream, "$(PREFIX)/include/%s: $(REPOSITORY)/$(PACKAGE)/%s\n", info.headers [count].destination.c_str (), info.headers [count].source.c_str ());
 #if (defined(_WIN32) || defined(__CYGWIN__)) && (ECOS_USE_CYGDRIVE > 0)
         fprintf (stream, "ifeq ($(HOST),CYGWIN)\n");
-	    fprintf (stream, "\t@mkdir -p `cygpath -w \"$(dir $@)\" | sed \"s/\\\\\\\\\\/\\\\//g\"`\n");
+	    fprintf (stream, "\t@mkdir -p `cygpath -w \"$(dir $@)\" | sed \"s@\\\\\\\\\\\\\\\\@/@g\"`\n");
         fprintf (stream, "else\n");
 	    fprintf (stream, "\t@mkdir -p $(dir $@)\n");
         fprintf (stream, "endif\n");

@@ -1,0 +1,416 @@
+<part id="redboot"><beginpage>
+<title>RedBoot&trade; User's Guide</title>
+<toc id="Getting-Started-with-Redboot2"></toc>
+<chapter id="Getting-Started-with-RedBoot">
+<title>Getting Started with RedBoot</title>
+<para><indexterm><primary>Red Boot</primary><secondary>getting started</secondary>
+</indexterm>RedBoot&trade; is an acronym for "Red Hat Embedded Debug and Bootstrap",
+and is the standard embedded system debug/bootstrap environment from Red Hat,
+replacing the previous generation of debug firmware: <indexterm><primary>CygMon</primary>
+</indexterm>CygMon and <indexterm><primary>GDB stubs</primary></indexterm>GDB
+stubs. It provides a complete bootstrap environment for a range of embedded
+operating systems, such as embedded Linux&trade; and eCos&trade;, and includes facilities
+such as network downloading and debugging. It also provides a simple flash
+file system for boot images.</para>
+<para>RedBoot provides a wide set of tools for downloading and executing programs
+on embedded target systems, as well as tools for manipulating the target system's
+environment. It can be used for both product development (debug support) and
+for end product deployment (flash and network booting).</para>
+<para>Here are some highlights of <indexterm><primary>RedBoot's capabilities
+</primary></indexterm>RedBoot&rsquo;s capabilities:  </para>
+<itemizedlist>
+<listitem><para>Boot scripting support</para>
+</listitem>
+<listitem><para>Simple command line interface for RedBoot configuration and
+management, accessible via serial (terminal) or Ethernet (telnet) </para>
+</listitem>
+<listitem><para>Integrated GDB stubs for connection to a host-based debugger
+via serial or ethernet. (Ethernet connectivity is limited to local network
+only)</para>
+</listitem>
+<listitem><para>Attribute Configuration - user control of aspects such as
+system time and date (if applicable), default Flash image to boot from, default
+failsafe image, static IP address, etc.</para>
+</listitem>
+<listitem><para>Configurable and extensible, specifically adapted to the target
+environment </para>
+</listitem>
+<listitem><para>Network bootstrap support including setup and download, via
+BOOTP, DHCP and TFTP</para>
+</listitem>
+<listitem><para>X/YModem support for image download via serial</para>
+</listitem>
+<listitem><para>Power On Self Test</para>
+</listitem>
+</itemizedlist>
+<para>Although RedBoot is derived from eCos, it may be used as a generalized
+system debug and bootstrap control software for any embedded system and any
+operating system. For example, with appropriate additions, RedBoot could replace
+the commonly used BIOS of PC (and certain other) architectures. Red Hat is
+currently installing RedBoot on all embedded platforms as a standard practice,
+and RedBoot is now generally included as part of all Red Hat Embedded Linux
+and eCos ports. Users who specifically wish to use RedBoot with the eCos operating
+system should refer to the <emphasis>Getting Started with eCos</emphasis>
+document, which provides information about the portability and extendability
+of RedBoot in an eCos environment.</para>
+<sect1 id="redboot-on-the-web">
+<title>More information about RedBoot on the web</title>
+<para>
+Information about the RedBoot product, including information about
+details of porting,
+customization, training and technical support services from Red Hat, is
+available from the
+<ulink url="http://www.redhat.com/embedded/technologies/redboot/">RedBoot
+Product web site</ulink>. </para>
+<para>The <ulink url="http://sources.redhat.com/redboot/">RedBoot Net
+Distribution web site</ulink> contains downloadable sources and documentation
+for all publically released targets, including the latest features and updates.
+</para>
+</sect1>
+<sect1 id="installing-redboot">
+<title>Installing RedBoot</title>
+<para><indexterm><primary>installing RedBoot</primary><secondary>general procedures
+</secondary></indexterm><indexterm><primary>RedBoot installation</primary>
+<secondary>general procedures</secondary></indexterm>To install the RedBoot
+package, follow the procedures detailed in the accompanying README. </para>
+<para>Although there are other possible configurations, RedBoot is usually
+run from the target platform&rsquo;s flash boot sector or boot ROM, and is
+designed to run when your system is initially powered on. The method used
+to install the RedBoot image into non-volatile storage varies from platform
+to platform. In general, it requires that the image be programmed into flash
+in situ or programmed into the flash or ROM using a device programmer. In
+some cases this will be done at manufacturing time; the platform being delivered
+with RedBoot already in place. In other cases, you will have to program RedBoot
+into the appropriate device(s) yourself. Installing to flash in situ may require
+special cabling or interface devices and software provided by the board manufacturer.
+The details of this installation process for a given platform will be found
+in Installation and Testing. Once installed, user-specific configuration options
+may be applied, using the <command>fconfig</command> command,
+providing that persistent data storage in flash is present in the relevant
+RedBoot version. See <xref linkend="Configuring-the-RedBoot-Environment">
+for details.</para>
+</sect1>
+<sect1 id="user-interface">
+<title>User Interface</title>
+<para><indexterm><primary>user interface</primary></indexterm><indexterm>
+<primary>ui</primary></indexterm><indexterm><primary>cli</primary></indexterm>RedBoot
+provides a command line user interface (CLI). At the minimum, this interface
+is normally available on a serial port on the platform. If more than one serial
+interface is available, RedBoot is normally configured to try to use any one
+of the ports for the CLI. Once command input has been received on one port,
+that port is used exclusively until the board is reset or the channel
+is manually changed by the
+user. If the platform has networking
+capabilities, the RedBoot CLI is also accessible using the <computeroutput>
+telnet</computeroutput> access protocol. By default, RedBoot runs <computeroutput><indexterm>
+<primary>telnet</primary></indexterm>telnet</computeroutput> on port TCP/9000,
+but this is configurable and/or settable by the user. </para>
+<para>RedBoot also contains a set of <indexterm><primary>GDB stubs</primary>
+</indexterm>GDB "stubs", consisting of code which supports the GDB remote
+protocol. GDB stub mode is automatically invoked when the '$' character appears
+anywhere on a command line unless escaped using the '\' character. 
+The platform will remain in GDB
+stub mode until explicitly disconnected (via the GDB protocol). The GDB stub
+mode is available regardless of the connection method; either serial or network.
+Note that if a GDB connection is made via the network, then special care must
+be taken to preserve that connection when running user code. eCos contains
+special network sharing code to allow for this situation, and can be used
+as a model if this methodology is required in other OS environments.</para>
+</sect1>
+<sect1 id="Configuring-the-RedBoot-Environment">
+<title>Configuring the RedBoot Environment</title>
+<para><indexterm><primary>configuring the RedBoot environment</primary><secondary></secondary>
+</indexterm><indexterm><primary>RedBoot </primary><secondary>environment configuration
+</secondary></indexterm><indexterm><primary>environment configuration</primary>
+</indexterm>Once installed, RedBoot will operate fairly generically. However,
+there are some features that can be configured for a particular installation.
+These depend primarily on whether <indexterm><primary>flash and/or networking
+support</primary></indexterm><indexterm><primary>networking and/or flash support
+</primary></indexterm>flash and/or networking support are available. The remainder
+of this discussion assumes that support for both of these options is included
+in RedBoot.</para>
+<sect2 id=target-network-configuration>
+<title>Target Network Configuration</title>
+<para><indexterm><primary>target network configuration</primary></indexterm><indexterm>
+<primary>network configuration</primary></indexterm><indexterm><primary>configuration
+</primary><secondary>secondary</secondary></indexterm>Each node in a networked
+system needs to have a unique address. Since the network support in RedBoot
+is based on <indexterm><primary>TCP/IP</primary></indexterm>TCP/IP, this address
+is an IP (Internet Protocol) address. <indexterm><primary>IP address type
+</primary></indexterm>There are two ways for a system to &ldquo;know&rdquo;
+its IP address. First, it can be stored locally on the platform. This is known
+as having a static IP address. Second, the system can use the network itself
+to discover its IP address. This is known as a dynamic IP address. RedBoot
+supports this dynamic IP address mode by use of the <indexterm><primary>BOOTP
+</primary></indexterm>BOOTP (a subset of <indexterm><primary>DHCP</primary>
+</indexterm>DHCP) protocol. In this case, RedBoot will ask the network (actually
+some generic server on the network) for the IP address to use.</para>
+<note><title>NOTE</title>
+<para>Currently, RedBoot only supports BOOTP. In future releases, DHCP may
+also be supported, but such support will be limited to additional data items,
+not lease-based address allocation.</para>
+</note>
+<para>The choice of <indexterm><primary>IP address type</primary></indexterm>IP
+address type is made via the <indexterm><primary>fconfig command</primary>
+</indexterm><command>fconfig</command> command. Once a selection
+is made, it will be stored in flash memory. RedBoot only queries the flash
+configuration information at reset, so any changes will require restarting
+the platform.</para>
+<para>Here is an example of the RedBoot <command>fconfig</command>
+command, showing network addressing:    </para>
+<programlisting>RedBoot> <userinput>fconfig -l</userinput>
+Run script at boot: false
+Use BOOTP for network configuration: false
+Local IP address: 192.168.1.29
+Default server IP address: 192.168.1.101
+DNS server IP address: 192.168.1.1
+GDB connection port: 9000
+Network debug at boot time: false  </programlisting>
+<para>In this case, the board has been configured with a static IP address
+listed as the Local IP address. The default server IP address specifies which
+network node to communicate with for TFTP service. This address can be overridden
+directly in the <indexterm><primary>TFTP commands</primary></indexterm>TFTP
+commands.</para>
+<para>The <computeroutput>DNS server IP address</computeroutput> option
+controls where RedBoot should make DNS lookups<indexterm><primary>DNS
+lookups</primary></indexterm>. A setting of 0.0.0.0 will disable DNS
+lookups. The DNS server IP address can also be set at runtime.</para>
+<para>If the selection for <computeroutput>Use BOOTP for network configuration
+</computeroutput> had been <computeroutput>true</computeroutput>, these IP
+addresses would be determined at boot time, via the BOOTP protocol. The final
+number which needs to be configured, regardless of IP address selection mode,
+is the <indexterm><primary>GDB connection port</primary></indexterm><computeroutput>
+GDB connection port</computeroutput>. RedBoot allows for incoming commands
+on either the available serial ports or via the network. This port number
+is the TCP port that RedBoot will use to accept incoming connections.  </para>
+<para>These connections can be used for GDB sessions, but they can also be
+used for generic RedBoot commands. In particular, it is possible to communicate
+with RedBoot via the <indexterm><primary>telnet</primary></indexterm>telnet
+protocol. For example, on Linux&reg;: </para>
+<programlisting>% telnet redboot_board 9000
+Connected to redboot_board
+Escape character is &lsquo;^]&rsquo;.
+RedBoot>  </programlisting>
+</sect2>
+<sect2>
+<title>Host Network Configuration</title>
+<para><indexterm><primary>host network configuration</primary></indexterm><indexterm>
+<primary>network configuration</primary><secondary>host</secondary></indexterm><indexterm>
+<primary>configuration</primary><secondary>network</secondary></indexterm>RedBoot
+may require three different classes of service from a network host:   </para>
+<itemizedlist>
+<listitem><para>dynamic IP address allocation, using BOOTP   </para>
+</listitem>
+<listitem><para>TFTP service for file downloading </para>
+</listitem>
+<listitem><para>DNS server for hostname lookups </para>
+</listitem>
+</itemizedlist>
+<para>Depending on the host system, these services may or may not be available
+or enabled by default. See your system documentation for more details.</para>
+<para>In particular, on Red Hat Linux, neither of these services will be configured
+out of the box. The following will provide a limited explanation of how to
+set them up. These configuration setups must be done as <computeroutput>root
+</computeroutput> on the host or server machine.</para>
+<sect3>
+<title>Enable TFTP on Red Hat Linux 6.2</title>
+<procedure>
+<step><para><indexterm><primary>TFTP</primary><secondary>enabling on Red Hat
+Linux 6.2</secondary></indexterm><indexterm><primary>Red Hat Linux</primary>
+<secondary>enabling TFTP on version 6.2</secondary></indexterm>Ensure that
+you have the tftp-server RPM package installed. By default, this installs
+the TFTP server in a disabled state. These steps will enable it:</para>
+</step>
+<step><para>Make sure that the following line is uncommented in the control
+file <filename>/etc/inetd.conf</filename> <screen>tftp dgram   udp     wait    root    /usr/sbin/tcpd      /usr/sbin/in.tftpd
+</screen></para>
+<para></para>
+</step>
+<step><para>If it was necessary to change the line in Step 2, then the inetd
+server must be restarted, which can be done via the command:    <programlisting>
+# service inet reload</programlisting></para>
+</step>
+</procedure>
+</sect3>
+<sect3>
+<title>Enable TFTP on Red Hat Linux 7 (or newer)</title>
+<procedure>
+<step><para><indexterm><primary>TFTP</primary><secondary>enabling on Red Hat
+Linux 7</secondary></indexterm><indexterm><primary>Red Hat Linux</primary>
+<secondary>enabling TFTP on version 7</secondary></indexterm>Ensure that the
+xinetd RPM is installed.</para>
+</step>
+<step><para>Ensure that the tftp-server RPM is installed.</para>
+</step>
+<step><para>Enable TFTP by means of the following: <programlisting>/sbin/chkconfig tftp on
+</programlisting>Reload the xinetd configuration using the command:<programlisting>
+ /sbin/service xinetd reload </programlisting>Create the directory /tftpboot
+using the command <programlisting>mkdir /tftpboot</programlisting></para>
+</step>
+</procedure>
+<note><title>NOTE</title>
+<para>Under Red Hat 7 you must address files by absolute pathnames, for example: <filename>
+/tftpboot/boot.img</filename> not <filename>/boot.img</filename>, as you may have done with
+other implementations.
+On systems newer than Red Hat 7 (7.1 and beyond), filenames are once again relative to the
+<filename>/tftpboot</filename> directory.
+</para>
+</note>
+</sect3>
+<sect3>
+<title>Enable BOOTP/DHCP server on Red Hat Linux</title>
+<para><indexterm><primary>DHCP</primary><secondary>enabling on Red Hat Linux
+</secondary></indexterm><indexterm><primary>BOOTP</primary><secondary>
+enabling on Red Hat Linux</secondary></indexterm>First, ensure that you have
+the proper package, <computeroutput>dhcp</computeroutput> (not <computeroutput>
+dhcpd</computeroutput>) installed. The DHCP server provides Dynamic Host Configuration,
+that is, IP address and other data to hosts on a network. It does this in
+different ways. Next, there can be a fixed relationship between a certain
+node and the data, based on that node&rsquo;s unique Ethernet Station Address
+(ESA, sometimes called a MAC address). The other possibility is simply to
+assign addresses that are free. The sample DHCP configuration file shown does
+both. Refer to the DHCP documentation for more details.</para>
+<example><title>Sample DHCP configuration file</title>
+<programlisting>--------------- /etc/dhcpd.conf -----------------------------
+default-lease-time 600;
+max-lease-time 7200;
+option subnet-mask 255.255.255.0;
+option broadcast-address 192.168.1.255;
+option domain-name-servers 198.41.0.4, 128.9.0.107;
+option domain-name &ldquo;bogus.com&rdquo;;
+allow bootp;
+shared-network BOGUS {
+subnet 192.168.1.0 netmask 255.255.255.0 {
+         option routers 192.168.1.101;
+         range 192.168.1.1 192.168.1.254;
+}
+ }
+host mbx {
+         hardware ethernet 08:00:3E:28:79:B8;
+         fixed-address 192.168.1.20;
+         filename &ldquo;/tftpboot/192.168.1.21/zImage&rdquo;;
+         default-lease-time -1;
+         server-name &ldquo;srvr.bugus.com&rdquo;;
+         server-identifier 192.168.1.101;
+         option host-name &ldquo;mbx&rdquo;;
+} </programlisting></example>
+<para>Once the DHCP package has been installed and the configuration file
+set up, type:<screen>
+# <userinput>service dhcpd start</userinput></screen></para>
+</sect3>
+<sect3>
+<title>Enable DNS server on Red Hat Linux</title>
+<para><indexterm><primary>DNS</primary><secondary>enabling on Red Hat
+Linux</secondary></indexterm>First, ensure that you have the proper
+RPM package, <computeroutput>caching-nameserver</computeroutput>
+installed. Then change the configuration
+(in <filename>/etc/named.conf</filename>) so that the
+<computeroutput>forwarders</computeroutput> point to the primary
+nameservers for your machine, normally using the nameservers listed in
+<filename>/etc/resolv.conf</filename>.</para>
+
+<example><title>
+Sample <filename>/etc/named.conf</filename> for Red Hat Linux 7.x
+</title>
+
+<programlisting>--------------- /etc/named.conf -----------------------------
+// generated by named-bootconf.pl
+
+options {
+        directory "/var/named";
+        /*
+         * If there is a firewall between you and nameservers you want
+         * to talk to, you might need to uncomment the query-source
+         * directive below.  Previous versions of BIND always asked
+         * questions using port 53, but BIND 8.1 uses an unprivileged
+         * port by default.
+         */
+        // query-source address * port 53;
+
+
+        forward first;
+        forwarders {
+                212.242.40.3;
+                212.242.40.51;
+        };
+};
+
+//
+// a caching only nameserver config
+//
+// Uncomment the following for Red Hat Linux 7.2 or above:
+// controls {
+//         inet 127.0.0.1 allow { localhost; } keys { rndckey; };
+// };
+// include "/etc/rndc.key";
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+
+zone "localhost" IN {
+        type master;
+        file "localhost.zone";
+        allow-update { none; };
+};
+
+zone "0.0.127.in-addr.arpa" IN {
+        type master;
+        file "named.local";
+        allow-update { none; };
+};
+
+</programlisting></example>
+
+<para>Make sure the server is started with the command:
+<screen># <userinput>service named start</userinput></screen> and is
+started on next reboot with the command
+<screen># <userinput>chkconfig named on</userinput></screen>
+Finally, you may wish to change
+<filename>/etc/resolv.conf</filename> to use
+<computeroutput>127.0.0.1</computeroutput> as the nameserver for your
+local machine.</para>
+</sect3>
+<sect3>
+<title>RedBoot network gateway</title>
+<para><indexterm><primary>RedBoot network gateway</primary></indexterm><indexterm>
+<primary>network gateway</primary></indexterm>RedBoot cannot communicate with
+machines on different subnets because it does not support routing. It always
+assumes that it can get to an address directly, therefore it always tries
+to ARP and then send packets directly to that unit. This means that whatever
+it talks to must be on the same subnet. If you need to talk to a host on a
+different subnet (even if it's on the same &lsquo;wire&rsquo;), you need to
+go through an ARP proxy, providing that there is a Linux box connected to
+the network which is able to route to the TFTP server. For example: <filename>
+/proc/sys/net/ipv4/conf/<replaceable>&lt;interface></replaceable>/proxy_arp </filename>where <replaceable>
+&lt;interface></replaceable>should be replaced with whichever network interface
+is directly connected to the board.</para>
+</sect3></sect2>
+<sect2>
+<title>Verification</title>
+<para><indexterm><primary>verification (network)</primary></indexterm><indexterm>
+<primary>network verification</primary></indexterm>Once your network setup
+has been configured, perform simple verification tests as follows: <itemizedlist>
+<listitem><para>Reboot your system, to enable the setup, and then try to &lsquo;ping&rsquo;
+the target board from a host.</para>
+</listitem>
+<listitem><para>Once communication has been established, try to ping
+a host using the RedBoot ping command - both by IP address and hostname.</para>
+</listitem>
+<listitem><para>Try using the RedBoot load command to download a file
+from a host.</para>
+</listitem>
+</itemizedlist></para>
+</sect2></sect1></chapter>
+
+<!-- Commands -->
+<!-- &redboot-current-doc-redboot-cmds-sgml; -->
+
+<!-- Rebuilding -->
+<!-- &redboot-current-doc-redboot-rebuilding-sgml; -->
+
+<!-- Installing and testing -->
+<!-- &redboot-current-doc-redboot-installing-sgml; -->
+
+<!-- Epilogue -->
+<!-- &redboot-current-doc-redboot-epilogue-sgml; -->

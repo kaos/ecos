@@ -1,0 +1,90 @@
+2002-02-26  Julian Smart  <julians@redhat.com>
+
+	* config-tool.sgml: updated further text and graphics
+	for Windows/Unix configtool.
+
+2002-02-15  Julian Smart  <julians@redhat.com>
+
+	* user-guide.sgml: added further GIF files
+	* config-tool.sgml: started to updated text and graphics
+	to encompass Windows and Linux tools.
+
+2002-02-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* user-guide.sgml: Move special topics to kernel doc.
+	* special-topics.sgml: delete.
+
+	* config-tool.sgml: Add ids to all <sect1>s and <chapter>s
+	* configuration.sgml: ditto.
+	* programming-concepts-techniques.sgml: ditto.
+	* special-topics.sgml: ditto.
+
+2001-12-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* user-guide.sgml: Move pictures to pix/ subdirectory.
+
+2001-12-17  Mark Galassi  <rosalia@galassi.org>
+
+	* added legal stuff and contact information.
+
+2001-11-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* configuration.sgml: Many cosmetic fixes, to bring the document in
+	line with the version on sources.redhat.com, including adding a little
+	missing content.
+	* config-tool.sgml: Ditto.
+	* programming-concepts-techniques.sgml: Ditto.
+
+	* config-tool.sgml: Fix fig1 title.
+
+2001-11-23  Mark Galassi  <rosalia@galassi.org>
+
+	* configuration.sgml: took care of the <programlisting> tags.
+
+2001-11-21  Mark Galassi  <rosalia@galassi.org>
+
+	* programming-concepts-techniques.sgml: restored the two tables in
+	this part.
+
+	* config-tool.sgml: reinstated the keyboard shortcut table.
+
+	* config-tool.sgml, configuration.sgml,
+	programming-concepts-techniques.sgml, special-topics.sgml: the new
+	files with the individual parts.
+
+	* user-guide.sgml: split each part into its own file to make
+	editing more manageable.
+
+2001-10-31  Mark Galassi  <rosalia@galassi.org>
+
+	* user-guide-not-normalized.sgml: this is the deprecated
+	original hand-edited file.
+
+	* user-guide.sgml: this is now the normalized file and the active
+	one.
+
+	* user-duide-normalized.sgml: removed this file.
+
+	* user-guide.sgml: last change (update the DTD) before I replace
+	this had-edited version with the normalized one.
+
+2001-10-29  Mark Galassi  <rosalia@galassi.org>
+
+	* user-guide-normalized.sgml: put this in because it satisfies all
+	the little nitpicks on other systems.
+
+2001-10-21  Mark Galassi  <rosalia@galassi.org>
+
+	* user-guide.sgml: more fixes; the HTML seems quite correct.
+
+	* *.gif: added all .gif files to CVS.
+
+	* user-guide.sgml: validates!!
+
+	* user-guide.sgml: 85% validates now.
+
+2001-10-20  Mark Galassi  <rosalia@galassi.org>
+
+	* user-guide.sgml: now into part III for the touch-up work.
+
+	* user-guide.sgml: did more fixing up.

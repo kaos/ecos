@@ -5,29 +5,38 @@
 //      HAL diagnostic output code
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -307,12 +316,15 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     int res = 0;
     channel_data_t* chan = (channel_data_t*)__ch_data;
     char c;
+    cyg_uint32 status;
     CYGARC_HAL_SAVE_GP();
 
     cyg_drv_interrupt_acknowledge(chan->isr_vector);
 
     *__ctrlc = 0;
-    if ( !RX_EMPTY(chan->base) ) { 
+    status = GET_STATUS(chan->base);
+
+    if ( RX_DATA(status) ) {
         c = GET_CHAR(chan->base);
 
         if( cyg_hal_is_break( &c , 1 ) )
@@ -367,6 +379,8 @@ cyg_hal_plf_serial_init(void)
 
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+
+    
 }
 
 void
@@ -433,237 +447,10 @@ hal_diag_alpha_led_char(char c1, char c2)
     }
     
     hal_diag_alpha_led(current);
+
 }
 
 #endif // CYGHWR_HAL_ARM_INTEGRATOR_DIAG_LEDS
 
-//=============================================================================
-// Compatibility with older stubs
-//=============================================================================
-#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
-#endif
-
-#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL==0
-// This is the base address of the A-channel
-#define CYG_DEVICE_SERIAL_BASE                  INTEGRATOR_UART0_BASE
-#define CYG_DEVICE_SERIAL_INT                   1
-#else
-// This is the base address of the B-channel
-#define CYG_DEVICE_SERIAL_BASE                  INTEGRATOR_UART1_BASE
-#define CYG_DEVICE_SERIAL_INT                   2
-#endif
-
-static channel_data_t integrator_ser_channel = {
-    (cyg_uint8*)CYG_DEVICE_SERIAL_BASE, 0, CYG_DEVICE_SERIAL_INT
-};
-
-// Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
-// totally stand-alone) system.
-
-#if defined(CYG_HAL_STARTUP_ROM) || !defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
-#define HAL_DIAG_USES_HARDWARE
-#endif
-
-#ifndef HAL_DIAG_USES_HARDWARE
-#if (CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL != CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL)
-#define HAL_DIAG_USES_HARDWARE
-#endif
-#endif
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT2
-// Attempt to provide CtrlC support?
-static cyg_interrupt gdb_interrupt;
-static cyg_handle_t  gdb_interrupt_handle;
-
-// This ISR is called only for serial receive interrupts.
-int 
-cyg_hal_gdb_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
-{
-    cyg_uint8 c;
-
-    hal_diag_read_char(&c);  // Fetch the character
-    cyg_drv_interrupt_acknowledge(CYG_DEVICE_SERIAL_INT);
-    if( 3 == c ) {  // ^C
-        // Ctrl-C: set a breakpoint at PC so GDB will display the
-        // correct program context when stopping rather than the
-        // interrupt handler.
-        cyg_hal_gdb_interrupt (regs->pc);
-    }
-    return 0;  // No need to run DSR
-}
-
-int
-cyg_hal_gdb_isr_attach(void)
-{
-    cyg_drv_interrupt_create(CYG_DEVICE_SERIAL_INT,
-                             99,                     // Priority - what goes here?
-                             0,                      //  Data item passed to interrupt handler
-                             cyg_hal_gdb_isr,
-                             0,
-                             &gdb_interrupt_handle,
-                             &gdb_interrupt);
-    cyg_drv_interrupt_attach(gdb_interrupt_handle);
-}
-#endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-
-#ifdef HAL_DIAG_USES_HARDWARE
-
-void hal_diag_init(void)
-{
-    static int init = 0;
-    int i;
-    char *msg = "\n\rARM eCos\n\r";
-
-    if (init++) return;
-
-    cyg_hal_plf_serial_init_channel(&integrator_ser_channel);
-
-    while (*msg) {
-        cyg_hal_plf_serial_putc(&integrator_ser_channel, *msg++);
-	for (i=0; i < 1000; i++) ;
-    }
-}
-
-#ifdef DEBUG_DIAG
-#ifndef CYG_HAL_STARTUP_ROM
-#define DIAG_BUFSIZE 2048
-static char diag_buffer[DIAG_BUFSIZE];
-static int diag_bp = 0;
-#endif // CYG_HAL_STARTUP_ROM
-#endif // DEBUG_DIAG
-
-void hal_diag_write_char(char c)
-{
-    hal_diag_init();
-
-    cyg_hal_plf_serial_putc(&integrator_ser_channel, c);
-
-#ifdef DEBUG_DIAG
-    diag_buffer[diag_bp++] = c;
-    if (diag_bp == DIAG_BUFSIZE) diag_bp = 0;
-#endif
-}
-
-void hal_diag_read_char(char *c)
-{
-    *c = cyg_hal_plf_serial_getc(&integrator_ser_channel);
-}
-
-#else // HAL_DIAG relies on GDB
-
-// Initialize diag port - assume GDB channel is already set up
-void hal_diag_init(void)
-{
-    if (0) cyg_hal_plf_serial_init_channel(&integrator_ser_channel); // avoid warning
-}
-
-// Actually send character down the wire
-static void
-hal_diag_write_char_serial(char c)
-{
-    hal_diag_init();
-
-    cyg_hal_plf_serial_putc(&integrator_ser_channel, c);
-}
-
-static bool
-hal_diag_read_serial(char *c)
-{
-    return cyg_hal_plf_serial_getc_nonblock(&integrator_ser_channel, c);
-}
-
-void 
-hal_diag_read_char(char *c)
-{
-    while (!hal_diag_read_serial(c)) ;
-}
-
-void 
-hal_diag_write_char(char c)
-{
-    static char line[100];
-    static int pos = 0;
-
-    // No need to send CRs
-    if( c == '\r' ) return;
-
-    line[pos++] = c;
-
-    if( c == '\n' || pos == sizeof(line) )
-    {
-        CYG_INTERRUPT_STATE old;
-
-        // Disable interrupts. This prevents GDB trying to interrupt us
-        // while we are in the middle of sending a packet. The serial
-        // receive interrupt will be seen when we re-enable interrupts
-        // later.
-        
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
-#else
-        HAL_DISABLE_INTERRUPTS(old);
-#endif
-
-        while(1)
-        {
-            static char hex[] = "0123456789ABCDEF";
-            cyg_uint8 csum = 0;
-            int i;
-            char c1;
-        
-            hal_diag_write_char_serial('$');
-            hal_diag_write_char_serial('O');
-            csum += 'O';
-            for( i = 0; i < pos; i++ )
-            {
-                char ch = line[i];
-                char h = hex[(ch>>4)&0xF];
-                char l = hex[ch&0xF];
-                hal_diag_write_char_serial(h);
-                hal_diag_write_char_serial(l);
-                csum += h;
-                csum += l;
-            }
-            hal_diag_write_char_serial('#');
-            hal_diag_write_char_serial(hex[(csum>>4)&0xF]);
-            hal_diag_write_char_serial(hex[csum&0xF]);
-
-            // Wait for the ACK character '+' from GDB here and handle
-            // receiving a ^C instead.  This is the reason for this clause
-            // being a loop.
-            if (!hal_diag_read_serial(&c1))
-                continue;   // No response - try sending packet again
-
-            if( c1 == '+' )
-                break;              // a good acknowledge
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            cyg_drv_interrupt_acknowledge(CYG_DEVICE_SERIAL_INT);
-            if( c1 == 3 ) {
-                // Ctrl-C: breakpoint.
-                cyg_hal_gdb_interrupt ((target_register_t)__builtin_return_address(0));
-                break;
-            }
-#endif
-            // otherwise, loop round again
-        }
-        
-        pos = 0;
-
-        // And re-enable interrupts
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
-#else
-        HAL_RESTORE_INTERRUPTS(old);
-#endif
-        
-    }
-}
-#endif
-
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 /*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

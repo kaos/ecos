@@ -5,29 +5,38 @@
 // #    ARM exception vectors
 // #
 // #========================================================================
-// ####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-// ####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 // #========================================================================
 // ######DESCRIPTIONBEGIN####
 // #
@@ -133,7 +142,7 @@ _name_:
 #define UNMAPPED_PTR(name)              \
 .##name: .word  UNMAPPED(name)
 
-        .file   "vectors.S"
+//        .file   "vectors.S"
 
 
 // CYGHWR_LED_MACRO can be defined in hal_platform_setup.h. It's free to
@@ -232,6 +241,14 @@ hal_virtual_vector_table:
         .endr
 #endif
         
+#ifdef CYGHWR_HAL_ARM_ICE_THREAD_SUPPORT
+        .balign 16      // Should be at 0x50
+ice_thread_vector:
+        .long   0       // Must be 'MICE'             
+        .long   0       // Pointer to thread support vector
+        .long   0       // eCos executing flag
+        .long   0       // Must be 'GDB '
+#endif // CYGHWR_HAL_ARM_ICE_THREAD_SUPPORT
         .balign 32
         
 // Other vectors - this may include "fixed" locations
@@ -274,6 +291,18 @@ warm_reset:
         ldr     r2,[r1,#0x08]   // software interrupt
         str     r2,[r0,#0x08]
 
+#ifdef CYGHWR_HAL_ARM_ICE_THREAD_SUPPORT        
+        ldr     r2,=ice_thread_vector
+        sub     r2,r2,r1        // compute fixed (low memory) address
+        ldr     r3,=0x4D494345  // 'MICE'
+        str     r3,[r2],#4
+        ldr     r3,=hal_arm_ice_thread_handler
+        str     r3,[r2],#4
+        mov     r3,#1
+        str     r3,[r2],#4
+        ldr     r3,=0x47444220  // 'GDB '
+        str     r3,[r2],#4
+#endif // CYGHWR_HAL_ARM_ICE_THREAD_SUPPORT
 
 #if defined(CYGSEM_HAL_ARM_PID_ANGEL_BOOT)
 // Ugly hack to get into supervisor mode
@@ -373,7 +402,13 @@ start:
         msr     spsr,r0
 
         // initialize stack
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+        // use interrupt stack for system initialization since it's bigger 
+        // than the "startup" stack in this configuration                                
+        ldr     sp,.__interrupt_stack
+#else        
         ldr     sp,.__startup_stack
+#endif        
 
         // clear BSS
         ldr     r1,.__bss_start
@@ -383,7 +418,7 @@ start:
         beq     2f
 1:      str     r0,[r1],#4
         cmp     r1,r2
-        bne     1b
+        bls     1b
 2:
 
         // Run kernel + application in THUMB mode
@@ -427,6 +462,9 @@ start:
         LED 1
         
         // This starts up the eCos kernel
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+        ldr     sp,.__startup_stack
+#endif        
         bl      cyg_start
 _start_hang:
         b       _start_hang
@@ -450,174 +488,134 @@ init_done:
 
 //
 // Exception handlers
-// Assumption: get here from a Supervisor context [mode]
+// Assumption: get here from a non-user context [mode]
 //
         .code   32
 undefined_instruction:
         ldr     sp,.__undef_exception_stack     // get good stack
-        stmfd   sp!,{r0,fp,ip,lr}               
-        mrs     r0,spsr
-        stmfd   sp!,{r0}
-        mov     ip,sp                   // save SP which will vanish with
-                                        //   mode switch
-        mrs     r0,cpsr                 // switch to Supervisor Mode
-        bic     r0,r0,#CPSR_MODE_BITS
-        orr     r0,r0,#CPSR_SUPERVISOR_MODE
-        msr     cpsr,r0                 // sp,lr are now old values
-        mov     fp,sp
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        ldr     sp,.__GDB_stack
-        cmp     fp,sp                   // already on GDB stack?
-        bhi     10f     
-        ldr     r0,.__GDB_stack_base            
-        cmp     fp,r0
-        bls     10f                     // no - switch to GDB stack
-                                        //      (already in sp)
-        mov     sp,fp                   // yes - no switch
-10:
-#endif
-        sub     sp,sp,#ARMREG_SIZE      // make space for frame
-        stmea   sp,{r0-r10,fp}          // save immediately visible registers
-        ldmfd   ip,{r0-r4}              // saved registers
-        // Adjust PC according to CPU mode
-        tst     r0,#CPSR_THUMB_ENABLE
-        subeq   r4,r4,#4                // PC at time of interrupt (ARM)
-        subne   r4,r4,#2                // PC at time of interrupt (thumb)
-        str     r0,[sp,#armreg_cpsr]    // CPSR at time of interrupt
-        str     r1,[sp,#armreg_r0]      // saved R0
-        str     r2,[sp,#armreg_fp]      // saved FP
-        str     r3,[sp,#armreg_ip]      // saved IP
-        str     r4,[sp,#armreg_pc]      // PC at time of interrupt
-        str     lr,[sp,#armreg_lr]      // LR at time of interrupt
-        add     r0,ip,#ARMREG_SIZE
-        str     fp,[sp,#armreg_sp]      // SP at time of interrupt
-#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
-        mov     r0,sp
-        bl      cyg_hal_report_undefined_instruction
-#endif
-        mov     v1,#CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
+        stmfd   sp!,{r0-r5}                     // save some supervisor regs
+        mrs     r1,spsr
+        tst     r1,#CPSR_THUMB_ENABLE
+        subeq   r0,lr,#4                // PC at time of interrupt (ARM)
+        subne   r0,lr,#2                // PC at time of interrupt (thumb)
+        mov     r2,#CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
+        mov     r3,sp
         b       call_exception_handler
 
         .code   32
 software_interrupt:
-        sub     sp,sp,#ARMREG_SIZE+16   // make space for frame
-        stmea   sp,{r0-r10,fp}          // save immediately visible registers
-        mrs     r0,spsr
-        // Adjust PC according to CPU mode
-        tst     r0,#CPSR_THUMB_ENABLE
-        subeq   r3,lr,#4                // PC at time of interrupt (ARM)
-        subne   r3,lr,#2                // PC at time of interrupt (thumb)
-        str     r0,[sp,#armreg_cpsr]    // CPSR at time of interrupt
-        str     ip,[sp,#armreg_ip]      // saved IP
-        str     r3,[sp,#armreg_pc]      // PC at time of interrupt
-        str     lr,[sp,#armreg_lr]      // LR at time of interrupt
-        add     r0,sp,#ARMREG_SIZE+16
-        str     r0,[sp,#armreg_sp]      // SP at time of interrupt
-#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
-        mov     r0,sp
-        bl      cyg_hal_report_software_interrupt
-#endif
-        mov     v1,#CYGNUM_HAL_EXCEPTION_INTERRUPT
+        stmfd   sp!,{r8}
+        ldr     r8,.__undef_exception_stack     // get good stack
+        stmfd   r8!,{r0-r5}                     // save some supervisor regs
+        mov     r3,r8
+        ldmfd   sp!,{r8}
+        mrs     r1,spsr
+        tst     r1,#CPSR_THUMB_ENABLE
+        subeq   r0,lr,#4                // PC at time of SWI (ARM)
+        subne   r0,lr,#2                // PC at time of SWI (thumb)
+        mov     r2,#CYGNUM_HAL_EXCEPTION_INTERRUPT
         b       call_exception_handler
 
         .code   32
 abort_prefetch:
         ldr     sp,.__undef_exception_stack     // get good stack
-        sub     lr,lr,#4                // PC at time of interrupt
-        stmfd   sp!,{r0,fp,ip,lr}               
-        mrs     r0,spsr
-        stmfd   sp!,{r0}
-        mov     ip,sp                   // save SP which will vanish with
-                                        //   mode switch
-        mrs     r0,cpsr                 // switch to Supervisor Mode
-        bic     r0,r0,#CPSR_MODE_BITS
-        orr     r0,r0,#CPSR_SUPERVISOR_MODE
-        msr     cpsr,r0                 // sp,lr are now old values
-        mov     fp,sp
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        ldr     sp,.__GDB_stack
-        cmp     fp,sp                   // already on GDB stack?
-        bhi     10f     
-        ldr     r0,.__GDB_stack_base            
-        cmp     fp,r0
-        bls     10f                     // no - switch to GDB stack
-                                        //      (already in sp)
-        mov     sp,fp                   // yes - no switch
-10:
-#endif
-        sub     sp,sp,#ARMREG_SIZE      // make space for frame
-        stmea   sp,{r0-r10,fp}          // save immediately visible registers
-        ldmfd   ip,{r0-r4}              // saved registers
-        str     r0,[sp,#armreg_cpsr]    // CPSR at time of interrupt
-        str     r1,[sp,#armreg_r0]      // saved R0
-        str     r2,[sp,#armreg_fp]      // saved FP
-        str     r3,[sp,#armreg_ip]      // saved IP
-        str     r4,[sp,#armreg_pc]      // PC at time of interrupt
-        str     lr,[sp,#armreg_lr]      // LR at time of interrupt
-        add     r0,ip,#ARMREG_SIZE
-        str     fp,[sp,#armreg_sp]      // SP at time of interrupt
-#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
-        mov     r0,sp
-        bl      cyg_hal_report_abort_prefetch
-#endif
-        mov     v1,#CYGNUM_HAL_EXCEPTION_CODE_ACCESS
+        stmfd   sp!,{r0-r5}                     // save some supervisor regs
+        sub     r0,lr,#4                        // PC at time of interrupt
+        mrs     r1,spsr
+        mov     r2,#CYGNUM_HAL_EXCEPTION_CODE_ACCESS
+        mov     r3,sp
         b       call_exception_handler
 
         .code   32
 abort_data:
         ldr     sp,.__undef_exception_stack     // get good stack
-        sub     lr,lr,#4                // PC at time of interrupt
-        stmfd   sp!,{r0,fp,ip,lr}               
-        mrs     r0,spsr
-        stmfd   sp!,{r0}
-        mov     ip,sp                   // save SP which will vanish with
-                                        //   mode switch
-        mrs     r0,cpsr                 // switch to Supervisor Mode
-        bic     r0,r0,#CPSR_MODE_BITS
-        orr     r0,r0,#CPSR_SUPERVISOR_MODE
-        msr     cpsr,r0                 // sp,lr are now old values
-        mov     fp,sp
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        ldr     sp,.__GDB_stack
-        cmp     fp,sp                   // already on GDB stack?
-        bhi     10f     
-        ldr     r0,.__GDB_stack_base            
-        cmp     fp,r0
-        bls     10f                     // no - switch to GDB stack
-                                        //      (already in sp)
-        mov     sp,fp                   // yes - no switch
-10:
-#endif
-        sub     sp,sp,#ARMREG_SIZE      // make space for frame
-        stmea   sp,{r0-r10,fp}          // save immediately visible registers
-        ldmfd   ip,{r0-r4}              // saved registers
-        str     r0,[sp,#armreg_cpsr]    // CPSR at time of interrupt
-        str     r1,[sp,#armreg_r0]      // saved R0
-        str     r2,[sp,#armreg_fp]      // saved FP
-        str     r3,[sp,#armreg_ip]      // saved IP
-        str     r4,[sp,#armreg_pc]      // PC at time of interrupt
-        str     lr,[sp,#armreg_lr]      // LR at time of interrupt
-        add     r0,ip,#ARMREG_SIZE
-        str     fp,[sp,#armreg_sp]      // SP at time of interrupt
-#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
-        mov     r0,sp
-        bl      cyg_hal_report_abort_data
-#endif
-        mov     v1,#CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+        stmfd   sp!,{r0-r5}                     // save some supervisor regs
+        sub     r0,lr,#4                        // PC at time of interrupt
+        mrs     r1,spsr
+        mov     r2,#CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+        mov     r3,sp
         b       call_exception_handler
-
         
 //
 // Dispatch an exception handler.
 
         .code   32
 call_exception_handler:
-        str     v1,[sp,#armreg_vector]
+        //
+        // On Entry:
+        //
+        // r4,r5 = scratch
+        // r3 = pointer to temp save area
+        // r2 = vector number
+        // r1 = exception psr
+        // r0 = exception pc
+        // 
+        // [r3+20]: exception r5
+        // [r3+16]: exception r4
+        // [r3+12]: exception r3
+        // [r3+8] : exception r2
+        // [r3+4] : exception r1
+        // [r3]   : exception r0
+        
+        mrs     r4,cpsr                 // switch to Supervisor Mode
+        bic     r4,r4,#CPSR_MODE_BITS
+        orr     r4,r4,#CPSR_SUPERVISOR_MODE
+        msr     cpsr,r4
+
+        mov     r5,sp                   // save original svc sp
+        mov	r4,lr                   // and original svc lr
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        // Make sure we use the GDB stack.
+        ldr     sp,.__GDB_stack
+        cmp     r5,sp                   // already on GDB stack?
+        bhi     10f     
+        ldr     r4,.__GDB_stack_base            
+        cmp     r5,r4
+        movhi   sp,r5
+10:
+#endif
+        //
+        // r5 holds original svc sp, current sp is stack to use
+        // r4 holds original svc lr, which must also be preserved
+        //
+
+        stmfd   sp!,{r0-r2,r4,r5}       // push svc_sp, svc_lr, vector, psr, pc
+        
+        // switch to pre-exception mode to get banked regs
+        mov     r0,sp                   // r0 survives mode switch
+        mrs     r2,cpsr                 // Save current psr for return
+        orr     r1,r1,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        msr     cpsr,r1
+        stmfd   r0!,{r8-r12,sp,lr}
+        msr     cpsr,r2                 // back to svc mode
+        mov     sp,r0                   // update stack pointer
+
+        // now save pre-exception r0-r7 on current stack
+        ldmfd   r3,{r0-r5}
+        stmfd   sp!,{r0-r7}
+
+        // SP needs fixing if exception occured in SVC mode.
+        // The original SVC LR is still in place so that 
+        // does not need to be fixed here.
+        ldr     r1,[sp,#armreg_cpsr]
+        and     r1,r1,#CPSR_MODE_BITS
+        cmp     r1,#CPSR_SUPERVISOR_MODE
+        ldreq   r1,[sp,#armreg_svcsp]
+        streq   r1,[sp,#armreg_sp]
+
+#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
         mov     r0,sp
+        ldr     r1,.__dump_procs
+        ldr     r2,[sp,#armreg_vector]
+        mov     lr,pc
+        ldr     pc,[r1,r2,lsl #2]
+#endif
 
+        // call exception handler
+        mov     r0,sp
         THUMB_MODE(r9,10)
-
         bl      exception_handler
+
 #ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
         mov     r0,sp
         bl      cyg_hal_report_exception_handler_returned
@@ -625,30 +623,52 @@ call_exception_handler:
 
         ARM_MODE(r1,10)
 
-// Restore [interrupted] context
-        mov     ip,sp                   // get stack pointer
+        //
+        // Return from exception
+        //
+return_from_exception:
 
-        mrs     r0,cpsr                 // move back to IRQ mode
+        ldr     r0,[sp,#armreg_cpsr]
+        msr     spsr,r0
+
+        // return to supervisor mode is simple
+        and     r1,r0,#CPSR_MODE_BITS
+        cmp     r1,#CPSR_SUPERVISOR_MODE
+        ldmeqfd sp,{r0-r14,pc}^
+
+        //
+        // return to other non-user modes is a little trickier
+        //
+
+        // switch to pre-exception mode and restore r8-r14
+        add     r2,sp,#armreg_r8
+        mrs     r1,cpsr
         orr     r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
         msr     cpsr,r0
-        nop
-        nop
+        ldmfd   r2,{r8-r14}
+        msr     cpsr, r1        // back to svc mode
 
-        ldr     lr,[ip,#armreg_lr]
-        ldr     sp,[sp,#armreg_sp]
-                        
-        bic     r0,r0,#CPSR_MODE_BITS
-        orr     r0,r0,#CPSR_IRQ_MODE
-        msr     cpsr,r0
+        // move sp,lr and pc for final load
+        ldr     r0,[sp,#armreg_svcsp]
+        str     r0,[sp,#armreg_r8]
+        ldr     r0,[sp,#armreg_svclr]	
+        str     r0,[sp,#armreg_r9]
+        ldr     r0,[sp,#armreg_pc]
+        str     r0,[sp,#armreg_r10]
 
-        mov     sp,ip
-        ldr     lr,[sp,#armreg_pc]
-        ldr     r0,[sp,#armreg_cpsr]
-        ldr     ip,[sp,#armreg_ip]
-        msr     spsr,r0
-        ldmfd   sp,{r0-r10,fp}
+        // restore r0-r7,sp,lr and return from exception
+        ldmfd   sp,{r0-r7,sp,lr,pc}^
 
-        movs    pc,lr                   // restore PC from LR, CPSR from SPSR
+#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
+__dump_procs:
+        .word  0    // placeholder for reset
+        .word  cyg_hal_report_undefined_instruction
+        .word  cyg_hal_report_software_interrupt
+        .word  cyg_hal_report_abort_prefetch
+        .word  cyg_hal_report_abort_data
+        .word  0    // reserved
+#endif
+
 
 // Handle device interrupts
 // This is slightly more complicated than the other exception handlers because
@@ -656,7 +676,7 @@ call_exception_handler:
 
         .code   32
 FIQ:
-        // We can get here from supervisor mode or from IRQ mode.
+        // We can get here from any non-user mode.
         mrs     r8,spsr                 // CPSR at time of interrupt
         and     r9,r8,#CPSR_MODE_BITS   // isolate pre-interrupt mode
         cmp	r9,#CPSR_IRQ_MODE
@@ -667,7 +687,7 @@ FIQ:
         msr	spsr,r8
         subs	pc,lr,#4
     1:
-        // If FIQ interrupted supervisor mode, switch to IRQ mode and
+        // If FIQ interrupted other non-user mode, switch to IRQ mode and
         // fall through to IRQ handler.
         ldr     sp,.__exception_stack   // get good stack to save lr and spsr
         stmdb   sp,{r8,lr}
@@ -679,36 +699,47 @@ FIQ:
 
         // now it looks like we got an IRQ instead of an FIQ except that
         // FIQ is disabled so we don't recurse.
-
 IRQ:
         // Note: I use this exception stack while saving the context because
         // the current SP does not seem to be always valid in this CPU mode.
         ldr     sp,.__exception_stack   // get good stack
-        sub     lr,lr,#4                // PC at time of interrupt
-        stmfd   sp!,{r0,fp,ip,lr}               
-        mrs     r0,spsr
-        stmfd   sp!,{r0}
+        stmfd   sp!,{r0-r5}             // save some supervisor regs
+        sub     r0,lr,#4                // PC at time of interrupt
+        mrs     r1,spsr
+        mov     r2,#CYGNUM_HAL_VECTOR_IRQ
+        mov     r3,sp
+	
+handle_IRQ_or_FIQ:
 
-handle_IRQ_or_FIQ:              
-        mov     ip,sp                   // save SP which will vanish with
-                                        //   mode switch
-        mrs     r0,cpsr                 // switch to Supervisor Mode
-        bic     r0,r0,#CPSR_MODE_BITS
-        orr     r0,r0,#CPSR_SUPERVISOR_MODE|CPSR_FIQ_DISABLE|CPSR_IRQ_DISABLE
-        msr     cpsr,r0                 // sp,lr are now old values
-        mov     fp,sp                   // save old SP
-        sub     sp,sp,#ARMREG_SIZE      // make space for frame
-        stmea   sp,{r0-r10,fp}          // save immediately visible registers
-        ldmfd   ip,{r0-r4}              // saved registers
-        str     r0,[sp,#armreg_cpsr]    // CPSR at time of interrupt
-        str     r1,[sp,#armreg_r0]      // saved R0
-        str     r2,[sp,#armreg_fp]      // saved FP
-        str     r3,[sp,#armreg_ip]      // saved IP
-        str     r4,[sp,#armreg_pc]      // PC at time of interrupt
-        str     lr,[sp,#armreg_lr]      // LR at time of interrupt
-        str     fp,[sp,#armreg_sp]      // SP at time of interrupt
-        mov     r0,#CYGNUM_HAL_VECTOR_IRQ       // FIXME: we don't distinguish
-        str     r0,[sp,#armreg_vector]          // FIQ and IRQ here
+        mrs     r4,cpsr                 // switch to Supervisor Mode
+        bic     r4,r4,#CPSR_MODE_BITS
+        orr     r4,r4,#CPSR_SUPERVISOR_MODE
+        msr     cpsr,r4
+
+        mov     r5,sp                   // save original svc sp
+	mov	r4,lr			// save original svc lr
+        stmfd   sp!,{r0-r2,r4,r5}       // push svc_sp, svc_lr, vector, psr, pc
+		
+        // switch to pre-exception mode to get banked regs
+        mov     r0,sp                   // r0 survives mode switch
+        mrs     r2,cpsr                 // Save current psr for return
+        orr     r1,r1,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
+        msr     cpsr,r1
+        stmfd   r0!,{r8-r12,sp,lr}
+        msr     cpsr,r2                 // back to svc mode
+        mov     sp,r0                   // update stack pointer
+	
+        // now save pre-exception r0-r7 on current stack
+        ldmfd   r3,{r0-r5}
+        stmfd   sp!,{r0-r7}
+
+        // sp needs fixing if exception occured in SVC mode.
+        ldr     r1,[sp,#armreg_cpsr]
+        and     r1,r1,#CPSR_MODE_BITS
+        cmp     r1,#CPSR_SUPERVISOR_MODE
+        ldreq   r1,[sp,#armreg_svcsp]
+        streq   r1,[sp,#armreg_sp]
+
         mov     v6,sp                   // Save pointer to register frame
 
 //      mov     r0,sp
@@ -835,28 +866,8 @@ spurious_IRQ:
 //      mov     r0,sp
 //      bl      show_frame_out
 
-        mov     ip,sp                   // get stack pointer
-
-        mrs     r0,cpsr                 // move back to IRQ mode
-        orr     r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
-        msr     cpsr,r0
-        nop
-        nop
-
-        ldr     lr,[ip,#armreg_lr]
-        ldr     sp,[sp,#armreg_sp]
-                        
-        bic     r0,r0,#CPSR_MODE_BITS
-        orr     r0,r0,#CPSR_IRQ_MODE
-        msr     cpsr,r0
-
-        mov     sp,ip
-        ldr     lr,[sp,#armreg_pc]
-        ldr     r0,[sp,#armreg_cpsr]
-        ldr     ip,[sp,#armreg_ip]
-        msr     spsr,r0
-        ldmfd   sp,{r0-r10,fp}
-        movs    pc,lr                   // restore PC from LR, CPSR from SPSR
+	// return from IRQ is same as return from exception
+	b	return_from_exception
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 // Execute pending DSRs the interrupt stack
@@ -1000,6 +1011,9 @@ PTR(cyg_scheduler_sched_lock)
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 PTR(irq_level)
 PTR(__interrupt_stack)
+#endif
+#ifdef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
+PTR(__dump_procs)
 #endif
 
 //

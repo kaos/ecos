@@ -5,29 +5,38 @@
 //      HAL CPU variant miscellaneous functions
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -100,6 +109,9 @@ void cyg_hal_dcache_store(CYG_ADDRWORD base, int size)
 #include <cyg/hal/var_arch.h>
 #include <cyg/hal/hal_stub.h>
 
+#if CYGHWR_HAL_MN10300_AM33_REVISION == 2
+int fpu_regs_read = 0;
+#endif
 
 int msp_read = 0;
 
@@ -160,6 +172,48 @@ void am33_get_gdb_extra_registers(CYG_ADDRWORD *registers, HAL_SavedRegisters *r
     registers[25] = usp;
   }
 
+#if CYGHWR_HAL_MN10300_AM33_REVISION == 2
+  if ((regs->psw & HAL_ARCH_AM33_PSW_FE) == HAL_ARCH_AM33_PSW_FE)
+    {
+      // The FPU is enabled.  Go ahead and read the registers
+      asm volatile (" fmov fpcr, %0  " : "=d" (registers[29]) : );
+      asm volatile (" fmov fs0,  %0  " : "=m" (registers[32]) : );
+      asm volatile (" fmov fs1,  %0  " : "=m" (registers[33]) : );
+      asm volatile (" fmov fs2,  %0  " : "=m" (registers[34]) : );
+      asm volatile (" fmov fs3,  %0  " : "=m" (registers[35]) : );
+      asm volatile (" fmov fs4,  %0  " : "=m" (registers[36]) : );
+      asm volatile (" fmov fs5,  %0  " : "=m" (registers[37]) : );
+      asm volatile (" fmov fs6,  %0  " : "=m" (registers[38]) : );
+      asm volatile (" fmov fs7,  %0  " : "=m" (registers[39]) : );
+      asm volatile (" fmov fs8,  %0  " : "=m" (registers[40]) : );
+      asm volatile (" fmov fs9,  %0  " : "=m" (registers[41]) : );
+      asm volatile (" fmov fs10, %0  " : "=m" (registers[42]) : );
+      asm volatile (" fmov fs11, %0  " : "=m" (registers[43]) : );
+      asm volatile (" fmov fs12, %0  " : "=m" (registers[44]) : );
+      asm volatile (" fmov fs13, %0  " : "=m" (registers[45]) : );
+      asm volatile (" fmov fs14, %0  " : "=m" (registers[46]) : );
+      asm volatile (" fmov fs15, %0  " : "=m" (registers[47]) : );
+      asm volatile (" fmov fs16, %0  " : "=m" (registers[48]) : );
+      asm volatile (" fmov fs17, %0  " : "=m" (registers[49]) : );
+      asm volatile (" fmov fs18, %0  " : "=m" (registers[50]) : );
+      asm volatile (" fmov fs19, %0  " : "=m" (registers[51]) : );
+      asm volatile (" fmov fs20, %0  " : "=m" (registers[52]) : );
+      asm volatile (" fmov fs21, %0  " : "=m" (registers[53]) : );
+      asm volatile (" fmov fs22, %0  " : "=m" (registers[54]) : );
+      asm volatile (" fmov fs23, %0  " : "=m" (registers[55]) : );
+      asm volatile (" fmov fs24, %0  " : "=m" (registers[56]) : );
+      asm volatile (" fmov fs25, %0  " : "=m" (registers[57]) : );
+      asm volatile (" fmov fs26, %0  " : "=m" (registers[58]) : );
+      asm volatile (" fmov fs27, %0  " : "=m" (registers[59]) : );
+      asm volatile (" fmov fs28, %0  " : "=m" (registers[60]) : );
+      asm volatile (" fmov fs29, %0  " : "=m" (registers[61]) : );
+      asm volatile (" fmov fs30, %0  " : "=m" (registers[62]) : );
+      asm volatile (" fmov fs31, %0  " : "=m" (registers[63]) : );
+      fpu_regs_read = 1;
+    } else {
+      fpu_regs_read = 0;
+    }
+#endif
 
 #ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
   {
@@ -235,6 +289,46 @@ void am33_set_gdb_extra_registers(CYG_ADDRWORD *registers, HAL_SavedRegisters *r
       }
   }
 
+#if CYGHWR_HAL_MN10300_AM33_REVISION == 2
+  if (fpu_regs_read)
+    {
+      // The FPU registers have been read and the FPU is enabled.
+      // Go ahead and write the registers
+      asm volatile (" fmov %0, fpcr  " : : "d" (registers[29]) );
+      asm volatile (" fmov %0, fs0   " : : "m" (registers[32]) );
+      asm volatile (" fmov %0, fs1   " : : "m" (registers[33]) );
+      asm volatile (" fmov %0, fs2   " : : "m" (registers[34]) );
+      asm volatile (" fmov %0, fs3   " : : "m" (registers[35]) );
+      asm volatile (" fmov %0, fs4   " : : "m" (registers[36]) );
+      asm volatile (" fmov %0, fs5   " : : "m" (registers[37]) );
+      asm volatile (" fmov %0, fs6   " : : "m" (registers[38]) );
+      asm volatile (" fmov %0, fs7   " : : "m" (registers[39]) );
+      asm volatile (" fmov %0, fs8   " : : "m" (registers[40]) );
+      asm volatile (" fmov %0, fs9   " : : "m" (registers[41]) );
+      asm volatile (" fmov %0, fs10  " : : "m" (registers[42]) );
+      asm volatile (" fmov %0, fs11  " : : "m" (registers[43]) );
+      asm volatile (" fmov %0, fs12  " : : "m" (registers[44]) );
+      asm volatile (" fmov %0, fs13  " : : "m" (registers[45]) );
+      asm volatile (" fmov %0, fs14  " : : "m" (registers[46]) );
+      asm volatile (" fmov %0, fs15  " : : "m" (registers[47]) );
+      asm volatile (" fmov %0, fs16  " : : "m" (registers[48]) );
+      asm volatile (" fmov %0, fs17  " : : "m" (registers[49]) );
+      asm volatile (" fmov %0, fs18  " : : "m" (registers[50]) );
+      asm volatile (" fmov %0, fs19  " : : "m" (registers[51]) );
+      asm volatile (" fmov %0, fs20  " : : "m" (registers[52]) );
+      asm volatile (" fmov %0, fs21  " : : "m" (registers[53]) );
+      asm volatile (" fmov %0, fs22  " : : "m" (registers[54]) );
+      asm volatile (" fmov %0, fs23  " : : "m" (registers[55]) );
+      asm volatile (" fmov %0, fs24  " : : "m" (registers[56]) );
+      asm volatile (" fmov %0, fs25  " : : "m" (registers[57]) );
+      asm volatile (" fmov %0, fs26  " : : "m" (registers[58]) );
+      asm volatile (" fmov %0, fs27  " : : "m" (registers[59]) );
+      asm volatile (" fmov %0, fs28  " : : "m" (registers[60]) );
+      asm volatile (" fmov %0, fs29  " : : "m" (registers[61]) );
+      asm volatile (" fmov %0, fs30  " : : "m" (registers[62]) );
+      asm volatile (" fmov %0, fs31  " : : "m" (registers[63]) );
+    }
+#endif
 }
 #endif // CYGPKG_CYGMON
 

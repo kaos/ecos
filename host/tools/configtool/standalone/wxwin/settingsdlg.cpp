@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: settingsdlg.cpp,v 1.14 2001/09/03 16:51:51 julians Exp $
+// Version:     $Id: settingsdlg.cpp,v 1.16 2002/02/15 17:40:01 julians Exp $
 // Purpose:
 // Description: Implementation file for ecSettingsDialog
 // Requires:
@@ -58,6 +58,7 @@
 #include "wx/cshelp.h"
 #include "wx/valgen.h"
 #include "wx/fontdlg.h"
+#include "wx/mimetype.h"
 
 #include "settingsdlg.h"
 #include "configtool.h"
@@ -68,12 +69,7 @@
 // but probably we should eventually for consistency and ease of use
 #define ecUSE_PATHS_PAGE 0
 
-// Haven't implemented this yet
-#ifdef __WXDEBUG__
 #define ecUSE_RUN_PAGE 1
-#else
-#define ecUSE_RUN_PAGE 0
-#endif
 
 /*
  * Settings dialog
@@ -467,6 +463,7 @@ IMPLEMENT_CLASS(ecViewerOptionsDialog, wxPanel)
 BEGIN_EVENT_TABLE(ecViewerOptionsDialog, wxPanel)
     EVT_BUTTON(ecID_VIEWER_DIALOG_BROWSE_HEADER, ecViewerOptionsDialog::OnBrowseForViewer)
     EVT_BUTTON(ecID_VIEWER_DIALOG_BROWSE_DOC, ecViewerOptionsDialog::OnBrowseForBrowser)
+    EVT_BUTTON(ecID_VIEWER_DIALOG_ASSOC_INFO, ecViewerOptionsDialog::OnShowAssociatedViewerInfo)
 
     EVT_UPDATE_UI(ecID_VIEWER_DIALOG_HEADER_TEXT, ecViewerOptionsDialog::OnUpdateViewerText)
     EVT_UPDATE_UI(ecID_VIEWER_DIALOG_BROWSE_HEADER, ecViewerOptionsDialog::OnUpdateViewerText)
@@ -539,6 +536,69 @@ void ecViewerOptionsDialog::CreateControls( wxPanel *parent)
 
     item0->Add( item1, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
+    item0->Add( 20, 20, 1, wxALIGN_CENTRE|wxALL, 5 );
+
+    wxStaticBox *item9 = new wxStaticBox( parent, -1, _("View documentation using") );
+    wxSizer *item8 = new wxStaticBoxSizer( item9, wxVERTICAL );
+
+    wxRadioButton *item10 = new wxRadioButton( parent, ecID_VIEWER_DIALOG_DOC_BUILTIN, _("&Built-in viewer"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    item8->Add( item10, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP, 5 );
+
+    wxSizer *item11 = new wxBoxSizer( wxHORIZONTAL );
+
+    wxRadioButton *item12 = new wxRadioButton( parent, ecID_VIEWER_DIALOG_DOC_ASSOCIATED, _("Associated browser"), wxDefaultPosition, wxDefaultSize, 0 );
+    item11->Add( item12, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+    item11->Add( 20, 20, 1, wxALIGN_CENTRE|wxALL, 5 );
+
+    wxButton *item13 = new wxButton( parent, ecID_VIEWER_DIALOG_ASSOC_INFO, _("&About..."), wxDefaultPosition, wxDefaultSize, 0 );
+    item11->Add( item13, 0, wxALIGN_CENTRE|wxALL, 5 );
+
+    item8->Add( item11, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 0 );
+
+    wxSizer *item14 = new wxBoxSizer( wxHORIZONTAL );
+
+    wxRadioButton *item15 = new wxRadioButton( parent, ecID_VIEWER_DIALOG_DOC_THIS, _("This &browser:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item14->Add( item15, 0, wxALIGN_CENTRE|wxLEFT|wxRIGHT|wxBOTTOM, 5 );
+
+    item14->Add( 20, 20, 1, wxALIGN_CENTRE|wxLEFT|wxRIGHT|wxBOTTOM, 5 );
+
+    wxButton *item16 = new wxButton( parent, ecID_VIEWER_DIALOG_BROWSE_DOC, _("Br&owse..."), wxDefaultPosition, wxDefaultSize, 0 );
+    item14->Add( item16, 0, wxALIGN_CENTRE|wxLEFT|wxRIGHT|wxBOTTOM, 5 );
+
+    item8->Add( item14, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 0 );
+
+    wxTextCtrl *item17 = new wxTextCtrl( parent, ecID_VIEWER_DIALOG_DOC_TEXT, _(""), wxDefaultPosition, wxSize(80,-1), 0 );
+    item8->Add( item17, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+    item0->Add( item8, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+#if 0
+    wxSizer *item0 = new wxBoxSizer( wxVERTICAL );
+
+    wxStaticBox *item2 = new wxStaticBox( parent, -1, _("View header files using") );
+    wxSizer *item1 = new wxStaticBoxSizer( item2, wxVERTICAL );
+
+    wxRadioButton *item3 = new wxRadioButton( parent, ecID_VIEWER_DIALOG_HEADER_ASSOCIATED, _("Associated viewer"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP );
+    item1->Add( item3, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxTOP, 5 );
+
+    wxSizer *item4 = new wxBoxSizer( wxHORIZONTAL );
+
+    wxRadioButton *item5 = new wxRadioButton( parent, ecID_VIEWER_DIALOG_HEADER_THIS, _("This &viewer:"), wxDefaultPosition, wxDefaultSize, 0 );
+    item4->Add( item5, 0, wxALIGN_CENTRE|wxLEFT|wxRIGHT|wxBOTTOM, 5 );
+
+    item4->Add( 20, 20, 1, wxALIGN_CENTRE|wxALL, 5 );
+
+    wxButton *item6 = new wxButton( parent, ecID_VIEWER_DIALOG_BROWSE_HEADER, _("&Browse..."), wxDefaultPosition, wxDefaultSize, 0 );
+    item4->Add( item6, 0, wxALIGN_CENTRE|wxALL, 5 );
+
+    item1->Add( item4, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxBOTTOM, 0 );
+
+    wxTextCtrl *item7 = new wxTextCtrl( parent, ecID_VIEWER_DIALOG_HEADER_TEXT, _(""), wxDefaultPosition, wxSize(80,-1), 0 );
+    item1->Add( item7, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+    item0->Add( item1, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
 //    item0->Add( 20, 20, 1, wxALIGN_CENTRE|wxALL, 5 );
 
     wxStaticBox *item9 = new wxStaticBox( parent, -1, _("View documentation using") );
@@ -566,6 +626,7 @@ void ecViewerOptionsDialog::CreateControls( wxPanel *parent)
     item8->Add( item15, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     item0->Add( item8, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+#endif
 
     // Disable this option because we don't yet have a built-in browser
 #if 0 // !ecUSE_EXPERIMENTAL_CODE
@@ -587,6 +648,7 @@ void ecViewerOptionsDialog::CreateControls( wxPanel *parent)
     FindWindow(ecID_VIEWER_DIALOG_DOC_ASSOCIATED)->SetHelpText(_("Select the default browser to display HTML-based help."));
     FindWindow(ecID_VIEWER_DIALOG_DOC_THIS)->SetHelpText(_("Select a browser of your choice to display HTML-based help."));
     FindWindow(ecID_VIEWER_DIALOG_BROWSE_DOC)->SetHelpText(_("Browses for a browser to be used to display HTML-based help."));
+    FindWindow(ecID_VIEWER_DIALOG_ASSOC_INFO)->SetHelpText(_("Shows information about the associated viewer."));
 
     parent->SetAutoLayout( TRUE );
     parent->SetSizer( item0 );
@@ -628,6 +690,55 @@ void ecViewerOptionsDialog::OnBrowseForBrowser(wxCommandEvent& event)
     {
         ((wxTextCtrl*) FindWindow(ecID_VIEWER_DIALOG_DOC_TEXT))->SetValue(dialog.GetPath());
     }
+}
+
+void ecViewerOptionsDialog::OnShowAssociatedViewerInfo(wxCommandEvent& event)
+{
+    wxString msg;
+    wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(wxT("html"));
+    if ( !ft )
+    {
+        msg += wxT("It is not possible to determine the associated browser for HTML documents.\n\n");
+    }
+    else
+    {
+        msg += wxT("The associated MIME type for HTML is:\n");
+        wxString mimeType(wxT("Unknown"));
+        ft->GetMimeType(& mimeType);
+        msg += mimeType;
+        msg += wxT("\n");
+
+        wxString descr;
+        if (ft->GetDescription(& descr))
+        {
+            msg += descr;
+            msg += wxT("\n");
+        }
+        msg += wxT("\n");
+
+        wxString cmd;
+        wxString url(wxT("http://example-url.html"));
+        bool ok = ft->GetOpenCommand(&cmd,
+            wxFileType::MessageParameters(url, _T("")));
+
+        if (ok)
+        {
+            msg += wxT("The associated command is:\n");
+            msg += cmd;
+            msg += wxT("\n");
+        }
+        msg += wxT("\n");
+    }
+
+    msg += wxT("If this MIME type is not defined or looks wrong, please consult your ");
+    msg += wxT("Configuration Tool documentation for how to set up an association.\n");
+#if defined(__WXGTK__)
+    msg += wxT("On Unix, this can be done by adding an entry to your ~/.mailcap file.");
+#endif
+
+    delete ft;
+   
+    wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_INFORMATION|wxOK);
 }
 
 /* Path options dialog

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: finddlg.cpp,v 1.3 2001/03/07 18:21:50 julians Exp $
+// Version:     $Id: finddlg.cpp,v 1.5 2002/02/28 18:30:35 julians Exp $
 // Purpose:
 // Description: Implementation file for ecFindDialog
 // Requires:
@@ -199,14 +199,14 @@ bool ecFindDialog::TransferDataToWindow()
     // Convert to radiobox selection index from bool
     m_directionSelection = wxGetApp().GetSettings().m_findDirection ? 1 : 0 ;
     
-    wxPanel::TransferDataToWindow();
+    wxWindow::TransferDataToWindow();
 
     return TRUE;
 }
 
 bool ecFindDialog::TransferDataFromWindow()
 {
-    wxPanel::TransferDataFromWindow();
+    wxWindow::TransferDataFromWindow();
 
     // Convert from radiobox selection index to bool
     wxGetApp().GetSettings().m_findDirection = (m_directionSelection == 1);

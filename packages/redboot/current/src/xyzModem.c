@@ -5,34 +5,43 @@
 //      RedBoot stream handler for xyzModem protocol
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, tsmith
+// Contributors: gthomas, tsmith, Yoshinori Sato
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -58,6 +67,8 @@
 #define CAN 0x18
 #define EOF 0x1A  // ^Z for DOS officionados
 
+#define nUSE_YMODEM_LENGTH
+
 // Data & state local to the protocol
 static struct {
     hal_virtual_comm_table_t* __chan;
@@ -66,7 +77,10 @@ static struct {
     unsigned char next_blk;  // Expected block
     int len, mode, total_retries;
     int total_SOH, total_STX, total_CAN;
-    bool crc_mode, at_eof;
+    bool crc_mode, at_eof, tx_ack;
+#ifdef USE_YMODEM_LENGTH
+    unsigned long file_length, read_length;
+#endif
 } xyz;
 
 #define xyzModem_CHAR_TIMEOUT            2000  // 2 seconds
@@ -185,6 +199,11 @@ xyzModem_get_hdr(void)
     // Find the start of a header
     can_total = 0;
     hdr_chars = 0;
+
+    if (xyz.tx_ack) {
+        CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+        xyz.tx_ack = false;
+    }
     while (!hdr_found) {
         res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &c);
         ZM_DEBUG(zm_save(c));
@@ -322,18 +341,30 @@ xyzModem_stream_open(char *filename, int mode, int chan, int *err)
     xyz.len = 0;
     xyz.crc_mode = true;
     xyz.at_eof = false;
+    xyz.tx_ack = false;
     xyz.mode = mode;
     xyz.total_retries = 0;
     xyz.total_SOH = 0;
     xyz.total_STX = 0;
     xyz.total_CAN = 0;
+#ifdef USE_YMODEM_LENGTH
+    xyz.read_length = 0;
+    xyz.file_length = 0;
+#endif
 
     while (retries-- > 0) {
         stat = xyzModem_get_hdr();
         if (stat == 0) {
+            // Y-modem file information header
             if (xyz.blk == 0) {
-                // Note: yModem file name data blocks quietly discarded
-                CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+#ifdef USE_YMODEM_LENGTH
+                // skip filename
+                while (*xyz.bufp++);
+                // get the length
+                parse_num(xyz.bufp, &xyz.file_length, NULL, " ");
+#endif
+                // The rest of the file name data block quietly discarded
+                xyz.tx_ack = true;
             }
             xyz.next_blk = 1;
             xyz.len = 0;
@@ -371,7 +402,7 @@ xyzModem_stream_read(char *buf, int size, int *err)
                 stat = xyzModem_get_hdr();
                 if (stat == 0) {
                     if (xyz.blk == xyz.next_blk) {
-                        CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+                        xyz.tx_ack = true;
                         ZM_DEBUG(zm_dprintf("ACK block %d (%d)\n", xyz.blk, __LINE__));
                         xyz.next_blk = (xyz.next_blk + 1) & 0xFF;
                         // Data blocks can be padded with ^Z (EOF) characters
@@ -385,6 +416,19 @@ xyzModem_stream_read(char *buf, int size, int *err)
                                 }
                             }
                         }
+
+#ifdef USE_YMODEM_LENGTH
+                        // See if accumulated length exceeds that of the file.
+                        // If so, reduce size (i.e., cut out pad bytes)
+                        // Only do this for Y-modem (and Z-modem should it ever
+                        // be supported since it can fall back to Y-modem mode).
+                        if (xyz.mode != xyzModem_xmodem && 0 != xyz.file_length) {
+                            xyz.read_length += xyz.len;
+                            if (xyz.read_length > xyz.file_length) {
+                                xyz.len -= (xyz.read_length - xyz.file_length);
+                            }
+                        }
+#endif
                         break;
                     } else if (xyz.blk == ((xyz.next_blk - 1) & 0xFF)) {
                         // Just re-ACK this so sender will get on with it
@@ -419,16 +463,19 @@ xyzModem_stream_read(char *buf, int size, int *err)
                 *err = stat;
                 xyz.len = -1;
                 return total;
-            }            
+            }
         }
-        len = xyz.len;
-        if (size < len) len = size;
-        memcpy(buf, xyz.bufp, len);
-        size -= len;
-        buf += len;
-        total += len;
-        xyz.len -= len;
-        xyz.bufp += len;
+        // Don't "read" data from the EOF protocol package
+        if (!xyz.at_eof) {
+            len = xyz.len;
+            if (size < len) len = size;
+            memcpy(buf, xyz.bufp, len);
+            size -= len;
+            buf += len;
+            total += len;
+            xyz.len -= len;
+            xyz.bufp += len;
+        }
     }
     return total;
 }
@@ -486,7 +533,7 @@ void xyzModem_stream_terminate(int method, int (*getc)(void))
       // Make a small delay to give terminal programs like minicom
       // time to get control again after their file transfer program
       // exits.
-      CYGACC_CALL_IF_DELAY_US((cyg_int32)100000);
+      CYGACC_CALL_IF_DELAY_US((cyg_int32)250000);
       break;
   }
 }

@@ -4,29 +4,38 @@
 //
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //####UCDSNMPCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -87,29 +96,38 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //      Simple test of PING (ICMP) and networking support
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -139,13 +157,13 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 // Configuration of the test... now from CDL
 
 // Do we test the interfaces in promiscuous mode?
-//#define PROMISC_TEST
+//#define CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 
 // Do we make the test run forever?
-//#define RUN_FOREVER
+//#define CYGNUM_SNMPAGENT_TESTS_ITERATIONS 999999
 
 // Do we initialize SNMP v3 MIBs and authentication database?
-//#define TEST_SNMPv3
+//#define CYGSEM_SNMPAGENT_TESTS_SNMPv3
 
 // ------------------------------------------------------------------------
 
@@ -159,7 +177,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <pkgconf/snmpagent.h>
 
 
-#ifdef  CYGSEM_SNMPAGENT_TEST_SNMPv3
+#ifdef  CYGSEM_SNMPAGENT_TESTS_SNMPv3
 #include <ucd-snmp/config.h>
 #include <ucd-snmp/asn1.h>
 #include <ucd-snmp/snmp_api.h>
@@ -169,7 +187,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <ucd-snmp/usmUser.h>
 #include <ucd-snmp/usmStats.h>
 #include <ucd-snmp/snmpEngine.h>
-#endif // CYGSEM_SNMPAGENT_TEST_SNMPv3
+#endif // CYGSEM_SNMPAGENT_TESTS_SNMPv3
 
 #include <cyg/infra/testcase.h>
 
@@ -366,6 +384,7 @@ ping_test(struct bootp *bp)
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     // Set up host address
     host.sin_family = AF_INET;
+    host.sin_len = sizeof(host);
     host.sin_addr = bp->bp_siaddr;
     host.sin_port = 0;
     ping_host(s, &host);
@@ -400,6 +419,7 @@ ping_test_loopback( int lo )
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     // Set up host address
     host.sin_family = AF_INET;
+    host.sin_len = sizeof(host);
     host.sin_addr.s_addr = htonl(INADDR_LOOPBACK + (0x100 * lo));
     host.sin_port = 0;
     ping_host(s, &host);
@@ -431,15 +451,33 @@ interface_promisc(const char *intf)
 }
 #endif // CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 
+void snmp_do_reinit( void )
+{
+    diag_printf( "SNMP re-init function\n" );
+#ifdef  CYGSEM_SNMPAGENT_TESTS_SNMPv3
+    init_usmUser();             /* MIBs to support SNMPv3             */
+    init_usmStats();
+    init_snmpEngine();
+    usm_parse_create_usmUser(NULL, "root MD5 md5passwd DES DESpasswd");
+#endif //  CYGSEM_SNMPAGENT_TESTS_SNMPv3
+}
+
 void
 net_test(cyg_addrword_t p)
 {
     int i = CYGNUM_SNMPAGENT_TESTS_ITERATIONS;
+    int ieth0_up = 0, ieth1_up = 0;
     int j;
 
     diag_printf("Start PING test\n");
     TNR_INIT();
     init_all_network_interfaces();
+#ifdef CYGHWR_NET_DRIVER_ETH0
+    ieth0_up = eth0_up;
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
+    ieth1_up = eth1_up;
+#endif
 #ifdef CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 #ifdef CYGHWR_NET_DRIVER_ETH0
         if (eth0_up)
@@ -450,18 +488,14 @@ net_test(cyg_addrword_t p)
             interface_promisc("eth1");
 #endif
 #endif // CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
-#ifdef CYGPKG_SNMPAGENT
     {
         extern void cyg_net_snmp_init(void);
+        extern void (*snmpd_reinit_function)( void );
+
+        snmpd_reinit_function = snmp_do_reinit;
+
         cyg_net_snmp_init();
-#ifdef  CYGSEM_SNMPAGENT_TEST_SNMPv3
-        init_usmUser();             /* MIBs to support SNMPv3             */
-        init_usmStats();
-        init_snmpEngine();
-        usm_parse_create_usmUser(NULL, "root MD5 md5passwd DES DESpasswd");
-#endif //  CYGSEM_SNMPAGENT_TEST_SNMPv3
     }
-#endif // CYGPKG_SNMPAGENT
     do {
         TNR_ON();
 #ifdef CYGHWR_NET_DRIVER_ETH0
@@ -484,6 +518,42 @@ net_test(cyg_addrword_t p)
 #endif
         TNR_OFF();
         TNR_PRINT_ACTIVITY();
+
+        // If an interface has gone down eg. due to DHCP timing out,
+        // re-initialize everything:
+        if (0
+#ifdef CYGHWR_NET_DRIVER_ETH0
+            || ieth0_up != eth0_up
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
+            || ieth1_up != eth1_up 
+#endif
+            ) {
+            diag_printf( "Re-initializing the world: eth0 %d/%d eth1 %d/%d!\n",
+                         ieth0_up, 0
+#ifdef CYGHWR_NET_DRIVER_ETH0
+                         | eth0_up
+#endif
+                         , ieth1_up, 0
+#ifdef CYGHWR_NET_DRIVER_ETH1
+                         | eth1_up
+#endif
+                );
+            init_all_network_interfaces();
+            for ( j = 0; j < CYGPKG_NET_NLOOP; j++ )
+                init_loopback_interface( j );
+
+            diag_printf( "Re-initialized the world: eth0 %d/%d eth1 %d/%d!\n",
+                         ieth0_up, 0
+#ifdef CYGHWR_NET_DRIVER_ETH0
+                         | eth0_up
+#endif
+                         , ieth1_up, 0
+#ifdef CYGHWR_NET_DRIVER_ETH1
+                         | eth1_up
+#endif
+                );
+        }
     } while ( i-- > 0 );
     CYG_TEST_PASS_FINISH( "Done pinging while SNMP looks on" );
 }

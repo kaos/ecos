@@ -5,29 +5,6 @@
 //      
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -456,13 +433,13 @@ struct mbstat {
 #ifdef	_KERNEL
 extern	struct mbuf *mbutl;		/* virtual address of mclusters */
 extern	char *mclrefcnt;		/* cluster reference counts */
-struct	mbstat mbstat;
+extern  struct	mbstat mbstat;
 extern	int nmbclusters;
 union	mcluster *mclfree;
-int	max_linkhdr;			/* largest link-level header */
-int	max_protohdr;			/* largest protocol header */
-int	max_hdr;			/* largest link+protocol header */
-int	max_datalen;			/* MHLEN - max_hdr */
+extern  int	max_linkhdr;			/* largest link-level header */
+extern  int	max_protohdr;			/* largest protocol header */
+extern  int	max_hdr;			/* largest link+protocol header */
+extern  int	max_datalen;			/* MHLEN - max_hdr */
 extern	int mbtypes[];			/* XXX */
 extern	int needqueuedrain;		/* True if allocation failed at */
 					/* interrupt level */
@@ -494,29 +471,6 @@ void	m_zero __P((struct mbuf *));
 int	m_apply __P((struct mbuf *, int, int,
 			int (*)(caddr_t, caddr_t, unsigned int), caddr_t));
 
-#ifdef MBTYPES
-int mbtypes[] = {				/* XXX */
-	M_FREE,		/* MT_FREE	0	   should be on free list */
-	M_MBUF,		/* MT_DATA	1	   dynamic (data) allocation */
-	M_MBUF,		/* MT_HEADER	2	   packet header */
-	M_SOCKET,	/* MT_SOCKET	3	   socket structure */
-	M_PCB,		/* MT_PCB	4	   protocol control block */
-	M_RTABLE,	/* MT_RTABLE	5	   routing tables */
-	M_HTABLE,	/* MT_HTABLE	6	   IMP host tables */
-	0,		/* MT_ATABLE	7	   address resolution tables */
-	M_MBUF,		/* MT_SONAME	8	   socket name */
-	0,		/* 		9 */
-	M_SOOPTS,	/* MT_SOOPTS	10	   socket options */
-	M_FTABLE,	/* MT_FTABLE	11	   fragment reassembly header */
-	M_MBUF,		/* MT_RIGHTS	12	   access rights */
-	M_IFADDR,	/* MT_IFADDR	13	   interface address */
-	M_MBUF,		/* MT_CONTROL	14	   extra-data protocol message */
-	M_MBUF,		/* MT_OOBDATA	15	   expedited data  */
-#ifdef DATAKIT
-	25, 26, 27, 28, 29, 30, 31, 32		/* datakit ugliness */
-#endif
-};
-#endif
 #endif
 
 #endif // _SYS_MBUF_H_

@@ -5,29 +5,38 @@
 //      RedBoot main routine
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -95,11 +104,27 @@ RedBoot_cmd("x",
             "-b <location> [-l <length>] [-s] [-1|2|4]",
             do_x
     );
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_CKSUM
 RedBoot_cmd("cksum", 
             "Compute a 32bit checksum [POSIX algorithm] for a range of memory", 
             "-b <location> -l <length>",
             do_cksum
     );
+#endif
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_MFILL
+RedBoot_cmd("mfill", 
+            "Fill a block of memory with a pattern",
+            "-b <location> -l <length> -p <pattern> [-1|-2|-4]",
+            do_mfill
+    );
+#endif
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_MCMP
+RedBoot_cmd("mcmp", 
+            "Compare two blocks of memory",
+            "-s <location> -d <location> -l <length> [-1|-2|-4]",
+            do_mcmp
+    );
+#endif
 RedBoot_cmd("cache", 
             "Manage machine caches", 
             "[ON | OFF]",
@@ -137,9 +162,6 @@ extern struct idle_tab_entry __RedBoot_IDLE_TAB__[], __RedBoot_IDLE_TAB_END__;
 extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
 #endif
 
-#ifdef CYGSEM_REDBOOT_FLASH_ALIASES
-externC void expand_aliases(char *line, int len);
-#endif
 
 void
 do_version(int argc, char *argv[])
@@ -320,9 +342,7 @@ cyg_start(void)
             } else 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
             {
-#ifdef CYGSEM_REDBOOT_FLASH_ALIASES
                 expand_aliases(line, sizeof(line));
-#endif
 		command = (char *)&line;
                 if ((*command == '#') || (*command == '=')) {
                     // Special cases
@@ -381,33 +401,42 @@ do_caches(int argc, char *argv[])
     }
 }
 
+void
+show_help(struct cmd *cmd, struct cmd *cmd_end, char *which, char *pre)
+{
+    bool show;
+    int len = 0;
+
+    if (which) {
+        len = strlen(which);
+    }
+    while (cmd != cmd_end) {
+        show = true;
+        if (which && (strncasecmp(which, cmd->str, len) != 0)) {
+            show = false;
+        }
+        if (show) {
+            diag_printf("%s\n  %s %s %s\n", cmd->help, pre, cmd->str, cmd->usage);
+            if ((cmd->sub_cmds != (struct cmd *)0) && (which != (char *)0)) {
+                show_help(cmd->sub_cmds, cmd->sub_cmds_end, 0, cmd->str);
+            }
+        }
+        cmd++;
+    }
+}
 
 void
 do_help(int argc, char *argv[])
 {
     struct cmd *cmd;
     char *which = (char *)0;
-    bool show;
-    int len = 0;
 
     if (!scan_opts(argc, argv, 1, 0, 0, (void **)&which, OPTION_ARG_TYPE_STR, "<topic>")) {
         diag_printf("Invalid argument\n");
         return;
     }
-    if (which) {
-        len = strlen(which);
-    }
     cmd = __RedBoot_CMD_TAB__;
-    while (cmd != &__RedBoot_CMD_TAB_END__) {
-        show = true;
-        if (which && (strncasecmp(which, cmd->str, len) != 0)) {
-            show = false;
-        }
-        if (show) {
-            diag_printf("%s\n   %s %s\n", cmd->help, cmd->str, cmd->usage);
-        }
-        cmd++;
-    }
+    show_help(cmd, &__RedBoot_CMD_TAB_END__, which, "");
     return;
 }
 
@@ -419,10 +448,7 @@ do_dump(int argc, char *argv[])
     bool base_set, len_set;
     static unsigned long _base, _len;
     static char _size = 1;
-    bool srec_dump;
-    bool set_32bit = false;
-    bool set_16bit = false;
-    bool set_8bit = false;
+    bool srec_dump, set_32bit, set_16bit, set_8bit;
     int i, n, off, cksum;
     cyg_uint8 ch;
 
@@ -505,6 +531,7 @@ do_x(int argc, char *argv[])
     do_dump(argc, argv);
 }
 
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_CKSUM
 void
 do_cksum(int argc, char *argv[])
 {
@@ -524,12 +551,146 @@ do_cksum(int argc, char *argv[])
         return;
     }
     if (!base_set || !len_set) {
-        diag_printf("usage: cksum -b <addr> -l <length>\n");
-        return;
+	if (load_address >= (CYG_ADDRESS)ram_start &&
+	    load_address_end < (CYG_ADDRESS)ram_end &&
+	    load_address < load_address_end) {
+	    base = load_address;
+	    len = load_address_end - load_address;
+            diag_printf("Computing cksum for area %p-%p\n",
+                        base, load_address_end);
+	} else {
+	    diag_printf("usage: cksum -b <addr> -l <length>\n");
+	    return;
+	}
     }
     crc = posix_crc32((unsigned char *)base, len);
-    diag_printf("POSIX cksum = 0x%08lx (%lu)\n", crc, crc);
+    diag_printf("POSIX cksum = %lu %lu (0x%08lx 0x%08lx)\n", crc, len, crc, len);
 }
+#endif
+
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_MFILL
+void
+do_mfill(int argc, char *argv[])
+{
+    // Fill a region of memory with a pattern
+    struct option_info opts[6];
+    unsigned long base, pat;
+    long len;
+    bool base_set, len_set, pat_set;
+    bool set_32bit, set_16bit, set_8bit;
+
+    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&base, (bool *)&base_set, "base address");
+    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&len, (bool *)&len_set, "length");
+    init_opts(&opts[2], 'p', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&pat, (bool *)&pat_set, "pattern");
+    init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
+              (void *)&set_32bit, (bool *)0, "fill 32 bit units");
+    init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
+              (void **)&set_16bit, (bool *)0, "fill 16 bit units");
+    init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
+              (void **)&set_8bit, (bool *)0, "fill 8 bit units");
+    if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
+        return;
+    }
+    if (!base_set || !len_set) {
+        diag_printf("usage: mfill -b <addr> -l <length> [-p <pattern>] [-1|-2|-4]\n");
+        return;
+    }
+    if (!pat_set) {
+        pat = 0;
+    }
+    // No checks here    
+    if (set_8bit) {
+        // Fill 8 bits at a time
+        while ((len -= sizeof(cyg_uint8)) >= 0) {
+            *((cyg_uint8 *)base)++ = (cyg_uint8)pat;
+        }
+    } else if (set_16bit) {
+        // Fill 16 bits at a time
+        while ((len -= sizeof(cyg_uint16)) >= 0) {
+            *((cyg_uint16 *)base)++ = (cyg_uint16)pat;
+        }
+    } else {
+        // Default - 32 bits
+        while ((len -= sizeof(cyg_uint32)) >= 0) {
+            *((cyg_uint32 *)base)++ = (cyg_uint32)pat;
+        }
+    }
+}
+#endif
+
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_MCMP
+void
+do_mcmp(int argc, char *argv[])
+{
+    // Fill a region of memory with a pattern
+    struct option_info opts[6];
+    unsigned long src_base, dst_base;
+    long len;
+    bool src_base_set, dst_base_set, len_set;
+    bool set_32bit, set_16bit, set_8bit;
+
+    init_opts(&opts[0], 's', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&src_base, (bool *)&src_base_set, "base address");
+    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&len, (bool *)&len_set, "length");
+    init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&dst_base, (bool *)&dst_base_set, "base address");
+    init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
+              (void *)&set_32bit, (bool *)0, "fill 32 bit units");
+    init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
+              (void **)&set_16bit, (bool *)0, "fill 16 bit units");
+    init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
+              (void **)&set_8bit, (bool *)0, "fill 8 bit units");
+    if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
+        return;
+    }
+    if (!src_base_set || !dst_base_set || !len_set) {
+        diag_printf("usage: mcmp -s <addr> -d <addr> -l <length> [-1|-2|-4]\n");
+        return;
+    }
+    // No checks here    
+    if (set_8bit) {
+        // Compare 8 bits at a time
+        while ((len -= sizeof(cyg_uint8)) >= 0) {
+            if (*((cyg_uint8 *)src_base)++ != *((cyg_uint8 *)dst_base)++) {
+                ((cyg_uint8 *)src_base)--;
+                ((cyg_uint8 *)dst_base)--;
+                diag_printf("Buffers don't match - %p=0x%02x, %p=0x%02x\n",
+                            src_base, *((cyg_uint8 *)src_base),
+                            dst_base, *((cyg_uint8 *)dst_base));
+                return;
+            }
+        }
+    } else if (set_16bit) {
+        // Compare 16 bits at a time
+        while ((len -= sizeof(cyg_uint16)) >= 0) {
+            if (*((cyg_uint16 *)src_base)++ != *((cyg_uint16 *)dst_base)++) {
+                ((cyg_uint16 *)src_base)--;
+                ((cyg_uint16 *)dst_base)--;
+                diag_printf("Buffers don't match - %p=0x%04x, %p=0x%04x\n",
+                            src_base, *((cyg_uint16 *)src_base),
+                            dst_base, *((cyg_uint16 *)dst_base));
+                return;
+            }
+        }
+    } else {
+        // Default - 32 bits
+        while ((len -= sizeof(cyg_uint32)) >= 0) {
+            if (*((cyg_uint32 *)src_base)++ != *((cyg_uint32 *)dst_base)++) {
+                ((cyg_uint32 *)src_base)--;
+                ((cyg_uint32 *)dst_base)--;
+                diag_printf("Buffers don't match - %p=0x%08x, %p=0x%08x\n",
+                            src_base, *((cyg_uint32 *)src_base),
+                            dst_base, *((cyg_uint32 *)dst_base));
+                return;
+            }
+        }
+    }
+}
+#endif
 
 void
 do_go(int argc, char *argv[])
@@ -601,27 +762,39 @@ do_reset(int argc, char *argv[])
 #include <flash_config.h>
 #endif
 
-void
+int
 set_console_baud_rate(int rate)
 {
     hal_virtual_comm_table_t *__chan;
-    int ret;
     static int current_rate = CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD;
+    int ret = current_rate;
 
     if (rate != current_rate) {
         __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SETBAUD, rate);
-        if (ret <= 0) {
-            diag_printf("Failed\n");
+        if (ret < 0) {
+            diag_printf("Setting console baud rate to %d failed\n", rate);
+            return ret;
         }
+        ret = current_rate;
         current_rate = rate;
+    }
+    return ret;
+}
+
+static void
+_sleep(int ms)
+{
+    int i;
+    for (i = 0;  i < ms;  i++) {
+        CYGACC_CALL_IF_DELAY_US((cyg_int32)1000);
     }
 }
 
 void
 do_baud_rate(int argc, char *argv[])
 {
-    int new_rate, ret;
+    int new_rate, ret, old_rate;
     bool new_rate_set;
     hal_virtual_comm_table_t *__chan;
     struct option_info opts[1];
@@ -636,6 +809,29 @@ do_baud_rate(int argc, char *argv[])
     }
     __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     if (new_rate_set) {
+        diag_printf("Baud rate will be changed to %d - update your settings\n", new_rate);
+        _sleep(500);  // Give serial time to flush
+        old_rate = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);
+        ret = set_console_baud_rate(new_rate);
+        if (ret < 0) {
+            if (old_rate > 0) {
+                // Try to restore
+                set_console_baud_rate(old_rate);
+                _sleep(500);  // Give serial time to flush
+                diag_printf("\nret = %d\n", ret);
+            }
+            return;  // Couldn't set the desired rate
+        }
+        old_rate = ret;
+        // Make sure this new rate works or back off to previous value
+        // Sleep for a few seconds, then prompt to see if it works
+        _sleep(3000);  // Give serial time to flush
+        if (!verify_action_with_timeout(5000, "Baud rate changed to %d", new_rate)) {
+            _sleep(500);  // Give serial time to flush
+            set_console_baud_rate(old_rate);
+            _sleep(500);  // Give serial time to flush
+            return;
+        }
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
         opt.type = CONFIG_INT;
         opt.enable = (char *)0;
@@ -644,7 +840,6 @@ do_baud_rate(int argc, char *argv[])
         opt.dflt = new_rate;
         flash_add_config(&opt, true);
 #endif
-        set_console_baud_rate(new_rate);
     } else {
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);
         diag_printf("Baud rate = ");

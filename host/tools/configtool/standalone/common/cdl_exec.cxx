@@ -1,7 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -45,6 +45,7 @@
 #endif
 #ifdef __CYGWIN__
 #include <windows.h>
+#include <sys/param.h>  /* for MAXPATHLEN */
 #include <sys/cygwin.h> /* for cygwin_conv_to_win32_path() */
 #endif
 #include "build.hxx"
@@ -55,6 +56,8 @@ bool cdl_exec::quiet            = false;
 bool cdl_exec::verbose          = false;
 bool cdl_exec::ignore_errors    = false;
 bool cdl_exec::no_updates       = false;
+bool cdl_exec::debug_level_set  = false;
+int  cdl_exec::debug_level      = 0;
 
 cdl_exec::cdl_exec (const std::string repository_arg, const std::string savefile_arg,
                     const std::string install_arg, bool no_resolve_arg)
@@ -105,6 +108,13 @@ cdl_exec::set_no_updates_mode(bool new_val)
     no_updates = new_val;
 }
 
+void
+cdl_exec::set_debug_level(int new_level)
+{
+    debug_level_set = true;
+    debug_level = new_level;
+}
+
 // ----------------------------------------------------------------------------
 void
 cdl_exec::init(bool load_config)
@@ -153,6 +163,10 @@ bool cdl_exec::cmd_new (const std::string cdl_hardware,
         transact.body();
         transact.destroy();
 
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
+        
         // Unless inference has been suppressed, make sure that the
         // inference engine gets invoked and that its results get
         // reported.
@@ -191,6 +205,9 @@ cdl_exec::cmd_target (const std::string cdl_target)
     try {
         init(true);
         config->set_hardware (resolve_hardware_alias (cdl_target), &diagnostic_handler, &diagnostic_handler);
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -220,6 +237,9 @@ cdl_exec::cmd_template (const std::string cdl_template, const std::string cdl_ve
     try {
         init(true);
         config->set_template (cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -248,6 +268,9 @@ cdl_exec::cmd_export (const std::string cdl_savefile)
     bool status = false;
     try {
         init(true);
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -280,6 +303,9 @@ cdl_exec::cmd_import (const std::string cdl_savefile)
     try {
         init(true);
         config->add(cdl_savefile, &diagnostic_handler, &diagnostic_handler);
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -310,6 +336,9 @@ cdl_exec::cmd_add (const std::vector<std::string> cdl_packages)
         init(true);
         for (unsigned int n = 0; n < cdl_packages.size (); n++) {
             config->load_package (resolve_package_alias (cdl_packages [n]), "", &diagnostic_handler, &diagnostic_handler);
+        }
+        if (debug_level_set) {
+            this->update_debug_level();
         }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
@@ -348,6 +377,9 @@ cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages)
         for (n = 0; n < cdl_packages.size (); n++) {
             config->unload_package (resolve_package_alias (cdl_packages [n]));
         }
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -380,6 +412,9 @@ cdl_exec::cmd_version (const std::string cdl_version, const std::vector<std::str
             config->change_package_version(resolve_package_alias (cdl_packages [n]), cdl_version,
                                            &diagnostic_handler, &diagnostic_handler, true);
         }
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -408,6 +443,9 @@ cdl_exec::cmd_tree ()
     bool status = false;
     try {
         init(true);
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_resolve) {
             CdlTransactionBody::set_callback_fn(&transaction_callback);
             config->resolve_all_conflicts();
@@ -556,6 +594,11 @@ cdl_exec::cmd_check ()
         // change.
         // However, updating the savefile is worthwhile because it
         // will now contain more accurate information about the state.
+        // Enabling/disabling debugs is allowed for now because that
+        // is unlikely to introduce conflicts.
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         if (!no_updates) {
             config->save (savefile);
         }
@@ -643,6 +686,9 @@ cdl_exec::cmd_resolve ()
 
     try {
         init(true);
+        if (debug_level_set) {
+            this->update_debug_level();
+        }
         CdlTransactionBody::set_callback_fn(&transaction_callback);
         config->resolve_all_conflicts ();
         report_conflicts();
@@ -878,4 +924,25 @@ cdl_exec::resolve_hardware_alias (const std::string alias)
         }
     }
     return target;
+}
+
+// ----------------------------------------------------------------------------
+// Enable or disable debugging in a configuration.
+void
+cdl_exec::update_debug_level()
+{
+    CdlNode node = config->lookup("CYGPKG_INFRA_DEBUG");
+    CdlValuable valuable = 0;
+    if (0 != node) {
+        valuable = dynamic_cast<CdlValuable>(node);
+    }
+    if (0 == valuable) {
+        throw CdlStringException("Cannot enable or disable debugging, the infrastructure package is absent");
+    }
+    
+    if (debug_level > 0) {
+        valuable->enable(CdlValueSource_User);
+    } else {
+        valuable->disable(CdlValueSource_User);
+    }
 }

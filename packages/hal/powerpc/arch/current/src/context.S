@@ -5,29 +5,38 @@
 ##      PowerPC context switch code
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -81,6 +90,20 @@
         .endm
                 
 #endif                  
+
+#ifdef CYGHWR_HAL_POWERPC_FPU
+#ifdef CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
+
+#define MIN_CONTEXT_SAVE_FREG   14
+#define MAX_CONTEXT_SAVE_FREG   31
+
+#else
+
+#define MIN_CONTEXT_SAVE_FREG    0
+#define MAX_CONTEXT_SAVE_FREG   31
+
+#endif
+#endif
                 
 #------------------------------------------------------------------------------
 # hal_thread_switch_context
@@ -99,6 +122,15 @@ FUNC_START(hal_thread_switch_context)
         stw     _reg,(CYGARC_PPCREG_REGS+_reg*4)(sp)
         .set    _reg,_reg+1
         .endr
+
+#ifdef CYGHWR_HAL_POWERPC_FPU
+        # Save floating point MIN..MAX
+        .set    _freg, MIN_CONTEXT_SAVE_FREG
+        .rept   MAX_CONTEXT_SAVE_FREG+1-MIN_CONTEXT_SAVE_FREG
+        stfd    _freg,(CYGARC_PPCREG_FREGS+_freg*8)(sp)
+        .set    _freg, _freg+1
+        .endr
+#endif
 
         stw     r0,CYGARC_PPCREG_REGS+0*4(sp)  # R0
         stw     r5,CYGARC_PPCREG_REGS+1*4(sp)  # R5 = real SP, save in R1 slot
@@ -156,6 +188,15 @@ FUNC_START(hal_thread_load_context)
         .set    _reg,_reg+1
         .endr
 
+#ifdef CYGHWR_HAL_POWERPC_FPU
+        # Load floating registers MIN..MAX
+        .set    _freg, MIN_CONTEXT_SAVE_FREG
+        .rept   MAX_CONTEXT_SAVE_FREG+1-MIN_CONTEXT_SAVE_FREG
+        lfd     _freg,(CYGARC_PPCREG_FREGS+_freg*8)(sp)
+        .set    _freg,_freg+1
+        .endr
+#endif
+
         lwz     r3,CYGARC_PPCREG_MSR(sp)       # merge interrupt state
         hal_cpu_int_merge r3
 
@@ -196,6 +237,26 @@ FUNC_START(hal_setjmp)
         stw     r15,CYGARC_JMPBUF_R15(r3)
         stw     r14,CYGARC_JMPBUF_R14(r3)
         stw     r13,CYGARC_JMPBUF_R13(r3)
+#ifdef CYGHWR_HAL_POWERPC_FPU
+        stfd    f31,CYGARC_JMPBUF_F31(r3)
+        stfd    f30,CYGARC_JMPBUF_F30(r3)
+        stfd    f29,CYGARC_JMPBUF_F29(r3)
+        stfd    f28,CYGARC_JMPBUF_F28(r3)
+        stfd    f27,CYGARC_JMPBUF_F27(r3)
+        stfd    f26,CYGARC_JMPBUF_F26(r3)
+        stfd    f25,CYGARC_JMPBUF_F25(r3)
+        stfd    f24,CYGARC_JMPBUF_F24(r3)
+        stfd    f23,CYGARC_JMPBUF_F23(r3)
+        stfd    f22,CYGARC_JMPBUF_F22(r3)
+        stfd    f21,CYGARC_JMPBUF_F21(r3)
+        stfd    f20,CYGARC_JMPBUF_F20(r3)
+        stfd    f19,CYGARC_JMPBUF_F19(r3)
+        stfd    f18,CYGARC_JMPBUF_F18(r3)
+        stfd    f17,CYGARC_JMPBUF_F17(r3)
+        stfd    f16,CYGARC_JMPBUF_F16(r3)
+        stfd    f15,CYGARC_JMPBUF_F15(r3)
+        stfd    f14,CYGARC_JMPBUF_F14(r3)
+#endif
         stw     r2, CYGARC_JMPBUF_R2(r3)        # TOC, optimize out?
         stw     sp, CYGARC_JMPBUF_SP(r3)
         li      r3,0            # return 0
@@ -228,6 +289,26 @@ FUNC_START(hal_longjmp)
         lwz     r15,CYGARC_JMPBUF_R15(r3)
         lwz     r14,CYGARC_JMPBUF_R14(r3)
         lwz     r13,CYGARC_JMPBUF_R13(r3)
+#ifdef CYGHWR_HAL_POWERPC_FPU
+        lfd     f31,CYGARC_JMPBUF_F31(r3)
+        lfd     f30,CYGARC_JMPBUF_F30(r3)
+        lfd     f29,CYGARC_JMPBUF_F29(r3)
+        lfd     f28,CYGARC_JMPBUF_F28(r3)
+        lfd     f27,CYGARC_JMPBUF_F27(r3)
+        lfd     f26,CYGARC_JMPBUF_F26(r3)
+        lfd     f25,CYGARC_JMPBUF_F25(r3)
+        lfd     f24,CYGARC_JMPBUF_F24(r3)
+        lfd     f23,CYGARC_JMPBUF_F23(r3)
+        lfd     f22,CYGARC_JMPBUF_F22(r3)
+        lfd     f21,CYGARC_JMPBUF_F21(r3)
+        lfd     f20,CYGARC_JMPBUF_F20(r3)
+        lfd     f19,CYGARC_JMPBUF_F19(r3)
+        lfd     f18,CYGARC_JMPBUF_F18(r3)
+        lfd     f17,CYGARC_JMPBUF_F17(r3)
+        lfd     f16,CYGARC_JMPBUF_F16(r3)
+        lfd     f15,CYGARC_JMPBUF_F15(r3)
+        lfd     f14,CYGARC_JMPBUF_F14(r3)
+#endif
         lwz     r2, CYGARC_JMPBUF_R2(r3)
         lwz     sp, CYGARC_JMPBUF_SP(r3)
         mr      r3,r4           # return r4[arg1]

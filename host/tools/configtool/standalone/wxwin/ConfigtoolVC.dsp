@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=ConfigtoolVC - Win32 ANSI Debug
+CFG=ConfigtoolVC - Win32 ANSI Debug For Recent wxWin
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=ConfigtoolVC - Win32 ANSI Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "ConfigtoolVC.mak" CFG="ConfigtoolVC - Win32 ANSI Debug"
+!MESSAGE NMAKE /f "ConfigtoolVC.mak" CFG="ConfigtoolVC - Win32 ANSI Debug For Recent wxWin"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -21,6 +21,8 @@ CFG=ConfigtoolVC - Win32 ANSI Debug
 !MESSAGE "ConfigtoolVC - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "ConfigtoolVC - Win32 ANSI Debug" (based on "Win32 (x86) Application")
 !MESSAGE "ConfigtoolVC - Win32 ANSI Release" (based on "Win32 (x86) Application")
+!MESSAGE "ConfigtoolVC - Win32 ANSI Debug For Recent wxWin" (based on "Win32 (x86) Application")
+!MESSAGE "ConfigtoolVC - Win32 ANSI Release for Recent wxWin" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -55,7 +57,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 wx.lib xpm.lib png.lib zlib.lib jpeg.lib tiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib shlwapi.lib winmm.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libci.lib" /nodefaultlib:"msvcrtd.lib" /out:"v:/ConfigToolWX/Release/configtool.exe" /libpath:"v:\cdl\release\lib"
+# ADD LINK32 wx.lib wxmsw.lib xpm.lib png.lib zlib.lib jpeg.lib tiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib shlwapi.lib winmm.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libci.lib" /nodefaultlib:"msvcrtd.lib" /out:"v:/ConfigToolWX/Release/configtool.exe" /libpath:"v:\cdl\release\lib"
 
 !ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 Debug"
 
@@ -81,7 +83,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 wxd.lib xpmd.lib pngd.lib zlibd.lib jpegd.lib tiffd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib winmm.lib shlwapi.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82d.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcd.lib" /nodefaultlib:"libcid.lib" /nodefaultlib:"msvcrt.lib" /out:"v:/ConfigToolWX/Debug/configtool.exe" /pdbtype:sept /libpath:"v:\cdl\debug\lib"
+# ADD LINK32 wxd.lib wxmswd.lib xpmd.lib pngd.lib zlibd.lib jpegd.lib tiffd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib winmm.lib shlwapi.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82d.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcd.lib" /nodefaultlib:"libcid.lib" /nodefaultlib:"msvcrt.lib" /out:"v:/ConfigToolWX/Debug/configtool.exe" /pdbtype:sept /libpath:"v:\cdl\debug\lib"
 
 !ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 ANSI Debug"
 
@@ -137,6 +139,60 @@ LINK32=link.exe
 # ADD BASE LINK32 wx.lib xpm.lib png.lib zlib.lib jpeg.lib tiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib shlwapi.lib winmm.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libci.lib" /nodefaultlib:"msvcrtd.lib" /out:"Release/configtool.exe" /libpath:"v:\cdl\release\lib"
 # ADD LINK32 wx.lib png.lib zlib.lib jpeg.lib tiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib shlwapi.lib winmm.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libci.lib" /nodefaultlib:"msvcrtd.lib" /out:"v:/ConfigToolWX/ANSIRelease/configtool.exe" /libpath:"v:\cdl\release\lib"
 
+!ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 ANSI Debug For Recent wxWin"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "ConfigtoolVC___Win32_ANSI_Debug_For_Recent_wxWin"
+# PROP BASE Intermediate_Dir "ConfigtoolVC___Win32_ANSI_Debug_For_Recent_wxWin"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "v:\ConfigToolWX\ANSIDebug"
+# PROP Intermediate_Dir "v:\ConfigToolWX\ANSIDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "v:\cdl\Debug\include" /I "..\..\common\common" /I "..\..\..\Utils\common" /I "..\..\..\ecostest\common" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__WINDOWS__" /D "__WXMSW__" /D DEBUG=1 /D "__WXDEBUG__" /D "__WIN95__" /D "__WIN32__" /D WINVER=0x0400 /D "STRICT" /Yu"ecpch.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /I "v:\cdl\Debug\include" /I "..\..\common\common" /I "..\..\..\Utils\common" /I "..\..\..\ecostest\common" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__WINDOWS__" /D "__WXMSW__" /D DEBUG=1 /D "__WXDEBUG__" /D "__WIN95__" /D "__WIN32__" /D WINVER=0x0400 /D "STRICT" /Yu"ecpch.h" /FD /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 wxd.lib pngd.lib zlibd.lib jpegd.lib tiffd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib winmm.lib shlwapi.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82d.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcd.lib" /nodefaultlib:"libcid.lib" /nodefaultlib:"msvcrt.lib" /out:"v:/ConfigToolWX/ANSIDebug/configtool.exe" /pdbtype:sept /libpath:"v:\cdl\debug\lib"
+# ADD LINK32 wxmswd.lib pngd.lib zlibd.lib jpegd.lib tiffd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib winmm.lib shlwapi.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82d.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"libcd.lib" /nodefaultlib:"libcid.lib" /nodefaultlib:"msvcrt.lib" /out:"v:/ConfigToolWX/ANSIDebug/configtool.exe" /pdbtype:sept /libpath:"v:\cdl\debug\lib"
+
+!ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 ANSI Release for Recent wxWin"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ConfigtoolVC___Win32_ANSI_Release_for_Recent_wxWin"
+# PROP BASE Intermediate_Dir "ConfigtoolVC___Win32_ANSI_Release_for_Recent_wxWin"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "v:\ConfigToolWX\ANSIRelease"
+# PROP Intermediate_Dir "v:\ConfigToolWX\ANSIRelease"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O1 /Ob2 /I "v:\cdl\Release\include" /I "..\..\common\common" /I "..\..\..\Utils\common" /I "..\..\..\ecostest\common" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "__WINDOWS__" /D "__WXMSW__" /D "__WIN95__" /D "__WIN32__" /D WINVER=0x0400 /D "STRICT" /Yu"ecpch.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O1 /Ob2 /I "v:\cdl\Release\include" /I "..\..\common\common" /I "..\..\..\Utils\common" /I "..\..\..\ecostest\common" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "__WINDOWS__" /D "__WXMSW__" /D "__WIN95__" /D "__WIN32__" /D WINVER=0x0400 /D "STRICT" /Yu"ecpch.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+# ADD BASE RSC /l 0x809 /d "NDEBUG"
+# ADD RSC /l 0x809 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 wx.lib png.lib zlib.lib jpeg.lib tiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib shlwapi.lib winmm.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libci.lib" /nodefaultlib:"msvcrtd.lib" /out:"v:/ConfigToolWX/ANSIRelease/configtool.exe" /libpath:"v:\cdl\release\lib"
+# ADD LINK32 wxmsw.lib png.lib zlib.lib jpeg.lib tiff.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib rpcrt4.lib wsock32.lib wininet.lib shlwapi.lib winmm.lib htmlhelp.lib cyginfra.lib cdl.lib tcl82.lib /nologo /subsystem:windows /machine:I386 /nodefaultlib:"libc.lib" /nodefaultlib:"libci.lib" /nodefaultlib:"msvcrtd.lib" /out:"v:/ConfigToolWX/ANSIRelease/configtool.exe" /libpath:"v:\cdl\release\lib"
+
 !ENDIF 
 
 # Begin Target
@@ -145,6 +201,8 @@ LINK32=link.exe
 # Name "ConfigtoolVC - Win32 Debug"
 # Name "ConfigtoolVC - Win32 ANSI Debug"
 # Name "ConfigtoolVC - Win32 ANSI Release"
+# Name "ConfigtoolVC - Win32 ANSI Debug For Recent wxWin"
+# Name "ConfigtoolVC - Win32 ANSI Release for Recent wxWin"
 # Begin Group "GUI files"
 
 # PROP Default_Filter ""
@@ -344,6 +402,13 @@ SOURCE=.\mainwin.cpp
 # ADD CPP /Yu
 
 !ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 ANSI Release"
+
+!ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 ANSI Debug For Recent wxWin"
+
+# ADD BASE CPP /Yu
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "ConfigtoolVC - Win32 ANSI Release for Recent wxWin"
 
 !ENDIF 
 

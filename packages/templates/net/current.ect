@@ -31,6 +31,8 @@ cdl_configuration template_net {
     package     CYGPKG_ERROR current ;
     package     CYGPKG_IO_FILEIO current ;
     package     CYGPKG_NET current ;
+    package     CYGPKG_NET_OPENBSD_STACK current ;
+    package     CYGPKG_NS_DNS current ;
     package     CYGPKG_IO_ETH_DRIVERS current ;
 };
 
@@ -80,6 +82,10 @@ cdl_option CYGBLD_ISO_STDLIB_ABS_HEADER {
 
 cdl_option CYGBLD_ISO_STDLIB_DIV_HEADER {
     inferred_value 1 <cyg/libc/stdlib/div.inl>
+};
+
+cdl_option CYGBLD_ISO_DNS_HEADER {
+    inferred_value 1 <cyg/ns/dns/dns.h>
 };
 
 cdl_option CYGBLD_ISO_STRERROR_HEADER {

@@ -1,33 +1,42 @@
 //==========================================================================
 //
-//      ecos/eth_drv.c
+//      src/net/eth_drv.c
 //
 //      Hardware independent ethernet driver
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -75,8 +84,8 @@
 #include <pkgconf/io_eth_drivers.h> // module configury; SIMULATED_FAILURES
 #include <pkgconf/net.h>            // CYGPKG_NET_FAST_THREAD_TICKLE_DEVS?
 
-#include <eth_drv.h>
-#include <netdev.h>
+#include <cyg/io/eth/eth_drv.h>
+#include <cyg/io/eth/netdev.h>
 
 #ifndef min
 #define min( _x_, _y_ ) ((_x_) < (_y_) ? (_x_) : (_y_))
@@ -265,19 +274,34 @@ simulate_fail_corrupt_sglist( struct eth_drv_sg *sg_list, int sg_len )
 #endif // CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
 // ------------------------------------------------------------------------
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT) && defined(CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE)
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 #include <cyg/hal/hal_if.h>
 
 // Use with care!  Local variable defined!
-#define START_CONSOLE()  {                                                                     \
-     int _cur_console;                                                                         \
-     _cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT); \
-     CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGPKG_IO_ETH_DRIVERS_WARN_FORCE_CONSOLE_NUMBER)
+#define START_CONSOLE()                                                                 \
+{   /* NEW BLOCK */                                                                     \
+    int _cur_console =                                                                  \
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);      \
+    {                                                                                   \
+        int i;                                                                          \
+        if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,                 \
+                                          "info_console_force", &i,                     \
+                                          CYGNUM_FLASH_CFG_OP_CONFIG_BOOL ) ) {         \
+            if ( i ) {                                                                  \
+                if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,         \
+                                                  "info_console_number", &i,            \
+                                                  CYGNUM_FLASH_CFG_OP_CONFIG_INT ) ) {  \
+                    /* Then i is the console to force it to: */                         \
+                    CYGACC_CALL_IF_SET_CONSOLE_COMM( i );                               \
+                }                                                                       \
+            }                                                                           \
+        }                                                                               \
+    }
 
 #define END_CONSOLE()                                   \
-     CYGACC_CALL_IF_SET_CONSOLE_COMM(_cur_console);     \
-}
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(_cur_console);      \
+}   /* END BLOCK */
 
 #else
 #define START_CONSOLE()
@@ -285,8 +309,14 @@ simulate_fail_corrupt_sglist( struct eth_drv_sg *sg_list, int sg_len )
 #endif
 // ------------------------------------------------------------------------
 
+#ifdef CYGPKG_NET_FREEBSD_STACK
+extern char *_ioctl_name(u_long cmd);
+typedef void void_fun(void *);
+#endif
+
 static int  eth_drv_ioctl(struct ifnet *, u_long, caddr_t);
 static void eth_drv_send(struct ifnet *);
+static void eth_drv_start(struct eth_drv_sc *sc);
 
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG 
 int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
@@ -308,23 +338,49 @@ static void
 eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
 {
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+#ifdef CYGPKG_NET_FREEBSD_STACK
+    int unit;
+    char *np, *xp;
+#endif
 
     // Set up hardware address
     if (NULL != enaddr)
         bcopy(enaddr, &sc->sc_arpcom.ac_enaddr, ETHER_ADDR_LEN);
 
     // Initialize ifnet structure
-    bcopy((void *)sc->dev_name, ifp->if_xname, IFNAMSIZ);
     ifp->if_softc = sc;
     ifp->if_start = eth_drv_send;
     ifp->if_ioctl = eth_drv_ioctl;
-    ifp->if_flags =
-        IFF_BROADCAST | IFF_SIMPLEX | IFF_NOTRAILERS | IFF_MULTICAST;
+    ifp->if_flags = IFF_BROADCAST | IFF_SIMPLEX | IFF_MULTICAST;
+#ifdef IFF_NOTRAILERS
+    ifp->if_flags |= IFF_NOTRAILERS;
+#endif
+#ifdef CYGPKG_NET_FREEBSD_STACK
+    ifp->if_name = xp = ifp->if_xname;
+    np = (char *)sc->dev_name;
+    unit = 0;
+    while (*np && !((*np >= '0') && (*np <= '9'))) *xp++ = *np++;
+    if (*np) {
+        *xp = '\0';
+        while (*np) {
+            unit = (unit * 10) + (*np++ - '0');
+        }
+        ifp->if_unit = unit;
+    }
+    ifp->if_init = (void_fun *)eth_drv_start;
+    ifp->if_output = ether_output;
+#else
+    bcopy((void *)sc->dev_name, ifp->if_xname, IFNAMSIZ);
+#endif
     sc->state = 0;
 
     // Attach the interface
+#ifdef CYGPKG_NET_FREEBSD_STACK
+    ether_ifattach(ifp, 0);
+#else
     if_attach(ifp);
     ether_ifattach(ifp);
+#endif
 
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 // Set up interfaces so debug environment can share this device
@@ -370,13 +426,26 @@ static int
 eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 {
     struct eth_drv_sc *sc = ifp->if_softc;
+#ifndef CYGPKG_NET_FREEBSD_STACK
     struct ifaddr *ifa = (struct ifaddr *) data;
+#endif
     struct ifreq *ifr = (struct ifreq *)data;
     int     s, error = 0;
 
+// DEBUG
+#ifdef CYGPKG_NET_FREEBSD_STACK
+    log(LOG_IOCTL, "%s: cmd: %s, data:\n", __FUNCTION__, _ioctl_name(cmd));
+    log_dump(LOG_IOCTL, data, 32);
+#endif
+// DEBUG
+
     s = splnet();
 
+#ifdef CYGPKG_NET_FREEBSD_STACK
+    if ((error = ether_ioctl(ifp, cmd, data)) > 0) {
+#else
     if ((error = ether_ioctl(ifp, &sc->sc_arpcom, cmd, data)) > 0) {
+#endif
         splx(s);
         return error;
     }
@@ -384,6 +453,7 @@ eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
     switch (cmd) {
 
     case SIOCSIFADDR:
+#ifndef CYGPKG_NET_FREEBSD_STACK // Now in if_ethersubr.c
         ifp->if_flags |= IFF_UP;
 
         switch (ifa->ifa_addr->sa_family) {
@@ -397,6 +467,7 @@ eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
             eth_drv_start(sc);
             break;
         }
+#endif // CYGPKG_NET_FREEBSD_STACK
         break;
 
     case SIOCGIFHWADDR:
@@ -456,24 +527,48 @@ eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
             }
         break;
 
-#if 0
+#ifdef CYGPKG_NET_FREEBSD_STACK
     case SIOCADDMULTI:
     case SIOCDELMULTI:
-        /* Update our multicast list. */
-        error = (cmd == SIOCADDMULTI) ?
-            ether_addmulti(ifr, &sc->sc_arpcom) :
-                ether_delmulti(ifr, &sc->sc_arpcom);
+    {
+	struct ifmultiaddr *ifma;
+        struct eth_drv_mc_list mc_list;
+        int mode = (ifp->if_flags & IFF_ALLMULTI) ? ETH_DRV_SET_MC_ALL :
+                                                    ETH_DRV_SET_MC_LIST;
 
-        if (error == ENETRESET) {
-            /*
-             * Multicast list has changed; set the hardware filter
-             * accordingly.
-             */
-            eth_drv_stop(sc);	/* XXX for ds_setmcaf? */
-            eth_drv_start(sc);
-            error = 0;
+#ifdef DEBUG
+        log(LOG_ADDR, "%s Multi\n",(cmd == SIOCADDMULTI) ? "Add" : "Del");
+#endif
+        mc_list.len = 0;
+        LIST_FOREACH(ifma, &((ifp)->if_multiaddrs), ifma_link) {
+  	    if (ifma->ifma_addr->sa_family != AF_LINK) {
+	      continue;
+	    }
+#ifdef DEBUG
+            log_dump(LOG_ADDR, LLADDR((struct sockaddr_dl *)ifma->ifma_addr), 6);
+#endif
+            if ((LLADDR((struct sockaddr_dl *)ifma->ifma_addr)[0] & 0x01) == 0) {
+#ifdef DEBUG
+                log(LOG_ADDR, "** Not a multicast address - ignored\n");
+#endif
+                continue;
+            }
+            if (mc_list.len < ETH_DRV_MAX_MC) {
+                bcopy(LLADDR((struct sockaddr_dl *)ifma->ifma_addr),
+                      mc_list.addrs[mc_list.len], ETHER_ADDR_LEN);
+                mc_list.len++;
+            } else {
+                mode = ETH_DRV_SET_MC_ALL;
+            }
+        }
+        // Note: drivers may behave like IFF_ALLMULTI if the list is 
+        // more than their hardware can handle, e.g. some can only handle 1.
+        if ((sc->funs->control)(sc, mode, &mc_list, sizeof(mc_list))) {
+            diag_printf("Driver can't set multi-cast mode\n");
+            error = EINVAL;
         }
         break;
+    }
 #endif
 
     default:
@@ -677,7 +772,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
     struct ether_header _eh, *eh=&_eh;
     struct mbuf *top, **mp, *m;
-    int i, mlen;
+    int mlen;
     unsigned char *data;
     struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
     int sg_len;
@@ -694,15 +789,6 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     if ( total_len < sizeof( struct ether_header ) )
         // Our arithmetic below would go wrong
         return;
-
-#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
-    if ( simulate_fail( sc, SIMULATE_FAIL_RECV ) ) {
-        // there is nothing we need to do; simply do not
-        // unload the packet
-        ifp->if_ierrors++;
-        return;
-    }
-#endif
 
     CYGARC_HAL_SAVE_GP();  // This is down here to make matching restore neat
 
@@ -789,6 +875,17 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     (sc->funs->recv)(sc, sg_list, sg_len);
 
 #ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+    if ( simulate_fail( sc, SIMULATE_FAIL_RECV ) ) {
+        // toss the packet - note that some hardware gets
+        // fussy if the packet isn't "unloaded", thus we
+        // have to wait until now to throw it away
+        if (top) {
+	    m_free(top);
+        }
+        ifp->if_ierrors++;
+        return;
+    }
+
     if ( simulate_fail( sc, SIMULATE_FAIL_CORRUPT ) ) {
         // Corrupt the data
         simulate_fail_corrupt_sglist( sg_list, sg_len );
@@ -797,6 +894,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
 
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
     if (cyg_io_eth_net_debug) {
+        int i;
         START_CONSOLE();
         for (i = 0;  i < sg_len;  i++) {
             if (sg_list[i].buf) {
@@ -920,4 +1018,4 @@ eth_drv_netdev(char *name)
 }
 #endif // CYGPKG_IO_PCMCIA
 
-// EOF eth_drv.c
+// EOF src/net/eth_drv.c

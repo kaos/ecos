@@ -1,7 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
 //
@@ -44,6 +44,7 @@ public:
     static void set_verbose_mode(bool);
     static void set_ignore_errors_mode(bool);
     static void set_no_updates_mode(bool);
+    static void set_debug_level(int);
     
 protected:
     static bool quiet;
@@ -54,6 +55,8 @@ protected:
     std::string savefile;
     std::string install_prefix;
     bool no_resolve;
+    static bool debug_level_set;
+    static int  debug_level;
     CdlPackagesDatabase pkgdata;
     CdlInterpreter interp;
     CdlConfiguration config;
@@ -67,4 +70,5 @@ protected:
     static void transaction_callback(const CdlTransactionCallback&);
     std::string resolve_package_alias (const std::string alias);
     std::string resolve_hardware_alias (const std::string alias);
+    void update_debug_level(void);
 };

@@ -5,29 +5,38 @@
 //      Linker script for the synthetic target
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//
+//####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
-// The contents of this file are subject to the Red Hat eCos Public License
-// Version 1.1 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://www.redhat.com/
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
 //
-// The Original Code is eCos - Embedded Configurable Operating System,
-// released September 30, 1998.
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
 //
-// The Initial Developer of the Original Code is Red Hat.
-// Portions created by Red Hat are
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
 // -------------------------------------------
-//
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -62,7 +71,7 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_text(_region_, _vma_, _lma_)                    \
   .text _vma_ : _lma_                                           \
   { _stext = .;                                                 \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }      \
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce.t.*) *(.init) }   \
   > _region_                                                    \
   _etext = .;  PROVIDE (etext = .);
 
@@ -78,7 +87,7 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_rodata(_region_, _vma_, _lma_)                  \
     .rodata _vma_ : _lma_                                       \
-    { FORCE_OUTPUT; *(.rodata*) }                               \
+    { FORCE_OUTPUT; *(.rodata*) *(.gnu.linkonce.r.*) }          \
     > _region_
 
 #define SECTION_fixup(_region_, _vma_, _lma_)                   		\
@@ -92,6 +101,68 @@ GROUP(libtarget.a libgcc.a)
       _EXCEPT_END_ = ABSOLUTE(.);}                                      	\
     > _region_
 
+#define SECTION_eh_frame(_region_, _vma_, _lma_)      \
+  .eh_frame _vma_ : _lma_                             \
+    {                                                 \
+       FORCE_OUTPUT;  __EH_FRAME_BEGIN__ = .;         \
+       KEEP(*(.eh_frame))                             \
+       __FRAME_END__ = .;                             \
+       . = . + 8;                                     \
+    } > _region_ = 0
+
+#define SECTION_RELOCS(_region_, _vma_, _lma_)                              \
+  .rel.text      :                                                          \
+    {                                                                       \
+      *(.rel.text)                                                          \
+      *(.rel.text.*)                                                        \
+      *(.rel.gnu.linkonce.t*)                                               \
+    } > _region_                                                            \
+  .rela.text     :                                                          \
+    {                                                                       \
+      *(.rela.text)                                                         \
+      *(.rela.text.*)                                                       \
+      *(.rela.gnu.linkonce.t*)                                              \
+    } > _region_                                                            \
+  .rel.data      :                                                          \
+    {                                                                       \
+      *(.rel.data)                                                          \
+      *(.rel.data.*)                                                        \
+      *(.rel.gnu.linkonce.d*)                                               \
+    } > _region_                                                            \
+  .rela.data     :                                                          \
+    {                                                                       \
+      *(.rela.data)                                                         \
+      *(.rela.data.*)                                                       \
+      *(.rela.gnu.linkonce.d*)                                              \
+    } > _region_                                                            \
+  .rel.rodata    :                                                          \
+    {                                                                       \
+      *(.rel.rodata)                                                        \
+      *(.rel.rodata.*)                                                      \
+      *(.rel.gnu.linkonce.r*)                                               \
+    } > _region_                                                            \
+  .rela.rodata   :                                                          \
+    {                                                                       \
+      *(.rela.rodata)                                                       \
+      *(.rela.rodata.*)                                                     \
+      *(.rela.gnu.linkonce.r*)                                              \
+    } > _region_                                                            \
+  .rel.got       :   { *(.rel.got)    } > _region_                          \
+  .rela.got      :   { *(.rela.got)   } > _region_                          \
+  .rel.ctors     :   { *(.rel.ctors)  } > _region_                          \
+  .rela.ctors    :   { *(.rela.ctors) } > _region_                          \
+  .rel.dtors     :   { *(.rel.dtors)  } > _region_                          \
+  .rela.dtors    :   { *(.rela.dtors) } > _region_                          \
+  .rel.init      :   { *(.rel.init)   } > _region_                          \
+  .rela.init     :   { *(.rela.init)  } > _region_                          \
+  .rel.fini      :   { *(.rel.fini)   } > _region_                          \
+  .rela.fini     :   { *(.rela.fini)  } > _region_                          \
+  .rel.bss       :   { *(.rel.bss)    } > _region_                          \
+  .rela.bss      :   { *(.rela.bss)   } > _region_                          \
+  .rel.plt       :   { *(.rel.plt)    } > _region_                          \
+  .rela.plt      :   { *(.rela.plt)   } > _region_                          \
+  .rel.dyn       :   { *(.rel.dyn)    } > _region_
+
 // Note: The __ in the name is an encoding of the .
 #define SECTION_rel__got(_region_, _vma_, _lma_)        			\
     .rel.got _vma_ : _lma_                                            		\
@@ -100,7 +171,7 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_data(_region_, _vma_, _lma_)                                    \
     .data _vma_ : _lma_                                                         \
-    { __ram_data_start = ABSOLUTE(.); *(.data*)                                 \
+    { __ram_data_start = ABSOLUTE(.); *(.data*) *(.gnu.linkonce.d.*)            \
     _GOT1_START_ = ABSOLUTE(.); *(.got1) _GOT1_END_ = ABSOLUTE(.);              \
       /* Put .ctors and .dtors next to the .got2 section, so that */            \
       /* the pointers get relocated with -mrelocatable.           */            \
@@ -113,11 +184,11 @@ GROUP(libtarget.a libgcc.a)
     _GOT2_START_ = ABSOLUTE(.); *(.got2) _GOT2_END_ = ABSOLUTE(.);              \
     _GOT_START_ = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768);     \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                               \
-    _GOT_END_ = ABSOLUTE(.);  *(.dynamic) *(.eh_frame)                          \
+    _GOT_END_ = ABSOLUTE(.);  *(.dynamic)                                       \
       /* We want the small data sections together, so single-instruction */     \
       /* offsets can access them all, and initialized data all before    */     \
       /* uninitialized, so we can shorten the on-disk segment size.      */     \
-    _SDATA_START_ = ABSOLUTE(.); *(.sdata*) }                                   \
+    _SDATA_START_ = ABSOLUTE(.); *(.sdata*) *(.gnu.linkonce.s.*) }              \
     > _region_                                                                  \
     __rom_data_start = LOADADDR(.data);                                         \
     __ram_data_end = .; PROVIDE(__ram_data_end = .);                            \
@@ -126,13 +197,14 @@ GROUP(libtarget.a libgcc.a)
 #define SECTION_sbss(_region_, _vma_, _lma_)                                    \
     .sbss _vma_ : _lma_                                                         \
     { __bss_start = ABSOLUTE (.);                                               \
-    _SBSS_START_ = ABSOLUTE(.); *(.sbss*) _SBSS_END_ = ABSOLUTE(.);             \
+    _SBSS_START_ = ABSOLUTE(.); *(.sbss*) *(.gnu.linkonce.sb.*)                 \
+    _SBSS_END_ = ABSOLUTE(.);                                                   \
     *(.scommon*) }                                                              \
     > _region_
 
 #define SECTION_bss(_region_, _vma_, _lma_)                                     \
     .bss _vma_ : _lma_                                                          \
-    { FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(COMMON) }                            \
+    { FORCE_OUTPUT; *(.dynbss*) *(.bss*) *(COMMON) *(.gnu.linkonce.b.*) }       \
     > _region_                                                                  \
     __bss_end = .;
 

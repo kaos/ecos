@@ -5,29 +5,6 @@
 //      
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -96,6 +73,7 @@
 
 #include <netinet6/tcpipv6.h>
 
+#ifdef TCPDEBUG
 struct	tcp_debug {
 	n_time	td_time;
 	short	td_act;
@@ -113,13 +91,12 @@ struct	tcp_debug {
 #define	TA_RESPOND	3
 #define	TA_DROP		4
 
-#ifdef TCPDEBUG
 char	*tanames[] =
     { "input", "output", "user", "respond", "drop" };
-#endif
 
 #define	TCP_NDEBUG 100
 struct	tcp_debug tcp_debug[TCP_NDEBUG];
 int	tcp_debx;
+#endif
 
 #endif // _NETINET_TCP_DEBUG_H_

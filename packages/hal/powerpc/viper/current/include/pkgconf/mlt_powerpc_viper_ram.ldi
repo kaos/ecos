@@ -15,7 +15,7 @@ SECTIONS
     CYG_LABEL_DEFN(__reserved_vectors) = 0; . = CYG_LABEL_DEFN(__reserved_vectors) + 0x3000;
     CYG_LABEL_DEFN(__reserved_vsr_table) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_vsr_table) + 0x200;
     CYG_LABEL_DEFN(__reserved_virtual_table) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_virtual_table) + 0x100;
-    CYG_LABEL_DEFN(__reserved_for_rom) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_for_rom) + 0x1cd00;
+    CYG_LABEL_DEFN(__reserved_for_rom) = ALIGN (0x10); . = CYG_LABEL_DEFN(__reserved_for_rom) + 0x3cd00;
     SECTION_vectors (ram, ALIGN (0x10), LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)

@@ -5,29 +5,38 @@
 //      Simple driver for the SH3 Serial Communication Interface with FIFO
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -77,14 +86,14 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
 
     // Reset FIFO.
     HAL_WRITE_UINT8(base+_REG_SCFCR, 
-                    CYGARC_REG_SCFCR2_TFRST|CYGARC_REG_SCFCR2_RFRST);
+                    CYGARC_REG_SCIF_SCFCR_TFRST|CYGARC_REG_SCIF_SCFCR_RFRST);
 
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+_REG_SCSMR, 0);
 
     // Set speed to CYGNUM_HAL_SH_SH3_SCIF_DEFAULT_BAUD_RATE
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
-    tmp &= ~CYGARC_REG_SCSMR2_CKSx_MASK;
+    tmp &= ~CYGARC_REG_SCIF_SCSMR_CKSx_MASK;
     tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
     HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH3_SCIF_BAUD_RATE));
@@ -104,11 +113,11 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
     // Bring FIFO out of reset and set to trigger on every char in
     // FIFO (or C-c input would not be processed).
     HAL_WRITE_UINT8(base+_REG_SCFCR, 
-                    CYGARC_REG_SCFCR2_RTRG_1|CYGARC_REG_SCFCR2_TTRG_1);
+                    CYGARC_REG_SCIF_SCFCR_RTRG_1|CYGARC_REG_SCIF_SCFCR_TTRG_1);
 
     // Leave Tx/Rx interrupts disabled, but enable Tx/Rx
     HAL_WRITE_UINT8(base+_REG_SCSCR, 
-                    CYGARC_REG_SCSCR2_TE|CYGARC_REG_SCSCR2_RE);
+                    CYGARC_REG_SCIF_SCSCR_TE|CYGARC_REG_SCIF_SCSCR_RE);
 }
 
 //static 
@@ -119,7 +128,7 @@ cyg_hal_plf_scif_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     cyg_uint16 fdr, sr;
 
     HAL_READ_UINT16(base+_REG_SCFDR, fdr);
-    if (0 == (fdr & CYGARC_REG_SCFDR2_RCOUNT_MASK))
+    if (0 == (fdr & CYGARC_REG_SCIF_SCFDR_RCOUNT_MASK))
         return false;
 
     HAL_READ_UINT8(base+_REG_SCFRDR, *ch);
@@ -127,7 +136,7 @@ cyg_hal_plf_scif_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     // Clear DR/RDF flags
     HAL_READ_UINT16(base+_REG_SCSSR, sr);
     HAL_WRITE_UINT16(base+_REG_SCSSR,
-                     CYGARC_REG_SCSSR2_CLEARMASK & ~(CYGARC_REG_SCSSR2_RDF | CYGARC_REG_SCSSR2_DR));
+                     CYGARC_REG_SCIF_SCSSR_CLEARMASK & ~(CYGARC_REG_SCIF_SCSSR_RDF | CYGARC_REG_SCIF_SCSSR_DR));
 
     return true;
 }
@@ -153,19 +162,19 @@ cyg_hal_plf_scif_putc(void* __ch_data, cyg_uint8 c)
 
     do {
         HAL_READ_UINT16(base+_REG_SCFDR, fdr);
-    } while (((fdr & CYGARC_REG_SCFDR2_TCOUNT_MASK) >> CYGARC_REG_SCFDR2_TCOUNT_shift) == 16);
+    } while (((fdr & CYGARC_REG_SCIF_SCFDR_TCOUNT_MASK) >> CYGARC_REG_SCIF_SCFDR_TCOUNT_shift) == 16);
 
     HAL_WRITE_UINT8(base+_REG_SCFTDR, c);
 
     // Clear FIFO-empty/transmit end flags (read back SR first)
     HAL_READ_UINT16(base+_REG_SCSSR, sr);
-    HAL_WRITE_UINT16(base+_REG_SCSSR, CYGARC_REG_SCSSR2_CLEARMASK   
-                     & ~(CYGARC_REG_SCSSR2_TDFE | CYGARC_REG_SCSSR2_TEND ));
+    HAL_WRITE_UINT16(base+_REG_SCSSR, CYGARC_REG_SCIF_SCSSR_CLEARMASK   
+                     & ~(CYGARC_REG_SCIF_SCSSR_TDFE | CYGARC_REG_SCIF_SCSSR_TEND ));
 
     // Hang around until the character has been safely sent.
     do {
         HAL_READ_UINT16(base+_REG_SCFDR, fdr);
-    } while ((fdr & CYGARC_REG_SCFDR2_TCOUNT_MASK) != 0);
+    } while ((fdr & CYGARC_REG_SCIF_SCFDR_TCOUNT_MASK) != 0);
 
     CYGARC_HAL_RESTORE_GP();
 }
@@ -232,7 +241,7 @@ cyg_hal_plf_scif_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         irq_state = 1;
         HAL_INTERRUPT_UNMASK(chan->isr_vector);
         HAL_READ_UINT8(chan->base+_REG_SCSCR, scr);
-        scr |= CYGARC_REG_SCSCR2_RIE;
+        scr |= CYGARC_REG_SCIF_SCSCR_RIE;
         HAL_WRITE_UINT8(chan->base+_REG_SCSCR, scr);
         break;
     case __COMMCTL_IRQ_DISABLE:
@@ -240,7 +249,7 @@ cyg_hal_plf_scif_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         irq_state = 0;
         HAL_INTERRUPT_UNMASK(chan->isr_vector);
         HAL_READ_UINT8(chan->base+_REG_SCSCR, scr);
-        scr &= ~CYGARC_REG_SCSCR2_RIE;
+        scr &= ~CYGARC_REG_SCIF_SCSCR_RIE;
         HAL_WRITE_UINT8(chan->base+_REG_SCSCR, scr);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
@@ -276,13 +285,13 @@ cyg_hal_plf_scif_isr(void *__ch_data, int* __ctrlc,
 
     *__ctrlc = 0;
     HAL_READ_UINT16(base+_REG_SCFDR, fdr);
-    if ((fdr & CYGARC_REG_SCFDR2_RCOUNT_MASK) != 0) {
+    if ((fdr & CYGARC_REG_SCIF_SCFDR_RCOUNT_MASK) != 0) {
         HAL_READ_UINT8(base+_REG_SCFRDR, c);
 
         // Clear buffer full flag (read back first).
         HAL_READ_UINT16(base+_REG_SCSSR, sr);
         HAL_WRITE_UINT16(base+_REG_SCSSR, 
-                         CYGARC_REG_SCSSR2_CLEARMASK & ~CYGARC_REG_SCSSR2_RDF);
+                         CYGARC_REG_SCIF_SCSSR_CLEARMASK & ~CYGARC_REG_SCIF_SCSSR_RDF);
 
         if( cyg_hal_is_break( &c , 1 ) )
             *__ctrlc = 1;

@@ -1,3 +1,14 @@
+2002-02-05  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx, cdl_exec.hxx, ecosconfig.cxx:
+	Add new options --enable-debug and --disable-debug
+
+2002-01-14  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx:
+	Add missing <sys/param.h> under cygwin, needed for MAXPATHLEN.
+	Reported by Jifl.
+
 2001-12-29  Bart Veer  <bartv@redhat.com>
 
 	* ecosconfig.cxx, cdl_exec.cxx, cdl_exec.hxx

@@ -7,29 +7,38 @@
 //      Standard mathematical functions conforming to ANSI and other standards
 //
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -149,6 +158,21 @@ cyg_libm_set_compat_mode( Cyg_libm_compat_t math_compat_mode)
 
 #endif // ifdef CYGSEM_LIBM_THREAD_SAFE_COMPAT_MODE
 
+#ifdef CYGSEM_LIBM_THREAD_SAFE_GAMMA_FUNCTIONS
+
+// FIXME: these need to be documented and signgam mentioned as non-ISO
+// This returns the address of the signgam variable used by the gamma*() and
+// lgamma*() functions
+externC int *
+cyg_libm_get_signgam_p( void );
+
+#define signgam (*cyg_libm_get_signgam_p())
+
+#else
+
+externC int signgam;
+
+#endif // ifdef CYGSEM_LIBM_THREAD_SAFE_GAMMA_FUNCTIONS
 
 //===========================================================================
 // Standard ANSI functions. Angles are always in radians
@@ -242,6 +266,77 @@ externC int
 matherr( struct exception * );    // User-overridable error handling - see
 #endif                            // <pkgconf/libm.h> for a discussion
 
+// FIXME: from here needs to be documented and mentioned as non-ISO
+// Arc Hyperbolic trigonometric functions
+
+externC double
+acosh( double );                  // Arc hyperbolic cos i.e. inverse cosh
+
+externC double
+asinh( double );                  // Arc hyperbolic sin i.e. inverse sinh
+
+externC double
+atanh( double );                  // Arc hyperbolic tan i.e. inverse tanh
+
+// Error functions
+
+externC double                    // Error function, such that
+erf( double );                    // erf(x) = 2/sqrt(pi) * integral from
+                                  // 0 to x of e**(-t**2) dt
+
+externC double                    // Complementary error function - simply
+erfc( double );                   // 1.0 - erf(x)
+
+// Gamma functions
+
+externC double                    // Logarithm of the absolute value of the
+lgamma( double );                 // gamma function of the argument. The
+                                  // integer signgam is used to store the
+                                  // sign of the gamma function of the arg
+
+externC double
+lgamma_r( double, int * );        // Re-entrant version of the above, where
+                                  // the user passes the location of signgam
+                                  // as the second argument
+
+externC double                    // Identical to lgamma()!
+gamma( double );                  // The reasons for this are historical,
+                                  // and may be changed in future standards
+                                  //
+                                  // To get the real gamma function, you should
+                                  // use: l=lgamma(x); g=signgam*exp(l);
+                                  //
+                                  // Do not just do signgam*exp(lgamma(x))
+                                  // as lgamma() modifies signgam
+
+externC double
+gamma_r( double, int * );         // Identical to lgamma_r(). See above.
+
+
+// Bessel functions
+
+externC double                    // Zero-th order Bessel function of the
+j0( double );                     // first kind at the ordinate of the argument
+
+externC double                    // First-order Bessel function of the
+j1( double );                     // first kind at the ordinate of the argument
+
+externC double                    // Bessel function of the first kind of the
+jn( int, double );                // order of the first argument at the
+                                  // ordinate of the second argument
+
+externC double                    // Zero-th order Bessel function of the
+y0( double );                     // second kind at the ordinate of the
+                                  // argument
+
+externC double                    // First-order Bessel function of the
+y1( double );                     // second kind at the ordinate of the
+                                  // argument
+
+externC double                    // Bessel function of the second kind of the
+yn( int, double );                // order of the first argument at the
+                                  // ordinate of the second argument
+
 // scalb*()
 
 externC double                    // scalbn(x,n) returns x*(2**n)
@@ -260,6 +355,11 @@ scalb( double, int );             // as scalbn()
 
 // And the rest
 
+externC double
+cbrt( double );                   // Cube Root
+
+externC double                    // hypotenuse function, defined such that:
+hypot( double, double );          // hypot(x,y)==sqrt(x**2 + y**2)
 
 externC int                       // whether the argument is NaN
 isnan( double );
@@ -267,6 +367,27 @@ isnan( double );
 externC int
 finite( double );                 // whether the argument is finite
 
+externC double                    // logb returns the binary exponent of its
+logb( double );                   // argument as an integral value
+                                  // This is not recommended - use ilogb
+                                  // instead
+
+externC int                       // As for logb, but has the more correct
+ilogb( double );                  // return value type of int
+
+
+externC double                    // nextafter(x,y) returns the next
+nextafter( double, double );      // representable floating point number
+                                  // adjacent to x in the direction of y
+                                  // i.e. the next greater FP if y>x, the next
+                                  // less FP if y<x, or just x if y==x
+
+externC double                    // remainder(x,y) returns the remainder
+remainder( double, double );      // when x is divided by y
+
+externC double                    // IEEE Test Vector
+significand( double );            // significand(x) computes:
+                                  //   scalb(x, (double) -ilogb(x))
                                  
 //===========================================================================
 // Non-standard functions
@@ -284,6 +405,9 @@ externC double                    // expm1(x) returns the equivalent of
 expm1( double );                  // (exp(x) - 1) but more accurately when
                                   // x tends to zero
 
+externC double                    // log1p(x) returns the equivalent of
+log1p( double );                  // log(1+x) but more accurately when
+                                  // x tends to zero
 
 #endif // ifdef CYGPKG_LIBM     
 

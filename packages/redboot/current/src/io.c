@@ -5,29 +5,38 @@
 //      RedBoot I/O support
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                        
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -585,20 +594,43 @@ _rb_gets(char *buf, int buflen, int timeout)
     return _rb_gets_preloaded(buf, buflen, timeout);
 }
 
-bool
-verify_action(char *fmt, ...)
+static bool
+_verify_action(int timeout, char *fmt, va_list ap)
 {
-    va_list ap;
     char ans[8];
+    int ret;
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
     // Don't ask if we're executing a script
     if (script && *script)
         return 1;
 #endif
 
-    va_start(ap, fmt);
     diag_vprintf(fmt, ap);
-    diag_printf(" - are you sure (y/n)? ");
-    _rb_gets(ans, sizeof(ans), 0);
-    return ((ans[0] == 'y') || (ans[0] == 'Y'));
+    diag_printf(" - continue (y/n)? ");
+    if ((ret = _rb_gets(ans, sizeof(ans), timeout)) > 0) {
+        return ((ans[0] == 'y') || (ans[0] == 'Y'));
+    } else {
+        if (ret == _GETS_TIMEOUT) {
+            diag_printf(" ** Timed out!\n");
+        }
+        return 0;  // Timed out or ^C
+    }
+}
+
+bool
+verify_action(char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    return _verify_action(0, fmt, ap);
+}
+
+bool
+verify_action_with_timeout(int timeout, char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    return _verify_action(timeout, fmt, ap);
 }

@@ -5,29 +5,38 @@
 //      Infrastructure diagnostic output code
 //
 //========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.  
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -227,7 +236,7 @@ static cyg_bool diag_check_string( const char *str )
 
         /* Check for a reasonable length string. */
         
-        if( s-str > 256 ) result = false;
+        if( s-str > 2048 ) result = false;
 
         /* We only really support CR, NL, and backspace at present. If
          * we want to use tabs or other special chars, this test will
@@ -495,14 +504,21 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
     return (res);
 }
 
+struct _sputc_info {
+    char *ptr;
+    int max, len;
+};
+
 static void 
 _sputc(char c, void **param)
 {
-    char *_sprintf_ptr = (char *)*param;
+    struct _sputc_info *info = (struct _sputc_info *)param;
 
-    *_sprintf_ptr++ = c;
-    *_sprintf_ptr = '\0';
-    *param = _sprintf_ptr;
+    if (info->len < info->max) {
+        *(info->ptr)++ = c;
+        *(info->ptr) = '\0';
+        info->len++;
+    }
 }
 
 int
@@ -510,24 +526,44 @@ diag_sprintf(char *buf, const char *fmt, ...)
 {        
     int ret;
     va_list ap;
-    char *_sprintf_ptr;
+    struct _sputc_info info;
 
     va_start(ap, fmt);
-    _sprintf_ptr = buf;
-    ret = _vprintf(_sputc, (void **)&_sprintf_ptr, fmt, ap);
+    info.ptr = buf;
+    info.max = 1024;  // Unlimited
+    info.len = 0;
+    ret = _vprintf(_sputc, (void **)&info, fmt, ap);
     va_end(ap);
-    return (ret);
+    return (info.len);
+}
+
+int
+diag_snprintf(char *buf, size_t len, const char *fmt, ...)
+{        
+    int ret;
+    va_list ap;
+    struct _sputc_info info;
+
+    va_start(ap, fmt);
+    info.ptr = buf;
+    info.len = 0;
+    info.max = len;
+    ret = _vprintf(_sputc, (void **)&info, fmt, ap);
+    va_end(ap);
+    return (info.len);
 }
 
 int 
 diag_vsprintf(char *buf, const char *fmt, va_list ap)
 {
     int ret;
-    char *_sprintf_ptr;
+    struct _sputc_info info;
 
-    _sprintf_ptr = buf;
-    ret = _vprintf(_sputc, (void **)&_sprintf_ptr, fmt, ap);
-    return (ret);
+    info.ptr = buf;
+    info.max = 1024;  // Unlimited
+    info.len = 0;
+    ret = _vprintf(_sputc, (void **)&info, fmt, ap);
+    return (info.len);
 }
 
 int
@@ -570,7 +606,7 @@ diag_dump_buf_with_offset(cyg_uint8     *p,
             if (i < (int)s) {
                 diag_printf("%02X ", p[i] & 0xFF);
             } else {
-                diag_printf("  ");
+                diag_printf("   ");
             }
 	    if (i == 7) diag_printf(" ");
         }

@@ -5,29 +5,38 @@
 //      HAL miscellaneous functions
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -193,6 +202,70 @@ hal_interrupt_update_level(int vector)
         iprX |= (level)*CYGARC_REG_IPRC_SCIF_PRI1;
         HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);
         break;
+#if (CYGARC_SH_MOD_INTC == 2)
+#ifndef CYGHWR_HAL_SH_IRQ_USE_IRQLVL
+    case CYGNUM_HAL_INTERRUPT_IRL0:
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);
+        iprX &= ~CYGARC_REG_IPRD_IRL0_MASK;
+        iprX |= (level)*CYGARC_REG_IPRD_IRL0_PRI1;
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);
+        break;
+    case CYGNUM_HAL_INTERRUPT_IRL1:
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);
+        iprX &= ~CYGARC_REG_IPRD_IRL1_MASK;
+        iprX |= (level)*CYGARC_REG_IPRD_IRL1_PRI1;
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);
+        break;
+    case CYGNUM_HAL_INTERRUPT_IRL2:
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);
+        iprX &= ~CYGARC_REG_IPRD_IRL2_MASK;
+        iprX |= (level)*CYGARC_REG_IPRD_IRL2_PRI1;
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);
+        break;
+    case CYGNUM_HAL_INTERRUPT_IRL3:
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);
+        iprX &= ~CYGARC_REG_IPRD_IRL3_MASK;
+        iprX |= (level)*CYGARC_REG_IPRD_IRL3_PRI1;
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);
+        break;
+#endif
+    case CYGNUM_HAL_INTERRUPT_PCISERR:
+    {
+        cyg_uint32 intpri;
+        HAL_READ_UINT32(CYGARC_REG_INTPRI00, intpri);
+        intpri &= ~CYGARC_REG_INTPRI00_PCISERR_MASK;
+        intpri |= (level)*CYGARC_REG_INTPRI00_PCISERR_PRI1;
+        HAL_WRITE_UINT32(CYGARC_REG_INTPRI00, intpri);
+        break;
+    }
+    case CYGNUM_HAL_INTERRUPT_PCIDMA3 ... CYGNUM_HAL_INTERRUPT_PCIERR:
+    {
+        cyg_uint32 intpri;
+        HAL_READ_UINT32(CYGARC_REG_INTPRI00, intpri);
+        intpri &= ~CYGARC_REG_INTPRI00_PCIERR_MASK;
+        intpri |= (level)*CYGARC_REG_INTPRI00_PCIERR_PRI1;
+        HAL_WRITE_UINT32(CYGARC_REG_INTPRI00, intpri);
+        break;
+    }
+    case CYGNUM_HAL_INTERRUPT_TUNI3:
+    {
+        cyg_uint32 intpri;
+        HAL_READ_UINT32(CYGARC_REG_INTPRI00, intpri);
+        intpri &= ~CYGARC_REG_INTPRI00_TUNI3_MASK;
+        intpri |= (level)*CYGARC_REG_INTPRI00_TUNI3_PRI1;
+        HAL_WRITE_UINT32(CYGARC_REG_INTPRI00, intpri);
+        break;
+    }
+    case CYGNUM_HAL_INTERRUPT_TUNI4:
+    {
+        cyg_uint32 intpri;
+        HAL_READ_UINT32(CYGARC_REG_INTPRI00, intpri);
+        intpri &= ~CYGARC_REG_INTPRI00_TUNI4_MASK;
+        intpri |= (level)*CYGARC_REG_INTPRI00_TUNI4_PRI1;
+        HAL_WRITE_UINT32(CYGARC_REG_INTPRI00, intpri);
+        break;
+    }
+#endif // CYGARC_SH_MOD_INTC
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:
     case CYGNUM_HAL_INTERRUPT_RESERVED_3E0:
     case CYGNUM_HAL_INTERRUPT_RESERVED_5C0:
@@ -225,6 +298,13 @@ hal_interrupt_set_level(int vector, int level)
 void
 hal_interrupt_mask(int vector)                                    
 {
+#ifdef CYGPKG_HAL_SH_7751
+    if (vector >= CYGNUM_HAL_INTERRUPT_PCISERR && vector <= CYGNUM_HAL_INTERRUPT_TUNI4) {
+        HAL_WRITE_UINT32(CYGARC_REG_INTMSK00, 1 << (vector - CYGNUM_HAL_INTERRUPT_PCISERR));
+        return;
+    }
+#endif
+
     switch( vector ) {
     case CYGNUM_HAL_INTERRUPT_NMI:
         break;
@@ -250,6 +330,13 @@ hal_interrupt_mask(int vector)
 void
 hal_interrupt_unmask(int vector)                                  
 {
+#ifdef CYGPKG_HAL_SH_7751
+    if (vector >= CYGNUM_HAL_INTERRUPT_PCISERR && vector <= CYGNUM_HAL_INTERRUPT_TUNI4) {
+        HAL_WRITE_UINT32(CYGARC_REG_INTMSKCLR00, 1 << (vector - CYGNUM_HAL_INTERRUPT_PCISERR));
+        return;
+    }
+#endif
+
     switch( (vector) ) {
     case CYGNUM_HAL_INTERRUPT_NMI:
         break;

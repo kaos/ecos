@@ -1,4 +1,4 @@
-<!-- Copyright (C) 2001 Red Hat, Inc.                                -->
+<!-- Copyright (C) 2002 Red Hat, Inc.                                -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -23,7 +23,10 @@ TITLE="eCos USB Slave Support"
 HREF="io-usb-slave.html"><LINK
 REL="PREVIOUS"
 TITLE="Data Endpoints"
-HREF="usbs-data.html"></HEAD
+HREF="usbs-data.html"><LINK
+REL="NEXT"
+TITLE="Testing"
+HREF="usbs-testing.html"></HEAD
 ><BODY
 CLASS="REFENTRY"
 BGCOLOR="#FFFFFF"
@@ -62,7 +65,10 @@ VALIGN="bottom"
 WIDTH="10%"
 ALIGN="right"
 VALIGN="bottom"
->&nbsp;</TD
+><A
+HREF="usbs-testing.html"
+>Next</A
+></TD
 ></TR
 ></TABLE
 ><HR
@@ -407,11 +413,27 @@ CLASS="FUNCTION"
 > functions involve
 calling the device driver's data transfer function with a buffer size
 of 0 bytes.</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>Giving a buffer size of 0 bytes a special meaning is problematical
+because it prevents transfers of that size. Such transfers are allowed
+by the USB protocol, consisting of just headers and acknowledgements
+and an empty data phase, although rarely useful. A future modification
+of the device driver specification will address this issue, although
+care has to be taken that the functionality remains accessible through
+devtab entries as well as via low-level accesses.</P
+></BLOCKQUOTE
+></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN729"
+NAME="AEN731"
 ></A
 ><H2
 >Devtab Entries</H2
@@ -497,7 +519,7 @@ provided, to avoid unnecessary memory overheads.</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN742"
+NAME="AEN744"
 ></A
 ><H2
 >Interrupt Handling</H2
@@ -524,6 +546,337 @@ for this; higher-level code is expected to write callbacks that
 function sensibly at DSR level. Much the same applies to the
 completion functions associated with data transfers. These should also
 be invoked at DSR or thread level.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN748"
+></A
+><H2
+>Support for USB Testing</H2
+><P
+>Optionally a USB device driver can provide support for the
+<A
+HREF="usbs-testing.html"
+>USB test software</A
+>. This requires
+defining a number of additional data structures, allowing the
+generic test code to work out just what the hardware is capable of and
+hence what testing can be performed.</P
+><P
+>The key data structure is
+<SPAN
+CLASS="STRUCTNAME"
+>usbs_testing_endpoint</SPAN
+>, defined in <TT
+CLASS="FILENAME"
+>cyg/io/usb/usbs.h</TT
+>. In addition some
+commonly required constants are provided by the common USB package in
+<TT
+CLASS="FILENAME"
+>cyg/io/usb/usb.h</TT
+>. One
+<SPAN
+CLASS="STRUCTNAME"
+>usbs_testing_endpoint</SPAN
+> structure should be
+defined for each supported endpoint. The following fields need to be
+filled in:</P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>endpoint_type</I
+></TT
+></DT
+><DD
+><P
+>    This specifies the type of endpoint and should be one of
+    <TT
+CLASS="LITERAL"
+>USB_ENDPOINT_DESCRIPTOR_ATTR_CONTROL</TT
+>,
+    <TT
+CLASS="LITERAL"
+>BULK</TT
+>, <TT
+CLASS="LITERAL"
+>ISOCHRONOUS</TT
+> or
+    <TT
+CLASS="LITERAL"
+>INTERRUPT</TT
+>.
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>endpoint_number</I
+></TT
+></DT
+><DD
+><P
+>    This identifies the number that should be used by the host
+    to address this endpoint. For a control endpoint it should
+    be 0. For other types of endpoints it should be between
+    1 and 15.
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>endpoint_direction</I
+></TT
+></DT
+><DD
+><P
+>    For control endpoints this field is irrelevant. For other
+    types of endpoint it should be either
+    <TT
+CLASS="LITERAL"
+>USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN</TT
+> or
+    <TT
+CLASS="LITERAL"
+>USB_ENDPOINT_DESCRIPTOR_ENDPOINT_OUT</TT
+>. If a given
+    endpoint number can be used for traffic in both directions then
+    there should be two entries in the array, one for each direction.
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>endpoint</I
+></TT
+></DT
+><DD
+><P
+>    This should be a pointer to the appropriate
+    <SPAN
+CLASS="STRUCTNAME"
+>usbs_control_endpoint</SPAN
+>,
+    <SPAN
+CLASS="STRUCTNAME"
+>usbs_rx_endpoint</SPAN
+> or
+    <SPAN
+CLASS="STRUCTNAME"
+>usbs_tx_endpoint</SPAN
+> structure, allowing the
+    generic testing code to perform low-level I/O.
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>devtab_entry</I
+></TT
+></DT
+><DD
+><P
+>    If the endpoint also has an entry in the system's device table then
+    this field should give the corresponding string, for example
+    <TT
+CLASS="LITERAL"
+>&quot;/dev/usbs1r&quot;</TT
+>. This allows the
+    generic testing code to access the device via higher-level
+    calls like <TT
+CLASS="FUNCTION"
+>open</TT
+> and <TT
+CLASS="FUNCTION"
+>read</TT
+>. 
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>min_size</I
+></TT
+></DT
+><DD
+><P
+>    This indicates the smallest transfer size that the hardware can
+    support on this endpoint. Typically this will be one.
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    Strictly speaking a minimum size of one is not quite right since it
+    is valid for a USB transfer to involve zero bytes, in other words a
+    transfer that involves just headers and acknowledgements and an
+    empty data phase, and that should be tested as well. However current
+    device drivers interpret a transfer size of 0 as special, so that
+    would have to be resolved first.
+  </P
+></BLOCKQUOTE
+></DIV
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>max_size</I
+></TT
+></DT
+><DD
+><P
+>    Similarly, this specifies the largest transfer size. For control
+    endpoints the USB protocol uses only two bytes to hold the transfer
+    length, so there is an upper bound of 65535 bytes. In practice
+    it is very unlikely that any control transfers would ever need to
+    be this large, and in fact such transfers would take a long time
+    and probably violate timing constraints. For other types of endpoint
+    any of the protocol, the hardware, or the device driver may impose
+    size limits. For example a given device driver might be unable to
+    cope with transfers larger than 65535 bytes. If it should be
+    possible to transfer arbitrary amounts of data then a value of
+    <TT
+CLASS="LITERAL"
+>-1</TT
+> indicates no upper limit, and transfer
+    sizes will be limited by available memory and by the capabilities
+    of the host machine.
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>max_in_padding</I
+></TT
+></DT
+><DD
+><P
+>    This field is needed on some hardware where it is impossible to
+    send packets of a certain size. For example the hardware may be
+    incapable of sending an empty bulk packet to terminate a transfer
+    that is an exact multiple of the 64-byte bulk packet size.
+    Instead the driver has to do some padding and send an extra byte,
+    and the host has to be prepared to receive this extra byte. Such a
+    driver should specify a value of <TT
+CLASS="LITERAL"
+>1</TT
+> for the
+    padding field. For most drivers this field should be set to
+  <TT
+CLASS="LITERAL"
+>0</TT
+>.
+  </P
+><P
+>    A better solution would be for the device driver to supply a
+    fragment of Tcl code that would adjust the receive buffer size
+    only when necessary, rather than for every transfer. Forcing
+    receive padding on all transfers when only certain transfers
+    will actually be padded reduces the accuracy of certain tests.
+  </P
+></DD
+><DT
+><TT
+CLASS="STRUCTFIELD"
+><I
+>alignment</I
+></TT
+></DT
+><DD
+><P
+>    On some hardware data transfers may need to be aligned to certain
+    boundaries, for example a word boundary or a cacheline boundary.
+    Although in theory device drivers could hide such alignment
+    restrictions from higher-level code by having their own buffers and
+    performing appropriate copying, that would be expensive in terms of
+    both memory and cpu cycles. Instead the generic testing code will
+    align any buffers passed to the device driver to the specified
+    boundary. For example, if the driver requires that buffers be
+    aligned to a word boundary then it should specify an alignment
+    value of 4.
+  </P
+></DD
+></DL
+></DIV
+><P
+>The device driver should provide an array of these structures
+<TT
+CLASS="VARNAME"
+>usbs_testing_endpoints[]</TT
+>. The USB testing code
+examines this array and uses the information to perform appropriate
+tests. Because different USB devices support different numbers of
+endpoints the number of entries in the array is not known in advance,
+so instead the testing code looks for a special terminator
+<TT
+CLASS="VARNAME"
+>USBS_TESTING_ENDPOINTS_TERMINATOR</TT
+>. An example
+array, showing just the control endpoint and the terminator, might
+look like this:</P
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>usbs_testing_endpoint usbs_testing_endpoints[] = {
+    {
+        endpoint_type       : USB_ENDPOINT_DESCRIPTOR_ATTR_CONTROL, 
+        endpoint_number     : 0,
+        endpoint_direction  : USB_ENDPOINT_DESCRIPTOR_ENDPOINT_IN,
+        endpoint            : (void*) &amp;ep0.common,
+        devtab_entry        : (const char*) 0,
+        min_size            : 1,
+        max_size            : 0x0FFFF,
+        max_in_padding      : 0,
+        alignment           : 0
+    },
+    &#8230;,
+    USBS_TESTING_ENDPOINTS_TERMINATOR
+};</PRE
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>The use of a single array <TT
+CLASS="VARNAME"
+>usbs_testing_endpoints</TT
+>
+limits USB testing to platforms with a single USB device: if there
+were multiple devices, each defining their own instance of this array,
+then there would a collision at link time. In practice this should not
+be a major problem since typical USB peripherals only interact with a
+single host machine via a single slave port. In addition, even if a
+peripheral did have multiple slave ports the current USB testing code
+would not support this since it would not know which port to use.</P
+></BLOCKQUOTE
+></DIV
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"
@@ -555,7 +908,10 @@ HREF="io-usb-slave.html"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->&nbsp;</TD
+><A
+HREF="usbs-testing.html"
+>Next</A
+></TD
 ></TR
 ><TR
 ><TD
@@ -572,7 +928,7 @@ VALIGN="top"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->&nbsp;</TD
+>Testing</TD
 ></TR
 ></TABLE
 ></DIV

@@ -7,29 +7,38 @@
 //      Intel 28Fxxx series flash driver
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -108,6 +117,12 @@ call_t d_print = &diag_printf;
 #endif
 #ifndef CYGHWR_FLASH_28FXXX_PLF_INIT
 # define CYGHWR_FLASH_28FXXX_PLF_INIT()
+#endif
+#ifndef CYGHWR_FLASH_WRITE_ENABLE
+#define CYGHWR_FLASH_WRITE_ENABLE()
+#endif
+#ifndef CYGHWR_FLASH_WRITE_DISABLE
+#define CYGHWR_FLASH_WRITE_DISABLE()
 #endif
 
 //----------------------------------------------------------------------------
@@ -226,6 +241,8 @@ flash_query(void* data)
 
     w = ROM[0];
 
+    CYGHWR_FLASH_WRITE_ENABLE();
+    
     ROM[0] = FLASH_Read_ID;
 
     // Manufacturers' code
@@ -235,6 +252,8 @@ flash_query(void* data)
 
     ROM[0] = FLASH_Reset;
 
+    CYGHWR_FLASH_WRITE_DISABLE();
+    
     // Stall, waiting for flash to return to read mode.
     while (w != ROM[0]);
 }
@@ -265,6 +284,8 @@ flash_erase_block(void* block, unsigned int block_size)
         len = flash_dev_info->block_size;
     }
 
+    CYGHWR_FLASH_WRITE_ENABLE();
+    
     while (len > 0) {
         b_v = FLASH_P2V(b_p);
 
@@ -311,6 +332,8 @@ flash_erase_block(void* block, unsigned int block_size)
             len = flash_dev_info->bootblocks[len_ix++];
     }
 
+    CYGHWR_FLASH_WRITE_DISABLE();
+    
     return res;
 }
 
@@ -334,7 +357,9 @@ flash_program_buf(void* addr, void* data, int len,
     // Base address of device(s) being programmed. 
     ROM = FLASH_P2V((unsigned long)addr & flash_dev_info->base_mask);
     BA = FLASH_P2V((unsigned long)addr & ~(flash_dev_info->block_size - 1));
-        
+
+    CYGHWR_FLASH_WRITE_ENABLE();
+    
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;
 
@@ -415,6 +440,8 @@ flash_program_buf(void* addr, void* data, int len,
     // Restore ROM to "normal" mode
  bad:
     ROM[0] = FLASH_Reset;            
+
+    CYGHWR_FLASH_WRITE_DISABLE();
     
     // Ideally, we'd want to return not only the failure code, but also
     // the address/device that reported the error.
@@ -454,6 +481,8 @@ flash_lock_block(void* block)
         len = flash_dev_info->block_size;
     }
 
+    CYGHWR_FLASH_WRITE_ENABLE();
+    
     while (len > 0) {
         b_v = FLASH_P2V(b_p);
 
@@ -487,6 +516,8 @@ flash_lock_block(void* block)
             len = flash_dev_info->bootblocks[len_ix++];
     }
 
+    CYGHWR_FLASH_WRITE_DISABLE();
+    
     return res;
 }
 
@@ -523,6 +554,8 @@ flash_unlock_block(void* block, int block_size, int blocks)
         len = flash_dev_info->block_size;
     }
 
+    CYGHWR_FLASH_WRITE_ENABLE();
+    
     while (len > 0) {
 
         b_v = FLASH_P2V(b_p);
@@ -557,6 +590,8 @@ flash_unlock_block(void* block, int block_size, int blocks)
             len = flash_dev_info->bootblocks[len_ix++];
     }
 
+    CYGHWR_FLASH_WRITE_DISABLE();
+    
     return res;
 
     // FIXME: Unlocking need to support some other parts in the future

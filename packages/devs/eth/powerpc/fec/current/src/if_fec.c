@@ -5,29 +5,38 @@
 //      Fast ethernet device driver for PowerPC MPC8xxT boards
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -61,17 +70,22 @@
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/ppc_regs.h>
 
-#include <netdev.h>
-#include <eth_drv.h>
+#include <cyg/io/eth/netdev.h>
+#include <cyg/io/eth/eth_drv.h>
 
 #include "fec.h"
 
+// Define this to force the buffer descriptors into the EPPC memory
+#define FEC_USE_EPPC_BD
+
+#ifndef FEC_USE_EPPC_BD
+static struct fec_bd fec_eth_rxring[CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM];
+static struct fec_bd fec_eth_txring[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
+#endif
 static unsigned char fec_eth_rxbufs[CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM+1]
                                    [CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE];
-static struct fec_bd fec_eth_rxring[CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM];
 static unsigned char fec_eth_txbufs[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM+1]
                                    [CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE];
-static struct fec_bd fec_eth_txring[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
 
 static struct fec_eth_info fec_eth0_info;
 static unsigned char _default_enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x7A, 0xBA};
@@ -116,14 +130,49 @@ NETDEVTAB_ENTRY(fec_netdev,
                 &fec_eth0_sc);
 
 #ifdef CYGPKG_NET
+#define _FEC_USE_INTS
+#ifdef _FEC_USE_INTS
 static cyg_interrupt fec_eth_interrupt;
 static cyg_handle_t  fec_eth_interrupt_handle;
-#endif
+#else
+#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
+static char fec_fake_int_stack[STACK_SIZE];
+static cyg_thread fec_fake_int_thread_data;
+static cyg_handle_t fec_fake_int_thread_handle;
+static void fec_fake_int(cyg_addrword_t);
+#endif // _FEC_USE_INTS
+#endif // CYGPKG_NET
 static void          fec_eth_int(struct eth_drv_sc *data);
 
 #define FEC_ETH_INT CYGNUM_HAL_INTERRUPT_SIU_LVL1
 
-#ifdef CYGPKG_NET
+#ifdef CYGPKG_HAL_POWERPC_VIPER
+extern int  hal_viper_get_led(void);
+extern void hal_viper_set_led(int);
+#define _get_led()  hal_viper_get_led()
+#define _set_led(v) hal_viper_set_led(v)
+#else
+#define _get_led()  
+#define _set_led(v) 
+#endif
+
+#define LED_TxACTIVE  7
+#define LED_RxACTIVE  6
+#define LED_IntACTIVE 5
+
+static void
+set_led(int bit)
+{
+  _set_led(_get_led() | (1<<bit));
+}
+
+static void
+clear_led(int bit)
+{
+  _set_led(_get_led() & ~(1<<bit));
+}
+
+#ifdef _FEC_USE_INTS
 // This ISR is called when the ethernet interrupt occurs
 static int
 fec_eth_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
@@ -138,7 +187,7 @@ static void
 fec_eth_deliver(struct eth_drv_sc * sc)
 {
     fec_eth_int(sc);
-#ifdef CYGPKG_NET
+#ifdef _FEC_USE_INTS
     // Allow interrupts to happen again
     cyg_drv_interrupt_acknowledge(FEC_ETH_INT);
     cyg_drv_interrupt_unmask(FEC_ETH_INT);
@@ -153,85 +202,89 @@ phy_write(int reg, int addr, unsigned short data)
 {
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
     volatile struct fec *fec = (volatile struct fec *)((unsigned char *)eppc + FEC_OFFSET);
+    int timeout = 0x100000;
 
     fec->iEvent = iEvent_MII;    
     fec->MiiData = MII_Start | MII_Write | MII_Phy(addr) | MII_Reg(reg) | MII_TA | data;
-    while (!(fec->iEvent & iEvent_MII)) ;
+    while (!(fec->iEvent & iEvent_MII) && (--timeout > 0)) ;
 }
 
-static unsigned short
-phy_read(int reg, int addr)
+static bool
+phy_read(int reg, int addr, unsigned short *val)
 {
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
     volatile struct fec *fec = (volatile struct fec *)((unsigned char *)eppc + FEC_OFFSET);
+    int timeout = 0x100000;
 
     fec->iEvent = iEvent_MII;    
     fec->MiiData = MII_Start | MII_Read | MII_Phy(addr) | MII_Reg(reg) | MII_TA;
-    while (!(fec->iEvent & iEvent_MII)) ;
-    return fec->MiiData & 0x0000FFFF;
+    while (!(fec->iEvent & iEvent_MII)) {
+        if (--timeout <= 0) {
+            return false;
+        }
+    }
+    *val = fec->MiiData & 0x0000FFFF;
+    return true;
 }
 
 //
-// Initialize the interface - performed at system startup
-// This function must set up the interface, including arranging to
-// handle interrupts, etc, so that it may be "started" cheaply later.
-//
-static bool 
-fec_eth_init(struct cyg_netdevtab_entry *tab)
+// [re]Initialize the ethernet controller
+//   Done separately since shutting down the device requires a 
+//   full reconfiguration when re-enabling.
+//   when 
+static bool
+fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
-    struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
     volatile struct fec *fec = (volatile struct fec *)((unsigned char *)eppc + FEC_OFFSET);
     struct fec_bd *rxbd, *txbd;
     unsigned char *RxBUF, *TxBUF;
-    unsigned short phy_state = 0;
-    int cache_state;
+    int cache_state, int_state;
     int i;
-    unsigned long proc_rev;
-    bool esa_ok;
+
+    // Ignore unless device is idle/stopped
+    if ((qi->fec->eControl & eControl_EN) != 0) {
+        return true;
+    }
+
+    // Make sure interrupts are off while we mess with the device
+    HAL_DISABLE_INTERRUPTS(int_state);
 
     // Ensure consistent state between cache and what the FEC sees
     HAL_DCACHE_IS_ENABLED(cache_state);
     HAL_DCACHE_SYNC();
     HAL_DCACHE_DISABLE();
 
-    qi->fec = fec;
-
-#ifdef CYGPKG_NET
-    // Set up to handle interrupts
-    cyg_drv_interrupt_create(FEC_ETH_INT,
-                             CYGARC_SIU_PRIORITY_HIGH,
-                             (cyg_addrword_t)sc, //  Data item passed to interrupt handler
-                             (cyg_ISR_t *)fec_eth_isr,
-                             (cyg_DSR_t *)eth_drv_dsr,
-                             &fec_eth_interrupt_handle,
-                             &fec_eth_interrupt);
-    cyg_drv_interrupt_attach(fec_eth_interrupt_handle);
-    cyg_drv_interrupt_acknowledge(FEC_ETH_INT);
-    cyg_drv_interrupt_unmask(FEC_ETH_INT);
-#endif
-
-    // Shut down ethernet, in case it is already running
+    // Shut down ethernet controller, in case it is already running
     fec->eControl = eControl_RESET;
-    eppc->pip_pbdat &= ~0x00004000;  // Reset PHY chip
-    CYGACC_CALL_IF_DELAY_US(1000);   // 1ms
-    eppc->pip_pbdat |= 0x00004000;   // Enable PHY chip
+    i = 0;
+    while ((fec->eControl & eControl_RESET) != 0) {
+      if (++i >= 500000) {
+	os_printf("FEC Ethernet does not reset\n");
+	if (cache_state)
+	  HAL_DCACHE_ENABLE();
+        HAL_RESTORE_INTERRUPTS(int_state);
+	return false;
+      }
+    }
 
     fec->iMask  = 0x0000000;  // Disables all interrupts
     fec->iEvent = 0xFFFFFFFF; // Clear all interrupts
     fec->iVector = (1<<29);   // Caution - must match FEC_ETH_INT above
 
+#define ROUNDUP(b,s) (((unsigned long)(b) + (s-1)) & ~(s-1))
+#ifdef FEC_USE_EPPC_BD
+    txbd = (struct fec_bd *)(0x2C00 + (cyg_uint32)eppc);
+    rxbd = &txbd[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
+#else
     txbd = fec_eth_txring;
     rxbd = fec_eth_rxring;
-    qi->tbase = txbd;
-    qi->txbd = txbd;    
-    qi->tnext = txbd;
-    qi->rbase = rxbd;
-    qi->rxbd = rxbd;
-    qi->rnext = rxbd;
+#endif
+    qi->tbase = qi->txbd = qi->tnext = txbd;
+    qi->rbase = qi->rxbd = qi->rnext = rxbd;
+    qi->txactive = 0;
 
-#define ROUNDUP(b,s) (((unsigned long)(b) + (s-1)) & ~(s-1))
     RxBUF = (unsigned char *)ROUNDUP(&fec_eth_rxbufs[0][0], 32);
     TxBUF = (unsigned char *)ROUNDUP(&fec_eth_txbufs[0][0], 32);
 
@@ -255,23 +308,13 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     txbd--;
     txbd->ctrl |= FEC_BD_Tx_Wrap;  // Last buffer
 
-    // Set up parallel port for connection to ethernet tranceiver
-    eppc->pio_pdpar = 0x1FFF;
-    CYGARC_MFSPR( proc_rev, CYGARC_REG_PVR );
-#define PROC_REVB 0x0020
-    if ((proc_rev & 0x0000FFFF) == PROC_REVB) {
-        eppc->pio_pddir = 0x1C58;
-    } else {
-        eppc->pio_pddir = 0x1FFF;
-    }
-
     // Reset interrupts
     fec->iMask  = 0x00000000;  // No interrupts enabled
     fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
 
     // Initialize shared PRAM
-    fec->RxRing = fec_eth_rxring;
-    fec->TxRing = fec_eth_txring;
+    fec->RxRing = qi->rbase;
+    fec->TxRing = qi->tbase;
 
     // Size of receive buffers
     fec->RxBufSize = CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE;
@@ -282,7 +325,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     fec->RxHash = IEEE_8023_MAX_FRAME; // Largest possible ethernet frame
 
     // Transmit control
-    fec->TxControl = 0;
+    fec->TxControl = 4+0;
 
     // Use largest possible Tx FIFO
     fec->TxWater = 3;
@@ -298,6 +341,98 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     fec->hash[1] = 0;
 
     // Device physical address
+    fec->addr[0] = *(unsigned long *)&enaddr[0];
+    fec->addr[1] = *(unsigned long *)&enaddr[4];
+    // os_printf("FEC ESA = %08x/%08x\n", fec->addr[0], fec->addr[1]);
+
+    // Enable device
+    fec->eControl = eControl_EN | eControl_MUX;
+    fec->RxUpdate = 0x0F0F0F0F;  // Any write tells machine to look for work
+
+#ifdef _FEC_USE_INTS
+    // Set up for interrupts
+    fec->iMask = iEvent_TFINT | iEvent_TXB |
+                 iEvent_RFINT | iEvent_RXB;
+    fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
+#endif
+
+    if (cache_state)
+        HAL_DCACHE_ENABLE();
+
+    // Set LED state
+    clear_led(LED_TxACTIVE);
+    clear_led(LED_RxACTIVE);
+
+    HAL_RESTORE_INTERRUPTS(int_state);
+    return true;
+}
+
+//
+// Initialize the interface - performed at system startup
+// This function must set up the interface, including arranging to
+// handle interrupts, etc, so that it may be "started" cheaply later.
+//
+static bool 
+fec_eth_init(struct cyg_netdevtab_entry *tab)
+{
+    struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
+    struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
+    volatile EPPC *eppc = (volatile EPPC *)eppc_base();
+    volatile struct fec *fec = (volatile struct fec *)((unsigned char *)eppc + FEC_OFFSET);
+    unsigned short phy_state = 0;
+    int cache_state;
+    int i;
+    unsigned long proc_rev;
+    bool esa_ok, phy_ok;
+    int phy_timeout = 5*1000;  // Wait 5 seconds max for link to clear
+
+    // Ensure consistent state between cache and what the FEC sees
+    HAL_DCACHE_IS_ENABLED(cache_state);
+    HAL_DCACHE_SYNC();
+    HAL_DCACHE_DISABLE();
+
+    qi->fec = fec;
+    fec_eth_stop(sc);  // Make sure it's not running yet
+
+#ifdef CYGPKG_NET
+#ifdef _FEC_USE_INTS
+    // Set up to handle interrupts
+    cyg_drv_interrupt_create(FEC_ETH_INT,
+                             CYGARC_SIU_PRIORITY_HIGH,
+                             (cyg_addrword_t)sc, //  Data item passed to interrupt handler
+                             (cyg_ISR_t *)fec_eth_isr,
+                             (cyg_DSR_t *)eth_drv_dsr,
+                             &fec_eth_interrupt_handle,
+                             &fec_eth_interrupt);
+    cyg_drv_interrupt_attach(fec_eth_interrupt_handle);
+    cyg_drv_interrupt_acknowledge(FEC_ETH_INT);
+    cyg_drv_interrupt_unmask(FEC_ETH_INT);
+#else // _FEC_USE_INTS
+    // Hack - use a thread to simulate interrupts
+    cyg_thread_create(1,                 // Priority
+                      fec_fake_int,   // entry
+                      (cyg_addrword_t)sc, // entry parameter
+                      "CS8900 int",      // Name
+                      &fec_fake_int_stack[0],         // Stack
+                      STACK_SIZE,        // Size
+                      &fec_fake_int_thread_handle,    // Handle
+                      &fec_fake_int_thread_data       // Thread data structure
+            );
+    cyg_thread_resume(fec_fake_int_thread_handle);  // Start it
+#endif
+#endif
+
+    // Set up parallel port for connection to ethernet tranceiver
+    eppc->pio_pdpar = 0x1FFF;
+    CYGARC_MFSPR( CYGARC_REG_PVR, proc_rev );
+#define PROC_REVB 0x0020
+    if ((proc_rev & 0x0000FFFF) == PROC_REVB) {
+        eppc->pio_pddir = 0x1C58;
+    } else {
+        eppc->pio_pddir = 0x1FFF;
+    }
+
+    // Get physical device address
 #ifdef CYGPKG_REDBOOT
     esa_ok = flash_get_config("fec_esa", enaddr, CONFIG_ESA);
 #else
@@ -309,36 +444,50 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
         os_printf("FEC_ETH - Warning! ESA unknown\n");
         memcpy(&enaddr, &_default_enaddr, sizeof(enaddr));
     }
-    memcpy((void *)&fec->addr[0], &enaddr[0], sizeof(enaddr));
-    // os_printf("FEC ESA = %08x/%08x\n", fec->addr[0], fec->addr[1]);
 
-    // Enable device
-    fec->eControl = eControl_EN | eControl_MUX;
+    // Configure the device
+    if (!fec_eth_reset(sc, enaddr, 0)) {
+        return false;
+    }
 
+    // Reset PHY (transceiver)
+    eppc->pip_pbdat &= ~0x00004000;  // Reset PHY chip
+    CYGACC_CALL_IF_DELAY_US(10000);   // 10ms
+    eppc->pip_pbdat |= 0x00004000;   // Enable PHY chip
     // Enable transceiver (PHY)    
     phy_write(PHY_BMCR, 0, PHY_BMCR_RESET);
     for (i = 0;  i < 10;  i++) {
-        phy_state = phy_read(PHY_BMCR, 0);
+        phy_ok = phy_read(PHY_BMCR, 0, &phy_state);
+        if (!phy_ok) break;
         if (!(phy_state & PHY_BMCR_RESET)) break;
     }
-    if (phy_state & PHY_BMCR_RESET) {
+    if (!phy_ok || (phy_state & PHY_BMCR_RESET)) {
         os_printf("FEC: Can't get PHY unit to reset: %x\n", phy_state);
         return false;
     }
-    phy_write(PHY_BMCR, 0, PHY_BMCR_AUTO_NEG);
-    // os_printf("MII: %x/%x\n", phy_state, phy_read(PHY_BMCR, 0));
-
-#ifdef CYGPKG_NET
-    // Set up for interrupts
-    fec->iMask = iEvent_all & ~iEvent_MII;
-#endif
-
-    if (cache_state)
-        HAL_DCACHE_ENABLE();
+    fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
+    phy_write(PHY_BMCR, 0, PHY_BMCR_AUTO_NEG|PHY_BMCR_RESTART);
+    while (phy_timeout-- >= 0) {
+        int ev = fec->iEvent;
+        unsigned short state;
+        fec->iEvent = ev;
+        if (ev & iEvent_MII) {
+            phy_ok = phy_read(PHY_BMSR, 0, &state);
+            if (phy_ok && (state & PHY_BMSR_AUTO_NEG)) {
+//                os_printf("State: %x\n", state);
+                break;
+            } else {
+                CYGACC_CALL_IF_DELAY_US(1000);   // 1ms
+            }
+        }
+    }
+    if (phy_timeout <= 0) {
+        os_printf("** FEC Warning: PHY auto-negotiation failed\n");
+    }
 
     // Initialize upper level driver
     (sc->funs->eth_drv->init)(sc, (unsigned char *)&enaddr);
-
+    
     return true;
 }
  
@@ -363,11 +512,8 @@ fec_eth_stop(struct eth_drv_sc *sc)
 static void
 fec_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
-    struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
-
     // Enable the device!
-    qi->fec->eControl |= eControl_EN;
-    qi->fec->RxUpdate = 0x0F0F0F0F;  // Any write tells machine to look for work
+    fec_eth_reset(sc, enaddr, flags);
 }
 
 //
@@ -377,10 +523,25 @@ static int
 fec_eth_control(struct eth_drv_sc *sc, unsigned long key,
                   void *data, int length)
 {
+#ifdef ETH_DRV_SET_MC_ALL
+    struct eth_drv_mc_list *mc_list;
+    struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
+    volatile struct fec *fec = qi->fec;
+#endif
+
     switch (key) {
     case ETH_DRV_SET_MAC_ADDRESS:
         return 0;
         break;
+#ifdef ETH_DRV_SET_MC_ALL
+    case ETH_DRV_SET_MC_ALL:
+    case ETH_DRV_SET_MC_LIST:
+        fec->RxControl &= ~RxControl_PROM;
+        fec->hash[0] = 0xFFFFFFFF;
+        fec->hash[1] = 0xFFFFFFFF;
+        return 0;
+        break;
+#endif
     default:
         return 1;
         break;
@@ -396,13 +557,13 @@ static int
 fec_eth_can_send(struct eth_drv_sc *sc)
 {
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
-    volatile struct fec_bd *txbd = qi->txbd;
 
-    return ((txbd->ctrl & FEC_BD_Tx_Ready) == 0);
+    return (qi->txactive < CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM);
 }
 
 //
 // This routine is called to send data to the hardware.
+int _fec_eth_tx_count = 0;
 static void 
 fec_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len, 
                int total_len, unsigned long key)
@@ -429,32 +590,37 @@ fec_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #endif
         }
     }
-    // Remember the next buffer to try
-    if (txbd->ctrl & FEC_BD_Tx_Wrap) {
-        qi->txbd = qi->tbase;
-    } else {
-        qi->txbd = txbd+1;
-    }
-    txindex = ((unsigned long)txbd - (unsigned long)qi->tbase) / sizeof(*txbd);
-    qi->txkey[txindex] = key;
     // Set up buffer
-    txbd->length = total_len;
     bp = txbd->buffer;
     for (i = 0;  i < sg_len;  i++) {
         memcpy((void *)bp, (void *)sg_list[i].buf, sg_list[i].len);
         bp += sg_list[i].len;
-    }
-    // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
+    } 
+    txbd->length = total_len;
+    txindex = ((unsigned long)txbd - (unsigned long)qi->tbase) / sizeof(*txbd);
+    qi->txkey[txindex] = key;
+    // Note: the MPC860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_FLUSH(txbd->buffer, txbd->length);  // Make sure no stale data
     }
     // Send it on it's way
     txbd->ctrl |= FEC_BD_Tx_Ready | FEC_BD_Tx_Last | FEC_BD_Tx_TC;
+#ifndef FEC_USE_EPPC_BD
     if (cache_state) {
         HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
     }
-    qi->fec->TxUpdate = 0x0F0F0F0F;  // Any write tells machine to look for work
+#endif
+    _fec_eth_tx_count++;
+    qi->txactive++;
+    qi->fec->TxUpdate = 0x01000000;  // Any write tells machine to look for work
+    set_led(LED_TxACTIVE);
+    // Remember the next buffer to try
+    if (txbd->ctrl & FEC_BD_Tx_Wrap) {
+        qi->txbd = qi->tbase;
+    } else {
+        qi->txbd = txbd+1;
+    }
 }
 
 //
@@ -468,30 +634,39 @@ static void
 fec_eth_RxEvent(struct eth_drv_sc *sc)
 {
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
-    volatile struct fec_bd *rxbd;
+    volatile struct fec_bd *rxbd, *rxfirst;
     int cache_state;
 
-    // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
+#ifndef FEC_USE_EPPC_BD
     if (cache_state) {
         HAL_DCACHE_FLUSH(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
     }
-    rxbd = qi->rnext;
-    while ((rxbd->ctrl & FEC_BD_Rx_Empty) == 0) {
-        qi->rxbd = rxbd;  // Save for callback
-        (sc->funs->eth_drv->recv)(sc, rxbd->length);
-        rxbd->ctrl |= FEC_BD_Rx_Empty;
+#endif
+    rxbd = rxfirst = qi->rnext;
+    while (true) {
+        if ((rxbd->ctrl & FEC_BD_Rx_Empty) == 0) {
+            qi->rxbd = rxbd;  // Save for callback
+            set_led(LED_RxACTIVE);
+            (sc->funs->eth_drv->recv)(sc, rxbd->length);
+        }
         if (rxbd->ctrl & FEC_BD_Rx_Wrap) {
             rxbd = qi->rbase;
         } else {
             rxbd++;
         }
+        if (rxbd == rxfirst) {
+            break;
+        }
     }
     // Remember where we left off
     qi->rnext = (struct fec_bd *)rxbd;
+#ifndef FEC_USE_EPPC_BD
     if (cache_state) {
         HAL_DCACHE_FLUSH(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
     }
+#endif
     qi->fec->RxUpdate = 0x0F0F0F0F;  // Any write tells machine to look for work
 }
 
@@ -510,7 +685,7 @@ fec_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     int i, cache_state;
 
     bp = (unsigned char *)qi->rxbd->buffer;
-    // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_INVALIDATE(qi->rxbd->buffer, qi->rxbd->length);  // Make sure no stale data
@@ -521,24 +696,34 @@ fec_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
             bp += sg_list[i].len;
         }
     }
+    qi->rxbd->ctrl |= FEC_BD_Rx_Empty;
+    clear_led(LED_RxACTIVE);
 }
 
 static void
-fec_eth_TxEvent(struct eth_drv_sc *sc, int stat)
+fec_eth_TxEvent(struct eth_drv_sc *sc)
 {
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile struct fec_bd *txbd;
-    int txindex, cache_state;
+    int key, txindex, cache_state;
 
     HAL_DCACHE_IS_ENABLED(cache_state);
+#ifndef FEC_USE_EPPC_BD
     if (cache_state) {
         HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
     }
+#endif
     txbd = qi->tnext;
     // Note: TC field is used to indicate the buffer has/had data in it
     while ((txbd->ctrl & (FEC_BD_Tx_Ready|FEC_BD_Tx_TC)) == FEC_BD_Tx_TC) {
         txindex = ((unsigned long)txbd - (unsigned long)qi->tbase) / sizeof(*txbd);
-        (sc->funs->eth_drv->tx_done)(sc, qi->txkey[txindex], 0);
+        if ((key = qi->txkey[txindex]) != 0) {
+            qi->txkey[txindex] = 0;
+            (sc->funs->eth_drv->tx_done)(sc, key, 0);
+        }
+	if (--qi->txactive == 0) {
+	  clear_led(LED_TxACTIVE);
+	}
         txbd->ctrl &= ~FEC_BD_Tx_TC;
         if (txbd->ctrl & FEC_BD_Tx_Wrap) {
             txbd = qi->tbase;
@@ -548,9 +733,11 @@ fec_eth_TxEvent(struct eth_drv_sc *sc, int stat)
     }
     // Remember where we left off
     qi->tnext = (struct fec_bd *)txbd;
+#ifndef FEC_USE_EPPC_BD
     if (cache_state) {
         HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
     }
+#endif
 }
 
 //
@@ -564,7 +751,7 @@ fec_eth_int(struct eth_drv_sc *sc)
 
     while ((event = qi->fec->iEvent) != 0) {
         if ((event & iEvent_TFINT) != 0) {
-            fec_eth_TxEvent(sc, event);
+            fec_eth_TxEvent(sc);
         }
         if ((event & iEvent_RFINT) != 0) {
             fec_eth_RxEvent(sc);
@@ -582,3 +769,18 @@ fec_eth_int_vector(struct eth_drv_sc *sc)
     return (FEC_ETH_INT);
 }
 
+#if defined(CYGPKG_NET) && ~defined(_FEC_USE_INTS)
+void
+fec_fake_int(cyg_addrword_t param)
+{
+    struct eth_drv_sc *sc = (struct eth_drv_sc *) param;
+    int int_state;
+
+    while (true) {
+      cyg_thread_delay(1);  // 10ms
+      HAL_DISABLE_INTERRUPTS(int_state);
+      fec_eth_int(sc);
+      HAL_RESTORE_INTERRUPTS(int_state);
+    }
+}
+#endif

@@ -1,6 +1,30 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
+*** Version 2.11, February 13th, 2002
+
+- Enabled Run Tests dialog in release mode.
+
+- Corrected backslashes in makefiles.
+
+- Added radio button group style to make the
+  groups on the Viewers dialog separate.
+
+- Enabled the Run Tests settings dialog.
+
+- Reordered the Alt-n accelerators on the
+  View menu.
+
+
+*** Version 2.10, January 25th, 2002
+
+- 2002 added to the copyright message.
+
+- The tree and value panes now have a minimum width,
+  so you can't lose the splitter bar by double-clicking
+  on it.
+
+
 *** Version 2.09, December 11th 2001
 
 - Hardware is now sorted alphabetically on UNIX.
@@ -15,7 +39,7 @@ Release History for eCos Configuration Tool 2
 - Packages dialog improvements: added keyword search and 'Omit hardware'
   checkbox; added more information to the description window.
 
-- added an "exact match" checkbox to the Packages dialog. That way if
+- Added an "exact match" checkbox to the Packages dialog. That way if
   you type 'flash', you get exactly what you'd get if you type
   'ecosconfig add flash'.
 
@@ -148,8 +172,3 @@ Release History for eCos Configuration Tool 2
 *** Version 2.0, May 2001
 
 - Initial public release
-
-
-
-
-

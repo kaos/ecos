@@ -5,29 +5,38 @@
 //      Device driver for the SA11x0 USB port.
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -871,6 +880,10 @@ usbs_sa11x0_ep0_dsr(void)
     // if the host needs to be told that the control message was
     // unacceptable and is cleared automatically by the hardware after
     // the stall is sent.
+    // NOTE: it is not clear the hardware actually works in this
+    // respect. The FORCE_STALL bit has been observed still set during
+    // the next interrupt, and the host appears to receive spurious
+    // data back in response to the next control packet.
     //
     // Sent-stall is set by the hardware following a protocol
     // violation, e.g. if there is an IN token when a new control
@@ -1167,19 +1180,69 @@ usbs_sa11x0_ep0_dsr(void)
                                 result = USBS_CONTROL_RETURN_STALL;
                             }
                         }
-                    } // Endpoing or device set-feature
+                    } // Endpoint or device set-feature
                 }
 
                 // If the result has not been handled yet, pass it to
-                // the install callback function (if any).
+                // the installed callback function (if any).
                 if (USBS_CONTROL_RETURN_UNKNOWN == result) {
                     if ((usbs_control_return (*)(usbs_control_endpoint*, void*))0 != ep0.common.standard_control_fn) {
                         result = (*ep0.common.standard_control_fn)(&ep0.common, ep0.common.standard_control_data);
                     }
                 }
+                
+#if 1                
+                if ((USBS_CONTROL_RETURN_UNKNOWN == result) &&
+                    (USB_DEVREQ_SET_INTERFACE == req->request)) {
+                    
+                    // This code should not be necessary. For
+                    // non-trivial applications which involve
+                    // alternate interfaces and the like, this request
+                    // should be handled by the application itself.
+                    // For other applications, the default handler
+                    // will ignore this request so we end up falling
+                    // through without actually handling the request
+                    // and hence returning a stall condition. That
+                    // is legitimate behaviour according to the standard.
+                    //
+                    // However, there are appear to be problems with
+                    // the SA1110 USB hardware when it comes to stall
+                    // conditions: they appear to affect some
+                    // subsequent messages from target to host as
+                    // well. Hence rather than returning a stall
+                    // condition this code instead generates a dummy
+                    // reply, which is also valid according to the
+                    // standard. This avoids complications with certain
+                    // USB compliance testers.
+                    if ((0 != length) ||
+                        (0 != req->value_hi) || (0 != req->index_hi) ||
+                        (USBS_STATE_CONFIGURED != (ep0.common.state & USBS_STATE_MASK))) {
+                        
+                        result = USBS_CONTROL_RETURN_STALL;
+                    } else {
+                        int interface_id;
+                        int alternate;
+            
+                        CYG_ASSERT( (1 == ep0.common.enumeration_data->device.number_configurations) && \
+                                    (1 == ep0.common.enumeration_data->total_number_interfaces),       \
+                                    "Higher level code should have handled this request");
+            
+                        interface_id = req->index_lo;
+                        alternate    = req->value_lo;
+                        if ((interface_id != ep0.common.enumeration_data->interfaces[0].interface_id) ||
+                            (alternate  != ep0.common.enumeration_data->interfaces[0].alternate_setting)) {
 
+                            result = USBS_CONTROL_RETURN_STALL;
+                        } else {
+                            result = USBS_CONTROL_RETURN_HANDLED;
+                        }
+                        
+                    }
+                }
+#endif
+                
                 // If the result has still not been handled, leave it to
-                // the default implementation in the USB slave common place.
+                // the default implementation in the USB slave common package
                 if (USBS_CONTROL_RETURN_UNKNOWN == result) {
                     result = usbs_handle_standard_control(&ep0.common);
                 }
@@ -1332,8 +1395,8 @@ usbs_sa11x0_ep0_dsr(void)
 // receive-packet-complete bit cannot be set by software and the OUT
 // max register has a minimum size of eight bytes. Fortunately for
 // many protocols the target-side code has a chance to start a receive
-// before the host is allowed to send, so this problem is ignored for
-// now.
+// before the host is allowed to send, so this problem is mostly
+// ignored for now.
 //
 // Another potential problem arises if the host sends more data than
 // is expected for a given transfer. It would be possible to address
@@ -1389,9 +1452,10 @@ ep1_start_rx_packet(void)
     // The full flexibility of the DMA engines is not required here,
     // specifically the automatic chaining between buffers A and B.
     // Instead always using buffer A is sufficient. To avoid the
-    // hardware switching to buffer B, an excessive size field is
-    // used, EP1_MTU rather than EP1_DMA_MTU, and hence the
-    // DMA transfer will never complete.
+    // However the hardware still requires the software to alternate
+    // between A and B. To avoid switching between buffers during a
+    // transfer an excessive size field is used, EP1_MTU rather than
+    // EP1_DMA_MTU, and hence the DMA transfer will never complete.
     //
     // With some silicon revisions writing to the DMA registers does
     // not always work either, so a retry is in order. Possibly
@@ -1446,18 +1510,17 @@ ep1_clear_error(void)
 static int
 ep1_process_packet(void)
 {
+    int pkt_size;
+
     // First, work out how much data has been processed by the DMA
     // engine. This is the amount originally poked into the size
     // register minus its current value.
-    int pkt_size;
-
     *EP1_DMA_CONTROL_CLEAR = DMA_CONTROL_CLEAR_ALL;
     if (ep1.using_buf_a) {
         pkt_size = EP1_DMA_MTU - *EP1_DMA_BUF_A_SIZE;
     } else {
         pkt_size = EP1_DMA_MTU - *EP1_DMA_BUF_B_SIZE;
     }
-    
     CYG_ASSERT( 0 == (pkt_size % DMA_BURST_SIZE), "DMA transfers must be in multiples of the burst size");
     
     // Move these bytes from physical memory to the target buffer.
@@ -1561,6 +1624,8 @@ ep1_start_rx(usbs_rx_endpoint* endpoint)
     } else {
         int status      = *EP1_CONTROL;
 
+        CYG_ASSERT((void*) 0 != ep1.common.buffer, "USB receives should not override the interrupt vectors");
+        
         // This indicates the start of a transfer.
         ep1.fetched     = 0;
 
@@ -1580,8 +1645,9 @@ ep1_start_rx(usbs_rx_endpoint* endpoint)
             // No error but data in the fifo. This implies a small
             // initial packet, all held in the fifo.
 #ifdef CYGNUM_DEVS_USB_SA11X0_EP1_DMA_CHANNEL
-            *EP1_DMA_BUF_A_SIZE         = EP1_MTU;
-#endif            
+            *EP1_DMA_BUF_A_SIZE = EP1_MTU;
+            ep1.using_buf_a     = true;
+#endif
             (void) ep1_process_packet();
             ep1_rx_complete(ep1.fetched);
         } else {
@@ -1610,19 +1676,14 @@ ep1_set_halted(usbs_rx_endpoint* endpoint, cyg_bool new_value)
         // transfer then the stall bit may not get set for a while, so
         // poke() is inappropriate.
         *EP1_CONTROL = EP1_FORCE_STALL;
-
-        // And abort any current transfer.
-        ep1_rx_complete(-EAGAIN);
-        
     } else {
         // The stall condition should be cleared. First take care of
         // things at the hardware level so that a new transfer is
         // allowed.
         usbs_sa11x0_poke(EP1_CONTROL, EP1_SENT_STALL, 0, EP1_SENT_STALL | EP1_FORCE_STALL);
-
+        
         // Now allow new transfers to begin.
         ep1.common.halted = false;
-        ep1_rx_complete(0);
     }
 }
 
@@ -1646,7 +1707,6 @@ usbs_sa11x0_ep1_dsr(void)
         // was in progress when the stall bit was set. The
         // set_halted() call above will have taken care of things.
         return;
-        
     }
 
     // The sent-stall bit should never get set, since we always
@@ -1666,29 +1726,40 @@ usbs_sa11x0_ep1_dsr(void)
     } else {
         // Another packet has been received. Process it, which may
         // complete the transfer or it may leave more to be done.
-        int pkt_size = ep1_process_packet();
-        INCR_STAT(ep1_receives);
-        if (0 != (EP1_PACKET_ERROR & *EP1_CONTROL)) {
-            CYG_ASSERT( 0, "an error has occurred inside ep1_process_packet()\n");
+        //
+        // The hardware starts with the wrong default value for
+        // the receive-packet-complete bit, so a packet may arrive
+        // even though no rx operation has started yet. The
+        // packets must be ignored for now. start_rx_packet()
+        // will detect data in the fifo and do the right thing.
+        int pkt_size;
 
-        } else if ((ep1.fetched != ep1.common.buffer_size) && (0 != pkt_size) && (0 == (ep1.fetched % EP1_MTU))) {
-            ep1_start_rx_packet();
-        } else if (ep1.fetched > ep1.common.buffer_size) {
-            // The host has sent too much data.
-            ep1_rx_complete(-EMSGSIZE);
-        } else {
+        if ((unsigned char*)0 != ep1.common.buffer) {
+            
+            pkt_size = ep1_process_packet();
+            INCR_STAT(ep1_receives);
+            if (0 != (EP1_PACKET_ERROR & *EP1_CONTROL)) {
+                CYG_ASSERT( 0, "an error has occurred inside ep1_process_packet()\n");
+
+            } else if ((ep1.fetched != ep1.common.buffer_size) && (0 != pkt_size) && (0 == (ep1.fetched % EP1_MTU))) {
+                ep1_start_rx_packet();
+            } else if (ep1.fetched > ep1.common.buffer_size) {
+                // The host has sent too much data.
+                ep1_rx_complete(-EMSGSIZE);
+            } else {
 #if 0
-            int i;
-            diag_printf("------------------------------------------------------\n");
-            diag_printf("rx: buf %x, total size %d\n", ep1.common.buffer, ep1.fetched);
-            for (i = 0; (i < ep1.fetched) && (i < 128); i+= 8) {
-                diag_printf("rx %x %x %x %x %x %x %x %x\n",
-                            ep1.common.buffer[i+0], ep1.common.buffer[i+1], ep1.common.buffer[i+2], ep1.common.buffer[i+3], 
-                            ep1.common.buffer[i+4], ep1.common.buffer[i+5], ep1.common.buffer[i+6], ep1.common.buffer[i+7]);
-            }
-            diag_printf("------------------------------------------------------\n");
+                int i;
+                diag_printf("------------------------------------------------------\n");
+                diag_printf("rx: buf %x, total size %d\n", ep1.common.buffer, ep1.fetched);
+                for (i = 0; (i < ep1.fetched) && (i < 128); i+= 8) {
+                    diag_printf("rx %x %x %x %x %x %x %x %x\n",
+                                ep1.common.buffer[i+0], ep1.common.buffer[i+1], ep1.common.buffer[i+2], ep1.common.buffer[i+3], 
+                                ep1.common.buffer[i+4], ep1.common.buffer[i+5], ep1.common.buffer[i+6], ep1.common.buffer[i+7]);
+                }
+                diag_printf("------------------------------------------------------\n");
 #endif
-            ep1_rx_complete(ep1.fetched);
+                ep1_rx_complete(ep1.fetched);
+            }
         }
     }
 }
@@ -1964,6 +2035,7 @@ ep2_start_tx(usbs_tx_endpoint* endpoint)
         // transmission, but if there is one then there is no safe way
         // to recover. process_packet() and tx_packet() will hopefully
         // do the right thing.
+        CYG_ASSERT((void*) 0 != ep2.common.buffer, "Transmitting the interrupt vectors is unlikely to be useful");
 #if 0
         {
             int i;
@@ -2004,16 +2076,12 @@ ep2_set_halted(usbs_tx_endpoint* endpoint, cyg_bool new_value)
         // so poke() cannot be used.
         *EP2_CONTROL = EP2_FORCE_STALL;
 
-        // And abort any current transfer.
-        ep2_tx_complete(-EAGAIN);
-        
+        // If in the middle of a transfer then that cannot be aborted,
+        // the DMA engines etc. would get very confused.
     } else {
-        // First take care of the hardware so that a new transfer is
-        // allowed. Then allow new transfers to begin and inform
-        // higher-level code.
+        // Take care of the hardware so that a new transfer is allowed. 
         usbs_sa11x0_poke(EP2_CONTROL, EP2_SENT_STALL, 0, EP2_SENT_STALL | EP2_FORCE_STALL);
         ep2.common.halted = false;
-        ep2_tx_complete(0);
     }
 }
 

@@ -5,29 +5,38 @@
 //        SA1110/iPAQ - LCD support routines
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -58,6 +67,12 @@
 #  include <stdio.h>  // sscanf
 # endif
 #endif
+
+// Gross hack to force use of simple internal functions.
+// Using libc sscanf fails (as far as I could tell from a quick look)
+// when assertions are enabled because some of the C++ contructors have
+// not been run yet.   jskov
+#undef CYGINT_ISO_STDIO_FORMATTED_IO
 
 #ifndef FALSE
 #define FALSE 0
@@ -162,6 +177,7 @@ _hexdigit(char c)
     if ((c >= 'a') && (c <= 'f')) {
         return (c - 'a') + 0x0a;
     }
+    return 0;
 }
 
 static int
@@ -279,9 +295,9 @@ lcd_init(int depth)
     fp = (struct lcd_frame *)hal_virt_to_phys_address((cyg_uint32)lcd_frame_buffer);
     // Enable LCD in 320x240 16bpp
     *SA1110_DBAR1 = (unsigned long)&(fp->palette);
-    *SA1110_LCCR1 = 0x09100C00 + DISPLAY_WIDTH - 16;
-    *SA1110_LCCR2 = 0x08010C00 + DISPLAY_HEIGHT - 1;
-    *SA1110_LCCR3 = 0x0030000a;
+    *SA1110_LCCR1 = 0x0b100800 + DISPLAY_WIDTH - 16;
+    *SA1110_LCCR2 = 0x0a010400 + DISPLAY_HEIGHT - 1;
+    *SA1110_LCCR3 = 0x00300010;
     fp->palette[0] = 0x2000;  // Tell controller true color / 16 bits
     *SA1110_LCCR0 = 0xB9;     // Color
     ipaq_EGPIO(SA1110_EIO_LCD_3V3|SA1110_EIO_LCD_CTRL|SA1110_EIO_LCD_5V|SA1110_EIO_LCD_VDD,
@@ -545,6 +561,7 @@ lcd_putc(cyg_int8 c)
 // Basic LCD 'printf()' support
 
 #include <stdarg.h>
+#include <string.h>
 
 #define is_digit(c) ((c >= '0') && (c <= '9'))
 
@@ -578,6 +595,7 @@ lcd_vprintf(void (*putc)(cyg_int8), const char *fmt0, va_list ap)
     int left_prec, right_prec, zero_fill, length, pad, pad_on_right;
     char buf[32];
     long val;
+
     while ((c = *fmt0++)) {
         cp = buf;
         length = 0;
@@ -680,6 +698,7 @@ lcd_vprintf(void (*putc)(cyg_int8), const char *fmt0, va_list ap)
             }
         }
     }
+    return 0;  // Should be length of string written
 }
 
 int
@@ -1163,6 +1182,7 @@ lcd_comm_isr(void *__ch_data, int* __ctrlc,
     }
     return CYG_ISR_HANDLED;
 #endif
+    return 0;
 }
 
 static bool
@@ -1262,6 +1282,8 @@ close(int c1, int c2)
     return (diff < 50);
 }
 
+#define LCD_COMM_CHANNEL 1  // Logical I/O channel used for LCD/TS console
+
 void
 lcd_comm_init(void)
 {
@@ -1275,7 +1297,7 @@ lcd_comm_init(void)
         int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
         // Setup procs in the vector table
-        CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
+        CYGACC_CALL_IF_SET_CONSOLE_COMM(LCD_COMM_CHANNEL);
         comm = CYGACC_CALL_IF_CONSOLE_PROCS();
         //CYGACC_COMM_IF_CH_DATA_SET(*comm, chan);
         CYGACC_COMM_IF_WRITE_SET(*comm, lcd_comm_write);
@@ -1401,13 +1423,16 @@ lcd_comm_init(void)
     }
 }
 
-// Control state of LCD display
+// Control state of LCD display - only called by logical I/O layers
 
 void
 lcd_on(bool enable)
 {
     static bool enabled = true;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
+    if (cur != LCD_COMM_CHANNEL) 
+        enable = false;  // Only enable display if LCD is the active "console"
     if (enable) {
         if (!enabled) {
             ipaq_EGPIO(SA1110_EIO_LCD_3V3|SA1110_EIO_LCD_CTRL|SA1110_EIO_LCD_5V|SA1110_EIO_LCD_VDD,

@@ -5,29 +5,38 @@
 //      HAL misc board support code for ARM EDB7XXX-1
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -73,8 +82,11 @@ static cyg_handle_t  batlow_interrupt_handle;
 #define CPU_CLOCK 2
 #elif (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK == 73728)
 #define CPU_CLOCK 3
+#elif (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK == 90317)
+#define CPU_CLOCK 3 // Yes, the same
+#define CPU_CLOCK_90MHZ
 #else
-#err Invalid CPU clock frequency
+#error Invalid CPU clock frequency
 #endif
 
 static cyg_uint32 _period;
@@ -130,6 +142,7 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
         *tc2d = period;
         _period = period;
     }
+#if !defined(__EDB7312)
 #ifndef CYGPKG_HAL_ARM_EDB7209
 // EP7209 has no DRAM/controller, thus no problem
     enable_FIQ();  // Should be safe here
@@ -139,6 +152,7 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
     dram_delay_loop();
 #endif 
 #endif
+#endif // !defined(__EDB7312)
 }
 
 // Read the current value of the clock, returning the number of hardware "ticks"
@@ -217,6 +231,9 @@ static cyg_uint32 hal_interrupt_bitmap[] = {
 #if defined(__EDB7209)
     INTSR3_I2SINT   // CYGNUM_HAL_INTERRUPT_I2SINT     22
 #endif
+#if defined(__EDB7312)
+    INTSR3_DAIINT   // CYGNUM_HAL_INTERRUPT_DAIINT     22
+#endif
 };
 
 static cyg_uint32 hal_interrupt_mask_regmap[] = {
@@ -247,6 +264,9 @@ static cyg_uint32 hal_interrupt_mask_regmap[] = {
 #endif
 #if defined(__EDB7209)
     INTMR3, // CYGNUM_HAL_INTERRUPT_I2SINT     22
+#endif
+#if defined(__EDB7312)
+    INTMR3, // CYGNUM_HAL_INTERRUPT_DAIINT     22
 #endif
 };
 
@@ -279,6 +299,9 @@ static cyg_uint32 hal_interrupt_clear_map[] = {
 #if defined(__EDB7209)
     0,      // CYGNUM_HAL_INTERRUPT_I2SINT     22
 #endif
+#if defined(__EDB7312)
+    0,      // CYGNUM_HAL_INTERRUPT_DAIINT     22
+#endif
 };
 
 static struct regmap {
@@ -291,6 +314,9 @@ static struct regmap {
 #endif
 #if defined(__EDB7209)
     { CYGNUM_HAL_INTERRUPT_I2SINT, CYGNUM_HAL_INTERRUPT_I2SINT,  INTSR3, INTMR3},
+#endif
+#if defined(__EDB7312)
+    { CYGNUM_HAL_INTERRUPT_DAIINT, CYGNUM_HAL_INTERRUPT_DAIINT,  INTSR3, INTMR3},
 #endif
     { CYGNUM_HAL_INTERRUPT_CSINT,  CYGNUM_HAL_INTERRUPT_SSEOTI,  INTSR1, INTMR1},
     { CYGNUM_HAL_INTERRUPT_KBDINT, CYGNUM_HAL_INTERRUPT_URXINT2, INTSR2, INTMR2},
@@ -329,6 +355,8 @@ void hal_hardware_init(void)
     *(volatile cyg_uint32 *)INTMR2 = 0;
 #if !defined(__CL7111)
     *(volatile cyg_uint32 *)INTMR3 = 0;
+#endif
+#if !defined(__CL7111) && !defined(__EDB7312)
     *(volatile cyg_uint8 *)SYSCON3 = SYSCON3_CLKCTL(CPU_CLOCK);
 #endif
 
@@ -400,13 +428,49 @@ void hal_hardware_init(void)
     *(volatile cyg_uint32 *)SYSCON2 = SYSCON2_KBWEN;
 #endif
 
+#if defined(__EDB7312)
+    *(volatile cyg_uint32 *)MEMCFG1 = 0x1F101710;
+    *(volatile cyg_uint32 *)MEMCFG2 = 0x00001F93;
+    // Set up GPIO lines
+    *(volatile cyg_uint8 *)PADDR   = 0x00;  // Keyboard data 0-7 input
+    *(volatile cyg_uint8 *)PBDDR   = 0xF2;
+    *(volatile cyg_uint8 *)PDDDR   = 0x2F;
+    *(volatile cyg_uint8 *)PDDDR   = 0x10;  // Directions are inverted!
+    *(volatile cyg_uint8 *)PDDR    = 0x00;  // Everything off
+    *(volatile cyg_uint8 *)PEDDR   = 0x01;
+    // Initialize system control
+    *(volatile cyg_uint32 *)SYSCON1 = 0x00040100;
+    *(volatile cyg_uint32 *)SYSCON2 = 0x00000102;
+
+#ifdef CPU_CLOCK_90MHZ
+    // We must slow down the RAM timings compared to default by adding
+    // wait states or it does not work.
+    // Slow them all down to Random=5, Seq=3 waitstates by replacing
+    // that field throughout the default value copied from above:
+    *(volatile cyg_uint32 *)MEMCFG1 = (0x1F101710 & ~0x3c3c3c3c) | 0x0c0c0c0c;
+    *(volatile cyg_uint32 *)MEMCFG2 = (0x00001F93 & ~0x00003c3c) | 0x00000c0c;
+#endif // CPU_CLOCK_90MHZ
+
+    *(volatile cyg_uint32 *)SYSCON3 = 0x00000208 | SYSCON3_CLKCTL(CPU_CLOCK);
+
+#ifdef CPU_CLOCK_90MHZ
+    // Let the clock change settle before hitting the PLL multiplier
+    // register to change up by a further 22.5%
+    asm volatile( "nop;nop;nop;nop;nop;nop;nop;nop;");
+    *(volatile cyg_uint32 *)EP7312_PLL_MR = EP7312_PLL_MR_FOR_90MHz;
+    asm volatile( "nop;nop;nop;nop;nop;nop;nop;nop;");
+#endif // CPU_CLOCK_90MHZ
+
+#endif
     // Reset all interrupt masks (disable all interrupt sources)
     for (vector = CYGNUM_HAL_ISR_MIN;  vector < CYGNUM_HAL_ISR_COUNT;  vector++) {
         icr = (volatile cyg_uint32 *)hal_interrupt_clear_map[vector];
         if (icr) *icr = 0;  // Just a write clears the latch
     }
+#ifndef __EDB7312
     // Turn on the DIAG LED to let the world know the board is alive
     *(volatile unsigned char *)LEDFLSH = LEDFLSH_ENABLE|LEDFLSH_DUTY(16)|LEDFLSH_PERIOD(1);
+#endif
 #ifdef CYGHWR_HAL_ARM_EDB7XXX_BATLOW
     cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_BLINT,
                              99,                     // Priority - what goes here?
@@ -425,6 +489,10 @@ void hal_hardware_init(void)
     // Set up eCos/ROM interfaces
     hal_if_init();
 
+#ifdef CYGSEM_EDB7XXX_LCD_COMM
+    // Initialize I/O channel
+    lcd_comm_init();
+#endif
 }
 
 //

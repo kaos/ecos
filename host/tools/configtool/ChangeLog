@@ -1,3 +1,12 @@
+2002-02-08  Julian Smart <julians@redhat.com>
+
+	* common/common/build.cxx: Added two missing backslashes
+
+2002-02-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* common/common/build.cxx: correctly substitute forward slashes
+	for backslashes.
+
 2002-01-02  Julian Smart <julians@redhat.com>
 
     * Modified these files:
@@ -2801,6 +2810,7 @@
   Include resources directly.  I suspect including resource headers from PCH might have been responsible for
   resource IDs not being found.
 
+  * common\win32\CTCommon.rc
 
   Restore CDL templates dialog
 

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.42 2001/10/11 12:31:42 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.43 2002/02/13 13:58:18 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -2233,31 +2233,37 @@ bool ecConfigToolDoc::NewMemoryLayout (const wxString &strPrefix)
 void ecConfigToolDoc::RunTests()
 {
     wxString strTarget(GetCdlConfig()->get_hardware ().c_str ());
-    wxGetApp().GetSettings().GetRunTestsSettings().m_strTarget = strTarget;
-
-    if (NULL==CeCosTestPlatform::Get(strTarget))
-    {
-        wxString msg;
-        msg.Printf(_("%s is not a recognized platform - do you wish to add it?"), (const wxChar*) strTarget);
-        if (wxNO == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO))
-            return;
-
-        ecPlatformEditorDialog dlg(wxGetApp().GetTopWindow());
-
-        dlg.m_strPlatform = strTarget;
-        dlg.m_strPrefix = GetCurrentTargetPrefix();
-        dlg.m_strCaption=_("New Platform");
-        if(wxID_CANCEL == dlg.ShowModal())
-        {
-            return;
-        }
-        CeCosTestPlatform::Add(CeCosTestPlatform(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_strPrompt,dlg.m_strGDB,dlg.m_bServerSideGdb,dlg.m_strInferior));
-        CeCosTestPlatform::Save();
-    }
-
     wxArrayString ar;
     wxArrayString arTestsMissing;
-    int nTests = GetTestExeNames(ar, arTestsMissing);
+    int nTests;
+    wxGetApp().GetSettings().GetRunTestsSettings().m_strTarget = strTarget;
+
+    {
+        wxBusyCursor busy;
+
+        GetCdlConfig()->get_build_info(m_BuildInfo);
+        if (NULL==CeCosTestPlatform::Get(strTarget))
+        {
+            wxString msg;
+            msg.Printf(_("%s is not a recognized platform - do you wish to add it?"), (const wxChar*) strTarget);
+            if (wxNO == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO))
+                return;
+            
+            ecPlatformEditorDialog dlg(wxGetApp().GetTopWindow());
+            
+            dlg.m_strPlatform = strTarget;
+            dlg.m_strPrefix = GetCurrentTargetPrefix();
+            dlg.m_strCaption=_("New Platform");
+            if(wxID_CANCEL == dlg.ShowModal())
+            {
+                return;
+            }
+            CeCosTestPlatform::Add(CeCosTestPlatform(dlg.m_strPlatform,dlg.m_strPrefix,dlg.m_strPrompt,dlg.m_strGDB,dlg.m_bServerSideGdb,dlg.m_strInferior));
+            CeCosTestPlatform::Save();
+        }
+        
+        nTests = GetTestExeNames(ar, arTestsMissing);
+    }
 
     const CeCosTestPlatform * etPlatform = CeCosTestPlatform::Get(strTarget);
     wxASSERT (NULL != etPlatform);

@@ -7,29 +7,38 @@
 ##      PC platform support
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -232,6 +241,29 @@ hal_idt_init:
 	set_IDT_entry  45, hal_pc_irq_45
 	set_IDT_entry  46, hal_pc_irq_46
 	set_IDT_entry  47, hal_pc_irq_47
+#ifdef CYGPKG_HAL_SMP_SUPPORT
+	set_IDT_entry  48, hal_pc_irq_48
+	set_IDT_entry  49, hal_pc_irq_49
+	set_IDT_entry  50, hal_pc_irq_50
+	set_IDT_entry  51, hal_pc_irq_51
+	set_IDT_entry  52, hal_pc_irq_52
+	set_IDT_entry  53, hal_pc_irq_53
+	set_IDT_entry  54, hal_pc_irq_54
+	set_IDT_entry  55, hal_pc_irq_55
+	set_IDT_entry  56, hal_pc_irq_56
+	set_IDT_entry  57, hal_pc_irq_57
+	set_IDT_entry  58, hal_pc_irq_58
+	set_IDT_entry  59, hal_pc_irq_59
+	set_IDT_entry  60, hal_pc_irq_60
+	set_IDT_entry  61, hal_pc_irq_61
+	set_IDT_entry  62, hal_pc_irq_62
+	set_IDT_entry  63, hal_pc_irq_63
+
+	set_IDT_entry  64, hal_pc_irq_64
+	set_IDT_entry  65, hal_pc_irq_65
+	set_IDT_entry  66, hal_pc_irq_66
+	set_IDT_entry  67, hal_pc_irq_67
+#endif
 	.endm
 	
 ##=============================================================================

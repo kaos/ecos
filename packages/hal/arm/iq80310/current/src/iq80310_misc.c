@@ -5,29 +5,38 @@
 //      HAL misc board support code for XScale IQ80310
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -78,8 +87,6 @@ static cyg_uint32 nmi_sb_ISR(cyg_vector_t vector, cyg_addrword_t data);
 
 void hal_hardware_init(void)
 {
-    unsigned rtmp = 0;
-
     // Route INTA-INTD to IRQ pin
     //   The Yavapai manual is incorrect in that a '1' value
     //   routes to the IRQ line, not a '0' value.
@@ -119,12 +126,16 @@ void hal_hardware_init(void)
     HAL_INTERRUPT_ATTACH (CYGNUM_HAL_INTERRUPT_SBDG_ERR, &nmi_sb_ISR, CYGNUM_HAL_INTERRUPT_SBDG_ERR, 0);
     HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SBDG_ERR);
 
-    // Enable FIQ
 #if 0
-    asm volatile ("mrs %0,cpsr\n"
-		  "bic %0,%0,#0x40\n"
-		  "msr cpsr,%0\n"
-		  : "=r"(rtmp) : );
+    // Enable FIQ
+    {
+        unsigned rtmp = 0;
+
+        asm volatile ("mrs %0,cpsr\n"
+                      "bic %0,%0,#0x40\n"
+                      "msr cpsr,%0\n"
+                      : "=r"(rtmp) : );
+    }
 #endif
 }
 
@@ -257,6 +268,81 @@ void hal_clock_initialize(cyg_uint32 period)
 
     EXT_TIMER_INT_ENAB();
     EXT_TIMER_CNT_ENAB();
+}
+
+// Dynamically set the timer interrupt rate.
+// Not for eCos application use at all, just special GPROF code in RedBoot.
+
+void
+hal_clock_reinitialize(          int *pfreq,    /* inout */
+                        unsigned int *pperiod,  /* inout */
+                        unsigned int old_hz )   /* in */
+{
+    unsigned int newp = 0, period, i = 0;
+    int hz;
+    int do_set_hw;
+
+// Arbitrary choice somewhat - so the CPU can make
+// progress with the clock set like this, we hope.
+#define MIN_TICKS (500)
+#define MAX_TICKS (0xffffff) // 24-bit timer
+
+    if ( ! pfreq || ! pperiod )
+        return; // we cannot even report a problem!
+
+    hz = *pfreq;
+    period = *pperiod;
+
+// Requested HZ:
+// 0         => tell me the current value (no change, implemented in caller)
+// - 1       => tell me the slowest (no change)
+// - 2       => tell me the default (no change, implemented in caller)
+// -nnn      => tell me what you would choose for nnn (no change)
+// MIN_INT   => tell me the fastest (no change)
+//        
+// 1         => tell me the slowest (sets the clock)
+// MAX_INT   => tell me the fastest (sets the clock)
+
+    do_set_hw = (hz > 0);
+    if ( hz < 0 )
+        hz = -hz;
+
+    // Be paranoid about bad args, and very defensive about underflows
+    if ( 0 < hz && 0 < period && 0 < old_hz ) {
+
+        newp = period * old_hz / (unsigned)hz;
+
+        if ( newp < MIN_TICKS ) {
+            newp = MIN_TICKS;
+            // recalculate to get the exact delay for this integral hz
+            // and hunt hz down to an acceptable value if necessary
+            i = period * old_hz / newp;
+            if ( i ) do {
+                newp = period * old_hz / i;
+                i--;
+            } while (newp < MIN_TICKS && i);
+        }
+        else if ( newp > MAX_TICKS ) {
+            newp = MAX_TICKS;
+            // recalculate to get the exact delay for this integral hz
+            // and hunt hz up to an acceptable value if necessary
+            i = period * old_hz / newp;
+            if ( i ) do {
+                newp = period * old_hz / i;
+                i++;
+            } while (newp > MAX_TICKS && i);
+        }
+
+        // Recalculate the actual value installed.
+        i = period * old_hz / newp;
+    }
+
+    *pfreq = i;
+    *pperiod = newp;
+
+    if ( do_set_hw ) {
+        hal_clock_initialize( newp );
+    }
 }
 
 // This routine is called during a clock interrupt.
@@ -1002,7 +1088,7 @@ int cyg_hal_plf_hw_breakpoint(int setflag, void *vaddr, int len)
 	unsigned x = (addr | 1);
 	if (get_ibcr0() == x)
 	    set_ibcr0(0);
-	else if (get_ibcr0() == x)
+	else if (get_ibcr1() == x)
 	    set_ibcr1(0);
 	else
 	    return -1;

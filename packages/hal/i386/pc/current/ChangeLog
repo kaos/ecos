@@ -1,8 +1,26 @@
+2002-05-07  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_i386_pc.cdl: 
+	Standardize CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT usage.
+
+2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/romboot.S:
+	Don't use .file as it can confuse debugging since the .file
+	doesn't contain the path and therefore the debugger will never
+	know where it lives! This conflicts with using -Wa,--gstabs.
+
+2002-04-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_i386_pc.cdl: Remove unused compile line.
+
 2001-12-07  Nick Garnett  <nickg@redhat.com>
 
 	* include/plf_intr.h: Added definition of HAL_DELAY_US() so that
 	this is used instead of the delay loop in delay_us(). This is
 	necessary to handle fast Pentiums and Athlons.
+
+	* misc/redboot_FLOPPY_D850GB.ecm: Removed reference to SMP.
 
 2001-10-16  Mark Salter  <msalter@redhat.com>
 
@@ -51,6 +69,7 @@
 	* misc/redboot_FLOPPY.ecm: Disable
 	CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
 	* misc/redboot_ROM.ecm: Ditto.
+	* misc/redboot_FLOPPY_SMP.ecm: Ditto.
 
 2001-09-05  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -62,6 +81,18 @@
 	* include/pkgconf/mlt_i386_pc_floppy.ldi:
 	* include/pkgconf/mlt_i386_pc_floppy.mlt:
 	Moved load base address from 0x2000 to 0x3000.
+	We now use page 0x2000 for SMP related data including the slave
+	CPU startup trampoline and various data structures that need to be
+	shared between RedBoot and the application.
+
+	* misc/redboot_FLOPPY_SMP.ecm: Added this file to configure an
+	SMP-aware RedBoot floppy. If SMP applications are to be run it is
+	essential that this version of RedBoot be used because a degree of
+	cooperation is required to get the CPUs going, and to handle
+	exceptions cleanly.
+
+	* src/plf_misc.c (hal_platform_init): Added call to cyg_hal_smp_init().
+
 
 	* include/platform.inc (hal_idt_init): Added entries to set up IDT
 	entries 48..67.
@@ -378,27 +409,36 @@
 	
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

@@ -5,29 +5,38 @@
 //      SH Serial SCI I/O Interface Module (interrupt driven)
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -67,22 +76,31 @@
 // Only compile driver if an inline file with driver details was selected.
 #ifdef CYGDAT_IO_SERIAL_SH_SCI_INL
 
-// Controller base (only one supported at the moment)
-#define SH_SERIAL_SCI_BASE       0xfffffe80
-
-// The SCI controller register layout on the SH3/7708.
-#define SCI_SCSMR                0      // serial mode register
-#define SCI_SCBRR                2      // bit rate register
-#define SCI_SCSCR                4      // serial control register
-#define SCI_SCTDR                6      // transmit data register
-#define SCI_SCSSR                8      // serial status register
-#define SCI_SCRDR                10     // receive data register
-#define SCI_SCSPTR               -4     // serial port register
+// Find the SCI controller register layout from the SCI0 definitions
+#if defined(CYGARC_REG_SCI_SCSMR0)
+# define SCI_SCSMR                (CYGARC_REG_SCI_SCSMR0-CYGARC_REG_SCI_SCSMR0) // serial mode register
+# define SCI_SCBRR                (CYGARC_REG_SCI_SCBRR0-CYGARC_REG_SCI_SCSMR0) // bit rate register
+# define SCI_SCSCR                (CYGARC_REG_SCI_SCSCR0-CYGARC_REG_SCI_SCSMR0) // serial control register
+# define SCI_SCTDR                (CYGARC_REG_SCI_SCTDR0-CYGARC_REG_SCI_SCSMR0) // transmit data register
+# define SCI_SCSSR                (CYGARC_REG_SCI_SCSSR0-CYGARC_REG_SCI_SCSMR0) // serial status register
+# define SCI_SCRDR                (CYGARC_REG_SCI_SCRDR0-CYGARC_REG_SCI_SCSMR0) // receive data register
+# define SCI_SCSPTR               (CYGARC_REG_SCI_SCSPTR0-CYGARC_REG_SCI_SCSMR0)// serial port register
+#elif defined(CYGARC_REG_SCI_SCSMR)
+# define SCI_SCSMR                (CYGARC_REG_SCI_SCSMR-CYGARC_REG_SCI_SCSMR) // serial mode register
+# define SCI_SCBRR                (CYGARC_REG_SCI_SCBRR-CYGARC_REG_SCI_SCSMR) // bit rate register
+# define SCI_SCSCR                (CYGARC_REG_SCI_SCSCR-CYGARC_REG_SCI_SCSMR) // serial control register
+# define SCI_SCTDR                (CYGARC_REG_SCI_SCTDR-CYGARC_REG_SCI_SCSMR) // transmit data register
+# define SCI_SCSSR                (CYGARC_REG_SCI_SCSSR-CYGARC_REG_SCI_SCSMR) // serial status register
+# define SCI_SCRDR                (CYGARC_REG_SCI_SCRDR-CYGARC_REG_SCI_SCSMR) // receive data register
+# define SCI_SCSPTR               (CYGARC_REG_SCI_SCSPTR-CYGARC_REG_SCI_SCSMR) // serial port register
+#else
+# error "Missing register offsets"
+#endif
 
 static short select_word_length[] = {
     -1,
     -1,
-    CYGARC_REG_SCSMR_CHR,               // 7 bits
+    CYGARC_REG_SCI_SCSMR_CHR,               // 7 bits
     0                                   // 8 bits
 };
 
@@ -90,13 +108,13 @@ static short select_stop_bits[] = {
     -1,
     0,                                  // 1 stop bit
     -1,
-    CYGARC_REG_SCSMR_STOP               // 2 stop bits
+    CYGARC_REG_SCI_SCSMR_STOP               // 2 stop bits
 };
 
 static short select_parity[] = {
     0,                                  // No parity
-    CYGARC_REG_SCSMR_PE,                // Even parity
-    CYGARC_REG_SCSMR_PE|CYGARC_REG_SCSMR_OE, // Odd parity
+    CYGARC_REG_SCI_SCSMR_PE,                // Even parity
+    CYGARC_REG_SCI_SCSMR_PE|CYGARC_REG_SCI_SCSMR_OE, // Odd parity
     -1,
     -1
 };
@@ -207,7 +225,7 @@ sh_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config,
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSMR, _smr);
 
     // Set baud rate.
-    _smr &= ~CYGARC_REG_SCSMR_CKSx_MASK;
+    _smr &= ~CYGARC_REG_SCI_SCSMR_CKSx_MASK;
     _smr |= baud_divisor >> 8;
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSMR, _smr);
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCBRR, baud_divisor & 0xff);
@@ -217,13 +235,13 @@ sh_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config,
 
     if (init) {
         // Always enable transmitter and receiver.
-        _scr = CYGARC_REG_SCSCR_TE | CYGARC_REG_SCSCR_RE;
+        _scr = CYGARC_REG_SCI_SCSCR_TE | CYGARC_REG_SCI_SCSCR_RE;
 
         if (chan->out_cbuf.len != 0)
-            _scr |= CYGARC_REG_SCSCR_TIE; // enable tx interrupts
+            _scr |= CYGARC_REG_SCI_SCSCR_TIE; // enable tx interrupts
 
         if (chan->in_cbuf.len != 0)
-            _scr |= CYGARC_REG_SCSCR_RIE; // enable rx interrupts
+            _scr |= CYGARC_REG_SCI_SCSCR_RIE; // enable rx interrupts
     }
      
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
@@ -307,12 +325,12 @@ sh_serial_putc(serial_channel *chan, unsigned char c)
     sh_sci_info *sh_chan = (sh_sci_info *)chan->dev_priv;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr);
-    if (_ssr & CYGARC_REG_SCSSR_TDRE) {
+    if (_ssr & CYGARC_REG_SCI_SCSSR_TDRE) {
 // Transmit buffer is empty
         HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCTDR, c);
         // Clear empty flag.
         HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSSR, 
-                        CYGARC_REG_SCSSR_CLEARMASK & ~CYGARC_REG_SCSSR_TDRE);
+                        CYGARC_REG_SCI_SCSSR_CLEARMASK & ~CYGARC_REG_SCI_SCSSR_TDRE);
         return true;
     } else {
 // No space
@@ -330,13 +348,13 @@ sh_serial_getc(serial_channel *chan)
 
     do {
         HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr);
-    } while ((_ssr & CYGARC_REG_SCSSR_RDRF) == 0);
+    } while ((_ssr & CYGARC_REG_SCI_SCSSR_RDRF) == 0);
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCRDR, c);
 
     // Clear buffer full flag.
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSSR, 
-                    CYGARC_REG_SCSSR_CLEARMASK & ~CYGARC_REG_SCSSR_RDRF);
+                    CYGARC_REG_SCI_SCSSR_CLEARMASK & ~CYGARC_REG_SCI_SCSSR_RDRF);
 
     return c;
 }
@@ -379,7 +397,7 @@ sh_serial_start_xmit(serial_channel *chan)
     cyg_drv_interrupt_mask(sh_chan->rx_int_num);
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr |= CYGARC_REG_SCSCR_TIE;       // Enable xmit interrupt
+    _scr |= CYGARC_REG_SCI_SCSCR_TIE;       // Enable xmit interrupt
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
 
     cyg_drv_interrupt_unmask(sh_chan->rx_int_num);
@@ -400,7 +418,7 @@ sh_serial_stop_xmit(serial_channel *chan)
     cyg_drv_interrupt_mask(sh_chan->rx_int_num);
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr &= ~CYGARC_REG_SCSCR_TIE;      // Disable xmit interrupt
+    _scr &= ~CYGARC_REG_SCI_SCSCR_TIE;      // Disable xmit interrupt
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
 
     cyg_drv_interrupt_unmask(sh_chan->rx_int_num);
@@ -415,7 +433,7 @@ sh_serial_tx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint8 _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr &= ~CYGARC_REG_SCSCR_TIE;      // mask out tx interrupts
+    _scr &= ~CYGARC_REG_SCI_SCSCR_TIE;      // mask out tx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
 
     return CYG_ISR_CALL_DSR;  // Cause DSR to be run
@@ -434,7 +452,7 @@ sh_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
         cyg_uint8 _scr;
 
         HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-        _scr |= CYGARC_REG_SCSCR_TIE;       // unmask tx interrupts
+        _scr |= CYGARC_REG_SCI_SCSCR_TIE;       // unmask tx interrupts
         HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
     }
 }
@@ -448,7 +466,7 @@ sh_serial_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint8 _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr &= ~CYGARC_REG_SCSCR_RIE;      // mask rx interrupts
+    _scr &= ~CYGARC_REG_SCI_SCSCR_RIE;      // mask rx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
     return CYG_ISR_CALL_DSR;  // Cause DSR to be run
 }
@@ -462,18 +480,18 @@ sh_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     cyg_uint8 _ssr, _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr);
-    if (_ssr & CYGARC_REG_SCSSR_RDRF) {
+    if (_ssr & CYGARC_REG_SCI_SCSSR_RDRF) {
         cyg_uint8 _c;
         HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCRDR, _c);
         // Clear buffer full flag.
         HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSSR, 
-                        CYGARC_REG_SCSSR_CLEARMASK & ~CYGARC_REG_SCSSR_RDRF);
+                        CYGARC_REG_SCI_SCSSR_CLEARMASK & ~CYGARC_REG_SCI_SCSSR_RDRF);
 
         (chan->callbacks->rcv_char)(chan, _c);
     }
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr |= CYGARC_REG_SCSCR_RIE;       // unmask rx interrupts
+    _scr |= CYGARC_REG_SCI_SCSCR_RIE;       // unmask rx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
 }
 
@@ -490,7 +508,7 @@ sh_serial_er_ISR(cyg_vector_t vector, cyg_addrword_t data)
     cyg_uint8 _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr &= ~CYGARC_REG_SCSCR_RIE;      // mask rx interrupts
+    _scr &= ~CYGARC_REG_SCI_SCSCR_RIE;      // mask rx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
     return CYG_ISR_CALL_DSR;            // Cause DSR to be run
 }
@@ -504,24 +522,24 @@ sh_serial_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     cyg_uint8 _ssr, _ssr2, _scr;
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr);
-    _ssr2 = CYGARC_REG_SCSSR_CLEARMASK;
+    _ssr2 = CYGARC_REG_SCI_SCSSR_CLEARMASK;
 
-    if (_ssr & CYGARC_REG_SCSSR_ORER) {
-        _ssr2 &= ~CYGARC_REG_SCSSR_ORER;
+    if (_ssr & CYGARC_REG_SCI_SCSSR_ORER) {
+        _ssr2 &= ~CYGARC_REG_SCI_SCSSR_ORER;
         sh_serial_error_orer++;
     }
-    if (_ssr & CYGARC_REG_SCSSR_FER) {
-        _ssr2 &= ~CYGARC_REG_SCSSR_FER;
+    if (_ssr & CYGARC_REG_SCI_SCSSR_FER) {
+        _ssr2 &= ~CYGARC_REG_SCI_SCSSR_FER;
         sh_serial_error_fer++;
     }
-    if (_ssr & CYGARC_REG_SCSSR_PER) {
-        _ssr2 &= ~CYGARC_REG_SCSSR_PER;
+    if (_ssr & CYGARC_REG_SCI_SCSSR_PER) {
+        _ssr2 &= ~CYGARC_REG_SCI_SCSSR_PER;
         sh_serial_error_per++;
     }
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr2);
 
     HAL_READ_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
-    _scr |= CYGARC_REG_SCSCR_RIE;       // unmask rx interrupts
+    _scr |= CYGARC_REG_SCI_SCSCR_RIE;       // unmask rx interrupts
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSCR, _scr);
 }
 

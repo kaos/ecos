@@ -11,15 +11,6 @@ cdl_configuration eCos {
     description "" ;
     hardware    integrator ;
     template    redboot ;
-    package -hardware CYGPKG_HAL_ARM current ;
-    package -hardware CYGPKG_HAL_ARM_INTEGRATOR current ;
-    package -hardware CYGPKG_IO_PCI current ;
-    package -hardware CYGPKG_DEVS_ETH_ARM_INTEGRATOR current ;
-    package -hardware CYGPKG_IO_SERIAL_ARM_INTEGRATOR current ;
-    package -hardware CYGPKG_DEVS_FLASH_INTEGRATOR current ;
-    package -template CYGPKG_HAL current ;
-    package -template CYGPKG_INFRA current ;
-    package -template CYGPKG_REDBOOT current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
 };
@@ -46,10 +37,6 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
 
 cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
     inferred_value 0
-};
-
-cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_DIAG {
-    user_value 1
 };
 
 cdl_option CYGSEM_HAL_USE_ROM_MONITOR {

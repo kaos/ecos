@@ -8,29 +8,38 @@
 //      Architecture specific abstractions
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -73,6 +82,8 @@
 #define HAL_THREAD_CONTEXT_FIRST        0
 #define HAL_THREAD_CONTEXT_R0           (0-HAL_THREAD_CONTEXT_FIRST)
 #define HAL_THREAD_CONTEXT_R4           (4-HAL_THREAD_CONTEXT_FIRST)
+#define HAL_THREAD_CONTEXT_R8           (8-HAL_THREAD_CONTEXT_FIRST)
+#define HAL_THREAD_CONTEXT_R9           (9-HAL_THREAD_CONTEXT_FIRST)
 #define HAL_THREAD_CONTEXT_R10          (10-HAL_THREAD_CONTEXT_FIRST)
 #define HAL_THREAD_CONTEXT_LAST         10
 #define HAL_NUM_THREAD_CONTEXT_REGS     (HAL_THREAD_CONTEXT_LAST - \
@@ -85,16 +96,16 @@ typedef struct
     // These are common to all saved states
     cyg_uint32  d[HAL_NUM_THREAD_CONTEXT_REGS] ;  // Data regs (r0..r10)
     cyg_uint32  fp;                               // (r11) Frame pointer
+    cyg_uint32  ip;                               // (r12)
     cyg_uint32  sp;                               // (r13) Stack pointer
     cyg_uint32  lr;                               // (r14) Link Reg
     cyg_uint32  pc;                               // (r15) PC place holder
                                                   //       (never used)
     cyg_uint32  cpsr;                             // Condition Reg
-    cyg_uint32  ip;                               // (r12) Previous stack
-                                                  //       pointer
     // These are only saved for exceptions and interrupts
     cyg_uint32  vector;                           // Vector number
-    cyg_uint32  msr;                              // Machine State Reg
+    cyg_uint32  svc_lr;                           // saved svc mode lr
+    cyg_uint32  svc_sp;                           // saved svc mode sp
 
 } HAL_SavedRegisters;
 
@@ -265,6 +276,17 @@ extern cyg_uint16 __thumb_breakinst;
     (_regs_)->pc = _regval_[15];                                \
     (_regs_)->cpsr = _regval_[25];                              \
     CYG_MACRO_END
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+#define HAL_GET_PROFILE_INFO( _thepc_, _thesp_ )                \
+    CYG_MACRO_START                                             \
+    extern HAL_SavedRegisters *hal_saved_interrupt_state;       \
+    if ( hal_saved_interrupt_state ) {                          \
+        (_thepc_) = (char *)(hal_saved_interrupt_state->pc);    \
+        (_thesp_) = (char *)(hal_saved_interrupt_state->sp);    \
+    }                                                           \
+    CYG_MACRO_END
+#endif
 
 //--------------------------------------------------------------------------
 // HAL setjmp

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/02
-// Version:     $Id: choosereposdlg.cpp,v 1.2 2001/03/23 13:38:04 julians Exp $
+// Version:     $Id: choosereposdlg.cpp,v 1.3 2002/02/28 18:30:35 julians Exp $
 // Purpose:
 // Description: Implementation file for ecChooseRepositoryDialog
 // Requires:
@@ -185,7 +185,7 @@ void ecChooseRepositoryDialog::CreateControls(wxWindow* parent)
 
 void ecChooseRepositoryDialog::OnBrowse(wxCommandEvent& event)
 {
-    wxDirDialog dialog(this);
+    wxDirDialog dialog(this, wxT("Repository path"));
     if (wxID_OK == dialog.ShowModal())
     {
         wxString path = dialog.GetPath();

@@ -87,8 +87,8 @@ So, the bottom line is that a hardware driver will have a template
 	#include <cyg/hal/hal_arch.h>
 	#include <cyg/infra/diag.h>
 	#include <cyg/hal/drv_api.h>
-	#include <netdev.h>
-	#include <eth_drv.h>
+	#include <cyg/io/eth/netdev.h>
+	#include <cyg/io/eth/eth_drv.h>
 
 	ETH_DRV_SC(DRV_sc,
 	           0,             // No driver specific data needed

@@ -5,29 +5,6 @@
 //     
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -2070,6 +2047,7 @@ dodata:							/* XXX */
 			break;
 		}
 	}
+#ifdef TCPDEBUG
 	if (so->so_options & SO_DEBUG) {
 #ifdef INET6
 		if (tp->pf == PF_INET6)
@@ -2078,6 +2056,7 @@ dodata:							/* XXX */
 #endif /* INET6 */
 			tcp_trace(TA_INPUT, ostate, tp, (caddr_t) &tcp_saveti, 0, tlen);
 	}
+#endif /* TCPDEBUG */
 
 	/*
 	 * Return any desired output.
@@ -2137,6 +2116,7 @@ drop:
 	/*
 	 * Drop space held by incoming segment and return.
 	 */
+#ifdef TCPDEBUG
 	if (tp && (tp->t_inpcb->inp_socket->so_options & SO_DEBUG)) {
 #ifdef INET6
 	  if (tp->pf == PF_INET6)
@@ -2145,6 +2125,7 @@ drop:
 #endif /* INET6 */
 	    tcp_trace(TA_DROP, ostate, tp, (caddr_t) &tcp_saveti, 0, tlen);
 	}
+#endif /* TCPDEBUG */
 
 	m_freem(m);
 	/* destroy temporarily created socket */
@@ -2644,7 +2625,7 @@ tcp_sack_partialack(tp, th)
 	}
 	return 0;
 }
-#endif TCP_SACK
+#endif /* TCP_SACK */
 
 /*
  * Pull out of band byte out of a segment so

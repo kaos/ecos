@@ -3,29 +3,38 @@
 // MLT linker script for ARM
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                     
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 
 #include <pkgconf/system.h>
@@ -96,7 +105,7 @@ OUTPUT_FORMAT(elf32-bigarm)
     .text _vma_ : _lma_ \
     { _stext = ABSOLUTE(.); \
     PROVIDE (__stext = ABSOLUTE(.)); \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) \
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce.t.*) *(.init) \
     *(.glue_7) *(.glue_7t)  \
     } > _region_ \
     _etext = .; PROVIDE (__etext = .);
@@ -112,7 +121,7 @@ OUTPUT_FORMAT(elf32-bigarm)
 #else
 #define SECTION_rodata(_region_, _vma_, _lma_) \
     .rodata _vma_ : _lma_ \
-    { FORCE_OUTPUT; *(.rodata*) } \
+    { FORCE_OUTPUT; *(.rodata*) *(.gnu.linkonce.r.*) } \
     > _region_
 
 #define SECTION_rodata1(_region_, _vma_, _lma_) \
@@ -213,13 +222,14 @@ OUTPUT_FORMAT(elf32-bigarm)
 
 #define SECTION_data(_region_,  _vma_, _lma_) \
     .data _vma_ : _lma_ \
-    { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) MERGE_IN_RODATA \
+    { __ram_data_start = ABSOLUTE (.); \
+    *(.data*) *(.data1) *(.gnu.linkonce.d.*) MERGE_IN_RODATA \
     . = ALIGN (4); \
     KEEP(*( SORT (.ecos.table.*))) ;            \
     . = ALIGN (4); \
     __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
-    *(.dynamic) *(.sdata*) *(.sbss*) \
+    *(.dynamic) *(.sdata*) *(.gnu.linkonce.s.*) \
     . = ALIGN (4); *(.2ram.*) } \
     > _region_ \
     __rom_data_start = LOADADDR (.data); \
@@ -229,7 +239,8 @@ OUTPUT_FORMAT(elf32-bigarm)
 #define SECTION_bss(_region_,  _vma_, _lma_) \
     .bss _vma_ : _lma_ \
     { __bss_start = ABSOLUTE (.); \
-    *(.scommon) *(.dynbss) *(.bss*) *(COMMON) \
+    *(.scommon) *(.dynsbss) *(.sbss*) *(.gnu.linkonce.sb.*) \
+    *(.dynbss) *(.bss*) *(.gnu.linkonce.b.*) *(COMMON) \
     __bss_end = ABSOLUTE (.); } \
     > _region_
 

@@ -8,29 +8,38 @@
 //      Platform specific support for HAL (assembly code)
 //
 //=============================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -111,7 +120,7 @@
 #endif
 #define SRAM_PA          0x60000000
 #define IO_LA_START      0x80000000
-#define IO_LA_END        0x80003000
+#define IO_LA_END        0x8000f000
 #define IO_PA            0x80000000
 
 
@@ -253,6 +262,27 @@ _phys_store_end:
         .endm
 #endif // CYG_HAL_STARTUP_RAM        
 
+#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7312
+        .macro  INIT_MEMORY_CONFIG
+        mov     r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_SUPERVISOR_MODE)
+        msr     cpsr,r0
+        ldr     r10,=UARTDR1
+        ldr     r11,=SYSFLG1
+        ldr     r12,=SYSFLG1_UTXFF1
+	ldr	r1,=SDCONF			
+	ldr	r2,=0x00000522			
+	str	r2,[r1]				
+	ldr	r1,=SDRFOR			
+	ldr	r2,=0x00000240			
+	str	r2,[r1]				
+	ldr	r1,=MEMCFG1			
+	ldr	r2,=0x1F101710			
+	str	r2,[r1]				
+	ldr	r1,=MEMCFG2			
+	ldr	r2,=0x00001F13			
+	str	r2,[r1]
+        .endm
+#else
 #if CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7209
 // No DRAM controller
         .macro  INIT_MEMORY_CONFIG
@@ -277,6 +307,7 @@ _phys_store_end:
 	ldr	r2,=0x81	/* DRAM refresh = 64KHz */
 	strb	r2,[r1]
         .endm
+#endif
 #endif
 
 #if defined(CYGSEM_HAL_STATIC_MMU_TABLES)
@@ -374,6 +405,8 @@ _phys_store_end:
 // The 16M EDB72xx boards are arranged as:
 //   0xC0000000..0xC07FFFFF
 //   0xC1000000..0xC17FFFFF
+// The 16M EDB7312 board is arranged as:
+//   0xC0000000..0xC0FFFFFF
         .macro  MAP_DRAM
 /* Map DRAM */
 	ldr	r3,=DRAM_LA_START
@@ -385,10 +418,15 @@ _phys_store_end:
 	orr	r6,r6,r7
 	str	r6,[r1],#4	/* Store PTE, update pointer */
         ldr     r8,=MMU_SECTION_SIZE/MMU_PAGE_SIZE
+#if !defined(__EDB7312)
+// EDB7312 has contiguous SDRAM
 	ldr	r9,=DRAM_PA_START+0x00800000   /* Skip at 8M boundary */
 12:     cmp     r5,r9
         bne     15f
 	ldr	r5,=DRAM_PA_START+0x01000000   /* Next chunk of DRAM */
+#else
+12:
+#endif
 15:	mov	r6,r5		/* Build page table entry */
 	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable
 	orr	r6,r6,r7

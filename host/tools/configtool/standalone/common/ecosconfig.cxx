@@ -91,6 +91,8 @@ int main (int argc, char * argv []) {
     bool ignore_errors = false; // -i, --ignore-errors
     bool no_updates = false;    // -n, --no-updates,
     bool help = false;          // --help
+    bool enable_debug_set = false;  // --enable-debug or --disable-debug
+    int  debug_level = 0;       // --enable-debug=[0|1|2]
         
     // getopt() cannot easily be used here since this code has to
     // build with VC++ as well.
@@ -117,6 +119,12 @@ int main (int argc, char * argv []) {
             version = true;
         } else if (0 == strcmp(arg, "--no-resolve")) {
             no_resolve = true;
+        } else if (0 == strcmp(arg, "--enable-debug")) {
+            enable_debug_set = true;
+            debug_level = 1;
+        } else if (0 == strcmp(arg, "--disable-debug")) {
+            enable_debug_set = true;
+            debug_level = 0;
         } else if (0 == strncmp(arg, "--srcdir", 8)) {
             // Duplicate use of --srcdir and other data-containing options should
             // be marked as an error.
@@ -280,6 +288,9 @@ int main (int argc, char * argv []) {
     cdl_exec::set_verbose_mode(verbose);
     cdl_exec::set_ignore_errors_mode(ignore_errors);
     cdl_exec::set_no_updates_mode(no_updates);
+    if (enable_debug_set) {
+        cdl_exec::set_debug_level(debug_level);
+    }
     
     // Now identify and process the sub-command.
     const std::string command = argv [command_index];
@@ -448,5 +459,7 @@ void usage_message () {
     printf ("    -v, --verbose                              : increase verbosity\n");    
     printf ("    -i, --ignore-errors                        : ignore unresolved conflicts\n");
     printf ("    -n, --no-updates                           : read-only mode, do not modify the file system\n");
+    printf ("    --enable-debug                             : enable debugging in this configuration\n");
+    printf ("    --disable-debug                            : disable debugging in this configuration\n");
     printf ("    --help                                     : display this message\n");
 }

@@ -8,29 +8,38 @@
 //      Native API data structures
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -222,12 +231,14 @@ typedef struct
 # define CYG_HARDWARETHREAD_SAVED_CONTEXT_MEMBER
 #endif
 
+typedef void cyg_thread_entry(CYG_ADDRWORD data);
+
 #define CYG_HARDWARETHREAD_MEMBERS                                           \
     CYG_ADDRESS         stack_base;   /* pointer to base of stack area */    \
     cyg_uint32          stack_size;   /* size of stack area in bytes */      \
     CYG_HARDWARETHREAD_STACK_LIMIT_MEMBER                                    \
     CYG_ADDRESS         stack_ptr;    /* pointer to saved state on stack */  \
-    CYG_ADDRWORD        entry_point;  /* main entry point (code pointer!) */ \
+    cyg_thread_entry   *entry_point;  /* main entry point (code pointer!) */ \
     CYG_ADDRWORD        entry_data;   /* entry point argument */             \
     CYG_HARDWARETHREAD_SAVED_CONTEXT_MEMBER
 
@@ -288,11 +299,11 @@ typedef struct
 #endif
 
 #ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
-# define CYG_SCHEDTHREAD_ASR_MEMBER                                       \
-    volatile cyg_bool   asr_inhibit; /* If true, blocks calls to ASRs */  \
-    volatile cyg_bool   asr_pending; /* If true, this thread's ASR    */  \
-                                     /* should be called. */              \
-    CYG_SCHEDTHREAD_ASR_NONGLOBAL_MEMBER                                  \
+# define CYG_SCHEDTHREAD_ASR_MEMBER                                         \
+    volatile cyg_ucount32 asr_inhibit; /* If true, blocks calls to ASRs */  \
+    volatile cyg_bool     asr_pending; /* If true, this thread's ASR    */  \
+                                       /* should be called. */              \
+    CYG_SCHEDTHREAD_ASR_NONGLOBAL_MEMBER                                    \
     CYG_SCHEDTHREAD_ASR_DATA_NONGLOBAL_MEMBER                             
 #else
 # define CYG_SCHEDTHREAD_ASR_MEMBER
@@ -339,7 +350,17 @@ typedef struct
 } cyg_threadtimer;
 
 
-typedef int cyg_reason_t; /* cyg_reason is originally an enum */
+typedef enum
+{
+    CYG_REASON_NONE,
+    CYG_REASON_WAIT,
+    CYG_REASON_DELAY,
+    CYG_REASON_TIMEOUT,
+    CYG_REASON_BREAK,
+    CYG_REASON_DESTRUCT,
+    CYG_REASON_EXIT,
+    CYG_REASON_DONE
+} cyg_reason_t;
 
 #if defined(CYGPKG_KERNEL_EXCEPTIONS) && !defined(CYGSEM_KERNEL_EXCEPTIONS_GLOBAL)
 # define CYG_THREAD_EXCEPTION_CONTROL_MEMBER \
@@ -450,14 +471,21 @@ struct cyg_flag_t
 
 /*---------------------------------------------------------------------------*/
 
+typedef enum
+{
+    CYG_MUTEX_PROTOCOL_NONE,
+    CYG_MUTEX_PROTOCOL_INHERIT,
+    CYG_MUTEX_PROTOCOL_CEILING
+} cyg_mutex_protocol_t;
+
 struct cyg_mutex_t
 {
-    cyg_bool            locked;         /* true if locked               */
+    cyg_atomic          locked;         /* true if locked               */
     cyg_thread          *owner;         /* Current locking thread       */
     cyg_threadqueue     queue;          /* Queue of waiting threads     */
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
-    cyg_uint32          protocol;       /* this mutex's protocol        */
+    cyg_mutex_protocol_t protocol;       /* this mutex's protocol        */
 #endif    
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
     cyg_priority_t      ceiling;        /* mutex priority ceiling       */

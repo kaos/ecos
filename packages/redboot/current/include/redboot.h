@@ -5,29 +5,38 @@
 //      Standard interfaces for RedBoot
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -113,9 +122,7 @@ externC int  strncasecmp(const char *s1, const char *s2, size_t len);
 
 externC void mon_write_char(char c);
 externC bool verify_action(char *fmt, ...);
-//void dump_buf(void *, CYG_ADDRWORD);
-//void dump_buf_with_offset(void *, CYG_ADDRWORD, void *);
-//void vdump_buf_with_offset(_printf_fun *pf, void *, CYG_ADDRWORD, void *);
+externC bool verify_action_with_timeout(int timeout, char *fmt, ...);
 
 // Read a single line of input from the console, possibly with timeout
 externC int  _rb_gets(char *line, int len, int timeout);
@@ -136,6 +143,15 @@ externC void end_console(int old_console);
 unsigned short crc16(unsigned char *buf, int len);
 unsigned long  crc32(unsigned char *buf, int len);
 
+// Alias functions
+#ifdef CYGSEM_REDBOOT_FLASH_ALIASES
+externC char *flash_lookup_alias(char *alias, char *alias_buf);
+#endif
+externC void expand_aliases(char *line, int len);
+
+typedef int (*getc_t)(void);
+typedef void (*terminate_t)(int method, getc_t get_c);
+
 #ifdef CYGPKG_COMPRESS_ZLIB
 // Decompression support
 typedef struct _pipe {
@@ -143,6 +159,7 @@ typedef struct _pipe {
     int in_avail;                       // only changed by producer
     unsigned char* out_buf;             // only changed by consumer (init by producer)
     int out_size;                       // only changed by consumer (init by producer)
+    int out_max;                        // set by producer
     const char* msg;                    // message from consumer
     void* priv;                         // handler's data
 } _pipe_t;
@@ -166,17 +183,19 @@ struct cmd {
     char    *help;
     char    *usage;
     cmd_fun *fun;
+    struct cmd *sub_cmds, *sub_cmds_end;
 } CYG_HAL_TABLE_TYPE;
 externC struct cmd *cmd_search(struct cmd *tab, struct cmd *tabend, char *arg);
 externC void        cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix);
-#define RedBoot_cmd(_s_,_h_,_u_,_f_) cmd_entry(_s_,_h_,_u_,_f_,RedBoot_commands)
-#define _cmd_entry(_s_,_h_,_u_,_f_,_n_)                                   \
+#define RedBoot_cmd(_s_,_h_,_u_,_f_) cmd_entry(_s_,_h_,_u_,_f_,0,0,RedBoot_commands)
+#define RedBoot_nested_cmd(_s_,_h_,_u_,_f_,_subs_,_sube_) cmd_entry(_s_,_h_,_u_,_f_,_subs_,_sube_,RedBoot_commands)
+#define _cmd_entry(_s_,_h_,_u_,_f_,_subs_,_sube_,_n_)                                   \
 cmd_fun _f_;                                                      \
-struct cmd _cmd_tab_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(_n_,_f_) = {_s_, _h_, _u_, _f_};
-#define cmd_entry(_s_,_h_,_u_,_f_,_n_)                                   \
-extern _cmd_entry(_s_,_h_,_u_,_f_,_n_)
+struct cmd _cmd_tab_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(_n_,_f_) = {_s_, _h_, _u_, _f_, _subs_, _sube_};
+#define cmd_entry(_s_,_h_,_u_,_f_,_subs_,_sube_,_n_)                                   \
+extern _cmd_entry(_s_,_h_,_u_,_f_,_subs_,_sube_,_n_)
 #define local_cmd_entry(_s_,_h_,_u_,_f_,_n_)                             \
-static _cmd_entry(_s_,_h_,_u_,_f_,_n_)
+static _cmd_entry(_s_,_h_,_u_,_f_,0,0,_n_)
 
 // Initialization functions
 #define RedBoot_INIT_FIRST 0000
@@ -238,18 +257,10 @@ externC bool scan_opts(int argc, char *argv[], int first,
                        void **def_arg, int def_arg_type, char *def_descr);
 
 externC int redboot_getc(void);
-externC void redboot_getc_init(int (*fun)(char *, int, int *), int verbose);
+externC void redboot_getc_init(int (*fun)(char *, int, int *), 
+                               int verbose, int decompress);
 externC void redboot_getc_rewind(void);
-
-#define BUF_SIZE 256
-typedef struct {
-    int (*fun)(char *, int len, int *err);
-    unsigned char  buf[BUF_SIZE];
-    unsigned char *bufp;
-    int   avail, len, err;
-    int   verbose, tick;
-} getc_info_t;
-
+externC void redboot_getc_close(void);
 
 #ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
 #define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
@@ -278,6 +289,8 @@ struct hostent {
 #define h_addr  h_addr_list[0]  /* for backward compatibility */
 
 externC int redboot_dns_res_init(void);
+externC void set_dns(char* new_ip);
+externC void show_dns(void);
 externC struct hostent *gethostbyname(const char *host);
 
 // Error reporting
@@ -371,5 +384,54 @@ isalnum(int c)
 {
     return (isalpha(c) || isdigit(c));
 }
+
+//----------------------------------------------------------------------------
+// syscall values
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+
+// These are required by the ANSI C part of newlib (excluding system() of
+// course).
+#define SYS_exit         1
+#define SYS_open         2
+#define SYS_close        3
+#define SYS_read         4
+#define SYS_write        5
+#define SYS_lseek        6
+#define SYS_unlink       7
+#define SYS_getpid       8
+#define SYS_kill         9
+#define SYS_fstat        10
+//#define SYS_sbrk       11 - not currently a system call, but reserved.
+
+// ARGV support.
+#define SYS_argvlen      12
+#define SYS_argv         13
+
+// These are extras added for one reason or another.
+#define SYS_chdir        14
+#define SYS_stat         15
+#define SYS_chmod        16
+#define SYS_utime        17
+#define SYS_time         18
+#define SYS_gettimeofday 19
+#define SYS_times        20
+
+#define SYS_interrupt   1000
+#define SYS_meminfo     1001
+
+#define __GET_SHARED  0xbaad // 47789 decimal
+
+#ifdef CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
+
+#define SYS_timer_call_back 2001
+#define SYS_timer_frequency 2002
+#define SYS_timer_reset     2003
+
+#endif // CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
+#define SYS_rename          3001
+#define SYS_isatty          3002
+#define SYS_system          3003
+
+#endif // CYGSEM_REDBOOT_BSP_SYSCALLS
 
 #endif // _REDBOOT_H_

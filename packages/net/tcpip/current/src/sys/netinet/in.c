@@ -5,29 +5,6 @@
 //     
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -294,6 +271,10 @@ in_control(so, cmd, data, ifp)
 
 	case SIOCAIFADDR:
 	case SIOCDIFADDR:
+
+	case SIOCSIFADDR: // Moved from after this search, otherwise repeated
+	    // identical SIOCSIFADDRs leaked the previously allocated record.
+
 		if (ifra->ifra_addr.sin_family == AF_INET)
 		    for (; ia != 0; ia = ia->ia_list.tqe_next) {
 			if (ia->ia_ifp == ifp  &&
@@ -304,7 +285,6 @@ in_control(so, cmd, data, ifp)
 		if (cmd == SIOCDIFADDR && ia == 0)
 			return (EADDRNOTAVAIL);
 		/* FALLTHROUGH */
-	case SIOCSIFADDR:
 	case SIOCSIFNETMASK:
 	case SIOCSIFDSTADDR:
 		if ((so->so_state & SS_PRIV) == 0)
@@ -314,7 +294,7 @@ in_control(so, cmd, data, ifp)
 			panic("in_control");
 		if (ia == (struct in_ifaddr *)0) {
 			ia = (struct in_ifaddr *)
-				malloc(sizeof *ia, M_IFADDR, M_WAITOK);
+				malloc(sizeof *ia, M_IFADDR, M_WAITOK); // This alloc was leaked
 			if (ia == (struct in_ifaddr *)0)
 				return (ENOBUFS);
 			bzero((caddr_t)ia, sizeof *ia);

@@ -1,3 +1,17 @@
+2002-03-04  Gary Thomas  <gthomas@redhat.com>
+
+	* build.cxx (update_header_file_info): 
+	Suppress include files which and in "~" - these are backup
+	files and are transient.  Keeping them can break a build
+	tree if the backup files are removed.
+
+2002-02-18  Bart Veer  <bartv@redhat.com>
+
+	* transact.cxx (user_confirmation_required):
+	Making a valuable with a user_value inactive requires
+	user confirmation, it should not be done automatically
+	by the inference engine.
+
 2001-12-07  Bart Veer  <bartv@redhat.com>
 
 	* doc/language.sgml, doc/*.html:

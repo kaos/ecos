@@ -7,29 +7,38 @@
 ##      SH3 variant assembler header file
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -52,17 +61,17 @@
 #include <cyg/hal/sh_regs.h>
         
 #===========================================================================
-# SR initialization value
-# zero all bits except:
-# MD = Processor operation mode field (privileged mode)
-# I0-3 = Mask out all interrupts but NMI.
-#
-# When saving or restoring the state of an exception or interrupt, the bit
-# CYGARC_REG_SR_RB is also set, switching the register bank. When this bit
-# is set, interrupts must be disabled.
-#
-# Note: We could also use the BL bit to prevent interrupts, but that would
-#       also prevent the use of breakpoints.
+## SR initialization value
+## zero all bits except:
+## MD = Processor operation mode field (privileged mode)
+## I0-3 = Mask out all interrupts but NMI.
+## 
+## When saving or restoring the state of an exception or interrupt, the bit
+## CYGARC_REG_SR_RB is also set, switching the register bank. When this bit
+## is set, interrupts must be disabled.
+## 
+## Note: We could also use the BL bit to prevent interrupts, but that would
+##       also prevent the use of breakpoints.
 
 #define CYG_SR (CYGARC_REG_SR_MD|CYGARC_REG_SR_IMASK)
 #define CYG_SR_BANK1 (CYGARC_REG_SR_MD|CYGARC_REG_SR_IMASK|CYGARC_REG_SR_RB)
@@ -159,16 +168,20 @@ $CYGARC_REG_IPRF:
 ##-----------------------------------------------------------------------------
 ## Interrupt decode macros
 	.macro	hal_intc_decode tmp,inum
-#if (CYGARC_SH_MOD_INTC >= 2)
-        mov.l   $nCYGARC_REG_INTEVT2,\tmp
-#else
-        mov     #CYGARC_REG_INTEVT,\tmp
-#endif
+        mov.l   1f,\tmp
         mov.l   @\tmp,\inum
         mov     #-5,\tmp                ! divide cause by 0x20
         shld    \tmp,\inum
-        add     #-14,\inum              ! adjust so NMI becomes 0
-
+	bra     2f
+         add     #-14,\inum             ! adjust so NMI becomes 0
+	.align  2
+1:
+#if (CYGARC_SH_MOD_INTC >= 2)
+	.long   CYGARC_REG_INTEVT2
+#else
+	.long   CYGARC_REG_INTEVT
+#endif	
+2:
 	.endm
 	
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN

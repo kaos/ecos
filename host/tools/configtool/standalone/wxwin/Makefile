@@ -38,6 +38,9 @@ PROGRAM = configtool
 LEVEL = debug
 WXDEBUGFLAGS=--with-debug_flag --with-debug_info --enable-debug --enable-debug_cntxt
 ECCDEBUGFLAGS=--enable-debug 
+# IMPORTANT NOTE for recent versions of wxWindows, you must pass
+# --static to wx-config. For older versions, comment this out.
+#WXCONFIGFLAGS=--static
 CPPDEBUGOPTIONS=-ggdb
 LINKDEBUGOPTIONS=
 STRIPCOMMAND=echo 
@@ -58,7 +61,7 @@ CTBUILDDIR=$(BUILDDIR)/ct-build-$(LEVEL)
 # You have to specify this when invoking make.
 ECOSDIR=You_should_override_the_ECOSDIR_variable
 CTDIR=$(ECOSDIR)/host/tools/configtool/standalone/wxwin
-WXCONFIG=$(WXBUILDDIR)/wx-config
+WXCONFIG=$(WXBUILDDIR)/wx-config $(WXCONFIGFLAGS)
 # Where the binary will be installed locally
 LOCALBINDIR=/home/ecos/misctools/H-i686-pc-linux-gnu/bin
 # A suitable home for archives of the tool
@@ -173,7 +176,7 @@ wx:
 	cd $(WXBUILDDIR) ; \
         if test ! -f Makefile ; then rm -f *.o *.d ; \
         rm -f *.cache ; \
-        $(WXDIR)/configure --disable-shared --enable-gui --with-gtk --enable-log $(WXDEBUGFLAGS) --with-threads --without-sockets -without-odbc -without-libjpeg ; \
+        $(WXDIR)/configure --disable-shared --enable-gui --with-gtk --enable-log $(WXDEBUGFLAGS) --with-threads --disable-no_rtti --without-sockets --without-odbc --without-libjpeg ; \
         fi; \
         make
 
@@ -397,3 +400,5 @@ $(CTBUILDDIR)/TestResource.o:	$(ECOSDIR)/host/tools/ecostest/common/TestResource
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) `$(WXCONFIG) $(INCLUDEPREFIX) --cflags` -o $@ $<
 
 
+help:
+	@echo "Targets: full, ecc, wx, ct, cleanall, cleanct, cleanwx, installbinary, installtarball"

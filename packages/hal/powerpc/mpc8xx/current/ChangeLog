@@ -1,3 +1,35 @@
+2002-05-03  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/intr0.c: Fiddle to make this test run on all current MPC8xx
+	boards (the MBX is especially cranky).  The problem lies with the
+	fact that the timers used to run the test are very platform specific.
+
+2002-04-24  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES
+	defined.
+
+2002-04-22  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/intr0.c: Only applicable if chained interrupts are *not*
+	turned on.  Also, change setup to be a little more intuitive.
+
+2002-04-11  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/intr0.c: Adjust counts on non-MBX platforms.  Note that
+	this test is highly subjective to how the hardware is setup and
+	that the test itself can't wholy determine the correct values
+	to use at runtime.  The chosen ones work for known platforms.
+
+2002-04-08  Gary Thomas  <gthomas@redhat.com>
+
+	* include/variant.inc: Need vectors for both ROM and ROMRAM mode.
+
+2002-01-23  Gary Thomas  <gthomas@redhat.com>
+
+	* include/var_regs.h (CYGARC_REG_IMM_BASE): Move to match
+	what EPPCbug uses (for Linux booting).
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/mpc8xxrev.c: Don't use printf(), but rather diag_printf().
@@ -150,27 +182,36 @@
 	* Created.
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

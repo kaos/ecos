@@ -5,29 +5,38 @@
 //      Device driver for Cirrus Logic CS8900A ethernet controller
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -70,8 +79,8 @@
 #include <cyg/hal/drv_api.h>
 #undef __ECOS
 #define __ECOS
-#include <eth_drv.h>
-#include <netdev.h>
+#include <cyg/io/eth/eth_drv.h>
+#include <cyg/io/eth/netdev.h>
 
 #include <cyg/io/cs8900.h>
 
@@ -104,6 +113,7 @@ cs8900a_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
 {
     cs8900a_priv_data_t* cpd = (cs8900a_priv_data_t *)data;
     cyg_drv_interrupt_mask(cpd->interrupt);
+    cyg_drv_interrupt_acknowledge(cpd->interrupt);
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
 
@@ -139,7 +149,6 @@ cs8900a_deliver(struct eth_drv_sc *sc)
     {
         cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
         // Allow interrupts to happen again
-        cyg_drv_interrupt_acknowledge(cpd->interrupt);
         cyg_drv_interrupt_unmask(cpd->interrupt);
     }
 #endif
@@ -212,6 +221,9 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 
     CYGHWR_CL_CS8900A_PLF_RESET(base);
     put_reg(base, PP_SelfCtl, PP_SelfCtl_Reset);  // Reset chip
+
+    CYGHWR_CL_CS8900A_PLF_POST_RESET(base);
+    
     while ((get_reg(base, PP_SelfStat) & PP_SelfStat_InitD) == 0) {
         if (--timeout <= 0) {
 #if DEBUG & 8
@@ -308,8 +320,8 @@ cs8900a_start(struct eth_drv_sc *sc, cyg_uint8 *esa, int flags)
     put_reg(base, PP_IntReg, PP_IntReg_IRQ0);  // Only possibility
     put_reg(base, PP_RxCFG, PP_RxCFG_RxOK | PP_RxCFG_CRC | 
                       PP_RxCFG_RUNT | PP_RxCFG_EXTRA);
-    put_reg(base, PP_RxCTL, PP_RxCTL_RxOK | PP_RxCTL_Broadcast | 
-                      PP_RxCTL_IA);
+    cpd->rxmode = PP_RxCTL_RxOK | PP_RxCTL_Broadcast | PP_RxCTL_IA;
+    put_reg(base, PP_RxCTL, cpd->rxmode);
     put_reg(base, PP_TxCFG, PP_TxCFG_TxOK | PP_TxCFG_Collision | 
                       PP_TxCFG_CRS | PP_TxCFG_SQE | PP_TxCFG_Late | 
                       PP_TxCFG_Jabber | PP_TxCFG_16Collisions);
@@ -329,10 +341,27 @@ cs8900a_start(struct eth_drv_sc *sc, cyg_uint8 *esa, int flags)
 static int
 cs8900a_control(struct eth_drv_sc *sc, unsigned long key, void *data, int data_length)
 {
+    cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
+    cyg_addrword_t base = cpd->base;
+    struct eth_drv_mc_list *mc_list = data;
+
     switch (key) {
     case ETH_DRV_SET_MAC_ADDRESS:
         return 0;
         break;
+    case ETH_DRV_SET_MC_LIST:
+    case ETH_DRV_SET_MC_ALL:
+        // Note: this code always accepts all multicast addresses if any
+        // are desired.  It would be possible to accept a subset by adjusting
+        // the Logical Address Filter (LAF), but that would require scanning
+        // this list and building a suitable mask.
+        if (mc_list->len) {
+            cpd->rxmode |= PP_RxCTL_Multicast;
+        } else {
+            cpd->rxmode &= ~PP_RxCTL_Multicast;
+        }
+        put_reg(base, PP_RxCTL, cpd->rxmode);  // When is it safe to do this?
+        return 0;
     default:
         return 1;
         break;

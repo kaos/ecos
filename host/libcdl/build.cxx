@@ -973,6 +973,9 @@ update_header_file_info(CdlConstBuildLoadable loadable, CdlBuildInfo_Loadable& b
             if (0 == strncmp("pkgconf/", file_i->c_str(), 8)) {
                 continue;
             }
+            if ('~' == *(file_i->rbegin())) {
+                continue;
+            }
             CdlBuildInfo_Header local_copy;
             local_copy.source   = "include/" + *file_i;
             local_copy.destination      = "";

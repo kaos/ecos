@@ -5,29 +5,38 @@
 //	Intel 82559 ethernet driver
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -144,8 +153,8 @@
 #include <cyg/infra/diag.h>
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/drv_api.h>
-#include <netdev.h>
-#include <eth_drv.h>
+#include <cyg/io/eth/netdev.h>
+#include <cyg/io/eth/eth_drv.h>
 
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>
@@ -163,7 +172,7 @@
 
 // Exported statistics and the like
 #include <cyg/devs/eth/i82559_info.h>
-#include <eth_drv_stats.h>
+#include <cyg/io/eth/eth_drv_stats.h>
 #include CYGDAT_DEVS_ETH_INTEL_I82559_INL
 
 // ------------------------------------------------------------------------
@@ -724,6 +733,7 @@ static inline cyg_uint32 virt_to_bus(cyg_uint32 p_memory)
 #define CFG_CMD_INT        0x0020
 #define CFG_CMD_IAS        0x0100       // individual address setup
 #define CFG_CMD_CONFIGURE  0x0200       // configure
+#define CFG_CMD_MULTICAST  0x0300       // Multicast-Setup
 
 #define CFG_STATUS_C       0x0080
 #define CFG_STATUS_OK      0x0020
@@ -735,6 +745,7 @@ static inline cyg_uint32 virt_to_bus(cyg_uint32 p_memory)
 #define CFG_CMD_INT        0x2000
 #define CFG_CMD_IAS        0x0001       // individual address setup
 #define CFG_CMD_CONFIGURE  0x0002       // configure
+#define CFG_CMD_MULTICAST  0x0003       // Multicast-Setup
 
 #define CFG_STATUS_C       0x8000
 #define CFG_STATUS_OK      0x2000
@@ -761,6 +772,9 @@ static inline cyg_uint32 virt_to_bus(cyg_uint32 p_memory)
 
 #endif // CYG_ADDRESSING_IS_GIBENDIAN
 
+// Normal addressing
+#define CFG_MC_LIST_BYTES 8
+#define CFG_MC_LIST_DATA 10
 
 // ------------------------------------------------------------------------
 //
@@ -837,6 +851,7 @@ static void *mem_reserved_ioctl = (void*)0;
 static int pci_init_find_82559s(void);
 
 static void i82559_reset(struct i82559* p_i82559);
+static void i82559_restart(struct i82559 *p_i82559);
 static int eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom );
 
 static void InitRxRing(struct i82559* p_i82559);
@@ -849,7 +864,13 @@ eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
 static cyg_uint32
 eth_isr(cyg_vector_t vector, cyg_addrword_t data);
 
-static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized);
+static int i82559_configure(struct i82559* p_i82559, int promisc,
+                            int oversized, int multicast_all);
+#ifdef ETH_DRV_SET_MC_LIST
+static int i82559_set_multicast(struct i82559* p_i82559,
+                                int num_addrs,
+                                cyg_uint8 *address_list );
+#endif // ETH_DRV_SET_MC_ALL
 #ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
 static void
 program_eeprom(cyg_uint32 ioaddr, cyg_uint32 eeprom_size, cyg_uint8 *data);
@@ -900,7 +921,10 @@ wait_for_cmd_done(long scb_ioaddr, cmd_wait_t type)
         while( (0 != ((CU_CMD_MASK | RU_CMD_MASK) & status)) && --wait >= 0);
     }
 
-    CYG_ASSERT( wait > 0, "wait_for_cmd_done: cmd busy" );
+    // special case - don't complain about RUC_ADDR_LOAD as it doesn't clear
+    // on some silicon
+    if ( RUC_ADDR_LOAD != (status & RU_CMD_MASK) )
+        CYG_ASSERT( wait > 0, "wait_for_cmd_done: cmd busy" );
 
     if (WAIT_CU == type) {
         // Also check CU is idle
@@ -1497,6 +1521,10 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
     
     p_i82559->within_send = 0; // init recursion level
 
+    p_i82559->promisc = 0;  // None of these initially
+    p_i82559->multicast_all = 0;
+    p_i82559->oversized = 1;    // Enable this for VLAN mode by default
+
     InitRxRing(p_i82559);
     InitTxRing(p_i82559);
 
@@ -1550,8 +1578,7 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
 
 #ifdef KEEP_STATISTICS
 #ifdef CYGDBG_DEVS_ETH_INTEL_I82559_KEEP_STATISTICS
-    p_i82559->p_statistics =
-        p_statistics = pciwindow_mem_alloc(sizeof(I82559_COUNTERS));
+    p_statistics = p_i82559->p_statistics;
     memset(p_statistics, 0xFFFFFFFF, sizeof(I82559_COUNTERS));
     // set statistics dump address
     wait_for_cmd_done(ioaddr, WAIT_CU);
@@ -1574,17 +1601,24 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
 
     /* Enable promiscuous mode if requested, reception of oversized frames always.
      * The latter is needed for VLAN support and shouldn't hurt even if we're not
-     * using VLANs.
+     * using VLANs.  Reset multicastALL reception choice.
      */
-    i82559_configure(p_i82559, 0
+
+    p_i82559->promisc = 0
 #ifdef CYGPKG_NET
                      || !!(ifp->if_flags & IFF_PROMISC)
 #endif
 #ifdef ETH_DRV_FLAGS_PROMISC_MODE
                      || !!(flags & ETH_DRV_FLAGS_PROMISC_MODE)
 #endif
-                     , 1);
+            ;
 
+    p_i82559->multicast_all = 0;
+
+    i82559_configure(p_i82559,
+                     p_i82559->promisc,
+                     p_i82559->oversized,
+                     p_i82559->multicast_all );
 
 #ifdef DEBUG
     {
@@ -1598,11 +1632,18 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
     }
 #endif
 
+    i82559_restart(p_i82559);
+}
+
+static void i82559_restart(struct i82559 *p_i82559)
+{
+    cyg_uint32 ioaddr;
+    ioaddr = p_i82559->io_address; // get 82559's I/O address
+
     // Load pointer to Rx Ring and enable receiver
     wait_for_cmd_done(ioaddr, WAIT_RU);
     OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]), ioaddr + SCBPointer);
     OUTW(RUC_START, ioaddr + SCBCmd);
-   
 }
 
 // ------------------------------------------------------------------------
@@ -1658,6 +1699,36 @@ i82559_stop( struct eth_drv_sc *sc )
 
     p_i82559->active = 0;               // stop people tormenting it
     i82559_reset(p_i82559);             // that should stop it
+
+    // Now that it's inactive, return all pending tx status to the higher
+    // layers:
+    // "Done" txen are from here to active, OR 
+    // the remove one if the queue is full AND its status is nonzero:
+    while ( 1 ) {
+	int tx_descriptor_remove = p_i82559->tx_descriptor_remove;
+	unsigned long key = p_i82559->tx_keys[ tx_descriptor_remove ];
+
+	// Break out if "remove" is the active slot
+	// (AND the Q is not full, or the Tx is not complete yet)
+	if ( (tx_descriptor_remove == p_i82559->tx_descriptor_active) &&
+	     ( ! p_i82559->tx_queue_full) )
+	    break;
+	    
+	// Zero the key in global state before the callback:
+	p_i82559->tx_keys[ tx_descriptor_remove ] = 0;
+
+#ifdef DEBUG_82559
+	os_printf("Stop: TxDone %d %x: KEY %x TxCB %x\n",
+		  p_i82559->index, (int)p_i82559, key, p_txcb );
+#endif
+	// tx_done() can now cope with a NULL key, no guard needed here
+	(sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ );
+
+	if ( ++tx_descriptor_remove >= MAX_TX_DESCRIPTORS )
+	    tx_descriptor_remove = 0;
+	p_i82559->tx_descriptor_remove = tx_descriptor_remove;
+	p_i82559->tx_queue_full = 0;
+    }
 
     ResetRxRing( p_i82559 );
     ResetTxRing( p_i82559 );
@@ -1813,6 +1884,10 @@ PacketRxReady(struct i82559* p_i82559)
         CYG_ASSERT( (cyg_uint8 *)p_rfd >= i82559_heap_base, "rfd under" );
         CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
 
+#ifdef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
+	// Can't deliver more than one packet in polled standalone mode
+	break;
+#endif
     }
 
     // See if the RU has gone idle (usually because of out of resource
@@ -2163,7 +2238,11 @@ i82559_can_send(struct eth_drv_sc *sc)
                 Check82559TxLockupTimeout(p_i82559);
                 TxMachine(p_i82559);
                 Acknowledge82559Interrupt(p_i82559);
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
+		// We are not prepared to receive a packet now if we are in a polled
+		// standalone configuration.
                 PacketRxReady(p_i82559);
+#endif
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
                 if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
 #ifdef CYGDBG_USE_ASSERTS
@@ -2184,7 +2263,11 @@ i82559_can_send(struct eth_drv_sc *sc)
     Check82559TxLockupTimeout(p_i82559);
     TxMachine(p_i82559);
     Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
+    // We are not prepared to receive a packet now if we are in a polled
+    // standalone configuration.
     PacketRxReady(p_i82559);
+#endif
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
     if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
 #ifdef CYGDBG_USE_ASSERTS
@@ -2353,7 +2436,11 @@ i82559_send(struct eth_drv_sc *sc,
             if ( p_i82559->active ) {
                 TxMachine(p_i82559);
                 Acknowledge82559Interrupt(p_i82559);
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
+		// We are not prepared to receive a packet now if we are in a polled
+		// standalone configuration.
                 PacketRxReady(p_i82559);
+#endif
             }
         }
     }
@@ -2363,7 +2450,11 @@ i82559_send(struct eth_drv_sc *sc,
     // Advance TxMachine atomically
     TxMachine(p_i82559);
     Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
+    // We are not prepared to receive a packet now if we are in a polled
+    // standalone configuration.
     PacketRxReady(p_i82559);
+#endif
 #endif // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
 
     p_i82559->within_send--;
@@ -2693,16 +2784,6 @@ pci_init_find_82559s( void )
         return 0;
     }
 
-#ifdef CYGARC_UNCACHED_ADDRESS
-    CYG_ASSERT( CYGARC_UNCACHED_ADDRESS((CYG_ADDRWORD)CYGMEM_SECTION_pci_window) ==
-                CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE,
-      "PCI window configured does not match PCI memory section base" );
-#else
-    CYG_ASSERT( (CYG_ADDRWORD)CYGMEM_SECTION_pci_window ==
-                CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE,
-      "PCI window configured does not match PCI memory section base" );
-#endif
-
     // First initialize the heap in PCI window'd memory
     i82559_heap_size = CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE;
     i82559_heap_base = (cyg_uint8 *)CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE;
@@ -2731,6 +2812,9 @@ pci_init_find_82559s( void )
 #ifdef DEBUG
             db_printf("eth%d = 82559\n", device_index);
 #endif
+	    // Allocate it a stats window:
+	    p_i82559->p_statistics = pciwindow_mem_alloc(sizeof(I82559_COUNTERS));
+
             cyg_pci_get_device_info(devid, &dev_info);
 
             p_i82559->interrupt_handle = 0; // Flag not attached.
@@ -2738,6 +2822,8 @@ pci_init_find_82559s( void )
 #ifdef DEBUG
                 db_printf(" Wired to HAL vector %d\n", p_i82559->vector);
 #endif
+
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
                 cyg_drv_interrupt_create(
                     p_i82559->vector,
                     0,                  // Priority - unused
@@ -2783,6 +2869,7 @@ pci_init_find_82559s( void )
                     }
                 }
 #endif // CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
+#endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
             }
             else {
                 p_i82559->vector=0;
@@ -2850,7 +2937,9 @@ pci_init_find_82559s( void )
                 // This is the indicator for "uses an interrupt"
                 if (p_i82559->interrupt_handle != 0) {
                     cyg_drv_interrupt_acknowledge(p_i82559->vector);
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
                     cyg_drv_interrupt_unmask(p_i82559->vector);
+#endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
                 }
 #ifdef DEBUG
                 db_printf(" **** Device enabled for I/O and Memory "
@@ -2895,13 +2984,103 @@ pci_init_find_82559s( void )
 
 // ------------------------------------------------------------------------
 //
+//  Function : i82559_set_multicast
+//
+// ------------------------------------------------------------------------
+#ifdef ETH_DRV_SET_MC_LIST
+static int i82559_set_multicast(struct i82559* p_i82559,
+                                int num_addrs,
+                                cyg_uint8 *address_list )
+{
+    cyg_uint32  ioaddr;
+    volatile CFG *ccs;
+    volatile cyg_uint8* config_bytes;
+    cyg_uint16 status;
+    int count;
+    int i;
+
+    IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
+        os_printf( "eth_set_promiscuos_mode: Bad device pointer %x\n",
+                   p_i82559 );
+#endif
+        return -1;
+    }
+
+    ioaddr = p_i82559->io_address;  
+    wait_for_cmd_done(ioaddr, WAIT_CU); 
+    // load cu base address = 0 */ 
+    OUTL(0, ioaddr + SCBPointer);         
+    // 32 bit linear addressing used
+    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
+    // wait for SCB command complete
+    wait_for_cmd_done(ioaddr, WAIT_CU);   
+  
+    // Check the malloc we did earlier worked
+    ccs = (CFG *)mem_reserved_ioctl;
+    if (ccs == (void*)0) 
+        return 2; // Failed
+
+    // Prepare header
+    WRITEMEM16(ccs + CFG_CMD, 
+                     (CFG_CMD_EL | CFG_CMD_SUSPEND | CFG_CMD_MULTICAST));
+    WRITEMEM16(ccs + CFG_STATUS, 0);
+    WRITEMEM32(ccs + CFG_CB_LINK_OFFSET, 
+                     HAL_CTOLE32(VIRT_TO_BUS((cyg_uint32)ccs)));
+
+    count = 6 * num_addrs; // byte count
+
+    WRITEMEM16(ccs + CFG_MC_LIST_BYTES,
+                     HAL_CTOLE16( count ) );
+               
+    config_bytes = ccs + CFG_MC_LIST_DATA;
+    
+    for ( i = 0; i < count; i++ )
+        config_bytes[i] = address_list[i];
+    
+    // Let chip read configuration
+    wait_for_cmd_done(ioaddr, WAIT_CU);
+
+    OUTL(VIRT_TO_BUS(ccs), ioaddr + SCBPointer);
+    OUTW(SCB_M | CU_START, ioaddr + SCBCmd);
+
+    // ...and wait for it to complete operation
+    count = 10000;
+    do {
+      udelay(1);
+      READMEM16(ccs + CFG_STATUS, status);
+    } while (0 == (status & CFG_STATUS_C) && (count-- > 0));
+
+    // Check status
+    if ((status & (CFG_STATUS_C | CFG_STATUS_OK)) 
+        != (CFG_STATUS_C | CFG_STATUS_OK)) {
+        // Failed!
+#ifdef DEBUG
+        os_printf("%s:%d Multicast setup failed\n", __FUNCTION__, __LINE__);
+#endif
+        return 1;
+    }
+
+    wait_for_cmd_done(ioaddr, WAIT_CU);
+    /* load pointer to Rx Ring */
+    
+    OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]), ioaddr + SCBPointer);
+    OUTW(RUC_START, ioaddr + SCBCmd);
+
+    return 0;
+}
+#endif // ETH_DRV_SET_MC_ALL
+
+// ------------------------------------------------------------------------
+//
 //  Function : i82559_configure
 //
 //  Return : 0 = It worked.
 //           non0 = It failed.
 // ------------------------------------------------------------------------
 
-static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
+static int i82559_configure(struct i82559* p_i82559, int promisc,
+                            int oversized, int multicast_all)
 {
     cyg_uint32  ioaddr;
     volatile CFG *ccs;
@@ -2941,7 +3120,7 @@ static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
     // Default values from the Intel Manual
     config_bytes = ccs + CFG_BYTES;
 
-    config_bytes[0]=0x13;
+    config_bytes[0]= 22; // All 22 bytes
     config_bytes[1]=0xc;
     config_bytes[2]=0x0;
     config_bytes[3]=0x0;
@@ -2962,6 +3141,10 @@ static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
     config_bytes[16]=0x0;
     config_bytes[17]=0x40;
     config_bytes[18]=0x72 | (oversized ? 8 : 0); // Keep the Padding Enable bit
+
+    config_bytes[19]=0x80; // FDX pin enable is the default
+    config_bytes[20]=0x3f; // the default
+    config_bytes[21]=0x05 | (multicast_all ? 8 : 0); // Bit 3 is MultiCastALL enable
     
     // Let chip read configuration
     wait_for_cmd_done(ioaddr, WAIT_CU);
@@ -3455,6 +3638,47 @@ i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
     }
 #endif
 
+#ifdef ETH_DRV_SET_MC_LIST
+    case ETH_DRV_SET_MC_LIST:    {
+            struct eth_drv_mc_list *mcl = (struct eth_drv_mc_list *)data;
+
+            i82559_reset(p_i82559);
+            ResetRxRing( p_i82559 );
+            ResetTxRing( p_i82559 );
+
+            p_i82559->multicast_all = 0;
+
+            i82559_configure(p_i82559,
+                             p_i82559->promisc,
+                             p_i82559->oversized,
+                             p_i82559->multicast_all );
+            
+            i82559_set_multicast( p_i82559,
+                                  mcl->len,
+                                  &(mcl->addrs[0][0]) );
+
+            i82559_restart(p_i82559);
+            return 0;
+    }
+#endif // ETH_DRV_SET_MC_LIST
+
+#ifdef ETH_DRV_SET_MC_ALL
+    case ETH_DRV_SET_MC_ALL:
+            i82559_reset(p_i82559);
+            ResetRxRing( p_i82559 );
+            ResetTxRing( p_i82559 );
+
+            p_i82559->multicast_all = 1;
+
+            i82559_configure(p_i82559,
+                             p_i82559->promisc,
+                             p_i82559->oversized,
+                             p_i82559->multicast_all );
+            
+            i82559_restart(p_i82559);
+            return 0;
+#endif // ETH_DRV_SET_MC_ALL
+
     default:
         break;
     }
@@ -3482,7 +3706,7 @@ update_statistics(struct i82559* p_i82559)
 
     ints = Mask82559Interrupt(p_i82559);
 
-    // This points to the sthared memory stats area/command block
+    // This points to the shared memory stats area/command block
     p_statistics = (I82559_COUNTERS *)(p_i82559->p_statistics);
 
     if ( (p_statistics->done & 0xFFFF) == 0xA007 ) {

@@ -5,29 +5,38 @@
 //      HAL implementation miscellaneous functions
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -52,6 +61,7 @@
 
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_io.h>
+#include <cyg/hal/hal_smp.h>
 
 /*------------------------------------------------------------------------*/
 // Array which stores the configured priority levels for the configured
@@ -96,6 +106,10 @@ void hal_pcmb_init(void)
 
     cyg_hal_pcmb_memsize_extended = ((hi<<8)+lo)*1024;
 #endif
+
+    // Disable NMI - this can be reenabled later, once a proper handler
+    // is registered and ready to handle events
+    HAL_WRITE_UINT8(0x70, 0x80);
 }
 
 /*------------------------------------------------------------------------*/
@@ -116,8 +130,12 @@ cyg_uint8 *hal_i386_mem_real_region_top( cyg_uint8 *regionend )
 /*------------------------------------------------------------------------*/
 // Clock initialization and access
 
+#ifdef CYGPKG_HAL_SMP_SUPPORT
+static HAL_SPINLOCK_TYPE pc_clock_lock;
+#else
 #define HAL_SPINLOCK_SPIN( lock )
 #define HAL_SPINLOCK_CLEAR( lock )
+#endif
 
 void hal_pc_clock_initialize(cyg_uint32 period)
 {
@@ -162,8 +180,52 @@ void hal_pc_clock_read(cyg_uint32 * count)
 
 void hal_idle_thread_action(cyg_uint32 loop_count)
 {
+#if 1 //ndef CYGPKG_HAL_SMP_SUPPORT
     asm("hlt") ;
 
+#else    
+
+    CYG_WORD32 val;
+    CYG_WORD32 cpu = 0;
+#ifdef CYGPKG_HAL_SMP_SUPPORT    
+    cpu = HAL_SMP_CPU_THIS();
+
+    {
+        __externC HAL_SPINLOCK_TYPE cyg_hal_ioapic_lock;
+
+        HAL_SPINLOCK_SPIN( cyg_hal_ioapic_lock );
+        HAL_IOAPIC_READ( HAL_IOAPIC_REG_REDTBL+4, val );
+        PC_WRITE_SCREEN_32( PC_SCREEN_LINE(15)+10, val );
+
+        HAL_IOAPIC_READ( HAL_IOAPIC_REG_REDTBL+5, val );
+        PC_WRITE_SCREEN_32( PC_SCREEN_LINE(15), val );
+
+        HAL_SPINLOCK_CLEAR( cyg_hal_ioapic_lock );
+        
+    }
+#endif
+    
+    hal_pc_clock_read( &val);
+    PC_WRITE_SCREEN_32( PC_SCREEN_LINE(15)+20, val );
+
+
+#ifdef CYGPKG_HAL_SMP_SUPPORT    
+    
+    PC_WRITE_SCREEN_8( PC_SCREEN_LINE(16+cpu), cpu);
+
+    HAL_APIC_READ( HAL_APIC_IRR, val );
+    PC_WRITE_SCREEN_32( PC_SCREEN_LINE(16+cpu)+10, val );
+    HAL_APIC_READ( HAL_APIC_IRR+1, val );
+    PC_WRITE_SCREEN_32( PC_SCREEN_LINE(16+cpu)+20, val );
+    HAL_APIC_READ( HAL_APIC_IRR+2, val );
+    PC_WRITE_SCREEN_32( PC_SCREEN_LINE(16+cpu)+30, val );
+#endif
+    
+    HAL_QUERY_INTERRUPTS( val );
+    PC_WRITE_SCREEN_32( PC_SCREEN_LINE(16+cpu)+50, val );
+    PC_WRITE_SCREEN_32( PC_SCREEN_LINE(16+cpu)+60, loop_count );
+    
+#endif
 }
 
 /*------------------------------------------------------------------------*/

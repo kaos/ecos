@@ -5,29 +5,38 @@
 //      HAL (architecture) "make defs" program
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -93,6 +102,26 @@ main(void)
     DEFINE(CYGARC_JMPBUF_R31, offsetof(hal_jmp_buf_t, r31));
     DEFINE(CYGARC_JMPBUF_LR, offsetof(hal_jmp_buf_t, lr));
     DEFINE(CYGARC_JMPBUF_CR, offsetof(hal_jmp_buf_t, cr));
+#ifdef CYGHWR_HAL_POWERPC_FPU
+    DEFINE(CYGARC_JMPBUF_F14, offsetof(hal_jmp_buf_t, f14));
+    DEFINE(CYGARC_JMPBUF_F15, offsetof(hal_jmp_buf_t, f15));
+    DEFINE(CYGARC_JMPBUF_F16, offsetof(hal_jmp_buf_t, f16));
+    DEFINE(CYGARC_JMPBUF_F17, offsetof(hal_jmp_buf_t, f17));
+    DEFINE(CYGARC_JMPBUF_F18, offsetof(hal_jmp_buf_t, f18));
+    DEFINE(CYGARC_JMPBUF_F19, offsetof(hal_jmp_buf_t, f19));
+    DEFINE(CYGARC_JMPBUF_F20, offsetof(hal_jmp_buf_t, f20));
+    DEFINE(CYGARC_JMPBUF_F21, offsetof(hal_jmp_buf_t, f21));
+    DEFINE(CYGARC_JMPBUF_F22, offsetof(hal_jmp_buf_t, f22));
+    DEFINE(CYGARC_JMPBUF_F23, offsetof(hal_jmp_buf_t, f23));
+    DEFINE(CYGARC_JMPBUF_F24, offsetof(hal_jmp_buf_t, f24));
+    DEFINE(CYGARC_JMPBUF_F25, offsetof(hal_jmp_buf_t, f25));
+    DEFINE(CYGARC_JMPBUF_F26, offsetof(hal_jmp_buf_t, f26));
+    DEFINE(CYGARC_JMPBUF_F27, offsetof(hal_jmp_buf_t, f27));
+    DEFINE(CYGARC_JMPBUF_F28, offsetof(hal_jmp_buf_t, f28));
+    DEFINE(CYGARC_JMPBUF_F29, offsetof(hal_jmp_buf_t, f29));
+    DEFINE(CYGARC_JMPBUF_F30, offsetof(hal_jmp_buf_t, f30));
+    DEFINE(CYGARC_JMPBUF_F31, offsetof(hal_jmp_buf_t, f31));
+#endif
 
     // Exception/interrupt/context save buffer
 #ifdef CYGDBG_HAL_POWERPC_FRAME_WALLS
@@ -100,6 +129,9 @@ main(void)
     DEFINE(CYGARC_PPCREG_WALL_TAIL, offsetof(HAL_SavedRegisters, wall_tail));
 #endif
     DEFINE(CYGARC_PPCREG_REGS, offsetof(HAL_SavedRegisters, d[0]));
+#ifdef CYGHWR_HAL_POWERPC_FPU
+    DEFINE(CYGARC_PPCREG_FREGS, offsetof(HAL_SavedRegisters, f[0]));
+#endif
     DEFINE(CYGARC_PPCREG_CR, offsetof(HAL_SavedRegisters, cr));
     DEFINE(CYGARC_PPCREG_XER, offsetof(HAL_SavedRegisters, xer));
     DEFINE(CYGARC_PPCREG_LR, offsetof(HAL_SavedRegisters, lr));
@@ -133,6 +165,7 @@ main(void)
 #ifdef CYGMEM_REGION_ram    
     DEFINE(CYGMEM_REGION_ram, CYGMEM_REGION_ram);
 #endif
+    return 0;
 }
 
 //--------------------------------------------------------------------------

@@ -5,29 +5,38 @@
 //      Fileio file operations
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -45,11 +54,9 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
 #include <pkgconf/isoinfra.h>
 
-#include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
@@ -58,8 +65,6 @@
 #include <stdio.h>                     // stdin, stdout, stderr
 
 #include "fio.h"                       // Private header
-
-#include <cyg/kernel/mutex.hxx>        // mutex definitions
 
 //==========================================================================
 // Implement filesystem locking protocol. 
@@ -161,7 +166,9 @@ static void update_cwd( cyg_mtab_entry *mte, cyg_dir dir, const char *path )
 
 #else
 
-static Cyg_Mutex getcwd_lock CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
+#ifdef CYGPKG_KERNEL
+static Cyg_Mutex getcwd_lock CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
+#endif
 
 #endif
 
@@ -610,7 +617,7 @@ __externC char *getcwd( char *buf, size_t size )
     int ddbufpos;
 
     // Claim lock to serialize use of ddbuf.
-    getcwd_lock.lock();
+    FILEIO_MUTEX_LOCK(getcwd_lock);
 
     // Initialize ddbuf with ".".
     ddbuf[0] = '.';
@@ -716,7 +723,7 @@ __externC char *getcwd( char *buf, size_t size )
     }
 
     // We have finished using ddbuf now.
-    getcwd_lock.unlock();
+    FILEIO_MUTEX_UNLOCK(getcwd_lock);
     
     if( err < 0 )
         FILEIO_RETURN_VALUE(NULL);

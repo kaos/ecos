@@ -88,3 +88,7 @@ cdl_option CYGSEM_REDBOOT_FIS_CRC_CHECK {
 cdl_option CYGSEM_IO_FLASH_VERIFY_PROGRAM {
   user_value 0
 };
+
+cdl_option CYGPKG_HAL_GDB_FILEIO {
+    user_value 1
+};

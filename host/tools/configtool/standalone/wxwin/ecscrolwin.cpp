@@ -4,7 +4,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: ecscrolwin.cpp,v 1.2 2001/05/02 10:36:15 julians Exp $
+// RCS-ID:      $Id: ecscrolwin.cpp,v 1.3 2002/02/28 16:39:37 julians Exp $
 // Copyright:   (c) Julian Smart and Markus Holzem
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ bool ecScrolledWindow::Create(wxWindow *parent,
 
     bool ok = wxPanel::Create(parent, id, pos, size, style, name);
 
-#ifdef __WXMSW__
+#if defined(__WXMSW__) && (wxVERSION_NUMBER < 2302)
     // we need to process arrows ourselves for scrolling
     m_lDlgCode |= DLGC_WANTARROWS;
 #endif // __WXMSW__

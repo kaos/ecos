@@ -5,29 +5,38 @@
 #      HAL configuration data
 #
 # ====================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
@@ -172,19 +181,6 @@ cdl_package CYGPKG_HAL {
         }
 
 
-        cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED {
-            display "The platform port predates virtual vectors"
-            no_define
-            description    "
-                Many platform HALs have adopted the virtual vector support
-                only after its introduction. On those platforms, old ROM
-                monitors will not provide the necessary services - and
-                so the use of these services should be disabled per default.
-                Newer ports, however, guarantee to provide the necessary
-                services in all ROM monitors, and so default to use the
-                services."
-        }                
-
         cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT {
             display     "Target supports baud rate control via vectors"
             no_define
@@ -208,8 +204,7 @@ cdl_package CYGPKG_HAL {
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE {
                 display       "Inherit console settings from ROM monitor"
 	        active_if     CYGSEM_HAL_USE_ROM_MONITOR
-                default_value { !CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED \
-                                && !CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
+                default_value { !CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
                 description   "
                     When this option is set, the application will inherit
 	            the console as set up by the ROM monitor. This means
@@ -240,7 +235,7 @@ cdl_package CYGPKG_HAL {
 
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE {
                 display       "Initialize whole of virtual vector table"
-                default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR || CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED }
+                default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR }
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE
@@ -258,10 +253,7 @@ cdl_package CYGPKG_HAL {
                     virtual vector support may still be in use, it is
                     necessary for RAM applictions to initialize the
                     table (since all HAL diagnostics and debug IO
-                    happens via the table). The default setting of
-                    this option will see to this, but it is still
-                    possible to override the option when a target with
-                    a newer ROM monitor is used."
+                    happens via the table)."
             }
 
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT {
@@ -403,6 +395,19 @@ cdl_package CYGPKG_HAL {
           Platforms which provide IDE controllers can implement
           this interface, indicating that IDE I/O macros are
           available."
+    }
+    cdl_option CYGPKG_HAL_GDB_FILEIO {
+        display       "File I/O operations via GDB"
+        default_value 0
+        active_if     CYGSEM_REDBOOT_BSP_SYSCALLS
+        requires      CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        compile       gdb-fileio.c
+        description   "This option enables support for various file I/O
+                       operations using the GDB remote protocol to communicate
+                       with GDB. The operations are then performed on the
+                       debugging host by proxy. These operations are only
+                       currently available by using a system call interface
+                       to RedBoot. This may change in the future."
     }
 
     define_proc {

@@ -5,29 +5,38 @@
 ##	MIPS VRC4372 platform code
 ##
 ##=============================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##=============================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -558,6 +567,22 @@ FUNC_END(hal_memc_setup)
 #define N1RESERVED1    (N1_BASE + 0x60)
 */
 
+#if defined(CYGPKG_HAL_MIPS_VR4300_VRC4375)
+#define N3_EM		(N1_BASE + 0x7C)
+#define N3_ARB		(N1_BASE + 0x80)
+#define UARTRBR		(N1_BASE + 0x84)
+#define UARTTHR		(N1_BASE + 0x84)
+#define UARTIER		(N1_BASE + 0x88)
+#define UARTDLL		(N1_BASE + 0x84)
+#define UARTDLM		(N1_BASE + 0x88)
+#define UARTIIR		(N1_BASE + 0x8C)
+#define UARTFCR		(N1_BASE + 0x8C)
+#define UARTLCR		(N1_BASE + 0x90)
+#define UARTMCR		(N1_BASE + 0x94)
+#define UARTLSR		(N1_BASE + 0x98)
+#define UARTMSR		(N1_BASE + 0x9C)
+#define UARTSCR		(N1_BASE + 0xA0)
+#endif
 
 #define N1PCIHEADER    (N1_BASE + 0x100)
 #define N1PCICMD       (N1PCIHEADER + 0x04)
@@ -574,6 +599,8 @@ FUNC_END(hal_memc_setup)
 
 #if defined(CYGPKG_HAL_MIPS_VR4300_VRC4373)	
 #define PCI_N2_DEV		0x00010000 	/* PCI Device # - Nile 2 */
+#elif defined(CYGPKG_HAL_MIPS_VR4300_VRC4375)	
+#define PCI_N2_DEV		0x00080000 	/* PCI Device # - Nile 2 */
 #endif
 	
 #define N2CLSIZE		( 0x0c)  /* Cache Line Size */
@@ -670,6 +697,15 @@ hal_memc_setup_table:
 	.long	BMCTRL,		0x0000803b	# Base memory setup
 	.long	S1CTRL,		0x0402013f	# SIMM1 
 
+#elif defined(CYGPKG_HAL_MIPS_VR4300_VRC4375)
+
+	.long	N3_EM,		0x00000000
+	.long	N3_ARB,		0x00000000
+	
+	.long	BMCTRL,		0x0000100b	# Base memory setup
+
+	# Dont set up SIMMs on VR4375 at present.
+	
 #else
 #error Unsupported board	
 #endif
@@ -683,6 +719,9 @@ hal_memc_setup_table:
 	.long	DELAY_LOOP,	0x00000100			# wait a bit
 	.long	REFRESHRATE,	0x00000fff			# DRAM refresh rate
 
+#if defined(CYGPKG_HAL_MIPS_VR4300_VRC4375)
+	.long	N3_ARB,		0x00000005
+#endif
 		
 	.long	BOOTROMWPRTCT,	0xffffff3e	# Write protect boot ROM
 

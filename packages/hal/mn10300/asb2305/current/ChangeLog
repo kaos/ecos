@@ -1,0 +1,87 @@
+2001-10-18  David Howells  <dhowells@redhat.com>
+
+	* cdl/hal_mn10300_am33_asb2305.cdl: change incorrect "BootFlash"
+	to "BootPROM" where specified.
+	
+	* cdl/hal_mn10300_am33_asb2305.cdl: added support for booting
+	directly from the system flash.
+	* include/platform.inc: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_flash.mlt: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_flash.h: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_flash.ldi: ditto.
+	* misc/redboot_FLASH.ecm: ditto.
+
+2001-10-16  David Howells  <dhowells@redhat.com>
+
+	* include/plf_io.h: made the CPU access PCI registers through the
+	uncached memmap reflection.
+	* cdl/hal_mn10300_am33_asb2305.cdl: moved the RTC configuration
+	previously added to MN10300 arch to the ASB2305 platform.
+	* include/platform.inc: display exception code on entry to NMI
+	handler and clear it on exit.
+
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* misc/redboot_RAM.ecm: forced ethernet to switch down to 10Mbps
+	and switched syscall support on.
+	* misc/redboot_ROM.ecm: ditto.
+
+	* include/platform.inc: improved LED driving upon exception.
+	* src/plf_misc.c: ditto.
+
+	* include/pkgconf/mlt_mn10300_am33_asb2305_ram.mlt: PCI window moved.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_ram.h: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_ram.ldi: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_rom.mlt: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_rom.h: ditto.
+	* include/pkgconf/mlt_mn10300_am33_asb2305_rom.ldi: ditto.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_cmds.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
+2001-08-08  David Howells  <dhowells@redhat.com>
+
+	* hal_mn10300_am33_asb2305.cdl: Generate binary RedBoot image
+	files as well as ELF ones.
+
+2001-07-27  David Howells  <dhowells@redhat.com>
+
+	* New platform inaugurated.
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

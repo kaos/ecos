@@ -5,29 +5,38 @@
 ##      SH exception vectors
 ##
 ##==========================================================================
-#####COPYRIGHTBEGIN####
-#                                                                          
-# -------------------------------------------                              
-# The contents of this file are subject to the Red Hat eCos Public License 
-# Version 1.1 (the "License"); you may not use this file except in         
-# compliance with the License.  You may obtain a copy of the License at    
-# http://www.redhat.com/                                                   
-#                                                                          
-# Software distributed under the License is distributed on an "AS IS"      
-# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-# License for the specific language governing rights and limitations under 
-# the License.                                                             
-#                                                                          
-# The Original Code is eCos - Embedded Configurable Operating System,      
-# released September 30, 1998.                                             
-#                                                                          
-# The Initial Developer of the Original Code is Red Hat.                   
-# Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-# All Rights Reserved.                                                     
-# -------------------------------------------                              
-#                                                                          
-#####COPYRIGHTEND####
+#####ECOSGPLCOPYRIGHTBEGIN####
+# -------------------------------------------
+# This file is part of eCos, the Embedded Configurable Operating System.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+#
+# eCos is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 or (at your option) any later version.
+#
+# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with eCos; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+#
+# As a special exception, if other files instantiate templates or use macros
+# or inline functions from this file, or you compile this file and link it
+# with other works to produce a work based on this file, this file does not
+# by itself cause the resulting work to be covered by the GNU General Public
+# License. However the source code for this file must still be made available
+# in accordance with section (3) of the GNU General Public License.
+#
+# This exception does not invalidate any other reasons why a work based on
+# this file might be covered by the GNU General Public License.
+#
+# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+# at http://sources.redhat.com/ecos/ecos-license
+# -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
 ##==========================================================================
 #######DESCRIPTIONBEGIN####
 ##
@@ -39,8 +48,7 @@
 ##               vectors. It also contains the first level default VSRs
 ##               that save and restore state for both exceptions and
 ##               interrupts.
-## Notes:        The SH architecture files are still more SH3 specific than
-##               architecture neutral, hence the sub-variant configury.
+##
 ######DESCRIPTIONEND####
 ##
 ##==========================================================================
@@ -60,68 +68,22 @@
 
 #===========================================================================
 
-        .file   "vectors.S"
+//        .file   "vectors.S"
 
-#undef __DEBUG
+#define n__DEBUG
         
 #===========================================================================
 # Start by defining the exceptions vectors.
+
         .section ".vectors","ax"
+# Include exception entry code since it exists in two variants,
+# depending on the CPU model. This file also defines macros used
+# for exception return.
 
-# reset            0xa0000000
-# other exceptions VBR+0x100
-# tlb miss         VBR+0x400
-# interrupts       VBR+0x600
+FUNC_START(_vector_code_vma)
 
+#include CYGBLD_HAL_VAR_EXCEPTION_MODEL_INC
 
-#===========================================================================
-# Reset code must be PC relative so it can be executed out of the shadow
-# area during startup. Not until after hal_hardware_init can the system
-# be expected to provide the proper address space (at that time we
-# jump to the VMA base of the code).
-
-        .org    0x000
-FUNC_START(_reset)
-        mov.l   $_reset_platform,r0
-        jmp     @r0
-         nop
-
-# Note: this is the unmapped, shadow address of the start of code
-# Sadly, it is too far to just branch to.                        
-        .align   2
-$_reset_platform:
-#ifdef CYG_HAL_STARTUP_RAM
-        .long   CYG_LABEL_DEFN(_reset_platform)
-#elif defined(CYG_HAL_STARTUP_ROMRAM)
-        // Uncached "shadow" address but adjusted for VMA/LMA differences
-        .long   __reset_platform+0x20000000-CYGMEM_REGION_ram+CYGMEM_REGION_rom
-#else
-        // Uncached "shadow" address
-        .long   CYG_LABEL_DEFN(_reset_platform)+0x20000000
-#endif
-                
-#---------------------------------------------------------------------------
-# Exception entry
-        
-        .org    0x100
-__exception:
-
-#if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
-        mov     #1,r7
-#endif
-
-        mov.l   $nCYGARC_REG_EXCEVT,r1
-        mov.l   @r1,r1
-        shlr2   r1
-        shlr    r1                      ! divide cause by 0x08
-        mov.l   $hal_vsr_table2,r0
-        mov.l   @(r0,r1),r1
-        jmp     @r1
-         nop
-        
-        .align   2
-        SYM_PTR_REFn(hal_vsr_table,2)
-        
 #---------------------------------------------------------------------------
 # This code handles the common part of all exception handlers.
 # It saves the machine state onto the stack  and then calls
@@ -130,79 +92,24 @@ __exception:
 # here the saved state is restored and execution is continued.
 
 FUNC_START(cyg_hal_default_exception_vsr)
-        
-        # We come here with all register containing their
-        # pre-exception values except:
-        # r0_b-r7_b  = saved r0-r7
-        # r7    = vector #
-        # spc   = saved pc
-        # ssr   = saved sr
-      
-        # Save away some registers
-        mov     r15,r1                  ! entry sp
-
+	hal_cpu_save_regs
+	hal_exception_entry_extras
 #ifdef __DEBUG
-        mov.l   $exc_state_marker,r0
+        mov.l   1f,r0
         mov.l   r0,@-r15
-        mov.l   $nCYGARC_REG_EXCEVT,r0
-        mov.l   @r0,r0
-        mov.l   r0,@-r15
-#endif
-
-#ifdef CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
-        add     #-12,r15                ! Space for cause, gbr, and vbr
-#else
-        add     #-4,r15                 ! Space for cause
-
-        stc     gbr,r0                  ! GBR
-        mov.l   r0,@-r15
-        stc     vbr,r0                  ! VBR
-        mov.l   r0,@-r15
-#endif
-
-        stc     spc,r0
-        mov.l   r0,@-r15                ! PC
-        stc     ssr,r0
-        mov.l   r0,@-r15                ! SR
-
-        sts.l   pr,@-r15                ! PR
-        sts.l   mach,@-r15              ! mach
-        sts.l   macl,@-r15              ! macl
-
-        mov.l   r1,@-r15                ! entry sp
-        mov.l   r14,@-r15               ! r14-r0
-        mov.l   r13,@-r15
-        mov.l   r12,@-r15
-        mov.l   r11,@-r15
-        mov.l   r10,@-r15
-        mov.l   r9,@-r15
-        mov.l   r8,@-r15
-        stc.l   r7_bank,@-r15
-        stc.l   r6_bank,@-r15
-        stc.l   r5_bank,@-r15
-        stc.l   r4_bank,@-r15
-        stc.l   r3_bank,@-r15
-        stc.l   r2_bank,@-r15
-        stc.l   r1_bank,@-r15
-        stc.l   r0_bank,@-r15
-
-        # After setting the SR it will be possible to use breakpoints.
-        mov.l   $nCYG_SR1,r1
-        ldc     r1,sr
-        # ------------------------------------------------------------
-        # Register bank has changed now. 
-
-#ifdef __DEBUG
+	bra	2f
+	 nop
+	.align  2
+1:      .long   0x77777770
+2:
         # It is safe to use breakpoints below this point.
         .globl  _cyg_hal_default_exception_vsr_bp_safe
 _cyg_hal_default_exception_vsr_bp_safe:
 #endif
-        mov.l   $nCYGARC_REG_EXCEVT,r0
-        mov.l   @r0,r4
-        mov     #-5,r0                  ! divide cause by 0x20
-        shld    r0,r4
-        mov     #CYGARC_SHREG_EVENT,r0
-        mov.l   r4,@(r0,r15)            ! store decoded vector number back
+
+	# Make sure the saved registers structure contain
+	# the decoded exception number
+	hal_exception_translate
 
         # The entire CPU state is now stashed on the stack,
         # call into C to do something with it.
@@ -219,137 +126,27 @@ _cyg_hal_default_exception_vsr_bp_safe:
         .align  2
 $restore_state:
         .long   restore_state
-$nCYG_SR1:
-        .long   CYG_SR
-
-#ifdef __DEBUG
-$exc_state_marker:
-        .long   0x77777770
-#endif
-
         SYM_PTR_REF(cyg_hal_exception_handler)
-
-#---------------------------------------------------------------------------
-# TLB miss entry
-
-        .org    0x400
-__tlb_miss:
-#if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
-        mov      #2,r7
-#endif
-
-        mov.l   $nCYGARC_REG_EXCEVT,r1
-        mov.l   @r1,r1
-        shlr2   r1
-        shlr    r1                      ! divide cause by 0x08
-        mov.l   $hal_vsr_table3,r0
-        mov.l   @(r0,r1),r1
-        jmp     @r1
-         nop
-
-        .align   2
-        SYM_PTR_REFn(hal_vsr_table,3)
-$nCYGARC_REG_EXCEVT:
-        .long   CYGARC_REG_EXCEVT
-
-#---------------------------------------------------------------------------
-# Interrupt entry
-
-        .org    0x600
-__interrupt:        
-
-#ifdef CYGHWR_HAL_SH_IRQ_HANDLE_SPURIOUS_INTERRUPTS
-        # A spurious interrupt with INTEVT=0 may be caused by
-        # clearing of BL. Those interrupts need to be ignored.
-        mov.l   $nCYGARC_REG_INTEVT,r0
-        mov.l   @r0,r0
-        cmp/eq  #0,r0
-        bf      1f
-        rte
-         nop
-1:      
-#endif        
-
-
-#if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
-        mov      #3,r7
-#endif
-
-        mov.l    $hal_vsr_table_int,r1
-        mov.l    @r1,r1
-        jmp      @r1
-         nop
-
-        .align   2
-$hal_vsr_table_int:
-        .long    CYG_LABEL_DEFN(hal_vsr_table)+CYGNUM_HAL_VECTOR_INTERRUPT*4
 
 #---------------------------------------------------------------------------
 # Common interrupt handling code.
 
 FUNC_START(cyg_hal_default_interrupt_vsr)
-
-        # We come here with all register containing their
-        # pre-exception values except:
-        # r0_b-r7_b  = saved r0-r7
-        # r7    = vector #
-        # spc   = saved pc
-        # ssr   = saved sr
-        
-        # Save away some registers
-        mov     r15,r1                  ! entry sp
-
-#ifdef CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
-        add     #-12,r15                ! Space for cause, gbr, and vbr
-#else
-        add     #-4,r15                 ! Space for cause
-
-        stc     gbr,r0                  ! GBR
-        mov.l   r0,@-r15
-        stc     vbr,r0                  ! VBR
-        mov.l   r0,@-r15
-#endif
-
-        stc     spc,r0
-        mov.l   r0,@-r15                ! PC
-        stc     ssr,r0
-        mov.l   r0,@-r15                ! SR
-
-        sts.l   pr,@-r15                ! PR
-        sts.l   mach,@-r15              ! mach
-        sts.l   macl,@-r15              ! macl
-
-        mov.l   r1,@-r15                ! entry sp
-        mov.l   r14,@-r15               ! r14-r0
-        mov.l   r13,@-r15
-        mov.l   r12,@-r15
-        mov.l   r11,@-r15
-        mov.l   r10,@-r15
-        mov.l   r9,@-r15
-        mov.l   r8,@-r15
-        stc.l   r7_bank,@-r15
-        stc.l   r6_bank,@-r15
-        stc.l   r5_bank,@-r15
-        stc.l   r4_bank,@-r15
-        stc.l   r3_bank,@-r15
-        stc.l   r2_bank,@-r15
-        stc.l   r1_bank,@-r15
-        stc.l   r0_bank,@-r15
-
-        # After setting the SR it will be possible to use breakpoints.
-        mov.l   $nCYG_SR2,r1
-        ldc     r1,sr
-        # ------------------------------------------------------------
-        # Register bank has changed now. 
-
+	hal_cpu_save_regs
+	hal_interrupt_entry_extras
+	
 #ifdef __DEBUG
+        mov.l   1f,r0
+        mov.l   r0,@-r15
+ 	bra	2f
+	 nop
+	.align  2
+1:	.long   0x77777771
+2:
         # It is safe to use breakpoints below this point.
         .globl  _cyg_hal_default_interrupt_vsr_bp_safe
 _cyg_hal_default_interrupt_vsr_bp_safe:
 #endif
-
-        # The entire CPU state is now stashed on the stack,
-        # call into C to do something with it.
 
         # The entire CPU state is now stashed on the stack,
         # increment the scheduler lock and call the ISR
@@ -395,9 +192,9 @@ $n0301:
 #endif
 
         # Decode the interrupt vector, and find ISR index
-        hal_intc_decode r0,r4
-
         mov     #CYGARC_SHREG_EVENT,r0
+        mov.l   @(r0,r8),r4             ! load existing vector number
+        hal_intc_decode r1,r4
         mov.l   r4,@(r0,r8)             ! store decoded vector number back
                                         ! to saved state.
         hal_intc_translate r4,r9
@@ -491,55 +288,12 @@ $n0301:
 
 restore_state:  
         # All done, restore CPU state and continue
-
-        # Disable interrupts and switch register bank during the restore 
-        # operation
-        mov.l   $nCYG_SR_BANK1,r1
-        ldc     r1,sr
-        # ------------------------------------------------------------
-        # Register bank has changed now. 
-
-        #
-        # Single step debugging becomes impossible after this point!
-        #
-
-        mov     r15,r0
-        ldc.l   @r0+,r0_bank
-        ldc.l   @r0+,r1_bank
-        ldc.l   @r0+,r2_bank
-        ldc.l   @r0+,r3_bank
-        ldc.l   @r0+,r4_bank
-        ldc.l   @r0+,r5_bank
-        ldc.l   @r0+,r6_bank
-        ldc.l   @r0+,r7_bank
-        mov.l   @r0+,r8
-        mov.l   @r0+,r9
-        mov.l   @r0+,r10
-        mov.l   @r0+,r11
-        mov.l   @r0+,r12
-        mov.l   @r0+,r13
-        mov.l   @r0+,r14
-        mov.l   @r0+,r15                ! return SP
-
-        lds.l   @r0+,macl               ! macl
-        lds.l   @r0+,mach               ! mach
-        lds.l   @r0+,pr                 ! PR
-
-        mov.l   @r0+,r2
-        ldc     r2,ssr                  ! return SR
-        mov.l   @r0+,r2
-        ldc     r2,spc                  ! return PC
-
-#ifndef CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
-        mov.l   @r0+,r2
-        ldc     r2,vbr                  ! return VBR
-        mov.l   @r0+,r2
-        ldc     r2,gbr                  ! return GBR
+#ifdef __DEBUG
+	# skip past debug marker
+	add     #4,sp
 #endif
 
-        rte
-         nop
-
+	hal_cpu_restore_regs_return
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
@@ -578,10 +332,6 @@ FUNC_START(hal_interrupt_stack_call_pending_DSRs)
 #endif // CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 
         .align  2        
-#ifdef __DEBUG
-$int_state_marker:
-        .long   0x77777771
-#endif
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
@@ -591,16 +341,6 @@ $int_state_marker:
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
         SYM_PTR_REF(cyg_interrupt_stack_base)
         SYM_PTR_REF(cyg_interrupt_stack)
-#endif
-$nCYG_SR2:
-        .long   CYG_SR
-$nCYG_SR_BANK1:
-        .long   CYG_SR_BANK1
-$nCYGARC_REG_INTEVT:
-        .long   CYGARC_REG_INTEVT
-#ifdef CYGARC_REG_INTEVT2
-$nCYGARC_REG_INTEVT2:
-        .long   CYGARC_REG_INTEVT2
 #endif
         SYM_PTR_REF(hal_interrupt_handlers)
         SYM_PTR_REF(hal_interrupt_data)
@@ -685,7 +425,7 @@ FUNC_START(_reset_platform)
 
         # Copy everything to the proper VMA base and jump to it.
         mov.l   $_vector_code_lma,r0
-        mov.l   $_reset,r1
+        mov.l   $_vector_code_vma,r1
         mov.l   $end,r2
 1:      mov.l   @r0+,r3                 ! get word from ROM
         mov.l   r3,@r1                  ! store in RAM
@@ -698,7 +438,7 @@ FUNC_START(_reset_platform)
         .align  2
 
         SYM_PTR_REF(_vector_code_lma)
-        SYM_PTR_REF(_reset)
+        SYM_PTR_REF(_vector_code_vma)
         SYM_PTR_REF(end)
         SYM_PTR_REF(complete_setup)
 
@@ -715,6 +455,7 @@ FUNC_START(_reset_platform)
 # After this point we can use absolute addressing modes and access all the
 # memory in the system.
 
+	.align  2
 FUNC_START(complete_setup)
                 
         # Set up monitor related stuff (vectors primarily)

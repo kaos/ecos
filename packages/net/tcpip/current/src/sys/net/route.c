@@ -5,29 +5,6 @@
 //     
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
 //####BSDCOPYRIGHTBEGIN####
 //
 // -------------------------------------------
@@ -206,15 +183,30 @@ route_init()
 //        incredibly sticky, i.e. can't be deleted.  BOOTP uses this to
 //        achieve a generic broadcast.  Sadly it seems that BOOTP servers will
 //        only work this way, thus the hack.
+//
+//        This version enumerates all routes and deletes them - this leaks less
+//        store than the previous version.
+
+static int
+rt_reinit_rtdelete( struct radix_node *rn, void *vifp )
+{
+    struct rtentry *rt = (struct rtentry *)rn;
+    rtrequest(RTM_DELETE, rt_key(rt), rt->rt_gateway, rt_mask(rt),
+              0, NULL);
+    return (0);
+}
+
 void
-route_reinit(void)
+cyg_route_reinit(void)
 {
     int i;
     for (i = 0;  i < AF_MAX+1;  i++) {
-        rt_tables[i] = NULL;
+        struct radix_node_head *rnh;
+        rnh = rt_tables[i];
+        if (rnh) {
+            (*rnh->rnh_walktree)(rnh, rt_reinit_rtdelete, NULL);
+        }
     }
-    rn_init();	/* initialize all zeroes, all ones, mask table */
-    rtable_init((void **)rt_tables);
 }
 
 void
@@ -489,7 +481,6 @@ rtioctl(req, data, p)
 {
 #ifdef __ECOS
     struct ecos_rtentry *rt;
-    struct rtentry *rt_res = 0;
     int res;
 
     switch (req) {
@@ -500,7 +491,7 @@ rtioctl(req, data, p)
                         &rt->rt_gateway,
                         &rt->rt_genmask,
                         rt->rt_flags,
-                        &rt_res);
+                        NULL);
 	return (res);
     case SIOCDELRT:
         rt = (struct ecos_rtentry *)data;
@@ -509,7 +500,7 @@ rtioctl(req, data, p)
                         &rt->rt_gateway,
                         &rt->rt_genmask,
                         rt->rt_flags,
-                        &rt_res);
+                        NULL);
 	return (res);
     default:
 	return (EOPNOTSUPP);
@@ -626,8 +617,12 @@ rtrequest(req, dst, gateway, netmask, flags, ret_nrt)
 		rt = (struct rtentry *)rn;
 		rt->rt_flags &= ~RTF_UP;
 		if (rt->rt_gwroute) {
-			rt = rt->rt_gwroute; RTFREE(rt);
-			(rt = (struct rtentry *)rn)->rt_gwroute = NULL;
+		    if (rt != rt->rt_gwroute)
+			RTFREE( rt->rt_gwroute ); // Free it up as normal
+		    else
+			rt->rt_refcnt--; // Just dec the refcount - freeing
+					 // it here would be premature
+		    rt->rt_gwroute = NULL;
 		}
 		if ((ifa = rt->rt_ifa) && ifa->ifa_rtrequest)
 			ifa->ifa_rtrequest(RTM_DELETE, rt, SA(NULL));

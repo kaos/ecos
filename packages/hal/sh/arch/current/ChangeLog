@@ -1,3 +1,197 @@
+2002-04-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_sp.inc: Allow variant to provide custom
+	interrupt vector layout. This means the size of
+	hal_interrupt_handlers/objects/data can be reduced if the vector
+	layout is sparse. Something similar could be done for
+	_HW_EXEC_ENTRY_TABLE, saving exception_vector_int entries in the
+	$vectors_code block. However, this code usually resides in flash
+	so there's not much point given todays flash block sizes.
+
+	* cdl/hal_sh.cdl: Added CYGHWR_HAL_SH_FPU and
+	CYGHWR_HAL_SH_NO_FPU, allowing an arch level control of FPU
+	related tests.
+	Skipping test handled in a different way now, so the implements
+	statement has been deleted again.
+
+2002-04-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_bank.inc: Define hal_exception_entry_extras and
+	hal_interrupt_entry_extras.
+	* include/hal_var_sp.inc: Define hal_exception_entry_extras and
+	hal_interrupt_entry_extras. Disable interrupts on exception
+	entry.
+	* src/vectors.S: Call hal_exception_entry_extras and
+	hal_interrupt_entry_extras.
+
+2002-04-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S:
+	Don't use .file as it can confuse debugging since the .file
+	doesn't contain the path and therefore the debugger will never
+	know where it lives! This conflicts with using -Wa,--gstabs.
+
+2002-04-15  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/hal_syscall.c (hal_syscall_handler): Add extra sig argument to
+	__do_syscall.
+
+2002-04-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_sp.inc: 7044 needs different vector layout than
+	76xx since its vectors are hardwired.
+
+2002-04-18  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_sp.inc: Do no translation of entry address if
+	cache module defines CYGARC_SH_MOD_CAC_NO_WINDOWS.
+
+	* include/hal_intr_vecs.h: Move all vectors after IRQ7 to variant
+	header. Define _IRQ and _LVL for all of the first 7
+	interrupts. Define CYGNUM_HAL_INTERRUPT_LVL_MAX
+
+2002-03-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_sp.inc: Fix asm comments.
+
+2002-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_syscall.c (hal_syscall_handler): Added.
+	* src/sh_stub.c (__is_bsp_syscall): Added.
+	* cdl/hal_sh.cdl: Build hal_syscall.c
+
+2002-02-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_stub.c (__computeSignal): Changed to use DATA_ACCESS
+	names as well.
+	* include/hal_intr_vecs.h (_CYGNUM_HAL_VECTOR_FIRST_MEM_FAULT,
+	_CYGNUM_HAL_VECTOR_LAST_MEM_FAULT): Same.
+
+2002-02-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr_vecs.h: Use DATA_ACCESS vector names instead of
+	ADDRESS_ERROR names.
+
+2002-02-15  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_stub.c (__single_step): Use normal breakpoint instruction
+	(trapa #32) for single-stepping.
+        On the SH2 the use of trapa#255 causes a different (and unhandled)
+	exception, in the range reserved for application
+	exceptions/interrupts.
+
+2002-02-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_bank.h: Switch mach/macl entries.
+	* include/hal_var_sp.h: Same.
+
+	* include/hal_var_sp.inc: Reserve (additional) trampoline for NMI
+	to make eCos interrupt numbers match. Make traps use trap numbers
+	32-64.
+	(hal_cpu_save_regs): Remember to adjust SP for R0 save location.
+	(hal_cpu_restore_regs_return): Rewritten to fix errors and allow
+	SP to be changed from GDB.
+
+2002-02-13  Jesper Skov  <jskov@redhat.com>
+
+	* src/context.S (hal_thread_load_context): Load up stack pointer
+	before enabling interrupts.
+	
+	* include/hal_var_sp.inc: Fetch the VSR pointer and jump to it
+	instead of into the VSR table.
+	(hal_cpu_restore_regs_return): adjust sp to point to exception
+	state before returning.
+
+2002-02-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: tweak ROMRAM relocation code.
+
+2002-02-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_sp.inc: Moved _reset code to below vectors.
+
+2002-01-17  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_bank.inc: Include SH3 register references. Make
+	better use of some delay slots.
+
+	* src/vectors.S: Don't save exception/interrupt state on stack
+	with debug markers. Load up event value in R4 before calling
+	hal_intc_decode so it can be a nop if desired. Removed some SH3
+	register references.
+
+	* include/hal_var_sp.inc: Include SH2 offsets, export
+	_HW_EXC_ENTRY_TABLE, fix some typos.
+
+	* include/hal_intr_vecs.h: IRL vectors renamed. Added IRQ
+	vectors.
+
+2002-01-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_var_bank.h: Fix typo.
+
+	* src/sh_stub.c (__computeSignal): Only handle defined vectors.
+
+	* include/hal_intr_vecs.h: Decode NMI as interrupt 0, moved all
+	other vectors. Provide MEM_FAULT vector range.
+	* include/hal_var_sp.inc: Changes for NMI-as-interrupt-0.
+	* include/hal_var_sp.h: Renamed vector to event to share code.
+
+	* include/hal_intr_excevt.h: Added MEM_FAULT vector ranges and
+	CYGHWR_SH_RTC_TIMER_IS_TMU.
+	* src/hal_misc.c (hal_delay_us): Only build if
+	CYGHWR_SH_RTC_TIMER_IS_TMU. Use MEM_FAULT vector range.
+
+	* include/hal_intr.h: Deleted clock controls.
+
+	* cdl/hal_sh.cdl: Use CYGNUM_HAL_RTC_PRESCALE instread of
+	module-specific prescale variable.
+
+	* include/hal_intr_excevt.h (_CYGNUM_HAL_VECTOR_FIRST_MEM_FAULT,
+	_CYGNUM_HAL_VECTOR_LAST_MEM_FAULT): Define.
+	* include/hal_intr_vecs.h: Same. 
+	* src/hal_misc.c (cyg_hal_exception_handler): Use new _MEM_FAULT
+	vector range.
+
+
+	* include/hal_intr_vecs.h: Removed RTC code.
+
+	* include/hal_arch.h: Changed breakpoint instruction to match that
+	used in GDB 5.1.
+	It also makes better sense on the SH2.
+
+	* include/hal_intr_excevt.h: Interrupt/exception vectors and clock
+	handling code moved here...
+	* include/hal_intr.h: From here.
+	* include/hal_intr_vecs.h: Interrupt/exception vector layout +
+	clock handling for SH1/SH2 variants.
+
+	* include/hal_var_sp.inc: Added some comments, fixed number of
+	pre-VSR vectors, renamed HW_VSR_TABLE to HW_EXC_ENTRY_TABLE to
+	avoid confusion (it has nothing to do with eCos VSRs). Finally,
+	made the pre-VSR stuff only compile when really required (since
+	it's 4KiB).
+
+2002-01-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h: Moved HAL_SavedRegisters structure to
+	bank variant headers. Same with HAL_THREAD_INIT_CONTEXT,
+	HAL_THREAD_GET_SAVED_REGISTERS, HAL_GET_GDB_REGISTERS,
+	HAL_SET_GDB_REGISTERS, CYGARC_BUS_ADDRESS, CYGARC_CACHED_ADDRESS,
+	and CYGARC_UNCACHED_ADDRESS.
+	* src/vectors.S: Moved exception/interrupt entry code to bank
+	variant include file.
+	* include/hal_var_sp.inc: Added. Contains (new) vectors.S stuff
+	for SH2.
+	* include/hal_var_sp.h: Added. Contains (new) hal_arch.h stuff for
+	SH2 variant.
+	* include/hal_var_bank.inc: Added. Contains old vectors.S stuff
+	for SH3/SH4 variants.
+	* include/hal_var_bank.h: Added. Contains old hal_arch.h stuff for
+	SH3/SH4 variants.
+
+	* src/hal_mk_defs.c: Added conversion for entry stack.
+
 2001-11-16  Nick Garnett  <nickg@redhat.com>
 
 	* src/hal_misc.c (hal_msbit_index): Fixed this function so that it
@@ -53,6 +247,18 @@
 2001-06-27  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_arch.h: Added CPU address space translation macros.
+
+2001-06-19  Jesper Skov  <jskov@redhat.com>
+
+	* src/redboot_linux_exec.c: Only base address, entry and cmdline
+	options are always used. Other commands only affect image if
+	set. This allows combined kernel&initrd images to be loaded in one
+	file where the initrd address & size is already recorded at the
+	start of the image.
+
+	From YAEGASHI Takeshi <t@keshi.org> with a few changes:
+	* cdl/hal_sh.cdl: Added RedBoot exec command options.
+	* src/redboot_linux_exec.c: Added.
 
 2001-05-29  Jesper Skov  <jskov@redhat.com>
 
@@ -858,27 +1064,36 @@
 	* Set up directory structure.
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                      
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

@@ -1,3 +1,59 @@
+2002-05-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_control): Fix return value
+	when changing the baud rate.
+
+2002-05-01  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/mmap_test.c: Diagnostic prints for failure cases.
+
+2002-04-24  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: CYGPRI_KERNEL_TESTS_DHRYSTONE_PASSES added.
+
+2002-01-29  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Removed CRUFT_H.
+
+	* include/hal_sa11x0.h: Moved CYGARC_PHYSICAL_ADDRESS definition
+	to:
+	* include/var_io.h: this file.
+
+2002-01-28  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Declare var_io.h file.
+	Tug RedBoot requirements away in a component properly controlled
+	by the RedBoot presence.
+	* include/var_io.h: Added.
+
+2002-01-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_sa11x0.h (CYGARC_PHYSICAL_ADDRESS): Added.
+
+	* src/redboot_linux_exec.c: Moved to arch directory.
+	* cdl/hal_arm_sa11x0.cdl: Replaced options with requirements to
+	arch options.
+
+2002-01-25  David Woodhouse  <dwmw2@cambridge.redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Trick the compiler into
+	thinking that the end1 and lab1 labels are both actually used,
+	so it doesn't move them around.
+	
+2002-01-22  David Woodhouse  <dwmw2@cambridge.redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Pass ATAG_MEM to Linux
+	kernel, having tried to obtain the appropriate numbers from the
+	MLT header file. This could probably do with some improvement -
+	the actual information we need isn't necessarily present in the
+	required form.
+
+2002-01-14  David Woodhouse  <dwmw2@cambridge.redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Use load start/end
+	parameters as defaults. Don't copy image if specified length is
+	zero.
+
 2001-10-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_arm_sa11x0.cdl: Indicate support of variable baud rates.
@@ -353,27 +409,36 @@
 	* current/cdl/hal_arm_sa11x0.cdl: New file(s).
 
 //===========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

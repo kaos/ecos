@@ -5,29 +5,38 @@
 //      RedBoot file/image loader
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -45,13 +54,25 @@
 
 #include <redboot.h>
 #include <xyzModem.h>
+#include <elf.h>
 #ifdef CYGPKG_REDBOOT_DISK
 #include <fs/disk.h>
 #endif
 
-
-// Buffer used by redboot_getc
-getc_info_t getc_info;
+// Buffers, data used by redboot_getc
+#define BUF_SIZE 256
+struct {
+    int (*fun)(char *, int len, int *err);
+    unsigned char  buf[BUF_SIZE];
+    unsigned char *bufp;
+    int   avail, len, err;
+    int   verbose, decompress, tick;
+#ifdef CYGPKG_COMPRESS_ZLIB
+    int (*raw_fun)(char *, int len, int *err);
+    _pipe_t load_pipe;
+    unsigned char _buffer[CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER];
+#endif
+} getc_info;
 
 static char usage[] = "[-r] [-v] "
 #ifdef CYGPKG_COMPRESS_ZLIB
@@ -73,12 +94,151 @@ RedBoot_cmd("load",
             do_load 
     );
 
-static unsigned long
-load_elf_image(int (*getc)(void))
+#ifdef CYGSEM_REDBOOT_ELF
+static int
+_read(int (*getc)(void), unsigned char *buf, int len)
 {
-    diag_printf("ELF images not supported\n");
-    return 0;
+    int total = 0;
+    int ch;
+    while (len-- > 0) {
+        ch = (*getc)();
+        if (ch < 0) {
+            // EOF or error
+            break;
+        }
+        *buf++ = ch;
+        total++;
+    }
+    return total;
 }
+#endif
+
+static unsigned long
+load_elf_image(getc_t getc, terminate_t terminate, unsigned long base)
+{
+#ifdef CYGSEM_REDBOOT_ELF
+    Elf32_Ehdr ehdr;
+#define MAX_PHDR 8
+    Elf32_Phdr phdr[MAX_PHDR];
+    unsigned long offset = 0;
+    int phx, len, ch;
+    unsigned char *addr;
+    bool first_addr = true;
+    unsigned long addr_offset = 0;
+    unsigned long highest_address = 0;
+    unsigned long lowest_address = 0xFFFFFFFF;
+    unsigned char *SHORT_DATA = "Short data reading ELF file";
+
+    // Read the header
+    if (_read(getc, (unsigned char *)&ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+        diag_printf("Can't read ELF header\n");
+        return 0;
+    }
+    offset += sizeof(ehdr);    
+#if 0 // DEBUG
+    diag_printf("Type: %d, Machine: %d, Version: %d, Entry: %p, PHoff: %p/%d/%d, SHoff: %p/%d/%d\n",
+                ehdr.e_type, ehdr.e_machine, ehdr.e_version, ehdr.e_entry, 
+                ehdr.e_phoff, ehdr.e_phentsize, ehdr.e_phnum,
+                ehdr.e_shoff, ehdr.e_shentsize, ehdr.e_shnum);
+#endif
+    if (ehdr.e_type != ET_EXEC) {
+        diag_printf("Only absolute ELF images supported\n");
+        return 0;
+    }
+    if (ehdr.e_phnum > MAX_PHDR) {
+        diag_printf("Too many program headers\n");
+        return 0;
+    }
+    while (offset < ehdr.e_phoff) {
+        if ((*getc)() < 0) {
+            diag_printf(SHORT_DATA);
+            return 0;
+        }
+        offset++;
+    }
+    for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
+        if (_read(getc, (unsigned char *)&phdr[phx], sizeof(phdr[0])) != sizeof(phdr[0])) {
+            diag_printf("Can't read ELF program header\n");
+            return 0;
+        }
+#if 0 // DEBUG
+        diag_printf("Program header: type: %d, off: %p, va: %p, pa: %p, len: %d/%d, flags: %d\n",
+                    phdr[phx].p_type, phdr[phx].p_offset, phdr[phx].p_vaddr, phdr[phx].p_paddr,
+                    phdr[phx].p_filesz, phdr[phx].p_memsz, phdr[phx].p_flags);
+#endif
+        offset += sizeof(phdr[0]);
+    }
+    for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
+        if ((phdr[phx].p_type == PT_LOAD) && (phdr[phx].p_offset != 0)) {
+            // Loadable segment
+            if (offset > phdr[phx].p_offset) {
+                diag_printf("Can't load ELF file - program headers out of order\n");
+                return 0;
+            }
+            while (offset < phdr[phx].p_offset) {
+                if ((*getc)() < 0) {
+                    diag_printf(SHORT_DATA);
+                    return 0;
+                }
+                offset++;
+            }
+            // Copy data into memory
+            addr = (unsigned char *)phdr[phx].p_paddr;
+            len = phdr[phx].p_filesz;
+            if (first_addr) {
+                if (base) {
+                    addr_offset = (unsigned long)base - (unsigned long)addr;
+                } else {
+                    addr_offset = 0;                    
+                }
+                first_addr = false;
+            }
+            addr += addr_offset;
+            if ((unsigned long)(addr-addr_offset) < lowest_address) {
+                lowest_address = (unsigned long)(addr - addr_offset);
+            }
+            while (len-- > 0) {
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+                if ((addr < user_ram_start) || (addr > user_ram_end)) {
+                    // Only if there is no need to stop the download before printing
+                    // output can we ask confirmation questions.
+                    if (terminate) {
+                        (*terminate)(xyzModem_abort, getc);
+                        diag_printf("*** Warning! Attempt to load ELF data to address: %p\nRedBoot does not believe this is in RAM\nUse TFTP for a chance to override this.\n",(void*)addr);
+                    } else {
+                        if (!verify_action("Attempt to load ELF data to address: %p\n"
+                                           "RedBoot does not believe this is in RAM", (void*)addr))
+                            return 0;
+                    }
+                }
+#endif
+                if ((ch = (*getc)()) < 0) {
+                    diag_printf(SHORT_DATA);
+                    return 0;
+                }
+                *addr++ = ch;
+                offset++;
+                if ((unsigned long)(addr-addr_offset) > highest_address) {
+                    highest_address = (unsigned long)(addr - addr_offset);
+                }
+            }
+        }
+    }
+    // Save load base/top and entry
+    load_address = lowest_address;
+    load_address_end = highest_address;
+    entry_address = ehdr.e_entry;
+
+    if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
+    diag_printf("Entry point: %p, address range: %p-%p\n", 
+                (void*)ehdr.e_entry, (void *)lowest_address, (void *)highest_address);
+    return 1;
+#else // CYGSEM_REDBOOT_ELF
+    diag_printf("Loading ELF images not supported\n");
+    return 0;
+#endif // CYGSEM_REDBOOT_ELF
+}
+
 
 //
 // Scan a string of hex bytes and update the checksum
@@ -118,11 +278,9 @@ _hex2(int (*getc)(void), int len, long *sum)
 //
 #define MAX_LINE 80
 static unsigned long
-load_srec_image(int (*getc)(void), void (*terminate)(int method,int (*getc)(void)), unsigned long base)
+load_srec_image(getc_t getc, terminate_t terminate, unsigned long base)
 {
-    char line[MAX_LINE];
-    char *lp;
-    int  c, len;
+    int  c;
     long offset = 0, count, sum, val, cksum;
     unsigned char *addr, *base_addr;
     char type;
@@ -132,7 +290,6 @@ load_srec_image(int (*getc)(void), void (*terminate)(int method,int (*getc)(void
     unsigned long lowest_address = 0xFFFFFFFF;
 
     while ((c = (*getc)()) > 0) {
-        lp = line;  len = 0;
         // Start of line
         if (c != 'S') {
 	    if (terminate) (*terminate)(xyzModem_abort, getc);
@@ -208,6 +365,7 @@ load_srec_image(int (*getc)(void), void (*terminate)(int method,int (*getc)(void
         case '9':
             addr = (unsigned char *)_hex2(getc, ('9'-type+2), &sum);
             offset += ('9'-type+2);
+            // Save entry address
             entry_address = (unsigned long)addr;
 	    if (terminate) (*terminate)(xyzModem_close, getc);
             if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
@@ -230,7 +388,9 @@ load_srec_image(int (*getc)(void), void (*terminate)(int method,int (*getc)(void
     return 0;
 }
 
-
+//
+// Stream I/O support
+//
 int
 redboot_getc(void)
 {
@@ -261,14 +421,66 @@ redboot_getc(void)
     return *getc_info.bufp++;
 }
 
+#ifdef CYGPKG_COMPRESS_ZLIB
+// Called to fetch a new chunk of data and decompress it
+int 
+_decompress_stream(char *buf, int len, int *err)
+{
+    _pipe_t* p = &getc_info.load_pipe;
+    int res, total;
+
+    total = 0;
+    while (len > 0) {
+        if (p->in_avail == 0) {
+            p->in_buf = &getc_info._buffer[0];
+            res = (*getc_info.raw_fun)(p->in_buf, CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER, 
+                                       &getc_info.err);
+            if ((p->in_avail = res) <= 0) {
+                // No more data
+                return total;
+            }
+        }
+        p->out_buf = buf;
+        p->out_size = 0;
+        p->out_max = len;
+        res = (*_dc_inflate)(p);
+        if (res != 0) {
+            *err = res;
+            return total;
+        }        
+        len -= p->out_size;
+        buf += p->out_size;
+        total += p->out_size;
+    }
+    return total;
+}
+#endif
+
 void
-redboot_getc_init(int (*fun)(char *, int, int *), int verbose)
+redboot_getc_init(int (*fun)(char *, int, int *), 
+                  int verbose, int decompress)
 {
     getc_info.avail = 0;
     getc_info.len = BUF_SIZE;
     getc_info.fun = fun;
     getc_info.verbose = verbose;
+    getc_info.decompress = decompress;
     getc_info.tick = 0;
+#ifdef CYGPKG_COMPRESS_ZLIB
+    if (decompress) {
+        _pipe_t* p = &getc_info.load_pipe;
+        int err;
+        p->out_buf = &getc_info.buf[0];
+        p->out_size = 0;
+        p->in_avail = 0;
+        getc_info.fun = _decompress_stream;
+        getc_info.raw_fun = fun;
+        err = (*_dc_init)(p);
+        if (0 != err && p->msg) {
+            diag_printf("open decompression error: %s\n", p->msg);
+        }
+    }
+#endif
 }
 
 void
@@ -276,6 +488,21 @@ redboot_getc_rewind(void)
 {
     getc_info.bufp = getc_info.buf;
     getc_info.avail = getc_info.len;
+}
+
+void
+redboot_getc_close(void)
+{
+#ifdef CYGPKG_COMPRESS_ZLIB
+    if (getc_info.decompress) {
+        _pipe_t* p = &getc_info.load_pipe;
+        int err = getc_info.err;
+        if (0 != err && p->msg) {
+            diag_printf("decompression error: %s\n", p->msg);
+        }
+        err = (*_dc_close)(p, getc_info.err);
+    }
+#endif
 }
 
 #define MODE_TFTP   0
@@ -297,9 +524,7 @@ do_load(int argc, char *argv[])
     bool hostname_set;
     char *hostname;
 #endif
-#ifdef CYGPKG_COMPRESS_ZLIB
-    bool decompress;
-#endif
+    bool decompress = false;
     int chan = -1;
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
     bool chan_set;
@@ -309,6 +534,7 @@ do_load(int argc, char *argv[])
     char type[4];
     char *filename = 0;
     struct option_info opts[7];
+    terminate_t terminate = NULL;
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memset((char *)&host, 0, sizeof(host));
@@ -348,8 +574,8 @@ do_load(int argc, char *argv[])
     num_options++;
 #endif
 
-    if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&filename, OPTION_ARG_TYPE_STR, "file name"))
-    {
+    if (!scan_opts(argc, argv, 1, opts, num_options, 
+                   (void *)&filename, OPTION_ARG_TYPE_STR, "file name")) {
         return;
     }
 #ifdef CYGPKG_REDBOOT_NETWORKING
@@ -443,17 +669,18 @@ do_load(int argc, char *argv[])
             diag_printf("Can't load '%s': %s\n", filename, tftp_error(err));
             return;
         }
-        redboot_getc_init(tftp_stream_read, verbose);
+        redboot_getc_init(tftp_stream_read, verbose, decompress);
     }
 #endif
 #ifdef CYGPKG_REDBOOT_DISK
     else if (mode == MODE_DISK) {
         res = disk_stream_open(filename, &err);
         if (res < 0) {
+
             diag_printf("Can't load '%s': %s\n", filename, disk_error(err));
             return;
         }
-        redboot_getc_init(disk_stream_read, verbose);
+        redboot_getc_init(disk_stream_read, verbose, decompress);
     }
 #endif
     else {
@@ -463,59 +690,49 @@ do_load(int argc, char *argv[])
             return;
         }
         // Suppress verbosity when using xyz modem download
-        redboot_getc_init(xyzModem_stream_read, 0 && verbose);
+        redboot_getc_init(xyzModem_stream_read, 0 && verbose, decompress);
+
+        terminate = xyzModem_stream_terminate;
     }
+
     if (raw) {
-#ifdef CYGPKG_COMPRESS_ZLIB
-        if (decompress) {
-            _pipe_t load_pipe;
-            _pipe_t* p = &load_pipe;
-            unsigned char _buffer[CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER];
-
-            p->out_buf = (unsigned char*) base;
-            p->out_size = 0;
-            p->in_buf = _buffer;
-                
-            err = (*_dc_init)(p);
-
-            while (0 == err) {
-                p->in_avail = 0;
-                for (i = 0; i < CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER; i++) {
-                    res = redboot_getc();
-                    if (res < 0) break;
-                    p->in_buf[p->in_avail++] = res;
+        bool continue_load = false;
+        unsigned char *mp = (unsigned char *)base;
+        err = 0;
+        while ((res = redboot_getc()) >= 0) {
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+            if (!continue_load && mp >= user_ram_end) {
+                // Only if there is no need to stop the download
+                // before printing output can we ask confirmation
+                // questions.
+                if (terminate) {
+                    (*terminate)(xyzModem_abort, redboot_getc);
+                    diag_printf("*** Warning! RAW data spills over limit of user RAM at %p\nRedBoot does not believe this is in RAM\nUse TFTP for a chance to override this.\n",(void*)mp);
+                    err = -1;
+                    break;
+                } else {
+                    if (!verify_action("RAW data spills over limit of user RAM at %p\n"
+                                       "Continuing may cause a hang or crash", (void*)mp)) {
+                        err = -1;
+                        break;
+                    }
+                    // Don't ask again
+                    continue_load = true;
                 }
-                if (0 == p->in_avail) break;
-
-                err = (*_dc_inflate)(p);
             }
-
-            // Free used resources, do final translation of
-            // error value.
-            err = (*_dc_close)(p, err);
-
-            if (0 != err && p->msg) {
-                diag_printf("decompression error: %s\n", p->msg);
-            }
-
-            end = (unsigned long) base + p->out_size;
-        } else // dangling block
 #endif
-        {
-            unsigned char *mp = (unsigned char *)base;
-            while ((res = redboot_getc()) >= 0) {
-                *mp++ = res;
-            }
-            err = 0;
-            end = (unsigned long) mp;
+            *mp++ = res;
         }
+        end = (unsigned long) mp;
 
         // Save load base/top
         load_address = base;
         load_address_end = end;
+        entry_address = base;           // best guess
 
         if (0 == err)
-            diag_printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
+            diag_printf("Raw file loaded %p-%p, assumed entry at %p\n", 
+                        (void *)base, (void *)end, (void*)base);
     } else {
         // Read initial header - to determine file [image] type
         for (i = 0;  i < sizeof(type);  i++) {
@@ -529,19 +746,10 @@ do_load(int argc, char *argv[])
             redboot_getc_rewind();  // Restore header to stream
             // Treat data as some sort of executable image
             if (strncmp(&type[1], "ELF", 3) == 0) {
-                end = load_elf_image(redboot_getc);
+                end = load_elf_image(redboot_getc, terminate, base);
             } else if ((type[0] == 'S') &&
                        ((type[1] >= '0') && (type[1] <= '9'))) {
-		switch (mode) {
-		  case MODE_XMODEM:
-		  case MODE_YMODEM:
-		  case MODE_ZMODEM:
-                    end = load_srec_image(redboot_getc, xyzModem_stream_terminate, base);
-		    break;
-		  default:
-                    end = load_srec_image(redboot_getc, NULL, base);
-		    break;
-		}
+		end = load_srec_image(redboot_getc, terminate, base);
             } else {
                 diag_printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
             }
@@ -563,5 +771,6 @@ do_load(int argc, char *argv[])
         xyzModem_stream_close(&err);
 	break;
     }
+    redboot_getc_close();  // Clean up
     return;
 }

@@ -8,29 +8,38 @@
 //      Standard types, and some useful coding macros.
 //
 //==========================================================================
-//####COPYRIGHTBEGIN####
-//                                                                          
-// -------------------------------------------                              
-// The contents of this file are subject to the Red Hat eCos Public License 
-// Version 1.1 (the "License"); you may not use this file except in         
-// compliance with the License.  You may obtain a copy of the License at    
-// http://www.redhat.com/                                                   
-//                                                                          
-// Software distributed under the License is distributed on an "AS IS"      
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
-// License for the specific language governing rights and limitations under 
-// the License.                                                             
-//                                                                          
-// The Original Code is eCos - Embedded Configurable Operating System,      
-// released September 30, 1998.                                             
-//                                                                          
-// The Initial Developer of the Original Code is Red Hat.                   
-// Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
-// All Rights Reserved.                                                     
-// -------------------------------------------                              
-//                                                                          
-//####COPYRIGHTEND####
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -245,9 +254,10 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 // Constructor ordering macros.  These are added as annotations to all
 // static objects to order the constuctors appropriately.
 
-#if defined(__cplusplus) && defined(__GNUC__)
+#if defined(__cplusplus) && defined(__GNUC__) && \
+    !defined(CYGBLD_ATTRIB_INIT_PRI)
 # define CYGBLD_ATTRIB_INIT_PRI( _pri_ ) __attribute__((init_priority(_pri_)))
-#else
+#elif !defined(CYGBLD_ATTRIB_INIT_PRI)
 // FIXME: should maybe just bomb out if this is attempted anywhere else?
 // Not sure
 # define CYGBLD_ATTRIB_INIT_PRI( _pri_ )
@@ -270,7 +280,8 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #define CYG_INIT_KERNEL                 40000
 #define CYG_INIT_MEMALLOC               47000
 #define CYG_INIT_IO                     49000
-#define CYG_INIT_LIBC                   50000
+#define CYG_INIT_IO_FS                  50000
+#define CYG_INIT_LIBC                   52000
 #define CYG_INIT_COMPAT                 55000
 #define CYG_INIT_APPLICATION            60000
 #define CYG_INIT_PREDEFAULT             65534
@@ -303,37 +314,53 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 
 #ifdef __GNUC__
 // Force a 'C' routine to be called like a 'C++' contructor
-# define CYGBLD_ATTRIB_CONSTRUCTOR __attribute__((constructor))
+# if !defined(CYGBLD_ATTRIB_CONSTRUCTOR)
+#  define CYGBLD_ATTRIB_CONSTRUCTOR __attribute__((constructor))
+# endif
 
 // Define a compiler-specific rune for saying a function doesn't return
-# define CYGBLD_ATTRIB_NORET __attribute__((noreturn))
+# if !defined(CYGBLD_ATTRIB_NORET)
+#  define CYGBLD_ATTRIB_NORET __attribute__((noreturn))
+# endif
 
 // How to define weak symbols - this is only relevant for ELF and a.out,
 // but that won't be a problem for eCos
-# define CYGBLD_ATTRIB_WEAK __attribute__ ((weak))
+# if !defined(CYGBLD_ATTRIB_WEAK)
+#  define CYGBLD_ATTRIB_WEAK __attribute__ ((weak))
+# endif
 
 // How to define alias to symbols. Just pass in the symbol itself, not
 // the string name of the symbol
-# define CYGBLD_ATTRIB_ALIAS(__symbol__) \
+# if !defined(CYGBLD_ATTRIB_ALIAS)
+#  define CYGBLD_ATTRIB_ALIAS(__symbol__) \
         __attribute__ ((alias (#__symbol__)))
+# endif
 
 // This effectively does the reverse of the previous macro. It defines
 // a name that the attributed variable or function will actually have
 // in assembler.
-#define __Str(x) #x
-#define __Xstr(x) __Str(x)
-# define CYGBLD_ATTRIB_ASM_ALIAS(__symbol__) \
-            __asm__ ( __Xstr( CYG_LABEL_DEFN( __symbol__ ) ) )
+# if !defined(CYGBLD_ATTRIB_ASM_ALIAS)
+#  define __Str(x) #x
+#  define __Xstr(x) __Str(x)
+#  define CYGBLD_ATTRIB_ASM_ALIAS(__symbol__) \
+             __asm__ ( __Xstr( CYG_LABEL_DEFN( __symbol__ ) ) )
+# endif
 
 // Shows that a function returns the same value when given the same args, but
 // note this can't be used if there are pointer args
-# define CYGBLD_ATTRIB_CONST __attribute__((const))
+# if !defined(CYGBLD_ATTRIB_CONST)
+#  define CYGBLD_ATTRIB_CONST __attribute__((const))
+#endif
 
 // Assign a defined variable to a specific section
-# define CYGBLD_ATTRIB_SECTION(__sect__) __attribute__((section (__sect__)))
+# if !defined(CYGBLD_ATTRIB_SECTION)
+#  define CYGBLD_ATTRIB_SECTION(__sect__) __attribute__((section (__sect__)))
+# endif
 
 // Give a type or object explicit minimum alignment
-# define CYGBLD_ATTRIB_ALIGN(__align__) __attribute__((aligned(__align__)))
+# if !defined(CYGBLD_ATTRIB_ALIGN)
+#  define CYGBLD_ATTRIB_ALIGN(__align__) __attribute__((aligned(__align__)))
+# endif
 
 #else // non-GNU
 

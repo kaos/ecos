@@ -5,7 +5,7 @@
 // Author:      Julian Smart
 // Modified by:
 // Created:     01/02/97
-// RCS-ID:      $Id: ecscrolwin.h,v 1.1 2001/05/01 17:18:47 julians Exp $
+// RCS-ID:      $Id: ecscrolwin.h,v 1.2 2002/02/28 18:30:35 julians Exp $
 // Copyright:   (c) Julian Smart and Markus Holzem
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,12 @@
 
 // 1 to use our own scroled window to insulate us from
 // wxWindows changes
+
+#if wxRELEASE_NUMBER < 2302
 #define ecUSE_OWN_SCROLLED_WINDOW 1
+#else
+#define ecUSE_OWN_SCROLLED_WINDOW 0
+#endif
 
 #if !ecUSE_OWN_SCROLLED_WINDOW
 #include "wx/scrolwin.h"
