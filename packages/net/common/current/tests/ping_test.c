@@ -364,6 +364,31 @@ ping6_test( struct sockaddr_in6 *host)
 }
 #endif
 
+#ifdef CYGPKG_PROFILE_GPROF
+#include <cyg/profile/profile.h>
+
+extern char _stext, _etext;  // Defined by the linker
+
+static void
+start_profile(void)
+{
+    // This starts up the system-wide profiling, gathering
+    // profile information on all of the code, with a 16 byte
+    // "bucket" size, at a rate of 100us/profile hit.
+    // Note: a bucket size of 16 will give pretty good function
+    //       resolution.  Much smaller and the buffer becomes
+    //       much too large for very little gain.
+    // Note: a timer period of 100us is also a reasonable
+    //       compromise.  Any smaller and the overhead of 
+    //       handling the timter (profile) interrupt could
+    //       swamp the system.  A fast processor might get
+    //       by with a smaller value, but a slow one could
+    //       even be swamped by this value.  If the value is
+    //       too large, the usefulness of the profile is reduced.
+    profile_on(&_stext, &_etext, 16, 100);
+}
+#endif
+
 static void
 ping_test(struct bootp *bp)
 {
@@ -405,6 +430,9 @@ net_test(cyg_addrword_t p)
     diag_printf("Start PING test\n");
     TNR_INIT();
     init_all_network_interfaces();
+#ifdef CYGPKG_PROFILE_GPROF
+    start_profile();
+#endif
 #ifdef CYGHWR_NET_DRIVER_ETH0
     if (eth0_up) {
         ping_test(&eth0_bootp_data);

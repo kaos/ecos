@@ -1,3 +1,7 @@
+2003-10-30  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/ping_test.c: Enable profiling if configured in - example use only.
+
 2003-10-16  Jay Foster  <jay@systech.com>
             Andrew Lunn <andrew.lunn@ascom.ch>
 	
