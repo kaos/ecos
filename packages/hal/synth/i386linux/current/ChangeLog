@@ -1,3 +1,7 @@
+2005-03-21  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/hal_synth_i386.cdl, src/profile.c: add profiling support.
+
 2005-03-11  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/var_io.h, src/syscall-i386-linux-1.0.S:

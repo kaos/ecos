@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2005 eCosCentric Ltd
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -66,6 +67,9 @@ cdl_package CYGPKG_HAL_SYNTH_I386 {
     # the recommended minimum from var_arch.h
     requires { !CYGPKG_LIBC_STARTUP || CYGINT_LIBC_STARTUP_MAIN_NO_STACK_SIZE || (CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE >= (16 * 1024)) }
 	
+    implements	  CYGINT_PROFILE_HAL_TIMER
+    implements	  CYGINT_PROFILE_HAL_MCOUNT
+    
     make {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
         $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
@@ -74,7 +78,7 @@ cdl_package CYGPKG_HAL_SYNTH_I386 {
         @echo >> $(notdir $@).deps
         @rm vectors.tmp
     }
-    compile       context.S syscall-i386-linux-1.0.S
+    compile       context.S syscall-i386-linux-1.0.S profile.c
 
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
