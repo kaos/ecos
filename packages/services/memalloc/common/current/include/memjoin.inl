@@ -196,7 +196,7 @@ Cyg_Mempool_Joined<T>::try_alloc( cyg_int32 size )
 template <class T>
 inline cyg_uint8 *
 Cyg_Mempool_Joined<T>::resize_alloc( cyg_uint8 *alloc_ptr, cyg_int32 newsize,
-                                     cyg_int32 *oldsize=NULL )
+                                     cyg_int32 *oldsize )
 {
     T *pool;
     cyg_uint8 * ret;

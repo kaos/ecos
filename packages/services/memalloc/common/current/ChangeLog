@@ -1,3 +1,7 @@
+2003-02-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/memjoin.inl: Don't use default arg in definition.
+
 2003-02-04  John Dallaway  <jld@ecoscentric.com>
 
 	* src/heapgen.tcl: Accommodate POSIX-style arguments
