@@ -1,3 +1,12 @@
+2004-09-19  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_ROM.ecm: Add CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROMRAM.ecm: Ditto.
+	* misc/redboot_ROMLE.ecm: Ditto.
+	* misc/redboot_RAMLE.ecm: Ditto.
+	* misc/redboot_ROMRAMLE.ecm: Ditto.
+
 2004-09-07  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROM.ecm (CYGBLD_REDBOOT_MIN_IMAGE_SIZE): Set to 0x80000.

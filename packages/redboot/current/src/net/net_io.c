@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -724,8 +724,18 @@ net_init(void)
     default_index = net_devindex(default_devname);
     if (default_index < 0)
 	default_index = 0;
+#ifdef CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
+    if ((t = net_devtab_entry(default_index)) != NULL && t->init(t)) {
+	t->status = CYG_NETDEVTAB_STATUS_AVAIL;
+	primary_net = __local_enet_sc;
+    } else
+#endif
 #endif
     for (index = 0; (t = net_devtab_entry(index)) != NULL; index++) {
+#ifdef CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
+	if (index == default_index)
+	    continue;
+#endif
 	if (t->init(t)) {
             t->status = CYG_NETDEVTAB_STATUS_AVAIL;
             if (primary_net == (struct eth_drv_sc *)0) {

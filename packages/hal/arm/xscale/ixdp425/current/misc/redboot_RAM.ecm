@@ -119,6 +119,10 @@ cdl_option CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH {
     user_value 1
 }
  
+cdl_option CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE {
+    user_value 1
+};
+
 cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
     user_value 1
 };

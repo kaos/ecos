@@ -483,6 +483,18 @@ cdl_package CYGPKG_REDBOOT {
                     This is the index of the first network device driver that
                     RedBoot will try to initialize."
             }
+
+	    cdl_option CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE {
+                display         "Initialize only one net device"
+                flavor          bool
+                active_if       { CYGHWR_NET_DRIVERS > 1 }
+                default_value   0
+                description     "
+                    This option tells RedBoot to stop initializing network
+		    devices when it finds the first device which is
+                    successfully initialized. The default behavior causes
+                    all network devices to be initialized."
+            }
         }
     
         cdl_option CYGPKG_REDBOOT_ANY_CONSOLE {

@@ -1,3 +1,9 @@
+2004-09-19  Mark Salter  <msalter@redhat.com>
+
+	* cdl/redboot.cdl: Add CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE
+	* src/net/net_io.c (net_init): Initialize only one network
+	device if CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE defined.
+
 2004-09-19  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/load.c (do_load): Removed compiler warning when building

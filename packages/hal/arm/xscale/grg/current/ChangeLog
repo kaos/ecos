@@ -1,3 +1,10 @@
+2004-09-19  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_ROM.ecm: Add CYGSEM_REDBOOT_NETWORK_INIT_ONE_DEVICE.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROMLE.ecm: Ditto.
+	* misc/redboot_RAMLE.ecm: Ditto.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_platform_extras.h: Removed.
