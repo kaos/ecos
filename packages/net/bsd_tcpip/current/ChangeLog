@@ -1,3 +1,11 @@
+2003-06-23  Michael Checky  <Michael_Checky@ThermoKing.com>
+ 
+	* include/netinet/icmp_var.h: Changed icmpstat definition to a
+	declaration so stopping ld from generating a multiple symbol
+	definition error if combining of common symbols is disabled in the
+	toolchain.
+	* src/sys/netinet/ip_icmp.c: Added an icmpstat definition.
+
 2003-06-23  Jay Foster  <jay@systech.com>
 
 	* src/ecos/support.c: Increase the stack size for the background

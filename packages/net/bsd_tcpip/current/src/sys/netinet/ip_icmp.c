@@ -83,6 +83,7 @@
  * host table maintenance routines.
  */
 
+struct icmpstat icmpstat;
 static int	icmpmaskrepl = 0;
 static int	drop_redirect = 0;
 static int	log_redirect = 0;

@@ -92,7 +92,7 @@ extern int badport_bandlim __P((int));
 #define BANDLIM_MAX 4
 
 // Used by SNMP
-struct icmpstat icmpstat;
+extern struct icmpstat icmpstat;
 
 #endif
 
