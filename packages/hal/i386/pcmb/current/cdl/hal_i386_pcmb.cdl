@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -42,7 +43,7 @@
 #
 # Author(s):      jskov
 # Original data:  jskov
-# Contributors:   nickg
+# Contributors:   nickg, gthomas
 # Date:           1999-11-01
 #
 #####DESCRIPTIONEND####
@@ -119,6 +120,18 @@ cdl_package CYGPKG_HAL_I386_PCMB {
             default_value 0x00100000
             active_if     { CYGPKG_HAL_I386_PCMB_MEMSIZE == "HARDCODE" }
         }
+    }
+
+    cdl_option CYGSEM_HAL_I386_PC_LARGE_PCI_SPACE {
+	display           "Search entire PCI space"
+	flavor            bool
+	default_value     0
+        description       "
+          This option enables searching the entire PCI address space, including
+        up to 256 busses, etc.  Probably only useful when there are bridges or
+        other PCI expanding devices (such as a board with it's own PCI bus)
+        in the system.  If disabled, the system will revert to the default
+        PCI space size (typically 8 busses)."
     }
 
     cdl_option CYGNUM_HAL_I386_PC_STARTUP_VIDEO_MODE {

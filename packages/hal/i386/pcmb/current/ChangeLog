@@ -1,3 +1,9 @@
+2002-08-14  Gary Thomas  <gthomas@ecoscentric.com>
+2002-08-14  Drew Moseley <drew.moseley@intel.com>	
+
+	* cdl/hal_i386_pcmb.cdl: 
+	* include/pcmb_io.h: Increase PCI space to include all possible
+	busses, slots, etc.  Required because defaults are often too small.	
 2002-04-29  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pcmb_misc.c (hal_pcmb_init): Disable NMI at this point since

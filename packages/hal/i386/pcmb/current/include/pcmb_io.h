@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -127,6 +128,14 @@ CYG_MACRO_END
     
 //-----------------------------------------------------------------------------
 // Resources
+
+#ifdef CYGSEM_HAL_I386_PC_LARGE_PCI_SPACE
+// Use unrestricted PCI space
+#define CYG_PCI_MAX_BUS                     256
+#define CYG_PCI_MIN_DEV                       0
+#define CYG_PCI_MAX_DEV                      32
+#define CYG_PCI_MAX_FN                        8
+#endif
 
 // This is where the PCI spaces are mapped in the CPU's address space.
 // In the PC the PCI address space is mapped 1-1 into the CPU physical
