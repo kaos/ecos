@@ -331,7 +331,7 @@ pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
             tv.tv_usec = ts->tv_nsec/1000;
         }
 
-	return cyg_pselect(nfd, in, out, ex, &tv, sigmask);
+	return cyg_pselect(nfd, in, out, ex, ts ? &tv : NULL, sigmask);
 }
 
 #endif

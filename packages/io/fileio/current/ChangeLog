@@ -1,3 +1,9 @@
+2003-12-03  Dan Jakubiec  <djakubiec@yahoo.com>
+
+	* src/select.cxx (pselect): Fixed the pselect() call to correctly
+	handle NULL timeout arguments.  The previous implementation would
+	cause a random timeout value to be used.
+
 2003-11-28  David Woodhouse  <dwmw2@redhat.com>
 
 	* include/fileio.h, include/sockio.h, src/dir.cxx, src/fd.cxx,
