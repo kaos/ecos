@@ -64,7 +64,6 @@ cdl_package CYGPKG_IO_SERIAL_SH_SCIF {
     description   "
            This option enables the serial device drivers for the
            SCIF module in Hitachi SH CPUs."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a sh_scif_serial.c
 
