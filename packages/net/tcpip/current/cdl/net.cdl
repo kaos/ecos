@@ -1,0 +1,489 @@
+# ====================================================================
+#
+#      net.cdl
+#
+#      Networking configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      gthomas
+# Original data:  gthomas
+# Contributors:
+# Date:           1999-11-29
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_NET {
+    display       "Networking"
+    doc           doc/index.html
+    include_dir   .
+    requires      CYGPKG_IO
+    requires      CYGPKG_LIBC
+    requires      CYGPKG_ERROR
+    description   "Basic networking support, including TCP/IP."
+
+    compile ecos/support.c \
+	ecos/timeout.c \
+        ecos/init.cxx \
+        sys/kern/uipc_mbuf.c \
+        sys/kern/uipc_socket.c \
+        sys/kern/uipc_socket2.c \
+	sys/kern/uipc_domain.c \
+	sys/kern/uipc_syscalls.c \
+	sys/kern/kern_subr.c \
+        sys/kern/sys_socket.c \
+        sys/kern/sys_generic.c \
+	sys/net/if.c \
+	sys/net/rtsock.c \
+	sys/net/raw_cb.c \
+	sys/net/raw_usrreq.c \
+	sys/net/route.c \
+	sys/net/radix.c \
+	sys/net/if_ethersubr.c \
+	sys/net/if_loop.c \
+	sys/netinet/igmp.c \
+	sys/netinet/raw_ip.c \
+	sys/netinet/in.c  \
+	sys/netinet/in_cksum.c \
+	sys/netinet/in_pcb.c \
+	sys/netinet/in_proto.c \
+	sys/netinet/ip_id.c \
+	sys/netinet/ip_icmp.c \
+	sys/netinet/ip_input.c \
+	sys/netinet/ip_output.c \
+	sys/netinet/if_ether.c \
+	sys/netinet/udp_usrreq.c \
+	sys/netinet/tcp_input.c \
+	sys/netinet/tcp_output.c \
+	sys/netinet/tcp_subr.c \
+	sys/netinet/tcp_debug.c \
+	sys/netinet/tcp_usrreq.c \
+	sys/netinet/tcp_timer.c \
+	lib/inet_addr.c \
+	lib/bootp_support.c \
+	lib/network_support.c \
+	lib/getproto.c \
+	lib/getserv.c \
+	lib/gethost.c \
+	lib/socket.c \
+	lib/close.c \
+	lib/read.c \
+	lib/write.c \
+	lib/bind.c \
+	lib/connect.c \
+	lib/accept.c \
+	lib/listen.c \
+	lib/shutdown.c \
+	lib/sendto.c \
+	lib/recvfrom.c \
+	lib/getsockname.c \
+	lib/getpeername.c \
+	lib/getsockopt.c \
+	lib/setsockopt.c \
+	lib/ioctl.c \
+	lib/select.c
+
+    cdl_component CYGPKG_NET_INET {
+        display "INET support"
+        flavor  bool
+        no_define
+        default_value 1
+        description   "
+            This option enables support for INET (IP) network processing."
+
+        cdl_option CYGPKG_NET_INET6 {
+            display "IPv6 support"
+            flavor  bool
+            default_value 0
+            description   "
+                This option enables support for new IPv6."
+            define_proc {
+                puts $::cdl_header "#define INET6"
+            }
+        }
+
+        cdl_option CYGPKG_NET_ROUTING {
+            display "Routing support"
+            flavor  bool
+            no_define
+            default_value 0
+            description   "
+                This option enables support for packet routing."
+            define_proc {
+                puts $::cdl_header "#define MROUTING"
+            }
+        }
+
+        define_proc {
+            puts $::cdl_header "#define INET"
+        }
+    }
+
+    cdl_component CYGPKG_NET_TFTP {
+        display        "TFTP (RFC-1350) support"
+        flavor         bool
+        default_value  1
+        compile        lib/tftp_client.c \
+                       lib/tftp_server.c
+        description    "
+          This option provides additional library support for
+          the TFTP (Trivial File Transfer Protocol)."
+
+	cdl_option CYGPKG_NET_TFTPD_THREAD_PRIORITY {
+	    display "Priority level for TFTP daemon thread."
+	    flavor  data
+	    default_value 10
+	    description   "
+	    This option allows the thread priority level used by the
+	    TFTP server thread to be adjusted by the user.  It should be set
+	    high enough that sufficient CPU resources are available to
+	    process network data, but may be adjusted so that application
+	    threads can have precedence over TFTP server processing."
+	}
+
+        cdl_option CYGPKG_NET_TFTP_FILE_ACCESS {
+            display       "File I/O functions for TFTP server"
+            flavor        bool
+            default_value 1
+            compile       lib/tftp_dummy_file.c
+            description   "
+              Minimal in-memory file I/O support for TFTP server."
+        }
+    }
+
+    cdl_option CYGPKG_NET_SYSCTL {
+        display "Support BSD 'sysctl()' function"
+        flavor  bool
+        default_value 0
+        description   "
+            This option includes support for the 'sysctl()' functions."
+    }
+
+    cdl_option CYGPKG_NET_THREAD_PRIORITY {
+        display "Priority level for backgound network processing."
+        flavor  data
+        default_value 7
+        description   "
+            This option allows the thread priority level used by the
+	networking stack to be adjusted by the user.  It should be set
+	high enough that sufficient CPU resources are available to
+	process network data, but may be adjusted so that application
+	threads can have precedence over network processing."
+    }
+
+    cdl_option CYGPKG_NET_NBPF {
+        display "Number of BPF filters"
+        flavor  data
+        default_value 0
+        description   "
+            This option controls the number of active BPF filters."
+        define_proc {
+            puts $::cdl_header "#define NBPFILTER CYGPKG_NET_NBPF"
+        }
+    }
+
+    cdl_option CYGPKG_NET_NBRIDGE {
+        display "Number of bridge buffers?"
+        flavor  data
+        default_value 0
+        description   "
+            This option controls the number of bridge buffers."
+        define_proc {
+            puts $::cdl_header "#define NBRIDGE CYGPKG_NET_NBRIDGE"
+        }
+    }
+
+    cdl_option CYGPKG_NET_NGIF {
+        display "Number of GIF things"
+        flavor  data
+        default_value 0
+        description   "
+            This option controls the number of active GIF things."
+        define_proc {
+            puts $::cdl_header "#define NGIF CYGPKG_NET_NGIF"
+        }
+    }
+
+    cdl_option CYGPKG_NET_NLOOP {
+        display "Number of loopback interfaces"
+        flavor  data
+        default_value 1
+        description   "
+            This option controls the number of loopback, i.e. local, interfaces."
+        define_proc {
+            puts $::cdl_header "#define NLOOP CYGPKG_NET_NLOOP"
+        }
+    }
+
+    cdl_option CYGPKG_NET_MEM_USAGE {
+        display "Memory designated for networking buffers."
+        flavor  data
+        default_value 256*1024
+        description   "
+            This option controls the amount of memory pre-allocated
+	for buffers used by the networking code."
+    }
+
+    cdl_option CYGPKG_NET_NUM_WAKEUP_EVENTS {
+        display "Number of supported pending network events"
+        flavor  data
+        default_value 8
+        description   "
+            This option controls the number of pending network events
+	used by the networking code."
+    }
+
+    cdl_component CYGPKG_NET_OPTIONS {
+        display "Networking support build options"
+        flavor  none
+	no_define
+
+        cdl_option CYGPKG_NET_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "-D_KERNEL -D__ECOS" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the networking package.
+	        These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_NET_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the networking package. These flags are removed from
+                the set of global flags if present."
+        }
+    }
+
+    cdl_component CYGPKG_NET_BUILD_TESTS {
+	display "Build networking tests (demo programs)"
+	flavor  bool
+	no_define
+	default_value 0
+	description   "
+	This option enables the building of the network tests
+	which at this time are just demos."
+
+	cdl_option CYGPKG_NET_TESTS {
+	    display "Networking tests"
+	    flavor  data
+	    no_define
+	    calculated { CYGPKG_NET_BUILD_TESTS ? \
+                              "tests/mbuf_test \
+                              tests/socket_test \
+                              tests/ftp_test \
+                              tests/server_test \
+                              tests/nc_test_master \
+                              tests/nc_test_slave \
+			      tests/tftp_client_test \
+			      tests/tftp_server_test \
+                              tests/tcp_echo \
+			      tests/set_mac_address \
+			      tests/flood \
+                              tests/ping_test"
+	    : "" }
+	    description   "
+	    This option specifies the set of tests
+	    for the networking package."
+	}
+	
+	cdl_option CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS {
+	    display "Use real-time response test harness (if available)"
+	    default_value 0
+	    description "
+		    Platform and/or ethernet device driver packages may
+		    provide a test harness to verify that interrupts are
+		    not disabled or flooded for too long during a test.  If
+		    such is provided, CYGTST_DEVS_ETH_TEST_NET_REALTIME is
+		    defined and can be #include'd to acquire the support.
+		    Some tests in the TCP/IP stack can use this harness;
+		    this option controls whether they do.  The StrongARM
+		    EBSA285 Ethernet device driver is one package that
+		    provides such a harness.  See the file
+		    tests/test_net_realtime.h in there for details."
+	}
+    }
+
+# Description and control over different interfaces
+
+    cdl_interface CYGHWR_NET_DRIVERS {
+        display "Network drivers"
+    }
+
+    cdl_interface CYGHWR_NET_DRIVER_ETH0 {
+        display "Does the hardware provide an 'eth0' device?"
+    }
+
+    cdl_component CYGHWR_NET_DRIVER_ETH0_SETUP_OPTIONS {
+        display "Initialization options for 'eth0'"
+        active_if (CYGHWR_NET_DRIVER_ETH0 == 1)
+        flavor none
+        no_define
+
+        cdl_interface CYGHWR_NET_DRIVER_ETH0_SETUP {
+            display "Initialization options for 'eth0'"
+            requires 1 == CYGHWR_NET_DRIVER_ETH0_SETUP
+            no_define
+        }
+
+        cdl_component CYGHWR_NET_DRIVER_ETH0_MANUAL {
+            display "Initialize 'eth0' manually?"
+            default_value 0
+            implements CYGHWR_NET_DRIVER_ETH0_SETUP	
+        }
+
+        cdl_component CYGHWR_NET_DRIVER_ETH0_BOOTP {
+            display "Use BOOTP/DHCP to initialize 'eth0'?"
+            default_value 1
+            implements CYGHWR_NET_DRIVER_ETH0_SETUP	
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_BOOTP_SHOW {
+                display "Show BOOTP/DHCP initialization values?"
+                flavor  bool
+                default_value 1
+            }
+        }
+
+        cdl_component CYGHWR_NET_DRIVER_ETH0_ADDRS {
+            display "Address setups for 'eth0'"
+            implements CYGHWR_NET_DRIVER_ETH0_SETUP	
+            no_define
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_IP {
+                display "IP address for 'eth0'"
+                flavor  data
+                default_value { "192.168.1.2" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_NETMASK {
+                display "Network mask address for 'eth0'"
+                flavor  data
+                default_value { "255.255.255.0" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_BROADCAST {
+                display "Broadcast address for 'eth0'"
+                flavor  data
+                default_value { "192.168.1.255" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_GATEWAY {
+                display "Gateway/router IP address for 'eth0'"
+                flavor  data
+                default_value { "192.168.1.101" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_SERVER {
+                display "Server IP address for 'eth0'"
+                flavor  data
+                default_value { "192.168.1.101" }
+            }
+        }
+    }
+
+    cdl_interface CYGHWR_NET_DRIVER_ETH1 {
+        display "Does the hardware provide an 'eth1' device?"
+    }
+
+    cdl_component CYGHWR_NET_DRIVER_ETH1_SETUP_OPTIONS {
+        display "Initialization options for 'eth1'"
+        active_if (CYGHWR_NET_DRIVER_ETH1 == 1)
+        flavor none
+        no_define
+
+        cdl_interface CYGHWR_NET_DRIVER_ETH1_SETUP {
+            display "Initialization options for 'eth1'"
+            requires 1 == CYGHWR_NET_DRIVER_ETH1_SETUP
+            no_define
+        }
+
+        cdl_component CYGHWR_NET_DRIVER_ETH1_MANUAL {
+            display "Initialize 'eth1' manually?"
+            default_value 0
+            implements CYGHWR_NET_DRIVER_ETH1_SETUP	
+        }
+
+        cdl_component CYGHWR_NET_DRIVER_ETH1_BOOTP {
+            display "Use BOOTP/DHCP to initialize 'eth1'?"
+            default_value 1
+            implements CYGHWR_NET_DRIVER_ETH1_SETUP	
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_BOOTP_SHOW {
+                display "Show BOOTP/DHCP initialization values?"
+                flavor  bool
+                default_value 1
+            }
+        }
+
+        cdl_component CYGHWR_NET_DRIVER_ETH1_ADDRS {
+            display "Address setups for 'eth1'"
+            implements CYGHWR_NET_DRIVER_ETH1_SETUP	
+            no_define
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_IP {
+                display "IP address for 'eth1'"
+                flavor  data
+                default_value { "192.168.1.2" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_NETMASK {
+                display "Network mask address for 'eth1'"
+                flavor  data
+                default_value { "255.255.255.0" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_BROADCAST {
+                display "Broadcast address for 'eth1'"
+                flavor  data
+                default_value { "192.168.1.255" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_GATEWAY {
+                display "Gateway/router IP address for 'eth1'"
+                flavor  data
+                default_value { "192.168.1.101" }
+            }
+
+            cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_SERVER {
+                display "Server IP address for 'eth1'"
+                flavor  data
+                default_value { "192.168.1.101" }
+            }
+        }
+    }
+}
+

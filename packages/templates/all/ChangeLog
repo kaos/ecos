@@ -49,6 +49,15 @@
 
 	* current.ect: Wallclock moved.
 
+2000-02-08  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* current.ect: Remove network package which, now distributed
+	separately.
+
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* current.ect: Add network package.
+
 1999-12-09  Bart Veer  <bartv@cygnus.co.uk>
 
 	* templates/all directory created

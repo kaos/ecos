@@ -111,6 +111,14 @@
 
 	* include/hal_intr.h: provide CYGNUM_HAL_VSR_EXCEPTION_COUNT.
 
+2000-02-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh.ld: Fix typo.
+
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/sh.ld: Add support for network package.
+
 2000-01-24  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/vectors.S (__interrupt_stack): Remove stubs config check for

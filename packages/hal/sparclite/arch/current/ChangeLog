@@ -8,6 +8,10 @@
 
 	* cdl/hal_sparclite.cdl: removed fix me
 
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/sparclite.ld: Add support for network package.
+
 2000-01-19  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/*.cdl: Add descriptions to a number of options &c which were

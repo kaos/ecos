@@ -70,6 +70,11 @@
 	* src/arm.ld: Changed PID BE workaround to work with ROM startup.
 	Not just when building stubs.
 	
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm.ld: Add new section 'netdevtab' used to support
+	network device initialization.
+
 2000-01-26  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/hal_misc.c (exception_handler): Replace CYGDAT_CYGMON_ENABLE

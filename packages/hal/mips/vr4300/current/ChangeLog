@@ -6,6 +6,10 @@
 
 	* cdl/hal_mips_vr4300.cdl: removed fix me
 
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/mips_vr4300.ld: Add support for network package.
+
 2000-01-14  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/pkgconf/hal_mips_vr4300.h:

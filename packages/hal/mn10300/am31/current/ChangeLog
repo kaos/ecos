@@ -17,6 +17,10 @@
 
 	* cdl/hal_mn10300_am31.cdl: removed fix me.
 
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/mn10300_am31.ld: Add support for network package.
+
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/variant.inc: Rename CYG_HAL_USE_ROM_MONITOR_CYGMON ->

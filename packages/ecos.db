@@ -219,6 +219,20 @@ package CYGPKG_IO_SERIAL_V85X_V850 {
                        SA1 (70F3017) or SB1 (70F3033) processors."
 }
 
+package CYGPKG_NET {
+	alias 		{ "Networking" net }
+	directory	net/tcpip
+	script		net.cdl
+        description     "Generic networking support, including TCP/IP."
+}
+
+package CYGPKG_NET_ETH_DRIVERS {
+	alias 		{ "Common ethernet support" net_drivers }
+	directory	net/drivers/eth/common
+	script		eth_drivers.cdl
+        description     "Platform independent ethernet support."
+}
+
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
 	hardware

@@ -22,6 +22,10 @@
 
 	* cdl/hal_mips_tx39.cdl: removed fix me.
 
+2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/mips_tx39.ld: Add support for network package.
+
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/var_arch.h: Rename CYG_HAL_USE_ROM_MONITOR_CYGMON ->

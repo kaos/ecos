@@ -2,6 +2,12 @@
 
 	* include/codes.h: Added some further codes.
 
+2000-01-11  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/strerror.cxx (_strerror): 
+	* include/codes.h: Add in additional errors require to support
+	networking.
+
 1999-04-14  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/error.h: Add cdl_package doc attribute.

@@ -1,0 +1,474 @@
+2000-05-31  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/network_support.c (init_all_network_interfaces): Make
+	this call idempotent - this is useful for reliable initialization
+	of dependent subsystems.
+
+	* include/lib/libkern/libkern.h: remove protos of random() and
+	srandom() for they are not in fact provided.
+
+	* cdl/net.cdl: Turn off CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS by
+	default - since not all tests currently pass. 
+
+2000-05-12  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl (CYGPKG_NET_TFTPD_THREAD_PRIORITY): New option,
+	control the TFTPD thread priority.  These options are *all*
+	CYGPKG_NET.  Yuk, sort 'em out later.
+
+	* tests/tftp_server_test.c (tftp_test): Added use of the
+	CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS stuff, same as for the flood
+	ping test.  This one passes (with the next change), so committed.
+
+	* src/lib/tftp_server.c (tftpd_server): Cancelled some of the
+	printouts as connections come and go *iff* the tests are set up to
+	use the realtime-ness test harness.  This needs generalizing into
+	proper control of the network's chattiness overall.
+	(tftpd_start): Also added configury of the TFTPD thread priority.
+
+2000-05-12  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Add flood test below.  Also add option
+	CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS to decide whether to
+	"Use real-time response test harness (if available)".
+	Consequently moved the test build stuff forward out of the build
+	flags area.
+
+	* tests/flood.c (net_test): New file; performs a flood-ping (well,
+	as fast as we can go) of the server(s) on the two interfaces.
+	Also uses the real-time interrupt response verification stuff from
+	the EBSA285 driver component.
+
+2000-05-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Add new utility (and harmless-by-default test)
+	tests/set_mac_address.  You have to edit it to get anything
+	damaging to happen.
+
+	* tests/set_mac_address.c: New file added.  It uses SIOCSIFHWADDR
+	to set the MAC address of any interfaces it has been told to.
+
+2000-05-08  Gary Thomas  <gthomas@redhat.com>
+
+	* include/machine/cpu.h: 
+	* include/machine/cdefs.h: Add copyright boilerplate.
+
+2000-05-05  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/arpa/tftp.h: Aargh.  Turns out that removing the align
+	driective and retaining only the packed directive makes the
+	original version work.  So, reverted.  Apologies for the wasted
+	time.
+
+	* src/lib/tftp_server.c (tftpd_read_file): Coupla warnings
+	reduced, and reverted to match original tftp.h
+
+	* src/lib/tftp_dummy_file.c (dummy_open): Removed use of
+	undeclared malloc().
+
+2000-05-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/tftp_server.c: 
+	* src/lib/tftp_client.c: Adjust for changes in header structure.
+
+	* include/arpa/tftp.h: Continuing problems with alignment on ARM.  
+	Recourse is very bastardized structure, but it _does_ work.
+
+2000-05-04  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tftp_client_test.c (tftp_test): Print out a coupla more
+	things and test both interfaces if they exist - which does the
+	same thing twice if the same server bootp'd both.  Changed the
+	filenames to something more obvious.
+
+	* cdl/net.cdl (CYGPKG_NET_TESTS): Build the tftp tests
+	tests/tftp_client_test tests/tftp_server_test
+
+	* src/ecos/support.c (cyg_kmem_print_stats): New function; prints
+	info about memory usage for some tests to come.
+
+2000-05-04  Gary Thomas  <gthomas@redhat.com>
+
+	* include/arpa/tftp.h: Force packed alignment - required on some
+	architectures.
+
+2000-05-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/tftp_dummy_file.c: Adding very simple routines - just
+	enough to test TFTP server.  This support will come from elsewhere
+	in actual application environments (e.g. a real file system).
+
+	* tests/tftp_server_test.c: 
+	* src/lib/tftp_server.c: 
+	* include/tftp_support.h: Flesh out TFTP server support.
+
+2000-04-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tcp_echo.c (calibrate_load): Import better background
+	thread loading algorithm with bugfix; if the initial HIGH limit
+	was not large enough, it never got loaded enough.
+
+	* tests/nc_test_slave.c (calibrate_load): Import the fixed version
+	from above back in here.
+
+2000-04-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ecos/support.c (cyg_tsleep): Use 'cyg_scheduler_safe_lock()' so
+	this function can be called with the scheduler locked.
+
+	* src/sys/kern/uipc_socket2.c: 
+	* include/sys/socketvar.h: Update sblock()/sbunlock() to be eCos safe.
+
+2000-04-12  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tcp_echo.c: Include <lib/libkern/libkern.h> so that it
+	links - otherwise max() is not around.
+
+2000-04-11  Gary Thomas  <gthomas@redhat.com>
+
+	* include/lib/libkern/libkern.h: 
+	* include/network.h (NO_LIBKERN_INLINE): Disable kernel inline
+	functions.
+
+2000-04-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/getserv.c: Add TFTP protocol.
+
+	* cdl/net.cdl: Add TFTP library functions.
+	
+	* include/tftp_support.h: 
+	* src/lib/tftp_dummy_file.c: 
+	* src/lib/tftp_server.c: 
+	* src/lib/tftp_client.c: New file(s).  Basic TFTP support functions.
+
+2000-04-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tcp_echo.c (echo_test): 
+	* tests/tcp_source.c: 
+	* tests/tcp_sink.c: 
+	Merge in changes from Grant Edwards <grante@visi.com> presented on
+	ecos-discuss "Mon, 10 Apr 2000 11:01:54 -0500" - fix some
+	warnings, and use ntohl() on the control data that travels netly
+	so that the host tools will work on otherendian machines.
+
+2000-04-07  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/nc_test_slave.c: Update background thread loading
+	calibration to use a binary search (better) algorithm.
+
+2000-03-29  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/ftp_test.c (cyg_test_exit): 
+	* tests/mbuf_test.c (cyg_start): 
+	* tests/nc_test_master.c (cyg_test_exit): 
+	* tests/nc_test_slave.c (show_net_times): 
+	* tests/ping_test.c (cyg_test_exit): 
+	* tests/server_test.c (cyg_test_exit): 
+	* tests/socket_test.c (cyg_test_exit): 
+	* tests/tcp_echo.c (cyg_test_exit): 
+	Some eCos infrastructure changes caused, in some configurations,
+	cyg_test_exit() from the infrastructure to be brought in (in
+	tcdiag.o) even when the Test Case system was not explicitly being
+	invoked.  That fought with the convenience copy of cyg_test_exit()
+	in these tests.  The neatest fix is to use that provided centrally
+	where relevent, so that is what this change does.
+
+	* tests/tcp_echo.c: Also now use granularity of 5% by default,
+	calibrate the load at 50%, and check and report the load that was
+	actually achieved after the test.
+
+2000-03-29  John Dallaway  <jld@cygnus.co.uk>
+
+	* doc/ecos_tcpip.html:
+
+	Remove error-prone cross-reference to another eCos package.
+
+	* doc/index.html:
+
+	Synchronize index page title with web site.
+
+2000-03-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/bootp_support.c (init_net): Need to start interface,
+	especially for manual/static IP configurations.
+
+	* tests/nc_test_slave.c (calibrate_load): Better calibration for
+	slower targets.
+
+2000-03-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sys/kern/sys_socket.c: 
+	* src/sys/kern/sys_generic.c: 
+	* include/sys/sockio.h: Add FIONBIO, FIOASYNC, FIONREAD functions.
+
+	* include/machine/types.h: Make definitions safe for use with libc.
+
+2000-03-08  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ecos/support.c: Remove some debug messages.
+	Update timed sleep functions (tsleep) to use scheduler lock
+	instead of brute-force interrupt locks.
+
+2000-03-08  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tcp_echo.c (echo_test): Also enable, log and print out the
+	idle-thread activity during the test - this reassures us that
+	there is no [significant] spare time being wasted idling during
+	the test.  This change has no effect on the results at all.
+
+2000-03-07  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tcp_echo.c (calibrate_load): Improve the accuracy of the
+	calibration with some post-scaling.  Change load to an array
+	accessor instead of register-based floating point - this is less
+	load, so more loops are needed, so the initial load level is upped
+	also.  More loops means better accuracy anyway, a good thing.
+
+2000-03-06  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/tcp_source.c (show_results): Print results in Mbit/S also.
+	(source_test): Warnings reduction; add some casts to sending and
+	receiving the control packets.
+	(NUM_BUF): becomes 1024; send more data to get thro'put result.
+
+	* tests/tcp_sink.c (show_results): Print results in Mbit/S also.
+	(sink_test): Warnings reduction; add some casts to sending and
+	receiving the control packets.
+
+	* tests/nc_test_master.c (show_results): Reinstate tot_bytes
+	variable for host testing tool version.  Print results in Mbit/S
+	also.
+
+	* tests/nc_test_slave.c (net_test): Comment out starting multiple
+	threads; they fight over a wide-open socket.  One thread is
+	enough.
+
+2000-03-06  Gary Thomas  <gthomas@redhat.com>
+
+	* include/netdev.h: Update structure for improved API description.
+
+2000-03-05  Gary Thomas  <gthomas@redhat.com>
+
+	* include/network.h:
+	* include/sys/syscallargs.h:
+	* src/lib/accept.c:
+	* src/lib/bootp_support.c:
+	* src/lib/close.c:
+	* src/lib/getpeername.c:
+	* src/lib/getsockname.c:
+	* src/lib/recvfrom.c:
+	* tests/ftp_test.c:
+	* tests/nc_test_framework.h:
+	* tests/nc_test_master.c:
+	* tests/nc_test_slave.c:
+	* tests/ping_test.c:
+	* tests/server_test.c:
+	* tests/socket_test.c:
+	* tests/tcp_echo.c:
+	Cleanup to remove compiler warnings.	
+
+2000-03-04  Gary Thomas  <gthomas@redhat.com>
+
+	* include/machine/param.h:
+	* include/sys/socketvar.h:
+	* src/ecos/timeout.c:
+	* src/sys/kern/kern_subr.c:
+	* src/sys/kern/sys_generic.c:
+	* src/sys/kern/sys_socket.c:
+	* src/sys/kern/uipc_mbuf.c:
+	* src/sys/kern/uipc_socket2.c:
+	* src/sys/kern/uipc_syscalls.c:
+	* src/sys/net/if_ethersubr.c:
+	* src/sys/net/if_loop.c:
+	* src/sys/net/route.c:
+	* src/sys/net/rtsock.c:
+	* src/sys/netinet/in_cksum.c:
+	* src/sys/netinet/in_pcb.c:
+	* src/sys/netinet/ip_input.c:
+	* src/sys/netinet/tcp_input.c:
+	* src/sys/netinet/tcp_output.c:
+	* src/sys/netinet/tcp_subr.c:
+	* src/sys/netinet/udp_usrreq.c:
+	Cleanup to remove compiler warnings.	
+
+2000-03-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/ping_test.c: Reorganize test, display error info.
+
+	* src/lib/bootp_support.c: Add support for DNS options.
+
+2000-02-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/sys/sockio.h (SIOCSIFHWADDR): Add function to
+	set hardware (MAC) address via ioctl.
+
+2000-02-28  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/net.cdl:
+
+	Reparent cdl_interface CYGHWR_NET_DRIVER_ETH0_SETUP under
+	cdl_component CYGHWR_NET_DRIVER_ETH0_SETUP_OPTIONS to
+	avoid a spurious conflict report when the latter is
+	inactive.
+
+2000-02-25  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/net.cdl:
+
+	Reparent cdl_interface CYGHWR_NET_DRIVER_ETH1_SETUP under
+	cdl_component CYGHWR_NET_DRIVER_ETH1_SETUP_OPTIONS to
+	avoid a spurious conflict report when the latter is
+	inactive.
+
+2000-02-22  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/netinet/if_ether.h: 
+	* include/netinet/ip.h: 
+	* include/netinet/ip_icmp.h: 
+	* include/netinet/tcp.h: 
+	* include/netinet/udp.h: More structure alignement fixes.
+
+2000-02-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/netinet/tcpip.h: 
+	* include/netinet/udp_var.h: Force structure alignment.
+
+2000-02-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/server_test.c: Target [client] address was wrong.
+
+	* tests/tcp_source.c:
+	* tests/tcp_sink.c:
+	* tests/tcp_echo.c: New test suite.
+	
+2000-02-17  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/ping_test.c: Fix typo in startup message.
+
+	* src/sys/net/route.c (route_reinit): New function - only here
+	until BOOTP problems can be found/fixed.
+
+	* src/lib/bootp_support.c (do_bootp): Force any existing routes
+	to be reset since this causes a problem if BOOTP has been previously
+	run.  Also, the BOOTP request must be zeroed or the server will
+	get confused.
+
+	* src/lib/network_support.c (init_all_network_interfaces): 
+	Rearrange initialization so that all BOOTP activity takes place
+	before any permanent setups are in place.
+
+2000-02-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/sys/net/route.c (rtioctl): Add support for deleting routes.
+
+	* src/lib/network_support.c (init_all_network_interfaces): 
+	Support predefined IP configurations, as well as BOOTP.
+
+	* tests/ping_test.c: Renamed from 'bootp_test.c'
+
+	* src/lib/inet_addr.c: 
+	* include/arpa/ftp.h: 
+	* include/arpa/nameser.h: 
+	* include/arpa/telnet.h: 
+	* include/arpa/inet.h: 
+	* include/arpa/tftp.h: New file(s).
+
+2000-02-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/lib/select.c: Add 'cyg_select_with_abort()' interface which
+	will allow 'select()' function to be abnormally terminated.  Add
+	new function 'cyg_select_abort()' which does this.
+
+2000-02-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Fix typo; cdl_interface CYGHWR_NET_DRIVER_ETH1 was
+	missing, so EBSA build was conflictual.
+
+2000-02-14  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/bootp_test.c: 
+	* tests/ftp_test.c: 
+	* tests/nc_test_framework.h: 
+	* tests/nc_test_master.c: 
+	* tests/nc_test_slave.c: 
+	* tests/server_test.c: Rework with automatic network initialization.
+	Includes support for multiple interfaces.
+
+	* src/lib/network_support.c: 
+	* include/network.h: New file(s).
+
+	* cdl/net.cdl: New CDL to support multiple interfaces and their
+	configuration.  (Not complete yet).
+
+2000-02-11  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/lib/select.c (select): Add a way to abort selects (EINTR).
+
+2000-02-10  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/nc_test_slave.c (calibrate_load): Slightly different algorithm,
+	which should work better on all platforms.
+
+2000-02-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* cdl/net.cdl: Add CYGPKG_NET_THREAD_PRIORITY to allow user more
+	control over how networking [anonymous] threads behave.
+
+	* tests/nc_test_framework.h: 
+	* tests/nc_test_slave.c: 
+	* tests/nc_test_master.c: Support test mode with target CPU under
+	various loads.
+
+2000-02-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ecos/support.c (bcmp): Fix bug.  Missing pointer increments
+	meant that the zeroth byte only was compared.  Caused stack to
+	reject ARP packets - depending on MAC address order for particular
+	platform.
+
+2000-02-09  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/bootp_test.c:
+	* tests/ftp_test.c:
+	* tests/nc_test_master.c:
+	* tests/server_test.c:
+	* tests/socket_test.c:
+	Change stacksize of test thread to TYPICAL not MINIMAL - some
+	drivers eat more stack than others.  Generally:
+	-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
+	+#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+
+2000-02-08  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/net.cdl:
+
+	Tidy display strings.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================
+	
+	
+
