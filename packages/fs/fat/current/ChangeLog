@@ -1,3 +1,8 @@
+2004-11-14  Jani Monoses <jani@iv.ro>
+
+	* test/fileio1.c: Start the test using main, not via a
+	thread. This makes is more uniform with the other fileio1 tests.
+	
 2004-11-11  David Brennan  <eCos@brennanhome.com>
 
 	* src/fatfs.c: fixed typos in TRACE statements

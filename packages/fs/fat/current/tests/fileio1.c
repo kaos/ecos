@@ -58,11 +58,9 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
 #include <pkgconf/fs_fat.h>
 
-#include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
@@ -429,7 +427,7 @@ void checkcwd( const char *cwd )
 //==========================================================================
 // main
 
-void fileio1_main( CYG_ADDRESS id )
+int main( int argc, char **argv )
 {
     int err;
     int existingdirents=-1;
@@ -741,31 +739,6 @@ void fileio1_main( CYG_ADDRESS id )
     if( err < 0 ) SHOW_RESULT( umount, err );    
     
     CYG_TEST_PASS_FINISH("fileio1");
-}
-
-// -------------------------------------------------------------------------
-
-#include <cyg/kernel/kapi.h>
-
-static char stack[CYGNUM_HAL_STACK_SIZE_TYPICAL];
-static cyg_handle_t thread_handle;
-static cyg_thread thread;
-
-externC void
-cyg_start( void )
-{
-    cyg_thread_create(3,                // Priority - just a number
-                      fileio1_main,     // entry
-                      0,                // index
-                      0,                // no name
-                      &stack[0],        // Stack
-                      sizeof(stack),    // Size
-                      &thread_handle,   // Handle
-                      &thread           // Thread data structure
-        );
-    cyg_thread_resume(thread_handle);
-
-    cyg_scheduler_start();
 }
 
 // -------------------------------------------------------------------------
