@@ -4584,13 +4584,34 @@ description of the associated modes.</para>
 and testing</secondary></indexterm><indexterm><primary>installing and testing
 </primary><secondary>Analogue & Micro PowerPC 860T</secondary></indexterm>RedBoot uses
 the SMC1 serial port. The default serial port settings are 38400,8,N,1.
-Ethernet is also supported using the RJ-45 connector. </para>
-<para>Management of onboard flash is also supported. 
-A single RedBoot configuration is supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM using an image copied from the flash boot sector (ROMRAM mode).
+Ethernet is also supported using the RJ-45 connector. Management of
+onboard flash is also supported.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROMRAM</entry>
+	      <entry>[ROMRAM]</entry>
+	      <entry>RedBoot running from RAM, but contained in the
+	      board's flash boot sector.</entry>
+	      <entry>redboot_ROMRAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-</itemizedlist></para>
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
@@ -4639,19 +4660,45 @@ and testing</secondary></indexterm><indexterm><primary>installing and testing
 </primary><secondary>Motorola PowerPC MBX</secondary></indexterm>RedBoot uses
 the SMC1/COM1 serial port. The default serial port settings are 38400,8,N,1.
 Ethernet is also supported using the 10-base T connector. </para>
-<para>Management of onboard flash is also supported. Two basic RedBoot configurations
-are supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+<para>Management of onboard flash is also supported.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-<listitem><para>RedBoot running from the board's flash boot sector.  </para>
-</listitem>
-</itemizedlist></para>
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
 <para>Device programmer is used to program the XU1 socketed flash part  (AM29F040B)
-with the ROM version of RedBoot. - Use the on-board EPPC-Bug monitor to update
+with the ROM mode image of RedBoot. Use the on-board EPPC-Bug monitor to update
 RedBoot. </para>
 <para>This assumes that you have EPPC-Bug in the on-board flash. This can
 be determined by setting up the board according to the following instructions
@@ -4666,33 +4713,27 @@ and powering up the board. </para>
 </orderedlist>
 <para>If it is available, program the flash by following these steps: </para>
 <orderedlist>
-<listitem><para>Prepare EPPC-Bug for download: <screen>EPPC-Bug>lo 0
+<listitem><para>Prepare EPPC-Bug for download: <screen>EPPC-Bug><userinput>lo 0</userinput>
 </screen>At this point the monitor is ready for input. It will not
 return the prompt until the file has been downloaded.  </para>
 </listitem>
 <listitem><para>Use the terminal emulator's ASCII download feature (or a simple
-clipboard copy/paste operation) to download the redboot.ppcbug file.</para>
-<para>Note that on Linux, Minicom's ASCII download feature seems to be broken.
-A workaround is to load the file into emacs (or another editor) and copy the
+clipboard copy/paste operation) to download the
+<filename>redboot.ppcbug</filename> file.</para>
+<para>Note that on Linux, <application>Minicom</application>'s ASCII
+download feature seems to be broken. A workaround is to load the file
+into <application>emacs</application> (or another editor) and copy the
 full contents to the clipboard. Then press the mouse paste-button (usually
-the middle one) over the Minicom window.  </para>
+the middle one) over the <application>Minicom</application> window.  </para>
 </listitem>
 <listitem><para>Program the flash with the downloaded data: <screen>
-EPPC-Bug>pflash 40000 60000 fc000000</screen></para>
+EPPC-Bug><userinput>pflash 40000 60000 fc000000</userinput></screen></para>
 </listitem>
 <listitem><para>Switch off the power, and change jumper 4 to 1-2. Turn on
 the power again. The board should now boot using the newly programmed RedBoot.
 </para>
 </listitem>
 </orderedlist>
-<para>To install RedBoot on a target that already has eCos GDB stubs, download
-the RAM version of RedBoot and run it. Initialize the flash image directory: <screen>
-RedBoot> fi init</screen>Then download the ROM version of RedBoot
-and program it into flash: 
-<screen>
-RedBoot> <userinput>load redboot_ROM.srec -b 0x80100000</userinput>
-RedBoot> <userinput>fi cr RedBoot -f 0xFE000000 -b 0x00040000 -l 0x20000</userinput>
-</screen></para>
 </sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
@@ -4743,14 +4784,40 @@ description of the associated modes.</para>
 and testing</secondary></indexterm><indexterm><primary>installing and testing
 </primary><secondary>Hitachi SH EDK7708</secondary></indexterm>RedBoot uses
 the serial port. The default serial port settings are 38400,8,N,1.</para>
-<para>Management of onboard flash is also supported. Two basic RedBoot configurations
-are supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+<para>Management of onboard flash is also supported.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-<listitem><para>RedBoot running from the board's flash boot sector.  </para>
-</listitem>
-</itemizedlist></para>
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
@@ -4802,14 +4869,40 @@ for instructions for the MS7729SE01 and MS7709SSE0101 variants.</para>
 <para>RedBoot uses
 the COM1 and COM2 serial ports. The default serial port settings are 38400,8,N,1.
 Ethernet is also supported using the 10-base T connector. </para>
-<para>Management of onboard flash is also supported. Two basic RedBoot configurations
-are supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+<para>Management of onboard flash is also supported.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-<listitem><para>RedBoot running from the board's flash boot sector.  </para>
-</listitem>
-</itemizedlist></para>
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
@@ -4822,13 +4915,14 @@ which allows for initial programming of RedBoot:</para>
 <listitem><para>Connect a serial cable to CN1 (SCI) and power up the board.</para>
 </listitem>
 <listitem><para>After the boot monitor banner, invoke the flash
-download/program command:<screen>Ready &gt;fl</screen></para>
+download/program command:<screen>Ready &gt;<userinput>fl</userinput></screen></para>
 </listitem>
 <listitem><para>The monitor should now ask for input:
 <screen>Flash ROM data copy to RAM
 Please Send A S-format Record</screen>At this point copy the
 RedBoot ROM SREC file to the serial port:<screen>
-$ cat redboot_SE7709RP_ROM.eprom.srec &gt /dev/ttyS0</screen>Eventually you
+$ <userinput>cat redboot_SE7709RP_ROM.eprom.srec &gt /dev/ttyS0</userinput></screen>
+Eventually you
 should see something like<screen>Start Addrs = A1000000
 End Addrs = A1xxxxxx
 Transfer complete</screen> from the monitor.
@@ -4940,28 +5034,59 @@ and testing</secondary></indexterm><indexterm><primary>installing and testing
 the COM1 and COM2 serial ports (and the debug port on the
 motherboard).
 The default serial port settings are 38400,8,N,1.
-Ethernet is also supported using a D-Link DFE-530TX PCI plugin card.</para>
-<para>Management of onboard flash is also supported. Two basic RedBoot configurations
-are supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+Ethernet is also supported using a D-Link DFE-530TX PCI plugin
+card. Management of onboard flash is also supported. </para> 
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-<listitem><para>RedBoot running from the board's flash boot sector.  </para>
-</listitem>
-</itemizedlist></para>
+
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
-<para>A copy of the ROM startup version of RedBoot must be programmed
-into the two EPROMs. Two files with a split version of the ROM image is
-provided: it is also possible to recreate these from the redboot.bin
-file, but requires the split_word.c program in
-hal/sh/hs7729pci/<replaceable>VERSION</replaceable>/misc to be built
-and executed with the redboot.bin filename as sole argument.</para>
+<para>A ROM mode RedBoot image must be programmed
+into the two EPROMs. Two files with a split version of the ROM mode
+image is
+provided: it is also possible to recreate these from the
+<filename>redboot.bin</filename>
+file, but requires the <application>split_word.c</application> program in
+<filename
+class="directory">hal/sh/hs7729pci/<replaceable>VERSION</replaceable>/misc</filename>
+to be built and executed with the <filename>redboot.bin</filename>
+filename as sole argument.</para>
 
-<para>After doing this it is advised that another ROM version of
-RedBoot is programmed into the flash, and that copy be used for
-booting the board. This allows for software programmed updates of
+<para>After doing this it is advised that another ROM mode image of
+RedBoot is programmed into the on-board flash, and that copy be used
+for booting the board. This allows for software programmed updates of
 RedBoot instead of having to reprogram the EPROMs.</para>
 
 <orderedlist>
@@ -4972,8 +5097,9 @@ go in socket M1 and the .hi image in socket M2.
 <listitem><para>Set switch SW1-6 to ON [boot from EPROM]</para>
 </listitem>
 <listitem><para>Follow the instructions under Flash management for
-updating the flash copy of RedBoot, but use
-<screen>-f 0x80400000</screen> due to setting of
+updating the flash copy of RedBoot, but force the flash destination
+address with
+<screen><userinput>-f 0x80400000</userinput></screen> due to setting of
 the SW1-6 switch.</para>
 </listitem>
 <listitem><para>Set switch SW1-6 to OFF [boot from flash] and reboot the board. You
@@ -5085,15 +5211,41 @@ for instructions for the MS7709SE01 variant.</para>
 
 <para>RedBoot uses
 the COM1 and COM2 serial ports. The default serial port settings are 38400,8,N,1.
-Ethernet is also supported using the 10-base T connector. </para>
-<para>Management of onboard flash is also supported. Two basic RedBoot configurations
-are supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+Ethernet is also supported using the 10-base T connector. Management
+of onboard flash is also supported.</para>
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-<listitem><para>RedBoot running from the board's flash boot sector.  </para>
-</listitem>
-</itemizedlist></para>
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
@@ -5106,13 +5258,14 @@ which allows for initial programming of RedBoot:</para>
 <listitem><para>Connect a serial cable to COM2 and power up the board.</para>
 </listitem>
 <listitem><para>After the boot monitor banner, invoke the flash
-download/program command:<screen>Ready &gt;fl</screen></para>
+download/program command:<screen>Ready &gt;<userinput>fl</userinput></screen></para>
 </listitem>
 <listitem><para>The monitor should now ask for input:
 <screen>Flash ROM data copy to RAM
 Please Send A S-format Record</screen>At this point copy the
 RedBoot ROM SREC file to the serial port:<screen>
-$ cat redboot_ROM.eprom.srec &gt /dev/ttyS0</screen>Eventually you
+$ <userinput>cat redboot_ROM.eprom.srec &gt /dev/ttyS0</userinput></screen>
+Eventually you
 should see something like<screen>Start Addrs = A1000000
 End Addrs = A1xxxxxx
 Transfer complete</screen> from the monitor.
@@ -5218,15 +5371,41 @@ description of the associated modes.</para>
 and testing</secondary></indexterm><indexterm><primary>installing and testing
 </primary><secondary>Hitachi SH SE7751</secondary></indexterm>RedBoot uses
 the COM1 serial port. The default serial port settings are 38400,8,N,1.
-Ethernet is also supported using the 10-base T connector. </para>
-<para>Management of onboard flash is also supported. Two basic RedBoot configurations
-are supported: <itemizedlist>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+Ethernet is also supported using the 10-base T connector. Management
+of onboard flash is also supported.</para> 
+
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-<listitem><para>RedBoot running from the board's flash boot sector.  </para>
-</listitem>
-</itemizedlist></para>
+
 </sect2>
 <sect2>
 <title>Initial Installation Method </title>
@@ -5239,13 +5418,14 @@ which allows for initial programming of RedBoot:</para>
 <listitem><para>Connect a serial cable to COM1 and power up the board.</para>
 </listitem>
 <listitem><para>After the boot monitor banner, invoke the flash
-download/program command:<screen>Ready &gt;fl</screen></para>
+download/program command:<screen>Ready &gt;<userinput>fl</userinput></screen></para>
 </listitem>
 <listitem><para>The monitor should now ask for input:
 <screen>Flash ROM data copy to RAM
 Please Send A S-format Record</screen>At this point copy the
 RedBoot ROM SREC file to the serial port:<screen>
-$ cat redboot_ROM.eprom.srec &gt /dev/ttyS0</screen>Eventually you
+$ <userinput>cat redboot_ROM.eprom.srec &gt /dev/ttyS0</userinput></screen>
+Eventually you
 should see something like<screen>Start Addrs = A1000000
 End Addrs = A1xxxxxx
 Transfer complete</screen> from the monitor.

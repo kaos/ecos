@@ -1,3 +1,8 @@
+2002-05-31  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_installing.sgml: Updated the remaining installation
+	instructions (well, the top mode details anyway).
+
 2002-05-29  Jesper Skov  <jskov@redhat.com>
 
 	* doc/redboot_cmds.sgml: Changed format of fis commands.
