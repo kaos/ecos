@@ -1,3 +1,8 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/vnc-test.c: main() added function parmeters to stop gcc
+	complaining.
+
 2004-05-31  Jani Monoses <jani@iv.ro>
 		
 	* src/vnc-server.c:
