@@ -80,6 +80,7 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
                      (CYGNUM_REDBOOT_FLASH_STRING_SIZE == 64) &&
                      (CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE == 256)) }
     requires      { !CYGPKG_REDBOOT || CYGBLD_REDBOOT_MAX_MEM_SEGMENTS == 2 }
+    requires      { !CYGPKG_REDBOOT || CYGSEM_REDBOOT_PLF_ESA_VALIDATE == 1 }
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_ppc40x.h>"

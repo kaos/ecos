@@ -1,3 +1,9 @@
+2003-10-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c: 
+	* cdl/hal_powerpc_moab.cdl: Add code to set and check ethernet station
+	addresses, based on CPU serial number.  Force RedBoot to validate them.
+
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_io.h (CYGARC_VIRTUAL_ADDRESS): Added.

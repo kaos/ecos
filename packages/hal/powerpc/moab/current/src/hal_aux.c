@@ -86,9 +86,28 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
 
 //--------------------------------------------------------------------------
 // Platform init code.
+
+// Board/CPU serial number
+cyg_uint32 _moab_serial_no[2];
+unsigned char _moab_eth0_ESA[] = { 0x00, 0x20, 0xCF, 0x01, 0x11, 0x11}; // Default ESA
+unsigned char _moab_eth1_ESA[] = { 0x00, 0x20, 0xCF, 0x81, 0x11, 0x11}; // Default ESA
+
 void
 hal_platform_init(void)
 {
+
+    CYGARC_MFDCR(DCR_CPC0_ECID0, _moab_serial_no[0]);
+    CYGARC_MFDCR(DCR_CPC0_ECID1, _moab_serial_no[1]);
+    // Set default ethernet ESA
+    _moab_eth0_ESA[3] = ((_moab_serial_no[1] & 0x007F0000) >> 16) | 0x00;
+    _moab_eth0_ESA[4] = ((_moab_serial_no[1] & 0x0000FF00) >> 8);
+    _moab_eth0_ESA[5] = ((_moab_serial_no[1] & 0x000000FF) >> 0);
+    _moab_eth1_ESA[3] = ((_moab_serial_no[1] & 0x007F0000) >> 16) | 0x80;
+    _moab_eth1_ESA[4] = ((_moab_serial_no[1] & 0x0000FF00) >> 8);
+    _moab_eth1_ESA[5] = ((_moab_serial_no[1] & 0x000000FF) >> 0);
+#ifdef CYGPKG_REDBOOT
+    diag_printf("CPU serial number: %08x/%08x\n", _moab_serial_no[0], _moab_serial_no[1]);
+#endif
 }
 
 #ifdef CYGSEM_REDBOOT_PLF_STARTUP
@@ -105,11 +124,24 @@ cyg_plf_redboot_startup(void)
     }
 }
 #endif
+
+#ifdef CYGSEM_REDBOOT_PLF_ESA_VALIDATE
+//
+// Verify that the given ESA is valid for this platform
+//
+bool
+cyg_plf_redboot_esa_validate(unsigned char *val)
+{
+    return ((val[0] == 0x00) && (val[1] == 0x20) && (val[2] == 0xCF));
+}
+#endif
+
 //
 // Initialize serial ports - called during hal_if_init()
 // Note: actual serial port support code is supported by the PPC405 variant layer
 //       Having this call here allows for additional platform specific additions
 //
+externC void cyg_hal_var_serial_init(void);
 void
 cyg_hal_plf_comms_init(void)
 {
@@ -138,8 +170,8 @@ void
 cyg_plf_memory_segment(int seg, unsigned char **start, unsigned char **end)
 {
     if (seg == 1) {
-        *start = _MOAB_OCM;
-        *end = _MOAB_OCM + 0x1000;
+        *start = (unsigned char *)_MOAB_OCM;
+        *end = (unsigned char *)_MOAB_OCM + 0x1000;
     } else {
         diag_printf("** Invalid memory segment #%d - ignored\n", seg);
         *start = NO_MEMORY;
@@ -183,7 +215,7 @@ read_eeprom(unsigned char *buf, int len)
         addr[0] = page_addr >> 8;  addr[1] = (page_addr & 0xFF);
         size = (len - i);
         if (size > 32) size = 32;
-        if (!hal_ppc405_i2c_put_bytes(page, &addr, 2)) {
+        if (!hal_ppc405_i2c_put_bytes(page, addr, 2)) {
             diag_printf("%s - Can't select address %x\n", __FUNCTION__, page);
             return;
         }
@@ -203,8 +235,11 @@ read_eeprom(unsigned char *buf, int len)
 void
 write_eeprom(unsigned char *buf, int len)
 {
-    int i, j, page, page_addr, size, left;
+    int i, j, page, page_addr, size;
     cyg_uint8 addr[32+2];
+#if CYGNUM_HAL_EEPROM_SIZE == 1024
+    int left;
+#endif
 
 #if 0
     diag_printf("EEPROM data - write\n");
