@@ -568,6 +568,8 @@ handle_IRQ_or_FIQ:
 	ldr	r1,[r1,v1,lsl #2]	// handler data
 	ldr	r2,.hal_interrupt_handlers
 	ldr	v3,[r2,v1,lsl #2]	// handler (indexed by vector #)
+	mov	r2,v6			// register frame (this is necessary
+					// for the ISR too, for ^C detection)
 
 	mov	lr,pc			// invoke handler (call indirect
 	mov	pc,v3                   // thru v3)
@@ -656,18 +658,19 @@ hal_interrupt_stack_call_pending_DSRs:
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
         
 
-// Dummy functions
+// Dummy/support functions
 
 	.global	__gccmain
+	.global	_psr
+	.global	_sp
+
 __gccmain:
 	mov	pc,lr	
 
-	.global	_psr
 _psr:
 	mrs	r0,cpsr
 	mov	pc,lr
 
-	.global	_sp
 _sp:
 	mov	r0,sp
 	mov	pc,lr

@@ -425,7 +425,16 @@ void hal_diag_write_char(char c)
         // later.
 
         CYG_INTERRUPT_STATE oldstate;
+        CYG_BYTE wdcr;
         HAL_DISABLE_INTERRUPTS(oldstate);
+
+        // Beacuse of problems with NT on the testfarm, we also have
+        // to disable the watchdog here. This only matters in the
+        // watchdog tests. And yes, this sends my irony meter off the
+        // scale too.
+        
+        HAL_READ_UINT8( 0x34004002, wdcr );
+        HAL_WRITE_UINT8( 0x34004002, wdcr&0x3F );
         
         while(1)
         {
@@ -471,6 +480,7 @@ void hal_diag_write_char(char c)
         
         // And re-enable interrupts
         HAL_RESTORE_INTERRUPTS(oldstate);        
+        HAL_WRITE_UINT8( 0x34004002, wdcr );
         
     }
     

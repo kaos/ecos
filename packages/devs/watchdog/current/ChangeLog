@@ -1,3 +1,14 @@
+1999-08-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/watchdog_reset.cxx: 
+	* tests/PKGconf.mak (TESTS):
+	Added test for watchdog devices that reset the board.
+
+1999-08-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300.cxx: Turn watchdog off in Cyg_Watchdog::trigger() to
+	prevent it repeating.
+
 1999-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/pkgconf/watchdog.h: Made test for use of a non-emulated

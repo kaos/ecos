@@ -92,6 +92,8 @@
 #define CYG_MSR (CYG_MSR_COMMON & ~(MSR_IR | MSR_DR))
 #endif
 
+#define CYG_MSR_NO_INTS (CYG_MSR & ~MSR_ME)        
+
 #===========================================================================
 # If the following option is enabled, we only save registers up to R12.
 # The PowerPC ABI defines registers 13..31 as callee saved and thus we do
@@ -383,7 +385,7 @@ _start:
         bl      hal_MMU_init
 
         # Enable MMU it so we can safely enable caches.
-        lwi     r3,CYG_MSR
+        lwi     r3,CYG_MSR_NO_INTS              # interrupts enabled later
         sync
         mtmsr   r3
         sync
@@ -444,7 +446,7 @@ __default_exception_vsr:
         stw     r5,ppcreg_lr(r1)        # stash LR
 
         # Enable MMU.
-        lwi     r3,CYG_MSR
+        lwi     r3,CYG_MSR_NO_INTS
         sync
         mtmsr   r3
         sync
@@ -588,7 +590,7 @@ __default_interrupt_vsr:
         stw     r5,ppcreg_lr(r1)        # stash LR
 
         # Enable MMU.
-        lwi     r3,CYG_MSR
+        lwi     r3,CYG_MSR_NO_INTS
         sync
         mtmsr   r3
         sync
@@ -821,7 +823,7 @@ restore_state:
 
         mtcr    r3                      # set ccr
         
-        lwi     r3,CYG_MSR              # do rest with ints disabled
+        lwi     r3,CYG_MSR_NO_INTS      # do rest with ints disabled
         sync
         mtmsr   r3
         sync

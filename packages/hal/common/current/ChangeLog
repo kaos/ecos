@@ -1,3 +1,53 @@
+1999-09-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Always include target and platform package
+	include (pkgconf) files.
+
+1999-08-26  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/generic-stub.c (__hex2mem_helper):
+	Use target_register_t when casting to address type, rather than long
+	Since the compiler can choose arbitrary alignment of unions, force
+	to use byte array only
+	Restore use of loop termination test for *hexMemSrc, just in case
+	since that's how it used to be
+	Increment destination, not source at end of loop
+	
+	(__mem2hex_helper):
+	Use target_register_t when casting to address type, rather than long.
+	Since the compiler can choose arbitrary alignment of unions, force
+	to use byte array only. Therefore use single __read_mem_safe() call
+	
+	* src/hal_stub.c (__do_copy_mem): Reassign back from dst/src at start
+	of each	"if" clause in case we go round the loop again.
+
+1999-08-24  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_stub.c (__do_copy_mem): Move temp variables to top of
+	function - potentially safer if there is an error.
+
+1999-08-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/generic-stub.c (__process_packet): For 'g' and 'G' packets,
+	when the register size differs from sizeof(target_register_t) we must
+	adjust according to the endianness 
+
+	* include/hal_stub.h: Ensure __LITTLE_ENDIAN__ is defined on
+	little-endian targets
+
+	* src/hal_stub.c (__build_t_packet): Use the correct register sizes
+	for PC and SP rather than assuming they are the same as target_register_t
+
+1999-08-23  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/generic-stub.h: Change prototypes for internal functions.
+
+	* src/hal_stub.c (__do_copy_mem): 
+	* src/generic-stub.c (__mem2hex_helper): Rework to perform aligned,
+	multi-byte operations when conditions allow.  This should handle
+	most "hardware register" access cases.  Note: there currently is
+	no good way to force GDB to require/use such accesses.
+
 1999-08-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/intr.c (cyg_start): Use CYG_TEST_NA rather than a pass saying

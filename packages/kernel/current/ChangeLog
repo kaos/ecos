@@ -1,3 +1,33 @@
+1999-08-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/kernel.h: Add missing close brace in
+	CYGIMP_KERNEL_COUNTERS_CLOCK_LATENCY CDL.
+
+1999-08-24  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/kcache1.c (entry0): Depending on architecture, set
+	cyg_test_is_simulator for last two tests. Otherwise they take far
+	too long and time out.
+
+1999-08-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/intr0.cxx (vsr0): 
+	* tests/kintr0.c (vsr0): 
+	Add a comment to the effect that vsr0() is NOT a valid VSR on any
+	known platform; VSRs must be writ in assembler.  Customer
+	requested this, the examples are rather confusing otherwise.
+
+1999-08-23  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/kernel.h:
+	* src/common/clock.cxx:
+	* tests/tm_basic.cxx:
+	Added CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY to enable recording
+	of DSR latency figures. Added code controlled by this option to
+	clock and tm_basic. Also made interrupt latency measurement
+	primarily dependent on CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY since
+	whether HAL_CLOCK_LATENCY is defined is not sufficient.
+
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/sload/sload.c: Rename AM32 to AM31

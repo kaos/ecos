@@ -33,6 +33,11 @@ include ../../../../pkgconf/pkgconf.mak
 
 TESTS	      := watchdog
 
+# Invoke make with RUN_BY_HAND=1 as argument
+ifdef RUN_BY_HAND
+TESTS         += watchdog_reset
+endif
+
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 
 

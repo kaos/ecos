@@ -1,8 +1,8 @@
-#ifndef CYGONCE_HAL_IMPL_INC
-#define CYGONCE_HAL_IMPL_INC
+#ifndef CYGONCE_HAL_VARIANT_INC
+#define CYGONCE_HAL_VARIANT_INC
 ##=============================================================================
 ##
-##	impl.inc
+##	variant.inc
 ##
 ##	TX39 family assembler header file
 ##
@@ -38,7 +38,7 @@
 ## Description:	This file contains various definitions and macros that are
 ##              useful for writing assembly code for the TX39 CPU family.
 ## Usage:
-##		#include <cyg/hal/impl.inc>
+##		#include <cyg/hal/variant.inc>
 ##		...
 ##		
 ##
@@ -46,11 +46,11 @@
 ##
 ##=============================================================================
 
+#include <pkgconf/hal.h>
+	
 #include <cyg/hal/mips.inc>
 
 #include <cyg/hal/platform.inc>
-
-#include <pkgconf/hal.h>
 
 ##-----------------------------------------------------------------------------
 ## Define CPU variant for architecture HAL.
@@ -73,9 +73,11 @@
 #if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
 #define ROM_CCR0_INIT	0x00000420
 #define DRAM_DREFC_INIT	0x00000180
+#define DRAM_DWR0_INIT  0x00111111
 #elif (CYGHWR_HAL_MIPS_CPU_FREQ == 66)
 #define ROM_CCR0_INIT	0x00000520
 #define DRAM_DREFC_INIT	0x00000200
+#define DRAM_DWR0_INIT  0x00332222
 #else
 #error Unsupported clock frequency		
 #endif
@@ -90,10 +92,25 @@
 #else
 #define DRAM_CONFIG_INIT 0x08024030
 #endif
-	
-#ifdef CYG_HAL_MIPS_JMR3904
+
+## Enabling timeout exceptions can result in bogus exceptions under the
+## following conditions:
+##    o half speed bus mode (JMR board uses this mode)
+##    o code resides on 0 wait SRAM
+##    o I- and D- caches are enabled
+##    o a very narrow timing condition of cache refill cycle (not
+##      descibed here)
+## The simple solution is to configure 1 cycle wait state SRAM rather
+## than zero.
+
+#ifdef CYGHWR_HAL_MIPS_TX39_JMR3904_ENABLE_TOE
+#define SRAM_WAIT_INIT 0x00000100
+#else
+#define SRAM_WAIT_INIT 0x00000000
+#endif
+
 	.macro	hal_memc_init
-	
+
 	# These mappings need to be set up before we
 	# can use the stack and make calls to other
 	# functions
@@ -122,7 +139,7 @@
 
 	# SRAM config
 	la	v0,0xffff9100
-	la	v1,0x00000000
+	la	v1,SRAM_WAIT_INIT
 	sw	v1,0(v0)	
 
 	# ISA bus setup
@@ -135,10 +152,16 @@
 	la	v1,0x00000000
 	sw	v1,0(v0)
 
+	hal_memc_init_dram
+	
+	.endm
+
+
 #if defined(CYG_HAL_STARTUP_ROM)
 
 	# Only do this in ROM configurations.
-	
+
+	.macro hal_memc_init_dram	
 	# DRAM Configuration
 	la	v0, 0xffff8000
 	la	v1, DRAM_CONFIG_INIT
@@ -151,19 +174,22 @@
 	
 	# DWR0
 	la	v0, 0xffff8008
-	la	v1, 0x00000000
+	la	v1, DRAM_DWR0_INIT
 	sw	v1, 0(v0)
 	
         # DREFC - Depends on clock requency
 	la	v0, 0xffff8800
 	la	v1, DRAM_DREFC_INIT
 	sw	v1, 0(v0)
+	.endm
 
+#else
+	.macro	hal_memc_init_dram
+	.endm	
 #endif
 
-	.endm
-#endif	
-	
+#define CYGPKG_HAL_MIPS_MEMC_DEFINED
+		
 #endif	
 	
 ##-----------------------------------------------------------------------------
@@ -235,5 +261,5 @@ hal_intc_translation_table:
 #endif
 
 #------------------------------------------------------------------------------
-#endif // ifndef CYGONCE_HAL_IMPL_INC
-# end of impl.inc
+#endif // ifndef CYGONCE_HAL_VARIANT_INC
+# end of variant.inc

@@ -77,6 +77,8 @@
 #undef CYGIMP_WATCHDOG_EMULATE
 #endif
 
+
+
 /* -------------------------------------------------------------------- */
 #endif  /* CYGONCE_PKGCONF_WATCHDOG_H */
 /* EOF watchdog.h */

@@ -535,7 +535,19 @@
           Measure the interrupt latency as seen by the real-time clock
           timer interrupt.  This requires hardware support, defined by
           the HAL_CLOCK_LATENCY() macro."
-     doc ref/ecos-ref/counters-clocks-and-alarms.html
+      doc ref/ecos-ref/counters-clocks-and-alarms.html
+  }
+
+  cdl_option CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY {
+      display "Measure real-time [clock] DSR latency"
+      parent  CYGPKG_KERNEL_COUNTERS
+      requires CYGVAR_KERNEL_COUNTERS_CLOCK
+      requires CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
+      description "
+          Measure the DSR latency as seen by the real-time clock
+          timer interrupt.  This requires hardware support, defined by
+          the HAL_CLOCK_LATENCY() macro."
+      doc ref/ecos-ref/counters-clocks-and-alarms.html
   }
 
  }}CFG_DATA */
@@ -550,6 +562,7 @@
 #define CYGNUM_KERNEL_COUNTERS_MULTI_LIST_SIZE 8
 #undef  CYGIMP_KERNEL_COUNTERS_SORT_LIST
 #undef  CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
+#undef  CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY
 
 /* ---------------------------------------------------------------------
  * Thread-related options

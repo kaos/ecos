@@ -1,3 +1,16 @@
+1999-08-31  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Define dummy crash ID.
+
+1999-08-30  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Added crash information which
+	should help track down repeating errors.
+
+1999-08-20  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/README: Added.
+
 1999-08-18  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/tty1.c: 

@@ -140,10 +140,16 @@ static fun_times alarm_ft[NALARMS];
 static long rtc_resolution[] = CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION;
 static long ns_per_system_clock;
 
-#ifdef HAL_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY)
 // Data kept by kernel real time clock measuring clock interrupt latency
 extern cyg_tick_count total_clock_latency, total_clock_interrupts;
 extern cyg_int32 min_clock_latency, max_clock_latency;
+extern bool measure_clock_latency;
+#endif
+
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+extern cyg_tick_count total_clock_dsr_latency, total_clock_dsr_calls;
+extern cyg_int32 min_clock_dsr_latency, max_clock_dsr_latency;
 extern bool measure_clock_latency;
 #endif
 
@@ -198,7 +204,7 @@ show_ticks_in_us(cyg_uint32 ticks)
 // fair measurements of the kernel primitives, which are not distorted
 // by the printing mechanisms.
 
-#ifdef HAL_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && defined(HAL_CLOCK_LATENCY)
 void
 disable_clock_latency_measurement(void)
 {
@@ -222,7 +228,14 @@ reset_clock_latency_measurement(void)
   total_clock_interrupts = 0;
   min_clock_latency = 0x7FFFFFFF;
   max_clock_latency = 0;
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)  
+  total_clock_dsr_latency = 0;
+  total_clock_dsr_calls = 0;
+  min_clock_dsr_latency = 0x7FFFFFFF;
+  max_clock_dsr_latency = 0;
+#endif  
   enable_clock_latency_measurement();
+  
 }
 #else
 #define disable_clock_latency_measurement()
@@ -1433,7 +1446,7 @@ run_all_tests(CYG_ADDRESS id)
 #ifdef CYG_SCHEDULER_LOCK_TIMINGS
     cyg_uint32 lock_ave, lock_max;
 #endif
-#ifdef HAL_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && defined(HAL_CLOCK_LATENCY)
     cyg_int32 clock_ave;
 #endif
 
@@ -1511,7 +1524,7 @@ run_all_tests(CYG_ADDRESS id)
     diag_printf("\n");
 #endif
 
-#ifdef HAL_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && defined(HAL_CLOCK_LATENCY)
     // Display latency figures in same format as all other numbers
     disable_clock_latency_measurement();
     clock_ave = (total_clock_latency*1000) / total_clock_interrupts;
@@ -1520,6 +1533,17 @@ run_all_tests(CYG_ADDRESS id)
     show_ticks_in_us(max_clock_latency*1000);
     show_ticks_in_us(0);
     diag_printf("            Clock/interrupt latency\n\n");
+    enable_clock_latency_measurement();    
+#endif
+
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+    disable_clock_latency_measurement();    
+    clock_ave = (total_clock_dsr_latency*1000) / total_clock_dsr_calls;
+    show_ticks_in_us(clock_ave);
+    show_ticks_in_us(min_clock_dsr_latency*1000);
+    show_ticks_in_us(max_clock_dsr_latency*1000);
+    show_ticks_in_us(0);
+    diag_printf("            Clock DSR latency\n\n");
     enable_clock_latency_measurement();
 #endif
 

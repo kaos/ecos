@@ -34,8 +34,9 @@ include ../../../../pkgconf/pkgconf.mak
 TESTS	:= test1   test2   test3   test4   test5   \
            test6   test7   test8   test9           \
            testcxx testcx2 testcx3 testcx4 testcx5 \
-           testcx6 testcx7 testcx8 testcx9
-	         
+           testcx6 testcx7 testcx8 testcx9         \
+	   testintr
+
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

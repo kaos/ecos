@@ -230,6 +230,7 @@ package CYGPKG_HAL_POWERPC_FADS {
 	hardware
 }
 
+
 package CYGPKG_HAL_POWERPC_MBX {
 	alias		{ "PowerPC Motorola MBX860/821 board support" hal_powerpc_mbx powerpc_mbx_hal }
 	directory	hal/powerpc/mbx

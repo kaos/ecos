@@ -390,13 +390,13 @@ __build_t_packet (int sigval, char *buf)
     *ptr++ = __tohex (PC);
     *ptr++ = ':';
     addr = get_register (PC);
-    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
+    ptr = __mem2hex((char *)&addr, ptr, REGSIZE(PC), 0);
     *ptr++ = ';';
 
     *ptr++ = __tohex (SP >> 4);
     *ptr++ = __tohex (SP);
     *ptr++ = ':';
-    ptr = __mem2hex((char *)&sp, ptr, sizeof(sp), 0);
+    ptr = __mem2hex((char *)&sp, ptr, REGSIZE(SP), 0);
     *ptr++ = ';';
     
     *ptr++ = 0;
@@ -481,20 +481,51 @@ static volatile target_register_t memCount;
 static void
 __do_copy_mem (unsigned char* src, unsigned char* dst)
 {
-  __mem_fault = 1;                      // Defaults to 'fail'. Is cleared
-                                        // when the copy loop completes.
-  __mem_fault_handler = &&err;
+    unsigned long *long_dst;
+    unsigned long *long_src;
+    unsigned short *short_dst;
+    unsigned short *short_src;
 
-  while (memCount)
-    {
-      *dst++ = *src++;
-      memCount--;
+    __mem_fault = 1;                      /* Defaults to 'fail'. Is cleared */
+                                          /* when the copy loop completes.  */
+    __mem_fault_handler = &&err;
+
+    // See if it's safe to do multi-byte, aligned operations
+    while (memCount) {
+        if ((memCount >= sizeof(long)) &&
+            (((target_register_t)dst & (sizeof(long)-1)) == 0) &&
+            (((target_register_t)src & (sizeof(long)-1)) == 0)) {
+        
+            long_dst = (unsigned long *)dst;
+            long_src = (unsigned long *)src;
+
+            *long_dst++ = *long_src++;
+            memCount -= sizeof(long);
+
+            dst = (unsigned char *)long_dst;
+            src = (unsigned char *)long_src;
+        } else if ((memCount >= sizeof(short)) &&
+                   (((target_register_t)dst & (sizeof(short)-1)) == 0) &&
+                   (((target_register_t)src & (sizeof(short)-1)) == 0)) {
+            
+            short_dst = (unsigned short *)dst;
+            short_src = (unsigned short *)src;
+
+            *short_dst++ = *short_src++;
+            memCount -= sizeof(short);
+
+            dst = (unsigned char *)short_dst;
+            src = (unsigned char *)short_src;
+        } else {
+            *dst++ = *src++;
+            memCount--;
+        }
     }
 
-  __mem_fault = 0;
+    __mem_fault = 0;
 
  err:
-  __mem_fault_handler = (void *)0;
+    __mem_fault_handler = (void *)0;
 }
 
 /*
@@ -503,7 +534,7 @@ __do_copy_mem (unsigned char* src, unsigned char* dst)
  */
 
 int
-__read_mem_safe (unsigned char *dst, target_register_t src, int count)
+__read_mem_safe (void *dst, void *src, int count)
 {
   memCount = count;
   __do_copy_mem((unsigned char*) src, (unsigned char*) dst);
@@ -516,7 +547,7 @@ __read_mem_safe (unsigned char *dst, target_register_t src, int count)
  */
 
 int
-__write_mem_safe (unsigned char *src, target_register_t dst, int count)
+__write_mem_safe (void *src, void *dst, int count)
 {
   memCount = count;
   __do_copy_mem((unsigned char*) src, (unsigned char*) dst);

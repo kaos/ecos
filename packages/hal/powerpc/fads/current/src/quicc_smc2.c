@@ -133,6 +133,14 @@ void cyg_smc2_init(unsigned long baudRate)
    IMMR->si_simode |= 0x10000000;       /* SCM2:  Tx/Rx Clocks are BRG2 */
 
 
+   /*--------------------*/
+   /* Initialize the BDs */
+   /*--------------------*/
+
+   InitBDs(); /* before setting up info depending on RxTxBD below */
+
+   IMMR->smc_regs[SMC2_REG].smc_smce = 0xFF;  /* Clear any pending events */
+
    /*----------------------------------------*/
    /* Set RXBD table start at Dual Port +800 */
    /*----------------------------------------*/
@@ -145,14 +153,7 @@ void cyg_smc2_init(unsigned long baudRate)
 
    IMMR->PRAM[PAGE4].pg.other.smc_dsp2.psmc2.u2.tbase = (unsigned short) (unsigned) &RxTxBD->TxBD; 
 
-   /*---------------------------------------*/
-   /* Initialize Rx and Tx Params for SMC2: */
-   /* Spin until cpcr flag is cleared       */
-   /*---------------------------------------*/
 
-   for(IMMR->cp_cr = 0x00d1; IMMR->cp_cr & 0x0001;) ;
-
-   
    /*--------------------------------------*/
    /* Set RFCR,TFCR -- Rx,Tx Function Code */
    /* Normal Operation and Motorola byte   */
@@ -190,12 +191,8 @@ void cyg_smc2_init(unsigned long baudRate)
 
    IMMR->PRAM[PAGE4].pg.other.smc_dsp2.psmc2.u2.brkcr = 1;    
 
-   /*--------------------*/
-   /* Initialize the BDs */
-   /*--------------------*/
 
-   InitBDs();
-
+   /* InitBDs() used to be here - no harm in doing this again */
    IMMR->smc_regs[SMC2_REG].smc_smce = 0xFF;  /* Clear any pending events */
 
    /*--------------------------------------------------*/
@@ -216,6 +213,13 @@ void cyg_smc2_init(unsigned long baudRate)
    /*------------------------------------*/
 
    IMMR->smc_regs[SMC2_REG].smc_smcmr = 0x4823;
+
+   /*---------------------------------------*/
+   /* Initialize Rx and Tx Params for SMC2: */
+   /* Spin until cpcr flag is cleared       */
+   /*---------------------------------------*/
+
+   for(IMMR->cp_cr = 0x00d1; IMMR->cp_cr & 0x0001;) ;
 
 } 
 

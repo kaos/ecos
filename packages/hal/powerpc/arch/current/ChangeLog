@@ -1,3 +1,15 @@
+1999-09-01  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_misc.c: Clean up list of included files.  <hal.h>
+	now provides target and platform specifics.
+
+	* src/hal_intr.c: CYGFUN_HAL_COMMON_KERNEL_SUPPORT should only
+	be defined if CYGPKG_KERNEL is defined.  This needs to be fixed
+	in a more generic fashion when full CDL becomes available.
+
+	* src/vectors.S: Exception and interrupt handling were enabling
+	CPU interrupts when it wasn't safe nor warranted.
+
 1999-08-16  Bob Koninckx <bob.koninckx@mail.mech.kuleuven.ac.be>
 
 	* src/ppc_stub.c (__clear_single_step): Clear irq_state to prevent

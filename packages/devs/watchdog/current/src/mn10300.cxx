@@ -182,6 +182,9 @@ Cyg_Watchdog::trigger()
     // Disable interrupt just in case
     interrupt.detach();
 
+    // Turn watchdog off to prevent it re-triggering.
+    HAL_WRITE_UINT8( WATCHDOG_CONTROL, 0 );
+    
     Cyg_Watchdog_Action *act = action_list;
 
     while( 0 != act )

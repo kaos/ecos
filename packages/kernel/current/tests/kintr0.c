@@ -97,6 +97,19 @@ static bool flash( void )
     return true;
 }
 
+/* IMPORTANT: The calling convention for VSRs is target dependent.  It is
+ * unlikely that a plain C or C++ routine would function correctly on any
+ * particular platform, even if it could correctly access the system
+ * resources necessary to handle the event that caused it to be called.
+ * VSRs usually must be written in assembly language.
+ * 
+ * This is just a test program.  The routine vsr0() below is defined simply
+ * to define an address that will be in executable memory.  If an event
+ * causes this VSR to be called, all bets are off.  If it is accidentally
+ * installed in the vector for the realtime clock, the system will likely
+ * freeze.
+ */
+
 static cyg_VSR_t vsr0;
 
 static void vsr0()

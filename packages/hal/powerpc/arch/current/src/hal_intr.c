@@ -44,6 +44,11 @@
 
 #include <cyg/hal/ppc_regs.h>
 
+// REMINDER: Full CDL required to enforce this
+#ifndef CYGPKG_KERNEL
+#undef  CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+#endif
+
 // These are the Cyg_Interrupt::HANDLED/CALL_DSR values.
 #define Cyg_InterruptHANDLED 1
 #define Cyg_InterruptCALL_DSR 2

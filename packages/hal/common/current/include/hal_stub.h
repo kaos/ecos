@@ -51,7 +51,7 @@
 
 #include <cyg/hal/basetype.h>           // HAL_LABEL_NAME
 #include <cyg/hal/hal_arch.h>           // HAL header
-#include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_type.h>         // cyg_uint32 and CYG_BYTEORDER
 typedef cyg_uint32 uint32;
 
 #include <cyg/hal/plf_stub.h>
@@ -65,6 +65,11 @@ extern "C" {
 // Definitions for generic-stub.c
 
 #define __set_mem_fault_trap(x) ({__mem_fault = 0; x(); __mem_fault;})
+
+#if (CYG_BYTEORDER==CYG_LSBFIRST) && \
+    (!defined(__LITTLE_ENDIAN__) || !defined(_LITTLE_ENDIAN))
+# define __LITTLE_ENDIAN__
+#endif
 
 //----------------------------------------------------------------------------
 // Signal definitions to avoid 'signal.h'/

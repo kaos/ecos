@@ -56,21 +56,21 @@
 
 // MACROS
 
-// The user should define NDEBUG to turn on these user assertions. Also the
-// common infrastructure assertions should be turned on too.
+// The user should define NDEBUG to turn off these user assertions. Also the
+// common infrastructure assertions should be turned off too.
 
-#ifndef NDEBUG
+#ifdef NDEBUG
 
 # define assert( _bool_ ) ((void)0)
 
-#else // if NDEBUG is defined
+#else // if NDEBUG is NOT defined
 
 # define assert( _bool_ ) \
         CYG_MACRO_START \
         CYG_ASSERT( _bool_, "User assertion failed: \""  # _bool_ "\"" ); \
         CYG_MACRO_END
 
-#endif // if NDEBUG is defined
+#endif // if NDEBUG is NOT defined
 
 
 

@@ -1,8 +1,11 @@
+#ifndef CYGONCE_PLF_IO_H
+#define CYGONCE_PLF_IO_H
+
 //=============================================================================
 //
-//      hal_aux.c
+//      plf_io.h
 //
-//      HAL auxiliary objects and code; per platform
+//      Platform specific IO support
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -29,11 +32,12 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   hmt
-// Contributors:hmt
-// Date:        1999-06-08
-// Purpose:     HAL aux objects: startup tables.
-// Description: Tables for per-platform initialization
+// Author(s):    hmt, jskov, nickg
+// Contributors: hmt, jskov, nickg
+// Date:         1999-08-09
+// Purpose:      JMR3904 platform IO support
+// Description: 
+// Usage:        #include <cyg/hal/plf_io.h>
 //
 //####DESCRIPTIONEND####
 //
@@ -41,26 +45,10 @@
 
 #include <pkgconf/hal.h>
 
-#include <cyg/infra/cyg_type.h>         // base types
-#include <cyg/infra/cyg_trac.h>         // tracing macros
-#include <cyg/infra/cyg_ass.h>          // assertion macros
+//-----------------------------------------------------------------------------
 
-#include <cyg/hal/hal_io.h>             // IO macros
-#include <cyg/hal/hal_diag.h>
-#include <cyg/hal/hal_intr.h>           // Interrupt macros
-#include <cyg/hal/hal_cache.h>          // Cache macros
+// Nothing here.
 
-// The memory map is weakly defined, allowing the application to redefine
-// it if necessary. The regions defined below are the minimum requirements.
-CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
-    // Mapping for the FADS POWERPC development board
-    CYGARC_MEMDESC_NOCACHE( 0x02800000, 0x00100000 ), // ROM region
-    CYGARC_MEMDESC_NOCACHE( 0x02200000, 0x00010000 ), // MCP registers/PRAM/DPRAM 64 kByte
-    CYGARC_MEMDESC_NOCACHE( 0x02100000, 0x00001000 ), // 4 kByte Board Control
-    CYGARC_MEMDESC_CACHE(   0x00000000, 0x00400000 ), // main memory
-
-    CYGARC_MEMDESC_TABLE_END
-};
-
-
-// EOF hal_aux.c
+//-----------------------------------------------------------------------------
+// end of plf_io.h
+#endif // CYGONCE_PLF_IO_H

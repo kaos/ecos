@@ -42,15 +42,11 @@
 //
 //==========================================================================
 
-#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_cache.h>
 
 #ifdef CYG_HAL_POWERPC_MPC860
-
-#include CYGBLD_HAL_TARGET_H
-#include CYGBLD_HAL_PLATFORM_H 
 
 // eCos headers decribing PowerQUICC:
 #include <cyg/hal/quicc/ppc8xx.h>
@@ -135,6 +131,7 @@ init_smc1_uart(void)
     eppc->brgc1 = 0x10204;
 #endif
 #endif
+
 
     /*
      *  NMSI mode, BRG1 to SMC1

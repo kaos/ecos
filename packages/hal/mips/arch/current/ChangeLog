@@ -1,3 +1,7 @@
+1999-08-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/hal_io.h: Added include of plf_io.h.
+
 1999-08-10  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/mipsfp.c (cyg_hal_mips_process_fpe): CYG_REPORT_FUNCNAMETYPE()

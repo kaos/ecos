@@ -53,6 +53,7 @@
 #include <cyg/io/devtab.h>
 #include <cyg/io/ttyio.h>
 #include <cyg/infra/diag.h>
+#include <cyg/infra/cyg_ass.h>
 
 #include <cyg/hal/hal_intr.h>           // for reclaiming interrup vector
 
@@ -65,10 +66,10 @@
 
 #define NA_MSG "No test device specified"
 
-
 #if defined(CYGPKG_HAL_POWERPC_COGENT)                          \
     && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT)                 \
     && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT_SERIAL_B)
+# define TEST_CRASH_ID "ppccog"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_POWERPC_COGENT_SERIAL_B_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY2_DEV
@@ -78,6 +79,7 @@
     && defined(CYGPKG_HAL_QUICC)                 \
     && defined(CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC)                 \
     && defined(CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1)
+# define TEST_CRASH_ID "ppcmbx"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
@@ -86,6 +88,7 @@
 #if defined(CYGPKG_HAL_ARM_PID)                         \
     && defined(CYGPKG_IO_SERIAL_ARM_PID)                \
     && defined(CYGPKG_IO_SERIAL_ARM_PID_SERIAL0)
+# define TEST_CRASH_ID "armpid"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_PID_SERIAL0_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
@@ -94,6 +97,7 @@
 #if defined(CYGPKG_HAL_ARM_AEB)                         \
     && defined(CYGPKG_IO_SERIAL_ARM_AEB)                \
     && defined(CYGPKG_IO_SERIAL_ARM_AEB_SERIAL1)
+# define TEST_CRASH_ID "armaeb"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_AEB_SERIAL1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
@@ -102,6 +106,7 @@
 #if defined(CYGPKG_HAL_ARM_CL7211)                         \
     && defined(CYGPKG_IO_SERIAL_ARM_CL7211)                \
     && defined(CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1)
+# define TEST_CRASH_ID "armcl7"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
@@ -110,6 +115,7 @@
 #if defined(CYGPKG_HAL_MIPS_TX39_JMR3904)               \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904)           \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0)
+# define TEST_CRASH_ID "tx3jmr"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL0_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
@@ -118,6 +124,7 @@
 #if defined(CYGPKG_HAL_MN10300_AM31_STDEVAL1)           \
     && defined(CYGPKG_IO_SERIAL_MN10300)                \
     && defined(CYGPKG_IO_SERIAL_MN10300_SERIAL2)
+# define TEST_CRASH_ID "am31st"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_MN10300_SERIAL2_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
@@ -130,6 +137,7 @@
 # define NA_MSG "CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT is unset"
 # if !defined(CYG_HAL_STARTUP_RAM) \
      || defined(CYG_KERNEL_DIAG_GDB_SERIAL_DIRECT)
+#  define TEST_CRASH_ID "sparcl"
 #  define TEST_SER_DEV CYGDAT_IO_SERIAL_SPARCLITE_SLEB_CON1_NAME
 // The interrupt vectors are normally in CygMon's control. Steal them back,
 // but beware that this results in GDB acknowledge characters showing up in
@@ -156,6 +164,60 @@
 # define  TEST_TTY_DEV "/dev/null"
 # endif
 #endif
+
+#ifndef TEST_CRASH_ID
+#define TEST_CRASH_ID "......"
+#endif
+
+//----------------------------------------------------------------------------
+// Crash types
+// Eventually this will be moved into a separate header file so a script
+// can read the definitions and use the output formats/codes to analyze
+// test results. For now we just keep it here...
+
+// FAILCODE:<tttttt:cccc:[optional data, separated by :]!>
+//  tttttt: 6 letter target code
+//  cccc:   crash code (16bit hex value)
+
+#define TEST_CRASH(__h, __code, __msg, args...)                         \
+    CYG_MACRO_START                                                     \
+    int __len = 1;                                                      \
+    /* Try to flush remaining input */                                  \
+    cyg_thread_delay(50);                                               \
+    cyg_io_get_config(__h, CYG_IO_GET_CONFIG_SERIAL_INPUT_FLUSH,        \
+                      0, &__len);                                       \
+    diag_printf("FAILCODE:<" TEST_CRASH_ID ":%04x:" __code, ## args);    \
+    diag_printf("!>\n");                                                \
+    CYG_FAIL(__msg);                                                    \
+    hang();                                                             \
+    CYG_MACRO_END
+
+// Target IO
+#define TEST_CRASH_IO                     0x0000
+#define TEST_CRASH_IO_READ                "%d",            0x0001
+#define TEST_CRASH_IO_WRITE               "%d",            0x0002
+#define TEST_CRASH_IO_DRAIN               "%d",            0x0003
+#define TEST_CRASH_IO_GET_CFG             "%d",            0x0004
+#define TEST_CRASH_IO_SET_CFG             "%d",            0x0005
+
+// Target
+#define TEST_CRASH_CRC                    0x0010
+#define TEST_CRASH_CRC_CHAR               "%02x",          0x0011
+#define TEST_CRASH_CRC_BAD                "%08x:%08x",     0x0012
+#define TEST_CRASH_CRC_HOST               "",              0x0013
+
+// Protocol errors
+#define TEST_CRASH_PROT                   0x1000
+#define TEST_CRASH_PROT_BIN_MODE          "%d",            0x1080
+#define TEST_CRASH_PROT_TEXT              "%d",            0x1100
+
+#define TEST_CRASH_HOST_xx                0xf000
+#define TEST_CRASH_HOST_TIMEOUT           "%d:%d:%d:%d",      0xf000
+        // command#, read invocation#, expected, actual
+#define TEST_CRASH_HOST_CRC_BAD           "%d:%08x:%08x:%d:%02x:%02x", 0xf010
+        // command#, expected CRC, actual, index, expected char, actual
+#define TEST_CRASH_HOST_DUPLEX_BAD        "%d:%d:%02x:%02x",     0xf020
+        // command#, index, expected char, actual
 
 //----------------------------------------------------------------------------
 // The data in buffer and the cmd buffer
@@ -343,20 +405,26 @@ do_abort(void *handle)
 #include "timeout.inl"
 
 // Read with timeout (__t = timeout in ticks, int* __r = result)
-#define Tcyg_io_read_timeout(__h, __d, __l, __t, __r)                         \
-    CYG_MACRO_START                                                           \
-    int __res;                                                                \
-    r_stamp = timeout((__t), do_abort, (__h));                                \
-    __res = cyg_io_read((__h), (__d), (__l));                                 \
-    CYG_TEST_CHECK((ENOERR == __res || -EINTR == __res),"cyg_io_read failed");\
-    *(__r) = __res;                                                           \
-    untimeout(r_stamp);                                                       \
+#define Tcyg_io_read_timeout(__h, __d, __l, __t, __r)           \
+    CYG_MACRO_START                                             \
+    int __res;                                                  \
+    r_stamp = timeout((__t), do_abort, (__h));                  \
+    __res = cyg_io_read((__h), (__d), (__l));                   \
+    if (ENOERR != __res && -EINTR != __res) {                   \
+        TEST_CRASH(__h, TEST_CRASH_IO_READ,                     \
+                   "cyg_io_read/timeout failed", __res);        \
+    }                                                           \
+    *(__r) = __res;                                             \
+    untimeout(r_stamp);                                         \
     CYG_MACRO_END
 
-#define Tcyg_io_read(__h, __d, __l)                             \
-    CYG_MACRO_START                                             \
-    int __res = cyg_io_read((__h), (__d), (__l));               \
-    CYG_TEST_CHECK(ENOERR == __res, "cyg_io_read failed");      \
+#define Tcyg_io_read(__h, __d, __l)                     \
+    CYG_MACRO_START                                     \
+    int __res = cyg_io_read((__h), (__d), (__l));       \
+    if (ENOERR != __res) {                              \
+        TEST_CRASH(__h, TEST_CRASH_IO_READ,             \
+                   "cyg_io_read failed", __res);        \
+    }                                                   \
     CYG_MACRO_END
 
 #define Tcyg_io_write(__h, __d, __l)                                    \
@@ -364,12 +432,17 @@ do_abort(void *handle)
     int __res;                                                          \
     cyg_uint32 __len = 1;                                               \
     __res = cyg_io_write((__h), (__d), (__l));                          \
-    if (ENOERR != __res) diag_printf("[%d]\n", __res);                  \
-    CYG_TEST_CHECK(ENOERR == __res, "cyg_io_write failed");             \
+    if (ENOERR != __res) {                                              \
+        TEST_CRASH(__h, TEST_CRASH_IO_WRITE,                            \
+                   "cyg_io_write failed", __res);                       \
+    }                                                                   \
     __res = cyg_io_get_config((__h),                                    \
                               CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN,    \
                               0, &__len);                               \
-    CYG_TEST_CHECK(ENOERR == __res, "DRAIN failed");                    \
+    if (ENOERR != __res) {                                              \
+        TEST_CRASH(__h, TEST_CRASH_IO_DRAIN,                            \
+                   "DRAIN failed", __res);                              \
+    }                                                                   \
     CYG_MACRO_END
 
 
@@ -489,9 +562,9 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     res = cyg_io_get_config(handle, CYG_IO_GET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
 
-     if (res != ENOERR) {
-        diag_printf("Can't get serial config - DEVIO error: %d\n", res);
-        hang();
+    if (res != ENOERR) {
+        TEST_CRASH(handle, TEST_CRASH_IO_GET_CFG, 
+                   "Can't get serial config", res);
     }
 
     new_cfg.baud = cfg->baud_rate;
@@ -519,9 +592,10 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &old_cfg, &len);
     cyg_thread_delay(10); // Some chips don't like changes to happen to fast...
-    if (ENOERR != res) {
-        diag_printf("change_config: set_config failed/1 (%d)\n", res);
-        hang();
+
+    if (res != ENOERR) {
+        TEST_CRASH(handle, TEST_CRASH_IO_SET_CFG, 
+                   "Can't set serial config", res);
     }
 
     // Send command to host and read host's reply.
@@ -554,9 +628,9 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
     res = cyg_io_set_config(handle, CYG_IO_SET_CONFIG_SERIAL_INFO, 
                             &new_cfg, &len);
     cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
-    if (ENOERR != res) {
-        diag_printf("change_config: set_config failed/2 (%d)\n", res);
-        hang();
+    if (res != ENOERR) {
+        TEST_CRASH(handle, TEST_CRASH_IO_SET_CFG, 
+                   "Can't set serial config/2", res);
     }
 
     {
@@ -621,8 +695,8 @@ change_config(cyg_io_handle_t handle, cyg_ser_cfg_t* cfg)
                                     &old_cfg, &len);
             cyg_thread_delay(10);  // Some chips don't like changes to happen to fast...
             if (res != ENOERR) {
-                diag_printf("change_config: set_config failed/3 (%d)\n", res);
-                hang();
+                TEST_CRASH(handle, TEST_CRASH_IO_SET_CFG,
+                           "Can't set serial config/3", res);
             }
             using_old_config = 1;
         }
@@ -646,14 +720,10 @@ read_host_crc(cyg_io_handle_t handle)
         if ('!' == ch)
             break;
 
-#ifdef __DEVELOPER__
         if (!((ch >= '0' && ch <= '9'))){
-            diag_printf("CHAR: %02x\n", ch);
+            TEST_CRASH(handle, TEST_CRASH_CRC_CHAR,
+                       "Illegal CRC format from host", ch);
         }
-#endif
-
-        CYG_TEST_CHECK((ch >= '0' && ch <= '9'),
-                       "Illegal CRC format from host");
 
         crc = crc*10 + (ch - '0');
     }
@@ -847,20 +917,24 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
     }
     break;
     default:
-        CYG_TEST_CHECK(0, "unknown mode");
+        TEST_CRASH(handle, TEST_CRASH_PROT_BIN_MODE, 
+                   "Unknown mode", mode);
+        break;
     }
 
 
     // Verify that the CRC matches the one from the host.
     FIX_CRC(xcrc, icrc);
-#ifdef __DEVELOPER__
-    if (host_crc != icrc)
-        diag_printf("%d != %d\n", icrc, host_crc);
-#endif
-    CYG_TEST_CHECK(host_crc == icrc, "CRC failed!");
+    if (host_crc != icrc) {
+        TEST_CRASH(handle, TEST_CRASH_CRC_BAD,
+                   "Input CRC failed", icrc, host_crc);
+    }
 
     // Verify that the host is happy with the data we echoed.
-    CYG_TEST_CHECK('O' == host_status, "Host failed checksum on echoed data");
+    if ('O' != host_status) {
+        TEST_CRASH(handle, TEST_CRASH_CRC_HOST, 
+                   "Output CRC failed");
+    }
 
     CYG_TEST_PASS("Binary test completed");
     return TEST_RETURN_OK;
@@ -892,7 +966,7 @@ test_text(cyg_io_handle_t handle, cyg_mode_t mode, const char* s_base,
 //---------------------------------------------------------------------------
 // Send PING to host, verifying the filter's presence.
 // Format out:
-//  "@PING!"
+//  "@PING:<crash id>!"
 // Format in:
 //  "OK"
 // or
@@ -903,7 +977,7 @@ test_text(cyg_io_handle_t handle, cyg_mode_t mode, const char* s_base,
 void
 test_ping(cyg_io_handle_t handle)
 {
-    char msg[] = "@PING:!";
+    char msg[] = "@PING:" TEST_CRASH_ID "!";
     char msg2[] = "\n";
     int msglen = strlen(msg);
     int res;

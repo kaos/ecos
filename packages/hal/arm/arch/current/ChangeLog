@@ -1,3 +1,17 @@
+1999-08-24  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* src/vectors.S (handle_IRQ_or_FIQ): Set up the pointer-to-regset
+	in r2 for calling the ISR as well as the DSR.  This is needed for
+	the cyg_hal_gdb_isr() for those platforms that handle ^C's
+	incoming that way - the ISR needs a regset to know where to plant
+	a breakpoint to stop the system in the interrupted context.
+
+1999-08-23  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/arm_stub.c 
+	(target_ins): Check whether branches execute.
+	(ins_will_execute): Fixed HI and LS.
+
 1999-08-06  Jesper Skov  <jskov@cygnus.co.uk>
         CR 101032
         * src/vectors.S (handle_IRQ_or_FIQ): Moved setup of register_frame

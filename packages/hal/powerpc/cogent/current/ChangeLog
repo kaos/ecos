@@ -1,3 +1,7 @@
+1999-09-02  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/STUBS_config: Added.
+
 1999-06-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/PKGconf.mak: Build the new file.

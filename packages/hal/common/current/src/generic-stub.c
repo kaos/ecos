@@ -391,7 +391,7 @@ __do_write_mem (void)
  */
 
 int
-__read_mem_safe (unsigned char *dst, target_register_t src, int count)
+__read_mem_safe (void *dst, target_register_t src, int count)
 {
   memCount = count;
   memSrc   = (unsigned char *) src;
@@ -429,23 +429,45 @@ static int   may_fault_mode;
 static void
 __mem2hex_helper (void)
 {
-  __mem_fault = 0;
-  while (hexMemCount-- > 0)
-    {
-      unsigned char ch;
+    union {
+        unsigned long  long_val;
+        unsigned char  bytes[sizeof(long)];
+    } val;
+    int len, i;
+    unsigned char ch;
+    __mem_fault = 0;
+    while (hexMemCount > 0) {
+        if (may_fault_mode) {
+            if ((hexMemCount >= sizeof(long)) &&
+                (((target_register_t)hexMemSrc & (sizeof(long)-1)) == 0)) {
+                // Should be safe to access via a long
+                len = sizeof(long);
+            } else if ((hexMemCount >= sizeof(short)) &&
+                       (((target_register_t)hexMemSrc & (sizeof(short)-1)) == 0)) {
+                // Should be safe to access via a short
+                len = sizeof(short);
+            } else {
+                len = 1;
+            }
+            __read_mem_safe(&val.bytes[0], hexMemSrc, len);
+        } else {
+            len = 1;
+            val.bytes[0] = *hexMemSrc;
+        }
+        if (__mem_fault)
+            return;
 
-      if (may_fault_mode)
-        __read_mem_safe (&ch, (target_register_t) (hexMemSrc++), 1);
-      else
-        ch = *(hexMemSrc++);
-      if (__mem_fault)
-        return;
-      *(hexMemDst++) = hexchars[(ch >> 4) & 0xf];
-      if (__mem_fault)
-        return;
-      *(hexMemDst++) = hexchars[ch & 0xf];
-      if (__mem_fault)
-        return;
+        for (i = 0;  i < len;  i++) {
+            ch = val.bytes[i];
+            *(hexMemDst++) = hexchars[(ch >> 4) & 0xf];
+            if (__mem_fault)
+                return;
+            *(hexMemDst++) = hexchars[ch & 0xf];
+            if (__mem_fault)
+                return;
+        }
+        hexMemCount -= len;
+        hexMemSrc += len;
     }
 }
 
@@ -486,24 +508,49 @@ __mem2hex (mem, buf, count, may_fault)
 static void
 __hex2mem_helper (void)
 {
-  target_register_t i;
-  unsigned char ch;
+    union {
+        unsigned long  long_val;
+        unsigned char  bytes[sizeof(long)];
+    } val;
+    int len, i;
+    unsigned char ch = '\0';
 
-  __mem_fault = 0;
-  for (i=0; i < hexMemCount && *hexMemSrc; i++)
-    {
-      ch = stubhex (*(hexMemSrc++)) << 4;
-      if (__mem_fault)
-        return;
-      ch |= stubhex (*(hexMemSrc++));
-      if (__mem_fault)
-        return;
-      if (may_fault_mode)
-        __write_mem_safe (&ch, (target_register_t) (hexMemDst++), 1);
-      else
-        *(hexMemDst++) = ch;
-      if (__mem_fault)
-        return;
+    __mem_fault = 0;
+    while (hexMemCount > 0 && *hexMemSrc) {
+        if (may_fault_mode) {
+            if ((hexMemCount >= sizeof(long)) &&
+                (((target_register_t)hexMemDst & (sizeof(long)-1)) == 0)) {
+                len = sizeof(long);
+            } else if ((hexMemCount >= sizeof(short)) &&
+                       (((target_register_t)hexMemDst & (sizeof(short)-1)) == 0)) {
+                len = sizeof(short);
+            } else {
+                len = 1;
+            }
+        } else {
+            len = 1;
+        }
+
+        for (i = 0;  i < len;  i++) {
+            // Check for short data?
+            ch = stubhex (*(hexMemSrc++)) << 4;
+            if (__mem_fault)
+                return;
+            ch |= stubhex (*(hexMemSrc++));
+            if (__mem_fault)
+                return;
+            val.bytes[i] = ch;
+        }
+
+        if (may_fault_mode)
+            __write_mem_safe (&val.bytes[0], hexMemDst, len);
+        else
+            *hexMemDst = ch;
+
+        if (__mem_fault)
+            return;
+        hexMemCount -= len;
+        hexMemDst += len;
     }
 }
 
@@ -831,8 +878,16 @@ __process_packet (char *packet)
                 else
                   addr = get_register (regnum);
 
-                vptr = ((char *) &addr) + sizeof (addr) - REGSIZE (regnum);
-                if (sizeof (addr) < REGSIZE (regnum))
+                vptr = ((char *) &addr);
+                if (sizeof (addr) > REGSIZE(regnum))
+                  {
+                    /* May need to cope with endian-ness */
+
+#if !defined(__LITTLE_ENDIAN__) && !defined(_LITTLE_ENDIAN)
+                    vptr += sizeof (addr) - REGSIZE (regnum);
+#endif
+                  }
+                else if (sizeof (addr) < REGSIZE (regnum))
                   {
                     int off = REGSIZE (regnum) - sizeof (addr);
                     int x;
@@ -944,7 +999,10 @@ __process_packet (char *packet)
             else
 #endif
               {
-                vptr = ((char *) &value) + sizeof (value) - REGSIZE (x);
+                vptr = ((char *) &value);
+#if !defined(__LITTLE_ENDIAN__) && !defined(_LITTLE_ENDIAN)
+                vptr += sizeof (value) - REGSIZE (x);
+#endif
                 __hex2mem (ptr, vptr, REGSIZE (x), 0);
                 put_register (x, value);
               }
@@ -999,7 +1057,7 @@ __process_packet (char *packet)
                       if ((buf[i] = *ptr++) == 0x7d)
                         buf[i] = 0x20 | (*ptr++ & 0xff);
 
-                    if (__write_mem_safe (buf, addr, i) != i)
+                    if (__write_mem_safe (buf, (void *)addr, i) != i)
                       break;
 
                     length -= i;
@@ -1229,11 +1287,11 @@ __get_gdb_input (target_register_t dest, int maxlen, int block)
     {
       d = stubhex (remcomInBuffer[3 + i * 2]) * 16;
       d |=  stubhex (remcomInBuffer[3 + i * 2 + 1]);
-      __write_mem_safe (&d, dest + i, 1);
+      __write_mem_safe (&d, (void *)(dest + i), 1);
     }
   /* Write the trailing \0. */
   d = '\0';
-  __write_mem_safe (&d, dest + i, 1);
+  __write_mem_safe (&d, (void *)(dest + i), 1);
   return len;
 }
 
@@ -1292,7 +1350,7 @@ __output_gdb_string (target_register_t str, int string_len)
         {
           char c;
 
-          __read_mem_safe (&c, str + x, 1);
+          __read_mem_safe (&c, (void *)(str + x), 1);
           buf[x*2+1] = hexchars[(c >> 4) & 0xf];
           buf[x*2+2] = hexchars[c % 16];
         }
@@ -1434,7 +1492,7 @@ __get_program_args (target_register_t argcPtr)
     {
       __free_program_args ();
     }
-  __write_mem_safe ((char *) &program_argc, argcPtr, sizeof (program_argc));
+  __write_mem_safe ((char *) &program_argc, (void *)argcPtr, sizeof (program_argc));
   return program_argv;
 }
 
@@ -1473,7 +1531,7 @@ crc32 (ptr, len, crc)
     {
       unsigned char ch;
 
-      __read_mem_safe (&ch, (target_register_t) ptr, 1);
+      __read_mem_safe (&ch, (void *)ptr, 1);
       if (__mem_fault)
         {
           break;

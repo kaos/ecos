@@ -460,9 +460,8 @@
 #endif
 
 
-#if defined(CYGPKG_HAL_MIPS) || defined(CYGPKG_HAL_MN10300)
 #include CYGBLD_HAL_TARGET_H
-#endif
+#include CYGBLD_HAL_PLATFORM_H 
 
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_H */

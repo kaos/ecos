@@ -53,7 +53,6 @@
 	
 #ifndef CYGPKG_HAL_MIPS_MON_DEFINED
 
-	.macro	hal_mon_init
 #if	defined(CYG_HAL_STARTUP_ROM) ||			\
 	(	defined(CYG_HAL_STARTUP_RAM) &&		\
 		!defined(CYG_HAL_USE_ROM_MONITOR))
@@ -61,6 +60,7 @@
 	# If we are starting up from ROM, or we are starting in
 	# RAM and NOT using a ROM monitor, initialize the VSR table.
 
+	.macro	hal_mon_init
 	la	a0,__default_interrupt_vsr
 	la	a1,__default_exception_vsr
 	la	a3,hal_vsr_table
@@ -83,22 +83,27 @@
 
 	sw	a1,32*4(a3)
 	sw	a1,33*4(a3)
+	.endm
 	
-#endif
-		
-#if defined(CYG_HAL_STARTUP_RAM) && defined(CYG_HAL_USE_ROM_MONITOR)
+#elif defined(CYG_HAL_STARTUP_RAM) && defined(CYG_HAL_USE_ROM_MONITOR)
 
 	# Initialize the VSR table entries
 	# We only take control of the interrupt vector,
 	# the rest are left to the ROM for now...
 
+	.macro	hal_mon_init
 	la	a0,__default_interrupt_vsr
 	la	a3,hal_vsr_table
 	sw	a0,0(a3)
-		
+	.endm
+
+#else
+
+	.macro	hal_mon_init
+	.endm
+
 #endif
 			
-	.endm
 
 #define CYGPKG_HAL_MIPS_MON_DEFINED
 

@@ -1,3 +1,18 @@
+1999-08-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/platform.inc: Rearranged code a little to avoid
+	assembler warning messages.
+
+	* src/plf_misc.c (hal_platform_init): No longer disable cache when
+	enabling TOE. A better solution to this has been made elsewhere.
+
+	* include/pkgconf/hal_mips_tx39_jmr3904.h: Removed some now-bogus
+	comments and generally tidied things a little.
+
+1999-08-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/plf_io.h: Added this file to match other platforms.
+
 1999-06-21  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/plf_misc.c (hal_ctrlc_isr): Changed return value from 0 to 2

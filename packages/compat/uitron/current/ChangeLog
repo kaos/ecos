@@ -1,3 +1,48 @@
+1999-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/testintr.cxx (attach_isr): Make it all work: my chosen
+	default interrupt "level" of 0 means make no interrupts on the
+	tx39 ;-( oh well.  Made the whole test simulator-friendly ie. much
+	shorter, made the output more friendly to me.
+
+
+1999-08-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+
+	* include/pkgconf/uitron.h: Add configury for lovely new
+	interrupt-safe functions: just "try immediate execution" [ie. if
+	the sched lock is one] and queue size.
+
+	* include/uit_ifnc.inl: Respond to general configury wrt the
+	presence of semas, flags, mboxes: only define the ixxx_yyy()
+	function if the corresponding xxx_yyy() func exists.  Remove the
+	static definitions of the configuration symbols.
+
+	* src/uit_ifnc.cxx: Respond to general configury wrt the presence
+	of semas, flags, mboxes: the functions called may not exist!
+
+1999-08-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/uit_ifnc.h: New file.  Prototypes of interrupt-safe
+	ixxx_yyy() style functions as a porting/backwards-compatibility
+	aid.  Prototype of a suitable DSR to mate with an ISR that uses
+	them too.
+
+	* include/uit_ifnc.inl: New file.  Bodies for possible inlining of
+	the ixxx_yyy() style functions; organized much like the standard
+	uITRON functions.
+
+	* src/uit_ifnc.cxx: New file.  Implementation of the DSR provided,
+	plus concrete instantiations of the ixxx_yyy() style functions.
+
+	* tests/testintr.cxx: New file.  Test for the ixxx_yyy() functions
+	newly provided above.  Rather unpleasant: it is necessary to break
+	type-safety to get access to the kernel's interrupt object that
+	drives the realtime clock.  Perhaps a neater way will follow.
+
+	* tests/PKGconf.mak (TESTS): Add new testcase testintr.cxx
+	* src/PKGconf.mak (COMPILE): Add new source file uit_ifnc.cxx
+
 1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/testcx7.cxx: Include new stackmon header.

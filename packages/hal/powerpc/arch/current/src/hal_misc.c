@@ -42,10 +42,7 @@
 //
 //===========================================================================
 
-#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
-#include CYGBLD_HAL_TARGET_H
-#include CYGBLD_HAL_PLATFORM_H 
 
 #define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include <cyg/hal/ppc_regs.h>           // SPR definitions

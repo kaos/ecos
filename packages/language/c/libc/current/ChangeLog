@@ -1,3 +1,15 @@
+1999-09-02  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/assert.h: Make the sense of NDEBUG correct; it is "set"
+	when NOT debugging.  Fix for CR 101983-CR-1
+	See Stroustrup, "The C++ Programming Language."
+
+1999-08-18  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/stdio/common/fopen.cxx (_fopen): Set buffer size 0 when not
+	buffering
+	Fix for case 101868
+
 1999-08-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/stdio/sprintf2.c (test): Don't rely on 2.345 being exactly

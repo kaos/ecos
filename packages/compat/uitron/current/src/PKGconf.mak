@@ -32,7 +32,7 @@ PACKAGE       := uitron
 include ../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := uit_func.cxx uit_objs.cxx	         
+COMPILE       := uit_func.cxx uit_objs.cxx uit_ifnc.cxx
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

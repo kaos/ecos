@@ -101,16 +101,16 @@ extern void __send_exit_status (int status);
    ADDR is assumed to live in the user program's space. 
    Returns number of bytes successfully read 
    (caller must check to see if less than requested).  */
-extern int __read_mem_safe (unsigned char *buf, 
-                            target_register_t addr, 
+extern int __read_mem_safe (void *buf, 
+                            void *addr, 
                             int count);
 
 /* Copy COUNT bytes of memory from BUF to ADDR. 
    ADDR is assumed to live in the user program's space. 
    Returns number of bytes successfully read 
    (caller must check to see if less than requested).  */
-extern int __write_mem_safe (unsigned char *buf, 
-                             target_register_t addr, 
+extern int __write_mem_safe (void *buf, 
+                             void *addr, 
                              int count);
 
 /* Set to a non-zero value if a memory fault occurs while 

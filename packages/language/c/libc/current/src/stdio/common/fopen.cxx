@@ -163,7 +163,7 @@ _fopen( const char *filename, const char *mode )
     // potentially interactive devices, so as per ANSI 7.9.3 it must not
     // be buffered
     curr_stream = new Cyg_StdioStream( dev, open_mode, append, binary,
-                                       _IONBF );
+                                       _IONBF, 0 );
 
     if (curr_stream == NULL) {
         errno = ENOMEM;

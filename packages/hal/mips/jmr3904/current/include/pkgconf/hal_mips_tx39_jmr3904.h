@@ -94,14 +94,14 @@
 #define CYGHWR_HAL_MIPS_TX39_JMR3904_DRAM_CONFIG_INIT  0x08024030  // 16MByte
 //#define CYGHWR_HAL_MIPS_TX39_JMR3904_DRAM_CONFIG_INIT 0x08013020 // 4 or 8MByte
 
-/* Bus Timeout Detection */
+/* -------------------------------------------------------------------*/
+/* Bus Timeout Detection                                              */
 
-/* Note: If you enable this option the caches are disabled by default.
- *  If you enable caches in your code, Spurious Bus Time Outs might
- *  fire.
- */
 
-// #define CYGHWR_HAL_MIPS_TX39_JMR3904_ENABLE_TOE
+//#define CYGHWR_HAL_MIPS_TX39_JMR3904_ENABLE_TOE
+
+/* -------------------------------------------------------------------*/
+/* Clock frequency initialization                                     */
 
 #include <pkgconf/hal_mips.h>  // Make sure clock frequency is defined
 

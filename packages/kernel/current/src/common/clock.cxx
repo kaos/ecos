@@ -660,11 +660,18 @@ Cyg_RealTimeClock::Cyg_RealTimeClock()
     Cyg_Clock::real_time_clock = this;
 }
 
-#ifdef HAL_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && defined(HAL_CLOCK_LATENCY)
 cyg_tick_count total_clock_latency, total_clock_interrupts;
 cyg_int32 min_clock_latency = 0x7FFFFFFF;
 cyg_int32 max_clock_latency = 0;
 bool measure_clock_latency = false;
+#endif
+
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+cyg_tick_count total_clock_dsr_latency, total_clock_dsr_calls;
+cyg_int32 min_clock_dsr_latency = 0x7FFFFFFF;
+cyg_int32 max_clock_dsr_latency = 0;
+cyg_int32 clock_dsr_start = 0;
 #endif
 
 // -------------------------------------------------------------------------
@@ -673,7 +680,7 @@ cyg_uint32 Cyg_RealTimeClock::isr(cyg_vector vector, CYG_ADDRWORD data)
 {
 //    CYG_REPORT_FUNCTION();
 
-#ifdef HAL_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && defined(HAL_CLOCK_LATENCY)
     if (measure_clock_latency) {
         cyg_int32 delta;
         HAL_CLOCK_LATENCY(&delta);
@@ -693,7 +700,10 @@ cyg_uint32 Cyg_RealTimeClock::isr(cyg_vector vector, CYG_ADDRWORD data)
     HAL_CLOCK_RESET( CYGNUM_HAL_INTERRUPT_RTC, CYGNUM_KERNEL_COUNTERS_RTC_PERIOD );
 
     Cyg_Interrupt::acknowledge_interrupt(CYGNUM_HAL_INTERRUPT_RTC);
-        
+
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+    HAL_CLOCK_READ(&clock_dsr_start);
+#endif    
     return Cyg_Interrupt::CALL_DSR|Cyg_Interrupt::HANDLED;
 }
 
@@ -702,6 +712,22 @@ cyg_uint32 Cyg_RealTimeClock::isr(cyg_vector vector, CYG_ADDRWORD data)
 void Cyg_RealTimeClock::dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD data)
 {
 //    CYG_REPORT_FUNCTION();
+
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+    if (measure_clock_latency) {
+        cyg_int32 delta;
+        HAL_CLOCK_READ(&delta);
+        delta -= clock_dsr_start;
+        // Note: Ignore a latency of <= 0 when finding min_clock_latency.
+        if (delta > 0 ) {
+            // Valid delta measured
+            total_clock_dsr_latency += delta;
+            total_clock_dsr_calls++;
+            if (min_clock_dsr_latency > delta) min_clock_dsr_latency = delta;
+            if (max_clock_dsr_latency < delta) max_clock_dsr_latency = delta;
+        }
+    }
+#endif    
 
     Cyg_RealTimeClock *rtc = (Cyg_RealTimeClock *)data;
 

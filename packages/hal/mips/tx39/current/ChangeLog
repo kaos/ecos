@@ -1,3 +1,16 @@
+1999-08-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc: Added clock-speed dependent values for the
+	DRAM DWR0 register. Values as suggested by Toshiba in PR20094.
+	Added improved work-around for TOE problem suggested by Toshiba
+	in PR20233.
+	Some code rearranged to eliminate assembler warning messages.
+	Some general tidying.
+
+	* include/var_cache.h (HAL_ICACHE_DISABLE): Added jump to aligned
+	label after disable to avoid potential race with cache. Suggested
+	by Toshiba in PR20091.
+
 1999-06-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/var_intr.h: Added TX39 specific variant of

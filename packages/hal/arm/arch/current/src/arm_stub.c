@@ -110,10 +110,10 @@ ins_will_execute(unsigned long ins)
         res = (psr & PS_V) == 0;
         break;
     case 0x8: // HI
-        res = ((psr & PS_Z) != 0) && ((psr & PS_C) == 0);
+        res = ((psr & PS_C) != 0) && ((psr & PS_Z) == 0);
         break;
     case 0x9: // LS
-        res = ((psr & PS_Z) == 0) || ((psr & PS_C) != 0);
+        res = ((psr & PS_C) == 0) || ((psr & PS_Z) != 0);
         break;
     case 0xA: // GE
         res = ((psr & (PS_N|PS_V)) == (PS_N|PS_V)) ||
@@ -321,10 +321,15 @@ target_ins(unsigned long *pc, unsigned long ins)
             }
         } else {
             // Branch
-            offset = (ins & 0x00FFFFFF) << 2;
-            if (ins & 0x00800000) offset |= 0xFC000000;  // sign extend
-            new_pc = (unsigned long)(pc+2) + offset;
-            return ((unsigned long *)new_pc);
+            if (ins_will_execute(ins)) {
+                offset = (ins & 0x00FFFFFF) << 2;
+                if (ins & 0x00800000) offset |= 0xFC000000;  // sign extend
+                new_pc = (unsigned long)(pc+2) + offset;
+                return ((unsigned long *)new_pc);
+            } else {
+                // Falls through
+                return (pc+1);
+            }
         }
     case 0x3:  // Coprocessor & SWI
         return (pc+1);

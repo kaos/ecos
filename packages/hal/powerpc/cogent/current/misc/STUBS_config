@@ -1,0 +1,49 @@
+#! /bin/sh
+# Configure PowerPC/cogent eCos to create Cogent GDB stubs
+# Ensure that PATH include the directory where the PPC tools reside.
+#
+# Run from an empty temporary directory with one argument: the path to
+# the packages directory (i.e., where pkgconf.tcl lives).
+#
+# Output will be ./stubrom.bin which is suitable for burning into ROM.
+# Remember to be careful with byte-endianess in the ROM programmer.
+
+tcl $1/pkgconf.tcl                                                     \
+   --target=powerpc --platform=cogent --startup=stubs                  \
+   --disable CYGPKG_KERNEL --disable CYGPKG_UITRON                     \
+   --disable CYGPKG_LIBC --disable CYGPKG_LIBM                         \
+   --disable CYGPKG_ERROR --disable CYGPKG_IO                          \
+   --disable CYGPKG_IO_SERIAL --disable CYGPKG_DEVICES_WALLCLOCK       \
+   --disable CYGPKG_DEVICES_WATCHDOG
+
+patch <<END_OF_PATCH -p0
+--- pkgconf/hal.h~      Thu Jul  8 08:26:44 1999
++++ pkgconf/hal.h       Wed Jul 28 10:51:07 1999
+@@ -110,7 +110,7 @@
+  }
+ 
+  }}CFG_DATA */
+-#define CYGFUN_HAL_COMMON_KERNEL_SUPPORT
++#undef  CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+ 
+ /* {{CFG_DATA
+    
+@@ -369,10 +369,10 @@
+ 
+    }}CFG_DATA */
+ 
+-#undef   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
++#define  CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+ #undef   CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+-#define  CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+-#define  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
++#undef   CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
++#undef   CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+ 
+ /*
+  * NOTE:
+END_OF_PATCH
+
+make
+make -C hal/common/current/src/stubrom
+powerpc-eabi-objcopy -O binary hal/common/current/src/stubrom/stubrom stubrom.bin

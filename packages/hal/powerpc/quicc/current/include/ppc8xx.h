@@ -73,8 +73,10 @@
 #define OR6        0x134        /* Option Register 2 */
 #define BR7        0x138        /* Base Register 2 */
 #define OR7        0x13C        /* Option Register 2 */
+#define MAR        0x164        /* Memory Address */
 #define MCR        0x168        /* Memory Command */
 #define MAMR       0x170        /* Machine A Mode Register */
+#define MBMR       0x174        /* Machine B Mode Register */
 #define MPTPR      0x17A        /* Memory Periodic Timer Prescaler */
 #define MDR        0x17C        /* Memory Data */
 #define TBSCR      0x200        /* Time Base Status and Control Register */

@@ -60,28 +60,17 @@ extern void patch_dbg_syscalls(void * vector);
 
 void hal_platform_init(void)
 {
-    // On the real hardware we also enable the cache.
-    // doing this here is a temporary measure until we
-    // have a proper platform specific place to do it.
-    
-#if !defined(CYGHWR_HAL_TX39_JMR3904_ENABLE_TOE)
 
     HAL_ICACHE_INVALIDATE_ALL();    
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_DCACHE_ENABLE();
 
+#if !defined(CYGHWR_HAL_MIPS_TX39_JMR3904_ENABLE_TOE)
+    
     HAL_TX39_DEBUG_TOE_DISABLE();
 
 #else
-
-    // If TOE is enabled, caches are disabled by default
-    // until spurious Bus Timeout problem is fixed.
-
-    HAL_ICACHE_INVALIDATE_ALL();    
-    HAL_ICACHE_DISABLE();
-    HAL_DCACHE_INVALIDATE_ALL();
-    HAL_DCACHE_DISABLE();
 
     HAL_TX39_DEBUG_TOE_ENABLE();
 

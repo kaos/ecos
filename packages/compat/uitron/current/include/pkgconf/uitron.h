@@ -935,6 +935,53 @@ static char vpool1[ 2000 ], \
 #endif
 #endif // NOT SUPPORTED 
 
+// ------------------------------------------------------------------------
+// Interrupt-safe functions [ixxx_yyy()]:
+//
+// These can queue up requests for execution in a DSR or maybe execute
+// immediately if safe so to do.
+
+/* {{CFG_DATA
+   cdl_component CYGPKG_UITRON_INTERRUPT_FUNCTIONS {
+       display "Interrupt-safe functions"
+       type    dummy
+       parent  CYGPKG_UITRON
+       description "The uITRON system provides some functions which may
+       		safely be used within interrupt handlers.  In eCos, this
+       		means within ISRs, providing that the corresponding DSR is
+       		associated with that interrupt.  These functions are
+       		typically named ixxx_yyy(), according to the uITRON
+       		specification, for example isig_sem() corresponds to normal
+       		function sig_sem()."
+
+   }
+   cdl_option CYGSEM_UITRON_ISRFUNCS_TRY_IMMEDIATE_EXECUTION {
+       display          "Execute in ISR if safe"
+       parent           CYGPKG_UITRON_INTERRUPT_FUNCTIONS
+       type             boolean
+       description "These functions of necessity maintain a queue of
+                operations requested for deferred execution.  However,
+                during an interrupt, it may be safe to perform scheduling
+                operations.  If this option is set, the interrupt-safe
+                functions will have effect there and then if it is indeed
+                safe, rather than queueing a request to perform the
+                operation in the DSR."
+   }
+   cdl_option CYGNUM_UITRON_ISR_ACTION_QUEUESIZE {
+       display          "Deferred operation queue size"
+       parent           CYGPKG_UITRON_INTERRUPT_FUNCTIONS
+       type             enum
+       legal_values 4 8 16 32 64 128 256
+       description "These functions of necessity maintain a queue of
+                operations requested for deferred execution.  This option
+                controls the queue size.  It must be a power of two for
+                implementation reasons."
+   }
+   }}CFG_DATA */
+
+#define CYGSEM_UITRON_ISRFUNCS_TRY_IMMEDIATE_EXECUTION
+#define CYGNUM_UITRON_ISR_ACTION_QUEUESIZE 32
+
 // ========================================================================
 // ------------------------------------------------------------------------
 //                      uITRON VERSION INFORMATION
@@ -1057,8 +1104,7 @@ static char vpool1[ 2000 ], \
                 response to a get_ver() system call.
                 Do NOT change this value."
    }
-   }}CFG_DATA
- */
+   }}CFG_DATA */
 
 // these constants are returned by the get_ver API call.
 

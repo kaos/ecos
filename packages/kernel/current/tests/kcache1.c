@@ -297,6 +297,18 @@ static void entry0( cyg_addrword_t data )
     CYG_TEST_INFO("Dcache on Icache on (again)");
     time1();
 
+#if defined(CYGPKG_HAL_MIPS)
+    // In some architectures, the time taken for the next two tests is
+    // very long, partly because HAL_XCACHE_INVALIDATE_ALL() is implemented
+    // with a loop over the cache. Hence these tests take longer than the
+    // testing infrastructure is prepared to wait. The simplest way to get
+    // these tests to run quickly is to make them think they are running
+    // under a simulator.
+    
+    cyg_test_is_simulator = 1;
+    
+#endif
+    
 #ifdef HAL_ICACHE_INVALIDATE_ALL
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_PURGE_ALL();

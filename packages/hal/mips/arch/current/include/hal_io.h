@@ -48,7 +48,11 @@
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
+
 #include <cyg/infra/cyg_type.h>
+
+#include <cyg/hal/plf_io.h>
 
 //-----------------------------------------------------------------------------
 // IO Register address.
@@ -128,7 +132,7 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
     for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
         ((volatile CYG_WORD32 *)(_register_))[_j_] = (_buf_)[_i_];      \
 }
-    
+
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_IO_H
 // End of hal_io.h
