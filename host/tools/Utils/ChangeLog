@@ -1,3 +1,7 @@
+2003-04-30  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosStd.h: Update version string to "2.net".
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* common/configure, common/Makefile.in:

@@ -131,7 +131,7 @@
   #define MODE_TEXT
 #endif
 
-#define ECOS_VERSION "1.3.2"
+#define ECOS_VERSION "2.net"
 
 typedef int Duration;
 
