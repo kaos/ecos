@@ -127,9 +127,9 @@ cyg_panic(const char *msg, ...)
     cyg_test_exit();  // FIXME
 }
 
-#define NET_MEMPOOL_SIZE  roundup(CYGPKG_NET_MEM_USAGE/4,MSIZE)
-#define NET_MBUFS_SIZE    roundup(CYGPKG_NET_MEM_USAGE/4,MSIZE)
-#define NET_CLUSTERS_SIZE roundup(CYGPKG_NET_MEM_USAGE/2,MCLBYTES)
+#define NET_MEMPOOL_SIZE  roundup(CYGPKG_NET_MEMPOOL_SIZE,MSIZE)
+#define NET_MBUFS_SIZE    roundup(CYGPKG_NET_MBUFS_SIZE,MSIZE)
+#define NET_CLUSTERS_SIZE roundup(CYGPKG_NET_CLUSTERS_SIZE,MCLBYTES)
 
 static unsigned char net_mempool_area[NET_MEMPOOL_SIZE];
 static cyg_mempool_var net_mem_pool;

@@ -280,7 +280,34 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
             This option controls the amount of memory pre-allocated
         for buffers used by the networking code.  The number is an
         upper limit, with at least enough space to get the stack
-        initialized."
+        initialized. Tip: setting a breakpoint at cyg_memalloc_alloc_fail() 
+	is an especially useful tool in establishing when there is too 
+        little memory for an application. "
+    }
+
+    cdl_option CYGPKG_NET_MEMPOOL_SIZE {
+        display "Memory designated for network dynamically allocated memory"
+        flavor  data
+        default_value CYGPKG_NET_MEM_USAGE/4
+        description   "
+            Controls the amount of memory in the pool used for dynamically
+            allocated memory. This does not include mbufs or clusters."
+    }
+
+    cdl_option CYGPKG_NET_MBUFS_SIZE {
+        display "MBUFs memory size"
+        flavor  data
+        default_value CYGPKG_NET_MEM_USAGE/4
+        description   "
+            Size of MBUFs pool."
+    }
+
+    cdl_option CYGPKG_NET_CLUSTERS_SIZE {
+        display "Clusters size"
+        flavor  data
+        default_value CYGPKG_NET_MEM_USAGE/2
+        description   "
+            Clusters size."
     }
 
     cdl_option CYGPKG_NET_MAXSOCKETS {

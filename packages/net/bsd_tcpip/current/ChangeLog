@@ -1,3 +1,10 @@
+2004-07-15 Oyvind Harboe <oyvind.harboe@zylin.com>	
+	
+	*cdl/freebsd_net.cdl:
+	*src/ecos/support.c: made memory pools default to current size, 
+	but separately controllable from the cdl file. This is useful for 
+	systems with tight memory budgets.
+	
 2004-06-01  Sandeep Kumar  <sandeep@codito.com>
 
 	* tests/sysctl1.c: Call CYG_TEST_EXIT at the end of the test.
