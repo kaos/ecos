@@ -400,10 +400,10 @@ opendatasock(int ctrl_s,
 
     if (ret != 2) {
         int _port = atoi(port);
-        char *s = name;
-        while (*s) {
-            if (*s == '.') *s = ',';
-            s++;
+        char *str = name;
+        while (*str) {
+            if (*str == '.') *str = ',';
+            str++;
         }
         snprintf(buf, sizeof(buf), "%s,%d,%d", name, _port/256, _port%256);
         ret = command("PORT",buf,ctrl_s,msgbuf,msgbuflen,ftp_printf);
