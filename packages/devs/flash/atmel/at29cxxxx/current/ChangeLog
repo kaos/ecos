@@ -1,3 +1,10 @@
+2003-10-02  Roland Cassebohm  <r.cassebohm@visionsystems.de>
+
+	* include/flash_at29cxxxx.inl: Improves driver, to work with 16 bit
+	wide access. The driver have to write 256 times after each command 
+	sequence, but with two 8 bit divices parallel, the driver writes
+	only 128 times.
+
 2001-09-13  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_at29cxxxx.inl: Added support for AT29LV1024. Added

@@ -232,10 +232,9 @@ flash_erase_block(void* block, unsigned int len)
         addr_ptr2 = addr_ptr;
         len2 = len;
 
-        // Always load 256 bytes
-        for (i = 0; i < 256;) {
+        // Always load 256 times
+        for (i = 0; i < 256; i++) {
             *addr_ptr2++ = FLASH_BlankValue;
-            i += sizeof(*addr_ptr2);
         }
 
         // Wait for completion (bit 6 stops toggling)
@@ -305,15 +304,14 @@ flash_program_buf(void* addr, void* data, int len)
         data_ptr2 = data_ptr;
         len2 = len;
 
-        // Always load 256 bytes
-        for (i = 0; i < 256;) {
+        // Always load 256 times
+        for (i = 0; i < 256; i++) {
             if (len2 > 0) {
                 *addr_ptr2++ = *data_ptr2++;
                 len2 -= sizeof(*data_ptr2);
             } else {
                 *addr_ptr2++ = FLASH_BlankValue;
             }
-            i += sizeof(*data_ptr2);
         }
 
         // Wait for completion (bit 6 stops toggling)
