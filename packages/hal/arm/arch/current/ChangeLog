@@ -1,3 +1,25 @@
+1999-11-01  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c (exception_handler): Check for CYGDAT_CYGMON_ENABLE
+	rather than just CYGPKG_CYGMON
+	Include <pkgconf/cygmon.h> to get this define
+
+1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/vectors.S: Cleaned up LED code a bit.
+
+1999-10-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S: Reorder context restore so stack changes are
+	protected (interrupts off).
+
+1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/arm.ld: Added support for merging RODATA sections into DATA
+	* include/hal_io.h: Added BE support.
+	
+	* src/vectors.S (LED): Added definition for PID board.
+
 1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/arm_stub.c (cyg_hal_gdb_running_step):

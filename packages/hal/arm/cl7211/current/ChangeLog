@@ -1,3 +1,39 @@
+1999-10-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/cl7211_misc.c (enable_FIQ): New function.  Used to re-enable
+	FIQ interrupts during DRAM refresh code.
+
+	* include/pkgconf/mlt_arm_eb7211_stubs.h:
+	* include/pkgconf/mlt_arm_eb7211_rom.h:
+	* include/pkgconf/mlt_arm_eb7211_ram.h: New files.
+
+	* include/pkgconf/mlt_arm_eb7211_rom.ldi:
+	* include/pkgconf/mlt_arm_eb7211_ram.ldi:
+	* include/pkgconf/mlt_arm_eb7211_stubs.ldi:
+	* include/pkgconf/mlt_arm_eb7211_ram.mlt:
+	* include/pkgconf/mlt_arm_eb7211_rom.mlt:
+	* include/pkgconf/mlt_arm_eb7211_stubs.mlt: Update for new layout
+	which describes physical regions completely.
+
+1999-10-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/hal_diag.c: Fixed conditional include.
+
+1999-10-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Use new macro
+	CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION and its mate to control
+	stepping through gdb $O packet output.
+
+1999-10-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/PKGconf.mak: Add DRAM test program.
+
+	* tests/dram_test.c: New file.
+
+	* include/hal_platform_setup.h: Fix DRAM mapping (was slightly
+	incorrect at end of first DRAM chip).
+
 1999-10-04  Gary Thomas  <gthomas@cygnus.co.uk>
 	* include/hal_platform_setup.h: Allow ROM applications to be linked
 	at "ram" addresses and be automatically relocated at startup time.

@@ -35,6 +35,30 @@ INPUT(extras.o)
 #endif
 GROUP(libtarget.a libgcc.a)
 
+#if defined(__ARMEB__)
+OUTPUT_FORMAT(elf32-bigarm)
+#endif
+
+#if defined(CYG_HAL_STARTUP_STUBS) \
+    && defined(CYGPKG_HAL_ARM_PID) \
+    && defined(__ARMEB__)
+// Note: This is only needed when the PID board is used in BE mode without
+//       the proper ROM controller part.
+//
+// In big-endian mode, merge .RODATA sections into the .DATA section. This
+// causes the data in these sections to be copied to RAM. When the CPU
+// makes byte or halfword access to RAM, A0/A1 are modified correctly.
+// This does not happen on ROM access (unless the proper ROM controller
+// is used).
+//
+// This is matched in the PID stubs.ldi file which does not use the
+// RODATA macros.
+#define MERGE_IN_RODATA *(.rodata*)
+#else
+// Keep RODATA in separate sections.
+#define MERGE_IN_RODATA
+#endif
+
 #define ALIGN_LMA 4
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
 #define LMA_EQ_VMA
@@ -92,7 +116,7 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_data(_region_,  _vma_, _lma_) \
     .data _vma_ : _lma_ \
-    { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) \
+    { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) MERGE_IN_RODATA \
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \

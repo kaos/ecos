@@ -91,6 +91,35 @@ void hal_clock_initialize(cyg_uint32 period)
 
 // This routine is called during a clock interrupt.
 
+#ifdef CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH
+#define DRAM_START    0x00000000
+#define DRAM_END      0x01000000
+#define DRAM_ROW_SIZE 0x00000400
+#define DRAM_REFRESH  (((DRAM_END-DRAM_START)/DRAM_ROW_SIZE)+99)/100
+
+static void __inline__
+enable_FIQ(void)
+{
+    asm volatile ("mrs r0,cpsr;"
+                  "bic r0,r0,#0x40;"
+                  "msr cpsr,r0");
+}
+
+static void
+do_DRAM_refresh(void)
+{
+    static cyg_uint32 *row_ptr;
+    volatile cyg_uint32 val;
+    int i;
+    enable_FIQ();  // Should be safe here
+    for (i = 0;  i < DRAM_REFRESH;  i++) {
+        val = *row_ptr;
+        row_ptr += DRAM_ROW_SIZE / sizeof(*row_ptr);
+        if (row_ptr >= (cyg_uint32 *)DRAM_END) row_ptr = (cyg_uint32 *)DRAM_START;
+    }
+}
+#endif // CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH
+
 void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
 {
     volatile cyg_uint32 *tc2d = (volatile cyg_uint32 *)TC2D;
@@ -98,6 +127,9 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
         *tc2d = period;
         _period = period;
     }
+#ifdef CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH
+    do_DRAM_refresh();
+#endif 
 }
 
 // Read the current value of the clock, returning the number of hardware "ticks"

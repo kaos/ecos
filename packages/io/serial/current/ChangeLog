@@ -1,3 +1,10 @@
+1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/arm/pid_serial.h: Added BE support.
+
+	* src/PKGconf.mak: Use CYGPKG_<> instead of CYG_<> to control what
+	needs to be compiled.
+
 1999-10-25  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/arm/pid_serial.h (ISR_RxTO): Define - character received but

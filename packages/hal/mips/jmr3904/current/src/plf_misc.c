@@ -76,7 +76,7 @@ void hal_platform_init(void)
 
 #endif
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)    
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)    
         {
             void hal_ctrlc_isr_init(void);
             hal_ctrlc_isr_init();
@@ -147,7 +147,7 @@ void cyg_hal_user_break( CYG_ADDRWORD *regs )
 /*------------------------------------------------------------------------*/
 /* Control C ISR support                                                  */
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
 
 #define DIAG_BASE       0xfffff300
 #define DIAG_SLCR       (DIAG_BASE+0x00)

@@ -26,18 +26,19 @@
 //####COPYRIGHTEND####
 //===========================================================================
 
-// eCos memory layout - Mon May 17 08:04:39 1999
+// eCos memory layout - Wed Oct 27 13:28:21 1999
 
 // This is a generated file - do not edit
 
 MEMORY
 {
-    ram : ORIGIN = 0x8000, LENGTH = 0x00FF8000
+    ram : ORIGIN = 0, LENGTH = 0x1000000
 }
 
 SECTIONS
 {
     SECTIONS_BEGIN
+    __Reserved = 0;
     SECTION_rom_vectors (ram, 0x8000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x1), LMA_EQ_VMA)

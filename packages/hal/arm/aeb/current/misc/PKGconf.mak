@@ -38,7 +38,7 @@ PACKAGE       := hal_arm_aeb
 include ../../../../../pkgconf/pkgconf.mak
 
 PROGS := gdb_module_ncs
-OTHER_PROGS := gdb_module.img
+OTHER_PROGS := gdb_module.img gdb_module.img.UU
 WHEREAMI := misc
 
 CKSUM = 0
@@ -59,7 +59,7 @@ $(PACKAGE)_gdb_module.o: $(SRC)/gdb_module.c gdb_module_ncs.stamp
 		$(SRC)/gdb_module.c -DCHECKSUM=$(CKSUM)
 
 gdb_module.img: gdb_module.cs gdb_module.stamp
-	$(OBJCOPY) --strip-all gdb_module gdb_module.img.XX
+	$(OBJCOPY) --strip-debug gdb_module gdb_module.img.XX
 	$(OBJCOPY) --change-addresses=0xFBFF4000 gdb_module.img.XX  gdb_module.img
 	$(OBJCOPY) -O binary gdb_module.img gdb_module.img.raw
 	$(RM) -f gdb_module.img.XX

@@ -250,6 +250,24 @@ target arm {
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
     }
+
+    platform pidBE {
+        alias		{ "ARM PID7 development board in big-endian mode" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_PID
+	}
+	base_platform pid
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7tdmi -mbig-endian"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
     platform aeb {
         alias		{ "ARM Eval Board (AEB)" }
 	startup		{ ram rom stubs }

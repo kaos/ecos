@@ -54,6 +54,8 @@ externC void hal_diag_init(void);
 externC void hal_diag_write_char(char c);
 externC void hal_diag_read_char(char *c);
 
+externC void hal_diag_led(int n);
+
 /*---------------------------------------------------------------------------*/
 
 #define HAL_DIAG_INIT() hal_diag_init()

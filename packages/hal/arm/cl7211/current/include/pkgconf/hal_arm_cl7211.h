@@ -186,6 +186,23 @@
 /* ----------------------------------------------------------------------------
    {{CFG_DATA
 
+   cdl_option CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH {
+       display "Perform DRAM refresh in software"
+       type    bool
+       parent   CYGPKG_HAL_ARM_CL7211
+       description "
+           This option will add code that refreshes the DRAM by
+           touching all of DRAM during the system clock interrupt
+           processing."
+   }
+
+   }}CFG_DATA */
+
+#define CYGHWR_HAL_ARM_CL7211_SOFTWARE_DRAM_REFRESH
+
+/* ----------------------------------------------------------------------------
+   {{CFG_DATA
+
    cdl_option CYGHWR_HAL_ARM_CL7211_LCD_INSTALLED {
        display "LCD panel"
        type    bool

@@ -48,7 +48,16 @@ struct serial_port {
     unsigned char _byte[32];
 };
 
+// Little-endian version
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
+
 #define reg(n) _byte[n*4]
+
+#else // Big-endian version
+
+#define reg(n) _byte[(n*4)^3]
+
+#endif
 
 // Receive control registers
 #define rhr reg(0)    // Receive holding register

@@ -73,6 +73,23 @@
    }}CFG_DATA */
 #undef  CYGHWR_HAL_ARM_DUMP_EXCEPTIONS
 
+/* ---------------------------------------------------------------------
+   {{CFG_DATA
+   cdl_option CYGIMP_HAL_PROCESS_ALL_EXCEPTIONS {
+       display          "Process all exceptions with the eCos application"
+       parent           CYGPKG_HAL_ARM
+       description      "
+           Normal [RAM-based] programs which do not include GDB stubs 
+           defer processing of the illegal instruction exception to GDB.
+           Setting this options allows the program to explicitly handle
+           the illegal instruction exception itself.  Note: this will
+           prevent the use of GDB to debug the application as breakpoints
+           will no longer work."
+   }
+   
+   }}CFG_DATA */
+#undef CYGIMP_HAL_PROCESS_ALL_EXCEPTIONS        
+
 
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_ARM_H */

@@ -125,7 +125,7 @@ externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) &&      \
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT) &&      \
     defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
     defined(HAL_CTRLC_ISR)
 

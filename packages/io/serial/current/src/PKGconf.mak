@@ -34,31 +34,31 @@ include ../../../../pkgconf/system.mak
 
 LIBRARY         := libtarget.a
 EXTRAS_COMPILE  := common/serial.c common/tty.c common/haldiag.c
-ifdef CYG_HAL_ARM_PID
+ifdef CYGPKG_HAL_ARM_PID
 EXTRAS_COMPILE  += arm/pid_serial_with_ints.c
 endif
-ifdef CYG_HAL_ARM_AEB
+ifdef CYGPKG_HAL_ARM_AEB
 EXTRAS_COMPILE  += arm/aeb_serial.c
 endif
-ifdef CYG_HAL_ARM_EB7211
+ifdef CYGPKG_HAL_ARM_CL7211
 EXTRAS_COMPILE  += arm/cl7211_serial.c
 endif
-ifdef CYG_HAL_ARM_CMA230
+ifdef CYGPKG_HAL_ARM_CMA230
 EXTRAS_COMPILE  += arm/cma230_serial.c
 endif
-ifdef CYG_HAL_MN10300_AM31
+ifdef CYGPKG_HAL_MN10300_AM31
 EXTRAS_COMPILE  += mn10300/mn10300_serial.c
 endif
-ifdef CYG_HAL_MIPS_TX39
+ifdef CYGPKG_HAL_MIPS_TX39
 EXTRAS_COMPILE  += mips/tx3904_serial.c
 endif
-ifdef CYG_HAL_POWERPC_COGENT
+ifdef CYGPKG_HAL_POWERPC_COGENT
 EXTRAS_COMPILE  += powerpc/cogent_serial_with_ints.c
 endif
 ifdef CYGPKG_HAL_QUICC
 EXTRAS_COMPILE  += powerpc/quicc_smc_serial.c
 endif
-ifdef CYG_HAL_SPARCLITE_SLEB
+ifdef CYGPKG_HAL_SPARCLITE_SLEB
 EXTRAS_COMPILE  += sparclite/sleb_sdtr.c
 endif
 OTHER_OBJS    :=

@@ -1,3 +1,22 @@
+1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/PKGconf.mak: Don't strip symbols when making .img.
+
+1999-10-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/PKGconf.mak: Build UU encoded stubs per default.
+
+	* misc/STUBS_config: 
+	Updated stub scripts. Allow to configure for revC.
+	
+	* src/hal_diag.c: Fixed conditional include.
+
+1999-10-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Use new macro
+	CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION and its mate to control
+	stepping through gdb $O packet output.
+
 1999-10-12  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_aeb.h: Add CT config of revision.

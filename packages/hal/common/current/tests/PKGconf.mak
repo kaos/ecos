@@ -33,8 +33,19 @@ include ../../../../pkgconf/pkgconf.mak
 include ../../../../pkgconf/system.mak
 
 TESTS	      := intr context
-ifndef CYG_HAL_ARM_AEB
-TESTS	      += cache
+
+ifndef CYGPKG_HAL_ARM
+TESTS	+= cache
+endif
+
+# Must be CYG_ - if CYGPKG_ would also match revision B
+ifdef CYG_HAL_ARM_AEBC
+TESTS	+= cache
+endif
+
+
+ifdef CYGPKG_HAL_ARM_CL7211
+TESTS	+= cache
 endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst

@@ -78,8 +78,18 @@ _name:
 
 	.file	"vectors.S"
 
+
+// CYGHWR_LED_MACRO can be defined in hal_platform_setup.h. It's free to
+// use r0+r1. Argument is in "\x" - cannot use macro arguments since the
+// macro may contain #-chars and use of arguments cause these to be 
+// interpreted as CPP stringify operators.
+// See example in PID hal_platform_setup.h.
+#ifndef CYGHWR_LED_MACRO
+#define CYGHWR_LED_MACRO
+#endif
 	
 .macro LED x
+    CYGHWR_LED_MACRO
 .endm
 
 
@@ -213,7 +223,7 @@ start:
 	str	r2,[r0,#0x30]
 
 	LED 4
-	
+
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
 	// Relocate [copy] data from ROM to RAM
 	ldr	r3,.__rom_data_start
@@ -276,6 +286,10 @@ start:
 	// to single-step through most of the init code, except the below.
 	// Put a breakpoint at the call to cyg_hal_invoke_constructors to
 	// pass over this bit (s-s depends on internal state in the stub).
+#endif
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) || \
+    defined(CYGIMP_HAL_PROCESS_ALL_EXCEPTIONS)
 	mov	r0,#0		// move vectors
 	ldr	r1,=__exception_handlers
 	ldr	r2,[r1,#0x04]	// undefined instruction
@@ -482,15 +496,15 @@ call_exception_handler:
 // Restore [interrupted] context
 	mov	ip,sp			// get stack pointer
 
-	ldr	lr,[ip,#armreg_lr]
-	ldr	sp,[sp,#armreg_sp]
-
 	mrs	r0,cpsr			// move back to IRQ mode
 	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
 	msr	cpsr,r0
         nop
         nop
 
+	ldr	lr,[ip,#armreg_lr]
+	ldr	sp,[sp,#armreg_sp]
+                        
 	bic	r0,r0,#CPSR_MODE_BITS
        	orr	r0,r0,#CPSR_IRQ_MODE
 	msr	cpsr,r0
@@ -575,9 +589,7 @@ handle_IRQ_or_FIQ:
 	str	r4,[r3]
 #endif
 
-// TEMP
 	mov	r0,v6
-// TEMP
 	bl	hal_IRQ_handler		// determine interrupt source
 	mov	v1,r0			// returned vector #
 
@@ -636,15 +648,15 @@ spurious_IRQ:
 
 	mov	ip,sp			// get stack pointer
 
-	ldr	lr,[ip,#armreg_lr]
-	ldr	sp,[sp,#armreg_sp]
-
 	mrs	r0,cpsr			// move back to IRQ mode
 	orr	r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
 	msr	cpsr,r0
         nop
         nop
-        
+
+	ldr	lr,[ip,#armreg_lr]
+	ldr	sp,[sp,#armreg_sp]
+                        
 	bic	r0,r0,#CPSR_MODE_BITS
 	orr	r0,r0,#CPSR_IRQ_MODE
 	msr	cpsr,r0

@@ -16,6 +16,9 @@
 #include <stddef.h>
 
 #include <pkgconf/hal.h>
+#ifdef CYGPKG_CYGMON
+#include <pkgconf/cygmon.h>
+#endif
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

@@ -1,10 +1,33 @@
 #! /bin/sh
+# Configure ARM/AEB-1 eCos to create AEB-1 GDB stubs
+# Ensure that PATH include the directory where the ARM tools reside.
+#
+# Run from an empty temporary directory with two arguments: the path to
+# the packages directory (i.e., where pkgconf.tcl lives), and the platform
+# name (aeb or aebC).
+#
+# Output files are in the directory hal/arm/aeb/<version>/misc.
+#  gdb_module.img: suitable for programming via GDB stub/Angel
+#  gdb_module.img.UU: suitable for programming via ROM menu 
+# See Notes for details.
 
-# Configure ARM/AEB eCos to create AEB-1 GDB stubs
+if [ "$2"x = "x" ]; then
+  AEB="aeb"
+else
+  AEB=$2
+fi
 
+if ( echo | tclsh ) 2>/dev/null ; then
+  TCL=tclsh
+elif ( echo | cygtclsh80 ) 2>/dev/null ; then
+  TCL=cygtclsh80
+else
+  echo Could not find TCL interpreter
+  exit 1
+fi
 
-tcl $1/pkgconf.tcl                                         \
-   --target=arm --platform=aeb --startup=stubs                         \
+$TCL $1/pkgconf.tcl                                         \
+   --target=arm --platform=${AEB} --startup=stubs                      \
    --disable CYGPKG_KERNEL --disable CYGPKG_UITRON                     \
    --disable CYGPKG_LIBC --disable CYGPKG_LIBM                         \
    --disable CYGPKG_ERROR --disable CYGPKG_IO                          \
@@ -12,9 +35,18 @@ tcl $1/pkgconf.tcl                                         \
    --disable CYGPKG_DEVICES_WATCHDOG
 
 patch <<END_OF_PATCH -p0
---- pkgconf/hal.h~      Thu Jul  8 08:26:44 1999
-+++ pkgconf/hal.h       Wed Jul 28 10:51:07 1999
-@@ -369,10 +369,10 @@
+--- pkgconf/hal.h.orig	Fri Oct 22 09:32:14 1999
++++ pkgconf/hal.h	Wed Oct 27 11:15:09 1999
+@@ -110,7 +110,7 @@
+  }
+ 
+  }}CFG_DATA */
+-#define CYGFUN_HAL_COMMON_KERNEL_SUPPORT
++#undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+ 
+ /* {{CFG_DATA
+    
+@@ -382,10 +382,10 @@
  
     }}CFG_DATA */
  
@@ -29,3 +61,6 @@ patch <<END_OF_PATCH -p0
  /*
   * NOTE:
 END_OF_PATCH
+
+make
+make misc

@@ -1,3 +1,10 @@
+1999-10-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/plf_intr.h:
+	* src/plf_misc.c: 
+	Changed CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT to
+	CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT.	
+
 1999-08-25  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/platform.inc: Rearranged code a little to avoid

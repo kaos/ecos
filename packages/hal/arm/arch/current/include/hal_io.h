@@ -51,15 +51,21 @@
 #include <pkgconf/system.h>
 #include <cyg/infra/cyg_type.h>
 
+#include <cyg/hal/basetype.h>
+
 //-----------------------------------------------------------------------------
 // IO Register address.
 // This type is for recording the address of an IO register.
 
 typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 
+
 //-----------------------------------------------------------------------------
 // BYTE Register access.
 // Individual and vectorized access to 8 bit registers.
+
+// Little-endian version
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
 
 #define HAL_READ_UINT8( _register_, _value_ ) \
         ((_value_) = *((volatile CYG_BYTE *)(_register_)))
@@ -81,11 +87,39 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
         ((volatile CYG_BYTE *)(_register_))[_j_] = (_buf_)[_i_];        \
     CYG_MACRO_END
 
+#else // Big-endian version
+
+#define HAL_READ_UINT8( _register_, _value_ ) \
+        ((_value_) = *((volatile CYG_BYTE *)((CYG_ADDRWORD)(_register_)^3)))
+
+#define HAL_WRITE_UINT8( _register_, _value_ ) \
+        (*((volatile CYG_BYTE *)((CYG_ADDRWORD)(_register_)^3)) = (_value_))
+
+#define HAL_READ_UINT8_VECTOR( _register_, _buf_, _count_, _step_ )     \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_,_j_;                                                \
+    volatile CYG_BYTE* _r_ = ((CYG_ADDRWORD)(_register_)^3);            \
+    for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
+        (_buf_)[_i_] = _r_[_j_];                                        \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT8_VECTOR( _register_, _buf_, _count_, _step_ )    \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_,_j_;                                                \
+    volatile CYG_BYTE* _r_ = ((CYG_ADDRWORD)(_register_)^3);            \
+    for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
+        _r_[_j_] = (_buf_)[_i_];                                        \
+    CYG_MACRO_END
+
+#endif // Big-endian
 
 //-----------------------------------------------------------------------------
 // 16 bit access.
 // Individual and vectorized access to 16 bit registers.
     
+// Little-endian version
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
+
 #define HAL_READ_UINT16( _register_, _value_ ) \
         ((_value_) = *((volatile CYG_WORD16 *)(_register_)))
 
@@ -106,9 +140,37 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
         ((volatile CYG_WORD16 *)(_register_))[_j_] = (_buf_)[_i_];      \
     CYG_MACRO_END
 
+#else // Big-endian version
+
+#define HAL_READ_UINT16( _register_, _value_ ) \
+        ((_value_) = *((volatile CYG_WORD16 *)((CYG_ADDRWORD)(_register_)^3)))
+
+#define HAL_WRITE_UINT16( _register_, _value_ ) \
+        (*((volatile CYG_WORD16 *)((CYG_ADDRWORD)(_register_)^3)) = (_value_))
+
+#define HAL_READ_UINT16_VECTOR( _register_, _buf_, _count_, _step_ )    \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_,_j_;                                                \
+    volatile CYG_WORD16* _r_ = ((CYG_ADDRWORD)(_register_)^3);          \
+    for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
+        (_buf_)[_i_] = _r_[_j_];                                        \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT16_VECTOR( _register_, _buf_, _count_, _step_ )   \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_,_j_;                                                \
+    volatile CYG_WORD16* _r_ = ((CYG_ADDRWORD)(_register_)^3);          \
+    for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
+        _r_[_j_] = (_buf_)[_i_];                                        \
+    CYG_MACRO_END
+
+#endif // Big-endian
+
 //-----------------------------------------------------------------------------
 // 32 bit access.
 // Individual and vectorized access to 32 bit registers.
+
+// Note: same macros for little- and big-endian systems.
     
 #define HAL_READ_UINT32( _register_, _value_ ) \
         ((_value_) = *((volatile CYG_WORD32 *)(_register_)))

@@ -45,6 +45,9 @@
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
 #endif
+#ifdef CYGPKG_CYGMON
+#include <pkgconf/cygmon.h>
+#endif
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_trac.h>         // tracing macros
@@ -101,7 +104,7 @@ __restore_debug_traps(void)
 void
 exception_handler(HAL_SavedRegisters *regs)
 {
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGDAT_CYGMON_ENABLE)
     if (__mem_fault_handler && 
         regs->vector == CYGNUM_HAL_EXCEPTION_DATA_ACCESS) {
         regs->pc = (unsigned long)__mem_fault_handler;

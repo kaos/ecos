@@ -1,3 +1,40 @@
+1999-10-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/PKGconf.mak: Add cache tests for Cirrus Logic boards.
+
+1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/cache.c: Made safe for targets with no cache.
+
+	* tests/PKGconf.mak: Don't build cache test for ARM unless
+	explicitly enabled.
+
+1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/cache.c: Fix array size.
+
+1999-10-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_stub.c (cyg_hal_gdb_interrupt): Bugfix to previous: ^Cs
+	were being ignored when received by the diag output code, because
+	there was already a break in place.  Solution is to let
+	cyg_hal_gdb_interrupt() override any previous break, and tidy up
+	state of course.
+
+1999-10-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_stub.h (CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION): Place
+	the break at the address of a label within the calling context
+	[normally hal_diag_write_char()]; this is neater and more
+	portable; it's supported for more targets.  Also use
+	cyg_hal_place_break() to place it, define that, &c.
+
+	* src/hal_stub.c (cyg_hal_gdb_place_break): New routine to
+	specially handle the inline breakpoint.  It basically does the
+	same as cyg_hal_gdb_interrupt(), except on some platforms where
+	you must do different things to set a bp from a non-interrupt
+	context.
+
 1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_stub.h (CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION):

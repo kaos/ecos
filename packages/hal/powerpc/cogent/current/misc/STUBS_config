@@ -8,7 +8,16 @@
 # Output will be ./stubrom.bin which is suitable for burning into ROM.
 # Remember to be careful with byte-endianess in the ROM programmer.
 
-tcl $1/pkgconf.tcl                                                     \
+if ( echo | tclsh ) 2>/dev/null ; then
+  TCL=tclsh
+elif ( echo | cygtclsh80 ) 2>/dev/null ; then
+  TCL=cygtclsh80
+else
+  echo Could not find TCL interpreter
+  exit 1
+fi
+
+$TCL $1/pkgconf.tcl                                                     \
    --target=powerpc --platform=cogent --startup=stubs                  \
    --disable CYGPKG_KERNEL --disable CYGPKG_UITRON                     \
    --disable CYGPKG_LIBC --disable CYGPKG_LIBM                         \

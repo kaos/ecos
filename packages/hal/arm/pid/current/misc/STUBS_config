@@ -1,10 +1,35 @@
 #! /bin/sh
 
-# Configure ARM/AEB eCos to create PID GDB stubs
+# Configure ARM/PID eCos to create PID GDB stubs
+# Ensure that PATH include the directory where the ARM tools reside.
+#
+# Run from an empty temporary directory with two arguments: the path to
+# the packages directory (i.e., where pkgconf.tcl lives), and the platform
+# name (pid or pid9).
+# If a big-endian stub is required, use the name 'pidBE'
+#
+# Output files are in the directory hal/arm/pid/<version>/misc.
+#  gdb_module.img: suitable for programming via GDB stub/Angel
+#  gdb_module.bin: suitable for programming with an EPROM programmer
+# See Notes for details.
 
+if [ "$2"x = "x" ]; then
+  PID="pid"
+else
+  PID=$2
+fi
 
-tcl $1/pkgconf.tcl                                         \
-   --target=arm --platform=pid --startup=stubs                         \
+if ( echo | tclsh ) 2>/dev/null ; then
+  TCL=tclsh
+elif ( echo | cygtclsh80 ) 2>/dev/null ; then
+  TCL=cygtclsh80
+else
+  echo Could not find TCL interpreter
+  exit 1
+fi
+
+$TCL $1/pkgconf.tcl                                         \
+   --target=arm --platform=${PID} --startup=stubs                      \
    --disable CYGPKG_KERNEL --disable CYGPKG_UITRON                     \
    --disable CYGPKG_LIBC --disable CYGPKG_LIBM                         \
    --disable CYGPKG_ERROR --disable CYGPKG_IO                          \
@@ -38,3 +63,6 @@ patch <<END_OF_PATCH -p0
  /*
   * NOTE:
 END_OF_PATCH
+
+make
+make misc

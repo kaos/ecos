@@ -42,7 +42,7 @@ include $(COMPONENT_REPOSITORY)/pkgconf/makrules.prv
 
 ifdef CYG_HAL_STARTUP_STUBS
 gdb_module.img: gdb_module.stamp
-	$(OBJCOPY) --strip-all gdb_module$(EXEEXT) gdb_module.img.XX
+	$(OBJCOPY) --strip-debug gdb_module$(EXEEXT) gdb_module.img.XX
 	$(OBJCOPY) --change-addresses=0x10038000 gdb_module.img.XX  gdb_module.img
 	$(OBJCOPY) -O binary gdb_module.img gdb_module.bin
 	$(RM) -f gdb_module.img.XX

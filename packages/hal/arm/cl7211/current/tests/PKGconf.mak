@@ -31,7 +31,7 @@
 PACKAGE       := hal_arm_cl7211
 include ../../../../../pkgconf/pkgconf.mak
 
-TESTS	      :=
+TESTS	      := dram_test
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst
 

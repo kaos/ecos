@@ -1,9 +1,63 @@
+1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/PKGconf.mak: Also generate stripped .img files.
+
+1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_RESET): Call stub entry on
+	GDB kill. But only do it for stubs startup.
+
+1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/PKGconf.mak: Don't strip symbols when making .img.
+
+1999-10-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_pid9_stubs.ldi: 
+	* include/pkgconf/mlt_arm_pid9_stubs.mlt: 
+	Added some linker files.
+
+	* misc/Notes: 
+	* misc/STUBS_config: 
+	Updated.
+	
+	* src/hal_diag.c: Fixed conditional include.
+
+1999-10-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Use new macro
+	CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION and its mate to control
+	stepping through gdb $O packet output.
+
+1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+	* include/hal_platform_setup.h (CYGHWR_LED_MACRO): define.
+	* include/pkgconf/hal_arm_pid.h: 
+	* src/hal_diag.c: 
+	* include/hal_diag.h: 
+	Added CDL for CYGHWR_HAL_ARM_PID_DIAG_LEDS.
+	
+1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
+	* include/pkgconf/mlt_arm_pidBE_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidBE_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidBE_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidBE_rom.mlt: 
+	* include/pkgconf/mlt_arm_pidBE_stubs.ldi: 
+	* include/pkgconf/mlt_arm_pidBE_stubs.mlt: 
+	* include/pkgconf/mlt_arm_pid9_ram.ldi: 
+	* include/pkgconf/mlt_arm_pid9_ram.mlt: 
+	* include/pkgconf/mlt_arm_pid9_rom.ldi: 
+	* include/pkgconf/mlt_arm_pid9_rom.mlt: 
+	Added some linker files.
+
 1999-10-25  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/STUBS_config: Updated.
 	* src/hal_diag.c (hal_diag_led): Added LED diag.
 	* misc/prog_flash.c: Fixed compiler warning.
 
+	* misc/prog_flash.c: 
+	* misc/PKGconf.mak: 
+	Add support for programming BE images on LE system.
 	
 1999-10-19  Jesper Skov  <jskov@cygnus.co.uk>
 

@@ -151,8 +151,13 @@ extern void CYG_LABEL_NAME(breakinst) (void);
 extern unsigned long __break_opcode (void);
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+// This one may assume a valid saved interrupt context on some platforms
 extern void cyg_hal_gdb_interrupt    (target_register_t pc);
+// This one does not; use from CRITICAL_IO_REGION macros below.
+extern void cyg_hal_gdb_place_break  (target_register_t pc);
+// Remove a break from either above - or not if cyg_hal_gdb_running_step
 extern int  cyg_hal_gdb_remove_break (target_register_t pc);
+// Bool: is such a breakpoint set?
 extern int  cyg_hal_gdb_break_is_set (void);
 
 /* This is used so that the generic stub can tell
@@ -166,10 +171,27 @@ extern volatile int cyg_hal_gdb_running_step;
 // NB they require __builtin_return_address() to work: if your platform
 // does not support this, use HAL_DISABLE_INTERRUPTS &c instead.
 
+#if 1 // Can use the address of a label: this is more portable
+
 #define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                           \
 do {                                                                            \
     HAL_DISABLE_INTERRUPTS(_old_);                                              \
-    cyg_hal_gdb_interrupt((target_register_t)__builtin_return_address(0));      \
+    cyg_hal_gdb_place_break( &&cyg_hal_gdb_break_place );                       \
+} while ( 0 )
+
+#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                           \
+do {                                                                            \
+    cyg_hal_gdb_remove_break( &&cyg_hal_gdb_break_place );                      \
+    HAL_RESTORE_INTERRUPTS(_old_);                                              \
+cyg_hal_gdb_break_place:                                                        \
+} while ( 0 )
+
+#else // use __builtin_return_address instead.
+
+#define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )                           \
+do {                                                                            \
+    HAL_DISABLE_INTERRUPTS(_old_);                                              \
+    cyg_hal_place_break((target_register_t)__builtin_return_address(0));        \
 } while ( 0 )
 
 #define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                           \
@@ -177,6 +199,8 @@ do {                                                                            
     cyg_hal_gdb_remove_break((target_register_t)__builtin_return_address(0));   \
     HAL_RESTORE_INTERRUPTS(_old_);                                              \
 } while ( 0 )
+
+#endif
 
 #else // NO debug_gdb_break_support
 

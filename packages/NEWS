@@ -32,10 +32,11 @@
      
 *** The following are the new target platforms...
 
-
 **** ARM:
-     ARM720  - Cirrus Logic CL7211 board
-     ARM710C - Cirrus Logic CL7111 board
+     ARM7TDMI - ARM PID7T board configured in big-endian mode
+     Cirrus Logic EP7211 (ARM720) CPU - Cirrus Logic EDB7211 evaluation board
+                                        (silk-screened EDB7111-2)
+     Cirrus Logic CL-PS7111 (ARM710C) CPU - Cirrus Logic EB7111 evaluation board
      Sharp LH77790 (ARM7DI core) - ARM AEB-1 rev C board
 
 **** PowerPC
@@ -52,11 +53,11 @@
 
 *** These are the new host platforms...
 
-**** FIXME
+**** None yet
 
 ** Host tool features
 
-**** FIXME
+**** None yet
 
 ** Drivers
 *** Watchdog Drivers added for:
@@ -64,17 +65,16 @@
 
 ** New toolchain features
 
-** API additions (are there any?)
+** API additions
 
-*** FIXME
+
+*** Debugging
+	The file <cyg/kernel/test/stackmon.h> defines some functions
+	that can be used to profile stack usage.
 
 ** API changes
 
 *** Kernel
-
-**** Debugging
-	The file <cyg/kernel/test/stackmon.h> defines some functions
-	that can be used to profile stack usage.
 
 **** KAPI
 	include/kapi.h (cyg_thread_delete): is now a boolean function to
@@ -90,3 +90,6 @@
 	(except in special configurations, see linux_misc.c).
 
 *** Common
+
+** Other new features
+

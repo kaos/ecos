@@ -51,8 +51,9 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_cma230.h>         // Hardware definitions
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
 #endif
 
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
@@ -288,7 +289,11 @@ hal_diag_write_char(char c)
         // receive interrupt will be seen when we re-enable interrupts
         // later.
         
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
+#else
         HAL_DISABLE_INTERRUPTS(old);
+#endif
 
         while(1)
         {
@@ -337,7 +342,11 @@ hal_diag_write_char(char c)
         pos = 0;
 
         // And re-enable interrupts
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
+#else
         HAL_RESTORE_INTERRUPTS(old);
+#endif
         
     }
 }

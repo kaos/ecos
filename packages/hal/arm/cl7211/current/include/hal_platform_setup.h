@@ -73,8 +73,9 @@
 #else
 #define LCD_BUFFER_SIZE  0x00000000
 #endif
-#define MMU_BASE         0xC0000000+LCD_BUFFER_SIZE
-#define PTE_BASE         0xC0004000+LCD_BUFFER_SIZE
+#define DRAM_PA_START    0xC0000000
+#define MMU_BASE         DRAM_PA_START+LCD_BUFFER_SIZE
+#define PTE_BASE         DRAM_PA_START+0x4000+LCD_BUFFER_SIZE
 #if (CYGHWR_HAL_ARM_CL7211_DRAM_SIZE == 2)
 #define MMU_TABLES_SIZE  0x4000+0x1000+0x1000     // RAM used for PTE entries
 #define DRAM_LA_END      0x00200000-MMU_TABLES_SIZE
@@ -201,10 +202,10 @@
 	orr	r6,r6,r7                                                                ;\
 	str	r6,[r1],#4	/* Store PTE, update pointer */                         ;\
         ldr     r8,=MMU_SECTION_SIZE/MMU_PAGE_SIZE                                      ;\
-	ldr	r6,=DRAM_PA+0x00800000   /* Need to skip at 8M boundary */              ;\
-        cmp     r5,r6                                                                   ;\
+	ldr	r9,=DRAM_PA_START+0x00800000   /* Need to skip at 8M boundary */        ;\
+12:     cmp     r5,r9                                                                   ;\
         bne     15f                                                                     ;\
-	ldr	r5,=DRAM_PA+0x01000000   /* Next chunk of DRAM */                       ;\
+	ldr	r5,=DRAM_PA_START+0x01000000   /* Next chunk of DRAM */                 ;\
 15:	mov	r6,r5		/* Build page table entry */                            ;\
 	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable           ;\
 	orr	r6,r6,r7                                                                ;\
@@ -216,7 +217,7 @@
         beq     20f                                                                     ;\
         sub     r8,r8,#1        /* End of 1M section? */                                ;\
         cmp     r8,#0                                                                   ;\
-        bne     15b             /* Next page */                                         ;\
+        bne     12b             /* Next page */                                         ;\
         b       10b             /* Next section */                                      ;\
 20:                                                                                     
 #else
@@ -252,7 +253,7 @@
 	ldr	r1,=0xFFFFFFFF                                                           ;\
 	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0	                                         ;\
 	ldr	r2,=10f                 	                                         ;\
-        ldr     r3,=__exception_handlers                                                              ;\
+        ldr     r3,=__exception_handlers                                                 ;\
         sub     r2,r2,r3                                                                 ;\
         ldr     r3,=ROM0_LA_START                                                        ;\
         add     r2,r2,r3                                                                 ;\
@@ -396,17 +397,17 @@
 	cmp	r3,r4                                                                   ;\
 	bne	10b                                                                     ;\
 /* Now initialize the MMU to use this new page table */                                 ;\
-        MMU_INITIALIZE                                                                   ;\
-        ldr     r2,=__exception_handlers                                                              ;\
-        ldr     r3,=ROM0_LA_START                                                        ;\
-        cmp     r2,r3                                                                    ;\
-        beq     20f                                                                      ;\
-        ldr     r4,=__rom_data_end                                                       ;\
-15:                                                                                      ;\
-        ldr     r0,[r3],#4                                                               ;\
-        str     r0,[r2],#4                                                               ;\
-        cmp     r2,r4                                                                    ;\
-        bne     15b                                                                      ;\
+        MMU_INITIALIZE                                                                  ;\
+        ldr     r2,=__exception_handlers                                                ;\
+        ldr     r3,=ROM0_LA_START                                                       ;\
+        cmp     r2,r3                                                                   ;\
+        beq     20f                                                                     ;\
+        ldr     r4,=__rom_data_end                                                      ;\
+15:                                                                                     ;\
+        ldr     r0,[r3],#4                                                              ;\
+        str     r0,[r2],#4                                                              ;\
+        cmp     r2,r4                                                                   ;\
+        bne     15b                                                                     ;\
 20:
 
 #else

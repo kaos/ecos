@@ -73,7 +73,14 @@ extern int  hal_pid_interruptible(int);
 
 //----------------------------------------------------------------------------
 // Reset.
-#define HAL_STUB_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+#ifdef CYG_HAL_STARTUP_STUBS
+// Just call the ROM's entry point. Not as safe as a reset, but the PID
+// doesn't have a watchdog, so this'll have to do.
+externC void reset_vector(void);
+#define HAL_STUB_PLATFORM_RESET() reset_vector()
+#else
+#define HAL_STUB_PLATFORM_RESET() CYG_EMPTY_STATEMENT
+#endif
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

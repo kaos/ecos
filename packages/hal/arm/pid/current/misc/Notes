@@ -22,25 +22,116 @@ by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
 ####COPYRIGHTEND####
 ===========================================================================
 
-15 Jan 1999
+27 Oct 1999
 
 How to build and install the GDB module on the PID
 
-1. Configure a minimal eCos system with all packages except 'infra' disabled.
-2. Edit <hal/hal.h> to enable GDB:
+Make GDB module
+~~~~~~~~~~~~~~~
+ 1. Configure a minimal eCos system with all packages except 'infra' disabled.
+ 2. Edit <hal/hal.h> to enable GDB:
     #define  CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     #undef   CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
     #undef   CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
-3. make;make -C hal/arm/pid/current/misc
-4. Download the image onto the PID board:
-      arm-elf-gdb -nw hal/arm/pid/current/misc/gdb_module.img
-   You can connect to the board using either existing GDB stubs or Angel.
-   This will download the stubs onto the board at 0x60000..0x64000
-5. Configure a separate eCos system with all packages enabled.
-6. make misc
-7. Now download the FLASH programmer tool
-      arm-elf-gdb -nw hal/arm/pid/current/misc/prog_flash
-8. Run the tool.  The GDB stubs will now be programmed into the FLASH.
+ 3. make;make -C hal/arm/pid/<version>/misc
 
-eCos GDB stubs should now be installed and set up as the default monitor when you
-run from FLASH.
+ Alternatively run hal/arm/pid/<version>/misc/STUBS_config.
+
+
+ GDB image is in the file hal/arm/pid/<version>/misc/gdb_module.img
+
+
+Make FLASH tool
+~~~~~~~~~~~~~~~
+ 1. Configure a separate eCos system with all packages enabled.
+ 2. Change diag chanel to port B (in file pkgconf/hal_arm_pid.h):
+     #define CYGHWR_HAL_ARM_PID_DIAG_PORT     1
+ 2. make misc
+
+ FLASH tool is in the file hal/arm/pid/<version>/misc/prog_flash
+
+
+Prepare board for eCos
+~~~~~~~~~~~~~~~~~~~~~~
+ 1. Set jumper 7-8 on LK6   [using the Angle code in the 16 bit EPROM]
+ 2. Set jumper 5-6 on LK6   [select 8bit ROM mode]
+ 3. Set jumper LK18         [ROM remap - this is also required for eCos]
+ 4. Set S1 to 0-0-1-1       [20MHz operation]
+
+
+Program FLASH
+~~~~~~~~~~~~~
+ 1. Download the image onto the PID board:
+      arm-elf-gdb -nw hal/arm/pid/<version>/misc/gdb_module.img
+
+      (gdb) target rdi s=<serial device>
+      (gdb) load
+      [...]
+      (gdb) quit
+
+   This will download the stubs onto the board at 0x60000..0x64000
+
+ 2. Now download the FLASH programmer tool
+      arm-elf-gdb -nw hal/arm/pid/<version>/misc/prog_flash
+
+      (gdb) target rdi s=<serial device>
+      (gdb) load
+      [...]
+      (gdb) cont
+
+ 3. The FLASH tool will output some text on the board serial port B at
+    38400 baud:
+
+       ARM eCos
+       FLASH here!
+       manuf: 8, device: 40
+       Error: Wrong Manufaturer: 08
+       ... Please change FLASH jumper
+
+ 4. This text is repeated until you remove the jumper 7-8 on LK6. Then
+    the output should be:
+
+       manuf: 1F, device: A4
+       AT29C040A recognised
+       About to program FLASH using data at 60000..64000
+       *** Press RESET now to abort!
+    
+ 5. You have about 10 seconds to abort the operation by pressing
+    reset. After this timeout, the FLASH programming happens:
+  
+      ...Programming FLASH
+      All done!
+
+ 6. Quit/kill the GDB process which will hang.
+
+ 7. Next time you reset the board, the stub will be in control, communicating
+    on serial port A at 38400 baud. See documentation for further details
+    on how to connect with GDB.
+
+
+
+Big-Endian operation
+~~~~~~~~~~~~~~~~~~~~
+
+  1) If the board is to be used in big-endian mode, the stub should be
+     configured for platform 'pidbe' instead of 'pid'. 'pidbe' can also
+     be used as a second argument to the STUBS_config script.
+
+ 2a) If a big-endian rom controller is installed on the board, the
+     programming of a new stub into flash is covered in the ARM PID
+     manual.
+
+ 2b) If a big-endian rom controller is _not_ used, this is what you
+     must do:
+
+       1) Follow the above instructions (including jumper settings) ,
+          but instead of using the 'prog_flash' FLASH tool, use the
+          'prog_flash_BE_image_LE_system' FLASH tool.
+
+       2) Instead of resetting the board after the FLASH has been
+          programmed, switch off the power and enable jumper LK4.
+
+     If you have to re-program the FLASH later, you can follow the
+     steps above again, but also disable jumper LK4 when changing the
+     other jumpers.
+

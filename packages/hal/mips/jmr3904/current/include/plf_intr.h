@@ -56,7 +56,7 @@
 //--------------------------------------------------------------------------
 // Control-C support.
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
 
 # define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_SIO_0
 

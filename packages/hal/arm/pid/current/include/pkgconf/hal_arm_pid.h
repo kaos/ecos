@@ -156,6 +156,30 @@
    }}CFG_DATA */
 #define CYGHWR_HAL_ARM_PID_GDB_BAUD     38400
 
+
+/* ---------------------------------------------------------------------
+   {{CFG_DATA
+   cdl_option CYGHWR_HAL_ARM_PID_DIAG_LEDS {
+       display          "Enable use of PPx LEDs"
+       parent           CYGPKG_HAL_ARM_PID
+       type             bool
+       description      "
+           The PID board has four LEDs labelled PP0-PP3. These can be
+           controlled by eCos if jumpers 9-16 on LK11 are
+           shorted. Note that this prevents the parallel port from
+           being used. See the PID board manual for details.
+
+           Enabling this option causes eCos to flash the LEDs during
+           early board initialization. See vectors.S for
+           details. Before calling cyg_start, PP0 is switched on,
+           PP1-3 are switched off. The application code can use the
+           function hal_diag_led() to control the LEDs after this
+           point."
+   }
+   
+   }}CFG_DATA */
+#undef CYGHWR_HAL_ARM_PID_DIAG_LEDS
+
 // Real-time clock/counter specifics
 
 #define CYGNUM_HAL_RTC_NUMERATOR     1000000000

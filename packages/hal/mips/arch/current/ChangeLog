@@ -1,3 +1,28 @@
+1999-10-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_mips.h: Added condition to set a
+	MIPS-private option (CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT) if
+	either CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT or
+	CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT are defined. In the MIPS HAL
+	these are implmented with the same code.
+
+	* src/hal_misc.c: Changed CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT to
+	CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT.
+
+	* src/vectors.S: Space for old SP after switching to interrupt
+	stack must be 8 bytes to preserve alignment of SP. Otherwise any
+	nested interrupts or exceptions will get an address error
+	exception if the FP regs are saved, which then recurses.
+	Changed CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT to
+	CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT.
+	
+	* src/mips-stub.c (__is_breakpoint_function): Fixed comparison
+	between PC register and label. On 64 bit CPUs these are both 32
+	bit values in 64 bit types, but the way that they are generated,
+	the PC is zero extended and the label is sign extended. This
+	caused them to always differ. Fixed by casting label to unsigned
+	long before widening.
+
 1999-10-22  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Replaced ifdef with call to hal_intc_translate

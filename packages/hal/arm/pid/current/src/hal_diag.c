@@ -50,8 +50,9 @@
 #include <cyg/hal/hal_intr.h>           // interrupt macros
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_diag.h>
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #include <cyg/hal/drv_api.h>
+#include <cyg/hal/hal_stub.h>           // cyg_hal_gdb_interrupt
 #endif
 
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
@@ -290,7 +291,11 @@ hal_diag_write_char(char c)
         // receive interrupt will be seen when we re-enable interrupts
         // later.
         
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
+#else
         HAL_DISABLE_INTERRUPTS(old);
+#endif
 
         while(1)
         {
@@ -339,7 +344,11 @@ hal_diag_write_char(char c)
         pos = 0;
 
         // And re-enable interrupts
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
+#else
         HAL_RESTORE_INTERRUPTS(old);
+#endif
         
     }
 }
@@ -347,7 +356,8 @@ hal_diag_write_char(char c)
 
 /*---------------------------------------------------------------------------*/
 
-// Control the LEDs PP0-PP3. this requires the jumpers on pins 1-8 to
+#ifdef CYGHWR_HAL_ARM_PID_DIAG_LEDS
+// Control the LEDs PP0-PP3. This requires the jumpers on pins 9-16 to
 // be set on LK11, thus preventing the use of the parallel port.
 
 #define CYG_DEVICE_PARALLEL_DATA 0x0d800040
@@ -357,6 +367,6 @@ hal_diag_led(int n)
 {
     HAL_WRITE_UINT8(CYG_DEVICE_PARALLEL_DATA, (n & 0xf) << 4);
 }
-
+#endif // CYGHWR_HAL_ARM_PID_DIAG_LEDS
 /*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

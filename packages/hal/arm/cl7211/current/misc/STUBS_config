@@ -1,20 +1,29 @@
 #! /bin/sh
 
-# usage: STUBS_config <repository> [cl7211 | cl7111]
+# usage: STUBS_config <repository> [eb7211 | cl7111]
 
 if [ "$2"x = "x" ]; then
-  CL7x11="cl7211"
+  CL7x11="eb7211"
 else
   CL7x11=$2
 fi
 
-tcl $1/pkgconf.tcl                                              \
+if ( echo | tclsh ) 2>/dev/null ; then
+  TCL=tclsh
+elif ( echo | cygtclsh80 ) 2>/dev/null ; then
+  TCL=cygtclsh80
+else
+  echo Could not find TCL interpreter
+  exit 1
+fi
+
+$TCL $1/pkgconf.tcl                                              \
   --target=arm --platform=${CL7x11} --startup=stubs             \
   --disable CYGPKG_KERNEL --disable CYGPKG_UITRON               \
   --disable CYGPKG_LIBC --disable CYGPKG_LIBM                   \
   --disable CYGPKG_ERROR --disable CYGPKG_IO                    \
   --disable CYGPKG_IO_SERIAL --disable CYGPKG_DEVICES_WALLCLOCK \
-  --disable CYGPKG_DEVICES_WATCHDOG
+  --disable CYGPKG_DEVICES_WATCHDOG --disable-cygmon
 
 patch <<END_OF_PATCH -p0
 --- pkgconf/hal.h~      Thu Jul  8 08:26:44 1999

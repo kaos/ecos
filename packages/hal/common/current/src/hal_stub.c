@@ -43,6 +43,9 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#ifdef CYGPKG_CYGMON
+#include <pkgconf/cygmon.h>
+#endif
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
@@ -139,11 +142,20 @@ static instrBuffer break_buffer;
 volatile int cyg_hal_gdb_running_step = 0;
 
 void 
+cyg_hal_gdb_place_break (target_register_t pc)
+{
+    cyg_hal_gdb_interrupt( pc ); // Let's hope this becomes a drop-through:
+}
+
+void 
 cyg_hal_gdb_interrupt (target_register_t pc)
 {
-    // Clear this regardless
+    // Clear flag that we Continued instead of Stepping
     cyg_hal_gdb_running_step = 0;
-    // so that a call to set a BP because of a ^C will take effect
+    // and override existing break? So that a ^C takes effect...
+    if (NULL != break_buffer.targetAddr)
+        cyg_hal_gdb_remove_break( (target_register_t)break_buffer.targetAddr );
+
     if (NULL == break_buffer.targetAddr) {
         break_buffer.targetAddr = (t_inst*) pc;
         break_buffer.savedInstr = *(t_inst*)pc;

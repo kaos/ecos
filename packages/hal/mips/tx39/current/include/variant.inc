@@ -213,6 +213,17 @@
 	lb	\vnum,0(v0)			# load it
 	.endm
 
+#ifndef CYGPKG_HAL_MIPS_INTC_TRANSLATE_DEFINED
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+	.macro	hal_intc_translate inum,vnum
+	move	\vnum,zero			# Just vector zero is supported
+	.endm
+#else			
+	.macro	hal_intc_translate inum,vnum
+	move	\vnum,\inum			# Vector == interrupt number
+	.endm
+#endif
+#endif
 
 # This table translates from the 6 bit value supplied in the IP bits
 # of the cause register into a 0..16 offset into the ISR tables.

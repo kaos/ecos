@@ -43,6 +43,19 @@
 //
 //===========================================================================*/
 
+
+// Define macro used to diddle the LEDs during early initialization.
+// Can use r0+r1. Argument in \x.
+// Control the LEDs PP0-PP3. This requires the jumpers on pins 9-16 to
+// be set on LK11 in order to be visible. Otherwise the parallel port
+// data pins are diddled instead.
+#ifdef CYGHWR_HAL_ARM_PID_DIAG_LEDS
+#define CYGHWR_LED_MACRO                                                  \
+        ldr     r0,=0x0d800040                                           ;\
+        mov     r1, #((15 & (\x)) << 4)                                  ;\
+        strb    r1, [r0]                                                 ;
+#endif
+
 #define MEM_RESET         0x0B000020  // Write to this location to enable RAM
 
 #define PLATFORM_SETUP1                                 \

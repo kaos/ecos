@@ -1,3 +1,8 @@
+1999-10-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc: Added implementations of hal_intc_translate
+	macro.
+
 1999-10-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak: Don't create extras.o here any more

@@ -197,6 +197,6 @@ void hal_show_IRQ(int vector, int data, int handler)
 {
     //    diag_printf("IRQ - vector: %x, data: %x, handler: %x\n", vector, data, handler);
 }
-
+ 
 /*---------------------------------------------------------------------------*/
 /* End of hal_misc.c */

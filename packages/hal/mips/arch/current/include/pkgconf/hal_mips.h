@@ -81,5 +81,19 @@
 #define CYGHWR_HAL_MIPS_CPU_FREQ        50
 
 /* -------------------------------------------------------------------*/
+/* If either the CTRLC or BREAK support options in hal.h are set      */
+/* then set our own option to turn on shared generic support for      */
+/* control C handling.                                                */
+
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
+    defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+
+#define CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT
+
+#endif
+
+
+/* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_MIPS_H */
 /* EOF hal_mips.h */

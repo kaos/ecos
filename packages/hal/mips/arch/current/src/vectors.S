@@ -488,7 +488,8 @@ FUNC_START(__default_interrupt_vsr)
 1:	
 	move	sp,a0				# switch to istack
 8:
-	addi	sp,sp,-4			# space for old SP
+	addi	sp,sp,-8			# space for old SP 
+						# (8 to keep dword alignment!)
 	sw	s0,0(sp)			# save old SP on stack
 	
 #endif
@@ -522,7 +523,7 @@ FUNC_START(__default_interrupt_vsr)
 	 move	a2,s2				# a2 = interrupt number
 #endif
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
 	# If we are supporting Ctrl-C interrupts from GDB, we must squirrel
 	# away a pointer to the save interrupt state here so that we can
 	# plant a breakpoint at some later time.

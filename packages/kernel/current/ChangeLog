@@ -1,3 +1,7 @@
+1999-10-29  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/PKGconf.mak: Enable cache tests for Cirrus Logic boards.
+
 1999-10-08  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/kcache1.c: Fix array size.

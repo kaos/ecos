@@ -37,17 +37,37 @@ PROGS	      := gdb_module
 OTHER_PROGS   := gdb_module.img
 endif
 ifdef CYG_HAL_STARTUP_RAM
-PROGS	      := flash prog_flash
+PROGS         := flash prog_flash
+OTHER_PROGS   := prog_flash.img
+# And for BE support
+PROGS         += prog_flash_BE_image_LE_system
+OTHER_PROGS   += prog_flash_BE_image_LE_system.img
 endif
 WHEREAMI      := misc
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.prv
 
+ifdef CYG_HAL_STARTUP_RAM
+prog_flash.img: prog_flash.stamp
+	$(OBJCOPY) --strip-debug prog_flash$(EXEEXT) prog_flash.img
+endif
+
 ifdef CYG_HAL_STARTUP_STUBS
 gdb_module.img: gdb_module.stamp
-	$(OBJCOPY) --strip-all gdb_module$(EXEEXT) gdb_module.img.XX
+	$(OBJCOPY) --strip-debug gdb_module$(EXEEXT) gdb_module.img.XX
 	$(OBJCOPY) --change-addresses=0xFC060000 gdb_module.img.XX  gdb_module.img
 	$(OBJCOPY) -O binary gdb_module.img gdb_module.bin
 	$(RM) -f gdb_module.img.XX
 endif
 
+ifdef CYG_HAL_STARTUP_RAM
+prog_flash_BE_image_LE_system.img: prog_flash_BE_image_LE_system.stamp
+	$(OBJCOPY) --strip-debug prog_flash_BE_image_LE_system$(EXEEXT) prog_flash_BE_image_LE_system.img
+
+hal_arm_pid_prog_flash_BE_image_LE_system.o: prog_flash.c
+	$(CC) -DBE_IMAGE -c $(INCLUDE_PATH) $(CFLAGS) $($(notdir $<)-CFLAGS)  -Wp,-MD,$(@:.o=.tmp) -o $@ $< 
+	@echo > $(@:.o=.d)
+	@echo $@ ':' $< '\' >> $(@:.o=.d)
+	@$(TAIL) +2 $(@:.o=.tmp) >> $(@:.o=.d)
+	@$(RM) $(@:.o=.tmp)
+endif

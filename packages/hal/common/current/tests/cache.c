@@ -43,6 +43,8 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/infra/diag.h>
 
+#if (HAL_DCACHE_SIZE > 0)
+
 // -------------------------------------------------------------------------
 // If the HAL does not supply this, we supply our own version
 
@@ -69,13 +71,11 @@ CYG_MACRO_END
 
 // -------------------------------------------------------------------------
 
-#define MAXSIZE 1<<18
-
-volatile char m[MAXSIZE];
-
 #ifndef MAX_STRIDE
 #define MAX_STRIDE 64
 #endif
+
+volatile char m[(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE)*MAX_STRIDE];
 
 // -------------------------------------------------------------------------
 
@@ -208,6 +208,19 @@ cyg_start( void )
 {
     cache_main();
 }
+
+#else // (HAL_DCACHE_SIZE > 0)
+#define N_A_MSG "No cache"
+#endif // (HAL_DCACHE_SIZE > 0)
+
+#ifdef N_A_MSG
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA( N_A_MSG );
+}
+#endif // N_A_MSG
 
 // -------------------------------------------------------------------------
 /* EOF cache.c */

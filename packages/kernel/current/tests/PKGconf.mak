@@ -46,6 +46,10 @@ TESTS	+= kcache1 kcache2
 endif
 
 
+ifdef CYGPKG_HAL_ARM_CL7211
+TESTS	+= kcache1 kcache2
+endif
+
 ifndef CYGPKG_HAL_ARM_AEB
 TESTS   += stress_threads
 endif
