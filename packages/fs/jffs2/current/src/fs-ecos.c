@@ -735,7 +735,7 @@ static int jffs2_open(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 		return EISDIR;
 	}
 
-#ifndef CYGOPT_FS_JFFS2_WRITE
+#ifdef CYGOPT_FS_JFFS2_WRITE
 	if (mode & O_TRUNC) {
 		struct jffs2_inode_info *f = JFFS2_INODE_INFO(node);
 		struct jffs2_sb_info *c = JFFS2_SB_INFO(node->i_sb);
