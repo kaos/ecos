@@ -119,8 +119,6 @@ typedef	struct fd_set {
 #   ifndef CYGONCE_ISO_SYS_SELECT_H
 #   define CYGONCE_ISO_SYS_SELECT_H
 
-#include <signal.h>
-
 #   ifdef __cplusplus
 extern "C" {
 #   endif
@@ -131,11 +129,15 @@ select( int /* nfd */, fd_set * /* in */, fd_set * /* out */,
         fd_set * /* ex */, struct timeval * /* tv */ );
 
 #ifdef CYGPKG_POSIX
+# include <pkgconf/posix.h>
+# ifdef CYGPKG_POSIX_SIGNALS
+#  include <signal.h>
 struct timespec;
 extern int
 pselect( int /* nfd */, fd_set * /* in */, fd_set * /* out */,
         fd_set * /* ex */, const struct timespec * /* ts */,
         const sigset_t * /* mask */);
+# endif
 #endif
     
 #   ifdef __cplusplus

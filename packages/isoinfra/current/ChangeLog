@@ -1,3 +1,8 @@
+2004-01-07  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/sys/select.h: Only declare pselect() when posix signals are
+	included.
+
 2003-07-15  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/sys/stat.h (S_ISGID): Please, somebody teach me to count!
