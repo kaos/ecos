@@ -159,6 +159,10 @@ static void          fec_eth_int(struct eth_drv_sc *data);
 #define FEC_ETH_RESET_PHY()
 #endif
 
+#ifndef FEC_EPPC_BD_OFFSET
+#define FEC_EPPC_BD_OFFSET CYGNUM_DEVS_ETH_POWERPC_FEC_BD_OFFSET
+#endif
+
 // LED activity [exclusive of hardware bits]
 #ifndef _get_led
 #define _get_led()  
@@ -263,7 +267,8 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 
     // Ensure consistent state between cache and what the FEC sees
     HAL_DCACHE_IS_ENABLED(cache_state);
-    HAL_DCACHE_SYNC();
+    if (cache_state)
+      HAL_DCACHE_SYNC();
     HAL_DCACHE_DISABLE();
 
     // Shut down ethernet controller, in case it is already running
@@ -285,7 +290,7 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 
 #define ROUNDUP(b,s) (((unsigned long)(b) + (s-1)) & ~(s-1))
 #ifdef FEC_USE_EPPC_BD
-    txbd = (struct fec_bd *)(0x2C00 + (cyg_uint32)eppc);
+    txbd = (struct fec_bd *)(FEC_EPPC_BD_OFFSET + (cyg_uint32)eppc);
     rxbd = &txbd[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
 #else
     txbd = fec_eth_txring;
@@ -398,7 +403,8 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
 
     // Ensure consistent state between cache and what the FEC sees
     HAL_DCACHE_IS_ENABLED(cache_state);
-    HAL_DCACHE_SYNC();
+    if (cache_state)
+      HAL_DCACHE_SYNC();
     HAL_DCACHE_DISABLE();
 
     qi->fec = fec;
@@ -520,6 +526,9 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     // Initialize upper level driver
     (sc->funs->eth_drv->init)(sc, (unsigned char *)&enaddr);
     
+    if (cache_state)
+      HAL_DCACHE_ENABLE();
+
     return true;
 }
  

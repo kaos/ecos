@@ -67,6 +67,15 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
     description   "Fast ethernet driver for PowerPC MPC8xxT boards."
     compile       -library=libextras.a if_fec.c
 
+    cdl_option CYGNUM_DEVS_ETH_POWERPC_FEC_BD_OFFSET {
+        display       "Buffer descriptors offset in PRAM"
+        flavor        data
+        default_value 0x2C00
+        description   "
+            This option specifies the address of the buffer descriptors
+            used by the PowerPC FEC/ethernet device."
+    }
+
     cdl_option CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE {
         display       "Buffer size"
         flavor        data

@@ -1,3 +1,10 @@
+2002-10-11  Gary Thomas  <gthomas@ecoscentric.com> [inspired by]
+2002-10-11  Wolfgang Heppner <hep@iis.fhg.de>	
+
+	* src/if_fec.c: 
+	* cdl/fec_eth_drivers.cdl: Make buffer descriptor use configurable.
+	Also, fix some issues where cache state wasn't being honored.
+
 2002-10-11  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fec.c: 
