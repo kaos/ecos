@@ -1,3 +1,7 @@
+2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
+	* src/aaed2000_misc.c: Replaced explicit prototype of memset with
+	#include <string.h>.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/aaed2000_misc.c (hal_mmu_init): Fixed warning.
