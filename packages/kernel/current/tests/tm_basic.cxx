@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,6 +55,7 @@
 #include <cyg/kernel/thread.inl>
 #include <cyg/kernel/mutex.hxx>
 #include <cyg/kernel/sema.hxx>
+#include <cyg/kernel/flag.hxx>
 #include <cyg/kernel/sched.inl>
 #include <cyg/kernel/clock.hxx>
 #include <cyg/kernel/clock.inl>
@@ -97,6 +99,8 @@ typedef struct fun_times {
 #define NSEMAPHORES          ((CYGMEM_REGION_ram_SIZE/16)/CYG_SEMAPHORE_OVERHEAD)
 #define CYG_COUNTER_OVERHEAD (sizeof(cyg_counter)+sizeof(fun_times))
 #define NCOUNTERS            ((CYGMEM_REGION_ram_SIZE/24)/CYG_COUNTER_OVERHEAD)
+#define CYG_FLAG_OVERHEAD    (sizeof(cyg_flag_t)+sizeof(fun_times))
+#define NFLAGS               ((CYGMEM_REGION_ram_SIZE/24)/CYG_FLAG_OVERHEAD)
 #define CYG_ALARM_OVERHEAD   (sizeof(cyg_alarm)+sizeof(fun_times))
 #define NALARMS              ((CYGMEM_REGION_ram_SIZE/16)/CYG_ALARM_OVERHEAD)
 #else
@@ -105,6 +109,7 @@ typedef struct fun_times {
 #define NMUTEXES         32
 #define NMBOXES          32
 #define NSEMAPHORES      32
+#define NFLAGS           32
 #define NCOUNTERS        32
 #define NALARMS          32
 #endif
@@ -120,6 +125,7 @@ typedef struct fun_times {
 #define NMBOXES_SIM          2
 #define NSEMAPHORES_SIM      2
 #define NSCHEDS_SIM          4
+#define NFLAGS_SIM           2
 #define NCOUNTERS_SIM        2
 #define NALARMS_SIM          2
 
@@ -130,6 +136,7 @@ static int nmutexes;
 static int nmboxes;
 static int nsemaphores;
 static int nscheds;
+static int nflags;
 static int ncounters;
 static int nalarms;
 
@@ -166,6 +173,9 @@ static cyg_counter test_counters[NCOUNTERS];
 static cyg_handle_t counters[NCOUNTERS];
 static fun_times counter_ft[NCOUNTERS];
 
+static cyg_flag_t test_flags[NFLAGS];
+static fun_times flag_ft[NFLAGS];
+
 static cyg_alarm test_alarms[NALARMS];
 static cyg_handle_t alarms[NALARMS];
 static fun_times alarm_ft[NALARMS];
@@ -196,6 +206,7 @@ void run_mbox_circuit_test(void);
 void run_semaphore_tests(void);
 void run_semaphore_circuit_test(void);
 void run_counter_tests(void);
+void run_flag_tests(void);
 void run_alarm_tests(void);
 
 #ifndef max
@@ -387,6 +398,7 @@ show_test_parameters(void)
     diag_printf("   Semaphores:            %5d\n", nsemaphores);
     diag_printf("   Scheduler operations:  %5d\n", nscheds);
     diag_printf("   Counters:              %5d\n", ncounters);
+    diag_printf("   Flags:                 %5d\n", nflags);
     diag_printf("   Alarms:                %5d\n", nalarms);
     diag_printf("\n"); 
     enable_clock_latency_measurement();
@@ -1145,6 +1157,101 @@ run_counter_tests(void)
     end_of_test_group();
 }
 
+void
+run_flag_tests(void)
+{
+    int i;
+    cyg_flag_value_t val;
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_init(&test_flags[i]);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Init flag");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_destroy(&test_flags[i]);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Destroy flag");
+
+    // Recreate the flags - reused in the remaining tests
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_init(&test_flags[i]);
+    }
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_maskbits(&test_flags[i], 0);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Mask bits in flag");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_setbits(&test_flags[i], 0x11);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Set bits in flag [no waiters]");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_setbits(&test_flags[i], 0x11);
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_AND);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Wait for flag [AND]");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_setbits(&test_flags[i], 0x11);
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_OR);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Wait for flag [OR]");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_setbits(&test_flags[i], 0x11);
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_AND|CYG_FLAG_WAITMODE_CLR);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Wait for flag [AND/CLR]");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_setbits(&test_flags[i], 0x11);
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        cyg_flag_wait(&test_flags[i], 0x11, CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Wait for flag [OR/CLR]");
+
+    wait_for_tick(); // Wait until the next clock tick to minimize aberations
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_setbits(&test_flags[i], 0x11);
+        HAL_CLOCK_READ(&flag_ft[i].start);
+        val = cyg_flag_peek(&test_flags[i]);
+        HAL_CLOCK_READ(&flag_ft[i].end);
+    }
+    show_times(flag_ft, nflags, "Peek on flag");
+
+    // Destroy flags - no longer needed
+    for (i = 0;  i < nflags;  i++) {
+        cyg_flag_destroy(&test_flags[i]);
+    }
+    end_of_test_group();
+}
+
 // Alarm callback function
 void
 alarm_cb(cyg_handle_t alarm, cyg_addrword_t val)
@@ -1608,6 +1715,7 @@ run_all_tests(CYG_ADDRESS id)
     run_mbox_tests();
     run_semaphore_tests();
     run_counter_tests();
+    run_flag_tests();
     run_alarm_tests();
 
 #ifdef CYG_SCHEDULER_LOCK_TIMINGS
@@ -1688,6 +1796,7 @@ void tm_basic_main( void )
         nmboxes = NMBOXES_SIM;
         nsemaphores = NSEMAPHORES_SIM;
         nscheds = NSCHEDS_SIM;
+        nflags = NFLAGS_SIM;
         ncounters = NCOUNTERS_SIM;
         nalarms = NALARMS_SIM;  
     } else {
@@ -1698,6 +1807,7 @@ void tm_basic_main( void )
         nmboxes = NMBOXES;
         nsemaphores = NSEMAPHORES;
         nscheds = NSCHEDS;
+        nflags = NFLAGS;
         ncounters = NCOUNTERS;
         nalarms = NALARMS;
     }
@@ -1716,6 +1826,7 @@ void tm_basic_main( void )
     nsemaphores = max(32, nsemaphores);
     nmboxes = max(32, nmboxes);
     ncounters = max(32, ncounters);
+    nflags = max(32, nflags);
     nalarms = max(32, nalarms);
 #endif
 

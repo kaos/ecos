@@ -1,3 +1,7 @@
+2002-12-03  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* tests/tm_basic.cxx: Add tests of 'flag' synchronizers.
+
 2002-10-28  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/tm_basic.cxx: Include infra/diag.h and removed the 
