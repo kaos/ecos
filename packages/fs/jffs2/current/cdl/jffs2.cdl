@@ -58,6 +58,7 @@ cdl_package CYGPKG_FS_JFFS2 {
     requires       CYGPKG_IO_FLASH
     requires       CYGPKG_COMPRESS_ZLIB
     requires       CYGINT_ISO_MALLOC
+    requires       CYGPKG_CRC
 
     requires       CYGPKG_ISOINFRA
     requires       CYGPKG_ERROR
@@ -67,7 +68,7 @@ cdl_package CYGPKG_FS_JFFS2 {
     requires       CYGPKG_IO_FILEIO_INODE
 
     compile        -library=libextras.a jffs2.c
-    compile        build.c scan.c malloc-ecos.c nodelist.c crc32.c nodemgmt.c readinode.c erase.c dir-ecos.c write.c gc.c read.c compr.c compr_zlib.c compr_rtime.c compr_rubin.c file-ecos.c
+    compile        build.c scan.c malloc-ecos.c nodelist.c nodemgmt.c readinode.c erase.c dir-ecos.c write.c gc.c read.c compr.c compr_zlib.c compr_rtime.c compr_rubin.c file-ecos.c
 
     cdl_option CYGPKG_FS_JFFS2_CFLAGS_ADD {
 	display "Additional compiler flags"

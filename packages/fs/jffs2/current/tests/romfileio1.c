@@ -58,6 +58,7 @@
 #include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
+#include <cyg/io/flash.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -277,14 +278,15 @@ static void comparefiles( char *name2, char *name1 )
 int main( int argc, char **argv )
 {
     int err;
-    char address[16];
+    //    char address[16];
 
     CYG_TEST_INIT();
 
     // --------------------------------------------------------------
 
-    err = mount( "", "/", "jffs2" );
-
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/", "jffs2" );
+    if ( err != ENOERR ) SHOW_RESULT( chdir, err );
+    
     diag_printf("<INFO>: JFFS2 root follows\n");
     diag_printf("<INFO>: Note that dev cannot be stat()ed\n");
     listdir( "/", true );
@@ -315,7 +317,7 @@ int main( int argc, char **argv )
 
     diag_printf("<INFO>: Mount JFFS2 again onto /mnt\n");
     //sprintf( address, "%p", (void*)CYGNUM_FS_JFFS2_BASE_ADDRESS );
-    err = mount( "", "/mnt", "jffs2" );
+    err = mount( CYGDAT_IO_FLASH_BLOCK_DEVICE_NAME_1, "/mnt", "jffs2" );
     if( err < 0 ) SHOW_RESULT( mount, err );    
 
     comparefiles( "/etc/passwd", "/mnt/etc/passwd" );

@@ -16,10 +16,7 @@ extern const uint32_t crc32_table[256];
 static inline uint32_t 
 crc32(uint32_t val, const void *ss, int len)
 {
-	const unsigned char *s = ss;
-        while (--len >= 0)
-                val = crc32_table[(val ^ *s++) & 0xff] ^ (val >> 8);
-        return val;
+	return cyg_crc32_accumulate(val,(void *)ss,len);
 }
 
 #endif

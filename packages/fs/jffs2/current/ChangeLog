@@ -1,3 +1,8 @@
+2002-10-11  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/crc32.h (crc32): Use the CRC package for crc calculation
+	* tests/romfileio1.c (main): Pass the name of the device to mount
+
 2002-05-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/LICENCE: New file. Contains license for JFFS2, now GPL+exception.

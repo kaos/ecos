@@ -27,6 +27,8 @@
 
 #include <cyg/io/flash.h>
 
+#include <cyg/crc/crc.h>
+
 #include <pkgconf/fs_jffs2.h>
 
 #include "list.h"
