@@ -476,13 +476,7 @@ init_all_network_interfaces(void)
 #endif
 
 #ifdef CYGDAT_NS_DNS_DEFAULT_SERVER
-#define _SERVER string(CYGDAT_NS_DNS_DEFAULT_SERVER)
-
-    {
-      struct in_addr server;
-      
-      inet_aton(_SERVER, &server);
-      cyg_dns_res_init(&server);
+      cyg_dns_res_start(CYGDAT_NS_DNS_DEFAULT_SERVER);
     }
 #endif
 
