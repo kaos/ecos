@@ -657,6 +657,17 @@ cdl_package CYGPKG_REDBOOT {
                       the FIS directory."
                 }
     
+                cdl_option CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT {
+                    display         "Number of FIS directory entries"
+                    flavor	    data
+                    default_value   8
+                    description "
+                      The FIS directory normally occupies a single flash
+                      sector. Adjusting this value can allow for more than
+                      one flash sector to be used, which is useful if your
+                      sectors are very small."
+                }
+    
                 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
                     display       "Minimum image size"
                     flavor        data
@@ -766,7 +777,7 @@ cdl_package CYGPKG_REDBOOT {
                 display       "Merged config data and FIS directory"
                 flavor        bool              
                 active_if     { CYGOPT_REDBOOT_FIS && (CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "FLASH") }
-                default_value 0
+                default_value 1
                 description "
                   If this option is set, then the FIS directory and FLASH 
                   configuration database will be stored in the same physical

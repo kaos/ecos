@@ -249,7 +249,8 @@ extern _cmd_entry(_s_,_h_,_u_,_f_,_subs_,_sube_,_n_)
 static _cmd_entry(_s_,_h_,_u_,_f_,0,0,_n_)
 
 // Initialization functions
-#define RedBoot_INIT_FIRST 0000
+#define RedBoot_INIT_FIRST  0000
+#define RedBoot_INIT_SECOND 0100
 // Specify a 3 digit numeric value for proper prioritizing
 #define RedBoot_INIT_PRIO(_n_) 1##_n_
 #define RedBoot_INIT_LAST  9999

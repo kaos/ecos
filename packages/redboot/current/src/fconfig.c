@@ -972,19 +972,20 @@ load_flash_config(void)
     workspace_end = cfg_temp;
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
     if (!do_flash_init()) return;
-    cfg_size = (flash_block_size > sizeof(struct _config)) ? 
-        sizeof(struct _config) : 
-        _rup(sizeof(struct _config), flash_block_size);
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-    cfg_size = _rup(cfg_size, sizeof(struct fis_image_desc));
-    if ((flash_block_size-cfg_size) < 8*sizeof(struct fis_image_desc)) {
+    cfg_size = _rup(sizeof(struct _config), sizeof(struct fis_image_desc));
+    if ((fisdir_size-cfg_size) < (CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT *
+                                  CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE)) {
         // Too bad this can't be checked at compile/build time
         diag_printf("Sorry, FLASH config exceeds available space in FIS directory\n");
         return;
     }
-    fisdir_size = flash_block_size - cfg_size;
-    cfg_base = (void *)(((CYG_ADDRESS)fis_addr + flash_block_size) - cfg_size);
+    cfg_base = (void *)(((CYG_ADDRESS)fis_addr + fisdir_size) - cfg_size);
+    fisdir_size -= cfg_size;
 #else
+    cfg_size = (flash_block_size > sizeof(struct _config)) ? 
+        sizeof(struct _config) : 
+        _rup(sizeof(struct _config), flash_block_size);
     if (CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK < 0) {
         cfg_base = (void *)((CYG_ADDRESS)flash_end + 1 -
            _rup(_rup((-CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*flash_block_size), cfg_size), flash_block_size));
@@ -1003,7 +1004,8 @@ load_flash_config(void)
     if ((cyg_crc32((unsigned char *)config, 
                    sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
         (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
-        diag_printf("FLASH configuration checksum error or invalid key\n");
+        diag_printf("**Warning** FLASH configuration checksum error or invalid key\n");
+        diag_printf("Use 'fconfig -i' to [re]intialize database\n");
         config_init();
         return;
     }
@@ -1021,6 +1023,6 @@ load_flash_config(void)
 #endif
 }
 
-RedBoot_init(load_flash_config, RedBoot_INIT_FIRST);
+RedBoot_init(load_flash_config, RedBoot_INIT_SECOND);
 
 // EOF fconfig.c

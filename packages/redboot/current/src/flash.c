@@ -463,8 +463,7 @@ fis_list(int argc, char *argv[])
 #else
     i = 1;
 #endif
-    if (!scan_opts(argc, argv, 2, opts, i, 0, 0, ""))
-    {
+    if (!scan_opts(argc, argv, 2, opts, i, 0, 0, "")) {
         return;
     }
     flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
@@ -1315,6 +1314,7 @@ do_flash_init(void)
     void *err_addr;
 
     if (!__flash_init) {
+        __flash_init = 1;
         if ((stat = flash_init((void *)(workspace_end-FLASH_MIN_WORKSPACE), 
                                FLASH_MIN_WORKSPACE, diag_printf)) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", flash_errmsg(stat));
@@ -1326,18 +1326,19 @@ do_flash_init(void)
         flash_get_block_info(&flash_block_size, &flash_num_blocks);
         workspace_end = (unsigned char *)(workspace_end-FLASH_MIN_WORKSPACE);
 #ifdef CYGOPT_REDBOOT_FIS
+        fisdir_size = CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_COUNT * CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE;
+        fisdir_size = ((fisdir_size + flash_block_size - 1) / flash_block_size) * flash_block_size;
 # ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
 	fis_work_block = fis_zlib_common_buffer;
-	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < flash_block_size) {
+	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < fisdir_size) {
             diag_printf("FLASH: common buffer too small\n");
 	    workspace_end += FLASH_MIN_WORKSPACE;
             return false;
 	}
 # else
-        workspace_end = (unsigned char *)(workspace_end-flash_block_size);
+        workspace_end = (unsigned char *)(workspace_end-fisdir_size);
         fis_work_block = workspace_end;
 # endif
-        fisdir_size = flash_block_size;
         if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
             fis_addr = (void *)((CYG_ADDRESS)flash_end + 1 +
                                 (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
@@ -1345,9 +1346,12 @@ do_flash_init(void)
             fis_addr = (void *)((CYG_ADDRESS)flash_start + 
                                 (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK*flash_block_size));
         }
+        if (((CYG_ADDRESS)fis_addr + fisdir_size - 1) > (CYG_ADDRESS)flash_end) {
+            diag_printf("FIS directory doesn't fit\n");
+            return false;
+        }
         flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
 #endif
-        __flash_init = 1;
     }
     return true;
 }

@@ -1,3 +1,18 @@
+2003-10-15  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/flash.c: 
+	* src/fconfig.c: Better handling of layout of fconfig and fis
+	data within the FLASH.  Should work for even flash devices with
+	very smal block sizes.
+
+	* include/redboot.h (RedBoot_INIT_SECOND): 
+	Finer initialization control.
+
+	* cdl/redboot.cdl: Combine FIS directory and FCONFIG database
+	by default.  This results in better FLASH utilization. Also define
+	number of FIS directory slots.  This will allow support for FLASH
+	devices with very small block sizes.
+
 2003-10-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (fis_create): Verify that any hard FLASH addresses
