@@ -1,3 +1,8 @@
+2003-05-06  Bart Veer  <bartv@ecoscentric.com>
+
+	* host/ethernet.tcl (filters_initialize):
+	Fix typo reported by Scott Wilkinson
+
 2003-02-25  Iztok Zupet  <iz@vsr.si>
 
 	* doc/syntheth.sgml: Replaced .gif with .png to get PDF

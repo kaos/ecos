@@ -1131,7 +1131,7 @@ namespace eval ethernet {
 	# Add a button on the toolbar for enabling/disabling logging.
 	# Also add an entry to the help menu
 	if { $synth::flag_gui } {
-	    button .toolbar.ethernet_logging -image $ethernet::image_netrecord -borderwidth 2 -relief flat -command ethernet::logging_button_toggle]
+	    button .toolbar.ethernet_logging -image $ethernet::image_netrecord -borderwidth 2 -relief flat -command ethernet::logging_button_toggle
 	    pack .toolbar.ethernet_logging -side left -padx 2
 	    synth::register_balloon_help .toolbar.ethernet_logging "Record ethernet traffic"
 
