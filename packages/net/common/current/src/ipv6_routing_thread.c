@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, lhamilton
+// Contributors: gthomas, lhamilton, andrew.lunn@ascom.ch
 // Date:         2002-04-16
 // Purpose:      
 // Description:  
@@ -58,7 +58,7 @@
 
 void _show_all_interfaces(void);
 
-#define DBG_PRINT                          1
+//#define DBG_PRINT                          1
 #define ALLROUTER                  "ff02::2"
 
 #define STACK_SIZE    CYGNUM_HAL_STACK_SIZE_TYPICAL+2048
@@ -87,6 +87,19 @@ static struct timeval last_ra_time;
 static struct timeval idle_expire;
 static struct icmp6stat *istat;
 extern struct icmp6stat cyg_icmp6stat;
+static struct sockaddr_in6 router;
+static int router_valid = 0;
+
+// Return the address of the last router to send us a router advertisement 
+// Copy the address into addr and return true. If we have not received an
+// advertisement yet, return false
+int cyg_net_get_ipv6_advrouter(struct sockaddr_in6 * addr) {
+  
+  if (addr) {
+    memcpy(addr,&router,sizeof(*addr));
+  }
+  return router_valid;
+}
 
 static void
 cyg_rs_exit(void)
@@ -154,17 +167,87 @@ receive_ra_packet(void)
 {
   int len;
   char msg[1024];
+  struct nd_router_advert *advert;
+  cyg_uint8 *opts;
+  int optlen;
+  int addrlen = sizeof(router);
+  char buf[64];
 
   dprnt("%s", __FUNCTION__);
 
-  len = read(s, msg, sizeof(msg));
+  len = recvfrom(s, msg, sizeof(msg),0,(struct sockaddr *)&router,&addrlen);
   if (len < 0) {
     dprnt("  Can't read RA data: %s", strerror(errno));
     return;
   }
-  dprnt("packet data (buf len=%d) :", len);
-  diag_dump_buf(msg, len);
+  router_valid = 1;
 
+  inet_ntop(AF_INET6,(void *)&router.sin6_addr,buf,64);  
+  dprnt("Router Advertisement from %s",buf);
+  dprnt("packet data (buf len=%d) :", len);
+#ifdef DBG_PRINT  
+  diag_dump_buf(msg, len);
+#endif
+
+  advert = (struct nd_router_advert *)msg;
+
+  dprnt("AdvCurHopLimit: %d", (int) advert->nd_ra_curhoplimit);
+  dprnt("AdvManagedFlag: %s",
+	(advert->nd_ra_flags_reserved & ND_RA_FLAG_MANAGED) ? "yes" : "no");
+  dprnt("AdvOtherConfigFlag: %s",
+	(advert->nd_ra_flags_reserved & ND_RA_FLAG_OTHER) ? "yes":"no");
+  dprnt("AdvHomeAgentFlag: %s",
+	 (advert->nd_ra_flags_reserved & ND_RA_FLAG_HOME_AGENT) ? 
+	 "yes" : "no");
+  dprnt("AdvReachableTime: %lu", 
+	 (unsigned long)ntohl(advert->nd_ra_reachable));
+  dprnt("AdvRetransTimer: %lu", 
+	(unsigned long)ntohl(advert->nd_ra_retransmit));
+  
+  // Now process the optinal fields 
+  len -= sizeof(*advert);
+  opts = (cyg_uint8 *)(msg + sizeof(struct nd_router_advert));
+
+  while (len > 0) {
+     optlen = (opts[1] << 3);
+     switch (*opts) {
+     case ND_OPT_MTU: {
+       struct nd_opt_mtu *mtu = (struct nd_opt_mtu *) opts;
+
+       dprnt("AdvLinkMTU: %lu", 
+	     (unsigned long)ntohl(mtu->nd_opt_mtu_mtu));
+       break;
+     }
+     case ND_OPT_PREFIX_INFORMATION: {
+       struct nd_opt_prefix_info *pinfo = (struct nd_opt_prefix_info *) opts;
+
+       inet_ntop(AF_INET6,(void *)&pinfo->nd_opt_pi_prefix,buf,64);
+       dprnt("Prefix:  %s/%d",buf,pinfo->nd_opt_pi_prefix_len);
+       break;
+     }
+     case ND_OPT_SOURCE_LINKADDR: {
+       char *cp = buf;
+       int i;
+       
+       for (i = 2 ; i < optlen ; i++) {
+	 cp += diag_sprintf(cp,"%02x ", (unsigned int) opts[i]);
+       }
+      
+       dprnt("AdvSourceLinkAddress: %s",buf);
+       break;
+     }
+     case ND_OPT_ADVINTERVAL:
+     case ND_OPT_HOMEAGENT_INFO:
+       dprnt("Mobile IPv6 entension options (not decoded)");
+       break;
+     default:
+       dprnt("Unknown option %d\n", (int)*opts);
+       break;
+     }
+     len -= optlen;
+     opts += optlen;
+  }
+       
   racount++;
   get_realtime(&last_ra_time);
   dprnt("racount=%d, timestamp=%d sec",
@@ -251,7 +334,9 @@ cyg_rs(cyg_addrword_t param)
   u_int hlim = 255;
   fd_set fdset;
 
+#ifdef DBG_PRINT
   _show_all_interfaces();
+#endif
 
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET6;
@@ -289,7 +374,7 @@ cyg_rs(cyg_addrword_t param)
   idle_expire.tv_usec = 0;
   select_timeout.tv_usec = 0;
   last_ra_time.tv_usec = 0;
-  last_ra_time.tv_sec = 10;
+  last_ra_time.tv_sec = 2;
   select(0, 0, 0, 0, &last_ra_time);
 
   racount = 0;

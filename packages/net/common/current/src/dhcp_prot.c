@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Andrew Lunn
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   hmt
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:        2000-07-01
 // Purpose:     DHCP support
 // Description: 
@@ -1311,17 +1312,16 @@ do_dhcp_down_net(const char *intf, struct bootp *res,
         return false;
       }
       // Now delete the ipv6 addr
+      memset(&iflr,0,sizeof(iflr));
       strcpy(iflr.iflr_name, intf);
-      if (ioctl(s6, SIOCGLIFADDR, &iflr)) {
-	perror("SIOCGIFADDR_IN6 1");
-	return false;
-      }
+      if (!ioctl(s6, SIOCGLIFADDR, &iflr)) {
       
-      strcpy(iflr.iflr_name, intf);
-      if (ioctl(s6, SIOCDLIFADDR, &iflr)) { /* delete IF addr */
-        perror("SIOCDIFADDR_IN61");
+	strcpy(iflr.iflr_name, intf);
+	if (ioctl(s6, SIOCDLIFADDR, &ifr)) { /* delete IF addr */
+	  perror("SIOCDIFADDR_IN61");
+	}
+	close(s6);
       }
-      close(s6);
     }
 #endif /* IP6 */
 

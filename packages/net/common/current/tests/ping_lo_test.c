@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas, sorin@netappi.com
-// Contributors: gthomas, sorin@netappi.com
+// Contributors: gthomas, sorin@netappi.com, andrew.lunn@ascom.ch
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -32,6 +32,10 @@
 // PING test code
 
 #include <network.h>
+#ifdef CYGPKG_NET_INET6
+#include <netinet/ip6.h>
+#include <netinet/icmp6.h>
+#endif
 
 #include <cyg/infra/testcase.h>
 
@@ -144,7 +148,7 @@ ping_host(int s, struct sockaddr_in *host)
         icmp->icmp_code = 0;
         icmp->icmp_cksum = 0;
         icmp->icmp_seq = seq;
-        icmp->icmp_id = 0x1234;
+        icmp->icmp_id = UNIQUEID;
         // Set up ping data
         tp = (cyg_tick_count_t *)&icmp->icmp_data;
         *tp++ = cyg_current_time();
@@ -206,17 +210,166 @@ ping_test_loopback( int lo )
     ping_host(s, &host);
 }
 
+#ifdef CYGPKG_NET_INET6
+static int
+show6_icmp(unsigned char *pkt, int len, 
+          const struct sockaddr_in6 *from, const struct sockaddr_in6 *to)
+{
+    cyg_tick_count_t *tp, tv;
+    struct icmp6_hdr *icmp;
+    char fromnamebuf[128];
+    char tonamebuf[128];
+    int error;
+
+    error = getnameinfo((struct sockaddr *)from,sizeof(*from), 
+			fromnamebuf, sizeof(fromnamebuf), 
+			NULL, 0,
+			NI_NUMERICHOST);
+    if (error) {
+      perror ("getnameinfo(from)");
+      return 0;
+    }
+
+    error = getnameinfo((struct sockaddr *)to,sizeof(*to), 
+			tonamebuf, sizeof(tonamebuf), 
+			NULL, 0,
+			NI_NUMERICHOST);
+    if (error) {
+      perror ("getnameinfo(to)");
+      return 0;
+    }
+
+    tv = cyg_current_time();
+    icmp = (struct icmp6_hdr *)pkt;
+    tp = (cyg_tick_count_t *)&icmp->icmp6_data8[4];
+   
+    if (icmp->icmp6_type != ICMP6_ECHO_REPLY) {
+        return 0;
+    }
+    if (icmp->icmp6_id != UNIQUEID) {
+        diag_printf("%s: ICMP received for wrong id - sent: %x, recvd: %x\n", 
+                    fromnamebuf, UNIQUEID, icmp->icmp6_id);
+    }
+    diag_printf("%d bytes from %s: ", len, fromnamebuf);
+    diag_printf("icmp_seq=%d", icmp->icmp6_seq);
+    diag_printf(", time=%dms\n", (int)(tv - *tp)*10);
+    return (!memcmp(&from->sin6_addr, &to->sin6_addr,sizeof(from->sin6_addr)));
+}
+
+static void
+ping6_host(int s, const struct sockaddr_in6 *host)
+{
+    struct icmp6_hdr *icmp = (struct icmp6_hdr *)pkt1;
+    int icmp_len = 64;
+    int seq, ok_recv, bogus_recv;
+    cyg_tick_count_t *tp;
+    long *dp;
+    struct sockaddr_in6 from;
+    int i, len, fromlen;
+    char namebuf[128];
+    int error;
+    int echo_responce;
+
+    ok_recv = 0;
+    bogus_recv = 0;
+    error = getnameinfo((struct sockaddr *)host,sizeof(*host), 
+			namebuf, sizeof(namebuf), 
+			NULL, 0,
+			NI_NUMERICHOST);
+    if (error) {
+      perror ("getnameinfo");
+    } else {
+      diag_printf("PING6 server %s\n", namebuf);
+    }
+    for (seq = 0;  seq < NUM_PINGS;  seq++) {
+        // Build ICMP packet
+        icmp->icmp6_type = ICMP6_ECHO_REQUEST;
+        icmp->icmp6_code = 0;
+        icmp->icmp6_cksum = 0;
+        icmp->icmp6_seq = seq;
+        icmp->icmp6_id = UNIQUEID;
+
+        // Set up ping data
+        tp = (cyg_tick_count_t *)&icmp->icmp6_data8[4];
+        *tp++ = cyg_current_time();
+        dp = (long *)tp;
+        for (i = sizeof(*tp);  i < icmp_len;  i += sizeof(*dp)) {
+            *dp++ = i;
+        }
+        // Add checksum
+        icmp->icmp6_cksum = inet_cksum( (u_short *)icmp, icmp_len+8);
+        // Send it off
+        if (sendto(s, icmp, icmp_len+8, 0, (struct sockaddr *)host, sizeof(*host)) < 0) {
+            perror("sendto");
+            continue;
+        }
+        // Wait for a response. We get our own ECHO_REQUEST and the responce
+	echo_responce = 0;
+	while (!echo_responce) {
+	  fromlen = sizeof(from);
+	  len = recvfrom(s, pkt2, sizeof(pkt2), 0, (struct sockaddr *)&from, &fromlen);
+	  if (len < 0) {
+            perror("recvfrom");
+	    echo_responce=1;
+	  } else {
+            if (show6_icmp(pkt2, len, &from, host)) {
+	      ok_recv++;
+	      echo_responce=1;
+	    }
+	  }
+        }
+    }
+    diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
+}
+
+static void
+ping6_test_loopback( int lo )
+{
+    struct protoent *p;
+    struct timeval tv;
+    struct sockaddr_in6 host;
+    int s;
+
+    if ((p = getprotobyname("ipv6-icmp")) == (struct protoent *)0) {
+        perror("getprotobyname");
+        return;
+    }
+    s = socket(AF_INET6, SOCK_RAW, p->p_proto);
+    if (s < 0) {
+        perror("socket");
+        return;
+    }
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    // Set up host address
+    host.sin6_family = AF_INET6;
+    host.sin6_len = sizeof(host);
+    host.sin6_addr = in6addr_loopback;
+    host.sin6_port = 0;
+    ping6_host(s, &host);
+    // Now try a bogus host
+    host.sin6_addr.s6_addr[15] = host.sin6_addr.s6_addr[15] + 32;
+    ping6_host(s, &host);
+}
+#endif
+
 void
 net_test(cyg_addrword_t p)
 {
     int i;
     diag_printf("Start PING test\n");
+
     init_all_network_interfaces();
 #if NLOOP > 0
     for ( i = 0; i < NLOOP; i++ )
         ping_test_loopback( i );
     for ( i = 0; i < NLOOP; i++ )
         ping_test_loopback( i );
+#ifdef CYGPKG_NET_INET6
+    for ( i = 0; i < NLOOP; i++ )
+        ping6_test_loopback( i );
+#endif
     CYG_TEST_PASS_FINISH( "Done pinging loopback" );
 #endif
     CYG_TEST_NA( "No loopback devs" );

@@ -128,6 +128,7 @@ cyg_bool_t init_loopback_interface(int lo)
     }
     if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &one, sizeof(one))) {
         perror("setsockopt");
+	close(s);
         return false;
     }
 
@@ -149,6 +150,7 @@ cyg_bool_t init_loopback_interface(int lo)
 
     if (ioctl(s, SIOCSIFADDR, &ifr)) {
         perror("SIOCIFADDR");
+        close(s);
         return false;
     }
     
@@ -166,6 +168,7 @@ cyg_bool_t init_loopback_interface(int lo)
     ifr.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING;
     if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
         perror("SIOCSIFFLAGS");
+        close(s);
         return false;
     }
 
@@ -191,6 +194,7 @@ cyg_bool_t init_loopback_interface(int lo)
         diag_printf(", gateway: %s\n", inet_ntoa(((struct sockaddr_in *)&route.rt_gateway)->sin_addr));
         if (errno != EEXIST) {
             perror("SIOCADDRT 3");
+            close(s);
             return false;
         }
     }
@@ -283,6 +287,9 @@ init_all_network_interfaces(void)
 #ifdef CYGPKG_IO_PCMCIA
     cyg_netdevtab_entry_t *t;
 #endif // CYGPKG_IO_PCMCIA
+#ifdef CYGOPT_NET_IPV6_ROUTING_THREAD
+    int rs_wait = 40;
+#endif
 
     cyg_scheduler_lock();
     while ( in_init_all_network_interfaces ) {
@@ -455,6 +462,14 @@ init_all_network_interfaces(void)
 
 #ifdef CYGOPT_NET_IPV6_ROUTING_THREAD
     ipv6_start_routing_thread();
+
+    // Wait for router solicit process to happen.
+    while (rs_wait-- && !cyg_net_get_ipv6_advrouter(NULL)) {
+      cyg_thread_delay(10);
+    }
+    if (rs_wait == 0 ) {
+      diag_printf("No router solicit received\n");
+    } 
 #endif
 
 #ifdef CYGDAT_NS_DNS_DEFAULT_SERVER

@@ -62,6 +62,10 @@ tftp_test(struct bootp *bp)
 {
     int res, err, len;
     struct sockaddr_in host;
+#ifdef CYGPKG_NET_INET6
+    struct sockaddr_in6 ipv6router;
+    char server[64];
+#endif
 
     memset((char *)&host, 0, sizeof(host));
     host.sin_len = sizeof(host);
@@ -75,10 +79,35 @@ tftp_test(struct bootp *bp)
         diag_dump_buf(buf, min(res,1024));
     }
     len = res;
-    diag_printf("Trying tftp_put %d %16s, length %d\n",
+    diag_printf("Trying tftp_put %s %16s, length %d\n",
                 PUTFILE, inet_ntoa(host.sin_addr), len);
     res = tftp_put( PUTFILE, &host, buf, len, TFTP_OCTET, &err);
     diag_printf("put - res: %d\n", res);
+
+#ifdef CYGPKG_NET_INET6
+    // Wait for router solicit process to happen.
+    if (!cyg_net_get_ipv6_advrouter(&ipv6router)) {
+      diag_printf("No router advertisement recieved\n");
+      cyg_test_exit();
+    }
+
+    getnameinfo((struct sockaddr *)&ipv6router,sizeof(ipv6router),
+		server, sizeof(server), 0 ,0 ,NI_NUMERICHOST);
+
+    diag_printf("Trying tftp_get %s using IPv6 from %16s...\n", GETFILE, server);
+
+    res = tftp_client_get( GETFILE, server, 0, buf, sizeof(buf), 
+			   TFTP_OCTET, &err);
+    diag_printf("IPv6 res = %d, err = %d\n", res, err);
+    if (res > 0) {
+        diag_dump_buf(buf, min(res,1024));
+    }
+    len = res;
+    diag_printf("Trying tftp_put %s using IPv6 to %16s, length %d\n",
+                PUTFILE, server, len);
+    res = tftp_client_put( PUTFILE, server, 0, buf, len, TFTP_OCTET, &err);
+    diag_printf("put - res: %d\n", res);
+#endif
 }
 
 void
@@ -115,3 +144,5 @@ cyg_start(void)
     cyg_thread_resume(thread_handle);  // Start it
     cyg_scheduler_start();
 }
+
+

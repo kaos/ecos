@@ -52,6 +52,8 @@
  *	BSDI getifaddrs.c,v 2.12 2000/02/23 14:51:59 dab Exp
  */
 
+#include <cyg/infra/diag.h>
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Andrew.Lunn@ascom.ch
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:         2000-04-06
 // Purpose:      
 // Description:  
@@ -63,25 +64,31 @@
 // Read a file from a host into a local buffer.  Returns the
 // number of bytes actually read, or (-1) if an error occurs.
 // On error, *err will hold the reason.
-//
-int
-tftp_get(char *filename,
-         struct sockaddr_in *server,
-         char *buf,
-         int len,
-         int mode,
-         int *err)
-{
-    int res = 0;
-    int s, actual_len, data_len, recv_len, from_len;
+// This version uses the server name. This can be a name for DNS lookup
+// or a dotty or colony number format for IPv4 or IPv6.
+int tftp_client_get(char *filename,
+		    char *server,
+		    int port,
+		    char *buf,
+		    int len,
+		    int mode,
+		    int *err) {
+		    
+    int result = 0;
+    int s=-1;
+    int actual_len, data_len, recv_len, from_len;
     static int get_port = 7700;
-    struct sockaddr_in local_addr, server_addr, from_addr;
+    struct addrinfo * addrinfo;
+    struct addrinfo * res;
+    struct addrinfo hints;
+    int error;
+
+    struct sockaddr local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *hdr = (struct tftphdr *)data;
     char *cp, *fp;
     struct timeval timeout;
     unsigned short last_good_block = 0;
-    struct servent *server_info;
     fd_set fds;
     int total_timeouts = 0;
 
@@ -103,130 +110,188 @@ tftp_get(char *filename,
     }
     while (*fp) *cp++ = *fp++;
     *cp++ = '\0';
-    server_info = getservbyname("tftp", "udp");
-    if (server_info == (struct servent *)0) {
-        *err = TFTP_NETERR;
-        return -1;
-    }
 
-    s = socket(AF_INET, SOCK_DGRAM, 0);
-    if (s < 0) {
-        // Couldn't open a communications channel
-        *err = TFTP_NETERR;
-        return -1;
+    memset(&hints,0,sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    error = getaddrinfo(server, "tftp", &hints, &res);
+    if (error) {
+      *err = TFTP_NETERR;
+      return -1;
     }
-    memset((char *)&local_addr, 0, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_len = sizeof(local_addr);
-    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    local_addr.sin_port = htons(get_port++);
-    if (bind(s, (struct sockaddr *)&local_addr, sizeof(local_addr)) < 0) {
-        // Problem setting up my end
-        *err = TFTP_NETERR;
-        close(s);
-        return -1;
-    }
-    memset((char *)&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_len = sizeof(server_addr);
-    server_addr.sin_addr = server->sin_addr;
-    if (server->sin_port == 0) {
-        server_addr.sin_port = server_info->s_port; // Network order already
-    } else {
-        server_addr.sin_port = server->sin_port;
-    }
+    
+    addrinfo = res;
+    while (addrinfo) {
+      s = socket(addrinfo->ai_family, addrinfo->ai_socktype, 
+		 addrinfo->ai_protocol);
+      if (s >= 0) {
+	memcpy(&local_addr,addrinfo->ai_addr,addrinfo->ai_addrlen);
+	switch(addrinfo->ai_addr->sa_family) {
+	case AF_INET: {
+	  struct sockaddr_in * saddr = 
+	    (struct sockaddr_in *) addrinfo->ai_addr;
+	  struct sockaddr_in * laddr = 
+	    (struct sockaddr_in *) &local_addr;
+	  if (port) {
+	    saddr->sin_port = htons(port);
+	  }
+	  laddr->sin_port = htons(get_port++);
+	  laddr->sin_addr.s_addr = INADDR_ANY;
+	  break;
+	}
+#ifdef CYGPKG_NET_INET6
+	case AF_INET6: {
+	  struct sockaddr_in6 * saddr = 
+	    (struct sockaddr_in6 *) addrinfo->ai_addr;
+	  struct sockaddr_in6 * laddr = 
+	    (struct sockaddr_in6 *) &local_addr;
+	  if (port) {
+	    saddr->sin6_port = htons(port);
+	  }
+	  laddr->sin6_port = htons(get_port++);
+	  laddr->sin6_addr = in6addr_any;
+	  break;
+	}
+#endif
+	default:
+	  *err = TFTP_NETERR;
+	  goto out;
+	}
 
-    // Send request
-    if (sendto(s, data, (int)(cp - data), 0, 
-               (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        // Problem sending request
-        *err = TFTP_NETERR;
-        close(s);
-        return -1;
-    }
+	if (bind(s,&local_addr,addrinfo->ai_addrlen) < 0) {
+	  *err = TFTP_NETERR;
+	  goto out;
+	}
+	
+	// Send request
+	if (sendto(s, data, (int)(cp-data), 0, 
+		   addrinfo->ai_addr, 
+		   addrinfo->ai_addrlen) < 0) {
+	  // Problem sending request
+	  *err = TFTP_NETERR;
+	  goto nextaddr;
+	}
 
-    // Read data
-    fp = buf;
-    while (true) {
-        timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
-        timeout.tv_usec = 0;
-        FD_ZERO(&fds);
-        FD_SET(s, &fds);
-        if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
-            if ((++total_timeouts > TFTP_TIMEOUT_MAX) || (last_good_block == 0)) {
-                // Timeout - no data received
-                *err = TFTP_TIMEOUT;
-                close(s);
-                return -1;
-            }
-            // Try resending last ACK
-            hdr->th_opcode = htons(ACK);
-            hdr->th_block = htons(last_good_block);
-            if (sendto(s, data, 4 /* FIXME */, 0, 
-                       (struct sockaddr *)&from_addr, from_len) < 0) {
-                // Problem sending request
-                *err = TFTP_NETERR;
-                close(s);
-                return -1;
-            }
-        } else {
-            recv_len = sizeof(data);
-            from_len = sizeof(from_addr);
-            if ((data_len = recvfrom(s, &data, recv_len, 0, 
-                                     (struct sockaddr *)&from_addr, &from_len)) < 0) {
-                // What happened?
-                *err = TFTP_NETERR;
-                close(s);
-                return -1;
-            }
-            if (ntohs(hdr->th_opcode) == DATA) {
-                actual_len = 0;
-                if (ntohs(hdr->th_block) == (last_good_block+1)) {
-                    // Consume this data
-                    cp = hdr->th_data;
-                    data_len -= 4;  /* Sizeof TFTP header */
-                    actual_len = data_len;
-                    res += actual_len;
-                    while (data_len-- > 0) {
-                        if (len-- > 0) {
-                            *fp++ = *cp++;
-                        } else {
-                            // Buffer overflow
-                            *err = TFTP_TOOLARGE;
-                            close(s);
-                            return -1;
-                        }
-                    }
-                    last_good_block++;
-                }
-                // Send out the ACK
-                hdr->th_opcode = htons(ACK);
-                hdr->th_block = htons(last_good_block);
-                if (sendto(s, data, 4 /* FIXME */, 0, 
-                           (struct sockaddr *)&from_addr, from_len) < 0) {
-                    // Problem sending request
-                    *err = TFTP_NETERR;
-                    close(s);
-                    return -1;
-                }
-                if ((actual_len >= 0) && (actual_len < SEGSIZE)) {
-                    // End of data
-                    close(s);
-                    return res;
-                }
-            } else 
-            if (ntohs(hdr->th_opcode) == ERROR) {
-                *err = ntohs(hdr->th_code);
-                close(s);
-                return -1;
-            } else {
-                // What kind of packet is this?
+	// Read data
+	fp = buf;
+	while (true) {
+	  timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
+	  timeout.tv_usec = 0;
+	  FD_ZERO(&fds);
+	  FD_SET(s, &fds);
+	  if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
+	    if ((++total_timeouts > TFTP_TIMEOUT_MAX) 
+		|| (last_good_block == 0)) {
+	      // Timeout - no data received
+	      *err = TFTP_TIMEOUT;
+	      goto out;
+	    }
+	    // Try resending last ACK
+	    hdr->th_opcode = htons(ACK);
+	    hdr->th_block = htons(last_good_block);
+	    if (sendto(s, data, 4 /* FIXME */, 0, 
+		       &from_addr, from_len) < 0) {
+	      // Problem sending request
+	      *err = TFTP_NETERR;
+	      goto out;
+	    }
+	  } else {
+	    recv_len = sizeof(data);
+	    from_len = sizeof(from_addr);
+	    if ((data_len = recvfrom(s, &data, recv_len, 0, 
+				     &from_addr, &from_len)) < 0) {
+	      // What happened?
+	      *err = TFTP_NETERR;
+	      goto out;
+	    }
+	    if (ntohs(hdr->th_opcode) == DATA) {
+	      actual_len = 0;
+	      if (ntohs(hdr->th_block) == (last_good_block+1)) {
+		// Consume this data
+		cp = hdr->th_data;
+		data_len -= 4;  /* Sizeof TFTP header */
+		actual_len = data_len;
+		result += actual_len;
+		while (data_len-- > 0) {
+		  if (len-- > 0) {
+		    *fp++ = *cp++;
+		  } else {
+		    // Buffer overflow
+		    *err = TFTP_TOOLARGE;
+		    goto out;
+		  }
+		}
+		last_good_block++;
+	      }
+	      // Send out the ACK
+	      hdr->th_opcode = htons(ACK);
+	      hdr->th_block = htons(last_good_block);
+	      if (sendto(s, data, 4 /* FIXME */, 0, 
+			 &from_addr, from_len) < 0) {
+		// Problem sending request
+		*err = TFTP_NETERR;
+		goto out;
+	      }
+	      if ((actual_len >= 0) && (actual_len < SEGSIZE)) {
+		// End of data
+		close(s);
+		freeaddrinfo(res);
+		return result;
+	      }
+	    } else 
+	      if (ntohs(hdr->th_opcode) == ERROR) {
+		*err = ntohs(hdr->th_code);
+		goto out;
+	      } else {
+		// What kind of packet is this?
                 *err = TFTP_PROTOCOL;
-                close(s);
-                return -1;
-            }
-        }
+		goto out;
+	      }
+	  }
+	}
+      }
+      // If we got here, it means there was a problem connecting to the 
+      // server. Try the next address returned by getaddrinfo
+    nextaddr:
+      if (-1 != s) {
+	close(s);
+      }
+      addrinfo=addrinfo->ai_next;
     }
+    // We ran into problems. Cleanup
+ out:
+    if (-1 != s) {
+      close (s);
+    }
+    freeaddrinfo(res);
+    return -1;
+}
+//
+// Read a file from a host into a local buffer.  Returns the
+// number of bytes actually read, or (-1) if an error occurs.
+// On error, *err will hold the reason.
+//
+// Depreciated. Use tftp_client_get instead.
+int
+tftp_get(char *filename,
+         struct sockaddr_in *server,
+         char *buf,
+         int len,
+         int mode,
+         int *err)
+{
+  char server_name[20];
+  char *ret;
+  int port;
+
+  ret = inet_ntop(AF_INET, (void *)&server->sin_addr, 
+		  server_name, sizeof(server_name));
+  if (NULL == ret) {
+      *err = TFTP_NETERR;
+      return -1;
+  }
+  port = server->sin_port;
+
+  return tftp_client_get(filename, server_name, port, buf, len, mode, err);
 }
 
 //
@@ -240,186 +305,247 @@ tftp_put(char *filename,
          int mode,
          int *err)
 {
-    int res = 0;
+  char server_name[20];
+  char *ret;
+  int port;
+
+  ret = inet_ntop(AF_INET, (void *)&server->sin_addr, 
+		  server_name, sizeof(server_name));
+  if (NULL == ret) {
+      *err = TFTP_NETERR;
+      return -1;
+  }
+  port = server->sin_port;
+
+  return tftp_client_put(filename, server_name, port, buf, len, mode, err);
+}
+
+//
+// Put a file to a host from a local buffer.  Returns the
+// number of bytes actually writen, or (-1) if an error occurs.
+// On error, *err will hold the reason.
+// This version uses the server name. This can be a name for DNS lookup
+// or a dotty or colony number format for IPv4 or IPv6.
+int tftp_client_put(char *filename,
+		    char *server,
+		    int port,
+		    char *buf,
+		    int len,
+		    int mode,
+		    int *err) {
+
+    int result = 0;
     int s, actual_len, data_len, recv_len, from_len;
     static int put_port = 7800;
-    struct sockaddr_in local_addr, server_addr, from_addr;
+    struct sockaddr local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *hdr = (struct tftphdr *)data;
     char *cp, *fp, *sfp;
     struct timeval timeout;
     unsigned short last_good_block = 0;
-    struct servent *server_info;
     fd_set fds;
     int total_timeouts = 0;
+    struct addrinfo hints;
+    struct addrinfo * addrinfo;
+    struct addrinfo * res;
+    int error;
 
     *err = 0;  // Just in case
 
-    server_info = getservbyname("tftp", "udp");
-    if (server_info == (struct servent *)0) {
-        *err = TFTP_NETERR;
-        return -1;
+    memset(&hints,0,sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    error = getaddrinfo(server, "tftp", &hints, &res);
+    if (error) {
+      *err = TFTP_NETERR;
+      return -1;
     }
+    
+    addrinfo = res;
+    while (addrinfo) {
+      s = socket(addrinfo->ai_family, addrinfo->ai_socktype,
+		 addrinfo->ai_protocol);
+      if (s >= 0) {
+	memcpy(&local_addr,addrinfo->ai_addr,addrinfo->ai_addrlen);
+	switch(addrinfo->ai_addr->sa_family) {
+	case AF_INET: {
+	  struct sockaddr_in * saddr = 
+	    (struct sockaddr_in *) addrinfo->ai_addr;
+	  struct sockaddr_in * laddr = 
+	    (struct sockaddr_in *) &local_addr;
+	  if (port) {
+	    saddr->sin_port = htons(port);
+	  }
+	  laddr->sin_port = htons(put_port++);
+	  laddr->sin_addr.s_addr = INADDR_ANY;
+	  break;
+	}
+#ifdef CYGPKG_NET_INET6
+	case AF_INET6: {
+	  struct sockaddr_in6 * saddr = 
+	    (struct sockaddr_in6 *) addrinfo->ai_addr;
+	  struct sockaddr_in6 * laddr = 
+	    (struct sockaddr_in6 *) &local_addr;
+	  if (port) {
+	    saddr->sin6_port = htons(port);
+	  }
+	  laddr->sin6_port = htons(put_port++);
+	  laddr->sin6_addr = in6addr_any;
+	  break;
+	}
+#endif
+	default:
+	  *err = TFTP_NETERR;
+	  goto out;
+	}
+	if (bind(s, 
+		 (struct sockaddr *)&local_addr, 
+		 addrinfo->ai_addrlen) < 0) {
+	  // Problem setting up my end
+	  *err = TFTP_NETERR;
+	  goto out;
+	}
 
-    s = socket(AF_INET, SOCK_DGRAM, 0);
-    if (s < 0) {
-        // Couldn't open a communications channel
-        *err = TFTP_NETERR;
-        return -1;
-    }
-    memset((char *)&local_addr, 0, sizeof(local_addr));
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_len = sizeof(local_addr);
-    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    local_addr.sin_port = htons(put_port++);
-    if (bind(s, (struct sockaddr *)&local_addr, sizeof(local_addr)) < 0) {
-        // Problem setting up my end
-        *err = TFTP_NETERR;
-        close(s);
-        return -1;
-    }
-    memset((char *)&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_len = sizeof(server_addr);
-    server_addr.sin_addr = server->sin_addr;
-    if (server->sin_port == 0) {
-        server_addr.sin_port = server_info->s_port; // Network order already
-    } else {
-        server_addr.sin_port = server->sin_port;
-    }
-
-    while (1) {
-        // Create initial request
-        hdr->th_opcode = htons(WRQ);  // Create/write file
-        cp = (char *)&hdr->th_stuff;
-        fp = filename;
-        while (*fp) *cp++ = *fp++;
-        *cp++ = '\0';
-        if (mode == TFTP_NETASCII) {
+	while (1) {
+	  // Create initial request
+	  hdr->th_opcode = htons(WRQ);  // Create/write file
+	  cp = (char *)&hdr->th_stuff;
+	  fp = filename;
+	  while (*fp) *cp++ = *fp++;
+	  *cp++ = '\0';
+	  if (mode == TFTP_NETASCII) {
             fp = "NETASCII";
-        } else if (mode == TFTP_OCTET) {
+	  } else if (mode == TFTP_OCTET) {
             fp = "OCTET";
-        } else {
+	  } else {
             *err = TFTP_INVALID;
-            return -1;
-        }
-        while (*fp) *cp++ = *fp++;
-        *cp++ = '\0';
-        // Send request
-        if (sendto(s, data, (int)(cp-data), 0, 
-                   (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+	    goto out;
+	  }
+	  while (*fp) *cp++ = *fp++;
+	  *cp++ = '\0';
+	  // Send request
+	  if (sendto(s, data, (int)(cp-data), 0, 
+		     addrinfo->ai_addr,
+		     addrinfo->ai_addrlen) < 0) {
             // Problem sending request
             *err = TFTP_NETERR;
-            close(s);
-            return -1;
-        }
-        // Wait for ACK
-        timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
-        timeout.tv_usec = 0;
-        FD_ZERO(&fds);
-        FD_SET(s, &fds);
-        if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
+	    goto nextaddr;
+	  }
+	  // Wait for ACK
+	  timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
+	  timeout.tv_usec = 0;
+	  FD_ZERO(&fds);
+	  FD_SET(s, &fds);
+	  if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
             if (++total_timeouts > TFTP_TIMEOUT_MAX) {
-                // Timeout - no ACK received
-                *err = TFTP_TIMEOUT;
-                close(s);
-                return -1;
+	      // Timeout - no ACK received
+	      *err = TFTP_TIMEOUT;
+	      goto nextaddr;
             }
-        } else {
+	  } else {
             recv_len = sizeof(data);
             from_len = sizeof(from_addr);
             if ((data_len = recvfrom(s, &data, recv_len, 0, 
-                                     (struct sockaddr *)&from_addr, &from_len)) < 0) {
-                // What happened?
-                *err = TFTP_NETERR;
-                close(s);
-                return -1;
+                                     &from_addr, &from_len)) < 0) {
+	      // What happened?
+	      *err = TFTP_NETERR;
+	      goto out;
             }
             if (ntohs(hdr->th_opcode) == ACK) {
-                // Write request accepted - start sending data
-                break;
+	      // Write request accepted - start sending data
+	      break;
             } else 
-            if (ntohs(hdr->th_opcode) == ERROR) {
+	      if (ntohs(hdr->th_opcode) == ERROR) {
                 *err = ntohs(hdr->th_code);
-                close(s);
-                return -1;
-            } else {
+                goto out;
+	      } else {
+                // What kind of packet is this?
+		goto out;
+	      }
+	  }
+	}
+	
+	// Send data
+	sfp = buf;
+	last_good_block = 1;
+	while (result < len) {
+	  // Build packet of data to send
+	  data_len = min(SEGSIZE, len-result);
+	  hdr->th_opcode = htons(DATA);
+	  hdr->th_block = htons(last_good_block);
+	  cp = hdr->th_data;
+	  fp = sfp;
+	  actual_len = data_len + 4;
+	  // FIXME - what about "netascii" data?
+	  while (data_len-- > 0) *cp++ = *fp++;
+	  // Send data packet
+	  if (sendto(s, data, actual_len, 0, 
+		     &from_addr, from_len) < 0) {
+            // Problem sending request
+            *err = TFTP_NETERR;
+	    goto out;
+	  }
+	  // Wait for ACK
+	  timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
+	  timeout.tv_usec = 0;
+	  FD_ZERO(&fds);
+	  FD_SET(s, &fds);
+	  if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
+            if (++total_timeouts > TFTP_TIMEOUT_MAX) {
+	      // Timeout - no data received
+	      *err = TFTP_TIMEOUT;
+	      goto out;
+            }
+	  } else {
+            recv_len = sizeof(data);
+            from_len = sizeof(from_addr);
+            if ((data_len = recvfrom(s, &data, recv_len, 0, 
+                                     &from_addr, &from_len)) < 0) {
+	      // What happened?
+	      *err = TFTP_NETERR;
+	      goto out;
+            }
+            if (ntohs(hdr->th_opcode) == ACK) {
+	      if (ntohs(hdr->th_block) == last_good_block) {
+		// Advance pointers, etc
+		sfp = fp;
+		result += (actual_len - 4);
+		last_good_block++;
+	      } else {
+		diag_printf("Send block #%d, got ACK for #%d\n", 
+			    last_good_block, ntohs(hdr->th_block));
+	      }
+            } else 
+	      if (ntohs(hdr->th_opcode) == ERROR) {
+                *err = ntohs(hdr->th_code);
+                goto out;
+	      } else {
                 // What kind of packet is this?
                 *err = TFTP_PROTOCOL;
-                close(s);
-                return -1;
-            }
-        }
-    }
+		goto out;
+	      }
+	  }
+	}
+	close (s);
+	return result;
+      }
 
-    // Send data
-    sfp = buf;
-    last_good_block = 1;
-    while (res < len) {
-        // Build packet of data to send
-        data_len = min(SEGSIZE, len-res);
-        hdr->th_opcode = htons(DATA);
-        hdr->th_block = htons(last_good_block);
-        cp = hdr->th_data;
-        fp = sfp;
-        actual_len = data_len + 4;
-        // FIXME - what about "netascii" data?
-        while (data_len-- > 0) *cp++ = *fp++;
-        // Send data packet
-        if (sendto(s, data, actual_len, 0, 
-                   (struct sockaddr *)&from_addr, from_len) < 0) {
-            // Problem sending request
-            *err = TFTP_NETERR;
-            close(s);
-            return -1;
-        }
-        // Wait for ACK
-        timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
-        timeout.tv_usec = 0;
-        FD_ZERO(&fds);
-        FD_SET(s, &fds);
-        if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
-            if (++total_timeouts > TFTP_TIMEOUT_MAX) {
-                // Timeout - no data received
-                *err = TFTP_TIMEOUT;
-                close(s);
-                return -1;
-            }
-        } else {
-            recv_len = sizeof(data);
-            from_len = sizeof(from_addr);
-            if ((data_len = recvfrom(s, &data, recv_len, 0, 
-                                     (struct sockaddr *)&from_addr, &from_len)) < 0) {
-                // What happened?
-                *err = TFTP_NETERR;
-                close(s);
-                return -1;
-            }
-            if (ntohs(hdr->th_opcode) == ACK) {
-                if (ntohs(hdr->th_block) == last_good_block) {
-                    // Advance pointers, etc
-                    sfp = fp;
-                    res += (actual_len - 4);
-                    last_good_block++;
-                } else {
-                    diag_printf("Send block #%d, got ACK for #%d\n", 
-                                last_good_block, ntohs(hdr->th_block));
-                }
-            } else 
-            if (ntohs(hdr->th_opcode) == ERROR) {
-                *err = ntohs(hdr->th_code);
-                close(s);
-                return -1;
-            } else {
-                // What kind of packet is this?
-                *err = TFTP_PROTOCOL;
-                close(s);
-                return -1;
-            }
-        }
+      // If we got here, it means there was a problem connecting to the 
+      // server. Try the next address returned by getaddrinfo
+    nextaddr:
+      if (-1 != s) {
+	close(s);
+      }
+      addrinfo=addrinfo->ai_next;
     }
-    close(s);
-    return res;
+    // We ran into problems. Cleanup
+ out:
+    if (-1 != s) {
+      close (s);
+    }
+    freeaddrinfo(res);
+    return -1;
 }
 
 // EOF tftp_client.c
+
+

@@ -154,6 +154,31 @@ cdl_package CYGPKG_NET {
             threads can have precedence over TFTP server processing."
         }
 
+	cdl_component CYGSEM_NET_TFTPD_MULTITHREADED {
+	    display "Multiple TFTPD server threads on the same port."
+	    flavor  bool
+	    default_value 1
+	    description "
+		This option controls the tftp server ability to be
+        	multi-threaded. When enabled, multiple server can be
+	        started on the same port number. This allows multiple
+	        concurrent transfers to be active. When this option is
+	        not enabled, while one transfer is active, other
+	        requests will be delayed or even ignored."
+		
+            cdl_option CYGNUM_NET_TFTPD_MULTITHREADED_PORTS {
+		display "Number of different ports with servers"
+	        flavor data
+	        default_value 1
+	        description "
+		   Each set of servers running on the same port number
+	           require a semaphore to synchronise there operation. This option
+		   controls the number of semaphores and so the number
+                   of port numbers multithreaded servers which can be
+		   running on."
+            }
+        }
+
         cdl_option CYGPKG_NET_TFTP_FILE_ACCESS {
             display       "File I/O functions for TFTP server"
             flavor        bool
@@ -370,7 +395,8 @@ cdl_package CYGPKG_NET {
                     tests/tcp_lo_test \
                     tests/udp_lo_test \
                     tests/multi_lo_select \
-                    tests/tcp_lo_select"
+                    tests/tcp_lo_select \
+                    tests/addr_test.c " 
             :
                     "tests/ping_lo_test \
                     tests/tcp_lo_test \

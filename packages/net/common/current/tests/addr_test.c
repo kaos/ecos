@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:         2002-03-19
 // Purpose:      
 // Description:  
@@ -56,13 +56,13 @@ walk_addrs(struct addrinfo *ai, char *title)
     diag_printf("INFO: %s\n", title);
     while (ai) {
         _inet_ntop(ai->ai_addr, addr_buf, sizeof(addr_buf));
-        diag_printf("INFO: Family: %d, Socket: %d, Addr: %s, Port: %d\n", 
+        diag_printf("INFO: Family: %2d, Socket: %d, Addr: %s, Port: %d\n", 
                     ai->ai_family, ai->ai_socktype, addr_buf, _inet_port(ai->ai_addr));
         ai = ai->ai_next;
     }
 }
 
-int 
+void 
 net_test(CYG_ADDRWORD data)
 {
     int err;
@@ -77,6 +77,7 @@ net_test(CYG_ADDRWORD data)
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all passive");
+
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -86,6 +87,7 @@ net_test(CYG_ADDRWORD data)
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all active");
+
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -95,6 +97,27 @@ net_test(CYG_ADDRWORD data)
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "IPv4 passive");
+
+    bzero(&hints, sizeof(hints));
+    hints.ai_family = PF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    if ((err = getaddrinfo("192.168.1.2", "7734", &hints, &addrs)) != EAI_NONE) {
+        diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
+        pexit("getaddrinfo");
+    }
+    walk_addrs(addrs, "IPv4 passive 192.168.1.2");
+
+    bzero(&hints, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    if ((err = getaddrinfo("192.168.1.2", "7734", &hints, &addrs)) != EAI_NONE) {
+        diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
+        pexit("getaddrinfo");
+    }
+    walk_addrs(addrs, "all passive 192.168.1.2");
+
 #ifdef CYGPKG_NET_INET6
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_INET6;
@@ -105,7 +128,27 @@ net_test(CYG_ADDRWORD data)
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "IPv6 passive");
+
+    bzero(&hints, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    if ((err = getaddrinfo(NULL, "7734", &hints, &addrs)) != EAI_NONE) {
+        diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
+        pexit("getaddrinfo");
+    }
+    walk_addrs(addrs, "all passive");
+
+    bzero(&hints, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    if ((err = getaddrinfo("fe80::260:97ff:feb0:866e", "7734", &hints, &addrs)) 
+	!= EAI_NONE) {
+        diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
+        pexit("getaddrinfo");
+    }
+    walk_addrs(addrs, "all passive fe80::260:97ff:feb0:866e");
 #endif
+
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
@@ -115,7 +158,18 @@ net_test(CYG_ADDRWORD data)
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all snmp/udp");
+
+    bzero(&hints, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = 0;
+    hints.ai_flags = AI_PASSIVE;
+    if ((err = getaddrinfo(NULL, "snmp", &hints, &addrs)) != EAI_NONE) {
+        diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
+        pexit("getaddrinfo");
+    }
+    walk_addrs(addrs, "all snmp/*");
     CYG_TEST_PASS_FINISH("Address [library] test OK");
+
 }
 void
 cyg_start(void)

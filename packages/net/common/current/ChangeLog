@@ -1,3 +1,14 @@
+2003-04-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/network_support.c (init_loopback_interface): Close the
+	socket when things go wrong otherwise we leak sockets.
+
+	* src/tftp_server.c (tftpd_server): Added support for IPv6 as well
+	as IPv4. Extended the multithreading support so that it works
+	correctly when there are multiple servers on multiple ports.  
+	* doc/tcpip.sgml: Documentation for the changes made to the tftp
+	server.
+
 2003-04-11  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* tests/linux_echo.c: Renamed to....
@@ -19,10 +30,57 @@
 	* tests/nc_test_slave.c: changed 'bool' to 'int' because the compiler
 	didn't like 'bool'.
 
+2003-04-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/network_support.c (init_all_network_interfaces): Wait upto 4
+	seconds for a router solicit message to be received. Once we have
+	received the message we know we have a valid IPv6 address.
+
+	* src/tftp_client.c: Added support for IPv6. This requires two new
+	functions, tftp_client_{get|put} which are protocol version
+        independent.
+	* tests/tftp_client_test.c (tftp_test): Added tests which use IPv6
+	addresses.
+	
+2003-04-07  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/getaddrinfo.c (getaddrinfo): Correctly deal with node when
+	its not NULL. Its OK for the address to not parse for an address
+	family when AF_UNSPEC is passed in hints. Also get the socktype
+	correct when wildcarding for services that use UDP.
+	* tests/addr_test.c: Added more test cases which test IP addresses
+	in number format as node.
+
+2003-04-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/net.cdl: Added addr_tests to the HW tests.
+	* tests/addr_test.c (net_test): void function not int.
+	* tests/ping_test.c (net_test): Added IPv6 ping test. This pings
+	the router which answers our router solicit message.
+	* src/ipv6_routing_thread.c (cyg_rs): Print out the router
+	advertisement message. Cleaned up the debug messages so they can
+	be disabled.
+	* src/ipv6_routing_thread.c (cyg_net_get_ipv6_advrouter): New
+	function to return the address of the router.
+	* include/network.h: Added prototype for above and
+	ipv6_start_routing_thread which did not have a prototype.
+	* src/ipv6_routing_thread.c (cyg_rs): Only wait 2 seconds before 
+	sending the first solicit request rather than 10. 
+	* src/dhcp_prot.c (do_dhcp_down_net): clear the if_laddrreq
+	before using it. If the request fails finish the IPv4 code rather 
+	than returning,.
+	
 2003-04-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
-	* src/dhcp_prot.c (do_dhcp_down_net): SIOCGLIFADDR and SIOCDLIFADDR
-	take if_laddrreq not ifreq. This caused stack corruption.
+	* tests/ping_lo_test.c: Added IPv6 ping test.
+	* src/getproto.c: Added the protocol ipv6-icmp.
+
+2003-04-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/dhcp_prot.c (do_dhcp_down_net): SIOCGLIFADDR and
+	SIOCDLIFADDR take if_laddrreq not ifreq. This caused stack
+	corruption. Also initialise the if_laddrreq to zero and only do
+	the second IOCTL call if the first once succeeds.
 
 2003-03-21  Nick Garnett  <nickg@balti.calivar.com>
 

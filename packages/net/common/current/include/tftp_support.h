@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:         2000-04-06
 // Purpose:      
 // Description:  
@@ -81,6 +81,11 @@ __externC int tftpd_stop(int);
  * Client support
  */
 
+/* IPv4 and IPv6 */
+__externC int tftp_client_get(char *, char *, int, char *, int, int, int *);
+__externC int tftp_client_put(char *, char *, int, char *, int, int, int *);
+
+/* IPv4 only */
 __externC int tftp_get(char *, struct sockaddr_in *, char *, int, int, int *);
 __externC int tftp_put(char *, struct sockaddr_in *, char *, int, int, int *);
 

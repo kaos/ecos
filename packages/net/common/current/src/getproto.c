@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -51,7 +51,8 @@ static struct protoent protocols[] = {
     { "xtp",       36}, // Xpress Tranfer Protocol
     { "ddp",       37}, // Datagram Delivery Protocol
     { "idpr-cmtp", 39}, // IDPR Control Message Transport
-    { "rspf",      73}, //Radio Shortest Path First.
+    { "ipv6-icmp", 58}, // ICMP for IPv6
+    { "rspf",      73}, // Radio Shortest Path First.
     { "vmtp",      81}, // Versatile Message Transport
     { "ospf",      89}, // Open Shortest Path First IGP
     { "ipip",      94}, // Yet Another IP encapsulation

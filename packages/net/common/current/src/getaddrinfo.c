@@ -9,6 +9,7 @@
 //
 // Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003 andrew.lunn@ascom.ch
 // All Rights Reserved.
 //
 // Permission is granted to use, copy, modify and redistribute this
@@ -19,7 +20,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:         2002-03-05
 // Purpose:      
 // Description:  
@@ -68,7 +69,11 @@ _getaddr(struct addrinfo *ai, const char *node,
             if (hints->ai_flags & AI_PASSIVE) {
                 sa->sin_addr.s_addr = htonl(INADDR_ANY);
             } else {
+#ifdef CYGPKG_NET_OPENBSD_STACK
+                sa->sin_addr.s_addr = INADDR_LOOPBACK;
+#else
                 sa->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+#endif
             }
         } else {
             _hent = gethostbyname(node);
@@ -123,11 +128,15 @@ getaddrinfo(const char *nodename, const char *servname,
     struct addrinfo dflt_hints;
     struct protoent *proto = (struct protoent *)NULL;
     struct addrinfo *ai;
+#ifdef CYGPKG_NET_INET6
+    struct addrinfo *nai;
+#endif
     char *protoname;
+    char *endptr;
     int port = 0;
-    int family;
     int err;
-
+    int used = 0;
+    
     if (hints == (struct addrinfo *)NULL) {
         dflt_hints.ai_flags = 0;  // No special flags
         dflt_hints.ai_family = PF_UNSPEC;
@@ -142,12 +151,10 @@ getaddrinfo(const char *nodename, const char *servname,
     switch (hints->ai_family) {
     case PF_UNSPEC:
     case PF_INET:
-        family = AF_INET;
-        break;
+      break;
 #ifdef CYGPKG_NET_INET6
     case PF_INET6:
-        family = AF_INET6;
-        break;
+      break;
 #endif
     default:
         return EAI_FAMILY;
@@ -161,7 +168,6 @@ getaddrinfo(const char *nodename, const char *servname,
     if (hints->ai_protocol != 0) {
         proto = getprotobynumber(hints->ai_protocol);
     }
-    ai->ai_family = family;
     if (servname != (char *)NULL) {
         switch (hints->ai_socktype) {
         case 0:
@@ -178,7 +184,8 @@ getaddrinfo(const char *nodename, const char *servname,
             return EAI_SOCKTYPE;
         }
         // See if this is just a port #
-        if ((port = strtol(servname, 0, 0)) >= 0) {
+        if (((port = strtol(servname, &endptr, 0)) >= 0) &&
+	    (endptr > servname)) {
             ai->ai_socktype = hints->ai_socktype;
             if (hints->ai_socktype == 0) {
                 // Need to have complete binding type/port
@@ -199,7 +206,8 @@ getaddrinfo(const char *nodename, const char *servname,
                 freeaddrinfo(ai);
                 return EAI_SERVICE;
             }
-            port = ntohs(serv->s_port);      
+            port = ntohs(serv->s_port);  
+            ai->ai_socktype = SOCK_DGRAM;    
         }
         proto = getprotobyname(protoname);
         if (hints->ai_protocol && (hints->ai_protocol != proto->p_proto)) {
@@ -211,30 +219,51 @@ getaddrinfo(const char *nodename, const char *servname,
     // Iterate through address types and create addresses
     // Note: this does not handle the case where a given service can be
     // handled via multiple protocols, e.g. http/tcp & http/udp
-    err = _getaddr(ai, nodename, hints, family, port);
-    if (err != EAI_NONE) {
+    if ((hints->ai_family == AF_INET) || (hints->ai_family == PF_UNSPEC)) {
+      err = _getaddr(ai, nodename, hints, AF_INET, port);
+      if ((err != EAI_NONE) && (hints->ai_family == AF_INET)) {
         freeaddrinfo(ai);
         return err;
+      }
+      if (err == EAI_NONE) {
+	ai->ai_family = AF_INET;
+	used = 1;
+      }
     }
 #ifdef CYGPKG_NET_INET6
-    if (hints->ai_family == PF_UNSPEC) {
-        // Add IPv6 address as well
-        struct addrinfo *nai = (struct addrinfo *)calloc(1, sizeof(struct addrinfo));
+    if ((hints->ai_family == AF_INET6) || (hints->ai_family == PF_UNSPEC)) {
+      if (1 == used) {
+	nai = (struct addrinfo *)calloc(1,sizeof(struct addrinfo));
         if (nai == (struct addrinfo *)NULL) {
-            freeaddrinfo(ai);
-            return EAI_MEMORY;
+	  freeaddrinfo(ai);
+	  return EAI_MEMORY;
         }
         ai->ai_next = nai;
-        nai->ai_family = PF_INET6;
         nai->ai_socktype = ai->ai_socktype;
         nai->ai_protocol = ai->ai_protocol;
-        err = _getaddr(nai, nodename, hints, AF_INET6, port);
-        if (err != EAI_NONE) {
-            freeaddrinfo(*res);
-            return err;
-        }
+      } else {
+	nai = ai;
+      }
+      err = _getaddr(nai, nodename, hints, AF_INET6, port);
+      if ((err != EAI_NONE) && (hints->ai_family == AF_INET6)) {
+	freeaddrinfo(ai);
+	return err;
+      }
+      // Free the second entry which has not been used
+      if ((err != EAI_NONE) && (1 == used)) {
+	ai->ai_next = NULL;
+	free(nai);
+      }
+      if (err == EAI_NONE) {
+	nai->ai_family = AF_INET6;
+	used = 1;
+      }
     }
 #endif
+    // Do we have at least one address?
+    if (0 == used) {
+      return EAI_NONAME;
+    }
     // Note: null nodename is the same as 'localhost'
     if (nodename == (char *)NULL) {
         nodename = (const char *)"localhost";

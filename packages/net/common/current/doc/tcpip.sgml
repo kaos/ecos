@@ -112,6 +112,12 @@ CYGHWR_NET_DRIVER_ETH0_IPV6_PREFIX for &ldquo;eth0&rdquo;, etc.
 This is a CDL booldata type, allowing this address to be suppressed if
 not desired.
 </PARA>
+
+<PARA>Alternatively, the system can configure its IPv6 address using
+router solicitation. When the CDL option
+CYGOPT_NET_IPV6_ROUTING_THREAD is enabled,
+<function>init_all_network_interface</function> will start a thread which sends out router solicit messages, process router advertisements and thus configure an IPv6 address to the interface.</PARA>
+
 <PARA>
 Refer to the test cases,
 <FILENAME>&hellip;/packages/net/common/<REPLACEABLE>VERSION</REPLACEABLE>/tests/ftp_test.c</FILENAME>
@@ -228,6 +234,11 @@ the receive timeout.  If there is such a machine, of course the
 2nd set of pings succeeds, confirming that we can talk to a machine
 not previously mentioned by configuration or by bootp. It then does
 the same thing on the other interface, eth1.</PARA>
+
+<PARA>If IPv6 is enabled, the program will also ping to the address it
+last received a router advertisement from. Also a ping will be made to
+that address plus 32, in a similar way the the IPv4 case.</PARA>
+
 <PROGRAMLISTING><EMPHASIS>dhcp_test</EMPHASIS>    - ping test, but also manipulates DHCP leases</PROGRAMLISTING>
 <PARA>This test is very similar to the ping test, but in addition,
 provided the network package is not configured to do this automatically,
@@ -362,6 +373,11 @@ be a copy of
 -rw-rw-rw-  1 root       1076 May  1 15:52 tftp_put
 
 </PROGRAMLISTING>
+
+<PARA>If the configuration contains IPv6 support, the test program
+will also use IPv6. It will attempt to put/get the files listed above
+from the address it last received a routers solicit from.</PARA>
+
 <PROGRAMLISTING><EMPHASIS>tftp_server_test</EMPHASIS> - runs a tftp server for a short while</PROGRAMLISTING>
 <PARA>This test is truly interactive, in that you can use a standard
 tftp application to get and put files from the server, during the
@@ -402,8 +418,81 @@ it &mdash; or it comes pre-set from the factory.
 <TITLE>TFTP</TITLE>
 <PARA>The TFTP client and server are described in
 <filename>tftp_support.h</filename>;
-the client API is simple and can be easily understood by reading
-<filename>tftp_client_test.c</filename>.</PARA>
+
+<PARA>The TFTP client has and new and an older, depreciated, API. The
+new API works for both IPv4 and IPv6 where as the depreciated API is
+IPv4 only.
+</PARA>
+<PARA>
+The new API is as follows:
+</PARA>
+<PROGRAMLISTING>int tftp_client_get(char *filename,
+		    char *server,
+		    int port,
+		    char *buf,
+		    int len,
+		    int mode,
+		    int *err);
+
+int tftp_client_put(char *filename,
+		    char *server,
+		    int port,
+		    char *buf,
+		    int len,
+		    int mode,
+		    int *err);
+</PROGRAMLISTING>
+<PARA>Currently <varname>server</varname> can only be a numeric IPv4 or
+IPv6 address. The resolver is currently not used, but it is planned to
+add this feature (patches welcome). If <varname>port</varname> is zero
+the client connects to the default TFTP port on the server. Otherwise
+the specified port is used.
+</PARA>
+<PARA> 
+The depreciated API is:
+<PROGRAMLISTING>int tftp_client_get(char *filename,
+		    struct sockaddr_in *server,
+		    char *buf,
+		    int len,
+		    int mode,
+		    int *err);
+
+int tftp_client_put(char *filename,
+		    struct sockaddr_in *server,
+		    char *buf,
+		    int len,
+		    int mode,
+		    int *err);
+</PROGRAMLISTING>
+<PARA>
+The <varname>server</varname> should contain the address of the
+server to contact. If the <varname>sin_port</varname> member of the
+structure is zero the default TFTP port is used. Otherwise the
+specified port is used.
+</PARA>
+<PARA>
+Both API's report errors in the same way. The functions return a value
+of -1 and <varname>*err</varname> will be set to one of the
+following values:
+</PARA>
+<PROGRAMLISTING>
+#define	TFTP_ENOTFOUND   1   /* file not found */
+#define	TFTP_EACCESS     2   /* access violation */
+#define	TFTP_ENOSPACE    3   /* disk full or allocation exceeded */
+#define	TFTP_EBADOP      4   /* illegal TFTP operation */
+#define	TFTP_EBADID      5   /* unknown transfer ID */
+#define	TFTP_EEXISTS     6   /* file already exists */
+#define	TFTP_ENOUSER     7   /* no such user */
+#define TFTP_TIMEOUT     8   /* operation timed out */
+#define TFTP_NETERR      9   /* some sort of network error */
+#define TFTP_INVALID    10   /* invalid parameter */
+#define TFTP_PROTOCOL   11   /* protocol violation */
+#define TFTP_TOOLARGE   12   /* file is larger than buffer */
+</PROGRAMLISTING>
+<PARA>If there are no errors the return value is the number of bytes
+transfered.
+</PARA>
+
 <PARA>The server is more complex.  It requires a filesystem implementation
 to be supplied by the user, and attached to the tftp server by means
 of a vector of function pointers:</PARA>
@@ -414,9 +503,52 @@ of a vector of function pointers:</PARA>
              int (&ast;read)(int, void &ast;, int);
 };</PROGRAMLISTING>
 <PARA>These functions have the obvious semantics.  The structure
-describing the filesystem is an argument to the <function>tftpd_start(int,
-struct tftpd_fileops &ast;);</function> call.
- The first argument is the port to use for the server.</PARA>
+describing the filesystem is an argument to the <function>tftpd_start</function>:
+<PROGRAMLISTING>
+int tftp_start(int port,
+               struct tftpd_fileops *ops);
+</PROGRAMLISTING>
+<PARA>The first argument is the port to use for the server. If this
+port number is zero, the default TFTP port number will be used. The
+return value from <function>tftpd_start</function> is a handle which
+can be passed to <function>tftpd_stop</function>. This will kill the
+tftpd thread. Note that this is not a clean shutdown. The thread will
+simply be killed. <function>tftpd_stop</function> will attempt to
+close the sockets the thread was listening on and free some of its
+allocated memory. But if the thread was actively transferreing data at
+the time <function>tftpd_stop</function> is called, it is quite likely
+some memory and a socket will be leaked. Use this function with
+caution (or implement a clean shutdown and please contribute the code
+back :-).
+</PARA>
+
+<PARA>There are two CDL configuration options that control how many
+servers on how many different ports tftp can be
+started. CYGSEM_NET_TFTPD_MULTITHREADED, when enabled, allows multiple
+tftpd threads to operate on the same port number. With only one
+thread, while the thread is active transferring data, new requests for
+transfers will not be served until the active transfer is
+complete. When multiple threads are started on the same port, multiple
+transfers can take place simultaneous, up to the number of threads
+started. However a semaphore is required to synchronise the
+threads. This semaphore is required per port. The CDL option
+CYGNUM_NET_TFTPD_MULTITHREADED_PORTS controls how many different port
+numbers multithreaded servers can service.
+</PARA>
+<PARA>If CYGSEM_NET_TFTPD_MULTITHREADED is not enabled, only one
+thread may be run per port number. But this removes the need for a
+semaphore and so CYGNUM_NET_TFTPD_MULTITHREADED_PORTS is not required
+and unlimited number of ports can be used. </PARA>
+
+<PARA>It should be noted that the TFTPD does not perform any form of
+file locking. When multiple servers are active, it is assumed the
+underlying filesystem will refuse to open the same file multiple
+times, operate correctly with simultaneous read/writes to the same
+file, or if you are unlucky, corrupt itself beyond all repair.</PARA>
+ 
+<PARA>When IPv6 is enabled the tftpd thread will listen for requests
+from both IPv4 and IPv6 addresses.</PARA>
+
 <PARA>As discussed in the description of the tftp_server_test
 above, an example filesystem is provided in
 <filename>net/common/<REPLACEABLE>VERSION</REPLACEABLE>/src/tftp_dummy_file.c</filename>

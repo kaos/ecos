@@ -81,22 +81,63 @@ pexit(char *s)
 static void
 tftp_test(struct bootp *bp)
 {
-    int server_id, res;
+    int res;
+    int server1_id = 0;
+    int server2_id = 0;
+    int server3_id = 0;
+
     extern struct tftpd_fileops dummy_fileops;
-    server_id = tftpd_start(0, &dummy_fileops);
-    if (server_id > 0) {
-        diag_printf("TFTP server created - id: %x\n", server_id);
-        // Only let the server run for 5 minutes
-        cyg_thread_delay(2*100); // let the tftpd start up first
-        TNR_ON();
-        cyg_thread_delay(5*60*100);
-        TNR_OFF();
-        res = tftpd_stop(server_id);
-        diag_printf("TFTP server stopped - res: %d\n", res);
+
+    server1_id = tftpd_start(0, &dummy_fileops);
+    if (server1_id > 0) {
+      diag_printf("TFTP server created - id: %x\n", server1_id);
     } else {
-        diag_printf("Couldn't create a server!\n");
+      diag_printf("Couldn't create first server!\n");
     }
-}
+
+#ifdef CYGSEM_NET_TFTPD_MULTITHREADED
+    server2_id = tftpd_start(0, &dummy_fileops);
+    if (server2_id > 0) {
+      diag_printf("Second TFTP server created - id: %x\n", server2_id);
+    } else {
+      diag_printf("Couldn't create a second server!\n");
+    }
+#if CYGNUM_NET_TFTPD_MULTITHREADED_PORTS > 1
+    server3_id = tftpd_start(1025, &dummy_fileops);
+    if (server3_id > 0) {
+      diag_printf("Third TFTP server created - id: %x\n", server3_id);
+    } else {
+      diag_printf("Couldn't create a third server!\n");
+    }
+#endif //CYGNUM_NET_TFTPD_MULTITHREADED_PORTS > 1
+#else  //CYGSEM_NET_TFTPD_MULTITHREADED
+    server2_id = tftpd_start(1025, &dummy_fileops);
+    if (server2_id > 0) {
+      diag_printf("Second TFTP server created - id: %x\n", server2_id);
+    } else {
+      diag_printf("Couldn't create a second server!\n");
+    }
+#endif //!CYGSEM_NET_TFTPD_MULTITHREADED
+    
+    // Only let the server run for 5 minutes
+    cyg_thread_delay(2*100); // let the tftpd start up first
+    TNR_ON();
+    cyg_thread_delay(5*60*100);
+    TNR_OFF();
+    
+    if (server1_id > 0) {
+      res = tftpd_stop(server1_id);
+      diag_printf("TFTP server - id: %x stopped - res: %d\n", server1_id, res);
+    }
+    if (server2_id > 0) {
+      res = tftpd_stop(server2_id);
+      diag_printf("TFTP server - id: %x stopped - res: %d\n", server2_id, res);
+    }
+    if (server3_id > 0) {
+      res = tftpd_stop(server2_id);
+      diag_printf("TFTP server - id: %x stopped - res: %d\n", server2_id, res);
+    }
+} 
 
 void
 net_test(cyg_addrword_t param)

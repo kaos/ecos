@@ -19,7 +19,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, andrew.lunn@ascom.ch
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -81,5 +81,12 @@ __externC int      select(int, fd_set *, fd_set *, fd_set *, struct timeval *tv)
 #define CYG_NET_GET_MEM_STATS_MBUFS 1 // Mbufs pool
 #define CYG_NET_GET_MEM_STATS_CLUST 2 // Clust pool
 int cyg_net_get_mem_stats( int which, cyg_mempool_info *p );
+
+#ifdef CYGPKG_NET_INET6
+#ifdef CYGOPT_NET_IPV6_ROUTING_THREAD 
+__externC void ipv6_start_routing_thread(void);
+__externC int cyg_net_get_ipv6_advrouter(struct sockaddr_in6 * addr);
+#endif
+#endif
 
 #endif // _NETWORK_H_
