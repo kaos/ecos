@@ -523,9 +523,9 @@ find_free(struct free_chunk *chunks)
 
     // Do not search the area reserved for pre-RedBoot systems:
     fis_ptr = (CYG_ADDRESS *)((CYG_ADDRESS)flash_start + 
-                                CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
-                                CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
-    fis_end = (CYG_ADDRESS *)(CYG_ADDRESS)flash_end;
+                              CYGNUM_REDBOOT_FLASH_RESERVED_BASE + 
+                              CYGBLD_REDBOOT_MIN_IMAGE_SIZE);
+    fis_end = (CYG_ADDRESS *)flash_end;
     chunks[num_chunks-1].start = (CYG_ADDRESS)fis_ptr;
     chunks[num_chunks-1].end = (CYG_ADDRESS)fis_end;
     flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
@@ -538,7 +538,7 @@ find_free(struct free_chunk *chunks)
                     (img->flash_base <= chunks[idx].end)) {
                     if (img->flash_base == chunks[idx].start) {
                         chunks[idx].start += img->size;
-                        if (chunks[idx].start == chunks[idx].end) {
+                        if (chunks[idx].start >= chunks[idx].end) {
                             // This free chunk has collapsed
                             while (idx < (num_chunks-1)) {
                                 chunks[idx] = chunks[idx+1];
