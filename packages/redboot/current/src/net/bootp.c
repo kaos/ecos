@@ -70,7 +70,7 @@ static bootp_header_t *bp_info;
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
 static const unsigned char dhcpCookie[] = {99,130,83,99};
 static const unsigned char dhcpEndOption[] = {255};
-static const unsigned char dhcpRequestOption[] = {53,1,3};
+static const unsigned char dhcpDiscoverOption[] = {53,1,1};
 #endif
 
 static void
@@ -169,7 +169,7 @@ __bootp_find_local_ip(bootp_header_t *info)
     p = b.bp_vend;
      
     AddOption(p,dhcpCookie);
-    AddOption(p,dhcpRequestOption);
+    AddOption(p,dhcpDiscoverOption);
     AddOption(p,dhcpEndOption);
 
     // Some servers insist on a minimum amount of "vendor" data

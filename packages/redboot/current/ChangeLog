@@ -1,5 +1,10 @@
 2003-07-15  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/net/bootp.c: Use correct options for DHCP discover.  This has
+	the added bonus that when BOOTP & GATEWAY options are enabled, then
+	RedBoot can get it's address via normal DHCP.  Of course, DHCP leases
+	will be ignored by RedBoot, so some caution is warranted.
+
 	* include/net/net.h: 
 	* src/net/arp.c (__arp_request): Allow ARP of self - used during
 	initialization to "broadcast" that an IP address is in use.
