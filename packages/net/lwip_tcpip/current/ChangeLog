@@ -1,3 +1,9 @@
+2004-05-05  Jani Monoses <jani@iv.ro>
+
+	* src/netif/ppp/ppp.c: Decrease sleep period in main thread
+	from 250ms to 1ms. Was a leftover of debugging the code and
+	slowing things down.
+
 2004-05-04  Jani Monoses <jani@iv.ro>
 
 	* cdl/lwip_net.cdl
