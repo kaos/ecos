@@ -1,3 +1,8 @@
+2002-06-14  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/ecos/support.c: 
+	Fix compile errors when CYGDBG_NET_TIMING_STATS enabled.
+
 2002-06-05  Gary Thomas  <gary@chez-thomas.org>
 
 	* include/netinet/in.h: Rename 'ip_opts' field (using the same

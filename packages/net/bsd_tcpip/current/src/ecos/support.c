@@ -193,8 +193,8 @@ cyg_net_malloc(u_long size, int type, int flags)
 {
     void *res;
 
-    log(LOG_MDEBUG, "Net malloc[%d] = ", size);
     START_STATS();
+    log(LOG_MDEBUG, "Net malloc[%d] = ", size);
     if (flags & M_NOWAIT) {
         res = cyg_mempool_var_try_alloc(net_mem, size);
     } else {
@@ -218,8 +218,8 @@ cyg_net_mbuf_alloc(int type, int flags)
 {
     void *res;    
 
-    log(LOG_MDEBUG, "Alloc mbuf = ");
     START_STATS();
+    log(LOG_MDEBUG, "Alloc mbuf = ");
     mbstat.m_mbufs++;
     if (flags & M_NOWAIT) {
         res = cyg_mempool_fix_try_alloc(net_mbufs);
@@ -247,8 +247,9 @@ void *
 cyg_net_cluster_alloc(void)
 {
     void *res;
-    log(LOG_MDEBUG, "Allocate cluster = ");
+
     START_STATS();
+    log(LOG_MDEBUG, "Allocate cluster = ");
     res = cyg_mempool_fix_try_alloc(net_clusters);
     FINISH_STATS(stats_cluster_alloc);
     log(LOG_MDEBUG, "%p\n", res);
