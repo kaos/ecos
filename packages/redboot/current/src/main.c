@@ -105,9 +105,16 @@ RedBoot_cmd("help",
             "[<topic>]",
             do_help 
     );
+
+static char go_usage[] = "[-w <timeout>] [-c] "
+#ifdef CYGPKG_IO_ETH_DRIVERS
+                      "[-n] "
+#endif
+                      "[entry]";
+
 RedBoot_cmd("go", 
             "Execute code at a location", 
-            "[-w <timeout>] [entry]",
+            go_usage,
             do_go 
     );
 #ifdef HAL_PLATFORM_RESET
