@@ -1,3 +1,7 @@
+2002-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_v85x_v850.cdl: Don't run cache tests.
+
 2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/v850_common.h: Add register defns for other V850/SA1 models.
@@ -153,7 +157,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

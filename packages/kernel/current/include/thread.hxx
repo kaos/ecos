@@ -37,7 +37,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -467,8 +467,14 @@ private:
 public:
  
     // Add and remove destructors. Returns true on success, false on failure.
-    static cyg_bool     add_destructor( destructor_fn fn, CYG_ADDRWORD data );
-    static cyg_bool     rem_destructor( destructor_fn fn, CYG_ADDRWORD data );
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    static 
+#endif
+    cyg_bool     add_destructor( destructor_fn fn, CYG_ADDRWORD data );
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    static 
+#endif
+    cyg_bool     rem_destructor( destructor_fn fn, CYG_ADDRWORD data );
 #endif
 
 #ifdef CYGVAR_KERNEL_THREADS_NAME

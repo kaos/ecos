@@ -1,3 +1,8 @@
+2002-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_intr.c: Fixed warning.
+	* src/var_misc.c: Same.
+
 2002-05-13  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_powerpc_ppc40x.cdl: This processor family has no FPU.
@@ -86,7 +91,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

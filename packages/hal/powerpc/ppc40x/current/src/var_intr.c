@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -56,6 +56,9 @@
 #include <cyg/hal/ppc_regs.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/infra/cyg_type.h>
+
+extern void hal_platform_IRQ_init(void);
+
 
 static cyg_uint32 exier_mask[] = {
     0x00000000, // Unused

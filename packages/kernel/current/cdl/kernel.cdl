@@ -6,36 +6,36 @@
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
-# -------------------------------------------
-# This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-#
-# eCos is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free
-# Software Foundation; either version 2 or (at your option) any later version.
-#
-# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with eCos; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-#
-# As a special exception, if other files instantiate templates or use macros
-# or inline functions from this file, or you compile this file and link it
-# with other works to produce a work based on this file, this file does not
-# by itself cause the resulting work to be covered by the GNU General Public
-# License. However the source code for this file must still be made available
-# in accordance with section (3) of the GNU General Public License.
-#
-# This exception does not invalidate any other reasons why a work based on
-# this file might be covered by the GNU General Public License.
-#
-# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-# at http://sources.redhat.com/ecos/ecos-license
-# -------------------------------------------
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 # ====================================================================
 ######DESCRIPTIONBEGIN####
@@ -327,14 +327,11 @@ cdl_package CYGPKG_KERNEL {
             flavor  data
             no_define
             calculated { 
-                CYGPKG_HAL_ARM_AEB ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/timeslice" : \
-                CYGPKG_HAL_ARM_EBSA285 ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2 tests/timeslice" : \
-                CYGPKG_HAL_ARM_SA11X0 ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/clocktruth tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2 tests/timeslice" : \
-                CYGPKG_HAL_ARM_EDB7XXX ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2 tests/timeslice" : \
-                CYGPKG_HAL_ARM_CMA230 ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/timeslice" : \
-                CYGPKG_HAL_ARM_E7T ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2 tests/timeslice" : \
-                CYGPKG_HAL_ARM ? "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/clocktruth tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/timeslice" : \
-                "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/clocktruth tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kclock0 tests/kclock1 tests/kexcept1 tests/kintr0 tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kflag0 tests/kflag1 tests/klock tests/kthread0 tests/kthread1 tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2 tests/release tests/kill tests/thread_gdb tests/tm_basic tests/dhrystone tests/stress_threads tests/kcache1 tests/kcache2 tests/smp tests/timeslice" 
+                "tests/bin_sem0 tests/bin_sem1 tests/bin_sem2 tests/clock0 tests/clock1 tests/clockcnv tests/clocktruth tests/cnt_sem0 tests/cnt_sem1 tests/except1 tests/flag0 tests/flag1 tests/intr0 tests/kill tests/mbox1 tests/mqueue1 tests/mutex0 tests/mutex1 tests/mutex2 tests/mutex3 tests/release tests/sched1 tests/sync2 tests/sync3 tests/thread0 tests/thread1 tests/thread2" 
+                . ((CYGFUN_KERNEL_API_C) ? "tests/kclock0 tests/kclock1 tests/kexcept1 tests/kflag0 tests/kflag1 tests/kintr0 tests/klock tests/kmbox1 tests/kmutex0 tests/kmutex1 tests/kmutex3 tests/kmutex4 tests/ksched1 tests/ksem0 tests/ksem1 tests/kthread0 tests/kthread1 tests/stress_threads tests/thread_gdb tests/timeslice tests/tm_basic" : "")
+                . ((!CYGPKG_INFRA_DEBUG && !CYGPKG_KERNEL_INSTRUMENT && CYGFUN_KERNEL_API_C) ? " tests/dhrystone" : "")
+                . ((CYGPKG_KERNEL_SMP_SUPPORT && CYGFUN_KERNEL_API_C) ? " tests/smp" : "")
+                . ((!CYGINT_HAL_TESTS_NO_CACHES && CYGFUN_KERNEL_API_C) ? " tests/kcache1 tests/kcache2" : "")
             }
             description   "
                 This option specifies the set of tests for the eCos kernel."

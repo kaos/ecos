@@ -1,3 +1,7 @@
+2002-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_pid.cdl: Don't run cache tests.
+
 2002-05-13  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_pid.cdl: Removed implemntation of
@@ -832,7 +836,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

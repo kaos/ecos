@@ -1,3 +1,10 @@
+2002-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Don't build tests that are not applicable with the
+	current configuration.
+	Added CYGINT_HAL_TESTS_NO_CACHES which allows cache tests to be
+	suppressed.
+
 2002-05-13  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal.cdl: Removed
@@ -2104,7 +2111,7 @@ Mon Aug 31 09:16:08 1998  Jesper Skov  <jskov@cygnus.co.uk>
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

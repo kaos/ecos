@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -339,6 +339,25 @@ externC void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD
 data)
 {
     Cyg_Thread::self()->set_data(index, data);
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+/* Thread destructors                                                        */
+
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+__externC cyg_bool_t
+cyg_thread_add_destructor( cyg_thread_destructor_fn fn,
+                           cyg_addrword_t data )
+{
+        return Cyg_Thread::self()->add_destructor( fn, data );
+}
+
+__externC cyg_bool_t
+cyg_thread_rem_destructor( cyg_thread_destructor_fn fn,
+                           cyg_addrword_t data )
+{
+        return Cyg_Thread::self()->rem_destructor( fn, data );
 }
 #endif
 

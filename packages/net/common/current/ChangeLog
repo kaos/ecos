@@ -1,3 +1,8 @@
+2002-05-21  Jesper Skov  <jskov@redhat.com>
+
+	* include/net/netdb.h: Include netinet/in.h for the in_addr use in
+	declarations.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* src/tftp_dummy_file.c: Fixed warnings.

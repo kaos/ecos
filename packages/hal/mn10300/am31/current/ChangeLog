@@ -1,3 +1,7 @@
+2002-05-21  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_cache.h (HAL_DCACHE_STORE): Fix warning.
+
 2001-10-15  Nick Garnett  <nickg@redhat.com>
 
 	* src/mn10300_am31.ld: Added test for __GNUC__ >= 3 so that

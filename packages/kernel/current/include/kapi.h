@@ -37,7 +37,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -219,6 +219,19 @@ CYG_ADDRWORD *cyg_thread_get_data_ptr(cyg_ucount32 index);
 
 void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD data);
 
+#endif
+    
+/*---------------------------------------------------------------------------*/
+/* Thread destructors                                                        */
+
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+
+typedef void (*cyg_thread_destructor_fn)(cyg_addrword_t);
+
+cyg_bool_t cyg_thread_add_destructor( cyg_thread_destructor_fn fn,
+                                      cyg_addrword_t data );
+cyg_bool_t cyg_thread_rem_destructor( cyg_thread_destructor_fn fn,
+                                      cyg_addrword_t data );
 #endif
     
 /*---------------------------------------------------------------------------*/

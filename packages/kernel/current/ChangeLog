@@ -1,3 +1,65 @@
+2002-05-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/kapi.h: Expose new cyg_thread_add_destructor and
+	cyg_thread_rem_destructor APIs.
+
+	* include/kapidata.h (struct Cyg_Destructor_Entry):
+	Change CYG_ADDRWORD to more correct cyg_addrword_t.
+
+	* include/thread.hxx (class Cyg_Thread): add_destructor and
+	rem_destructor are onyl static when not per-thread.
+
+	* include/thread.inl (add_destructor): Don't need to lock and unlock
+	scheduler when destructors are per-thread.
+	(rem_destructor): Ditto.
+
+	* src/common/thread.cxx (exit): No need to lock scheduler when
+	calling destructors.
+
+	* doc/kernel.sgml: Document thread destructor API.
+
+2002-05-23  Nick Garnett  <nickg@redhat.com>
+
+	* doc/kernel.sgml: Some more edits to the kernel documentation:
+	changed all references to message boxes to mail boxes, clarified
+	some thing in various places, fixed a few typos.
+
+2002-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/kernel.cdl: Cleaned up kernel tests rule. Also remove tests
+	depending on the C API when its not present. And skip dhrystone
+	test when debug or instrumentation is enabled.
+
+	* tests/tm_basic.cxx: Fixed warning.
+
+2002-05-22  Nick Garnett  <nickg@redhat.com>
+
+	* doc/kernel.sgml:
+	Fixed up SMP documentation.
+	Rewrote condtion variable documentation to make its relationship
+	to mutexes more apparent.
+
+2002-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* tests/smp.cxx: Move inclusion of testaux.hxx to below NA
+	checks.
+
+2002-05-21  Bart Veer  <bartv@redhat.com>
+
+	* doc/kernel.sgml:
+	Major update to the kernel documentation.
+
+2002-05-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/clock.cxx (dsr): Fix latency ifdef guards.
+	* tests/tm_basic.cxx: Same.
+
+2002-05-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sched/mlqueue.cxx: Don't force timeslice tracing on by default
+	against	the user's wishes.
+	* cdl/scheduler.cdl: Instead provide an option controlling it.
+
 2002-05-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/kapidata.h (CYG_HARDWARETHREAD_MEMBERS): entry_point
@@ -4172,7 +4234,7 @@ Wed Mar 11 13:18:17 GMT 1998  Chris Provenzano  <proven@cygnus.com>
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -58,6 +58,9 @@
 #ifdef CYGPKG_REDBOOT_DISK
 #include <fs/disk.h>
 #endif
+#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+#include <net/http.h>
+#endif
 
 // Buffers, data used by redboot_getc
 #define BUF_SIZE 256
@@ -78,7 +81,15 @@ static char usage[] = "[-r] [-v] "
 #ifdef CYGPKG_COMPRESS_ZLIB
                       "[-d] "
 #endif
-                      "[-h <host>] [-m {TFTP | xyzMODEM"
+                      "[-h <host>] [-m {TFTP "
+#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+                      "| HTTP"
+#endif
+#ifdef xyzModem_zmodem
+                      "| {x|y|z}MODEM"
+#else
+                      "| {x|y}MODEM"
+#endif
 #ifdef CYGPKG_REDBOOT_DISK
                       " | disk"
 #endif
@@ -508,8 +519,13 @@ redboot_getc_close(void)
 #define MODE_TFTP   0
 #define MODE_XMODEM xyzModem_xmodem  // 1
 #define MODE_YMODEM xyzModem_ymodem  // 2
+#ifdef xyzModem_zmodem
 #define MODE_ZMODEM xyzModem_zmodem  // 3
+#endif
 #define MODE_DISK   4
+#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+#define MODE_HTTP   5
+#endif
 
 void 
 do_load(int argc, char *argv[])
@@ -602,9 +618,11 @@ do_load(int argc, char *argv[])
             case 'y':
                 mode = MODE_YMODEM;
                 break;
+#ifdef xyzModem_zmodem
             case 'z':
                 mode = MODE_ZMODEM;
                 break;
+#endif
             default:
                 diag_printf("Invalid 'mode': %s\n", mode_str);
                 return;
@@ -615,6 +633,10 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_DISK
 	} else if (strcasecmp(mode_str, "disk") == 0) {
             mode = MODE_DISK;
+#endif
+#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+	} else if (strcasecmp(mode_str, "http") == 0) {
+            mode = MODE_HTTP;
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
         } else if (strcasecmp(mode_str, "tftp") == 0) {
@@ -638,8 +660,16 @@ do_load(int argc, char *argv[])
 #endif
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
     if (chan_set) {
-        if ((mode != MODE_XMODEM) && (mode != MODE_YMODEM) && (mode != MODE_ZMODEM)) {
+        if ((mode != MODE_XMODEM) && 
+#ifdef MODE_ZMODEM
+            (mode != MODE_ZMODEM) && 
+#endif
+            (mode != MODE_YMODEM)) {
+#ifdef xyzModem_zmodem
             diag_printf("I/O channel can only be used with {xyz}Modem\n");
+#else
+            diag_printf("I/O channel can only be used with {xy}Modem\n");
+#endif
             return;
         }
         if (chan >= CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
@@ -681,6 +711,17 @@ do_load(int argc, char *argv[])
             return;
         }
         redboot_getc_init(disk_stream_read, verbose, decompress);
+    }
+#endif
+#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+    else if (mode == MODE_HTTP) {
+        res = http_stream_open(filename, &host, &err);
+        if (res < 0) {
+
+            diag_printf("Can't load '%s': %s\n", filename, http_error(err));
+            return;
+        }
+        redboot_getc_init(http_stream_read, verbose, decompress);
     }
 #endif
     else {
@@ -760,6 +801,11 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_DISK
       case MODE_DISK:
         disk_stream_close(&err);
+	break;
+#endif
+#ifdef CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD
+      case MODE_HTTP:
+        http_stream_close(&err);
 	break;
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING

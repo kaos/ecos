@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -505,6 +505,12 @@ extern int __udp_recvfrom(char *buf, int len,
 extern void __tcp_poll(void);
 
 /*
+ * Initiate outgoing connection, waiting for at most timeout seconds.
+ */
+extern int __tcp_open(tcp_socket_t *s, struct sockaddr_in *host, 
+                      word port, int timeout, int *err);
+
+/*
  * Set up a listening socket on the given port.
  * Does not block.
  */
@@ -520,7 +526,6 @@ extern void __tcp_so_reuseaddr(tcp_socket_t *s);
  * be transmitted.
  */
 extern void __tcp_drain(tcp_socket_t *s);
-
 
 /*
  * Initiate connection close.
@@ -545,6 +550,13 @@ extern int __tcp_read(tcp_socket_t *s, char *buf, int len);
  * If connection is closed, returns -1.
  */
 extern int __tcp_write(tcp_socket_t *s, char *buf, int len);
+
+/*
+ * Write up to 'len' bytes, blocking until sent (not ACK'd).
+ * Returns number of bytes written.
+ * If connection is closed, returns -1.
+ */
+extern int __tcp_write_block(tcp_socket_t *s, char *buf, int len);
 
 
 /*

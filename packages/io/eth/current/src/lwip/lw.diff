@@ -213,7 +213,7 @@ diff -Nur lwip-0.5.3/proj/ecos/lwipopts.h lwip.ecos/proj/ecos/lwipopts.h
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __LWIPOPTS_H__
 +#define __LWIPOPTS_H__
@@ -391,7 +391,7 @@ diff -Nur lwip-0.5.3/proj/ecos/simhost.c lwip.ecos/proj/ecos/simhost.c
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +
 +#include "lwip/debug.h"
@@ -587,7 +587,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/include/arch/cc.h lwip.ecos/src/arch/ecos/inc
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __ARCH_CC_H__
 +#define __ARCH_CC_H__
@@ -642,7 +642,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/include/arch/cpu.h lwip.ecos/src/arch/ecos/in
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __ARCH_CPU_H__
 +#define __ARCH_CPU_H__
@@ -690,7 +690,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/include/arch/init.h lwip.ecos/src/arch/ecos/i
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __ARCH_INIT_H__
 +#define __ARCH_INIT_H__
@@ -738,7 +738,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/include/arch/lib.h lwip.ecos/src/arch/ecos/in
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __ARCH_LIB_H__
 +#define __ARCH_LIB_H__
@@ -780,7 +780,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/include/arch/perf.h lwip.ecos/src/arch/ecos/i
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __PERF_H__
 +#define __PERF_H__
@@ -842,7 +842,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/include/netif/ecosif.h lwip.ecos/src/arch/eco
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +#ifndef __ECOSIF_H__
 +#define __ECOSIF_H__
@@ -888,7 +888,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/lib_arch.c lwip.ecos/src/arch/ecos/lib_arch.c
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +
 +/* These are generic implementations of various library functions used
@@ -984,7 +984,7 @@ diff -Nur lwip-0.5.3/src/arch/ecos/netif/ecosif.c lwip.ecos/src/arch/ecos/netif/
 + * 
 + * Author: Adam Dunkels <adam@sics.se>
 + *
-+ * $Id: lw.diff,v 1.1 2002/05/20 22:24:22 jlarmour Exp $
++ * $Id: lw.diff,v 1.2 2002/05/23 23:06:02 jlarmour Exp $
 + */
 +
 +#include "lwip/debug.h"

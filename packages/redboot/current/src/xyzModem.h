@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -57,7 +57,8 @@
 
 #define xyzModem_xmodem 1
 #define xyzModem_ymodem 2
-#define xyzModem_zmodem 3
+// Don't define this until the protocol support is in place
+//#define xyzModem_zmodem 3
 
 #define xyzModem_access   -1
 #define xyzModem_noZmodem -2

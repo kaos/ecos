@@ -1,3 +1,7 @@
+2002-05-22  Nick Garnett  <nickg@redhat.com>
+
+	* doc/uitron.sgml: Fixed dangling xref.
+
 2002-02-19  Mark Salter  <msalter@redhat.com>
 
 	* doc/uitron.sgml: Fixed typos and such.
@@ -855,7 +859,7 @@ Fri Jul 24 13:02:46 1998  Hugo Tyson  <hmt@cygnus.co.uk>
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

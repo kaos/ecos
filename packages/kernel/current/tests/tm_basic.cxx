@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -149,8 +149,10 @@ static cyg_handle_t mutex_test_thread_handle;
 static cyg_mbox test_mboxes[NMBOXES];
 static cyg_handle_t test_mbox_handles[NMBOXES];
 static fun_times mbox_ft[NMBOXES];
+#ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
 static cyg_thread mbox_test_thread;
 static cyg_handle_t mbox_test_thread_handle;
+#endif
 
 static cyg_sem_t test_semaphores[NSEMAPHORES];
 static fun_times semaphore_ft[NSEMAPHORES];
@@ -170,14 +172,14 @@ static fun_times alarm_ft[NALARMS];
 static long rtc_resolution[] = CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION;
 static long ns_per_system_clock;
 
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY)
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY)  && defined(HAL_CLOCK_LATENCY)
 // Data kept by kernel real time clock measuring clock interrupt latency
 extern cyg_tick_count total_clock_latency, total_clock_interrupts;
 extern cyg_int32 min_clock_latency, max_clock_latency;
 extern bool measure_clock_latency;
 #endif
 
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY) && defined(HAL_CLOCK_LATENCY)
 extern cyg_tick_count total_clock_dsr_latency, total_clock_dsr_calls;
 extern cyg_int32 min_clock_dsr_latency, max_clock_dsr_latency;
 extern bool measure_clock_latency;
@@ -262,7 +264,7 @@ reset_clock_latency_measurement(void)
   total_clock_interrupts = 0;
   min_clock_latency = 0x7FFFFFFF;
   max_clock_latency = 0;
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)  
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY) && defined(HAL_CLOCK_LATENCY)
   total_clock_dsr_latency = 0;
   total_clock_dsr_calls = 0;
   min_clock_dsr_latency = 0x7FFFFFFF;
@@ -1630,7 +1632,7 @@ run_all_tests(CYG_ADDRESS id)
     enable_clock_latency_measurement();    
 #endif
 
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY) && defined(HAL_CLOCK_LATENCY)
     disable_clock_latency_measurement();    
     clock_ave = (total_clock_dsr_latency*1000) / total_clock_dsr_calls;
     show_ticks_in_us(clock_ave);

@@ -37,7 +37,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -504,21 +504,27 @@ inline void Cyg_Thread::set_data( Cyg_Thread::cyg_data_index index,
 
 #ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
 
-    // Add and remove destructors. Returns true on success, false on failure.
+// Add and remove destructors. Returns true on success, false on failure.
 inline cyg_bool
 Cyg_Thread::add_destructor( destructor_fn fn, CYG_ADDRWORD data )
 {
     cyg_ucount16 i;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
     Cyg_Scheduler::lock();
+#endif
     for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
         if (NULL == destructors[i].fn) {
             destructors[i].data = data;
             destructors[i].fn = fn;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
             Cyg_Scheduler::unlock();
+#endif
             return true;
         }
     }
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
     Cyg_Scheduler::unlock();
+#endif
     return false;
 }
 
@@ -526,18 +532,23 @@ inline cyg_bool
 Cyg_Thread::rem_destructor( destructor_fn fn, CYG_ADDRWORD data )
 {
     cyg_ucount16 i;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
     Cyg_Scheduler::lock();
+#endif
     for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
         if (destructors[i].fn == fn && destructors[i].data == data) {
             destructors[i].fn = NULL;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
             Cyg_Scheduler::unlock();
+#endif
             return true;
         }
     }
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
     Cyg_Scheduler::unlock();
+#endif
     return false;
 }
-
 #endif
 
 // -------------------------------------------------------------------------

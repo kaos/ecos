@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -81,9 +81,6 @@ static int get_port = 7700;
 
 /* Some magic to make dns_impl.inl compile under RedBoot */
 #define sprintf diag_sprintf
-static cyg_addrword_t _thread_data;
-static cyg_addrword_t cyg_thread_get_data(int i) { return _thread_data; }
-static void cyg_thread_set_data(int i, cyg_addrword_t data) { _thread_data = data; }
 
 struct sockaddr_in server;
 
@@ -102,7 +99,6 @@ static int _strings_alloc = 0;
 static short id = 0;              /* ID of the last query */
 static int s = -1;                /* Socket to the DNS server */
 static cyg_drv_mutex_t dns_mutex; /* Mutex to stop multiple queries as once */
-static cyg_ucount32 ptdindex;     /* Index for the per thread data */
 static char * domainname=NULL;    /* Domain name used for queries */
 
 
@@ -163,6 +159,18 @@ alloc_hent(void)
     _hent_alloc = 1;
 
     return hent;
+}
+
+static __inline__ void
+free_stored_hent(void)
+{
+    free_hent( &_hent );
+}
+
+static __inline__ void
+store_hent(struct hostent *hent)
+{
+    hent=hent; // avoid warning
 }
 
 /* Send the query to the server and read the response back. Return -1

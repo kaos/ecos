@@ -6,36 +6,36 @@
 #
 # ====================================================================
 #####ECOSGPLCOPYRIGHTBEGIN####
-# -------------------------------------------
-# This file is part of eCos, the Embedded Configurable Operating System.
-# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-#
-# eCos is free software; you can redistribute it and/or modify it under
-# the terms of the GNU General Public License as published by the Free
-# Software Foundation; either version 2 or (at your option) any later version.
-#
-# eCos is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-# for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with eCos; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-#
-# As a special exception, if other files instantiate templates or use macros
-# or inline functions from this file, or you compile this file and link it
-# with other works to produce a work based on this file, this file does not
-# by itself cause the resulting work to be covered by the GNU General Public
-# License. However the source code for this file must still be made available
-# in accordance with section (3) of the GNU General Public License.
-#
-# This exception does not invalidate any other reasons why a work based on
-# this file might be covered by the GNU General Public License.
-#
-# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-# at http://sources.redhat.com/ecos/ecos-license
-# -------------------------------------------
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 # ====================================================================
 ######DESCRIPTIONBEGIN####
@@ -430,14 +430,26 @@ cdl_package CYGPKG_HAL {
             Enabling this option causes compiler tests to be built."
     }
 
-    cdl_option CYGPKG_HAL_TESTS {
+    cdl_component CYGPKG_HAL_TESTS {
         display "Common HAL tests"
         flavor  data
         no_define
-        calculated { (!CYGPKG_HAL_BUILD_COMPILER_TESTS) ? 
-                      "tests/cache tests/context tests/intr tests/basic" :
-                      "tests/cache tests/context tests/intr tests/basic tests/cpp1 tests/vaargs" }
+        calculated {  "tests/context tests/basic"
+                      . ((!CYGINT_HAL_TESTS_NO_CACHES) ? " tests/cache" : "")
+                      . ((CYGPKG_HAL_BUILD_COMPILER_TESTS) ? " tests/cpp1 tests/vaargs" : "")
+                      . ((!CYGVAR_KERNEL_COUNTERS_CLOCK) ?   " tests/intr" : "") }
         description   "
             This option specifies the set of tests for the common HAL."
+
+
+        cdl_interface CYGINT_HAL_TESTS_NO_CACHES {
+            display       "Interface for cache presence"
+            flavor        booldata
+            description   "
+                Some architectures and/or platforms do not have caches. By
+                implementing this interface, these can disable the various
+                cache-related tests."
+        }                
+
     }
 }

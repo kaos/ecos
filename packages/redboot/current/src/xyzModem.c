@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -323,10 +323,12 @@ xyzModem_stream_open(char *filename, int mode, int chan, int *err)
     int crc_retries = xyzModem_MAX_RETRIES_WITH_CRC;
 
 //    ZM_DEBUG(zm_out = zm_out_start);
+#ifdef xyzModem_zmodem
     if (mode == xyzModem_zmodem) {
         *err = xyzModem_noZmodem;
         return -1;
     }
+#endif
 
     // Set up the I/O channel.  Note: this allows for using a different port in the future
     console_chan = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
@@ -407,7 +409,11 @@ xyzModem_stream_read(char *buf, int size, int *err)
                         xyz.next_blk = (xyz.next_blk + 1) & 0xFF;
                         // Data blocks can be padded with ^Z (EOF) characters
                         // This code tries to detect and remove them
+#ifdef xyzModem_zmodem
                         if (xyz.mode != xyzModem_zmodem) {
+#else
+                        if (1) {
+#endif
                             if ((xyz.bufp[xyz.len-1] == EOF) &&
                                 (xyz.bufp[xyz.len-2] == EOF) &&
                                 (xyz.bufp[xyz.len-3] == EOF)) {
@@ -517,8 +523,10 @@ void xyzModem_stream_terminate(int method, int (*getc)(void))
 	  xyzModem_flush();
           xyz.at_eof = true;
 	break;
+#ifdef xyzModem_zmodem
 	case xyzModem_zmodem:
 	  // Might support it some day I suppose.
+#endif
 	break;
       }
     default:

@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -58,6 +58,8 @@
 #include <cyg/infra/cyg_type.h>
 
 #include <cyg/hal/hal_mem.h>
+
+void hal_ppc40x_clock_initialize(cyg_uint32 period);
 
 //--------------------------------------------------------------------------
 void hal_variant_init(void)
@@ -145,7 +147,7 @@ cyg_hal_clear_MMU (void)
 static cyg_uint32 _period;
 extern cyg_uint32 _hold_tcr;  // Shadow of TCR register which can't be read
 
-externC void 
+void 
 hal_ppc40x_clock_initialize(cyg_uint32 period)
 {
     cyg_uint32 tcr;    

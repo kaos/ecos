@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -464,6 +464,15 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 
 	      case _SYN_SENT:
 		/* active open not supported */
+                  if (tcp->flags != (TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+                      do_reset(s);
+                      __pktbuf_free(pkt);
+                      return;
+                  }
+                  s->state = _ESTABLISHED;
+                  s->ack = ntohl(tcp->seqnum) + 1;
+                  s->seq = ntohl(tcp->acknum);
+                  send_ack(s);
 		break;
 
 	      case _LISTEN:
@@ -644,7 +653,7 @@ __tcp_listen(tcp_socket_t *s, word port)
 
     s->next = tcp_list;
 
-#if 1
+#if 0
     /* limit to one open socket at a time */
     if (s->next) {
 	BSPLOG(bsp_log("tcp_listen: recursion error\n"));
@@ -778,6 +787,9 @@ __tcp_read(tcp_socket_t *s, char *buf, int len)
 }
 
 
+/*
+ * Write up to 'len' bytes without blocking
+ */
 int
 __tcp_write(tcp_socket_t *s, char *buf, int len)
 {
@@ -802,4 +814,80 @@ __tcp_write(tcp_socket_t *s, char *buf, int len)
 
     return len;
 }
+
+/*
+ * Write 'len' bytes from 'buf', blocking until sent.
+ * If connection collapses, return -1
+ */
+int
+__tcp_write_block(tcp_socket_t *s, char *buf, int len)
+{
+    int total = 0;
+    int n;
+
+    while (len) {
+        if (s->state == _CLOSE_WAIT) {
+            // This connection is tring to close
+            // This connection is breaking
+            if (s->data_bytes == 0 && s->rxcnt == 0)
+                __tcp_close(s);
+        }
+        if (s->state == _CLOSED) {
+            // The connection is gone!
+            return -1;
+        }
+        n = __tcp_write(s, buf, len);
+        if (n > 0) {
+            len -= n;
+            buf += n;
+        }
+        __tcp_poll();
+    }
+    __tcp_drain(s);
+    return total;
+}
+
+/*
+ * Establish a new [outgoing] connection, with a timeout.
+ */
+int 
+__tcp_open(tcp_socket_t *s, struct sockaddr_in *host, 
+           word port, int timeout, int *err)
+{
+    // Fill in socket details
+    memset(s, 0, sizeof(tcp_socket_t));
+    s->state = _SYN_SENT;
+    s->our_port = port;
+    s->his_port = host->sin_port;
+    s->pkt.buf = (word *)s->pktbuf;
+    s->pkt.bufsize = ETH_MAX_PKTLEN;
+    s->pkt.ip_hdr  = (ip_header_t *)s->pkt.buf;
+    s->pkt.tcp_hdr = (tcp_header_t *)(s->pkt.ip_hdr + 1);
+    s->seq = (port << 16) | 0xDE77;
+    s->ack = 0;
+    if (__arp_lookup((ip_addr_t *)&host->sin_addr, &s->his_addr) < 0) {
+        diag_printf("%s: Can't find address of server\n", __FUNCTION__);
+        return -1;
+    }
+    s->next = tcp_list;
+    tcp_list = s;
+
+    // Send off the SYN packet to open the connection
+    tcp_send(s, TCP_FLAG_SYN, 0);
+    // Wait for connection to establish
+    while (s->state != _ESTABLISHED) {
+        if (s->state == _CLOSED) {
+            diag_printf("TCP open - host closed connection\n");
+            return -1;
+        }
+        if (--timeout <= 0) {
+            diag_printf("TCP open - connection timed out\n");
+            return -1;
+        }
+        MS_TICKS_DELAY();
+        __tcp_poll();
+    }
+    return 0;
+}
+
 

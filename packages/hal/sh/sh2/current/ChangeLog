@@ -1,3 +1,7 @@
+2002-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh2.cdl: Select variant 7044 by default.
+
 2002-05-08  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh2_sci.c: Register renaming.
@@ -364,7 +368,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

@@ -1,3 +1,8 @@
+2002-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/signals.cdl: Don't build signal2 test when it'll N/A
+	anyway.
+
 2002-04-30  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/signals.cdl: Added
@@ -81,7 +86,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

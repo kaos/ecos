@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -249,36 +249,24 @@ net_io_flush(void)
     int n;
     char *bp = out_buf;
 
-    while (out_buflen) {
-        if (tcp_sock.state == _CLOSE_WAIT) {
-            // This connection is tring to close
-            // This connection is breaking
-            if (tcp_sock.data_bytes == 0 && tcp_sock.rxcnt == 0)
-                __tcp_close(&tcp_sock);
-        }
-        if (tcp_sock.state == _CLOSED) {
-            // The connection is gone!
-            net_io_revert_console();
-            break;
-        }
 #ifdef DEBUG_TCP
-        if (show_tcp) {
-            int old_console;
-            old_console = start_console();  
-            diag_printf("%s.%d\n", __FUNCTION__, __LINE__);
-            diag_dump_buf(out_buf, out_buflen);  
-            end_console(old_console);
-        }
+    if (show_tcp) {
+        int old_console;
+        old_console = start_console();  
+        diag_printf("%s.%d\n", __FUNCTION__, __LINE__);
+        diag_dump_buf(out_buf, out_buflen);  
+        end_console(old_console);
+    }
 #endif // SHOW_TCP
-        n = __tcp_write(&tcp_sock, bp, out_buflen);
-        if (n > 0) {
-            out_buflen -= n;
-            bp += n;
-        }
-        __tcp_poll();
+    n = __tcp_write_block(&tcp_sock, bp, out_buflen);
+    if (n < 0) {
+        // The connection is gone!
+        net_io_revert_console();
+    } else {
+        out_buflen -= n;
+        bp += n;
     }
     out_bufp = out_buf;  out_buflen = 0;
-    __tcp_drain(&tcp_sock);
     // Check interrupt flag
     if (CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG()) {
         CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(0);

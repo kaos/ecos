@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -71,7 +71,7 @@ lookup_alias(char *alias, char *alias_buf)
         diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)user_ram_start + 0x03ff) & ~0x03ff);
         return alias_buf;
     } else if (0 == strcasecmp("FREEMEMHI", alias)) {
-        diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)user_ram_end - 0x03ff) & ~0x03ff);
+        diag_sprintf(alias_buf,"%p", ((CYG_ADDRWORD)user_ram_end) & ~0x03ff);
         return alias_buf;
     }
 

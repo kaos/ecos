@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -56,6 +56,11 @@
 //
 //=============================================================================
 
+#include <pkgconf/system.h>
+#ifdef CYGPKG_KERNEL
+# include <pkgconf/kernel.h>
+# include <cyg/kernel/kapi.h>
+#endif
 #include <cyg/hal/drv_api.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_trac.h>         /* Tracing support */
@@ -136,6 +141,41 @@ alloc_hent(void)
     }
 
     return hent;
+}
+
+/* Thread destructor used to free stuff stored in per-thread data slot. */
+static void
+thread_destructor(CYG_ADDRWORD data)
+{
+    struct hostent *hent;
+    hent = (struct hostent *)cyg_thread_get_data(index);
+    if (hent)
+        free_hent(hent);
+    return;
+    data=data;
+}
+
+/* Store the hent away in the per-thread data. */
+static void
+store_hent(struct hostent *hent)
+{
+    // Prevent memory leaks by setting a destructor to be
+    // called on thread exit to free per-thread data.
+    cyg_thread_add_destructor( &thread_destructor, 0 );
+    cyg_thread_set_data(index, (CYG_ADDRWORD)hent);
+}
+
+/* If there is an answer to an old query, free the memory it uses. */
+static void
+free_stored_hent(void)
+{
+    struct hostent *hent;
+    hent = (struct hostent *)cyg_thread_get_data(index);
+    if (hent) {
+        free_hent(hent);
+        cyg_thread_set_data(index, (CYG_ADDRWORD)NULL);
+        cyg_thread_rem_destructor( &thread_destructor, 0 );
+    }
 }
 
 /* Send the query to the server and read the response back. Return -1

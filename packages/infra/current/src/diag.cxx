@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //========================================================================
@@ -479,10 +479,6 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
             }
             while (length-- > 0) {
                 c = *cp++;
-                if (c == '\n') {
-                    (*putc)('\r', param);
-                    res++;
-                }
                 (*putc)(c, param);
                 res++;
             }
@@ -493,10 +489,6 @@ _vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_l
                 }
             }
         } else {
-            if (c == '\n') {
-                (*putc)('\r', param);
-                res++;
-            }
             (*putc)(c, param);
             res++;
         }

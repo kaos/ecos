@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -595,7 +595,7 @@ fis_create(int argc, char *argv[])
     bool no_copy = false;
     void *err_addr;
     struct fis_image_desc *img = NULL;
-    bool slot_found, defaults_assumed;
+    bool defaults_assumed;
     struct option_info opts[7];
     bool prog_ok = true;
 
@@ -636,24 +636,18 @@ fis_create(int argc, char *argv[])
 	(load_address_end) < (CYG_ADDRESS)ram_end) {
 	mem_addr = load_address;
 	mem_addr_set = true;
+        defaults_assumed = true;
         // Get entry address from loader, unless overridden
         if (!entry_addr_set)
             entry_addr = entry_address;
 	if (!length_set) {
 	    length = load_address_end - load_address;
 	    length_set = true;
-	    diag_printf("No memory address or length set.\n");
-	    if (!verify_action("Inferring base %p, length 0x%x", mem_addr, length))
-		return;
 	} else if (defaults_assumed && !img_size_set) {
 	    /* We got length from the FIS table, so the size of the
 	       actual loaded image becomes img_size */
 	    img_size = load_address_end - load_address;
 	    img_size_set = true;
-	    diag_printf("No memory address set.\n");
-	    if (!verify_action("Inferring base %p, length 0x%x, image size 0x%x, entry %p\n",
-			       mem_addr, length, img_size, entry_addr))
-		return;
 	}
     }
     // Get the remaining fall-back values from the fis
@@ -713,23 +707,24 @@ fis_create(int argc, char *argv[])
             return;
         }
     }
-    // Find a slot in the directory for this entry
-    // First, see if an image by this name is already present
-    slot_found = false;
-    img = fis_lookup(name, NULL);
+    // First, see if the image by this name has agreable properties
     if (img) {
         if (flash_addr_set && (img->flash_base != flash_addr)) {
-            diag_printf("Image found, but FLASH address incorrect\n");
+            diag_printf("Image found, but flash address (%p)\n"
+                        "             is incorrect (present image location %p)\n",
+                        flash_addr, img->flash_base);
+            
             return;
         }
         if (img->size != length) {
-            diag_printf("Image found, but LENGTH is incorrect (0x%lx != 0x%lx)\n", img->size, length);
+            diag_printf("Image found, but length (0x%lx, necessitating image size 0x%lx)\n"
+                        "             is incorrect (present image size 0x%lx)\n",
+                        img_size, length, img->size);
             return;
         }
         if (!verify_action("An image named '%s' exists", name)) {
             return;
         } else {                
-            slot_found = true;
             if (defaults_assumed) {
                 if (!verify_action("* CAUTION * about to program '%s'\n            at %p..%p from %p", 
                                    name, (void *)flash_addr, (void *)(flash_addr+img_size-1),
@@ -738,13 +733,11 @@ fis_create(int argc, char *argv[])
                 }
             }
         }
-    }
-    // If not found, try and find an empty slot
-    if (!slot_found) {
+    } else {
+        // If not image by that name, try and find an empty slot
         img = (struct fis_image_desc *)fis_work_block;
         for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
             if (img->name[0] == (unsigned char)0xFF) {
-                slot_found = true;
                 break;
             }
         }
@@ -794,7 +787,6 @@ fis_delete(int argc, char *argv[])
     int num_reserved, i, stat;
     void *err_addr;
     struct fis_image_desc *img;
-    bool slot_found;
 
     if (!scan_opts(argc, argv, 2, 0, 0, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
@@ -806,7 +798,6 @@ fis_delete(int argc, char *argv[])
     arm_fis_delete(name);
     return;
 #endif
-    slot_found = false;
     img = (struct fis_image_desc *)fis_work_block;
     num_reserved = 0;
 #ifdef CYGOPT_REDBOOT_FIS_RESERVED_BASE

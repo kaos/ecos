@@ -37,7 +37,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -200,7 +200,7 @@
 externC void cyg_hal_dcache_store(CYG_ADDRWORD base, int size);
 
 #define HAL_DCACHE_STORE( _base_ , _size_ ) \
-    cyg_hal_dcache_store((_base_), (_size_))
+    cyg_hal_dcache_store((CYG_ADDRWORD)(_base_), (int)(_size_))
 
 // Preread the given range into the cache with the intention of reading
 // from it later.

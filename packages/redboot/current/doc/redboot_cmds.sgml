@@ -13,27 +13,68 @@
 </listitem>
 </itemizedlist>Given the extensible and configurable nature of eCos and RedBoot,
 there may be extended or enhanced sets of commands available.</para>
-<para>The basic format for commands is:    <programlisting>RedBoot> COMMAND [-S] [-s val] operand
-</programlisting>Commands may require additional information beyond the basic
+<para>The basic format for commands is:    <programlisting>RedBoot> COMMAND [-S]... [-s val]... operand
+</programlisting>
+</para>
+<para>
+Commands may require additional information beyond the basic
 command name. In most cases this additional information is optional, with
-suitable default values provided if they are not present. The type of information
-required affects how it is specified:   <programlisting> [-S]</programlisting>An
-optional switch. If this switch is present, then some particular action will
-take place. For example in the command        
-<programlisting>RedBoot> <userinput>fis init -f</userinput>
-</programlisting>     the -f switch indicates to perform a full file system
-initialization. <programlisting> [-s val]</programlisting>An optional switch
-which requires an associated value. For example the command:        <programlisting>
-RedBoot> <userinput>load -b 0x00100000 data_file</userinput></programlisting>specifies downloading
-a file (via TFTP) into memory, relocating it to location 0x00100000. <programlisting>
-operand</programlisting>This format is used in a case where a command has
-one operand which must always be present (no -s is required since it is always
-implied). For example the command        
-<programlisting>RedBoot> <userinput>go 0x10044</userinput>
-</programlisting>specifies executing the code starting at location 0x10044.
+suitable default values provided if they are not present. 
+
+      <informaltable frame="all">
+	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <thead>
+	    <row>
+	      <entry>Format</entry>
+	      <entry>Description</entry>
+	      <entry>Example</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>-S</entry>	     
+	      <entry>A boolean switch; the behavior of the command will differ, depending
+on the presence of the switch.  In this example, the <userinput>-f</userinput> switch
+indicates that a complete initialization of the FIS data should be performed.
+There may be many such switches available for any given command and any or all of
+them may be present, in any order.</entry>
+	      <entry>
+                <computeroutput> RedBoot> <userinput>fis init -f</userinput></computeroutput>
+              </entry>	     
+	    </row>
+	    <row>
+	      <entry>-s<replaceable> val</replaceable></entry>	     
+	      <entry>A qualified value; the letter "s" introduces the value, qualifying it's meaning.  In the
+example, <userinput>-b 0x100000</userinput> specifies where the memory dump should begin.
+There may be many such switches available for any given command and any or all of
+them may be present, in any order.
+</entry>
+	      <entry>
+                <computeroutput> RedBoot> <userinput>dump -b 0x100000 -l 0x20</userinput></computeroutput>
+              </entry>	     
+	    </row>
+	    <row>
+	      <entry><replaceable> operand</replaceable></entry>	     
+	      <entry>A simple value; some commands require a single parameter for which an additional
+<userinput>-X</userinput> switch would be redundant.  In the example, <userinput>JFFS2</userinput>
+is the name of a flash image.  The image name is always required, thus is no need to qualify it with 
+a switch.
+Note that any un-qualified operand must always appear at the end of the command.</entry>
+	      <entry>
+                <computeroutput> RedBoot> <userinput>fis delete JFFS2</userinput></computeroutput>
+              </entry>	     
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+
 </para>
 <para>The list of available commands, and their syntax, can be obtained by
-typing <command>help</command> at the command line:    <programlisting>
+typing <command>help</command> at the command line:    
+<screen>
 RedBoot> <userinput>help</userinput>
 Manage aliases kept in FLASH memory
       alias name [value]
@@ -58,7 +99,7 @@ Help about help?
 Set/change IP addresses
       ip_address [-l &lt;local_ip_address>] [-h &lt;server_address>]
 Load a file
-      load [-r] [-v] [-d] [-c &lt;channel>] [-h &lt;host>] [-m {TFTP | xyzMODEM | disk}]
+      load [-r] [-v] [-d] [-c &lt;channel>] [-h &lt;host>] [-m {TFTP | HTTP | {x|y}MODEM | disk}]
       [-b &lt;base_address>] &lt;file_name>
 Network connectivity test
       ping [-v] [-n &lt;count>] [-t &lt;timeout>] [-i &lt;IP_addr]
@@ -69,7 +110,7 @@ Display RedBoot version information
       version
 Display (hex dump) a range of memory
       x -b &lt;location> [-l &lt;length>] [-s]
-</programlisting>
+</screen>
 </para>
 <para>
 Commands can be abbreviated to their shortest
@@ -97,87 +138,6 @@ are typically included in RedBoot. </para>
 <para>The command set may be also be extended on a platform basis. </para>
 </sect1>
 
-<sect1 id="RedBoot-Editing-Commands">
-<title>RedBoot Editing Commands</title>
-<para><indexterm><primary>RedBoot</primary><secondary>editing commands</secondary>
-</indexterm><indexterm><primary>editing commands</primary></indexterm><indexterm>
-<primary>commands</primary><secondary>editing</secondary></indexterm>RedBoot
-uses the following line editing commands. 
-<note><title>NOTE</title>
-<para>
-In this description, <guibutton>^A</guibutton> means the character formed
-by typing the letter &ldquo;A&rdquo; while holding down the control key.
-</para></note>
-<itemizedlist>
-<listitem><para><guibutton>Delete</guibutton> (0x7F) or 
-<guibutton>Backspace</guibutton> (0x08) 
-erases the character to the left of the cursor.
-</para></listitem>
-<listitem><para>
-<guibutton>^A</guibutton>
-moves the cursor (insertion point) to the beginning of the line.
-</para></listitem>
-<listitem><para>
-<guibutton>^K</guibutton>
-erases all characters on the line from the cursor to the end.
-</para></listitem>
-<listitem><para>
-<guibutton>^E</guibutton>
-positions the cursor to the end of the line.
-</para></listitem>
-<listitem><para>
-<guibutton>^D</guibutton>
-erases the character under the cursor.
-</para></listitem>
-<listitem><para>
-<guibutton>^F</guibutton>
-moves the cursor one character to the right.
-</para></listitem>
-<listitem><para>
-<guibutton>^B</guibutton>
-moves the cursor one character to the left.
-</para></listitem>
-<listitem><para>
-<guibutton>^P</guibutton>
-replaces the current line by a previous line from the history buffer.  
-A small number of lines
-can be kept as history.  Using ^P (and ^N), the current line can be replaced
-by any one of the previously typed lines.
-</para></listitem>
-<listitem><para>
-<guibutton>^N</guibutton>
-replaces the current line by the next line from the history buffer.  
-</para></listitem>
-</itemizedlist></para>
-<para>In the case of the <command>fconfig</command>
-command, additional editing commands are possible. 
-As data are entered for this command, the current/previous value
-will be displayed and the cursor placed at the end of that data.
-The user may use the editing keys (above) to move around in the data
-to modify it as appropriate.
-Additionally, when certain
-characters are entered at the end of the current value, 
-i.e. entered separately, certain behavior is elicited.</para>
-<para><itemizedlist>
-<listitem>
-<para>^ (caret) switch to editing the previous item in the 
-<command>fconfig</command> list. If fconfig edits item A, followed by item B,
-pressing ^ when changing item B, allows you to change item A. This is similar
-to the up arrow.
-Note: ^P and ^N do not have the same meaning while editing 
-<command>fconfig</command> data and should not be used.
-</para>
-</listitem>
-<listitem><para>. (period) stop editing any further items. This does not change
-the current item.</para>
-</listitem>
-<listitem><para><guibutton>Return</guibutton> leaves the value
-for this item unchanged. Currently it is not possible to step through the
-value for the start-up script; it must always be retyped.</para>
-</listitem>
-</itemizedlist></para>
-</sect1>
-
 <sect1 id="common-commands">
 <title>Common Commands</title>
 <para>
@@ -201,7 +161,7 @@ value for the start-up script; it must always be retyped.</para>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -251,43 +211,43 @@ then the value will be saved and used when the system is reset.
       <title>Examples</title>
       <para>
 Set an alias.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>alias joe "This is Joe"</userinput>
 Update RedBoot non-volatile configuration - continue (y/n)? n
-</programlisting> 
+</screen> 
 </para>
 <para>
 Display an alias.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>alias joe</userinput>
 'joe' = 'This is Joe'
-</programlisting> 
+</screen> 
 </para>
 <para>
 Use an alias.  Note: the <command>"="</command> command simply echoes the command to to console.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>= %{joe}</userinput>
 This is Joe
-</programlisting>
+</screen>
 </para>
 <para>
 Aliases can be nested.
-<programlisting>
+<screen>
 RedBoot> <userinput>alias frank "Who are you? %{joe}"</userinput>
 Update RedBoot non-volatile configuration - continue (y/n)? n
 RedBoot> <userinput>= %{frank}</userinput>
 Who are you? This is Joe
-</programlisting>
+</screen>
 </para>
 <para>
 Notice how the value of %{frank} changes when %{joe} is changed since
 the value of %{joe} is not evaluated until %{frank} is evaluated.
-<programlisting>
+<screen>
 RedBoot> <userinput>alias joe "This is now Josephine"</userinput>
 Update RedBoot non-volatile configuration - continue (y/n)? n
 RedBoot> <userinput>= %{frank}</userinput>
 Who are you? This is now Josephine
-</programlisting>
+</screen>
       </para>
     </refsect1>
   </refentry>
@@ -307,7 +267,7 @@ Who are you? This is now Josephine
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -348,10 +308,10 @@ then the value will be saved and used when the system is reset.
       <title>Examples</title>
       <para>
 Show the current baud rate.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>baudrate</userinput>
 Baud rate = 38400
-</programlisting> 
+</screen> 
 </para>
 <para>
 Change the console baud rate.  In order to make this operation safer,
@@ -361,13 +321,13 @@ If it doesn't work, or a less than affirmative answer is given to the
 "continue" prompt, then the baud rate will revert to the current value.
 Only after the baud rate has been firmly established will <emphasis>RedBoot</emphasis>
 give you an opportunity to save the value in persistent storage.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>baudrate -b 57600</userinput>
 Baud rate will be changed to 57600 - update your settings
 <emphasis>Device baud rate changed at this point</emphasis>
 Baud rate changed to 57600 - continue (y/n)? y
 Update RedBoot non-volatile configuration - continue (y/n)? n
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -390,7 +350,7 @@ Update RedBoot non-volatile configuration - continue (y/n)? n
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -430,26 +390,26 @@ Update RedBoot non-volatile configuration - continue (y/n)? n
       <title>Examples</title>
       <para>
 Show the current cache state.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>cache</userinput>
 Data cache: On, Instruction cache: On
-</programlisting> 
+</screen> 
 </para>
 <para>
 Disable the caches.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>cache off</userinput>
 RedBoot> <userinput>cache</userinput>
 Data cache: Off, Instruction cache: Off
-</programlisting> 
+</screen> 
 </para>
 <para>
 Enable the caches.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>cache on</userinput>
 RedBoot> <userinput>cache</userinput>
 Data cache: On, Instruction cache: On
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -472,7 +432,7 @@ Data cache: On, Instruction cache: On
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -507,7 +467,7 @@ Data cache: On, Instruction cache: On
       <para>
 With no arguments, the <command>channel</command> command displays the current console channel number.
 </para><para>
-When passed an argument of 0 upwards, this command switches the console
+When passed an argument of 0 upward, this command switches the console
 channel to that channel number. The mapping between channel numbers and
 physical channels is platform specific but will typically be something like
 channel 0 is the first serial port, channel 1 is the second, etc.
@@ -521,23 +481,23 @@ starts execution.
       <title>Examples</title>
       <para>
 Show the current channel.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>channel</userinput>
 Current console channel id: 0
-</programlisting> 
+</screen> 
 </para>
 <para>
 Change to an invalid channel.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>channel 99</userinput>
 **Error: bad channel number '99'
-</programlisting> 
+</screen> 
 </para>
 <para>
 Revert to the default channel setting (any console mode).
-<programlisting> 
+<screen> 
 RedBoot> <userinput>channel -1</userinput>
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -558,7 +518,7 @@ RedBoot> <userinput>channel -1</userinput>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -599,22 +559,22 @@ The values printed (decimal cksum, decimal length, hexadecimal cksum,
       <title>Examples</title>
       <para>
 Checksum a buffer.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>cksum -b 0x100000 -l 0x100</userinput>
 POSIX cksum = 3286483632 256 (0xc3e3c2b0 0x00000100)
-</programlisting> 
+</screen> 
       </para>
       <para>
 Checksum an area of memory after loading a file. Note that the base
 address and length parameters are provided by the preceding
 load command.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>load -r -b %{FREEMEMLO} redboot.bin</userinput>
 Raw file loaded 0x06012800-0x0602f0a8
 RedBoot> <userinput>cksum</userinput>
 Computing cksum for area 0x06012800-0x0602f0a8
 POSIX cksum = 2092197813 116904 (0x7cb467b5 0x0001c8a8)
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -642,11 +602,13 @@ POSIX cksum = 2092197813 116904 (0x7cb467b5 0x0001c8a8)
       <title>Examples</title>
       <para>
 Show what disk partitions are available.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>disks</userinput>
+hda1     Linux Swap
+hda2     Linux
 00100000: 00 3E 00 06 00 06 00 06  00 00 00 00 00 00 00 00  |.>..............|
 00100010: 00 00 00 78 00 70 00 60  00 60 00 60 00 60 00 60  |...x.p.`.`.`.`.`|
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -673,7 +635,7 @@ RedBoot> <userinput>disks</userinput>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -742,42 +704,42 @@ raw hex value, followed by an ASCII interpretation of the data. </para>
       <title>Examples</title>
       <para>
 Display a buffer, one byte at a time.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>mfill -b 0x100000 -l 0x20 -p 0xDEADFACE</userinput>
 RedBoot> <userinput>x -b 0x100000</userinput>
 00100000: CE FA AD DE CE FA AD DE  CE FA AD DE CE FA AD DE  |................|
 00100010: CE FA AD DE CE FA AD DE  CE FA AD DE CE FA AD DE  |................|
-</programlisting> 
+</screen> 
 </para>
 <para>
 Display a buffer, one short (16 bit) word at a time.  Note in this case that
 the ASCII interpretation is suppressed.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>dump -b 0x100000 -2</userinput>
 00100000: FACE DEAD FACE DEAD  FACE DEAD FACE DEAD 
 00100010: FACE DEAD FACE DEAD  FACE DEAD FACE DEAD 
-</programlisting> 
+</screen> 
 </para>
 <para>
 Display a buffer, one word (32 bit) word at a time.  Note in this case that
 the ASCII interpretation is suppressed.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>dump -b 0x100000 -4</userinput>
 00100000: DEADFACE DEADFACE DEADFACE DEADFACE 
 00100010: DEADFACE DEADFACE DEADFACE DEADFACE 
-</programlisting> 
+</screen> 
 </para>
 <para>
 Display the same buffer, using Motorola S-record format.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>dump -b 0x100000 -s</userinput>
 S31500100000CEFAADDECEFAADDECEFAADDECEFAADDE8E
 S31500100010CEFAADDECEFAADDECEFAADDECEFAADDE7E
-</programlisting> 
+</screen> 
 </para>
 <para>
 Display a buffer, with visible ASCII strings.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>d -b 0xfe00b000 -l 0x80</userinput>
 0xFE00B000: 20 25 70 0A 00 00 00 00  41 74 74 65 6D 70 74 20 | %p.....Attempt |
 0xFE00B010: 74 6F 20 6C 6F 61 64 20  53 2D 72 65 63 6F 72 64 |to load S-record|
@@ -788,7 +750,7 @@ RedBoot> <userinput>d -b 0xfe00b000 -l 0x80</userinput>
 0xFE00B060: 65 20 2D 20 41 64 64 72  3A 20 25 6C 78 2C 20 25 |e - Addr: %lx, %|
 0xFE00B070: 30 32 6C 58 20 3C 3E 20  25 30 32 6C 58 0A 00 00 |02lX &lt;> %02lX...|
 0xFE00B080: 45 6E 74 72 79 20 70 6F  69 6E 74 3A 20 25 70 2C |Entry point: %p,|
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -808,7 +770,7 @@ RedBoot> <userinput>d -b 0xfe00b000 -l 0x80</userinput>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -852,7 +814,7 @@ were successfully completed.
       <para>
 Show generic help.  Note that the contents of this display will depend on the various configuration
 options for RedBoot when it was built.
-<programlisting>
+<screen>
 RedBoot> <userinput>help</userinput>
 Manage aliases kept in FLASH memory
    alias name [value]
@@ -875,7 +837,7 @@ Help about help?
 Set/change IP addresses
    ip_address [-l &lt;local_ip_address&gt;] [-h &lt;server_address&gt;]
 Load a file
-   load [-r] [-v] [-d] [-h &lt;host&gt;] [-m {TFTP | xyzMODEM -c &lt;channel_number&gt;}]
+   load [-r] [-v] [-d] [-h &lt;host&gt;] [-m {TFTP | HTTP | {x|y}MODEM -c &lt;channel_number&gt;}]
         [-b &lt;base_address&gt;] &lt;file_name&gt;
 Compare two blocks of memory
    mcmp -s &lt;location&gt; -d &lt;location&gt; -l &lt;length&gt; [-1|-2|-4]
@@ -890,11 +852,11 @@ Display RedBoot version information
    version 
 Display (hex dump) a range of memory
    x -b &lt;location&gt; [-l &lt;length&gt;] [-s] [-1|2|4]
-</programlisting> 
+</screen> 
       </para>
       <para>
 Help about a command with sub-commands.
-<programlisting>
+<screen>
 RedBoot> <userinput>help fis</userinput>
 Manage FLASH images
    fis {cmds}
@@ -915,7 +877,7 @@ Load image from FLASH Image System [FIS] into RAM
   fis load [-d] [-b &lt;memory_load_address&gt;] [-c] name
 Write raw data directly to FLASH
   fis write -f &lt;flash_addr&gt; -b &lt;mem_base&gt; -l &lt;image_length&gt;
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -938,7 +900,7 @@ DNS_server_IP_address</replaceable></arg>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -1004,24 +966,24 @@ that an address of 0.0.0.0 will disable DNS lookups.
       <title>Examples</title>
       <para>
 Display the current network settings. 
-<programlisting> 
+<screen> 
 RedBoot> <userinput>ip_address</userinput> 
 IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 0.0.0.0 
-</programlisting> 
+</screen> 
 </para>
 <para>
 Change the DNS server address. 
-<programlisting> 
+<screen> 
 RedBoot> <userinput>ip_address -d 192.168.1.101</userinput> 
 IP: 192.168.1.31, Default server: 192.168.1.101, DNS server IP: 192.168.1.101 
-</programlisting> 
+</screen> 
 </para>
 <para>
 Change the default server address. 
-<programlisting> 
+<screen> 
 RedBoot> <userinput>ip_address -h 192.168.1.104</userinput> 
 IP: 192.168.1.31, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
-</programlisting>
+</screen>
       </para>
     </refsect1>
   </refentry>
@@ -1040,8 +1002,10 @@ IP: 192.168.1.31, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
 	<arg>-r </arg>
 	<arg>-m
           <group>
-            <arg>xmodem</arg>
-            <arg>ymodem</arg>
+            <arg choice="req"><group>
+              <arg>xmodem</arg>
+              <arg>ymodem</arg>
+            </group></arg>
             <arg>tftp</arg>
             <arg>disk</arg>
 	  </group>
@@ -1055,7 +1019,7 @@ IP: 192.168.1.31, Default server: 192.168.1.104, DNS server IP: 192.168.1.101
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -1093,31 +1057,37 @@ serial download method since it would interfere with the protocol.</entry>
 	    <row>
 	      <entry>-m tftp</entry>	     
 	      <entry></entry>
-	      <entry>Transfer data via the network using <emphasis>tftp</emphasis> protocol.</entry>	     
-	      <entry><emphasis>tftp</emphasis></entry>	     
+	      <entry>Transfer data via the network using <acronym>TFTP</acronym> protocol.</entry>	     
+	      <entry><acronym>TFTP</acronym></entry>	     
+	    </row>
+	    <row>
+	      <entry>-m http</entry>	     
+	      <entry></entry>
+	      <entry>Transfer data via the network using <acronym>HTTP</acronym> protocol.</entry>	     
+	      <entry><acronym>TFTP</acronym></entry>	     
 	    </row>
 	    <row>
 	      <entry>-m xmodem</entry>	     
 	      <entry></entry>
 	      <entry>Transfer data using <emphasis>X-modem</emphasis> protocol.</entry>	     
-	      <entry><emphasis>tftp</emphasis></entry>	     
+	      <entry><acronym>TFTP</acronym></entry>	     
 	    </row>
 	    <row>
 	      <entry>-m ymodem</entry>	     
 	      <entry></entry>
 	      <entry>Transfer data using <emphasis>Y-modem</emphasis> protocol.</entry>	     
-	      <entry><emphasis>tftp</emphasis></entry>	     
+	      <entry><acronym>TFTP</acronym></entry>	     
 	    </row>
 	    <row>
 	      <entry>-m disk</entry>	     
 	      <entry></entry>
 	      <entry>Transfer data from a local disk.</entry>	     
-	      <entry><emphasis>tftp</emphasis></entry>	     
+	      <entry><acronym>TFTP</acronym></entry>	     
 	    </row>
 	    <row>
 	      <entry>-h <replaceable>server_IP_address</replaceable></entry>	     
 	      <entry>Numeric IP or DNS name</entry>
-	      <entry>The IP address of the <emphasis>tftp</emphasis> server.</entry>	     
+	      <entry>The IP address of the <acronym>TFTP</acronym> or <acronym>HTTP</acronym> server.</entry>	     
 	      <entry>Value set by <command>ip_address</command></entry>	     
 	    </row>
 	    <row>
@@ -1138,8 +1108,8 @@ xmodem or ymodem protocol.</entry>
 	    <row>
 	      <entry><replaceable>file_name</replaceable></entry>	     
 	      <entry>String</entry>
-	      <entry>The name of the file on the TFTP
-server or the local disk. Details of how this is specified for TFTP are
+	      <entry>The name of the file on the <acronym>TFTP</acronym> or <acronym>HTTP</acronym>
+server or the local disk. Details of how this is specified for <acronym>TFTP</acronym> are
 host-specific. For local disk files, the name must be in <emphasis>disk</emphasis>:
 <emphasis>filename</emphasis> format. The disk portion must match one of the disk
 names listed by the <command>disks</command> command.</entry>	     
@@ -1154,7 +1124,7 @@ names listed by the <command>disks</command> command.</entry>
       <para>
 The <command>load</command> command is used to download
 data into the target system. Data can be loaded via a network connection,
-using either the TFTP protocol, or the console serial connection using the
+using either the <acronym>TFTP</acronym> or <acronym>HTTP</acronym> protocols, or the console serial connection using the
 X/Y modem protocol. Files may also be loaded directly from local filesystems
 on disk. Files to be downloaded may either be executable images in 
 ELF executable program format,
@@ -1165,13 +1135,29 @@ format or raw data.
     <refsect1>
       <title>Examples</title>
       <para>
-Download a Motorola S-record (or ELF) image, using TFTP, specifying the 
+Download a Motorola S-record (or ELF) image, using <acronym>TFTP</acronym>, specifying the 
 base memory address.
-<programlisting>
-RedBoot> <userinput>lo redboot.ROM -b 0x8c400000</userinput>
+<screen>
+RedBoot> <userinput>load redboot.ROM -b 0x8c400000</userinput>
 Address offset = 0x0c400000
 Entry point: 0x80000000, address range: 0x80000000-0x8000fe80
-</programlisting> 
+</screen> 
+      </para>
+      <para>
+Download a Motorola S-record (or ELF) image, using <acronym>HTTP</acronym>, specifying the
+host [server] address.
+<screen>
+RedBoot> <userinput>load /redboot.ROM -m HTTP -h 192.168.1.104</userinput>
+Address offset = 0x0c400000
+Entry point: 0x80000000, address range: 0x80000000-0x8000fe80
+</screen> 
+      </para>
+      <para>
+Load an ELF file from /dev/hda1 which should be an EXT2 partition:
+<screen>
+RedBoot> <userinput>load -mode disk hda1:hello.elf</userinput>
+Entry point: 0x00020000, address range: 0x00020000-0x0002fd70
+</screen>
       </para>
     </refsect1>
   </refentry>
@@ -1198,7 +1184,7 @@ Entry point: 0x80000000, address range: 0x80000000-0x8000fe80
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -1262,19 +1248,19 @@ Only the least significant 16 bits of the pattern will be used.</entry>
       <title>Examples</title>
       <para>
 Compare two buffers which match (result is <emphasis>quiet</emphasis>).
-<programlisting> 
+<screen> 
 RedBoot> <userinput>mfill -b 0x100000 -l 0x20 -p 0xDEADFACE</userinput>
 RedBoot> <userinput>mfill -b 0x200000 -l 0x20 -p 0xDEADFACE</userinput>
 RedBoot> <userinput>mcmp -s 0x100000 -d 0x200000 -l 0x20</userinput>
-</programlisting> 
+</screen> 
 </para>
 <para>
 Compare two buffers which don't match.  
 Only the first non-matching element is displayed.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>mcmp -s 0x100000 -d 0x200000 -l 0x30 -2</userinput>
 Buffers don't match - 0x00100020=0x6000, 0x00200020=0x0000
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -1301,7 +1287,7 @@ Buffers don't match - 0x00100020=0x6000, 0x00200020=0x0000
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -1365,7 +1351,7 @@ Only the least significant 16 bits of the pattern will be used.</entry>
       <title>Examples</title>
       <para>
 Fill a buffer with zeros.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>x -b 0x100000 -l 0x20</userinput>
 00100000: 00 3E 00 06 00 06 00 06  00 00 00 00 00 00 00 00  |.>..............|
 00100010: 00 00 00 78 00 70 00 60  00 60 00 60 00 60 00 60  |...x.p.`.`.`.`.`|
@@ -1373,16 +1359,16 @@ RedBoot> <userinput>mfill -b 0x100000 -l 0x20</userinput>
 RedBoot> <userinput>x -b 0x100000 -l 0x20</userinput>
 00100000: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
 00100010: 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-</programlisting> 
+</screen> 
 </para>
 <para>
 Fill a buffer with a pattern.
-<programlisting> 
+<screen> 
 RedBoot> <userinput>mfill -b 0x100000 -l 0x20 -p 0xDEADFACE</userinput>
 RedBoot> <userinput>x -b 0x100000 -l 0x20</userinput>
 00100000: CE FA AD DE CE FA AD DE  CE FA AD DE CE FA AD DE  |................|
 00100010: CE FA AD DE CE FA AD DE  CE FA AD DE CE FA AD DE  |................|
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -1408,7 +1394,7 @@ RedBoot> <userinput>x -b 0x100000 -l 0x20</userinput>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -1482,15 +1468,15 @@ were successfully completed.
       <title>Examples</title>
       <para>
 Test connectivity to host 192.168.1.101.
-<programlisting>
+<screen>
 RedBoot> <userinput>ping -h 192.168.1.101</userinput>
 Network PING - from 192.168.1.31 to 192.168.1.101
 PING - received 10 of 10 expected
-</programlisting> 
+</screen> 
 </para>
 <para>
 Test connectivity to host 192.168.1.101, with verbose reporting.
-<programlisting>
+<screen>
 RedBoot> <userinput>ping -h 192.168.1.101 -v -n 4</userinput>
 Network PING - from 192.168.1.31 to 192.168.1.101
  seq: 1, time: 1 (ticks)
@@ -1498,14 +1484,14 @@ Network PING - from 192.168.1.31 to 192.168.1.101
  seq: 3, time: 1 (ticks)
  seq: 4, time: 1 (ticks)
 PING - received 10 of 10 expected
-</programlisting> 
+</screen> 
 </para>
 <para>
-Test connectivity to a non-existant host (192.168.1.109).
-<programlisting>
+<screen>
+Test connectivity to a non-existent host (192.168.1.109).
 RedBoot> <userinput>ping -h 192.168.1.109 -v -n 4</userinput>
 PING: Cannot reach server '192.168.1.109' (192.168.1.109)
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -1537,7 +1523,7 @@ equivalent to a power-on reset condition.
       <title>Examples</title>
       <para>
 Reset the platform.
-<programlisting>
+<screen>
 RedBoot> <userinput>reset</userinput>
 ... Resetting.+... Waiting for network card: .
 Socket Communications, Inc: Low Power Ethernet CF Revision C 5V/3.3V 08/27/98
@@ -1553,7 +1539,7 @@ Copyright (C) 2000, 2001, 2002, Red Hat, Inc.
 RAM: 0x00000000-0x01fc0000, 0x00014748-0x01f71000 available
 FLASH: 0x50000000 - 0x51000000, 64 blocks of 0x00040000 bytes each.
 RedBoot> 
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -1583,13 +1569,13 @@ RedBoot>
       <title>Examples</title>
       <para>
 Display RedBoot's version.
-<programlisting>
+<screen>
 RedBoot> <userinput>version</userinput>
 RedBoot(tm) debug environment - built 09:12:03, Feb 12 2001
 Platform: XYZ (PowerPC 860)
 Copyright (C) 2000, 2001, Red Hat, Inc.
 RAM: 0x00000000-0x00400000
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>
@@ -1619,10 +1605,10 @@ blocks of flash memory will be erased as part of this process.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis init -f</userinput>
 About to initialize [format] flash image system - continue (y/n)? n
-</programlisting></para>
+</screen></para>
 <variablelist>
 <varlistentry><term>fis [-c] [-d] list</term>
 <listitem>
@@ -1641,7 +1627,7 @@ used for data.
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis list</userinput>
 Name           flash addr  Mem addr   Length   Entry point
 RedBoot        0xA0000000  0xA0000000 0x020000 0x80000000
@@ -1651,8 +1637,8 @@ RedBoot> <userinput>fis list -c</userinput>
 Name           flash addr  Checksum   Length   Entry point
 RedBoot        0xA0000000  0x34C94A57 0x020000 0x80000000
 RedBoot config 0xA0FC0000  0x00000000 0x020000 0x00000000
-RedBoot config 0xA0FE0000  0x00000000 0x020000 0x00000000
-</programlisting></para>
+FIS directory  0xA0FE0000  0x00000000 0x020000 0x00000000
+</screen></para>
 <variablelist>
 <varlistentry><term>fis free</term>
 <listitem>
@@ -1670,11 +1656,11 @@ is not erased that does not correspond to a named image, or vice-versa.
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis free</userinput>
         0xA0040000 .. 0xA07C0000
         0xA0840000 .. 0xA0FC0000
-</programlisting></para>
+</screen></para>
 <variablelist>
 <varlistentry><term>fis create -b &lt;mem_base> -l &lt;length> [-f &lt;flash_addr>]
 [-e &lt;entry_point>]  [-r &lt;ram_addr>] [-s &lt;data_length>] [-n] &lt;name>
@@ -1710,7 +1696,7 @@ original value.</entry>
 <entry colname="col1" colsep="0" rowsep="0">-f</entry>
 <entry colname="col2" colsep="0" rowsep="0">The location in flash for the
 image, which will be inferred for extant images if not specified. If this
-is not provided, the first freeVblock which is large enough will be used.
+is not provided, the first free block which is large enough will be used.
 See <command>fis free</command>.</entry>
 </row><row>
 <entry colname="col1" colsep="0" rowsep="0">-e</entry>
@@ -1738,7 +1724,7 @@ space for use by applications other than RedBoot.</entry>
 the FIS directory is updated, and no data is copied from RAM to flash. This
 feature can be used to recreate the FIS entry if it has been destroyed.</entry>
 </row></tbody></tgroup></informaltable>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis create RedBoot -f 0xa0000000 -b 0x8c400000 -l 0x20000</userinput>
 An image named &lsquo;RedBoot&rsquo; exists - continue (y/n)? n
 RedBoot> <userinput>fis create junk -b 0x8c400000 -l 0x20000</userinput>
@@ -1746,7 +1732,7 @@ RedBoot> <userinput>fis create junk -b 0x8c400000 -l 0x20000</userinput>
 ... Program from 0x8c400000-0x8c420000 at 0xa0040000: .
 ... Erase from 0xa0fe0000-0xa1000000: .
 ... Program from 0x8c7d0000-0x8c7f0000 at 0xa0fe0000: .
-</programlisting>If
+</screen>If
 you are loading an existing file, then the fis create command will provide
 some values automatically, such as the flash address and flash length.</para>
 <variablelist>
@@ -1787,10 +1773,10 @@ of the image data after it has been loaded into memory.</entry>
 copying it from flash to RAM.</entry>
 </row></tbody></tgroup></informaltable>
 </para>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis load RedBoot[RAM]</userinput>
 RedBoot> <userinput>go</userinput>
-</programlisting>
+</screen>
 </para>
 <variablelist>
 <varlistentry><term>fis delete name</term>
@@ -1801,7 +1787,7 @@ name from the FIS directory.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis list</userinput>
 Name              flash addr   Mem addr    Length    Entry point
 RedBoot          0xA0000000   0xA0000000  0x020000  0x80000000
@@ -1813,7 +1799,7 @@ Delete image &lsquo;junk&rsquo; - continue (y/n)? y
 ... Erase from 0xa0040000-0xa0060000: .
 ... Erase from 0xa0fe0000-0xa1000000: .
 ... Program from 0x8c7d0000-0x8c7f0000 at 0xa0fe0000: .
-</programlisting>
+</screen>
  </para>
 <note><title>NOTE</title>
 <para>Certain images are reserved by RedBoot and cannot be deleted.
@@ -1835,10 +1821,10 @@ may generate errors or warnings, or be benignly quiet.  </para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis lock -f 0xa0040000 -l 0x20000</userinput>
 ... Lock from 0xa0040000-0xa0060000: .
-</programlisting>
+</screen>
  </para>
 <variablelist>
 <varlistentry><term>fis unlock -f &lt;flash_addr> -l &lt;length></term>
@@ -1849,10 +1835,10 @@ the FIS can reuse those portions of flash.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis unlock -f 0xa0040000 -l 0x20000</userinput>
 ... Unlock from 0xa0040000-0xa0060000: .
-</programlisting>
+</screen>
  </para>
 <variablelist>
 <varlistentry><term>fis erase -f &lt;flash_addr> -l &lt;length></term>
@@ -1863,10 +1849,10 @@ to a loaded image.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fis erase -f 0xa0040000 -l 0x20000</userinput>
 ... Erase from 0xa0040000-0xa0060000: .
-</programlisting>
+</screen>
 </para>
 <variablelist>
 <varlistentry><term>fis write -b &lt;location> -l &lt;length> -f &lt;flash
@@ -1918,7 +1904,7 @@ process may be stopped simply by entering a period (.) on the line. Entering
 the caret (^) moves the editing back to the previous item. See &ldquo;RedBoot
 Editing Commands&rdquo;, <xref linkend="RedBoot-Editing-Commands">. </para>
 <para>If any changes are made in the configuration, then the updated data
-will be written back to flash after getting acknowledgement from the user.
+will be written back to flash after getting acknowledgment from the user.
 </para>
 <para>
 If the optional flag <computeroutput>-n</computeroutput> is specified
@@ -1999,7 +1985,7 @@ to execute a script at boot time. A sequence of RedBoot commands can be entered
 which will be executed when the system starts up. Optionally, a time-out period
 can be provided which allows the user to abort the startup script and proceed
 with normal command processing from the console.     </para>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fconfig -l</userinput>
 Run script at boot: false
 Use BOOTP for network configuration: false
@@ -2008,11 +1994,11 @@ Default server IP address: 192.168.1.101
 DNS server IP address: 192.168.1.1
 GDB connection port: 9000
 Network debug at boot time: false
-</programlisting></para>
+</screen></para>
 <para>The following example sets a boot script and then shows it running.
     </para>
 <para>
-<programlisting>
+<screen>
 RedBoot> <userinput>fconfig</userinput>
 Run script at boot: false <userinput>t</userinput>
       Boot script:
@@ -2039,7 +2025,7 @@ RedBoot          0xA0000000   0xA0000000  0x020000  0x80000000
 RedBoot config   0xA0FC0000   0xA0FC0000  0x020000  0x00000000
 FIS directory    0xA0FE0000   0xA0FE0000  0x020000  0x00000000
 RedBoot>
-</programlisting>
+</screen>
 </para>
 <note><title>NOTE</title>
 <para>The bold characters above indicate where something was entered on the
@@ -2053,9 +2039,9 @@ the console. </para>
 <para>
 RedBoot supports the notion of a boot script timeout, i.e. a period of
 time that RedBoot waits before executing the boot time script.  This period
-is primarily to allow the possibility of cancelling the script.  Since
+is primarily to allow the possibility of canceling the script.  Since
 a timeout value of zero (0) seconds would never allow the script to
-be aborted or cancelled, this value is not allowed.  If the timeout
+be aborted or canceled, this value is not allowed.  If the timeout
 value is zero, then RedBoot will abort the script execution immediately.
 </para>
 </note>
@@ -2069,7 +2055,7 @@ commands which should be executed only by the RedBoot configured for the
 specified startup type. The following boot script illustrates this concept
 by having the ROM based RedBoot load and run the RAM based RedBoot. The RAM
 based RedBoot will then list flash images.</para>
-<para><programlisting>
+<para><screen>
 RedBoot> <userinput>fco</userinput>
 Run script at boot: false <userinput>t</userinput>
 Boot script:
@@ -2120,7 +2106,7 @@ RedBoot           0x00000000  0x00000000  0x00040000  0x00002000
 RedBoot config    0x007DF000  0x007DF000  0x00001000  0x00000000
 FIS directory     0x007E0000  0x007E0000  0x00020000  0x00000000
 RedBoot>
-</programlisting></para>
+</screen></para>
 </sect1>
 <sect1 id="executing-programs">
 <title>Executing Programs from RedBoot</title>
@@ -2152,7 +2138,7 @@ or a Linux kernel.</para>
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -2200,18 +2186,18 @@ a program and move on in the script.
       <title>Examples</title>
       <para>
 Execute a program - <emphasis>no explicit output from RedBoot</emphasis>.
-<programlisting>
+<screen>
 RedBoot> <userinput>go 0x40040</userinput>
-</programlisting> 
+</screen> 
       </para>
       <para>
 Execute a program with a timeout.
-<programlisting>
+<screen>
 RedBoot> <userinput>go -w 10</userinput>
 About to start execution at 0x00000000 - abort with ^C within 10 seconds
 ^C
 RedBoot>
-</programlisting> 
+</screen> 
 Note that the starting address was implied (0x00000000 in this example).
 The user is prompted that execution will commence in 10 seconds.  At
 anytime within that 10 seconds the user may type  <guibutton>Ctrl+C</guibutton>
@@ -2243,7 +2229,7 @@ command, either from a script or the console.
     <refsect1>
       <title>Arguments</title>
       <informaltable frame="all">
-	<tgroup cols="3" colsep="1" rowsep="1" align="left">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
 	  <colspec colname="c1">
 	  <colspec colname="c2">
 	  <colspec colname="c3">
@@ -2321,7 +2307,7 @@ be relocated to the appropriate location before being started. The "-r" and
 "-s" options are used to pass information to the kernel about where a statically
 loaded ramdisk (initrd) is located.</para>
 <para>The "-c" option can be used to pass textual "command line" information
-to the kernel.  If the command line data contains any puncuation (spaces,
+to the kernel.  If the command line data contains any punctuation (spaces,
 etc), then it must be quoted using the double-quote character '"'. If the
 quote character is required, it should be written as '\"'.
       </para>
@@ -2332,14 +2318,14 @@ quote character is required, it should be written as '\"'.
 Execute a Linux kernel, passing a command line, which needs relocation.
 The result from RedBoot is normally quiet, with the target platform being
 passed over to Linux immediately.
-<programlisting>
+<screen>
 RedBoot> <userinput>exec -b 0x100000 -l 0x80000 -c "noinitrd root=/dev/mtdblock3 console=ttySA0"</userinput>
-</programlisting> 
+</screen> 
       </para>
       <para>
 Execute a Linux kernel, default entry address and no relocation required, with a timeout.  
 The <emphasis> emphasized lines</emphasis> are output from the loaded kernel.
-<programlisting> 
+<screen> 
 RedBoot> exec <userinput>-c "console=ttyS0,38400 ip=dhcp nfsroot=/export/elfs-sh" -w 5</userinput>
 Now booting linux kernel:
 Base address 0x8c001000 Entry 0x8c210000
@@ -2348,7 +2334,7 @@ About to start execution at 0x8x210000 - abort with ^C within 5 seconds
 <emphasis>
 Linux version 2.4.10-pre6 (...) (gcc version 3.1-stdsh-010931) #3 Thu Sep 27 11:04:23 BST 2001
 </emphasis>
-</programlisting> 
+</screen> 
       </para>
     </refsect1>
   </refentry>

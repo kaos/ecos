@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -876,7 +876,7 @@ void Cyg_RealTimeClock::dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD 
 {
 //    CYG_REPORT_FUNCTION();
 
-#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY) && defined(HAL_CLOCK_LATENCY)
     if (measure_clock_latency) {
         cyg_int32 delta;
         HAL_CLOCK_READ((cyg_uint32 *)&delta);

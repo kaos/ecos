@@ -37,7 +37,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -400,11 +400,9 @@ typedef enum
 
 
 #ifdef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-typedef void (*cyg_thread_destructor_fn)(CYG_ADDRWORD);
-
 struct Cyg_Destructor_Entry {
     cyg_thread_destructor_fn fn;
-    CYG_ADDRWORD data;
+    cyg_addrword_t data;
 };
 # define CYG_THREAD_DESTRUCTORS_MEMBER \
    struct Cyg_Destructor_Entry destructors[ CYGNUM_KERNEL_THREADS_DESTRUCTORS ];

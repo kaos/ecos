@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -67,9 +67,6 @@
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>
 
-#define NTHREADS 1
-#include "testaux.hxx"
-
 //==========================================================================
 
 #if defined(CYGPKG_KERNEL_SMP_SUPPORT) &&       \
@@ -81,6 +78,9 @@
     (CYGNUM_KERNEL_SCHED_PRIORITIES > 12)
 
 //==========================================================================
+
+#define NTHREADS 1
+#include "testaux.hxx"
 
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 

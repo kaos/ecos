@@ -37,7 +37,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -87,6 +87,7 @@
 
 //--------------------------------------------------------------------------
 
+#ifndef __ASSEMBLER__
 #ifdef CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 externC int
 hal_diag_irq_check(int vector);
@@ -96,6 +97,7 @@ CYG_MACRO_START                             \
 _ret_ =  hal_diag_irq_check((_vector_));    \
 CYG_MACRO_END
 #endif
+#endif /* __ASSEMBLER__ */
 
 //--------------------------------------------------------------------------
 

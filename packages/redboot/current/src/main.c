@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -199,6 +199,9 @@ do_idle(bool is_idle)
 static void
 _mon_write_char(char c, void **param)
 {
+    if (c == '\n') {
+        mon_write_char('\r');
+    }
     mon_write_char(c);
 }
 

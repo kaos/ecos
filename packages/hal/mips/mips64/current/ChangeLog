@@ -1,3 +1,7 @@
+2002-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_arch.h: Added __ASSEMBLER__ protection.
+
 2001-12-04  Nick Garnett  <nickg@redhat.com>
 
 	* include/var_arch.h: Added macros to read/write CP0 registers.
@@ -60,7 +64,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

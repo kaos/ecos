@@ -1,3 +1,4 @@
+* SMP support added for x86.
 * Ported new networking stack from FreeBSD to eCos. Includes IPv6 support.
 * Added generic power management support, plus platform support for the iPAQ.
 * Ported Microwindows windowing graphics system. This port is still alpha.

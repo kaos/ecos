@@ -1,3 +1,8 @@
+2002-05-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx (_vprintf): Mapping of '\n'=>'\r\n' must be done
+	at the _putc() level.
+
 2002-04-17  Gary Thomas  <gthomas@redhat.com>
 
 	* src/diag.cxx (diag_dump_buf_with_offset): Fix pad for short lines.
@@ -855,7 +860,7 @@ Tue Aug 25 11:47:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

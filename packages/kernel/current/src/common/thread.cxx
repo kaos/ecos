@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -752,17 +752,13 @@ Cyg_Thread::exit()
 
 #ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
     cyg_ucount16 i;
-    Cyg_Scheduler::lock();
     for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
         if (NULL != self->destructors[i].fn) {
             destructor_fn fn = self->destructors[i].fn;
             CYG_ADDRWORD data = self->destructors[i].data;
-            Cyg_Scheduler::unlock();
             fn(data);
-            Cyg_Scheduler::lock();
         }        
     }
-    Cyg_Scheduler::unlock();
 #endif
 #ifdef CYGDBG_KERNEL_THREADS_STACK_MEASUREMENT_VERBOSE_EXIT
     diag_printf( "Stack usage for thread %08x: %d\n", self,

@@ -36,7 +36,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
@@ -369,13 +369,9 @@ gethostbyaddr(const char *addr, int len, int type)
         return NULL;
     }
 
-    /* See if there is answer to and old query. If so free the memory
+    /* See if there is an answer to an old query. If so free the memory
        it uses. */
-    hent = (struct hostent *)cyg_thread_get_data(ptdindex);
-    if (hent) {
-        free_hent(hent);
-        cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)NULL);
-    }
+    free_stored_hent();
 
     /* Only IPv4 addresses accepted */
     if ((type != AF_INET) || (len != sizeof(struct in_addr))) {
@@ -414,7 +410,7 @@ gethostbyaddr(const char *addr, int len, int type)
     hent = parse_answer(msg, DNS_TYPE_PTR);
     if (hent) {
         memcpy(hent->h_addr_list[0], addr, sizeof(struct in_addr));
-        cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)hent);
+        store_hent(hent);
     }
     cyg_drv_mutex_unlock(&dns_mutex);
 
@@ -447,18 +443,14 @@ gethostbyname(const char * hostname)
         return NULL;
     }
 
-    /* See if there is answer to and old query. If so free the memory
+    /* See if there is an answer to an old query. If so free the memory
        it uses */
-    hent = (struct hostent *)cyg_thread_get_data(ptdindex);
-    if (hent) {
-        free_hent(hent);
-        cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)NULL);
-    }
+    free_stored_hent();
   
     if (!valid_hostname(hostname)) {
         /* It could be a dot address */
         hent = dot_hostname(hostname);
-        cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)hent);
+        store_hent(hent);
         CYG_REPORT_RETVAL( hent );
         return hent;
     }
@@ -486,7 +478,7 @@ gethostbyname(const char * hostname)
     hent = parse_answer(msg, DNS_TYPE_A);
     if (hent) {
         cyg_drv_mutex_unlock(&dns_mutex); 
-        cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)hent);
+        store_hent(hent);
         CYG_REPORT_RETVAL( hent );
         return hent;
     }
@@ -524,7 +516,7 @@ gethostbyname(const char * hostname)
     }
 
     cyg_drv_mutex_unlock(&dns_mutex); 
-    cyg_thread_set_data(ptdindex, (CYG_ADDRWORD)hent);
+    store_hent(hent);
     CYG_REPORT_RETVAL( hent );
     return hent;
 }

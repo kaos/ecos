@@ -1,3 +1,78 @@
+2002-05-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/net/dns.c (store_hent): New function. DNS package now requires
+	this instead of the cyg_thread_get_data calls.
+	(free_stored_hent): New function. Ditto.
+
+2002-05-23  Gary Thomas  <gthomas@redhat.com>
+
+	* doc/redboot_cmds.sgml: Document new HTTP download mode.
+
+	* src/net/tcp.c: Improve some interfaces.  Add support for
+	outgoing (__tcp_open) connections.
+
+	* src/net/net_io.c (net_io_flush): Use improved TCP interfaces.
+
+	* src/main.c (_mon_write_char): Map '\n' => '\r\n'.  This used
+	to be done by diag_printf(), but that was the wrong place for it.
+
+	* include/net/net.h: Add support for TCP outgoing connections.
+
+	* src/net/http_client.c: 
+	* include/net/http.h: New file(s) - HTTP client support.
+
+	* src/load.c: 
+	* cdl/redboot.cdl: Support HTTP download mode.
+
+2002-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot.sgml: Moved the editing and resource sections to
+	this document. Added new section on RedBoot (startup) modes.
+	* doc/redboot_cmds.sgml: Removed the editing and resource
+	sections.
+	* doc/redboot_installing.sgml: Changed a couple of platform
+	descriptions.
+	* doc/redboot_rebuilding.sgml: Make use of mode/config
+	consistent. Removed mode section.
+
+2002-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_rebuilding.sgml: Added a note about redboot growing
+	beyond its slot limits.
+	Rewrote the RedBoot rebuilding documentation.
+
+	* src/flash.c (fis_create): Clarify error message. Get rid of bool
+	flag slot_found that only duplicated fis variable state.
+
+2002-05-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/xyzModem.h: 
+	* src/xyzModem.c: 
+	* src/load.c: Purge mention of Z-modem until it's implemented.
+
+2002-05-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c (fis_create): Removed one of the three questions to
+	verify.
+	* doc/redboot_rebuilding.sgml: Removed the query lines from the
+	docs.
+
+	* doc/redboot_installing.sgml: Removed all the free RAM related
+	resource descriptions. Left in a few timer resource descriptions.
+	* doc/redboot_cmds.sgml: Refer to platform sections for additional
+	platform-specific resource usage.
+
+	* doc/redboot_installing.sgml: Removed all platform specific
+	references to the updating section which told the user to use
+	specific flash paramemters. All this is now handled
+	automagically.
+
+	* src/alias.c (lookup_alias): FREEMEMHI is just the high address
+	masked to 1KB alignment.
+
+	* doc/redboot_cmds.sgml: Added load disk example.
+	Added section on RedBoot resources.
+
 2002-05-18  Gary Thomas  <gthomas@redhat.com>
 
 	* src/main.c (do_baud_rate): Improve safety by asking for verification
@@ -2395,7 +2470,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

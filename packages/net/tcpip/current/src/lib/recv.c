@@ -35,10 +35,11 @@
 #include <sys/socket.h>
 #include <sys/socketvar.h>
 
+extern ssize_t recvfrom (int, void *, size_t, int, struct sockaddr *, socklen_t *);
+
 ssize_t	
-recv(int s, const void *buf, size_t buflen, 
-       int flags)
+recv(int s, void *buf, size_t buflen, int flags)
 {
     
-    return(recvfrom(s,buf,buflen,NULL,0));
+    return(recvfrom(s,buf,buflen,flags,NULL,0));
 }

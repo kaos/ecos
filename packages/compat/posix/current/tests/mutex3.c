@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -69,6 +69,8 @@
 #define NA_MSG "No POSIX thread priority scheduling enabled"
 #elif !defined(_POSIX_THREAD_PRIO_INHERIT)
 #define NA_MSG "No POSIX thread priority inheritance enabled"
+#elif !defined(_POSIX_SEMAPHORES)
+#define NA_MSG "No POSIX sempaphore support enabled enabled"
 #elif !defined(CYGFUN_KERNEL_API_C)
 #define NA_MSG "Kernel C API not enabled"
 #elif defined(CYGPKG_KERNEL_SMP_SUPPORT)

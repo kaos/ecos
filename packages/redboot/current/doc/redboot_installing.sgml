@@ -11,75 +11,82 @@ testing</secondary></indexterm><indexterm><primary>installing and testing
 </primary><secondary>Cyclone IQ80310</secondary></indexterm>RedBoot supports
 both serial ports and the built-in ethernet port for communication and downloads.
 The default serial port settings are 115200,8,N,1. RedBoot also supports flash
-management for the onboard 8MB flash. Several basic RedBoot configurations
-are supported: </para>
-<itemizedlist>
-<listitem><para>RedBoot running from the board's flash boot sector.</para>
-</listitem>
-<listitem><para>RedBoot running from flash address 0x40000, with ARM bootloader
-in flash boot sector.</para>
-</listitem>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
-</para>
-</listitem>
-<listitem><para>RedBoot running from RAM with ARM bootloader in flash boot
-sector.</para>
-</listitem>
-</itemizedlist>
-<para>A special RedBoot command: <command>diag</command> is
-used to access a set of hardware diagnostics provided by the board manufacturer.
+management for the onboard 8MB flash.</para>
+
+<para>The following RedBoot mode configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>ROMA</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from flash address 0x40000, with
+	      ARM bootloader in flash boot sector.</entry>
+	      <entry>redboot_ROMA.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAMA</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with ARM bootloader in
+	      flash boot sector.</entry>
+	      <entry>redboot_RAMA.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
 </sect2>
 <sect2>
 <title>Initial Installation Method</title>
-<para>The board manufacturer provides a DOS application which is capable of
-programming the flash over the PCI bus, and this is required for initial installations
-of RedBoot. Please see the board manual for information on using this utility.
-In general, the process involves programming one of the two flash based RedBoot
-configurations to flash. The RedBoot which runs from the flash boot sector
-should be programmed to flash address 0x00000000. RedBoot that has been configured
-to be started by the ARM bootloader should be programmed to flash address
-0x00004000. </para>
-<para>Four sets of prebuilt files are provided in a tarball and zip format.
-Each set corresponds to one of the four supported configurations and includes
-an ELF file (.elf), a binary image (.bin), and an S-record file (.srec). <programlisting>
-For RedBoot running from the flash boot sector:
-bins/cyclone-rom.bin
-bins/cyclone-rom.elf
-bins/cyclone-rom.srec
 
+<para>The board manufacturer provides a DOS application which is
+capable of programming the flash over the PCI bus, and this is
+required for initial installations of RedBoot. Please see the board
+manual for information on using this utility.  In general, the process
+involves programming one of the two flash based RedBoot images to
+flash. The ROM mode RedBoot (which runs from the flash boot sector)
+should be programmed to flash address 0x00000000. The ROMA RedBoot
+mode (which is started by the ARM bootloader) should be programmed to
+flash address 0x00004000.
+</para>
 
-For RedBoot running from flash address 0x40000:
-bins/cyclone-roma.bin
-bins/cyclone-roma.elf
-bins/cyclone-roma.srec
-
-
-For RedBoot running from RAM with RedBoot in the flash boot sector:
-bins/cyclone-ram.bin
-bins/cyclone-ram.elf
-bins/cyclone-ram.srec
-
-
-For RedBoot running from RAM with ARM bootloader in the flash boot sector:
-bins/cyclone-rama.bin
-bins/cyclone-rama.elf
-bins/cyclone-rama.srec</programlisting>Initial installations deal with the
-flash-based RedBoots. Installation and use of RAM based RedBoots is documented
-elsewhere.</para>
 <para> To install RedBoot to run from the flash boot sector, use the manufacturer's
-flash utility to install the bins/cyclone-rom.bin image at address zero.
+flash utility to install the ROM mode image at address zero.
 </para>
 <para>To install RedBoot to run from address 0x40000 with the ARM bootloader
 in the flash boot sector, use the manufacturer's flash utility to install
-the bins/cyclone-roma.bin image at address 0x40000. </para>
+the ROMA mode image at address 0x40000. </para>
+
 <para>After booting the initial installation of RedBoot, this warning may
 be printed: <programlisting>flash configuration checksum error or invalid key
 </programlisting>This is normal, and indicates that the flash must be configured
 for use by RedBoot. Even if the above message is not printed, it may be a
 good idea to reinitialize the flash anyway. Do this with the <command>
 fis</command> command: <programlisting>RedBoot> <userinput>fis init</userinput>
-About to initialize [format] flash image system - continue (y/n)? y
+About to initialize [format] flash image system - continue (y/n)? <userinput>y</userinput>
 *** Initialize flash Image System
 Warning: device contents not erased, some blocks may not be usable
 ... Unlock from 0x007e0000-0x00800000: .
@@ -99,6 +106,11 @@ Followed by the fconfig command:
    ... Erase from 0x007c0000-0x007e0000: .
    ... Program from 0xa0013018-0xa0013418 at 0x007c0000: .
    ... Lock from 0x007c0000-0x007e0000: .</programlisting></para>
+
+<note><para>When later updating RedBoot in situ, it is important to
+use a matching ROM and RAM mode pair of images. So use either RAM/ROM
+or RAMA/ROMA images. Do not mix them.</para></note>
+
 </sect2>
 <sect2>
 <title>Error codes</title>
@@ -118,39 +130,10 @@ address 0x40000. RedBoot is selected by switch position 0 or 1. Other switch
 positions are used by the ARM firmware and RedBoot will not be started. </para>
 </sect2>
 <sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be: </para>
-<bridgehead>ARM bootloader in flash boot sector</bridgehead>
-<para><programlisting>-f 0x40000
--b 0xa0100000
--l 0x40000</programlisting></para>
-<bridgehead>RedBoot in flash boot sector</bridgehead>
-<para><programlisting>-f 0
--b 0xa0100000
--l 0x40000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<bridgehead>ARM bootloader in flash boot sector</bridgehead>
-<programlisting>-f 0x80000
--b 0xa0020000
--r 0xa0020000
--l 0x40000</programlisting>
-<bridgehead>RedBoot in flash boot sector</bridgehead>
-<programlisting>-f 0x40000
--b 0xa0020000
--r 0xa0020000
--l 0x40000</programlisting>
-</sect3></sect2>
-<sect2>
 <title>Special RedBoot Commands </title>
-<para>A special RedBoot command, diag, is used to access a set of hardware
-diagnostics provided by the board manufacturer. To access the diagnostic menu,
-enter diag at the RedBoot prompt: 
+<para>A special RedBoot command, <command>diag</command>, is used to
+access a set of hardware diagnostics provided by the board
+manufacturer. To access the diagnostic menu, enter diag at the RedBoot prompt: 
 <programlisting>
 RedBoot> <userinput>diag</userinput>
 Entering Hardware Diagnostics - Disabling Data Cache!
@@ -204,31 +187,22 @@ item may be used to set the board ethernet address.</para>
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot </title>
-<para>The build process is nearly identical for the four supported configurations.
-Assuming that the provided RedBoot source tree is located in the current directory
-and that we want to build a RedBoot that runs from the flash boot sector,
-the build process is: <programlisting>% export TOPDIR=`pwd`
-% export ECOS_REPOSITORY=\
-    ${TOPDIR}/src/ecos-monitors/redboot-<replaceable>DATE</replaceable>-intel/packages
-% mkdir ${TOPDIR}/build
-% cd ${TOPDIR}/build
-% ecosconfig new iq80310 redboot
-% ecosconfig import \
-   ${ECOS_REPOSITORY}/hal/arm/iq80310/<replaceable>VERSION</replaceable>/misc/redboot_ROM.ecm
-% ecosconfig tree
-% make</programlisting>If a different configuration is desired,
-simply use the above build process but substitute an alternate configuration
-file for the ecosconfig import command, e.g.:</para>
-<para>For a RedBoot that runs from flash address 0x40000 with the ARM booloader
-in the flash boot sector, use: <programlisting>% ecosconfig import \
-  ${ECOS_REPOSITORY}/hal/arm/iq80310/<replaceable>VERSION</replaceable>/misc/redboot_ROMA.ecm</programlisting>For
-a RedBoot which runs from RAM with RedBoot located in the flash boot sector,
-use:<programlisting>% ecosconfig import \
-  ${ECOS_REPOSITORY}/hal/arm/iq80310/<replaceable>VERSION</replaceable>/misc/redboot_RAM.ecm</programlisting>For
-a RedBoot which runs from RAM with ARM bootloader located in the flash boot
-sector, use: <programlisting>% ecosconfig import \
-  ${ECOS_REPOSITORY}/hal/arm/iq80310/<replaceable>VERSION</replaceable>/misc/redboot_RAMA.ecm</programlisting></para>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=iq80310
+export ARCH_DIR=arm
+export PLATFORM_DIR=iq80310
+</programlisting>
+</para>
+
+<para>The names of configuration files are listed above with the
+description of the associated modes.</para>
+
 </sect2>
+
 <sect2>
 <title>Interrupts</title>
 <para>RedBoot uses an interrupt vector table which is located at address 0xA000A004.
@@ -363,19 +337,11 @@ Virtual Address Range    C B  Description
 0xf0000000 - 0xffffffff  N N  80200 Internal Registers </programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage</title>
-<para>The standalone flash based RedBoot image (no ARM bootloader) occupies
-flash addresses 0x00000000 - 0x0003ffff. </para>
-<para>The flash based RedBoot configured to be booted by the ARM bootloader
-occupies flash addresses 0x00040000 - 0x0007ffff. Both of these also reserve
-RAM (0xa0000000 - 0xa001ffff) for RedBoot runtime uses. </para>
-<para>Both RAM based RedBoot configurations are designed to run from RAM at
-addresses 0xa0020000 - 0xa005ffff. RAM addresses from 0xa0060000 to the end
-of RAM are available for general use, such as a temporary scratchpad for downloaded
-images before they are written to flash. </para>
+<title>Platform Resource Usage</title>
 <para>The external timer is used as a polled timer to provide timeout support
 for networking and XModem file transfers.</para>
 </sect2></sect1>
+
 <?Pub _newpage>
 <sect1 id="iq80321">
 <title>Intel IQ80321</title>
@@ -386,55 +352,59 @@ testing</secondary></indexterm><indexterm><primary>installing and testing
 </primary><secondary>Intel IQ80321</secondary></indexterm>RedBoot supports
 the serial port and the built-in ethernet port for communication and downloads.
 The default serial port settings are 115200,8,N,1. RedBoot also supports flash
-management for the onboard 8MB flash. Several basic RedBoot configurations
-are supported: </para>
-<itemizedlist>
-<listitem><para>RedBoot running from the board's flash boot sector.</para>
-</listitem>
-<listitem><para>RedBoot running from RAM with RedBoot in the flash boot sector.
+management for the onboard 8MB flash.</para>
+
+<para>The following RedBoot mode configurations are supported:
+
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <thead>
+	    <row>
+	      <entry>Configuration</entry>
+	      <entry>Mode</entry>
+	      <entry>Description</entry>
+	      <entry>File</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>ROM</entry>
+	      <entry>[ROM]</entry>
+	      <entry>RedBoot running from the board's flash boot
+	      sector.</entry>
+	      <entry>redboot_ROM.ecm</entry>
+	    </row>
+	    <row>
+	      <entry>RAM</entry>
+	      <entry>[RAM]</entry>
+	      <entry>RedBoot running from RAM with RedBoot in the
+	      flash boot sector.</entry>
+	      <entry>redboot_RAM.ecm</entry>
+	    </row>
+</tbody>
+</tgroup>
+</informaltable>
 </para>
-</listitem>
-</itemizedlist>
-<para>A special RedBoot command: <command>diag</command> is
-used to access a set of hardware diagnostics.
-</para>
+
+
 </sect2>
 <sect2>
 <title>Initial Installation Method</title>
 <para>The board manufacturer provides a DOS application which is capable of
 programming the flash over the PCI bus, and this is required for initial installations
 of RedBoot. Please see the board manual for information on using this utility.
-In general, the process involves programming the flash based RedBoot to flash.
-RedBoot should be programmed to flash address 0x00000000 using the DOS utility.
+In general, the process involves programming the ROM mode RedBoot
+image to flash. RedBoot should be programmed to flash address
+0x00000000 using the DOS utility.
 </para>
-<para>Two sets of prebuilt files are provided in a tarball and zip format.
-Each set corresponds to one of the supported configurations and includes
-an ELF file (.elf), a binary image (.bin), and an S-record file (.srec). <programlisting>
-For RedBoot running from the flash boot sector:
-loaders/iq80321/iq80321-rom.bin
-loaders/iq80321/iq80321-rom.elf
-loaders/iq80321/iq80321-rom.srec
 
-For RedBoot running from RAM with RedBoot in the flash boot sector:
-loaders/iq80321/iq80321-ram.bin
-loaders/iq80321/iq80321-ram.elf
-loaders/iq80321/iq80321-ram.srec
-
-</programlisting>Initial installations deal with the
-flash-based RedBoots. Installation and use of RAM based RedBoots is documented
-elsewhere.</para>
-<para> To install RedBoot to run from the flash boot sector, use the manufacturer's
-flash utility to install the
-<filename>loaders/iq80321/iq80321-rom.bin</filename>
-image at address zero.
-</para>
 <para>After booting the initial installation of RedBoot, this warning may
 be printed: <programlisting>flash configuration checksum error or invalid key
 </programlisting>This is normal, and indicates that the flash must be configured
 for use by RedBoot. Even if the above message is not printed, it may be a
 good idea to reinitialize the flash anyway. Do this with the <command>
 fis</command> command: <programlisting>RedBoot> <userinput>fis init</userinput>
-About to initialize [format] FLASH image system - continue (y/n)? y
+About to initialize [format] FLASH image system - continue (y/n)? <userinput>y</userinput>
 *** Initialize FLASH Image System
     Warning: device contents not erased, some blocks may not be usable
     ... Unlock from 0xf07e0000-0xf0800000: .
@@ -566,30 +536,10 @@ A1
 </programlisting>
 </sect2>
 <sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be: </para>
-<para><programlisting>-f 0xf0000000
--b 0x100000
--l 0x40000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot image, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used with
-the flags in the sample commands should be: </para>
-<programlisting>-f 0xf0040000
--b 0x20000
--r 0x20000
--l 0x40000</programlisting>
-</sect3></sect2>
-<sect2>
 <title>Special RedBoot Commands </title>
-<para>A special RedBoot command, diag, is used to access a set of hardware
-diagnostics. To access the diagnostic menu, enter diag at the RedBoot prompt: 
+<para>A special RedBoot command, <command>diag</command>, is used to
+access a set of hardware diagnostics. To access the diagnostic menu,
+enter <command>diag</command> at the RedBoot prompt:
 <programlisting>
 RedBoot> <userinput>diag</userinput>
 Entering Hardware Diagnostics - Disabling Data Cache!
@@ -622,11 +572,11 @@ the user will be prompted to enter the base address of the test range and its
 size. The numbers must be in hex with no leading &ldquo;0x&rdquo;
 </para>
 <programlisting>
-Enter the menu item number (0 to quit): 1
+Enter the menu item number (0 to quit): <userinput>1</userinput>
 
-Base address of memory to test (in hex): 100000
+Base address of memory to test (in hex): <userinput>100000</userinput>
 
-Size of memory to test (in hex): 200000
+Size of memory to test (in hex): <userinput>200000</userinput>
 
 Testing memory from 0x00100000 to 0x002fffff.
 
@@ -676,11 +626,11 @@ the current contents are invalid. In any case, this test will also allow the
 user to enter a six byte ethernet MAC address into the serial EEPROM.
 </para>
 <programlisting>
-Enter the menu item number (0 to quit): 6
+Enter the menu item number (0 to quit): <userinput>6</userinput>
 
 
 Current MAC address: 00:80:4d:46:00:02
-Enter desired MAC address: 00:80:4d:46:00:01
+Enter desired MAC address: <userinput>00:80:4d:46:00:01</userinput>
 Writing to the Serial EEPROM... Done
 
 ******** Reset The Board To Have Changes Take Effect ********
@@ -737,25 +687,21 @@ This should prevent all external bus accesses.
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot </title>
-<para>The build process is nearly identical for the supported configurations.
-Assuming that the provided RedBoot source tree is located in the current directory
-and that we want to build a RedBoot that runs from the flash boot sector,
-the build process is: <programlisting>% export TOPDIR=`pwd`
-% export ECOS_REPOSITORY=\
-    ${TOPDIR}/src/ecos-monitors/redboot-<replaceable>DATE</replaceable>-intel/packages
-% mkdir ${TOPDIR}/build
-% cd ${TOPDIR}/build
-% ecosconfig new iq80321 redboot
-% ecosconfig import \
-   ${ECOS_REPOSITORY}/hal/arm/xscale/iq80321/<replaceable>VERSION</replaceable>/misc/redboot_ROM.ecm
-% ecosconfig tree
-% make</programlisting>If a RedBoot that runs from RAM is desired,
-simply use the above build process but substitute an alternate configuration
-file for the ecosconfig import command, e.g.:</para>
-<para><programlisting>% ecosconfig import \
-  ${ECOS_REPOSITORY}/hal/arm/xscale/iq80321/<replaceable>VERSION</replaceable>/misc/redboot_RAM.ecm
-</programlisting></para>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=iq80321
+export ARCH_DIR=arm
+export PLATFORM_DIR=xscale/iq80321
+</programlisting>
+</para>
+
+<para>The names of configuration files are listed above with the
+description of the associated modes.</para>
 </sect2>
+
 <sect2>
 <title>Interrupts</title>
 <para>RedBoot uses an interrupt vector table which is located at address 0x8004.
@@ -875,13 +821,7 @@ Alternate Virtual Map    X C B  Description
 </programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage</title>
-<para>The flash based RedBoot image occupies flash addresses
-0xf0000000 - 0xf003ffff and RAM addresses (0x00000000 - 0x0001ffff). </para>
-<para>The RAM based RedBoot configuration is designed to run from RAM at
-addresses 0x00020000 - 0x0005ffff. RAM addresses from 0x00060000 to the end
-of RAM are available for general use, such as a temporary scratchpad for
-downloaded images before they are written to flash. </para>
+<title>Platform Resource Usage</title>
 <para>The Verde programmable timer0 is used for timeout support
 for networking and XModem file transfers.</para>
 </sect2></sect1>
@@ -946,12 +886,9 @@ Virtual Address Range    C B  Description
 0xe0000000 - 0xe7ffffff  Y Y  Cache Clean</programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x40000000 -
-0x4000ffff. The RAM based RedBoot image occupies RAM addresses 0x10000 - 0x2ffff.
-RAM addresses from 0x30000 to the end of RAM are available for general use
-such as a temporary scratchpad for downloaded images before they are written
-to flash. The SA11x0 OS timer is used as a polled timer to provide timeout
+<title>Platform Resource Usage </title>
+<para>
+The SA11x0 OS timer is used as a polled timer to provide timeout
 support for XModem file transfers.</para>
 </sect2>
 <sect2>
@@ -992,26 +929,6 @@ in: <programlisting>.../packages/hal/arm/ebsa285/current/support/linux/safl_util
 </programlisting></para>
 </sect2>
 <sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x41000000
--b 0x100000
--l 0x40000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:        <programlisting>-f 0x41040000
--b 0x20000
--r 0x20000
--l 0x40000
-</programlisting></para>
-</sect3></sect2>
-<sect2>
 <title>Communication Channels </title>
 <para>Serial, Intel PRO 10/100+ 82559 PCI ethernet card.</para>
 </sect2>
@@ -1038,13 +955,7 @@ whether or not the region is cached (C) or buffered (B).</para>
 0x80000000 - 0xffffffff  N Y  PCI Memory </programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x41000000 -
-0x4103ffff. It also reserves the first 192K bytes of RAM for runtime uses.
-The RAM based RedBoot image occupies RAM addresses 0x30000 - 0x5ffff. RAM
-addresses from 0x60000 to the end of RAM are available for general use such
-as a temporary scratchpad for downloaded images before they are written to
-flash.</para>
+<title>Platform Resource Usage </title>
 <para>Timer3 is used as a polled timer to provide timeout support for networking
 and XModem file transfers.</para>
 </sect2>
@@ -1143,12 +1054,7 @@ Virtual Address Range    C B  Description
 0xe0000000 - 0xe7ffffff  Y Y  Cache Clean</programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies virtual addresses 0x50000000
-- 0x5000ffff. The RAM based RedBoot image occupies virtual addresses 0x10000
-- 0x2ffff. RAM addresses from 0x30000 to the end of RAM are available for
-general use such as a temporary scratchpad for downloaded images before they
-are written to flash.</para>
+<title>Platform Resource Usage </title>
 <para> The SA11x0 OS timer is used as a polled timer to provide timeout support
 for XModem file transfers.</para>
 </sect2><sect2>
@@ -1187,25 +1093,6 @@ programming. </para>
 <para>The flash parts are also socketed and may be programmed in a suitable
 device programmer.</para>
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x50000000
--b 0x60000
--l 0x40000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:        <programlisting>-f 0x50040000
--b 0x20000
--r 0x20000
--l 0x40000</programlisting></para>
-</sect3></sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
 <para>None.</para>
@@ -1252,11 +1139,7 @@ The flash based RedBoot image occupies virtual addresses 0x50000000 - 0x5003ffff
 </programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The RAM based RedBoot image occupies RAM addresses 0x20000 - 0x5ffff.
-RAM addresses from 0x60000 to the end of RAM are available for general use
-such as a temporary scratchpad for downloaded images before they are written
-to flash. </para>
+<title>Platform Resource Usage </title>
 <para>The SA11x0 OS timer is used as a polled timer to provide timeout support
 for network and XModem file transfers.</para>
 </sect2><sect2>
@@ -1359,24 +1242,7 @@ ethaddr</computeroutput> command to print out the board ethernet address.
 Typically, it is:    <programlisting>00:0d:a0:00:xx:xx</programlisting> where
 xx.xx is the hex representation of the board serial number.</para>
 </sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be: <programlisting>-f 0x9dc40000
--b 0x80020000
--r 0x80020000
--l 0x40000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x9dc00000
--b 0x80080000
--l 0x40000</programlisting></para>
-</sect3></sect2>
-
+</sect2>
 <sect2>
 <title>Additional commands</title>
 <para>The <command>exec</command> command which allows the
@@ -1462,14 +1328,6 @@ by RedBoot. </para>
 0x1f000000 - 0x1fbfffff FPGA</programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x1fc00000 -
-0x1fc1ffff. RedBoot also reserves RAM (0x00000000 - 0x0001ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x00020000 - 0x0003ffff. RAM physical addresses from
-0x00040000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -1548,25 +1406,6 @@ on the Dev Kit CD. The path in the expanded tarball is <computeroutput>yamon/bin
 the S-record file:     <programlisting>% cp redboot_ROM.srec redboot_ROM.rec
 % srecconv.pl -ES L -A 29 redboot_ROM </programlisting>  The resulting file
 is named redboot_ROM.fl.</para>
-</sect3></sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:        <programlisting>-f 0xBE020000
--b 0x80020000
--r 0x80020000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be: <programlisting>-f 0xBE000000
--b 0x80080000
--l 0x20000</programlisting></para>
 </sect3></sect2>
 
 <sect2>
@@ -1657,14 +1496,6 @@ whether or not the region is cached (C) or buffered (B).</para>
 0xbf000000 - 0xbfffffff N N  Board logic FPGA</programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0xbe000000 -
-0xbe01ffff. RedBoot also reserves RAM (0x00000000 - 0x0001ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x00020000 - 0x0004ffff. RAM physical addresses from
-0x00050000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -1695,31 +1526,6 @@ Two basic RedBoot configurations are supported:<itemizedlist>
 <title>Initial Installation Method </title>
 <para>Device programmer is used to program socketed flash parts.</para>
 </sect2>
-<sect2>
-<title>Flash Management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, loading the primary image into
-RAM at 0x80100000. The actual numbers used with
-the flags in the sample commands are then:
-<programlisting>
--f 0xbfc00000
--b 0x80100000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:
-<programlisting>
--f 0xbfc20000
--b 0x80020000
--r 0x80020000
--l 0x20000
-</programlisting></para>
-</sect3></sect2>
 
 <sect2>
 <title>Additional commands</title>
@@ -1770,15 +1576,6 @@ whether or not the region is cached (C) or buffered (B).</para>
 0x1fc00000 - 0x1fc7ffff flash</programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x1fc00000 -
-0x1fc1ffff. RedBoot also reserves RAM (0x00000000 - 0x0001ffff) for RedBoot
-runtime uses. </para>
-<para>RAM based RedBoot configurations are designed to run from RAM at physical
-addresses 0x00020000 - 0x0003ffff. RAM physical addresses from 0x00040000
-to the end of RAM are available for general use, such as a temporary scratchpad
-for downloaded images, before they are written to flash.</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -1853,28 +1650,6 @@ RedBoot> <userinput>fi cr RedBoot -f 0xFE000000 -b 0x00040000 -l 0x20000</userin
 </programlisting></para>
 </sect2>
 <sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0xfe000000
--b 0x50000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:
-<programlisting>
--f 0xfe020000
--b 0x20000
--r 0x20000
--l 0x20000
-</programlisting></para>
-</sect3></sect2>
-<sect2>
 <title>Special RedBoot Commands </title>
 <para>None.</para>
 </sect2>
@@ -1887,15 +1662,6 @@ Physical Address Range Description
 0xfa100000 - 0xfa100003 LEDs
 0xfe000000 - 0xfe07ffff flash (AMD29F040B)
 0xff000000 - 0xff0fffff MPC registers</programlisting></para>
-</sect2>
-<sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0xfe000000 -
- 0xfe01ffff. RedBoot also reserves RAM (0x00000000 - 0x0001ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x00020000 - 0x0004ffff. RAM physical addresses from
-0x00050000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot</title>
@@ -1930,20 +1696,6 @@ A single RedBoot configuration is supported: <itemizedlist>
 </para>
 </sect2>
 <sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:
-<programlisting>
--f 0xfe000000
--b 0x50000
--l 0x30000
-</programlisting></para>
-</sect3>
-</sect2>
-<sect2>
 <title>Special RedBoot Commands </title>
 <para>None.</para>
 </sect2>
@@ -1955,14 +1707,6 @@ Physical Address Range Description
 0x00000000 - 0x007fffff DRAM
 0xfe000000 - 0xfe0fffff flash (AMD29LV8008B)
 0xff000000 - 0xff0fffff MPC registers</programlisting></para>
-</sect2>
-<sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0xfe000000 -
- 0xfe02ffff. RedBoot also reserves RAM (0x00000000 - 0x0003ffff) for RedBoot
-runtime uses. RAM physical addresses from
-0x00040000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot</title>
@@ -2048,14 +1792,6 @@ whether or not the region is cached (C) or buffered (B).</para>
 0x01820000 - 0x0187ffff N N  System flash (mirrored)</programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x0182000 - 0x0182ffff.
-</para>
-<para>RedBoot also reserves RAM (0x00000000 - 0x0000ffff) for RedBoot runtime
-uses. </para>
-<para>RAM physical addresses from 0x00010000 to the end of RAM are available
-for general use.</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -2195,20 +1931,6 @@ Physical Address Range  C B  Description
 </para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>
-The flash based RedBoot image occupies flash addresses
-0x24000000 - 0x2401ffff.
-</para>
-<para>
-RedBoot also reserves RAM (0x00000000 - 0x0003ffff) for RedBoot runtime
-uses. If ethernet support is included, then the address range
-0x00f00000 to 0x00ffffff are reserved for use by the driver. This may
-be moved using the MLT.
-</para>
-<para>RAM physical addresses from 0x00040000 to 0x00efffff and from
-0x00100000 to the end of SDRAM are available for general use.</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should
 be followed.  The values for TARGET, ARCH_DIR and PLATFORM_DIR on this
@@ -2266,16 +1988,6 @@ Physical Address Range Description
 0x0c000000 - 0x0fffffff NISA Serial, Parallel and PC Card ports </programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x04000000 -
- 0x0401ffff. </para>
-<para>RedBoot also reserves RAM (0x00000000 - 0x00007fff) for RedBoot runtime
-uses. </para>
-<para>RAM based RedBoot configurations are designed to run from RAM at physical
-addresses 0x00008000 - 0x0003ffff. RAM physical addresses from 0x00040000
-to the end of RAM are available for general use, such as a temporary scratchpad
-for downloaded images, before they are written to flash.</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -2432,34 +2144,6 @@ for directions.
 </para>
 </sect3></sect2>
 <sect2>
-<title>Flash Management</title>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, relying on default location
-and size of the image. It is also possible to explicitly specify the options
-- the appropriate options for the iPAQ are:   <programlisting>-f 0x50080000
--b 0x00020000
--r 0x00020000
--e 0x00020040
--l 0x40000</programlisting>When updating the image, the flash should be unlocked
-before programming, and relocked afterwards. This is done with the commands:
-    <programlisting>fis unlock -f 0x50080000 -l 0x40000</programlisting>and<programlisting>
-fis lock -f 0x50080000 -l 0x40000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, relying on default location and
-size of the image. It is also possible to explicitly specify the options -
-the appropriate options for the iPAQ are:    <programlisting>-f 0x50040000
--b 0x00100000
--l 0x40000</programlisting> When updating the image, the flash should be unlocked
-before programming, and relocked afterwards. This is done with the commands:
-    <programlisting>fis unlock -f 0x50040000 -l 0x40000</programlisting>and<programlisting>
-fis lock -f 0x50040000 -l 0x40000</programlisting></para>
-</sect3></sect2>
-<sect2>
 <title>Additional commands</title>
 <para>The <command>exec</command> command which allows the loading
 and execution of Linux kernels,
@@ -2524,17 +2208,6 @@ Virtual Address Range    C B  Description
 0x80000000 - 0xbfffffff  N N  SA-1110 Internal Registers
 0xc0000000 - 0xc1ffffff  N Y  DRAM Bank 0: 32Mb
 0xe0000000 - 0xe7ffffff  Y Y  Cache Clean   </programlisting> </para>
-</sect2>
-<sect2>
-<title>Resource Usage</title>
-<para>The flash based RedBoot image occupies flash addresses 0x50040000 -
-0x5007ffff. RedBoot also reserves RAM (0x00000000 - 0x0001ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at virtual addresses 0x00020000 - 0x0005ffff. RAM virtual addresses from
-0x00060000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash. An exception
-is RAM from 0x01F70000 - 0x01FFFFFF which is reserved for use by the LCD
-display.</para>
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot</title>
@@ -2603,20 +2276,6 @@ FLASH: 0x50000000 - 0x51000000, 128 blocks of 0x00020000 bytes each.
 </sect3>
 </sect2>
 <sect2>
-<title>Flash Management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, relying on default location and
-size of the image. It is also possible to explicitly specify the options -
-the appropriate options for the CerfCube are:    <programlisting>-f 0x50000000
--b 0x00100000
--l 0x40000</programlisting> When updating the image, the flash should be unlocked
-before programming, and relocked afterwards. This is done with the commands:
-    <programlisting>fis unlock -f 0x50000000 -l 0x20000</programlisting>and<programlisting>
-fis lock -f 0x50000000 -l 0x20000</programlisting></para>
-</sect3></sect2>
-<sect2>
 <title>Additional commands</title>
 <para>The <command>exec</command> command which allows the loading
 and execution of Linux kernels,
@@ -2671,17 +2330,7 @@ Virtual Address Range    C B  Description
 0xc0000000 - 0xc1ffffff  N Y  DRAM Bank 0: 32Mb
 0xe0000000 - 0xe7ffffff  Y Y  Cache Clean   </programlisting> </para>
 </sect2>
-<sect2>
 
-<title>Resource Usage</title>
-<para>The flash based RedBoot image occupies flash addresses 0x50000000 -
-0x5001ffff. RedBoot also reserves RAM (0x00000000 - 0x0001ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at virtual addresses 0x00020000 - 0x0005ffff. RAM virtual addresses from
-0x00060000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.
-</para>
-</sect2>
 <sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
@@ -2720,37 +2369,6 @@ flash boot sector.
 <para>A Windows or Linux utility is used to program flash using serial port
 #1 via on-chip programming firmware. See board documentation for details on
 in situ flash programming. </para>
-</sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:         
-<programlisting>
--f 0xE0000000
--b 0x40000
--l 0x40000
-</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:         <programlisting>
--f 0xE0040000
--b 0x40000
--r 0x40000
--l 0x40000
-</programlisting></para>
-<note><title>NOTE</title>
-<para>
-On the EDB7312, because the primary RedBoot image runs in RAM and not
-FLASH, it can be updated directly without
-use of the separate RAM based version.
-</para></note>
-</sect3>
 </sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
@@ -2797,19 +2415,7 @@ The flash based RedBoot image occupies virtual addresses 0xe0000000 - 0xe003ffff
 </programlisting></para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>
-The RAM based RedBoot image occupies RAM addresses 
-<computeroutput>0x40000 - 0x7ffff</computeroutput>.
-The ROMRAM based RedBoot image (EDB7312 only) occupies RAM addresses 
-<computeroutput>0x1000 - 0x3ffff</computeroutput>.
-RAM addresses start at 
-<computeroutput>0x80000</computeroutput> 
-and continue up to the top of the installed
-physical RAM size, less the memory reserved for MMU page tables
-(0x9000 bytes) and the LCD display buffer, if enabled (0x20000 bytes). The
-RAM is available for general use such as a temporary scratchpad
-for downloaded images before they are written to flash. </para>
+<title>Platform Resource Usage</title>
 <para>The EP7xxx timer #2 is used as a polled timer to provide timeout support
 for network and XModem file transfers.</para>
 </sect2><sect2>
@@ -3107,12 +2713,6 @@ from address 0x100000 upwards. Space is reserved between 0xa0000 and
 </para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>RedBoot is loaded into RAM at address 0x2000 and reserves all RAM below
-0xa0000 for its own use. RAM applications should load from address 0x100000
-upwards.</para>
-</sect2>
-<sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -3181,12 +2781,6 @@ by a fast host. For this reason, GDB must be told to limit the size of code
 download packets to avoid serial overrun. This is done with the following
 GDB command:
 <programlisting>    (gdb) set download-write-size 25</programlisting>
-</para>
-</sect2>
-<sect2>
-<title>Resource Usage </title>
-<para>The RedBoot image occupies program addresses 0x000000 - 0x00ffff
-and data addresses 0x000000 - 0x00ffff.
 </para>
 </sect2>
 <sect2>
@@ -3259,12 +2853,6 @@ GDB command:
 </para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The RedBoot image occupies program addresses 0x00000000 - 0x0000ffff
-and data addresses 0x00000000 - 0x0000ffff.
-</para>
-</sect2>
-<sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -3298,17 +2886,6 @@ are supported: <itemizedlist>
 <para>Program the ROM RedBoot image into flash using an eprom programmer.</para>
 
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x80000000
--b 0x88040000
--l 0x20000</programlisting></para>
-</sect3>
-</sect2>
 
 <sect2>
 <title>Memory Maps </title>
@@ -3320,15 +2897,6 @@ Physical Address Range  Description
 0xa4000000 - 0xa40000ff LED ON
 0xb8000000 - 0xb80000ff LED ON
 </programlisting></para>
-</sect2>
-<sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x80000000 -
- 0x8001ffff. RedBoot also reserves RAM (0x88000000 - 0x8800ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x88010000 - 0x8803ffff. RAM physical addresses from
-0x88040000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot</title>
@@ -3391,28 +2959,6 @@ should now see the RedBoot banner.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x80000000
--b 0x8c080000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:
-<programlisting>
--f 0x80020000
--b 0x8c020000
--r 0x8c020000
--l 0x20000
-</programlisting></para>
-</sect3></sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
 <para>The <command>exec</command> command which allows the loading
@@ -3483,15 +3029,6 @@ Physical Address Range  Description
 only be changed in CDL.</para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x80000000 -
- 0x8001ffff. RedBoot also reserves RAM (0x8c000000 - 0x8c01ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x8c020000 - 0x8c07ffff. RAM physical addresses from
-0x8c080000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
-</sect2>
-<sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -3552,28 +3089,6 @@ should now see the RedBoot banner.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x80000000
--b 0x8c080000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:
-<programlisting>
--f 0x80020000
--b 0x8c020000
--r 0x8c020000
--l 0x20000
-</programlisting></para>
-</sect3></sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
 <para>The <command>exec</command> command which allows the loading
@@ -3648,15 +3163,6 @@ Physical Address Range  Description
 only be changed in CDL.</para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x80000000 -
- 0x8001ffff. RedBoot also reserves RAM (0x8c000000 - 0x8c01ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x8c020000 - 0x8c07ffff. RAM physical addresses from
-0x8c080000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
-</sect2>
-<sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -3714,28 +3220,6 @@ should now see the RedBoot banner.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x80000000
--b 0x8c080000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:
-<programlisting>
--f 0x80020000
--b 0x8c020000
--r 0x8c020000
--l 0x20000
-</programlisting></para>
-</sect3></sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
 <para>The <command>exec</command> command which allows the loading
@@ -3807,15 +3291,6 @@ Physical Address Range  Description
 only be changed in CDL.</para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x80000000 -
- 0x8001ffff. RedBoot also reserves RAM (0x8c000000 - 0x8c01ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x8c020000 - 0x8c07ffff. RAM physical addresses from
-0x8c080000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
-</sect2>
-<sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for TARGET, ARCH_DIR and PLATFORM_DIR on this platform are
@@ -3882,28 +3357,6 @@ the flash table with the correct addresses.</para>
 
 
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot images, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        <programlisting>-f 0x80000000
--b 0x8c080000
--l 0x20000</programlisting></para>
-</sect3>
-<sect3>
-<title>Updating the secondary RedBoot image</title>
-<para>To update the secondary RedBoot images, follow the procedures detailed
-in <xref linkend="different-version-from-RAM">, but the actual numbers used
-with the flags in the sample commands should be:
-<programlisting>
--f 0x80020000
--b 0x8c020000
--r 0x8c020000
--l 0x20000
-</programlisting></para>
-</sect3></sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
 <para>The <command>exec</command> command which allows the loading
@@ -3972,15 +3425,6 @@ Physical Address Range  Description
 0xb0000000 - 0xb3ffffff PCI (SD0001)
 0xb8000000 - 0xbbffffff PCMCIA (MaruBun)
 </programlisting></para>
-</sect2>
-<sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x80000000 -
- 0x8001ffff. RedBoot also reserves RAM (0x8c000000 - 0x8c01ffff) for RedBoot
-runtime uses. RAM based RedBoot configurations are designed to run from RAM
-at physical addresses 0x8c020000 - 0x8c07ffff. RAM physical addresses from
-0x8c080000 to the end of RAM are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.</para>
 </sect2>
 <sect2>
 <title>Rebuilding RedBoot</title>
@@ -4070,26 +3514,15 @@ Copyright (C) 2000, 2001, Red Hat, Inc.
 RAM: 0x02000000-0x02080000, 0x020116d8-0x0207fd00 available
 FLASH: 0x01010000 - 0x01020000, 256 blocks of 0x00000100 bytes each.
 
-RedBoot> <userinput>load -m ymodem -b 0x02040000</userinput>
+RedBoot> <userinput>load -m ymodem -b %{FREEMEMLO}</userinput>
 </programlisting>
 Use minicom to send the file redboot_ROMRAM.srec via YModem.
 <programlisting>
-RedBoot> <userinput>fi wr -f 0x01010000 -b 0x02040000 -l 0xe000</userinput>
+RedBoot> <userinput>fi wr -f 0x01010000 -b %{FREEMEMLO} -l 0xe000</userinput>
 </programlisting>
 Set switch SW1 to "upper mem", press the "reset" pushbutton and RedBoot
 should come up on the board.
 </para>
-</sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the RedBoot image in flash</title>
-<para>
-Since the primary RedBoot runs from RAM, it can be used to update itself directly.
-Simply follow the steps above, starting with a connection to RedBoot running on
-the board.
-</para>
-</sect3>
 </sect2>
 <sect2>
 <title>Special RedBoot Commands </title>
@@ -4111,12 +3544,6 @@ The flash based RedBoot image occupies virtual addresses 0x01010000 - 0x0101dfff
 
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The RAM based RedBoot image occupies RAM addresses 0x02020000 - 0x0203ffff.
-RAM addresses from 0x02040000 to the end of RAM are available for general use
-such as a temporary scratchpad for downloaded images before they are written
-to flash. </para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for PLATFORM_DIR on this platform is
@@ -4421,18 +3848,6 @@ Physical Address Range   Description
 therefore be aligned to a 0xFF000000 mask.</para>
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The flash based RedBoot image occupies flash addresses 0x80000000 - 0x8001ffff. RedBoot also
-reserves RAM (0x90000000 - 0x9001ffff) for RedBoot runtime uses. RAM based RedBoot configurations
-are designed to run from RAM at physical addresses 0x90000000 - 0x9001ffff. RAM physical addresses
-from 0x90050000 to the end of RAM are available for general use, such as a temporary scratchpad for
-downloaded images, before they are written to flash.</para>
-<note>
-<title>NOTE</title>
-<para>The location at which RedBoot can be started is highly restricted due to the way in which the
-address of the Trap Vector Table is specified to the CPU.</para>
-</note>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-RedBoot"> should be followed.  The values for
 TARGET, ARCH_DIR and PLATFORM_DIR on this platform are &ldquo;asb2305&rdquo;, &ldquo;mn10300&rdquo;
@@ -4720,41 +4135,6 @@ while pressing the SPACE key.
 -->
 
 </sect2>
-<sect2>
-<title>Flash management</title>
-<sect3>
-<title>Updating the RedBoot image</title>
-<para> Since the RedBoot image is a ROMRAM-startup
-type, it is not necessary to load and run the RAM startup RedBoot
-image to update the image in flash. Doing so causes no harm though -
-but ignoring the step saves some time.
-</para>
-
-<para>To update the primary RedBoot image, follow the procedures
-detailed in <xref linkend="update-primary-image">, but let RedBoot
-find the correct flash address (the -f option) since this is different
-between the bootmonitor configurations. If
-specifying it, be sure to get it right - the actual numbers used with
-the flags in the sample commands should for a RedBoot image configured
-to be the primary bootmonitor be:
-<programlisting>
--f 0x60000000
--b 0x100000
--l 0x40000
-</programlisting>
-
-<!--
-And for a RedBoot image configured to be the secondary bootmonitor:
-
-<programlisting>
--f 0x60020000
--b 0x100000
--l 0x40000
-</programlisting>
--->
-
-</para>
-</sect3></sect2>
 
 <sect2>
 <title>Special RedBoot Commands </title>
@@ -4830,19 +4210,6 @@ Virtual Address Range    C B  Description
 
 </sect2>
 <sect2>
-<title>Resource Usage </title>
-<para>The RAM based RedBoot image occupies RAM addresses 
-<computeroutput>0x40000 - 0x7ffff</computeroutput>. 
-The flash based RedBoot image occupies RAM addresses 
-<computeroutput>0x00000000 - 0x0003ffff</computeroutput>.
-RAM addresses from <computeroutput>0x80000</computeroutput> to the end of RAM are available for general use
-such as a temporary scratchpad for downloaded images before they are written
-to flash. 
-If configured to use the LCD screen, additional DRAM from 
-<computeroutput>0x01f80000 - 0x01ffffff</computeroutput>
-is used for the LCD frame buffer.
-</para>
-</sect2><sect2>
 <title>Rebuilding RedBoot</title>
 <para>The instructions in <xref linkend="Rebuilding-Redboot"> should be followed.
 The values for ARCH_DIR and PLATFORM_DIR on this platform are
@@ -4887,28 +4254,6 @@ before reprogramming the FLASH.</para>
 (AMD 29F040). The board as delivered is configured for a 512K
 EPROM. To install a FLASH ROM, Jumpers J30, J31 and J36 need to be
 changed as described in the board's User Manual.</para>
-
-<para>
-Since RedBoot for this board relocates itself from ROM to RAM at
-startup, it is not necessary to run a secondary RAM based version of
-RedBoot to update the main FLASH image. Instead this can be done from
-the primary version of RedBoot.
-</para>
-
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot image, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        
-<programlisting>
--b 0x80100000
-</programlisting>
-Flash locking and unlocking is not required.
-Note that these values are inferred when updating the RedBoot image once
-the <command>fis create</command> has been run.
-</para>
-</sect3>
-
 </sect2>
 
 <sect2>
@@ -4966,22 +4311,6 @@ mapped at physical addresses 0x8xxxxxxx to virtual addresses
 </para>
 </note>
 
-</sect2>
-
-<sect2>
-<title>Resource Usage</title>
-
-<para>
-The RedBoot image occupies flash addresses 0x1fc00000 - 0x1fc1ffff. To
-execute it copies itself out of there to RAM at 0x80000000. RedBoot
-reserves 1MB of RAM from 0x80000000 to 0x800FFFFF for its own use.
-The top 1MB of RAM from 0x81F00000 to 0x81FFFFFF is reserved for use
-by the PCI Ethernet device. RAM based RedBoot configurations are
-designed to run from RAM at virtual addresses 0x80100000 -
-0x8011ffff. RAM virtual addresses from 0x80020000 to the start of the
-PCI window are available for general use, such as a temporary
-scratchpad for downloaded images, before they are written to flash.
-</para>
 </sect2>
 
 <sect2>
@@ -5073,21 +4402,6 @@ version into the FLASH device.  Complete instructions are provided
 separately.
 </para>
 
-<sect3>
-<title>Updating the primary RedBoot image</title>
-<para>To update the primary RedBoot image, follow the procedures detailed
-in <xref linkend="update-primary-image">, but the actual numbers used with
-the flags in the sample commands should be:        
-<programlisting>
--f 0xFF000000
--b 0x100000
--l 0x40000
-</programlisting>
-Note that these values are inferred when updating the RedBoot image once
-the <command>fis create</command> has been run.
-</para>
-</sect3>
-
 </sect2>
 
 <sect2>
@@ -5127,19 +4441,6 @@ is supported at this time.
 </para>
 </note>
 
-</sect2>
-
-<sect2>
-<title>Resource Usage</title>
-
-<para>
-The RedBoot image occupies flash addresses 0xFF000000 - 0xFF03FFFF. To
-execute it copies itself out of there to RAM at 0x03E00000. RedBoot
-reserves memory from 0x00000000 to 0x0001FFFF for its own use.
-User programs can use memory from 0x00020000 to 0x03DFFFFF.
-RAM based RedBoot configurations are
-designed to run from RAM at 0x00020000.
-</para>
 </sect2>
 
 <sect2>

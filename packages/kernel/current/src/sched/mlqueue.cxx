@@ -34,7 +34,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
@@ -67,20 +67,6 @@
 #include <cyg/kernel/sched.inl>        // scheduler inlines
 
 #ifdef CYGSEM_KERNEL_SCHED_MLQUEUE
-
-//-------------------------------------------------------------------------
-// Some local tracing control - a default.
-#ifdef CYGDBG_USE_TRACING
-# if !defined( CYGDBG_INFRA_DEBUG_TRACE_ASSERT_SIMPLE ) && \
-     !defined( CYGDBG_INFRA_DEBUG_TRACE_ASSERT_FANCY  )
-   // ie. not a tracing implementation that takes a long time to output
-
-#  ifndef CYGDBG_KERNEL_TRACE_TIMESLICE
-#   define CYGDBG_KERNEL_TRACE_TIMESLICE
-#  endif // control not already defined
-
-# endif  // trace implementation not ..._SIMPLE && not ..._FANCY
-#endif   // CYGDBG_USE_TRACING
 
 //==========================================================================
 // Cyg_Scheduler_Implementation class static members

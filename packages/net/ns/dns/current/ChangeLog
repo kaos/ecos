@@ -1,3 +1,13 @@
+2002-05-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/dns.cdl (CYGPKG_NS_DNS_BUILD): Require thread destructors in
+	kernel.
+	* include/dns_impl.inl: Instead of using cyg_thread_get_data
+	and _set_data directly, instead use store_hent and free_stored_hent
+	defined by includer.
+	* src/dns.c: Define store_hent() and free_stored_hent() and make
+	them use thread destructors thus fixing a memory leak.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* tests/dns2.c: Fix warning.
@@ -154,7 +164,7 @@
 // this file might be covered by the GNU General Public License.
 //
 // Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license
+// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================

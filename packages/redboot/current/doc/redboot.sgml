@@ -117,6 +117,228 @@ be taken to preserve that connection when running user code. eCos contains
 special network sharing code to allow for this situation, and can be used
 as a model if this methodology is required in other OS environments.</para>
 </sect1>
+
+<sect1 id="RedBoot-Editing-Commands">
+<title>RedBoot Editing Commands</title>
+<para><indexterm><primary>RedBoot</primary><secondary>editing commands</secondary>
+</indexterm><indexterm><primary>editing commands</primary></indexterm><indexterm>
+<primary>commands</primary><secondary>editing</secondary></indexterm>RedBoot
+uses the following line editing commands. 
+<note><title>NOTE</title>
+<para>
+In this description, <guibutton>^A</guibutton> means the character formed
+by typing the letter &ldquo;A&rdquo; while holding down the control key.
+</para></note>
+<itemizedlist>
+<listitem><para><guibutton>Delete</guibutton> (0x7F) or 
+<guibutton>Backspace</guibutton> (0x08) 
+erases the character to the left of the cursor.
+</para></listitem>
+<listitem><para>
+<guibutton>^A</guibutton>
+moves the cursor (insertion point) to the beginning of the line.
+</para></listitem>
+<listitem><para>
+<guibutton>^K</guibutton>
+erases all characters on the line from the cursor to the end.
+</para></listitem>
+<listitem><para>
+<guibutton>^E</guibutton>
+positions the cursor to the end of the line.
+</para></listitem>
+<listitem><para>
+<guibutton>^D</guibutton>
+erases the character under the cursor.
+</para></listitem>
+<listitem><para>
+<guibutton>^F</guibutton>
+moves the cursor one character to the right.
+</para></listitem>
+<listitem><para>
+<guibutton>^B</guibutton>
+moves the cursor one character to the left.
+</para></listitem>
+<listitem><para>
+<guibutton>^P</guibutton>
+replaces the current line by a previous line from the history buffer.  
+A small number of lines
+can be kept as history.  Using ^P (and ^N), the current line can be replaced
+by any one of the previously typed lines.
+</para></listitem>
+<listitem><para>
+<guibutton>^N</guibutton>
+replaces the current line by the next line from the history buffer.  
+</para></listitem>
+</itemizedlist></para>
+<para>In the case of the <command>fconfig</command>
+command, additional editing commands are possible. 
+As data are entered for this command, the current/previous value
+will be displayed and the cursor placed at the end of that data.
+The user may use the editing keys (above) to move around in the data
+to modify it as appropriate.
+Additionally, when certain
+characters are entered at the end of the current value, 
+i.e. entered separately, certain behavior is elicited.</para>
+<para><itemizedlist>
+<listitem>
+<para>^ (caret) switch to editing the previous item in the 
+<command>fconfig</command> list. If fconfig edits item A, followed by item B,
+pressing ^ when changing item B, allows you to change item A. This is similar
+to the up arrow.
+Note: ^P and ^N do not have the same meaning while editing 
+<command>fconfig</command> data and should not be used.
+</para>
+</listitem>
+<listitem><para>. (period) stop editing any further items. This does not change
+the current item.</para>
+</listitem>
+<listitem><para><guibutton>Return</guibutton> leaves the value
+for this item unchanged. Currently it is not possible to step through the
+value for the start-up script; it must always be retyped.</para>
+</listitem>
+</itemizedlist></para>
+</sect1>
+
+<sect1 id="startup-mode">
+<title>RedBoot Startup Mode</title>
+<para>
+  <indexterm><primary>RedBoot</primary><secondary>mode</secondary></indexterm>
+  <indexterm><primary>RedBoot</primary><secondary>startup mode</secondary></indexterm>
+</para>
+
+<para>RedBoot can normally be configured to run in a number of startup
+modes (or just "modes" for short), determining its location of
+residence and its location of execution:
+<variablelist>
+ <varlistentry><term>RAM mode</term>
+ <listitem><para>In this mode, RedBoot both resides and executes from
+ RAM memory. This is used for updating a primary ROM
+ mode image in situ and sometimes as part of the RedBoot installation
+ on the board when there's already an existing (non-RedBoot) boot
+ monitor available.</para></listitem>
+ </varlistentry>
+
+ <varlistentry><term>ROM mode</term>
+ <listitem><para>In this mode, RedBoot both resides and executes from
+ ROM memory (flash or EPROM). This mode is used when there are limited
+ RAM resources. The flash commands cannot update the region of flash
+ where the RedBoot image resides. In order to update the RedBoot image
+ in flash, it is necessary to run a RAM mode instance of
+ RedBoot.</para></listitem>
+ </varlistentry>
+
+ <varlistentry><term>ROMRAM mode</term>
+ <listitem><para>In this mode, RedBoot resides in ROM memory (flash or
+ EPROM), but is copied to RAM memory before it starts executing. The
+ RAM footprint is larger than for ROM mode, but there are two
+ advantages to make up for this: it normally runs faster (relevant
+ only on slower boards) and it is able to update the flash region
+ where the image resides.</para></listitem>
+ </varlistentry>
+</variablelist>
+
+The chosen mode has influence on flash and RAM resource usage (see
+<xref linkend="resource-usage">) and the procedure of an in situ update
+of RedBoot in flash (see <xref linkend="Updating-Redboot">).</para>
+
+<para>The startup mode is controlled by the option CYG_HAL_STARTUP
+which resides in the platform HAL. Some platforms provide only some of
+the RAM, ROM, and ROMRAM modes, others provide additional
+modes.</para>
+
+<para>To see mode of a currently executing RedBoot, issue the
+<command>version</command> command, which prints the RedBoot banner,
+including the startup mode (here ROM):
+<screen>RedBoot><userinput>version</userinput>
+
+RedBoot(tm) bootstrap and debug environment <emphasis>[ROM]</emphasis>
+Non-certified release, version UNKNOWN - built 13:31:57, May 17 2002
+</screen>
+</para>
+
+</sect1>
+
+<sect1 id="resource-usage">
+<title>RedBoot Resource Usage</title>
+<para>
+  <indexterm><primary>RedBoot</primary><secondary>resource usage</secondary></indexterm>
+</para>
+
+<para>RedBoot takes up both flash and RAM resources depending on its
+startup mode and number of enabled features. There are also other
+resources used by RedBoot, such as timers. Platform-specific resources
+used by RedBoot are listed in the platform specific parts of this
+manual.</para>
+
+
+<sect2>
+<title>Flash Resources</title>
+<para>On many platforms, a ROM mode RedBoot image resides in the first
+flash sectors, working as the board's primary boot monitor. On these
+platforms, it is also normal to reserve a similar amount of flash for
+a secondary RAM mode image, which is used when updating the primary
+ROM mode image.</para>
+<para>On other platforms, a ROMRAM mode RedBoot image is used as the
+primary boot monitor. On these platforms there is not normally
+reserved space for a RAM mode RedBoot image, since the ROMRAM mode
+RedBoot is capable of updating the primary boot monitor image.</para>
+<para>Most platforms also contain a FIS directory (keeping track of
+available flash space) and a RedBoot config block (containing RedBoot
+board configuration data).</para>
+<para>To see the amount of reserved flash memory, run the <command>fis
+list</command> command:
+<screen>RedBoot> <userinput>fis list</userinput>
+Name              FLASH addr  Mem addr    Length      Entry point
+RedBoot           0x00000000  0x00000000  0x00020000  0x00000000
+RedBoot[RAM]      0x00020000  0x06020000  0x00020000  0x060213C0
+RedBoot config    0x0007F000  0x0007F000  0x00001000  0x00000000
+FIS directory     0x00070000  0x00070000  0x0000F000  0x00000000
+</screen>
+</para>
+</sect2>
+
+<sect2>
+<title>RAM Resources</title>
+
+<para>RedBoot reserves RAM space for its run-time data, and such
+things as CPU exception/interrupt tables. It normally does so at the
+bottom of the memory map. It may also reserve space at the top of the
+memory map for configurable RedBoot features such as the net stack
+and zlib decompression support.</para>
+<para>To see the actual amount of reserved space, issue the
+<command>version</command> command, which prints the RedBoot banner,
+including the RAM usage:
+<screen>RedBoot> <userinput>version</userinput>
+
+RedBoot(tm) bootstrap and debug environment [ROM]
+Non-certified release, version UNKNOWN - built 13:31:57, May 17 2002
+
+Platform: FooBar (SH 7615)
+Copyright (C) 2000, 2001, 2002, Red Hat, Inc.
+
+<emphasis>RAM: 0x06000000-0x06080000, 0x06012498-0x06061000 available</emphasis>
+FLASH: 0x00000000 - 0x00080000, 8 blocks of 0x00010000 bytes each.
+</screen>
+</para>
+
+<para>To simplify operations that temporarily need data in free
+memory, the limits of free RAM are also available as aliases (aligned
+to the nearest kilo-byte limit). These are named
+<indexterm><primary>FREEMEMLO</primary></indexterm>FREEMEMLO and
+<indexterm><primary>FREEMEMHI</primary></indexterm>FREEMEMHI, and can
+be used in commands like any user defined alias:
+<screen>RedBoot> <userinput>load -r -b %{FREEMEMLO} file</userinput>
+Raw file loaded 0x06012800-0x06013e53, assumed entry at 0x06012800
+</screen>
+<screen>
+RedBoot> <userinput>x -b %{FREEMEMHI}</userinput>
+06061000: 86 F5 EB D8 3D 11 51 F2  96 F4 B2 DC 76 76 8F 77  |....=.Q.....vv.w|
+06061010: E6 55 DD DB F3 75 5D 15  E0 F3 FC D9 C8 73 1D DA  |.U...u]......s..|
+</screen>
+</para>
+</sect2>
+</sect1>
+
 <sect1 id="Configuring-the-RedBoot-Environment">
 <title>Configuring the RedBoot Environment</title>
 <para><indexterm><primary>configuring the RedBoot environment</primary><secondary></secondary>
