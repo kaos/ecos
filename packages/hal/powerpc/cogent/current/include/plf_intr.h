@@ -49,21 +49,5 @@
 //==========================================================================
 
 //--------------------------------------------------------------------------
-// Control-C support.
-
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-
-// Serial interrupts are feed to IRQ1 (vector 0x08) on the Cogent
-// board.
-# define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_SIU_IRQ1
-
-externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
-
-# define HAL_CTRLC_ISR hal_ctrlc_isr
-
-#endif
-
-//--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H
 // End of plf_intr.h

@@ -1,3 +1,30 @@
+2000-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: serial driver API changes.
+
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Include hal_if file.
+	
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_misc.c: 
+	* src/hal_diag.c:
+	* src/plf_stub.c: [deleted]
+	* include/pkgconf/mlt_sh_edk7708_ram.h: 
+	* include/pkgconf/mlt_sh_edk7708_ram.ldi: 
+	* include/pkgconf/mlt_sh_edk7708_ram.mlt: 
+	* include/pkgconf/mlt_sh_edk7708_rom.h: 
+	* include/pkgconf/mlt_sh_edk7708_rom.ldi: 
+	* include/pkgconf/mlt_sh_edk7708_rom.mlt: 
+	* include/pkgconf/mlt_sh_edk7708_romram.h: 
+	* include/pkgconf/mlt_sh_edk7708_romram.ldi: 
+	* include/pkgconf/mlt_sh_edk7708_romram.mlt: 
+	* include/plf_stub.h: 
+	* include/hal_diag.h: 
+	* cdl/hal_sh_edk7708.cdl: 
+	Changed to use virtual vector table.
+
 1999-06-19  John Dallaway  <jld@redhat.com>
 
 	* cdl/hal_sh_edk7708.cdl: Tidy display strings.

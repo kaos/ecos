@@ -1,3 +1,17 @@
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Cleanup.
+
+2000-06-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_cogent.cdl: Removed ROM_DEBUG option.
+
+	* include/plf_intr.h: 
+	* src/plf_misc.c: Removed Ctrl-c code.
+
+	* src/hal_diag.c: Snip cruft. Added non-block/timout
+	features. Moved Ctrl-c support code here.
+
 2000-06-21  Jesper Skov  <jskov@redhat.com>
 
 	* src/plf_stub.c: Provide plf stub init which prints build date

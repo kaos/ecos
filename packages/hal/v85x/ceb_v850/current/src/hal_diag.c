@@ -33,7 +33,7 @@
 //
 // Author(s):   nickg, gthomas
 // Contributors:nickg, gthomas
-// Date:        1998-03-02
+// Date:        2000-05-22
 // Purpose:     HAL diagnostic output
 // Description: Implementations of HAL diagnostic output support.
 //
@@ -54,27 +54,13 @@
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_diag.h>
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
 #include <cyg/hal/hal_stub.h>           // target_register_t
-#include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
 #include <cyg/hal/hal_if.h>             // Calling interface definitions
 #include <cyg/hal/hal_misc.h>           // Helper functions
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
-#endif
 
 #include <cyg/hal/v850_common.h>        // hardware registers, etc.
 
-// Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
-// totally stand-alone) system.
-
-#if defined(CYG_HAL_STARTUP_ROM) && !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-#define HAL_DIAG_USES_HARDWARE
-#else
-#if defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
-#define HAL_DIAG_USES_HARDWARE
-#endif
-#endif
 
 #if (CYGHWR_HAL_V85X_V850_CEB_DIAG_BAUD == 9600)
 #define BAUD_COUNT    0xDD
@@ -95,45 +81,16 @@
 /*---------------------------------------------------------------------------*/
 // CEB-v850
 
-// Actually send character down the wire
 void
-hal_diag_write_char_serial(char c)
+init_serial_channel(void* base)
 {
-    volatile unsigned char *TxDATA = (volatile unsigned char *)V850_REG_TXS0;
-    volatile unsigned char *TxSTAT = (volatile unsigned char *)V850_REG_STIC0;
-    // Send character
-    *TxDATA = (unsigned char)c;
-    // Wait for Tx not busy
-    while ((*TxSTAT & 0x80) == 0x00) ;
-    *TxSTAT &= ~0x80;
-}
-
-bool
-hal_diag_read_serial(char *c)
-{
-    volatile unsigned char *RxDATA = (volatile unsigned char *)V850_REG_RXS0;
-    volatile unsigned char *RxSTAT = (volatile unsigned char *)V850_REG_SRIC0;
-    volatile unsigned char *RxERR = (volatile unsigned char *)V850_REG_SERIC0;
-    int timeout = 0;
-    while ((*RxSTAT & 0x80) == 0x00) {
-        if (++timeout == 50000) return false;
-    }
-    *c = (char)*RxDATA;
-    *RxSTAT &= ~0x80;
-    return true;
-}
-
-void hal_diag_init(void)
-{
-    static int init = 0;
     volatile unsigned char *mode = (volatile unsigned char *)V850_REG_ASIM0;
     volatile unsigned char *brgc = (volatile unsigned char *)V850_REG_BRGC0;
     volatile unsigned char *brgm = (volatile unsigned char *)V850_REG_BRGM0;
     volatile unsigned char *rxstat = (volatile unsigned char *)V850_REG_SRIC0;
     volatile unsigned char *rxerr = (volatile unsigned char *)V850_REG_SERIC0;
     volatile unsigned char *txstat = (volatile unsigned char *)V850_REG_STIC0;
-    if (init) return;
-    init++;
+
     *mode = 0xC8;
     *brgc = BAUD_COUNT;
     *brgm = BAUD_DIVISOR;
@@ -142,20 +99,240 @@ void hal_diag_init(void)
     *txstat = 0x47;
 }
 
+// Actually send character down the wire
+void
+cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 c)
+{
+    volatile unsigned char *TxDATA = (volatile unsigned char *)V850_REG_TXS0;
+    volatile unsigned char *TxSTAT = (volatile unsigned char *)V850_REG_STIC0;
+    CYGARC_HAL_SAVE_GP();
+
+    // Send character
+    *TxDATA = (unsigned char)c;
+    // Wait for Tx not busy
+    while ((*TxSTAT & 0x80) == 0x00);
+    *TxSTAT &= ~0x80;
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static cyg_bool
+cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
+{
+    volatile unsigned char *RxDATA = (volatile unsigned char *)V850_REG_RXS0;
+    volatile unsigned char *RxSTAT = (volatile unsigned char *)V850_REG_SRIC0;
+
+    if ((*RxSTAT & 0x80) == 0x00)
+        return false;
+
+    *ch = (char)*RxDATA;
+    *RxSTAT &= ~0x80;
+    return true;
+}
+
+cyg_uint8
+cyg_hal_plf_serial_getc(void* __ch_data)
+{
+    cyg_uint8 ch;
+    CYGARC_HAL_SAVE_GP();
+
+    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch));
+
+    CYGARC_HAL_RESTORE_GP();
+    return ch;
+}
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+
+static void
+cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
+                         cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        cyg_hal_plf_serial_putc(__ch_data, *__buf++);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+static void
+cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
+{
+    CYGARC_HAL_SAVE_GP();
+
+    while(__len-- > 0)
+        *__buf++ = cyg_hal_plf_serial_getc(__ch_data);
+
+    CYGARC_HAL_RESTORE_GP();
+}
+
+cyg_int32 msec_timeout = 1000;
+
+cyg_bool
+cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
+{
+    int delay_count = msec_timeout * 10; // delay in .1 ms steps
+    cyg_bool res;
+    CYGARC_HAL_SAVE_GP();
+
+    for(;;) {
+        res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
+        if (res || 0 == delay_count--)
+            break;
+        
+        CYGACC_CALL_IF_DELAY_US()(100);
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static int
+cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
+{
+    static int irq_state = 0;
+    int ret = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    switch (__func) {
+    case __COMMCTL_IRQ_ENABLE:
+        HAL_INTERRUPT_UNMASK(CYGNUM_HAL_VECTOR_INTCSI1);
+        irq_state = 1;
+        break;
+    case __COMMCTL_IRQ_DISABLE:
+        ret = irq_state;
+        irq_state = 0;
+        HAL_INTERRUPT_MASK(CYGNUM_HAL_VECTOR_INTCSI1);
+        break;
+    case __COMMCTL_DBG_ISR_VECTOR:
+        ret = CYGNUM_HAL_VECTOR_INTCSI1;
+        break;
+    case __COMMCTL_SET_TIMEOUT:
+    {
+        va_list ap;
+
+        va_start(ap, __func);
+
+        ret = msec_timeout;
+        msec_timeout = va_arg(ap, cyg_uint32);
+
+        va_end(ap);
+    }        
+    default:
+        break;
+    }
+    CYGARC_HAL_RESTORE_GP();
+    return ret;
+}
+
+static int
+cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
+                       CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
+{
+    volatile unsigned char *RxDATA = (volatile unsigned char *)V850_REG_RXS0;
+    cyg_uint8 c;
+    int res = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    c = (char)*RxDATA;
+    *__ctrlc = 0;
+    if( cyg_hal_is_break( &c , 1 ) )
+        *__ctrlc = 1;
+
+    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_VECTOR_INTCSI1);
+
+    res = CYG_ISR_HANDLED;
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
+static void
+cyg_hal_plf_serial_init(void)
+{
+    hal_virtual_comm_table_t* comm;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+    // Disable interrupts.
+    HAL_INTERRUPT_MASK(CYGNUM_HAL_VECTOR_INTCSI1);
+
+    // Init channels
+    init_serial_channel((cyg_uint8*)0);
+
+    // Setup procs in the vector table
+
+    // Set channel 0
+    CYGACC_CALL_IF_SET_CONSOLE_COMM()(0);
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, 0);
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+    
+    // Restore original console
+    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
+}
+
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+
+    initialized = 1;
+
+    cyg_hal_plf_serial_init();
+}
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
+
+//=============================================================================
+// Compatibility with older stubs
+//=============================================================================
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
+// Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
+// totally stand-alone) system.
+
+//#ifdef CYGSEM_HAL_ROM_MONITOR
+//#define CYG_HAL_STARTUP_ROM
+//#undef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+//#endif
+
+#if defined(CYG_HAL_STARTUP_ROM) && !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+#define HAL_DIAG_USES_HARDWARE
+#else
+#if defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#define HAL_DIAG_USES_HARDWARE
+#endif
+#endif
+
+void hal_diag_init(void)
+{
+    init_serial_channel(0);
+}
+
 #ifdef HAL_DIAG_USES_HARDWARE
 
 void hal_diag_write_char(char c)
 {
     CYG_INTERRUPT_STATE old;
     HAL_DISABLE_INTERRUPTS(old);
-    hal_diag_init();
-    hal_diag_write_char_serial(c);
+    cyg_hal_plf_serial_putc(0, c);
     HAL_RESTORE_INTERRUPTS(old);
 }
 
 void hal_diag_read_char(char *c)
 {
-    while (!hal_diag_read_serial(c)) ;
+    *c = cyg_hal_plf_serial_getc(0);
 }
 
 #else // HAL_DIAG relies on GDB
@@ -163,7 +340,7 @@ void hal_diag_read_char(char *c)
 void 
 hal_diag_read_char(char *c)
 {
-    while (!hal_diag_read_serial(c)) ;
+    *c = cyg_hal_plf_serial_getc(0);
 }
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -205,41 +382,40 @@ hal_diag_write_char(char c)
             int i;
             char c1;
         
-            hal_diag_write_char_serial('$');
-            hal_diag_write_char_serial('O');
+            cyg_hal_plf_serial_putc(0, '$');
+            cyg_hal_plf_serial_putc(0, 'O');
             csum += 'O';
             for( i = 0; i < pos; i++ )
             {
                 char ch = line[i];
                 char h = hex[(ch>>4)&0xF];
                 char l = hex[ch&0xF];
-                hal_diag_write_char_serial(h);
-                hal_diag_write_char_serial(l);
+                cyg_hal_plf_serial_putc(0, h);
+                cyg_hal_plf_serial_putc(0, l);
                 csum += h;
                 csum += l;
             }
-            hal_diag_write_char_serial('#');
-            hal_diag_write_char_serial(hex[(csum>>4)&0xF]);
-            hal_diag_write_char_serial(hex[csum&0xF]);
+            cyg_hal_plf_serial_putc(0, '#');
+            cyg_hal_plf_serial_putc(0, hex[(csum>>4)&0xF]);
+            cyg_hal_plf_serial_putc(0, hex[csum&0xF]);
 
             // Wait for the ACK character '+' from GDB here and handle
             // receiving a ^C instead.  This is the reason for this clause
             // being a loop.
-            if (!hal_diag_read_serial(&c1))
-                continue;   // No response - try sending packet again
+            c1 = cyg_hal_plf_serial_getc(0);
 
             if( c1 == '+' )
                 break;              // a good acknowledge
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && \
     defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-            cyg_drv_interrupt_acknowledge(CYGHWR_HAL_GDB_PORT_VECTOR);
+            cyg_drv_interrupt_acknowledge(CYGNUM_HAL_VECTOR_INTCSI1);
             if( c1 == 3 ) {
                 // Ctrl-C: breakpoint.
 #if 0  // FIXME - __builtin_return_address() doesn't work
                 cyg_hal_gdb_interrupt (__builtin_return_address(0));
 #else
-                cyg_hal_gdb_interrupt (hal_diag_write_char_break);
+                cyg_hal_gdb_interrupt((CYG_ADDRWORD)hal_diag_write_char_break);
 #endif
                 break;
             }
@@ -262,28 +438,7 @@ hal_diag_write_char(char c)
 }
 #endif  // USE HARDWARE
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
-
-struct Hal_SavedRegisters *hal_saved_interrupt_state;
-
-void
-hal_ctrlc_isr_init(void)
-{
-    HAL_INTERRUPT_UNMASK(CYGHWR_HAL_GDB_PORT_VECTOR);
-}
-
-cyg_uint32
-hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
-{
-    volatile unsigned char *RxDATA = (volatile unsigned char *)V850_REG_RXS0;
-    unsigned char ch;
-    ch = (char)*RxDATA;
-    if( cyg_hal_is_break( &ch , 1 ) )
-        cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
-    return CYG_ISR_HANDLED;
-}
-#endif
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 /*---------------------------------------------------------------------------*/
 /* End of hal_diag.c */

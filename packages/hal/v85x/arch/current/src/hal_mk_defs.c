@@ -160,6 +160,8 @@ main(void)
 #endif
 
     // Variant definitions - want these to be included instead.
+
+    return 0;
 }
 
 //--------------------------------------------------------------------------

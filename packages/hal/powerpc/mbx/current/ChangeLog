@@ -1,3 +1,9 @@
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_diag.h: 
+	* src/hal_diag.c: 
+	Cleanup.
+
 2000-06-22  John Dallaway  <jld@redhat.com>
 
 	* include/pkgconf/mlt_powerpc_mbx_rom.mlt:

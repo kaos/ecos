@@ -1,3 +1,15 @@
+2000-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_misc.c: Fix compiler warnings.
+
+	* src/plf_stub.c: 
+	* src/hal_diag.c:
+	* include/plf_stub.h: 
+	* include/plf_intr.h: 
+	* include/hal_diag.h:
+	Moved Ctrl-c handling to driver code. Use new comms procs
+	semantics. 
+
 2000-06-17  Gary Thomas  <gthomas@redhat.com>
 
 	* include/plf_intr.h: 

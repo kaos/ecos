@@ -57,6 +57,35 @@
 //
 //==========================================================================
 
+#include <pkgconf/system.h>
+#include <pkgconf/net.h>
+
+#ifdef CYGBLD_DEVS_ETH_DEVICE_H    // Get the device config if it exists
+#include CYGBLD_DEVS_ETH_DEVICE_H  // May provide CYGTST_DEVS_ETH_TEST_NET_REALTIME
+#endif
+
+#ifdef CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS // do we use the rt test?
+# ifdef CYGTST_DEVS_ETH_TEST_NET_REALTIME // Get the test ancilla if it exists
+#  include CYGTST_DEVS_ETH_TEST_NET_REALTIME
+# endif
+#endif
+
+
+// Fill in the blanks if necessary
+#ifndef TNR_OFF
+# define TNR_OFF()
+#endif
+#ifndef TNR_ON
+# define TNR_ON()
+#endif
+#ifndef TNR_INIT
+# define TNR_INIT()
+#endif
+#ifndef TNR_PRINT_ACTIVITY
+# define TNR_PRINT_ACTIVITY()
+#endif
+
+
 // Network throughput test code
 
 #include <lib/libkern/libkern.h>
@@ -118,6 +147,7 @@ cyg_test_exit(void);
 void
 pexit(char *s)
 {
+    TNR_OFF();
     perror(s);
     cyg_test_exit();
 }
@@ -449,25 +479,33 @@ echo_test(cyg_addrword_t p)
     starttime = cyg_current_time();
     start_load(params.load);
 
+    TNR_ON();
+
     // Echo the data from the source to the sink hosts
     for (i = 0;  i < params.nbufs;  i++) {
         if ((len = do_read(e_source, data_buf, params.bufsize)) != params.bufsize) {
+            TNR_OFF();
             diag_printf("Can't read buf #%d: ", i+1);
             if (len < 0) {
                 perror("I/O error");
             } else {
                 diag_printf("short read - only %d bytes\n", len);
             }
+            TNR_ON();
         }
         if ((len = do_write(e_sink, data_buf, params.bufsize)) != params.bufsize) {
+            TNR_OFF();
             diag_printf("Can't write buf #%d: ", i+1);
             if (len < 0) {
                 perror("I/O error");
             } else {
                 diag_printf("short write - only %d bytes\n", len);
             }
+            TNR_ON();
         }
     }
+
+    TNR_OFF();
 
     // Wait for the data to drain and the "sink" to tell us all is OK.
     if (do_read(e_sink, &status, sizeof(status)) != sizeof(status)) {
@@ -511,7 +549,15 @@ net_test(cyg_addrword_t param)
     diag_printf("Start TCP test - ECHO mode\n");
     init_all_network_interfaces();
     calibrate_load(DESIRED_BACKGROUND_LOAD);
+    TNR_INIT();
+#ifdef CYGPKG_SNMPAGENT
+    {
+        extern void cyg_net_snmp_init(void);
+        cyg_net_snmp_init();
+    }
+#endif
     echo_test(param);
+    TNR_PRINT_ACTIVITY();
     cyg_test_exit();
 }
 
@@ -558,3 +604,5 @@ cyg_start(void)
     }
     cyg_scheduler_start();
 }
+
+// EOF tcp_echo.c

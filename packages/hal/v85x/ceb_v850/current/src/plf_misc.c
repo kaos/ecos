@@ -55,6 +55,8 @@
 
 #include <cyg/hal/hal_if.h>             // ROM monitor interfaces
 
+#include <cyg/infra/diag.h>             // diag_printf
+
 extern void show_hex4(unsigned long val);
 extern void show_hex1(unsigned long val);
 extern void show_8bit_reg(void *addr);
@@ -63,7 +65,6 @@ extern void show_led(int p);
 void
 cyg_hal_platform_hardware_init(void)
 {
-    int i;
     hal_if_init();  // Initialize GDB[ROM]/eCos interfaces
     show_led(' ');
     show_led(' ');
@@ -92,9 +93,9 @@ show_8bit_reg(void *addr)
     unsigned char *reg = (unsigned char *)addr;
     unsigned char val = *reg;
     show_led(' ');
-    show_hex4(reg);
+    show_hex4((unsigned long)reg);
     show_led('=');
-    show_hex1(val);
+    show_hex1((unsigned long)val);
     show_led('/');
 }
 
@@ -302,7 +303,7 @@ extern void _hal_thread_switch_context(HAL_SavedRegisters **to, HAL_SavedRegiste
 
 void hal_thread_load_context(CYG_ADDRESS to)
 {
-    HAL_SavedRegisters **new_context = to;
+    HAL_SavedRegisters **new_context = (HAL_SavedRegisters **)to;
 #if 0
     diag_printf("Load context: %x\n", *new_context);
     show_regs(*new_context);
@@ -312,8 +313,8 @@ void hal_thread_load_context(CYG_ADDRESS to)
 
 void hal_thread_switch_context(CYG_ADDRESS to, CYG_ADDRESS from)
 {
-    HAL_SavedRegisters **old_context = from;
-    HAL_SavedRegisters **new_context = to;
+    HAL_SavedRegisters **old_context = (HAL_SavedRegisters **)from;
+    HAL_SavedRegisters **new_context = (HAL_SavedRegisters **)to;
 #if 0
     diag_printf("Switch context - old: %x, new: %x\n", *old_context, *new_context);
     show_regs(*new_context);

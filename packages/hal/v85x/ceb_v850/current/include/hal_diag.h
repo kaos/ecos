@@ -50,14 +50,6 @@
 #include <cyg/infra/cyg_type.h>
 
 /*---------------------------------------------------------------------------*/
-/* functions implemented in hal_diag.c                                       */
-
-
-externC void hal_diag_init(void);
-externC void hal_diag_write_char(char c);
-externC void hal_diag_read_char(char *c);
-
-/*---------------------------------------------------------------------------*/
 
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 
@@ -67,17 +59,11 @@ externC void hal_diag_read_char(char *c);
 #define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
 #define HAL_DIAG_READ_CHAR(_c_)  hal_if_diag_read_char(&_c_)
 
-#ifndef CYGPRI_CONSOLE_PROCS_HANDLED
-externC void hal_plf_init_serial(void);
-externC void hal_plf_write_char(int);
-externC int  hal_plf_get_char(void);
-
-# define HAL_PLF_DIAG_RAW_INIT()          hal_plf_init_serial()
-# define HAL_PLF_DIAG_RAW_WRITE_CHAR(_c_) hal_plf_write_char(_c_)
-# define HAL_PLF_DIAG_RAW_READ_CHAR(_c_)  (_c_) = hal_plf_get_char()
-#endif
-
 #else
+
+externC void hal_diag_init(void);
+externC void hal_diag_write_char(char c);
+externC void hal_diag_read_char(char *c);
 
 #define HAL_DIAG_INIT()          hal_diag_init()
 #define HAL_DIAG_WRITE_CHAR(_c_) hal_diag_write_char(_c_)

@@ -1,3 +1,8 @@
+2000-06-28  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx, cdl_exec.hxx, ecosconfig.cxx:
+	Fix up the reporting of conflicts, inference engine changes, etc. 
+
 2000-04-10  Bart Veer  <bartv@redhat.com>
 
 	* cdl_exec.cxx:

@@ -1,3 +1,12 @@
+2000-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S:
+	* src/hal_mk_defs.c: 
+	Fix compiler warnings.
+
+	* src/hal_misc.c (hal_default_isr): Let common version do the
+	checks.
+
 2000-06-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_mk_defs.c: 

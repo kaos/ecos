@@ -125,12 +125,8 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 //---------------------------------------------------------------------------
 // Default ISR
 externC cyg_uint32
-hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
-    diag_printf("Interrupt: %d\n", vector);
-
-    CYG_FAIL("Spurious Interrupt!!!");
-
     return 0;
 }
 
@@ -203,6 +199,14 @@ cyg_hal_enable_caches(void)
 
     // Enable cache.
     HAL_UCACHE_ENABLE();
+}
+
+//---------------------------------------------------------------------------
+// SH3 variant stuff
+// This should be split out...
+void
+hal_variant_init(void)
+{
 }
 
 //---------------------------------------------------------------------------

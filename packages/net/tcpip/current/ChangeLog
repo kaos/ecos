@@ -1,3 +1,23 @@
+2000-06-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/ping_test.c (net_test): Added use of the
+	CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS stuff now that the test
+	passes (consequent on the change below); also use larger ping
+	packets now that that is working also.
+
+	* tests/tcp_echo.c (echo_test): Added use of the
+	CYGPKG_NET_TESTS_USE_RT_TEST_HARNESS stuff now that the test
+	passes (consequent on the change below).
+
+2000-06-26  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/ecos/support.c (cyg_splnet): Use the scheduler lock and a
+	mutex instead of disable-interrupts for SPLX type processing.  A
+	mutex is used at splsoftnet because that is client threads - we do
+	not want them to pre-empt the rest of the app.  This enables the
+	real-time response testing for the EBSA285 to succeed (interrupts
+	every 1mS, DSRs delayed by at most 2mS).
+
 2000-06-23  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/ecos/support.c (cyg_net_mbuf_alloc, cyg_kmem_init): Align

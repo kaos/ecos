@@ -347,10 +347,8 @@ _start:
         # Variant HALs may need to do something special before we continue
         bl      hal_variant_init
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
         # Platform initialization
         bl      hal_platform_init
-#endif
         
         # MMU and cache are controlled by the same option since caching
         # on the PPC does not make sense without the MMU to mark regions
@@ -378,12 +376,10 @@ _start:
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         bl      initialize_stub
 #endif
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
         .extern hal_ctrlc_isr_init
         bl     hal_ctrlc_isr_init
-#endif
 #endif
         
         bl      cyg_start                       # call cyg_start
@@ -657,19 +653,6 @@ cyg_hal_default_interrupt_vsr:
 
         hal_intc_decode r15,r14                # get table index
 
-#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT  // this should go away
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-        .extern cyg_hal_gdb_isr
-        lwz     r3,CYGARC_PPCREG_PC(r14)        # for serial receive irq.
-        bl      cyg_hal_gdb_isr                 # (arg1 is PC)
-        cmpwi   r3,0x0000                       # Call ISR proper?
-        beq     2f                              # (r3 is 0 when skipping
-                                                #  to avoid DSR call)
-1:
-#endif
-
-#else // the below should remain        
-
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
 	# If we are supporting Ctrl-C interrupts from GDB, we must squirrel
@@ -681,7 +664,6 @@ cyg_hal_default_interrupt_vsr:
 	stw	r14,0(r3)
 	
 #endif
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 
@@ -707,14 +689,6 @@ cyg_hal_default_interrupt_vsr:
 
         bctrl                                   # branch to ctr reg and link
 
-#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT  // this should go away
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-        # If interrupt was caused by GDB, the ISR call above
-        # is skipped by jumping here.
-2:
-#endif
-#endif
-        
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
         # If we are returning from the last nested interrupt, move back

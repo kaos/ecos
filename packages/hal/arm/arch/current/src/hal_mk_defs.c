@@ -106,6 +106,8 @@ main(void)
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
     DEFINE(CYGNUM_CALL_IF_TABLE_SIZE, CYGNUM_CALL_IF_TABLE_SIZE);
 #endif
+
+    return 0;
 }
 
 

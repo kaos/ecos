@@ -60,14 +60,11 @@
 
 #include <cyg/hal/quicc/quicc_smc1.h>
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
 #include <cyg/hal/hal_stub.h>           // target_register_t
 #include <cyg/hal/hal_intr.h>           // HAL_INTERRUPT_UNMASK(...)
 #include <cyg/hal/hal_if.h>             // Calling interface definitions
 #include <cyg/hal/hal_misc.h>           // Helper functions
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
-#endif
 
 #define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
 #define UART_BAUD_RATE CYGNUM_HAL_QUICC_DIAG_BAUD
@@ -92,8 +89,8 @@
  *  The basic initialization steps are from Section 16.15.8
  *  of that manual.
  */	
-static void
-init_smc1_uart(void)
+void
+cyg_hal_plf_serial_init_channel(void)
 {
     EPPC *eppc;
     volatile struct smc_uart_pram *uart_pram;
@@ -286,22 +283,22 @@ cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 ch)
     CYGARC_HAL_RESTORE_GP();
 }
 
-cyg_uint8
-cyg_hal_plf_serial_getc(void* __ch_data)
+
+static cyg_bool
+cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
     volatile struct cp_bufdesc *bd;
-    char ch;
     EPPC *eppc = (EPPC*) __ch_data;
     volatile struct smc_uart_pram *uart_pram = &eppc->pram[2].scc.pothers.smc_modem.psmc.u;
     int cache_state;
-    CYGARC_HAL_SAVE_GP();
 
     /* rx buffer descriptor */
     bd = (struct cp_bufdesc *)((char *)eppc + uart_pram->rbptr);
 
-    while (bd->ctrl & QUICC_BD_CTL_Ready) ;
+    if (bd->ctrl & QUICC_BD_CTL_Ready)
+        return false;
 
-    ch = bd->buffer[0];
+    *ch = bd->buffer[0];
 
     bd->length = 0;
     bd->buffer[0] = '\0';
@@ -312,9 +309,25 @@ cyg_hal_plf_serial_getc(void* __ch_data)
         HAL_DCACHE_INVALIDATE(bd->buffer, uart_pram->mrblr);  // Make sure no stale data
     }
 
+    return true;
+}
+
+cyg_uint8
+cyg_hal_plf_serial_getc(void* __ch_data)
+{
+    cyg_uint8 ch;
+    CYGARC_HAL_SAVE_GP();
+
+    while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch));
+
     CYGARC_HAL_RESTORE_GP();
     return ch;
 }
+
+
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
 static void
 cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
@@ -339,11 +352,101 @@ cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     CYGARC_HAL_RESTORE_GP();
 }
 
+cyg_int32 msec_timeout = 1000;
+
+cyg_bool
+cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
+{
+    int delay_count = msec_timeout * 10; // delay in .1 ms steps
+    cyg_bool res;
+    CYGARC_HAL_SAVE_GP();
+
+    for(;;) {
+        res = cyg_hal_plf_serial_getc_nonblock(__ch_data, ch);
+        if (res || 0 == delay_count--)
+            break;
+        
+        CYGACC_CALL_IF_DELAY_US()(100);
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
+}
+
 static int
 cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 {
-    // Do nothing (yet).
-    return 0;
+    static int irq_state = 0;
+    int ret = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    switch (__func) {
+    case __COMMCTL_IRQ_ENABLE:
+        HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_CPM_SMC1);
+        irq_state = 1;
+        break;
+    case __COMMCTL_IRQ_DISABLE:
+        ret = irq_state;
+        irq_state = 0;
+        HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_CPM_SMC1);
+        break;
+    case __COMMCTL_DBG_ISR_VECTOR:
+        ret = CYGNUM_HAL_INTERRUPT_CPM_SMC1;
+        break;
+    case __COMMCTL_SET_TIMEOUT:
+    {
+        va_list ap;
+
+        va_start(ap, __func);
+
+        ret = msec_timeout;
+        msec_timeout = va_arg(ap, cyg_uint32);
+
+        va_end(ap);
+    }        
+    default:
+        break;
+    }
+    CYGARC_HAL_RESTORE_GP();
+    return ret;
+}
+
+static int
+cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc, 
+                       CYG_ADDRWORD __vector, CYG_ADDRWORD __data)
+{
+    EPPC *eppc = (EPPC*) __ch_data;
+    struct cp_bufdesc *bd;
+    char ch;
+    int res = 0;
+    CYGARC_HAL_SAVE_GP();
+
+    *__ctrlc = 0;
+    if (eppc->smc_regs[0].smc_smce & QUICC_SMCE_RX) {
+
+        eppc->smc_regs[0].smc_smce = QUICC_SMCE_RX;
+
+        /* rx buffer descriptors */
+        bd = (struct cp_bufdesc *)((char *)eppc + Rxbd);
+
+        if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
+            
+            // then there be a character waiting
+            ch = bd->buffer[0];
+            bd->length = 1;
+            bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
+        
+            if( cyg_hal_is_break( &ch , 1 ) )
+                *__ctrlc = 1;
+        }
+
+        // Interrupt handled. Acknowledge it.
+        eppc->cpmi_cisr = 0x10;
+        res = CYG_ISR_HANDLED;
+    }
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
 }
 
 /*
@@ -354,6 +457,8 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 void
 cyg_hal_plf_serial_init(void)
 {
+    hal_virtual_comm_table_t* comm;
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     volatile EPPC *eppc = eppc_base();
     int i;
 
@@ -367,126 +472,27 @@ cyg_hal_plf_serial_init(void)
     eppc->cp_cr = QUICC_CPM_CR_RESET | QUICC_CPM_CR_BUSY;
     for (i = 0; i < 100000; i++);
 
-    init_smc1_uart();
+    cyg_hal_plf_serial_init_channel();
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
-    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
-    {
-        // Setup procs in the vector table
-        hal_virtual_comm_table_t* comm;
-        int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM()(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    // Setup procs in the vector table
 
-        // Set channel 0
-        CYGACC_CALL_IF_SET_CONSOLE_COMM()(0);// Should be configurable!
-        comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-        CYGACC_COMM_IF_CH_DATA_SET(*comm, eppc_base());
-        CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-        CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-        CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-        CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-        CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    // Set channel 0
+    CYGACC_CALL_IF_SET_CONSOLE_COMM()(0);// Should be configurable!
+    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, eppc_base());
+    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
 
-        // Restore original console
-        CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
-    }
-#endif
+    // Restore original console
+    CYGACC_CALL_IF_SET_CONSOLE_COMM()(cur);
 }
 
-#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // the below should be removed
-
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-// This ISR is called from the interrupt handler. This should only
-// happen when there is no real serial driver, so the code shouldn't
-// mess anything up.
-int cyg_hal_gdb_isr( target_register_t pc )
-{
-    EPPC *eppc = eppc_base();
-    struct cp_bufdesc *bd;
-    char ch;
-
-    eppc->smc_regs[0].smc_smce = 0xff;
-
-    /* rx buffer descriptors */
-    bd = (struct cp_bufdesc *)((char *)eppc_base() + Rxbd);
-
-    if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
-        // then there be a character waiting
-        ch = bd->buffer[0];
-        bd->length = 1;
-        bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
-
-        if ( 3 == ch ) {
-            // Ctrl-C: set a breakpoint at PC so GDB will display the
-            // correct program context when stopping rather than the
-            // interrupt handler.
-            cyg_hal_gdb_interrupt( pc );
-
-            // Interrupt handled. Don't call ISR proper. At return
-            // from the VSR, execution will stop at the breakpoint
-            // just set.
-
-            eppc->cpmi_cisr = 0x10;
-            return 0;
-        }
-    }
-    eppc->cpmi_cisr = 0x10; // acknowledge the Rx event anyway
-                            // in case it was left over from polled reception
-    // Not caused by GDB. Call ISR proper.
-    return 1;
-}
-#endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-
-
-#else // the below stays
-
-#if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
-
-struct Hal_SavedRegisters *hal_saved_interrupt_state;
-
-void
-hal_ctrlc_isr_init(void)
-{
-    HAL_INTERRUPT_UNMASK(CYGHWR_HAL_GDB_PORT_VECTOR);
-}
-
-
-cyg_uint32
-hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
-{
-    EPPC *eppc = eppc_base();
-    struct cp_bufdesc *bd;
-    char ch;
-
-    if (eppc->smc_regs[0].smc_smce & QUICC_SMCE_RX) {
-
-        eppc->smc_regs[0].smc_smce = QUICC_SMCE_RX;
-
-        /* rx buffer descriptors */
-        bd = (struct cp_bufdesc *)((char *)eppc_base() + Rxbd);
-
-        if ((bd->ctrl & QUICC_BD_CTL_Ready) == 0) {
-            
-            // then there be a character waiting
-            ch = bd->buffer[0];
-            bd->length = 1;
-            bd->ctrl   = QUICC_BD_CTL_Ready | QUICC_BD_CTL_Wrap | QUICC_BD_CTL_Int;
-        
-            if( cyg_hal_is_break( &ch , 1 ) )
-                cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
-        }
-
-        // Interrupt handled. Acknowledge it.
-        eppc->cpmi_cisr = 0x10;
-        return CYG_ISR_HANDLED;
-    }
-
-    // Not a serial interrupt.
-    return 0;
-}
-#endif
-#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
 
 #endif // CYGPKG_HAL_POWERPC_MPC860
 // EOF quicc_smc1.c

@@ -90,10 +90,10 @@ cdl_package CYGPKG_HAL_POWERPC_COGENT {
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
         display          "Debug serial port"
         flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        legal_values     0 to 1
         default_value    1
         description      "
-           The MBX board has only one serial port. This option
+           The Cogent board has two serial ports. This option
            chooses which port will be used to connect to a host
            running GDB."
     }
@@ -104,24 +104,8 @@ cdl_package CYGPKG_HAL_POWERPC_COGENT {
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
         default_value    1
         description      "
-           The MBX board has only one serial port.  This option
+           The Cogent board has two serial ports and an LCD.  This option
            chooses which port will be used for diagnostic output."
-    }
-
-    # This option is only used when USE_ROM_MONITOR is enabled - but
-    # it cannot be a sub-option to that option, since the code uses the
-    # definition in a preprocessor comparison.
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL {
-        display          "Debug serial port used by ROM monitor"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    1
-        description      "
-            The MBX board has only one serial port.  This
-            option tells the code which port is in use by the ROM
-            monitor. It should only be necessary to change this
-            option if a non-standard configurated eCos GDB stub is
-            used."
     }
 
     cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {

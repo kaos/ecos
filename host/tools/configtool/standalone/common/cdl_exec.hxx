@@ -26,33 +26,43 @@
 
 class cdl_exec {
 public:
-	cdl_exec (const std::string repository_tree, const std::string savefile_name, const std::string install_tree, bool no_resolve);
-	bool cmd_new (const std::string cdl_hardware, const std::string cdl_template = "default", const std::string cdl_version = "");
-	bool cmd_tree ();
-	bool cmd_check ();
-	bool cmd_list ();
-	bool cmd_add (const std::vector<std::string> cdl_packages);
-	bool cmd_remove (const std::vector<std::string> cdl_packages);
-	bool cmd_version (const std::string cdl_version, const std::vector<std::string> cdl_packages);
-	bool cmd_template (const std::string cdl_template, const std::string cdl_version = "");
-	bool cmd_export (const std::string cdl_savefile);
-	bool cmd_import (const std::string cdl_savefile);
-	bool cmd_target (const std::string cdl_target);
-	bool cmd_resolve ();
+    cdl_exec (const std::string repository_tree, const std::string savefile_name, const std::string install_tree, bool no_resolve);
+    bool cmd_new (const std::string cdl_hardware, const std::string cdl_template = "default", const std::string cdl_version = "");
+    bool cmd_tree ();
+    bool cmd_check ();
+    bool cmd_list ();
+    bool cmd_add (const std::vector<std::string> cdl_packages);
+    bool cmd_remove (const std::vector<std::string> cdl_packages);
+    bool cmd_version (const std::string cdl_version, const std::vector<std::string> cdl_packages);
+    bool cmd_template (const std::string cdl_template, const std::string cdl_version = "");
+    bool cmd_export (const std::string cdl_savefile);
+    bool cmd_import (const std::string cdl_savefile);
+    bool cmd_target (const std::string cdl_target);
+    bool cmd_resolve ();
 
+    static void set_quiet_mode(bool);
+    static void set_verbose_mode(bool);
+    static void set_ignore_errors_mode(bool);
+    
 protected:
-	std::string repository;
-	std::string savefile;
-	std::string install_prefix;
-	CdlPackagesDatabase pkgdata;
-	CdlInterpreter interp;
-	CdlConfiguration config;
-	void delete_cdl_data ();
-	static void diagnostic_handler (std::string message);
-	void exception_handler (CdlStringException exception);
-	void exception_handler ();
-	static void report_conflict (CdlConflict conflict);
-	static CdlInferenceCallbackResult inference_callback (CdlTransaction transaction);
-	std::string resolve_package_alias (const std::string alias);
-	std::string resolve_hardware_alias (const std::string alias);
+    static bool quiet;
+    static bool verbose;
+    static bool ignore_errors;
+    std::string repository;
+    std::string savefile;
+    std::string install_prefix;
+    bool no_resolve;
+    CdlPackagesDatabase pkgdata;
+    CdlInterpreter interp;
+    CdlConfiguration config;
+    void init(bool /* load */);
+    void delete_cdl_data ();
+    static void diagnostic_handler (std::string message);
+    void exception_handler (CdlStringException exception);
+    void exception_handler ();
+    void report_conflicts();
+    static CdlInferenceCallbackResult inference_callback (CdlTransaction transaction);
+    static void transaction_callback(const CdlTransactionCallback&);
+    std::string resolve_package_alias (const std::string alias);
+    std::string resolve_hardware_alias (const std::string alias);
 };

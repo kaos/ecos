@@ -97,7 +97,9 @@ typedef struct {
 
 
 extern STATISTICS statistics[2];
+#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
 extern I82559_COUNTERS i82559_counters[2];
+#endif
 
 #endif // KEEP_STATISTICS
 
@@ -183,7 +185,7 @@ void update_statistics(struct i82559* p_i82559);
 #endif
 
 
-#ifdef KEEP_STATISTICS
+#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
 #define ETH_STATS_INIT( p ) \
         int _tmp;           \
         update_statistics( (struct i82559 *)((p)->driver_private) )
@@ -223,6 +225,7 @@ void update_statistics(struct i82559* p_i82559);
  (statistics[ ((struct i82559 *)((p)->driver_private))->index \
      ].tx_dropped)
 
+#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
 #define ETH_DEV_STATSALIGNMENTERRORS( p ) \
  (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \
      ].rx_align_errors)
@@ -277,6 +280,7 @@ void update_statistics(struct i82559* p_i82559);
 // (i82559_counters[ ((struct i82559 *)((p)->driver_private))->index  \ 
 //     ].)
 
+#endif // CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
 
 #endif // KEEP_STATISTICS
 

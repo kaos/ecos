@@ -49,16 +49,19 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
         The edk HAL package provides the support needed to run
         eCos on a Hitachi SH3 EDK7708 board."
 
-    compile       hal_diag.c plf_stub.c plf_misc.c
+    compile       hal_diag.c plf_misc.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_sh.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_sh_edk7708.h>"
 
+        puts $::cdl_header "#define CYGNUM_HAL_SH_SH3_SCI_PORTS 1"
         puts $::cdl_header "#define CYGHWR_HAL_VSR_TABLE 0x08000000"
+        puts $::cdl_header "#define CYGHWR_HAL_VECTOR_TABLE 0x08000100"
     }
 
     cdl_component CYG_HAL_STARTUP {
@@ -80,6 +83,33 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
            bootstrap, but everything is copied to RAM before execution 
            starts thus improving performace, but at the cost of an
            increased RAM footprint."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   1
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           The EDK/7708 board has only one serial port. This option
+           chooses which port will be used to connect to a host
+           running GDB."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+        display          "Diagnostic serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           The EDK/7708 board has only one serial port.  This option
+           chooses which port will be used for diagnostic output."
     }
 
     cdl_option CYGHWR_HAL_SH_BOARD_SPEED {
@@ -165,8 +195,8 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGBLD_BUILD_COMMON_GDB_STUBS
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-            requires ! CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-            requires ! CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+            requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
             requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
             requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
             no_define

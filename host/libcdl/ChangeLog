@@ -1,3 +1,17 @@
+2000-06-28  Bart Veer  <bartv@redhat.com>
+
+	* transact.cxx, cdlcore.hxx:
+	Add details of the current transaction to the transaction callback
+	class. Previously there was no way of getting hold of the current
+	transaction and hence the toplevel from inside the callback
+	without using statics.
+
+	* value.cxx (set_flavor):
+	Temporarily undo some of the previous value clean-ups, they were
+	causing problems at the application level. The API needs to be
+	changed to eliminate confusion between value and the data part
+	of a bool/value pair.
+
 2000-06-22  Bart Veer  <bartv@redhat.com>
 
 	* value.cxx, interface.cxx:

@@ -32,7 +32,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):    jskov
-## Contributors: jskov
+## Contributors: jskov, gthomas
 ## Date:         1999-05-01
 ## Purpose:      SH exception vectors
 ## Description:  This file defines the code placed into the exception
@@ -97,167 +97,18 @@
 # be expected to provide the proper address space (at that time we
 # jump to the VMA base of the code).
 
+        .org    0x000
         .globl __reset;
 __reset:
-
-        # Initialize CPU
-        mov.l   $nCYG_SR,r1             ! Put CPU in a well-known state
-        ldc     r1,sr
-        mov     #0,r0
-        mov     #CYGARC_REG_CCR,r1      ! Disable cache
-        mov.l   r0,@r1
-        mov     #CYGARC_REG_MMUCR,r1    ! Disable MMU
-        mov.l   r0,@r1
-        mov     #CYGARC_REG_BBRA,r1     ! Disable UBC Channel A
-        mov.w   r0,@r1
-        mov     #CYGARC_REG_BBRB,r1     ! Disable UBC Channel B
-        mov.w   r0,@r1
-        mov     #CYGARC_REG_BRCR,r1     ! Reset UBC common register
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_TSTR,r1     ! Disable timers
-        mov.b   r0,@r1
-        mov.l   $CYGARC_REG_IPRA,r1     ! Disable interrupt request sources
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_IPRB,r1
-        mov.w   r0,@r1
-#ifdef CYGARC_SH_MOD_INTC_V2
-        mov.l   $CYGARC_REG_IPRC,r1
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_IPRD,r1
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_IPRE,r1
-        mov.w   r0,@r1
-        mov.l   $CYGARC_REG_ICR1,r1     ! Set interrupt controller to IRQ mode
-        mov.w   r0,@r1
-#endif
-
-        # Initialize VBR if necessary
-#if     !defined(CYG_HAL_STARTUP_RAM) ||                \
-        (       defined(CYG_HAL_STARTUP_RAM) &&         \
-                !defined(CYGSEM_HAL_USE_ROM_MONITOR))
-        mov.l   $__reset,r1             ! Set VBR
-        ldc     r1,vbr
-#endif
-
-        
-#ifdef __DEBUG
-        mov     #0,r0
-        mov     #1,r1
-        mov     #2,r2
-        mov     #3,r3
-        mov     #4,r4
-        mov     #5,r5
-        mov     #6,r6
-        mov     #7,r7
-        mov     #8,r8
-        mov     #9,r9
-        mov     #10,r10
-        mov     #11,r11
-        mov     #12,r12
-        mov     #13,r13
-        mov     #14,r14
-#endif
-        
-        # Call platform specific hardware initialization
-        # This may include memory controller initialization. It is not
-        # safe to access RAM until after this point.
-        hal_hardware_init
-
-        # Now copy necessary bits to RAM and jump to the VMA base
-
-#ifdef CYG_HAL_STARTUP_ROM
-
-        # Copy data from ROM to ram
-        mov.l   $__rom_data_start,r3    ! r3 = rom start
-        mov.l   $__ram_data_start,r4    ! r4 = ram start
-        mov.l   $__ram_data_end,r5      ! r5 = ram end
-        
-        cmp/eq  r4,r5                   ! skip if no data
-        bt      2f
-1:      mov.l   @r3+,r0                 ! get word from ROM
-        mov.l   r0,@r4                  ! store in RAM
-        add     #4,r4
-        cmp/eq  r4,r5                   ! compare
-        bf      1b                      ! loop if not yet done
-2:
-
-        # Jump to the proper VMA base of the code.
-        mov.l   $_complete_setup,r0
+        mov.l   $__reset_platform,r0
         jmp     @r0
          nop
-        .align 2
 
-        .extern __rom_data_start
-        .extern __ram_data_start
-        .extern __ram_data_end
-
-$__rom_data_start:
-        .long   __rom_data_start
-$__ram_data_start:
-        .long   __ram_data_start
-$__ram_data_end:
-        .long   __ram_data_end
-$_complete_setup:
-        .long _complete_setup
-
-#elif defined(CYG_HAL_STARTUP_ROMRAM)
-
-        # Copy everything to the proper VMA base and jump to it.
-        mov.l   $_vectors_lma,r0
-        mov.l   $_vectors_vma,r1
-        mov.l   $_end,r2
-1:      mov.l   @r0+,r3                 ! get word from ROM
-        mov.l   r3,@r1                  ! store in RAM
-        add     #4,r1
-        cmp/eq  r1,r2                   ! compare
-        bf      1b                      ! loop if not yet done
-        mov.l   $_complete_setup,r0
-        jmp     @r0
-         nop
-        .align  2
-
-        .extern __vector_code_lma
-
-$_vectors_lma:
-        .long __vector_code_lma
-$_vectors_vma:
-        .long __reset
-$_end:
-        .long _end
-$_complete_setup:
-        .long _complete_setup
-
-#else
-
-        # Jump to remaining setup code. Relative branch is OK since VMA=LMA.
-        bra   _complete_setup
+# Note: this is the unmapped, shadow address of the start of code
+# Sadly, it is too far to just branch to.                        
+$__reset_platform:      
+        .long   __reset_platform-__reset+0xA0000000
                 
-#endif
-
-        .align  2
-
-$nCYG_SR:
-        .long   CYG_SR
-$CYGARC_REG_TSTR:
-        .long   CYGARC_REG_TSTR
-$CYGARC_REG_IPRA:
-        .long   CYGARC_REG_IPRA
-$CYGARC_REG_IPRB:
-        .long   CYGARC_REG_IPRB
-#ifdef CYGARC_SH_MOD_INTC_V2
-$CYGARC_REG_IPRC:
-        .long   CYGARC_REG_IPRC
-$CYGARC_REG_IPRD:
-        .long   CYGARC_REG_IPRD
-$CYGARC_REG_IPRE:
-        .long   CYGARC_REG_IPRE
-$CYGARC_REG_ICR1:
-        .long   CYGARC_REG_ICR1
-#endif
-
-$__reset:
-        .long   __reset
-
 #---------------------------------------------------------------------------
 # Exception entry
         
@@ -280,91 +131,7 @@ __exception:
         .align   2
 $_hal_vsr_table:
         .long   _hal_vsr_table
-
-#-----------------------------------------------------------------------------
-# Complete target initialization and setup.
-# [Placed here to make use of gap between exception and interrupt entry points]
-# After this point we can use absolute addressing modes and access all the
-# memory in the system.
-
-_complete_setup:
-                
-        # Set up monitor related stuff (vectors primarily)
-        hal_mon_init
-
-        # set up stack
-        mov.l    $__startup_stack,r15
-
-        # clear BSS
-        mov.l   $__bss_start,r3         ! r3 = start
-        mov.l   $__bss_end,r4           ! r4 = end
-        mov     #0,r0                   ! r0 = 0
-1:      cmp/eq  r3,r4                   ! skip if no bss
-        bt      2f
-        mov.l   r0,@r3                  ! store zero
-        add     #4,r3
-        bra     1b                      ! loop
-         nop
-2:
-
-        # It is now safe to call C functions which may rely on initialized
-        # data.
         
-#        # Initialize MMU.
-#        .extern hal_MMU_init
-#        jsr      hal_MMU_init
-#         nop
-        
-        # Enable caches
-        mov.l    $_cyg_hal_enable_caches,r1
-        jsr      @r1
-         nop
-
-        # call c++ constructors
-        mov.l    $_cyg_hal_invoke_constructors,r1
-        jsr      @r1
-         nop
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        mov.l    $_initialize_stub,r1
-        jsr      @r1
-         nop
-#endif
-
-        mov.l    $_cyg_start,r1
-        jsr      @r1
-         nop
-9:      
-        bra      9b                     ! if we return, loop
-         nop
-
-        .align  2
-$__startup_stack:
-        .long   __startup_stack
-
-        .extern __bss_start
-        .extern __bss_end
-        .extern _cyg_hal_invoke_constructors
-        .extern _cyg_start
-
-$__bss_start:
-        .long   __bss_start
-$__bss_end:
-        .long   __bss_end
-$_cyg_hal_invoke_constructors:
-        .long   _cyg_hal_invoke_constructors
-$_cyg_hal_enable_caches:
-        .long   _cyg_hal_enable_caches
-$_cyg_start:
-        .long   _cyg_start
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        .extern _initialize_stub
-$_initialize_stub:
-        .long   _initialize_stub
-#endif
-
-
 #---------------------------------------------------------------------------
 # This code handles the common part of all exception handlers.
 # It saves the machine state onto the stack  and then calls
@@ -530,7 +297,6 @@ __interrupt:
 $_hal_vsr_table_int:
         .long    _hal_vsr_table+CYGNUM_HAL_VECTOR_INTERRUPT*4
 
-
 #---------------------------------------------------------------------------
 # Common interrupt handling code.
 
@@ -669,24 +435,14 @@ $_cyg_instrument:
 #endif //  CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-        mov     r4,r10                   ! save across call.
-        mov     #CYGARC_SHREG_PC,r4
-        add     r8,r4
-        mov.l   @r4,r4
-        mov.l   $_cyg_hal_gdb_isr,r1
-        jsr     @r1                     ! returns 1 if the proper isr must be
-         nop                            ! called (i.e., if it was not a GDB 
-        mov     r10,r4                  ! interrupt)
-        cmp/eq  #0,r0
-        bt      skip_isr_proper
-        bra     2f
-         nop
-        .align  2
-        .extern _cyg_hal_gdb_isr
-$_cyg_hal_gdb_isr:
-        .long   _cyg_hal_gdb_isr
-2:
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+	# If we are supporting Ctrl-C interrupts from GDB, we must squirrel
+	# away a pointer to the save interrupt state here so that we can
+	# plant a breakpoint at some later time.
+	
+	mov.l	$_hal_saved_interrupt_state,r1
+	mov.l	r8,@r1
 #endif
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
@@ -730,12 +486,6 @@ $_cyg_hal_gdb_isr:
 
         jsr     @r1                     ! r4=vector, r5=data
          nop
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-        # If interrupt was caused by GDB, the ISR call above
-        # is skipped by jumping here.
-skip_isr_proper:
-#endif
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
@@ -867,6 +617,13 @@ $int_state_marker:
         .long   0x77777771
 #endif
 
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        .extern _hal_saved_interrupt_state
+$_hal_saved_interrupt_state:
+        .long   _hal_saved_interrupt_state
+#endif
+
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
 $__interrupt_stack:
         .long   __interrupt_stack
@@ -908,6 +665,266 @@ $cyg_scheduler_sched_lock:
 $_interrupt_end:
         .long   _interrupt_end
 #endif
+
+#---------------------------------------------------------------------------
+# Platform initialization (reset)
+__reset_platform:               
+        # Initialize CPU
+        mov.l   $nCYG_SR,r1             ! Put CPU in a well-known state
+        ldc     r1,sr
+        mov     #0,r0
+        mov     #CYGARC_REG_CCR,r1      ! Disable cache
+        mov.l   r0,@r1
+        mov     #CYGARC_REG_MMUCR,r1    ! Disable MMU
+        mov.l   r0,@r1
+        mov     #CYGARC_REG_BBRA,r1     ! Disable UBC Channel A
+        mov.w   r0,@r1
+        mov     #CYGARC_REG_BBRB,r1     ! Disable UBC Channel B
+        mov.w   r0,@r1
+        mov     #CYGARC_REG_BRCR,r1     ! Reset UBC common register
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_TSTR,r1     ! Disable timers
+        mov.b   r0,@r1
+        mov.l   $CYGARC_REG_IPRA,r1     ! Disable interrupt request sources
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_IPRB,r1
+        mov.w   r0,@r1
+#ifdef CYGARC_SH_MOD_INTC_V2
+        mov.l   $CYGARC_REG_IPRC,r1
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_IPRD,r1
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_IPRE,r1
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_ICR1,r1     ! Set interrupt controller to IRQ mode
+        mov.w   r0,@r1
+#endif
+
+        # Initialize VBR if necessary
+#if     !defined(CYG_HAL_STARTUP_RAM) ||                \
+        (       defined(CYG_HAL_STARTUP_RAM) &&         \
+                !defined(CYGSEM_HAL_USE_ROM_MONITOR))
+        mov.l   $__reset,r1             ! Set VBR
+        ldc     r1,vbr
+#endif
+
+        
+#ifdef __DEBUG
+        mov     #0,r0
+        mov     #1,r1
+        mov     #2,r2
+        mov     #3,r3
+        mov     #4,r4
+        mov     #5,r5
+        mov     #6,r6
+        mov     #7,r7
+        mov     #8,r8
+        mov     #9,r9
+        mov     #10,r10
+        mov     #11,r11
+        mov     #12,r12
+        mov     #13,r13
+        mov     #14,r14
+#endif
+        
+        # Call platform specific hardware initialization
+        # This may include memory controller initialization. It is not
+        # safe to access RAM until after this point.
+        hal_hardware_init
+
+        # Now copy necessary bits to RAM and jump to the VMA base
+
+#ifdef CYG_HAL_STARTUP_ROM
+
+        # Copy data from ROM to ram
+        mov.l   $__rom_data_start,r3    ! r3 = rom start
+        mov.l   $__ram_data_start,r4    ! r4 = ram start
+        mov.l   $__ram_data_end,r5      ! r5 = ram end
+        
+        cmp/eq  r4,r5                   ! skip if no data
+        bt      2f
+1:      mov.l   @r3+,r0                 ! get word from ROM
+        mov.l   r0,@r4                  ! store in RAM
+        add     #4,r4
+        cmp/eq  r4,r5                   ! compare
+        bf      1b                      ! loop if not yet done
+2:
+
+        # Jump to the proper VMA base of the code.
+        mov.l   $_complete_setup,r0
+        jmp     @r0
+         nop
+        .align 2
+
+        .extern __rom_data_start
+        .extern __ram_data_start
+        .extern __ram_data_end
+
+$__rom_data_start:
+        .long   __rom_data_start
+$__ram_data_start:
+        .long   __ram_data_start
+$__ram_data_end:
+        .long   __ram_data_end
+$_complete_setup:
+        .long _complete_setup
+
+#elif defined(CYG_HAL_STARTUP_ROMRAM)
+
+        # Copy everything to the proper VMA base and jump to it.
+        mov.l   $_vectors_lma,r0
+        mov.l   $_vectors_vma,r1
+        mov.l   $_end,r2
+1:      mov.l   @r0+,r3                 ! get word from ROM
+        mov.l   r3,@r1                  ! store in RAM
+        add     #4,r1
+        cmp/eq  r1,r2                   ! compare
+        bf      1b                      ! loop if not yet done
+        mov.l   $_complete_setup,r0
+        jmp     @r0
+         nop
+        .align  2
+
+        .extern __vector_code_lma
+
+$_vectors_lma:
+        .long __vector_code_lma
+$_vectors_vma:
+        .long __reset
+$_end:
+        .long _end
+$_complete_setup:
+        .long _complete_setup
+
+#else
+
+        # Jump to remaining setup code. Relative branch is OK since VMA=LMA.
+        bra   _complete_setup
+                
+#endif
+
+        .align  2
+
+$nCYG_SR:
+        .long   CYG_SR
+$CYGARC_REG_TSTR:
+        .long   CYGARC_REG_TSTR
+$CYGARC_REG_IPRA:
+        .long   CYGARC_REG_IPRA
+$CYGARC_REG_IPRB:
+        .long   CYGARC_REG_IPRB
+#ifdef CYGARC_SH_MOD_INTC_V2
+$CYGARC_REG_IPRC:
+        .long   CYGARC_REG_IPRC
+$CYGARC_REG_IPRD:
+        .long   CYGARC_REG_IPRD
+$CYGARC_REG_IPRE:
+        .long   CYGARC_REG_IPRE
+$CYGARC_REG_ICR1:
+        .long   CYGARC_REG_ICR1
+#endif
+
+$__reset:
+        .long   __reset
+
+#-----------------------------------------------------------------------------
+# Complete target initialization and setup.
+# After this point we can use absolute addressing modes and access all the
+# memory in the system.
+
+_complete_setup:
+                
+        # Set up monitor related stuff (vectors primarily)
+        hal_mon_init
+
+        # set up stack
+        mov.l    $__startup_stack,r15
+
+        # clear BSS
+        mov.l   $__bss_start,r3         ! r3 = start
+        mov.l   $__bss_end,r4           ! r4 = end
+        mov     #0,r0                   ! r0 = 0
+1:      cmp/eq  r3,r4                   ! skip if no bss
+        bt      2f
+        mov.l   r0,@r3                  ! store zero
+        add     #4,r3
+        bra     1b                      ! loop
+         nop
+2:
+
+        # It is now safe to call C functions which may rely on initialized
+        # data.
+        
+#        # Initialize MMU.
+#        .extern hal_MMU_init
+#        jsr      hal_MMU_init
+#         nop
+        
+        # Enable caches
+        mov.l    $_cyg_hal_enable_caches,r1
+        jsr      @r1
+         nop
+
+        # Variant HALs may need to do something special before we continue
+        mov.l    $_hal_variant_init,r1
+        jsr      @r1
+         nop
+
+        # Platform initialization
+        mov.l    $_hal_platform_init,r1
+        jsr      @r1
+         nop
+        
+        # call c++ constructors
+        mov.l    $_cyg_hal_invoke_constructors,r1
+        jsr      @r1
+         nop
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        mov.l    $_initialize_stub,r1
+        jsr      @r1
+         nop
+#endif
+
+        mov.l    $_cyg_start,r1
+        jsr      @r1
+         nop
+9:      
+        bra      9b                     ! if we return, loop
+         nop
+
+        .align  2
+$__startup_stack:
+        .long   __startup_stack
+
+        .extern __bss_start
+        .extern __bss_end
+        .extern _cyg_hal_invoke_constructors
+        .extern _hal_variant_init
+        .extern _hal_platform_init
+        .extern _cyg_start
+
+$__bss_start:
+        .long   __bss_start
+$__bss_end:
+        .long   __bss_end
+$_cyg_hal_invoke_constructors:
+        .long   _cyg_hal_invoke_constructors
+$_cyg_hal_enable_caches:
+        .long   _cyg_hal_enable_caches
+$_hal_variant_init:
+        .long   _hal_variant_init
+$_hal_platform_init:
+        .long   _hal_platform_init
+$_cyg_start:
+        .long   _cyg_start
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+        .extern _initialize_stub
+$_initialize_stub:
+        .long   _initialize_stub
+#endif
+                        
 
 #---------------------------------------------------------------------------
 # Cache operations

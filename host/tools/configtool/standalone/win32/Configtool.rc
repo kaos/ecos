@@ -158,7 +158,7 @@ BEGIN
         POPUP "Red Hat on the &Web"
         BEGIN
             MENUITEM "&Red Hat Home Page",          ID_HELP_RED_HATONTHEWEB
-            MENUITEM "&eCos Services Page",         ID_HELP_ECOSHOME
+            MENUITEM "&eCos Product Page",         ID_HELP_ECOSHOME
             MENUITEM "eCos &Net Release Page",      ID_HELP_ECOS
             MENUITEM SEPARATOR
             MENUITEM "µ&ITRON Specification",       ID_HELP_UITRON

@@ -1,3 +1,7 @@
+2000-06-23  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added CqREEK serial package.
+
 2000-06-22  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added io_wallclock alias.

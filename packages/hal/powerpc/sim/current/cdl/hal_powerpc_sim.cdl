@@ -55,6 +55,8 @@ cdl_package CYGPKG_HAL_POWERPC_SIM {
 
     compile       sim.S hal_aux.c
 
+    implements CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED
+
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_ppc60x.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_sim.h>"

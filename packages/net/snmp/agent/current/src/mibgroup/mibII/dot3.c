@@ -242,6 +242,10 @@ var_dot3StatsTable(struct variable *vp,
 
     if ( IFT_LOOP == ifp->if_type ) {
         switch(vp->magic) {
+        case DOT3STATSINDEX:
+            long_ret = name[(*length)-1];
+            return (unsigned char *) &long_ret;
+
         case DOT3STATSETHERCHIPSET:
             *var_len = sizeof(nullobjid);
             return (unsigned char *) nullobjid;

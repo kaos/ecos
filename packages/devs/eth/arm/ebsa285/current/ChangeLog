@@ -1,3 +1,24 @@
+2000-06-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ebsa285_eth_drivers.cdl: Add sesquipedalian option
+	CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS in (now)
+	component CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_STATISTICS to control
+	keeping (well, harvesting really) the i82559's internal stats.
+	Reputedly, it doesn't service the net whilst this is happening, so
+	it could be viewed a bad thing.  Hence the option.
+
+	* include/ebsa285_info.h: Only describe the I82559_COUNTERS
+	i82559_counters[2]; structs if full stats are to be kept.
+
+	* src/if_ebsa285.c (update_statistics): Only include this if full
+	stats are to be kept.
+
+2000-06-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (ResetRxRing): Re-do the management of the
+	RxRing; have an end-of-list flag (EL) in the last entry, and as
+	you unload filled slots, drag it round after you.
+
 2000-06-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/ebsa285_eth_drivers.cdl: Add option to control statistics

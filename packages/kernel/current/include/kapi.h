@@ -133,6 +133,9 @@ void cyg_scheduler_unlock(void);
 /* subsequent call to 'cyg_scheduler_unlock()' will completely unlock.      */
 void cyg_scheduler_safe_lock(void);
     
+/* Read the scheduler lock value. */
+cyg_ucount32 cyg_scheduler_read_lock(void);
+
 /*---------------------------------------------------------------------------*/
 /* Thread operations */
 

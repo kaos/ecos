@@ -1,3 +1,11 @@
+2000-06-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/kapi.h (cyg_scheduler_read_lock): New function, to
+	return the value of the scheduler lock; this for implementing SPLX
+	in the network stack.
+
+	* src/common/kapi.cxx (cyg_scheduler_read_lock): New function.
+
 2000-06-16  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/kernel.cdl: Remove exception tests for CMA230 - not supported

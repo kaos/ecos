@@ -176,7 +176,7 @@ cyg_net_snmp_init(void)
 {
 
     // Create network background thread
-    cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY-2, // Priority
+    cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY+1, // Priority, just lower than the net
                       snmpd,                    // entry
                       0,                        // entry parameter
                       "snmpd",                  // Name

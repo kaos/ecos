@@ -4,14 +4,14 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0x8000100, LENGTH = 0xfff00
+    ram : ORIGIN = 0x8000200, LENGTH = 0xffe00
     rom : ORIGIN = 0xa0000000, LENGTH = 0x20000
 }
 
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_vectors (ram, 0x8000100, AT (0xa0000000))
+    SECTION_vectors (ram, 0x8000200, AT (0xa0000000))
     SECTION_text (ram, ALIGN (0x10), FOLLOWING (.vectors))
     SECTION_fini (ram, ALIGN (0x10), FOLLOWING (.text))
     SECTION_rodata1 (ram, ALIGN (0x10), FOLLOWING (.fini))

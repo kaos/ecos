@@ -18,6 +18,10 @@ Minor
 5) make cdl_interfaces into containers? How about cdl_options as well,
    to avoid reparenting problems?
 
+   cdl_interfaces as containers is actually a problem because interfaces
+   are part of the core, and hence do not know about the existence of
+   options and components.
+
 6) allow components and options to be used interchangeably in savefiles. 
 
 7) ecosconfig, create a paths file with details of the source tree
@@ -155,6 +159,9 @@ Intermediate
 
 13) friend packages, allowing one package to see the implementation
     details of another. Also, handle documentation links between these.
+
+14) API clean-up. Eliminate the confusion between "value" and the data part of
+    a bool/data pair.
 
 Major
 -----

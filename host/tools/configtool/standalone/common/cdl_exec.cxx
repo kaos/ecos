@@ -39,470 +39,747 @@
 //==========================================================================
 
 #ifdef _MSC_VER
-	#include <direct.h> /* for getcwd() */
+#include <direct.h> /* for getcwd() */
 #else
-	#include <unistd.h> /* for getcwd() */
+#include <unistd.h> /* for getcwd() */
 #endif
 #ifdef __CYGWIN__
-	#include <sys/cygwin.h> /* for cygwin_conv_to_win32_path() */
+#include <windows.h>
+#include <sys/cygwin.h> /* for cygwin_conv_to_win32_path() */
 #endif
 #include "build.hxx"
 #include "cdl_exec.hxx"
 
-cdl_exec::cdl_exec (const std::string repository_tree, const std::string savefile_name, const std::string install_tree, bool no_resolve) :
-	pkgdata (NULL),
-	interp (NULL),
-	config (NULL) {
-	repository = repository_tree;
-	savefile = savefile_name;
-	install_prefix = install_tree;
-	CdlTransactionBody::set_inference_callback_fn (&inference_callback);
-	if (no_resolve) {
-		CdlTransactionBody::disable_automatic_inference ();
-	}
+// ----------------------------------------------------------------------------
+bool cdl_exec::quiet            = false;
+bool cdl_exec::verbose          = false;
+bool cdl_exec::ignore_errors    = false;
+
+cdl_exec::cdl_exec (const std::string repository_arg, const std::string savefile_arg,
+                    const std::string install_arg, bool no_resolve_arg)
+    : repository(repository_arg),
+      savefile(savefile_arg),
+      install_prefix(install_arg),
+      no_resolve(no_resolve_arg),
+      pkgdata (NULL),
+      interp (NULL),
+      config (NULL)
+{
+
+    // The inference callback does not actually do anything at present.
+    // In future it may be useful for diagnostic purposes.
+    CdlTransactionBody::set_inference_callback_fn (&inference_callback);
+    
+    // Automatic inference is always disabled. The inference engine
+    // only gets invoked explicitly, after a suitable transaction callback
+    // has been invoked. The problem here is that the transaction callback
+    // has to report changes made by the inference engine but there is
+    // no way of distinguishing between inferred values that come out of
+    // savefiles and inferred values determined by the inference engine.
+    CdlTransactionBody::disable_automatic_inference ();
 }
 
-bool cdl_exec::cmd_new (const std::string cdl_hardware, const std::string cdl_template /* = "default" */, const std::string cdl_version /* = "" */) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::make ("eCos", pkgdata, interp);
-		config->set_hardware (resolve_hardware_alias (cdl_hardware), &diagnostic_handler, &diagnostic_handler);
-		if (pkgdata->is_known_template (cdl_template) && ! cdl_version.empty ()) {
-			const std::vector<std::string> & versions = pkgdata->get_template_versions (cdl_template);
-			if (versions.end () == std::find (versions.begin (), versions.end (), cdl_version)) {
-				throw CdlStringException ("Unknown version " + cdl_version);
-			}
-		}
-		config->set_template (cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
-
-	delete_cdl_data ();
-	return status;
+void
+cdl_exec::set_quiet_mode(bool new_val)
+{
+    quiet = new_val;
 }
 
-bool cdl_exec::cmd_target (const std::string cdl_target) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		config->set_hardware (resolve_hardware_alias (cdl_target), &diagnostic_handler, &diagnostic_handler);
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
-
-	delete_cdl_data ();
-	return status;
+void
+cdl_exec::set_verbose_mode(bool new_val)
+{
+    verbose = new_val;
 }
 
-bool cdl_exec::cmd_template (const std::string cdl_template, const std::string cdl_version /* = "" */) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		if (pkgdata->is_known_template (cdl_template) && ! cdl_version.empty ()) {
-			const std::vector<std::string> & versions = pkgdata->get_template_versions (cdl_template);
-			if (versions.end () == std::find (versions.begin (), versions.end (), cdl_version)) {
-				throw CdlStringException ("Unknown version " + cdl_version);
-			}
-		}
-		config->set_template (cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
-
-	delete_cdl_data ();
-	return status;
+void
+cdl_exec::set_ignore_errors_mode(bool new_val)
+{
+    ignore_errors = new_val;
 }
 
-bool cdl_exec::cmd_export (const std::string cdl_savefile) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		config->save (cdl_savefile, /* minimal = */ true);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
-
-	delete_cdl_data ();
-	return status;
+// ----------------------------------------------------------------------------
+void
+cdl_exec::init(bool load_config)
+{
+    pkgdata = CdlPackagesDatabaseBody::make(repository, &diagnostic_handler, &diagnostic_handler);
+    interp  = CdlInterpreterBody::make();
+    if (load_config) {
+        config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
+    }
 }
 
-bool cdl_exec::cmd_import (const std::string cdl_savefile) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		config->add (cdl_savefile, &diagnostic_handler, &diagnostic_handler);
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
-
-	delete_cdl_data ();
-	return status;
+// ----------------------------------------------------------------------------
+void
+cdl_exec::delete_cdl_data ()
+{
+    if (0 != config) {
+        delete config;
+        config = 0;
+    }
+    if (0 != interp) {
+        delete interp;
+        interp = 0;
+    }
+    if (0 != pkgdata) {
+        delete pkgdata;
+        pkgdata = 0;
+    }
 }
 
-bool cdl_exec::cmd_add (const std::vector<std::string> cdl_packages) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		for (unsigned int n = 0; n < cdl_packages.size (); n++) {
-			config->load_package (resolve_package_alias (cdl_packages [n]), "", &diagnostic_handler, &diagnostic_handler);
-		}
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+// ----------------------------------------------------------------------------
+bool cdl_exec::cmd_new (const std::string cdl_hardware,
+                        const std::string cdl_template /* = "default" */,
+                        const std::string cdl_version /* = "" */)
+{
+    bool status = false;
+    try {
+        init(false);
+        
+        config = CdlConfigurationBody::make ("eCos", pkgdata, interp);
 
-	delete_cdl_data ();
-	return status;
+        // The hardware and template should be loaded in a single transaction.
+        // Validating the target name etc. can be left to libcdl.
+        CdlTransaction transact = CdlTransactionBody::make(config);
+        config->set_hardware(transact, resolve_hardware_alias(cdl_hardware), &diagnostic_handler, &diagnostic_handler);
+        config->set_template(transact, cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
+        transact->body();
+        delete transact;
+
+        // Unless inference has been suppressed, make sure that the
+        // inference engine gets invoked and that its results get
+        // reported.
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+
+        // Now report any conflicts which the inference engine could not report. 
+        report_conflicts();
+        
+        // A savefile should be generated/updated even if there are conflicts.
+        // Otherwise the user does not have a chance to edit the savefile
+        // and fix things.
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
+
+    delete_cdl_data ();
+    return status;
 }
 
-bool cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages) {
-	unsigned int n;
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		for (n = 0; n < cdl_packages.size (); n++) {
-			if (! config->lookup (resolve_package_alias (cdl_packages [n]))) {
-				throw CdlStringException ("Unknown package " + cdl_packages [n]);
-			}
-		}
-		for (n = 0; n < cdl_packages.size (); n++) {
-			config->unload_package (resolve_package_alias (cdl_packages [n]));
-		}
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_target (const std::string cdl_target)
+{
+    bool status = false;
+    try {
+        init(true);
+        config->set_hardware (resolve_hardware_alias (cdl_target), &diagnostic_handler, &diagnostic_handler);
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
 
-	delete_cdl_data ();
-	return status;
+    delete_cdl_data ();
+    return status;
 }
 
-bool cdl_exec::cmd_version (const std::string cdl_version, const std::vector<std::string> cdl_packages) {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		for (unsigned int n = 0; n < cdl_packages.size (); n++) {
-			config->change_package_version (resolve_package_alias (cdl_packages [n]), cdl_version, &diagnostic_handler, &diagnostic_handler, true);
-		}
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_template (const std::string cdl_template, const std::string cdl_version /* = "" */)
+{
+    bool status = false;
+    try {
+        init(true);
+        config->set_template (cdl_template, cdl_version, &diagnostic_handler, &diagnostic_handler);
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
 
-	delete_cdl_data ();
-	return status;
+    delete_cdl_data ();
+    return status;
 }
 
-bool cdl_exec::cmd_tree () {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_export (const std::string cdl_savefile)
+{
+    bool status = false;
+    try {
+        init(true);
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        // Exporting to another file should only happen if the
+        // configuration is conflict-free. This is different from
+        // updating the savefile.
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            config->save (cdl_savefile, /* minimal = */ true);
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
+
+    delete_cdl_data ();
+    return status;
+}
+
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_import (const std::string cdl_savefile)
+{
+    bool status = false;
+    try {
+        init(true);
+        config->add(cdl_savefile, &diagnostic_handler, &diagnostic_handler);
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
+
+    delete_cdl_data ();
+    return status;
+}
+
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_add (const std::vector<std::string> cdl_packages)
+{
+    bool status = false;
+    try {
+        init(true);
+        for (unsigned int n = 0; n < cdl_packages.size (); n++) {
+            config->load_package (resolve_package_alias (cdl_packages [n]), "", &diagnostic_handler, &diagnostic_handler);
+        }
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
+
+    delete_cdl_data ();
+    return status;
+}
+
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_remove (const std::vector<std::string> cdl_packages)
+{
+    unsigned int n;
+    bool status = false;
+    try {
+        init(true);
+        for (n = 0; n < cdl_packages.size (); n++) {
+            if (! config->lookup (resolve_package_alias (cdl_packages [n]))) {
+                throw CdlStringException ("Unknown package " + cdl_packages [n]);
+            }
+        }
+        for (n = 0; n < cdl_packages.size (); n++) {
+            config->unload_package (resolve_package_alias (cdl_packages [n]));
+        }
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
+
+    delete_cdl_data ();
+    return status;
+}
+
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_version (const std::string cdl_version, const std::vector<std::string> cdl_packages)
+{
+    bool status = false;
+    try {
+        init(true);
+        for (unsigned int n = 0; n < cdl_packages.size (); n++) {
+            config->change_package_version(resolve_package_alias (cdl_packages [n]), cdl_version,
+                                           &diagnostic_handler, &diagnostic_handler, true);
+        }
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
+
+    delete_cdl_data ();
+    return status;
+}
+
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_tree ()
+{
+    bool status = false;
+    try {
+        init(true);
+        if (!no_resolve) {
+            CdlTransactionBody::set_callback_fn(&transaction_callback);
+            config->resolve_all_conflicts();
+        }
+        report_conflicts();
+        config->save (savefile);
+        // A build tree should only be generated if there are no conflicts.
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
 #ifdef _MSC_VER
-		char cwd [_MAX_PATH + 1];
+            char cwd [_MAX_PATH + 1];
 #else
-		char cwd [PATH_MAX + 1];
+            char cwd [PATH_MAX + 1];
 #endif
-		getcwd (cwd, sizeof cwd);
+            getcwd (cwd, sizeof cwd);
 #ifdef __CYGWIN__
-		char cwd_win32 [MAXPATHLEN + 1];
-		cygwin_conv_to_win32_path (cwd, cwd_win32);
-		generate_build_tree (config, cwd_win32, install_prefix);
+            char cwd_win32 [MAXPATHLEN + 1];
+            cygwin_conv_to_win32_path (cwd, cwd_win32);
+            generate_build_tree (config, cwd_win32, install_prefix);
 #else
-		generate_build_tree (config, cwd, install_prefix);
+            generate_build_tree (config, cwd, install_prefix);
 #endif
-		config->generate_config_headers (install_prefix.empty () ? "install/include/pkgconf" : install_prefix + "/include/pkgconf");
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+            config->generate_config_headers (install_prefix.empty () ? "install/include/pkgconf" : install_prefix + "/include/pkgconf");
+            status = true;
+        } else {
+            printf("\nUnable to generate build tree, this configuration still contains conflicts.\n");
+            printf("Either resolve the conflicts or use --ignore-errors\n");
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
 
-	delete_cdl_data ();
-	return status;
+    delete_cdl_data ();
+    return status;
 }
 
-bool cdl_exec::cmd_list () {
-	bool status = false;
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_list ()
+{
+    bool status = false;
+    try {
+        init(false);
 
-		// list the installed packages
-		std::vector<std::string> packages = pkgdata->get_packages ();
-		std::sort (packages.begin (), packages.end ());
-		for (unsigned int package = 0; package < packages.size (); package++) {
-			const std::vector<std::string> & aliases = pkgdata->get_package_aliases (packages [package]);
-			printf ("Package %s (%s):\n aliases:", packages [package].c_str (), aliases [0].c_str ());
-			for (unsigned int alias = 1; alias < aliases.size (); alias++) {
-				printf (" %s", aliases [alias].c_str ());
-			}
-			const std::vector<std::string> & versions = pkgdata->get_package_versions (packages [package]);
-			printf ("\n versions:");
-			for (unsigned int version = 0; version < versions.size (); version++) {
-				printf (" %s", versions [version].c_str ());
-			}
-			printf ("\n");
-		}
+        // list the installed packages
+        std::vector<std::string> packages = pkgdata->get_packages ();
+        std::sort (packages.begin (), packages.end ());
+        for (unsigned int package = 0; package < packages.size (); package++) {
+            const std::vector<std::string> & aliases = pkgdata->get_package_aliases (packages [package]);
+            printf ("Package %s (%s):\n aliases:", packages [package].c_str (), aliases [0].c_str ());
+            for (unsigned int alias = 1; alias < aliases.size (); alias++) {
+                printf (" %s", aliases [alias].c_str ());
+            }
+            const std::vector<std::string> & versions = pkgdata->get_package_versions (packages [package]);
+            printf ("\n versions:");
+            for (unsigned int version = 0; version < versions.size (); version++) {
+                printf (" %s", versions [version].c_str ());
+            }
+            printf ("\n");
+        }
 
-		// list the available targets
-		std::vector<std::string> targets = pkgdata->get_targets ();
-		std::sort (targets.begin (), targets.end ());
-		for (unsigned int target = 0; target < targets.size (); target++) {
-			const std::vector<std::string> & aliases = pkgdata->get_target_aliases (targets [target]);
-			printf ("Target %s (%s):\n aliases:", targets [target].c_str (), aliases [0].c_str ());
-			for (unsigned int alias = 1; alias < aliases.size (); alias++) {
-				printf (" %s", aliases [alias].c_str ());
-			}
-			printf ("\n");
-		}
+        // list the available targets
+        std::vector<std::string> targets = pkgdata->get_targets ();
+        std::sort (targets.begin (), targets.end ());
+        for (unsigned int target = 0; target < targets.size (); target++) {
+            const std::vector<std::string> & aliases = pkgdata->get_target_aliases (targets [target]);
+            printf ("Target %s (%s):\n aliases:", targets [target].c_str (), aliases [0].c_str ());
+            for (unsigned int alias = 1; alias < aliases.size (); alias++) {
+                printf (" %s", aliases [alias].c_str ());
+            }
+            printf ("\n");
+        }
 
-		// list the available templates
-		std::vector<std::string> templates = pkgdata->get_templates ();
-		std::sort (templates.begin (), templates.end ());
-		for (unsigned int templ = 0; templ < templates.size (); templ++) {
-			const std::vector<std::string> & versions = pkgdata->get_template_versions (templates [templ]);
-			printf ("Template %s:\n versions:", templates [templ].c_str ());
-			for (unsigned int version = 0; version < versions.size (); version++) {
-				printf (" %s", versions [version].c_str ());
-			}
-			printf ("\n");
-		}
+        // list the available templates
+        std::vector<std::string> templates = pkgdata->get_templates ();
+        std::sort (templates.begin (), templates.end ());
+        for (unsigned int templ = 0; templ < templates.size (); templ++) {
+            const std::vector<std::string> & versions = pkgdata->get_template_versions (templates [templ]);
+            printf ("Template %s:\n versions:", templates [templ].c_str ());
+            for (unsigned int version = 0; version < versions.size (); version++) {
+                printf (" %s", versions [version].c_str ());
+            }
+            printf ("\n");
+        }
 
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+        status = true;
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
 
-	delete_cdl_data ();
-	return status;
+    delete_cdl_data ();
+    return status;
 }
 
-bool cdl_exec::cmd_check () {
-	bool status = false;
-	unsigned int n;
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_check ()
+{
+    bool status = false;
+    unsigned int n;
 
-	try {
-		CdlTransactionBody::disable_automatic_inference ();
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		config->save (savefile); // tidy up any manual edits
+    try {
+        init(true);
+        // check() should never invoke the inference engine. The user
+        // wants to determine the current status, which should not
+        // change.
+        // However, updating the savefile is worthwhile because it
+        // will now contain more accurate information about the state.
+        config->save (savefile);
 
-		// report current target and template
-		printf ("Target: %s\n", config->get_hardware ().c_str ());
-		printf ("Template: %s\n", config->get_template ().c_str ());
-		std::vector<std::string> template_packages = pkgdata->get_template_packages (config->get_template ());
-		const std::vector<std::string> & hardware_packages = pkgdata->get_target_packages (config->get_hardware ());
-		for (n = 0; n < hardware_packages.size (); n++) {
-			template_packages.push_back (hardware_packages [n]);
-		}
+        // report current target and template
+        printf ("Target: %s\n", config->get_hardware ().c_str ());
+        printf ("Template: %s\n", config->get_template ().c_str ());
+        std::vector<std::string> template_packages = pkgdata->get_template_packages (config->get_template ());
+        const std::vector<std::string> & hardware_packages = pkgdata->get_target_packages (config->get_hardware ());
+        for (n = 0; n < hardware_packages.size (); n++) {
+            template_packages.push_back (hardware_packages [n]);
+        }
 
-		// report loaded packages not in the templates
-		const std::vector<CdlLoadable> & loadables = config->get_loadables ();
-		std::vector<std::string> added_packages;
-		std::vector<CdlLoadable>::const_iterator loadable_i;
-		for (loadable_i = loadables.begin (); loadable_i != loadables.end (); loadable_i++) {
-			const CdlNode & node = dynamic_cast<CdlNode> (* loadable_i);
-			if (template_packages.end () == std::find (template_packages.begin (), template_packages.end (), node->get_name ())) {
-				added_packages.push_back (node->get_name ());
-			}
-		}
-		if (added_packages.size ()) {
-			printf ("Added:\n");
-		}
-		for (n = 0; n < added_packages.size (); n++) {
-			printf (" %s\n", added_packages [n].c_str ());
-		}
+        // report loaded packages not in the templates
+        const std::vector<CdlLoadable> & loadables = config->get_loadables ();
+        std::vector<std::string> added_packages;
+        std::vector<CdlLoadable>::const_iterator loadable_i;
+        for (loadable_i = loadables.begin (); loadable_i != loadables.end (); loadable_i++) {
+            const CdlNode & node = dynamic_cast<CdlNode> (* loadable_i);
+            if (template_packages.end () == std::find (template_packages.begin (), template_packages.end (), node->get_name ())) {
+                added_packages.push_back (node->get_name ());
+            }
+        }
+        if (added_packages.size ()) {
+            printf ("Added:\n");
+        }
+        for (n = 0; n < added_packages.size (); n++) {
+            printf (" %s\n", added_packages [n].c_str ());
+        }
 
-		// report template packages not in the configuration
-		std::vector<std::string> removed_packages;
-		for (n = 0; n < template_packages.size (); n++) {
-			if (! config->lookup (template_packages [n])) {
-				removed_packages.push_back (template_packages [n]);
-			}
-		}
-		if (removed_packages.size ()) {
-			printf ("Removed:\n");
-		}
-		for (n = 0; n < removed_packages.size (); n++) {
-			printf (" %s\n", removed_packages [n].c_str ());
-		}
+        // report template packages not in the configuration
+        std::vector<std::string> removed_packages;
+        for (n = 0; n < template_packages.size (); n++) {
+            if (! config->lookup (template_packages [n])) {
+                removed_packages.push_back (template_packages [n]);
+            }
+        }
+        if (removed_packages.size ()) {
+            printf ("Removed:\n");
+        }
+        for (n = 0; n < removed_packages.size (); n++) {
+            printf (" %s\n", removed_packages [n].c_str ());
+        }
 
-		// report packages of non-default version
-		std::vector<CdlValuable> version_packages;
-		for (loadable_i = loadables.begin (); loadable_i != loadables.end (); loadable_i++) {
-			const CdlValuable & valuable = dynamic_cast<CdlValuable> (* loadable_i);
-			if (pkgdata->get_package_versions (valuable->get_name ()) [0] != valuable->get_value ()) {
-				version_packages.push_back (valuable);
-			}
-		}
-		if (version_packages.size ()) {
-			printf ("Version(s):\n");
-		}
-		for (n = 0; n < version_packages.size (); n++) {
-			printf (" %s %s\n", version_packages [n]->get_name ().c_str (), version_packages [n]->get_value ().c_str ());
-		}
+        // report packages of non-default version
+        std::vector<CdlValuable> version_packages;
+        for (loadable_i = loadables.begin (); loadable_i != loadables.end (); loadable_i++) {
+            const CdlValuable & valuable = dynamic_cast<CdlValuable> (* loadable_i);
+            if (pkgdata->get_package_versions (valuable->get_name ()) [0] != valuable->get_value ()) {
+                version_packages.push_back (valuable);
+            }
+        }
+        if (version_packages.size ()) {
+            printf ("Version(s):\n");
+        }
+        for (n = 0; n < version_packages.size (); n++) {
+            printf (" %s %s\n", version_packages [n]->get_name ().c_str (), version_packages [n]->get_value ().c_str ());
+        }
 
-		// report conflicts
-		const std::list<CdlConflict> & conflicts = config->get_all_conflicts ();
-		if (conflicts.size ()) {
-			printf ("%u conflict(s):\n", conflicts.size ());
-		} else {
-			printf ("No conflicts\n");
-		}
-		std::list<CdlConflict>::const_iterator conf_i;
-		for (conf_i = conflicts.begin (); conf_i != conflicts.end (); conf_i++) { // for each conflict
-			report_conflict (* conf_i);
-		}
+        // report conflicts
+        const std::list<CdlConflict> & conflicts = config->get_all_conflicts ();
+        if (conflicts.size ()) {
+            printf ("%u conflict(s):\n", conflicts.size ());
+        } else {
+            printf ("No conflicts\n");
+        }
+        report_conflicts();
 
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+        status = true;
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
 
-	delete_cdl_data ();
-	return status;
+    delete_cdl_data ();
+    return status;
 }
 
-bool cdl_exec::cmd_resolve () {
-	bool status = false;
+// ----------------------------------------------------------------------------
+bool
+cdl_exec::cmd_resolve ()
+{
+    bool status = false;
 
-	try {
-		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
-		interp = CdlInterpreterBody::make ();
-		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		config->resolve_all_conflicts ();
-		config->save (savefile);
-		status = true;
-	} catch (CdlStringException exception) {
-		exception_handler (exception);
-	} catch (...) {
-		exception_handler ();
-	}
+    try {
+        init(true);
+        CdlTransactionBody::set_callback_fn(&transaction_callback);
+        config->resolve_all_conflicts ();
+        report_conflicts();
+        config->save (savefile);
+        if (ignore_errors || (0 == config->get_all_conflicts().size())) {
+            status = true;
+        }
+    } catch (CdlStringException exception) {
+        exception_handler (exception);
+    } catch (...) {
+        exception_handler ();
+    }
 
-	delete_cdl_data ();
-	return status;
+    delete_cdl_data ();
+    return status;
 }
 
-CdlInferenceCallbackResult cdl_exec::inference_callback (CdlTransaction transaction) {
-	const std::vector<CdlConflict> & resolved_conflicts = transaction->get_resolved_conflicts ();
+// ----------------------------------------------------------------------------
+// The inference callback. This could give some useful diagnostics, or it
+// could do useful things when running in some interactive mode. In batch
+// mode it should not do anything.
 
-	// report resolved conflicts
-	if (resolved_conflicts.size ()) {
-		printf ("%u conflict(s) resolved:\n", resolved_conflicts.size ());
-	}
-	for (unsigned int n = 0; n < resolved_conflicts.size (); n++) {
-		report_conflict (resolved_conflicts [n]);
-	}
-
-	// accept all changes
-	return CdlInferenceCallbackResult_Continue;
+CdlInferenceCallbackResult
+cdl_exec::inference_callback (CdlTransaction transaction)
+{
+    return CdlInferenceCallbackResult_Continue;
 }
 
-void cdl_exec::report_conflict (CdlConflict conflict) {
-	printf (" %s:\n  %s\n", conflict->get_node ()->get_name ().c_str (), conflict->get_explanation ().c_str ());
+// ----------------------------------------------------------------------------
+// Output a message with indentation after newlines.
+static void
+dump_string(unsigned int indent, const std::string& str)
+{
+    bool newline_pending = false;
+    unsigned int i, j;
+    for (i = 0; i < str.size(); i++) {
+        if (newline_pending) {
+            putchar('\n');
+            if ('\n' != str[i]) {
+                for (j = 0; j < indent; j++) {
+                    putchar(' ');
+                }
+            }
+            newline_pending = false;
+        }
+        if ('\n' == str[i]) {
+            newline_pending = true;
+        } else {
+            putchar(str[i]);
+        }
+    }
+    if (newline_pending) {
+        putchar('\n');  // But not the indentation.
+    }
 }
 
-void cdl_exec::diagnostic_handler (std::string message) {
-	printf ("%s\n", message.c_str ());
+// ----------------------------------------------------------------------------
+// The transaction callback. This should report any changes that have been
+// made to the configuration. The amount of output depends on the verbosity
+// level selected by the user.
+//
+// 1) quiet     - no output at all
+// 2) default   - list updates done by the inference engine.
+// 3) verbose   - this does not currently add anything.
+// 
+// There is no reporting of new or resolved conflicts. Resolved
+// conflicts are probably of no interest in batch mode. New conflicts
+// will be handled by report_conflicts(). There is also no information
+// given about active state changes, although arguably there should be
+// especially in the case of containers.
+
+void
+cdl_exec::transaction_callback(const CdlTransactionCallback& callback_data)
+{
+    if (quiet) {
+        return;
+    }
+
+    unsigned int i;
+    for (i = 0; i < callback_data.value_changes.size(); i++) {
+        CdlValuable valuable = callback_data.value_changes[i];
+        if (CdlValueSource_Inferred == valuable->get_source()) {
+            std::string msg = std::string("U ") + valuable->get_name() + ", new inferred value ";
+            std::string value = valuable->get_value();
+            if ("" == value) {
+                msg += "\"\"";
+            } else {
+                msg += value;
+            }
+            msg += "\n";
+            dump_string(4, msg);
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Report the remaining conflicts in the configuration. These indicate
+// problems that the user should fix before going further with the
+// configuration, e.g. before generating a build tree.
+//
+// Quiet verbosity level has no effect on this, but at the verbose level
+// it is a good idea to look for a possible solution to the conflict.
+
+
+void
+cdl_exec::report_conflicts()
+{
+    const std::list<CdlConflict>& all_conflicts = config->get_all_conflicts();
+    std::list<CdlConflict>::const_iterator conf_i;
+    for (conf_i = all_conflicts.begin(); conf_i != all_conflicts.end(); conf_i++) {
+        CdlNode     node = (*conf_i)->get_node();
+
+        std::string msg = std::string("C ") + node->get_name() + ", " + (*conf_i)->get_explanation() + "\n";
+        dump_string(2, msg);
+
+        if (verbose && (*conf_i)->resolution_implemented()) {
+            // See if there is a possible solution to this conflict.
+            // This involves creating a transaction, invoking the
+            // inference engine, and cancelling the transaction
+            // (thus making sure that nothing actually changes).
+            //
+            // NOTE: at some stage libcdl may keep track of solutions
+            // globally. However, although it will know when a solution
+            // becomes invalid it will not necessarily try to resolve
+            // all global conflicts after every change, so attempting
+            // to do this in a transaction may still be necessary.
+            CdlTransaction transact = CdlTransactionBody::make(config);
+            transact->resolve(*conf_i);
+            if ((*conf_i)->has_known_solution()) {
+                std::string soln_msg = "  Possible solution:\n";
+                const std::vector<std::pair<CdlValuable, CdlValue> > & soln = (*conf_i)->get_solution();
+                unsigned int i;
+                for (i = 0; i < soln.size(); i++) {
+                    soln_msg += soln[i].first->get_name() + " -> " + soln[i].second.get_value() + "\n";
+                }
+#if 0
+                // FIXME: currently this member only works for nested sub-transactions.
+                if (transact->user_confirmation_required()) {
+                    msg += "This change affects previous user settings.\n";
+                }
+#endif                
+                dump_string(4, soln_msg);
+            }
+            transact->cancel();
+            delete transact;
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+void
+cdl_exec::diagnostic_handler (std::string message)
+{
+    printf ("%s\n", message.c_str ());
 }
 
 void cdl_exec::exception_handler (CdlStringException exception) {
-	printf ("%s\n", exception.get_message ().c_str ());
+    printf ("%s\n", exception.get_message ().c_str ());
 }
 
-void cdl_exec::exception_handler () {
-	printf ("Unknown error\n");
+void
+cdl_exec::exception_handler ()
+{
+    printf ("Unknown error\n");
 }
 
-void cdl_exec::delete_cdl_data () {
-	delete config;
-	config = NULL;
-	delete interp;
-	interp = NULL;
-	delete pkgdata;
-	pkgdata = NULL;
+
+// ----------------------------------------------------------------------------
+std::string
+cdl_exec::resolve_package_alias (const std::string alias)
+{
+    std::string package = alias;
+
+    if (! pkgdata->is_known_package (alias)) { // if the alias is not a package name
+        const std::vector<std::string> & packages = pkgdata->get_packages (); // get packages
+        for (unsigned int n = 0; n < packages.size (); n++) { // for each package
+            const std::vector<std::string> & aliases = pkgdata->get_package_aliases (packages [n]); // get package aliases
+            if (aliases.end () != std::find (aliases.begin (), aliases.end (), alias)) { // if alias is found
+                package = packages [n]; // note the package
+                break;
+            }
+        }
+    }
+    return package;
 }
 
-std::string cdl_exec::resolve_package_alias (const std::string alias) {
-	std::string package = alias;
+std::string
+cdl_exec::resolve_hardware_alias (const std::string alias)
+{
+    std::string target = alias;
 
-	if (! pkgdata->is_known_package (alias)) { // if the alias is not a package name
-		const std::vector<std::string> & packages = pkgdata->get_packages (); // get packages
-		for (unsigned int n = 0; n < packages.size (); n++) { // for each package
-			const std::vector<std::string> & aliases = pkgdata->get_package_aliases (packages [n]); // get package aliases
-			if (aliases.end () != std::find (aliases.begin (), aliases.end (), alias)) { // if alias is found
-				package = packages [n]; // note the package
-				break;
-			}
-		}
-	}
-	return package;
-}
-
-std::string cdl_exec::resolve_hardware_alias (const std::string alias) {
-	std::string target = alias;
-
-	if (! pkgdata->is_known_target (alias)) { // if the alias is not a target name
-		const std::vector<std::string> & targets = pkgdata->get_targets (); // get targets
-		for (unsigned int n = 0; n < targets.size (); n++) { // for each target
-			const std::vector<std::string> & aliases = pkgdata->get_target_aliases (targets [n]); // get target aliases
-			if (aliases.end () != std::find (aliases.begin (), aliases.end (), alias)) { // if alias is found
-				target = targets [n]; // note the target
-				break;
-			}
-		}
-	}
-	return target;
+    if (! pkgdata->is_known_target (alias)) { // if the alias is not a target name
+        const std::vector<std::string> & targets = pkgdata->get_targets (); // get targets
+        for (unsigned int n = 0; n < targets.size (); n++) { // for each target
+            const std::vector<std::string> & aliases = pkgdata->get_target_aliases (targets [n]); // get target aliases
+            if (aliases.end () != std::find (aliases.begin (), aliases.end (), alias)) { // if alias is found
+                target = targets [n]; // note the target
+                break;
+            }
+        }
+    }
+    return target;
 }

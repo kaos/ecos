@@ -103,7 +103,7 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.dtors*))) ___DTOR_END__ = ABSOLUTE(.);                     \
     . = ALIGN(8);                                                             \
     ___DEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.devtab*))) ___DEVTAB_END__ = ABSOLUTE (.); \
-    __NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) __NETDEVTAB_END__ = ABSOLUTE (.); \
+    ___NETDEVTAB__ = ABSOLUTE (.); KEEP (*(SORT (.netdevtab*))) ___NETDEVTAB_END__ = ABSOLUTE (.); \
     } > _region_                                                                \
     __rom_data_start = LOADADDR(.data);                                       \
     __ram_data_end = .; PROVIDE(__ram_data_end = .);                          \
@@ -122,6 +122,7 @@ GROUP(libtarget.a libgcc.a)
 #include CYGHWR_MEMORY_LAYOUT_LDI
 #include CYGBLD_HAL_PLATFORM_H
 
-// Define VSR table to reside at fixed address.
+// Define VSR and vector tables to reside at fixed address.
 _hal_vsr_table = CYGHWR_HAL_VSR_TABLE;
+_hal_virtual_vector_table = CYGHWR_HAL_VECTOR_TABLE;
 

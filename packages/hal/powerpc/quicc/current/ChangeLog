@@ -1,3 +1,19 @@
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/quicc_smc1.h: 
+	* src/quicc_smc1.c: Cleanup.
+
+2000-06-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/quicc_smc1.h:
+	* src/quicc_smc1.c: Added non-block/timout features. Reworked
+	Ctrl-c support code.
+
+2000-06-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c: Fix compiler warning. Add functions to deal
+	with ctrl-c interrupts from the device.
+
 2000-06-21  Jesper Skov  <jskov@redhat.com>
 
 	* src/quicc_smc1.c: 

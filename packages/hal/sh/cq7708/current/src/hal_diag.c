@@ -45,17 +45,62 @@
 
 #include <cyg/hal/hal_diag.h>           // our header.
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-#include <cyg/hal/hal_stub.h>           // hal_output_gdb_string
-#endif
-
 #include <cyg/infra/cyg_type.h>         // base types, externC
 #include <cyg/hal/hal_io.h>             // IO macros
 #include <cyg/hal/hal_intr.h>           // Interrupt macros
+#include <cyg/hal/sh3_sci.h>            // driver API
+#include <cyg/hal/hal_misc.h>           // Helper functions
 
-#include <cyg/hal/sh_sci.inl>
+#define SCI_BASE ((cyg_uint8*)0xfffffe80)
 
 //-----------------------------------------------------------------------------
+
+#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
+    || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
+
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+
+    initialized = 1;
+
+    cyg_hal_plf_sci_init(0, 0, CYGNUM_HAL_INTERRUPT_SCI_RXI, SCI_BASE);
+}
+
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG || CYGPRI_HAL_IMPLEMENTS_IF_SERVICES
+
+//=============================================================================
+// Led control
+//=============================================================================
+#define LED   0xa8000000
+
+void
+hal_diag_led_on( void )
+{
+    HAL_WRITE_UINT8(LED, 0x18);
+}
+
+void
+hal_diag_led_off( void )
+{
+    HAL_WRITE_UINT8(LED, 0);
+}
+
+//=============================================================================
+// Compatibility with older stubs
+//=============================================================================
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
+
+static channel_data_t channel = { (cyg_uint8*)SCI_BASE, 0, 0};
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+#include <cyg/hal/hal_stub.h>           // hal_output_gdb_string
+#endif
 
 #if defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
 
@@ -71,23 +116,20 @@
 
 void hal_diag_init(void)
 {
-    hal_sci_init_serial();
+    cyg_hal_plf_sci_init_channel(&channel);
 }
 
 void 
 hal_diag_write_char_serial( char c )
 {
-    hal_sci_put_char(c);
+    cyg_hal_plf_sci_putc(&channel, c);
 }
 
 void
 hal_diag_read_char(char *c)
 {
-    *c = (char) hal_sci_get_char();
+    *c = (char) cyg_hal_plf_sci_getc(&channel);
 }
-
-externC cyg_bool cyg_hal_is_break(char *buf, int size);
-externC void cyg_hal_user_break(CYG_ADDRWORD *regs);
 
 // Packet function
 void 
@@ -124,26 +166,26 @@ hal_diag_write_char(char c)
             cyg_uint8 csum = 0;
             int i;
         
-            hal_diag_write_char_serial('$');
-            hal_diag_write_char_serial('O');
+            cyg_hal_plf_sci_putc(&channel, '$');
+            cyg_hal_plf_sci_putc(&channel, 'O');
             csum += 'O';
             for( i = 0; i < pos; i++ )
             {
                 char ch = line[i];
                 char h = hex[(ch>>4)&0xF];
                 char l = hex[ch&0xF];
-                hal_diag_write_char_serial(h);
-                hal_diag_write_char_serial(l);
+                cyg_hal_plf_sci_putc(&channel, h);
+                cyg_hal_plf_sci_putc(&channel, l);
                 csum += h;
                 csum += l;
             }
-            hal_diag_write_char_serial('#');
-            hal_diag_write_char_serial(hex[(csum>>4)&0xF]);
-            hal_diag_write_char_serial(hex[csum&0xF]);
+            cyg_hal_plf_sci_putc(&channel, '#');
+            cyg_hal_plf_sci_putc(&channel, hex[(csum>>4)&0xF]);
+            cyg_hal_plf_sci_putc(&channel, hex[csum&0xF]);
 
             // Wait for the ACK character '+' from GDB here and handle
             // receiving a ^C instead.
-            hal_diag_read_char(&c1);
+            c1 = (char) cyg_hal_plf_sci_getc(&channel);
 
             if( c1 == '+' )
                 break;              // a good acknowledge
@@ -165,25 +207,11 @@ hal_diag_write_char(char c)
 #endif
     }
 #else // CYG_HAL_DIAG_GDB
-    hal_diag_write_char_serial(c);
+    cyg_hal_plf_sci_putc(&channel, c);
 #endif
 }
 
-//-----------------------------------------------------------------------------
-// Led control
-#define LED   0xa8000000
-
-void
-hal_diag_led_on( void )
-{
-    HAL_WRITE_UINT8(LED, 0x18);
-}
-
-void
-hal_diag_led_off( void )
-{
-    HAL_WRITE_UINT8(LED, 0);
-}
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_DIAG
 
 //-----------------------------------------------------------------------------
 // End of hal_diag.c

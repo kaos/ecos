@@ -1,7 +1,7 @@
 version 0
-region ram 8000100 fff00 0 !
+region ram 8000200 ffe00 0 !
 region rom a0000000 20000 1 !
-section vectors 0 10 1 1 1 1 1 1 8000100 a0000000 text text !
+section vectors 0 10 1 1 1 1 1 1 8000200 a0000000 text text !
 section text 0 10 1 1 0 1 0 1 fini fini !
 section fini 0 10 1 1 0 1 0 1 rodata1 rodata1 !
 section rodata1 0 10 1 1 0 1 0 1 rodata rodata !

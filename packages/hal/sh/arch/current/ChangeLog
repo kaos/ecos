@@ -1,3 +1,38 @@
+2000-06-29  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S: Reorg initialization (reset) code to be all
+	in one, non-fixed location.  Required for platforms with more
+	complex initialization sequences.
+
+2000-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh3_sci.c:
+	* src/sh3_scif.c:
+	Use per-channel data structure instead of code cruft.
+
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh3_sci.h:    [added]
+	* include/sh3_scif.h:   [added] 
+	* include/sh3_scif.inl: [removed]
+	* include/sh_sci.inl:   [removed]
+	* src/sh3_sci.c:        [added]
+	* src/sh3_scif.c:       [added]
+	* cdl/hal_sh.cdl:
+	Rewrote serial drivers for comm procs usage.
+	
+2000-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: Added arch and platform init calls. Added ctrlc
+	init call. Replaced old BREAK magic with new ctrlc magic.
+
+	* src/sh.ld: Added extra _ on NETDEVTAB labels. Define
+	hal_virtual_vector_table.
+
+	* src/hal_misc.c: hal_default_isr moved to common HAL.
+
+	* cdl/hal_sh.cdl: Also build simple drivers.
+
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_intr.h: Added HAL_DEFAULT_ISR.

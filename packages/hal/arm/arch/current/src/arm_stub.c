@@ -553,33 +553,6 @@ static instrBuffer break_buffer;
 
 volatile int cyg_hal_gdb_running_step = 0;
 
-void 
-cyg_hal_gdb_interrupt (target_register_t pc)
-{
-    // Clear flag that we Continued instead of Stepping
-    cyg_hal_gdb_running_step = 0;
-    // and override existing break? So that a ^C takes effect...
-    if (0 != break_buffer.targetAddr)
-        cyg_hal_gdb_remove_break( break_buffer.targetAddr );
-
-    if (0 == break_buffer.targetAddr) {
-        cyg_uint32 cpsr = get_register(PS);
-
-        if (cpsr & CPSR_THUMB_ENABLE) {
-            break_buffer.targetAddr = MAKE_THUMB_ADDR((cyg_uint32)pc);
-            break_buffer.savedInstr.thumb_instr = *(cyg_uint16*)pc;
-            *(cyg_uint16*)pc = HAL_BREAKINST_THUMB;
-        } else {
-            break_buffer.targetAddr = (cyg_uint32)pc;
-            break_buffer.savedInstr.arm_instr = *(cyg_uint32*)pc;
-            *(cyg_uint32*)pc = HAL_BREAKINST_ARM;
-        }
-
-        __data_cache(CACHE_FLUSH);
-        __instruction_cache(CACHE_FLUSH);
-    }
-}
-
 // This function is passed thumb/arm information about the PC address
 // in bit 0. This information is passed on to the break_buffer.
 void 
@@ -625,6 +598,33 @@ cyg_hal_gdb_remove_break (target_register_t pc)
         return 1;
     }
     return 0;
+}
+
+void 
+cyg_hal_gdb_interrupt (target_register_t pc)
+{
+    // Clear flag that we Continued instead of Stepping
+    cyg_hal_gdb_running_step = 0;
+    // and override existing break? So that a ^C takes effect...
+    if (0 != break_buffer.targetAddr)
+        cyg_hal_gdb_remove_break( break_buffer.targetAddr );
+
+    if (0 == break_buffer.targetAddr) {
+        cyg_uint32 cpsr = get_register(PS);
+
+        if (cpsr & CPSR_THUMB_ENABLE) {
+            break_buffer.targetAddr = MAKE_THUMB_ADDR((cyg_uint32)pc);
+            break_buffer.savedInstr.thumb_instr = *(cyg_uint16*)pc;
+            *(cyg_uint16*)pc = HAL_BREAKINST_THUMB;
+        } else {
+            break_buffer.targetAddr = (cyg_uint32)pc;
+            break_buffer.savedInstr.arm_instr = *(cyg_uint32*)pc;
+            *(cyg_uint32*)pc = HAL_BREAKINST_ARM;
+        }
+
+        __data_cache(CACHE_FLUSH);
+        __instruction_cache(CACHE_FLUSH);
+    }
 }
 
 int

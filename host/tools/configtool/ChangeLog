@@ -1,3 +1,10 @@
+2000-06-27  John Dallaway  <jld@redhat.com>
+
+	* standalone/win32/Configtool.rc:
+
+	Update menu item text:
+	"eCos Services Page" -> "eCos Product Page".
+
 2000-06-22  John Dallaway  <jld@redhat.com>
 
 	* standalone/common/cdl_exec.cxx:

@@ -9,7 +9,7 @@
 * Serial device drivers added for systems based on NEC V850 SA1 (70F3017)
   or SB1 (70F3033) processors
 * Hitachi SH3 CqREEK (cq7708) platform HAL support added
-  Contributed by Haruki Kashiwaya [Still untested, serial not imported]
+  Contributed by Haruki Kashiwaya
 * Watchdog reworked much like wallclock.
   Common code and API in io/watchdog, simpler (smaller) low-level drivers in
   devs/watchdog/<arch>.

@@ -4656,11 +4656,16 @@ class CdlTransactionCallback {
     friend class CdlTransactionBody;
     
   public:
-    CdlTransactionCallback();
     ~CdlTransactionCallback();
     static void (*get_callback_fn())(const CdlTransactionCallback&);
     static void set_callback_fn(void (*)(const CdlTransactionCallback&));
 
+    // Callback functions should be able to retrieve information
+    // about the current transaction and toplevel, to avoid the use
+    // of statics.
+    CdlTransaction              get_transaction() const;
+    CdlToplevel                 get_toplevel() const;
+    
     // active_changes and legal_values_changes get updated as the
     // transaction proceeds, so a set implementation is more
     // efficient. The others get filled in during a commit operation.
@@ -4681,7 +4686,12 @@ class CdlTransactionCallback {
   protected:
 
   private:
+    CdlTransactionCallback(CdlTransaction);
+    CdlTransaction      transact;
 
+    // Illegal operation.
+    CdlTransactionCallback();
+    
     enum {
         CdlTransactionCallback_Invalid     = 0,
         CdlTransactionCallback_Magic       = 0x0cec3a95

@@ -120,13 +120,28 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     cyg_uint32 result;
 
-#if (defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)        \
-     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)) && \
-    defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
-    defined(HAL_CTRLC_ISR)
+#if (defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)           \
+     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)) &&    \
+        (defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT) ||     \
+          defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&           \
+          defined(HAL_CTRLC_ISR))
 
 #ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN    
+#if CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    int gdb_vector = -1;
+    // This check only to avoid crash on older stubs in case of unhandled
+    // interrupts. It is a bit messy, but required in a transition period.
+    if (CYGNUM_CALL_IF_TABLE_VERSION == CYGACC_CALL_IF_VERSION()) {
+        hal_virtual_comm_table_t* comm = CYGACC_CALL_IF_DEBUG_PROCS();
+        gdb_vector 
+            = CYGACC_COMM_IF_CONTROL(*comm)(CYGACC_COMM_IF_CH_DATA(*comm),
+                                            __COMMCTL_DBG_ISR_VECTOR);
+    }
+    if( vector == gdb_vector )
+#else
+    // Old code using hardwired channels. This should go away eventually.
     if( vector == CYGHWR_HAL_GDB_PORT_VECTOR )
+#endif
 #endif        
     {
         result = HAL_CTRLC_ISR( vector, data );
@@ -137,7 +152,7 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     result = hal_arch_default_isr (vector, data);
     if( 0 != result) return result;
 
-    CYG_TRACE1(true, "Interrupt: %d", vector);
+    CYG_TRACE2(true, "Interrupt: %d, Data: 0x%08x", vector, data);
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }

@@ -137,6 +137,13 @@ externC void cyg_scheduler_unlock(void)
         Cyg_Scheduler::unlock();
 }
 
+/* Read the scheduler lock value. */
+externC cyg_ucount32 cyg_scheduler_read_lock(void)
+{
+    cyg_ucount32 slock = Cyg_Scheduler::get_sched_lock();
+    return slock;
+}
+
 /*---------------------------------------------------------------------------*/
 /* Thread operations */
 

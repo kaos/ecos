@@ -1,3 +1,30 @@
+2000-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c (cyg_hal_gdb_diag_putc): Check console interrupt
+	flag and breakpoint if set.
+
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c (cyg_hal_gdb_diag_putc): Don't try to set
+	breakpoints in ROM startup - just disable interrupts. Also, use
+	procs table function to disable device interrupts.
+
+	* include/hal_if.h: Mark vector/comms arrays volatile to avoid
+	compiler confusion.
+
+	* include/dbg-threads-api.h: Fix C/C++ declaration issues.
+
+	* src/hal_stub.c: Moved stub platform init call below vector table
+	setup.
+
+	* src/hal_misc.c:
+	* src/hal_if.c:
+	* include/hal_if.h: DBG_ISR_VECTOR and SET_TIMEOUT functions added
+	to comms table. Added DELAY_US function to vector table. Made
+	switching of debug channel dis/enable Ctrl-c interrupts as
+	well. Made ctrlc_isr code use new vector entries. All this amounts
+	to a properly switchable debug channel.
+
 2000-06-21  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_stub.c: Fixed clients of vector procs tables to pass

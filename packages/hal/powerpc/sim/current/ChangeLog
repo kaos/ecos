@@ -1,3 +1,10 @@
+2000-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_aux.c (hal_platform_init): Added.
+
+	* cdl/hal_powerpc_sim.cdl: Does not support CTRLC (sim handles
+	that, no target code required).
+
 2000-04-11  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_sim.cdl: Force inclusion of vectors, disable

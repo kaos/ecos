@@ -1,3 +1,8 @@
+2000-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: Removed unnecessary
+	CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT checks.
+
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_intr.h: Added HAL_DEFAULT_ISR.

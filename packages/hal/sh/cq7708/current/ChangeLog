@@ -1,3 +1,23 @@
+2000-06-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: serial driver API changes.
+
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_stub.c: [deleted]
+	* src/plf_misc.c: 
+	* src/hal_diag.c: 
+	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.h: 
+	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.ldi: 
+	* include/pkgconf/mlt_sh_sh7708_cq7708_ram.mlt: 
+	* include/pkgconf/mlt_sh_sh7708_cq7708_rom.h: 
+	* include/pkgconf/mlt_sh_sh7708_cq7708_rom.ldi: 
+	* include/pkgconf/mlt_sh_sh7708_cq7708_rom.mlt: 
+	* include/plf_stub.h: 
+	* include/hal_diag.h: 
+	* cdl/hal_sh_sh7708_cq7708.cdl: 
+	Changed to use virtual vector code.
+
 2000-06-06  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh7708_cq7708.cdl: Added CYGHWR_HAL_SH_BOARD_SPEED

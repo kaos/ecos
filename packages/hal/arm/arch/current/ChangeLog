@@ -1,3 +1,9 @@
+2000-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_mk_defs.c:
+	* src/arm_stub.c: 
+	Fix compiler warnings.
+
 2000-06-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S: Changes for virtual vector support.

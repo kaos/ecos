@@ -69,10 +69,6 @@
 
 #include <cyg/infra/cyg_type.h>
 
-externC void cyg_hal_plf_serial_init(void);
-externC void cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch);
-externC cyg_uint8 cyg_hal_plf_serial_getc(void* __ch_data);
-
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 
 #include <cyg/hal/hal_if.h>

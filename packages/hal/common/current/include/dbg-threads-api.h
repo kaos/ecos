@@ -66,21 +66,21 @@ struct dbg_capabilities
 
 
 /* fill in the list of thread aware capabilities */
-extern int dbg_thread_capabilities(struct dbg_capabilities * cbp) ;
+externC int dbg_thread_capabilities(struct dbg_capabilities * cbp) ;
 
 
 /* Fillin the identifier of the current thread */
 /* return 1 if defined, 0 if not defined */
-extern int dbg_currthread(threadref * varparm) ;
+externC int dbg_currthread(threadref * varparm) ;
 
 /* Return the unique ID number of the current thread. */
-extern int dbg_currthread_id(void);
+externC int dbg_currthread_id(void);
 
 /* get the first or next member of the list of known threads */
-extern int dbg_threadlist(int startflag,
-                          threadref * lastthreadid,
-                          threadref * next_thread
-                          ) ;
+externC int dbg_threadlist(int startflag,
+                           threadref * lastthreadid,
+                           threadref * next_thread
+    ) ;
 
 /* return 1 if next_threadid has been filled in with a value */
 /* return 0 if there are none or no more */
@@ -106,7 +106,7 @@ struct cygmon_thread_debug_info
 
 
 
-extern int dbg_threadinfo(
+externC int dbg_threadinfo(
                           threadref * threadid,
                           struct cygmon_thread_debug_info * info) ;
 
@@ -119,7 +119,7 @@ registers which are NOT in the O.S. thread context. Their default values
 have already been assigned.
 */
 
-extern int dbg_getthreadreg(
+externC int dbg_getthreadreg(
                             threadref * osthreadid, 
                             int regcount, /* count of registers in the array */
                             void * regval) ; /* fillin this array */
@@ -131,7 +131,7 @@ which are defined in the saved context of thread or process identified
 by osthreadid. Return 0 if the threadis does not map to a known
 process or other error. Return 1 if the setting is successful.  */
 
-extern int dbg_setthreadreg(
+externC int dbg_setthreadreg(
                             threadref * osthreadid, 
                             int regcount , /* number of registers */
                             void * regval) ;

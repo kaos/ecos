@@ -242,7 +242,10 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 //
 // ------------------------------------------------------------------------
 typedef struct rfd {
-    volatile cyg_uint32 status;         // result of receive operation
+    volatile union {
+        cyg_uint32 u32_status;         // result of receive operation
+        cyg_uint16 u16_status[2];
+    } u_status;
     volatile cyg_uint32 link;           // offset from RU base to next RFD
     volatile cyg_uint32 rdb_address;    // pointer to Rx data buffer
     volatile cyg_uint32 count:14,       // number of bytes received +
@@ -252,12 +255,30 @@ typedef struct rfd {
     volatile cyg_uint8 buffer[0];       // data buffer (simple mode)
 } RFD;
 
+// The status is split into two shorts to get atomic access to the EL bit;
+// the upper word is not written by the device, so we can just hit it,
+// leaving the lower word (which the device updates) alone.  Otherwise
+// there's a race condition between software moving the end-of-list (EL)
+// bit round and the device writing into the previous slot.
+
+#define rxstatus    u_status.u32_status
+#define rxstatus_hi u_status.u16_status[1]
+#define rxstatus_lo u_status.u16_status[0]
+
 #define RFD_STATUS_EL   0x80000000      // 1=last RFD in RFA
 #define RFD_STATUS_S    0x40000000      // 1=suspend RU after receiving frame
 #define RFD_STATUS_H    0x00100000      // 1=RFD is a header RFD
 #define RFD_STATUS_SF   0x00080000      // 0=simplified, 1=flexible mode
 #define RFD_STATUS_C    0x00008000      // completion of received frame
 #define RFD_STATUS_OK   0x00002000      // frame received with no errors
+
+#define RFD_STATUS_HI_EL   0x8000       // 1=last RFD in RFA
+#define RFD_STATUS_HI_S    0x4000       // 1=suspend RU after receiving frame
+#define RFD_STATUS_HI_H    0x0010       // 1=RFD is a header RFD
+#define RFD_STATUS_HI_SF   0x0008       // 0=simplified, 1=flexible mode
+
+#define RFD_STATUS_LO_C    0x8000       // completion of received frame
+#define RFD_STATUS_LO_OK   0x2000       // frame received with no errors
 
 #define RFD_RX_CRC          0x00000800  // crc error
 #define RFD_RX_ALIGNMENT    0x00000400  // alignment error
@@ -288,7 +309,7 @@ typedef struct rbd {
 //
 // ------------------------------------------------------------------------
 typedef struct txcb {
-    volatile cyg_uint32 status:16,      // result of transmit operation
+    volatile cyg_uint32 txstatus:16,      // result of transmit operation
         command:16;                     // transmit command
     volatile cyg_uint32 link;           // offset from RU base to next RFD
     volatile cyg_uint32 tbd_address;    // pointer to Rx data buffer
@@ -931,6 +952,7 @@ static void i82559_start( struct eth_drv_sc *sc,
     ioaddr = p_i82559->io_address; // get 82559's I/O address
 
 #ifdef KEEP_STATISTICS
+#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
     p_i82559->p_statistics =
         p_statistics = pciwindow_mem_alloc(sizeof(I82559_COUNTERS));
     memset(p_statistics, 0xFFFFFFFF, sizeof(I82559_COUNTERS));
@@ -941,6 +963,7 @@ static void i82559_start( struct eth_drv_sc *sc,
 
     wait_for_cmd_done(ioaddr); // make sure no command operating
     OUTW(SCB_M | CU_DUMPSTATS, ioaddr + SCBCmd); // start register dump
+#endif
 #endif
 
     // Set the base address
@@ -1075,7 +1098,7 @@ static void ResetRxRing(struct i82559* p_i82559)
         CYG_ASSERT( p_i82559->rx_ring[
                  ( i ? (i-1) : (MAX_RX_DESCRIPTORS-1) )
             ]->link == VIRT_TO_BUS(p_rfd), "rfd linked list broken" );
-        p_rfd->status = 0;
+        p_rfd->rxstatus = 0;
         p_rfd->count = 0;
         p_rfd->f = 0;
         p_rfd->eof = 0;
@@ -1083,6 +1106,8 @@ static void ResetRxRing(struct i82559* p_i82559)
         p_rfd->size = MAX_RX_PACKET_SIZE;
     }
     p_i82559->next_rx_descriptor = 0;
+    // And set an end-of-list marker in the previous one.
+    p_rfd->rxstatus = RFD_STATUS_EL;
 }
 
 // ------------------------------------------------------------------------
@@ -1113,8 +1138,8 @@ static void PacketRxReady(struct i82559* p_i82559)
     CYG_ASSERT( (cyg_uint8 *)p_rfd >= i82559_heap_base, "rfd under" );
     CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
 
-    while ( p_rfd->status & RFD_STATUS_C ) {
-        p_rfd->status |= RFD_STATUS_EL;
+    while ( p_rfd->rxstatus & RFD_STATUS_C ) {
+        p_rfd->rxstatus_hi |= RFD_STATUS_HI_EL;
         length = p_rfd->count;
 
 #ifdef DEBUG_82559
@@ -1130,7 +1155,18 @@ static void PacketRxReady(struct i82559* p_i82559)
         p_rfd->count = 0;
         p_rfd->f = 0;
         p_rfd->eof = 0;
-        p_rfd->status = 0;
+        p_rfd->rxstatus_lo = 0;
+
+        // The just-emptied slot is now ready for re-use and already marked EL;
+        // we can now remove the EL marker from the previous one.
+        if ( 0 == next_descriptor )
+            p_rfd = p_i82559->rx_ring[ MAX_RX_DESCRIPTORS-1 ];
+        else
+            p_rfd = p_i82559->rx_ring[ next_descriptor-1 ];
+        // The previous one: check it *was* marked before clearing.
+        CYG_ASSERT( p_rfd->rxstatus_hi & RFD_STATUS_HI_EL, "No prev EL" );
+        p_rfd->rxstatus_hi = 0; // that word is not written by the device.
+
 #ifdef KEEP_STATISTICS
         statistics[p_i82559->index].rx_deliver++;
 #endif
@@ -1154,6 +1190,9 @@ static void PacketRxReady(struct i82559* p_i82559)
 #ifdef KEEP_STATISTICS
         statistics[p_i82559->index].rx_restart++;
 #endif
+        // There's an end-of-list marker out there somewhere...
+        // So mop it up; it takes a little time but this is infrequent.
+        ResetRxRing( p_i82559 );  
         next_descriptor = 0;        // re-initialize next desc.
         // wait for SCB command complete
         wait_for_cmd_done(ioaddr);
@@ -1195,17 +1234,20 @@ static void i82559_recv( struct eth_drv_sc *sc,
     CYG_ASSERT( (cyg_uint8 *)p_rfd >= i82559_heap_base, "rfd under" );
     CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
 
-    CYG_ASSERT( p_rfd->status & RFD_STATUS_C, "No complete frame" );
-    CYG_ASSERT( p_rfd->status & RFD_STATUS_EL, "No marked frame" );
+    CYG_ASSERT( p_rfd->rxstatus & RFD_STATUS_C, "No complete frame" );
+    CYG_ASSERT( p_rfd->rxstatus & RFD_STATUS_EL, "No marked frame" );
+
+    CYG_ASSERT( p_rfd->rxstatus_lo & RFD_STATUS_LO_C, "No complete frame 2" );
+    CYG_ASSERT( p_rfd->rxstatus_hi & RFD_STATUS_HI_EL, "No marked frame 2" );
     
-    if ( 0 == (p_rfd->status & RFD_STATUS_C) )
+    if ( 0 == (p_rfd->rxstatus & RFD_STATUS_C) )
         return;
         
     total_len = p_rfd->count;
     
 #ifdef DEBUG_82559
     os_printf("Rx %d %x (status %x): %d sg's, %d bytes\n",
-              p_i82559->index, (int)p_i82559, p_rfd->status, sg_len, total_len);
+              p_i82559->index, (int)p_i82559, p_rfd->rxstatus, sg_len, total_len);
 #endif
 
     // Copy the data to the network stack
@@ -1292,7 +1334,7 @@ static void ResetTxRing(struct i82559* p_i82559)
         CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
         CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
 
-        p_txcb->status = 0;
+        p_txcb->txstatus = 0;
         p_txcb->command = 0;
         p_txcb->link = VIRT_TO_BUS((cyg_uint32)p_txcb);
         p_txcb->tbd_address = 0xFFFFFFFF;
@@ -1385,7 +1427,7 @@ static void TxDone(struct i82559* p_i82559)
     // the remove one if the queue is full AND its status is nonzero:
     while (  (tx_descriptor_remove != p_i82559->tx_descriptor_active) ||
              ( p_i82559->tx_queue_full &&
-              (0 != p_i82559->tx_ring[ tx_descriptor_remove ]->status) ) ) {
+              (0 != p_i82559->tx_ring[ tx_descriptor_remove ]->txstatus) ) ) {
         unsigned long key = p_i82559->tx_keys[ tx_descriptor_remove ];
 #ifdef DEBUG_82559
         os_printf("TxDone %d %x: KEY %x\n",
@@ -1491,7 +1533,7 @@ i82559_send(struct eth_drv_sc *sc,
         CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
         CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
 
-        p_txcb->status = 0;
+        p_txcb->txstatus = 0;
         p_txcb->command = TxCB_CMD_TRANSMIT | TxCB_CMD_S
                                 | TxCB_CMD_I | TxCB_CMD_EL;
         p_txcb->link = VIRT_TO_BUS((cyg_uint32)p_txcb);
@@ -2304,6 +2346,7 @@ static int i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
 // ------------------------------------------------------------------------
 
 #ifdef KEEP_STATISTICS
+#ifdef CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS
 void update_statistics(struct i82559* p_i82559)
 {
     I82559_COUNTERS *p_statistics;
@@ -2335,6 +2378,7 @@ void update_statistics(struct i82559* p_i82559)
     Acknowledge82559Interrupt(p_i82559);
     UnMask82559Interrupt(p_i82559);
 }
+#endif
 #endif // KEEP_STATISTICS
 
 // ------------------------------------------------------------------------
@@ -2347,7 +2391,7 @@ void update_statistics(struct i82559* p_i82559)
 void dump_txcb(TxCB *p_txcb)
 {
     os_printf("TxCB @ %x\n", (int)p_txcb);
-    os_printf("status = %04X ", p_txcb->status);
+    os_printf("status = %04X ", p_txcb->txstatus);
     os_printf("command = %04X ", p_txcb->command);
     os_printf("link = %08X ", p_txcb->link);
     os_printf("tbd = %08X ", p_txcb->tbd_address);
@@ -2461,9 +2505,9 @@ void DisplayStatistics(void)
 
 void dump_rfd(RFD *p_rfd, int anyway )
 {
-    if ( (0 != p_rfd->status) || anyway ) {
+    if ( (0 != p_rfd->rxstatus) || anyway ) {
         os_printf("RFD @ %x = ", (int)p_rfd);
-        os_printf("status = %x ", p_rfd->status);
+        os_printf("status = %x ", p_rfd->rxstatus);
         os_printf("link = %x ", p_rfd->link);
 //        os_printf("rdb_address = %x ", p_rfd->rdb_address);
         os_printf("count = %x ", p_rfd->count);

@@ -902,7 +902,16 @@ CdlValue::set_flavor(CdlValueFlavor flavor_arg)
             enabled[CdlValueSource_Wizard]      = false;
             enabled[CdlValueSource_User]        = false;
 
+            // BLV - keep the data part at 0 for now. There is too
+            // much confusion in the code between value as a string
+            // representation, and value as the data part of the
+            // bool/data pair. This needs to be fixed, but it requires
+            // significant API changes.
+#if 0            
             CdlSimpleValue simple_val(cdl_int(1));
+#else
+            CdlSimpleValue simple_val(cdl_int(0));
+#endif            
             values[CdlValueSource_Default]      = simple_val;
             values[CdlValueSource_Inferred]     = simple_val;
             values[CdlValueSource_Wizard]       = simple_val;

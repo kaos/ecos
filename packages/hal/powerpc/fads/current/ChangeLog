@@ -1,3 +1,7 @@
+2000-06-26  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_fads.cdl: Removed ROM_DEBUG_CHANNEL option.
+
 2000-06-15  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: 

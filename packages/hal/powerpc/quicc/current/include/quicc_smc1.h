@@ -48,21 +48,14 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/quicc/ppc8xx.h>             // FIXME: bad, but need eppc_base
 
+
+#if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
+// This one should only be used by old-stub compatibility code!
+externC void cyg_hal_plf_serial_init_channel(void);
+#endif
+
 externC void cyg_hal_plf_serial_init(void);
 externC void cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch);
 externC cyg_uint8 cyg_hal_plf_serial_getc(void* __ch_data);
-
-//--------------------------------------------------------------------------
-// Control-C support.
-
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-
-#define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_CPM_SMC1
-externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
-
-# define HAL_CTRLC_ISR hal_ctrlc_isr
-
-#endif
 
 #endif /* CYGONCE_HAL_PPC_QUICC_SMC1_H */

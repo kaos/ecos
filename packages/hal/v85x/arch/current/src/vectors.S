@@ -83,7 +83,7 @@ reset_vector:
 #ifdef CYG_HAL_STARTUP_ROM
 //
 // These are the hardware exception vectors.
-//                        
+//
 __ROM_vsr:
         // 0x000
         jr      start
@@ -92,12 +92,12 @@ __ROM_vsr:
         .rept   CYGNUM_HAL_EXCEPTION_COUNT-1
         EXCEPTION
         .endr
-        .set    VECTOR, 8                
+        .set    VECTOR, 8
         .rept   CYGNUM_HAL_ISR_COUNT
         INTERRUPT
-        .endr               
+        .endr
 #endif  // CYG_HAL_STARTUP_ROM
-        
+
         .globl  start
 start:
         // Perform hardware initialization
@@ -113,7 +113,7 @@ start:
         addi    4,r6,r6
         addi    4,r7,r7
         cmp     r7,r8
-        bne     1b 
+        bne     1b
 #endif
         // Initialize stack
         lea     __startup_stack,r1
@@ -125,7 +125,7 @@ start:
 1:      st.w    r0,0[r6]
         addi    4,r6,r6
         cmp     r6,r7
-        bne     1b        
+        bne     1b
 
 #ifdef CYG_HAL_STARTUP_ROM
         // Built initial trap VSR tables
@@ -135,13 +135,13 @@ start:
         lea     __ROM_vsr,r7
         mov     r6,r8
         sub     r7,r8
-        lea     0x003FFFFF,r7        
+        lea     0x003FFFFF,r7
         and     r7,r8
         lea     0x07800000,r7
         or      r7,r8
 #else
         lea     0x00000794,r8   // jr 0x0100xx0
-#endif                
+#endif
 10:     st.w    r8,0[r6]
         addi    16,r6,r6
         cmp     r6,r9
@@ -169,8 +169,8 @@ start:
 10:     st.w    r8,0[r6]
         addi    4,r6,r6
         addi    -1,r7,r7
-        bne     10b        
-#endif        
+        bne     10b
+#endif
         jarl    _initialize_stub,r31
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
@@ -550,4 +550,3 @@ _hal_interrupt_objects:
 	.rept	CYGNUM_HAL_ISR_COUNT
 	.long	0
 	.endr
-        

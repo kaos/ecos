@@ -72,8 +72,10 @@ target_register_t registers[NUMREGS];
 target_register_t alt_registers[NUMREGS] ;  // Thread or saved process state
 target_register_t * _registers = registers; // Pointer to current set of registers
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this should go away
 // Interrupt control.
 static volatile __PFI __interruptible_control;
+#endif
 
 //-----------------------------------------------------------------------------
 // Register access
@@ -240,18 +242,34 @@ interruptible(int state)
 {
     static int __interrupts_suspended = 0;
 
-    if (__interruptible_control) {
-        if (state) {
-            __interrupts_suspended--;
-            if (0 >= __interrupts_suspended) {
-                __interrupts_suspended = 0;
-                __interruptible_control(1);
+    if (state) {
+        __interrupts_suspended--;
+        if (0 >= __interrupts_suspended) {
+            __interrupts_suspended = 0;
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+            {
+                hal_virtual_comm_table_t* __chan;
+                __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+                CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_ENABLE);
             }
-        } else {
-            __interrupts_suspended++;
-            if (1 == __interrupts_suspended)
-                __interruptible_control(0);
+#else                
+            if (__interruptible_control)
+                __interruptible_control(1);
+#endif
         }
+    } else {
+        __interrupts_suspended++;
+        if (1 == __interrupts_suspended)
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+            {
+                hal_virtual_comm_table_t* __chan;
+                __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+                CYGACC_COMM_IF_CONTROL(*__chan)(CYGACC_COMM_IF_CH_DATA(*__chan), __COMMCTL_IRQ_DISABLE);
+            }
+#else                
+            if (__interruptible_control)
+                __interruptible_control(0);
+#endif
     }
 }
 
@@ -299,7 +317,11 @@ cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
         // while we are in the middle of sending a packet. The serial
         // receive interrupt will be seen when we re-enable interrupts
         // later.
+#ifdef CYG_HAL_STARTUP_ROM
+        HAL_DISABLE_INTERRUPTS(old);
+#else
         CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
+#endif
         
         while(1)
         {
@@ -336,7 +358,11 @@ cyg_hal_gdb_diag_putc(void* __ch_data, cyg_uint8 c)
 
         pos = 0;
         // And re-enable interrupts
+#ifdef CYG_HAL_STARTUP_ROM
+        HAL_RESTORE_INTERRUPTS(old);
+#else
         CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION(old);
+#endif
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -454,9 +480,11 @@ __install_traps (void)
     __cleanup_vec = &handle_exception_cleanup;
     __init_vec    = &handle_exception_init;
 
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this should go away
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
     // Control of GDB interrupts.
     __interruptible_control = HAL_STUB_PLATFORM_INTERRUPTIBLE;
+#endif
 #endif
 
     // Nothing further to do, handle_exception will be called when an
@@ -474,11 +502,6 @@ initHardware (void)
     initialized = 1;
 
 #if !defined(CYGPKG_CYGMON)
-#ifdef HAL_STUB_PLATFORM_INIT
-    // If the platform defines any initialization code, call it here.
-    HAL_STUB_PLATFORM_INIT();
-#endif        
-                
     // Get serial port initialized.
     HAL_STUB_PLATFORM_INIT_SERIAL();
 
@@ -507,6 +530,11 @@ initHardware (void)
         // Set the debug channel.
         CYGACC_CALL_IF_SET_DEBUG_COMM()(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
     }
+
+#ifdef HAL_STUB_PLATFORM_INIT
+    // If the platform defines any initialization code, call it here.
+    HAL_STUB_PLATFORM_INIT();
+#endif        
 #endif
 
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT

@@ -58,7 +58,7 @@ cdl_package CYGPKG_HAL_SH {
         requires 1 == CYGINT_HAL_SH_VARIANT
     }
 
-    compile       hal_misc.c context.S sh_stub.c
+    compile       hal_misc.c context.S sh_stub.c sh3_sci.c sh3_scif.c
 
     # The "-o file" is a workaround for CR100958 - without it the
     # output file would end up in the source directory under CygWin.

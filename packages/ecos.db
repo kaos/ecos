@@ -208,6 +208,16 @@ package CYGPKG_IO_SERIAL_SH_EDK7708 {
     description       "SH3 EDK7708 serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_SH_CQ7708 {
+    alias             { "SH3 cq7708 serial device drivers"
+                        devs_serial_sh3_cq7708
+                        devs_serial_sh_cq7708 cq7708_serial_driver }
+    hardware
+    directory	      devs/serial/sh/cq7708
+    script	      ser_sh_cq7708.cdl	
+    description       "SH3 cq7708 serial device drivers"
+}
+
 
 package CYGPKG_IO_SERIAL_V85X_V850 {
     alias             { "NEC V850 serial device drivers"
@@ -507,7 +517,6 @@ package CYGPKG_HAL_SH_EDK7708 {
            The edk HAL package provides the support needed to run
            eCos on a Hitachi SH3 EDK7708 board."
 }
-
 package CYGPKG_HAL_SH_SH7708_CQ7708 {
         alias           { "CqREEK SH7708 board" hal_sh_cq sh_cq_hal }
         directory       hal/sh/cq7708
@@ -940,6 +949,7 @@ target cq7708 {
         alias { "CqREEK SH7708 board" cq7708 }
         packages { CYGPKG_HAL_SH
                    CYGPKG_HAL_SH_SH7708_CQ7708
+	           CYGPKG_IO_SERIAL_SH_CQ7708
         }
         enable      { CYGPKG_HAL_SH_7708 }
         description "

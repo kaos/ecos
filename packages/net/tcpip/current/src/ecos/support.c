@@ -102,11 +102,111 @@ cyg_panic(const char *msg, ...)
     cyg_test_exit();  // FIXME
 }
 
+
+// ------------------------------------------------------------------------
+#define SPLSOFTNET_IS_A_MUTEX 1
+// ------------------------------------------------------------------------
+#ifdef SPLSOFTNET_IS_A_MUTEX
+
+#define MUTEX 0x50F750F7
+#define HOLD  MUTEX+1
+
+static cyg_mutex_t mutex;
+static volatile cyg_handle_t owner;
+
+#define SPLINIT() CYG_MACRO_START               \
+    cyg_mutex_init( &mutex );                   \
+    owner = 0;                                  \
+CYG_MACRO_END
+
+// use the scheduler lock for SPLX() and a mutex for softnet
+
+static inline cyg_uint32
+cyg_splin_softnet(void)
+{
+    if ( 0 == cyg_scheduler_read_lock() ) {
+        cyg_handle_t self = cyg_thread_self();
+        if ( self != owner ) {
+            cyg_mutex_lock( &mutex ); // Perfectly OK for this to wait
+            owner = self;
+            return MUTEX; // release when restoring here
+        }
+        return HOLD; // do not release when restoring to this value
+    }
+    cyg_scheduler_lock();
+    return cyg_scheduler_read_lock() - 1;
+}
+
+static inline cyg_uint32
+cyg_splin(void)
+{
+    cyg_scheduler_lock();
+    return cyg_scheduler_read_lock() - 1;
+}
+
+static inline void
+cyg_splout(cyg_uint32 orig)
+{
+    if ( MUTEX == orig ) {
+        CYG_ASSERT( cyg_thread_self() == owner, "Not owner release!" );
+        cyg_scheduler_lock();
+        owner = 0;
+        cyg_mutex_unlock( &mutex );
+        cyg_scheduler_unlock();
+        return;
+    }
+    if ( HOLD == orig ) {
+        CYG_ASSERT( cyg_thread_self() == owner, "Not owner hold!" );
+        return;
+    }
+    CYG_ASSERT( 0 == (0xffff0000 & orig), "Scary splx value" );
+    while ( cyg_scheduler_read_lock() > orig )
+        cyg_scheduler_unlock();
+}
+
+#define SPL_ENTER(x)    (x) = cyg_splin()
+#define SPL_SOFTNET(x)  (x) = cyg_splin_softnet()
+#define SPL_EXIT(x)     cyg_splout((x))
+
+#else
+#if 1
+
+// use the scheduler lock for SPLX()
+static inline cyg_uint32
+cyg_splin(void)
+{
+    cyg_scheduler_lock();
+    return cyg_scheduler_read_lock() - 1;
+}
+
+static inline void
+cyg_splout(cyg_uint32 orig)
+{
+    CYG_ASSERT( 0 == (0xffff0000 & orig), "Scary splx value" );
+    while ( cyg_scheduler_read_lock() > orig )
+        cyg_scheduler_unlock();
+}
+
+#define SPL_ENTER(x)    (x) = cyg_splin()
+#define SPL_SOFTNET(x)  (x) = cyg_splin()
+#define SPL_EXIT(x)     cyg_splout((x))
+
+#else
+
+// Old interrupt based version
+#define SPL_ENTER(x)    HAL_DISABLE_INTERRUPTS((x))
+#define SPL_SOFTNET(x)  HAL_DISABLE_INTERRUPTS((x))
+#define SPL_EXIT(x)     HAL_RESTORE_INTERRUPTS((x))
+
+#endif
+#endif
+// ------------------------------------------------------------------------
+
 cyg_uint32
 cyg_splimp(void)
 {
     cyg_uint32 old_ints;
-    HAL_DISABLE_INTERRUPTS(old_ints);
+    SPL_ENTER(old_ints);
     return old_ints;
 }
 
@@ -114,7 +214,7 @@ cyg_uint32
 cyg_splnet(void)
 {
     cyg_uint32 old_ints;
-    HAL_DISABLE_INTERRUPTS(old_ints);
+    SPL_ENTER(old_ints);
     return old_ints;
 }
 
@@ -122,7 +222,7 @@ cyg_uint32
 cyg_splclock(void)
 {
     cyg_uint32 old_ints;
-    HAL_DISABLE_INTERRUPTS(old_ints);
+    SPL_ENTER(old_ints);
     return old_ints;
 }
 
@@ -130,14 +230,14 @@ cyg_uint32
 cyg_splsoftnet(void)
 {
     cyg_uint32 old_ints;
-    HAL_DISABLE_INTERRUPTS(old_ints);
+    SPL_SOFTNET(old_ints);
     return old_ints;
 }
 
 void
 cyg_splx(cyg_uint32 old_lev)
 {
-    HAL_RESTORE_INTERRUPTS(old_lev);
+    SPL_EXIT(old_lev);
 }
 
 void
@@ -497,11 +597,19 @@ cyg_wakeup(void *chan)
 int       
 cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
 {
-    int i, res;
+    int i, res = 0;
     struct wakeup_event *ev;    
     cyg_tick_count_t sleep_time;
-    res = 0;
+#ifdef SPLSOFTNET_IS_A_MUTEX
+    int olock; // this does the same as safe_lock() but keeping the old state
+    cyg_scheduler_lock(); // ...around.
+    olock = cyg_scheduler_read_lock();
+    if ( olock > 1 )
+        cyg_scheduler_unlock();
+#else
     cyg_scheduler_safe_lock();  // Ensure safe scan
+#endif
+
     for (i = 0, ev = wakeup_list;  i < CYGPKG_NET_NUM_WAKEUP_EVENTS;  i++, ev++) {
         if (ev->chan == 0) {
             ev->chan = chan;
@@ -511,16 +619,41 @@ cyg_tsleep(void *chan, int pri, char *wmesg, int timo)
     if (i == CYGPKG_NET_NUM_WAKEUP_EVENTS) {
         panic("no sleep slots");
     }
-    cyg_scheduler_unlock();
-    if (timo) {
-        sleep_time = cyg_current_time() + timo;
-        if (!cyg_semaphore_timed_wait(&ev->sem, sleep_time)) {
-            res = ETIMEDOUT;
-            ev->chan = 0;  // Free slot
+    CYG_ASSERT( 1 == cyg_scheduler_read_lock(), "Sleep won't!" );
+
+#ifdef SPLSOFTNET_IS_A_MUTEX
+    {   // Then we must release the mutex when we wait - if we have it
+        cyg_handle_t self = cyg_thread_self();
+        if ( self == owner ) {
+            owner = 0;
+            cyg_mutex_unlock( &mutex );
+        } else {
+            self = 0; // Flag no need to reclaim
         }
-    } else {
-        cyg_semaphore_wait(&ev->sem);
+#endif
+
+        // This part actually does the wait:
+        cyg_scheduler_unlock();
+        if (timo) {
+            sleep_time = cyg_current_time() + timo;
+            if (!cyg_semaphore_timed_wait(&ev->sem, sleep_time)) {
+                res = ETIMEDOUT;
+                ev->chan = 0;  // Free slot
+            }
+        } else {
+            cyg_semaphore_wait(&ev->sem);
+        }
+
+#ifdef SPLSOFTNET_IS_A_MUTEX
+        if ( self ) { // return to previous state
+            cyg_mutex_lock( &mutex ); // this might wait
+            owner = self; // got it now...
+        }
+        if ( olock > 1 )
+            cyg_scheduler_lock();
     }
+#endif
+
     return res;
 }
 
@@ -590,6 +723,10 @@ cyg_net_init(void)
     cyg_do_net_init();  // Just forces the linking in of the initializer/constructor
     // Initialize interrupt "flags"
     cyg_flag_init(&netint_flags);
+    // Anthing else needed?
+#ifdef SPLINIT
+    SPLINIT();
+#endif
     // Create network background thread
     cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY, // Priority
                       cyg_netint,               // entry

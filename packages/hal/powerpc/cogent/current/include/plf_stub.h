@@ -69,7 +69,6 @@ externC void cyg_hal_plf_comms_init(void);
 
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
 #define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
-#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    hal_cma_stub_init_break_irq()
 
 //----------------------------------------------------------------------------
 // Stub initializer.

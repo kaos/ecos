@@ -66,12 +66,14 @@
 // The callback class is very straightforward. The hard work is done in
 // the transaction class.
 
-CdlTransactionCallback::CdlTransactionCallback()
+CdlTransactionCallback::CdlTransactionCallback(CdlTransaction transact_arg)
 {
     CYG_REPORT_FUNCNAME("CdlTransactionCallback:: constructor");
-    CYG_REPORT_FUNCARG1XV(this);
-
+    CYG_REPORT_FUNCARG2XV(this, transact_arg);
+    CYG_PRECONDITION_CLASSC(transact_arg);
+    
     // The vectors etc. will take care of themselves.
+    transact = transact_arg;
     cdltransactioncallback_cookie = CdlTransactionCallback_Magic;
     
     CYG_POSTCONDITION_THISC();
@@ -85,6 +87,7 @@ CdlTransactionCallback::~CdlTransactionCallback()
     CYG_PRECONDITION_THISC();
 
     cdltransactioncallback_cookie = CdlTransactionCallback_Invalid;
+    transact = 0;
     value_changes.clear();
     active_changes.clear();
     legal_values_changes.clear();
@@ -114,6 +117,32 @@ void (*CdlTransactionCallback::get_callback_fn())(const CdlTransactionCallback&)
 
     void (*result)(const CdlTransactionCallback&) = CdlTransactionBody::get_callback_fn();
     
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+CdlTransaction
+CdlTransactionCallback::get_transaction() const
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlTransactionCallback::get_transaction", "result %p");
+    CYG_PRECONDITION_THISC();
+
+    CdlTransaction result = transact;
+    CYG_POSTCONDITION_CLASSC(result);
+
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+CdlToplevel
+CdlTransactionCallback::get_toplevel() const
+{
+    CYG_REPORT_FUNCNAMETYPE("CdlTransactionCallback::get_toplevel", "result %p");
+    CYG_PRECONDITION_THISC();
+
+    CdlToplevel result = transact->get_toplevel();
+    CYG_POSTCONDITION_CLASSC(result);
+
     CYG_REPORT_RETVAL(result);
     return result;
 }
@@ -1953,7 +1982,6 @@ CdlTransactionBody::commit()
             CYG_LOOP_INVARIANT_CLASSC(map_i->first);
             CYG_LOOP_INVARIANT_CLASSOC(map_i->second);
             parent->changes[map_i->first] = map_i->second;
-            
             for (conf_i = parent->new_conflicts.begin(); conf_i != parent->new_conflicts.end(); conf_i++) {
                 CYG_LOOP_INVARIANT_CLASSC(*conf_i);
                 (*conf_i)->update_solution_validity(map_i->first);
@@ -2035,11 +2063,10 @@ CdlTransactionBody::commit()
         // should happen before any conflicts get deleted. The actual callback
         // is invoked at the end, once all the changes have been moved to
         // the toplevel.
-        CdlTransactionCallback all_changes;
+        CdlTransactionCallback all_changes(this);
         if (0 != callback_fn) {
             
             for (map_i = changes.begin(); map_i != changes.end(); map_i++) {
-
                 if (0 == map_i->first->get_toplevel()) {
                     continue;
                 }

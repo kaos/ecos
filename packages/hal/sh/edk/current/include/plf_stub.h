@@ -47,10 +47,6 @@
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 
-#ifdef CYGPKG_IO_SERIAL
-#include <pkgconf/io_serial.h>
-#endif
-
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 #include <cyg/infra/cyg_type.h>         // CYG_UNUSED_PARAM, externC
@@ -60,19 +56,16 @@
 #include <cyg/hal/hal_diag.h>           // hal_diag_led_on
 
 //----------------------------------------------------------------------------
-// Define serial stuff.
-externC void hal_sci_stub_init_serial( void );
-externC int  hal_sci_stub_get_char( void );
-externC void hal_sci_stub_put_char( int c );
-externC int  hal_sci_stub_interruptible( int state );
-externC void hal_sci_stub_init_break_irq( void );
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_sci_stub_init_serial()
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_sci_stub_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_sci_stub_put_char((c))
+externC void cyg_hal_plf_comms_init(void);
+
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
-#define HAL_STUB_PLATFORM_INTERRUPTIBLE       (&hal_sci_stub_interruptible)
-#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    hal_sci_stub_init_break_irq()
+#define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
 
 //----------------------------------------------------------------------------
 // Stub initializer.
@@ -82,15 +75,16 @@ externC void hal_sci_stub_init_break_irq( void );
 # define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
 #endif
 
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+
 //----------------------------------------------------------------------------
 // Reset.
 // Block interrupts and cause an exception. This forces a reset.
 #define HAL_STUB_PLATFORM_RESET() \
     asm volatile ("ldc %0,sr;trapa #0x00;" : : "r" (CYGARC_REG_SR_BL))
+
+#define HAL_STUB_PLATFORM_RESET_ENTRY 0xa0000000
     
-
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

@@ -83,7 +83,7 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	    connection."
     }
 
-    cdl_option CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_STATISTICS {
+    cdl_component CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_STATISTICS {
 	display "Keep Ethernet statistics"
 	default_value 1
 	description   "
@@ -92,6 +92,18 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	    for network management.  SNMP for example uses this
 	    information.  There is some performance cost in maintaining
 	    this information; disable this option to recoup that."
+
+	cdl_option CYGDBG_DEVS_ETH_ARM_EBSA285_KEEP_82559_STATISTICS {
+	    display "Keep i82559 Internal statistics"
+	    default_value 1
+	    description   "
+	        The i82559 keeps internal counters, and it is possible to
+	        acquire these.  But the i82559 (reputedly) does not service
+	        the network whilst uploading the data to RAM from its
+	        internal registers.  If throughput is a problem, disable
+	        this option to acquire only those statistics gathered by
+	        software, so that the i82559 never sleeps."
+	}
     }
 
     cdl_component CYGPKG_DEVS_ETH_ARM_EBSA285_WRITE_EEPROM {

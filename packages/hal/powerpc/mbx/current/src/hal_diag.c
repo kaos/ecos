@@ -134,7 +134,7 @@ void hal_diag_init(void)
     eppc = eppc_base();
 
     // init the actual serial port
-    cyg_hal_plf_serial_init();
+    cyg_hal_plf_serial_init_channel();
 #ifndef CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
 #ifndef CYG_HAL_STARTUP_ROM
     // We are talking to GDB; ack the "go" packet!

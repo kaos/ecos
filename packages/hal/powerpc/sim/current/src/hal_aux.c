@@ -55,4 +55,10 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
     CYGARC_MEMDESC_TABLE_END
 };
 
+//-----------------------------------------------------------------------------
+void
+hal_platform_init(void)
+{
+}
+
 // EOF hal_aux.c
