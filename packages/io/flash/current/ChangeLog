@@ -1,3 +1,7 @@
+2003-03-19  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+	* src/flashiodev.c: Fixed trivial error.
+
 2003-03-03  Knud Woehler <knud.woehler@microplex.de>
 
 	* src/flashiodev.c:

@@ -79,34 +79,32 @@ static int dummy_printf( const char *fmt, ... ) {return 0;}
 static bool
 flashiodev_init( struct cyg_devtab_entry *tab )
 {
-	struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
-	char *ws = dev->workspace;
+    struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
+    char *ws = dev->workspace;
     int stat = flash_init( ws, FLASH_MIN_WORKSPACE, &dummy_printf );
-    if ( stat == 0 )
-	{
+    if ( stat == 0 ) {
 #ifdef CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1
-		CYG_ADDRESS		flash_base;
-		unsigned long	size;
+        CYG_ADDRESS		flash_base;
+        unsigned long	size;
 
-		if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
+        if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
                                         CYGDAT_IO_FLASH_BLOCK_FIS_NAME_1,
-									    &flash_base))
-			return false;
-		if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
-	                                    CYGDAT_IO_FLASH_BLOCK_FIS_NAME_1,
-									    &size))
-			return false;
+                                        &flash_base))
+            return false;
+        if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
+                                        CYGDAT_IO_FLASH_BLOCK_FIS_NAME_1,
+                                        &size))
+            return false;
 			
-		dev->start = (char *)flash_base;
-		dev->end = (char *)flash_base + size;
+        dev->start = (char *)flash_base;
+        dev->end = (char *)flash_base + size;
 #else
-		dev->start = (char *)flash_info.start + CYGNUM_IO_FLASH_BLOCK_OFFSET_1;
-		dev->end = (char *)flash_info.start + CYGNUM_IO_FLASH_BLOCK_OFFSET_1 + 
-                           CYGNUM_IO_FLASH_BLOCK_LENGTH_1)
+        dev->start = (char *)flash_info.start + CYGNUM_IO_FLASH_BLOCK_OFFSET_1;
+        dev->end = (char *)flash_info.start + CYGNUM_IO_FLASH_BLOCK_OFFSET_1 + 
+            CYGNUM_IO_FLASH_BLOCK_LENGTH_1;
 #endif
         return true;
-	}
-    else
+    } else
         return false;
 } // flashiodev_init()
 
