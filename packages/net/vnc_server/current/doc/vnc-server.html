@@ -60,13 +60,15 @@
         &nbsp;&nbsp;&nbsp;&nbsp;</font><font face="Courier New, Courier, mono" size="-1">bool 
         rgb555;<br>
         &nbsp;&nbsp;&nbsp;&nbsp;bool rgb565;<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;</font><font face="Courier New, Courier, mono" size="-1">bool 
+        bgr233;<br>
         } vnc_frame_format_t;</font></p>
       <p>The frame_width and frame height fields contain the VNC server display 
         size in pixels.</p>
       <p>The * frame_buffer pointer contains the address of the actual frame buffer 
         the VNC server uses, though the application should never write to this 
         buffer directly.</p>
-      <p>The final 3 (bool) fields specifiy the pixel format - only one of them 
+      <p>The final 4 (bool) fields specifiy the pixel format - only one of them 
         will be set to true.</p>
       </td>
   </tr>

@@ -136,17 +136,25 @@ int main()
     {
         VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: RGB332");
     }
-
-    if (display_info->rgb555)
+    else if (display_info->rgb555)
     {
         VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: RGB555");
     }
-
-    if (display_info->rgb565)
+    else if (display_info->rgb565)
     {
         VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: RGB565");
     }
+    else if (display_info->bgr233)
+    {
+        VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: BGR233");
+    }
+    else
+    {
+        VncPrintf(0, 1, VNC_BLACK, 1, 345, "Pixel format: Unknown");
+    }
 
+    /* Report the frame dimensions */
+    VncPrintf(0, 1, VNC_BLACK, 1, 360, "Frame size: %d x %d", display_info->frame_width, display_info->frame_height);
 
     /* Write text messages using each of the available fonts */
     text_y_pos = 5;
