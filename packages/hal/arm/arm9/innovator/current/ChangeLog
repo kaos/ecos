@@ -1,4 +1,4 @@
-2003-02-12  Patrick Doyle  <wpd@localhost.localdomain>
+2003-02-12  Patrick Doyle  <wpd@delcomsys.com>
 
 	* src/innovator_misc.c: Replaced explicit prototype of memset with
 	#include <string.h>.
