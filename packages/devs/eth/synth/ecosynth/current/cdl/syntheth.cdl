@@ -122,7 +122,7 @@ cdl_package CYGPKG_DEVS_ETH_ECOSYNTH {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "" }
+            default_value { "-D_KERNEL -D__ECOS" }
             description   "
                 This option modifies the set of compiler flags for
                 building this package. These flags are used in addition
@@ -141,3 +141,4 @@ cdl_package CYGPKG_DEVS_ETH_ECOSYNTH {
     }
 }
 
+# EOF syntheth.cdl

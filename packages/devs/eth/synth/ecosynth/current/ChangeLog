@@ -1,3 +1,9 @@
+2003-02-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/syntheth.cdl (CYGPKG_DEVS_ETH_ECOSYNTH_CFLAGS_ADD):
+	Define -D_KERNEL -D__ECOS in line with other drivers. Fixes build
+	issue with freeBSD stack.
+
 2002-09-25  Bart Veer  <bartv@ecoscentric.com>
 
 	* host/configure.in, host/rawether.c, doc/syntheth.sgml: 
