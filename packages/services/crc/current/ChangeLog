@@ -1,3 +1,7 @@
+2003-02-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/crc.cdl: specify test binaries, not test sources
+
 2002-10-28  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* */*: Fixed 32-bit reliance.

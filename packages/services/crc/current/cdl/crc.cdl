@@ -63,7 +63,7 @@ cdl_package CYGPKG_CRC {
         display "POSIX CRC tests"
         flavor  data
         no_define
-        calculated { "tests/crc_test.c" }
+        calculated { "tests/crc_test" }
     }
 }
 

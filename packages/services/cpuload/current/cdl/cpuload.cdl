@@ -66,7 +66,7 @@ cdl_package CYGPKG_CPULOAD {
         display "CPU load measurement tests"
         flavor  data   
         no_define      
-        calculated { "tests/cpuload.c" }
+        calculated { "tests/cpuload" }
     }
 }
 

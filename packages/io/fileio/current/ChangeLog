@@ -1,3 +1,7 @@
+2003-02-20  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/fileio.cdl: identify test binaries, not test sources
+
 2003-01-30  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/fileio.cdl: Added interface CYGINT_IO_FILEIO_FS which any
