@@ -69,11 +69,8 @@ static bootp_header_t *bp_info;
 static const unsigned char dhcpCookie[] = {99,130,83,99};
 static const unsigned char dhcpEnd[] = {255};
 static const unsigned char dhcpDiscover[] = {53,1,1};
-static const unsigned char dhcpOffer[] = {53,1,2};
 static const unsigned char dhcpRequest[] = {53,1,3};
 static const unsigned char dhcpRequestIP[] = {50,4};
-static const unsigned char dhcpAck[] = {53,1,5};
-static const unsigned char dhcpNak[] = {53,1,6};
 static const unsigned char dhcpParamRequestList[] = {55,3,1,3,6};
 static enum {
     DHCP_NONE = 0,
@@ -90,7 +87,7 @@ bootp_handler(udp_socket_t *skt, char *buf, int len,
 {
     bootp_header_t *b;
 #ifdef CYGSEM_REDBOOT_NETWORKING_DHCP
-    unsigned char *p, *expected = 0;
+    unsigned char *p, expected = 0;
 #endif
 
     b = (bootp_header_t *)buf;
@@ -114,24 +111,33 @@ bootp_handler(udp_socket_t *skt, char *buf, int len,
     if (memcmp(p, dhcpCookie, sizeof(dhcpCookie)))
       return;
     p += 4;
-                    
+
+    // Find the DHCP Message Type tag
+    while (*p != TAG_DHCP_MESS_TYPE) {
+        p += p[1] + 2;
+        if (p >= (unsigned char*)b + sizeof(*bp_info))
+            return;
+    }
+
+    p += 2;
+
     switch (dhcpState) {
     case DHCP_DISCOVER:
         // The discover message has been sent, only accept an offer reply
-        if (memcmp(p, dhcpOffer, sizeof(dhcpOffer)) == 0) {
+        if (*p == DHCP_MESS_TYPE_OFFER) {
             dhcpState = DHCP_OFFER;
             return;
         } else {
-            expected = (unsigned char *)dhcpOffer;
+            expected = DHCP_MESS_TYPE_OFFER;
         }
         break;
     case DHCP_REQUEST:
         // The request message has been sent, only accept an ack reply
-        if (memcmp(p, dhcpAck, sizeof(dhcpAck)) == 0) {
+        if (*p == DHCP_MESS_TYPE_ACK) {
             dhcpState = DHCP_ACK;
             return;
         } else {
-            expected = (unsigned char *)dhcpAck;
+            expected = DHCP_MESS_TYPE_ACK;
         }
         break;
     case DHCP_NONE:
@@ -141,12 +147,11 @@ bootp_handler(udp_socket_t *skt, char *buf, int len,
         return;
     }
     // See if we've been NAK'd - if so, give up and try again
-    if (memcmp(p, dhcpNak, sizeof(dhcpNak)) == 0) {
+    if (*p == DHCP_MESS_TYPE_NAK) {
         dhcpState = DHCP_NONE;
         return;
     }
-    diag_printf("DHCP reply: %d/%d/%d, not %d/%d/%d\n",
-                p[0], p[1], p[2], expected[0], expected[1], expected[2]);
+    diag_printf("DHCP reply: %d, not %d\n", (int)*p, (int)expected);
     return;
 #else
     // Simple BOOTP - this is all there is!

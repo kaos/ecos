@@ -1,3 +1,11 @@
+2003-11-21  David Vrabel  <dvrabel@arcom.com>
+
+	* src/net/bootp.c (bootp_handler): Scan for DHCP Message Type tag
+	as it isn't always the first tag.
+
+	* include/net/bootp.h: New #define's for DHCP message types
+	(DHCP_MESSAGE_TYPE_DISCOVER etc.).
+	
 2003-11-25  John Dallaway  <jld@ecoscentric.com>
 
 	* src/fconfig.c (load_flash_config):

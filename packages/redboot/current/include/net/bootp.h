@@ -284,6 +284,14 @@ typedef struct bootp {
 
 /* XXX - Add new tags here */
 
+/* DHCP Message Types */
+#define DHCP_MESS_TYPE_DISCOVER  ((unsigned char) 1)
+#define DHCP_MESS_TYPE_OFFER     ((unsigned char) 2)
+#define DHCP_MESS_TYPE_REQUEST   ((unsigned char) 3)
+#define DHCP_MESS_TYPE_DECLINE   ((unsigned char) 4)
+#define DHCP_MESS_TYPE_ACK       ((unsigned char) 5)
+#define DHCP_MESS_TYPE_NAK       ((unsigned char) 6)
+#define DHCP_MESS_TYPE_RELEASE   ((unsigned char) 7)
 
 /*
  * "vendor" data permitted for CMU bootp clients.
