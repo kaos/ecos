@@ -1,3 +1,11 @@
+2002-09-12  Mark Salter  <msalter@redhat.com>
+
+	* src/decompress.c (gzip_inflate): Fix error return so that upper
+	doesn't quit on Z_STREAM_END.
+	(gzip_close): Move error handling into gzip_inflate.
+	
+	* src/load.c (do_load): Fix printing of address range for raw loads.
+
 2002-09-11  Mark Salter  <msalter@redhat.com>
 
 	* src/main.c (do_go): Turn on line flushes before jumping to function.

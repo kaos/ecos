@@ -733,7 +733,7 @@ do_load(int argc, char *argv[])
         redboot_getc_terminate(false);
         if (0 == err)
             diag_printf("Raw file loaded %p-%p, assumed entry at %p\n", 
-                        (void *)base, (void *)end, (void*)base);
+                        (void *)base, (void *)(end - 1), (void*)base);
     } else {
         // Read initial header - to determine file [image] type
         for (i = 0;  i < sizeof(type);  i++) {

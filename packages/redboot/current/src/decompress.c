@@ -271,19 +271,37 @@ gzip_init(_pipe_t* p)
 static int
 gzip_inflate(_pipe_t* p)
 {
-    int err;
+    int err, bytes_out;
 
     stream.next_in = p->in_buf;
     stream.avail_in = p->in_avail;
     stream.next_out = p->out_buf;
     stream.avail_out = p->out_max;
     err = inflate(&stream, Z_SYNC_FLUSH);
-    p->out_size += (stream.next_out - p->out_buf);
+    bytes_out = stream.next_out - p->out_buf;
+    p->out_size += bytes_out;
     p->out_buf = stream.next_out;
     p->msg = stream.msg;
     p->in_avail = stream.avail_in;
     p->in_buf = stream.next_in;
 
+    switch (err) {
+    case Z_STREAM_END:
+	p->in_avail = 0;
+	err = 0;
+	break;
+    case Z_OK:
+	if (bytes_out == 0) {
+	    // Decompression didn't complete
+	    err = -1;
+	    p->msg = "premature end of input";
+	} else
+	    err = 0;
+	break;
+    default:
+	err = -1;
+	break;
+    }
     return err;
 }
 
@@ -295,19 +313,6 @@ gzip_inflate(_pipe_t* p)
 static int
 gzip_close(_pipe_t* p, int err)
 {
-    switch (err) {
-    case Z_STREAM_END:
-        err = 0;
-        break;
-    case Z_OK:
-        // Decompression didn't complete
-        p->msg = "premature end of input";
-        // fall-through
-    default:
-        err = -1;
-        break;
-    }
-
     inflateEnd(&stream);
 
     return err;
