@@ -1,3 +1,7 @@
+2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Clarify platform description.
+
 2001-06-08  Gary Thomas  <gthomas@redhat.com>
 
 	* support/dl_edb7xxx.c: Change use of 'CharReady()' which seems

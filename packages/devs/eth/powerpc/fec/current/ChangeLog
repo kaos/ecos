@@ -1,3 +1,7 @@
+2001-06-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_fec.c (fec_eth_init): Use correct version register.
+
 2001-05-07  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_fec.c (fec_eth_init): Use RedBoot/fconfig data for ethernet

@@ -41,14 +41,14 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_ARM_EDB7XXX {
-    display       "Cirrus Logic development board"
+    display       "Cirrus Logic EDB7xxx development board"
     parent        CYGPKG_HAL_ARM
     include_dir   cyg/hal
     hardware
     define_header hal_arm_edb7xxx.h
     description   "
         The EDB7XXX HAL package provides the support needed to run
-        eCos on a Cirrus Logic development board."
+        eCos on a Cirrus Logic EDB7xxx development board."
 
     compile       hal_diag.c edb7xxx_misc.c
 

@@ -1,3 +1,7 @@
+2001-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* tests/i18nmb.c: fix warning.
+
 2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/mbtowc_jp.cxx (__mbtowc_jp): Fix nasty bug for mblen(NULL, x);

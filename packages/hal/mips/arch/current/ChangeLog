@@ -1,3 +1,13 @@
+2001-06-27  Mark Salter  <msalter@redhat.com>
+
+	* src/vectors.S (_start): Add code to switch from KSEG1 to KSEG0 if
+	CYGARC_START_FUNC_UNCACHED.
+
+2001-06-27  Hugo Tyson  <hmt@redhat.com>
+
+	* src/hal_misc.c: Include <cyg/hal/hal_if.h> for definition of
+	hal_ctrlc_isr() and hence warnings reduced.
+
 2001-06-19  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_arch.h: Support saving/restoring CP0 registers for GDB.

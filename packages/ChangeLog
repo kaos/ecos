@@ -1,3 +1,7 @@
+2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Clarify edb7xxx description.
+
 2001-06-22  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add CYGPKG_NET_ETH_DRIVERS alias for CYGPKG_IO_ETH_DRIVERS

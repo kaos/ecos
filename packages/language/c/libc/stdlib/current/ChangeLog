@@ -1,3 +1,7 @@
+2001-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* tests/atoi.c (main): Fix warning.
+
 2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/stdlib.cdl: requires string functions, so say so.

@@ -1,3 +1,43 @@
+2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/redboot.cdl: Don't have a configured default IP address by
+	default if we have fconfig.
+	* src/net/ip.c: Provide a default ip addr if not defined.
+
+2001-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/load.c (do_load): Don't allow verbose to be used with serial
+	downloads.
+
+	* src/main.c (do_reset): Reset via VV function.
+
+2001-06-27  Hugo Tyson  <hmt@redhat.com>
+
+	* src/io.c: Provide proto for do_channel() to reduce warning.
+
+2001-06-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/redboot.cdl (CYGDAT_REDBOOT_DEFAULT_IP_ADDR): Provide a compiled
+	in default IP address.
+	* src/net/ip.c: Initialize __local_ip_addr with it.
+	* src/net/bootp.c: Restore the previous __local_ip_addr if BOOTP fails.
+
+	* include/redboot.h: Fix another VARIBLE_BAUD_RATE typo. Fun this.
+
+2001-06-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/io.c (do_channel): New function to display/switch console
+	channel
+
+	* src/main.c: Move define of CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS to
+	* include/redboot.h: ...here
+
+2001-06-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (load_flash_config): Fix another VARIBLE_BAUD_RATE typo.
+
+	* src/xyzModem.c (xyzModem_get_hdr): ACK on EOT was missing.
+
 2001-06-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/load.c (do_load): Move [static] data used by decompression

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.cpp,v 1.21 2001/05/30 12:37:24 julians Exp $
+// Version:     $Id: appsettings.cpp,v 1.22 2001/06/26 17:26:35 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecSettings
 // Requires:
@@ -167,6 +167,9 @@ void ecSettings::Copy(const ecSettings& settings)
 
     // Run tests settings
     m_runTestsSettings = settings.m_runTestsSettings;
+
+    m_userToolsDir = settings.m_userToolsDir;
+    m_buildToolsDir = settings.m_buildToolsDir;
 }
 
 ecSettings::~ecSettings()
@@ -287,6 +290,10 @@ bool ecSettings::LoadConfig()
         // Use the default provided by the installer
         config.Read(_("Default User Tools Path"), & m_userToolsDir);
     }
+
+    // Only to be used if we fail to find the information installed
+    // with the Configuration Tool.
+    config.Read(_("/Paths/BuildToolsDir"), & m_buildToolsDir);
     
     if (!config.Read(_("/Build/Make Options"), & m_strMakeOptions))
     {
@@ -570,6 +577,7 @@ bool ecSettings::SaveConfig()
     config.Write(_("/Rule/Checking"), (long) m_nRuleChecking);
     
     config.Write(_("/Paths/UserToolsDir"), m_userToolsDir);
+    config.Write(_("/Paths/BuildToolsDir"), m_buildToolsDir);
     
     config.Write(_("/Build/Make Options"), m_strMakeOptions);
     

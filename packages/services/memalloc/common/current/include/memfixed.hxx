@@ -93,9 +93,9 @@ public:
     // to be carved out, note that management structures are taken from the
     // same arena.  Alloc_unit is the blocksize allocated.
     Cyg_Mempool_Fixed(
-        cyg_uint8 *base,
-        cyg_int32 size,
-        CYG_ADDRWORD alloc_unit );
+        cyg_uint8 * /* base */,
+        cyg_int32 /* size */,
+        CYG_ADDRWORD /* alloc_unit */ );
 
     // Destructor
     ~Cyg_Mempool_Fixed();
@@ -106,7 +106,7 @@ public:
     
 # ifdef CYGFUN_KERNEL_THREADS_TIMER
     // get some memory with a timeout
-    cyg_uint8 *alloc( cyg_tick_count delay_timeout );
+    cyg_uint8 *alloc( cyg_tick_count /* delay_timeout */ );
 # endif
 #endif
 
@@ -118,11 +118,11 @@ public:
     // an error (false) for all values, except for the blocksize
     // returns true on success
     cyg_uint8 *
-    resize_alloc( cyg_uint8 *alloc_ptr, cyg_int32 newsize,
-                  cyg_int32 *oldsize=NULL );
+    resize_alloc( cyg_uint8 * /* alloc_ptr */, cyg_int32 /* newsize */,
+                  cyg_int32 * /* oldsize */ =NULL );
 
     // free the memory back to the pool
-    cyg_bool free( cyg_uint8 *p );
+    cyg_bool free( cyg_uint8 * /* p */ );
 
     // Get memory pool status
     // flags is a bitmask of requested fields to fill in. The flags are

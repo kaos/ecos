@@ -61,14 +61,6 @@
 #endif
 #endif
 
-#ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
-#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
-  (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS)
-#else
-#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
-  CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
-#endif
-
 // Builtin Self Test (BIST)
 externC void bist(void);
 
@@ -506,8 +498,7 @@ do_reset(int argc, char *argv[])
     printf("... Resetting.");
     CYGACC_CALL_IF_DELAY_US(2*100000);
     printf("\n");
-    CYGACC_CALL_IF_DELAY_US(50000);
-    HAL_PLATFORM_RESET();
+    CYGACC_CALL_IF_RESET();
     printf("!! oops, RESET not working on this platform\n");
 }
 #endif

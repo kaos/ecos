@@ -59,6 +59,7 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_if.h>
+#include <cyg/hal/ppc_regs.h>
 
 #include <netdev.h>
 #include <eth_drv.h>
@@ -260,7 +261,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
 
     // Set up parallel port for connection to ethernet tranceiver
     eppc->pio_pdpar = 0x1FFF;
-    asm volatile ("mfspr   %0,638 \n\t"	: "=r" (proc_rev) : );
+    CYGARC_MFSPR( proc_rev, CYGARC_REG_PVR );
 #define PROC_REVB 0x0020
     if ((proc_rev & 0x0000FFFF) == PROC_REVB) {
         eppc->pio_pddir = 0x1C58;

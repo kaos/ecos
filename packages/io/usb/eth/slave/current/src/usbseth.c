@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 2000 Red Hat, Inc.                             
+// Copyright (C) 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -96,7 +96,13 @@ usbs_eth_init(usbs_eth* eth, usbs_control_endpoint* ctrl, usbs_rx_endpoint* rx, 
     eth->interrupts             = 0;
     eth->tx_count               = 0;
     eth->rx_count               = 0;
+# endif
+# ifndef HAL_DCACHE_LINE_SIZE
+    eth->rx_bufptr              = eth->rx_buffer;
+# else
 # endif    
+    eth->rx_bufptr              = (unsigned char*) ((((cyg_uint32)eth->rx_buffer) + HAL_DCACHE_LINE_SIZE - 1)
+                                                    & ~(HAL_DCACHE_LINE_SIZE - 1));
     eth->rx_buffer_full         = false;
     eth->tx_in_send             = false;
     eth->tx_buffer_full         = false;
@@ -193,11 +199,11 @@ usbs_eth_start_rx(usbs_eth* eth, unsigned char* buf, void (*callback_fn)(usbs_et
 {
     eth->rx_callback_fn  = callback_fn;
     eth->rx_callback_arg = callback_arg;
-    
+
     cyg_drv_dsr_lock();
     if (eth->host_up) {
         eth->rx_endpoint->buffer        = buf;
-        eth->rx_endpoint->buffer_size   = CYGNUM_USBS_ETH_MAXTU;
+        eth->rx_endpoint->buffer_size   = CYGNUM_USBS_ETH_RXSIZE;
         eth->rx_endpoint->complete_fn   = &usbs_eth_rx_callback;
         eth->rx_endpoint->complete_data = (void*) eth;
         (*(eth->rx_endpoint->start_rx_fn))(eth->rx_endpoint);
@@ -295,7 +301,7 @@ usbs_eth_enable(usbs_eth* eth)
         eth->host_promiscuous   = false;
         if ((void*) 0 != eth->rx_pending_buf) {
             eth->rx_endpoint->buffer            = eth->rx_pending_buf;
-            eth->rx_endpoint->buffer_size       = CYGNUM_USBS_ETH_MAXTU;
+            eth->rx_endpoint->buffer_size       = CYGNUM_USBS_ETH_RXSIZE;
             eth->rx_endpoint->complete_fn       = &usbs_eth_rx_callback;
             eth->rx_endpoint->complete_data     = (void*) eth;
             eth->rx_pending_buf = (void*) 0;

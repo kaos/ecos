@@ -1,0 +1,60 @@
+Release History for eCos Configuration Tool 2
+=============================================
+
+*** Version 2.03, June 28th 2001
+
+- Corrected a bug introduced in the previous release, where the initial template
+  selection was wrong.
+
+*** Version 2.02, June 27th 2001
+
+- Packages are now sorted in the Packages Dialog.
+  Templates are sorted on Windows, not yet on Linux.
+
+- There was an interaction between Configtool/TCL/Windows 98 that
+  caused a GPF when saving files. This has now been worked around.
+
+- When entering the user tools directory, Configtool now
+  recognises it correctly if it contains appropriate binaries.
+
+- The current build tools path is saved so that if the eCos
+  installer wasn't used, there will be a default build tools
+  path and the user won't get asked every time.
+
+- Main window now refreshed after some dialogs close and before
+  a lengthy operation for aesthetic reasons.
+
+- The dialogs for saving and opening .ecc files now default to the
+  directory of the last loaded/saved file, for convenience.
+
+- Switched to Rich Edit control for Output Window since it has
+  a higher capacity; this causes scrolling behaviour to be
+  less than optimal on NT and a bit weird on Win98, so there's some
+  work to do.
+
+- Stopping a build now works.
+
+- Added CHANGES.txt and TODO.txt to the distribution.
+
+*** Version 2.01, June 2001
+
+- Clicking Save when tool was first loaded didn't do anything.
+  Now behaves like Save As for a first-time save.
+
+- Mix-up with directory names fixed.
+
+- Windows installer now leaves existing DLLs intact even if
+  the installer's files were newer.
+
+- The Unix tarball now contains a subdirectory containing the current
+  version in the name.
+
+
+*** Version 2.0, May 2001
+
+- Initial public release
+
+
+
+
+

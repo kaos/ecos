@@ -46,6 +46,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include <cyg/infra/testcase.h>
+#include <string.h>
 
 // FUNCTIONS
 

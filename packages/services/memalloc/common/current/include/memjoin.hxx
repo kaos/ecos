@@ -99,8 +99,8 @@ public:
     // to higher layers. The data is copied from old to new though.
     // The effects of alloc_ptr==NULL or newsize==0 are undefined
     cyg_uint8 *
-    resize_alloc( cyg_uint8 *alloc_ptr, cyg_int32 newsize,
-                  cyg_int32 *oldsize=NULL );
+    resize_alloc( cyg_uint8 * /* alloc_ptr */, cyg_int32 /* newsize */,
+                  cyg_int32 * /* oldsize */ =NULL );
 
     // free the memory back to the pool
     // returns true on success

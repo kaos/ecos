@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/28
-// Version:     $Id: packagesdlg.cpp,v 1.2 2001/03/23 13:38:04 julians Exp $
+// Version:     $Id: packagesdlg.cpp,v 1.3 2001/06/27 12:48:18 julians Exp $
 // Purpose:
 // Description: Implementation file for ecPackagesDialog
 // Requires:
@@ -118,7 +118,7 @@ void ecPackagesDialog::CreateControls(wxWindow* parent)
     item2->Add( item3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     wxString *strs4 = (wxString*) NULL;
-    wxListBox *item4 = new wxListBox( parent, ecID_PACKAGES_DIALOG_AVAILABLE_LIST, wxDefaultPosition, wxSize(180,190), 0, strs4, 0 );
+    wxListBox *item4 = new wxListBox( parent, ecID_PACKAGES_DIALOG_AVAILABLE_LIST, wxDefaultPosition, wxSize(180,190), 0, strs4, wxLB_SORT );
     item2->Add( item4, 1, wxGROW|wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxBOTTOM, 5 );
 
     item1->Add( item2, 1, wxGROW|wxALIGN_CENTER_HORIZONTAL|wxALL, 0 );
@@ -139,7 +139,7 @@ void ecPackagesDialog::CreateControls(wxWindow* parent)
     item8->Add( item9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     wxString *strs10 = (wxString*) NULL;
-    wxListBox *item10 = new wxListBox( parent, ecID_PACKAGES_DIALOG_USE_LIST, wxDefaultPosition, wxSize(180,190), 0, strs10, 0 );
+    wxListBox *item10 = new wxListBox( parent, ecID_PACKAGES_DIALOG_USE_LIST, wxDefaultPosition, wxSize(180,190), 0, strs10, wxLB_SORT );
     item8->Add( item10, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT|wxBOTTOM, 5 );
 
     item1->Add( item8, 1, wxGROW|wxALIGN_CENTER_HORIZONTAL|wxALL, 0 );

@@ -1070,6 +1070,16 @@ package CYGPKG_HAL_ARM_EBSA285 {
         eCos on a Intel EBSA285 StrongARM eval board."
 }
 
+package CYGPKG_HAL_ARM_ARM9 {
+	alias		{ "ARM9 variant" hal_arm_arm9 }
+	directory	hal/arm/arm9/var
+	script		hal_arm_arm9.cdl
+	hardware
+        description "
+        The ARM9 HAL package provides the support needed to run
+        eCos on a ARM9 based systems."
+}
+
 package CYGPKG_HAL_ARM_SA11X0 {
 	alias		{ "Intel SA11X0 Chipset" hal_arm_sa11x0 }
 	directory	hal/arm/sa11x0/var
@@ -1870,7 +1880,7 @@ target iq80310 {
 }
 
 target edb7xxx {
-        alias		{ "Cirrus Logic development board" edb7211 eb7xxx eb7211 }
+        alias		{ "Cirrus Logic EDB7xxx development board" edb7211 eb7xxx eb7211 }
 	packages	{ CYGPKG_HAL_ARM
                           CYGPKG_HAL_ARM_EDB7XXX
 			  CYGPKG_DEVS_ETH_ARM_EDB7XXX
@@ -1878,7 +1888,7 @@ target edb7xxx {
 			  CYGPKG_DEVS_FLASH_EDB7XXX
         }
         description "
-The edb7xxx target provides the packages needed to run eCos on Cirrus Logic development boards."
+The edb7xxx target provides the packages needed to run eCos on the Cirrus Logic EDB7xxx development boards."
     }
 
 target cma230 {

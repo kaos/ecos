@@ -338,6 +338,9 @@ do_load(int argc, char *argv[])
                 printf("Invalid 'mode': %s\n", mode_str);
                 return;
             }
+            // When using a serial download type, override verbose
+            // setting: spinner interferes with the protocol.
+            verbose = false;
 #ifdef CYGPKG_REDBOOT_NETWORKING
         } else if (strcmpci(mode_str, "tftp") == 0) {
             mode = MODE_TFTP;

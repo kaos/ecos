@@ -25,7 +25,7 @@
 //
 // The Initial Developer of the Original Code is Red Hat.
 // Portions created by Red Hat are
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.
 // -------------------------------------------
 //
@@ -178,6 +178,9 @@ extern "C" {
 #ifdef CYGPKG_USBS_ETHDRV
 # include <netdev.h>
 #endif
+
+// Cache details, to allow alignment to cache line boundaries etc.
+#include <cyg/hal/hal_cache.h>    
     
 // ----------------------------------------------------------------------------
 // Maximum transfer size. This is not specified by io/eth. It can be
@@ -208,6 +211,21 @@ extern "C" {
 // for the length.
 #define CYGNUM_USBS_ETH_MIN_FRAME_SIZE 14
 #define CYGNUM_USBS_ETH_MINTU (CYGNUM_USBS_ETH_MIN_FRAME_SIZE + 2)
+
+// Typical USB devices involve DMA operations and hence confusion
+// between cached and uncached memory. To make life easier for
+// the underlying USB device drivers, this package ensures that
+// receive operations always involve buffers that are aligned to
+// a cache-line boundary and that are a multiple of the cacheline
+// size.
+#ifndef HAL_DCACHE_LINE_SIZE
+# define CYGNUM_USBS_ETH_RXBUFSIZE      CYGNUM_USBS_ETH_MAXTU
+# define CYGNUM_USBS_ETH_RXSIZE         CYGNUM_USBS_ETH_MAXTU    
+#else
+# define CYGNUM_USBS_ETH_RXBUFSIZE      ((CYGNUM_USBS_ETH_MAXTU + HAL_DCACHE_LINE_SIZE + HAL_DCACHE_LINE_SIZE - 1) \
+                                         & ~(HAL_DCACHE_LINE_SIZE - 1))
+# define CYGNUM_USBS_ETH_RXSIZE         ((CYGNUM_USBS_ETH_MAXTU + HAL_DCACHE_LINE_SIZE - 1) & ~(HAL_DCACHE_LINE_SIZE - 1))
+#endif    
     
 // ----------------------------------------------------------------------------
 // This data structure serves two purposes. First, it keeps track of
@@ -298,11 +316,19 @@ typedef struct usbs_eth {
     // 1516 byte mbuf could be pre-allocated and then the whole
     // transfer could go there, potentially wasting some mbuf space.
     // None of this is possible at present.
-    unsigned char       rx_buffer[CYGNUM_USBS_ETH_MAXTU];
+    //
+    // Also, typically there will be complications because of
+    // dependencies on DMA, cached vs. uncached memory, etc.
+    unsigned char       rx_buffer[CYGNUM_USBS_ETH_RXBUFSIZE];
+    unsigned char*      rx_bufptr;
     cyg_bool            rx_buffer_full;
 
-    // It should be possible to eliminate the tx buffer once the
-    // USB driver supports refill functions.
+    // It should be possible to eliminate the tx buffer. The problem
+    // is that the protocol requires 2 bytes to be prepended, and that
+    // may not be possible with the buffer supplied by higher-level
+    // code. Eliminating this buffer would either require USB
+    // device drivers to implement gather functionality on transmits,
+    // or it would impose a dependency on higher-level code.
     unsigned char       tx_buffer[CYGNUM_USBS_ETH_MAXTU];
     cyg_bool            tx_buffer_full;
     cyg_bool            tx_done;

@@ -205,8 +205,10 @@ xyzModem_get_hdr(void)
                     break;
                 }
             case EOT:
+                // EOT only supported if no noise
                 if (hdr_chars == 1) {
-                    // EOT only supported if no noise
+                    CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+                    ZM_DEBUG(zm_dprintf("ACK on EOT #%d\n", __LINE__));
                     ZM_DEBUG(zm_dump(__LINE__));
                     return xyzModem_eof;
                 }

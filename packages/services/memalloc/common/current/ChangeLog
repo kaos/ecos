@@ -1,3 +1,13 @@
+2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/memjoin.inl (~Cyg_Mempool_Joined): free even when asserts
+	disabled.
+
+	* include/memvar.hxx (class Cyg_Mempool_Variable): Comment out argument
+	names for consistency.
+	* include/memfixed.hxx (class Cyg_Mempool_Fixed): Ditto.
+	* include/memjoin.hxx (class Cyg_Mempool_Joined): Ditto.
+
 2001-06-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/mvarimpl.inl (get_status): Correct calculation of maxfree

@@ -168,6 +168,15 @@ FUNC_START(_start)
 	hal_cache_init
 	hal_timer_init
 		
+#ifdef CYGARC_START_FUNC_UNCACHED
+	# switch to cached execution address if necessary
+	# assumption is that hal_cache_init makes this safe
+	lar	v0,1f
+	jr	v0
+	nop
+   1:
+#endif
+	
 	# Load Global Pointer register.
 	la	gp,_gp
 

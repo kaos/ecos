@@ -87,6 +87,7 @@ __bootp_find_local_ip(bootp_header_t *info)
     ip_route_t     r;
     int            retry;
     unsigned long  start;
+    ip_addr_t saved_ip_addr;
 
     bp_info = info;
 
@@ -97,10 +98,8 @@ __bootp_find_local_ip(bootp_header_t *info)
     b.bp_hlen = 6;
     b.bp_xid = SHOULD_BE_RANDOM;
 
-    __local_ip_addr[0] = 0;
-    __local_ip_addr[1] = 0;
-    __local_ip_addr[2] = 0;
-    __local_ip_addr[3] = 0;
+    memcpy( saved_ip_addr, __local_ip_addr, sizeof(__local_ip_addr) );
+    memset( __local_ip_addr, 0, sizeof(__local_ip_addr) );
 
     memcpy(b.bp_chaddr, __local_enet_addr, 6);
 
@@ -139,6 +138,7 @@ __bootp_find_local_ip(bootp_header_t *info)
     /* timed out */
     __udp_remove_listener(IPPORT_BOOTPC);
     net_debug = 0;
+    memcpy( __local_ip_addr, saved_ip_addr, sizeof(__local_ip_addr) );
     return -1;
 }
 

@@ -45,7 +45,11 @@
 
 #include <net/net.h>
 
-ip_addr_t __local_ip_addr = { 0, 0, 0, 0 };
+#ifndef CYGDAT_REDBOOT_DEFAULT_IP_ADDR
+# define CYGDAT_REDBOOT_DEFAULT_IP_ADDR 0, 0, 0, 0
+#endif
+
+ip_addr_t __local_ip_addr = { CYGDAT_REDBOOT_DEFAULT_IP_ADDR };
 
 static word ip_ident;
 

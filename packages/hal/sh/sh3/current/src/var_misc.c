@@ -280,6 +280,9 @@ hal_interrupt_update_level(int vector)
         /* Do nothing for these reserved vectors. */                     
         break;                                                           
 
+    // Platform extensions
+    CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF(vector, level)
+
     default:
         CYG_FAIL("Unknown interrupt vector");                             
         break;
@@ -381,6 +384,8 @@ hal_interrupt_acknowledge(int vector)
         HAL_WRITE_UINT8(CYGARC_REG_IRR0, irr0);      
     }                                                                     
 #endif
+
+    CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF(vector);
 }
 
 // Note: The PINTs can be masked and configured individually, even

@@ -1836,7 +1836,7 @@ load_flash_config(void)
         flash_get_config("boot_script_data", &script, CONFIG_SCRIPT);
         flash_get_config("boot_script_timeout", &script_timeout, CONFIG_INT);
     }
-#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+#ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
     if (flash_get_config("console_baud_rate", &console_baud_rate, CONFIG_INT)) {
         extern void set_console_baud_rate(int);
         set_console_baud_rate(console_baud_rate);

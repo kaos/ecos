@@ -31,6 +31,8 @@ dotar()
     cp $SRC/*.png .
     cp $SRC/setup/ecosplatforms.tar.gz .
     cp $SRC/README.txt .
+    cp $SRC/CHANGES.txt .
+    cp $SRC/TODO.txt .
     cp "$ECOSDIR/ecc/release/eCos Install/Setup Files/Uncompressed Files/Disk1/license.txt" .
     cp $BINARYSRC/configtool .
     cp $CONFIGTOOLDIR/manual/*.html $CONFIGTOOLDIR/manual/*.css $CONFIGTOOLDIR/manual/*.gif manual

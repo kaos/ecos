@@ -44,6 +44,7 @@
 [Files]
   Source: v:\deliver\configtool\about.htm; DestDir: {app}\
   Source: v:\deliver\configtool\aboutlo.htm; DestDir: {app}\
+  Source: v:\deliver\configtool\CHANGES.txt; DestDir: {app}\
   Source: v:\deliver\configtool\configtool.exe; DestDir: {app}\
   Source: v:\deliver\configtool\ecoslogo.png; DestDir: {app}\
   Source: v:\deliver\configtool\ecoslogosmall.png; DestDir: {app}\
@@ -182,8 +183,9 @@
   Source: v:\deliver\configtool\manual\user-guides.html; DestDir: {app}\manual
   Source: v:\deliver\configtool\README.txt; DestDir: {app}\
   Source: v:\deliver\configtool\rhlogo.png; DestDir: {app}\
+  Source: v:\deliver\configtool\TODO.txt; DestDir: {app}\
 
-    Source: c:\winnt\system32\tcl84.dll; DestDir: {sys}\; DestName: tcl84.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
     Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
@@ -191,6 +193,7 @@
 [Icons]
     Name: {group}\Configuration Tool; Filename: {app}\configtool.exe; WorkingDir: {app}; IconFilename: {app}\configtool.exe; IconIndex: 0
     Name: {group}\ReadMe; Filename: {app}\README.txt; WorkingDir: {app}; IconIndex: 0; Flags: useapppaths
+    Name: {group}\Changes; Filename: {app}\CHANGES.txt; WorkingDir: {app}; IconIndex: 0; Flags: useapppaths
     Name: {group}\License; Filename: {app}\license.txt; WorkingDir: {app}; IconIndex: 0; Flags: useapppaths
     Name: {group}\Configuration Tool Manual; Filename: {app}\manual\user-guides.4.html; WorkingDir: {app}; IconIndex: 0; Flags: useapppaths
     Name: {userdesktop}\eCos Config Tool; Filename: {app}\configtool.exe; WorkingDir: {app}; IconFilename: {app}\configtool.exe; IconIndex: 0

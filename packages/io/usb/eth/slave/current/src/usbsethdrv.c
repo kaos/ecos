@@ -295,7 +295,7 @@ usbs_ethdrv_recv_callback(usbs_eth* eth, void* callback_data, int size)
     } else {
         // A packet has been received. Now do a size sanity check
         // based on the first two bytes.
-        int real_size = eth->rx_buffer[0] + (eth->rx_buffer[1] << 8);
+        int real_size = eth->rx_bufptr[0] + (eth->rx_bufptr[1] << 8);
         if (real_size < CYGNUM_USBS_ETH_MIN_FRAME_SIZE) {
             INCR_STAT(eth->rx_short_frames);
         } else if (real_size > CYGNUM_USBS_ETH_MAX_FRAME_SIZE) {
@@ -312,7 +312,7 @@ usbs_ethdrv_recv_callback(usbs_eth* eth, void* callback_data, int size)
     
     if (resubmit) {
         eth->rx_active = true;
-        usbs_eth_start_rx(eth, eth->rx_buffer, &usbs_ethdrv_recv_callback, callback_data);
+        usbs_eth_start_rx(eth, eth->rx_bufptr, &usbs_ethdrv_recv_callback, callback_data);
     }
 }
 
@@ -336,7 +336,7 @@ usbs_ethdrv_start_recv(struct eth_drv_sc* sc, usbs_eth* eth)
     cyg_drv_dsr_lock();
     if (!eth->rx_active) {
         eth->rx_active = true;
-        usbs_eth_start_rx(eth, eth->rx_buffer, &usbs_ethdrv_recv_callback, (void*) sc);
+        usbs_eth_start_rx(eth, eth->rx_bufptr, &usbs_ethdrv_recv_callback, (void*) sc);
     }
     cyg_drv_dsr_unlock();
 }
@@ -352,10 +352,10 @@ usbs_ethdrv_recv(struct eth_drv_sc* sc,
     usbs_eth* eth = (usbs_eth*)(sc->driver_private);
 
     CYG_ASSERT( eth->rx_buffer_full, "This function should only be called when there is a buffer available");
-    (void) scatter(eth->rx_buffer, sg_list, sg_len);
+    (void) scatter(eth->rx_bufptr, sg_list, sg_len);
     eth->rx_buffer_full = false;
     eth->rx_active      = true;
-    usbs_eth_start_rx(eth, eth->rx_buffer, &usbs_ethdrv_recv_callback, (void*) sc);
+    usbs_eth_start_rx(eth, eth->rx_bufptr, &usbs_ethdrv_recv_callback, (void*) sc);
 }
 
 // ----------------------------------------------------------------------------
@@ -456,7 +456,7 @@ usbs_ethdrv_deliver(struct eth_drv_sc* sc)
     usbs_eth* eth = (usbs_eth*)(sc->driver_private);
 
     if (eth->rx_buffer_full) {
-        int size = eth->rx_buffer[0] + (eth->rx_buffer[1] << 8);
+        int size = eth->rx_bufptr[0] + (eth->rx_bufptr[1] << 8);
         (*sc->funs->eth_drv->recv)(sc, size);
     }
     if (eth->tx_done) {

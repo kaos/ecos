@@ -95,7 +95,8 @@ main(int argc, char *argv[])
 
     test(0);
 
-//    CYG_TEST_NA("Testing is not applicable to this configuration");
+    CYG_TEST_FAIL_FINISH("Not reached");
+
 } // main()
 
 // EOF atoi.c

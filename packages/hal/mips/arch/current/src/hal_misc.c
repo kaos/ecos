@@ -54,7 +54,7 @@
 #include <cyg/hal/hal_intr.h>           // Interrupt handling
 
 #include <cyg/hal/hal_cache.h>          // Cache handling
-
+#include <cyg/hal/hal_if.h>             // hal_ctrlc_isr()
 #include <cyg/hal/mips-regs.h>          // FPU cause register definitions
 
 /*------------------------------------------------------------------------*/

@@ -107,6 +107,18 @@ cdl_package CYGPKG_REDBOOT {
             puts $::cdl_system_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS 1"
         }
 
+        cdl_option CYGDAT_REDBOOT_DEFAULT_IP_ADDR {
+            display          "Default IP address"
+            flavor           booldata
+            default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
+                                { "0, 0, 0, 0" }
+            description      "
+                This IP address is the default used by RedBoot if a BOOTP/DHCP
+                server does not respond. The numbers should be separated by
+                *commas*, and not dots. If an IP address is configured into
+                the Flash configuration, that will be used in preference."
+        }
+
         cdl_option CYGNUM_REDBOOT_NETWORKING_TCP_PORT {
             display          "TCP port to listen for incoming connections"
             flavor           data

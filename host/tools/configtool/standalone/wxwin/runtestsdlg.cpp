@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/29
-// Version:     $Id: runtestsdlg.cpp,v 1.12 2001/05/02 10:36:15 julians Exp $
+// Version:     $Id: runtestsdlg.cpp,v 1.13 2001/06/28 15:54:25 julians Exp $
 // Purpose:
 // Description: Implementation file for ecRunTestsDialog
 // Requires:
@@ -80,6 +80,7 @@ BEGIN_EVENT_TABLE(ecRunTestsDialog, wxDialog)
     EVT_NOTEBOOK_PAGE_CHANGED(-1, ecRunTestsDialog::OnPageChange)
     EVT_SIZE(ecRunTestsDialog::OnSize)
     EVT_IDLE(ecRunTestsDialog::OnIdle)
+    EVT_CLOSE(ecRunTestsDialog::OnCloseWindow)
 END_EVENT_TABLE()
 
 #define PROPERTY_DIALOG_WIDTH   600
@@ -213,12 +214,17 @@ ecRunTestsDialog::ecRunTestsDialog(wxWindow* parent):
     // m_prop.Add(_T("Extension"),executionpage.m_strExtension);
 #endif
 
+#ifdef _DEBUG
+    CeCosTrace::EnableTracing(CeCosTrace::TRACE_LEVEL_TRACE);
+#endif
+    CeCosTrace::SetInteractive(TRUE);
     CeCosTrace::SetOutput(TestOutputCallback, this);
     CeCosTrace::SetError (TestOutputCallback, this);
 }
 
 ecRunTestsDialog::~ecRunTestsDialog()
 {
+    CeCosTrace::SetInteractive(FALSE);
     m_runTestsDialog = NULL;
     if (m_pResource)
     {
@@ -228,7 +234,28 @@ ecRunTestsDialog::~ecRunTestsDialog()
 
 void ecRunTestsDialog::OnOK(wxCommandEvent& event)
 {
+    if (ecRunning == m_runStatus)
+    {
+        wxMessageBox(_("Tests are running. Please press Stop before quitting this dialog."),
+            wxGetApp().GetSettings().GetAppName(), wxICON_INFORMATION|wxOK, this);
+        return;
+    }
+
     wxDialog::OnOK(event);
+}
+
+void ecRunTestsDialog::OnCloseWindow(wxCloseEvent& event)
+{
+    if (ecRunning == m_runStatus)
+    {
+        wxMessageBox(_("Tests are running. Please press Stop before quitting this dialog."),
+            wxGetApp().GetSettings().GetAppName(), wxICON_INFORMATION|wxOK, this);
+        event.Veto();
+        return;
+    }
+
+    this->EndModal(wxID_CANCEL);
+    this->Destroy();
 }
 
 void ecRunTestsDialog::OnProperties(wxCommandEvent& event)

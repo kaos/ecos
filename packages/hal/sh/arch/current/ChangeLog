@@ -1,3 +1,7 @@
+2001-06-27  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_arch.h: Added CPU address space translation macros.
+
 2001-05-29  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_io.h: Include var_io.h

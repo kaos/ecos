@@ -1,3 +1,10 @@
+2001-06-28  Bart Veer  <bartv@redhat.com>
+
+	* include/usbs_eth.h, src/usbsethdrv.c, src/usbseth.c:
+	Align receive boundaries to cacheline boundaries, and
+	always transfer a multiple of the cacheline size. This
+	avoids problems with some USB device drivers.
+	
 2001-05-21  Bart Veer  <bartv@redhat.com>
 
 	* host/ecos_usbeth.c (ecos_usbeth_start_tx):

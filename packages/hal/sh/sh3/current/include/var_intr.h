@@ -93,7 +93,11 @@
 #define CYGNUM_HAL_INTERRUPT_ADC_ADI         62
 
 #undef  CYGNUM_HAL_ISR_MAX
-#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_ADC_ADI
+#ifdef CYGNUM_HAL_ISR_PLF_MAX
+# define CYGNUM_HAL_ISR_MAX                  CYGNUM_HAL_ISR_PLF_MAX
+#else
+# define CYGNUM_HAL_ISR_MAX                  CYGNUM_HAL_INTERRUPT_ADC_ADI
+#endif
 
 #endif // CYGARC_SH_MOD_INTC >= 2
 
@@ -106,10 +110,24 @@
 #define CYGNUM_HAL_INTERRUPT_PCC_PCC1        65
 
 #undef  CYGNUM_HAL_ISR_MAX
-#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_PCC_PCC1
+#ifdef CYGNUM_HAL_ISR_PLF_MAX
+# define CYGNUM_HAL_ISR_MAX                  CYGNUM_HAL_ISR_PLF_MAX
+#else
+# define CYGNUM_HAL_ISR_MAX                  CYGNUM_HAL_INTERRUPT_PCC_PCC1
+#endif
 
 #endif // CYGARC_SH_MOD_INTC >= 3
 
+
+//----------------------------------------------------------------------------
+// Platform may provide extensions to the interrupt configuration functions
+// via these macros. The first macro is put inside the functions's
+// switch statements, the last two called as functions.
+#ifndef CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF
+# define CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF(vec, level)
+# define CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF(vec)
+# define CYGPRI_HAL_INTERRUPT_CONFIGURE_PLF(vec)
+#endif
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_VAR_INTR_H

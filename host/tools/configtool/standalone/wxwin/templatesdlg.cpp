@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/27
-// Version:     $Id: templatesdlg.cpp,v 1.5 2001/03/23 13:38:04 julians Exp $
+// Version:     $Id: templatesdlg.cpp,v 1.7 2001/06/28 15:54:25 julians Exp $
 // Purpose:
 // Description: Implementation file for ecTemplatesDialog
 // Requires:
@@ -107,7 +107,7 @@ void ecTemplatesDialog::CreateControls(wxWindow* parent)
     wxSizer *item1 = new wxStaticBoxSizer( item2, wxVERTICAL );
 
     wxString *strs3 = (wxString*) NULL;
-    wxComboBox *item3 = new wxComboBox( parent, ecID_TEMPLATES_DIALOG_HARDWARE_TEMPLATES, "", wxDefaultPosition, wxSize(360,-1), 0, strs3, wxCB_DROPDOWN|wxCB_READONLY );
+    wxComboBox *item3 = new wxComboBox( parent, ecID_TEMPLATES_DIALOG_HARDWARE_TEMPLATES, "", wxDefaultPosition, wxSize(360,-1), 0, strs3, wxCB_DROPDOWN|wxCB_READONLY|wxCB_SORT );
     item1->Add( item3, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     wxTextCtrl *item4 = new wxTextCtrl( parent, ecID_TEMPLATES_DIALOG_HARDWARE_DESCRIPTION, _(""), wxDefaultPosition, wxSize(90,60), wxTE_MULTILINE|wxTE_READONLY );
@@ -222,7 +222,14 @@ void ecTemplatesDialog::PopulateControls()
 		cdlHardwareCtrl->Append(strTargetDescription, (void*) target_i); // store the target iterator
         std::string str(* (target_i));
 		if (m_hardware == str.c_str())            // if current target...
-			cdlHardwareCtrl->SetSelection (nIndex); // ...select the string
+        {
+            int sel = 0;
+            int i;
+            for (i = 0; i <= nIndex; i++)
+                if (cdlHardwareCtrl->GetClientData(i) == (void*) target_i)
+                    sel = i;
+			cdlHardwareCtrl->SetSelection (sel); // ...select the string
+        }
         nIndex ++;
 	}
 

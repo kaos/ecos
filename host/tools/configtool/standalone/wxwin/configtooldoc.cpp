@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.31 2001/06/18 14:41:13 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.33 2001/06/28 15:54:25 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -668,6 +668,10 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                     wxGetApp().SetStatusText(wxEmptyString);
                     return FALSE;
                 }
+#ifdef __WXMSW__
+                // Ensure display gets updated
+                wxYield();
+#endif
                 strNewRepository=dlg.GetFolder();
             } else
             {
@@ -1893,6 +1897,9 @@ int ecConfigToolDoc::GetTestExeNames (wxArrayString& arTestExes, wxArrayString& 
             strFile += wxFILE_SEP_PATH;
             strFile += ar[i];
 
+            // Some tests accidentally specify .c
+            wxStripExtension(strFile);
+
 #ifdef __WXMSW__
             strFile += wxT(".exe");
             strFile.Replace(wxT("/"),wxT("\\"));
@@ -2193,7 +2200,8 @@ void ecConfigToolDoc::RunTests()
         }
     }
     wxString shellCommands;
-    if (wxGetApp().PrepareEnvironment(FALSE, & shellCommands))
+    // Don't know why we passed TRUE (no build tools) but we need build tools for gdb
+    if (wxGetApp().PrepareEnvironment(TRUE /* FALSE */, & shellCommands))
     {
         ecRunTestsDialog dialog(wxGetApp().GetTopWindow());
         int i;

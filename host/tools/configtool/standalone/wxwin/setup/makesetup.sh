@@ -42,6 +42,8 @@ doinno()
 
     cp $SRC/about.htm .
     cp $SRC/README.txt .
+    cp $SRC/CHANGES.txt .
+    cp $SRC/TODO.txt .
     cp $SRC/*.png .
     cp "$ECOSDIR/ecc/release/eCos Install/Setup Files/Uncompressed Files/Disk1/license.txt" .
     cp $BINARYSRC/configtool.exe .
@@ -83,7 +85,7 @@ doinno()
       fi
 
       #echo About to: cp configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%d`"
-      cp configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%d`"
+      cp $DEST/configtool/CHANGES.txt $DEST/configtool/README.txt configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%d`"
     fi
 }
 

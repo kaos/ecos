@@ -120,7 +120,7 @@ usbs_devtab_cwrite(cyg_io_handle_t handle, const void* buf, cyg_uint32* size)
 }
 
 Cyg_ErrNo
-usbs_devtab_cread(cyg_io_handle_t handle, const void* buf, cyg_uint32* size)
+usbs_devtab_cread(cyg_io_handle_t handle, void* buf, cyg_uint32* size)
 {
     usbs_callback_data  wait;
     cyg_devtab_entry_t* devtab_entry;

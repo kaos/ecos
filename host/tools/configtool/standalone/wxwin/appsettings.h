@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.h,v 1.8 2001/04/24 14:39:13 julians Exp $
+// Version:     $Id: appsettings.h,v 1.9 2001/06/26 17:26:35 julians Exp $
 // Purpose:
 // Description: Header file for the ConfigTool application settings
 // Requires:
@@ -166,7 +166,8 @@ public:
 
     const ecFileName& DefaultExternalBrowser() ;
 
-    const wxString& GetUserToolsDir() const { return m_userToolsDir; }  
+    const wxString& GetUserToolsDir() const { return m_userToolsDir; }
+    const wxString& GetBuildToolsDir() const { return m_buildToolsDir; }  /* Only used if no other clues */
 
     wxStringToStringMap& GetBinDirs() { return m_arstrBinDirs; }
 
@@ -210,6 +211,7 @@ public:
     bool                    m_bHex;
 
     ecFileName              m_userToolsDir;
+    ecFileName              m_buildToolsDir; /* Only used if no other clues */
 
     wxString                m_strMakeOptions;
 

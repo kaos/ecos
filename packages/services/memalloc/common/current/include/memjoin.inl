@@ -140,8 +140,11 @@ Cyg_Mempool_Joined<T>::~Cyg_Mempool_Joined()
 {
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARGVOID();
-    CYG_ASSERT( free( (cyg_uint8 *)pools, poolcount * sizeof(struct pooldesc) ),
-                "free failed!");
+
+    cyg_bool freestat;
+    
+    freestat = free( (cyg_uint8 *)pools, poolcount * sizeof(struct pooldesc) );
+    CYG_ASSERT( freestat, "free failed!");
     CYG_REPORT_RETURN();
 } // Cyg_Mempool_Joined<T>::~Cyg_Mempool_Joined()
 

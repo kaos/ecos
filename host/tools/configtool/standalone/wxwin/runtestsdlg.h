@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/29
-// Version:     $Id: runtestsdlg.h,v 1.8 2001/05/02 10:36:15 julians Exp $
+// Version:     $Id: runtestsdlg.h,v 1.9 2001/06/28 15:54:25 julians Exp $
 // Purpose:
 // Description: Header file for ecRunTestsDialog
 // Requires:
@@ -85,6 +85,7 @@ public:
     void OnPageChange(wxNotebookEvent& event);
     void OnSize(wxSizeEvent& event);
     void OnIdle(wxIdleEvent& event);
+    void OnCloseWindow(wxCloseEvent& event);
 
     virtual bool TransferDataToWindow();
     virtual bool TransferDataFromWindow();

@@ -47,6 +47,67 @@
 #ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>         // types & externC
 
+//=============================================================================
+// Function used to call ISRs from ISR arbiters
+// An arbiter is hooked on the shared interrupt vector and looks like this:
+//
+//  cyg_uint32 _arbitration_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
+//  {
+//     cyg_uint32 isr_ret;
+//     // decode interrupt source and for each active source call the ISR
+//     if (source_A_active) {
+//         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SOURCE_A);
+//  #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+//         if (isr_ret & CYG_ISR_HANDLED)
+//  #endif
+//             return isr_ret;
+//     }
+//     if (source_B_active) {
+//         isr_ret = hal_call_isr (CYGNUM_HAL_INTERRUPT_SOURCE_B);
+//  #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+//         if (isr_ret & CYG_ISR_HANDLED)
+//  #endif
+//             return isr_ret;
+//     }
+//  ...
+//     return 0;
+//  }
+//
+// Remember to attach and enable the arbiter source:
+//    HAL_INTERRUPT_ATTACH(CYGNUM_HAL_INTERRUPT_ARBITER, &_arbitration_isr, 0, 0);
+//    HAL_INTERRUPT_SET_LEVEL(CYGNUM_HAL_INTERRUPT_ARBITER, 1);
+//    HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_ARBITER);
+//
+
+#include <cyg/hal/hal_intr.h>           // hal_interrupt_x tables
+#include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
+
+typedef cyg_uint32 cyg_ISR(cyg_uint32 vector, CYG_ADDRWORD data);
+
+extern void cyg_interrupt_post_dsr( CYG_ADDRWORD intr_obj );
+
+static inline cyg_uint32
+hal_call_isr (cyg_uint32 vector)
+{
+    cyg_ISR *isr;
+    CYG_ADDRWORD data;
+    cyg_uint32 isr_ret;
+
+    isr = (cyg_ISR*) hal_interrupt_handlers[vector];
+    data = hal_interrupt_data[vector];
+
+    isr_ret = (*isr) (vector, data);
+
+#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+    if (isr_ret & CYG_ISR_CALL_DSR) {
+        cyg_interrupt_post_dsr (hal_interrupt_objects[vector]);
+    }
+#endif
+
+    return isr_ret & ~CYG_ISR_CALL_DSR;
+}
+
+//=============================================================================
 externC cyg_bool cyg_hal_is_break(char *buf, int size);
 externC void cyg_hal_user_break( CYG_ADDRWORD *regs );
 #endif

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.43 2001/06/18 14:41:13 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.45 2001/06/26 17:26:35 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -412,7 +412,7 @@ void ecMainFrame::CreateWindows()
     m_outputSashWindow->SetOrientation(wxLAYOUT_HORIZONTAL);
     m_outputSashWindow->SetAlignment(wxLAYOUT_BOTTOM);
     m_outputSashWindow->SetSashVisible(wxSASH_TOP, TRUE);
-    m_outputWindow = new ecOutputWindow(m_outputSashWindow, ecID_OUTPUT_WINDOW, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxCLIP_CHILDREN|wxTE_READONLY);
+    m_outputWindow = new ecOutputWindow(m_outputSashWindow, ecID_OUTPUT_WINDOW, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxCLIP_CHILDREN|wxTE_READONLY|wxTE_RICH);
     m_outputWindow->SetHelpText(_("The output window displays various warning and informational messages."));
     
     // Sash window for the memory window
@@ -890,6 +890,8 @@ void ecMainFrame::OnIdle(wxIdleEvent& event)
 
 void ecMainFrame::OnCloseWindow(wxCloseEvent& event)
 {
+    wxBusyCursor busy;
+
     if (!wxGetApp().GetDocManager()->Clear(FALSE) && event.CanVeto())
     {
         event.Veto();
@@ -1109,7 +1111,11 @@ void ecMainFrame::OnTemplates(wxCommandEvent& event)
     ecTemplatesDialog dialog(this);
     if (dialog.ShowModal() == wxID_OK)
 	{
-		ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
+#ifdef __WXMSW__
+        // Ensure display gets updated
+        wxYield();
+#endif
+        ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
 
 		doc->SelectHardware(dialog.GetSelectedHardware());
 		doc->SelectTemplate(dialog.GetSelectedTemplate(), dialog.GetSelectedTemplateVersion());
@@ -1208,11 +1214,18 @@ void ecMainFrame::OnBuildToolsPath(wxCommandEvent& event)
     wxStringToStringMap& map = wxGetApp().GetSettings().GetBinDirs();
     map.BeginFind();
     wxString key, value;
+    bool hasDefaultDir = FALSE;
     while (map.Next(key, value))
     {
         arstrPaths.Add(value);
         if (key == strPrefix)
             defaultPath = value;
+        if (value == wxGetApp().GetSettings().m_buildToolsDir)
+            hasDefaultDir = TRUE;
+    }
+    if (!wxGetApp().GetSettings().m_buildToolsDir.IsEmpty() && !hasDefaultDir)
+    {
+        arstrPaths.Add(wxGetApp().GetSettings().m_buildToolsDir);
     }
     
     wxString msg;
@@ -1246,6 +1259,8 @@ void ecMainFrame::OnBuildToolsPath(wxCommandEvent& event)
             (wxID_YES == wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO)))
         {
             map.Set(strPrefix, path);
+            if (!hasDefaultDir)
+                wxGetApp().GetSettings().m_buildToolsDir = path;
         }
     }
 }
@@ -1279,9 +1294,9 @@ void ecMainFrame::OnUserToolsPath(wxCommandEvent& event)
 #else
         wxString exeSuffix(wxEmptyString);
 #endif
+        wxString prog(wxString(wxT("ls")) + exeSuffix);
 
-        strFile += wxT("ls");
-        strFile += (const wxChar*) exeSuffix;
+        strFile += (const wxChar*) prog;
 
         wxString msg;
         msg.Printf(wxT("%s does not appear to contain the user tools - use this folder anyway?"), (const wxChar*) path);

@@ -90,7 +90,7 @@ EXTERN int gdb_port;
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
 EXTERN unsigned char *script;
 EXTERN int script_timeout;
-#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+#ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
 EXTERN int console_baud_rate;
 #endif
 #endif
@@ -245,6 +245,14 @@ typedef struct {
     int   verbose, tick;
 } getc_info_t;
 
+
+#ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
+#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
+  (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS)
+#else
+#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
+  CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
+#endif
 
 //
 // Validate a hex character

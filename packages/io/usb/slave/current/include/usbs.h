@@ -340,7 +340,7 @@ extern void     usbs_start_tx_endpoint_wait(usbs_tx_endpoint*, void (*)(void*, i
 #if defined(CYGPKG_IO) && defined(CYGPKG_ERROR)
 #include <cyg/io/io.h>
 extern Cyg_ErrNo usbs_devtab_cwrite(cyg_io_handle_t, const void*, cyg_uint32*);
-extern Cyg_ErrNo usbs_devtab_cread(cyg_io_handle_t, const void*, cyg_uint32*);
+extern Cyg_ErrNo usbs_devtab_cread(cyg_io_handle_t, void*, cyg_uint32*);
 extern Cyg_ErrNo usbs_devtab_get_config(cyg_io_handle_t, cyg_uint32, void*, cyg_uint32*);
 extern Cyg_ErrNo usbs_devtab_set_config(cyg_io_handle_t, cyg_uint32, const void*, cyg_uint32*);
 #endif

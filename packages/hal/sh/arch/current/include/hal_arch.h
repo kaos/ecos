@@ -300,6 +300,13 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGARC_HAL_SAVE_GP()
 #define CYGARC_HAL_RESTORE_GP()
 
+
+//--------------------------------------------------------------------------
+// CPU address space translation macros
+#define CYGARC_PHYSICAL_ADDRESS(x)  ((CYG_ADDRWORD)(x) & 0x1fffffff)
+#define CYGARC_CACHED_ADDRESS(x)    (CYGARC_PHYSICAL_ADDRESS(x)|0x80000000)
+#define CYGARC_UNCACHED_ADDRESS(x)  (CYGARC_PHYSICAL_ADDRESS(x)|0xa0000000)
+
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_ARCH_H
 // End of hal_arch.h

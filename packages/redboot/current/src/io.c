@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                        
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas,hmt,jlarmour
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -49,6 +49,63 @@
 // GDB interface functions
 extern void ungetDebugChar(char c);
 #endif
+
+static void
+do_channel(int argc, char *argv[]);
+
+#ifdef CYGPKG_REDBOOT_ANY_CONSOLE
+RedBoot_cmd("channel", 
+            "Display/switch console channel", 
+            "[-1|<channel number>]",
+            do_channel
+    );
+#else
+RedBoot_cmd("channel", 
+            "Display/switch console channel", 
+            "[<channel number>]",
+            do_channel
+    );
+#endif
+
+static void
+do_channel(int argc, char *argv[])
+{
+    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+
+    if (argc == 2) { 
+#ifdef CYGPKG_REDBOOT_ANY_CONSOLE
+        if (strcmp( argv[1], "-1") == 0) {
+            console_selected = false;
+            console_echo = true;
+        } else 
+#endif
+        {
+            unsigned long chan;
+            if ( !parse_num( argv[1], &chan, NULL, NULL) ) {
+                printf("** Error: invalid channel '%s'\n", argv[1]);
+            } else {
+                if (chan < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
+                    CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);
+                    CYGACC_CALL_IF_SET_DEBUG_COMM(chan);
+                    if (chan != cur)
+                        console_echo = true;
+                }
+                else {
+                    printf("**Error: bad channel number '%s'\n", argv[1]);
+                }
+            }
+        }
+    }
+    /* else display */ 
+    else {
+        printf("Current console channel id: ");
+        if (!console_selected)
+            printf("-1\n");
+        else {
+            printf("%d\n", cur);
+        }
+    }
+}
 
 void 
 mon_write_char(char c)

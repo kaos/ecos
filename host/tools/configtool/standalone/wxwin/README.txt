@@ -82,24 +82,7 @@ Known bugs:
 Version History
 ---------------
 
-*** Version 2.01, June 2001
-
-- Clicking Save when tool was first loaded didn't do anything.
-  Now behaves like Save As for a first-time save.
-
-- Mix-up with directory names fixed.
-
-- Windows installer now leaves existing DLLs intact even if
-  the installer's files were newer.
-
-- The Unix tarball now contains a subdirectory containing the current
-  version in the name.
-
-
-*** Version 2.0, May 2001
-
-- Initial public release
-
+See CHANGES.txt.
 
 Installing the Configuration Tool
 =================================

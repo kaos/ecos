@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: aboutdlg.cpp,v 1.10 2001/05/22 14:31:40 julians Exp $
+// Version:     $Id: aboutdlg.cpp,v 1.11 2001/06/27 14:07:05 julians Exp $
 // Purpose:
 // Description: Implementation file for ecAboutDialog
 // Requires:
@@ -101,7 +101,9 @@ bool ecAboutDialog::AddControls(wxWindow* parent)
     }
 
     // Customize the HTML
-    htmlText.Replace(wxT("$VERSION$"), ecCONFIGURATION_TOOL_VERSION_STRING);
+    wxString verString;
+    verString.Printf("%.2f", ecCONFIGURATION_TOOL_VERSION);
+    htmlText.Replace(wxT("$VERSION$"), verString);
     htmlText.Replace(wxT("$DATE$"), __DATE__);
     
     wxSize htmlSize(420, 390);

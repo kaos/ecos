@@ -647,6 +647,10 @@ SOURCE=..\..\..\..\ChangeLog
 # End Source File
 # Begin Source File
 
+SOURCE=.\CHANGES.txt
+# End Source File
+# Begin Source File
+
 SOURCE=.\setup\innobott.txt
 # End Source File
 # Begin Source File

@@ -1,3 +1,7 @@
+2001-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_misc.h (hal_call_isr): Added. Used by ISR arbiters.
+
 2001-06-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/generic-stub.c (BUFMAX): Define as platform specific, thus

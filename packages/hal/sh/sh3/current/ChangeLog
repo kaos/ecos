@@ -1,3 +1,8 @@
+2001-06-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h: Allow platforms to extend vector table.
+	* src/var_misc.c: Same.
+
 2001-06-19  Jesper Skov  <jskov@redhat.com>
 
 	* include/mod_regs_ubc.h: Allow MOD_UBC to be unset.
