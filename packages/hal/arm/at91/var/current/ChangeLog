@@ -1,3 +1,8 @@
+2004-11-12  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/hal_diag.c: Only support the third serial port if we have
+	the defines needed. Not all HAL do have.
+
 2004-11-11  Sebastian Block <SebastianBlock@gmx.net>
 
 	* src/hal_diag.c: Added support for the third serial port

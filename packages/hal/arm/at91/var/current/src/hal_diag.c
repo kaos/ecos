@@ -272,7 +272,9 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
 static channel_data_t at91_ser_channels[3] = {
     { (cyg_uint8*)AT91_USART0, 1000, CYGNUM_HAL_INTERRUPT_USART0, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD},
     { (cyg_uint8*)AT91_USART1, 1000, CYGNUM_HAL_INTERRUPT_USART1, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD},
+#ifdef AT91_USART2
     { (cyg_uint8*)AT91_USART2, 1000, CYGNUM_HAL_INTERRUPT_USART2, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD}
+#endif
 };
 
 static void
