@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,7 +28,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	sdf
+// Author(s): 	sdf, jld
 // Contact(s):	sdf
 // Date:		1998/08/11
 // Version:		0.01
@@ -69,6 +70,10 @@
 
 #ifdef __WXMSW__
 #include <tlhelp32.h>
+#endif
+
+#ifdef __CYGWIN__
+#include <sys/cygwin.h> /* for cygwin_conv_to_*_path() */
 #endif
 
 #if 0
@@ -256,6 +261,40 @@ const wxString ecUtils::LoadString(UINT id)
 	return str;
 }
 #endif
+
+const wxString ecUtils::NativeToPosixPath(const wxString & native)
+{
+#ifdef __CYGWIN__
+    if (native.IsEmpty())
+        return native;
+    else
+    {
+        wxString posix;
+        cygwin_conv_to_posix_path(native.c_str(), posix.GetWriteBuf(MAXPATHLEN + 1));
+        posix.UngetWriteBuf();
+        return posix;
+    }
+#else
+    return native;
+#endif
+}
+
+const wxString ecUtils::PosixToNativePath(const wxString & posix)
+{
+#ifdef __CYGWIN__
+    if (posix.IsEmpty())
+        return posix;
+    else
+    {
+        wxString native;
+        cygwin_conv_to_win32_path(posix.c_str(), native.GetWriteBuf(MAXPATHLEN + 1));
+        native.UngetWriteBuf();
+        return native;
+    }
+#else
+    return posix;
+#endif
+}
 
 bool ecUtils::AddToPath(const ecFileName & strFolder, bool bAtFront)
 {

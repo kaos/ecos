@@ -598,6 +598,7 @@ bool ecSettings::LoadConfig()
             // Note that ECOS_REPOSITORY has the packages (or ecc) folder in the name.
             // In order to be in the form that is compatible with configtool operation,
             // it needs to have that stripped off.
+            envVarValue = ecUtils::PosixToNativePath(envVarValue); // accommodate posix-style ECOS_REPOSITORY value under Cygwin
             wxString packagesName = wxFileNameFromPath(envVarValue);
             if (packagesName == wxT("ecc") || packagesName == wxT("packages"))
                 envVarValue = wxPathOnly(envVarValue);
@@ -608,7 +609,7 @@ bool ecSettings::LoadConfig()
 
 #ifdef __WXMSW__
     if (m_userToolsDir.IsEmpty())
-        m_userToolsDir =  GetCygwinInstallPath() + wxT("\\bin");
+        m_userToolsDir = GetCygwinInstallPath() + wxT("\\bin");
 #else
     if (m_userToolsDir.IsEmpty())
         m_userToolsDir = wxT("/bin");

@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -25,7 +26,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s): 	sdf
+// Author(s): 	sdf, jld
 // Contact(s):	sdf
 // Date:		1998/08/11
 // Version:		0.01
@@ -76,6 +77,8 @@ public:
     static wxString GetLastErrorMessageString ();
 #endif    
 
+    static const wxString PosixToNativePath(const wxString & posix);
+    static const wxString NativeToPosixPath(const wxString & native);
     static bool AddToPath (const ecFileName &strFolder, bool bAtFront=true);
 
 #if 0
