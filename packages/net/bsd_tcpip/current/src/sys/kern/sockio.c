@@ -257,14 +257,17 @@ static int
 bsd_connect(cyg_file *fp, const sockaddr *sa, socklen_t len)
 {
     struct socket *so;
+    sockaddr sa1=*sa;
+    
     int error, s;
 
+    sa1.sa_len = len;
     so = (struct socket *)fp->f_data;
 
     if ((so->so_state & SS_NBIO) && (so->so_state & SS_ISCONNECTING))
         return (EALREADY);
 
-    error = soconnect(so, (struct sockaddr *)sa, 0);
+    error = soconnect(so, (struct sockaddr *)&sa1, 0);
     if (error)
         goto bad;
 
