@@ -994,6 +994,17 @@ package CYGPKG_FS_JFFS2 {
 	   This package contains the JFFS2 filesystem."
 }
 
+package CYGPKG_LINUX_COMPAT {
+        alias           { "Linux compatibility" linux_compat linuxcompat }
+        directory       compat/linux
+        script          linux.cdl
+        description "
+eCos supports a basic Linux compatibility Layer providing various
+functions, equivalents or stubs expected by Linux kernel code, for
+assistance in porting drivers and file system code from Linux.
+Note this does not provide Linux compatibility to applications."
+}
+
 package CYGPKG_IO_ETH_DRIVERS {
 	alias 		{ "Common ethernet support" net_drivers eth_drivers CYGPKG_NET_ETH_DRIVERS }
 	directory	io/eth
