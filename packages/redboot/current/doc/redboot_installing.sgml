@@ -1458,7 +1458,171 @@ description of the associated modes.</para>
 </sect2>
 </sect1>
 
+<?Pub _newpage>
+<sect1 id="excaliburarm9">
+<title>ARM/ARM9 Altera Excalibur</title>
+<sect2>
+<title>Overview</title>
+<para><indexterm><primary>Altera Excalibur ARM9 (excalibur_arm9)</primary>
+<secondary>installing and testing</secondary></indexterm><indexterm><primary>
+installing and testing</primary><secondary>Altera Excalibur ARM9 (excalibur_arm9)
+</secondary></indexterm>RedBoot supports the serial port labelled
+P2 on the board. The default serial port settings are 57600,8,N,1. RedBoot
+also supports flash management on the Excalibur.</para>
 
+<para>The following RedBoot configurations are supported:
+
+      <informaltable frame="all">
+        <tgroup cols="4" colsep="1" rowsep="1" align="left">
+          <thead>
+            <row>
+              <entry>Configuration</entry>
+              <entry>Mode</entry>
+              <entry>Description</entry>
+              <entry>File</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>ROMRAM</entry>
+              <entry>[ROMRAM]</entry>
+              <entry>RedBoot running from RAM, but contained in the
+              board's flash boot sector.</entry>
+              <entry>redboot_ROMRAM.ecm</entry>
+            </row>
+            <row>
+              <entry>RAM</entry>
+              <entry>[RAM]</entry>
+              <entry>RedBoot running from RAM with RedBoot in the
+              flash boot sector.</entry>
+              <entry>redboot_RAM.ecm</entry>
+            </row>
+            <row>
+              <entry>REDBOOT</entry>
+              <entry>[ROMRAM]</entry>
+              <entry>RedBoot running from top of RAM, but contained in
+              the board's flash boot sector.</entry>
+              <entry>redboot_REDBOOT.ecm</entry>
+            </row>
+</tbody>
+</tgroup>
+</informaltable>
+</para>
+
+<note> <title>NOTE</title>
+<para>RedBoot is currently hardwired to use a 128MB SDRAM SIMM module.
+</para>
+</note>
+</sect2>
+
+<sect2>
+<title>Initial Installation Method </title>
+<para>A Windows utility
+(<application>exc_flash_programmer.exe</application>) is used to
+program flash using the ByteBlasterMV JTAG unit.
+See board documentation for details on
+in situ flash programming. </para>
+<para>For ethernet to work (under Linux) the following jumper
+settings should be used on a REV 2 board: <literallayout>
+SW2-9    : OFF
+U179     : 2-3
+JP14-18  : OPEN
+JP40-41  : 2-3
+JP51-55  : 2-3
+</literallayout>
+</para>
+</sect2>
+<sect2>
+<title>Flash management</title>
+
+<para>The ROMRAM and REDBOOT configurations supported on this platform
+differ only in the memory layout (ROMRAM configuration runs RedBoot from
+0x00008000 while REDBOOT configuration runs RedBoot from 0x07f80000). The
+REDBOOT configuration allows applications to be loaded and run from
+address 0x00008000.</para>
+</sect2>
+<sect2>
+<title>Special RedBoot Commands </title>
+<para>The <command>exec</command> command which allows the loading
+and execution of Linux kernels,
+is supported for this board (see <xref linkend="executing-programs">). The <command>
+exec</command> parameters used for the Excalibur are:</para>
+<variablelist><varlistentry>
+<term>-b <replaceable>&lt;addr></replaceable></term>
+<listitem><para>Location Linux kernel was loaded to</para></listitem></varlistentry>
+<varlistentry><term>
+-l <replaceable>&lt;len></replaceable></term>
+<listitem><para>Length of kernel</para></listitem></varlistentry>
+<varlistentry><term>
+-c <replaceable>"params"</replaceable></term>
+<listitem><para>Parameters passed to kernel</para></listitem></varlistentry>
+<varlistentry><term>-r <replaceable>&lt;addr></replaceable></term>
+<listitem><para>'initrd' ramdisk location</para></listitem></varlistentry>
+<varlistentry><term>-s <replaceable>&lt;len></replaceable></term>
+<listitem><para>Length of initrd ramdisk</para></listitem></varlistentry>
+</variablelist>
+
+<para>The parameters for kernel image base and size are automatically
+set after a load operation. So one way of starting the kernel would
+be:
+
+<screen>RedBoot&gt; <userinput>load -r -b 0x100000 zImage</userinput>
+Raw file loaded 0x00100000-0x001a3d6c
+RedBoot&gt; <userinput>exec -c "console=ttyUA0,57600"</userinput>
+Using base address 0x00100000 and length 0x000a3d6c
+Uncompressing Linux.....
+</screen>
+
+An image could also be put in flash and started directly:
+
+<screen>RedBoot&gt; <userinput>exec -b 0x40400000 -l 0xc0000 -c "console=ttyUA0,57600"</userinput>
+Uncompressing Linux.....
+</screen>
+
+</para>
+</sect2>
+<sect2>
+<title>Memory Maps </title>
+<para>The MMU page tables are located at 0x4000. <note><title>NOTE
+</title>
+<para>The virtual memory maps in this section use a C and B column to indicate
+whether or not the region is cached (C) or buffered (B).</para>
+</note><programlisting>Physical Address Range     Description
+-----------------------    ----------------------------------
+0x00000000 - 0x07ffffff    SDRAM
+0x08000000 - 0x0805ffff    On-chip SRAM
+0x40000000 - 0x40ffffff    Flash
+0x7fffc000 - 0x7fffffff    I/O registers
+0x80000000 - 0x8001ffff    PLD
+
+Virtual Address Range    C B  Description
+-----------------------  - -  ----------------------------------
+0x00000000 - 0x07ffffff  Y Y  SDRAM
+0x08000000 - 0x0805ffff  Y Y  On-chip SRAM
+0x40000000 - 0x403fffff  N Y  Flash
+0x7fffc000 - 0x7fffffff  N N  I/O registers
+0x80000000 - 0x8001ffff  N N  PLD
+</programlisting></para>
+
+</sect2>
+<sect2>
+<title>Rebuilding RedBoot</title>
+
+<para>These shell variables provide the platform-specific information
+needed for building RedBoot according to the procedure described in
+<xref linkend="Rebuilding-Redboot">:
+<programlisting>
+export TARGET=excalibur_arm9
+export ARCH_DIR=arm
+export PLATFORM_DIR=arm9/excalibur
+</programlisting>
+</para>
+
+<para>The names of configuration files are listed above with the
+description of the associated modes.</para>
+
+</sect2>
+</sect1>
 
 <?Pub _newpage>
 <sect1 id="ebsa285">
