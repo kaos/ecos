@@ -330,7 +330,7 @@ main(int argc, char** argv)
 The USB-ethernet package provides two main modes of operation. In the
 first mode it provides a <link linkend="usbseth-netdev">network device
 driver</link> for use by a TCP/IP stack running inside the USB
-peripheral. All incoming ethernet packages should be passed up the
+peripheral. All incoming ethernet packets should be passed up the
 TCP/IP stack, and only the stack will generate outgoing packets. Apart
 from <link linkend="usbseth-init">initialization</link> and possibly
 certain <link linkend="usbseth-control">control operations</link>,
