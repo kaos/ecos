@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, tkoeller
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -114,6 +114,10 @@ EXTERN int script_timeout;
 #ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
 EXTERN int console_baud_rate;
 #endif
+#endif
+
+#ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+EXTERN unsigned char *fis_zlib_common_buffer;
 #endif
 
 // Prototypes

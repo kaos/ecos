@@ -41,7 +41,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov, gthomas
+// Contributors: jskov, gthomas, tkoeller
 // Date:         2001-03-08
 // Purpose:      
 // Description:  
@@ -74,7 +74,11 @@ struct _block {
 };
 static struct _block *memlist;
 
-#define ZLIB_COMPRESSION_OVERHEAD 0xC000
+#ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+# define ZLIB_COMPRESSION_OVERHEAD CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE
+#else
+# define ZLIB_COMPRESSION_OVERHEAD 0xC000
+#endif
 static void *zlib_workspace;
 
 //
@@ -87,9 +91,13 @@ static void *zlib_workspace;
 static void
 _zlib_init(void)
 {
+#ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+    zlib_workspace = fis_zlib_common_buffer;
+#else
     // Allocate some RAM for use by the gzip/zlib routines
     workspace_end -= ZLIB_COMPRESSION_OVERHEAD;
     zlib_workspace = workspace_end;
+#endif
 }
 
 RedBoot_init(_zlib_init, RedBoot_INIT_FIRST);

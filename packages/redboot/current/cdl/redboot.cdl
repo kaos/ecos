@@ -833,6 +833,28 @@ cdl_package CYGPKG_REDBOOT {
 	    no_define
 	}
     }
+
+    cdl_component CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER {
+    	display     	"Use a common buffer for Zlib and FIS"
+	flavor	    	bool
+	active_if   	{ CYGBLD_BUILD_REDBOOT_WITH_ZLIB && \
+    	    	    	  CYGOPT_REDBOOT_FIS }
+	default_value	0
+	description 	"
+	    Use a common memory buffer for both the zlib workspace
+	    and FIS directory operations. This can save a substantial
+	    amount of RAM, especially when flash sectors are large."
+
+    	cdl_option CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE {
+	    display 	    "Size of Zlib/FIS common buffer"
+	    flavor  	    data
+	    default_value   0xc000
+	    legal_values    0x4000 to 0x80000000
+	    description     "
+	    	Size of common buffer to allocate. Must be at least the
+		size of one flash sector."
+	}
+    }
 }
 
 # EOF redboot.cdl

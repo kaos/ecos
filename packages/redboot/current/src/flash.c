@@ -41,7 +41,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, tkoeller
 // Date:         2000-07-28
 // Purpose:      
 // Description:  
@@ -477,7 +477,7 @@ fis_list(int argc, char *argv[])
     {
         return;
     }
-    img = (struct fis_image_desc *)fis_work_block;
+    img = (struct fis_image_desc *) fis_addr;
     // Let diag_printf do the formatting in both cases, rather than counting
     // cols by hand....
     diag_printf("%-16s  %-10s  %-10s  %-10s  %-s\n",
@@ -619,6 +619,7 @@ fis_create(int argc, char *argv[])
         return;
     }
 
+    memcpy(fis_work_block, fis_addr, fisdir_size);
     defaults_assumed = false;
     if (name) {
         // Search existing files to acquire defaults for params not specified:
@@ -819,6 +820,7 @@ fis_delete(int argc, char *argv[])
     num_reserved++;
 #endif
 
+    memcpy(fis_work_block, fis_addr, fisdir_size);
     img = fis_lookup(name, &i);
     if (img) {
         if (i < num_reserved) {
@@ -874,6 +876,7 @@ fis_load(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
+    memcpy(fis_work_block, fis_addr, fisdir_size);
     if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
         diag_printf("No image '%s' found\n", name);
         return;
@@ -915,6 +918,9 @@ fis_load(int argc, char *argv[])
         // Set load address/top
         load_address = mem_addr;
         load_address_end = (unsigned long)p->out_buf;
+
+    	// Reload fis directory
+	memcpy(fis_work_block, fis_addr, fisdir_size);
     } else // dangling block
 #endif
     {
@@ -1092,6 +1098,7 @@ fis_lock(int argc, char *argv[])
     /* Get parameters from image if specified */
     if (name) {
         struct fis_image_desc *img;
+	memcpy(fis_work_block, fis_addr, fisdir_size);
         if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
             diag_printf("No image '%s' found\n", name);
             return;
@@ -1138,6 +1145,7 @@ fis_unlock(int argc, char *argv[])
 
     if (name) {
         struct fis_image_desc *img;
+	memcpy(fis_work_block, fis_addr, fisdir_size);
         if ((img = fis_lookup(name, NULL)) == (struct fis_image_desc *)0) {
             diag_printf("No image '%s' found\n", name);
             return;
@@ -1190,8 +1198,17 @@ do_flash_init(void)
         flash_get_block_info(&flash_block_size, &flash_num_blocks);
         workspace_end = (unsigned char *)(workspace_end-FLASH_MIN_WORKSPACE);
 #ifdef CYGOPT_REDBOOT_FIS
+# ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+	fis_work_block = fis_zlib_common_buffer;
+	if(CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE < flash_block_size) {
+            diag_printf("FLASH: common buffer too small\n");
+	    workspace_end += FLASH_MIN_WORKSPACE;
+            return false;
+	}
+# else
         workspace_end = (unsigned char *)(workspace_end-flash_block_size);
         fis_work_block = workspace_end;
+# endif
         fisdir_size = flash_block_size;
         if (CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK < 0) {
             fis_addr = (void *)((CYG_ADDRESS)flash_end + 1 +
@@ -1230,9 +1247,6 @@ do_fis(int argc, char *argv[])
         diag_printf("Sorry, no FLASH memory is available\n");
         return;
     }
-#ifdef CYGOPT_REDBOOT_FIS
-    memcpy(fis_work_block, fis_addr, flash_block_size);
-#endif
     if ((cmd = cmd_search(__FIS_cmds_TAB__, &__FIS_cmds_TAB_END__, 
                           argv[1])) != (struct cmd *)0) {
         (cmd->fun)(argc, argv);

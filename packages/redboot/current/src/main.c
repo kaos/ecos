@@ -42,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, tkoeller
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -222,6 +222,11 @@ cyg_start(void)
     }
 
     bist();
+
+#ifdef CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER
+    fis_zlib_common_buffer =
+    workspace_end -= CYGNUM_REDBOOT_FIS_ZLIB_COMMON_BUFFER_SIZE;
+#endif
 
     for (init_entry = __RedBoot_INIT_TAB__; init_entry != &__RedBoot_INIT_TAB_END__;  init_entry++) {
         (*init_entry->fun)();
