@@ -1,8 +1,10 @@
 2003-09-20  Chris Garry  <cgarry@sweeneydesign.co.uk>
+	
+	* src/main.c: Modified the way multiple "RAM" segments are reported.
 
-    * src/fconfig.c: Variables 'stat' and '*err_addr' in function
-    flash_write_config() are now defined regardless of whether 
-    CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG is defined of not.
+	* src/fconfig.c: Variables 'stat' and '*err_addr' in function
+	flash_write_config() are now defined regardless of whether 
+	CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG is defined of not.
 
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 

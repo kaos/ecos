@@ -173,14 +173,16 @@ do_version(int argc, char *argv[])
     diag_printf("Copyright (C) 2000, 2001, 2002, Red Hat, Inc.\n\n");
     diag_printf("RAM: %p-%p, ", (void*)ram_start, (void*)ram_end);
     diag_printf("[%p-%p]", mem_segments[0].start, mem_segments[0].end);
+    diag_printf(" available\n");
 #if CYGBLD_REDBOOT_MAX_MEM_SEGMENTS > 1
     for (seg = 1;  seg < CYGBLD_REDBOOT_MAX_MEM_SEGMENTS;  seg++) {
         if (mem_segments[seg].start != NO_MEMORY) {
+            diag_printf("     %p-%p, ", mem_segments[seg].start, mem_segments[seg].end);
             diag_printf("[%p-%p]", mem_segments[seg].start, mem_segments[seg].end);
+            diag_printf(" available\n");
         }
     }
 #endif
-    diag_printf(" available\n");
 #ifdef CYGPKG_REDBOOT_FLASH
     _flash_info();
 #endif
