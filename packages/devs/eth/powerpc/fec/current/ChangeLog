@@ -1,3 +1,14 @@
+2002-10-11  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fec.c: 
+	* cdl/fec_eth_drivers.cdl: Add control over PHY - when to reset
+	and how to configure the link.
+
+2002-09-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fec.c (fec_eth_init): Check for availability of RedBoot
+	FLASH support.
+
 2002-09-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fec.c: Make driver more generic - platform specifics are

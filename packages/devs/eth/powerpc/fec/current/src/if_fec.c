@@ -444,7 +444,11 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
 
     // Get physical device address
 #ifdef CYGPKG_REDBOOT
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     esa_ok = flash_get_config("fec_esa", enaddr, CONFIG_ESA);
+#else
+    esa_ok = false;
+#endif
 #else
     esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
                                          "fec_esa", enaddr, CONFIG_ESA);
@@ -460,40 +464,58 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
         return false;
     }
 
+    fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
+
+#ifdef CYGSEM_DEVS_ETH_POWERPC_FEC_RESET_PHY
     // Reset PHY (transceiver)
     FEC_ETH_RESET_PHY();
 
-    // Enable transceiver (PHY)    
     phy_ok = 0;
-    phy_write(PHY_BMCR, FEC_ETH_PHY, PHY_BMCR_RESET);
-    for (i = 0;  i < 10;  i++) {
-        phy_ok = phy_read(PHY_BMCR, FEC_ETH_PHY, &phy_state);
-        if (!phy_ok) break;
-        if (!(phy_state & PHY_BMCR_RESET)) break;
-    }
-    if (!phy_ok || (phy_state & PHY_BMCR_RESET)) {
-        os_printf("FEC: Can't get PHY unit to reset: %x\n", phy_state);
-        return false;
-    }
-    fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
-    phy_write(PHY_BMCR, FEC_ETH_PHY, PHY_BMCR_AUTO_NEG|PHY_BMCR_RESTART);
-    while (phy_timeout-- >= 0) {
-        int ev = fec->iEvent;
-        unsigned short state;
-        fec->iEvent = ev;
-        if (ev & iEvent_MII) {
-            phy_ok = phy_read(PHY_BMSR, FEC_ETH_PHY, &state);
-            if (phy_ok && (state & PHY_BMSR_AUTO_NEG)) {
-//                os_printf("State: %x\n", state);
-                break;
-            } else {
-                CYGACC_CALL_IF_DELAY_US(1000);   // 1ms
+    if (phy_read(PHY_BMSR, FEC_ETH_PHY, &phy_state)) {
+        if ((phy_state & PHY_BMSR_LINK) !=  PHY_BMSR_LINK) {
+            unsigned short reset_mode;
+            phy_write(PHY_BMCR, FEC_ETH_PHY, PHY_BMCR_RESET);
+            for (i = 0;  i < 10;  i++) {
+                phy_ok = phy_read(PHY_BMCR, FEC_ETH_PHY, &phy_state);
+                if (!phy_ok) break;
+                if (!(phy_state & PHY_BMCR_RESET)) break;
+            }
+            if (!phy_ok || (phy_state & PHY_BMCR_RESET)) {
+                os_printf("FEC: Can't get PHY unit to soft reset: %x\n", phy_state);
+                return false;
+            }
+
+            fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
+            reset_mode = PHY_BMCR_RESTART;
+#ifdef CYGNUM_DEVS_ETH_POWERPC_FEC_LINK_MODE_Auto
+            reset_mode |= PHY_BMCR_AUTO_NEG;
+#endif
+#ifdef CYGNUM_DEVS_ETH_POWERPC_FEC_LINK_MODE_100Mb
+            reset_mode |= PHY_BMCR_100MB;
+#endif
+            phy_write(PHY_BMCR, FEC_ETH_PHY, reset_mode);
+            while (phy_timeout-- >= 0) {
+                int ev = fec->iEvent;
+                unsigned short state;
+                fec->iEvent = ev;
+                if (ev & iEvent_MII) {
+                    phy_ok = phy_read(PHY_BMSR, FEC_ETH_PHY, &state);
+                    if (phy_ok && (state & PHY_BMSR_LINK)) {
+                        break;
+                    } else {
+                        CYGACC_CALL_IF_DELAY_US(10000);   // 10ms
+                    }
+                }
+            }
+            if (phy_timeout <= 0) {
+                os_printf("** FEC Warning: PHY LINK UP failed\n");
             }
         }
+        else {
+            os_printf("** FEC Info: PHY LINK alreay UP \n");
+        }
     }
-    if (phy_timeout <= 0) {
-        os_printf("** FEC Warning: PHY auto-negotiation failed\n");
-    }
+#endif // CYGSEM_DEVS_ETH_POWERPC_FEC_RESET_PHY
 
     // Initialize upper level driver
     (sc->funs->eth_drv->init)(sc, (unsigned char *)&enaddr);

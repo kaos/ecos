@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -99,6 +100,10 @@
 #define RTCK       0x324
 #define RTSECK     0x328
 #define RTCALK     0x32C
+#define PADIR      0x950        /* Port A - Pin direction */
+#define PAPAR      0x952        /* Port A - Pin assignment */
+#define PAODR      0x954        /* Port A - Open Drain Control */
+#define PADAT      0x956        /* Port A - Data */
 
 #else
 

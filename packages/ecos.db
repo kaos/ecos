@@ -3972,3 +3972,48 @@ target calm32_ceb {
 }
 # --------------------------------------------------------------------------
 
+package CYGPKG_HAL_POWERPC_TS1000 {
+	alias		{ "Allied Telesyn TS1000 board" hal_powerpc_ts1000 }
+	directory	hal/powerpc/ts1000
+	script		hal_powerpc_ts1000.cdl
+	hardware
+        description "
+            The TS1000 HAL package provides the support needed to run
+            eCos on a Allied Telesyn TS1000 board equipped with a PowerPC processor."
+}
+
+package CYGPKG_DEVS_FLASH_TS1000 {
+	alias 		{ "FLASH memory support for Allied Telesyn TS1000 (PPC855) board" flash_ts1000 }
+	directory	devs/flash/powerpc/ts1000
+	script		flash_ts1000.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Allied Telesyn TS1000 (PPC855) platform."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_TS1000 {
+	alias 		{ "Allied Telesyn TS1000 ethernet driver" ts1000_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/ts1000
+	script		ts1000_eth_drivers.cdl
+        description     "Ethernet driver specifics for Allied Telesyn TS1000 (MPC855T) based boards."
+}
+
+target ts1000 {
+        alias		{ "Allied Telesyn TS1000 board" ts1000_855 }
+	packages        { CYGPKG_HAL_POWERPC
+                          CYGPKG_HAL_POWERPC_MPC8xx
+                          CYGPKG_HAL_POWERPC_TS1000
+                          CYGPKG_HAL_QUICC 
+                          CYGPKG_DEVS_FLASH_TS1000
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_ETH_POWERPC_FEC
+                          CYGPKG_DEVS_ETH_POWERPC_TS1000
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+        }
+        description "
+            The ts1000 target provides the packages needed to run
+            eCos on a Allied Telesyn TS1000 (PPC855T) board."
+}
+

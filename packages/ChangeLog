@@ -9,6 +9,7 @@
 2002-09-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: Adding generic FEC driver support package (Viper).
+	Add Allied Telesyn TS1000 platform.
 
 2002-08-27  Bart Veer  <bartv@ecoscentric.com>
 

@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -54,6 +55,29 @@
 //
 //==========================================================================
 
+//
+// Note: 'bootblocks' are a set of blocks which are treated by
+// the driver as a single larger block.  This simplifies the driver
+// so as to only have to deal with single size blocks (even though
+// the physical device may differ).  The data structure is laid out as:
+//    <address of start of boot block area 1>
+//    <size of sub-block 1>
+//    <size of sub-block 2>
+//    ...
+//    <size of sub-block n>
+//    <address of start of boot block area 2>
+//    <size of sub-block 1>
+//    <size of sub-block 2>
+//    ...
+//    <size of sub-block n>
+//    _LAST_BOOTBLOCK
+//
+// Finally, when specifying a device with bootblocks, the total number
+// of blocks should reflect this collapse, i.e. if the device has 15
+// full size blocks and 8 blocks which are 1/8 each, then the total
+// should be 16 blocks.
+//
+#define _LAST_BOOTBLOCK (-1)
 
 #if CYGNUM_FLASH_WIDTH == 8
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29F040B
@@ -80,7 +104,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -96,7 +120,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -114,7 +138,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -130,7 +154,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -152,7 +176,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -172,7 +196,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -194,7 +218,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
@@ -217,7 +241,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
@@ -232,19 +256,29 @@
         device_id2 : FLASHWORD(0x02),
         device_id3 : FLASHWORD(0x01),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 142,
+        block_count: 128,
         device_size: 0x0800000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x8000000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblocks : { 0x07F0000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x0002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x7F0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
                      },
         banked     : true,
         banks      : { 0x0700000 * CYGNUM_FLASH_INTERLEAVE,
@@ -267,7 +301,7 @@
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -283,7 +317,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -301,7 +335,7 @@
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -317,7 +351,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -335,7 +369,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -356,7 +390,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -372,7 +406,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -390,7 +424,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -406,7 +440,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -424,7 +458,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -440,7 +474,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -463,7 +497,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -483,7 +517,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -505,7 +539,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
@@ -515,7 +549,7 @@
     {   // AM29DL324D-B
         device_id  : FLASHWORD(0x225f),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 64,
+        block_count: 64,  
         device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x400000 * CYGNUM_FLASH_INTERLEAVE - 1),
         bootblock  : true,
@@ -528,7 +562,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : true,
         banks      : { 0x200000 * CYGNUM_FLASH_INTERLEAVE,
@@ -543,10 +577,11 @@
         device_id2 : FLASHWORD(0x2202),
         device_id3 : FLASHWORD(0x2201),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 142,
+        block_count: 128,
         device_size: 0x800000 * CYGNUM_FLASH_INTERLEAVE,
         base_mask  : ~(0x800000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblocks : { 0x7F0000 * CYGNUM_FLASH_INTERLEAVE,
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
                        0x2000 * CYGNUM_FLASH_INTERLEAVE,
                        0x2000 * CYGNUM_FLASH_INTERLEAVE,
                        0x2000 * CYGNUM_FLASH_INTERLEAVE,
@@ -555,7 +590,16 @@
                        0x2000 * CYGNUM_FLASH_INTERLEAVE,
                        0x2000 * CYGNUM_FLASH_INTERLEAVE,
                        0x2000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       0x7F0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
                      },
         banked     : true,
         banks      : { 0x700000 * CYGNUM_FLASH_INTERLEAVE,
@@ -578,7 +622,7 @@
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -594,7 +638,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -612,7 +656,7 @@
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x02000 * CYGNUM_FLASH_INTERLEAVE,
                        0x04000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -628,7 +672,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },
@@ -657,7 +701,7 @@
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
+                       _LAST_BOOTBLOCK
                      },
         banked     : false
     },

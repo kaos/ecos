@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -140,9 +141,9 @@ typedef struct flash_dev_info {
     cyg_uint32   base_mask;
     cyg_uint32   device_size;
     cyg_bool     bootblock;
-    cyg_uint32   bootblocks[12];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
+    cyg_uint32   bootblocks[64];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
     cyg_bool     banked;
-    cyg_uint32   banks[5];               // bank offets, highest to lowest (lowest should be 0)
+    cyg_uint32   banks[8];               // bank offsets, highest to lowest (lowest should be 0)
                                          // (only one entry for now, increase to support devices
                                          // with more banks).
 } flash_dev_info_t;
@@ -296,10 +297,11 @@ _flash_erase_block(void* block, unsigned int size)
     volatile flash_data_t *b_v;
     volatile flash_data_t *f_s0, *f_s1, *f_s2;
     int timeout = 50000;
-    int len, len_ix = 1;
+    int len = 0;
     int res = FLASH_ERR_OK;
     flash_data_t state;
-    cyg_bool bootblock;
+    cyg_bool bootblock = false;
+    cyg_uint32 *bootblocks = (cyg_uint32 *)0;
     CYG_ADDRWORD bank_offset;
 
     BANK = ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
@@ -323,16 +325,27 @@ _flash_erase_block(void* block, unsigned int size)
     f_s1 = FLASH_P2V(BANK + FLASH_Setup_Addr1);
     f_s2 = FLASH_P2V(BANK + FLASH_Setup_Addr2);
 
-    // Is this the boot sector?
-    bootblock = (flash_dev_info->bootblock &&
-                 (flash_dev_info->bootblocks[0] == ((unsigned long)block - (unsigned long)ROM)));
-    if (bootblock) {
-        len = flash_dev_info->bootblocks[len_ix++];
-    } else {
-        len = flash_dev_info->block_size;
+    // Assume not "boot" sector, full size
+    bootblock = false;
+    len = flash_dev_info->block_size;
+
+    // Is this in a "boot" sector?
+    if (flash_dev_info->bootblock) {
+        bootblocks = (cyg_uint32 *)&flash_dev_info->bootblocks[0];
+        while (*bootblocks != _LAST_BOOTBLOCK) {
+            if (*bootblocks++ == ((unsigned long)block - (unsigned long)ROM)) {
+                len = *bootblocks++;  // Size of first sub-block
+                bootblock = true;
+                break;
+            } else {
+                int ls = flash_dev_info->block_size;
+                // Skip over segment
+                while ((ls -= *bootblocks++) > 0) ;
+            }
+        }
     }
 
-    while (len > 0) {
+    while (size > 0) {
 #ifndef CYGHWR_FLASH_AM29XXXXX_NO_WRITE_PROTECT
         // First check whether the block is protected
         *f_s1 = FLASH_Setup_Code1;
@@ -391,6 +404,8 @@ _flash_erase_block(void* block, unsigned int size)
         if (FLASH_ERR_OK != res)
             *FLASH_P2V(ROM) = FLASH_Reset;
 
+        size -= len;  // This much has been erased
+
         // Verify erase operation
         while (len > 0) {
             b_v = FLASH_P2V(b_p++);
@@ -402,8 +417,9 @@ _flash_erase_block(void* block, unsigned int size)
             len -= sizeof(*b_p);
         }
 
-        if (bootblock)
-            len = flash_dev_info->bootblocks[len_ix++];
+        if (bootblock) {
+            len = *bootblocks++;
+        }
     }
     return res;
 }
