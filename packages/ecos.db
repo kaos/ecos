@@ -562,6 +562,16 @@ package CYGPKG_DEVS_FLASH_IXDP425 {
 	   on the IXDP425 platform."
 }
 
+package CYGPKG_DEVS_FLASH_XSENGINE {
+       alias           { "FLASH memory support for XSEngine" flash_xsengine }
+       directory       devs/flash/arm/xsengine
+       script          flash_xsengine.cdl
+       hardware
+       description "
+          This package contains hardware support for FLASH memory
+          on the XSEngine platform."
+}
+
 package CYGPKG_DEVS_FLASH_GRG {
 	alias 		{ "FLASH memory support for GRG" flash_grg }
 	directory	devs/flash/arm/grg
@@ -1662,6 +1672,14 @@ package CYGPKG_DEVS_ETH_ARM_IXDP425_I82559 {
 	directory	devs/eth/arm/ixdp425/i82559
 	script		ixdp425_i82559_eth_driver.cdl
         description     "Ethernet driver for IXDP425 with Intel 82559 PCI NIC."
+}
+
+package CYGPKG_DEVS_ETH_ARM_XSCALE_XSENGINE {
+       alias           { "XSEngine SMC91C111 ethernet driver" devs_eth_arm_xsengine }
+       hardware
+       directory       devs/eth/arm/xsengine
+       script          xsengine_eth_drivers.cdl
+       description     "Ethernet driver for XSEngine board."
 }
 
 package CYGPKG_DEVS_ETH_ARM_GRG_I82559 {
@@ -2769,6 +2787,16 @@ package CYGPKG_HAL_ARM_XSCALE_IXP425 {
         description "
         The XScale IXP425 HAL package provides the support needed to run
         eCos on Intel XScale IXP425 network processor based systems."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_XSENGINE {
+       alias           { "Exys XSEngine" hal_arm_xscale_xsengine }
+       directory       hal/arm/xscale/xsengine
+       script          hal_arm_xscale_xsengine.cdl
+       hardware
+       description "
+         The XSEngine HAL package provides the support needed to run
+         eCos on an Exys XSEngine board."
 }
 
 package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
@@ -4439,6 +4467,22 @@ target ixdp425 {
         description "
         The ixdp425 target provides the packages needed to run
         eCos on an Intel network processor evaluation board."
+}
+
+target XSEngine {
+        alias { "Exys XSEngine Board" XSEngine xsengine }
+        packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+                   CYGPKG_HAL_ARM_XSCALE_PXA2X0
+                   CYGPKG_HAL_ARM_XSCALE_XSENGINE
+                   CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                   CYGPKG_DEVS_FLASH_XSENGINE
+                   CYGPKG_DEVS_ETH_SMSC_LAN91CXX
+                   CYGPKG_DEVS_ETH_ARM_XSCALE_XSENGINE
+        }
+        description "
+            The XSEngine target provides the packages needed to run
+            eCos on an Exys XSEngine board."
 }
 
 target grg {

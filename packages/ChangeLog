@@ -1,3 +1,7 @@
+2005-02-23  Kurt Stremerch <kurt.stremerch@exys.be>
+
+        * ecos.db: Added support for Exys XSEngine (PXA255) based system.
+		
 2005-01-31  Aaron Voisine <aaron@voisine.org>
 
 	* Port of exXML to eCos.  Based on ezXML 0.8.1.  
