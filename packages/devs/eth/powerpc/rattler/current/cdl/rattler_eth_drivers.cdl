@@ -61,6 +61,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_RATTLER {
 
     requires      CYGPKG_DEVS_ETH_POWERPC_FCC
     requires      CYGPKG_HAL_POWERPC_RATTLER
+    requires      CYGHWR_DEVS_ETH_PHY_AM79C874
 
     cdl_option CYGHWR_DEVS_ETH_POWERPC_RATTLER_FCC1 {
         display       "Include fcc1/eth0 ethernet device"

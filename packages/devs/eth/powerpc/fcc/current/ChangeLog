@@ -1,3 +1,7 @@
+2003-08-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fcc.c: Use new PHY support.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fcc.c: 

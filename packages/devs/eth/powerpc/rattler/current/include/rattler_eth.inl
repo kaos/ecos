@@ -71,9 +71,19 @@ static void
 fcc1_phy_init(void)
 {
     // Set up PHY reset line
-    IMM->io_regs[PORT_B].pdat &= ~FCC1_PHY_RESET;
     IMM->io_regs[PORT_B].pdat |= FCC1_PHY_RESET;
     IMM->io_regs[PORT_C].pdir |= FCC1_PHY_CLOCK;
+}
+
+//
+// Reset the PHY associated with FCC1/eth0
+//
+static void 
+fcc1_phy_reset(void)
+{
+    // Toggle PHY reset line
+    IMM->io_regs[PORT_B].pdat &= ~FCC1_PHY_RESET;
+    IMM->io_regs[PORT_B].pdat |= FCC1_PHY_RESET;
 }
 
 //
@@ -135,8 +145,9 @@ fcc1_phy_set_dir(int data_dir)
     }
 }
 
-ETH_PHY_ACCESS_FUNS(fcc1_phy,
+ETH_PHY_BIT_LEVEL_ACCESS_FUNS(fcc1_phy,
                     fcc1_phy_init,
+                    fcc1_phy_reset,
                     fcc1_phy_set_data,
                     fcc1_phy_get_data,
                     fcc1_phy_set_clock,
@@ -193,9 +204,19 @@ static void
 fcc2_phy_init(void)
 {
     // Set up PHY reset line
-    IMM->io_regs[PORT_B].pdat &= ~FCC2_PHY_RESET;
     IMM->io_regs[PORT_B].pdat |= FCC2_PHY_RESET;
     IMM->io_regs[PORT_C].pdir |= FCC2_PHY_CLOCK;
+}
+
+//
+// Reset the PHY associated with FCC2/eth1
+//
+static void 
+fcc2_phy_reset(void)
+{
+    // Toggle the PHY reset line
+    IMM->io_regs[PORT_B].pdat &= ~FCC2_PHY_RESET;
+    IMM->io_regs[PORT_B].pdat |= FCC2_PHY_RESET;
 }
 
 //
@@ -257,8 +278,9 @@ fcc2_phy_set_dir(int data_dir)
     }
 }
 
-ETH_PHY_ACCESS_FUNS(fcc2_phy,
+ETH_PHY_BIT_LEVEL_ACCESS_FUNS(fcc2_phy,
                     fcc2_phy_init,
+                    fcc2_phy_reset,
                     fcc2_phy_set_data,
                     fcc2_phy_get_data,
                     fcc2_phy_set_clock,

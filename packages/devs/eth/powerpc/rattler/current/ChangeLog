@@ -1,3 +1,8 @@
+2003-08-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/rattler_eth.inl: 
+	* cdl/rattler_eth_drivers.cdl: Update PHY support, using AMD AM79C874.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/rattler_eth.inl: 

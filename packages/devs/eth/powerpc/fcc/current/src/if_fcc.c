@@ -158,6 +158,9 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
     // The FCC seems rather picky about these...
     static long rxbd_base = 0x3000;
     static long txbd_base = 0xB000;
+#ifdef CYGPKG_DEVS_ETH_PHY
+    unsigned short phy_state = 0;
+#endif
 
     // Set up pointers to FCC controller
     switch (qi->int_vector) {
@@ -306,49 +309,34 @@ fcc_eth_init(struct cyg_netdevtab_entry *dtp)
         CPCR_FLG;              /* ISSUE COMMAND */
     while ((IMM->cpm_cpcr & CPCR_FLG) != CPCR_READY_TO_RX_CMD); 
 
-#ifdef CYGSEM_DEVS_ETH_POWERPC_FCC_RESET_PHY
-    {
-        unsigned short phy_state;
-        unsigned short reset_mode;
-        int phy_unit = 0;
-        int phy_ok;
-        int phy_timeout = 5*100;
-
-        // Reset PHY (transceiver)
-        _eth_phy_init(qi->phy);
-
-        if (_eth_phy_read(qi->phy, PHY_BMSR, phy_unit, &phy_state)) {
-            if ((phy_state & PHY_BMSR_LINK) !=  PHY_BMSR_LINK) {
-                _eth_phy_write(qi->phy, PHY_BMCR, phy_unit, PHY_BMCR_RESET);
-                for (i = 0;  i < 10;  i++) {
-                    phy_ok = _eth_phy_read(qi->phy, PHY_BMCR, phy_unit, &phy_state);
-                    if (!phy_ok) break;
-                    if (!(phy_state & PHY_BMCR_RESET)) break;
-                }
-                if (!phy_ok || (phy_state & PHY_BMCR_RESET)) {
-                    diag_printf("%s: Can't get PHY unit to soft reset: %x\n", dtp->name, phy_state);
-                    return false;
-                }
-                reset_mode = PHY_BMCR_RESTART | PHY_BMCR_AUTO_NEG | PHY_BMCR_FULL_DUPLEX;
-                _eth_phy_write(qi->phy, PHY_BMCR, phy_unit, reset_mode);
-                while (phy_timeout-- >= 0) {
-                    phy_ok = _eth_phy_read(qi->phy, PHY_BMSR, phy_unit, &phy_state);
-                    if (phy_ok && (phy_state & PHY_BMSR_LINK)) {
-                        break;
-                    } else {
-                        CYGACC_CALL_IF_DELAY_US(10000);   // 10ms
-                    }
-                }
-                if (phy_timeout <= 0) {
-                    diag_printf("** %s Warning: PHY LINK UP failed\n", dtp->name);
-                }
-            }
-            else {
-                diag_printf("** %s Info: PHY LINK already UP \n", dtp->name);
-            }
-        }
+    // Operating mode
+    if (!_eth_phy_init(qi->phy)) {
+        return false;
     }
-#endif // CYGSEM_DEVS_ETH_POWERPC_FCC_RESET_PHY
+#ifdef CYGSEM_DEVS_ETH_POWERPC_FCC_RESET_PHY
+    if (!_eth_phy_reset(qi->phy)) {
+        return false;
+    }
+#endif
+    phy_state = _eth_phy_state(qi->phy);
+    os_printf("FCC ETH: ");
+    if ((phy_state & ETH_PHY_STAT_LINK) != 0) {
+        if ((phy_state & ETH_PHY_STAT_100MB) != 0) {
+            // Link can handle 100Mb
+            os_printf("100Mb");
+            if ((phy_state & ETH_PHY_STAT_FDX) != 0) {
+                os_printf("/Full Duplex");
+            } 
+        } else {
+            // Assume 10Mb, half duplex
+            os_printf("10Mb");
+        }
+    } else {
+        os_printf("/***NO LINK***");
+        return false;
+    }
+    os_printf("\n");
+
 
     // Initialize upper level driver for ecos
     (sc->funs->eth_drv->init)(sc, (unsigned char *)&qi->enaddr);
