@@ -67,107 +67,190 @@ net_test(CYG_ADDRWORD data)
 {
     int err;
     struct addrinfo *addrs, hints;
+    size_t hostlen = 128;
+    size_t servlen = 64;
+    char host[hostlen];
+    char serv[servlen];
 
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all passive");
 
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      NULL, 0, serv,servlen, 0);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: service: %s\n",serv);
+    freeaddrinfo(addrs);
+
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = 0;
+    hints.ai_flags = AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all active");
+    freeaddrinfo(addrs);
 
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "IPv4 passive");
+    freeaddrinfo(addrs);
 
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
     if ((err = getaddrinfo("192.168.1.2", "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "IPv4 passive 192.168.1.2");
 
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      host, hostlen, serv, servlen, NI_NUMERICHOST);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: host: %s service: %s\n",host, serv);
+    freeaddrinfo(addrs);
+
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
     if ((err = getaddrinfo("192.168.1.2", "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all passive 192.168.1.2");
+    freeaddrinfo(addrs);
 
 #ifdef CYGPKG_NET_INET6
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_INET6;
     hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "IPv6 passive");
 
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      NULL, 0, serv,servlen, 0);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: service: %s\n",serv);
+    freeaddrinfo(addrs);
+    
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "7734", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all passive");
-
+    freeaddrinfo(addrs);
+    
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_NUMERICHOST;
     if ((err = getaddrinfo("fe80::260:97ff:feb0:866e", "7734", &hints, &addrs)) 
 	!= EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all passive fe80::260:97ff:feb0:866e");
+
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      host, hostlen, serv, servlen, NI_NUMERICHOST);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: host: %s service: %s\n",host, serv);
+    freeaddrinfo(addrs);
 #endif
 
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
+    if ((err = getaddrinfo(NULL, "ftp", &hints, &addrs)) != EAI_NONE) {
+        diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
+        pexit("getaddrinfo");
+    }
+    walk_addrs(addrs, "all snmp/udp");
+
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      NULL, 0, serv,servlen, 0);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: service: %s\n",serv);
+    freeaddrinfo(addrs);
+
+    bzero(&hints, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_PASSIVE|AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "snmp", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all snmp/udp");
 
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      NULL, 0, serv,servlen, 0);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: service: %s\n",serv);
+    freeaddrinfo(addrs);
+    
     bzero(&hints, sizeof(hints));
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = 0;
-    hints.ai_flags = AI_PASSIVE;
+    hints.ai_flags = AI_NUMERICHOST;
     if ((err = getaddrinfo(NULL, "snmp", &hints, &addrs)) != EAI_NONE) {
         diag_printf("<ERROR> can't getaddrinfo(): %s\n", gai_strerror(err));
         pexit("getaddrinfo");
     }
     walk_addrs(addrs, "all snmp/*");
+
+    err = getnameinfo(addrs->ai_addr, addrs->ai_addrlen, 
+                      NULL, 0, serv,servlen, NI_NUMERICSERV);
+    if (err != EAI_NONE) {
+        diag_printf("<ERROR> can't getnameinfo(): %s\n", gai_strerror(err));
+        pexit("getnameinfo");
+    }
+    diag_printf("INFO: service: %s\n",serv);
+    freeaddrinfo(addrs);
+
     CYG_TEST_PASS_FINISH("Address [library] test OK");
 
 }

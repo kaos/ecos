@@ -600,6 +600,9 @@ tftpd_server(cyg_addrword_t p)
       ai = server->res;
       memset(server->s,0,sizeof(server->s));
       server->num_s = 0;
+#ifdef CYGSEM_NET_TFTPD_MULTITHREADED   
+      sem_wait(server->port);
+#endif
       while (ai && (server->num_s < CYGNUM_NET_MAX_INET_PROTOS)) {
 	server->s[server->num_s] = socket(ai->ai_family, 
 					  ai->ai_socktype, 
@@ -613,9 +616,6 @@ tftpd_server(cyg_addrword_t p)
 	
 	set_port(ai->ai_addr, server->port);
 	
-#ifdef CYGSEM_NET_TFTPD_MULTITHREADED   
-	sem_wait(server->port);
-#endif
 	if (bind(server->s[server->num_s],ai->ai_addr, ai->ai_addrlen) < 0) {
 	  // Problem setting up my end
 	  diag_printf("TFTPD [%x]: can't bind to server port\n",p);

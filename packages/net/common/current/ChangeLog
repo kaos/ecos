@@ -1,7 +1,46 @@
+2003-05-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ifaddrs.c (getifaddrs): Fill in flags, netmask and broadcast
+	addresses, for both IPv4 and IPv6 and enabled.
+	* src/ipv6_routing_thread.c (ipv6_start_routing_thread): Only
+	start the thread once. 
+
+2003-04-26  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/getaddrinfo.c (getaddrinfo): Correctly return TCP when it is!
+	* tests/addr_test.c (net_test): Added a test which uses protocol TCP
+	* src/tftp_client.c (tftp_get): If we timeout on the first block,
+	try other addresses for the server if we have any.
+	* src/network_support.c (init_all_network_interfaces): After
+	router solicitation has given us an address, wait a couple of
+	seconds for duplicate address detection to do its work. While DAD
+	is active, we cannot use the new address.
+
 2003-04-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/tcpip.sgml: Fix some docbook errors only reported by certain
 	Jade versions.
+
+2003-04-24  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/tftp_client.c (tftp_client_put): Fixed compiler warning. 
+
+2003-04-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/getaddrinfo.c (getnameinfo): Fixed some endian issues with
+	port numbers and a typo. Added an interface to the DNS client for 
+	reverse lookups.
+	* tests/addr_test.c (net_test): Added tests for getnameinfo. Fixed
+	some memory leaks.
+
+2003-04-20  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/getaddrinfo.c (getaddrinfo): Virtually a re-write to
+	interface to the DNS client.
+
+2003-04-14  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/net/netdb.h: const correctness. 
 
 2003-04-12  Andrew Lunn  <andrew.lunn@ascom.ch>
 

@@ -121,7 +121,8 @@ server_test(struct bootp *bp)
                     getpeername(client, &client_addr, &client_len);
                     if (getnameinfo (&client_addr, client_len, 
                                      host_addr_buf, sizeof(host_addr_buf),
-                                     host_port_buf, sizeof(host_port_buf), 0) == EAI_NONE) {
+                                     host_port_buf, sizeof(host_port_buf), 
+                                     NI_NUMERIC) == EAI_NONE) {
                         diag_printf("connection from %s(%s)\n", host_addr_buf, host_port_buf);
                         diag_sprintf(buf, "Hello %s(%s)\n", host_addr_buf, host_port_buf);
                     } else {

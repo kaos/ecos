@@ -158,9 +158,9 @@ int tftp_client_get(char *filename,
 	}
 
 	if (bind(s,&local_addr,addrinfo->ai_addrlen) < 0) {
-	  *err = TFTP_NETERR;
-	  goto out;
-	}
+          *err = TFTP_NETERR;
+          goto out;
+        }
 	
 	// Send request
 	if (sendto(s, data, (int)(cp-data), 0, 
@@ -179,21 +179,38 @@ int tftp_client_get(char *filename,
 	  FD_ZERO(&fds);
 	  FD_SET(s, &fds);
 	  if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
-	    if ((++total_timeouts > TFTP_TIMEOUT_MAX) 
-		|| (last_good_block == 0)) {
-	      // Timeout - no data received
+            total_timeouts++;
+            if ((last_good_block == 0) && (total_timeouts > TFTP_RETRIES_MAX)) {
+	      // Timeout - no data received. Probably no server.
 	      *err = TFTP_TIMEOUT;
-	      goto out;
+	      goto nextaddr;
+            }
+	    if (total_timeouts > TFTP_TIMEOUT_MAX) {
+              // Timeout - have received data. Network problem?
+              *err = TFTP_TIMEOUT;
+              goto out;
 	    }
-	    // Try resending last ACK
-	    hdr->th_opcode = htons(ACK);
-	    hdr->th_block = htons(last_good_block);
-	    if (sendto(s, data, 4 /* FIXME */, 0, 
-		       &from_addr, from_len) < 0) {
-	      // Problem sending request
-	      *err = TFTP_NETERR;
-	      goto out;
-	    }
+            
+            if (last_good_block == 0 ) {
+              // Send request
+              if (sendto(s, data, (int)(cp-data), 0, 
+                         addrinfo->ai_addr, 
+                         addrinfo->ai_addrlen) < 0) {
+                // Problem sending request
+                *err = TFTP_NETERR;
+                goto nextaddr;
+              }
+            } else {
+              // Try resending last ACK
+              hdr->th_opcode = htons(ACK);
+              hdr->th_block = htons(last_good_block);
+              if (sendto(s, data, 4 /* FIXME */, 0, 
+                         &from_addr, from_len) < 0) {
+                // Problem sending request
+                *err = TFTP_NETERR;
+                goto out;
+              }
+            }
 	  } else {
 	    recv_len = sizeof(data);
 	    from_len = sizeof(from_addr);
@@ -335,7 +352,7 @@ int tftp_client_put(char *filename,
 		    int *err) {
 
     int result = 0;
-    int s, actual_len, data_len, recv_len, from_len;
+    int s = -1, actual_len, data_len, recv_len, from_len;
     static int put_port = 7800;
     struct sockaddr local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
@@ -436,7 +453,7 @@ int tftp_client_put(char *filename,
 	  FD_ZERO(&fds);
 	  FD_SET(s, &fds);
 	  if (select(s+1, &fds, 0, 0, &timeout) <= 0) {
-            if (++total_timeouts > TFTP_TIMEOUT_MAX) {
+            if (++total_timeouts > TFTP_RETRIES_MAX) {
 	      // Timeout - no ACK received
 	      *err = TFTP_TIMEOUT;
 	      goto nextaddr;
@@ -547,5 +564,3 @@ int tftp_client_put(char *filename,
 }
 
 // EOF tftp_client.c
-
-

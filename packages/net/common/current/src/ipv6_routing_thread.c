@@ -340,6 +340,7 @@ cyg_rs(cyg_addrword_t param)
 
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET6;
+  hints.ai_flags = AI_NUMERICHOST;
   err = getaddrinfo(ALLROUTER, NULL, &hints, &res);
   if (err) {
     dprnt("%s - failed to get ALL ROUTER: %s",
@@ -412,6 +413,12 @@ cyg_rs(cyg_addrword_t param)
 void
 ipv6_start_routing_thread(void)
 {
+  static int started = 0;
+  
+  started++;
+
+  if (started == 1) {
+  
     cyg_thread_create(
         CYGINT_NET_IPV6_ROUTING_THREAD_PRIORITY, // Priority
         cyg_rs,                                  // entry
@@ -424,5 +431,7 @@ ipv6_start_routing_thread(void)
         );
     cyg_thread_resume(rs_thread_handle);         // Start it
     diag_printf("IPv6 routing thread started\n");
+  }
 }
+
 

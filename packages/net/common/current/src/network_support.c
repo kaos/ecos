@@ -469,7 +469,10 @@ init_all_network_interfaces(void)
     }
     if (rs_wait == 0 ) {
       diag_printf("No router solicit received\n");
-    } 
+    } else {
+      // Give Duplicate Address Detection time to work
+      cyg_thread_delay(200);
+    }
 #endif
 
 #ifdef CYGDAT_NS_DNS_DEFAULT_SERVER

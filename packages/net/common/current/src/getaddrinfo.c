@@ -38,87 +38,232 @@
 #include <errno.h>
 #include <cyg/infra/cyg_ass.h>
 
+#include <pkgconf/system.h>
+#ifdef CYGPKG_NS_DNS
+#include <pkgconf/ns_dns.h>
+#include <cyg/ns/dns/dns.h>
+#endif
+
 extern int  sprintf(char *, const char *, ...);
 extern long strtol(const char *, char **, int);
 extern void *malloc(size_t);
 extern void *calloc(int, size_t);
 extern void free(void *);
 
-// This routine is the real meat of the host->address translation
-static int
-_getaddr(struct addrinfo *ai, const char *node, 
-         const struct addrinfo *hints, int family, int port)
-{
-    struct hostent *_hent;
+// Allocate a new addrinfo structure and if passed an existing
+// addrinfo copy all the port, protocol info into the new structure
+// and then link the new onto the old.
 
-    switch (family) {
-    case AF_INET:
-    {
-        struct sockaddr_in *sa;
-        sa = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
-        memset(sa, 0, sizeof(*sa));
-        ai->ai_addr = (struct sockaddr *)sa;
-        ai->ai_addrlen = sizeof(*sa);
-        if (ai->ai_addr == (struct sockaddr *)NULL) {
-            return EAI_MEMORY;
+struct addrinfo * alloc_addrinfo(struct addrinfo * ai) {
+    
+    struct addrinfo * nai;
+    struct sockaddr * sa;
+
+    nai = (struct addrinfo *)malloc(sizeof(struct addrinfo));
+    if (!nai) {
+        return NULL;
+    }
+    sa = (struct sockaddr *) malloc(sizeof(struct sockaddr));
+    if (!sa) {
+        free (nai);
+        return NULL;
+    }
+    memset(sa,0,sizeof(*sa));
+
+    if (ai) {
+        memcpy(nai,ai,sizeof(struct addrinfo));
+        ai->ai_next = nai;
+    } else {
+        memset(nai,0,sizeof(*nai));
+    }
+    nai->ai_addr = sa;
+    nai->ai_addrlen = sizeof(*sa);
+
+    return nai;
+}
+
+// getaddrinfo has not been passed a hostname. So it should use the
+// loopback or the any address.
+static int
+no_node_addr(struct addrinfo *ai, const struct addrinfo *hints, int port) {
+
+    switch (hints->ai_family) {
+    case AF_INET: {
+        struct sockaddr_in *sa = (struct sockaddr_in *) ai->ai_addr;
+        if (hints->ai_flags & AI_PASSIVE) {
+            sa->sin_addr.s_addr = htonl(INADDR_ANY);
+        } else {
+            sa->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
         }
-        sa->sin_family = AF_INET;
         sa->sin_len = sizeof(*sa);
         sa->sin_port = htons(port);
-        if (node == (char *)NULL) {
-            if (hints->ai_flags & AI_PASSIVE) {
-                sa->sin_addr.s_addr = htonl(INADDR_ANY);
-            } else {
-#ifdef CYGPKG_NET_OPENBSD_STACK
-                sa->sin_addr.s_addr = INADDR_LOOPBACK;
-#else
-                sa->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-#endif
-            }
-        } else {
-            _hent = gethostbyname(node);
-            if (_hent) {
-                memcpy(&sa->sin_addr.s_addr, _hent->h_addr, sizeof(struct in_addr));
-            } else {
-                // For now, only numeric "presentation" addresses supported
-                if (!inet_pton(AF_INET, (char *)node, (char *)&sa->sin_addr.s_addr)) {
-                    return EAI_FAIL;  // Couldn't resolve name
-                }
-            }
-        }
+        sa->sin_family = AF_INET;
+        ai->ai_family = AF_INET;
+        break;
     }
-    break;
 #ifdef CYGPKG_NET_INET6
-    case AF_INET6:
-    {
-        struct sockaddr_in6 *sa;
-        sa = (struct sockaddr_in6 *)malloc(sizeof(struct sockaddr_in6));
-        memset(sa, 0, sizeof(*sa));
-        ai->ai_addr = (struct sockaddr *)sa;
-        ai->ai_addrlen = sizeof(*sa);
-        if (ai->ai_addr == (struct sockaddr *)NULL) {
-            return EAI_MEMORY;
+    case AF_INET6: {
+        struct sockaddr_in6 *sa = (struct sockaddr_in6 *) ai->ai_addr;
+        if (hints->ai_flags & AI_PASSIVE) {
+            memcpy(&sa->sin6_addr, &in6addr_any, sizeof(sa->sin6_addr));
+        } else {
+            memcpy(&sa->sin6_addr, &in6addr_loopback, sizeof(sa->sin6_addr));
         }
-        sa->sin6_family = AF_INET6;
         sa->sin6_len = sizeof(*sa);
         sa->sin6_port = htons(port);
-        if (node == (char *)NULL) {
-            if (hints->ai_flags & AI_PASSIVE) {
-                sa->sin6_addr = in6addr_any;
-            } else {
-                sa->sin6_addr = in6addr_loopback;
-            }
+        sa->sin6_family = AF_INET6;
+        ai->ai_family = AF_INET6;
+        break;
+    }
+#endif
+    case PF_UNSPEC: {
+        struct sockaddr_in *sa = (struct sockaddr_in *) ai->ai_addr;
+        if (hints->ai_flags & AI_PASSIVE) {
+            sa->sin_addr.s_addr = htonl(INADDR_ANY);
         } else {
-            // For now, only numeric "presentation" addresses supported
-            if (!inet_pton(AF_INET6, (char *)node, (char *)&sa->sin6_addr)) {
-                return EAI_FAIL;  // Couldn't resolve name
+            sa->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+        }
+        sa->sin_len = sizeof(*sa);
+        sa->sin_port = htons(port);
+        sa->sin_family = AF_INET;
+        ai->ai_family = AF_INET;
+#ifdef CYGPKG_NET_INET6 
+        {
+            struct sockaddr_in6 *sa6;
+            ai=alloc_addrinfo(ai);
+            if (ai == NULL) {
+                return EAI_MEMORY;
+            }
+            sa6 = (struct sockaddr_in6 *) ai->ai_addr;
+            if (hints->ai_flags & AI_PASSIVE) {
+                memcpy(&sa6->sin6_addr, &in6addr_any, sizeof(sa6->sin6_addr));
+            } else {
+                memcpy(&sa6->sin6_addr, &in6addr_loopback, sizeof(sa6->sin6_addr));
+            }
+            sa6->sin6_len = sizeof(*sa);
+            sa6->sin6_port = htons(port);
+            sa6->sin6_family = AF_INET6;
+            ai->ai_family = AF_INET6;
+        }
+#endif
+        break;
+    }
+    }
+   return EAI_NONE;
+}
+
+
+// We have been asked to convert only numeric addresses so as to not
+// need a DNS server query.
+static int
+numeric_node_addr(struct addrinfo *ai, const char *node, 
+               const struct addrinfo *hints, int port) {
+    
+    switch (hints->ai_family) {
+    case AF_INET: {
+        struct sockaddr_in *sa = (struct sockaddr_in *) ai->ai_addr;
+        if (!inet_pton(AF_INET, node, (void *)&sa->sin_addr.s_addr)) {
+            return EAI_FAIL;
+        }
+        sa->sin_port = htons(port);
+        sa->sin_family = AF_INET;
+        sa->sin_len = sizeof(*sa);
+        ai->ai_family = AF_INET;
+        break;
+    }
+#ifdef CYGPKG_NET_INET6
+    case AF_INET6: {
+        struct sockaddr_in6 *sa = (struct sockaddr_in6 *) ai->ai_addr;
+        if (!inet_pton(AF_INET6, node, (void *)&sa->sin6_addr.s6_addr)) {
+            return EAI_FAIL;
+        }
+        sa->sin6_port = htons(port);
+        sa->sin6_family = AF_INET6;
+        sa->sin6_len = sizeof(*sa);
+        ai->ai_family = AF_INET6;
+        break;
+    }
+#endif
+    case PF_UNSPEC: {
+        struct sockaddr_in *sa = (struct sockaddr_in *) ai->ai_addr;
+        sa->sin_len = sizeof(*sa);
+        sa->sin_port = htons(port);
+        sa->sin_family = AF_INET;
+        ai->ai_family = AF_INET;
+        if (inet_pton(AF_INET, node, (void *)&sa->sin_addr.s_addr)) {
+          return EAI_NONE;
+        }
+#ifdef CYGPKG_NET_INET6
+        {
+            struct sockaddr_in6 *sa = (struct sockaddr_in6 *) ai->ai_addr;
+            sa->sin6_len = sizeof(*sa);
+            sa->sin6_port = htons(port);
+            sa->sin6_family = AF_INET6;
+            ai->ai_family = AF_INET6;
+            if (inet_pton(AF_INET6, node, (void *)&sa->sin6_addr.s6_addr)) {
+                return EAI_NONE;
             }
         }
-    }
-    break;
 #endif
+        return EAI_FAIL;
+        break;
+    }
     }
     return EAI_NONE;
+}
+
+// We have a host name. Use the DNS client to perform a lookup. If the
+// DNS client is not part of the configuration try using the numeric
+// convertion.
+static int
+with_node_addr(struct addrinfo *ai, const char *node, 
+               const struct addrinfo *hints, int port) {
+    
+#ifdef CYGPKG_NS_DNS
+    struct sockaddr addrs[CYGNUM_NS_DNS_GETADDRINFO_ADDRESSES];
+    int nresults;
+    int i;
+    char ** canon = NULL;
+    
+    if (hints->ai_flags & AI_CANONNAME) {
+        canon = &ai->ai_canonname;
+    }
+    nresults = cyg_dns_getaddrinfo(node, 
+                                   addrs, CYGNUM_NS_DNS_GETADDRINFO_ADDRESSES, 
+                                   hints->ai_family, canon);
+    if (nresults < 0) {
+        return -nresults;
+    }
+    
+    for (i=0; i < nresults; i++) {
+        if (i != 0) {
+            ai = alloc_addrinfo(ai);
+            if (ai == NULL) {
+                return EAI_MEMORY;
+            }
+        }
+        memcpy(ai->ai_addr, &addrs[i], sizeof(addrs[i]));        
+        ai->ai_family = addrs[i].sa_family;
+        ai->ai_addrlen = addrs[i].sa_len;
+        switch (ai->ai_family) {
+        case AF_INET: {
+            struct sockaddr_in *sa = (struct sockaddr_in *) ai->ai_addr;
+            sa->sin_port = htons(port);
+            break;
+        }
+#ifdef CYGPKG_NET_INET6
+        case AF_INET6: {
+            struct sockaddr_in6 *sa = (struct sockaddr_in6 *) ai->ai_addr;
+            sa->sin6_port = htons(port);
+            break;
+        }
+#endif
+        }
+    }
+    return EAI_NONE;
+#else
+    return (numeric_node_addr(ai, node, hints, hints->ai_family, port));
+#endif
 }
 
 int   
@@ -128,15 +273,12 @@ getaddrinfo(const char *nodename, const char *servname,
     struct addrinfo dflt_hints;
     struct protoent *proto = (struct protoent *)NULL;
     struct addrinfo *ai;
-#ifdef CYGPKG_NET_INET6
-    struct addrinfo *nai;
-#endif
     char *protoname;
     char *endptr;
     int port = 0;
     int err;
-    int used = 0;
-    
+    int used;
+
     if (hints == (struct addrinfo *)NULL) {
         dflt_hints.ai_flags = 0;  // No special flags
         dflt_hints.ai_family = PF_UNSPEC;
@@ -151,16 +293,16 @@ getaddrinfo(const char *nodename, const char *servname,
     switch (hints->ai_family) {
     case PF_UNSPEC:
     case PF_INET:
-      break;
+        break;
 #ifdef CYGPKG_NET_INET6
     case PF_INET6:
-      break;
+        break;
 #endif
     default:
         return EAI_FAMILY;
     }
     // Allocate the first/primary result
-    *res = ai = (struct addrinfo *)calloc(1, sizeof(struct addrinfo));
+    *res = ai = alloc_addrinfo(NULL);
     if (ai == (struct addrinfo *)NULL) {
         return EAI_MEMORY;
     }
@@ -168,6 +310,9 @@ getaddrinfo(const char *nodename, const char *servname,
     if (hints->ai_protocol != 0) {
         proto = getprotobynumber(hints->ai_protocol);
     }
+    
+    // Note: this does not handle the case where a given service can be
+    // handled via multiple protocols, e.g. http/tcp & http/udp
     if (servname != (char *)NULL) {
         switch (hints->ai_socktype) {
         case 0:
@@ -185,7 +330,7 @@ getaddrinfo(const char *nodename, const char *servname,
         }
         // See if this is just a port #
         if (((port = strtol(servname, &endptr, 0)) >= 0) &&
-	    (endptr > servname)) {
+            (endptr > servname)) {
             ai->ai_socktype = hints->ai_socktype;
             if (hints->ai_socktype == 0) {
                 // Need to have complete binding type/port
@@ -194,11 +339,12 @@ getaddrinfo(const char *nodename, const char *servname,
             }
         } else {
             struct servent *serv = (struct servent *)NULL;
-
+            
             serv = getservbyname(servname, protoname);
             if (serv == (struct servent *)NULL) {
                 if (hints->ai_socktype == 0) {
                     protoname = "udp";
+                    ai->ai_socktype = SOCK_DGRAM;    
                     serv = getservbyname(servname, protoname);
                 }
             }
@@ -207,7 +353,6 @@ getaddrinfo(const char *nodename, const char *servname,
                 return EAI_SERVICE;
             }
             port = ntohs(serv->s_port);  
-            ai->ai_socktype = SOCK_DGRAM;    
         }
         proto = getprotobyname(protoname);
         if (hints->ai_protocol && (hints->ai_protocol != proto->p_proto)) {
@@ -216,81 +361,59 @@ getaddrinfo(const char *nodename, const char *servname,
         }
         ai->ai_protocol = proto->p_proto;
     }
-    // Iterate through address types and create addresses
-    // Note: this does not handle the case where a given service can be
-    // handled via multiple protocols, e.g. http/tcp & http/udp
-    if ((hints->ai_family == AF_INET) || (hints->ai_family == PF_UNSPEC)) {
-      err = _getaddr(ai, nodename, hints, AF_INET, port);
-      if ((err != EAI_NONE) && (hints->ai_family == AF_INET)) {
+    
+    if (nodename) {
+        if (hints->ai_flags & AI_NUMERICHOST) {
+            err = numeric_node_addr(ai, nodename, hints, port);
+        } else {
+            err = with_node_addr(ai, nodename, hints, port );
+        }
+    } else {
+        err = no_node_addr(ai, hints, port);
+    }
+    
+    if (err != EAI_NONE) {
         freeaddrinfo(ai);
         return err;
-      }
-      if (err == EAI_NONE) {
-	ai->ai_family = AF_INET;
-	used = 1;
-      }
     }
-#ifdef CYGPKG_NET_INET6
-    if ((hints->ai_family == AF_INET6) || (hints->ai_family == PF_UNSPEC)) {
-      if (1 == used) {
-	nai = (struct addrinfo *)calloc(1,sizeof(struct addrinfo));
-        if (nai == (struct addrinfo *)NULL) {
-	  freeaddrinfo(ai);
-	  return EAI_MEMORY;
-        }
-        ai->ai_next = nai;
-        nai->ai_socktype = ai->ai_socktype;
-        nai->ai_protocol = ai->ai_protocol;
-      } else {
-	nai = ai;
-      }
-      err = _getaddr(nai, nodename, hints, AF_INET6, port);
-      if ((err != EAI_NONE) && (hints->ai_family == AF_INET6)) {
-	freeaddrinfo(ai);
-	return err;
-      }
-      // Free the second entry which has not been used
-      if ((err != EAI_NONE) && (1 == used)) {
-	ai->ai_next = NULL;
-	free(nai);
-      }
-      if (err == EAI_NONE) {
-	nai->ai_family = AF_INET6;
-	used = 1;
-      }
+    if (err == EAI_NONE) {
+        ai->ai_family = AF_INET;
+        used = 1;
     }
-#endif
-    // Do we have at least one address?
-    if (0 == used) {
-      return EAI_NONAME;
-    }
-    // Note: null nodename is the same as 'localhost'
-    if (nodename == (char *)NULL) {
-        nodename = (const char *)"localhost";
-    }
-    if (hints->ai_flags & AI_CANONNAME) {
-        // Hack - until host name handling is more complete
-        ai = *res;  // Canonical name is only in primary record
-        ai->ai_canonname = malloc(strlen(nodename)+1);
+    
+    if ((hints->ai_flags & AI_CANONNAME) && !nodename) {
+        ai->ai_canonname = malloc(strlen("localhost")+1);
         if (ai->ai_canonname) {
-            strcpy(ai->ai_canonname, nodename);
+            strcpy(ai->ai_canonname, "localhost");
+        } else {
+            freeaddrinfo(ai);
+            return EAI_MEMORY;
         }
     }
-    if (hints->ai_flags & AI_PASSIVE) {
-        // Incomplete addressing - used for bind/listen
-    } else {
-        // Complete addressing - used for connect/send/...
+    
+    /* The DNS code may have filled in the official address. If not
+       and we have been asked for it, return an error */
+    if ((hints->ai_flags & AI_CANONNAME) & !ai->ai_canonname) {
+        freeaddrinfo(ai);
+        return EAI_FAIL;
     }
     return EAI_NONE;  // No errors
 }
 
+// The canonname will probably point to the same memory in each
+// addrinfo in the linked list. Don't free it multiple times.
 void  
 freeaddrinfo(struct addrinfo *ai)
 {
     struct addrinfo *next = ai;
+    char * last_canonname = NULL;
 
     while ((ai = next) != (struct addrinfo *)NULL) {
-        if (ai->ai_canonname) free(ai->ai_canonname);
+        if ((ai->ai_canonname) && 
+            (ai->ai_canonname != last_canonname)) { 
+            free(ai->ai_canonname);
+            last_canonname = ai->ai_canonname;
+        }
         if (ai->ai_addr) free(ai->ai_addr);
         next = ai->ai_next;
         free(ai);
@@ -342,6 +465,8 @@ getnameinfo (const struct sockaddr *sa, socklen_t salen,
     int port;
     char *s;
     struct servent *se;
+    int error;
+    int numeric = (flags & NI_NUMERICHOST);
 
     if ((flags & ~NI_MASK) != 0) {
         return EAI_BADFLAGS;
@@ -352,11 +477,31 @@ getnameinfo (const struct sockaddr *sa, socklen_t salen,
     case PF_INET6:
 #endif
         if (host != (char *)NULL) {
-            s = _inet_ntop((struct sockaddr *)sa, host, hostlen);
-            if (!s) {
-                return EAI_FAIL;
+            if ( !numeric) {
+                error = EAI_NONAME;
+#ifdef CYGPKG_NS_DNS
+                error = -cyg_dns_getnameinfo(sa, host,hostlen);
+#endif
+                if ((error == EAI_NONAME) && (flags & NI_NAMEREQD)) {
+                    return EAI_NONAME;
+                }
+                // If lookup failed, try it as numeric address
+                numeric = !(error == EAI_NONE);
+            }
+            if (numeric) {
+                s = _inet_ntop((struct sockaddr *)sa, host, hostlen);
+                if (!s) {
+                    return EAI_FAIL;
+                }
+            }
+            if (!numeric && flags & NI_NOFQDN) {
+                s = index(host, '.');
+                if (s) {
+                    *s = '\0';
+                }
             }
         }
+    
         if (serv != (char *)NULL) {
             port = _inet_port((struct sockaddr *)sa);
             if (!port) {
@@ -365,16 +510,16 @@ getnameinfo (const struct sockaddr *sa, socklen_t salen,
             se = (struct servent *)NULL;
             if ((flags & NI_NUMERICSERV) == 0) {
                 if ((flags & NI_DGRAM) == 0) {
-                    se = getservbyport(port, "tcp");
+                    se = getservbyport(htons(port), "tcp");
                 }
                 if (se == (struct servent *)NULL) {
-                    se = getservbyport(port, "ucp");
+                    se = getservbyport(htons(port), "udp");
                 }
             }
             if (se != (struct servent *)NULL) {
-                sprintf(serv, "%s/%s", se->s_name, se->s_proto);
+                diag_snprintf(serv,servlen, "%s/%s", se->s_name, se->s_proto);
             } else {
-                sprintf(serv, "%d", port);
+                diag_snprintf(serv,servlen, "%d", port);
             }
         }
         break;

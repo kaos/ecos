@@ -66,10 +66,15 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <net/if_dl.h>
+#ifndef CYGPKG_NET_OPENBSD_STACK
+#include <net/if_var.h>
+#endif
 #include <errno.h>
 #include <netinet/in.h>
 #include <net/netdb.h>
 #include <ifaddrs.h>
+#include <netinet/in_var.h>
+
 
 #if !defined(AF_LINK)
 #define	SA_LEN(sa)	sizeof(struct sockaddr)
@@ -101,8 +106,13 @@ getifaddrs(struct ifaddrs **pif)
     int ncnt = 0;  // Length of interface names
     char buf[1024];
     int i, sock;
+#ifdef CYGPKG_NET_INET6
+    int sock6;
+    struct in6_ifreq ifrq6;
+#endif
     struct ifconf ifc;
     struct ifreq *ifr, *lifr;
+    struct ifreq ifrq;
     char *data, *names;
     struct ifaddrs *ifa, *ift;
 
@@ -112,9 +122,11 @@ getifaddrs(struct ifaddrs **pif)
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         return (-1);
     i =  ioctl(sock, SIOCGIFCONF, (char *)&ifc);
-    close(sock);
-    if (i < 0)
+
+    if (i < 0) {
+        close(sock); 
         return (-1);
+    }
 
     ifr = ifc.ifc_req;
     lifr = (struct ifreq *)&ifc.ifc_buf[ifc.ifc_len];
@@ -124,7 +136,7 @@ getifaddrs(struct ifaddrs **pif)
 
         sa = &ifr->ifr_addr;
         ++icnt;
-        dcnt += SA_RLEN(sa);
+        dcnt += SA_RLEN(sa) * 3;  /* addr, mask, brdcst */
         ncnt += sizeof(ifr->ifr_name) + 1;
 		
         if (SA_LEN(sa) < sizeof(*sa))
@@ -137,11 +149,13 @@ getifaddrs(struct ifaddrs **pif)
         // Nothing found
         *pif = NULL;
         free(buf);
+        close(sock);
         return (0);
     }
     data = malloc(sizeof(struct ifaddrs) * icnt + dcnt + ncnt);
     if (data == NULL) {
         free(buf);
+        close(sock);
         return(-1);
     }
 
@@ -155,8 +169,15 @@ getifaddrs(struct ifaddrs **pif)
     ifr = ifc.ifc_req;
     lifr = (struct ifreq *)&ifc.ifc_buf[ifc.ifc_len];
 
+#ifdef CYGPKG_NET_INET6
+    if ((sock6 = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
+      close(sock);
+      return (-1);
+    }
+#endif
+
     while (ifr < lifr) {
-        struct sockaddr *sa;
+       struct sockaddr * sa;
 
         ift->ifa_name = names;
         names[sizeof(ifr->ifr_name)] = 0;
@@ -167,7 +188,46 @@ getifaddrs(struct ifaddrs **pif)
         sa = &ifr->ifr_addr;
         memcpy(data, sa, SA_LEN(sa));
         data += SA_RLEN(sa);
-		
+
+        if ((sa->sa_family == AF_INET) || (sa->sa_family == AF_INET6)) {
+          struct sockaddr *sa_netmask;
+          struct sockaddr *sa_broadcast;
+
+          memset(&ifrq,0,sizeof(ifrq));
+          strcpy(ifrq.ifr_name,ifr->ifr_name);
+          ioctl( sock, SIOCGIFFLAGS, &ifrq );
+
+          ift->ifa_flags = ifrq.ifr_flags;
+
+          memcpy(&ifrq.ifr_addr, ift->ifa_addr,sizeof(struct sockaddr));
+          if (sa->sa_family == AF_INET) {
+            ioctl(sock, SIOCGIFNETMASK, &ifrq); 
+            sa_netmask = &ifrq.ifr_addr;
+          }
+#ifdef CYGPKG_NET_INET6
+          if (sa->sa_family == AF_INET6) {
+            memset(&ifrq6,0,sizeof(ifrq));
+            strcpy(ifrq6.ifr_name,ifr->ifr_name);
+            memcpy(&ifrq6.ifr_addr, ift->ifa_addr,sizeof(struct sockaddr));
+          
+            ioctl(sock6, SIOCGIFNETMASK_IN6, &ifrq6);
+            sa_netmask = (struct sockaddr *)&ifrq6.ifr_addr;
+          }
+#endif
+          ift->ifa_netmask = (struct sockaddr *)data;
+          memcpy(data, sa_netmask, SA_LEN(sa_netmask));
+          data += SA_RLEN(sa_netmask);
+
+          memcpy(&ifrq.ifr_addr, ift->ifa_addr,sizeof(struct sockaddr));
+          if (sa->sa_family == AF_INET) {
+            if (ioctl(sock, SIOCGIFBRDADDR, &ifrq) == 0) {
+              sa_broadcast = &ifrq.ifr_addr;
+              ift->ifa_broadaddr = (struct sockaddr *)data;
+              memcpy(data, sa_broadcast, SA_LEN(sa_broadcast));
+              data += SA_RLEN(sa_broadcast);
+            }
+          }
+        }
         if (SA_LEN(sa) < sizeof(*sa))
             ifr = (struct ifreq *)(((char *)sa) + sizeof(*sa));
         else
@@ -182,6 +242,10 @@ getifaddrs(struct ifaddrs **pif)
         *pif = NULL;
         free(ifa);
     }
+#ifdef CYGPKG_NET_INET6
+    close(sock6);
+#endif
+    close(sock);
     return (0);
 }
 
@@ -205,7 +269,8 @@ _show_all_interfaces(void)
     ifp = iflist;
     while (ifp != (struct ifaddrs *)NULL) {
         if (ifp->ifa_addr->sa_family != AF_LINK) {
-            getnameinfo (ifp->ifa_addr, ifp->ifa_addr->sa_len, addr, sizeof(addr), 0, 0, 0);
+            getnameinfo (ifp->ifa_addr, ifp->ifa_addr->sa_len, addr, 
+                         sizeof(addr), 0, 0, NI_NUMERICHOST);
             diag_printf("%p - %s - %s\n", ifp, ifp->ifa_name, addr);
         }
         ifp = ifp->ifa_next;
