@@ -1484,7 +1484,7 @@ sohasoutofband(so)
 int
 sopoll(struct socket *so, int events, struct ucred *cred, struct proc *p)
 {
-    panic(__FUNCTION__"\n");
+    panic("%s\n", __FUNCTION__);
     return 0;
 #if 0 // POLL
 	int revents = 0;

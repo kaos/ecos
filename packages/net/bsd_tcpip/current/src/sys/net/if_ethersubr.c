@@ -242,7 +242,7 @@ ether_output(ifp, m, dst, rt0)
 	    }
 	    break;
 	  }
-#endif NETATALK
+#endif /* NETATALK */
 #ifdef NS
 	case AF_NS:
 		switch(ns_nettype){
@@ -634,7 +634,7 @@ ether_demux(ifp, eh, m)
 		/* probably this should be done with a NETISR as well */
                 aarpinput(IFP2AC(ifp), m); /* XXX */
                 return;
-#endif NETATALK
+#endif /* NETATALK */
 	default:
 #ifdef IPX
 		if (ef_inputp && ef_inputp(ifp, eh, m) == 0)

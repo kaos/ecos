@@ -1,3 +1,13 @@
+2003-02-12  Jani Monoses  <jani@iv.ro>
+
+	* src/sys/kern/sockio.c: bsd_getinfo/bsd_setinfo should have
+	void * args. Silences warnings.
+	* src/sys/kern/uipc_socket.c (sopoll): Use __FUNCTION__ correctly
+	for GCC 3.x.
+	* src/sys/net/if_ethersubr.c: Put comments for stuff after endifs
+	to silence warnings.
+	* src/sys/net/if_loop.c: Ditto.
+
 2003-02-04  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/sys/bsdtypes.h: Workaround when building with new

@@ -145,8 +145,8 @@ static int bsd_select    (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info)
 static int bsd_fsync     (struct CYG_FILE_TAG *fp, int mode);        
 static int bsd_close     (struct CYG_FILE_TAG *fp);
 static int bsd_fstat     (struct CYG_FILE_TAG *fp, struct stat *buf);
-static int bsd_getinfo   (struct CYG_FILE_TAG *fp, int key, char *buf, int len);
-static int bsd_setinfo   (struct CYG_FILE_TAG *fp, int key, char *buf, int len);
+static int bsd_getinfo   (struct CYG_FILE_TAG *fp, int key, void *buf, int len);
+static int bsd_setinfo   (struct CYG_FILE_TAG *fp, int key, void *buf, int len);
 
 static int bsd_recvit    (cyg_file *fp, struct msghdr *mp, 
                           socklen_t *namelenp, ssize_t *retsize);
@@ -744,7 +744,7 @@ bsd_fstat(struct CYG_FILE_TAG *fp, struct stat *buf)
 // -------------------------------------------------------------------------
 
 static int 
-bsd_getinfo(struct CYG_FILE_TAG *fp, int key, char *buf, int len)
+bsd_getinfo(struct CYG_FILE_TAG *fp, int key, void *buf, int len)
 {
     return ENOSYS;
 }
@@ -752,7 +752,7 @@ bsd_getinfo(struct CYG_FILE_TAG *fp, int key, char *buf, int len)
 // -------------------------------------------------------------------------
 
 static int 
-bsd_setinfo(struct CYG_FILE_TAG *fp, int key, char *buf, int len)
+bsd_setinfo(struct CYG_FILE_TAG *fp, int key, void *buf, int len)
 {
     return ENOSYS;
 }
