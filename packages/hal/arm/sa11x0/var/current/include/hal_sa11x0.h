@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -82,6 +83,9 @@
 #define SA11X0_ROM_BANK1_BASE                    (SA11X0_ROM_BANK0_BASE + SZ_128M)
 #define SA11X0_ROM_BANK2_BASE                    (SA11X0_ROM_BANK1_BASE + SZ_128M)
 #define SA11X0_ROM_BANK3_BASE                    (SA11X0_ROM_BANK2_BASE + SZ_128M)
+
+#define SA11X0_SRAM_BANK0_BASE                   (0x40000000)
+#define SA11X0_SRAM_BANK1_BASE                   (SA11X0_SRAM_BANK0_BASE + SZ_128M)
 
 #define SA11X0_RAM_BANK0_BASE                    (0xC0000000)
 #define SA11X0_RAM_BANK1_BASE                    (SA11X0_RAM_BANK0_BASE + SZ_128M)
