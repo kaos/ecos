@@ -1,3 +1,10 @@
+2003-02-25  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/power.sgml: Declare as <part> not <reference> to get
+	correct TOC numbering.
+	Fix build on some jade versions by using &amp; instead of
+	plain '&'.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/power.cdl: Fix doc links for config tool's doc system.

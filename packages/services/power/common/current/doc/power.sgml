@@ -35,8 +35,8 @@
 <!-- =============================================================== -->
 
 <!-- }}} -->
-
-<reference id="services-power">
+<part id="services-power">
+<!-- reference id="services-power" -->
   <title>eCos Power Management Support</title>
 
 <!-- {{{ Intro                          -->
@@ -450,8 +450,8 @@ table, for example:
 </para>
 <programlisting>
 PowerController* controller;
-for (controller  = &(__POWER__[0]);
-     controller != &(__POWER_END__);
+for (controller  = &amp;(__POWER__[0]);
+     controller != &amp;(__POWER_END__);
      controller++) {
 
      &hellip;
@@ -1416,4 +1416,5 @@ power controllers to meet their exact requirements.
 
 <!-- }}} -->
 
-</reference>
+<!-- /reference -->
+</part>
