@@ -1,3 +1,4 @@
+* SNTP client supports IPv6 multicast packets from time servers.
 * DNS client support looking up IPv6 addresses and reverse lookups
 * FTP client is IPv6 aware.
 * httpd daemon is IPv6 aware.
