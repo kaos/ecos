@@ -96,8 +96,13 @@ _mpc8xx_reset_cpm(void)
 unsigned short
 _mpc8xx_allocBd(int len)
 {
-    unsigned short bd = *nextBd;
+    unsigned short bd;
 
+    bd = *nextBd;
+    if ((bd < QUICC_BD_BASE) || (bd > QUICC_BD_END)) {
+        // Most likely not set up :-(
+        bd = *nextBd = QUICC_BD_BASE;
+    }
     len = (len + 7) & ~7;  // Multiple of 8 bytes
     *nextBd += len;
     return bd;

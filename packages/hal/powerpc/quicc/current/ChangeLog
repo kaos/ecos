@@ -1,3 +1,9 @@
+2003-03-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/cpm.c: Handle case where DPRAM allocation is unknown.
+	
+	* include/ppc8xx.h: Define limits of CPM/DPRAM space.
+
 2003-03-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc1.c: Need to flush data cache because the serial

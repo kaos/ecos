@@ -943,6 +943,7 @@ __externC void _mpc8xx_reset_cpm(void);
 __externC unsigned short _mpc8xx_allocBd(int len);
 
 #define QUICC_BD_BASE               0x2000  // Start of shared memory
+#define QUICC_BD_END                0x3000  // End of shared memory
 
 
 #endif /* __ASSEMBLER__ */

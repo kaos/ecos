@@ -73,11 +73,10 @@ hal_variant_init(void)
         CYGARC_MTSPR (ICTRL, ictrl);
     }
 
-    // Note: it would be nice to only do this in the ROM/monitor.  However,
-    // "new" programs which rely on that happening would break if the monitor
-    // environment does not handle this properly.
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
     // Reset CPM
     _mpc8xx_reset_cpm();
+#endif
 }
 
 //--------------------------------------------------------------------------

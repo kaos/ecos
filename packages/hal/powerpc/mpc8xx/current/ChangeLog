@@ -1,3 +1,7 @@
+2003-03-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_misc.c: Can only reset CPM if not relying on a ROM monitor.
+
 2003-03-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/var_misc.c (hal_variant_init): Reset CPM - always.
