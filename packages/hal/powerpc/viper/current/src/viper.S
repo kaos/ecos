@@ -256,7 +256,17 @@ FUNC_START( hal_hardware_init )
 // 	Field WLFA (bits 24-27) = 1
 // 	Field TLFA (bits 28-31) = 4
 	 */
-	lwi	r3,0x5E802114
+
+//        
+// PTX field is (System Clock in MHz * Refresh rate in us) / Prescale
+// e.g.  ((14*3.6864)*62.5)/32 => 100.8 => 101        
+//                
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)
+	lwi	r3,0x5E802114   // PTX = 94
+#endif        
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 51)
+	lwi	r3,0x65802114   // PTX = 101
+#endif        
         stw	r3,MAMR(r4)
         stw	r3,MBMR(r4)
 
@@ -356,8 +366,14 @@ FUNC_START( hal_hardware_init )
 // 	Field FIOPD (bit 26) = 0
 // 	Field Reserved (bits 27-31) = 0
 	 */
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 47)
 	/*  MF    (0:11)  = 0x00C = 12 = (47MHz/3.6864MHz)-1 */
 	lwi	r3,0x00C04000
+#endif        
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 51)
+	/*  MF    (0:11)  = 0x00D = 13 = (51.6MHz/3.6864MHz)-1 */
+	lwi	r3,0x00D04000
+#endif        
 	stw	r3,PLPRCR(r4)
 
 	LED(0xE0)
