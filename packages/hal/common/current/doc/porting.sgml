@@ -604,19 +604,15 @@ in an auxiliary HAL.</para>
 <TITLE>Virtual Vectors (eCos/ROM Monitor Calling Interface)</TITLE>
 
 <para>
-Some eCos platforms have supported full debugging capabilities via
-CygMon since day one. Platforms of the architectures PowerPC, ARM, and
-SH do not provide those features unless a GDB stub is included in the
-application.
-</para>
-
-<para>
-This is going to change. All platforms will (eventually) support
-all the debugging features by relying on a ROM/RAM calling interface
-(also referred to as virtual vector table) provided by the ROM
-monitor. This calling interface is based on the tables used by libbsp
-and is thus backwards compatible with the existing CygMon supported
-platforms.
+Virtually all eCos platforms provide full debugging capabilities
+via RedBoot.  This enviroment contains not only debug stubs based
+on GDB, but also rich I/O support which can be exported to loaded
+programs.  Such programs can take advantage of the I/O capabilities
+using a special ROM/RAM calling interface
+(also referred to as virtual vector table).
+eCos programs make use of the virtual vector mechanism implicitly.
+Non-eCos programs can access these functions using the support from
+the <emphasis>newlib</emphasis> library.
 </para>
 
 <!-- {{{ Virtual Vectors -->
