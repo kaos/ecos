@@ -60,3 +60,5 @@ cdl_package CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX {
 
     include_dir   cyg/io
 }
+
+# EOF flash_atmel_49xxxx.cdl

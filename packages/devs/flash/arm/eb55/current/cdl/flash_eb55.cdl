@@ -68,3 +68,5 @@ cdl_package CYGPKG_DEVS_FLASH_EB55 {
 
     implements    CYGINT_DEVS_FLASH_ATMEL_AT49XXXX_REQUIRED
 }
+
+# EOF flash_eb55.cdl
