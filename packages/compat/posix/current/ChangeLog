@@ -1,3 +1,15 @@
+2003-11-19  Rickard Westman <rickard.westman@27m.se>
+	
+	* src/mqueue.cxx: Fix problem with mq_timedsend() and
+	mq_timedreceive() timing out with zero timeouts even when there is
+	room in the queue.
+
+2003-11-17  Dan Jakubiec <djakubiec@yahoo.com>
+
+	* src/pthread.cxx (pthread_exit): Added code to disable cancellation
+	requests during thread exit.  This allows thread cleanup handlers
+	to issue system calls when cleaning up thread resources.
+
 2003-06-18  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/pthread.cxx (pthread_self_info): Just add some comments so

@@ -699,6 +699,13 @@ externC void pthread_exit (void *retval)
     
     pthread_info *self = pthread_self_info();
 
+    // Disable cancellation requests for this thread.  If cleanup
+    // handlers exist, they will generally be issuing system calls
+    // to clean up resources.  We want these system calls to run
+    // without cancelling, and we also want to prevent being
+    // re-cancelled.
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+
     // Call cancellation handlers. We eat up the buffers as we go in
     // case any of the routines calls pthread_exit() itself.
     while( self->cancelbuffer != NULL )

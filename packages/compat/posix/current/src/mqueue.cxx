@@ -723,9 +723,18 @@ mq_timedsend( mqd_t mqdes, const char *msg_ptr, size_t msg_len,
     bool nonblocking = ((user->flags & O_NONBLOCK) == O_NONBLOCK);
     bool badtimespec = (abs_timeout->tv_nsec < 0) ||
         (abs_timeout->tv_nsec > 999999999l);
-    err = tabent->mq->put( msg_ptr, msg_len, msg_prio,
-                           !nonblocking && !badtimespec,
-                           cyg_timespec_to_ticks(abs_timeout));
+    cyg_tick_count abs_ticks = cyg_timespec_to_ticks(abs_timeout);
+
+    // We should never time out if there is room in the queue.  Simplest
+    // way to ensure this is to try the non-blocking put() first.
+    err = tabent->mq->put( msg_ptr, msg_len, msg_prio, false, abs_ticks );
+
+    // If the blocking variant would have blocked and that is what's wanted
+    if ( Cyg_Mqueue::WOULDBLOCK == err && !nonblocking && !badtimespec ) {
+        err = tabent->mq->put( msg_ptr, msg_len, msg_prio, true, 
+                               abs_ticks );
+    }
+
     switch (err) {
 
     case Cyg_Mqueue::INTR:
@@ -808,9 +817,17 @@ mq_timedreceive( mqd_t mqdes, char *msg_ptr, size_t msg_len,
     bool nonblocking = ((user->flags & O_NONBLOCK) == O_NONBLOCK);
     bool badtimespec = (abs_timeout->tv_nsec < 0) ||
         (abs_timeout->tv_nsec > 999999999l);
-    err = tabent->mq->get( msg_ptr, &msg_len, msg_prio,
-                           !nonblocking && !badtimespec,
-                           cyg_timespec_to_ticks(abs_timeout) );
+    cyg_tick_count abs_ticks = cyg_timespec_to_ticks(abs_timeout);
+
+    // We should never time out if there is something to read.  Simplest
+    // way to ensure this is to try the non-blocking get() first.
+    err = tabent->mq->get( msg_ptr, &msg_len, msg_prio, false, abs_ticks );
+
+    // If the blocking variant would have blocked and that is what's wanted
+    if ( Cyg_Mqueue::WOULDBLOCK == err && !nonblocking && !badtimespec ) {
+        err = tabent->mq->get( msg_ptr, &msg_len, msg_prio, true, abs_ticks );
+    }
+
     switch (err) {
 
     case Cyg_Mqueue::INTR:
