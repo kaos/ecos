@@ -160,15 +160,16 @@ void hal_hardware_init(void)
 {
     unsigned i;
 
-    // Set up eCos/ROM interfaces
-    hal_if_init();
-
     // Reset all interrupts
-    HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_IDCR, 0xFFFFFFFF);  
+    HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_IDCR, 0xFFFFFFFF);
 
     // Flush internal priority level stack
     for (i = 0; i < 8; ++i)
         HAL_WRITE_UINT32(AT91_AIC+AT91_AIC_EOI, 0xFFFFFFFF);
+    
+    // Set up eCos/ROM interfaces
+    hal_if_init();
+
 }
 
 // -------------------------------------------------------------------------
