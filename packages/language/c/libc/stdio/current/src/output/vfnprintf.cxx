@@ -153,7 +153,7 @@ externC mbtowc_fn_type __get_current_locale_mbtowc_fn();
 #define SIZET           0x200           /* size_t */
 
 externC int 
-vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg)
+vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg) __THROW
 {
         char *fmt;     /* format string */
         int ch;        /* character from fmt */

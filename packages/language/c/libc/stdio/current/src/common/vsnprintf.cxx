@@ -102,7 +102,7 @@ static DEVIO_TABLE(devio_table,
                    NULL);           // set_config
 
 externC int
-vsnprintf( char *s, size_t size, const char *format, va_list arg )
+vsnprintf( char *s, size_t size, const char *format, va_list arg ) __THROW
 {
     int rc;
     // construct a fake device with the address of the string we've
@@ -131,7 +131,7 @@ vsnprintf( char *s, size_t size, const char *format, va_list arg )
 #else
 
 externC int
-vsnprintf( char *s, size_t size, const char *format, va_list arg )
+vsnprintf( char *s, size_t size, const char *format, va_list arg ) __THROW
 {
     int rc;
 

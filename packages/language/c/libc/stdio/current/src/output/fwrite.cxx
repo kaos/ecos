@@ -69,7 +69,7 @@
 
 externC size_t
 fwrite( const void *ptr, size_t object_size, size_t num_objects,
-         FILE *stream )
+         FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     cyg_ucount32 written;

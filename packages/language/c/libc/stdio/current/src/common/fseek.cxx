@@ -69,7 +69,7 @@
 // ISO C 7.9.9 File positioning functions
 
 externC int
-fgetpos( FILE * stream , fpos_t *pos  )
+fgetpos( FILE * stream , fpos_t *pos  ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;
@@ -90,7 +90,7 @@ fgetpos( FILE * stream , fpos_t *pos  )
 }
 
 externC int
-fseek( FILE * stream , long int offset , int whence  )
+fseek( FILE * stream , long int offset , int whence  ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;
@@ -111,7 +111,7 @@ fseek( FILE * stream , long int offset , int whence  )
 }
 
 externC int
-fsetpos( FILE * stream , const fpos_t * pos )
+fsetpos( FILE * stream , const fpos_t * pos ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;
@@ -132,7 +132,7 @@ fsetpos( FILE * stream , const fpos_t * pos )
 }
 
 externC long int
-ftell( FILE * stream  )
+ftell( FILE * stream  ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;
@@ -155,7 +155,7 @@ ftell( FILE * stream  )
 }
 
 externC void
-rewind( FILE * stream  )
+rewind( FILE * stream  ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;    
     (void)fseek( stream, 0L, SEEK_SET );

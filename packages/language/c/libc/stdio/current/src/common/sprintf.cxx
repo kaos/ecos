@@ -65,7 +65,7 @@
 // FUNCTIONS
 
 externC int
-sprintf( char *s, const char *format, ... )
+sprintf( char *s, const char *format, ... ) __THROW
 {
     int rc;      // return code
     va_list ap;  // for variable args

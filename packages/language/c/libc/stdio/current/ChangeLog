@@ -1,3 +1,57 @@
+2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/input/vfscanf.cxx (vfscanf): Silence warning.
+
+	* include/stdio.h:
+	Add file operation functions which weren't here before!
+	While I'm here, add __THROW everywhere and use __externC not externC.
+
+	* cdl/stdio.cdl:  We implement stdio fileops in isoinfra now.
+	Also set header for that.
+	Build fileops.cxx.
+	L_tmpnam must be at least 4.
+	TMP_MAX must be at least 1, and ISO C says it should be >=25.
+	Add description for CYGPKG_LIBC_STDIO_FILEIO and move up from
+	bottom so it goes with others.
+
+	* src/common/fileops.cxx: New file. Implements rename(), remove(),
+	tmpnam() and tmpfile().
+
+	* src/common/fclose.cxx: Add throw specifiers to match stdio.h.
+	* src/common/feof.cxx: Ditto.
+	* src/common/fflush.cxx: Ditto.
+	* src/common/fopen.cxx: Ditto.
+	* src/common/freopen.cxx: Ditto.
+	* src/common/fseek.cxx: Ditto.
+	* src/common/setvbuf.cxx: Ditto.
+	* src/common/snprintf.cxx: Ditto.
+	* src/common/sprintf.cxx: Ditto.
+	* src/common/sscanf.cxx: Ditto.
+	* src/common/stdioinlines.cxx: Ditto.
+	* src/common/ungetc.cxx: Ditto.
+	* src/common/vsnprintf.cxx: Ditto.
+	* src/common/vsscanf.cxx: Ditto.
+	* src/input/fgetc.cxx: Ditto.
+	* src/input/fgets.cxx: Ditto.
+	* src/input/fread.cxx: Ditto.
+	* src/input/fscanf.cxx: Ditto.
+	* src/input/gets.cxx: Ditto.
+	* src/input/scanf.cxx: Ditto.
+	* src/input/vfscanf.cxx: Ditto.
+	* src/output/fnprintf.cxx: Ditto.
+	* src/output/fprintf.cxx: Ditto.
+	* src/output/fputc.cxx: Ditto.
+	* src/output/fputs.cxx: Ditto.
+	* src/output/fwrite.cxx: Ditto.
+	* src/output/printf.cxx: Ditto.
+	* src/output/vfnprintf.cxx: Ditto.
+	
+2004-02-17  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/stdio.cdl (CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS): Can
+	be inactive when no kernel.
+	* cdl/stdio.cdl: Implements file positioning functions in isoinfra.
+
 2003-09-03  Thomas Koeller <thomas.koeller@baslerweb.com>
 
 	* cdl/stdio.cdl: only require "/dev/haldiag" if actually using it.

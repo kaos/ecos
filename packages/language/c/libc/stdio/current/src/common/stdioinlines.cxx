@@ -79,7 +79,7 @@
 // 7.9.5 File access functions
 
 externC void
-setbuf( FILE *stream, char *buf )
+setbuf( FILE *stream, char *buf ) __THROW
 {
     if (buf == NULL)
         setvbuf( stream, NULL, _IONBF, 0 );
@@ -97,21 +97,21 @@ setbuf( FILE *stream, char *buf )
 
 
 externC int
-vfprintf( FILE *stream, const char *format, va_list arg )
+vfprintf( FILE *stream, const char *format, va_list arg ) __THROW
 {
     return vfnprintf(stream, INT_MAX, format, arg);
 } // vfprintf()
 
 
 externC int
-vprintf( const char *format, va_list arg)
+vprintf( const char *format, va_list arg) __THROW
 {
     return vfnprintf( stdout, INT_MAX, format, arg );
 } // vprintf()
 
 
 externC int
-vsprintf( char *s, const char *format, va_list arg )
+vsprintf( char *s, const char *format, va_list arg ) __THROW
 {
     return vsnprintf(s, INT_MAX, format, arg);
 } // vsprintf()
@@ -122,7 +122,7 @@ vsprintf( char *s, const char *format, va_list arg )
 // 7.9.7 Character input/output functions
 
 externC int
-puts( const char *s )
+puts( const char *s ) __THROW
 {
     int rc;
 
@@ -140,7 +140,7 @@ puts( const char *s )
 // 7.9.10 Error-handling functions
 
 externC void
-perror( const char *s )
+perror( const char *s ) __THROW
 {
     if (s && *s)
         fprintf( stderr, "%s: %s\n", s, strerror(errno) );
@@ -155,7 +155,7 @@ perror( const char *s )
 
 #ifdef CYGFUN_LIBC_STDIO_ungetc
 externC int
-vscanf( const char *format, va_list arg )
+vscanf( const char *format, va_list arg ) __THROW
 {
     return vfscanf( stdin, format, arg );
 } // vscanf()

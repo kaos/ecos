@@ -64,7 +64,7 @@
 // FUNCTIONS
 
 externC int
-sscanf( const char *s, const char *format, ... )
+sscanf( const char *s, const char *format, ... ) __THROW
 {
     int rc;      // return code
     va_list ap;  // for variable args

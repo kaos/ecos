@@ -68,7 +68,7 @@
 
 
 externC int
-setvbuf( FILE *stream, char *buf, int mode, size_t size )
+setvbuf( FILE *stream, char *buf, int mode, size_t size ) __THROW
 {
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
 

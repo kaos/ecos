@@ -63,7 +63,7 @@
 #include <cyg/libc/stdio/stream.hxx>      // Cyg_StdioStream class
 
 externC int
-feof( FILE *stream )
+feof( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
 
@@ -71,7 +71,7 @@ feof( FILE *stream )
 } // feof()
 
 externC int
-ferror( FILE *stream )
+ferror( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
 
@@ -79,7 +79,7 @@ ferror( FILE *stream )
 } // ferror()
 
 externC void
-clearerr( FILE *stream )
+clearerr( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
 

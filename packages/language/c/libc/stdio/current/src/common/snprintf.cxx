@@ -64,7 +64,7 @@
 // FUNCTIONS
 
 externC int
-snprintf( char *s, size_t size, const char *format, ... )
+snprintf( char *s, size_t size, const char *format, ... ) __THROW
 {
     int rc;      // return code
     va_list ap;  // for variable args

@@ -202,7 +202,7 @@ static FILE *fopen_inner( cyg_stdio_handle_t dev,
 } // fopen_inner()
 
 externC FILE *
-fopen( const char *filename, const char *mode )
+fopen( const char *filename, const char *mode ) __THROW
 {
     cyg_stdio_handle_t dev;
     Cyg_ErrNo err;
@@ -232,14 +232,14 @@ fopen( const char *filename, const char *mode )
 
 #ifdef CYGPKG_LIBC_STDIO_FILEIO
 
-externC int fileno( FILE *stream )
+externC int fileno( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
 
     return real_stream->get_dev();
 }
 
-externC FILE *fdopen( int fd, const char *mode )
+externC FILE *fdopen( int fd, const char *mode ) __THROW
 {
     Cyg_StdioStream::OpenMode open_mode;
     cyg_bool binary, append;

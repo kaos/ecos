@@ -71,7 +71,7 @@
 // for newlines, rather than reading byte at a time.
 
 externC char *
-fgets( char *s, int n, FILE *stream )
+fgets( char *s, int n, FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err=ENOERR;

@@ -69,7 +69,7 @@
 
 
 externC FILE *
-freopen( const char *, const char *, FILE * )
+freopen( const char *, const char *, FILE * ) __THROW
 {
     return NULL;  // Returning NULL is valid! FIXME
 } // freopen()

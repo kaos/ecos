@@ -75,7 +75,7 @@
 
 
 externC int
-fclose( FILE *stream )
+fclose( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     int i;

@@ -119,97 +119,113 @@ __externC FILE *stdin, *stdout, *stderr;
 
 //========================================================================
 
-// ISO C 7.9.5 File access functions
+// ISO C89 7.9.4 Functions for operations on files
 
-externC int
-fclose( FILE * /* stream */ );
+__externC int
+remove( const char * /* pathname */ ) __THROW;
 
-externC int
-fflush( FILE * /* stream */ );
+__externC int
+rename( const char * /* oldpath */, const char * /* newpath */ ) __THROW;
 
-externC FILE *
-fopen( const char * /* filename */, const char * /* mode */ );
+__externC FILE *
+tmpfile( void ) __THROW;
 
-externC FILE *
+__externC char *
+tmpnam(char * /* s */ ) __THROW;
+
+//========================================================================
+
+// ISO C89 7.9.5 File access functions
+
+__externC int
+fclose( FILE * /* stream */ ) __THROW;
+
+__externC int
+fflush( FILE * /* stream */ ) __THROW;
+
+__externC FILE *
+fopen( const char * /* filename */, const char * /* mode */ ) __THROW;
+
+__externC FILE *
 freopen( const char * /* filename */, const char * /* mode */,
-         FILE * /* stream */ );
+         FILE * /* stream */ ) __THROW;
 
-externC void
-setbuf( FILE * /* stream */, char * /* buffer */ );
+__externC void
+setbuf( FILE * /* stream */, char * /* buffer */ ) __THROW;
 
-externC int
+__externC int
 setvbuf( FILE * /* stream */, char * /* buffer */, int /* mode */,
-         size_t /* size */ );
+         size_t /* size */ ) __THROW;
 
 //========================================================================
 
-// ISO C 7.9.6 Formatted input/output functions
+// ISO C89 7.9.6 Formatted input/output functions
 
-externC int
-fprintf( FILE * /* stream */, const char * /* format */, ... );
+__externC int
+fprintf( FILE * /* stream */, const char * /* format */, ... ) __THROW;
 
-externC int
-fscanf( FILE * /* stream */, const char * /* format */, ... );
+__externC int
+fscanf( FILE * /* stream */, const char * /* format */, ... ) __THROW;
 
-externC int
-printf( const char * /* format */, ... );
+__externC int
+printf( const char * /* format */, ... ) __THROW;
 
-externC int
-scanf( const char * /* format */, ... );
+__externC int
+scanf( const char * /* format */, ... ) __THROW;
 
-externC int
-sprintf( char * /* str */, const char * /* format */, ... );
+__externC int
+sprintf( char * /* str */, const char * /* format */, ... ) __THROW;
 
-externC int
-sscanf( const char * /* str */, const char * /* format */, ... );
+__externC int
+sscanf( const char * /* str */, const char * /* format */, ... ) __THROW;
 
-externC int
+__externC int
 vfprintf( FILE * /* stream */, const char * /* format */,
-          va_list /* args */ );
+          va_list /* args */ ) __THROW;
 
-externC int
-vprintf( const char * /* format */, va_list /* args */ );
+__externC int
+vprintf( const char * /* format */, va_list /* args */ ) __THROW;
 
-externC int
+__externC int
 vsprintf( char * /* str */, const char * /* format */,
-          va_list /* args */ );
+          va_list /* args */ ) __THROW;
 
 //========================================================================
 
-// ISO C 7.9.7 Character input/output functions
+// ISO C89 7.9.7 Character input/output functions
 
-externC int
-fgetc( FILE * /* stream */ );
+__externC int
+fgetc( FILE * /* stream */ ) __THROW;
 
-externC char *
-fgets( char * /* str */, int /* length */, FILE * /* stream */ );
+__externC char *
+fgets( char * /* str */, int /* length */, FILE * /* stream */ ) __THROW;
 
-externC int
-fputc( int /* c */, FILE * /* stream */ );
+__externC int
+fputc( int /* c */, FILE * /* stream */ ) __THROW;
 
-externC int
-putc( int /* c */, FILE * /* stream */ );
+__externC int
+putc( int /* c */, FILE * /* stream */ ) __THROW;
 
-externC int
-putchar( int /* c */ );
+__externC int
+putchar( int /* c */ ) __THROW;
 
-externC int
-fputs( const char * /* str */, FILE * /* stream */ );
+__externC int
+fputs( const char * /* str */, FILE * /* stream */ ) __THROW;
 
-externC char *
-gets( char * );
+__externC char *
+gets( char * ) __THROW;
 
-externC int
-getc( FILE * /* stream */ );
+__externC int
+getc( FILE * /* stream */ ) __THROW;
 
-externC int
-getchar( void );
+__externC int
+getchar( void ) __THROW;
 
-externC int
-puts( const char * /* str */ );
+__externC int
+puts( const char * /* str */ ) __THROW;
 
-externC int
-ungetc( int /* c */, FILE * /* stream */ );
+__externC int
+ungetc( int /* c */, FILE * /* stream */ ) __THROW;
 
 // no function equivalent is required for getchar() or putchar(), so we can
 // just #define them
@@ -220,81 +236,81 @@ ungetc( int /* c */, FILE * /* stream */ );
 
 //========================================================================
 
-// ISO C 7.9.8 Direct input/output functions
+// ISO C89 7.9.8 Direct input/output functions
 
-externC size_t
+__externC size_t
 fread( void * /* ptr */, size_t /* object_size */,
-       size_t /* num_objects */, FILE * /* stream */ );
+       size_t /* num_objects */, FILE * /* stream */ ) __THROW;
 
-externC size_t
+__externC size_t
 fwrite( const void * /* ptr */, size_t /* object_size */,
-        size_t /* num_objects */, FILE * /* stream */ );
+        size_t /* num_objects */, FILE * /* stream */ ) __THROW;
 
 //========================================================================
 
-// ISO C 7.9.9 File positioning functions
+// ISO C89 7.9.9 File positioning functions
 
-externC int
-fgetpos( FILE * /* stream */, fpos_t * /* pos */ );
+__externC int
+fgetpos( FILE * /* stream */, fpos_t * /* pos */ ) __THROW;
 
-externC int
-fseek( FILE * /* stream */, long int /* offset */, int /* whence */ );
+__externC int
+fseek( FILE * /* stream */, long int /* offset */, int /* whence */ ) __THROW;
 
-externC int
-fsetpos( FILE * /* stream */, const fpos_t * /* pos */ );
+__externC int
+fsetpos( FILE * /* stream */, const fpos_t * /* pos */ ) __THROW;
 
-externC long int
-ftell( FILE * /* stream */ );
+__externC long int
+ftell( FILE * /* stream */ ) __THROW;
 
-externC void
-rewind( FILE * /* stream */ );
+__externC void
+rewind( FILE * /* stream */ ) __THROW;
 
 //========================================================================
 
-// ISO C 7.9.10 Error-handling functions
+// ISO C89 7.9.10 Error-handling functions
 
-externC void
-clearerr( FILE * /* stream */ );
+__externC void
+clearerr( FILE * /* stream */ ) __THROW;
 
-externC int
-feof( FILE * /* stream */ );
+__externC int
+feof( FILE * /* stream */ ) __THROW;
 
-externC int
-ferror( FILE * /* stream */ );
+__externC int
+ferror( FILE * /* stream */ ) __THROW;
 
-externC void
-perror( const char * /* prefix_str */ );
+__externC void
+perror( const char * /* prefix_str */ ) __THROW;
 
 //========================================================================
 
 // Other non-ISO C functions
 
-externC int
+__externC int
 fnprintf( FILE * /* stream */, size_t /* length */,
-          const char * /* format */, ... ) CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
+          const char * /* format */, ... ) __THROW CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
 
-externC int
+__externC int
 snprintf( char * /* str */, size_t /* length */, const char * /* format */,
-          ... ) CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
+          ... ) __THROW CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
 
-externC int
+__externC int
 vfnprintf( FILE * /* stream */, size_t /* length */,
-           const char * /* format */, va_list /* args */ );
+           const char * /* format */, va_list /* args */ ) __THROW;
 
-externC int
+__externC int
 vsnprintf( char * /* str */, size_t /* length */,
-           const char * /* format */, va_list /* args */ );
+           const char * /* format */, va_list /* args */ ) __THROW;
 
-externC int
-vscanf( const char * /* format */, va_list /* args */ );
+__externC int
+vscanf( const char * /* format */, va_list /* args */ ) __THROW;
 
-externC int
+__externC int
 vsscanf( const char * /* str */, const char * /* format */,
-         va_list /* args */ );
+         va_list /* args */ ) __THROW;
 
-externC int
+__externC int
 vfscanf( FILE * /* stream */, const char * /* format */,
-         va_list /* args */ );
+         va_list /* args */ ) __THROW;
 
 
 // INLINE FUNCTIONS

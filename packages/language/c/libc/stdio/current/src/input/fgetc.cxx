@@ -69,7 +69,7 @@
 // FUNCTIONS
 
 externC int
-fgetc( FILE *stream )
+fgetc( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     cyg_ucount32 bytes_read;
@@ -113,7 +113,7 @@ fgetc( FILE *stream )
 #undef getchar
 
 externC int
-getchar( void )
+getchar( void ) __THROW
 {
     return fgetc( stdin );
 } // getchar()
@@ -126,6 +126,6 @@ getchar( void )
 #undef getc
 
 externC int
-getc( FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(fgetc);
+getc( FILE * ) __THROW CYGBLD_ATTRIB_WEAK_ALIAS(fgetc);
 
 // EOF fgetc.cxx

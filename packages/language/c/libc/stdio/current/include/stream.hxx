@@ -79,7 +79,7 @@ cyg_libc_stdio_flush_all_but( Cyg_StdioStream * );
 
 class Cyg_StdioStream
 {
-    friend int setvbuf( FILE *, char *, int, size_t );
+    friend int setvbuf( FILE *, char *, int, size_t ) __THROW;
     friend Cyg_ErrNo
     cyg_libc_stdio_flush_all_but( Cyg_StdioStream * );
 

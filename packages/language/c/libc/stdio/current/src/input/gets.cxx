@@ -71,7 +71,7 @@
 // for newlines, rather than reading byte at a time.
 
 externC char *
-gets( char *s )
+gets( char *s ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stdin;
     Cyg_ErrNo err=ENOERR;

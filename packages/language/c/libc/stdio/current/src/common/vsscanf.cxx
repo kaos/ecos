@@ -119,7 +119,7 @@ static DEVIO_TABLE(devio_table,
 
 
 externC int
-vsscanf( const char *s, const char *format, va_list arg )
+vsscanf( const char *s, const char *format, va_list arg ) __THROW
 {
     // construct a fake device with the address of the string we've
     // been passed as its private data. This way we can use the data
@@ -141,7 +141,7 @@ vsscanf( const char *s, const char *format, va_list arg )
 #else
 
 externC int
-vsscanf( const char *s, const char *format, va_list arg )
+vsscanf( const char *s, const char *format, va_list arg ) __THROW
 {
     Cyg_StdioStream my_stream( Cyg_StdioStream::CYG_STREAM_READ,
                                strlen(s), (cyg_uint8 *)s );

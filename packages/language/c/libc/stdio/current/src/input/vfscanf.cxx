@@ -178,7 +178,7 @@ externC mbtowc_fn_type __get_current_locale_mbtowc_fn();
 #endif
 
 externC int
-vfscanf (FILE *fp, const char *fmt0, va_list ap)
+vfscanf (FILE *fp, const char *fmt0, va_list ap) __THROW
 {
     u_char *fmt = (u_char *) fmt0;
     int c;              /* character from format, or conversion */
@@ -517,7 +517,7 @@ literal:
             if (flags & SUPPRESS)
             {
                 n = 0;
-                while (ccltab[*CURR_POS])
+                while (ccltab[(int)*CURR_POS])
                 {
                     n++, INC_CURR_POS;
                     if (--width == 0)
@@ -535,7 +535,7 @@ literal:
             else
             {
                 p0 = p = va_arg (ap, char *);
-                while (ccltab[*CURR_POS])
+                while (ccltab[(int)*CURR_POS])
                 {
                     *p++ = *CURR_POS;
                     INC_CURR_POS;

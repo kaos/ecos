@@ -69,7 +69,7 @@
 // FUNCTIONS
 
 externC int
-fputc( int c, FILE *stream )
+fputc( int c, FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;
@@ -101,7 +101,7 @@ fputc( int c, FILE *stream )
 #undef putchar
 
 externC int
-putchar( int c )
+putchar( int c ) __THROW
 {
     return fputc( c, stdout );
 } // putchar()
@@ -111,6 +111,6 @@ putchar( int c )
 #undef putc
 
 externC int
-putc( int, FILE * ) CYGBLD_ATTRIB_WEAK_ALIAS(fputc);
+putc( int, FILE * ) __THROW CYGBLD_ATTRIB_WEAK_ALIAS(fputc);
 
 // EOF fputc.cxx

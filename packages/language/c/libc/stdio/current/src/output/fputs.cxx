@@ -67,7 +67,7 @@
 // FUNCTIONS
 
 externC int
-fputs( const char *s, FILE *stream )
+fputs( const char *s, FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     cyg_ucount32 size = strlen(s);

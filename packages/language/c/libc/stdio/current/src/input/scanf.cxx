@@ -65,7 +65,7 @@
 
 
 externC int
-scanf( const char *format, ... )
+scanf( const char *format, ... ) __THROW
 {
     int rc;      // return code
     va_list ap;  // for variable args

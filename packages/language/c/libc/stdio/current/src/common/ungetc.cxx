@@ -67,7 +67,7 @@
 // FUNCTIONS
 
 externC int
-ungetc( int c, FILE *stream )
+ungetc( int c, FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;

@@ -127,7 +127,7 @@ cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
 } // cyg_libc_stdio_flush_all_but()
 
 externC int
-fflush( FILE *stream )
+fflush( FILE *stream ) __THROW
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
     Cyg_ErrNo err;

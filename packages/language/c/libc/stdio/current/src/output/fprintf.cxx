@@ -65,7 +65,7 @@
 // FUNCTIONS
 
 externC int
-fprintf( FILE *stream, const char *format, ... )
+fprintf( FILE *stream, const char *format, ... ) __THROW
 {
     int rc;      // return code
     va_list ap;  // for variable args
