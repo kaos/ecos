@@ -52,7 +52,7 @@
 cdl_package CYGPKG_UITRON {
     display       "uITRON compatibility layer"
     include_dir   cyg/compat/uitron
-    doc           redirect/micro-itron-api.html
+    doc           ref/compat-uitron.html
     requires      CYGPKG_KERNEL
     description   "
         eCos supports a uITRON Compatibility Layer, providing
