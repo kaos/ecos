@@ -771,6 +771,7 @@ synth_start_auxiliary(void)
         // current directory.
         if (':' == *path) {
             filename[j++] = '.';
+            path++;
         } else {
             while ((j < BUFSIZE) && ('\0' != *path) && (':' != *path)) {
                 filename[j++] = *path++;

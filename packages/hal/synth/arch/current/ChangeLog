@@ -1,3 +1,9 @@
+2003-03-26  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/synth_intr.c (synth_start_auxiliary): When an empty string
+	is found on the PATH, remember to move onto the next entry
+	otherwise we loop forever.
+ 
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/overview.gif, doc/overview.fig: renamed to
