@@ -1,3 +1,17 @@
+2004-01-14  Nick Garnett  <nickg@calivar.com>
+
+	* src/plf_misc.c (hal_platform_init): Changed capitalization of
+	"eCos" displayed on ASCII display.
+	(cyg_hal_plf_pci_init): Added call to cyg_pci_init() before call
+	to cyg_pci_configure_bus().
+
+	* include/plf_io.h (HAL_PCI_TRANSLATE_INTERRUPT): Added special
+	case for on-board Ethernet device. It doesn't seem it obey the
+	rules.
+
+	* include/plf_intr.h (HAL_INTERRUPT_ACKNOWLEDGE): Added
+	acknowledgement for interrupts in interrupt controller.
+
 2003-09-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_RAM.ecm: 

@@ -220,24 +220,32 @@ externC volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
     }                                                                       \
     CYG_MACRO_END
 
-#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                \
-    CYG_MACRO_START                                                     \
-    cyg_uint32 _srvector_ = _vector_;                                   \
-    if ((_vector_) >= CYGNUM_HAL_INTERRUPT_EXTERNAL_BASE) {             \
-        _srvector_ = CYGNUM_HAL_INTERRUPT_SOUTH_BRIDGE_INTR;            \
-    }                                                                   \
-    asm volatile (                                                      \
-        "mfc0   $3,$13\n"                                               \
-        "la     $2,0x00000400\n"                                        \
-        "sllv   $2,$2,%0\n"                                             \
-        "nor    $2,$2,$0\n"                                             \
-        "and    $3,$3,$2\n"                                             \
-        "mtc0   $3,$13\n"                                               \
-        "nop; nop; nop\n"                                               \
-        :                                                               \
-        : "r"(_srvector_)                                               \
-        : "$2", "$3"                                                    \
-        );                                                              \
+#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                   \
+    CYG_MACRO_START                                             \
+    cyg_uint32 _srvector_ = _vector_;                           \
+    if ((_vector_) >= CYGNUM_HAL_INTERRUPT_CTRL2_BASE)          \
+    {                                                           \
+        HAL_WRITE_UINT8(HAL_PIIX4_SLAVE_OCW3, 0x20 );           \
+    }                                                           \
+    if ((_vector_) >= CYGNUM_HAL_INTERRUPT_CTRL1_BASE)          \
+    {                                                           \
+        HAL_WRITE_UINT8(HAL_PIIX4_MASTER_OCW3, 0x20 );          \
+    }                                                           \
+    if ((_vector_) >= CYGNUM_HAL_INTERRUPT_EXTERNAL_BASE) {     \
+        _srvector_ = CYGNUM_HAL_INTERRUPT_SOUTH_BRIDGE_INTR;    \
+    }                                                           \
+    asm volatile (                                              \
+        "mfc0   $3,$13\n"                                       \
+        "la     $2,0x00000400\n"                                \
+        "sllv   $2,$2,%0\n"                                     \
+        "nor    $2,$2,$0\n"                                     \
+        "and    $3,$3,$2\n"                                     \
+        "mtc0   $3,$13\n"                                       \
+        "nop; nop; nop\n"                                       \
+        :                                                       \
+        : "r"(_srvector_)                                       \
+        : "$2", "$3"                                            \
+        );                                                      \
     CYG_MACRO_END
 
 #define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )                  \

@@ -101,8 +101,8 @@ void hal_platform_init(void)
     HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS1, ' ');
     HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS2, 'e');
     HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS3, 'C');
-    HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS4, 'O');
-    HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS5, 'S');
+    HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS4, 'o');
+    HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS5, 's');
     HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS6, ' ');
     HAL_WRITE_UINT32(HAL_DISPLAY_ASCIIPOS7, ' ');
 #endif
@@ -308,7 +308,7 @@ void cyg_hal_plf_pci_init(void)
     cyg_hal_plf_pci_cfg_write_byte(0, CYG_PCI_DEV_MAKE_DEVFN(_PIIX4_PCI_ID,_PIIX4_BRIDGE),
                                    CYG_PCI_CFG_PIIX4_TOM, v);
 
-
+    cyg_pci_init();
     // Configure PCI bus.
     next_bus = 1;
     cyg_pci_configure_bus(0, &next_bus);

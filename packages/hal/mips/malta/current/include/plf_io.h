@@ -559,41 +559,45 @@ externC void cyg_hal_plf_pci_init(void);
 
 // Translate the PCI interrupt requested by the device (INTA#, INTB#,
 // INTC# or INTD#) to the associated CPU interrupt (i.e., HAL vector).
-#define HAL_PCI_TRANSLATE_INTERRUPT( __bus, __devfn, __vec, __valid)          \
-    CYG_MACRO_START                                                           \
-    cyg_uint8 __req;                                                          \
-    HAL_PCI_CFG_READ_UINT8(__bus, __devfn, CYG_PCI_CFG_INT_PIN, __req);       \
-    if (0 != __req) {                                                         \
-        /* Interrupt assignment as Galileo sees them.                     */  \
-        /* (From Malta User's Manual, 6.1 PCI Bus)                        */  \
-        CYG_ADDRWORD __translation[4] = {                                     \
-            CYGNUM_HAL_INTERRUPT_PCI_AB,  /* INTB# */                         \
-            CYGNUM_HAL_INTERRUPT_PCI_CD,  /* INTC# */                         \
-            CYGNUM_HAL_INTERRUPT_PCI_CD,  /* INTD# */                         \
-            CYGNUM_HAL_INTERRUPT_PCI_AB}; /* INTA# */                         \
-                                                                              \
-        /* The PCI lines from the different slots are wired like this  */     \
-        /* on the PCI backplane:                                       */     \
-        /*                PCI_AB    PCI_AB   PCI_CD  PCI_CD            */     \
-        /* AMD PCnet                INTA#                              */     \
-        /* I/O Slot 1     INTA#     INTB#    INTC#   INTD#             */     \
-        /* I/O Slot 2     INTD#     INTA#    INTB#   INTC#             */     \
-        /* I/O Slot 3     INTC#     INTD#    INTA#   INTB#             */     \
-        /* I/O Slot 4     INTB#     INTC#    INTD#   INTA#             */     \
-        /*                                                             */     \
-        /* Devsel signals are wired to, resulting in device IDs:       */     \
-        /* AMD PCnet      AD21 / dev 11      [(11+1)&3 = 0]            */     \
-        /* I/O Slot 1     AD28 / dev 18      [(18+1)&3 = 3]            */     \
-        /* I/O Slot 2     AD29 / dev 19      [(19+1)&3 = 0]            */     \
-        /* I/O Slot 3     AD30 / dev 20      [(20+1)&3 = 1]            */     \
-        /* I/O Slot 4     AD31 / dev 21      [(21+1)&3 = 2]            */     \
-                                                                              \
-        __vec = __translation[((__req+CYG_PCI_DEV_GET_DEV(__devfn))&3)];      \
-        __valid = true;                                                       \
-    } else {                                                                  \
-        /* Device will not generate interrupt requests. */                    \
-        __valid = false;                                                      \
-    }                                                                         \
+#define HAL_PCI_TRANSLATE_INTERRUPT( __bus, __devfn, __vec, __valid)            \
+    CYG_MACRO_START                                                             \
+    cyg_uint8 __req;                                                            \
+    HAL_PCI_CFG_READ_UINT8(__bus, __devfn, CYG_PCI_CFG_INT_PIN, __req);         \
+    if (0 != __req) {                                                           \
+        /* Interrupt assignment as Galileo sees them.                     */    \
+        /* (From Malta User's Manual, 6.1 PCI Bus)                        */    \
+        CYG_ADDRWORD __translation[4] = {                                       \
+            CYGNUM_HAL_INTERRUPT_PCI_AB,  /* INTB# */                           \
+            CYGNUM_HAL_INTERRUPT_PCI_CD,  /* INTC# */                           \
+            CYGNUM_HAL_INTERRUPT_PCI_CD,  /* INTD# */                           \
+            CYGNUM_HAL_INTERRUPT_PCI_AB}; /* INTA# */                           \
+                                                                                \
+        /* The PCI lines from the different slots are wired like this  */       \
+        /* on the PCI backplane:                                       */       \
+        /*                PCI_AB    PCI_AB   PCI_CD  PCI_CD            */       \
+        /* AMD PCnet                INTA#                              */       \
+        /* I/O Slot 1     INTA#     INTB#    INTC#   INTD#             */       \
+        /* I/O Slot 2     INTD#     INTA#    INTB#   INTC#             */       \
+        /* I/O Slot 3     INTC#     INTD#    INTA#   INTB#             */       \
+        /* I/O Slot 4     INTB#     INTC#    INTD#   INTA#             */       \
+        /*                                                             */       \
+        /* Devsel signals are wired to, resulting in device IDs:       */       \
+        /* AMD PCnet      AD21 / dev 11      [(11+1)&3 = 0]            */       \
+        /* I/O Slot 1     AD28 / dev 18      [(18+1)&3 = 3]            */       \
+        /* I/O Slot 2     AD29 / dev 19      [(19+1)&3 = 0]            */       \
+        /* I/O Slot 3     AD30 / dev 20      [(20+1)&3 = 1]            */       \
+        /* I/O Slot 4     AD31 / dev 21      [(21+1)&3 = 2]            */       \
+                                                                                \
+        /* For some reason the Ethernet device comes in on interrupt   */       \
+        /* 11 rather than interrupt 16.                                */       \
+        if( (__bus)==0 && (__devfn)==0x58 )                                     \
+            __vec = CYGNUM_HAL_INTERRUPT_11;                                    \
+        else __vec = __translation[((__req+CYG_PCI_DEV_GET_DEV(__devfn))&3)];   \
+        __valid = true;                                                         \
+    } else {                                                                    \
+        /* Device will not generate interrupt requests. */                      \
+        __valid = false;                                                        \
+    }                                                                           \
     CYG_MACRO_END
 
 // Galileo GT64120 on MIPS MALTA requires special processing.
@@ -620,7 +624,7 @@ externC void cyg_hal_plf_pci_init(void);
 #define HAL_IDE_NUM_CONTROLLERS 2
 
 // Initialize the IDE controller(s).
-externC void cyg_hal_plf_ide_init(void);
+externC int cyg_hal_plf_ide_init(void);
 #define HAL_IDE_INIT() cyg_hal_plf_ide_init()
 
 #define HAL_IDE_READ_UINT8( __ctlr, __regno, __val )  \
