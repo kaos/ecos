@@ -1,3 +1,8 @@
+2003-10-30  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_arm_sa11x0.cdl: 
+	* src/sa11x0_misc.c: Add support for profiling, using timer #1
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_arm_sa11x0.cdl:

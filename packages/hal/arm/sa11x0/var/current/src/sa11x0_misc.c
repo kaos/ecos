@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -207,6 +208,44 @@ void hal_delay_us(cyg_int32 usecs)
         val -= 1000000;
     }
 }
+#ifdef CYGPKG_PROFILE_GPROF
+//--------------------------------------------------------------------------
+//
+// Profiling support - uses a separate high-speed timer
+//
+
+#include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_intr.h>
+#include <cyg/profile/profile.h>
+
+// Can't rely on Cyg_Interrupt class being defined.
+#define Cyg_InterruptHANDLED 1
+
+// Profiling timer ISR
+static cyg_uint32 
+profile_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data, HAL_SavedRegisters *regs)
+{
+    HAL_INTERRUPT_ACKNOWLEDGE(CYGNUM_HAL_INTERRUPT_TIMER1);
+    __profile_hit(regs->pc);
+    return Cyg_InterruptHANDLED;
+}
+
+void
+hal_enable_profile_timer(int resolution)
+{
+    // Run periodic timer interrupt for profile 
+    // The resolution is specified in us, the hardware generates 3.6864
+    // ticks/us
+    int period = (resolution*36864) / 10000;
+
+    // Attach ISR.
+    HAL_INTERRUPT_ATTACH(CYGNUM_HAL_INTERRUPT_TIMER1, &profile_isr, 0x1111, 0);
+    HAL_INTERRUPT_UNMASK(CYGNUM_HAL_INTERRUPT_TIMER1);
+
+    // Set period.
+    *SA11X0_OSMR1 = period;
+}
+#endif
 
 // -------------------------------------------------------------------------
 

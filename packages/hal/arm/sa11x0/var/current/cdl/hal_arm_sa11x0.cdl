@@ -62,6 +62,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
 
     implements    CYGINT_HAL_ARM_ARCH_STRONGARM
     implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+    implements    CYGINT_PROFILE_HAL_TIMER
 
     # Let the architectural HAL see this variant's interrupts file -
     # the SA11x0 has no variation between targets here.
