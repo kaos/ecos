@@ -1,3 +1,8 @@
+2002-10-16  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* include/test/stackmon.h (STACKMON_PRINTF): Use #include to get
+	prototype for 'diag_printf()'.
+
 2002-10-01  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/common/clock.cxx (add_alarm): Tweak last change to allow

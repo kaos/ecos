@@ -74,7 +74,7 @@
 #endif
 
 #ifndef STACKMON_PRINTF
-externC void diag_printf(const char *, ...);
+#include <cyg/infra/diag.h>
 #define STACKMON_PRINTF diag_printf
 #endif
 
