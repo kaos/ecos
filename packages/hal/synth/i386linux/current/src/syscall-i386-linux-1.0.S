@@ -140,7 +140,7 @@
 #define SYS_swapon              87
 #define SYS_reboot              88
 #define SYS_readdir             89
-#define SYS_mmap                90
+#define SYS_mmapx               90
 #define SYS_munmap              91
 #define SYS_truncate            92
 #define SYS_ftruncate           93
@@ -426,7 +426,7 @@ SYSCALL1(chroot)
 SYSCALL2(dup2)
 SYSCALL3(sigaction)
 SYSCALL2(gettimeofday)
-SYSCALL1(mmap)
+SYSCALL1(mmapx)
 SYSCALL2(socketcall)
 SYSCALL3(setitimer)
 SYSCALL3(sigprocmask)
@@ -440,3 +440,4 @@ SYSCALL3(readdir)
 STATCALL2(lstat)
 STATCALL2(fstat)
 SYSCALL2(mkdir)
+SYSCALL5(ipc)
