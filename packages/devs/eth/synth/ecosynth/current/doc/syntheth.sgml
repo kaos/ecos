@@ -74,7 +74,7 @@ operations cannot conveniently be done by a Tcl script so
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="overview.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="overview.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>

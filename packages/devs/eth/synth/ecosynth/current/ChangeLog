@@ -1,3 +1,10 @@
+2003-02-25  Iztok Zupet  <iz@vsr.si>
+
+	* doc/syntheth.sgml: Replaced .gif with .png to get PDF
+	output.
+	* doc/overview.gif: delete.
+	* doc/overview.png: add.
+
 2003-04-08  Andrew Lunn  <lunn@londo>
 
 	* host/rawether.c (tap_init): Set the persistent flag on the tap
