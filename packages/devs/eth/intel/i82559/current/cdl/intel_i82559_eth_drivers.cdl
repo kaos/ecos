@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -76,13 +77,16 @@ cdl_package CYGPKG_DEVS_ETH_INTEL_I82559 {
 
     cdl_option CYGDBG_DEVS_ETH_INTEL_I82559_CHATTER {
 	display "Prints ethernet device status info during startup"
+        flavor        booldata
 	default_value 0
 	description   "
-	    The ethernet device initialization code can print lots of info
+	    Definining this will cause the ethernet device initialization code 
+            to print lots of info
 	    to confirm that it has found the devices on the PCI bus, read
 	    the MAC address from EEPROM correctly, and so on, and also
 	    displays the mode (10/100MHz, half/full duplex) of the
-	    connection."
+	    connection.  If the value is set higher than one then
+            additional information about each packet sent will be printed."
     }
 
     cdl_option CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT {

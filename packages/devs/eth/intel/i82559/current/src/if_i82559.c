@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -220,9 +220,11 @@
 // ------------------------------------------------------------------------
 
 #ifdef CYGDBG_DEVS_ETH_INTEL_I82559_CHATTER
-#define notDEBUG_82559 // This one prints stuff as packets come and go
 #define DEBUG          // Startup printing mainly
 #define DEBUG_EE       // Some EEPROM specific retries &c
+#if (CYGDBG_DEVS_ETH_INTEL_I82559_CHATTER > 1)
+#define DEBUG_82559 // This one prints stuff as packets come and go
+#endif
 #endif
 
 #ifdef CYGDBG_USE_ASSERTS

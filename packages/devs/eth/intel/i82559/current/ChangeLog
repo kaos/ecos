@@ -1,3 +1,9 @@
+2003-01-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_i82559.c: 
+	* cdl/intel_i82559_eth_drivers.cdl: Allow finer control over
+	debug (chatter) by making control booldata.
+
 2002-12-17  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82559.c (CYGHWR_DEVS_ETH_INTEL_I82559_ENDIAN_NEUTRAL_IO): New
