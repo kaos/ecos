@@ -10,6 +10,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -74,44 +75,44 @@
         bt       2f
         mov.w    @r3+,r1                // data
         bra      1b
-         mov.w    r1,@r0                // delay slot
+        mov.w    r1,@r0                // delay slot
 
         .align  2
 BSC_settings_table:
         # These are the settings set by the Hitachi ROM Monitor.
 
-	.word   CYGARC_REG_FRQCR
+	.word   (CYGARC_REG_FRQCR & 0x0000FFFF)
 	.word   CYGARC_REG_FRQCR_INIT
 
         # BCR2: Bus size of areas 1-6 to 32 bits
-        .word   CYGARC_REG_BCR2
+        .word   (CYGARC_REG_BCR2 & 0x0000FFFF)
         .word   0x3ffc
         # BCR1: Areas 2 and 3 are SDRAM
-        .word   CYGARC_REG_BCR1
+        .word   (CYGARC_REG_BCR1 & 0x0000FFFF)
         .word   0x080c
         # BCR2: Bus size of areas 1-6 to 32 bits [note: second write!]
-        .word   CYGARC_REG_BCR2
+        .word   (CYGARC_REG_BCR2 & 0x0000FFFF)
         .word   0x3ffc
         # WCR1: 3 wait-state cycles inserted for all areas
-        .word   CYGARC_REG_WCR1
+        .word   (CYGARC_REG_WCR1 & 0x0000FFFF)
         .word   0x3fff
         # WCR2: extra wait states and full pitch for burst
-        .word   CYGARC_REG_WCR2
+        .word   (CYGARC_REG_WCR2 & 0x0000FFFF)
         .word   0xffd7
         # MCR: RAS/CAS & burst timing area 2/3
-        .word   CYGARC_REG_MCR
+        .word   (CYGARC_REG_MCR & 0x0000FFFF)
         .word   0x963c
         # RTCNT: refresh counter (needs a5 in top byte to accept write)
-        .word   CYGARC_REG_RTCNT
+        .word   (CYGARC_REG_RTCNT & 0x0000FFFF)
         .word   (0xa500 | 0x0000)
         # RTCOR: refresh time constant (needs a5 in top byte to accept write)
-        .word   CYGARC_REG_RTCOR
+        .word   (CYGARC_REG_RTCOR & 0x0000FFFF)
         .word   (0xa500 | 0x003b)
         # RFCR:  refresh count register (needs a4 in top byte to accept write)
-        .word   CYGARC_REG_RFCR
+        .word   (CYGARC_REG_RFCR & 0x0000FFFF)
         .word   (0xa400 | 0x0000)
         # RTCSR: refresh timer control (needs a5 in top byte to accept write)
-        .word   CYGARC_REG_RTCSR
+        .word   (CYGARC_REG_RTCSR & 0x0000FFFF)
         .word   (0xa500 | 0x0008)
 
         # Set SDMR to 0x220

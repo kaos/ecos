@@ -1,3 +1,8 @@
+2003-01-19  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/platform.inc (BSC_settings_table):
+	Avoid warnings with binutils 2.13.1
+
 2002-05-13  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_edk7708.cdl: Removed implemntation of
@@ -398,6 +403,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) Bart Veer	
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under

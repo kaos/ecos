@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 Bart Veer        
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -78,7 +79,7 @@
 
 FUNC_START(cyg_hal_cache_enable)
         GOTO_NONCACHED_SHADOW
-        mov     #CYGARC_REG_CCR,r1
+        mov     #CYGARC_REG_CCR & 0x0FF,r1
         mov.l   @r1,r0
         mov     #CYGARC_REG_CCR_CE,r2
         or      r2,r0
@@ -89,7 +90,7 @@ FUNC_START(cyg_hal_cache_enable)
 
 FUNC_START(cyg_hal_cache_disable)
         GOTO_NONCACHED_SHADOW
-        mov     #CYGARC_REG_CCR,r1
+        mov     #CYGARC_REG_CCR & 0x0FF,r1
         mov.l   @r1,r0
         mov     #CYGARC_REG_CCR_CE,r2
         not     r2,r2
@@ -101,7 +102,7 @@ FUNC_START(cyg_hal_cache_disable)
         
 FUNC_START(cyg_hal_cache_invalidate_all)
         GOTO_NONCACHED_SHADOW
-        mov     #CYGARC_REG_CCR,r1
+        mov     #CYGARC_REG_CCR & 0x0FF,r1
         mov.l   @r1,r0
         mov     #CYGARC_REG_CCR_CF,r2
         or      r2,r0
@@ -168,7 +169,7 @@ FUNC_START(cyg_hal_cache_write_mode)
         GOTO_NONCACHED_SHADOW
         # Mode argument in r4.
         # Read current state and mask out the two caching mode bits
-        mov     #CYGARC_REG_CCR,r1
+        mov     #CYGARC_REG_CCR & 0x0FF,r1
         mov.l   @r1,r3
         mov     #CYGARC_REG_CCR_CB|CYGARC_REG_CCR_WT,r2
 	and	r2,r4

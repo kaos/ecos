@@ -10,6 +10,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -84,15 +85,15 @@
         mov.l   $nCYG_SR,r1             ! Put CPU in a well-known state
         ldc     r1,sr
         mov     #0,r0
-        mov     #CYGARC_REG_CCR,r1      ! Disable cache
+        mov     #CYGARC_REG_CCR & 0x0FF,r1      ! Disable cache
         mov.l   r0,@r1
-        mov     #CYGARC_REG_MMUCR,r1    ! Disable MMU
+        mov     #CYGARC_REG_MMUCR & 0x0FF,r1    ! Disable MMU
         mov.l   r0,@r1
-        mov     #CYGARC_REG_BBRA,r1     ! Disable UBC Channel A
+        mov     #CYGARC_REG_BBRA & 0x0FF,r1     ! Disable UBC Channel A
         mov.w   r0,@r1
-        mov     #CYGARC_REG_BBRB,r1     ! Disable UBC Channel B
+        mov     #CYGARC_REG_BBRB & 0x0FF,r1     ! Disable UBC Channel B
         mov.w   r0,@r1
-        mov     #CYGARC_REG_BRCR,r1     ! Reset UBC common register
+        mov     #CYGARC_REG_BRCR & 0x0FF,r1     ! Reset UBC common register
         mov.w   r0,@r1
         mov.l   $CYGARC_REG_TSTR,r1     ! Disable timers
         mov.b   r0,@r1
@@ -116,7 +117,7 @@
         mov.w   r0,@r1
 #endif
 	mov.w	$nCYG_WTCSR,r0          ! Clear watchdog
-	mov	#CYGARC_REG_WTCSR,r1
+	mov	#CYGARC_REG_WTCSR & 0x0FF,r1
 	mov.w	r0,@r1
 
         # Initialize VBR if necessary

@@ -10,6 +10,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2003 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -81,29 +82,29 @@
 BSC_settings_table:
         # These are the settings set by the ROM Monitor.
 
-	.word   CYGARC_REG_FRQCR
+	.word   (CYGARC_REG_FRQCR & 0x0000FFFF)
 	.word   CYGARC_REG_FRQCR_INIT
 
         # BCR1: Areas 3 are SDRAM
-        .word   CYGARC_REG_BCR1
+        .word   (CYGARC_REG_BCR1 & 0x0000FFFF)
         .word   0x0010
         # BCR2: Bus size of areas 2,4 are 8 bits
-        .word   CYGARC_REG_BCR2
+        .word   (CYGARC_REG_BCR2 & 0x0000FFFF)
         .word   0x3ddc
         # WCR1: 3 wait-state cycles inserted for all areas
-        .word   CYGARC_REG_WCR1
+        .word   (CYGARC_REG_WCR1 & 0x0000FFFF)
         .word   0x3fff
         # WCR2: cs0=8wait cs1=0wait cs2=0wait cs3=2wait cs4=4wait */
-        .word   CYGARC_REG_WCR2
+        .word   (CYGARC_REG_WCR2 & 0x0000FFFF)
         .word   0x0246
         # MCR:  dram setting 10 bit
-        .word   CYGARC_REG_MCR
+        .word   (CYGARC_REG_MCR & 0x0000FFFF)
         .word   0x0074
         # RTCSR: refresh timer control
-        .word   CYGARC_REG_RTCSR
+        .word   (CYGARC_REG_RTCSR & 0x0000FFFF)
         .word   (0xa500 | 0x0010)
         # RTCOR: refresh time constant
-        .word   CYGARC_REG_RTCOR
+        .word   (CYGARC_REG_RTCOR & 0x0000FFFF)
         .word   (0xa500 | 0x003a)
         
         # Table end
