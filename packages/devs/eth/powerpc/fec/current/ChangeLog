@@ -1,3 +1,7 @@
+2003-01-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/fec_eth_drivers.cdl: Increase number of allowed buffers.
+
 2002-11-14  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* cdl/fec_eth_drivers.cdl: Increase default number of buffers (to a
