@@ -1,3 +1,15 @@
+2003-09-30  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/fconfig.c (do_flash_config): Fix typo in error message.
+
+2003-09-30  David Vrabel  <dvrabel@arcom.com>
+
+        * src/net/tcp.c: Include missing <cyg/infra/diag.h>.
+
+        * include/redboot.h, src/parse.c (init_opts, scan_opts): Remove
+        the excessive level of indirection in the handling of option
+        arguments.
+	
 2003-09-29  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/load.c (load_elf_image): Use LMA (loader memory address), instead

@@ -200,7 +200,7 @@ cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix)
 //
 void
 init_opts(struct option_info *opts, char flag, bool takes_arg, 
-          int arg_type, void **arg, bool *arg_set, char *name)
+          int arg_type, void *arg, bool *arg_set, char *name)
 {
     opts->flag = flag;
     opts->takes_arg = takes_arg;
@@ -216,7 +216,7 @@ init_opts(struct option_info *opts, char flag, bool takes_arg,
 bool
 scan_opts(int argc, char *argv[], int first, 
           struct option_info *opts, int num_opts, 
-          void **def_arg, int def_arg_type, char *def_descr)
+          void *def_arg, int def_arg_type, char *def_descr)
 {
     bool ret = true;
     bool flag_ok;
@@ -226,7 +226,7 @@ scan_opts(int argc, char *argv[], int first,
     struct option_info *opt;
 
     if (def_arg && (def_arg_type == OPTION_ARG_TYPE_STR)) {
-        *def_arg = (char *)0;
+        *(char **)def_arg = (char *)0;
     }
     opt = opts;
     for (j = 0;  j < num_opts;  j++, opt++) {
@@ -271,7 +271,7 @@ scan_opts(int argc, char *argv[], int first,
                             }
                             break;
                         case OPTION_ARG_TYPE_STR:
-                            *opt->arg = s;
+                            *(char **)opt->arg = s;
                             break;
                         }
                         *opt->arg_set = true;
@@ -308,7 +308,7 @@ scan_opts(int argc, char *argv[], int first,
                     }
                     break;
                 case OPTION_ARG_TYPE_STR:
-                    *def_arg = argv[i];
+                    *(char **)def_arg = argv[i];
                     break;
                 }
                 def_arg_set = true;

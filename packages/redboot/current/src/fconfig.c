@@ -551,7 +551,7 @@ do_flash_config(int argc, char *argv[])
             diag_printf("Trying to add value\n");
         }
 #else
-        diag_printf("** entry '%s' not found", onlyone);
+        diag_printf("** entry '%s' not found\n", onlyone);
 #endif
     }
     if (!need_update)

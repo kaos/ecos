@@ -53,6 +53,7 @@
 //==========================================================================
 
 #include <net/net.h>
+#include <cyg/infra/diag.h>
 
 #define MAX_TCP_SEGMENT (ETH_MAX_PKTLEN - (sizeof(eth_header_t) + sizeof(ip_header_t)))
 #define MAX_TCP_DATA    (MAX_TCP_SEGMENT - sizeof(tcp_header_t))

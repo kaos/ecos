@@ -289,7 +289,7 @@ struct option_info {
     char flag;
     bool takes_arg;
     int  arg_type;
-    void **arg;
+    void *arg;
     bool *arg_set;
     char *name;
 };
@@ -302,10 +302,10 @@ struct option_info {
 externC struct cmd *parse(char **line, int *argc, char **argv);
 
 externC void init_opts(struct option_info *opts, char flag, bool takes_arg, 
-                       int arg_type, void **arg, bool *arg_set, char *name);
+                       int arg_type, void *arg, bool *arg_set, char *name);
 externC bool scan_opts(int argc, char *argv[], int first, 
                        struct option_info *opts, int num_opts, 
-                       void **def_arg, int def_arg_type, char *def_descr);
+                       void *def_arg, int def_arg_type, char *def_descr);
 
 #ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
 #define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
