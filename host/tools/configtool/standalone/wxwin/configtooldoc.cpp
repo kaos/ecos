@@ -1979,10 +1979,10 @@ int ecConfigToolDoc::GetTestExeNames (wxArrayString& arTestExes, wxArrayString& 
             strFile += ar[i];
 
             // Some tests accidentally specify .c
-            wxStripExtension(strFile);
+//            wxStripExtension(strFile);
 
 #ifdef __WXMSW__
-            strFile += wxT(".exe");
+//            strFile += wxT(".exe");
             strFile.Replace(wxT("/"),wxT("\\"));
 #endif
 

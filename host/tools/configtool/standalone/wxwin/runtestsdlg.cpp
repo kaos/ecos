@@ -756,11 +756,11 @@ void ecRunTestsExecutablesDialog::OnAdd(wxCommandEvent& event)
     if (!checkList)
         return;
 
-#ifdef __WXMSW__
-    wxString wildcard(wxT("Executables (*.exe)|*.exe"));
-#else
+//#ifdef __WXMSW__
+//    wxString wildcard(wxT("Executables (*.exe)|*.exe"));
+//#else
     wxString wildcard(wxT("Executables (*)|*"));
-#endif
+//#endif
 
     wxFileDialog dialog(this, _("Choose one or more executables to add"), wxGetCwd(), wxEmptyString,
         wildcard, wxMULTIPLE|wxOPEN);
@@ -802,11 +802,11 @@ void ecRunTestsExecutablesDialog::OnAddFromFolder(wxCommandEvent& event)
     // before we show the folder dialog.
     // We won't bother allowing the user to change the extension: on Windows it's .exe,
     // on Unix it's anything.
-#ifdef __WXMSW__
-    wxString filespec(wxT("*.exe"));
-#else
+//#ifdef __WXMSW__
+//    wxString filespec(wxT("*.exe"));
+//#else
     wxString filespec(wxT("*"));
-#endif
+//#endif
 
     wxString msg;
     msg.Printf(_("Would you like to add from subfolders, or just the folder you specify?\nChoose Yes to add from subfolders."));

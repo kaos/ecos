@@ -1,3 +1,13 @@
+2003-02-05  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/platformeditordlg.cpp,
+	  standalone/wxwin/runtestsdlg.cpp:
+	Eliminate .exe suffix handling when running eCos tests. Latest
+	cross toolchains do not generate a .exe suffix.
+
+	* standalone/wxwin/symbols.h: Version number 2.11 -> 2.12
+
 2003-02-03  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/filename.cpp: Eliminate (const WCHAR*) cast

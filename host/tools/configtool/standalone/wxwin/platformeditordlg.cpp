@@ -206,7 +206,7 @@ void ecPlatformEditorDialog::CreateControls(wxWindow* parent)
 
     // Add context-sensitive help text
     parent->FindWindow( ecID_MODIFY_PLATFORM_NAME )->SetHelpText(_("Specifies the name of the platform. Platform names are arbitrary strings, but must be unique for a given user."));
-    parent->FindWindow( ecID_MODIFY_PLATFORM_PREFIX )->SetHelpText(_("Specifies the prefix to be used when invoking tools (for example, 'arm-elf' is the correct prefix if the appropriate gdb executable is arm-elf-gdb.exe)."));
+    parent->FindWindow( ecID_MODIFY_PLATFORM_PREFIX )->SetHelpText(_("Specifies the prefix to be used when invoking tools (for example, 'arm-elf' is the correct prefix if the appropriate gdb executable is arm-elf-gdb)."));
     parent->FindWindow( ecID_MODIFY_PLATFORM_ARGS )->SetHelpText(_("Specifies any additional arguments to be used when invoking gdb."));
     parent->FindWindow( ecID_MODIFY_PLATFORM_INFERIOR )->SetHelpText(_("The gdb command to run."));
     parent->FindWindow( ecID_MODIFY_PLATFORM_PROMPT )->SetHelpText(_("The gdb prompt."));
