@@ -1,3 +1,8 @@
+2003-07-11  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/socket.cxx (socket): If there are no network stacks configured
+	return EAFNOSUPPORT when opening a socket.
+
 2003-04-11  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/socket.cxx: Give nstab_lock mutex a priority. Also it's

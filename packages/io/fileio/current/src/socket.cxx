@@ -148,7 +148,7 @@ __externC int	socket (int domain, int type, int protocol)
 {
     SOCKET_ENTRY();
 
-    int err = 0;
+    int err = EAFNOSUPPORT;
     int fd;
     cyg_file *file;
 
