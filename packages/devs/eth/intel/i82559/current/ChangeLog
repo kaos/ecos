@@ -1,3 +1,8 @@
+2003-02-12  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82559.c: Remove restriction preventing combination of
+	*_GET_ESA and *_HAS_EEPROM.
+
 2003-01-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_i82559.c: 

@@ -8,8 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -199,21 +198,9 @@
 #endif
 #endif
 
-#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
-#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
-#error This platform has EEPROM, yet external ..._GET_ESA is defined
-#endif
-#endif
-
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
 #error This platform has no EEPROM, yet it also HAS_ONE_EEPROM
-#endif
-#endif
-
-#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
-#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
-#error This platform has one EEPROM, yet external ..._GET_ESA is defined
 #endif
 #endif
 
