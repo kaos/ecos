@@ -1,3 +1,8 @@
+2000-11-25  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/redboot_RAM.cfg: Added new import file for redboot
+	* misc/redboot_ROM.cfg: Ditto
+
 2000-11-10  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0_brutus.cdl: Add RedBoot configuration.

@@ -51,6 +51,7 @@
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
+
 // When this flag is set, 
 #undef RAM_FLASH_DEV_DEBUG
 #if !defined(CYG_HAL_STARTUP_RAM) && defined(RAM_FLASH_DEV_DEBUG)
@@ -111,7 +112,6 @@ flash_get_block_info(int *block_size, int *blocks)
     *blocks = flash_info.blocks;
     return FLASH_ERR_OK;
 }
-
 int
 flash_erase(void *addr, int len, void **err_addr)
 {
@@ -121,6 +121,7 @@ flash_erase(void *addr, int len, void **err_addr)
     int code_len;
     typedef int code_fun(unsigned short *);
     code_fun *_flash_erase_block;
+    int d_cache, i_cache;
 
     if (!flash_info.init) {
         return FLASH_ERR_NOT_INIT;
@@ -130,9 +131,8 @@ flash_erase(void *addr, int len, void **err_addr)
     code_len = (unsigned long)&flash_erase_block_end - (unsigned long)&flash_erase_block;
     _flash_erase_block = (code_fun *)flash_info.work_space;
     memcpy(_flash_erase_block, &flash_erase_block, code_len);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
 
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
 
@@ -151,7 +151,7 @@ flash_erase(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
-    HAL_ICACHE_ENABLE();
+    HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
 }
@@ -166,6 +166,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     code_fun *_flash_program_buf;
     unsigned short *addr = (unsigned short *)_addr;
     unsigned short *data = (unsigned short *)_data;
+    int d_cache, i_cache;
 
     if (!flash_info.init) {
         return FLASH_ERR_NOT_INIT;
@@ -175,10 +176,9 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     code_len = (unsigned long)&flash_program_buf_end - (unsigned long)&flash_program_buf;
     _flash_program_buf = (code_fun *)flash_info.work_space;
     memcpy(_flash_program_buf, &flash_program_buf, code_len);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
 
-    printf("... Program from %p-%p at %p: ", data, ((unsigned long)data)+len, addr);
+    printf("... Program from %p-%p at %p: ", data, (void*)(((unsigned long)data)+len), addr);
 
     while (len > 0) {
         size = len;
@@ -197,7 +197,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         addr += size/sizeof(*addr);
         data += size/sizeof(*data);
     }
-    HAL_ICACHE_ENABLE();
+    HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
 }
@@ -213,6 +213,7 @@ flash_lock(void *addr, int len, void **err_addr)
     int code_len;
     typedef int code_fun(unsigned short *);
     code_fun *_flash_lock_block;
+    int d_cache, i_cache;
 
     if (!flash_info.init) {
         return FLASH_ERR_NOT_INIT;
@@ -222,8 +223,7 @@ flash_lock(void *addr, int len, void **err_addr)
     code_len = (unsigned long)&flash_lock_block_end - (unsigned long)&flash_lock_block;
     _flash_lock_block = (code_fun *)flash_info.work_space;
     memcpy(_flash_lock_block, &flash_lock_block, code_len);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
 
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
@@ -243,7 +243,7 @@ flash_lock(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
-    HAL_ICACHE_ENABLE();
+    HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
 }
@@ -257,6 +257,7 @@ flash_unlock(void *addr, int len, void **err_addr)
     int code_len;
     typedef int code_fun(unsigned short *, int, int);
     code_fun *_flash_unlock_block;
+    int d_cache, i_cache;
 
     if (!flash_info.init) {
         return FLASH_ERR_NOT_INIT;
@@ -266,8 +267,7 @@ flash_unlock(void *addr, int len, void **err_addr)
     code_len = (unsigned long)&flash_unlock_block_end - (unsigned long)&flash_unlock_block;
     _flash_unlock_block = (code_fun *)flash_info.work_space;
     memcpy(_flash_unlock_block, &flash_unlock_block, code_len);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
+    HAL_FLASH_CACHES_OFF(d_cache, i_cache);
 
     block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
     end_addr = (unsigned short *)((unsigned long)addr+len);
@@ -287,7 +287,7 @@ flash_unlock(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
-    HAL_ICACHE_ENABLE();
+    HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
 }

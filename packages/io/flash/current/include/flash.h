@@ -45,21 +45,24 @@
 #define _IO_FLASH_H_
 
 #include <pkgconf/io_flash.h>
+#include <cyg/hal/hal_cache.h>
 
 #define FLASH_MIN_WORKSPACE 0x10000  // Space used by FLASH code
 
-extern int flash_init(void *work_space, int work_space_length);
-extern int flash_erase(void *base, int len, void **err_address);
-extern int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
+externC int flash_init(void *work_space, int work_space_length);
+externC int flash_erase(void *base, int len, void **err_address);
+externC int flash_program(void *flash_base, void *ram_base, int len, void **err_address);
 #if 0 < CYGHWR_IO_FLASH_BLOCK_LOCKING // This is an *interface*
-extern int flash_lock(void *base, int len, void **err_address);
-extern int flash_unlock(void *base, int len, void **err_address);
+externC int flash_lock(void *base, int len, void **err_address);
+externC int flash_unlock(void *base, int len, void **err_address);
 #endif
-extern int flash_verify_addr(void *base);
-extern int flash_get_limits(void *base, void **start, void **end);
-extern int flash_get_block_info(int *block_size, int *blocks);
-extern bool flash_code_overlaps(void *start, void *end);
-extern char *flash_errmsg(int err);
+externC int flash_verify_addr(void *base);
+externC int flash_get_limits(void *base, void **start, void **end);
+externC int flash_get_block_info(int *block_size, int *blocks);
+externC bool flash_code_overlaps(void *start, void *end);
+externC char *flash_errmsg(int err);
+
+externC int printf(char* fmt, ...);
 
 #define FLASH_ERR_OK              0x00  // No error - operation complete
 #define FLASH_ERR_INVALID         0x01  // Invalid FLASH address
@@ -89,6 +92,93 @@ extern struct flash_info flash_info;
 extern int  flash_hwr_init(void);
 extern int  flash_hwr_map_error(int err);
 
-#endif
+
+//---------------------------------------------------------------------------
+//Execution of relocated code must be done inside a
+//HAL_FLASH_CACHES_OFF/HAL_FLASH_CACHES_ON region - disabling the
+//cache on unified cache systems is necessary to prevent burst access
+//to the flash area being programmed. With Harvard style caches, only
+//the data cache needs to be disabled, but the instruction cache must
+//still be invalidated to ensure the relocated code is properly
+//fetched from memory.
+
+// Targets may provide alternative implementations for these macros in
+// the hal_cache.h (or var/plf) files.
+
+// The first part below is the optimal implementation, but it does not
+// always work. The second part is a more safe implementation that has
+// been tested to work on some targets - it may not be suitable for
+// targets that would do burst access to the flash (data cache needs
+// disabling as well).
+
+// NOTE: Do _not_ change any of the below macros without checking that
+//       the changed code still works on _all_ platforms that rely on these
+//       macros. There is no such thing as logical and correct when dealing
+//       with different cache and IO models, so _do not_ mess with this code
+//       unless you test it properly afterwards.
+
+#ifndef HAL_FLASH_CACHES_OFF
+
+#ifdef HAL_FLASH_CACHES_WANT_OPTIMAL // Optimal implementation
+
+#ifdef HAL_CACHE_UNIFIED
+
+// Note: the ucache code has not been tested yet on any target.
+#define HAL_FLASH_CACHES_OFF(_d_, _i_)          \
+    CYG_MACRO_START                             \
+    _i_ = 0; /* avoids warning */               \
+    HAL_UCACHE_IS_ENABLED(_d_);                 \
+    HAL_UCACHE_SYNC();                          \
+    HAL_UCACHE_INVALIDATE_ALL();                \
+    HAL_UCACHE_DISABLE();                       \
+    CYG_MACRO_END
+
+#define HAL_FLASH_CACHES_ON(_d_, _i_)           \
+    CYG_MACRO_START                             \
+    if (_d_) HAL_UCACHE_ENABLE();               \
+    CYG_MACRO_END
+
+#else  // HAL_CACHE_UNIFIED
+
+#define HAL_FLASH_CACHES_OFF(_d_, _i_)          \
+    CYG_MACRO_START                             \
+    _i_ = 0; /* avoids warning */               \
+    HAL_DCACHE_IS_ENABLED(_d_);                 \
+    HAL_DCACHE_SYNC();                          \
+    HAL_DCACHE_INVALIDATE_ALL();                \
+    HAL_DCACHE_DISABLE();                       \
+    HAL_ICACHE_INVALIDATE_ALL();                \
+    CYG_MACRO_END
+
+#define HAL_FLASH_CACHES_ON(_d_, _i_)           \
+    CYG_MACRO_START                             \
+    if (_d_) HAL_DCACHE_ENABLE();               \
+    CYG_MACRO_END
+
+#endif // HAL_CACHE_UNIFIED
+
+#else  // HAL_FLASH_CACHES_WANT_OPTIMAL
+
+// Note: This implementation is broken as it will always enable the i-cache
+//       even if it was not enabled before. It also doesn't work if the
+//       target uses burst access to flash since the d-cache is left enabled.
+//       However, this does not mean you can change this code! Leave it as
+//       is - if you want a different implementation, provide it in the
+//       arch/var/platform cache header file.
+
+#define HAL_FLASH_CACHES_OFF(_d_, _i_)          \
+    _d_ = 0; /* avoids warning */               \
+    _i_ = 0; /* avoids warning */               \
+    HAL_DCACHE_SYNC();                          \
+    HAL_ICACHE_DISABLE();
+
+#define HAL_FLASH_CACHES_ON(_d_, _i_)           \
+    HAL_ICACHE_ENABLE();
+
+#endif  // HAL_FLASH_CACHES_WANT_OPTIMAL
+
+#endif  // HAL_FLASH_CACHES_OFF
+
+#endif  // _FLASH_PRIVATE_
 
 #endif  // _IO_FLASH_H_

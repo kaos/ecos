@@ -1,3 +1,7 @@
+2000-11-27  Jesper Skov  <jskov@redhat.com>
+
+	* tests/clock.c: Skip fourth sample too.
+
 2000-11-14  Jesper Skov  <jskov@redhat.com>
 
 	* tests/clock.c: Skip first three samples.

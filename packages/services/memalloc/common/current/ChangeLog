@@ -1,3 +1,8 @@
+2000-11-25  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/memalloc.cdl: Make sure PWD variable doesn't clash with bash PWD
+	by renaming to XPWD
+
 2000-11-24  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/memalloc.cdl: Invoke heapgen.tcl with build directory

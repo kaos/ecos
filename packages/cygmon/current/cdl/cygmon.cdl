@@ -125,7 +125,7 @@ cdl_package CYGPKG_CYGMON {
             $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/bsp_cache.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp_cache.c
             $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/gdb-cpu.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/gdb-cpu.c
             $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/hex-utils.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/hex-utils.c
-            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(patsubst $(REPOSITORY)/$(PACKAGE)/%.c,%.o,$^)
+            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(filter-out %.ld %vectors.o, $(patsubst $(REPOSITORY)/$(PACKAGE)/%.c,%.o,$^))
         }
     }
 }

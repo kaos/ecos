@@ -1,3 +1,11 @@
+2000-11-27  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/sa1100mm_misc.c (sa1100mm_program_new_stack): New function
+	for switching to an application stack when running a program under
+	a ROM monitor.
+
+	* cdl/hal_arm_sa11x0_sa1100mm. Define HAL_ARCH_PROGRAM_NEW_STACK.
+
 2000-11-13  Drew Moseley  <dmoseley@st-kitts.caribbean>
 
 	* misc/redboot_ROM.cfg: Turn on REDBOOT_BSP_SYSCALLS.

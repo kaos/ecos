@@ -129,10 +129,10 @@ clean:
 	@find . -type f -print | grep -v makefile | xargs rm -f
 
 # rule to copy MLT files
-mlt_headers:
-ifneq ($(strip $(MLT)),)
-	@install -c $(MLT) $(PREFIX)/include/pkgconf
-	@chmod u+w $(PREFIX)/include/pkgconf/mlt*.*
-endif
+mlt_headers: $(foreach x,$(MLT),$(PREFIX)/include/pkgconf/$(notdir $x))
+
+$(foreach x,$(MLT),$(PREFIX)/include/pkgconf/$(notdir $x)): $(MLT)
+	@cp $(dir $<)/$(notdir $@) $(PREFIX)/include/pkgconf
+	@chmod u+w $(PREFIX)/include/pkgconf/$(notdir $@)
 
 # end of file

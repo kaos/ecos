@@ -1,3 +1,9 @@
+2000-11-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c: Do all flash access inside properly
+	cache-controlled region.
+	* include/flash.h: Cache definitions.
+
 2000-11-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c: Added debug mode, allowing device driver to use printf.

@@ -95,7 +95,8 @@ cyg_start(void)
 // We ignore ctrs[2] because it always seems to be substantially faster
 // that the other samples. Probably due to cache/timing effect after the
 // previous loop.
-#define SKIPPED_SAMPLES 3
+// Finally, ctrs[3] is skipped because it's also very fast on ARM targets.
+#define SKIPPED_SAMPLES 4
 
 
 // FUNCTIONS

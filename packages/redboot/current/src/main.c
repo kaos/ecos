@@ -93,6 +93,10 @@ CYG_HAL_TABLE_BEGIN( __RedBoot_CMD_TAB__, RedBoot_commands );
 CYG_HAL_TABLE_END( __RedBoot_CMD_TAB_END__, RedBoot_commands );
 extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
 
+#ifdef HAL_ARCH_PROGRAM_NEW_STACK
+extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
+#endif
+
 void
 do_version(int argc, char *argv[])
 {
@@ -172,7 +176,11 @@ cyg_start(void)
             if (res == 0) {
                 // Special case of '$' - need to start GDB protocol
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
+#ifdef HAL_ARCH_PROGRAM_NEW_STACK
+                HAL_ARCH_PROGRAM_NEW_STACK(breakpoint);
+#else
                 breakpoint();  // Get GDB stubs started, with a proper environment, etc.
+#endif
             } else {
                 if (strlen(line) > 0) {
                     if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
@@ -288,7 +296,11 @@ do_go(int argc, char *argv[])
     HAL_DCACHE_SYNC();
     HAL_ICACHE_INVALIDATE_ALL();
     HAL_DCACHE_INVALIDATE_ALL();
+#ifdef HAL_ARCH_PROGRAM_NEW_STACK
+    HAL_ARCH_PROGRAM_NEW_STACK(fun);
+#else
     (*fun)();
+#endif
 }
 
 // 

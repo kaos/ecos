@@ -1,3 +1,8 @@
+2000-11-27  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/main.c: Switch to an application stack before running a
+	user-downloaded app.
+
 2000-11-20  Gary Thomas  <gthomas@redhat.com>
 
 	* src/flash.c: Use CYGBLD_REDBOOT_MIN_IMAGE_SIZE.
