@@ -1092,6 +1092,46 @@
         bufsiz     : 1
     },
 #endif
+#ifdef CYGHWR_DEVS_FLASH_AMD_S29GL064M
+    {   // AMD/SPANSION S29GL064M
+	long_device_id: true,
+	device_id  : FLASHWORD(0x227e),
+	device_id2 : FLASHWORD(0x2210),
+        device_id3 : FLASHWORD(0x2201),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x0800000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x8000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x00000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x7F0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x2000 * CYGNUM_FLASH_INTERLEAVE,
+                       _LAST_BOOTBLOCK
+                      },
+         banked     : true,
+         banks      : { 0x0700000 * CYGNUM_FLASH_INTERLEAVE,
+                        0x0400000 * CYGNUM_FLASH_INTERLEAVE,
+                        0x0100000 * CYGNUM_FLASH_INTERLEAVE,
+                        0
+    		      },
+        bufsiz     : 1
+    },
+#endif
 
 #endif // 16 bit devices
 
