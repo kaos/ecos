@@ -1,3 +1,9 @@
+2004-06-07  Roland Cassebohm <roland.cassebohm@visionsystems.de>
+
+        * src/aim711_misc.c: 
+        The I2C transfer routine waits now while the bus is busy
+        instead of just return an error.
+
 2004-04-28  Roland Cassebohm <roland.cassebohm@visionsystems.de>
 
 	* include/plf_aux.h:

@@ -396,12 +396,10 @@ hal_ks32c_i2c_transfer(cyg_uint32 nmsg, hal_ks32c_i2c_msg_t* pmsgs)
     }
 
     // is the bus free ?
-    HAL_READ_UINT32(KS32C_I2CCON, i2ccon);
-    if (i2ccon & KS32C_I2C_CON_BUSY)
+    do
     {
-        cyg_drv_mutex_unlock(&i2c_mutex);
-        RETURN(I2C_STATUS_BUSY);
-    }
+        HAL_READ_UINT32(KS32C_I2CCON, i2ccon);
+    } while (i2ccon & KS32C_I2C_CON_BUSY);
 
     // transfer the messages
     for (; nmsg > 0; --nmsg, ++pmsgs)
