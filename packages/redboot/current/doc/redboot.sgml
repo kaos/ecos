@@ -29,8 +29,10 @@
 
 <!-- }}} -->
 
+<!-- uncomment to build this documentation as a DocBook part
 <part id="redboot"><beginpage>
 <title>RedBoot&trade; User's Guide</title>
+-->
 <toc id="Getting-Started-with-Redboot2"></toc>
 <chapter id="Getting-Started-with-RedBoot">
 <title>Getting Started with RedBoot</title>

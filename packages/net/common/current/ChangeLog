@@ -1,3 +1,8 @@
+2004-04-19  John Dallaway  <jld@ecoscentric.com>
+
+	* doc/tcpip.sgml: Remove reference to RedBoot documentation
+	which is now built separately.
+
 2004-04-13  Sandeep Kumar <sandeep@codito.com>
 
 	* src/network_support.c (init_all_network_interfaces): Fix argument to

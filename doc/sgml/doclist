@@ -1,9 +1,4 @@
 kernel/current/doc/kernel.sgml
-redboot/current/doc/redboot.sgml
-redboot/current/doc/redboot_cmds.sgml
-redboot/current/doc/redboot_rebuilding.sgml
-redboot/current/doc/redboot_installing.sgml
-redboot/current/doc/redboot_epilogue.sgml
 hal/common/current/doc/hal.sgml
 hal/common/current/doc/porting.sgml
 language/c/libc/common/current/doc/libc.sgml

@@ -60,7 +60,6 @@ documentation
 <xref linkend="io-eth-drv-generic">
 The driver and API is the same as the minimal debug stack used by
 the RedBoot application. See the RedBoot documentation
-<xref linkend="redboot">
 for further
 information.</PARA>
 </CHAPTER>

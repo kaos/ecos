@@ -1,3 +1,8 @@
+2004-04-19  John Dallaway  <jld@ecoscentric.com>
+
+	* sgml/doclist: Remove RedBoot documentation which is now built
+	separately.
+
 2004-04-14  Nick Garnett  <nickg@calivar.com>
 
 	* sgml/doclist: Added PPP package documentation.

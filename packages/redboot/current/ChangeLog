@@ -1,3 +1,11 @@
+2004-04-19  John Dallaway  <jld@ecoscentric.com>
+
+	* doc/makefile, doc/redboot_main.sgml: New files to build the RedBoot
+	User's Guide as a self-contained document.
+
+	* doc/redboot.sgml: Eliminate <part> tag to build the RedBoot User's
+	Guide as a self-contained document.
+
 2004-03-30  Mark Salter  <msalter@redhat.com>
 
 	* src/net/udp.c (__udp_recvfrom_handler): Protect against back-to-back
