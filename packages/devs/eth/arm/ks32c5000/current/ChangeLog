@@ -1,3 +1,10 @@
+2002-11-05  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+	* src/ks5000_ether.c: (CYG_BYTEORDER == CYG_MSBFIRST) used to swap
+	endian in BDMARxConfigVar declaration and txWritePointer transmit
+	descriptor reserved fields setup.
+	(ks32c5000_eth_poll): Added call to BDMA Rx isr routine.
+
 2002-10-10  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/ks32c5000_eth.cdl

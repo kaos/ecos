@@ -65,6 +65,8 @@
 #define EINVAL 2
 #endif
 
+#include <cyg/infra/cyg_type.h>  // Common type definitions and support
+                                 // including endian-ness
 #include <cyg/infra/diag.h>
 #include <cyg/io/eth/netdev.h>
 #include <cyg/io/eth/eth_drv.h>
@@ -252,6 +254,7 @@ static volatile U32 BDMATxConfigVar =
 #error "EtherFramePadding must be 0,1,2 or 3"
 #endif
 
+#if (CYG_BYTEORDER == CYG_MSBFIRST) // Big endian
 static volatile U32 BDMARxConfigVar = 
   BDMARXCON_DIE | 
   BDMARXCON_EN |
@@ -261,6 +264,18 @@ static volatile U32 BDMARxConfigVar =
   BDMARXCON_ALIGN |
   BDMARXCON_STP_SKP | 
   15;  /* burst size - 1 */
+  
+#else // Little endian
+static volatile U32 BDMARxConfigVar = 
+  BDMARXCON_DIE | 
+  BDMARXCON_EN |
+  BDMARXCON_LITTLE | 
+  BDMARXCON_MA_INC |
+  BDMARXCON_NOIE | 
+  BDMARXCON_ALIGN |
+  BDMARXCON_STP_SKP | 
+  15;  /* burst size - 1 */
+#endif
 
 
 /* Global variables For BDMA Error Report */
@@ -488,9 +503,15 @@ static int ks32c5000_eth_buffer_send(tEthBuffer *buf)
 
   // fill in the packet descriptor
 
+#if (CYG_BYTEORDER == CYG_MSBFIRST) // Big endian
   txWritePointer->Reserved = (TXFDCON_PADDING_MODE | TXFDCON_CRC_MODE |
                     TXFDCON_SRC_ADDR_INC | TXFDCON_BIG_ENDIAN |
                     TXFDCON_WIDGET_ALIGN00 | TXFDCON_MAC_TX_INT_EN);
+#else // Little endian
+  txWritePointer->Reserved = (TXFDCON_PADDING_MODE | TXFDCON_CRC_MODE |
+                    TXFDCON_SRC_ADDR_INC | TXFDCON_LITTLE_ENDIAN |
+                    TXFDCON_WIDGET_ALIGN00 | TXFDCON_MAC_TX_INT_EN);
+#endif
   
   txWritePointer->StatusAndFrameLength = buf->length;
   txWritePointer->FrameDataPtr = ((unsigned)buf | FRM_OWNERSHIP_BDMA);
@@ -1306,6 +1327,7 @@ static void ks32c5000_eth_recv(struct eth_drv_sc *sc,
 // routine called to handle ethernet controller in polled mode
 static void ks32c5000_eth_poll(struct eth_drv_sc *sc)
 {
+  BDMA_Rx_isr(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX, 0); // Call ISR routine
   ks32c5000_eth_deliver(sc);  // handle rx frames
   ks32c5000_handle_tx_complete();
 }
