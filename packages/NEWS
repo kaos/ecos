@@ -1,3 +1,7 @@
+* NEC V85x architecture support added
+* NEC Cosmo CEB-V850/SA1 evaluation board platform HAL added
+* Serial device drivers added for systems based on NEC V850 SA1 (70F3017)
+  or SB1 (70F3033) processors
 * Hitachi SH3 CqREEK (cq7708) platform HAL support added
   Contributed by Haruki Kashiwaya [Still untested, serial not imported]
 * Watchdog reworked much like wallclock.

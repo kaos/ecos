@@ -1,3 +1,9 @@
+2000-06-04  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: Support variant 'pkgconf' headers.  This will allow
+	[variant] common symbols to be defined, rather than duplicating 
+	them over all platforms using that variant.
+
 2000-05-25  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/debugging.cdl: Allow thread support to included for ROM

@@ -812,7 +812,8 @@ CdlConfigurationBody::load_package(CdlTransaction transaction, std::string name,
         CdlInterpreter interp = package->get_interpreter();
         CYG_ASSERT_CLASSC(interp);
 
-        interp->add_command("unknown", &CdlParse::unknown_command);
+        interp->add_command("unknown",  &CdlParse::unknown_command);
+        CdlInterpreterBody::DiagSupport diag_support(interp, error_fn, warn_fn);
         
         // Next figure out the script name, and make sure that it exists.
         std::string actual_script = package->find_absolute_file(script, "cdl");

@@ -1,3 +1,10 @@
+2000-06-02  Bart Veer  <bartv@redhat.com>
+
+	* config.cxx (load_package):
+	Diagnostic function pointers were not being installed at the
+	package level, so error messages due to invalid CDL were
+	disappearing.
+
 2000-05-11  Bart Veer  <bartv@redhat.com>
 
 	* value.cxx (implements_update_handler):

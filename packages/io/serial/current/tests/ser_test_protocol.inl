@@ -205,6 +205,15 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
 #endif
+#if defined(CYGPKG_HAL_V85X_V850)                       \
+    && defined(CYGPKG_IO_SERIAL_V85X_V850)              \
+    && defined(CYGPKG_IO_SERIAL_V85X_V850_SERIAL0)
+# define TEST_CRASH_ID "v85x/v850"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_V85X_V850_SERIAL0_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
+# endif
+#endif
 
 // We can't rely on haldiag for ser_filter detection - it may not define
 // a working character reading function.

@@ -1,0 +1,518 @@
+// #========================================================================
+// #
+// #    vectors.S
+// #
+// #    NEC/V85x exception/interrupt vectors
+// #
+// #========================================================================
+// ####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+// ####COPYRIGHTEND####
+// #========================================================================
+// ######DESCRIPTIONBEGIN####
+// #
+// # Author(s):     gthomas
+// # Contributors:  gthomas
+// # Date:          2000-03-10
+// # Purpose:       NEC/V85x exception vectors
+// # Description:   This file defines the code placed into the exception
+// #                vectors. It also contains the first level default VSRs
+// #		    that save and restore state for both exceptions and
+// #		    interrupts.
+// #
+// #####DESCRIPTIONEND####
+// #
+// #========================================================================
+
+#include <pkgconf/hal.h>
+#include <pkgconf/hal_v85x.h>
+#ifdef CYGPKG_KERNEL  // no CDL yet
+#include <pkgconf/kernel.h>
+#else
+# undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+# undef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+#endif
+#include <cyg/hal/hal_platform_setup.h>
+
+#include <cyg/hal/nec_offsets.inc>
+
+// Two different macros in case we ever decide to differentiate
+// between exceptions and interrupts.                
+        .macro  EXCEPTION
+        .org    reset_vector+(0x0010*VECTOR)
+        addi    -CYGARC_EXCEPTION_FRAME_SIZE,sp,sp
+        st.w    r1,CYGARC_REG_R1[sp]
+        movea   VECTOR,r0,r1
+        .set    VECTOR, VECTOR+1
+        jr      exception
+        .endm
+
+        .macro  INTERRUPT
+        .org    reset_vector+(0x0010*VECTOR)
+        addi    -CYGARC_EXCEPTION_FRAME_SIZE,sp,sp
+        st.w    r1,CYGARC_REG_R1[sp]
+        movea   VECTOR,r0,r1
+        jr      exception
+        .set    VECTOR, VECTOR+1
+        .endm
+
+        .text
+        .globl  reset_vector
+reset_vector:
+        
+#ifdef CYG_HAL_STARTUP_ROM
+//
+// These are the hardware exception vectors.
+//                        
+__ROM_vsr:
+        // 0x000
+        jr      start
+
+        .set    VECTOR, 1
+        .rept   CYGNUM_HAL_EXCEPTION_COUNT-1
+        EXCEPTION
+        .endr
+        .set    VECTOR, 8                
+        .rept   CYGNUM_HAL_ISR_COUNT
+        INTERRUPT
+        .endr               
+#endif  // CYG_HAL_STARTUP_ROM
+        
+        .globl  start
+start:
+        // Perform hardware initialization
+        PLATFORM_SETUP1
+        
+#ifdef CYG_HAL_STARTUP_ROM
+	// Relocate [copy] data from ROM to RAM
+        lea     ___rom_data_start,r6
+        lea     ___ram_data_start,r7
+        lea     ___ram_data_end,r8
+1:      ld.w    0[r6],r1
+        st.w    r1,0[r7]
+        addi    4,r6,r6
+        addi    4,r7,r7
+        cmp     r7,r8
+        bne     1b 
+#endif
+        // Initialize stack
+        lea     __startup_stack,r1
+        mov     r1,sp
+
+        // Clear BSS
+        lea     ___bss_start,r6
+        lea     ___bss_end,r7
+1:      st.w    r0,0[r6]
+        addi    4,r6,r6
+        cmp     r6,r7
+        bne     1b        
+
+#ifdef CYG_HAL_STARTUP_ROM
+        // Built initial trap VSR tables
+        lea     __vsr_table,r6
+        lea     __vsr_table_end,r9
+#if 0        
+        lea     __ROM_vsr,r7
+        mov     r6,r8
+        sub     r7,r8
+        lea     0x003FFFFF,r7        
+        and     r7,r8
+        lea     0x07800000,r7
+        or      r7,r8
+#else
+        lea     0x00000794,r8   // jr 0x0100xx0
+#endif                
+10:     st.w    r8,0[r6]
+        addi    16,r6,r6
+        cmp     r6,r9
+        bne     10b
+#else
+// Set up VSR pointers into this application/image
+        lea     _hal_vsr_table+(CYGNUM_HAL_EXCEPTION_COUNT*4),r6
+        movea   CYGNUM_HAL_ISR_COUNT,r0,r7
+        lea     do_interrupt,r8
+10:     st.w    r8,0[r6]
+        addi    4,r6,r6
+        addi    -1,r7,r7
+        bne     10b        
+#endif
+
+        // Initialize hardware
+        jarl    _cyg_hal_hardware_init,r31
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#ifndef CYG_HAL_STARTUP_ROM
+// Need to handle exceptions as well
+        lea     _hal_vsr_table,r6
+        movea   CYGNUM_HAL_EXCEPTION_COUNT,r0,r7
+        lea     do_exception,r8
+10:     st.w    r8,0[r6]
+        addi    4,r6,r6
+        addi    -1,r7,r7
+        bne     10b        
+#endif        
+        jarl    _initialize_stub,r31
+#endif
+        
+        // Run through static constructors
+        jarl    _cyg_hal_invoke_constructors,r31
+
+        // Ready to start the eCos kernel
+        jarl    _cyg_start,r31
+
+        // If we get here, something is _very_ wrong
+_start_hang:    
+        br      _start_hang
+        
+#ifdef CYG_HAL_STARTUP_ROM
+        // Handle exception
+exception:
+        // save exception context
+        st.w    ep,CYGARC_REG_EP[sp]
+        mov     sp,ep
+        st.w    r1,CYGARC_REG_VECTOR[ep]
+        addi    CYGARC_EXCEPTION_FRAME_SIZE,ep,r1
+        sst.w   r2,CYGARC_REG_R2[ep]        
+        sst.w   r1,CYGARC_REG_SP[ep] 
+        sst.w   r4,CYGARC_REG_R4[ep]        
+        sst.w   r5,CYGARC_REG_R5[ep]        
+        sst.w   r6,CYGARC_REG_R6[ep]        
+        sst.w   r7,CYGARC_REG_R7[ep]        
+        sst.w   r8,CYGARC_REG_R8[ep]        
+        sst.w   r9,CYGARC_REG_R9[ep]        
+        sst.w   r10,CYGARC_REG_R10[ep]        
+        sst.w   r11,CYGARC_REG_R11[ep]        
+        sst.w   r12,CYGARC_REG_R12[ep]        
+        sst.w   r13,CYGARC_REG_R13[ep]        
+        sst.w   r14,CYGARC_REG_R14[ep]        
+        sst.w   r15,CYGARC_REG_R15[ep]        
+        sst.w   r16,CYGARC_REG_R16[ep]        
+        sst.w   r17,CYGARC_REG_R17[ep]        
+        sst.w   r18,CYGARC_REG_R18[ep]        
+        sst.w   r19,CYGARC_REG_R19[ep]        
+        sst.w   r20,CYGARC_REG_R20[ep]        
+        sst.w   r21,CYGARC_REG_R21[ep]        
+        sst.w   r22,CYGARC_REG_R22[ep]        
+        sst.w   r23,CYGARC_REG_R23[ep]        
+        sst.w   r24,CYGARC_REG_R24[ep]        
+        sst.w   r25,CYGARC_REG_R25[ep]        
+        sst.w   r26,CYGARC_REG_R26[ep]        
+        sst.w   r27,CYGARC_REG_R27[ep]        
+        sst.w   r28,CYGARC_REG_R28[ep]        
+        sst.w   r29,CYGARC_REG_R29[ep]        
+        ld.w    CYGARC_REG_VECTOR[ep],r8
+        sst.w   lp,CYGARC_REG_LP[ep]
+        cmp     CYGNUM_HAL_VECTOR_TRAP0,r8  // NMI?
+        bge     05f
+        stsr    FEPC,r6                 // saved state differs
+        stsr    FEPSW,r7
+        br      20f
+05:     stsr    EIPC,r6
+        cmp     CYGNUM_HAL_VECTOR_ILLEGAL_OPCODE,r8 // Illegal opcode?
+        bne     10f
+        addi    -4,r6,r6                // yes, adjust PC
+10:     stsr    EIPSW,r7        
+20:     st.w    r6,CYGARC_REG_PC[ep]
+        st.w    r7,CYGARC_REG_PSW[ep]
+        stsr    ECR,r6
+        st.w    r6,CYGARC_REG_CAUSE[ep]
+        // Reenable exception processing
+        stsr    PSW,r6
+        andi    ~(CYGARC_PSW_EP|CYGARC_PSW_NP),r6,r6
+        ldsr    r6,PSW
+        shl     2,r8
+        lea     _hal_vsr_table,r1
+        add     r1,r8
+        ld.w    0[r8],r1
+        jmp     [r1]
+#endif
+        
+do_exception:
+        mov     sp,r6
+        jarl    _exception_handler,r31
+
+return_from_exception_or_interrupt: 
+        mov     sp,ep            
+        ld.w    CYGARC_REG_PSW[ep],r7
+        sld.w   CYGARC_REG_R1[ep],r1
+        ld.w    CYGARC_REG_PC[ep],r6
+        sld.w   CYGARC_REG_R2[ep],r2       
+        // disable interrupts while restoring context
+        ld.w    CYGARC_REG_VECTOR[ep],r4
+        stsr    PSW,r8
+        cmp     CYGNUM_HAL_VECTOR_TRAP0,r4
+        bge     10f
+        ori     CYGARC_PSW_NP,r8,r8     // returning from NMI
+        ori     CYGARC_PSW_ID,r8,r8     // disable interrupt
+        ldsr    r8,PSW
+        ldsr    r7,FEPSW
+        ldsr    r6,FEPC
+        br      30f
+10:     cmp     CYGNUM_HAL_ISR_MIN,r4   // exception or interrupt
+        bge     20f
+        ori     CYGARC_PSW_EP,r8,r8     // returning from exception
+20:     ori     CYGARC_PSW_ID,r8,r8     // disable interrupt
+        ldsr    r8,PSW
+        ldsr    r7,EIPSW                // Avoid pipline bubbles
+        ldsr    r6,EIPC
+30:     sld.w   CYGARC_REG_R4[ep],r4
+        sld.w   CYGARC_REG_R5[ep],r5      
+        sld.w   CYGARC_REG_R6[ep],r6      
+        sld.w   CYGARC_REG_R7[ep],r7      
+        sld.w   CYGARC_REG_R8[ep],r8      
+        sld.w   CYGARC_REG_R9[ep],r9      
+        sld.w   CYGARC_REG_R10[ep],r10       
+        sld.w   CYGARC_REG_R11[ep],r11     
+        sld.w   CYGARC_REG_R12[ep],r12
+        sld.w   CYGARC_REG_R13[ep],r13              
+        sld.w   CYGARC_REG_R14[ep],r14       
+        sld.w   CYGARC_REG_R15[ep],r15       
+        sld.w   CYGARC_REG_R16[ep],r16       
+        sld.w   CYGARC_REG_R17[ep],r17       
+        sld.w   CYGARC_REG_R18[ep],r18               
+        sld.w   CYGARC_REG_R19[ep],r19       
+        sld.w   CYGARC_REG_R20[ep],r20       
+        sld.w   CYGARC_REG_R21[ep],r21       
+        sld.w   CYGARC_REG_R22[ep],r22       
+        sld.w   CYGARC_REG_R23[ep],r23       
+        sld.w   CYGARC_REG_R24[ep],r24       
+        sld.w   CYGARC_REG_R25[ep],r25       
+        sld.w   CYGARC_REG_R26[ep],r26       
+        sld.w   CYGARC_REG_R27[ep],r27       
+        sld.w   CYGARC_REG_R28[ep],r28       
+        sld.w   CYGARC_REG_R29[ep],r29       
+        sld.w   CYGARC_REG_LP[ep],lp
+        sld.w   CYGARC_REG_SP[ep],sp
+        sld.w   CYGARC_REG_EP[ep],ep
+        reti
+        
+        // Handle interrupt - these are typically vectored into user code
+do_interrupt:
+        mov     sp,ep                   // save pointer to regs frame
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	// Switch to interrupt stack
+        lea     irq_level,r6            // current number of nested interrupts
+        ld.w    0[r6],r7
+        addi    1,r7,r8
+        st.w    r8,0[r6]
+        cmp     0,r7                    // if was zero, switch stacks
+        bne     10f
+        mov     sp,r1                   // save old stack pointer
+        lea     __interrupt_stack-4,r2
+        mov     r2,sp
+        st.w    r1,0[sp]                
+10:
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+        // The entire CPU state is now stashed on the stack,
+        // increment the scheduler lock and handle the interrupt
+
+#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT			
+        .extern	cyg_scheduler_sched_lock
+        lea     cyg_scheduler_sched_lock,r7
+        ld.w    0[r7],r8
+        addi    1,r8,r8
+        st.w    r8,0[r7]
+#endif
+
+#if defined(CYGPKG_KERNEL_INSTRUMENT) && \
+    defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
+        lea     RAISE_INTR,r6                   // arg0 = type = INTR,RAISE
+        ld.w    CYGARC_REG_VECTOR[ep],r7        // args = vector
+        mov     r0,r8                           // arg2 = 0
+        jarl    _cyg_instrument,r31
+#endif
+
+        ld.w    CYGARC_REG_VECTOR[ep],r6        // vector #
+        addi    -CYGNUM_HAL_ISR_MIN,r6,r8
+        shl     2,r8
+        lea     _hal_interrupt_objects,r1
+        add     r8,r1
+        ld.w    0[r1],r29                       // save object handle
+        lea     _hal_interrupt_data,r1
+        add     r8,r1
+        ld.w    0[r1],r7                        // handler data
+        lea     _hal_interrupt_handlers,r1
+        add     r8,r1
+        mov     ep,r8                           // pointer to saved registers
+        ld.w    0[r1],r1                        // handler routine
+        jarl    call_via_r1,r31
+        
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	// If we are returning from the last nested interrupt, move back
+	// to the thread stack. interrupt_end() must be called on the
+	// thread stack since it potentially causes a context switch.
+        lea     irq_level,r6
+        ld.w    0[r6],r7
+        addi    -1,r7,r8
+        st.w    r8,0[r6]
+        cmp     0,r8
+        bne     10f
+        ld.w    0[sp],sp        // Restore non-interrupt stack at last interrupt
+10:
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+	// The return value from the handler (in r10) will indicate whether a 
+	// DSR is to be posted. Pass this together with a pointer to the
+	// interrupt object we have just used to the interrupt tidy up routine.
+
+        mov     r10,r6                          // interrupt handler return code
+        mov     r29,r7                          // object handle
+        mov     ep,r8                           // register frame
+        jarl    _interrupt_end,r31              // post any bottom layer handle
+        
+#endif
+        br      return_from_exception_or_interrupt
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+        .globl  _hal_interrupt_stack_call_pending_DSRs
+_hal_interrupt_stack_call_pending_DSRs:
+        stsr    PSW,r9
+        di                              // disable interrupts while changing stack
+	// Switch to interrupt stack
+        lea     irq_level,r6            // current number of nested interrupts
+        mov     1,r7                    // note: this can never be non-zero at this point
+        st.w    r7,0[r6]
+        mov     sp,r1                   // save old stack pointer
+        lea     __interrupt_stack-(4*4),r8
+        mov     r8,sp        
+        st.w    r1,0[sp]               
+        st.w    r9,4[sp]
+        st.w    lp,8[sp]
+        ei
+       	jarl    _cyg_interrupt_call_pending_DSRs,lp
+        di
+        ld.w    8[sp],lp                // restore state
+        ld.w    4[sp],r6
+        ld.w    0[sp],sp
+        lea     irq_level,r7
+        st.w    r0,0[r7]
+        ldsr    r6,PSW
+        jmp     [lp]
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+                
+//
+// Indirect subroutine call, via R1
+
+call_via_r1:    
+        jmp     [r1]
+                                        
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+//
+// Reset the board
+//
+        .globl  _hal_plf_reset_board
+_hal_plf_reset_board:   
+        di                      // Turn off interrupts
+        jmp     [r0]            // Restart machine        
+#endif
+
+#if !defined(CYGSEM_HAL_NEC_INLINE_INTERRUPT_FUNCTIONS)
+        .globl  _hal_disable_interrupts
+_hal_disable_interrupts:
+        stsr    PSW,r10
+        di
+        jmp     [lp]
+
+        .globl  _hal_enable_interrupts
+_hal_enable_interrupts:
+        stsr    PSW,r6
+        ei
+        jmp     [lp]
+
+        .globl  _hal_restore_interrupts
+_hal_restore_interrupts:
+        ldsr    r6,PSW
+        jmp     [lp]
+#endif        
+                
+// -------------------------------------------------------------------------
+        .data
+#ifdef CYG_HAL_STARTUP_ROM
+// Trap jump table - used by builtin ROM
+__vsr_table:            
+        .rept   CYGNUM_HAL_VSR_COUNT
+        .word   0,0,0,0
+        .endr
+__vsr_table_end:
+
+_hal_vsr_table:
+        .rept   CYGNUM_HAL_EXCEPTION_COUNT
+        .word   do_exception
+        .endr
+        .rept   CYGNUM_HAL_ISR_COUNT
+        .word   do_interrupt
+        .endr
+#endif
+
+// Initial stack        
+        .rept   1024
+        .byte   0
+        .endr
+__startup_stack:        
+
+#ifndef CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+#define CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE 4096
+#endif
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	.balign 16
+	.global _cyg_interrupt_stack_base
+_cyg_interrupt_stack_base:
+__interrupt_stack_base:
+        .rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+        .byte 0
+        .endr
+	.balign 16
+	.global _cyg_interrupt_stack
+_cyg_interrupt_stack:
+__interrupt_stack:
+irq_level:
+	.long	0
+#endif  // CYG_HAL_STARTUP == ROM
+        
+// Interrupt vector tables.
+// These tables contain the isr, data and object pointers used to deliver
+// interrupts to user code.
+
+	.extern _hal_default_isr
+
+	.globl	_hal_interrupt_handlers
+_hal_interrupt_handlers:
+	.rept	CYGNUM_HAL_ISR_COUNT
+	.long	_hal_default_isr
+	.endr
+
+	.globl	_hal_interrupt_data
+_hal_interrupt_data:
+	.rept	CYGNUM_HAL_ISR_COUNT
+	.long	0
+	.endr
+
+	.globl	_hal_interrupt_objects
+_hal_interrupt_objects:
+	.rept	CYGNUM_HAL_ISR_COUNT
+	.long	0
+	.endr
+        

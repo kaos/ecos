@@ -1,0 +1,73 @@
+2000-05-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850.ld: Add platform specifics.  In particular the
+	special, hardwired symbol "hal_vsr_table" needs to be platform
+	specific.
+
+2000-05-24  Gary Thomas  <gthomas@redhat.com>
+
+	* include/v850_common.h: Split into platform specific files.
+
+2000-04-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850.ld: Fix linking problem with "_etext".
+
+2000-04-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v850_stub.c: Use 'br *' with a watchdog to emulate a
+	breakpoint since the hardware does not support them directly.
+
+2000-04-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v850_stub.c (next_pc): Instruction "jmp [Rn]" was being
+	decoded incorrectly, leading to erroneous single step behaviour.
+
+2000-03-31  Gary Thomas  <gthomas@redhat.com>
+
+	* src/context.S: Use SLD/SST for smaller, faster code in context
+	save/restore functions.
+
+2000-03-30  Gary Thomas  <gthomas@redhat.com>
+
+	* src/context.S (_hal_longjmp): 
+	(_hal_setjmp): Need to save R1/R2/R4/R5 since GCC seems to use them.
+
+2000-03-27  Gary Thomas  <gthomas@redhat.com>
+
+	* include/var_intr.h: Remove extra junk left over from cut&paste.
+
+	* src/context.S: Add setjmp/longjmp support.
+
+2000-03-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v850_stub.c (__skipinst): Use single step code properly.
+
+2000-03-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v850_stub.c: Add single step support.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

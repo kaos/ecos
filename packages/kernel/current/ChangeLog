@@ -1,3 +1,8 @@
+2000-05-30  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/dhrystone.c: Increase number of test loops for faster
+	StrongARM platforms.
+
 2000-05-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* cdl/counters.cdl (CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY): 

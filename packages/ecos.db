@@ -209,6 +209,16 @@ package CYGPKG_IO_SERIAL_SH_EDK7708 {
 }
 
 
+package CYGPKG_IO_SERIAL_V85X_V850 {
+    alias             { "NEC V850 serial device drivers"
+                        devs_serial_v85x_v850 v850_serial_driver }
+    hardware
+    directory	      devs/serial/v85x/v850
+    script	      ser_v85x_v850.cdl	
+    description       "Serial device drivers for systems based on NEC V850
+                       SA1 (70F3017) or SB1 (70F3033) processors."
+}
+
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
 	hardware
@@ -472,13 +482,13 @@ package CYGPKG_HAL_SH_EDK7708 {
 }
 
 package CYGPKG_HAL_SH_SH7708_CQ7708 {
-        alias           { "CqREEK Hitachi SH7708 board" hal_sh_cq sh_cq_hal }
+        alias           { "CqREEK SH7708 board" hal_sh_cq sh_cq_hal }
         directory       hal/sh/cq7708
         script          hal_sh_sh7708_cq7708.cdl
         hardware
         description "
            The cq HAL package provides the support needed to run
-           eCos on a Hitachi SH3 CqREEK board."
+           eCos on a CqREEK SH7708 board."
 }
 
 
@@ -789,6 +799,38 @@ package CYGPKG_HAL_MN10300_AM33_STB {
            actual hardware for the AM33 STB evaluation board."
 }
 
+# --------------------------------------------------------------------------
+# NEC packages
+package CYGPKG_HAL_V85X {
+	alias		{ "NEC V85x common HAL" hal_v85x nec_arch_hal }
+	directory	hal/v85x/arch
+	script		hal_v85x.cdl
+	hardware
+	description "
+The NEC V85x architecture HAL package provides generic support for this
+processor architecture. It is also necessary to select a specific
+target platform HAL package."
+}
+
+package CYGPKG_HAL_V85X_V850 {
+	alias		{ "NEC V850 variant HAL" hal_v85x_v850 nec_v850_hal }
+	directory	hal/v85x/v850
+	script		hal_v85x_v850.cdl
+	hardware
+        description "
+The V850 HAL package provides the support needed to run eCos on a NEC V850
+processor."
+}
+
+package CYGPKG_HAL_V85X_V850_CEB {
+	alias		{ "Cosmo CEB-V850/SA1 board" hal_v85x_v850_ceb nec_v850_ceb_hal }
+	directory	hal/v85x/ceb_v850
+	script		hal_v85x_ceb_v850.cdl
+	hardware
+        description "
+The CEB-V850/SA1 HAL package provides the support needed to run eCos on a Cosmo CEB-V850/SA1
+evaluation board."
+}
 # ==========================================================================
 # --------------------------------------------------------------------------
 # ARM targets
@@ -868,14 +910,14 @@ target sh7708 {
 }
 
 target cq7708 {
-        alias { "CqREEK SH7708 Evaluation board" cq7708 }
+        alias { "CqREEK SH7708 board" cq7708 }
         packages { CYGPKG_HAL_SH
                    CYGPKG_HAL_SH_SH7708_CQ7708
         }
         enable      { CYGPKG_HAL_SH_7708 }
         description "
            The cq7708 target provides the packages needed to run
-           eCos on a CqREEK Hitachi SH7708 board."
+           eCos on a CqREEK SH7708 board."
 }
 
 # --------------------------------------------------------------------------
@@ -1064,3 +1106,18 @@ target stb {
            eCos on a Matsushita STB board."
 }
 
+# --------------------------------------------------------------------------
+# NEC targets
+
+target ceb_v850 {
+	alias { "Cosmo CEB-V850/SA1 board" CEB }
+	packages { CYGPKG_HAL_V85X
+                   CYGPKG_HAL_V85X_V850
+                   CYGPKG_HAL_V85X_V850_CEB
+                   CYGPKG_IO_SERIAL_V85X_V850
+        }
+        description "
+The ceb target provides the packages needed to run eCos on a Cosmo CEB-V850/SA1
+evaluation board."
+}
+# --------------------------------------------------------------------------

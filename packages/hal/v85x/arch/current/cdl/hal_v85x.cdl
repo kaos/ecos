@@ -1,0 +1,102 @@
+# ====================================================================
+#
+#      hal_v85x.cdl
+#
+#      NEC architectural HAL package configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      gthomas
+# Contributors:
+# Date:           2000-03-09
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_V85X {
+    display "NEC V85x architecture"
+    parent        CYGPKG_HAL
+    hardware
+    include_dir   cyg/hal
+    define_header hal_v85x.h
+    description   "
+        The NEC architecture HAL package provides generic support
+        for this processor architecture. It is also necessary to
+        select a CPU variant and a specific target platform HAL
+        package."
+
+    cdl_interface CYGINT_HAL_V85X_VARIANT {
+        display  "Number of variant implementations in this configuration"
+        requires 1 == CYGINT_HAL_V85X_VARIANT
+    }
+
+    compile hal_misc.c
+
+    make -priority 1 {
+        <PREFIX>/include/cyg/hal/nec_offsets.inc : <PACKAGE>/src/hal_mk_defs.c
+        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,nec_offsets.tmp -o hal_mk_defs.tmp -S $<
+        fgrep .equ hal_mk_defs.tmp | sed s/#// > $@
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail +2 nec_offsets.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm nec_offsets.tmp hal_mk_defs.tmp
+    }
+
+    make {
+        <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
+        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail +2 vectors.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm vectors.tmp
+    }
+
+    cdl_option CYGHWR_HAL_V85X_CPU_FREQ {
+        display "CPU frequency in MHz"
+        flavor  data
+        legal_values 5 10 17
+        default_value 17
+        description "
+           This option contains the frequency of the CPU in MegaHertz.
+           Choose the frequency to match the processor you have. This
+           may affect thing like serial device, interval clock and
+           memory access speed settings."
+    }
+
+    cdl_option CYGSEM_HAL_V85X_INLINE_INTERRUPT_FUNCTIONS {
+        display        "In-line interrupt functions"
+        flavor         bool
+        default_value  1
+        description "
+           This option allows for the HAL interrupt functions, 
+           e.g. HAL_ENABLE_INTERRUPTS() to be coded as either in-line
+           assembly code or real functions.  The primary motivations
+           for the latter would be debugging, tracing, etc."
+    }
+}

@@ -1,3 +1,7 @@
+2000-05-28  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/ser_test_protocol.inl: Rename NEC V85x drivers.
+
 2000-05-08  Jesper Skov  <jskov@redhat.com>
 
     	* cdl/io_serial.cdl: active_if CYGPKG_IO

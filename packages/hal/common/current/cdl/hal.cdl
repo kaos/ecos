@@ -165,6 +165,9 @@ cdl_package CYGPKG_HAL {
         puts $::cdl_header "#include <pkgconf/system.h>"
 
         puts $::cdl_header "#include CYGBLD_HAL_TARGET_H"
+        puts $::cdl_header "#ifdef   CYGBLD_HAL_VARIANT_H"
+        puts $::cdl_header "#include CYGBLD_HAL_VARIANT_H"
+        puts $::cdl_header "#endif"
         puts $::cdl_header "#include CYGBLD_HAL_PLATFORM_H"
 
         puts $::cdl_header "/****** proc output end ******/"

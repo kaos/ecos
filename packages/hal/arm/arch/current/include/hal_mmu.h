@@ -97,6 +97,7 @@
 #define MMU_Control_B  0x080    // Enable Big-Endian
 #define MMU_Control_S  0x100    // Enable system protection
 #define MMU_Control_R  0x200    // Enable ROM protection
+#define MMU_Control_I  0x1000   // Enable Instruction cache
 #define MMU_Control_Init (MMU_Control_P|MMU_Control_D|MMU_Control_L)
 
 //-----------------------------------------------------------------------------

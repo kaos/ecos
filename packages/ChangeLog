@@ -1,3 +1,9 @@
+2000-06-05  John Dallaway  <jld@redhat.com>
+
+	* ecos.db:
+
+	Tidy CqREEK-related display strings.
+
 2000-05-31  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added CqREEK platform HAL (contributed by Haruki
@@ -13,6 +19,18 @@
 2000-05-26  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added dallas 1742 wallclock driver package.
+
+2000-05-25  John Dallaway  <jld@redhat.com>
+
+	* ecos.db: Tidy V850-related display strings.
+
+2000-04-26  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: ceb_v850 - include serial driver.
+
+2000-04-20  Gary Thomas <gthomas@redhat.com>
+
+	* ecos.db: Rename hal/nec to hal/v85x for NEC/V85x architecture.
 
 2000-04-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
@@ -85,6 +103,10 @@
 
 	Don't invoke 'cygpath' on DOS-style paths to workaround erratic
 	behaviour when invoked from the GUI admin tool.
+
+2000-03-20  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add support for NEC/V850 HAL and CEB platform.
 
 2000-03-16  Jesper Skov  <jskov@redhat.com>
 

@@ -170,10 +170,13 @@ PTR(start) // This is copied to 0x28 for bootup // 0x40
            // location 0x40 is used for storing DRAM size if known
            // for some platforms.
 
-// Other vectors
-        .balign 16      // Should be at 0x50
         .balign 32
-
+        
+// Other vectors - this may include "fixed" locations
+#ifdef PLATFORM_VECTORS
+        PLATFORM_VECTORS
+#endif
+                        
         .text   
 // Startup code which will get the machine into supervisor mode
         .global reset_vector

@@ -41,13 +41,13 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_SH_SH7708_CQ7708 {
-    display       "Hitachi SH3 CQ7708 evaluation board"
+    display       "CqREEK SH7708 board"
     parent        CYGPKG_HAL_SH
     define_header hal_sh_sh7708_cq7708.h
     include_dir   cyg/hal
     description   "
         The cq HAL package provides the support needed to run
-        eCos on a Hitachi SH3 CQ7708 board."
+        eCos on a CqREEK SH7708 board."
 
     compile       hal_diag.c plf_stub.c plf_misc.c
 
