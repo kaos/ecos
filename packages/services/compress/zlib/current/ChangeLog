@@ -1,3 +1,7 @@
+2003-09-08  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* cdl/compress_zlib.cdl : Displayed package name was wrong.
+
 2002-10-10  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/zutil.h:

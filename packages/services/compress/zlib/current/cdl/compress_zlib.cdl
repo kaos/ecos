@@ -83,7 +83,7 @@ cdl_package CYGPKG_COMPRESS_ZLIB {
 # ====================================================================
 
     cdl_component CYGPKG_COMPRESS_ZLIB_OPTIONS {
-        display "Common memory allocator package build options"
+        display "Zlib compress and decompress package build options"
         flavor  none
         no_define
         description   "
