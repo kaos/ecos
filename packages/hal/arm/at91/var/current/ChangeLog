@@ -1,3 +1,8 @@
+2003-06-25  Daniel Néri  <daniel.neri@sigicom.se>
+
+	* src/at91_misc.c (hal_interrupt_set_level): Fix assert condition;
+	AT91 interrupt priority levels are between 0 and 7.
+
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/var_io.h: Remove not seemingly useful AT91_PMC_SCER_CPU.

@@ -247,7 +247,7 @@ void hal_interrupt_set_level(int vector, int level)
 
     CYG_ASSERT(vector <= CYGNUM_HAL_ISR_MAX &&
                vector >= CYGNUM_HAL_ISR_MIN , "Invalid vector");
-    CYG_ASSERT(level >= 1 && level <= 7, "Invalid level");
+    CYG_ASSERT(level >= 0 && level <= 7, "Invalid level");
 
     HAL_READ_UINT32(AT91_AIC+(AT91_AIC_SMR0+(vector*4)), mode);
     mode = (mode & ~AT91_AIC_SMR_PRIORITY) | level;
