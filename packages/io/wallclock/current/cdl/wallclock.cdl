@@ -105,6 +105,7 @@ cdl_package CYGPKG_IO_WALLCLOCK {
             display       "Wallclock emulator"
             implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
             compile       emulate.cxx
+            requires      CYGPKG_KERNEL
             define_proc {
                 puts $::cdl_header "#undef CYGSEM_WALLCLOCK_SET_GET_MODE"
             }
@@ -115,7 +116,7 @@ cdl_package CYGPKG_IO_WALLCLOCK {
 
         cdl_option CYGIMP_WALLCLOCK_NONE {
             display       "No wallclock"
-            default_value 0
+            default_value { !CYGPKG_KERNEL && 0 == CYGINT_WALLCLOCK_HW_IMPLEMENTATIONS }
             implements    CYGINT_WALLCLOCK_IMPLEMENTATIONS
             description   "Disables the wallclock."
         }
@@ -156,7 +157,7 @@ cdl_package CYGPKG_IO_WALLCLOCK {
             display "Wallclock tests"
             flavor  data
             no_define
-            calculated { "tests/wallclock tests/wallclock2" }
+            calculated { CYGPKG_KERNEL ? "tests/wallclock tests/wallclock2" : "" }
             description   "
                 This option specifies the set of tests for the
                 wallclock device."

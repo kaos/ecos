@@ -1,3 +1,7 @@
+2000-11-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash_query.c: Increase startup timing - didn't always work.
+
 2000-08-29  Gary Thomas  <gthomas@redhat.com>
 
 	* src/edb7xxx_flash.c: Improve error decoding.

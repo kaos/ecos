@@ -94,6 +94,19 @@ __externC Cyg_ErrNo cyg_devio_bread(cyg_io_handle_t handle,
                                     void *buf, cyg_uint32 *len,
                                     cyg_uint32 pos);
 
+__externC Cyg_ErrNo cyg_devio_select(cyg_io_handle_t handle,
+                                     cyg_uint32 which,
+                                     CYG_ADDRWORD info);
+
+__externC Cyg_ErrNo cyg_devio_get_config(cyg_io_handle_t handle,
+                                         cyg_uint32 key,
+                                         void* buf,
+                                         cyg_uint32* len);
+
+__externC Cyg_ErrNo cyg_devio_set_config(cyg_io_handle_t handle,
+                                         cyg_uint32 key,
+                                         void* buf,
+                                         cyg_uint32* len);
 
 // Initialization macros
 

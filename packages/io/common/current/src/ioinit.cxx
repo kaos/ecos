@@ -58,3 +58,7 @@ public:
 
 // And here's an instance of the class just to make the code run
 static cyg_io_init_class _cyg_io_init CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
+
+// Define table boundaries
+CYG_HAL_TABLE_BEGIN( __DEVTAB__, devtab );
+CYG_HAL_TABLE_END( __DEVTAB_END__, devtab );

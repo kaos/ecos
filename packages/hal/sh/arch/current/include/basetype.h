@@ -54,9 +54,15 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// sh usually uses labels with underscores. 
+// sh-elf toolchain uses labels with underscores, sh-linux-gnu does not.
 
-#define CYG_LABEL_DEFN(_name_) _##_name_
+#ifdef linux
+# define CYG_LABEL_DEFN(_name_) _name_
+# define CYG_LABEL_NAME(_name_) _name_
+#else
+# define CYG_LABEL_DEFN(_name_) _##_name_
+# define CYG_LABEL_NAME(_name_) _##_name_
+#endif
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

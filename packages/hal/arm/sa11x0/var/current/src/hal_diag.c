@@ -94,7 +94,9 @@ init_channel(channel_data_t* __ch_data)
     base->utsr0 = SA11X0_UART_RX_IDLE | SA11X0_UART_RX_BEGIN_OF_BREAK |
                   SA11X0_UART_RX_END_OF_BREAK;
 
-    if (SA11X0_UART1_BASE == (volatile unsigned long *)base) {
+#ifdef CYGPKG_HAL_ARM_SA11X0_SA1100MM
+   // This code has problems on other SA11x0 platforms.
+   if (SA11X0_UART1_BASE == (volatile unsigned long *)base) {
         cyg_uint32 pdr, afr, par;
 
         HAL_READ_UINT32(SA11X0_GPIO_PIN_DIRECTION, pdr);
@@ -110,6 +112,7 @@ init_channel(channel_data_t* __ch_data)
         // Pin reassignment for serial port 1.
         HAL_WRITE_UINT32(SA11X0_PPC_PIN_ASSIGNMENT, par | SA11X0_PPC_UART_PIN_REASSIGNMENT_MASK);
     }
+#endif
 
     // Set UART to 8N1 (8 data bits, no partity, 1 stop bit)
     base->utcr0 = SA11X0_UART_PARITY_DISABLED | SA11X0_UART_STOP_BITS_1 |

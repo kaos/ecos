@@ -1,3 +1,9 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/wallclock.cxx: User driver API instead of scheduler lock.
+
+	* cdl/wallclock.cdl: Emulation requires the kernel, as do the tests. 
+
 2000-11-09  Jesper Skov  <jskov@redhat.com>
 
 	* tests/wallclock2.cxx: Include string header.

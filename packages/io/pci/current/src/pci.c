@@ -466,14 +466,20 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
     return false;
 }
 
+//
+// Scan for a particular device, starting with 'devid'
+// 'devid' is updated with the next device if found.
+//         is not changed if no suitable device is found.
 cyg_bool
 cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
                      cyg_pci_device_id *devid )
 {
+    cyg_pci_device_id new_devid = *devid;
+
     // Scan entire bus, check for matches on valid devices.
-    while (cyg_pci_find_next(*devid, devid)) {
-        cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(*devid);
-        cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(*devid);
+    while (cyg_pci_find_next(new_devid, &new_devid)) {
+        cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(new_devid);
+        cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(new_devid);
         cyg_uint16 v, d;
 
         // Check that vendor matches.
@@ -484,8 +490,10 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
         // Check that device matches.
         cyg_pcihw_read_config_uint16(bus, devfn,
                                      CYG_PCI_CFG_DEVICE, &d);
-        if (d == device)
+        if (d == device) {
+            *devid = new_devid;
             return true;
+        }
     }
 
     return false;

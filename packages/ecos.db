@@ -397,6 +397,7 @@ package CYGPKG_IO_ETH_DRIVERS {
         description     "Platform independent ethernet support."
 }
 
+
 package CYGPKG_NET {
 	alias 		{ "Networking" net }
 	directory	net/tcpip
@@ -1334,6 +1335,7 @@ target assabet {
         The assabet target provides the packages needed to run
         eCos on an Intel StrongARM SA1110 evaluation board."
 }
+
 target brutus {
 	alias { "Intel StrongARM SA1100 board" brutus }
 	packages { CYGPKG_HAL_ARM

@@ -152,12 +152,11 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // HAL_BREAKINST_SIZE is its size in bytes.
 
 // Enable interrupts before doing the trap, or the CPU will reset.
-#define HAL_BREAKPOINT(_label_)                 \
-    CYG_MACRO_START                             \
-    HAL_ENABLE_INTERRUPTS();                    \
-    asm volatile (" .globl  _" #_label_ ";_"    \
-                  #_label_":"                   \
-                  " trapa #0xc3;nop;nop;nop");  \
+#define HAL_BREAKPOINT(_label_)                         \
+    CYG_MACRO_START                                     \
+    HAL_ENABLE_INTERRUPTS();                            \
+    asm volatile (" .globl " #_label_ ";" #_label_ ": " \
+                  " trapa #0xc3;nop;nop;nop");          \
     CYG_MACRO_END
 
 #define HAL_BREAKINST           0xc3c3

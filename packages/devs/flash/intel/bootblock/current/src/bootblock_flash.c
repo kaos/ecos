@@ -68,7 +68,7 @@ flash_hwr_init(void)
     _flash_query = (code_fun *)flash_info.work_space;
     memcpy(_flash_query, &flash_query, code_len);
     HAL_DCACHE_SYNC();  // Should guarantee this code will run
-
+    HAL_ICACHE_INVALIDATE_ALL(); // is also required to avoid old contents
     stat = (*_flash_query)(data);
 #if DEBUG
     printf("stat = %x\n", stat);
@@ -85,7 +85,7 @@ flash_hwr_init(void)
         num_regions = 64*2;
         region_size = 0x20000;
     } else if (data[1] == (unsigned short)0x88f4) {
-        num_regions = 32*4;             // 4 devices in serial, each having 32 regions
+        num_regions = 32; // (only use one for now)*4;             // 4 devices in serial, each having 32 regions
         region_size = 0x10000;
     } else {
         printf("Unknown device type: %x\n", data[1]);
@@ -95,8 +95,14 @@ flash_hwr_init(void)
     // Hard wired for now FIXME
     flash_info.block_size = region_size;
     flash_info.blocks = num_regions;
-    flash_info.start = (void *)0;//0x10000000 FIXME;
+#if 0 // This should be used only for the gross XX firmware build
+    flash_info.start = (void *)0;
     flash_info.end = (void *)(0x10000000+(num_regions*region_size));
+#else
+    flash_info.start = (void *)0x50000000;
+    flash_info.end = (void *)(0x50000000+(num_regions*region_size));
+#endif
+
     return FLASH_ERR_OK;
 }
 

@@ -59,6 +59,7 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_ebsa285.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_IO_H <cyg/hal/plf_io.h>"
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"StrongARM 110\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"EBSA-285\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
@@ -77,8 +78,7 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
            'ram' when building programs to load into RAM using onboard
            debug software such as Angel or eCos GDB stubs.  Select 'rom'
            when building a stand-alone application which will be put
-           into ROM.  Selection of 'stubs' is for the special case of
-           building the eCos GDB stubs themselves."
+           into ROM."
    }
 
    cdl_option CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE {
@@ -102,7 +102,7 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
            This error condition can only be detected at runtime in
            current versions of the configuration tools.
            CLI users can edit include/pkgconf/mlt_arm_ebsa285_*.h
-           and include/pkgconf/mlt_arm_ebsa285_*.ldi to acheive the
+           and include/pkgconf/mlt_arm_ebsa285_*.ldi to achieve the
            same effects as moving that region in the MLT."
    }
 

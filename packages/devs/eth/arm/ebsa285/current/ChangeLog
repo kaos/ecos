@@ -1,3 +1,8 @@
+2000-11-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_ebsa285.c (pci_init_find_82559s): Intel has at least
+	two devices equivalent to the 82559.  Support both (0x1229, 0x01030).
+
 2000-10-05  Hugo Tyson  <hmt@redhat.com>
 
 	* src/if_ebsa285.c: Deal with device interrupts in a nested

@@ -1,3 +1,12 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+ 	* src/variant.S: Mangle symbols.
+	* include/variant.inc: Same.
+
+2000-11-20  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_ser.h (CYGARC_SCBRR_N): Reduce rounding error.
+
 2000-11-10  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_misc.c: Add spaces around ... used in ranges.

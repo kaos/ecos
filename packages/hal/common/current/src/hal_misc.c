@@ -135,7 +135,10 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     int gdb_vector = -1;
     // This check only to avoid crash on older stubs in case of unhandled
     // interrupts. It is a bit messy, but required in a transition period.
-    if (CYGNUM_CALL_IF_TABLE_VERSION+1 == CYGACC_CALL_IF_VERSION()) {
+#ifndef CYGSEM_HAL_ROM_MONITOR
+    if (CYGNUM_CALL_IF_TABLE_VERSION+1 == CYGACC_CALL_IF_VERSION())
+#endif
+    {
         hal_virtual_comm_table_t* comm = CYGACC_CALL_IF_DEBUG_PROCS();
         gdb_vector = CYGACC_COMM_IF_CONTROL(*comm, __COMMCTL_DBG_ISR_VECTOR);
     }

@@ -1,3 +1,9 @@
+2000-11-20  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/signal.cxx (cyg_deliver_signals): Added else in code to
+	handle SIG_DFL. Otherwise if the SA_SIGINFO bit is set we call the
+	signal handler twice!
+
 2000-11-07  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/signal.cxx (cyg_posix_thread_siginit): Add extra thread

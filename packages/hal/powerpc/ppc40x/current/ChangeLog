@@ -1,3 +1,11 @@
+2000-11-21  Gary Thomas  <gthomas@redhat.com>
+
+	* include/variant.inc: Include platform specifics <cyg/hal/plf.inc>
+
+2000-11-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/var_misc.c: Add hal_delay_us().
+
 2000-11-04  Gary Thomas  <gthomas@redhat.com>
 
 	* src/var_misc.c: Define clock handling for PPC40x (different

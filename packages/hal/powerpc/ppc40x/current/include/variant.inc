@@ -54,6 +54,7 @@
 #define CYG_MSR_COMMON (MSR_ME | MSR_RI)
 
 #include <cyg/hal/arch.inc>
+#include <cyg/hal/plf.inc>
 
 ##-----------------------------------------------------------------------------
 ## PPC40x defined vectors

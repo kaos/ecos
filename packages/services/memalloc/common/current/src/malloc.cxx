@@ -110,11 +110,13 @@ malloc( size_t size )
     
     CYG_REPORT_FUNCARG1DV( size );
 
+#ifdef CYGSEM_MEMALLOC_MALLOC_ZERO_RETURNS_NULL
     // first check if size wanted is 0
     if ( 0 == size ) {
         CYG_REPORT_RETVAL( NULL );
         return NULL;
     } // if
+#endif
 
     // ask the pool for the data
     data_ptr = POOL.try_alloc( size );

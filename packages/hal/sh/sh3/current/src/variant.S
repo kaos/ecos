@@ -45,6 +45,8 @@
 #include <cyg/hal/sh_regs.h>
 #include <cyg/hal/sh3_offsets.inc>
 
+#include <cyg/hal/arch.inc>
+
 #---------------------------------------------------------------------------
 # Cache operations
 # These need to be written in assembly to ensure they do not rely on data
@@ -65,8 +67,7 @@
 10:
         .endm
 
-        .globl _cyg_hal_cache_enable
-_cyg_hal_cache_enable:
+FUNC_START(cyg_hal_cache_enable)
         GOTO_NONCACHED_SHADOW
         mov     #CYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -76,8 +77,7 @@ _cyg_hal_cache_enable:
         rts
          nop
 
-        .globl _cyg_hal_cache_disable
-_cyg_hal_cache_disable:
+FUNC_START(cyg_hal_cache_disable)
         GOTO_NONCACHED_SHADOW
         mov     #CYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -89,8 +89,7 @@ _cyg_hal_cache_disable:
         rts
          nop
         
-        .globl _cyg_hal_cache_invalidate_all
-_cyg_hal_cache_invalidate_all:
+FUNC_START(cyg_hal_cache_invalidate_all)
         GOTO_NONCACHED_SHADOW
         mov     #CYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -103,8 +102,7 @@ _cyg_hal_cache_invalidate_all:
         rts
          nop
 
-        .globl _cyg_hal_cache_sync
-_cyg_hal_cache_sync:
+FUNC_START(cyg_hal_cache_sync)
         GOTO_NONCACHED_SHADOW
         mov.l   $CYGARC_REG_CACHE_ADDRESS_FLUSH,r0
         mov.l   $CYGARC_REG_CACHE_ADDRESS_BASE,r1
@@ -121,8 +119,7 @@ _cyg_hal_cache_sync:
 
 	! r4 = base
 	! r5 = size
-        .globl _cyg_hal_cache_sync_region
-_cyg_hal_cache_sync_region:
+FUNC_START(cyg_hal_cache_sync_region)
         GOTO_NONCACHED_SHADOW
 	mov.l   10f,r0
 	and	r4,r0		! array index
@@ -157,8 +154,7 @@ _cyg_hal_cache_sync_region:
 12:	.long	CYGARC_REG_CACHE_ADDRESS_TAG_Mask
 13:	.long   ~(HAL_UCACHE_LINE_SIZE-1)
 	
-        .globl _cyg_hal_cache_write_mode
-_cyg_hal_cache_write_mode:
+FUNC_START(cyg_hal_cache_write_mode)
         GOTO_NONCACHED_SHADOW
         # Mode argument in r4.
         # Read current state and mask out the two caching mode bits

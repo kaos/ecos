@@ -313,12 +313,21 @@ void __clear_breakpoints (void)
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */
 
+#ifdef linux
+externC void _breakinst(void);
 int
 __is_breakpoint_function ()
 {
     return get_register(PC) == (target_register_t)&_breakinst;
 }
-
+#else
+externC void breakinst(void);
+int
+__is_breakpoint_function ()
+{
+    return get_register(PC) == (target_register_t)&breakinst;
+}
+#endif
 
 /* Skip the current instruction.  Since this is only called by the
    stub when the PC points to a breakpoint or trap instruction,

@@ -202,6 +202,7 @@ net_io_flush(void)
         __tcp_poll();
     }
     out_bufp = out_buf;  out_buflen = 0;
+    __tcp_drain(&tcp_sock);
     // Check interrupt flag
     if (CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG()) {
         CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(0);
@@ -320,7 +321,11 @@ net_io_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         _timeout = va_arg(ap, cyg_uint32);
 
         va_end(ap);
-    }        
+	break;
+    }
+    case __COMMCTL_FLUSH_OUTPUT:
+        net_io_flush();
+	break;
     default:
         break;
     }

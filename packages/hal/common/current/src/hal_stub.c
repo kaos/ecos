@@ -170,6 +170,17 @@ getDebugChar (void)
 #endif
 }
 
+// Flush output channel
+void
+hal_flush_output(void)
+{
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    __call_if_debug_procs_t __debug_procs = CYGACC_CALL_IF_DEBUG_PROCS();
+    CYGACC_COMM_IF_CONTROL(*__debug_procs, __COMMCTL_FLUSH_OUTPUT);
+#endif
+}
+
+
 // Set the baud rate for the current serial port.
 void 
 __set_baud_rate (int baud) 

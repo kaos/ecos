@@ -1,3 +1,20 @@
+2000-11-19  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Define CYGBLD_HAL_PLATFORM_IO_H.
+
+	* src/redboot_cmds.c: Fix 'exec' command to handle Linux
+	kernel.  Includes support to relocate image before startup.
+
+	* cdl/hal_arm_ebsa285.cdl: Fix some minor comments.
+
+2000-11-14    <gthomas@laptop_local>
+
+	* include/hal_ebsa285.h (EBSA285_RAM_BANK0_BASE): Correct for SA110/285.
+
+2000-11-13    <gthomas@laptop_local>
+
+	* cdl/hal_arm_ebsa285.cdl: Fix out of date ROM/RAM description.
+
 2000-10-18  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_cmds.c: New file: only built in redboot, for a

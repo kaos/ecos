@@ -195,23 +195,34 @@ __exception_\name:
         mtspr   SPRG2,r4                    
         mtspr   SPRG3,r5                    
         mfcr    r4                           # stash CR
-        li      r5,__exception_\name@L       # load low half of vector addr
+        li      r5,__exception_\name-rom_vectors       # load low half of vector addr
         srwi    r5,r5,6                      # shift right by 6      
         lwi     r3,hal_vsr_table             # table base
         lwzx    r3,r3,r5                     # address of vsr
         mflr    r5                           # save link register
         mtlr    r3                           # put vsr address into it
-        li      r3,__exception_\name@L       # reload low half of vector addr
+        li      r3,__exception_\name-rom_vectors       # reload low half of vector addr
         blr                                  # go to common code
         .endm
         
 #---------------------------------------------------------------------------
 # Define the exception vectors.
 
+// Some platforms won't let us put the vector code just where we want
+// This macro introduces some lattitude in vector placement
+                        
+#ifdef CYG_HAL_FUDGE_VECTOR_ALIGNMENT        
+        hal_fudge_vector_alignment
+#endif
+                
 rom_vectors:
         # These are the architecture defined vectors that
         # are always present.
+#ifdef CYG_HAL_RESERVED_VECTOR_00000
+        hal_reserved_vector_00000                
+#else                
         exception_vector        reserved_00000
+#endif        
         reset_vector            reset
         exception_vector        machine_check
         exception_vector        data_storage

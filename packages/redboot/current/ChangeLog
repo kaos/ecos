@@ -1,3 +1,25 @@
+2000-11-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: Use CYGBLD_REDBOOT_MIN_IMAGE_SIZE.
+
+	* cdl/redboot.cdl(CYGBLD_REDBOOT_MIN_IMAGE_SIZE): Define this to
+	be the minimum size allowed for FIS images.
+
+	* src/xyzModem.c: Tidy up debug support.  Fix some synch problems 
+	so that X/Y modem protocols now work properly with Windows/Hyperterm.
+
+2000-11-20  Mark Salter  <msalter@redhat.com>
+
+	* src/net/net_io.c (net_io_flush): Add __tcp_drain to make sure
+	everything is successfully sent out.
+	(net_io_control): Call net_io_flush for __COMMCTL_FLUSH_OUTPUT.
+
+2000-11-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_create): Print more info when length check fails.
+
+	* src/main.c: Split version display into separate command.
+
 2000-11-06  Mark Salter  <msalter@redhat.com>
 
 	* src/syscall.c: New file. Common handling for bsp syscalls.

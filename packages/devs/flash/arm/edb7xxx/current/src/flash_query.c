@@ -53,7 +53,7 @@
 // it must not contain any code which might be position dependent!
 //
 
-#define CNT 200*1000*10  // Approx 20ms
+#define CNT 2000*1000*10  // At least 20ms
 
 int
 flash_query(unsigned short *data)

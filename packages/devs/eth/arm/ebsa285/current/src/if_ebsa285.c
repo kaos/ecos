@@ -1948,9 +1948,12 @@ pci_init_find_82559s( void )
 
     for (device_index = 0; device_index < MAX_82559; device_index++) {
         struct i82559 *p_i82559 = &i82559[device_index];
+
         p_i82559->index = device_index;
 
-        if (cyg_pci_find_device(0x8086, 0x1229, &devid) ) {
+        // Intel 82559 and 82557 are virtually identical, with different dev codes
+        if (cyg_pci_find_device(0x8086, 0x1030, &devid) ||
+            cyg_pci_find_device(0x8086, 0x1229, &devid) ) {
 #ifdef DEBUG
             db_printf("eth%d = 82559\n", device_index);
 #endif

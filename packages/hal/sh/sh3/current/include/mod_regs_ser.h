@@ -110,6 +110,10 @@
  (((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED/32/4/(_b_))-1)<256) ? 4 : \
  (((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED/32/16/(_b_))-1)<256) ? 16 : 64)
 
+// Add half the divisor to reduce rounding errors to .5
+#define CYGARC_SCBRR_ROUNDING(_b_) \
+  16*CYGARC_SCBRR_PRESCALE(_b_)*(_b_)
+
 // These two macros provide the static values we need to stuff into the
 // registers.
 #define CYGARC_SCBRR_CKSx(_b_) \
@@ -119,7 +123,7 @@
 #define CYGARC_SCBRR_N(_b_)     \
     (((_b_) < 4800) ? 0 :       \
       ((_b_) > 115200) ? 0 :    \
-       ((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED/32/CYGARC_SCBRR_PRESCALE(_b_)/(_b_))-1))
+       (((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED+CYGARC_SCBRR_ROUNDING(_b_))/32/CYGARC_SCBRR_PRESCALE(_b_)/(_b_))-1))
 
 
 //++++++ Module IRDA +++++++++++++++++++++++++++++++++++++++++++++++++++++++

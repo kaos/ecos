@@ -1,3 +1,7 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc: Mangle symbols.
+
 2000-10-31  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_intr.h: Added.

@@ -59,6 +59,11 @@ externC void bist(void);
 extern void breakpoint(void);
 
 // CLI command processing (defined in this file)
+RedBoot_cmd("version", 
+            "Display RedBoot version information",
+            "",
+            do_version
+    );
 RedBoot_cmd("help", 
             "Help about help?", 
             "<topic>",
@@ -88,6 +93,17 @@ CYG_HAL_TABLE_BEGIN( __RedBoot_CMD_TAB__, RedBoot_commands );
 CYG_HAL_TABLE_END( __RedBoot_CMD_TAB_END__, RedBoot_commands );
 extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
 
+void
+do_version(int argc, char *argv[])
+{
+    printf("\nRedBoot(tm) debug environment - built %s, %s\n", __TIME__, __DATE__);
+#ifdef HAL_PLATFORM_CPU
+    printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
+#endif
+    printf("Copyright (C) 2000, Red Hat, Inc.\n\n");
+    printf("RAM: %p-%p\n", ram_start, ram_end);
+}
+
 //
 // This is the main entry point for RedBoot
 //
@@ -113,12 +129,7 @@ cyg_start(void)
 
     bist();
 
-    printf("\nRedBoot(tm) debug environment - built %s, %s\n", __TIME__, __DATE__);
-#ifdef HAL_PLATFORM_CPU
-    printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
-#endif
-    printf("Copyright (C) 2000, Red Hat, Inc.\n\n");
-    printf("RAM: %p-%p\n", ram_start, ram_end);
+    do_version(0,0);
 
     config_ok = false;
 

@@ -112,6 +112,14 @@ typedef enum {
      *                              cyg_int32 new_timeout);
      */
     __COMMCTL_SET_TIMEOUT,
+
+    /*
+     * Forces driver to send all characters which may be buffered in
+     * the driver. This only flushes the driver buffers, not necessarily
+     * any hardware FIFO, etc.
+     */
+    __COMMCTL_FLUSH_OUTPUT,
+
 } __comm_control_cmd_t;
 
 

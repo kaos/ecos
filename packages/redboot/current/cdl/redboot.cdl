@@ -148,6 +148,17 @@ cdl_package CYGPKG_REDBOOT {
           into memory for execution or executed in place."
         compile -library=libextras.a flash.c
 
+        cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
+            display       "Minimum image size"
+            flavor        data
+            default_value 0x20000
+            description "
+              This option controls the minimum length of images kept by
+              the FIS.  In particular, it should be large enough to hold
+              the RedBoot primary image itself, as well as be a natural
+              multiple of the FLASH erase block size."
+        }
+
         cdl_option CYGSEM_REDBOOT_FLASH_CONFIG {
             display       "Keep RedBoot configuration data in FLASH"
             flavor        bool

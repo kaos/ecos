@@ -1,3 +1,7 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc: Mangle symbols.
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* Moved HAL to edk7708.

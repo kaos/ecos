@@ -101,7 +101,7 @@
 #if     !defined(CYG_HAL_STARTUP_RAM) ||                \
         (       defined(CYG_HAL_STARTUP_RAM) &&         \
                 !defined(CYGSEM_HAL_USE_ROM_MONITOR))
-        mov.l   $__reset,r1             ! Set VBR
+        mov.l   $_reset,r1             ! Set VBR
         ldc     r1,vbr
 #endif
 	bra	1f
@@ -133,8 +133,8 @@ $CYGARC_REG_IPRC:
         .long   CYGARC_REG_IPRC
 $nCYGARC_REG_WTCSR:
 	.long	CYGARC_REG_WTCSR
-$__reset:
-        .long   __reset
+
+	SYM_PTR_REF(_reset)
 
 1:	
 	.endm

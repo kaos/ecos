@@ -200,11 +200,8 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 
 //-----------------------------------------------------------------------------
 // Include plf_io.h for platforms that define it.
-// FIXME: It should be possible to handle this better with CDL; define
-//        CYGBLD_HAL_PLATFORM_IO or similar where appropriate.
-#if defined(CYGPKG_HAL_ARM_EBSA285) \
- || defined(CYGPKG_HAL_ARM_SA110)
-#include <cyg/hal/plf_io.h>
+#ifdef CYGBLD_HAL_PLATFORM_IO_H
+#include CYGBLD_HAL_PLATFORM_IO_H
 #endif
 
 //-----------------------------------------------------------------------------

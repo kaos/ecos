@@ -1,3 +1,15 @@
+2000-11-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/io.cdl: Only put ioinit.cxx in extras.o. Build others normally.
+	* src/iosys.c: Move devtab table definition from here....
+	* src/ioinit.cxx: .... to here
+
+2000-11-21  Bart Veer  <bartv@redhat.com>
+
+	* src/iosys.c: 
+	* include/devtab.h:
+	Add dummy implementations for select, get_config and set_config
+
 2000-09-07  Jesper Skov  <jskov@redhat.com>
 
 	* include/devtab.h (cyg_devtab_entry_t): Fix syntax problem.

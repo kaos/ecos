@@ -1,3 +1,9 @@
+2000-11-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pci.c (cyg_pci_find_device): Don't update 'devid' if no
+	suitable devices found.  This allows for simpler rescan for
+	multiple device types.
+
 2000-11-12  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pci_hw.c: 

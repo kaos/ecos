@@ -183,6 +183,9 @@ extern void _breakinst (void);
 
 extern unsigned long __break_opcode (void);
 
+/* Function to flush output buffers */
+extern void hal_flush_output(void);
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 // This one may assume a valid saved interrupt context on some platforms
 extern void cyg_hal_gdb_interrupt    (target_register_t pc);

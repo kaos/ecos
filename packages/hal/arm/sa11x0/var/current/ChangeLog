@@ -1,3 +1,8 @@
+2000-11-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_diag.c (init_channel): Disable broken uart setups on platforms
+	other than the SA1110MM, since this code seems to be somewhat broken.
+
 2000-10-25  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/hal_diag.c: Added UART1 support for SA1100 targets.

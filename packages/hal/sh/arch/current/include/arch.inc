@@ -47,9 +47,40 @@
 ##
 ##=============================================================================
 
-#include <cyg/hal/platform.inc>
+#include <cyg/hal/basetype.h>
 #include <cyg/hal/sh_regs.h>
-        
+
+##-----------------------------------------------------------------------------
+## SH entry definitions. This allows _ prefixing to change by modifying
+## the CYG_LABEL_DEFN macro.
+
+#define FUNC_START(name)	\
+        .type CYG_LABEL_DEFN(name),@function;	\
+        .globl CYG_LABEL_DEFN(name);		\
+CYG_LABEL_DEFN(name):
+
+#define FUNC_END(name)	\
+        .globl CYG_LABEL_DEFN(name);		\
+CYG_LABEL_DEFN(name):
+	
+#define SYM_DEF(name)	\
+        .globl CYG_LABEL_DEFN(name);		\
+CYG_LABEL_DEFN(name):
+
+#define SYM_PTR_REF(name)	\
+        .globl CYG_LABEL_NAME(name);		\
+$##name:	.long	CYG_LABEL_NAME(name)
+
+# We need this macro because the SH assembler is lacking the nice
+# inline immediate constant feature of the ARM assembler. So we have
+# to define constants ourselves, and sometimes we need more than one of
+# the same type. This allows the symbols used to change.
+#define SYM_PTR_REFn(name,n)	\
+        .globl CYG_LABEL_NAME(name);		\
+$##name##n:	.long	CYG_LABEL_NAME(name)
+
+#include <cyg/hal/platform.inc>
+	        
 ##-----------------------------------------------------------------------------
 ## SH FPU state handling
 ## Empty for now.

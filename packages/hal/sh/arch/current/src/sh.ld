@@ -41,9 +41,10 @@
 //========================================================================*/
 
 #include <pkgconf/system.h>
+#include <cyg/hal/basetype.h>
 
 STARTUP(vectors.o)
-ENTRY(__reset)
+ENTRY(CYG_LABEL_NAME(_reset))
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
@@ -62,28 +63,29 @@ GROUP(libtarget.a libgcc.a)
   { FORCE_OUTPUT; KEEP(*(.vectors))				\
   }								\
   > _region_							\
-  __vector_code_lma = LOADADDR(.vectors);
+  CYG_LABEL_DEFN(_vector_code_lma) = LOADADDR(.vectors);
 
 # define SECTION_text(_region_, _vma_, _lma_)			\
   .text _vma_ : _lma_						\
-  { __stext = .;						\
+  { CYG_LABEL_DEFN(_stext) = .;					\
     *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }	\
   > _region_							\
-  __etext = .;  PROVIDE (__etext = .);
+  CYG_LABEL_DEFN(_etext) = .;  PROVIDE (__etext = .);
 
-# define SECTION_data(_region_, _vma_, _lma_)			\
-    .data _vma_ : _lma_						\
-    { __ram_data_start = ABSOLUTE(.); *(.data*)			\
-     . = ALIGN(8); ___CTOR_LIST__ = ABSOLUTE(.);		\
-      KEEP(*(SORT(.ctors*))) ___CTOR_END__ = ABSOLUTE(.);	\
-    ___DTOR_LIST__ = ABSOLUTE(.);				\
-      KEEP(*(SORT(.dtors*))) ___DTOR_END__ = ABSOLUTE(.);	\
-    . = ALIGN(8);						\
-      KEEP(*( SORT (.ecos.table.*))) ;				\
-    } > _region_						\
-    __rom_data_start = LOADADDR(.data);				\
-    __ram_data_end = .; PROVIDE(__ram_data_end = .);		\
-    _edata = .; PROVIDE (edata = .);
+# define SECTION_data(_region_, _vma_, _lma_)				 \
+    .data _vma_ : _lma_							 \
+    { CYG_LABEL_DEFN(_ram_data_start) = ABSOLUTE(.); *(.data*)		 \
+     . = ALIGN(8); CYG_LABEL_DEFN(__CTOR_LIST__) = ABSOLUTE(.);		 \
+      KEEP(*(SORT(.ctors*))) CYG_LABEL_DEFN(__CTOR_END__) = ABSOLUTE(.); \
+    CYG_LABEL_DEFN(__DTOR_LIST__) = ABSOLUTE(.);			 \
+      KEEP(*(SORT(.dtors*))) CYG_LABEL_DEFN(__DTOR_END__) = ABSOLUTE(.); \
+    . = ALIGN(8);							 \
+      KEEP(*( SORT (.ecos.table.*))) ;					 \
+      *(.got*) *(.rela.got)						 \
+    } > _region_							 \
+    CYG_LABEL_DEFN(_rom_data_start) = LOADADDR(.data);			 \
+    CYG_LABEL_DEFN(_ram_data_end) = .; PROVIDE(_ram_data_end = .);	 \
+    CYG_LABEL_DEFN(edata) = .; PROVIDE (edata = .);
 
 
 
@@ -115,18 +117,17 @@ GROUP(libtarget.a libgcc.a)
 
 #define SECTION_bss(_region_, _vma_, _lma_)		\
     .bss _vma_ : _lma_					\
-    { __bss_start = ABSOLUTE (.);			\
+    { CYG_LABEL_DEFN(_bss_start) = ABSOLUTE (.);	\
       FORCE_OUTPUT; *(.dynbss) *(.bss) *(COMMON)	\
-      __bss_end = ABSOLUTE (.); }			\
+      CYG_LABEL_DEFN(_bss_end) = ABSOLUTE (.); }	\
     > _region_
 
-#define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .);
+#define SECTIONS_END . = ALIGN(4); CYG_LABEL_DEFN(end) = .; PROVIDE (end = .);
 
 #include <pkgconf/system.h>
 #include CYGHWR_MEMORY_LAYOUT_LDI
 #include CYGBLD_HAL_PLATFORM_H
 
 // Define VSR and vector tables to reside at fixed address.
-_hal_vsr_table = CYGHWR_HAL_VSR_TABLE;
-_hal_virtual_vector_table = CYGHWR_HAL_VECTOR_TABLE;
-
+CYG_LABEL_DEFN(hal_vsr_table) = CYGHWR_HAL_VSR_TABLE;
+CYG_LABEL_DEFN(hal_virtual_vector_table) = CYGHWR_HAL_VECTOR_TABLE;

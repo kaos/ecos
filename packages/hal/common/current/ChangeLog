@@ -1,3 +1,20 @@
+2000-11-22  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_misc.c (hal_default_isr): Version check only when
+	CYGSEM_HAL_ROM_MONITOR not defined.
+
+2000-11-20  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_stub.c (hal_flush_output): New function to flush debug
+	comm interface.
+
+	* src/generic-stub.c (__process_packet): Use hal_flush_output when
+	killing or continuing.
+
+	* include/hal_stub.h: Add declaration for hal_flush_output().
+
+	* include/hal_if.h (__COMMCTL_FLUSH_OUTPUT): New comm control cmd.
+
 2000-11-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_if.c (delay_us): Add dummy loop.

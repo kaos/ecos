@@ -71,13 +71,6 @@
 #	fr12..fr15	call saved floating point registers
 #------------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------
-# function declaration macro
-                
-#define FUNC_START(name) \
-        .type CYG_LABEL_DEFN(name),@function; \
-        .globl CYG_LABEL_DEFN(name); \
-CYG_LABEL_DEFN(name):   
 
 #------------------------------------------------------------------------------
 # hal_thread_switch_context

@@ -55,13 +55,6 @@
 
 #define CNT 200*1000*10  // Approx 20ms
 
-/*
-88F4 0089 88F4 0089 FFC7 0089 88F4 0089 
-88F4 0089 88F4 0089 FFC7 0089 88F4 0089 
-88F4 0089 88F4 0089 FFC7 0089 88F4 0089 
-88F4 0089 88F4 0089 FFC7 0089 88F4
-*/
-
 int
 flash_query(unsigned short *data)
 {
@@ -69,7 +62,7 @@ flash_query(unsigned short *data)
     int cnt;
     int cache_on;
 
-    ROM = (volatile unsigned short *)0x03000000;
+    ROM = (volatile unsigned short *)0x53000000;
 
     ROM[0] = FLASH_Read_ID;
     for (cnt = CNT;  cnt > 0;  cnt--) ;

@@ -1266,6 +1266,7 @@ __process_packet (char *packet)
 
         __data_cache (CACHE_FLUSH) ;
         __instruction_cache (CACHE_FLUSH) ;
+	hal_flush_output();
 #endif
 
         return -1;
@@ -1273,6 +1274,9 @@ __process_packet (char *packet)
 
       /* kill the program */
     case 'k' :
+#ifdef __ECOS__
+      hal_flush_output();
+#endif
       __process_exit_vec ();
       return 1;
 

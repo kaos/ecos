@@ -1,3 +1,13 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/bootblock_flash.c (flash_hwr_init): Invalidate icache
+	instead of disabling it.
+
+2000-11-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash_query.c (flash_query): A new hardwired flash address.
+	* src/bootblock_flash.c (flash_hwr_init): Same
+
 2000-11-17  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash_erase_block.c: cleanup.

@@ -51,6 +51,7 @@
 //=============================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/hal.h>
 #include <cyg/hal/var_regs.h>
 
 #endif // ifndef CYGONCE_HAL_SH_REGS_H

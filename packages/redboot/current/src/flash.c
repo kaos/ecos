@@ -203,7 +203,7 @@ fis_init(int argc, char *argv[])
         printf("    Warning: device contents not erased, some blocks may not be usable\n");
     }
     // Create a pseudo image for RedBoot
-#define MIN_REDBOOT_IMAGE_SIZE 0x20000
+#define MIN_REDBOOT_IMAGE_SIZE CYGBLD_REDBOOT_MIN_IMAGE_SIZE
     redboot_image_size = block_size > MIN_REDBOOT_IMAGE_SIZE ? block_size : MIN_REDBOOT_IMAGE_SIZE;
     img = (struct fis_image_desc *)fis_work_block;
     memset(img, 0, sizeof(*img));
@@ -444,7 +444,7 @@ fis_create(int argc, char *argv[])
                 return;
             }
             if (img->size != length) {
-                printf("Image found, but LENGTH is incorrect\n");
+                printf("Image found, but LENGTH is incorrect (0x%x != 0x%x)\n", img->size, length);
                 return;
             }
             if (!verify_action("An image named '%s' exists", name)) {

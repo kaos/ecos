@@ -273,7 +273,7 @@ serial_init(serial_channel *chan)
 #endif
 
 #ifdef CYGDBG_USE_ASSERTS
-#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
     chan->in_cbuf.block_mode_xfer_running = false;
     chan->out_cbuf.block_mode_xfer_running = false;
 #endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER

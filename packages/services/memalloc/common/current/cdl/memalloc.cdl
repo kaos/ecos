@@ -186,6 +186,16 @@ cdl_package CYGPKG_MEMALLOC {
             to support integration into the kernel C API."
     }       
 
+    cdl_option CYGSEM_MEMALLOC_MALLOC_ZERO_RETURNS_NULL {
+        display       "malloc(0) returns NULL"
+        default_value 0
+        description   "
+            This option controls the behavior of malloc(0) ( or calloc with
+            either argument 0 ). It is permitted by the standard to return
+            either a NULL pointer or a unique pointer. Enabling this option
+            forces a NULL pointer to be returned."
+    }       
+
     cdl_component CYGPKG_MEMALLOC_MALLOC_ALLOCATORS {
         display      "malloc() and supporting allocators"
         flavor        bool

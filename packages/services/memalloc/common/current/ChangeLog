@@ -1,3 +1,10 @@
+2000-11-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/memalloc.cdl (CYGSEM_MEMALLOC_MALLOC_ZERO_RETURNS_NULL): 
+	New option.
+	* src/malloc.cxx (malloc): Use above option to decide if NULL should
+	be returned on malloc(0).
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* tests/realloc.c (main): Use reasonable factor when making too

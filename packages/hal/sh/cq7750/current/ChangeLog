@@ -1,3 +1,7 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc: Mangle symbols.
+
 2000-11-09  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh7750_cq7750.cdl: Set flags to -m3 for now.

@@ -53,6 +53,8 @@
 //--------------------------------------------------------------------------
 void hal_variant_init(void)
 {
+    // Initialize real-time clock (for delays, etc, even if kernel doesn't use it)
+    hal_ppc40x_clock_initialize(CYGNUM_HAL_RTC_PERIOD);
 }
 
 
@@ -126,15 +128,13 @@ cyg_hal_clear_MMU (void)
     for (id = 0; id < max_tlbs; id++) {
         CYGARC_TLBWE(id, tlbhi, tlblo);
     }
-
-    // Make caches default disabled when MMU is disabled.
 }
 
 //--------------------------------------------------------------------------
 // Clock control - use the programmable (variable period) timer
 
 static cyg_uint32 _period;
-extern cyg_uint32 _hold_tcr;
+extern cyg_uint32 _hold_tcr;  // Shadow of TCR register which can't be read
 
 externC void 
 hal_ppc40x_clock_initialize(cyg_uint32 period)
@@ -157,10 +157,10 @@ hal_ppc40x_clock_initialize(cyg_uint32 period)
 externC void 
 hal_ppc40x_clock_read(cyg_uint32 *val)
 {
-    cyg_uint32 period;
+    cyg_uint32 cur_val;
 
-    CYGARC_MFSPR(SPR_PIT, period);
-    *val = _period - period;
+    CYGARC_MFSPR(SPR_PIT, cur_val);
+    *val = _period - cur_val;
 }
 
 externC void 
@@ -169,9 +169,35 @@ hal_ppc40x_clock_reset(cyg_uint32 vector, cyg_uint32 period)
     hal_ppc40x_clock_initialize(period);
 }
 
+//
+// Delay for the specified number of microseconds.
+// Assumption: _period has been set already and corresponds to the
+// system clock frequency, normally 10ms.
+//
+
 externC void 
 hal_ppc40x_delay_us(int us)
 {
+    cyg_uint32 delay_period, delay, diff;
+    cyg_uint32 pit_val1, pit_val2;
+
+    delay_period = (_period * us) / 10000;
+    delay = 0;
+    CYGARC_MFSPR(SPR_PIT, pit_val1);
+    while (delay < delay_period) {
+        // Wait for clock to "tick"
+        while (true) {
+            CYGARC_MFSPR(SPR_PIT, pit_val2);
+            if (pit_val2 != pit_val1) break;
+        }
+        if (pit_val2 > pit_val1) {
+            diff = pit_val2 - pit_val1;
+        } else {
+            diff = (pit_val2 + _period) - pit_val1;
+        }
+        delay += diff;        
+        pit_val1 = pit_val2;
+    }
 }
 
 //--------------------------------------------------------------------------

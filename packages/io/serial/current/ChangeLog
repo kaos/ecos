@@ -1,3 +1,8 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/serial.c: Changed #ifdef to #if used on an interface
+	option.
+
 2000-11-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/common/tty.c (tty_write): Check buffer size appropriately

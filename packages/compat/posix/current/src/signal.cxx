@@ -365,7 +365,7 @@ cyg_bool cyg_deliver_signals()
                                     "Bad sa_sigaction signal handler" );
                 ss->sa.sa_sigaction( signo, &lsi, NULL );
             }
-            if ( ss->sa.sa_handler == SIG_DFL )
+            else if ( ss->sa.sa_handler == SIG_DFL )
             {
                 // FIXME: should do something better here
 #if CYGINT_ISO_EXIT

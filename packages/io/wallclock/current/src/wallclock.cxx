@@ -59,12 +59,11 @@
 //
 //==========================================================================
 
-#include <pkgconf/kernel.h>             // Kernel config
 #include <pkgconf/wallclock.h>          // Wallclock device config
 
 #include <cyg/infra/cyg_type.h>         // Common type definitions and support
 
-#include <cyg/kernel/sched.inl>         // For lock/unlock 
+#include <cyg/hal/drv_api.h>	        // Driver API
 
 #include <cyg/io/wallclock.hxx>         // The WallClock API
 
@@ -103,7 +102,7 @@ cyg_uint32 Cyg_WallClock::get_current_time()
 {
     cyg_uint32 res;
 
-    Cyg_Scheduler::lock();
+    cyg_drv_dsr_lock();
 
 #ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
     res = get_hw_seconds();
@@ -111,7 +110,7 @@ cyg_uint32 Cyg_WallClock::get_current_time()
     res = epoch_time_stamp + get_hw_seconds() - epoch_ticks;
 #endif
 
-    Cyg_Scheduler::unlock();
+    cyg_drv_dsr_unlock();
 
     return res;
 }
@@ -122,7 +121,7 @@ cyg_uint32 Cyg_WallClock::get_current_time()
 // anything up to a second to complete.
 void Cyg_WallClock::set_current_time( cyg_uint32 time_stamp )
 {
-    Cyg_Scheduler::lock();
+    cyg_drv_dsr_lock();
 
 #ifdef CYGSEM_WALLCLOCK_SET_GET_MODE
     set_hw_seconds(time_stamp);
@@ -131,7 +130,7 @@ void Cyg_WallClock::set_current_time( cyg_uint32 time_stamp )
     epoch_ticks         = get_hw_seconds();
 #endif
 
-    Cyg_Scheduler::unlock();
+    cyg_drv_dsr_unlock();
 }
 
 //-----------------------------------------------------------------------------

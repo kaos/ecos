@@ -1,3 +1,20 @@
+2000-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh.ld: Added mangling to all symbols.
+	* src/vectors.S: Same. Plus introduce macro to simplify (a bit)
+	the definition of inline immediate constants.
+
+	* include/sh_regs.h: Include HAL config.
+
+	* include/hal_arch.h: Don't prefix with _ in HAL_BREAKPOINT.
+	* src/sh_stub.c: Matching changes - hack to handle both
+	conventions.
+
+	* include/basetype.h: Made CYG_LABEL_DEFN depend on toolchain.
+
+	* include/arch.inc: Added symbol ref/def macros.
+	* src/context.S: Removed FUNC_START macro.
+
 2000-11-09  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh_stub.c (__single_step): Fix CPP problem.

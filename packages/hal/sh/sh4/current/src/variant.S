@@ -45,6 +45,8 @@
 #include <cyg/hal/sh_regs.h>
 #include <cyg/hal/sh4_offsets.inc>
 
+#include <cyg/hal/arch.inc>
+	
 #---------------------------------------------------------------------------
 # Cache operations
 # These need to be written in assembly to ensure they do not rely on data
@@ -65,8 +67,7 @@
 10:
         .endm
 
-        .globl _cyg_hal_dcache_enable
-_cyg_hal_dcache_enable:
+FUNC_START(cyg_hal_dcache_enable)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -76,8 +77,7 @@ _cyg_hal_dcache_enable:
         rts
          nop
 
-        .globl _cyg_hal_dcache_disable
-_cyg_hal_dcache_disable:
+FUNC_START(cyg_hal_dcache_disable)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -89,8 +89,7 @@ _cyg_hal_dcache_disable:
         rts
          nop
         
-        .globl _cyg_hal_dcache_invalidate_all
-_cyg_hal_dcache_invalidate_all:
+FUNC_START(cyg_hal_dcache_invalidate_all)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -103,8 +102,7 @@ _cyg_hal_dcache_invalidate_all:
         rts
          nop
 
-        .globl _cyg_hal_dcache_sync
-_cyg_hal_dcache_sync:
+FUNC_START(cyg_hal_dcache_sync)
         GOTO_NONCACHED_SHADOW
         mov.l   $CYGARC_REG_DCACHE_ADDRESS_FLUSH,r0
         mov.l   $CYGARC_REG_DCACHE_ADDRESS_BASE,r1
@@ -132,8 +130,7 @@ $CYGARC_REG_DCACHE_ADDRESS_STEP:
 
 	! r4 = base
 	! r5 = size
-        .globl _cyg_hal_dcache_sync_region
-_cyg_hal_dcache_sync_region:
+FUNC_START(cyg_hal_dcache_sync_region)
         GOTO_NONCACHED_SHADOW
 1:	ocbp	@r4                     ! operand cache block purge
 	add	#CYGARC_SH_MOD_DCAC_ADDRESS_STEP,r4
@@ -143,8 +140,7 @@ _cyg_hal_dcache_sync_region:
         rts
          nop
 
-        .globl _cyg_hal_dcache_write_mode
-_cyg_hal_dcache_write_mode:
+FUNC_START(cyg_hal_dcache_write_mode)
         GOTO_NONCACHED_SHADOW
         # Mode argument in r4.
         # Read current state and mask out the two caching mode bits
@@ -162,8 +158,7 @@ _cyg_hal_dcache_write_mode:
          nop
 
 
-        .globl _cyg_hal_icache_enable
-_cyg_hal_icache_enable:
+FUNC_START(cyg_hal_icache_enable)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -173,8 +168,7 @@ _cyg_hal_icache_enable:
         rts
          nop
 
-        .globl _cyg_hal_icache_disable
-_cyg_hal_icache_disable:
+FUNC_START(cyg_hal_icache_disable)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
         mov.l   @r1,r0
@@ -186,8 +180,7 @@ _cyg_hal_icache_disable:
         rts
          nop
         
-        .globl _cyg_hal_icache_invalidate_all
-_cyg_hal_icache_invalidate_all:
+FUNC_START(cyg_hal_icache_invalidate_all)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
         mov.l   @r1,r0

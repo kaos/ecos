@@ -129,30 +129,24 @@ BSC_settings_table:
 	# RAM and NOT using a ROM monitor, initialize the VSR table.
 
 	.macro	hal_mon_init
-        mov.l   $_hal_vsr_table_p,r3
+        mov.l   $hal_vsr_table,r3
 	# Write exception vectors
-	mov.l   $_cyg_hal_default_exception_vsr_p,r4
+	mov.l   $cyg_hal_default_exception_vsr,r4
 	mov     #CYGNUM_HAL_VSR_EXCEPTION_COUNT,r5
 1:	mov.l   r4,@r3
         add     #4,r3
 	dt	r5
 	bf	1b
 	# Write interrupt vector
-	mov.l   $_cyg_hal_default_interrupt_vsr_p,r4
+	mov.l   $cyg_hal_default_interrupt_vsr,r4
 	mov.l   r4,@r3
 	bra	2f
 	 nop
         .align  2
 
-$_cyg_hal_default_exception_vsr_p:
-	.long	_cyg_hal_default_exception_vsr
-$_cyg_hal_default_interrupt_vsr_p:
-	.long	_cyg_hal_default_interrupt_vsr
-
-	.extern _hal_vsr_table
-$_hal_vsr_table_p:
-	.long _hal_vsr_table
-
+	SYM_PTR_REF(cyg_hal_default_exception_vsr)
+	SYM_PTR_REF(cyg_hal_default_interrupt_vsr)
+	SYM_PTR_REF(hal_vsr_table)
 2:
 	.endm
 
@@ -164,20 +158,15 @@ $_hal_vsr_table_p:
 
 	.macro	hal_mon_init
 	# Write interrupt vector
-        mov.l   $_hal_vsr_table_p,r3
-	mov.l   $_cyg_hal_default_interrupt_vsr_p,r4
+        mov.l   $hal_vsr_table,r3
+	mov.l   $cyg_hal_default_interrupt_vsr,r4
 	mov.l   r4,@r3
 	bra	2f
 	 nop
         .align  2
 
-$_cyg_hal_default_interrupt_vsr_p:
-	.long	_cyg_hal_default_interrupt_vsr
-
-	.extern _hal_vsr_table
-$_hal_vsr_table_p:
-	.long _hal_vsr_table+CYGNUM_HAL_VECTOR_INTERRUPT*4
-
+	SYM_PTR_REF(cyg_hal_default_interrupt_vsr)
+	SYM_PTR_REF(hal_vsr_table)
 2:
 	.endm
 

@@ -83,20 +83,20 @@
 # jump to the VMA base of the code).
 
         .org    0x000
-        .globl __reset;
-__reset:
-        mov.l   $__reset_platform,r0
+FUNC_START(_reset)
+        mov.l   $_reset_platform,r0
         jmp     @r0
          nop
 
 # Note: this is the unmapped, shadow address of the start of code
 # Sadly, it is too far to just branch to.                        
         .align   2
-$__reset_platform:      
+$_reset_platform:
 #ifdef CYG_HAL_STARTUP_RAM
-        .long   __reset_platform
+        .long   CYG_LABEL_NAME(_reset_platform)
 #else
-        .long   __reset_platform+0x20000000  // Uncached "shadow" address
+        // Uncached "shadow" address
+        .long   CYG_LABEL_NAME(_reset_platform)+0x20000000
 #endif
                 
 #---------------------------------------------------------------------------
@@ -113,14 +113,13 @@ __exception:
         mov.l   @r1,r1
         shlr2   r1
         shlr    r1                      ! divide cause by 0x08
-        mov.l   $_hal_vsr_table,r0
+        mov.l   $hal_vsr_table2,r0
         mov.l   @(r0,r1),r1
         jmp     @r1
          nop
         
         .align   2
-$_hal_vsr_table:
-        .long   _hal_vsr_table
+        SYM_PTR_REFn(hal_vsr_table,2)
         
 #---------------------------------------------------------------------------
 # This code handles the common part of all exception handlers.
@@ -129,8 +128,7 @@ $_hal_vsr_table:
 # in thread switches, and changes to the saved state. When we return
 # here the saved state is restored and execution is continued.
 
-        .globl  _cyg_hal_default_exception_vsr
-_cyg_hal_default_exception_vsr:
+FUNC_START(cyg_hal_default_exception_vsr)
         
         # We come here with all register containing their
         # pre-exception values except:
@@ -213,7 +211,7 @@ _cyg_hal_default_exception_vsr_bp_safe:
         mov.l   $restore_state,r0       ! get return link
         lds     r0,pr                   ! to procedure register
 
-        mov.l   $_cyg_hal_exception_handler,r0
+        mov.l   $cyg_hal_exception_handler,r0
         jmp     @r0                     ! call C code, r4 = registers
          nop
 
@@ -227,11 +225,8 @@ $nCYG_SR1:
 $exc_state_marker:
         .long   0x77777770
 #endif
-        
-        .extern _cyg_hal_exception_handler
 
-$_cyg_hal_exception_handler:
-        .long _cyg_hal_exception_handler
+        SYM_PTR_REF(cyg_hal_exception_handler)
 
 #---------------------------------------------------------------------------
 # TLB miss entry
@@ -246,14 +241,13 @@ __tlb_miss:
         mov.l   @r1,r1
         shlr2   r1
         shlr    r1                      ! divide cause by 0x08
-        mov.l   $_hal_vsr_table2,r0
+        mov.l   $hal_vsr_table3,r0
         mov.l   @(r0,r1),r1
         jmp     @r1
          nop
 
         .align   2
-$_hal_vsr_table2:
-        .long    _hal_vsr_table
+        SYM_PTR_REFn(hal_vsr_table,3)
 $nCYGARC_REG_EXCEVT:
         .long   CYGARC_REG_EXCEVT
 
@@ -280,20 +274,19 @@ __interrupt:
         mov      #3,r7
 #endif
 
-        mov.l    $_hal_vsr_table_int,r1
+        mov.l    $hal_vsr_table_int,r1
         mov.l    @r1,r1
         jmp      @r1
          nop
 
         .align   2
-$_hal_vsr_table_int:
-        .long    _hal_vsr_table+CYGNUM_HAL_VECTOR_INTERRUPT*4
+$hal_vsr_table_int:
+        .long    CYG_LABEL_NAME(hal_vsr_table)+CYGNUM_HAL_VECTOR_INTERRUPT*4
 
 #---------------------------------------------------------------------------
 # Common interrupt handling code.
 
-        .globl _cyg_hal_default_interrupt_vsr
-_cyg_hal_default_interrupt_vsr:
+FUNC_START(cyg_hal_default_interrupt_vsr)
 
         # We come here with all register containing their
         # pre-exception values except:
@@ -372,8 +365,8 @@ _cyg_hal_default_interrupt_vsr_bp_safe:
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
 
-        mov.l   $__interrupt_stack_base,r0
-        mov.l   $__interrupt_stack,r1
+        mov.l   $cyg_interrupt_stack_base,r0
+        mov.l   $cyg_interrupt_stack,r1
         cmp/hi  r15,r0                  ! if r0 > r15 or
         bt      2f
         cmp/hi  r1,r15                  ! if r15 > r1
@@ -386,7 +379,7 @@ _cyg_hal_default_interrupt_vsr_bp_safe:
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
         mov.l   $n0301,r4               ! arg0 = type = INTR,RAISE
         mov     r7,r5                   ! arg1 = vector number
-        mov.l   $_cyg_instrument,r0
+        mov.l   $cyg_instrument,r0
         mov     #0,r6                   ! arg2 = 0
         jsr      @r0                    ! call instrument function
          nop
@@ -396,28 +389,26 @@ _cyg_hal_default_interrupt_vsr_bp_safe:
         .align  2
 $n0301: 
         .long   0x0301
-$_cyg_instrument:
-        .extern _cyg_instrument
-        .long   _cyg_instrument
+        SYM_PTR_REF(cyg_instrument)
 1:
 #endif
 
         # Decode the interrupt vector, and find ISR index
-	hal_intc_decode r0,r4
+        hal_intc_decode r0,r4
 
         mov     #CYGARC_SHREG_EVENT,r0
         mov.l   r4,@(r0,r8)             ! store decoded vector number back
                                         ! to saved state.
-	hal_intc_translate r4,r9
+        hal_intc_translate r4,r9
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-	# If we are supporting Ctrl-C interrupts from GDB, we must squirrel
-	# away a pointer to the save interrupt state here so that we can
-	# plant a breakpoint at some later time.
-	
-	mov.l	$_hal_saved_interrupt_state,r1
-	mov.l	r8,@r1
+        # If we are supporting Ctrl-C interrupts from GDB, we must squirrel
+        # away a pointer to the save interrupt state here so that we can
+        # plant a breakpoint at some later time.
+        
+        mov.l   $hal_saved_interrupt_state,r1
+        mov.l   r8,@r1
 #endif
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
@@ -453,10 +444,10 @@ $_cyg_instrument:
 #endif
 
         mov     r9,r0
-        mov.l   $_hal_interrupt_handlers,r1 ! get interrupt handler
+        mov.l   $hal_interrupt_handlers,r1 ! get interrupt handler
         mov.l   @(r0,r1),r1
 
-        mov.l   $_hal_interrupt_data,r5 ! get interrupt data
+        mov.l   $hal_interrupt_data,r5 ! get interrupt data
         mov.l   @(r0,r5),r5
 
         jsr     @r1                     ! r4=vector, r5=data
@@ -489,9 +480,9 @@ $_cyg_instrument:
         # calls by the calling convention, so they still contain
         # the register dump and the vector table index respectively.
 
-        mov.l   $_hal_interrupt_objects,r0  ! get interrupt object table
+        mov.l   $hal_interrupt_objects,r0  ! get interrupt object table
         mov.l   @(r0,r9),r5             ! arg2 = interrupt object
-        mov.l   $_interrupt_end,r0
+        mov.l   $interrupt_end,r0
         mov     r8,r6                   ! arg3 = saved register dump
         jsr     @r0                     ! call into C to finish off
          nop
@@ -554,11 +545,10 @@ restore_state:
 ##-----------------------------------------------------------------------------
 ## Execute pending DSRs on the interrupt stack with interrupts enabled.
 ## Note: this can only be called from code running on a thread stack
-        .globl _hal_interrupt_stack_call_pending_DSRs
-_hal_interrupt_stack_call_pending_DSRs: 
+FUNC_START(hal_interrupt_stack_call_pending_DSRs)
         # Change to interrupt stack
         mov     r15,r2
-        mov.l   $__interrupt_stack,r15
+        mov.l   $cyg_interrupt_stack,r15
 
         mov.l   r2,@-r15                ! save old stack pointer
         sts.l   pr,@-r15                ! save pr on stack
@@ -569,7 +559,7 @@ _hal_interrupt_stack_call_pending_DSRs:
         hal_cpu_int_enable r0,r1
 
         # Call into kernel which will execute DSRs
-        mov.l   $_cyg_interrupt_call_pending_DSRs,r0
+        mov.l   $cyg_interrupt_call_pending_DSRs,r0
         jsr     @r0
          nop
 
@@ -594,16 +584,12 @@ $int_state_marker:
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-        .extern _hal_saved_interrupt_state
-$_hal_saved_interrupt_state:
-        .long   _hal_saved_interrupt_state
+        SYM_PTR_REF(hal_saved_interrupt_state)
 #endif
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
-$__interrupt_stack:
-        .long   __interrupt_stack
-$__interrupt_stack_base:
-        .long   __interrupt_stack_base
+        SYM_PTR_REF(cyg_interrupt_stack_base)
+        SYM_PTR_REF(cyg_interrupt_stack)
 #endif
 $nCYG_SR2:
         .long   CYG_SR
@@ -615,38 +601,27 @@ $nCYGARC_REG_INTEVT:
 $nCYGARC_REG_INTEVT2:
         .long   CYGARC_REG_INTEVT2
 #endif
-$_hal_interrupt_handlers:
-        .long   _hal_interrupt_handlers
-$_hal_interrupt_data:
-        .long   _hal_interrupt_data
-$_hal_interrupt_objects:
-        .long   _hal_interrupt_objects
+        SYM_PTR_REF(hal_interrupt_handlers)
+        SYM_PTR_REF(hal_interrupt_data)
+        SYM_PTR_REF(hal_interrupt_objects)
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
-$cyg_hal_ILVL_table:
-        .long   _cyg_hal_ILVL_table
+        SYM_PTR_REF(cyg_hal_ILVL_table)
 $unmasked_SR:
         .long   (CYG_SR & ~CYGARC_REG_SR_IMASK)
 #endif // CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
         
         
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
-        .extern _cyg_scheduler_sched_lock
-        .extern _interrupt_end
-        .extern _cyg_interrupt_call_pending_DSRs
-
-$_cyg_interrupt_call_pending_DSRs:
-        .long   _cyg_interrupt_call_pending_DSRs
-$cyg_scheduler_sched_lock:
-        .long   cyg_scheduler_sched_lock
-$_interrupt_end:
-        .long   _interrupt_end
+        SYM_PTR_REF(cyg_interrupt_call_pending_DSRs)
+        SYM_PTR_REF(cyg_scheduler_sched_lock)
+        SYM_PTR_REF(interrupt_end)
 #endif
 
 #---------------------------------------------------------------------------
 # Platform initialization (reset)
-__reset_platform:               
-	hal_post_reset_init	
+FUNC_START(_reset_platform)
+        hal_post_reset_init     
 
 #ifdef __DEBUG
         mov     #0,r0
@@ -679,9 +654,9 @@ __reset_platform:
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_SUBSETROMRAM)
 
         # Copy data from ROM to ram
-        mov.l   $__rom_data_start,r3    ! r3 = rom start
-        mov.l   $__ram_data_start,r4    ! r4 = ram start
-        mov.l   $__ram_data_end,r5      ! r5 = ram end
+        mov.l   $_rom_data_start,r3    ! r3 = rom start
+        mov.l   $_ram_data_start,r4    ! r4 = ram start
+        mov.l   $_ram_data_end,r5      ! r5 = ram end
         
         cmp/eq  r4,r5                   ! skip if no data
         bt      2f
@@ -694,56 +669,42 @@ __reset_platform:
 
 
         # Jump to the proper VMA base of the code.
-        mov.l   $_complete_setup,r0
+        mov.l   $complete_setup,r0
         jmp     @r0
          nop
         .align 2
 
-        .extern __rom_data_start
-        .extern __ram_data_start
-        .extern __ram_data_end
-$__rom_data_start:
-        .long   __rom_data_start
-$__ram_data_start:
-        .long   __ram_data_start
-$__ram_data_end:
-        .long   __ram_data_end
+        SYM_PTR_REF(_rom_data_start)
+        SYM_PTR_REF(_ram_data_start)
+        SYM_PTR_REF(_ram_data_end)
+        SYM_PTR_REF(complete_setup)
 
-
-$_complete_setup:
-        .long _complete_setup
 
 #elif defined(CYG_HAL_STARTUP_ROMRAM)
 
         # Copy everything to the proper VMA base and jump to it.
-        mov.l   $_vectors_lma,r0
-        mov.l   $_vectors_vma,r1
-        mov.l   $_end,r2
+        mov.l   $_vector_code_lma,r0
+        mov.l   $_reset,r1
+        mov.l   $end,r2
 1:      mov.l   @r0+,r3                 ! get word from ROM
         mov.l   r3,@r1                  ! store in RAM
         add     #4,r1
         cmp/eq  r1,r2                   ! compare
         bf      1b                      ! loop if not yet done
-        mov.l   $_complete_setup,r0
+        mov.l   $complete_setup,r0
         jmp     @r0
          nop
         .align  2
 
-        .extern __vector_code_lma
-
-$_vectors_lma:
-        .long __vector_code_lma
-$_vectors_vma:
-        .long __reset
-$_end:
-        .long _end
-$_complete_setup:
-        .long _complete_setup
+        SYM_PTR_REF(_vector_code_lma)
+        SYM_PTR_REF(_reset)
+        SYM_PTR_REF(end)
+        SYM_PTR_REF(complete_setup)
 
 #else
 
         # Jump to remaining setup code. Relative branch is OK since VMA=LMA.
-        bra   _complete_setup
+        bra   CYG_LABEL_NAME(complete_setup)
          nop
                 
 #endif
@@ -753,17 +714,17 @@ $_complete_setup:
 # After this point we can use absolute addressing modes and access all the
 # memory in the system.
 
-_complete_setup:
+FUNC_START(complete_setup)
                 
         # Set up monitor related stuff (vectors primarily)
         hal_mon_init
 
         # set up stack
-        mov.l    $__startup_stack,r15
+        mov.l    $startup_stack,r15
 
         # clear BSS
-        mov.l   $__bss_start,r3         ! r3 = start
-        mov.l   $__bss_end,r4           ! r4 = end
+        mov.l   $_bss_start,r3         ! r3 = start
+        mov.l   $_bss_end,r4           ! r4 = end
         mov     #0,r0                   ! r0 = 0
 1:      cmp/eq  r3,r4                   ! skip if no bss
         bt      2f
@@ -782,38 +743,38 @@ _complete_setup:
 #         nop
         
         # Enable caches
-        mov.l    $_cyg_var_enable_caches,r1
+        mov.l    $cyg_var_enable_caches,r1
         jsr      @r1
          nop
 
         # Variant HALs may need to do something special before we continue
-        mov.l    $_hal_variant_init,r1
+        mov.l    $hal_variant_init,r1
         jsr      @r1
          nop
 
         # Platform initialization
-        mov.l    $_hal_platform_init,r1
+        mov.l    $hal_platform_init,r1
         jsr      @r1
          nop
         
         # call c++ constructors
-        mov.l    $_cyg_hal_invoke_constructors,r1
+        mov.l    $cyg_hal_invoke_constructors,r1
         jsr      @r1
          nop
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        mov.l    $_initialize_stub,r1
+        mov.l    $initialize_stub,r1
         jsr      @r1
          nop
 #endif
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-        mov.l    $_hal_ctrlc_isr_init,r1
+        mov.l    $hal_ctrlc_isr_init,r1
         jsr      @r1
          nop
 #endif
 
-        mov.l    $_cyg_start,r1
+        mov.l    $cyg_start,r1
         jsr      @r1
          nop
 9:      
@@ -821,41 +782,21 @@ _complete_setup:
          nop
 
         .align  2
-$__startup_stack:
-        .long   __startup_stack
-
-        .extern __bss_start
-        .extern __bss_end
-        .extern _cyg_hal_invoke_constructors
-        .extern _hal_variant_init
-        .extern _hal_platform_init
-        .extern _cyg_start
-
-$__bss_start:
-        .long   __bss_start
-$__bss_end:
-        .long   __bss_end
-$_cyg_hal_invoke_constructors:
-        .long   _cyg_hal_invoke_constructors
-$_cyg_var_enable_caches:
-        .long   _cyg_var_enable_caches
-$_hal_variant_init:
-        .long   _hal_variant_init
-$_hal_platform_init:
-        .long   _hal_platform_init
-$_cyg_start:
-        .long   _cyg_start
+        SYM_PTR_REF(_bss_start)
+        SYM_PTR_REF(_bss_end)
+        SYM_PTR_REF(startup_stack)
+        SYM_PTR_REF(cyg_hal_invoke_constructors)
+        SYM_PTR_REF(cyg_var_enable_caches)
+        SYM_PTR_REF(hal_variant_init)
+        SYM_PTR_REF(hal_platform_init)
+        SYM_PTR_REF(cyg_start)
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        .extern _initialize_stub
-$_initialize_stub:
-        .long   _initialize_stub
+        SYM_PTR_REF(initialize_stub)
 #endif
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-        .extern _hal_ctrlc_isr_init
-$_hal_ctrlc_isr_init:
-        .long   _hal_ctrlc_isr_init
+        SYM_PTR_REF(hal_ctrlc_isr_init)
 #endif
 
 #---------------------------------------------------------------------------
@@ -865,34 +806,30 @@ $_hal_ctrlc_isr_init:
 
         .data
 
-        .extern _hal_default_isr
+        .extern CYG_LABEL_NAME(hal_default_isr)
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 #define CYG_ISR_TABLE_SIZE    1
 #else
 #define CYG_ISR_TABLE_SIZE    CYGNUM_HAL_ISR_COUNT
 #endif
 
-        .globl  _hal_interrupt_handlers
-_hal_interrupt_handlers:
+SYM_DEF(hal_interrupt_handlers)
         .rept   CYG_ISR_TABLE_SIZE
-        .long   _hal_default_isr
+        .long   CYG_LABEL_NAME(hal_default_isr)
         .endr
 
-        .globl  _hal_interrupt_data
-_hal_interrupt_data:
+SYM_DEF(hal_interrupt_data)
         .rept   CYG_ISR_TABLE_SIZE
         .long   0
         .endr
 
-        .globl  _hal_interrupt_objects
-_hal_interrupt_objects:
+SYM_DEF(hal_interrupt_objects)
         .rept   CYG_ISR_TABLE_SIZE
         .long   0
         .endr
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
-        .globl  _cyg_hal_ILVL_table
-_cyg_hal_ILVL_table:
+SYM_DEF(cyg_hal_ILVL_table)
         # The first entries in the table have static priorities.
 
         .byte   0xf                     // NMI
@@ -928,16 +865,13 @@ _cyg_hal_ILVL_table:
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK 
         .balign 16
-        .global _cyg_interrupt_stack_base
-_cyg_interrupt_stack_base:
-__interrupt_stack_base:
+SYM_DEF(cyg_interrupt_stack_base)
         .rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
         .byte 0
         .endr
         .balign 16
         .global _cyg_interrupt_stack
-_cyg_interrupt_stack:
-__interrupt_stack:
+SYM_DEF(cyg_interrupt_stack)
         
         .long   0,0,0,0
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
@@ -959,12 +893,12 @@ __interrupt_stack:
 #endif
 
         .balign 16
-__startup_stack_base:
+SYM_DEF(startup_stack_base)
         .rept   STARTUP_STACK_SIZE
         .byte 0
         .endr
         .balign 16
-__startup_stack:
+SYM_DEF(startup_stack)
         .long   0,0,0,0
 
 #---------------------------------------------------------------------------

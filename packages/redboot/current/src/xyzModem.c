@@ -62,12 +62,13 @@ static struct {
     unsigned char pkt[1024], *bufp;
     unsigned char blk,cblk,crc1,crc2;
     unsigned char next_blk;  // Expected block
-    int len;
+    int len, mode;
     bool crc_mode, at_eof;
 } xyz;
 
 #define xyzModem_CHAR_TIMEOUT 1000  // 1 second
 #define xyzModem_MAX_RETRIES    20
+#define xyzModem_MAX_RETRIES_WITH_CRC    10
 
 // Table of CRC constants - implements x^16+x^12+x^5+1
 static unsigned short crc16[] = {
@@ -105,6 +106,13 @@ static unsigned short crc16[] = {
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0, 
 };
 
+#ifdef DEBUG
+
+//
+// Note: this debug setup only works if the target platform has two serial ports
+// available so that the other one (currently only port 1) can be used for debug
+// messages.
+//
 void
 zm_dprintf(char *fmt, ...)
 {
@@ -129,6 +137,33 @@ zm_dump_buf(void *buf, int len)
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur_console);
 }
 
+static unsigned char zm_buf[2048];
+static unsigned char *zm_bp;
+
+void
+zm_new(void)
+{
+    zm_bp = zm_buf;
+}
+
+void
+zm_save(unsigned char c)
+{
+    *zm_bp++ = c;
+}
+
+void
+zm_dump(int line)
+{
+    zm_dprintf("Packet at line: %d\n", line);
+    zm_dump_buf(zm_buf, zm_bp-zm_buf);
+}
+
+#define ZM_DEBUG(x) x
+#else
+#define ZM_DEBUG(x)
+#endif
+
 // Wait for the line to go idle
 static void
 xyzModem_flush(void)
@@ -150,9 +185,11 @@ xyzModem_get_hdr(void)
     int i;
     unsigned short cksum;
 
+    ZM_DEBUG(zm_new());
     // Find the start of a header
     while (!hdr_found) {
         res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &c);
+        ZM_DEBUG(zm_save(c));
         if (res) {
             switch (c) {
             case SOH:
@@ -160,8 +197,10 @@ xyzModem_get_hdr(void)
                 hdr_found = true;
                 break;
             case CAN:
+                ZM_DEBUG(zm_dump(__LINE__));
                 return xyzModem_cancel;
             case EOT:
+                ZM_DEBUG(zm_dump(__LINE__));
                 return xyzModem_eof;
             default:
                 // Ignore, waiting for start of header
@@ -174,10 +213,12 @@ xyzModem_get_hdr(void)
 
     // Header found, now read the data
     res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.blk);
+    ZM_DEBUG(zm_save(xyz.blk));
     if (!res) {
         return xyzModem_timeout;
     }
     res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.cblk);
+    ZM_DEBUG(zm_save(xyz.cblk));
     if (!res) {
         return xyzModem_timeout;
     }
@@ -185,6 +226,7 @@ xyzModem_get_hdr(void)
     xyz.bufp = xyz.pkt;
     for (i = 0;  i < xyz.len;  i++) {
         res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &c);
+        ZM_DEBUG(zm_save(c));
         if (res) {
             xyz.pkt[i] = c;
         } else {
@@ -192,19 +234,22 @@ xyzModem_get_hdr(void)
         }
     }
     res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.crc1);
+    ZM_DEBUG(zm_save(xyz.crc1));
     if (!res) {
         return xyzModem_timeout;
     }
     if (xyz.crc_mode) {
         res = CYGACC_COMM_IF_GETC_TIMEOUT(*xyz.__chan, &xyz.crc2);
+        ZM_DEBUG(zm_save(xyz.crc2));
         if (!res) {
             return xyzModem_timeout;
         }
     }
+    ZM_DEBUG(zm_dump(__LINE__));
     // Validate the message
     if ((xyz.blk ^ xyz.cblk) != (unsigned char)0xFF) {
-        zm_dprintf("Framing error - blk: %x/%x/%x\n", xyz.blk, xyz.cblk, (xyz.blk ^ xyz.cblk));
-        zm_dump_buf(xyz.pkt, xyz.len);
+        ZM_DEBUG(zm_dprintf("Framing error - blk: %x/%x/%x\n", xyz.blk, xyz.cblk, (xyz.blk ^ xyz.cblk)));
+        ZM_DEBUG(zm_dump_buf(xyz.pkt, xyz.len));
         xyzModem_flush();
         return xyzModem_frame;
     }
@@ -215,8 +260,8 @@ xyzModem_get_hdr(void)
             cksum = crc16[((cksum>>8) ^ xyz.pkt[i]) & 0xFF] ^ (cksum << 8);
         }
         if (cksum != ((xyz.crc1 << 8) | xyz.crc2)) {
-            zm_dprintf("CRC error - recvd: %02x%02x, computed: %x\n", 
-                       xyz.crc1, xyz.crc2, cksum & 0xFFFF);
+            ZM_DEBUG(zm_dprintf("CRC error - recvd: %02x%02x, computed: %x\n", 
+                                xyz.crc1, xyz.crc2, cksum & 0xFFFF));
             return xyzModem_cksum;
         }
     } else {
@@ -225,7 +270,7 @@ xyzModem_get_hdr(void)
             cksum += xyz.pkt[i];
         }
         if (xyz.crc1 != (cksum & 0xFF)) {
-            zm_dprintf("Checksum error - recvd: %x, computed: %x\n", xyz.crc1, cksum & 0xFF);
+            ZM_DEBUG(zm_dprintf("Checksum error - recvd: %x, computed: %x\n", xyz.crc1, cksum & 0xFF));
             return xyzModem_cksum;
         }
     }
@@ -238,6 +283,7 @@ xyzModem_stream_open(char *filename, int mode, int *err)
 {
     int console_chan, stat;
     int retries = xyzModem_MAX_RETRIES;
+    int crc_retries = xyzModem_MAX_RETRIES_WITH_CRC;
 
     if (mode == xyzModem_zmodem) {
         *err = xyzModem_noZmodem;
@@ -253,19 +299,24 @@ xyzModem_stream_open(char *filename, int mode, int *err)
     xyz.len = 0;
     xyz.crc_mode = true;
     xyz.at_eof = false;
+    xyz.mode = mode;
 
     while (retries-- > 0) {
         stat = xyzModem_get_hdr();
         if (stat == 0) {
-            CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
-            // Note: yModem file name data blocks quietly discarded
+            if (xyz.blk == 0) {
+                // Note: yModem file name data blocks quietly discarded
+                CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+            }
             xyz.next_blk = 1;
             xyz.len = 0;
             return 0;
         } else 
         if (stat == xyzModem_timeout) {
+            if (--crc_retries <= 0) xyz.crc_mode = false;
             CYGACC_CALL_IF_DELAY_US(5*100000);   // Extra delay for startup
-            CYGACC_COMM_IF_PUTC(*xyz.__chan, 'C');
+            CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
+            ZM_DEBUG(zm_dprintf("NAK (%d)\n", __LINE__));
         }
     }
     *err = stat;
@@ -288,6 +339,7 @@ xyzModem_stream_read(char *buf, int size, int *err)
                 if (stat == 0) {
                     if (xyz.blk == xyz.next_blk) {
                         CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+                        ZM_DEBUG(zm_dprintf("ACK (%d)\n", __LINE__));
                         xyz.next_blk = (xyz.next_blk + 1) & 0xFF;
                         break;
                     } else if (xyz.blk == ((xyz.next_blk - 1) & 0xFF)) {
@@ -300,10 +352,18 @@ xyzModem_stream_read(char *buf, int size, int *err)
                 }
                 if (stat == xyzModem_eof) {
                     CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+                    ZM_DEBUG(zm_dprintf("ACK (%d)\n", __LINE__));
+                    if (xyz.mode == xyzModem_ymodem) {
+                        CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
+                        stat = xyzModem_get_hdr();                        
+                        CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
+                        ZM_DEBUG(zm_dprintf("ACK (%d)\n", __LINE__));
+                    }
                     xyz.at_eof = true;
                     break;
                 }
-                CYGACC_COMM_IF_PUTC(*xyz.__chan, 'C');
+                CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
+                ZM_DEBUG(zm_dprintf("NAK (%d)\n", __LINE__));
             }
             if (stat < 0) {
                 *err = stat;

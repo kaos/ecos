@@ -46,10 +46,6 @@
 #include <cyg/io/devtab.h>
 #include <cyg/infra/diag.h>
 
-// Define table boundaries
-CYG_HAL_TABLE_BEGIN( __DEVTAB__, devtab );
-CYG_HAL_TABLE_END( __DEVTAB_END__, devtab );
-
 //extern void cyg_io_init(void) CYGBLD_ATTRIB_CONSTRUCTOR
 //  CYG_INIT_PRIORITY(CYG_INIT_BEFORE(LIBC));
 
@@ -306,6 +302,36 @@ Cyg_ErrNo cyg_devio_bread(cyg_io_handle_t handle, void *buf,
     return -EDEVNOSUPP;
 }
 
+Cyg_ErrNo
+cyg_devio_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
+{
+    CYG_UNUSED_PARAM(cyg_io_handle_t, handle);
+    CYG_UNUSED_PARAM(cyg_uint32, which);
+    CYG_UNUSED_PARAM(CYG_ADDRWORD, info);
+    return -EDEVNOSUPP;
+}
+
+Cyg_ErrNo
+cyg_devio_get_config(cyg_io_handle_t handle, cyg_uint32 key,
+                     void* buf, cyg_uint32* len)
+{
+    CYG_UNUSED_PARAM(cyg_io_handle_t, handle);
+    CYG_UNUSED_PARAM(cyg_uint32, key);
+    CYG_UNUSED_PARAM(void*, buf);
+    CYG_UNUSED_PARAM(cyg_uint32*, len);
+    return -EDEVNOSUPP;
+}
+
+Cyg_ErrNo
+cyg_devio_set_config(cyg_io_handle_t handle, cyg_uint32 key,
+                     void* buf, cyg_uint32* len)
+{
+    CYG_UNUSED_PARAM(cyg_io_handle_t, handle);
+    CYG_UNUSED_PARAM(cyg_uint32, key);
+    CYG_UNUSED_PARAM(void*, buf);
+    CYG_UNUSED_PARAM(cyg_uint32*, len);
+    return -EDEVNOSUPP;
+}
 
 /*---------------------------------------------------------------------------*/
 /* End of io/iosys.c */
