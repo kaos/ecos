@@ -11,6 +11,7 @@
 <!--                                                                 -->
 <!-- =============================================================== -->
 <!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.  -->
+<!-- Copyright (C) 2003 Andrew Lunn.                                 -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -34,7 +35,8 @@
 <PARTINTRO>
 <PARA>
 The ftpclient package provides an FTP (File Transfer Protocol) client
-for use with the TCP/IP stack in eCos.
+for use with the TCP/IP stack in eCos. It supports both IPv4 and IPv6
+and will use the DNS client, when its is part of the eCos configuration.
 </PARA>
 </PARTINTRO>
 <CHAPTER id="net-ftpclient-features">

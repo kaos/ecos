@@ -1,3 +1,13 @@
+2003-04-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ftpclient.c (connect_to_server): Added support for
+	IPv6. This meant changing from using the PORT command to using
+	EPRT, when setting up the data connection. EPRT is protocol 
+	independant. 
+	* tests/ftpclient1.c (ftp_test): Added tests which use IPv6
+	addresses. Fixed a few minor bugs with format strings.
+	* doc/ftpclient.sgml: Mention we support IPv6 and DNS.
+	
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ftpclient.cdl: Add doc link.
@@ -25,6 +35,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Andrew Lunn.	
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

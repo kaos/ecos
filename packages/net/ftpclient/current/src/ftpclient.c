@@ -209,66 +209,54 @@ command(char * cmd,
 
 static int
 connect_to_server(char *hostname, 
-                  struct sockaddr_in * local,
+                  struct sockaddr * local,
                   ftp_printf_t ftp_printf) 
 { 
-  struct sockaddr_in host; 
-  struct servent *sent;
-#ifdef CYGPKG_NS_DNS   
-  struct hostent *hp=NULL; 
-#endif
   int s, len;
+  int error;
+  struct addrinfo *res, *nai;
+  char name[80];
+  char port[8];
 
-  s = socket(AF_INET, SOCK_STREAM, 0);
-  if (s < 0) {
-    ftp_printf(1,"socket: %s\n",strerror(errno));
-    return FTP_BAD;
-  }
-  
-  sent = getservbyname("ftp", "tcp");
-  if (sent == (struct servent *)0) {
-    ftp_printf(1,"FTP: unknown serivice\n");
-    close(s);
-    return FTP_BAD;
-  }
-
-#ifdef CYGPKG_NS_DNS  
-  hp = gethostbyname(hostname);
-
-
-  if (hp) {           /* try name first */
-    host.sin_family = hp->h_addrtype;
-    bcopy(hp->h_addr, &host.sin_addr, hp->h_length);
-  } else 
-#endif
-    {			/* maybe it's a numeric address ?*/
-    host.sin_family = AF_INET;
-    
-    if (inet_aton(hostname,&host.sin_addr) == 0)  { 
-      ftp_printf(1,"host not found: %s\n", hostname);
-      close (s);
-      return FTP_NOSUCHHOST;
-    }
-  }
-  
-  host.sin_port = sent->s_port;
-  
-  if (connect(s, (struct sockaddr *)&host, sizeof(host)) < 0) {
-    ftp_printf(1,"FTP Connect failed: %s\n",strerror(errno));
-    close (s);
+  error = getaddrinfo(hostname, "ftp", NULL, &res);
+  if (error != EAI_NONE) {
     return FTP_NOSUCHHOST;
   }
-  
-  len = sizeof(struct sockaddr_in);
-  if (getsockname(s, (struct sockaddr *)local, &len) < 0) {
-    ftp_printf(1,"getsockname failed %s\n",strerror(errno));
-    close(s);
-    return FTP_BAD;
+
+  nai=res;
+  while (nai) {
+    s = socket(nai->ai_family, nai->ai_socktype,nai->ai_protocol);
+    if (s < 0) {
+      nai = nai->ai_next;
+      continue;
+    }
+    
+    if (connect(s, nai->ai_addr, nai->ai_addrlen) < 0) {
+      getnameinfo(nai->ai_addr, nai->ai_addrlen, 
+                  name, sizeof(name), NULL,0, NI_NUMERICHOST);
+      ftp_printf(1,"FTP Connect to %s failed: %s\n",name, strerror(errno));
+      close (s);
+      nai = nai->ai_next;
+      continue;
+    }
+    
+    len = sizeof(struct sockaddr);
+    if (getsockname(s, (struct sockaddr *)local, &len) < 0) {
+      ftp_printf(1,"getsockname failed %s\n",strerror(errno));
+      close(s);
+      nai = nai->ai_next;
+      continue;
+    }
+    getnameinfo(nai->ai_addr, nai->ai_addrlen, 
+                name, sizeof(name), port, sizeof(port), 
+                NI_NUMERICHOST|NI_NUMERICSERV);
+    
+    ftp_printf(0,"FTP: Connected to %s:%s\n", name, port);
+    freeaddrinfo(res);
+    return (s);
   }
-  ftp_printf(0,"FTP: Connected to %s.%d\n",
-             inet_ntoa(host.sin_addr), ntohs(host.sin_port));
-  
-  return (s);
+  freeaddrinfo(res);
+  return FTP_NOSUCHHOST;
 }
 
 /* Perform a login to the server. Pass the username and password and
@@ -320,20 +308,21 @@ opened send the port command to the server so the server knows which
 port we are listening on.*/
 static int 
 opendatasock(int ctrl_s,
-             struct sockaddr_in ctrl, 
+             struct sockaddr *ctrl, 
              char *msgbuf, 
              unsigned msgbuflen,
              ftp_printf_t ftp_printf) {
 
-  struct sockaddr_in local;
+  struct sockaddr local;
+  char name[64];
+  char port[10];
   socklen_t len;
   int on = 1;
-  char buf[4*6+1];
-  char *a, *p;
+  char buf[80];
   int ret;
   int s;
 
-  s = socket(AF_INET, SOCK_STREAM, 0);
+  s = socket(ctrl->sa_family, SOCK_STREAM, 0);
   if (s < 0) {
     ftp_printf(1,"socket: %s\n",strerror(errno));
     return FTP_BAD;
@@ -344,18 +333,34 @@ opendatasock(int ctrl_s,
     close(s);
     return FTP_BAD;
   }
+  
+  memcpy(&local,ctrl,sizeof(struct sockaddr));
+  switch (ctrl->sa_family) {
+    case AF_INET: {
+      struct sockaddr_in * sa4 = (struct sockaddr_in *) &local;
+      sa4->sin_port = 0;
+      break;
+    }
+#ifdef CYGPKG_NET_INET6
+    case AF_INET6: {
+      struct sockaddr_in6 * sa6 = (struct sockaddr_in6 *) &local;
+      sa6->sin6_port = 0;
+      break;
+    }
+#endif
+    default:
+      close (s);
+      return FTP_BAD;
+  }
 
-  local = ctrl;
-  local.sin_family = AF_INET;
-  local.sin_port = 0;
-  if (bind(s,(struct sockaddr *)&local,sizeof(local)) < 0) {
+  if (bind(s,&local,local.sa_len) < 0) {
     ftp_printf(1,"bind: %s\n",strerror(errno));
     close(s);
     return FTP_BAD;   
   }
   
   len = sizeof(local);
-  if (getsockname(s,(struct sockaddr *)&local,&len) < 0) {
+  if (getsockname(s,&local,&len) < 0) {
     ftp_printf(1,"getsockname: %s\n",strerror(errno));
     close(s);
     return FTP_BAD;   
@@ -366,15 +371,26 @@ opendatasock(int ctrl_s,
     close(s);
     return FTP_BAD;   
   }
+  
+  getnameinfo(&local,sizeof(local),name,sizeof(name), port, sizeof(port),
+              NI_NUMERICHOST|NI_NUMERICSERV);
+  switch (local.sa_family) {
+  case AF_INET: {
+    sprintf(buf,"|1|%s|%s|", name, port);
+    break;
+  }
+#ifdef CYGPKG_NET_INET6
+  case AF_INET6: {
+    sprintf(buf,"|2|%s|%s|", name, port);
+    break;
+  }
+#endif
+  default:
+    close (s);
+    return (FTP_BAD);
+  }
 
-#define	BtoI(b)	(((int)b)&0xff)
-  a = (char *)&local.sin_addr;
-  p = (char *)&local.sin_port;
-  sprintf(buf,"%d,%d,%d,%d,%d,%d",
-          BtoI(a[0]),BtoI(a[1]),BtoI(a[2]),BtoI(a[3]),
-          BtoI(p[0]),BtoI(p[1]));
-
-  ret = command("PORT",buf,ctrl_s,msgbuf,msgbuflen,ftp_printf);
+  ret = command("EPRT",buf,ctrl_s,msgbuf,msgbuflen,ftp_printf);
   if (ret < 0) {
     close(s);
     return (ret);
@@ -511,7 +527,7 @@ int ftp_get(char * hostname,
             ftp_printf_t ftp_printf)
 {
 
-  struct sockaddr_in local;
+  struct sockaddr local;
   char msgbuf[256];
   int s,data_s;
   int bytes;
@@ -538,7 +554,7 @@ int ftp_get(char * hostname,
   /* We are now logged in and ready to transfer the file. Open the
      data socket ready to receive the file. It also build the PORT
      command ready to send */
-  data_s = opendatasock(s,local,msgbuf,sizeof(msgbuf),ftp_printf);
+  data_s = opendatasock(s,&local,msgbuf,sizeof(msgbuf),ftp_printf);
   if (data_s < 0) {
     close (s);
     return (data_s);
@@ -604,7 +620,7 @@ int ftp_put(char * hostname,
             ftp_printf_t ftp_printf)
 {
 
-  struct sockaddr_in local;
+  struct sockaddr local;
   char msgbuf[256];
   int s,data_s;
   int ret;
@@ -630,7 +646,7 @@ int ftp_put(char * hostname,
   /* We are now logged in and ready to transfer the file. Open the
      data socket ready to receive the file. It also build the PORT
      command ready to send */
-  data_s = opendatasock(s,local,msgbuf,sizeof(msgbuf),ftp_printf);
+  data_s = opendatasock(s,&local,msgbuf,sizeof(msgbuf),ftp_printf);
   if (data_s < 0) {
     close (s);
     return (data_s);
