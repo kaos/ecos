@@ -1,3 +1,12 @@
+2004-08-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/moab.S: 
+	* sa_tests/tty.c: 
+	* sa_tests/start.S: 
+	* include/pkgconf/mlt_powerpc_moab_romram.h: 
+	* cdl/hal_powerpc_moab.cdl: Support for new board revision.  Minor
+	layout changes, change in RAM/FLASH sizes.
+
 2004-02-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_BOOT.ecm: 

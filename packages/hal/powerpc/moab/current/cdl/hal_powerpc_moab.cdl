@@ -102,11 +102,21 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
            the existence of a debug environment, such as GDB stubs."
     }
 
+    cdl_component CYG_HAL_MOAB_BOARD_REVISION {
+        display       "PC revision"
+        flavor        data
+        legal_values  {"1_0" "1_1"}
+        default_value {"1_1"}
+        description   "
+           This option describes the board (PC) revision.  Certain changes were
+           made between the various revisions and this allows the kernel to adapt."
+    }
+
     cdl_option CYGHWR_HAL_POWERPC_CPU_SPEED {
         display          "Development board clock speed (MHz)"
         flavor           data
-        legal_values     250 333
-        default_value    250
+        legal_values     250 300 333 400
+        default_value    { CYG_HAL_MOAB_BOARD_REVISION == "1_1" ? 400 : 250 }
         description      "
            MOAB Development Boards have various system clock speeds
            depending on the processor and oscillator fitted.  Select 
@@ -117,7 +127,7 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
    cdl_option CYGHWR_HAL_POWERPC_MEM_SPEED {
         display          "Development board memory bus speed (MHz)"
         flavor           data
-        legal_values     66
+        legal_values     66 100 133
         default_value    66
         description      "
            MOAB Development Boards have various system clock speeds

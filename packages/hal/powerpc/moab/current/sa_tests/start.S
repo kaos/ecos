@@ -2,14 +2,14 @@
 // Simple test code framework
 //
 //-----------------------------------------------------------------
-// Copyright (C) 2003, Gary Thomas <gary@mlbassoc.com>
+// Copyright (C) 2003, 2004 Gary Thomas <gary@mlbassoc.com>
 //-----------------------------------------------------------------
 
 #include "ppc.inc"        
         
-#define GPIO0           0xEF600700        
-#define GPIO0_OR        GPIO0+0x000
-#define GPIO0_TCR       GPIO0+0x004
+#define GPIO0           (0xEF600700)
+#define GPIO0_OR        (GPIO0+0x000)
+#define GPIO0_TCR       (GPIO0+0x004)
 
         .text
         .globl  start
@@ -27,6 +27,7 @@ start:
         cmpw    r3,r4
         bne     10b        
 
+#if 0 // Assume that 'boot' environment has set this up        
 //
 // Setup GPIO to drive LEDs
 //
@@ -34,6 +35,7 @@ start:
         li      r4,0x80
         stw     r4,GPIO0_TCR-GPIO0(r11)
         stw     r4,GPIO0_OR-GPIO0(r11)
+#endif        
 
         // Setup and clear a stack used by the C code
         lwi     sp,stack_base-4

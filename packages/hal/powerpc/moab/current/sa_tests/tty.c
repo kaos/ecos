@@ -2,7 +2,7 @@
 // TTY support code
 //
 //-----------------------------------------------------------------
-// Copyright (C) 2003, Gary Thomas <gary@mlbassoc.com>
+// Copyright (C) 2003, 2004 Gary Thomas <gary@mlbassoc.com>
 //-----------------------------------------------------------------
 
 struct uart {
@@ -81,10 +81,12 @@ tty_init(void)
     uart->fcr = (SIO_FCR_FCR0 | SIO_FCR_FCR1 | SIO_FCR_FCR2);
     uart->fcr = 0;
 
+#if 0 // Assume that baud rate has been properly set
     // Set speed to 38400.
     uart->lcr = SIO_LCR_WLS0 | SIO_LCR_WLS1 | SIO_LCR_DLAB;
     uart->dll = 0x12;
     uart->dlm = 0;
+#endif
 
     // 8-1-no parity.
     uart->lcr = SIO_LCR_WLS0 | SIO_LCR_WLS1;

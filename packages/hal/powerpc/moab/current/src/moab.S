@@ -9,7 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-## Copyright (C) 2002, 2003 Gary Thomas
+## Copyright (C) 2002, 2003, 2004 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -60,8 +60,39 @@
 #------------------------------------------------------------------------------
 
 // No useable LEDs
-#define LED(x)                          
-	
+#define LED(x)
+
+//
+// Various setup values - based on board revision &/or xtal speed
+//                        
+#if defined(CYG_HAL_MOAB_BOARD_REVISION_1_0)
+#define MOAB_DCR_SDRAM0_RTR    0x05F00000
+#define MOAB_DCR_SDRAM0_B1CR   0x00062001                
+#define MOAB_DCR_SDRAM0_B0CR   0x02062001
+#define MOAB_DCR_SDRAM0_CFG    0x80800000
+#elif defined(CYG_HAL_MOAB_BOARD_REVISION_1_1)
+#define MOAB_DCR_SDRAM0_RTR    0x07F00000
+#define MOAB_DCR_SDRAM0_B1CR   0x00084001                        
+#define MOAB_DCR_SDRAM0_B0CR   0x00000000
+#define MOAB_DCR_SDRAM0_CFG    0x80800000
+#else
+#error "Illegal board revision"
+#endif                        
+#if CYGHWR_HAL_POWERPC_CPU_SPEED == 250        
+#define MOAB_DCR_CPC0_CR0      0x09F8502A	
+#define MOAB_DCR_EBC0_B1AP     0x03840000           
+#elif CYGHWR_HAL_POWERPC_CPU_SPEED == 333
+#define MOAB_DCR_CPC0_CR0      0x09F8503A
+#define MOAB_DCR_EBC0_B1AP     0x05840000           
+#elif CYGHWR_HAL_POWERPC_CPU_SPEED == 300
+#define MOAB_DCR_CPC0_CR0      0x0FF85034        
+#define MOAB_DCR_EBC0_B1AP     0x0A840000           
+#elif CYGHWR_HAL_POWERPC_CPU_SPEED == 400      
+#define MOAB_DCR_CPC0_CR0      0x0FF8503C
+#define MOAB_DCR_EBC0_B1AP     0x0C840000           
+#else
+#error "Illegal CPU speed"
+#endif                        
 #------------------------------------------------------------------------------       
                 
 FUNC_START( hal_hardware_init )
@@ -72,7 +103,6 @@ FUNC_START( hal_hardware_init )
         li      r3,0x00000000              // Make sure nothing is cacheable
         mticcr  r3
         mtdccr  r3
-
         // Force data caches to be totally clean
         lwi     r3,0
         lwi     r4,0x8000
@@ -83,14 +113,7 @@ FUNC_START( hal_hardware_init )
         bne     10b
 
         // Basic chip configuration
-#if CYGHWR_HAL_POWERPC_CPU_SPEED == 250        
-        lwi     r3,0x09f8102a
-        lwi     r3,0x09f8502a
-#elif CYGHWR_HAL_POWERPC_CPU_SPEED == 333
-        lwi     r3,0x09f8503a
-#else
-#error "Unsupported board/CPU speed"        
-#endif
+        lwi     r3,MOAB_DCR_CPC0_CR0
         mtdcr   DCR_CPC0_CR0,r3
         li      r3,0x00000000
         mtdcr   DCR_CPC0_CR1,r3
@@ -115,7 +138,7 @@ FUNC_START( hal_hardware_init )
         li      r3,DCR_SDRAM0_CFG          // See if SDRAM already configured
         mtdcr   DCR_SDRAM0_CFGADDR,r3        
         mfdcr   r4,DCR_SDRAM0_CFGDATA
-        lwi     r3,0x80800000
+        lwi     r3,MOAB_DCR_SDRAM0_CFG        
         and     r4,r4,r3
         cmpw    r3,r4
         beq     sdram_ok
@@ -129,16 +152,17 @@ FUNC_START( hal_hardware_init )
         lwi     r4,0x010A800E
         mtdcr   DCR_SDRAM0_CFGADDR,r3        
         mtdcr   DCR_SDRAM0_CFGDATA,r4
-        li      r3,DCR_SDRAM0_RTR
-        lwi     r4,0x05F00000
+        li      r3,DCR_SDRAM0_RTR            // Refresh timing
+        lwi     r4,MOAB_DCR_SDRAM0_RTR  
         mtdcr   DCR_SDRAM0_CFGADDR,r3        
         mtdcr   DCR_SDRAM0_CFGDATA,r4
         li      r3,DCR_SDRAM0_B1CR           // Note: non-ascending addresses because
-        lwi     r4,0x00062001                // the low 1/2 of memory fails on some boards
+                                             // the low 1/2 of memory fails on some boards        
+        lwi     r4,MOAB_DCR_SDRAM0_B1CR
         mtdcr   DCR_SDRAM0_CFGADDR,r3        
         mtdcr   DCR_SDRAM0_CFGDATA,r4
         li      r3,DCR_SDRAM0_B0CR
-        lwi     r4,0x02062001
+        lwi     r4,MOAB_DCR_SDRAM0_B0CR
         mtdcr   DCR_SDRAM0_CFGADDR,r3        
         mtdcr   DCR_SDRAM0_CFGDATA,r4
         
@@ -152,7 +176,7 @@ FUNC_START( hal_hardware_init )
         bdnz    13b
         
         li      r3,DCR_SDRAM0_CFG         // Enable controller
-        lwi     r4,0x80800000
+        lwi     r4,MOAB_DCR_SDRAM0_CFG        
         mtdcr   DCR_SDRAM0_CFGADDR,r3        
         mtdcr   DCR_SDRAM0_CFGDATA,r4
 
@@ -167,14 +191,7 @@ sdram_ok:
         mtdcr   DCR_EBC0_CFGADDR,r3
         mtdcr   DCR_EBC0_CFGDATA,r4
         li      r3,DCR_EBC0_B1AP          // MAIN FLASH at 0xCxxxxxxx, R/W
-#if CYGHWR_HAL_POWERPC_CPU_SPEED == 250        
-        lwi     r4,0x03840000             // Cycle time = 50ns
-#elif CYGHWR_HAL_POWERPC_CPU_SPEED == 333
-        lwi     r4,0x05840000            
-#else
-        lwi     r4,0x0C840000            
-#error "Unsupported board/CPU speed"        
-#endif
+        lwi     r4,MOAB_DCR_EBC0_B1AP
         mtdcr   DCR_EBC0_CFGADDR,r3
         mtdcr   DCR_EBC0_CFGDATA,r4
         li      r3,DCR_EBC0_B1CR
@@ -199,7 +216,7 @@ sdram_ok:
         lwi     r3,0x80000001              // DRAM can be cached - instructions only
         iccci   0,r3
         mticcr  r3
-        li      r3,0x00000000
+        lwi     r3,0x00000000
         mtdccr  r3
 
 #ifdef CYG_HAL_STARTUP_ROMRAM
