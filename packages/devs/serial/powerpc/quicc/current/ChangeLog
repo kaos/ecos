@@ -1,3 +1,10 @@
+2003-03-17  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc_serial.h: 
+	* src/quicc_smc_serial.c: 
+	* cdl/ser_quicc_smc.cdl: Add support for SCC1/SCC2/SCC3.  Inspired
+	by Paul Randall <prandall@delta-info.com>
+
 2003-03-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc_serial.c: Use common routines to manage CPM/DPRAM
