@@ -89,6 +89,7 @@
 #include "folderdlg.h"
 #include "reposdlg.h"
 #include "docsystem.h"
+#include "symbols.h"
 
 #ifdef __WXMSW__
 #include "wx/msw/winundef.h"
@@ -549,7 +550,9 @@ void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 //    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
 //    dialog.ShowModal();
-    wxMessageBox(_("eCos Configuration Tool 2.13.net\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003"), _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
+	wxString msg;
+	msg.Printf("eCos Configuration Tool %s (%s %s)\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003", ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__);
+    wxMessageBox(msg, _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
 }
 
 void ecMainFrame::OnSize(wxSizeEvent& WXUNUSED(event))

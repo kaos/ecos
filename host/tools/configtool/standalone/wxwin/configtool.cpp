@@ -246,7 +246,7 @@ bool ecApp::OnInit()
         wxLog::SetActiveTarget(new wxLogStderr);
 #endif
         wxString msg;
-        msg.Printf(wxT("eCos Configuration Tool (c) Red Hat, 2001 Version %.2f, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
+        msg.Printf(wxT("eCos Configuration Tool (c) Red Hat, 2001 Version %s, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
         wxLogMessage(msg);
         return FALSE;
     }
@@ -658,7 +658,7 @@ bool ecApp::VersionStampSplashScreen()
         // Bottom left of area to start drawing at
 
         wxString verString;
-        verString.Printf("%.2f", ecCONFIGURATION_TOOL_VERSION);
+        verString.Printf("%s", ecCONFIGURATION_TOOL_VERSION);
 
         int x = 339; int y = 231;
 #ifdef __WXMSW__

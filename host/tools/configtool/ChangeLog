@@ -1,5 +1,11 @@
 2003-03-25  John Dallaway  <jld@ecoscentric.com>
 
+	* standalone/wxwin/symbols.h,
+	  standalone/wxwin/aboutdlg.cpp,
+	  standalone/wxwin/configtool.cpp,
+	  standalone/wxwin/mainwin.cpp: Use a character string to represent
+	the configtool version number.
+
 	* standalone/wxwin/runtestsdlg.cpp: Remove CR characters in test
 	output. [ Bugzilla 85163 ]
 
