@@ -293,7 +293,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     }
 
     sg_list[0].buf = (CYG_ADDRESS)eth_hdr;
-    sg_list[0].len = 14;  // FIXME
+    sg_list[0].len = (6+6+2);  // FIXME
     sg_list[1].buf = (CYG_ADDRESS)buf;
     sg_list[1].len = len;
     packet_sent = 0;
