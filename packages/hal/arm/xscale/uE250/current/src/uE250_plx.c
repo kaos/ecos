@@ -8,7 +8,6 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -99,6 +98,7 @@ static struct plx_init {
     { 0xf0,0xffff8000 },
     { 0xf4,0x40008001 },
     { 0xf8,0x00000243 },
+    { 0x900, 0x68 },
     { 0xFFFFFFFF,0},  // End marker
 };
 
@@ -133,6 +133,20 @@ _show_pci_device(cyg_pci_device_id devid)
     }
 }
 #endif
+
+static /*__inline__*/ void 
+write_fdc37c672_configreg(cyg_uint8 regno, cyg_uint8 data)
+{
+    localbus_writeb(regno, FDC37C672_INDEX);
+    localbus_writeb(data, FDC37C672_DATA);
+}
+
+static /*__inline__*/ cyg_uint8 
+read_fdc37c672_configreg(cyg_uint8 regno)
+{
+    localbus_writeb(regno, FDC37C672_INDEX);
+    return localbus_readb(FDC37C672_DATA) & 0xff;
+}
 
 /**
  *  Sets up the Base Address Registers of the PLX 9080
@@ -173,7 +187,7 @@ initialize_plx_bridge(void)
         // See what was assigned - for later use
         cyg_pci_get_device_info(plx_dev, &dev_info);
         _plx_config_addr = dev_info.base_map[0] + LOCALBUS_CONFIG_OFFSET;
-        _plx_localbus_addr = dev_info.base_map[3] + LOCALBUS_OFFSET;
+        _plx_localbus_addr = dev_info.base_map[3];
 
         // A little commercial plug :-)
         localbus_writeb('M', ASCII_DISPLAY_BASE+8);
@@ -181,8 +195,40 @@ initialize_plx_bridge(void)
         localbus_writeb('N', ASCII_DISPLAY_BASE+16);
         localbus_writeb('D', ASCII_DISPLAY_BASE+20);
 
+        // Configure SMSC FDC36c672 Super I/O controller
+
+        localbus_writeb(0x55,FDC37C672_CONFIG); // Enter FDC37C672 configuration mode
+
+        write_fdc37c672_configreg(7, 3);        // parallel port to IRQ 7, IO 0x378
+        write_fdc37c672_configreg(0x30, 1);
+        write_fdc37c672_configreg(0x70, 7);
+        write_fdc37c672_configreg(0x60, 0x3);
+        write_fdc37c672_configreg(0x61, 0x78);
+
+        write_fdc37c672_configreg(7, 4);        // first serial port to IRQ4, IO 0x3f8 
+        write_fdc37c672_configreg(0x30, 1);
+        write_fdc37c672_configreg(0x70, 4);
+        write_fdc37c672_configreg(0x60, 0x3);
+        write_fdc37c672_configreg(0x61, 0xf8);
+
+        write_fdc37c672_configreg(7, 5);        // second serial port to IRQ5, IO 0x2f8
+        write_fdc37c672_configreg(0x30, 1);
+        write_fdc37c672_configreg(0x70, 3);
+        write_fdc37c672_configreg(0x60, 0x2);
+        write_fdc37c672_configreg(0x61, 0xf8);
+
+        write_fdc37c672_configreg(7, 7);        // PS/2 Keyboard/mouse to IRQ 1/5, IO 0x60 
+        write_fdc37c672_configreg(0x30, 1);
+        write_fdc37c672_configreg(0x70, 1);
+        write_fdc37c672_configreg(0x72, 5);
+
+        localbus_writeb(0xAA,FDC37C672_CONFIG); // Leave FDC37C672 configuration mode 
+
 #ifdef CYGSEM_HAL_LOAD_VGA_FPGA
         load_vga(uE250_plx_bitstream, sizeof(uE250_plx_bitstream));
+#endif
+#ifdef CYGSEM_UE250_VGA_COMM
+        vga_comm_init(dev_info.base_map[2]);
 #endif
     } else {
         diag_printf("Can't find PLX controller!\n");

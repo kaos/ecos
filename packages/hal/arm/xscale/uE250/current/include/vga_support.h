@@ -1,58 +1,17 @@
-2003-02-25  Gary Thomas  <gary@mind.be>
-
-	* src/uE250_pci.c: Initialize super I/O chip - used for legacy devices.
-
-	* src/font.h: 
-	* src/banner.xpm: 
-	* src/vga_support.c: 
-	* include/vga_support.h: New file(s) for VGA console support.
-
-	* src/uE250_plx.c: 
-	* cdl/hal_arm_xscale_uE250.cdl: Add support for console using VGA+PS/2.
-
-2003-02-24  Gary Thomas  <gary@mind.be>
-
-	* include/plx.h: Clean up unused code.
-
-	* src/uE250_pci.c: 
-	* src/uE250_misc.c: 
-	* include/plf_io.h: 
-	* include/hal_plf_ints.h: Support interrupts via PCI bus.
-
-2003-02-04  Gary Thomas  <gary@mind.be>
-
-	* src/xilinx-load.c: 
-	* src/uE250_plx.c: 
-	* src/uE250_pci.c: 
-	* src/uE250_misc.c: 
-	* src/uE250_ide.c: 
-	* src/uE250_plx_bitstream.h: 
-	* src/uE250_pci_bitstream.h: 
-	* misc/redboot_ROM.ecm: 
-	* misc/redboot_RAM.ecm: 
-	* include/pkgconf/mlt_arm_xscale_uE250_romram.mlt: 
-	* include/pkgconf/mlt_arm_xscale_uE250_romram.ldi: 
-	* include/pkgconf/mlt_arm_xscale_uE250_romram.h: 
-	* include/pkgconf/mlt_arm_xscale_uE250_rom.mlt: 
-	* include/pkgconf/mlt_arm_xscale_uE250_rom.ldi: 
-	* include/pkgconf/mlt_arm_xscale_uE250_rom.h: 
-	* include/pkgconf/mlt_arm_xscale_uE250_ram.mlt: 
-	* include/pkgconf/mlt_arm_xscale_uE250_ram.ldi: 
-	* include/pkgconf/mlt_arm_xscale_uE250_ram.h: 
-	* include/uE250.h: 
-	* include/plx.h: 
-	* include/plf_mmap.h: 
-	* include/hal_plf_ints.h: 
-	* include/plf_io.h: 
-	* include/hal_platform_setup.h: 
-	* cdl/hal_arm_xscale_uE250.cdl: 
-	New package - support for NMI uE250 (Xscale PXA250) platform.
-
-//===========================================================================
+#ifndef _VGA_SUPPORT_H_
+#define _VGA_SUPPORT_H_
+//==========================================================================
+//
+//        vga_support.h
+//
+//        VGA support routines
+//
+//==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -81,4 +40,43 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     gthomas
+// Contributors:  gthomas
+// Date:          2001-09-29
+// Description:   Simple VGA support
+//####DESCRIPTIONEND####
+
+struct vga_info {
+    short height, width;  // Pixels
+    short bpp;            // Depth (bits/pixel)
+    short type;
+    short rlen;           // Length of one raster line in bytes
+    short access_size;    // Data path width to frame buffer
+    short stride;         // Offset (in bytes) between elements
+    void  *fb;            // Frame buffer
+    void  *ctlr;          // Controller regs
+    void  (*off)(void);   // Turn screen off
+    void  (*on)(void);    // Turn screen on
+};
+
+// Frame buffer types - used by MicroWindows
+#define FB_TRUE_RGB565 0x01
+#define FB_TRUE_RGB555 0x02  
+
+// Exported functions
+void vga_init(cyg_uint32 *ctlr);
+void vga_clear(void);
+int  vga_getinfo(struct vga_info *info);
+void vga_on(bool enable);
+#ifdef CYGSEM_UE250_VGA_COMM 
+void vga_screen_clear(void);
+void vga_moveto(int X, int Y);
+void vga_putc(cyg_uint8 c);
+int  _vga_printf(char const *fmt, ...);
+void vga_comm_init(cyg_uint32 *addr);
+#endif
+
+#endif //  _VGA_SUPPORT_H_

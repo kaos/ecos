@@ -108,8 +108,10 @@ cyg_hal_plf_pci_init(void)
 
     // FIXME: Change MSC values ??
     // Set FPGA to 110.6 MHz
-    *PXA2X0_GPSR0 = (0x01 << 7);
-    *PXA2X0_GPCR1 = (0x01 << 13);
+    *PXA2X0_GPDR0 |= (0x01 << 7);
+    *PXA2X0_GPSR0 |= (0x01 << 7);
+    *PXA2X0_GPDR1 |= (0x01 << (45-32));
+    *PXA2X0_GPCR1 |= (0x01 << (45-32));
   
     // Set busmastering
 //    diag_printf("Activating PCI bridge.\n");
@@ -158,9 +160,12 @@ _uE250_pci_translate_interrupt(int bus, int devfn, int *vector, int *valid)
 {
     int dev = CYG_PCI_DEV_GET_DEV(devfn);
 
-    *vector = _uPCI_BASE_INTERRUPT+(dev-1);
-    diag_printf("%s.%d - dev: %d = %d\n", __FUNCTION__, __LINE__, dev, *vector);
-    valid = true;;
+    if (dev <= 5) {
+        *vector = _uPCI_BASE_INTERRUPT+(dev-1);
+        valid = true;;
+    } else {
+        valid = false;
+    }
 }
 
 static void

@@ -98,6 +98,47 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_UE250 {
            RAM for improved performance."
     }
 
+    cdl_component CYGSEM_UE250_VGA_SUPPORT {
+        display        "Support LCD"
+        flavor         bool
+        default_value  1
+        compile        vga_support.c
+        description    "
+          Enabling this option will enable the use the VGA/CRT as a 
+          simple framebuffer, suitable for use with a windowing
+          package."
+
+        cdl_component CYGSEM_UE250_VGA_COMM {
+            display        "Support VGA/keyboard for comminication channel"
+            active_if      CYGPKG_REDBOOT
+            flavor         bool
+            default_value  1
+            description    "
+              Enabling this option will use the LCD/CRT and keyboard for a
+              communications channel, suitable for RedBoot, etc."
+
+            cdl_option  CYGNUM_UE250_VGA_COMM_FONT_SIZE {
+                display       "VGA console font size"
+                flavor        data
+                legal_values  8 16
+                default_value 16
+                description   "
+                   This option selects which size font, and ultimately the
+                   number of displayable characters, to be used on the VGA."
+            }
+
+            cdl_option  CYGOPT_UE250_VGA_COMM_LOGO {
+                display       "Logo location"
+                flavor        booldata
+                legal_values  { "TOP" "BOTTOM" }
+                default_value { "TOP" }
+                description   "
+                    Use this option to control where the logo is placed
+                    on the VGA/CRT screen."
+            }
+        }
+    }
+
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
         flavor        data
@@ -123,7 +164,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_UE250 {
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
         display      "Number of communication channels on the board"
         flavor       data
-        calculated   1
+        calculated   1+CYGSEM_UE250_VGA_COMM
 	description "
 	    Channel 0 is the only serial port on the board."
     }
