@@ -1,3 +1,19 @@
+2002-09-19  Mark Salter  <msalter@redhat.com>
+
+	* src/iq80310_misc.c (hal_hardware_init): Call hal_xscale_core_init.
+	(iq80310_program_new_stack): Remove.
+	Remove debug support which is now in xscale core package.
+	* misc/redboot_RAM.ecm: Add CYGPKG_HAL_ARM_XSCALE_CORE package.
+	* misc/redboot_RAMA.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+	* misc/redboot_ROMA.ecm: Ditto.
+	* include/plf_io.h (CYGARC_PHYSICAL_ADDRESS): Define.
+	* include/hal_platform_setup.h (DCACHE_FLUSH_AREA): Remove define.
+	Remove debug unit init code.
+	* include/hal_iq80310.h (DCACHE_FLUSH_AREA): Define.
+	* cdl/hal_arm_iq80310.cdl: Remove HAL_ARCH_PROGRAM_NEW_STACK and
+	add CYGBLD_HAL_VAR_H.
+
 2002-08-29  Mark Salter  <msalter@redhat.com>
 
 	* include/plf_stub.h: Add HAL_STUB_HW_BREAKPOINT_LIST_SIZE and

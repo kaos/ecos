@@ -55,6 +55,8 @@
 //
 //===========================================================================*/
 
+#define DCACHE_FLUSH_AREA 0xc0000000
+
 // Addresses of the left and right 7-segment display
 #define DISPLAY_LEFT	0xFE840000
 #define DISPLAY_RIGHT	0xFE850000

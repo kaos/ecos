@@ -1,3 +1,7 @@
+2002-09-19  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Add XScale core package.
+
 2002-09-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: Adding generic FEC driver support package (Viper).

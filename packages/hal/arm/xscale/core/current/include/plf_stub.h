@@ -43,10 +43,11 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   msalter
-// Contributors:jskov, gthomas, msalter
-// Date:        2000-10-10
-// Purpose:     Platform HAL stub support for Intel IQ80310 boards.
+// Author(s):   gthomas
+// Contributors:jskov
+//              Travis C. Furrer <furrer@mit.edu>
+// Date:        2000-05-08
+// Purpose:     Platform HAL stub support for Intel XScale boards.
 // Usage:       #include <cyg/hal/plf_stub.h>
 //              
 //####DESCRIPTIONEND####
@@ -54,14 +55,13 @@
 //=============================================================================
 
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_arm_iq80310.h>
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
 #include <cyg/infra/cyg_type.h>         // CYG_UNUSED_PARAM
-
+#include CYGBLD_HAL_VAR_H               // registers
+#include <cyg/hal/hal_io.h>             // IO macros
+#include <cyg/hal/hal_intr.h>           // Interrupt macros
 #include <cyg/hal/arm_stub.h>           // architecture stub support
 
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 //----------------------------------------------------------------------------
 // Define some platform specific communication details. This is mostly
 // handled by hal_if now, but we need to make sure the comms tables are
@@ -70,29 +70,29 @@
 externC void cyg_hal_plf_comms_init(void);
 
 #define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
-
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
 #define HAL_STUB_PLATFORM_INTERRUPTIBLE       0
-#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
 
 //----------------------------------------------------------------------------
 // Stub initializer.
-#define HAL_STUB_PLATFORM_INIT()              CYG_EMPTY_STATEMENT
-
-#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-
+#define HAL_STUB_PLATFORM_INIT()        CYG_EMPTY_STATEMENT
 
 extern int   cyg_hal_plf_hw_breakpoint(int setflag, void *addr, int len);
 extern int   cyg_hal_plf_hw_watchpoint(int setflag, void *addr, int len, int type);
 extern int   cyg_hal_plf_is_stopped_by_hardware(void **paddr);
 
 #define HAL_STUB_HW_BREAKPOINT_LIST_SIZE 2
-#define HAL_STUB_HW_WATCHPOINT_LIST_SIZE 1
+#define HAL_STUB_HW_WATCHPOINT_LIST_SIZE 2
 
 #define HAL_STUB_HW_BREAKPOINT(f,a,l)      cyg_hal_plf_hw_breakpoint((f),(a),(l))
 #define HAL_STUB_HW_WATCHPOINT(f,a,l,t)    cyg_hal_plf_hw_watchpoint((f),(a),(l),(t))
 #define HAL_STUB_IS_STOPPED_BY_HARDWARE(p) cyg_hal_plf_is_stopped_by_hardware(&(p))
 
+#endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+
+// start-sanitize-xscale
+externC cyg_uint32 cyg_hal_iwmmxt_coprocessor_id(void);
+// end-sanitize-xscale
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_PLF_STUB_H
 // End of plf_stub.h

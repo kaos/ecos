@@ -211,6 +211,7 @@ externC void cyg_hal_plf_pci_init(void);
 #define CYGARC_VIRT_TO_BUS(_x_) \
   (((((unsigned long)(_x_)) >> 28)==0xA) ? (unsigned long)(_x_) : (((unsigned long)(_x_))&~0x40000000))
 
+#define CYGARC_PHYSICAL_ADDRESS(x) (x)
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

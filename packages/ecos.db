@@ -1997,6 +1997,16 @@ The cma230 HAL package provides the support needed to run eCos on a Cogent
 CMA230 (ARM7TDMI) or CMA222 (ARM710T) eval board."
 }
 
+package CYGPKG_HAL_ARM_XSCALE_CORE {
+	alias		{ "Intel XScale Core" hal_arm_xscale_core }
+	directory	hal/arm/xscale/core
+	script		hal_arm_xscale_core.cdl
+	hardware
+        description "
+        The XScale core HAL package provides the support needed to run eCos
+        on all Intel XScale based systems."
+}
+
 package CYGPKG_HAL_ARM_IQ80310 {
 	alias		{ "Intel IQ80310 XScale board" hal_arm_iq80310 arm_iq80310_hal }
 	directory	hal/arm/iq80310
@@ -3250,6 +3260,7 @@ target sa1100mm {
 target iq80310 {
 	alias { "Intel IQ80310 XScale board" iq80310 }
         packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_IQ80310
                    CYGPKG_IO_PCI
                    CYGPKG_DEVS_ETH_INTEL_I82559
@@ -3266,6 +3277,7 @@ target iq80310 {
 target iq80321 {
 	alias { "Intel XScale IQ80321 Board" iq80321 }
 	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
                    CYGPKG_HAL_ARM_XSCALE_VERDE
                    CYGPKG_HAL_ARM_XSCALE_IQ80321
                    CYGPKG_IO_PCI

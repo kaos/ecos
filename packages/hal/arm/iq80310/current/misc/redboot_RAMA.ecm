@@ -12,6 +12,7 @@ cdl_configuration eCos {
     hardware    iq80310 ;
     template    redboot ;
     package -hardware CYGPKG_HAL_ARM current ;
+    package -hardware CYGPKG_HAL_ARM_XSCALE_CORE current ;
     package -hardware CYGPKG_HAL_ARM_IQ80310 current ;
     package -hardware CYGPKG_IO_PCI current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;

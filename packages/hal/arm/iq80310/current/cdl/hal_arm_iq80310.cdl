@@ -64,7 +64,6 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
-    implements    CYGINT_HAL_ARM_ARCH_XSCALE
     implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
     define_proc {
@@ -73,7 +72,7 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"XScale\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"IQ80310\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
-        puts $::cdl_header "#define HAL_ARCH_PROGRAM_NEW_STACK iq80310_program_new_stack"
+        puts $::cdl_header "#define CYGBLD_HAL_VAR_H <cyg/hal/hal_iq80310.h>"
     }
 
     cdl_component CYG_HAL_STARTUP {

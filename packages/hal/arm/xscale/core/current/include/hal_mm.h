@@ -58,6 +58,9 @@
 //
 //=============================================================================
 
+#define PTE_SECTION_FLASH    ((3 << 10) | (1 << 3) | 2)
+#define PTE_SECTION_RAM      ((1 << 12) | (3 << 10) | (1 << 3) | (1 << 2) | 2)
+#define PTE_SECTION_UNCACHED ((3 << 10) | 2)
 
 #ifdef __ASSEMBLER__
 

@@ -88,11 +88,9 @@
 #define PLATFORM_SETUP1
 #endif
 
-
 #define	RAM_BASE	0xa0000000
 #define	DRAM_SIZE	(512*1024*1024)		// max size of available SDRAM
 #define	DCACHE_SIZE	(32*1024)		// size of the Dcache
-#define DCACHE_FLUSH_AREA (RAM_BASE+DRAM_SIZE)  // NB: needs page table support
 
 #define MMU_Control_BTB 0x800
 
@@ -896,13 +894,6 @@ SDRAM_DRIVE_2_BANK_X8:
         mcr	p13,0,r0,c0,c0,0 // write to INTCTL
         // Steer both BCU and PMU to IRQ
         mcr	p13,0,r0,c8,c0,0 // write to INTSTR
-
-	mov	r0,#0
-	mcr	p15,0,r0,c14,c8,0  // ibcr0
-	mcr	p15,0,r0,c14,c9,0  // ibcr1
-	mcr	p15,0,r0,c14,c4,0  // dbcon
-	mov	r0,#0x80000000
-	mcr	p14,0,r0,c10,c0,0  // dcsr
 
 	HEX_DISPLAY r0, r1, DISPLAY_0, DISPLAY_0
 

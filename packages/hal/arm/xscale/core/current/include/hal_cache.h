@@ -61,7 +61,7 @@
 #include <pkgconf/system.h>             // System-wide configuration info
 #include <cyg/hal/hal_io.h>             // DCACHE_FLUSH_AREA
 #include <cyg/infra/cyg_type.h>
-#include <cyg/hal/hal_verde.h>
+#include CYGBLD_HAL_VAR_H
 #include <cyg/hal/hal_mmu.h>
 
 //-----------------------------------------------------------------------------

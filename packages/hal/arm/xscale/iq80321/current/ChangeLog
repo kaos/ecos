@@ -1,3 +1,10 @@
+2002-09-19  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_RAM.ecm: Add CYGPKG_HAL_ARM_XSCALE_CORE.
+	* misc/redboot_RAM_ALTMAP.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+	* misc/redboot_ROM_ALTMAP.ecm: Ditto.
+
 2002-08-12  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROM.ecm: Remove CYGSEM_REDBOOT_ARM_LINUX_BOOT.

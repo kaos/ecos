@@ -60,12 +60,12 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_VERDE {
         necessary to select a specific target platform HAL
         package."
 
-    implements    CYGINT_HAL_ARM_ARCH_XSCALE
-
     # Let the architectural HAL see this variant's interrupts file
      define_proc {
         puts $::cdl_header \
        "#define CYGBLD_HAL_VAR_INTS_H <cyg/hal/hal_var_ints.h>"
+        puts $::cdl_header \
+       "#define CYGBLD_HAL_VAR_H <cyg/hal/hal_verde.h>"
 
         puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
     }

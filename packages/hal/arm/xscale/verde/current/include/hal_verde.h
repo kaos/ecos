@@ -54,134 +54,66 @@
 #define CYGONCE_HAL_ARM_XSCALE_HAL_VERDE_H
 
 #include <pkgconf/system.h>
-
-#ifdef __ASSEMBLER__
-	// Useful CPU macros
-
-	// Delay a bit
-	.macro DELAY_FOR cycles, reg0
-	ldr	\reg0, =\cycles
-	subs	\reg0, \reg0, #1
-	subne	pc,  pc, #0xc
-	.endm
-	
-	// wait for coprocessor write complete
-	.macro CPWAIT reg
-        mrc  p15,0,\reg,c2,c0,0
-	mov  \reg,\reg
-	sub  pc,pc,#4
-	.endm
-
-	// Enable the BTB
-	.macro BTB_INIT reg
-	mrc	p15, 0, \reg, c1, c0, 0
-	orr	\reg, \reg, #MMU_Control_BTB
-	mcr	p15, 0, \reg, c1, c0, 0
-	CPWAIT  \reg
-	.endm
-#else
-static inline void CPWAIT(void) {
-    cyg_uint32 tmp;
-    asm volatile ("mrc  p15,0,%0,c2,c0,0\n"
-		  "mov  %0,%0\n"
-		  "sub  pc,pc,#4" : "=r" (tmp));
-}
-#endif
-
-// Override the default MMU off code. This is intended
-// to be included in an inline asm statement.
-#define CYGARC_HAL_MMU_OFF(__paddr__)        \
-              "   mrc p15,0,r0,c1,c0,0\n"    \
-              "   bic r0,r0,#0x05\n"         \
-              "   b 99f\n"                   \
-              "   .p2align 5\n"              \
-              "99:\n"                        \
-              "   mcr p15,0,r0,c1,c0,0\n"    \
-              "   mrc p15,0,r0,c2,c0,0\n"    \
-              "   mov r0,r0\n"	             \
-              "   sub pc,pc,#4\n"            \
-              "   mov pc," #__paddr__ "\n"
-
-#ifdef __ASSEMBLER__
-
-#define REG8_VAL(a)  (a)
-#define REG16_VAL(a) (a)
-#define REG32_VAL(a) (a)
-
-#define REG8_PTR(a)  (a)
-#define REG16_PTR(a) (a)
-#define REG32_PTR(a) (a)
-
-#else /* __ASSEMBLER__ */
-
-#define REG8_VAL(a)  ((unsigned char)(a))
-#define REG16_VAL(a) ((unsigned short)(a))
-#define REG32_VAL(a) ((unsigned int)(a))
-
-#define REG8_PTR(a)  ((volatile unsigned char *)(a))
-#define REG16_PTR(a) ((volatile unsigned short *)(a))
-#define REG32_PTR(a) ((volatile unsigned int *)(a))
-
-#endif /* __ASSEMBLER__ */
+#include <cyg/hal/hal_xscale.h>
 
 
 // --------------------------------------------------------------------------
 // Address Translation Unit  (Chapter 3)
-#define ATU_ATUVID	REG16_PTR(0xffffe100)
-#define ATU_ATUDID	REG16_PTR(0xffffe102)
-#define ATU_ATUCMD	REG16_PTR(0xffffe104)
-#define ATU_ATUSR	REG16_PTR(0xffffe106)
-#define ATU_ATURID	REG8_PTR(0xffffe108)
-#define ATU_ATUCCR	REG8_PTR(0xffffe109)
-#define ATU_ATUCLSR	REG8_PTR(0xffffe10c)
-#define ATU_ATULT	REG8_PTR(0xffffe10d)
-#define ATU_ATUHTR	REG8_PTR(0xffffe10e)
-#define ATU_ATUBIST	REG8_PTR(0xffffe10f)
-#define ATU_IABAR0	REG32_PTR(0xffffe110)
-#define ATU_IAUBAR0	REG32_PTR(0xffffe114)
-#define ATU_IABAR1	REG32_PTR(0xffffe118)
-#define ATU_IAUBAR1	REG32_PTR(0xffffe11c)
-#define ATU_IABAR2	REG32_PTR(0xffffe120)
-#define ATU_IAUBAR2	REG32_PTR(0xffffe124)
-#define ATU_ASVIR	REG16_PTR(0xffffe12c)
-#define ATU_ASIR	REG16_PTR(0xffffe12e)
-#define ATU_ERBAR	REG32_PTR(0xffffe130)
-#define ATU_ATUILR	REG8_PTR(0xffffe13c)
-#define ATU_ATUIPR	REG8_PTR(0xffffe13d)
-#define ATU_ATUMGNT	REG8_PTR(0xffffe13e)
-#define ATU_ATUMLAT	REG8_PTR(0xffffe13f)
-#define ATU_IALR0	REG32_PTR(0xffffe140)
-#define ATU_IATVR0	REG32_PTR(0xffffe144)
-#define ATU_ERLR	REG32_PTR(0xffffe148)
-#define ATU_ERTVR	REG32_PTR(0xffffe14c)
-#define ATU_IALR1	REG32_PTR(0xffffe150)
-#define ATU_IALR2	REG32_PTR(0xffffe154)
-#define ATU_IATVR2	REG32_PTR(0xffffe158)
-#define ATU_OIOWTVR	REG32_PTR(0xffffe15c)
-#define ATU_OMWTVR0	REG32_PTR(0xffffe160)
-#define ATU_OUMWTVR0	REG32_PTR(0xffffe164)
-#define ATU_OMWTVR1	REG32_PTR(0xffffe168)
-#define ATU_OUMWTVR1	REG32_PTR(0xffffe16c)
-#define ATU_OUDWTVR	REG32_PTR(0xffffe178)
-#define ATU_ATUCR	REG32_PTR(0xffffe180)
-#define ATU_PCSR	REG32_PTR(0xffffe184)
-#define ATU_ATUISR	REG32_PTR(0xffffe188)
-#define ATU_ATUIMR	REG32_PTR(0xffffe18c)
-#define ATU_IABAR3	REG32_PTR(0xffffe190)
-#define ATU_IAUBAR3	REG32_PTR(0xffffe194)
-#define ATU_IALR3	REG32_PTR(0xffffe198)
-#define ATU_IATVR3	REG32_PTR(0xffffe19c)
-#define ATU_OCCAR	REG32_PTR(0xffffe1a4)
-#define ATU_OCCDR	REG32_PTR(0xffffe1ac)
-#define ATU_PDSCR	REG32_PTR(0xffffe1bc)
-#define ATU_PMCAPID	REG8_PTR(0xffffe1c0)
-#define ATU_PMNEXT	REG8_PTR(0xffffe1c1)
-#define ATU_APMCR	REG16_PTR(0xffffe1c2)
-#define ATU_APMCSR	REG16_PTR(0xffffe1c4)
-#define ATU_PCIXCAPID	REG8_PTR(0xffffe1e0)
-#define ATU_PCIXNEXT	REG8_PTR(0xffffe1e1)
-#define ATU_PCIXCMD	REG16_PTR(0xffffe1e2)
-#define ATU_PCIXSR	REG32_PTR(0xffffe1e4)
+#define ATU_ATUVID	REG16(0,0xffffe100)
+#define ATU_ATUDID	REG16(0,0xffffe102)
+#define ATU_ATUCMD	REG16(0,0xffffe104)
+#define ATU_ATUSR	REG16(0,0xffffe106)
+#define ATU_ATURID	REG8(0,0xffffe108)
+#define ATU_ATUCCR	REG8(0,0xffffe109)
+#define ATU_ATUCLSR	REG8(0,0xffffe10c)
+#define ATU_ATULT	REG8(0,0xffffe10d)
+#define ATU_ATUHTR	REG8(0,0xffffe10e)
+#define ATU_ATUBIST	REG8(0,0xffffe10f)
+#define ATU_IABAR0	REG32(0,0xffffe110)
+#define ATU_IAUBAR0	REG32(0,0xffffe114)
+#define ATU_IABAR1	REG32(0,0xffffe118)
+#define ATU_IAUBAR1	REG32(0,0xffffe11c)
+#define ATU_IABAR2	REG32(0,0xffffe120)
+#define ATU_IAUBAR2	REG32(0,0xffffe124)
+#define ATU_ASVIR	REG16(0,0xffffe12c)
+#define ATU_ASIR	REG16(0,0xffffe12e)
+#define ATU_ERBAR	REG32(0,0xffffe130)
+#define ATU_ATUILR	REG8(0,0xffffe13c)
+#define ATU_ATUIPR	REG8(0,0xffffe13d)
+#define ATU_ATUMGNT	REG8(0,0xffffe13e)
+#define ATU_ATUMLAT	REG8(0,0xffffe13f)
+#define ATU_IALR0	REG32(0,0xffffe140)
+#define ATU_IATVR0	REG32(0,0xffffe144)
+#define ATU_ERLR	REG32(0,0xffffe148)
+#define ATU_ERTVR	REG32(0,0xffffe14c)
+#define ATU_IALR1	REG32(0,0xffffe150)
+#define ATU_IALR2	REG32(0,0xffffe154)
+#define ATU_IATVR2	REG32(0,0xffffe158)
+#define ATU_OIOWTVR	REG32(0,0xffffe15c)
+#define ATU_OMWTVR0	REG32(0,0xffffe160)
+#define ATU_OUMWTVR0	REG32(0,0xffffe164)
+#define ATU_OMWTVR1	REG32(0,0xffffe168)
+#define ATU_OUMWTVR1	REG32(0,0xffffe16c)
+#define ATU_OUDWTVR	REG32(0,0xffffe178)
+#define ATU_ATUCR	REG32(0,0xffffe180)
+#define ATU_PCSR	REG32(0,0xffffe184)
+#define ATU_ATUISR	REG32(0,0xffffe188)
+#define ATU_ATUIMR	REG32(0,0xffffe18c)
+#define ATU_IABAR3	REG32(0,0xffffe190)
+#define ATU_IAUBAR3	REG32(0,0xffffe194)
+#define ATU_IALR3	REG32(0,0xffffe198)
+#define ATU_IATVR3	REG32(0,0xffffe19c)
+#define ATU_OCCAR	REG32(0,0xffffe1a4)
+#define ATU_OCCDR	REG32(0,0xffffe1ac)
+#define ATU_PDSCR	REG32(0,0xffffe1bc)
+#define ATU_PMCAPID	REG8(0,0xffffe1c0)
+#define ATU_PMNEXT	REG8(0,0xffffe1c1)
+#define ATU_APMCR	REG16(0,0xffffe1c2)
+#define ATU_APMCSR	REG16(0,0xffffe1c4)
+#define ATU_PCIXCAPID	REG8(0,0xffffe1e0)
+#define ATU_PCIXNEXT	REG8(0,0xffffe1e1)
+#define ATU_PCIXCMD	REG16(0,0xffffe1e2)
+#define ATU_PCIXSR	REG32(0,0xffffe1e4)
 
 #define PCSR_RESET_I_BUS 0x20
 #define PCSR_RESET_P_BUS 0x10
@@ -190,51 +122,51 @@ static inline void CPWAIT(void) {
 
 // --------------------------------------------------------------------------
 // Application Accelerator Unit  (Chapter 6)
-#define AAU_ACR     REG32_PTR(0xffffe800)
-#define AAU_ASR     REG32_PTR(0xffffe804)
-#define AAU_ADAR    REG32_PTR(0xffffe808)
-#define AAU_ANDAR   REG32_PTR(0xffffe80c)
-#define AAU_SAR1    REG32_PTR(0xffffe810)
-#define AAU_SAR2    REG32_PTR(0xffffe814)
-#define AAU_SAR3    REG32_PTR(0xffffe818)
-#define AAU_SAR4    REG32_PTR(0xffffe81c)
-#define AAU_DAR     REG32_PTR(0xffffe820)
-#define AAU_ABCR    REG32_PTR(0xffffe824)
-#define AAU_ADCR    REG32_PTR(0xffffe828)
-#define AAU_SAR5    REG32_PTR(0xffffe82c)
-#define AAU_SAR6    REG32_PTR(0xffffe830)
-#define AAU_SAR7    REG32_PTR(0xffffe834)
-#define AAU_SAR8    REG32_PTR(0xffffe838)
-#define AAU_EDCR0   REG32_PTR(0xffffe83c)
-#define AAU_SAR9    REG32_PTR(0xffffe840)
-#define AAU_SAR10   REG32_PTR(0xffffe844)
-#define AAU_SAR11   REG32_PTR(0xffffe848)
-#define AAU_SAR12   REG32_PTR(0xffffe84c)
-#define AAU_SAR13   REG32_PTR(0xffffe850)
-#define AAU_SAR14   REG32_PTR(0xffffe854)
-#define AAU_SAR15   REG32_PTR(0xffffe858)
-#define AAU_SAR16   REG32_PTR(0xffffe85c)
-#define AAU_EDCR1   REG32_PTR(0xffffe860)
-#define AAU_SAR17   REG32_PTR(0xffffe864)
-#define AAU_SAR18   REG32_PTR(0xffffe868)
-#define AAU_SAR19   REG32_PTR(0xffffe86c)
-#define AAU_SAR20   REG32_PTR(0xffffe870)
-#define AAU_SAR21   REG32_PTR(0xffffe874)
-#define AAU_SAR22   REG32_PTR(0xffffe878)
-#define AAU_SAR23   REG32_PTR(0xffffe87c)
-#define AAU_SAR24   REG32_PTR(0xffffe880)
-#define AAU_EDCR2   REG32_PTR(0xffffe884)
-#define AAU_SAR25   REG32_PTR(0xffffe888)
-#define AAU_SAR26   REG32_PTR(0xffffe88c)
-#define AAU_SAR27   REG32_PTR(0xffffe890)
-#define AAU_SAR28   REG32_PTR(0xffffe894)
-#define AAU_SAR29   REG32_PTR(0xffffe898)
-#define AAU_SAR30   REG32_PTR(0xffffe89c)
-#define AAU_SAR31   REG32_PTR(0xffffe8a0)
-#define AAU_SAR32   REG32_PTR(0xffffe8a4)
-#define AAU_RES0    REG32_PTR(0xffffe8a8)
-#define AAU_RES1    REG32_PTR(0xffffe900)
-#define AAU_RES2    REG32_PTR(0xfffff000)
+#define AAU_ACR     REG32(0,0xffffe800)
+#define AAU_ASR     REG32(0,0xffffe804)
+#define AAU_ADAR    REG32(0,0xffffe808)
+#define AAU_ANDAR   REG32(0,0xffffe80c)
+#define AAU_SAR1    REG32(0,0xffffe810)
+#define AAU_SAR2    REG32(0,0xffffe814)
+#define AAU_SAR3    REG32(0,0xffffe818)
+#define AAU_SAR4    REG32(0,0xffffe81c)
+#define AAU_DAR     REG32(0,0xffffe820)
+#define AAU_ABCR    REG32(0,0xffffe824)
+#define AAU_ADCR    REG32(0,0xffffe828)
+#define AAU_SAR5    REG32(0,0xffffe82c)
+#define AAU_SAR6    REG32(0,0xffffe830)
+#define AAU_SAR7    REG32(0,0xffffe834)
+#define AAU_SAR8    REG32(0,0xffffe838)
+#define AAU_EDCR0   REG32(0,0xffffe83c)
+#define AAU_SAR9    REG32(0,0xffffe840)
+#define AAU_SAR10   REG32(0,0xffffe844)
+#define AAU_SAR11   REG32(0,0xffffe848)
+#define AAU_SAR12   REG32(0,0xffffe84c)
+#define AAU_SAR13   REG32(0,0xffffe850)
+#define AAU_SAR14   REG32(0,0xffffe854)
+#define AAU_SAR15   REG32(0,0xffffe858)
+#define AAU_SAR16   REG32(0,0xffffe85c)
+#define AAU_EDCR1   REG32(0,0xffffe860)
+#define AAU_SAR17   REG32(0,0xffffe864)
+#define AAU_SAR18   REG32(0,0xffffe868)
+#define AAU_SAR19   REG32(0,0xffffe86c)
+#define AAU_SAR20   REG32(0,0xffffe870)
+#define AAU_SAR21   REG32(0,0xffffe874)
+#define AAU_SAR22   REG32(0,0xffffe878)
+#define AAU_SAR23   REG32(0,0xffffe87c)
+#define AAU_SAR24   REG32(0,0xffffe880)
+#define AAU_EDCR2   REG32(0,0xffffe884)
+#define AAU_SAR25   REG32(0,0xffffe888)
+#define AAU_SAR26   REG32(0,0xffffe88c)
+#define AAU_SAR27   REG32(0,0xffffe890)
+#define AAU_SAR28   REG32(0,0xffffe894)
+#define AAU_SAR29   REG32(0,0xffffe898)
+#define AAU_SAR30   REG32(0,0xffffe89c)
+#define AAU_SAR31   REG32(0,0xffffe8a0)
+#define AAU_SAR32   REG32(0,0xffffe8a4)
+#define AAU_RES0    REG32(0,0xffffe8a8)
+#define AAU_RES1    REG32(0,0xffffe900)
+#define AAU_RES2    REG32(0,0xfffff000)
 
 #define ACR_ENABLE   1
 #define ACR_RESUME   2
@@ -244,34 +176,34 @@ static inline void CPWAIT(void) {
 
 // --------------------------------------------------------------------------
 // Memory Controller  (Chapter 7)
-#define MCU_SDIR	REG32_PTR(0xffffe500)
-#define MCU_SDCR	REG32_PTR(0xffffe504)
-#define MCU_SDBR	REG32_PTR(0xffffe508)
-#define MCU_SBR0	REG32_PTR(0xffffe50c)
-#define MCU_SBR1	REG32_PTR(0xffffe510)
-#define MCU_ECCR	REG32_PTR(0xffffe534)
-#define MCU_ELOG0	REG32_PTR(0xffffe538)
-#define MCU_ELOG1	REG32_PTR(0xffffe53c)
-#define MCU_ECAR0	REG32_PTR(0xffffe540)
-#define MCU_ECAR1	REG32_PTR(0xffffe544)
-#define MCU_ECTST	REG32_PTR(0xffffe548)
-#define MCU_MCISR	REG32_PTR(0xffffe54c)
-#define MCU_RFR         REG32_PTR(0xffffe550)
-#define MCU_DBUDSR      REG32_PTR(0xffffe554)
-#define MCU_DBDDSR      REG32_PTR(0xffffe558)
-#define MCU_CUDSR       REG32_PTR(0xffffe55c)
-#define MCU_CDDSR       REG32_PTR(0xffffe560)
-#define MCU_CEUDSR      REG32_PTR(0xffffe564)
-#define MCU_CEDDSR      REG32_PTR(0xffffe568)
-#define MCU_CSUDSR      REG32_PTR(0xffffe56c)
-#define MCU_CSDDSR      REG32_PTR(0xffffe570)
-#define MCU_REUDSR      REG32_PTR(0xffffe574)
-#define MCU_REDDSR      REG32_PTR(0xffffe578)
-#define MCU_ABUDSR      REG32_PTR(0xffffe57c)
-#define MCU_ABDDSR      REG32_PTR(0xffffe580)
-#define MCU_DSDR        REG32_PTR(0xffffe584)
-#define MCU_REDR        REG32_PTR(0xffffe588)
-#define MCU_RES10       REG32_PTR(0xffffe58c)
+#define MCU_SDIR	REG32(0,0xffffe500)
+#define MCU_SDCR	REG32(0,0xffffe504)
+#define MCU_SDBR	REG32(0,0xffffe508)
+#define MCU_SBR0	REG32(0,0xffffe50c)
+#define MCU_SBR1	REG32(0,0xffffe510)
+#define MCU_ECCR	REG32(0,0xffffe534)
+#define MCU_ELOG0	REG32(0,0xffffe538)
+#define MCU_ELOG1	REG32(0,0xffffe53c)
+#define MCU_ECAR0	REG32(0,0xffffe540)
+#define MCU_ECAR1	REG32(0,0xffffe544)
+#define MCU_ECTST	REG32(0,0xffffe548)
+#define MCU_MCISR	REG32(0,0xffffe54c)
+#define MCU_RFR         REG32(0,0xffffe550)
+#define MCU_DBUDSR      REG32(0,0xffffe554)
+#define MCU_DBDDSR      REG32(0,0xffffe558)
+#define MCU_CUDSR       REG32(0,0xffffe55c)
+#define MCU_CDDSR       REG32(0,0xffffe560)
+#define MCU_CEUDSR      REG32(0,0xffffe564)
+#define MCU_CEDDSR      REG32(0,0xffffe568)
+#define MCU_CSUDSR      REG32(0,0xffffe56c)
+#define MCU_CSDDSR      REG32(0,0xffffe570)
+#define MCU_REUDSR      REG32(0,0xffffe574)
+#define MCU_REDDSR      REG32(0,0xffffe578)
+#define MCU_ABUDSR      REG32(0,0xffffe57c)
+#define MCU_ABDDSR      REG32(0,0xffffe580)
+#define MCU_DSDR        REG32(0,0xffffe584)
+#define MCU_REDR        REG32(0,0xffffe588)
+#define MCU_RES10       REG32(0,0xffffe58c)
 
 // Banksize specific component of SBRx register bits
 #define		SBR_32MEG	1
@@ -300,27 +232,27 @@ static inline void CPWAIT(void) {
 
 // --------------------------------------------------------------------------
 // Peripheral Bus Interface Unit  (Chapter 8)
-#define PBIU_PBCR	REG32_PTR(0xffffe680)
-#define PBIU_PBSR	REG32_PTR(0xffffe684)
-#define PBIU_PBAR0	REG32_PTR(0xffffe688)
-#define PBIU_PBLR0	REG32_PTR(0xffffe68c)
-#define PBIU_PBAR1	REG32_PTR(0xffffe690)
-#define PBIU_PBLR1	REG32_PTR(0xffffe694)
-#define PBIU_PBAR2	REG32_PTR(0xffffe698)
-#define PBIU_PBLR2	REG32_PTR(0xffffe69c)
-#define PBIU_PBAR3	REG32_PTR(0xffffe6a0)
-#define PBIU_PBLR3	REG32_PTR(0xffffe6a4)
-#define PBIU_PBAR4	REG32_PTR(0xffffe6a8)
-#define PBIU_PBLR4	REG32_PTR(0xffffe6ac)
-#define PBIU_PBAR5	REG32_PTR(0xffffe6b0)
-#define PBIU_PBLR5	REG32_PTR(0xffffe6b4)
-#define PBIU_PBVR0	REG32_PTR(0xffffe6c0)
-#define PBIU_PBVR1	REG32_PTR(0xffffe6c4)
-#define PBIU_PBVR2	REG32_PTR(0xffffe6c8)
-#define PBIU_PBVR3	REG32_PTR(0xffffe6cc)
-#define PBIU_PBVR4	REG32_PTR(0xffffe6d0)
-#define PBIU_PBVR5	REG32_PTR(0xffffe6d8)
-#define PBIU_PBVR6	REG32_PTR(0xffffe6dc)
+#define PBIU_PBCR	REG32(0,0xffffe680)
+#define PBIU_PBSR	REG32(0,0xffffe684)
+#define PBIU_PBAR0	REG32(0,0xffffe688)
+#define PBIU_PBLR0	REG32(0,0xffffe68c)
+#define PBIU_PBAR1	REG32(0,0xffffe690)
+#define PBIU_PBLR1	REG32(0,0xffffe694)
+#define PBIU_PBAR2	REG32(0,0xffffe698)
+#define PBIU_PBLR2	REG32(0,0xffffe69c)
+#define PBIU_PBAR3	REG32(0,0xffffe6a0)
+#define PBIU_PBLR3	REG32(0,0xffffe6a4)
+#define PBIU_PBAR4	REG32(0,0xffffe6a8)
+#define PBIU_PBLR4	REG32(0,0xffffe6ac)
+#define PBIU_PBAR5	REG32(0,0xffffe6b0)
+#define PBIU_PBLR5	REG32(0,0xffffe6b4)
+#define PBIU_PBVR0	REG32(0,0xffffe6c0)
+#define PBIU_PBVR1	REG32(0,0xffffe6c4)
+#define PBIU_PBVR2	REG32(0,0xffffe6c8)
+#define PBIU_PBVR3	REG32(0,0xffffe6cc)
+#define PBIU_PBVR4	REG32(0,0xffffe6d0)
+#define PBIU_PBVR5	REG32(0,0xffffe6d8)
+#define PBIU_PBVR6	REG32(0,0xffffe6dc)
 
 #define PBCR_ENABLE     1
 
@@ -368,16 +300,16 @@ static inline void CPWAIT(void) {
 
 // --------------------------------------------------------------------------
 // I2C (Chapter 9)
-#define I2C_ICR0	REG32_PTR(0xfffff680)
-#define I2C_ICR1	REG32_PTR(0xfffff6A0)
-#define I2C_ISR0	REG32_PTR(0xfffff684)
-#define I2C_ISR1	REG32_PTR(0xfffff6A4)
-#define I2C_ISAR0	REG32_PTR(0xfffff688)
-#define I2C_ISAR1	REG32_PTR(0xfffff6A8)
-#define I2C_IDBR0	REG32_PTR(0xfffff68c)
-#define I2C_IDBR1	REG32_PTR(0xfffff6Ac)
-#define I2C_IBMR0	REG32_PTR(0xfffff694)
-#define I2C_IBMR1	REG32_PTR(0xfffff6b4)
+#define I2C_ICR0	REG32(0,0xfffff680)
+#define I2C_ICR1	REG32(0,0xfffff6A0)
+#define I2C_ISR0	REG32(0,0xfffff684)
+#define I2C_ISR1	REG32(0,0xfffff6A4)
+#define I2C_ISAR0	REG32(0,0xfffff688)
+#define I2C_ISAR1	REG32(0,0xfffff6A8)
+#define I2C_IDBR0	REG32(0,0xfffff68c)
+#define I2C_IDBR1	REG32(0,0xfffff6Ac)
+#define I2C_IBMR0	REG32(0,0xfffff694)
+#define I2C_IBMR1	REG32(0,0xfffff6b4)
 
 // Control Register bits
 #define	ICR_START	0x0001  /* 1:send a Start condition to the I2C when in master mode */
@@ -415,14 +347,14 @@ static inline void CPWAIT(void) {
 
 // --------------------------------------------------------------------------
 // Timers (Chapter 14)
-#define TU_TMR0	    REG32_PTR(0xffffe7e0)
-#define TU_TMR1	    REG32_PTR(0xffffe7e4)
-#define TU_TCR0	    REG32_PTR(0xffffe7e8)
-#define TU_TCR1	    REG32_PTR(0xffffe7ec)
-#define TU_TRR0	    REG32_PTR(0xffffe7f0)
-#define TU_TRR1	    REG32_PTR(0xffffe7f4)
-#define TU_TISR	    REG32_PTR(0xffffe7f8)
-#define TU_WDTCR    REG32_PTR(0xffffe7fc)
+#define TU_TMR0	    REG32(0,0xffffe7e0)
+#define TU_TMR1	    REG32(0,0xffffe7e4)
+#define TU_TCR0	    REG32(0,0xffffe7e8)
+#define TU_TCR1	    REG32(0,0xffffe7ec)
+#define TU_TRR0	    REG32(0,0xffffe7f0)
+#define TU_TRR1	    REG32(0,0xffffe7f4)
+#define TU_TISR	    REG32(0,0xffffe7f8)
+#define TU_WDTCR    REG32(0,0xffffe7fc)
 
 #define TMR_TC      0x01  // terminal count
 #define TMR_ENABLE  0x02  // timer enable
@@ -462,11 +394,11 @@ static inline void TISR_WRITE(cyg_uint32 val) { _TISR_WRITE(val); }
 
 // --------------------------------------------------------------------------
 // Interrupts (Chapter 15)
-#define INTCTL	REG32_PTR(0xffffe7d0)
-#define INTSTR	REG32_PTR(0xffffe7d4)
-#define IINTSRC	REG32_PTR(0xffffe7d8)
-#define FINTSRC	REG32_PTR(0xffffe7dc)
-#define PIRSR	REG32_PTR(0xffffe1ec)
+#define INTCTL	REG32(0,0xffffe7d0)
+#define INTSTR	REG32(0,0xffffe7d4)
+#define IINTSRC	REG32(0,0xffffe7d8)
+#define FINTSRC	REG32(0,0xffffe7dc)
+#define PIRSR	REG32(0,0xffffe1ec)
 
 #ifndef __ASSEMBLER__
 #define INTCTL_READ(val)   asm volatile ("mrc p6, 0, %0, c0, c0, 0" : "=r" (val))
@@ -482,9 +414,9 @@ static inline void INTSTR_WRITE(cyg_uint32 val) { _INTSTR_WRITE(val); }
 
 // --------------------------------------------------------------------------
 // GPIO (Chapter 15)
-#define GPIO_GPOE	REG8_PTR(0xffffe7c4)
-#define GPIO_GPID	REG8_PTR(0xffffe7c8)
-#define GPIO_GPOD	REG8_PTR(0xffffe7cc)
+#define GPIO_GPOE	REG8(0,0xffffe7c4)
+#define GPIO_GPID	REG8(0,0xffffe7c8)
+#define GPIO_GPOD	REG8(0,0xffffe7cc)
 
 #endif // CYGONCE_HAL_ARM_XSCALE_HAL_VERDE_H
 // EOF hal_verde.h

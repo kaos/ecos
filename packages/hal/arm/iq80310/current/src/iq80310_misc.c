@@ -87,6 +87,8 @@ static cyg_uint32 nmi_sb_ISR(cyg_vector_t vector, cyg_addrword_t data);
 
 void hal_hardware_init(void)
 {
+    hal_xscale_core_init();
+
     // Route INTA-INTD to IRQ pin
     //   The Yavapai manual is incorrect in that a '1' value
     //   routes to the IRQ line, not a '0' value.
@@ -137,20 +139,6 @@ void hal_hardware_init(void)
                       : "=r"(rtmp) : );
     }
 #endif
-}
-
-#include CYGHWR_MEMORY_LAYOUT_H
-void __attribute__ ((naked)) iq80310_program_new_stack(void *func)
-{
-    asm volatile ("mov    r12,sp\n"
-                  "stmdb  sp!, {r4, r12, lr, pc}\n"
-                  "sub    r4,r12, #4\n"
-                  "mov    r12,#0xa0000000\n"
-                  "add    sp,r12,#0x1000000\n"
-                  "mov    lr,pc\n"
-                  "mov    pc,r0\n"
-                  "ldmdb  r4, {r4, sp, pc}\n");
-    return;
 }
 
 /*------------------------------------------------------------------------*/
@@ -995,187 +983,6 @@ void hal_interrupt_configure(int vector, int level, int up)
 void hal_interrupt_set_level(int vector, int level)
 {
 }
-
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-/*------------------------------------------------------------------------*/
-//  HW Debug support
-
-static inline void set_ibcr0(unsigned x)
-{
-    asm volatile ("mcr p15,0,%0,c14,c8,0" : : "r"(x) );
-}
-
-static inline unsigned get_ibcr0(void)
-{
-    unsigned x;
-    asm volatile ("mrc p15,0,%0,c14,c8,0" : "=r"(x) : );
-    return x;
-}
-
-static inline void set_ibcr1(unsigned x)
-{
-    asm volatile ("mcr p15,0,%0,c14,c9,0" : : "r"(x) );
-}
-
-static inline unsigned get_ibcr1(void)
-{
-    unsigned x;
-    asm volatile ("mrc p15,0,%0,c14,c9,0" : "=r"(x) : );
-    return x;
-}
-
-static inline void set_dbr0(unsigned x)
-{
-    asm volatile ("mcr p15,0,%0,c14,c0,0" : : "r"(x) );
-}
-
-static inline unsigned get_dbr0(void)
-{
-    unsigned x;
-    asm volatile ("mrc p15,0,%0,c14,c0,0" : "=r"(x) : );
-    return x;
-}
-
-static inline void set_dbr1(unsigned x)
-{
-    asm volatile ("mcr p15,0,%0,c14,c3,0" : : "r"(x) );
-}
-
-static inline unsigned get_dbr1(void)
-{
-    unsigned x;
-    asm volatile ("mrc p15,0,%0,c14,c3,0" : "=r"(x) : );
-    return x;
-}
-
-static inline void set_dbcon(unsigned x)
-{
-    asm volatile ("mcr p15,0,%0,c14,c4,0" : : "r"(x) );
-}
-
-static inline unsigned get_dbcon(void)
-{
-    unsigned x;
-    asm volatile ("mrc p15,0,%0,c14,c4,0" : "=r"(x) : );
-    return x;
-}
-
-static inline void set_dcsr(unsigned x)
-{
-    asm volatile ("mcr p14,0,%0,c10,c0,0" : : "r"(x) );
-}
-
-static inline unsigned get_dcsr(void)
-{
-    unsigned x;
-    asm volatile ("mrc p14,0,%0,c10,c0,0" : "=r"(x) : );
-    return x;
-}
-
-
-int cyg_hal_plf_hw_breakpoint(int setflag, void *vaddr, int len)
-{
-    unsigned int addr = (unsigned)vaddr;
-
-    if (setflag) {
-	if (!(get_ibcr0() & 1))
-	    set_ibcr0(addr | 1);
-	else if (!(get_ibcr1() & 1))
-	    set_ibcr1(addr | 1);
-	else
-	    return -1;
-    } else {
-	unsigned x = (addr | 1);
-	if (get_ibcr0() == x)
-	    set_ibcr0(0);
-	else if (get_ibcr1() == x)
-	    set_ibcr1(0);
-	else
-	    return -1;
-    }
-    return 0;
-}
-
-int cyg_hal_plf_hw_watchpoint(int setflag, void *vaddr, int len, int type)
-{
-    unsigned int mask, bit_nr, mode, addr = (unsigned)vaddr;
-    unsigned dbcon = get_dbcon();
-
-    mask = 0x80000000;
-    bit_nr = 31;
-    while (bit_nr) {
-	if (len & mask)
-	    break;
-	bit_nr--;
-	mask >>= 1;
-    }
-    mask = ~(0xffffffff << bit_nr);
-
-    if (setflag) {
-	/* set a watchpoint */
-	if (type == 2)
-	    mode = 1; // break on write
-	else if (type == 3)
-	    mode = 3; // break on read
-	else if (type == 4)
-	    mode = 2; // break on any access
-	else
-	    return 1;
-
-	if (!(dbcon & 3)) {
-	    set_dbr0(addr);
-	    set_dbr1(mask);
-	    set_dbcon(dbcon | mode | 0x100);
-	} else
-	    return 1;
-    } else {
-	/* clear a watchpoint */
-	if (dbcon & 3)
-	    set_dbcon(dbcon & ~3);
-	else
-	    return 1;
-    }
-    return 0;
-}
-
-// Return indication of whether or not we stopped because of a
-// watchpoint or hardware breakpoint. If stopped by a watchpoint,
-// also set '*data_addr_p' to the data address which triggered the
-// watchpoint.
-int cyg_hal_plf_is_stopped_by_hardware(void **data_addr_p)
-{
-    unsigned fsr, dcsr, dbcon, kind = 0;
-
-    // Check for debug event
-    asm volatile ("mrc p15,0,%0,c5,c0,0" : "=r"(fsr) : );
-    if ((fsr & 0x200) == 0)
-	return HAL_STUB_HW_STOP_NONE;
-
-    // There was a debug event. Check the MOE for details
-    dcsr = get_dcsr();
-    switch ((dcsr >> 2) & 7) {
-      case 1:  // HW breakpoint
-      case 3:  // BKPT breakpoint
-	return HAL_STUB_HW_STOP_BREAK;
-      case 2:  // Watchpoint
-	dbcon = get_dbcon();
-	if (dbcon & 0x100) {
-	    // dbr1 is used as address mask
-	    kind = dbcon & 3;
-	    *data_addr_p = (void *)get_dbr0();
-	}
-	if (kind == 1)
-	    return HAL_STUB_HW_STOP_WATCH;
-	if (kind == 2)
-	    return HAL_STUB_HW_STOP_AWATCH;
-	if (kind == 3)
-	    return HAL_STUB_HW_STOP_RWATCH;
-	// should never get here
-	break;
-    }
-    return HAL_STUB_HW_STOP_NONE;
-}
-#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 /*------------------------------------------------------------------------*/
 // EOF iq80310_misc.c
