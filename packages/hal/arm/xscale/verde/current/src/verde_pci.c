@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -103,7 +103,7 @@ pci_config_setup(cyg_uint32 bus, cyg_uint32 devfn, cyg_uint32 offset)
 #endif
 
     if (bus == localbus)
-	*ATU_OCCAR = ( (1 << (dev + 16)) | (fn << 8) | offset | 0 );
+        *ATU_OCCAR = ( (1 << (dev + 16)) | (dev << 11) | (fn << 8) | offset | 0 );
     else
         *ATU_OCCAR = ( (bus << 16) | (dev << 11) | (fn << 8) | offset | 1 );
 

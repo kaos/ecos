@@ -1,3 +1,9 @@
+2003-06-21  Mark Salter  <msalter@redhat.com>
+
+	* src/verde_pci.c (pci_config_setup): Add dev field to PCI-X Type 0
+	config cycles. 
+	* include/hal_verde.h: Define I2C registers as base+offset.
+
 2003-01-24  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_verde.h: Add some arbitatration unit defines.

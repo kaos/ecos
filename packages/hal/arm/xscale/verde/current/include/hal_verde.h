@@ -300,16 +300,25 @@
 
 // --------------------------------------------------------------------------
 // I2C (Chapter 9)
-#define I2C_ICR0	REG32(0,0xfffff680)
-#define I2C_ICR1	REG32(0,0xfffff6A0)
-#define I2C_ISR0	REG32(0,0xfffff684)
-#define I2C_ISR1	REG32(0,0xfffff6A4)
-#define I2C_ISAR0	REG32(0,0xfffff688)
-#define I2C_ISAR1	REG32(0,0xfffff6A8)
-#define I2C_IDBR0	REG32(0,0xfffff68c)
-#define I2C_IDBR1	REG32(0,0xfffff6Ac)
-#define I2C_IBMR0	REG32(0,0xfffff694)
-#define I2C_IBMR1	REG32(0,0xfffff6b4)
+#define I2C_BASE0       0xfffff680
+#define I2C_BASE1       0xfffff6A0
+
+#define I2C_ICR	        0x00
+#define I2C_ISR	        0x04
+#define I2C_ISAR	0x08
+#define I2C_IDBR	0x0c
+#define I2C_IBMR	0x14
+
+#define I2C_ICR0	REG32(I2C_BASE0,I2C_ICR)
+#define I2C_ICR1	REG32(I2C_BASE1,I2C_ICR)
+#define I2C_ISR0	REG32(I2C_BASE0,I2C_ISR)
+#define I2C_ISR1	REG32(I2C_BASE1,I2C_ISR)
+#define I2C_ISAR0	REG32(I2C_BASE0,I2C_ISAR)
+#define I2C_ISAR1	REG32(I2C_BASE1,I2C_ISAR)
+#define I2C_IDBR0	REG32(I2C_BASE0,I2C_IDBR)
+#define I2C_IDBR1	REG32(I2C_BASE1,I2C_IDBR)
+#define I2C_IBMR0	REG32(I2C_BASE0,I2C_IBMR)
+#define I2C_IBMR1	REG32(I2C_BASE1,I2C_IBMR)
 
 // Control Register bits
 #define	ICR_START	0x0001  /* 1:send a Start condition to the I2C when in master mode */

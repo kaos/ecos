@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -225,10 +225,8 @@ icache_boundary:
 	//
 
 	// Pointers to I2C Registers
-	ldr	r11, =I2C_ICR0		// address of the I2C Control Register in r11.
-	ldr	r12, =I2C_ISR0		// address of the I2C Status Register in r12.
-	ldr	r13, =I2C_IDBR0		// address of the I2C Data Buffer Register in r13.
-
+	ldr	r11, =I2C_BASE0		// base address of the I2C unit
+        
 	//  Write 0 to avoid interfering with I2C bus.
 	//  (See GPIO section in 80321 manual)
 	ldr	r2, =GPIO_GPOD
@@ -237,20 +235,19 @@ icache_boundary:
 
 	// Reset I2C Unit
 	mov	r1, #ICR_RESET
-	str	r1, [r11]
+	str	r1, [r11, #I2C_ICR0]
 	ldr	r1, =0x7ff
-	str	r1, [r12]
+	str	r1, [r11, #I2C_ISR0]
 	mov	r1, #0
-	str	r1, [r11]
+	str	r1, [r11, #I2C_ICR0]
 
 	//  Setup I2C Slave Address Register
-	ldr	r2, =I2C_ISAR0		// Load address of the I2C Slave Address Register in r2.
 	mov	r1, #I2C_DEVID		// Load slave address r1.
-	str	r1, [r2]		// Save the value 0x02 (I2C_DEVID) in the register.
+	str	r1, [r11, #I2C_ISAR0]	// Save the value 0x02 (I2C_DEVID) in the register.
 
 	//  Enable I2C Interface Unit - status will be polled
 	ldr	r1, =ICR_GCALL | ICR_ENB | ICR_SCLENB
-	str	r1, [r11]
+	str	r1, [r11, #I2C_ICR0]
 
 	//
 	//  *** Now read the SPD Data ***
@@ -266,8 +263,8 @@ icache_boundary:
 	mov	r10, #0		// Bank size
 	mov	r14, #0         // ECC flag
 
-	ldr	r0, [r12]		// Load I2C Status Reg into R0
-	str	r0, [r12]		// Clear status
+	ldr	r0, [r11, #I2C_ISR0]	// Load I2C Status Reg into R0
+	str	r0, [r11, #I2C_ISR0]	// Clear status
 
 	/*  FREE REGISTERS ARE R0 - R3 */
 
@@ -276,13 +273,13 @@ icache_boundary:
 	// Set SDRAM module address and write mode
 	mov	r1, #SDRAM_DEVID	// Load slave address for SDRAM module. 0xA2 (Presence Detect Data)
 	bic	r1, r1, #IDBR_MODE	// Clear read bit (bit #0)
-	str	r1, [r13]		// Store to data register
+	str	r1, [r11, #I2C_IDBR0]	// Store to data register
 
 	// Initiate dummy write to set EEPROM pointer to 0
-	ldr	r1, [r11]		// read the current Control Register value
+	ldr	r1, [r11, #I2C_ICR0]	// read the current Control Register value
 	bic	r1, r1,	#ICR_STOP	// No stop bit
 	orr	r1, r1,	#ICR_START | ICR_TRANSFER
-	str	r1, [r11]		// Store to control register
+	str	r1, [r11, #I2C_ICR0]	// Store to control register
 
 	// ====================================================================
 	HEX_DISPLAY r0, r1, DISPLAY_9, DISPLAY_0
@@ -292,10 +289,10 @@ icache_boundary:
 	mov	r1, #I2C_TIMOUT		// Initialize I2C timeout counter
     0:	subs	r1, r1, #1		// Increment I2C timeout counter (r1 = r1 + 1)
 	beq	i2c_error		// Kick out of SDRAM initialization if timeout occurs
-	ldr	r0, [r12]		// Load I2C Status Reg into R0
+	ldr	r0, [r11, #I2C_ISR0]	// Load I2C Status Reg into R0
 	ands	r3, r0, #ISR_EMPTY	// Bit #6 is checked, IDBR Transmit Empty
 	beq	0b			// If bit = 0 then branch to 0 and check again
-	str	r0, [r12]		// Write back status to clear
+	str	r0, [r11, #I2C_ISR0]	// Write back status to clear
 
 	// ====================================================================
 	HEX_DISPLAY r0, r1, DISPLAY_9, DISPLAY_1
@@ -303,13 +300,13 @@ icache_boundary:
 		
 	// Write pointer register on EEPROM to 0x00000000
 	mov	r1, #0			// Load base address of SDRAM module EEPROM
-	str	r1, [r13]	        // Store to data register
+	str	r1, [r11, #I2C_IDBR0]   // Store to data register
 
 	//  Send address to EEPROM
-	ldr	r1, [r11]		// read the current Control Register value
+	ldr	r1, [r11, #I2C_ICR0]	// read the current Control Register value
 	bic	r1, r1,	#ICR_START | ICR_STOP
 	orr	r1, r1, #ICR_TRANSFER	// Set transfer bit - bit is self_clearing
-	str	r1, [r11]		// Store to control register
+	str	r1, [r11, #I2C_ICR0]	// Store to control register
 
 	// ====================================================================
 	HEX_DISPLAY r0, r1, DISPLAY_9, DISPLAY_2
@@ -319,10 +316,10 @@ icache_boundary:
 	mov	r1, #I2C_TIMOUT		// Initialize I2C timeout counter
     0:	subs	r1, r1, #1		// Increment I2C timeout counter (r1 = r1 + 1)
 	beq	i2c_error		// Kick out of SDRAM initialization if timeout occurs
-	ldr	r0, [r12]		// Load I2C Status Reg into R0 -  ld	(r12), r10
+	ldr	r0, [r11, #I2C_ISR0]	// Load I2C Status Reg into R0
 	ands	r3, r0, #ISR_EMPTY	// Bit #6 is checked, IDBR Transmit Empty
 	beq	0b			// If bit = 0 then branch to 0 and check again
-	str	r0, [r12]		// Write back status to clear
+	str	r0, [r11, #I2C_ISR0]	// Write back status to clear
 1:
 	// ====================================================================
 	HEX_DISPLAY r0, r1, DISPLAY_9, DISPLAY_3
@@ -335,22 +332,22 @@ icache_boundary:
 	//  Set SDRAM module address and read mode
 	mov	r0, #SDRAM_DEVID	// Load slave address for SDRAM module (0xA2)
 	orr	r1, r0, #IDBR_MODE	// Set read bit (bit #0)
-	str	r1, [r13]		// Store to data register
+	str	r1, [r11, #I2C_IDBR0]	// Store to data register
 
 	//  Send next read request
-	ldr	r1, [r11]		// read the current Control Register value
+	ldr	r1, [r11, #I2C_ICR0]	// read the current Control Register value
 	bic	r1, r1,	#ICR_STOP	// No stop bit
 	orr	r1, r1,	#ICR_START | ICR_TRANSFER
-	str	r1, [r11]		// Store to control register
+	str	r1, [r11, #I2C_ICR0]	// Store to control register
 
 	// Wait for transmit empty status
 	mov	r1, #I2C_TIMOUT		// Initialize I2C timeout counter
     0:	subs	r1, r1, #1		// Increment I2C timeout counter (r1 = r1 + 1)
 	beq	i2c_error		// Kick out of SDRAM initialization if timeout occurs
-	ldr	r0, [r12]		// Load I2C Status Reg into R0 -  ld	(r12), r10
+	ldr	r0, [r11, #I2C_ISR0]	// Load I2C Status Reg into R0
 	ands	r3, r0, #ISR_EMPTY	// Bit #6 is checked, IDBR Transmit Empty
 	beq	0b			// If bit = 0 then branch to 0 and check again
-	str	r0, [r12]		// Write back status to clear
+	str	r0, [r11, #I2C_ISR0]	// Write back status to clear
 
 	// ====================================================================
 	HEX_DISPLAY r0, r1, DISPLAY_9, DISPLAY_4
@@ -359,7 +356,7 @@ icache_boundary:
   spd_loop:
 	// read the next Byte of Serial Presence Detect data
 
-	ldr	r1, [r11]		// read the current Control Register value
+	ldr	r1, [r11, #I2C_ICR0]	// read the current Control Register value
 	bic	r1, r1,	#ICR_START	// No start bit (already started)
 	orr	r1, r1, #ICR_TRANSFER	// Set transfer bit - bit is self_clearing
 
@@ -367,18 +364,18 @@ icache_boundary:
 	add     r2, r6, #1
 	cmp	r2, r7			// r7 = 64 (decimal) so if r6 = 64, this is the last byte to be read
 	orreq	r1, r1, #ICR_ACK | ICR_STOP
-	str	r1, [r11]		// Store to control register
+	str	r1, [r11, #I2C_ICR0]	// Store to control register
 
 	// Wait for read full status
 	mov	r1, #I2C_TIMOUT		// Initialize I2C timeout counter
     0:	subs	r1, r1, #1		// decrement timeout
 	beq	i2c_error		// Kick out of SDRAM initialization if timeout occurs
-	ldr	r0, [r12]		// Load I2C Status Reg into R0
+	ldr	r0, [r11, #I2C_ISR0]	// Load I2C Status Reg into R0
 	ands	r3, r0, #ISR_FULL	// Bit #7 is checked
 	beq	0b			// If bit = 0 then branch to 0 and check again
-	str	r0, [r12]		// Write back status to clear
+	str	r0, [r11, #I2C_ISR0]	// Write back status to clear
 
-	ldr	r1, [r13] 		// Read the byte
+	ldr	r1, [r11, #I2C_IDBR0]	// Read the byte
 
 	// check for checksum byte
 	subs	r2, r6, #SPD_CHECKSUM
@@ -545,9 +542,9 @@ icache_boundary:
 	b i2c_error
     i2c_disable:
 	//  Disable I2C Interface Unit
-	ldr	r1, [r11] 
+	ldr	r1, [r11, #I2C_ICR0] 
 	bic	r1, r1, #ICR_ENB | ICR_SCLENB	// Disable I2C unit
-	str	r1, [r11]
+	str	r1, [r11, #I2C_ICR0]
 	
 	// At this point, r4 = SDRAM size in bytes, r8 = Bank count, r10 = bank size in MB
 
@@ -773,6 +770,8 @@ icache_boundary:
 	mov	r0, #0xc
         ldr     r1, =ATU_IABAR1
 	str     r0, [r1]
+0        ldr     r1, =ATU_IABAR2
+        str     r0, [r1]
 	mov	r0, #0
         ldr     r1, =ATU_IAUBAR1
 	str     r0, [r1]
