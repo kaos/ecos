@@ -2,6 +2,8 @@
 # these lines restart using the tcl shell \
   exec sh -c "if ( echo | tclsh ) 2>/dev/null ; then \
       exec tclsh \"${0}\" ${1+${*}} ; \
+    elif ( echo | tclsh83 ) 2>/dev/null ; then \
+      exec tclsh83 \"${0}\" ${1+${*}} ; \
     elif ( echo | cygtclsh80 ) 2>/dev/null ; then \
       exec cygtclsh80 \"${0}\" ${1+${*}} ; \
     else \
