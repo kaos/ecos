@@ -123,7 +123,7 @@
 #define S_IRWXO  (S_IROTH|S_IWOTH|S_IXOTH)
 
 #define S_ISUID  (1<<25)
-#define S_ISGID  (1<<25)
+#define S_ISGID  (1<<26)
 
 
 struct stat {

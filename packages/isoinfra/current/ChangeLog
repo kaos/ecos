@@ -1,3 +1,7 @@
+2003-07-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/stat.h (S_ISGID): Please, somebody teach me to count!
+
 2003-07-10  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/sys/stat.h :S_I[RWX]{USR|GRP|OTH} etc changed so they
