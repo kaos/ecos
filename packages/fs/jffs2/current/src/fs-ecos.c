@@ -607,15 +607,16 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 		free(c->blocks);
 		free(c->inocache_list);
 		free(jffs2_sb);
-		// Clear root pointer
+		// Clear superblock & root pointer
 		mte->root = CYG_DIR_NULL;
+                mte->data = 0;
 		mte->fs->data = 0;	// fstab entry, visible to all mounts. No current mount
 		// That's all folks.
 		D2(printf("jffs2_umount No current mounts\n"));
-	}
-	
-        jffs2_sb->s_mount_count--;
-
+	} else {
+          jffs2_sb->s_mount_count--;
+        }
+        
 	return ENOERR;
 }
 

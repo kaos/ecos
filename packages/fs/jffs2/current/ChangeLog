@@ -1,3 +1,7 @@
+2003-09-23  Thomas Koeller  <thomas.koeller@baslerweb.com>
+                                                                               
+        * src/fs-ecos.c: Another umount() fix.
+
 2003-09-23  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/fs-ecos.c: Added test to detect known broken ARM compiler
