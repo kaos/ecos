@@ -1,3 +1,21 @@
+2003-08-22  Chris Garry <cgarry@sweeneydesign.co.uk>
+
+    * cdl/microwindows.cdl
+    Added support for VNC server.
+    
+    * src/include/device.h:
+    Remove COLOR2PIXEL555 hack for strongarm lcd when VNC server screen
+    driver is used.
+    
+    * src/nanox/clientfb.c:
+    Removed assumption that CYGPKG_HAL_ARM means target is a strongarm
+    lcd when VNC server is used.
+    
+    * src/drivers/kbd_vnc_ecos.c:
+    * src/drivers/mou_vnc_ecos.c:
+    * src/drivers/scr_vnc_ecos.c:
+    New keyboard, mouse and screen drivers for VNC server.
+
 2003-07-21  Chris Garry <cgarry@sweeneydesign.co.uk>
 
     * src/nanox/client.c

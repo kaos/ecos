@@ -143,6 +143,27 @@ cdl_package CYGPKG_MICROWINDOWS {
         compile ecos/ecos_init.c ecos/nanox_thread.c
     }
 
+    # eCos VNC server drivers
+    cdl_option CYGBLD_MICROWINDOWS_VNC_DRIVERS {
+        display   "Build MicroWindows VNC server drivers"
+        default_value 0
+        description \
+            "This option builds the drivers for the VNC server.  The VNC server
+             then provides a virtual screen, keyboard and mouse for MicroWindows."
+
+        compile                     \
+            drivers/scr_vnc_ecos.c  \
+            drivers/kbd_vnc_ecos.c  \
+            drivers/mou_vnc_ecos.c
+            
+        requires CYGBLD_MICROWINDOWS_ECOS
+        requires CYGBLD_MICROWINDOWS_NANOWM
+        requires CYGPKG_VNC_SERVER
+        requires !CYGBLD_MICROWINDOWS_ARM_DRIVERS
+        requires CYGPKG_VNC_SERVER_BUILD_MOUSE_DRIVER
+        requires CYGPKG_VNC_SERVER_BUILD_KEYBOARD_DRIVER
+    }
+
     # eCos ARM drivers
     cdl_option CYGBLD_MICROWINDOWS_ARM_DRIVERS {
         display   "Build MicroWindows ARM drivers"
@@ -152,6 +173,7 @@ cdl_package CYGPKG_MICROWINDOWS {
             drivers/scr_ecos.c                  \
             drivers/kbd_ipaq.c			\
             drivers/mou_ipaq.c
+
 
         requires CYGBLD_MICROWINDOWS_ECOS
         requires CYGBLD_MICROWINDOWS_NANOWM
@@ -167,7 +189,7 @@ cdl_package CYGPKG_MICROWINDOWS {
     cdl_component CYGPKG_MICROWINDOWS_PC {
 	display     "Build options for PC hardware"
 	flavor      none
-	active_if   CYGPKG_HAL_I386_PCMB
+    active_if   (CYGPKG_HAL_I386_PCMB && !CYGBLD_MICROWINDOWS_VNC_DRIVERS)
 	compile     drivers/ps2kbdmou_ecos.c
 	
 	requires CYGBLD_MICROWINDOWS_ECOS

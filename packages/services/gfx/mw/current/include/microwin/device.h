@@ -8,6 +8,7 @@
  * Contents of this file are not for general export
  */
 #include "mwtypes.h"				/* public export typedefs*/
+#include <pkgconf/microwindows.h>   /* CYGBLD_MICROWINDOWS_VNC_DRIVERS */
 
 /* Changeable limits and options*/
 #define ALPHABLEND	1			/* =1 to include blending code*/
@@ -291,10 +292,12 @@ typedef struct {
 	((((c) & 0xf8) << 8) | (((c) & 0xfc00) >> 5) | (((c) & 0xf80000) >> 19))
 
 /* create 16 bit 5/5/5 format pixel from RGB colorval (0x00BBGGRR)*/
-#if 0
+#ifdef CYGBLD_MICROWINDOWS_VNC_DRIVERS
+    /* Real RGB555 data is required for VNC drivers */
 #define COLOR2PIXEL555(c)	\
 	((((c) & 0xf8) << 7) | (((c) & 0xf800) >> 6) | (((c) & 0xf80000) >> 19))
 #else
+   /* BGR555 data is required strongarm LCD */
 #define COLOR2PIXEL555(c)	\
 	((((c) & 0xf8) >> (3-0)) | (((c) & 0xf800) >> (11-5)) | (((c) & 0xf80000) >> (19-10)))
 #endif

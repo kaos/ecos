@@ -9,8 +9,11 @@
 #include <fcntl.h>
 #ifdef __ECOS
 # include <pkgconf/system.h>
+#include <pkgconf/microwindows.h>   /* CYGBLD_MICROWINDOWS_VNC_DRIVERS */
+# ifndef CYGBLD_MICROWINDOWS_VNC_DRIVERS
 # ifdef CYGPKG_HAL_ARM
 #  include <cyg/hal/lcd_support.h>
+# endif
 # endif
 #else
 #include <sys/ioctl.h>
@@ -55,6 +58,7 @@ GrOpenClientFramebuffer(void)
 		return NULL;
 
 #ifdef __ECOS
+# ifndef CYGBLD_MICROWINDOWS_VNC_DRIVERS
 # ifdef CYGPKG_HAL_ARM
     {
         struct lcd_info li;
@@ -69,6 +73,7 @@ GrOpenClientFramebuffer(void)
         return physpixels;
     }
 # endif        
+# endif
 #else
 	/*
 	 * Try to open the framebuffer directly.
