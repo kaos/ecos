@@ -1,3 +1,9 @@
+2004-04-29  Sebastien Couret  <sebastien.couret@elios-informatique.com>
+2004-04-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/flashiodev.c: When checking flash upper bound, allow for end
+	of flash at 0xffffffff.
+
 2003-11-27  David Woodhouse  <dwmw2@infradead.org>
 
 	* src/flashiodev.c: Enable set_config() and implement

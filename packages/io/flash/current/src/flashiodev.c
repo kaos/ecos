@@ -126,7 +126,7 @@ flashiodev_bread( cyg_io_handle_t handle, void *buf, cyg_uint32 *len,
 
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
     char *endpos = startpos + *len - 1;
-    char *flashend = MIN( (char *)flash_info.end, dev->end);
+    char *flashend = MIN( (char *)flash_info.end - 1, dev->end - 1);
     if ( startpos < dev->start )
         return -EINVAL;
     if ( endpos > flashend )
@@ -154,7 +154,7 @@ flashiodev_bwrite( cyg_io_handle_t handle, const void *buf, cyg_uint32 *len,
 
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
     char *endpos = startpos + *len - 1;
-    char *flashend = MIN( (char *)flash_info.end, dev->end);
+    char *flashend = MIN( (char *)flash_info.end - 1, dev->end - 1);
     if ( startpos < dev->start )
         return -EINVAL;
     if ( endpos > flashend )
@@ -188,8 +188,8 @@ flashiodev_get_config( cyg_io_handle_t handle,
 
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
             char *endpos = startpos + e->len - 1;
-		    char *flashend = MIN( (char *)flash_info.end, dev->end);
-			if ( startpos < dev->start )
+            char *flashend = MIN( (char *)flash_info.end - 1, dev->end - 1);
+            if ( startpos < dev->start )
                 return -EINVAL;
             if ( endpos > flashend )
                 return -EINVAL;
@@ -218,7 +218,7 @@ flashiodev_get_config( cyg_io_handle_t handle,
             (cyg_io_flash_getconfig_blocksize_t *)buf;
 #ifdef CYGPKG_INFRA_DEBUG // don't bother checking this all the time
        char *startpos = dev->start + b->offset;
-	    char *flashend = MIN( (char *)flash_info.end, dev->end);
+	    char *flashend = MIN( (char *)flash_info.end - 1, dev->end - 1);
 
         if ( startpos < dev->start )
             return -EINVAL;
@@ -244,8 +244,10 @@ flashiodev_set_config( cyg_io_handle_t handle,
                        const void* buf,
                        cyg_uint32* len)
 {
+#ifdef CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1
 	struct cyg_devtab_entry *tab = (struct cyg_devtab_entry *)handle;
 	struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
+#endif
 
     switch (key) {
 #ifdef CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1
