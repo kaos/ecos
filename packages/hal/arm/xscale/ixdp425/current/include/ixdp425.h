@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -62,10 +62,18 @@
 // These must match setup in the page table in hal_platform_extras.h
 #define SDRAM_PHYS_BASE                    0x00000000
 #define SDRAM_BASE                         0x00000000
-#define SDRAM_UNCACHED_BASE                0x10000000
+#define SDRAM_ALIAS_BASE                   0x10000000
+#define SDRAM_UNCACHED_BASE                0x20000000
+#define SDRAM_DC_BASE                      0x30000000
 #define SDRAM_SIZE                         0x10000000  // 256MB
 
-#define IXDP425_LED_DATA                   REG16(0, 0x52000000)
+#define IXDP425_LED_BASE                   0x52000000
+#define IXDP425_LED_SIZE                   0x00100000
+#define IXDP425_LED_DATA                   REG16(0, IXDP425_LED_BASE)
+
+#define IXDP_FLASH_BASE                    0x50000000
+#define IXDP_FLASH_SIZE                    0x01000000
+#define IXDP_FLASH_DC_BASE                 0xA0000000
 
 // CS0 (flash optimum timing)
 #define IXP425_EXP_CS0_INIT \

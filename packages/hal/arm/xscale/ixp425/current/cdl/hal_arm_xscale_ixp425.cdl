@@ -65,7 +65,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXP425 {
         package."
 
     # Let the architectural HAL see this variant's interrupts file
-     define_proc {
+    define_proc {
         puts $::cdl_header \
        "#define CYGBLD_HAL_VAR_INTS_H <cyg/hal/hal_var_ints.h>"
         puts $::cdl_header \
@@ -198,11 +198,14 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXP425 {
         description   "
             This option lists the target's requirements for a valid Redboot
             configuration."
+	compile -library=libextras.a ixp425_redboot.c
 
         # RedBoot details
         requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT != 0 }
         define_proc {
             puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0x00001f00"
+            puts $::cdl_header "#define HAL_FLASH_READ(a,b,c,d) hal_flash_read((a),(b),(c),(d))"
+            puts $::cdl_header "#define HAL_FLASH_PROGRAM(a,b,c,d) hal_flash_program((a),(b),(c),(d))"
         }
     }
 }

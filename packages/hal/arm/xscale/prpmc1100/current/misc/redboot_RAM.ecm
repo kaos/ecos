@@ -112,6 +112,3 @@ cdl_option CYGPKG_HAL_GDB_FILEIO {
     user_value 1
 };
 
-cdl_option CYGOPT_DEVS_FLASH_STRATA_NOT_IN_RAM {
-   inferred_value 0
-};

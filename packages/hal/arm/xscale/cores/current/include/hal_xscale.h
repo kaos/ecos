@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -93,11 +93,22 @@ static inline void CPWAIT(void) {
 }
 #endif
 
-// Override the default MMU off code. This is intended
-// to be included in an inline asm statement.
-#define CYGARC_HAL_MMU_OFF(__paddr__)        \
-              "   mrc p15,0,r0,c1,c0,0\n"    \
+#define __CYGARC_GET_CTLREG \
+              "   mrc p15,0,r0,c1,c0,0\n"
+
+#define __CYGARC_CLR_MMU_BITS \
+              "   bic r0,r0,#0x05\n"
+
+#ifdef CYGHWR_HAL_ARM_BIGENDIAN
+#define __CYGARC_CLR_MMU_BITS_X \
+              "   bic r0,r0,#0x85\n"
+#else
+#define __CYGARC_CLR_MMU_BITS_X \
               "   bic r0,r0,#0x05\n"         \
+              "   orr r0,r0,#0x80\n"
+#endif
+
+#define __CYGARC_SET_CTLREG(__paddr__) \
               "   b 99f\n"                   \
               "   .p2align 5\n"              \
               "99:\n"                        \
@@ -106,6 +117,19 @@ static inline void CPWAIT(void) {
               "   mov r0,r0\n"	             \
               "   sub pc,pc,#4\n"            \
               "   mov pc," #__paddr__ "\n"
+
+
+// Override the default MMU off code. This is intended
+// to be included in an inline asm statement.
+#define CYGARC_HAL_MMU_OFF(__paddr__)        \
+    __CYGARC_GET_CTLREG                      \
+    __CYGARC_CLR_MMU_BITS                    \
+    __CYGARC_SET_CTLREG(__paddr__)
+
+#define CYGARC_HAL_MMU_OFF_X(__paddr__)      \
+    __CYGARC_GET_CTLREG                      \
+    __CYGARC_CLR_MMU_BITS_X                  \
+    __CYGARC_SET_CTLREG(__paddr__)
 
 #ifdef __ASSEMBLER__
 

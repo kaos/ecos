@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -89,6 +89,17 @@
 .word (\base << 12) | (\x << 6) | (\ap << 4) | (\c << 3) | (\b << 2) | 3
 .endm
 
+.macro XSCALE_MMU_SECTION abase vbase size cache buff access x p
+        ldr     r0, =(0x4000 + (\vbase << 2))
+        ldr     r1, =(0x4000 + (\vbase << 2) + (\size << 2))
+        ldr     r2, =((\abase << 20) + (\x << 12) + (\access << 10) + (\p << 9) + (\cache << 3) + (\buff << 2) + 2)
+     981:
+        str     r2, [r0], #4
+        add     r2, r2, #(1 << 20)
+        cmp     r0, r1
+        bne     981b
+.endm
+
 #else
 
 // -------------------------------------------------------------------------
@@ -133,7 +144,8 @@ struct ARM_MMU_FIRST_LEVEL_SECTION {
     unsigned int domain : 4;
     unsigned int p : 1;
     unsigned int ap : 2;
-    unsigned int tex : 8;
+    unsigned int x : 1;
+    unsigned int tex : 7;
     unsigned int base_address : 12;
 };
 #define ARM_MMU_FIRST_LEVEL_SECTION_ID 0x2
@@ -150,7 +162,7 @@ struct ARM_MMU_FIRST_LEVEL_RESERVED {
 #define ARM_FIRST_LEVEL_PAGE_TABLE_SIZE 0x4000
 
 #define ARM_MMU_SECTION(ttb_base, actual_base, virtual_base,              \
-                        cacheable, bufferable, perm)                      \
+                        cacheable, bufferable, perm, xbit, pbit)          \
     CYG_MACRO_START                                                       \
         register union ARM_MMU_FIRST_LEVEL_DESCRIPTOR desc;               \
                                                                           \
@@ -161,18 +173,29 @@ struct ARM_MMU_FIRST_LEVEL_RESERVED {
         desc.section.b = (bufferable);                                    \
         desc.section.ap = (perm);                                         \
         desc.section.base_address = (actual_base);                        \
+        desc.section.x = (xbit);                                          \
+        desc.section.p = (pbit);                                          \
         *ARM_MMU_FIRST_LEVEL_DESCRIPTOR_ADDRESS(ttb_base, (virtual_base)) \
                             = desc.word;                                  \
     CYG_MACRO_END
 
-#define X_ARM_MMU_SECTION(abase,vbase,size,cache,buff,access)      \
-    { int i; int j = abase; int k = vbase;                         \
-      for (i = size; i > 0 ; i--,j++,k++)                          \
-      {                                                            \
-        ARM_MMU_SECTION(ttb_base, j, k, cache, buff, access);      \
-      }                                                            \
+#define X_ARM_MMU_SECTION(abase,vbase,size,cache,buff,access)       \
+    { int i; int j = abase; int k = vbase;                          \
+      for (i = size; i > 0 ; i--,j++,k++)                           \
+      {                                                             \
+        ARM_MMU_SECTION(ttb_base, j, k, cache, buff, access, 0, 0); \
+      }                                                             \
     }
 
+
+#define XSCALE_MMU_SECTION(abase,vbase,size,cache,buff,access, x, p)  \
+    { int i; int j = abase; int k = vbase;                            \
+      for (i = size; i > 0 ; i--,j++,k++)                             \
+      {                                                               \
+        ARM_MMU_SECTION(ttb_base, j, k, cache, buff, access, x, p);   \
+      }                                                               \
+      }
+  
 union ARM_MMU_FIRST_LEVEL_DESCRIPTOR {
     unsigned long word;
     struct ARM_MMU_FIRST_LEVEL_FAULT fault;

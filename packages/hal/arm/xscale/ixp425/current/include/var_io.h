@@ -11,7 +11,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -229,6 +229,12 @@ extern void cyg_hal_plf_pci_translate_interrupt(cyg_uint32 bus, cyg_uint32 devfn
 
 #define HAL_IO_MACROS_DEFINED
 
+//-----------------------------------------------------------------------------
+// HAL flash functions.
+// These perform special operations between RedBoot and the flash driver.
+
+externC int hal_flash_read(void *addr, void *data, int len, void **err);
+externC int hal_flash_program(void *addr, void *data, int len, void **err);
 
 #endif // CYGONCE_HAL_ARM_IXP425_VAR_IO_H
 // EOF var_io.h

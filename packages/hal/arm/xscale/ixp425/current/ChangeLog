@@ -1,3 +1,11 @@
+2004-09-02  Mark Salter  <msalter@redhat.com>
+
+	* include/var_io.h: Add externs for hal_flash_{read,program}.
+	* include/hal_ixp425.h: Add more register related defines.
+	* cdl/hal_arm_xscale_ixp425.cdl: Add little-endian support.
+	* src/ixp425_pci.c: Ditto.
+	* src/ixp425_redboot.c: New file.
+
 2003-12-05  David Vrabel  <dvrabel@arcom.com>
 
 	* include/hal_diag.h: hal_delay_us() is a C function.

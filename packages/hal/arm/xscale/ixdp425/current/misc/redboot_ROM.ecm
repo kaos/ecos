@@ -24,6 +24,7 @@ cdl_configuration eCos {
     package -template CYGPKG_REDBOOT current ;
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
+    package -template CYGPKG_CRC current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
     package CYGPKG_MEMALLOC current ;
@@ -119,6 +120,14 @@ cdl_option CYGBLD_ISO_DNS_HEADER {
 };
 
 cdl_option CYGPKG_HAL_GDB_FILEIO {
+    user_value 1
+};
+
+cdl_option CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH {
+    user_value 1
+}
+ 
+cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
     user_value 1
 };
 

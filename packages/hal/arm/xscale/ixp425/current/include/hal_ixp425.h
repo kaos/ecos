@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -57,8 +57,19 @@
 #include <cyg/hal/hal_xscale.h>
 
 // --------------------------------------------------------------------------
+#define IXP425_PCI_WINDOW_BASE     0x48000000
+#define IXP425_PCI_WINDOW_SIZE     0x04000000
+
+#define IXP425_QMGR_BASE           0x60000000
+#define IXP425_QMGR_SIZE           0x04000000
+
+#define IXP425_MISC_CFG_BASE       0xC8000000
+#define IXP425_MISC_CFG_SIZE       0x00100000
+
+// --------------------------------------------------------------------------
 // PCI Registers  (Chapter 6)
 #define IXP425_PCI_CFG_BASE        0xC0000000
+#define IXP425_PCI_CFG_SIZE        0x00100000
 #define IXP425_PCI_NP_AD           REG32(IXP425_PCI_CFG_BASE,0x00)
 #define IXP425_PCI_NP_CBE          REG32(IXP425_PCI_CFG_BASE,0x04)
 #define IXP425_PCI_NP_WDATA        REG32(IXP425_PCI_CFG_BASE,0x08)
@@ -134,6 +145,7 @@
 // --------------------------------------------------------------------------
 // SDRAM Registers  (Chapter 7)
 #define IXP425_SDRAM_CFG_BASE      0xCC000000
+#define IXP425_SDRAM_CFG_SIZE      0x00100000
 #define IXP425_SDRAM_CONFIG        REG32(IXP425_SDRAM_CFG_BASE,0x00)
 #define IXP425_SDRAM_REFRESH       REG32(IXP425_SDRAM_CFG_BASE,0x04)
 #define IXP425_SDRAM_IR            REG32(IXP425_SDRAM_CFG_BASE,0x08)
@@ -160,6 +172,9 @@
 // --------------------------------------------------------------------------
 // Expansion Bus Register (Chapter 9)
 #define IXP425_EXP_CFG_BASE	   0xC4000000
+#define IXP425_EXP_CFG_SIZE	   0x00100000
+#define IXP425_EXP_CS_BASE         0x50000000
+#define IXP425_EXP_CS_SIZE         0x01000000
 #define IXP425_EXP_CS0             REG32(IXP425_EXP_CFG_BASE,0x00)
 #define IXP425_EXP_CS1             REG32(IXP425_EXP_CFG_BASE,0x04)
 #define IXP425_EXP_CS2             REG32(IXP425_EXP_CFG_BASE,0x08)
@@ -221,6 +236,7 @@
 // EXP_CNFG1 bits
 #define EXP_CNFG1_SW_INT0          (1 << 0)
 #define EXP_CNFG1_SW_INT1          (1 << 1)
+#define EXP_CNFG1_BYTE_SWAP_EN     (1 << 8)
 
 
 // --------------------------------------------------------------------------

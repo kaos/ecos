@@ -9,16 +9,16 @@ cdl_savefile_command cdl_interface { value_source user_value wizard_value inferr
 
 cdl_configuration eCos {
     description "" ;
-    hardware    ixdp425 ;
+    hardware    grg ;
     template    redboot ;
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_XSCALE_CORE current ;
     package -hardware CYGPKG_HAL_ARM_XSCALE_IXP425 current ;
-    package -hardware CYGPKG_HAL_ARM_XSCALE_IXDP425 current ;
+    package -hardware CYGPKG_HAL_ARM_XSCALE_GRG current ;
     package -hardware CYGPKG_DEVS_FLASH_STRATA current ;
-    package -hardware CYGPKG_DEVS_FLASH_IXDP425 current ;
+    package -hardware CYGPKG_DEVS_FLASH_GRG current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
-    package -hardware CYGPKG_DEVS_ETH_ARM_IXDP425_I82559 current ;
+    package -hardware CYGPKG_DEVS_ETH_ARM_GRG_I82559 current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -84,7 +84,7 @@ cdl_component CYGSEM_REDBOOT_BSP_SYSCALLS {
 };
 
 cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT {
-    inferred_value 0x6000000
+    inferred_value 0x1600000
 };
 
 cdl_option CYGHWR_HAL_IXP425_PCI_NP_WORKAROUND {
@@ -120,6 +120,9 @@ cdl_option CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH {
 }
  
 cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
-    user_value 1
+    user_value 0
 };
 
+cdl_option CYGOPT_REDBOOT_FLASH_BYTEORDER {
+    user_value MSBFIRST
+}

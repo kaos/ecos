@@ -1,3 +1,15 @@
+2004-09-02  Mark Salter  <msalter@redhat.com>
+
+	* src/ixdp425_pci.c: Fix compilation when not configured for PCI.
+	* include/ixdp425.h: Add some defines for use in page table setup.
+	* include/hal_platform_extras.h: Removed.
+	* misc/redboot_ROMLE.ecm: New file.
+	* misc/redboot_RAMLE.ecm: New file.
+	* cdl/hal_arm_xscale_ixdp425.cdl: Add little-endian support.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+	* include/hal_platform_setup.h: Ditto.
+
 2003-06-30  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_platform_setup.h: Fix CYGINT_HAL_ARM_BIGENDIAN test.

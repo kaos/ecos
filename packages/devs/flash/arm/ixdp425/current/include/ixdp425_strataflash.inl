@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -61,6 +61,15 @@
 #define CYGNUM_FLASH_BASE 	(0x50000000u)
 #define CYGNUM_FLASH_WIDTH 	(16)
 #define CYGNUM_FLASH_BLANK      (1)
+
+#include <pkgconf/hal.h>  // for CYGHWR_HAL_ARM_BIGENDIAN
+
+// We have to do some address gymnastics in little-endian mode
+#ifndef CYGHWR_HAL_ARM_BIGENDIAN
+#define __INV(a) ((flash_t *)((unsigned)(a) ^ 0x2))
+#define CYGHWR_FLASH_WRITE_BUF(a,b) (*__INV(a) = *__INV(b))
+#define CYGHWR_FLASH_READ_QUERY(a)  (*__INV(a))
+#endif
 
 #endif  // CYGONCE_DEVS_FLASH_IXDP425_STRATAFLASH_INL
 // ------------------------------------------------------------------------

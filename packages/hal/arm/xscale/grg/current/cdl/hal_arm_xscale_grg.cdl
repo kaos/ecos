@@ -67,7 +67,11 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_GRG {
         puts $::cdl_header "#define CYGBLD_HAL_PLF_INTS_H <cyg/hal/hal_plf_ints.h>"
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"XScale\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Intel Generic Residential Gateway\""
-        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+        puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_BIGENDIAN"
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"BE\""
+        puts $::cdl_header "#else"
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"LE\""
+        puts $::cdl_header "#endif"
         puts $::cdl_header "#define HAL_PLATFORM_MACHINE_TYPE  290"
     }
 
@@ -109,7 +113,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_GRG {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mcpu=xscale -mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority -mapcs-frame" }
+            default_value { CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -mapcs-frame" :
+	                    "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -mapcs-frame" }
             description   "
                 This option controls the global compiler flags which are used to
                 compile all packages by default. Individual packages may define
@@ -120,7 +125,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_GRG {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-mcpu=xscale -mbig-endian -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
+            default_value { CYGHWR_HAL_ARM_BIGENDIAN ? "-mbig-endian -Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" :
+	                    "-Wl,--gc-sections -Wl,-static -g -O2 -nostdlib" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

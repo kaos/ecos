@@ -389,6 +389,11 @@ cyg_hal_plf_pci_io_inl(cyg_uint32 offset)
     return pci_np_read(cmd);
 }
 
+#ifdef CYGHWR_HAL_ARM_BIGENDIAN
+#define CSR_ENDIAN_BITS  (PCI_CSR_PDS | PCI_CSR_ABE | PCI_CSR_ADS)
+#else
+#define CSR_ENDIAN_BITS  (PCI_CSR_ABE | PCI_CSR_ADS)
+#endif
 
 void
 cyg_hal_plf_pci_init(void)
@@ -440,7 +445,7 @@ cyg_hal_plf_pci_init(void)
 	// respond to PCI configuration cycles. Specify that the AHB bus is
 	// operating in big endian mode. Set up byte lane swapping between 
 	// little-endian PCI and the big-endian AHB bus 
-	*IXP425_PCI_CSR = PCI_CSR_IC | PCI_CSR_ABE | PCI_CSR_PDS | PCI_CSR_ADS;
+	*IXP425_PCI_CSR = PCI_CSR_IC | CSR_ENDIAN_BITS;
     
 	HAL_PCI_CFG_WRITE_UINT16(0, 0, CYG_PCI_CFG_COMMAND,
 		 CYG_PCI_CFG_COMMAND_MASTER | CYG_PCI_CFG_COMMAND_MEMORY);

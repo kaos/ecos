@@ -1,3 +1,14 @@
+2004-09-02  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_platform_extras.h: Removed.
+	* misc/redboot_ROMLE.ecm: New file.
+	* misc/redboot_RAMLE.ecm: New file.
+	* cdl/hal_arm_xscale_grg.cdl: Add little-endian support.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto.
+	* include/hal_platform_setup.h: Ditto.
+	* include/grg.h: Add some defines for use in page table setup.
+
 2003-06-30  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_platform_setup.h: Fix CYGINT_HAL_ARM_BIGENDIAN test.
@@ -35,7 +46,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

@@ -62,6 +62,15 @@
 #define CYGNUM_FLASH_WIDTH 	(16)
 #define CYGNUM_FLASH_BLANK      (1)
 
+#include <pkgconf/hal.h>  // for CYGHWR_HAL_ARM_BIGENDIAN
+
+// We have to do some address gymnastics in little-endian mode
+#ifndef CYGHWR_HAL_ARM_BIGENDIAN
+#define __INV(a) ((flash_t *)((unsigned)(a) ^ 0x2))
+#define CYGHWR_FLASH_WRITE_BUF(a,b) (*__INV(a) = *__INV(b))
+#define CYGHWR_FLASH_READ_QUERY(a)  (*__INV(a))
+#endif
+
 #endif  // CYGONCE_DEVS_FLASH_GRG_STRATAFLASH_INL
 // ------------------------------------------------------------------------
 // EOF grg_strataflash.inl

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -63,10 +63,10 @@
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>           // Interrupt names
 #include <cyg/hal/hal_cache.h>
-#include <cyg/io/pci_hw.h>
-#include <cyg/io/pci.h>
 
 #ifdef CYGPKG_IO_PCI
+#include <cyg/io/pci_hw.h>
+#include <cyg/io/pci.h>
 
 #define IXP425_PCI_MAX_DEV      4
 #define IXP425_PCI_IRQ_LINES    4

@@ -120,6 +120,9 @@ cdl_option CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH {
 }
  
 cdl_option CYGHWR_HAL_ARM_BIGENDIAN {
-    user_value 1
+    user_value 0
 };
 
+cdl_option CYGOPT_REDBOOT_FLASH_BYTEORDER {
+    user_value MSBFIRST
+}
