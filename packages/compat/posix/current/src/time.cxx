@@ -272,6 +272,7 @@ static void alarm_action( Cyg_Alarm *alarm, CYG_ADDRWORD data )
             sigset_t mask;
             sigemptyset( &mask );
             sigaddset( &mask, timer->sigev.sigev_signo );
+            cyg_posix_signal_sigwait();
             cyg_posix_pthread_release_thread( &mask );
         }
         else if( timer->sigev.sigev_notify == SIGEV_THREAD )

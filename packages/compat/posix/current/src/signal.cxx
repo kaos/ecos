@@ -435,6 +435,14 @@ cyg_bool cyg_deliver_signals()
 }
 
 // -------------------------------------------------------------------------
+// Utility routine to signal any threads waiting in sigwait*().
+
+void cyg_posix_signal_sigwait()
+{
+    signal_sigwait.broadcast();
+}       
+
+// -------------------------------------------------------------------------
 // Action routine called from kernel alarm to deliver the SIGALRM signal.
 // We cannot call any signal delivery functions directly here, so we simply
 // set a flag and schedule an ASR to be called.
@@ -918,6 +926,8 @@ externC int sigtimedwait  (const sigset_t *set, siginfo_t *info,
         // Special case check for SIGALRM since the fact SIGALRM is masked
         // would have prevented it being set pending in the alarm handler.
         check_sigalarm();
+
+        cyg_posix_timer_asr(self);
     }
 
     if( err == 0 )

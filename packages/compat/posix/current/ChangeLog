@@ -1,3 +1,20 @@
+2003-01-31  Nick Garnett  <nickg@calivar.com>
+
+	* src/time.cxx (alarm_action): Added call to
+	cyg_posix_signal_sigwait() to wake up any sigwait()ing threads.
+
+	* src/signal.cxx (cyg_posix_signal_sigwait): Added this function
+	to export access to signal_sigwait conditional variable.
+	(sigtimedwait): Added call to cyg_posix_timer_asr() to allow timer
+	signals to be delivered here.
+
+	* src/pprivate.h: Added prototype for cyg_posix_signal_sigwait().
+
+	* cdl/posix.cdl:
+	* tests/signal3.c: Added this program to test interaction of
+	timers and signals, particularly sigwait(). Based on a test
+	program from N.Suresh <nsuresh@cdotb.ernet.in>.
+
 2003-01-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/signal.cxx (cyg_posix_deliver_signals): silence warning.

@@ -302,7 +302,7 @@ cdl_package CYGPKG_POSIX {
             no_define
             calculated { 
                 "tests/pthread1 tests/pthread2 tests/pthread3 tests/mutex3 tests/mqueue2"
-                . ((CYGPKG_POSIX_SIGNALS) ? " tests/mqueue1 tests/signal1 tests/signal2 tests/sigsetjmp tests/timer1 tests/tm_basic" : "")
+                . ((CYGPKG_POSIX_SIGNALS) ? " tests/mqueue1 tests/signal1 tests/signal2 tests/signal3 tests/sigsetjmp tests/timer1 tests/tm_basic" : "")
             }
             description   "
                 This option specifies the set of tests for the POSIX package."

@@ -183,7 +183,7 @@ void *pthread_entry1( void *arg)
     pthread_sigmask( SIG_SETMASK, &mask, NULL );
     
     alarm(1);
-    CYG_TEST_INFO( "Thread1: calling alarm()");            
+    CYG_TEST_INFO( "Thread1: calling sigwait()");            
     err = sigwait( &mask, &sig);
     CYG_TEST_CHECK( 0==err, "sigwait returned -1");
     CYG_TEST_CHECK( sig==SIGALRM, "sigwait caught alarm");

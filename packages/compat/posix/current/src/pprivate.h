@@ -227,7 +227,9 @@ externC cyg_bool cyg_sigqueue( const struct sigevent *sev, int code,
                                pthread_info *thread = NULL );
 
 externC cyg_bool cyg_deliver_signals();
-    
+
+externC void cyg_posix_signal_sigwait();
+
 externC void cyg_posix_thread_siginit( pthread_info *thread,
                                        pthread_info *parentthread );
 
