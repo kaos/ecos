@@ -207,7 +207,7 @@ __bootp_find_local_ip(bootp_header_t *info)
     __udp_install_listener(&udp_skt, IPPORT_BOOTPC, bootp_handler);
 
     retry = MAX_RETRIES;  
-    while (!abort && (retry-- > 0)) {
+    do {
 	start = MS_TICKS();
 
         // Build up the BOOTP/DHCP request
@@ -260,6 +260,10 @@ __bootp_find_local_ip(bootp_header_t *info)
 #endif
 
 	__udp_send((char *)&b, txSize, &r, IPPORT_BOOTPS, IPPORT_BOOTPC);
+
+        // If we're retrying, inform the user
+        if (retry == (MAX_RETRIES-1))
+            diag_printf("... waiting for BOOTP information\n");
 
 	do {
 	    __enet_poll();
@@ -328,12 +332,7 @@ __bootp_find_local_ip(bootp_header_t *info)
             }
             MS_TICKS_DELAY();  // Count for ^C test
 	} while ((MS_TICKS_DELAY() - start) < RETRY_TIME);
-
-        // Warn the user that we're polling for BOOTP info
-        if (retry == (MAX_RETRIES-1)) {
-            diag_printf("... waiting for BOOTP information\n");
-        }
-    }
+    } while (!abort && (retry-- > 0));
 
     // timed out
     __udp_remove_listener(IPPORT_BOOTPC);

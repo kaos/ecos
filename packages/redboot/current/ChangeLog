@@ -7,6 +7,8 @@
 2005-01-05  David Vrabel  <dvrabel@arcom.com>
 
 	* src/fs/fileio.c (do_ls): Remove useless "getcwd" message.
+ 	* src/net/bootp.c (__bootp_find_local_ip): Only print the
+ 	"waiting for BOOTP" message when after first retry.
 	
 2004-12-01  Andrea Michelotti  <amichelotti@atmel.com>
 
