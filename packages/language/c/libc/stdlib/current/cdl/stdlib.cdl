@@ -53,7 +53,7 @@ cdl_package CYGPKG_LIBC_STDLIB {
     description   "
         This package provides general utility functions in <stdlib.h>
         as specified by the ISO C standard - ISO/IEC 9899:1990."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     include_dir   cyg/libc/stdlib
     parent        CYGPKG_LIBC
     requires      CYGPKG_ISOINFRA
@@ -120,6 +120,7 @@ cdl_package CYGPKG_LIBC_STDLIB {
     
         cdl_option CYGSEM_LIBC_PER_THREAD_RAND {
             display       "Per-thread random seed"
+            doc           ref/libc-thread-safety.html
             requires      CYGVAR_KERNEL_THREADS_DATA
             default_value 0
             description   "
