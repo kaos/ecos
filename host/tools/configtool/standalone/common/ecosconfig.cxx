@@ -1,6 +1,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2003 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // This program is part of the eCos host tools.
@@ -93,7 +94,9 @@ int main (int argc, char * argv []) {
     bool help = false;          // --help
     bool enable_debug_set = false;  // --enable-debug or --disable-debug
     int  debug_level = 0;       // --enable-debug=[0|1|2]
-        
+
+    Tcl_FindExecutable(argv[0]);
+    
     // getopt() cannot easily be used here since this code has to
     // build with VC++ as well.
     bool args_ok = true;
