@@ -1,3 +1,7 @@
+2002-10-15  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ts1000.S: Don't reset PHY on RAM startup.
+
 2002-09-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ts1000.S: 

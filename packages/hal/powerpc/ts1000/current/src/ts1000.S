@@ -222,7 +222,12 @@ FUNC_START( hal_hardware_init )
         lhz     r3,PAPAR(r4)    // papar &= ~0x803C
         andi.   r3,r3,(~0x803C&0xFFFF)
         sth     r3,PAPAR(r4)
-	lwi	r3,0x803C
+#ifdef CYG_HAL_STARTUP_RAM
+        lhz     r3,PADAT(r4)    // Turn off all LEDs, preserve PHY state
+        ori     r3,r3,0x003C
+#else        
+	lwi	r3,0x803C       // Turn off all LEDS, reset PHY
+#endif        
 	sth	r3,PADAT(r4)
         	
 	LED( 0 )			# turn all LEDs off
