@@ -72,7 +72,7 @@ for i in `cat doclist`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
    /bin/echo -n " ../../packages/$i" >> makefile
-   entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g'`"
+   entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
    echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" >> ecos.sgml
   fi
 done
