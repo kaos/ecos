@@ -695,7 +695,6 @@ do_baud_rate(int argc, char *argv[])
             }
             return;  // Couldn't set the desired rate
         }
-        old_rate = ret;
         // Make sure this new rate works or back off to previous value
         // Sleep for a few seconds, then prompt to see if it works
         _sleep(3000);  // Give serial time to flush

@@ -11,6 +11,10 @@
 
 	* src/flash.c: flash_init() no longer takes three args.
 
+2003-11-19  David Woodhouse  <dwmw2@redhat.com>
+ 
+ 	* src/main.c: Restore correct old baud rate if changing fails.
+ 
 2003-11-13  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/main.c (do_go): Need to stop catching exceptions when running a
