@@ -127,10 +127,14 @@ void hal_clock_read(cyg_uint32 *pvalue)
 //
 void hal_delay_us(cyg_int32 usecs)
 {
-    CYG_ADDRESS timer = AT91_TC+AT91_TC_TC2;
     cyg_uint32 stat;
     cyg_uint64 ticks;
-
+#if defined(CYGHWR_HAL_ARM_AT91_JTST)
+    // TC2 is reserved for AD/DA. Use TC1 instead. 
+    CYG_ADDRESS timer = AT91_TC+AT91_TC_TC1;
+#else
+    CYG_ADDRESS timer = AT91_TC+AT91_TC_TC2;
+#endif
     // Calculate how many timer ticks the required number of
     // microseconds equate to. We do this calculation in 64 bit
     // arithmetic to avoid overflow.

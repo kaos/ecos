@@ -81,8 +81,9 @@ CYG_MACRO_START                                               \
     HAL_WRITE_UINT32(AT91_PMC+AT91_PMC_SCDR, 1);              \
 CYG_MACRO_END
 
+#elif defined(CYGHWR_HAL_ARM_AT91_JTST) 
+// No idle action for the JTST
 #else
-
 #error Unknown AT91 variant
 
 #endif

@@ -78,7 +78,7 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
         display        "AT91 variant used"
         flavor         data
         default_value  {"R40807"}
-        legal_values   {"R40807" "R40008" "M42800A" "M55800A" }
+        legal_values   {"R40807" "R40008" "M42800A" "M55800A" "JTST"}
         description    "The AT91 microcontroller family has several variants,
                         the main differences being the amount of on-chip SRAM,
                         peripherals and their layout. This option allows the

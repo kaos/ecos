@@ -130,13 +130,28 @@
 #define AT91_US_BRG 0x20  // Baud rate generator
 #define AT91_US_RTO 0x24  // Receive time out
 #define AT91_US_TTG 0x28  // Transmit timer guard
+
+// PDC US registers may have different addresses in at91 targets (i.e jtst)
+#ifndef AT91_US_RPR
 #define AT91_US_RPR 0x30  // Receive pointer register
+#endif
+
+#ifndef AT91_US_RCR
 #define AT91_US_RCR 0x34  // Receive counter register
+#endif
+
+#ifndef AT91_US_TPR
 #define AT91_US_TPR 0x38  // Transmit pointer register
+#endif
+
+#ifndef AT91_US_TCR
 #define AT91_US_TCR 0x3c  // Transmit counter register
+#endif
 
+// macro could be different from target to target (i.e jtst)
+#ifndef AT91_US_BAUD
 #define AT91_US_BAUD(baud) ((CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/(8*(baud))+1)/2)
-
+#endif
 //=============================================================================
 // PIO
 
@@ -610,6 +625,8 @@
 
 #endif
 
+#elif defined(CYGHWR_HAL_ARM_AT91_JTST)
+// Now power management control for the JTST
 #else
 
 #error Unknown AT91 variant
