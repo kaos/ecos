@@ -192,7 +192,7 @@ int  flash_program_buf(void* addr, void* data, int len)
 
 //----------------------------------------------------------------------------
 // Auxiliary functions
-static flash_data_t * find_bank(volatile flash_data_t * base, void * addr, CYG_ADDRWORD * bo)
+static volatile flash_data_t * find_bank(volatile flash_data_t * base, void * addr, CYG_ADDRWORD * bo)
     __attribute__ ((section (".2ram.find_bank")));
 static flash_data_t * find_sector(volatile flash_data_t * addr, unsigned long *remain_size)
     __attribute__ ((section (".2ram.find_sector")));
@@ -431,7 +431,7 @@ flash_program_buf(void* addr, void* data, int len)
 {
     volatile flash_data_t* ROM;
     volatile flash_data_t* BANK;
-    volatile flash_data_t* SECT;
+    volatile flash_data_t* SECT=NULL;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
     volatile flash_data_t* addr_p = (flash_data_t*) addr;
     volatile flash_data_t* addr_v = FLASH_P2V(addr_p);
@@ -532,7 +532,7 @@ flash_program_buf(void* addr, void* data, int len)
     return res;
 }
 
-static flash_data_t *
+static volatile flash_data_t *
 find_bank(volatile flash_data_t * base, void * addr, CYG_ADDRWORD * bo)
 {
     volatile flash_data_t * res = base;
@@ -559,7 +559,7 @@ find_sector(volatile flash_data_t * addr, unsigned long *remain_size)
     const CYG_ADDRESS mask = flash_dev_info->block_size - 1;
     const CYG_ADDRESS a = (CYG_ADDRESS) addr;
     const CYG_ADDRESS base = a & flash_dev_info->base_mask;
-    const CYG_ADDRESS res = a & ~mask;
+    CYG_ADDRESS res = a & ~mask;
     
     *remain_size = flash_dev_info->block_size - (a & mask);
 
