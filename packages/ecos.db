@@ -522,6 +522,16 @@ package CYGPKG_DEVS_FLASH_GRG {
 	   on the Intel Generic Residential Gateway platform."
 }
 
+package CYGPKG_DEVS_FLASH_PRPMC1100 {
+	alias 		{ "FLASH memory support for PrPMC1100" flash_prpmc1100 }
+	directory	devs/flash/arm/prpmc1100
+	script		flash_prpmc1100.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Motorola PrPMC1100 platform."
+}
+
 package CYGPKG_DEVS_FLASH_ARM_INTEGRATOR {
         alias           { "FLASH memory support for ARM INTEGRATOR" flash_integrator }
         directory       devs/flash/arm/integrator
@@ -2384,6 +2394,16 @@ package CYGPKG_HAL_ARM_XSCALE_GRG {
         Intel Generic Residential Gateway evaluation board."
 }
 
+package CYGPKG_HAL_ARM_XSCALE_PRPMC1100 {
+	alias		{ "Motorola PrPMC1100 PMC for Intel XScale IXC1100" hal_arm_xscale_prpmc1100 }
+	directory	hal/arm/xscale/prpmc1100
+	script		hal_arm_xscale_prpmc1100.cdl
+	hardware
+        description "
+        The PrPMC1100 HAL package provides the support needed to run eCos on an
+        Motorola PrPMC1100 evaluation board."
+}
+
 package CYGPKG_HAL_ARM_XSCALE_PXA2X0 {
 	alias		{ "Intel PXA2X0" hal_arm_xscale_pxa2x0 }
 	directory	hal/arm/xscale/pxa2x0
@@ -3826,6 +3846,21 @@ target grg {
         description "
         The grg target provides the packages needed to run
         eCos on an Intel Generic Residential Gateway board."
+}
+
+target prpmc1100 {
+	alias { "Motorola PrPMC1100" prpmc1100 }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+	           CYGPKG_HAL_ARM_XSCALE_IXP425
+                   CYGPKG_HAL_ARM_XSCALE_PRPMC1100
+		   CYGPKG_IO_PCI
+                   CYGPKG_DEVS_FLASH_STRATA
+		   CYGPKG_DEVS_FLASH_PRPMC1100
+        }
+        description "
+        The prpmc1100 target provides the packages needed to run
+        eCos on a Motorola PrPMC1100."
 }
 
 target edb7xxx {
