@@ -54,7 +54,7 @@ cdl_package CYGPKG_DEVS_USB_UPD985XX {
     include_dir "cyg/io/usb"
     parent      CYGPKG_USB
     implements  CYGHWR_IO_USB_SLAVE
-    doc         devs-usb-nec-upd985xx.html
+    doc         ref/devs-usb-nec-upd985xx.html
     
     # Make sure that we are running on the right hardware.
     requires CYGPKG_HAL_MIPS
