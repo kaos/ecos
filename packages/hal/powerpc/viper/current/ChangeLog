@@ -1,3 +1,8 @@
+2003-03-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/viper.S: 
+	* cdl/hal_powerpc_viper.cdl: Support higher speed parts - up to 100MHz.
+
 2002-12-02  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/plf_intr.h: Use MPC8xx variant RESET support.

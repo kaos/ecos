@@ -279,6 +279,10 @@ FUNC_START( hal_hardware_init )
 #define PLPRCR_PTX 0x010 // (62.7MHz/3.6864MHz)-1
 #define MAMR_PTA 123
 #endif        
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED == 100)
+#define PLPRCR_PTX 0x01A // (99.53MHz/3.6864MHz)-1
+#define MAMR_PTA 194
+#endif        
 //#define MAMR_PTA (((((((PLPRCR_PTX+1)*3686400)*625)/10000000)+31)/32)&0xFF)
         lwi     r3,0x00802114|(MAMR_PTA<<24)
         stw	r3,MAMR(r4)
@@ -358,7 +362,11 @@ FUNC_START( hal_hardware_init )
 // 	Field DFNH (bits 24-26) = 0
 // 	Field Reserved (bits 27-31) = 0
 	 */
+#if (CYGHWR_HAL_POWERPC_BOARD_SPEED > 63)
+	lwi	r3,0x00420000  // Bus divide by 2
+#else        
 	lwi	r3,0x00400000
+#endif        
 	stw	r3,SCCR(r4)
         
 	LED( 0x03 )
