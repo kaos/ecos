@@ -97,7 +97,7 @@ static void jffs2_clear_inode (struct _inode *inode);
 
 #ifdef CYGOPT_FS_JFFS2_WRITE
 FSTAB_ENTRY(jffs2_fste, "jffs2", 0,
-	    CYG_SYNCMODE_FILE_FILESYSTEM | CYG_SYNCMODE_IO_FILE,
+	    CYG_SYNCMODE_FILE_FILESYSTEM | CYG_SYNCMODE_IO_FILESYSTEM,
 	    jffs2_mount,
 	    jffs2_umount,
 	    jffs2_open,
@@ -110,7 +110,7 @@ FSTAB_ENTRY(jffs2_fste, "jffs2", 0,
 	    jffs2_chdir, jffs2_stat, jffs2_getinfo, jffs2_setinfo);
 #else
 FSTAB_ENTRY(jffs2_fste, "jffs2", 0,
-	    CYG_SYNCMODE_FILE_FILESYSTEM | CYG_SYNCMODE_IO_FILE,
+	    CYG_SYNCMODE_FILE_FILESYSTEM | CYG_SYNCMODE_IO_FILESYSTEM,
 	    jffs2_mount,
 	    jffs2_umount,
 	    jffs2_open,

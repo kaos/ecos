@@ -1,3 +1,9 @@
+2004-12-10  Per Hedblom  <per.hedblom@abem.se>
+
+	* src/fs-ecos.c: Use filesystem locking not file locking otherwise
+	the node cache can be corrupted by multiple operations on
+	different files at the same time.
+
 2004-11-11  Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* Merge from public MTD.
@@ -91,12 +97,12 @@
        * src/fs-ecos.c:
        Make JFFS2 honor O_TRUNC flag when opening files /w read access.
 
-2004-02-17  David Woodhouse  <dwmw2@redhat.com>
+2004-02-17  David Woodhouse  <dwmw2@infradead.org>
 
 	* src/fs-ecos.c:
 	Don't re-initialise the already-locked f->sem. It makes eCos unhappy. 
 
-2004-01-27  David Woodhouse  <dwmw2@redhat.com>
+2004-01-27  David Woodhouse  <dwmw2@infradead.org>
 
 	* src/write.c: 
 	Fix bug noted by Howard Gray; dirents belong to, and should dirty, 
@@ -112,7 +118,7 @@
 	* cdl/jffs2.cdl: Re-added CYGPKG_FS_JFFS2_CFLAGS_REMOVE that had been
 	removed by previous change.
 	
-2003-11-26  David Woodhouse  <dwmw2@redhat.com>
+2003-11-26  David Woodhouse  <dwmw2@infradead.org>
 
 	JFFS2 cleanup and import of newer code. Remove last vestiges of
 	Linuxisms such as 'struct inode' from the core code, leaving eCos
