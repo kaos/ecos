@@ -1,3 +1,10 @@
+2003-04-02  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/watchdog.cdl: Watchdog implementation requirement should be
+	in package, not interface itself. *Note* must be requires, not
+	active_if otherwise turning off the emulated watchdog means you
+	can never turn it on again!
+
 2000-05-31  Jesper Skov  <jskov@redhat.com>
 
 	* tests/watchdog.cxx: fix comment.
