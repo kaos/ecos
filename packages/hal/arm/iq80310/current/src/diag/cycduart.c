@@ -44,7 +44,7 @@
 
 #define DFLTLOOPERMS 500
 
-extern int printf(char*,...);
+//extern int printf(char*,...);
 extern long hexIn();
 
 int break_flag = 0;

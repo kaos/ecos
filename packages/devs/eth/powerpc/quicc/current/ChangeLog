@@ -1,3 +1,9 @@
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_quicc.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-05-07  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_quicc.c (quicc_eth_init): Get ESA from RedBoot 'fconfig' data.
@@ -155,7 +161,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

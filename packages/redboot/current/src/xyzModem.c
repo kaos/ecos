@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, tsmith
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -53,6 +53,7 @@
 #define STX 0x02
 #define EOT 0x04
 #define ACK 0x06
+#define BSP 0x08
 #define NAK 0x15
 #define CAN 0x18
 
@@ -88,7 +89,7 @@ zm_dprintf(char *fmt, ...)
     va_start(args, fmt);
     cur_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
-    vprintf(fmt, args);
+    diag_vprintf(fmt, args);
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur_console);
 }
 
@@ -111,7 +112,7 @@ zm_dprintf(char *fmt, ...)
     va_list args;
 
     va_start(args, fmt);
-    len = vsprintf(zm_out, fmt, args);
+    len = diag_vsprintf(zm_out, fmt, args);
     zm_out += len;
     return len;
 }
@@ -300,7 +301,7 @@ xyzModem_stream_open(char *filename, int mode, int *err)
     int retries = xyzModem_MAX_RETRIES;
     int crc_retries = xyzModem_MAX_RETRIES_WITH_CRC;
 
-    ZM_DEBUG(zm_out = zm_out_start);
+//    ZM_DEBUG(zm_out = zm_out_start);
     if (mode == xyzModem_zmodem) {
         *err = xyzModem_noZmodem;
         return -1;
@@ -385,9 +386,10 @@ xyzModem_stream_read(char *buf, int size, int *err)
                     if (xyz.mode == xyzModem_ymodem) {
                         CYGACC_COMM_IF_PUTC(*xyz.__chan, (xyz.crc_mode ? 'C' : NAK));
                         xyz.total_retries++;
+                        ZM_DEBUG(zm_dprintf("Reading Final Header\n"));
                         stat = xyzModem_get_hdr();                        
                         CYGACC_COMM_IF_PUTC(*xyz.__chan, ACK);
-                        ZM_DEBUG(zm_dprintf("ACK (%d)\n", __LINE__));
+                        ZM_DEBUG(zm_dprintf("FINAL ACK (%d)\n", __LINE__));
                     }
                     xyz.at_eof = true;
                     break;
@@ -417,11 +419,59 @@ xyzModem_stream_read(char *buf, int size, int *err)
 void
 xyzModem_stream_close(int *err)
 {
-    printf("xyzModem - %s mode, %d(SOH)/%d(STX)/%d(CAN) packets, %d retries\n", 
-           xyz.crc_mode ? "CRC" : "Cksum",
-           xyz.total_SOH, xyz.total_STX, xyz.total_CAN,
-           xyz.total_retries);
+    diag_printf("xyzModem - %s mode, %d(SOH)/%d(STX)/%d(CAN) packets, %d retries\n", 
+                xyz.crc_mode ? "CRC" : "Cksum",
+                xyz.total_SOH, xyz.total_STX, xyz.total_CAN,
+                xyz.total_retries);
 //    ZM_DEBUG(zm_flush());
+}
+
+// Need to be able to clean out the input buffer, so have to take the
+// getc
+void xyzModem_stream_terminate(int method, int (*getc)(void))
+{
+  int c;
+
+  switch (method) {
+    case xyzModem_abort:
+      ZM_DEBUG(zm_dprintf("!!!! TRANSFER ABORT !!!!\n"));
+      switch (xyz.mode) {
+	case xyzModem_xmodem:
+	case xyzModem_ymodem:
+	  // The X/YMODEM Spec seems to suggest that multiple CAN followed by an equal
+	  // number of Backspaces is a friendly way to get the other end to abort.
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,CAN);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,CAN);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,CAN);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,CAN);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,BSP);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,BSP);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,BSP);
+	  CYGACC_COMM_IF_PUTC(*xyz.__chan,BSP);
+	  // Now consume the rest of what's waiting on the line.
+	  ZM_DEBUG(zm_dprintf("Flushing serial line.\n"));
+	  xyzModem_flush();
+          xyz.at_eof = true;
+	break;
+	case xyzModem_zmodem:
+	  // Might support it some day I suppose.
+	break;
+      }
+    default:
+      ZM_DEBUG(zm_dprintf("Engaging cleanup mode...\n"));
+      // Consume any trailing crap left in the inbuffer from
+      // previous recieved blocks. Since very few files are an exact multiple
+      // of the transfer block size, there will almost always be some gunk here.
+      // If we don't eat it now, RedBoot will think the user typed it.
+      ZM_DEBUG(zm_dprintf("Trailing gunk:\n"));
+      while ((c = (*getc)()) > -1) ;
+      ZM_DEBUG(zm_dprintf("\n"));
+      // Make a small delay to give terminal programs like minicom
+      // time to get control again after their file transfer program
+      // exits.
+      CYGACC_CALL_IF_DELAY_US((cyg_int32)100000);
+      break;
+  }
 }
 
 char *

@@ -453,7 +453,7 @@ inline void Cyg_Thread::clear_timer()
 
 #ifdef CYGVAR_KERNEL_THREADS_DATA
 
-inline CYG_ADDRWORD Cyg_Thread::get_data( cyg_ucount32 index )
+inline CYG_ADDRWORD Cyg_Thread::get_data( Cyg_Thread::cyg_data_index index )
 {
     CYG_ASSERT( index < CYGNUM_KERNEL_THREADS_DATA_MAX,
                 "Per thread data index out of bounds");
@@ -463,7 +463,7 @@ inline CYG_ADDRWORD Cyg_Thread::get_data( cyg_ucount32 index )
     return self()->thread_data[index];
 }
 
-inline CYG_ADDRWORD *Cyg_Thread::get_data_ptr( cyg_ucount32 index )
+inline CYG_ADDRWORD *Cyg_Thread::get_data_ptr( Cyg_Thread::cyg_data_index index )
 {
     CYG_ASSERT( index < CYGNUM_KERNEL_THREADS_DATA_MAX,
                 "Per thread data index out of bounds");
@@ -473,7 +473,8 @@ inline CYG_ADDRWORD *Cyg_Thread::get_data_ptr( cyg_ucount32 index )
     return &(self()->thread_data[index]);
 }
 
-inline void Cyg_Thread::set_data( cyg_ucount32 index, CYG_ADDRWORD data )
+inline void Cyg_Thread::set_data( Cyg_Thread::cyg_data_index index,
+                                  CYG_ADDRWORD data )
 {
     CYG_ASSERT( index < CYGNUM_KERNEL_THREADS_DATA_MAX,
                 "Per thread data index out of bounds");
@@ -481,6 +482,46 @@ inline void Cyg_Thread::set_data( cyg_ucount32 index, CYG_ADDRWORD data )
                 "Unallocated index used");
 
     thread_data[index] = data;
+}
+
+#endif
+
+// -------------------------------------------------------------------------
+
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+
+    // Add and remove destructors. Returns true on success, false on failure.
+inline cyg_bool
+Cyg_Thread::add_destructor( destructor_fn fn, CYG_ADDRWORD data )
+{
+    cyg_ucount16 i;
+    Cyg_Scheduler::lock();
+    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
+        if (NULL == destructors[i].fn) {
+            destructors[i].data = data;
+            destructors[i].fn = fn;
+            Cyg_Scheduler::unlock();
+            return true;
+        }
+    }
+    Cyg_Scheduler::unlock();
+    return false;
+}
+
+inline cyg_bool
+Cyg_Thread::rem_destructor( destructor_fn fn, CYG_ADDRWORD data )
+{
+    cyg_ucount16 i;
+    Cyg_Scheduler::lock();
+    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
+        if (destructors[i].fn == fn && destructors[i].data == data) {
+            destructors[i].fn = NULL;
+            Cyg_Scheduler::unlock();
+            return true;
+        }
+    }
+    Cyg_Scheduler::unlock();
+    return false;
 }
 
 #endif

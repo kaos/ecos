@@ -72,7 +72,6 @@
 #include <net/if.h>  /* Needed for struct ifnet */
 #else
 #include <cyg/hal/hal_if.h>
-#define diag_printf printf
 #endif
 
 #ifdef CYGPKG_IO_PCI
@@ -1469,6 +1468,10 @@ static void PacketRxReady(struct i82559* p_i82559)
 
         CYG_ASSERT( (cyg_uint8 *)p_rfd >= i82559_heap_base, "rfd under" );
         CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
+#ifdef CYGPKG_REDBOOT
+	// Need to make this decision at runtime.
+	break;
+#endif
     }
 
     // See if the RU has gone idle (usually because of out of resource

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -416,7 +416,7 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
     cyg_uint8 fn = CYG_PCI_DEV_GET_FN(devfn);
 
 #ifdef CYGPKG_IO_PCI_DEBUG
-    printf("cyg_pci_find_next: start[%x] ...\n",(unsigned)cur_devid);
+    diag_printf("cyg_pci_find_next: start[%x] ...\n",(unsigned)cur_devid);
 #endif
 
     // If this is the initializer, start with 0/0/0
@@ -459,7 +459,7 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
                                              CYG_PCI_CFG_VENDOR, &vendor);
                 if (CYG_PCI_VENDOR_UNDEFINED != vendor) {
 #ifdef CYGPKG_IO_PCI_DEBUG
-                printf("   Bus: %d, Dev: %d, Fn: %d, Vendor: %x\n", bus, dev, fn, vendor);
+                diag_printf("   Bus: %d, Dev: %d, Fn: %d, Vendor: %x\n", bus, dev, fn, vendor);
 #endif
                     *next_devid = CYG_PCI_DEV_MAKE_ID(bus, devfn);
                     return true;
@@ -469,7 +469,7 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
     }
 
 #ifdef CYGPKG_IO_PCI_DEBUG
-    printf("nothing.\n");
+    diag_printf("nothing.\n");
 #endif
 
     return false;
@@ -486,7 +486,7 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
     cyg_pci_device_id new_devid = *devid;
 
 #ifdef CYGPKG_IO_PCI_DEBUG
-    printf("cyg_pci_find_device - vendor: %x, device: %x\n", vendor, device);
+    diag_printf("cyg_pci_find_device - vendor: %x, device: %x\n", vendor, device);
 #endif
     // Scan entire bus, check for matches on valid devices.
     while (cyg_pci_find_next(new_devid, &new_devid)) {
@@ -500,7 +500,7 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
         cyg_pcihw_read_config_uint16(bus, devfn,
                                      CYG_PCI_CFG_DEVICE, &d);
 #ifdef CYGPKG_IO_PCI_DEBUG
-        printf("... PCI vendor = %x, device = %x\n", v, d);
+        diag_printf("... PCI vendor = %x, device = %x\n", v, d);
 #endif
         if (v != vendor) continue;
 
@@ -542,7 +542,7 @@ cyg_pci_find_matching( cyg_pci_match_func *matchp,
     cyg_pci_device_id new_devid = *devid;
 
 #ifdef CYGPKG_IO_PCI_DEBUG
-    printf("cyg_pci_find_matching - func is at %x\n", (unsigned int)matchp);
+    diag_printf("cyg_pci_find_matching - func is at %x\n", (unsigned int)matchp);
 #endif
     // Scan entire bus, check for matches on valid devices.
     while (cyg_pci_find_next(new_devid, &new_devid)) {
@@ -560,7 +560,7 @@ cyg_pci_find_matching( cyg_pci_match_func *matchp,
                                      CYG_PCI_CFG_CLASS_REV, &c);
         c >>= 8;
 #ifdef CYGPKG_IO_PCI_DEBUG
-        printf("... PCI vendor = %x, device = %x, class %x\n", v, d, c);
+        diag_printf("... PCI vendor = %x, device = %x, class %x\n", v, d, c);
 #endif
         // Check that device matches as the caller desires:
         if ( (*matchp)(v, d, c, match_callback_data) ) {
@@ -819,7 +819,7 @@ cyg_pci_configure_bus( cyg_uint8 bus,
     devid = CYG_PCI_DEV_MAKE_ID(bus, 0) | CYG_PCI_NULL_DEVFN;
 
 #ifdef CYGPKG_IO_PCI_DEBUG
-    printf("Configuring bus %d.\n", bus);
+    diag_printf("Configuring bus %d.\n", bus);
 #endif
 
     while (cyg_pci_find_next(devid, &devid) && bus == CYG_PCI_DEV_GET_BUS(devid)) {
@@ -830,12 +830,12 @@ cyg_pci_configure_bus( cyg_uint8 bus,
 	cyg_pci_get_device_info(devid, &dev_info);
 
 #ifdef CYGPKG_IO_PCI_DEBUG
-	printf("\n");
-	printf("Configuring PCI Bus   : %d\n", bus);
-	printf("            PCI Device: %d\n", CYG_PCI_DEV_GET_DEV(devfn));
-	printf("            PCI Func  : %d\n", CYG_PCI_DEV_GET_FN(devfn));
-	printf("            Vendor Id : 0x%08X\n", dev_info.vendor);
-	printf("            Device Id : 0x%08X\n", dev_info.device);
+	diag_printf("\n");
+	diag_printf("Configuring PCI Bus   : %d\n", bus);
+	diag_printf("            PCI Device: %d\n", CYG_PCI_DEV_GET_DEV(devfn));
+	diag_printf("            PCI Func  : %d\n", CYG_PCI_DEV_GET_FN(devfn));
+	diag_printf("            Vendor Id : 0x%08X\n", dev_info.vendor);
+	diag_printf("            Device Id : 0x%08X\n", dev_info.device);
 #endif
 
 	header_type = dev_info.header_type & CYG_PCI_CFG_HEADER_TYPE_MASK;
@@ -1012,7 +1012,7 @@ cyg_pci_configure_bus( cyg_uint8 bus,
 	}
     }
 #ifdef CYGPKG_IO_PCI_DEBUG
-    printf("Finished configuring bus %d.\n", bus);
+    diag_printf("Finished configuring bus %d.\n", bus);
 #endif
 
     return true;

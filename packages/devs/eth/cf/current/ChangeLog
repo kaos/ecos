@@ -1,3 +1,13 @@
+2001-08-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c (sc_lpe_card_handler): Rework ESA discovery code.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-06-16  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_sc_lpe.c: Use generic DP83902A driver, only redefining
@@ -114,7 +124,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

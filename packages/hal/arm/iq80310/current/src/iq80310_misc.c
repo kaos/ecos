@@ -129,17 +129,16 @@ void hal_hardware_init(void)
 }
 
 #include CYGHWR_MEMORY_LAYOUT_H
-typedef void code_fun(void);
-void iq80310_program_new_stack(void *func)
+void __attribute__ ((naked)) iq80310_program_new_stack(void *func)
 {
-    register CYG_ADDRESS stack_ptr asm("sp");
-    register CYG_ADDRESS old_stack asm("r4");
-    register code_fun *new_func asm("r0");
-    old_stack = stack_ptr;
-    stack_ptr = CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE - sizeof(CYG_ADDRESS);
-    new_func = (code_fun*)func;
-    new_func();
-    stack_ptr = old_stack;
+    asm volatile ("mov    r12,sp\n"
+                  "stmdb  sp!, {r4, r12, lr, pc}\n"
+                  "sub    r4,r12, #4\n"
+                  "mov    r12,#0xa0000000\n"
+                  "add    sp,r12,#0x1000000\n"
+                  "mov    lr,pc\n"
+                  "mov    pc,r0\n"
+                  "ldmdb  r4, {r4, sp, pc}\n");
     return;
 }
 

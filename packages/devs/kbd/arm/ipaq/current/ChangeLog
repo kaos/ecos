@@ -1,3 +1,7 @@
+2001-08-29  Kenichi Nakamura  <nakamura@redhat.com>
+
+	* cdl/kbd_ipaq.cdl: Modified dependency on file I/O package.
+
 2001-04-24  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/kbd_ipaq.cdl: Add dependency on file I/O package.

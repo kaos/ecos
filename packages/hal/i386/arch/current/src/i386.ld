@@ -144,10 +144,8 @@ GROUP(libtarget.a libgcc.a)
 // Standard tables at base of memory
 
 idtStart                 = 0x00001000;
-//idtEnd                   = 0x00001800;
 hal_vsr_table            = 0x00001800;
-hal_virtual_vector_table = 0x00001900;
-
+hal_virtual_vector_table = 0x00001c00;
 
 
 

@@ -256,7 +256,7 @@ cdl_package CYGPKG_HAL_MIPS_RM7000_OCELOT {
             flavor  data
             no_define
 # -mabi=eabi -mips2
-            default_value { CYGPKG_HAL_MIPS_MSBFIRST ? "-G0 -mips32 -EB -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-mips2 -EL -mabi=eabi -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGPKG_HAL_MIPS_MSBFIRST ? "-G0 -mips2 -EB -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-G0 -mips2 -EL -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by

@@ -524,11 +524,9 @@ bool ecUtils::CopyFile(LPCTSTR pszSource,LPCTSTR pszDest)
 
   if(rc){
     // Files are identical
-    TRACE(wxT("Copy not necessary: '%s' to '%s'\n"),pszSource,pszDest);
   } else {
     rc=TRUE==::CopyFile(pszSource,pszDest,FALSE);
     if(rc){
-      TRACE(wxT("Copied '%s' to '%s'\n"),pszSource,pszDest);
     } else {
       MessageBoxF(wxT("Failed to copy '%s' to '%s' - %s"),pszSource,pszDest,GetLastErrorMessageString());
     }
@@ -1010,205 +1008,6 @@ bool wxWindowSettings::ApplyFontsToWindows()
     return TRUE;
 }
 
-#if TODO
-
-#ifdef _WIN32
-class wxProcessInfo: public wxObject
-{
-public:
-    wxProcessInfo() {}
-
-    wxProcessInfo *pParent;
-#ifdef _WIN32
-    __int64 tCreation;
-#endif
-    Time tCpu;
-    int PID;
-    int PPID;
-    bool IsChildOf(int pid) const;
-};
-
-void wxSetProcessInfoParents(CSubprocess::PInfoArray &arPinfo)
-{
-  int i;
-  for(i=0;i<(signed)arPinfo.size();i++){
-    PInfo &p=arPinfo[i];
-    p.pParent=0;
-    for(int j=0;j<(signed)arPinfo.size();j++){
-      if(arPinfo[j].PID==p.PPID 
-#ifdef _WIN32
-        && arPinfo[j].tCreation<p.tCreation
-#endif
-        )
-      {
-        arPinfo[i].pParent=&arPinfo[j];
-        break;
-      }
-    }
-  }
-
-  // Check for circularity
-  bool bCircularity=false;
-  for(i=0;i<(signed)arPinfo.size();i++){
-    PInfo *p=&arPinfo[i];
-    for(int j=0;j<(signed)arPinfo.size() && p;j++){
-      p=p->pParent;
-    }
-    // If all is well, p should be NULL here.  Otherwise we have a loop.
-    if(p){
-      // Make sure it can't foul things up:
-      arPinfo[i].pParent=0;
-      bCircularity=true;
-    }
-  }
-  
-  if(bCircularity){
-    ERROR(_T("!!! Circularly linked process list at index %d\n"),i);
-    for(int k=0;k<(signed)arPinfo.size();k++){
-      const PInfo &p=arPinfo[k];
-      ERROR(_T("%d: %s ppid=%4d\n"),k,(LPCTSTR)Name(p.PID),p.PPID);
-    }
-  }
-}
-
-bool CSubprocess::PInfo::IsChildOf(int pid) const
-{
-  for(PInfo *p=pParent;p && p!=this;p=p->pParent) { // guard against circular linkage
-    if(p->PID==pid){
-      return true;
-    }
-  }
-  return false;
-}
-
-
-bool wxGetChildProcesses(wxList& children)
-{
-    int osVersion = wxGetOsVersion() ;
-    HINSTANCE hInstLib1 = wxWINDOWS_NT==osVersion ? LoadLibrary(_T("PSAPI.DLL")):LoadLibrary(_T("Kernel32.DLL")) ;
-    HINSTANCE hInstLib2 = wxWINDOWS_NT==osVersion ? LoadLibrary(_T("NTDLL.DLL")):NULL;
-    
-    bool rc=false;
-    children.Clear();
-    // If Windows NT:
-    switch (osVersion)
-    {
-    case wxWINDOWS_NT:
-        if(hInstLib1)
-        {
-            
-            // Get procedure addresses.
-            static BOOL (WINAPI *lpfEnumProcesses)( DWORD *, DWORD cb, DWORD * ) = (BOOL(WINAPI *)(DWORD *,DWORD,DWORD*))GetProcAddress( hInstLib1, "EnumProcesses" ) ;
-            if (lpfEnumProcesses)
-            {
-                
-                if (hInstLib2)
-                {
-                    
-                    static DWORD (WINAPI *lpfNtQueryInformationProcess)( HANDLE, int, void *, DWORD, LPDWORD ) =
-                        (DWORD(WINAPI *)(HANDLE, int, void *, DWORD, LPDWORD)) GetProcAddress( hInstLib2,"NtQueryInformationProcess" ) ;
-                    
-                    if(lpfNtQueryInformationProcess)
-                    {
-                        DWORD dwMaxPids=256;
-                        DWORD dwPidSize;
-                        DWORD *arPids = NULL ;
-                        do {
-                            delete [] arPids;
-                            arPids=new DWORD[dwMaxPids];
-                        } while(lpfEnumProcesses(arPids, dwMaxPids, &dwPidSize) && dwPidSize/sizeof(DWORD)==dwMaxPids) ;
-                        
-                        if(dwPidSize/sizeof(DWORD)<dwMaxPids)
-                        {
-                            rc=true;
-                            for ( DWORD dwIndex = 0 ; (signed)dwIndex < dwPidSize/sizeof(DWORD); dwIndex++ ) {
-                                // Regardless of OpenProcess success or failure, we
-                                // still call the enum func with the ProcID.
-                                DWORD pid=arPids[dwIndex];
-                                HANDLE hProcess=::OpenProcess( PROCESS_QUERY_INFORMATION, FALSE, pid ); 
-                                if (hProcess ) {
-                                    struct {
-                                        DWORD ExitStatus; // receives process termination status
-                                        DWORD PebBaseAddress; // receives process environment block address
-                                        DWORD AffinityMask; // receives process affinity mask
-                                        DWORD BasePriority; // receives process priority class
-                                        ULONG UniqueProcessId; // receives process identifier
-                                        ULONG InheritedFromUniqueProcessId; // receives parent process identifier
-                                    } pbi;
-                                    memset( &pbi, 0, sizeof(pbi)); 
-                                    DWORD retLen; 
-                                    __int64 ftCreation,ftExit,ftKernel,ftUser;
-                                    if(lpfNtQueryInformationProcess(hProcess, 0 /*ProcessBasicInformation*/, &pbi, sizeof(pbi), &retLen)>=0 &&
-                                        TRUE==::GetProcessTimes (hProcess,(FILETIME *)&ftCreation,(FILETIME *)&ftExit,(FILETIME *)&ftKernel,(FILETIME *)&ftUser)){
-                                        // The second test is important.  It excludes orphaned processes who appear to have been adopted by virtue of a new
-                                        // process having been created with the same ID as their original parent.
-                                        wxProcessInfo* p = new wxProcessInfo;
-                                        p->PID=pid;
-                                        p->PPID=pbi.InheritedFromUniqueProcessId;
-                                        p->tCreation=ftCreation;
-                                        p->tCpu=Time((ftKernel+ftUser)/10000);
-                                        children.Append(p);
-                                    }
-                                    
-                                    CloseHandle(hProcess); 
-                                    
-                                }
-                            }
-                        }
-                        delete [] arPids;
-                    }          
-                }
-            }      
-        }
-        break;
-    case wxWIN95:
-        
-        if( hInstLib1) {
-            
-            static HANDLE (WINAPI *lpfCreateToolhelp32Snapshot)(DWORD,DWORD)=
-                (HANDLE(WINAPI *)(DWORD,DWORD))GetProcAddress( hInstLib1,"CreateToolhelp32Snapshot" ) ;
-            static BOOL (WINAPI *lpfProcess32First)(HANDLE,LPPROCESSENTRY32)=
-                (BOOL(WINAPI *)(HANDLE,LPPROCESSENTRY32))GetProcAddress( hInstLib1, "Process32First" ) ;
-            static BOOL (WINAPI *lpfProcess32Next)(HANDLE,LPPROCESSENTRY32)=
-                (BOOL(WINAPI *)(HANDLE,LPPROCESSENTRY32))GetProcAddress( hInstLib1, "Process32Next" ) ;
-            if( lpfProcess32Next && lpfProcess32First && lpfCreateToolhelp32Snapshot) {
-                
-                // Get a handle to a Toolhelp snapshot of the systems
-                // processes.
-                HANDLE hSnapShot = lpfCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) ;
-                if(INVALID_HANDLE_VALUE != hSnapShot) {
-                    // Get the first process' information.
-                    PROCESSENTRY32 procentry;
-                    procentry.dwSize = sizeof(PROCESSENTRY32) ;
-                    if(lpfProcess32First( hSnapShot, &procentry )){
-                        rc=true;
-                        do {
-                            PInfo p;
-                            p.PID=procentry.th32ProcessID;
-                            p.PPID=procentry.th32ParentProcessID;
-                            arPinfo.push_back(p);
-                        } while(lpfProcess32Next( hSnapShot, &procentry ));
-                    }
-                    CloseHandle(hSnapShot);
-                }
-            }
-        }
-        break;
-    default:
-        break;
-    }    
-    
-    SetParents(children);
-    
-    if(!rc){
-        wxMessageBox(_T("Couldn't get process information!\n"));
-    }
-    return rc;
-}
-#endif
-
-#endif
-
 #ifdef __WIN32__
 // This will be obsolete when we switch to using the version included
 // in wxWindows (from wxWin 2.3.1 onwards)
@@ -1435,6 +1234,366 @@ int ecKill(long pid, wxSignal sig)
     return wxNewKill(pid, sig);
 #else
     return -1;
+#endif
+}
+
+#ifdef _WIN32
+  #include <tlhelp32.h>
+
+  WXHINSTANCE wxProcessKiller::hInstLib1 = VER_PLATFORM_WIN32_NT==wxProcessKiller::GetPlatform()? (WXHINSTANCE) LoadLibrary(_T("PSAPI.DLL")) : (WXHINSTANCE) LoadLibrary(_T("Kernel32.DLL")) ;
+  WXHINSTANCE wxProcessKiller::hInstLib2 = VER_PLATFORM_WIN32_NT==wxProcessKiller::GetPlatform()? (WXHINSTANCE) LoadLibrary(_T("NTDLL.DLL")): (WXHINSTANCE) NULL;
+
+#endif
+
+const unsigned int wxProcessKiller::PROCESS_KILL_EXIT_CODE=0xCCFFCCFF;
+
+wxProcessKiller::wxProcessKiller(int pid):
+  m_bVerbose(false),
+  m_nExitCode(-1),
+  m_idProcess(pid)
+{
+#ifdef _WIN32
+      m_hProcess = (WXHANDLE) ::OpenProcess(SYNCHRONIZE |
+          PROCESS_TERMINATE |
+          PROCESS_QUERY_INFORMATION,
+          FALSE, // not inheritable
+          (DWORD) m_idProcess);
+#endif
+}
+
+wxProcessKiller::~wxProcessKiller()
+{
+#ifdef _WIN32
+    if (m_hProcess)
+    {
+        ::CloseHandle((HANDLE) m_hProcess);
+    }
+#endif
+}
+
+bool wxProcessKiller::Kill(bool bRecurse)
+{
+    wxPInfoArray arPinfo;
+    bool rc=false;
+    if(m_idProcess && -1!=m_idProcess){
+        // Start of with the easy one:
+        if(bRecurse) {
+            // Need to gather this information before we orphan our grandchildren:
+            PSExtract(arPinfo);
+        }
+        
+#ifdef _WIN32
+        
+        if(m_hProcess){
+            rc=(TRUE==::TerminateProcess((HANDLE) m_hProcess,PROCESS_KILL_EXIT_CODE));
+            // dtor's (or subsequent Run's) responsibility to close the handle
+        }
+        
+#else
+        rc=(0==kill(m_idProcess,SIGTERM));
+        int status;
+        waitpid(m_idProcess,&status,WNOHANG);
+#endif
+        
+        if(bRecurse) {
+            // kill process *and* its children
+            // FIXME: needs to be top-down
+            for(int i=0;i<(signed)arPinfo.size();i++){
+                if(arPinfo[i].IsChildOf(m_idProcess)){
+                    
+#ifdef _WIN32
+                    // begin hack
+                    // WHY NECESSARY??
+                    const wxString strName(Name(arPinfo[i].PID));
+                    if(_tcsstr(strName,_T("eCosTest")) || _tcsstr(strName,_T("cmd.EXE")) || _tcsstr(strName,_T("CMD.EXE")) || arPinfo[i].PID==(signed)GetCurrentProcessId()){
+                        continue;
+                    }
+                    // end hack
+                    HANDLE hProcess=::OpenProcess(PROCESS_TERMINATE,false,arPinfo[i].PID);
+                    if(hProcess){
+                        rc&=(TRUE==::TerminateProcess(hProcess,PROCESS_KILL_EXIT_CODE));
+                        CloseHandle(hProcess);
+                    } else {
+                        rc=false;
+                    }
+#else
+                    rc&=(0==kill(arPinfo[i].PID,SIGTERM));
+                    int status;
+                    waitpid(arPinfo[i].PID,&status,WNOHANG);
+#endif
+                }
+            }
+        }
+    }
+    return rc;
+}
+
+#ifdef _WIN32
+bool wxProcessKiller::PSExtract(wxProcessKiller::wxPInfoArray &arPinfo)
+{
+    bool rc=false;
+    arPinfo.clear();
+    // If Windows NT:
+    switch(GetPlatform()) {
+    case VER_PLATFORM_WIN32_NT:
+        if(hInstLib1) {
+            
+            // Get procedure addresses.
+            static BOOL (WINAPI *lpfEnumProcesses)( DWORD *, DWORD cb, DWORD * ) = (BOOL(WINAPI *)(DWORD *,DWORD,DWORD*))GetProcAddress( (HINSTANCE) hInstLib1, "EnumProcesses" ) ;
+            if( lpfEnumProcesses) {
+                
+                if(hInstLib2) {
+                    
+                    static DWORD (WINAPI *lpfNtQueryInformationProcess)( HANDLE, int, void *, DWORD, LPDWORD ) =
+                        (DWORD(WINAPI *)(HANDLE, int, void *, DWORD, LPDWORD)) GetProcAddress( (HINSTANCE) hInstLib2,"NtQueryInformationProcess" ) ;
+                    
+                    if(lpfNtQueryInformationProcess){
+                        DWORD dwMaxPids=256;
+                        DWORD dwPidSize;
+                        DWORD *arPids = NULL ;
+                        do {
+                            delete [] arPids;
+                            arPids=new DWORD[dwMaxPids];
+                        } while(lpfEnumProcesses(arPids, dwMaxPids, &dwPidSize) && dwPidSize/sizeof(DWORD)==dwMaxPids) ;
+                        
+                        if(dwPidSize/sizeof(DWORD)<dwMaxPids){
+                            rc=true;
+                            for( DWORD dwIndex = 0 ; (signed)dwIndex < dwPidSize/sizeof(DWORD); dwIndex++ ) {
+                                // Regardless of OpenProcess success or failure, we
+                                // still call the enum func with the ProcID.
+                                DWORD pid=arPids[dwIndex];
+                                HANDLE hProcess=::OpenProcess( PROCESS_QUERY_INFORMATION, FALSE, pid ); 
+                                if (hProcess ) {
+                                    struct {
+                                        DWORD ExitStatus; // receives process termination status
+                                        DWORD PebBaseAddress; // receives process environment block address
+                                        DWORD AffinityMask; // receives process affinity mask
+                                        DWORD BasePriority; // receives process priority class
+                                        ULONG UniqueProcessId; // receives process identifier
+                                        ULONG InheritedFromUniqueProcessId; // receives parent process identifier
+                                    } pbi;
+                                    memset( &pbi, 0, sizeof(pbi)); 
+                                    DWORD retLen; 
+                                    __int64 ftCreation,ftExit,ftKernel,ftUser;
+                                    if(lpfNtQueryInformationProcess(hProcess, 0 /*ProcessBasicInformation*/, &pbi, sizeof(pbi), &retLen)>=0 &&
+                                        TRUE==::GetProcessTimes (hProcess,(FILETIME *)&ftCreation,(FILETIME *)&ftExit,(FILETIME *)&ftKernel,(FILETIME *)&ftUser)){
+                                        // The second test is important.  It excludes orphaned processes who appear to have been adopted by virtue of a new
+                                        // process having been created with the same ID as their original parent.
+                                        wxPInfo p;
+                                        p.PID=pid;
+                                        p.PPID=pbi.InheritedFromUniqueProcessId;
+                                        p.tCreation=ftCreation;
+                                        p.tCpu=Time((ftKernel+ftUser)/10000);
+                                        arPinfo.push_back(p);
+                                    }
+                                    
+                                    CloseHandle(hProcess); 
+                                    
+                                }
+                            }
+                        }
+                        delete [] arPids;
+                    }          
+                }
+            }      
+        }
+        break;
+    case VER_PLATFORM_WIN32_WINDOWS:
+        
+        if( hInstLib1) {
+            
+            static HANDLE (WINAPI *lpfCreateToolhelp32Snapshot)(DWORD,DWORD)=
+                (HANDLE(WINAPI *)(DWORD,DWORD))GetProcAddress( (HINSTANCE) hInstLib1,"CreateToolhelp32Snapshot" ) ;
+            static BOOL (WINAPI *lpfProcess32First)(HANDLE,LPPROCESSENTRY32)=
+                (BOOL(WINAPI *)(HANDLE,LPPROCESSENTRY32))GetProcAddress( (HINSTANCE) hInstLib1, "Process32First" ) ;
+            static BOOL (WINAPI *lpfProcess32Next)(HANDLE,LPPROCESSENTRY32)=
+                (BOOL(WINAPI *)(HANDLE,LPPROCESSENTRY32))GetProcAddress( (HINSTANCE) hInstLib1, "Process32Next" ) ;
+            if( lpfProcess32Next && lpfProcess32First && lpfCreateToolhelp32Snapshot) {
+                
+                // Get a handle to a Toolhelp snapshot of the systems
+                // processes.
+                HANDLE hSnapShot = lpfCreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) ;
+                if(INVALID_HANDLE_VALUE != hSnapShot) {
+                    // Get the first process' information.
+                    PROCESSENTRY32 procentry;
+                    procentry.dwSize = sizeof(PROCESSENTRY32) ;
+                    if(lpfProcess32First( hSnapShot, &procentry )){
+                        rc=true;
+                        do {
+                            wxPInfo p;
+                            p.PID=procentry.th32ProcessID;
+                            p.PPID=procentry.th32ParentProcessID;
+                            arPinfo.push_back(p);
+                        } while(lpfProcess32Next( hSnapShot, &procentry ));
+                    }
+                    CloseHandle(hSnapShot);
+                }
+            }
+        }
+        break;
+    default:
+        break;
+    }    
+    
+    SetParents(arPinfo);
+    
+    if(!rc){
+        wxLogError(_T("Couldn't get process information!\n"));
+    }
+    return rc;
+}
+
+#else // UNIX
+
+bool wxProcessKiller::PSExtract(wxProcessKiller::wxPInfoArray &arPinfo)
+{
+    arPinfo.clear();
+    int i;
+    FILE *f=popen("ps -l",_T("r") MODE_TEXT);
+    if(f){
+        char buf[100];
+        while(fgets(buf,sizeof(buf)-1,f)){
+            TCHAR discard[100];
+            wxPInfo p;
+            // Output is in the form
+            //  F S   UID   PID  PPID  C PRI  NI ADDR    SZ WCHAN  TTY          TIME CMD
+            //100 S   490   877   876  0  70   0    -   368 wait4  pts/0    00:00:00 bash
+            int F,UID,C,PRI,NI,SZ,HH,MM,SS; 
+            bool rc=(15==_stscanf(buf,_T("%d %s %d %d %d %d %d %d %s %d %s %s %d:%d:%d"),&F,discard,&UID,&p.PID,&p.PPID,&C,&PRI,&NI,discard,&SZ,discard,discard,&HH,&MM,&SS));
+            if(rc){
+                p.tCpu=1000*(SS+60*(60*HH+MM));
+                arPinfo.push_back(p);
+            }
+        }
+        pclose(f);
+        for(i=0;i<(signed)arPinfo.size();i++){
+            int pid=arPinfo[i].PPID;
+            arPinfo[i].pParent=0;
+            for(int j=0;j<(signed)arPinfo.size();j++){
+                if(i!=j && arPinfo[j].PID==pid){
+                    arPinfo[i].pParent=&arPinfo[j];
+                    break;
+                }
+            }
+        }
+    } else {
+        wxLogError(_T("Failed to run ps -l\n"));
+    }
+    return true; //FIXME
+}
+
+#endif
+
+void wxProcessKiller::SetParents(wxProcessKiller::wxPInfoArray &arPinfo)
+{
+    int i;
+    for(i=0;i<(signed)arPinfo.size();i++){
+        wxPInfo &p=arPinfo[i];
+        p.pParent=0;
+        for(int j=0;j<(signed)arPinfo.size();j++){
+            if(arPinfo[j].PID==p.PPID 
+#ifdef _WIN32
+                && arPinfo[j].tCreation<p.tCreation
+#endif
+                )
+            {
+                arPinfo[i].pParent=&arPinfo[j];
+                break;
+            }
+        }
+    }
+    
+    // Check for circularity
+    bool bCircularity=false;
+    for(i=0;i<(signed)arPinfo.size();i++){
+        wxPInfo *p=&arPinfo[i];
+        for(int j=0;j<(signed)arPinfo.size() && p;j++){
+            p=p->pParent;
+        }
+        // If all is well, p should be NULL here.  Otherwise we have a loop.
+        if(p){
+            // Make sure it can't foul things up:
+            arPinfo[i].pParent=0;
+            bCircularity=true;
+        }
+    }
+    
+    if(bCircularity){
+        wxLogError(_T("!!! Circularly linked process list at index %d\n"),i);
+        for(int k=0;k<(signed)arPinfo.size();k++){
+            const wxPInfo &p=arPinfo[k];
+            wxLogError(_T("%d: %s ppid=%4d\n"),k,(LPCTSTR)Name(p.PID),p.PPID);
+        }
+    }
+}
+
+bool wxProcessKiller::wxPInfo::IsChildOf(int pid) const
+{
+    for(wxPInfo *p=pParent;p && p!=this;p=p->pParent) { // guard against circular linkage
+        if(p->PID==pid){
+            return true;
+        }
+    }
+    return false;
+}
+
+const wxString wxProcessKiller::Name(int pid)
+{
+    wxString str;
+    str.Printf(_T("id=%d"),pid);
+#ifdef _DEBUG
+#ifdef _WIN32
+    if(VER_PLATFORM_WIN32_NT==GetPlatform() && hInstLib1){
+        static BOOL (WINAPI *lpfEnumProcessModules)( HANDLE, HMODULE *, DWORD, LPDWORD ) =
+            (BOOL(WINAPI *)(HANDLE, HMODULE *, DWORD, LPDWORD)) GetProcAddress( (HINSTANCE) hInstLib1,"EnumProcessModules" ) ;
+        static DWORD (WINAPI *lpfGetModuleFileNameEx)( HANDLE, HMODULE, LPTSTR, DWORD )=
+            (DWORD (WINAPI *)(HANDLE, HMODULE,LPTSTR, DWORD )) GetProcAddress( (HINSTANCE) hInstLib1,"GetModuleFileNameExA" ) ;
+        if( lpfEnumProcessModules &&  lpfGetModuleFileNameEx ) {
+            HANDLE hProcess=::OpenProcess(PROCESS_ALL_ACCESS,false,pid);
+            if(hProcess) {
+                HMODULE hMod;
+                DWORD dwSize;
+                if(lpfEnumProcessModules( hProcess, &hMod, sizeof(HMODULE), &dwSize ) ){
+                    // Get Full pathname:
+                    TCHAR buf[1+MAX_PATH];
+                    lpfGetModuleFileNameEx( hProcess, hMod, buf, MAX_PATH);
+                    str+=_TCHAR(' ');
+                    str+=buf;
+                }
+                CloseHandle(hProcess);
+            }
+        }
+    }
+#endif
+#endif
+    return str;
+}
+
+#ifdef _WIN32
+long wxProcessKiller::GetPlatform()
+{
+    OSVERSIONINFO  osver;
+    osver.dwOSVersionInfoSize = sizeof( osver ) ;
+    return GetVersionEx( &osver ) ? (long) osver.dwPlatformId : (long)-1;
+}
+#endif
+
+const wxString wxProcessKiller::ErrorString() const
+{
+#ifdef _WIN32
+    TCHAR *pszMsg;
+    FormatMessage(  
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL,
+        m_nErr,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+        (LPTSTR)&pszMsg,
+        0,
+        NULL 
+        );
+    return pszMsg;
+#else 
+    return strerror(errno);
 #endif
 }
 

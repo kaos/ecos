@@ -77,11 +77,11 @@
 #define CYGNUM_HAL_VECTOR_FPE                    16
 #define CYGNUM_HAL_VECTOR_ALIGNMENT              17
 
-// The default size of the VSR table is 64 entries.
+// The default size of the VSR table is 256 entries.
 #ifndef CYGNUM_HAL_VSR_MIN
 #define CYGNUM_HAL_VSR_MIN                        0
-#define CYGNUM_HAL_VSR_MAX                       63
-#define CYGNUM_HAL_VSR_COUNT                     64
+#define CYGNUM_HAL_VSR_MAX                       255
+#define CYGNUM_HAL_VSR_COUNT                     256
 #endif
 
 // Common exception vectors.

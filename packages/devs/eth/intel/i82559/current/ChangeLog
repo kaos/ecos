@@ -1,3 +1,29 @@
+2001-08-29  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/intel_i82559_eth_drivers.cdl: New CDL options called 
+	CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD, .._PRIORITY and
+	.._DELAY to control the thread.  By default this is all disabled
+	because it is not needed for a real network application which
+	itself proactively tries to use the net - it's only needed when
+	the app is totally passive, so the driver otherwise does not get
+	CPU time at all.
+	
+	* src/if_i82559.c (starti82559ticklethread): New code to start a
+	thread (!) to catch lost interrupts and thus restart jammed
+	hardware.  It's only possible if KERNEL and NET - RedBoot is
+	unaffected, and it's not needed for RedBoot 'cos RedBoot polls.
+	(TxMachine): An assert about the CU idle status sometimes fired;
+	made the code more conservative wrt timing here.
+	(comments): more documentation on the possible external configury
+	by .inl file, described the two TIMEOUT macros that can be set,
+	and indeed must be to use the tickling thread meaningfully.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_i82559.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-06-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_i82559.c (i82559_init): Handle EEPROMS without CRC.
@@ -629,7 +655,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -95,9 +95,26 @@ Cyg_Mutex::Cyg_Mutex()
 #endif    
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_NONE
     protocol    = NONE;
-#endif    
+#endif
 
+#else // not (DYNAMIC and DEFAULT defined)
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING    
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY
+
+    // if there is a default priority ceiling defined, use that to initialize
+    // the ceiling.
+    ceiling = CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY;    
+
+#else
+
+    // Otherwise set it to zero.
+    ceiling = 0;
+    
 #endif    
+#endif
+
+#endif // DYNAMIC and DEFAULT defined
     
     CYG_REPORT_RETURN();
 }

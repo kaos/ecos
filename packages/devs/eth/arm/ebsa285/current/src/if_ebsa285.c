@@ -70,7 +70,6 @@
 #include <net/if.h>  /* Needed for struct ifnet */
 #else
 #include <cyg/hal/hal_if.h>
-#define diag_printf printf
 #endif
 
 #ifdef CYGPKG_IO_PCI
@@ -1490,14 +1489,14 @@ static void TxDone(struct i82559* p_i82559)
              ( p_i82559->tx_queue_full &&
               (0 != p_i82559->tx_ring[ tx_descriptor_remove ]->txstatus) ) ) {
         unsigned long key = p_i82559->tx_keys[ tx_descriptor_remove ];
+        // Zero the key in global state before the callback:
+        p_i82559->tx_keys[ tx_descriptor_remove ] = 0;
 #ifdef DEBUG_82559
         os_printf("TxDone %d %x: KEY %x\n",
                   p_i82559->index, (int)p_i82559, key );
 #endif
-        if (key) {
-            (sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ ); 
-        }
-        p_i82559->tx_keys[ tx_descriptor_remove ] = 0;
+        // tx_done() can now cope with a NULL key, no guard needed here
+        (sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ ); 
         
         if ( ++tx_descriptor_remove >= MAX_TX_DESCRIPTORS )
             tx_descriptor_remove = 0;

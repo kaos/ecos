@@ -1,3 +1,11 @@
+2001-08-22  Nick Garnett  <nickg@redhat.com>
+
+	* src/pcmb_misc.c: Added spinlock to clock read operation.
+	
+	* include/pcmb_io.h (PC_WRITE_SCREEN_*): Added casts to make these
+	macros more universal.
+
+
 2001-07-31  Mark Salter  <msalter@redhat.com>
 
 	* include/pcmb_io.h: Add IDE I/O macros.

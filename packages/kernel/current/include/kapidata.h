@@ -327,7 +327,7 @@ typedef struct
 } cyg_schedthread;
 
 #define CYG_THREADTIMER_MEMBERS \
-    CYG_ALARM_MEMBERS           \
+    cyg_alarm           alarm;  \
     cyg_thread          *thread;
 
 /*---------------------------------------------------------------------------*/
@@ -376,6 +376,22 @@ typedef int cyg_reason_t; /* cyg_reason is originally an enum */
 # define CYG_THREAD_LIST_NEXT_MEMBER
 #endif
 
+
+
+#ifdef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+typedef void (*cyg_thread_destructor_fn)(CYG_ADDRWORD);
+
+struct Cyg_Destructor_Entry {
+    cyg_thread_destructor_fn fn;
+    CYG_ADDRWORD data;
+};
+# define CYG_THREAD_DESTRUCTORS_MEMBER \
+   struct Cyg_Destructor_Entry destructors[ CYGNUM_KERNEL_THREADS_DESTRUCTORS ];
+#else
+# define CYG_THREAD_DESTRUCTORS_MEMBER
+#endif
+
+
 #define CYG_THREAD_MEMBERS                        \
     CYG_HARDWARETHREAD_MEMBERS                    \
     CYG_SCHEDTHREAD_MEMBERS                       \
@@ -393,6 +409,7 @@ typedef int cyg_reason_t; /* cyg_reason is originally an enum */
     cyg_reason_t        wake_reason;              \
                                                   \
     CYG_THREAD_THREAD_DATA_MEMBER                 \
+    CYG_THREAD_DESTRUCTORS_MEMBER                 \
     CYG_THREAD_NAME_MEMBER                        \
     CYG_THREAD_LIST_NEXT_MEMBER                   
 
@@ -460,7 +477,7 @@ struct cyg_cond_t
 
 struct cyg_spinlock_t
 {
-    cyg_atomic          lock;           /* lock word                     */
+    cyg_uint32          lock;           /* lock word                     */
 };
 
 /*------------------------------------------------------------------------*/

@@ -88,8 +88,8 @@ e2fs_get_gdesc(e2fs_desc_t *e2fs, cyg_uint32 group_nr, e2fs_group_t *gdesc)
 	sec_nr += (group_nr / E2FS_GDESC_PER_SECTOR);
 
 #if DEBUG_E2FS > 2
-	printf("%s: group[%d] cache miss, sec_nr[%d]\n",
-	       __FUNCTION__, group_nr, sec_nr);
+	diag_printf("%s: group[%d] cache miss, sec_nr[%d]\n",
+                    __FUNCTION__, group_nr, sec_nr);
 #endif
 	if (!PARTITION_READ(e2fs->part, sec_nr, (cyg_uint32 *)e2fs->gdesc_cache,
 			    sizeof(e2fs->gdesc_cache)/SECTOR_SIZE))
@@ -125,8 +125,8 @@ e2fs_get_inode(e2fs_desc_t *e2fs, int ino, e2fs_inode_t *ip)
     offset %= SECTOR_SIZE;
 
 #if DEBUG_E2FS > 0
-    printf("%s: ino[%d], sec_nr[%d] offset[%d]\n", __FUNCTION__,
-	   ino, sec_nr, offset);
+    diag_printf("%s: ino[%d], sec_nr[%d] offset[%d]\n", __FUNCTION__,
+                ino, sec_nr, offset);
 #endif
 
     if (!PARTITION_READ(e2fs->part, sec_nr, buf, 1))
@@ -135,7 +135,7 @@ e2fs_get_inode(e2fs_desc_t *e2fs, int ino, e2fs_inode_t *ip)
     *ip = *(e2fs_inode_t *)((char *)buf + offset);
 
 #if DEBUG_E2FS > 0
-    printf("%s: inode size[%d]\n", __FUNCTION__, SWAB_LE32(ip->size));
+    diag_printf("%s: inode size[%d]\n", __FUNCTION__, SWAB_LE32(ip->size));
 #endif
 
     return 1;
@@ -158,7 +158,7 @@ e2fs_mount(partition_t *part, e2fs_desc_t *e2fs)
 	return -1;
 
     if (SWAB_LE16(sb->magic) != E2FS_SUPER_MAGIC) {
-	printf("ext2_mount: bad magic 0x%x\n", SWAB_LE16(sb->magic));
+	diag_printf("ext2_mount: bad magic 0x%x\n", SWAB_LE16(sb->magic));
 	return -1;
     }
 
@@ -181,12 +181,12 @@ e2fs_mount(partition_t *part, e2fs_desc_t *e2fs)
 	return -1;
 
 #if DEBUG_E2FS > 1
-    printf("E2FS superblock:\n");
-    printf("   [%d] inodes\n", SWAB_LE32(sb->inodes_count));
-    printf("   [%d] blocks\n", SWAB_LE32(sb->blocks_count));
-    printf("   [%d] blocksize\n", e2fs->blocksize);
-    printf("   [%d] blocks per group\n", e2fs->blocks_per_group);
-    printf("   [%d] ngroups\n", e2fs->ngroups);
+    diag_printf("E2FS superblock:\n");
+    diag_printf("   [%d] inodes\n", SWAB_LE32(sb->inodes_count));
+    diag_printf("   [%d] blocks\n", SWAB_LE32(sb->blocks_count));
+    diag_printf("   [%d] blocksize\n", e2fs->blocksize);
+    diag_printf("   [%d] blocks per group\n", e2fs->blocks_per_group);
+    diag_printf("   [%d] ngroups\n", e2fs->ngroups);
 #endif
 
 #if DEBUG_E2FS > 4
@@ -289,13 +289,13 @@ e2fs_dir_lookup(e2fs_desc_t *e2fs, cyg_uint32  dir_ino,
     cyg_uint32 nblocks, last_block_size, i, block_nr, nbytes;
 
 #if DEBUG_E2FS > 0
-    printf("%s: looking for %s [%d] in ino[%d]\n",
-	   __FUNCTION__, name, namelen, dir_ino);
+    diag_printf("%s: looking for %s [%d] in ino[%d]\n",
+                __FUNCTION__, name, namelen, dir_ino);
 #endif
 
     if (!e2fs_get_inode(e2fs, dir_ino, &inode)) {
 #if DEBUG_E2FS > 0
-	printf("%s: e2fs_get_inode [%d] failed\n", __FUNCTION__, dir_ino);
+	diag_printf("%s: e2fs_get_inode [%d] failed\n", __FUNCTION__, dir_ino);
 #endif
 	return NULL;
     }
@@ -349,7 +349,7 @@ e2fs_follow_symlink(e2fs_desc_t *e2fs, cyg_uint32 dir_ino, cyg_uint32 sym_ino, i
 
     if (!e2fs_get_inode(e2fs, sym_ino, &inode)) {
 #if DEBUG_E2FS > 0
-	printf("%s: e2fs_get_inode [%d] failed\n", __FUNCTION__, *ino);
+	diag_printf("%s: e2fs_get_inode [%d] failed\n", __FUNCTION__, *ino);
 #endif
 	return 0;
     }
@@ -472,19 +472,19 @@ e2fs_open(partition_t *p, const char *filepath)
 
     // mount partition
     if (e2fs_mount(p, &rinfo.e2fs_desc) != 0) {
-	printf("mount failed.\n");
+	diag_printf("mount failed.\n");
 	return NULL;
     }
 
     // find file inode
     if (!e2fs_inode_lookup(&rinfo.e2fs_desc, E2FS_ROOT_INO, filepath, &ino_info)) {
-	printf("%s: e2fs_inode_lookup failed\n", __FUNCTION__);
+	diag_printf("%s: e2fs_inode_lookup failed\n", __FUNCTION__);
 	return NULL;
     }
 
     // read inode
     if (!e2fs_get_inode(&rinfo.e2fs_desc, ino_info.ino, &rinfo.inode)) {
-	printf("%s: e2fs_get_inode failed for ino[%d]\n", __FUNCTION__, ino_info.ino);
+	diag_printf("%s: e2fs_get_inode failed for ino[%d]\n", __FUNCTION__, ino_info.ino);
 	return NULL;
     }
 
@@ -552,46 +552,46 @@ e2fs_read(void *fp, char *buf, cyg_uint32 nbytes)
 #if DEBUG_E2FS > 4
 static void dump_sb(struct e2fs_super_block *s)
 {
-    printf("inode_count: %d\n", SWAB_LE32(s->inodes_count));
-    printf("blocks_count: %d\n", SWAB_LE32(s->blocks_count));
-    printf("r_blocks_count: %d\n", SWAB_LE32(s->r_blocks_count));
-    printf("free_blocks_count: %d\n", SWAB_LE32(s->free_blocks_count));
-    printf("free_inodes_count: %d\n", SWAB_LE32(s->free_inodes_count));
-    printf("first_data_block: %d\n", SWAB_LE32(s->first_data_block));
-    printf("log_block_size: %d\n", SWAB_LE32(s->log_block_size));
-    printf("log_frag_size: %d\n", SWAB_LE32(s->log_frag_size));
-    printf("blocks_per_group: %d\n", SWAB_LE32(s->blocks_per_group));
-    printf("frags_per_group: %d\n", SWAB_LE32(s->frags_per_group));
-    printf("inodes_per_group: %d\n", SWAB_LE32(s->inodes_per_group));
-    printf("mnt_count: %d\n", SWAB_LE16(s->mnt_count));
-    printf("max_mnt_count: %d\n", SWAB_LE16(s->max_mnt_count));
-    printf("magic: %d\n", SWAB_LE16(s->magic));
-    printf("state: %d\n", SWAB_LE16(s->state));
-    printf("errors: %d\n", SWAB_LE16(s->errors));
-    printf("minor_rev_level: %d\n", SWAB_LE16(s->minor_rev_level));
-    printf("lastcheck: %d\n", SWAB_LE32(s->lastcheck));
-    printf("checkinterval: %d\n", SWAB_LE32(s->checkinterval));
-    printf("creator_os: %d\n", SWAB_LE32(s->creator_os));
-    printf("rev_level: %d\n", SWAB_LE32(s->rev_level));
+    diag_printf("inode_count: %d\n", SWAB_LE32(s->inodes_count));
+    diag_printf("blocks_count: %d\n", SWAB_LE32(s->blocks_count));
+    diag_printf("r_blocks_count: %d\n", SWAB_LE32(s->r_blocks_count));
+    diag_printf("free_blocks_count: %d\n", SWAB_LE32(s->free_blocks_count));
+    diag_printf("free_inodes_count: %d\n", SWAB_LE32(s->free_inodes_count));
+    diag_printf("first_data_block: %d\n", SWAB_LE32(s->first_data_block));
+    diag_printf("log_block_size: %d\n", SWAB_LE32(s->log_block_size));
+    diag_printf("log_frag_size: %d\n", SWAB_LE32(s->log_frag_size));
+    diag_printf("blocks_per_group: %d\n", SWAB_LE32(s->blocks_per_group));
+    diag_printf("frags_per_group: %d\n", SWAB_LE32(s->frags_per_group));
+    diag_printf("inodes_per_group: %d\n", SWAB_LE32(s->inodes_per_group));
+    diag_printf("mnt_count: %d\n", SWAB_LE16(s->mnt_count));
+    diag_printf("max_mnt_count: %d\n", SWAB_LE16(s->max_mnt_count));
+    diag_printf("magic: %d\n", SWAB_LE16(s->magic));
+    diag_printf("state: %d\n", SWAB_LE16(s->state));
+    diag_printf("errors: %d\n", SWAB_LE16(s->errors));
+    diag_printf("minor_rev_level: %d\n", SWAB_LE16(s->minor_rev_level));
+    diag_printf("lastcheck: %d\n", SWAB_LE32(s->lastcheck));
+    diag_printf("checkinterval: %d\n", SWAB_LE32(s->checkinterval));
+    diag_printf("creator_os: %d\n", SWAB_LE32(s->creator_os));
+    diag_printf("rev_level: %d\n", SWAB_LE32(s->rev_level));
 }
 
 static void dump_inode(struct e2fs_inode *i)
 {
     int j, n;
 
-    printf("mode: %o\n", SWAB_LE16(i->mode));
-    printf("uid: %o\n", SWAB_LE16(i->uid));
-    printf("size: %d\n", SWAB_LE32(i->size));
-    printf("gid: %o\n", SWAB_LE16(i->gid));
-    printf("links: %d\n", SWAB_LE16(i->links_count));
-    printf("blocks: %d\n", SWAB_LE32(i->blocks));
+    diag_printf("mode: %o\n", SWAB_LE16(i->mode));
+    diag_printf("uid: %o\n", SWAB_LE16(i->uid));
+    diag_printf("size: %d\n", SWAB_LE32(i->size));
+    diag_printf("gid: %o\n", SWAB_LE16(i->gid));
+    diag_printf("links: %d\n", SWAB_LE16(i->links_count));
+    diag_printf("blocks: %d\n", SWAB_LE32(i->blocks));
 
     n = i->blocks;
     if (n > E2FS_N_BLOCKS)
 	n = E2FS_N_BLOCKS;
 
     for (j = 0; j < n; j++)
-	printf("  block: %d\n", SWAB_LE32(i->block[j]));
+	diag_printf("  block: %d\n", SWAB_LE32(i->block[j]));
 }
 #endif
 

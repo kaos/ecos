@@ -338,7 +338,7 @@ HAL_SMP_SCHEDLOCK_DATA_TYPE Cyg_Scheduler_SchedLock::lock_data;
 
 class Cyg_SpinLock
 {
-    cyg_atomic          lock;
+    volatile cyg_uint32 lock;
 
 public:
 

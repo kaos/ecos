@@ -209,6 +209,11 @@ Cyg_Thread::Cyg_Thread(
     for( int i = 0; i < CYGNUM_KERNEL_THREADS_DATA_MAX; i++ )
         thread_data[i] = 0;
 #endif
+#ifdef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    for (int j=0; j<CYGNUM_KERNEL_THREADS_DESTRUCTORS; j++) {
+        destructors[j].fn = NULL;
+    }
+#endif
 #ifdef CYGVAR_KERNEL_THREADS_NAME
     name = name_arg;
 #endif
@@ -720,6 +725,13 @@ Cyg_Thread::release()
 // -------------------------------------------------------------------------
 // Exit thread. This puts the thread into EXITED state.
 
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+Cyg_Thread::Cyg_Destructor_Entry
+Cyg_Thread::destructors[ CYGNUM_KERNEL_THREADS_DESTRUCTORS ];
+#endif
+#endif
+
 void
 Cyg_Thread::exit()
 {
@@ -729,6 +741,20 @@ Cyg_Thread::exit()
 
     Cyg_Thread *self = Cyg_Thread::self();
 
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+    cyg_ucount16 i;
+    Cyg_Scheduler::lock();
+    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
+        if (NULL != self->destructors[i].fn) {
+            destructor_fn fn = self->destructors[i].fn;
+            CYG_ADDRWORD data = self->destructors[i].data;
+            Cyg_Scheduler::unlock();
+            fn(data);
+            Cyg_Scheduler::lock();
+        }        
+    }
+    Cyg_Scheduler::unlock();
+#endif
 #ifdef CYGDBG_KERNEL_THREADS_STACK_MEASUREMENT_VERBOSE_EXIT
     diag_printf( "Stack usage for thread %08x: %d\n", self,
 		 self->measure_stack_usage() );
@@ -1023,14 +1049,15 @@ Cyg_Thread::deliver_exception(
 cyg_ucount32 Cyg_Thread::thread_data_map = (~CYGNUM_KERNEL_THREADS_DATA_ALL) &
                                            ((1<<CYGNUM_KERNEL_THREADS_DATA_MAX)-1);
 
-cyg_ucount32
+Cyg_Thread::cyg_data_index
 Cyg_Thread::new_data_index()
 {
     Cyg_Scheduler::lock();
 
-    cyg_ucount32 index;
+    Cyg_Thread::cyg_data_index index;
 
-    CYG_ASSERT( thread_data_map != 0 , "No more thread data indexes");
+    if (0 == thread_data_map)
+        return -1;
     
     // find ls set bit
     HAL_LSBIT_INDEX( index, thread_data_map );
@@ -1043,7 +1070,7 @@ Cyg_Thread::new_data_index()
     return index;
 }
 
-void Cyg_Thread::free_data_index( cyg_ucount32 index )
+void Cyg_Thread::free_data_index( Cyg_Thread::cyg_data_index index )
 {
     Cyg_Scheduler::lock();
 

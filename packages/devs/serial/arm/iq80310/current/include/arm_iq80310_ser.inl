@@ -72,7 +72,7 @@ static unsigned short select_baud[] = {
 
 #ifdef CYGPKG_IO_SERIAL_ARM_IQ80310_SERIAL0
 static pc_serial_info iq80310_serial_info0 = {0xFE800000,
-                                          CYGNUM_HAL_INTERRUPT_SERIALA};
+                                          CYGNUM_HAL_INTERRUPT_SERIAL_A};
 #if CYGNUM_IO_SERIAL_ARM_IQ80310_SERIAL0_BUFSIZE > 0
 static unsigned char iq80310_serial_out_buf0[CYGNUM_IO_SERIAL_ARM_IQ80310_SERIAL0_BUFSIZE];
 static unsigned char iq80310_serial_in_buf0[CYGNUM_IO_SERIAL_ARM_IQ80310_SERIAL0_BUFSIZE];
@@ -112,7 +112,7 @@ DEVTAB_ENTRY(iq80310_serial_io0,
 
 #ifdef CYGPKG_IO_SERIAL_ARM_IQ80310_SERIAL1
 static pc_serial_info iq80310_serial_info1 = {0xFE810000,
-                                          CYGNUM_HAL_INTERRUPT_SERIALB};
+                                          CYGNUM_HAL_INTERRUPT_SERIAL_B};
 #if CYGNUM_IO_SERIAL_ARM_IQ80310_SERIAL1_BUFSIZE > 0
 static unsigned char iq80310_serial_out_buf1[CYGNUM_IO_SERIAL_ARM_IQ80310_SERIAL1_BUFSIZE];
 static unsigned char iq80310_serial_in_buf1[CYGNUM_IO_SERIAL_ARM_IQ80310_SERIAL1_BUFSIZE];

@@ -167,12 +167,15 @@ class Cyg_Interrupt
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
     
-    static Cyg_Interrupt *dsr_table[CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE]
-                                    CYGBLD_ANNOTATE_VARIABLE_INTR;
+    static Cyg_Interrupt *dsr_table[CYGNUM_KERNEL_CPU_MAX]
+                                   [CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE]
+                                   CYGBLD_ANNOTATE_VARIABLE_INTR;
 
-    static cyg_ucount32 dsr_table_head CYGBLD_ANNOTATE_VARIABLE_INTR;
+    static cyg_ucount32 dsr_table_head[CYGNUM_KERNEL_CPU_MAX]
+                                      CYGBLD_ANNOTATE_VARIABLE_INTR;
 
-    static volatile cyg_ucount32 dsr_table_tail CYGBLD_ANNOTATE_VARIABLE_INTR;
+    static volatile cyg_ucount32 dsr_table_tail[CYGNUM_KERNEL_CPU_MAX]
+                                               CYGBLD_ANNOTATE_VARIABLE_INTR;
 
 #endif
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
@@ -184,7 +187,8 @@ class Cyg_Interrupt
     Cyg_Interrupt* volatile next_dsr CYGBLD_ANNOTATE_VARIABLE_INTR; 
 
     // static list of pending DSRs
-    static Cyg_Interrupt* volatile dsr_list CYGBLD_ANNOTATE_VARIABLE_INTR;
+    static Cyg_Interrupt* volatile dsr_list[CYGNUM_KERNEL_CPU_MAX]
+                                           CYGBLD_ANNOTATE_VARIABLE_INTR;
     
 #endif
 
@@ -335,14 +339,15 @@ public:
 
 inline cyg_bool Cyg_Interrupt::DSRs_pending()
 {
+    HAL_SMP_CPU_TYPE cpu = CYG_KERNEL_CPU_THIS();
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
     
-    return dsr_table_head != dsr_table_tail;
+    return dsr_table_head[cpu] != dsr_table_tail[cpu];
 
 #endif
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
     
-    return dsr_list != NULL;
+    return dsr_list[cpu] != NULL;
 
 #endif
 };

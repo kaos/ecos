@@ -1,8 +1,134 @@
+2001-09-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/mqueue.inl (Cyg_Mqueue): Initialize busy flag of last
+	entry in the list.
+
+2001-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/instrument.cdl (CYGDBG_KERNEL_INSTRUMENT_BUILD_HOST_DUMP): 
+	Remove redundant requires, and adjust make rule to be more portable
+	across hosts.
+	(CYGDBG_KERNEL_INSTRUMENT_MSGS_BUILD_HEADERFILE):
+	Invoke script with sh directly rather than rely on executable attribute.
+
+	* host/instr/readme.txt: Update build of host dump as per the changed
+	CDL.
+
+	* cdl/kernel.cdl: Don't build nullinst.cxx any more.
+	Build meminst.cxx only in CYGPKG_KERNEL_INSTRUMENT.
+	* src/instrmnt/nullinst.cxx: Delete. It causes confusion in the
+	library as it declares cyg_instrument like meminst.cxx does.
+
+2001-08-31  Nick Garnett  <nickg@redhat.com>
+
+	* src/intr/intr.cxx: Clean up typo in DSR table
+	case. dsr_table_tail and dsr_table_head were not being subscripted
+	in a couple of places.
+
+2001-08-23  Hugo Tyson  <hmt@redhat.com>
+2001-08-20  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* include/instrument_desc.h: New file.  This contains the table of
+	events used to print the nice information.  It should be
+	regenerated when the instrumentation numbers change.
+
+	* src/instrmnt/meminst.cxx (cyg_instrument_msg):
+	returns an ASCII string describing the type of event the
+	instrumentation code logged.
+
+	* include/instrmnt.h: Added function prototype.
+
+	* cdl/instrument.cdl: Configury for enabling the new function, and
+	optionally rebuilding its header file and building a host tool.
+
+	* host/instr/dump_instr.c: New file.  A host program to print the
+	instrumentation information in a human readable form.
+
+	* host/instr/instrument.sh: New file.  Script to generate table of
+	events with textual representation.
+
+	* host/instr/readme.txt: New file.  Helpful information.
+
+2001-08-23  Nick Garnett  <nickg@redhat.com>
+
+	* include/kapidata.h (CYG_THREADTIMER_MEMBERS):
+	Substituted an expicit cyg_alarm object for CYG_ALARM_MEMBERS in
+	this definition. In some architectures (MIPS in particular) the
+	structures need to be padded to a multiple of 64 bits. This was
+	not happening with the macro substituted versions.
+	This is just a temporary fix, I'll leave it to Jifl to sort out a
+	real patch when he returns.
+
+2001-08-23  Hugo Tyson  <hmt@redhat.com>
+
+	* src/common/thread.cxx: Properly qualify Cyg_Thread::destructors
+	array so that it builds when destructors are not used.
+
+2001-08-23  Nick Garnett  <nickg@redhat.com>
+
+	* src/sched/mlqueue.cxx: Added code to
+	Cyg_SchedThread_Implementation::to_queue_head() to handle a NULL
+	thread queue pointer. This compensates for a minor change in
+	behaviour of the scheduler.
+
+2001-08-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/thread.cdl: Add kernel thread destructor options.
+	* include/kapidata.h: Add thread destructor entries to cyg_thread
+	* include/thread.hxx (Cyg_Thread): Give per-thread data indexes
+	their own type, cyg_data_index.
+	Include new thread destructor data members, and new add_destructor
+	and rem_destructor member functions.
+	* include/thread.inl: Use a cyg_data_index for per-thread data handle.
+	(add_destructor): New Cyg_Thread member function.
+	(rem_destructor): Ditto.
+	* src/common/kapi.cxx: Use cyg_data_index type for per-thread data
+	functions.
+	* src/common/thread.cxx (Cyg_Thread): initialise per-thread
+	destructors if needed.
+	Define static destructors if needed.
+	(exit): Call destructors.
+	(new_data_index): Use cyg_data_index type.
+	(free_data_index): Ditto.
+
+2001-08-22  Hugo Tyson  <hmt@redhat.com>
+  
+	* src/sync/mutex.cxx (Cyg_Mutex): Add initialization of the
+	priority ceiling value in the non-dynamic protocol case.
+
+2001-08-22  Nick Garnett  <nickg@redhat.com>
+
+	* tests/intr0.c: 
+	* tests/kintr0.c:
+	Swapped order of interrupt enable/disable calls to keep kernel
+	happy when assertions are enabled. Otherwise the enable call
+	complains that interrupts have not been disabled.
+
+	* src/sched/mlqueue.cxx:
+	Simplified algorithm in set_need_reschedule().
+
+	* include/smp.hxx: 
+	* include/kapidata.h: Change spinlock to be a cyg_uint32, rather
+	than a cyg_atomic.
+
+	* src/intr/intr.cxx: 
+	* include/intr.hxx:
+	Now arrange for DSRs to be called on the same CPU as the ISR. This
+	is necessary if the DSR needs to access per-CPU hardware (such as
+	interrupt controllers). This is achieved by keeping a separate DSR
+	list/table for each CPU.
+
+	* tests/smp.cxx: Some modifications to make this test work in a
+	real SMP environment.
+
+	* tests/timeslice.c: 
+	* cdl/kernel.cdl: Added timeslice test.
+
 2001-08-21  Hugo Tyson  <hmt@redhat.com>
 
 	* src/sync/mutex.cxx (lock): Bugfix: a ceiling priority mutex
 	wasn't elevated until after it had acquired the mutex.  This meant
-	is slept with a low priority, and so did not run when awakened by
+	it slept with a low priority, and so did not run when awakened by
 	the release of the mutex.  The fix is to elevate the potential
 	claimant before it sleeps in contention. 
 

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/28
-// Version:     $Id: admindlg.h,v 1.2 2001/03/23 13:38:04 julians Exp $
+// Version:     $Id: admindlg.h,v 1.3 2001/08/22 16:50:32 julians Exp $
 // Purpose:
 // Description: Header file for ecAdminDialog
 // Requires:
@@ -70,7 +70,7 @@ public:
     void CreateControls(wxWindow* parent);
 	bool FindUserToolsPath();
 	bool RemovePackageVersion (wxTreeItemId hTreeItem);
-	bool EvalTclFile (int nargc, const wxString& argv);
+	bool EvalTclFile (int nargc, const wxString& argv, const wxString& msg);
 	void ClearPackageTree ();
 	bool PopulatePackageTree (const wxString& packageDatabase);
 

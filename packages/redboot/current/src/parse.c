@@ -76,7 +76,7 @@ parse(char *line, int *argc, char **argv)
         if (indx < MAX_ARGV) {
             argv[indx++] = cp;
         } else {
-            printf("Too many arguments - stopped at: '%s'\n", cp);
+            diag_printf("Too many arguments - stopped at: '%s'\n", cp);
         }
         while (*cp) {
             if (*cp == ' ') {
@@ -97,7 +97,7 @@ parse(char *line, int *argc, char **argv)
                     *pp++ = *cp++;
                 }
                 if (!*cp) {
-                    printf("Unbalanced string!\n");
+                    diag_printf("Unbalanced string!\n");
                 } else {
                     if (pp != cp) *pp = '\0';
                     *cp++ = '\0';
@@ -124,7 +124,7 @@ cmd_search(struct cmd *tab, struct cmd *tabend, char *arg)
     cmd_len = strlen(arg);
     cmd = tab;
     while (cmd != tabend) {
-        if (strncmpci(arg, cmd->str, cmd_len) == 0) {
+        if (strncasecmp(arg, cmd->str, cmd_len) == 0) {
             if (strlen(cmd->str) > cmd_len) {
                 // Check for ambiguous commands here
                 // Note: If there are commands which are not length-unique
@@ -133,18 +133,19 @@ cmd_search(struct cmd *tab, struct cmd *tabend, char *arg)
                 cmd2 = tab;
                 while (cmd2 != tabend) {
                     if ((cmd != cmd2) && 
-                        (strncmpci(arg, cmd2->str, cmd_len) == 0)) {
+                        (strncasecmp(arg, cmd2->str, cmd_len) == 0)) {
                         if (first) {
-                            printf("Ambiguous command '%s', choices are: %s", arg, cmd->str);
+                            diag_printf("Ambiguous command '%s', choices are: %s", 
+                                        arg, cmd->str);
                             first = false;
                         }
-                        printf(" %s", cmd2->str);
+                        diag_printf(" %s", cmd2->str);
                     }
                     cmd2++;
                 }
                 if (!first) {
                     // At least one ambiguity found - fail the lookup
-                    printf("\n");
+                    diag_printf("\n");
                     return (struct cmd *)0;
                 }
             }
@@ -159,8 +160,10 @@ void
 cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix)
 {
     struct cmd *cmd;
-    printf("Usage:\n"); for (cmd = tab;  cmd != tabend;  cmd++) {
-        printf("  %s%s %s\n", prefix, cmd->str, cmd->usage);
+
+    diag_printf("Usage:\n"); 
+    for (cmd = tab;  cmd != tabend;  cmd++) {
+        diag_printf("  %s%s %s\n", prefix, cmd->str, cmd->usage);
     }
 }
 
@@ -223,7 +226,7 @@ scan_opts(int argc, char *argv[], int first,
             for (j = 0;  j < num_opts;  j++, opt++) {
                 if (c == opt->flag) {
                     if (opt->arg_set && *opt->arg_set) {
-                        printf("** Error: %s already specified\n", opt->name);
+                        diag_printf("** Error: %s already specified\n", opt->name);
                         ret = false;
                     }
                     if (opt->takes_arg) {
@@ -236,7 +239,8 @@ scan_opts(int argc, char *argv[], int first,
                         switch (opt->arg_type) {
                         case OPTION_ARG_TYPE_NUM:
                             if (!parse_num(s, (unsigned long *)opt->arg, 0, 0)) {
-                                printf("** Error: invalid number '%s' for %s\n", s, opt->name);
+                                diag_printf("** Error: invalid number '%s' for %s\n", 
+                                            s, opt->name);
                                 ret = false;
                             }
                             break;
@@ -260,19 +264,20 @@ scan_opts(int argc, char *argv[], int first,
                 }
             }
             if (!flag_ok) {
-                printf("** Error: invalid flag '%c'\n", c);
+                diag_printf("** Error: invalid flag '%c'\n", c);
                 ret = false;
             }
         } else {
             if (def_arg) {
                 if (def_arg_set) {
-                    printf("** Error: %s already specified\n", def_descr);
+                    diag_printf("** Error: %s already specified\n", def_descr);
                     ret = false;
                 }
                 switch (def_arg_type) {
                 case OPTION_ARG_TYPE_NUM:
                     if (!parse_num(argv[i], (unsigned long *)def_arg, 0, 0)) {
-                        printf("** Error: invalid number '%s' for %s\n", argv[i], def_descr);
+                        diag_printf("** Error: invalid number '%s' for %s\n", 
+                                    argv[i], def_descr);
                         ret = false;
                     }
                     break;
@@ -282,7 +287,7 @@ scan_opts(int argc, char *argv[], int first,
                 }
                 def_arg_set = true;
             } else {
-                printf("** Error: no default/non-flag arguments supported\n");
+                diag_printf("** Error: no default/non-flag arguments supported\n");
                 ret = false;
             }
         }
@@ -304,7 +309,7 @@ parse_num(char *s, unsigned long *val, char **es, char *delim)
 
     while (*s == ' ') s++;
     while (*s) {
-        if (first && (s[0] == '0') && (tolower(s[1]) == 'x')) {
+        if (first && (s[0] == '0') && (_tolower(s[1]) == 'x')) {
             radix = 16;
             s += 2;
         }

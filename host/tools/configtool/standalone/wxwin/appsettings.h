@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.h,v 1.9 2001/06/26 17:26:35 julians Exp $
+// Version:     $Id: appsettings.h,v 1.10 2001/08/22 16:50:32 julians Exp $
 // Purpose:
 // Description: Header file for the ConfigTool application settings
 // Requires:
@@ -192,6 +192,7 @@ public:
 	wxSize					m_shortDescrSashSize;
 	wxSize					m_memorySashSize;
 	wxSize					m_outputSashSize;
+    int                     m_configPaneWidth; // The sash to the right of the tree
     bool                    m_showConflictsWindow;
     bool                    m_showPropertiesWindow;
     bool                    m_showShortDescrWindow;
@@ -200,6 +201,10 @@ public:
 
     // Are we showing macro names, or ordinary names?
     bool                    m_showMacroNames ;
+
+    // Are we merely editing the .ecc file and not saving build trees?
+    // This option is specified on the command line and not saved.
+    bool                    m_editSaveFileOnly;
 
     // Viewers & browsers
     bool                    m_bUseCustomViewer;

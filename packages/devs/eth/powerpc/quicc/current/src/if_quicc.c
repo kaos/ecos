@@ -450,7 +450,7 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #ifdef CYGPKG_NET
             panic ("No free xmit buffers");
 #else
-            printf("QUICC Ethernet: No free xmit buffers\n");
+            diag_printf("QUICC Ethernet: No free xmit buffers\n");
 #endif
         }
     }

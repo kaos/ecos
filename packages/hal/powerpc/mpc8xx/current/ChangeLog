@@ -1,3 +1,7 @@
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/mpc8xxrev.c: Don't use printf(), but rather diag_printf().
+
 2001-06-29  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_intr.c: Include new arbiter header.
@@ -164,7 +168,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -47,6 +47,7 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_i386_pc.h>
 
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
@@ -67,6 +68,7 @@
 
 _start: 
 	hal_cpu_init
+	hal_smp_init
 	hal_diag_init
 	hal_mmu_init
 	hal_memc_init
@@ -74,7 +76,8 @@ _start:
 	hal_cache_init
 	hal_timer_init
 
-	# loading the stack pointer seems appropriate now.
+	# Loading the stack pointer seems appropriate now.
+	
 	movl	$__interrupt_stack, %esp
 
 #if defined(CYG_HAL_STARTUP_FLOPPY) || defined(CYG_HAL_STARTUP_ROM)
@@ -131,6 +134,7 @@ _start:
 	.extern cyg_hal_invoke_constructors
 	call	cyg_hal_invoke_constructors
 
+		
 	.extern cyg_start
 	call	cyg_start
 
@@ -153,13 +157,12 @@ __default_exception_vsr:
 
 	pusha			# save all registers
 	hal_fpu_push_exc	# save FPU state
-	
+
 	mov	%esp,%edi	# save state pointer in EDI
+
+        # adjust ESP by 16 for the state stored before the pusha
+        add     $16,i386reg_esp(%edi)
 		
-#if 0 //def CYGSEM_HAL_ROM_MONITOR
-	# In a monitor, switch to interrupt stack to handle this
-	movl	$__interrupt_stack,%esp
-#endif			
 
 	hal_fpu_push_exc_annex
 	
@@ -171,18 +174,12 @@ __default_exception_vsr:
 	
 	hal_fpu_pop_exc_annex
 		
-#if 0 //def CYGSEM_HAL_ROM_MONITOR 
-	
-	# If we switched to the interrupt stack, switch back here
-	# %edi will have been preserved across the call to
-	# cyg_hal_exception_handler()
-	
-	movl	%edi,%esp
-#endif	
 
 	hal_fpu_pop_exc		# restore FPU state
 	popa			# restore all our registers.
 	addl	$4, %esp	# skip the vector number
+                                # Note: we do not need to re-adjust ESP
+                                # back by 16 as popa does not pop ESP.
 	iret			# and return to the program.
 			
 #==============================================================================
@@ -203,7 +200,7 @@ __default_interrupt_vsr:
 	
 	pusha			# save registers
 	hal_fpu_push_int	# save FPU state
-	
+
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
     defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
 	# Save the context just to be able to set a breakpoint
@@ -212,7 +209,8 @@ __default_interrupt_vsr:
 	movl %esp,hal_saved_interrupt_state
 #endif
 
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && \
+    !defined(CYGPKG_HAL_SMP_SUPPORT)
 	# Increment scheduler lock
 	.extern cyg_scheduler_sched_lock
 	incl	cyg_scheduler_sched_lock
@@ -220,21 +218,11 @@ __default_interrupt_vsr:
 
 	movl	%esp,%ebp			# EBP = copy of ESP
 	
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
-
-	# Switch to interrupt stack if we are not already on it
-
-	movl	$__interrupt_stack,%eax		# eax = stack top
-	cmpl	$__interrupt_stack_base,%ebp	# compare SP with istack base
-	jb	1f				# if sp < istack base, switch
-	cmpl	%eax,%ebp			# compare SP with istack top
-	jbe	2f				# if sp < istack top, dont switch
-1:	
-	movl	%eax,%esp			# move on to new stack
-2:		
-	pushl	%ebp				# Save old SP on new stack
-#endif		
-
+        # adjust ESP by 16 for the state stored before the pusha
+        add     $16,i386reg_esp(%esp)
+		
+	hal_to_intstack
+		
 	hal_fpu_push_int_annex			# save extra FPU state
 	
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
@@ -285,17 +273,11 @@ __default_interrupt_vsr:
 
 	hal_fpu_pop_int_annex		# Pop any saved interrupt state
 		
-#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
-
 	# If we are returning from the last nested interrupt, move back
 	# to the thread stack. interrupt_end() must be called on the
 	# thread stack since it potentially causes a context switch.
-	# Since we have arranged for the top of stack location to
-	# contain the sp we need to go back to here, just pop it off
-	# into ESP.
 	
-	popl	%esp
-#endif
+	hal_from_intstack	
 			
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 
@@ -323,7 +305,8 @@ __default_interrupt_vsr:
 
 #==============================================================================
 ## Execute pending DSRs on the interrupt stack with interrupts enabled.
-## Note: this can only be called from code running on a thread stack
+## Note: this can only be called from code running on a thread stack so we 
+## can always just jump to the interrupt stack without looking.
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
@@ -332,33 +315,34 @@ __default_interrupt_vsr:
 	
 hal_interrupt_stack_call_pending_DSRs:	
 
-	pushl	%esi			# save a work register
+	pushl	%ebp			# save EBP
 	pushfl				# save flags
-	movl	%esp,%esi		# ESI = old stack
+	movl	%esp,%ebp		# EBP = saved SP
 
-	movl	$__interrupt_stack,%esp	# ESP = interrupt stack
+	hal_load_istack	%edx		# load new SP into EDX
+	movl	%edx,%esp		# move it to ESP
 	
 	sti				# Enable interrupts
 
 	# Call back to kernel to run DSRs
 	call	cyg_interrupt_call_pending_DSRs
 
-	# On return ESI will still contain the old ESP since
+	# On return EBP will still contain the old ESP since
 	# it is a callee saved register.
 	
-	movl	%esi,%esp		# restore original stack
+	movl	%ebp,%esp		# restore saved SP
 
 	# Now merge the original IF bit into the current
 	# EFLAGS. 
 	
-	popl	%esi			# ESI = saved flags
+	popl	%eax			# EAX = saved flags
 	pushfl				# 0(%esp) = current flags
 	btrl	$9,0(%esp)		# clear IF bit in current flags
-	andl	$0x00000200,%esi	# isolate saved IF bit
-	orl	%esi,0(%esp)		# OR it in to the saved flags
+	andl	$0x00000200,%eax	# isolate saved IF bit
+	orl	%eax,0(%esp)		# OR it in to the saved flags
 	popfl				# restore flags
 	
-	popl	%esi			# retrieve work register
+	popl	%ebp			# restore EBP
 	ret				# and return
 	
 #endif				
@@ -373,22 +357,41 @@ hal_interrupt_stack_call_pending_DSRs:
 	
 #ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY		
 
+#ifndef CYGPKG_HAL_SMP_CPU_MAX
+#define CYGPKG_HAL_SMP_CPU_MAX 1
+#endif
+				
 	.data
 	.global cyg_hal_fpustate_owner
-cyg_hal_fpustate_owner:	
+cyg_hal_fpustate_owner:
+	.rept	CYGPKG_HAL_SMP_CPU_MAX
 	.long	0				# pointer to FPU owning context
+	.endr
 	.global cyg_hal_fpustate_current	
 cyg_hal_fpustate_current:	
+	.rept	CYGPKG_HAL_SMP_CPU_MAX
 	.long	0				# pointer to current threads FPU context
-		
+	.endr
+			
 	.text	
 __fpu_switch_vsr:
 
+	## We enter here with the CPU state still in the registers and:
+	##  0(%esp)	vector number pushed by trampoline
+	##  4(%esp)	PC pushed by hardware
+	##  8(%esp)	CS pushed by hardware
+	## 12(%esp)	EFLAGS pushed by hardware
+	
 	clts					# clear CR0:TS bit
 	pusha					# save all regs
 
-	movl	cyg_hal_fpustate_owner,%eax	# EAX = FPU context owner
-	movl	cyg_hal_fpustate_current,%ebx	# EBX = current threads context
+	hal_smp_cpu %ecx			# ECX = CPU id
+	movl	$cyg_hal_fpustate_owner,%esi	# ESI = FPU context owner table
+	leal	0(%eax,%ecx,4),%esi		# ESI = address of owner pointer
+	movl	$cyg_hal_fpustate_current,%edi	# EDI = current threads context table
+	leal	0(%ebx,%ecx,4),%edi		# EDI = address of context pointer
+	movl	0(%esi),%eax			# EAX = Current FPU context owner
+	movl	0(%edi),%ebx			# EBX = Current threads FPU context
 	cmpl	%ebx,%eax			# current == owner ?
 	je	9f				# yes, nothing else to do
 	cmpl	$0,%eax				# is FPU even in use?
@@ -396,7 +399,7 @@ __fpu_switch_vsr:
 	fsave	i386reg_fpucontext_state(%eax)	# save FPU state
 	movl	$1,i386reg_fpucontext_valid(%eax) # mark valid
 1:
-	movl	%ebx,cyg_hal_fpustate_owner	# Set new owner
+	movl	%ebx,0(%esi)            	# Set new owner
 	btl	$0,i386reg_fpucontext_valid(%ebx) # Valid state?
 	jc	2f				# If yes, go to restore it
 	finit					# Otherwise init FPU
@@ -409,17 +412,8 @@ __fpu_switch_vsr:
 	iret					# and return to the thread.
 		
 #endif
-		
-#==============================================================================	
-# hal_idle_thread_action(cyg_uint32 loop_count)
-	
-	.align	4
-	.globl	hal_idle_thread_action
-hal_idle_thread_action:
-	hlt
-	ret
-	
 
+#if 0			
 #==============================================================================
 # Assembler swap routines
 	
@@ -444,7 +438,8 @@ CPU_swap_u32:
 	movb	6(%esp), %ah
 	movb	7(%esp), %al
 	ret
-	
+#endif
+		
 #==============================================================================
 # Exception trampolines
 # IDT exception gates point to short code sequences that push the vector
@@ -561,7 +556,9 @@ default_vsr_iret:
 #ifndef CYG_HAL_PPC_INTERRUPT_STACK_DEFINED
 	        
 	.bss
+
 	
+	.balign 16
 	.global cyg_interrupt_stack_base
 cyg_interrupt_stack_base:
 __interrupt_stack_base:
@@ -572,8 +569,9 @@ __interrupt_stack_base:
 	.global cyg_interrupt_stack
 cyg_interrupt_stack:
 __interrupt_stack:
-        
-        .long   0,0,0,0,0,0,0,0
+
+	.long	0,0,0,0,0,0,0,0	
+
 
 #endif	
 		

@@ -1,3 +1,23 @@
+2001-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/redboot_FLOPPY.ecm: Disable
+	CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+	* misc/redboot_ROM.ecm: Ditto.
+
+2001-09-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/plf_misc.c (hal_platform_init): If not RAM startup, install
+	exception VSRs.
+
+2001-08-22  Nick Garnett  <nickg@redhat.com>
+
+	* include/pkgconf/mlt_i386_pc_floppy.ldi:
+	* include/pkgconf/mlt_i386_pc_floppy.mlt:
+	Moved load base address from 0x2000 to 0x3000.
+
+	* include/platform.inc (hal_idt_init): Added entries to set up IDT
+	entries 48..67.
+
 2001-08-13  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_i386_pc.cdl: Fix CYG_HAL_STARTUP description.

@@ -1,3 +1,18 @@
+2001-08-27  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm_iq80310.cdl (CYGSEM_HAL_ARM_IQ80310_BTB): New option.
+	(CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY) New option.
+	
+	* src/iq80310_pci.c (cyg_hal_plf_pci_init): Clear PCI retry based on
+	CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY.
+
+	* include/hal_platform_setup.h: Turn on BTB based on configure option.
+
+2001-08-24  Mark Salter  <msalter@redhat.com>
+
+	* src/iq80310_misc.c (iq80310_program_new_stack): Convert to inline
+	asm so that code generation differences won't break it.
+
 2001-08-15  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_iq80310.h: Fix size of PATUSR, SATUSR, PSR, and SSR regs.

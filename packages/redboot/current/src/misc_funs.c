@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -46,109 +46,27 @@
 #include <redboot.h>
 
 int
-strlen(const char *s)
-{
-    int len = 0;
-    if (s)
-        while (*s++) len++;
-    return len;
-}
-
-int
-strcmp(const char *s1, const char *s2)
+strcasecmp(const char *s1, const char *s2)
 {
     char c1, c2;
-
-    while ((c1 = *s1++) == (c2 = *s2++))
-        if (c1 == 0)
-            return (0);
-    return ((unsigned char)c1 - (unsigned char)c2);
-}
-
-char *
-strncpy(char *s1, const char *s2, unsigned long n)
-{
-    char c;
-    char *_s1 = s1;
-
-    if (n) {
-        n--;                            // leave space for terminator
-        while (n != 0 && (c = *s2++) != '\0') {
-            *s1++ = c;
-            n--;
-        }
-        *s1 = '\0';
-        while (n != 0) {                // fill remainder with zero
-            *s1++ = 0;
-            n--;
-        }
-    }
-    return _s1;
-}
-
-char *
-strcpy(char *s1, const char *s2)
-{
-    char c;
-    char *_s1 = s1;
-
-    while ((c = *s2++) != '\0')
-        *s1++ = c;
-    *s1 = '\0';
-    return _s1;
-}
-
-int
-strcmpci(const char *s1, const char *s2)
-{
-    char c1, c2;
-    while ((c1 = tolower(*s1++)) == (c2 = tolower(*s2++)))
+    while ((c1 = _tolower(*s1++)) == (c2 = _tolower(*s2++)))
         if (c1 == 0)
             return (0);
     return ((unsigned char)c1 - (unsigned char)c2);
 }
 
 int
-strncmp(const char *s1, const char *s2, int len)
+strncasecmp(const char *s1, const char *s2, size_t len)
 {
     char c1, c2;
 
     if (len == 0)
         return 0;
     do {
-        if ((c1 = *s1++) != (c2 = *s2++))
+        if ((c1 = _tolower(*s1++)) != (c2 = _tolower(*s2++)))
             return ((unsigned char)c1 - (unsigned char)c2);
         if (c1 == 0)
             break;
     } while (--len != 0);
-    return 0;
-}
-
-int
-strncmpci(const char *s1, const char *s2, int len)
-{
-    char c1, c2;
-
-    if (len == 0)
-        return 0;
-    do {
-        if ((c1 = tolower(*s1++)) != (c2 = tolower(*s2++)))
-            return ((unsigned char)c1 - (unsigned char)c2);
-        if (c1 == 0)
-            break;
-    } while (--len != 0);
-    return 0;
-}
-
-int
-memcmp(const void *_dst, const void *_src, size_t len)
-{
-    unsigned char *dst = (unsigned char *)_dst;
-    unsigned char *src = (unsigned char *)_src;
-    while (len-- > 0) {
-        if (*dst++ != *src++) {
-            return (*--dst - *--src);
-        }
-    }
     return 0;
 }

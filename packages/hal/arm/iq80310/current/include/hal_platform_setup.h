@@ -128,6 +128,16 @@
 	sub  pc,pc,#4
 	.endm
 
+	// Enable the BTB
+	.macro BTB_INIT reg
+#ifdef CYGSEM_HAL_ARM_IQ80310_BTB
+	mrc	p15, 0, \reg, c1, c0, 0
+	orr	\reg, \reg, #MMU_Control_BTB
+	mcr	p15, 0, \reg, c1, c0, 0
+	CPWAIT  \reg
+#endif
+	.endm
+
 	// form a first-level section entry
 	.macro FL_SECTION_ENTRY base,x,ap,p,d,c,b
 	.word (\base << 20) | (\x << 12) | (\ap << 10) | (\p << 9) |\
@@ -696,11 +706,8 @@ SDRAM_DRIVE_2_BANK_X8:
 	mcr	p15, 0, r0, c1, c0, 0
 	CPWAIT  r0
 
-	// Enable the BTB
-	mrc	p15, 0, r0, c1, c0, 0
-	orr	r0, r0, #MMU_Control_BTB
-	mcr	p15, 0, r0, c1, c0, 0
-	CPWAIT  r0
+        // Initialize branch target buffer
+        BTB_INIT r0
 
 	//  Battery Backup SDRAM Memory Test
         //  Move 4 byte Test Pattern into register prior to zeroing out

@@ -95,7 +95,7 @@ __eth_install_listener(int eth_type, pkt_handler_t handler)
 	    return (pkt_handler_t)0;
 	}
     }
-    printf("** Warning: can't install listener for ethernet type 0x%02x\n", eth_type);
+    diag_printf("** Warning: can't install listener for ethernet type 0x%02x\n", eth_type);
     return (pkt_handler_t)0;
 }
 
@@ -131,7 +131,7 @@ __enet_poll(void)
         if ((pkt = __pktbuf_alloc(ETH_MAX_PKTLEN)) == NULL) {
             if (!was_exhausted) {
                 int old = start_console();  // Force output to standard port
-                printf("__enet_poll: no more buffers\n");
+                diag_printf("__enet_poll: no more buffers\n");
                 __pktbuf_dump();
                 was_exhausted = true;
                 end_console(old);

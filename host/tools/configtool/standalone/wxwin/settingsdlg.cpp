@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/11
-// Version:     $Id: settingsdlg.cpp,v 1.13 2001/07/05 10:42:16 julians Exp $
+// Version:     $Id: settingsdlg.cpp,v 1.14 2001/09/03 16:51:51 julians Exp $
 // Purpose:
 // Description: Implementation file for ecSettingsDialog
 // Requires:
@@ -568,7 +568,7 @@ void ecViewerOptionsDialog::CreateControls( wxPanel *parent)
     item0->Add( item8, 0, wxGROW|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
     // Disable this option because we don't yet have a built-in browser
-#if !ecUSE_EXPERIMENTAL_CODE
+#if 0 // !ecUSE_EXPERIMENTAL_CODE
     FindWindow(ecID_VIEWER_DIALOG_DOC_BUILTIN)->Enable(FALSE);
 #endif
 

@@ -105,6 +105,10 @@
 	* ecos.db:
 	Include flash driver in sa1100mm target.
 
+2001-04-03  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added PCNet ethernet driver package.
+
 2001-03-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add Atlas flash and ethernet drivers to target description.

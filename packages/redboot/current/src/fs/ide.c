@@ -139,14 +139,14 @@ ide_read_sectors(int ctlr, int dev, cyg_uint32 start, cyg_uint8 count, cyg_uint1
 
     for(p = buf, i = 0; i < count; i++) {
 
-	if (!__wait_for_drq(ctlr)) {
-	    printf("%s: NO DRQ for ide%d, device %d.\n",
-		   __FUNCTION__, ctlr, dev);
-	    return 0;
-	}
+        if (!__wait_for_drq(ctlr)) {
+            diag_printf("%s: NO DRQ for ide%d, device %d.\n",
+                        __FUNCTION__, ctlr, dev);
+            return 0;
+        }
 
-	for (j = 0; j < (SECTOR_SIZE / sizeof(cyg_uint16)); j++, p++)
-	    HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *p);
+        for (j = 0; j < (SECTOR_SIZE / sizeof(cyg_uint16)); j++, p++)
+            HAL_IDE_READ_UINT16(ctlr, IDE_REG_DATA, *p);
     }
     return 1;
 }

@@ -306,28 +306,30 @@ externC cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread)
 
 externC cyg_ucount32 cyg_thread_new_data_index()
 {
-        return Cyg_Thread::new_data_index();
+    Cyg_Thread::cyg_data_index index = Cyg_Thread::new_data_index();
+    CYG_ASSERT(index >= 0, "failed to allocate data index" );
+    return index;
 }
 
 externC void cyg_thread_free_data_index(cyg_ucount32 index)
 {
-        Cyg_Thread::free_data_index(index);
+    Cyg_Thread::free_data_index(index);
 }
 
 externC CYG_ADDRWORD cyg_thread_get_data(cyg_ucount32 index)
 {
-        return Cyg_Thread::get_data(index);
+    return Cyg_Thread::get_data(index);
 }
 
 externC CYG_ADDRWORD *cyg_thread_get_data_ptr(cyg_ucount32 index)
 {
-        return Cyg_Thread::get_data_ptr(index);
+    return Cyg_Thread::get_data_ptr(index);
 }
 
 externC void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD 
 data)
 {
-        Cyg_Thread::self()->set_data(index, data);
+    Cyg_Thread::self()->set_data(index, data);
 }
 #endif
 

@@ -292,26 +292,31 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 // This is not a config option because it should not be adjusted except
 // under "enough rope" sort of disclaimers.
  
-// Stack frame overhead per call. 3 local registers (edi, esi, ebx) and
-// return address.
-#define CYGNUM_HAL_STACK_FRAME_SIZE (4 * 4)
+// Stack frame overhead per call. Four arguments, 3 local registers
+// (edi, esi, ebx), four local variables and return address.
+#define CYGNUM_HAL_STACK_FRAME_SIZE (12 * 4)
 
-// Stack needed for a context switch (i386reg_context_size from i386.inc)
-#define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 24)
+// Stack needed for a context switch ( sizeof(HAL_SavedRegisters) ).
+#ifdef CYGHWR_HAL_I386_FPU
+# ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+#  define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 13)
+# else
+#  define CYGNUM_HAL_STACK_CONTEXT_SIZE ((4 * 12) + 108)
+# endif
+#else
+# define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 12)
+#endif
 
 // Interrupt + call to ISR, interrupt_end() and the DSR
 #define CYGNUM_HAL_STACK_INTERRUPT_SIZE \
-    ((6*4*2 /* 2*sizeof(HAL_SavedRegisters) */) + 4 * CYGNUM_HAL_STACK_FRAME_SIZE)
-
-// We have lots of registers so no particular amount is added in for
-// typical local variable usage.
+    ((4*CYGNUM_HAL_STACK_CONTEXT_SIZE) + 4 * CYGNUM_HAL_STACK_FRAME_SIZE)
 
 // We define a minimum stack size as the minimum any thread could ever
 // legitimately get away with. We can throw asserts if users ask for less
 // than this. Allow enough for three interrupt sources - clock, serial and
 // one other
 
-#if 0 // defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
+#if defined(CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK)
 
 // An interrupt stack which is large enough for all possible interrupt
 // conditions (and only used for that purpose) exists.  "User" stacks

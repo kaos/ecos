@@ -1264,7 +1264,11 @@ __process_packet (char *packet)
             && __hexToInt (&ptr, &length)
             && *ptr++ == ':')
           {
-            if (is_binary)
+            /* GDB sometimes sends an impossible length */
+            if (length < 0 || length >= BUFMAX)
+              strcpy (remcomOutBuffer, "E01");
+                
+            else if (is_binary)
               {
                 while (length > 0)
                   {
@@ -1290,7 +1294,7 @@ __process_packet (char *packet)
                 else
                   strcpy (remcomOutBuffer, "E03");
               }
-              else
+            else
               {
                 if (__hex2mem_safe (ptr, addr, length) != NULL)
                   strcpy (remcomOutBuffer, "OK");
@@ -1389,8 +1393,10 @@ __process_packet (char *packet)
         return -1;
       }
 
-      /* kill the program */
-    case 'k' :
+    case 'D' :     /* detach */
+      __putpacket (remcomOutBuffer);
+      /* fall through */
+    case 'k' :      /* kill the program */
 #ifdef __ECOS__
       hal_flush_output();
 #endif

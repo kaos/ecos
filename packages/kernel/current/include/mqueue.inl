@@ -163,7 +163,7 @@ Cyg_Mqueue::check_this( cyg_assert_class_zeal zeal ) const
         if ( qlen != (msgs+freemsgs+busymsgs) )
             goto fail;
 #endif
-        
+
         Cyg_Scheduler::unlock();
 
     }
@@ -218,6 +218,7 @@ Cyg_Mqueue::Cyg_Mqueue( long maxmsgs, long maxmsgsize,
 
     // set the last entry in the chain to the start to make the list circular
     qtmp->next = NULL;
+    qtmp->busy = false;
     callback   = NULL;
     q          = NULL;
     free_fn    = qfree;

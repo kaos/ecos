@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/29
-// Version:     $Id: appsettings.cpp,v 1.22 2001/06/26 17:26:35 julians Exp $
+// Version:     $Id: appsettings.cpp,v 1.24 2001/09/05 14:35:53 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecSettings
 // Requires:
@@ -90,7 +90,7 @@ ecSettings::ecSettings()
     m_showToolBar = TRUE;
     m_frameSize = wxRect(0, 0, 600, 500);
     m_appName = _("eCos Configuration Tool");
-    m_showSplashScreen = FALSE;
+    m_showSplashScreen = TRUE;
     m_userName = wxEmptyString;
     m_serialNumber = 0;
     m_frameStatus = ecSHOW_STATUS_NORMAL;
@@ -101,6 +101,7 @@ ecSettings::ecSettings()
     m_shortDescrSashSize = wxSize(1000, 80);
     m_memorySashSize = wxSize(1000, 50);
     m_outputSashSize = wxSize(1000, 50);
+    m_configPaneWidth = 200;
     
     m_showConflictsWindow = FALSE;
     m_showPropertiesWindow = TRUE;
@@ -127,6 +128,8 @@ ecSettings::ecSettings()
     m_findDirection = TRUE; // Down is TRUE, Up is FALSE
     m_findSearchWhat = _("Macro names"); // Macro names, item names etc.
     m_findDialogPos = wxPoint(-1, -1);
+
+    m_editSaveFileOnly = FALSE;
 }
 
 // Copy constructor
@@ -148,7 +151,7 @@ void ecSettings::Copy(const ecSettings& settings)
     m_propertiesSashSize = settings.m_propertiesSashSize;
     m_memorySashSize = settings.m_memorySashSize;
     m_outputSashSize = settings.m_outputSashSize;
-    
+    m_configPaneWidth = settings.m_configPaneWidth;    
     m_showMacroNames = settings.m_showMacroNames;
     
     m_bUseCustomViewer = settings.m_bUseCustomViewer;
@@ -170,6 +173,8 @@ void ecSettings::Copy(const ecSettings& settings)
 
     m_userToolsDir = settings.m_userToolsDir;
     m_buildToolsDir = settings.m_buildToolsDir;
+
+    m_editSaveFileOnly = settings.m_editSaveFileOnly;
 }
 
 ecSettings::~ecSettings()
@@ -245,6 +250,7 @@ bool ecSettings::LoadConfig()
     
     config.Read(_("/Window Size/TreeSashWidth"), & m_treeSashSize.x);
     config.Read(_("/Window Size/TreeSashHeight"), & m_treeSashSize.y);
+    config.Read(_("/Window Size/ConfigPaneWidth"), & m_configPaneWidth);
     config.Read(_("/Window Size/ConflictsWidth"), & m_conflictsSashSize.x);
     config.Read(_("/Window Size/ConflictsHeight"), & m_conflictsSashSize.y);
     config.Read(_("/Window Size/PropertiesWidth"), & m_propertiesSashSize.x);
@@ -554,6 +560,7 @@ bool ecSettings::SaveConfig()
     config.Write(_("/Window Size/WindowHeight"), (long) m_frameSize.height);
     config.Write(_("/Window Size/TreeSashWidth"), (long) m_treeSashSize.x);
     config.Write(_("/Window Size/TreeSashHeight"), (long) m_treeSashSize.y);
+    config.Write(_("/Window Size/ConfigPaneWidth"), (long) m_configPaneWidth);
     config.Write(_("/Window Size/ConflictsWidth"), (long) m_conflictsSashSize.x);
     config.Write(_("/Window Size/ConflictsHeight"), (long) m_conflictsSashSize.y);
     config.Write(_("/Window Size/PropertiesWidth"), (long) m_propertiesSashSize.x);

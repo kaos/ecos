@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.36 2001/08/10 14:58:21 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.41 2001/09/03 17:18:18 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -294,22 +294,28 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
             ecFileName buildFilename(m_strBuildTree);
             ecFileName installFilename(m_strInstallTree);
 
-            if (!buildFilename.CreateDirectory() || !installFilename.CreateDirectory())
+            if (!wxGetApp().GetSettings().m_editSaveFileOnly)
             {
-                wxString msg;
-                msg.Printf(_("Failed to save %s"), (const wxChar*) filename);
-
-                wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION);
-                rc = FALSE;
+                if (!buildFilename.CreateDirectory() || !installFilename.CreateDirectory())
+                {
+                    wxString msg;
+                    msg.Printf(_("Failed to save %s"), (const wxChar*) filename);
+                    
+                    wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION);
+                    rc = FALSE;
+                }
+                else if (GenerateHeaders() && CopyMLTFiles())
+                {
+                    // in each case errors already emitted
+                    // copy new MLT files to the build tree as necessary
+                    rc=generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree), ecUtils::UnicodeToStdStr(m_strInstallTree));
+                    rc = TRUE;
+                }
             }
-            else if (GenerateHeaders() && CopyMLTFiles())
+            else
             {
-                // in each case errors already emitted
-                // copy new MLT files to the build tree as necessary
-                rc=generate_build_tree (GetCdlConfig(), ecUtils::UnicodeToStdStr(m_strBuildTree), ecUtils::UnicodeToStdStr(m_strInstallTree));
                 rc = TRUE;
             }
-
         }
     }
     if(rc)
@@ -440,11 +446,12 @@ bool ecConfigToolDoc::OnOpenDocument(const wxString& filename)
 
         UpdateFailingRuleCount();
 
-        UpdateBuildInfo();
+        SetFilename(filename);
+
+	// UpdateBuildInfo(); // Don't create directories on opening file
 
         rc = TRUE;
 
-        SetFilename(filename);
 
         ecConfigToolHint hint(NULL, ecFilenameChanged);
         UpdateAllViews (NULL, & hint);
@@ -722,7 +729,8 @@ bool ecConfigToolDoc::OpenRepository(const wxString& pszRepository /* = wxEmptyS
                 }
 #ifdef __WXMSW__
                 // Ensure display gets updated
-                wxYield();
+                ::UpdateWindow((HWND) mainFrame->GetHWND());
+                //wxYield();
 #endif
                 strNewRepository=dlg.GetFolder();
             } else
@@ -1010,7 +1018,9 @@ void ecConfigToolDoc::RegenerateData()
     SwitchMemoryLayout (TRUE); // the hardware template may have changed
 #endif
 
-    UpdateBuildInfo();
+    if (GetDocumentSaved() && !wxGetApp().GetSettings().m_editSaveFileOnly)
+        UpdateBuildInfo();
+    
     // TODO
     // CConfigTool::GetControlView()->SelectItem(Item(0));
 }
@@ -1379,7 +1389,12 @@ bool ecConfigToolDoc::ShowExternalHtmlHelp (const wxString& strURL)
     if (strURL.Left(7) == wxT("http://") || strURL.Left(7) == wxT("file://"))
         url = strURL;
     else
-        url = docDir + sep + strURL;
+    {
+	if (wxIsAbsolutePath(strURL))
+	    url = strURL;
+	else
+            url = docDir + sep + strURL;
+    }
 
     wxFileType *ft = wxTheMimeTypesManager->GetFileTypeFromExtension(wxT("html"));
     if ( !ft )

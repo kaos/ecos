@@ -626,8 +626,13 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRESS key, int status)
     // Check for errors here (via 'status')
     ifp->if_opackets++;
     // Done with packet
-    mbuf_key = m0;
-    m_freem(m0);
+
+    // Guard against a NULL return - can be caused by race conditions in
+    // the driver, this is the neatest fixup:
+    if (m0) { 
+        mbuf_key = m0;
+        m_freem(m0);
+    }
     // Start another if possible
     eth_drv_send(ifp);
     CYGARC_HAL_RESTORE_GP();

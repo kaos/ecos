@@ -4,13 +4,13 @@
 
 [Setup]
     MinVersion=4.0,4.0
-    AppName=eCos Configuration Tool 2.04
+    AppName=eCos Configuration Tool 2.07
     AppId=eCos Configuration Tool
     CreateUninstallRegKey=1
     UsePreviousAppDir=1
     UsePreviousGroup=1
-    AppVersion=2.04
-    AppVerName=eCos Configuration Tool 2.04
+    AppVersion=2.07
+    AppVerName=eCos Configuration Tool 2.07
     AppCopyright=Copyright © Red Hat Inc., 2001
     BackColor=$FF0000
     BackColor2=$000000
@@ -42,12 +42,9 @@
   Name: {app}\manual\pix
 
 [Files]
-  Source: v:\deliver\configtool\about.htm; DestDir: {app}\
-  Source: v:\deliver\configtool\aboutlo.htm; DestDir: {app}\
   Source: v:\deliver\configtool\CHANGES.txt; DestDir: {app}\
+  Source: v:\deliver\configtool\configtool.bin; DestDir: {app}\
   Source: v:\deliver\configtool\configtool.exe; DestDir: {app}\
-  Source: v:\deliver\configtool\ecoslogo.png; DestDir: {app}\
-  Source: v:\deliver\configtool\ecoslogosmall.png; DestDir: {app}\
   Source: v:\deliver\configtool\license.txt; DestDir: {app}\
   Source: v:\deliver\configtool\manual\botclear.gif; DestDir: {app}\manual
   Source: v:\deliver\configtool\manual\cygnus.css; DestDir: {app}\manual
@@ -182,7 +179,6 @@
   Source: v:\deliver\configtool\manual\user-guides.f.html; DestDir: {app}\manual
   Source: v:\deliver\configtool\manual\user-guides.html; DestDir: {app}\manual
   Source: v:\deliver\configtool\README.txt; DestDir: {app}\
-  Source: v:\deliver\configtool\rhlogo.png; DestDir: {app}\
   Source: v:\deliver\configtool\TODO.txt; DestDir: {app}\
 
     Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
@@ -217,7 +213,7 @@
 ; DO NOT DELETE THEM or you may be unable to reload the script
 
 ;[ScriptSetup]
-;VerNum=2.04
+;VerNum=2.07
 ;InnoVer=1.3
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe

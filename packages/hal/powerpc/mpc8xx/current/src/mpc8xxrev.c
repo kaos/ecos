@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <cyg/hal/ppc_regs.h>
 #include <cyg/hal/hal_io.h>
+#include <cyg/infra/diag.h>
 
 int
 main( void )
@@ -49,17 +50,17 @@ main( void )
     CYG_TEST_INIT();
 
     asm volatile ("mfspr %0, 287;": "=r" (pvr));
-    printf ("Processor PVR:         0x%08x\n", pvr);
+    diag_printf("Processor PVR:         0x%08x\n", pvr);
 
     asm volatile ("mfspr %0, 638;": "=r" (part_mask));
-    printf ("Processor IMMR[16:31]: 0x%04x\n", (part_mask & 0xffff));
+    diag_printf("Processor IMMR[16:31]: 0x%04x\n", (part_mask & 0xffff));
 
     HAL_READ_UINT16(CYGARC_REG_REV_NUM, rev_num);
-    printf ("Processor REV_NUM:     0x%04x\n", rev_num);
+    diag_printf("Processor REV_NUM:     0x%04x\n", rev_num);
 
 
-    printf("\nSee http://www.motorola.com/SPS/RISC/netcomm/ for erratas.\n");
-    printf("Look for MPC8xx Versions and Masks in the Publications Library\n");
+    diag_printf("\nSee http://www.motorola.com/SPS/RISC/netcomm/ for erratas.\n");
+    diag_printf("Look for MPC8xx Versions and Masks in the Publications Library\n");
 
     CYG_TEST_PASS_FINISH("mpc8xx revision dump");
 }

@@ -1,3 +1,8 @@
+2001-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/posix.cdl: Moved signal implements statements to the
+	CYGPKG_POSIX_SIGNALS component.
+
 2001-08-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/posix.cdl: Reorganize dependencies so that signals, timers

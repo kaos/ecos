@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:        nickg
+// Contributors: nickg, andrew.lunn@ascom.ch
 // Date:        1997-10-27
 // Purpose:     Instrumentation functions
 // Description: The functions in this file are implementations of the
@@ -209,6 +209,38 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event)
 
 // -------------------------------------------------------------------------
 
+#ifdef CYGDBG_KERNEL_INSTRUMENT_MSGS
+#include <cyg/kernel/instrument_desc.h>
+#define NELEM(x) (sizeof(x)/sizeof*(x))
+externC char * cyg_instrument_msg(CYG_WORD16 type) {
+
+  struct instrument_desc_s *record;
+  struct instrument_desc_s *end_record;
+  CYG_WORD cl, event;
+
+  record = instrument_desc;
+  end_record = &instrument_desc[NELEM(instrument_desc)];
+  cl = type & 0xff00;
+  event = type & 0x00ff;
+
+  while ((record != end_record) && (record->num != cl)) {
+    record++;
+  }
+
+  if (record->num == cl) {
+    record++;
+    while ((record != end_record) && (record->num != event) &&
+           (record->num < 0xff)) {
+      record++;
+    }
+
+    if (record->num == event) {
+      return (record->msg);
+    }
+  }
+  return("Unknown event");
+}
+#endif // CYGDBG_KERNEL_INSTRUMENT_MSGS
 #endif // CYGPKG_KERNEL_INSTRUMENT
 
-// EOF instrmnt/null.cxx
+// EOF instrmnt/meminst.cxx

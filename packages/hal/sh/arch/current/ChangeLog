@@ -1,3 +1,13 @@
+2001-09-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_stub.c (__single_step): Changed type 2 handling.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_linux_exec.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-07-09  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh_stub.c: Fixed potential SH4 problem in UBC handling.
@@ -833,7 +843,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -1,3 +1,43 @@
+2001-08-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx (_vprintf): Fix confusion between signed and unsigned
+	descriptors (only %d is signed).
+
+2001-08-24  Gary Thomas  <gthomas@redhat.com>
+
+	* include/diag.h: Export diag_dump_buf_with_offset.
+
+	* src/diag.cxx (_vprintf): Fix problems with signed/unsigned prints.
+	(diag_dump_buf_with_offset): Export.
+
+2001-08-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx (_vprintf): Restore functionality of %D,%U,%X,%B,%S,%C
+	which were present in old code.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/diag.cxx: 
+	* include/diag.h: 
+	* cdl/infra.cdl: Restructuring to support more flexible versions
+	of diag_printf() and related functions.  Remove old cruft which
+	was workaround for possibly failing compilers [K&R support].
+	These versions of printf(), etc, were part of the RedBoot package
+	and have been moved here (and renamed) to reduce code duplication.
+
+2001-08-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/eprintf.c: New file to implement __eprintf called from libgcc.
+	* cdl/infra.cdl: Build it.
+	* include/cyg_type.h: Provide __THROW default empty throw specifier.
+	* include/cyg_ass.h (cyg_assert_fail): Add __THROW.
+	(cyg_assert_msg): Ditto.
+	* src/buffer.cxx (cyg_assert_fail): Ditto.
+	* src/fancy.cxx (cyg_assert_fail): Ditto.
+	* src/null.cxx (cyg_assert_fail): Ditto (twice).
+	* src/simple.cxx (cyg_assert_fail): Ditto.
+	* src/tcdiag.cxx (cyg_assert_msg): Ditto.
+
 2001-08-03  Nick Garnett  <nickg@cygnus.co.uk>
 
 	Imported from a development branch:
@@ -731,7 +771,7 @@ Tue Aug 25 11:47:58 1998  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

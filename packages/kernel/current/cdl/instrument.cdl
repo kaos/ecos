@@ -248,3 +248,56 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_USER {
         whether or not application-level instrumentation gets
         compiled in."
 }
+
+cdl_component CYGDBG_KERNEL_INSTRUMENT_MSGS {
+    display       "Print user friendly instrument messages"
+    default_value 1
+    description   "
+        Include code which will convert the instrument type field 
+        into a more human understandable string"
+        
+    cdl_option  CYGDBG_KERNEL_INSTRUMENT_MSGS_BUILD_HEADERFILE {
+	display   "Rebuild the header file"
+	default_value 0
+	description "
+
+	Make (using a shell script) include/cyg/kernel/instrument_desc.h in
+	your build tree; this is normally simply copied from the repository.
+	If you make a permanent change to include/instrmnt.h, such that
+	instrument_desc.h needs updating, it's up to you to first delete the
+	master file
+	ECOS_REPOSITORY/kernel/VERSION/include/instrument_desc.h
+	in your source repository, make the new version by enabling this
+	option then copy the new file
+        back from your build place to its source in
+	ECOS_REPOSITORY/kernel/VERSION/include/instrument_desc.h
+	and/or commit this to any version control system that you use."
+
+	make -priority 50 {
+	    <PREFIX>/include/cyg/kernel/instrument_desc.h: <PACKAGE>/include/instrmnt.h <PACKAGE>/cdl/instrument.cdl
+	    sh $(REPOSITORY)/$(PACKAGE)/host/instr/instrument.sh $< > $@
+	}
+    }
+
+    cdl_component CYGDBG_KERNEL_INSTRUMENT_BUILD_HOST_DUMP {
+	display       "Build the host tool to print out a dump"
+	default_value 0
+	description   "
+        Generate a host program which can dump the instrumentation
+        data in a human readable format. You have to somehow get the
+        instrumentation buffer into a file on the host. 'Exercise for
+        the reader' as university lecturers tend to say."
+
+	make -priority 51 {
+	    <PREFIX>/bin/dump_instr: <PREFIX>/include/cyg/kernel/instrument_desc.h <PACKAGE>/cdl/instrument.cdl
+	    @mkdir -p $(dir $@)
+            @mkdir -p tempinc
+            @cp -r $(PREFIX)/include/cyg tempinc
+            @cp -r $(PREFIX)/include/pkgconf tempinc
+	    cc -I./tempinc $(REPOSITORY)/$(PACKAGE)/host/instr/dump_instr.c -o $(PREFIX)/bin/dump_instr
+            @rm -rf tempinc
+	}
+    }
+}
+
+# EOF instrument.cdl

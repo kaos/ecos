@@ -113,8 +113,10 @@ void cyg_hal_plf_pci_init(void)
         *(cyg_uint32 *)POIOWVR_ADDR = PRIMARY_IO_BASE;	
     }
 
+#ifdef CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY
     // clear RETRY
     *(cyg_uint16 *)EBCR_ADDR = 0x0008;
+#endif
 
     // ******** Secondary Inbound ATU ***********
 
@@ -185,6 +187,7 @@ void cyg_hal_plf_pci_init(void)
 	// set the primary bus number to 0
 	*(cyg_uint8 *)PBNR_ADDR = PRIMARY_BUS_NUM;
     } else {
+#ifdef CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY
 	// Wait for PC BIOS to initialize bus number
 	int i;
 
@@ -193,7 +196,7 @@ void cyg_hal_plf_pci_init(void)
 		break;
 	    hal_delay_us(1000);  // 1msec
 	}
-
+#endif
 	if (*((volatile cyg_uint8 *)SBNR_ADDR) == 0)
 	    *(cyg_uint8 *)SBNR_ADDR = SECONDARY_BUS_NUM;
     }
@@ -220,9 +223,6 @@ void cyg_hal_plf_pci_init(void)
     cyg_pci_set_memory_base(SECONDARY_MEM_BASE);
     cyg_pci_set_io_base(SECONDARY_IO_BASE);
     cyg_pci_configure_bus(sbus_nr, &next_bus);
-
-    // clear RETRY
-    *(cyg_uint16 *)EBCR_ADDR = 0x0008;
 }
 
 void cyg_hal_plf_pci_config_setup( cyg_uint32 bus,

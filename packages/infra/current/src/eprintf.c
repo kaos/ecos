@@ -1,10 +1,10 @@
-//==========================================================================
+//========================================================================
 //
-//      instrmnt/null.cxx
+//      eprintf.c
 //
-//      Null instrumentation functions
+//      __eprintf() used by libgcc
 //
-//==========================================================================
+//========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -23,44 +23,61 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//==========================================================================
+//========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:        nickg
-// Date:        1997-10-24
-// Purpose:     Instrumentation functions
-// Description: The functions in this file are null implementations of the
-//              standard instrumentation functions. These can be used to
-//              eliminate all instrumentation without recompiling.
+// Author(s):     jlarmour
+// Contributors:  
+// Date:          2001-08-21
+// Purpose:       Provide __eprintf() as used by libgcc.
+// Description:   libgcc calls __eprintf() to display errors and abort.
+// Usage:       
 //
 //####DESCRIPTIONEND####
 //
-//==========================================================================
+//========================================================================
 
-#include <pkgconf/kernel.h>
+// CONFIGURATION
 
-#include <cyg/kernel/ktypes.h>             // base kernel types
-#include <cyg/infra/cyg_trac.h>            // tracing macros
-#include <cyg/infra/cyg_ass.h>             // assertion macros
-#include <cyg/kernel/instrmnt.h>           // instrumentation
+#include <pkgconf/system.h>
+/* We can't do anything without the isoinfra package */
+#ifdef CYGPKG_ISOINFRA 
+#include <pkgconf/isoinfra.h>   // Configuration header
 
-#ifdef CYGPKG_KERNEL_INSTRUMENT
+// INCLUDES
 
-// -------------------------------------------------------------------------
+#include <cyg/infra/cyg_type.h>    // Common type definitions and support
+#include <cyg/infra/cyg_ass.h>     // Default assertion
+#include <stdio.h>
+#include <stdlib.h>
 
-void cyg_instrument( cyg_uint32 type, CYG_ADDRWORD arg1, CYG_ADDRWORD arg2 )
+// FUNCTIONS
+
+__externC void
+__eprintf (const char *string, const char *expression,
+           unsigned int line, const char *filename)
 {
-    return;
-}
+#ifdef CYGINT_ISO_STDIO_FORMATTED_IO
+    fprintf(stderr, string, expression, line, filename);
+#else
+    diag_printf(string, expression, line, filename);
+#endif
+#ifdef CYGINT_ISO_STDIO_FILEACCESS
+    fflush (stderr);
+#endif
+#if CYGINT_ISO_EXIT
+    abort();
+#else
+    CYG_FAIL( "Aborting" );
+    for (;;);
+#endif
+} // __eprintf()
 
-// -------------------------------------------------------------------------
+#endif // ifdef CYGPKG_ISOINFRA 
 
-#endif //CYGPKG_KERNEL_INSTRUMENT
-
-// EOF instrmnt/null.cxx
+// EOF eprintf.c

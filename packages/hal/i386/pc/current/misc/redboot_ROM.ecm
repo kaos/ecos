@@ -32,6 +32,10 @@ cdl_option CYGBLD_BUILD_REDBOOT {
     user_value 1
 };
 
+cdl_option CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS {
+    user_value 0
+};
+
 #cdl_option CYGSEM_REDBOOT_FLASH_CONFIG {
 #    user_value 1
 #};

@@ -116,9 +116,7 @@ Installing the Configuration Tool
   The following files will be extracted to the installation directory:
 
   configtool
-  ecoslogo.png
-  rhlogo.png
-  about.htm
+  configtool.bin
   README.txt
   license.txt
   ecosplatforms.tar.gz

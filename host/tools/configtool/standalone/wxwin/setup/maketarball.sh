@@ -29,6 +29,9 @@ dotar()
 
     cp $SRC/*.htm .
     cp $SRC/*.png .
+    cp $SRC/bitmaps/splash16.png .
+    zip configtool.bin *.htm *.png
+    rm -f *.htm *.png
     cp $SRC/setup/ecosplatforms.tar.gz .
     cp $SRC/README.txt .
     cp $SRC/CHANGES.txt .

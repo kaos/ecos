@@ -167,5 +167,18 @@ CYG_MACRO_END
     CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
+
+// Macros for acessing shared memory structures
+
+#define HAL_READMEM_UINT8(   _reg_, _val_ ) ((_val_) = *((volatile CYG_BYTE *)(_reg_)))
+#define HAL_WRITEMEM_UINT8(  _reg_, _val_ ) (*((volatile CYG_BYTE *)(_reg_)) = (_val_))
+
+#define HAL_READMEM_UINT16(  _reg_, _val_ ) ((_val_) = *((volatile CYG_WORD16 *)(_reg_)))
+#define HAL_WRITEMEM_UINT16( _reg_, _val_ ) (*((volatile CYG_WORD16 *)(_reg_)) = (_val_))
+
+#define HAL_READMEM_UINT32(  _reg_, _val_ ) ((_val_) = *((volatile CYG_WORD32 *)(_reg_)))
+#define HAL_WRITEMEM_UINT32( _reg_, _val_ ) (*((volatile CYG_WORD32 *)(_reg_)) = (_val_))
+
+//-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_IO_H
 // End of hal_io.h

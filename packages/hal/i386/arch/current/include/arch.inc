@@ -78,7 +78,80 @@
 
 #endif
 
+#------------------------------------------------------------------------------
 
+	.macro	hal_smp_init
+	.endm
+
+	.macro hal_smp_cpu reg
+	movl	$0,\reg
+	.endm
+
+
+#------------------------------------------------------------------------------
+# Stack switching macros
+
+#ifndef CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+	.macro	hal_init_istack reg,tr
+	movl	$__interrupt_stack,\reg		// Load interrupt stack
+	.endm
+
+	.macro	hal_load_istack reg
+	movl	$__interrupt_stack,\reg		// Load interrupt stack
+	.endm
+
+	.macro	hal_load_istack_base reg
+	movl	$__interrupt_stack_base,\reg	// Load interrupt stack base
+	.endm
+
+		
+	.macro	hal_to_intstack
+	hal_load_istack_base %ebx		// EBX = stack base
+	movl	%ebx,%eax
+	addl	$CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE,%eax
+	cmpl	%ebx,%ebp			# compare SP with istack base
+	jb	1f				# if sp < istack base, switch
+	cmpl	%eax,%ebp			# compare SP with istack top
+	jbe	2f				# if sp < istack top, dont switch
+1:	
+	movl	%eax,%esp			# move on to new stack
+2:		
+	pushl	%ebp				# Save old SP on new stack
+	.endm
+
+	.macro	hal_from_intstack
+	popl	%esp				# pop old SP from stack
+	.endm
+
+#define CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+
+
+#else // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+	.macro	hal_init_istack reg
+	.endm
+
+	.macro	hal_load_istack_base reg
+	.endm
+
+	.macro	hal_load_istack reg
+	.endm
+
+	.macro	hal_to_intstack
+	.endm
+
+	.macro	hal_from_intstack
+	.endm
+
+#define CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+
+#endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+#endif // CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+	
 #------------------------------------------------------------------------------
 # FPU macros.
 	
@@ -127,8 +200,52 @@
 	# up.
 	subl	$i386reg_fpucontext_size,%esp
 	movl	$0,i386reg_fpucontext_valid(%esp)
-	movl	%esp,cyg_hal_fpustate_current
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	movl	%esp,0(%ecx,%ebx,4)		# save in table[cpu] entry
 #endif
+	.endm
+
+	.macro	hal_fpu_cpu_init
+	# Tell the CPU to use the math hardware.
+	movl	%cr0, %eax
+	orl	$0x32, %eax	# Set MP, ET, NE bits
+	andl	$~0x8, %eax	# And clear TS bit
+	movl	%eax, %cr0
+
+	finit			# and initialize...
+
+        ## Enable floating point exceptions. Bit mask:
+        ##  1 - invalid operation
+        ##  2 - denormalized operand
+        ##  4 - zero divide
+        ##  8 - overflow
+        ## 16 - underflow
+        ## 32 - precision
+	pushl	$0		# space for CW
+        fstcw   0(%esp)		# store FPCW to stack
+        movl	0(%esp),%eax	# get into EAX
+        andb	$(~0x04),%al	# allow only zero divide exceptions
+        movl	%eax,0(%esp)	# put back into memory
+        fldcw	0(%esp)		# reload
+	addl	$4,%esp		# pop value
+
+#ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+	# Tell the CPU to generate an FPU unavailable exception
+	# when the FPU is first used.
+	movl	%cr0, %eax
+	orl	$0x8, %eax
+	movl	%eax, %cr0
+	# Now create an FPU context on the stack so that we can take
+	# FPU-using interrupts and exceptions before the kernel starts
+	# up.
+	subl	$i386reg_fpucontext_size,%esp
+	movl	$0,i386reg_fpucontext_valid(%esp)
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	movl	%esp,0(%ecx,%ebx,4)		# save in table[cpu] entry
+#endif
+
 	.endm
 
 #ifndef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
@@ -206,7 +323,9 @@
 	# threads FPU context save area.
 
 	.macro	hal_fpu_push_ctx
-	pushl	cyg_hal_fpustate_current		# push our FPU state ptr
+	hal_smp_cpu %ebx			# Get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	pushl	0(%ecx,%ebx,4)			# push table[cpu] entry
 	.endm
 
 	# We do nothing here but set the CR0:TS bit to force
@@ -217,7 +336,9 @@
 	movl	%cr0, %ecx			# get CR0
 	orl	$0x8, %ecx			# set TS bit
 	movl	%ecx, %cr0			# restore CR0
-	popl	cyg_hal_fpustate_current	# set current FPU state pointer
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	popl	0(%ecx,%ebx,4)			# pop table[cpu] entry
 	.endm
 
 	# ------------------------------------------------------------
@@ -228,7 +349,9 @@
 	# interrupt.
 
 	.macro	hal_fpu_push_int
-	pushl	cyg_hal_fpustate_current	# push current threads FPU state ptr
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	pushl	0(%ecx,%ebx,4)			# push table[cpu] entry
 	# ensure that CR0:TS bit is set
 	movl	%cr0, %ecx			# get CR0
 	orl	$0x8, %ecx			# set TS bit
@@ -242,7 +365,9 @@
 	.macro	hal_fpu_push_int_annex
 	subl	$i386reg_fpucontext_size,%esp
 	movl	$0,i386reg_fpucontext_valid(%esp)
-	movl	%esp,cyg_hal_fpustate_current
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	movl	%esp,0(%ecx,%ebx,4)		# save in table[cpu] entry
 	.endm
 
 	# This is invoked just before any transfer back to the thread stack.
@@ -251,9 +376,11 @@
 	# own state over the top of it.
 
 	.macro	hal_fpu_pop_int_annex
-	cmpl	cyg_hal_fpustate_owner,%esp	# are we FPU owner?
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_owner,%ecx	# current state table
+	cmpl	0(%ecx,%ebx,4),%esp		# are we FPU owner?
 	jne	1f				# if not, then just continue
-	movl	$0,cyg_hal_fpustate_owner	# no one owns FPU now
+	movl	$0,0(%ecx,%ebx,4)		# no one owns FPU now
 	# ensure that CR0:TS bit is set to force a reload of
 	# the previous FPU state
 	movl	%cr0, %ecx			# get CR0
@@ -266,7 +393,9 @@
 	# Final return from interrupt handling. Just pull the current
 	# FPU context off the stack.
 	.macro	hal_fpu_pop_int
-	popl	cyg_hal_fpustate_current	# set current FPU state pointer
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	popl	0(%ecx,%ebx,4)			# pop table[cpu] entry
 	.endm
 
 	# ------------------------------------------------------------
@@ -277,13 +406,16 @@
 	# whole machine state is saved in memory.
 
 	.macro	hal_fpu_push_exc
-	pushl	cyg_hal_fpustate_current	# push our FPU state ptr
-	movl	cyg_hal_fpustate_owner,%eax	# EAX = FPU state owner
+	hal_smp_cpu %ebx			# get CPU id
+	movl	$cyg_hal_fpustate_current,%ecx	# current state table
+	pushl	0(%ecx,%ebx,4)			# push table[cpu] entry
+	movl	$cyg_hal_fpustate_owner,%ecx	# current owner table
+	movl	0(%ecx,%ebx,4),%eax		# EAX = FPU state owner
 	cmpl	$0,%eax				# test it
 	je	1f				# skip if zero
 	fsave	i386reg_fpucontext_state(%eax)	# save state
 	movl	$1,i386reg_fpucontext_valid(%eax) # set valid
-	movl	$0,cyg_hal_fpustate_owner	# zero owner pointer
+	movl	$0,0(%ecx,%ebx,4)		# zero owner pointer
 1:
 	.endm
 
@@ -309,6 +441,9 @@
 	# Non-FP macros.
 
 	.macro	hal_fpu_init
+	.endm
+
+	.macro	hal_fpu_cpu_init
 	.endm
 
 	.macro	hal_fpu_push_ctx

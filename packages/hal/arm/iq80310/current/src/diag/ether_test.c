@@ -58,7 +58,7 @@ static int waitForRxInt();
 static int get_ether_addr();
 
 /* Externals */
-void printf();
+//void printf();
 void bcopy();
 extern void sgets();
 extern int atod();

@@ -39,7 +39,7 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 	#include <windows.h> /* for GetShortPathNameA() */
 #endif
 #ifdef __CYGWIN__
@@ -120,7 +120,7 @@ static void path_to_vector (std::string input, std::vector <std::string> & outpu
 
 // eliminate spaces from a DOS filepath by substituting the
 // short form of path components containing spaces
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 std::string nospace_path (const std::string input) {
 	// split the path into a vector of path components
 	std::vector <std::string> long_path_vector;
@@ -151,7 +151,7 @@ std::string nospace_path (const std::string input) {
 
 // convert a DOS filepath to a Cygwin filepath
 std::string cygpath (const std::string input) {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 	// remove spaces from the DOS filepath
 	const std::string path = nospace_path (input);
 	std::string output;
@@ -323,7 +323,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "export COMMAND_PREFIX := %s\n", command_prefix.c_str ());
 	fprintf (stream, "export CC := $(COMMAND_PREFIX)gcc\n");
 	fprintf (stream, "export OBJCOPY := $(COMMAND_PREFIX)objcopy\n");
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     fprintf (stream, "export HOST := CYGWIN\n");
 #else
     fprintf (stream, "export HOST := UNIX\n");
@@ -415,7 +415,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "\n\n");
 	for (count = 0; count < info.headers.size (); count++) { // for each header
 		fprintf (stream, "$(PREFIX)/include/%s: $(REPOSITORY)/$(PACKAGE)/%s\n", info.headers [count].destination.c_str (), info.headers [count].source.c_str ());
-#if defined(_WIN32) && (ECOS_USE_CYGDRIVE == 1)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && (ECOS_USE_CYGDRIVE == 1)
         fprintf (stream, "ifeq ($(HOST),CYGWIN)\n");
 	    fprintf (stream, "\t@mkdir -p `cygpath -w \"$(dir $@)\" | sed \"s/\\\\\\\\\\/\\\\//g\"`\n");
         fprintf (stream, "else\n");
@@ -482,7 +482,7 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
 
 	// generate the variables
 	fprintf (stream, "export REPOSITORY := %s\n", cygpath (config->get_database ()->get_component_repository ()).c_str ());
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     fprintf (stream, "export HOST := CYGWIN\n");
 #else
     fprintf (stream, "export HOST := UNIX\n");
@@ -545,7 +545,7 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
 
 // generates the directory structure for the build and install trees
 bool generate_build_tree (const CdlConfiguration config, const std::string build_tree, const std::string install_tree /* = "" */ ) {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 	// convert backslash directory separators to forward slashes under Win32
 	const std::string build_dir = replace_char (build_tree, '\\', '/');
 	const std::string install_dir = install_tree.empty () ? build_dir + "/install" : replace_char (install_tree, '\\', '/');

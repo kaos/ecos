@@ -1,3 +1,8 @@
+2001-09-05  David Howells  <dhowells@redhat.com>
+
+	* src/plf_misc.c: made inclusion here of hal_ctrlc_isr()
+	contingent on the lack of virtual vector support.
+
 2001-08-15  David Howells  <dhowells@redhat.com>
 
 	* src/hal_diag.c: included hal_misc.h.

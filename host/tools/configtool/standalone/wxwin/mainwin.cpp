@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.48 2001/08/10 14:58:21 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.53 2001/09/03 17:18:18 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -478,7 +478,7 @@ void ecMainFrame::CreateWindows()
         wxDefaultSize, wxNO_BORDER);
     m_splitter->SplitVertically(m_tree, m_valueWindow);
     //m_splitter->AdjustScrollbars();
-    m_splitter->SetSashPosition(200);
+    m_splitter->SetSashPosition(wxGetApp().GetSettings().m_configPaneWidth);
     m_scrolledWindow->SetTargetWindow(m_tree);  
     m_scrolledWindow->EnableScrolling(FALSE, FALSE);
     m_tree->SetHelpText(_("The configuration window is the principal window used to configure eCos.\nIt takes the form of a tree-based representation of the configuration items within the currently loaded eCos packages."));
@@ -928,6 +928,7 @@ void ecMainFrame::OnCloseWindow(wxCloseEvent& event)
     wxGetApp().GetSettings().m_shortDescrSashSize = m_shortDescrSashWindow->GetSize();
     wxGetApp().GetSettings().m_memorySashSize = m_memorySashWindow->GetSize();
     wxGetApp().GetSettings().m_outputSashSize = m_outputSashWindow->GetSize();
+    wxGetApp().GetSettings().m_configPaneWidth = m_splitter->GetSashPosition();
     
     event.Skip();
 }
@@ -1047,6 +1048,8 @@ void ecMainFrame::OnHelpConfigtool(wxCommandEvent& event)
 {
     //wxString strURL(wxT("redirect/the-ecos-configuration-tool.html"));
     wxString strURL(wxGetApp().GetFullAppPath(wxT("manual/user-guides.2.html")));
+    if (!wxFileExists(strURL))
+	strURL = wxT("guides/user-guides.2.html");
 
     if (wxGetApp().GetConfigToolDoc())
     {
@@ -1118,7 +1121,8 @@ void ecMainFrame::OnTemplates(wxCommandEvent& event)
 	{
 #ifdef __WXMSW__
         // Ensure display gets updated
-        wxYield();
+        ::UpdateWindow((HWND) GetHWND());
+        //wxYield();
 #endif
         ecConfigToolDoc* doc = wxGetApp().GetConfigToolDoc();
 
@@ -1520,11 +1524,60 @@ void ecMainFrame::OnBuildLibrary(wxCommandEvent& event)
     // TODO: possibly add wxT("clean build") to ensure library is
     // cleanly built. No, can't do that because it would clean
     // out any user code too :-(
+
+    bool regenerateBuildTree = FALSE;
+
+    if (wxGetApp().GetSettings().m_editSaveFileOnly)
+    {
+        int ans = wxMessageBox(wxT("Running in --edit-only mode so there may not be an up-to-date build tree.\nBuild the tree now?"), wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO|wxCANCEL);
+
+        if (ans == wxYES)
+        {
+            regenerateBuildTree = TRUE;
+        }
+        else if (ans == wxCANCEL)
+            return;
+    }
+
+    if (regenerateBuildTree)
+    {
+        ecConfigToolDoc* pDoc = wxGetApp().GetConfigToolDoc();
+        if (!pDoc)
+            return;
+
+        if (!pDoc->GenerateBuildTree())
+            return ;
+    }
+
     wxGetApp().Build();
 }
 
 void ecMainFrame::OnBuildTests(wxCommandEvent& event)
 {
+    bool regenerateBuildTree = FALSE;
+
+    if (wxGetApp().GetSettings().m_editSaveFileOnly)
+    {
+        int ans = wxMessageBox(wxT("Running in --edit-only mode so there may not be an up-to-date build tree.\nBuild the tree now?"), wxGetApp().GetSettings().GetAppName(), wxICON_QUESTION|wxYES_NO|wxCANCEL);
+
+        if (ans == wxYES)
+        {
+            regenerateBuildTree = TRUE;
+        }
+        else if (ans == wxCANCEL)
+            return;
+    }
+
+    if (regenerateBuildTree)
+    {
+        ecConfigToolDoc* pDoc = wxGetApp().GetConfigToolDoc();
+        if (!pDoc)
+            return;
+
+        if (!pDoc->GenerateBuildTree())
+            return ;
+    }
+
     wxGetApp().Build(wxT("tests"));
 }
 
@@ -1534,7 +1587,9 @@ void ecMainFrame::OnStopBuild(wxCommandEvent& event)
     {
         long pid = wxGetApp().m_pipedProcess->GetPid();
         wxGetApp().m_pipedProcess->Detach();
-        ecKill(pid, wxSIGKILL);
+
+        wxProcessKiller pKiller(pid);
+        pKiller.Kill(TRUE);
     }
 }
 

@@ -90,15 +90,15 @@ __pktbuf_dump(void)
 {
     int i;
     for (i = 0; i < MAX_PKTBUF; i++) {
-        printf("Buf[%d]/%p: buf: %p, len: %d/%d, next: %p\n", 
-               i,
-               (void*)&pktbuf_list[i],
-               (void*)pktbuf_list[i].buf,
-               pktbuf_list[i].bufsize,
-               pktbuf_list[i].pkt_bytes,
-               (void*)pktbuf_list[i].next);
+        diag_printf("Buf[%d]/%p: buf: %p, len: %d/%d, next: %p\n", 
+                    i,
+                    (void*)&pktbuf_list[i],
+                    (void*)pktbuf_list[i].buf,
+                    pktbuf_list[i].bufsize,
+                    pktbuf_list[i].pkt_bytes,
+                    (void*)pktbuf_list[i].next);
     }
-    printf("Free list = %p\n", (void*)free_list);
+    diag_printf("Free list = %p\n", (void*)free_list);
 }
 
 /*

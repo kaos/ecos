@@ -75,7 +75,7 @@
 
 externC void
 cyg_assert_fail( const char* /* psz_func */, const char* /* psz_file */,
-                 cyg_uint32 /* linenum */, const char* /* psz_msg */ )
+                 cyg_uint32 /* linenum */, const char* /* psz_msg */ )  __THROW
     CYGBLD_ATTRIB_NORET CYGBLD_ATTRIB_WEAK;
 
 

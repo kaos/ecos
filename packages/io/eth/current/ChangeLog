@@ -1,3 +1,28 @@
+2001-09-05  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c (eth_drv_init): Don't initialize
+	structures if ESA is zero.  This is used by low level drivers
+	to indicate that a device is present, but can't currently be
+	used.  The eCos driver handles this case as well.
+
+2001-08-31  Hugo Tyson  <hmt@redhat.com>
+2001-08-31  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/net/eth_drv.c (eth_drv_tx_done): Guard against a NULL key
+	return - which can be caused by race conditions in the driver,
+	this is the neatest fixup.  It's good defensive programming
+	anyway and ASCOM's tests indicate a benefit for CASE 106059.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
+	* cdl/eth_drivers.cdl: Only enable warning/debug modes if RedBoot
+	is present as the debug environment (since there are implicit
+	dependencies on RedBoot functions).
+
 2001-08-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/eth_drv.c (eth_drv_send): Move endif location to fix build
@@ -356,7 +381,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

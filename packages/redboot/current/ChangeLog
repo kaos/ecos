@@ -1,3 +1,68 @@
+2001-09-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/redboot.h: Include string function prototype header.
+
+2001-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/fs/ide.c (ide_read_sectors): Use diag_(s)printf.
+	* src/fs/disk.c (do_disks): Same.
+
+2001-08-27  Mark Salter  <msalter@redhat.com>
+
+	* src/syscall.c (HZ): Should be 60 for ARM, also.
+
+2001-08-24  Tim Smith  <tsmith@redhat.com>
+	* src/xyzModem.c
+	* src/xyzModem.h
+	Provide xyzModem_stream_terminate() function to abort/clean up
+	XYZmodem download on normal termination or after errors.
+
+	* src/load.c
+	Use aforementioned function to abort downloads on SREC errors,
+	stop load_srec_image() from injecting stuff into the XYZmodem
+	stream and confusing things.
+
+2001-08-24  Mark Salter  <msalter@redhat.com>
+
+	* src/net/net_io.c: Don't close connections if there is
+	data left to read or write.
+
+	* src/syscall.c: Add support for utimes syscall.
+
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/udp.c: 
+
+	* src/net/pktbuf.c: 
+
+	* src/net/ping.c: 
+
+	* src/net/net_io.c: 
+
+	* src/net/inet_addr.c: 
+
+	* src/net/enet.c: 
+
+	* src/fs/e2fs.c: 
+
+	* src/xyzModem.c: 
+	* src/parse.c: 
+	* src/misc_funs.c: 
+	* src/main.c: 
+	* src/load.c: 
+	* src/io.c: 
+	* src/flash.c: 
+	* include/net/net.h: 
+	* include/redboot.h: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.  Also
+	renamed the non-standard function gets() to be _rb_gets()
+	since there was some confusion about it because of it's
+	rather standard name.
+
+	* cdl/redboot.cdl: Lots of changes based on moving all printf()
+	functionality into "infra" and only using it as diag_XXX().
+
 2001-08-17  Gary Thomas  <gthomas@redhat.com>
 
 	* src/version.c: Augment version information with startup mode.

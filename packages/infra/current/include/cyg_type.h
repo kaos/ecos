@@ -362,6 +362,12 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_WEAK_ALIAS(__symbol__) \
         CYGBLD_ATTRIB_WEAK CYGBLD_ATTRIB_ALIAS(__symbol__)
 
+#ifdef __cplusplus
+# define __THROW throw()
+#else
+# define __THROW
+#endif
+
 // -------------------------------------------------------------------------
 // Variable annotations
 // These annotations may be added to various static variables in the

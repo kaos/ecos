@@ -440,13 +440,28 @@ target_thumb_ins(unsigned long pc, unsigned short ins)
 {
     unsigned long new_pc = MAKE_THUMB_ADDR(pc+2); // default is fall-through 
                                         // to next thumb instruction
-    unsigned long offset, arm_ins;
+    unsigned long offset, arm_ins, sp;
+    int i;
 
     switch ((ins & 0xf000) >> 12) {
     case 0x4:
         // Check for BX or BLX
         if ((ins & 0xff07) == 0x4700)
             new_pc = (unsigned long)get_register((ins & 0x00078) >> 3);
+        break;
+    case 0xb:
+        // push/pop
+        // Look for "pop {...,pc}"
+        if ((ins & 0xf00) == 0xd00) {
+            // find PC
+            sp = (unsigned long)get_register(SP);
+
+            for (offset = i = 0; i < 8; i++)
+              if (ins & (1 << i))
+                  offset += 4;
+
+            new_pc = *(cyg_uint32 *)(sp + offset);
+        }
         break;
     case 0xd:
         // Bcc

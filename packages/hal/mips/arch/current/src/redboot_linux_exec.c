@@ -107,14 +107,14 @@ do_exec(int argc, char *argv[])
     __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     baud = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);
 
-    printf("Now booting linux kernel:\n");
-    printf(" Base address 0x%08x Entry 0x%08x\n", base_addr, entry);
-    printf(" Cmdline : %s\n", cmd_line);
+    diag_printf("Now booting linux kernel:\n");
+    diag_printf(" Base address 0x%08x Entry 0x%08x\n", base_addr, entry);
+    diag_printf(" Cmdline : %s\n", cmd_line);
 
     if (wait_time_set) {
-        printf("About to start execution at %p - abort with ^C within %d seconds\n",
-               (void *)entry, wait_time);
-        res = gets(line, sizeof(line), wait_time*1000);
+        diag_printf("About to start execution at %p - abort with ^C within %d seconds\n",
+                    (void *)entry, wait_time);
+        res = _rb_gets(line, sizeof(line), wait_time*1000);
         if (res == _GETS_CTRLC) {
             return;
         }
@@ -126,23 +126,23 @@ do_exec(int argc, char *argv[])
     pcmd = pb->text;
 
     pb->memsize.name = pcmd;
-    pcmd += sprintf(pcmd, "memsize");
+    pcmd += diag_sprintf(pcmd, "memsize");
     pb->memsize.val = ++pcmd;
-    pcmd += sprintf(pcmd, "0x%08x", (ram_end - ram_start + 0xFFFFF) & ~0xFFFFF);
+    pcmd += diag_sprintf(pcmd, "0x%08x", (ram_end - ram_start + 0xFFFFF) & ~0xFFFFF);
 
     pb->modetty0.name = ++pcmd;
-    pcmd += sprintf(pcmd, "modetty0");
+    pcmd += diag_sprintf(pcmd, "modetty0");
     pb->modetty0.val = ++pcmd;
-    pcmd += sprintf(pcmd, "%d,n,8,1,hw", baud);
+    pcmd += diag_sprintf(pcmd, "%d,n,8,1,hw", baud);
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     pb->ethaddr.name = ++pcmd;
-    pcmd += sprintf(pcmd, "ethaddr");
+    pcmd += diag_sprintf(pcmd, "ethaddr");
     pb->ethaddr.val = ++pcmd;
-    pcmd += sprintf(pcmd, "%02x.%02x.%02x.%02x.%02x.%02x",
-            __local_enet_addr[0], __local_enet_addr[1],
-            __local_enet_addr[2], __local_enet_addr[3],
-            __local_enet_addr[4], __local_enet_addr[5]);
+    pcmd += diag_sprintf(pcmd, "%02x.%02x.%02x.%02x.%02x.%02x",
+                         __local_enet_addr[0], __local_enet_addr[1],
+                         __local_enet_addr[2], __local_enet_addr[3],
+                         __local_enet_addr[4], __local_enet_addr[5]);
     pb->env_end.name = NULL;
     pb->env_end.val = NULL;
 #else

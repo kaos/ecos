@@ -144,14 +144,14 @@ do_version(int argc, char *argv[])
     externC void _flash_info(void);
 #endif
 
-    printf(RedBoot_version);
+    diag_printf(RedBoot_version);
 #ifdef HAL_PLATFORM_CPU
-    printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
+    diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
-    printf("Copyright (C) 2000, 2001, Red Hat, Inc.\n\n");
-    printf("RAM: %p-%p, %p-%p available\n", 
-           (void*)ram_start, (void*)ram_end,
-           (void*)user_ram_start, (void *)user_ram_end);
+    diag_printf("Copyright (C) 2000, 2001, Red Hat, Inc.\n\n");
+    diag_printf("RAM: %p-%p, %p-%p available\n", 
+                (void*)ram_start, (void*)ram_end,
+                (void*)user_ram_start, (void *)user_ram_end);
 #ifdef CYGPKG_IO_FLASH
     _flash_info();
 #endif
@@ -168,6 +168,13 @@ do_idle(bool is_idle)
     }
 }
 
+// Wrapper used by diag_printf()
+static void
+_mon_write_char(char c, void **param)
+{
+    mon_write_char(c);
+}
+
 //
 // This is the main entry point for RedBoot
 //
@@ -182,6 +189,7 @@ cyg_start(void)
     struct init_tab_entry *init_entry;
 
     // Make sure the channels are properly initialized.
+    diag_init_putc(_mon_write_char);
     hal_if_diag_init();
 
     // Force console to output raw text - but remember the old setting
@@ -248,15 +256,15 @@ cyg_start(void)
         // Give the guy a chance to abort any boot script
         unsigned char *hold_script = script;
         int script_timeout_ms = script_timeout * CYGNUM_REDBOOT_BOOT_SCRIPT_TIMEOUT_RESOLUTION;
-        printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
-               script_timeout_ms/1000, script_timeout_ms%1000);
+        diag_printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
+                    script_timeout_ms/1000, script_timeout_ms%1000);
         script = (unsigned char *)0;
         res = _GETS_CTRLC;  // Treat 0 timeout as ^C
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
-            res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+            res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res >= _GETS_OK) {
-                printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
-                       script_timeout_ms/1000, script_timeout_ms%1000);
+                diag_printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
+                            script_timeout_ms/1000, script_timeout_ms%1000);
                 continue;  // Ignore anything but ^C
             }
             if (res != _GETS_TIMEOUT) break;
@@ -272,10 +280,10 @@ cyg_start(void)
 
     while (true) {
         if (prompt) {
-            printf("RedBoot> ");
+            diag_printf("RedBoot> ");
             prompt = false;
         }
-        res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+        res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
         if (res == _GETS_TIMEOUT) {
             // No input arrived
         } else {
@@ -311,7 +319,7 @@ cyg_start(void)
                     if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
                         (cmd->fun)(argc, argv);
                     } else {
-                        printf("** Error: Illegal command: \"%s\"\n", argv[0]);
+                        diag_printf("** Error: Illegal command: \"%s\"\n", argv[0]);
                     }
                 }
                 prompt = true;
@@ -327,12 +335,12 @@ do_caches(int argc, char *argv[])
     int dcache_on=0, icache_on=0;
 
     if (argc == 2) {
-        if (strcmpci(argv[1], "on") == 0) {
+        if (strcasecmp(argv[1], "on") == 0) {
             HAL_DISABLE_INTERRUPTS(oldints);
             HAL_ICACHE_ENABLE();
             HAL_DCACHE_ENABLE();
             HAL_RESTORE_INTERRUPTS(oldints);
-        } else if (strcmpci(argv[1], "off") == 0) {
+        } else if (strcasecmp(argv[1], "off") == 0) {
             HAL_DISABLE_INTERRUPTS(oldints);
             HAL_DCACHE_SYNC();
             HAL_ICACHE_DISABLE();
@@ -342,7 +350,7 @@ do_caches(int argc, char *argv[])
             HAL_DCACHE_INVALIDATE_ALL();
             HAL_RESTORE_INTERRUPTS(oldints);
         } else {
-            printf("Invalid cache mode: %s\n", argv[1]);
+            diag_printf("Invalid cache mode: %s\n", argv[1]);
         }
     } else {
 #ifdef HAL_DCACHE_IS_ENABLED
@@ -351,7 +359,8 @@ do_caches(int argc, char *argv[])
 #ifdef HAL_ICACHE_IS_ENABLED
         HAL_ICACHE_IS_ENABLED(icache_on);
 #endif
-        printf("Data cache: %s, Instruction cache: %s\n", dcache_on?"On":"Off", icache_on?"On":"Off");
+        diag_printf("Data cache: %s, Instruction cache: %s\n", 
+                    dcache_on?"On":"Off", icache_on?"On":"Off");
     }
 }
 
@@ -365,7 +374,7 @@ do_help(int argc, char *argv[])
     int len = 0;
 
     if (!scan_opts(argc, argv, 1, 0, 0, (void **)&which, OPTION_ARG_TYPE_STR, "<topic>")) {
-        printf("Invalid argument\n");
+        diag_printf("Invalid argument\n");
         return;
     }
     if (which) {
@@ -374,11 +383,11 @@ do_help(int argc, char *argv[])
     cmd = __RedBoot_CMD_TAB__;
     while (cmd != &__RedBoot_CMD_TAB_END__) {
         show = true;
-        if (which && (strncmpci(which, cmd->str, len) != 0)) {
+        if (which && (strncasecmp(which, cmd->str, len) != 0)) {
             show = false;
         }
         if (show) {
-            printf("%s\n   %s %s\n", cmd->help, cmd->str, cmd->usage);
+            diag_printf("%s\n   %s %s\n", cmd->help, cmd->str, cmd->usage);
         }
         cmd++;
     }
@@ -402,7 +411,7 @@ do_dump(int argc, char *argv[])
     }
     if (!base_set) {
         if (_base == 0) {
-            printf("Dump what [location]?\n");
+            diag_printf("Dump what [location]?\n");
             return;
         }
         base = _base;
@@ -414,7 +423,7 @@ do_dump(int argc, char *argv[])
     if (!len_set) {
         len = 32;
     }
-    dump_buf((void *)base, len);
+    diag_dump_buf((void *)base, len);
     _base = base + len;
     _len = len;
 }
@@ -438,11 +447,11 @@ do_cksum(int argc, char *argv[])
         return;
     }
     if (!base_set || !len_set) {
-        printf("usage: cksum -b <addr> -l <length>\n");
+        diag_printf("usage: cksum -b <addr> -l <length>\n");
         return;
     }
     crc = posix_crc32((unsigned char *)base, len);
-    printf("POSIX cksum = 0x%08lx (%lu)\n", crc, crc);
+    diag_printf("POSIX cksum = 0x%08lx (%lu)\n", crc, crc);
 }
 
 void
@@ -470,10 +479,10 @@ do_go(int argc, char *argv[])
         unsigned char *hold_script = script;
         script = (unsigned char *)0;
 #endif
-        printf("About to start execution at %p - abort with ^C within %d seconds\n",
-               (void *)entry, wait_time);
+        diag_printf("About to start execution at %p - abort with ^C within %d seconds\n",
+                    (void *)entry, wait_time);
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
-            res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+            res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res == _GETS_CTRLC) {
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
                 script = hold_script;  // Re-enable script
@@ -502,11 +511,11 @@ do_go(int argc, char *argv[])
 void
 do_reset(int argc, char *argv[])
 {
-    printf("... Resetting.");
+    diag_printf("... Resetting.");
     CYGACC_CALL_IF_DELAY_US(2*100000);
-    printf("\n");
+    diag_printf("\n");
     CYGACC_CALL_IF_RESET();
-    printf("!! oops, RESET not working on this platform\n");
+    diag_printf("!! oops, RESET not working on this platform\n");
 }
 #endif
 
@@ -526,7 +535,7 @@ set_console_baud_rate(int rate)
         __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SETBAUD, rate);
         if (ret <= 0) {
-            printf("Failed\n");
+            diag_printf("Failed\n");
         }
         current_rate = rate;
     }
@@ -561,11 +570,11 @@ do_baud_rate(int argc, char *argv[])
         set_console_baud_rate(new_rate);
     } else {
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);
-        printf("Baud rate = ");
+        diag_printf("Baud rate = ");
         if (ret <= 0) {
-            printf("unknown\n");
+            diag_printf("unknown\n");
         } else {
-            printf("%d\n", ret);
+            diag_printf("%d\n", ret);
         }
     }
 }

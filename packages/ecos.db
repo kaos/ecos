@@ -657,6 +657,14 @@ package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
         description     "Ethernet driver for Cirrus Logic EDB7xxx development boards."
 }
 
+package CYGPKG_DEVS_ETH_AMD_PCNET {
+	alias 		{ "AMD PCNET ethernet driver" pcnet_eth_driver }
+	hardware
+	directory	devs/eth/amd/pcnet
+	script		amd_pcnet_eth_drivers.cdl
+        description     "Ethernet driver for AMD PCNET controller."
+}
+
 package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	alias 		{ "Intel EBSA285 with PRO/100+ ethernet driver"
 			   devs_eth_arm_ebsa285 ebsa285_eth_driver }

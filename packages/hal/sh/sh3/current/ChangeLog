@@ -1,3 +1,9 @@
+2001-09-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_ubc.h: Type 2 BRCR definitions.
+
+	* include/mod_7729.h (CYGARC_SH_MOD_UBC): Changed to type 2.
+
 2001-07-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_cache.h: Fix cache query function.

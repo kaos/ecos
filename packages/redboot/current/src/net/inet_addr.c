@@ -60,7 +60,7 @@ inet_aton(char *s, in_addr_t *addr)
         val = 0;
         radix = 10;
         while ((c = *s++) != '\0') {
-            if (first && (c == '0') && (tolower(*s) == 'x')) {
+            if (first && (c == '0') && (_tolower(*s) == 'x')) {
                 radix = 16;
                 s++;  // Skip over 0x
                 c = *s++;
@@ -94,6 +94,6 @@ inet_ntoa(in_addr_t *addr)
     unsigned char *ap;
 
     ap = (unsigned char *)addr;
-    sprintf(str, "%d.%d.%d.%d", ap[0], ap[1], ap[2], ap[3]);
+    diag_sprintf(str, "%d.%d.%d.%d", ap[0], ap[1], ap[2], ap[3]);
     return str;
 }

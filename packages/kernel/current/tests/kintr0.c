@@ -156,8 +156,8 @@ void kintr0_main( void )
 
     // Check these functions at least exist
 
-    cyg_interrupt_enable();
     cyg_interrupt_disable();
+    cyg_interrupt_enable();
 
     if (intr0)
         cyg_interrupt_attach(intr0);

@@ -180,17 +180,17 @@ CYG_MACRO_END
 #define PC_WRITE_SCREEN_8( __pos, __val )                       \
 {                                                               \
     char __hex[] = "0123456789ABCDEF";                          \
-    PC_WRITE_SCREEN( (__pos), __hex[((__val)>>4)&0xF] );        \
-    PC_WRITE_SCREEN( ((__pos)+1), __hex[(__val)&0xF] );         \
+    PC_WRITE_SCREEN( (__pos), __hex[((int)(__val)>>4)&0xF] );        \
+    PC_WRITE_SCREEN( ((__pos)+1), __hex[(int)(__val)&0xF] );         \
 }
 
 #define PC_WRITE_SCREEN_16( __pos, __val )      \
-    PC_WRITE_SCREEN_8( __pos, (__val)>>8 );     \
-    PC_WRITE_SCREEN_8( (__pos)+2, __val );
+    PC_WRITE_SCREEN_8( __pos, (int)(__val)>>8 );     \
+    PC_WRITE_SCREEN_8( (__pos)+2, (int)(__val) );
 
 #define PC_WRITE_SCREEN_32( __pos, __val )      \
-    PC_WRITE_SCREEN_16( __pos, (__val)>>16 );   \
-    PC_WRITE_SCREEN_16( (__pos)+4, __val );
+    PC_WRITE_SCREEN_16( __pos, (int)(__val)>>16 );   \
+    PC_WRITE_SCREEN_16( (__pos)+4, (int)(__val) );
 
 //-----------------------------------------------------------------------------
 // IDE interface macros

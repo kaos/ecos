@@ -1,6 +1,28 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
+*** Version 2.07, September 5th 2001
+
+- Image (png) files and about.htm now incorporated into configtool.bin,
+  which is an ordinary zip file.
+
+
+*** Version 2.06, August 30th 2001
+
+- Now saves the width of the configuration tree pane.
+
+- New -r (--edit-only) command-line switch which suppresses creation
+  of build trees when saving .ecc files.
+
+- Added -v (--version), -h (--help) switches, and under Unix the
+  resulting output goes on the terminal, not a dialog box.
+
+- The build tree will now only get generated when the file is saved instead
+  of when a new document is created or template selected.
+
+- Added recursive process killing for implementing Stop command.
+
+
 *** Version 2.05, August 10th 2001
 
 - Fixed a bug in the administration dialog that only looked at the filename of the

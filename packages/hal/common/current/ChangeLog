@@ -1,3 +1,8 @@
+2001-08-24  Mark Salter  <msalter@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Add support for 'D' packet.
+	(__process_packet): Check for impossible mem write length.
+
 2001-08-17  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal.cdl: Add CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT

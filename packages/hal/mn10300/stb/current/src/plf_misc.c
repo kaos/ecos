@@ -128,7 +128,8 @@ void hal_platform_init(void)
 /*------------------------------------------------------------------------*/
 /* Control C ISR support                                                  */
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) && \
+    !defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
 
 #if CYGHWR_HAL_MN10300_AM33_STB_GDB_PORT == 0
 

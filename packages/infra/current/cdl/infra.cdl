@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -50,7 +50,7 @@ cdl_package CYGPKG_INFRA {
 
     compile startup.cxx prestart.cxx pkgstart.cxx userstart.cxx      \
             dummyxxmain.cxx null.cxx simple.cxx fancy.cxx buffer.cxx \
-            diag.cxx tcdiag.cxx memcpy.c memset.c delete.cxx
+            diag.cxx tcdiag.cxx memcpy.c memset.c delete.cxx eprintf.c
 
 
     # ====================================================================
@@ -64,19 +64,6 @@ cdl_package CYGPKG_INFRA {
 #            with the Common Types component; they are automatically
 #            set up according to the selected HAL."
 #    }
-
-    cdl_option CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG {
-        display       "Use varargs in diag_printf()"
-        default_value 1 
-        description   "
-            The diagnostic routine diag_printf() can be defined
-            using either variadic arguments or a K&R style definition.
-            The former will work in most circumstances, but if variable
-            argument handling is broken or missing then the K&R variant
-            may be used. This will also generate warnings about the
-            declaration of diag_printf() not being a prototype.
-            These may safely be ignored."
-    }
 
     # ====================================================================
     cdl_component CYGPKG_INFRA_DEBUG {
@@ -182,14 +169,6 @@ cdl_package CYGPKG_INFRA {
 
     # ========================================================================
     # Debugging-related miscellania.
-    #
-    # NOTE: this is not yet fully supported, by CDL nor by having a proper
-    # symbol name.
-    #
-    # Define how diag data is directed off of the board. If using an actual
-    # device then a device must be configured to support diag.
-    #
-    #undef CYGDBG_INFRA_DIAG_USE_DEVICE
 
     define_proc {
         puts $::cdl_header "/***** proc output start *****/"

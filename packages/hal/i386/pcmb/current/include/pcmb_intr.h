@@ -96,10 +96,11 @@
 #define CYGNUM_HAL_INTERRUPT_HDD                 46
 
 #define CYGNUM_HAL_ISR_MIN                       32
-#define CYGNUM_HAL_ISR_MAX                       47
+#define CYGNUM_HAL_ISR_MAX                       255
 #define CYGNUM_HAL_ISR_COUNT    (CYGNUM_HAL_ISR_MAX - CYGNUM_HAL_ISR_MIN + 1)
 
 #define CYGNUM_HAL_INTERRUPT_RTC                 CYGNUM_HAL_INTERRUPT_TIMER
+
 
 //--------------------------------------------------------------------------
 // Interrupt vector translation
@@ -111,6 +112,7 @@
 //--------------------------------------------------------------------------
 // PIC interrupt acknowledge
 
+
 #define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )   \
 CYG_MACRO_START                                 \
     int x;                                      \
@@ -121,8 +123,10 @@ CYG_MACRO_START                                 \
         HAL_WRITE_UINT8( 0x20, 0x20 );          \
 CYG_MACRO_END
 
+
 //--------------------------------------------------------------------------
 // PIC per-interrupt source masking
+
 
 #define HAL_INTERRUPT_MASK( _vector_ )                  \
 CYG_MACRO_START                                         \
@@ -192,6 +196,7 @@ CYG_MACRO_END
 #define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )      
 
 #define HAL_INTERRUPT_SET_LEVEL( _vector_, _level_ )            
+
 
 //---------------------------------------------------------------------------
 // Clock support.

@@ -89,11 +89,7 @@ RedBoot_config_option("Network hardware address [MAC]",
 #endif
 #endif
 
-#ifdef CYGPKG_REDBOOT
-#define os_printf printf
-#else
 #define os_printf diag_printf
-#endif
 
 // For fetching the ESA from RedBoot
 #include <cyg/hal/hal_if.h>
@@ -310,7 +306,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
 #endif
     if (!esa_ok) {
         // Can't figure out ESA
-        diag_printf("FEC_ETH - Warning! ESA unknown\n");
+        os_printf("FEC_ETH - Warning! ESA unknown\n");
         memcpy(&enaddr, &_default_enaddr, sizeof(enaddr));
     }
     memcpy((void *)&fec->addr[0], &enaddr[0], sizeof(enaddr));

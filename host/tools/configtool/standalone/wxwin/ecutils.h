@@ -213,6 +213,77 @@ wxOutputStream& operator <<(wxOutputStream&, const char c);
 wxOutputStream& operator <<(wxOutputStream&, long l);
 
 /*
+ * Class for recursively killing a process and its children.
+ * This has been taken from CSubprocess, but we can't use CSubprocess
+ * directly for killing a process because it assumes it's been used to create
+ * the process.
+ */
+
+class wxProcessKiller
+{
+
+public:
+    const wxString ErrorString() const;
+
+    wxProcessKiller(int pid);
+    ~wxProcessKiller();
+    
+    void SetVerbose   (bool b)         { m_bVerbose=b; }
+      
+    int Pid() const { return m_idProcess; } // returns process id (even when process is terminated)
+    
+    // Get the process exit code.  This can be:
+    //   exit code of process (if terminated)
+    //   0xffffffff (if process not yet run)
+    //   GetLastError result (if process could not be run)
+    int GetExitCode() { return m_nExitCode; }
+    
+    // Kill the process:
+    bool Kill(bool bRecurse = true);
+    
+    // Is the process running?
+    bool ProcessAlive();
+    
+protected:
+    static const wxString Name (int pid); // for debugging - only works under NT
+    
+    struct wxPInfo;
+    struct wxPInfo {
+        wxPInfo *pParent;
+#ifdef _WIN32
+        __int64 tCreation;
+#endif
+        long tCpu;
+        int PID;
+        int PPID;
+        bool IsChildOf(int pid) const;
+    };
+    
+    typedef std::vector<wxPInfo> wxPInfoArray;
+    
+    static bool PSExtract(wxPInfoArray &arPinfo);
+    static void SetParents(wxPInfoArray &arPinfo);
+    
+#ifdef _WIN32
+    static long GetPlatform();
+    WXHANDLE m_hrPipe;
+    WXHANDLE m_hwPipe;
+    WXHANDLE m_hProcess;     // This handle is "owned" by the ThreadFunc
+    static WXHINSTANCE hInstLib1, hInstLib2;
+    int m_nErr;
+#else
+    int m_tty;
+    wxString m_strCmd;
+#endif
+    
+    bool m_bVerbose;
+    int m_nExitCode;
+    int m_idProcess;
+    
+    static const unsigned int PROCESS_KILL_EXIT_CODE;
+};
+
+/*
  * ecDialog
  * Supports features we want to have for all dialogs in the application.
  * So far, this just allows dialogs to be resizeable under MSW by

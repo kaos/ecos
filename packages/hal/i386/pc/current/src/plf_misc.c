@@ -74,6 +74,7 @@ extern void patch_dbg_syscalls(void * vector);
 
 extern void hal_pcmb_init(void);
 
+
 //----------------------------------------------------------------------------
 // ISR tables
 
@@ -114,8 +115,17 @@ void hal_platform_init(void)
         cyg_uint32 index;
         HAL_TRANSLATE_VECTOR( vector, index );
         hal_interrupt_handlers[index] = (CYG_ADDRESS) HAL_DEFAULT_ISR;
-        HAL_VSR_SET( vector, __default_interrupt_vsr, NULL );
+        HAL_VSR_SET( vector, &__default_interrupt_vsr, NULL );
     }
+    
+#if !defined(CYG_HAL_STARTUP_RAM)
+    for (vector = CYGNUM_HAL_EXCEPTION_MIN;
+         vector <= CYGNUM_HAL_EXCEPTION_MAX;
+         vector++)        
+    {
+        HAL_VSR_SET( vector, &__default_exception_vsr, NULL );
+    }
+#endif
     
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)    
     {
@@ -125,14 +135,6 @@ void hal_platform_init(void)
 
 #endif
         
-#if 0 // !defined(CYGSEM_HAL_ROM_MONITOR)
-    /* Connect to the floating point interrupt. */
-    cyg_interrupt_create(CYGNUM_HAL_VECTOR_NO_DEVICE, 1, 0,
-                         hal_pc_fpe_isr, hal_pc_fpe_dsr,
-                         &hal_pc_fpe_interrupt, &hal_pc_fpe_interrupt_object);
-    cyg_interrupt_attach(hal_pc_fpe_interrupt);
-#endif        
-
 #ifdef CYGPKG_REDBOOT
 
     // Start the timer device running if we are in a RedBoot
@@ -144,6 +146,7 @@ void hal_platform_init(void)
     
     hal_if_init();
 
+    
 }
 
 /*------------------------------------------------------------------------*/

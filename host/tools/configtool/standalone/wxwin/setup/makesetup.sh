@@ -35,6 +35,7 @@ findversion()
 
 doinno()
 {
+    rm -f -r $DEST/configtool
     mkdir -p $DEST/configtool
     mkdir -p $DEST/configtool/manual
     mkdir -p $DEST/configtool/manual/pix
@@ -45,6 +46,9 @@ doinno()
     cp $SRC/CHANGES.txt .
     cp $SRC/TODO.txt .
     cp $SRC/*.png .
+    cp $SRC/bitmaps/splash16.png .
+    zip configtool.bin about.htm *.png
+    rm -f about.htm *.png
     cp "$ECOSDIR/ecc/release/eCos Install/Setup Files/Uncompressed Files/Disk1/license.txt" .
     cp $BINARYSRC/configtool.exe .
     cp $CONFIGTOOLDIR/manual/*.html $CONFIGTOOLDIR/manual/*.css $CONFIGTOOLDIR/manual/*.gif $DEST/configtool/manual

@@ -1,3 +1,9 @@
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_cmds.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* images/*: Remove. Don't bloat repository with things already on
@@ -751,7 +757,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -102,14 +102,14 @@ do_ping(int argc, char *argv[])
     init_opts(&opts[6], 'r', true, OPTION_ARG_TYPE_NUM, 
               (void **)&rate, (bool *)&rate_set, "<rate> - time between packets");
     if (!scan_opts(argc, argv, 1, opts, 7, (void **)0, 0, "")) {
-        printf("PING - Invalid option specified\n");
+        diag_printf("PING - Invalid option specified\n");
         return;
     }   
     // Set defaults; this has to be done _after_ the scan, since it will
     // have destroyed all values not explicitly set.
     if (local_ip_addr_set) {
         if (!inet_aton(local_ip_addr, (in_addr_t *)&local_addr)) {
-            printf("PING - Invalid IP address: %s\n", local_ip_addr);
+            diag_printf("PING - Invalid IP address: %s\n", local_ip_addr);
             return;
         }
     } else {
@@ -117,15 +117,15 @@ do_ping(int argc, char *argv[])
     }
     if (host_ip_addr_set) {
         if (!inet_aton(host_ip_addr, (in_addr_t *)&host_addr)) {
-            printf("PING - Invalid IP address: %s\n", host_ip_addr);
+            diag_printf("PING - Invalid IP address: %s\n", host_ip_addr);
             return;
         }
         if (__arp_lookup((ip_addr_t *)&host_addr.sin_addr, &dest_ip) < 0) {
-            printf("PING: Can't find address of server '%s'\n", host_ip_addr);
+            diag_printf("PING: Can't find address of server '%s'\n", host_ip_addr);
             return;
         }
     } else {
-        printf("PING - host IP address required\n");
+        diag_printf("PING - host IP address required\n");
         return;
     }
 #define DEFAULT_LENGTH   64
@@ -139,7 +139,7 @@ do_ping(int argc, char *argv[])
         length = DEFAULT_LENGTH;
     }
     if ((length < 64) || (length > 1400)) {
-        printf("Invalid length specified: %ld\n", length);
+        diag_printf("Invalid length specified: %ld\n", length);
         return;
     }
     if (!count_set) {
@@ -149,10 +149,10 @@ do_ping(int argc, char *argv[])
         timeout = DEFAULT_TIMEOUT;
     }
     // Note: two prints here because 'inet_ntoa' returns a static pointer
-    printf("Network PING - from %s",
-           inet_ntoa((in_addr_t *)&local_addr));
-    printf(" to %s\n",
-           inet_ntoa((in_addr_t *)&host_addr));
+    diag_printf("Network PING - from %s",
+                inet_ntoa((in_addr_t *)&local_addr));
+    diag_printf(" to %s\n",
+                inet_ntoa((in_addr_t *)&host_addr));
     received = 0;    
     __icmp_install_listener(handle_icmp);
     for (tries = 0;  tries < count;  tries++) {
@@ -203,14 +203,14 @@ do_ping(int argc, char *argv[])
         if (icmp_received) {
             received++;
             if (verbose) {
-                printf(" seq: %ld, time: %ld (ticks)\n",
-                       ntohs(hold_hdr.seqnum), end_time-start_time);
+                diag_printf(" seq: %ld, time: %ld (ticks)\n",
+                            ntohs(hold_hdr.seqnum), end_time-start_time);
             }
         }
     }
     __icmp_remove_listener();
     // Report
-    printf("PING - received %ld of %ld expected\n", received, count);
+    diag_printf("PING - received %ld of %ld expected\n", received, count);
 }
 
 #endif //CYGPKG_REDBOOT_NETWORKING

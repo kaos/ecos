@@ -310,20 +310,22 @@ do_disks(int argc, char *argv[])
     char name[16];
 
     for (i = 0, d = disk_table;  i < disk_count;  i++, d++) {
-	switch (d->kind) {
-	  case DISK_IDE_HD:
-	    for (j = 0, p = d->partitions; j < CYGNUM_REDBOOT_MAX_PARTITIONS; j++, p++) {
-		if (p->systype) {
-		    sprintf(name, "hd%c%d", 'a' + d->index, j+1);
-		    printf("%-8s %s\n", name, systype_name(p->systype));
-		}
-	    }
-	    break;
-	  case DISK_IDE_CDROM:
-	    sprintf(name, "cd%d", d->index);
-	    printf("%-8s ISO9660\n", name);
-	    break;
-	}
+        switch (d->kind) {
+          case DISK_IDE_HD:
+            for (j = 0, p = d->partitions;
+                 j < CYGNUM_REDBOOT_MAX_PARTITIONS;
+                 j++, p++) {
+                if (p->systype) {
+                    diag_sprintf(name, "hd%c%d", 'a' + d->index, j+1);
+                    diag_printf("%-8s %s\n", name, systype_name(p->systype));
+                }
+            }
+            break;
+          case DISK_IDE_CDROM:
+            diag_sprintf(name, "cd%d", d->index);
+            diag_printf("%-8s ISO9660\n", name);
+            break;
+        }
     }
 }
 

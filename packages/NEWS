@@ -1,3 +1,4 @@
+* AMD PCNet ethernet driver added.
 * Generic SMP support added.
 * RedBoot support added to AM33-STB port.
 * Add Atmel AT91/EB40 port, including flash and serial drivers.

@@ -193,7 +193,7 @@ __udp_sendto(char *data, int len, struct sockaddr_in *server,
     ip_route_t rt;
 
     if (__arp_lookup((ip_addr_t *)&server->sin_addr, &rt) < 0) {
-        printf("%s: Can't find address of server\n", __FUNCTION__);
+        diag_printf("%s: Can't find address of server\n", __FUNCTION__);
         return -1;
     } else {
 	__udp_send(data, len, &rt, ntohs(server->sin_port), ntohs(local->sin_port));
@@ -223,7 +223,7 @@ __udp_recvfrom_handler(udp_socket_t *skt, char *buf, int len,
         memcpy(&recvfrom_server->sin_addr, &src_route->ip_addr, sizeof(src_route->ip_addr));
         recvfrom_buf = (char *)0;  // Tell reader we got a packet
     } else {
-        printf("udp_recvfrom - dropped packet of %d bytes\n", len);
+        diag_printf("udp_recvfrom - dropped packet of %d bytes\n", len);
     }
 }
 

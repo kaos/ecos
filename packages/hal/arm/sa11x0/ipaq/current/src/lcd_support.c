@@ -896,7 +896,7 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 #ifdef KBD_DEBUG
                 {
                     int cur = start_console(0);
-                    printf("pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
+                    diag_printf("pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
                     end_console(cur);
                     dump_info = !dump_info;
                 }
@@ -923,7 +923,7 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 #ifdef KBD_DEBUG
                 if (dump_info) {
                     int cur = start_console(0);
-                    printf("start pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
+                    diag_printf("start pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
                     end_console(cur);
                 }
 #endif
@@ -955,7 +955,7 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 #ifdef KBD_DEBUG
             if (dump_info) {
                 int cur = start_console(0);
-                printf("going idle\n");
+                diag_printf("going idle\n");
                 end_console(cur);
             }
 #endif
@@ -965,7 +965,7 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 #ifdef KBD_DEBUG
     if (dump_info) {
         int cur = start_console(0);
-        printf("pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
+        diag_printf("pen: %d, waiting: %d, total: %d\n", pen_down, waiting_for_pen_down, total_events);
         end_console(cur);
     }
 #endif
@@ -980,7 +980,7 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 #ifdef KBD_DEBUG
         if (dump_info) {
             int cur = start_console(0);
-            printf("Pen[%d] at %d/%d\n", total_events, x, y);
+            diag_printf("Pen[%d] at %d/%d\n", total_events, x, y);
             end_console(cur);
         }
 #endif
@@ -995,7 +995,7 @@ lcd_comm_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 #ifdef KBD_DEBUG
             if (dump_info) {
                 int cur = start_console(0);
-                printf("Row/Col = %d/%d = %x\n", row, col, kbd_ch);
+                diag_printf("Row/Col = %d/%d = %x\n", row, col, kbd_ch);
                 end_console(cur);
             }
 #endif
@@ -1390,13 +1390,13 @@ lcd_comm_init(void)
             lcd_kbd(LCD_KBD_NORM);
         }
 #if 0
-        printf("KBD Limits[] = %d/%d, %d/%d, %d/%d, %d/%d\n",
-               kbd_limits[CS_UL].x, kbd_limits[CS_UL].y,
-               kbd_limits[CS_UR].x, kbd_limits[CS_UR].y,
-               kbd_limits[CS_LL].x, kbd_limits[CS_LL].y,
-               kbd_limits[CS_LR].x, kbd_limits[CS_LR].y);
-        printf("KBD in %d/%d .. %d/%d\n", minX, minY, maxX, maxY);
-        printf("screen %d x %d\n", screen_height, screen_width);
+        diag_printf("KBD Limits[] = %d/%d, %d/%d, %d/%d, %d/%d\n",
+                    kbd_limits[CS_UL].x, kbd_limits[CS_UL].y,
+                    kbd_limits[CS_UR].x, kbd_limits[CS_UR].y,
+                    kbd_limits[CS_LL].x, kbd_limits[CS_LL].y,
+                    kbd_limits[CS_LR].x, kbd_limits[CS_LR].y);
+        diag_printf("KBD in %d/%d .. %d/%d\n", minX, minY, maxX, maxY);
+        diag_printf("screen %d x %d\n", screen_height, screen_width);
 #endif
     }
 }

@@ -53,18 +53,9 @@ cdl_package CYGPKG_POSIX {
     requires       CYGIMP_KERNEL_SCHED_SORTED_QUEUES
 
     implements     CYGINT_ISO_SCHED_IMPL
-    implements     CYGINT_ISO_SIGNAL_NUMBERS
-    implements     CYGINT_ISO_SIGNAL_IMPL
     implements     CYGINT_ISO_POSIX_LIMITS
-    implements     CYGINT_ISO_PMUTEXTYPES
-    requires       { CYGBLD_ISO_SIGNAL_NUMBERS_HEADER == \
-                         "<cyg/posix/signal.h>" }
-    requires       { CYGBLD_ISO_SIGNAL_IMPL_HEADER == \
-                         "<cyg/posix/signal.h>" }
     requires       { CYGBLD_ISO_POSIX_LIMITS_HEADER == \
                          "<cyg/posix/limits.h>" }
-    requires       { CYGBLD_ISO_PMUTEXTYPES_HEADER == \
-                         "<cyg/posix/muttypes.h>" }
     
     compile        mqueue.cxx mutex.cxx sem.cxx misc.cxx
     compile       -library=libextras.a startup.cxx
@@ -205,6 +196,12 @@ cdl_package CYGPKG_POSIX {
         implements       CYGINT_ISO_SIGSETJMP
         requires         { CYGBLD_ISO_SIGSETJMP_HEADER == \
                              "<cyg/posix/sigsetjmp.h>" }
+        implements       CYGINT_ISO_SIGNAL_NUMBERS
+        implements       CYGINT_ISO_SIGNAL_IMPL
+        requires         { CYGBLD_ISO_SIGNAL_NUMBERS_HEADER == \
+                             "<cyg/posix/signal.h>" }
+        requires         { CYGBLD_ISO_SIGNAL_IMPL_HEADER == \
+                             "<cyg/posix/signal.h>" }
 	description      "This component provides configuration controls for
 	                  the POSIX signals."
         compile          signal.cxx except.cxx 

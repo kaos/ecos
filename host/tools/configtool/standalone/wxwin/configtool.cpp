@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.cpp,v 1.40 2001/07/16 14:02:56 julians Exp $
+// Version:     $Id: configtool.cpp,v 1.46 2001/09/05 14:35:53 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool application class
 // Requires:
@@ -74,6 +74,8 @@
 #include "wx/process.h"
 #include "wx/mimetype.h"
 #include "wx/txtstrm.h"
+#include "wx/wfstream.h"
+#include "wx/fs_mem.h"
 
 #include "configtool.h"
 #include "configtoolview.h"
@@ -85,6 +87,7 @@
 #include "shortdescrwin.h"
 #include "conflictwin.h"
 #include "propertywin.h"
+#include "symbols.h"
 
 // ----------------------------------------------------------------------------
 // resources
@@ -115,6 +118,9 @@ static const wxCmdLineEntryDesc sg_cmdLineDesc[] =
     { wxCMD_LINE_OPTION, "s", "size",    "output block size", wxCMD_LINE_VAL_NUMBER },
     { wxCMD_LINE_OPTION, "d", "date",    "output file date", wxCMD_LINE_VAL_DATE },
 */
+    { wxCMD_LINE_SWITCH, "h", "help",   "displays help on the command line parameters" },
+    { wxCMD_LINE_SWITCH, "e", "edit-only",    "edit save file only" },
+    { wxCMD_LINE_SWITCH, "v", "version",    "print version" },
 
     { wxCMD_LINE_PARAM,  NULL, NULL, "input file 1", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
     { wxCMD_LINE_PARAM,  NULL, NULL, "input file 2", wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL },
@@ -134,11 +140,16 @@ ecApp::ecApp()
     m_pipedProcess = NULL;
     m_valuesLocked = 0;
     m_helpController = NULL;
+    m_fileSystem = new wxFileSystem;
+#if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
+    m_zipHandler = new wxZipFSHandler;
+#endif
 }
 
 ecApp::~ecApp()
 {
     delete m_whatsThisMenu;
+    delete m_fileSystem;
 }
 
 // 'Main program' equivalent: the program execution "starts" here
@@ -157,7 +168,7 @@ bool ecApp::OnInit()
 
     // Required for advanced HTML help
 #if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
-      wxFileSystem::AddHandler(new wxZipFSHandler);
+    wxFileSystem::AddHandler(m_zipHandler);
 #endif
 
     wxString currentDir = wxGetCwd();
@@ -174,6 +185,10 @@ bool ecApp::OnInit()
         )
         m_appDir = wxPathOnly(m_appDir);
 #endif
+
+    // Load resources from binary resources archive, or failing that, from
+    // Windows resources or plain files
+    LoadResources();
 
     wxGetEnv(wxT("PATH"), & m_strOriginalPath);
 
@@ -203,6 +218,33 @@ bool ecApp::OnInit()
     if (!m_settings.m_lastFilename.IsEmpty())
         templ->SetDirectory(wxPathOnly(m_settings.m_lastFilename));
 
+    // Parse the command-line parameters and options
+    wxCmdLineParser parser(sg_cmdLineDesc, argc, argv);
+    int res;
+    {
+        wxLogNull log;
+        res = parser.Parse();
+    }
+    if (res == -1 || res > 0 || parser.Found(wxT("h")))
+    {
+#ifdef __WXGTK__
+	wxLog::SetActiveTarget(new wxLogStderr);
+#endif
+        parser.Usage();
+        return FALSE;
+    }
+    if (parser.Found(wxT("v")))
+    {
+#ifdef __WXGTK__
+	wxLog::SetActiveTarget(new wxLogStderr);
+#endif
+	wxString msg;
+	msg.Printf(wxT("eCos Configuration Tool (c) Red Hat, 2001 Version %.2f, %s"), ecCONFIGURATION_TOOL_VERSION, __DATE__);
+        wxLogMessage(msg);
+        return FALSE;
+    }
+
+/*
 #ifdef __WXMSW__
     wxBitmap bitmap(wxBITMAP(splash));
 #else
@@ -210,9 +252,11 @@ bool ecApp::OnInit()
     if (wxFileExists("splash16.png"))
         bitmap.LoadFile("splash16.png", wxBITMAP_TYPE_PNG);
 #endif
-    if (bitmap.Ok() && GetSettings().m_showSplashScreen)
+*/
+
+    if (m_splashScreenBitmap.Ok() && GetSettings().m_showSplashScreen)
     {
-        m_splashScreen = new ecSplashScreen(bitmap, wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
+        m_splashScreen = new ecSplashScreen(m_splashScreenBitmap, wxSPLASH_CENTRE_ON_SCREEN|wxSPLASH_TIMEOUT,
             6000, NULL, -1, wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER|wxFRAME_FLOAT_ON_PARENT|wxSTAY_ON_TOP);
     }
 
@@ -227,6 +271,9 @@ bool ecApp::OnInit()
     SetTopWindow(frame);
     frame->Show(TRUE);
     SendIdleEvents(); // Otherwise UI updates aren't done, because it's busy loading the repository
+#ifdef __WXMSW__
+    ::UpdateWindow((HWND) frame->GetHWND());
+#endif
 
     InitializeWindowSettings(FALSE /* beforeWindowConstruction */) ;
 
@@ -235,14 +282,9 @@ bool ecApp::OnInit()
 
     wxYieldIfNeeded();
 
-    // Parse the command-line parameters and options
-    wxCmdLineParser parser(sg_cmdLineDesc, argc, argv);
-    int res = parser.Parse();
-    if (res == -1 || res > 0)
-    {
-        parser.Usage();
-        return FALSE;
-    }
+    if (parser.Found(wxT("e")))
+        GetSettings().m_editSaveFileOnly = TRUE;
+
     wxString filenameToOpen1, filenameToOpen2;
     if (parser.GetParamCount() > 0)
     {
@@ -425,6 +467,153 @@ bool ecApp::OnInit()
     }
 
     return TRUE;
+}
+
+// Load resources from disk
+bool ecApp::LoadResources()
+{
+    wxFileSystem::AddHandler(new wxMemoryFSHandler);
+
+    LoadBitmapResource(m_splashScreenBitmap, wxT("splash16.png"), wxBITMAP_TYPE_PNG, FALSE);
+
+    wxBitmap bitmap1, bitmap2, bitmap3;
+    LoadBitmapResource(bitmap1, wxT("ecoslogo.png"), wxBITMAP_TYPE_PNG, TRUE);
+    LoadBitmapResource(bitmap2, wxT("ecoslogosmall.png"), wxBITMAP_TYPE_PNG, TRUE);
+    LoadBitmapResource(bitmap3, wxT("rhlogo.png"), wxBITMAP_TYPE_PNG, TRUE);
+
+    wxString aboutText;
+    LoadTextResource(aboutText, wxT("about.htm"), TRUE);
+
+    VersionStampSplashScreen();
+
+    return TRUE;
+}
+
+// Load resources from zip resource file or disk
+bool ecApp::LoadBitmapResource(wxBitmap& bitmap, const wxString& filename, int bitmapType, bool addToMemoryFS)
+{
+    wxString archive(GetFullAppPath(wxT("configtool.bin")));
+
+#if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
+    wxFSFile* file = m_fileSystem->OpenFile(archive + wxString(wxT("#zip:")) + filename);
+    if (file)
+    {
+        wxInputStream* stream = file->GetStream();
+        
+        wxImage image(* stream, bitmapType);
+        bitmap = image.ConvertToBitmap();
+        
+        delete file;
+    }
+#endif
+
+#ifdef __WXMSW__
+    if (!bitmap.Ok())
+        bitmap.LoadFile(filename, wxBITMAP_TYPE_BMP_RESOURCE);
+#endif
+
+    if (!bitmap.Ok() && wxFileExists(GetFullAppPath(filename)))
+        bitmap.LoadFile(GetFullAppPath(filename), bitmapType);
+
+
+    if (bitmap.Ok() && addToMemoryFS)
+        wxMemoryFSHandler::AddFile(filename, bitmap, bitmapType);
+
+    return bitmap.Ok();
+}
+
+// Load resources from zip resource file or disk
+bool ecApp::LoadTextResource(wxString& text, const wxString& filename, bool addToMemoryFS)
+{
+    wxString archive(GetFullAppPath(wxT("configtool.bin")));
+
+    bool success = FALSE;
+
+#if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
+    wxFSFile* file = m_fileSystem->OpenFile(archive + wxString(wxT("#zip:")) + filename);
+    if (file)
+    {
+        wxInputStream* stream = file->GetStream();
+
+        char* buf = text.GetWriteBuf(stream->GetSize() + 1);
+        stream->Read((void*) buf, stream->GetSize());
+        buf[stream->GetSize()] = 0;
+        text.UngetWriteBuf();
+
+        success = TRUE;
+        
+        delete file;
+    }
+#endif
+
+    if (!success && wxFileExists(GetFullAppPath(filename)))
+    {
+        wxFileInputStream str(GetFullAppPath(filename));
+
+        char* buf = text.GetWriteBuf(str.GetSize() + 1);
+        str.Read((void*) buf, str.GetSize());
+        buf[str.GetSize()] = 0;
+        text.UngetWriteBuf();
+
+        success = TRUE;
+    }
+
+    if (success && addToMemoryFS)
+        wxMemoryFSHandler::AddFile(filename, text);
+
+    return success;
+}
+
+// Get a text resource from the memory filesystem
+bool ecApp::GetMemoryTextResource(const wxString& filename, wxString& text)
+{
+    wxString s(wxString(wxT("memory:")) + filename);
+    wxFSFile* file = wxGetApp().GetFileSystem()->OpenFile(s);
+    if (file)
+    {
+        wxInputStream* stream = file->GetStream();
+
+        char* buf = text.GetWriteBuf(stream->GetSize() + 1);
+        stream->Read((void*) buf, stream->GetSize());
+        buf[stream->GetSize()] = 0;
+        text.UngetWriteBuf();
+
+        delete file;
+        return TRUE;
+    }
+    else
+        return FALSE;
+}
+
+// Version-stamp the splash screen
+bool ecApp::VersionStampSplashScreen()
+{
+    if (m_splashScreenBitmap.Ok())
+    {
+        wxMemoryDC dc;
+        dc.SelectObject(m_splashScreenBitmap);
+
+        wxColour textColour(19, 49, 4);
+        dc.SetTextForeground(textColour);
+        dc.SetBackgroundMode(wxTRANSPARENT);
+        dc.SetFont(wxFont(11, wxSWISS, wxNORMAL, wxBOLD, FALSE));
+
+        // Bottom left of area to start drawing at
+
+        wxString verString;
+        verString.Printf("%.2f", ecCONFIGURATION_TOOL_VERSION);
+
+        int x = 339; int y = 236;
+        int w, h;
+        dc.GetTextExtent(verString, & w, & h);
+        dc.DrawText(verString, x, y - h);
+
+        dc.SelectObject(wxNullBitmap);
+
+        return TRUE;
+    }
+    else
+        return FALSE;
 }
 
 // Initialize window settings object
@@ -628,7 +817,8 @@ void ecApp::SetStatusText(const wxString& text, bool clearFailingRulesPane)
         if (clearFailingRulesPane)
             mainFrame->GetStatusBar()->SetStatusText(wxT(""), ecFailRulePane);
 #ifdef __WXMSW__
-        wxYield();
+        ::UpdateWindow((HWND) mainFrame->GetHWND());
+        //wxYield();
 #endif
     }
 }

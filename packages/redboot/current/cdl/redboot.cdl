@@ -68,6 +68,9 @@ cdl_package CYGPKG_REDBOOT {
         requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
         requires CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
+        requires CYGINT_ISO_STRING_MEMFUNCS 
+        requires CYGINT_ISO_STRING_STRFUNCS
+
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
             display "Threads debugging support"
             no_define
@@ -98,7 +101,7 @@ cdl_package CYGPKG_REDBOOT {
                      This is handled by a rule in the target CDL."
 
         compile main.c crc.c
-        compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
+        compile misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
         compile decompress.c
         compile -library=libextras.a load.c
 

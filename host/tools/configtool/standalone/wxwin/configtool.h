@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.h,v 1.25 2001/08/10 14:58:21 julians Exp $
+// Version:     $Id: configtool.h,v 1.26 2001/09/05 14:35:53 julians Exp $
 // Purpose:
 // Description: main header file for the ConfigTool application
 // Requires:
@@ -99,6 +99,9 @@ class ecPipedProcess;
 #define ecUSE_EXPERIMENTAL_CODE 1
 #endif
 
+class WXDLLEXPORT wxZipFSHandler;
+class WXDLLEXPORT wxFileSystem;
+
 // Define a new application type, each program should derive a class from wxApp
 class ecApp : public wxApp
 {
@@ -137,6 +140,21 @@ public:
 
     // Initialize window settings object
     bool InitializeWindowSettings(bool beforeWindowConstruction);
+
+    // Load resources from disk
+    bool LoadResources();
+
+    // Load a bitmap resource from resource.bin
+    bool LoadBitmapResource(wxBitmap& bitmap, const wxString& filename, int bitmapType, bool addToMemoryFS);
+
+    // Load a text resource from resource.bin
+    bool LoadTextResource(wxString& text, const wxString& filename, bool addToMemoryFS);
+
+    // Get a text resource from the memory filesystem
+    bool GetMemoryTextResource(const wxString& filename, wxString& text);
+
+    // Version-stamp the splash screen
+    bool VersionStampSplashScreen();
 
 //// Accessors
 
@@ -182,6 +200,8 @@ public:
     wxString GetHelpFile() const { return m_helpFile; }
     void SetHelpFile(const wxString& file) { m_helpFile = file; }
 
+    wxFileSystem* GetFileSystem() const { return m_fileSystem; }
+
     // Lock out value changes while conflicts are being resolved, for example
     bool GetValuesLocked() { return (m_valuesLocked > 0); }
     void LockValues() { m_valuesLocked ++; }
@@ -210,6 +230,9 @@ public:
     ecConfigToolDoc*    m_currentDoc;
     wxString            m_helpFile;
     ecPipedProcess*     m_pipedProcess;
+    wxBitmap            m_splashScreenBitmap;
+    wxZipFSHandler*     m_zipHandler;
+    wxFileSystem*       m_fileSystem;
 
 DECLARE_EVENT_TABLE()
 };

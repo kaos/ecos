@@ -427,16 +427,39 @@ private:
 
 public:
     
-    static CYG_ADDRWORD get_data( cyg_ucount32 index );
+    typedef cyg_count32 cyg_data_index;
 
-    static CYG_ADDRWORD *get_data_ptr( cyg_ucount32 index );
+    static CYG_ADDRWORD get_data( cyg_data_index index );
 
-    void                set_data( cyg_ucount32 index, CYG_ADDRWORD data );
+    static CYG_ADDRWORD *get_data_ptr( cyg_data_index index );
 
-    static cyg_ucount32 new_data_index();
+    void                set_data( cyg_data_index index, CYG_ADDRWORD data );
 
-    static void         free_data_index( cyg_ucount32 index );
+    // returns -1 if no more indexes available
+    static cyg_data_index new_data_index();
 
+    static void         free_data_index( cyg_data_index index );
+
+#endif
+
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+
+    // thread destructors, called on thread exit.
+private:
+    typedef void (*destructor_fn)(CYG_ADDRWORD);
+    struct Cyg_Destructor_Entry {
+        destructor_fn fn;
+        CYG_ADDRWORD data;
+    };
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    static 
+#endif
+    Cyg_Destructor_Entry destructors[ CYGNUM_KERNEL_THREADS_DESTRUCTORS ];
+public:
+ 
+    // Add and remove destructors. Returns true on success, false on failure.
+    static cyg_bool     add_destructor( destructor_fn fn, CYG_ADDRWORD data );
+    static cyg_bool     rem_destructor( destructor_fn fn, CYG_ADDRWORD data );
 #endif
 
 #ifdef CYGVAR_KERNEL_THREADS_NAME

@@ -1,3 +1,11 @@
+2001-08-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash_program_buf.c (flash_program_buf): Allow configuration
+	specific code sequence for actual writing of data.  Define by the
+	macro CYGHWR_FLASH_WRITE_ELEM.  Note: this is required on some
+	hardware, like the Intel SA185, which handles flash writes in
+	strange/obscure fashion.
+
 2001-07-17 Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* src/flash_query.c (flash_query): Query needs to be done on even

@@ -1,3 +1,8 @@
+2001-08-25  Gary Thomas  <gthomas@redhat.com>
+
+	* include/dp83902a.h (DP_DATAPORT): Add - used by ESA discovery
+	on SC/LPE card.
+
 2001-06-21  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_dp83902a.c: Fix various build problems when net package

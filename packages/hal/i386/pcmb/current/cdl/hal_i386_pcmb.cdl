@@ -87,6 +87,7 @@ cdl_package CYGPKG_HAL_I386_PCMB {
         }
     }
 
+    
     cdl_interface CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT {
 	display       "Enable PC screen support"
 	compile       pcmb_screen.c

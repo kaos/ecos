@@ -82,7 +82,7 @@ do_channel(int argc, char *argv[])
         {
             unsigned long chan;
             if ( !parse_num( argv[1], &chan, NULL, NULL) ) {
-                printf("** Error: invalid channel '%s'\n", argv[1]);
+                diag_printf("** Error: invalid channel '%s'\n", argv[1]);
             } else {
                 if (chan < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS) {
                     CYGACC_CALL_IF_SET_CONSOLE_COMM(chan);
@@ -91,20 +91,20 @@ do_channel(int argc, char *argv[])
                         console_echo = true;
                 }
                 else {
-                    printf("**Error: bad channel number '%s'\n", argv[1]);
+                    diag_printf("**Error: bad channel number '%s'\n", argv[1]);
                 }
             }
         }
     }
     /* else display */ 
     else {
-        printf("Current console channel id: ");
+        diag_printf("Current console channel id: ");
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
         if (!console_selected)
-            printf("-1\n");
+            diag_printf("-1\n");
         else
 #endif
-            printf("%d\n", cur);
+            diag_printf("%d\n", cur);
     }
 }
 
@@ -283,7 +283,7 @@ getc_script(char *cp)
 //   -2: ^C typed
 //
 int
-gets(char *buf, int buflen, int timeout)
+_rb_gets(char *buf, int buflen, int timeout)
 {
     char *ptr = buf;
     char c;
@@ -318,7 +318,7 @@ gets(char *buf, int buflen, int timeout)
         switch (c) {
         case 0x03: // ^C
             if (ptr == buf) {
-                printf("^C\n");
+                diag_printf("^C\n");
                 return _GETS_CTRLC;
             }
             *ptr++ = c;
@@ -349,7 +349,6 @@ gets(char *buf, int buflen, int timeout)
                 ptr--;
             }
             break;
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         case '\\':                 // escape character
             if (console_echo) {
                 mon_write_char(c);
@@ -359,6 +358,7 @@ gets(char *buf, int buflen, int timeout)
             *ptr++ = c;
             c = '\0';    // cheat so that the "shift" state resets
             break;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         case '+': // fall through
         case '$':
             if (ptr == buf || last_ch != '\\')
@@ -381,59 +381,6 @@ gets(char *buf, int buflen, int timeout)
     }
 }
 
-void
-vdump_buf_with_offset(_printf_fun *pf, void *_p, CYG_ADDRWORD s, void *_base)
-{
-    int i, c;
-    cyg_uint8 *p = (cyg_uint8 *)_p;
-    cyg_uint8 *base = (cyg_uint8 *)_base;
-
-    if ((CYG_ADDRWORD)s > (CYG_ADDRWORD)p) {
-        s = (CYG_ADDRWORD)s - (CYG_ADDRWORD)p;
-    }
-    while ((int)s > 0) {
-        if (base) {
-            (*pf)("0x%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
-        } else {
-            (*pf)("0x%08X: ", (CYG_ADDRWORD)p);
-        }
-        for (i = 0;  i < 16;  i++) {
-            if (i < (int)s) {
-                (*pf)("%02X", p[i] & 0xFF);
-            } else {
-                (*pf)("  ");
-            }
-            if ((i % 2) == 1) (*pf)(" ");
-            if ((i % 8) == 7) (*pf)(" ");
-        }
-        (*pf)(" |");
-        for (i = 0;  i < 16;  i++) {
-            if (i < (int)s) {
-                c = p[i] & 0xFF;
-                if ((c < 0x20) || (c >= 0x7F)) c = '.';
-            } else {
-                c = ' ';
-            }
-            (*pf)("%c", c);
-        }
-        (*pf)("|\n");
-        s -= 16;
-        p += 16;
-    }
-}
-
-void
-dump_buf_with_offset(void *p, CYG_ADDRWORD s, void *base)
-{
-    vdump_buf_with_offset(printf, p, s, base);
-}
-
-void
-dump_buf(void *p, CYG_ADDRWORD s)
-{
-   dump_buf_with_offset((cyg_uint8 *)p, s, 0);
-}
-
 bool
 verify_action(char *fmt, ...)
 {
@@ -446,8 +393,8 @@ verify_action(char *fmt, ...)
 #endif
 
     va_start(ap, fmt);
-    vprintf(fmt, ap);
-    printf(" - are you sure (y/n)? ");
-    gets(ans, sizeof(ans), 0);
+    diag_vprintf(fmt, ap);
+    diag_printf(" - are you sure (y/n)? ");
+    _rb_gets(ans, sizeof(ans), 0);
     return ((ans[0] == 'y') || (ans[0] == 'Y'));
 }

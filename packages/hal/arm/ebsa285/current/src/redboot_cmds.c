@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -118,15 +118,15 @@ do_exec(int argc, char *argv[])
         }
     }
     if (wait_time_set) {
-        printf("About to start execution at %p - abort with ^C within %d seconds\n",
-               (void *)entry, wait_time);
-        res = gets(line, sizeof(line), wait_time*1000);
+        diag_printf("About to start execution at %p - abort with ^C within %d seconds\n",
+                    (void *)entry, wait_time);
+        res = _rb_gets(line, sizeof(line), wait_time*1000);
         if (res == _GETS_CTRLC) {
             return;
         }
     }
     if (base_addr_set && !length_set) {
-      printf("Length required for non-standard base address\n");
+      diag_printf("Length required for non-standard base address\n");
       return;
     }
     ip = (unsigned long *)&&lab1;

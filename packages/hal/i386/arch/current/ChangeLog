@@ -1,3 +1,23 @@
+2001-09-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S (__default_interrupt_vsr): Adjust saved stack pointer
+	for the hardware and trampoline saved data.
+	(__default_exception_vsr): Ditto.
+
+2001-08-31  Nick Garnett  <nickg@redhat.com>
+
+	* include/arch.inc: Clean up typo in stack switching macros.
+
+2001-08-22  Nick Garnett  <nickg@redhat.com>
+
+	* include/hal_io.h: Added some macros to do in-memory data
+	accesses for memory mapped devices.
+
+	* include/hal_arch.h: Attempted to make some sense out of the
+	stack size macros.
+
+	* include/hal_intr.h: Extended VSR table to its full 256 entries.
+
 2001-07-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/hal_misc.c: Fix "implicit decl of diag_printf" warning.

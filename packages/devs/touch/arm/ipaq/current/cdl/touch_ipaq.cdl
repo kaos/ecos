@@ -43,7 +43,7 @@ cdl_package CYGPKG_DEVS_TOUCH_IPAQ {
     display     "Touch screen driver for iPAQ"
     include_dir cyg/io
 
-    active_if   CYGPKG_FILEIO
+    active_if   CYGPKG_IO_FILEIO
     requires    CYGPKG_IO
     requires    CYGFUN_KERNEL_API_C
     requires    CYGPKG_HAL_ARM_SA11X0_IPAQ

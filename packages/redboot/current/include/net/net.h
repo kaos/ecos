@@ -578,7 +578,7 @@ extern char *inet_ntoa(in_addr_t *);
 
 #ifdef BSP_LOG
 #define BSPLOG(x) { int old_console = start_console(); x; end_console(old_console); }
-#define bsp_log printf
+#define bsp_log diag_printf
 #else
 #define BSPLOG(x)
 #endif

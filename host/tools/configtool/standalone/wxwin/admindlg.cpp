@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/28
-// Version:     $Id: admindlg.cpp,v 1.5 2001/08/10 14:58:21 julians Exp $
+// Version:     $Id: admindlg.cpp,v 1.6 2001/08/22 16:50:32 julians Exp $
 // Purpose:
 // Description: Implementation file for ecAdminDialog
 // Requires:
@@ -245,7 +245,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 wxString strCommand;
                 strCommand.Printf(wxT("add %s --extract_license"), (const wxChar*) strPathName);
                 strCommand.Replace(wxT("\\"), wxT("/")); // backslashes -> forward slashes for Tcl_EvalFile
-                EvalTclFile (3, strCommand);
+                EvalTclFile (3, strCommand, _("Adding package"));
 
                 wxString strLicenseFile = m_strRepository + wxString(wxFILE_SEP_PATH) + wxT("pkgadd.txt");
 #ifdef __WXMSW__
@@ -280,7 +280,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
                 
                 strCommand.Printf (wxT("add %s --accept_license"), (const wxChar*) strPathName);
                 strCommand.Replace (wxT("\\"), wxT("/")); // backslashes -> forward slashes for Tcl_EvalFile
-                if (! EvalTclFile (3, strCommand))  // if not successful
+                if (! EvalTclFile (3, strCommand, _("Adding package")))  // if not successful
                 {
                     // try the next file
                 }
@@ -398,7 +398,7 @@ bool ecAdminDialog::RemovePackageVersion (wxTreeItemId hTreeItem)
     wxString strCommand;
     wxString itemText(treeCtrl->GetItemText (hTreeItem));
     strCommand.Printf (wxT("remove %s --version %s"), (const wxChar*) pstrPackage, (const wxChar*) itemText);
-    if (! EvalTclFile (3, strCommand)) // if not successful
+    if (! EvalTclFile (3, strCommand, wxT("Removing package"))) // if not successful
         return false;
     
     treeCtrl->Delete (hTreeItem); // remove the selected item from the tree
@@ -505,9 +505,9 @@ bool ecAdminDialog::PopulatePackageTree (const wxString& packageDatabase)
 }
 
 
-bool ecAdminDialog::EvalTclFile(int nargc, const wxString& Argv)
+bool ecAdminDialog::EvalTclFile(int nargc, const wxString& Argv, const wxString& msg)
 {
-    wxProgressDialog dlgWait(_("Adding Package"), _("Please wait..."), 100, this);
+    wxProgressDialog dlgWait(msg, _("Please wait..."), 100, this);
 
     dlgWait.Update(50);
 

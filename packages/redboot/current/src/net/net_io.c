@@ -130,10 +130,10 @@ _net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
         __tcp_poll();
         if (tcp_sock.state == _CLOSE_WAIT) {
             // This connection is breaking
-            if (tcp_sock.data_bytes == 0) {
+            if (tcp_sock.data_bytes == 0 && tcp_sock.rxcnt == 0) {
                 __tcp_close(&tcp_sock);
+                return false;
             }
-            return false;
         }
         if (tcp_sock.state == _CLOSED) {
             // The connection is gone
@@ -147,8 +147,8 @@ _net_io_getc_nonblock(void* __ch_data, cyg_uint8* ch)
         if (show_tcp && (in_buflen > 0)) {
             int old_console;
             old_console = start_console();  
-            printf("%s:%d\n", __FUNCTION__, __LINE__);  
-            dump_buf(in_buf, in_buflen);  
+            diag_printf("%s:%d\n", __FUNCTION__, __LINE__);  
+            diag_dump_buf(in_buf, in_buflen);  
             end_console(old_console);
         }
 #endif // DEBUG_TCP
@@ -231,7 +231,9 @@ net_io_flush(void)
     while (out_buflen) {
         if (tcp_sock.state == _CLOSE_WAIT) {
             // This connection is tring to close
-            __tcp_close(&tcp_sock);
+            // This connection is breaking
+            if (tcp_sock.data_bytes == 0 && tcp_sock.rxcnt == 0)
+                __tcp_close(&tcp_sock);
         }
         if (tcp_sock.state == _CLOSED) {
             // The connection is gone!
@@ -242,8 +244,8 @@ net_io_flush(void)
         if (show_tcp) {
             int old_console;
             old_console = start_console();  
-            printf("%s.%d\n", __FUNCTION__, __LINE__);
-            dump_buf(out_buf, out_buflen);  
+            diag_printf("%s.%d\n", __FUNCTION__, __LINE__);
+            diag_dump_buf(out_buf, out_buflen);  
             end_console(old_console);
         }
 #endif // SHOW_TCP
@@ -290,7 +292,7 @@ net_io_write(void* __ch_data, const cyg_uint8* __buf, cyg_uint32 __len)
     int old_console;
 
     old_console = start_console();
-    printf("%s.%d\n", __FUNCTION__, __LINE__);
+    diag_printf("%s.%d\n", __FUNCTION__, __LINE__);
     end_console(old_console);
 #if 0
     CYGARC_HAL_SAVE_GP();
@@ -308,7 +310,7 @@ net_io_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     int old_console;
 
     old_console = start_console();
-    printf("%s.%d\n", __FUNCTION__, __LINE__);
+    diag_printf("%s.%d\n", __FUNCTION__, __LINE__);
     end_console(old_console);
 #if 0
     CYGARC_HAL_SAVE_GP();
@@ -380,11 +382,11 @@ net_io_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         _timeout = va_arg(ap, cyg_uint32);
 
         va_end(ap);
-	break;
+        break;
     }
     case __COMMCTL_FLUSH_OUTPUT:
         net_io_flush();
-	break;
+        break;
     default:
         break;
     }
@@ -485,7 +487,7 @@ net_io_init(void)
     __tcp_listen(&tcp_sock, gdb_port);
     state = tcp_sock.state; 
 #ifdef DEBUG_TCP
-    printf("show tcp = %p\n", (void *)&show_tcp);
+    diag_printf("show tcp = %p\n", (void *)&show_tcp);
 #endif
 }
 
@@ -546,7 +548,7 @@ net_init(void)
     if (!use_bootp)
     {
         ip_addr_t bootp_my_ip;
-        char i;
+        int i;
         flash_get_config("bootp_my_ip", &bootp_my_ip, CONFIG_IP);
         if (bootp_my_ip[0] != 0 || bootp_my_ip[1] != 0 ||
             bootp_my_ip[2] != 0 || bootp_my_ip[3] != 0) {
@@ -572,7 +574,7 @@ net_init(void)
         }
     }
     if (!__local_enet_sc) {
-        printf("No network interfaces found\n");
+        diag_printf("No network interfaces found\n");
         return;
     }    
     // Initialize the network [if present]
@@ -583,9 +585,9 @@ net_init(void)
             // Is it an unset address, or has it been set to a static addr
             if (__local_ip_addr[0] == 0 && __local_ip_addr[1] == 0 &&
                 __local_ip_addr[2] == 0 && __local_ip_addr[3] == 0) {
-                printf("Can't get BOOTP info - network disabled!\n");
+                diag_printf("Can't get BOOTP info - network disabled!\n");
             } else {
-                printf("Can't get BOOTP info, using default IP address\n");
+                diag_printf("Can't get BOOTP info, using default IP address\n");
                 have_net = true;
             }
         }
@@ -593,17 +595,17 @@ net_init(void)
         have_net = true;  // Assume values in FLASH were OK
     }
     if (have_net) {
-        printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
-               __local_enet_sc->dev_name,
-               __local_enet_addr[0],
-               __local_enet_addr[1],
-               __local_enet_addr[2],
-               __local_enet_addr[3],
-               __local_enet_addr[4],
-               __local_enet_addr[5]);
+        diag_printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
+                    __local_enet_sc->dev_name,
+                    __local_enet_addr[0],
+                    __local_enet_addr[1],
+                    __local_enet_addr[2],
+                    __local_enet_addr[3],
+                    __local_enet_addr[4],
+                    __local_enet_addr[5]);
 
-        printf("IP: %s", inet_ntoa((in_addr_t *)&__local_ip_addr));
-        printf(", Default server: %s\n", inet_ntoa(&my_bootp_info.bp_siaddr));
+        diag_printf("IP: %s", inet_ntoa((in_addr_t *)&__local_ip_addr));
+        diag_printf(", Default server: %s\n", inet_ntoa(&my_bootp_info.bp_siaddr));
         net_io_init();
     }
 }

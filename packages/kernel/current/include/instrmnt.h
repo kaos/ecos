@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg
+// Contributors: nickg, andrew.lunn@ascom.ch
 // Date:         2000-05-04
 // Purpose:      Define kernel instrumentation
 // Description:  A set of definitions and macros used to implement an
@@ -73,6 +73,9 @@ externC void cyg_instrument_enable( cyg_uint32 cl, cyg_uint32 event );
 
 externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
+#ifdef CYGDBG_KERNEL_INSTRUMENT_MSGS
+externC char * cyg_instrument_msg(CYG_WORD16 type);
+#endif 
 #endif
 
 // -------------------------------------------------------------------------
@@ -446,4 +449,4 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 
 // -------------------------------------------------------------------------
 #endif // ifndef CYGONCE_KERNEL_INSTRMNT_HXX
-// EOF instrmnt.hxx
+// EOF instrmnt.h

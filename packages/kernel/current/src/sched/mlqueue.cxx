@@ -106,7 +106,9 @@ Cyg_Scheduler_Implementation::Cyg_Scheduler_Implementation()
     
     for( int i = 0; i < CYGNUM_KERNEL_CPU_MAX; i++ )
     {
+#ifdef CYGSEM_KERNEL_SCHED_TIMESLICE        
         timeslice_count[i] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+#endif        
         need_reschedule[i] = true;
     }
     
@@ -350,20 +352,18 @@ void Cyg_Scheduler_Implementation::set_need_reschedule(Cyg_Thread *thread)
     // Start with current CPU. If we can do the job locally then
     // that is most efficient. Only go on to other CPUs if that is
     // not possible.
-        
-    HAL_SMP_CPU_TYPE cpu = cpu_this;
-    HAL_SMP_CPU_TYPE cpu_last = (cpu + cpu_count - 1) % cpu_count;
 
-    for(;;)
+    for(int i = 0; i < cpu_count; i++)
     {
-        
+        HAL_SMP_CPU_TYPE cpu = (i + cpu_this) % cpu_count;
+       
         // If a CPU is not already marked for rescheduling, and its
         // current thread is of lower priority than _thread_, then
         // set its need_reschedule flag.
 
         Cyg_Thread *cur = current_thread[cpu];
-        
-        if( !need_reschedule[cpu] &&
+
+        if( (!need_reschedule[cpu]) &&
             (cur->priority > thread->priority)
           )
         {
@@ -371,6 +371,9 @@ void Cyg_Scheduler_Implementation::set_need_reschedule(Cyg_Thread *thread)
 
             if( cpu != cpu_this )
             {
+                // All processors other than this one need to be sent
+                // a reschedule interrupt.
+                
                 CYG_INSTRUMENT_SMP( RESCHED_SEND, cpu, 0 );
                 CYG_KERNEL_CPU_RESCHEDULE_INTERRUPT( cpu, 0 );
             }
@@ -380,17 +383,7 @@ void Cyg_Scheduler_Implementation::set_need_reschedule(Cyg_Thread *thread)
             // that CPU onto another.
             
             thread = cur;
-            cpu = (cpu + 1) % cpu_count;
-            cpu_last = (cpu + cpu_count - 1) % cpu_count;
-            continue;
         }
-
-        // If that was the last CPU in the circle, stop here.
-        if( cpu == cpu_last )
-            break;
-
-        // Otherwise go on to the next.
-        cpu = (cpu + 1) % cpu_count;
     } 
 
 #endif  
@@ -723,7 +716,18 @@ Cyg_SchedThread_Implementation::to_queue_head( void )
     CYG_ASSERTCLASS( thread, "Bad current thread");
     
     Cyg_ThreadQueue *q = thread->get_current_queue();
-    q->to_head( thread );
+    if( q != NULL )
+        q->to_head( thread );
+    else if( thread->in_list() )
+    {
+        // If the queue pointer is NULL then it is on a run
+        // queue. Move the thread to the head of it's priority list
+        // and force a reschedule.
+        
+        Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
+        sched->run_queue[thread->priority].to_head( thread );
+        sched->set_need_reschedule( thread );
+    }
 
     // Unlock the scheduler and switch threads
     Cyg_Scheduler::unlock();

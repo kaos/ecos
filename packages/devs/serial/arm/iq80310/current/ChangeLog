@@ -1,3 +1,7 @@
+2001-09-03  Jesper Skov  <jskov@redhat.com>
+
+	* include/arm_iq80310_ser.inl: Fix interrupt vector name typos.
+
 2000-10-25  Mark Salter  <msalter@redhat.com>
 
 	* include/arm_iq80310_ser.inl: Initial checkin.

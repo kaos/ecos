@@ -1,3 +1,9 @@
+2001-08-31  David Woodhouse  <dwmw2@redhat.com>
+
+	* cfl/hal_mips_rm7000_ocelot.cdl: Fix compiler options to use
+	-mips2 for BE build, and make the LE options match the BE options
+	in all but endianness.
+
 2001-08-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/plf_intr.h: Move HAL_INTERRUPT_ interrupt controller

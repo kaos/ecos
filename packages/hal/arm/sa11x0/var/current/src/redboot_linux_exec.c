@@ -282,10 +282,10 @@ do_exec(int argc, char *argv[])
         unsigned char *hold_script = script;
         script = (unsigned char *)0;
 #endif
-        printf("About to start execution at %p - abort with ^C within %d seconds\n",
-               (void *)entry, wait_time);
+        diag_printf("About to start execution at %p - abort with ^C within %d seconds\n",
+                    (void *)entry, wait_time);
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
-            res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+            res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res == _GETS_CTRLC) {
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
                 script = hold_script;  // Re-enable script
@@ -296,7 +296,7 @@ do_exec(int argc, char *argv[])
         }
     }
     if (base_addr_set && !length_set) {
-      printf("Length required for non-standard base address\n");
+      diag_printf("Length required for non-standard base address\n");
       return;
     }
     ip = (unsigned long *)&&lab1;

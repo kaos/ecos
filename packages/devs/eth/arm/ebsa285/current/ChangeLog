@@ -1,3 +1,17 @@
+2001-08-31  Hugo Tyson  <hmt@redhat.com>
+2001-08-31  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/if_ebsa285.c (TxDone): Check from prev change is moved to
+	the logical driver.  Also, we zero the key in global state before
+	the callback - this should make no difference, but again it's good
+	practice, and ASCOM's tests indicate a benefit for CASE 106059.
+	
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_ebsa285.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-06-08  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_ebsa285.c (TxDone): Defensive programming: only call

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 2000 Red Hat, Inc.                             
+// Copyright (C) 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -41,35 +41,37 @@
 //=========================================================================*/
 
 #include <redboot.h>
+#include <cyg/hal/hal_intr.h>
+#include <cyg/hal/drv_api.h>
 
 #ifdef CYGSEM_REDBOOT_BSP_SYSCALLS
 
-#define	EIO 5		/* I/O error */
+#define EIO 5           /* I/O error */
 
 // These are required by the ANSI C part of newlib (excluding system() of
 // course).
-#define	SYS_exit	1
-#define	SYS_open	2
-#define	SYS_close	3
-#define	SYS_read	4
-#define	SYS_write	5
-#define	SYS_lseek	6
-#define	SYS_unlink	7
-#define	SYS_getpid	8
-#define	SYS_kill	9
+#define SYS_exit        1
+#define SYS_open        2
+#define SYS_close       3
+#define SYS_read        4
+#define SYS_write       5
+#define SYS_lseek       6
+#define SYS_unlink      7
+#define SYS_getpid      8
+#define SYS_kill        9
 #define SYS_fstat       10
-//#define SYS_sbrk	11 - not currently a system call, but reserved.
+//#define SYS_sbrk      11 - not currently a system call, but reserved.
 
 // ARGV support.
-#define SYS_argvlen	12
-#define SYS_argv	13
+#define SYS_argvlen     12
+#define SYS_argv        13
 
 // These are extras added for one reason or another.
-#define SYS_chdir	14
-#define SYS_stat	15
-#define SYS_chmod 	16
-#define SYS_utime 	17
-#define SYS_time 	18
+#define SYS_chdir       14
+#define SYS_stat        15
+#define SYS_chmod       16
+#define SYS_utime       17
+#define SYS_time        18
 
 #define SYS_interrupt   1000
 #define SYS_meminfo     1001
@@ -84,7 +86,7 @@
  * is made automatically from within the crt0.o file.
  */
 typedef struct {
-    int		version;	/* version number for future expansion */
+    int         version;        /* version number for future expansion */
     const void **__ictrl_table;
     void **__exc_table;
     void *__dbg_vector;
@@ -96,8 +98,8 @@ typedef struct {
     void *__cpu_data;
     void *__board_data;
     void *__sysinfo;
-    int	 (*__set_debug_comm)(int __comm_id);
-    int	 (*__set_console_comm)(int __comm_id);
+    int  (*__set_debug_comm)(int __comm_id);
+    int  (*__set_console_comm)(int __comm_id);
     int  (*__set_serial_baud)(int __comm_id, int baud);
     void *__dbg_data;
     void (*__reset)(void);
@@ -124,11 +126,56 @@ static inline void __putc(char c)
 {
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     if (__chan)
-	CYGACC_COMM_IF_PUTC(*__chan, c);
+        CYGACC_COMM_IF_PUTC(*__chan, c);
     else {
-	__chan = CYGACC_CALL_IF_DEBUG_PROCS();
-	CYGACC_COMM_IF_PUTC(*__chan, c);
+        __chan = CYGACC_CALL_IF_DEBUG_PROCS();
+        CYGACC_COMM_IF_PUTC(*__chan, c);
     }
+}
+
+
+// Timer support
+
+static cyg_handle_t  sys_timer_handle;
+static cyg_interrupt sys_timer_interrupt;
+static cyg_uint32    sys_timer_ticks;
+
+static void
+sys_timer_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+{
+    // do nothing
+}
+
+
+static cyg_uint32
+sys_timer_isr(cyg_vector_t vector, cyg_addrword_t data)
+{
+    ++sys_timer_ticks;
+
+    HAL_CLOCK_RESET(CYGNUM_HAL_INTERRUPT_RTC, CYGNUM_HAL_RTC_PERIOD);
+
+    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_RTC);
+
+    return 0;
+}
+
+
+static void sys_timer_init(void)
+{
+    HAL_CLOCK_INITIALIZE(CYGNUM_HAL_RTC_PERIOD);
+    
+    cyg_drv_interrupt_create(
+        CYGNUM_HAL_INTERRUPT_RTC,
+        0,                      // Priority - unused
+        (CYG_ADDRWORD)0,        // Data item passed to ISR & DSR
+        sys_timer_isr,          // ISR
+        sys_timer_dsr,          // DSR
+        &sys_timer_handle,      // handle to intr obj
+        &sys_timer_interrupt ); // space for int obj
+
+    cyg_drv_interrupt_attach(sys_timer_handle);
+
+    cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_RTC);
 }
 
 
@@ -141,11 +188,11 @@ sys_read(int fd, char *buf, int nbytes)
     int i = 0;
 
     for (i = 0; i < nbytes; i++) {
-	*(buf + i) = __getc();
-	if ((*(buf + i) == '\n') || (*(buf + i) == '\r')) {
-	    (*(buf + i + 1)) = 0;
-	    break;
-	}
+        *(buf + i) = __getc();
+        if ((*(buf + i) == '\n') || (*(buf + i) == '\r')) {
+            (*(buf + i + 1)) = 0;
+            break;
+        }
     }
     return (i);
 }
@@ -165,10 +212,10 @@ sys_write(int fd, char *buf, int nbytes)
     tosend = nbytes;
 
     while (tosend > 0) {
-	if (*buf == '\n')
-	    __putc('\r');
-	__putc(*buf++);
-	tosend--;
+        if (*buf == '\n')
+            __putc('\r');
+        __putc(*buf++);
+        tosend--;
     }
 
     return (nbytes);
@@ -205,23 +252,28 @@ sys_lseek(int fd,  int offset, int whence)
     return (-EIO);
 }
 
+#define NS_PER_TICK    (CYGNUM_HAL_RTC_NUMERATOR/CYGNUM_HAL_RTC_DENOMINATOR)
+#define TICKS_PER_SEC  (1000000000L / NS_PER_TICK)
+
+// This needs to match newlib HZ which is normally 60.
+#define HZ 60
 
 static int
 sys_utime(unsigned long *p)
 {
-#ifdef HAVE_SYS_CLOCK
-    extern unsigned long __clock;
+    static int inited = 0;
+
+    if (!inited) {
+        inited = 1;
+        sys_timer_init();
+    }
 
     /* target clock runs at CLOCKS_PER_SEC. Convert to HZ */
     if (p)
-	*p = (__clock * HZ) / CLOCKS_PER_SEC;
-#else
-    if (p)
-	*p = 0;
-#endif
+        *p = (sys_timer_ticks * HZ) / TICKS_PER_SEC;
+
     return 0;
 }
-
 
 //
 //  Generic syscall handler.
@@ -231,38 +283,38 @@ sys_utime(unsigned long *p)
 //  extend the syscall handler by using exception chaining.
 //
 CYG_ADDRWORD
-__do_syscall(CYG_ADDRWORD func,			// syscall function number
-	     CYG_ADDRWORD arg1, CYG_ADDRWORD arg2,	// up to four args.
-	     CYG_ADDRWORD arg3, CYG_ADDRWORD arg4,
-	     CYG_ADDRWORD *retval)		// syscall return value
+__do_syscall(CYG_ADDRWORD func,                 // syscall function number
+             CYG_ADDRWORD arg1, CYG_ADDRWORD arg2,      // up to four args.
+             CYG_ADDRWORD arg3, CYG_ADDRWORD arg4,
+             CYG_ADDRWORD *retval)              // syscall return value
 {
     int err = 0;
 
     switch (func) {
 
       case SYS_read:
-	err = sys_read((int)arg1, (char *)arg2, (int)arg3);
-	break;
+        err = sys_read((int)arg1, (char *)arg2, (int)arg3);
+        break;
 
       case SYS_write:
-	err = sys_write((int)arg1, (char *)arg2, (int)arg3);
-	break;
+        err = sys_write((int)arg1, (char *)arg2, (int)arg3);
+        break;
 
       case SYS_open:
-	err = sys_open((const char *)arg1, (int)arg2, (int)arg3);
-	break;
+        err = sys_open((const char *)arg1, (int)arg2, (int)arg3);
+        break;
 
       case SYS_close:
-	err = sys_close((int)arg1);
-	break;
+        err = sys_close((int)arg1);
+        break;
 
       case SYS_lseek:
-	err = sys_lseek((int)arg1, (int)arg2, (int)arg3);
-	break;
+        err = sys_lseek((int)arg1, (int)arg2, (int)arg3);
+        break;
 
       case SYS_utime:
-	err = sys_utime((unsigned long *)arg1);
-	break;
+        err = sys_utime((unsigned long *)arg1);
+        break;
 
       case SYS_meminfo:
         err = 1;
@@ -271,11 +323,11 @@ __do_syscall(CYG_ADDRWORD func,			// syscall function number
         break;
         
       case __GET_SHARED:
-	*(__shared_t **)arg1 = &__shared_data;
-	break;
+        *(__shared_t **)arg1 = &__shared_data;
+        break;
 
       default:
-	return 0;
+        return 0;
     }    
 
     *retval = err;

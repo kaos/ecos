@@ -31,3 +31,6 @@ To-Do List for Configuration Tool 2.x
 
   Bart says: "The whole makefile generation system needs a major overhaul."
 
+- Make as many UI elements as possible copyable to the clipboard, such as the
+  name and description for a configuration option. Can do this via the right-click
+  menus.

@@ -72,6 +72,7 @@ cdl_package CYGPKG_HAL_I386 {
         @rm target.tmp
     }
 
+        
     cdl_option CYGBLD_BUILD_I386_ROMBOOT {
 	display       "Build ROM bootstrap code"
 	calculated    { CYG_HAL_STARTUP == "ROM" }

@@ -43,6 +43,7 @@
 //========================================================================*/
 
 #include <pkgconf/hal.h>
+#include <pkgconf/hal_i386.h>
 #include <pkgconf/hal_i386_pcmb.h>
 
 #include <cyg/infra/cyg_type.h>         // Base types
@@ -88,6 +89,7 @@ void hal_pcmb_init(void)
 #endif
 
     cyg_hal_pcmb_memsize_extended = ((hi<<8)+lo)*1024;
+
 }
 
 /*------------------------------------------------------------------------*/
@@ -108,12 +110,17 @@ cyg_uint8 *hal_i386_mem_real_region_top( cyg_uint8 *regionend )
 /*------------------------------------------------------------------------*/
 // Clock initialization and access
 
+#define HAL_SPINLOCK_SPIN( lock )
+#define HAL_SPINLOCK_CLEAR( lock )
+
 void hal_pc_clock_initialize(cyg_uint32 period)
 {
     /* Select mode 2: rate generator.  Then we'll load LSB, and finally MSB. */
     HAL_WRITE_UINT8( PC_PIT_CONTROL, 0x34 );
     HAL_WRITE_UINT8( PC_PIT_CLOCK_0, period & 0xFF );
     HAL_WRITE_UINT8( PC_PIT_CLOCK_0, period >> 8 );
+
+    HAL_SPINLOCK_CLEAR( pc_clock_lock );
 }
 
 
@@ -121,11 +128,13 @@ void hal_pc_clock_read(cyg_uint32 * count)
 {
     cyg_uint8 lo = 0,hi = 0;
     cyg_uint32 curr = 0;
-    cyg_uint32 interruptState ;
+    CYG_INTERRUPT_STATE interruptState ;
 
     /* Hold off on interrupts for a bit. */
     HAL_DISABLE_INTERRUPTS(interruptState) ;
 
+    HAL_SPINLOCK_SPIN( pc_clock_lock );    
+    
     /* Latch counter 0. */
     HAL_WRITE_UINT8(PC_PIT_CONTROL, 0x00);
 
@@ -134,6 +143,8 @@ void hal_pc_clock_read(cyg_uint32 * count)
     HAL_READ_UINT8( PC_PIT_CLOCK_0, hi );
 
     curr = (hi<<8) | lo;
+
+    HAL_SPINLOCK_CLEAR( pc_clock_lock );
     
     /* (Maybe) restore interrupts. */
     HAL_RESTORE_INTERRUPTS(interruptState) ;
@@ -143,11 +154,11 @@ void hal_pc_clock_read(cyg_uint32 * count)
 
 /*------------------------------------------------------------------------*/
 
-#if 0
 void hal_idle_thread_action(cyg_uint32 loop_count)
-{	asm("hlt") ;
+{
+    asm("hlt") ;
+
 }
-#endif
 
 /*------------------------------------------------------------------------*/
 /* End of pcmb_misc.c                                                      */

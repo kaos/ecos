@@ -50,6 +50,8 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/hal_tables.h>
+#include <cyg/infra/diag.h>
+#include <string.h>
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
 #include <net/net.h>
@@ -96,27 +98,18 @@ EXTERN int console_baud_rate;
 #endif
 
 // Prototypes
-typedef int _printf_fun(char *fmt, ...);
-_printf_fun printf;
-int  vprintf(char *fmt, va_list ap);
-int  sprintf(char *buf, char *fmt, ...);
-int  vsprintf(char *buf, char *fmt, va_list ap);
-int  strlen(const char *str);
-int  strcmp(const char *s1, const char *s2);
-int  strncmp(const char *s1, const char *s2, int len);
-int  strcmpci(const char *s1, const char *s2);
-int  strncmpci(const char *s1, const char *s2, int len);
-char *strcpy(char *s1, const char *s2);
-char *strncpy(char *s1, const char *s2, unsigned long n);
+typedef int _printf_fun(const char *fmt, ...);
+externC int  strcasecmp(const char *s1, const char *s2);
+externC int  strncasecmp(const char *s1, const char *s2, size_t len);
 
-void mon_write_char(char c);
-bool verify_action(char *fmt, ...);
-void dump_buf(void *, CYG_ADDRWORD);
-void dump_buf_with_offset(void *, CYG_ADDRWORD, void *);
-void vdump_buf_with_offset(_printf_fun *pf, void *, CYG_ADDRWORD, void *);
+externC void mon_write_char(char c);
+externC bool verify_action(char *fmt, ...);
+//void dump_buf(void *, CYG_ADDRWORD);
+//void dump_buf_with_offset(void *, CYG_ADDRWORD, void *);
+//void vdump_buf_with_offset(_printf_fun *pf, void *, CYG_ADDRWORD, void *);
 
 // Read a single line of input from the console, possibly with timeout
-int  gets(char *line, int len, int timeout);
+externC int  _rb_gets(char *line, int len, int timeout);
 // Result codes from 'gets()'
 #define _GETS_TIMEOUT -1
 #define _GETS_CTRLC   -2
@@ -124,8 +117,8 @@ int  gets(char *line, int len, int timeout);
 #define _GETS_OK       1
 
 // "console" selection
-int  start_console(void);
-void end_console(int old_console);
+externC int  start_console(void);
+externC void end_console(int old_console);
 
 // CRC support
 unsigned short crc16(unsigned char *buf, int len);
@@ -152,8 +145,8 @@ externC _decompress_fun_close* _dc_close;
 #endif // CYGPKG_COMPRESS_ZLIB
 
 // CLI support functions
-bool parse_num(char *s, unsigned long *val, char **es, char *delim);
-bool parse_bool(char *s, bool *val);
+externC bool parse_num(char *s, unsigned long *val, char **es, char *delim);
+externC bool parse_bool(char *s, bool *val);
 
 typedef void cmd_fun(int argc, char *argv[]);
 struct cmd {
@@ -162,8 +155,8 @@ struct cmd {
     char    *usage;
     cmd_fun *fun;
 } CYG_HAL_TABLE_TYPE;
-extern struct cmd *cmd_search(struct cmd *tab, struct cmd *tabend, char *arg);
-extern void        cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix);
+externC struct cmd *cmd_search(struct cmd *tab, struct cmd *tabend, char *arg);
+externC void        cmd_usage(struct cmd *tab, struct cmd *tabend, char *prefix);
 #define RedBoot_cmd(_s_,_h_,_u_,_f_) cmd_entry(_s_,_h_,_u_,_f_,RedBoot_commands)
 #define _cmd_entry(_s_,_h_,_u_,_f_,_n_)                                   \
 cmd_fun _f_;                                                      \
@@ -224,17 +217,17 @@ struct option_info {
 #define OPTION_ARG_TYPE_FLG 2    // Flag only
 
 // Command line parsing
-struct cmd *parse(char *line, int *argc, char **argv);
+externC struct cmd *parse(char *line, int *argc, char **argv);
 
-extern void init_opts(struct option_info *opts, char flag, bool takes_arg, 
-                      int arg_type, void **arg, bool *arg_set, char *name);
-extern bool scan_opts(int argc, char *argv[], int first, 
-                      struct option_info *opts, int num_opts, 
-                      void **def_arg, int def_arg_type, char *def_descr);
+externC void init_opts(struct option_info *opts, char flag, bool takes_arg, 
+                       int arg_type, void **arg, bool *arg_set, char *name);
+externC bool scan_opts(int argc, char *argv[], int first, 
+                       struct option_info *opts, int num_opts, 
+                       void **def_arg, int def_arg_type, char *def_descr);
 
-extern int redboot_getc(void);
-extern void redboot_getc_init(int (*fun)(char *, int, int *), int verbose);
-extern void redboot_getc_rewind(void);
+externC int redboot_getc(void);
+externC void redboot_getc_init(int (*fun)(char *, int, int *), int verbose);
+externC void redboot_getc_rewind(void);
 
 #define BUF_SIZE 256
 typedef struct {
@@ -283,11 +276,12 @@ _from_hex(char c)
     return ret;
 }
 
+
 //
 // Convert a character to lower case
 //
 __inline__ static char
-tolower(char c)
+_tolower(char c)
 {
     if ((c >= 'A') && (c <= 'Z')) {
         c = (c - 'A') + 'a';

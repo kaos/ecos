@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:        nickg
+// Contributors:        nickg, gthomas
 // Date:        1998-03-02
 // Purpose:     Diagnostic Routines for Infra Development
 // Description: Diagnostic routines for use during infra development.
@@ -47,14 +47,7 @@
 
 #include <pkgconf/infra.h>
 #include <cyg/infra/cyg_type.h>
-
-#ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
 #include <stdarg.h>
-#endif
-
-#ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
-#include <cyg/io/io_diag.h>
-#endif
 
 /*---------------------------------------------------------------------------*/
 /* Diagnostic routines                                                       */
@@ -70,35 +63,23 @@ externC void diag_write_dec( cyg_int32 n);    /* Write decimal value       */
 externC void diag_write_hex( cyg_uint32 n);   /* Write hexadecimal value   */
 
 externC void diag_dump_buf(void *buf, CYG_ADDRWORD len);
+externC void diag_dump_buf_with_offset(cyg_uint8     *p, 
+                                       CYG_ADDRWORD   s, 
+                                       cyg_uint8     *base);
 
-#ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
+externC int  diag_printf( const char *fmt, ... );  /* Formatted print      */
 
-externC void diag_printf( const char *fmt, ... );  /* Formatted print      */
+externC void diag_init_putc(void (*putc)(char c, void **param));
+externC int  diag_sprintf(char *buf, const char *fmt, ...);
+externC int  diag_vsprintf(char *buf, const char *fmt, va_list ap);
+externC int  diag_vprintf(const char *fmt, va_list ap);
 
-#else
-
-// This function deliberately has a K&R prototype to avoid having to use
-// varargs, or pad arglists or anything grody like that.
-
-#warning CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG not enabled
-#warning Expect a "function declaration isn't a prototype" warning
-
-externC void diag_printf(/* const char *fmt, CYG_ADDRWORD, CYG_ADDRWORD,
-                         CYG_ADDRWORD, CYG_ADDRWORD, CYG_ADDRWORD,
-                         CYG_ADDRWORD, CYG_ADDRWORD, CYG_ADDRWORD */);
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 /* Internal Diagnostic MACROS                                                */
 
-#ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
-#define DIAG_DEVICE_START_SYNC()        diag_device_start_sync()
-#define DIAG_DEVICE_END_SYNC()          diag_device_end_sync()
-#else
 #define DIAG_DEVICE_START_SYNC()
 #define DIAG_DEVICE_END_SYNC()
-#endif
 
 /*---------------------------------------------------------------------------*/
 #endif /* CYGONCE_INFRA_DIAG_H */

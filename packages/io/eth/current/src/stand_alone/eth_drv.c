@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -114,10 +114,10 @@ static struct eth_msg eth_msgs[NUM_ETH_MSG];
 // Prototypes for functions used in this module
 static void eth_drv_start(struct eth_drv_sc *sc);
 
+// These functions are defined in RedBoot and control access to
+// the "default" console.
 extern int  start_console(void);
 extern void end_console(int);
-extern void printf(char *fmt, ...);
-extern void dump_buf(CYG_ADDRWORD, int);
 
 // Simple queue management functions
 
@@ -170,11 +170,14 @@ eth_drv_buffers_init(void)
 static void
 eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr)
 {
-    // Set up hardware address
-    memcpy(&sc->sc_arpcom.esa, enaddr, ETHER_ADDR_LEN);
-    memcpy(__local_enet_addr, enaddr, ETHER_ADDR_LEN);
-    __local_enet_sc = sc;
-    eth_drv_start(sc);
+    // enaddr == 0 -> hardware init was incomplete (no ESA)
+    if (enaddr != 0) {
+        // Set up hardware address
+        memcpy(&sc->sc_arpcom.esa, enaddr, ETHER_ADDR_LEN);
+        memcpy(__local_enet_addr, enaddr, ETHER_ADDR_LEN);
+        __local_enet_sc = sc;
+        eth_drv_start(sc);
+    }
 }
 
 #if 0 // Not currently used.  Left in case it's needed in the future
@@ -246,9 +249,9 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     if (net_debug) {
         int old_console;
         old_console = start_console();
-        printf("Ethernet send:\n");
-        dump_buf((CYG_ADDRWORD)eth_hdr, 14);
-        dump_buf((CYG_ADDRWORD)buf, len);
+        diag_printf("Ethernet send:\n");
+        diag_dump_buf((CYG_ADDRWORD)eth_hdr, 14);
+        diag_dump_buf((CYG_ADDRWORD)buf, len);
         end_console(old_console);
     }
 #endif
@@ -297,7 +300,7 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
         if (net_debug) {
             int old_console;
             old_console = start_console();
-            printf("tx_done for other key: %x\n", key);
+            diag_printf("tx_done for other key: %x\n", key);
             end_console(old_console);
         }
 #endif
@@ -405,7 +408,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
 #ifdef CYGSEM_IO_ETH_DRIVERS_WARN
         int old_console;
         old_console = start_console();
-        printf("%s: packet of %d bytes dropped\n", __FUNCTION__, total_len);
+        diag_printf("%s: packet of %d bytes dropped\n", __FUNCTION__, total_len);
         end_console(old_console);
 #endif
         buf = (char *)0;  // Drivers know this means "the bit bucket"
@@ -419,9 +422,9 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     if (net_debug) {
         int old_console;
         old_console = start_console();
-        printf("Ethernet recv:\n");
-        dump_buf((CYG_ADDRWORD)buf, 14);
-        dump_buf((CYG_ADDRWORD)buf+14, total_len-14);
+        diag_printf("Ethernet recv:\n");
+        diag_dump_buf((CYG_ADDRWORD)buf, 14);
+        diag_dump_buf((CYG_ADDRWORD)buf+14, total_len-14);
         end_console(old_console);
     }
 #endif
@@ -448,7 +451,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         eth_drv_msg_put(&eth_msg_full, msg);
 #ifdef CYGSEM_IO_ETH_DRIVERS_WARN
     } else {
-        dump_buf(sg_list[0].buf, sg_list[0].len);
+        diag_dump_buf(sg_list[0].buf, sg_list[0].len);
 #endif
     }
     CYGARC_HAL_RESTORE_GP();
@@ -469,8 +472,8 @@ void eth_drv_dsr(cyg_vector_t vector,
                  cyg_ucount32 count,
                  cyg_addrword_t data)
 {
-    printf( "eth_drv_dsr should not be called: vector %d, data %x\n",
-            vector, data );
+    diag_printf("eth_drv_dsr should not be called: vector %d, data %x\n",
+                vector, data );
 }
 
 

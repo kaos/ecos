@@ -1,3 +1,9 @@
+2001-08-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_fec.c: 
+	printf() is no longer a part of RedBoot.  Thus all programs
+	must use diag_printf() and related functions instead.
+
 2001-06-26  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/if_fec.c (fec_eth_init): Use correct version register.

@@ -220,6 +220,38 @@ cdl_component CYGVAR_KERNEL_THREADS_DATA {
     }
 }
 
+cdl_component CYGPKG_KERNEL_THREADS_DESTRUCTORS {
+    display       "Thread destructors"
+    default_value 0
+    description   "
+        This option enables support for registered destructor functions to
+        be called on thread exit."
+    
+
+    cdl_option CYGNUM_KERNEL_THREADS_DESTRUCTORS {
+        display        "Number of possible destructors"
+        flavor         data
+        legal_values   1 to 65535
+        default_value  8
+        description    "
+                This option gives the number of possible destructors allowed.
+                Increasing this will increase the size of every
+                thread control structure if per-thread destructors are
+                enabled."
+    }
+    
+    cdl_option CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD {
+        display        "Per-thread destructors"
+        default_value  1
+        description    "
+                Enabling this option makes the thread destructors a per-thread
+                property, with each thread having its own list of destructors.
+                Disabling this option makes the thread destructor list
+                global so all threads have the same destructors."
+    }
+    
+}
+
 cdl_option CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE {
     display       "Stack size for the idle thread"
     flavor        data

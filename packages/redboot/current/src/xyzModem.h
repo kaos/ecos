@@ -59,8 +59,12 @@
 #define xyzModem_cksum    -7
 #define xyzModem_sequence -8
 
+#define xyzModem_close 1
+#define xyzModem_abort 2
+
 int   xyzModem_stream_open(char *filename, int mode, int *err);    
 void  xyzModem_stream_close(int *err);    
+void  xyzModem_stream_terminate(int method, int (*getc)(void));    
 int   xyzModem_stream_read(char *buf, int size, int *err);    
 char *xyzModem_error(int err);
 

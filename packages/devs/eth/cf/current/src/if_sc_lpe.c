@@ -65,7 +65,6 @@
 #include <pkgconf/net.h>
 #else
 #include <cyg/hal/hal_if.h>
-#define diag_printf printf
 #endif
 
 #include <cyg/io/dp83902a.h>
@@ -159,7 +158,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
                 while (*cp++) ;  // Skip to nul
                 vers_date = cp;
 #ifndef CYGPKG_NET
-                if (tries != 0) printf("\n");
+                if (tries != 0) diag_printf("\n");
                 diag_printf("%s: %s %s %s\n", vers_manuf, vers_product, vers_revision, vers_date);
 #endif
             }
@@ -172,23 +171,6 @@ sc_lpe_card_handler(cyg_addrword_t param)
             if (!cor) {
 //                diag_printf("Couldn't find COR pointer!\n");
                 continue;
-            }
-
-            // Fetch hardware address from card - terrible, but not well defined
-            // Note: at least one card has been known to not have a valid ESA anywhere
-            if (!dp->hardwired_esa) {
-                if (slot->attr[0x1C0] != (unsigned char)0xFF) {
-                    for (i = 0;  i < ETHER_ADDR_LEN;  i++)
-                        dp->esa[i] = slot->attr[0x1C0+(i*2)];
-                } else {
-                    diag_printf("No valid ESA found in CIS! Hardwiring to 08:88:87:65:43:21\n");
-                    dp->esa[0] = 0x08;
-                    dp->esa[1] = 0x88;
-                    dp->esa[2] = 0x87;
-                    dp->esa[3] = 0x65;
-                    dp->esa[4] = 0x43;
-                    dp->esa[5] = 0x21;
-                }
             }
 
             ptr = 0;
@@ -207,6 +189,53 @@ sc_lpe_card_handler(cyg_addrword_t param)
                     do {
                         DP_IN(base, DP_ISR, tmp);
                     } while (0 == (tmp & DP_ISR_RESET));
+
+                    // Fetch hardware address from card - terrible, but not well defined
+                    // Patterned after what Linux drivers do
+                    if (!dp->hardwired_esa) {
+                        static unsigned char sc_lpe_addr[] = { 0x00, 0xC0, 0x1B, 0x00, 0x99, 0x9E};
+                        if ((slot->attr[0x1C0] == sc_lpe_addr[0]) &&
+                            (slot->attr[0x1C2] == sc_lpe_addr[1]) &&
+                            (slot->attr[0x1C4] == sc_lpe_addr[2])) {
+                            sc_lpe_addr[3] = slot->attr[0x1C6];
+                            sc_lpe_addr[4] = slot->attr[0x1C8];
+                            sc_lpe_addr[5] = slot->attr[0x1CA];
+                        } else {
+                            // Coudn't find it in the CIS (attribute) data
+                            unsigned char prom[32];
+
+                            // Tell device to give up ESA
+                            DP_OUT(base, DP_DCR, 0x48);  // Bytewide access
+                            DP_OUT(base, DP_RBCH, 0);    // Remote byte count
+                            DP_OUT(base, DP_RBCL, 0);
+                            DP_OUT(base, DP_ISR, 0xFF);  // Clear any pending interrupts
+                            DP_OUT(base, DP_IMR, 0x00);  // Mask all interrupts 
+                            DP_OUT(base, DP_RCR, 0x20);  // Monitor
+                            DP_OUT(base, DP_TCR, 0x02);  // loopback
+                            DP_OUT(base, DP_RBCH, 32);   // Remote byte count
+                            DP_OUT(base, DP_RBCL, 0);
+                            DP_OUT(base, DP_RSAL, 0);    // Remote address
+                            DP_OUT(base, DP_RSAH, 0);
+                            DP_OUT(base, DP_CR, DP_CR_START|DP_CR_RDMA);  // Read data
+                            for (i = 0;  i < 32;  i++) {
+                                HAL_READ_UINT8(base+DP_DATAPORT, prom[i]);
+                            }
+                            if ((prom[0] == sc_lpe_addr[0]) &&
+                                (prom[2] == sc_lpe_addr[1]) &&
+                                (prom[4] == sc_lpe_addr[2])) {
+                                diag_printf("Getting address from port\n");
+                                sc_lpe_addr[3] = prom[6];
+                                sc_lpe_addr[4] = prom[8];
+                                sc_lpe_addr[5] = prom[10];
+                            } else {
+                                diag_printf("No valid ESA found in CIS! Hardwiring to 00:C0:1B:00:99:9E\n");
+                            }
+                        }
+                        for (i = 0;  i < 6;  i++) {
+                            dp->esa[i] = sc_lpe_addr[i];
+                        }
+                    }
+
                     // Initialize upper level driver
                     (sc->funs->eth_drv->init)(sc, dp->esa);
                     // Tell system card is ready to talk
@@ -229,8 +258,8 @@ sc_lpe_card_handler(cyg_addrword_t param)
             cyg_drv_dsr_unlock();
             do_delay(50);  // FIXME!
 #ifndef CYGPKG_NET
-            if (tries == 0) printf("... Waiting for network card: ");
-            printf(".");
+            if (tries == 0) diag_printf("... Waiting for network card: ");
+            diag_printf(".");
             if (++tries == 10) {
                 // 5 seconds have elapsed - give up
                 return false;

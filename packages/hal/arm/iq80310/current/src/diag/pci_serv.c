@@ -107,8 +107,7 @@ typedef struct
 /* Table where the interrupt handler addresses are stored. */
 INT_HANDLER pci_int_handlers[4][MAX_PCI_HANDLERS];
 
-
-extern void printf();
+//extern void printf();
 extern void hexIn();
 
 extern int pci_config_cycle;

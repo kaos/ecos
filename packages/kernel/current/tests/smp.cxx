@@ -86,7 +86,7 @@ static cyg_handle_t threads[NTHREADS_MAX];
 
 static volatile cyg_uint32 cpu_run[CYGNUM_KERNEL_CPU_MAX];
 static volatile int failed = false;
-static volatile cyg_handle_t cpu_thread[CYGNUM_KERNEL_CPU_MAX];
+static volatile cyg_uint32 cpu_thread[CYGNUM_KERNEL_CPU_MAX];
 
 static volatile cyg_uint32 slicerun[NTHREADS_MAX][CYGNUM_KERNEL_CPU_MAX];
 
@@ -141,7 +141,7 @@ void run_smp_test_cpus()
     }
 
     // Just wait a while, until the threads have all run for a bit.
-    cyg_thread_delay( 1 );
+    cyg_thread_delay( 10 );
 
     // Delete all the threads
     for (i = 0;  i < ncpus;  i++) {
@@ -150,9 +150,12 @@ void run_smp_test_cpus()
 
     // And check that a thread ran on each CPU
     for (i = 0;  i < ncpus;  i++) {
-        CYG_TEST_CHECK( cpu_run[i], "CPU didn't run");
+//        CYG_TEST_CHECK( cpu_run[i], "CPU didn't run");
         if( !cpu_run[i] )
+        {
+            CYG_TEST_INFO( "CPU didn't run" );
             failed++;
+        }
     }
 
     CYG_TEST_INFO( "CPU Test: done");
@@ -166,13 +169,14 @@ test_thread_pri(CYG_ADDRESS id)
 {
     for(;;)
     {
-        cpu_thread[CYG_KERNEL_CPU_THIS()] = cyg_thread_self();
+        cpu_thread[CYG_KERNEL_CPU_THIS()] = id;
     }
 }
 
 //==========================================================================
 // Second test: Run a thread on each CPU and then by manipulating the
 // priorities, get the current thread to migrate to each CPU in turn.
+
 
 void run_smp_test_pri()
 {
@@ -183,7 +187,7 @@ void run_smp_test_pri()
     // Init flags.
     for (i = 0;  i < ncpus;  i++)
         cpu_run[i] = false;
-    
+
     // Set my priority higher than any I plan to creat
     cyg_thread_set_priority(cyg_thread_self(), 2);
 
@@ -200,13 +204,15 @@ void run_smp_test_pri()
         cyg_thread_resume( threads[i]);
     }
 
+    cyg_thread_delay( 2 );
+    
     cyg_handle_t cthread = threads[0];
     cyg_thread_set_priority(cthread, 25);
     
     // Just wait a while, until the threads have all run for a bit.
-    cyg_thread_delay( 1 );
+    cyg_thread_delay( 2 );
 
-    for (i = 0;  i < ncpus*5;  i++)
+    for (i = 0;  i < ncpus*500;  i++)
     {
         HAL_SMP_CPU_TYPE cpu = i % CYG_KERNEL_CPU_COUNT();
         
@@ -218,12 +224,17 @@ void run_smp_test_pri()
             // priority 25.
             
             // Pick a thread on a different CPU
-            cyg_handle_t dthread = cpu_thread[cpu];
+            cyg_handle_t dthread;
+
+            do
+            {
+                dthread = threads[cpu_thread[cpu]];
+            } while( dthread == cthread );
 
             // Change the priority of the victim thread to 20. It is
             // still higher priority than cthread so it will continue
             // running.
-            
+
             cyg_thread_set_priority(dthread, 20);
 
             // Now change our priority to 15. We are still higher
@@ -248,7 +259,7 @@ void run_smp_test_pri()
 
             // Spin here a while until the scheduler sorts itself out.
             
-            for( int j = 0; j < 1000; j++ );
+            for( int j = 0; j < 100000; j++ );
 
             // Indicate that we have run on this CPU
             cpu_run[CYG_KERNEL_CPU_THIS()]++;
@@ -270,9 +281,12 @@ void run_smp_test_pri()
 
     // And check that a thread ran on each CPU
     for (i = 0;  i < ncpus;  i++) {
-        CYG_TEST_CHECK( cpu_run[i], "CPU didn't run");
+//        CYG_TEST_CHECK( cpu_run[i], "CPU didn't run");
         if( !cpu_run[i] )
+        {
+            CYG_TEST_INFO( "CPU didn't run" );            
             failed++;
+        }
     }
 
     CYG_TEST_INFO( "PRI Test: done");
@@ -319,7 +333,7 @@ void run_smp_test_timeslice()
     }
 
     // Just wait a while, until the threads have all run for a bit.
-    cyg_thread_delay( 20 );
+    cyg_thread_delay( 200 );
 
     // Delete all the threads
     for (i = 0;  i < nthread;  i++) {
@@ -384,7 +398,7 @@ run_smp_tests(CYG_ADDRESS id)
 {
     cyg_mutex_init( &mx );
 
-    for( int i = 0; i < 10; i++ )
+    for( int i = 0; i < 100; i++ )
     {
         run_smp_test_cpus();
         run_smp_test_pri();

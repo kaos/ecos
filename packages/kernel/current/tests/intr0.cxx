@@ -133,8 +133,8 @@ void intr0_main( void )
         intr1 = new((void *)&intr1_obj[0]) Cyg_Interrupt( lvl2, 1, 888, isr1, dsr1 );
 
     // Check these functions at least exist
-    Cyg_Interrupt::enable_interrupts();
     Cyg_Interrupt::disable_interrupts();
+    Cyg_Interrupt::enable_interrupts();
 
     if (intr0)
         intr0->attach();

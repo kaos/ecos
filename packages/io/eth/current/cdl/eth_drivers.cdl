@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -145,6 +145,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
 
         cdl_option CYGSEM_IO_ETH_DRIVERS_WARN {
             display          "Show driver warnings"
+            active_if        CYGPKG_REDBOOT
             flavor           bool
             default_value    0
             description      "
@@ -155,6 +156,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
 
         cdl_option CYGSEM_IO_ETH_DRIVERS_DEBUG {
             display          "Print driver debug information"
+            active_if        CYGPKG_REDBOOT
             flavor           booldata
             default_value    { 0 != CYGPKG_REDBOOT ? 1 : 0}
             description      "

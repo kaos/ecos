@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.  
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -31,8 +31,8 @@
 //========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Contributors: nickg
+// Author(s):    nickg,gthomas,jlarmour
+// Contributors: 
 // Date:         1999-02-22
 // Purpose:      Infrastructure diagnostic output
 // Description:  Implementations of infrastructure diagnostic routines.
@@ -46,26 +46,18 @@
 #include <pkgconf/infra.h>
 
 #include <cyg/infra/cyg_type.h>         // base types
-
+  
 #include <cyg/infra/diag.h>             // HAL polled output
 #include <cyg/hal/hal_arch.h>           // architectural stuff for...
 #include <cyg/hal/hal_intr.h>           // interrupt control
 #include <cyg/hal/hal_diag.h>           // diagnostic output routines
-
-#ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
-
 #include <stdarg.h>
-
-#endif
-
-#ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
-#include <cyg/io/io_diag.h>
-#endif
-
+#include <limits.h>
+  
 #ifdef CYG_HAL_DIAG_LOCK_DATA_DEFN
 CYG_HAL_DIAG_LOCK_DATA_DEFN;
 #endif
-
+  
 /*----------------------------------------------------------------------*/
 
 externC void diag_write_num(
@@ -79,29 +71,9 @@ externC void diag_write_num(
 class Cyg_dummy_diag_init_class {
 public:
     Cyg_dummy_diag_init_class() {
-#ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
-        diag_device_init(); 
-#else
         HAL_DIAG_INIT();
-#endif
     }
 };
-
-#ifdef CYGDBG_INFRA_DIAG_USE_DEVICE
-
-// Initialize after IO devices.
-static Cyg_dummy_diag_init_class cyg_dummy_diag_init_obj 
-                                      CYGBLD_ATTRIB_INIT_AFTER(CYG_INIT_IO);
-
-/*----------------------------------------------------------------------*/
-/* Write single char to output                                          */
-
-externC void diag_write_char(char c)
-{
-    diag_device_write_char(c);
-}
-
-#else
 
 // Initialize after HAL.
 static Cyg_dummy_diag_init_class cyg_dummy_diag_init_obj 
@@ -110,29 +82,42 @@ static Cyg_dummy_diag_init_class cyg_dummy_diag_init_obj
 /*----------------------------------------------------------------------*/
 /* Write single char to output                                          */
 
-#define PREFIX()
-//#define PREFIX() HAL_DIAG_WRITE_CHAR(0x0F)
-
 externC void diag_write_char(char c)
 {    
     /* Translate LF into CRLF */
     
     if( c == '\n' )
     {
-        PREFIX();
         HAL_DIAG_WRITE_CHAR('\r');        
     }
 
-    PREFIX();
     HAL_DIAG_WRITE_CHAR(c);
 }
-#endif
+
+// Default wrapper function used by diag_printf
+static void
+_diag_write_char(char c, void **param)
+{
+    diag_write_char(c);
+}
 
 /*----------------------------------------------------------------------*/
 /* Initialize. Call to pull in diag initializing constructor            */
 
 externC void diag_init(void)
 {
+}
+
+//
+// This routine is used to send characters during 'printf()' functions.
+// It can be replaced by providing a replacement via diag_init_putc().
+//
+static void (*_putc)(char c, void **param) = _diag_write_char;
+
+void
+diag_init_putc(void (*putc)(char c, void **param))
+{
+    _putc = putc;
 }
 
 /*----------------------------------------------------------------------*/
@@ -264,256 +249,310 @@ static cyg_bool diag_check_string( const char *str )
 
 /*----------------------------------------------------------------------*/
 
-externC void diag_vprintf( const char *fmt, CYG_ADDRWORD *args)
+static int
+_cvt(unsigned long long val, char *buf, long radix, char *digits)
 {
+    char temp[80];
+    char *cp = temp;
+    int length = 0;
 
-    cyg_bool pad = true;
+    if (val == 0) {
+        /* Special case */
+        *cp++ = '0';
+    } else {
+        while (val) {
+            *cp++ = digits[val % radix];
+            val /= radix;
+        }
+    }
+    while (cp != temp) {
+        *buf++ = *--cp;
+        length++;
+    }
+    *buf = '\0';
+    return (length);
+}
 
-    if( !diag_check_string(fmt) )
-    {
-        int i;
+#define is_digit(c) ((c >= '0') && (c <= '9'))
+
+static int
+_vprintf(void (*putc)(char c, void **param), void **param, const char *fmt, va_list ap)
+{
+    char buf[sizeof(long long)*8];
+    char c, sign, *cp=buf;
+    int left_prec, right_prec, zero_fill, pad, pad_on_right, 
+        i, islong, islonglong;
+    long long val = 0;
+    int res = 0, length = 0;
+
+    if (!diag_check_string(fmt)) {
         diag_write_string("<Bad format string: ");
         diag_write_hex((cyg_uint32)fmt);
         diag_write_string(" :");
-        for( i = 0; i < 8; i++ )
-        {
+        for( i = 0; i < 8; i++ ) {
             diag_write_char(' ');
-            diag_write_hex(args[i]);
+            val = va_arg(ap, unsigned long);
+            diag_write_hex(val);
         }
         diag_write_string(">\n");
-        return;
+        return 0;
     }
-    
-    while( *fmt != '\0' )
-    {
-        char c = *fmt;
-
-        if( c != '%' ) diag_write_char( c );
-        else
-        {
-            cyg_bool pfzero = false;
-            cyg_count8 width = 0;
-            char sign = '+';
-            cyg_bool long_op = false;
-                        
-            c = *++fmt;
-                        
-            if( c == '0' ) pfzero = true;
-
-            while( '0' <= c && c <= '9' )
-            {
-                width = width*10 + c - '0';
-                c = *++fmt;
+    while ((c = *fmt++) != '\0') {
+        if (c == '%') {
+            c = *fmt++;
+            left_prec = right_prec = pad_on_right = islong = islonglong = 0;
+            if (c == '-') {
+                c = *fmt++;
+                pad_on_right++;
             }
-
+            if (c == '0') {
+                zero_fill = true;
+                c = *fmt++;
+            } else {
+                zero_fill = false;
+            }
+            while (is_digit(c)) {
+                left_prec = (left_prec * 10) + (c - '0');
+                c = *fmt++;
+            }
+            if (c == '.') {
+                c = *fmt++;
+                zero_fill++;
+                while (is_digit(c)) {
+                    right_prec = (right_prec * 10) + (c - '0');
+                    c = *fmt++;
+                }
+            } else {
+                right_prec = left_prec;
+            }
+            sign = '\0';
             if (c == 'l') {
-                // %lx and %ld are equivalent to %x/%d
-                c = *++fmt;
-                // %llx or %lld used to indicate (long long) operand
+                // 'long' qualifier
+                c = *fmt++;
+		islong = 1;
                 if (c == 'l') {
-                    long_op = true;
-                    c = *++fmt;
+                    // long long qualifier
+                    c = *fmt++;
+                    islonglong = 1;
                 }
             }
-
-            if (long_op) {
-                    if(pad) args++;
-                    pad=false;
-            } else {
-                    pad=!pad;
-            }
-               
-            switch( c )
-            {
+            // Fetch value [numeric descriptors only]
+            switch (c) {
+            case 'p':
+		islong = 1;
             case 'd':
             case 'D':
-            {
-                if (long_op) {
-                    long long *lp = (long long *)args;
-                    long long val = *lp++;
-                    args = (CYG_ADDRWORD *)lp;
-                    if( val < 0 ) val = -val, sign = '-';
-                    diag_write_long_num(val, 10, sign, pfzero, width);
-                } else {
-                    long val = (long)(*args++);
-                    if( val < 0 ) val = -val, sign = '-';
-                    diag_write_num(val, 10, sign, pfzero, width);
-                }
-                break;
-            }
-
             case 'x':
             case 'X':
-            {
-                if (long_op) {
-                    long long *lp = (long long *)args;
-                    long long val = *lp++;
-                    args = (CYG_ADDRWORD *)lp;
-                    diag_write_long_num(val, 16, sign, pfzero, width);
-                } else {
-                    unsigned long val = (long)(*args++);
-                    diag_write_num(val, 16, sign, pfzero, width);
-                }
-                break;
-            }
-
-            case 'c':
-            case 'C':
-            {
-                char ch = (char)(*args++);
-                diag_write_char(ch);
-                break;
-            }
-
-            case 's':
-            case 'S':
-            {
-                char *s = (char *)(*args++);
-                cyg_count32 len = 0;
-                cyg_count32 pre = 0, post = 0;
-
-                if( s == NULL ) s = "<null>";
-                else if( !diag_check_string(s) )
-                {
-                    diag_write_string("<Not a string: 0x");
-                    diag_write_hex((cyg_uint32)s);
-                    s = ">";
-                    if( width > 25 ) width -= 25;
-                    pfzero = false;
-                    /* Drop through to print the closing ">" */
-                    /* and pad to the required length.       */
-                }
-                
-                while( s[len] != 0 ) len++;
-                
-                if( width && len > width ) len = width;
-
-                if( pfzero ) pre = width-len;
-                else post = width-len;
-
-                while( pre-- > 0 ) diag_write_char(' ');
-
-                while( *s != '\0' && len-- != 0)
-                    diag_write_char(*s++);
-
-                while( post-- > 0 ) diag_write_char(' ');
-                                
-                break;
-            }
-
+            case 'u':
+            case 'U':
             case 'b':
             case 'B':
-            {
-                unsigned long val = (unsigned long)(*args++);
-                cyg_uint32 i;
-                if( width == 0 ) width = 32;
-
-                for( i = width-1; i >= 0; i-- )
-                    diag_write_char( (val&(1<<i))?'1':'.' );
-                                
+                if (islonglong) {
+                    val = va_arg(ap, long long);
+	        } else if (islong) {
+                    val = (long long)va_arg(ap, long);
+		} else{
+                    val = (long long)va_arg(ap, int);
+                }
+                if ((c == 'd') || (c == 'D')) {
+                    if (val < 0) {
+                        sign = '-';
+                        val = -val;
+                    }
+                } else {
+                    // Mask to unsigned, sized quantity
+                    if (islong) {
+                        val &= ((long long)1 << (sizeof(long) * 8)) - 1;
+                    } else{
+                        val &= ((long long)1 << (sizeof(int) * 8)) - 1;
+                    }
+                }
                 break;
-            }
-
-            case '%':
-                diag_write_char('%');
-                break;
-
             default:
-                diag_write_char('%');
-                diag_write_char(c);
                 break;
             }
+            // Process output
+            switch (c) {
+            case 'p':  // Pointer
+                (*putc)('0', param);
+                (*putc)('x', param);
+                zero_fill = true;
+                left_prec = sizeof(unsigned long)*2;
+            case 'd':
+            case 'D':
+            case 'u':
+            case 'U':
+            case 'x':
+            case 'X':
+                switch (c) {
+                case 'd':
+                case 'D':
+                case 'u':
+                case 'U':
+                    length = _cvt(val, buf, 10, "0123456789");
+                    break;
+                case 'p':
+                case 'x':
+                    length = _cvt(val, buf, 16, "0123456789abcdef");
+                    break;
+                case 'X':
+                    length = _cvt(val, buf, 16, "0123456789ABCDEF");
+                    break;
+                }
+                cp = buf;
+                break;
+            case 's':
+            case 'S':
+                cp = va_arg(ap, char *);
+                if (cp == NULL) 
+                    cp = "<null>";
+                else if (!diag_check_string(cp)) {
+                    diag_write_string("<Not a string: 0x");
+                    diag_write_hex((cyg_uint32)cp);
+                    cp = ">";
+                }
+                length = 0;
+                while (cp[length] != '\0') length++;
+                break;
+            case 'c':
+            case 'C':
+                c = va_arg(ap, int /*char*/);
+                (*putc)(c, param);
+                res++;
+                continue;
+            case 'b':
+            case 'B':
+                length = left_prec;
+                if (left_prec == 0) {
+                    if (islonglong)
+                        length = sizeof(long long)*8;
+                    else if (islong)
+                        length = sizeof(long)*8;
+                    else
+                        length = sizeof(int)*8;
+                }
+                for (i = 0;  i < length-1;  i++) {
+                    buf[i] = ((val & ((long long)1<<i)) ? '1' : '.');
+                }
+                cp = buf;
+                break;
+            case '%':
+                (*putc)('%', param);
+                break;
+            default:
+                (*putc)('%', param);
+                (*putc)(c, param);
+                res += 2;
+            }
+            pad = left_prec - length;
+            if (sign != '\0') {
+                pad--;
+            }
+            if (zero_fill) {
+                c = '0';
+                if (sign != '\0') {
+                    (*putc)(sign, param);
+                    res++;
+                    sign = '\0';
+                }
+            } else {
+                c = ' ';
+            }
+            if (!pad_on_right) {
+                while (pad-- > 0) {
+                    (*putc)(c, param);
+                    res++;
+                }
+            }
+            if (sign != '\0') {
+                (*putc)(sign, param);
+                res++;
+            }
+            while (length-- > 0) {
+                c = *cp++;
+                if (c == '\n') {
+                    (*putc)('\r', param);
+                    res++;
+                }
+                (*putc)(c, param);
+                res++;
+            }
+            if (pad_on_right) {
+                while (pad-- > 0) {
+                    (*putc)(' ', param);
+                    res++;
+                }
+            }
+        } else {
+            if (c == '\n') {
+                (*putc)('\r', param);
+                res++;
+            }
+            (*putc)(c, param);
+            res++;
         }
-
-        fmt++;
-    }   
-    
+    }
+    return (res);
 }
 
-/*-----------------------------------------------------------------------*/
-/* Formatted diagnostic output.                                          */
-
-#ifdef CYGDBG_INFRA_DIAG_PRINTF_USE_VARARG
-
-externC void diag_printf(const char *fmt, ... )
+static void 
+_sputc(char c, void **param)
 {
-    
-    CYG_ADDRWORD args[8];
+    char *_sprintf_ptr = (char *)*param;
 
-    va_list a;
-
-    va_start(a, fmt);
-
-    /* Move all of the arguments into simple scalars. This avoids
-     * having to use varargs to define diag_vprintf().
-     */
-    
-    args[0] = va_arg(a,CYG_ADDRWORD);
-    args[1] = va_arg(a,CYG_ADDRWORD);
-    args[2] = va_arg(a,CYG_ADDRWORD);
-    args[3] = va_arg(a,CYG_ADDRWORD);
-    args[4] = va_arg(a,CYG_ADDRWORD);
-    args[5] = va_arg(a,CYG_ADDRWORD);
-    args[6] = va_arg(a,CYG_ADDRWORD);
-    args[7] = va_arg(a,CYG_ADDRWORD);
-
-    va_end(a);
-
-#ifdef CYG_HAL_DIAG_LOCK
-    CYG_HAL_DIAG_LOCK();
-#endif    
-    
-    diag_vprintf( fmt, args);
-
-#ifdef CYG_HAL_DIAG_UNLOCK
-    CYG_HAL_DIAG_UNLOCK();
-#endif    
-    
+    *_sprintf_ptr++ = c;
+    *_sprintf_ptr = '\0';
+    *param = _sprintf_ptr;
 }
 
-#else
+int
+diag_sprintf(char *buf, const char *fmt, ...)
+{        
+    int ret;
+    va_list ap;
+    char *_sprintf_ptr;
 
-/* The prototype for diag_printf in diag.h is defined using K&R syntax   */
-/* to allow us to use a variable number of arguments in the call without */
-/* using ellipses, which would require use of varargs stuff. If we ever  */
-/* need to support arguments that are not simple words, we may need to   */
-/* use varargs.                                                          */
-/* For the actual implementation, a normal ANSI C prototype is           */
-/* acceptable.                                                            */
+    va_start(ap, fmt);
+    _sprintf_ptr = buf;
+    ret = _vprintf(_sputc, (void **)&_sprintf_ptr, fmt, ap);
+    va_end(ap);
+    return (ret);
+}
 
-externC void diag_printf(const char *fmt, CYG_ADDRWORD a1, CYG_ADDRWORD a2,
-                         CYG_ADDRWORD a3, CYG_ADDRWORD a4,
-                         CYG_ADDRWORD a5, CYG_ADDRWORD a6,
-                         CYG_ADDRWORD a7, CYG_ADDRWORD a8)
+int 
+diag_vsprintf(char *buf, const char *fmt, va_list ap)
 {
-    
-    CYG_ADDRWORD args[8];
+    int ret;
+    char *_sprintf_ptr;
 
-    args[0] = a1;
-    args[1] = a2;
-    args[2] = a3;
-    args[3] = a4;
-    args[4] = a5;
-    args[5] = a6;
-    args[6] = a7;
-    args[7] = a8;
-
-
-#ifdef CYG_HAL_DIAG_LOCK
-    CYG_HAL_DIAG_LOCK();
-#endif    
-    
-    diag_vprintf( fmt, args);
-
-#ifdef CYG_HAL_DIAG_UNLOCK
-    CYG_HAL_DIAG_UNLOCK();
-#endif    
-
+    _sprintf_ptr = buf;
+    ret = _vprintf(_sputc, (void **)&_sprintf_ptr, fmt, ap);
+    return (ret);
 }
 
-#endif
+int
+diag_printf(const char *fmt, ...)
+{
+    va_list ap;
+    int ret;
 
-static void
+    va_start(ap, fmt);
+    ret = _vprintf(_putc, (void **)0, fmt, ap);
+    va_end(ap);
+    return (ret);
+}
+
+int
+diag_vprintf(const char *fmt, va_list ap)
+{
+    int ret;
+
+    ret = _vprintf(_putc, (void **)0, fmt, ap);
+    return (ret);
+}
+
+void
 diag_dump_buf_with_offset(cyg_uint8     *p, 
                           CYG_ADDRWORD   s, 
                           cyg_uint8     *base)

@@ -41,7 +41,7 @@
 
 //--------------------------------------------------------------------------
 // User Break Control
-#define CYGARC_REG_BRCR                 0xffffff98 // 16 bit
+#define CYGARC_REG_BRCR                 0xffffff98 // 16 bit (v1) / 32 bit
 
 #define CYGARC_REG_BARA                 0xffffffb0 // 32 bit
 #define CYGARC_REG_BAMRA                0xffffffb4 // 8 bit (v1) / 32 bit
@@ -55,20 +55,39 @@
 #define CYGARC_REG_BDRB                 0xffffff90 // 32 bit
 #define CYGARC_REG_BDMRB                0xffffff94 // 32 bit
 
+#ifdef CYGARC_SH_MOD_UBC
 
-#define CYGARC_REG_BRCR_CMFA            0x8000 // condition match flag A
-#define CYGARC_REG_BRCR_CMFB            0x4000 // condition match flag B
-#define CYGARC_REG_BRCR_PCBA            0x0400 // post execute channel A
-#define CYGARC_REG_BRCR_DBEB            0x0080 // data break enable B
-#define CYGARC_REG_BRCR_PCBB            0x0040 // post execute channel B
-#define CYGARC_REG_BRCR_SEQ             0x0008 // sequence condition select
+#if (CYGARC_SH_MOD_UBC == 1)
+# define CYGARC_REG_BRCR_CMFA           0x8000 // condition match flag A
+# define CYGARC_REG_BRCR_CMFB           0x4000 // condition match flag B
+# define CYGARC_REG_BRCR_PCBA           0x0400 // post execute channel A
+# define CYGARC_REG_BRCR_DBEB           0x0080 // data break enable B
+# define CYGARC_REG_BRCR_PCBB           0x0040 // post execute channel B
+# define CYGARC_REG_BRCR_SEQ            0x0008 // sequence condition select
+# define CYGARC_REG_BRCR_ONE_STEP       (CYGARC_REG_BRCR_PCBA)
+#else
+# define CYGARC_REG_BRCR_BASMA          0x00200000 // asid not checked
+# define CYGARC_REG_BRCR_BASMB          0x00100000
+# define CYGARC_REG_BRCR_SCMFCA         0x00008000
+# define CYGARC_REG_BRCR_SCMFCB         0x00004000
+# define CYGARC_REG_BRCR_SCMFDA         0x00002000
+# define CYGARC_REG_BRCR_SCMFDB         0x00001000
+# define CYGARC_REG_BRCR_PCTE           0x00000800 // PC trace enable
+# define CYGARC_REG_BRCR_PCBA           0x00000400 // post execute
+# define CYGARC_REG_BRCR_DBEB           0x00000080 // data break
+# define CYGARC_REG_BRCR_PCBB           0x00000040
+# define CYGARC_REG_BRCR_SEQ            0x00000008 // A and B channel in sequence
+# define CYGARC_REG_BRCR_ETBE           0x00000001 // execution count on B matches
+# define CYGARC_REG_BRCR_ONE_STEP       (CYGARC_REG_BRCR_BASMA | CYGARC_REG_BRCR_PCBA)
+#endif
 
-#if defined(CYGARC_SH_MOD_UBC) && (CYGARC_SH_MOD_UBC == 1)
-#define CYGARC_REG_BAMRA_BASMA          0x04   // BASRA masked
-#define CYGARC_REG_BAMRA_BARA_UNMASKED  0x00   // BARA not masked
-#define CYGARC_REG_BAMRA_BARA_10BIT     0x01   // Lowest 10 bit masked
-#define CYGARC_REG_BAMRA_BARA_12BIT     0x02   // Lowest 12 bit masked
-#define CYGARC_REG_BAMRA_BARA_MASKED    0x03   // All bits masked
+
+#if (CYGARC_SH_MOD_UBC == 1)
+# define CYGARC_REG_BAMRA_BASMA          0x04   // BASRA masked
+# define CYGARC_REG_BAMRA_BARA_UNMASKED  0x00   // BARA not masked
+# define CYGARC_REG_BAMRA_BARA_10BIT     0x01   // Lowest 10 bit masked
+# define CYGARC_REG_BAMRA_BARA_12BIT     0x02   // Lowest 12 bit masked
+# define CYGARC_REG_BAMRA_BARA_MASKED    0x03   // All bits masked
 #else
 // mask is fully configurable in other versions of the UBC
 #endif
@@ -85,7 +104,7 @@
 
 //----------------------------------------------------------------------------
 // Other types
-#if defined(CYGARC_SH_MOD_UBC) && (CYGARC_SH_MOD_UBC >= 3)
+#if (CYGARC_SH_MOD_UBC == 2)
 #define CYGARC_REG_BETR                 0xffffff9c // 16 bit
 #define CYGARC_REG_BRSR                 0xffffffac // 32 bit
 #define CYGARC_REG_BRDR                 0xffffffbc // 32 bit
@@ -93,3 +112,5 @@
 #define CYGARC_REG_BBRA_DMA             0x0080 // Break on DMAC cycle
 #define CYGARC_REG_BBRA_CPU             0x0040 // Break on CPU cycle
 #endif
+
+#endif // CYGARC_SH_MOD_UBC

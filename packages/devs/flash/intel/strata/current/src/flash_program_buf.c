@@ -97,7 +97,11 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
         }
         *BA = FLASHWORD(wc-1);  // Count is 0..N-1
         for (i = 0;  i < wc;  i++) {
+#ifdef CYGHWR_FLASH_WRITE_ELEM
+            CYGHWR_FLASH_WRITE_ELEM(addr+i, data+i);
+#else
             *(addr+i) = *(data+i);
+#endif
         }
         *BA = FLASH_Confirm;
     
@@ -125,7 +129,11 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
 
     while (len > 0) {
         ROM[0] = FLASH_Program;
+#ifdef CYGHWR_FLASH_WRITE_ELEM
+        CYGHWR_FLASH_WRITE_ELEM(addr, data);
+#else
         *addr = *data;
+#endif
         timeout = 5000000;
         while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
             if (--timeout == 0) {

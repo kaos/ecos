@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, tsmith
 // Date:         2000-07-14
 // Purpose:      
 // Description:  
@@ -48,6 +48,7 @@
 #ifdef CYGPKG_REDBOOT_DISK
 #include <fs/disk.h>
 #endif
+
 
 // Buffer used by redboot_getc
 getc_info_t getc_info;
@@ -72,7 +73,7 @@ RedBoot_cmd("load",
 static unsigned long
 load_elf_image(int (*getc)(void))
 {
-    printf("ELF images not supported\n");
+    diag_printf("ELF images not supported\n");
     return 0;
 }
 
@@ -114,7 +115,7 @@ _hex2(int (*getc)(void), int len, long *sum)
 //
 #define MAX_LINE 80
 static unsigned long
-load_srec_image(int (*getc)(void), unsigned long base)
+load_srec_image(int (*getc)(void), void (*terminate)(int method,int (*getc)(void)), unsigned long base)
 {
     char line[MAX_LINE];
     char *lp;
@@ -131,7 +132,8 @@ load_srec_image(int (*getc)(void), unsigned long base)
         lp = line;  len = 0;
         // Start of line
         if (c != 'S') {
-            printf("Invalid S-record at offset %p, input: %c\n", 
+	    if (terminate) (*terminate)(xyzModem_abort, getc);
+            diag_printf("Invalid S-record at offset %p, input: %c\n", 
                    (void *)offset, c);
             return 0;
         }
@@ -139,7 +141,8 @@ load_srec_image(int (*getc)(void), unsigned long base)
         offset += 2;
         sum = 0;
         if ((count = _hex2(getc, 1, &sum)) < 0) {
-            printf("Bad S-record count at offset %p\n", (void *)offset);
+	    if (terminate) (*terminate)(xyzModem_abort, getc);
+            diag_printf("Bad S-record count at offset %p\n", (void *)offset);
             return 0;
         }
         offset += 1;
@@ -154,7 +157,6 @@ load_srec_image(int (*getc)(void), unsigned long base)
             if (first_addr) {
                 if (base) {
                     addr_offset = (unsigned long)base - (unsigned long)addr;
-                    printf("Address offset = %p\n", (void *)addr_offset);
                 } else {
                     addr_offset = 0;                    
                 }
@@ -166,9 +168,16 @@ load_srec_image(int (*getc)(void), unsigned long base)
             }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
             if ((addr < user_ram_start) || (addr > user_ram_end)) {
+	      // Only if there is no need to stop the download before printing
+	      // output can we ask confirmation questions.
+	      if (terminate) {
+		(*terminate)(xyzModem_abort, getc);
+		diag_printf("*** Warning! Attempt to load S-record to address: %p\nRedBoot does not believe this is in RAM\nUse TFTP for a chance to override this.\n",(void*)addr);
+	      } else {
                 if (!verify_action("Attempt to load S-record data to address: %p\n"
                                    "RedBoot does not believe this is in RAM", (void*)addr))
                     return 0;
+	      }
             }
 #endif
             count -= ((type-'1'+2)+1);
@@ -182,7 +191,8 @@ load_srec_image(int (*getc)(void), unsigned long base)
             sum = sum & 0xFF;
             cksum = (~cksum & 0xFF);
             if (cksum != sum) {
-                printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
+		if (terminate) (*terminate)(xyzModem_abort, getc);
+                diag_printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
                        (unsigned long)base_addr, sum, cksum);
                 return 0;
             }
@@ -196,12 +206,14 @@ load_srec_image(int (*getc)(void), unsigned long base)
             addr = (unsigned char *)_hex2(getc, ('9'-type+2), &sum);
             offset += ('9'-type+2);
             entry_address = (unsigned long *)addr;
-            printf("Entry point: %p, address range: %p-%p\n", 
+	    if (terminate) (*terminate)(xyzModem_close, getc);
+            if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
+            diag_printf("Entry point: %p, address range: %p-%p\n", 
                    (void*)entry_address, (void *)lowest_address, (void *)highest_address);
-            while ((c = (*getc)()) > 0) ;  // Swallow rest of data
             return highest_address;
         default:
-            printf("Invalid S-record at offset 0x%lx, type: %x\n", 
+	    if (terminate) (*terminate)(xyzModem_abort, getc);
+            diag_printf("Invalid S-record at offset 0x%lx, type: %x\n", 
                    (unsigned long)offset, type);
             return 0;
         }
@@ -220,20 +232,20 @@ redboot_getc(void)
     }
     if (getc_info.avail == 0) {
         if (getc_info.verbose) {
-            printf("%c\b", spin[getc_info.tick++]);
+            diag_printf("%c\b", spin[getc_info.tick++]);
             if (getc_info.tick >= sizeof(spin)) {
                 getc_info.tick = 0;
             }
         }
         if (getc_info.len < BUF_SIZE) {
             // No more data available
-            if (getc_info.verbose) printf("\n");
+            if (getc_info.verbose) diag_printf("\n");
             return -1;
         }
         getc_info.bufp = getc_info.buf;
         getc_info.len = (*getc_info.fun)(getc_info.bufp, BUF_SIZE, &getc_info.err);
         if ((getc_info.avail = getc_info.len) <= 0) {
-            if (getc_info.verbose) printf("\n");
+            if (getc_info.verbose) diag_printf("\n");
             return -1;
         }
     }
@@ -326,14 +338,14 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_NETWORKING
     if (hostname_set) {
         if (!inet_aton(hostname, (in_addr_t *)&host)) {
-            printf("Invalid IP address: %s\n", hostname);
+            diag_printf("Invalid IP address: %s\n", hostname);
             return;
         }
     }
 #endif
     if (mode_str_set) {
-        if (strncmpci(&mode_str[1], "modem", strlen(&mode_str[1])) == 0) {
-            switch (tolower(mode_str[0])) {
+        if (strncasecmp(&mode_str[1], "modem", strlen(&mode_str[1])) == 0) {
+            switch (_tolower(mode_str[0])) {
             case 'x':
                 mode = MODE_XMODEM;
                 break;
@@ -344,33 +356,33 @@ do_load(int argc, char *argv[])
                 mode = MODE_ZMODEM;
                 break;
             default:
-                printf("Invalid 'mode': %s\n", mode_str);
+                diag_printf("Invalid 'mode': %s\n", mode_str);
                 return;
             }
             // When using a serial download type, override verbose
             // setting: spinner interferes with the protocol.
             verbose = false;
 #ifdef CYGPKG_REDBOOT_DISK
-	} else if (strcmpci(mode_str, "disk") == 0) {
+	} else if (strcasecmp(mode_str, "disk") == 0) {
             mode = MODE_DISK;
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
-        } else if (strcmpci(mode_str, "tftp") == 0) {
+        } else if (strcasecmp(mode_str, "tftp") == 0) {
             mode = MODE_TFTP;
             if (!have_net) {
-                printf("TFTP mode requires a working network\n");
+                diag_printf("TFTP mode requires a working network\n");
                 return;
             }
 #endif
         } else {
-            printf("Invalid 'mode': %s\n", mode_str);
+            diag_printf("Invalid 'mode': %s\n", mode_str);
             return;
         }
     }
 #if defined(CYGPKG_REDBOOT_NETWORKING) || defined(CYGPKG_REDBOOT_DISK)
     if ((mode == MODE_TFTP || mode == MODE_DISK) && !filename) {
-        printf("File name missing\n");
-        printf("usage: load %s\n", usage);
+        diag_printf("File name missing\n");
+        diag_printf("usage: load %s\n", usage);
         return;
     }
 #endif
@@ -383,14 +395,14 @@ do_load(int argc, char *argv[])
     }
 #endif
     if (raw && !base_addr_set) {
-        printf("Raw load requires a memory address\n");
+        diag_printf("Raw load requires a memory address\n");
         return;
     }
 #ifdef CYGPKG_REDBOOT_NETWORKING
     if (mode == MODE_TFTP) {
         res = tftp_stream_open(filename, &host, TFTP_OCTET, &err);    
         if (res < 0) {
-            printf("Can't load '%s': %s\n", filename, tftp_error(err));
+            diag_printf("Can't load '%s': %s\n", filename, tftp_error(err));
             return;
         }
         redboot_getc_init(tftp_stream_read, verbose);
@@ -400,7 +412,7 @@ do_load(int argc, char *argv[])
     else if (mode == MODE_DISK) {
         res = disk_stream_open(filename, &err);
         if (res < 0) {
-            printf("Can't load '%s': %s\n", filename, disk_error(err));
+            diag_printf("Can't load '%s': %s\n", filename, disk_error(err));
             return;
         }
         redboot_getc_init(disk_stream_read, verbose);
@@ -409,7 +421,7 @@ do_load(int argc, char *argv[])
     else {
         res = xyzModem_stream_open(filename, mode, &err);
         if (res < 0) {
-            printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
+            diag_printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
             return;
         }
         // Suppress verbosity when using xyz modem download
@@ -445,7 +457,7 @@ do_load(int argc, char *argv[])
             err = (*_dc_close)(p, err);
 
             if (0 != err && p->msg) {
-                printf("decompression error: %s\n", p->msg);
+                diag_printf("decompression error: %s\n", p->msg);
             }
 
             end = (unsigned long) base + p->out_size;
@@ -460,7 +472,7 @@ do_load(int argc, char *argv[])
             end = (unsigned long) mp;
         }
         if (0 == err)
-            printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
+            diag_printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
     } else {
         // Read initial header - to determine file [image] type
         for (i = 0;  i < sizeof(type);  i++) {
@@ -477,9 +489,18 @@ do_load(int argc, char *argv[])
                 end = load_elf_image(redboot_getc);
             } else if ((type[0] == 'S') &&
                        ((type[1] >= '0') && (type[1] <= '9'))) {
-                end = load_srec_image(redboot_getc, base);
+		switch (mode) {
+		  case MODE_XMODEM:
+		  case MODE_YMODEM:
+		  case MODE_ZMODEM:
+                    end = load_srec_image(redboot_getc, xyzModem_stream_terminate, base);
+		    break;
+		  default:
+                    end = load_srec_image(redboot_getc, NULL, base);
+		    break;
+		}
             } else {
-                printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
+                diag_printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
             }
         }
     }

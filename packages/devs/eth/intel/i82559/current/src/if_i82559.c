@@ -114,6 +114,13 @@
 //               allocated chunk who appears to contain such a break, and
 //               tries again.
 //
+//               CYGHWR_DEVS_ETH_INTEL_I82559_RESET_TIMEOUT( int32 )
+//               CYGHWR_DEVS_ETH_INTEL_I82559_TIMEOUT_FIRED( int32 ) if
+//               both defined give the driver a means to detect that we
+//               have been fixated on the same transmit operation for too
+//               long - we missed an interrupt or the device crashed.  The
+//               int32 argument is used to hold a eg. the value of a
+//               fast-running hardware timer.
 //
 //        FIXME: replace -1/-2 return values with proper E-defines
 //        FIXME: For 82557/8 compatibility i82559_configure() function
@@ -143,8 +150,6 @@
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>
 #include <net/if.h>  /* Needed for struct ifnet */
-#else
-#define diag_printf printf
 #endif
 
 #ifdef CYGPKG_IO_PCI
@@ -214,7 +219,8 @@ static struct {
     int waitcmd_timeouts;
     int waitcmd_timeouts_cu;
     int lockup_timeouts;
-} missed_interrupt = { 0,0,0, 0,0, 0 };
+    int bad_cu_idles;
+} missed_interrupt = { 0,0,0, 0,0, 0, 0 };
 #endif
 
 #define os_printf diag_printf
@@ -853,6 +859,17 @@ static int
 write_enable_eeprom(long ioaddr,  int addr_len);
 #endif
 
+#ifdef CYGPKG_KERNEL
+#ifdef CYGPKG_NET
+#ifdef CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD
+
+static void
+starti82559ticklethread( void );
+
+#endif // CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD
+#endif // CYGPKG_NET
+#endif // CYGPKG_KERNEL
+
 // debugging/logging only:
 void dump_txcb(TxCB* p_txcb);
 void DisplayStatistics(void);
@@ -1295,6 +1312,15 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
 #endif
             return 0;
         }
+#ifdef CYGPKG_KERNEL
+#ifdef CYGPKG_NET
+#ifdef CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD
+
+        starti82559ticklethread();
+
+#endif // CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD
+#endif // CYGPKG_NET
+#endif // CYGPKG_KERNEL
     }
 
     // If this device is not present, exit
@@ -2034,7 +2060,16 @@ TxMachine(struct i82559* p_i82559)
         // start Tx operation
         wait_for_cmd_done(ioaddr, WAIT_CU);
         status = INW(ioaddr + SCBStatus);
-
+        // The following assert sometimes fires here, apparantly harmless!
+        // So check a second time to let the cursed thing settle and not
+        // tell us lies.
+        if ( 0 != (status & CU_STATUS_MASK) ) {
+#ifdef CYGDBG_USE_ASSERTS
+            missed_interrupt.bad_cu_idles++;
+#endif
+            wait_for_cmd_done(ioaddr, WAIT_CU);
+            status = INW(ioaddr + SCBStatus);
+        }
         CYG_ASSERT( ( 0 == (status & CU_STATUS_MASK)), "CU not idle");
         CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
         CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
@@ -3544,6 +3579,92 @@ update_statistics(struct i82559* p_i82559)
 }
 #endif
 #endif // KEEP_STATISTICS
+
+// ------------------------------------------------------------------------
+
+#ifdef CYGPKG_KERNEL
+#ifdef CYGPKG_NET
+#ifdef CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD
+
+// Then we create a thread to tickle the device(s) periodically
+// to unblock them when the hardware has become wedged.
+// 
+// This is not necessary if a networked app is running, provided that it
+// tries to "send stuff" itself from time to time - or uses TCP, or amy
+// similar protocol which exchanges "keep-alive" packets periodically and
+// often enough.
+
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL)
+static char i82559tickle_stack[STACK_SIZE];
+static cyg_thread i82559tickle_thread_data;
+static cyg_handle_t i82559tickle_thread_handle;
+
+static int
+Poll82559ForTxLockupTimeout( void )
+{
+    struct eth_drv_sc *sc;
+    struct cyg_netdevtab_entry *ndp;
+    struct i82559 *p_i82559;
+    int i;
+#ifdef CYGDBG_USE_ASSERTS
+    int lockto = missed_interrupt.lockup_timeouts;
+#endif
+    for ( i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++ ) {
+        p_i82559 = i82559_priv_array[i];
+        ndp = (struct cyg_netdevtab_entry *)(p_i82559->ndp);
+        sc = (struct eth_drv_sc *)(ndp->device_instance);
+        if ( p_i82559->active )
+            (void)i82559_can_send( sc ); // This is a neat way to advance
+    }
+    return 
+#ifdef CYGDBG_USE_ASSERTS
+        (missed_interrupt.lockup_timeouts - lockto)
+#endif
+        +0;
+}
+
+static void
+i82559tickle( cyg_addrword_t param )
+{
+    int spl, to;
+
+    while( 1 ) {
+        cyg_thread_delay(CYGNUM_DEVS_ETH_INTEL_I82559_TICKLE_THREAD_DELAY);
+
+        spl = splnet();
+        to = Poll82559ForTxLockupTimeout();
+        splx(spl);
+
+#ifdef DEBUG
+#ifdef CYGDBG_USE_ASSERTS
+        if ( to )
+            diag_printf( "###Lockup detected: %d this time, total %d\n",
+                         to, missed_interrupt.lockup_timeouts );
+#endif
+#endif
+    }
+}
+
+
+static void
+starti82559ticklethread( void )
+{
+    // Create background thread
+    cyg_thread_create(CYGNUM_DEVS_ETH_INTEL_I82559_TICKLE_THREAD_PRIORITY,
+                      i82559tickle,                 // entry
+                      0,                            // entry parameter
+                      "i82559 ethernet tickle",     // Name
+                      &i82559tickle_stack[0],       // Stack
+                      STACK_SIZE,                   // Size
+                      &i82559tickle_thread_handle,  // Handle
+                      &i82559tickle_thread_data     // Thread data structure
+        );
+    cyg_thread_resume(i82559tickle_thread_handle);    // Start it
+}
+
+#endif // CYGPKG_DEVS_ETH_INTEL_I82559_TICKLE_THREAD
+#endif // CYGPKG_NET
+#endif // CYGPKG_KERNEL
 
 // ------------------------------------------------------------------------
 

@@ -228,6 +228,7 @@ static void dp83902a_poll(struct eth_drv_sc *sc);
 #define DP_DCR         0x0e             // write
 #define DP_MISSED      0x0f
 #define DP_IMR         0x0f             // write
+#define DP_DATAPORT    0x10             // "eprom" data port
 
 #define DP_P1_CR       0x00
 #define DP_P1_PAR0     0x01

@@ -85,7 +85,7 @@ Cyg_Interrupt::Cyg_Interrupt(
     data        = d;
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
-    
+
     dsr_count   = 0;
     next_dsr    = NULL;
 
@@ -116,17 +116,17 @@ Cyg_Interrupt::~Cyg_Interrupt()
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
 
 Cyg_Interrupt *
-Cyg_Interrupt::dsr_table[CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE];
+Cyg_Interrupt::dsr_table[CYGNUM_KERNEL_CPU_MAX][CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE];
 
-cyg_ucount32 Cyg_Interrupt::dsr_table_head = 0;
+cyg_ucount32 Cyg_Interrupt::dsr_table_head[CYGNUM_KERNEL_CPU_MAX];
 
-volatile cyg_ucount32 Cyg_Interrupt::dsr_table_tail = 0;
+volatile cyg_ucount32 Cyg_Interrupt::dsr_table_tail[CYGNUM_KERNEL_CPU_MAX];
 
 #endif
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-Cyg_Interrupt* volatile Cyg_Interrupt::dsr_list = NULL;
+Cyg_Interrupt* volatile Cyg_Interrupt::dsr_list[CYGNUM_KERNEL_CPU_MAX];
 
 #endif
 
@@ -138,15 +138,17 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
 {
 //    CYG_REPORT_FUNCTION();
 
+    HAL_SMP_CPU_TYPE cpu = CYG_KERNEL_CPU_THIS();
+    
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE    
 
-    while( dsr_table_head != dsr_table_tail )
+    while( dsr_table_head[cpu] != dsr_table_tail[cpu] )
     {
-        Cyg_Interrupt *intr = dsr_table[dsr_table_head];
+        Cyg_Interrupt *intr = dsr_table[cpu][dsr_table_head[cpu]];
 
-        dsr_table_head++;
-        if( dsr_table_head >= CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE )
-            dsr_table_head = 0;
+        dsr_table_head[cpu]++;
+        if( dsr_table_head[cpu] >= CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE )
+            dsr_table_head[cpu] = 0;
 
         CYG_INSTRUMENT_INTR(CALL_DSR, intr->vector, 0);
         
@@ -159,7 +161,7 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-    while( dsr_list != NULL )
+    while( dsr_list[cpu] != NULL )
     {
         Cyg_Interrupt* intr;
         cyg_uint32 old_intr;
@@ -167,8 +169,8 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
         
         HAL_DISABLE_INTERRUPTS(old_intr);
         
-        intr = dsr_list;
-        dsr_list = intr->next_dsr;
+        intr = dsr_list[cpu];
+        dsr_list[cpu] = intr->next_dsr;
         count = intr->dsr_count;
         intr->dsr_count = 0;
         
@@ -211,7 +213,8 @@ void
 Cyg_Interrupt::post_dsr(void)
 {
 //    CYG_REPORT_FUNCTION();
-
+    HAL_SMP_CPU_TYPE cpu = CYG_KERNEL_CPU_THIS();
+    
     CYG_INSTRUMENT_INTR(POST_DSR, vector, 0);
 
     cyg_uint32 old_intr;
@@ -223,9 +226,9 @@ Cyg_Interrupt::post_dsr(void)
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
     
-    dsr_table[dsr_table_tail++] = this;
-    if( dsr_table_tail >= CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE )
-        dsr_table_tail = 0;
+    dsr_table[cpu][dsr_table_tail[cpu]++] = this;
+    if( dsr_table_tail[cpu] >= CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE )
+        dsr_table_tail[cpu] = 0;
 
 #endif
 
@@ -239,8 +242,8 @@ Cyg_Interrupt::post_dsr(void)
     
     if( dsr_count++ == 0 )
     {
-        next_dsr = dsr_list;
-        dsr_list = this;
+        next_dsr = dsr_list[cpu];
+        dsr_list[cpu] = this;
     }
     
 #endif
@@ -271,7 +274,7 @@ interrupt_end(
 {
 //    CYG_REPORT_FUNCTION();
 
-#ifdef CYGPKG_KERNEL_SMP_SUPPORT    
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
     Cyg_Scheduler::lock();
 #endif
     
@@ -708,7 +711,7 @@ Cyg_Interrupt::get_cpu(
     CYG_ASSERT( vector >= CYGNUM_HAL_ISR_MIN, "Invalid vector");    
     CYG_ASSERT( vector <= CYGNUM_HAL_ISR_MAX, "Invalid vector");
 
-    HAL_SMP_CPU_TYPE cpu;
+    HAL_SMP_CPU_TYPE cpu = 0;
     
     HAL_INTERRUPT_GET_CPU( vector, cpu );
 
