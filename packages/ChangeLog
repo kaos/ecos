@@ -1,3 +1,8 @@
+2003-08-22  Gary Thomas  <gary@mind.be>
+
+	* ecos.db: Add support for picasso - another NMI uEngine (PXA255)
+	based system.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: New packages:

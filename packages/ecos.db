@@ -3522,7 +3522,7 @@ The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
 }
 
- target e7t {
+target e7t {
 	alias { "ARM Evaluator7T board (AEB-2)" aeb2 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_E7T
@@ -4854,6 +4854,54 @@ target uE250 {
         description "
         The uE250 target provides the packages needed to run
         eCos on an NMI uEngine uE250 board."
+}
+
+# --------------------------------------------------------------------------
+
+package CYGPKG_DEVS_FLASH_PICASSO {
+	alias 		{ "FLASH memory support for picasso" flash_picasso }
+	directory	devs/flash/arm/picasso
+	script		flash_picasso.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the picasso platform."
+}
+
+package CYGPKG_DEVS_ETH_ARM_XSCALE_PICASSO {
+	alias 		{ "NMI picasso PCI ethernet driver" devs_eth_arm_picasso }
+	hardware
+	directory	devs/eth/arm/picasso
+	script		picasso_eth_drivers.cdl
+        description     "Ethernet driver for NMI picasso via PCI card."
+}
+
+package CYGPKG_HAL_ARM_XSCALE_PICASSO {
+	alias		{ "NMI uEngine picasso" hal_arm_xscale_picasso }
+	directory	hal/arm/xscale/picasso
+	script		hal_arm_xscale_picasso.cdl
+	hardware
+        description "
+        The PICASSO HAL package provides the support needed to run
+        eCos on an NMI uEngine u250 board."
+}
+
+target picasso {
+	alias { "NMI uEngine picasso Board" picasso picasso }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_XSCALE_CORE
+                   CYGPKG_HAL_ARM_XSCALE_PXA2X0
+                   CYGPKG_HAL_ARM_XSCALE_PICASSO
+                   CYGPKG_IO_PCI
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
+                   CYGPKG_DEVS_FLASH_STRATA
+                   CYGPKG_DEVS_FLASH_PICASSO
+                   CYGPKG_DEVS_ETH_NS_DP83902A
+                   CYGPKG_DEVS_ETH_ARM_XSCALE_PICASSO
+        }
+        description "
+        The picasso target provides the packages needed to run
+        eCos on an NMI uEngine picasso board."
 }
 
 # --------------------------------------------------------------------------
