@@ -70,7 +70,7 @@
 
 #include <cyg/kernel/sched.hxx>        // scheduler definitions
 #include <cyg/kernel/thread.hxx>       // thread definitions
-#include <cyg/kernel/mutex.hxx>        // mutex definitions
+#include <cyg/kernel/flag.hxx>         // flag definitions
 #include <cyg/kernel/clock.hxx>        // clock definitions
 
 #include <cyg/kernel/sched.inl>
@@ -84,22 +84,26 @@
 
 #define UNLOCK_FILE( fp ) cyg_file_unlock( fp )
 
+// Get a flag based on the thread's unique ID. Note: In a system with a large
+// number of threads, the same flag may be used by more than one thread.
+#define SELECT_WAIT_FLAG_GET() (1 << (Cyg_Thread::self()->get_unique_id() \
+                                & (sizeof (Cyg_FlagValue) * NBBY - 1)))
+
 //==========================================================================
 // Local variables
 
-// Mutex for serializing select processing. This essntially controls
-// access to the contents of the selinfo structures embedded in the
-// client system data structures.
-static Cyg_Mutex select_mutex CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
-
-// Condition variable where any thread that is waiting for a select to
-// fire is suspended. Note that select is not intended to be a real time
-// operation. Whenever any selectable event occurs, all selecting threads
-// will be resumed. They must then rescan their selectees and resuspend if
-// necessary.
-static Cyg_Condition_Variable CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS) selwait( select_mutex ) ;
-
 static volatile cyg_uint32 selwake_count = 0;
+
+// A flag is used to block a thread until data from the device is available. This
+// prevents all threads from waking up at the same time and polling for changes.
+// Each thread is allocated a flag bit via the SELECT_WAIT_FLAG_GET() macro when 
+// the thread registers for selection via cyg_selrecord (). The flag is stored in
+// the driver's select info block. Only those threads specified via the flags in 
+// the select info are woken up by cyg_selwakeup (). 
+// If there are more than 32 threads in the system, then there is a chance that
+// cyg_selwakeup () may wake up more than one thread. Each thread then polls for
+// changes.
+static Cyg_Flag select_flag CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO_FS);
 
 //==========================================================================
 // Timeval to ticks conversion support
@@ -152,7 +156,18 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
     cyg_tick_count ticks;
     int mode_type[] = {CYG_FREAD, CYG_FWRITE, 0};
     cyg_uint32 wake_count;
+#ifdef CYGPKG_POSIX
     sigset_t oldmask;
+#endif
+    Cyg_FlagValue myFlag = SELECT_WAIT_FLAG_GET ();
+    int    maxFdIndex = __howmany(nfd, __NFDBITS); // size of fd sets
+
+    // Make sure the nfd < FD_SETSIZE, a value greater than FD_SETSIZE 
+    // would break the results sets
+    if(nfd > FD_SETSIZE)
+    {
+        FILEIO_RETURN(EINVAL);
+    }
 
     FD_ZERO(&in_res);
     FD_ZERO(&out_res);
@@ -168,42 +183,45 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
         ticks = cyg_timeval_to_ticks( tv );
     else ticks = 0;
 
-    // Lock the mutex
-    select_mutex.lock();
-
     // Scan sets for possible I/O until something found, timeout or error.
     while (!error)
     {
         wake_count = selwake_count;
-        
+
         num = 0;  // Total file descriptors "ready"
         for (mode = 0;  !error && mode < 3;  mode++)
         {
-            if (selection[mode]) {
-                for (fd = 0;  !error && fd < nfd;  fd++)
+            if (selection[mode]) 
+            {
+                fd_mask *fds_bits = selection[mode]->fds_bits;
+                int      index, fdbase;
+                for(index = 0, fdbase = 0; !error && index < maxFdIndex; index++, fdbase += __NFDBITS)
                 {
-                    if (FD_ISSET(fd, selection[mode]))
+                    fd_mask mask = fds_bits[index];
+                    for(fd = fdbase; mask != 0; fd++, mask >>= 1)
                     {
-                        fp = cyg_fp_get( fd );
-                        if( fp == NULL )
+                        if(mask & 1)
                         {
-                            error = EBADF;
-                            break;
-                        }
+                            fp = cyg_fp_get( fd );
+                            if( fp == NULL )
+                            {
+                                error = EBADF;
+                                break;
+                            }
 
-                        if ((*fp->f_ops->fo_select)(fp, mode_type[mode], 0))
-                        {
-                            FD_SET(fd, result[mode]);
-                            num++;
+                            if ((*fp->f_ops->fo_select)(fp, mode_type[mode], 0))
+                            {
+                                FD_SET(fd, result[mode]);
+                                num++;
+                            }
+                            cyg_fp_free( fp );
                         }
-
-                        cyg_fp_free( fp );
                     }
                 }
             }
         }
 
-        if( error )
+        if (error)
             break;
         
         if (num)
@@ -212,7 +230,6 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
             if (in)  FD_COPY( &in_res, in );
             if (out) FD_COPY( &out_res, out );
             if (ex)  FD_COPY( &ex_res, ex );
-            select_mutex.unlock();
             CYG_FILEIO_DELIVER_SIGNALS( mask );
             FILEIO_RETURN_VALUE(num);
         }
@@ -257,7 +274,7 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
 
                     ticks += Cyg_Clock::real_time_clock->current_value();
                 
-                    if( !selwait.wait( ticks ) )
+                    if( !select_flag.wait (myFlag, Cyg_Flag::OR, ticks) )
                     {
                         // A non-standard wakeup, if the current time is equal to
                         // or past the timeout, return zero. Otherwise return
@@ -276,8 +293,7 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
                 else
                 {
                     // Wait forever (until something happens)
-            
-                    if( !selwait.wait() )
+                    if( !select_flag.wait (myFlag, Cyg_Flag::OR) )
                         error = EINTR;
                 }
             }
@@ -290,8 +306,6 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
         
     } // while(!error)
 
-    select_mutex.unlock();
- 
     // If the error code is EAGAIN, this means that a timeout has
     // happened. We return zero in that case, rather than a proper
     // error code.
@@ -350,46 +364,38 @@ pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
 void cyg_selinit( struct CYG_SELINFO_TAG *sip )
 {
     sip->si_info = 0;
-    sip->si_thread = 0;
+    sip->si_waitFlag = 0;
 }
 
 // -------------------------------------------------------------------------
 // cyg_selrecord() is called when a client device needs to register
-// the current thread for selection.
-
+// the current thread for selection. Save the flag that identifies the thread. 
 void cyg_selrecord( CYG_ADDRWORD info, struct CYG_SELINFO_TAG *sip )
 {
     sip->si_info = info;
-    sip->si_thread = (CYG_ADDRESS)Cyg_Thread::self();
+    Cyg_Scheduler::lock();
+    sip->si_waitFlag |= SELECT_WAIT_FLAG_GET ();
+    Cyg_Scheduler::unlock();    
 }
 
 // -------------------------------------------------------------------------
 // cyg_selwakeup() is called when the client device matches the select
-// criterion, and needs to wake up a selector.
-
+// criterion, and needs to wake up a thread.
 void cyg_selwakeup( struct CYG_SELINFO_TAG *sip )
 {
     // We don't actually use the si_info field of selinfo at present.
-    // A potential use would be to select one of several selwait condition
-    // variables to signal. However, that would only be necessary if we
-    // end up having lots of threads in select.
-
     Cyg_Scheduler::lock();
  
-    if( sip->si_thread != 0 )
+    if( sip->si_waitFlag != 0 )
     {
-        // If the thread pointer is still present, this selection has
-        // not been fired before. We just wake up all threads waiting,
-        // regardless of whether they are waiting for this event or
-        // not.  This avoids any race conditions, and is consistent
-        // with the behaviour of the BSD kernel.
-        
-        sip->si_thread = 0;
-        selwait.broadcast();
+        // If the flag is still present, this selection has not fired before. 
+        // Only wake up the threads waiting on the flags specified in si_waitFlag. 
+        // There is no need to wake threads that are not waiting for this data.
+        select_flag.setbits (sip->si_waitFlag); 
+        sip->si_waitFlag = 0;     // clear all flags
+        select_flag.maskbits (sip->si_waitFlag); 
         selwake_count++;
-
     }
-
     Cyg_Scheduler::unlock();    
 }
 

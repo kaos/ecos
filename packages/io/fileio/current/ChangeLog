@@ -1,3 +1,12 @@
+2004-12-01  Alex Paulis and Cameron Taylor  <ctaylor@waverider.com>
+
+	* include/fileio.h: Changed si_thread to si_waitFlag
+	* src/select.cxx: Improved efficiency: 1. Only threads waiting
+	on a selector are woken up in selwake. This is done by swapping
+	the condition variable for an event flag and registering threads
+	for wakeup in selrecord. 2. No mutex is now required. 3. Search
+	through the FD mask much streamlined.
+ 
 2004-11-17  Jani Monoses <jani@iv.ro>
 
 	* tests/socket.c: Allow building without kernel config.

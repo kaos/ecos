@@ -63,6 +63,7 @@
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_tables.h>
+#include <cyg/kernel/kapi.h>
 
 #include <stddef.h>             // NULL, size_t
 #include <limits.h>
@@ -400,7 +401,7 @@ __externC int cyg_fs_fsetinfo( int fd, int key, void *buf, int len );
 struct CYG_SELINFO_TAG
 {
     CYG_ADDRWORD        si_info;        // info passed through from fo_select()
-    CYG_ADDRESS         si_thread;      // selecting thread pointer
+    cyg_flag_value_t    si_waitFlag;    // select wait flags
 };
 
 //-----------------------------------------------------------------------------
