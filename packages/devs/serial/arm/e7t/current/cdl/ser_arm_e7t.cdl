@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_ARM_E7T {
     description   "
            This package contains serial device drivers for the
            ARM AEB-2 (E7T)."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   e7t_serial.c
 
