@@ -56,6 +56,7 @@
 
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 
+#include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_io.h>             // IO register access
 #include <cyg/hal/mod_regs_wdt.h>       // watchdog register definitions
 
@@ -90,8 +91,7 @@ Cyg_Watchdog::start()
     HAL_WRITE_UINT16(CYGARC_TCSR,CYGARC_TCNT_MAGIC);
     //Start WDT
     HAL_WRITE_UINT16(CYGARC_TCSR,CYGARC_TCSR_MAGIC|
-                                 CYGARC_WDT_WT|CYGARC_WDT_TME|CYGARC_WDT_CKS);
-    
+		     CYGARC_WDT_WT|CYGARC_WDT_TME|CYGARC_WDT_CKS);
     CYG_REPORT_RETURN();
 }
 

@@ -1,3 +1,7 @@
+2005-01-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/watchdog_h8300.cxx: add include header
+
 2002-08-14  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 
 	* New package.
