@@ -1720,7 +1720,8 @@ i82559_stop( struct eth_drv_sc *sc )
 
 #ifdef DEBUG_82559
 	os_printf("Stop: TxDone %d %x: KEY %x TxCB %x\n",
-		  p_i82559->index, (int)p_i82559, key, p_txcb );
+		  p_i82559->index, (int)p_i82559, key, 
+                  p_i82559->tx_ring[ tx_descriptor_remove ]);
 #endif
 	// tx_done() can now cope with a NULL key, no guard needed here
 	(sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ );
@@ -2773,6 +2774,10 @@ pci_init_find_82559s( void )
     int device_index;
     int found_devices = 0;
 
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
+    static cyg_handle_t mux_interrupt_handle = 0;
+ #endif
+
 #ifdef DEBUG
     db_printf("pci_init_find_82559s()\n");
 #endif
@@ -2849,7 +2854,6 @@ pci_init_find_82559s( void )
                 // with a rotation of interrupt lines in the different
                 // slots.
                 {
-                    static cyg_handle_t mux_interrupt_handle = 0;
                     static cyg_interrupt mux_interrupt_object;
 
                     if ( ! mux_interrupt_handle ) {

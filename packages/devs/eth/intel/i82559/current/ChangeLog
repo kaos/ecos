@@ -1,3 +1,10 @@
+2002-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/if_i82559.c (pci_init_find_82559s): Changed scope of 
+	max_interrupt_handle since its needed in other places.
+	* src/if_i82559.c (i82559_stop): Corrected wrong name of variable
+	in a diag_printf function.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_i82559.c: 
