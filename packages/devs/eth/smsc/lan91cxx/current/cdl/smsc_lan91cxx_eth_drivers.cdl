@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2004 Andrew Lunn
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -76,6 +77,17 @@ cdl_package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
 	    into the EEPROM associated with the interface, so that the new
 	    MAC address is permanently recorded.  Doing this should be a
 	    carefully chosen decision, hence this option."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_SMSC_LAN91CXX_INT_PRIO {
+        display "Interrupt priority when registering interrupt handler"
+        flavor  data
+        default_value 3
+        description "
+            When registering the interrupt handler this specifies the 
+            priority of the interrupt. Some hardware platforms require
+            values other than the default given here. Such platforms
+            can then override this value in the hardware specific package. "
     }
 
     cdl_interface CYGINT_DEVS_ETH_SMSC_LAN91CXX_STATIC_ESA {

@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Nick Garnett 
+// Copyright (C) 2004 Andrew Lunn
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -288,7 +289,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
 #ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
-                             3, // Priority - what goes here?
+                             CYGNUM_DEVS_ETH_SMSC_LAN91CXX_INT_PRIO,
                              (cyg_addrword_t)sc, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)lan91cxx_isr,
                              (cyg_DSR_t *)eth_drv_dsr, // The logical driver DSR
