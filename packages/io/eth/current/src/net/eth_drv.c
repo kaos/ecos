@@ -410,8 +410,15 @@ static void
 eth_drv_start(struct eth_drv_sc *sc)
 {
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+    int s;
     // Perform any hardware initialization
     (sc->funs->start)(sc, (unsigned char *)&sc->sc_arpcom.ac_enaddr, 0);
+    // resend multicast addresses if present
+    if(ifp->if_multiaddrs.lh_first && ifp->if_ioctl) {
+      	s = splimp();
+	ifp->if_ioctl(ifp, SIOCADDMULTI, 0);
+	splx(s);
+    }
     // Set 'running' flag, and clear output active flag.
     ifp->if_flags |= IFF_RUNNING;
     ifp->if_flags &= ~IFF_OACTIVE;

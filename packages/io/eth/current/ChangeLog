@@ -1,3 +1,9 @@
+2002-07-26  Gary Thomas  <gary@chez-thomas.org>
+2002-07-26  Ken Cox <jkc@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_start): Force multicast address
+	setup any time chip is reset/reconfigured.
+
 2002-05-30  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/eth_drivers.cdl: Provide CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
