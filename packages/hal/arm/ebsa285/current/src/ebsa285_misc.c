@@ -69,7 +69,7 @@
 
 #include <cyg/infra/diag.h>             // diag_printf
 
-externC void* memset( void *, int, size_t );
+#include <string.h> // memset
 
 /*
  * Toggle LED for debugging purposes.
