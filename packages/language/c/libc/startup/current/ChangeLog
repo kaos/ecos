@@ -1,3 +1,15 @@
+2000-12-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/startup.cdl: Allow others to say whether main() can be invoked
+	elsewhere.
+	Use defaults for startup context implementor using above interface
+	rather than POSIX pthread package.
+	Allow main() stack to be visible for other implementors, except
+	when called from the init context since the stack size isn't used
+	there, or when the implementation says it doesn't use it.
+	Define an interface to express that the stack size option
+	isn't used in such cases.
+	
 2000-10-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/startup.cdl (CYGSEM_LIBC_INVOKE_DEFAULT_STATIC_CONSTRUCTORS):

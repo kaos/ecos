@@ -120,6 +120,28 @@ cdl_component CYGFUN_KERNEL_THREADS_STACK_CHECKING {
     }
 }
 
+cdl_component CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT {
+    display            "Measure stack usage"
+    default_value      { 0 != CYGPKG_INFRA_DEBUG }
+    description "
+        This option allows measurement of each thread's stack by initializing
+        it to a predefined value at thread creation time. Later use of the
+	cyg_thread_measure_stack_usage() function allows the maximum stack
+	usage of the thread so far to be obtained. Note that this is not
+	necessarily the true maximum stack usage that the thread will ever
+	use since all that has been measured is the stack usage corresponding
+	to the code path followed this time, and not the code path that may
+	be followed in future."
+
+    cdl_option CYGDBG_KERNEL_THREADS_STACK_MEASUREMENT_VERBOSE_EXIT {
+	display        "Output stack usage on thread exit"
+        default_value  0
+        description    "
+            This will output the measured stack usage on the diagnostic
+            output when a thread exits."
+    }
+}
+
 cdl_component CYGVAR_KERNEL_THREADS_DATA {
     display            "Support for per-thread data"
     requires           CYGFUN_KERNEL_THREADS_STACK_LIMIT

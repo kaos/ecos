@@ -170,6 +170,15 @@ cdl_package CYGPKG_REDBOOT {
               multiple of the FLASH erase block size."
         }
 
+        cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {
+            display       "Offset from start of FLASH to RedBoot boot image"
+            flavor        data
+            default_value 0
+            description "
+              This option controls where the RedBoot boot image is located
+              relative to the start of FLASH."
+        }
+
         cdl_option CYGSEM_REDBOOT_FLASH_CONFIG {
             display       "Keep RedBoot configuration data in FLASH"
             flavor        bool

@@ -176,6 +176,7 @@ package CYGPKG_DEVS_FLASH_MBX {
 	   on the Motorola PowerPC/860 MBX platform."
 }
 
+
 package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     alias 	      { "Intel EBSA285 serial driver"
                         devs_serial_arm_ebsa285 ebsa285_serial_driver }
@@ -446,6 +447,7 @@ package CYGPKG_DEVS_ETH_POWERPC_QUICC {
 	script		quicc_eth_drivers.cdl
         description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
 }
+
 
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned

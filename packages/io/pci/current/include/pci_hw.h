@@ -69,6 +69,16 @@
 #define CYG_PCI_DEV_GET_DEV(__devfn) ((__devfn>>3)&0x1f)
 #define CYG_PCI_DEV_GET_FN(__devfn) (__devfn&0x7)
 
+// Some buggy PCI chips force us to ignore certain devices so that
+// they may be handled specially.
+#ifdef HAL_PCI_IGNORE_DEVICE
+#define CYG_PCI_IGNORE_DEVICE(__bus, __dev, __fn) \
+            HAL_PCI_IGNORE_DEVICE((__bus), (__dev), (__fn))
+#else
+#define CYG_PCI_IGNORE_DEVICE(__bus, __dev, __fn) 0
+#endif
+
+
 // Init
 externC void cyg_pcihw_init(void);
 
@@ -97,3 +107,4 @@ externC cyg_bool cyg_pcihw_translate_interrupt( cyg_uint8 bus, cyg_uint8 devfn,
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_PCI_HW_H
 // End of pci_hw.h
+

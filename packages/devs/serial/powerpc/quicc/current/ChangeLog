@@ -1,3 +1,10 @@
+2000-12-22  Björn Stenberg <bjorn@haxx.se>
+
+	* src/quicc_smc_serial.c (quicc_smc_serial_init_info): 
+	Set quicc going only after most of the other initialization is
+	complete - otherwise initializing too early causes some of the
+	parameters not to be initialized properly.
+
 2000-12-13  Daniel Lind <daniel.lind@sth.frontec.se>
 
 	* src/quicc_smc_serial.c (quicc_smc_serial_flush): 

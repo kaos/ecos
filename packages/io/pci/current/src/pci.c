@@ -448,6 +448,10 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
         for (;dev < CYG_PCI_MAX_DEV; dev++, fn=0) {
             for (;fn < CYG_PCI_MAX_FN; fn++) {
                 cyg_uint16 vendor;
+
+		if (CYG_PCI_IGNORE_DEVICE(bus, dev, fn))
+		    continue;
+
                 devfn = CYG_PCI_DEV_MAKE_DEVFN(dev, fn);
                 cyg_pcihw_read_config_uint16(bus, devfn,
                                              CYG_PCI_CFG_VENDOR, &vendor);
@@ -523,6 +527,44 @@ cyg_pci_find_class( cyg_uint32 dev_class, cyg_pci_device_id *devid )
         c >>= 8;
         if (c == dev_class)
             return true;
+    }
+
+    return false;
+}
+
+cyg_bool
+cyg_pci_find_matching( cyg_pci_match_func *matchp, 
+                       void * match_callback_data,
+                       cyg_pci_device_id *devid )
+{
+    cyg_pci_device_id new_devid = *devid;
+
+#ifdef CYGPKG_IO_PCI_DEBUG
+    printf("cyg_pci_find_matching - func is at %x\n", (unsigned int)matchp);
+#endif
+    // Scan entire bus, check for matches on valid devices.
+    while (cyg_pci_find_next(new_devid, &new_devid)) {
+        cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(new_devid);
+        cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(new_devid);
+        cyg_uint16 v, d;
+        cyg_uint32 c;
+
+        // Check that vendor, device and class match.
+        cyg_pcihw_read_config_uint16(bus, devfn,
+                                     CYG_PCI_CFG_VENDOR, &v);
+        cyg_pcihw_read_config_uint16(bus, devfn,
+                                     CYG_PCI_CFG_DEVICE, &d);
+        cyg_pcihw_read_config_uint32(bus, devfn,
+                                     CYG_PCI_CFG_CLASS_REV, &c);
+        c >>= 8;
+#ifdef CYGPKG_IO_PCI_DEBUG
+        printf("... PCI vendor = %x, device = %x, class %x\n", v, d, c);
+#endif
+        // Check that device matches as the caller desires:
+        if ( (*matchp)(v, d, c, match_callback_data) ) {
+            *devid = new_devid;
+            return true;
+        }
     }
 
     return false;

@@ -377,10 +377,11 @@ void hal_delay_us(cyg_int32 usecs)
 {
     int diff, diff2;
     cyg_uint32 val1, val2;
+
     while (usecs-- > 0) {
         diff = 0;
+        val1 = *SA110_TIMER3_VALUE;
         while (diff < 3) {
-            val1 = *SA110_TIMER3_VALUE;
             while ((val2 = *SA110_TIMER3_VALUE) == val1) ;
             if (*SA110_TIMER3_LOAD) {
                 // A kernel is running, the counter may get reset as we watch

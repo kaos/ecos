@@ -556,7 +556,9 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRESS key, int status)
 {
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
     struct mbuf *m0 = (struct mbuf *)key;
+
     // Check for errors here (via 'status')
+    ifp->if_opackets++;
     // Done with packet
     mbuf_key = m0;
     m_freem(m0);

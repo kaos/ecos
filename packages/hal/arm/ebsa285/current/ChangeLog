@@ -1,3 +1,8 @@
+2001-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ebsa285_misc.c (hal_delay_us): Slight rearrangement to
+	ensure this works properly on all speeds of platform.
+
 2000-12-11  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_ebsa285.cdl: 

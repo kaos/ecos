@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -181,7 +181,7 @@ fis_init(int argc, char *argv[])
 #endif
     bool full_init = false;
     struct option_info opts[1];
-    unsigned long redboot_image_size;
+    unsigned long redboot_image_size, redboot_flash_start;
 
     init_opts(&opts[0], 'f', false, OPTION_ARG_TYPE_FLG, 
               (void **)&full_init, (bool *)0, "full initialization, erases all of flash");
@@ -195,29 +195,57 @@ fis_init(int argc, char *argv[])
         return;
     }
     printf("*** Initialize FLASH Image System\n");
+
+    redboot_flash_start = (unsigned long)flash_start + CYGBLD_REDBOOT_FLASH_BOOT_OFFSET;
+#define MIN_REDBOOT_IMAGE_SIZE CYGBLD_REDBOOT_MIN_IMAGE_SIZE
+    redboot_image_size = block_size > MIN_REDBOOT_IMAGE_SIZE ? block_size : MIN_REDBOOT_IMAGE_SIZE;
+
     if (full_init) {
-        if ((stat = flash_erase((void *)((unsigned long)flash_start+(2*block_size)), 
-                                (blocks-4)*block_size, (void **)&err_addr)) != 0) {
-            printf("   initialization failed %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
-        }
+	// Erase everything except default RedBoot images, fis block, and config block.
+	// FIXME! This still assumes that fis and config blocks can use top of FLASH.
+	if (CYGBLD_REDBOOT_FLASH_BOOT_OFFSET == 0) {
+	    if ((stat = flash_erase((void *)((unsigned long)flash_start+(2*redboot_image_size)), 
+				    ((blocks-2)*block_size) - (2*redboot_image_size),
+				    (void **)&err_addr)) != 0) {
+		printf("   initialization failed %p: 0x%x(%s)\n",
+		       err_addr, stat, flash_errmsg(stat));
+	    }
+	} else {
+	    if ((stat = flash_erase(flash_start, CYGBLD_REDBOOT_FLASH_BOOT_OFFSET, 
+				    (void **)&err_addr)) != 0) {
+		printf("   initialization failed %p: 0x%x(%s)\n",
+		       err_addr, stat, flash_errmsg(stat));
+	    } else {
+		unsigned long erase_start, erase_size;
+
+		erase_start = redboot_flash_start+(2*redboot_image_size);
+		erase_size = (blocks-2)*block_size;
+		erase_size -= erase_start - (unsigned long)flash_start;
+
+		if (erase_size && (stat = flash_erase((void *)erase_start, erase_size,
+						      (void **)&err_addr)) != 0) {
+		    printf("   initialization failed %p: 0x%x(%s)\n",
+			   err_addr, stat, flash_errmsg(stat));
+		}
+	    }
+	}
+
     } else {
         printf("    Warning: device contents not erased, some blocks may not be usable\n");
     }
     // Create a pseudo image for RedBoot
-#define MIN_REDBOOT_IMAGE_SIZE CYGBLD_REDBOOT_MIN_IMAGE_SIZE
-    redboot_image_size = block_size > MIN_REDBOOT_IMAGE_SIZE ? block_size : MIN_REDBOOT_IMAGE_SIZE;
     img = (struct fis_image_desc *)fis_work_block;
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot");
-    img->flash_base = (unsigned long)flash_start;
-    img->mem_base = (unsigned long)flash_start;
+    img->flash_base = redboot_flash_start;
+    img->mem_base = redboot_flash_start;
     img->size = redboot_image_size;
     img++;  img_count++;
     // And a backup image
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot[backup]");
-    img->flash_base = (unsigned long)flash_start+redboot_image_size;
-    img->mem_base = (unsigned long)flash_start+redboot_image_size;
+    img->flash_base = redboot_flash_start+redboot_image_size;
+    img->mem_base = redboot_flash_start+redboot_image_size;
     img->size = redboot_image_size;
     img++;  img_count++;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
@@ -557,7 +585,7 @@ fis_erase(int argc, char *argv[])
     }
     // Safety check - make sure the address range is not within the code we're running
     if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+length-1))) {
-        printf("Can't program this region - contains code in use!\n");
+        printf("Can't erase this region - contains code in use!\n");
         return;
     }
     if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {

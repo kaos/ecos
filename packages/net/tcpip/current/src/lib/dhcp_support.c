@@ -60,10 +60,10 @@ cyg_uint8   eth1_dhcpstate = 0;
 cyg_sem_t dhcp_needs_attention;
 
 #ifdef CYGHWR_NET_DRIVER_ETH0
-struct dhcp_lease eth0_lease = { 0,0,0,0 };
+struct dhcp_lease eth0_lease = { &dhcp_needs_attention, 0,0,0,0,0,0 };
 #endif
 #ifdef CYGHWR_NET_DRIVER_ETH1
-struct dhcp_lease eth1_lease = { 0,0,0,0 };
+struct dhcp_lease eth1_lease = { &dhcp_needs_attention, 0,0,0,0,0,0 };
 #endif
 
 // ---------------------------------------------------------------------------

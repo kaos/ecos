@@ -277,6 +277,12 @@ externC cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread)
     return ((Cyg_Thread *)thread)->get_stack_size();
 }
 
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+externC cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread)
+{
+    return ((Cyg_Thread *)thread)->measure_stack_usage();
+}
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Per-thread data                                                           */

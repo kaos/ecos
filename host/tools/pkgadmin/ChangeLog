@@ -1,3 +1,10 @@
+2000-12-15  Julian Smart  <julians@redhat.com>
+
+	* win32/PkgAdminDlg.cpp:
+
+	Provide dummy error and warning handlers for
+    CdlPackagesDatabaseBody::make or it asserts in debug mode.
+
 2000-06-15  John Dallaway  <jld@redhat.com>
 
 	* win32/PkgAdmin.dsp:

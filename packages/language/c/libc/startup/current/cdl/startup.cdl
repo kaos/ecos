@@ -68,6 +68,13 @@ cdl_package CYGPKG_LIBC_STARTUP {
 
 # ====================================================================
 
+    cdl_interface CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE {
+        display       "main() can be invoked elsewhere"
+        description   "Implementors of this interface show that they
+                       allow main() to be invoked elsewhere."
+        flavor        bool
+        no_define
+    }
 
     cdl_option CYGDAT_LIBC_ARGUMENTS {
         display       "Arguments to main()"
@@ -97,6 +104,7 @@ cdl_package CYGPKG_LIBC_STARTUP {
 
         cdl_interface CYGINT_LIBC_STARTUP_CONTEXT {
             display       "Startup context implementors"
+            no_define
         }
 
 
@@ -116,21 +124,24 @@ cdl_package CYGPKG_LIBC_STARTUP {
                            re-entrant functions from within main() in
                            this case."
             flavor        bool
-            default_value { 0 == CYGPKG_KERNEL && 0 == CYGPKG_POSIX_PTHREAD }
+            default_value { 0 == CYGPKG_KERNEL && 0 == 
+                            CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE }
             implements    CYGINT_LIBC_STARTUP_CONTEXT
+            implements    CYGINT_LIBC_STARTUP_MAIN_NO_STACK_SIZE
         }
 
         cdl_component CYGSEM_LIBC_STARTUP_MAIN_THREAD {
             display       "Invoked as eCos thread"
             requires      CYGPKG_KERNEL
             flavor        bool
-            default_value { 0 != CYGPKG_KERNEL && 0 == CYGPKG_POSIX_PTHREAD }
+            default_value { 0 != CYGPKG_KERNEL && 0 == \
+                            CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE }
             implements    CYGINT_LIBC_STARTUP_CONTEXT
             description   "
                 With this option selected, main() is invoked from an eCos
                 thread."
         
-            cdl_component CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM {
+            cdl_option CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM {
                 display        "System provides stack for main()'s thread"
                 description    "
                     This option controls whether the stack of
@@ -145,24 +156,6 @@ cdl_package CYGPKG_LIBC_STARTUP {
                     This must be a multiple of 8."
                 flavor         bool
                 default_value  1
-        
-                cdl_option CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE {
-                    display        "main()'s default thread stack size"
-                    flavor         data
-                    legal_values   16 to 0x7fffffff
-                    default_value  8192
-                    description    "
-                        With an eCos kernel, when the cyg_iso_c_start()
-                        function is used to invoke the user-supplied
-                        main() function in an ISO C compatible fashion,
-                        a separate thread is created to call main().
-                        This option controls the size of that thread's
-                        stack, which is allocated in the BSS. It
-                        must be a multiple of 8. Note, a low number
-                        here may be overriden by the HAL if there is
-                        a minimum requirement to process interrupts
-                        etc."
-                }
             }
 
             cdl_option CYGNUM_LIBC_MAIN_THREAD_PRIORITY {
@@ -185,11 +178,45 @@ cdl_package CYGPKG_LIBC_STARTUP {
             description   "With this option selected, main() must be
                            invoked by a separate package, or by the user."
             flavor        bool
-            default_value { 0 != CYGPKG_POSIX_PTHREAD }
+            default_value { 0 != \
+                            CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE }
+            requires      CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE
             implements    CYGINT_LIBC_STARTUP_CONTEXT
         }
     }
     
+    cdl_interface CYGINT_LIBC_STARTUP_MAIN_NO_STACK_SIZE {
+        display        "Don't allow main()'s stack size to be set"
+        description    "This interface describes whether the stack size
+                        value set in this package is supported by the
+                        implementation that invokes main. If not, that
+                        option is disabled."
+        flavor         bool
+        no_define
+    }
+        
+    cdl_option CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE {
+        display        "main()'s default thread stack size"
+        flavor         data
+        legal_values   16 to 0x7fffffff
+        default_value  8192
+        active_if      !CYGINT_LIBC_STARTUP_MAIN_NO_STACK_SIZE
+        description    "
+            This option sets the size of the stack used
+            in the context that invokes main(). For example,
+            with an eCos kernel, when the cyg_iso_c_start()
+            function is used to invoke the user-supplied
+            main() function in an ISO C compatible fashion,
+            a separate thread is created to call main().
+            This option controls the size of that thread's
+            stack, which is allocated in the BSS. It
+            must be a multiple of 8. Note, a low number
+            here may be overriden by the HAL if there is
+            a minimum requirement to process interrupts
+            etc. This option cannot be set if the implementation
+            that invokes main() does not use it."
+    }
+
     cdl_component CYGFUN_LIBC_ATEXIT {
         display        "Include atexit() function"
         flavor         bool

@@ -113,9 +113,11 @@ extern cyg_uint8   eth0_dhcpstate;
 extern cyg_uint8   eth1_dhcpstate;
 #endif
 
-// This is public so the app wait on it or poll it when managing DHCP
+// This is public so the app can wait on it or poll it when managing DHCP
 // itself.  It will be zero while the app should wait, and posted when a
-// call to do_dhcp() is needed.
+// call to do_dhcp() is needed.  If, instead, the app wishes to manage DHCP
+// with a thread per interface somehow, then separate semaphores may be used.
+// See the dhcp_lease structure definition below.
 extern cyg_sem_t dhcp_needs_attention;
 
 // This routine is used at startup time, and after relinquishing leases or
@@ -220,13 +222,20 @@ extern void dhcp_mgt_entry( cyg_addrword_t loop_on_failure ); // the function
 #define DHCP_LEASE_EX 4
 
 struct dhcp_lease {
+    // Client settable: Semaphore to signal when attention is needed:
+    cyg_sem_t          *needs_attention;
+    // Initialize all the rest to zero:
     cyg_tick_count_t    t1, t2, expiry;
     volatile cyg_uint8  next;
     volatile cyg_uint8  which;
     cyg_handle_t        alarm;
+    // except this one, which is just some space:
     cyg_alarm           alarm_obj;
 };
 
+// These dhcp_lease objects are initialized to use
+//         extern cyg_sem_t dhcp_needs_attention;
+// for the semaphore.
 #ifdef CYGHWR_NET_DRIVER_ETH0
 extern struct dhcp_lease eth0_lease;
 #endif

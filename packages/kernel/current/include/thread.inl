@@ -86,10 +86,10 @@ inline void Cyg_HardwareThread::check_stack(void)
     cyg_uint32 sig = (cyg_uint32)this;
     cyg_uint32 *base = (cyg_uint32 *)get_stack_base();
     cyg_uint32 *top =  (cyg_uint32 *)(stack_base + stack_size);
-    unsigned int i;
+    cyg_ucount32 i;
 
-    CYG_ASSERT( 0 == (3 & (cyg_uint32)base), "stack base not word aligned" );
-    CYG_ASSERT( 0 == (3 & (cyg_uint32)top),  "stack  top not word aligned" );
+    CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)base), "stack base not word aligned" );
+    CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)top),  "stack  top not word aligned" );
 
     CYG_ASSERT( (cyg_uint32)stack_ptr > (cyg_uint32)stack_base,
                 "Stack_ptr below base" );
@@ -102,6 +102,47 @@ inline void Cyg_HardwareThread::check_stack(void)
         CYG_ASSERT( (sig ^ (i * 0x01010101)) == base[i], "Stack base corrupt" );
         CYG_ASSERT( (sig ^ (i * 0x10101010)) ==  top[i], "Stack top corrupt"  );
     }            
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
+    // we won't have added check data above the stack limit if it hasn't
+    // been incremented
+    if (stack_limit != stack_base) {
+        CYG_ADDRESS limit = stack_limit;
+        // the limit will be off by the check data size, so lets correct it
+        limit -= CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+        
+        // determine base of check data by rounding up to nearest word aligned
+        // address if not already aligned
+        cyg_uint32 *p = (cyg_uint32 *)((limit + 3) & ~3);
+        // i.e. + sizeof(cyg_uint32)-1) & ~(sizeof(cyg_uint32)-1);
+        
+        for ( i = 0;
+              i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
+              i++ ) {
+            CYG_ASSERT( (sig ^ (i * 0x01010101)) == p[i],
+                        "Gap between stack limit and base corrupt" );
+        }
+    }
+#endif
+}
+#endif
+
+// -------------------------------------------------------------------------
+// Measure the stack usage of the thread
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+inline cyg_uint32 Cyg_HardwareThread::measure_stack_usage(void)
+{
+    CYG_WORD *base = (CYG_WORD *)stack_base;
+    cyg_uint32 size = stack_size/sizeof(CYG_WORD);
+    cyg_ucount32 i;
+
+    // Work up the stack comparing with the preset value
+    // We assume the stack grows downwards, hmm...
+    for (i=0; i<size; i++) {
+	if (base[i] != 0xDEADBEEF)
+	  break;
+    }
+    return (size - i)*sizeof(CYG_WORD);
 }
 #endif
 
@@ -124,8 +165,8 @@ inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_si
 
         unsigned int i;
 
-        CYG_ASSERT( 0 == (3 & (cyg_uint32)base), "stack base alignment" );
-        CYG_ASSERT( 0 == (3 & (cyg_uint32)top),  "stack  top alignment" );
+        CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)base), "stack base alignment" );
+        CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)top),  "stack  top alignment" );
 
         for ( i = 0;
               i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
@@ -145,7 +186,24 @@ inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_si
                     "Stack size too small after allocating checking buffer");
     }
 #endif
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+    {
+	CYG_WORD *base = (CYG_WORD *)s_base;
+	cyg_uint32 size = s_size/sizeof(CYG_WORD);
+	cyg_ucount32 i;
 
+	// initialize all of stack with known value - don't choose 0
+	// could do with pseudo value as above, but this way, checking
+	// is faster
+	for (i=0; i<size; i++) {
+		base[i] = 0xDEADBEEF;
+	}
+	// Don't bother about the case when the stack isn't a multiple of
+	// CYG_WORD in size. Since it's at the top of the stack, it will
+	// almost certainly be overwritten the instant the thread starts
+	// anyway.
+    }
+#endif
     stack_base = s_base;
     stack_size = s_size;
 #ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
@@ -269,12 +327,15 @@ inline CYG_ADDRWORD Cyg_HardwareThread::get_entry_data()
 
 #ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
 
-inline void *Cyg_HardwareThread::increment_stack_limit( cyg_ucount32 size)
+#ifndef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+// if stack checking, implementation is in thread.cxx
+inline void *Cyg_HardwareThread::increment_stack_limit( cyg_ucount32 size )
 {
+    void *ret = (void *)stack_limit;
     stack_limit += size;
-    return (void *)(stack_limit - size);
+    return ret;
 }
-
+#endif
     
 inline CYG_ADDRESS
 Cyg_HardwareThread::get_stack_limit()

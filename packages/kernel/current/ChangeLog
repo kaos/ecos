@@ -1,3 +1,30 @@
+2000-12-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/thread.inl (check_stack): check word alignment with CYG_WORD
+	not cyg_uint32
+	Add extra stack checking for when stack limits are used.
+	(measure_stack_usage): New function to measure stack usage of the thread
+	(attach_stack): check word alignment with CYG_WORD not cyg_uint32
+	Initialize stack to preset value when measuring stack usage
+	(increment_stack_limit): Conditionalize here wrt 
+	CYGFUN_KERNEL_THREADS_STACK_CHECKING and use the version in thread.cxx
+	instead if CYGFUN_KERNEL_THREADS_STACK_CHECKING is defined.
+
+	* src/common/thread.cxx (exit): If verbose stack measurement enabled,
+	output stack usage
+	(increment_stack_limit): Add version of this method when
+	CYGFUN_KERNEL_THREADS_STACK_CHECKING *is* defined. This will add
+	padding above the stack limit as necessary.
+
+	* include/thread.hxx (class Cyg_HardwareThread): Add
+	measure_stack_usage() member
+
+	* cdl/thread.cdl (CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT):
+	Add to implement stack usage measurement.
+
+	* include/kapi.h (cyg_thread_measure_stack_usage): New function
+	* src/common/kapi.cxx (cyg_thread_measure_stack_usage): New function
+
 2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/thread.cdl (CYGFUN_KERNEL_ALL_THREADS_STACK_CHECKING): 

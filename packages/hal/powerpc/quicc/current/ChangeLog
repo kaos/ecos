@@ -1,3 +1,7 @@
+2001-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* include/ppc8xx.h: Layout of I2C and IDMA was [slightly] wrong.
+
 2000-08-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/quicc_smc1.c (cyg_hal_plf_serial_init_channel): Move all

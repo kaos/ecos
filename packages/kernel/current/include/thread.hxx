@@ -162,6 +162,11 @@ public:
     inline void check_stack(void);
 
 #endif
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+
+    inline cyg_uint32 measure_stack_usage(void);
+
+#endif
 };
 
 // -------------------------------------------------------------------------

@@ -1,3 +1,24 @@
+2001-01-03  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/linux_echo.c: New file to test for network bandwidth
+	limitations in host side.  Builds to a linux version of the
+	tcp_echo middleman.
+
+	* tests/make.linux (all): Build linux_echo.
+
+2001-01-03  Hugo Tyson  <hmt@redhat.com>
+
+	* include/dhcp.h (struct dhcp_lease): Define the semaphore pointer
+	field in each lease structure.
+
+	* src/lib/dhcp_support.c: Initialize the dhcp_lease structs to
+	point to the semaphore "dhcp_needs_attention".
+
+	* src/lib/dhcp_prot.c (alarm_function): Post to the semaphore
+	pointed to in the lease structure, rather than one hard-coded.
+	This is much cleaner, in that dhcp_prot.c now uses no external
+	variables, all state goes through the API.
+
 2000-11-15  Hugo Tyson  <hmt@redhat.com>
 
 	* src/lib/bootp_support.c (init_net): Do a SIOCSIFADDR a 2nd time
@@ -1163,7 +1184,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

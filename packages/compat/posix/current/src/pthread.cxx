@@ -48,6 +48,7 @@
 #include <pkgconf/kernel.h>
 #include <pkgconf/posix.h>
 #include <pkgconf/isoinfra.h>
+#include <pkgconf/libc_startup.h>
 
 #include <cyg/kernel/ktypes.h>         // base kernel types
 #include <cyg/infra/cyg_trac.h>        // tracing macros
@@ -155,7 +156,7 @@ static pthread_t thread_id_cookie = THREAD_ID_COOKIE_INC;
 //-----------------------------------------------------------------------------
 // Main thread.
 
-static char main_stack[CYGNUM_POSIX_MAIN_DEFAULT_STACK_SIZE];
+static char main_stack[CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE];
 
 // Thread ID of main thread.
 static pthread_t main_thread;
@@ -390,8 +391,8 @@ externC void cyg_posix_pthread_start( void )
 
     pthread_attr_init( &attr );
     pthread_attr_setinheritsched( &attr, PTHREAD_EXPLICIT_SCHED );
-    pthread_attr_setstackaddr( &attr, &main_stack[CYGNUM_POSIX_MAIN_DEFAULT_STACK_SIZE] );
-    pthread_attr_setstacksize( &attr, CYGNUM_POSIX_MAIN_DEFAULT_STACK_SIZE );
+    pthread_attr_setstackaddr( &attr, &main_stack[CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE] );
+    pthread_attr_setstacksize( &attr, CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE );
     pthread_attr_setschedpolicy( &attr, SCHED_RR );
     pthread_attr_setschedparam( &attr, &schedparam );
     
@@ -2017,6 +2018,21 @@ externC void pthread_cleanup_pop_inner (struct pthread_cleanup_buffer *buffer,
     return;
 }
 
+
+// -------------------------------------------------------------------------
+// eCos-specific function to measure stack usage of the supplied thread
+
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+externC size_t pthread_measure_stack_usage (pthread_t thread)
+{
+    pthread_info *th = pthread_info_id(thread);
+
+    if ( NULL == th )
+      return (size_t)-1;
+
+    return (size_t)th->thread->measure_stack_usage();
+}
+#endif
 
 // -------------------------------------------------------------------------
 // EOF pthread.cxx

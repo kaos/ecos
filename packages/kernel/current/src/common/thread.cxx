@@ -60,6 +60,10 @@
 #include <cyg/kernel/sched.inl>         // scheduler inlines
 #include <cyg/kernel/clock.inl>         // clock inlines
 
+#ifdef CYGDBG_KERNEL_THREADS_STACK_MEASUREMENT_VERBOSE_EXIT
+#include <cyg/infra/diag.h>
+#endif
+
 // =========================================================================
 // Cyg_HardwareThread members
 
@@ -302,6 +306,9 @@ Cyg_Thread::check_this( cyg_assert_class_zeal zeal) const
         // of the executing thread.
         if( (stack_ptr > (stack_base + stack_size)) ||
             (stack_ptr < stack_base) ) return false;
+#ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
+        if( stack_ptr < stack_limit ) return false;
+#endif
     case cyg_trivial:
     case cyg_none:
     default:
@@ -718,6 +725,11 @@ Cyg_Thread::exit()
 
     Cyg_Thread *self = Cyg_Thread::self();
 
+#ifdef CYGDBG_KERNEL_THREADS_STACK_MEASUREMENT_VERBOSE_EXIT
+    diag_printf( "Stack usage for thread %08x: %d\n", self,
+		 self->measure_stack_usage() );
+#endif
+
     Cyg_Scheduler::lock();
 
     // clear the timer; if there was none, no worries.
@@ -1031,6 +1043,56 @@ void Cyg_Thread::free_data_index( cyg_ucount32 index )
 
 #endif
 
+// -------------------------------------------------------------------------
+// Allocate some memory at the lower end of the stack
+// by moving the stack limit pointer.
+
+#if defined(CYGFUN_KERNEL_THREADS_STACK_LIMIT) && \
+    defined(CYGFUN_KERNEL_THREADS_STACK_CHECKING)
+// if not doing stack checking, implementation can be found in thread.inl
+// This implementation puts the magic buffer area (to watch for overruns
+// *above* the stack limit, i.e. there is no official demarcation between
+// the stack and the buffer. But that's okay if you think about it... having
+// a demarcation would not accomplish anything more.
+void *Cyg_HardwareThread::increment_stack_limit( cyg_ucount32 size )
+{
+    void *ret = (void *)stack_limit;
+
+    // First lock the scheduler because we're going to be tinkering with
+    // the check data
+    Cyg_Scheduler::lock();
+
+    // if we've inc'd the limit before, it will be off by the check data
+    // size, so lets correct it
+    if (stack_limit != stack_base)
+        stack_limit -= CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+    stack_limit += size;
+
+    // determine base of check data by rounding up to nearest word aligned
+    // address if not already aligned
+    cyg_uint32 *p = (cyg_uint32 *)((stack_limit + 3) & ~3);
+    // i.e. + sizeof(cyg_uint32)-1) & ~(sizeof(cyg_uint32)-1);
+    cyg_ucount32 i;
+    cyg_uint32 sig = (cyg_uint32)this;
+    
+    for ( i = 0;
+          i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
+          i++ ) {
+        p[i] = (sig ^ (i * 0x01010101));
+    }
+
+    // increment limit by the check size. Note this will not necessarily
+    // reach the end of the check data. But that doesn't really matter.
+    // Doing this allows better checking of the saved stack pointer in
+    // Cyg_Thread::check_this()
+    stack_limit += CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
+
+    Cyg_Scheduler::unlock();
+    
+    return ret;
+}
+#endif
+    
 // =========================================================================
 // Cyg_ThreadTimer member functions
 

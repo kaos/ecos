@@ -1,3 +1,8 @@
+2001-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Let RTC [heartbeat] rate be user
+	specified.
+
 2000-10-20  Gary Thomas  <gthomas@redhat.com>
 
 	* include/pkgconf/mlt_powerpc_mbx_ram.mlt: 

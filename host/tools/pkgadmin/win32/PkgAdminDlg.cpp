@@ -259,6 +259,16 @@ HCURSOR CPkgAdminDlg::OnQueryDragIcon()
 	return (HCURSOR) m_hIcon;
 }
 
+// Trivial handlers; otherwise CdlPackagesDatabaseBody::make asserts.
+void CdlErrorHandler (std::string message)
+{
+};
+
+void CdlWarningHandler (std::string message)
+{
+};
+
+
 bool CPkgAdminDlg::PopulatePackageTree(LPCTSTR pszPackagesPath)
 {
 	// delete any existing CDL database
@@ -273,7 +283,12 @@ bool CPkgAdminDlg::PopulatePackageTree(LPCTSTR pszPackagesPath)
 
 	try
 	{
+        // Cdl asserts unless the handlers are present.
+#if 1
+        m_CdlPkgData = CdlPackagesDatabaseBody::make (UnicodeToStdStr (pszPackagesPath), &CdlErrorHandler, &CdlWarningHandler);
+#else
         m_CdlPkgData = CdlPackagesDatabaseBody::make (UnicodeToStdStr (pszPackagesPath));
+#endif
 	}
 	catch (CdlStringException exception)
 	{

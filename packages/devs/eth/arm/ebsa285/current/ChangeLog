@@ -1,3 +1,16 @@
+2001-01-02  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_ebsa285.c (find_82559s_match_func): New func to match
+	complex PCI device requirements.
+	(pci_init_find_82559s): Use it, and the new PCI API to correctly
+	match a disparate bunch of devices on the one board.
+
+2000-12-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_ebsa285.c (pci_init_find_82559s): Also check for the PCI
+	device whose name is ... 0x1209; "82559ER".  Thanks to Martin Buck
+	<martin.buck@ascom.ch> for the ID for that.
+
 2000-11-19  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_ebsa285.c (pci_init_find_82559s): Intel has at least

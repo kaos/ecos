@@ -303,10 +303,6 @@ quicc_smc_serial_init_info(quicc_smc_serial_info *smc_chan,
     eppc->pip_pbpar |= portBmask;
     eppc->pip_pbdir &= ~portBmask;
     /*
-     *  Reset Rx & Tx params
-     */
-    eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_InitTxRx;
-    /*
      *  SDMA & LCD bus request level 5
      *  (Section 16.10.2.1)
      */
@@ -360,6 +356,10 @@ quicc_smc_serial_init_info(quicc_smc_serial_info *smc_chan,
         TxBUF += TxSIZE;
         txbd++;
     }
+    /*
+     *  Reset Rx & Tx params
+     */
+    eppc->cp_cr = smc_chan->channel | QUICC_SMC_CMD_Go | QUICC_SMC_CMD_InitTxRx;
     /*
      *  Clear any previous events. Enable interrupts.
      *  (Section 16.15.7.14 and 16.15.7.15)

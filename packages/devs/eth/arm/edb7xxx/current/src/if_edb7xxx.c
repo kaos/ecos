@@ -251,6 +251,8 @@ static void
 cs8900_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
     unsigned short stat;
+    struct cs8900_priv_data *cpd = (struct cs8900_priv_data *)sc->driver_private;
+
     put_reg(PP_BusCtl, PP_BusCtl_MemoryE);  // Disable interrupts, memory mode
     put_reg(PP_IntReg, PP_IntReg_IRQ0);  // Only possibility
     put_reg(PP_RxCFG, PP_RxCFG_RxOK | PP_RxCFG_CRC | 
@@ -266,6 +268,7 @@ cs8900_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     put_reg(PP_LineCTL, PP_LineCTL_Rx | PP_LineCTL_Tx);
     // Clear Interrupt Status Queue before enabling interrupts
     while ((stat = CS8900_ISQ) != 0) ;
+    cpd->txbusy = 0;
     put_reg(PP_BusCtl, PP_BusCtl_EnableIRQ);
 }
 
@@ -295,6 +298,7 @@ cs8900_can_send(struct eth_drv_sc *sc)
 {
     struct cs8900_priv_data *cpd = (struct cs8900_priv_data *)sc->driver_private;
     unsigned short stat;
+
     stat = get_reg(PP_LineStat);
     if ((stat & PP_LineStat_LinkOK) == 0) {
         return false;  // Link not connected
@@ -431,6 +435,7 @@ static void
 cs8900_TxEvent(struct eth_drv_sc *sc, int stat)
 {
     struct cs8900_priv_data *cpd = (struct cs8900_priv_data *)sc->driver_private;
+
     stat = get_reg(PP_TER);
     if (net_debug) {
         diag_printf("Tx event: %x\n", stat);
@@ -452,6 +457,7 @@ static void
 cs8900_int(struct eth_drv_sc *sc)
 {
     unsigned short event;
+
     while ((event = CS8900_ISQ) != 0) {
         switch (event & ISQ_EventMask) {
         case ISQ_RxEvent:
@@ -481,6 +487,7 @@ void
 cs8900_fake_int(cyg_addrword_t param)
 {
     int s;
+
     while (true) {
         cyg_thread_delay(5);
         s = splnet();

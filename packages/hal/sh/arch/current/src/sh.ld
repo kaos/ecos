@@ -82,6 +82,7 @@ GROUP(libtarget.a libgcc.a)
     . = ALIGN(8);							 \
       KEEP(*( SORT (.ecos.table.*))) ;					 \
       *(.got*) *(.rela.got)						 \
+    . = ALIGN(4);                                                        \
     } > _region_							 \
     CYG_LABEL_DEFN(_rom_data_start) = LOADADDR(.data);			 \
     CYG_LABEL_DEFN(_ram_data_end) = .; PROVIDE(_ram_data_end = .);	 \
@@ -119,6 +120,7 @@ GROUP(libtarget.a libgcc.a)
     .bss _vma_ : _lma_					\
     { CYG_LABEL_DEFN(_bss_start) = ABSOLUTE (.);	\
       FORCE_OUTPUT; *(.dynbss) *(.bss) *(COMMON)	\
+      . = ALIGN(4);                                     \
       CYG_LABEL_DEFN(_bss_end) = ABSOLUTE (.); }	\
     > _region_
 

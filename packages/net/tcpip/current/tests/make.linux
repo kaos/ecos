@@ -5,7 +5,7 @@
 CC = cc
 CFLAGS = -O2 -g
 
-all: nc_test_master nc_test_slave tcp_source tcp_sink
+all: nc_test_master nc_test_slave tcp_source tcp_sink linux_echo
 
 nc_test_master: nc_test_framework.h nc_test_master.c
 	$(CC) -o $@ ${CFLAGS} nc_test_master.c
@@ -18,4 +18,7 @@ tcp_source: tcp_source.c
 
 tcp_sink: tcp_sink.c
 	$(CC) -o $@ ${CFLAGS} tcp_sink.c
+
+linux_echo: linux_echo.c
+	$(CC) -o $@ ${CFLAGS} linux_echo.c
 

@@ -1889,6 +1889,20 @@ i82559_int_op( struct eth_drv_sc *sc, int mask)
 //  o instantiate interrupts for them
 //  o attach those interrupts appropriately
 // ------------------------------------------------------------------------
+static cyg_pci_match_func find_82559s_match_func;
+
+// Intel 82559 and 82557 are virtually identical, with different
+// dev codes; also 82559ER (cutdown) = 0x1209.
+static cyg_bool
+find_82559s_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
+{
+    return
+        (0x8086 == v) &&
+        ((0x1030 == d) ||
+         (0x1229 == d) ||
+         (0x1209 == d));
+}
+
 static int
 pci_init_find_82559s( void )
 {
@@ -1951,9 +1965,10 @@ pci_init_find_82559s( void )
 
         p_i82559->index = device_index;
 
-        // Intel 82559 and 82557 are virtually identical, with different dev codes
-        if (cyg_pci_find_device(0x8086, 0x1030, &devid) ||
-            cyg_pci_find_device(0x8086, 0x1229, &devid) ) {
+        // See above for find_82559s_match_func - it selects any of several
+        // variants.  This is necessary in case we have multiple mixed-type
+        // devices on one board in arbitrary orders.
+        if (cyg_pci_find_matching( &find_82559s_match_func, NULL, &devid )) {
 #ifdef DEBUG
             db_printf("eth%d = 82559\n", device_index);
 #endif

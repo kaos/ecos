@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -181,7 +181,7 @@ gets(char *buf, int buflen, int timeout)
         } else
 #endif
         if ((timeout > 0) && (ptr == buf)) {
-            mon_set_read_char_timeout(50);
+            mon_set_read_char_timeout(timeout);
             while (timeout > 0) {
                 res = mon_read_char_with_timeout(&c);
                 if (res) {

@@ -1,3 +1,7 @@
+2001-01-04  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh.ld: Make sure .data and .bss section sizes are aligned.
+
 2000-12-13  Jesper Skov  <jskov@redhat.com>
 2000-12-13  Jonathan Larmour  <jlarmour@redhat.com>
 

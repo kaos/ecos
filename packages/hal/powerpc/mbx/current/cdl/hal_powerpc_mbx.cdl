@@ -154,6 +154,7 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
         description   "
             Period is busclock/16/100."
         flavor        none
+        no_define
     
         cdl_option CYGNUM_HAL_RTC_NUMERATOR {
             display       "Real-time clock numerator"
@@ -163,12 +164,15 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
         cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
             display       "Real-time clock denominator"
             flavor        data
-            calculated    100
+            default_value 100
+            description   "
+              This option selects the number of system clock 'ticks'
+              per second.  This rate is sometimes known as the heartbeat rate."
         }
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    { (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/100) }
+            calculated    { (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/CYGNUM_HAL_RTC_DENOMINATOR) }
         }
     }
     
@@ -346,6 +350,7 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
                 <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
                 $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 
                 $(OBJCOPY) -O srec $< $(@:.bin=.srec)
+                $(OBJCOPY) -O srec --change-address=0x02040000 $< $(@:.bin=.ppcbug)
                 $(OBJCOPY) -O binary $< $@
             }
         }

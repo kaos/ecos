@@ -186,6 +186,9 @@ cyg_addrword_t cyg_thread_get_stack_base(cyg_handle_t thread);
 
 cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread);
 
+#ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
+cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread);
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Per-thread Data                                                           */

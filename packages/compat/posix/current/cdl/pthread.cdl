@@ -180,25 +180,10 @@ cdl_component CYGPKG_POSIX_MAIN_THREAD {
 	calculated 	1
 	requires        { 0 != CYGPKG_LIBC_STARTUP }
 	requires        CYGSEM_LIBC_STARTUP_MAIN_OTHER
+        implements      CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE
 	description	"These options control the thread used to
                          run the main() application entry routine."
 			 
-	cdl_option CYGNUM_POSIX_MAIN_DEFAULT_STACK_SIZE {
-	    display        "main()'s default thread stack size"
-	    flavor         data
-	    legal_values   16 to 0x7fffffff
-	    default_value  8192
-	    description    "
-                POSIX compatibility requires that the application's
-                main() function be invoked in a thread.
-                This option controls the size of that thread's
-                stack, which is allocated in the BSS. It
-                must be a multiple of 8. Note, a low number
-                here may be overriden by the HAL if there is
-                a minimum requirement to process interrupts
-                etc."
-	}
-
 	cdl_option CYGNUM_POSIX_MAIN_DEFAULT_PRIORITY {
 	     display        "main()'s default thread priority"
 	     flavor         data

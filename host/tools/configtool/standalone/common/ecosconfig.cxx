@@ -50,7 +50,7 @@
 #include "ecosconfig.hxx"
 
 #define TOOL_VERSION "1.3.net"
-#define TOOL_COPYRIGHT "Copyright (c) 2000 Red Hat, Inc."
+#define TOOL_COPYRIGHT "Copyright (c) 2001 Red Hat, Inc."
 #define DEFAULT_SAVE_FILE "ecos.ecc"
 static char* tool = "ecosconfig";
 

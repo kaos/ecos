@@ -1,3 +1,8 @@
+2001-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_intr.c (hal_delay_us): Fix some problems - didn't
+	always work properly, especially on fast processors.
+
 2000-11-21  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S (rom_vectors): Special handling when vectors

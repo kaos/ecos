@@ -1,3 +1,20 @@
+2001-01-02  Hugo Tyson  <hmt@redhat.com>
+
+	* include/pci.h: Define new API to perform more generalized matching
+	on device properties.
+
+	* src/pci.c (cyg_pci_find_matching): New API implementation.
+
+2000-12-21  Mark Salter  <msalter@redhat.com>
+
+	* include/pci_hw.h: Add platform hook so certain devices
+	can be skipped by generic PCI io code. This is a workaround
+	for a hw problem where configuration space cycles on some
+	devices cause a bus lockup.
+	
+	* src/pci.c (cyg_pci_find_next): Use platform hook to ignore
+	certain devices during device search.
+
 2000-12-02  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pci.c: 

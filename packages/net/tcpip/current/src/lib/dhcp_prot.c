@@ -271,7 +271,8 @@ static void alarm_function(cyg_handle_t alarm, cyg_addrword_t data)
 {
     struct dhcp_lease *lease = (struct dhcp_lease *)data;
     lease->which |= lease->next;
-    cyg_semaphore_post( &dhcp_needs_attention );
+    if ( lease->needs_attention )
+        cyg_semaphore_post( lease->needs_attention );
 
     // Step the lease on into its next state of being alarmed ;-)
     if ( lease->next & DHCP_LEASE_EX ) {

@@ -81,6 +81,18 @@ static unsigned char quicc_eth_txbufs[CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM]
 
 static struct quicc_eth_info quicc_eth0_info;
 static unsigned char enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x79, 0xB8};
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#include <redboot.h>
+#include <flash_config.h>
+RedBoot_config_option("Network hardware address [MAC]",
+                      quicc_esa,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_ESA
+    );
+#endif
+#endif
 
 ETH_DRV_SC(quicc_eth0_sc,
            &quicc_eth0_info,   // Driver specific data
@@ -136,7 +148,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
     struct cp_bufdesc *rxbd, *txbd;
-    unsigned char *RxBUF, *TxBUF, *ep, *ap;
+    unsigned char *RxBUF, *TxBUF, *ep, *ap; 
     volatile struct ethernet_pram *enet_pram;
     volatile struct scc_regs *scc;
     int TxBD, RxBD;
@@ -145,7 +157,19 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
 
     // Fetch the board address from the VPD
 #define VPD_ETHERNET_ADDRESS 0x08
-    _mbx_fetch_VPD(VPD_ETHERNET_ADDRESS, enaddr, sizeof(enaddr));
+    if (_mbx_fetch_VPD(VPD_ETHERNET_ADDRESS, enaddr, sizeof(enaddr)) == 0) {
+#if defined(CYGPKG_REDBOOT) && \
+    defined(CYGSEM_REDBOOT_FLASH_CONFIG)
+        flash_get_config("quicc_esa", enaddr, CONFIG_ESA);
+#else
+        enet_pram = &eppc->pram[0].enet_scc;
+        ap = &enaddr[sizeof(enaddr)];
+        ep = (unsigned char *)&enet_pram->paddr_h;
+        for (i = 0;  i < sizeof(enaddr);  i++) {
+            *ap++ = *--ep;
+        }
+#endif
+    }
 
     // Ensure consistent state between cache and what the QUICC sees
     HAL_DCACHE_IS_ENABLED(cache_state);

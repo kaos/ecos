@@ -26,6 +26,7 @@
 #define IDC_RADIO_CUSTOM_BROWSER        22028
 #define IDC_STATIC_ABOUT                22031
 #define IDC_RADIO_INTERNAL_BROWSER      22032
+#define IDC_STATIC_ABOUT2               22032
 #define IDC_HEADERSTATIC                22033
 #define IDC_STATIC_DATETIME             22034
 #define IDC_PANECOMBO                   22035

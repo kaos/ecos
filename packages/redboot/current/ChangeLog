@@ -1,3 +1,17 @@
+2001-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_version): Update copyright for 2001.
+
+	* src/io.c (gets): Use timeout provided [was hardcoded to 50ms!]
+
+2000-12-21  Mark Salter  <msalter@redhat.com>
+
+	* src/flash.c (fis_init): Use CYGBLD_REDBOOT_FLASH_BOOT_OFFSET to
+	decide where to create default images.
+
+	* cdl/redboot.cdl (CYGBLD_REDBOOT_FLASH_BOOT_OFFSET): Use this
+	to define offset from start of FLASH to start of boot image.
+
 2000-12-15  Gary Thomas  <gthomas@redhat.com>
 
 	* src/version.c: Define GDB stubs version here as well.  Also

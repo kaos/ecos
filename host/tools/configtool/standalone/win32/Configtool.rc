@@ -158,7 +158,7 @@ BEGIN
         POPUP "Red Hat on the &Web"
         BEGIN
             MENUITEM "&Red Hat Home Page",          ID_HELP_RED_HATONTHEWEB
-            MENUITEM "&eCos Product Page",         ID_HELP_ECOSHOME
+            MENUITEM "&eCos Product Page",          ID_HELP_ECOSHOME
             MENUITEM "eCos &Net Release Page",      ID_HELP_ECOS
             MENUITEM SEPARATOR
             MENUITEM "µ&ITRON Specification",       ID_HELP_UITRON
@@ -186,7 +186,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 217, 190
+IDD_ABOUTBOX DIALOGEX 0, 0, 217, 198
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Configuration Tool"
 FONT 8, "MS Sans Serif"
@@ -194,13 +194,17 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,178,7,32,14,WS_GROUP
     LTEXT           "eCos Configuration Tool 1.3.net",IDC_STATIC,40,10,119,8,
                     SS_NOPREFIX
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,21,20
     LTEXT           "Date/Time info",IDC_STATIC_DATETIME,40,23,119,8
-    LTEXT           "Copyright © 1998-2000 Red Hat, Inc.",IDC_STATIC,40,36,
+    LTEXT           "Copyright © 1998-2001 Red Hat, Inc.",IDC_STATIC,40,36,
                     170,8
-    LTEXT           "The eCos engineering team is:",IDC_STATIC,7,50,109,8
-    CTEXT           "\r\nPaul Beskeen\r\nJohn Dallaway\r\nRobert Erskine\r\nNick Garnett\r\nEugene Kulesha\r\nJonathan Larmour\r\nAlex Schuilenburg\r\nJesper Skov\r\nJulian Smart\r\nGary Thomas\r\nHugo Tyson\r\nBart Veer",
-                    IDC_STATIC_ABOUT,7,69,203,114,SS_SUNKEN,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYFRAME,8,57,201,133,
+                    WS_EX_DLGMODALFRAME | WS_EX_TRANSPARENT
+    CTEXT           "Paul Beskeen\r\nJohn Dallaway\r\nRobert Erksine\r\nSimon FitzMaurice\r\nMark Galassi\r\nNick Garnett\r\nTim Goodwin\r\nStu Grossman\r\nEugene Kulesha\r\nJonathan Larmour\r\nDavid Moore\r\nDrew Moseley",
+                    IDC_STATIC_ABOUT,17,82,84,102
+    CTEXT           "Daniel Neades\r\nGary Oliverio\r\nChris Provenzano\r\nMark Salter\r\nRob Savoye\r\nAlex Schuilenburg\r\nJesper Skov\r\nJulian Smart\r\nChris Tarpy\r\nGary Thomas\r\nHugo Tyson\r\nBart Veer",
+                    IDC_STATIC_ABOUT2,115,82,84,101
+    LTEXT           "The eCos engineering team is:",IDC_STATIC,60,64,109,8
 END
 
 IDD_VIEW_SETTINGS_DIALOG DIALOG DISCARDABLE  0, 0, 234, 302
@@ -377,6 +381,11 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO DISCARDABLE 
 BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 193
+    END
+
     IDD_VIEW_SETTINGS_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7

@@ -61,21 +61,30 @@ hal_IRQ_init(void)
 externC void 
 hal_delay_us(int us)
 {
-    cyg_uint32 old_dec, new_dec;
+    cyg_int32 old_dec, new_dec;
     long ticks;
+    int diff;
+
     // Note: the system constant CYGNUM_HAL_RTC_PERIOD corresponds to 10,000us
     // Scale the desired number of microseconds to be a number of decrementer ticks
+    // Note: this test says "if there is more than one decrementer tick / us"
     if (CYGNUM_HAL_RTC_PERIOD > 10000) {
-        ticks = us * (CYGNUM_HAL_RTC_PERIOD * 100) / 1000000;
+        ticks = ((long long)us * (CYGNUM_HAL_RTC_PERIOD * 100)) / 1000000;
     } else {
         ticks = us / (CYGNUM_HAL_RTC_PERIOD * 100) / 1000000;
     }
     asm volatile("mfdec  %0;" : "=r"(old_dec) : );
-    while (ticks-- > 0) {
+    while (ticks > 0) {
         do {
             asm volatile("mfdec  %0;" : "=r"(new_dec) : );        
         } while (old_dec == new_dec);
+        if (new_dec < 0) {
+            HAL_CLOCK_RESET(0, CYGNUM_HAL_RTC_PERIOD);
+        }
+        diff = (old_dec - new_dec);
+        if (diff < 1) diff = 1;
         old_dec = new_dec;
+        ticks -= diff;
     }
 }
 

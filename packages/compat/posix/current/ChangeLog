@@ -1,3 +1,17 @@
+2000-12-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pthread.cxx (pthread_measure_stack_usage): New function
+	to measure stack usage.
+
+	* include/pthread.h: Prototype it.
+
+	* cdl/pthread.cdl: remove CYGNUM_POSIX_MAIN_DEFAULT_STACK_SIZE and
+	instead implement CYGINT_LIBC_STARTUP_EXTERNAL_INVOKE_MAIN_POSSIBLE
+
+	* src/pthread.cxx: Use stack size for main from libc_startup package
+	to prevent confusion
+	(cyg_posix_pthread_start): Likewise
+
 2000-12-06  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/signal.cxx: include unistd.h for _exit

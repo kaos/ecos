@@ -880,7 +880,7 @@ typedef struct eppc {
 	    union {
 		struct {
 		    struct i2c_pram	i2c;
-		    unsigned char	RSRVD56[0x18];
+		    unsigned char	RSRVD56[0x10];
 		    struct idma_pram	idma1;
 		} i2c_idma;
 		struct {

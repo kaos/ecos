@@ -1,3 +1,8 @@
+2001-01-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_quicc.c: Add support in RedBoot to keep ESA (since
+	the I2C interface is really broken).
+
 2000-10-20  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_quicc.c: Changes to compile in stand-alone mode.

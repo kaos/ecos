@@ -205,6 +205,26 @@ externC cyg_bool cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
 externC cyg_bool cyg_pci_find_class( cyg_uint32 dev_class,
                                      cyg_pci_device_id *devid );
 
+
+
+// Searches the PCI bus configuration space for a device whose properties
+// match those required by the match_func, which the user supplies.  The
+// match_func's arguments are vendor, device, class exactly as they might
+// be in the two APIs above.  The additional parameter is for any state
+// which a caller might wish available to its callback routine.
+// The search starts at the device pointed to by
+// devid, or at the first slot if it contains CYG_PCI_NULL_DEVID.  *devid
+// will be updated with the ID of the next device found.  Returns true if
+// one is found and false if not.
+typedef cyg_bool (cyg_pci_match_func)( cyg_uint16,/* vendor */
+                                       cyg_uint16,/* device */
+                                       cyg_uint32,/* class  */
+                                       void * /* arbitrary user data */ );
+externC cyg_bool cyg_pci_find_matching( cyg_pci_match_func *matchp,
+                                        void * match_callback_data,
+                                        cyg_pci_device_id *devid );
+
+
 // Searches the PCI configuration space for the next valid device
 // after cur_devid. If cur_devid is given the value
 // CYG_PCI_NULL_DEVID, then the search starts at the first slot. It

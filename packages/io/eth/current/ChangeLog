@@ -1,3 +1,7 @@
+2001-01-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_tx_done): Update count of Tx packets.
+
 2000-12-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/net/eth_drv.c (eth_drv_run_deliveries): Support ^C when
