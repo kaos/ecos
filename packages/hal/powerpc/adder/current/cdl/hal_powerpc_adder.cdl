@@ -88,7 +88,6 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
             implements    CYGNUM_HAL_QUICC_SMC2
             implements    CYGNUM_HAL_QUICC_SCC3
             define_proc {
-                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 850\""
                 puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M ADDER\""
             }
             description "
@@ -103,7 +102,6 @@ cdl_package CYGPKG_HAL_POWERPC_ADDER {
             implements    CYGNUM_HAL_QUICC_SMC1
             implements    CYGNUM_HAL_QUICC_SCC3
             define_proc {
-                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 852T\""
                 puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M AdderII\""
             }
             description "

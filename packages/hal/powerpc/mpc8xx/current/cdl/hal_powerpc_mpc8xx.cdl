@@ -114,6 +114,31 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8xx {
             such as memory controllers, DMA controllers, serial ports and
             timers/counters."               
 
+        define_proc {
+            # Someday, CDL will support doing this directly...
+            puts $::cdl_header "#if defined(CYGHWR_HAL_POWERPC_MPC8XX_823)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 823\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_850)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 850\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_852T)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 852T\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_855T)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 855T\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_860)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_860T)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860T\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_862T)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 862T\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_862P)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 862P\""
+            puts $::cdl_header "#elif defined(CYGHWR_HAL_POWERPC_MPC8XX_866T)"
+            puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 866T\""
+            puts $::cdl_header "#else"
+            puts $::cdl_header "#error Unknown CPU variant"
+            puts $::cdl_header "#endif"
+        }
+
         cdl_option CYGHWR_HAL_POWERPC_FPU {
             display    "Variant FPU support"
             calculated 0

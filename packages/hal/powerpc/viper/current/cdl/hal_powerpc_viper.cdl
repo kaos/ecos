@@ -88,12 +88,11 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
                             (CYGHWR_HAL_POWERPC_MPC8XX == "862P") }
             default_value 1
             define_proc {
-                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860T\""
-                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M VIPER\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M Viper\""
                 puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
             }
             description "
-                Select this model for an original Viper with the PPC860T or PPC862P processor."
+                Select this model for an original Viper with the MPC860T or MPC862P processor."
         }
 
         cdl_option  CYGHWR_HAL_POWERPC_VIPER_II {
@@ -103,13 +102,12 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
                             (CYGHWR_HAL_POWERPC_MPC8XX == "866T") }
             default_value 0
             define_proc {
-                puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860T\""
-                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M VIPER\""
+                puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"A&M Viper\""
                 puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
             }
             description "
                 Select this model for a Viper with the new board layout.  This
-                version will be outfitted with either a PPC860T or PPC866T processor."
+                version will be outfitted with either a MPC860T or MPC866T processor."
         }
     }
 

@@ -1,3 +1,8 @@
+2003-12-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_mpc8xx.cdl: Define HAL_PLATFORM_CPU, based on
+	actual CPU type selection - simplifies platform CDL files.
+
 2003-10-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/var_regs.h: Changes to allow building with GCC-3.3.x
