@@ -1,3 +1,8 @@
+2003-06-24  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/codes.h (ENOTEMPTY): Needed by the sysctl call in the
+	freeBSD stack.
+
 2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/errno.h: Don't use 'const' type qualifier any more. It

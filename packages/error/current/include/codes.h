@@ -127,6 +127,7 @@ typedef int Cyg_ErrNo;
 #define EDEADLOCK        EDEADLK
 #define ENOSYS           38    /* Function not implemented */
 #define ENAMETOOLONG     60    /* File name too long */    
+#define ENOTEMPTY        66    /* Directory not empty */
 #define ENOTSUP          95    /* Not supported error */
 #define EEOF             200   /* End of file reached */
 #define ENOSUPP          201   /* Operation not supported */
