@@ -645,8 +645,8 @@ quicc_eth_RxEvent(struct eth_drv_sc *sc)
             // OK frame - Prepare for callback
             qi->rxbd = rxbd;  // Save for callback
             set_led(LED_RxACTIVE);
-			
-            (sc->funs->eth_drv->recv)(sc, rxbd->length);
+            // Remove the CRC from the end
+            (sc->funs->eth_drv->recv)(sc, rxbd->length - 4);
 			
             clear_led(LED_RxACTIVE);
         }

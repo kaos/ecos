@@ -1,3 +1,7 @@
+2004-10-11  Harald Kuethe  <hkuethe@controlware.de>
+
+	* src/if_quicc.c (quicc_eth_RxEvent): remove CRC from the packet.
+
 2003-08-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_quicc.c (quicc_eth_init): Use 'quicc_eth_command()'
