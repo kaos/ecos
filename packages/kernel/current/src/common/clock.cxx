@@ -171,7 +171,7 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
 #endif
 
         // Now that we have the list pointer, we can use common code for
-        // both list oragnizations.
+        // both list organizations.
 
 #ifdef CYGIMP_KERNEL_COUNTERS_SORT_LIST
 
@@ -400,8 +400,11 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
 #if defined(CYGIMP_KERNEL_COUNTERS_SINGLE_LIST)
 
     alarm_list_ptr = &alarm_list;
+    Cyg_Scheduler::lock();
 
 #elif defined(CYGIMP_KERNEL_COUNTERS_MULTI_LIST)
+
+    Cyg_Scheduler::lock();
 
     alarm_list_ptr = &(alarm_list[
         ((alarm->trigger+increment-1)/increment) %
@@ -413,8 +416,6 @@ void Cyg_Counter::rem_alarm( Cyg_Alarm *alarm )
 
     // Now that we have the list pointer, we can use common code for
     // both list organizations.
-
-    Cyg_Scheduler::lock();
 
     CYG_INSTRUMENT_ALARM( REM, this, alarm );
 

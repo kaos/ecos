@@ -1,3 +1,9 @@
+2003-06-25  Thomas Binder  <Thomas.Binder@frequentis.com>
+
+	* src/common/clock.cxx (Cyg_Counter::rem_alarm): Bugfix: call
+	Cyg_Scheduler::lock() before calculation of index into alarm_list
+	array to avoid race condition with multi list counters.
+
 2003-06-06  David Brennan  <eCos@brennanhome.com>
 2003-06-23  Nick Garnett  <nickg@balti.calivar.com>
 
