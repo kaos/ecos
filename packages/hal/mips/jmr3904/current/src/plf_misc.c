@@ -87,17 +87,12 @@ void hal_platform_init(void)
 
 #endif
 
-#if 0
-#if defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    !defined(CYGDBG_INFRA_DIAG_USE_DEVICE)      && \
-        defined(CYG_HAL_TX39_JMR3904)
-
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)    
         {
-            static void hal_init_ctrlc_intr(void);
-            hal_init_ctrlc_intr();
+            void hal_ctrlc_isr_init(void);
+            hal_ctrlc_isr_init();
         }
 
-#endif
 #endif
         
 #if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
@@ -124,38 +119,46 @@ cyg_bool cyg_hal_is_break(char *buf, int size)
 
 void cyg_hal_user_break( CYG_ADDRWORD *regs )
 {
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
+#if defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+    // The following code should be at the very start of this function so
+    // that it can access the RA register before it is saved and reused.
+    register CYG_WORD32 ra;
+    asm volatile ( "move %0,$31;" : "=r" (ra) );
+#endif    
+    
+#if defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
 
-    // Ctrl-C: breakpoint.
-    extern void breakpoint(void);
-    breakpoint();
+        {
+            typedef void install_bpt_fn(void *epc);
+            CYG_WORD32 pc;
+            HAL_SavedRegisters *sreg = (HAL_SavedRegisters *)regs;
+            install_bpt_fn *ibp = (install_bpt_fn *)hal_vsr_table[35];
 
-#elif defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_GDB_STUBS)
+            if( regs == NULL ) pc = ra;
+            else pc = sreg->pc;
 
-    // Ctrl-C: breakpoint.
-    typedef void bpt_fn(void);
-    bpt_fn *bfn = ((bpt_fn **)0x80000100)[61];
-    bfn();
+            if( ibp != NULL ) ibp((void *)pc);
+        }
+    
+#elif defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 
-#elif defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
+        {
+            extern void breakpoint(void);
+            breakpoint();
+        }
+    
+#else
 
-    // Ctrl-C: breakpoint.
-    typedef void install_bpt_fn(void *epc);
-    HAL_SavedRegisters *sreg = (HAL_SavedRegisters *)regs;
-    install_bpt_fn *ibp = (install_bpt_fn *)hal_vsr_table[35];
-    if( ibp != NULL ) ibp((void *)sreg->pc);
+        HAL_BREAKPOINT(breakinst);
 
 #endif
 
 }
 
 /*------------------------------------------------------------------------*/
-/* This code installs an interrupt handler to capture Ctrl-C.             */
+/* Control C ISR support                                                  */
 
-#if 0
-#if defined(CYG_HAL_USE_ROM_MONITOR) && \
-    !defined(CYGDBG_INFRA_DIAG_USE_DEVICE)    && \
-    defined(CYG_HAL_TX39_JMR3904)
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
 
 #define DIAG_BASE       0xfffff300
 #define DIAG_SLCR       (DIAG_BASE+0x00)
@@ -171,11 +174,27 @@ void cyg_hal_user_break( CYG_ADDRWORD *regs )
 #define BRG_T2          0x0100
 #define BRG_T4          0x0200
 #define BRG_T5          0x0300
+
+struct Hal_SavedRegisters *hal_saved_interrupt_state;
+
+void hal_ctrlc_isr_init(void)
+{
+    CYG_WORD16 dicr;
     
-static cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data, CYG_ADDRWORD regs)
+    HAL_READ_UINT16( DIAG_SLDICR , dicr );
+    dicr = 0x0001;
+    HAL_WRITE_UINT16( DIAG_SLDICR , dicr );
+
+    HAL_INTERRUPT_SET_LEVEL( CYGHWR_HAL_GDB_PORT_VECTOR, 1 );
+    HAL_INTERRUPT_UNMASK( CYGHWR_HAL_GDB_PORT_VECTOR );
+}
+
+cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
     char c;
     CYG_WORD16 disr;
+
+    HAL_INTERRUPT_ACKNOWLEDGE( CYGHWR_HAL_GDB_PORT_VECTOR );
     
     HAL_READ_UINT16( DIAG_SLDISR , disr );
 
@@ -189,28 +208,12 @@ static cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data, CYG_ADDR
         HAL_WRITE_UINT16( DIAG_SLDISR , disr );
         
         if( cyg_hal_is_break( &c , 1 ) )
-            cyg_hal_user_break( regs );
+            cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
     }
 
     return 0;
 }
 
-    
-static void hal_init_ctrlc_intr(void)
-{
-    CYG_WORD16 dicr;
-    
-    HAL_INTERRUPT_ATTACH( CYGNUM_HAL_INTERRUPT_SIO_0, hal_ctrlc_isr, NULL,
-                          NULL );
-
-    HAL_INTERRUPT_UNMASK( CYGNUM_HAL_INTERRUPT_SIO_0 );
-
-    HAL_READ_UINT16( DIAG_SLDICR , dicr );
-    dicr = 0x0001;
-    HAL_WRITE_UINT16( DIAG_SLDICR , dicr );    
-}
-
-#endif
 #endif
 
 /*------------------------------------------------------------------------*/

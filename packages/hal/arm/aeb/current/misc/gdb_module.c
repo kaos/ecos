@@ -51,10 +51,10 @@
 #define CHECKSUM 0x0
 #endif
 
-extern char _exception_handlers, _rom_data_end;
+extern char __exception_handlers, __rom_data_end;
 
 const char __title[] = "eCos";
-const char __help[] = "eCos            1.2  (26 Feb 1999) GDB stubs";
+const char __help[] = "eCos            1.2.2 (25 May 1999) GDB stubs";
 
 struct ModuleHeader {
     cyg_uint32    magic;
@@ -85,13 +85,13 @@ const static struct ModuleHeader __hdr = {
     1,                              // major
     0,                              // minor
     CHECKSUM,                       // checksum
-    (cyg_uint32) &_exception_handlers,         // start of module (read-only) image
-    (cyg_uint32) &_rom_data_end,    // end of image
+    (cyg_uint32) &__exception_handlers,         // start of module (read-only) image
+    (cyg_uint32) &__rom_data_end,    // end of image
     0,                              // r/w base - unused
     0,                              // bss base - unused
     0,                              // bss limit - unused
     (cyg_uint32) &__hdr,            // self (for module identification)
-    (cyg_uint32) &_exception_handlers,         // startup 
+    (cyg_uint32) &__exception_handlers,         // startup 
     0,                              // init - unused
     0,                              // final - unused
     0,                              // service - unused

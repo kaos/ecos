@@ -275,6 +275,11 @@ initHardware (void)
     if (!initialized) {
         initialized = 1;
 
+#ifdef HAL_STUB_PLATFORM_INIT
+        // If the platform defines any initialization code, call it here.
+        HAL_STUB_PLATFORM_INIT();
+#endif        
+                
         // Get serial port initialized.
         HAL_STUB_PLATFORM_INIT_SERIAL();
 
@@ -410,7 +415,11 @@ __instruction_cache (cache_control_t request)
         break;
     case CACHE_FLUSH:
         HAL_ICACHE_SYNC();
+#ifndef CYGPKG_HAL_MIPS
+        // SYNC and INVALIDATE_ALL are the same on the MIPS,
+        // so avoid doing it twice.
         HAL_ICACHE_INVALIDATE_ALL();
+#endif        
         break;
     case CACHE_NOOP:
         /* fall through */
@@ -442,14 +451,17 @@ __data_cache (cache_control_t request)
         break;
     case CACHE_FLUSH:
         HAL_DCACHE_SYNC();
+#ifndef CYGPKG_HAL_MIPS
+        // SYNC and INVALIDATE_ALL are the same on the MIPS,
+        // so avoid doing it twice.
         HAL_DCACHE_INVALIDATE_ALL();
+#endif        
         break;
     case CACHE_NOOP:
         /* fall through */
     default:
         break;
     }
-
 #ifdef HAL_DCACHE_IS_ENABLED
     HAL_DCACHE_IS_ENABLED(state);
 #endif

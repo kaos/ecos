@@ -200,6 +200,13 @@ externC cyg_handle_t cyg_thread_self()
     return (cyg_handle_t)Cyg_Thread::self();
 }
 
+// idle thread is not really a plain CygThread; danger.
+externC cyg_handle_t cyg_thread_idle_thread()
+{
+    extern Cyg_Thread idle_thread;
+    return (cyg_handle_t)&idle_thread;
+}
+
 /* Priority manipulation */
 externC void cyg_thread_set_priority(
     cyg_handle_t thread, cyg_priority_t priority )
@@ -233,6 +240,18 @@ externC void cyg_thread_delay(cyg_tick_count_t delay)
 {
     Cyg_Thread::self()->delay(delay);
 }
+
+/* Stack information */
+externC cyg_addrword_t cyg_thread_get_stack_base(cyg_handle_t thread)
+{
+    return ((Cyg_Thread *)thread)->get_stack_base();
+}
+
+externC cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread)
+{
+    return ((Cyg_Thread *)thread)->get_stack_size();
+}
+
 
 /*---------------------------------------------------------------------------*/
 /* Per-thread data                                                           */

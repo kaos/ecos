@@ -43,7 +43,7 @@ endif
 ifdef CYG_HAL_MN10300_STDEVAL1
 EXTRAS_COMPILE  += mn10300/mn10300_serial.c
 endif
-ifdef CYG_HAL_TX39
+ifdef CYG_HAL_MIPS_TX39
 EXTRAS_COMPILE  += mips/tx3904_serial.c
 endif
 ifdef CYG_HAL_POWERPC_COGENT

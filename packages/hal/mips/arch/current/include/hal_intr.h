@@ -168,8 +168,12 @@ externC volatile CYG_ADDRESS    hal_vsr_table[CYGNUM_HAL_VSR_MAX+1];
 
 //--------------------------------------------------------------------------
 // Default ISR
+// The #define is used to test whether this routine exists, and to allow
+// us to call it.
 
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+
+#define HAL_DEFAULT_ISR hal_default_isr
 
 //--------------------------------------------------------------------------
 // Interrupt state storage
@@ -280,7 +284,7 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
     cyg_uint32 _index_;                                                   \
     HAL_TRANSLATE_VECTOR ((_vector_), _index_);                           \
                                                                           \
-    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)hal_default_isr ) \
+    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)HAL_DEFAULT_ISR ) \
         (_state_) = 0;                                                    \
     else                                                                  \
         (_state_) = 1;                                                    \
@@ -291,7 +295,7 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
     cyg_uint32 _index_;                                                     \
     HAL_TRANSLATE_VECTOR( _vector_, _index_ );                              \
                                                                             \
-    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)hal_default_isr )   \
+    if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)HAL_DEFAULT_ISR )   \
     {                                                                       \
         hal_interrupt_handlers[_index_] = (CYG_ADDRESS)_isr_;               \
         hal_interrupt_data[_index_] = (CYG_ADDRWORD)_data_;                 \
@@ -306,7 +310,7 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
                                                                         \
     if( hal_interrupt_handlers[_index_] == (CYG_ADDRESS)_isr_ )         \
     {                                                                   \
-        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)hal_default_isr; \
+        hal_interrupt_handlers[_index_] = (CYG_ADDRESS)HAL_DEFAULT_ISR; \
         hal_interrupt_data[_index_] = 0;                                \
         hal_interrupt_objects[_index_] = 0;                             \
     }                                                                   \

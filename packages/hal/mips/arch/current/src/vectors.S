@@ -164,7 +164,7 @@ FUNC_START(_start)
 	jal     cyg_hal_invoke_constructors
 	nop
 
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYG_HAL_STARTUP_STUBS)
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
         .extern initialize_stub
         jal     initialize_stub
         nop
@@ -192,7 +192,6 @@ FUNC_START(__default_exception_vsr)
 	# K0 = vector index
 	# K1 = address of this function
 
-		
 	move	k1,sp			# K1 = original SP
 	
 #ifdef CYG_HAL_ROM_MONITOR
@@ -372,8 +371,6 @@ FUNC_START(__default_interrupt_vsr)
 		
 	# The machine state is now all saved on the stack.
 
-	hal_diag_intr_start
-
 	# Load Global Pointer register.
 	la	gp,_gp
 	
@@ -421,7 +418,9 @@ FUNC_START(__default_interrupt_vsr)
 
 	# Here s1 is the number of the vector to be called and s2 is
 	# the number of the interrupt being serviced. 
-	
+
+	hal_diag_intr_start
+		
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
 
 	# Call cyg_instrument to record that this interrupt is being raised.
@@ -432,8 +431,21 @@ FUNC_START(__default_interrupt_vsr)
 	xor	a2,a2,a2			# arg2 = 0 (delay slot)
 #endif
 
-	sll	s1,s1,2				# s1 = byte offset of vector
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+	# If we are supporting Ctrl-C interrupts from GDB, we must squirrel
+	# away a pointer to the save interrupt state here so that we can
+	# plant a breakpoint at some later time.
 	
+	.extern	hal_saved_interrupt_state
+	la	v0,hal_saved_interrupt_state
+	sw	s0,0(v0)
+	
+#endif
+	
+	sll	s1,s1,2				# s1 = byte offset of vector
+
+	hal_cpu_except_enable			# reenable exceptions
+			
 	la	t2,hal_interrupt_handlers	# handler table
 	add	t2,t2,s1			# address of ISR ptr
 	lw	t2,0(t2)			# ISR pointer
@@ -444,8 +456,6 @@ FUNC_START(__default_interrupt_vsr)
 
 	move	a0,s2				# pass interrupt number
 
-	move	a2,s0				# arg3 = saved register dump
-		
 	jalr	t2				# call ISR via t2
 	nop					# (delay slot)
 

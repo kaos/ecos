@@ -800,6 +800,61 @@ restore_state:
         isync   
         rfi                             # and return
 
+
+
+##-----------------------------------------------------------------------------
+## Execute pending DSRs on the interrupt stack with interrupts enabled.
+## Note: this can only be called from code running on a thread stack
+	
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	.extern cyg_interrupt_call_pending_DSRs
+
+FUNC_START(hal_interrupt_stack_call_pending_DSRs)
+        # Disable interrupts
+        mfmsr   r4
+        lis     r3,0
+        ori     r3,r3,0x8000
+        andc    r5,r4,r3
+        mtmsr   r5
+
+        # Change to interrupt stack
+        mr      r3,sp
+        lwi     sp,__interrupt_stack
+        stwu    r3,-4(sp)                       # store old stackptr on stack
+        mflr    r3
+        stwu    r3,-4(sp)                       # store lr on stack
+        stwu    r4,-4(sp)                       # store msr values on stack
+        stwu    r5,-4(sp)
+        
+        # Set up stack for calls to C code.
+        subi    sp,sp,12                        # make space on stack
+        li      r0,0
+        stw     r0,0(sp)                        # clear back chain
+        stw     r0,8(sp)                        # zero return pc
+        stwu    sp,-ppc_stack_frame_size(sp)    # create new stack frame
+
+        # Restore interrupt state
+        mtmsr   r4
+
+        # Call into kernel which will execute DSRs
+        bl      cyg_interrupt_call_pending_DSRs
+
+        # Unwind stack and get msr values
+        lwzu    r5,12+ppc_stack_frame_size(sp)
+        lwz     r4,4(sp)
+        lwz     r3,8(sp)
+        mtlr    r3
+
+        # Disable interrupts
+        mtmsr   r5
+
+        # Restore original stack pointer, original interrupt state and return
+        lwz     sp,12(sp)
+        mtmsr   r4
+
+        blr
+#endif		
+        
 #---------------------------------------------------------------------------
 # Code for putting the CPU in a post-reset state; disabling MMU and caches.
 _init_CPU:

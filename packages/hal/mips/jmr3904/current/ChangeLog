@@ -1,3 +1,15 @@
+1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/plf_misc.c: Reorganized and generally fixed up Ctrl-C
+	handling code.
+
+	* include/plf_intr.h: Added support for Ctrl-C handling.
+
+1999-05-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/plf_misc.c: Change CYG_HAL_TX39_JMR3904 to
+	CYG_HAL_MIPS_TX39_JMR3904
+
 1999-05-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_diag.c: Delete - this has been moved to hal/mips/tx39

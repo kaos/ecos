@@ -1,3 +1,8 @@
+1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Tidied away defunct code
+	and made use of HAL support for user break detection and delivery.
+
 1999-05-14  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/var_misc.c: Added definition of hal_interrupt_level[].

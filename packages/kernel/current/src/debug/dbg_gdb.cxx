@@ -99,16 +99,23 @@ externC int dbg_thread_capabilities(struct dbg_capabilities * cpb)
 
 static void dbg_make_threadref(Cyg_Thread *thread, threadref *ref )
 {
-    cyg_uint16 id = thread->get_unique_id();
+    if( thread == NULL )                     
+    {
+        ((unsigned long *)ref)[0] = 0;
+        ((unsigned long *)ref)[1] = 0;
+    }
+    else
+    {
+        cyg_uint16 id = thread->get_unique_id();
 
 #if USE_ID
-    ((unsigned long *)ref)[0] = (unsigned long)thread;
-    ((unsigned long *)ref)[1] = (unsigned long)swap32(id);
+        ((unsigned long *)ref)[0] = (unsigned long)thread;
+        ((unsigned long *)ref)[1] = (unsigned long)swap32(id);
 #else    
-    ((unsigned long *)ref)[1] = (unsigned long)thread;
-    ((unsigned long *)ref)[0] = (unsigned long)id;
+        ((unsigned long *)ref)[1] = (unsigned long)thread;
+        ((unsigned long *)ref)[0] = (unsigned long)id;
 #endif
-    
+    }
 }
 
 static Cyg_Thread *dbg_get_thread( threadref *ref)

@@ -1,3 +1,51 @@
+1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/intr/intr.cxx (Cyg_Interrupt::chain_isr): Calls
+	HAL_DEFAULT_ISR if it is defined and no chained ISRs have
+	reported that they have handled the interrupt.
+
+	* src/debug/dbg_gdb.cxx (dbg_make_threadref): Fixed this routine
+	so that it copes with a NULL thread object.
+
+1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c: Output stackmon status
+	occasionally. Output (simple) run time.
+
+1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/kcache1.c: Added handling of unified caches.
+
+1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/test/stackmon.h: Fixed some typos and thinkos.
+
+	* tests/tm_basic.cxx: Include new stackmon header.
+
+	* src/common/kapi.cxx: 
+	* include/kapi.h: 
+	Added kapi support for stackmon requirements.
+	
+	* include/stackmon.hxx:    [deleted]
+	* include/test/stackmon.h: [added]
+	Made stackmon safe to use from both C and C++.
+
+1999-05-25  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/stress_threads.c (setup_death_alarm): Only compile when
+	DEATH_TIME_LIMIT is defined.
+
+1999-05-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/except1.cxx: 
+	* tests/intr0.cxx (intr0_main): 
+	* tests/kexcept1.c: 
+	* tests/kintr0.c (kintr0_main): 
+	Change all mentions of CYG_HAL_TX39[_JMR3904] to
+	CYG_HAL_MIPS_TX39[_JMR3904]
+	
+	* tests/kcache1.c: Use HAL_DCACHE_SYNC if possible
+
 1999-05-20  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/tm_basic.cxx (run_all_tests): Added some more stack stats

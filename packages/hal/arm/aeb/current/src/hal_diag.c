@@ -143,7 +143,6 @@ void hal_diag_init(void)
 {
     static int init = 0;
     char *msg = "\n\rAEB-1 eCos\n\r";
-#if !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) || 1
     cyg_uint8 lcr;
     cyg_uint8 dll, dlm;
 
@@ -165,9 +164,6 @@ void hal_diag_init(void)
     lcr &= ~SIO_LCR_DLAB;
     HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_LCR, lcr);
     HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_FCR, 0x07);  // Enable & clear FIFO
-#else
-    if (init++) return;
-#endif
     while (*msg) hal_diag_write_char(*msg++);
 }
 
@@ -181,7 +177,6 @@ static int diag_bp = 0;
 
 void hal_diag_write_char(char c)
 {
-#if !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) || 1
     cyg_uint8 lsr;
 
     hal_diag_init();
@@ -191,10 +186,6 @@ void hal_diag_write_char(char c)
 
     HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_THR, c);
     HAL_IO_BARRIER ();
-#endif
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && 0
-    hal_output_gdb_string (&c, 1);
-#endif
     diag_buffer[diag_bp++] = c;
     if (diag_bp == DIAG_BUFSIZE) diag_bp = 0;
 }

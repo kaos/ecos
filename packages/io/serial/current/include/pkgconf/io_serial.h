@@ -386,7 +386,6 @@
 
 
 
-
 /* ----------------------------------------------------------------------------
    {{CFG_DATA
    cdl_component CYGPKG_IO_SERIAL_POWERPC_COGENT {
@@ -874,6 +873,7 @@
 #define CYGDAT_IO_SERIAL_MN10300_SERIAL2_NAME "/dev/ser2"
 #define CYGNUM_IO_SERIAL_MN10300_SERIAL2_BAUD 38400
 #define CYGNUM_IO_SERIAL_MN10300_SERIAL2_BUFSIZE 128
+
 
 #endif  /* CYGONCE_PKGCONF_IO_SERIAL_H */
 /* EOF io_serial.h */

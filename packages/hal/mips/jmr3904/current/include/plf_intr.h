@@ -54,8 +54,18 @@
 #include <cyg/infra/cyg_type.h>
 
 //--------------------------------------------------------------------------
+// Control-C support.
 
-// No platform specific stuff at present.
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+
+# define CYGHWR_HAL_GDB_PORT_VECTOR CYGNUM_HAL_INTERRUPT_SIO_0
+
+externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
+
+# define HAL_CTRLC_ISR hal_ctrlc_isr
+
+#endif
+
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

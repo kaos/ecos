@@ -161,7 +161,7 @@ static void entry0( CYG_ADDRWORD data )
     CYG_TEST_FAIL_FINISH("Couldn't cause exception");
 }
 
-#ifdef CYG_HAL_TX39_JMR3904
+#ifdef CYG_HAL_MIPS_TX39_JMR3904
 
 externC cyg_VSR __default_exception_vsr;
 cyg_VSR *old_vsr;

@@ -159,6 +159,7 @@ void cyg_thread_yield(void);
 
 cyg_handle_t cyg_thread_self(void);
 
+cyg_handle_t cyg_thread_idle_thread(void);
 
 /* Priority manipulation */
 
@@ -175,6 +176,12 @@ void cyg_thread_deadline_wait(
 ); 
 
 void cyg_thread_delay(cyg_tick_count_t delay);
+
+/* Stack information */
+cyg_addrword_t cyg_thread_get_stack_base(cyg_handle_t thread);
+
+cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread);
+
 
 /*---------------------------------------------------------------------------*/
 /* Per-thread Data                                                           */

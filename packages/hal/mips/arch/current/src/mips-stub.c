@@ -27,6 +27,50 @@
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/mips_opcode.h>
 
+typedef unsigned long t_inst;
+
+/*----------------------------------------------------------------------
+ * Asynchronous interrupt support
+ */
+
+static struct
+{
+  t_inst *targetAddr;
+  t_inst savedInstr;
+} asyncBuffer;
+
+/* Called to asynchronously interrupt a running program.
+   Must be passed address of instruction interrupted.
+   This is typically called in response to a debug port
+   receive interrupt.
+*/
+
+void
+install_async_breakpoint(void *epc)
+{
+  long gp_save;
+
+  /* This may be called from a separately linked program,
+     so we need to save and restore the incoming gp register
+     and setup our stub local gp register. 
+     Alternatively, we could skip this foolishness if we
+     compiled libstub with "-G 0". */
+
+  __asm__ volatile ( "move   %0,$28\n"
+		     ".extern _gp\n"
+		     "la     $28,_gp\n"
+		     : "=r" (gp_save) );
+
+  asyncBuffer.targetAddr = epc;
+  asyncBuffer.savedInstr = *(t_inst *)epc;
+  *(t_inst *)epc = *(t_inst *)_breakinst;
+  __instruction_cache(CACHE_FLUSH);
+  __data_cache(CACHE_FLUSH);
+
+  __asm__  volatile ( "move   $28,%0\n" :: "r"(gp_save) );
+}
+
+/*--------------------------------------------------------------------*/
 /* Given a trap value TRAP, return the corresponding signal. */
 
 int __computeSignal (unsigned int trap_number)
@@ -45,6 +89,15 @@ int __computeSignal (unsigned int trap_number)
 
     case EXC_BP:
       /* Break point */
+      if (asyncBuffer.targetAddr != NULL)
+	{
+	  /* BP installed by serial driver to stop running program */
+	  *asyncBuffer.targetAddr = asyncBuffer.savedInstr;
+          __instruction_cache(CACHE_FLUSH);
+          __data_cache(CACHE_FLUSH);
+	  asyncBuffer.targetAddr = NULL;
+	  return SIGINT;
+	}
       return SIGTRAP;
 
     case EXC_OVF:
@@ -103,8 +156,6 @@ void set_pc (target_register_t pc)
  */
 
 /* Saved instruction data for single step support.  */
-
-typedef unsigned long t_inst;
 
 static struct
 {

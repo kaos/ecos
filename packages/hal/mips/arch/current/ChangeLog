@@ -1,3 +1,32 @@
+1999-05-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Removed references to CYG_HAL_STARTUP_STUBS.
+	Removed some defunct code.
+
+	* include/hal_cache.h (HAL_ICACHE_INVALIDATE_ALL): Fixed typo.
+
+1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S:
+	Move call to hal_diag_intr_start to a more useful place.
+	Added a save of the current state pointer to memory for ctrl-c
+	support. Ensure that exceptions are enabled before calling the ISR
+	to allow breakpoints to function.
+
+	* src/mips-stub.c: Imported asynchronous interrupt support from
+	libstub/cygmon.
+
+	* include/hal_intr.h: Added HAL_DEFAULT_ISR to contain the name of
+	the default ISR.
+
+	* src/hal_misc.c: Added code to call HAL_CTRLC_ISR to default ISR
+	if it is enabled. Added some (disabled) debug code.
+
+	* include/hal_cache.h: Added default implementation of
+	HAL_DCACHE_IS_ENABLED(). Made use of it in some cache macros.
+	Also fixed some typos in some macros.
+
 1999-05-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_intr.h: Define HAL_INTERRUPT_STACK_BASE and

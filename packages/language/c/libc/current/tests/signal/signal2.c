@@ -232,7 +232,7 @@ main( int argc, char *argv[] )
 #if 0
 #elif defined(CYGPKG_HAL_MN10300)
     CYG_TEST_PASS("Test 3 not applicable to mn10300");
-#elif defined(CYGPKG_HAL_TX39)
+#elif defined(CYGPKG_HAL_MIPS_TX39)
     CYG_TEST_PASS("Test 3 not applicable to mips-tx39");
 #elif defined(CYGPKG_HAL_SPARCLITE)
     CYG_TEST_PASS("Test 3 not applicable to sparclite");

@@ -246,58 +246,14 @@ void hal_diag_write_char(char c)
             hal_diag_write_char_serial0(hex[(csum>>4)&0xF]);
             hal_diag_write_char_serial0(hex[csum&0xF]);
 
-#if 1
             hal_diag_read_char_serial0( &c1 );
 
             if( c1 == '+' ) break;
 
-            // FIXME: Need to make the following use
-            // cyg_hal_is_break() and cyg_hal_user_break().
+            if( cyg_hal_is_break( &c1 , 1 ) )
+                cyg_hal_user_break( NULL );    
             
-            if( c1 == 3 )
-                HAL_BREAKPOINT(_breakinst);                
-#endif            
-#if 0
-
-            // We must ack the interrupt caused by that read to avoid
-            // confusing the GDB stub ROM.
-//            HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_SIO_0 );
-            
-            if( c1 == '+' ) break;
-
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-            if( c1 == 3 )
-            {
-                // Ctrl-C: breakpoint.
-                extern void breakpoint();
-                breakpoint();
-                break;
-            }
-#elif defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_GDB_STUBS)
-            if( c1 == 3 )
-            {
-                // Ctrl-C: breakpoint.
-//                HAL_BREAKPOINT(_breakinst);
-                typedef void bpt_fn();
-                bpt_fn *bfn = ((bpt_fn **)0x80000100)[61];
-
-                bfn();
-                
-                break;
-            }
-#elif defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-            if( c1 == 3 )
-            {
-                // Ctrl-C: breakpoint.
-                HAL_BREAKPOINT(_breakinst);
-                
-                break;
-            }            
-#endif
-            
-#else
             break;
-#endif
         }
         
         pos = 0;

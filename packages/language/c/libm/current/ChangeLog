@@ -1,3 +1,8 @@
+1999-05-27  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak (SPECIAL_FLAGS): Add workaround flags for new
+	toolchains for all targets
+
 1999-05-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak: Make below workaround be the other way around by

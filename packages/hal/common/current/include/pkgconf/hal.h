@@ -400,6 +400,17 @@
 #endif
 
 /* ---------------------------------------------------------------------
+ * This option decides whether we are going to BE a ROM monitor. On
+ * some targets and platforms we provide a simple ROM monitor (the GDB
+ * STUBS monitor) by means of a simple configuration of the HAL and
+ * GDB stubs.
+ * This option has no CDL since it is only set by a special configuration
+ * permutation used for building a monitor.
+ */
+
+#undef CYG_HAL_ROM_MONITOR
+
+/* ---------------------------------------------------------------------
  *
  * The section below deals with some inferences about package/feature
  * presence that are not yet supported by the full external configuration
@@ -432,6 +443,7 @@
 #ifdef CYG_HAL_POWERPC_SIM
 # define CYG_HAL_POWERPC_MPC603
 #endif
+
 
 #ifdef CYGPKG_HAL_MIPS
 #include CYGBLD_HAL_TARGET_H

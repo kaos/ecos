@@ -105,7 +105,7 @@
 
 // ============================ END ============================
 
-#include <cyg/kernel/stackmon.hxx>      // stack analysis tools
+#include <cyg/kernel/test/stackmon.h>   // stack analysis tools
 
 #include <cyg/compat/uitron/uit_func.h> // uITRON
 

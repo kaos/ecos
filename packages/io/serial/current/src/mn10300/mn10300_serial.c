@@ -449,9 +449,18 @@ mn10300_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, 
 {
     mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
     cyg_uint16 cr = 0;
+    cyg_uint16 sr;
+
+    // wait for the device to become acquiescent. This could take some time
+    // if the device had been transmitting at a low baud rate.
+    do {
+        sr = mn10300_read_sr(mn10300_chan);
+    } while (sr & (SR_RXF|SR_TXF));
 
     // Disable device entirely.
     HAL_WRITE_UINT16(mn10300_chan->base+SERIAL_CTR, 0);
+
+    // Set up the Interrupt Mode Register
     HAL_WRITE_UINT8(mn10300_chan->base+SERIAL_ICR, 0);
 
     // Set up baud rate

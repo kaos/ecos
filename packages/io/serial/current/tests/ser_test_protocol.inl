@@ -90,7 +90,7 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
-#if defined(CYGPKG_HAL_TX39_JMR3904)                    \
+#if defined(CYGPKG_HAL_MIPS_TX39_JMR3904)               \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904)           \
     && defined(CYGPKG_IO_SERIAL_TX39_JMR3904_SERIAL0)
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL0_NAME
@@ -125,7 +125,6 @@
 #  endif
 # endif
 #endif
-
 
 // We can't rely on haldiag for ser_filter detection - it may not define
 // a working character reading function.
@@ -169,12 +168,53 @@ typedef struct ser_cfg {
     // etc...
 } cyg_ser_cfg_t;
 
+typedef enum {
+    OPT_SERIAL_DEBUG = 0,
+    OPT_VERBOSE_LEVEL
+} cyg_option_t;
+
+typedef enum {
+    NONE = 0,
+    PROTOCOL_PROGRESS,
+    PROTOCOL_DATA,
+} cyg_verbosity_level_t;
+
+
+// A few predifined option macros. Use after test_ping().
+#define TEST_OPTIONS(__handle, __array) \
+  test_options(__handle, sizeof(__array)/8, __array)
+
+#define TEST_HOST_DEBUG(__handle)                               \
+    CYG_MACRO_START                                             \
+    cyg_uint32 __options[] = {OPT_SERIAL_DEBUG, 1};             \
+    test_options((__handle), sizeof(__options)/8,               \
+                 __options);                                    \
+    CYG_MACRO_END
+
+#define TEST_HOST_PROGRESS(__handle)                            \
+    CYG_MACRO_START                                             \
+    cyg_uint32 __options[] =                                    \
+        {OPT_SERIAL_DEBUG, 1,                                   \
+         OPT_VERBOSE_LEVEL, PROTOCOL_PROGRESS};                 \
+    test_options((__handle), sizeof(__options)/8,               \
+                 __options);                                    \
+    CYG_MACRO_END
+
+#define TEST_HOST_DATA(__handle)                                \
+    CYG_MACRO_START                                             \
+    cyg_uint32 __options[] =                                    \
+        {OPT_SERIAL_DEBUG, 1,                                   \
+         OPT_VERBOSE_LEVEL, PROTOCOL_DATA};                     \
+    test_options((__handle), sizeof(__options)/8,               \
+                 __options);                                    \
+    CYG_MACRO_END
+
 //----------------------------------------------------------------------------
 // A few predefined configurations. These must all be valid for any
 // given target until change_config is behaving correctly.
 cyg_ser_cfg_t test_configs[] = {
 
-#if !defined(CYGPKG_HAL_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
     { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
@@ -191,14 +231,14 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
-#if !defined(CYGPKG_HAL_TX39_JMR3904) &&        \
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB)
     { CYGNUM_SERIAL_BAUD_57600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
-#if !defined(CYGPKG_HAL_TX39_JMR3904) &&        \
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_PID) &&             \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
@@ -207,7 +247,7 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },
 #endif
 
-#if !defined(CYGPKG_HAL_TX39_JMR3904) &&        \
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_ARM_PID)
     // One stop bit, even parity
@@ -215,7 +255,7 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_EVEN },
 #endif
 
-#if !defined(CYGPKG_HAL_TX39_JMR3904) &&        \
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_ARM_PID)
     // Two stop bits, even parity
@@ -223,7 +263,7 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_EVEN },
 #endif
 
-#if !defined(CYGPKG_HAL_TX39_JMR3904)
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904)
     // Two stop bits, no parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_NONE },
@@ -878,6 +918,46 @@ test_ping(cyg_io_handle_t handle)
 
     CYG_TEST_NA("No host side testing harness detected.");
 }
+
+
+//---------------------------------------------------------------------------
+// Send OPT to host, setting options in the filter.
+// Format out:
+//  "@OPT:option1,value1:...:optionN,valueN!"
+// Format in:
+//  "OK"
+//
+// Only integer values can be used. Any option not recognized by the
+// filter will be silently ignored.
+void
+test_options(cyg_io_handle_t handle, int count, cyg_uint32* options)
+{
+    const char cmd[] = "@OPT:";
+    int msglen;
+    cyg_uint8 *p1;
+
+    // Prepare and send the command.
+    p1 = &cmd_buffer[0];
+    p1 = strcpy(p1, &cmd[0]);
+    while(count--) {
+        p1 = itoa(p1, *options++);      // option
+        *p1++ = ':';
+        p1 = itoa(p1, *options++);      // value
+        *p1++ = ':';
+    }
+    *(p1-1) = '!';
+    *p1++ = 0;
+
+    CYG_TEST_INFO(&cmd_buffer[1]);
+  
+    msglen = strlen(&cmd_buffer[0]);
+    Tcyg_io_write(handle, &cmd_buffer[0], &msglen);
+
+    // Now read host side's status
+    msglen = 2;
+    Tcyg_io_read(handle, &in_buffer[0], &msglen);
+}
+
 
 //---------------------------------------------------------------------------
 // Some helper functions to get a test started.

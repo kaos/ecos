@@ -326,7 +326,9 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 //--------------------------------------------------------------------------
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
-// Macro/routine to call DSRs on interrupt stack?
+externC void hal_interrupt_stack_call_pending_DSRs(void);
+#define HAL_INTERRUPT_STACK_CALL_PENDING_DSRS() \
+    hal_interrupt_stack_call_pending_DSRs()
 
 // these are offered solely for stack usage testing
 // if they are not defined, then there is no interrupt stack.

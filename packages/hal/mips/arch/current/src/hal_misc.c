@@ -91,6 +91,18 @@ externC void exception_handler(HAL_SavedRegisters *regs)
 
 externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) &&      \
+    defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
+    defined(HAL_CTRLC_ISR)
+
+    if( vector == CYGHWR_HAL_GDB_PORT_VECTOR )
+    {
+        cyg_uint32 result = HAL_CTRLC_ISR( vector, data );
+        if( result != 0 ) return result;
+    }
+    
+#endif
+    
     CYG_TRACE1(true, "Interrupt: %d", vector);
     CYG_FAIL("Spurious Interrupt!!!");
     return 0;

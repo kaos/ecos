@@ -1,3 +1,14 @@
+1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/time/ctime.c: Fixed compiler warning.
+
+1999-05-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/signal/signal2.c (main): 
+	Update CYGPKG_HAL_TX39 -> CYGPKG_HAL_MIPS_TX39 due to recent MIPS
+	HAL changes
+	Fix for PR 20116
+
 1999-04-30  Jesper Skov  <jskov@lassi.cygnus.co.uk>
         PR 19945/19946 workaround
 	* tests/signal/signal2.c: Disabled test 3 for PowerPC sim.

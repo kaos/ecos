@@ -158,7 +158,7 @@ void intr0_main( void )
     CHECK( NULL != vsr0 );
 
     cyg_vector v1;
-#ifdef CYGPKG_HAL_TX39    
+#ifdef CYGPKG_HAL_MIPS_TX39    
     // This can be removed when PR 17831 is fixed
     if ( cyg_test_is_simulator )
         v1 = 12 % CYGNUM_HAL_ISR_COUNT;

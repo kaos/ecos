@@ -1,3 +1,7 @@
+1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/testcx7.cxx: Include new stackmon header.
+
 1999-05-20  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/testcx7.cxx (task1): Add some statistics dumping about

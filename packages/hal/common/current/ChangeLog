@@ -1,3 +1,26 @@
+1999-05-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_stub.c (initHardware): Added call to
+	HAL_STUB_PLATFORM_INIT if it is defined.
+
+	* include/pkgconf/hal.h: Added a #undef for CYG_HAL_ROM_MONITOR,
+	largely so that a stubrom permutation can define it.
+
+1999-05-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_stub.c: Do not call HAL_ICACHE_INVALIDATE_ALL() and
+	HAL_DCACHE_INVALIDATE_ALL() in __instruction_cache() and
+	__data_cache() for MIPS targets. These macros are simply
+	duplicates.
+
+1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/cache.c:  Added handling of unified caches.
+
+1999-05-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/cache.c: Use HAL_DCACHE_SYNC if available
+
 1999-05-21  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/hal_stub.c (__install_traps): Set exit vector to __reset.

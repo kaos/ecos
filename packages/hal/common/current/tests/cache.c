@@ -45,7 +45,11 @@
 // -------------------------------------------------------------------------
 // If the HAL does not supply this, we supply our own version
 
-#ifndef HAL_DCACHE_PURGE_ALL
+#ifdef HAL_DCACHE_SYNC
+
+# define HAL_DCACHE_PURGE_ALL() HAL_DCACHE_SYNC()
+
+#else
 
 static cyg_uint8 dca[HAL_DCACHE_SIZE + HAL_DCACHE_LINE_SIZE*2];
 
@@ -116,6 +120,26 @@ static void entry0( void )
 {
     register CYG_INTERRUPT_STATE oldints;
 
+#ifdef HAL_CACHE_UNIFIED
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();             // rely on above definition
+    HAL_UCACHE_INVALIDATE_ALL();
+    HAL_UCACHE_DISABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
+    CYG_TEST_INFO("Cache off");
+    time1();
+
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();             // rely on above definition
+    HAL_UCACHE_INVALIDATE_ALL();
+    HAL_UCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);
+    CYG_TEST_INFO("Cache on");
+    time1();
+
+#else // HAL_CACHE_UNIFIED
+
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_PURGE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
@@ -165,6 +189,8 @@ static void entry0( void )
     HAL_RESTORE_INTERRUPTS(oldints);
     CYG_TEST_INFO("Dcache off Icache off");
     time1();
+
+#endif // HAL_CACHE_UNIFIED
 
     CYG_TEST_PASS_FINISH("End of test");
 }

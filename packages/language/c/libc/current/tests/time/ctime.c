@@ -78,7 +78,6 @@ test( CYG_ADDRWORD data )
 {
     time_t t;
     char *ret;
-    char ret2[26];
     
     // make this predictable - independent of the user option
     cyg_libc_time_setzoneoffsets(0, 3600);
@@ -109,9 +108,13 @@ test( CYG_ADDRWORD data )
 
     t = (time_t)915510061;
     
-    ret = ctime_r(&t, ret2);
-    CYG_TEST_PASS_FAIL(!my_strcmp(ret2, "Tue Jan 05 04:21:01 1999\n"),
-                       "ctime_r test #1");
+    {
+        char ret2[26];
+
+        ret = ctime_r(&t, ret2);
+        CYG_TEST_PASS_FAIL(!my_strcmp(ret2, "Tue Jan 05 04:21:01 1999\n"),
+                           "ctime_r test #1");
+    }
 #endif
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "

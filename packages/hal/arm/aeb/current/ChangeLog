@@ -1,3 +1,11 @@
+1999-05-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* misc/gdb_module.c: Fix up symbols for new ABI.
+
+1999-05-24  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c: Clean up direct access code.
+
 1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_aeb.h: Move RTC setup here.

@@ -1,3 +1,7 @@
+1999-05-26  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* NEWS: Added Kernel/Debugging entry.
+
 1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
 
 	The following changes were made in a branch and imported to the
@@ -80,14 +84,6 @@
 	* packages:
 	Move serial devices to the end of the file so that the reparenting
 	below the HAL packages works as intended.
-
-1999-04-12  John Dallaway  <jld@cygnus.co.uk>
-
-	* pkgrelease.tcl: Report 'not within region' messages.
-
-1999-03-28  John Dallaway  <jld@cygnus.co.uk>
-
-	* pkgrelease.tcl: Supress incomplete NEWS file.
 
 1999-03-22  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
@@ -173,9 +169,6 @@
 	pkgconf.tcl to know about or make guesses about the mount
 	table.
 
-	* pkgrelease.tcl:
-	Added NEWS to the list of special files.
-
 1999-03-04  John Dallaway  <jld@cygnus.co.uk>
 
 	* pkgconf.tcl: Point to renamed *.ldi and *.h memory
@@ -214,14 +207,6 @@
 
 	* NEWS: added the NEWS file.  It's rather sparse for now.
 
-1999-02-12  John Dallaway  <jld@cygnus.co.uk>
-
-	* pkgrelease.tcl: Report 'region is full' message count.
-
-1999-02-11  John Dallaway  <jld@cygnus.co.uk>
-
-	* pkgrelease.tcl: Report ignored linker error count.
-
 1999-02-11  John Dallaway  <jld@cygnus.co.uk>
 
 	* pkgconf/makrules.tst: Ignore linker errors while building tests.
@@ -234,10 +219,6 @@
 1999-02-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* targets: Remove options now that math problems have been addressed.
-
-1999-02-10  John Dallaway  <jld@cygnus.co.uk>
-
-	* pkgrelease.tcl: Suppress generation of prebuilts for stubs startup
 
 1999-02-08  John Dallaway  <jld@cygnus.co.uk>
 
@@ -258,12 +239,6 @@
 	* targets:
 	* packages:
  	Added FADS entries from Kevin Hester <KHester@opticworks.com>.
-
-1999-01-21  Gary Thomas  <gthomas@cygnus.co.uk>
-
-	* pkgrelease.tcl: Add "--customers_file=xxx" option to allow customer
-	data-base file to be overidden on command line.  This is really just
-	for ease of testing new, exciting customer setups.
 
 1999-01-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
@@ -512,13 +487,6 @@ Thu Sep  3 15:13:42 1998  Tim Goodwin  <tgoodiwn@cygnus.co.uk>
 	* packages:
 
 	s/panx/mn10300/g
-
-1998-09-03  Bart Veer  <bartv@cygnus.co.uk>
-
-	* pkgrelease.tcl:
-	Updated to cope with the HAL packages no longer being special.
-	Also tidied up some of the Tcl code and removed a few references
-	to ecc.
 
 1998-09-02  Bart Veer  <bartv@cygnus.co.uk>
 

@@ -49,7 +49,7 @@
 
 #include <cyg/infra/testcase.h>
 
-#include <cyg/kernel/stackmon.hxx>
+#include <cyg/kernel/test/stackmon.h>
 
 // Define this to see the statistics with the first sample datum removed.
 // This can expose the effects of caches on the speed of operations.

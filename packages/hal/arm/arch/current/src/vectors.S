@@ -74,6 +74,7 @@ _name:
 // Hardware exception vectors.
 //   This entire section will be copied to location 0x0000 at startup time.
 //
+	.code	32
 	.section ".vectors","ax"
 	.global	__exception_handlers
 __exception_handlers:
@@ -222,6 +223,7 @@ start:
 	bne	1b
 2:
 
+
 	// Call platform specific hardware initialization
 	bl	hal_hardware_init
 
@@ -236,6 +238,7 @@ start:
 	bl	cyg_start
 _start_hang:
 	b	_start_hang
+	.code	32
 
 init_done:
 	.long	0xDEADB00B
@@ -244,7 +247,7 @@ init_done:
 // Exception handlers
 // Assmumption: get here from a Supervisor context [mode]
 //
-
+	.code	32
 undefined_instruction:
 	ldr	sp,.__undef_exception_stack	// get good stack
 	sub	lr,lr,#4		// PC at time of interrupt
@@ -287,6 +290,7 @@ undefined_instruction:
 	mov	v1,#CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
 	b	call_exception_handler
 
+	.code	32
 software_interrupt:
 	ldr	sp,.__startup_stack	// get good stack
 	sub	lr,lr,#4		// PC at time of interrupt
@@ -318,6 +322,7 @@ software_interrupt:
 	mov	v1,#CYGNUM_HAL_EXCEPTION_INTERRUPT
 	b	call_exception_handler
 
+	.code	32
 abort_prefetch:
 	ldr	sp,.__undef_exception_stack	// get good stack
 	sub	lr,lr,#4		// PC at time of interrupt
@@ -360,6 +365,7 @@ abort_prefetch:
 	mov	v1,#CYGNUM_HAL_EXCEPTION_CODE_ACCESS
 	b	call_exception_handler
 
+	.code	32
 abort_data:
 	ldr	sp,.__undef_exception_stack	// get good stack
 	sub	lr,lr,#4		// PC at time of interrupt
@@ -402,6 +408,7 @@ abort_data:
 	mov	v1,#CYGNUM_HAL_EXCEPTION_DATA_ACCESS
 	b	call_exception_handler
 
+	.code	32
 FIQ:
 	ldr	sp,.__startup_stack	// get good stack
 	sub	lr,lr,#4		// PC at time of interrupt
@@ -436,6 +443,7 @@ FIQ:
 //
 // Dispatch an exception handler.
 
+	.code	32
 call_exception_handler:
 	str	v1,[sp,#armreg_vector]
 	mov	r0,sp
@@ -469,6 +477,7 @@ call_exception_handler:
 // This is slightly more complicated than the other exception handlers because
 // it needs to interface with the kernel (if present).
 
+	.code	32
 IRQ:
 	// Note: I use this exception stack while saving the context because
 	// the current SP does not seem to be always valid in this CPU mode.
@@ -564,6 +573,7 @@ IRQ:
 	bl	interrupt_end   // post any bottom layer handler
                                 // threads and call scheduler
 #endif
+
 
 //	mov	r0,sp
 //	bl	show_frame_out
@@ -670,6 +680,11 @@ PTR(cyg_scheduler_sched_lock)
 PTR(irq_level)
 PTR(__interrupt_stack)
 #endif
+
+//
+// Identification - useful to find out when a system was configured
+_eCos_id:
+	.asciz	"eCos v1.2.1: " __DATE__
 
 
 // -------------------------------------------------------------------------

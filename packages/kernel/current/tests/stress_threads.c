@@ -69,13 +69,15 @@
 #include <math.h>
 #include <assert.h>
 
+#include <cyg/kernel/test/stackmon.h>
+
 #if defined(CYGFUN_KERNEL_THREADS_TIMER)
 #if defined(CYGPKG_LIBC_MALLOC)
 
 /* if TIME_LIMIT is defined, it represents the number of seconds this
    test should last; if it is undefined the test will go forever */
 #define DEATH_TIME_LIMIT 20
-/*  #undef DEATH_TIME_LIMIT */
+/* #undef DEATH_TIME_LIMIT */
 
 #define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL)
 #define STACK_SIZE2 (8*1024 + CYGNUM_HAL_STACK_SIZE_TYPICAL)
@@ -133,6 +135,8 @@ int client_makes_request = 0;
 
 /* indicates that it's time to print out a report */
 int time_to_report = 0;
+ /* print status after a delay of this many secs. */
+int time_report_delay;
 
 /*** now application-specific variables ***/
 /* an array that stores whether the handler threads are in use */
@@ -140,15 +144,15 @@ int handler_thread_in_use[MAX_HANDLERS];
 
 /***** statistics-gathering variables *****/
 struct s_statistics {
-  /* store the number of times each handler has been invoked */
-  unsigned long handler_invocation_histogram[MAX_HANDLERS];
+    /* store the number of times each handler has been invoked */
+    unsigned long handler_invocation_histogram[MAX_HANDLERS];
 
-  /* store how many times malloc has been attempted and how many times
-     it has failed */
-  unsigned long malloc_tries, malloc_failures;
+    /* store how many times malloc has been attempted and how many times
+       it has failed */
+    unsigned long malloc_tries, malloc_failures;
 
-  /* how many threads have been created */
-  unsigned long thread_creations, thread_exits;
+    /* how many threads have been created */
+    unsigned long thread_creations, thread_exits;
 };
 
 struct s_statistics statistics;
@@ -171,7 +175,7 @@ void perform_stressful_tasks(void);
 void permute_array(char a[], int size, int seed);
 void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
                        cyg_alarm *death_alarm_p, int *killed_p);
-void print_statistics(void);
+void print_statistics(int print_full);
 
 /* we need to declare the alarm handling function (which is defined
    below), so that we can pass it to cyg_alarm_initialize() */
@@ -254,10 +258,13 @@ void cyg_user_start(void)
                    (cyg_addrword_t) 4000,
                    &report_alarmH, &report_alarm);
   if (cyg_test_is_simulator) {
-    cyg_alarm_initialize(report_alarmH, cyg_current_time()+200, 200);
+      time_report_delay = 2;
   } else {
-    cyg_alarm_initialize(report_alarmH, cyg_current_time()+300, 4000);
+      time_report_delay = 30;
   }
+
+  cyg_alarm_initialize(report_alarmH, cyg_current_time()+200, 
+                       time_report_delay*100);
 }
 
 /* main_program() -- frees resources and prints status. */
@@ -312,13 +319,13 @@ void main_program(cyg_addrword_t data)
         // Print status if time.
         if (time_to_report) {
             time_to_report = 0;
-            print_statistics();
+            print_statistics(0);
         }
 
 #ifdef DEATH_TIME_LIMIT
         // Stop test if time.
         if (is_dead) {
-            print_statistics();
+            print_statistics(1);
             CYG_TEST_PASS_FINISH("Kernel thread stress test OK");
         }
 #endif /* DEATH_TIME_LIMIT */
@@ -522,6 +529,7 @@ void report_alarm_func(cyg_handle_t alarmH, cyg_addrword_t data)
     time_to_report = 1;
 }
 
+#ifdef DEATH_TIME_LIMIT
 /* this sets up death alarms. it gets the handle and alarm from the
    caller, since they must persist for the life of the alarm */
 void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
@@ -553,6 +561,7 @@ void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
     cyg_alarm_initialize(*deathHp, cyg_current_time() + tick_delay, 0);
   }
 }
+#endif
 
 /* death_alarm_func() is the alarm handler that kills the current
    thread after a specified timeout. It does so by setting a flag the
@@ -583,20 +592,35 @@ void sc_thread_create(
                     stack_base, stack_size, handle, thread);
 }
 
-void print_statistics(void)
+
+void print_statistics(int print_full)
 {
   int i;
+  static int print_count = 0;
+
+  printf("State dump %d (time %02d.%02d.%02d)\n",
+         print_count,
+         print_count*time_report_delay / (60*60),   // hours
+         (print_count*time_report_delay / 60) % 60, // minutes
+         (print_count*time_report_delay ) % 60); // seconds
+  print_count++;
 
   cyg_mutex_lock(&statistics_print_lock); {
-    printf("Handler-invocations: ");
+    printf(" Handler-invocations: ");
     for (i = 0; i < MAX_HANDLERS; ++i) {
       printf("%4lu ", statistics.handler_invocation_histogram[i]);
     }
     printf("\n");
-    printf("malloc()-tries/failures: -- %7lu %7lu\n",
+    printf(" malloc()-tries/failures: -- %7lu %7lu\n",
            statistics.malloc_tries, statistics.malloc_failures);
-    printf("client_makes_request:       %d\n", client_makes_request);
+    printf(" client_makes_request:       %d\n", client_makes_request);
   } cyg_mutex_unlock(&statistics_print_lock);
+
+  // Add: Also occasionally dump individual threads' stack status.
+  if (0 == print_count % 5 || print_full) {
+      cyg_test_dump_interrupt_stack_stats( " Status" );
+      cyg_test_dump_idlethread_stack_stats( " Status" );
+  }
 }
 
 #else /* (CYGNUM_KERNEL_SCHED_PRIORITIES >=    */

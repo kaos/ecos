@@ -313,7 +313,7 @@ typedef struct {
                       "sync;"                                                 \
                       "mtspr %2, %4;"                                         \
                       "mtspr %3, %5;"                                         \
-                      : /* %0 */ "=r" (__scratch)                             \
+                      : /* %0 */ "=&r" (__scratch)                            \
                       : /* %1 */ "b" (__base),                                \
                         /* %2 */ "I" (CYGARC_REG_DC_ADR),                     \
                         /* %3 */ "I" (CYGARC_REG_DC_CST),                     \

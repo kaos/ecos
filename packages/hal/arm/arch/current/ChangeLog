@@ -1,3 +1,8 @@
+1999-05-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (_eCos_id): Add version string.  Useful for
+	tracking when a system was configured (especially ROMs).
+
 1999-05-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_intr.h: Define HAL_INTERRUPT_STACK_BASE and
