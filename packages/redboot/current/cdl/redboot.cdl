@@ -128,6 +128,17 @@ cdl_package CYGPKG_REDBOOT {
                enable rudimentary editting of the lines themselves."
         }
 
+        cdl_option CYGBLD_REDBOOT_CMD_LINE_HISTORY {
+            display        "Enable history command and expansion"
+            requires       { CYGNUM_REDBOOT_CMD_LINE_EDITING > 0 }
+            flavor         bool
+            default_value  1
+            description  "
+              Enabling this option will allow RedBoot to provide a history command
+              to list previous commands. Also enables history expansion via '!'
+              character similar to bash shell."
+        }
+    
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
             display       "Include support gzip/zlib decompression"
             active_if     CYGPKG_COMPRESS_ZLIB

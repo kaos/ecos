@@ -223,6 +223,39 @@ value for the start-up script; it must always be retyped.</para>
 </itemizedlist></para>
 </sect1>
 
+<sect1 id="RedBoot-Command-History">
+<title>RedBoot Command History</title>
+<para>
+<indexterm><primary>RedBoot</primary><secondary>command history</secondary></indexterm>
+<indexterm><primary>command history</primary></indexterm>
+<indexterm><primary>commands</primary><secondary>history</secondary></indexterm>
+RedBoot provides support for listing and repeating previously entered commands. A
+list of previously entered commands may be obtained by typing <command>history</command>
+at the command line:
+<screen>
+RedBoot> <userinput>history</userinput>
+  0 fis list
+  1 fconfig -l
+  2 load -m ymodem
+  3 history
+</screen>
+</para><para>
+The following history expansions may be used to execute commands in the history list:
+<itemizedlist>
+<listitem><para>
+!! repeats last command.
+</para></listitem>
+<listitem><para>
+!<userinput>n</userinput> repeats command <userinput>n</userinput>.
+</para></listitem>
+<listitem><para>
+!<userinput>string</userinput> repeats most recent command starting with
+<userinput>string</userinput>.
+</para></listitem>
+</itemizedlist>
+</para>
+</sect1>
+
 <sect1 id="startup-mode">
 <title>RedBoot Startup Mode</title>
 <para>

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -296,6 +296,17 @@ getc_script(char *cp)
 }
 #endif
 
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+#define _CL_NUM_LINES CYGNUM_REDBOOT_CMD_LINE_EDITING       // Number of lines to keep
+static char _cl_lines[_CL_NUM_LINES][CYGPKG_REDBOOT_MAX_CMD_LINE];
+static int  _cl_index = -1;      // Last known command line
+static int  _cl_max_index = -1;  // Last command in buffers
+
+#ifdef CYGBLD_REDBOOT_CMD_LINE_HISTORY
+static void expand_history(char *);
+#endif
+#endif
+
 //
 // Read a line of input from the user
 // Return:
@@ -303,6 +314,15 @@ getc_script(char *cp)
 //       _GETS_GDB: '$' (GDB lead-in)
 //   _GETS_TIMEOUT: No input before timeout
 //     _GETS_CTRLC: ^C typed
+//
+// if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+//   Command line history support
+//    ^P - Select previous line from history
+//    ^N - Select next line from history
+//    ^A - Move insertion [cursor] to start of line
+//    ^E - Move cursor to end of line
+//    ^B - Move cursor back [previous character]
+//    ^F - Move cursor forward [next character]
 //
 int
 _rb_gets_preloaded(char *buf, int buflen, int timeout)
@@ -314,19 +334,6 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
     static char last_ch = '\0';
     int _timeout;
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
-//
-// Command line history support
-//    ^P - Select previous line from history
-//    ^N - Select next line from history
-//    ^A - Move insertion [cursor] to start of line
-//    ^E - Move cursor to end of line
-//    ^B - Move cursor back [previous character]
-//    ^F - Move cursor forward [next character]
-//
-#define _CL_NUM_LINES CYGNUM_REDBOOT_CMD_LINE_EDITING       // Number of lines to keep
-    static char _cl_lines[_CL_NUM_LINES][CYGPKG_REDBOOT_MAX_CMD_LINE];
-    static int  _cl_index = -1;      // Last known command line
-    static int  _cl_max_index = -1;  // Last command in buffers
     int _index = _cl_index;  // Last saved line
     char *xp;
 #endif
@@ -490,11 +497,16 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
 	    }
             last_ch = c;
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
-            if (cmd_history && (buf != eol)) {
-                // Save current line - only when enabled
-                if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
-                if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;
-                strcpy(_cl_lines[_cl_index], buf);
+            if (cmd_history) {
+                // History handling - only when enabled
+#ifdef CYGBLD_REDBOOT_CMD_LINE_HISTORY
+		expand_history(buf);
+#endif
+		if (*buf != '\0') {
+		    if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
+		    if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;
+		    strcpy(_cl_lines[_cl_index], buf);
+		}
             }
 #endif
             return _GETS_OK;
@@ -649,3 +661,84 @@ verify_action_with_timeout(int timeout, char *fmt, ...)
     va_start(ap, fmt);
     return _verify_action(timeout, fmt, ap);
 }
+
+
+#ifdef CYGBLD_REDBOOT_CMD_LINE_HISTORY
+// parse for history index number. Return number or -1 if not
+// an index number.
+static int
+parse_history_index(char *s)
+{
+    int val = 0;
+
+    while ('0' <= *s && *s <= '9')
+	val = (val * 10) + (*s++ - '0');
+
+    if (*s)
+	return -1;
+
+    return val;
+}
+
+// Check input line to see if it needs history expansion. If so,
+// try to find matching command and replace buffer as appropriate.
+static void
+expand_history(char *buf)
+{
+    int ncmds = _cl_max_index + 1;
+    int i, index, len;
+
+    if (buf[0] != '!' || buf[1] == '\0')
+	return;
+
+    if (ncmds > 0) {
+	if (!strcmp(buf, "!!")) {
+	    strcpy(buf, _cl_lines[_cl_index]);
+	    return;
+	}
+	if ((index = parse_history_index(buf + 1)) >= 0) {
+	    if (index <= _cl_max_index) {
+		strcpy(buf, _cl_lines[index]);
+		return;
+	    }
+	}
+	len = strlen(buf + 1);
+	for (i = 0, index = _cl_index; i < ncmds; i++) {
+	    if (!strncmp(_cl_lines[index], buf+1, len)) {
+		strcpy(buf, _cl_lines[index]);
+		return;
+	    }
+	    if (--index < 0)
+		index = _cl_max_index;
+	}
+    }
+
+    diag_printf("%s: event not found\n", buf);
+    *buf = '\0';
+}
+
+static void
+do_history(int argc, char *argv[])
+{
+    int ncmds = _cl_max_index + 1;
+    int i, index;
+
+    if (_cl_index == _cl_max_index) {
+	// history has not wrapped around
+	for (i = 0; i < ncmds; i++)
+	    diag_printf("%3d %s\n", i, _cl_lines[i]);
+    } else {
+	for (i = 0, index = _cl_index + 1; i < ncmds; i++) {
+	    diag_printf("%3d %s\n", i, _cl_lines[index++]);
+	    if (index > _cl_max_index)
+		index = 0;
+	}
+    }
+}
+
+RedBoot_cmd("history", 
+            "Display command history", 
+            "",
+            do_history
+    );
+#endif  // CYGBLD_REDBOOT_CMD_LINE_HISTORY
