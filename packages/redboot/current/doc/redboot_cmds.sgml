@@ -1909,7 +1909,7 @@ FIS directory     0x00070000  0x00000000  0x0000F000  0x00000000
 List the FIS directory with image data lengths substituted for flash
 block reservation lengths.
 <screen> 
-RedBoot> <userinput>fis list</userinput>
+RedBoot> <userinput>fis list -d</userinput>
 Name              FLASH addr  Mem addr    Datalen     Entry point               
 RedBoot           0x00000000  0x00000000  0x00000000  0x00000000                
 RedBoot config    0x0007F000  0x0007F000  0x00000000  0x00000000                

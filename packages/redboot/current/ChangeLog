@@ -1,3 +1,7 @@
+2004-08-27  Peter Korsgaard <jacmet@sunsite.dk>  
+
+	* doc/redboot_cmds.sgml: Fixed a minor typo with fis list
+
 2004-08-17  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * cdl/redboot.cdl:
