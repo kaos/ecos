@@ -61,6 +61,8 @@
 # define NA_MSG "POSIX threads needed to run test"
 #elif !defined CYGPKG_NET
 # define NA_MSG "NET package needed to run test"
+#elif !defined CYGPKG_POSIX_SIGNALS
+# define NA_MSG "POSIX signals package needed to run test"
 #endif
 
 #include <cyg/infra/testcase.h>
