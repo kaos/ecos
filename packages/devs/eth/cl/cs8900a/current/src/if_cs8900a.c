@@ -533,25 +533,30 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 // the upper layer is ready to unload the packet, the internal function
 // 'cs8900a_recv' will be called to actually fetch it from the hardware.
 static void
-cs8900a_RxEvent(struct eth_drv_sc *sc)
+cs8900a_RxEvent(struct eth_drv_sc *sc, int stat)
 {
     cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
     cyg_addrword_t base = cpd->base;
-    cyg_uint16 stat, len;
+    cyg_uint16 len;
 
-    HAL_READ_UINT16(base+CS8900A_RTDATA, stat);
-    HAL_READ_UINT16(base+CS8900A_RTDATA, len);
+    if(stat & PP_RxCFG_RxOK) {
+        // Only start reading a message if one has been received
+        HAL_READ_UINT16(base+CS8900A_RTDATA, stat);
+        HAL_READ_UINT16(base+CS8900A_RTDATA, len);
 
 #ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
-    len = CYG_SWAP16(len);
+        len = CYG_SWAP16(len);
 #endif
+
+        CYG_ASSERT(len > 0, "Zero length ethernet frame received");
         
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
-    if (cyg_io_eth_net_debug) {
-        diag_printf("RxEvent - stat: %x, len: %d\n", stat, len);
-    }
+        if (cyg_io_eth_net_debug) {
+            diag_printf("RxEvent - stat: %x, len: %d\n", stat, len);
+        }
 #endif
-    (sc->funs->eth_drv->recv)(sc, len);
+        (sc->funs->eth_drv->recv)(sc, len);
+    }
 }
 
 // This function is called as a result of the "eth_drv_recv()" call above.
@@ -636,7 +641,7 @@ cs8900a_poll(struct eth_drv_sc *sc)
     while (event != 0) {
         switch (event & ISQ_EventMask) {
         case ISQ_RxEvent:
-            cs8900a_RxEvent(sc);
+            cs8900a_RxEvent(sc, event);
             break;
         case ISQ_TxEvent:
             cs8900a_TxEvent(sc, event);

@@ -1,3 +1,6 @@
+2004-05-07  Bob Koninckx <bob.koninckx@o-3s.com>
+	* src/if_cs8900a.c: Drop "ghost" frames with zero length
+
 2004-04-19  Bob Koninckx <bob.koninckx@o-3s.com>
 	* src/if_cs8900a.c: function cs8900a_int_vector, return the vector
 	instead of a boolean.
