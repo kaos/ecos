@@ -60,6 +60,7 @@
 #include <cyg/kernel/kapi.h>
 
 #include <cyg/infra/testcase.h>
+#include <cyg/infra/diag.h>
 
 #include <cyg/kernel/test/stackmon.h>
 #include CYGHWR_MEMORY_LAYOUT_H
@@ -184,8 +185,6 @@ extern cyg_tick_count total_clock_dsr_latency, total_clock_dsr_calls;
 extern cyg_int32 min_clock_dsr_latency, max_clock_dsr_latency;
 extern bool measure_clock_latency;
 #endif
-
-externC void diag_printf(const char *, ...);
 
 void run_sched_tests(void);
 void run_thread_tests(void);

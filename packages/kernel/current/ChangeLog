@@ -1,3 +1,8 @@
+2002-10-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/tm_basic.cxx: Include infra/diag.h and removed the 
+	incorrect prototype for diag_printf
+
 2002-10-16  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/test/stackmon.h (STACKMON_PRINTF): Use #include to get
