@@ -1,3 +1,7 @@
+2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/common/termiostty.c: Support VMIN > 0 properly.
+
 2002-12-10  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/common/tty.c (tty_write): Only return number of characters

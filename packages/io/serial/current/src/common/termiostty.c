@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Jonathan Larmour
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -523,10 +524,7 @@ set_attr( struct termios *t, struct termios_private_info *priv )
                                        INLCR|INPCK|ISTRIP|PARMRK );
     
     ptermios->c_oflag &= ~(OPOST|ONLCR);
-    ptermios->c_oflag |= t->c_oflag & ONLCR;
-#ifdef NOTYET
-    ptermios->c_oflag |= t->c_oflag & OPOST;
-#endif
+    ptermios->c_oflag |= t->c_oflag & (OPOST|ONLCR);
 
     ptermios->c_cflag &= ~(CLOCAL|CREAD|HUPCL);
     ptermios->c_cflag |= t->c_cflag & (CLOCAL|CREAD|HUPCL);
@@ -599,32 +597,31 @@ termios_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
     cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
     struct termios_private_info *priv = (struct termios_private_info *)t->priv;
     cyg_io_handle_t chan = (cyg_io_handle_t)priv->dev_handle;
-    cyg_int32 size, bytes_successful, actually_written;
+    cyg_int32 xbufsize, input_bytes_read;
     cyg_uint8 xbuf[WRITE_BUFSIZE];
     cyg_uint8 *buf = (cyg_uint8 *)_buf;
     Cyg_ErrNo res;
 
-    size = 0;
-    bytes_successful = 0;
-    actually_written = 0;
-    while (bytes_successful++ < *len) {
-        xbuf[size] = *buf++;
-        if ( (xbuf[size] == '\n') && (priv->termios.c_oflag & ONLCR) ) {
-            xbuf[size] = '\r';
+    xbufsize = input_bytes_read = 0;
+    while (input_bytes_read++ < *len) {
+        if ( (*buf == '\n') && (priv->termios.c_oflag & (OPOST|ONLCR)) ) {
+            xbuf[xbufsize++] = '\r';
         }
-        size++;
-        if ((size == (WRITE_BUFSIZE-1)) ||
-            (bytes_successful == *len)) {
+        xbuf[xbufsize++] = *buf;
+        if ((xbufsize >= (WRITE_BUFSIZE-1)) || (input_bytes_read == *len) ||
+            (*buf == '\n'))
+        {
+            cyg_int32 size = xbufsize;
             res = cyg_io_write(chan, xbuf, &size);
             if (res != ENOERR) {
-                *len = actually_written;
+                *len = input_bytes_read - (xbufsize - size);
                 return res;
             }
-            actually_written += size;
-            size = 0;
+            xbufsize = 0;
         }
+        buf++;
     }
-    *len = actually_written;
+    // Everything sent, so *len is correct.
     return ENOERR;
 }
 
@@ -758,9 +755,8 @@ termios_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
                 returnnow = true; // FIXME: true even for INLCR?
             } // else if
         } else { // non-canonical mode
-            /* This is completely wrong:
-            if ( size+1 >= t->c_cc[ VMIN ] )
-            returnnow = true;*/
+            if ( t->c_cc[ VMIN ] && (size+1 >= t->c_cc[ VMIN ]) )
+                returnnow = true;
         } // else
 
 #ifdef CYGSEM_IO_SERIAL_TERMIOS_USE_SIGNALS
@@ -793,7 +789,7 @@ termios_read(cyg_io_handle_t handle, void *_buf, cyg_uint32 *len)
             if ( t->c_lflag & ECHO ) {
                 clen = 1;
                 // FIXME: what about error or non-blocking?
-                cyg_io_write( chan, &c, &clen );
+                termios_write( handle, &c, &clen );
             }
         }
         cyg_drv_mutex_unlock( &priv->lock );
