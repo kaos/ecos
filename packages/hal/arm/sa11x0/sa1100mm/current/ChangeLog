@@ -1,3 +1,7 @@
+2003-02-13  Patrick Doyle  <wpd@delcomsys.com>
+	* src/sa1100mm_misc.c: Replaced explicit prototype of memset with
+	#include <string.h>.
+
 2003-02-10  Nick Garnett  <nickg@calivar.com>
 
 	* misc/redboot_ROM.ecm:
