@@ -52,7 +52,6 @@
 
 
 #include <cyg/hal/hal_arch.h>    /* CYGNUM_HAL_STACK_SIZE_MINIMUM & CYGNUM_HAL_STACK_SIZE_TYPICAL */
-#include <cyg/infra/cyg_type.h>  /* CYG_BYTEORDER */
 #include <pkgconf/system.h>
 #include <cyg/infra/diag.h>      /* diag_printf */
 #include <string.h>
@@ -81,6 +80,7 @@ void lwip_init(void);
 #define MESSAGE_BUFFER_SIZE 50
 #define TILE_SIZE           CYGNUM_VNC_SERVER_TILE_SIZE
 #define TRUE_COLOUR_FLAG    1       /* True colour is set */
+#define BIG_ENDIAN_FLAG     1       /* Always send colour data big endian */
 
 /* Various definitions for different pixel types */
 #ifdef CYGNUM_VNC_SERVER_PIXEL_RGB332
@@ -125,20 +125,9 @@ void lwip_init(void);
 #define POINTER_EVENT            5
 #define CLIENT_CUT_TEXT          6
 
-#if CYG_BYTEORDER == CYG_MSBFIRST
-#define REQUESTED_BIG_ENDIAN_FLAG   1  /* We are big endian */
-#else
-#define REQUESTED_BIG_ENDIAN_FLAG   0  /* We are little endian */
-#endif
-
-/* Give these variables initial values - they may be set again */
-/* after a SetPixelFormat message from the client              */
-volatile int clr_byte0_shift = 0;
-volatile int clr_byte1_shift = 8;
-
-/* Macro to split colour to bytes depending on required endian and so on */
-#define COLOUR2BYTE0(col) ((col>>clr_byte0_shift)&0xFF)
-#define COLOUR2BYTE1(col) ((col>>clr_byte1_shift)&0xFF)
+/* Macros to split colour to bytes */
+#define COLOUR2BYTE1(col) ((col>>8)&0xFF)
+#define COLOUR2BYTE0(col) (col&0xFF)
 
 /* Function prototype */
 static int GetMessageData(int, char *, int);
@@ -414,6 +403,7 @@ static void client_handler(void *data)
             exit(1);
         }
 
+
         /*
           ProtocolVersion Handshake - begin
         */
@@ -524,7 +514,7 @@ static void client_handler(void *data)
 
         message_buffer[4] = (cyg_uint8)BITS_PER_PIXEL;
         message_buffer[5] = (cyg_uint8)PIXEL_DEPTH;
-        message_buffer[6] = (cyg_uint8)REQUESTED_BIG_ENDIAN_FLAG;
+        message_buffer[6] = (cyg_uint8)BIG_ENDIAN_FLAG;
         message_buffer[7] = (cyg_uint8)TRUE_COLOUR_FLAG;
 
         ptr_to_uint16 = (cyg_uint16 *) &(message_buffer[8]);
@@ -655,20 +645,6 @@ static void client_handler(void *data)
                     diag_printf("Please ensure the 'Auto select' is not enabled in your vncviewer options,\n");
                     diag_printf("then try connecting again.\n");
                     goto close_connection_quietly;
-                }
-
-                if ( (message_buffer[6] && !REQUESTED_BIG_ENDIAN_FLAG)
-                  || (!message_buffer[6] && REQUESTED_BIG_ENDIAN_FLAG) )
-                {
-                    /* Colour values are stored in a different endianess */
-                    clr_byte0_shift = 8;
-                    clr_byte1_shift = 0;
-                }
-                else
-                {
-                    /* Colour values are stored in the same endianess */
-                    clr_byte0_shift = 0;
-                    clr_byte1_shift = 8;
                 }
 
                 break;
@@ -898,7 +874,8 @@ static void frame_update(void *data)
     static long rtc_resolution[] = CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION;
 
     /* These are declared static so they don't use thread stack memory */
-    static cyg_uint8 FramebufferUpdate_msg[4 + 12 + TILE_SIZE*TILE_SIZE*BITS_PER_PIXEL/8];
+    static cyg_uint8 FramebufferUpdate_msg[4 + 12 + TILE_SIZE*TILE_SIZE*BITS_PER_PIXEL/8 + 1460];
+    static int FrameBufferPtr;  /* Pointer to next space in buffer */
     static int tile_updated_local[NUM_TILES_Y_AXIS][NUM_TILES_X_AXIS];
 
     while(1)
@@ -938,12 +915,7 @@ static void frame_update(void *data)
             FramebufferUpdate_msg[1] = 0;  /* Padding */
             ptr_to_uint16 = (cyg_uint16 *) &(FramebufferUpdate_msg[2]);
             *ptr_to_uint16 = htons(num_updated_tiles);  /* Number-of-rectangles */
-
-            /* Send the first 4 bytes of the frame update message to the client */
-            if (send(client_sock, FramebufferUpdate_msg, 4, 0) != 4)
-            {
-                goto wait_for_client;
-            }
+            FrameBufferPtr = 4;
 
             for (y_pos = 0; y_pos < NUM_TILES_Y_AXIS; y_pos++)
             {
@@ -959,47 +931,74 @@ static void frame_update(void *data)
                         }
 
                         /* Send current square data to client */
-                        ptr_to_uint16 = (cyg_uint16 *) &(FramebufferUpdate_msg[4-4]);
-                        *ptr_to_uint16 = htons(x_pos * TILE_SIZE);     /* x-position */
-                        ptr_to_uint16 = (cyg_uint16 *) &(FramebufferUpdate_msg[6-4]);
-                        *ptr_to_uint16 = htons(y_pos * TILE_SIZE);     /* y-position */
+
+                        /* x-position */
+                        FramebufferUpdate_msg[FrameBufferPtr+0] = (x_pos * TILE_SIZE) / 256;
+                        FramebufferUpdate_msg[FrameBufferPtr+1] = (x_pos * TILE_SIZE) % 256;
+
+                        /* y-position */
+                        FramebufferUpdate_msg[FrameBufferPtr+2] = (y_pos * TILE_SIZE) / 256;
+                        FramebufferUpdate_msg[FrameBufferPtr+3] = (y_pos * TILE_SIZE) % 256;
+
 
                         /* Set width of tile in packet */
-                        ptr_to_uint16 = (cyg_uint16 *) &(FramebufferUpdate_msg[8-4]);
                         if (x_pos == (NUM_TILES_X_AXIS -1))
                         {
                             /* Last tile in X-axis */
-                            *ptr_to_uint16 = htons(LAST_TILE_WIDTH);  /* Width */
+                            FramebufferUpdate_msg[FrameBufferPtr+4] = LAST_TILE_WIDTH / 256;
+                            FramebufferUpdate_msg[FrameBufferPtr+5] = LAST_TILE_WIDTH % 256;
                         }
                         else
                         {
-                            *ptr_to_uint16 = htons(TILE_SIZE);        /* Width */
+                            FramebufferUpdate_msg[FrameBufferPtr+4] = TILE_SIZE / 256;
+                            FramebufferUpdate_msg[FrameBufferPtr+5] = TILE_SIZE % 256;
                         }
 
-                        ptr_to_uint16 = (cyg_uint16 *) &(FramebufferUpdate_msg[10-4]);
                         if (y_pos == (NUM_TILES_Y_AXIS -1))
                         {
                             /* Last tile in Y-axis */
-                            *ptr_to_uint16 = htons(LAST_TILE_HEIGHT); /* Height */
+                            FramebufferUpdate_msg[FrameBufferPtr+6] = LAST_TILE_HEIGHT / 256;
+                            FramebufferUpdate_msg[FrameBufferPtr+7] = LAST_TILE_HEIGHT % 256;
                         }
                         else
                         {
-                            *ptr_to_uint16 = htons(TILE_SIZE);       /* Height */
+                            FramebufferUpdate_msg[FrameBufferPtr+6] = TILE_SIZE / 256;
+                            FramebufferUpdate_msg[FrameBufferPtr+7] = TILE_SIZE % 256;
                         }
 
                         /* Generate the packet data for this tile */
-                        packet_length = GenTileUpdateData(FramebufferUpdate_msg);
+                        packet_length = GenTileUpdateData(&(FramebufferUpdate_msg[FrameBufferPtr]));
 
                         /* Send the packet data for this tile to the client */
-                        if (send(client_sock, FramebufferUpdate_msg, packet_length, 0) != packet_length)
+                        FrameBufferPtr += packet_length;
+
+                        if (FrameBufferPtr > 1460)
+                        {
+                            /* Send the data to the client */
+                            if (send(client_sock, FramebufferUpdate_msg, FrameBufferPtr, 0) != FrameBufferPtr)
                         {
                             goto wait_for_client;
+                        }
+
+                            FrameBufferPtr = 0;
                         }
 
                         tile_updated_local[y_pos][x_pos] = 0;  /* Clear the update bit for this square */
                     }
                 }
             }
+
+            if (FrameBufferPtr > 0)
+            {
+                /* Last data for this update, send it to the client */
+                if (send(client_sock, FramebufferUpdate_msg, FrameBufferPtr, 0) != FrameBufferPtr)
+                {
+                    goto wait_for_client;
+                }
+
+                FrameBufferPtr = 0;
+            }
+
         }
         else  /* if (num_updated_tiles) */
         {
@@ -1054,8 +1053,6 @@ static void frame_update(void *data)
  *****************************************************************************/
 static int GenTileUpdateData(cyg_uint8 *packet_buffer)
 {
-    cyg_uint16 *ptr_to_uint16;
-    cyg_uint32 *ptr_to_uint32;
     cyg_uint16 x_pos, y_pos;
     int i, j;
     int packet_length;
@@ -1069,21 +1066,17 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
     int k, l;
 
     no_of_subrects = 0;  /* Set to no sub-rectangles to start with */
-#endif   //CYGNUM_VNC_SERVER_USE_CORRE_ENCODING
+#endif   /* CYGNUM_VNC_SERVER_USE_CORRE_ENCODING */
 
     packet_length = 20-4+(BITS_PER_PIXEL/8);  /* Set to minimum packet length to start with */
 
     /* Get the X and Y positions of this tile from the packet buffer */
-    ptr_to_uint16 = (cyg_uint16 *) &(packet_buffer[4-4]);
-    x_pos = htons(*ptr_to_uint16);
-    ptr_to_uint16 = (cyg_uint16 *) &(packet_buffer[6-4]);
-    y_pos = htons(*ptr_to_uint16);
+    x_pos = packet_buffer[0] * 256 + packet_buffer[1];
+    y_pos = packet_buffer[2] * 256 + packet_buffer[3];
 
     /* Get the tile width and height from the packet buffer */
-    ptr_to_uint16 = (cyg_uint16 *) &(packet_buffer[8-4]);
-    tile_width = htons(*ptr_to_uint16);
-    ptr_to_uint16 = (cyg_uint16 *) &(packet_buffer[10-4]);
-    tile_height = htons(*ptr_to_uint16);
+    tile_width = packet_buffer[4] * 256 + packet_buffer[5];
+    tile_height = packet_buffer[6] * 256 + packet_buffer[7];
 
 #ifdef CYGNUM_VNC_SERVER_USE_CORRE_ENCODING
     /* Set the encoding type to RRE  */
@@ -1094,8 +1087,10 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
     }
 
     /* Set encoding type to CoRRE encoding in packet buffer */
-    ptr_to_uint32 = (cyg_uint32 *) &(packet_buffer[12-4]);
-    *ptr_to_uint32 = htonl(4);     /* Encoding-type = CoRRE encoding */
+    packet_buffer[8+0] = 0;
+    packet_buffer[8+1] = 0;
+    packet_buffer[8+2] = 0;
+    packet_buffer[8+3] = 4;
 
     /* Copy tile from the main frame buffer to the local tile buffer */
     for (i = 0; i < tile_height; i++)
@@ -1113,11 +1108,11 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
 
     /* Set the background colour in the packet buffer */
 #if BITS_PER_PIXEL == 8
-    packet_buffer[20-4] = (vnc_colour_t) bg_colour;
+    packet_buffer[16] = (vnc_colour_t) bg_colour;
 #endif
 #if BITS_PER_PIXEL == 16
-    packet_buffer[20-4]   = COLOUR2BYTE0(bg_colour);
-    packet_buffer[20-4+1] = COLOUR2BYTE1(bg_colour);
+    packet_buffer[16]   = COLOUR2BYTE0(bg_colour);
+    packet_buffer[16+1] = COLOUR2BYTE1(bg_colour);
 #endif
 
 #ifdef CYGNUM_VNC_SERVER_CORRE_ENCODING_HACK
@@ -1128,8 +1123,8 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
     packet_length++;
 #endif
 #if BITS_PER_PIXEL == 16
-    packet_buffer[packet_length]   = packet_buffer[20-4];
-    packet_buffer[packet_length+1] = packet_buffer[20-4+1];
+    packet_buffer[packet_length]   = packet_buffer[16];
+    packet_buffer[packet_length+1] = packet_buffer[16+1];
     packet_length += 2;
 #endif
     packet_buffer[packet_length]   = (cyg_uint8) 0;  /* Sub-rect x-pos */
@@ -1210,7 +1205,7 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
 
                 no_of_subrects++;  /* Increment sub-rectangle count */
 
-                if (packet_length >= 16-4 + tile_height*tile_width*(BITS_PER_PIXEL/8) - 6)
+                if (packet_length >= 12 + tile_height*tile_width*(BITS_PER_PIXEL/8) - 6)
                 {
                     /* The next sub-rectangle will make the packet size   */
                     /* larger than a rew encoded packet - so just use raw */
@@ -1221,14 +1216,16 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
     }
 
     /* Fill in no_of_sub-rectangles field in packet buffer */
-    ptr_to_uint32 = (cyg_uint32 *) &(packet_buffer[16-4]);
-    *ptr_to_uint32 = htonl(no_of_subrects);
+    packet_buffer[12+0] = 0;
+    packet_buffer[12+1] = 0;
+    packet_buffer[12+2] = no_of_subrects / 256;
+    packet_buffer[12+3] = no_of_subrects % 256;
 
     /* CoRRE data encoding for tile complete */
     return packet_length;
 
     use_raw_encoding:
-#endif   //CYGNUM_VNC_SERVER_USE_CORRE_ENCODING
+#endif   /* CYGNUM_VNC_SERVER_USE_CORRE_ENCODING */
 
     /* Create packet data using RAW encoding */
     for (i = 0; i < tile_height; i++)
@@ -1236,20 +1233,22 @@ static int GenTileUpdateData(cyg_uint8 *packet_buffer)
         for (j = 0; j < tile_width; j++)
         {
 #if BITS_PER_PIXEL == 8
-             packet_buffer[16-4 + tile_width * i + j] = frame_buffer[y_pos + i][x_pos + j];
+             packet_buffer[12 + tile_width * i + j] = frame_buffer[y_pos + i][x_pos + j];
 #endif
 #if BITS_PER_PIXEL == 16
-            packet_buffer[16-4 + 2 * tile_width * i + 2*j]    = COLOUR2BYTE0(frame_buffer[y_pos + i][x_pos + j]);
-            packet_buffer[16-4 + 2 * tile_width * i + 2*j+ 1] = COLOUR2BYTE1(frame_buffer[y_pos + i][x_pos + j]);
+            packet_buffer[12 + 2 * tile_width * i + 2*j]    = COLOUR2BYTE0(frame_buffer[y_pos + i][x_pos + j]);
+            packet_buffer[12 + 2 * tile_width * i + 2*j+ 1] = COLOUR2BYTE1(frame_buffer[y_pos + i][x_pos + j]);
 #endif
         }
     }
 
     /* Set the encoding type to raw */
-    ptr_to_uint32 = (cyg_uint32 *) &(packet_buffer[12-4]);
-    *ptr_to_uint32 = htonl(0);     /* Encoding-type = raw */
+    packet_buffer[8+0] = 0;
+    packet_buffer[8+1] = 0;
+    packet_buffer[8+2] = 0;
+    packet_buffer[8+3] = 0;
 
-    return (16-4 + tile_width*tile_height*(BITS_PER_PIXEL/8));
+    return (12 + tile_width*tile_height*(BITS_PER_PIXEL/8));
 }
 
 
@@ -1601,6 +1600,13 @@ vnc_printf_return_t VncPrintf(MWCFONT* font, int do_print, vnc_colour_t colour, 
             continue;
         }
 
+        /* Check for characters not if the font - set to first char */
+        if (buf[char_pos] < sel_font->firstchar)
+        {
+            buf[char_pos] = sel_font->firstchar;
+        }
+
+
         char_offset = ((cyg_uint8) buf[char_pos]) - sel_font->firstchar;
 
         /* Get the character width */
@@ -1659,11 +1665,14 @@ vnc_printf_return_t VncPrintf(MWCFONT* font, int do_print, vnc_colour_t colour, 
     }
 
     /* Mark the required tiles for update */
+    if (do_print)
+    {
     for (i = y/TILE_SIZE; i <= (y_max + sel_font->height)/TILE_SIZE; i++)
     {
         for (j = x/TILE_SIZE; j <= x_max/TILE_SIZE; j++)
         {
             tile_updated[i][j] = 1;
+            }
         }
     }
 

@@ -1,3 +1,19 @@
+2003-08-31  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+    * src/vnc-server.c:
+    Always send colour data to client in big endian format.
+    When doing frame updates, do not call send command until there
+    if 1460 bytes of data unless the data is all that is left for the
+    cuurent frame update (huge improvement with lwIP stack).
+    Fixed bug where VncPrintf() did not handle characters not defined
+    for the selected font.
+    VncPrintf() does not mark tiles for update when do_print argument
+    is not set.
+    
+    * tests/vnc-test.c:
+    Modifed the test to use select() function.  Added more examples
+    of using the VNC server API.
+    
 2003-08-22  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
 	* tests/vnc-test.c: 
