@@ -1,3 +1,13 @@
+2000-09-06  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850_serial.h: 
+	* src/v85x_v850_serial.c: Better handling of V850 variants (SA1,SB1)
+
+2000-08-31  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850_serial.c (v850_serial_config_port): Better handling
+	of cpu xtal frequency for baud rate calculations.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/v85x_v850_serial.c (v850_serial_set_config): Now use keys to make

@@ -1,7 +1,16 @@
+2000-09-06  Gary Thomas  <gthomas@redhat.com>
+
+	* include/mod_7729.h: Includes PFC (programmable I/O) module.
+
+2000-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh.cdl: Added 7729 option.
+
 2000-08-31  Jesper Skov  <jskov@redhat.com>
 
 	* include/mod_7709a.h: Added UBC definition.
 	* include/mod_7708.h: Same.
+	* include/mod_7729.h: Same.
 	* include/mod_7707a.h: Same.
 	* include/sh_regs.h: Extra UBC definitions.
 	* src/sh_stub.c: If core supports UBC, use it for
@@ -15,7 +24,6 @@
 
 	* src/vectors.S (__reset): Change calculation of uncached startup
 	address.
-
 	* include/mod_7707a.h: 7707a has 32K caches (we believe).
 
 2000-07-17  Gary Thomas  <gthomas@redhat.com>

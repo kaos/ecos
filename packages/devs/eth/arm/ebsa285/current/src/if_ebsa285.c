@@ -74,6 +74,9 @@
 
 #ifdef CYGPKG_IO_PCI
 #include <cyg/io/pci.h>
+// So we can check the validity of the PCI window against the MLTs opinion,
+// and thereby what the malloc heap consumes willy-nilly:
+#include CYGHWR_MEMORY_LAYOUT_H
 #else
 #error "Need PCI package here"
 #endif
@@ -1848,6 +1851,25 @@ pci_init_find_82559s( void )
     if (mem_reserved_ioctl != (void*)0) {
 #ifdef DEBUG
         db_printf("pci_init_find_82559s() called > once\n");
+#endif
+        return 0;
+    }
+
+
+    CYG_ASSERT( CYGMEM_SECTION_pci_window ==
+                (char *)CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE,
+      "PCI window configured does not match PCI memory section base" );
+    CYG_ASSERT( CYGMEM_SECTION_pci_window_SIZE ==
+                CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_SIZE,
+        "PCI window configured does not match PCI memory section size" );
+
+    if ( CYGMEM_SECTION_pci_window !=
+         (char *)CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE
+         ||
+         CYGMEM_SECTION_pci_window_SIZE !=
+         CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_SIZE ) {
+#ifdef DEBUG
+        db_printf("pci_init_find_82559s(): PCI window misconfigured\n");
 #endif
         return 0;
     }

@@ -188,7 +188,6 @@
 
 #endif // CYGARC_SH_MOD_INTC_V3
 
-
 // CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_NMI
 #define CYGNUM_HAL_ISR_COUNT                 ( CYGNUM_HAL_ISR_MAX + 1 )

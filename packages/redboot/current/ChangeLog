@@ -1,3 +1,13 @@
+2000-09-07 Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/load.c, include/redboot.h: renamed the getc functions to
+ 	redboot_getc and made them globel so custom boot loaders can use
+ 	them.
+
+2000-09-06  Gary Thomas  <gthomas@redhat.com>
+
+	* doc/users_guide: Add info about region locking/unlocking.
+
 2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/flash_config.h (struct config_option): Apply

@@ -44,7 +44,10 @@
 //
 // ====================================================================
 
-// Description of serial ports on NEC CEB/V850SA1
+// Description of serial ports on NEC V850/SA1 & SB1
+
+#include <pkgconf/system.h>
+#include CYGBLD_HAL_TARGET_H
 
 #include <cyg/hal/v850_common.h>
 
@@ -61,6 +64,10 @@ struct serial_port {
     unsigned char _filler4[5];
     unsigned char brgm;        // Baud rate mode
     unsigned char _filler5;
+#if CYGINT_HAL_V85X_VARIANT_SB1
+    unsigned char _filler6[0x10];
+    unsigned char brgm1;       // Baud rate overflow
+#endif
 };
 
 // Relative interrupt numbers
@@ -118,6 +125,32 @@ static struct v850_baud {
     unsigned char count;
     unsigned char mode;
 } select_baud[] = {
+#if CYGINT_HAL_V85X_VARIANT_SB1
+// Baud rate values, using defined system clock
+#define BAUD_COUNT (CYGHWR_HAL_V85X_V850_BOARD_FREQUENCY)/19200
+      {0, 0},  // Unused
+      {0, 0},  // 50
+      {0, 0},  // 75
+      {0, 0},  // 110
+      {0, 0},  // 134.5
+      {0, 0},  // 150
+      {0, 0},  // 200
+      {0, 0},  // 300
+      {0, 0},  // 600
+    {BAUD_COUNT, 5},  // 1200
+      {0, 0},  // 1800
+    {BAUD_COUNT, 4},  // 2400
+      {0, 0},  // 3600
+    {BAUD_COUNT, 3},  // 4800
+      {0, 0},  // 7200
+    {BAUD_COUNT, 2},  // 9600
+      {0, 0},  // 14400
+    {BAUD_COUNT, 1},  // 19200
+    {BAUD_COUNT, 0},  // 38400
+      {0, 0},  // 57600
+      {0, 0},  // 115200
+      {0, 0},  // 230400
+#else
 // Baud rate values, based on raw 17MHz clock
       {0, 0},  // Unused
       {0, 0},  // 50
@@ -141,6 +174,7 @@ static struct v850_baud {
       {0, 0},  // 57600
       {0, 0},  // 115200
       {0, 0},  // 230400
+#endif
 };
 
 #endif // CYGONCE_V85X_V850_SERIAL_H

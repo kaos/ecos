@@ -1,3 +1,9 @@
+2000-09-05  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* include/basetype.h: Override the alignment macros for the ARM
+	architecture. The ARM compiler only alows a maximum of 4 bytes
+	of alignment where as the default is 8
+	
 2000-08-15  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/arm.ld (SECTION_text): Change it back so that

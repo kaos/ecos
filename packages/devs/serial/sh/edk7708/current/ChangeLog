@@ -1,3 +1,10 @@
+2000-09-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_sci_serial.c: Moved to SCI package.
+	* src/sh_sci_7708.inl: Moved ...
+	* include/sh_sh3_edk7708_sci.inl: ... to here.
+	* cdl/ser_sh_edk7708.cdl: Matching changes.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/sh_sci_serial.c (sh_serial_set_config): Now use keys to make

@@ -458,11 +458,7 @@ Cyg_Thread::counted_sleep( cyg_tick_count delay )
             current->sleep();               // prepare to sleep
             current->state |= COUNTSLEEP;   // Set the state
 
-            CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1,
-                    "Called with non-zero scheduler lock");
-        
-            Cyg_Scheduler::unlock();
-            Cyg_Scheduler::lock();
+            Cyg_Scheduler::reschedule();
     
             // clear the timer; if it actually fired, no worries.
             clear_timer();

@@ -1,3 +1,8 @@
+2000-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* current.ect: Add libc signals package because there's no real reason
+	not to.
+
 2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* current.ect: Update to reflect new libc package layout, isoinfra,

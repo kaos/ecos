@@ -53,6 +53,7 @@ cdl_package CYGPKG_HAL_V85X {
 
     cdl_interface CYGINT_HAL_V85X_VARIANT {
         display  "Number of variant implementations in this configuration"
+        no_define
         requires 1 == CYGINT_HAL_V85X_VARIANT
     }
 

@@ -68,15 +68,6 @@ flash_query(unsigned char *data)
         HAL_DCACHE_DISABLE();
     }
 
-#if 0
-    ROM = (volatile unsigned long *)0x50000000;
-
-    ROM[0] = FLASH_Read_ID;
-    for (cnt = CNT;  cnt > 0;  cnt--) ;
-    *data++ = *ROM++;  // Manufacturer code
-    *data++ = *ROM++;  // Device identifier
-#endif
-
     ROM = (volatile unsigned long *)0x50000000;
     ROM[0] = FLASH_Read_Query;
     for (cnt = CNT;  cnt > 0;  cnt--) ;

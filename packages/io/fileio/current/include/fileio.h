@@ -158,7 +158,7 @@ struct cyg_fstab_entry
 #define FSTAB_ENTRY( _l, _name, _data, _syncmode, _mount, _umount,      \
                      _open, _unlink,  _mkdir, _rmdir, _rename, _link,   \
                      _opendir, _chdir, _stat, _getinfo, _setinfo)       \
-struct cyg_fstab_entry _l CYG_HAL_TABLE_ENTRY( fstab ) =                \
+struct cyg_fstab_entry _l CYG_HAL_TABLE_ENTRY(fstab) =                  \
 {                                                                       \
     _name,                                                              \
     _data,                                                              \
@@ -198,7 +198,7 @@ struct cyg_mtab_entry
 // This macro defines an initialized mtab entry
 
 #define MTAB_ENTRY( _l, _name, _fsname, _devname, _data )       \
-struct cyg_mtab_entry _l CYG_HAL_TABLE_ENTRY( mtab ) =          \
+struct cyg_mtab_entry _l CYG_HAL_TABLE_ENTRY(mtab) =            \
 {                                                               \
     _name,                                                      \
     _fsname,                                                    \

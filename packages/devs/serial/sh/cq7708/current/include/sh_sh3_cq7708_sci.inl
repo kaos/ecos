@@ -1,6 +1,9 @@
+#ifndef CYGONCE_DEVS_SH_CQ7708_SCI_H
+#define CYGONCE_DEVS_SH_CQ7708_SCI_H
+
 //==========================================================================
 //
-//      io/serial/sh/sh_sci_cq7708.c
+//      io/serial/sh/sh_sh3_cq7708_sci.inl
 //
 //      Serial I/O Interface Module definitions for SH3/CQ7708
 //
@@ -40,17 +43,8 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
-// Controller bases in the SH3/CQ7708 (only one)
-#define SH_SERIAL_SCI_BASE       0xfffffe80
 
-// The SCI controller register layout on the SH3/CQ7708.
-#define SCI_SCSMR                0      // serial mode register
-#define SCI_SCBRR                2      // bit rate register
-#define SCI_SCSCR                4      // serial control register
-#define SCI_SCTDR                6      // transmit data register
-#define SCI_SCSSR                8      // serial status register
-#define SCI_SCRDR                10     // receive data register
-#define SCI_SCSPTR               -4     // serial port register
+#include <pkgconf/io_serial_sh_cq7708.h>
 
 static sh_sci_info sh_serial_info = {CYGARC_REG_SCSPTR,
                                      CYGNUM_HAL_INTERRUPT_SCI_ERI,
@@ -58,14 +52,14 @@ static sh_sci_info sh_serial_info = {CYGARC_REG_SCSPTR,
                                      CYGNUM_HAL_INTERRUPT_SCI_TXI,
                                      SH_SERIAL_SCI_BASE};
 
-#if CYGNUM_IO_SERIAL_SH_CQ7708_SCI_BUFSIZE > 0
-static unsigned char sh_serial_out_buf[CYGNUM_IO_SERIAL_SH_CQ7708_SCI_BUFSIZE];
-static unsigned char sh_serial_in_buf[CYGNUM_IO_SERIAL_SH_CQ7708_SCI_BUFSIZE];
+#if CYGNUM_IO_SERIAL_SH_CQ7708_SERIAL1_BUFSIZE > 0
+static unsigned char sh_serial_out_buf[CYGNUM_IO_SERIAL_SH_CQ7708_SERIAL1_BUFSIZE];
+static unsigned char sh_serial_in_buf[CYGNUM_IO_SERIAL_SH_CQ7708_SERIAL1_BUFSIZE];
 
 static SERIAL_CHANNEL_USING_INTERRUPTS(sh_serial_channel,
                                        sh_serial_funs, 
                                        sh_serial_info,
-                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_SH_CQ7708_SCI_BAUD),
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_SH_CQ7708_SERIAL1_BAUD),
                                        CYG_SERIAL_STOP_DEFAULT,
                                        CYG_SERIAL_PARITY_DEFAULT,
                                        CYG_SERIAL_WORD_LENGTH_DEFAULT,
@@ -79,7 +73,7 @@ static SERIAL_CHANNEL_USING_INTERRUPTS(sh_serial_channel,
 static SERIAL_CHANNEL(sh_serial_channel,
                       sh_serial_funs, 
                       sh_serial_info,
-                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_SH_CQ7708_SCI_BAUD),
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_SH_CQ7708_SERIAL1_BAUD),
                       CYG_SERIAL_STOP_DEFAULT,
                       CYG_SERIAL_PARITY_DEFAULT,
                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
@@ -88,7 +82,7 @@ static SERIAL_CHANNEL(sh_serial_channel,
 #endif
 
 DEVTAB_ENTRY(sh_serial_io,
-             CYGDAT_IO_SERIAL_SH_CQ7708_SCI_NAME,
+             CYGDAT_IO_SERIAL_SH_CQ7708_SERIAL1_NAME,
              0,                 // Does not depend on a lower level interface
              &cyg_io_serial_devio, 
              sh_serial_init, 
@@ -96,3 +90,4 @@ DEVTAB_ENTRY(sh_serial_io,
              &sh_serial_channel
     );
 
+#endif // CYGONCE_DEVS_SH_CQ7708_SCI_H

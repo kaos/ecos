@@ -1,3 +1,13 @@
+2000-09-06  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (pci_init_find_82559s): Add asserts and an
+	unconditional check that the PCI window as configured matches the
+	address and size of the pci_window region from the MLT.  This is
+	here because at present the MLT and CT cannot intercommunicate
+	enough.  The separation of the PCI window is needed because
+	otherwise the malloc heap will eat all memory.  [This is related
+	to CR 902624-CR, "MLT needs to be configuration aware"]
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* OVERVIEW: This is part of the change to the network stack to

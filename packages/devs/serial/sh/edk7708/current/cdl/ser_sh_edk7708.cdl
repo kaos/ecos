@@ -41,7 +41,7 @@
 
 
 cdl_package CYGPKG_IO_SERIAL_SH_EDK7708 {
-    display       "SH3 EDK7708  serial device drivers"
+    display       "SH3 EDK7708 serial device drivers"
 
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
@@ -49,88 +49,62 @@ cdl_package CYGPKG_IO_SERIAL_SH_EDK7708 {
 
     requires      CYGPKG_ERROR
     include_dir   cyg/io
-    include_files ; # none _exported_ whatsoever
+
     description   "
-           This option enables the serial device drivers for the
-           Hitachi SH3 EDK7708 board."
+        This option enables the serial device drivers for the
+        Hitachi SH3 EDK7708 board, based on the generic SH SCI driver."
+
     doc           redirect/ecos-device-drivers.html
 
+    # FIXME: This really belongs in the SH_SCI package
+    cdl_interface CYGINT_IO_SERIAL_SH_SCI_REQUIRED {
+        display   "SH SCI driver required"
+    }
 
     define_proc {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"
-        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_sh_edk7708.h>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_SH_SCI_INL <cyg/io/sh_sh3_edk7708_sci.inl>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_SH_SCI_CFG <pkgconf/io_serial_sh_edk7708.h>"
         puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
     }
 
-cdl_component CYGPKG_IO_SERIAL_SH_EDK7708_SCI {
-    display       "SH3 EDK7708 SCI device driver"
-    flavor        bool
-    default_value 1
-    description   "
-        This option includes the serial device driver for the SCI port."
-
-    compile       -library=libextras.a   sh_sci_serial.c
-
-    cdl_option CYGDAT_IO_SERIAL_SH_EDK7708_SCI_NAME {
-        display       "Device name for SH3 EDK7708 SCI"
-        flavor        data
-        default_value {"\"/dev/ser1\""}
+    cdl_component CYGPKG_IO_SERIAL_SH_EDK7708_SERIAL1 {
+        display       "SH EDK7708 serial 1 driver (SCI)"
+        flavor        bool
+        default_value 1
         description   "
-            This option specifies the device name for the SCI port."
-    }
+            This option includes the serial device driver for the SCI
+            port."
 
-    cdl_option CYGNUM_IO_SERIAL_SH_EDK7708_SCI_BAUD {
-        display       "Baud rate for the SH SCI driver"
-        flavor        data
-        legal_values  { 4800 9600 14400 19200 38400 57600 115200 }
-        default_value 38400
-        description   "
-            This option specifies the default baud rate (speed) for the 
-            SCI port."
-    }
+        implements CYGINT_IO_SERIAL_SH_SCI_REQUIRED
 
-    cdl_option CYGNUM_IO_SERIAL_SH_EDK7708_SCI_BUFSIZE {
-        display       "Buffer size for the SH SCI driver"
-        flavor        data
-        legal_values  0 to 8192
-        default_value 128
-        description   "
-            This option specifies the size of the internal buffers used for
-            the SCI port."
-    }
-}
-
-    cdl_component CYGPKG_IO_SERIAL_SH_EDK7708_OPTIONS {
-        display "Serial device driver build options"
-        flavor  none
-        description   "
-	    Package specific build options including control over
-	    compiler flags used only in building this package,
-	    and details of which tests are built."
-
-
-        cdl_option CYGPKG_IO_SERIAL_SH_EDK7708_CFLAGS_ADD {
-            display "Additional compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
+        cdl_option CYGDAT_IO_SERIAL_SH_EDK7708_SERIAL1_NAME {
+            display       "Device name for SH3 EDK7708 SCI"
+            flavor        data
+            default_value {"\"/dev/ser1\""}
             description   "
-                This option modifies the set of compiler flags for
-                building these serial device drivers. These flags are used in addition
-                to the set of global flags."
+                This option specifies the device name for the SCI port."
         }
 
-        cdl_option CYGPKG_IO_SERIAL_SH_EDK7708_CFLAGS_REMOVE {
-            display "Suppressed compiler flags"
-            flavor  data
-            no_define
-            default_value { "" }
+        cdl_option CYGNUM_IO_SERIAL_SH_EDK7708_SERIAL1_BAUD {
+            display       "Baud rate for the SH SCI driver"
+            flavor        data
+            legal_values  { 4800 9600 14400 19200 38400 57600 115200 }
+            default_value 38400
             description   "
-                This option modifies the set of compiler flags for
-                building these serial device drivers. These flags are removed from
-                the set of global flags if present."
+                This option specifies the default baud rate (speed)
+                for the SCI port."
+        }
+
+        cdl_option CYGNUM_IO_SERIAL_SH_EDK7708_SERIAL1_BUFSIZE {
+            display       "Buffer size for the SH SCI driver"
+            flavor        data
+            legal_values  0 to 8192
+            default_value 128
+            description   "
+                This option specifies the size of the internal buffers
+                used for the SCI port."
         }
     }
 }
-
 # EOF ser_sh_edk7708.cdl

@@ -59,13 +59,20 @@
 
 #include <cyg/hal/sh_regs.h>
 
-#ifdef CYGPKG_IO_SERIAL_SH_CQ7708
-#define __CYGPKG_IO_SERIAL_SH_SCI_INL "sh_sci_cq7708.inl"
-#endif
-
-
 // Only compile driver if an inline file with driver details was selected.
-#ifdef __CYGPKG_IO_SERIAL_SH_SCI_INL
+#ifdef CYGDAT_IO_SERIAL_SH_SCI_INL
+
+// Controller base (only one supported at the moment)
+#define SH_SERIAL_SCI_BASE       0xfffffe80
+
+// The SCI controller register layout on the SH3/7708.
+#define SCI_SCSMR                0      // serial mode register
+#define SCI_SCBRR                2      // bit rate register
+#define SCI_SCSCR                4      // serial control register
+#define SCI_SCTDR                6      // transmit data register
+#define SCI_SCSSR                8      // serial status register
+#define SCI_SCRDR                10     // receive data register
+#define SCI_SCSPTR               -4     // serial port register
 
 static short select_word_length[] = {
     -1,
@@ -163,7 +170,7 @@ static SERIAL_FUNS(sh_serial_funs,
                    sh_serial_stop_xmit
     );
 
-#include __CYGPKG_IO_SERIAL_SH_SCI_INL
+#include CYGDAT_IO_SERIAL_SH_SCI_INL
 
 // Internal function to actually configure the hardware to desired baud rate,
 // etc.
@@ -509,5 +516,4 @@ sh_serial_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     HAL_WRITE_UINT8(sh_chan->ctrl_base+SCI_SCSSR, _ssr2);
 }
 
-#endif // ifdef __CYGPKG_IO_SERIAL_SH_SCI
-
+#endif // ifdef CYGDAT_IO_SERIAL_SH_SCI_INL

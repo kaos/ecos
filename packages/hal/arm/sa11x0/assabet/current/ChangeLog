@@ -1,3 +1,16 @@
+2000-09-10  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redhat.xpm: 
+	* misc/escw.xpm: 
+	* misc/eCos.xpm: 
+	* misc/lcd_test.c: Simple test of LCD.
+
+	* include/assabet.h: Add more BCR defines (cosmetic).
+
+	* src/redboot_cmds.c: 
+	* cdl/hal_arm_sa11x0_assabet.cdl: Add RedBoot command to execute
+	code with MMU off (for booting Linux).
+
 2000-08-28  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0_assabet.cdl: Define default console [even

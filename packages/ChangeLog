@@ -1,3 +1,7 @@
+2000-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: SH serial driver reorg changes.
+
 2000-08-29  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* ecos.db: Include CYGPKG_IO_PCI in vrc4373 target

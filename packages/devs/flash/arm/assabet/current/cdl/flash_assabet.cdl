@@ -48,6 +48,7 @@ cdl_package CYGPKG_DEVS_FLASH_ASSABET {
     requires	  CYGPKG_HAL_ARM_SA11X0_ASSABET
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
 
     include_dir   .
     include_files ; # none _exported_ whatsoever
@@ -77,6 +78,22 @@ cdl_package CYGPKG_DEVS_FLASH_ASSABET {
         echo "flash_query_end:" >>flash_query.s
         $(CC) -c -o flash_query.o flash_query.s
         $(AR) rcs $(PREFIX)/lib/libtarget.a flash_query.o
+    }
+    make -priority 1 {
+        flash_lock_block.o: $(REPOSITORY)/$(PACKAGE)/src/flash_lock_block.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_lock_block.c
+        echo " .globl flash_lock_block_end" >>flash_lock_block.s
+        echo "flash_lock_block_end:" >>flash_lock_block.s
+        $(CC) -c -o flash_lock_block.o flash_lock_block.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_lock_block.o
+    }
+    make -priority 1 {
+        flash_unlock_block.o: $(REPOSITORY)/$(PACKAGE)/src/flash_unlock_block.c
+        $(CC) -S $(INCLUDE_PATH) $(CFLAGS) -g0 -fno-function-sections $(REPOSITORY)/$(PACKAGE)/src/flash_unlock_block.c
+        echo " .globl flash_unlock_block_end" >>flash_unlock_block.s
+        echo "flash_unlock_block_end:" >>flash_unlock_block.s
+        $(CC) -c -o flash_unlock_block.o flash_unlock_block.s
+        $(AR) rcs $(PREFIX)/lib/libtarget.a flash_unlock_block.o
     }
 }
 

@@ -107,6 +107,19 @@ inline void Cyg_Scheduler::reschedule()
     unlock_inner( sched_lock );
 }
 
+inline void Cyg_Scheduler:: unlock_reschedule()
+{
+    // This function decrements the scheduler lock and also looks for
+    // a reschedule opportunity. When the lock is being decremented
+    // from 1 to zero this function is equivalent to unlock. When the
+    // lock is being decremented to a non-zero value, it is equivalent
+    // to unlock() followed by reschedule().
+    
+    CYG_INSTRUMENT_SCHED(UNLOCK,sched_lock,0);
+    
+    unlock_inner( sched_lock - 1 );
+}
+
 inline void Cyg_Scheduler::unlock_simple()
 {
     // This function decrements the lock, but does not call unlock_inner().

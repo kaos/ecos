@@ -173,6 +173,12 @@ main( int argc, char *argv[] )
 #ifdef CYGNUM_HAL_EXCEPTION_DIV_BY_ZERO
     HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_DIV_BY_ZERO, NULL );
 #endif
+#ifdef CYGNUM_HAL_EXCEPTION_FPU
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_FPU, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO, NULL );
+#endif
 #endif
 
 #ifdef CYGSEM_LIBC_SIGNALS_HWEXCEPTIONS
@@ -239,8 +245,10 @@ main( int argc, char *argv[] )
     
     state = 3;
 
-#if defined(CYGPKG_HAL_SH_EDK7708)
+#if defined(CYGPKG_HAL_SH_7708)
     CYG_TEST_PASS("Test 3 not applicable to sh 7708");
+#elif defined(CYGPKG_HAL_SH_7709A)
+    CYG_TEST_PASS("Test 3 not applicable to sh 7709A");
 #elif defined(CYGPKG_HAL_MN10300)
     CYG_TEST_PASS("Test 3 not applicable to mn10300");
 #elif defined(CYGPKG_HAL_MIPS_TX39)
@@ -271,6 +279,7 @@ main( int argc, char *argv[] )
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "
                     "library signal functions");
 
+    return 0;
 } // main()
 
 // EOF signal2.c

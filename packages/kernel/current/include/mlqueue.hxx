@@ -143,6 +143,7 @@ inline cyg_bool Cyg_ThreadQueue_Implementation::empty()
 class Cyg_SchedulerThreadQueue_Implementation
     : public Cyg_ThreadQueue_Implementation
 {
+public:    
     void                enqueue(Cyg_Thread *thread);  // Add thread to queue
 };
 

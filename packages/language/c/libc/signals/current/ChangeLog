@@ -1,6 +1,16 @@
+2000-09-07  Jesper Skov  <jskov@redhat.com>
+
+	* tests/signal2.c: Fix compiler warning. Also reset FPU exception
+	vectors. Check for SH7708, not EDK7708 in test3 skip code.
+	* tests/signal1.c: Fix compiler warning.
+
 2000-05-16  Jesper Skov  <jskov@redhat.com>
 
         * tests/signal2.c: Also reset DIV_BY_ZERO vector.
+
+2000-05-08  Jesper Skov  <jskov@redhat.com>
+
+	* tests/signal2.c: Skip test3 on SH7709A.
 
 2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
 

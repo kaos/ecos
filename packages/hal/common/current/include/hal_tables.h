@@ -59,7 +59,7 @@
 
 #ifndef CYG_HAL_TABLE_BEGIN
 #define CYG_HAL_TABLE_BEGIN( _label, _name )                                  \
-__asm__(".section \"" __string(.ecos.table.##_name##.begin) "\",\"aw\"\n"     \
+__asm__(".section \".ecos.table." __xstring(_name) ".begin\",\"aw\"\n"        \
 	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                      \
 	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"            \
 	".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                        \
@@ -70,7 +70,7 @@ __xstring(CYG_LABEL_DEFN(_label)) ":\n"                                       \
 
 #ifndef CYG_HAL_TABLE_END
 #define CYG_HAL_TABLE_END( _label, _name )                                    \
-__asm__(".section \"" __string(.ecos.table.##_name##.finish) "\",\"aw\"\n"    \
+__asm__(".section \".ecos.table." __xstring(_name) ".finish\",\"aw\"\n"       \
 	".globl " __xstring(CYG_LABEL_DEFN(_label)) "\n"                      \
 	".type    " __xstring(CYG_LABEL_DEFN(_label)) ",@object\n"            \
 	".p2align " __xstring(CYGARC_P2ALIGNMENT) "\n"                        \
@@ -87,20 +87,18 @@ __xstring(CYG_LABEL_DEFN(_label)) ":\n"                                       \
 
 #ifndef CYG_HAL_TABLE_EXTRA
 #define CYG_HAL_TABLE_EXTRA( _name ) \
-        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.extra) \
-        CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
+        CYGBLD_ATTRIB_SECTION(".ecos.table." __xstring(_name) ".extra")
 #endif
 
 #ifndef CYG_HAL_TABLE_ENTRY
 #define CYG_HAL_TABLE_ENTRY( _name ) \
-        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data) \
-        CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
+        CYGBLD_ATTRIB_SECTION(".ecos.table." __xstring(_name) ".data")
 #endif
 
 #ifndef CYG_HAL_TABLE_QUALIFIED_ENTRY
 #define CYG_HAL_TABLE_QUALIFIED_ENTRY( _name, _qual ) \
-        CYGBLD_ATTRIB_SECTION(.ecos.table.##_name##.data.##_qual) \
-        CYGBLD_ATTRIB_ALIGN( CYGARC_ALIGNMENT )
+        CYGBLD_ATTRIB_SECTION(".ecos.table." __xstring(_name) ".data." \
+                              __xstring(_qual))
 #endif
 
 /*------------------------------------------------------------------------*/

@@ -183,6 +183,8 @@ nmid\@:
 	add	12,\dreg			# skip NMI vectors
 	.endm
 
+#define CYGPKG_HAL_MN10300_INTC_DECODE_DEFINED
+
 #else
 
 #define CYG_ISR_TABLE_SIZE	 34
@@ -194,7 +196,9 @@ nmid\@:
 	mov	\dreg,(0,a2)			# store real vector in saved state
 	add	12,\dreg			# skip NMI vectors
 	.endm
-		
+
+#define CYGPKG_HAL_MN10300_INTC_DECODE_DEFINED
+
 #endif
 
 #define CYGPKG_HAL_MN10300_INTC_DEFINED

@@ -301,7 +301,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 # define CYGBLD_ATTRIB_CONST __attribute__((const))
 
 // Assign a defined variable to a specific section
-# define CYGBLD_ATTRIB_SECTION(__sect__) __attribute__((section (#__sect__)))
+# define CYGBLD_ATTRIB_SECTION(__sect__) __attribute__((section (__sect__)))
 
 // Give a type or object explicit minimum alignment
 # define CYGBLD_ATTRIB_ALIGN(__align__) __attribute__((aligned(__align__)))
@@ -312,7 +312,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 
 # define CYGBLD_ATTRIB_NORET
     // This intentionally gives an error only if we actually try to
-    // use it.  #error would give an error if we simple can't.
+    // use it.  #error would give an error if we simply can't.
 // FIXME: Had to disarm the bomb - the CYGBLD_ATTRIB_WEAK macro is now
 //        (indirectly) used in host tools.
 # define CYGBLD_ATTRIB_WEAK /* !!!-- Attribute weak not defined --!!! */

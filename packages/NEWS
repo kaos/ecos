@@ -1,3 +1,5 @@
+* SH serial driver cleanup. SCIF driver added. SCI and SCIF drivers are
+  now separate packages.
 * Move logical ethernet "driver" into io/eth where the interface can be shared
   between multiple implementations, e.g. BSD TCP/IP and Red Boot's TCP/IP
   stacks.

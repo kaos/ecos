@@ -45,6 +45,10 @@
 
 #include <redboot.h>
 
+// Buffer used by redboot_getc
+getc_info_t getc_info;
+
+
 // Exported CLI function
 RedBoot_cmd("load", 
             "Load a file", 
@@ -186,19 +190,14 @@ load_srec_image(int (*getc)(void), unsigned long base)
     }
 }
 
-#define BUF_SIZE 256
-static struct {
-    int (*fun)(char *, int len, int *err);
-    unsigned char  buf[BUF_SIZE];
-    unsigned char *bufp;
-    int   avail, len, err;
-    int   verbose, tick;
-} getc_info;
 
-static int
-getc(void)
+int
+redboot_getc(void)
 {
     static char spin[] = "|/-\\|-";
+    if (getc_info.avail < 0) {
+      return -1;
+    }
     if (getc_info.avail == 0) {
         if (getc_info.verbose) {
             printf("%c\b", spin[getc_info.tick++]);
@@ -222,8 +221,8 @@ getc(void)
     return *getc_info.bufp++;
 }
 
-static void
-getc_init(int (*fun)(char *, int, int *), int verbose)
+void
+redboot_getc_init(int (*fun)(char *, int, int *), int verbose)
 {
     getc_info.avail = 0;
     getc_info.len = BUF_SIZE;
@@ -232,8 +231,8 @@ getc_init(int (*fun)(char *, int, int *), int verbose)
     getc_info.tick = 0;
 }
 
-static void
-getc_rewind(void)
+void
+redboot_getc_rewind(void)
 {
     getc_info.bufp = getc_info.buf;
     getc_info.avail = getc_info.len;
@@ -328,9 +327,9 @@ do_load(int argc, char *argv[])
             printf("Can't load '%s': %s\n", filename, tftp_error(err));
             return;
         }
-        getc_init(tftp_stream_read, verbose);
+        redboot_getc_init(tftp_stream_read, verbose);
         for (i = 0;  i < sizeof(type);  i++) {
-            if ((res = getc()) < 0) {
+            if ((res = redboot_getc()) < 0) {
                 err = getc_info.err;
                 break;
             } 
@@ -347,13 +346,13 @@ do_load(int argc, char *argv[])
         printf("Sorry, zmodem download not yet available\n");
         return;
     }
-    getc_rewind();  // Restore header to stream
+    redboot_getc_rewind();  // Restore header to stream
     if (raw) {
         if (!base_addr_set) {
             printf("Raw load requires a memory address\n");
         } else {
             unsigned char *mp = (unsigned char *)base;
-            while ((res = getc()) >= 0) {
+            while ((res = redboot_getc()) >= 0) {
                 *mp++ = res;
             }
             printf("Raw file loaded %p-%p\n", (void *)base, (void *)mp);
@@ -361,10 +360,10 @@ do_load(int argc, char *argv[])
     } else {
         // Treat data as some sort of executable image
         if (strncmp(&type[1], "ELF", 3) == 0) {
-            load_elf_image(getc);
+            load_elf_image(redboot_getc);
         } else if ((type[0] == 'S') &&
                    ((type[1] >= '0') && (type[1] <= '9'))) {
-            load_srec_image(getc, base);
+            load_srec_image(redboot_getc, base);
         } else {
             printf("Unrecognized image type: %lx\n", *(unsigned long *)type);
         }

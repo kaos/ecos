@@ -1,3 +1,15 @@
+2000-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/basetype.h: Don't need special alignment after all - it was
+	a bug elsewhere.
+
+2000-09-06  Gary Thomas  <gthomas@redhat.com>
+
+	* include/basetype.h: Need special alignment to match the way
+	the compiler/linker actually do things.
+
+	* cdl/hal_v85x.cdl: Improve variant handling and specification.
+
 2000-08-30  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S (start): Allow programs to field NMI exceptions.

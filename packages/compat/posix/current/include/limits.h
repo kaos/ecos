@@ -78,8 +78,6 @@
 
 #define LOGIN_NAME_MAX          _POSIX_LOGIN_NAME_MAX
 
-#define OPEN_MAX                _POSIX_OPEN_MAX
-
 #define PAGESIZE                1
 
 #define PTHREAD_DESTRUCTOR_ITERATIONS CYGNUM_POSIX_PTHREAD_DESTRUCTOR_ITERATIONS
@@ -114,15 +112,9 @@
 
 // From table 2-6.
 
-#define LINK_MAX                _POSIX_LINK_MAX
-
 #define MAX_CANON               _POSIX_MAX_CANON
 
 #define MAX_INPUT               _POSIX_MAX_INPUT
-
-#define NAME_MAX                _POSIX_NAME_MAX
-
-#define PATH_MAX                _POSIX_PATH_MAX
 
 #define PIPE_BUF                _POSIX_PIPE_BUF
 

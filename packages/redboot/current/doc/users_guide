@@ -192,6 +192,30 @@ a loaded image.
     ... Erase from 0xa0040000-0xa0060000: .
     =======================================================================
 
+  fis lock -f <flash_addr> -l <length>
+
+This command is used to write-protect [lock] a portion of flash memory.  This
+command is optional and will only be provided on hardware which can support
+write-protection of the flash space.  Note: depending on the system, attempting
+to write to write-protected flash may generate errors or warnings or be
+benignly quiet.
+
+    =======================================================================
+    RedBoot> fis lock -f 0xa0040000 -l 0x20000
+    ... Lock from 0xa0040000-0xa0060000: .
+    =======================================================================
+
+  fis unlock -f <flash_addr> -l <length>
+
+This command is used to unlock forceably erase a portion of flash memory.  
+It must be issued for regions which have been locked before the FIS can reuse
+those portions of flash.
+
+    =======================================================================
+    RedBoot> fis unlock -f 0xa0040000 -l 0x20000
+    ... Unlock from 0xa0040000-0xa0060000: .
+    =======================================================================
+
 - Persistent state [flash-based configuration] control
 
 Additionally, if the platform has flash memory, certain control and configuration

@@ -1,3 +1,42 @@
+2000-09-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sched.hxx:
+	* include/sched.inl:
+	Added Cyg_Scheduler::unlock_reschedule() function. This decrements
+	the scheduler lock by one but also permits the current thread to
+	be rescheduled if it ready to sleep, or there is a higher priority
+	thread ready to run. This is to support use of various
+	synchronization objects while the scheduler lock is claimed.
+
+	* src/sched/sched.cxx (unlock_inner): Modified precondition to
+	allow for functionality of unlock_reschedule().
+
+	* src/sched/mlqueue.cxx:
+	Now uses Cyg_SchedulerThreadQueue_Implementation for all runqueue
+	pointers. It was using Cyg_ThreadQueue_Implementation in some
+	places which meant we were trying to sort the run queues!
+	Changed yield() so it can be called with the scheduler lock
+	claimed.
+	Changed Cyg_Scheduler_Implementation::timeslice() to rotate the
+	queue itself rather than call yield(). The changes to yield() make
+	it unsafe to call here any more.
+
+	* include/mlqueue.hxx (class Cyg_SchedulerThreadQueue_Implementation): 
+	Made enqueue() member public.
+	
+	* include/mboxt2.inl:
+	* src/common/thread.cxx: 
+	* src/sync/mutex.cxx: 
+	* src/sync/cnt_sem2.cxx: 
+	Removed assertions for zero scheduler lock and replaced some
+	invocations of Cyg_Scheduler::unlock() with
+	Cyg_Scheduler::unlock_reschedule() or Cyg_Scheduler::reschedule()
+	where appropriate.
+
+	* tests/klock.c:
+	* cdl/kernel.cdl:
+	Added klock.c to test functionality while scheduler lock is claimed.
+
 2000-08-17  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/sched/sched.cxx (unlock_inner): Move an assert to some place

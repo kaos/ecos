@@ -128,9 +128,13 @@ public:
     // release the preemption lock and possibly reschedule
     static void             unlock();
 
-    // release and reclaim the lock atomically 
+    // release and reclaim the lock atomically, keeping the old
+    // value on restart
     static void             reschedule();
-    
+
+    // decrement the lock but also look for a reschedule opportunity
+    static void             unlock_reschedule();
+
     // release the preemption lock without rescheduling
     static void             unlock_simple();
     

@@ -81,27 +81,45 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
    cdl_option CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE {
        display            "Base of memory accessible via PCI space"
        flavor             data
-       legal_values       0 to 0x01000000
+       legal_values       {	0x200000 0x300000 0x400000 0x500000
+       				0x600000 0x700000 0x800000 0x900000
+       				0xa00000 0xb00000 0xc00000 0xd00000
+                                0xe00000 0xf00000
+                          }
        default_value      0x00f00000
        active_if          CYGPKG_IO_PCI
        description "
            This option determines the base of the EBSA memory which
            can be accessed via the PCI bus. The default is to allow
-           access to the upper 1MB of a 16MB system. Change in 256kB
-           increments."
+           access to the upper 1MB of a 16MB system. 
+           NB: We advise *against* changing this option.
+           The value MUST match the base address of the section
+           'pci_window' in the Memory Layout Tool else this memory area
+           will be consumed by the malloc heap.
+           This error condition can only be detected at runtime in
+           current versions of the configuration tools.
+           CLI users can edit include/pkgconf/mlt_arm_ebsa285_*.h
+           and include/pkgconf/mlt_arm_ebsa285_*.ldi to acheive the
+           same effects as moving that region in the MLT."
    }
 
    cdl_option CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_SIZE {
        display            "Size of memory accessible via PCI space"
        flavor             data
-       legal_values       0 to 0x01000000
+       legal_values       {	0x100000 0x200000 0x300000 0x400000
+                                0x500000 0x600000 0x700000 0x800000
+                          }
        default_value      0x00100000
        active_if          CYGPKG_IO_PCI
        description "
            This option determines the size of the EBSA memory which
            can be accessed via the PCI bus. The default is to allow
-           access to the upper 1MB of a 16MB system. Change in 256kB
-           increments."
+           access to the upper 1MB of a 16MB system.
+           NB: We advise *against* changing this option.
+           The value MUST match the size of the section 'pci_window' in the
+           Memory Layout Tool else this memory area will be consumed by the
+           malloc heap.
+           Further caveats in the PCI base option."
    }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {

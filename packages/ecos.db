@@ -266,6 +266,24 @@ package CYGPKG_IO_SERIAL_I386_PC {
     description       "PC serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_SH_SCI {
+    alias             { "SH SCI serial device drivers"
+                        devs_serial_sh_sci sci_serial_driver }
+    hardware
+    directory	      devs/serial/sh/sci
+    script	      ser_sh_sci.cdl	
+    description       "SH SCI serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_SH_SCIF {
+    alias             { "SH SCIF serial device drivers"
+                        devs_serial_sh_scif scif_serial_driver }
+    hardware
+    directory	      devs/serial/sh/scif
+    script	      ser_sh_scif.cdl	
+    description       "SH SCIF serial device drivers"
+}
+
 package CYGPKG_IO_SERIAL_SH_EDK7708 {
     alias             { "SH3 EDK7708 serial device drivers"
                         devs_serial_sh3_edk7708
@@ -885,6 +903,7 @@ package CYGPKG_HAL_POWERPC_PPC60x {
            for this processor variant. It is also necessary to
            select a specific target platform HAL package."
 }
+
 package CYGPKG_HAL_POWERPC_COGENT {
 	alias		{ "Cogent CMA286/287 board" hal_powerpc_cogent powerpc_cogent_hal }
 	directory	hal/powerpc/cogent
@@ -1219,6 +1238,7 @@ target sh7708 {
 	packages    { CYGPKG_HAL_SH
                       CYGPKG_HAL_SH_EDK7708
                       CYGPKG_DEVICES_WALLCLOCK_SH3 
+	              CYGPKG_IO_SERIAL_SH_SCI
 	              CYGPKG_IO_SERIAL_SH_EDK7708
                       CYGPKG_DEVICES_WATCHDOG_SH_SH3
         }
@@ -1231,6 +1251,7 @@ target cq7708 {
         alias { "CqREEK SH7708 board" cq7708 }
         packages { CYGPKG_HAL_SH
                    CYGPKG_HAL_SH_SH7708_CQ7708
+	           CYGPKG_IO_SERIAL_SH_SCI
 	           CYGPKG_IO_SERIAL_SH_CQ7708
         }
         description "
@@ -1310,6 +1331,7 @@ target fads {
             The fads target provides the packages needed to run
             eCos on a Motorola MPC8xxFADS board."
 }
+
 target mbx {
         alias		{ "Motorola MBX860/821 board" mbx860 mbx821 }
 	packages        { CYGPKG_HAL_POWERPC

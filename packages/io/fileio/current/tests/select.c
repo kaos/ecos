@@ -45,6 +45,15 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+
+#ifndef CYGPKG_POSIX
+# define NA_MSG "POSIX package needed to run test"
+#endif
+
+#include <cyg/infra/testcase.h>
+
+#ifndef NA_MSG
+
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
@@ -59,10 +68,6 @@
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
-#include <cyg/infra/testcase.h>
-
-#if 1 //defined(CYGPKG_NET) && defined(CYGPKG_POSIX) && defined(CYGPKG_IO_SERIAL_LOOP)
-             
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -604,11 +609,11 @@ int main( int argc, char **argv )
 //==========================================================================
 // main
 
-int main( int argc, char **argv )
+void cyg_start(void)
 {
     CYG_TEST_INIT();
 
-    CYG_TEST_NA("socket");
+    CYG_TEST_NA(NA_MSG);
 }
 
 #endif

@@ -121,7 +121,8 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
         
     do {
 
-        CYG_PRECONDITION( new_lock==0 ? sched_lock == 1 : sched_lock == new_lock,
+        CYG_PRECONDITION( new_lock==0 ? sched_lock == 1 :
+                          ((sched_lock == new_lock) || (sched_lock == new_lock+1)),
                           "sched_lock not at expected value" );
         
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS

@@ -139,6 +139,22 @@ cdl_package CYGPKG_HAL_SH {
         }
     }
 
+    cdl_option CYGPKG_HAL_SH_7729 {
+        display       "SH 7729 microprocessor"
+        implements    CYGINT_HAL_SH_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_SH_7729
+        description "
+            The SH3 7729 microprocessor. This is an embedded part that in
+            addition to the SH3 processor core has built in peripherals
+            such as memory controllers, serial ports, and timers/counters,
+            and a DSP engine."
+        define_proc {
+            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7729.h>"
+        }
+    }
+
     cdl_option CYGHWR_HAL_SH_BIGENDIAN {
         display          "Use big-endian mode"
         default_value    1

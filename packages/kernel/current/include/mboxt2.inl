@@ -266,11 +266,9 @@ Cyg_Mboxt2<T,QUEUE_SIZE>::get( T &ritem )
     get_threadq.enqueue( self );
 
     CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-    CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                "Called with non-zero scheduler lock");
         
     // Unlock scheduler and allow other threads to run
-    Cyg_Scheduler::unlock();
+    Cyg_Scheduler::unlock_reschedule();
 
     cyg_bool result = true;
     switch( self->get_wake_reason() )
@@ -349,11 +347,8 @@ Cyg_Mboxt2<T,QUEUE_SIZE>::get( T &ritem, cyg_tick_count abs_timeout )
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
     }
 
-    CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                "Called with non-zero scheduler lock");
-        
     // Unlock scheduler and allow other threads to run
-    Cyg_Scheduler::unlock();
+    Cyg_Scheduler::unlock_reschedule();
 
     // clear the timer; if it actually fired, no worries.
     self->clear_timer();
@@ -475,11 +470,9 @@ Cyg_Mboxt2<T,QUEUE_SIZE>::put( const T item )
         put_threadq.enqueue( self );
 
         CYG_INSTRUMENT_MBOXT(WAIT, this, count);
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
         
         // when this returns, our item is in the queue.
-        Cyg_Scheduler::unlock();        // unlock, switch threads
+        Cyg_Scheduler::unlock_reschedule();        // unlock, switch threads
 
         CYG_ASSERTCLASS( this, "Bad this pointer");    
 
@@ -565,11 +558,9 @@ Cyg_Mboxt2<T,QUEUE_SIZE>::put( const T item, cyg_tick_count abs_timeout )
 
             CYG_INSTRUMENT_MBOXT(WAIT, this, count);
         }
-        CYG_ASSERT( 1 == Cyg_Scheduler::get_sched_lock(),
-                    "Called with non-zero scheduler lock");
 
         // when this returns, our item is in the queue.
-        Cyg_Scheduler::unlock();        // unlock, switch threads
+        Cyg_Scheduler::unlock_reschedule();        // unlock, switch threads
 
         // clear the timer; if it actually fired, no worries.
         self->clear_timer();

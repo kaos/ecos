@@ -1,3 +1,17 @@
+2000-09-08  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/netdev.h (NETDEVTAB_ENTRY): Work around feature of new
+	version of CYG_HAL_TABLE_ENTRY() whereby no spaces are allowed.
+
+2000-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/netdev.h (cyg_netdevtab_entry_t): Correct syntax for
+	CYG_HAL_TABLE_TYPE
+
+2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/netdev.h (cyg_netdevtab_entry_t): Apply CYG_HAL_TABLE_TYPE
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/stand_alone/eth_drv.c (eth_drv_dsr): New function, never

@@ -57,7 +57,9 @@
 #define FLASH_Program      0x00100010
 #define FLASH_Block_Erase  0x00200020
 #define FLASH_Set_Lock     0x00600060
+#define FLASH_Set_Lock_Confirm 0x00010001
 #define FLASH_Clear_Locks  0x00600060
+#define FLASH_Clear_Locks_Confirm  0x00D000D0
 #define FLASH_Confirm      0x00D000D0
 #define FLASH_Configure    0x00B800B8
 #define FLASH_Configure_ReadyWait      0x00000000

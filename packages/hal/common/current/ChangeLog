@@ -1,3 +1,15 @@
+2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_tables.h (CYG_HAL_TABLE_EXTRA): Use new definition of
+	CYGBLD_ATTRIB_SECTION, and fix the string name up better.
+	(CYG_HAL_TABLE_ENTRY): Ditto
+	(CYG_HAL_TABLE_QUALIFIED_ENTRY): Ditto
+
+2000-09-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_tables.h: Fix non-standard use of paste operator to
+	remove warnings with recent gcc
+
 2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_tables.h (CYG_HAL_TABLE_END): Use CYGARC_P2ALIGNMENT

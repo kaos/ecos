@@ -1,3 +1,27 @@
+2000-09-06  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/hal_arm_ebsa285.cdl (CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE
+	CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_SIZE): Add strong constraints
+	to the alignment and size of the PCI window by means of
+	legal_values lists so that runtime can check that the MLTs opinion
+	of the memory usage is valid. [This is related to CR 902624-CR,
+	"MLT needs to be configuration aware"]
+
+	* include/pkgconf/mlt_arm_ebsa285_ram.h:
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi:
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt:
+	* include/pkgconf/mlt_arm_ebsa285_rom.h:
+	* include/pkgconf/mlt_arm_ebsa285_rom.ldi:
+	* include/pkgconf/mlt_arm_ebsa285_rom.mlt:
+	Regenerate these from the MLT featuring a "pci_window" section in
+	order to prevent the greedy heap code comsuming all of memory.
+	The pci_window section is from 0xf00000 of size 0x100000
+	i.e. Megabyte number 15, at the top of (default) memory.
+	Unfortunately my previous quick fix (2000-08-15) for this had not
+	in fact worked, because of the "clever" code which looks for
+	add-in memory and consumes *that* too, unconditionally...  [This
+	is related to CR 902624-CR, "MLT needs to be configuration aware"]
+
 2000-08-18  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/hal_platform_setup.h: Initialize the world if you are

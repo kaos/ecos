@@ -161,6 +161,20 @@ extern bool scan_opts(int argc, char *argv[], int first,
                       struct option_info *opts, int num_opts, 
                       void **def_arg, int def_arg_type, char *def_descr);
 
+extern int redboot_getc(void);
+extern void redboot_getc_init(int (*fun)(char *, int, int *), int verbose);
+extern void redboot_getc_rewind(void);
+
+#define BUF_SIZE 256
+typedef struct {
+    int (*fun)(char *, int len, int *err);
+    unsigned char  buf[BUF_SIZE];
+    unsigned char *bufp;
+    int   avail, len, err;
+    int   verbose, tick;
+} getc_info_t;
+
+
 //
 // Validate a hex character
 //

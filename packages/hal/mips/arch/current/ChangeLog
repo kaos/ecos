@@ -1,3 +1,19 @@
+2000-09-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: Removed change from yesterday.
+
+	* include/hal_intr.h (CYGNUM_HAL_EXCEPTION_FPU): Associated to FPE
+	exceptions.
+
+2000-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: Override the alignment macros for the MIPS
+	architecture. The MIPS compiler only alows a maximum of 4 bytes
+	of alignment where as the default is 8
+
+	* include/hal_cache.h (_HAL_ASM_DCACHE_ALL_WAYS): Force d-cache
+	selection.
+
 2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/mips-stub.h: No longer need to define

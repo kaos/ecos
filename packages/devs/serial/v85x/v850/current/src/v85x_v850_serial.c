@@ -45,6 +45,7 @@
 #include <pkgconf/io_serial.h>
 #include <pkgconf/io.h>
 #include <pkgconf/kernel.h>
+#include CYGBLD_HAL_TARGET_H
 
 #include <cyg/io/io.h>
 #include <cyg/hal/hal_intr.h>
@@ -143,6 +144,8 @@ v850_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
     unsigned char parity = select_parity[new_config->parity];
     unsigned char word_length = select_word_length[new_config->word_length-CYGNUM_SERIAL_WORD_LENGTH_5];
     unsigned char stop_bits = select_stop_bits[new_config->stop];
+    int mode, count;
+
     if ((select_baud[new_config->baud].count == 0) ||
         (word_length == 0xFF) ||
         (parity == 0xFF) ||
@@ -150,8 +153,19 @@ v850_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
         return false;  // Unsupported configuration
     }
     port->asim = ASIM_TxRx_Tx | ASIM_TxRx_Rx | parity | word_length | stop_bits;
-    port->brgc = select_baud[new_config->baud].count;
-    port->brgm = select_baud[new_config->baud].mode + 1;
+    mode = select_baud[new_config->baud].mode + 1;
+    count = select_baud[new_config->baud].count;
+    while (count > 0xFF) {
+        count >>= 1;
+        mode <<= 1;
+    }
+    port->brgc = count;
+#if CYGINT_HAL_V85X_VARIANT_SB1
+    port->brgm = mode & 0x07; 
+    port->brgm1 = mode >> 3;
+#else
+    port->brgm = mode;
+#endif
     if (new_config != &chan->config) {
         chan->config = *new_config;
     }

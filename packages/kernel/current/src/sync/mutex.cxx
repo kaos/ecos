@@ -557,11 +557,7 @@ Cyg_Condition_Variable::wait_inner( Cyg_Mutex *mx )
     cyg_bool result = true;
     Cyg_Thread *self = Cyg_Thread::self();
 
-    cyg_int32 current_lock = Cyg_Scheduler::get_sched_lock();
-
-    if (current_lock == 0) 
-        // Prevent preemption
-        Cyg_Scheduler::lock();
+    Cyg_Scheduler::lock();
 
     CYG_ASSERTCLASS( this, "Bad this pointer");
     CYG_ASSERTCLASS( mx, "Corrupt mutex");
@@ -577,13 +573,11 @@ Cyg_Condition_Variable::wait_inner( Cyg_Mutex *mx )
         
     queue.enqueue( self );
 
-    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
-
     // Avoid calling ASRs during the following unlock.
     self->set_asr_inhibit();
     
     // Unlock the scheduler and switch threads
-    Cyg_Scheduler::unlock();
+    Cyg_Scheduler::unlock_reschedule();
 
     // Allow ASRs again
     self->clear_asr_inhibit();
@@ -625,10 +619,6 @@ Cyg_Condition_Variable::wait_inner( Cyg_Mutex *mx )
     CYG_ASSERT( mx->owner == self, "Not mutex owner");
 
     CYG_REPORT_RETURN();
-
-    if (current_lock)
-        // Reacquire the DSR pseudo lock
-        Cyg_Scheduler::lock();
 
     return result;
 }
@@ -752,13 +742,11 @@ Cyg_Condition_Variable::wait_inner( Cyg_Mutex *mx, cyg_tick_count timeout )
     if( self->get_wake_reason() == Cyg_Thread::NONE )
         queue.enqueue( self );
 
-    CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1, "Called with non-zero scheduler lock");
-
     // Avoid calling ASRs during the following unlock.
     self->set_asr_inhibit();
         
     // Unlock the scheduler and switch threads
-    Cyg_Scheduler::unlock();
+    Cyg_Scheduler::unlock_reschedule();
 
     // Allow ASRs again
     self->clear_asr_inhibit();

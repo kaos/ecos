@@ -135,8 +135,8 @@ Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
-    cyg_priority pri                            = thread->priority;
-    Cyg_ThreadQueue_Implementation *queue       = &run_queue[pri];
+    cyg_priority pri                               = thread->priority;
+    Cyg_SchedulerThreadQueue_Implementation *queue = &run_queue[pri];
 
     CYG_ASSERT((CYG_THREAD_MIN_PRIORITY >= pri) 
                && (CYG_THREAD_MAX_PRIORITY <= pri),
@@ -186,8 +186,8 @@ Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
         
     CYG_ASSERT( queue_map != 0, "Run queue empty");
       
-    cyg_priority pri                            = thread->priority;
-    Cyg_ThreadQueue_Implementation *queue       = &run_queue[pri];
+    cyg_priority pri                               = thread->priority;
+    Cyg_SchedulerThreadQueue_Implementation *queue = &run_queue[pri];
 
     CYG_ASSERT( pri != CYG_THREAD_MIN_PRIORITY, "Idle thread trying to sleep!");
     CYG_ASSERT( queue_map & (1<<pri), "Queue map bit not set for pri");
@@ -272,8 +272,24 @@ Cyg_Scheduler_Implementation::timeslice(void)
 #ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
         CYG_TRACE0( true, "quantum consumed, time to reschedule" );
 #endif
-        // And force the current thread to yield.
-        current_thread->yield();
+
+        CYG_ASSERT( sched_lock > 0 , "Timeslice called with zero sched_lock");
+
+        Cyg_Thread *thread = current_thread;
+        Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
+
+        CYG_ASSERTCLASS( thread, "Bad current thread");
+        CYG_ASSERTCLASS( sched, "Bad scheduler");
+    
+        cyg_priority pri                               = thread->priority;
+        Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
+
+        queue->rotate();
+
+        if( queue->highpri() != thread )
+            sched->need_reschedule = true;
+
+        timeslice_count = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
     }
 
     
@@ -377,8 +393,8 @@ Cyg_SchedThread_Implementation::yield(void)
 
         CYG_ASSERTCLASS( sched, "Bad scheduler");
     
-        cyg_priority pri                            = thread->priority;
-        Cyg_ThreadQueue_Implementation *queue       = &sched->run_queue[pri];
+        cyg_priority pri                               = thread->priority;
+        Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
 
         queue->rotate();
 
@@ -392,8 +408,16 @@ Cyg_SchedThread_Implementation::yield(void)
     }
     
     // Unlock the scheduler and switch threads
-    Cyg_Scheduler::unlock();
+#ifdef CYGDBG_USE_ASSERTS
+    // This test keeps the assertions in unlock_inner() happy if
+    // need_reschedule was not set above.
+    if( !Cyg_Scheduler::need_reschedule )
+        Cyg_Scheduler::unlock();
+    else 
+#endif    
+    Cyg_Scheduler::unlock_reschedule();
 
+    
     CYG_REPORT_RETURN();
 }
 
@@ -414,7 +438,7 @@ Cyg_SchedThread_Implementation::rotate_queue( cyg_priority pri )
 
     CYG_ASSERTCLASS( sched, "Bad scheduler");
     
-    Cyg_ThreadQueue_Implementation *queue = &sched->run_queue[pri];
+    Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
 
     if ( !queue->empty() ) {
         queue->rotate();

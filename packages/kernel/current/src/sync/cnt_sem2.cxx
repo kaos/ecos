@@ -114,9 +114,6 @@ cyg_bool Cyg_Counting_Semaphore2::wait()
 
         CYG_INSTRUMENT_CNTSEM( WAIT, this, 0 );
 
-        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1,
-                    "Called with non-zero scheduler lock");
-        
         Cyg_Scheduler::unlock();
 
         CYG_INSTRUMENT_CNTSEM( WOKE, this, count );
@@ -180,8 +177,6 @@ Cyg_Counting_Semaphore2::wait( cyg_tick_count abs_timeout )
 
         CYG_INSTRUMENT_CNTSEM( WAIT, this, 0 );
 
-        CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1,
-                    "Called with non-zero scheduler lock");
         
         Cyg_Scheduler::unlock();
 

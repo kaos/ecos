@@ -934,6 +934,27 @@ cdl_package CYGPKG_ISOINFRA {
             flavor        booldata
             default_value 0
         }
+
+        cdl_option CYGBLD_ISO_OPEN_MAX_HEADER {
+            display       "OPEN_MAX implementation header"
+            flavor        booldata
+            default_value 0
+        }
+        cdl_option CYGBLD_ISO_LINK_MAX_HEADER {
+            display       "LINK_MAX implementation header"
+            flavor        booldata
+            default_value 0
+        }
+        cdl_option CYGBLD_ISO_NAME_MAX_HEADER {
+            display       "NAME_MAX implementation header"
+            flavor        booldata
+            default_value 0
+        }
+        cdl_option CYGBLD_ISO_PATH_MAX_HEADER {
+            display       "PATH_MAX implementation header"
+            flavor        booldata
+            default_value 0
+        }
     }
 
 # ====================================================================

@@ -162,6 +162,38 @@
 
 /* INCLUDES */
 
+#ifdef CYGBLD_ISO_OPEN_MAX_HEADER
+# include CYGBLD_ISO_OPEN_MAX_HEADER
+#else
+# ifndef __STRICT_ANSI__
+#  define OPEN_MAX _POSIX_OPEN_MAX
+# endif
+#endif
+
+#ifdef CYGBLD_ISO_LINK_MAX_HEADER
+# include CYGBLD_ISO_LINK_MAX_HEADER
+#else
+# ifndef __STRICT_ANSI__
+#  define LINK_MAX _POSIX_LINK_MAX
+# endif
+#endif
+
+#ifdef CYGBLD_ISO_NAME_MAX_HEADER
+# include CYGBLD_ISO_NAME_MAX_HEADER
+#else
+# ifndef __STRICT_ANSI__
+#  define NAME_MAX _POSIX_NAME_MAX
+# endif
+#endif
+
+#ifdef CYGBLD_ISO_PATH_MAX_HEADER
+# include CYGBLD_ISO_PATH_MAX_HEADER
+#else
+# ifndef __STRICT_ANSI__
+#  define PATH_MAX _POSIX_PATH_MAX
+# endif
+#endif
+
 #if CYGINT_ISO_POSIX_LIMITS
 # ifdef CYGBLD_ISO_POSIX_LIMITS_HEADER
 #  include CYGBLD_ISO_POSIX_LIMITS_HEADER

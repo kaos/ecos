@@ -1,3 +1,11 @@
+2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/limits.h (OPEN_MAX): Don't define here - let FS infra do
+	that.
+	(LINK_MAX): Ditto
+	(NAME_MAX): Ditto
+	(PATH_MAX): Ditto
+
 2000-09-04  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* tests/pthread2.c: 

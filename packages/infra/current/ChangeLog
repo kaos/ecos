@@ -1,3 +1,7 @@
+2000-09-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/cyg_type.h (CYGBLD_ATTRIB_SECTION): Don't stringify arg.
+
 2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/cyg_type.h (CYGARC_ALIGNMENT): Add default of 8

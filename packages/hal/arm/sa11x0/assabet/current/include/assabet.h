@@ -107,6 +107,8 @@ extern unsigned long _assabet_CFG;
 #define SA1110_BCR_GREEN_LED_ON     SA1110_LOGIC_ZERO(SA1110_BCR_GREEN_LED)
 #define SA1110_BCR_GREEN_LED_OFF    SA1110_LOGIC_ONE(SA1110_BCR_GREEN_LED)
 #define SA1110_BCR_MOTOR            0x00008000     // 1 = Vibrator motor on
+#define SA1110_BCR_MOTOR_ON         SA1110_LOGIC_ONE(SA1110_BCR_MOTOR)
+#define SA1110_BCR_MOTOR_OFF        SA1110_LOGIC_ZERO(SA1110_BCR_MOTOR)
 #define SA1110_BCR_COM_DTR          0x00010000     // COM port Data Terminal Ready
 #define SA1110_BCR_COM_RTS          0x00020000     // COM port Request To Send
 #define SA1110_BCR_RADIO_WAKE       0x00040000     // 1 = Wake up CPU with radio

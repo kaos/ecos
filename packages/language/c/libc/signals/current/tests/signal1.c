@@ -195,6 +195,7 @@ main( int argc, char *argv[] )
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C "
                     "library signal functions");
 
+    return 0;
 } // main()
 
 // EOF signal1.c

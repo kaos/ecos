@@ -57,6 +57,14 @@ cdl_package CYGPKG_HAL_V85X_V850 {
 
     compile v850_stub.c v850_misc.c context.S
 
+    cdl_interface CYGINT_HAL_V85X_VARIANT_SA1 {
+        display  "Defined if CPU is a V850/SA1"
+    }
+
+    cdl_interface CYGINT_HAL_V85X_VARIANT_SB1 {
+        display  "Defined if CPU is a V850/SB1"
+    }
+
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/v85x_v850.ld
         $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<

@@ -63,7 +63,7 @@ typedef struct cyg_netdevtab_entry {
     bool             (*init)(struct cyg_netdevtab_entry *tab);
     void              *device_instance;  // Local data, instance specific
     unsigned long     status;
-} cyg_netdevtab_entry_t;
+} CYG_HAL_TABLE_TYPE cyg_netdevtab_entry_t;
 
 #define CYG_NETDEVTAB_STATUS_AVAIL   0x0001
 
@@ -71,7 +71,7 @@ extern cyg_netdevtab_entry_t __NETDEVTAB__[], __NETDEVTAB_END__;
 
 #define NETDEVTAB_ENTRY(_l,_name,_init,_instance)  \
 static bool _init(struct cyg_netdevtab_entry *tab);                  \
-cyg_netdevtab_entry_t _l CYG_HAL_TABLE_ENTRY( netdev ) = {           \
+cyg_netdevtab_entry_t _l CYG_HAL_TABLE_ENTRY(netdev) = {             \
    _name,                                                            \
    _init,                                                            \
    _instance                                                         \

@@ -1,3 +1,17 @@
+2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/select.c: NA if no POSIX package
+
+	* cdl/fileio.cdl: Set CYGBLD_ISO_OPEN_MAX_HEADER to this package's
+	limits.h
+	* include/limits.h: New file to define OPEN_MAX (and other things in
+	future)
+
+2000-09-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/fileio.h:
+	Removed spaces from arguments to CYG_HAL_TABLE_ENTRY().
+
 2000-09-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/sockio.h (struct cyg_nstab_entry): Apply CYG_HAL_TABLE_TYPE

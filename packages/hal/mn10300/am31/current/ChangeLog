@@ -1,3 +1,8 @@
+2000-09-07  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/variant.inc:
+	Added defines for CYGPKG_HAL_MN10300_INTC_DECODE_DEFINED.
+
 2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/mn10300_am31.ld:

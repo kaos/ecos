@@ -1,3 +1,11 @@
+2000-09-10  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash_unlock_block.c: 
+	* src/flash_lock_block.c: New file(s).
+
+	* src/flash.h: 
+	* cdl/flash_assabet.cdl: Add region locking functions.
+
 2000-08-29  Gary Thomas  <gthomas@redhat.com>
 
 	* src/assabet_flash.c: Improve error decoding.
