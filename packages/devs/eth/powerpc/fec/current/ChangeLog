@@ -1,3 +1,8 @@
+2003-10-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/fec_eth_drivers.cdl: Disable STATUS_LEDS by default since these
+	are mostly useful for debugging and get in the way of "normal" LED use.
+
 2003-05-14  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/fec_eth_drivers.cdl: Only force serial console for eCos 

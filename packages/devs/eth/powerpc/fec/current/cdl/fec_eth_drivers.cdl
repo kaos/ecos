@@ -129,7 +129,7 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_FEC {
     cdl_component CYGSEM_DEVS_ETH_POWERPC_FEC_STATUS_LEDS {
         display "Display I/O status via LEDs"
         flavor  bool
-        default_value 1
+        default_value 0
         description "
             If this option is set, and the platform defines LED access
             functions, then I/O status will be displayed using the LEDs.
