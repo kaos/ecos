@@ -1,3 +1,8 @@
+2003-04-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/mips_tx49.ld:
+        Fix .gnulinkonce.s -> .gnu.linkonce.s typo.
+
 2000-12-05  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_cache.h (HAL_MIPS_CACHE_INSN_USES_LSB): The TX49
