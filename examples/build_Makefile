@@ -6,15 +6,7 @@
 # usage: <eCos_repository>/build_Makefile [<eCos_install_dir>]
 # env:   ${SRCS} - the default list of source files
 #        ${DST}  - the default target
-
-HOME=${1-`pwd`}
-if [ ! -d ${HOME}/install ]; then
-  echo "Not an eCos install tree"
-  echo "usage: <eCos_repository>/build_Makefile [<eCos_install_dir>]"
-  echo "env:   \${SRCS} - the default list of source files"
-  echo "       \${DST}  - the default target"
-  exit
-fi
+ECOS_DIR=${1-`pwd`}
 
 cat <<EOF >Makefile
 #
@@ -42,6 +34,6 @@ EOF
 
 # Create actual parameters
 
-`dirname $0`/build_Make.params ${HOME}
+`dirname $0`/build_Make.params ${ECOS_DIR}
 
 

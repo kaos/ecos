@@ -5,13 +5,21 @@
 # the automatically generated Makefile (via the script
 # 'build_Makefile')
 
-# Copied from 'makefile' the "install" tree
+# Copied from 'makefile' in the "install" tree
 
-HOME=${1-`pwd`}
-if [ ! -d ${HOME}/install ]; then
-  echo "Not an eCos install tree"
-  echo "usage: <eCos_repository>/build_Make.params [<eCos_install_dir>]"
-  exit
+ECOS_BUILD_DIR=${1-`pwd`}
+ECOS_INSTALL_DIR=`echo ${ECOS_BUILD_DIR}/install`
+if [ ! -d ${ECOS_BUILD_DIR}/install ]; then
+  if [ ! -d ${ECOS_BUILD_DIR}/*_build ]; then
+    echo "Not an eCos install tree"
+    echo "usage: <eCos_repository>/build_Make.params [<eCos_install_dir>]"
+    echo "... where <eCos_install_dir> is the directory which contains"
+    echo "    the *.ecc configuration file used to build the kernel"
+    exit
+  else
+    ECOS_INSTALL_DIR=`echo ${ECOS_BUILD_DIR}/*_install`
+    ECOS_BUILD_DIR=`echo ${ECOS_BUILD_DIR}/*_build`
+  fi
 fi
 
 cat <<EOF >Make.params
@@ -20,7 +28,7 @@ cat <<EOF >Make.params
 
 EOF
 
-grep export ${HOME}/makefile >>Make.params
+grep export ${ECOS_BUILD_DIR}/makefile >>Make.params
 
 cat <<EOF >>Make.params
 
@@ -30,7 +38,7 @@ cat <<EOF >>Make.params
 
 EOF
 
-cat ${HOME}/install/include/pkgconf/ecos.mak >>Make.params
+cat ${ECOS_INSTALL_DIR}/include/pkgconf/ecos.mak >>Make.params
 
 
 
