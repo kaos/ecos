@@ -99,6 +99,43 @@
 
 #endif
 
+// Defines for various R4000+ MIPS cache operations
+// this is a 5 bit field with bits 4-2 defining the operation
+// and bits 1-0 defining which cache is being operated on
+#define HAL_MIPS_CACHE_INDEX_INVALIDATE_I    0x00 /* 0 0 */
+#define HAL_MIPS_CACHE_INDEX_WRITEBACK_INV_D 0x01 /* 0 1 */
+#define HAL_MIPS_CACHE_INDEX_WRITEBACK_INV_S 0x03 /* 0 3 */
+#define HAL_MIPS_CACHE_INDEX_LOAD_TAG_I      0x04 /* 1 0 */
+#define HAL_MIPS_CACHE_INDEX_LOAD_TAG_D      0x05 /* 1 1 */
+#define HAL_MIPS_CACHE_INDEX_LOAD_TAG_S      0x07 /* 1 3 */
+#define HAL_MIPS_CACHE_INDEX_STORE_TAG_I     0x08 /* 2 0 */
+#define HAL_MIPS_CACHE_INDEX_STORE_TAG_D     0x09 /* 2 1 */
+#define HAL_MIPS_CACHE_INDEX_STORE_TAG_S     0x0b /* 2 3 */
+#define HAL_MIPS_CACHE_HIT_INVALIDATE_I      0x10 /* 4 0 */
+#define HAL_MIPS_CACHE_HIT_INVALIDATE_D      0x11 /* 4 1 */
+#define HAL_MIPS_CACHE_HIT_INVALIDATE_S      0x13 /* 4 3 */
+#define HAL_MIPS_CACHE_FILL_I                0x14 /* 5 0 */
+#define HAL_MIPS_CACHE_HIT_WRITEBACK_INV_D   0x15 /* 5 1 */
+#define HAL_MIPS_CACHE_HIT_WRITEBACK_INV_S   0x17 /* 5 3 */
+
+// there seems to be different uses for operation
+// code 6 depending on CPU
+#define HAL_MIPS_CACHE_HIT_WRITEBACK_D       0x19 /* 6 1 */
+
+#define HAL_MIPS_CACHE_INDEX_LOAD_DATA_I     0x18 /* 6 0 */
+#define HAL_MIPS_CACHE_INDEX_LOAD_DATA_D     0x19 /* 6 1 */
+#define HAL_MIPS_CACHE_INDEX_LOAD_DATA_S     0x1b /* 6 3 */
+
+// there seems to be different uses for operation
+// code 7 depending on CPU
+#define HAL_MIPS_CACHE_FETCH_AND_LOCK_I      0x1c /* 7 0 */
+#define HAL_MIPS_CACHE_FETCH_AND_LOCK_D      0x1d /* 7 1 */
+
+#define HAL_MIPS_CACHE_INDEX_STORE_DATA_I    0x1c /* 7 0 */
+#define HAL_MIPS_CACHE_INDEX_STORE_DATA_D    0x1d /* 7 1 */
+#define HAL_MIPS_CACHE_INDEX_STORE_DATA_S    0x1f /* 7 3 */
+
+
 //-----------------------------------------------------------------------------
 // Cache instruction uses LSBs or MSBs (depending on the
 // implementation) of the virtual address to specify which WAY to
@@ -106,8 +143,8 @@
 // to affect all ways.
 
 #ifdef HAL_MIPS_CACHE_INSN_USES_LSB
-# define _IWAY(_n_) ((_n_)*HAL_ICACHE_SIZE/HAL_ICACHE_WAYS+(_n_))
-# define _DWAY(_n_) ((_n_)*HAL_DCACHE_SIZE/HAL_DCACHE_WAYS+(_n_))
+# define _IWAY(_n_) (_n_)
+# define _DWAY(_n_) (_n_)
 #else
 # define _IWAY(_n_) ((_n_)*HAL_ICACHE_SIZE/HAL_ICACHE_WAYS)
 # define _DWAY(_n_) ((_n_)*HAL_DCACHE_SIZE/HAL_DCACHE_WAYS)
@@ -214,7 +251,7 @@
     register CYG_WORD _size_ = HAL_DCACHE_SIZE;                         \
     _HAL_ASM_SET_MIPS_ISA(3);                                           \
     for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )   \
-    { _HAL_ASM_DCACHE_ALL_WAYS(0x01, _addr_); }                         \
+    { _HAL_ASM_DCACHE_ALL_WAYS(HAL_MIPS_CACHE_INDEX_WRITEBACK_INV_D, _addr_); } \
     _HAL_ASM_SET_MIPS_ISA(0);                                           \
     CYG_MACRO_END
 #endif
@@ -241,7 +278,7 @@
     if( _state_ ) {                                                         \
         _HAL_ASM_SET_MIPS_ISA(3);                                           \
         for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
-        { _HAL_ASM_DCACHE_ALL_WAYS(0x1d, _addr_); }                         \
+        { _HAL_ASM_DCACHE_ALL_WAYS(HAL_MIPS_CACHE_FETCH_AND_LOCK_D, _addr_); } \
         _HAL_ASM_SET_MIPS_ISA(0);                                           \
     }                                                                       \
     CYG_MACRO_END
@@ -280,7 +317,7 @@
     if( _state_ ) {                                                         \
         _HAL_ASM_SET_MIPS_ISA(3);                                           \
         for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
-        { _HAL_ASM_DCACHE_ALL_WAYS(0x15, _addr_); }                         \
+        { _HAL_ASM_DCACHE_ALL_WAYS(HAL_MIPS_CACHE_HIT_WRITEBACK_INV_D, _addr_); } \
         _HAL_ASM_SET_MIPS_ISA(0);                                           \
     }                                                                       \
     CYG_MACRO_END
@@ -295,7 +332,7 @@
     register CYG_ADDRESS _eaddr_ = HAL_DCACHE_END_ADDRESS(_base_, _asize_); \
     _HAL_ASM_SET_MIPS_ISA(3);                                               \
     for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )               \
-    { _HAL_ASM_DCACHE_ALL_WAYS(0x11, _addr_); }                             \
+    { _HAL_ASM_DCACHE_ALL_WAYS(HAL_MIPS_CACHE_HIT_INVALIDATE_D, _addr_); }  \
     _HAL_ASM_SET_MIPS_ISA(0);                                               \
     CYG_MACRO_END
 #endif
@@ -312,7 +349,7 @@
     if( _state_ ) {                                                         \
         _HAL_ASM_SET_MIPS_ISA(3);                                           \
         for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
-        { _HAL_ASM_DCACHE_ALL_WAYS(0x19, _addr_); }                         \
+        { _HAL_ASM_DCACHE_ALL_WAYS(HAL_MIPS_CACHE_HIT_WRITEBACK_D, _addr_); } \
         _HAL_ASM_SET_MIPS_ISA(0);                                           \
     }                                                                       \
     CYG_MACRO_END
@@ -356,7 +393,7 @@
     register CYG_ADDRESS _addr_ = 0x80000000;                                 \
     _HAL_ASM_SET_MIPS_ISA(3);                                                 \
     for( ; _addr_ < _baddr_+HAL_ICACHE_SIZE; _addr_ += HAL_ICACHE_LINE_SIZE ) \
-    { _HAL_ASM_ICACHE_ALL_WAYS(0x00, _addr_); }                               \
+    { _HAL_ASM_ICACHE_ALL_WAYS(HAL_MIPS_CACHE_INDEX_INVALIDATE_I, _addr_); }  \
     _HAL_ASM_SET_MIPS_ISA(0);                                                 \
     CYG_MACRO_END
 #endif
@@ -383,7 +420,7 @@
     if( _state_ ) {                                                         \
         _HAL_ASM_SET_MIPS_ISA(3);                                           \
         for( ; _addr_ < _eaddr_; _addr_ += HAL_ICACHE_LINE_SIZE )           \
-        { _HAL_ASM_ICACHE_ALL_WAYS(0x1c, _addr_); }                         \
+        { _HAL_ASM_ICACHE_ALL_WAYS(HAL_MIPS_CACHE_FETCH_AND_LOCK_I, _addr_); } \
         _HAL_ASM_SET_MIPS_ISA(0);                                           \
     }                                                                       \
     CYG_MACRO_END
@@ -411,7 +448,7 @@
     register CYG_ADDRESS _eaddr_ = HAL_ICACHE_END_ADDRESS(_base_, _asize_); \
     _HAL_ASM_SET_MIPS_ISA(3);                                               \
     for( ; _addr_ < _eaddr_; _addr_ += HAL_ICACHE_LINE_SIZE )               \
-    { _HAL_ASM_ICACHE_ALL_WAYS(0x10, _addr_); }                             \
+    { _HAL_ASM_ICACHE_ALL_WAYS(HAL_MIPS_CACHE_HIT_INVALIDATE_I, _addr_); }  \
     _HAL_ASM_SET_MIPS_ISA(0);                                               \
     CYG_MACRO_END
 #endif

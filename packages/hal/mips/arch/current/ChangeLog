@@ -1,3 +1,11 @@
+2004-05-16  Andrew Dyer  <adyer@righthandtech.com>
+
+	* include/hal_cache.h: Changed the calculation of _IWAY and _DWAY
+	for the case where HAL_MIPS_CACHE_INSN_USES_LSB is set to only
+	affect the LSBs in the CACHE instruction offset field.  #define
+	MIPS cache ops and use them instead of constants in the
+	HAL_?CACHE_* macros below.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_mips.cdl :
