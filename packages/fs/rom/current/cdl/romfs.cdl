@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_FS_ROM {
     display        "ROM filesystem"
-    doc            doc/index.html
+    doc            ref/fileio.html
     include_dir    cyg/romfs
 
     requires       CYGPKG_IO_FILEIO
