@@ -174,7 +174,7 @@ net_test(cyg_addrword_t q)
                         (((int *)&oldbuff)[1] == 3)), 
                        "sysctlnametooid1");
 
-    /* This time with to small a results buffer */
+    /* This time with too small a results buffer */
     num_elem = 1;
     ret = sysctlnametomib(name2oid, mib,&num_elem);
     CYG_TEST_PASS_FAIL((ret == -1) && (errno = ENOMEM), 
@@ -194,6 +194,8 @@ net_test(cyg_addrword_t q)
                         (((int *)&oldbuff)[0] == CTL_DEBUG) &&
                         (((int *)&oldbuff)[1] == 3)), 
                        "sysctlbyname");
+
+    CYG_TEST_EXIT ("sysctl1 exit");
 }
 
 void
