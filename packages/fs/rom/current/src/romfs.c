@@ -588,28 +588,30 @@ static int romfs_pathconf( romfs_node *node, struct cyg_pathconf_info *info )
 
 static int romfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
 {
-    romfs_disk *disk;
+    romfs_disk *disk=NULL;
     
     if ( !mte->data ) {
 	// If the image address was not in the MTE data word,
 	if ( mte->devname && mte->devname[0] ) {
 	    // And there's something in the 'hardware device' field,
 	    // then read the address from there.
-	    sscanf( mte->devname, "%p", (char**)&mte->data );
+	    sscanf( mte->devname, "%p", (char**)&disk );
 	}
+    } else {
+        disk = (romfs_disk *)mte->data;
     }
 
-    if ( !mte->data ) {
+    if ( !disk ) {
 	// If still no address, try the FSTAB entry data word
 	mte->data = fste->data;
     }
 
-    if ( !mte->data ) {
+    if ( !disk ) {
 	// If still no address, give up...
 	return ENOENT;
     }
 
-    disk = (romfs_disk *)mte->data;
+
     
     // Check the ROMFS magic number to ensure that there's really an fs.
     if ( disk->magic == ROMFS_CIGAM ) {
@@ -622,6 +624,7 @@ static int romfs_mount    ( cyg_fstab_entry *fste, cyg_mtab_entry *mte )
 
     mte->root = (cyg_dir)&disk->node[0];
     
+    mte->data = (CYG_ADDRWORD)disk;
     return ENOERR;
 }
 

@@ -1,3 +1,8 @@
+2003-09-25  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* src/romfs.c (romfs_mount): If a mount fails, make sure we leave
+	all state information in such a way we can try again.
+
 2003-07-10  Andrew Lunn  <andrew.lunn@ascom.ch>
         
 	* support/mk_romfs.c: S_I[RWX]{USR|GRP|OTH} etc changed to match
