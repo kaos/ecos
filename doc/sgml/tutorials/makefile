@@ -45,7 +45,7 @@
 #####DESCRIPTIONEND####
 #=============================================================================
 
-TOPLEVEL   := ../../../ecc
+TOPLEVEL   := ../../../packages
 MAIN_SGML  := ecos-tutorial.sgml
 MAIN_HTML  := ecos-tutorial.html
 MAIN_PDF   := 

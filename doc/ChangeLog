@@ -1,3 +1,8 @@
+2002-09-02  Andrew Lunn  <andrew.lunn@ascom.ch
+
+	* sgml/tutorial/makefile: changed ecc to packages
+	* sgml/user-guide/makefile: changed ecc to packages
+	
 2002-08-15  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* sgml/doclist: Added the CPU load package documentation.
