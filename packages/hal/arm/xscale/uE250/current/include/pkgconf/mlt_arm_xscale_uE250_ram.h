@@ -14,5 +14,5 @@
 extern char CYG_LABEL_NAME (__heap1) [];
 #endif
 #define CYGMEM_SECTION_heap1 (CYG_LABEL_NAME (__heap1))
-#define CYGMEM_SECTION_heap1_SIZE (0x1e00000 - (size_t) CYG_LABEL_NAME (__heap1))
+#define CYGMEM_SECTION_heap1_SIZE (0x3F00000 - (size_t) CYG_LABEL_NAME (__heap1))
 
