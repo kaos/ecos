@@ -380,6 +380,7 @@ target_ins(unsigned long *pc, unsigned long ins)
             // Destination register is PC
             if ((ins & 0x0FBF0000) != 0x010F0000) {
                 Rn = (unsigned long)get_register((ins & 0x000F0000) >> 16);
++		if ((ins & 0x000F0000) == 0x000F0000) Rn += 8;  // PC prefetch!
                 if ((ins & 0x02000000) == 0) {
                     op2 = RmShifted(ins & 0x00000FFF);
                 } else {

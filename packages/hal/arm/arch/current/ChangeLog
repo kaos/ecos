@@ -1,3 +1,8 @@
+2002-11-12  Mark Salter  <msalter@redhat.com>
+
+	* src/arm_stub.c (target_ins): Account for PC prefetch when PC is
+	source register in data processing insns.
+
 2002-08-29  Mark Salter  <msalter@redhat.com>
 
 	* src/vectors.S: Avoid entering thumb mode in exception handlers.
