@@ -214,14 +214,6 @@ hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     return 0;
 }
 
-/*------------------------------------------------------------------------*/
-/* Idle thread action                                                     */
-
-void
-hal_idle_thread_action( cyg_uint32 count )
-{
-}
-
 /*-------------------------------------------------------------------------*/
 /* Misc functions                                                          */
 

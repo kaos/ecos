@@ -1,3 +1,12 @@
+2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_arch.h: Include plf_arch.h or var_arch.h if platform
+	or variant requires it to do overrides.
+	(HAL_IDLE_THREAD_ACTION): Default to empty statement but allow to be
+	overridden.
+	
+	* src/hal_misc.c: Remove hal_idle_thread_action. It's no use.
+
 2003-05-06  Pierre Habraken  <Pierre.Habraken@imag.fr>
 
 	* src/arm_stub.c (target_ins, target_thumb_ins): Added code to

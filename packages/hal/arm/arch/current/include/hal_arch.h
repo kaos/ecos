@@ -57,6 +57,14 @@
 #include <pkgconf/hal.h>         // To decide on stack usage
 #include <cyg/infra/cyg_type.h>
 
+#ifdef CYGBLD_HAL_ARM_PLF_ARCH_H
+#include <cyg/hal/plf_arch.h>
+#endif
+
+#ifdef CYGBLD_HAL_ARM_VAR_ARCH_H
+#include <cyg/hal/var_arch.h>
+#endif
+
 //
 // CPSR Register defines
 //
@@ -330,11 +338,12 @@ externC void hal_longjmp(hal_jmp_buf env, int val);
 // Idle thread code.
 // This macro is called in the idle thread loop, and gives the HAL the
 // chance to insert code. Typical idle thread behaviour might be to halt the
-// processor.
+// processor. Here we only supply a default fallback if the variant/platform
+// doesn't define anything.
 
-externC void hal_idle_thread_action(cyg_uint32 loop_count);
-
-#define HAL_IDLE_THREAD_ACTION(_count_) hal_idle_thread_action(_count_)
+#ifndef HAL_IDLE_THREAD_ACTION
+#define HAL_IDLE_THREAD_ACTION(_count_) CYG_EMPTY_STATEMENT
+#endif
 
 //---------------------------------------------------------------------------
 
