@@ -61,6 +61,7 @@
 #include <cyg/hal/hal_intr.h>           // HAL_ENABLE/MASK/UNMASK_INTERRUPTS
 #include <cyg/hal/hal_misc.h>           // Helper functions
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
+#include <cyg/hal/hal_diag.h>
 
 #include <cyg/hal/var_io.h>             // USART registers
 
@@ -69,6 +70,7 @@ typedef struct {
     cyg_uint8* base;
     cyg_int32 msec_timeout;
     int isr_vector;
+    int baud_rate;
 } channel_data_t;
 
 //-----------------------------------------------------------------------------
@@ -79,7 +81,8 @@ cyg_hal_plf_serial_putc(void *__ch_data, char c);
 static void
 cyg_hal_plf_serial_init_channel(void* __ch_data)
 {
-    cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    cyg_uint8* base = chan->base;
 
     // Reset device
     HAL_WRITE_UINT32(base+AT91_US_CR, AT91_US_CR_RxRESET | AT91_US_CR_TxRESET);
@@ -89,7 +92,7 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
                      AT91_US_MR_CLOCK_MCK | AT91_US_MR_LENGTH_8 |
                      AT91_US_MR_PARITY_NONE | AT91_US_MR_STOP_1);
 
-    HAL_WRITE_UINT32(base+AT91_US_BRG, AT91_US_BAUD(CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD));
+    HAL_WRITE_UINT32(base+AT91_US_BRG, AT91_US_BAUD(chan->baud_rate));
 
     // Enable RX and TX
     HAL_WRITE_UINT32(base+AT91_US_CR, AT91_US_CR_RxENAB | AT91_US_CR_TxENAB);
@@ -195,9 +198,21 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     channel_data_t* chan = (channel_data_t*)__ch_data;
     cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
     int ret = 0;
+    va_list ap;
+
     CYGARC_HAL_SAVE_GP();
+    va_start(ap, __func);
 
     switch (__func) {
+    case __COMMCTL_GETBAUD:
+        ret = chan->baud_rate;
+        break;
+    case __COMMCTL_SETBAUD:
+        chan->baud_rate = va_arg(ap, cyg_int32);
+        // Should we verify this value here?
+        cyg_hal_plf_serial_init_channel(chan);
+        ret = 0;
+        break;
     case __COMMCTL_IRQ_ENABLE:
         irq_state = 1;
         HAL_INTERRUPT_ACKNOWLEDGE(chan->isr_vector);
@@ -261,8 +276,8 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
 }
 
 static channel_data_t at91_ser_channels[2] = {
-    { (cyg_uint8*)AT91_USART0, 1000, CYGNUM_HAL_INTERRUPT_USART0},
-    { (cyg_uint8*)AT91_USART1, 1000, CYGNUM_HAL_INTERRUPT_USART1}
+    { (cyg_uint8*)AT91_USART0, 1000, CYGNUM_HAL_INTERRUPT_USART0, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD},
+    { (cyg_uint8*)AT91_USART1, 1000, CYGNUM_HAL_INTERRUPT_USART1, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD}
 };
 
 static void

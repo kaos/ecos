@@ -1,3 +1,14 @@
+2004-02-12  Jani Monoses <jani@iv.ro>
+
+	* cdl/hal_arm_at91.cdl: Put configuration options common to all
+	variants here. Replace
+	CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD with the two
+	separate options for console and debug channels as used by most
+	HALs.
+	* src/hal_diag.c: Implement
+	CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT so baudrate is
+	changeable from RedBoot.
+	
 2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/hal_diag.h: hal_delay_us() is a C function.
