@@ -97,7 +97,7 @@ ETH_DRV_SC(ppc405_eth0_sc,
            ppc405_eth_int_vector);
 
 NETDEVTAB_ENTRY(ppc405_netdev, 
-                "ppc405_eth", 
+                "eth0", 
                 ppc405_eth_init, 
                 &ppc405_eth0_sc);
 
@@ -106,7 +106,7 @@ NETDEVTAB_ENTRY(ppc405_netdev,
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 #include <redboot.h>
 #include <flash_config.h>
-RedBoot_config_option("Network hardware address [MAC]",
+RedBoot_config_option("eth0 network hardware address [MAC]",
                       eth0_esa,
                       ALWAYS_ENABLED, true,
                       CONFIG_ESA, &ppc405_eth0_info.enaddr

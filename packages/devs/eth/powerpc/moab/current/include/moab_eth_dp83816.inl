@@ -56,23 +56,6 @@
 #define DP_IN(_b_, _o_, _d_)  HAL_READ_UINT32LE((cyg_addrword_t)(_b_)+(_o_), (_d_))
 #define DP_OUT(_b_, _o_, _d_) HAL_WRITE_UINT32LE((cyg_addrword_t)(_b_)+(_o_), (_d_))
 
-#if defined(CYGPKG_REDBOOT) 
-#include <pkgconf/redboot.h>
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-#include <redboot.h>
-#include <flash_config.h>
-RedBoot_config_option("Network hardware address [MAC]",
-                      eth1_esa,
-                      ALWAYS_ENABLED, true,
-                      CONFIG_ESA, 0
-    );
-#endif  // CYGSEM_REDBOOT_FLASH_CONFIG
-#else
-#ifndef CONFIG_ESA
-#define CONFIG_ESA 6
-#endif
-#endif  // CYGPKG_REDBOOT
-
 static cyg_bool
 find_rtl8381x_match_func(cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p)
 {
@@ -150,8 +133,26 @@ ETH_DRV_SC(dp83816_sc,
            dp83816_int_vector);
 
 NETDEVTAB_ENTRY(dp83816_netdev, 
-                "dp83816_" CYGDAT_DEVS_ETH_MOAB_ETH1_NAME,
+                CYGDAT_DEVS_ETH_MOAB_ETH1_NAME,
                 dp83816_init, 
                 &dp83816_sc);
+
+#if defined(CYGPKG_REDBOOT) 
+#include <pkgconf/redboot.h>
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#include <redboot.h>
+#include <flash_config.h>
+RedBoot_config_option("eth1 network hardware address [MAC]",
+                      eth1_esa,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_ESA, &dp83816_eth1_priv_data.enaddr
+    );
+#endif  // CYGSEM_REDBOOT_FLASH_CONFIG
+#else
+#ifndef CONFIG_ESA
+#define CONFIG_ESA 6
+#endif
+#endif  // CYGPKG_REDBOOT
+
 
 // EOF moab_eth_dp83816.inl

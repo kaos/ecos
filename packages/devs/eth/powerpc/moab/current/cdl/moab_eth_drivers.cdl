@@ -117,31 +117,6 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_MOAB {
                 This option specifies the number of input buffer packets
                 to be used for the NS DP83816 ethernet device."
         }
-
-        cdl_option CYGDAT_DEVS_ETH_MOAB_ETH1_NAME {
-            display       "Device name for the ETH1 ethernet driver"
-            flavor        data
-            default_value {"\"eth1\""}
-            description   "
-                This option sets the name of the ethernet device."
-        }
-
-        cdl_component CYGSEM_DEVS_ETH_MOAB_ETH1_SET_ESA {
-            display       "Set the ethernet station address"
-            flavor        bool
-            default_value 0
-            description   "Enabling this option will allow the ethernet
-            station address to be forced to the value set by the
-            configuration.  This may be required if the hardware does
-            not include a serial EEPROM for the ESA."
-            
-            cdl_option CYGDAT_DEVS_ETH_MOAB_ETH1_ESA {
-                display       "The ethernet station address"
-                flavor        data
-                default_value {"{0x08, 0x88, 0x12, 0x34, 0x56, 0x78}"}
-                description   "The ethernet station address"
-            }
-        }
     }
 
     include_dir   cyg/io

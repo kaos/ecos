@@ -1,6 +1,8 @@
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/moab_eth_dp83816.inl: 
+	* include/moab_eth.inl: Change device names used by RedBoot to eth0/eth1
+	* include/moab_eth_dp83816.inl: 
 	* cdl/moab_eth_drivers.cdl: Add support for 2nd LAN device, based
 	on National Semiconductor DP83816.
 
