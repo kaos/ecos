@@ -1,3 +1,8 @@
+2002-09-23  Gary Thomas  <gthomas@ecoscentric.com> on behalf of
+2002-11-23  Scott Dattalo <scott@dattalo.com>	
+
+	* include/plf_io.h: Add some missing register definitions.
+
 2002-05-28  Thomas Koeller  <Thomas.Koeller@baslerweb.com>
 
 	* include/plf_io.h: Add watchdog definitions.

@@ -129,8 +129,19 @@
 #define AT91_PIO_PDR  0x04  // PIO disable
 #define AT91_PIO_PSR  0x08  // PIO status
 #define AT91_PIO_OER  0x10  // Output enable
+#define AT91_PIO_ODR  0x14  // Output disable
+#define AT91_PIO_OSR  0x1C  // Output status register
+#define AT91_PIO_IFER 0x20  // Input Filter enable
+#define AT91_PIO_IFDR 0x24  // Input Filter disable
+#define AT91_PIO_IFSR 0x28  // Input Filter status register
 #define AT91_PIO_SODR 0x30  // Set out bits
 #define AT91_PIO_CODR 0x34  // Clear out bits
+#define AT91_PIO_ODSR 0x38  // Output data status register
+#define AT91_PIO_IER  0x40  // Interrupt enable
+#define AT91_PIO_IDR  0x44  // Interrupt disable
+#define AT91_PIO_IMR  0x48  // Interrupt mask
+#define AT91_PIO_ISR  0x4C  // Interrupt status register
+
 
 // Advanced Interrupt Controller (AIC)
 
@@ -295,8 +306,63 @@
 
 // External Bus Interface
 
-#define AT91_EBI        0xFFE00000
+#define AT91_EBI        0xFFE00000  // Base
+
+#define AT91_EBI_CSR0   0x00    // Chip selects 0 - 7
+#define AT91_EBI_CSR1   0x04
+#define AT91_EBI_CSR2   0x08
+#define AT91_EBI_CSR3   0x0C
+#define AT91_EBI_CSR4   0x10
+#define AT91_EBI_CSR5   0x14
+#define AT91_EBI_CSR6   0x18
+#define AT91_EBI_CSR7   0x1C
+
 #define AT91_EBI_RCR    0x20       // Reset control
+#define AT91_EBI_MCR    0x24       // Memory control
+
+#define AT91_EBI_CSEN              (1<<13)  // Chip Select enable
+#define AT91_EBI_BAT_BYTE_WRITE    (0<<12)  // Byte write access
+#define AT91_EBI_BAT_BYTE_SELECT   (1<<12)  // Byte select access type
+#define AT91_EBI_TDF0              (0<<9)   // 0 cycles of data float time
+#define AT91_EBI_TDF1              (1<<9)   // 1 
+#define AT91_EBI_TDF2              (2<<9)   // 2, etc
+#define AT91_EBI_TDF3              (3<<9)   //
+#define AT91_EBI_TDF4              (4<<9)   //
+#define AT91_EBI_TDF5              (5<<9)   //
+#define AT91_EBI_TDF6              (6<<9)   //
+#define AT91_EBI_TDF7              (7<<9)   //
+
+#define AT91_EBI_PAGES_1M          (0<<7)   // 1MByte page size
+#define AT91_EBI_PAGES_4M          (1<<7)   // 4MByte page size
+#define AT91_EBI_PAGES_16M         (2<<7)   // 16MByte page size
+#define AT91_EBI_PAGES_64M         (3<<7)   // 64MByte page size
+
+#define AT91_EBI_WSE               (1<<5)   // Wait State enable
+
+#define AT91_EBI_NWS_1             (0<<2)   // 1 wait state
+#define AT91_EBI_NWS_2             (1<<2)   // 1 wait state
+#define AT91_EBI_NWS_3             (2<<2)   // 1 wait state
+#define AT91_EBI_NWS_4             (3<<2)   // 1 wait state
+#define AT91_EBI_NWS_5             (4<<2)   // 1 wait state
+#define AT91_EBI_NWS_6             (5<<2)   // 1 wait state
+#define AT91_EBI_NWS_7             (6<<2)   // 1 wait state
+#define AT91_EBI_NWS_8             (7<<2)   // 1 wait state
+
+#define AT91_EBI_DBW_8             (2<<0)   // 8-bit data bus width
+#define AT91_EBI_DBW_16            (1<<0)   // 16-bit data bus width
+
+#define AT91_EBI_RCB               (1<<0)   // Remap command bit
+
+#define AT91_EBI_ALE_16M           (0<<0)   // Address line enable: A20,A21,A22,A23
+#define AT91_EBI_ALE_8M            (4<<0)   //   "   "  A20,A21,A22 CS4
+#define AT91_EBI_ALE_4M            (5<<0)   //   "   "  A20,A21     CS4,CS5
+#define AT91_EBI_ALE_2M            (6<<0)   //   "   "  A20         CS4,CS5,CS6
+#define AT91_EBI_ALE_1M            (7<<0)   //   "   "              CS4,CS5,CS6,CS7
+
+#define AT91_EBI_DRP_STANDARD      (0<<4)   // Standard data read protocol
+#define AT91_EBI_DRP_EARLY         (1<<4)   // Early data read protocol
+
+
 
 // Power Savings control
 
