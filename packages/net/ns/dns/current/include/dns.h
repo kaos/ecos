@@ -57,7 +57,7 @@
 /* Initialise the DNS client with the address of the server */
 externC int cyg_dns_res_init(struct in_addr *dns_server);
 externC int getdomainname(char *name, size_t len);
-externC int setdomainname(char *name, size_t len);
+externC int setdomainname(const char *name, size_t len);
 #endif
 
 // Host name / IP mapping

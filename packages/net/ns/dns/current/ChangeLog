@@ -1,3 +1,9 @@
+2003-01-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/dns_impl.inl (setdomainname): define with const name
+	argument.
+	* include/dns.h: Ditto.
+
 2003-01-10  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/dns.cdl: Added the ability to hard code a domain name.

@@ -523,7 +523,7 @@ gethostbyname(const char * hostname)
 
 /* Set the domain names, as used by the DNS server */
 int
-setdomainname(char *name, size_t len)
+setdomainname(const char *name, size_t len)
 {
     char * ptr;
 
