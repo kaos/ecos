@@ -48,7 +48,7 @@
 TOPLEVEL   := ../../../packages
 MAIN_SGML  := user-guide.sgml
 MAIN_HTML  := ecos-user-guide.html
-MAIN_PDF   := 
+MAIN_PDF   := ecos-user-guide.pdf
 OTHER_SGML :=
 PICTURES   :=
 

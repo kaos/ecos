@@ -11,42 +11,43 @@
 <!ENTITY config-tool SYSTEM "config-tool.sgml">
 <!ENTITY programming-concepts-and-techniques SYSTEM "programming-concepts-techniques.sgml">
 <!ENTITY configuration SYSTEM "configuration.sgml">
+<!NOTATION PNG SYSTEM "PNG">
 <!ENTITY send-pr SYSTEM "send-pr.sgml">
-<!ENTITY graphic1 SYSTEM "pix/config-f1.gif" NDATA gif>
-<!ENTITY graphic2 SYSTEM "pix/repos-relocate.gif" NDATA gif>
-<!ENTITY graphic3 SYSTEM "pix/save-as-dialog.gif" NDATA gif>
-<!ENTITY graphic4 SYSTEM "pix/open-dialog.gif" NDATA gif>
-<!ENTITY graphic5 SYSTEM "pix/html-help.gif" NDATA gif>
-<!ENTITY graphic6 SYSTEM "pix/settings-viewers.gif" NDATA gif>
-<!ENTITY graphic7 SYSTEM "pix/configwin.gif" NDATA gif>
-<!ENTITY graphic8 SYSTEM "pix/conflictwin.gif" NDATA gif>
-<!ENTITY graphic9 SYSTEM "pix/propwin.gif" NDATA gif>
-<!ENTITY graphic10 SYSTEM "pix/memorywin.gif" NDATA gif>
-<!ENTITY graphic11 SYSTEM "pix/regprops.gif" NDATA gif>
-<!ENTITY graphic12 SYSTEM "pix/memregions.gif" NDATA gif>
-<!ENTITY graphic13 SYSTEM "pix/memreloc.gif" NDATA gif>
-<!ENTITY graphic14 SYSTEM "pix/BuildPackages.gif" NDATA gif>
-<!ENTITY graphic15 SYSTEM "pix/toolsplatforms.gif" NDATA gif>
-<!ENTITY graphic16 SYSTEM "pix/modifyplatform.gif" NDATA gif>
-<!ENTITY graphic17 SYSTEM "pix/addplatform.gif" NDATA gif>
-<!ENTITY graphic18 SYSTEM "pix/templates.gif" NDATA gif>
-<!ENTITY graphic19 SYSTEM "pix/ToolsOptions.gif" NDATA gif>
-<!ENTITY graphic20 SYSTEM "pix/Conflicts.gif" NDATA gif>
-<!ENTITY graphic21 SYSTEM "pix/find-dialog.gif" NDATA gif>
-<!ENTITY graphic22 SYSTEM "pix/buildoptions.gif" NDATA gif>
-<!ENTITY graphic23 SYSTEM "pix/build-tools2.gif" NDATA gif>
-<!ENTITY graphic24 SYSTEM "pix/user-tools-dialog.gif" NDATA gif>
-<!ENTITY graphic25 SYSTEM "pix/ch-properties-dialog.gif" NDATA gif>
-<!ENTITY graphic26 SYSTEM "pix/connection.gif" NDATA gif>
-<!ENTITY graphic27 SYSTEM "pix/run-tests.gif" NDATA gif>
-<!ENTITY graphic28 SYSTEM "pix/addfromfolder.gif" NDATA gif>
-<!ENTITY graphic29 SYSTEM "pix/bash.gif" NDATA gif>
-<!ENTITY graphic30 SYSTEM "pix/comprepos.gif" NDATA gif>
+<!ENTITY graphic1 SYSTEM "pix/config-f1.png" NDATA png>
+<!ENTITY graphic2 SYSTEM "pix/repos-relocate.png" NDATA png>
+<!ENTITY graphic3 SYSTEM "pix/save-as-dialog.png" NDATA png>
+<!ENTITY graphic4 SYSTEM "pix/open-dialog.png" NDATA png>
+<!ENTITY graphic5 SYSTEM "pix/html-help.png" NDATA png>
+<!ENTITY graphic6 SYSTEM "pix/settings-viewers.png" NDATA png>
+<!ENTITY graphic7 SYSTEM "pix/configwin.png" NDATA png>
+<!ENTITY graphic8 SYSTEM "pix/conflictwin.png" NDATA png>
+<!ENTITY graphic9 SYSTEM "pix/propwin.png" NDATA png>
+<!ENTITY graphic10 SYSTEM "pix/memorywin.png" NDATA png>
+<!ENTITY graphic11 SYSTEM "pix/regprops.png" NDATA png>
+<!ENTITY graphic12 SYSTEM "pix/memregions.png" NDATA png>
+<!ENTITY graphic13 SYSTEM "pix/memreloc.png" NDATA png>
+<!ENTITY graphic14 SYSTEM "pix/BuildPackages.png" NDATA png>
+<!ENTITY graphic15 SYSTEM "pix/toolsplatforms.png" NDATA png>
+<!ENTITY graphic16 SYSTEM "pix/modifyplatform.png" NDATA png>
+<!ENTITY graphic17 SYSTEM "pix/addplatform.png" NDATA png>
+<!ENTITY graphic18 SYSTEM "pix/templates.png" NDATA png>
+<!ENTITY graphic19 SYSTEM "pix/ToolsOptions.png" NDATA png>
+<!ENTITY graphic20 SYSTEM "pix/Conflicts.png" NDATA png>
+<!ENTITY graphic21 SYSTEM "pix/find-dialog.png" NDATA png>
+<!ENTITY graphic22 SYSTEM "pix/buildoptions.png" NDATA png>
+<!ENTITY graphic23 SYSTEM "pix/build-tools2.png" NDATA png>
+<!ENTITY graphic24 SYSTEM "pix/user-tools-dialog.png" NDATA png>
+<!ENTITY graphic25 SYSTEM "pix/ch-properties-dialog.png" NDATA png>
+<!ENTITY graphic26 SYSTEM "pix/connection.png" NDATA png>
+<!ENTITY graphic27 SYSTEM "pix/run-tests.png" NDATA png>
+<!ENTITY graphic28 SYSTEM "pix/addfromfolder.png" NDATA png>
+<!ENTITY graphic29 SYSTEM "pix/bash.png" NDATA png>
+<!ENTITY graphic30 SYSTEM "pix/comprepos.png" NDATA png>
 <!ENTITY Version CDATA "v1_3_x">
-<!ENTITY graphic31 SYSTEM "pix/admin.gif" NDATA gif>
-<!ENTITY graphic32 SYSTEM "pix/settings-display.gif" NDATA gif>
-<!ENTITY graphic33 SYSTEM "pix/settings-confict.gif" NDATA gif>
-<!ENTITY graphic34 SYSTEM "pix/settings-runtests.gif" NDATA gif>
+<!ENTITY graphic31 SYSTEM "pix/admin.png" NDATA png>
+<!ENTITY graphic32 SYSTEM "pix/settings-display.png" NDATA png>
+<!ENTITY graphic33 SYSTEM "pix/settings-confict.png" NDATA png>
+<!ENTITY graphic34 SYSTEM "pix/settings-runtests.png" NDATA png>
 <!ENTITY version CDATA "1.3.x">
 
 <!-- End Document Specific Declarations -->
