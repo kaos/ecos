@@ -55,6 +55,7 @@
 #include <pkgconf/io_pci.h>
 
 #include <cyg/infra/cyg_type.h>
+#include <cyg/infra/diag.h>
 #include <cyg/hal/hal_mem.h>            // HAL memory definitions
 #include <cyg/hal/ppc_regs.h>           // Platform registers
 #include <cyg/hal/hal_if.h>             // hal_if_init
@@ -64,6 +65,10 @@
 #include <cyg/io/pci.h>
 #include <cyg/hal/hal_io.h>             // I/O macros
 #include CYGHWR_MEMORY_LAYOUT_H
+
+// Functions defined in this module
+void _csb281_fs6377_init(int mode);
+static void _csb281_i2c_init(void);
 
 // The memory map is weakly defined, allowing the application to redefine
 // it if necessary. The regions defined below are the minimum requirements.
@@ -117,7 +122,10 @@ hal_platform_init(void)
     HAL_WRITE_UINT32(_CSB281_BCSR, _zero_bit(bcsr, _CSB281_BCSR_PRESET));
     HAL_WRITE_UINT32(_CSB281_BCSR, _one_bit(bcsr, _CSB281_BCSR_PRESET));
     _csb281_i2c_init();
-    _csb281_fs6377_init();
+    _csb281_fs6377_init(0);
+#endif
+#ifdef CYGSEM_CSB281_LCD_COMM
+    lcd_comm_init();
 #endif
     _csb281_pci_init();
 }
@@ -607,13 +615,25 @@ static unsigned char _fs6377_init_data[] = {
     0x94, 0x32, 0x80, 0xD4, 0x56, 0xF6, 0xF6, 0xE0
 };
 
-static void
-_csb281_fs6377_init(void)
+// Setup for CRT mode 640x480 @75Hz
+static unsigned char _fs6377_init_data_CRT[] = {
+    0x10, 0x3b, 0x49, 0x03, 0x4B, 0x80, 0x32, 0x80,
+    0x94, 0x32, 0x80, 0xD4, 0x66, 0xF6, 0xF6, 0xE0 
+};
+
+void
+_csb281_fs6377_init(int mode)
 {
     int reg;
+    unsigned char *data;
 
+    if (mode) {
+        data = _fs6377_init_data_CRT;
+    } else {
+        data = _fs6377_init_data;
+    }
     for (reg = 0;  reg < 16;  reg++) {
-        if (_csb281_i2c_write_reg(_CSB281_FS6377_DEV, reg, _fs6377_init_data[reg]) < 0) {
+        if (_csb281_i2c_write_reg(_CSB281_FS6377_DEV, reg, *data++) < 0) {
             diag_printf("** Can't write FS6377 register %d\n", reg);
             return;
         }
@@ -637,6 +657,7 @@ _set_leds(int led0, int led1)
     HAL_WRITE_UINT32(_CSB281_BCSR, bcsr);
 }
 
+static void
 _led_delay(int len)
 {
     int ctr, limit;
@@ -649,6 +670,7 @@ _led_delay(int len)
     }
 }
 
+void
 _csb281_led(int val)
 {
     int bit, ctr;

@@ -116,10 +116,41 @@ cdl_package CYGPKG_HAL_POWERPC_CSB281 {
            baud rate correctly, amongst other things."
    }
 
+    cdl_component CYGSEM_CSB281_LCD_SUPPORT {
+        display        "Support LCD"
+        flavor         bool
+        default_value  1
+        compile        lcd_support.c sed135x_16bit.c
+        description    "
+          Enabling this option will enable the use the LCD/CRT as a 
+          simple framebuffer, suitable for use with a windowing
+          package."
+
+        cdl_component CYGSEM_CSB281_LCD_COMM {
+            display        "Support LCD/keyboard for comminication channel"
+            active_if      CYGPKG_REDBOOT
+            flavor         bool
+            default_value  1
+            description    "
+              Enabling this option will use the LCD/CRT and keyboard for a
+              communications channel, suitable for RedBoot, etc."
+
+            cdl_option  CYGOPT_CSB281_LCD_COMM_LOGO {
+                display       "Logo location"
+                flavor        booldata
+                legal_values  { "TOP" "BOTTOM" }
+                default_value { "TOP" }
+                description   "
+                    Use this option to control where the logo is placed
+                    on the LCD/CRT screen."
+            }
+        }
+    }
+
    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
        display      "Number of communication channels on the board"
        flavor       data
-       calculated   1
+       calculated   2+CYGSEM_CSB281_LCD_COMM
    }
 
    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
@@ -297,14 +328,14 @@ cdl_package CYGPKG_HAL_POWERPC_CSB281 {
                 the set of global flags if present."
         }
 
-##        cdl_option CYGPKG_HAL_POWERPC_CSB281_TESTS {
-##            display "CSB281 tests"
-##            flavor  data
-##            no_define
-##            calculated { "tests/csb281time" }
-##            description   "
-##                This option specifies the set of tests for the CSB281 HAL."
-##        }
+        cdl_option CYGPKG_HAL_POWERPC_CSB281_TESTS {
+            display "CSB281 tests"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option specifies the set of tests for the CSB281 HAL."
+        }
     }
 
     cdl_component CYGHWR_MEMORY_LAYOUT {
