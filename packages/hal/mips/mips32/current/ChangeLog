@@ -1,3 +1,7 @@
+2003-01-21  Tim Michals  <t.michals@attbi.com>
+
+	* cdl/hal_mips_mips32.cdl: Make endianness configurable.
+
 2002-05-24  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_arch.h: Removed HAL_DIAG_IRQ_CHECK. It's not
