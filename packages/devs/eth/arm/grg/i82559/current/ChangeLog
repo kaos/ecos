@@ -1,3 +1,8 @@
+2003-03-24  Mark Salter  <msalter@redhat.com>
+
+	* cdl/grg_i82559_eth_driver.cdl: Fix copyright notice.
+	* include/grg_i82559.inl: Ditto.
+
 2003-02-07  Mark Salter  <msalter@redhat.com>
 
 	* Initial checkin.

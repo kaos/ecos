@@ -1,3 +1,8 @@
+2003-03-24  Mark Salter  <msalter@redhat.com>
+
+	* cdl/ixdp425_i82559_eth_driver.cdl: Fix copyright notice.
+	* include/ixdp425_i82559.inl: Ditto.
+
 2003-02-07  Mark Salter  <msalter@redhat.com>
 
 	* cdl/ixdp425_i82559_eth_driver.cdl: CYGPKG_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA.
