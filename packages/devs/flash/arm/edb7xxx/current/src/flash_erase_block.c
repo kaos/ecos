@@ -54,26 +54,16 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
+int  flash_erase_block(volatile unsigned long * block) 
+    __attribute__ ((section (".2ram.flash_erase_block")));
 
 int flash_erase_block(volatile unsigned long *block)
 {
     volatile unsigned long *ROM, *sb;
     unsigned long stat;
     int timeout = 50000;
-    int cache_on;
     int len, block_size;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     ROM = (volatile unsigned long *)((unsigned long)block & 0xFF800000);
 
@@ -112,10 +102,6 @@ int flash_erase_block(volatile unsigned long *block)
             len -= sizeof(*block);
         }
         if (len == 0) stat = 0;
-    }
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
     }
 
     return stat;

@@ -1,3 +1,13 @@
+2003-11-20  Jani Monoses <jani@iv.ro>
+	
+	* cdl/flash_edb7xxx.cdl:
+	* src/edb7xxx_flash.c.c:
+	* src/flash_query.c:
+	* src/flash_erase_block.c:
+	* src/flash_program_buf.c: Place flash functions in RAM sections
+	and no longer implement CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM. Use
+	generic flash_dev_query().
+	
 2001-10-14  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/flash_edb7xxx.cdl: Missed change in include file location

@@ -54,28 +54,18 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 #define CNT 2000*1000*10  // At least 20ms
+
+int flash_query(unsigned short* data) __attribute__ ((section (".2ram.flash_query")));
 
 int
 flash_query(unsigned short *data)
 {
     volatile unsigned long *ROM;
     int cnt;
-    int cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     ROM = (volatile unsigned long *)0xE0000000;
 
@@ -85,10 +75,6 @@ flash_query(unsigned short *data)
     *data++ = *ROM++;  // Device identifier
 
     ROM[0] = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return 0;
 }

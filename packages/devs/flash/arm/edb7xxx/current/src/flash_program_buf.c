@@ -54,12 +54,9 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
+int  flash_program_buf(volatile unsigned long* addr, unsigned long* data, int len)
+    __attribute__ ((section (".2ram.flash_program_buf")));
 
 int
 flash_program_buf(volatile unsigned long *addr, unsigned long *data, int len)
@@ -67,13 +64,6 @@ flash_program_buf(volatile unsigned long *addr, unsigned long *data, int len)
     volatile unsigned long *ROM;
     unsigned long stat = 0;
     int timeout = 50000;
-    int cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     ROM = (volatile unsigned long *)((unsigned long)addr & 0xFF800000);
 
@@ -103,10 +93,6 @@ flash_program_buf(volatile unsigned long *addr, unsigned long *data, int len)
     // Restore ROM to "normal" mode
  bad:
     ROM[0] = FLASH_Reset;            
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return stat;
 }
