@@ -71,9 +71,10 @@ case "${host}" in
     *-*-linux-gnu* ) SUPPORTED="yes";;
     * ) SUPPORTED="no"
 esac
-AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
 
-if test "${SUPPORTED}" = "yes" ; then
+if test "${SUPPORTED}" = "no" ; then
+    AC_MSG_WARN([USB testing is only supported on Linux hosts])
+else   
     AC_PROG_CC
     AC_PROG_CXX
     AC_PROG_LN_S
@@ -81,6 +82,7 @@ if test "${SUPPORTED}" = "yes" ; then
     AC_EXEEXT
     ECOS_PROG_MSVC
     ECOS_PROG_STANDARD_COMPILER_FLAGS
+    ECOS_PACKAGE_DIRS
 
     ECOS_PATH_TCL
     dnl Check that the version of tcl is sufficiently recent.
@@ -88,11 +90,23 @@ if test "${SUPPORTED}" = "yes" ; then
     dnl string commands after 8.1
     if test "${TK_MAJOR_VERSION}" = "8" ; then
         if test ${TK_MINOR_VERSION} -lt 2 ; then
-            AC_MSG_ERROR([The USB testing support requires at least version 8.2 of Tcl/Tk])
+	    AC_MSG_WARN([Version 8.2 or greater of Tcl/Tk is required])
+	    SUPPORTED="no"
         fi
     fi
-    ECOS_PACKAGE_DIRS
+    if test "${SUPPORTED}" = "yes" ; then
+        AC_CHECK_HEADERS("linux/usb.h" "linux/usbdevice_fs.h",,SUPPORTED="no")
+        if test "${SUPPORTED}" = "no" ; then
+	    AC_MSG_WARN([Required Linux kernel functionality does not appear to be available])
+        fi
+    fi
 fi
+	
+if test "${SUPPORTED}" = "no" ; then
+    AC_MSG_WARN([The USB testing support cannot be built on this platform.])
+fi
+	
+AM_CONDITIONAL(SUPPORTED, test "${SUPPORTED}" = "yes")
 
 dnl There is no real need for a config.h file at this time, since the code
 dnl is specific to Linux. This may change in future.
