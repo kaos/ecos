@@ -1342,8 +1342,7 @@ read_eeprom_esa(struct i82559 *p_i82559, char *addr)
 		  p_i82559->index);
 #endif
     } else {
-	for (checksum = 0, i = 0, count = 0; 
-             count < (1 << addr_length); count++) {
+	for (checksum = 0, i = 0, count = 0; count < (1 << addr_length); count++) {
 	    cyg_uint16 value;
 	    // read word from eeprom
 	    value = read_eeprom(ioaddr, count, addr_length);
@@ -3460,7 +3459,7 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom)
 
         addr_length = get_eeprom_size( ioaddr );
 
-        for (i = 0; i < 63; i++)
+        for (i = 0; i < (1 << addr_length); i++)
             eeprom_burn[i] = read_eeprom( ioaddr, i, addr_length );
 
         // now set this address in the device eeprom ....
@@ -3478,7 +3477,7 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom)
         udelay( 100000 );
 
         // by reading EEPROM to get the mac address back
-        for (checksum = 0, i = 0, count = 0; count < 64; count++) {
+        for (checksum = 0, i = 0, count = 0; count < (1 << addr_length); count++) {
             cyg_uint16 value;
             // read word from eeprom
             value = read_eeprom(ioaddr, count, addr_length);
@@ -3630,7 +3629,7 @@ program_eeprom(cyg_uint32 ioaddr, cyg_uint32 eeprom_size, cyg_uint8 *data)
   // This is done through the EWEN instruction.
   write_enable_eeprom( ioaddr, eeprom_size );
 
-  for (i=0 ; i< 63 ; i++) {
+  for (i=0 ; i< (1 << eeprom_size) ; i++) {
     value = ((unsigned short *)data)[i];
     checksum += value;
 #ifdef DEBUG_82559
