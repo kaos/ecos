@@ -1,3 +1,27 @@
+2001-01-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/main.c (cyg_start): Rework last change to use more generic
+	HAL_MEM_REAL_REGION_TOP macro.
+
+2001-01-24  Hugo Tyson  <hmt@redhat.com>
+
+	* src/main.c (cyg_start): Take notice of the hal_dram_size
+	variable (only supported on ARMs) to set ram_end.  The symbols
+	given by the CYGMEM_REGION_ram symbols are minima or defaults.
+
+2001-01-22  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/inet_addr.c (inet_aton): Fix byte order on big endian systems.
+
+	* src/net/icmp.c (__icmp_install_listener): 
+	(__icmp_remove_listener): New functions.
+	(__icmp_handler): Call listener for unhandled packets.
+
+	* include/net/net.h: Add handler for ICMP [incoming] data.
+
+	* cdl/redboot.cdl: 
+	* src/net/ping.c: New CLI command - ping a host.
+
 2001-01-18  Gary Thomas  <gthomas@redhat.com>
 
 	* include/net/net.h: 

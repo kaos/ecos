@@ -1,3 +1,8 @@
+2001-01-24  Dave Airlie  <airlied@parthus.com>
+
+	* src/ser_16x5x.c (pc_serial_DSR): Allow RX timeouts to be interpreted
+	as RXs.
+
 2000-12-19   Dave Airlie <airlied@parthus.com>
 
 	* src/ser_16x5x.c: Add defines for FIFO control register

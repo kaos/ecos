@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -76,7 +76,11 @@ inet_aton(char *s, in_addr_t *addr)
             }
         }
         // merge result
+#ifdef __LITTLE_ENDIAN__
         res |= val << ((3-i)*8);  // 24, 16, 8, 0
+#else
+        res = (res << 8) | val;
+#endif
     }
     addr->s_addr = htonl(res);
     return true;

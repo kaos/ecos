@@ -1,3 +1,7 @@
+2001-01-19  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_diag.h: Remove unwarranted disclaimer [commentary].
+
 2001-01-03  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_powerpc_mbx.cdl: Let RTC [heartbeat] rate be user

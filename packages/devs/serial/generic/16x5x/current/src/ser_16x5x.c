@@ -425,8 +425,9 @@ pc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     // is pending of the low bit of the isr is *0*, not 1.
     HAL_READ_UINT8(base+REG_isr, _isr);
     while ((_isr & ISR_nIP) == 0) {
-        switch (_isr&0x6) {
+        switch (_isr&0xE) {
         case ISR_Rx:
+        case ISR_RxTO:
         {
             cyg_uint8 _lsr;
             unsigned char c;

@@ -1,3 +1,8 @@
+2001-01-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/arch.inc: Allow hal_intc_decode to be defined by variant
+	or platform.
+
 2000-12-06  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_intr.h (HAL_DELAY_US): Added.

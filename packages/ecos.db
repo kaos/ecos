@@ -25,7 +25,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -446,6 +446,15 @@ package CYGPKG_DEVS_ETH_POWERPC_QUICC {
 	directory	devs/eth/powerpc/quicc
 	script		quicc_eth_drivers.cdl
         description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
+}
+
+package CYGPKG_DEVS_ETH_INTEL_I82559 {
+	alias 		{ "Intel 82559 ethernet driver"
+			   devs_eth_intel_i82559 i82559_eth_driver }
+	hardware
+	directory	devs/eth/intel/i82559
+	script		intel_i82559_eth_drivers.cdl
+        description     "Ethernet driver for Intel 82559 NIC."
 }
 
 

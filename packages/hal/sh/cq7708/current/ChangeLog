@@ -1,3 +1,7 @@
+2001-01-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc: Properly init interrupt VSR.
+
 2000-11-22  Jesper Skov  <jskov@redhat.com>
 
 	* include/platform.inc: Mangle symbols.

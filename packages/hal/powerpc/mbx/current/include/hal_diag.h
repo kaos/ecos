@@ -8,26 +8,6 @@
 //      HAL Support for Kernel Diagnostic Routines
 //
 //=============================================================================
-//####UNSUPPORTEDBEGIN####
-//
-// -------------------------------------------
-// This source file has been contributed to eCos/Red Hat. It may have been
-// changed slightly to provide an interface consistent with those of other 
-// files.
-//
-// The functionality and contents of this file is supplied "AS IS"
-// without any form of support and will not necessarily be kept up
-// to date by Red Hat.
-//
-// All inquiries about this file, or the functionality provided by it,
-// should be directed to the 'ecos-discuss' mailing list (see
-// http://sourceware.cygnus.com/ecos/intouch.html for details).
-//
-// Maintained by:  <Unmaintained>
-// -------------------------------------------
-//
-//####UNSUPPORTEDEND####
-//=============================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          
 // -------------------------------------------                              
@@ -46,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

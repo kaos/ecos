@@ -1,4 +1,4 @@
-/*==========================================================================
+//==========================================================================
 //
 //	powerpc.ld
 //
@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -38,7 +38,7 @@
 //
 //####DESCRIPTIONEND####
 //
-//========================================================================*/
+//==========================================================================
 STARTUP(vectors.o)
 ENTRY(__exception_reset)
 #ifdef EXTRAS
@@ -111,7 +111,7 @@ GROUP(libtarget.a libgcc.a)
       /* We want the small data sections together, so single-instruction */   \
       /* offsets can access them all, and initialized data all before    */   \
       /* uninitialized, so we can shorten the on-disk segment size.      */   \
-    __SDATA_START__ = ABSOLUTE(.); *(.sdata.*)                                 \
+    __SDATA_START__ = ABSOLUTE(.); *(.sdata) *(.sdata.*)                      \
     __SDATA2_START__ = ABSOLUTE(.); *(.sdata2*) }                             \
     > _region_                                                                \
     __rom_data_start = LOADADDR(.data);                                       \

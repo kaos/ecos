@@ -552,7 +552,7 @@ Cyg_Thread *
 Cyg_ThreadQueue_Implementation::highpri(void)
 {
     CYG_REPORT_FUNCTYPE("returning thread %08x");
-    CYG_REPORT_RETVAL(queue);
+    CYG_REPORT_RETVAL(get_head());
     return get_head();
 }
 

@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -97,6 +97,7 @@ cdl_package CYGPKG_REDBOOT {
 	compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
 	compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c
 	compile net/tftp_client.c net/net_io.c net/inet_addr.c
+	compile -library=libextras.a net/ping.c
         description "This option includes networking support in RedBoot."
         define_proc {
             puts $::cdl_system_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS 1"

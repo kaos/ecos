@@ -257,7 +257,6 @@ typedef struct {
     word	seqnum;
 } icmp_header_t;
 
-
 typedef struct _pktbuf {
     struct _pktbuf *next;
     union {
@@ -283,6 +282,8 @@ typedef struct _pktbuf {
 /* protocol handler */
 typedef void (*pkt_handler_t)(pktbuf_t *pkt);
 
+/* ICMP fielder */
+typedef void (*icmp_handler_t)(pktbuf_t *pkt, ip_route_t *src_route);
 
 typedef struct _udp_socket {
     struct _udp_socket	*next;
@@ -448,6 +449,8 @@ extern void __ip_send(pktbuf_t *pkt, int protocol, ip_route_t *dest);
  * Handle incoming ICMP packets.
  */
 extern void __icmp_handler(pktbuf_t *pkt, ip_route_t *r);
+extern int  __icmp_install_listener(icmp_handler_t handler);
+extern void __icmp_remove_listener(void);
 
 /*
  * Handle incoming UDP packets.

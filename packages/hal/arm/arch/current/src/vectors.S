@@ -976,6 +976,7 @@ _eCos_id:
         .data
 
 init_flag:
+        .balign 4
         .long   0
 
         .extern hal_default_isr

@@ -148,6 +148,7 @@ BSC_settings_table:
 	# Write interrupt vector
         mov.l   $hal_vsr_table,r3
 	mov.l   $cyg_hal_default_interrupt_vsr,r4
+	add	#CYGNUM_HAL_VECTOR_INTERRUPT*4,r3
 	mov.l   r4,@r3
 	bra	2f
 	 nop

@@ -293,6 +293,7 @@
 	.endm
 #endif
 
+#ifndef CYGPKG_HAL_MIPS_INTC_DECODE_DEFINED
 	.macro	hal_intc_decode vnum
 	mfc0	v0,cause		# get cause register
 	nop				# delay slot
@@ -302,6 +303,7 @@
 	add	v0,v0,v1		# index into table
 	lb	\vnum,0(v0)		# pick up vector number
 	.endm
+#endif
 
 #ifndef CYGPKG_HAL_MIPS_INTC_TRANSLATE_DEFINED
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN

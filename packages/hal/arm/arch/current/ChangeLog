@@ -1,3 +1,8 @@
+2001-01-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S (init_flag): Add explicit alignment, just in case.
+	From Ilko Iliev <iliev@caretec.at>
+
 2001-01-11  Hugo Tyson  <hmt@redhat.com>
 
 	* src/vectors.S (hal_dram_size): Create hal_dram_type in memory at

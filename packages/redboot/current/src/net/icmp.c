@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -48,6 +48,33 @@
 /*
  * Handle ICMP packets.
  */
+
+static icmp_handler_t icmp_handler;
+
+/*
+ * Install a handler for incoming icmp packets.
+ * Returns zero if successful, -1 if socket is already used.
+ */
+int
+__icmp_install_listener(icmp_handler_t handler)
+{
+    if (icmp_handler) {
+        return -1;
+    }
+    icmp_handler = handler;
+    return 0;
+}
+
+
+/*
+ * Remove the handler
+ */
+void
+__icmp_remove_listener(void)
+{
+    icmp_handler = (icmp_handler_t)NULL;
+}
+
 void
 __icmp_handler(pktbuf_t *pkt, ip_route_t *r)
 {
@@ -65,6 +92,8 @@ __icmp_handler(pktbuf_t *pkt, ip_route_t *r)
 	BSPLOG(bsp_log("icmp: seq<%d>\n", pkt->icmp_hdr->seqnum));
 
 	__ip_send(pkt, IP_PROTO_ICMP, r);
+    } else if (icmp_handler) {
+        (*icmp_handler)(pkt, r);
     }
     __pktbuf_free(pkt);
 }

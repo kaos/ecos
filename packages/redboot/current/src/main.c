@@ -143,6 +143,12 @@ cyg_start(void)
 
     ram_start = (unsigned char *)CYGMEM_REGION_ram;
     ram_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
+#ifdef HAL_MEM_REAL_REGION_TOP
+    {
+        unsigned char *ram_end_tmp = ram_end;
+        ram_end = HAL_MEM_REAL_REGION_TOP( ram_end_tmp );
+    }
+#endif
 
     bist();
 
