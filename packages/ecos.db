@@ -1418,6 +1418,14 @@ package CYGPKG_DEVS_ETH_AMD_LANCEPCI {
         description     "Ethernet driver for AMD Lance PCI controller (vmWare)."
 }
 
+package CYGPKG_DEVS_ETH_DAVICOM_DM9000 {
+	alias 		{ "Davicom DM9000 ethernet driver" dm9000_eth_driver }
+	hardware
+	directory	devs/eth/davicom/dm9000
+	script		davicom_dm9000_eth_drivers.cdl
+        description     "Ethernet driver for Davicom DM9000 controller."
+}
+
 package CYGPKG_DEVS_ETH_MIPS_MIPS32_MALTA {
 	alias 		{ "MIPS Malta board ethernet driver" malta_eth_driver }
 	hardware
@@ -3787,6 +3795,16 @@ package CYGPKG_DEVS_ETH_FRV_PDK403 {
 			 Demonstration Kit with AXL88796 Ethernet device"
 }
 
+package CYGPKG_DEVS_ETH_FRV_CB70 {
+	alias 		{ "Fujitsu FR-V 405 with DM9000 ethernet driver"
+			   devs_eth_frv_cb70 cb70_eth_driver }
+	hardware
+	directory	devs/eth/frv/cb70
+	script		cb70_eth_driver.cdl
+        description     "Ethernet driver for Fujitsu FR-V 405 CB70 CPU card with
+                         Davicom DM9000 ethernet interface."
+}
+
 # --------------------------------------------------------------------------
 
 # ==========================================================================
@@ -3816,6 +3834,7 @@ target mb93091 {
                    CYGPKG_DEVS_ETH_FRV_FRV400
                    CYGPKG_DEVS_ETH_NS_DP83902A
                    CYGPKG_DEVS_ETH_FRV_CB70
+                   CYGPKG_DEVS_ETH_DAVICOM_DM9000
                    CYGPKG_DEVS_FLASH_FRV_FRV400
                    CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
         }
@@ -5693,3 +5712,4 @@ package CYGPKG_NET_LWIP {
 	script		cdl/lwip_net.cdl
 	description	"Lightweight TCP/IP stack: lwIP"
 }
+
