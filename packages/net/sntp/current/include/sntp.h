@@ -53,9 +53,6 @@
 #include <pkgconf/net_sntp.h>
 #include <cyg/infra/cyg_type.h>
 
-/* General Definitions */
-#define NTP_UDP_PORT            123
-
 // Multicast address used by IPv6
 #define IN6ADDR_NTP_MULTICAST \
 	{{{ 0xff, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \

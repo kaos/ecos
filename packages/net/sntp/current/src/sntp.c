@@ -480,7 +480,6 @@ void cyg_sntp_start(void) {
 }
 
 #ifdef CYGPKG_NET_SNTP_UNICAST
-
 /*
  *	FUNCTION cyg_sntp_set_servers
  *
@@ -497,8 +496,10 @@ void cyg_sntp_start(void) {
  *		array can be unregistered by calling this
  *		function again with different parameters.
  *
- *      NOTE: This function must be called AFTER
- *      cyg_sntp_start().
+ *      NOTE: If cyg_sntp_start() has not been called
+ * 		already, and this function is called with a
+ *		list of 1 or more servers, then cyg_sntp_start()
+ *		will be called by this function to start the client.
  *
  *	PARAMETERS
  *		server_list - Array of IPv4 and/or IPv6 sockaddr's
@@ -510,9 +511,21 @@ void cyg_sntp_start(void) {
 void cyg_sntp_set_servers(struct sockaddr *server_list,
         cyg_uint32 num_servers)
 {
-    /* Get the server list mutex */
+	/* If we haven't already started the SNTP client, then
+	 * start it now.
+	 */
     if (!sntp_initialized)
-        return;
+	{
+		/* If we haven't started already and we don't
+		 * have a list of servers, then don't start
+		 * anything up.
+		 */
+		if (num_servers == 0)
+			return;
+		cyg_sntp_start();
+	}
+
+    /* Get the server list mutex */
     cyg_mutex_lock(&sntp_mutex);
 
 	/* Record the new server list */
@@ -525,4 +538,7 @@ void cyg_sntp_set_servers(struct sockaddr *server_list,
     cyg_mutex_unlock(&sntp_mutex);
 }
 #endif /* CYGPKG_NET_SNTP_UNICAST */
+
+
+
 
