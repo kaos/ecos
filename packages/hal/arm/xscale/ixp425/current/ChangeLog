@@ -1,3 +1,7 @@
+2003-04-06  Mark Salter  <msalter@redhat.com>
+
+	* src/ixp425_pci.c (cyg_hal_plf_pci_init): Support non-host mode.
+
 2003-02-22  Mark Salter  <msalter@redhat.com>
 
 	* src/ixp425_pci.c (cyg_hal_plf_pci_init): Don't reinit PCI
