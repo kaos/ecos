@@ -1,3 +1,9 @@
+2003-04-03  Patrick Doyle  <wpd@delcomsys.com>
+
+	* include/var_cache.h (HAL_DCACHE_SYNC): Step through twice the
+	number of lines in order to ensure that dirty lines in the first
+	16Kbytes of memory are flushed.
+
 2003-03-04  Paul Fine <pfine@delcomsys.com>
 	
 	* include/var_cache.h: Modify the HAL_DCACHE_SYNC macro to look

@@ -137,12 +137,18 @@
 
 
 // Synchronize the contents of the cache with memory.
-// Use the macro defined in the PPC60x HAL as of January 2003.
+// Modifications to this macro should mirror modifications to the
+// identically named one in the ppc60x variant.
+// We step through twice the number of lines in the cache in order
+// to ensure that all dirty lines are flushed to main memory.
+// (Consider the case where one of the dirty lines is in the
+// first 16Kbytes of RAM -- it won't get flushed by loading
+// in words from the first 16Kbytes of RAM).
 #define HAL_DCACHE_SYNC()                                       \
     CYG_MACRO_START                                             \
     cyg_int32 i;                                                \
     cyg_uint32 *__base = (cyg_uint32 *) (0);                    \
-    for(i=0;i< (HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE);i++,__base += HAL_DCACHE_LINE_SIZE/4){                                                    \
+    for(i=0;i< (2 * HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE);i++,__base += HAL_DCACHE_LINE_SIZE/4){                                                 \
         asm volatile ("lwz %%r0,0(%0);"::"r"(__base):"r0");     \
     }                                                           \
     CYG_MACRO_END
