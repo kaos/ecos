@@ -1,3 +1,9 @@
+2004-02-19  Daniel Néri  <daniel.neri@sigicom.se>
+ 
+        * cdl/hal_arm_at91.cdl (CYGBLD_GLOBAL_CFLAGS): Honour CYGHWR_THUMB
+        and CYGBLD_ARM_ENABLE_THUMB_INTERWORK.
+	* cdl/hal_arm_at91.cdl (CYGBLD_GLOBAL_LDFLAGS): Ditto.
+ 
 2004-02-18  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* cdl/hal_arm_at91.cdl: Define CYGNUM_HAL_ARM_AT91_CLOCK_SPEED with
