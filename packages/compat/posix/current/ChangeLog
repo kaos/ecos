@@ -1,3 +1,12 @@
+2003-03-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/signal2.c (cause_illegal_access): PowerPC only generates
+	alignment exceptions in little-endian mode, so make that a special
+	case.
+
+	* tests/mutex3.c: Include POSIX headers before feature tests to
+	prevent spurious CYG_TEST_NA.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/posix.sgml: Expunge EL/IX. Dead standard.
