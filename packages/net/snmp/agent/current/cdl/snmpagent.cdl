@@ -52,7 +52,7 @@
 cdl_package CYGPKG_SNMPAGENT {
     display       "SNMP agent"
     parent        CYGPKG_NET
-#    doc           doc/index.html
+    doc           ref/net-snmp-ecos-port.html
     include_dir   ucd-snmp
     requires      CYGPKG_IO
     requires      { 0 != CYGINT_ISO_STRING_STRFUNCS }

@@ -20,11 +20,11 @@ for manpage in $MANPAGE_LIST
 do
     echo "processing $manpage"
     # get the title for this section
-    manpage_title=`egrep '^\.TH' $manpage | awk '{print $2}'`
+    manpage_title=`egrep '^\.TH' $manpage | awk '{print $2}' | tr 'A-Z' 'a-z'`
     # note that _ is illegal in an id, so we canonicalize it to -
     docbook_section_id=`echo $manpage_title | sed 's/_/-/g'`
     # now prepare out a section and title
-    echo "  <sect1 id=\"$docbook_section_id\">" >> snmp-manpages.sgml
+    echo "  <sect1 id=\"net-snmp-agent-manpages-$docbook_section_id\">" >> snmp-manpages.sgml
     echo "    <title>$manpage_title</title>" >> snmp-manpages.sgml
     # we make it <screen> so that it is a monospaced font
     echo "    <screen>" >> snmp-manpages.sgml

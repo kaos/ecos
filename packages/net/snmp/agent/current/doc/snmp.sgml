@@ -302,7 +302,7 @@ in the usual way as with the standard UCD-SNMP distribution.
 <TITLE>Traps</TITLE>
 <PARA>
 The support of the <LITERAL>trapsink</LITERAL> command in the
-<link linkend="SNMPD.CONF">snmpd.conf</link> file is not tested 
+<link linkend="net-snmp-agent-manpages-snmpd.conf">snmpd.conf</link> file is not tested 
 and there may be problems for it working as expected. Moreover, in systems that do not 
 have filesystem support, there is no way to configure a trap-session in the
 conventional way.
@@ -346,7 +346,7 @@ Using snmpd.conf requires the inclusion of one of the file-system packages
 SNMP sub-system will read the snmpd.conf file from the location specified in
 <LITERAL>SNMPCONFPATH</LITERAL>, or the standard builtin locations, and use
 these profiles. Only the profiles specified in the <LITERAL>ACCESS-CONTROL</LITERAL>
-section of <link linkend="SNMPD.CONF">snmpd.conf</link> file have 
+section of <link linkend="net-snmp-agent-manpages-snmpd.conf">snmpd.conf</link> file have 
 been tested and shown to work. Other profiles which have been implemented in 
 <LITERAL>UCD-SNMP-4.1.2</LITERAL>'s <LITERAL>snmpd.conf</LITERAL> may not work
 because the sole purpose of adding support for the snmpd.conf file has been to

@@ -4,8 +4,8 @@
 <!-- so PLEASE do not modify it: your changes will be lost -->
 
 
-  <sect1 id="SNMPD.CONF">
-    <title>SNMPD.CONF</title>
+  <sect1 id="net-snmp-agent-manpages-snmpd.conf">
+    <title>snmpd.conf</title>
     <screen>
 SNMPD.CONF(5)                                       SNMPD.CONF(5)
 
