@@ -1,3 +1,8 @@
+2003-03-17  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82544.c: Fix 82546 EEPROM access. Fix ESA address for second
+	port of 82546.
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82544.c (find_82544s_match_func): Add 82546 devid.
