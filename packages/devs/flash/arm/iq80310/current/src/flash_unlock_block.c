@@ -52,7 +52,6 @@
 
 #include "flash.h"
 
-#include <cyg/hal/hal_cache.h>
 
 //
 // CAUTION!  This code must be copied to RAM before execution.  Therefore,
@@ -76,13 +75,7 @@ flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
     unsigned short stat;
     int timeout = 5000000;
     unsigned short is_locked[MAX_FLASH_BLOCKS];
-    int i, cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
+    int i;
 
     ROM = FLASH_P2V((unsigned long)block & 0xFF800000);
 
@@ -127,10 +120,6 @@ flash_unlock_block(volatile unsigned char *block, int block_size, int blocks)
  done:
     // Restore ROM to "normal" mode
     ROM[0] = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return stat;
 }

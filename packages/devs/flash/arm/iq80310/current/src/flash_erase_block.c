@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 
 //
 // CAUTION!  This code must be copied to RAM before execution.  Therefore,
@@ -66,15 +65,7 @@ int flash_erase_block(volatile unsigned char *block)
     volatile unsigned char *ROM;
     unsigned short stat;
     int timeout = 50000;
-    int cache_on;
     int len;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
-
 
     // First 4K page of flash at physcial address zero is
     // virtually mapped to address 0xa0000000.
@@ -104,10 +95,6 @@ int flash_erase_block(volatile unsigned char *block)
             len -= sizeof(*block);
         }
         if (len == 0) stat = 0;
-    }
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
     }
 
     return stat;

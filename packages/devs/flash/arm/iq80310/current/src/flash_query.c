@@ -54,7 +54,6 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
 //
@@ -69,13 +68,6 @@ flash_query(unsigned char *data)
 {
     volatile unsigned short *ROM;
     int i, cnt;
-    int cache_on;
-
-    HAL_DCACHE_IS_ENABLED(cache_on);
-    if (cache_on) {
-        HAL_DCACHE_SYNC();
-        HAL_DCACHE_DISABLE();
-    }
 
     ROM = FLASH_P2V(0);
     ROM[0] = FLASH_Read_Query;
@@ -85,10 +77,6 @@ flash_query(unsigned char *data)
     }
 
     ROM[0] = FLASH_Reset;
-
-    if (cache_on) {
-        HAL_DCACHE_ENABLE();
-    }
 
     return 0;
 }
