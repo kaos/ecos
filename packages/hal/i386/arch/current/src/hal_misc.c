@@ -99,12 +99,14 @@ cyg_hal_invoke_constructors (void)
 externC void __handle_exception (void);
 externC HAL_SavedRegisters *_hal_registers;
 
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 externC void* volatile __mem_fault_handler;
+#endif
 
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 
     // If we caught an exception inside the stubs, see if we were expecting it
     // and if so jump to the saved address

@@ -80,7 +80,9 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 externC void* volatile __mem_fault_handler;
+#endif
 
 externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 

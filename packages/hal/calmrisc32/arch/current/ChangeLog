@@ -1,3 +1,8 @@
+2003-12-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_misc.c: Only declare __mem_fault_handler if GDB stubs
+	are included (and it will be used).
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code

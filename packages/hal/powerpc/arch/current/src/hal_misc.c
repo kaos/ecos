@@ -115,7 +115,9 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 externC void* volatile __mem_fault_handler;
+#endif
 
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs)

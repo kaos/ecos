@@ -1,5 +1,8 @@
 2003-12-08  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/hal_misc.c (cyg_hal_exception_handler): Only declare __mem_fault_handler
+	if GDB stubs are included (and it will be used).
+
 	* src/vectors.S: Minor change which makes newer versions of assembler
 	happy (at least for binutils-2.14.90.0.6).
 

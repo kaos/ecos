@@ -71,7 +71,6 @@
 externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
-externC void* volatile __mem_fault_handler;
 
 void
 exception_handler(HAL_SavedRegisters *regs)
