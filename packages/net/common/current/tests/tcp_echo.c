@@ -67,8 +67,8 @@
 
 #include <network.h>
 
-static __inline__ int
-max(int m, int n)
+static __inline__ unsigned int
+max(unsigned int m, unsigned int n)
 {
     return m > n ? m : n;
 }

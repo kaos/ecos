@@ -87,6 +87,7 @@
 #define NLISTENERS (CYGPKG_IO_NFILE/3)
 #endif
 #else
+#include <pkgconf/io_fileio.h>
 #if CYGNUM_FILEIO_NFD > 30
 #define NLISTENERS 10
 #else
