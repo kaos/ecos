@@ -61,6 +61,9 @@
 #ifdef CYGPKG_REDBOOT_DISK
 #include <fs/disk.h>
 #endif
+#ifdef CYGPKG_REDBOOT_FILEIO
+#include <fs/fileio.h>
+#endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
 #ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD
 #include <net/tftp_support.h>
@@ -693,6 +696,13 @@ do_load(int argc, char *argv[])
         which = "HTTP";
         io = &http_io;
 #endif
+#endif
+#ifdef CYGPKG_REDBOOT_FILEIO
+        // Make file I/O default if mounted
+	if (fileio_mounted) {
+	    which = "file";
+	    io = &fileio_io;
+	}
 #endif
         if (!io) {
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM

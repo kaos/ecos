@@ -1,16 +1,14 @@
-2003-11-21  David Vrabel  <dvrabel@arcom.com>
+2003-11-27  David Woodhouse  <dwmw2@redhat.com>
 
-	* src/net/bootp.c (bootp_handler): Scan for DHCP Message Type tag
-	as it isn't always the first tag.
+	* cdl/redboot.cdl, fs/fileio.c, include/fs/fileio.h, src/load.c: 
+	Support for mounting and loading files from fileio file systems
+	such as JFFS2.
 
-	* include/net/bootp.h: New #define's for DHCP message types
-	(DHCP_MESSAGE_TYPE_DISCOVER etc.).
-	
 2003-11-25  John Dallaway  <jld@ecoscentric.com>
 
 	* src/fconfig.c (load_flash_config):
 	Fix typo in output string.
-
+	
 2003-11-24  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/bootp.c (__bootp_find_local_ip): 
@@ -19,6 +17,14 @@
 2002-11-24  Jani Monoses  <jani@iv.ro>
 
 	* src/flash.c: Remove references to FLASH_MIN_WORKSPACE.
+
+2003-11-21  David Vrabel  <dvrabel@arcom.com>
+
+	* src/net/bootp.c (bootp_handler): Scan for DHCP Message Type tag
+	as it isn't always the first tag.
+
+	* include/net/bootp.h: New #define's for DHCP message types
+	(DHCP_MESSAGE_TYPE_DISCOVER etc.).
 	
 2002-11-20  Jani Monoses  <jani@iv.ro>
 

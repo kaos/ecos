@@ -839,6 +839,17 @@ cdl_package CYGPKG_REDBOOT {
             }
         }
     
+        cdl_component CYGPKG_REDBOOT_FILEIO {
+            display       "Allow RedBoot to support fileio"
+            flavor        bool
+            default_value 1
+            active_if     CYGPKG_IO_FILEIO
+            description   "
+              If this option is enabled then RedBoot will provide commands
+              to load files from fileio file systems such as JFFS2."
+            compile -library=libextras.a fs/fileio.c
+        }
+
         cdl_component CYGPKG_REDBOOT_DISK {
             display       "Allow RedBoot to support disks"
             flavor        bool
