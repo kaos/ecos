@@ -1249,8 +1249,7 @@ ip_ctloutput(so, sopt)
 				break;
 			if ((error = soopt_mcopyin(sopt, m)) != 0) /* XXX */
 				break;
-			priv = (sopt->sopt_p != NULL &&
-				suser(sopt->sopt_p) != 0) ? 0 : 1;
+			priv = 1;
 			req = mtod(m, caddr_t);
 			len = m->m_len;
 			optname = sopt->sopt_name;
@@ -1350,6 +1349,17 @@ ip_ctloutput(so, sopt)
 			struct mbuf *m = NULL;
 			caddr_t req = NULL;
 			size_t len = 0;
+                        size_t ovalsize = sopt->sopt_valsize;
+			caddr_t oval = (caddr_t)sopt->sopt_val;
+
+                        error = soopt_getm(sopt, &m); /* XXX */
+                        if (error != 0)
+                                break;
+                        error = soopt_mcopyin(sopt, m); /* XXX */
+                        if (error != 0)
+				break;
+                        sopt->sopt_valsize = ovalsize;
+                        sopt->sopt_val = oval;
 
 			if (m != 0) {
 				req = mtod(m, caddr_t);

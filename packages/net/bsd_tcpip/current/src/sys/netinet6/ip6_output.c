@@ -2775,10 +2775,10 @@ do { \
 				struct mbuf **mp = &m;
 
 				error = soopt_getm(sopt, &m); /* XXX */
-				if (error != NULL)
+				if (error != 0)
 					break;
 				error = soopt_mcopyin(sopt, m); /* XXX */
-				if (error != NULL)
+				if (error != 0)
 					break;
 #endif
 				if (m) {

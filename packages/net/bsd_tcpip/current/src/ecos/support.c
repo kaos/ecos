@@ -556,10 +556,11 @@ get_random_bytes(void *buf, size_t len)
     }
 }
 
-void
+int
 read_random_unlimited(void *buf, size_t len)
 {
     get_random_bytes(buf, len);
+    return len;
 }
 
 void read_random(void *buf, size_t len) 

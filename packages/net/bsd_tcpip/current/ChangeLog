@@ -1,3 +1,28 @@
+2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/net/if_gif.h include/net/if_sec.h include/net/zlib.h
+	include/netinet/ip_ecn.h include/netinet6/ah.h
+	include/netinet6/esp.h include/netinet6/esp_rijndael.h
+	include/netinet6/esp_twofish.h include/netinet6/in6_gif.h
+	include/netinet6/ipcomp.h include/netkey/key.h
+	include/netkey/key_debug.h include/netkey/keysock.h src/sys/netkey
+	src/sys/netinet/ip_ecn.c src/sys/netinet6/ah_core.c
+	src/sys/netinet6/ah_input.c src/sys/netinet6/ah_output.c
+	src/sys/netinet6/esp_core.c src/sys/netinet6/esp_input.c
+	src/sys/netinet6/esp_output.c src/sys/netinet6/esp_rijndael.c
+	src/sys/netinet6/esp_twofish.c src/sys/netinet6/in6_gif.c
+	src/sys/netinet6/ipcomp_core.c src/sys/netinet6/ipcomp_input.c
+	src/sys/netinet6/ipcomp_output.c src/sys/netinet6/ipsec.c: 
+	Added back the original KAME FreeBSD IPSEC files.  
+	* cdl/freebsd_net.cdl: CDl to control the compilation of IPSEC 
+	* include/sys/malloc.h: New memory type needed by IPSEC 
+	* include/sys/param.h: Name munging for IPSEC symbols 
+	* src/ecos/support.c: read_random_unlimited() should return the
+	number of random bytes in the buffer.
+	* src/sys/kern/kern_sysctl.c: Added missing copyright header.
+	* src/sys/netinet/ip_output.c: Removed user() checks in IPSEC code.
+	* src/sys/netinet6/ip6_output.c: Compiler warning fixes.
+
 2003-11-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/sys/kern/kern_sysctl.c (sysctl): Update the oldlen value at

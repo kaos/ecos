@@ -42,9 +42,18 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
     requires      CYGPKG_IO_FILEIO
     description   "Basic networking support, including TCP/IP."
 
+    cdl_interface CYGINT_NET_IPSEC_BSD_CRYPTO {
+        display   "Implementation of BSD CRYPTO functions"
+        description "
+          In order to avoid potential export problems of crypto
+          functions, they are distributed in a separate package which
+          must implement this interface"
+    }
+
     implements    CYGPKG_NET_STACK
     implements    CYGPKG_NET_STACK_INET
     implements    CYGPKG_NET_STACK_INET6
+
     # Note: separating the stack implementation from the common support leads
     # to some rather incestious config file relationships.
     define_proc {
@@ -151,6 +160,50 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
 ## Only if firewall enabled
 ##              sys/netinet6/ip6_fw.c \
 ##
+        }
+        cdl_option CYGPKG_NET_FREEBSD_IPSEC {
+            display       "IPSEC support"
+            requires      CYGPKG_COMPRESS_ZLIB
+            implements    CYGPKG_NET_STACK_IPSEC
+
+            flavor        bool
+            default_value CYGPKG_NET_IPSEC_BSD_CRYPTO
+
+            description   "
+                This option enables support for IPSEC."
+            # These files were derived from FreeBSD/KAME and carry their copyright
+            compile \
+              sys/netkey/key.c \
+              sys/netkey/key_debug.c \
+              sys/netkey/keydb.c\
+              sys/netkey/keysock.c \
+              sys/netinet6/ipsec.c \
+              sys/netinet6/ah_core.c \
+              sys/netinet6/ah_input.c \
+              sys/netinet6/ah_output.c \
+              sys/netinet6/ipcomp_core.c \
+              sys/netinet6/esp_core.c \
+              sys/netinet6/esp_output.c \
+              sys/netinet6/esp_input.c \
+              sys/netinet6/esp_rijndael.c \
+              sys/netinet6/esp_twofish.c \
+              sys/netinet6/ipcomp_core.c \
+              sys/netinet6/ipcomp_output.c \
+              sys/netinet6/ipcomp_input.c \
+              sys/netinet/ip_ecn.c
+        }
+        cdl_option CYGPKG_NET_FREEBSD_IPSEC6 {
+            display       "IPSEC support for IPv6"
+            active_if     CYGPKG_NET_INET6
+            active_if     CYGPKG_NET_FREEBSD_IPSEC
+
+            flavor        bool
+            default_value 1
+            description   "
+                This option enables support for IPSEC with IPv6"
+            compile \
+              sys/netinet6/in6_gif.c
+
         }
         cdl_option CYGPKG_NET_FREEBSD_SYSCTL {
             display       "sysctl support"

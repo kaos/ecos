@@ -1,3 +1,24 @@
+//==========================================================================
+//
+//      src/sys/kern/kerm_sysctl.c
+//
+//==========================================================================
+//####BSDCOPYRIGHTBEGIN####
+//
+// -------------------------------------------
+//
+// Portions of this software may have been derived from OpenBSD, 
+// FreeBSD or other sources, and are covered by the appropriate
+// copyright disclaimers included herein.
+//
+// Portions created by Red Hat are
+// Copyright (C) 2002 Red Hat, Inc. All Rights Reserved.
+//
+// -------------------------------------------
+//
+//####BSDCOPYRIGHTEND####
+//==========================================================================
+
 /*-
  * Copyright (c) 1982, 1986, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.

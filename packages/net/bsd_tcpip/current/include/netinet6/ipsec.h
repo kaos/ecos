@@ -57,18 +57,6 @@
 #ifndef _NETINET6_IPSEC_H_
 #define _NETINET6_IPSEC_H_
 
-#if defined(_KERNEL) && !defined(_LKM) && !defined(KLD_MODULE)
-#if defined(__FreeBSD__) && __FreeBSD__ >= 3
-#include "opt_inet.h"
-#include "opt_inet6.h"
-#include "opt_ipsec.h"
-#endif
-#if defined(__NetBSD__)
-#include "opt_inet.h"
-#include "opt_ipsec.h"
-#endif
-#endif
-
 #include <net/pfkeyv2.h>
 #include <netkey/keydb.h>
 

@@ -31,11 +31,6 @@
 // polution to a minimum
 
 // TEXT symbols
-#define MD5Final cyg_MD5Final
-#define MD5Init cyg_MD5Init
-#define MD5Pad cyg_MD5Pad
-#define MD5Transform cyg_MD5Transform
-#define MD5Update cyg_MD5Update
 #define _ip_mcast_src cyg__ip_mcast_src
 #define _ip_mforward cyg__ip_mforward
 #define _ip_mrouter_done cyg__ip_mrouter_done
@@ -704,6 +699,65 @@
 #define udpstat cyg_udpstat
 #endif
 
+// Symbols from the BSD_CRYPTO package
+
+// TEXT symbols
+
+#define SHA256_Data cyg_SHA256_Data
+#define SHA256_End cyg_SHA256_End
+#define SHA256_Final cyg_SHA256_Final
+#define SHA256_Init cyg_SHA256_Init
+#define SHA256_Transform cyg_SHA256_Transform
+#define SHA256_Update cyg_SHA256_Update
+#define SHA384_Data cyg_SHA384_Data
+#define SHA384_End cyg_SHA384_End
+#define SHA384_Final cyg_SHA384_Final
+#define SHA384_Init cyg_SHA384_Init
+#define SHA384_Update cyg_SHA384_Update
+#define SHA512_Data cyg_SHA512_Data
+#define SHA512_End cyg_SHA512_End
+#define SHA512_Final cyg_SHA512_Final
+#define SHA512_Init cyg_SHA512_Init
+#define SHA512_Last cyg_SHA512_Last
+#define SHA512_Transform cyg_SHA512_Transform
+#define SHA512_Update cyg_SHA512_Update
+#define md5_init cyg_md5_init
+#define md5_loop cyg_md5_loop
+#define md5_pad cyg_md5_pad
+#define md5_result cyg_md5_result
+#define sha1_init cyg_sha1_init
+#define sha1_loop cyg_sha1_loop
+#define sha1_pad cyg_sha1_pad
+#define sha1_result cyg_sha1_result
+#define cast128_decrypt_round12 cyg_cast128_decrypt_round12
+#define cast128_decrypt_round16 cyg_cast128_decrypt_round16
+#define cast128_encrypt_round12 cyg_cast128_encrypt_round12
+#define cast128_encrypt_round16 cyg_cast128_encrypt_round16
+#define set_cast128_subkey cyg_set_cast128_subkey
+#define twofish_TableOp cyg_twofish_TableOp
+#define twofish_blockDecrypt cyg_twofish_blockDecrypt
+#define twofish_blockEncrypt cyg_twofish_blockEncrypt
+#define twofish_cipherInit cyg_twofish_cipherInit
+#define twofish_makeKey cyg_twofish_makeKey
+#define twofish_reKey cyg_twofish_reKey
+#define rijndaelDecrypt cyg_rijndaelDecrypt
+#define rijndaelEncrypt cyg_rijndaelEncrypt
+#define rijndaelKeyEncToDec cyg_rijndaelKeyEncToDec
+#define rijndaelKeySched cyg_rijndaelKeySched
+#define rijndael_blockDecrypt cyg_rijndael_blockDecrypt
+#define rijndael_blockEncrypt cyg_rijndael_blockEncrypt
+#define rijndael_cipherInit cyg_rijndael_cipherInit
+#define rijndael_makeKey cyg_rijndael_makeKey
+#define rijndael_padDecrypt cyg_rijndael_padDecrypt
+#define rijndael_padEncrypt cyg_rijndael_padEncrypt
+
+// Data symbols
+
+#define numRounds cyg_numRounds
+
+// BSS symbols
+
+
 #include <pkgconf/net.h>
 #include <cyg/infra/cyg_type.h>  // Standard eCos types
 
@@ -878,7 +932,7 @@ extern void get_mono_time(void);
 extern int arc4random(void);
 extern void get_random_bytes(void *buf, size_t len);
 extern void read_random(void *buf, size_t len);
-extern void read_random_unlimited(void *buf, size_t len);
+extern int read_random_unlimited(void *buf, size_t len);
 extern void *hashinit(int elements, void *type, u_long *hashmask);
 
 // Initialization support - cross between RedBoot & FreeBSD
