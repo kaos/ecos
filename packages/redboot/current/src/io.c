@@ -456,7 +456,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
         case CTRL('A'):
             // Move insertion point to beginning of line
             if (ip != buf) {
-                xp = eol;
+                xp = ip;
                 while (xp-- != buf) {
                     mon_write_char('\b');
                 }

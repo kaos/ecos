@@ -1,3 +1,8 @@
+2003-12-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/io.c (_rb_gets_preloaded): ^A could have moved the cursor to
+	the wrong location on the screen if ^F/^B had been used.
+
 2003-12-03  David Vrabel  <dvrabel@arcom.com>
 
 	* src/time_date.cxx (do_time_date): Use YYYY/MM/DD HH:MM:SS format
