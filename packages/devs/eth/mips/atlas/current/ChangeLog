@@ -1,3 +1,14 @@
+2003-03-13  Nick Garnett  <nickg@balti.calivar.com>
+
+	* cdl/atlas_eth_drivers.cdl:
+	Changed CYGPKG_DEVS_ETH_ARM_ATLAS_OPTIONS to
+	CYGPKG_DEVS_ETH_MIPS_ATLAS_OPTIONS. 
+
+	* src/if_atlas.c (atlas_saa9730_init): ifdeffed out bogus code to
+	set MAC address in non-redboot configuration just to make it
+	compile. Note that there are other problems with this driver in
+	eCos.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_atlas.c: 

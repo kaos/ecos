@@ -86,7 +86,7 @@ cdl_package CYGPKG_DEVS_ETH_MIPS_ATLAS {
         flavor  none
 	no_define
 
-        cdl_option CYGPKG_DEVS_ETH_ARM_ATLAS_CFLAGS_ADD {
+        cdl_option CYGPKG_DEVS_ETH_MIPS_ATLAS_CFLAGS_ADD {
             display "Additional compiler flags"
             flavor  data
             no_define

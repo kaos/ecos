@@ -527,11 +527,13 @@ atlas_saa9730_init(struct cyg_netdevtab_entry *tab)
     !defined(CYGSEM_ARM_ATLAS_SET_ESA)
     flash_get_config("atlas_esa", enaddr, CONFIG_ESA);
 #else
+#if 0
     for (i = 0;  i < ETHER_ADDR_LEN;  i += 2) {
         unsigned short esa_reg = get_reg(PP_IA+i);
         enaddr[i] = esa_reg & 0xFF;
         enaddr[i+1] = esa_reg >> 8;
     }
+#endif
 #endif
 
     saa9730_reset(spd);
