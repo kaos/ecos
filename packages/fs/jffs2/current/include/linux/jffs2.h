@@ -8,7 +8,7 @@
  * For licensing information, see the file 'LICENCE' in the 
  * jffs2 directory.
  *
- * $Id: jffs2.h,v 1.29 2003/01/22 11:59:23 dwmw2 Exp $
+ * $Id: jffs2.h,v 1.30 2003/02/15 00:15:22 dwmw2 Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 /* Values we may expect to find in the 'magic' field */
 #define JFFS2_OLD_MAGIC_BITMASK 0x1984
 #define JFFS2_MAGIC_BITMASK 0x1985
-#define KSAMTIB_CIGAM_2SFFJ 0x5981 /* For detecting wrong-endian fs */
+#define KSAMTIB_CIGAM_2SFFJ 0x8519 /* For detecting wrong-endian fs */
 #define JFFS2_EMPTY_BITMASK 0xffff
 #define JFFS2_DIRTY_BITMASK 0x0000
 

@@ -1,4 +1,4 @@
-/* $Id: jffs2_fs_sb.h,v 1.37 2003/01/17 16:04:44 dwmw2 Exp $ */
+/* $Id: jffs2_fs_sb.h,v 1.39 2003/06/30 14:36:47 dwmw2 Exp $ */
 
 #ifndef _JFFS2_FS_SB
 #define _JFFS2_FS_SB
@@ -84,6 +84,7 @@ struct jffs2_sb_info {
 	   to an obsoleted node. I don't like this. Alternatives welcomed. */
 	struct semaphore erase_free_sem;
 
+#ifdef CONFIG_JFFS2_FS_NAND
 	/* Write-behind buffer for NAND flash */
 	unsigned char *wbuf;
 	uint32_t wbuf_ofs;
@@ -91,6 +92,13 @@ struct jffs2_sb_info {
 	uint32_t wbuf_pagesize;
 	struct work_struct wbuf_task;		/* task for timed wbuf flush */
 	struct timer_list wbuf_timer;		/* timer for flushing wbuf */
+
+	/* Information about out-of-band area usage... */
+	struct nand_oobinfo *oobinfo;
+	uint32_t badblock_pos;
+	uint32_t fsdata_pos;
+	uint32_t fsdata_len;
+#endif
 
 	/* OS-private pointer for getting back to master superblock info */
 	void *os_priv;

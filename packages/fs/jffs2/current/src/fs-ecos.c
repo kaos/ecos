@@ -8,7 +8,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: fs-ecos.c,v 1.8 2003/01/21 18:13:01 dwmw2 Exp $
+ * $Id: fs-ecos.c,v 1.9 2003/07/15 20:42:33 gthomas Exp $
  *
  */
 

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: build.c,v 1.44 2003/01/17 16:04:16 dwmw2 Exp $
+ * $Id: build.c,v 1.46 2003/04/29 17:12:26 gleixner Exp $
  *
  */
 
@@ -19,8 +19,30 @@
 int jffs2_build_inode_pass1(struct jffs2_sb_info *, struct jffs2_inode_cache *);
 int jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *, struct jffs2_inode_cache *);
 
+static inline struct jffs2_inode_cache *
+first_inode_chain(int *i, struct jffs2_sb_info *c)
+{
+	for (; *i < INOCACHE_HASHSIZE; (*i)++) {
+		if (c->inocache_list[*i])
+			return c->inocache_list[*i];
+	}
+	return NULL;
+}
 
-#define for_each_inode(i, c, ic) for (i=0; i<INOCACHE_HASHSIZE; i++) for (ic=c->inocache_list[i]; ic; ic=ic->next) 
+static inline struct jffs2_inode_cache *
+next_inode(int *i, struct jffs2_inode_cache *ic, struct jffs2_sb_info *c)
+{
+	/* More in this chain? */
+	if (ic->next)
+		return ic->next;
+	(*i)++;
+	return first_inode_chain(i, c);
+}
+
+#define for_each_inode(i, c, ic)			\
+	for (i = 0, ic = first_inode_chain(&i, (c));	\
+	     ic;					\
+	     ic = next_inode(&i, ic, (c)))
 
 /* Scan plan:
  - Scan physical nodes. Build map of inodes/dirents. Allocate inocaches as we go

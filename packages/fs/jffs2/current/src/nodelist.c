@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodelist.c,v 1.75 2003/01/21 18:11:28 dwmw2 Exp $
+ * $Id: nodelist.c,v 1.79 2003/04/08 08:20:01 dwmw2 Exp $
  *
  */
 
@@ -159,6 +159,14 @@ int jffs2_get_inode_nodes(struct jffs2_sb_info *c, ino_t ino, struct jffs2_inode
 				err = -EIO;
 				goto free_out;
 			}
+			/* sanity check */
+			if (PAD((node.d.nsize + sizeof (node.d))) != PAD(je32_to_cpu (node.d.totlen))) {
+				printk(KERN_NOTICE "jffs2_get_inode_nodes(): Illegal nsize in node at 0x%08x: nsize 0x%02x, totlen %04x\n",
+				       ref_offset(ref), node.d.nsize, je32_to_cpu(node.d.totlen));
+				jffs2_mark_node_obsolete(c, ref);
+				spin_lock(&c->erase_completion_lock);
+				continue;
+			}
 			if (je32_to_cpu(node.d.version) > *highest_version)
 				*highest_version = je32_to_cpu(node.d.version);
 			if (ref_obsolete(ref)) {
@@ -167,6 +175,7 @@ int jffs2_get_inode_nodes(struct jffs2_sb_info *c, ino_t ino, struct jffs2_inode
 				       ref_offset(ref));
 				BUG();
 			}
+			
 			fd = jffs2_alloc_full_dirent(node.d.nsize+1);
 			if (!fd) {
 				err = -ENOMEM;
@@ -244,6 +253,18 @@ int jffs2_get_inode_nodes(struct jffs2_sb_info *c, ino_t ino, struct jffs2_inode
 				if (crc != je32_to_cpu(node.i.node_crc)) {
 					printk(KERN_NOTICE "jffs2_get_inode_nodes(): CRC failed on node at 0x%08x: Read 0x%08x, calculated 0x%08x\n",
 					       ref_offset(ref), je32_to_cpu(node.i.node_crc), crc);
+					jffs2_mark_node_obsolete(c, ref);
+					spin_lock(&c->erase_completion_lock);
+					continue;
+				}
+				
+				/* sanity checks */
+				if ( je32_to_cpu(node.i.offset) > je32_to_cpu(node.i.isize) ||
+				     PAD(je32_to_cpu(node.i.csize) + sizeof (node.i)) != PAD(je32_to_cpu(node.i.totlen))) {
+					printk(KERN_NOTICE "jffs2_get_inode_nodes(): Inode corrupted at 0x%08x, totlen %d, #ino  %d, version %d, isize %d, csize %d, dsize %d \n",
+						ref_offset(ref),  je32_to_cpu(node.i.totlen),  je32_to_cpu(node.i.ino),
+						je32_to_cpu(node.i.version),  je32_to_cpu(node.i.isize), 
+						je32_to_cpu(node.i.csize), je32_to_cpu(node.i.dsize));
 					jffs2_mark_node_obsolete(c, ref);
 					spin_lock(&c->erase_completion_lock);
 					continue;
@@ -429,7 +450,7 @@ void jffs2_set_inocache_state(struct jffs2_sb_info *c, struct jffs2_inode_cache 
    Rather than introducing special case get_ino_cache functions or 
    callbacks, we just let the caller do the locking itself. */
    
-struct jffs2_inode_cache *jffs2_get_ino_cache(struct jffs2_sb_info *c, int ino)
+struct jffs2_inode_cache *jffs2_get_ino_cache(struct jffs2_sb_info *c, uint32_t ino)
 {
 	struct jffs2_inode_cache *ret;
 

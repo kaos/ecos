@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: readinode.c,v 1.103 2003/01/22 14:43:29 dwmw2 Exp $
+ * $Id: readinode.c,v 1.106 2003/05/14 06:53:26 dwmw2 Exp $
  *
  */
 
@@ -169,8 +169,10 @@ static int jffs2_add_frag_to_fragtree(struct jffs2_sb_info *c, struct rb_root *l
 		if (lastend < newfrag->node->ofs) {
 			/* ... and we need to put a hole in before the new node */
 			struct jffs2_node_frag *holefrag = jffs2_alloc_node_frag();
-			if (!holefrag)
+			if (!holefrag) {
+				jffs2_free_node_frag(newfrag);
 				return -ENOMEM;
+			}
 			holefrag->ofs = lastend;
 			holefrag->size = newfrag->node->ofs - lastend;
 			holefrag->node = NULL;
@@ -408,6 +410,7 @@ int jffs2_do_crccheck_inode(struct jffs2_sb_info *c, struct jffs2_inode_cache *i
 {
 	struct jffs2_raw_inode n;
 	struct jffs2_inode_info *f = kmalloc(sizeof(*f), GFP_KERNEL);
+	int ret;
 
 	if (!f)
 		return -ENOMEM;
@@ -416,7 +419,13 @@ int jffs2_do_crccheck_inode(struct jffs2_sb_info *c, struct jffs2_inode_cache *i
 	init_MUTEX_LOCKED(&f->sem);
 	f->inocache = ic;
 
-	return jffs2_do_read_inode_internal(c, f, &n);
+	ret = jffs2_do_read_inode_internal(c, f, &n);
+	if (!ret) {
+		up(&f->sem);
+		jffs2_do_clear_inode(c, f);
+	}
+	kfree (f);
+	return ret;
 }
 
 static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c, 
@@ -450,13 +459,21 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 
 		fn = tn->fn;
 
-		if (f->metadata && tn->version > mdata_ver) {
-			D1(printk(KERN_DEBUG "Obsoleting old metadata at 0x%08x\n", ref_offset(f->metadata->raw)));
-			jffs2_mark_node_obsolete(c, f->metadata->raw);
-			jffs2_free_full_dnode(f->metadata);
-			f->metadata = NULL;
-			
-			mdata_ver = 0;
+		if (f->metadata) {
+			if (tn->version > mdata_ver) {
+				D1(printk(KERN_DEBUG "Obsoleting old metadata at 0x%08x\n", ref_offset(f->metadata->raw)));
+				jffs2_mark_node_obsolete(c, f->metadata->raw);
+				jffs2_free_full_dnode(f->metadata);
+				f->metadata = NULL;
+				
+				mdata_ver = 0;
+			} else {
+				D1(printk(KERN_DEBUG "Er. New metadata at 0x%08x with ver %d is actually older than previous %d\n",
+				       ref_offset(f->metadata->raw), tn->version, mdata_ver));
+				jffs2_mark_node_obsolete(c, fn->raw);
+				jffs2_free_full_dnode(fn);
+				goto next_tn;
+			}
 		}
 
 		if (fn->size) {
@@ -467,6 +484,7 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 			f->metadata = fn;
 			mdata_ver = tn->version;
 		}
+	next_tn:
 		tn_list = tn->next;
 		jffs2_free_tmp_dnode_info(tn);
 	}

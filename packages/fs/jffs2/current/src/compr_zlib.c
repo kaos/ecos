@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr_zlib.c,v 1.22 2003/01/12 13:21:28 dwmw2 Exp $
+ * $Id: compr_zlib.c,v 1.23 2003/05/26 09:15:19 dwmw2 Exp $
  *
  */
 
@@ -17,7 +17,8 @@
 
 #include <linux/config.h>
 #include <linux/kernel.h>
-#include <linux/mtd/compatmac.h> /* for min() */
+#include <linux/vmalloc.h>
+#include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/zlib.h>
 #include <linux/zutil.h>

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: scan.c,v 1.98 2003/01/22 16:33:39 dwmw2 Exp $
+ * $Id: scan.c,v 1.101 2003/06/30 10:58:57 dwmw2 Exp $
  *
  */
 #include <linux/kernel.h>
@@ -65,6 +65,16 @@ static int jffs2_scan_dirent_node(struct jffs2_sb_info *c, struct jffs2_eraseblo
 #define BLK_STATE_ALLDIRTY	4
 #define BLK_STATE_BADBLOCK	5
 
+static inline int min_free(struct jffs2_sb_info *c)
+{
+	uint32_t min = 2 * sizeof(struct jffs2_raw_inode);
+#ifdef CONFIG_JFFS2_FS_NAND
+	if (!jffs2_can_mark_obsolete(c) && min < c->wbuf_pagesize)
+		return c->wbuf_pagesize;
+#endif
+	return min;
+
+}
 int jffs2_scan_medium(struct jffs2_sb_info *c)
 {
 	int i, ret;
@@ -151,8 +161,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
                            Later when we do snapshots, this must be the most recent block,
                            not the one with most free space.
                         */
-                        if (jeb->free_size > 2*sizeof(struct jffs2_raw_inode) && 
-			    (jffs2_can_mark_obsolete(c) || jeb->free_size > c->wbuf_pagesize) &&
+                        if (jeb->free_size > min_free(c) && 
 			    (!c->nextblock || c->nextblock->free_size < jeb->free_size)) {
                                 /* Better candidate for the next writes to go to */
                                 if (c->nextblock) {
@@ -210,7 +219,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		c->dirty_size -= c->nextblock->dirty_size;
 		c->nextblock->dirty_size = 0;
 	}
-
+#ifdef CONFIG_JFFS2_FS_NAND
 	if (!jffs2_can_mark_obsolete(c) && c->nextblock && (c->nextblock->free_size & (c->wbuf_pagesize-1))) {
 		/* If we're going to start writing into a block which already 
 		   contains data, and the end of the data isn't page-aligned,
@@ -226,6 +235,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		c->nextblock->free_size -= skip;
 		c->free_size -= skip;
 	}
+#endif
 	if (c->nr_erasing_blocks) {
 		if ( !c->used_size && ((empty_blocks+bad_blocks)!= c->nr_blocks || bad_blocks == c->nr_blocks) ) {
 			printk(KERN_NOTICE "Cowardly refusing to erase blocks on filesystem with no valid JFFS2 nodes\n");
@@ -354,7 +364,7 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 
 		if (ofs & 3) {
 			printk(KERN_WARNING "Eep. ofs 0x%08x not word-aligned!\n", ofs);
-			ofs = (ofs+3)&~3;
+			ofs = PAD(ofs);
 			continue;
 		}
 		if (ofs == prevofs) {
@@ -410,8 +420,8 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 			/* Ran off end. */
 			D1(printk(KERN_DEBUG "Empty flash ends normally at 0x%08x\n", ofs));
 
-			if (buf_ofs == jeb->offset && jeb->used_size == PAD(c->cleanmarker_size) && 
-			    !jeb->first_node->next_in_ino && !jeb->dirty_size)
+			if (buf_ofs == jeb->offset &&  jeb->used_size == PAD(c->cleanmarker_size) && 
+			    c->cleanmarker_size && !jeb->first_node->next_in_ino && !jeb->dirty_size)
 				return BLK_STATE_CLEANMARKER;
 			wasempty = 1;
 			continue;
@@ -430,7 +440,7 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 			continue;
 		}
 		if (je16_to_cpu(node->magic) == JFFS2_DIRTY_BITMASK) {
-			D1(printk(KERN_DEBUG "Empty bitmask at 0x%08x\n", ofs));
+			D1(printk(KERN_DEBUG "Dirty bitmask at 0x%08x\n", ofs));
 			DIRTY_SPACE(4);
 			ofs += 4;
 			continue;

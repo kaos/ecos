@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodelist.h,v 1.92 2003/01/22 14:43:29 dwmw2 Exp $
+ * $Id: nodelist.h,v 1.94 2003/07/03 10:35:45 dwmw2 Exp $
  *
  */
 
@@ -29,7 +29,7 @@
 #endif
 
 #ifndef CONFIG_JFFS2_FS_DEBUG
-#define CONFIG_JFFS2_FS_DEBUG 2
+#define CONFIG_JFFS2_FS_DEBUG 1
 #endif
 
 #if CONFIG_JFFS2_FS_DEBUG > 0
@@ -292,7 +292,7 @@ int jffs2_get_inode_nodes(struct jffs2_sb_info *c, ino_t ino, struct jffs2_inode
 			  uint32_t *highest_version, uint32_t *latest_mctime,
 			  uint32_t *mctime_ver);
 void jffs2_set_inocache_state(struct jffs2_sb_info *c, struct jffs2_inode_cache *ic, int state);
-struct jffs2_inode_cache *jffs2_get_ino_cache(struct jffs2_sb_info *c, int ino);
+struct jffs2_inode_cache *jffs2_get_ino_cache(struct jffs2_sb_info *c, uint32_t ino);
 void jffs2_add_ino_cache (struct jffs2_sb_info *c, struct jffs2_inode_cache *new);
 void jffs2_del_ino_cache(struct jffs2_sb_info *c, struct jffs2_inode_cache *old);
 void jffs2_free_ino_caches(struct jffs2_sb_info *c);

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: gc.c,v 1.100 2003/01/22 14:43:51 dwmw2 Exp $
+ * $Id: gc.c,v 1.103 2003/05/22 18:01:02 dwmw2 Exp $
  *
  */
 
@@ -122,8 +122,6 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 		return -EINTR;
 
 	for (;;) {
-		struct jffs2_inode_cache *ic;
-
 		spin_lock(&c->erase_completion_lock);
 		if (!c->unchecked_size)
 			break;
@@ -191,8 +189,10 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 		D1(printk(KERN_DEBUG "jffs2_garbage_collect_pass() triggering inode scan of ino#%d\n", ic->ino));
 
 		ret = jffs2_do_crccheck_inode(c, ic);
-		if (!ret)
-			jffs2_set_inocache_state(c, ic, INO_STATE_CHECKEDABSENT);
+		if (ret)
+			printk(KERN_WARNING "Returned error for crccheck of ino #%u. Expect badness...\n", ic->ino);
+
+		jffs2_set_inocache_state(c, ic, INO_STATE_CHECKEDABSENT);
 		up(&c->alloc_sem);
 		return ret;
 	}
@@ -624,7 +624,7 @@ static int jffs2_garbage_collect_metadata(struct jffs2_sb_info *c, struct jffs2_
 {
 	struct jffs2_full_dnode *new_fn;
 	struct jffs2_raw_inode ri;
-	unsigned short dev;
+	jint16_t dev;
 	char *mdata = NULL, mdatalen = 0;
 	uint32_t alloclen, phys_ofs;
 	int ret;
@@ -633,8 +633,8 @@ static int jffs2_garbage_collect_metadata(struct jffs2_sb_info *c, struct jffs2_
 	    S_ISCHR(JFFS2_F_I_MODE(f)) ) {
 		/* For these, we don't actually need to read the old node */
 		/* FIXME: for minor or major > 255. */
-		dev =  ((JFFS2_F_I_RDEV_MAJ(f) << 8) | 
-			JFFS2_F_I_RDEV_MIN(f));
+		dev = cpu_to_je16(((JFFS2_F_I_RDEV_MAJ(f) << 8) | 
+			JFFS2_F_I_RDEV_MIN(f)));
 		mdata = (char *)&dev;
 		mdatalen = sizeof(dev);
 		D1(printk(KERN_DEBUG "jffs2_garbage_collect_metadata(): Writing %d bytes of kdev_t\n", mdatalen));
