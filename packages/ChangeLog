@@ -1,3 +1,7 @@
+2002-08-06  Thomas Koeller  <thomas@koeller.dyndns.org>
+
+	* ecos.db: Add AT91 watchdog driver.
+
 2002-06-20  Gary Thomas  <gary@chez-thomas.org>
 
 	* ecos.db: A&M Viper now uses generic AMD FLASH drivers.

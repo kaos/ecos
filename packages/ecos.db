@@ -1411,6 +1411,16 @@ package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
            ARM/AEB board."
 }
 
+package CYGPKG_DEVICES_WATCHDOG_ARM_AT91 {
+	alias		{ "Watchdog driver for ARM AT91 CPU" devices_watchdog_at91 device_watchdog_at91 }
+	directory	devs/watchdog/arm/at91
+	script          watchdog_at91.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           ARM AT91 CPU."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285 {
 	alias		{ "Watchdog driver for ARM/EBSA285 board" devices_watchdog_ebsa285 device_watchdog_ebsa285 }
 	directory	devs/watchdog/arm/ebsa285
