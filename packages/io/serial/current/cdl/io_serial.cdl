@@ -304,6 +304,49 @@ cdl_package CYGPKG_IO_SERIAL {
 	    serial devices."
     }
 
+
+    cdl_component CYGPKG_IO_SERIAL_TEST_SPECS {
+        display "Serial testing specification"
+        flavor     bool
+        calculated 1
+        no_define
+       
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_9600 {
+            display "Skip 9600 baud testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_14400 {
+            display "Skip 14400 baud testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_19200 {
+            display "Skip 19200 baud testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_38400 {
+            display "Skip 38400 baud testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_57600 {
+            display "Skip 57600 baud testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_115200 {
+            display "Skip 115200 baud testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN {
+            display "Skip even-parity testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_PARITY_ODD {
+            display "Skip odd-parity testing"
+        }
+
+        cdl_interface CYGINT_IO_SERIAL_TEST_SKIP_STOP_2 {
+            display "Skip 2-stop bit testing"
+        }
+    }
 }
 
 # EOF io_serial.cdl

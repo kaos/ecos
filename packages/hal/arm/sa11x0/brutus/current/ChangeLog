@@ -1,3 +1,7 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_brutus.cdl: Add platform/cpu identification strings.
+
 2000-07-05  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_brutus.cdl: Cleanup channel options.

@@ -266,6 +266,15 @@ package CYGPKG_IO_SERIAL_I386_PC {
     description       "PC serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_GENERIC_16X5X {
+    alias             { "16x5x compatible serial device drivers"
+                        devs_serial_generic_16x5x 16x5x_serial_driver }
+    hardware
+    directory	      devs/serial/generic/16x5x
+    script	      ser_generic_16x5x.cdl
+    description       "16x5x compatible serial device drivers"
+}
+
 package CYGPKG_IO_SERIAL_SH_SCI {
     alias             { "SH SCI serial device drivers"
                         devs_serial_sh_sci sci_serial_driver }
@@ -341,7 +350,7 @@ package CYGPKG_FS_RAM {
 }
 
 package CYGPKG_IO_ETH_DRIVERS {
-	alias 		{ "Common ethernet support" net_drivers }
+	alias 		{ "Common ethernet support" net_drivers eth_drivers }
 	directory	io/eth
 	script		eth_drivers.cdl
         description     "Platform independent ethernet support."
@@ -1150,6 +1159,7 @@ target pid {
 	alias { "ARM development board (PID)" PID }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_PID
+                   CYGPKG_IO_SERIAL_GENERIC_16X5X
 	           CYGPKG_IO_SERIAL_ARM_PID
         }
         description "

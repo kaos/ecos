@@ -1,3 +1,12 @@
+2000-09-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/platform.inc: Added some extra ifdefs and code to try
+	and get ROM startup working.
+
+	* cdl/hal_mips_vr4300_vrc4373.cdl:
+	Building GDB stubs was requiring ROM startup when it should have
+	ROMRAM startup.
+
 2000-08-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/platform.S (hal_pci_config_read): Prevent assembler reordering,

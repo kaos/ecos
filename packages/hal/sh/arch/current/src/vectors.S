@@ -425,6 +425,7 @@ $_cyg_instrument:
         mov     #-5,r0                  ! divide cause by 0x20
         shld    r0,r4
         add     #-14,r4                 ! adjust so NMI becomes 0
+
         mov     #CYGARC_SHREG_EVENT,r0
         mov.l   r4,@(r0,r8)             ! store decoded vector number back
                                         ! to saved state.

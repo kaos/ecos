@@ -1,3 +1,23 @@
+2000-09-14  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/eth_drivers.cdl: Add configury to control new features.  All
+	is controlled globally by CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+	which is by default off, natch.
+
+	* src/net/eth_drv.c (simulate_fail): Implement simulated failures
+	in ethernet packet delivery - independent tx and rx dropping and
+	rx packet corruption.  Also a "line break" drop-all feature.
+
+2000-09-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c: Take out noisy dump when out of buffers.
+
+2000-09-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/stand_alone/eth_drv.c (eth_drv_write): If we timeout waiting
+	for the write to complete, do reset the vectors to point to the
+	application, rather just a bald "return".
+
 2000-09-08  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/netdev.h (NETDEVTAB_ENTRY): Work around feature of new

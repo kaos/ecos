@@ -231,27 +231,10 @@ typedef volatile union {
 #define DP8390_TSR_OWC    0x80   // Collision outside normal window
 
 // Page (buffer) allocation
-#if 0
-#define DP8390_RX_START   1
-#define DP8390_RX_STOP    255-12
-#define DP8390_TX_BUF1    (DP8390_RX_STOP+1)
-#define DP8390_TX_BUF2    (DP8390_TX_BUF1+6)
-#define DP8390_TX_STOP    255
-#else
-#if 0
-#define DP8390_RX_START   1
-#define DP8390_RX_STOP    127-12
-#define DP8390_TX_BUF1    (DP8390_RX_STOP+1)
-#define DP8390_TX_BUF2    (DP8390_TX_BUF1+6)
-#define DP8390_TX_STOP    127
-#else
-#define DP8390_RX_START   0x60
-#define DP8390_RX_STOP    0x80
 #define DP8390_TX_BUF1    0x40
-#define DP8390_TX_BUF2    0x50
-#define DP8390_TX_STOP    127
-#endif
-#endif
+#define DP8390_TX_BUF2    0x48
+#define DP8390_RX_START   0x50
+#define DP8390_RX_STOP    0x80
 
 #define IEEE_8023_MAX_FRAME         1518    // Largest possible ethernet frame
 #define IEEE_8023_MIN_FRAME           64    // Smallest possible ethernet frame

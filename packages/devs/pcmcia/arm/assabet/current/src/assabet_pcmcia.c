@@ -51,9 +51,8 @@
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>   // Configuration header
 #include <cyg/kernel/kapi.h>
-#else
-#include <cyg/hal/hal_if.h>
 #endif
+#include <cyg/hal/hal_if.h>
 
 #include <cyg/io/pcmcia.h>
 #include <cyg/infra/diag.h>
@@ -114,7 +113,7 @@ cf_irq_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     if (!was_ctrlc_int) // Fall through and run normal code
 #endif
     // Process interrupt
-    (slot->irq_handler.handler)(slot->irq_handler.param);
+    (slot->irq_handler.handler)(vector, count, slot->irq_handler.param);
     // Allow interrupts to happen again
     cyg_drv_interrupt_unmask(SA1110_CF_IRQ);
 }

@@ -81,8 +81,8 @@ extern int   tftp_stream_open(char *file, struct sockaddr_in *server, int mode, 
 extern int   tftp_stream_read(char *buf, int len, int *err);
 extern int   tftp_stream_close(int *err);
 
-#define TFTP_TIMEOUT_PERIOD 5
-#define TFTP_TIMEOUT_MAX    5
+#define TFTP_TIMEOUT_PERIOD 1
+#define TFTP_TIMEOUT_MAX   15
 #define TFTP_RETRIES_MAX    5
 
 #define TFTP_PORT           69

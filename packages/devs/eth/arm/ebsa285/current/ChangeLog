@@ -1,3 +1,9 @@
+2000-09-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (i82559_poll): Only diddle the interface we
+	were asked to.  This is more correct in terms of the intent of the
+	API, though it shouldn't really be necessary.
+
 2000-09-06  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c (pci_init_find_82559s): Add asserts and an

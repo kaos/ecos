@@ -242,5 +242,7 @@ void
 plf_hardware_init(void)
 {
     // Force "alternate" use of GPIO pins used for LCD screen
-//    *SA11X0_GPIO_ALTERNATE_FUNCTION |= 0x000003FC;  // Bits 2..9
+    *SA11X0_GPIO_ALTERNATE_FUNCTION |= 0x000003FC;  // Bits 2..9
+    *SA11X0_GPIO_PIN_DIRECTION |= 0x000003FC;  // Bits 2..9
+    *SA11X0_GPIO_PIN_OUTPUT_CLEAR = 0x000003FC;  // Bits 2..9
 }

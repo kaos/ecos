@@ -1,3 +1,18 @@
+2000-09-18  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/io_serial.cdl: Added interfaces to allow test tweaking.
+	* tests/ser_test_protocol.inl: Use interfaces. Moved PID details
+	to PID serial package.
+
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* tests/ser_test_protocol.inl: Allow drivers to define testing
+	parameters via CDL.
+
+2000-09-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/serial.h (SERIAL_CALLBACKS): Fix typo.
+
 2000-09-06  Jesper Skov  <jskov@redhat.com>
 
 	* tests/ser_test_protocol.inl: Renamed some option names due to SH

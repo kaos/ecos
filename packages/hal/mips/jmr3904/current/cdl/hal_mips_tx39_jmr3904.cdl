@@ -78,9 +78,7 @@ cdl_package CYGPKG_HAL_MIPS_TX39_JMR3904 {
            equivalent software that allows GDB to download the eCos
            application on to the board. The ROM bootstrap typically
            requires that the eCos application be blown into EPROMs or
-           equivalent technology. STUB bootstrap is for configurations
-           of eCos used only as GDB stub ROMs; the use of memory is
-           limited to the top 8kB."
+           equivalent technology."
     }
 
     cdl_option CYGHWR_HAL_MIPS_TX39_JMR3904_DRAM_CONFIG {

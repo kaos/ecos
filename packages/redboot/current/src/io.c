@@ -107,9 +107,12 @@ mon_read_char_with_timeout(char *c)
             res = CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, c);
             if (res) {
                 // Input available on this channel, make it be the console
-                console_selected = true;
-                CYGACC_CALL_IF_SET_DEBUG_COMM(i);
-                return res;
+                if (*c != '\0') {
+                    // Don't chose this unless real data have arrived
+                    console_selected = true;
+                    CYGACC_CALL_IF_SET_DEBUG_COMM(i);
+                    return res;
+                }
             }
         }
         CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);        

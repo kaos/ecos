@@ -40,6 +40,19 @@
 #
 # ====================================================================
 
+cdl_option CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER {
+    display       "Use buffer provided by the application"
+    flavor        bool
+    default_value 0
+    description "
+          In most circumstances the kernel should provide the
+          instrumentation circular buffer itself. Occasionally
+          application code may wish to provide the buffer instead,
+          giving the application code more convenient access to the
+          buffer. This also makes it possible to put the circular
+          buffer in special areas of memory, for example a region that
+          is shared with the host."
+}
 
 cdl_option CYGNUM_KERNEL_INSTRUMENT_BUFFER_SIZE {
     display       "Size of instrumentation buffer size"

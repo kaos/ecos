@@ -132,6 +132,15 @@ dnl ])
 dnl --------------------------------------------------------------------
 
 dnl Add any other directories that are autoconfiscated and present
+if test -f ${srcdir}/tools/Utils/common/configure; then
+  ECOS_DIRS="${ECOS_DIRS} tools/Utils/common"
+  AC_OUTPUT_COMMANDS([
+	test -d tools 			     || mkdir tools
+	test -d tools/Utils 		     || mkdir tools/Utils
+	test -d tools/Utils/common 	     || mkdir tools/Utils/common
+  ])
+fi
+
 if test -f ${srcdir}/tools/ecostest/common/configure; then
   ECOS_DIRS="${ECOS_DIRS} tools/ecostest/common"
   AC_OUTPUT_COMMANDS([

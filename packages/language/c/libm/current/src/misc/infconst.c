@@ -62,11 +62,11 @@
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST) // Big endian
 
-const Cyg_libm_ieee_double_shape_type cyg_libm_infinity[] = { { {0x7ff00000, 0} } };
+const Cyg_libm_ieee_double_shape_type cyg_libm_infinity = { {0x7ff00000, 0} };
 
 #else  // Little endian
 
-const Cyg_libm_ieee_double_shape_type cyg_libm_infinity[] = { { {0, 0x7ff00000} } };
+const Cyg_libm_ieee_double_shape_type cyg_libm_infinity = { {0, 0x7ff00000} };
 
 #endif
 

@@ -116,7 +116,7 @@ start:
         bne     1b
 #endif
         // Initialize stack
-        lea     __startup_stack,r1
+        lea     __startup_stack-16,r1
         mov     r1,sp
 
         // Clear BSS
@@ -260,11 +260,18 @@ exception:
 #endif
         
 do_exception:
+        // leave space for the parameter flush back area (as per calling
+        // conventions)
+        addi    -16,sp,sp
+        
         mov     sp,r6
         jarl    _exception_handler,r31
 
 return_from_exception_or_interrupt: 
-        mov     sp,ep            
+        // save sp, but remove space for the parameter flush back area
+        // (as per calling conventions) at the same time
+        addi    16,sp,ep
+                
         ld.w    CYGARC_REG_PSW[ep],r7
         sld.w   CYGARC_REG_R1[ep],r1
         ld.w    CYGARC_REG_PC[ep],r6
@@ -321,6 +328,9 @@ return_from_exception_or_interrupt:
         // Handle interrupt - these are typically vectored into user code
 do_interrupt:
         mov     sp,ep                   // save pointer to regs frame
+        // leave space for the parameter flush back area (as per calling
+        // conventions)
+        addi    -16,sp,sp
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 	// Switch to interrupt stack
@@ -331,9 +341,9 @@ do_interrupt:
         cmp     0,r7                    // if was zero, switch stacks
         bne     10f
         mov     sp,r1                   // save old stack pointer
-        lea     __interrupt_stack-4,r2
+        lea     __interrupt_stack-20,r2
         mov     r2,sp
-        st.w    r1,0[sp]                
+        st.w    r1,16[sp]                
 10:
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
@@ -401,7 +411,9 @@ do_interrupt:
         st.w    r8,0[r6]
         cmp     0,r8
         bne     10f
-        ld.w    0[sp],sp        // Restore non-interrupt stack at last interrupt
+        ld.w    16[sp],sp       // Restore non-interrupt stack at last interrupt
+                                // this is offset 16 because of parameter
+                                // flush back area
 10:
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 

@@ -78,14 +78,14 @@
 // Mutex for serializing select processing. This essntially controls
 // access to the contents of the selinfo structures embedded in the
 // client system data structures.
-static Cyg_Mutex select_mutex;
+static Cyg_Mutex select_mutex CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
 
 // Condition variable where any thread that is waiting for a select to
 // fire is suspended. Note that select is not intended to be a real time
 // operation. Whenever any selectable event occurs, all selecting threads
 // will be resumed. They must then rescan their selectees and resuspend if
 // necessary.
-static Cyg_Condition_Variable selwait( select_mutex );
+static Cyg_Condition_Variable selwait( select_mutex ) CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
 
 static volatile cyg_uint32 selwake_count = 0;
 

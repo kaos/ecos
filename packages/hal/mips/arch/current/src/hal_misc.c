@@ -48,11 +48,14 @@
 #include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
+#define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include <cyg/hal/hal_arch.h>           // architectural definitions
 
 #include <cyg/hal/hal_intr.h>           // Interrupt handling
 
 #include <cyg/hal/hal_cache.h>          // Cache handling
+
+#include <cyg/hal/mips-regs.h>          // FPU cause register definitions
 
 /*------------------------------------------------------------------------*/
 /* If required, define a variable to store the clock period.              */
@@ -76,20 +79,58 @@ externC cyg_uint8 cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs );
 
 externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
-#if defined(CYGHWR_HAL_MIPS_FPU) && \
-    defined(CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS)
-    // We may be required to emulate certain unimplemented Floating Point
-    // operations
+    int vec = regs->vector>>2;
 
-    if ((regs->vector>>2) == CYGNUM_HAL_VECTOR_FPE) {
+#if defined(CYGHWR_HAL_MIPS_FPU)
+    // Special handling of FPU exceptions
+    if (CYGNUM_HAL_VECTOR_FPE == vec) {
+
+#if defined(CYGSEM_HAL_MIPS_EMULATE_UNIMPLEMENTED_FPU_OPS)
+        // We may be required to emulate certain unimplemented Floating Point
+        // operations
 
         // cyg_hal_mips_process_fpe() returns non-zero if it could handle
         // the exception successfully. If so, we just return
 
         if ( cyg_hal_mips_process_fpe(regs) )
             return 0;
-    }
 #endif
+
+        // Find the cause of the FPU exception, clear the flag and use
+        // the decoded vector number.
+        {
+            cyg_uint32 cause = regs->fcr31;
+
+            if (cause & FCR31_CAUSE_I) {
+                vec = CYGNUM_HAL_EXCEPTION_FPU_INEXACT;
+                cause &= ~(FCR31_FLAGS_I | FCR31_CAUSE_I);
+            } else if (cause & FCR31_CAUSE_U) {
+                vec = CYGNUM_HAL_EXCEPTION_FPU_UNDERFLOW;
+                cause &= ~(FCR31_FLAGS_U | FCR31_CAUSE_U);
+            } else if (cause & FCR31_CAUSE_O) {
+                vec = CYGNUM_HAL_EXCEPTION_FPU_OVERFLOW;
+                cause &= ~(FCR31_FLAGS_O | FCR31_CAUSE_O);
+            } else if (cause & FCR31_CAUSE_Z) {
+                vec = CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO;
+                cause &= ~(FCR31_FLAGS_Z | FCR31_CAUSE_Z);
+            } else if (cause & FCR31_CAUSE_V) {
+                vec = CYGNUM_HAL_EXCEPTION_FPU_INVALID;
+                cause &= ~(FCR31_FLAGS_V | FCR31_CAUSE_V);
+            }
+            regs->fcr31 = cause;
+
+#if 1
+            // Update the FPU status register with the new
+            // setting. This is a workaround for the signal2 test
+            // which does a longjump in the exception handler and thus
+            // never gets around to executing the register restore
+            // code.
+            asm ("ctc1	%0,$31" : : "r" (cause));
+#endif
+        }
+    }
+#endif // CYGHWR_HAL_MIPS_FPU
+
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 
@@ -113,7 +154,7 @@ externC cyg_uint32 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
     // pointer to the saved registers. We should also divert
     // breakpoint and other debug vectors into the debug stubs.
     
-    cyg_hal_deliver_exception( regs->vector>>2, (CYG_ADDRWORD)regs );
+    cyg_hal_deliver_exception( vec, (CYG_ADDRWORD)regs );
 
 #else
     

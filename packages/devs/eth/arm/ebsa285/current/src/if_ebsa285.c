@@ -1790,6 +1790,7 @@ void i82559_deliver(struct eth_drv_sc *sc)
 
 // ------------------------------------------------------------------------
 // Device table entry to operate the chip in a polled mode.
+// Only diddle the interface we were asked to!
 
 void i82559_poll(struct eth_drv_sc *sc)
 {
@@ -1804,9 +1805,9 @@ void i82559_poll(struct eth_drv_sc *sc)
     }
 
     // As it happens, this driver always requests the DSR to be called:
-    (void)eth_mux_isr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, (cyg_addrword_t)p_i82559 );
+    (void)eth_isr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, (cyg_addrword_t)p_i82559 );
 
-    i82559_deliver( NULL /* arg is not used */ );
+    uni_deliver( p_i82559 );
 }
 
 // ------------------------------------------------------------------------

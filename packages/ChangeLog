@@ -1,3 +1,11 @@
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Made PID use generic 16x5x driver.
+
+2000-09-14  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added generic 16x5x driver package.
+
 2000-09-06  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: SH serial driver reorg changes.

@@ -249,7 +249,7 @@ cdl_package CYGPKG_NET {
 	cdl_option CYGOPT_NET_DHCP_DHCP_THREAD_PARAM {
 	    display "DHCP management thread loops forever"
 	    flavor  data
-	    default_value 0
+	    default_value 1
 	    active_if CYGOPT_NET_DHCP_DHCP_THREAD
 	    description "
 	        If the parameter is nonzero, it loops forever; if zero,

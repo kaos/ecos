@@ -463,6 +463,7 @@ init_net(const char *intf, struct bootp *bp)
             memset(&route, 0, sizeof(route));
             addrp->sin_family = AF_INET;
             addrp->sin_port = 0;
+            addrp->sin_len = sizeof(*addrp);
             addrp->sin_addr.s_addr = 0; // Use 0,0,GATEWAY for the default route
             memcpy(&route.rt_dst, addrp, sizeof(*addrp));
             addrp->sin_addr.s_addr = 0;

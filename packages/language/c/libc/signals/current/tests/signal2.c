@@ -119,7 +119,10 @@ cause_fpe(int num)
                                         // (integer division by zero).
 } // cause_fpe()
 
+volatile int tmp;
+
 #endif
+
 
 int
 main( int argc, char *argv[] )
@@ -265,7 +268,9 @@ main( int argc, char *argv[] )
 #else
 
     if (0==setjmp(jbuf)) {
-        (void)cause_fpe(0);
+        // It is necessary to save the return value in a volatile
+        // variable, or GCC will get rid of the call.
+        tmp = cause_fpe(0);
         CYG_TEST_FAIL("Didn't cause exception");
     }
     

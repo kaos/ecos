@@ -2,7 +2,7 @@
 static char * escw_xpm[] = {
 "320 240 21 1",
 " 	c None",
-".	c #28CAFF",
+".	c #28CAE0",
 "+	c #6F8695",
 "@	c #3FB3C7",
 "#	c #579DAE",

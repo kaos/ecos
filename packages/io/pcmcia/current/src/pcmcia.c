@@ -277,7 +277,7 @@ cf_change_state(struct cf_slot *slot, int desired_state)
 //
 void 
 cf_register_handler(struct cf_slot *slot, 
-                    void (*handler)(void *), 
+                    void (*handler)(int, int, void *), 
                     void *param)
 {
     slot->irq_handler.handler = handler;

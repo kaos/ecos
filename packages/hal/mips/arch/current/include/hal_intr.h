@@ -127,14 +127,26 @@
 #define CYGNUM_HAL_EXCEPTION_COPROCESSOR    CYGNUM_HAL_VECTOR_COPROCESSOR
 #define CYGNUM_HAL_EXCEPTION_OVERFLOW       CYGNUM_HAL_VECTOR_OVERFLOW
 #define CYGNUM_HAL_EXCEPTION_DIV_BY_ZERO    CYGNUM_HAL_VECTOR_DIV_BY_ZERO
+#ifdef  CYGHWR_HAL_MIPS_FPU
 #define CYGNUM_HAL_EXCEPTION_FPU            CYGNUM_HAL_VECTOR_FPE 
+#endif
 
 #define CYGNUM_HAL_EXCEPTION_INTERRUPT      CYGNUM_HAL_VECTOR_BREAKPOINT
 
+// decoded exception vectors
+#define CYGNUM_HAL_EXCEPTION_FPU_INEXACT     (-1)
+#define CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO (-2)
+#define CYGNUM_HAL_EXCEPTION_FPU_OVERFLOW    (-3)
+#define CYGNUM_HAL_EXCEPTION_FPU_UNDERFLOW   (-4)
+#define CYGNUM_HAL_EXCEPTION_FPU_INVALID     (-5)
+
+
 // Min/Max exception numbers and how many there are
-#define CYGNUM_HAL_EXCEPTION_MIN                1
+#define CYGNUM_HAL_EXCEPTION_MIN                CYGNUM_HAL_EXCEPTION_FPU_INVALID
 #define CYGNUM_HAL_EXCEPTION_MAX                CYGNUM_HAL_VSR_MAX
-#define CYGNUM_HAL_EXCEPTION_COUNT              CYGNUM_HAL_VSR_MAX
+
+#define CYGNUM_HAL_EXCEPTION_COUNT           \
+                 ( CYGNUM_HAL_EXCEPTION_MAX - CYGNUM_HAL_EXCEPTION_MIN + 1 )
 
 
 #ifndef CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED
@@ -332,7 +344,7 @@ externC void hal_interrupt_stack_call_pending_DSRs(void);
     
 
 #define HAL_VSR_SET( _vector_, _vsr_, _poldvsr_ ) CYG_MACRO_START         \
-    if( _poldvsr_ != NULL)                                                \
+    if( (void*)_poldvsr_ != NULL)                                         \
         *(CYG_ADDRESS *)_poldvsr_ = (CYG_ADDRESS)hal_vsr_table[_vector_]; \
     hal_vsr_table[_vector_] = (CYG_ADDRESS)_vsr_;                         \
 CYG_MACRO_END

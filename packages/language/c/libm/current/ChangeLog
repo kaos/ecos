@@ -1,3 +1,8 @@
+2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/misc/infconst.c: Revert below two changes - the gcc problem
+	that provoked it is now fixed.
+
 2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/misc/infconst.c: Silence warning about number of brackets

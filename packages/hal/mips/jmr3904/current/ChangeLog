@@ -1,3 +1,7 @@
+2000-09-11  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx39_jmr3904.cdl: Fix startup type description.
+
 2000-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/plf_misc.c: Let arch call ctrlc_init.

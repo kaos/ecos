@@ -256,7 +256,7 @@ bool CeCosTest::RunLocal()
 
     TRACE(_T("LocalThreadFunc - target=%s\n"),(LPCTSTR)m_ep.PlatformName());
     // Acquire a port (our caller may have done this for us)
-    VTRACE(_T("LocalThreadFunc():Tring to acquire a port\n"));
+    VTRACE(_T("LocalThreadFunc():Trying to acquire a port\n"));
     if(0==m_pResource){
       for(;;){
         m_pResource=CTestResource::GetResource(m_ep);

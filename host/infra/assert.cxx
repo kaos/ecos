@@ -61,6 +61,12 @@
 #include <cstdio>
 #include <cstdlib>
 
+#ifdef __unix__
+extern "C" {
+#include <unistd.h>		// Needed for _exit()
+}
+#endif
+
 // These are needed for the table of callbacks.
 #include <utility>
 #include <iterator>

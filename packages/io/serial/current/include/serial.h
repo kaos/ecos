@@ -95,7 +95,7 @@ serial_callbacks_t _l = {                               \
     _data_rcv_req,                                      \
     _data_rcv_done,                                     \
     _data_xmt_req,                                      \
-    _data_xmt_done                                      \
+    _data_xmt_done,                                     \
     _indicate_status                                    \
 };
 # else

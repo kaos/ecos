@@ -1,3 +1,23 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/lcd_test.c: Add simple "glass tty" driver for LCD.
+
+	* cdl/hal_arm_sa11x0_assabet.cdl: Add platform/cpu identification strings.
+
+2000-09-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/assabet_misc.c: Set up for LCD - configure [pin] signals.
+
+	* misc/lcd_test.c: Adding more glitz, turn on light, etc.
+
+	* include/assabet.h: LCD pixel size was wrong in docs(?)
+
+2000-09-13  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot.xpm: New file.
+
+	* misc/lcd_test.c: Update LCD demo - add RedBoot splash.
+
 2000-09-10  Gary Thomas  <gthomas@redhat.com>
 
 	* misc/redhat.xpm: 

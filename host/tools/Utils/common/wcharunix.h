@@ -148,7 +148,8 @@
 #define _tfullpath  fullpath
 #define _tgetenv    getenv
 #define _tmakepath  makepath
-#define _tputenv    putenv
+// Yuck - /usr/include/stdlib.h defines it as char*, not const char*
+#define _tputenv(s) putenv((char*)(s.c_str()))
 #define _tsearchenv searchenv
 #define _tsplitpath splitpath
 

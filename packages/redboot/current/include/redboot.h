@@ -134,9 +134,12 @@ static _cmd_entry(_s_,_h_,_u_,_f_,_n_)
 #define RedBoot_INIT_PRIO(_n_) 1000+_n_
 #define RedBoot_INIT_LAST  9999
 typedef void void_fun(void);
-typedef void_fun *void_fun_ptr CYG_HAL_TABLE_TYPE;
+typedef void_fun *void_fun_ptr;
+struct init_tab_entry {
+    void_fun_ptr fun;
+} CYG_HAL_TABLE_TYPE;
 #define _RedBoot_init(_f_,_p_)                                          \
-void_fun_ptr _init_tab_##_p_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_inits,_f_) = _f_; 
+struct init_tab_entry _init_tab_##_p_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_inits,_f_) = { _f_ }; 
 #define RedBoot_init(_f_,_p_) _RedBoot_init(_f_,_p_)
 
 

@@ -1,3 +1,18 @@
+2000-09-14  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/net.cdl (CYGOPT_NET_DHCP_DHCP_THREAD_PARAM): Set default to
+	1 so that the DHCP management thread loops forever.  This allows
+	it to recover from a DHCP renewal failure.
+
+	* src/lib/dhcp_prot.c (next_timeout): Harden the DHCP protocol
+	machine against [simulated] failures - otherwise the tests with
+	simulated failures tend just to close down all the interfaces when
+	DHCP packets are lost.
+
+2000-09-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/bootp_support.c (init_net): Set default route correctly.
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/ecos/support.c (cyg_net_init): You can't print things while

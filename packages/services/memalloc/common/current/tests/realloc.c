@@ -178,6 +178,8 @@ main( int argc, char *argv[] )
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "realloc() function");
+
+    return 0;
 } // main()
 
 #endif // ifndef NA_MSG

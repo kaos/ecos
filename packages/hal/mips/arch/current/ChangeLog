@@ -1,3 +1,31 @@
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h (HAL_DEFAULT_ISR): Fix warning.
+	(HAL_DEFAULT_ISR): Undo that change.
+
+2000-09-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Only define _FPE when there's a FPU.
+
+2000-09-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h (HAL_VSR_SET_TO_ECOS_HANDLER): Fix compiler
+	warning.
+
+	* src/vectors.S: Fully decode TLB related exceptions.
+	* src/hal_misc.c (cyg_hal_exception_handler): Undid below change.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Base vector
+	calculation on cause register, not the provided vector value.
+
+2000-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added definition for decoded FPU
+	exceptions.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Decode FPU
+	exceptions.
+
 2000-09-07  Jesper Skov  <jskov@redhat.com>
 
 	* include/basetype.h: Removed change from yesterday.

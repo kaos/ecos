@@ -1,3 +1,7 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Add platform/cpu identification strings.
+
 2000-09-06  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/hal_arm_ebsa285.cdl (CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE

@@ -87,7 +87,7 @@ extern struct cmd __RedBoot_CMD_TAB__[], __RedBoot_CMD_TAB_END__;
 
 CYG_HAL_TABLE_BEGIN( __RedBoot_INIT_TAB__, RedBoot_inits );
 CYG_HAL_TABLE_END( __RedBoot_INIT_TAB_END__, RedBoot_inits );
-extern void_fun_ptr __RedBoot_INIT_TAB__[], __RedBoot_INIT_TAB_END__;
+extern struct init_tab_entry __RedBoot_INIT_TAB__[], __RedBoot_INIT_TAB_END__;
 
 //
 // This is the main entry point for RedBoot
@@ -100,7 +100,7 @@ cyg_start(void)
     char line[256];
     struct cmd *cmd;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-    void_fun_ptr *init_fun;
+    struct init_tab_entry *init_entry;
 
     CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL);
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
@@ -112,13 +112,16 @@ cyg_start(void)
     ram_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
 
     printf("\nRedBoot(tm) debug environment - built %s, %s\n", __TIME__, __DATE__);
+#ifdef HAL_PLATFORM_CPU
+    printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
+#endif
     printf("Copyright (C) 2000, Red Hat, Inc.\n\n");
     printf("RAM: %p-%p\n", ram_start, ram_end);
 
     config_ok = false;
 
-    for (init_fun = __RedBoot_INIT_TAB__; init_fun != &__RedBoot_INIT_TAB_END__;  init_fun++) {
-        (*init_fun)();
+    for (init_entry = __RedBoot_INIT_TAB__; init_entry != &__RedBoot_INIT_TAB_END__;  init_entry++) {
+        (*init_entry->fun)();
     }
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG

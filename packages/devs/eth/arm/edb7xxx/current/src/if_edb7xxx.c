@@ -59,6 +59,7 @@
 #include <pkgconf/devs_eth_arm_edb7xxx.h>
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>
+#include <cyg/kernel/kapi.h>
 #endif
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
@@ -103,6 +104,9 @@ extern int net_debug; // FIXME
 struct cs8900_priv_data {
     int txbusy;            // A packet has been sent
     unsigned long txkey;   // Used to ack when packet sent
+#ifdef CYGPKG_NET
+    cyg_tick_count_t txstart;
+#endif
 } _cs8900_priv_data;
 
 ETH_DRV_SC(edb7xxx_sc,
@@ -295,6 +299,19 @@ cs8900_can_send(struct eth_drv_sc *sc)
     if ((stat & PP_LineStat_LinkOK) == 0) {
         return false;  // Link not connected
     }
+#ifdef CYGPKG_NET
+    // Horrible hack!
+    if (cpd->txbusy > 0) {
+        cyg_tick_count_t now = cyg_current_time();
+        if ((now - cpd->txstart) > 25) {
+            // 250ms is more than enough to transmit one frame
+            diag_printf("CS8900: Tx interrupt lost\n");
+            cpd->txbusy = 0;
+            // Free up the buffer (with error indication)
+            (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 1);
+        }
+    }
+#endif
     return (cpd->txbusy == 0);
 }
 
@@ -315,10 +332,13 @@ cs8900_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     // Mark xmitter busy
     cpd->txbusy = 1;
     cpd->txkey = key;
+#ifdef CYGPKG_NET
+    cpd->txstart = cyg_current_time();
+#endif
     // Start the xmit sequence
 // Note: this can go back once the 'dump' is removed
-//    CS8900_TxCMD = PP_TxCmd_TxStart_5;  // Start more-or-less immediately
-    CS8900_TxCMD = PP_TxCmd_TxStart_Full;  // Start only when all data sent to chip
+    CS8900_TxCMD = PP_TxCmd_TxStart_5;  // Start more-or-less immediately
+//    CS8900_TxCMD = PP_TxCmd_TxStart_Full;  // Start only when all data sent to chip
     CS8900_TxLEN = total_len;
     stat = get_reg(PP_BusStat);  // This actually starts the xmit
 

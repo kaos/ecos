@@ -61,6 +61,9 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_arm_sa11x0.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_sa11x0_brutus.h>"
+	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"StrongARM 1100\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Brutus development system\""
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
     }
 
     cdl_component CYG_HAL_STARTUP {

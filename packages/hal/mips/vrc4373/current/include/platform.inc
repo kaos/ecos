@@ -182,6 +182,7 @@ hal_mmu_setup_return:
 	jalr	k0
 	nop
 
+#if defined(CYG_HAL_STARTUP_ROMRAM)
 	# Having got the RAM working, we must now relocate the Entire
 	# ROM into it and then continue execution from RAM.
 
@@ -201,6 +202,8 @@ hal_mmu_setup_return:
 	nop
 2:	
 	# We are now executing out of RAM!
+
+#endif
 
 	.endm
 
@@ -342,6 +345,17 @@ hal_mmu_setup_return:
 	addiu	a0,a0,4
 	bne	a0,a1,1b
 	addiu	t0,t0,4
+#if defined(CYG_HAL_STARTUP_ROM)
+	la	a0,other_vector
+	la	a1,other_vector_end
+	la	t0,0xa0000180
+1:
+	lw	v0,0(a0)
+	sw	v0,0(t0)
+	addiu	a0,a0,4
+	bne	a0,a1,1b
+	addiu	t0,t0,4
+#endif
 	.endm
 #else
 	.macro	hal_mon_copy_trampoline

@@ -185,14 +185,14 @@ fis_init(int argc, char *argv[])
     strcpy(img->name, "RedBoot");
     img->flash_base = (unsigned long)flash_start;
     img->mem_base = (unsigned long)flash_start;
-    img->size = 0;
+    img->size = block_size;
     img++;  img_count++;
     // And a backup image
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "RedBoot[backup]");
     img->flash_base = (unsigned long)flash_start+block_size;
     img->mem_base = (unsigned long)flash_start+block_size;
-    img->size = 0;
+    img->size = block_size;
     img++;  img_count++;
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     // And a descriptor for the configuration data
@@ -362,9 +362,8 @@ fis_create(int argc, char *argv[])
     }
     if ((mem_addr < (unsigned long)ram_start) ||
         ((mem_addr+length) >= (unsigned long)ram_end)) {
-        printf("Invalid RAM address: %p\n", (void *)mem_addr);
+        printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
         printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
-        return;
     }
     if (strlen(name) >= sizeof(img->name)) {
         printf("Name is too long, must be less than %d chars\n", (int)sizeof(img->name));
@@ -382,8 +381,12 @@ fis_create(int argc, char *argv[])
     img = (struct image_desc *)fis_work_block;
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
-            if (img->flash_base != flash_addr) {
+            if (flash_addr_set && (img->flash_base != flash_addr)) {
                 printf("Image found, but FLASH address incorrect\n");
+                return;
+            }
+            if (img->size != length) {
+                printf("Image found, but LENGTH is incorrect\n");
                 return;
             }
             if (!verify_action("An image named '%s' exists", name)) {
@@ -1052,13 +1055,13 @@ load_flash_config(void)
     bool use_boot_script;
 
     config_ok = false;
+    script = (unsigned char *)0;
     if (!do_flash_init()) return;
     cfg_base = (void *)((unsigned long)flash_end - (2*block_size));
     memcpy(&config, cfg_base, sizeof(config));
     if ((_cksum((unsigned long *)&config, sizeof(config)-sizeof(config.cksum)) != config.cksum) ||
         (config.key1 != CONFIG_KEY1)|| (config.key2 != CONFIG_KEY2)) {
         printf("FLASH configuration checksum error or invalid key\n");
-        script = (unsigned char *)0;
         memset(&config, 0, sizeof(config));
         return;
     }

@@ -1,3 +1,8 @@
+2000-09-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/uit_objs.hxx (CYG_UITRON_OBJS_INIT_PRIORITY): Define
+	with correct priority now.
+
 2000-08-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/uit_func.inl (ref_mpf): Compute used blocks from

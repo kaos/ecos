@@ -100,9 +100,14 @@ well.
   $ mkdir build
   $ cd build
 
-The next step is to run the toplevel configure script. It might be
-possible to configure and build individual directories within the
-host-side hierarchy, but again this has not been tested.
+The next step is to run the toplevel configure script, in other words
+the configure script in the same directory as this README file. This
+will automatically recurse into the various subdirectories for the
+infrastructure, libcdl, and so on. Note that all of the host-side
+software needs to be configured and built: it is not possible to
+invoke just the configure script for the ecosconfig tool and build
+just that tool, because there are dependencies on other parts of the
+host-side code.
 
   $ <path>/configure <args>
 

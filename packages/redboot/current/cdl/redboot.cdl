@@ -31,22 +31,20 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      jskov
+# Author(s):      gthomas
 # Original data:  gthomas
 # Contributors:
-# Date:           1999-11-03
+# Date:           2000-05-01
 #
 #####DESCRIPTIONEND####
 #
 # ====================================================================
 cdl_package CYGPKG_REDBOOT {
-    display  "Redboot ROM monitor"
-#    include_dir   cyg/redboot
+    display       "Redboot ROM monitor"
     define_header redboot.h
     description   "
            This package supports the Redboot \[stand-alone debug monitor\]
            using eCos as the underlying board support mechanism."
-
 
     # Since the CYGDAT_REDBOOT_CONSOLE_DEV setting ends up in the platform
     # HAL header, we need to include that here (via hal.h).
@@ -54,17 +52,24 @@ cdl_package CYGPKG_REDBOOT {
         puts $::cdl_header "#include <pkgconf/hal.h>"
     }
 
-    cdl_option CYGBLD_BUILD_REDBOOT {
+    cdl_component CYGBLD_BUILD_REDBOOT {
         display "Build Redboot ROM ELF image"
         default_value 0
-#        requires { CYG_HAL_STARTUP == "ROM" }
         requires CYGPKG_INFRA
         requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-#        requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+        requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+        requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
+
         requires ! CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
         requires ! CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
         requires ! CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM
+
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
+            no_define
+            active_if { CYG_HAL_STARTUP == "ROM" }
+            requires  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
+        }
 
         no_define
         description "This option enables the building of the Redboot ELF image.
@@ -89,7 +94,7 @@ cdl_package CYGPKG_REDBOOT {
     cdl_component CYGPKG_REDBOOT_NETWORKING {
         display       "Build Redboot ROM binary image"
         flavor        bool
-        active_if     CYGBLD_BUILD_REDBOOT
+        active_if     CYGPKG_IO_ETH_DRIVERS
         default_value 1
 	compile net/bootp.c net/udp.c net/ip.c net/pktbuf.c net/cksum.c
 	compile net/enet.c net/icmp.c net/tcp.c net/timers.c net/arp.c

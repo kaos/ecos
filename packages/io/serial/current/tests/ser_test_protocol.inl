@@ -67,6 +67,15 @@
 
 #define NA_MSG "No test device specified"
 
+// Cleaned up drivers will export the testing parameters via CDL.
+// When all drivers are changed, replace the TEST_ macros throughout
+// with the CYGPRI_ equivalents.
+#ifdef CYGPRI_SER_TEST_CRASH_ID
+# define TEST_CRASH_ID CYGPRI_SER_TEST_CRASH_ID
+# define TEST_SER_DEV  CYGPRI_SER_TEST_SER_DEV
+# define TEST_TTY_DEV  CYGPRI_SER_TEST_TTY_DEV
+#endif
+
 #if defined(CYGPKG_HAL_POWERPC_COGENT)                          \
     && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT)                 \
     && defined(CYGPKG_IO_SERIAL_POWERPC_COGENT_SERIAL_B)
@@ -84,15 +93,6 @@
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_ARM_PID)                         \
-    && defined(CYGPKG_IO_SERIAL_ARM_PID)                \
-    && defined(CYGPKG_IO_SERIAL_ARM_PID_SERIAL0)
-# define TEST_CRASH_ID "armpid"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_PID_SERIAL0_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY0)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
 #endif
 #if defined(CYGPKG_HAL_ARM_AEB)                                 \
@@ -385,30 +385,37 @@ typedef enum {
 // A few predefined configurations. These must all be valid for any
 // given target until change_config is behaving correctly.
 cyg_ser_cfg_t test_configs[] = {
-#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_9600)
+#if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904)
     { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_14400)
 #if !defined(CYGPKG_HAL_MN10300_AM31) &&    \
     !defined(CYGPKG_HAL_MN10300_AM33)
     { CYGNUM_SERIAL_BAUD_14400, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
 
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_38400)
 #if !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
     !defined(CYGPKG_HAL_ARM_AEB)
     { CYGNUM_SERIAL_BAUD_38400, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_57600)
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB) &&      \
@@ -417,9 +424,10 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_115200)
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_PID) &&             \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
     !defined(CYGPKG_HAL_ARM_CMA230) &&          \
@@ -429,30 +437,37 @@ cyg_ser_cfg_t test_configs[] = {
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN)
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_AEB) &&             \
-    !defined(CYGPKG_HAL_ARM_PID)
+    !defined(CYGPKG_HAL_ARM_AEB)
     // One stop bit, even parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_EVEN,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_PARITY_EVEN)
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_STOP_2)
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) &&   \
-    !defined(CYGPKG_HAL_ARM_AEB) &&             \
-    !defined(CYGPKG_HAL_ARM_PID)
+    !defined(CYGPKG_HAL_ARM_AEB)
     // Two stop bits, even parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_EVEN,
       CYGNUM_SERIAL_FLOW_NONE },
 #endif
+#endif
+#endif
 
+#if (0 == CYGINT_IO_SERIAL_TEST_SKIP_STOP_2)
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904)
     // Two stop bits, no parity
     { CYGNUM_SERIAL_BAUD_19200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_2, CYGNUM_SERIAL_PARITY_NONE,
       CYGNUM_SERIAL_FLOW_NONE },
+#endif
 #endif
 };
 
@@ -1149,7 +1164,7 @@ test_options(cyg_io_handle_t handle, int count, cyg_uint32* options)
 void
 test_open_ser( cyg_io_handle_t* handle )
 {
-#ifndef SER_NOP_TEST
+#if defined(CYGPKG_IO_SERIAL_DEVICES) && !defined(SER_NOP_TEST)
     Cyg_ErrNo res;
 
     if (cyg_test_is_simulator)
@@ -1176,7 +1191,7 @@ test_open_ser( cyg_io_handle_t* handle )
 void
 test_open_tty( cyg_io_handle_t* handle )
 {
-#ifndef TTY_NOP_TEST
+#if defined(CYGPKG_IO_SERIAL_TTY) && !defined(TTY_NOP_TEST)
     Cyg_ErrNo res;
 
     if (cyg_test_is_simulator)

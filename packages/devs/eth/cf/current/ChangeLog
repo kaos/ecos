@@ -1,3 +1,24 @@
+2000-09-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c: Suppress noisy message which seems to sometimes
+	happen if the card is re-initialized from warm.
+
+2000-09-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c: Better recovery for bad devices [stand-alone].
+
+2000-09-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c: Fix handling of receive buffer overflow,
+	i.e. missed data.  [quietly ignored]
+
+	* src/dp8390.h: Update layout of Tx/Rx buffers.
+
+2000-09-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_sc_lpe.c (sc_lpe_card_handler): Handle case when card 
+	is warm (powered up from boot ROM).
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_sc_lpe.c (sc_lpe_init): Work with new fast net

@@ -60,13 +60,14 @@
 // File data structures
 
 // Mutex for controlling access to file desriptor arrays
-Cyg_Mutex fdlock;
+Cyg_Mutex fdlock CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
 
 // Array of open file objects
 static cyg_file file[CYGNUM_FILEIO_NFILE];
 
 // Array of per-file mutexes
-static Cyg_Mutex file_lock[CYGNUM_FILEIO_NFILE];
+static Cyg_Mutex file_lock[CYGNUM_FILEIO_NFILE] \
+    CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
 
 // Descriptor array
 static cyg_file *desc[CYGNUM_FILEIO_NFD];

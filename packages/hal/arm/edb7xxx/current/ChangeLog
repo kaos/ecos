@@ -1,3 +1,7 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Update platform/cpu identification strings.
+
 2000-08-18  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_getc): Only call dram refresh

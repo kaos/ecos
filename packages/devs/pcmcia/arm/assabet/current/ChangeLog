@@ -1,3 +1,12 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/assabet_pcmcia.c: Change interrupt functions to have same
+	calling convention as DSR.
+
+2000-09-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/assabet_pcmcia.c: Fix build problem when built for eCos.
+
 2000-08-28  Gary Thomas  <gthomas@redhat.com>
 
 	* src/assabet_pcmcia.c (cf_irq_dsr): Support [shared] network

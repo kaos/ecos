@@ -1,3 +1,8 @@
+2000-09-14  Jesper Skov  <jskov@redhat.com>
+
+	* tests/signal/signal2.c: Prevent that GCC optimizes away the
+	cause_fpe call.
+
 2000-09-07  Jesper Skov  <jskov@redhat.com>
 
 	* tests/signal2.c: Fix compiler warning. Also reset FPU exception

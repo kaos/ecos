@@ -53,6 +53,51 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         no_define
         default_value 1
         compile       net/eth_drv.c
+
+	cdl_component CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES {
+	    display		"Simulate network failures for testing"
+	    flavor		bool
+	    default_value	0
+	    description	"
+		This package contains a suite of simulated failure modes
+		for the ethernet device layer, including dropping and/or
+		corrupting received packets, dropping packets queued for
+		transmission, and simulating a complete network break.
+	        It requires the kernel as a source of time information."
+
+	    cdl_option CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_RX {
+		display	"Drop incoming packets (percentage)"
+		flavor	booldata
+		legal_values 10 50 80
+		default_value 10
+	    }
+
+	    cdl_option CYGPKG_IO_ETH_DRIVERS_SIMULATE_CORRUPT_RX {
+		display	"Corrupt incoming packets (percentage)"
+		flavor	booldata
+		legal_values 10 50 80
+		default_value 10
+	    }
+
+	    cdl_option CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_TX {
+		display	"Drop outgoing packets (percentage)"
+		flavor	booldata
+		legal_values 10 50 80
+		default_value 10
+	    }
+
+	    cdl_option CYGPKG_IO_ETH_DRIVERS_SIMULATE_LINE_CUT {
+		display	"Simulate a line cut from time to time"
+		flavor	bool
+		default_value 0
+		description "
+	    	This option causes the system to drop all packets for a
+	    	short random period (10s of seconds), and then act
+	    	normally for up to 4 times that long.  This simulates your
+	    	sysadmin fiddling with plugs in the network switch
+	    	cupboard."
+	    }
+	}
     }
 
     cdl_component CYGPKG_IO_ETH_DRIVERS_STAND_ALONE {

@@ -239,7 +239,8 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
         // Give driver a chance to service hardware
         (sc->funs->poll)(sc);
         CYGACC_CALL_IF_DELAY_US(2*100000);
-        if (--wait_time <= 0) return;  // Give up on sending packet
+        if (--wait_time <= 0)
+            goto reset_and_out;  // Give up on sending packet
     }
 
     sg_list[0].buf = (CYG_ADDRESS)eth_hdr;
@@ -260,7 +261,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     while (!packet_sent) {
         (sc->funs->poll)(sc);
     }
-   
+ reset_and_out:   
     if (dbg) {
 //        if (!old_state & ETH_DRV_STATE_ACTIVE) {
 //            // This interface was not fully initialized, shut it back down
@@ -419,8 +420,10 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     if (msg) {
         msg->len = total_len;
         eth_drv_msg_put(&eth_msg_full, msg);
+#ifdef CYGSEM_IO_ETH_DRIVERS_WARN
     } else {
         dump_buf(sg_list[0].buf, sg_list[0].len);
+#endif
     }
 }
 

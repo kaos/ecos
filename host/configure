@@ -1673,6 +1673,11 @@ ECOS_DIRS="infra libcdl"
 
 
 
+if test -f ${srcdir}/tools/Utils/common/configure; then
+  ECOS_DIRS="${ECOS_DIRS} tools/Utils/common"
+  
+fi
+
 if test -f ${srcdir}/tools/ecostest/common/configure; then
   ECOS_DIRS="${ECOS_DIRS} tools/ecostest/common"
   
@@ -1968,8 +1973,14 @@ cat >> $CONFIG_STATUS <<EOF
 
 
 
+
 EOF
 cat >> $CONFIG_STATUS <<\EOF
+
+	test -d tools 			     || mkdir tools
+	test -d tools/Utils 		     || mkdir tools/Utils
+	test -d tools/Utils/common 	     || mkdir tools/Utils/common
+  
 
     test -d tools 			     || mkdir tools
     test -d tools/ecostest 		     || mkdir tools/ecostest

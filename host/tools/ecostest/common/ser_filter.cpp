@@ -127,7 +127,7 @@ main(int argc, char** argv)
   bool opt_no_gdb = false;
   char* ser_port;
   int i=1;
-  if(!CeCosTestUtils::CommandLine(argc,argv)){
+  if(!CeCosTestUtils::CommandLine(argc, argv, false)){
     goto Usage;
   }
   

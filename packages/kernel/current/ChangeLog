@@ -1,3 +1,19 @@
+2000-09-13  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kexcept1.c (cause_exception): Use separate cause_fpe function.
+	* tests/except1.cxx (cause_exception): Same.
+
+	* tests/kexcept1.c (cause_exception): Do not use division at all.
+	* tests/except1.cxx (cause_exception): Same.
+
+	* tests/kexcept1.c (cause_exception): Do not cause div-by-zero.
+	* tests/except1.cxx (cause_exception): Same.
+
+2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/instrument.cdl (CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER): 
+	Bring this option back from the dead
+
 2000-09-08  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/sched.hxx:

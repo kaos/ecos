@@ -51,6 +51,7 @@
 
 #include "eCos.xpm"
 #include "redhat.xpm"
+#include "redboot.xpm"
 #include "escw.xpm"
 
 #ifndef FALSE
@@ -140,36 +141,161 @@ show_xpm(char *xpm[])
     for (i = 0;  i < nclrs;  i++) {
         cp = xpm[i+1];
         colors[(unsigned int)*cp] = parse_color(&cp[4]);
+//        printf("Color[%c] = %x\n", *cp, colors[(unsigned int)*cp]);
     }
 
     for (row = 0;  row < nrows;  row++) {            
         cp = xpm[nclrs+1+row];        
         for (col = 0;  col < ncols;  col++) {
-#if 0
-            if (*cp++ != '.') {
-                fp->pixels[row][col] = 0x0000;
-            } else {
-                fp->pixels[row][col] = 0xFFFF;
-            }
-#else
             fp->pixels[row][col] = colors[(unsigned int)*cp++];
-#endif
         }
     }
     cyg_thread_delay(100);
 }
 
-static void
-lcd_test(cyg_addrword_t p)
+
+// 8x8 Font - from Helios
+
+#define FIRST_CHAR 0x20
+#define LAST_CHAR  0x7E
+#define FONT_HEIGHT 8
+#define FONT_WIDTH  8
+#define CURSOR_ON  0x5F
+#define CURSOR_OFF 0x20
+static char font_table[LAST_CHAR-FIRST_CHAR+1][8] =
 {
-    int i, pix, row, col;
+        {        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, /*   */
+        {        0x18, 0x18, 0x18, 0x18, 0x18, 0x00, 0x18, 0x00 }, /* ! */
+        {        0x36, 0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00 }, /* " */
+        {        0x6C, 0x6C, 0xFE, 0x6C, 0xFE, 0x6C, 0x6C, 0x00 }, /* # */
+        {        0x30, 0xFC, 0x16, 0x7C, 0xD0, 0x7E, 0x18, 0x00 }, /* $ */
+        {        0x06, 0x66, 0x30, 0x18, 0x0C, 0x66, 0x60, 0x00 }, /* % */
+        {        0x1C, 0x36, 0x36, 0x1C, 0xB6, 0x66, 0xDC, 0x00 }, /* & */
+        {        0x18, 0x18, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00 }, /* ' */
+        {        0x30, 0x18, 0x0C, 0x0C, 0x0C, 0x18, 0x30, 0x00 }, /* ( */
+        {        0x0C, 0x18, 0x30, 0x30, 0x30, 0x18, 0x0C, 0x00 }, /* ) */
+        {        0x00, 0x18, 0x7E, 0x3C, 0x7E, 0x18, 0x00, 0x00 }, /* * */
+        {        0x00, 0x18, 0x18, 0x7E, 0x18, 0x18, 0x00, 0x00 }, /* + */
+        {        0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x0C }, /* , */
+        {        0x00, 0x00, 0x00, 0x7E, 0x00, 0x00, 0x00, 0x00 }, /* - */
+        {        0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x18, 0x00 }, /* . */
+        {        0x00, 0x60, 0x30, 0x18, 0x0C, 0x06, 0x00, 0x00 }, /* / */
+        {        0x3C, 0x66, 0x76, 0x7E, 0x6E, 0x66, 0x3C, 0x00 }, /* 0 */
+        {        0x18, 0x1C, 0x18, 0x18, 0x18, 0x18, 0x7E, 0x00 }, /* 1 */
+        {        0x3C, 0x66, 0x60, 0x30, 0x18, 0x0C, 0x7E, 0x00 }, /* 2 */
+        {        0x3C, 0x66, 0x60, 0x38, 0x60, 0x66, 0x3C, 0x00 }, /* 3 */
+        {        0x30, 0x38, 0x3C, 0x36, 0x7E, 0x30, 0x30, 0x00 }, /* 4 */
+        {        0x7E, 0x06, 0x3E, 0x60, 0x60, 0x66, 0x3C, 0x00 }, /* 5 */
+        {        0x38, 0x0C, 0x06, 0x3E, 0x66, 0x66, 0x3C, 0x00 }, /* 6 */
+        {        0x7E, 0x60, 0x30, 0x18, 0x0C, 0x0C, 0x0C, 0x00 }, /* 7 */
+        {        0x3C, 0x66, 0x66, 0x3C, 0x66, 0x66, 0x3C, 0x00 }, /* 8 */
+        {        0x3C, 0x66, 0x66, 0x7C, 0x60, 0x30, 0x1C, 0x00 }, /* 9 */
+        {        0x00, 0x00, 0x18, 0x18, 0x00, 0x18, 0x18, 0x00 }, /* : */
+        {        0x00, 0x00, 0x18, 0x18, 0x00, 0x18, 0x18, 0x0C }, /* ; */
+        {        0x30, 0x18, 0x0C, 0x06, 0x0C, 0x18, 0x30, 0x00 }, /* < */
+        {        0x00, 0x00, 0x7E, 0x00, 0x7E, 0x00, 0x00, 0x00 }, /* = */
+        {        0x0C, 0x18, 0x30, 0x60, 0x30, 0x18, 0x0C, 0x00 }, /* > */
+        {        0x3C, 0x66, 0x30, 0x18, 0x18, 0x00, 0x18, 0x00 }, /* ? */
+        {        0x3C, 0x66, 0x76, 0x56, 0x76, 0x06, 0x3C, 0x00 }, /* @ */
+        {        0x3C, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66, 0x00 }, /* A */
+        {        0x3E, 0x66, 0x66, 0x3E, 0x66, 0x66, 0x3E, 0x00 }, /* B */
+        {        0x3C, 0x66, 0x06, 0x06, 0x06, 0x66, 0x3C, 0x00 }, /* C */
+        {        0x1E, 0x36, 0x66, 0x66, 0x66, 0x36, 0x1E, 0x00 }, /* D */
+        {        0x7E, 0x06, 0x06, 0x3E, 0x06, 0x06, 0x7E, 0x00 }, /* E */
+        {        0x7E, 0x06, 0x06, 0x3E, 0x06, 0x06, 0x06, 0x00 }, /* F */
+        {        0x3C, 0x66, 0x06, 0x76, 0x66, 0x66, 0x3C, 0x00 }, /* G */
+        {        0x66, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66, 0x00 }, /* H */
+        {        0x7E, 0x18, 0x18, 0x18, 0x18, 0x18, 0x7E, 0x00 }, /* I */
+        {        0x7C, 0x30, 0x30, 0x30, 0x30, 0x36, 0x1C, 0x00 }, /* J */
+        {        0x66, 0x36, 0x1E, 0x0E, 0x1E, 0x36, 0x66, 0x00 }, /* K */
+        {        0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x7E, 0x00 }, /* L */
+        {        0xC6, 0xEE, 0xFE, 0xD6, 0xD6, 0xC6, 0xC6, 0x00 }, /* M */
+        {        0x66, 0x66, 0x6E, 0x7E, 0x76, 0x66, 0x66, 0x00 }, /* N */
+        {        0x3C, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00 }, /* O */
+        {        0x3E, 0x66, 0x66, 0x3E, 0x06, 0x06, 0x06, 0x00 }, /* P */
+        {        0x3C, 0x66, 0x66, 0x66, 0x56, 0x36, 0x6C, 0x00 }, /* Q */
+        {        0x3E, 0x66, 0x66, 0x3E, 0x36, 0x66, 0x66, 0x00 }, /* R */
+        {        0x3C, 0x66, 0x06, 0x3C, 0x60, 0x66, 0x3C, 0x00 }, /* S */
+        {        0x7E, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x00 }, /* T */
+        {        0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x00 }, /* U */
+        {        0x66, 0x66, 0x66, 0x66, 0x66, 0x3C, 0x18, 0x00 }, /* V */
+        {        0xC6, 0xC6, 0xD6, 0xD6, 0xFE, 0xEE, 0xC6, 0x00 }, /* W */
+        {        0x66, 0x66, 0x3C, 0x18, 0x3C, 0x66, 0x66, 0x00 }, /* X */
+        {        0x66, 0x66, 0x66, 0x3C, 0x18, 0x18, 0x18, 0x00 }, /* Y */
+        {        0x7E, 0x60, 0x30, 0x18, 0x0C, 0x06, 0x7E, 0x00 }, /* Z */
+        {        0x3E, 0x06, 0x06, 0x06, 0x06, 0x06, 0x3E, 0x00 }, /* [ */
+        {        0x00, 0x06, 0x0C, 0x18, 0x30, 0x60, 0x00, 0x00 }, /* \ */
+        {        0x7C, 0x60, 0x60, 0x60, 0x60, 0x60, 0x7C, 0x00 }, /* ] */ 
+        {        0x3C, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, /* ^ */
+        {        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF }, /* _ */
+        {        0x0C, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, /* ` */
+        {        0x00, 0x00, 0x3C, 0x60, 0x7C, 0x66, 0x7C, 0x00 }, /* a */
+        {        0x06, 0x06, 0x3E, 0x66, 0x66, 0x66, 0x3E, 0x00 }, /* b */
+        {        0x00, 0x00, 0x3C, 0x66, 0x06, 0x66, 0x3C, 0x00 }, /* c */
+        {        0x60, 0x60, 0x7C, 0x66, 0x66, 0x66, 0x7C, 0x00 }, /* d */
+        {        0x00, 0x00, 0x3C, 0x66, 0x7E, 0x06, 0x3C, 0x00 }, /* e */
+        {        0x38, 0x0C, 0x0C, 0x3E, 0x0C, 0x0C, 0x0C, 0x00 }, /* f */
+        {        0x00, 0x00, 0x7C, 0x66, 0x66, 0x7C, 0x60, 0x3C }, /* g */
+        {        0x06, 0x06, 0x3E, 0x66, 0x66, 0x66, 0x66, 0x00 }, /* h */
+        {        0x18, 0x00, 0x1C, 0x18, 0x18, 0x18, 0x3C, 0x00 }, /* i */
+        {        0x18, 0x00, 0x1C, 0x18, 0x18, 0x18, 0x18, 0x0E }, /* j */
+        {        0x06, 0x06, 0x66, 0x36, 0x1E, 0x36, 0x66, 0x00 }, /* k */
+        {        0x1C, 0x18, 0x18, 0x18, 0x18, 0x18, 0x3C, 0x00 }, /* l */
+        {        0x00, 0x00, 0x6C, 0xFE, 0xD6, 0xD6, 0xC6, 0x00 }, /* m */
+        {        0x00, 0x00, 0x3E, 0x66, 0x66, 0x66, 0x66, 0x00 }, /* n */
+        {        0x00, 0x00, 0x3C, 0x66, 0x66, 0x66, 0x3C, 0x00 }, /* o */
+        {        0x00, 0x00, 0x3E, 0x66, 0x66, 0x3E, 0x06, 0x06 }, /* p */
+        {        0x00, 0x00, 0x7C, 0x66, 0x66, 0x7C, 0x60, 0xE0 }, /* q */
+        {        0x00, 0x00, 0x36, 0x6E, 0x06, 0x06, 0x06, 0x00 }, /* r */
+        {        0x00, 0x00, 0x7C, 0x06, 0x3C, 0x60, 0x3E, 0x00 }, /* s */
+        {        0x0C, 0x0C, 0x3E, 0x0C, 0x0C, 0x0C, 0x38, 0x00 }, /* t */
+        {        0x00, 0x00, 0x66, 0x66, 0x66, 0x66, 0x7C, 0x00 }, /* u */
+        {        0x00, 0x00, 0x66, 0x66, 0x66, 0x3C, 0x18, 0x00 }, /* v */
+        {        0x00, 0x00, 0xC6, 0xD6, 0xD6, 0xFE, 0x6C, 0x00 }, /* w */
+        {        0x00, 0x00, 0x66, 0x3C, 0x18, 0x3C, 0x66, 0x00 }, /* x */
+        {        0x00, 0x00, 0x66, 0x66, 0x66, 0x7C, 0x60, 0x3C }, /* y */
+        {        0x00, 0x00, 0x7E, 0x30, 0x18, 0x0C, 0x7E, 0x00 }, /* z */
+        {        0x30, 0x18, 0x18, 0x0E, 0x18, 0x18, 0x30, 0x00 }, /* { */
+        {        0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x00 }, /* | */
+        {        0x0C, 0x18, 0x18, 0x70, 0x18, 0x18, 0x0C, 0x00 }, /* } */
+        {        0x8C, 0xD6, 0x62, 0x00, 0x00, 0x00, 0x00, 0x00 }  /* ~ */
+};
+
+#define LCD_WIDTH  320
+#define LCD_HEIGHT 240
+#define LCD_DEPTH   16
+
+// This can be 1 or 2
+#define SCREEN_SCALE 2
+#define NIBBLES_PER_PIXEL (1*SCREEN_SCALE)
+#define PIXELS_PER_BYTE (2/NIBBLES_PER_PIXEL)
+#define PIXEL_MASK      ((1<<PIXELS_PER_BYTE)-1)
+
+// Physical screen info
+static int lcd_depth  = LCD_DEPTH;  // Should be 1, 2, or 4
+static int lcd_width  = LCD_WIDTH;
+static int lcd_height = LCD_HEIGHT;
+
+// Virtual screen info
+static int curX = 0;  // Last used position
+static int curY = 0;
+static int width = LCD_WIDTH / (FONT_WIDTH*NIBBLES_PER_PIXEL);
+static int height = LCD_HEIGHT / (FONT_HEIGHT*SCREEN_SCALE);
+static int fg = RGB_RED(0) | RGB_GREEN(0) | RGB_BLUE(0);
+static int bg = RGB_RED(31) | RGB_GREEN(63) | RGB_BLUE(31);
+#define SCREEN_WIDTH  (LCD_WIDTH/FONT_WIDTH)
+#define SCREEN_HEIGHT (LCD_HEIGHT/FONT_HEIGHT)
+static char screen[SCREEN_HEIGHT][SCREEN_WIDTH];
+
+// Functions
+static void lcd_drawc(cyg_int8 c, int x, int y);
+
+void
+lcd_init(int depth)
+{
+    // Currently only color/16bpp supported
+
     unsigned long _fp;
-    int on;
-
-    diag_printf("LCD test here\n");
-
-//    HAL_DCACHE_SYNC();  
-//    HAL_DCACHE_DISABLE();
 
     // Frame buffer must be aligned on a 16 byte boundary
     _fp = (((unsigned long)&lcd_frame_buffer) + 15) & ~15;
@@ -180,11 +306,309 @@ lcd_test(cyg_addrword_t p)
     *SA1110_LCCR2 = 0xEF;
     *SA1110_LCCR3 = 0x0c;
     fp->palette[0] = 0x2000;  // Tell controller 16 bits
-    *SA1110_LCCR0 = 0xBB;  // B&W
+//    *SA1110_LCCR0 = 0xBB;  // B&W
     *SA1110_LCCR0 = 0xB9;  // Color
-    assabet_BCR(SA1110_BCR_LCD_BPP, SA1110_BCR_LCD_12BPP);
+//    assabet_BCR(SA1110_BCR_LCD_BPP, SA1110_BCR_LCD_12BPP);
     assabet_BCR(SA1110_BCR_LCD_BPP, SA1110_BCR_LCD_16BPP);
     assabet_BCR(SA1110_BCR_LCD, SA1110_BCR_LCD_ON);
+    assabet_BCR(SA1110_BCR_BACKLIGHT, SA1110_BCR_BACKLIGHT);
+}
+
+// Clear screen
+void
+lcd_clear(void)
+{
+    int row, col;
+    for (row = 0;  row < lcd_height;  row++) {
+        for (col = 0;  col < lcd_width;  col++) {
+            fp->pixels[row][col] = bg;
+        }
+    }
+    for (row = 0;  row < SCREEN_HEIGHT;  row++) {
+        for (col = 0;  col < SCREEN_WIDTH;  col++) {
+            screen[row][col] = ' ';
+        }
+    }
+    // Note: Row 0 seems to wrap incorrectly
+    curX = 0;  curY = 1;
+    lcd_drawc(CURSOR_ON, curX, curY);
+}
+
+// Position cursor
+void
+lcd_moveto(int X, int Y)
+{
+    lcd_drawc(CURSOR_OFF, curX, curY);
+    if (X < 0) X = 0;
+    if (X >= SCREEN_WIDTH) X = SCREEN_WIDTH-1;
+    curX = X;
+//    if (Y < 0) Y = 0;
+    if (Y < 1) Y = 1;
+    if (Y >= SCREEN_HEIGHT) Y = SCREEN_HEIGHT-1;
+    curY = Y;
+    lcd_drawc(CURSOR_ON, curX, curY);
+}
+
+// Render a character at position (X,Y) with current background/foreground
+static void
+lcd_drawc(cyg_int8 c, int x, int y)
+{
+    // Currently hard-coded for 16bpp
+    cyg_uint8 bits;
+    cyg_uint16 *pixels;
+    int l, p, w;
+
+    screen[curY][curX] = c;
+    for (l = 0;  l < FONT_HEIGHT;  l++) {
+        bits = font_table[c-FIRST_CHAR][l]; 
+        pixels = &fp->pixels[curY*FONT_HEIGHT+l][curX*FONT_WIDTH];
+        for (p = 0;  p < 8;  p++) {
+            if (bits & 0x01) {
+                *pixels++ = fg;
+            } else {
+                *pixels++ = bg;
+            }
+            bits >>= 1;
+        }
+    }
+}
+
+static void
+lcd_scroll(void)
+{
+    int row, col;
+    cyg_uint8 *c1, *c2;
+    cyg_uint16 *p1, *p2;
+
+    // First scroll up the virtual screen
+    for (row = 1;  row < SCREEN_HEIGHT;  row++) {
+        c1 = &screen[row-1][0];
+        c2 = &screen[row][0];
+        for (col = 0;  col < SCREEN_WIDTH;  col++) {
+            *c1++ = *c2++;
+        }
+    } 
+    c1 = &screen[SCREEN_HEIGHT-1][0];
+    for (col = 0;  col < SCREEN_WIDTH;  col++) {
+        *c1++ = 0x20;
+    }
+    // Now the physical screen
+    for (row = FONT_HEIGHT*2;  row < LCD_HEIGHT;  row++) {        
+        p1 = &fp->pixels[row-FONT_HEIGHT][0];
+        p2 = &fp->pixels[row][0];
+        for (col = 0;  col < LCD_WIDTH;  col++) {
+            *p1++ = *p2++;
+        }
+    }
+    for (row = LCD_HEIGHT-FONT_HEIGHT;  row < LCD_HEIGHT;  row++) {
+        p1 = &fp->pixels[row][0];
+        for (col = 0;  col < LCD_WIDTH;  col++) {
+            *p1++ = bg;
+        }
+    }
+}
+
+// Draw one character at the current position
+void
+lcd_putc(cyg_int8 c)
+{
+    lcd_drawc(CURSOR_OFF, curX, curY);
+    switch (c) {
+    case '\r':
+        curX = 0;
+        break;
+    case '\n':
+        curY++;
+        if (curY == SCREEN_HEIGHT) {
+            lcd_scroll();
+            curY--;
+        }
+        break;
+    case '\b':
+        curX--;
+        if (curX < 0) {
+            curY--;
+            if (curY < 0) curY = 0;
+            curX = SCREEN_WIDTH-1;
+        }
+        break;
+    default:
+        lcd_drawc(c, curX, curY);
+        curX++;
+        if (curX == SCREEN_WIDTH) {
+            curY++;
+            curX = 0;
+        }
+    } 
+    lcd_drawc(CURSOR_ON, curX, curY);
+}
+
+// Basic LCD 'printf()' support
+
+#ifndef FALSE
+#define FALSE 0
+#define TRUE  1
+#endif
+
+#include <stdarg.h>
+
+#define is_digit(c) ((c >= '0') && (c <= '9'))
+
+static int
+_cvt(unsigned long val, char *buf, long radix, char *digits)
+{
+    char temp[80];
+    char *cp = temp;
+    int length = 0;
+    if (val == 0) {
+        /* Special case */
+        *cp++ = '0';
+    } else {
+        while (val) {
+            *cp++ = digits[val % radix];
+            val /= radix;
+        }
+    }
+    while (cp != temp) {
+        *buf++ = *--cp;
+        length++;
+    }
+    *buf = '\0';
+    return (length);
+}
+
+int
+lcd_vprintf(void (*putc)(cyg_int8), const char *fmt0, va_list ap)
+{
+    char c, sign, *cp;
+    int left_prec, right_prec, zero_fill, length, pad, pad_on_right;
+    char buf[32];
+    long val;
+    while ((c = *fmt0++)) {
+        cp = buf;
+        length = 0;
+        if (c == '%') {
+            c = *fmt0++;
+            left_prec = right_prec = pad_on_right = 0;
+            if (c == '-') {
+                c = *fmt0++;
+                pad_on_right++;
+            }
+            if (c == '0') {
+                zero_fill = TRUE;
+                c = *fmt0++;
+            } else {
+                zero_fill = FALSE;
+            }
+            while (is_digit(c)) {
+                left_prec = (left_prec * 10) + (c - '0');
+                c = *fmt0++;
+            }
+            if (c == '.') {
+                c = *fmt0++;
+                zero_fill++;
+                while (is_digit(c)) {
+                    right_prec = (right_prec * 10) + (c - '0');
+                    c = *fmt0++;
+                }
+            } else {
+                right_prec = left_prec;
+            }
+            sign = '\0';
+            switch (c) {
+            case 'd':
+            case 'x':
+            case 'X':
+                val = va_arg(ap, long);
+                switch (c) {
+                case 'd':
+                    if (val < 0) {
+                        sign = '-';
+                        val = -val;
+                    }
+                    length = _cvt(val, buf, 10, "0123456789");
+                    break;
+                case 'x':
+                    length = _cvt(val, buf, 16, "0123456789abcdef");
+                    break;
+                case 'X':
+                    length = _cvt(val, buf, 16, "0123456789ABCDEF");
+                    break;
+                }
+                break;
+            case 's':
+                cp = va_arg(ap, char *);
+                length = strlen(cp);
+                break;
+            case 'c':
+                c = va_arg(ap, long /*char*/);
+                (*putc)(c);
+                continue;
+            default:
+                (*putc)('?');
+            }
+            pad = left_prec - length;
+            if (sign != '\0') {
+                pad--;
+            }
+            if (zero_fill) {
+                c = '0';
+                if (sign != '\0') {
+                    (*putc)(sign);
+                    sign = '\0';
+                }
+            } else {
+                c = ' ';
+            }
+            if (!pad_on_right) {
+                while (pad-- > 0) {
+                    (*putc)(c);
+                }
+            }
+            if (sign != '\0') {
+                (*putc)(sign);
+            }
+            while (length-- > 0) {
+                (*putc)(c = *cp++);
+                if (c == '\n') {
+                    (*putc)('\r');
+                }
+            }
+            if (pad_on_right) {
+                while (pad-- > 0) {
+                    (*putc)(' ');
+                }
+            }
+        } else {
+            (*putc)(c);
+            if (c == '\n') {
+                (*putc)('\r');
+            }
+        }
+    }
+}
+
+int
+lcd_printf(char const *fmt, ...)
+{
+	int ret;
+	va_list ap;
+
+	va_start(ap, fmt);
+	ret = lcd_vprintf(lcd_putc, fmt, ap);
+	va_end(ap);
+	return (ret);
+}
+
+static void
+lcd_test(cyg_addrword_t p)
+{
+    int i, pix, row, col;
+    int on;
+
+    diag_printf("LCD test here\n");
+
+    lcd_init(16);
 #if 0
     for (i = 0;  i < 16;  i++) {
         on = true;
@@ -297,7 +721,7 @@ lcd_test(cyg_addrword_t p)
 #endif
     }
 #endif
-#if 1
+#if 0
     for (row = 0;  row < 240;  row++) {            
         for (col = 0;  col < 320;  col++) {
             if (col == 59) {
@@ -309,16 +733,82 @@ lcd_test(cyg_addrword_t p)
     }
     cyg_thread_delay(100);
 #endif
+#if 0
+    for (i = 0;  i < 16;  i++) {
+        diag_printf("Value 0x%04x\n", (1<<i));
+        for (row = 0;  row < 240;  row++) {            
+            for (col = 0;  col < 320;  col++) {
+                fp->pixels[row][col] = (1<<i);
+            }
+        }
+        cyg_thread_delay(500);
+    }
+#endif
+#if 0
+    for (i = 0;  i < 32;  i++) {
+        diag_printf("Red at %d\n", i);
+        for (row = 0;  row < 240;  row++) {            
+            for (col = 0;  col < 320;  col++) {
+                fp->pixels[row][col] = RGB_RED(i);
+            }
+        }
+        cyg_thread_delay(100);
+    }
+#endif
+#if 0
+    for (i = 0;  i < 64;  i++) {
+        diag_printf("Green at %d\n", i);
+        for (row = 0;  row < 240;  row++) {            
+            for (col = 0;  col < 320;  col++) {
+                fp->pixels[row][col] = RGB_GREEN(i);
+            }
+        }
+        cyg_thread_delay(100);
+    }
+#endif
+#if 0
+    for (i = 0;  i < 32;  i++) {
+        diag_printf("BLUE at %d\n", i);
+        for (row = 0;  row < 240;  row++) {            
+            for (col = 0;  col < 320;  col++) {
+                fp->pixels[row][col] = RGB_BLUE(i);
+            }
+        }
+        cyg_thread_delay(100);
+    }
+#endif
 
-    for (i = 0;  i < 5;  i++) {
-    show_xpm(eCos_xpm);
-    show_xpm(redhat_xpm);
-    show_xpm(escw_xpm);
+    for (i = 0;  i < 1;  i++) {
+        show_xpm(eCos_xpm);
+        show_xpm(redhat_xpm);
+        show_xpm(redboot_xpm);
+        show_xpm(escw_xpm);
     }
 
+#if 0
+    // This doesn't seem to do anything on my unit
     assabet_BCR(SA1110_BCR_MOTOR, SA1110_BCR_MOTOR_ON);
     cyg_thread_delay(2*100);
     assabet_BCR(SA1110_BCR_MOTOR, SA1110_BCR_MOTOR_OFF);
+#endif
+
+    lcd_clear();
+    lcd_printf("\n\n**** Hello world!\n");
+    cyg_thread_delay(200);
+    for (i = 0;  i < 132;  i++) {
+        lcd_printf("... testing line #%d\n", i);
+    }
+    cyg_thread_delay(200);
+    bg = RGB_RED(0) | RGB_GREEN(0) | RGB_BLUE(0);
+    fg = RGB_RED(31) | RGB_GREEN(63) | RGB_BLUE(0);
+    for (i = 0;  i < 132;  i++) {
+        lcd_printf("... testing line #%d\n", i);
+    }
+    cyg_thread_delay(200);
+    lcd_clear();
+    lcd_printf("*****");    
+    cyg_thread_delay(200);
+
     cyg_test_exit();
 }
 

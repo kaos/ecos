@@ -93,15 +93,35 @@ static void handler1(CYG_ADDRWORD data, cyg_code number, CYG_ADDRWORD info)
 // hacky ways.  It is machine dependent what exception is generated.
 // It does reads rather than writes hoping not to corrupt anything
 // important.
+static int
+cause_fpe(int num)
+{
+    double a;
+
+    a = 1.0/num;                        // Depending on FPU emulation and/or
+                                        // the FPU architecture, this may
+                                        // cause an exception.
+                                        // (float division by zero)
+
+    return ((int)a)/num;                // This may cause an exception if
+                                        // the architecture supports it.
+                                        // (integer division by zero).
+} // cause_fpe()
+
 void cause_exception(void)
 {
     int x;
     unsigned int p=0;
 
+    // First try for an address exception (unaligned access exception
+    // or SEGV/BUS exceptions)
     do {
-        x=*(volatile int *)(p-1)/p;
+        x=*(volatile int *)(p-1);
         p+=0x100000;
     } while(p != 0);
+
+    // Next try an integer or floating point divide-by-zero exception.
+    cause_fpe(0);
 }
 #endif
 
@@ -186,6 +206,7 @@ void except0_main( void )
     // Use CYG_TEST_GDBCMD _before_ CYG_TEST_INIT()
     CYG_TEST_GDBCMD("handle SIGBUS nostop");
     CYG_TEST_GDBCMD("handle SIGSEGV nostop");
+    CYG_TEST_GDBCMD("handle SIGFPE nostop");
 
     CYG_TEST_INIT();
 
@@ -202,6 +223,15 @@ void except0_main( void )
 #endif
 #ifdef CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION
     HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_DIV_BY_ZERO
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_DIV_BY_ZERO, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_FPU
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_FPU, NULL );
+#endif
+#ifdef CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO
+    HAL_VSR_SET_TO_ECOS_HANDLER( CYGNUM_HAL_EXCEPTION_FPU_DIV_BY_ZERO, NULL );
 #endif
 #endif
 

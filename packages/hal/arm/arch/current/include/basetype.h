@@ -60,8 +60,8 @@
 //#define CYG_LABEL_NAME(_name_) _name_
 
 //-----------------------------------------------------------------------------
-// Override the alignment definitions from cyg_type.h. ARM only alows 4 
-// bytes alignment where as the default is 8 byte.
+// Override the alignment definitions from cyg_type.h. ARM only allows 4 
+// byte alignment whereas the default is 8 byte.
 
 #define CYGARC_ALIGNMENT 4
 #define CYGARC_P2ALIGNMENT 2

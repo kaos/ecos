@@ -1,3 +1,13 @@
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* common/ser_filter.cpp (main): Don't require ResourceServer.
+
+	* common/Makefile.am: Added ser_filter handling.
+	* common/Makefile.in: Ditto.
+	* common/configure: Ditto.
+	* common/configure.in: Ditto.
+	* common/eCosTest.cpp: Fix typo.
+
 2000-08-16  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* common/ser_filter.cpp (main): Clean up warning

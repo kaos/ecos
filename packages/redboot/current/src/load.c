@@ -167,6 +167,7 @@ load_srec_image(int (*getc)(void), unsigned long base)
             if (cksum != sum) {
                 printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
                        (unsigned long)base_addr, sum, cksum);
+                return;
             }
             if ((unsigned long)(addr-addr_offset) > highest_address) {
                 highest_address = (unsigned long)(addr - addr_offset);
@@ -244,12 +245,13 @@ redboot_getc_rewind(void)
 void 
 do_load(int argc, char *argv[])
 {
-    int i, res, err, num_options;
+    int res, num_options;
     int mode;
     bool verbose, raw;
     bool base_addr_set, mode_str_set;
     char *mode_str;
 #ifdef CYGPKG_REDBOOT_NETWORKING
+    int i, err;
     struct sockaddr_in host;
     bool hostname_set;
     char *hostname;

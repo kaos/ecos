@@ -1,3 +1,41 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c: Display platform/cpu identification strings if available.
+
+	* cdl/redboot.cdl: Improve CDL to include thread support if
+	built in ROM mode.  Also, better handling of network option.
+
+2000-09-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_create): Length (and flash address) must match
+	exactly when replacing an image.
+	Only warn of invalid memory addresses, not fail.
+
+2000-09-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c: Better handling of bad data / checksum errors.
+
+	* src/flash.c: Handle case of replacing an image, even if no flash
+	address was given.
+
+	* include/net/tftp_support.h: Modify timeouts, etc, for better response.
+
+2000-09-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/io.c (mon_read_char_with_timeout): Only "select" a console
+	when real data (non-zero) arrives.
+
+2000-09-10  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c:
+	* src/flash.c: Remove warnings if built without networking.
+
+2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/redboot.h (_RedBoot_init): Define tables entries as structs
+	with one member rather than just func ptrs, to enforce alignment rules
+	* src/main.c (cyg_start): Change to use struct init_tab_entry per above
+
 2000-09-07 Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/load.c, include/redboot.h: renamed the getc functions to

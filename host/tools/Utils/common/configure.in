@@ -1,0 +1,64 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl ====================================================================
+dnl
+dnl     configure.in
+dnl
+dnl	Utils
+dnl
+dnl ====================================================================
+dnl###COPYRIGHTBEGIN####
+dnl                                                                          
+dnl -------------------------------------------                              
+dnl The contents of this file are subject to the Red Hat eCos Public License 
+dnl Version 1.1 (the "License"); you may not use this file except in         
+dnl compliance with the License.  You may obtain a copy of the License at    
+dnl http://www.redhat.com/                                                   
+dnl                                                                          
+dnl Software distributed under the License is distributed on an "AS IS"      
+dnl basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+dnl License for the specific language governing rights and limitations under 
+dnl the License.                                                             
+dnl                                                                          
+dnl The Original Code is eCos - Embedded Configurable Operating System,      
+dnl released September 30, 1998.                                             
+dnl                                                                          
+dnl The Initial Developer of the Original Code is Red Hat.                   
+dnl Portions created by Red Hat are                                          
+dnl Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+dnl All Rights Reserved.                                                     
+dnl -------------------------------------------                              
+dnl                                                                          
+dnl####COPYRIGHTEND####
+dnl ====================================================================
+dnl#####DESCRIPTIONBEGIN####
+dnl
+dnl Author(s):	bartv,jskov
+dnl Contact(s):	jskov
+dnl Date:	2000/09/15
+dnl Version:	0.01
+dnl
+dnl####DESCRIPTIONEND####
+dnl ====================================================================
+
+AC_INIT(eCosStd.cpp)
+
+dnl Pick up the support files from the top-level of the source tree
+AC_CONFIG_AUX_DIR(../../..)
+
+dnl Other standard options.
+AC_CANONICAL_HOST
+
+AM_INIT_AUTOMAKE(libutils, 0.1)
+AM_MAINTAINER_MODE
+
+dnl Other standard options.
+AC_PROG_MAKE_SET
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_RANLIB
+AC_OBJEXT
+AC_EXEEXT
+CYG_AC_PROG_MSVC
+CYG_AC_PROG_STANDARD_COMPILER_FLAGS
+
+AC_OUTPUT(Makefile)

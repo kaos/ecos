@@ -1,3 +1,9 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pcmcia.h: 
+	* src/pcmcia.c (cf_register_handler): Interrupt handler must look 
+	just like a DSR and will be called using the same calling conventions.
+
 2000-08-23  Gary Thomas  <gthomas@redhat.com>
 
 	* src/pcmcia.c: 

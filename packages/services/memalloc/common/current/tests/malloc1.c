@@ -241,6 +241,8 @@ main( int argc, char *argv[] )
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "malloc(), calloc() and free() functions");
+
+    return 0;
 } // main()
 
 #endif // ifndef NA_MSG

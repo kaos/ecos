@@ -226,21 +226,40 @@ bring_half_up(const char *intf, struct ifreq *ifrp )
 
 // ------------------------------------------------------------------------
 // DHCP retransmission timeouts and number of tries
+// 
+// To work better with simulated failures (or real ones!) so that the rest
+// of the system is tested, rather than DHCP renewal failures pulling
+// everything down, we try a little more zealously than the RFC suggests.
 
 static unsigned char timeout_random = 0;
 
-static inline void reset_timeout( struct timeval *ptv )
+struct timeout_state {
+    unsigned int secs;
+    int countdown;
+};
+
+static inline void reset_timeout( struct timeval *ptv, struct timeout_state *pstate )
 {
     timeout_random++;
-    ptv->tv_sec = 3 + (timeout_random & 3);
-    ptv->tv_usec = 65536 * (timeout_random & 15);
+    pstate->countdown = 4; // initial fast retries
+    pstate->secs = 3 + (timeout_random & 3);
+    ptv->tv_sec = 0;
+    ptv->tv_usec = 65536 * (2 + (timeout_random & 3)); // 0.1 - 0.3S, about
 }
 
-static inline int next_timeout( struct timeval *ptv )
+static inline int next_timeout( struct timeval *ptv, struct timeout_state *pstate )
 {
-    timeout_random++;
-    ptv->tv_sec = ptv->tv_sec * 2 - 2 + (timeout_random & 3);
-    return ptv->tv_sec < 48; // If longer, too many tries...
+    if ( 0 < pstate->countdown-- )
+        return true;
+    if ( 0 == ptv->tv_sec )
+        ptv->tv_sec = pstate->secs;
+    else {
+        timeout_random++;
+        pstate->secs = ptv->tv_sec * 2 - 2 + (timeout_random & 3);
+        pstate->countdown = 2; // later fast retries
+        ptv->tv_sec = 0;
+    }
+    return pstate->secs < 100; // If longer, too many tries...
 }
 
 // ------------------------------------------------------------------------
@@ -350,6 +369,7 @@ do_dhcp(const char *intf, struct bootp *res,
     int one = 1;
     unsigned char mincookie[] = {99,130,83,99,255} ;
     struct timeval tv;
+    struct timeout_state timeout_scratch;
     cyg_uint8 oldstate = *pstate;
     cyg_uint8 msgtype = 0, seen_bootp_reply = 0;
 
@@ -421,7 +441,7 @@ do_dhcp(const char *intf, struct bootp *res,
     // be the neatest way to do it; it returns from within the switch arms
     // when all is well, or utterly failed.
 
-    reset_timeout( &tv );
+    reset_timeout( &tv, &timeout_scratch );
 
     while ( 1 ) {
 
@@ -445,12 +465,12 @@ do_dhcp(const char *intf, struct bootp *res,
             }
             else if ( lease_state & DHCP_LEASE_T2 ) {
                 // Time to renew
-                reset_timeout( &tv ); // for the next conversation
+                reset_timeout( &tv, &timeout_scratch ); // next conversation
                 *pstate = DHCPSTATE_REBINDING;
             }
             else if ( lease_state & DHCP_LEASE_T1 ) {
                 // Time to renew
-                reset_timeout( &tv ); // for the next conversation
+                reset_timeout( &tv, &timeout_scratch ); // next conversation
                 *pstate = DHCPSTATE_RENEWING;
             }
         }
@@ -512,11 +532,11 @@ do_dhcp(const char *intf, struct bootp *res,
                     // Save the good packet in *xmit
                     bcopy( received, xmit, dhcp_size(received) );
                     *pstate = DHCPSTATE_BOOTP_FALLBACK;
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     break;
                 }       
                 // go to the next larger timeout and re-send:
-                if ( ! next_timeout( &tv ) ) {
+                if ( ! next_timeout( &tv, &timeout_scratch ) ) {
                     *pstate = DHCPSTATE_FAILED;
                     break;
                 }
@@ -548,7 +568,7 @@ do_dhcp(const char *intf, struct bootp *res,
                     // Save the good packet in *xmit
                     bcopy( received, xmit, dhcp_size(received) );
                     // we like the packet, so reset the timeout for next time
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     *pstate = DHCPSTATE_REQUESTING;
                 }
             }
@@ -599,7 +619,7 @@ do_dhcp(const char *intf, struct bootp *res,
                          (struct sockaddr *)&rx_addr, &addrlen) < 0) {
                 // No packet arrived
                 // go to the next larger timeout and re-send:
-                if ( ! next_timeout( &tv ) ) {
+                if ( ! next_timeout( &tv, &timeout_scratch ) ) {
                     *pstate = DHCPSTATE_FAILED;
                     break;
                 }
@@ -632,7 +652,7 @@ do_dhcp(const char *intf, struct bootp *res,
                     // Save the good packet in *xmit
                     bcopy( received, xmit, dhcp_size(received) );
                     // we like the packet, so reset the timeout for next time
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     // Record the new lease and set up timers &c
                     new_lease( received, lease );
                     *pstate = DHCPSTATE_BOUND;
@@ -642,7 +662,7 @@ do_dhcp(const char *intf, struct bootp *res,
                      && received->bp_siaddr.s_addr == xmit->bp_siaddr.s_addr) {
                     // we're bounced!
                     *pstate = DHCPSTATE_INIT;  // So back the start of the rigmarole.
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     break;
                 }
                 // otherwise it's something else, maybe another offer, or a bogus
@@ -726,8 +746,8 @@ do_dhcp(const char *intf, struct bootp *res,
                          (struct sockaddr *)&rx_addr, &addrlen) < 0) {
                 // No packet arrived
                 // go to the next larger timeout and re-send:
-                if ( ! next_timeout( &tv ) ) {
-                    reset_timeout( &tv );
+                if ( ! next_timeout( &tv, &timeout_scratch ) ) {
+                    reset_timeout( &tv, &timeout_scratch );
                     *pstate = DHCPSTATE_REBINDING;
                     break;
                 }
@@ -759,7 +779,7 @@ do_dhcp(const char *intf, struct bootp *res,
                     // Save the good packet in *xmit
                     bcopy( received, xmit, dhcp_size(received) );
                     // we like the packet, so reset the timeout for next time
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     // Record the new lease and set up timers &c
                     new_lease( received, lease );
                     *pstate = DHCPSTATE_BOUND;
@@ -767,7 +787,7 @@ do_dhcp(const char *intf, struct bootp *res,
                 }
                 if ( DHCPNAK == msgtype ) { // we're bounced!
                     *pstate = DHCPSTATE_NOTBOUND;  // So quit out.
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     break;
                 }
                 // otherwise it's something else, maybe another offer.
@@ -815,8 +835,8 @@ do_dhcp(const char *intf, struct bootp *res,
                          (struct sockaddr *)&rx_addr, &addrlen) < 0) {
                 // No packet arrived
                 // go to the next larger timeout and re-send:
-                if ( ! next_timeout( &tv ) ) {
-                    reset_timeout( &tv );
+                if ( ! next_timeout( &tv, &timeout_scratch ) ) {
+                    reset_timeout( &tv, &timeout_scratch );
                     *pstate = DHCPSTATE_FAILED;
                     break;
                 }
@@ -848,7 +868,7 @@ do_dhcp(const char *intf, struct bootp *res,
                     // Save the good packet in *xmit
                     bcopy( received, xmit, dhcp_size(received) );
                     // we like the packet, so reset the timeout for next time
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     // Record the new lease and set up timers &c
                     new_lease( received, lease );
                     *pstate = DHCPSTATE_BOUND;
@@ -856,7 +876,7 @@ do_dhcp(const char *intf, struct bootp *res,
                 }
                 else if ( DHCPNAK == msgtype ) { // we're bounced!
                     *pstate = DHCPSTATE_NOTBOUND;  // So back the start of the rigmarole.
-                    reset_timeout( &tv );
+                    reset_timeout( &tv, &timeout_scratch );
                     break;
                 }
                 // otherwise it's something else, maybe another offer.

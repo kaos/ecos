@@ -148,19 +148,26 @@ sc_lpe_card_handler(cyg_addrword_t param)
 #ifndef CYGPKG_NET
     int tries = 0;
 #endif
+    bool first = true;
 
     slot = dp->slot;
     cyg_drv_dsr_lock();
     while (true) {
         cyg_drv_dsr_unlock();   // Give DSRs a chance to run (card insertion)
         cyg_drv_dsr_lock();
-        if (slot->state == CF_SLOT_STATE_Inserted) {
+        if ((slot->state == CF_SLOT_STATE_Inserted) ||
+            ((slot->state == CF_SLOT_STATE_Ready) && first)) {
+            first = false;
             if (slot->state != CF_SLOT_STATE_Ready) {
                 cf_change_state(slot, CF_SLOT_STATE_Ready);
             }
             if (slot->state != CF_SLOT_STATE_Ready) {
                 diag_printf("CF card won't go ready!\n");
+#ifndef CYGPKG_NET
+                return false;
+#else
                 continue;
+#endif
             }
             len = sizeof(buf);
             ptr = 0;
@@ -193,7 +200,7 @@ sc_lpe_card_handler(cyg_addrword_t param)
                 }
             }
             if (!cor) {
-                diag_printf("Couldn't find COR pointer!\n");
+//                diag_printf("Couldn't find COR pointer!\n");
                 continue;
             }
             // Fetch hardware address from card - terrible, but not well defined
@@ -560,13 +567,12 @@ sc_lpe_TxEvent(struct eth_drv_sc *sc, int stat)
 static void
 sc_lpe_BufEvent(struct eth_drv_sc *sc, int stat)
 {
-    diag_printf("%s\n", __FUNCTION__);
-#if 0
-    if (stat & PP_BufCFG_RxMiss) {
+    // What to do if the receive buffers overflow?
+    if (stat & DP8390_ISR_OFLW) {
+        // Note: [so far] it seems safe to just ignore this condition
+        // The Linux driver goes through extraordinary pains to handle
+        // it, including totally shutting down the chip and restarting.
     }
-    if (stat & PP_BufCFG_TxUE) {
-    }
-#endif
 }
 
 static void

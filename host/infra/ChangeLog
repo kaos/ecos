@@ -1,3 +1,8 @@
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* assert.cxx: Include unistd.h on unix.
+	Oops. Forgot the C wrapper.
+
 2000-08-18  Bart Veer  <bartv@redhat.com>
 
 	* acinclude.m4, configure.in:

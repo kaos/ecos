@@ -1,3 +1,20 @@
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* common/Makefile.in: Regenerated.
+	* common/configure: Ditto.
+
+	* common/eCosSocket.h: Made SSReadResult enum public.
+
+	* common/Makefile.am: Added autoconf/make support.
+	* common/Makefile.in: Ditto.
+	* common/configure: Ditto.
+	* common/configure.in: Ditto.
+	* common/acinclude.m4: Ditto.
+	* common/aclocal.m4: Ditto.
+
+	* common/wcharunix.h (_tperror): Make putenv convert String to
+	char*.
+
 2000-08-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* common/eCosSerial.h: 

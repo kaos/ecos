@@ -116,7 +116,7 @@ FUNC_END(reset_vector)
 	# Debug vector at 0xBFC00200
 	
 FUNC_START(debug_vector)
-	la	k0,32
+	la	k0,32*4
 	la	k1,hal_vsr_table	# Get VSR table
 	lw	k1,32*4(k1)		# load debug vector
 	jr	k1			# go there
@@ -136,15 +136,17 @@ FUNC_START(other_vector)
 	lw	k1,0(k1)		# k1 = pointer to VSR
 	jr	k1			# go there
 	nop				# (delay slot)
-
 FUNC_END(other_vector)
 	
 	.section ".utlb_vector","ax"
 
 FUNC_START(utlb_vector)
-	la	k0,33
-	la	k1,hal_vsr_table	# Get VSR table
-	lw	k1,33*4(k1)		# load utlb vector
+	mfc0	k0,cause		# K0 = exception cause
+	nop
+	andi	k0,k0,0x7F		# isolate exception code
+	la	k1,hal_vsr_table	# address of VSR table
+	add	k1,k1,k0		# offset of VSR entry
+	lw	k1,0(k1)		# k1 = pointer to VSR
 	jr	k1			# go there
 	nop				# (delay slot)
 FUNC_END(utlb_vector)

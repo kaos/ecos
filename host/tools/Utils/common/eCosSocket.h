@@ -164,6 +164,8 @@ public:
   // Set up a connection between two sockets.  Traffic is simply passed between them.
   bool ConnectSocketToSocket (CeCosSocket &o,FilterFunc *pSocketToSocketFilterFunc1,FilterFunc *pSocketToSocketFilterFunc2,void *pParam,bool *pbStop);
   
+  enum   SSReadResult {SS_SOCKET_ERROR=-1,SS_SOCKET_READ=1,SS_SERIAL_ERROR=-2,SS_SERIAL_READ=2,SS_STOPPED=0};
+
 protected:
 
   // Blocking read on one or other of the data sources:
@@ -172,7 +174,6 @@ protected:
   //          -2 - serial error occurred
   //           2 - data read from serial
 
-  enum   SSReadResult {SS_SOCKET_ERROR=-1,SS_SOCKET_READ=1,SS_SERIAL_ERROR=-2,SS_SERIAL_READ=2,SS_STOPPED=0};
   static SSReadResult SSRead (CeCosSerial &serial,CeCosSocket &socket,void *pBuf,unsigned int nSize,unsigned int &nRead,bool *pbStop);
   
   Duration m_nDefaultTimeout;

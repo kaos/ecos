@@ -82,8 +82,195 @@
 #include <cyg/hal/drv_api.h>
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_if.h>
+#include <pkgconf/io_eth_drivers.h> // module configury; SIMULATED_FAILURES
+
 #include <eth_drv.h>
 #include <netdev.h>
+
+
+
+// ------------------------------------------------------------------------
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+
+#define noLOG_RANDOM 32 // so you can tell this is really being random
+#ifdef LOG_RANDOM
+static struct {
+    unsigned int *which;
+    unsigned int random;
+    unsigned int r100;
+} random_log[LOG_RANDOM];
+
+static int random_index = 0;
+#endif
+
+static unsigned int
+randomize( unsigned int *p )
+{
+    unsigned int r100;
+    HAL_CLOCK_READ( &r100 );
+    r100 ^= *p;
+    *p = (r100 * 1103515245) + 12345;
+    r100 &= 127;
+    if ( r100 >= 100 ) // spread the overflow around evenly
+        r100 = 4 * (r100 - 100);
+    if ( r100 >= 100 ) // and again - (125,126,127=>100,104,108)
+        r100 = 12 * (r100 - 100); // =>(0,48,96)
+#ifdef LOG_RANDOM
+    random_log[random_index].which  = p;
+    random_log[random_index].random = *p;
+    random_log[random_index].r100   = r100;
+    random_index++;
+    random_index &= (LOG_RANDOM-1);
+#endif
+    return r100;
+}
+
+#define SIMULATE_FAIL_SEND     1
+#define SIMULATE_FAIL_RECV     2
+#define SIMULATE_FAIL_CORRUPT  3
+
+static struct simulated_failure_state {
+    struct eth_drv_sc *sc;
+    unsigned int r_tx_fail;
+    unsigned int r_rx_fail;
+    unsigned int r_rx_corrupt;
+    cyg_tick_count_t droptime;
+    cyg_tick_count_t passtime;
+} simulated_failure_states[2] = {{0},{0}};
+
+static int
+simulate_fail( struct eth_drv_sc *sc, int which )
+{
+    struct simulated_failure_state *s;  
+    
+    for ( s = &simulated_failure_states[0]; s < &simulated_failure_states[2];
+          s++ ) {
+        if ( 0 == s->sc ) {
+            s->sc = sc;
+            s->r_tx_fail    = (unsigned int)sc;
+            s->r_rx_fail    = (unsigned int)sc ^ 0x01234567;
+            s->r_rx_corrupt = (unsigned int)sc ^ 0xdeadbeef;
+            s->droptime = 0;
+            s->passtime = 0;
+        }
+        if ( sc == s->sc )
+            break;
+    }
+    if ( &simulated_failure_states[2] == s ) {
+        CYG_FAIL( "No free slot in simulated_failure_states[]" );
+        return 1; // always fail
+    }
+
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATE_LINE_CUT
+    // Regardless of the question, we say "yes" during the period of
+    // unpluggedness...
+    {
+        cyg_tick_count_t now = cyg_current_time();
+        if ( now > s->droptime && 0 == s->passtime ) { // [initial condition]
+            s->droptime = 0; // go into a passing phase
+            (void)randomize( &s->r_tx_fail );
+            (void)randomize( &s->r_rx_fail );
+            (void)randomize( &s->r_rx_corrupt );
+            s->passtime = s->r_tx_fail + s->r_rx_fail + s->r_rx_corrupt;
+            s->passtime &= 0x3fff; // 16k cS is up to 160S, about 2.5 minutes
+            s->passtime += now;
+        }
+        else if ( now > s->passtime && 0 == s->droptime ) {
+            s->passtime = 0; // go into a dropping phase
+            (void)randomize( &s->r_tx_fail );
+            (void)randomize( &s->r_rx_fail );
+            (void)randomize( &s->r_rx_corrupt );
+            s->droptime = s->r_tx_fail + s->r_rx_fail + s->r_rx_corrupt;
+            s->droptime &= 0x0fff; // 4k cS is up to 40S, about 1/2 a minute
+            s->droptime += now;
+        }
+
+        if ( now < s->droptime )
+            return 1; // Say "no"
+    }
+#endif
+
+    switch ( which ) {
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_TX
+    case SIMULATE_FAIL_SEND: {
+        unsigned int z = randomize( &s->r_tx_fail );
+        return z < CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_TX;
+    }
+#endif
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_RX
+    case SIMULATE_FAIL_RECV: {
+        unsigned int z = randomize( &s->r_rx_fail );
+        return z < CYGPKG_IO_ETH_DRIVERS_SIMULATE_DROP_RX;
+    }
+#endif
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATE_CORRUPT_RX
+    case SIMULATE_FAIL_CORRUPT: {
+        unsigned int z = randomize( &s->r_rx_corrupt );
+        return z < CYGPKG_IO_ETH_DRIVERS_SIMULATE_CORRUPT_RX;
+    }
+#endif
+    default:
+        // do nothing - for when options above are not enabled.
+    }
+    return 0;
+}
+
+#define noLOG_CORRUPTION 32 // so you can tell this is really being random
+#ifdef LOG_CORRUPTION
+static struct {
+    int len;
+    int thislen;
+    int off;
+    unsigned char xor;
+    unsigned char idx;
+} corruption_log[LOG_CORRUPTION];
+
+static int corruption_index = 0;
+#endif
+
+static void
+simulate_fail_corrupt_sglist( struct eth_drv_sg *sg_list, int sg_len )
+{
+    unsigned int z, len, i, off;
+    HAL_CLOCK_READ( &z );
+    z += simulated_failure_states[0].r_rx_corrupt;
+    z += simulated_failure_states[1].r_rx_corrupt;
+
+    CYG_ASSERT( MAX_ETH_DRV_SG >= sg_len, "sg_len overflow in corrupt" );
+
+    for ( i = 0, len = 0; i < sg_len && sg_list[i].buf && sg_list[i].len; i++ )
+        len =+ sg_list[i].len;
+
+    CYG_ASSERT( 1500 >= len, "sg...len > ether MTU" );
+    if ( 14 >= len ) // normal ether header
+        return;
+
+    off = z & 2047; // next (2^N-1) > MTU
+    while ( off > len )
+        off -= len;
+
+    for ( i = 0; i < sg_len && sg_list[i].buf && sg_list[i].len; i++ ) {
+        if ( off < sg_list[i].len ) { // corrupt this one
+            unsigned char *p = (unsigned char *)sg_list[i].buf;
+            p[off] ^= (0xff & (z >> 11));
+#ifdef LOG_CORRUPTION
+            corruption_log[corruption_index].len = len;
+            corruption_log[corruption_index].thislen = sg_list[i].len;
+            corruption_log[corruption_index].off = off;
+            corruption_log[corruption_index].xor = (0xff & (z >> 11));
+            corruption_log[corruption_index].idx = i;
+            corruption_index++;
+            corruption_index &= (LOG_CORRUPTION-1);
+#endif
+            return;
+        }
+        off -= sg_list[i].len;
+    }    
+    CYG_FAIL( "Didn't corrupt anything" );
+}
+
+#endif // CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+// ------------------------------------------------------------------------
 
 static int  eth_drv_ioctl(struct ifnet *, u_long, caddr_t);
 static void eth_drv_send(struct ifnet *);
@@ -309,6 +496,14 @@ eth_drv_send(struct ifnet *ifp)
             break;
         }
 
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+        if ( simulate_fail( sc, SIMULATE_FAIL_SEND ) ) {
+            // must free the mbufs
+            m_freem(m0);
+            continue; // next packet to send
+        }
+#endif
+
         if (net_debug)
             diag_printf("Sending %d bytes\n", m0->m_pkthdr.len);
 
@@ -398,6 +593,15 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         // Our arithmetic below would go wrong
         return;
 
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+    if ( simulate_fail( sc, SIMULATE_FAIL_RECV ) ) {
+        // there is nothing we need to do; simply do not
+        // unload the packet
+        ifp->if_ierrors++;
+        return;
+    }
+#endif
+
     /* Pull packet off interface. */
     MGETHDR(m, M_DONTWAIT, MT_DATA);
     if (m == 0) {
@@ -461,6 +665,13 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
 
     // Ask hardware to unload buffers
     (sc->funs->recv)(sc, sg_list, sg_len);
+
+#ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES
+    if ( simulate_fail( sc, SIMULATE_FAIL_CORRUPT ) ) {
+        // Corrupt the data
+        simulate_fail_corrupt_sglist( sg_list, sg_len );
+    }
+#endif
 
     if (net_debug) {
         for (i = 0;  i < sg_len;  i++) {

@@ -1,3 +1,9 @@
+2000-09-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c (cs8900_can_send): Add simple timeout on Tx.
+	Since this chip has to way to test "can send" and it seems to
+	sometimes loose Tx interrupts, this is necessary.
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_edb7xxx.c (edb7xxx_cs8900_init): Work with new fast net

@@ -75,11 +75,7 @@
 // Macro to declare static uitron static objects; uses the appropriate
 // config define for the number of them to have.
 
-#if 0
 #define CYG_UITRON_OBJS_INIT_PRIORITY CYG_INIT_PRIORITY( COMPAT )
-#else
-#define CYG_UITRON_OBJS_INIT_PRIORITY // nothing
-#endif
 
 #define CYG_UITRON_DECL( _which_ ) \
     CYG_UITRON_OBJS( _which_ ) [ CYG_UITRON_NUM( _which_ ) ] \

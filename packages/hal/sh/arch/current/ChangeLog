@@ -16,6 +16,10 @@
 	* src/sh_stub.c: If core supports UBC, use it for
 	single-stepping.
 
+2000-08-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7729.h: Added.
+
 2000-07-20  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh_stub.c (__single_step): Skip trap instructions.
