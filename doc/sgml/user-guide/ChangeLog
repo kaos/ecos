@@ -1,3 +1,11 @@
+2003-05-01  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* jadetex.cfg: Add this to configure PDF output nicely with index
+	and coloured links.
+
+	* pix/*.gif: Delete as they are now unused.
+	* introduction.sgml: Add ID for notation and conventions chap.
+
 2003-03-03  John Dallaway  <jld@ecoscentric.com>
 
 	* programming-concepts-techniques.sgml:
