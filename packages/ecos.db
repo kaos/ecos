@@ -5260,6 +5260,44 @@ target moab {
 
 # --------------------------------------------------------------------------
 
+# Realtek 8139 (PCI) Ethernet driver
+package CYGPKG_DEVS_ETH_RLTK_8139 {
+	alias 		{ "Realtek 8139 ethernet driver" rltk8139_eth_driver }
+	hardware
+	directory	devs/eth/rltk/8139
+	script		rltk_8139_eth_drivers.cdl
+        description     "Ethernet driver for Realtek 8139 (PCI) card."
+}
+
+package CYGPKG_DEVS_ETH_I386_PC_RLTK8139 {
+	alias 		{ "Intel PC with Realtek 8139 ethernet driver" pc_rltk8139_eth_driver }
+	hardware
+	directory	devs/eth/i386/pc/rltk8139
+	script		i386_pc_rltk8139_eth_drivers.cdl
+        description     "Intel PC using Realtek 8139 (PCI) card."
+}
+
+target pc_rltk8139 {
+        alias		{ "i386 PC target using Realtek 8139 networking" }
+	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_GENERIC
+                          CYGPKG_HAL_I386_PC
+                          CYGPKG_HAL_I386_PCMB
+			  CYGPKG_IO_PCI
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+	                  CYGPKG_IO_SERIAL_I386_PC
+			  CYGPKG_DEVS_ETH_RLTK_8139
+			  CYGPKG_DEVS_ETH_I386_PC_RLTK8139
+                          CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887
+                          CYGPKG_DEVICES_WALLCLOCK_I386_PC
+        }
+        description "
+    	    The pc target provides the packages needed to run eCos binaries 
+            on a standard i386 PC motherboard, using a Realtek 8139 network card."
+}
+
+# --------------------------------------------------------------------------
+
 package CYGPKG_VNC_SERVER {
     alias       { "VNC server" vnc_server }
     directory   net/vnc_server

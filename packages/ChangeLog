@@ -74,6 +74,10 @@
 	CYGPKG_DEVS_FLASH_ARM_E7T.  Updated e7t target to include FLASH
 	drivers.
 
+2003-07-09  Eric Doenges <Eric.Doenges@DynaPel.com>
+
+	* ecos.db: Add Realtek 8139 (PCI) ethernet driver.
+
 2003-06-12  John Dallaway  <jld@ecoscentric.com>
 
 	* ecosadmin.tcl: Add repository merge capability (undocumented and
