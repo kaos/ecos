@@ -58,12 +58,20 @@ cdl_package CYGPKG_COMPRESS_ZLIB {
     requires      CYGPKG_ISOINFRA
     requires      CYGPKG_CRC
 
-    compile       infblock.c infcodes.c inffast.c inflate.c
-    compile       inftrees.c infutil.c adler32.c 
-    compile       zutil.c deflate.c trees.c compress.c uncompr.c
+    compile       adler32.c compress.c uncompr.c zutil.c trees.c
+    compile       deflate.c infback.c inffast.c inflate.c inftrees.c
 
     cdl_interface CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC {
         display "Override memory allocation routines."
+    }
+
+    cdl_option  CYGSEM_COMPRESS_ZLIB_DEFLATE_MAKES_GZIP {
+        display        "Should deflate() produce 'gzip' compatible output?"
+        flavor         bool
+        default_value  1
+        description "
+          If this option is set then the output of calling deflate()
+          will be wrapped up as a 'gzip' compatible file."
     }
 
     cdl_option CYGSEM_COMPRESS_ZLIB_NEEDS_MALLOC {

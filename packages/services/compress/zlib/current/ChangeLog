@@ -1,3 +1,39 @@
+2004-05-24  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/zlib2.c: 
+	* tests/zlib1.c: 
+	* src/zutil.h: 
+	* src/zutil.c: 
+	* src/zlib.3: 
+	* src/uncompr.c: 
+	* src/trees.c: 
+	* src/minigzip.c: 
+	* src/inftrees.h: 
+	* src/inftrees.c: 
+	* src/inflate.h: 
+	* src/inflate.c: 
+	* src/inffixed.h:
+	* src/inffast.h: 
+	* src/inffast.c: 
+	* src/infback.c: 
+	* src/gzio.c: 
+	* src/example.c: 
+	* src/deflate.h: 
+	* src/deflate.c: 
+	* src/configure: 
+	* src/compress.c: 
+	* src/algorithm.txt: 
+	* src/adler32.c: 
+	* src/README.eCos: 
+	* src/README: 
+	* src/Makefile.in: 
+	* src/Makefile: 
+	* src/INDEX: 
+	* src/FAQ: 
+	* include/zlib.h: 
+	* include/zconf.h: 
+	* cdl/compress_zlib.cdl: Upgrade to zlib-1.2.1
+
 2004-04-29  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/inffixed.h: added "const" to tables that do not 

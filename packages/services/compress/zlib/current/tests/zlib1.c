@@ -166,6 +166,8 @@ static void entry0( cyg_addrword_t data )
 
     len = buf_size;
     err = compress(packed, &len, license_txt, sizeof(license_txt));
+    diag_printf("len = %d", len);
+    diag_dump_buf(packed, len);
 
     if (Z_OK != err)
         CYG_TEST_NA("Not enough memory for compression");
