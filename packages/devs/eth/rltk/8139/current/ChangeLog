@@ -1,3 +1,8 @@
+2005-03-03  Bob Koninckx <bob.koninckx@fmtc.be>
+
+	* src/if_8139.c: fixed bug that prevented rltk8139_find to find
+	anything but first device.
+
 2004-10-18  Andrew Dyer  <adyer@righthandtech.com>
 
 	* src/if_8139.c (rltk8139_recv): if eth_drv_recv() wants to

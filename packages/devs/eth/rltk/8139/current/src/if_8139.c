@@ -319,8 +319,8 @@ rltk8139_find(int n_th, struct eth_drv_sc *sc)
 
 
   /* Go through all PCI devices until we find the Nth 8139 chip */
+  pci_device_id = CYG_PCI_NULL_DEVID;
   do {
-    pci_device_id = CYG_PCI_NULL_DEVID;
     if (!cyg_pci_find_matching(&rltk8139_find_match_func, NULL,
                                &pci_device_id))
       return false;
