@@ -558,7 +558,6 @@ cyg_pci_find_device( cyg_uint16 vendor, cyg_uint16 device,
         // Check that device matches.
         if (d == device) {
             *devid = new_devid;
-            diag_printf("Found it!\n");
             return true;
         }
     }
