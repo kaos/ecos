@@ -1,3 +1,7 @@
+2003-11-24  Jani Monoses <jani@iv.ro>
+
+	* cdl/net.cdl: Close quote for test list.
+	
 2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* cdl/net.cdl: Added control for IPSEC 

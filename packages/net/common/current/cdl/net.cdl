@@ -470,7 +470,7 @@ cdl_package CYGPKG_NET {
                     tests/tcp_lo_test \
                     tests/udp_lo_test \
                     tests/multi_lo_select \
-                    tests/tcp_lo_select
+                    tests/tcp_lo_select"
             }
             description   "
              This option specifies the set of tests
