@@ -65,6 +65,7 @@ CL-PS7111 and EP7xxx based development boards."
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
     implements    CYGINT_HAL_ARM_ARCH_ARM7
     implements    CYGINT_HAL_SUPPORTS_MMU_TABLES
 

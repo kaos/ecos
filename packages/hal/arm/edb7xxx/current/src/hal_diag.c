@@ -87,6 +87,7 @@ typedef struct {
     volatile struct edb_serial* base;
     cyg_int32 msec_timeout;
     int isr_vector;
+    int baud_rate;	
 } channel_data_t;
 
 //-----------------------------------------------------------------------------
@@ -99,7 +100,7 @@ cyg_hal_plf_serial_init_channel(channel_data_t* __ch_data)
     // Enable port
     chan->base->ctrl |= SYSCON1_UART1EN;
     // Configure
-    chan->base->blcr = UART_BITRATE(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD) |
+    chan->base->blcr = UART_BITRATE(chan->baud_rate) |
                        UBLCR_FIFOEN | UBLCR_WRDLEN8;
 }
 
@@ -159,8 +160,8 @@ cyg_hal_plf_serial_getc(void* __ch_data)
 }
 
 static channel_data_t edb_ser_channels[2] = {
-    {(volatile struct edb_serial*)SYSCON1, 1000, CYGNUM_HAL_INTERRUPT_URXINT1},
-    {(volatile struct edb_serial*)SYSCON2, 1000, CYGNUM_HAL_INTERRUPT_URXINT2}
+    {(volatile struct edb_serial*)SYSCON1, 1000, CYGNUM_HAL_INTERRUPT_URXINT1, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD},
+    {(volatile struct edb_serial*)SYSCON2, 1000, CYGNUM_HAL_INTERRUPT_URXINT2, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD}
 };
 
 static void
@@ -214,9 +215,22 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     static int irq_state = 0;
     channel_data_t* chan = (channel_data_t*)__ch_data;
     int ret = 0;
+    va_list ap;
+
     CYGARC_HAL_SAVE_GP();
+    va_start(ap, __func);
 
     switch (__func) {
+    case __COMMCTL_GETBAUD:
+        ret = chan->baud_rate;
+        break;
+    case __COMMCTL_SETBAUD:
+        chan->baud_rate = va_arg(ap, cyg_int32);
+        // Should we verify this value here?
+        cyg_hal_plf_serial_init_channel(chan);
+        ret = 0;
+        break;
+
     case __COMMCTL_IRQ_ENABLE:
         irq_state = 1;
         HAL_INTERRUPT_UNMASK(chan->isr_vector);
@@ -243,6 +257,8 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     default:
         break;
     }
+
+    va_end(ap);
     CYGARC_HAL_RESTORE_GP();
     return ret;
 }
