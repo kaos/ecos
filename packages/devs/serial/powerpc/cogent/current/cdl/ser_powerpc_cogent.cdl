@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_COGENT {
     description   "
            This option enables the serial device drivers for the
            Cogent PowerPC."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   cogent_serial_with_ints.c
 
