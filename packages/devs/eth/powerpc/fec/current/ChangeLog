@@ -1,3 +1,8 @@
+2002-08-08  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/if_fec.c (fec_eth_RxEvent): Cache needs to be invalidated
+	to avoid any possible corruption.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_fec.c: 

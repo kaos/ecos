@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -482,7 +483,7 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
-        HAL_DCACHE_INVALIDATE(txbd->buffer, txbd->length);  // Make sure no stale data
+        HAL_DCACHE_FLUSH(txbd->buffer, txbd->length);  // Make sure no stale data
     }
     // Send it on it's way
     ctrl = txbd->ctrl & ~QUICC_BD_TX_PAD;

@@ -642,7 +642,7 @@ fec_eth_RxEvent(struct eth_drv_sc *sc)
     HAL_DCACHE_IS_ENABLED(cache_state);
 #ifndef FEC_USE_EPPC_BD
     if (cache_state) {
-        HAL_DCACHE_FLUSH(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
+        HAL_DCACHE_INVALIDATE(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
     }
 #endif
     rxbd = rxfirst = qi->rnext;
@@ -665,7 +665,7 @@ fec_eth_RxEvent(struct eth_drv_sc *sc)
     qi->rnext = (struct fec_bd *)rxbd;
 #ifndef FEC_USE_EPPC_BD
     if (cache_state) {
-        HAL_DCACHE_FLUSH(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
+        HAL_DCACHE_INVALIDATE(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
     }
 #endif
     qi->fec->RxUpdate = 0x0F0F0F0F;  // Any write tells machine to look for work

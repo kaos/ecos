@@ -1,3 +1,9 @@
+2002-08-08  Gary Thomas  <gthomas@ecoscentric.com>
+2002-08-08  Luoqi Chen <lchen@onetta.com>
+
+	* src/if_quicc.c (quicc_eth_send): Need to flush cache to force
+	out data, not invalidate it.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_quicc.c: 
