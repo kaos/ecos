@@ -1,3 +1,9 @@
+2002-05-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_xscale_verde.cdl: Remove implement of
+	CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT since platforms should
+	define whether baud rate changes are possible.
+
 2002-04-01  Rory Bolt  <rorybolt@pacbell.net>
 
 	* include/hal_var_ints.h: Fix definition for DMA1_ERR.

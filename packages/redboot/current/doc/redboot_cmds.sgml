@@ -1590,204 +1590,525 @@ RAM: 0x00000000-0x00400000
 </indexterm><indexterm><primary>fis commands</primary></indexterm>If the platform
 has flash memory, RedBoot can use this for image storage. Executable images,
 as well as data, can be stored in flash in a simple file store. The <command>
-fis</command> command is used to manipulate and maintain flash images.
+fis</command> command (fis is short for Flash Image System) is used to
+manipulate and maintain flash images.
 </para>
-<para>The available <command>fis</command> commands are:  </para>
-<variablelist>
-<varlistentry><term>fis init [-f]</term>
-<listitem>
-<para>This command is used to initialize the flash Image System (FIS). It
-should only be executed once, when RedBoot is first installed on the hardware.
-Subsequent executions will cause loss of data in the flash (previously saved
-images will no longer be accessible). </para>
-<para>If the <computeroutput>-f</computeroutput> option is specified, all
-blocks of flash memory will be erased as part of this process.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
+
+<!-- ******** fis init ************************************************ -->
+
+  <refentry id="fis-init-command">
+    <refnamediv>
+      <refname>fis init</refname>
+      <refpurpose>Initialize Flash Image System (FIS)</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis init</command>
+	<arg><replaceable>-f</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>-f</entry>	     
+	      <entry></entry>
+	      <entry>All blocks of flash memory (except for the boot
+	      blocks) will be erased as part of the initialization
+	      procedure.</entry>
+	      <entry></entry>	     
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
+
+       <para>This command is used to initialize the Flash Image System
+       (FIS). It should normally only be executed once, when RedBoot
+       is first installed on the hardware. If the reserved images or
+       their sizes in the FIS change, due to a different configuration
+       of RedBoot being used, it may be necessary to issue the command
+       again though.
+
+        <note><para>Subsequent executions will cause loss of
+       previously stored information in the FIS.</para></note>
+     </para>
+    </refsect1>
+    <refsect1>
+      <title>Examples</title>
+      <para>
+Initialize the FIS directory.
+<screen> 
+RedBoot> <userinput>fis init</userinput>
+About to initialize [format] flash image system - continue (y/n)? <userinput>y</userinput>
+*** Initialize FLASH Image System
+    Warning: device contents not erased, some blocks may not be usable
+... Erase from 0x00070000-0x00080000: .
+... Program from 0x0606f000-0x0607f000 at 0x00070000: .
+</screen> 
+</para>
+
+      <para>
+Initialize the FIS directory and all of flash memory, except for first
+blocks of the flash where the boot monitor resides.
+<screen> 
 RedBoot> <userinput>fis init -f</userinput>
-About to initialize [format] flash image system - continue (y/n)? n
-</screen></para>
-<variablelist>
-<varlistentry><term>fis [-c] [-d] list</term>
-<listitem>
-<para>This command lists the images currently available in the FIS. Certain
-images used by RedBoot have fixed names. Other images can be manipulated by
-the user. </para>
-<para>If the <emphasis>-c</emphasis> option is specified, the image checksum
-is displayed instead of the <computeroutput>Mem Addr</computeroutput> field.
-  </para>
-<para>If the <emphasis>-d</emphasis> option is specified, the image
-<computeroutput>datalength</computeroutput> is displayed instead of the
-length [amount of flash used]. The <computeroutput>datalength</computeroutput>
-is the length of data within the allocated flash image actually being
-used for data.
-  </para>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
-RedBoot> <userinput>fis list</userinput>
-Name           flash addr  Mem addr   Length   Entry point
-RedBoot        0xA0000000  0xA0000000 0x020000 0x80000000
-RedBoot config 0xA0FC0000  0xA0FC0000 0x020000 0x00000000
-FIS directory  0xA0FE0000  0xA0FE0000 0x020000 0x00000000
-RedBoot> <userinput>fis list -c</userinput>
-Name           flash addr  Checksum   Length   Entry point
-RedBoot        0xA0000000  0x34C94A57 0x020000 0x80000000
-RedBoot config 0xA0FC0000  0x00000000 0x020000 0x00000000
-FIS directory  0xA0FE0000  0x00000000 0x020000 0x00000000
-</screen></para>
-<variablelist>
-<varlistentry><term>fis free</term>
-<listitem>
-<para>This command shows which areas of the flash memory are currently not
-in use. In use means that the block contains non-erased contents. Since it
-is possible to force an image to be loaded at a particular flash location,
-this command can be used to check whether that location is in use by any other
-image. </para>
-<note><title>NOTE</title>
-<para>There is currently no cross-checking between actual flash contents and
-the image directory, which mans that there could be a segment of flash which
-is not erased that does not correspond to a named image, or vice-versa.
+About to initialize [format] flash image system - continue (y/n)? <userinput>y</userinput>
+*** Initialize FLASH Image System                                               
+... Erase from 0x00020000-0x00070000: .....                                     
+... Erase from 0x00080000-0x00080000:                                           
+... Erase from 0x00070000-0x00080000: .                                         
+... Program from 0x0606f000-0x0607f000 at 0x00070000: .                         
+</screen> 
 </para>
-</note>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
+</refsect1>
+</refentry>
+
+<!-- ******** fis list ************************************************ -->
+  <refentry id="fis-list-command">
+    <refnamediv>
+      <refname>fis list</refname>
+      <refpurpose>List Flash Image System directory</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis list</command>
+	<arg><replaceable>-f</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>-c</entry>
+	      <entry></entry>
+	      <entry>Show image checksum instead of memory address
+	      (column <computeroutput>Mem addr</computeroutput> is
+	      replaced by
+	      <computeroutput>Checksum</computeroutput>).</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry>-d</entry>
+	      <entry></entry>
+	      <entry>Show image data length instead of amount of flash
+	      occupied by image (column
+	      <computeroutput>Length</computeroutput> is replaced by
+	      <computeroutput>Datalen</computeroutput>).</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
+<para>This command lists the images currently available in the FIS. Certain
+images used by RedBoot have fixed names and have reserved slots in the
+FIS (these can be seen after using the <command>fis init</command>
+command). Other images can be manipulated by the user.</para>
+<note><para>The images are listed in the order they appear in the FIS
+directory, not by name or creation time.</para></note>
+    </refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+      <para>
+List the FIS directory.
+<screen> 
+RedBoot> <userinput>fis list</userinput>
+Name              FLASH addr  Mem addr    Length      Entry point               
+RedBoot           0x00000000  0x00000000  0x00020000  0x00000000                
+RedBoot config    0x0007F000  0x0007F000  0x00001000  0x00000000                
+FIS directory     0x00070000  0x00070000  0x0000F000  0x00000000                
+</screen> 
+</para>
+
+      <para>
+List the FIS directory, with image checksums substituted for
+memory addresses.
+<screen> 
+RedBoot> <userinput>fis list -c</userinput>
+Name              FLASH addr  Checksum    Length      Entry point               
+RedBoot           0x00000000  0x00000000  0x00020000  0x00000000                
+RedBoot config    0x0007F000  0x00000000  0x00001000  0x00000000                
+FIS directory     0x00070000  0x00000000  0x0000F000  0x00000000                
+</screen> 
+</para>
+
+      <para>
+List the FIS directory with image data lengths substituted for flash
+block reservation lengths.
+<screen> 
+RedBoot> <userinput>fis list</userinput>
+Name              FLASH addr  Mem addr    Datalen     Entry point               
+RedBoot           0x00000000  0x00000000  0x00000000  0x00000000                
+RedBoot config    0x0007F000  0x0007F000  0x00000000  0x00000000                
+FIS directory     0x00070000  0x00070000  0x00000000  0x00000000                
+</screen> 
+</para>
+</refsect1>
+</refentry>
+
+<!-- ******** fis free ************************************************ -->
+
+  <refentry id="fis-free-command">
+    <refnamediv>
+      <refname>fis free</refname>
+      <refpurpose>Free flash image</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis free</command>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Description</title>
+
+
+<para>This command shows which areas of the flash memory are currently
+not in use. When a block contains non-erased contents it is considered
+in use. Since it is possible to force an image to be loaded at a
+particular flash location, this command can be used to check whether
+that location is in use by any other image.</para>
+
+<note><para>There is currently no cross-checking between actual flash
+contents and the FIS directory, which mans that there could be a
+segment of flash which is not erased that does not correspond to a
+named image, or vice-versa.</para></note>
+    </refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+      <para>
+Show free flash areas.
+<screen>
 RedBoot> <userinput>fis free</userinput>
         0xA0040000 .. 0xA07C0000
         0xA0840000 .. 0xA0FC0000
 </screen></para>
-<variablelist>
-<varlistentry><term>fis create -b &lt;mem_base> -l &lt;length> [-f &lt;flash_addr>]
-[-e &lt;entry_point>]  [-r &lt;ram_addr>] [-s &lt;data_length>] [-n] &lt;name>
-</term>
-<listitem>
+</refsect1>
+</refentry>
+
+<!-- ******** fis create ************************************************ -->
+
+  <refentry id="fis-create-command">
+    <refnamediv>
+      <refname>fis create</refname>
+      <refpurpose>Create flash image</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis create</command>
+	<arg choice="req">-b <replaceable> data address</replaceable></arg>
+	<arg choice="req">-l <replaceable> length</replaceable></arg>
+	<arg>-f <replaceable> flash address</replaceable></arg>
+	<arg>-e <replaceable> entry</replaceable></arg>
+	<arg>-r <replaceable> relocation address</replaceable></arg>
+	<arg>-s <replaceable> data length</replaceable></arg>
+	<arg>-n </arg>
+	<arg><replaceable>name</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>-b</entry>
+	      <entry>Number</entry>
+	      <entry>Address of data to be written to the flash.</entry>
+	      <entry>Address of last loaded file. If not set in a load
+	      operation, it must be specified.</entry>
+	    </row>
+	    <row>
+	      <entry>-l</entry>
+	      <entry>Number</entry>
+	      <entry>Length of flash area to occopy. If specified, and
+	      the named image already exists, the length must match
+	      the value in the FIS directory.</entry>
+	      <entry>Length of area reserved in FIS directory if the
+	      image already exists, or the length of the last loaded
+	      file. If neither are set, it must be specified.</entry>
+	    </row>
+	    <row>
+	      <entry>-f</entry>
+	      <entry>Number</entry>
+	      <entry>Address of flash area to occopy.</entry>
+	      <entry>The address of an area reserved in the FIS
+	      directory for extant images. Otherwise the first free block
+	      which is large enough will be used.</entry>
+	    </row>
+	    <row>
+	      <entry>-e</entry>
+	      <entry>Number</entry>
+	      <entry>Entry address for an executable image, used by
+	      the <command>fis load</command> command.</entry>
+	      <entry>The entry address of last loaded file.</entry>
+	    </row>
+	    <row>
+	      <entry>-r</entry>
+	      <entry>Number</entry>
+	      <entry>Address where the image should be relocated to by
+	      the <command>fis load</command> command. This is only
+	      relevant for images that will be loaded with the
+	      <command>fis load</command> command.</entry>
+	      <entry>The load address of the last loaded file.</entry>
+	    </row>
+            <row>
+	      <entry>-s</entry>
+	      <entry>Number</entry>
+	      <entry>Actual length of data written to image. This is
+	      used to control the range over which the checksum is
+	      made.</entry>
+	      <entry>It defaults to the length of the last loaded
+	      file.</entry>
+	    </row>
+	    <row>
+	      <entry>-n</entry>
+	      <entry></entry>
+	      <entry>When set, no image data will be written to the
+	      flash. Only the FIS directory will be updated.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>name</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>Name of flash image.</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
 <para>This command creates an image in the FIS directory. The data for the
 image must exist in RAM memory before the copy. Typically, you would use the
-RedBoot <command>load</command> command to load an image into
+RedBoot <command>load</command> command to load file into
 RAM and then the <command>fis create</command> command to write
-it to flash.  </para>
-</listitem>
-</varlistentry>
-</variablelist>
-<bridgehead>Arguments</bridgehead>
-<informaltable frame="none"><tgroup cols="2">
-<?PubTbl tgroup dispwid="7.00in">
-<colspec colname="col1" colwidth="0.75in"><colspec colname="col2" colwidth="2*">
-<tbody><row>
-<entry colname="col1" colsep="0" rowsep="0">name</entry>
-<entry colname="col2" colsep="0" rowsep="0">The name of the file, as shown
-in the FIS directory.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-b</entry>
-<entry colname="col2" colsep="0" rowsep="0">The location in RAM used to obtain
-the image. This is a required option.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-l</entry>
-<entry colname="col2" colsep="0" rowsep="0">The length of the image. If the
-image already exists, then the length is inferred from when the image was
-previously created. If specified, and the image exists, it must match the
-original value.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-f</entry>
-<entry colname="col2" colsep="0" rowsep="0">The location in flash for the
-image, which will be inferred for extant images if not specified. If this
-is not provided, the first free block which is large enough will be used.
-See <command>fis free</command>.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-e</entry>
-<entry colname="col2" colsep="0" rowsep="0">The execution entry address. This
-is used if the starting address for an image is not known, or needs to be
-overridden.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-r</entry>
-<entry colname="col2" colsep="0" rowsep="0">The location in RAM when the image
-is loaded via<command> fis load</command>. This only needs to
-be specified for images which will eventually loaded via <command>
-fis load</command>. Fixed images, such as RedBoot itself, will not
-need this.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0"> -s</entry>
-<entry colname="col2" colsep="0" rowsep="0">The length of the actual data
-to be written to flash. If not present then the image length (-1) value is
-assumed. If the value given by -s is less than -1, the remainder of the image
-in flash will be left in an erased state. Note that by using this option it
-is possible to create a completely empty flash image, for example to reserve
-space for use by applications other than RedBoot.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-n</entry>
-<entry colname="col2" colsep="0" rowsep="0">If -n is specified, then only
-the FIS directory is updated, and no data is copied from RAM to flash. This
-feature can be used to recreate the FIS entry if it has been destroyed.</entry>
-</row></tbody></tgroup></informaltable>
-<para><screen>
+it to a flash image.</para>
+</refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+      <para>Trying to create an extant image, will require the action
+      to be verified.
+<screen>
 RedBoot> <userinput>fis create RedBoot -f 0xa0000000 -b 0x8c400000 -l 0x20000</userinput>
-An image named &lsquo;RedBoot&rsquo; exists - continue (y/n)? n
+An image named &lsquo;RedBoot&rsquo; exists - continue (y/n)? <userinput>n</userinput>
+</screen>
+</para>
+
+<para>Create a new test image, let the command find a suitable place.
+<screen>
 RedBoot> <userinput>fis create junk -b 0x8c400000 -l 0x20000</userinput>
 ... Erase from 0xa0040000-0xa0060000: .
 ... Program from 0x8c400000-0x8c420000 at 0xa0040000: .
 ... Erase from 0xa0fe0000-0xa1000000: .
 ... Program from 0x8c7d0000-0x8c7f0000 at 0xa0fe0000: .
-</screen>If
-you are loading an existing file, then the fis create command will provide
-some values automatically, such as the flash address and flash length.</para>
-<variablelist>
-<varlistentry><term>fis load [-b &lt;memory load address>] [-c] [-d] name
-</term>
-<listitem>
+</screen>
+</para>
+
+<para>Update the RedBoot[RAM] image.
+<screen>
+RedBoot> <userinput>load redboot_RAM.img</userinput>
+Entry point: 0x060213c0, address range: 0x06020000-0x06036cc0                   
+RedBoot> <userinput>fis create RedBoot[RAM]</userinput>
+No memory address set.
+An image named 'RedBoot[RAM]' exists - continue (y/n)? <userinput>y</userinput>
+* CAUTION * about to program 'RedBoot[RAM]'
+            at 0x00020000..0x00036cbf from 0x06020000 - continue (y/n)? <userinput>y</userinput>
+... Erase from 0x00020000-0x00040000: ..
+... Program from 0x06020000-0x06036cc0 at 0x00020000: ..
+... Erase from 0x00070000-0x00080000: .
+... Program from 0x0606f000-0x0607f000 at 0x00070000: .
+</screen>
+</para>
+</refsect1>
+</refentry>
+
+<!-- ******** fis load ************************************************ -->
+
+  <refentry id="fis-load-command">
+    <refnamediv>
+      <refname>fis load</refname>
+      <refpurpose>Load flash image</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis load</command>
+	<arg>-b <replaceable> load address</replaceable></arg>
+	<arg>-c </arg>
+	<arg>-d </arg>
+	<arg><replaceable>name</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>-b</entry>
+	      <entry>Number</entry>
+	      <entry>Address the image should be loaded to. Executable
+	      images normally load at the location to which the file
+	      was linked. This option allows the image to be loaded to
+	      a specific memory location, possibly overriding any
+	      assumed location.</entry>
+	      <entry>If not specified, the address associated with the
+	      image in the FIS directory will be used.</entry>
+	    </row>
+	    <row>
+	      <entry>-c</entry>
+	      <entry></entry>
+	      <entry>Compute and print the checksum of the image data
+	      after it has been loaded into memory.</entry>
+	    </row>
+	    <row>
+	      <entry>-d</entry>
+	      <entry></entry>
+	      <entry>Decompress gzipped image while copying it from
+	      flash to RAM.</entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>name</replaceable></entry>
+	      <entry>String</entry>
+	      <entry>The name of the file, as shown in the FIS
+	      directory.</entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
 <para>This command is used to transfer an image from flash memory to RAM.
 </para>
-<para>Once loaded, it may be executed using the go command. If -b is specified,
-then the image is copied from flash to the specified address in RAM. If -b
-is not specified, the image is copied from flash to the load address given
-when the image was created. </para>
-</listitem>
-</varlistentry>
-</variablelist>
-<bridgehead>Arguments</bridgehead>
-<para>
-<informaltable frame="none"><tgroup cols="2">
-<?PubTbl tgroup dispwid="7.00in">
-<colspec colname="col1" colwidth="0.75in"><colspec colname="col2" colwidth="2*">
-<tbody><row>
-<entry colname="col1" colsep="0" rowsep="0">name</entry>
-<entry colname="col2" colsep="0" rowsep="0">The name of the file, as shown
-in the FIS directory</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-b</entry>
-<entry colname="col2" colsep="0" rowsep="0">Specify the location in memory
-to which the file should be loaded. Executable images normally load at the
-location to which the file was linked. This option allows the file to be loaded
-to a specific memory location, possibly overriding any assumed location.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-c</entry>
-<entry colname="col2" colsep="0" rowsep="0">Compute and print the checksum
-of the image data after it has been loaded into memory.</entry>
-</row><row>
-<entry colname="col1" colsep="0" rowsep="0">-d</entry>
-<entry colname="col2" colsep="0" rowsep="0">Decompress gzipped image while
-copying it from flash to RAM.</entry>
-</row></tbody></tgroup></informaltable>
-</para>
-<para><screen>
+<para>Once the image has been loaded, it may be executed using the
+<command>go</command> command.</para>
+</refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+<para>Load and run RedBoot[RAM] image.
+<screen>
 RedBoot> <userinput>fis load RedBoot[RAM]</userinput>
 RedBoot> <userinput>go</userinput>
 </screen>
 </para>
-<variablelist>
-<varlistentry><term>fis delete name</term>
-<listitem>
+</refsect1>
+</refentry>
+
+<!-- ******** fis delete ************************************************ -->
+
+  <refentry id="fis-delete-command">
+    <refnamediv>
+      <refname>fis delete</refname>
+      <refpurpose>Delete flash image</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis delete</command>
+	<arg choice="req"><replaceable>name</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry><replaceable>name</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Name of image that should be deleted.</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
 <para>This command removes an image from the FIS. The flash memory will be
 erased as part of the execution of this command, as well as removal of the
 name from the FIS directory.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
+
+<note><para>Certain images are reserved by RedBoot and cannot be deleted.
+RedBoot will issue a warning if this is attempted.</para></note>
+</refsect1>
+    <refsect1>
+      <title>Examples</title>
+<para>
+<screen>
 RedBoot> <userinput>fis list</userinput>
 Name              flash addr   Mem addr    Length    Entry point
 RedBoot          0xA0000000   0xA0000000  0x020000  0x80000000
@@ -1795,73 +2116,294 @@ RedBoot config   0xA0FC0000   0xA0FC0000  0x020000  0x00000000
 FIS directory    0xA0FE0000   0xA0FE0000  0x020000  0x00000000
 junk             0xA0040000   0x8C400000  0x020000  0x80000000
 RedBoot> <userinput>fis delete junk</userinput>
-Delete image &lsquo;junk&rsquo; - continue (y/n)? y
+Delete image &lsquo;junk&rsquo; - continue (y/n)? <userinput>y</userinput>
 ... Erase from 0xa0040000-0xa0060000: .
 ... Erase from 0xa0fe0000-0xa1000000: .
 ... Program from 0x8c7d0000-0x8c7f0000 at 0xa0fe0000: .
 </screen>
- </para>
-<note><title>NOTE</title>
-<para>Certain images are reserved by RedBoot and cannot be deleted.
-RedBoot will issue a warning if this is attempted.
 </para>
-</note>
-<variablelist>
-<varlistentry><term>fis lock -f &lt;flash_addr> -l &lt;length></term>
-<listitem>
+</refsect1>
+</refentry>
+
+<!-- ******** fis lock ************************************************ -->
+
+  <refentry id="fis-lock-command">
+    <refnamediv>
+      <refname>fis lock</refname>
+      <refpurpose>Lock flash area</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis lock</command>
+	<arg choice="req">-f <replaceable>flash_address</replaceable></arg>
+	<arg choice="req">-l <replaceable>length</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry><replaceable>flash_address</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Address of area to be locked.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>length</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Length of area to be locked.</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
 <para>This command is used to write-protect (lock) a portion of flash memory,
 to prevent accidental overwriting of images. In order to make make any modifications
-to the flash, a matching unlock command must be issued. This command is optional
-and will only be provided on hardware which can support write-protection of
-the flash space.  </para>
-<note><title>NOTE</title>
+to the flash, a matching <command>fis unlock</command> command must be
+issued. This command is optional and will only be provided on hardware
+which can support write-protection of the flash space.</para>
+<note>
 <para>Depending on the system, attempting to write to write-protected flash
 may generate errors or warnings, or be benignly quiet.  </para>
 </note>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
+</refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+<para>Lock an area of the flash
+<screen>
 RedBoot> <userinput>fis lock -f 0xa0040000 -l 0x20000</userinput>
 ... Lock from 0xa0040000-0xa0060000: .
 </screen>
- </para>
-<variablelist>
-<varlistentry><term>fis unlock -f &lt;flash_addr> -l &lt;length></term>
-<listitem>
+</para>
+</refsect1>
+</refentry>
+
+<!-- ******** fis unlock ************************************************ -->
+
+  <refentry id="fis-unlock-command">
+    <refnamediv>
+      <refname>fis unlock</refname>
+      <refpurpose>Unlock flash area</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis unlock</command>
+	<arg choice="req">-f <replaceable>flash_address</replaceable></arg>
+	<arg choice="req">-l <replaceable>length</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry><replaceable>flash_address</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Address of area to be unlocked.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>length</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Length of area to be unlocked.</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
 <para>This command is used to unlock a portion of flash memory forcibly, allowing
 it to be updated. It must be issued for regions which have been locked before
 the FIS can reuse those portions of flash.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
+<note>
+<para>Some flash devices power up in locked state and always need to
+be manually unlocked before they can be written to.</para></note>
+</refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+<para>Unlock an area of the flash
+<screen>
 RedBoot> <userinput>fis unlock -f 0xa0040000 -l 0x20000</userinput>
 ... Unlock from 0xa0040000-0xa0060000: .
 </screen>
- </para>
-<variablelist>
-<varlistentry><term>fis erase -f &lt;flash_addr> -l &lt;length></term>
-<listitem>
+</para>
+</refsect1>
+</refentry>
+
+<!-- ******** fis erase ************************************************ -->
+
+  <refentry id="fis-erase-command">
+    <refnamediv>
+      <refname>fis erase</refname>
+      <refpurpose>Erase flash area</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis erase</command>
+	<arg choice="req">-f <replaceable>flash_address</replaceable></arg>
+	<arg choice="req">-l <replaceable>length</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry><replaceable>flash_address</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Address of area to be erased.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>length</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Length of area to be erased.</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
 <para>This command is used to erase a portion of flash memory forcibly. There
 is no cross-checking to ensure that the area being erased does not correspond
-to a loaded image.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-<para><screen>
+to an existing image.</para>
+</refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+<para>Erase an area of the flash
+<screen>
 RedBoot> <userinput>fis erase -f 0xa0040000 -l 0x20000</userinput>
 ... Erase from 0xa0040000-0xa0060000: .
 </screen>
 </para>
-<variablelist>
-<varlistentry><term>fis write -b &lt;location> -l &lt;length> -f &lt;flash
-addr></term>
-<listitem>
-<para>Writes data from RAM at &lt;location> to flash.</para>
-</listitem>
-</varlistentry>
-</variablelist>
+</refsect1>
+</refentry>
+
+<!-- ******** fis write ************************************************ -->
+
+  <refentry id="fis-write-command">
+    <refnamediv>
+      <refname>fis write</refname>
+      <refpurpose>Write flash area</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>fis write</command>
+	<arg choice="req">-b <replaceable>mem_address</replaceable></arg>
+	<arg choice="req">-l <replaceable>length</replaceable></arg>
+	<arg choice="req">-f <replaceable>flash_address</replaceable></arg>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry><replaceable>mem_address</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Address of data to be written to flash.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>length</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Length of data to be writtem.</entry>
+	      <entry></entry>
+	    </row>
+	    <row>
+	      <entry><replaceable>flash_address</replaceable></entry>
+	      <entry>Number</entry>
+	      <entry>Address of flash to write to.</entry>
+	      <entry></entry>
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
+<para>This command is used to write data from memory to flash. There
+is no cross-checking to ensure that the area being written to does not
+correspond to an existing image.</para>
+</refsect1>
+
+    <refsect1>
+      <title>Examples</title>
+<para>Write an area of data to the flash
+<screen>
+RedBoot> <userinput>fis write -b 0x0606f000 -l 0x1000 -f 0x00020000</userinput>
+* CAUTION * about to program FLASH
+            at 0x00020000..0x0002ffff from 0x0606f000 - continue (y/n)? <userinput>y</userinput>
+... Erase from 0x00020000-0x00030000: .
+... Program from 0x0606f000-0x0607f000 at 0x00020000: .
+</screen>
+</para>
+</refsect1>
+</refentry>
+
 </sect1>
 <sect1 id="Persistent-State-Flash">
 <title>Persistent State Flash-based Configuration and Control</title>

@@ -134,7 +134,6 @@ load_elf_image(getc_t getc, terminate_t terminate, unsigned long base)
     unsigned long offset = 0;
     int phx, len, ch;
     unsigned char *addr;
-    bool first_addr = true;
     unsigned long addr_offset = 0;
     unsigned long highest_address = 0;
     unsigned long lowest_address = 0xFFFFFFFF;
@@ -179,35 +178,43 @@ load_elf_image(getc_t getc, terminate_t terminate, unsigned long base)
 #endif
         offset += sizeof(phdr[0]);
     }
+    if (base) {
+        // Set address offset based on lowest address in file.
+        addr_offset = 0xFFFFFFFF;
+        for (phx = 0;  phx < ehdr.e_phnum;  phx++) {    
+            if (phdr[phx].p_vaddr < addr_offset) {
+                addr_offset = phdr[phx].p_vaddr;
+            }
+        }
+        addr_offset = (unsigned long)base - addr_offset;
+    } else {
+        addr_offset = 0;
+    }
     for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
-        if ((phdr[phx].p_type == PT_LOAD) && (phdr[phx].p_offset != 0)) {
+        if (phdr[phx].p_type == PT_LOAD) {
             // Loadable segment
-            if (offset > phdr[phx].p_offset) {
-                diag_printf("Can't load ELF file - program headers out of order\n");
-                return 0;
-            }
-            while (offset < phdr[phx].p_offset) {
-                if ((*getc)() < 0) {
-                    diag_printf(SHORT_DATA);
-                    return 0;
-                }
-                offset++;
-            }
-            // Copy data into memory
-            addr = (unsigned char *)phdr[phx].p_paddr;
+            addr = (unsigned char *)phdr[phx].p_vaddr;
             len = phdr[phx].p_filesz;
-            if (first_addr) {
-                if (base) {
-                    addr_offset = (unsigned long)base - (unsigned long)addr;
-                } else {
-                    addr_offset = 0;                    
-                }
-                first_addr = false;
+            if ((unsigned long)addr < lowest_address) {
+                lowest_address = (unsigned long)addr;
             }
             addr += addr_offset;
-            if ((unsigned long)(addr-addr_offset) < lowest_address) {
-                lowest_address = (unsigned long)(addr - addr_offset);
+            if (offset > phdr[phx].p_offset) {
+                if ((phdr[phx].p_offset + len) < offset) {
+                    diag_printf("Can't load ELF file - program headers out of order\n");
+                    return 0;
+                }
+                addr += offset - phdr[phx].p_offset;
+            } else {
+                while (offset < phdr[phx].p_offset) {
+                    if ((*getc)() < 0) {
+                        diag_printf(SHORT_DATA);
+                        return 0;
+                    }
+                    offset++;
+                }
             }
+            // Copy data into memory
             while (len-- > 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
                 if ((addr < user_ram_start) || (addr > user_ram_end)) {

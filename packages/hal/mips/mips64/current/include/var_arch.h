@@ -102,21 +102,6 @@
 	           : "r" (tmp), "i"  (_cp0_regno_), "i" (_cp0_regsel_) );       \
 }
 
-
-//--------------------------------------------------------------------------
-
-#ifndef __ASSEMBLER__
-#ifdef CYGSEM_HAL_USE_ROM_MONITOR_CygMon
-externC int
-hal_diag_irq_check(int vector);
-
-#define HAL_DIAG_IRQ_CHECK(_vector_, _ret_) \
-CYG_MACRO_START                             \
-_ret_ =  hal_diag_irq_check((_vector_));    \
-CYG_MACRO_END
-#endif
-#endif /* __ASSEMBLER__ */
-
 //--------------------------------------------------------------------------
 
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS

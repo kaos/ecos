@@ -298,13 +298,32 @@
 #define AT91_EBI        0xFFE00000
 #define AT91_EBI_RCR    0x20       // Reset control
 
-// Power Saveings control
+// Power Savings control
 
 #define AT91_PS         0xFFFF4000
 #define AT91_PS_CR        0x000    // Control
 #define AT91_PS_PCER      0x004    // Peripheral clock enable
 #define AT91_PS_PCDR      0x004    // Peripheral clock disable
 #define AT91_PS_PCSR      0x004    // Peripheral clock status
+
+// Watchdog
+
+#define AT91_WD             0xFFFF8000
+#define AT91_WD_OMR         0x00
+#define AT91_WD_OMR_WDEN    0x00000001
+#define AT91_WD_OMR_RSTEN   0x00000002
+#define AT91_WD_OMR_IRQEN   0x00000004
+#define AT91_WD_OMR_EXTEN   0x00000008
+#define AT91_WD_OMR_OKEY    (0x00000234 << 4)
+#define AT91_WD_CMR         0x04
+#define AT91_WD_CMR_WDCLKS  0x00000003
+#define AT91_WD_CMR_HPCV    0x0000003C
+#define AT91_WD_CMR_CKEY    (0x0000006E << 7)
+#define AT91_WD_CR          0x08
+#define AT91_WD_CR_RSTKEY   0x0000C071
+#define AT91_WD_SR          0x0C
+#define AT91_WD_SR_WDOVF    0x00000001
+
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h

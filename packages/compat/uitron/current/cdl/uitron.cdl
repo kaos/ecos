@@ -425,7 +425,11 @@ cdl_package CYGPKG_UITRON {
             display "uITRON tests"
             flavor  data
             no_define
-            calculated { "tests/test1 tests/test2 tests/test3 tests/test4 tests/test5 tests/test6 tests/test7 tests/test8 tests/test9 tests/testcxx tests/testcx2 tests/testcx3 tests/testcx4 tests/testcx5 tests/testcx6 tests/testcx7 tests/testcx8 tests/testcx9 tests/testintr" }
+            calculated {
+                "tests/testcxx tests/testcx2 tests/testcx3 tests/testcx4 tests/testcx5 tests/testcx6 tests/testcx7 tests/testcx8 tests/testcx9"
+                . ((!CYGIMP_UITRON_INLINE_FUNCS && !CYGIMP_UITRON_CPP_OUTLINE_FUNCS) ?
+                " tests/test1 tests/test2 tests/test3 tests/test4 tests/test5 tests/test6 tests/test7 tests/test8 tests/test9 tests/testintr" : "")
+            }
             description   "
                 This option specifies the set of tests for the uITRON compatibility layer."
         }

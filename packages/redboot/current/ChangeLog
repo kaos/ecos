@@ -1,3 +1,42 @@
+2002-05-29  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_cmds.sgml: Changed format of fis commands.
+
+	* doc/redboot_installing.sgml: Updated installation instructions
+	for all targets up to PowerPC.
+
+2002-05-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c (load_elf_image): Improve loading of ELF files with
+	multiple physical segments.
+
+2002-05-27  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_rebuilding.sgml: Added some guimenu tags.
+
+	* doc/redboot_installing.sgml: Updating more board instructions.
+	More updates. Changing most programlisting keywords to screen.
+	Converted remaining rebuild instructions. More mode descriptions
+	updated. iPAQ converted as well.
+
+2002-05-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c (load_elf_image): Improve loading where ELF image
+	actually overlaps headers [old COFF style files].
+
+2002-05-24  Jesper Skov  <jskov@redhat.com>
+
+	* doc/redboot_installing.sgml: Updated another 3 boards'
+	instructions.
+
+	* doc/redboot.sgml: Changes due to comments from Jifl.
+	* doc/redboot_rebuilding.sgml: Same.
+	
+	* doc/redboot.sgml: Fix wording.
+
+	* doc/redboot_installing.sgml: Reordered the platform sections
+	according to CPU architecture/variant and board manufacturer.
+
 2002-05-23  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/dns.c (store_hent): New function. DNS package now requires

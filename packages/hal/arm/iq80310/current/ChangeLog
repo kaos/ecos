@@ -1,3 +1,9 @@
+2002-05-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/hal_diag.c: Support dynamic getting and setting of baud rates.
+	* cdl/hal_arm_iq80310.cdl: implements
+	CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_io.h (CYGARC_VIRT_TO_BUS, CYGARC_UNCACHED_ADDRESS):

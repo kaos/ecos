@@ -72,31 +72,20 @@
 
 //-----------------------------------------------------------------------------
 // Based on 1.8432 MHz xtal
-#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==9600
-#define CYG_DEV_SERIAL_BAUD_MSB        0x00
-#define CYG_DEV_SERIAL_BAUD_LSB        0x0c
-#endif
-#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==19200
-#define CYG_DEV_SERIAL_BAUD_MSB        0x00
-#define CYG_DEV_SERIAL_BAUD_LSB        0x06
-#endif
-#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==38400
-#define CYG_DEV_SERIAL_BAUD_MSB        0x00
-#define CYG_DEV_SERIAL_BAUD_LSB        0x03
-#endif
-#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==57600
-#define CYG_DEV_SERIAL_BAUD_MSB        0x00
-#define CYG_DEV_SERIAL_BAUD_LSB        0x02
-#endif
-#if CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD==115200
-#define CYG_DEV_SERIAL_BAUD_MSB        0x00
-#define CYG_DEV_SERIAL_BAUD_LSB        0x01
-#endif
 
-#ifndef CYG_DEV_SERIAL_BAUD_MSB
-#error Missing/incorrect serial baud rate defined - CDL error?
-#endif
+struct baud_config {
+    cyg_int32 baud_rate;
+    cyg_uint8 msb;
+    cyg_uint8 lsb;
+};
 
+struct baud_config baud_conf[] = {
+    {9600,   0x00, 0x0c},
+    {19200,  0x00, 0x06},
+    {38400,  0x00, 0x03},
+    {57600,  0x00, 0x02},
+    {115200, 0x00, 0x01}};
+    
 // Define the serial registers.
 #define CYG_DEV_RBR   0x00 // receiver buffer register, read, dlab = 0
 #define CYG_DEV_THR   0x00 // transmitter holding register, write, dlab = 0
@@ -157,26 +146,43 @@ typedef struct {
     cyg_uint8* base;
     cyg_int32 msec_timeout;
     int isr_vector;
+    cyg_int32 baud_rate;
 } channel_data_t;
 
 
 //-----------------------------------------------------------------------------
 
+static int
+set_baud( channel_data_t *chan )
+{
+    cyg_uint8* base = chan->base;
+    cyg_uint8 i;
+
+    for (i=0; i<(sizeof(baud_conf)/sizeof(baud_conf[0])); i++)
+    {
+        if (chan->baud_rate == baud_conf[i].baud_rate) {
+            cyg_uint8 lcr;
+            HAL_READ_UINT8(base+CYG_DEV_LCR, lcr);
+            HAL_WRITE_UINT8(base+CYG_DEV_LCR, lcr|SIO_LCR_DLAB);
+            HAL_WRITE_UINT8(base+CYG_DEV_DLL, baud_conf[i].lsb);
+            HAL_WRITE_UINT8(base+CYG_DEV_DLM, baud_conf[i].msb);
+            HAL_WRITE_UINT8(base+CYG_DEV_LCR, lcr);
+            return 1;
+        }
+    }
+    return -1;
+}
+
 static void
 cyg_hal_plf_serial_init_channel(void* __ch_data)
 {
     cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
-    cyg_uint8 lcr;
-
+    channel_data_t* chan = (channel_data_t*)__ch_data;
+    
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+CYG_DEV_LCR, SIO_LCR_WLS0 | SIO_LCR_WLS1);
-    HAL_READ_UINT8(base+CYG_DEV_LCR, lcr);
-    lcr |= SIO_LCR_DLAB;
-    HAL_WRITE_UINT8(base+CYG_DEV_LCR, lcr);
-    HAL_WRITE_UINT8(base+CYG_DEV_DLL, CYG_DEV_SERIAL_BAUD_LSB);
-    HAL_WRITE_UINT8(base+CYG_DEV_DLM, CYG_DEV_SERIAL_BAUD_MSB);
-    lcr &= ~SIO_LCR_DLAB;
-    HAL_WRITE_UINT8(base+CYG_DEV_LCR, lcr);
+    chan->baud_rate = CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD;
+    set_baud( chan );
     HAL_WRITE_UINT8(base+CYG_DEV_FCR, 0x07);  // Enable & clear FIFO
 }
 
@@ -308,6 +314,18 @@ cyg_hal_plf_serial_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 
         va_end(ap);
     }        
+    case __COMMCTL_GETBAUD:
+        ret = chan->baud_rate;
+        break;
+    case __COMMCTL_SETBAUD:
+    {
+        va_list ap;
+        va_start(ap, __func);
+        chan->baud_rate = va_arg(ap, cyg_int32);
+        va_end(ap);
+        ret = set_baud(chan);
+        break;
+    }
     default:
         break;
     }

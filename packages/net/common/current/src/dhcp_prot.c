@@ -546,6 +546,7 @@ do_dhcp(const char *intf, struct bootp *res,
     struct bootp rx_local;
     struct bootp *received = &rx_local;
     struct bootp *xmit = res;
+    struct bootp xmit2;
 
     // First, get a socket on the interface in question.  But Zeroth, if
     // needs be, bring it to the half-up broadcast only state if needs be.
@@ -783,7 +784,13 @@ do_dhcp(const char *intf, struct bootp *res,
             diag_printf( "---------DHCPSTATE_REQUESTING sending:\n" );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
+            // Send back a [modified] copy.  Note that some fields are explicitly
+            // cleared, as per the RFC.  We need the copy because these fields are
+            // still useful to us (and currently stored in the 'result' structure)
+            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
+            xmit2.bp_yiaddr.s_addr = 0;
+            xmit2.bp_siaddr.s_addr = 0;
+            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -913,7 +920,13 @@ do_dhcp(const char *intf, struct bootp *res,
             show_bootp( intf, xmit );
 #endif            
             
-            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
+            // Send back a [modified] copy.  Note that some fields are explicitly
+            // cleared, as per the RFC.  We need the copy because these fields are
+            // still useful to us (and currently stored in the 'result' structure)
+            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
+            xmit2.bp_yiaddr.s_addr = 0;
+            xmit2.bp_siaddr.s_addr = 0;
+            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
                        // UNICAST address of the server:
                       (struct sockaddr *)&server_addr,
                       sizeof(server_addr)) < 0) {
@@ -1011,7 +1024,13 @@ do_dhcp(const char *intf, struct bootp *res,
             diag_printf( "---------DHCPSTATE_REBINDING sending:\n" );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
+            // Send back a [modified] copy.  Note that some fields are explicitly
+            // cleared, as per the RFC.  We need the copy because these fields are
+            // still useful to us (and currently stored in the 'result' structure)
+            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
+            xmit2.bp_yiaddr.s_addr = 0;
+            xmit2.bp_siaddr.s_addr = 0;
+            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -1152,7 +1171,13 @@ do_dhcp(const char *intf, struct bootp *res,
                          server_addr.sin_port );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
+            // Send back a [modified] copy.  Note that some fields are explicitly
+            // cleared, as per the RFC.  We need the copy because these fields are
+            // still useful to us (and currently stored in the 'result' structure)
+            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
+            xmit2.bp_yiaddr.s_addr = 0;
+            xmit2.bp_siaddr.s_addr = 0;
+            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
                        // UNICAST address of the server:
                       (struct sockaddr *)&server_addr,
                       sizeof(server_addr)) < 0) {

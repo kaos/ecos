@@ -66,6 +66,7 @@ cdl_package CYGPKG_IO_FILEIO {
 
     requires       { CYGBLD_ISO_DIRENT_HEADER == "<cyg/fileio/dirent.h>" }
     requires       { CYGBLD_ISO_OPEN_MAX_HEADER == "<cyg/fileio/limits.h>" }
+    requires       { CYGBLD_ISO_NAME_MAX_HEADER == "<cyg/fileio/limits.h>" }
 
     compile 	   fd.cxx file.cxx io.cxx dir.cxx
     compile        -library=libextras.a misc.cxx

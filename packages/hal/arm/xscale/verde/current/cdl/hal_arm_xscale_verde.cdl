@@ -61,7 +61,6 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_VERDE {
         package."
 
     implements    CYGINT_HAL_ARM_ARCH_XSCALE
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
     # Let the architectural HAL see this variant's interrupts file
      define_proc {

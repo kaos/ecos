@@ -1,3 +1,7 @@
+2002-05-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/uitron.cdl: Don't build C tests when C++ options selected.
+
 2002-05-22  Nick Garnett  <nickg@redhat.com>
 
 	* doc/uitron.sgml: Fixed dangling xref.

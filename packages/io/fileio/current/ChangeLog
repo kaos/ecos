@@ -1,3 +1,13 @@
+2002-05-29  Jesper Skov  <jskov@redhat.com>
+
+	* tests/fileio1.c: Removed strcat definition. Rely on string.h to
+	provide it.
+
+2002-05-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/limits.h (NAME_MAX): Increase default to 64.
+	* cdl/fileio.cdl: Set CYGBLD_ISO_NAME_MAX_HEADER.
+
 2002-04-11  Nick Garnett  <nickg@redhat.com>
 
 	* doc/fileio.sgml: Added a section on writing a new

@@ -1,3 +1,11 @@
+2002-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/infra.cdl: Added two options to control CFLAGS.
+
+2002-05-17  Martin Buck <martin.buck@ascom.ch>
+ 
+ 	* include/cyg_type.h (CYGBLD_ATTRIB_PRINTF_FORMAT): Add.
+ 
 2002-05-23  Gary Thomas  <gthomas@redhat.com>
 
 	* src/diag.cxx (_vprintf): Mapping of '\n'=>'\r\n' must be done

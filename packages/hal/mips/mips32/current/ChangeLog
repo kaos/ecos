@@ -1,3 +1,8 @@
+2002-05-24  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_arch.h: Removed HAL_DIAG_IRQ_CHECK. It's not
+	implemented.
+
 2002-05-22  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_arch.h: Added __ASSEMBLER__ protection.

@@ -208,16 +208,8 @@ value for the start-up script; it must always be retyped.</para>
 
 <para>RedBoot can normally be configured to run in a number of startup
 modes (or just "modes" for short), determining its location of
-residence and its location of execution:
+residence and execution:
 <variablelist>
- <varlistentry><term>RAM mode</term>
- <listitem><para>In this mode, RedBoot both resides and executes from
- RAM memory. This is used for updating a primary ROM
- mode image in situ and sometimes as part of the RedBoot installation
- on the board when there's already an existing (non-RedBoot) boot
- monitor available.</para></listitem>
- </varlistentry>
-
  <varlistentry><term>ROM mode</term>
  <listitem><para>In this mode, RedBoot both resides and executes from
  ROM memory (flash or EPROM). This mode is used when there are limited
@@ -234,6 +226,22 @@ residence and its location of execution:
  advantages to make up for this: it normally runs faster (relevant
  only on slower boards) and it is able to update the flash region
  where the image resides.</para></listitem>
+ </varlistentry>
+
+ <varlistentry><term>RAM mode</term>
+ <listitem><para>In this mode, RedBoot both resides and executes from
+ RAM memory. This is used for updating a primary ROM
+ mode image in situ and sometimes as part of the RedBoot installation
+ on the board when there's already an existing (non-RedBoot) boot
+ monitor available.</para>
+
+ <para> You can only use ROM and ROMRAM mode images for booting a
+ board - a RAM mode image cannot run unless loaded by another ROM
+ monitor. There is no need for this startup mode if a RedBoot ROMRAM
+ mode image is the primary boot monitor.  When this startup mode is
+ programmed into flash (as a convenience as it's fast to load from
+ flash) it will generally be named as "RedBoot[RAM]" in the FIS
+ directory.  </para></listitem>
  </varlistentry>
 </variablelist>
 
@@ -270,6 +278,14 @@ resources used by RedBoot, such as timers. Platform-specific resources
 used by RedBoot are listed in the platform specific parts of this
 manual.</para>
 
+<para>Both flash and RAM resources used by RedBoot depend to some
+degree on the features enabled in the RedBoot configuration. It is
+possible to reduce in particular the RAM resources used by RedBoot by
+removing features that are not needed. Flash resources can also be
+reduced, but due to the granularity of the flash (the block sizes),
+reductions in feature size do not always result in flash resource
+savings.</para>
+
 
 <sect2>
 <title>Flash Resources</title>
@@ -295,6 +311,14 @@ RedBoot config    0x0007F000  0x0007F000  0x00001000  0x00000000
 FIS directory     0x00070000  0x00070000  0x0000F000  0x00000000
 </screen>
 </para>
+
+<para>To save flash resources, use a ROMRAM mode RedBoot, or if using
+a ROM mode RedBoot, avoid reserving space for the RedBoot[RAM] image
+(this is done by changing the RedBoot configuration) and download the
+RAM mode RedBoot whenever it is needed. If the RedBoot image takes up
+a fraction of an extra flash block, it may be possible to reduce the
+image size enough to free this block by removing some features.</para>
+
 </sect2>
 
 <sect2>
@@ -336,6 +360,13 @@ RedBoot> <userinput>x -b %{FREEMEMHI}</userinput>
 06061010: E6 55 DD DB F3 75 5D 15  E0 F3 FC D9 C8 73 1D DA  |.U...u]......s..|
 </screen>
 </para>
+
+<para>To reduce RedBoot's RAM resource usage, use a ROM mode
+RedBoot. The RedBoot features that use most RAM are the net stack, the
+flash support and the gunzip support. These, and other features, can
+be disabled to reduce the RAM footprint, but obviously at the cost of
+lost functionality.</para>
+
 </sect2>
 </sect1>
 

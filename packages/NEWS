@@ -47,6 +47,8 @@
   boards that have old-style GDB stubs without VV support.
 * Added ELF and wider decompression support to RedBoot.
 * Added support for SuperH SH2 CPUs
+* Added port for Motorola MCF5272c3 ColdFire evaulation board from 
+  Wade Jensen <Wade_Jensen@inter-tel.com>.
 * Added ports to Wuerz Elektronik and Axiom Manufacturing MPC555 based eval
   boards. Contributed by Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
   from Katholieke Universiteit Leuven. Includes FLASH, serial and wallclock

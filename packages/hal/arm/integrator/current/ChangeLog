@@ -1,3 +1,7 @@
+2002-05-27  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_integrator.cdl: Don't run cache tests.
+
 2002-05-07  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_integrator.cdl: 

@@ -892,6 +892,15 @@ package CYGPKG_IO_SERIAL_H8300_SCI {
     description       "H8/300 SCI serial device drivers"
 }
 
+package CYGPKG_IO_SERIAL_MCF5272_UART {
+    alias             { "MCF5272 Serial UART Drivers"
+                         devs_MCF5272_uart_driver }
+    hardware
+    directory	      devs/serial/mcf52xx/mcf5272
+    script	      ser_mcf5272_uart.cdl	
+    description       "Serial MCF5272 UART Drivers."
+}
+
 package CYGPKG_IO_SERIAL_LOOP {
     alias             { "Loop serial device drivers"
                         devs_serial_loop loop_serial_driver }
@@ -1293,6 +1302,14 @@ package CYGPKG_DEVS_ETH_H8300_AKI3068NET {
         hardware
         description     "Ethernet drivers for Akizuki H8/3068 Network
    	                 micom board."
+}
+
+package CYGPKG_DEVS_ETH_MCF5272 {
+        alias           { "MCF5272 Fast Ethernet Controller driver" mcf5272_eth_driver}
+        hardware
+        directory       devs/eth/mcf52xx/mcf5272
+        script          mcf5272_eth_driver.cdl
+        description     "Ethernet driver for the MCF5272."
 }
 
 
@@ -2709,6 +2726,65 @@ evaluation board."
 }
 
 # --------------------------------------------------------------------------
+# m68k packages
+
+package CYGPKG_HAL_M68K {
+    alias       { "m68k common HAL" hal_m68k m68k_hal m68k_arch_hal }
+    directory   hal/m68k/arch
+    script      hal_m68k.cdl
+    hardware
+
+        description   "The m68k  architecture  HAL  package  provides  generic
+                    support for  this  processor  architecture.   It  is  also
+                    necessary  to  select  a  specific  target  platform   HAL
+                    package."
+
+}
+
+package CYGPKG_HAL_M68K_MCF52xx {
+    alias       { "68k/Coldfire version 2 core variant HAL"
+                   hal_m68k_mcf52xx
+                   m68k_mcf52xx_hal }
+    directory   hal/m68k/mcf52xx/var
+    script      hal_m68k_mcf52xx.cdl
+    hardware
+
+    description   "The 68k/Coldfire version 2  core  variant  HAL  package
+                  provides generic support for the version 2 Coldfire  core.
+                  It is also necessary to select a specific target  platform
+                  HAL package."
+}
+
+package CYGPKG_HAL_M68K_MCF52xx_MCF5272 {
+    alias       { "mcf5272 68k/Coldfire processor variant HAL"
+                  hal_m68k_mcf52xx_mcf5272
+                      m68k_mcf52xx_mcf5272_hal }
+    directory   hal/m68k/mcf52xx/mcf5272/proc
+    script      hal_m68k_mcf52xx_mcf5272.cdl
+    hardware
+
+    description   "The mcf5272 68k/Coldfire processor variant HAL  package
+                  provides generic support for this processor  architecture.
+                  It is also necessary to select a specific target  platform
+                  HAL package."
+
+}
+
+package CYGPKG_HAL_M68K_MCF52xx_MCF5272_MCF5272C3 {
+    alias       { "Motorola mcf5272c3 evaluation board platform HAL"
+                  hal_m68k_mcf52xx_mcf5272_mcf5272c3
+                      m68k_mcf52xx_mcf5272_mcf5272c3_hal }
+    directory   hal/m68k/mcf52xx/mcf5272/mcf5272c3/plf
+    script      hal_m68k_mcf52xx_mcf5272_mcf5272c3.cdl
+    hardware
+
+    description   "The Motorola  mcf5272c3 evaluation  board platform  HAL
+                  package should be used when targeting the actual  hardware
+                  for the Motorola mcf5272c3 evaluation board platform."
+
+}
+
+# --------------------------------------------------------------------------
 # CalmRISC16 packages
 
 package CYGPKG_HAL_CALM16 {
@@ -3749,6 +3825,27 @@ target ceb_v850 {
 The ceb_v850 target provides the packages needed to run eCos on a
 Cosmo CEB-V850 evaluation board fitted with a NEC V850/SA1 or NEC V850/SB1."
 }
+
+# --------------------------------------------------------------------------
+# m68k targets
+
+target mcf5272c3 {
+    alias { "Motorola mcf5272c3 evaluation board" }
+	packages {
+        CYGPKG_HAL_M68K
+        CYGPKG_HAL_M68K_MCF52xx
+        CYGPKG_HAL_M68K_MCF52xx_MCF5272
+        CYGPKG_HAL_M68K_MCF52xx_MCF5272_MCF5272C3
+        CYGPKG_DEVS_ETH_MCF5272
+        CYGPKG_IO_SERIAL_MCF5272_UART
+    }
+
+    description   "The mcf5272c3 target provides  the packages  needed to  run
+                eCos on the Motorola mcf5272c3 evaluation board."
+
+}
+ 
+# --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 # H8 targets

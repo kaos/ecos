@@ -115,6 +115,7 @@ free_hent(struct hostent * hent)
         }
         free(hent->h_addr_list);
     }
+    free(hent);
 }
 
 /* Allocate hent structure with room for one in_addr. Returns NULL on

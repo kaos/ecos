@@ -1,3 +1,10 @@
+2002-05-17  Martin Buck  <martin.buck@ascom.ch>
+ 
+ 	* include/stdio.h (fnprintf): Added printf-format-checking using
+ 	CYGBLD_ATTRIB_PRINTF_FORMAT, since gcc does it automatically only for
+ 	ISO C90 functions.
+ 	(snprintf) Likewise.
+ 
 2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 
 	* include/streambuf.inl (Cyg_StdioStreamBuffer constructor): 

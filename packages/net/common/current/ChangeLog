@@ -1,3 +1,19 @@
+2002-05-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/dhcp_prot.c (do_dhcp): xmit2 need not be static.
+
+2002-05-27  Gary Thomas  <gthomas@redhat.com>
+
+	* src/dhcp_prot.c (do_dhcp): Suppress my_ip and server_ip fields
+	in all messages where they should not be set.  Also be more careful
+	about size of messages as they are copied.
+	
+2002-05-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/dhcp_prot.c (do_dhcp): Suppress my_ip and server_ip fields
+	when returning DHCP request (acceptance phase) because some DHCP
+	servers insist (and the RFC says it must be this way).
+
 2002-05-21  Jesper Skov  <jskov@redhat.com>
 
 	* include/net/netdb.h: Include netinet/in.h for the in_addr use in

@@ -57,7 +57,10 @@
 
 #include <pkgconf/io_fileio.h>
 
-#define OPEN_MAX CYGNUM_FILEIO_NFILE
+#ifndef __STRICT_ANSI__
+# define NAME_MAX    64
+# define OPEN_MAX    CYGNUM_FILEIO_NFILE
+#endif
 
 /*--------------------------------------------------------------------------*/
 #endif /* ifndef CYGONCE_IO_FILEIO_LIMITS_H */

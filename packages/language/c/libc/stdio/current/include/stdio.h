@@ -271,11 +271,11 @@ perror( const char * /* prefix_str */ );
 
 externC int
 fnprintf( FILE * /* stream */, size_t /* length */,
-          const char * /* format */, ... );
+          const char * /* format */, ... ) CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
 
 externC int
 snprintf( char * /* str */, size_t /* length */, const char * /* format */,
-          ... );
+          ... ) CYGBLD_ATTRIB_PRINTF_FORMAT(3, 4);
 
 externC int
 vfnprintf( FILE * /* stream */, size_t /* length */,

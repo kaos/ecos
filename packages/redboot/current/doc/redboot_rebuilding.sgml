@@ -81,13 +81,14 @@ chosen platform.
 <para>Then import the appropriate platform RedBoot configuration file,
 here for RAM configuration:
 <screen>
-$ <userinput>ecosconfig import <filename>${ECOS_REPOSITORY}/hal/sh/se7751/current/misc/redboot_RAM.ecm</filename></userinput>
+$ <userinput>ecosconfig import <filename>${ECOS_REPOSITORY}/hal/sh/se7751/<replaceable>VERSION</replaceable>/misc/redboot_RAM.ecm</filename></userinput>
 $ <userinput>ecosconfig tree</userinput>
 </screen>
 Replace architecture ("sh"), platform ("se7751") and version
-("current") with those appropriate for the chosen platform and the
-version number of its HAL package. Also replace the configuration name
-("redboot_RAM.ecm") with that of the appropriate configuration file.
+("<replaceable>VERSION</replaceable>") with those appropriate for the
+chosen platform and the version number of its HAL package. Also
+replace the configuration name ("redboot_RAM.ecm") with that of the
+appropriate configuration file.
 </para>
 
 <para>RedBoot can now be built:
@@ -105,7 +106,7 @@ details are described in the form of shell variables. Using those,
 the steps to build RedBoot are:
 <programlisting>
 export REDBOOT_CFG=redboot_ROM
-export VERSION=current
+export VERSION=<replaceable>VERSION</replaceable>
 mkdir /tmp/${REDBOOT_CFG}
 cd /tmp/${REDBOOT_CFG}
 ecosconfig new ${TARGET} redboot
@@ -125,26 +126,26 @@ version of the platform package.
 <title>Rebuilding RedBoot from the <application>Configuration Tool</application></title>
 
 <para>To rebuild RedBoot from the <application>Configuration
-Tool</application>, open the template window (Build-&gt;Templates) and
+Tool</application>, open the template window (<guimenuitem>Build->Templates</guimenuitem>) and
 select the appropriate Hardware target and in Packages select
 "redboot". Then press OK. Depending on the platform, a number of
 conflicts may need to be resolved before the build can be started;
 select "Continue".</para>
 
 <para>Import the desired RedBoot configuration file from the platform HAL
-(File-&gt;Import...).  Depending on the platform, a number of
+(<guimenuitem>File->Import...</guimenuitem>).  Depending on the platform, a number of
 conflicts may need to be resolved before the build can be started;
 select "Continue". For example, if the platform selected is Hitachi
 SE7751 board and the RAM configuration RedBoot should be built, import
 the file
-<filename>hal/sh/se7751/current/misc/redboot_RAM.ecm</filename>.</para>
+<filename>hal/sh/se7751/<replaceable>VERSION</replaceable>/misc/redboot_RAM.ecm</filename>.</para>
 
 <para>Save the configuration somewhere suitable with enough disk space
-for building RedBoot (File-&gt;Save...). Choose the name according to
+for building RedBoot (<guimenuitem>File->Save...</guimenuitem>). Choose the name according to
 the RedBoot configuration, for example
 <filename>redboot_RAM.ecc</filename>.</para>
 
-<para>Then start the build (Build-&gt;Library) and wait for it to
+<para>Then start the build (<guimenuitem>Build->Library</guimenuitem>) and wait for it to
 complete. The resulting RedBoot files will be in the associated
 install directory, for the example this would be <filename
 class="directory">redboot_RAM_install/bin</filename>.</para>

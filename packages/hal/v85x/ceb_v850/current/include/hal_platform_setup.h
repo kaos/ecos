@@ -74,20 +74,32 @@
 
         // Internal RAM, internal ROM and I/O - no wait states, regardless
         // of the setting of DWC
-#if CYGHWR_HAL_V85X_CPU_FREQ > 17000000
-        // External ROM      - 3 wait states
-        // External RAM      - 3 wait states
-        movea   0xFFFF,r0,r1
-#elif CYGHWR_HAL_V85X_CPU_FREQ > 8000000
-        // External ROM      - 2 wait states
-        // External RAM      - 1 wait states
-        movea   0x7FFE,r0,r1
-#elif CYGHWR_HAL_V85X_CPU_FREQ > 4194304
-        // External ROM      - 1 wait states
+        // External RAM is 70ns, External ROM is 120ns. Therefore...
+#if CYGHWR_HAL_V85X_CPU_FREQ < 14285714
         // External RAM      - 0 wait states
-        movea   0x3FFD,r0,r1
+        movea   0x3F00,r0,r1
+#elif CYGHWR_HAL_V85X_CPU_FREQ < 28571428
+        // External RAM      - 1 wait state
+        movea   0x7F00,r0,r1
+#elif CYGHWR_HAL_V85X_CPU_FREQ < 42857142
+        // External RAM      - 2 wait states
+        movea   0xBF00,r0,r1
 #else
-
+        // External RAM      - 3 wait states
+        movea   0xFF00,r0,r1
+#endif
+#if CYGHWR_HAL_V85X_CPU_FREQ < 8333333
+        // External ROM      - 0 wait states
+        ori     0x00FC,r1,r1
+#elif CYGHWR_HAL_V85X_CPU_FREQ < 16666667
+        // External ROM      - 1 wait states
+        ori     0x00FD,r1,r1
+#elif CYGHWR_HAL_V85X_CPU_FREQ < 25000000
+        // External ROM      - 2 wait states
+        ori     0x00FE,r1,r1
+#else
+        // External ROM      - 3 wait states
+        ori     0x00FF,r1,r1
 #endif
         st.h    r1,lo(V850_REG_DWC)[r6]
 

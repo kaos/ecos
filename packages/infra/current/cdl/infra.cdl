@@ -185,6 +185,36 @@ cdl_package CYGPKG_INFRA {
         puts $::cdl_header "/*****  proc output end  *****/"
     }
 
+
+    # ========================================================================
+    # Global compiler option controls
+
+    cdl_option CYGBLD_INFRA_CFLAGS_WARNINGS_AS_ERRORS {
+        display       "Make all compiler warnings show as errors"
+        requires      { is_substr(CYGBLD_GLOBAL_CFLAGS, " -Werror") }
+        default_value 0
+        description   "
+            Enabling this option will cause all compiler warnings to show
+            as errors and bring the library build to a halt. This is used
+            to ensure that the code base is warning free, and thus ensure
+            that newly introduced warnings stand out and get fixed before
+            they show up as weird run-time behavior."
+    }
+
+    cdl_option CYGBLD_INFRA_CFLAGS_PIPE {
+        display       "Make compiler and assembler communicate by pipe"
+        requires      { is_substr(CYGBLD_GLOBAL_CFLAGS, " -pipe") }
+        default_value 0
+        description   "
+            Enabling this option will cause the compiler to feed the
+            assembly output the the assembler via a pipe instead of
+            via a temporary file. This normally reduces the build
+            time."
+    }
+
+    # ========================================================================
+    # Package compiler options
+
     cdl_component CYGPKG_INFRA_OPTIONS {
         display "Infra build options"
         flavor  none

@@ -92,16 +92,6 @@ diag_printf("<INFO>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):
 
 //==========================================================================
 
-static char *strcat( char *s1, const char *s2 )
-{
-    char *s = s1;
-    while( *s1 ) s1++;
-    while( (*s1++ = *s2++) != 0);
-    return s;
-}
-
-//==========================================================================
-
 static void listdir( char *name, int statp )
 {
     int err;

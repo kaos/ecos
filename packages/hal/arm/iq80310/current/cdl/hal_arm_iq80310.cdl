@@ -65,6 +65,7 @@ cdl_package CYGPKG_HAL_ARM_IQ80310 {
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
     implements    CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
     implements    CYGINT_HAL_ARM_ARCH_XSCALE
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
