@@ -55,7 +55,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <net/if.h>
-#include <net/if.h>
+#include <net/if_types.h>
 
 /* How many interfaces are there? */
 
@@ -64,9 +64,9 @@ extern struct ifaddr **ifnet_addrs;
 
 long cyg_snmp_num_interfaces(void) {
   long long_ret=0;
-  int cnt = if_index;
+  int cnt = if_index - 1;
   
-  while (cnt > 0) {
+  while (cnt >= 0) {
     if (ifnet_addrs[cnt] != 0) {
       long_ret++;
     }
@@ -78,12 +78,15 @@ long cyg_snmp_num_interfaces(void) {
 struct ifnet *cyg_snmp_get_if(int if_num) {
   int index = 0;
   struct ifnet *ifp;
+  
   do {
     while(0 == ifnet_addrs[index])
       index++;
 
     ifp = ifnet_addrs[index]->ifa_ifp;
-    if_num--;
+    
+    if_num--;	    
+    index++;
   } while (if_num);
 
   return ifp;

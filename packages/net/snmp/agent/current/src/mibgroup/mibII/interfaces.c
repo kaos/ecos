@@ -371,6 +371,9 @@ var_ifTable(struct variable *vp,
         case IFT_PROPVIRTUAL:
             strcpy( string, "(Proprietary Virtual/Internal)" );
             break;
+        case IFT_PPP:
+        	strcpy( string, "(Point to point interface)" );
+        	break;
         default:
             strcpy( string, "Some shy network adaptor" );
             break;

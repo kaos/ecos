@@ -1,3 +1,12 @@
+2004-05-14	Matt Jerdonek	<maj1224@yahoo.com>
+
+	* src/mibgroup/mibII/helpers.c (cyg_snmp_num_interfaces): return
+	correct number of interfaces including the loopback interface.  
+	* src/mibgroup/mibII/helpers (cyg_snmp_get_if) increment the
+	interface index properly.  
+	* src/mibgroup/mibII/interfaces.c (var_ifTable): Add case 
+	for IFT_PPP interface type.
+
 2003-10-09  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
   
 	* src/mibgroup/mibII/dot3.c: Make sure the agent responses with
