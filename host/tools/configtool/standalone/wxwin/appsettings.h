@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,7 +28,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians, jld
 // Contact(s):  julians
 // Date:        2000/08/29
 // Version:     $Id: appsettings.h,v 1.12 2001/12/14 17:34:03 julians Exp $
@@ -153,6 +154,11 @@ public:
 
     // Find the subkey of the latest installed eCos, e.g. "1.4.9"
     wxString GetInstallVersionKey ();
+    
+#ifdef __WXMSW__
+    // Find the location of the Cygwin installation
+    wxString GetCygwinInstallPath ();
+#endif
 
 //// Accessors
 

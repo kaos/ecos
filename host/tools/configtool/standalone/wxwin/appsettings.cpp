@@ -314,7 +314,36 @@ bool ecSettings::LoadConfig()
     // Only to be used if we fail to find the information installed
     // with the Configuration Tool.
     config.Read(_("/Paths/BuildToolsDir"), & m_buildToolsDir);
-    
+    if (m_buildToolsDir.IsEmpty()) // first invocation by this user
+    {
+        // we have no clues as to the location of the build tools so
+        // test for ../../../gnutools relative to the configtool location
+        wxFileName gnutools = wxFileName (wxGetApp().GetAppDir(), wxEmptyString);
+        gnutools.Normalize(); // remove trailing "./" if present
+		if (2 < gnutools.GetDirCount())
+        {
+            gnutools.RemoveDir (gnutools.GetDirCount()-1);
+            gnutools.RemoveDir (gnutools.GetDirCount()-1);
+            gnutools.RemoveDir (gnutools.GetDirCount()-1);
+            gnutools.AppendDir (wxT("gnutools"));
+            if (gnutools.DirExists()) // we've found the gnutools
+                m_buildToolsDir = gnutools.GetFullPath();
+        }
+    }
+
+    // look for bin/*-objcopy under the build tools directory
+    wxArrayString objcopyFiles;
+    wxString objcopyFileSpec(wxT("-objcopy"));
+#ifdef __WXMSW__
+    objcopyFileSpec += wxT(".exe");
+#endif
+    size_t objcopyCount = wxDir::GetAllFiles(m_buildToolsDir, &objcopyFiles, wxT("*") + objcopyFileSpec, wxDIR_FILES | wxDIR_DIRS);
+    for (int count=0; count < objcopyCount; count++)
+    {
+        wxFileName file (objcopyFiles [count]);
+        m_arstrBinDirs.Set(file.GetFullName().Left (file.GetFullName().Find(objcopyFileSpec)), file.GetPath(wxPATH_GET_VOLUME));
+    }
+
     if (!config.Read(_("/Build/Make Options"), & m_strMakeOptions))
     {
 #ifdef __WXMSW__
@@ -577,13 +606,47 @@ bool ecSettings::LoadConfig()
         }
     }
 
-#ifdef __WXGTK__
+#ifdef __WXMSW__
+    if (m_userToolsDir.IsEmpty())
+        m_userToolsDir =  GetCygwinInstallPath() + wxT("\\bin");
+#else
     if (m_userToolsDir.IsEmpty())
         m_userToolsDir = wxT("/bin");
 #endif
     
     return TRUE;
 }
+
+#ifdef __WXMSW__
+wxString ecSettings::GetCygwinInstallPath()
+{
+    HKEY hKey = 0;
+    DWORD type;
+    BYTE value[256];
+    DWORD sz = sizeof(value);
+    wxString strCygwinInstallPath;
+
+    // look for the "/" mount point in the system registry settings
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Cygnus Solutions\\Cygwin\\mounts v2\\/", 0, KEY_READ, &hKey)) {
+        if (ERROR_SUCCESS == RegQueryValueEx(hKey, "native", NULL, & type, value, & sz)) {
+            strCygwinInstallPath = (const char*) value;
+        }
+        RegCloseKey(hKey);
+    }
+
+    // if not yet found, look for the "/" mount point in the user's registry settings
+    hKey = 0;
+    sz = sizeof(value);
+    if (strCygwinInstallPath.IsEmpty() && (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Cygnus Solutions\\Cygwin\\mounts v2\\/", 0, KEY_READ, &hKey))) {
+        if (ERROR_SUCCESS == RegQueryValueEx(hKey, "native", NULL, & type, value, & sz)) {
+            strCygwinInstallPath = (const char*) value;
+        }
+        RegCloseKey(hKey);
+    }
+
+    return strCygwinInstallPath;
+}
+#endif
 
 // Save config info
 bool ecSettings::SaveConfig()

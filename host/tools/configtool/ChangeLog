@@ -1,3 +1,9 @@
+2003-04-07  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp,
+	  standalone/wxwin/appsettings.h: Look for user tools and build
+	tools relative to the configtool executable file.
+
 2003-04-05  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/makefile.gnu: Build Cygwin hosted configtool with
