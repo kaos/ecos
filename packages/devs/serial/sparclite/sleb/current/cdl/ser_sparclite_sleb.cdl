@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_SPARCLITE_SLEB {
     description   "
            This option enables the serial device drivers for the
            SPARClite SLEB."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   sleb_sdtr.c
 
