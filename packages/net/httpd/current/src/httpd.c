@@ -237,6 +237,7 @@ static void cyg_httpd_process( int client_socket, struct sockaddr *client_addres
       
         if( match( filename, entry->pattern ) )
         {
+            HTTPD_DIAG("calling %08x: %s\n", entry, entry->pattern);
             if( (success = entry->handler( client, filename, formdata, entry->arg )) )
                 break;
         }
@@ -250,7 +251,10 @@ static void cyg_httpd_process( int client_socket, struct sockaddr *client_addres
      * some filesystem, somewhere.
      */
     if( !success )
+    {
+        HTTPD_DIAG("Not found %s\n",filename);
         cyg_httpd_send_html( client, NULL, NULL, cyg_httpd_not_found );
+    }
 
     fclose(client);
 }
@@ -382,7 +386,9 @@ static void cyg_httpd_init(cyg_addrword_t arg)
 /* System initializer
  *
  * This is called from the static constructor in init.cxx. It spawns
- * the main server thread and makes it ready to run.
+ * the main server thread and makes it ready to run. It can also be
+ * called explicitly by the application if the auto start option is
+ * disabled.
  */
 
 __externC void cyg_httpd_startup(void)

@@ -57,6 +57,8 @@
 #include <pkgconf/isoinfra.h>
 #include <pkgconf/httpd.h>
 
+#ifdef CYGNUM_HTTPD_SERVER_AUTO_START
+
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
@@ -88,6 +90,8 @@ Cyg_Httpd_Init_Class::Cyg_Httpd_Init_Class()
 {
     cyg_httpd_startup();
 }
+
+#endif // CYGNUM_HTTPD_SERVER_AUTO_START
 
 /* ----------------------------------------------------------------- */
 /* end of httpd.c                                                    */

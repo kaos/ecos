@@ -1,6 +1,17 @@
+2004-03-09  Nick Garnett  <nickg@calivar.com>
+
+	* include/httpd.h: 
+	* src/init.cxx: 
+	* src/httpd.c: 
+	* src/init.cxx:
+	Added option to enable auto-starting of HTTPD. This is set by
+	default so the current behaviour is retained. When this is
+	disabled the application has to call cyg_httpd_startup() to get
+	the server going.
+
 2004-02-23  Jeff Duncan  <jeffd@magtek.com>
 
-        * src/httpd.c (cyg_httpd_server): Fix http header by adding
+	* src/httpd.c (cyg_httpd_server): Fix http header by adding
           newline after server name.
 
 2003-10-21  Eric Doenges <Eric.Doenges@DynaPel.com>

@@ -64,6 +64,16 @@
 #include <stdio.h>
 
 /* ================================================================= */
+/* Start daemon explicitly
+ */
+
+#ifndef CYGNUM_HTTPD_SERVER_AUTO_START
+
+__externC void cyg_httpd_startup(void);
+
+#endif
+
+/* ================================================================= */
 /* Lookup Table
  *
  * 

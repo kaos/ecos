@@ -70,7 +70,7 @@ cdl_package CYGPKG_HTTPD {
 
     compile httpd.c 
     compile -library=libextras.a init.cxx
-    
+
     cdl_option CYGNUM_HTTPD_SERVER_PORT {
         display "HTTP port"
         flavor   data
@@ -129,6 +129,15 @@ cdl_package CYGPKG_HTTPD {
         description "This defines the size of the buffer used to receive the first
                      line of each HTTP request. If you expect to use particularly
                      long URLs or have very complex forms, this should be increased."
+    }
+
+    cdl_option CYGNUM_HTTPD_SERVER_AUTO_START {
+       display  "Autostart HTTPD"
+       default_value 1
+       description  "This option causes the HTTP Daemon to be started
+                     automatically during system initialization. If this option
+                     is not set then the application must start the daemon
+                     explicitly by calling cyg_httpd_startup()."
     }
 
     cdl_option CYGNUM_HTTPD_SERVER_DELAY {
