@@ -1,3 +1,8 @@
+2003-06-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/linux/stat.h: Removed #defines which has been added to 
+	the main eCos sys/stat.h. 
+
 2003-01-21  David Woodhouse  <dwmw2@infradead.org>
 
 	* New package.
