@@ -322,7 +322,7 @@ cdl_package CYGPKG_LIBC_TIME {
             no_define
             calculated { 
                 "tests/asctime tests/clock tests/ctime tests/gmtime tests/localtime tests/mktime tests/strftime tests/time " 
-                . (CYGSEM_LIBC_TIME_POSIX_TIME_ROUTINES ? "tests/strptime" : "")
+                . (CYGFUN_LIBC_TIME_POSIX ? "tests/strptime" : "")
             }
             description   "
                 This option specifies the set of tests for the C library
