@@ -518,7 +518,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
             }
         }
         else {
-            os_printf("** FEC Info: PHY LINK alreay UP \n");
+            os_printf("** FEC Info: PHY LINK already UP \n");
         }
     }
 #endif // CYGSEM_DEVS_ETH_POWERPC_FEC_RESET_PHY
