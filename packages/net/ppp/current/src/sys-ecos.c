@@ -593,6 +593,11 @@ void
 wait_input(timo)
     struct timeval *timo;
 {
+    // If there are any packets still waiting on the input queue then
+    // return immediately to let the PPPD handle them.
+    if (cyg_ppp_pppcheck(&ppp_tty) != 0)
+        return;
+
     if( timo != NULL )
     {
         cyg_tick_count_t trigger = timo->tv_sec*ppp_rtc_resolution.divisor;

@@ -146,6 +146,8 @@ extern int	cyg_ppp_pppread __P((struct tty *tp, struct uio *uio, int flag));
 
 extern int	cyg_ppp_pppclose __P((struct tty *tp, int flag));
 
+extern int	cyg_ppp_pppcheck __P((struct tty *tp));
+
 // ====================================================================
 // Start PPP transmission. This is called from the TX thread to cause
 // any pending packets to be sent.

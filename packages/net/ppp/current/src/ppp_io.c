@@ -291,6 +291,43 @@ register struct ppp_softc *sc;
     db_printf("%s called\n", __PRETTY_FUNCTION__);
 }
 
+
+
+//==========================================================================
+/*
+ * function to check if data is available
+ */
+ 
+int
+cyg_ppp_pppcheck(tp)
+    register struct tty *tp;
+{
+    register struct ppp_softc *sc = (struct ppp_softc *)tp->t_sc;	
+    int status = 0;  
+    register int s;    
+	
+    s = spltty();
+
+    if (tp != (struct tty *) sc->sc_devp ) {
+        splx(s);
+        return 0;
+    }
+    if (sc->sc_inq.ifq_head == NULL)
+    {
+        splx(s);
+        return 0;
+    }	
+	
+    // if the queue is not empty
+    if ( IF_IS_EMPTY(&sc->sc_inq) == false)
+        status = 1;
+	
+    splx(s);
+
+    return(status);
+}
+
+
 //==========================================================================
 /*
  * Line specific (tty) read routine.
