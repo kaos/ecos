@@ -1,3 +1,7 @@
+2003-09-22  Reinhard Jessich  <Reinhard.Jessich@frequentis.com>
+
+	* include/net/if.h: Define macro IF_IS_EMPTY needed by eth_drv.c
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/openbsd_net.cdl: Improve doc links.

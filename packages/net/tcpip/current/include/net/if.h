@@ -254,6 +254,7 @@ struct ifnet {				/* and the entries */
 		(ifq)->ifq_len--; \
 	} \
 }
+#define	IF_IS_EMPTY(ifq)	((ifq)->ifq_len == 0)
 
 #define	IFQ_MAXLEN	50
 #define	IFNET_SLOWHZ	1		/* granularity is 1 second */
