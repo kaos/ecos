@@ -67,6 +67,7 @@
 #include <network.h>
 #include <sys/types.h>
 #include <stdlib.h>
+
 #ifdef CYGPKG_NET_BRIDGE_HANDLER
 #include <net/if.h>
 #include <net/if_dl.h>
@@ -955,11 +956,17 @@ main_fn(cyg_addrword_t data) {
   interface_up("eth0");
   eth0_up = 1;
   bridge_add(sock,brdg,"eth0");
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+  bridge_ifsetflag (sock, brdg, "eth0", IFBIF_STP);
+#endif
 #endif
 #ifdef CYGHWR_NET_DRIVER_ETH1
   interface_up("eth1");
   eth1_up = 1;
   bridge_add(sock,brdg,"eth1");
+#ifdef CYGPKG_NET_BRIDGE_STP_CODE
+  bridge_ifsetflag (sock, brdg, "eth1", IFBIF_STP);
+#endif
 #endif
 
   bridge_status(sock,brdg);

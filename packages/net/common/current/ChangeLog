@@ -1,3 +1,8 @@
+2003-11-25  Manu Sharma <manu.sharma@ascom.com>
+
+         * tests/bridge.c: Changes to enable Spanning Tree Protocol if the
+	 corresponding CDL component is enabled.
+ 
 2003-11-24  Jani Monoses <jani@iv.ro>
 
 	* cdl/net.cdl: Close quote for test list.
