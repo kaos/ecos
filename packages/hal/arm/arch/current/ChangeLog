@@ -1,3 +1,10 @@
+2003-11-05  Roland Caﬂebohm  <roland.cassebohm@visionsystems.de>
+
+        * include/hal_io.h: If defined HAL_IO_MACROS_NO_ADDRESS_MUNGING
+        use macros which don't mung the addresses even if the platform
+        is big-endian. Platforms which don't need address munging can
+        just define HAL_IO_MACROS_NO_ADDRESS_MUNGING in plf_io.h .
+ 
 2003-10-23  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/vectors.S: Acknowlege spurious interrupts.

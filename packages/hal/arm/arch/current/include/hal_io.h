@@ -87,8 +87,8 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 // BYTE Register access.
 // Individual and vectorized access to 8 bit registers.
 
-// Little-endian version
-#if (CYG_BYTEORDER == CYG_LSBFIRST)
+// Little-endian version or big-endian version that doesn't need address munging
+#if (CYG_BYTEORDER == CYG_LSBFIRST) || defined(HAL_IO_MACROS_NO_ADDRESS_MUNGING)
 
 #define HAL_READ_UINT8( _register_, _value_ ) \
         ((_value_) = *((volatile CYG_BYTE *)(_register_)))
@@ -170,8 +170,8 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 // 16 bit access.
 // Individual and vectorized access to 16 bit registers.
     
-// Little-endian version
-#if (CYG_BYTEORDER == CYG_LSBFIRST)
+// Little-endian version or big-endian version that doesn't need address munging
+#if (CYG_BYTEORDER == CYG_LSBFIRST) || defined(HAL_IO_MACROS_NO_ADDRESS_MUNGING)
 
 #define HAL_READ_UINT16( _register_, _value_ ) \
         ((_value_) = *((volatile CYG_WORD16 *)(_register_)))
