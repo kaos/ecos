@@ -1,3 +1,8 @@
+2003-05-04  John Dallaway  <jld@ecoscentric.com>
+
+	* installation.sgml: Refer to installation instructions on the
+	eCos website.
+
 2003-05-01  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* jadetex.cfg: Add this to configure PDF output nicely with index

@@ -42,10 +42,10 @@
 
 <LISTITEM>
 <PARA><!-- <conditionaltext> -->Standard Intel architecture PC running
- Linux (tested on Red Hat Linux distributions 7.2-8.0), and Microsoft
- Windows NT (no earlier than 4.0 SP6a) and Windows 2000. Other
- versions of Red Hat distributions, or Linux distributions from other
- vendors may also work, but are currently untested. </PARA>
+ Linux (tested on recent Red Hat, SuSE and Debian distributions),
+ Microsoft Windows NT (no earlier than 4.0 + SP6a), Windows 2000 and
+ Windows XP. Linux distributions from other vendors may also work, but
+ are currently untested. </PARA>
 </LISTITEM>
 
 <LISTITEM>
@@ -63,7 +63,7 @@ requirements.</PARA>
 </ITEMIZEDLIST>
 
 <PARA>If you are downloading the <productname>eCos</productname>
-Release distribution from <ULINK
+release distribution from <ULINK
 URL="http://sources.redhat.com/ecos">sources.redhat.com/ecos</ULINK>,
 you will also need space to store that image and to compile the
 toolchain and <productname>eCos</productname> from source.</PARA>
@@ -77,10 +77,11 @@ toolchain and <productname>eCos</productname> from source.</PARA>
 <chapter id="user-guide-installation-linux">
 <title>Installation on Linux</title>
 
-<!-- XXXXX Need text on how to do this here. XXXXX -->
-
 <para>
-Still awaiting text. See the instructions on the website for now.
+Full instructions for the <ULINK
+URL="http://sources.redhat.com/ecos/getstart.html">downloading and
+installation of eCos</ULINK> on Linux hosts are provided on the eCos
+website.
 </para>
 
 </chapter>
@@ -91,12 +92,13 @@ Still awaiting text. See the instructions on the website for now.
 <chapter id="user-guide-installation-windows">
 <title>Installation on Windows</title>
 
-<!-- XXXXX Need text on how to do this here. XXXXX -->
-
 <para>
-Still awaiting text. See the instructions on the website for now.
+Full instructions for the <ULINK
+URL="http://sources.redhat.com/ecos/getstart.html">downloading and
+installation of eCos</ULINK> on Windows hosts are provided on the
+eCos website.
 </para>
-    
+
 </chapter>
 
 <!-- }}} -->
