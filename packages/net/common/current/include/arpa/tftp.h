@@ -74,7 +74,7 @@
 struct	tftphdr {
 	short	th_opcode;		/* packet type */
 	union {
-		short	tu_block;	/* block # */
+		unsigned short	tu_block;	/* block # */
 		short	tu_code;	/* error code */
 		char	tu_stuff[1];	/* request packet stuff */
 	} __attribute__ ((packed)) th_u;

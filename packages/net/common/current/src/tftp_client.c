@@ -58,7 +58,7 @@ tftp_get(char *filename,
     struct tftphdr *hdr = (struct tftphdr *)data;
     char *cp, *fp;
     struct timeval timeout;
-    int last_good_block = 0;
+    unsigned short last_good_block = 0;
     struct servent *server_info;
     fd_set fds;
     int total_timeouts = 0;
@@ -226,7 +226,7 @@ tftp_put(char *filename,
     struct tftphdr *hdr = (struct tftphdr *)data;
     char *cp, *fp, *sfp;
     struct timeval timeout;
-    int last_good_block = 0;
+    unsigned short last_good_block = 0;
     struct servent *server_info;
     fd_set fds;
     int total_timeouts = 0;

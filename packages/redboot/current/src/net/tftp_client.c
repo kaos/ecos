@@ -66,7 +66,7 @@ static int get_port = 7700;
 static struct {
     bool open;
     int  total_timeouts;
-    int  last_good_block;
+    unsigned short last_good_block;
     int  avail, actual_len;
     struct sockaddr_in local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];

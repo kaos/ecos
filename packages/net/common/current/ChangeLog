@@ -1,3 +1,10 @@
+2002-08-07  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/tftp_server.c: 
+	* src/tftp_client.c: 
+	* include/arpa/tftp.h: Make block numbers unsigned to handle files
+	larger than 16MB.
+
 2002-07-26  Gary Thomas  <gary@chez-thomas.org>
 2002-07-26  Ken Cox <jkc@redhat.com>
 

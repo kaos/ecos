@@ -1,3 +1,9 @@
+2002-08-07  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/net/tftp_client.c: 
+	* include/net/tftp.h: Make block numbers unsigned to handle files
+	larger than 16MB.
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/crc.c: POSIX crc code is now separate.

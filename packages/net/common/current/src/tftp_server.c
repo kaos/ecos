@@ -114,7 +114,8 @@ tftpd_write_file(struct tftp_server *server,
     char data_in[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *reply = (struct tftphdr *)data_out;
     struct tftphdr *response = (struct tftphdr *)data_in;
-    int fd, block, len, ok, tries, closed, data_len, s;
+    int fd, len, ok, tries, closed, data_len, s;
+    unsigned short block;
     struct timeval timeout;
     fd_set fds;
     int total_timeouts = 0;
@@ -265,7 +266,8 @@ tftpd_read_file(struct tftp_server *server,
     char data_in[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *reply = (struct tftphdr *)data_out;
     struct tftphdr *response = (struct tftphdr *)data_in;
-    int fd, block, len, tries, ok, data_len, s;
+    int fd, len, tries, ok, data_len, s;
+    unsigned short block;
     struct timeval timeout;
     fd_set fds;
     int total_timeouts = 0;

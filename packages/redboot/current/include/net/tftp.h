@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -118,7 +119,7 @@
 struct	tftphdr {
 	short	th_opcode;		/* packet type */
 	union {
-		short	tu_block;	/* block # */
+		unsigned short	tu_block;	/* block # */
 		short	tu_code;	/* error code */
 		char	tu_stuff[1];	/* request packet stuff */
 	} __attribute__ ((packed)) th_u;
