@@ -65,6 +65,7 @@
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
+#include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
