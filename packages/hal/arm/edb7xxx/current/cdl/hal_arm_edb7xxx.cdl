@@ -75,7 +75,8 @@ CL-PS7111 and EP7xxx based development boards."
         puts $::cdl_header "#define CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS 0x00001f00"
     }
 
-    requires { CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xC0038000 }
+    requires { (CYGBLD_BUILD_REDBOOT_WITH_EXEC == 0) || \
+               (CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS_DEFAULT == 0xC0038000) }
 
     cdl_option CYGHWR_HAL_ARM_EDB7XXX_VARIANT {
         display       "Cirrus Logic processor variant"

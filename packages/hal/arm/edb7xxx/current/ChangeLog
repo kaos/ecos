@@ -1,3 +1,8 @@
+2003-02-13  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_arm_edb7xxx.cdl: Builds without RedBoot+Linux-exec
+	were broken by recent changes.
+
 2003-02-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_io.h: Provide proper memory layout for EDB7312.
