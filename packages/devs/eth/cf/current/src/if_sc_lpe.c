@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -85,8 +86,6 @@
 
 #define SC_LPE_MANUF 0x0104
 
-
-
 #ifdef CYGPKG_KERNEL
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 static char sc_lpe_card_handler_stack[STACK_SIZE];
@@ -94,13 +93,13 @@ static cyg_thread sc_lpe_card_handler_thread_data;
 static cyg_handle_t sc_lpe_card_handler_thread_handle;
 #endif  // CYGPKG_KERNEL
 
-static void
-do_delay(int ticks)
+__inline__ static void
+do_delay(int _ticks)
 {
 #ifdef CYGPKG_KERNEL
-    cyg_thread_delay(ticks);
+    cyg_thread_delay(_ticks);
 #else
-    CYGACC_CALL_IF_DELAY_US(10000*ticks);
+    CYGACC_CALL_IF_DELAY_US(10000*_ticks);
 #endif
 }
 

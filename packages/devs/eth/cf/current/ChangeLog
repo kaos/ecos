@@ -1,3 +1,8 @@
+2002-11-04  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/if_sc_lpe.c (do_delay): Fix problem with overloaded name 'ticks'.
+	n.b. the FreeBSD stack has this defined for it's own use.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_sc_lpe.c: 
