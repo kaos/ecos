@@ -10,6 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2002 Nick Garnett
+// Copyright (C) 2003 Jonathan Larmour
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -317,11 +318,20 @@ externC cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread)
 cyg_bool_t cyg_thread_get_next( cyg_handle_t *current, cyg_uint16 *id )
 {
     cyg_bool_t result = true;
-    
+
+    // There is a minute but finite chance that the thread could have
+    // exitted since the previous cyg_thread_get_next() call, and we can't
+    // detect the ID mismatch further down. So be quite zealous with checking.
+
+    CYG_CHECK_DATA_PTRC( current );
+    CYG_CHECK_DATA_PTRC( id );
+    if ( *current != 0 )
+        CYG_CHECK_DATA_PTRC( *current );
+
     Cyg_Scheduler::lock();
 
     Cyg_Thread *thread = (Cyg_Thread *)*current;
-
+    CYG_ASSERT_CLASSC( thread );
     if( *current == 0 )
     {
         thread = Cyg_Thread::get_list_head();
@@ -331,6 +341,8 @@ cyg_bool_t cyg_thread_get_next( cyg_handle_t *current, cyg_uint16 *id )
     else if( (thread->get_unique_id() == *id) &&
              (thread = thread->get_list_next()) != NULL )
     {
+        CYG_CHECK_DATA_PTRC( thread );
+        CYG_ASSERT_CLASSC( thread );
         *current = (cyg_handle_t)thread;
         *id = thread->get_unique_id();
     }
@@ -373,11 +385,15 @@ cyg_bool_t cyg_thread_get_info( cyg_handle_t threadh,
 {
     cyg_bool_t result = true;
     Cyg_Thread *thread = (Cyg_Thread *)threadh;
+    CYG_CHECK_DATA_PTRC( thread );
+    if ( NULL != info )
+        CYG_CHECK_DATA_PTRC( info );
     
     Cyg_Scheduler::lock();
     
     if( thread->get_unique_id() == id && info != NULL )
     {
+        CYG_ASSERT_CLASSC( thread );
         info->handle = threadh;
         info->id = id;
         info->state = thread->get_state();

@@ -1,5 +1,9 @@
 2003-01-28  Jonathan Larmour  <jifl@eCosCentric.com>
 
+	* src/common/kapi.cxx (cyg_thread_get_next): Be quite zealous about
+	checking the validity of passed in threads in debug mode.
+	(cyg_thread_get_info): Ditto.
+
 	* cdl/thread.cdl: Correct max legal value for
 	CYGNUM_KERNEL_THREADS_DATA_MAX.
 
