@@ -3876,7 +3876,7 @@ description of the associated modes.</para>
 <title>Interrupts</title>
 <para>RedBoot uses an interrupt vector table which is located at address 0x8004.
 Entries in this table are pointers to functions with this protoype::      <programlisting>
-int irq_handler( unsigned vector, unsigned data )</programlisting>On the Mainstone
+int irq_handler( unsigned vector, unsigned data )</programlisting>On the IXDP425
 board, the vector argument is one of many interrupts defined in <computeroutput>
 hal/arm/xscale/ixp425/current/include/hal_var_ints.h:</computeroutput>:   <programlisting>
 #define CYGNUM_HAL_INTERRUPT_NPEA         0
@@ -4040,7 +4040,7 @@ description of the associated modes.</para>
 <title>Interrupts</title>
 <para>RedBoot uses an interrupt vector table which is located at address 0x8004.
 Entries in this table are pointers to functions with this protoype::      <programlisting>
-int irq_handler( unsigned vector, unsigned data )</programlisting>On the Mainstone
+int irq_handler( unsigned vector, unsigned data )</programlisting>On the GRG
 board, the vector argument is one of many interrupts defined in <computeroutput>
 hal/arm/xscale/ixp425/current/include/hal_var_ints.h:</computeroutput>:   <programlisting>
 #define CYGNUM_HAL_INTERRUPT_NPEA         0
@@ -4211,9 +4211,9 @@ description of the associated modes.</para>
 <title>Interrupts</title>
 <para>RedBoot uses an interrupt vector table which is located at address 0x8004.
 Entries in this table are pointers to functions with this protoype::      <programlisting>
-int irq_handler( unsigned vector, unsigned data )</programlisting>On the Mainstone
+int irq_handler( unsigned vector, unsigned data )</programlisting>On the PrPMC1100
 board, the vector argument is one of many interrupts defined in <computeroutput>
-hal/arm/xscale/bulverde/current/include/hal_var_ints.h:</computeroutput>:   <programlisting>
+hal/arm/xscale/ixp425/current/include/hal_var_ints.h:</computeroutput>:   <programlisting>
 #define CYGNUM_HAL_INTERRUPT_NPEA         0
 #define CYGNUM_HAL_INTERRUPT_NPEB         1
 #define CYGNUM_HAL_INTERRUPT_NPEC         2
