@@ -63,9 +63,19 @@ externC void diag_write_dec( cyg_int32 n);    /* Write decimal value       */
 externC void diag_write_hex( cyg_uint32 n);   /* Write hexadecimal value   */
 
 externC void diag_dump_buf(void *buf, CYG_ADDRWORD len);
+externC void diag_dump_buf_32bit(void *buf, CYG_ADDRWORD len);
+externC void diag_dump_buf_16bit(void *buf, CYG_ADDRWORD len);
 externC void diag_dump_buf_with_offset(cyg_uint8     *p, 
                                        CYG_ADDRWORD   s, 
                                        cyg_uint8     *base);
+
+externC void diag_dump_buf_with_offset_32bit(cyg_uint32 *p, 
+                                             CYG_ADDRWORD     s, 
+                                             cyg_uint32      *base);
+
+externC void diag_dump_buf_with_offset_16bit(cyg_uint16 *p, 
+                                             CYG_ADDRWORD     s, 
+                                             cyg_uint16      *base);
 
 externC int  diag_printf( const char *fmt, ... );  /* Formatted print      */
 

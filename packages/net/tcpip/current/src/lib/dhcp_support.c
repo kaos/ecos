@@ -189,6 +189,7 @@ int dhcp_release( void )
 // The management thread function
 void dhcp_mgt_entry( cyg_addrword_t loop_on_failure )
 {
+    int j;
     while ( 1 ) {
         while ( 1 ) {
             cyg_semaphore_wait( &dhcp_needs_attention );
@@ -196,10 +197,14 @@ void dhcp_mgt_entry( cyg_addrword_t loop_on_failure )
                 break; // If we need to re-bind
         }
         dhcp_halt(); // tear everything down
-        if ( loop_on_failure )
-            init_all_network_interfaces(); // re-initialize
-        else
+        if ( !loop_on_failure )
             return; // exit the thread/return
+        init_all_network_interfaces(); // re-initialize
+        for ( j = 0; j < CYGPKG_NET_NLOOP; j++ )
+            init_loopback_interface( j );
+#ifdef CYGPKG_SNMPAGENT
+        SnmpdShutDown(0); // Cycle the snmpd state
+#endif
     }
 }
 

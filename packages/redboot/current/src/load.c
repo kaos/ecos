@@ -301,7 +301,9 @@ do_load(int argc, char *argv[])
     bool decompress;
 #endif
     int chan = -1;
+#if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
     bool chan_set;
+#endif
     unsigned long base = 0;
     unsigned long end = 0;
     char type[4];

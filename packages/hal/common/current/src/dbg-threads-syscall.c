@@ -82,8 +82,8 @@ static __inline__ int dbg_thread_syscall(
 				     enum dbg_syscall_ids id)
 {
   dbg_syscall_func f ; /* double indirect via */
-  if (0 ==(f = *dbg_syscall_ptr)) return 0 ; /* no pointer to vector */
-  if (0 == *f) return 0 ; /* vector not initialized */
+  if (0 == dbg_syscall_ptr) return 0; /* dbg_syscall_ptr never init'd */
+  if (0 ==(f = *dbg_syscall_ptr)) return 0 ;  /* vector not initialized */
   return (*f)(id,&tcall);
 }
 

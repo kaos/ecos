@@ -54,6 +54,9 @@
 
 #ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
 
+// macro for aligning buffers to cache lines
+#define ALIGN_TO_CACHELINES(b) ((cyg_uint8 *)(((CYG_ADDRESS)(b) + (HAL_DCACHE_LINE_SIZE-1)) & ~(HAL_DCACHE_LINE_SIZE-1)))
+
 // Buffer descriptor control bits
 #define QUICC_BD_CTL_Ready 0x8000  // Buffer contains data (tx) or is empty (rx)
 #define QUICC_BD_CTL_Wrap  0x2000  // Last buffer in list
@@ -154,8 +157,8 @@ static SERIAL_CHANNEL(quicc_smc_serial_channel1,
     );
 #endif
 
-static unsigned char quicc_smc1_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE];
-static unsigned char quicc_smc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE];
+static unsigned char quicc_smc1_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_smc1_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
 
 DEVTAB_ENTRY(quicc_smc_serial_io1, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME,
@@ -198,8 +201,8 @@ static SERIAL_CHANNEL(quicc_smc_serial_channel2,
                       CYG_SERIAL_FLAGS_DEFAULT
     );
 #endif
-static unsigned char quicc_smc2_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE];
-static unsigned char quicc_smc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE];
+static unsigned char quicc_smc2_txbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE + HAL_DCACHE_LINE_SIZE-1];
+static unsigned char quicc_smc2_rxbuf[CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM][CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE + HAL_DCACHE_LINE_SIZE-1];
 
 DEVTAB_ENTRY(quicc_smc_serial_io2, 
              CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_NAME,
@@ -398,11 +401,11 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE,
-                                   &quicc_smc1_txbuf[0][0],
+                                   ALIGN_TO_CACHELINES(&quicc_smc1_txbuf[0][0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE,
-                                   &quicc_smc1_rxbuf[0][0],
+                                   ALIGN_TO_CACHELINES(&quicc_smc1_rxbuf[0][0]),
                                    0xC0, // PortB mask
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BRG,
                                    12  // SI mask position
@@ -430,11 +433,11 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
                                    TxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE,
-                                   &quicc_smc2_txbuf[0][0],
+                                   ALIGN_TO_CACHELINES(&quicc_smc2_txbuf[0][0]),
                                    RxBD, 
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM,
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE,
-                                   &quicc_smc2_rxbuf[0][0],
+                                   ALIGN_TO_CACHELINES(&quicc_smc2_rxbuf[0][0]),
                                    0xC00, // PortB mask
                                    CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BRG,
                                    28  // SI mask position
@@ -475,6 +478,13 @@ static void
 quicc_smc_serial_flush(quicc_smc_serial_info *smc_chan)
 {
     volatile struct cp_bufdesc *txbd = smc_chan->txbd;
+    int cache_state;
+                                       
+    HAL_DCACHE_IS_ENABLED(cache_state);
+    if (cache_state) {
+      HAL_DCACHE_FLUSH(txbd->buffer, smc_chan->txsize);
+    }
+
     if ((txbd->length > 0) && 
         ((txbd->ctrl & (QUICC_BD_CTL_Ready|QUICC_BD_CTL_Int)) == 0)) {
         txbd->ctrl |= QUICC_BD_CTL_Ready|QUICC_BD_CTL_Int;  // Signal buffer ready

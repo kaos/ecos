@@ -1,3 +1,13 @@
+2001-11-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/snmpd.c (snmpd): Explicit execution-time initialization of
+	"running" variable, so that we can restart snmpd without it
+	immediately exiting again.
+
+	* src/snmptask.c (snmpdloop): Make the snmpd thread loop forever,
+	so that we can restart it when the state of all the interfaces
+	changes.
+
 2001-08-14  Gary Thomas  <gthomas@redhat.com>
 
 	* tests/snmpping.c: 

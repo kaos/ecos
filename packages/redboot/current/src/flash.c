@@ -1340,6 +1340,11 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
 #ifdef CYGPKG_REDBOOT_NETWORKING
     case CONFIG_IP:
         lp += diag_sprintf(lp, "%s", inet_ntoa((in_addr_t *)val_ptr));
+        if (0 == strcmp("0.0.0.0", line) && !(LIST_OPT_LIST_ONLY & list_opt)) {
+            // then we have a deeply unhelpful starting text - kill it off
+            // (unless we are just listing all values)
+            lp = line;  *lp = '\0';
+        }
         break;
     case CONFIG_ESA:
         for (esa_ptr = 0;  esa_ptr < sizeof(enet_addr_t);  esa_ptr++) {
@@ -1372,8 +1377,8 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             ret = strlen(newvalue);
             if (ret > sizeof(line))
                 return CONFIG_BAD;
+            strcpy(hold_line, line); // Hold the old value for comparison
             strcpy(line, newvalue);
-            strcpy(hold_line, newvalue);
             diag_printf("Setting to %s\n", newvalue);
         } else {
             // read from terminal
@@ -1381,6 +1386,9 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             ret = _rb_gets_preloaded(line, sizeof(line), 0);
         }
         if (ret < 0) return CONFIG_ABORT;
+        // empty input - leave value untouched (else DNS goes away for a
+        // minute to try to look it up) but we must accept empty value for strings.
+        if (0 == line[0] && CONFIG_STRING != type) return CONFIG_OK; 
         if (strcmp(line, hold_line) == 0) return CONFIG_OK;  // Just a CR - leave value untouched
         lp = &line[strlen(line)-1];
         if (*lp == '.') return CONFIG_DONE;
@@ -1598,6 +1606,7 @@ do_flash_config(int argc, char *argv[])
         case CONFIG_BAD:
             // Nothing - make him do it again
             diag_printf ("** invalid entry\n");
+            onevalue = NULL; // request a good value be typed in - or abort/whatever
         }
     }
 

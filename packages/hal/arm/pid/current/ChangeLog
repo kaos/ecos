@@ -316,6 +316,10 @@
 	Modify testing parameters according to
 	CYGHWR_HAL_ARM_BIGENDIAN.
 
+1999-12-09  John Dallaway  <jld@cygnus.co.uk>
+
+	* cdl/hal_arm_pid.cdl: Add SID execution flags option.
+
 1999-12-07  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* cdl/hal_arm_pid.cdl: Add descriptive strings used by CygMon.

@@ -367,9 +367,23 @@ parse_bool(char *s, bool *val)
 {
     while (*s == ' ') s++;
     if ((*s == 't') || (*s == 'T')) {
+        char *p = "rue";
+        char *P = "RUE";
+        // check for (partial) rest of the word and no extra including the
+        // terminating zero.  "tru" will match; "truef" will not.
+        while ( *++s ) {
+            if ( *p != *s && *P != *s ) return false;
+            p++; P++;
+        }
         *val = true;
     } else 
     if ((*s == 'f') || (*s == 'F')) {
+        char *p = "alse";
+        char *P = "ALSE";
+        while ( *++s ) {
+            if ( *p != *s && *P != *s ) return false;
+            p++; P++;
+        }
         *val = false;
     } else {
         return false;

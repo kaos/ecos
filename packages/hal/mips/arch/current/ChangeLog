@@ -1,3 +1,23 @@
+2001-12-04  Nick Garnett  <nickg@redhat.com>
+
+	* src/hal_misc.c: Added hal_arch_program_new_stack() to support
+	running user programs on a new stack placed at the top of RAM.
+
+	* src/vectors.S: Added hal_program_new_stack function to support
+	hal_arch_program_new_stack(). This does the actual stack
+	switching.
+
+	* include/mips-stub.h (NUMREGS): 
+	* include/mips-regs.h (NUM_REGS):
+	Added test to correctly define these when the target expects the
+	CP0 registers to be reported to GDB
+
+	* include/hal_arch.h: Added support for fetching CP0 registers in
+	MIPS64 platforms for GDB. Reorganized the code slightly.
+
+	* cdl/hal_mips.cdl:
+	Added define_proc to define HAL_ARCH_PROGRAM_NEW_STACK.
+
 2001-11-16  Nick Garnett  <nickg@redhat.com>
 
 	* src/hal_misc.c (hal_msbit_index): Fixed this function so that it

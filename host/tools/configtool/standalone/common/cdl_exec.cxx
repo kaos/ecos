@@ -748,8 +748,36 @@ cdl_exec::report_conflicts()
                 const std::vector<std::pair<CdlValuable, CdlValue> > & soln = (*conf_i)->get_solution();
                 unsigned int i;
                 for (i = 0; i < soln.size(); i++) {
-                    soln_msg += soln[i].first->get_name() + " -> " + soln[i].second.get_value() + "\n";
+                    CdlValuable valuable = soln[i].first;
+                    soln_msg += valuable->get_name();
+                    soln_msg += " -> ";
+                    switch(valuable->get_flavor()) {
+                      case CdlValueFlavor_Bool :
+                        if (!soln[i].second.is_enabled()) {
+                            soln_msg += "0 (disabled)";
+                        } else {
+                            soln_msg += "1 (enabled)";
+                        }
+                        break;
+                      case CdlValueFlavor_Data:
+                        soln_msg += soln[i].second.get_value();
+                        break;
+                      case CdlValueFlavor_BoolData:
+                        if (!soln[i].second.is_enabled()) {
+                            soln_msg += "0 " + soln[i].second.get_value();
+                        } else {
+                            soln_msg += "1 " + soln[i].second.get_value();
+                        }
+                        break;
+                        // An option with flavor none cannot be involved
+                        // in a solution.
+                      default:
+                        soln_msg += "<internal error>";
+                        break;
+                    }
+                    soln_msg += "\n";
                 }
+                
 #if 0
                 // FIXME: currently this member only works for nested sub-transactions.
                 if (transact->user_confirmation_required()) {

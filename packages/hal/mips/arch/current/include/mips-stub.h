@@ -54,7 +54,7 @@
 extern "C" {
 #endif
 
-#if defined(CYGPKG_HAL_MIPS_MIPS32)
+#if defined(CYGPKG_HAL_MIPS_GDB_REPORT_CP0)
 #define NUMREGS   107
 #else
 #define NUMREGS    90

@@ -1,3 +1,15 @@
+2001-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/netdb.h (gethostbyname): anonymous arguments aren't allowed
+	in C (I thought they were a GNU C extension, sigh).
+
+2001-11-30  Jonathan Larmour  <jlarmour@redhat.com>
+2001-11-30  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/netdb.h: Provide a default NULL implementation of
+	struct hostent, gethostbyname and gethostbyaddr if a real implementation
+	doesn't exist. This makes life easier for legacy code.
+
 2001-10-17  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/isoinfra.cdl: Changed string interfaces to flavor booldata.

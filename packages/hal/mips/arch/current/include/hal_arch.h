@@ -247,70 +247,73 @@ CYG_MACRO_END
 #define HAL_SET_GDB_FPU_REGISTERS( _regs_ , _regval_ )
 #endif
 
-// Some variants support CP0 regs in GDB
-#if defined(CYGPKG_HAL_MIPS_MIPS32)
-#define HAL_GET_CP0_REGISTER( _regval_, _cp0_regno_, _cp0_regsel_ ) \
-{                                                                   \
-    cyg_uint32 tmp;                                                 \
-    asm volatile ("mfc0   %0,$%1,%2\nnop\n"                         \
-	           : "=r" (tmp)                                     \
-	           : "i"  (_cp0_regno_), "i"  (_cp0_regsel_)  );    \
-    _regval_ = tmp;                                                 \
-}
+// Some targets also report the state of all the coprocessor 0
+// registers to GDB. If that is the case then
+// CYGPKG_HAL_MIPS_GDB_REPORT_CP0 will be defined and the
+// HAL_[G|S]ET_CP0_REGISTER_*() macros will be defined.
 
-#define HAL_SET_CP0_REGISTER( _regval_, _cp0_regno_, _cp0_regsel_ )       \
-{                                                                         \
-    cyg_uint32 tmp = _regval_;                                            \
-    asm volatile ("mtc0   %1,$%2,%3\nnop\n"                               \
-	           : "=r" (tmp)                                           \
-	           : "r" (tmp), "i"  (_cp0_regno_), "i" (_cp0_regsel_) ); \
-}
+#ifdef CYGPKG_HAL_MIPS_GDB_REPORT_CP0
 
-#define HAL_GET_GDB_CP0_REGISTERS( _regval_ )                      \
-    HAL_GET_CP0_REGISTER( _regval_[74],   0, 0 ); /* index    */   \
-    HAL_GET_CP0_REGISTER( _regval_[75],   1, 0 ); /* random   */   \
-    HAL_GET_CP0_REGISTER( _regval_[76],   2, 0 ); /* EntryLo0 */   \
-    HAL_GET_CP0_REGISTER( _regval_[77],   3, 0 ); /* EntryLo1 */   \
-    HAL_GET_CP0_REGISTER( _regval_[78],   4, 0 ); /* context  */   \
-    HAL_GET_CP0_REGISTER( _regval_[79],   5, 0 ); /* PageMask */   \
-    HAL_GET_CP0_REGISTER( _regval_[80],   6, 0 ); /* Wired    */   \
-    HAL_GET_CP0_REGISTER( _regval_[83],   9, 0 ); /* Count    */   \
-    HAL_GET_CP0_REGISTER( _regval_[84],  10, 0 ); /* EntryHi  */   \
-    HAL_GET_CP0_REGISTER( _regval_[85],  11, 0 ); /* Compare  */   \
-    HAL_GET_CP0_REGISTER( _regval_[88],  14, 0 ); /* EPC      */   \
-    HAL_GET_CP0_REGISTER( _regval_[89],  15, 0 ); /* PRId     */   \
-    HAL_GET_CP0_REGISTER( _regval_[90],  16, 0 ); /* Config   */   \
-    HAL_GET_CP0_REGISTER( _regval_[91],  17, 0 ); /* LLAddr   */   \
-    HAL_GET_CP0_REGISTER( _regval_[92],  18, 0 ); /* WatchLo  */   \
-    HAL_GET_CP0_REGISTER( _regval_[93],  19, 0 ); /* WatchHi  */   \
-    HAL_GET_CP0_REGISTER( _regval_[97],  23, 0 ); /* Debug    */   \
-    HAL_GET_CP0_REGISTER( _regval_[98],  24, 0 ); /* DEPC     */   \
-    HAL_GET_CP0_REGISTER( _regval_[102], 28, 0 ); /* TagLo    */   \
-    HAL_GET_CP0_REGISTER( _regval_[104], 30, 0 ); /* ErrorEPC */   \
-    HAL_GET_CP0_REGISTER( _regval_[105], 31, 0 ); /* DESAVE   */   \
-    HAL_GET_CP0_REGISTER( _regval_[106], 16, 1 ); /* Config1  */
+#define HAL_GET_GDB_CP0_REGISTERS( _regval_, _regs_ )                   \
+    HAL_GET_CP0_REGISTER_32( _regval_[74],   0, 0 ); /* index    */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[75],   1, 0 ); /* random   */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[76],   2, 0 ); /* EntryLo0 */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[77],   3, 0 ); /* EntryLo1 */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[78],   4, 0 ); /* context  */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[79],   5, 0 ); /* PageMask */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[80],   6, 0 ); /* Wired    */     \
+    (_regval_)[81] = 0xC0C0C006;                                        \
+    (_regval_)[82] = (_regs_)->badvr;                /* BadVr    */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[83],   9, 0 ); /* Count    */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[84],  10, 0 ); /* EntryHi  */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[85],  11, 0 ); /* Compare  */     \
+    (_regval_)[86] = (_regs_)->sr;                   /* Status   */     \
+    (_regval_)[87] = (_regs_)->cause;                /* Cause    */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[88],  14, 0 ); /* EPC      */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[89],  15, 0 ); /* PRId     */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[90],  16, 0 ); /* Config   */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[91],  17, 0 ); /* LLAddr   */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[92],  18, 0 ); /* WatchLo  */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[93],  19, 0 ); /* WatchHi  */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[94],  20, 0 ); /* XContext */     \
+    (_regval_)[95] = 0xC0C0C021;                                        \
+    (_regval_)[96] = 0xC0C0C022;                                        \
+    HAL_GET_CP0_REGISTER_32( _regval_[97],  23, 0 ); /* Debug    */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[98],  24, 0 ); /* DEPC     */     \
+    (_regval_)[99] = 0xC0C0C025;                                        \
+    HAL_GET_CP0_REGISTER_32( _regval_[100], 26, 0 ); /* ErrCtl   */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[101], 27, 0 ); /* CacheErr */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[102], 28, 0 ); /* TagLo    */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[103], 29, 0 ); /* TagHi    */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[104], 30, 0 ); /* ErrorEPC */     \
+    HAL_GET_CP0_REGISTER_64( _regval_[105], 31, 0 ); /* DESAVE   */     \
+    HAL_GET_CP0_REGISTER_32( _regval_[106], 16, 1 ); /* Config1  */
 
-#define HAL_SET_GDB_CP0_REGISTERS( _regval_ )                      \
-    HAL_SET_CP0_REGISTER( _regval_[74],   0, 0 ); /* index    */   \
-    HAL_SET_CP0_REGISTER( _regval_[76],   2, 0 ); /* EntryLo0 */   \
-    HAL_SET_CP0_REGISTER( _regval_[77],   3, 0 ); /* EntryLo1 */   \
-    HAL_SET_CP0_REGISTER( _regval_[78],   4, 0 ); /* context  */   \
-    HAL_SET_CP0_REGISTER( _regval_[79],   5, 0 ); /* PageMask */   \
-    HAL_SET_CP0_REGISTER( _regval_[80],   6, 0 ); /* Wired    */   \
-    HAL_SET_CP0_REGISTER( _regval_[83],   9, 0 ); /* Count    */   \
-    HAL_SET_CP0_REGISTER( _regval_[84],  10, 0 ); /* EntryHi  */   \
-    HAL_SET_CP0_REGISTER( _regval_[85],  11, 0 ); /* Compare  */   \
-    HAL_SET_CP0_REGISTER( _regval_[90],  16, 0 ); /* Config   */   \
-    HAL_SET_CP0_REGISTER( _regval_[92],  18, 0 ); /* WatchLo  */   \
-    HAL_SET_CP0_REGISTER( _regval_[93],  19, 0 ); /* WatchHi  */   \
-    HAL_SET_CP0_REGISTER( _regval_[97],  23, 0 ); /* Debug    */   \
-    HAL_SET_CP0_REGISTER( _regval_[98],  24, 0 ); /* DEPC     */   \
-    HAL_SET_CP0_REGISTER( _regval_[102], 28, 0 ); /* TagLo    */   \
-    HAL_SET_CP0_REGISTER( _regval_[105], 31, 0 ); /* DESAVE   */
+#define HAL_SET_GDB_CP0_REGISTERS( _regval_, _regs_ )                   \
+    HAL_SET_CP0_REGISTER_32( _regval_[74],   0, 0 ); /* index    */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[76],   2, 0 ); /* EntryLo0 */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[77],   3, 0 ); /* EntryLo1 */     \
+    HAL_SET_CP0_REGISTER_64( _regval_[78],   4, 0 ); /* context  */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[79],   5, 0 ); /* PageMask */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[80],   6, 0 ); /* Wired    */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[83],   9, 0 ); /* Count    */     \
+    HAL_SET_CP0_REGISTER_64( _regval_[84],  10, 0 ); /* EntryHi  */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[85],  11, 0 ); /* Compare  */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[90],  16, 0 ); /* Config   */     \
+    HAL_SET_CP0_REGISTER_64( _regval_[92],  18, 0 ); /* WatchLo  */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[93],  19, 0 ); /* WatchHi  */     \
+    HAL_SET_CP0_REGISTER_64( _regval_[94],  20, 0 ); /* XContext */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[97],  23, 0 ); /* Debug    */     \
+    HAL_SET_CP0_REGISTER_64( _regval_[98],  24, 0 ); /* DEPC     */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[100], 26, 0 ); /* ErrCtl   */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[101], 27, 0 ); /* CacheErr */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[102], 28, 0 ); /* TagLo    */     \
+    HAL_SET_CP0_REGISTER_32( _regval_[103], 29, 0 ); /* TagHi    */     \
+    HAL_SET_CP0_REGISTER_64( _regval_[105], 31, 0 ); /* DESAVE   */
 
 #else
-#define HAL_GET_GDB_CP0_REGISTERS( _regval_ )
-#define HAL_SET_GDB_CP0_REGISTERS( _regval_ )
+#define HAL_GET_GDB_CP0_REGISTERS( _regval_, _regs_ )
+#define HAL_SET_GDB_CP0_REGISTERS( _regval_, _regs_ )
 #endif
 
 // Copy a set of registers from a HAL_SavedRegisters structure into a
@@ -332,7 +335,7 @@ CYG_MACRO_END
     _regval_[36] = (_regs_)->cause;                             \
     _regval_[37] = (_regs_)->pc;                                \
                                                                 \
-    HAL_GET_GDB_CP0_REGISTERS( _regval_ );                      \
+    HAL_GET_GDB_CP0_REGISTERS( _regval_, _regs_ );              \
 }
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
@@ -353,7 +356,7 @@ CYG_MACRO_END
     (_regs_)->cause = _regval_[36];                             \
     (_regs_)->pc = _regval_[37];                                \
                                                                 \
-    HAL_SET_GDB_CP0_REGISTERS( _regval_ );                      \
+    HAL_SET_GDB_CP0_REGISTERS( _regval_, _regs_ );              \
 }
 
 //--------------------------------------------------------------------------

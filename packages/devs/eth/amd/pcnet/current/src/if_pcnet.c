@@ -100,6 +100,27 @@ int pcnet_txfifo_bad = 0;
 #include CYGDAT_DEVS_ETH_AMD_PCNET_INL
 #undef  __WANT_DEVS
 
+#ifdef CYGPKG_REDBOOT
+
+static void db_printf( char *fmt, ... )
+{
+    extern int start_console(void);
+    extern void end_console(int);
+    va_list a;
+    int old_console;
+    va_start( a, fmt );
+    old_console = start_console();  
+    diag_vprintf( fmt, a );
+    end_console(old_console);
+    va_end( a );
+}
+
+#else
+
+#define db_printf diag_printf
+
+#endif
+
 static void pcnet_poll(struct eth_drv_sc *sc);
 
 // This ISR is called when the ethernet interrupt occurs
@@ -200,7 +221,7 @@ pciwindow_mem_alloc(int size)
     }
 
 #if DEBUG & 9
-    diag_printf("Allocated %d bytes at 0x%08x\n", size, p_memory);
+    db_printf("Allocated %d bytes at 0x%08x\n", size, p_memory);
 #endif
 
     return p_memory;
@@ -212,7 +233,7 @@ static cyg_bool
 find_pcnet_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
 {
 #if DEBUG & 9
-    diag_printf("PCI match vendor 0x%04x device 0x%04x\n", v, d);
+    db_printf("PCI match vendor 0x%04x device 0x%04x\n", v, d);
 #endif
     return (0x1022 == v) && (0x2000 == d);
 }
@@ -252,7 +273,7 @@ pci_init_find_pcnet( void )
          CYGMEM_SECTION_pci_window_SIZE !=
          CYGHWR_AMD_PCNET_PCI_MEM_MAP_SIZE ) {
 #if DEBUG & 8
-        diag_printf("pci_init_find_pcnets(): PCI window misconfigured\n");
+        db_printf("pci_init_find_pcnets(): PCI window misconfigured\n");
 #endif
         return 0;
     }
@@ -262,12 +283,12 @@ pci_init_find_pcnet( void )
     pcnet_heap_base = (cyg_uint8 *)CYGHWR_AMD_PCNET_PCI_MEM_MAP_BASE;
     pcnet_heap_free = pcnet_heap_base;
 #if DEBUG & 9
-    diag_printf("pcimem : 0x%08x size: 0x%08x\n", pcnet_heap_base, pcnet_heap_size);
+    db_printf("pcimem : 0x%08x size: 0x%08x\n", pcnet_heap_base, pcnet_heap_size);
 #endif
 
     cyg_pci_init();
 #if DEBUG & 8
-    diag_printf("Finished cyg_pci_init();\n");
+    db_printf("Finished cyg_pci_init();\n");
 #endif
 
     devid = CYG_PCI_NULL_DEVID;
@@ -284,14 +305,14 @@ pci_init_find_pcnet( void )
         // devices on one board in arbitrary orders.
         if (cyg_pci_find_matching( &find_pcnet_match_func, NULL, &devid )) {
 #if DEBUG & 8
-            diag_printf("eth%d = pcnet\n", device_index);
+            db_printf("eth%d = pcnet\n", device_index);
 #endif
             cyg_pci_get_device_info(devid, &dev_info);
 
             cpd->interrupt_handle = 0; // Flag not attached.
             if (cyg_pci_translate_interrupt(&dev_info, &cpd->interrupt)) {
 #if DEBUG & 8
-                diag_printf(" Wired to HAL vector %d\n", cpd->interrupt);
+                db_printf(" Wired to HAL vector %d\n", cpd->interrupt);
 #endif
                 cyg_drv_interrupt_create(
                     cpd->interrupt,
@@ -310,39 +331,39 @@ pci_init_find_pcnet( void )
             else {
                 cpd->interrupt = 0;
 #if DEBUG & 8
-                diag_printf(" Does not generate interrupts.\n");
+                db_printf(" Does not generate interrupts.\n");
 #endif
             }
 
             if (cyg_pci_configure_device(&dev_info)) {
 #if DEBUG & 8
                 int i;
-                diag_printf("Found device on bus %d, devfn 0x%02x:\n",
+                db_printf("Found device on bus %d, devfn 0x%02x:\n",
                           CYG_PCI_DEV_GET_BUS(devid),
                           CYG_PCI_DEV_GET_DEVFN(devid));
 
                 if (dev_info.command & CYG_PCI_CFG_COMMAND_ACTIVE) {
-                    diag_printf(" Note that board is active. Probed"
+                    db_printf(" Note that board is active. Probed"
                               " sizes and CPU addresses invalid!\n");
                 }
-                diag_printf(" Vendor    0x%04x", dev_info.vendor);
-                diag_printf("\n Device    0x%04x", dev_info.device);
-                diag_printf("\n Command   0x%04x, Status 0x%04x\n",
+                db_printf(" Vendor    0x%04x", dev_info.vendor);
+                db_printf("\n Device    0x%04x", dev_info.device);
+                db_printf("\n Command   0x%04x, Status 0x%04x\n",
                           dev_info.command, dev_info.status);
                 
-                diag_printf(" Class/Rev 0x%08x", dev_info.class_rev);
-                diag_printf("\n Header 0x%02x\n", dev_info.header_type);
+                db_printf(" Class/Rev 0x%08x", dev_info.class_rev);
+                db_printf("\n Header 0x%02x\n", dev_info.header_type);
 
-                diag_printf(" SubVendor 0x%04x, Sub ID 0x%04x\n",
+                db_printf(" SubVendor 0x%04x, Sub ID 0x%04x\n",
                           dev_info.header.normal.sub_vendor, 
                           dev_info.header.normal.sub_id);
 
                 for(i = 0; i < CYG_PCI_MAX_BAR; i++) {
-                    diag_printf(" BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
-                    diag_printf(" probed size 0x%08x / CPU addr 0x%08x\n",
+                    db_printf(" BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
+                    db_printf(" probed size 0x%08x / CPU addr 0x%08x\n",
                               dev_info.base_size[i], dev_info.base_map[i]);
                 }
-                diag_printf(" eth%d configured\n", device_index);
+                db_printf(" eth%d configured\n", device_index);
 #endif
                 found_devices++;
                 cpd->found = 1;
@@ -350,7 +371,7 @@ pci_init_find_pcnet( void )
                 cpd->devid = devid;
                 cpd->base = (unsigned char*) dev_info.base_map[0];
 #if DEBUG & 8
-                diag_printf(" I/O address = 0x%08x\n", cpd->base);
+                db_printf(" I/O address = 0x%08x\n", cpd->base);
 #endif
 
                 // Don't use cyg_pci_set_device_info since it clears
@@ -368,11 +389,11 @@ pci_init_find_pcnet( void )
                     cyg_drv_interrupt_acknowledge(cpd->interrupt);
                     cyg_drv_interrupt_unmask(cpd->interrupt);
 #if DEBUG & 8
-                    diag_printf(" Enabled interrupt %d\n", cpd->interrupt);
+                    db_printf(" Enabled interrupt %d\n", cpd->interrupt);
 #endif
                 }
 #if DEBUG & 8
-                diag_printf(" **** Device enabled for I/O and Memory "
+                db_printf(" **** Device enabled for I/O and Memory "
                             "and Bus Master\n");
 #endif
             }
@@ -380,7 +401,7 @@ pci_init_find_pcnet( void )
                 cpd->found = 0;
                 cpd->active = 0;
 #if DEBUG & 8
-                diag_printf("Failed to configure device %d\n", device_index);
+                db_printf("Failed to configure device %d\n", device_index);
 #endif
             }
         }
@@ -388,7 +409,7 @@ pci_init_find_pcnet( void )
             cpd->found = 0;
             cpd->active = 0;
 #if DEBUG & 8
-            diag_printf("eth%d not found\n", device_index);
+            db_printf("eth%d not found\n", device_index);
 #endif
         }
     }
@@ -421,7 +442,7 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
         // then this is the first time ever:
         if ( ! pci_init_find_pcnet() ) {
 #if DEBUG & 8
-            diag_printf( "pci_init_find_pcnet failed" );
+            db_printf( "pci_init_find_pcnet failed" );
 #endif
             return false;
         }
@@ -434,20 +455,20 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
     cpd->txbusy = 0;
 
 #if DEBUG & 8
-    diag_printf("PCNet at base 0x%08x, EEPROM key 0x%04x\n",
+    db_printf("PCNet at base 0x%08x, EEPROM key 0x%04x\n",
                 cpd->base, _SU16(cpd->base, PCNET_IO_ID));
 #endif
 
 #if 0
     // FIXME: Doesn't work with non-conforming EEPROMS
     if (PCNET_IO_ID_KEY != _SU16(cpd->base, PCNET_IO_ID) ) {
-        diag_printf("PCNet EPROM key not found\n");
+        db_printf("PCNet EPROM key not found\n");
         return false;
     }
 #endif
 
 #if DEBUG & 9
-    diag_printf("pcimem : %08x size: %08x\n", pcnet_heap_base, pcnet_heap_size);
+    db_printf("pcimem : %08x size: %08x\n", pcnet_heap_base, pcnet_heap_size);
 #endif
 
     // Prepare ESA
@@ -458,7 +479,7 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
             cpd->esa[i] = *p++;
     }
 #if DEBUG & 9
-    diag_printf("PCNET - %s ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+    db_printf("PCNET - %s ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 (cpd->hardwired_esa) ? "static" : "eeprom",
                 cpd->esa[0], cpd->esa[1], cpd->esa[2],
                 cpd->esa[3], cpd->esa[4], cpd->esa[5] );
@@ -470,7 +491,7 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
 	int loop;
 
 #if DEBUG & 9
-	diag_printf("%s: Forcing 10Mbps negotiation\n", __FUNCTION__);
+	db_printf("%s: Forcing 10Mbps negotiation\n", __FUNCTION__);
 #endif
 	// adjust speed/duplex auto-negotiation mask to clear 100Mbps bits
 	anr = get_reg(sc,PCNET_ANR_AAR);
@@ -484,9 +505,9 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
 	while (loop>0 && !(get_reg(sc,PCNET_ANR_PHYSTAT) & PCNET_ANR_PHYSTAT_AUTONEG_COMP))
 		loop--;
 #if DEBUG & 9
-	diag_printf("ANR0: %04x\n",get_reg(sc,PCNET_ANR_PHYCTRL));
-	diag_printf("ANR1: %04x\n",get_reg(sc,PCNET_ANR_PHYSTAT));
-	diag_printf("ANR4: %04x\n",get_reg(sc,PCNET_ANR_AAR));
+	db_printf("ANR0: %04x\n",get_reg(sc,PCNET_ANR_PHYCTRL));
+	db_printf("ANR1: %04x\n",get_reg(sc,PCNET_ANR_PHYSTAT));
+	db_printf("ANR4: %04x\n",get_reg(sc,PCNET_ANR_AAR));
 #endif
     }
 #endif
@@ -535,18 +556,18 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
                                         | (cpd->tx_ring_log_cnt << PCNET_IB_TDRA_CNT_shift));
 
 #if DEBUG & 9
-    diag_printf("Loading up PCNet controller from table at 0x%08x\n", init_table);
-    diag_printf(" Mode 0x%04x\n", _SU16(init_table, PCNET_IB_MODE));
-    diag_printf(" PADR %02x:%02x:%02x:%02x:%02x:%02x ",
+    db_printf("Loading up PCNet controller from table at 0x%08x\n", init_table);
+    db_printf(" Mode 0x%04x\n", _SU16(init_table, PCNET_IB_MODE));
+    db_printf(" PADR %02x:%02x:%02x:%02x:%02x:%02x ",
                 _SU8(init_table, PCNET_IB_PADR0+0), _SU8(init_table, PCNET_IB_PADR0+1),
                 _SU8(init_table, PCNET_IB_PADR0+2), _SU8(init_table, PCNET_IB_PADR0+3),
                 _SU8(init_table, PCNET_IB_PADR0+4), _SU8(init_table, PCNET_IB_PADR0+5));
-    diag_printf("LADR %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
+    db_printf("LADR %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x\n",
                 _SU8(init_table, PCNET_IB_LADRF0+0), _SU8(init_table, PCNET_IB_LADRF0+1),
                 _SU8(init_table, PCNET_IB_LADRF0+2), _SU8(init_table, PCNET_IB_LADRF0+3),
                 _SU8(init_table, PCNET_IB_LADRF0+4), _SU8(init_table, PCNET_IB_LADRF0+5),
                 _SU8(init_table, PCNET_IB_LADRF0+5), _SU8(init_table, PCNET_IB_LADRF0+7));
-    diag_printf(" RX 0x%08x (len %d) TX 0x%08x (len %d)\n",
+    db_printf(" RX 0x%08x (len %d) TX 0x%08x (len %d)\n",
                 _SU32(init_table, PCNET_IB_RDRA) & 0x1fffffff,
                 (_SU32(init_table, PCNET_IB_RDRA) >> PCNET_IB_RDRA_CNT_shift) & 7,
                 _SU32(init_table, PCNET_IB_TDRA) & 0x1fffffff,
@@ -578,29 +599,29 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
     put_reg(sc, PCNET_CSR_CSCR, PCNET_CSR_CSCR_STOP);
 
 #if DEBUG & 9
-    diag_printf("PCNet controller state is now:\n");
-    diag_printf(" Mode 0x%04x  TFC 0x%04x\n", _SU16(init_table, PCNET_IB_MODE), get_reg(sc, PCNET_CSR_TFC));
-    diag_printf(" PADR %04x:%04x:%04x ",
+    db_printf("PCNet controller state is now:\n");
+    db_printf(" Mode 0x%04x  TFC 0x%04x\n", _SU16(init_table, PCNET_IB_MODE), get_reg(sc, PCNET_CSR_TFC));
+    db_printf(" PADR %04x:%04x:%04x ",
                 get_reg(sc, PCNET_CSR_PAR0),
                 get_reg(sc, PCNET_CSR_PAR1),
                 get_reg(sc, PCNET_CSR_PAR2));
-    diag_printf("LADR %04x:%04x:%04x:%04x\n",
+    db_printf("LADR %04x:%04x:%04x:%04x\n",
                 get_reg(sc, PCNET_CSR_LAR0),
                 get_reg(sc, PCNET_CSR_LAR1),
                 get_reg(sc, PCNET_CSR_LAR2),
                 get_reg(sc, PCNET_CSR_LAR3));
-    diag_printf(" RX 0x%04x%04x (len 0x%04x) TX 0x%04x%04x (len 0x%04x)\n",
+    db_printf(" RX 0x%04x%04x (len 0x%04x) TX 0x%04x%04x (len 0x%04x)\n",
                 get_reg(sc, PCNET_CSR_BARRU), get_reg(sc, PCNET_CSR_BARRL), 
                 get_reg(sc, PCNET_CSR_RRLEN),
                 get_reg(sc, PCNET_CSR_BATRU), get_reg(sc, PCNET_CSR_BATRL), 
                 get_reg(sc, PCNET_CSR_TRLEN));
 
     val = get_reg(sc, PCNET_CSR_ID_LO);
-    diag_printf("PCnet ID 0x%04x (%s) ",
+    db_printf("PCnet ID 0x%04x (%s) ",
                 val, 
                 (0x5003 == val) ? "Am79C973" : (0x7003 == val) ? "Am79C975" : "Unknown");
     val = get_reg(sc, PCNET_CSR_ID_HI);
-    diag_printf("Part IDU 0x%03x Silicon rev %d\n",
+    db_printf("Part IDU 0x%03x Silicon rev %d\n",
                 val & 0x0fff, (val >> 12) & 0xf);
 #endif
 
@@ -616,7 +637,7 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
         put_reg(sc, PCNET_CSR_CSCR, (PCNET_CSR_CSCR_IENA | PCNET_CSR_CSCR_STRT));
         if (i++ == 1000) {
 #if DEBUG & 9
-            diag_printf("Failed to start the controller\n");
+            db_printf("Failed to start the controller\n");
 #endif
             return false;
         }
@@ -635,7 +656,7 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
     (sc->funs->eth_drv->init)(sc, cpd->esa);
 
 #if DEBUG & 9
-    diag_printf("Done\n");
+    db_printf("Done\n");
 #endif
     return true;
 }
@@ -742,7 +763,7 @@ pcnet_control(struct eth_drv_sc *sc, unsigned long key,
     switch (key) {
     case ETH_DRV_SET_MAC_ADDRESS:
 #if 9 & DEBUG
-        diag_printf("PCNET - set ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        db_printf("PCNET - set ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 esa[0], esa[1], esa[2], esa[3], esa[4], esa[5] );
 #endif // DEBUG
 
@@ -920,7 +941,7 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         if (cpd->tx_ring_owned == cpd->tx_ring_cnt) {
             // Is this a dead end? Probably is.
 #if DEBUG & 1
-            diag_printf("%s: Allocation failed! Retrying...\n", __FUNCTION__ );
+            db_printf("%s: Allocation failed! Retrying...\n", __FUNCTION__ );
 #endif
             continue;
         }
@@ -937,7 +958,7 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
                "TX descriptor not free");
 
 #if DEBUG & 4
-    diag_printf("#####Tx descriptor 0x%08x buffer 0x%08x\n",
+    db_printf("#####Tx descriptor 0x%08x buffer 0x%08x\n",
                 txd, buf);
 #endif
 
@@ -954,7 +975,7 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     CYG_ASSERT( sdata, "No sg data pointer outside" );
 
 #if DEBUG & 1
-    diag_printf("CSCR %04x\n", get_reg(sc, PCNET_CSR_CSCR));
+    db_printf("CSCR %04x\n", get_reg(sc, PCNET_CSR_CSCR));
 #endif
     _SU16(txd, PCNET_TD_LEN) = (-plen);
     _SU16(txd, PCNET_TD_MISC) = 0;
@@ -964,11 +985,17 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
 #if DEBUG & 1
     cpd->txd = txd;
-    diag_printf("Last TX: LEN %04x MISC %04x PTR %08x\n", 
+    db_printf("Last TX: LEN %04x MISC %04x PTR %08x\n", 
                 _SU16(cpd->txd, PCNET_TD_LEN),
                 _SU16(cpd->txd, PCNET_TD_MISC),
                 _SU32(cpd->txd, PCNET_TD_PTR));
 #endif
+
+    // This delay seems to be necessary on some platforms
+    // Why it is needed is not clear, but removing it or
+    // reducing it cause transmission failures in RedBoot (at least).
+    CYGACC_CALL_IF_DELAY_US(100);
+    
 
     // Set transmit demand
     ints = get_reg(sc, PCNET_CSR_CSCR);
@@ -978,8 +1005,13 @@ pcnet_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 
 #if DEBUG & 1
     ints = get_reg(sc, PCNET_CSR_CSCR);
-    diag_printf("%s:END: ints at TX: 0x%04x\n", __FUNCTION__, ints);
+    db_printf("%s:END: ints at TX: 0x%04x\n", __FUNCTION__, ints);
 #endif
+
+    // This is another mystery delay like the one above. This one is
+    // even stranger, since waiting here at the _end_ of the function
+    // should have no effect.
+    CYGACC_CALL_IF_DELAY_US(200);
 }
 
 static void
@@ -1000,7 +1032,7 @@ pcnet_TxEvent(struct eth_drv_sc *sc, int stat)
     pkt_stat = _SU32(txd, PCNET_TD_PTR);
     if (pkt_stat & PCNET_TD_PTR_OWN) {
 #if DEBUG & 1
-        diag_printf("%s: got TX completion when buffer is still owned\n", __FUNCTION__);
+        db_printf("%s: got TX completion when buffer is still owned\n", __FUNCTION__);
 #endif
         // first dirty ring entry not freed - wtf?
     }
@@ -1009,7 +1041,7 @@ pcnet_TxEvent(struct eth_drv_sc *sc, int stat)
         // We had an error. Tell the stack.
         success = 0;
 #if DEBUG & 1
-        diag_printf("%s: TX failure, retrying...\n", __FUNCTION__);
+        db_printf("%s: TX failure, retrying...\n", __FUNCTION__);
 #endif
     }
 
@@ -1061,7 +1093,7 @@ pcnet_TxEvent(struct eth_drv_sc *sc, int stat)
     put_reg(sc, PCNET_CSR_CSCR, ints);
 
 #if DEBUG & 4
-    diag_printf("#####Tx packet freed 0x%08x\n", txd );
+    db_printf("#####Tx packet freed 0x%08x\n", txd );
 #endif
 
     if ( cpd->txbusy ) {
@@ -1091,7 +1123,7 @@ pcnet_RxEvent(struct eth_drv_sc *sc)
 
     ints = get_reg(sc, PCNET_CSR_CSCR);
 #if DEBUG & 1
-    diag_printf("RxEvent - CSR: 0x%04x\n", ints);
+    db_printf("RxEvent - CSR: 0x%04x\n", ints);
 #endif
 
     while (1) {
@@ -1115,14 +1147,14 @@ pcnet_RxEvent(struct eth_drv_sc *sc)
                     cyg_uint16 mlen, blen;
                     cyg_uint8* rxd;
 
-                    diag_printf("%s: Inconsistent RX state\n", __FUNCTION__);
+                    db_printf("%s: Inconsistent RX state\n", __FUNCTION__);
                     for (i = 0; i < cpd->rx_ring_cnt; i++) {
                         rxd = cpd->rx_ring + i*PCNET_RD_SIZE;
                 
                         rstat = _SU32(rxd, PCNET_RD_PTR);
                         blen = _SU16(rxd, PCNET_RD_BLEN);
                         mlen = _SU16(rxd, PCNET_RD_MLEN);
-                        diag_printf(" %02d: 0x%08x:0x%04x:0x%04x\n", i, rstat, blen, mlen);
+                        db_printf(" %02d: 0x%08x:0x%04x:0x%04x\n", i, rstat, blen, mlen);
                     }
                 }
             }
@@ -1131,7 +1163,7 @@ pcnet_RxEvent(struct eth_drv_sc *sc)
         }
 
 #if DEBUG & 4
-        diag_printf("#####Rx packet at index %d\n", cpd->rxpacket);
+        db_printf("#####Rx packet at index %d\n", cpd->rxpacket);
 #endif
 
         // Increment counts
@@ -1153,7 +1185,7 @@ pcnet_RxEvent(struct eth_drv_sc *sc)
             INCR_STAT( rx_good );
 
 #if DEBUG & 1
-            diag_printf("RxEvent good rx - stat: 0x%08x, len: 0x%04x\n", rstat, len);
+            db_printf("RxEvent good rx - stat: 0x%08x, len: 0x%04x\n", rstat, len);
 #endif
             // Check for bogusly short packets; can happen in promisc
             // mode: Asserted against and checked by upper layer
@@ -1166,7 +1198,7 @@ pcnet_RxEvent(struct eth_drv_sc *sc)
         } else {
             // Not OK for one reason or another...
 #if DEBUG & 1
-            diag_printf("RxEvent - No RX bit: stat: 0x%08x, len: 0x%04x\n",
+            db_printf("RxEvent - No RX bit: stat: 0x%08x, len: 0x%04x\n",
                         rstat, len);
 #endif
         }
@@ -1212,7 +1244,7 @@ pcnet_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
         mlen = sg_list[i].len;
 
 #if DEBUG & 1
-        diag_printf("%s : mlen %x, plen %x\n", __FUNCTION__, mlen, plen);
+        db_printf("%s : mlen %x, plen %x\n", __FUNCTION__, mlen, plen);
 #endif
         if (data) {
             while (mlen > 0) {
@@ -1252,14 +1284,14 @@ pcnet_poll(struct eth_drv_sc *sc)
             struct pcnet_priv_data *cpd = 
                 (struct pcnet_priv_data *)sc->driver_private;
 
-            diag_printf("%s: Ran out of RX buffers (%04x)\n", __FUNCTION__, event);
+            db_printf("%s: Ran out of RX buffers (%04x)\n", __FUNCTION__, event);
             for (i = 0; i < cpd->rx_ring_cnt; i++) {
                 rxd = cpd->rx_ring + i*PCNET_TD_SIZE;
                 
                 rstat = _SU32(rxd, PCNET_RD_PTR);
                 blen = _SU16(rxd, PCNET_RD_BLEN);
                 mlen = _SU16(rxd, PCNET_RD_MLEN);
-                diag_printf(" %02d: 0x%08x:0x%04x:0x%04x\n", i, rstat, blen, mlen);
+                db_printf(" %02d: 0x%08x:0x%04x:0x%04x\n", i, rstat, blen, mlen);
             }
 #endif
             event &= PCNET_CSR_CSCR_EV_MASK;
@@ -1268,7 +1300,7 @@ pcnet_poll(struct eth_drv_sc *sc)
         }
         else {
 #if DEBUG & 1
-            diag_printf("%s: Unknown interrupt: 0x%04x\n", __FUNCTION__, event);
+            db_printf("%s: Unknown interrupt: 0x%04x\n", __FUNCTION__, event);
 #endif
             put_reg(sc, PCNET_CSR_CSCR, event);
         }

@@ -69,6 +69,10 @@ cdl_package CYGPKG_HAL_MIPS {
         @rm vectors.tmp
     }
 
+    define_proc {
+	puts $::cdl_header "#define HAL_ARCH_PROGRAM_NEW_STACK hal_arch_program_new_stack"
+    }
+
     cdl_option CYGHWR_HAL_MIPS_CPU_FREQ {
         display "CPU frequency"
         flavor  data

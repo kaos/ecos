@@ -1,3 +1,13 @@
+2001-12-06  Nick Garnett  <nickg@redhat.com>
+
+	* include/pcmb_serial.h: 
+	* src/pcmb_serial.c:
+	Added a simple validation test for serial devices. If the status
+	register reads back all ones we decide that the device is absent
+	and mark it invalid. We test this elsewhere to avoid touching the
+	device again. This should help to cope with various problems with
+	PCs that come with only one serial port.
+
 2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/pcmb_screen.c: Restore sensible num lock behaviour after the

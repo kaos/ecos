@@ -41,6 +41,8 @@
 //
 //==========================================================================
 
+#include <pkgconf/system.h>
+
 #include <network.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -186,8 +188,10 @@ connect_to_server(char *hostname,
                   ftp_printf_t ftp_printf) 
 { 
   struct sockaddr_in host; 
-  struct servent *sent; 
-  struct hostent *hp; 
+  struct servent *sent;
+#ifdef CYGPKG_NS_DNS   
+  struct hostent *hp=NULL; 
+#endif
   int s, len;
 
   s = socket(AF_INET, SOCK_STREAM, 0);
@@ -202,13 +206,17 @@ connect_to_server(char *hostname,
     close(s);
     return FTP_BAD;
   }
-  
+
+#ifdef CYGPKG_NS_DNS  
   hp = gethostbyname(hostname);
-  
+
+
   if (hp) {           /* try name first */
     host.sin_family = hp->h_addrtype;
     bcopy(hp->h_addr, &host.sin_addr, hp->h_length);
-  } else {			/* maybe it's a numeric address ?*/
+  } else 
+#endif
+    {			/* maybe it's a numeric address ?*/
     host.sin_family = AF_INET;
     
     if (inet_aton(hostname,&host.sin_addr) == 0)  { 
@@ -649,31 +657,13 @@ output device for outputting error and diagnostic messages. The
 function take one addition parameter to the normal printf function. The
 first parameter indicates when the message is an error message when
 true. This can be used to filter errors from diagnostic output. In
-this example the error parameter is ignored and everything printed.
-
-The diag_vprintf() function does not use varargs, so we have to do the
-hard work ourselves of unpacking the stack and passing an array of
-pointers*/
-
-externC void diag_vprintf( const char *fmt, CYG_ADDRWORD *args);
+this example the error parameter is ignored and everything printed. */
 
 void ftpclient_printf(unsigned error, const char *fmt, ...) 
 {
   va_list ap;
-  CYG_ADDRWORD args[8];
   
   va_start(ap, fmt);
-
-  args[0] = va_arg(ap,CYG_ADDRWORD);
-  args[1] = va_arg(ap,CYG_ADDRWORD);
-  args[2] = va_arg(ap,CYG_ADDRWORD);
-  args[3] = va_arg(ap,CYG_ADDRWORD);
-  args[4] = va_arg(ap,CYG_ADDRWORD);
-  args[5] = va_arg(ap,CYG_ADDRWORD);
-  args[6] = va_arg(ap,CYG_ADDRWORD);
-  args[7] = va_arg(ap,CYG_ADDRWORD);
-  
-  diag_vprintf( fmt, args);
-
+  diag_vprintf( fmt, ap);
   va_end(ap);
 }

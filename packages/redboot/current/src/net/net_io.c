@@ -214,8 +214,6 @@ net_io_getc(void* __ch_data)
         if (--idle_timeout == 0) {
             net_io_flush();
             idle_timeout = 10;
-        } else {
-            MS_TICKS_DELAY();
         }
     }
     CYGARC_HAL_RESTORE_GP();
@@ -336,7 +334,6 @@ net_io_getc_timeout(void* __ch_data, cyg_uint8* ch)
         res = net_io_getc_nonblock(__ch_data, ch);
         if (res || 0 == delay_count--)
             break;
-        MS_TICKS_DELAY();
     }
 
     CYGARC_HAL_RESTORE_GP();
@@ -599,7 +596,15 @@ net_init(void)
             // Is it an unset address, or has it been set to a static addr
             if (__local_ip_addr[0] == 0 && __local_ip_addr[1] == 0 &&
                 __local_ip_addr[2] == 0 && __local_ip_addr[3] == 0) {
-                diag_printf("Can't get BOOTP info - network disabled!\n");
+                diag_printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
+                            __local_enet_sc->dev_name,
+                            __local_enet_addr[0],
+                            __local_enet_addr[1],
+                            __local_enet_addr[2],
+                            __local_enet_addr[3],
+                            __local_enet_addr[4],
+                            __local_enet_addr[5]);
+                diag_printf("Can't get BOOTP info for device!\n");
             } else {
                 diag_printf("Can't get BOOTP info, using default IP address\n");
                 have_net = true;

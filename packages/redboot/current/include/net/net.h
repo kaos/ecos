@@ -88,7 +88,7 @@ extern unsigned long  ntohs(unsigned short x);
  * Minimum ethernet packet length.
  */
 #define ETH_MIN_PKTLEN  60
-#define ETH_MAX_PKTLEN  1514
+#define ETH_MAX_PKTLEN  (1540-14)
 
 typedef unsigned char enet_addr_t[6];
 typedef unsigned char ip_addr_t[4];

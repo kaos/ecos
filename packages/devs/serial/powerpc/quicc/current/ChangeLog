@@ -1,3 +1,10 @@
+2001-11-30  Jonathan Larmour  <jlarmour@redhat.com>
+2001-11-29  Christoph Csebits  <christoph.csebits@frequentis.com>
+
+	* src/quicc_smc_serial.c:
+        aligning buffer to cache lines,
+        flushing buffer in cache before flushing the device.
+
 2001-09-10  Jonathan Larmour  <jlarmour@redhat.com>
 
         * cdl/ser_quicc_smc.cdl:        

@@ -5,10 +5,6 @@ To-Do List for Configuration Tool 2.x
 
 - Verify Run Tests Dialog works for TCP/IP mode on Linux.
 
-- List templates in alphabetical order under Linux. Unfortunately
-  wxComboBox in wxGTK doesn't support wxCB_SORT at this time
-  (but wxChoice does).
-
 - Importing more than one package at a time can cause conflicts
   whereas importing one at a time causes no conflicts.
 
@@ -30,3 +26,6 @@ To-Do List for Configuration Tool 2.x
 - Make as many UI elements as possible copyable to the clipboard, such as the
   name and description for a configuration option. Can do this via the right-click
   menus.
+
+- Should look for a .ecc file in the current directory if no save file is
+  passed on the command line.

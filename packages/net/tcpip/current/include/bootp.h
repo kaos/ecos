@@ -111,6 +111,8 @@ SOFTWARE.
 #define BP_MINPKTSZ	300	/* to check sizeof(struct bootp) */
 #endif
 
+#define BP_MAX_OPTION_LEN 256
+
 struct bootp {
     unsigned char    bp_op;			/* packet opcode type */
     unsigned char    bp_htype;			/* hardware addr type */
@@ -369,7 +371,7 @@ __externC cyg_bool_t init_net(const char *interface, struct bootp *res);
 __externC void show_bootp(const char *interface, struct bootp *res);
 
 // Interrogate a bootp record for a particular option
-__externC cyg_bool_t get_bootp_option(struct bootp *bp, unsigned char tag, void *res);
+__externC cyg_bool_t get_bootp_option(struct bootp *bp, unsigned char tag, void *res, unsigned int * length);
 
 // ------------------------------------------------------------------------
 // This isn't exactly the right place for this since bootp is not involved

@@ -79,6 +79,11 @@
 #include <functional>
 #include <algorithm>
 
+// <cctype> is needed in various places in the implementation.
+// This #include should be moved to an implementation-specific
+// header.
+#include <cctype>
+
 // Now for some eCos host-side infrastructure headers.
 //
 // Get the cyg_int64 data type and CYG_UNUSED_PARAM() macro.

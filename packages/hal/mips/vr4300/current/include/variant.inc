@@ -89,6 +89,8 @@
 
 	.macro	hal_cache_init
 
+#ifndef CYG_HAL_STARTUP_RAM
+
 	mfc0	v0,config0		# disable Kseg0 caching in config0 register
 	nop
 	nop
@@ -134,6 +136,7 @@
         nop                             # delay slot
 
         .set mips0                      # reset ISA to default
+#endif
 
 	.endm
 

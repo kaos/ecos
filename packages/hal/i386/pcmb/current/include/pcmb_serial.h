@@ -65,6 +65,7 @@
 
 typedef struct {
     cyg_uint16  base;
+    cyg_uint16  valid;
     cyg_int32   msec_timeout;
     cyg_int32   isr_vector;
 } channel_data_t;

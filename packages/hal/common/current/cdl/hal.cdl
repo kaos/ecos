@@ -57,6 +57,8 @@ cdl_package CYGPKG_HAL {
     compile       drv_api.c
     compile       -library=libextras.a dummy.c
 
+    requires      CYGPKG_INFRA
+
     make -priority 250 {
         <PREFIX>/lib/extras.o: <PREFIX>/lib/libextras.a
         $(CC) $(CFLAGS) -nostdlib -Wl,-r -Wl,--whole-archive -o $@ $<

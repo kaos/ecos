@@ -52,7 +52,34 @@
 # ifdef CYGBLD_ISO_DNS_HEADER
 #  include CYGBLD_ISO_DNS_HEADER
 # endif
-#endif
+#else
+
+/* Provide dummy entries so that legacy code that relies on the presence
+  of these types/functions still works. */
+
+/* Host name / IP mapping fallback when not using a real DNS implementation */
+struct hostent {
+  char    *h_name;        /* official name of host */
+  char    **h_aliases;    /* alias list */
+  int     h_addrtype;     /* host address type */
+  int     h_length;       /* length of address */
+  char    **h_addr_list;  /* list of addresses */
+};
+#define h_addr  h_addr_list[0]  /* for backward compatibility */
+
+static inline struct hostent *
+gethostbyname( const char *__host )
+{
+  return NULL;
+}
+
+static inline struct hostent *
+gethostbyaddr( const char * __addr, int __len, int __type )
+{
+  return NULL;
+}
+
+#endif /* ifdef CYGINT_ISO_DNS */
 
 #ifdef CYGINT_ISO_NETDB_PROTO
 # ifdef CYGBLD_ISO_NETDB_PROTO_HEADER

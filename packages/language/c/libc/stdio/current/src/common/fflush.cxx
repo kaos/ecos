@@ -63,14 +63,14 @@ externC Cyg_ErrNo
 cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
 {
     cyg_bool files_flushed[FOPEN_MAX] = { false }; // sets all to 0
-    cyg_bool loop_again;
+    cyg_bool loop_again, looped = false;
     cyg_ucount32 i;
     Cyg_ErrNo err=ENOERR;
     Cyg_StdioStream *stream;
 
     do {
         loop_again = false;
-        
+
         for (i=0; (i<FOPEN_MAX) && !err; i++) {
             if (files_flushed[i] == false) {
                 
@@ -90,14 +90,23 @@ cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
                     // only buffers which we've written to need flushing
                     if ( !stream->flags.last_buffer_op_was_read)
 #endif
-		      {
-                        if ( stream->trylock_me() ) {
+                    {
+                        // we try to flush the first time through so that
+                        // everything is flushed that can be flushed.
+                        // The second time through we should just wait
+                        // in case some other lowerpri thread has locked the
+                        // stream, otherwise we will spin needlessly and
+                        // never let the lower pri thread run!
+                        if ( (looped && stream->lock_me()) || 
+                             stream->trylock_me() ) {
                             err = stream->flush_output_unlocked();
                             stream->unlock_me();
                             files_flushed[i] = true;
                         } // if
-                        else
+                        else {
                             loop_again = true;
+                            looped = true;
+                        }
                     }
                 } // else
             } // if

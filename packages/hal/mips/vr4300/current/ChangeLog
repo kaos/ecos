@@ -1,3 +1,12 @@
+2001-12-05  Nick Garnett  <nickg@redhat.com>
+
+	* include/variant.inc: Add ifdef around cache clearing code to
+	only do this in non-RAM-startup configurations. If this is done in
+	a RAM-startup configuration, it can play merry havoc with the
+	state of things like RedBoot's network stack.
+	We now assume, for RAM applications, that our loader has
+	initialized the cache.
+
 2001-10-12  Nick Garnett  <nickg@redhat.com>
 
 	* src/mips_vr4300.ld (SECTION_rom_vectors): Updated this section

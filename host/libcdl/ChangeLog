@@ -1,3 +1,15 @@
+2001-12-06  Bart Veer  <bartv@redhat.com>
+
+	* cdlcore.hxx, build.cxx, interp.cxx:
+	Move #include of <cctype> to common header rather than to
+	individual source files, avoiding build problems with
+	newer compilers. Reported by Jeff Law.
+
+	* infer.cxx (inner_resolve):
+	CdlTransaction::is_preferable_to() is not symmetric. Rearrange
+	some expressions so that disabling options or making them
+	inactive is subtly discouraged rather than encouraged.
+
 2001-07-20  Bart Veer  <bartv@redhat.com>
 
 	* value.cxx (save):

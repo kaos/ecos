@@ -1,3 +1,8 @@
+2001-12-03  Julian Smart <julians@redhat.com>
+
+    * standalone/wxwin/templatesdlg.cpp: hardware is now sorted alphabetically
+    on UNIX.
+
 2001-10-25  Julian Smart <julians@redhat.com>
 
     * common/common/build.cxx: now generates /ecos-x names under Windows

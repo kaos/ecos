@@ -1,6 +1,11 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
+*** Version 2.09, December 3rd 2001
+
+- Hardware is now sorted alphabetically on UNIX.
+
+
 *** Version 2.08, October 25th 2001
 
 - Looks in PATH for gcc locations on UNIX.

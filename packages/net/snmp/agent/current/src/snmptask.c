@@ -166,6 +166,13 @@ static cyg_handle_t netsnmp_thread_handle;
 
 externC void snmpd( void );
 
+static void
+snmpdloop( void )
+{
+    while ( 1 )
+        snmpd();
+} 
+
 // Network initialization
 //   This function is called during system initialization to setup the whole
 // networking environment.
@@ -177,7 +184,7 @@ cyg_net_snmp_init(void)
 
     // Create network background thread
     cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY+1, // Priority, just lower than the net
-                      snmpd,                    // entry
+                      snmpdloop,                // entry
                       0,                        // entry parameter
                       "snmpd",                  // Name
                       &netsnmp_stack[0],        // Stack

@@ -1,3 +1,63 @@
+2001-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/load.c (do_load): Fix warning.
+	* src/main.c: Added support for dumping memory in 16 and 32 bit
+	units. Based on patch from Warren Jasper <warrenj@bops.com>.
+
+2001-12-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (get_config): If we are editing an IP address, and
+	it is 0.0.0.0 (as you get at "fco -i" time) suppress using that as
+	the initial value of the string, it is unhelpful as a starting
+	point for line editing.
+
+	If we were given a value on the CLI eg. "fco bootp false" because
+	the new value was copied into the holding string, it was not
+	recognized as a change, so the flash was not updated.  Bug!  The
+	fix is to change the order of the strcpy()s so that holdline is
+	before line.
+
+	If the input line for a new value is completely blank, and the
+	type is not string, take this to mean don't change the value.
+	Otherwise typing in an empty line to an IP address goes off and
+	tries to DNS resolve it there and then, looks like a hang.
+
+	(do_flash_config): If we print the message "** invalid entry" do
+	not just loop; set onevalue = NULL so that the user is prompted
+	for a good value.  Otherwise it loops forever trying the same
+	value if you typed "fco bootp goat" (goat being a bad boolean).
+
+	* src/parse.c (parse_bool): Check for (partial) rest of the word
+	either "true" or "false" and nothing extra.  Thus we reject
+	"truefalse" as is all to easy to type in by accident.  "TRU" "T"
+	"tRuE" are all OK of course.
+
+	* src/net/inet_addr.c (inet_aton): Do not accept terminating the
+	dot-quad address with a final dot.  Else typing on the end of a
+	provided-for-editing string is accepted.  Also reject units > 255.
+	Allow typing in either exactly one (large) number or 4 small ones;
+	reject intermediates.  Thus we reject "10.16.19.1110.16.19.33" and
+	"0.0.0.010.16.19.11" as are all to easy to type in by accident,
+	and things like 10.0.0xffff which used to be accepted.  0x0a00ffff
+	is OK though.  This change also prevents the pointer s running off
+	the end of the string if you just entered eg. "1".
+
+2001-12-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* include/net/net.h (ETH_MAX_PKTLEN): Increase to match definition
+	of MAX_ETH_MSG.
+
+2001-12-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* src/net/tcp.c (__tcp_poll): Call MS_TICKS_DELAY before __timer_poll.
+	* src/net/net_io.c (net_io_getc): Remove MS_TICKS_DELAY from here...
+	(net_io_getc_nonblock): ...and from here.
+
+2001-11-30  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/net_io.c (net_init): Print ESA for device even if bootp
+	fails.
+
 2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/dns.c: Rename index -> ptdindex to avoid conflict with BSD

@@ -568,12 +568,11 @@ diag_dump_buf_with_offset(cyg_uint8     *p,
         }
         for (i = 0;  i < 16;  i++) {
             if (i < (int)s) {
-                diag_printf("%02X", p[i] & 0xFF);
+                diag_printf("%02X ", p[i] & 0xFF);
             } else {
                 diag_printf("  ");
             }
-            if ((i % 2) == 1) diag_printf(" ");
-            if ((i % 8) == 7) diag_printf(" ");
+	    if (i == 7) diag_printf(" ");
         }
         diag_printf(" |");
         for (i = 0;  i < 16;  i++) {
@@ -595,6 +594,75 @@ externC void
 diag_dump_buf(void *p, CYG_ADDRWORD s)
 {
    diag_dump_buf_with_offset((cyg_uint8 *)p, s, 0);
+}
+
+void
+diag_dump_buf_with_offset_32bit(cyg_uint32   *p, 
+				CYG_ADDRWORD  s, 
+				cyg_uint32   *base)
+{
+    int i;
+    if ((CYG_ADDRWORD)s > (CYG_ADDRWORD)p) {
+        s = (CYG_ADDRWORD)s - (CYG_ADDRWORD)p;
+    }
+    while ((int)s > 0) {
+        if (base) {
+            diag_printf("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
+        } else {
+            diag_printf("%08X: ", p);
+        }
+        for (i = 0;  i < 4;  i++) {
+            if (i < (int)s/4) {
+                diag_printf("%08X ", p[i] );
+            } else {
+                diag_printf("         ");
+            }
+        }
+        diag_printf("\n");
+        s -= 16;
+        p += 4;
+    }
+}
+
+externC void
+diag_dump_buf_32bit(void *p, CYG_ADDRWORD s)
+{
+   diag_dump_buf_with_offset_32bit((cyg_uint32 *)p, s, 0);
+}
+
+void
+diag_dump_buf_with_offset_16bit(cyg_uint16   *p, 
+				CYG_ADDRWORD  s, 
+				cyg_uint16   *base)
+{
+    int i;
+    if ((CYG_ADDRWORD)s > (CYG_ADDRWORD)p) {
+        s = (CYG_ADDRWORD)s - (CYG_ADDRWORD)p;
+    }
+    while ((int)s > 0) {
+        if (base) {
+            diag_printf("%08X: ", (CYG_ADDRWORD)p - (CYG_ADDRWORD)base);
+        } else {
+            diag_printf("%08X: ", p);
+        }
+        for (i = 0;  i < 8;  i++) {
+            if (i < (int)s/2) {
+	      diag_printf("%04X ", p[i] );
+	      if (i == 3) diag_printf(" ");
+            } else {
+	      diag_printf("     ");
+            }
+        }
+        diag_printf("\n");
+        s -= 16;
+        p += 8;
+    }
+}
+
+externC void
+diag_dump_buf_16bit(void *p, CYG_ADDRWORD s)
+{
+   diag_dump_buf_with_offset_16bit((cyg_uint16 *)p, s, 0);
 }
 
 /*-----------------------------------------------------------------------*/

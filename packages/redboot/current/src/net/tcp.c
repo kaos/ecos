@@ -569,6 +569,7 @@ void
 __tcp_poll(void)
 {
     __enet_poll();
+    MS_TICKS_DELAY();
     __timer_poll();
 }
 

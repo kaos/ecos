@@ -1,3 +1,10 @@
+2001-12-04  Nick Garnett  <nickg@redhat.com>
+
+	* include/var_arch.h: Added macros to read/write CP0 registers.
+
+	* cdl/hal_mips_mips32.cdl: Added CYGPKG_HAL_MIPS_GDB_REPORT_CP0
+	option to enable reporting of CP0 registers to GDB.
+
 2001-03-21  Jesper Skov  <jskov@redhat.com>
 
 	* src/mips_mips32.ld: Added .2ram pattern.

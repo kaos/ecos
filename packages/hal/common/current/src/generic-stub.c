@@ -259,20 +259,20 @@ __add_char_to_packet (ch, packet)
   
   if (packet->state == 1)
     {
-      if (ch == '#')
+      if (packet->length == BUFMAX)
+        {
+          packet->state = 0;
+          packet->err = 1;
+        }
+      else if (ch == '#')
         {
           packet->contents[packet->length] = 0;
           packet->state = 2;
         }
-      else
+      else 
         {
-          if (packet->length == BUFMAX) {
-              packet->state = 0;
-              packet->err = 1;
-          } else {
-              packet->checksum += ch;
-              packet->contents[packet->length++] = ch;
-          }
+          packet->checksum += ch;
+          packet->contents[packet->length++] = ch;
         }
       return 0;
     }

@@ -1,3 +1,20 @@
+2001-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/dbg-threads-syscall.c (dbg_thread_syscall): Don't bother to
+	deref a func ptr. The opcode could theoretically be 0x0!
+
+2001-12-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* src/generic-stub.c (__add_char_to_packet): Reverse check for
+	end of buffer and end of packet to fix potential buffer overrun.
+
+2001-12-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/dbg-threads-syscall.c (dbg_thread_syscall): check for
+	NULL dbg_syscall_ptr.
+
+	* cdl/hal.cdl: require CYGPKG_INFRA since all HALs do!
+
 2001-11-29  Hugo Tyson  <hmt@redhat.com>
 
 	* src/hal_stub.c: Enable HAL_STUB_HW_SEND_STOP_REASON_TEXT for

@@ -622,6 +622,11 @@ void snmpd( void )    {
 #define stderr_log 1
 #endif
 
+    // ---------
+    // En-bloc reinitialization of statics.
+    running = 1;
+    // ---------
+
     SOCK_STARTUP;
     init_agent("snmpd");		/* do what we need to do first. */
     init_mib_modules();

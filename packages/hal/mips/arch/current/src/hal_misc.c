@@ -57,6 +57,8 @@
 #include <cyg/hal/hal_if.h>             // hal_ctrlc_isr()
 #include <cyg/hal/mips-regs.h>          // FPU cause register definitions
 
+#include CYGHWR_MEMORY_LAYOUT_H
+
 /*------------------------------------------------------------------------*/
 /* If required, define a variable to store the clock period.              */
 
@@ -373,6 +375,15 @@ hal_delay_us(int us)
             val1 = val2;
         }
     }
+}
+
+/*------------------------------------------------------------------------*/
+
+void hal_arch_program_new_stack(void *_func)
+{
+    externC void hal_program_new_stack( void *func, CYG_ADDRESS addr);
+    hal_program_new_stack( (void *)_func,
+                   (CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE - sizeof(CYG_ADDRESS)) & ~15 );
 }
 
 /*------------------------------------------------------------------------*/

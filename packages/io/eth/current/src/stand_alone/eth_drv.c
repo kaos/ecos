@@ -346,13 +346,15 @@ eth_drv_read(char *eth_hdr, char *buf, int len)
     }
     (sc->funs->poll)(sc);  // Give the driver a chance to fetch packets
     msg = eth_drv_msg_get(&eth_msg_full);
-    if (msg) {
+    if (msg && len >= msg->len - 14) {
         memcpy(eth_hdr, msg->data, 14);
         memcpy(buf, &msg->data[14], msg->len-14);
-        eth_drv_msg_put(&eth_msg_free, msg);
         res = msg->len;
     } else {
-        res = 0;  // No packets available
+        res = 0;
+    }
+    if (msg) {
+        eth_drv_msg_put(&eth_msg_free, msg);
     }
    
     if (dbg) {

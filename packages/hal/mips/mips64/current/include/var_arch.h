@@ -57,6 +57,44 @@
 #define CYG_HAL_GDB_REG CYG_WORD64
 
 //--------------------------------------------------------------------------
+// define macros for accessing CP0 registers
+
+#define HAL_GET_CP0_REGISTER_32( _regval_, _cp0_regno_, _cp0_regsel_ )  \
+{                                                                       \
+    cyg_uint32 tmp;                                                     \
+    asm volatile ("mfc0   %0,$%1,%2\nnop;nop;nop\n"                     \
+	           : "=r" (tmp)                                         \
+	           : "i"  (_cp0_regno_), "i"  (_cp0_regsel_)  );        \
+    _regval_ = tmp;                                                     \
+}
+
+#define HAL_SET_CP0_REGISTER_32( _regval_, _cp0_regno_, _cp0_regsel_ )          \
+{                                                                               \
+    cyg_uint32 tmp = _regval_;                                                  \
+    asm volatile ("mtc0   %1,$%2,%3\nnop\n"                                     \
+	           : "=r" (tmp)                                                 \
+	           : "r" (tmp), "i"  (_cp0_regno_), "i" (_cp0_regsel_) );       \
+}
+
+#define HAL_GET_CP0_REGISTER_64( _regval_, _cp0_regno_, _cp0_regsel_ )  \
+{                                                                       \
+    cyg_uint64 tmp;                                                     \
+    asm volatile ("dmfc0   %0,$%1,%2\nnop\n"                            \
+	           : "=r" (tmp)                                         \
+	           : "i"  (_cp0_regno_), "i"  (_cp0_regsel_)  );        \
+    _regval_ = tmp;                                                     \
+}
+
+#define HAL_SET_CP0_REGISTER_64( _regval_, _cp0_regno_, _cp0_regsel_ )          \
+{                                                                               \
+    cyg_uint64 tmp = _regval_;                                                  \
+    asm volatile ("dmtc0   %1,$%2,%3\nnop\n"                                    \
+	           : "=r" (tmp)                                                 \
+	           : "r" (tmp), "i"  (_cp0_regno_), "i" (_cp0_regsel_) );       \
+}
+
+
+//--------------------------------------------------------------------------
 
 #ifdef CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 externC int

@@ -71,7 +71,7 @@
 #define DEBUG 0x0
 
 #if DEBUG & 1
-#define DEBUG_FUNCTION() do { diag_printf("%s\n", __FUNCTION__); } while (0)
+#define DEBUG_FUNCTION() do { os_printf("%s\n", __FUNCTION__); } while (0)
 #else
 #define DEBUG_FUNCTION() do {} while(0)
 #endif
@@ -491,7 +491,7 @@ get_reg(struct eth_drv_sc *sc, int regno)
             HAL_PCI_IO_READ_UINT16(cpd->base+PCNET_IO_RDP, val);
     }
 #if DEBUG & 2
-    diag_printf("read %s reg %d val 0x%04x\n", 
+    os_printf("read %s reg %d val 0x%04x\n", 
                 (regno & PCNET_ANR_FLAG) ? "anr" : (regno & PCNET_BCR_FLAG) ? "bcr" : "csr", 
                 regno & PCNET_RAP_MASK, val);
 #endif
@@ -526,7 +526,7 @@ put_reg(struct eth_drv_sc *sc, int regno, cyg_uint16 val)
     }
 
 #if DEBUG & 2
-    diag_printf("write %s reg %d val 0x%04x\n", 
+    os_printf("write %s reg %d val 0x%04x\n", 
                 (regno & PCNET_ANR_FLAG) ? "anr" : (regno & PCNET_BCR_FLAG) ? "bcr" : "csr", 
                 regno & PCNET_RAP_MASK, val);
 #endif

@@ -50,7 +50,11 @@
 
 /* This value must agree with NUMREGS in mips-stub.h. */
 
-#define NUM_REGS 90
+#if defined(CYGPKG_HAL_MIPS_GDB_REPORT_CP0)
+#define NUM_REGS   107
+#else
+#define NUM_REGS    90
+#endif
 
 #ifdef __mips64
   #define REG_SIZE 8

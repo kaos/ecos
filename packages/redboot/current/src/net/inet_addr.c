@@ -69,7 +69,7 @@ inet_aton(const char *s, in_addr_t *addr)
             if (_is_hex(c) && ((digit = _from_hex(c)) < radix)) {
                 // Valid digit
                 val = (val * radix) + digit;
-            } else if (c == '.') {
+            } else if (c == '.' && i < 3) { // all but last terminate by '.'
                 break;
             } else {
                 return false;
@@ -81,6 +81,16 @@ inet_aton(const char *s, in_addr_t *addr)
 #else
         res = (res << 8) | val;
 #endif
+        if ('\0' == c) {
+            if (0 == i) { // first field found end of string
+                res = val; // no shifting, use it as the whole thing
+                break; // permit entering a single number
+            }
+            if (3 > i) // we found end of string before getting 4 fields
+                return false;
+        }
+        // after that we check that it was 0..255 only
+        if (val &~0xff) return false;
     }
     addr->s_addr = htonl(res);
     return true;

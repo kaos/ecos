@@ -87,12 +87,12 @@ RedBoot_cmd("go",
     );
 RedBoot_cmd("dump", 
             "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>] [-s]",
+            "-b <location> [-l <length>] [-s] [-1|2|4]",
             do_dump 
     );
 RedBoot_cmd("x", 
             "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>] [-s]",
+            "-b <location> [-l <length>] [-s] [-1|2|4]",
             do_x
     );
 RedBoot_cmd("cksum", 
@@ -414,11 +414,15 @@ do_help(int argc, char *argv[])
 void
 do_dump(int argc, char *argv[])
 {
-    struct option_info opts[3];
+    struct option_info opts[6];
     unsigned long base, len;
     bool base_set, len_set;
     static unsigned long _base, _len;
+    static char _size = 1;
     bool srec_dump;
+    bool set_32bit = false;
+    bool set_16bit = false;
+    bool set_8bit = false;
     int i, n, off, cksum;
     cyg_uint8 ch;
 
@@ -428,7 +432,13 @@ do_dump(int argc, char *argv[])
               (void **)&len, (bool *)&len_set, "length");
     init_opts(&opts[2], 's', false, OPTION_ARG_TYPE_FLG, 
               (void **)&srec_dump, 0, "dump data using Morotola S-records");
-    if (!scan_opts(argc, argv, 1, opts, 3, 0, 0, "")) {
+    init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
+              (void *)&set_32bit, (bool *)0, "dump 32 bit units");
+    init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
+              (void **)&set_16bit, (bool *)0, "dump 16 bit units");
+    init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
+              (void **)&set_8bit, (bool *)0, "dump 8 bit units");
+    if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
         return;
     }
     if (!base_set) {
@@ -442,6 +452,15 @@ do_dump(int argc, char *argv[])
             len_set = true;
         }
     }
+
+    if (set_32bit) {
+      _size = 4;
+    } else if (set_16bit) {
+      _size = 2;
+    } else if (set_8bit) {
+      _size = 1;
+    }
+
     if (!len_set) {
         len = 32;
     }
@@ -463,7 +482,17 @@ do_dump(int argc, char *argv[])
             off += n;
         }
     } else {
-        diag_dump_buf((void *)base, len);
+        switch( _size ) {
+        case 1:
+            diag_dump_buf((void *)base, len);
+            break;
+        case 2:
+            diag_dump_buf_16bit((void *)base, len);
+            break;
+        case 4:
+            diag_dump_buf_32bit((void *)base, len);
+            break;
+        }
     }
     _base = base + len;
     _len = len;

@@ -9,7 +9,7 @@ cdl_savefile_command cdl_interface { value_source user_value wizard_value inferr
 
 cdl_configuration eCos {
     description "" ;
-    hardware    edb7212 ;
+    hardware    edb7xxx ;
     template    redboot ;
     package -hardware CYGPKG_HAL_ARM current ;
     package -hardware CYGPKG_HAL_ARM_EDB7XXX current ;

@@ -1,3 +1,15 @@
+2001-12-04  Nick Garnett  <nickg@redhat.com>
+
+	* src/if_pcnet.c:
+	Added a couple of 100us delays in transmit code. These appear to
+	be necessary to meet timing constraints on some platforms. These
+	are not a very satisfying fix, but they will have to do for now.
+	Also changed all references to diag_printf to db_printf, and added
+	a static implementation of db_printf() that will gnerate
+	diagnostic output properly on RedBoot.
+
+	* src/amd_pcnet.h: diag_printf -> db_printf
+	
 2001-10-16  David Howells  <dhowells@redhat.com>
 
 	* src/if_pcnet.c: don't invert the logic of the auto-negotiation

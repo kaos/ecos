@@ -1,3 +1,9 @@
+2001-12-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* misc/edb7212_redboot.ecm:
+	* misc/edb7212_redboot_ROM.ecm:
+	Fix target descriptions to be edb7xxx.
+
 2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_arm_edb7xxx.cdl: Clarify package description strings.

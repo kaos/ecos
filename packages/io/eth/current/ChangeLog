@@ -1,3 +1,8 @@
+2001-12-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* src/stand_alone/eth_drv.c (eth_drv_read): Check that the return
+	buffer is big enough to hold the packet.
+
 2001-11-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* doc/driver_doc: Mention preferences on how the ESA should be set.

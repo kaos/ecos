@@ -169,6 +169,50 @@ set_fixed_tag( struct bootp *ppkt,
     return true;
 }
 
+// Note that this does not permit changing the size of an extant tag.
+static int
+set_variable_tag( struct bootp *ppkt,
+               unsigned char tag,
+               cyg_uint8 *pvalue,
+               int len)
+{
+    unsigned char *op;
+
+    // Initially this will only scan the options field.
+    op = &ppkt->bp_vend[4];
+    while (*op != TAG_END) {
+        if ( op > &ppkt->bp_vend[BP_VEND_LEN-1] ) {
+            CYG_FAIL( "Oversize DHCP packet in set_variable_tag" );
+            return false;
+        }
+        if (*op == tag)                 // Found it...
+            break;
+        op += *(op+1)+2;
+    }
+    
+    if (*op == tag) { // Found it...
+        if ( *(op+1) != len ) {
+            CYG_FAIL( "Wrong size in set_variable_tag" );
+            return false;           // wrong size
+        }
+    }
+    else { // overwrite the end tag and install a new one
+        if ( op + len + 2 > &ppkt->bp_vend[BP_VEND_LEN-1] ) {
+            CYG_FAIL( "Oversize DHCP packet in set_variable_tag append" );
+            return false;
+        }
+        *op = tag;
+        *(op+1) = len;
+        *(op + len + 2) = TAG_END;
+    }
+    // and insert the value.  No order is implied.
+    op += 2;               // point to start of value
+    while ( len-- > 0 ) {
+        *op++ = *pvalue++;
+    }
+    return true;
+}
+
 // ------------------------------------------------------------------------
 // Bring up an interface enough to broadcast, before we know who we are
 
@@ -345,7 +389,8 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     cyg_resolution_t resolution = 
         cyg_clock_get_resolution(cyg_real_time_clock());
     cyg_handle_t h;
-
+    unsigned int length;
+    
     // Silence any jabbering from past lease on this interface
     no_lease( lease );
     lease->which = lease->next = 0;
@@ -354,7 +399,8 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
                       &lease->alarm, &lease->alarm_obj );
 
     // extract the lease time and scale it &c to now.
-    if(!get_bootp_option( bootp, TAG_DHCP_LEASE_TIME, &tag ))
+    length = sizeof(tag);
+    if(!get_bootp_option( bootp, TAG_DHCP_LEASE_TIME, &tag ,&length))
         tag = 0xffffffff;
 
     if ( 0xffffffff == tag ) {
@@ -370,8 +416,8 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     then *= 1000000000; // into nS - we know there is room in a tick_count_t
     then = (then / resolution.dividend) * resolution.divisor; // into system ticks
     lease->expiry = now + then;
-
-    if (get_bootp_option( bootp, TAG_DHCP_REBIND_TIME, &tag ))
+    length = sizeof(tag);
+    if (get_bootp_option( bootp, TAG_DHCP_REBIND_TIME, &tag, &length ))
         then = (cyg_uint64)(ntohl(tag));
     else
         then = expiry_then - expiry_then/4;
@@ -379,7 +425,8 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     then = (then / resolution.dividend) * resolution.divisor; // into system ticks
     lease->t2 = now + then;
 
-    if (get_bootp_option( bootp, TAG_DHCP_RENEWAL_TIME, &tag ))
+    length = sizeof(tag);
+    if (get_bootp_option( bootp, TAG_DHCP_RENEWAL_TIME, &tag, &length ))
         then = (cyg_uint64)(ntohl(tag));
     else
         then = expiry_then/2;
@@ -406,6 +453,45 @@ static inline void new_lease( struct bootp *bootp, struct dhcp_lease *lease )
     cyg_alarm_enable( lease->alarm );
 }
 
+// ------------------------------------------------------------------------
+// Set all the tags we want to use when sending a packet.
+// This has expanded to a large, explicit set to interwork better
+// with a variety of DHCP servers.
+
+static void set_default_dhcp_tags( struct bootp *xmit )
+{
+    // Explicitly request full set of params that are default for LINUX
+    // dhcp servers, but not default for others.  This is rather arbitrary,
+    // but it preserves behaviour for people using those servers.
+    // Perhaps configury of this set will be needed in future?
+    //
+    // Here's the set:
+    static cyg_uint8 req_list[]  = {
+#ifdef CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE
+        CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE ,
+#else
+        TAG_DHCP_SERVER_ID    ,     //     DHCP server id: 10.16.19.66
+        TAG_DHCP_LEASE_TIME   ,     //     DHCP time 51: 60
+        TAG_DHCP_RENEWAL_TIME ,     //     DHCP time 58: 30
+        TAG_DHCP_REBIND_TIME  ,     //     DHCP time 59: 52
+        TAG_SUBNET_MASK       ,     //     subnet mask: 255.255.255.0
+        TAG_GATEWAY           ,     //     gateway: 10.16.19.66
+        TAG_DOMAIN_SERVER     ,     //     domain server: 10.16.19.66
+        TAG_DOMAIN_NAME       ,     //     domain name: hmt10.cambridge.redhat.com
+        TAG_IP_BROADCAST      ,     //     IP broadcast: 10.16.19.255
+#endif
+#ifdef CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL
+        CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL ,
+#endif
+    };
+
+    if ( req_list[0] ) // So that one may easily turn it all off by configury
+        set_variable_tag( xmit, TAG_DHCP_PARM_REQ_LIST,
+                          &req_list[0], sizeof( req_list ) );
+
+    // Explicitly specify our max message size.
+    set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
+}
 
 // ------------------------------------------------------------------------
 // the DHCP state machine - this does all the work
@@ -423,7 +509,8 @@ do_dhcp(const char *intf, struct bootp *res,
     struct timeout_state timeout_scratch;
     cyg_uint8 oldstate = *pstate;
     cyg_uint8 msgtype = 0, seen_bootp_reply = 0;
-
+    unsigned int length;
+    
     cyg_uint32 xid;
 
     // IMPORTANT: xmit is the same as res throughout this; *received is a
@@ -494,6 +581,15 @@ do_dhcp(const char *intf, struct bootp *res,
 
     xid = res->bp_xid; // default to what's there already;
 
+    // generates a new XID
+    {
+      unsigned char* xp = (unsigned char*)&xid;
+      
+      *xp++ = ifr.ifr_hwaddr.sa_data[5];
+      *xp++ = ifr.ifr_hwaddr.sa_data[4];
+      *((cyg_uint16*)xp) = (cyg_uint16)(arc4random() & 0xffff);
+    }
+      
     while ( 1 ) {
 
         // If we are active rather than in the process of shutting down,
@@ -537,15 +633,6 @@ do_dhcp(const char *intf, struct bootp *res,
                 return false;
             }
 
-            // generates a new XID
-            {
-                unsigned char* xp = (unsigned char*)&xid;
-
-                *xp++ = ifr.ifr_hwaddr.sa_data[5];
-                *xp++ = ifr.ifr_hwaddr.sa_data[4];
-                *((cyg_uint16*)xp) = (cyg_uint16)(arc4random() & 0xffff);
-            }
-
             // Fill in the BOOTP request - DHCPDISCOVER packet
             bzero(xmit, sizeof(*xmit));
             xmit->bp_op = BOOTREQUEST;
@@ -559,8 +646,8 @@ do_dhcp(const char *intf, struct bootp *res,
 
             // remove the next line to test ability to handle bootp packets.
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPDISCOVER, 1 );
-
-            set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
+            // Set all the tags we want to use when sending a packet
+            set_default_dhcp_tags( xmit );
 
 #ifdef CYGDBG_NET_DHCP_CHATTER
             diag_printf( "---------DHCPSTATE_INIT sending:\n" );
@@ -617,13 +704,17 @@ do_dhcp(const char *intf, struct bootp *res,
 
             if ( 0 == received->bp_siaddr.s_addr ) {
                 // then fill in from the options...
+                length = sizeof(received->bp_siaddr.s_addr);
                 get_bootp_option( received, TAG_DHCP_SERVER_ID,
-                                  &received->bp_siaddr.s_addr );
+                                  &received->bp_siaddr.s_addr,
+                                  &length);
             }
 
             // see if it was a DHCP reply or a bootp reply; it could be
             // either.
-            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype ) ) {
+            length = sizeof(msgtype);
+            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype,
+                                   &length) ) {
                 if ( DHCPOFFER == msgtype ) { // all is well
                     // Save the good packet in *xmit
                     bcopy( received, xmit, dhcp_size(received) );
@@ -646,12 +737,13 @@ do_dhcp(const char *intf, struct bootp *res,
             // then wait for an ACK in DHCPSTATE_REQUEST_RECV.
 
             // Fill in the BOOTP request - DHCPREQUEST packet
+            xmit->bp_xid = xid;
             xmit->bp_op = BOOTREQUEST;
             xmit->bp_flags = htons(0x8000); // BROADCAST FLAG
 
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPREQUEST, 1 );
-            set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
-
+            // Set all the tags we want to use when sending a packet
+            set_default_dhcp_tags( xmit );
             // And this will be a new one:
             set_fixed_tag( xmit, TAG_DHCP_REQ_IP, ntohl(xmit->bp_yiaddr.s_addr), 4 );
             
@@ -700,12 +792,16 @@ do_dhcp(const char *intf, struct bootp *res,
 
             if ( 0 == received->bp_siaddr.s_addr ) {
                 // then fill in from the options...
+                length = sizeof(received->bp_siaddr.s_addr );
                 get_bootp_option( received, TAG_DHCP_SERVER_ID,
-                                  &received->bp_siaddr.s_addr );
+                                  &received->bp_siaddr.s_addr,
+                                  &length);
             }
 
             // check it was a DHCP reply
-            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype ) ) {
+            length = sizeof(msgtype);
+            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype,
+                                   &length) ) {
                 if ( DHCPACK == msgtype // Same offer & server?
                      && received->bp_yiaddr.s_addr == xmit->bp_yiaddr.s_addr
                      && received->bp_siaddr.s_addr == xmit->bp_siaddr.s_addr) {
@@ -761,14 +857,15 @@ do_dhcp(const char *intf, struct bootp *res,
             // type UNICAST straight to the server.  Then wait for an ACK.
 
             // Fill in the BOOTP request - DHCPREQUEST packet
+            xmit->bp_xid = xid;
             xmit->bp_op = BOOTREQUEST;
             xmit->bp_flags = htons(0); // No BROADCAST FLAG
             // Use the *client* address here:
             xmit->bp_ciaddr.s_addr = xmit->bp_yiaddr.s_addr;
 
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPREQUEST, 1 );
-            set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
-
+            // Set all the tags we want to use when sending a packet
+            set_default_dhcp_tags( xmit );
             // And this will be a new one:
             set_fixed_tag( xmit, TAG_DHCP_REQ_IP, ntohl(xmit->bp_yiaddr.s_addr), 4 );
             
@@ -828,12 +925,16 @@ do_dhcp(const char *intf, struct bootp *res,
 
             if ( 0 == received->bp_siaddr.s_addr ) {
                 // then fill in from the options...
+                length = sizeof(received->bp_siaddr.s_addr);
                 get_bootp_option( received, TAG_DHCP_SERVER_ID,
-                                  &received->bp_siaddr.s_addr );
+                                  &received->bp_siaddr.s_addr,
+                                  &length);
             }
 
             // check it was a DHCP reply
-            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype ) ) {
+            length = sizeof(msgtype);
+            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype,
+                                   &length) ) {
                 if ( DHCPACK == msgtype  // Same offer?
                      && received->bp_yiaddr.s_addr == xmit->bp_yiaddr.s_addr) {
                     // Save the good packet in *xmit
@@ -860,14 +961,15 @@ do_dhcp(const char *intf, struct bootp *res,
             // Then wait for an ACK.  This one is BROADCAST.
 
             // Fill in the BOOTP request - DHCPREQUEST packet
+            xmit->bp_xid = xid;
             xmit->bp_op = BOOTREQUEST;
             xmit->bp_flags = htons(0); // no BROADCAST FLAG
             // Use the *client* address here:
             xmit->bp_ciaddr.s_addr = xmit->bp_yiaddr.s_addr;
 
             set_fixed_tag( xmit, TAG_DHCP_MESS_TYPE, DHCPREQUEST, 1 );
-            set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
-
+            // Set all the tags we want to use when sending a packet
+            set_default_dhcp_tags( xmit );
             // And this will be a new one:
             set_fixed_tag( xmit, TAG_DHCP_REQ_IP, ntohl(xmit->bp_yiaddr.s_addr), 4 );
             
@@ -917,12 +1019,16 @@ do_dhcp(const char *intf, struct bootp *res,
 
             if ( 0 == received->bp_siaddr.s_addr ) {
                 // then fill in from the options...
+                int length = sizeof(received->bp_siaddr.s_addr );
                 get_bootp_option( received, TAG_DHCP_SERVER_ID,
-                                  &received->bp_siaddr.s_addr );
+                                  &received->bp_siaddr.s_addr,
+                                  &length);
             }
 
             // check it was a DHCP reply
-            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype ) ) {
+            length = sizeof(msgtype);
+            if ( get_bootp_option( received, TAG_DHCP_MESS_TYPE, &msgtype,
+                                   &length) ) {
                 if ( DHCPACK == msgtype  // Same offer?
                      && received->bp_yiaddr.s_addr == xmit->bp_yiaddr.s_addr) {
                     // Save the good packet in *xmit
@@ -991,7 +1097,7 @@ do_dhcp(const char *intf, struct bootp *res,
             // Just send what you got with a DHCPRELEASE in the message
             // type UNICAST straight to the server.  No ACK.  Then go to
             // NOTBOUND state.
-
+            xmit->bp_xid = xid;
             xmit->bp_op = BOOTREQUEST;
             xmit->bp_flags = htons(0); // no BROADCAST FLAG
             // Use the *client* address here:

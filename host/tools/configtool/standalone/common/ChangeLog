@@ -1,3 +1,8 @@
+2001-12-06  Bart Veer  <bartv@redhat.com>
+
+	* cdl_exec.cxx (report_conflicts):
+	Report possible solutions correctly (bug 56232).
+
 2001-10-25  Julian Smart  <julians@redhat.com>
 
 	* cdl_exec.cxx: added calls to mount -f /ecos-x under Cygwin,

@@ -82,6 +82,11 @@ cdl_package CYGPKG_HAL_MIPS_MIPS64 {
         calculated 1
     }
 
+    cdl_option CYGPKG_HAL_MIPS_GDB_REPORT_CP0 {
+	display "Report contents of CP0 to GDB"
+	calculated 1
+    }
+
     define_proc {
         puts $::cdl_header "#include <pkgconf/hal_mips.h>"
     }

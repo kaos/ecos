@@ -1,3 +1,54 @@
+2001-12-06  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/bootp_support.c (init_net): Just re-tabbed and checked
+	the addition to initialize DNS from DHCP info - it had already
+	snuck into the file in the previous change from Andrew.  Include
+	of netdb.h added also, from the patch in Bug 57019.  Also check
+	CYGINT_ISO_DNS for the setup code instead of CYGPKG_ISO_DNS.
+
+2001-12-04  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/lib/bootp_support.c: Check CYGINT_ISO_DNS (from
+	<pkgconf/isoinfra.h>) instead of CYGPKG_ISO_DNS.
+
+2001-12-03   Andrew Lunn  <Andrew.Lunn@ascom.ch>
+
+	* src/lib/bootp_support.c: get_bootp_option(): Take the
+	max length of data we want out of the bootp record.
+	* src/lib/dhcp_prot.c: Pass the length we expect for an option.
+
+2001-08-16  Anssi Pulkkinen <Anssi.Pulkkinen@ascom.ch>
+
+	* src/lib/dhcp_prot.c: Make sure we use the newly calculated xid.
+	
+2001-08-02  Anand Srivastava <Anand.Srivastava@ascom.ch>
+
+        * src/lib/dhcp_prot.c do_dhcp: ID calculation must be done only
+	once. moved it out the loop. 	
+	
+2001-11-21  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/dhcp_support.c (dhcp_mgt_entry): If we have an
+	SNMPAGENT, must recycle it whenever we reinitialize all
+	interfaces; call SnmpdShutDown() to cause this.
+	Also re-initialize all loopback interfaces here too.	
+
+2001-11-30  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/dhcp_prot.c (set_default_dhcp_tags): New routine to
+	insert all the extra woffle we need neatly each time, keeping the
+	state machine's case arms to the real work.  The new thing this
+	sets is TAG_DHCP_PARM_REQ_LIST, with a list that matches the
+	default set we get from a LINUX dhcpd.  This is because M$ servers
+	need explicit requests for eg. TAG_GATEWAY.  Note that I have
+	included configuration to override the set of tags requested here
+	in the source, but not yet backed up by CDL - we'll see whether
+	anyone needs this.
+	(set_variable_tag): New routine to insert a variable pointed-to
+	data item rather than an int of 1,2 or 4 bytes.
+	(do_dhcp): Call set_default_dhcp_tags() every time we send a
+	packet, rather than ad hoc additions in each state.
+
 2001-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/machine/ansi.h: No longer require BSD string function

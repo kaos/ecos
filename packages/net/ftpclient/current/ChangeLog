@@ -1,4 +1,8 @@
-2001-11-4  Andrew Lunn  <andrew.lunn@ascom.ch>
+2001-12-04  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/ftpclient.c: Allow it to compile!
+
+2001-11-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 	
 	* First version. Implements an FTP client which can get and put 
 	  files on a server. 

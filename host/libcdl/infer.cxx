@@ -1591,7 +1591,7 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
                 return result;
             } else if (0 == preferred_transaction) {
                 preferred_transaction = disable_transaction;
-            } else if (disable_transaction->is_preferable_to(preferred_transaction)) {
+            } else if (!preferred_transaction->is_preferable_to(disable_transaction)) {
                 preferred_transaction->cancel(); 
                 delete preferred_transaction;
                 preferred_transaction = disable_transaction;
@@ -1626,7 +1626,7 @@ CdlConflict_RequiresBody::inner_resolve(CdlTransaction transaction, int level)
             return result;
         } else if (0 == preferred_transaction) {
             preferred_transaction = inactive_transaction;
-        } else if (inactive_transaction->is_preferable_to(preferred_transaction)) {
+        } else if (!preferred_transaction->is_preferable_to(inactive_transaction)) {
             preferred_transaction->cancel(); 
             delete preferred_transaction;
             preferred_transaction = inactive_transaction;

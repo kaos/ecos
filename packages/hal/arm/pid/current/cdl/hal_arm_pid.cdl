@@ -404,6 +404,19 @@ cdl_package CYGPKG_HAL_ARM_PID {
              the ROM monitor or boot ROM."
      }
 
+    # custom rule to create a shell script to execute SID
+    make {
+        <PREFIX>/runsid : <PREFIX>/include/pkgconf/hal_arm_pid.h
+	@echo "arm-elf-sid CYGTST_SID_FLAGS \$$@" > $(notdir $@).tmp
+	$(CC) -E -P -c -xc -undef -imacros $< -o $@ $(notdir $@).tmp
+	@rm $(notdir $@).tmp
+    }
+
+    cdl_option CYGTST_SID_FLAGS {
+        display "SID execution flags"
+        flavor data
+        default_value { CYGHWR_HAL_ARM_BIGENDIAN ? "--board=pid7t -EB" : "--board=pid7t -EL" }
+    }
 
     cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
         display       "Redboot HAL options"

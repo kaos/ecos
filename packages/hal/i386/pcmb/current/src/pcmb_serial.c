@@ -143,7 +143,8 @@ static void
 cyg_hal_plf_serial_init_channel(void* __ch_data)
 {
     cyg_uint16 base = ((channel_data_t*)__ch_data)->base;
-
+    cyg_uint8 lsr;
+    
     HAL_WRITE_UINT8(base+CYG_DEV_IER, 0);	
     HAL_WRITE_UINT8(base+CYG_DEV_IER, 0);
     HAL_WRITE_UINT8(base+CYG_DEV_MCR, 0);    
@@ -154,6 +155,12 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
     // 8-1-no parity.
     HAL_WRITE_UINT8(base+CYG_DEV_LCR, SIO_LCR_WLS0 | SIO_LCR_WLS1);
 
+    // Test whether the channel is valid or not. If the status
+    // register reads back all ones, its a fair bet that it is not
+    // actually there!
+    HAL_READ_UINT8(base+CYG_DEV_LSR, lsr);
+    ((channel_data_t*)__ch_data)->valid = (lsr != 0xFF);
+    
 //    HAL_WRITE_UINT8(base+CYG_DEV_FCR, 0x07);  // Enable & clear FIFO
 }
 
@@ -164,6 +171,10 @@ cyg_hal_plf_serial_putc(void *__ch_data, char c)
 {
     cyg_uint16 base = ((channel_data_t*)__ch_data)->base;
     cyg_uint8 lsr;
+
+    if( !((channel_data_t*)__ch_data)->valid )
+            return;
+    
     CYGARC_HAL_SAVE_GP();
     do {
         HAL_READ_UINT8(base+CYG_DEV_LSR, lsr);
@@ -182,6 +193,9 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     cyg_uint16 base = ((channel_data_t*)__ch_data)->base;
     cyg_uint8 lsr;
 
+    if( !((channel_data_t*)__ch_data)->valid )
+            return false;
+    
     HAL_READ_UINT8(base+CYG_DEV_LSR, lsr);
     if ((lsr & SIO_LSR_DR) == 0)
         return false;
@@ -197,6 +211,10 @@ cyg_uint8
 cyg_hal_plf_serial_getc(void* __ch_data)
 {
     cyg_uint8 ch;
+
+    if( !((channel_data_t*)__ch_data)->valid )
+            return '\n';
+    
     CYGARC_HAL_SAVE_GP();
 
     while(!cyg_hal_plf_serial_getc_nonblock(__ch_data, &ch));

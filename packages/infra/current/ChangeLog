@@ -1,3 +1,9 @@
+2001-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/diag.cxx: Added functions to do memory dump in 16 and 32 bit
+	units. Based on changes from Warren Jasper <warrenj@bops.com>.
+	* include/diag.h: Function declarations.
+	
 2001-09-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/eprintf.c (__eprintf): Tolerate absence of standard ISO C

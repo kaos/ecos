@@ -56,8 +56,13 @@
 
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
+#include <pkgconf/isoinfra.h>
 
 #include <network.h>
+
+#ifdef CYGINT_ISO_DNS
+#include <netdb.h>
+#endif
 
 #ifndef CYGPKG_LIBC_STDIO
 #define perror(s) diag_printf(#s ": %s\n", strerror(errno))
@@ -248,6 +253,8 @@ show_bootp(const char *intf, struct bootp *bp)
     unsigned char *op, *ap = 0, optover;
     unsigned char name[128];
     struct in_addr addr[32];
+    unsigned int length;
+    
     diag_printf("BOOTP[%s] op: %s\n", intf, _bootp_op[bp->bp_op]);
     diag_printf("       htype: %s\n", _bootp_hw_type[bp->bp_htype]);
     diag_printf("        hlen: %d\n", bp->bp_hlen );
@@ -267,7 +274,8 @@ show_bootp(const char *intf, struct bootp *bp)
     diag_printf("    gateway IP: %s\n", inet_ntoa(bp->bp_giaddr));
 
     optover = 0; // See whether sname and file are overridden for options
-    (void)get_bootp_option( bp, TAG_DHCP_OPTOVER, &optover );
+    length = sizeof(optover);
+    (void)get_bootp_option( bp, TAG_DHCP_OPTOVER, &optover, &length );
     if ( !(1 & optover) && bp->bp_sname[0] )
         diag_printf("        server: %s\n", bp->bp_sname);
     if ( ! (2 & optover) && bp->bp_file[0] )
@@ -362,19 +370,23 @@ show_bootp(const char *intf, struct bootp *bp)
 }
 
 cyg_bool_t
-get_bootp_option(struct bootp *bp, unsigned char tag, void *opt)
+get_bootp_option(struct bootp *bp, unsigned char tag, void *opt, 
+                 unsigned int *length)
 {
     unsigned char *val = (unsigned char *)opt;
     int i;
     cyg_uint8 optover;
-
+    
 #define SCANTAG( ptr ) CYG_MACRO_START          \
+    unsigned int max;                           \
     unsigned char *op = (ptr);                  \
     while (*op != TAG_END) {                    \
         if (*op == tag) {                       \
-            for (i = 0;  i < *(op+1);  i++) {   \
+            max=(*(op+1)>*length ? *length : *(op+1)); \
+            for (i = 0;  i < max;  i++) {       \
                 *val++ = *(op+i+2);             \
             }                                   \
+            *length=max;                        \
             return true;                        \
         }                                       \
         op += *(op+1)+2;                        \
@@ -387,7 +399,7 @@ CYG_MACRO_END
         return false;
     // else, look for that tag to see if there's more...
     optover = 0;
-    if ( ! get_bootp_option( bp, TAG_DHCP_OPTOVER, &optover ) )
+    if ( ! get_bootp_option( bp, TAG_DHCP_OPTOVER, &optover, length) )
         return false;
 
     if ( 1 & optover ) // then the file field also holds options
@@ -409,6 +421,8 @@ init_net(const char *intf, struct bootp *bp)
     int one = 1;
     struct ecos_rtentry route;
     struct in_addr netmask, gateway;
+    unsigned int length;
+
 
     s = socket(AF_INET, SOCK_DGRAM, 0);
     if (s < 0) {
@@ -436,7 +450,8 @@ init_net(const char *intf, struct bootp *bp)
         return false;
     }
 
-    if (get_bootp_option(bp, TAG_SUBNET_MASK, &addrp->sin_addr)) {
+    length = sizeof(addrp->sin_addr);
+    if (get_bootp_option(bp, TAG_SUBNET_MASK, &addrp->sin_addr,&length)) {
         netmask = addrp->sin_addr;
         if (ioctl(s, SIOCSIFNETMASK, &ifr)) {
             perror("SIOCSIFNETMASK");
@@ -451,7 +466,8 @@ init_net(const char *intf, struct bootp *bp)
         }
     }
 
-    if (get_bootp_option(bp, TAG_IP_BROADCAST, &addrp->sin_addr)) {
+    length = sizeof(addrp->sin_addr);    
+    if (get_bootp_option(bp, TAG_IP_BROADCAST, &addrp->sin_addr,&length)) {
         if (ioctl(s, SIOCSIFBRDADDR, &ifr)) {
             perror("SIOCSIFBRDADDR");
             return false;
@@ -467,7 +483,8 @@ init_net(const char *intf, struct bootp *bp)
     }
 
     // Set up routing
-    if (get_bootp_option(bp, TAG_GATEWAY, &gateway)) {
+    length = sizeof(addrp->sin_addr);
+    if (get_bootp_option(bp, TAG_GATEWAY, &gateway,&length)) {
         // ...and it's a nonzero address...
         if ( 0 != gateway.s_addr ) {
             memset(&route, 0, sizeof(route));
@@ -499,6 +516,21 @@ init_net(const char *intf, struct bootp *bp)
             }
         }
     }
+#ifdef CYGINT_ISO_DNS
+    {
+#define MAX_IP_ADDR_LEN 16
+        char buf[BP_MAX_OPTION_LEN+1];  
+        memset(buf,0,sizeof(buf));
+        length = sizeof(buf);
+        if (get_bootp_option(bp, TAG_DOMAIN_NAME, buf, &length)) {
+            setdomainname(buf, length);
+        }
+        length = sizeof(buf);
+        if (get_bootp_option(bp, TAG_DOMAIN_SERVER, buf, &length)) {
+            cyg_dns_res_init((struct in_addr *)buf);
+        }
+    }
+#endif
     close(s);
     return true;
 }

@@ -52,10 +52,6 @@ cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
     user_value 2
 };
 
-cdl_component CYGPKG_HAL_SMP_SUPPORT {
-    user_value 0
-};
-
 cdl_component CYGHWR_HAL_I386_PENTIUM {
     user_value 1
 };

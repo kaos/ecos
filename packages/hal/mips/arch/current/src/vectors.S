@@ -819,6 +819,33 @@ FUNC_START(__gccmain)
 FUNC_END(__gccmain)
 
 ##-----------------------------------------------------------------------------
+## Switch to a new stack.
+## This is used in RedBoot to allow code to execute in a different
+## stack context.
+
+FUNC_START(hal_program_new_stack)
+	# Arguments are:
+	# a0 = function to call
+	# a1 = stack pointer to use
+
+	move	v1,sp				# v1 = original stack ptr
+	move	sp,a1				# sp = new stack
+	addi	sp,sp,-32			# make a null frame
+	sva	v1,8(sp)			# save old sp
+	sva	ra,16(sp)			# save old ra
+
+	jalr	a0				# call function
+	 nop
+
+	lva	ra,16(sp)			# restore ra
+	lva	sp,8(sp)			# restore sp
+
+	jr	ra				# go back
+	 nop					# delay slot
+	
+FUNC_END(hal_program_new_stack)
+		
+##-----------------------------------------------------------------------------
 ## hal_zero_bss
 ## Zero bss. Done in assembler to be optimal rather than using memset,
 ## which would risk zeroing bss while using it.
