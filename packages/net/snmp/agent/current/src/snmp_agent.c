@@ -721,6 +721,9 @@ statp_loop:
 			   asp->exact, &write_method, asp->pdu, &noSuchObject);
 			   
 	if (statP == NULL && (asp->rw != WRITE || write_method == NULL)) {
+	        /*  Careful -- if the varbind was lengthy, it will have
+		    allocated some memory.  */
+	        snmp_set_var_value(varbind_ptr, NULL, 0);
 	    	varbind_ptr->val.integer   = NULL;
 	    	varbind_ptr->val_len = 0;
 		if ( asp->exact ) {
