@@ -53,7 +53,7 @@ cat > makefile <<EOF
 #####DESCRIPTIONEND####
 #=============================================================================
 
-TOPLEVEL   := ../../ecc
+TOPLEVEL   := ../../packages
 EOF
 /bin/echo -n MAIN_SGML   := ecos.sgml >> makefile
 
@@ -70,12 +70,12 @@ EOF
 for i in `cat doclist`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
-   /bin/echo -n " ../../ecc/$i" >> makefile
+   /bin/echo -n " ../../packages/$i" >> makefile
    entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g'`"
-   echo "<!ENTITY $entityi SYSTEM \"../../ecc/$i\">" >> ecos.sgml
+   echo "<!ENTITY $entityi SYSTEM \"../../packages/$i\">" >> ecos.sgml
   fi
 done
-echo "<!ENTITY hal-common-current-doc-porting-sgml SYSTEM \"../../ecc/hal/common/current/doc/porting.sgml\">" >> ecos.sgml
+echo "<!ENTITY hal-common-current-doc-porting-sgml SYSTEM \"../../packages/hal/common/current/doc/porting.sgml\">" >> ecos.sgml
 
 cat >> makefile <<EOF
 

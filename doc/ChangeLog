@@ -1,0 +1,5 @@
+2002-08-07  Andrew Lunn  <lunn@cobra.ma.tech.ascom.ch>
+
+	* sgml/makemakefile: Replaced the old internal RedHat ecc
+	directory name with the new name "packages"
+
