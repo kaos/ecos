@@ -348,7 +348,9 @@ struct spi_pram {
     unsigned long	tptr;		/* Tx internal data pointer */
     unsigned short	tbptr;		/* Tx BD pointer */
     unsigned short	tcount;		/* Tx byte count */
-    unsigned long	ttemp;		/* Tx temp */
+    unsigned long	ttemp[2];	/* Tx temp */
+    unsigned short	rpbase;		/* Relocated param block pointer */
+    unsigned short	res;		/* unused */
 };
 
 struct smc_uart_pram {
@@ -899,7 +901,6 @@ typedef struct eppc {
 		} i2c_idma;
 		struct {
 		    struct spi_pram	spi;
-		    unsigned char	RSRVD57[0x8];
 		    struct timer_pram	timer;
 		    struct idma_pram	idma2;
 		} spi_timer_idma;

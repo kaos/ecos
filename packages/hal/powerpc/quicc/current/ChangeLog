@@ -1,3 +1,9 @@
+2004-04-01  Robert Chenault  <robertchenault@yahoo.com>
+
+	* include/ppc8xx.h: Add definition for 8 bytes to spi_pram structure
+	(for a total of 48 bytes) as is done in the i2c_pram structure. Then
+	remove the equivalent 8 reserved bytes in the scc_pram structure.
+
 2003-09-08  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc1.c: Fix baud rate clock setup - was off by 1.
