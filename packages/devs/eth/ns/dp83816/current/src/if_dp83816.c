@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -379,7 +380,6 @@ dp83816_warm_reset(struct eth_drv_sc *sc)
 {
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     dp83816_bd_t *bdp;
-    int len, err;
     int i;
 
     // Free up any active Tx buffers

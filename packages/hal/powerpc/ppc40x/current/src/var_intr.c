@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -193,6 +193,7 @@ hal_ppc40x_interrupt_mask(int vector)
         _hold_tcr = tcr;
         break;
     default:
+        break;
     }
 }
 
@@ -242,6 +243,7 @@ hal_ppc40x_interrupt_unmask(int vector)
         _hold_tcr = tcr;
         break;
     default:
+        break;
     }
 }
 
@@ -275,6 +277,7 @@ hal_ppc40x_interrupt_acknowledge(int vector)
     case CYGNUM_HAL_INTERRUPT_DMA2:
     case CYGNUM_HAL_INTERRUPT_DMA3:
     default:
+        break;
     }
 }
 
@@ -369,6 +372,7 @@ hal_ppc40x_interrupt_mask(int vector)
         _hold_tcr = tcr;
         break;
     default:
+        break;
     }
 }
 
@@ -409,6 +413,7 @@ hal_ppc40x_interrupt_unmask(int vector)
         _hold_tcr = tcr;
         break;
     default:
+        break;
     }
 }
 
@@ -433,6 +438,7 @@ hal_ppc40x_interrupt_acknowledge(int vector)
         CYGARC_MTSPR(SPR_TSR, TSR_WIS);  // clear & acknowledge interrupt
         break;
     default:
+        break;
     }
 }
 

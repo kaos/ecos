@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -234,7 +234,7 @@ _eth_phy_cfg(eth_phy_access_t *f, int mode)
 
     if (!f->init_done) {
         diag_printf("PHY config without init on PHY: %x\n", f);
-        return;
+        return 0;
     }
 
     // Reset PHY (transceiver)
