@@ -1,3 +1,7 @@
+2000-04-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/PKGconf.mak: remove; it's obsolete.
+
 2000-04-13  Gary Thomas  <gthomas@redhat.com>
 
 	* src/common/serial.c (serial_write): Make safer - only call

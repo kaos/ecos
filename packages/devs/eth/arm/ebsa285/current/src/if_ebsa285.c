@@ -142,6 +142,10 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define SCB_STATUS_SWI  0x0400          // software generated interrupt
 #define SCB_STATUS_FCP  0x0100          // flow control pause interrupt
 
+#define SCB_INTACK_MASK 0xFD00          // all the above
+
+#define SCB_INTACK_TX (SCB_STATUS_CX | SCB_STATUS_CNA)
+#define SCB_INTACK_RX (SCB_STATUS_FR | SCB_STATUS_RNR)
 
 // ------------------------------------------------------------------------
 //
@@ -202,7 +206,7 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define	CU_RESUME       0x0020
 #define	CU_STATSADDR    0x0040          // Load Dump Statistics ctrs addr
 #define	CU_SHOWSTATS    0x0050          // Dump statistics counters.
-#define	CU_CMD_BASE     0x0060          // Base address to add to CU commands
+#define	CU_ADDR_LOAD    0x0060          // Base address to add to CU commands
 #define	CU_DUMPSTATS    0x0070          // Dump then reset stats counters.
 
 // RUC COMMANDS
@@ -210,7 +214,7 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define	RUC_START       0x0001
 #define	RUC_RESUME      0x0002
 #define RUC_ABORT       0x0004
-#define	RUC_ADDR_LOAD   0x0006
+#define	RUC_ADDR_LOAD   0x0006          // (seems not to clear on acceptance)
 #define RUC_RESUMENR    0x0007
 
 #define SCB_M	        0x0100          // 0 = enable interrupt, 1 = disable
@@ -219,33 +223,17 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define CU_STATUS_MASK  0x00C0
 #define RU_STATUS_MASK  0x003C
 
-#define CUC_ADDR_LOAD  0x0060
-#define CUC_START      0x0010      
- 
+#define RU_STATUS_IDLE  (0<<2)
+#define RU_STATUS_SUS   (1<<2)
+#define RU_STATUS_NORES (2<<2)
+#define RU_STATUS_READY (4<<2)
+#define RU_STATUS_NO_RBDS_SUS   ((1<<2)|(8<<2))
+#define RU_STATUS_NO_RBDS_NORES ((2<<2)|(8<<2))
+#define RU_STATUS_NO_RBDS_READY ((4<<2)|(8<<2))
+
+
+
 #define MAX_MEM_RESERVED_IOCTL 1000
-
-// We use this as a templete when writing a new MAC address into the
-// eeproms. The MAC address in the first few bytes is over written
-// with the correct MAC address and then the whole lot is programmed
-// into the serial EEPROM. The checksum is calculated on the fly and
-// sent instead of the last two bytes.
-
-static char eeprom_burn[126] = { 
-  0x00, 0x90, 0x27, 0x8c, 0x57, 0x82, 0x03, 0x02, 0x00, 0x00, 0x01,
-  0x02, 0x01, 0x47, 0x00, 0x00, 0x13, 0x72, 0x06, 0x83, 0xa2, 0x40,
-  0x0c, 0x00, 0x86, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28, 0x01, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00 
-};
-
- 
 
 // ------------------------------------------------------------------------
 //
@@ -371,6 +359,7 @@ typedef struct {
 
 
 typedef struct {
+    cyg_uint32 interrupts;
     cyg_uint32 rx_count;
     cyg_uint32 rx_deliver;
     cyg_uint32 rx_resource;
@@ -391,6 +380,14 @@ I82559_COUNTERS i82559_counters[2];
 #define MAX_RX_PACKET_SIZE  1536        // maximum Rx packet size
 #define MAX_TX_PACKET_SIZE  1536        // maximum Tx packet size
 
+// The system seems to work OK with as few as 8 of RX and TX descriptors.
+// It limps very painfully with only 4.
+// Performance is better with more than 8.
+// But the size of non-cached (so useless for anything else)
+// memory window is 1Mb, so we might as well use it all.
+//
+// 128 for these uses the whole 1Mb, near enough.
+
 #ifndef MAX_RX_DESCRIPTORS
 #define MAX_RX_DESCRIPTORS	128     // number of Rx descriptors
 #endif
@@ -407,8 +404,7 @@ typedef struct i82559 {
         active:1,                       // has this if been brung up?
         spare1:5; 
     cyg_uint8
-        out_of_resources:1,             // need to restart rx engine.
-        spare2:7; 
+        spare2:8; 
     cyg_uint8
         tx_in_progress:1,               // transmit in progress flag
         tx_queue_full:1,                // all Tx descriptors used flag
@@ -424,7 +420,9 @@ typedef struct i82559 {
     RFD *rx_ring[MAX_RX_DESCRIPTORS];   // location of Rx descriptors
 
     int tx_descriptor_add;              // descriptor index for additions
-    int tx_descriptor_remove;           // descriptor index for removals
+    int tx_descriptor_active;           // descriptor index for active tx
+    int tx_descriptor_remove;           // descriptor index for remove
+
     TxCB *tx_ring[MAX_TX_DESCRIPTORS];  // location of Tx descriptors
     unsigned long tx_keys[MAX_TX_DESCRIPTORS];
                                         // keys for tx q management
@@ -508,31 +506,6 @@ CYG_MACRO_END
 
 // ------------------------------------------------------------------------
 //
-// Communications from ISR to DSR
-//
-// ------------------------------------------------------------------------
-
-#define PACKET_RX   1
-#define PACKET_TX   2
-
-typedef struct {
-    cyg_uint32 request;
-    void *p;
-    unsigned long key;
-} I82559_QUEUE;
-
-// 82559 thread request queue
-#define I82559_QUEUE_SIZE \
-   ((MAX_RX_DESCRIPTORS + MAX_TX_DESCRIPTORS) * MAX_82559)
-
-I82559_QUEUE i82559_queue[I82559_QUEUE_SIZE];
-int i82559_q_in;                        // queue insertion index
-int i82559_q_out;                       // queue removal index
-int i82559_q_full;                      // queue full flag
-
-
-// ------------------------------------------------------------------------
-//
 // Managing the memory that is windowed onto the PCI bus
 //
 // ------------------------------------------------------------------------
@@ -556,7 +529,6 @@ static void i82559_reset(struct i82559* p_i82559);
 
 static void InitRxRing(struct i82559* p_i82559);
 static void ResetRxRing(struct i82559* p_i82559);
-static void PacketRxReady(struct i82559* p_i82559);
 static void InitTxRing(struct i82559* p_i82559);
 static void ResetTxRing(struct i82559* p_i82559);
 
@@ -565,14 +537,24 @@ static void program_eeprom(cyg_uint32 , cyg_uint32 , cyg_uint8 * );
 
 static int eth_set_promiscuous_mode(struct i82559* p_i82559);
 
+// debugging/logging only:
+void dump_txcb(TxCB *p_txcb);
+void DisplayStatistics(void);
+void dump_rfd(RFD *p_rfd, int anyway );
+void dump_all_rfds( int intf );
+void dump_packet(cyg_uint8 *p_buffer, int length);
+
 // ------------------------------------------------------------------------
-// utility that is used in statistics routine
+// utilities
 // ------------------------------------------------------------------------
+
 static inline void wait_for_cmd_done(long scb_ioaddr)
 {
-    int wait = 10000;
-    do /* nothing */ ;
-    while( INB(scb_ioaddr) && --wait >= 0);
+    register int CSRstatus;
+    register int wait = 0x100000;
+    do CSRstatus = INB(scb_ioaddr + SCBCmd) ;
+    while( CSRstatus && --wait >= 0);
+    CYG_ASSERT( wait > 0, "wait_for_cmd_done" );
 }
 
 static inline void Mask82559Interrupt(struct i82559* p_i82559)
@@ -587,6 +569,41 @@ static inline void UnMask82559Interrupt(struct i82559* p_i82559)
     cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
 }
 
+#ifdef CYGDBG_USE_ASSERTS // an indication of a debug build
+static int acknowledge82559interrupt_compensating = 0;
+#endif
+
+static void Acknowledge82559Interrupt(struct i82559* p_i82559)
+{
+    int sources, mask;
+    cyg_uint32 ioaddr;
+    cyg_uint16 status;
+    int loops = 64;
+
+    cyg_drv_interrupt_acknowledge(p_i82559->vector);
+    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+
+    // It appears that some time can be taken before the interrupt source
+    // *really* quietens down... this is ugly, but effective.
+    // Without it, we get "Spurious Interrupt!" failures.
+    ioaddr = p_i82559->io_address; // get I/O address for 82559
+    mask = (1 << p_i82559->vector); // Do not include the MUX vector or we
+    sources = *SA110_IRQCONT_IRQSTATUS; //...get hung on the other 82559
+    status = INW(ioaddr + SCBStatus);
+    while ( ((0 != (sources & mask)) || (0 != (status & SCB_INTACK_MASK)))
+            && --loops >= 0) {
+        OUTW( status & SCB_INTACK_MASK, ioaddr + SCBStatus);
+        cyg_drv_interrupt_acknowledge(p_i82559->vector);
+        cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+#ifdef CYGDBG_USE_ASSERTS
+        acknowledge82559interrupt_compensating++; // verify this is executed
+#endif
+        sources = *SA110_IRQCONT_IRQSTATUS;
+        status = INW(ioaddr + SCBStatus);
+    }
+    CYG_ASSERT( loops >= 0, "Acknowledge82559Interrupt" );
+}
+
 
 static void udelay(int delay)
 {
@@ -597,204 +614,6 @@ static void udelay(int delay)
   for ( i = 76 * delay; i ; i--)
     ;
 }
-
-// ------------------------------------------------------------------------
-//
-//
-//           CODE FOR DEBUGGING PURPOSES ONLY
-//
-//
-// ------------------------------------------------------------------------
-void dump_txcb(TxCB *p_txcb)
-{
-    os_printf("TxCB @ %x\n", (int)p_txcb);
-    os_printf("status = %04X ", p_txcb->status);
-    os_printf("command = %04X ", p_txcb->command);
-    os_printf("link = %08X ", p_txcb->link);
-    os_printf("tbd = %08X ", p_txcb->tbd_address);
-    os_printf("count = %d ", p_txcb->count);
-    os_printf("eof = %x ", p_txcb->eof);
-    os_printf("threshold = %d ", p_txcb->tx_threshold);
-    os_printf("tbd number = %d\n", p_txcb->tbd_number);
-}
-
-
-// This is intended to be the body of a THREAD that prints stuff every 10
-// seconds or so:
-#ifdef KEEP_STATISTICS
-#ifdef DISPLAY_STATISTICS
-void DisplayStatistics(void)
-{
-    int i;
-    I82559_COUNTERS *p_statistics;
-    cyg_uint32 *p_counter;
-    cyg_uint32 *p_register;
-    int reg_count;
-    int status;
-    
-    while ( 1 ) {
-#ifdef DISPLAY_82559_STATISTICS
-        for ( i = 0; i < 2; i ++ ) {
-            p_statistics = (I82559_COUNTERS *)i82559[i].p_statistics;
-            if ( (p_statistics->done & 0xFFFF) == 0xA007 ) {
-                p_counter = (cyg_uint32 *)&i82559_counters[i];
-                p_register = (cyg_uint32 *)&p_statistics->tx_good;
-                for ( reg_count = 20; reg_count != 0; reg_count--) {
-                    *p_counter += *p_register;
-                    p_counter++;
-                    p_register++;
-                }
-                p_statistics->done = 0;
-                // make sure no command operating
-            	wait_for_cmd_done(i82559[i].io_address + SCBCmd);
-                // start register dump
-                OUTW(CU_DUMPSTATS, i82559[i].io_address + SCBCmd);
-            }
-        }
-#endif
-        os_printf("\nRx\nPackets = %d  %d\n",
-        statistics[0].rx_count, statistics[1].rx_count);
-        os_printf("Deliver   %d  %d\n",
-        statistics[0].rx_deliver, statistics[1].rx_deliver);
-        os_printf("Resource  %d  %d\n",
-        statistics[0].rx_resource, statistics[1].rx_resource);
-        os_printf("Restart   %d  %d\n",
-        statistics[0].rx_restart, statistics[1].rx_restart);
-
-#ifdef DISPLAY_82559_STATISTICS
-        os_printf("Count     %d  %d\n",
-        i82559_counters[0].rx_good, i82559_counters[1].rx_good);
-        os_printf("CRC       %d  %d\n",
-        i82559_counters[0].rx_crc_errors, i82559_counters[1].rx_crc_errors);
-        os_printf("Align     %d  %d\n",
-        i82559_counters[0].rx_align_errors, i82559_counters[1].rx_align_errors);
-        os_printf("Resource  %d  %d\n",
-        i82559_counters[0].rx_resource_errors, i82559_counters[1].rx_resource_errors);
-        os_printf("Overrun   %d  %d\n",
-        i82559_counters[0].rx_overrun_errors, i82559_counters[1].rx_overrun_errors);
-        os_printf("Collision %d  %d\n",
-        i82559_counters[0].rx_collisions, i82559_counters[1].rx_collisions);
-        os_printf("Short     %d  %d\n",
-        i82559_counters[0].rx_short_frames, i82559_counters[1].rx_short_frames);
-#endif
-        os_printf("\nTx\nPackets = %d  %d\n",
-        statistics[0].tx_count, statistics[1].tx_count);
-        os_printf("Complete  %d  %d\n",
-        statistics[0].tx_complete, statistics[1].tx_complete);
-        os_printf("Dropped   %d  %d\n",
-        statistics[0].tx_dropped, statistics[1].tx_dropped);
-        os_printf("Count     %d  %d\n",
-        i82559_counters[0].tx_good, i82559_counters[1].tx_good);
-#ifdef DISPLAY_82559_STATISTICS
-        os_printf("Collision %d  %d\n",
-        i82559_counters[0].tx_max_collisions,i82559_counters[1].tx_max_collisions);
-        os_printf("Late Col. %d  %d\n",
-        i82559_counters[0].tx_late_collisions,i82559_counters[1].tx_late_collisions);
-        os_printf("Underrun  %d  %d\n",
-        i82559_counters[0].tx_underrun,i82559_counters[1].tx_underrun);
-        os_printf("Carrier   %d  %d\n",
-        i82559_counters[0].tx_carrier_loss,i82559_counters[1].tx_carrier_loss);
-        os_printf("Deferred  %d  %d\n",
-        i82559_counters[0].tx_deferred, i82559_counters[1].tx_deferred);
-        os_printf("1 Col     %d  %d\n",
-        i82559_counters[0].tx_single_collisions, i82559_counters[0].tx_single_collisions);
-        os_printf("Mult. Col %d  %d\n",
-        i82559_counters[0].tx_mult_collisions, i82559_counters[0].tx_mult_collisions);
-        os_printf("Total Col %d  %d\n",
-        i82559_counters[0].tx_total_collisions, i82559_counters[0].tx_total_collisions);
-#endif
-        status = INB(i82559[0].io_address + SCBGenStatus);
-        os_printf("Interface 0 Link = %s, %s Mbps, %s Duplex\n",
-            status & GEN_STATUS_LINK ? "Up" : "Down",
-            status & GEN_STATUS_100MBPS ?  "100" : "10",
-            status & GEN_STATUS_FDX ? "Full" : "Half");
-
-        status = INB(i82559[1].io_address + SCBGenStatus);
-        os_printf("Interface 1 Link = %s, %s Mbps, %s Duplex\n",
-            status & GEN_STATUS_LINK ? "Up" : "Down",
-            status & GEN_STATUS_100MBPS ?  "100" : "10",
-            status & GEN_STATUS_FDX ? "Full" : "Half");
-
-        cyg_thread_delay(1000);
-    }
-}
-#endif // DISPLAY_STATISTICS
-#endif // KEEP_STATISTICS
-
-void dump_rfd(RFD *p_rfd, int anyway )
-{
-    if ( (0 != p_rfd->status) || anyway ) {
-        os_printf("RFD @ %x = ", (int)p_rfd);
-        os_printf("status = %x ", p_rfd->status);
-        os_printf("link = %x ", p_rfd->link);
-//        os_printf("rdb_address = %x ", p_rfd->rdb_address);
-        os_printf("count = %x ", p_rfd->count);
-        os_printf("f = %x ", p_rfd->f);
-        os_printf("eof = %x ", p_rfd->eof);
-        os_printf("size = %x\n", p_rfd->size);
-        os_printf("[%04x %04x %04x] ",
-                  *((cyg_uint16 *)(&(p_rfd->buffer[0]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[2]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[4]))) );
-        os_printf("[%04x %04x %04x] %04x : ",          
-                  *((cyg_uint16 *)(&(p_rfd->buffer[6]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[8]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[10]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[12]))) );
-        os_printf("(%04x %04x %04x %04x) ",            
-                  *((cyg_uint16 *)(&(p_rfd->buffer[14]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[16]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[18]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[20]))) );
-        os_printf("[%04x %04x %04x] ",                 
-                  *((cyg_uint16 *)(&(p_rfd->buffer[22]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[24]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[26]))) );
-        os_printf("%d.%d.%d.%d ",
-                  *((cyg_uint8  *)(&(p_rfd->buffer[28]))),
-                  *((cyg_uint8  *)(&(p_rfd->buffer[29]))),
-                  *((cyg_uint8  *)(&(p_rfd->buffer[30]))),
-                  *((cyg_uint8  *)(&(p_rfd->buffer[31]))) );
-        os_printf("[%04x %04x %04x] ",                 
-                  *((cyg_uint16 *)(&(p_rfd->buffer[32]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[34]))),
-                  *((cyg_uint16 *)(&(p_rfd->buffer[36]))) );
-        os_printf("%d.%d.%d.%d ...\n",
-                  *((cyg_uint8  *)(&(p_rfd->buffer[38]))),
-                  *((cyg_uint8  *)(&(p_rfd->buffer[39]))),
-                  *((cyg_uint8  *)(&(p_rfd->buffer[40]))),
-                  *((cyg_uint8  *)(&(p_rfd->buffer[41]))) );
-    }
-}
-
-void dump_all_rfds( int intf )
-{
-    struct i82559* p_i82559 = &i82559[intf];
-    int i, j;
-    j = p_i82559->next_rx_descriptor;
-    os_printf("rx descriptors for interface %d (eth%d):\n", intf, intf );
-    for ( i = 0; i < MAX_RX_DESCRIPTORS; i++ )
-        dump_rfd( p_i82559->rx_ring[i], (i > (j-3) && (i <= j)) );
-    os_printf("next rx descriptor = %x\n\n", j);
-}
-
-
-void dump_packet(cyg_uint8 *p_buffer, int length)
-{
-    int count;
-
-    count = 0;
-    while ( length > 0 ) {
-        if ( count == 0 )
-            os_printf("\n");
-        count = (count + 1) & 0x0F;
-        os_printf("%02X ", *p_buffer++);
-        length--;
-    }
-    os_printf("\n");
-}
-
-
 
 // ------------------------------------------------------------------------
 // Memory management
@@ -937,7 +756,7 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
 
     Mask82559Interrupt(p_i82559);
 
-    wait_for_cmd_done(ioaddr + SCBCmd); // make sure no command operating
+    wait_for_cmd_done(ioaddr); // make sure no command operating
 
     i82559_reset(p_i82559);
 
@@ -953,6 +772,7 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
         udelay(10);
     } while ( (p_selftest[1] == -1)  &&  (--count >= 0) );
 
+    Acknowledge82559Interrupt(p_i82559);
     UnMask82559Interrupt(p_i82559);
     
     if (count < 0) {
@@ -1044,7 +864,9 @@ static void i82559_start( struct eth_drv_sc *sc,
     struct i82559 *p_i82559;
     cyg_uint32 ioaddr;
 #ifdef KEEP_STATISTICS
+#ifdef DISPLAY_82559_STATISTICS
     void *p_statistics;
+#endif
 #endif
 
     p_i82559 = (struct i82559 *)sc->driver_private;
@@ -1071,27 +893,24 @@ static void i82559_start( struct eth_drv_sc *sc,
     p_i82559->p_statistics =
         p_statistics = pciwindow_mem_alloc(sizeof(I82559_COUNTERS));
     memset(p_statistics, 0xFFFFFFFF, sizeof(I82559_COUNTERS));
-    wait_for_cmd_done(ioaddr + SCBCmd); // make sure no command operating
+    wait_for_cmd_done(ioaddr); // make sure no command operating
                                         // set statistics dump address
     OUTL(VIRT_TO_BUS(p_statistics), ioaddr + SCBPointer);
     OUTW(SCB_M | CU_STATSADDR, ioaddr + SCBCmd);
 
-    wait_for_cmd_done(ioaddr + SCBCmd); // make sure no command operating
+    wait_for_cmd_done(ioaddr); // make sure no command operating
     OUTW(SCB_M | CU_DUMPSTATS, ioaddr + SCBCmd); // start register dump
 #endif
 #endif
 
-    wait_for_cmd_done(ioaddr + SCBCmd); // make sure no command operating
-
+    // Set the base address
+    wait_for_cmd_done(ioaddr);
     OUTL(0, ioaddr + SCBPointer);       // load ru base address = 0
     OUTW(SCB_M | RUC_ADDR_LOAD, ioaddr + SCBCmd);
-
-    wait_for_cmd_done(ioaddr + SCBCmd); // wait for SCB command complete
-                                        // load pointer to Rx Ring
+    udelay( 1000 );                     // load pointer to Rx Ring
     OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]), ioaddr + SCBPointer);
     OUTW(RUC_START, ioaddr + SCBCmd);
     
-    p_i82559->out_of_resources = 0;
     p_i82559->active = 1;
 
     if ( 0
@@ -1137,8 +956,8 @@ static void i82559_stop( struct eth_drv_sc *sc )
     os_printf("i82559_stop %d flg %x\n", p_i82559->index, *(int *)p_i82559 );
 #endif
 
+    p_i82559->active = 0;               // stop people tormenting it
     i82559_reset(p_i82559);             // that should stop it
-    p_i82559->active = 0;               // and stop people tormenting it
 
     ResetRxRing( p_i82559 );
     ResetTxRing( p_i82559 );
@@ -1202,21 +1021,25 @@ static void ResetRxRing(struct i82559* p_i82559)
 
 // ------------------------------------------------------------------------
 //
-//  Function : PacketRx
+//  Function : PacketRxReady        (Called from DSR)
 //
 // ------------------------------------------------------------------------
 static void PacketRxReady(struct i82559* p_i82559)
 {
-    struct cyg_netdevtab_entry *ndp;
-    struct eth_drv_sc *sc;
     RFD *p_rfd;
     int next_descriptor;
     int length;
+    struct cyg_netdevtab_entry *ndp;
+    struct eth_drv_sc *sc;
+    cyg_uint32 ioaddr;
+    cyg_uint16 status;
 
     ndp = (struct cyg_netdevtab_entry *)(p_i82559->ndp);
     sc = (struct eth_drv_sc *)(ndp->device_instance);
 
     CHECK_NDP_SC_LINK();
+
+    ioaddr = p_i82559->io_address;
 
     next_descriptor = p_i82559->next_rx_descriptor;
     p_rfd = p_i82559->rx_ring[next_descriptor];
@@ -1253,35 +1076,29 @@ static void PacketRxReady(struct i82559* p_i82559)
         CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
     }
 
-    if ( p_i82559->out_of_resources ) { // out of Rx resources ?
-        if ( ! (p_rfd->status & RFD_STATUS_C) ) { // all buffers processed ?
-            cyg_uint32 ioaddr;
-            // yes, restart RU
+    // See if the RU has gone idle (usually because of out of resource
+    // condition) and restart it if needs be.
+    Mask82559Interrupt(p_i82559);
+    status = INW(ioaddr + SCBStatus);
+    if ( RU_STATUS_READY != (status & RU_STATUS_MASK) ) {
+        // Acknowledge the RX INT sources
+        OUTW( SCB_INTACK_RX, ioaddr + SCBStatus);
+        // (see pages 6-10 & 6-90)
+
 #ifdef KEEP_STATISTICS
-            statistics[p_i82559->index].rx_restart++;
+        statistics[p_i82559->index].rx_restart++;
 #endif
-            next_descriptor = 0;        // re-initialize next desc.
-            p_i82559->out_of_resources = 0; // clear out of resource flag
-            ioaddr = p_i82559->io_address; // get I/O address
-
-            // wait for SCB command complete
-            wait_for_cmd_done(ioaddr + SCBCmd);
-            OUTW(RUC_ABORT, ioaddr + SCBCmd);
-            
-            // make sure no command operating
-            wait_for_cmd_done(ioaddr + SCBCmd);
-
-            OUTL(0, ioaddr + SCBPointer); // load ru base address = 0
-            OUTW(SCB_M | RUC_ADDR_LOAD, ioaddr + SCBCmd);
-
-            // wait for SCB command complete
-            wait_for_cmd_done(ioaddr + SCBCmd);
-            // load pointer to Rx Ring
-            OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]),
-                 ioaddr + SCBPointer);
-            OUTW(RUC_START, ioaddr + SCBCmd);
-        }
+        next_descriptor = 0;        // re-initialize next desc.
+        // wait for SCB command complete
+        wait_for_cmd_done(ioaddr);
+        // load pointer to Rx Ring
+        OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]),
+             ioaddr + SCBPointer);
+        OUTW(RUC_START, ioaddr + SCBCmd);
+        Acknowledge82559Interrupt(p_i82559);
     }
+    UnMask82559Interrupt(p_i82559);
+
     p_i82559->next_rx_descriptor = next_descriptor;
 }
 
@@ -1320,7 +1137,7 @@ static void i82559_recv( struct eth_drv_sc *sc,
     
 #ifdef DEBUG_82559
     os_printf("Rx %d %x (status %x): %d sg's, %d bytes\n",
-              p_i82559->index, (int)priv, p_rfd->status, sg_len, total_len);
+              p_i82559->index, (int)p_i82559, p_rfd->status, sg_len, total_len);
 #endif
 
     // Copy the data to the network stack
@@ -1377,7 +1194,6 @@ static void InitTxRing(struct i82559* p_i82559)
     for ( i = 0; i < MAX_TX_DESCRIPTORS; i++) {
         p_i82559->tx_ring[i] = (TxCB *)pciwindow_mem_alloc(
             sizeof(TxCB) + MAX_TX_PACKET_SIZE);
-        p_i82559->tx_keys[i] = 0;
     }
 
     ResetTxRing(p_i82559);
@@ -1398,6 +1214,7 @@ static void ResetTxRing(struct i82559* p_i82559)
 #endif
     ioaddr = p_i82559->io_address;
     p_i82559->tx_descriptor_add =
+        p_i82559->tx_descriptor_active = 
         p_i82559->tx_descriptor_remove = 0;
     p_i82559->tx_in_progress =
         p_i82559->tx_queue_full = 0;
@@ -1418,11 +1235,102 @@ static void ResetTxRing(struct i82559* p_i82559)
         p_i82559->tx_keys[i] = 0;
     }
     
-    wait_for_cmd_done(ioaddr + SCBCmd);
+    wait_for_cmd_done(ioaddr);
     OUTL(0, ioaddr + SCBPointer);
-    OUTW(CU_CMD_BASE, ioaddr + SCBCmd);
+    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
 }
 
+// ------------------------------------------------------------------------
+//
+//  Function : TxMachine          (Called from FG & ISR)
+//
+// This steps the Tx Machine onto the next record if necessary - allowing
+// for missed interrupts, and so on.
+// ------------------------------------------------------------------------
+
+static void TxMachine(struct i82559* p_i82559)
+{
+    int tx_descriptor_active;
+    cyg_uint32 ioaddr;
+
+    tx_descriptor_active = p_i82559->tx_descriptor_active;
+    ioaddr = p_i82559->io_address;  
+    
+    // See if the CU is idle when we think it isn't:
+    // (Recovers from a dropped interrupt)
+    if ( p_i82559->tx_in_progress ) {
+        cyg_uint16 status;
+        status = INW(ioaddr + SCBStatus);
+        if ( 0 == (status & CU_STATUS_MASK) ) {
+            // It is idle.  So ack the TX interrupts
+            OUTW( SCB_INTACK_TX, ioaddr + SCBStatus);
+            // (see pages 6-10 & 6-90)
+
+            // and step on to the next queued tx.
+            p_i82559->tx_in_progress = 0;
+            if ( ++tx_descriptor_active >= MAX_TX_DESCRIPTORS )
+                tx_descriptor_active = 0;
+            p_i82559->tx_descriptor_active = tx_descriptor_active;
+        }
+    }
+
+    // is the CU idle, and there a next tx to set going?
+    if ( ( ! p_i82559->tx_in_progress )
+         && p_i82559->tx_descriptor_add != tx_descriptor_active ) {
+        TxCB *p_txcb;
+        p_txcb = p_i82559->tx_ring[tx_descriptor_active];
+        CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
+        CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
+#ifdef DEBUG_82559
+        os_printf("Tx %d %x: Starting Engines, KEY %x\n",
+                  p_i82559->index, (int)p_i82559, key );
+#endif
+        // make sure no command operating
+        wait_for_cmd_done(ioaddr); 
+        // start Tx operation
+        OUTL(VIRT_TO_BUS(p_txcb), ioaddr + SCBPointer);
+        OUTW(CU_START, ioaddr + SCBCmd);
+        p_i82559->tx_in_progress = 1;
+    }
+}
+
+// ------------------------------------------------------------------------
+//
+//  Function : TxDone          (Called from DSR)
+//
+// This returns Tx's from the Tx Machine to the stack (ie. reports
+// completion) - allowing for missed interrupts, and so on.
+// ------------------------------------------------------------------------
+
+static void TxDone(struct i82559* p_i82559)
+{
+    struct cyg_netdevtab_entry *ndp;
+    struct eth_drv_sc *sc;
+    int tx_descriptor_remove = p_i82559->tx_descriptor_remove;
+
+    ndp = (struct cyg_netdevtab_entry *)(p_i82559->ndp);
+    sc = (struct eth_drv_sc *)(ndp->device_instance);
+
+    CHECK_NDP_SC_LINK();
+    
+    // "Done" txen are from here to active, OR 
+    // the remove one if the queue is full AND its status is nonzero:
+    while (  (tx_descriptor_remove != p_i82559->tx_descriptor_active) ||
+             ( p_i82559->tx_queue_full &&
+              (0 != p_i82559->tx_ring[ tx_descriptor_remove ]->status) ) ) {
+        unsigned long key = p_i82559->tx_keys[ tx_descriptor_remove ];
+#ifdef DEBUG_82559
+        os_printf("TxDone %d %x: KEY %x\n",
+                  p_i82559->index, (int)p_i82559, key );
+#endif
+        eth_drv_tx_done( sc, key, 1 /* status */ );
+        
+        if ( ++tx_descriptor_remove >= MAX_TX_DESCRIPTORS )
+            tx_descriptor_remove = 0;
+        p_i82559->tx_descriptor_remove = tx_descriptor_remove;
+        p_i82559->tx_queue_full = 0;
+    }
+}
 
 
 // ------------------------------------------------------------------------
@@ -1444,6 +1352,12 @@ i82559_can_send(struct eth_drv_sc *sc)
         os_printf( "i82559_send: Bad device pointer %x\n", p_i82559 );
         return 0;
     }
+    
+    // Advance TxMachine atomically
+    Mask82559Interrupt(p_i82559);
+    TxMachine(p_i82559);
+    Acknowledge82559Interrupt(p_i82559);
+    UnMask82559Interrupt(p_i82559);
 
     return ! p_i82559->tx_queue_full;
 }
@@ -1473,7 +1387,7 @@ i82559_send(struct eth_drv_sc *sc,
 
 #ifdef DEBUG_82559
     os_printf("Tx %d %x: %d sg's, %d bytes, KEY %x\n",
-              p_i82559->index, (int)priv, sg_len, total_len, key );
+              p_i82559->index, (int)p_i82559, sg_len, total_len, key );
 #endif
 
     if ( ! p_i82559->active )
@@ -1485,7 +1399,7 @@ i82559_send(struct eth_drv_sc *sc,
 
     if ( p_i82559->tx_queue_full ) {
 #ifdef KEEP_STATISTICS
-        statistics[p_i82559->index].tx_dropped++
+        statistics[p_i82559->index].tx_dropped++;
 #endif
         os_printf( "i82559_send: Queue full, device %x, key %x\n",
                    p_i82559, key );
@@ -1543,209 +1457,33 @@ i82559_send(struct eth_drv_sc *sc,
         CYG_ASSERT( &p_txcb->buffer[0] + MAX_TX_PACKET_SIZE >= to_p,
                     "to_p overflow in tx" );
   
+        // Next descriptor
         if ( ++tx_descriptor_add >= MAX_TX_DESCRIPTORS)
             tx_descriptor_add = 0;
-
-        // no more interrupts until started
-        Mask82559Interrupt(p_i82559);
-
         p_i82559->tx_descriptor_add = tx_descriptor_add;
-        
+
         if ( p_i82559->tx_descriptor_remove == tx_descriptor_add )
             p_i82559->tx_queue_full = 1;
-
-        if ( ! p_i82559->tx_in_progress ) { // if no Tx operation running
-#ifdef DEBUG_82559
-            os_printf("Tx %d %x: Starting Engines, KEY %x\n",
-                      p_i82559->index, (int)priv, key );
-#endif
-            // flag start of Tx operation
-            p_i82559->tx_in_progress = 1; 
-            // make sure no command operating
-    	    wait_for_cmd_done(ioaddr + SCBCmd); 
-            // start Tx operation
-            OUTL(VIRT_TO_BUS(p_txcb), ioaddr + SCBPointer);
-            OUTW(CU_START, ioaddr + SCBCmd);
-        }
-        UnMask82559Interrupt(p_i82559);     // Allow this device to interrupt
     }
 
-}
+    // Try advancing the Tx Machine regardless
 
+    // no more interrupts until started
+    Mask82559Interrupt(p_i82559);
 
+    // Check that either:
+    //     tx is already active, there is other stuff queued,
+    // OR  this tx just added is the current active one.
+    CYG_ASSERT( (p_i82559->tx_in_progress == 1) ||
+       ((p_i82559->tx_descriptor_add-1) == p_i82559->tx_descriptor_active)
+    || ((0 == p_i82559->tx_descriptor_add) &&
+        ((MAX_TX_DESCRIPTORS-1) == p_i82559->tx_descriptor_active)),
+                "Active/add mismatch" );
 
-// ------------------------------------------------------------------------
-//
-//  Function : TxComplete
-//
-// ------------------------------------------------------------------------
-static unsigned long TxComplete(struct i82559* p_i82559)
-{
-    int tx_descriptor_remove;
-    cyg_uint32 ioaddr;
-    TxCB *p_txcb;
-    unsigned long key;
-
-    tx_descriptor_remove = p_i82559->tx_descriptor_remove;
-    
-    CYG_ASSERT( p_i82559->tx_in_progress, "Tx not in progress but Tx intr" );
-
-    key = p_i82559->tx_keys[tx_descriptor_remove];
-    if ( ++tx_descriptor_remove >= MAX_TX_DESCRIPTORS )
-        tx_descriptor_remove = 0;
-    p_i82559->tx_descriptor_remove = tx_descriptor_remove;
-    p_i82559->tx_queue_full = 0;
-    if ( p_i82559->tx_descriptor_add != tx_descriptor_remove ) {
-        // get device I/O address
-        ioaddr = p_i82559->io_address;  
-        p_txcb = p_i82559->tx_ring[tx_descriptor_remove];
-        CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
-        CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
-        // make sure no command operating
-        wait_for_cmd_done(ioaddr + SCBCmd); 
-        // start Tx operation
-        OUTL(VIRT_TO_BUS(p_txcb), ioaddr + SCBPointer);
-        OUTW(CU_START, ioaddr + SCBCmd);
-    }
-    else
-        p_i82559->tx_in_progress = 0;
-
-    return key;
-}
-
-// ------------------------------------------------------------------------
-
-static void
-PacketTxDone(struct i82559* p_i82559, unsigned long key)
-{
-    struct cyg_netdevtab_entry *ndp;
-    struct eth_drv_sc *sc;
-
-    // Just tell the stack that this device has done a Tx.
-    ndp = (struct cyg_netdevtab_entry *)(p_i82559->ndp);
-    sc = (struct eth_drv_sc *)(ndp->device_instance);
-
-    CHECK_NDP_SC_LINK();
-
-#ifdef DEBUG_82559
-    os_printf("TxDone %d %x: KEY %x\n",
-              p_i82559->index, (int)p_i82559, key );
-#endif
-
-    eth_drv_tx_done( sc, key, 1 /* status */ );
-}
-
-
-// ------------------------------------------------------------------------
-//
-//  Function : QueueThreadRequest
-//
-// ------------------------------------------------------------------------
-static void QueueThreadRequest(int type,
-                               struct i82559* p_i82559,
-                               unsigned long key)
-{
-    if ( ! i82559_q_full ) {
-
-        i82559_queue[i82559_q_in].request = type;
-        i82559_queue[i82559_q_in].p = p_i82559;
-        i82559_queue[i82559_q_in].key = key;
-
-        if ( ++i82559_q_in >= I82559_QUEUE_SIZE )
-            i82559_q_in = 0;
-
-        if ( i82559_q_in == i82559_q_out )
-            i82559_q_full = 1;
-    }
-}
-
-
-
-// ------------------------------------------------------------------------
-//
-//  Function : i82559_isr
-//
-// ------------------------------------------------------------------------
-int last_status[16] = { 0 };
-int last_index = 0;
-
-static int i82559_isr(struct i82559* p_i82559)
-{
-    cyg_uint16 status;
-    cyg_uint32 io_address;
-    int return_value;
-
-    IF_BAD_82559( p_i82559 ) {
-        os_printf( "i82559_isr: Bad device pointer %x\n", p_i82559 );
-        return 0;
-    }
-
-    io_address = p_i82559->io_address;
-    status = INW(io_address + SCBStatus);
-    OUTW(status & 0xFC00, io_address + SCBStatus);
-
-    return_value = 0;
-
-    last_status[last_index++] = status;
-    last_status[last_index &= 15] = -1;
-
-    // receiver left ready state ?
-    if ( status & SCB_STATUS_RNR ) {    
-#ifdef KEEP_STATISTICS
-        statistics[p_i82559->index].rx_resource++;
-#endif
-        // flag out of resources
-        p_i82559->out_of_resources = 1; 
-    }
-
-    // frame receive interrupt ?
-    if ( status & SCB_STATUS_FR ) {     
-#ifdef KEEP_STATISTICS
-        statistics[p_i82559->index].rx_count++;
-#endif
-        QueueThreadRequest(PACKET_RX, p_i82559, 0);
-        return_value = 1;
-    }
-
-    // transmit interrupt ?
-    if ( status & SCB_STATUS_CX ) {
-        unsigned long key;
-#ifdef KEEP_STATISTICS
-        statistics[p_i82559->index].tx_complete++;
-#endif
-        key = TxComplete(p_i82559);
-        QueueThreadRequest(PACKET_TX, p_i82559, key);
-        return_value = 1;
-    }
-
-    return return_value;
-}
-
-// ------------------------------------------------------------------------
-//
-//  Function : i82559_mux_isr
-//
-// ------------------------------------------------------------------------
-static int i82559_mux_isr(void)
-{
-    int return_value = 0;
-
-    static int mux_device_index = 0;
-
-    int device_index = mux_device_index;
-
-    return_value = i82559_isr( &i82559[device_index] );
-
-    mux_device_index ^= 1;              // look at the other one first next time.
-    
-    if ( return_value )
-        return return_value;
-
-    device_index = mux_device_index;
-
-    return_value = i82559_isr( &i82559[device_index] );
-
-    return return_value;
+    // Advance TxMachine atomically
+    TxMachine(p_i82559);
+    Acknowledge82559Interrupt(p_i82559);
+    UnMask82559Interrupt(p_i82559);
 }
 
 // ------------------------------------------------------------------------
@@ -1760,7 +1498,7 @@ static void i82559_reset(struct i82559* p_i82559)
 
     ioaddr = p_i82559->io_address;
     // make sure no command operating
-    wait_for_cmd_done(ioaddr + SCBCmd);   
+    wait_for_cmd_done(ioaddr);   
  
     OUTL(I82559_SELECTIVE_RESET, ioaddr + SCBPort);
   
@@ -1775,6 +1513,313 @@ static void i82559_reset(struct i82559* p_i82559)
     }
 }
 
+
+// ------------------------------------------------------------------------
+//
+//                       INTERRUPT HANDLERS
+//
+// ------------------------------------------------------------------------
+
+static cyg_uint32 eth_isr(cyg_vector_t vector, cyg_addrword_t data)
+{
+    struct i82559* p_i82559 = (struct i82559 *)data;
+    cyg_uint16 status;
+    cyg_uint32 ioaddr;
+
+    IF_BAD_82559( p_i82559 ) {
+        os_printf( "i82559_isr: Bad device pointer %x\n", p_i82559 );
+        return 0;
+    }
+
+    ioaddr = p_i82559->io_address;
+    status = INW(ioaddr + SCBStatus);
+    // Acknowledge all INT sources that were active
+    OUTW( status & SCB_INTACK_MASK, ioaddr + SCBStatus);
+    // (see pages 6-10 & 6-90)
+
+#ifdef KEEP_STATISTICS
+    statistics[p_i82559->index].interrupts++;
+
+    // receiver left ready state ?
+    if ( status & SCB_STATUS_RNR )
+        statistics[p_i82559->index].rx_resource++;
+
+    // frame receive interrupt ?
+    if ( status & SCB_STATUS_FR )
+        statistics[p_i82559->index].rx_count++;
+
+    // transmit interrupt ?
+    if ( status & SCB_STATUS_CX )
+        statistics[p_i82559->index].tx_complete++;
+#endif
+
+    // Advance the Tx Machine regardless
+    TxMachine(p_i82559);
+
+    // it should have settled down now...
+    Acknowledge82559Interrupt(p_i82559);
+
+    return CYG_ISR_CALL_DSR;        // schedule DSR
+}
+
+
+// ------------------------------------------------------------------------
+static int mux_device_index = 0;
+
+static cyg_uint32 eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
+{
+    int device_index = mux_device_index;
+    struct i82559* p_i82559;
+
+    mux_device_index ^= 1; // look at the other one first next time.
+
+    do {
+        p_i82559 = &i82559[device_index];
+        if ( p_i82559->active )
+            (void)eth_isr( vector, (cyg_addrword_t)p_i82559 );
+        device_index ^= 1;
+    } while ( device_index == mux_device_index );
+
+    return CYG_ISR_CALL_DSR;
+}
+
+// ------------------------------------------------------------------------
+
+void eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+{
+    struct i82559* p_i82559 = (struct i82559 *)data;
+
+    // First pass any rx data up the stack
+    PacketRxReady(p_i82559);
+
+    // Then scan for completed Txen and inform the stack
+    TxDone(p_i82559);
+}
+
+
+// ------------------------------------------------------------------------
+void eth_mux_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+{
+    int device_index = mux_device_index;
+    struct i82559* p_i82559;
+
+    mux_device_index ^= 1; // look at the other one first next time.
+                           // (non-atomicity wrt IRQ does not matter)
+    do {
+        p_i82559 = &i82559[device_index];
+        if ( p_i82559->active )
+            eth_dsr( vector, count, (cyg_addrword_t)p_i82559 );
+        device_index ^= 1;
+    } while ( device_index == mux_device_index );
+}
+
+// ------------------------------------------------------------------------
+//
+//  Function : pci_init_find_82559s
+//
+// This is called exactly once at the start of time to:
+//  o scan the PCI bus for objects
+//  o record them in the device table
+//  o acquire all the info needed for the driver to access them
+//  o instantiate interrupts for them
+//  o attach those interrupts appropriately
+// ------------------------------------------------------------------------
+static int
+pci_init_find_82559s( void )
+{
+    cyg_pci_device_id devid;
+    cyg_pci_device dev_info;
+    cyg_uint16 cmd;
+    int device_index;
+
+    // MUX interrupt - special case when 2 cards share one intr.
+    static cyg_handle_t mux_interrupt_handle = 0;
+    static cyg_interrupt mux_interrupt_object;
+
+#ifdef DEBUG
+    db_printf("pci_init_find_82559s()\n");
+#endif
+
+    // allocate memory to be used in ioctls later
+    if (mem_reserved_ioctl != (void*)0) {
+        db_printf("pci_init_find_82559s() called > once\n");
+        return 0;
+    }
+
+    // First initialize the heap in PCI window'd memory
+    i82559_heap_size = CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_SIZE;
+    i82559_heap_base = (cyg_uint8 *)CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE;
+    i82559_heap_free = i82559_heap_base;
+
+    mem_reserved_ioctl = pciwindow_mem_alloc(MAX_MEM_RESERVED_IOCTL);     
+
+    cyg_pci_init();
+#ifdef DEBUG
+    db_printf("Finished cyg_pci_init();\n");
+#endif
+    devid = CYG_PCI_NULL_DEVID;
+
+    for (device_index = 0; device_index < MAX_82559; device_index++) {
+        struct i82559 *p_i82559 = &i82559[device_index];
+        p_i82559->index = device_index;
+
+        if (cyg_pci_find_device(0x8086, 0x1229, &devid) ) {
+#ifdef DEBUG
+            db_printf("eth%d = 82559\n", device_index);
+#endif
+            cyg_pci_get_device_info(devid, &dev_info);
+
+            if (cyg_pci_translate_interrupt(&dev_info, &p_i82559->vector)) {
+#ifdef DEBUG
+                db_printf(" Wired to HAL vector %d\n", p_i82559->vector);
+#endif
+                cyg_drv_interrupt_create(
+                    p_i82559->vector,
+                    0,                  // Priority - unused
+                    (CYG_ADDRWORD)p_i82559, // Data item passed to ISR & DSR
+                    eth_isr,            // ISR
+                    eth_dsr,            // DSR
+                    &p_i82559->interrupt_handle, // handle to intr obj
+                    &p_i82559->interrupt_object ); // space for int obj
+
+                cyg_drv_interrupt_attach(p_i82559->interrupt_handle);
+
+                // Don't unmask the interrupt yet, that could get us into a
+                // race.
+
+                // ALSO attach it to interrupt #18 for multiplexed
+                // interrupts.  This is for certain boards where the
+                // PCI backplane is wired "straight through" instead of
+                // with a rotation of interrupt lines in the different
+                // slots.
+                if ( ! mux_interrupt_handle ) {
+#ifdef DEBUG
+                    db_printf(" Also attaching to HAL vector %d\n", 
+                              CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+#endif
+                    cyg_drv_interrupt_create(
+                        CYGNUM_HAL_INTERRUPT_PCI_IRQ,
+                        0,              // Priority - unused
+                        0,              // Data item passed to ISR (not used)
+                        eth_mux_isr,    // ISR
+                        eth_mux_dsr,    // DSR
+                        &mux_interrupt_handle,
+                        &mux_interrupt_object );
+                    
+                    cyg_drv_interrupt_attach(mux_interrupt_handle);
+                }
+            }
+            else {
+                p_i82559->vector=0;
+#ifdef DEBUG
+                db_printf(" Does not generate interrupts.\n");
+#endif
+            }
+
+            if (cyg_pci_configure_device(&dev_info)) {
+#ifdef DEBUG
+                int i;
+                db_printf("Found device on bus %d, devfn 0x%02x:\n",
+                          CYG_PCI_DEV_GET_BUS(devid),
+                          CYG_PCI_DEV_GET_DEVFN(devid));
+
+                if (dev_info.command & CYG_PCI_CFG_COMMAND_ACTIVE) {
+                    db_printf(" Note that board is active. Probed"
+                              " sizes and CPU addresses invalid!\n");
+                }
+                db_printf(" Vendor    0x%04x", dev_info.vendor);
+                db_printf("\n Device    0x%04x", dev_info.device);
+                db_printf("\n Command   0x%04x, Status 0x%04x\n",
+                          dev_info.command, dev_info.status);
+                
+                db_printf(" Class/Rev 0x%08x", dev_info.class_rev);
+                db_printf("\n Header 0x%02x\n", dev_info.header_type);
+
+                db_printf(" SubVendor 0x%04x, Sub ID 0x%04x\n",
+                          dev_info.header.normal.sub_vendor, 
+                          dev_info.header.normal.sub_id);
+
+                for(i = 0; i < CYG_PCI_MAX_BAR; i++) {
+                    db_printf(" BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
+                    db_printf(" probed size 0x%08x / CPU addr 0x%08x\n",
+                              dev_info.base_size[i], dev_info.base_map[i]);
+                }
+                db_printf(" eth%d configured\n", device_index);
+#endif
+                p_i82559->found = 1;
+                p_i82559->active = 0;
+                p_i82559->devid = devid;
+                p_i82559->memory_address = dev_info.base_map[0];
+                p_i82559->io_address = dev_info.base_map[1];
+#ifdef DEBUG
+                db_printf(" memory address = 0x%08x\n", dev_info.base_map[0]);
+                db_printf(" I/O address = 0x%08x\n", dev_info.base_map[1]);
+#endif
+
+                // Don't use cyg_pci_set_device_info since it clears
+                // some of the fields we want to print out below.
+                cyg_pci_read_config_uint16(dev_info.devid, CYG_PCI_CFG_COMMAND, &cmd);
+                cmd |= CYG_PCI_CFG_COMMAND_IO // enable I/O space
+                    | CYG_PCI_CFG_COMMAND_MEMORY // enable memory space
+                    | CYG_PCI_CFG_COMMAND_MASTER; // enable bus master
+                cyg_pci_write_config_uint16(dev_info.devid, CYG_PCI_CFG_COMMAND, cmd);
+
+                // Now the PCI part of the device is configured, reset it. This 
+                // should make it safe to enable the interrupt
+                i82559_reset(p_i82559);
+
+                if (p_i82559->vector != 0) {
+                    cyg_interrupt_acknowledge(p_i82559->vector);
+                    cyg_drv_interrupt_unmask(p_i82559->vector);
+                }
+#ifdef DEBUG
+                db_printf(" **** Device enabled for I/O and Memory and Bus Master\n");
+#endif
+            }
+            else {
+                p_i82559->found = 0;
+                p_i82559->active = 0;
+                db_printf("Failed to configure device %d\n",device_index);
+            }
+        }
+        else {
+            p_i82559->found = 0;
+            p_i82559->active = 0;
+            db_printf("eth%d not found\n", device_index);
+        }
+    }
+
+    // Now enable the mux shared interrupt if it is in use
+    if (mux_interrupt_handle) {
+        cyg_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+        cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+    }
+
+    return 1;
+}
+
+
+// ------------------------------------------------------------------------
+// We use this as a templete when writing a new MAC address into the
+// eeproms. The MAC address in the first few bytes is over written
+// with the correct MAC address and then the whole lot is programmed
+// into the serial EEPROM. The checksum is calculated on the fly and
+// sent instead of the last two bytes.
+
+static char eeprom_burn[126] = { 
+  0x00, 0x90, 0x27, 0x8c, 0x57, 0x82, 0x03, 0x02, 0x00, 0x00, 0x01,
+  0x02, 0x01, 0x47, 0x00, 0x00, 0x13, 0x72, 0x06, 0x83, 0xa2, 0x40,
+  0x0c, 0x00, 0x86, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28, 0x01, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00 
+};
 
 // ------------------------------------------------------------------------
 //
@@ -1796,14 +1841,14 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     }
 
     ioaddr = p_i82559->io_address;  
-    wait_for_cmd_done(ioaddr + SCBCmd); 
+    wait_for_cmd_done(ioaddr); 
     // load cu base address = 0 */ 
     OUTL(0, ioaddr + SCBPointer);         
     // 32 bit linear addressing used
                                         
-    OUTW(SCB_M | CUC_ADDR_LOAD, ioaddr + SCBCmd);
+    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
     // wait for SCB command complete
-    wait_for_cmd_done(ioaddr + SCBCmd);   
+    wait_for_cmd_done(ioaddr);   
   
     ccs = (CONFIG_CMD_STRUCT *)mem_reserved_ioctl;
   
@@ -1844,13 +1889,13 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     ccs->config_bytes[18]=0x70;
     
     // wait for SCB command complete
-    wait_for_cmd_done(ioaddr + SCBCmd);   
+    wait_for_cmd_done(ioaddr);   
     
     OUTL(VIRT_TO_BUS(ccs), ioaddr + SCBPointer); 
-    OUTW(SCB_M | CUC_START, ioaddr + SCBCmd);    
+    OUTW(SCB_M | CU_START, ioaddr + SCBCmd);    
   
     // now check for result ...
-    wait_for_cmd_done(ioaddr + SCBCmd);   
+    wait_for_cmd_done(ioaddr);   
   
     if ( (!ccs->cb_entry.cb_ok) || (!ccs->cb_entry.cb_complete) )
         return 1; // Failed
@@ -1879,14 +1924,14 @@ static int eth_set_mac_address(struct i82559* p_i82559, char *addr)
 
     ioaddr = p_i82559->io_address;      
     
-    wait_for_cmd_done(ioaddr + SCBCmd); 
+    wait_for_cmd_done(ioaddr); 
     // load cu base address = 0 */ 
     OUTL(0, ioaddr + SCBPointer);       
     // 32 bit linear addressing used
                                         
-    OUTW(SCB_M | CUC_ADDR_LOAD, ioaddr + SCBCmd);
+    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
     // wait for SCB command complete
-    wait_for_cmd_done(ioaddr + SCBCmd); 
+    wait_for_cmd_done(ioaddr); 
     
     ccs = (CONFIG_CMD_STRUCT *)mem_reserved_ioctl;
     if (ccs == (void*)0)
@@ -1907,12 +1952,12 @@ static int eth_set_mac_address(struct i82559* p_i82559, char *addr)
     ioaddr = p_i82559->io_address;  
   
     OUTL(VIRT_TO_BUS(ccs), ioaddr + SCBPointer); 
-    OUTW(SCB_M | CUC_START, ioaddr + SCBCmd);    
+    OUTW(SCB_M | CU_START, ioaddr + SCBCmd);    
     // Next delay seems to be required, otherwise,
     // cb_ok/cb_complete won't be set later.
 
     udelay(100);
-    wait_for_cmd_done(ioaddr + SCBCmd);   
+    wait_for_cmd_done(ioaddr);   
   
     // now check for result ...
     if ( (!ccs->cb_entry.cb_ok) || (!ccs->cb_entry.cb_complete) )
@@ -2105,265 +2150,199 @@ static int i82559_ioctl(struct eth_drv_sc *sc, unsigned long key,
 
 // ------------------------------------------------------------------------
 //
-//                       INTERRUPT HANDLERS
+//
+//           CODE FOR DEBUGGING PURPOSES ONLY
+//
 //
 // ------------------------------------------------------------------------
-
-static cyg_uint32 eth_isr(cyg_vector_t vector, cyg_addrword_t data)
+void dump_txcb(TxCB *p_txcb)
 {
-    int schedule_dsr;
-
-    cyg_drv_interrupt_mask(vector);     // mask this interrupt
-
-    schedule_dsr = i82559_isr( (struct i82559 *)data ); // process interrupt
-
-    cyg_drv_interrupt_acknowledge(vector); // acknowledge interrupt
-
-    // schedule further processing ?
-    if ( schedule_dsr )
-        return CYG_ISR_CALL_DSR;        // yes, schedule DSR
-
-    // else...
-    cyg_drv_interrupt_unmask(vector);   // allow more of these interrupts
-    return CYG_ISR_HANDLED;
+    os_printf("TxCB @ %x\n", (int)p_txcb);
+    os_printf("status = %04X ", p_txcb->status);
+    os_printf("command = %04X ", p_txcb->command);
+    os_printf("link = %08X ", p_txcb->link);
+    os_printf("tbd = %08X ", p_txcb->tbd_address);
+    os_printf("count = %d ", p_txcb->count);
+    os_printf("eof = %x ", p_txcb->eof);
+    os_printf("threshold = %d ", p_txcb->tx_threshold);
+    os_printf("tbd number = %d\n", p_txcb->tbd_number);
 }
 
 
-
-static cyg_uint32 eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
+// This is intended to be the body of a THREAD that prints stuff every 10
+// seconds or so:
+#ifdef KEEP_STATISTICS
+#ifdef DISPLAY_STATISTICS
+void DisplayStatistics(void)
 {
-    int schedule_dsr;
-
-    cyg_drv_interrupt_mask( vector );   // mask this interrupt
-
-    schedule_dsr = i82559_mux_isr();    // process interrupt
-
-    cyg_drv_interrupt_acknowledge( vector ); // ack interrupt
-
-    // schedule further processing ?
-    if ( schedule_dsr )
-        return CYG_ISR_CALL_DSR;        // yes, schedule DSR
+    int i;
+    I82559_COUNTERS *p_statistics;
+    cyg_uint32 *p_counter;
+    cyg_uint32 *p_register;
+    int reg_count;
+    int status;
     
-    // else...
-    cyg_drv_interrupt_unmask( vector ); // allow more of these interrupts
-    return CYG_ISR_HANDLED;
+    while ( 1 ) {
+#ifdef DISPLAY_82559_STATISTICS
+        for ( i = 0; i < 2; i ++ ) {
+            p_statistics = (I82559_COUNTERS *)i82559[i].p_statistics;
+            if ( (p_statistics->done & 0xFFFF) == 0xA007 ) {
+                p_counter = (cyg_uint32 *)&i82559_counters[i];
+                p_register = (cyg_uint32 *)&p_statistics->tx_good;
+                for ( reg_count = 20; reg_count != 0; reg_count--) {
+                    *p_counter += *p_register;
+                    p_counter++;
+                    p_register++;
+                }
+                p_statistics->done = 0;
+                // make sure no command operating
+            	wait_for_cmd_done(i82559[i].io_address);
+                // start register dump
+                OUTW(CU_DUMPSTATS, i82559[i].io_address + SCBCmd);
+            }
+        }
+#endif
+        os_printf("\nRx\nPackets = %d  %d\n",
+        statistics[0].rx_count, statistics[1].rx_count);
+        os_printf("Deliver   %d  %d\n",
+        statistics[0].rx_deliver, statistics[1].rx_deliver);
+        os_printf("Resource  %d  %d\n",
+        statistics[0].rx_resource, statistics[1].rx_resource);
+        os_printf("Restart   %d  %d\n",
+        statistics[0].rx_restart, statistics[1].rx_restart);
+
+#ifdef DISPLAY_82559_STATISTICS
+        os_printf("Count     %d  %d\n",
+        i82559_counters[0].rx_good, i82559_counters[1].rx_good);
+        os_printf("CRC       %d  %d\n",
+        i82559_counters[0].rx_crc_errors, i82559_counters[1].rx_crc_errors);
+        os_printf("Align     %d  %d\n",
+        i82559_counters[0].rx_align_errors, i82559_counters[1].rx_align_errors);
+        os_printf("Resource  %d  %d\n",
+        i82559_counters[0].rx_resource_errors, i82559_counters[1].rx_resource_errors);
+        os_printf("Overrun   %d  %d\n",
+        i82559_counters[0].rx_overrun_errors, i82559_counters[1].rx_overrun_errors);
+        os_printf("Collision %d  %d\n",
+        i82559_counters[0].rx_collisions, i82559_counters[1].rx_collisions);
+        os_printf("Short     %d  %d\n",
+        i82559_counters[0].rx_short_frames, i82559_counters[1].rx_short_frames);
+#endif
+        os_printf("\nTx\nPackets = %d  %d\n",
+        statistics[0].tx_count, statistics[1].tx_count);
+        os_printf("Complete  %d  %d\n",
+        statistics[0].tx_complete, statistics[1].tx_complete);
+        os_printf("Dropped   %d  %d\n",
+        statistics[0].tx_dropped, statistics[1].tx_dropped);
+        os_printf("Count     %d  %d\n",
+        i82559_counters[0].tx_good, i82559_counters[1].tx_good);
+#ifdef DISPLAY_82559_STATISTICS
+        os_printf("Collision %d  %d\n",
+        i82559_counters[0].tx_max_collisions,i82559_counters[1].tx_max_collisions);
+        os_printf("Late Col. %d  %d\n",
+        i82559_counters[0].tx_late_collisions,i82559_counters[1].tx_late_collisions);
+        os_printf("Underrun  %d  %d\n",
+        i82559_counters[0].tx_underrun,i82559_counters[1].tx_underrun);
+        os_printf("Carrier   %d  %d\n",
+        i82559_counters[0].tx_carrier_loss,i82559_counters[1].tx_carrier_loss);
+        os_printf("Deferred  %d  %d\n",
+        i82559_counters[0].tx_deferred, i82559_counters[1].tx_deferred);
+        os_printf("1 Col     %d  %d\n",
+        i82559_counters[0].tx_single_collisions, i82559_counters[0].tx_single_collisions);
+        os_printf("Mult. Col %d  %d\n",
+        i82559_counters[0].tx_mult_collisions, i82559_counters[0].tx_mult_collisions);
+        os_printf("Total Col %d  %d\n",
+        i82559_counters[0].tx_total_collisions, i82559_counters[0].tx_total_collisions);
+#endif
+        status = INB(i82559[0].io_address + SCBGenStatus);
+        os_printf("Interface 0 Link = %s, %s Mbps, %s Duplex\n",
+            status & GEN_STATUS_LINK ? "Up" : "Down",
+            status & GEN_STATUS_100MBPS ?  "100" : "10",
+            status & GEN_STATUS_FDX ? "Full" : "Half");
+
+        status = INB(i82559[1].io_address + SCBGenStatus);
+        os_printf("Interface 1 Link = %s, %s Mbps, %s Duplex\n",
+            status & GEN_STATUS_LINK ? "Up" : "Down",
+            status & GEN_STATUS_100MBPS ?  "100" : "10",
+            status & GEN_STATUS_FDX ? "Full" : "Half");
+
+        cyg_thread_delay(1000);
+    }
 }
+#endif // DISPLAY_STATISTICS
+#endif // KEEP_STATISTICS
 
-// ------------------------------------------------------------------------
-
-void eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+void dump_rfd(RFD *p_rfd, int anyway )
 {
-    while ( (i82559_q_out != i82559_q_in) || (i82559_q_full) ) {
-        switch ( i82559_queue[i82559_q_out].request ) {
-        case PACKET_RX:
-            PacketRxReady(i82559_queue[i82559_q_out].p);
-            break;
-            
-        case PACKET_TX:
-            PacketTxDone(i82559_queue[i82559_q_out].p,
-                         i82559_queue[i82559_q_out].key);
-            break;
-        }
-        i82559_q_full = 0;
-        if ( ++i82559_q_out == I82559_QUEUE_SIZE )
-            i82559_q_out = 0;
+    if ( (0 != p_rfd->status) || anyway ) {
+        os_printf("RFD @ %x = ", (int)p_rfd);
+        os_printf("status = %x ", p_rfd->status);
+        os_printf("link = %x ", p_rfd->link);
+//        os_printf("rdb_address = %x ", p_rfd->rdb_address);
+        os_printf("count = %x ", p_rfd->count);
+        os_printf("f = %x ", p_rfd->f);
+        os_printf("eof = %x ", p_rfd->eof);
+        os_printf("size = %x\n", p_rfd->size);
+        os_printf("[%04x %04x %04x] ",
+                  *((cyg_uint16 *)(&(p_rfd->buffer[0]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[2]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[4]))) );
+        os_printf("[%04x %04x %04x] %04x : ",          
+                  *((cyg_uint16 *)(&(p_rfd->buffer[6]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[8]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[10]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[12]))) );
+        os_printf("(%04x %04x %04x %04x) ",            
+                  *((cyg_uint16 *)(&(p_rfd->buffer[14]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[16]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[18]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[20]))) );
+        os_printf("[%04x %04x %04x] ",                 
+                  *((cyg_uint16 *)(&(p_rfd->buffer[22]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[24]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[26]))) );
+        os_printf("%d.%d.%d.%d ",
+                  *((cyg_uint8  *)(&(p_rfd->buffer[28]))),
+                  *((cyg_uint8  *)(&(p_rfd->buffer[29]))),
+                  *((cyg_uint8  *)(&(p_rfd->buffer[30]))),
+                  *((cyg_uint8  *)(&(p_rfd->buffer[31]))) );
+        os_printf("[%04x %04x %04x] ",                 
+                  *((cyg_uint16 *)(&(p_rfd->buffer[32]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[34]))),
+                  *((cyg_uint16 *)(&(p_rfd->buffer[36]))) );
+        os_printf("%d.%d.%d.%d ...\n",
+                  *((cyg_uint8  *)(&(p_rfd->buffer[38]))),
+                  *((cyg_uint8  *)(&(p_rfd->buffer[39]))),
+                  *((cyg_uint8  *)(&(p_rfd->buffer[40]))),
+                  *((cyg_uint8  *)(&(p_rfd->buffer[41]))) );
     }
-    // allow interrupts to continue from whichever source
-    // (if multiple device actions were dispatched in this DSR call,
-    //  another call will occur almost immediately)
-    cyg_drv_interrupt_unmask(vector);
 }
 
-// ------------------------------------------------------------------------
-//
-//  Function : pci_init_find_82559s
-//
-// This is called exactly once at the start of time to:
-//  o scan the PCI bus for objects
-//  o record them in the device table
-//  o acquire all the info needed for the driver to access them
-//  o instantiate interrupts for them
-//  o attach those interrupts appropriately
-// ------------------------------------------------------------------------
-static int
-pci_init_find_82559s( void )
+void dump_all_rfds( int intf )
 {
-    cyg_pci_device_id devid;
-    cyg_pci_device dev_info;
-    cyg_uint16 cmd;
-    int device_index;
-
-    // MUX interrupt - special case when 2 cards share one intr.
-    static cyg_handle_t mux_interrupt_handle = 0;
-    static cyg_interrupt mux_interrupt_object;
-
-#ifdef DEBUG
-    db_printf("pci_init_find_82559s()\n");
-#endif
-
-    // allocate memory to be used in ioctls later
-    if (mem_reserved_ioctl != (void*)0) {
-        db_printf("pci_init_find_82559s() called > once\n");
-        return 0;
-    }
-
-    // First initialize the heap in PCI window'd memory
-    i82559_heap_size = CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_SIZE;
-    i82559_heap_base = (cyg_uint8 *)CYGHWR_HAL_ARM_EBSA285_PCI_MEM_MAP_BASE;
-    i82559_heap_free = i82559_heap_base;
-
-    mem_reserved_ioctl = pciwindow_mem_alloc(MAX_MEM_RESERVED_IOCTL);     
-
-    // initialize the event queue for DSR actions
-    i82559_q_out = i82559_q_in = 0;
-    i82559_q_full = 0;
-
-    cyg_pci_init();
-#ifdef DEBUG
-    db_printf("Finished cyg_pci_init();\n");
-#endif
-    devid = CYG_PCI_NULL_DEVID;
-
-    for (device_index = 0; device_index < MAX_82559; device_index++) {
-        struct i82559 *p_i82559 = &i82559[device_index];
-        p_i82559->index = device_index;
-
-        if (cyg_pci_find_device(0x8086, 0x1229, &devid) ) {
-#ifdef DEBUG
-            db_printf("eth%d = 82559\n", device_index);
-#endif
-            cyg_pci_get_device_info(devid, &dev_info);
-
-            if (cyg_pci_translate_interrupt(&dev_info, &p_i82559->vector)) {
-#ifdef DEBUG
-                db_printf(" Wired to HAL vector %d\n", p_i82559->vector);
-#endif
-                cyg_drv_interrupt_create(
-                    p_i82559->vector,
-                    0,                  // Priority - unused
-                    (CYG_ADDRWORD)p_i82559, // Data item passed to ISR
-                    eth_isr,            // ISR
-                    eth_dsr,            // DSR
-                    &p_i82559->interrupt_handle, // handle to intr obj
-                    &p_i82559->interrupt_object ); // space for int obj
-
-                cyg_drv_interrupt_attach(p_i82559->interrupt_handle);
-
-                // Don't unmask the interrupt yet, that could get us into a
-                // race.
-
-                // ALSO attach it to interrupt #18 for multiplexed
-                // interrupts.  This is for certain boards where the
-                // PCI backplane is wired "straight through" instead of
-                // with a rotation of interrupt lines in the different
-                // slots.
-                if ( ! mux_interrupt_handle ) {
-#ifdef DEBUG
-                    db_printf(" Also attaching to HAL vector %d\n", 
-                              CYGNUM_HAL_INTERRUPT_PCI_IRQ);
-#endif
-                    cyg_drv_interrupt_create(
-                        CYGNUM_HAL_INTERRUPT_PCI_IRQ,
-                        0,              // Priority - unused
-                        0,              // Data item passed to ISR (not used)
-                        eth_mux_isr,    // ISR
-                        eth_dsr,        // DSR
-                        &mux_interrupt_handle,
-                        &mux_interrupt_object );
-                    
-                    cyg_drv_interrupt_attach(mux_interrupt_handle);
-                }
-            }
-            else {
-                p_i82559->vector=0;
-#ifdef DEBUG
-                db_printf(" Does not generate interrupts.\n");
-#endif
-            }
-
-            if (cyg_pci_configure_device(&dev_info)) {
-#ifdef DEBUG
-                int i;
-                db_printf("Found device on bus %d, devfn 0x%02x:\n",
-                          CYG_PCI_DEV_GET_BUS(devid),
-                          CYG_PCI_DEV_GET_DEVFN(devid));
-
-                if (dev_info.command & CYG_PCI_CFG_COMMAND_ACTIVE) {
-                    db_printf(" Note that board is active. Probed"
-                              " sizes and CPU addresses invalid!\n");
-                }
-                db_printf(" Vendor    0x%04x", dev_info.vendor);
-                db_printf("\n Device    0x%04x", dev_info.device);
-                db_printf("\n Command   0x%04x, Status 0x%04x\n",
-                          dev_info.command, dev_info.status);
-                
-                db_printf(" Class/Rev 0x%08x", dev_info.class_rev);
-                db_printf("\n Header 0x%02x\n", dev_info.header_type);
-
-                db_printf(" SubVendor 0x%04x, Sub ID 0x%04x\n",
-                          dev_info.header.normal.sub_vendor, 
-                          dev_info.header.normal.sub_id);
-
-                for(i = 0; i < CYG_PCI_MAX_BAR; i++) {
-                    db_printf(" BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
-                    db_printf(" probed size 0x%08x / CPU addr 0x%08x\n",
-                              dev_info.base_size[i], dev_info.base_map[i]);
-                }
-                db_printf(" eth%d configured\n", device_index);
-#endif
-                p_i82559->found = 1;
-                p_i82559->active = 0;
-                p_i82559->devid = devid;
-                p_i82559->memory_address = dev_info.base_map[0];
-                p_i82559->io_address = dev_info.base_map[1];
-#ifdef DEBUG
-                db_printf(" memory address = 0x%08x\n", dev_info.base_map[0]);
-                db_printf(" I/O address = 0x%08x\n", dev_info.base_map[1]);
-#endif
-
-                // Don't use cyg_pci_set_device_info since it clears
-                // some of the fields we want to print out below.
-                cyg_pci_read_config_uint16(dev_info.devid, CYG_PCI_CFG_COMMAND, &cmd);
-                cmd |= CYG_PCI_CFG_COMMAND_IO // enable I/O space
-                    | CYG_PCI_CFG_COMMAND_MEMORY // enable memory space
-                    | CYG_PCI_CFG_COMMAND_MASTER; // enable bus master
-                cyg_pci_write_config_uint16(dev_info.devid, CYG_PCI_CFG_COMMAND, cmd);
-
-                // Now the PCI part of the device is configured, reset it. This 
-                // should make it safe to enable the interrupt
-                i82559_reset(p_i82559);
-
-                if (p_i82559->vector != 0) {
-                    cyg_interrupt_acknowledge(p_i82559->vector);
-                    cyg_drv_interrupt_unmask(p_i82559->vector);
-                }
-#ifdef DEBUG
-                db_printf(" **** Device enabled for I/O and Memory and Bus Master\n");
-#endif
-            }
-            else {
-                p_i82559->found = 0;
-                p_i82559->active = 0;
-                db_printf("Failed to configure device %d\n",device_index);
-            }
-        }
-        else {
-            p_i82559->found = 0;
-            p_i82559->active = 0;
-            db_printf("eth%d not found\n", device_index);
-        }
-    }
-
-    // Now enable the mux shared interrupt if it is in use
-    if (mux_interrupt_handle) {
-        cyg_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
-        cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
-    }
-
-    return 1;
+    struct i82559* p_i82559 = &i82559[intf];
+    int i, j;
+    j = p_i82559->next_rx_descriptor;
+    os_printf("rx descriptors for interface %d (eth%d):\n", intf, intf );
+    for ( i = 0; i < MAX_RX_DESCRIPTORS; i++ )
+        dump_rfd( p_i82559->rx_ring[i], (i > (j-3) && (i <= j)) );
+    os_printf("next rx descriptor = %x\n\n", j);
 }
 
 
+void dump_packet(cyg_uint8 *p_buffer, int length)
+{
+    int count;
+
+    count = 0;
+    while ( length > 0 ) {
+        if ( count == 0 )
+            os_printf("\n");
+        count = (count + 1) & 0x0F;
+        os_printf("%02X ", *p_buffer++);
+        length--;
+    }
+    os_printf("\n");
+}
 
 // ------------------------------------------------------------------------
 

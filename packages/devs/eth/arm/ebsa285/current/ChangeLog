@@ -1,3 +1,38 @@
+2000-04-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c: A serious re-write.  This cuts out a lot of
+	code from the old version and improves the performance greatly.
+
+	The cruft was mainly doing lots of explicit event communication
+	between the ISR and DSR, when in fact all the state needed is
+	present in the tx/rx rings.  So both ISRs and DSRs regard their
+	call as an opportunity to progress everything they can, rather
+	than only dealing with one interrupt cause at a time; the
+	connection between them is now rather looser.
+
+	Interrups can now be re-enabled after the ISR (in other words they
+	are not masked in the ISR), no need to wait for the DSR, but in
+	consequence some DSR code must mask/unmask intrs as it works.
+
+	The 82559 appears to be a little slow in reacting to commands and
+	state changes, so some interrupts were being lost - or persisting
+	beyond their desired life - so there's some kinda polling code to
+	deal with that also.  We also rely on the foreground to kind of
+	poll in the same way, in the send/can_send calls - we know the
+	stack will re-try if necessary, though this is rare.
+
+	The driver now works (albeit at much reduced performance) with as
+	few as 6 rx and tx buffers - in other words the "queue full/out of
+	rx buffers" states have been tested and all is well.  It works
+	generally fine with 8 buffers of each kind.
+
+	The mux ISR and DSR are now rather more polled than the old
+	versions; we just try to do things with both devices (if active)
+	by simply calling each unitary ISR/DSR respectively.
+
+	I also re-ordered some of the code, moving utilities to the end of
+	the file and grouping together Tx and Rx machines a bit better.
+
 2000-04-13  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c: Attribution to Ron Spence, Pacific Softworks

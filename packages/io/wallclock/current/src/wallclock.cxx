@@ -72,7 +72,7 @@
 //-----------------------------------------------------------------------------
 // Local static variables
 
-static Cyg_WallClock wallclock_instance CYG_INIT_PRIORITY( CLOCK );
+static Cyg_WallClock wallclock_instance CYGBLD_ATTRIB_INIT_AFTER( CYG_INIT_CLOCK );
 
 #ifndef CYGSEM_WALLCLOCK_SET_GET_MODE
 static cyg_uint32 epoch_ticks;

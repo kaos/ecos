@@ -43,12 +43,13 @@
 
 #include <cyg/infra/testcase.h>
 
-#ifdef HAL_DCACHE_SIZE
+#include <cyg/hal/hal_cache.h>
+
+#if defined(HAL_DCACHE_SIZE) || defined(HAL_UCACHE_SIZE)
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
 #ifdef CYGFUN_KERNEL_API_C
 
 #include <cyg/infra/diag.h>
-#include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_intr.h>
 
 // -------------------------------------------------------------------------
@@ -175,7 +176,8 @@ void time1II(void)
 static void time0DI(register cyg_uint32 stride)
 {
     register cyg_uint32 j,k;
-    cyg_tick_count_t count0, count1;
+    volatile cyg_tick_count_t count0;
+    cyg_tick_count_t count1;
     cyg_ucount32 t;
     register char c;
 
@@ -217,7 +219,7 @@ void time1DI(void)
 static void entry0( cyg_addrword_t data )
 {
     register CYG_INTERRUPT_STATE oldints;
-    
+
 #ifdef HAL_CACHE_UNIFIED
 
     HAL_DISABLE_INTERRUPTS(oldints);
@@ -235,6 +237,16 @@ static void entry0( cyg_addrword_t data )
     HAL_RESTORE_INTERRUPTS(oldints);
     CYG_TEST_INFO("Cache on");
     time1();
+
+#ifdef HAL_DCACHE_INVALIDATE_ALL
+    HAL_DISABLE_INTERRUPTS(oldints);
+    HAL_DCACHE_PURGE_ALL();
+    HAL_UCACHE_INVALIDATE_ALL();
+    HAL_UCACHE_ENABLE();
+    HAL_RESTORE_INTERRUPTS(oldints);    
+    CYG_TEST_INFO("Cache on: invalidate Cache (expect bogus times)");
+    time1DI();
+#endif
 
 #else // HAL_CACHE_UNIFIED
 
@@ -313,8 +325,7 @@ static void entry0( cyg_addrword_t data )
         CYG_TEST_PASS_FINISH("End of test");
  
     cyg_test_is_simulator = 1;
-#endif
-    
+#endif    
 #ifdef HAL_ICACHE_INVALIDATE_ALL
     HAL_DISABLE_INTERRUPTS(oldints);
     HAL_DCACHE_PURGE_ALL();

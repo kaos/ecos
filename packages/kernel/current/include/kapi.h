@@ -127,6 +127,11 @@ void cyg_scheduler_start(void) __attribute__ ((noreturn));
 void cyg_scheduler_lock(void);
 
 void cyg_scheduler_unlock(void);
+
+/* Just like 'cyg_scheduler_lock()', but never take the lock higher than 1  */
+/* Thus this call is safe even if the scheduler is already locked and a     */
+/* subsequent call to 'cyg_scheduler_unlock()' will completely unlock.      */
+void cyg_scheduler_safe_lock(void);
     
 /*---------------------------------------------------------------------------*/
 /* Thread operations */

@@ -1,3 +1,9 @@
+2000-04-14  Bart Veer  <bartv@redhat.com>
+
+	* infer.cxx (infer_set_valuable_value):
+	Extend the == operator inference support to cope with bool and
+	booldata options.
+
 2000-04-11  Bart Veer  <bartv@redhat.com>
 
 	* infer.cxx (infer_make_active):

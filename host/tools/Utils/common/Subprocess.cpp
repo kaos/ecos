@@ -68,9 +68,9 @@ CSubprocess::CSubprocess(bool bAutoDelete):
   m_pfnLogfunc(0),
   m_bKillThread(false)
 {
-  #ifdef _WIN32
-  InitializeCriticalSection(&m_cs);
-  #endif
+#ifdef _WIN32
+  m_hProcess=0;
+#endif
 }
 
 CSubprocess::~CSubprocess()
@@ -80,9 +80,11 @@ CSubprocess::~CSubprocess()
     m_bKillThread=true;
     CeCosThreadUtils::WaitFor(m_bThreadTerminated);  
   }
-  #ifdef _WIN32
-  DeleteCriticalSection(&m_cs);
-  #endif
+#ifdef _WIN32
+  if(m_hProcess){
+    CloseHandle(m_hProcess);
+  }
+#endif
 }
 
 bool CSubprocess::Run(LogFunc *pfnLog,void * pLogparam, LPCTSTR pszCmd,bool bBlock/*=true*/)
@@ -96,6 +98,10 @@ bool CSubprocess::Run(LogFunc *pfnLog,void * pLogparam, LPCTSTR pszCmd,bool bBlo
 #ifdef _WIN32 
     // UNIX does it from the thread func.  WIN32 could too, but it's nice to know at the time 
     // of calling run whether the process is successfully created.
+    if(m_hProcess){
+      // Normally done in the dtor
+      CloseHandle(m_hProcess);
+    }
     rc=CreateProcess(pszCmd);
 #else 
     m_strCmd=pszCmd;
@@ -224,7 +230,7 @@ bool CSubprocess::CreateProcess(LPCTSTR pszCmdline)
     if(m_bVerbose){
       Output(String::SFormat(_T("*** Process %d created \"%s\"\n"),m_idProcess,pszCmdline));
     }
-    TRACE(String::SFormat(_T("*** Process %d created \"%s\"\n"),m_idProcess,pszCmdline));
+    TRACE(String::SFormat(_T("Process %d created \"%s\"\n"),m_idProcess,pszCmdline));
     m_nExitCode=STILL_ACTIVE;
     CloseHandle(pi.hThread);
   } else {
@@ -232,7 +238,7 @@ bool CSubprocess::CreateProcess(LPCTSTR pszCmdline)
     if(m_bVerbose){
       Output(String::SFormat(_T("*** Failed to create process \"%s\" %s\n"),pszCmdline,(LPCTSTR)ErrorString()));
     }
-    TRACE(String::SFormat(_T("*** Failed to create process \"%s\" %s\n"),pszCmdline,(LPCTSTR)ErrorString()));
+    TRACE(String::SFormat(_T("Failed to create process \"%s\" %s\n"),pszCmdline,(LPCTSTR)ErrorString()));
     m_nExitCode=GetLastError();
     CloseHandle(m_hrPipe);m_hrPipe=INVALID_HANDLE_VALUE;
     CloseHandle(m_hwPipe);m_hwPipe=INVALID_HANDLE_VALUE;
@@ -301,10 +307,6 @@ void CSubprocess::ThreadFunc()
 
   CloseHandle(m_hrPipe);m_hrPipe=INVALID_HANDLE_VALUE;
   CloseHandle(m_hwPipe);m_hwPipe=INVALID_HANDLE_VALUE;
-  EnterCriticalSection(&m_cs);
-  CloseHandle(m_hProcess);
-  m_hProcess=0; // Do not use INVALID_HANDLE_VALUE, which is also the pseudo-handle returned by GetCurrentProcess()
-  LeaveCriticalSection(&m_cs);
   
   if(m_bAutoDelete){
     m_bThreadTerminated=true; // or else the dtor will block
@@ -496,13 +498,12 @@ TRACE(_T("CSubprocess::Kill pid %d recurse=%d\n"),m_idProcess,bRecurse);
     
 #ifdef _WIN32
 
-    EnterCriticalSection(&m_cs); // because the thread func may be closing it
     if(m_hProcess){
-      TRACE(_T("Terminate m_idProcess %d [%s]\n"),m_idProcess,(LPCTSTR)Name(m_idProcess));
+      TRACE(_T("Terminate process %s\n"),(LPCTSTR)Name(m_idProcess));
       rc=(TRUE==::TerminateProcess(m_hProcess,PROCESS_KILL_EXIT_CODE));
-      // Threadfunc's responsibility alone to close the handle
+      // dtor's (or subsequent Run's) responsibility to close the handle
     }
-    LeaveCriticalSection(&m_cs);
+
 #else
     rc=(0==kill(m_idProcess,SIGTERM));
     int status;
@@ -524,8 +525,7 @@ TRACE(_T("CSubprocess::Kill pid %d recurse=%d\n"),m_idProcess,bRecurse);
           // end hack
           HANDLE hProcess=::OpenProcess(PROCESS_TERMINATE,false,arPinfo[i].PID);
           if(hProcess){
-            TRACE(_T("Terminate m_idProcess %d [%s]\n"),arPinfo[i].PID,(LPCTSTR)Name(arPinfo[i].PID));
-          
+            TRACE(_T("Terminate process %s\n"),(LPCTSTR)Name(arPinfo[i].PID));
             rc&=(TRUE==::TerminateProcess(hProcess,PROCESS_KILL_EXIT_CODE));
             CloseHandle(hProcess);
           } else {
@@ -550,12 +550,10 @@ Time CSubprocess::CpuTime(bool bRecurse) const
   // FIXME: needs to be top-down
   
 #ifdef _WIN32
-  EnterCriticalSection(&m_cs); // because the thread func may be closing it
   __int64 ftCreation,ftExit,ftKernel,ftUser;
   if(m_hProcess && ::GetProcessTimes (m_hProcess,(FILETIME *)&ftCreation,(FILETIME *)&ftExit,(FILETIME *)&ftKernel,(FILETIME *)&ftUser)){
     t+=Time((ftKernel+ftUser)/10000);
   }
-  LeaveCriticalSection(&m_cs);
 
   if(bRecurse){
     PInfoArray arPinfo;
@@ -689,12 +687,6 @@ bool CSubprocess::PSExtract(CSubprocess::PInfoArray &arPinfo)
 
   SetParents(arPinfo);
 
-/*
-for(int k=0;k<(signed)arPinfo.size();k++){
-  const PInfo &p=arPinfo[k];
-  TRACE(_T("%d%c pid=%4d ppid=%4d t=%I64d [%s]\n"),k,p.IsChildOf(GetCurrentProcessId())?_TCHAR('*'):_TCHAR(':'),p.PID,p.PPID,p.t,(LPCTSTR)Name(p.PID));
-}
-*/
   if(!rc){
     ERROR(_T("Couldn't get process information!\n"));
   }
@@ -780,7 +772,7 @@ void CSubprocess::SetParents(CSubprocess::PInfoArray &arPinfo)
     ERROR(_T("!!! Circularly linked process list at index %d\n"),i);
     for(int k=0;k<(signed)arPinfo.size();k++){
       const PInfo &p=arPinfo[k];
-      ERROR(_T("%d: pid=%4d ppid=%4d [%s]\n"),k,p.PID,p.PPID,(LPCTSTR)Name(p.PID));
+      ERROR(_T("%d: %s ppid=%4d\n"),k,(LPCTSTR)Name(p.PID),p.PPID);
     }
   }
 }
@@ -797,7 +789,7 @@ bool CSubprocess::PInfo::IsChildOf(int pid) const
 
 const String CSubprocess::Name(int pid)
 {
-  String str;
+  String str(String::SFormat(_T("id=%d"),pid));
 #ifdef _DEBUG
 #ifdef _WIN32
   if(VER_PLATFORM_WIN32_NT==GetPlatform() && hInstLib1){
@@ -812,9 +804,10 @@ const String CSubprocess::Name(int pid)
         DWORD dwSize;
         if(lpfEnumProcessModules( hProcess, &hMod, sizeof(HMODULE), &dwSize ) ){
           // Get Full pathname:
-          LPTSTR buf=str.GetBuffer(MAX_PATH);
+          TCHAR buf[1+MAX_PATH];
           lpfGetModuleFileNameEx( hProcess, hMod, buf, MAX_PATH);
-          str.ReleaseBuffer();
+          str+=_TCHAR(' ');
+          str+=buf;
         }
         CloseHandle(hProcess);
       }

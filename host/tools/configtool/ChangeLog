@@ -1,3 +1,17 @@
+2000-04-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* standalone/common/cdl_exec.cxx:
+
+	Use PATH_MAX rather than _MAX_PATH in the Cygwin-hosted
+	build.
+
+2000-04-17  John Dallaway  <jld@cygnus.co.uk>
+
+	* standalone/common/cdl_exec.cxx:
+
+	Modify cmd_tree() to avoid non-standard use of
+	getcwd().
+
 2000-04-11  John Dallaway  <jld@cygnus.co.uk>
 
 	* common/win32/CTCommonDoc.cpp:

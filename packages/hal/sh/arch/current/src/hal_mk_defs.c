@@ -47,6 +47,7 @@
 
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_intr.h>           // HAL header
+#include <cyg/hal/hal_cache.h>          // HAL header
 #ifdef CYGPKG_KERNEL
 # include <pkgconf/kernel.h>
 # include <cyg/kernel/instrmnt.h>
@@ -102,6 +103,12 @@ main(void)
     DEFINE(CYGNUM_HAL_VSR_MAX, CYGNUM_HAL_VSR_MAX);
     DEFINE(CYGNUM_HAL_VSR_COUNT, CYGNUM_HAL_VSR_COUNT);
     DEFINE(CYGNUM_HAL_VSR_EXCEPTION_COUNT, CYGNUM_HAL_VSR_EXCEPTION_COUNT);
+
+    // Caching details
+    DEFINE(CYGARC_REG_CACHE_ADDRESS_FLUSH, CYGARC_REG_CACHE_ADDRESS_FLUSH);
+    DEFINE(CYGARC_REG_CACHE_ADDRESS_BASE,CYGARC_REG_CACHE_ADDRESS_BASE);
+    DEFINE(CYGARC_REG_CACHE_ADDRESS_TOP,CYGARC_REG_CACHE_ADDRESS_TOP);
+    DEFINE(CYGARC_REG_CACHE_ADDRESS_STEP,CYGARC_REG_CACHE_ADDRESS_STEP);
 
     // Variant definitions - want these to be included instead.
 }

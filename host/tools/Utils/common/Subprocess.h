@@ -146,7 +146,6 @@ protected:
 	HANDLE m_hrPipe;
 	HANDLE m_hwPipe;
   HANDLE m_hProcess;     // This handle is "owned" by the ThreadFunc
-  mutable CRITICAL_SECTION m_cs; // protects m_hProcess
   static HINSTANCE hInstLib1, hInstLib2;
 	int m_nErr;
 #else

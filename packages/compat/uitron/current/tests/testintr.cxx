@@ -316,6 +316,7 @@ void task1( unsigned int arg )
 #endif
     }
 
+
     // First test that dis_int() and ena_int() work for the clock interrupt
 #ifdef CYGSEM_UITRON_BAD_PARAMS_RETURN_ERRORS
     ercd = ena_int( 123456789 ); // Hope this is large enough to error

@@ -448,7 +448,6 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
     }                                                                    \
     CYG_MACRO_END
 
-
 #define HAL_INTERRUPT_MASK( _vector_ )                                    \
     CYG_MACRO_START                                                       \
     switch( (_vector_) ) {                                                \
@@ -491,9 +490,11 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
     }                                                                     \
     CYG_MACRO_END
 
+
 #define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )
 
 #define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )
+
 
 //--------------------------------------------------------------------------
 // Clock control

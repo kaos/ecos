@@ -340,13 +340,13 @@ CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOn
       //   2. Read timeout
       StringArray ar;
       int nArgs=strArg.Chop(ar,ARGSEP,true);
-      if(nArgs>0 && ar[0].size()){
+      if(nArgs>0){
         m_strAuxPort=ar[0];
       }
-      if(nArgs>1 && ar[1].size()){
+      if(nArgs>1){
         m_nBaud=_ttoi(ar[1]);
       }
-      if(nArgs>2 && ar[2].size()){
+      if(nArgs>2){
         m_nReadTimeout=_ttoi(ar[2]);
       }
     } else if (_T("off")==strID || _T("on")==strID || _T("on_off")==strID || _T("off_on")==strID) {
@@ -360,22 +360,22 @@ CResetAttributes::ResetResult CResetAttributes::Parse (LPCTSTR psz,bool bCheckOn
       //   5. Delay
       StringArray ar;
       int nArgs=strArg.Chop(ar,ARGSEP,true);
-      if(nArgs>0 && ar[0].size()){
+      if(nArgs>0){
         m_strHostPort=ar[0];  
       }
-      if(nArgs>1 && ar[1].size()){
+      if(nArgs>1){
         m_strControl=ar[1];
       }
-      if(nArgs>2 && ar[2].size()){
+      if(nArgs>2){
         m_strAuxPort=ar[2];
       }
-      if(nArgs>3 && ar[3].size()){
+      if(nArgs>3){
         m_nBaud=_ttoi(ar[3]);
       }
-      if(nArgs>4 && ar[4].size()){
+      if(nArgs>4){
         m_nReadTimeout=_ttoi(ar[4]);
       }
-      if(nArgs>5 && ar[5].size()){
+      if(nArgs>5){
         m_nDelay=_ttoi(ar[5]);
       }
 

@@ -1,3 +1,9 @@
+2000-04-14 Simon FitzMaurice <sdf@redhat.co.uk>
+  * common\Subprocess.cpp
+    common\Subprocess.h
+
+  Always attempt to kill a process explicitly (don't let Cygwin processes linger)
+
 2000-04-13 Simon FitzMaurice <sdf@redhat.co.uk>
   * common\eCosSerial.cpp
     common\eCosSocket.cpp

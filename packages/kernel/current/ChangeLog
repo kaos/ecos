@@ -1,3 +1,17 @@
+2000-04-26  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kcache1.c: Also to flush testing with unified caches.
+
+2000-04-25  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kcache1.c: Fixed cache check to also look for unified
+	caches.
+
+2000-04-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/common/kapi.cxx (cyg_scheduler_safe_lock): 
+	* include/kapi.h: Add 'cyg_scheduler_safe_lock()' function.
+
 2000-04-12  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/interrupts.cdl: 

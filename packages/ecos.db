@@ -210,6 +210,31 @@ package CYGPKG_IO_SERIAL_SH_EDK7708 {
 }
 
 
+package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
+	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
+	hardware
+	directory	devs/eth/arm/edb7xxx
+	script		edb7xxx_eth_drivers.cdl
+        description     "Ethernet driver for Cirrus Logic EDB7xxx development boards."
+}
+
+package CYGPKG_DEVS_ETH_ARM_EBSA285 {
+	alias 		{ "Intel EBSA285 with PRO/100+ ethernet driver"
+			   devs_eth_arm_ebsa285 ebsa285_eth_driver }
+	hardware
+	directory	devs/eth/arm/ebsa285
+	script		ebsa285_eth_drivers.cdl
+        description     "Ethernet driver for Intel EBSA285 with PRO/100+ boards."
+}
+
+package CYGPKG_DEVS_ETH_POWERPC_QUICC {
+	alias 		{ "QUICC ethernet driver" quicc_eth_driver }
+	hardware
+	directory	devs/eth/powerpc/quicc
+	script		quicc_eth_drivers.cdl
+        description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
+}
+
 package CYGPKG_IO_PCI	{
 	alias		{ "PCI configuration library" io_pci }
 	directory	io/pci

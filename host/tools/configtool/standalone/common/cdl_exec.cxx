@@ -244,7 +244,12 @@ bool cdl_exec::cmd_tree () {
 		pkgdata = CdlPackagesDatabaseBody::make (repository, &diagnostic_handler, &diagnostic_handler);
 		interp = CdlInterpreterBody::make ();
 		config = CdlConfigurationBody::load (savefile, pkgdata, interp, &diagnostic_handler, &diagnostic_handler);
-		char * cwd = getcwd (NULL, 0);
+#ifdef _MSC_VER
+		char cwd [_MAX_PATH + 1];
+#else
+		char cwd [PATH_MAX + 1];
+#endif
+		getcwd (cwd, sizeof cwd);
 #ifdef __CYGWIN__
 		char cwd_win32 [MAXPATHLEN + 1];
 		cygwin_conv_to_win32_path (cwd, cwd_win32);
@@ -252,7 +257,6 @@ bool cdl_exec::cmd_tree () {
 #else
 		generate_build_tree (config, cwd, install_prefix);
 #endif
-		free (cwd);
 		config->generate_config_headers (install_prefix.empty () ? "install/include/pkgconf" : install_prefix + "/include/pkgconf");
 		status = true;
 	} catch (CdlStringException exception) {

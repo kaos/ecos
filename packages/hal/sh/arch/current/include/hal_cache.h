@@ -61,6 +61,8 @@
 //-----------------------------------------------------------------------------
 // Cache dimensions - one unified cache
 
+#define HAL_CACHE_UNIFIED
+
 #define HAL_UCACHE_SIZE                 CYGARC_SH_MOD_CAC_SIZE
 #define HAL_UCACHE_LINE_SIZE            CYGARC_SH_MOD_CAC_LINE_SIZE
 #define HAL_UCACHE_WAYS                 CYGARC_SH_MOD_CAC_WAYS
@@ -79,48 +81,28 @@
 //-----------------------------------------------------------------------------
 // Global control of cache
 
+// This is all handled in assembly (see vectors.S) due to a requirement about
+// not fiddling the cache from cachable memory.
+
+externC void cyg_hal_cache_enable(void);
+externC void cyg_hal_cache_disable(void);
+externC void cyg_hal_cache_invalidate_all(void);
+externC void cyg_hal_cache_sync(void);
+externC void cyg_hal_cache_write_mode(int mode);
 
 // Enable the cache
-#define HAL_UCACHE_ENABLE()                     \
-    CYG_MACRO_START                             \
-    register cyg_uint32 __tmp;                  \
-    HAL_READ_UINT32(CYGARC_REG_CCR, __tmp);     \
-    __tmp |= CYGARC_REG_CCR_CE;                 \
-    HAL_WRITE_UINT32(CYGARC_REG_CCR, __tmp);    \
-    CYG_MACRO_END
+#define HAL_UCACHE_ENABLE() cyg_hal_cache_enable()
 
 // Disable the cache
-#define HAL_UCACHE_DISABLE()                    \
-    CYG_MACRO_START                             \
-    register cyg_uint32 __tmp;                  \
-    HAL_READ_UINT32(CYGARC_REG_CCR, __tmp);     \
-    __tmp &= ~CYGARC_REG_CCR_CE;                \
-    HAL_WRITE_UINT32(CYGARC_REG_CCR, __tmp);    \
-    CYG_MACRO_END
+#define HAL_UCACHE_DISABLE() cyg_hal_cache_disable()
 
 // Invalidate the entire cache
-// Note: The CF bit does not cause any data to be written back before
-// invalidation of the cache.
-#define HAL_UCACHE_INVALIDATE_ALL()             \
-    CYG_MACRO_START                             \
-    register cyg_uint32 __tmp;                  \
-    HAL_READ_UINT32(CYGARC_REG_CCR, __tmp);     \
-    __tmp |= CYGARC_REG_CCR_CF;                 \
-    HAL_WRITE_UINT32(CYGARC_REG_CCR, __tmp);    \
-    CYG_MACRO_END
+#define HAL_UCACHE_INVALIDATE_ALL() cyg_hal_cache_invalidate_all()
 
 // Synchronize the contents of the cache with memory.
-#define HAL_UCACHE_SYNC()                                                   \
-    CYG_MACRO_START                                                         \
-    register cyg_uint32* __p;                                               \
-    register cyg_uint32* __top = (cyg_uint32*)CYGARC_REG_CACHE_ADDRESS_TOP; \
-    for (__p = (cyg_uint32*)CYGARC_REG_CACHE_ADDRESS_BASE;                  \
-         __p < __top;                                                       \
-         __p += CYGARC_REG_CACHE_ADDRESS_STEP/sizeof(cyg_uint32))           \
-        *__p = CYGARC_REG_CACHE_ADDRESS_FLUSH;                              \
-    CYG_MACRO_END
+#define HAL_UCACHE_SYNC() cyg_hal_cache_sync()
 
-// Query the state of the cache
+// Query the state of the cache (does not affect the caching)
 #define HAL_UCACHE_IS_ENABLED(_state_)          \
     CYG_MACRO_START                             \
     HAL_READ_UINT32(CYGARC_REG_CCR, (_state_)); \
@@ -131,15 +113,7 @@
 //#define HAL_UCACHE_BURST_SIZE(_size_)
 
 // Set the cache write mode
-#define HAL_UCACHE_WRITE_MODE( _mode_ )         \
-    CYG_MACRO_START                             \
-    register cyg_uint32 __tmp;                  \
-    HAL_READ_UINT32(CYGARC_REG_CCR, __tmp);     \
-    __tmp &= ~CYGARC_REG_CCR_CB;                \
-    if (HAL_UCACHE_WRITEBACK_MODE == (_mode_))  \
-        __tmp |= CYGARC_REG_CCR_CB;             \
-    HAL_WRITE_UINT32(CYGARC_REG_CCR, __tmp);    \
-    CYG_MACRO_END        
+#define HAL_UCACHE_WRITE_MODE( _mode_ ) cyg_hal_cache_write_mode(_mode_)
 
 #define HAL_UCACHE_WRITETHRU_MODE       0
 #define HAL_UCACHE_WRITEBACK_MODE       1

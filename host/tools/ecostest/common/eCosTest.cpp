@@ -926,6 +926,7 @@ void CeCosTest::AcceptThreadFunc()
     sendResult();
     m_pSock->recvInteger(n); // receive an ack
   } else {
+    // Client-side GDB
     bool bTargetReady;
     if(_TCHAR('\0')==*(m_pResource->ResetString())){
       bTargetReady=true;
@@ -938,12 +939,11 @@ void CeCosTest::AcceptThreadFunc()
     m_pSock->sendInteger(bTargetReady,_T("target ready indicator"));
     
     int nAck=-1;
-    int dTimeout=m_ep.DownloadTimeout()+MAX(3*m_ep.ActiveTimeout(),15*60*1000);
     
     if(bTargetReady){
       if(CeCosSocket::IsLegalHostPort(m_pResource->Serial())){
         TRACE(_T("Sending %s\n"),(LPCTSTR)m_pResource->Serial());
-        if(m_pSock->sendString(m_pResource->Serial(),_T("Serial name")) && m_pSock->recvInteger(nAck,_T("Terminating ack"),dTimeout)){
+        if(m_pSock->sendString(m_pResource->Serial(),_T("Serial name")) && m_pSock->recvInteger(nAck,_T("Terminating ack"),CeCosSocket::NOTIMEOUT)){
           TRACE(_T("Terminating ack=%d\n"),nAck);
         }
       } else {
@@ -963,7 +963,7 @@ void CeCosTest::AcceptThreadFunc()
           CeCosThreadUtils::RunThread(SConnectSocketToSerialThreadFunc,this,&bConnectSocketToSerialThreadDone,_T("SConnectSocketToSerialThreadFunc")); 
           
           // Wait for either client or the ConnectSocketToSerial thread to finish.
-          if(m_pSock->recv(&nAck,sizeof(int),_T("Terminating ack"),dTimeout,DerefBool,&bConnectSocketToSerialThreadDone)){
+          if(m_pSock->recv(&nAck,sizeof(int),_T("Terminating ack"),CeCosSocket::NOTIMEOUT,DerefBool,&bConnectSocketToSerialThreadDone)){
             TRACE(_T("Session terminated by request of client (%s)\n"),(LPCTSTR)Image((StatusType)nAck));
           } else if(0!=m_pSock->SocketError()){
             TRACE(_T("Session terminated by socket error - %s\n"),(LPCTSTR)m_pSock->SocketErrString());

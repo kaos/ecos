@@ -328,15 +328,55 @@ infer_set_valuable_value(CdlTransaction transaction, CdlValuable valuable, CdlSi
 
     const CdlValue& current_value = transaction->get_whole_value(valuable);
     CdlValueFlavor  flavor        = current_value.get_flavor();
+    bool bool_goal                = goal.get_bool_value();
 
-    // For now only deal with data items. Interpreter a simple value
-    // so that it is relevant for booleans etc. can come later.
-    if (CdlValueFlavor_Data == flavor) {
+    switch(flavor) {
+      default                  :
+      case CdlValueFlavor_None :
+          break;
+
+      case CdlValueFlavor_Bool :
+          if (bool_goal == current_value.is_enabled()) {
+              result = true;
+          } else {
+              if (valuable->is_modifiable() &&
+                  (0 == dynamic_cast<CdlLoadable>(valuable)) &&
+                  !transaction->changed_by_user(valuable)) {
+
+                  valuable->set_enabled(transaction, bool_goal, CdlValueSource_Inferred);
+                  valuable->set_source(transaction, CdlValueSource_Inferred);
+                  result = transaction->resolve_recursion(level);
+              }
+
+          }
+          break;
+
+      case CdlValueFlavor_BoolData :
+          if (!bool_goal && !current_value.is_enabled()) {
+              result = true;
+          } else if (bool_goal && current_value.is_enabled() && (goal == current_value.get_simple_value())) {
+              result = true;
+          } else {
+              if (valuable->is_modifiable() &&
+                  (0 == dynamic_cast<CdlLoadable>(valuable)) &&
+                  !transaction->changed_by_user(valuable)) {
+                  
+                  if (!bool_goal) {
+                      valuable->disable(transaction, CdlValueSource_Inferred);
+                  } else {
+                      valuable->enable_and_set_value(transaction, goal, CdlValueSource_Inferred);
+                  }
+                  valuable->set_source(transaction, CdlValueSource_Inferred);
+                  result = transaction->resolve_recursion(level);
+              }
+          }
+          break;
+
+      case CdlValueFlavor_Data:
         // Now check whether or not the valuable already has the desired value
         if (goal == current_value.get_simple_value()) {
             result = true;
         } else {
-
             if (valuable->is_modifiable() &&
                 (0 == dynamic_cast<CdlLoadable>(valuable)) &&
                 !transaction->changed_by_user(valuable)) {
@@ -347,6 +387,7 @@ infer_set_valuable_value(CdlTransaction transaction, CdlValuable valuable, CdlSi
                 result = transaction->resolve_recursion(level);
             }
         }
+        break;
     }
     
     CYG_REPORT_RETVAL(result);

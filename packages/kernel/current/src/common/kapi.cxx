@@ -115,6 +115,18 @@ externC void cyg_scheduler_lock(void)
                 "Scheduler overlocked" );
 }
 
+/* Lock the scheduler, but never more than level=1. */
+externC void cyg_scheduler_safe_lock(void)
+{
+    Cyg_Scheduler::lock();
+    cyg_ucount32 slock = Cyg_Scheduler::get_sched_lock();
+    if (slock > 1)
+        Cyg_Scheduler::unlock();
+    // get_sched_lock() is unsigned, see below "cyg_ucount32 lock"
+    CYG_ASSERT( (0xff000000 & (Cyg_Scheduler::get_sched_lock())) == 0,
+                "Scheduler overlocked" );
+}
+
 /* Unlock the scheduler. */
 externC void cyg_scheduler_unlock(void)
 {

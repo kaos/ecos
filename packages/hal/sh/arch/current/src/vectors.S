@@ -39,7 +39,8 @@
 ##               vectors. It also contains the first level default VSRs
 ##               that save and restore state for both exceptions and
 ##               interrupts.
-##
+## Notes:        The SH architecture files are still more SH3 specific than
+##               architecture neutral, hence the sub-variant configury.
 ######DESCRIPTIONEND####
 ##
 ##==========================================================================
@@ -494,6 +495,7 @@ __interrupt:
 1:      
 #endif        
 
+
 #if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
         mov      #3,r7
 #endif
@@ -884,6 +886,121 @@ $_interrupt_end:
         .long   _interrupt_end
 #endif
 
+#---------------------------------------------------------------------------
+# Cache operations
+# These need to be written in assembly to ensure they do not rely on data
+# in cachable space (i.e., code must use registers exclusively, not the stack).
+
+# This macro must be used at the top of each cache function. It ensures
+# that the code gets executed from a shadow region where caching is disabled
+# (0xA0000000).
+        .macro GOTO_NONCACHED_SHADOW
+        mova    10f,r0
+        mov.l   $MASK,r1
+        and     r1,r0
+        mov.l   $BASE,r1
+        or      r1,r0
+        jmp     @r0
+         nop
+        .align  2
+10:
+        .endm
+
+        .globl _cyg_hal_cache_enable
+_cyg_hal_cache_enable:
+        GOTO_NONCACHED_SHADOW
+        mov     #CYGARC_REG_CCR,r1
+        mov.l   @r1,r0
+        or      #CYGARC_REG_CCR_CE,r0
+        mov.l   r0,@r1
+        nop
+        rts
+         nop
+
+        .globl _cyg_hal_cache_disable
+_cyg_hal_cache_disable:
+        GOTO_NONCACHED_SHADOW
+        mov     #CYGARC_REG_CCR,r1
+        mov.l   @r1,r0
+        mov     #CYGARC_REG_CCR_CE,r2
+        not     r2,r2
+        and     r2,r0
+        mov.l   r0,@r1
+        nop
+        rts
+         nop
+        
+        .globl _cyg_hal_cache_invalidate_all
+_cyg_hal_cache_invalidate_all:
+        GOTO_NONCACHED_SHADOW
+        mov     #CYGARC_REG_CCR,r1
+        mov.l   @r1,r0
+        or      #CYGARC_REG_CCR_CF,r0
+        mov.l   r0,@r1
+        nop                             ! Nothing in the docs suggest we need
+        nop                             ! nops here, but without them, the
+        nop                             ! CPU crashes.
+        rts
+         nop
+
+        .globl _cyg_hal_cache_sync
+_cyg_hal_cache_sync:
+        GOTO_NONCACHED_SHADOW
+        mov.l   $CYGARC_REG_CACHE_ADDRESS_FLUSH,r0
+        mov.l   $CYGARC_REG_CACHE_ADDRESS_BASE,r1
+        mov.l   $CYGARC_REG_CACHE_ADDRESS_TOP,r2
+        mov.l   $CYGARC_REG_CACHE_ADDRESS_STEP,r3
+1:      cmp/hi  r1,r2
+        bf      2f
+        mov.l   r0,@r1
+        bra     1b        
+         add     r3,r1                  ! delay slot!
+2:      nop
+        rts
+         nop
+
+        .globl _cyg_hal_cache_write_mode
+_cyg_hal_cache_write_mode:
+        GOTO_NONCACHED_SHADOW
+        # Mode argument in r4. Compute the WT and CB states from this
+        mov     r4,r0
+        and     #1,r0
+        shll    r0                      ! shift to WT position
+        mov     r0,r1                   ! duplicate at CB position
+        shll    r1
+        or      r1,r0
+        xor     #CYGARC_REG_CCR_WT,r0   ! WT must be 0 for write-back
+        # Read current state and mask out the two caching mode bits
+        mov     #CYGARC_REG_CCR,r1
+        mov.l   @r1,r3
+        mov     #CYGARC_REG_CCR_CB|CYGARC_REG_CCR_WT,r2
+        not     r2,r2
+        and     r2,r3
+        # Or in the new settings and restore to CCR
+        or      r0,r3
+        mov.l   r3,@r1
+        nop
+        rts
+         nop
+        
+
+
+        .align  2
+$CYGARC_REG_CACHE_ADDRESS_FLUSH:
+        .long   CYGARC_REG_CACHE_ADDRESS_FLUSH
+$CYGARC_REG_CACHE_ADDRESS_BASE:
+        .long   CYGARC_REG_CACHE_ADDRESS_BASE
+$CYGARC_REG_CACHE_ADDRESS_TOP:
+        .long   CYGARC_REG_CACHE_ADDRESS_TOP
+$CYGARC_REG_CACHE_ADDRESS_STEP:
+        .long   CYGARC_REG_CACHE_ADDRESS_STEP
+
+
+$MASK:
+        .long   0x1fffffff              ! mask off top 3 bits
+$BASE:
+        .long   0xa0000000              ! base of non-cachable memory
+        
 #---------------------------------------------------------------------------
 # Interrupt vector tables.
 # These tables contain the isr, data and object pointers used to deliver

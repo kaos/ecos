@@ -1,3 +1,8 @@
+2000-04-19  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* src/wallclock.cxx: Construct after kernel RTC since the
+	emulation implementation may have to use the RTC.
+
 2000-04-13  Jesper Skov  <jskov@redhat.com>
 
 	* tests/wallclock.cxx: Use TEST_NA if N/A.

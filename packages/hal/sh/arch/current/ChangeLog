@@ -1,3 +1,17 @@
+2000-04-26  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_mk_defs.c: Added some caching data.
+
+	* src/vectors.S:
+	* include/hal_cache.h:
+	Rewrote caching functions in assembly with appropriate magic to
+	have the code execute out of a non-cachable memory shadow.
+
+2000-04-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_cache.h (HAL_UCACHE_WRITE_MODE): Also wiggle the WT
+	bit. It has opposite polarity of the CB bit.
+
 2000-04-12  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: Entry code rewritten to allow ROMRAM startups.
