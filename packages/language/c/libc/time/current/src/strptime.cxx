@@ -185,8 +185,16 @@ strptime (const char *buf, const char *format, struct tm *timeptr)
 {
     char c;
 
-    timeptr->tm_yday = 1;  // So it's always valid
-    timeptr->tm_isdst = 0;
+    timeptr->tm_yday = 1;  // Initialize to a well known, valid date
+    timeptr->tm_isdst = 0; //   Tuesday March 18 14:05:00 2003 UTC
+    timeptr->tm_sec = 0;
+    timeptr->tm_min = 5;
+    timeptr->tm_hour = 24;
+    timeptr->tm_mday = 18;
+    timeptr->tm_mon = 2;
+    timeptr->tm_year = 103;
+    timeptr->tm_wday = 2;
+    timeptr->tm_yday = 77;
 
     for (; (c = *format) != '\0'; ++format) {
 	char *s;
