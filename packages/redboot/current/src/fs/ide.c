@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas <gary@mind.be>
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -114,6 +114,28 @@ ide_reset(int ctlr)
 	    return 1;
     }
 	  }
+    }
+    return 0;
+}
+
+// Return true if any devices attached to controller
+static int
+ide_presence_detect(int ctlr)
+{
+    cyg_uint8 sel, val;
+    int i;
+
+    for (i = 0; i < 2; i++) {
+	sel = (i << 4) | 0xA0;
+	CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+	HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, sel);
+	CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+	HAL_IDE_READ_UINT8(ctlr, IDE_REG_DEVICE, val);
+	if (val == sel) {
+	    if (i)
+		HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, 0);
+	    return 1;
+	}
     }
     return 0;
 }
@@ -423,6 +445,11 @@ ide_init(void)
 
     priv = ide_privs;
     for (i = 0; i < num_controllers; i++) {
+
+	if (!ide_presence_detect(i)) {
+	    diag_printf("No devices on IDE controller %d\n", i);
+	    continue;
+	}
 
 	// soft reset the devices on this controller
 	if (!ide_reset(i))
