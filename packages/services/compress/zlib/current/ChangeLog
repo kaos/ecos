@@ -1,3 +1,8 @@
+2004-04-29  Oyvind Harboe <oyvind.harboe@zylin.com>
+	
+	* src/inffixed.h: added "const" to tables that do not 
+	change in order to save RAM. Ca. 4k.
+
 2003-11-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* tests/zlib[12].c: Modified the text to the gcc3.3 friendly.
