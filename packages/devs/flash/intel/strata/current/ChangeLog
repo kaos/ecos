@@ -1,3 +1,11 @@
+2003-09-11  Jani Monoses <jani@iv.ro>
+
+	* src/flash_erase_block.c (flash_erase_block): 
+	* src/flash_program_buf.c (flash_program_buf): Fix bootblock handling
+	in erase. Fix erase and word-program for Synchronous Strata and later
+	chips where block address and word address are required in the first
+	cycle of the operation while for earlier parts any address was good.
+	
 2003-09-10  Jani Monoses <jani@iv.ro>
 	
 	* cdl/flash_strata.cdl:

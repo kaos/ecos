@@ -73,8 +73,7 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
 
     // Get base address and map addresses to virtual addresses
     ROM = FLASH_P2V( CYGNUM_FLASH_BASE_MASK & (unsigned int)addr );
-    BA = FLASH_P2V( block_mask & (unsigned int)addr );
-    addr = FLASH_P2V(addr);
+    BA = addr = FLASH_P2V(addr);
 
     // Clear any error conditions
     ROM[0] = FLASH_Clear_Status;
@@ -128,14 +127,14 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
 #endif
 
     while (len > 0) {
-        ROM[0] = FLASH_Program;
+        BA[0] = FLASH_Program;
 #ifdef CYGHWR_FLASH_WRITE_ELEM
         CYGHWR_FLASH_WRITE_ELEM(addr, data);
 #else
         *addr = *data;
 #endif
         timeout = 5000000;
-        while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
+        while(((stat = BA[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
             if (--timeout == 0) {
                 goto bad;
             }
@@ -143,7 +142,7 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
         if (stat & FLASH_ErrorMask) {
             break;
         }
-        ROM[0] = FLASH_Reset;            
+        BA[0] = FLASH_Reset;            
         if (*addr++ != *data++) {
             stat = FLASH_ErrorNotVerified;
             break;
@@ -153,7 +152,7 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
 
     // Restore ROM to "normal" mode
  bad:
-    ROM[0] = FLASH_Reset;            
+    BA[0] = FLASH_Reset;            
 
     return stat;
 }

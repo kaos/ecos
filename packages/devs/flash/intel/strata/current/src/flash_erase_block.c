@@ -55,7 +55,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-int flash_erase_block(volatile flash_t *block, unsigned int block_size) 
+int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 	__attribute__ ((section (".2ram.flash_erase_block")));
 int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 {
@@ -73,8 +73,7 @@ int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 #ifdef CYGOPT_FLASH_IS_BOOTBLOCK
 #define BLOCKSIZE (0x10000*CYGNUM_FLASH_DEVICES)
 #define ERASE_BLOCKSIZE (0x2000*CYGNUM_FLASH_DEVICES)
-    if ((eb - ROM) < BLOCKSIZE) {
-// FIXME - Handle 'boot' blocks
+    if ((eb - ROM) < BLOCKSIZE/(sizeof eb[0])) {
         erase_block_size = ERASE_BLOCKSIZE;
     } else {
         erase_block_size = block_size;
@@ -88,12 +87,14 @@ int flash_erase_block(volatile flash_t *block, unsigned int block_size)
 
     // Erase block
     while (block_len > 0) {
-        ROM[0] = FLASH_Block_Erase;
-        *eb = FLASH_Confirm;
+        eb[0] = FLASH_Block_Erase;
+        eb[0] = FLASH_Confirm;
+	
         timeout = 5000000;
-        while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
+        while(((stat = eb[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {
             if (--timeout == 0) break;
         }
+
         block_len -= erase_block_size;
         eb = FLASH_P2V((unsigned int)eb + erase_block_size);
     }
