@@ -10,7 +10,7 @@
 <!-- ####COPYRIGHTBEGIN####                                          -->
 <!--                                                                 -->
 <!-- =============================================================== -->
-<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.  -->
+<!-- Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.  -->
 <!-- This material may be distributed only subject to the terms      -->
 <!-- and conditions set forth in the Open Publication License, v1.0  -->
 <!-- or later (the latest version is presently available at          -->
@@ -2974,6 +2974,12 @@ command, either from a script or the console.
 	      <entry>Command line to pass to the Linux kernel.</entry>	     
 	      <entry><emphasis>None</emphasis></entry>	     
 	    </row>
+            <row>
+	      <entry>-x</entry>      
+	      <entry></entry>
+	      <entry>Boot kernel with endianess opposite of RedBoot endianess.</entry>       
+	      <entry>Boot kernel with same endianess as RedBoot</entry>      
+	      </row>
 	    <row>
 	      <entry><replaceable>entry_address</replaceable></entry>	     
 	      <entry>Number</entry>
@@ -3006,6 +3012,8 @@ to the kernel.  If the command line data contains any punctuation (spaces,
 etc), then it must be quoted using the double-quote character '"'. If the
 quote character is required, it should be written as '\"'.
       </para>
+<para>The "-x" option is optionally available on some bi-endian platforms. It is used to boot
+a kernel built with an endianess opposite of RedBoot.</para>
     </refsect1>
     <refsect1>
       <title>Examples</title>

@@ -1,3 +1,7 @@
+2004-09-02  Mark Salter  <msalter@redhat.com>
+
+	* doc/redboot_cmds.sgml: Add -x option to exec command.
+
 2004-09-01  Mark Salter  <msalter@redhat.com>
 
 	* cdl/redboot.cdl (CYGOPT_REDBOOT_FLASH_BYTEORDER): New option.
