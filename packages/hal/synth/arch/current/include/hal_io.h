@@ -381,6 +381,19 @@ struct cyg_hal_sys_itimerval {
 #define CYG_HAL_SYS_S_IWOTH (CYG_HAL_SYS_S_IWGRP>>3)
 #define CYG_HAL_SYS_S_IXOTH (CYG_HAL_SYS_S_IXGRP>>3)
 
+/* stat flags */
+#define CYG_HAL_SYS_S_IFMT   0170000 /*bitmask for the file type bitfields*/
+#define CYG_HAL_SYS_S_IFSOCK 0140000 /*socket*/
+#define CYG_HAL_SYS_S_IFLNK  0120000 /*symbolic link*/
+#define CYG_HAL_SYS_S_IFREG  0100000 /*regular file*/
+#define CYG_HAL_SYS_S_IFBLK  0060000 /*block device*/
+#define CYG_HAL_SYS_S_IFDIR  0040000 /*directory*/
+#define CYG_HAL_SYS_S_IFCHR  0020000 /*character device*/
+#define CYG_HAL_SYS_S_IFIFO  0010000 /*fifo*/
+#define CYG_HAL_SYS_S_ISUID  0004000 /*set UID bit*/
+#define CYG_HAL_SYS_S_ISGID  0002000 /*set GID bit (see below)*/
+#define CYG_HAL_SYS_S_ISVTX  0001000 /*sticky bit (see below)*/
+
 struct cyg_hal_sys_mmap_args {
         unsigned long addr;
         unsigned long len;
@@ -401,7 +414,40 @@ struct cyg_hal_sys_mmap_args {
 #define CYG_HAL_SYS_MAP_PRIVATE     0x02     /* Changes are private.  */
 #define CYG_HAL_SYS_MAP_FIXED       0x10     /* Interpret addr exactly.  */
  
-// System calls, or rather the subset that is needed internally.
+struct cyg_hal_sys_dirent
+{
+   unsigned long d_ino;
+   unsigned long d_off;
+   unsigned short int d_reclen;
+   char d_name[256];
+};
+
+struct cyg_hal_sys_timespec
+{
+   unsigned int tv_sec;
+   unsigned int tv_nsec;
+};
+
+struct cyg_hal_sys_stat
+{
+	unsigned int  dev;          /* inode */
+	unsigned long ino;          /* device */
+	unsigned short mode;        /* protection */
+	unsigned short	nlink;       /* number of hard links */
+	unsigned short	uid;         /* user ID of owner */
+	unsigned short	gid;         /* group ID of owner */
+	unsigned long rdev;         /* device type (if inode device) */
+	unsigned long size;         /* total size, in bytes */
+	unsigned int blksize;       /* blocksize for filesystem I/O */
+	unsigned int blocks;        /* number of blocks allocated */
+	struct cyg_hal_sys_timespec atime; /* time of last access */
+	struct cyg_hal_sys_timespec mtime; /* time of last modification */
+	struct cyg_hal_sys_timespec ctime; /* time of last change */
+};
+
+// System calls, or rather the subset that is needed internally or by
+// applications which want to access the host OS.
+
 externC unsigned long   cyg_hal_sys_write(int, const void*, long);
 externC unsigned long   cyg_hal_sys_read(int, void*, long);
 externC int             cyg_hal_sys_lseek(int, int, int);
@@ -440,6 +486,12 @@ externC int             cyg_hal_sys_getcwd(char*, int);
 
 // mmap on the "host" system - this may be unportable.
 externC int             cyg_hal_sys_mmap(struct cyg_hal_sys_mmap_args *);
+
+externC int cyg_hal_sys_readdir(unsigned int fd, 
+                                struct cyg_hal_sys_dirent *dp, 
+                                unsigned int count);
+externC int cyg_hal_sys_lstat(const char* name, struct cyg_hal_sys_stat *buf);
+externC int cyg_hal_sys_fstat(int fd, struct cyg_hal_sys_stat *buf);
 
 // Access to environmental data
 extern int              cyg_hal_sys_argc;

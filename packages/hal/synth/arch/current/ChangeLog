@@ -1,3 +1,10 @@
+2004-06-21  Alexander Neundorf <alexander.neundorf@jenoptik.com>
+
+	* include/hal_io.h: 
+	Add cyg_hal_sys_readdir(), cyg_hal_sys_lstat(), 
+        cyg_hal_sys_fstat() system call toegther with their 
+        accompanying data structures and file mode bits
+
 2004-06-18  William Donahue  <WDonahue@siriusradio.com>
 
 	* include/hal_io.h (CYG_HAL_SYS_FD_ZERO): Added misisng }
