@@ -155,43 +155,6 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
         }
     }
 
-    cdl_option CYGPKG_NET_NBPF {
-        display "Number of BPF filters"
-        flavor  data
-        default_value 0
-        description   "
-            This option controls the number of active BPF filters."
-        define NBPFILTER
-    }
-
-    cdl_component CYGPKG_NET_BRIDGE {
-         display "Built-in ethernet bridge code"
-         default_value 0
-         implements CYGINT_NET_BRIDGE_HANDLER
-         no_define
-         description   "
-             This option controls whether to include the built-in code for
-             the Ethernet bridge."
-         compile sys/net/if_bridge.c
-
-         cdl_option CYGNUM_NET_BRIDGES {
-             display "Number of Ethernet bridges"
-             flavor  data
-             default_value 1
-             legal_values 1 to 999999
-         }
-    }
-
-    cdl_interface CYGINT_NET_BRIDGE_HANDLER {
-        display "Support for ethernet bridges in the IP stack"
-        define NBRIDGE
-            description "
-              This interface controls whether calls to bridge code are made
-              from the IP stack; these are needed if the built-in bridge code
-              is used, but they can also be enabled in order to call different
-              bridge code from an external component."
-    }
-
     cdl_option CYGPKG_NET_NGIF {
         display "Number of GIF things"
         flavor  data

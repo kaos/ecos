@@ -1,3 +1,7 @@
+2003-02-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/freebsd_net.cdl: Remove unused NBPFILTER and BRIDGE CDL options.
+
 2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/freebsd.sgml: new_net template is now just "net".
