@@ -154,6 +154,7 @@ cdl_component CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT {
 cdl_component CYGVAR_KERNEL_THREADS_DATA {
     display            "Support for per-thread data"
     requires           CYGFUN_KERNEL_THREADS_STACK_LIMIT
+    doc                ref/kernel-thread-data.html
     default_value      1
     description "
         It is possible for the kernel to support per-thread data, in
@@ -233,6 +234,7 @@ cdl_component CYGVAR_KERNEL_THREADS_DATA {
 
 cdl_component CYGPKG_KERNEL_THREADS_DESTRUCTORS {
     display       "Thread destructors"
+    doc           ref/kernel-thread-destructors.html
     default_value 0
     description   "
         This option enables support for registered destructor functions to
@@ -291,7 +293,7 @@ cdl_option CYGNUM_KERNEL_MAX_SUSPEND_COUNT_ASSERT {
     description   "
         This option provides for an assertion that the count value for
         counted thread suspends do not exceed set limits.  This is to help
-        with debugging, to allow a runaaway loop, for example, to be
+        with debugging, to allow a runaway loop, for example, to be
         detected more easily.
     
         If the option is not defined, no assert is included.  Whether asserts
@@ -327,3 +329,4 @@ cdl_option CYGIMP_IDLE_THREAD_YIELD {
         level, then the idle thread must yield each time around its loop."
 }
 
+# EOF thread.cdl

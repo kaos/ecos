@@ -253,3 +253,4 @@ cdl_component CYGSEM_KERNEL_SCHED_ASR_SUPPORT {
     }
 }
 
+# EOF scheduler.cdl

@@ -53,6 +53,7 @@
 cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
     display      "Priority inversion protection protocols"
     flavor       booldata
+    doc          ref/kernel-mutexes.html
     legal_values { "SIMPLE" }
     default_value { "SIMPLE" }
     active_if    { CYGSEM_KERNEL_SCHED_MLQUEUE }
@@ -142,6 +143,7 @@ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
 
 cdl_option CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT {
     display       "Message box blocking put support"
+    doc           ref/kernel-mail-boxes.html
     default_value 1
     description   "
         Message boxes can support three different versions of the
@@ -161,6 +163,7 @@ cdl_option CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT {
 
 cdl_option CYGNUM_KERNEL_SYNCH_MBOX_QUEUE_SIZE {
     display       "Message box queue size"
+    doc           ref/kernel-mail-boxes.html
     flavor        data
     legal_values  1 to 65535
     default_value 10
@@ -174,6 +177,7 @@ cdl_option CYGNUM_KERNEL_SYNCH_MBOX_QUEUE_SIZE {
 
 cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {
     display       "Condition variable timed-wait support"
+    doc           ref/kernel-condition-variables.html
     requires      CYGFUN_KERNEL_THREADS_TIMER
     default_value 1
     description   "
@@ -183,6 +187,7 @@ cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {
 
 cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_WAIT_MUTEX {
     display       "Condition variable explicit mutex wait support"
+    doc           ref/kernel-condition-variables.html
     default_value 1
     description   "
         This option enables the condition variable explicit mutex wait
@@ -204,3 +209,5 @@ cdl_option CYGIMP_KERNEL_SYNCH_MQUEUE_NOT_INLINE {
         non-inline versions to be used instead."
     compile       sync/mqueue.cxx
 }
+
+# EOF synch.cdl

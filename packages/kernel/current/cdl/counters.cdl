@@ -248,3 +248,4 @@ cdl_option CYGNUM_KERNEL_COUNTERS_RTC_PERIOD {
 	(CYGPKG_KERNEL_COUNTERS_CLOCK_OVERRIDE) and associated options."
 }
 
+# EOF counters.cdl

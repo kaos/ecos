@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_KERNEL {
     display       "eCos kernel"
-    doc           redirect/ecos-kernel-overview.html
+    doc           ref/kernel.html
     include_dir   cyg/kernel
     description   "
         This package contains the core functionality of the eCos
@@ -77,7 +77,7 @@ cdl_package CYGPKG_KERNEL {
     cdl_component CYGPKG_KERNEL_INTERRUPTS {
         display       "Kernel interrupt handling"
         flavor        none
-        doc           redirect/interrupts.html
+        doc           ref/kernel-interrupts.html
         description   "
             The majority of configuration options related to interrupt
             handling are in the HAL packages, since usually the code has
@@ -98,7 +98,7 @@ cdl_package CYGPKG_KERNEL {
         display       "Exception handling"
         requires      CYGPKG_HAL_EXCEPTIONS
         default_value 1
-        doc           redirect/exceptions.html
+        doc           ref/kernel-exceptions.html
         description   "
             In the context of the eCos kernel exceptions are unexpected
             events detected by the hardware, for example an attempt to
@@ -141,7 +141,7 @@ cdl_package CYGPKG_KERNEL {
     cdl_component CYGPKG_KERNEL_SCHED {
         display       "Kernel schedulers"
         flavor        none
-        doc           redirect/the-scheduler.html
+        doc           ref/kernel-overview.html#KERNEL-OVERVIEW-SCHEDULERS
         description   "
             The eCos kernel provides a choice of schedulers. In addition
             there are a number of configuration options to control the
@@ -164,7 +164,7 @@ cdl_package CYGPKG_KERNEL {
     cdl_component CYGPKG_KERNEL_COUNTERS {
         display       "Counters and clocks"
         flavor        none
-        doc           redirect/counters-clocks-and-alarms.html
+        doc           ref/kernel-counters.html
         description   "
             The counter objects provided by the kernel provide an
             abstraction of the clock facility that is generally provided.
@@ -180,7 +180,6 @@ cdl_package CYGPKG_KERNEL {
     cdl_component CYGPKG_KERNEL_THREADS {
         display       "Thread-related options"
         flavor        none
-        doc           redirect/thread-operations.html
         description   "
             There are a number of configuration options related to the
             implementation of threads, for example whether or not the
@@ -193,7 +192,6 @@ cdl_package CYGPKG_KERNEL {
     cdl_component CYGPKG_KERNEL_SYNCH {
         display       "Synchronization primitives"
         flavor        none
-        doc           redirect/thread-synchronization.html
         description   "
             The eCos kernel supports a number of different
             synchronization primitives such as mutexes, semaphores,
@@ -249,7 +247,6 @@ cdl_package CYGPKG_KERNEL {
     cdl_component CYGPKG_KERNEL_API {
         display       "Kernel APIs"
         flavor        none
-        doc           redirect/kernel-apis.html
         description   "
             The eCos kernel is implemented in C++, so a C++ interface
             to the kernel is always available. There is also an optional
@@ -336,3 +333,5 @@ cdl_package CYGPKG_KERNEL {
         }
     }
 }
+
+# EOF kernel.cdl
