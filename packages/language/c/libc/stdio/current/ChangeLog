@@ -1,3 +1,7 @@
+2003-01-29  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/output/vfnprintf.cxx: Add support for C99 'z' flag (size_t).
+
 2002-09-02  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/stream.inl (set_position): Fixed typo in none buffered

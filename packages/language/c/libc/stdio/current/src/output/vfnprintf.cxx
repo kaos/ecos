@@ -150,6 +150,7 @@ externC mbtowc_fn_type __get_current_locale_mbtowc_fn();
 #define SHORTINT        0x040           /* short integer */
 #define ZEROPAD         0x080           /* zero (as opposed to blank) pad */
 #define FPT             0x100           /* Floating point number */
+#define SIZET           0x200           /* size_t */
 
 externC int 
 vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg)
@@ -237,14 +238,16 @@ CYG_MACRO_END
 
 #define SARG() \
         (flags&QUADINT ? va_arg(arg, cyg_int64) : \
-            flags&LONGINT ? va_arg(arg, cyg_int32) : \
-            flags&SHORTINT ? (long)va_arg(arg, cyg_int32) : \
-            (long)va_arg(arg, cyg_int32))
+            flags&LONGINT ? va_arg(arg, long) : \
+            flags&SHORTINT ? (long)(short)va_arg(arg, int) : \
+            flags&SIZET ? va_arg(arg, size_t) : \
+            (long)va_arg(arg, int))
 #define UARG() \
         (flags&QUADINT ? va_arg(arg, cyg_uint64) : \
-            flags&LONGINT ? va_arg(arg, cyg_uint32) : \
-            flags&SHORTINT ? (unsigned long)va_arg(arg, cyg_uint32) : \
-            (unsigned long)va_arg(arg, cyg_uint32))
+            flags&LONGINT ? va_arg(arg, unsigned long) : \
+            flags&SHORTINT ? (unsigned long)(unsigned short)va_arg(arg, int) : \
+            flags&SIZET ? va_arg(arg, size_t) : \
+            (unsigned long)va_arg(arg, unsigned int))
 
 
         xdigs = NULL;  // stop compiler whinging
@@ -450,6 +453,8 @@ reswitch:       switch (ch) {
                                 *va_arg(arg, long *) = ret;
                         else if (flags & SHORTINT)
                                 *va_arg(arg, short *) = ret;
+                        else if (flags & SIZET)
+                                *va_arg(arg, size_t *) = ret;
                         else
                                 *va_arg(arg, int *) = ret;
                         continue;       /* no output */
@@ -572,6 +577,9 @@ number:                 if ((dprec = prec) >= 0)
                         size = buf + BUF - cp;
                 skipsize:
                         break;
+                case 'z':
+                        flags |= SIZET;
+                        goto rflag;
                 default:        /* "%?" prints ?, unless ? is NUL */
                         if (ch == '\0')
                                 goto done;
