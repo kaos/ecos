@@ -1,3 +1,8 @@
+2003-06-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/synth.ld: Synthetic linux at least needs libgcc_eh.a in the
+	GROUP() to resolve exception handling symbols.
+
 2003-02-25  Iztok Zupet  <iz@vsr.si>
 
 	* doc/synth.sgml: Replaced .gif with .png to get PDF

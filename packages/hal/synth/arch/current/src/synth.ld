@@ -54,7 +54,7 @@ ENTRY(_start)
 INPUT(extras.o)
 #endif
 #if (__GNUC__ >= 3)
-GROUP(libtarget.a libgcc.a libsupc++.a)
+GROUP(libtarget.a libgcc.a libsupc++.a libgcc_eh.a)
 #else
 GROUP(libtarget.a libgcc.a)
 #endif
