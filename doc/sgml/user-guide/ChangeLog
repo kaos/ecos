@@ -1,3 +1,9 @@
+2004-06-15  Roland Cassebohn <Roland.Cassebohm@VisionSystems.de>
+
+	* target-setup.sgml: 
+	* real-time-characterization.sgmo:
+	Added documentation for the aim711 module 
+
 2003-10-17  Alex Schuilenburg <alex@schuilenburg.org>
         * user-guide/installation.sgml:
         * user-guide/introduction.sgml:

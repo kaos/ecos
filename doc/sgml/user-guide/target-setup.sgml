@@ -2084,6 +2084,73 @@ directly, or via the cradle. Serial communication uses the parameters
 38400,8,N,1. The LCD/Touchscreen may also be used as an
 interface to RedBoot and eCos applications.</PARA>
 </SECT1>
+<SECT1 id="setup-arm-aim711">
+<TITLE>Arm Industrial Module AIM 711 Hardware Setup</TITLE>
+<PARA>The Arm Industrial Module AIM 711 comes with RedBoot installed
+as the default boot loader.</PARA>
+<PARA>For developing without having a finished custom board, a 
+starter-kit with a minimally configured board is available. It offers all the 
+connectors needed for development, including serial device, Ethernet, power 
+supply and an extra connector for the external bus.</PARA>
+<SECT2>
+<TITLE>Setup Hardware</TITLE>
+<SECT3>
+<TITLE>Power supply</TITLE>
+<PARA>A 6V - 7.5V power supply must be connected to J2 or TB1. At
+J2 the inner pin is V+ and at TB1 it is pin 1.</PARA>
+</SECT3>
+<SECT3>
+<TITLE>Serial devices</TITLE>
+<PARA>The AIM 711 has 3 serial devices, which are the debug and 
+diagnostic channel COM0 (/dev/ser0), the high performance 16550
+UART COM1 (/dev/ser1) and the second internal device COM2
+(/dev/ser2).</PARA>
+<PARA>To use the debug channel, which is also the default for 
+RedBoot, the supplied DB9-male cable must be connected to
+CN4. If the also available service board is used, the above
+connector must be disabled by setting JP1.</PARA>
+<PARA>COM1 is available over the RJ45 connector CN2. This device
+can be configured as a RS232, RS422, RS485 or TTL level</PARA>
+<PARA>COM2 is only available with TTL level at CN5.</PARA>
+</SECT3>
+<SECT3>
+<TITLE>Ethernet</TITLE>
+<PARA>The RJ45 connector CN1 is for Ethernet.</PARA>
+</SECT3>
+</SECT2>
+<SECT2>
+<TITLE>Installing RedBoot into FLASH</TITLE>
+<SECT3>
+<TITLE>Using RedBoot</TITLE>
+<PARA>In order that Redboot can overwrite itself, Redboot is built as a ROMRAM image. </PARA>
+<PARA>Load the RedBoot binary to the next free space:
+<PROGRAMLISTING>RedBoot> load -m tftp -h 192.168.1.36 -r -b 0x40000 redboot.bin
+Raw file loaded 0x00040000-0x00063233, assumed entry at 0x00040000</PROGRAMLISTING>
+Store it in FLASH:
+<PROGRAMLISTING>RedBoot> fis create RedBoot
+An image named 'RedBoot' exists - continue (y/n)? y
+... Erase from 0x02000000-0x02025000: .....................................
+... Program from 0x00040000-0x00063234 at 0x02000000: ..........................
+..........
+... Erase from 0x021ff000-0x02200000: .
+... Program from 0x007ff000-0x00800000 at 0x021ff000: .</PROGRAMLISTING>
+Restart the AIM 711:
+<PROGRAMLISTING>RedBoot> reset
+... Resetting.</PROGRAMLISTING>
+</PARA>
+</SECT3>
+<SECT3>
+<TITLE>Using JTAG</TITLE>
+<PARA>To rewrite the FLASH using JTAG the service board must be
+used, which includes a JTAG connector.</PARA>
+</SECT3>
+</SECT2>
+<SECT2>
+<TITLE>More documentation</TITLE>
+<PARA>For more information please look at
+<ULINK URL="http://www.visionsystems.de/arm7.html">http://www.visionsystems.de/arm7.html</ULINK>.</PARA>
+</SECT2>
+</SECT1>
 <SECT1 id="setup-sh-edk7708">
 <TITLE>SH3/EDK7708 Hardware Setup</TITLE>
 <PARA>The eCos Developer&rsquo;s Kit package comes with a ROM
