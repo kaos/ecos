@@ -1,5 +1,7 @@
 2003-02-10  Gary Thomas  <gary@mlbassoc.com>
 
+	* include/thread.inl: Add more debug info to thread stack checking.
+
 	* tests/clocktruth.cxx: 
 	* tests/clockcnv.cxx: Use <cyg/infra/diag.h> for diag_printf()
 	prototype, rather than hard coding (because it was inconsistent).

@@ -12,6 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -64,6 +65,7 @@
 #include <cyg/hal/hal_arch.h>
 
 #include <cyg/kernel/clock.inl>
+#include <cyg/infra/diag.h>
 
 #ifndef CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE
 #define CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE (0)
@@ -110,8 +112,18 @@ inline void Cyg_HardwareThread::check_stack(void)
     for ( i = 0;
           i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
           i++ ) {
-        CYG_ASSERT( (sig ^ (i * 0x01010101)) == base[i], "Stack base corrupt" );
-        CYG_ASSERT( (sig ^ (i * 0x10101010)) ==  top[i], "Stack top corrupt"  );
+        if ((sig ^ (i * 0x01010101)) != base[i]) {
+            char *reason = "Stack base corrupt";
+            diag_printf("%s - i: %d\n", reason, i);
+            diag_dump_buf(base, CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
+            CYG_FAIL(reason);
+        }
+        if ((sig ^ (i * 0x10101010)) != top[i]) {
+            char *reason = "Stack top corrupt";
+            diag_printf("%s - i: %d\n", reason, i);
+            diag_dump_buf(top, CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
+            CYG_FAIL(reason);
+        }
     }            
 
 #ifdef CYGFUN_KERNEL_THREADS_STACK_LIMIT
@@ -130,8 +142,12 @@ inline void Cyg_HardwareThread::check_stack(void)
         for ( i = 0;
               i < CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE/sizeof(cyg_uint32);
               i++ ) {
-            CYG_ASSERT( (sig ^ (i * 0x01010101)) == p[i],
-                        "Gap between stack limit and base corrupt" );
+            if ((sig ^ (i * 0x01010101)) != p[i]) {
+                char *reason = "Gap between stack limit and base corrupt";
+                diag_printf("%s - i: %d\n", reason, i);
+                diag_dump_buf(p, CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE);
+                CYG_FAIL(reason);
+            }
         }
     }
 #endif
