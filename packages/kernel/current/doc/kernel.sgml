@@ -1665,7 +1665,7 @@ DSR context.
           <paramdef>cyg_handle_t <parameter>thread</parameter></paramdef>
         </funcprototype>
         <funcprototype>
-          <funcdef>void <function>cyg_thread_delete</function></funcdef>
+          <funcdef>cyg_bool_t <function>cyg_thread_delete</function></funcdef>
           <paramdef>cyg_handle_t <parameter>thread</parameter></paramdef>
         </funcprototype>
       </funcsynopsis>
@@ -1717,7 +1717,12 @@ thread handle is no longer valid, and both the
 <structname>cyg_thread</structname> structure and the thread stack can
 be re-used or freed. If <function>cyg_thread_delete</function> is
 invoked on a thread that is still running then there is an implicit
-call to <function>cyg_thread_kill</function>.
+call to <function>cyg_thread_kill</function>. This function returns
+<literal>true</literal> if the delete was successful, and
+<literal>false</literal> if the delete did not happen. The delete
+may not happen for example if the thread being destroyed is a lower
+priority thread than the running thread, and will thus not wake up
+in order to exit until it is rescheduled.
       </para>
     </refsect1>
 
