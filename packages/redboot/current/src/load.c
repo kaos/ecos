@@ -600,6 +600,8 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_NETWORKING
     struct sockaddr_in host;
     bool hostname_set, port_set;
+    unsigned int port;	// int because it's an OPTION_ARG_TYPE_NUM, 
+                        // but will be cast to short
     char *hostname;
 #endif
     bool decompress = false;
@@ -615,7 +617,6 @@ do_load(int argc, char *argv[])
     connection_info_t info;
     getc_io_funcs_t *io = NULL;
     struct load_io_entry *io_tab;
-    unsigned int port;	//int because it's an OPTION_ARG_TYPE_NUM, but will be cast to short
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     bool spillover_ok = false;
 #endif
