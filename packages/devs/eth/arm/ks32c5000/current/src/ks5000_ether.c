@@ -1123,8 +1123,6 @@ static unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
 static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 {
   struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
-  *(unsigned*)0x7ff5000 |= Bit(1)+Bit(3)+Bit(5);  // enable debug output bits
-  // memcpy(myMacAddr,(unsigned char*)CAM_BaseAddr,6);
   debug_printf("ks32c5000_eth_init()\n");
   debug_printf("  MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",myMacAddr[0],myMacAddr[1],myMacAddr[2],myMacAddr[3],myMacAddr[4],myMacAddr[5]);
 #if defined(CYGPKG_NET)  
