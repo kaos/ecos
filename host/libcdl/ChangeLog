@@ -1,3 +1,9 @@
+2004-06-23  John Dallaway  <jld@ecoscentric.com>
+
+	* interp.cxx (locate_subdirs): Avoid use of a trailing period in
+	the file path. This causes problems for Cygwin 1.5.10.
+	[ Bugzilla 1000095 ]
+
 2003-08-19  Bart Veer  <bartv@ecoscentric.com>
 
 	* config.cxx (savefile_package_command):
@@ -962,6 +968,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
+// Copyright (C) 2004 eCosCentric Limited
 //
 // This file is part of the eCos host tools.
 //

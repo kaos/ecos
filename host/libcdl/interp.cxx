@@ -10,6 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
+// Copyright (C) 2004 eCosCentric Limited
 // Copyright (C) 2002 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
@@ -1173,12 +1174,14 @@ CdlInterpreterBody::locate_subdirs(std::string directory, std::vector<std::strin
     CYG_PRECONDITION_THISC();
     
     static char locate_subdirs_script[] = "\
-set pattern [file join \"$::cdl_locate_subdirs_path\" * .]  \n\
+set pattern [file join \"$::cdl_locate_subdirs_path\" *]    \n\
 set result {}                                               \n\
 foreach entry [glob -nocomplain -- $pattern] {              \n\
-    set entry [file tail [file dirname $entry]]             \n\
-    if {($entry != \"CVS\") && ($entry != \"cvs\")} {       \n\
-        lappend result $entry                               \n\
+    if ([file isdirectory $entry]) {                        \n\
+        set entry [file tail $entry]                        \n\
+        if {($entry != \"CVS\") && ($entry != \"cvs\")} {   \n\
+            lappend result $entry                           \n\
+        }                                                   \n\
     }                                                       \n\
 }                                                           \n\
 return $result                                              \n\
