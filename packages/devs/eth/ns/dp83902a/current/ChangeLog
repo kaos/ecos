@@ -1,3 +1,10 @@
+2003-11-19  David Woodhouse  <dwmw2@redhat.com>
+
+	* src/if_dp83902a.c: Set STOP bit in CR after setting CURP 
+	register; required for AX88796 chip. Fix handling of BNDRY 
+	pointer w.r.t. ring buffer wrap-around. Add extra delays
+	ifdef CYGHWR_NS_DP83902A_PLF_BROKEN_RX_DMA.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_dp83902a.c: 

@@ -244,7 +244,7 @@ dp83902a_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     dp->rx_next = dp->rx_buf_start-1;
     DP_OUT(base, DP_ISR, 0xFF);               // Clear any pending interrupts
     DP_OUT(base, DP_IMR, DP_IMR_All);     // Enable all interrupts
-    DP_OUT(base, DP_CR, DP_CR_NODMA | DP_CR_PAGE1);  // Select page 1
+    DP_OUT(base, DP_CR, DP_CR_NODMA | DP_CR_PAGE1 | DP_CR_STOP);  // Select page 1
     DP_OUT(base, DP_P1_CURP, dp->rx_buf_start);   // Current page - next free page for Rx
     for (i = 0;  i < ETHER_ADDR_LEN;  i++) {
         DP_OUT(base, DP_P1_PAR0+i, enaddr[i]);
@@ -498,24 +498,33 @@ dp83902a_RxEvent(struct eth_drv_sc *sc)
         DP_IN(base, DP_P1_CURP, cur);
         DP_OUT(base, DP_P1_CR, DP_CR_PAGE0 | DP_CR_NODMA | DP_CR_START);
         DP_IN(base, DP_BNDRY, pkt);
+
         pkt += 1;
+        if (pkt == dp->rx_buf_end)
+            pkt = dp->rx_buf_start;
+
         if (pkt == cur) {
             CR_DOWN();
             break;
         }
-        if (pkt == dp->rx_buf_end) pkt = dp->rx_buf_start;
         DP_OUT(base, DP_RBCL, sizeof(rcv_hdr));
         DP_OUT(base, DP_RBCH, 0);
         DP_OUT(base, DP_RSAL, 0);
         DP_OUT(base, DP_RSAH, pkt);
         if (dp->rx_next == pkt) {
-            DP_OUT(base, DP_BNDRY, cur-1); // Update pointer
+            if (cur == dp->rx_buf_start)
+                DP_OUT(base, DP_BNDRY, dp->rx_buf_end-1);
+            else
+                DP_OUT(base, DP_BNDRY, cur-1); // Update pointer
             CR_DOWN();
             return;
         }
         dp->rx_next = pkt;
         DP_OUT(base, DP_ISR, DP_ISR_RDC); // Clear end of DMA
         DP_OUT(base, DP_CR, DP_CR_RDMA | DP_CR_START);
+#ifdef CYGHWR_NS_DP83902A_PLF_BROKEN_RX_DMA
+	CYGACC_CALL_IF_DELAY_US(10);
+#endif
 
         for (i = 0;  i < sizeof(rcv_hdr);) {
 #ifdef CYGHWR_NS_DP83902A_PLF_16BIT_DATA
@@ -535,7 +544,10 @@ dp83902a_RxEvent(struct eth_drv_sc *sc)
 #endif
         len = ((rcv_hdr[3] << 8) | rcv_hdr[2]) - sizeof(rcv_hdr);
         (sc->funs->eth_drv->recv)(sc, len);
-        DP_OUT(base, DP_BNDRY, rcv_hdr[1]-1); // Update pointer
+        if (rcv_hdr[1] == dp->rx_buf_start)
+            DP_OUT(base, DP_BNDRY, dp->rx_buf_end-1);
+        else 
+            DP_OUT(base, DP_BNDRY, rcv_hdr[1]-1); // Update pointer
     }
 }
 
@@ -581,6 +593,9 @@ dp83902a_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     DP_OUT(base, DP_RSAH, dp->rx_next);
     DP_OUT(base, DP_ISR, DP_ISR_RDC); // Clear end of DMA
     DP_OUT(base, DP_CR, DP_CR_RDMA | DP_CR_START);
+#ifdef CYGHWR_NS_DP83902A_PLF_BROKEN_RX_DMA
+    CYGACC_CALL_IF_DELAY_US(10);
+#endif
 
     saved = false;
     for (i = 0;  i < sg_len;  i++) {
