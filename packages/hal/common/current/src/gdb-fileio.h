@@ -24,10 +24,11 @@
 #define FILEIO_O_CREAT          0x200
 #define FILEIO_O_TRUNC          0x400
 #define FILEIO_O_EXCL           0x800
+#define FILEIO_O_BINARY       0x10000
 #define FILEIO_O_SUPPORTED	(FILEIO_O_RDONLY | FILEIO_O_WRONLY| \
 				 FILEIO_O_RDWR   | FILEIO_O_APPEND| \
 				 FILEIO_O_CREAT  | FILEIO_O_TRUNC| \
-				 FILEIO_O_EXCL)
+				 FILEIO_O_EXCL | FILEIO_O_BINARY)
 
 /* mode_t bits */
 #define FILEIO_S_IFREG        0100000
