@@ -591,6 +591,11 @@ ether_output(ifp, m0, dst, rt0)
 	 * not yet active.
 	 */
 	if (IF_QFULL(&ifp->if_snd)) {
+                // Let the interface try a dequeue anyway, in case the
+                // interface has "got better" from whatever made the queue
+                // fill up - being unplugged for example.
+                if ((ifp->if_flags & IFF_OACTIVE) == 0)
+                    (*ifp->if_start)(ifp);
 		IF_DROP(&ifp->if_snd);
 		splx(s);
 		senderr(ENOBUFS);

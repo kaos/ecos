@@ -1,3 +1,9 @@
+2001-10-29  Hugo Tyson  <hmt@redhat.com>
+
+	* src/arm.ld (SECTION_rom_vectors): Define symbols used for ROMRAM
+	startup; for some reason these were not in the trunk.  They are:
+	__rom_vectors_vma and __rom_vectors_lma
+
 2001-10-24  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_misc.c (hal_msbindex): Fix calculation.

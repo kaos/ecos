@@ -202,8 +202,21 @@ flash_erase(void *addr, int len, void **err_addr)
     FLASH_Enable(block, end_addr);
     while (block < end_addr) {
         // Supply the blocksize for a gross check for erase success
-        stat = (*_flash_erase_block)(block, flash_info.block_size);
-        stat = flash_hwr_map_error(stat);
+        int i;
+        unsigned char *dp;
+        bool erased = true;
+
+        dp = (unsigned char *)block;
+        for (i = 0;  i < flash_info.block_size;  i++) {
+            if (*dp++ != (unsigned char)0xFF) {
+                erased = false;
+                break;
+            }
+        }
+        if (!erased) {
+            stat = (*_flash_erase_block)(block, flash_info.block_size);
+            stat = flash_hwr_map_error(stat);
+        }
         if (stat) {
             *err_addr = (void *)block;
             break;
@@ -275,7 +288,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         stat = flash_hwr_map_error(stat);
 #ifdef CYGSEM_IO_FLASH_VERIFY_PROGRAM
         if (0 == stat) // Claims to be OK
-            if (memcmp(addr, data, size) != 0) {
+            if (memcmp(addr, data, size) != 0) {                
                 stat = 0x0BAD;
                 (*flash_info.pf)("V");
             }

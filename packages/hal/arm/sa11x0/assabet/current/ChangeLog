@@ -1,4 +1,4 @@
-2001-10-20  Nicolar Pitre <nico@cam.org>
+2001-10-20  Nicolas Pitre <nico@cam.org>
 
 	* include/hal_platform_setup.h:	Wake up from deep sleep mode.
 

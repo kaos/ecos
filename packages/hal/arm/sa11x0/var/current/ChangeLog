@@ -1,3 +1,7 @@
+2001-10-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: Indicate support of variable baud rates.
+
 2001-10-09  Hugo Tyson  <hmt@redhat.com>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_isr): As well as the sticky

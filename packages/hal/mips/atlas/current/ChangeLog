@@ -1,3 +1,7 @@
+2001-10-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_mips_atlas.cdl: Indicate support of variable baud rates.
+
 2001-07-20  David Woodhouse  <dwmw2@redhat.com>
 
 	* src/redboot_cmds.c: Remove. Obsoleted by generic MIPS version.

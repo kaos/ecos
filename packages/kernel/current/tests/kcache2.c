@@ -330,6 +330,7 @@ static void test_dsync(void)
     CYG_TEST_CHECK(43 == aligned_p[HAL_DCACHE_LINE_SIZE], 
                    "memory didn't contain flushed data next block after invalidate");
 
+    HAL_ICACHE_INVALIDATE_ALL();    
     HAL_DCACHE_DISABLE();
 
     CYG_TEST_CHECK(42 == aligned_p[0],

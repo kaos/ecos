@@ -1,3 +1,66 @@
+2001-11-01  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c (fis_init): tweaks to the SIB protection code.
+
+2001-11-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_init): Need to init block fully, otherwise old
+	images can persist after init.
+
+2001-10-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/sib.h: Contains information about ARM Boot Monitor flash
+	block information.
+
+	* cdl/redboot.cdl: Added CYGOPT_REDBOOT_FIS_DIRECTORY_ARM_SIB_ID
+	option.
+
+	* src/flash.c (fis_init): Added code to add ARM Boot Monitor
+	footer on FIS block.
+	
+2001-10-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/flash.c (fis_delete): Prototype arm_fis_delete in correct place.
+	(fis_list): Fix compilation problem - this isn't C++!
+
+2001-10-30  Philippe Robin <Philippe.Robin@arm.com>
+2001-10-30  Jonathan Larmour  <jlarmour@redhat.com>
+	
+	* cdl/redboot.cdl: Add CYGINT_REDBOOT_ARM_FLASH_SIB_SUPPORTED and
+	CYGHWR_REDBOOT_ARM_FLASH_SIB to indicate support for, and a request
+	to provide ARM flash block structure support.
+
+	* src/flash.c (fis_list): Call out to driver for ARM block FIS listing.
+	(fis_delete): Call out to driver for ARM block FIS deletion.
+
+2001-10-29  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (cyg_start): New pseudo-commands, useful for scripts.
+	'# anything' - treated like a comment.
+	'= anything' - comment, but prints command line on console.
+
+	* src/flash.c (expand_aliases): Don't expand aliases which are
+	quoted, but only on the command line.  This allows aliases to
+	expand into other aliases which are within quoted strings.
+
+	* include/redboot.h: 
+	* src/io.c (_rb_gets_preloaded): New function which allows for a
+	buffer to be displayed and edited in place.  This is extremely
+	useful for 'fconfig', now that better line editing functions are
+	supported.
+
+	* src/flash.c (get_config): Using new function _rb_gets_preloaded(),
+	which supports edit-in-place for data items.
+
+2001-10-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (cyg_start): 
+	* src/io.c (_rb_gets): 
+	* include/redboot.h: Add new global control 'cmd_history' which is
+	used to enable/disable command history collection.  This keeps the
+	history from being cluttered with things like 'y' (answers to simple
+	questions).
+
 2001-10-26  Gary Thomas  <gthomas@redhat.com>
 
 	* src/io.c (_rb_gets): Fix ^A editing - was timing out, thus erasing

@@ -1,3 +1,9 @@
+2001-10-30  Jordi Colomer <jco@ict.es>
+
+	* include/flexanet.h: minor changes to the GPIO usage.
+	* include/hal_platform_setup.h: solved some problems with the
+	sleep/wakeup procedure.
+
 2001-10-04  Jordi Colomer <jco@ict.es>
 
 	* include/hal_platform_setup.h: Add sleep/resume support.

@@ -68,7 +68,7 @@ extern void flexanet_BCR(unsigned long mask, unsigned long value);
 // GPIO settings
 //
 #define SA1110_GPIO_DIR       0x080037FE
-#define SA1110_GPIO_ALT       0x080037FE
+#define SA1110_GPIO_ALT       0x080037FC
 #define SA1110_GPIO_CLR       0x080037FE
 #define SA1110_GPIO_SET       0x00000000
 
@@ -123,7 +123,7 @@ extern void flexanet_BCR(unsigned long mask, unsigned long value);
 #define SA1110_GPIO_GUI_IRQ	        (1<<23)  /* IRQ from GUI board (i.e., UCB1300) */
 #define SA1110_GPIO_ETH_IRQ	        (1<<24)  /* IRQ from Ethernet controller */
 #define SA1110_GPIO_INTIP_IRQ    	(1<<25)  /* Measurement IRQ (INTIP) */
-#define SA1110_GPIO_LED_RED	        (1<<26)  /* General-purpose red LED */
+#define SA1110_GPIO_XMI_IRQ	        (1<<26)  /* External Module Insertion interrupt */
 
 /* IRQ mappings from GPIOs */
 #define SA1110_IRQ_GPIO_CF1_CD		CYGNUM_HAL_INTERRUPT_GPIO14

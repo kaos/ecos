@@ -87,8 +87,10 @@ OUTPUT_FORMAT(elf32-bigarm)
 
 #define SECTION_rom_vectors(_region_, _vma_, _lma_) \
     .rom_vectors _vma_ : _lma_ \
-    { FORCE_OUTPUT; KEEP (*(.vectors)) } \
-    > _region_
+    { __rom_vectors_vma = ABSOLUTE(.); \
+      FORCE_OUTPUT; KEEP (*(.vectors)) } \
+    > _region_ \
+    __rom_vectors_lma = LOADADDR(.rom_vectors);
 
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \

@@ -46,6 +46,7 @@
 #include <redboot.h>
 #include <cyg/io/flash.h>
 #include <fis.h>
+#include <sib.h>
 
 // CLI function
 static cmd_fun do_fis;
@@ -216,6 +217,7 @@ fis_init(int argc, char *argv[])
 
     // Create a pseudo image for RedBoot
     img = (struct fis_image_desc *)fis_work_block;
+    memset(img, 0xFF, block_size);  // Start with erased data
 #ifdef CYGOPT_REDBOOT_FIS_RESERVED_BASE
     memset(img, 0, sizeof(*img));
     strcpy(img->name, "(reserved)");
@@ -273,6 +275,42 @@ fis_init(int argc, char *argv[])
     img->mem_base = (CYG_ADDRESS)fis_addr;
     img->size = block_size;
     img++;
+
+#ifdef CYGOPT_REDBOOT_FIS_DIRECTORY_ARM_SIB_ID
+    // FIS gets the size of a full block - note, this should be changed
+    // if support is added for multi-block FIS structures.
+    img = (struct fis_image_desc *)((CYG_ADDRESS)fis_work_block + block_size);
+    // Add a footer so the FIS will be recognized by the ARM Boot
+    // Monitor as a reserved area.
+    {
+        tFooter* footer_p = (tFooter*)((CYG_ADDRESS)img - sizeof(tFooter));
+        cyg_uint32 check = 0;
+        cyg_uint32 *check_ptr = (cyg_uint32 *)footer_p;
+        cyg_int32 count = (sizeof(tFooter) - 4) >> 2;
+
+        // Prepare footer. Try to protect all but the reserved space
+        // and the first RedBoot image (which is expected to be
+        // bootable), but fall back to just protecting the FIS if it's
+        // not at the default position in the flash.
+#if defined(CYGOPT_REDBOOT_FIS_RESERVED_BASE) && (-1 == CYGNUM_REDBOOT_FIS_DIRECTORY_BLOCK)
+        footer_p->blockBase = (char*)_ADDR_REDBOOT_TO_ARM(flash_start);
+        footer_p->blockBase += CYGNUM_REDBOOT_FLASH_RESERVED_BASE + redboot_image_size;
+#else
+        footer_p->blockBase = _ADDR_REDBOOT_TO_ARM(fis_work_block);
+#endif
+        footer_p->infoBase = NULL;
+        footer_p->signature = FLASH_FOOTER_SIGNATURE;
+        footer_p->type = TYPE_REDHAT_REDBOOT;
+
+        // and compute its checksum
+        for ( ; count > 0; count--) {
+            if (*check_ptr > ~check)
+                check++;
+            check += *check_ptr++;
+        }
+        footer_p->checksum = ~check;
+    }
+#endif
 
     // Do this after creating the initialized table because that inherently
     // calculates where the high water mark of default RedBoot images is.
@@ -370,6 +408,13 @@ fis_list(int argc, char *argv[])
     bool show_cksums = false;
     bool show_datalen = false;
     struct option_info opts[2];
+
+#ifdef CYGHWR_REDBOOT_ARM_FLASH_SIB
+    // FIXME: this is somewhat half-baked
+    extern void arm_fis_list(void);
+    arm_fis_list();
+    return;
+#endif
 
     init_opts(&opts[0], 'd', false, OPTION_ARG_TYPE_FLG, 
               (void **)&show_datalen, (bool *)0, "display data length");
@@ -688,6 +733,7 @@ fis_create(int argc, char *argv[])
     }
 }
 
+extern void arm_fis_delete(char *);
 static void
 fis_delete(int argc, char *argv[])
 {
@@ -702,6 +748,11 @@ fis_delete(int argc, char *argv[])
         fis_usage("invalid arguments");
         return;
     }
+#ifdef CYGHWR_REDBOOT_ARM_FLASH_SIB
+    // FIXME: this is somewhat half-baked
+    arm_fis_delete(name);
+    return;
+#endif
     slot_found = false;
     img = (struct fis_image_desc *)fis_work_block;
     num_reserved = 0;
@@ -1238,7 +1289,7 @@ static void config_init(void);
 static int
 get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
 {
-    char line[256], *sp, *lp;
+    char line[256], hold_line[256], *sp, *lp;
     int ret;
     bool hold_bool_val, new_bool_val, enable;
     unsigned long hold_int_val, new_int_val;
@@ -1258,6 +1309,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             return CONFIG_OK;  // Disabled field
         }
     }
+    lp = line;  *lp = '\0';
     val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
     if (LIST_OPT_NICKNAMES & list_opt)
         diag_printf("%s: ", CONFIG_OBJECT_KEY(dp));
@@ -1271,26 +1323,25 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
     switch (type = CONFIG_OBJECT_TYPE(dp)) {
     case CONFIG_BOOL:
         memcpy(&hold_bool_val, val_ptr, sizeof(bool));
-        diag_printf("%s ", hold_bool_val ? "true" : "false");
+        lp += diag_sprintf(lp, "%s", hold_bool_val ? "true" : "false");
         break;
     case CONFIG_INT:
         memcpy(&hold_int_val, val_ptr, sizeof(unsigned long));
-        diag_printf("%ld ", hold_int_val);
+        lp += diag_sprintf(lp, "%ld", hold_int_val);
         break;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     case CONFIG_IP:
-        diag_printf("%s ", inet_ntoa((in_addr_t *)val_ptr));
+        lp += diag_sprintf(lp, "%s", inet_ntoa((in_addr_t *)val_ptr));
         break;
     case CONFIG_ESA:
         for (esa_ptr = 0;  esa_ptr < sizeof(enet_addr_t);  esa_ptr++) {
-            diag_printf("0x%02X", ((unsigned char *)val_ptr)[esa_ptr]);
-            if (esa_ptr < (sizeof(enet_addr_t)-1)) diag_printf(":");
+            lp += diag_sprintf(lp, "0x%02X", ((unsigned char *)val_ptr)[esa_ptr]);
+            if (esa_ptr < (sizeof(enet_addr_t)-1)) lp += diag_sprintf(lp, ":");
         }
-        diag_printf(" ");
         break;
 #endif
     case CONFIG_STRING:
-        diag_printf("%s ", (unsigned char *)val_ptr);
+        lp += diag_sprintf(lp, "%s", (unsigned char *)val_ptr);
         break;
     case CONFIG_SCRIPT:
         diag_printf("\n");
@@ -1305,7 +1356,7 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
         break;
     }
     if (LIST_OPT_LIST_ONLY & list_opt) {
-        diag_printf("\n");
+        diag_printf("%s\n", line);
         return CONFIG_OK;
     }
     if (type != CONFIG_SCRIPT) {
@@ -1314,14 +1365,18 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             if (ret > sizeof(line))
                 return CONFIG_BAD;
             strcpy(line, newvalue);
+            strcpy(hold_line, newvalue);
             diag_printf("Setting to %s\n", newvalue);
+        } else {
+            // read from terminal
+            strcpy(hold_line, line);
+            ret = _rb_gets_preloaded(line, sizeof(line), 0);
         }
-        else // read from terminal
-            ret = _rb_gets(line, sizeof(line), 0);
         if (ret < 0) return CONFIG_ABORT;
-        if (strlen(line) == 0) return CONFIG_OK;  // Just a CR - leave value untouched
-        if (line[0] == '.') return CONFIG_DONE;
-        if (line[0] == '^') return CONFIG_BACK;
+        if (strcmp(line, hold_line) == 0) return CONFIG_OK;  // Just a CR - leave value untouched
+        lp = &line[strlen(line)-1];
+        if (*lp == '.') return CONFIG_DONE;
+        if (*lp == '^') return CONFIG_BACK;
     }
     switch (type) {
     case CONFIG_BOOL:
@@ -1661,8 +1716,11 @@ lookup_alias(char *alias, char *alias_buf)
 // Expand aliases, this is recursive. ie if one alias contains other
 // aliases, these will also be expanded from the insertion point
 // onwards.
+//
+// If 'iter' is zero, then quoted strings are not expanded
+//
 bool
-_expand_aliases(char *line, int len)
+_expand_aliases(char *line, int len, int iter)
 {
     char *lp = line;
     char *ms, *me, *ep;
@@ -1727,7 +1785,7 @@ _expand_aliases(char *line, int len)
                     diag_printf("Alias '%s' not defined\n", ms);
                     *me = '|';
                 }
-            } else if (c == '"') {
+            } else if ((c == '"') && (iter == 0)) {
                 // Skip quoted strings
                 while (*lp && (*lp != '"')) lp++;
             }            
@@ -1739,7 +1797,10 @@ _expand_aliases(char *line, int len)
 void
 expand_aliases(char *line, int len)
 {
-    while (_expand_aliases(line, len)) ;
+    int iter = 0;
+
+    while (_expand_aliases(line, len, iter++)) {
+    }
 }
 #endif //  CYGSEM_REDBOOT_FLASH_ALIASES
 

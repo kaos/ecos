@@ -54,6 +54,7 @@ cdl_package CYGPKG_HAL_MIPS_VR4300_VRC437X {
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
    cdl_option CYGSEM_HAL_MIPS_VR4300_VRC437X_DIAG_ACKS_INT_0 {
        display          "Acknowledge spurious interrupt 0 on output"

@@ -132,6 +132,7 @@ package CYGPKG_DEVS_FLASH_INTEL_BOOTBLOCK {
            This package contains hardware support for Intel boot block flash memory."
 }
 
+
 package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
 	alias 		{ "Support for AMD AM29xxxxx flash memory" flash_amd_am29xxxxx }
 	directory	devs/flash/amd/am29xxxxx
@@ -303,6 +304,16 @@ package CYGPKG_DEVS_FLASH_IQ80310 {
 	   on the Cyclone IQ80310 platform."
 }
 
+package CYGPKG_DEVS_FLASH_INTEGRATOR {
+        alias           { "FLASH memory support for ARM INTEGRATOR" flash_integrator }
+        directory       devs/flash/arm/integrator
+        script          flash_integrator.cdl
+        hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the ARM INTEGRATOR platform."
+}
+
 package CYGPKG_DEVS_FLASH_MBX {
 	alias 		{ "FLASH memory support for Motorola PowerPC/860 MBX" flash_mbx }
 	directory	devs/flash/powerpc/mbx
@@ -431,6 +442,15 @@ package CYGPKG_IO_SERIAL_ARM_E7T {
     directory         devs/serial/arm/e7t
     script            ser_arm_e7t.cdl   
     description       "ARM AEB-2 (E7T) serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_INTEGRATOR {
+    alias             { "ARM INTEGRATOR serial device drivers"
+                        devs_serial_arm_integrator integrator_serial_driver }
+    hardware
+    directory         devs/serial/arm/integrator
+    script            ser_arm_integrator.cdl    
+    description       "ARM INTEGRATOR serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_ARM_AT91 {
@@ -711,6 +731,15 @@ package CYGPKG_DEVS_ETH_ARM_FLEXANET {
       script          flexanet_eth_drivers.cdl
       description "This package contains hardware support for onboard SMC91C96
                    ethernet device on the Flexanet board."
+}
+
+package CYGPKG_DEVS_ETH_ARM_INTEGRATOR {
+        alias           { "ARM INTEGRATOR with Intel PRO/100+ ethernet driver"
+                           devs_eth_arm_integrator integrator_eth_driver }
+        hardware
+        directory       devs/eth/arm/integrator
+        script          integrator_eth_drivers.cdl
+        description     "Ethernet driver for Intel PRO/100+ boards on ARM INTEGRATOR."
 }
 
 package CYGPKG_DEVS_ETH_POWERPC_QUICC {
@@ -1179,6 +1208,16 @@ The e7t HAL package provides the support needed to run eCos on a ARM
 Evaluator7T board (aka the AEB-2)."
 }
 
+package CYGPKG_HAL_ARM_INTEGRATOR {
+        alias           { "ARM development board (INTEGRATOR)" hal_arm_integrator arm_integrator_hal }
+        directory       hal/arm/integrator
+        script          hal_arm_integrator.cdl
+        hardware
+        description "
+        The INTEGRATOR HAL package provides the support needed to 
+        run eCos on a ARM INTEGRATOR eval board."
+}
+
 package CYGPKG_HAL_ARM_AT91 {
 	alias		{ "Atmel evaluation board (EB40)" hal_arm_at91 arm_at91_hal }
 	directory	hal/arm/at91
@@ -1208,6 +1247,7 @@ package CYGPKG_HAL_ARM_ARM9 {
         The ARM9 HAL package provides the support needed to run
         eCos on a ARM9 based systems."
 }
+
 
 package CYGPKG_HAL_ARM_SA11X0 {
 	alias		{ "Intel SA11X0 Chipset" hal_arm_sa11x0 }
@@ -1929,6 +1969,21 @@ The aeb target provides the packages needed to run eCos on an ARM
 Evaluator7T board (aka AEB-2)."
 }
 
+target integrator {
+        alias { "ARM development board (INTEGRATOR)" INTEGRATOR }
+        packages { CYGPKG_HAL_ARM 
+                   CYGPKG_HAL_ARM_INTEGRATOR 
+                   CYGPKG_IO_PCI
+                   CYGPKG_DEVS_ETH_ARM_INTEGRATOR
+                   CYGPKG_IO_SERIAL_ARM_INTEGRATOR
+                   CYGPKG_DEVS_FLASH_INTEGRATOR
+        }
+        description "
+        The INTEGRATOR target provides the packages needed to 
+        run eCos on an ARM development board (formerly known 
+        as INTEGRATOR)."
+}
+
 target at91 {
 	alias { "Atmel evaluation board (EB40)" eb40 }
 	packages { CYGPKG_HAL_ARM
@@ -1955,6 +2010,7 @@ target ebsa285 {
         The ebsa285 target provides the packages needed to run
         eCos on an Intel EBSA285 StrongARM board."
 }
+
 
 target assabet {
 	alias { "Intel StrongARM SA1110 board" assabet }

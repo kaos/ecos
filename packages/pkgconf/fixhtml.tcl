@@ -115,6 +115,10 @@ foreach file $files {
 	    regsub -all "&equals;" $data "\\&#0061;" data
             regsub -all "&num;"    $data "\\&#0035;" data
             regsub -all "&plus;"   $data "\\&#0043;" data
+            regsub -all "&percnt;" $data "\\&#0037;" data
+            regsub -all "&dollar;" $data "\\&#0036;" data
+            regsub -all "&boxv;"   $data "\\&#9474;" data
+            regsub -all "&bsol;"   $data "\\&#0092;" data
 
 	    # Now write the data back to the file. Do not bother to
 	    # keep an old version lying around, the html files can be

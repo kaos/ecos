@@ -33,7 +33,7 @@
 #
 # Author(s):      gthomas
 # Original data:  gthomas
-# Contributors:
+# Contributors:   Philippe Robin
 # Date:           2000-05-01
 #
 #####DESCRIPTIONEND####
@@ -406,6 +406,16 @@ cdl_package CYGPKG_REDBOOT {
                     under this name for use in updating the ROM-based
                     RedBoot that boots the board."
             }
+
+            cdl_option CYGOPT_REDBOOT_FIS_DIRECTORY_ARM_SIB_ID {
+                display         "Include ARM SIB ID in FIS"
+                default_value   0
+                description "
+                  If set, this option will cause the last 5 words of
+                  the FIS to include the special ID needed for the
+                  flash to be recognized as a reserved area for RedBoot
+                  by an ARM BootRom monitor."
+            }
         }
 
         cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
@@ -484,6 +494,24 @@ cdl_package CYGPKG_REDBOOT {
             description "
               When this option is enabled, RedBoot will use CRC checksums
               when reading and writing flash images."
+        }
+
+        cdl_interface CYGINT_REDBOOT_ARM_FLASH_SIB_SUPPORTED {
+            display       "ARM FLASH drivers support SIB flash block structure"
+            active_if     CYGPKG_HAL_ARM
+            description   "This interface is implemented by a flash driver
+                           to indicate that it supports the ARM SIB flash
+                           block structure"
+        }
+
+        cdl_option CYGHWR_REDBOOT_ARM_FLASH_SIB {
+            display       "Use ARM SIB flash block structure"
+            flavor        bool
+            active_if     CYGINT_REDBOOT_ARM_FLASH_SIB_SUPPORTED
+            default_value 1
+            description "
+              This option is used to interpret ARM Flash System information
+              blocks."
         }
     }
 

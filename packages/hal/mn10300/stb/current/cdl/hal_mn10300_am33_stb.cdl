@@ -55,6 +55,7 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
     requires CYGSEM_HAL_UNCACHED_FLASH_ACCESS == 1;
 
@@ -112,6 +113,7 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
        flavor data
        legal_values     9600 19200 38400 115200
        default_value    38400
+       define           CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
        description      "
            This option selects the baud rate used for the diagnostic port.
            Note: this should match the value chosen for the GDB port if the

@@ -239,6 +239,25 @@ hal_mmu_setup_return:
 #define CYGPKG_HAL_MIPS_INTC_INIT_DEFINED
 
 #------------------------------------------------------------------------------
+# Interrupt Translator.
+# This translates an interrupt number into an ISR table offset. Vector 0
+# contains a special ISR for dealing with spurious interrupts from the
+# Vrc437x, and vectors 1-3 contain springboards, so we chain via vector 4.
+# This macro translates interrupt 0 to vector 0 and all others to vector 4.
+
+#ifndef CYGPKG_HAL_MIPS_INTC_TRANSLATE_DEFINED
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+	.macro	hal_intc_translate inum,vnum
+	beqz	\inum,1f	# jump if interrupt is zero
+	 move	v0,zero		# set v0=0 in delay slot
+	addi	v0,v0,4		# non zero vector, inc v0
+1:	move	\vnum,v0	# store 0 or 4 in vnum
+	.endm
+#define CYGPKG_HAL_MIPS_INTC_TRANSLATE_DEFINED
+#endif
+#endif
+
+#------------------------------------------------------------------------------
 # Monitor initialization.
 	
 #ifndef CYGPKG_HAL_MIPS_MON_DEFINED

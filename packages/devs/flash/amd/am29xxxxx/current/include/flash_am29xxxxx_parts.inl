@@ -362,6 +362,18 @@
     },
 #endif
 
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV640
+    {   // MBM29LV640xx
+        device_id  : FLASHWORD(0x22d7),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 128,
+        device_size: 0x800000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x800000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,  
+        banked     : false
+    },
+#endif
+
 #endif // 16 bit devices
 
 #endif // CYGONCE_DEVS_FLASH_AMD_AM29XXXXX_PARTS_INL

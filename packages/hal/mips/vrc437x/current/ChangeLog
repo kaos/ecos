@@ -1,3 +1,18 @@
+2001-10-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_mips_vr4300_vrc437x.cdl: Indicate support of variable baud
+	rates.
+
+2001-10-30  Nick Garnett  <nickg@redhat.com>
+
+	* include/platform.inc:
+	Added local version of hal_intc_decode to make chaining work
+	correctly.
+	
+	* include/plf_intr.h:
+	Added local version of HAL_TRANSLATE_VECTOR() to make chaining
+	work correctly.
+
 2001-10-24  Nick Garnett  <nickg@redhat.com>
 
 	* include/hal_diag.h: Fixed problem with support for virtual

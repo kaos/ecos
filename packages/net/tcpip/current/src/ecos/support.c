@@ -364,7 +364,7 @@ cyg_cltom(u_long x)
     return res;
 }
 
-void 
+externC void 
 net_memcpy(void *d, void *s, int n)
 {
     START_STATS();
@@ -372,7 +372,7 @@ net_memcpy(void *d, void *s, int n)
     FINISH_STATS(stats_memcpy);
 }
 
-void 
+externC void 
 net_memset(void *s, int v, int n)
 {
     START_STATS();

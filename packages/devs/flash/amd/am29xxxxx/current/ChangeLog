@@ -1,3 +1,14 @@
+2001-10-31  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx_parts.inl: Removed fix me comments -
+	description is accurate.
+
+2001-10-30  Jesper Skov  <jskov@redhat.com>
+	From Gary:
+	* include/flash_am29xxxxx_parts.inl: Added preliminary AM29LV640
+	support. Still needs some tweaks.
+	* cdl/flash_amd_am29xxxxx.cdl: Same.
+
 2001-09-26  Gary Thomas  <gthomas@redhat.com>
 
 	* include/flash_am29xxxxx.inl (flash_erase_block): 

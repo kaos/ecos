@@ -1,3 +1,8 @@
+2001-10-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Added ARM Integrator target including HAL, serial driver, 
+	eth driver and flash driver packages.
+
 2001-10-19  Lars Lindqvist  <Lars.Lindqvist@combitechsystems.com>
 2001-10-19  Jonathan Larmour  <jlarmour@redhat.com>
 

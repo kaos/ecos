@@ -132,6 +132,7 @@ cdl_package CYGPKG_NET {
         lib/shutdown.c \
         lib/sendto.c \
         lib/recvfrom.c \
+        lib/recv.c \
         lib/getsockname.c \
         lib/getpeername.c \
         lib/getsockopt.c \

@@ -1,3 +1,21 @@
+2001-10-30  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* doc/driver_doc: Add description of poll, deliver and int_vector
+	driver functions.
+
+2001-10-29  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_tickle_devices): [CASE 106613] Rather
+	than calling can_send() in the device driver directly, call our
+	own eth_drv_send() function which will also dequeue a waiting
+	packet if we find we indeed can_send().  This helps to recover
+	from queue full situations within the if_ethersubr layer above.
+	This change is belt & braces with a similar call in the code which
+	drops a packet if the queue is full, in the main network code in
+	net/tcpip/.../src/sys/net/if_ethersubr.c (ether_output); this
+	change will recover the situation shortly even if the application
+	gives up trying to send because of ENOBUFS.
+
 2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/eth_drivers.cdl: Rename CYGSEM_IO_ETH_DRIVERS_DEBUG to

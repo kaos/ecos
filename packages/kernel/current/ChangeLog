@@ -1,3 +1,12 @@
+2001-10-30  Nick Garnett  <nickg@redhat.com>
+
+	* tests/kcache2.c (test_dsync):
+	Added call to HAL_ICACHE_INVALIDATE_ALL() just before DCACHE
+	disable. In platforms where both caches are controlled together,
+	such as the VR4300, not doing this can result in strange behaviour
+	as the ICACHE gets turned off under the program's feet, when it is
+	not ready for it.
+
 2001-10-17  Jesper Skov  <jskov@redhat.com>
 
 	* tests/dhrystone.c: CYGINT_ISO_STRING_STRFUNCS check changed to
@@ -6,7 +15,7 @@
 2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/synch.cdl (CYGIMP_KERNEL_SYNCH_MQUEUE_NOT_INLINE): New option
-	to avoid inliningn mqueue implementation.
+	to avoid inlining mqueue implementation.
 
 	* src/sync/mqueue.cxx: New file to provide non-inline version of
 	mqueue functions.

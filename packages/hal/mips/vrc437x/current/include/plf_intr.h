@@ -117,6 +117,24 @@
 #define CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED
 
 //--------------------------------------------------------------------------
+// Vector translation.
+// For chained interrupts we only have a single vector though which all
+// are passed. For unchained interrupts we have a vector per interrupt.
+// Vector 0 has a special catcher ISR for spurious interrupts from the VRC437X
+// and vectors 1-3 are springboards, so we chain through vector 4.
+
+#if defined(CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN)
+
+#define HAL_TRANSLATE_VECTOR(_vector_,_index_)  \
+{                                               \
+    if ((_vector_)==0)                          \
+        (_index_) = 0;                          \
+    else                                        \
+        (_index_) = 4;                          \
+}   
+#endif
+
+//--------------------------------------------------------------------------
 // controller access code
 
 #define CYGHWR_HAL_MIPS_VRC4372_BASE            0xbc000000

@@ -75,5 +75,26 @@ void hal_hardware_init(void)
 #endif
 }
 
+void
+cyg_hal_arm9_soft_reset(CYG_ADDRESS entry)
+{
+
+    /* It would probably make more sense to have the
+       clear/drain/invalidate after disabling the cache and MMU, but
+       then we'd have to know the (unmapped) address of this code. */
+    asm volatile ("mov r1, #0;"
+                  "mcr p15,0,r1,c7,c7,0;"  /* clear I+DCache */
+                  "mcr p15,0,r1,c7,c10,4;" /* Drain Write Buffer */
+                  "mcr p15,0,r1,c8,c7,0;"  /* Invalidate TLBs */
+                  "mrc p15,0,r1,c1,c0,0;"
+                  "bic r1,r1,#0x1000;"     /* disable ICache */
+                  "bic r1,r1,#0x0007;"     /* disable DCache, MMU and alignment faults */
+                  "mcr p15,0,r1,c1,c0,0;"
+                  "nop;"                   /* delay 1 */
+                  "mov pc, %0;"            /* delay 2  - next instruction should be fetched flat */
+                  : : "r" (entry) : "r1");
+    for(;;);
+}
+
 /*------------------------------------------------------------------------*/
 // EOF arm9_misc.c

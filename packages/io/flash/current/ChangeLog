@@ -1,3 +1,8 @@
+2001-10-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (flash_erase): Don't call hardware layer if block
+	appears to be already erased [faster and less wear & tear].
+
 2001-10-25  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/flash_dev.h: Fix test of 4x16-bit flash parts.

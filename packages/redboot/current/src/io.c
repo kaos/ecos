@@ -277,13 +277,13 @@ getc_script(char *cp)
 //
 // Read a line of input from the user
 // Return:
-//    n: 'n' valid characters received
-//    0: '$' (GDB lead-in)
-//   -1: No input before timeout
-//   -2: ^C typed
+//        _GETS_OK: 'n' valid characters received
+//       _GETS_GDB: '$' (GDB lead-in)
+//   _GETS_TIMEOUT: No input before timeout
+//     _GETS_CTRLC: ^C typed
 //
 int
-_rb_gets(char *buf, int buflen, int timeout)
+_rb_gets_preloaded(char *buf, int buflen, int timeout)
 {
     char *ip = buf;   // Insertion point
     char *eol = buf;  // End of line
@@ -307,6 +307,12 @@ _rb_gets(char *buf, int buflen, int timeout)
     int _index = _cl_index;  // Last saved line
     char *xp;
 #endif
+
+    // Display current buffer data
+    while (*eol) {
+        mon_write_char(*eol++);
+    }
+    ip = eol;
 
     while (true) {
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
@@ -423,14 +429,27 @@ _rb_gets(char *buf, int buflen, int timeout)
                 eol = ip;
             }
             break;
+        case CTRL('D'):
+            // Erase the character under the cursor
+            if (ip != eol) {
+                xp = ip;
+                eol--;
+                while (xp != eol) {
+                    *xp = *(xp+1);
+                    mon_write_char(*xp++);
+                }
+                mon_write_char(' ');  // Erases last character
+                mon_write_char('\b');
+                while (xp-- != ip) {
+                    mon_write_char('\b');
+                }
+            }
+            break;
 #endif // CYGNUM_REDBOOT_CMD_LINE_EDITING
         case CTRL('C'): // ^C
-            if (ip == buf) {
-                diag_printf("^C\n");
-                return _GETS_CTRLC;
-            }
-            *ip++ = c;
-            break;
+            // Abort current input
+            diag_printf("^C\n");
+            return _GETS_CTRLC;
         case '\n':
         case '\r':
             // If previous character was the "other" end-of-line, ignore this one
@@ -446,10 +465,12 @@ _rb_gets(char *buf, int buflen, int timeout)
 	    }
             last_ch = c;
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
-            // Save current line
-            if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
-            if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;
-            strcpy(_cl_lines[_cl_index], buf);
+            if (cmd_history) {
+                // Save current line - only when enabled
+                if (++_cl_index == _CL_NUM_LINES) _cl_index = 0;
+                if (_cl_index > _cl_max_index) _cl_max_index = _cl_index;
+                strcpy(_cl_lines[_cl_index], buf);
+            }
 #endif
             return _GETS_OK;
         case '\b':
@@ -552,6 +573,13 @@ _rb_gets(char *buf, int buflen, int timeout)
         if (ip == buf + buflen) // Buffer full
             return buflen;
     }
+}
+
+int
+_rb_gets(char *buf, int buflen, int timeout)
+{
+    *buf = '\0';  // Empty buffer
+    return _rb_gets_preloaded(buf, buflen, timeout);
 }
 
 bool

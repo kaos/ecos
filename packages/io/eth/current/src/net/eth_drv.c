@@ -851,8 +851,15 @@ void eth_drv_tickle_devices( void )
     cyg_netdevtab_entry_t *t;
     for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
         struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
-        if ( ETH_DRV_STATE_ACTIVE & sc->state )
-            (*sc->funs->can_send)(sc);
+        if ( ETH_DRV_STATE_ACTIVE & sc->state ) {
+            struct ifnet *ifp = &sc->sc_arpcom.ac_if;
+            // Try to dequeue a packet for this interface, if we can.  This
+            // will call can_send() for active interfaces.  It is calls to
+            // this function from tx_done() which normally provide
+            // continuous transmissions; otherwise we do not get control.
+            // This call fixes that.
+            eth_drv_send(ifp);
+        }
     }
 }
 #endif // CYGPKG_NET_FAST_THREAD_TICKLE_DEVS

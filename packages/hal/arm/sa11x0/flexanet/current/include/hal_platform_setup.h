@@ -56,6 +56,7 @@
 #if defined(CYG_HAL_STARTUP_ROM)
 #define PLATFORM_SETUP1 _platform_setup1
 #define CYGHWR_HAL_ARM_HAS_MMU
+#define CYGSEM_HAL_ROM_RESET_USES_JUMP
 
 #if (CYGHWR_HAL_ARM_SA11X0_PROCESSOR_CLOCK == 59000)
 #define SA11X0_PLL_CLOCK 0x0        
@@ -127,18 +128,54 @@
 #define STATIC_1_CONFIG_VALUE	0x2C290001
 
 
+// Macros that handle the red debug LED wired to GPIO-1
+
+        .macro    _red_led_on
+        
+        // Turn on the red LED on GPIO-1
+        ldr     r3,=SA11X0_GPIO_PIN_OUTPUT_SET
+        ldr     r2,=0x02
+        str     r2,[r3]
+        .endm
+        
+        .macro    _red_led_off
+        
+        // Turn off the red LED on GPIO-1
+        ldr     r3,=SA11X0_GPIO_PIN_OUTPUT_CLEAR
+        ldr     r2,=0x02
+        str     r2,[r3]        
+        .endm
+
 
 // This macro represents the initial startup code for the platform,
 // when the startup is ROM.
 
+// Red LED is turned on during redboot execution and turned off
+// right before entering the operating system.
+
+// Green LED is turned off during the redboot execution and
+// on right before entering the operating system on a reset
+// (not on a wake-up).
+
         .macro  _platform_setup1
         
-        // Reset the BCR (LEDs off)
+        // Disable all interrupts (ICMR not specified on power-up)
+        ldr     r1,=SA11X0_ICMR
+        mov     r0,#0
+        str     r0,[r1]
+        
+        // Disable IRQs and FIQs
+        mov     r0, #(CPSR_IRQ_DISABLE | \
+                      CPSR_FIQ_DISABLE | \
+                      CPSR_SUPERVISOR_MODE)
+        msr     cpsr, r0
+        
+        // Reset the BCR (green LED off)
         ldr     r1,=SA1110_BOARD_CONTROL
         ldr     r2,=SA1110_BCR_MIN
         str     r2,[r1]
 
-        // Set up GPIOs
+        // Set up GPIOs (red LED off)
         ldr     r1,=SA11X0_GPIO_PIN_DIRECTION
         ldr     r2,=SA1110_GPIO_DIR
         str     r2,[r1]
@@ -154,7 +191,10 @@
         ldr     r1,=SA11X0_GPIO_PIN_OUTPUT_SET
         ldr     r2,=SA1110_GPIO_SET
         str     r2,[r1]
-        
+
+        // Turn on the red LED
+        _red_led_on
+
         // Disable clock switching
         mcr     p15,0,r0,\
                 SA11X0_TEST_CLOCK_AND_IDLE_REGISTER,\
@@ -174,19 +214,14 @@
         nop
         nop
 
-        // Turn on the red LED on GPIO-1
-        ldr     r1,=SA11X0_GPIO_PIN_OUTPUT_SET
-        ldr     r2,=(1<<1)
-        str     r2,[r1]        
-
-	// Let the PLL settle down	
+        // Let the PLL settle down	
         ldr     r1,=20000
 10:     sub     r1,r1,#1
         cmp     r1,#0
         bne     10b        
 
         // Initialize DRAM controller. See table below.
-	// The DRAM banks are set to disabled.
+        // The DRAM banks are set to disabled.
 	
         ldr     r1,=dram_table
         ldr     r2,=__exception_handlers
@@ -205,46 +240,42 @@
 
         // Release DRAM hold (PSSR register, bit DH)
 	
-	// This bit is set upon exit from sleep mode and indicates that the 
-	// nRAS/nSDCS 3:0 and nCAS/DQM 3:0 continue to be held low and that 
-	// the DRAMs are still in self-refresh mode. This bit should be cleared 
-	// by the processor (by writing a one to it) after the DRAM interface 
-	// has been configured but before any DRAM access is attempted. 
-	// The nRAS/nSDCS and nCAS/DQM lines are released when this bit is
-	// cleared. This bit is cleared on hardware reset.
-	
+        // This bit is set upon exit from sleep mode and indicates that the 
+        // nRAS/nSDCS 3:0 and nCAS/DQM 3:0 continue to be held low and that 
+        // the DRAMs are still in self-refresh mode. This bit should be cleared 
+        // by the processor (by writing a one to it) after the DRAM interface 
+        // has been configured but before any DRAM access is attempted. 
+        // The nRAS/nSDCS and nCAS/DQM lines are released when this bit is
+        // cleared. This bit is cleared on hardware reset.
+
         ldr     r1,=SA11X0_PWR_MGR_SLEEP_STATUS
         ldr     r2,=SA11X0_DRAM_CONTROL_HOLD
         str     r2,[r1]
 
-	// On hardware reset in systems containing DRAM or SDRAM, 
-	// trigger a number (typically eight) of refresh cycles by attempting 
-	// nonburst read or write accesses to any disabled DRAM bank. 
-	// Each such access causes a simultaneous CBR for all four banks.
+        // On hardware reset in systems containing DRAM or SDRAM, 
+        // trigger a number (typically eight) of refresh cycles by attempting 
+        // nonburst read or write accesses to any disabled DRAM bank. 
+        // Each such access causes a simultaneous CBR for all four banks.
 	
         ldr     r1,=SA11X0_RAM_BANK0_BASE
         ldr     r2,[r1]
-	nop
-	nop
         ldr     r2,[r1]
-	nop
-	nop
         ldr     r2,[r1]
-	nop
-	nop
         ldr     r2,[r1]
-	nop
-	nop
+        ldr     r2,[r1]
+        ldr     r2,[r1]
+        ldr     r2,[r1]
+        ldr     r2,[r1]
 	
         // Enable DRAM bank 0
         ldr     r1,=SA11X0_DRAM_CONFIGURATION
         ldr     r2,=DRAM_CONFIG_VALUE
-	orr	r2, r2, #0x01
+        orr     r2, r2, #0x01
         str     r2,[r1]
 
         b       19f        
 
-	// Memory controller settings (register, value)        
+        // Memory controller settings (register, value)        
 
 dram_table:
 
@@ -260,13 +291,8 @@ dram_table:
         .word   SA11X0_DRAM_CONFIGURATION,    DRAM_CONFIG_VALUE
         .word   SA11X0_STATIC_CONTROL_0,      STATIC_0_CONFIG_VALUE
         .word   SA11X0_STATIC_CONTROL_1,      STATIC_1_CONFIG_VALUE
-	.word   0, 0
+        .word   0, 0
 19:
-
-        // Release peripheral hold (set by RESET)
-        ldr     r1,=SA11X0_PWR_MGR_SLEEP_STATUS
-        ldr     r2,=SA11X0_PERIPHERAL_CONTROL_HOLD
-        str     r2,[r1]
 
         // If waking up from sleep, jump to the resume function
         // pointed by the scratchpad register.
@@ -276,6 +302,9 @@ dram_table:
         bne     20f
         ldr     r1,=SA11X0_PWR_MGR_SCRATCHPAD
         ldr     r1,[r1]
+
+        _red_led_off
+        
         mov     pc,r1
         nop
 20:     nop        
@@ -307,8 +336,13 @@ dram_table:
         ldr     r2,=SA1110_BCR_MIN
         orr     r2,r2,#SA1110_BCR_LED_GREEN
         str     r2,[r1]
-        .endm
         
+        // Turn off red LED
+        _red_led_off
+        
+        .endm
+
+                
 #else // defined(CYG_HAL_STARTUP_ROM)
 #define PLATFORM_SETUP1
 #endif

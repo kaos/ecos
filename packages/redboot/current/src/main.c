@@ -285,7 +285,13 @@ cyg_start(void)
             diag_printf("RedBoot> ");
             prompt = false;
         }
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+        cmd_history = true;  // Enable history collection
+#endif
         res = _rb_gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+        cmd_history = false;  // Enable history collection
+#endif
         if (res == _GETS_TIMEOUT) {
             // No input arrived
         } else {
@@ -318,11 +324,19 @@ cyg_start(void)
                 expand_aliases(line, sizeof(line));
 #endif
 		command = (char *)&line;
-                while (strlen(command) > 0) {                    
-                    if ((cmd = parse(&command, &argc, &argv[0])) != (struct cmd *)0) {
-                        (cmd->fun)(argc, argv);
-                    } else {
-                        diag_printf("** Error: Illegal command: \"%s\"\n", argv[0]);
+                if ((*command == '#') || (*command == '=')) {
+                    // Special cases
+                    if (*command == '=') {
+                        // Print line on console
+                        diag_printf("%s\n", &line[2]);
+                    }
+                } else {
+                    while (strlen(command) > 0) {                    
+                        if ((cmd = parse(&command, &argc, &argv[0])) != (struct cmd *)0) {
+                            (cmd->fun)(argc, argv);
+                        } else {
+                            diag_printf("** Error: Illegal command: \"%s\"\n", argv[0]);
+                        }
                     }
                 }
                 prompt = true;

@@ -82,6 +82,9 @@ EXTERN bool console_selected;
 #endif
 EXTERN bool console_echo;
 EXTERN bool gdb_active;
+#if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
+EXTERN bool cmd_history;
+#endif
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
 EXTERN bool have_net, use_bootp;
@@ -111,6 +114,9 @@ externC bool verify_action(char *fmt, ...);
 
 // Read a single line of input from the console, possibly with timeout
 externC int  _rb_gets(char *line, int len, int timeout);
+// Just like _rb_gets(), except that the line buffer is assumed to contain
+// valid input data.  This provides an easy mechanism for edit-in-place.
+externC int  _rb_gets_preloaded(char *line, int len, int timeout);
 // Result codes from 'gets()'
 #define _GETS_TIMEOUT -1
 #define _GETS_CTRLC   -2

@@ -1,3 +1,24 @@
+2001-11-02  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ecos/support.c: 
+	* include/machine/ansi.h: Add C++ support [externC].
+
+2001-11-11  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	*src/lib/recv.c: Implement the recv() call.
+
+2001-10-29  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sys/net/if_ethersubr.c (ether_output): [CASE 106613] Even if
+	the queue is full, and we are dropping the packet, try to start
+	the interface anyway, to give it a chance to empty the queue if
+	the device has recovered from whatever made the queue fill up in
+	the first place - being unplugged from the network for example.
+	This change is belt & braces with a similar policy in the periodic
+	tickle function in the logical ether driver in io/eth/... ; this
+	change will recover the situation immediately if the application
+	continues trying to send despite ENOBUFS.
+
 2001-10-25  Hugo Tyson  <hmt@redhat.com>
 
 	* src/sys/net/if_bridge.c (bridge_broadcast): Count if_obytes in
