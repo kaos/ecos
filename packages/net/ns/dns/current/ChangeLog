@@ -1,6 +1,7 @@
 2004-07-13  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/dns.c (cyg_dns_getaddrinfo): Typo spotted by Andy Jackson.
+	* src/dns.c (cyg_dns_getnameinfo): And another typo
 
 2003-09-04  Andrew Lunn  <andrew.lunn@ascom.ch>
 
