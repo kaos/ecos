@@ -1,5 +1,3 @@
-#ifndef CYGONCE_ISO_SYS_SELECT_H
-#define CYGONCE_ISO_SYS_SELECT_H
 /*========================================================================
 //
 //      sys/select.h
@@ -11,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -60,7 +59,6 @@
 
 #include <pkgconf/isoinfra.h>          /* Configuration header */
 
-
 /* ------------------------------------------------------------------- */
 
 #if !defined(_POSIX_SOURCE)
@@ -69,6 +67,9 @@
 # ifdef CYGBLD_ISO_SELECT_HEADER
 #  include CYGBLD_ISO_SELECT_HEADER
 # else
+
+#   ifndef CYGONCE_ISO_SYS_SELECT_FD_SETS
+#   define CYGONCE_ISO_SYS_SELECT_FD_SETS
 
 #define	NBBY	8		/* number of bits in a byte */
 
@@ -111,23 +112,45 @@ typedef	struct fd_set {
         (__p)->fds_bits[_i] = 0;                                \
 }
 
-#  ifdef __cplusplus
+#   endif /* CYGONCE_ISO_SYS_SELECT_FD_SETS */
+
+#  ifndef __NEED_FD_SETS_ONLY
+
+#   ifndef CYGONCE_ISO_SYS_SELECT_H
+#   define CYGONCE_ISO_SYS_SELECT_H
+
+#include <signal.h>
+
+#   ifdef __cplusplus
 extern "C" {
-#  endif
+#   endif
 
 struct timeval;
 extern int
 select( int /* nfd */, fd_set * /* in */, fd_set * /* out */,
         fd_set * /* ex */, struct timeval * /* tv */ );
-        
-#  ifdef __cplusplus
+
+#ifdef CYGPKG_POSIX
+struct timespec;
+extern int
+pselect( int /* nfd */, fd_set * /* in */, fd_set * /* out */,
+        fd_set * /* ex */, const struct timespec * /* ts */,
+        const sigset_t * /* mask */);
+#endif
+    
+#   ifdef __cplusplus
 }   /* extern "C" */
-#  endif
+#   endif
+
+#   endif /* CYGONCE_ISO_SYS_SELECT_H multiple inclusion protection */
+
+#  endif /* __NEED_FD_SETS_ONLY */
+
 # endif
 #endif
 
+
 #endif /* if !defined(_POSIX_SOURCE) */
 /* ------------------------------------------------------------------- */
-#endif /* CYGONCE_ISO_SYS_SELECT_H multiple inclusion protection */
 
 /* EOF sys/select.h */

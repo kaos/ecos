@@ -1,3 +1,14 @@
+2002-11-10  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/sys/types.h: Add define/undefine for __NEED_FD_SETS_ONLY
+	around include of sys/select.h to avoid circular dependencies in
+	headers.
+
+	* include/sys/select.h: Reorganized definitions so that the
+	include from sys/types.h only defines the fd_set type and macros
+	and not the select() and pselect() functions. The latter needs
+	sigset_t from signal.h, which can result in circularity.
+
 2002-04-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/stdlib.h: use NORET attributes from cyg_type.h.

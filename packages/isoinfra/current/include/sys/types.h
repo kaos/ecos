@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -101,7 +102,9 @@ typedef int pid_t;
 #endif
 
 /* Include <sys/select.h> for backward compatibility for now */
+#define __NEED_FD_SETS_ONLY
 #include <sys/select.h>
+#undef __NEED_FD_SETS_ONLY
 
 #if !defined(_POSIX_SOURCE)
 # if CYGINT_ISO_BSDTYPES
