@@ -1,3 +1,14 @@
+2003-01-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/bootp_support.c: Fix licence which should always have been
+	GPL since no BSD licensed code was in fact involved.
+	* src/dhcp_prot.c: Ditto.
+	* src/dhcp_support.c: Ditto.
+	* src/network_support.c: Ditto.
+	* src/tftp_client.c: Ditto.
+	* src/tftp_dummy_file.c: Ditto.
+	* src/tftp_server.c: Ditto.
+
 2003-01-04  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/tcpip.sgml: Use new entity name for tcpip manpages.
