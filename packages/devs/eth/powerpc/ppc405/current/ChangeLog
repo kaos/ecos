@@ -1,3 +1,8 @@
+2005-02-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ppc405_enet.h: 
+	* src/if_ppc405.c: Improve error detection and recovery.
+
 2003-10-02  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ppc405_enet.h: Let default ESA be a pointer so that platforms

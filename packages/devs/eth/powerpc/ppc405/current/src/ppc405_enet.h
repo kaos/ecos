@@ -160,16 +160,16 @@
 //
 // Interrupt status
 //
-#define EMAC0_ISR_OVR  0x02000000
-#define EMAC0_ISR_PP   0x01000000
-#define EMAC0_ISR_BP   0x00800000
-#define EMAC0_ISR_RP   0x00400000
-#define EMAC0_ISR_SE   0x00200000
-#define EMAC0_ISR_ALE  0x00100000
-#define EMAC0_ISR_BFCS 0x00080000
-#define EMAC0_ISR_PTLE 0x00040000
-#define EMAC0_ISR_ORE  0x00020000
-#define EMAC0_ISR_IRE  0x00010000
+#define EMAC0_ISR_OVR  0x02000000  // Rx overrun
+#define EMAC0_ISR_PP   0x01000000  // Pause packet received
+#define EMAC0_ISR_BP   0x00800000  // Rx bad packet
+#define EMAC0_ISR_RP   0x00400000  // Rx runt packet
+#define EMAC0_ISR_SE   0x00200000  // Rx short event
+#define EMAC0_ISR_ALE  0x00100000  // Rx alignment error
+#define EMAC0_ISR_BFCS 0x00080000  // Rx bad FCS
+#define EMAC0_ISR_PTLE 0x00040000  // Rx packet too long
+#define EMAC0_ISR_ORE  0x00020000  // Rx packet out of range
+#define EMAC0_ISR_IRE  0x00010000  // Rx packet in range error
 #define EMAC0_ISR_DBDM 0x00000200
 #define EMAC0_ISR_DB0  0x00000100
 #define EMAC0_ISR_SE0  0x00000080
@@ -356,5 +356,6 @@ struct ppc405_eth_info {
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     unsigned long       ints;            // Mask of interrupts in progress
 #endif
+    unsigned char       cfg_enaddr[6];   // Last configured ESA
 };
 

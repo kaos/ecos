@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2005 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -405,6 +405,7 @@ ppc405_eth_init(struct cyg_netdevtab_entry *tab)
         os_printf("PPC405_ETH - Warning! ESA unknown\n");
         memcpy(&enaddr, qi->enaddr, sizeof(enaddr));
     }
+    memcpy(qi->cfg_enaddr, enaddr, sizeof(enaddr));
 
     // Configure the device
     if (!ppc405_eth_reset(sc, enaddr, 0)) {
@@ -612,6 +613,7 @@ ppc405_eth_int(struct eth_drv_sc *sc)
 {
     struct ppc405_eth_info *qi = (struct ppc405_eth_info *)sc->driver_private;
     unsigned long event, tx_event, rx_event, tx_deir, rx_deir;
+    bool need_reset = false;
 
     CYGARC_MFDCR(MAL0_TXEOBISR, tx_event);
     if (tx_event != 0) {
@@ -625,12 +627,17 @@ ppc405_eth_int(struct eth_drv_sc *sc)
     }
     if ((event = EMAC0_ISR) != 0) {
         if ((event & ~(EMAC0_ISR_SE0|EMAC0_ISR_SE1)) != 0) {
+            // Error other than signal quality
             os_printf("EMAC0_ISR: %x\n", event);
-        }
-        if ((event & (EMAC0_ISR_TE0|EMAC0_ISR_TE1)) != 0) {
-            // Some problem with transmit
-            CYGARC_MTDCR(MAL0_TXCASR, MAL_CASR_C0);
-            qi->tnext = qi->tbase;
+            if ((event & (EMAC0_ISR_TE0|EMAC0_ISR_TE1)) != 0) {
+                // Some problem with transmit - should be easily recoverable
+                CYGARC_MTDCR(MAL0_TXCASR, MAL_CASR_C0);
+                qi->tnext = qi->tbase;
+            }
+            if ((event & (EMAC0_ISR_OVR|EMAC0_ISR_BP|EMAC0_ISR_RP|EMAC0_ISR_ALE|EMAC0_ISR_BFCS)) != 0) {
+                // Rx errors - reset device
+                need_reset = true;
+            }
         }
         EMAC0_ISR = event;  // Reset the bits we handled
     }
@@ -639,11 +646,11 @@ ppc405_eth_int(struct eth_drv_sc *sc)
         CYGARC_MFDCR(MAL0_TXDEIR, tx_deir);
         CYGARC_MFDCR(MAL0_RXDEIR, rx_deir);
         if (dump_mal0_esr) {
-        os_printf("MAL0_ESR: %x, Tx: %x, Rx: %x\n", event, tx_deir, rx_deir);
-        os_printf("Tx buffer headers\n");
-        diag_dump_buf((void *)qi->tbase, qi->txnum*sizeof(mal_bd_t));
-        os_printf("Rx buffer headers\n");
-        diag_dump_buf((void *)qi->rbase, qi->rxnum*sizeof(mal_bd_t));
+            os_printf("MAL0_ESR: %x, Tx: %x, Rx: %x\n", event, tx_deir, rx_deir);
+            os_printf("Tx buffer headers\n");
+            diag_dump_buf((void *)qi->tbase, qi->txnum*sizeof(mal_bd_t));
+            os_printf("Rx buffer headers\n");
+            diag_dump_buf((void *)qi->rbase, qi->rxnum*sizeof(mal_bd_t));
         }
         if (tx_deir != 0) {
             // Fix Tx descriptor problems
@@ -658,6 +665,14 @@ ppc405_eth_int(struct eth_drv_sc *sc)
             qi->rnext = qi->rbase;
         }
         CYGARC_MTDCR(MAL0_ESR, event);  // Clear events just handled
+    }
+    if (need_reset) {
+        // Something has gone awry - try resetting the device
+        os_printf("\n... PPC405 ethernet - hard reset after failure\n");
+        ppc405_eth_stop(sc);
+        if (!ppc405_eth_reset(sc, qi->cfg_enaddr, 0)) {        
+            os_printf("!! Failed? !!\n");
+        }
     }
 }
 
