@@ -1,3 +1,9 @@
+2003-08-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/redboot_installing.sgml: Fix brain fart in last change to
+	AT91 instructions. Also clarify instructions a bit, including
+	documenting better for windows users.
+
 2003-07-23  Patrick Doyle  <wpd@dtccom.com>
 
 	* src/flash.c (fis_find_free)
