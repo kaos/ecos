@@ -1,3 +1,8 @@
+2003-01-24  Gary Thomas  <gary@mlbassoc.com> (inspired by)
+2003-01-24  Christoph Csebits <christoph.csebits@frequentis.com>	
+
+	* src/quicc2_scc_serial.h: Remove invalid ";" from #defines
+
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 

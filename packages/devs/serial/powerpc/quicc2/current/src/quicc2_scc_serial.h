@@ -114,15 +114,15 @@
 // SCC clock Route register constants
 #define QUICC2_CMX_SCC1_CLR      0x00ffffff
 #define QUICC2_CMX_SCC1_BRG1     0x00000000
-#define QUICC2_CMX_SCC1_BRG2     0x09000000;
-#define QUICC2_CMX_SCC1_BRG3     0x12000000;
-#define QUICC2_CMX_SCC1_BRG4     0x1b000000;
+#define QUICC2_CMX_SCC1_BRG2     0x09000000
+#define QUICC2_CMX_SCC1_BRG3     0x12000000
+#define QUICC2_CMX_SCC1_BRG4     0x1b000000
 
-#define QUICC2_CMX_SCC2_CLR      0xff00ffff;
-#define QUICC2_CMX_SCC2_BRG1     0x00000000;
-#define QUICC2_CMX_SCC2_BRG2     0x00090000;
-#define QUICC2_CMX_SCC2_BRG3     0x00120000;
-#define QUICC2_CMX_SCC2_BRG4     0x001b0000;
+#define QUICC2_CMX_SCC2_CLR      0xff00ffff
+#define QUICC2_CMX_SCC2_BRG1     0x00000000
+#define QUICC2_CMX_SCC2_BRG2     0x00090000
+#define QUICC2_CMX_SCC2_BRG3     0x00120000
+#define QUICC2_CMX_SCC2_BRG4     0x001b0000
 
 static unsigned int select_word_length[] = {
   QUICC2_SCC_PSMR_CLEN(5),  // 5 bits / word (char)
