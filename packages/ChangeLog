@@ -10,6 +10,11 @@
         * ecos.db: Added the LANCEPCI packages and support for the vmWare
 	target
 
+2004-02-25  Gary Thomas  <gary@mlbassoc.com>
+
+	* devs/flash/powerpc/moab/current/src/moab_nand_flash.c: 
+	New board revision has larger FLASH (TC58DVG02 == 128MB)
+
 2004-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* ecos.db: Include CYGPKG_DEVS_ETH_ARM_KS32C5000 in snds100 and
