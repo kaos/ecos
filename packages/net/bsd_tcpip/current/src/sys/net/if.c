@@ -194,8 +194,6 @@ if_attach(ifp)
 	}
 
         if (ifp->if_snd.ifq_maxlen == 0) {
-            printf("%s%d XXX: driver didn't set ifq_maxlen\n",
-                   ifp->if_name, ifp->if_unit);
             ifp->if_snd.ifq_maxlen = ifqmaxlen;
         }
 
