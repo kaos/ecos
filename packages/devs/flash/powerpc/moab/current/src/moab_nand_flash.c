@@ -10,7 +10,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Nick Garnett <nickg@calivar.com>
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -58,9 +58,11 @@
 #include <cyg/hal/hal_io.h>             // I/O macros
 #include <cyg/hal/hal_if.h>             // Virtual vector interfaces
 
-// There's a single TC58256 on the MOAB board. 
+// There's a single TC58256 or TC58DVG02 on the MOAB board. 
 
 #define CYGHWR_DEVS_FLASH_TOSHIBA_TC58256
+#define CYGHWR_DEVS_FLASH_TOSHIBA_TC58DVG02
+#define CYGNUM_FLASH_BLANK	(1)
 #define CYGNUM_FLASH_INTERLEAVE	(1)
 #define CYGNUM_FLASH_WIDTH      (8)
 #define CYGNUM_FLASH_SERIES	(1)
