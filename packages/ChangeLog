@@ -1,3 +1,7 @@
+2002-08-27  Bart Veer  <bartv@ecoscentric.com>
+
+	* ecos.db: remove packages SDL and SMPEG that were never released.
+
 2002-08-15  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Added the CPU load measurement package.

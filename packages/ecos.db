@@ -1712,26 +1712,11 @@ package CYGPKG_REDBOOT {
         using eCos as the underlying board support mechanism."
 }
 
-
 package CYGPKG_MICROWINDOWS {
 	alias 		{ "Microwindows" mw }
 	directory	services/gfx/mw
 	script		microwindows.cdl
         description     "Microwindows."
-}
-
-package CYGPKG_SDL {
-	alias 		{ "SDL" sdl }
-	directory	services/gfx/sdl
-	script		sdl.cdl
-        description     "SDL."
-}
-
-package CYGPKG_SMPEG {
-	alias 		{ "SMPEG" smpeg }
-	directory	services/gfx/smpeg
-	script		smpeg.cdl
-        description     "SMPEG."
 }
 
 package CYGPKG_HAL_SH_SH7750_DREAMCAST {
