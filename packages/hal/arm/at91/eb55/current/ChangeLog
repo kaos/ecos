@@ -1,3 +1,13 @@
+2004-04-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* misc/redboot_ROMRAM.ecm: Deleted since this is no longer
+	supported.
+
+2004-04-08  Alan Bowman <abowman@synaptics-uk.com>
+
+	* include/pkgconf/mlt_arm_at91_eb55_romram.ldi: Alter rom_vectors
+	section to match the startup code for ROMRAM applications
+
 2004-02-12  Jani Monoses <jani@iv.ro>
 
 	* cdl/hal_arm_at91_eb55.cdl: Move configuration options 
