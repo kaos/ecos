@@ -217,6 +217,9 @@
    world. So skip it by defining _LIBC_LIMITS_H_ */
 #define _LIBC_LIMITS_H_
 
-#include_next <limits.h>
+/* Secondly only include if we haven't already been included by it. */
+#ifndef _GCC_LIMITS_H_
+# include_next <limits.h>
+#endif
 
 /* EOF limits.h */

@@ -257,7 +257,7 @@ cdl_package CYGPKG_ISOINFRA {
             requires      { 1 >= CYGINT_ISO_STDIO_FILEPOS }
         }
     
-        cdl_option CYGBLD_ISO_STDIO_FILEPOS {
+        cdl_option CYGBLD_ISO_STDIO_FILEPOS_HEADER {
             display       "Stdio file positioning implementation header"
             flavor        booldata
             default_value 0

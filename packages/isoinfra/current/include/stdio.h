@@ -69,6 +69,13 @@
 #define __need_size_t
 #include <stddef.h>
 
+/*  Misc functions below use varargs stuff, so pull it in from the compiler
+ *  here to save duplication.
+ */
+
+#define __need___va_list
+#include <stdarg.h>
+
 #ifdef CYGINT_ISO_STDIO_FILETYPES
 # ifdef CYGBLD_ISO_STDIO_FILETYPES_HEADER
 #  include CYGBLD_ISO_STDIO_FILETYPES_HEADER
@@ -133,10 +140,10 @@ extern "C" {
 #  endif
 
 extern int
-fileno( FILE *__stream );
+fileno( FILE *__stream ) __THROW;
 
 extern FILE *
-fdopen( int __fildes, const char *__type );
+fdopen( int __fildes, const char *__type ) __THROW;
 
 #  ifdef __cplusplus
 } // extern "C"

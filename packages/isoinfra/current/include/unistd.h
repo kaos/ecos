@@ -222,7 +222,6 @@ extern "C" {
 extern int 	link(const char *path1, const char *path2);
 extern int 	unlink(const char *path);
 extern int 	rmdir(const char *path);
-extern int 	rename(const char *old_name, const char *new_name);
 extern int 	access(const char *path, int amode);
 extern int 	chown(const char *path, uid_t owner, uid_t group);
 extern long 	pathconf(const char *path, int name);

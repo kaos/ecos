@@ -1,3 +1,16 @@
+2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/isoinfra.cdl: Typo: CYGBLD_ISO_STDIO_FILEPOS ->
+	CYGBLD_ISO_STDIO_FILEPOS_HEADER.
+
+	* include/limits.h: Avoid potential illegal recursion if
+	already been included by GCC's limits.h.
+
+	* include/stdio.h: Include stdarg.h to save duplication.
+	Give fileno(),fdopen() throw specifiers.
+
+	* include/unistd.h: Prototype for rename() lives in stdio.h.
+
 2004-01-07  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/sys/select.h: Only declare pselect() when posix signals are
