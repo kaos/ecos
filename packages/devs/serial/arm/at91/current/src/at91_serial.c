@@ -41,7 +41,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     gthomas
-// Contributors:  gthomas, tkoeller
+// Contributors:  gthomas, tkoeller, sblock
 // Date:          2001-07-24
 // Purpose:       Atmel AT91/EB40 Serial I/O module (interrupt driven version)
 // Description: 
@@ -96,7 +96,8 @@ typedef struct at91_serial_info {
 static bool at91_serial_init(struct cyg_devtab_entry *tab);
 static bool at91_serial_putc_interrupt(serial_channel *chan, unsigned char c);
 #if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
- || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE == 0)
 static bool at91_serial_putc_polled(serial_channel *chan, unsigned char c);
 #endif
 static Cyg_ErrNo at91_serial_lookup(struct cyg_devtab_entry **tab, 
@@ -104,7 +105,8 @@ static Cyg_ErrNo at91_serial_lookup(struct cyg_devtab_entry **tab,
                                     const char *name);
 static unsigned char at91_serial_getc_interrupt(serial_channel *chan);
 #if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
- || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE == 0)
 static unsigned char at91_serial_getc_polled(serial_channel *chan);
 #endif
 static Cyg_ErrNo at91_serial_set_config(serial_channel *chan, cyg_uint32 key,
@@ -116,7 +118,8 @@ static cyg_uint32 at91_serial_ISR(cyg_vector_t vector, cyg_addrword_t data);
 static void       at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
 
 #if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE > 0) \
- || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE > 0)
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE > 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE > 0)
 static SERIAL_FUNS(at91_serial_funs_interrupt, 
                    at91_serial_putc_interrupt, 
                    at91_serial_getc_interrupt,
@@ -127,7 +130,8 @@ static SERIAL_FUNS(at91_serial_funs_interrupt,
 #endif
 
 #if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
- || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE == 0)
 static SERIAL_FUNS(at91_serial_funs_polled, 
                    at91_serial_putc_polled, 
                    at91_serial_getc_polled,
@@ -193,7 +197,6 @@ static at91_serial_info at91_serial_info1 = {
     rcv_chunk_size  : CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_RCV_CHUNK_SIZE,
     rcv_buffer      : {at91_serial_rcv_buffer_1[0], at91_serial_rcv_buffer_1[1]}
 };
-
 #if CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE > 0
 static unsigned char at91_serial_out_buf1[CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE];
 static unsigned char at91_serial_in_buf1[CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE];
@@ -230,6 +233,56 @@ DEVTAB_ENTRY(at91_serial_io1,
              &at91_serial_channel1
     );
 #endif //  CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1
+
+
+#ifdef CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2
+
+static cyg_uint8 at91_serial_rcv_buffer_2
+    [2][CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_RCV_CHUNK_SIZE + RCVBUF_EXTRA];
+static at91_serial_info at91_serial_info2 = {
+    base            : (CYG_ADDRWORD) AT91_USART2,
+    int_num         : CYGNUM_HAL_INTERRUPT_USART2,
+    rcv_chunk_size  : CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_RCV_CHUNK_SIZE,
+    rcv_buffer      : {at91_serial_rcv_buffer_2[0], at91_serial_rcv_buffer_2[1]}
+};
+
+#if CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE > 0
+static unsigned char at91_serial_out_buf2[CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE];
+static unsigned char at91_serial_in_buf2[CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE];
+
+static SERIAL_CHANNEL_USING_INTERRUPTS(at91_serial_channel2,
+                                       at91_serial_funs_interrupt, 
+                                       at91_serial_info2,
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BAUD),
+                                       CYG_SERIAL_STOP_DEFAULT,
+                                       CYG_SERIAL_PARITY_DEFAULT,
+                                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                                       CYG_SERIAL_FLAGS_DEFAULT,
+                                       &at91_serial_out_buf2[0], sizeof(at91_serial_out_buf2),
+                                       &at91_serial_in_buf2[0], sizeof(at91_serial_in_buf2)
+    );
+#else
+static SERIAL_CHANNEL(at91_serial_channel2,
+                      at91_serial_funs_polled, 
+                      at91_serial_info2,
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BAUD),
+                      CYG_SERIAL_STOP_DEFAULT,
+                      CYG_SERIAL_PARITY_DEFAULT,
+                      CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                      CYG_SERIAL_FLAGS_DEFAULT
+    );
+#endif
+
+DEVTAB_ENTRY(at91_serial_io2, 
+             CYGDAT_IO_SERIAL_ARM_AT91_SERIAL2_NAME,
+             0,                     // Does not depend on a lower level interface
+             &cyg_io_serial_devio, 
+             at91_serial_init, 
+             at91_serial_lookup,     // Serial driver may need initializing
+             &at91_serial_channel2
+    );
+#endif //  CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2
+
 
 // Internal function to actually configure the hardware to desired baud rate, etc.
 static bool
@@ -338,7 +391,8 @@ at91_serial_putc_interrupt(serial_channel *chan, unsigned char c)
 }
 
 #if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
- || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE == 0)
 static bool
 at91_serial_putc_polled(serial_channel *chan, unsigned char c)
 {
@@ -367,7 +421,8 @@ at91_serial_getc_interrupt(serial_channel *chan)
 }
 
 #if (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL0) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL0_BUFSIZE == 0) \
- || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0)
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL1) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL1_BUFSIZE == 0) \
+ || (defined(CYGPKG_IO_SERIAL_ARM_AT91_SERIAL2) && CYGNUM_IO_SERIAL_ARM_AT91_SERIAL2_BUFSIZE == 0)
 static unsigned char 
 at91_serial_getc_polled(serial_channel *chan)
 {
