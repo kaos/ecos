@@ -50,34 +50,16 @@
 # ====================================================================
 
 cdl_package CYGPKG_DEVS_ETH_ARM_INNOVATOR {
-
     display       "Innovator SMC91C96 ethernet driver"
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_HAL_ARM_ARM9_INNOVATOR
 
-    # chip wired in PCMCIA, 16-bit mode, no EEPROM
-    # -- the chip is probably not wired in PCMCIA mode & I saw an EEPROM for it
+    include_dir   cyg/io
 
-    implements    CYGHWR_NET_DRIVERS
-    implements    CYGHWR_NET_DRIVER_ETH0
-    implements    CYGINT_DEVS_ETH_SMSC_LAN91CXX_REQUIRED
-#    implements    CYGINT_DEVS_ETH_SMSC_LAN91CXX_STATIC_ESA
-    
-    requires      CYGPKG_DEVS_ETH_SMSC_LAN91CXX
     description   "Ethernet driver for Innovator boards."
 
-    include_dir   cyg/io
-    compile       if_innovator.c
-
-    define_proc {
-        puts $::cdl_system_header "/***** ethernet driver proc output start *****/"
-        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL <cyg/io/devs_eth_innovator.inl>"
-        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_SMSC_LAN91CXX_CFG <pkgconf/devs_eth_arm_innovator.h>"
-        puts $::cdl_system_header "/*****  ethernet driver proc output end  *****/"
-    }
-    
     # Arguably this should do in the generic package
     # but then there is a logic loop so you can never enable it.
 
@@ -85,34 +67,51 @@ cdl_package CYGPKG_DEVS_ETH_ARM_INNOVATOR {
         display   "SMSC LAN91CXX driver required"
     }
 
-    cdl_option CYGDAT_DEVS_ETH_ARM_INNOVATOR_NAME {
-        display       "Device name for the ethernet driver"
-        flavor        data
-        default_value {"\"eth0\""}
-        description   "
-            This option sets the name of the ethernet device for the
-            ethernet port."
+    define_proc {
+        puts $::cdl_system_header "/***** ethernet driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL <cyg/io/devs_eth_innovator.inl>"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_SMSC_LAN91CXX_CFG <pkgconf/devs_eth_arm_innovator.h>"
+        puts $::cdl_system_header "/*****  ethernet driver proc output end  *****/"
     }
 
-    cdl_option CYGDAT_DEVS_ETH_ARM_INNOVATOR_ESA {
-        display       "The ethernet station address (MAC)"
-        flavor        data
-        default_value {"{0x12, 0x13, 0x14, 0x15, 0x16, 0x17}"}
-        description   "A static ethernet station address. 
-            Caution: Booting two systems with the same MAC on the same
-            network, will cause severe conflicts."
-        active_if     !CYGSEM_DEVS_ETH_ARM_INNOVATOR_REDBOOT_ESA
-    }
-
-    cdl_option CYGSEM_DEVS_ETH_ARM_INNOVATOR_REDBOOT_ESA {
-        display "Use the RedBoot ESA (MAC address)"
-        default_value 0
+    cdl_component CYGPKG_DEVS_ETH_ARM_INNOVATOR_ETH0 {
+        display       "Innovator ethernet port driver"
         flavor        bool
+        default_value 1
         description   "
-            Use the ESA that is stored as a RedBoot variable instead of
-            a static ESA." 
-    }
+            This option includes the ethernet device driver for the
+            Innovator port."
 
+        implements    CYGHWR_NET_DRIVERS
+        implements    CYGHWR_NET_DRIVER_ETH0
+        implements    CYGINT_DEVS_ETH_SMSC_LAN91CXX_REQUIRED
+
+        cdl_option CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_NAME {
+            display       "Device name for the ETH0 ethernet driver"
+            flavor        data
+            default_value {"\"eth0\""}
+            description   "
+                This option sets the name of the ethernet device."
+        }
+
+        cdl_component CYGSEM_DEVS_ETH_ARM_INNOVATOR_ETH0_SET_ESA {
+            display       "Set the ethernet station address"
+            flavor        bool
+            default_value 0
+            description   "Enabling this option will allow the ethernet
+            station address to be forced to the value set by the
+            configuration.  This may be required if the hardware does
+            not include a serial EEPROM for the ESA."
+            
+            cdl_option CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_ESA {
+                display       "The ethernet station address (MAC)"
+                flavor        data
+                default_value {"{0x12, 0x13, 0x14, 0x15, 0x16, 0x17}"}
+                description   "A static ethernet station address. 
+                    Caution: Booting two systems with the same MAC on the same
+                    network, will cause severe conflicts."
+            }
+        }
+    }
 }
 
-# EOF innovator_eth_drivers.cdl

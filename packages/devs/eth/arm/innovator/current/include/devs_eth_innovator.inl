@@ -52,58 +52,76 @@
 #include <cyg/hal/hal_intr.h>          
 #include <cyg/hal/innovator.h>
 
-//  #define CYGNUM_DEVS_ETH_SMSC_LAN91CXX_SHIFT_ADDR    2
-
-// MAC address is stored as a Redboot config option
 #ifdef CYGPKG_REDBOOT
-#include <pkgconf/redboot.h>
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-#include <redboot.h>
-#include <flash_config.h>
+# include <pkgconf/redboot.h>
+# ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#  include <redboot.h>
+#  include <flash_config.h>
+# endif
+#endif
 
-RedBoot_config_option("Network hardware address [MAC]",
-                      innovator_esa,
+#ifdef CYGPKG_DEVS_ETH_ARM_INNOVATOR_ETH0
+
+#if defined(CYGPKG_REDBOOT) && defined(CYGSEM_REDBOOT_FLASH_CONFIG)
+RedBoot_config_option("Set " CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_NAME " network hardware address [MAC]",
+                      eth0_esa,
                       ALWAYS_ENABLED, true,
+                      CONFIG_BOOL, false
+    );
+RedBoot_config_option(CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_NAME " network hardware address [MAC]",
+                      eth0_esa_data,
+                      "eth0_esa", true,
                       CONFIG_ESA, 0
     );
-#endif
-#endif
+#endif // CYGPKG_REDBOOT && CYGSEM_REDBOOT_FLASH_CONFIG
 
-// ESA address fetch function
-static void innovator_get_ESA(struct lan91cxx_priv_data *cpd)
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+// Note that this section *is* active in an application, outside RedBoot,
+// where the above section is not included.
+
+# include <cyg/hal/hal_if.h>
+
+# ifndef CONFIG_ESA
+#  define CONFIG_ESA (6)
+# endif
+# ifndef CONFIG_BOOL
+#  define CONFIG_BOOL (1)
+# endif
+
+cyg_bool
+_innovator_provide_eth0_esa(struct lan91cxx_priv_data* cpd)
 {
-    // Fetch hardware address from RedBoot config
-#if defined(CYGSEM_DEVS_ETH_ARM_INNOVATOR_REDBOOT_ESA)
-#if defined(CYGPKG_REDBOOT) && \
-    defined(CYGSEM_REDBOOT_FLASH_CONFIG)
-    flash_get_config("innovator_esa", cpd->enaddr, CONFIG_ESA);
-#else
-#error "No RedBoot flash configuration to store ESA"
-#endif
-#else
-    unsigned char static_esa[] = CYGDAT_DEVS_ETH_ARM_INNOVATOR_ESA;
-    memcpy(cpd->enaddr, static_esa, 6);
-#endif
+    cyg_bool set_esa;
+    int ok;
+    ok = CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,
+                                      "eth0_esa", &set_esa, CONFIG_BOOL);
+    if (ok && set_esa) {
+        ok = CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,
+                                          "eth0_esa_data", cpd->enaddr, CONFIG_ESA);
+    }
+    return ok && set_esa;
 }
 
-static lan91cxx_priv_data lan91cxx_eth0_priv_data = { 
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
-    config_enaddr : innovator_get_ESA,
-#ifndef CYGSEM_DEVS_ETH_ARM_INNOVATOR_REDBOOT_ESA    
-    enaddr: CYGDAT_DEVS_ETH_ARM_INNOVATOR_ESA,
-#endif
-#if 0
-    base : (unsigned short *) SA1110_FHH_ETH_IOBASE,
-    attbase : (unsigned char *) SA1110_FHH_ETH_MMBASE,
-    interrupt : SA1110_IRQ_GPIO_ETH
-#else
+static lan91cxx_priv_data lan91cxx_eth0_priv_data = { 
     base : (unsigned short *) 0x08000300,
+#ifdef CYGSEM_DEVS_ETH_ARM_INNOVATOR_ETH0_SET_ESA
+    enaddr        : CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_ESA,
+    hardwired_esa : true,
+#else
+    hardwired_esa : false,
+#endif
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+    provide_esa   : &_innovator_provide_eth0_esa,
+#else
+    provide_esa   : NULL,
 #endif
 };
 
 ETH_DRV_SC(lan91cxx_sc,
            &lan91cxx_eth0_priv_data,          // Driver specific data
-           CYGDAT_DEVS_ETH_ARM_INNOVATOR_NAME, // Name for device
+           CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_NAME, // Name for device
            lan91cxx_start,
            lan91cxx_stop,
            lan91cxx_control,
@@ -116,10 +134,11 @@ ETH_DRV_SC(lan91cxx_sc,
 );
 
 NETDEVTAB_ENTRY(lan91cxx_netdev, 
-                "lan91cxx_" CYGDAT_DEVS_ETH_ARM_INNOVATOR_NAME,
+                "lan91cxx_" CYGDAT_DEVS_ETH_ARM_INNOVATOR_ETH0_NAME,
                 smsc_lan91cxx_init,
                 &lan91cxx_sc);
 
-//EOF devs_eth_innovator.inl
+#endif // CYGPKG_DEVS_ETH_ARM_INNOVATOR_ETH0
+
 
 

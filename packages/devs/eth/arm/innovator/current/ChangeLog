@@ -1,3 +1,10 @@
+2003-02-14  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/if_innovator.c (removed file)
+	* include/devs_eth_innovator.inl
+	* cdl/innovator_eth_drivers.cdl: Reworked to support flash, CDL,
+	and eeprom ESA assignment, in that priority.
+
 2003-02-05  Patrick Doyle <wpd@delcomsys.com>
 	* cdl/innovator_eth_drivers.cdl
 	* include/devs_eth_innovator.inl
