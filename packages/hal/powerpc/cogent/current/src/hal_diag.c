@@ -388,7 +388,7 @@ void hal_diag_read_char(char* c) {}
 
 #if defined(CYG_KERNEL_DIAG_ROMART)
 
-#ifdef CYG_HAL_POWERPC_COGENT
+#ifdef CYGPKG_HAL_POWERPC_COGENT
 #define PROMICE_AILOC           0xfff00020
 #endif
 

@@ -1,3 +1,7 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* src/quicc_smc1.c: CYG_HAL_POWERPC_x->CYGPKG_...
+
 1999-09-02  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/quicc_smc1.c (init_smc1_uart): Generalize baud rate computation.

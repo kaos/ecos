@@ -53,7 +53,7 @@ extern diag_printf( char *format, ... );
 
 #include <cyg/infra/testcase.h>
 
-#if defined(CYG_HAL_POWERPC_MPC860)
+#if defined(CYGPKG_HAL_POWERPC_MPC860)
 
 #undef CHECK(b)
 #define CHECK(b) CYG_TEST_CHECK(b,#b)
@@ -66,7 +66,7 @@ extern diag_printf( char *format, ... );
 // interrupt handlers.
 #define PIT_PERIOD 5000
 
-#ifdef CYG_HAL_POWERPC_MBX
+#ifdef CYGPKG_HAL_POWERPC_MBX
 #define TB_PERIOD (PIT_PERIOD*384)      // PTA period is 15.36 uS
 #else
 #define TB_PERIOD (PIT_PERIOD*32)       // assuming 512/16 divisors
@@ -284,7 +284,7 @@ cyg_start( void )
     intr0_main();
 }
 
-#else  // ifdef CYG_HAL_POWERPC_MPC860
+#else  // ifdef CYGPKG_HAL_POWERPC_MPC860
 
 externC void
 cyg_start( void )
@@ -293,6 +293,6 @@ cyg_start( void )
     CYG_TEST_PASS_FINISH("N/A: Not a MPC860");
 }
 
-#endif // ifdef CYG_HAL_POWERPC_MPC860
+#endif // ifdef CYGPKG_HAL_POWERPC_MPC860
 
 // EOF intr0.c

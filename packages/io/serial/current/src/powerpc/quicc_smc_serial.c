@@ -408,7 +408,7 @@ quicc_smc_serial_init(struct cyg_devtab_entry *tab)
             );
         TxBD = RxBD + CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM*8;
 #else
-#ifdef CYG_HAL_POWERPC_MBX
+#ifdef CYGPKG_HAL_POWERPC_MBX
         // Ensure the SMC1 side is initialized first and use shared mem
         // above where it plays:
         diag_init();    // (pull in constructor that inits diag channel)

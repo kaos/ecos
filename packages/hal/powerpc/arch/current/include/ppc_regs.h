@@ -134,7 +134,7 @@
 //--------------------------------------------------------------------------
 // MPC603 Specific Definitions
 //--------------------------------------------------------------------------
-#ifdef CYG_HAL_POWERPC_MPC603
+#ifdef CYGPKG_HAL_POWERPC_MPC603
 
 //--------------------------------------------------------------------------
 // Cache
@@ -182,12 +182,12 @@
 #define LBAT_PP_RW      0x00000002      // read/write
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
-#endif // ifdef CYG_HAL_POWERPC_MPC603
+#endif // ifdef CYGPKG_HAL_POWERPC_MPC603
 
 //--------------------------------------------------------------------------
 // MPC8xx Generic Definitions
 //--------------------------------------------------------------------------
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
 
 //--------------------------------------------------------------------------
 // Instruction cache control.
@@ -475,6 +475,6 @@
 #define ICTRL_NOSERSHOW CYGARC_REG_ICTRL_NOSERSHOW
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
-#endif // ifdef CYG_HAL_POWERPC_MPC8xx
+#endif // ifdef CYGPKG_HAL_POWERPC_MPC8xx
 
 #endif // ifdef CYGONCE_HAL_PPC_REGS_H

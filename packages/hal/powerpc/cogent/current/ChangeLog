@@ -1,3 +1,9 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+	* src/cma_ser.inl:
+	* src/cogent.S:
+	* src/hal_diag.c:
+	CYG_HAL_POWERPC_x->CYGPKG_...
+
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.

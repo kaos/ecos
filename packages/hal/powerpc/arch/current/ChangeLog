@@ -1,3 +1,17 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* tests/intr0.c: 
+	* tests/PKGconf.mak: 
+	* include/hal_cache.h:
+	* include/hal_intr.h:
+	* include/ppc_regs.h:
+	* include/ppc.inc:
+	* src/hal_intr.c:
+	* src/hal_misc.c:
+	* src/ppc_stub.c:
+	* src/vectors.S:
+        CYG_HAL_POWERPC_x->CYGPKG_...
+	
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_cache.h: Include plf_cache.h

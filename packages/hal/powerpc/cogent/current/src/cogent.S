@@ -52,7 +52,7 @@
         .globl  hal_hardware_init
 hal_hardware_init:
 
-#if defined(CYG_HAL_POWERPC_COGENT) && defined(CYG_HAL_POWERPC_MPC8xx)
+#if defined(CYGPKG_HAL_POWERPC_COGENT) && defined(CYGPKG_HAL_POWERPC_MPC8xx)
 
         # Set up MPC8xx mapping registers for cogent
 

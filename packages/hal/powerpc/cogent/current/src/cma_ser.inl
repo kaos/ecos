@@ -212,7 +212,7 @@ CYG_CMA_PUBLIC void NC(init_serial)( void )
     cyg_uint8 lcr;
 
     // Disable interrupts.
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
     HAL_INTERRUPT_MASK(CYGNUM_HAL_INTERRUPT_SIU_IRQ1);
 #else
 #error "Not supported on CPU"
@@ -297,7 +297,7 @@ CYG_CMA_PUBLIC void NC(put_char)( int c )
 int NC(interruptible)( int state )
 {
     int vector;
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
     // Serial interrupts are feed to IRQ1 on the 8xx CPUs.
     vector = CYGNUM_HAL_INTERRUPT_SIU_IRQ1;
 #else
@@ -332,7 +332,7 @@ int cyg_hal_gdb_isr( target_register_t pc )
     cyg_uint8 vec;
     int break_irq = 0;
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
     // Serial interrupts are feed to IRQ1 (vector 0x08) on the Cogent
     // board.
     HAL_READ_UINT8(CYGARC_REG_IMM_SIVEC, vec);

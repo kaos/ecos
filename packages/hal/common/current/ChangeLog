@@ -1,3 +1,7 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* include/pkgconf/hal.h: CYG_HAL_POWERPC_x->CYGPKG_...
+
 1999-12-21  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/hal.h: Rename all CYG_HAL_USE_ROM_MONITOR_GDB_STUBS

@@ -1,3 +1,8 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* src/fads.S:
+        CYG_HAL_POWERPC_x->CYGPKG_...
+	
 2000-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_cache.h: Added.

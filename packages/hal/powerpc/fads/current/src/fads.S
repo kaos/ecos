@@ -73,7 +73,7 @@
         .globl  hal_hardware_init
 hal_hardware_init:
 
-#if defined(CYGPKG_HAL_POWERPC_FADS) && defined(CYG_HAL_POWERPC_MP860)
+#if defined(CYGPKG_HAL_POWERPC_FADS) && defined(CYGPKG_HAL_POWERPC_MP860)
 
         # kevinh disabled - we use the values which have already been setup
         # by the mpc8bug

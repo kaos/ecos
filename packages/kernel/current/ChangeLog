@@ -1,3 +1,7 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* src/sched/lottery.cxx (schedule): CYG_HAL_POWERPC_x->CYGPKG_...
+
 2000-02-01  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* tests/tm_basic.cxx (NTEST_THREADS): Reduce further to fit on small

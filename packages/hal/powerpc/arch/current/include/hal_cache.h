@@ -94,7 +94,7 @@ externC cyg_memdesc_t cyg_hal_mem_map[];
 //=============================================================================
 // PowerPC simulator
 
-#ifdef CYG_HAL_POWERPC_SIM
+#ifdef CYGPKG_HAL_POWERPC_SIM
 
 //-----------------------------------------------------------------------------
 // Cache dimensions
@@ -224,12 +224,12 @@ externC cyg_memdesc_t cyg_hal_mem_map[];
 //=============================================================================
 // Motorola MPC8xx
 
-#elif defined(CYG_HAL_POWERPC_MPC8xx)
+#elif defined(CYGPKG_HAL_POWERPC_MPC8xx)
 
 //-----------------------------------------------------------------------------
 // Cache dimensions
 
-#if defined(CYG_HAL_POWERPC_MPC860)
+#if defined(CYGPKG_HAL_POWERPC_MPC860)
 // Data cache
 #define HAL_DCACHE_SIZE                 4096    // Size of data cache in bytes
 #define HAL_DCACHE_LINE_SIZE            16      // Size of a data cache line
@@ -239,9 +239,9 @@ externC cyg_memdesc_t cyg_hal_mem_map[];
 #define HAL_ICACHE_SIZE                 4096    // Size of cache in bytes
 #define HAL_ICACHE_LINE_SIZE            16      // Size of a cache line
 #define HAL_ICACHE_WAYS                 2       // Associativity of the cache
-#endif // defined(CYG_HAL_POWERPC_MPC860)
+#endif // defined(CYGPKG_HAL_POWERPC_MPC860)
 
-#if defined(CYG_HAL_POWERPC_MPC823) || defined(CYG_HAL_POWERPC_MPC850)
+#if defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
 // Data cache
 #define HAL_DCACHE_SIZE                 1024    // Size of data cache in bytes
 #define HAL_DCACHE_LINE_SIZE            16      // Size of a data cache line
@@ -251,7 +251,7 @@ externC cyg_memdesc_t cyg_hal_mem_map[];
 #define HAL_ICACHE_SIZE                 2048    // Size of cache in bytes
 #define HAL_ICACHE_LINE_SIZE            16      // Size of a cache line
 #define HAL_ICACHE_WAYS                 2       // Associativity of the cache
-#endif // defined(CYG_HAL_POWERPC_MPC823) || defined(CYG_HAL_POWERPC_MPC850)
+#endif // defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
 
 #define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
 #define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))

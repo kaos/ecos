@@ -93,7 +93,7 @@
 	ori	\reg,\reg,\val@L
 	.endm
 
-#ifdef CYG_HAL_POWERPC_MPC603
+#ifdef CYGPKG_HAL_POWERPC_MPC603
 	# Move from HID0 hw control register
 	.macro	mfhid0 reg
 	mfspr	\reg,HID0

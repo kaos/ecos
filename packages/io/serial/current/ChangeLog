@@ -1,3 +1,7 @@
+2000-02-03  Jesper Skov  <jskov@redhat.com>
+
+	* src/powerpc/quicc_smc_serial.c: CYG_HAL_POWERPC_x->CYGPKG_...
+
 2000-02-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/arm/aeb_serial.h: Rename lower case register macros to REG_ upper

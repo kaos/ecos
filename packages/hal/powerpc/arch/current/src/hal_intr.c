@@ -87,7 +87,7 @@ hal_call_isr (cyg_uint32 vector)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#ifdef CYG_HAL_POWERPC_MPC860
+#ifdef CYGPKG_HAL_POWERPC_MPC860
 
 // Since the interrupt sources do not have fixed vectors on the 860
 // SIU, some arbitration is required.
@@ -236,7 +236,7 @@ hal_IRQ_init(void)
     HAL_INTERRUPT_SET_LEVEL (CYGNUM_HAL_INTERRUPT_SIU_CPM, 7);
     HAL_INTERRUPT_UNMASK (CYGNUM_HAL_INTERRUPT_SIU_CPM);
 }
-#else // ifdef CYG_HAL_POWERPC_MPC860
+#else // ifdef CYGPKG_HAL_POWERPC_MPC860
 
 externC void
 hal_IRQ_init(void)
@@ -244,7 +244,7 @@ hal_IRQ_init(void)
     // Nothing special
 }
 
-#endif // ifdef CYG_HAL_POWERPC_MPC860
+#endif // ifdef CYGPKG_HAL_POWERPC_MPC860
 
 // -------------------------------------------------------------------------
 // EOF hal_intr.c

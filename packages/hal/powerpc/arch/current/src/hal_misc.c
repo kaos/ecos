@@ -229,7 +229,7 @@ void
 hal_idle_thread_action( cyg_uint32 count )
 {
 #if 0
-#ifdef CYG_HAL_POWERPC_MPC860
+#ifdef CYGPKG_HAL_POWERPC_MPC860
     register cyg_uint32 result;
 
     cyg_uint32 *psivec  = (cyg_uint32*)CYGARC_REG_IMM_SIVEC ;
@@ -256,7 +256,7 @@ static int
 hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys, 
                 cyg_int32 size, cyg_uint8 flags)
 {
-#ifdef CYG_HAL_POWERPC_MPC603
+#ifdef CYGPKG_HAL_POWERPC_MPC603
     {
         // Use BATs to map the memory.
         cyg_uint32 ubat, lbat;
@@ -312,7 +312,7 @@ hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
 #endif
 
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
     {
         // The MPC8xx CPUs do not have BATs. Fortunately we don't
         // currently use the MMU, so we can simulate BATs by using the
@@ -321,11 +321,11 @@ hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
         cyg_uint32 epn, rpn, ctr, twc;
         int max_tlbs;
 
-#if defined(CYG_HAL_POWERPC_MPC860)
+#if defined(CYGPKG_HAL_POWERPC_MPC860)
         // There are 32 TLBs.
         max_tlbs = 32;
 #endif
-#if defined(CYG_HAL_POWERPC_MPC823) || defined(CYG_HAL_POWERPC_MPC850)
+#if defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
         // There are 8 TLBs.
         max_tlbs = 8;
 #endif
@@ -381,7 +381,7 @@ hal_map_memory (int id,CYG_ADDRESS virt, CYG_ADDRESS phys,
 static void
 hal_clear_MMU (void)
 {
-#ifdef CYG_HAL_POWERPC_MPC603
+#ifdef CYGPKG_HAL_POWERPC_MPC603
     {
         cyg_uint32 ubat, lbat;
 
@@ -408,7 +408,7 @@ hal_clear_MMU (void)
     }
 #endif
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
     {
         // Initialize TLBs with 0, Valid bits unset.
 
@@ -416,11 +416,11 @@ hal_clear_MMU (void)
         int id;
         int max_tlbs;
 
-#if defined(CYG_HAL_POWERPC_MPC860)
+#if defined(CYGPKG_HAL_POWERPC_MPC860)
         // There are 32 TLBs.
         max_tlbs = 32;
 #endif
-#if defined(CYG_HAL_POWERPC_MPC823) || defined(CYG_HAL_POWERPC_MPC850)
+#if defined(CYGPKG_HAL_POWERPC_MPC823) || defined(CYGPKG_HAL_POWERPC_MPC850)
         // There are 8 TLBs.
         max_tlbs = 8;
 #endif
@@ -488,7 +488,7 @@ hal_enable_caches(void)
 #endif
 #endif
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
     // Disable serialization
     {
         cyg_uint32 ictrl;

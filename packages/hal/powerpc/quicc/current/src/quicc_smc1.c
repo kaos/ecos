@@ -48,7 +48,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_cache.h>
 
-#ifdef CYG_HAL_POWERPC_MPC860
+#ifdef CYGPKG_HAL_POWERPC_MPC860
 
 // eCos headers decribing PowerQUICC:
 #include <cyg/hal/quicc/ppc8xx.h>
@@ -365,5 +365,5 @@ int cyg_hal_gdb_isr( target_register_t pc )
 }
 #endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
-#endif // CYG_HAL_POWERPC_MPC860
+#endif // CYGPKG_HAL_POWERPC_MPC860
 // EOF quicc_smc1.c

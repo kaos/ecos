@@ -119,7 +119,7 @@ int __computeSignal (unsigned int trap_number)
         /* System call */
         return SIGSYS;
 
-#if defined(CYG_HAL_POWERPC_MPC8xx)
+#if defined(CYGPKG_HAL_POWERPC_MPC8xx)
     case CYGNUM_HAL_VECTOR_SW_EMUL:
         /* A SW_EMUL is generated instead of PROGRAM for illegal
            instructions. */
@@ -144,7 +144,7 @@ int __computeSignal (unsigned int trap_number)
     case CYGNUM_HAL_VECTOR_DTLB_ERROR:
         /* Invalid data access. */
         return SIGSEGV;
-#endif // defined(CYG_HAL_POWERPC_MPC8xx)
+#endif // defined(CYGPKG_HAL_POWERPC_MPC8xx)
         
     default:
         return SIGTERM;

@@ -94,7 +94,7 @@ Cyg_Thread *Cyg_Scheduler_Implementation::schedule()
 {
     CYG_REPORT_FUNCTION();
 
-#ifdef CYG_HAL_POWERPC
+#ifdef CYGPKG_HAL_POWERPC
 
     // PowerPc specific version of random number generator.
     register cyg_int32 r1 asm("r4");

@@ -78,7 +78,7 @@
 
 #define CYG_MSR_COMMON (MSR_FP | MSR_ME | MSR_IR | MSR_DR | MSR_RI)
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
-# ifdef CYG_HAL_POWERPC_COPY_VECTORS
+# ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS
 #  define CYG_MSR CYG_MSR_COMMON
 # else
 #  define CYG_MSR (CYG_MSR_COMMON | MSR_IP)
@@ -87,7 +87,7 @@
 #ifdef CYG_HAL_STARTUP_RAM      
 #define CYG_MSR CYG_MSR_COMMON
 #endif
-#ifdef CYG_HAL_POWERPC_SIM
+#ifdef CYGPKG_HAL_POWERPC_SIM
 # When building for SIM, don~t enable MMU -- it~s not needed since caches
 # are disabled, and there is a runtime simulation overhead.
 #undef CYG_MSR
@@ -207,7 +207,7 @@ __exception_program:
         # There are some additional vectors defined
         # on various implementations.
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
         # MPC8xx vectors
 
         exception_vector        software_emu
@@ -241,7 +241,7 @@ _start:
         # Initialize CPU
         bl      _init_CPU
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
         # Disable special MPC8xx "development support" which
 	# suppresses trace exceptions. The CPU seems to hang, not 
         # executing from offset 0x1e00(?) as expected.
@@ -292,9 +292,9 @@ _start:
 #endif
         
         
-#ifdef CYG_HAL_POWERPC_COPY_VECTORS // only for StubRom-supported startup
+#ifdef CYGSEM_HAL_POWERPC_COPY_VECTORS // only for StubRom-supported startup
 
-#ifdef CYG_HAL_POWERPC_MBX
+#ifdef CYGPKG_HAL_POWERPC_MBX
 # define CYGPRI_STUBROM_HAS_RAM_VECTORS
 #endif
 
@@ -520,7 +520,7 @@ __default_exception_vsr:
 
 ## Note: CYG_ISR_TABLE_SIZE must match CYG_ISR_COUNT defined in hal_intr.h.
 
-#ifdef CYG_HAL_POWERPC_MPC8xx 
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx 
 
 ## First level decoding of MPC8xx SIU interrupt controller.
 
@@ -689,7 +689,7 @@ __default_interrupt_vsr:
 
 #ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
         # The CPM controller allows nested interrupts. However,
         # it sits on the back of the SIU controller which has no
         # HW support for this. In effect, SW masking of lower
@@ -894,7 +894,7 @@ FUNC_START(hal_interrupt_stack_call_pending_DSRs)
 #---------------------------------------------------------------------------
 # Code for putting the CPU in a post-reset state; disabling MMU and caches.
 _init_CPU:
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
         lwi     r3,CYGARC_REG_DC_CMD_CD
         sync
         mtspr   CYGARC_REG_DC_CST,r3
@@ -943,7 +943,7 @@ hal_vsr_table:
         .long   __default_exception_vsr         # floating point assist
         .long   __default_exception_vsr         # reserved 0x0f00
 
-#ifdef CYG_HAL_POWERPC_MPC8xx
+#ifdef CYGPKG_HAL_POWERPC_MPC8xx
 
         # Implementation defined vectors
         .long   __default_exception_vsr         # software emulation
