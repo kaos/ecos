@@ -81,6 +81,21 @@ target_register_t registers[NUMREGS];
 target_register_t alt_registers[NUMREGS] ;  // Thread or saved process state
 target_register_t * _registers = registers; // Pointer to current set of registers
 
+#if defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
+static int  _hw_stop_reason;   // Reason we were stopped by hw.
+
+// strings indexed by hw stop reasons defined in hal_stub.h
+static const char * const _hw_stop_str[] = {
+    "",
+    "hbreak",
+    "watch",
+    "rwatch",
+    "awatch"
+};
+
+static void *_watch_data_addr; // The data address if stopped by watchpoint
+#endif
+
 // Register validity checking
 #ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
 int registers_valid[NUMREGS];
@@ -470,6 +485,14 @@ handle_exception_cleanup( void )
     // seem like an interrupt rather than having hit a breakpoint.
     cyg_hal_gdb_break = cyg_hal_gdb_remove_break(get_register (PC));
 #endif
+
+#if defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
+    // For HW watchpoint/breakpoint support, we need to know if we
+    // stopped because of watchpoint or hw break. We do that here
+    // before GDB has a chance to remove the watchpoints and save
+    // the information for later use in building response packets.
+    _hw_stop_reason = HAL_STUB_IS_STOPPED_BY_HARDWARE(_watch_data_addr);
+#endif    
 }
 
 // Called at stub *exit*
@@ -649,6 +672,24 @@ __build_t_packet (int sigval, char *buf)
 #endif
         ptr = __mem2hex((char *)&id, ptr, sizeof(id), 0);
         *ptr++ = ';';
+    }
+#endif
+
+#ifdef HAL_STUB_HW_WATCHPOINT
+    switch(_hw_stop_reason) {
+      case HAL_STUB_HW_STOP_WATCH:
+      case HAL_STUB_HW_STOP_RWATCH:
+      case HAL_STUB_HW_STOP_AWATCH:
+	strcpy(ptr, _hw_stop_str[_hw_stop_reason]);
+	ptr += strlen(_hw_stop_str[_hw_stop_reason]);
+	*ptr++ = ':';
+	// Send address MSB first
+	ptr += __intToHex(ptr, (target_register_t)_watch_data_addr,
+			  sizeof(_watch_data_addr) * 8);
+	*ptr++ = ';';
+	break;
+      default:
+	break;
     }
 #endif
 

@@ -98,4 +98,11 @@ extern ssize_t  write(int, const void *, size_t);
 extern char     *inet_ntoa(struct in_addr);
 extern int      select(int, fd_set *, fd_set *, fd_set *, struct timeval *tv);
 
+// This API is for our own automated network tests.
+// It's not at all supported.
+#define CYG_NET_GET_MEM_STATS_MISC  0 // Misc mpool
+#define CYG_NET_GET_MEM_STATS_MBUFS 1 // Mbufs pool
+#define CYG_NET_GET_MEM_STATS_CLUST 2 // Clust pool
+int cyg_net_get_mem_stats( int which, cyg_mempool_info *p );
+
 #endif // _NETWORK_H_

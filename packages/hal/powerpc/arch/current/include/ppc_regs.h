@@ -54,7 +54,6 @@
 
 #include <cyg/hal/var_regs.h>
 
-
 //--------------------------------------------------------------------------
 // SPR access macros.
 #define CYGARC_MTSPR(_spr_, _v_) \

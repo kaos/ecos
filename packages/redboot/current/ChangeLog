@@ -1,3 +1,15 @@
+2000-11-06  Mark Salter  <msalter@redhat.com>
+
+	* src/syscall.c: New file. Common handling for bsp syscalls.
+
+	* cdl/redboot.cdl: Add CYGSEM_REDBOOT_BSP_SYSCALLS option to
+	turn on BSP syscall support.
+
+2000-11-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/net_io.c (net_io_flush): Clear interrupt flag before
+	setting breakpoint.
+
 2000-10-30  Gary Thomas  <gthomas@redhat.com>
 
 	* src/net/udp.c: 

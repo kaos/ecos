@@ -1,3 +1,7 @@
+2000-11-14  Jesper Skov  <jskov@redhat.com>
+
+	* tests/clock.c: Skip first three samples.
+
 2000-10-30  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/time.inl: Ensure POSIX *_r functions can be accessed by

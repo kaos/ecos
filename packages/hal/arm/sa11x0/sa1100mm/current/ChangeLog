@@ -1,3 +1,17 @@
+2000-11-13  Drew Moseley  <dmoseley@st-kitts.caribbean>
+
+	* misc/redboot_ROM.cfg: Turn on REDBOOT_BSP_SYSCALLS.
+	* misc/redboot_RAM.cfg: Ditto.
+
+2000-11-09  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/redboot_ROM.cfg: New import file for ecosconfig.
+	* misc/redboot_RAM.cfg: Ditto.
+
+2000-11-06  Drew Moseley  <dmoseley@redhat.com>
+
+	* cdl/hal_arm_sa11x0_sa1100mm.cdl: Use the "-mapcs-frame" compile option.
+
 2000-10-25  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/sa1100mm_misc.c: New file.  Support for SA1100 Multimedia

@@ -43,6 +43,10 @@
 cdl_package CYGPKG_HAL_SH_SH4 {
     display       "SH4 architecture"
     parent        CYGPKG_HAL_SH
+
+    # Disable for now. Problem with cache consistency
+    requires      ! CYGHWR_HAL_SH_CACHE_ENABLE
+
     hardware
     include_dir   cyg/hal
     define_header hal_sh_sh4.h

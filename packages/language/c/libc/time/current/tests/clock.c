@@ -86,6 +86,17 @@ cyg_start(void)
 // Number of samples to take
 #define SAMPLES 30
 
+// We ignore ctrs[0] because it's always 0
+// We ignore ctrs[1] because it will always be odd since it was
+// the first measurement taken at the start of the looping, and
+// the initial clock measurement (in clocks[0]) was not treated as
+// part of the loop and therefore can't be considered to take the same
+// time.
+// We ignore ctrs[2] because it always seems to be substantially faster
+// that the other samples. Probably due to cache/timing effect after the
+// previous loop.
+#define SKIPPED_SAMPLES 3
+
 
 // FUNCTIONS
 
@@ -184,22 +195,16 @@ main(int argc, char *argv[])
                     i, ctrs[i]);
 
         // Now we work out the error etc.
-        // We ignore ctrs[0] because it's always 0
-        // We ignore ctrs[1] because it will always be odd since it was
-        // the first measurement taken at the start of the looping, and
-        // the initial clock measurement (in clocks[0]) was not treated as
-        // part of the loop and therefore can't be considered to take the same
-        // time.
-        if (i>=2) {
+        if (i>=SKIPPED_SAMPLES) {
             sum += ctrs[i];
         }
     }
 
     // deduce out the average
-    mean = sum / (SAMPLES-2);
+    mean = sum / (SAMPLES-SKIPPED_SAMPLES);
 
     // now go through valid results and compare against average
-    for (i=2;i<SAMPLES;i++) {
+    for (i=SKIPPED_SAMPLES;i<SAMPLES;i++) {
         unsigned long err;
 
         err = (100 * my_abs(ctrs[i]-mean)) / mean;

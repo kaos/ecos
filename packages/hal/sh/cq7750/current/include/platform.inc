@@ -85,6 +85,11 @@
         .align  2
 
 BSC_settings_table:
+        # FRQCR:
+	.long   CYGARC_REG_FRQCR
+	.long   CYGARC_REG_FRQCR_INIT
+	.long	2
+	
         # BCR1:
         .long   CYGARC_REG_BCR1
         .long   0x0020000c

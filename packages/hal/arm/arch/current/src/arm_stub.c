@@ -46,6 +46,10 @@
 
 #include <pkgconf/hal.h>
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#endif
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 #ifdef CYGPKG_HAL_ARM_SIM
@@ -79,8 +83,11 @@ int __computeSignal (unsigned int trap_number)
 {
     // Check to see if we stopped because of a hw watchpoint/breakpoint.
 #ifdef HAL_STUB_IS_STOPPED_BY_HARDWARE
-    if (HAL_STUB_IS_STOPPED_BY_HARDWARE(trap_number))
-	return SIGTRAP;
+    {
+	void *daddr;
+	if (HAL_STUB_IS_STOPPED_BY_HARDWARE(daddr))
+	    return SIGTRAP;
+    }
 #endif
     // should also catch CYGNUM_HAL_VECTOR_UNDEF_INSTRUCTION here but we
     // can't tell the different between a real one and a breakpoint :-(
@@ -105,6 +112,14 @@ int __get_trap_number (void)
     // directly from the save context.
     return _hal_registers->vector;
 }
+
+
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+int __is_bsp_syscall(void) 
+{
+    return _hal_registers->vector == CYGNUM_HAL_EXCEPTION_INTERRUPT;
+}
+#endif
 
 /* Set the currently-saved pc register value to PC. */
 

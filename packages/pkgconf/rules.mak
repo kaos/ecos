@@ -126,12 +126,12 @@ endif
 
 # rule to clean the build tree
 clean:
-	@find . -type f -not -name makefile -print0 | xargs -0 rm -f
+	@find . -type f -print | grep -v makefile | xargs rm -f
 
 # rule to copy MLT files
 mlt_headers:
 ifneq ($(strip $(MLT)),)
-	@cp -u $(MLT) $(PREFIX)/include/pkgconf
+	@install -c $(MLT) $(PREFIX)/include/pkgconf
 	@chmod u+w $(PREFIX)/include/pkgconf/mlt*.*
 endif
 

@@ -1,3 +1,33 @@
+2000-11-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/pci_hw.c: 
+	* src/pci.c: Layout changes require <pkgconf/hal.h>
+
+2000-11-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pci.c (cyg_pci_find_next): Conditionalize debug printfs
+
+2000-11-04  Mark Salter  <msalter@redhat.com>
+
+	* src/pci.c (cyg_pci_get_device_info): Add bridge support. Handle
+	already configured devices.
+	(cyg_pci_set_device_info): Add bridge support.
+	(cyg_pci_find_next): Support device id with valid bus number
+	combined with CYG_PCI_NULL_DEVFN.
+	(cyg_pci_configure_device): Return true if device already configured.
+	Fixed for devices which use no BARs.
+	(cyg_pci_allocate_io_priv): Remove bogus limit check.
+	(cyg_pci_configure_bus): New function to recursively configure a
+	bus and its subordinate bases.
+
+	* include/pci_cfg.h: Added bridge definitions.
+	(CYG_PCI_CFG_BAR_5): Corrected.
+
+	* include/pci.h (CYG_PCI_NULL_DEVFN): Define.
+	(cyg_pci_device): Add bridge support. Add num_bars. Add
+	declaration for cyg_pci_configure_bus.
+	(CYG_PCI_MAX_BUS): Increase to (arbitrary) 8.
+
 2000-03-28  John Dallaway  <jld@cygnus.co.uk>
 
 	* cdl/io_pci.cdl:

@@ -125,6 +125,15 @@ externC void __stub_copy_registers(target_register_t *dest,
                                    target_register_t *src);
 
 //----------------------------------------------------------------------------
+// Hardware Watch/Breakpoint support. These are the possible return values
+// of HAL_STUB_IS_STOPPED_BY_HARDWARE().
+#define HAL_STUB_HW_STOP_NONE   0   // target did not stop for hw watch/break
+#define HAL_STUB_HW_STOP_BREAK  1   // target stopped for hw breakpoint
+#define HAL_STUB_HW_STOP_WATCH  2   // target stopped for write-only watchpoint
+#define HAL_STUB_HW_STOP_RWATCH 3   // target stopped for read-only watchpoint
+#define HAL_STUB_HW_STOP_AWATCH 4   // target stopped for access watchpoint
+
+//----------------------------------------------------------------------------
 // Memory accessor functions.
 #define TARGET_HAS_OWN_MEM_FUNCS
 

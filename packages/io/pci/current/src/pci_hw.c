@@ -41,6 +41,7 @@
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
 #include <cyg/io/pci_hw.h>
 
 // CYG_PCI_PRESENT only gets defined for targets that provide PCI HAL support.

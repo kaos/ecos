@@ -139,7 +139,9 @@ A list of the all the command-line options can be obtained by running
    --disable-tracing        disable tracing
    --disable-fntracing      disable function entry/exit tracing
 
-3) --with-tcl=<path> and --with-tcl-version=<number>
+3) --with-tcl=<path>, --with-tcl-header=<path>, --with-tcl-lib=<path>
+   and --with-tcl-version=<number>
+
    The host-side tools have a dependency on Tcl, which is not supplied
    with the sources because many people will already have a suitable
    installation. Specifically it is necessary to have the header file
@@ -156,6 +158,14 @@ A list of the all the command-line options can be obtained by running
    appropriate:
 
    $ <path>/configure --with-tcl=/usr <args>
+
+   If the Tcl libraries and Tcl headers are installed in different
+   locations, such as when a seperate --prefix and --exec-prefix are
+   used, the --with-tcl-header and --with-tcl-lib options can be used
+   to specify both location.  The configure will expect to find
+   <tcl-header-dir>/include/tcl.h and <tcl-lib-dir>/lib/tclConfig.sh.
+   The --with-tcl option has precedence and if used will override the
+   --with-tcl-header and --with-tcl-lib options.
 
    It is possible to have multiple versions of Tcl installed, for
    example libtcl8.0.a, libtcl8.1.a, and so on. Typically linking with

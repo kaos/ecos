@@ -61,15 +61,17 @@ extern int flash_get_block_info(int *block_size, int *blocks);
 extern bool flash_code_overlaps(void *start, void *end);
 extern char *flash_errmsg(int err);
 
-#define FLASH_ERR_OK       0x00  // No error - operation complete
-#define FLASH_ERR_INVALID  0x01  // Invalid FLASH address
-#define FLASH_ERR_ERASE    0x02  // Error trying to erase
-#define FLASH_ERR_LOCK     0x03  // Error trying to lock/unlock
-#define FLASH_ERR_PROGRAM  0x04  // Error trying to program
-#define FLASH_ERR_PROTOCOL 0x05  // Generic error
-#define FLASH_ERR_PROTECT  0x06  // Device/region is write-protected
-#define FLASH_ERR_NOT_INIT 0x07  // FLASH info not yet initialized
-#define FLASH_ERR_HWR      0x08  // Hardware (configuration?) problem
+#define FLASH_ERR_OK              0x00  // No error - operation complete
+#define FLASH_ERR_INVALID         0x01  // Invalid FLASH address
+#define FLASH_ERR_ERASE           0x02  // Error trying to erase
+#define FLASH_ERR_LOCK            0x03  // Error trying to lock/unlock
+#define FLASH_ERR_PROGRAM         0x04  // Error trying to program
+#define FLASH_ERR_PROTOCOL        0x05  // Generic error
+#define FLASH_ERR_PROTECT         0x06  // Device/region is write-protected
+#define FLASH_ERR_NOT_INIT        0x07  // FLASH info not yet initialized
+#define FLASH_ERR_HWR             0x08  // Hardware (configuration?) problem
+#define FLASH_ERR_ERASE_SUSPEND   0x09  // Device is in erase suspend mode
+#define FLASH_ERR_PROGRAM_SUSPEND 0x0a  // Device is in in program suspend mode
 
 #ifdef _FLASH_PRIVATE_
 

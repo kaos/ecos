@@ -62,7 +62,7 @@
 #define CYG_PCI_CFG_BAR_2                       0x18
 #define CYG_PCI_CFG_BAR_3                       0x1c
 #define CYG_PCI_CFG_BAR_4                       0x20
-#define CYG_PCI_CFG_BAR_5                       0x14
+#define CYG_PCI_CFG_BAR_5                       0x24
 #define CYG_PCI_CFG_CARDBUS_CIS                 0x28
 #define CYG_PCI_CFG_SUB_VENDOR                  0x2c
 #define CYG_PCI_CFG_SUB_ID                      0x2e
@@ -72,6 +72,26 @@
 #define CYG_PCI_CFG_INT_PIN                     0x3d
 #define CYG_PCI_CFG_MIN_GNT                     0x3e
 #define CYG_PCI_CFG_MAX_LAT                     0x3f
+
+// Bridge configuration offsets
+#define CYG_PCI_CFG_PRI_BUS                     0x18
+#define CYG_PCI_CFG_SEC_BUS                     0x19
+#define CYG_PCI_CFG_SUB_BUS                     0x1a
+#define CYG_PCI_CFG_SEC_LATENCY_TIMER           0x1b
+#define CYG_PCI_CFG_IO_BASE                     0x1c
+#define CYG_PCI_CFG_IO_LIMIT                    0x1d
+#define CYG_PCI_CFG_SEC_STATUS                  0x1e
+#define CYG_PCI_CFG_MEM_BASE                    0x20
+#define CYG_PCI_CFG_MEM_LIMIT                   0x22
+#define CYG_PCI_CFG_PREFETCH_BASE               0x24
+#define CYG_PCI_CFG_PREFETCH_LIMIT              0x26
+#define CYG_PCI_CFG_PREFETCH_BASE_UPPER32       0x28
+#define CYG_PCI_CFG_PREFETCH_LIMIT_UPPER32      0x2c
+#define CYG_PCI_CFG_IO_BASE_UPPER16             0x30
+#define CYG_PCI_CFG_IO_LIMIT_UPPER16            0x32
+#define CYG_PCI_CFG_BRIDGE_ROM_ADDRESS          0x38
+#define CYG_PCI_CFG_BRIDGE_CONTROL              0x3e
+
 
 //-----------------------------------------------------------------
 // PCI Control bits
@@ -113,6 +133,14 @@
 #define CYG_PRI_CFG_BAR_MEM_MASK                  0xfffffff0
 #define CYG_PRI_CFG_BAR_IO_MASK                   0xfffffffc
 
+// Bridge control
+#define CYG_PCI_CFG_BRIDGE_CTL_PARITY		0x0001
+#define CYG_PCI_CFG_BRIDGE_CTL_SERR		0x0002
+#define CYG_PCI_CFG_BRIDGE_CTL_ISA		0x0004
+#define CYG_PCI_CFG_BRIDGE_CTL_VGA		0x0008
+#define CYG_PCI_CFG_BRIDGE_CTL_MASTER		0x0020
+#define CYG_PCI_CFG_BRIDGE_CTL_RESET		0x0040
+#define CYG_PCI_CFG_BRIDGE_CTL_FAST_BACK	0x0080
 
 //----------------------------------------------------------------------
 // PCI Vendor IDs

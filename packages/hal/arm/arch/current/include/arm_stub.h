@@ -110,6 +110,8 @@ extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
 
+extern int __is_bsp_syscall(void);
+
 //------------------------------------------------------------------------
 // Special definition of CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION
 

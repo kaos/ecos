@@ -1,3 +1,11 @@
+2000-11-07  Hugo Tyson  <hmt@redhat.com>
+2000-11-07  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* include/config.h (STRUCT_SOCKADDR_HAS_SA_LEN): #defined.
+	The BSD stack uses sa_len in its sockaddr structures, so the agent
+	must also use them or when it tries to send traps the stack
+	rejects them because the destination addres is invalid.
+
 2000-06-21  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/snmp_logging.c: 

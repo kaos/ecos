@@ -62,8 +62,8 @@
 // MMU control.
 #ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
-#define EVPR            982            // Exception vector prefix
-#define M_PID           945            // Process ID
+#define SPR_EVPR        982            // Exception vector prefix
+#define SPR_PID         945            // Process ID
 
 #define M_EPN_EPNMASK  0xfffff000      // effective page no mask
 #define M_EPN_EV       0x00000040      // entry valid
@@ -84,6 +84,59 @@
         asm volatile ("tlbre %0,%2,0; tlbre %1,%2,1" : "=r"(_hi_), "=r"(_lo_) : "r"(_id_));
 
 #endif // ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+
+//--------------------------------------------------------------------------
+// Device control register access macros.
+#define CYGARC_MTDCR(_tbr_, _v_) \
+    asm volatile ("mtdcr %0, %1;" :: "I" (_tbr_), "r" (_v_));
+#define CYGARC_MFDCR(_tbr_, _v_) \
+    asm volatile ("mfdcr %0, %1;" : "=r" (_v_) : "I" (_tbr_));
+
+#ifdef CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
+
+// Interrupt control (device) registers
+#define DCR_EXIER  66
+#define DCR_EXISR  64
+#define DCR_IOCR   160
+
+// Timer control (special) registers
+#define SPR_PIT    987
+#define SPR_TCR    986
+#define SPR_TSR    984
+
+// Interval and watchdog timer control
+#define TCR_WP          0xC0000000  // Watchdog timer period
+#define TCR_WP_17       0x00000000  //   2^17 clocks
+#define TCR_WP_21       0x40000000  //   2^21 clocks
+#define TCR_WP_25       0x80000000  //   2^25 clocks
+#define TCR_WP_29       0xC0000000  //   2^29 clocks
+#define TCR_WRC         0x30000000  // Reset control
+#define TCR_WRC_None    0x00000000  //   No reset on timeout
+#define TCR_WRC_Core    0x10000000  //   Reset core on timeout
+#define TCR_WRC_Chip    0x20000000  //   Reset chip on timeout
+#define TCR_WRC_System  0x30000000  //   Reset system on timeout
+#define TCR_WIE         0x08000000  // Watchdog interrupt enable
+#define TCR_PIE         0x04000000  // Programmable timer interrupt
+#define TCR_FP          0x03000000  // Fixed timer interval
+#define TCR_FP_9        0x00000000  //   2^9 clocks
+#define TCR_FP_13       0x01000000  //   2^13 clocks
+#define TCR_FP_17       0x02000000  //   2^17 clocks
+#define TCR_FP_21       0x03000000  //   2^21 clocks
+#define TCR_FIE         0x00800000  // Fixed timer interrupt
+#define TCR_ARE         0x00400000  // Auto-reload enable
+
+// Interval and watchdog status
+#define TSR_ENW         0x80000000  // Enable next watchdog
+#define TSR_WIS         0x40000000  // Watchdog interrupt pending
+#define TSR_WRS         0x30000000  // Watchdog reset state
+#define TSR_WRS_None    0x00000000  //   No watchdog reset
+#define TSR_WRS_Core    0x10000000  //   Core reset by watchdog
+#define TSR_WRS_Chip    0x20000000  //   Chip reset by watchdog
+#define TSR_WRS_System  0x30000000  //   System reset by watchdog
+#define TSR_PIS         0x08000000  // Programmable timer interrupt
+#define TSR_FIS         0x04000000  // Fixed timer interrupt
+
+#endif //  CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 
 //-----------------------------------------------------------------------------
 #endif // ifdef CYGONCE_HAL_VAR_REGS_H

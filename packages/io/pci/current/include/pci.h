@@ -72,6 +72,7 @@ typedef CYG_WORD32 cyg_pci_device_id;           // PCI device ID
 #define CYG_PCI_DEV_GET_DEVFN(__devid) ((__devid>>8)&0xFF)
 
 #define CYG_PCI_NULL_DEVID 0xffffffff
+#define CYG_PCI_NULL_DEVFN 0xffff
 
 //------------------------------------------------------------------
 // PCI device data definitions and structures
@@ -102,6 +103,7 @@ typedef struct                          // PCI device data
 
     // The following fields are used by the resource allocation
     // routines to keep track of allocated resources.
+    cyg_uint32 num_bars;
         
     cyg_uint32 base_size[6];            // Memory size for each base address
     cyg_uint32 base_map[6];             // Physical address mapped
@@ -129,7 +131,26 @@ typedef struct                          // PCI device data
         } normal;
         struct
         {
-            // Not yet supported
+	    cyg_uint8	pri_bus;		// primary bus number
+	    cyg_uint8	sec_bus;		// secondary bus number
+	    cyg_uint8	sub_bus;		// subordinate bus number
+	    cyg_uint8	sec_latency_timer;	// secondary bus latency
+	    cyg_uint8	io_base;
+	    cyg_uint8	io_limit;
+	    cyg_uint16	sec_status;		// secondary bus status
+	    cyg_uint16	mem_base;
+	    cyg_uint16	mem_limit;
+	    cyg_uint16	prefetch_base;
+	    cyg_uint16	prefetch_limit;
+	    cyg_uint32	prefetch_base_upper32;
+	    cyg_uint32	prefetch_limit_upper32;	
+	    cyg_uint16	io_base_upper16;
+	    cyg_uint16	io_limit_upper16;
+            cyg_uint8   reserved1[4];
+            cyg_uint32  rom_address;    	// ROM address register
+            cyg_uint8   int_line;       	// interrupt line
+            cyg_uint8   int_pin;        	// interrupt pin
+	    cyg_uint16	control;		// bridge control
         } bridge;
         struct
         {
@@ -201,6 +222,15 @@ externC cyg_bool cyg_pci_find_next( cyg_pci_device_id cur_devid,
 // dev_info does not contain valid base_size[] entries, then the
 // result is false.
 externC cyg_bool cyg_pci_configure_device( cyg_pci_device *dev_info );
+
+// Allocate memory and IO space for all devices found on the given
+// bus and its subordinate busses. This routine recurses when a
+// PCI-to-PCI bridge is encountered. The next_bus argument points
+// to a variable holding the bus number of the next PCI bus to
+// be allocated when a bridge is encountered. This routine returns
+// true if successful, false if unsuccessful.
+externC cyg_bool cyg_pci_configure_bus( cyg_uint8 bus,
+					cyg_uint8 *next_bus );
 
 // These routines set the base addresses for memory and IO mappings
 // to be used by the memory allocation routines. Normally these base
@@ -278,7 +308,7 @@ externC cyg_bool cyg_pci_allocate_io_priv( cyg_pci_device *dev_info,
 
 //----------------------------------------------------------------------
 // Bus probing limits.
-#define CYG_PCI_MAX_BUS                      1  // FIXME: Just the one for now
+#define CYG_PCI_MAX_BUS                      8  // Eight is enough?
 #define CYG_PCI_MAX_DEV                      32
 #define CYG_PCI_MAX_FN                       8
 #define CYG_PCI_MAX_BAR                      6

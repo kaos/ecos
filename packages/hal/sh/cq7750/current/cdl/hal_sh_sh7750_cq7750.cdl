@@ -124,7 +124,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
             display          "SH clock crystal"
             flavor           data
             legal_values     9000000 to 66000000
-            default_value    33000000
+            default_value    33333333
             no_define
             description      "
                 This option specifies the frequency of the crystal all
@@ -168,7 +168,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
         cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_BFC {
             display          "SH clock divider, bus"
             flavor           data
-            default_value    8
+            default_value    3
             legal_values     { 1 2 3 4 6 8 }
             description      "
                 This divider option affects the bus clock."
@@ -177,7 +177,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
         cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_PFC {
             display          "SH clock divider, peripheral"
             flavor           data
-            default_value    8
+            default_value    6
             legal_values     { 1 2 3 4 6 8 }
             description      "
                 This divider option affects the peripheral clock."
@@ -186,7 +186,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
         cdl_option CYGHWR_HAL_SH_OOC_CLOCK_MODE {
             display          "SH clock mode"
             flavor           data
-            default_value    2
+            default_value    5
             legal_values     { 0 1 2 3 4 5 }
             description      "
                 This option must mirror the clock mode hardwired on
@@ -214,11 +214,12 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
                 invoking the build tools."
         }
 
+        # CPU flags should be -m4-nofpu
         cdl_option CYGBLD_GLOBAL_CFLAGS {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m4 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" : "-ml -m3 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -ggdb -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by
@@ -230,7 +231,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m4 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
+            default_value { CYGHWR_HAL_SH_BIGENDIAN ? "-mb -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" : "-ml -m3 -ggdb -nostdlib -Wl,--gc-sections -Wl,-static" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

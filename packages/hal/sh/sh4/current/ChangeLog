@@ -1,3 +1,11 @@
+2000-11-09  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_ubc.h: Correct definitions.
+
+	* include/mod_7750.h (CYGARC_SH_MOD_UBC): Defined.
+
+	* cdl/hal_sh_sh4.cdl: Disable cache for now.
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* Many changes to bring the variant HAL up to date with the later

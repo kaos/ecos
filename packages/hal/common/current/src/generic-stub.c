@@ -781,6 +781,19 @@ __handle_exception (void)
   if (__cleanup_vec != NULL)
     __cleanup_vec ();
 
+#if defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
+  // Temporary support for gnupro bsp SWIs
+  if (__is_bsp_syscall())
+    {
+      if (hal_syscall_handler() == 0)
+	{
+	  if (__init_vec != NULL)
+	    __init_vec ();
+	  return;
+	}
+    }
+#endif
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
   // Special case for GDB BREAKs. This flag is set by cyg_stub_cleanup.
   if (cyg_hal_gdb_break) {
@@ -789,6 +802,7 @@ __handle_exception (void)
   } else
 #endif
       sigval = __computeSignal (__get_trap_number ());
+
 #else  // __ECOS__
   /* reply to host that an exception has occurred */
   sigval = __computeSignal (__get_trap_number ());
@@ -1368,12 +1382,6 @@ __process_packet (char *packet)
 		      else
 			strcpy (remcomOutBuffer, "E02");
 			}
-		      break;
-
-		      // FIXME   !!Test only!!
-		    case 5:
-		      addr = (target_register_t)HAL_STUB_HW_STOPPED_DATA_ADDRESS();
-		      __mem2hex ((char *)&addr, remcomOutBuffer, sizeof(target_register_t), 0);
 		      break;
 #endif
 		  }

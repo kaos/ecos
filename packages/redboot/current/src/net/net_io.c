@@ -204,8 +204,8 @@ net_io_flush(void)
     out_bufp = out_buf;  out_buflen = 0;
     // Check interrupt flag
     if (CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG()) {
-        cyg_hal_user_break(0);
         CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(0);
+        cyg_hal_user_break(0);
     }
 }
 

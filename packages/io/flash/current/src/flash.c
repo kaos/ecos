@@ -51,6 +51,13 @@
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
+// When this flag is set, 
+#undef RAM_FLASH_DEV_DEBUG
+#if !defined(CYG_HAL_STARTUP_RAM) && defined(RAM_FLASH_DEV_DEBUG)
+# warning "Can only enable the flash debugging when configured for RAM startup"
+# undef RAM_FLASH_DEV_DEBUG
+#endif
+
 struct flash_info flash_info;
 
 int
@@ -132,6 +139,9 @@ flash_erase(void *addr, int len, void **err_addr)
     printf("... Erase from %p-%p: ", block, end_addr);
 
     while (block < end_addr) {
+#ifdef RAM_FLASH_DEV_DEBUG
+        _flash_erase_block = &flash_erase_block;
+#endif
         stat = (*_flash_erase_block)(block);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -173,6 +183,9 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
     while (len > 0) {
         size = len;
         if (size > flash_info.block_size) size = flash_info.block_size;
+#ifdef RAM_FLASH_DEV_DEBUG
+        _flash_program_buf = &flash_program_buf;
+#endif
         stat = (*_flash_program_buf)(addr, data, size);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -218,6 +231,9 @@ flash_lock(void *addr, int len, void **err_addr)
     printf("... Lock from %p-%p: ", block, end_addr);
 
     while (block < end_addr) {
+#ifdef RAM_FLASH_DEV_DEBUG
+        _flash_lock_block = &flash_lock_block;
+#endif
         stat = (*_flash_lock_block)(block);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -259,6 +275,9 @@ flash_unlock(void *addr, int len, void **err_addr)
     printf("... Unlock from %p-%p: ", block, end_addr);
 
     while (block < end_addr) {
+#ifdef RAM_FLASH_DEV_DEBUG
+        _flash_unlock_block = &flash_unlock_block;
+#endif
         stat = (*_flash_unlock_block)(block, flash_info.block_size, flash_info.blocks);
         stat = flash_hwr_map_error(stat);
         if (stat) {
@@ -280,6 +299,10 @@ flash_errmsg(int err)
     switch (err) {
     case FLASH_ERR_OK:
         return "No error - operation complete";
+    case FLASH_ERR_ERASE_SUSPEND:
+        return "Device is in erase suspend state";
+    case FLASH_ERR_PROGRAM_SUSPEND:
+        return "Device is in program suspend state";
     case FLASH_ERR_INVALID:
         return "Invalid FLASH address";
     case FLASH_ERR_ERASE:

@@ -63,6 +63,17 @@
 #define CYGARC_REG_BRCR_SEQ             0x0008 // sequence condition select
 #define CYGARC_REG_BRCR_UBDE            0x0001 // User Break Debug Enable
 
+#if (CYGARC_SH_MOD_UBC == 1)
+#define CYGARC_REG_BAMRA_BASMA          0x04   // BASRA masked
+#define CYGARC_REG_BAMRA_BARA_UNMASKED  0x00   // BARA not masked
+#define CYGARC_REG_BAMRA_BARA_10BIT     0x01   // Lowest 10 bit masked
+#define CYGARC_REG_BAMRA_BARA_12BIT     0x02   // Lowest 12 bit masked
+#define CYGARC_REG_BAMRA_BARA_MASKED    0x03   // All bits masked
+#define CYGARC_REG_BAMRA_BARA_16BIT     0x08   // Lowest 16 bit masked
+#define CYGARC_REG_BAMRA_BARA_20BIT     0x09   // Lowest 20 bit masked
+#else
+// mask is fully configurable in other versions of the UBC
+#endif
 
 #define CYGARC_REG_BBRA_DFETCH          0x0020 // Break on DFETCH
 #define CYGARC_REG_BBRA_IFETCH          0x0010 // Break on IFETCH

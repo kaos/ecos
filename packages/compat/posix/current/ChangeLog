@@ -1,3 +1,17 @@
+2000-11-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/signal.cxx (cyg_posix_thread_siginit): Add extra thread
+	argument so that threads can inherit parent's sigmask.
+
+	* src/pthread.cxx (pthread_create): Call with parent thread
+
+	* src/pprivate.h: Change cyg_posix_thread_siginit prototype to take
+	parent thread argument
+
+	* tests/signal1.c: Add more checking of sigwaits, and fix so that it's
+	only called when the signal is masked. Check errno values too
+	sometimes.
+
 2000-11-02  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/signal.cxx (sigtimedwait): return signal number on success,

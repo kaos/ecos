@@ -413,6 +413,25 @@ cyg_hal_default_exception_vsr:
         subi    sp,sp,CYGARC_PPC_EXCEPTION_DECREMENT
                                         # leave space for registers and
                                         # a safety margin
+#ifdef CYGPKG_HAL_POWERPC_PPC40x
+// The caches on this processor are always enabled when the MMU is on
+// (and disabled when off).  Thus we need to be careful about cache
+// polution and staleness when changing the MMU state.
+// At this point, the MMU is off due to the exception.  We need to
+// flush the part of the cache which may be touched before the MMU
+// is reenabled so that memory will be consistent when that happens.
+// Of course, this is complicated by the fact that there are no "free"
+// registers at this point in the code.
+        dcbf    0,sp                    // Flushes first line
+        stw     r3,0(sp)                // This is now safe
+        li      r3,CYGARC_PPCREG_VECTOR // Flush lines which will be changed
+        dcbf    r3,sp                   
+        li      r3,CYGARC_PPCREG_CR
+        dcbf    r3,sp                   
+        li      r3,CYGARC_PPCREG_LR
+        dcbf    r3,sp              
+        lwz     r3,0(sp)                // Restore register
+#endif        
 
         # First, save away some registers
         stw     r3,CYGARC_PPCREG_VECTOR(sp)    # stash vector
@@ -542,7 +561,26 @@ cyg_hal_default_interrupt_vsr:
         subi    sp,sp,CYGARC_PPC_EXCEPTION_DECREMENT
                                         # leave space for registers and
                                         # a safety margin
-
+#ifdef CYGPKG_HAL_POWERPC_PPC40x
+// The caches on this processor are always enabled when the MMU is on
+// (and disabled when off).  Thus we need to be careful about cache
+// polution and staleness when changing the MMU state.
+// At this point, the MMU is off due to the exception.  We need to
+// flush the part of the cache which may be touched before the MMU
+// is reenabled so that memory will be consistent when that happens.
+// Of course, this is complicated by the fact that there are no "free"
+// registers at this point in the code.
+        dcbf    0,sp                    // Flushes first line
+        stw     r3,0(sp)                // This is now safe
+        li      r3,CYGARC_PPCREG_VECTOR // Flush lines which will be changed
+        dcbf    r3,sp                   
+        li      r3,CYGARC_PPCREG_CR
+        dcbf    r3,sp                   
+        li      r3,CYGARC_PPCREG_LR
+        dcbf    r3,sp              
+        lwz     r3,0(sp)                // Restore register
+#endif        
+              
         stw     r3,CYGARC_PPCREG_VECTOR(sp)    # stash vector
         stw     r4,CYGARC_PPCREG_CR(sp)        # stash CR
         stw     r5,CYGARC_PPCREG_LR(sp)        # stash LR

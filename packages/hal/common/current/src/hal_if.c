@@ -105,9 +105,20 @@ delay_us(cyg_int32 usecs)
 
     CYGARC_HAL_RESTORE_GP();
 #else
-    // Use a HAL feature if defined
 #ifdef HAL_DELAY_US
+    // Use a HAL feature if defined
     HAL_DELAY_US(usecs);
+#else
+    // If no accurate delay mechanism, just spin for a while. Having
+    // an inaccurate delay is much better than no delay at all. The
+    // count of 100 should mean the loop takes something resembling
+    // 1us on most CPUs running between 30-100MHz [depends on how many
+    // instructions this compiles to, how many dispatch units can be
+    // used for the simple loop, actual CPU frequency, etc]
+    while (usecs-- > 0) {
+        int i;
+        for (i = 0; i < 100; i++);
+    }
 #endif
 #endif
 }
@@ -355,8 +366,8 @@ hal_if_diag_write_char(char c)
 
     // Check interrupt flag
     if (CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG()) {
-        cyg_hal_user_break(0);
         CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(0);
+        cyg_hal_user_break(0);
     }
 }
 

@@ -1,3 +1,12 @@
+2000-11-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c: Added debug mode, allowing device driver to use printf.
+
+2000-11-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c: Added suspend error messages.
+	* include/flash.h: Same.
+
 2000-09-01  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/flash.h: 

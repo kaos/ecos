@@ -175,7 +175,7 @@ tty_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
         }
         xbuf[size++] = c;
         // Always leave room for possible CR/LF expansion
-        if ((size == (BUFSIZE-1)) ||
+        if ((size >= (BUFSIZE-1)) ||
             (bytes_successful == *len)) {
             res = cyg_io_write(chan, xbuf, &size);
             if (res != ENOERR) {

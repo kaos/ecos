@@ -589,7 +589,7 @@ externC int pthread_create ( pthread_t *thread,
     nthread->joiner = new(nthread->joiner_obj) Cyg_Condition_Variable( pthread_mutex );
 
     // Initialize signal specific fields.
-    cyg_posix_thread_siginit( nthread );
+    cyg_posix_thread_siginit( nthread, self );
 
     // create the underlying eCos thread
 

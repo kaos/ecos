@@ -62,6 +62,7 @@
 
 #ifndef NA_MSG
 #include <time.h>
+#include <string.h>                     // strcmp
 #include <cyg/io/wallclock.hxx>         // The WallClock API
 
 // -------------------------------------------------------------------------

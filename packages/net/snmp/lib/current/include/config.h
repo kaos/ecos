@@ -852,7 +852,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define STRUCT_SIGACTION_HAS_SA_SIGACTION 1
 
 /* Does struct sockaddr have a sa_len field? */
-/* #undef STRUCT_SOCKADDR_HAS_SA_LEN */
+#define STRUCT_SOCKADDR_HAS_SA_LEN
 
 /* Does struct sockaddr have a sa_family2 field? */
 /* #undef STRUCT_SOCKADDR_HAS_SA_UNION_SA_GENERIC_SA_FAMILY2 */

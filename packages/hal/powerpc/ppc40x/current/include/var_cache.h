@@ -83,21 +83,30 @@
 // Invalidate the entire cache
 #define HAL_DCACHE_INVALIDATE_ALL()                             \
     CYG_MACRO_START                                             \
-    int _i_, _indx_;                                            \
+    int _i_, _ix_, _indx_;                                      \
     _indx_ = 0;                                                 \
+    _ix_ = HAL_DCACHE_SIZE/2;                                   \
     for (_i_ = 0;  _i_ < HAL_DCACHE_SETS;  _i_++) {             \
+/*        asm volatile ("dcbf 0,%0;" :: "r"(_indx_));           */  \
+/*        asm volatile ("dcbf %1,%0;" :: "r"(_indx_), "r"(_ix_)); */\
         asm volatile ("dccci 0,%0;" :: "r"(_indx_));            \
         _indx_ += HAL_DCACHE_LINE_SIZE;                         \
     }                                                           \
     CYG_MACRO_END
 
-// Synchronize the contents of the cache with memory.
-#define HAL_DCACHE_SYNC()
+// Synchronize the contents of the cache with memory.                                   
+#define HAL_DCACHE_SYNC()                                                               \
+    CYG_MACRO_START                                                                     \
+    int _indx_;                                                                         \
+    for (_indx_ = 0;  _indx_ < HAL_DCACHE_SIZE;  _indx_ += HAL_DCACHE_LINE_SIZE) {      \
+        asm volatile ("dcbf 0,%0;" :: "r"(_indx_));                                     \
+    }                                                                                   \
+    CYG_MACRO_END
 
 // Query the state of the data cache
 #define HAL_DCACHE_IS_ENABLED(_state_)          \
     CYG_MACRO_START                             \
-    (_state_) = 0;                              \
+    (_state_) = 1;                              \
     CYG_MACRO_END
 
 // Set the data cache refill burst size
@@ -157,15 +166,23 @@
 #define HAL_ICACHE_DISABLE()
 
 // Invalidate the entire cache
-#define HAL_ICACHE_INVALIDATE_ALL()
+#define HAL_ICACHE_INVALIDATE_ALL()                     \
+    CYG_MACRO_START                                     \
+    int _i_, _indx_;                                    \
+    _indx_ = 0;                                         \
+    for (_i_ = 0;  _i_ < HAL_ICACHE_SETS;  _i_++) {     \
+        asm volatile ("iccci 0,%0;" :: "r"(_indx_));    \
+        _indx_ += HAL_ICACHE_LINE_SIZE;                 \
+    }                                                   \
+    CYG_MACRO_END
 
 // Synchronize the contents of the cache with memory.
-#define HAL_ICACHE_SYNC()
+#define HAL_ICACHE_SYNC()  HAL_ICACHE_INVALIDATE_ALL()
 
 // Query the state of the instruction cache
 #define HAL_ICACHE_IS_ENABLED(_state_)          \
     CYG_MACRO_START                             \
-    (_state_) = 0;                              \
+    (_state_) = 1;                              \
     CYG_MACRO_END
 
 // Set the instruction cache refill burst size

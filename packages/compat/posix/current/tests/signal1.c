@@ -43,6 +43,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <semaphore.h>
+#include <errno.h>
 
 #include <cyg/infra/testcase.h>
 
@@ -91,9 +92,20 @@ void *pthread_entry1( void *arg)
     sigset_t mask;
     siginfo_t info;
     struct timespec timeout;
-    int sig;
+    int sig, sig2, err;
     
     CYG_TEST_INFO( "Thread 1 running" );
+
+    // Should have inherited parent's signal mask
+    pthread_sigmask( 0, NULL, &mask );
+    CYG_TEST_CHECK( sigismember( &mask, SIGALRM),
+                                 "SIGALRM mask inherited");
+    CYG_TEST_CHECK( sigismember( &mask, SIGUSR1),
+                                 "SIGUSR1 mask inherited");
+    CYG_TEST_CHECK( sigismember( &mask, SIGUSR2),
+                                 "SIGUSR2 mask inherited");
+    CYG_TEST_CHECK( sigismember( &mask, SIGSEGV),
+                                 "SIGSEGV mask inherited");
 
     // Make a full set
     sigfillset( &mask );
@@ -115,10 +127,11 @@ void *pthread_entry1( void *arg)
     CYG_TEST_INFO( "Thread1: calling sigtimedwait()");
     
     // Wait for a signal to be delivered
-    sigtimedwait( &mask, &info, &timeout );
+    sig = sigtimedwait( &mask, &info, &timeout );
 
-    sig = info.si_signo;
+    sig2 = info.si_signo;
     
+    CYG_TEST_CHECK( sig == sig2, "sigtimedwait return value not equal");
     CYG_TEST_CHECK( sig == SIGUSR1, "Signal not delivered");
 
     while( sigusr2_called != 2 )
@@ -127,12 +140,31 @@ void *pthread_entry1( void *arg)
         pause();
     }
 
+    errno = 0; // strictly correct to reset errno first
+
     // now wait for SIGALRM to be delivered
     CYG_TEST_INFO( "Thread1: calling pause()");            
-    pause();
+    err = pause();
+    CYG_TEST_CHECK( -1==err, "pause returned -1");
+    CYG_TEST_CHECK( EINTR==errno, "errno set to EINTR");
+
+    // generate another SIGALRM and wait for it to be delivered too
+    // we need to mask it first though
+
+    // Make a full set
+    sigfillset( &mask );
+
+    // Set signal mask
+    pthread_sigmask( SIG_SETMASK, &mask, NULL );
+    
+    alarm(1);
+    CYG_TEST_INFO( "Thread1: calling alarm()");            
+    err = sigwait( &mask, &sig);
+    CYG_TEST_CHECK( 0==err, "sigwait returned -1");
+    CYG_TEST_CHECK( sig==SIGALRM, "sigwait caught alarm");
 
     CYG_TEST_INFO( "Thread1: calling pthread_exit()");    
-    pthread_exit( (void *)((int)arg+sig) );
+    pthread_exit( (void *)((int)arg+sig2) );
 }
 
 //--------------------------------------------------------------------------

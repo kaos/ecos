@@ -1,3 +1,7 @@
+2000-11-09  Jesper Skov  <jskov@redhat.com>
+
+	* tests/wallclock2.cxx: Include string header.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/wallclock2.cxx: Play better with main() startup configury

@@ -1,3 +1,26 @@
+2000-11-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: Define LABEL mangling macros.
+
+	* include/arch.inc: Added.
+
+2000-11-06  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_syscall.c: New file. Arm interface to redboot's
+	handler for GNUPro based application library syscalls.
+
+	* src/arm_stub.c (__is_bsp_syscall): New function. Return
+	true if exception caused by bsp SWI.
+
+	* include/arm_stub.h: Add declaration for __is_bp_syscall.
+
+	* cdl/hal_arm.cdl: Add hal_syscall.c to compile list.
+
+2000-11-04  Mark Salter  <msalter@redhat.com>
+
+	* src/arm_stub.c (__computeSignal): New interface for
+	HAL_STUB_IS_STOPPED_BY_HARDWARE
+
 2000-10-27  Mark Salter  <msalter@redhat.com>
 
 	* src/arm_stub.c: Removed uneccesary include.

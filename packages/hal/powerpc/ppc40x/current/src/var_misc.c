@@ -117,19 +117,61 @@ cyg_hal_clear_MMU (void)
     cyg_uint32 tlbhi = 0;
     cyg_uint32 tlblo = 0;
     int id, max_tlbs;
-    cyg_uint32 tlb[64][2];
 
     // There are 64 TLBs.
     max_tlbs = 64;
 
-    CYGARC_MTSPR (M_PID, 0);
+    CYGARC_MTSPR (SPR_PID, 0);
 
     for (id = 0; id < max_tlbs; id++) {
-        CYGARC_TLBRE(id, tlb[id][0], tlb[id][1]);
         CYGARC_TLBWE(id, tlbhi, tlblo);
     }
 
     // Make caches default disabled when MMU is disabled.
+}
+
+//--------------------------------------------------------------------------
+// Clock control - use the programmable (variable period) timer
+
+static cyg_uint32 _period;
+extern cyg_uint32 _hold_tcr;
+
+externC void 
+hal_ppc40x_clock_initialize(cyg_uint32 period)
+{
+    cyg_uint32 tcr;    
+
+    // Enable auto-reload
+    CYGARC_MFSPR(SPR_TCR, tcr);
+    tcr = _hold_tcr;
+    tcr |= TCR_ARE;
+    CYGARC_MTSPR(SPR_TCR, tcr);
+    _hold_tcr = tcr;
+
+    // Set up the counter register
+    _period = period;
+    CYGARC_MTSPR(SPR_PIT, period);
+}
+
+// Returns the number of clocks since the last interrupt
+externC void 
+hal_ppc40x_clock_read(cyg_uint32 *val)
+{
+    cyg_uint32 period;
+
+    CYGARC_MFSPR(SPR_PIT, period);
+    *val = _period - period;
+}
+
+externC void 
+hal_ppc40x_clock_reset(cyg_uint32 vector, cyg_uint32 period)
+{
+    hal_ppc40x_clock_initialize(period);
+}
+
+externC void 
+hal_ppc40x_delay_us(int us)
+{
 }
 
 //--------------------------------------------------------------------------

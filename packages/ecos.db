@@ -113,6 +113,16 @@ package CYGPKG_IO_FLASH {
            This package contains generic support for FLASH memory."
 }
 
+package CYGPKG_DEVS_FLASH_INTEL_BOOTBLOCK {
+	alias 		{ "Support for Intel boot block flash memory" flash_intel_bootblock }
+	directory	devs/flash/intel/bootblock
+	script		flash_intel_bootblock.cdl
+	hardware
+        description "
+           This package contains hardware support for Intel boot block flash memory."
+}
+
+
 
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
@@ -432,6 +442,7 @@ package CYGPKG_DEVS_ETH_POWERPC_QUICC {
 	script		quicc_eth_drivers.cdl
         description     "Ethernet driver for PowerPC QUICC (MPC8xx) based boards."
 }
+
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
 # in all targets that can use it.
@@ -768,6 +779,8 @@ package CYGPKG_HAL_ARM_EBSA285 {
         The EBSA285 HAL package provides the support needed to run
         eCos on a Intel EBSA285 StrongARM eval board."
 }
+
+
 
 package CYGPKG_HAL_ARM_SA11X0 {
 	alias		{ "Intel SA11X0 Chipset" hal_arm_sa11x0 }
@@ -1305,6 +1318,8 @@ target ebsa285 {
         The ebsa285 target provides the packages needed to run
         eCos on an Intel EBSA285 StrongARM board."
 }
+
+
 
 target assabet {
 	alias { "Intel StrongARM SA1110 board" assabet }

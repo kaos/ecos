@@ -1,3 +1,23 @@
+2000-11-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/var_misc.c: Define clock handling for PPC40x (different
+	from default since there is no decrementer).
+
+	* include/variant.inc: Special interrupt fielder for timers.
+	Add interrupt decode.
+
+	* include/var_regs.h: Define architecture (variant) specific
+	registers and special instructions used to access them.
+
+	* src/var_intr.c: 
+	* include/var_intr.h: Define proper interrupt support for
+	this platform.
+
+	* include/var_cache.h: Fix details of cache on PPC40x.  Note:
+	the data cache has problems - currently left disabled.
+
+	* cdl/hal_powerpc_ppc40x.cdl: Add support for ROM_MONITOR.
+
 //===========================================================================
 //####COPYRIGHTBEGIN####
 //                                                                          

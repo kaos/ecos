@@ -143,9 +143,6 @@
 #define CYGNUM_HAL_EXCEPTION_COUNT           \
                  ( CYGNUM_HAL_EXCEPTION_MAX - CYGNUM_HAL_EXCEPTION_MIN + 1 )
 
-// The vector used by the Real time clock
-#define CYGNUM_HAL_INTERRUPT_RTC             CYGNUM_HAL_INTERRUPT_DECREMENTER
-
 //--------------------------------------------------------------------------
 // Static data used by HAL
 
@@ -340,6 +337,9 @@ externC void cyg_hal_default_exception_vsr( void );
 //--------------------------------------------------------------------------
 // Clock control
 
+#ifndef CYGHWR_HAL_CLOCK_DEFINED
+// Note: variant or platform allowed to override these definitions
+
 #define HAL_CLOCK_INITIALIZE( _period_ )        \
     CYG_MACRO_START                             \
     asm volatile (                              \
@@ -394,6 +394,13 @@ externC void cyg_hal_default_exception_vsr( void );
 
 extern void hal_delay_us(int);
 #define HAL_DELAY_US(n) hal_delay_us(n)
+
+// The vector used by the Real time clock
+#ifndef CYGNUM_HAL_INTERRUPT_RTC
+#define CYGNUM_HAL_INTERRUPT_RTC             CYGNUM_HAL_INTERRUPT_DECREMENTER
+#endif // CYGNUM_HAL_INTERRUPT_RTC
+
+#endif // CYGHWR_HAL_CLOCK_DEFINED
 
 //--------------------------------------------------------------------------
 // Variant functions

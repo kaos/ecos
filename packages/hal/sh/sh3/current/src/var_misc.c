@@ -116,7 +116,7 @@ hal_interrupt_set_level(int vector, int level)
     switch( (vector) ) {                                               
     case CYGNUM_HAL_INTERRUPT_NMI:                                       
         /* fall through */                                               
-    case CYGNUM_HAL_INTERRUPT_LVL0...CYGNUM_HAL_INTERRUPT_LVL14:         
+    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:         
         /* Cannot change levels */                                       
         break;                                                           
                                                                          
@@ -302,10 +302,10 @@ hal_interrupt_mask(int vector)
     switch( (vector) ) {                                                
     case CYGNUM_HAL_INTERRUPT_NMI:                                        
         /* fall through */                                                
-    case CYGNUM_HAL_INTERRUPT_LVL0...CYGNUM_HAL_INTERRUPT_LVL14:          
+    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:
         /* Can only be masked by fiddling Imask in SR. */                 
         break;                                                            
-    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0...CYGNUM_HAL_ISR_MAX:            
+    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0 ... CYGNUM_HAL_ISR_MAX:            
         HAL_INTERRUPT_SET_LEVEL((vector), 0);                           
         break;                                                            
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                               
@@ -324,10 +324,10 @@ hal_interrupt_unmask(int vector)
     switch( (vector) ) {                                                
     case CYGNUM_HAL_INTERRUPT_NMI:                                        
         /* fall through */                                                
-    case CYGNUM_HAL_INTERRUPT_LVL0...CYGNUM_HAL_INTERRUPT_LVL14:          
+    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:          
         /* Can only be unmasked by fiddling Imask in SR. */               
         break;                                                            
-    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0...CYGNUM_HAL_ISR_MAX:            
+    case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0 ... CYGNUM_HAL_ISR_MAX:            
         HAL_INTERRUPT_SET_LEVEL((vector), 1);                           
         break;                                                            
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                               

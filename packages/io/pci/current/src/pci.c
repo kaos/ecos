@@ -45,6 +45,7 @@
 //
 //=============================================================================
 
+#include <pkgconf/hal.h>
 #include <cyg/io/pci_hw.h>
 
 // CYG_PCI_PRESENT only gets defined for targets that provide PCI HAL support.
@@ -98,18 +99,20 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_BIST,
                                 &dev_info->bist);
 
-    for (i = 0; i < CYG_PCI_MAX_BAR; i++){
-        cyg_uint32 bar;
-        cyg_pcihw_read_config_uint32(bus, devfn, 
+    if ((dev_info->header_type & CYG_PCI_CFG_HEADER_TYPE_MASK) == CYG_PCI_HEADER_BRIDGE)
+	dev_info->num_bars = 2;
+    else
+	dev_info->num_bars = 6;
+
+    for (i = 0; i < dev_info->num_bars; i++)
+        cyg_pcihw_read_config_uint32(bus, devfn,
                                      CYG_PCI_CFG_BAR_BASE + 4*i,
-                                     &bar);
-        dev_info->base_address[i] = bar;
-    }
+                                     &dev_info->base_address[i]);
 
     // If device is disabled, probe BARs for sizes.
     if ((dev_info->command & CYG_PCI_CFG_COMMAND_ACTIVE) == 0) {
 
-        for (i = 0; i < CYG_PCI_MAX_BAR; i++){
+        for (i = 0; i < dev_info->num_bars; i++){
             cyg_uint32 size;
 
             cyg_pcihw_write_config_uint32(bus, devfn, 
@@ -120,7 +123,12 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
                                          &size);
             dev_info->base_size[i] = size;
             dev_info->base_map[i] = 0xffffffff;
-            
+
+	    // No reason to scan beyond first inactive BAR.
+	    if (size == 0) {
+		dev_info->num_bars = i;
+		break;
+	    }
 
             // Check for a 64bit memory region.
             if (CYG_PCI_CFG_BAR_SPACE_MEM == 
@@ -134,10 +142,36 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
             }
         }
     } else {
-        // Clear the base map so we can recognize an already configured
-        // device.
-        for (i = 0; i < CYG_PCI_MAX_BAR; i++) {
-            dev_info->base_size[i] = 0;
+	// If the device is already configured. Fill in the base_map.
+	CYG_PCI_ADDRESS64 tmp_addr;
+	cyg_uint32 bar;
+
+        for (i = 0; i < dev_info->num_bars; i++){
+
+	    dev_info->base_size[i] = 0;
+
+            bar = dev_info->base_address[i];
+
+	    // No reason to scan beyond first inactive BAR.
+	    if (bar == 0) {
+		dev_info->num_bars = i;
+		break;
+	    }
+
+	    if ((bar & CYG_PCI_CFG_BAR_SPACE_MASK) == CYG_PCI_CFG_BAR_SPACE_IO) {
+		dev_info->base_map[i] = (bar & CYG_PRI_CFG_BAR_IO_MASK) + HAL_PCI_PHYSICAL_IO_BASE;
+	    } else {
+		tmp_addr = bar & CYG_PRI_CFG_BAR_MEM_MASK;
+
+		if ((bar & CYG_PRI_CFG_BAR_MEM_TYPE_MASK) == CYG_PRI_CFG_BAR_MEM_TYPE_64)
+		    tmp_addr |= ((CYG_PCI_ADDRESS64)(dev_info->base_address[i+1] & CYG_PRI_CFG_BAR_MEM_MASK)) << 32;
+			
+		tmp_addr += HAL_PCI_PHYSICAL_MEMORY_BASE;
+
+		dev_info->base_map[i] = tmp_addr;
+		if ((bar & CYG_PRI_CFG_BAR_MEM_TYPE_MASK) == CYG_PRI_CFG_BAR_MEM_TYPE_64)
+		    dev_info->base_map[i++] = tmp_addr >> 32;
+	    }
         }
     }
             
@@ -165,7 +199,44 @@ cyg_pci_get_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
                                     &dev_info->header.normal.max_lat);
         break;
     case CYG_PCI_HEADER_BRIDGE:
-        CYG_FAIL("PCI device header 'bridge' support not implemented");
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_PRI_BUS,
+                                    &dev_info->header.bridge.pri_bus);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_SEC_BUS,
+                                    &dev_info->header.bridge.sec_bus);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_SUB_BUS,
+                                    &dev_info->header.bridge.sub_bus);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_SEC_LATENCY_TIMER,
+                                    &dev_info->header.bridge.sec_latency_timer);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_IO_BASE,
+                                    &dev_info->header.bridge.io_base);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_IO_LIMIT,
+                                    &dev_info->header.bridge.io_limit);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_SEC_STATUS,
+                                    &dev_info->header.bridge.sec_status);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_MEM_BASE,
+                                    &dev_info->header.bridge.mem_base);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_MEM_LIMIT,
+                                    &dev_info->header.bridge.mem_limit);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_PREFETCH_BASE,
+                                    &dev_info->header.bridge.prefetch_base);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_PREFETCH_LIMIT,
+                                    &dev_info->header.bridge.prefetch_limit);
+        cyg_pcihw_read_config_uint32(bus, devfn, CYG_PCI_CFG_PREFETCH_BASE_UPPER32,
+                                    &dev_info->header.bridge.prefetch_base_upper32);
+        cyg_pcihw_read_config_uint32(bus, devfn, CYG_PCI_CFG_PREFETCH_LIMIT_UPPER32,
+                                    &dev_info->header.bridge.prefetch_limit_upper32);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_IO_BASE_UPPER16,
+                                    &dev_info->header.bridge.io_base_upper16);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_IO_LIMIT_UPPER16,
+                                    &dev_info->header.bridge.io_limit_upper16);
+        cyg_pcihw_read_config_uint32(bus, devfn, CYG_PCI_CFG_BRIDGE_ROM_ADDRESS,
+                                    &dev_info->header.bridge.rom_address);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_INT_LINE,
+                                    &dev_info->header.bridge.int_line);
+        cyg_pcihw_read_config_uint8(bus, devfn, CYG_PCI_CFG_INT_PIN,
+                                    &dev_info->header.bridge.int_pin);
+        cyg_pcihw_read_config_uint16(bus, devfn, CYG_PCI_CFG_BRIDGE_CONTROL,
+                                    &dev_info->header.bridge.control);
         break;
     case CYG_PCI_HEADER_CARDBUS_BRIDGE:
         CYG_FAIL("PCI device header 'cardbus bridge' support not implemented");
@@ -181,6 +252,7 @@ cyg_pci_set_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
 {
     cyg_uint8 bus = CYG_PCI_DEV_GET_BUS(devid);
     cyg_uint8 devfn = CYG_PCI_DEV_GET_DEVFN(devid);
+    int i;
 
     // Only writable entries are updated.
     cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_COMMAND,
@@ -194,18 +266,10 @@ cyg_pci_set_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
     cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_BIST,
                                  dev_info->bist);
 
-    cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_0,
-                                  dev_info->base_address[0]);
-    cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_1,
-                                  dev_info->base_address[1]);
-    cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_2,
-                                  dev_info->base_address[2]);
-    cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_3,
-                                  dev_info->base_address[3]);
-    cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_4,
-                                  dev_info->base_address[4]);
-    cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_5,
-                                  dev_info->base_address[5]);
+    for (i = 0; i < dev_info->num_bars; i++) {
+	cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BAR_BASE+4*i,
+				      dev_info->base_address[i]);
+    }
 
     switch (dev_info->header_type & CYG_PCI_CFG_HEADER_TYPE_MASK) {
     case CYG_PCI_HEADER_NORMAL:
@@ -228,7 +292,42 @@ cyg_pci_set_device_info ( cyg_pci_device_id devid, cyg_pci_device *dev_info )
                                      dev_info->header.normal.max_lat);
         break;
     case CYG_PCI_HEADER_BRIDGE:
-        CYG_FAIL("PCI device header 'bridge' support not implemented");
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_PRI_BUS,
+				     dev_info->header.bridge.pri_bus);
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_SEC_BUS,
+				     dev_info->header.bridge.sec_bus);
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_SUB_BUS,
+				     dev_info->header.bridge.sub_bus);
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_SEC_LATENCY_TIMER,
+				     dev_info->header.bridge.sec_latency_timer);
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_IO_BASE,
+				     dev_info->header.bridge.io_base);
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_IO_LIMIT,
+				     dev_info->header.bridge.io_limit);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_SEC_STATUS,
+				      dev_info->header.bridge.sec_status);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_MEM_BASE,
+				      dev_info->header.bridge.mem_base);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_MEM_LIMIT,
+				      dev_info->header.bridge.mem_limit);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_PREFETCH_BASE,
+				      dev_info->header.bridge.prefetch_base);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_PREFETCH_LIMIT,
+				      dev_info->header.bridge.prefetch_limit);
+        cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_PREFETCH_BASE_UPPER32,
+				      dev_info->header.bridge.prefetch_base_upper32);
+        cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_PREFETCH_LIMIT_UPPER32,
+				      dev_info->header.bridge.prefetch_limit_upper32);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_IO_BASE_UPPER16,
+				      dev_info->header.bridge.io_base_upper16);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_IO_LIMIT_UPPER16,
+				      dev_info->header.bridge.io_limit_upper16);
+        cyg_pcihw_write_config_uint32(bus, devfn, CYG_PCI_CFG_BRIDGE_ROM_ADDRESS,
+				      dev_info->header.bridge.rom_address);
+        cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_INT_LINE,
+				     dev_info->header.bridge.int_line);
+        cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_BRIDGE_CONTROL,
+				      dev_info->header.bridge.control);
         break;
     case CYG_PCI_HEADER_CARDBUS_BRIDGE:
         CYG_FAIL("PCI device header 'cardbus bridge' support not implemented");
@@ -313,26 +412,33 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
     cyg_uint8 dev = CYG_PCI_DEV_GET_DEV(devfn);
     cyg_uint8 fn = CYG_PCI_DEV_GET_FN(devfn);
 
+#ifdef DEBUG_PCI
+    printf("cyg_pci_find_next: start[%x] ...",(unsigned)cur_devid);
+#endif
+
     // If this is the initializer, start with 0/0/0
     if (CYG_PCI_NULL_DEVID == cur_devid) {
         bus = dev = fn = 0;
+    } else if (CYG_PCI_NULL_DEVFN == (cur_devid & CYG_PCI_NULL_DEVFN)) {
+        dev = fn = 0;
     } else {
         // Otherwise, check multi-function bit of device's first function
         cyg_uint8 header;
-        devfn = CYG_PCI_DEV_MAKE_DEVFN(dev, 0);
-        cyg_pcihw_read_config_uint8(bus, devfn,
-                                    CYG_PCI_CFG_HEADER_TYPE, &header);
-        if (header & CYG_PCI_CFG_HEADER_TYPE_MF) {
-            // Multi-function device. Increase fn.
-            fn++;
-            if (fn >= CYG_PCI_MAX_FN) {
-                fn = 0;
-                dev++;
-            }
-        } else {
-            // Single-function device. Skip to next.
-            dev++;
-        }
+
+	devfn = CYG_PCI_DEV_MAKE_DEVFN(dev, 0);
+	cyg_pcihw_read_config_uint8(bus, devfn,
+				    CYG_PCI_CFG_HEADER_TYPE, &header);
+	if (header & CYG_PCI_CFG_HEADER_TYPE_MF) {
+	    // Multi-function device. Increase fn.
+	    fn++;
+	    if (fn >= CYG_PCI_MAX_FN) {
+		fn = 0;
+		dev++;
+	    }
+	} else {
+	    // Single-function device. Skip to next.
+	    dev++;
+	}
     }
 
     // Note: Reset iterators in enclosing statement's "next" part.
@@ -352,6 +458,10 @@ cyg_pci_find_next( cyg_pci_device_id cur_devid,
             }
         }
     }
+
+#ifdef DEBUG_PCI
+    printf("nothing.\n");
+#endif
 
     return false;
 }
@@ -424,32 +534,37 @@ cyg_pci_configure_device( cyg_pci_device *dev_info )
 {
     int bar;
     cyg_uint32 flags;
-    cyg_bool ret = false;
+    cyg_bool ret = true;
 
-    // Check that device is inactive.
+    // If device is already active, just return true as
+    // cyg_pci_get_device_info has presumably filled in
+    // the base_map already.
     if ((dev_info->command & CYG_PCI_CFG_COMMAND_ACTIVE) != 0)
-        return false;
+	return true;
 
-    for (bar = 0; bar < CYG_PCI_MAX_BAR; bar++) {
-        flags = dev_info->base_size[bar];
+    if (dev_info->num_bars > 0) {
+	for (bar = 0; bar < dev_info->num_bars; bar++) {
+	    flags = dev_info->base_size[bar];
 
-        // No reason to scan beyond first inactive BAR.
-        if (0 == flags)
-            break;
+	    ret = false;
 
-        if ((flags & CYG_PCI_CFG_BAR_SPACE_MASK) == CYG_PCI_CFG_BAR_SPACE_MEM){
-            ret |= cyg_pci_allocate_memory(dev_info, bar, 
-                                           &cyg_pci_memory_base);
+	    if ((flags & CYG_PCI_CFG_BAR_SPACE_MASK) == CYG_PCI_CFG_BAR_SPACE_MEM){
+		ret |= cyg_pci_allocate_memory(dev_info, bar, 
+					       &cyg_pci_memory_base);
 
-            // If this is a 64bit memory region, skip the next bar
-            // since it will contain the top 32 bits.
-            if (flags & CYG_PRI_CFG_BAR_MEM_TYPE_64)
-                bar++;
-        } else
-            ret |= cyg_pci_allocate_io(dev_info, bar, &cyg_pci_io_base);
+		// If this is a 64bit memory region, skip the next bar
+		// since it will contain the top 32 bits.
+		if (flags & CYG_PRI_CFG_BAR_MEM_TYPE_64)
+		    bar++;
+	    } else
+		ret |= cyg_pci_allocate_io(dev_info, bar, &cyg_pci_io_base);
 
-        cyg_pci_translate_interrupt(dev_info, &dev_info->hal_vector);
+	    if (!ret)
+		return ret;
+	}
     }
+
+    cyg_pci_translate_interrupt(dev_info, &dev_info->hal_vector);
 
     return ret;
 }
@@ -487,7 +602,7 @@ cyg_pci_allocate_memory_priv( cyg_pci_device *dev_info, cyg_uint32 bar,
     // Is the request for memory space?
     if (CYG_PCI_CFG_BAR_SPACE_MEM != (flags & CYG_PCI_CFG_BAR_SPACE_MASK))
         return false;
-    
+
     // Check type of memory requested...
     mem_type = CYG_PRI_CFG_BAR_MEM_TYPE_MASK & flags;
 
@@ -574,10 +689,6 @@ cyg_pci_allocate_io_priv( cyg_pci_device *dev_info, cyg_uint32 bar,
     // For now, simply align to required size.
     aligned_addr = (*base+size-1) & ~(size-1);
 
-    // Ensure the region fits within the 1MB IO space
-    if (aligned_addr+size > 1024*1024)
-        return false;
-
     // Is the request for IO space?
     if (CYG_PCI_CFG_BAR_SPACE_IO != (flags & CYG_PCI_CFG_BAR_SPACE_MASK))
         return false;
@@ -629,6 +740,223 @@ cyg_pci_translate_interrupt( cyg_pci_device *dev_info,
 
     return cyg_pcihw_translate_interrupt(bus, devfn, vec);
 }
+
+
+// Initialize devices on a given bus and all subordinate busses.
+cyg_bool
+cyg_pci_configure_bus( cyg_uint8 bus,
+		       cyg_uint8 *next_bus )
+{
+    cyg_uint8 devfn, header_type;
+    cyg_pci_device_id devid;
+    cyg_pci_device dev_info;
+
+    CYG_PCI_ADDRESS64 mem_start, mem_limit, mem_base;
+    CYG_PCI_ADDRESS32 io_start, io_limit, io_base;
+
+    // Scan only this bus for valid devices.
+    devid = CYG_PCI_DEV_MAKE_ID(bus, 0) | CYG_PCI_NULL_DEVFN;
+
+#ifdef DEBUG_PCI
+    printf("Configuring bus %d.\n", bus);
+#endif
+
+    while (cyg_pci_find_next(devid, &devid) && bus == CYG_PCI_DEV_GET_BUS(devid)) {
+
+        devfn = CYG_PCI_DEV_GET_DEVFN(devid);
+	
+	// Get the device info
+	cyg_pci_get_device_info(devid, &dev_info);
+
+#ifdef DEBUG_PCI
+	printf("\n");
+	printf("Configuring PCI Bus   : %d\n", bus);
+	printf("            PCI Device: %d\n", CYG_PCI_DEV_GET_DEV(devfn));
+	printf("            PCI Func  : %d\n", CYG_PCI_DEV_GET_FN(devfn));
+	printf("            Vendor Id : 0x%08X\n", dev_info.vendor);
+	printf("            Device Id : 0x%08X\n", dev_info.device);
+#endif
+
+	header_type = dev_info.header_type & CYG_PCI_CFG_HEADER_TYPE_MASK;
+
+	// Check for supported header types.
+	if (header_type != CYG_PCI_HEADER_NORMAL &&
+	    header_type != CYG_PCI_HEADER_BRIDGE) {
+	    CYG_FAIL("Unsupported PCI header type");
+	    continue;
+	}
+
+	// Only PCI-to-PCI bridges
+	if (header_type == CYG_PCI_HEADER_BRIDGE &&
+	    (dev_info.class_rev >> 8) != CYG_PCI_CLASS_BRIDGE_PCI_PCI) {
+	    CYG_FAIL("Unsupported PCI bridge class");
+	    continue;
+	}
+
+	// Configure the base registers
+	if (!cyg_pci_configure_device(&dev_info)) {
+	    // Apparently out of resources.
+	    CYG_FAIL("cyg_pci_configure_device failed");
+	    break;
+	}
+	
+	// Activate non-bridge devices.
+	if (header_type != CYG_PCI_HEADER_BRIDGE) {
+	    dev_info.command |= (CYG_PCI_CFG_COMMAND_IO 	// enable I/O space
+		              | CYG_PCI_CFG_COMMAND_MEMORY	// enable memory space
+		              | CYG_PCI_CFG_COMMAND_MASTER); 	// enable bus master
+	    cyg_pci_write_config_uint16(dev_info.devid, CYG_PCI_CFG_COMMAND, dev_info.command);
+	} else {
+	    //  Bridge Configuration
+
+	    // Set up the bus numbers that define the bridge
+	    dev_info.header.bridge.pri_bus = bus;
+	    cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_PRI_BUS,
+					 dev_info.header.bridge.pri_bus);
+
+	    dev_info.header.bridge.sec_bus = *next_bus;
+	    cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_SEC_BUS,
+					 dev_info.header.bridge.sec_bus);
+
+	    // Temporarily set to maximum so config cycles get passed along.
+	    dev_info.header.bridge.sub_bus = CYG_PCI_MAX_BUS - 1;
+	    cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_SUB_BUS,
+					 dev_info.header.bridge.sub_bus);
+
+	    // increment bus counter
+	    *next_bus += 1;
+
+	    // To figure the sizes of the memory and I/O windows, save the
+	    // current base of memory and I/O before configuring the bus
+	    // or busses on the secondary side of the bridge. After the
+	    // secondary side is configured, the difference between the
+	    // current values and saved values will tell the size.
+
+	    // For bridges, the memory window must start and end on a 1M
+	    // boundary and the I/O window must start and end on a 4K
+	    // boundary. We round up the mem and I/O allocation bases
+	    // to appropriate boundaries before configuring the secondary
+	    // bus. Save the pre-rounded values in case no mem or I/O
+	    // is needed we can recover any space lost due to rounding.
+
+	    // round up start of PCI memory space to a 1M boundary
+	    mem_base = cyg_pci_memory_base;
+	    cyg_pci_memory_base += 0xfffff;
+	    cyg_pci_memory_base &= ~0xfffff;
+	    mem_start = cyg_pci_memory_base;
+
+	    // round up start of PCI I/O space to a 4 Kbyte start address
+	    io_base = cyg_pci_io_base;
+	    cyg_pci_io_base += 0xfff;
+	    cyg_pci_io_base &= ~0xfff;
+	    io_start = cyg_pci_io_base;
+		
+	    // configure the subordinate PCI bus
+	    cyg_pci_configure_bus (dev_info.header.bridge.sec_bus, next_bus);
+			
+	    // set subordinate bus number to last assigned bus number
+	    dev_info.header.bridge.sub_bus = *next_bus - 1;
+	    cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_SUB_BUS,
+					 dev_info.header.bridge.sub_bus);
+
+	    // Did sub bus configuration use any I/O?
+	    if (cyg_pci_io_base > io_start) {
+
+		// round up end of bridge's I/O space to a 4K boundary
+		cyg_pci_io_base += 0xfff;
+		cyg_pci_io_base &= ~0xfff;
+		io_limit = cyg_pci_io_base - 0x1000;
+
+		// Enable I/O cycles across bridge
+		dev_info.command |= CYG_PCI_CFG_COMMAND_IO;
+
+		// 32 Bit I/O?
+		if ((dev_info.header.bridge.io_base & 0x0f) == 0x01) {
+		    // I/O Base Upper 16 Bits Register
+		    dev_info.header.bridge.io_base_upper16 = io_start >> 16;
+		    cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_IO_BASE_UPPER16,
+						 dev_info.header.bridge.io_base_upper16);
+		    // I/O Limit Upper 16 Bits Register
+		    dev_info.header.bridge.io_limit_upper16 = io_limit >> 16;
+		    cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_IO_LIMIT_UPPER16,
+						 dev_info.header.bridge.io_limit_upper16);
+		}
+
+		// I/O Base Register
+		dev_info.header.bridge.io_base = (io_start & 0xf000) >> 8;
+		cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_IO_BASE,
+					     dev_info.header.bridge.io_base);
+		// I/O Limit Register
+		dev_info.header.bridge.io_limit = (io_limit & 0xf000) >> 8;
+		cyg_pcihw_write_config_uint8(bus, devfn, CYG_PCI_CFG_IO_LIMIT,
+					     dev_info.header.bridge.io_limit);
+
+	    } else {
+		// No I/O space used on secondary bus.
+		// Recover any space lost on unnecessary rounding
+		cyg_pci_io_base = io_base;
+	    }
+
+	    // Did sub bus configuration use any memory?
+	    if (cyg_pci_memory_base > mem_start) {
+
+		// round up end of bridge's PCI memory space to a 1M boundary
+		cyg_pci_memory_base += 0xfffff;
+		cyg_pci_memory_base &= ~0xfffff;
+		mem_limit = cyg_pci_memory_base - 0x100000;
+
+		// Enable memory cycles across bridge
+		dev_info.command |= CYG_PCI_CFG_COMMAND_MEMORY;
+
+		// Memory Base Register
+		dev_info.header.bridge.mem_base = (mem_start >> 16) & 0xfff0;
+		cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_MEM_BASE,
+						 dev_info.header.bridge.mem_base);
+
+		// Memory Limit Register
+		dev_info.header.bridge.mem_limit = (mem_limit >> 16) & 0xfff0;
+		cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_MEM_LIMIT,
+						 dev_info.header.bridge.mem_limit);
+
+		// Prefetchable memory not yet supported across bridges.
+		// Disable by making limit < base
+		{
+		    cyg_uint16 tmp_word;
+
+		    tmp_word = 0;
+		    cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_PREFETCH_LIMIT,
+						 tmp_word);
+		    tmp_word = 0xfff0;
+		    cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_PREFETCH_BASE,
+						 tmp_word);
+		}
+	    } else {
+		// No memory space used on secondary bus.
+		// Recover any space lost on unnecessary rounding
+		cyg_pci_memory_base = mem_base;
+	    }
+
+	    // Setup the bridge command register
+	    dev_info.command |= CYG_PCI_CFG_COMMAND_MASTER;
+	    dev_info.command |= CYG_PCI_CFG_COMMAND_SERR;
+	    cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_COMMAND,
+					  dev_info.command);
+
+	    /* Setup the Bridge Control Register */
+	    dev_info.header.bridge.control |= CYG_PCI_CFG_BRIDGE_CTL_PARITY;
+	    dev_info.header.bridge.control |= CYG_PCI_CFG_BRIDGE_CTL_SERR;
+	    dev_info.header.bridge.control |= CYG_PCI_CFG_BRIDGE_CTL_MASTER;
+	    cyg_pcihw_write_config_uint16(bus, devfn, CYG_PCI_CFG_BRIDGE_CONTROL,
+					  dev_info.header.bridge.control);
+	}
+    }
+#ifdef DEBUG_PCI
+    printf("Finished configuring bus %d.\n", bus);
+#endif
+
+    return true;
+}
+
 
 #endif // ifdef CYG_PCI_PRESENT
 

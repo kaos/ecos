@@ -1,3 +1,7 @@
+2000-11-10  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0_brutus.cdl: Add RedBoot configuration.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_arm_sa11x0_brutus_ram.mlt:

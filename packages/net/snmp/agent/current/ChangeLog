@@ -1,3 +1,12 @@
+2000-11-17  Hugo Tyson  <hmt@redhat.com>
+
+	* src/mibgroup/mibII/dot3.c (var_dot3StatsTable): 
+	* src/mibgroup/mibII/interfaces.c (var_ifTable): Use the
+	last component of the OID to select the matching interface rather
+	than merely counting through them.  Thus this MIB matches eg. the
+	IP MIB in terms of ip.ipAddrTable.ipAddrEntry.ipAdEntIfIndex.
+	[CASE 104939 "snmp interface and IP group don't correspond"]
+
 2000-08-31  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/snmpping.c (net_test): Add use of network realtime test

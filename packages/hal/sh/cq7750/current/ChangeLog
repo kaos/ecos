@@ -1,3 +1,13 @@
+2000-11-09  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh7750_cq7750.cdl: Set flags to -m3 for now.
+
+2000-11-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc (BSC_settings_table): Use computed init frqcr.
+
+	* cdl/hal_sh_sh7750_cq7750.cdl: Updated clock default settings.
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh7750_cq7750.cdl: Adding clock options.

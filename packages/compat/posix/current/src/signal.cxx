@@ -456,12 +456,17 @@ externC void cyg_posix_signal_asr(pthread_info *self)
 //==========================================================================
 // Per-thread initialization and destruction
 
-externC void cyg_posix_thread_siginit( pthread_info *thread )
+externC void cyg_posix_thread_siginit( pthread_info *thread,
+                                       pthread_info *parentthread )
 {
     // Clear out signal masks
     sigemptyset( &thread->sigpending );
-    sigemptyset( &thread->sigmask );
-
+    // but threads inherit signal masks
+    if ( NULL == parentthread )
+        sigemptyset( &thread->sigmask );
+    else
+        thread->sigmask = parentthread->sigmask;
+    
     cyg_pthread_exception_init( thread );
 }
 

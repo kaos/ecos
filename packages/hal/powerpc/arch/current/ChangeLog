@@ -1,3 +1,19 @@
+2000-11-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S: Minor changes in support of PPC40x.  This
+	platform has no cache control - if the MMU is on, it's on.
+	This causes some interesting cache coherency problems in the
+	interrupt/exception handlers.  Note: it may be possible to
+	overcome this by use of the DCCR register (untested).
+
+	* src/powerpc.ld: Fix problems with 'sbss6', etc.
+
+	* src/hal_mk_defs.c: Use variant/platform macros for additional
+	symbols, rather than direcly polluting this file.
+
+	* include/hal_intr.h: Allow variant/platform to define clock
+	setup (since the 40x does not have a decrementer!)
+
 2000-10-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/powerpc.ld: Use .sdata.* rather than .sdata* so that .sdata2

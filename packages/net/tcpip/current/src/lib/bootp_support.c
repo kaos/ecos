@@ -428,6 +428,8 @@ init_net(const char *intf, struct bootp *bp)
     addrp->sin_port = 0;
     addrp->sin_addr = bp->bp_yiaddr;  // The address BOOTP gave us
 
+    // Must do this temporarily with default route and netmask so that
+    // [sub]netmask can be set.
     strcpy(ifr.ifr_name, intf);
     if (ioctl(s, SIOCSIFADDR, &ifr)) {
         perror("SIOCIFADDR");
@@ -440,6 +442,13 @@ init_net(const char *intf, struct bootp *bp)
             perror("SIOCSIFNETMASK");
             return false;
         }
+        // Must do this again so that [sub]netmask (and so default route)
+        // is taken notice of.
+        addrp->sin_addr = bp->bp_yiaddr;  // The address BOOTP gave us
+        if (ioctl(s, SIOCSIFADDR, &ifr)) {
+            perror("SIOCIFADDR 2");
+            return false;
+        }
     }
 
     if (get_bootp_option(bp, TAG_IP_BROADCAST, &addrp->sin_addr)) {
@@ -447,7 +456,8 @@ init_net(const char *intf, struct bootp *bp)
             perror("SIOCSIFBRDADDR");
             return false;
         }
-    
+        // Do not re-set the IFADDR after this; doing *that* resets the
+        // BRDADDR to the default!
     }
 
     ifr.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING;

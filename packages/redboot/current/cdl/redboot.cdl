@@ -74,7 +74,7 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
-	compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c
+	compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
         compile -library=libextras.a load.c
 
         make -priority 320 {
@@ -198,5 +198,13 @@ cdl_package CYGPKG_REDBOOT {
         no_define
     }
 
+    cdl_option CYGSEM_REDBOOT_BSP_SYSCALLS {
+        display       "Allow RedBoot to handle GNUPro application 'syscalls'."
+        flavor        bool
+        default_value 0
+        description   "
+          If this option is enabled then RedBoot will install a syscall handler
+          to support debugging of applications based on GNUPro newlib/bsp."
+    }
 }
 

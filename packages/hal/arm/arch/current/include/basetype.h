@@ -57,7 +57,8 @@
 //-----------------------------------------------------------------------------
 // ARM does not usually use labels with underscores.
 
-//#define CYG_LABEL_NAME(_name_) _name_
+#define CYG_LABEL_NAME(_name_) _name_
+#define CYG_LABEL_DEFN(_name_) _name_
 
 //-----------------------------------------------------------------------------
 // Override the alignment definitions from cyg_type.h. ARM only allows 4 

@@ -122,8 +122,8 @@ main(void)
     DEFINE(CYGNUM_HAL_VSR_COUNT, CYGNUM_HAL_VSR_COUNT);
 
     // Variant definitions - want these to be included instead.
-#ifdef CYGPKG_HAL_POWERPC_MPC8xx
-    DEFINE(CYGNUM_HAL_VECTOR_NMI, CYGNUM_HAL_VECTOR_NMI);
+#ifdef CYGARC_VARIANT_DEFS
+    CYGARC_VARIANT_DEFS
 #endif
 
     // Memory layout values (since these aren't "asm"-safe)

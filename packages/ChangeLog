@@ -1,3 +1,13 @@
+2000-11-16  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added intel flash driver. Going to use it as a test to
+	get more generic drivers working.
+
+2000-11-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* pkgconf/rules.mak: Get rid of some gnu specific options to cp, find and xargs.
+
+	
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added cq7750 target and SH3/SH4 variant packages. Moved

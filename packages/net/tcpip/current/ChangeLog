@@ -1,3 +1,19 @@
+2000-11-15  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/bootp_support.c (init_net): Do a SIOCSIFADDR a 2nd time
+	after setting the netmask (SIOCSIFNETMASK) in order for the newly
+	set netmask to "take" - otherwise a bogus route based on the
+	default netmask lurks within the system.
+
+2000-11-10  Hugo Tyson  <hmt@redhat.com>
+
+	* src/ecos/support.c (cyg_net_get_mem_stats): New API for getting
+	info on the various mem pools the stack uses to enable tests to
+	spot store leaks.
+
+	* include/network.h (cyg_net_get_mem_stats): Export this API for
+	automated network testing.
+
 2000-10-24  Hugo Tyson  <hmt@redhat.com>
 
 	* src/lib/tftp_server.c (tftpd_server): Cut down the chatter to

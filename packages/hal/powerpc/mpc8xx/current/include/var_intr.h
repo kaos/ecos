@@ -686,5 +686,10 @@ externC cyg_uint32 hal_arbitration_isr_cpm (CYG_ADDRWORD vector,
 #endif // ifdef CYGPKG_HAL_POWERPC_MPC860
 
 //-----------------------------------------------------------------------------
+// Symbols used by assembly code
+#define CYGARC_VARIANT_DEFS                                     \
+    DEFINE(CYGNUM_HAL_VECTOR_NMI, CYGNUM_HAL_VECTOR_NMI);
+
+//-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_VAR_INTR_H
 // End of var_intr.h

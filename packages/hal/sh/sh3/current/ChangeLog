@@ -1,3 +1,7 @@
+2000-11-10  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c: Add spaces around ... used in ranges.
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* Many changes to bring the Haruki's HAL split up to date. Also

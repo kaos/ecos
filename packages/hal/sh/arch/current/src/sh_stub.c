@@ -138,12 +138,15 @@ void __single_step (void)
 #endif
     // Stop after instruction at matching address has executed.
     HAL_WRITE_UINT16(CYGARC_REG_BRCR, CYGARC_REG_BRCR_PCBA);
+
     // Stop on IFETCH/READ
-    HAL_WRITE_UINT16(CYGARC_REG_BBRA, 
 #if (CYGARC_SH_MOD_UBC == 3)
-                     CYGARC_REG_BBRA_CPU| // Match on CPU cycle
-#endif
+    HAL_WRITE_UINT16(CYGARC_REG_BBRA, 
+                     CYGARC_REG_BBRA_CPU|CYGARC_REG_BBRA_IFETCH|CYGARC_REG_BBRA_READ);
+#else
+    HAL_WRITE_UINT16(CYGARC_REG_BBRA, 
                      CYGARC_REG_BBRA_IFETCH|CYGARC_REG_BBRA_READ);
+#endif
 }
 
 /* Clear the single-step state. */

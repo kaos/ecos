@@ -321,13 +321,27 @@ AC_SUBST(cyg_ac_tcl_version)
 
 dnl Where is the Tcl installation? By default assume Tcl is already
 dnl installed in the same place as the eCos host-side.
+AC_ARG_WITH(tcl,[ --with-tcl-header=<path>        location of Tcl header])
+AC_ARG_WITH(tcl,[ --with-tcl-lib=<path>        location of Tcl libraries])
+
 AC_MSG_CHECKING(for Tcl installation)
 AC_ARG_WITH(tcl,[ --with-tcl=<path>        location of Tcl header and libraries],[
   cyg_ac_tcl_incdir=${with_tcl}/include
   cyg_ac_tcl_libdir=${with_tcl}/lib
 ],[
-  cyg_ac_tcl_incdir=${prefix}/include
-  cyg_ac_tcl_libdir=${prefix}/lib
+  if test "${with_tcl_header}" = "no"; then
+    cyg_ac_tcl_incdir=${prefix}/include
+  else
+    with_tcl=yes
+    cyg_ac_tcl_incdir=${with_tcl_header}/include
+  fi
+
+  if test "${with_tcl_lib}" = "no"; then
+    cyg_ac_tcl_libdir=${prefix}/lib
+  else
+    with_tcl=yes
+    cyg_ac_tcl_libdir=${with_tcl_lib}/lib
+  fi
 ])
 AC_MSG_RESULT(${cyg_ac_tcl_libdir})
 

@@ -318,6 +318,31 @@ void cyg_kmem_print_stats( void )
         );
 }
 
+// This API is for our own automated network tests.  It's not in any header
+// files because it's not at all supported.
+int cyg_net_get_mem_stats( int which, cyg_mempool_info *p )
+{
+    CYG_CHECK_DATA_PTR( p, "Bad pointer to mempool_info" );
+    CYG_ASSERT( 0 <= which, "Mempool selector underflow" );
+    CYG_ASSERT( 2 >=which, "Mempool selector overflow" );
+    
+    if ( p )
+        switch ( which ) {
+        case 0:
+            cyg_mempool_var_get_info( net_mem, p );
+            break;
+        case 1:
+            cyg_mempool_fix_get_info( net_mbufs, p );
+            break;
+        case 2:
+            cyg_mempool_fix_get_info( net_clusters, p );
+            break;
+        default:
+            return 0;
+        }
+    return p;
+}
+
 int
 cyg_mtocl(u_long x)
 {

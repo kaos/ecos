@@ -1,3 +1,31 @@
+2000-11-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c (delay_us): Add dummy loop.
+	Duh! Take usecs argment into account.
+
+2000-11-06  Mark Salter  <msalter@redhat.com>
+
+	* src/generic-stub.c (__handle_exception): Add support for GNUPro bsp
+	syscall handling.
+
+	* src/board.h: Include pkgconf/redboot.h for CYGSEM_REDBOOT_BSP_SYSCALLS.
+
+2000-11-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c (hal_if_diag_write_char): Clear interrupt flag before
+	setting breakpoint.
+
+2000-11-04  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_stub.c (__build_t_packet): Report reason and data
+	address if stopped by hw watchpoint.
+
+	* src/generic-stub.c (__process_packet): Remove experimental
+	support for type 5 Z packet.
+
+	* include/hal_stub.h: Define HAL_STUB_STOP_* reasons returned
+	by HAL_IS_STOPPED_BY_HARDWARE.
+
 2000-10-27  Mark Salter  <msalter@redhat.com>
 
 	* src/generic-stub.c: Fixed preprocessor warning.

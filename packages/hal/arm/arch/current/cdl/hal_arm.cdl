@@ -56,7 +56,7 @@ cdl_package CYGPKG_HAL_ARM {
 
     implements CYGINT_HAL_DIAG_DISABLE_GDB_PROTOCOL_SUPPORTED
 
-    compile       hal_misc.c context.S arm_stub.c
+    compile       hal_misc.c context.S arm_stub.c hal_syscall.c
 
     # The "-o file" is a workaround for CR100958 - without it the
     # output file would end up in the source directory under CygWin.

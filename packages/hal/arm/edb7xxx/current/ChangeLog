@@ -1,3 +1,7 @@
+2000-11-06  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dram_test.c: Add kernel check.
+
 2000-10-26  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* misc/edb7211_redboot_ROM.cfg: Ensure CYGSEM_HAL_ROM_MONITOR is

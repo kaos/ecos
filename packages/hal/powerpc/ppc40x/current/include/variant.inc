@@ -57,8 +57,55 @@
 
 ##-----------------------------------------------------------------------------
 ## PPC40x defined vectors
+                
+## Special code to handle the various timers which generate non-standard
+## interrupts.  There are really three VSRs here, each 0x10 apart.
+        .macro  timer_vector name
+        .p2align 8
+        .globl  __exception_\name
+__exception_\name:
+	# Variable timer interrupt
+        mtspr   SPRG1,r3                     # stash some work registers away
+        mtspr   SPRG2,r4                    
+        li      r4,0x1000                    # vector offset
+	b	0f
+	# Fixed timer interrupt
+        mtspr   SPRG1,r3                     # stash some work registers away
+        mtspr   SPRG2,r4                    
+        li      r4,0x1010                    # vector offset
+	b	0f
+	# Watchdog timer interrupt
+        mtspr   SPRG1,r3                     # stash some work registers away
+        mtspr   SPRG2,r4                    
+        li      r4,0x1020                    # vector offset
+0:      mtspr   SPRG3,r5
+        lwi     r3,hal_vsr_table+(0x1000>>6) # table base
+        lwz     r3,0(r3)                     # address of vsr
+        mflr    r5                           # save link register
+        mtlr    r3                           # put vsr address into it
+	mr	r3,r4			     # original vector
+        mfcr    r4                           # stash CR
+        blr                                  # go to common code
+        .endm
 
         .macro hal_extra_vectors
+	timer_vector		ppc40x_timers
+	exception_vector	data_TLB_miss
+	exception_vector	instr_TLB_miss
+	exception_vector	reserved_01300
+	exception_vector	reserved_01400
+	exception_vector	reserved_01500
+	exception_vector	reserved_01600
+	exception_vector	reserved_01700
+	exception_vector	reserved_01800
+	exception_vector	reserved_01900
+	exception_vector	reserved_01A00
+	exception_vector	reserved_01B00
+	exception_vector	reserved_01C00
+	exception_vector	reserved_01D00
+	exception_vector	reserved_01E00
+	exception_vector	reserved_01F00
+	exception_vector	ppc40x_debug
         .endm
 
 ##-----------------------------------------------------------------------------
@@ -108,7 +155,7 @@
 
 	# Ensure that the vectors will come from 0x0000
 	lwi	r4,0
-	mtspr	EVPR,r4
+	mtspr	SPR_EVPR,r4
 #endif
 
         # Next initialize the VSR table. This happens whether the
@@ -129,6 +176,7 @@
         lwi     r4,hal_vsr_table
         stw     r3,CYGNUM_HAL_VECTOR_INTERRUPT*4(r4)
         stw     r3,CYGNUM_HAL_VECTOR_DECREMENTER*4(r4)
+        stw     r3,CYGNUM_HAL_VECTOR_TIMERS*4(r4)
         .endm
 
 #elif defined(CYG_HAL_STARTUP_RAM) && defined(CYGSEM_HAL_USE_ROM_MONITOR)
@@ -142,6 +190,7 @@
         lwi     r4,hal_vsr_table
         stw     r3,CYGNUM_HAL_VECTOR_INTERRUPT*4(r4)
         stw     r3,CYGNUM_HAL_VECTOR_DECREMENTER*4(r4)
+        stw     r3,CYGNUM_HAL_VECTOR_TIMERS*4(r4)
         .endm
 
 
@@ -170,6 +219,37 @@
 ## Indicate that the ISR tables are defined in variant.S
 
 #define CYG_HAL_PPC_ISR_TABLES_DEFINED
+
+##-----------------------------------------------------------------------------
+## MPC4xx interrupt handling.
+
+## Decode the EXISR appropriately
+
+#define CYGPKG_HAL_POWERPC_INTC_DEFINED
+        # decode the interrupt
+	# the interrupt vector will be 0x500 or 0x10x0
+	# 0x0500 = external, must be decoded via EXISR
+	# 0x10X0 = timer, X is the timer type
+	# r3 used as scratch
+	.macro  hal_intc_decode dreg,state
+        lwz     \dreg,CYGARC_PPCREG_VECTOR(\state) # retrieve vector number,
+	extrwi.	\dreg,\dreg,1,19		# isolate bit 19
+	beq	0f				# timer interrupt = 1
+        lwz     \dreg,CYGARC_PPCREG_VECTOR(\state) # retrieve vector number,
+	extrwi	\dreg,\dreg,2,26		# isolate bits 26-27
+	addi	\dreg,\dreg,CYGNUM_HAL_INTERRUPT_VAR_TIMER # FIXME
+	b	1f
+0:	mfdcr	r3,DCR_EXISR			# Interrupt status register
+	lwi	\dreg,0x8FF0001F		# significant bits
+	and	\dreg,\dreg,r3
+	cntlzw	r3,\dreg			# find highest "1" bit
+	slwi	r3,r3,2
+	lwi	\dreg,EXISR_TAB			# convert bit # to signal #
+	lwz	\dreg,0(\dreg)
+1:      stw     \dreg,CYGARC_PPCREG_VECTOR(\state) # update vector in state frame.
+        slwi    \dreg,\dreg,2                   # convert to byte offset.
+        .endm                              
+
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_VARIANT_INC

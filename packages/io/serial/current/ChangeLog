@@ -1,3 +1,10 @@
+2000-11-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/common/tty.c (tty_write): Check buffer size appropriately
+	since when doing \r\n expansion "size" may have been double
+	incremented as a result.
+	Thanks to Alex Mathews of Crosstor for the fix.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/common/serial.c: Include cyg/infra/cyg_ass.h for assertion

@@ -37,10 +37,17 @@
 // Description:   Tool used to test DRAM on eval boards
 //####DESCRIPTIONEND####
 
+#include <pkgconf/system.h>
+#include <cyg/infra/testcase.h>
+
+#ifdef CYGPKG_KERNEL
+
 #include <pkgconf/kernel.h>   // Configuration header
+
+#ifdef CYGFUN_KERNEL_API_C
+
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
-#include <cyg/infra/testcase.h>
 
 #include <cyg/hal/hal_arch.h>
 #include CYGHWR_MEMORY_LAYOUT_H  // Memory layout
@@ -313,3 +320,20 @@ cyg_start( void )
     cyg_scheduler_start();
 } // cyg_package_start()
 
+#else /* def CYGFUN_KERNEL_API_C */
+# define NA_MSG "Kernel C API layer disabled"
+#endif
+
+#else /* def CYGPKG_KERNEL */
+# define NA_MSG "No kernel"
+#endif
+
+
+#ifdef NA_MSG
+externC void
+cyg_start( void )
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(NA_MSG);
+}
+#endif

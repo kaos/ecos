@@ -52,6 +52,10 @@
 
 #include <cyg/hal/hal_stub.h>
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#endif
+
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_BOARD_H
 // End of board.h

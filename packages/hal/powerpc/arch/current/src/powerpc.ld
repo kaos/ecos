@@ -122,7 +122,7 @@ GROUP(libtarget.a libgcc.a)
     .sbss _vma_ : _lma_                                                         \
     { __sbss_start = ABSOLUTE (.);                                        \
     __SBSS_START__ = ABSOLUTE(.); *(.sbss.*) __SBSS_END__ = ABSOLUTE(.);   \
-    __SBSS2_START__ = ABSOLUTE(.); *(.sbss2*) __SBSS2_END__ = ABSOLUTE(.);\
+    __SBSSx_START__ = ABSOLUTE(.); *(.sbss*) __SBSSx_END__ = ABSOLUTE(.);\
     *(.scommon*)                                                          \
     __sbss_end = ABSOLUTE (.); }                                          \
     > _region_
