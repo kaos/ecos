@@ -834,16 +834,23 @@ echo "configure:825: checking that a separate build tree is being used" >&5
     fi
 
 
-SUBDIRS="host"
+		     
+if test -f "${srcdir}/host/configure" ; then
+   SUBDIRS="host"
+elif test -f "${srcdir}/tools/src/configure" ; then
+   SUBDIRS="tools/src"
+else   
+   SUBDIRS=""
+fi   
 
 
 PKGHOSTDIRS=""
 FOUND_CONFIGURES=""
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/current/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/*/host/configure"
 for configure in ${FOUND_CONFIGURES}; do
     if test -f ${configure}; then
                                 hostdir=`dirname ${configure}`

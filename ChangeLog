@@ -1,3 +1,11 @@
+2003-03-27  Bart Veer  <bartv@ecoscentric.com>
+
+	* configure.in, configure:
+	Look for the host-side sources in tools/src as well as in host, as
+	per the 2.0 release tree.
+	Look for per-package host-side software in any/all versions of a
+	package, not just "current".
+
 2003-02-12  Bart Veer  <bartv@ecoscentric.com>
 
 	* README.host: update Tcl-related instructions

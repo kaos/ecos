@@ -8,7 +8,7 @@ dnl
 dnl ====================================================================
 dnl ####ECOSHOSTGPLCOPYRIGHTBEGIN####
 dnl ----------------------------------------------------------------------------
-dnl Copyright (C) 2002 Bart Veer
+dnl Copyright (C) 2002, 2003 Bart Veer
 dnl Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 dnl
 dnl This file is part of the eCos host tools.
@@ -85,7 +85,7 @@ dnl   1) if the entire repository is managed by CVS or anoncvs, this
 dnl      configure script will search the packages tree for any packages
 dnl      that have host-side software that needs to be built -
 dnl      specifically, that have a file "configure" inside a "host"
-dnl      subdirectory in version "current" of a package.
+dnl      subdirectory in a version of a package.
 dnl
 dnl   2) if instead the repository contains additional packages
 dnl      installed as epk's and managed by an administration tool then
@@ -137,8 +137,17 @@ dnl Nothing actually gets built in this directory, so there should be no
 dnl need to worry about compiler flags etc. Instead, the problem is
 dnl figuring out what should actually get built.
 dnl
-dnl  1) the host subdirectory should always get built.
-SUBDIRS="host"
+dnl  1) the host subdirectory should always get built, if it exists.
+dnl     With the 2.0 release system the directory gets moved to
+dnl     tools/src
+		     
+if test -f "${srcdir}/host/configure" ; then
+   SUBDIRS="host"
+elif test -f "${srcdir}/tools/src/configure" ; then
+   SUBDIRS="tools/src"
+else   
+   SUBDIRS=""
+fi   
 
 dnl  2) any package which has a configure script in a
 dnl     current/host subdirectory should also get built.
@@ -157,11 +166,11 @@ dnl     at the Tcl level at run-time, so there are no build-time complications.
 
 PKGHOSTDIRS=""
 FOUND_CONFIGURES=""
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/current/host/configure"
-FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/current/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/host/configure"
+FOUND_CONFIGURES="${FOUND_CONFIGURES} ${srcdir}/packages/*/*/*/*/*/*/host/configure"
 for configure in ${FOUND_CONFIGURES}; do
     if test -f ${configure}; then
         dnl A configure script has been found in the source tree.
