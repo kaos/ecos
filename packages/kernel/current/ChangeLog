@@ -1,3 +1,9 @@
+2003-07-06  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/test/stackmon.h (cyg_test_size_a_stack):
+	If stack checking is enabled, look for 0xdeadbeef rather than 0x0
+	to determine usage. Also reset the interrupt stack to that value.
+
 2003-07-02  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/kernel.sgml: Document that timeouts for timed functions are

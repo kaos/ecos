@@ -84,11 +84,22 @@
 inline void cyg_test_size_a_stack( char *comment, char *format,
                                    char *base, char *top )
 {
+#ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+    cyg_uint32* cur32   = (cyg_uint32*) ((((CYG_ADDRWORD)&(base[CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE])) + 3) & ~3);
+    cyg_uint32* top32   = (cyg_uint32*) ((((CYG_ADDRWORD)top) + 3) & ~3);
+    for ( ; cur32 < top32; cur32++) {
+        if (*cur32 != 0xDEADBEEF) {
+            break;
+        }
+    }
+    STACKMON_PRINTF( format, comment, (CYG_ADDRWORD)top32 - (CYG_ADDRWORD)cur32, top - base );
+#else    
     register char *p;
     for ( p = base; p < top; p++ )
         if ( *p )
             break;
     STACKMON_PRINTF( format, comment, top - p, top - base );
+#endif    
 }
 
 // ------------------------------------------------------------------------
@@ -200,10 +211,22 @@ inline void cyg_test_clear_interrupt_stack( void )
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 #if defined(HAL_INTERRUPT_STACK_BASE) && defined(HAL_INTERRUPT_STACK_TOP)
     cyg_uint32  old_intr;
-    register char *p;
     HAL_DISABLE_INTERRUPTS(old_intr);
-    for ( p = HAL_INTERRUPT_STACK_BASE; p < HAL_INTERRUPT_STACK_TOP; p++ )
-        *p = 0;                         // zero it for checking later
+# ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
+    {
+        cyg_uint32* cur32   = (cyg_uint32*) ((((CYG_ADDRWORD)HAL_INTERRUPT_STACK_BASE) + 3) & ~3);
+        cyg_uint32* top32   = (cyg_uint32*) ((((CYG_ADDRWORD)HAL_INTERRUPT_STACK_TOP) + 3) & ~3);
+        for ( ; cur32 < top32; cur32++) {
+            *cur32 = 0xDEADBEEF;
+        }
+    }
+# else
+    {
+        register char *p;
+        for ( p = HAL_INTERRUPT_STACK_BASE; p < HAL_INTERRUPT_STACK_TOP; p++ )
+            *p = 0;                         // zero it for checking later
+    }
+# endif    
     HAL_RESTORE_INTERRUPTS(old_intr);
 #endif
 #endif
