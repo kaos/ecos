@@ -1,3 +1,10 @@
+2003-04-03  Jani Monoses <jani@iv.ro> 
+
+	* include/flash_am29xxxxx.inl:
+	Removed wrapper functions which enabled/disabled cache around query,
+	erase and program operations since the generic flash driver takes
+	care of the cache already.
+	
 2003-02-11  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/flash_am29xxxxx_parts.inl:
