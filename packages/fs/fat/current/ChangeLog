@@ -1,3 +1,39 @@
+2004-08-10  Savin Zlobec  <savin@elatec.si>
+
+        * src/fatfs.h:
+        * src/fatfs_supp.c:
+        Added FAT32 support.
+
+2004-07-13  Savin Zlobec  <savin@elatec.si>
+
+        * cdl/fatfs.cdl:
+        * src/fatfs.h:
+        * src/fatfs.c:
+        * src/fatfs_supp.c:
+        * src/fatfs_ncache.c:
+        Refactored the code and changed file node cache memory 
+        allocation from malloc to custom pool based one.
+
+2004-07-05  Savin Zlobec  <savin@elatec.si>
+
+        * cdl/fatfs.cdl:
+        * src/fatfs.h:
+        * src/fatfs.c:
+        * src/fatfs_supp.c:
+        * src/fatfs_ncache.c:
+        Removed FAT table cache - it added little or no speed gain to
+        the fatfs. Implemented private data for fatfs file descriptors which
+        holds the current FAT cluster position, this greatly improves
+        read/write times for big files comparing to the old implementation.
+        * src/fatfs_tcache.c: Removed.
+
+2004-06-24  Savin Zlobec  <savin@elatec.si>
+
+        * src/fatfs.h:
+        * src/fatfs_supp.c:
+        Implemented fatfs_get_disk_usage function for 
+        getting the number of total and free clusters.
+
 2004-01-19  Nick Garnett  <nickg@calivar.com>
 
 
@@ -65,7 +101,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Savin Zlobec 
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free

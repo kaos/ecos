@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Savin Zlobec 
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -38,7 +38,7 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):           savin 
+// Author(s):           Savin Zlobec <savin@elatec.si> 
 // Date:                2003-06-26
 //
 //####DESCRIPTIONEND####
@@ -73,10 +73,8 @@
 # define TNC 0
 #endif
 
-// This defines how many nodes should always be kept in
-// dead list regardless of node allocation treshold - it 
-// should always be >= 2 or the file finding code may not
-// work correctly!
+// This defines how many nodes should always be kept in dead list - 
+// it should be >= 2 or the file finding code may not work correctly!
 #define DLIST_KEEP_NUM 2 
 
 //==========================================================================
@@ -85,7 +83,7 @@
 static void
 node_list_init(fatfs_node_list_t *list)
 {
-    list->size = 0;
+    list->size  = 0;
     list->first = list->last = NULL;
 }
 
@@ -267,10 +265,6 @@ node_lists_check(fatfs_disk_t* disk)
 {
     node_list_check(&disk->live_nlist, 1, 99999);                        
     node_list_check(&disk->dead_nlist, 0, 0);                           
-
-    if ((disk->live_nlist.size + disk->dead_nlist.size) > 
-        FATFS_NODE_ALLOC_THRESHOLD)
-        CYG_ASSERTC(disk->dead_nlist.size <= DLIST_KEEP_NUM);
 }
 #endif // USE_XCHECKS
 
@@ -305,9 +299,10 @@ node_hash_add(fatfs_hash_table_t *tbl, fatfs_node_t *node)
     unsigned int hval;
    
     // Calculate hash of given node filename
-    hval = hash_fn(node->filename, strlen(node->filename)) % tbl->size;
+    hval = hash_fn(node->dentry.filename, 
+                   strlen(node->dentry.filename)) % tbl->size;
 
-    CYG_TRACE2(TNC, "name='%s' hval=%d", node->filename, hval);
+    CYG_TRACE2(TNC, "name='%s' hval=%d", node->dentry.filename, hval);
 
     if (tbl->nodes[hval] == NULL)
     {
@@ -331,7 +326,7 @@ node_hash_add(fatfs_hash_table_t *tbl, fatfs_node_t *node)
             if (lnode == node)
                 return false;
             
-            if (strcasecmp(lnode->filename, node->filename) > 0)
+            if (strcasecmp(lnode->dentry.filename, node->dentry.filename) > 0)
             {
                 if (pnode != NULL)
                     pnode->hash_next = node; // Insert in the middle
@@ -359,7 +354,7 @@ node_hash_find(fatfs_hash_table_t *tbl,
                unsigned int        namelen,
                unsigned int        parent_cluster)
 {   
-    unsigned int hval; 
+    unsigned int  hval; 
     fatfs_node_t *node;
 
     // Calculate hash of name and get the first node in slot
@@ -375,10 +370,10 @@ node_hash_find(fatfs_hash_table_t *tbl,
         // First compare the parent cluster number and 
         // check filename length since it is faster than 
         // comparing filenames
-        if (parent_cluster == node->parent_cluster &&
-            '\0' == node->filename[namelen])
+        if (parent_cluster == node->dentry.parent_cluster &&
+            '\0' == node->dentry.filename[namelen])
         {
-            int i = strncasecmp(node->filename, name, namelen);
+            int i = strncasecmp(node->dentry.filename, name, namelen);
 
             if (i == 0)
                 return node;
@@ -435,7 +430,8 @@ node_hash_remove(fatfs_hash_table_t *tbl, fatfs_node_t *node)
     fatfs_node_t *lnode, *pnode;
    
     // Calculate hash of name and get the first node in slot
-    hval = hash_fn(node->filename, strlen(node->filename)) % tbl->size;
+    hval = hash_fn(node->dentry.filename, 
+                   strlen(node->dentry.filename)) % tbl->size;
     lnode = tbl->nodes[hval];
 
     // Now find the node in list and remove it
@@ -480,9 +476,9 @@ node_hash_check(fatfs_hash_table_t *tbl)
         {
             if (pnode != NULL)
             {
-                int c = strcasecmp(pnode->filename, lnode->filename);
+                int c = strcasecmp(pnode->dentry.filename, lnode->dentry.filename);
                 CYG_ASSERT(c <= 0, "hash table not sorted");
-                CYG_ASSERT(pnode->parent_cluster != lnode->parent_cluster ||
+                CYG_ASSERT(pnode->dentry.parent_cluster != lnode->dentry.parent_cluster ||
                            0 != c, "duplicated node in hash table");
             }
             n++;
@@ -504,9 +500,9 @@ node_hash_not_found_check(fatfs_disk_t *disk,
     node = node_list_get_head(&disk->live_nlist);
     while (NULL != node)
     {
-        if (node->parent_cluster == parent_cluster          &&
-            namelen == strlen(node->filename)               &&
-            0 == strncasecmp(name, node->filename, namelen))
+        if (node->dentry.parent_cluster == parent_cluster          &&
+            namelen == strlen(node->dentry.filename)               &&
+            0 == strncasecmp(name, node->dentry.filename, namelen))
             CYG_ASSERT(false, "node not found in hash, "
                               "but exists in live list");
         node = node_list_get_next(node);
@@ -515,9 +511,9 @@ node_hash_not_found_check(fatfs_disk_t *disk,
     node = node_list_get_head(&disk->dead_nlist);
     while (NULL != node)
     {
-        if (node->parent_cluster == parent_cluster          &&
-            namelen == strlen(node->filename)               &&
-            0 == strncasecmp(name, node->filename, namelen))
+        if (node->dentry.parent_cluster == parent_cluster          &&
+            namelen == strlen(node->dentry.filename)               &&
+            0 == strncasecmp(name, node->dentry.filename, namelen))
             CYG_ASSERT(false, "node not found in hash, "
                               "but exists in dead list");
         node = node_list_get_next(node);
@@ -531,16 +527,16 @@ node_hash_found_check(fatfs_disk_t *disk,
                       unsigned int  parent_cluster,
                       fatfs_node_t* node)
 {
-    fatfs_node_t* n;
+    fatfs_node_t *n;
 
     n = node_list_get_head(&disk->live_nlist);
     while (NULL != n)
     {
         if (n == node) 
         {
-            if (node->parent_cluster != parent_cluster ||
-                namelen != strlen(node->filename)      ||
-                0 != strncasecmp(name, node->filename, namelen))
+            if (node->dentry.parent_cluster != parent_cluster ||
+                namelen != strlen(node->dentry.filename)      ||
+                0 != strncasecmp(name, node->dentry.filename, namelen))
                 CYG_ASSERT(false, "node_hash_find returned wrong node");
             return;
         }
@@ -552,9 +548,9 @@ node_hash_found_check(fatfs_disk_t *disk,
     {
         if (n == node)
         {
-            if (node->parent_cluster != parent_cluster ||
-                namelen != strlen(node->filename)      ||
-                0 != strncasecmp(name, node->filename, namelen))
+            if (node->dentry.parent_cluster != parent_cluster ||
+                namelen != strlen(node->dentry.filename)      ||
+                0 != strncasecmp(name, node->dentry.filename, namelen))
                 CYG_ASSERT(false, "node_hash_find returned wrong node");
             return;
         } 
@@ -592,6 +588,37 @@ node_hash_found_check(fatfs_disk_t *disk,
 #endif // not USE_XCHECKS
 
 //==========================================================================
+// Node pool allocation functions
+
+static void
+node_pool_init(fatfs_disk_t *disk)
+{
+    int i;
+
+    for (i = 0; i < FATFS_NODE_POOL_SIZE; i++)
+        disk->node_pool[i] = &disk->node_pool_base[i];
+
+    disk->node_pool_free_cnt = i;
+}
+
+static fatfs_node_t *
+node_pool_alloc(fatfs_disk_t *disk)
+{
+    fatfs_node_t *node = NULL;
+
+    if (disk->node_pool_free_cnt > 0)
+        node = disk->node_pool[--disk->node_pool_free_cnt];
+
+    return node;
+}
+
+static void
+node_pool_free(fatfs_disk_t *disk, fatfs_node_t *node)
+{
+    disk->node_pool[disk->node_pool_free_cnt++] = node;
+}
+    
+//==========================================================================
 //==========================================================================
 // Exported functions 
 
@@ -607,7 +634,8 @@ fatfs_node_cache_init(fatfs_disk_t *disk)
     node_list_init(&disk->live_nlist);
     node_list_init(&disk->dead_nlist);
     node_hash_init(&disk->node_hash);
-
+    node_pool_init(disk);
+    
     SANITY_CHECK();
 }
 
@@ -628,8 +656,7 @@ fatfs_node_cache_flush(fatfs_disk_t *disk)
         node_list_remove(&disk->live_nlist, node);
         if (!node_hash_remove(&disk->node_hash, node))
             CYG_ASSERT(false, "Node not in hash");
-        fatfs_tcache_flush(disk, &node->tcache);
-        free(node);
+        node_pool_free(disk, node);
         node = next_node;
     }
 
@@ -641,8 +668,7 @@ fatfs_node_cache_flush(fatfs_disk_t *disk)
         node_list_remove(&disk->dead_nlist, node);
         if (!node_hash_remove(&disk->node_hash, node))
             CYG_ASSERT(false, "Node not in hash");
-        fatfs_tcache_flush(disk, &node->tcache);
-        free(node);
+        node_pool_free(disk, node);
         node = next_node;
     }
 
@@ -654,62 +680,45 @@ fatfs_node_cache_flush(fatfs_disk_t *disk)
 // Allocates a new node.  
 
 fatfs_node_t*
-fatfs_node_alloc(fatfs_disk_t *disk, fatfs_node_t *node_data)
+fatfs_node_alloc(fatfs_disk_t *disk, fatfs_dir_entry_t *dentry)
 {
-    int lsize, dsize;
-    fatfs_node_t *anode;
+    fatfs_node_t *node;
 
     CYG_CHECK_DATA_PTRC(disk);
-    CYG_CHECK_DATA_PTRC(node_data);
+    CYG_CHECK_DATA_PTRC(dentry);
  
-    lsize = node_list_get_size(&disk->live_nlist);
-    dsize = node_list_get_size(&disk->dead_nlist);
-   
-    CYG_TRACE2(TNC, "lsize=%d dsize=%d", lsize, dsize);
-    
-    // Allocate space for a new node if we haven't reached the 
-    // allocation treshold or if we can't reuse dead nodes space
-    if (dsize > DLIST_KEEP_NUM && (lsize + dsize) >= 
-        (FATFS_NODE_ALLOC_THRESHOLD - 1))
-        anode = NULL;
-    else
-        anode = (fatfs_node_t *)malloc(sizeof(fatfs_node_t));
+    node = node_pool_alloc(disk);
         
-    if (NULL == anode)
+    if (NULL == node)
     {
-        CYG_TRACE0(TNC, "getting node from dead list");
+        CYG_TRACE2(TNC, "getting node from dead list (size=%d keep=%d)",
+                        node_list_get_size(&disk->dead_nlist), DLIST_KEEP_NUM);
         
-        if (dsize <= DLIST_KEEP_NUM)
+        if (node_list_get_size(&disk->dead_nlist) <= DLIST_KEEP_NUM)
             return NULL;
         
-        anode = node_list_tail_get(&disk->dead_nlist);
-        if (NULL == anode)
+        node = node_list_tail_get(&disk->dead_nlist);
+        if (NULL == node)
             return NULL;
         
-        CYG_TRACE1(TNC, "recycling node='%s'", anode->filename); 
+        CYG_TRACE1(TNC, "recycling node='%s'", node->dentry.filename); 
 
-        // Flush FAT table cache
-        fatfs_tcache_flush(disk, &anode->tcache);
-        
-        node_list_remove(&disk->dead_nlist, anode);
-        if (!node_hash_remove(&disk->node_hash, anode))
-            CYG_ASSERT(false, "Node not in hash");
+        node_list_remove(&disk->dead_nlist, node);
+        if (!node_hash_remove(&disk->node_hash, node))
+            CYG_ASSERT(false, "node not in hash");
     }     
 
     // Init new node    
-    *anode = *node_data;
-    anode->refcnt = 0;
+    node->dentry = *dentry;
+    node->refcnt = 0;
 
-    // Init FAT table cache
-    fatfs_tcache_init(disk, &anode->tcache);
-
-    node_list_head_add(&disk->dead_nlist, anode);
-    if (!node_hash_add(&disk->node_hash, anode))
-        CYG_ASSERT(false, "Node already in hash");
+    node_list_head_add(&disk->dead_nlist, node);
+    if (!node_hash_add(&disk->node_hash, node))
+        CYG_ASSERT(false, "node already in hash");
 
     SANITY_CHECK();
 
-    return anode;
+    return node;
 }
 
 //--------------------------------------------------------------------------
@@ -722,7 +731,7 @@ fatfs_node_touch(fatfs_disk_t *disk, fatfs_node_t *node)
 {
     CYG_CHECK_DATA_PTRC(disk);
     CYG_CHECK_DATA_PTRC(node);
-    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->filename, node->refcnt);
+    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->dentry.filename, node->refcnt);
 
     if (node->refcnt == 0)
     {
@@ -749,14 +758,15 @@ fatfs_node_ref(fatfs_disk_t *disk, fatfs_node_t *node)
 {
     CYG_CHECK_DATA_PTRC(disk);
     CYG_CHECK_DATA_PTRC(node);
-    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->filename, node->refcnt);
+    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->dentry.filename, node->refcnt);
     
-    // Increase node reference counter
     node->refcnt++;    
     if (1 == node->refcnt)
     {
-        CYG_TRACE1(TNC, "node='%s' to live list", node->filename);
         // First reference - move node from dead to live list
+
+        CYG_TRACE1(TNC, "node='%s' to live list", node->dentry.filename);
+        
         node_list_remove(&disk->dead_nlist, node);
         node_list_head_add(&disk->live_nlist, node);
     }
@@ -770,41 +780,24 @@ fatfs_node_ref(fatfs_disk_t *disk, fatfs_node_t *node)
 // If the reference goes from 1 to 0, than the node
 // is moved from live list to top of dead list.
 // (When reusing dead node it is always taken from the bottom of list)
-// If we are over the allocation treshold the bottom node of
-// dead list if freed.
 
 void
 fatfs_node_unref(fatfs_disk_t *disk, fatfs_node_t *node)
 {
     CYG_CHECK_DATA_PTRC(disk);
     CYG_CHECK_DATA_PTRC(node);
-    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->filename, node->refcnt);
+    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->dentry.filename, node->refcnt);
     CYG_ASSERT(node->refcnt > 0, "node->refcnt <= 0");
 
     node->refcnt--;
-    if (node->refcnt == 0)
+    if (0 == node->refcnt)
     {
         // No more references - move node from live to dead list
-        CYG_TRACE1(TNC, "node='%s' to dead list", node->filename);
+
+        CYG_TRACE1(TNC, "node='%s' to dead list", node->dentry.filename);
+
         node_list_remove(&disk->live_nlist, node);
         node_list_head_add(&disk->dead_nlist, node);
-
-        // Check the number of allocated nodes and free 
-        // the last node in dead list if we are over 
-        // the treshold and we have enough dead nodes
-        {
-            int lsize = node_list_get_size(&disk->live_nlist);
-            int dsize = node_list_get_size(&disk->dead_nlist);
-   
-            if (dsize > DLIST_KEEP_NUM && 
-                (lsize + dsize) >= FATFS_NODE_ALLOC_THRESHOLD) 
-            {
-                fatfs_node_t *n = node_list_get_tail(&disk->dead_nlist);
-                CYG_TRACE1(TNC, "freeing node='%s' - to satisfy "
-                                "alloc treshold", n->filename);
-                fatfs_node_free(disk, n);
-            }
-        }
     }
 
     SANITY_CHECK();
@@ -820,18 +813,17 @@ fatfs_node_free(fatfs_disk_t *disk, fatfs_node_t *node)
 {
     CYG_CHECK_DATA_PTRC(disk);
     CYG_CHECK_DATA_PTRC(node);
-    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->filename, node->refcnt);
+    CYG_TRACE2(TNC, "node='%s' refcnt=%d", node->dentry.filename, node->refcnt);
     CYG_ASSERTC(node->refcnt == 0);
     CYG_ASSERTC(node != disk->root);
 
-    // Flush FAT table cache    
-    fatfs_tcache_flush(disk, &node->tcache);
+    // Remove from dead list, from hash and free ptr
 
-    // Remove from dead list and from hash and free ptr
     node_list_remove(&disk->dead_nlist, node);
     if (!node_hash_remove(&disk->node_hash, node))
-        CYG_ASSERT(false, "node not in hash");    
-    free(node);
+        CYG_ASSERT(false, "node not in hash");   
+    
+    node_pool_free(disk, node);
 
     SANITY_CHECK();
 }
@@ -847,10 +839,10 @@ fatfs_node_rehash(fatfs_disk_t *disk, fatfs_node_t *node)
     CYG_CHECK_DATA_PTRC(node);
     
     if (!node_hash_remove_keyless(&disk->node_hash, node))
-        CYG_ASSERT(false, "Node not in hash");
+        CYG_ASSERT(false, "node not in hash");
     
     if (!node_hash_add(&disk->node_hash, node))
-        CYG_ASSERT(false, "Node already in hash");
+        CYG_ASSERT(false, "node already in hash");
     
     SANITY_CHECK();
 }
@@ -899,27 +891,6 @@ int
 fatfs_get_dead_node_count(fatfs_disk_t *disk)
 {
     return node_list_get_size(&disk->dead_nlist);
-}
-
-//--------------------------------------------------------------------------
-// fatfs_node_flush_dead_tcache()
-// Flushes FAT table cache of dead nodes.
-
-void
-fatfs_node_flush_dead_tcache(fatfs_disk_t *disk)
-{
-    fatfs_node_t *node;
- 
-    CYG_CHECK_DATA_PTRC(disk);
-    
-    node = node_list_get_tail(&disk->dead_nlist);
-
-    while (NULL != node)
-    {
-        CYG_TRACE1(TNC, "node='%s'", node->filename);
-        fatfs_tcache_flush(disk, &node->tcache);
-        node = node_list_get_prev(node);
-    }
 }
 
 // -------------------------------------------------------------------------

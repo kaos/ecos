@@ -10,7 +10,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Savin Zlobec 
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc. 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -40,7 +40,7 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):           savin 
+// Author(s):           Savin Zlobec <savin@elatec.si> 
 // Date:                2003-06-29
 //
 //####DESCRIPTIONEND####
@@ -48,9 +48,10 @@
 //==========================================================================
 
 #include <pkgconf/fs_fat.h>
-#include <cyg/kernel/kapi.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/io/io.h>
+#include <cyg/fileio/fileio.h>
 #include <blib/blib.h>
 
 #include <unistd.h>
@@ -63,15 +64,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <cyg/fileio/fileio.h>
-
 // --------------------------------------------------------------------------
 
 #define FATFS_HASH_TABLE_SIZE CYGNUM_FS_FAT_NODE_HASH_TABLE_SIZE 
 
-#define FATFS_NODE_ALLOC_THRESHOLD CYGNUM_FS_FAT_NODE_ALLOC_THRESHOLD 
-
-#define FATFS_FAT_TABLE_CACHE_INCREMENT CYGNUM_FS_FAT_FAT_TABLE_CACHE_INCREMENT 
+#define FATFS_NODE_POOL_SIZE  CYGNUM_FS_FAT_NODE_POOL_SIZE
 
 #ifdef CYGDBG_FS_FAT_NODE_CACHE_EXTRA_CHECKS
 # define FATFS_NODE_CACHE_EXTRA_CHECKS 1
@@ -81,12 +78,6 @@
 
 // Node cache tracing support
 //#define FATFS_TRACE_NODE_CACHE 1
-
-// FAT table cache tracing support
-//#define FATFS_TRACE_FAT_TABLE_CACHE 1
-
-// FAT table operations tracing support 
-//#define FATFS_TRACE_FAT_TABLE 1
 
 // FAT dir entry operations tracing support 
 //#define FATFS_TRACE_DIR_ENTRY 1
@@ -108,7 +99,8 @@
 typedef enum fatfs_type_e
 {
     FATFS_FAT12 = 0,    
-    FATFS_FAT16         
+    FATFS_FAT16,         
+    FATFS_FAT32         
 } fatfs_type_t;
 
 typedef struct fatfs_data_pos_s
@@ -120,32 +112,28 @@ typedef struct fatfs_data_pos_s
     cyg_uint32 cluster_pos;  // Position inside cluster
 } fatfs_data_pos_t;
 
-typedef struct fatfs_tcache_s
+typedef struct fatfs_dir_entry_s
 {
-    cyg_uint32 *clusters; // Cached clusters array
-    cyg_uint32  size;     // Number of cached clusters in array
-    cyg_uint32  max_size; // Size of array (allocated space)
-} fatfs_tcache_t;
+    char              filename[12+1]; // File name
+    mode_t            mode;           // Node type
+    size_t            size;           // Size of file in bytes
+    time_t            ctime;          // Creation timestamp
+    time_t            atime;          // Last access timestamp
+    time_t            mtime;          // Last write timestamp
+    cyg_uint8         priv_data;      // Private data
+    cyg_uint32        cluster;        // First cluster number
+    cyg_uint32        parent_cluster; // First cluster of parent dentry
+    fatfs_data_pos_t  disk_pos;       // Position of dir entry on disk
+} fatfs_dir_entry_t;
 
 typedef struct fatfs_node_s
 {
-    char                 filename[12+1]; // File name
-    mode_t               mode;           // Node type
-    cyg_ucount32         refcnt;         // Open file/current dir references
-    size_t               size;           // Size of file in bytes
-    time_t               ctime;          // Creation timestamp
-    time_t               atime;          // Last access timestamp
-    time_t               mtime;          // Last write timestamp
-    cyg_uint8            priv_data;      // Private data
-    cyg_uint32           cluster;        // First cluster number
-    cyg_uint32           parent_cluster; // First cluster of parent dentry
-    fatfs_data_pos_t     dentry_pos;     // Position of node's dir entry on disk
+    fatfs_dir_entry_t    dentry;     // Dir entry data
+    cyg_ucount32         refcnt;     // Open file/current dir references
 
-    struct fatfs_node_s *list_prev;      // Next node in list
-    struct fatfs_node_s *list_next;      // Prev node in list
-    struct fatfs_node_s *hash_next;      // Next node in hash
-
-    fatfs_tcache_t       tcache;         // Node FAT table clusters cache 
+    struct fatfs_node_s *list_prev;  // Next node in list
+    struct fatfs_node_s *list_next;  // Prev node in list
+    struct fatfs_node_s *hash_next;  // Next node in hash
 } fatfs_node_t;
 
 typedef struct fatfs_hash_table_s 
@@ -164,84 +152,102 @@ typedef struct fatfs_node_list_s
 
 typedef struct fatfs_disk_s
 {
-    cyg_uint32   sector_size;        // Sector size in bytes
-    cyg_uint32   sector_size_log2;   // Sector size log2
-    cyg_uint32   cluster_size;       // Cluster size in bytes
-    cyg_uint32   cluster_size_log2;  // Cluster size log2 
-    cyg_uint32   fat_tbl_pos;        // Position of the first FAT table
-    cyg_uint32   fat_tbl_size;       // FAT table size in bytes
-    cyg_uint32   fat_tbl_nents;      // Number of entries in FAT table
-    cyg_uint32   fat_tbls_num;       // Number of FAT tables
-    cyg_uint32   fat_root_dir_pos;   // Position of the root dir
-    cyg_uint32   fat_root_dir_size;  // Root dir size in bytes 
-    cyg_uint32   fat_root_dir_nents; // Max number of entries in root dir
-    cyg_uint32   fat_data_pos;       // Position of data area
-    fatfs_type_t fat_type;           // Type of FAT - 12 or 16
+    cyg_uint32    sector_size;          // Sector size in bytes
+    cyg_uint32    sector_size_log2;     // Sector size log2
+    cyg_uint32    cluster_size;         // Cluster size in bytes
+    cyg_uint32    cluster_size_log2;    // Cluster size log2 
+    cyg_uint32    fat_tbl_pos;          // Position of the first FAT table
+    cyg_uint32    fat_tbl_size;         // FAT table size in bytes
+    cyg_uint32    fat_tbl_nents;        // Number of entries in FAT table
+    cyg_uint32    fat_tbls_num;         // Number of FAT tables
+    cyg_uint32    fat_root_dir_pos;     // Position of the root dir
+    cyg_uint32    fat_root_dir_size;    // Root dir size in bytes 
+    cyg_uint32    fat_root_dir_nents;   // Max number of entries in root dir
+    cyg_uint32    fat_root_dir_cluster; // Cluster number of root dir (FAT32) 
+    cyg_uint32    fat_data_pos;         // Position of data area
+    fatfs_type_t  fat_type;             // Type of FAT - 12, 16 or 32 
     
-    cyg_io_handle_t  dev_h;          // Disk device handle
-    fatfs_node_t    *root;           // Root dir node
+    cyg_io_handle_t  dev_h;           // Disk device handle
+    fatfs_node_t    *root;            // Root dir node
 
-    cyg_uint8       *tcache_mem;     // FAT table cache memory base
-    cyg_handle_t     tcache_mpool_h; // FAT table cache memory pool handle 
-    cyg_mempool_var  tcache_mpool;   // FAT table cache memory pool struct 
+    cyg_uint8       *bcache_mem;      // Block cache memory base
+    cyg_blib_t       blib;            // Block cache and access library instance
 
-    cyg_uint8       *bcache_mem;     // Block cache memory base
-    cyg_blib_t       blib;           // Block cache and access library instance
-
-    fatfs_node_list_t  live_nlist;   // List of nodes with refcnt > 0
-    fatfs_node_list_t  dead_nlist;   // List of nodes with refcnt == 0
-    fatfs_hash_table_t node_hash;    // Hash of nodes in live and dead lists
+    fatfs_node_t  node_pool_base[FATFS_NODE_POOL_SIZE]; // Node pool base   
+    fatfs_node_t *node_pool[FATFS_NODE_POOL_SIZE];      // Node pool 
+    cyg_uint32    node_pool_free_cnt;                   // Node pool free cnt
+    
+    fatfs_node_list_t  live_nlist;    // List of nodes with refcnt > 0
+    fatfs_node_list_t  dead_nlist;    // List of nodes with refcnt == 0
+    fatfs_hash_table_t node_hash;     // Hash of nodes in live and dead lists
 } fatfs_disk_t;
 
 // --------------------------------------------------------------------------
 
-int  fatfs_get_disk_info(fatfs_disk_t *disk);
+int  fatfs_init(fatfs_disk_t *disk);
 
-void fatfs_get_root_node(fatfs_disk_t *disk, fatfs_node_t *root);
+void fatfs_get_root_dir_entry(fatfs_disk_t *disk, fatfs_dir_entry_t *dentry);
 
-bool fatfs_is_node_root_node(fatfs_node_t *node);
+bool fatfs_is_root_dir_dentry(fatfs_dir_entry_t *dentry);
 
-int  fatfs_get_dir_entry_node(fatfs_disk_t *disk,
-                              fatfs_node_t *dir,
-                              cyg_uint32   *pos,
-                              fatfs_node_t *node);
+int  fatfs_get_disk_usage(fatfs_disk_t *disk,
+                          cyg_uint32   *total_clusters,
+                          cyg_uint32   *free_clusters);
 
-int  fatfs_write_file_attr(fatfs_disk_t *disk, fatfs_node_t *node);
+int  fatfs_initpos(fatfs_disk_t      *disk,
+                   fatfs_dir_entry_t *file,
+                   fatfs_data_pos_t  *pos);
 
-int  fatfs_delete_file(fatfs_disk_t *disk, fatfs_node_t *node);
+int  fatfs_setpos(fatfs_disk_t      *disk,
+                  fatfs_dir_entry_t *file,
+                  fatfs_data_pos_t  *pos,
+                  cyg_uint32         offset);
 
-int  fatfs_create_file(fatfs_disk_t *disk, 
-                       fatfs_node_t *dir, 
-                       const char   *name,
-                       int           namelen,
-                       fatfs_node_t *node);
+cyg_uint32 fatfs_getpos(fatfs_disk_t      *disk, 
+                        fatfs_dir_entry_t *file,
+                        fatfs_data_pos_t  *pos);
 
-int  fatfs_create_dir(fatfs_disk_t *disk, 
-                      fatfs_node_t *dir, 
-                      const char   *name,
-                      int           namelen,
-                      fatfs_node_t *node);
+int  fatfs_read_dir_entry(fatfs_disk_t      *disk,
+                          fatfs_dir_entry_t *dir,
+                          fatfs_data_pos_t  *pos,
+                          fatfs_dir_entry_t *dentry);
 
-int  fatfs_trunc_file(fatfs_disk_t *disk, fatfs_node_t *node);
+int  fatfs_write_dir_entry(fatfs_disk_t *disk, fatfs_dir_entry_t *dentry);
 
-int  fatfs_rename_file(fatfs_disk_t *disk, 
-                       fatfs_node_t *dir1,
-                       fatfs_node_t *node,
-                       fatfs_node_t *dir2,
-                       const char   *name,
-                       int           namelen);
+int  fatfs_delete_file(fatfs_disk_t *disk, fatfs_dir_entry_t *file);
 
-int  fatfs_read_data(fatfs_disk_t *disk,
-                     fatfs_node_t *node,
-                     void         *data,
-                     cyg_uint32   *len,
-                     cyg_uint32    off);
+int  fatfs_create_file(fatfs_disk_t      *disk, 
+                       fatfs_dir_entry_t *dir, 
+                       const char        *name,
+                       int                namelen,
+                       fatfs_dir_entry_t *dentry);
 
-int  fatfs_write_data(fatfs_disk_t *disk,
-                      fatfs_node_t *node,
-                      void         *data,
-                      cyg_uint32   *len,
-                      cyg_uint32    off);
+int  fatfs_create_dir(fatfs_disk_t      *disk, 
+                      fatfs_dir_entry_t *dir, 
+                      const char        *name,
+                      int                namelen,
+                      fatfs_dir_entry_t *dentry);
+
+int  fatfs_trunc_file(fatfs_disk_t *disk, fatfs_dir_entry_t *file);
+
+int  fatfs_rename_file(fatfs_disk_t      *disk,
+                       fatfs_dir_entry_t *dir1,
+                       fatfs_dir_entry_t *target,
+                       fatfs_dir_entry_t *dir2,
+                       const char        *name,
+                       int                namelen);
+
+int  fatfs_read_data(fatfs_disk_t      *disk,
+                     fatfs_dir_entry_t *file,
+                     fatfs_data_pos_t  *pos,
+                     void              *data,
+                     cyg_uint32        *len);
+
+int  fatfs_write_data(fatfs_disk_t      *disk,
+                      fatfs_dir_entry_t *file,
+                      fatfs_data_pos_t  *pos,
+                      void              *data,
+                      cyg_uint32        *len);
 
 // --------------------------------------------------------------------------
 
@@ -249,7 +255,7 @@ void fatfs_node_cache_init(fatfs_disk_t *disk);
 
 void fatfs_node_cache_flush(fatfs_disk_t *disk);
 
-fatfs_node_t *fatfs_node_alloc(fatfs_disk_t *disk, fatfs_node_t *node_data);
+fatfs_node_t *fatfs_node_alloc(fatfs_disk_t *disk, fatfs_dir_entry_t *dentry);
 
 void fatfs_node_ref(fatfs_disk_t *disk, fatfs_node_t *node);
 
@@ -269,33 +275,6 @@ fatfs_node_t* fatfs_node_find(fatfs_disk_t *disk,
 int  fatfs_get_live_node_count(fatfs_disk_t *disk);
 
 int  fatfs_get_dead_node_count(fatfs_disk_t *disk);
-
-void fatfs_node_flush_dead_tcache(fatfs_disk_t *disk);
-
-// --------------------------------------------------------------------------
-
-int  fatfs_tcache_create(fatfs_disk_t *disk, cyg_uint32 mem_size);
-
-void fatfs_tcache_delete(fatfs_disk_t *disk);
-
-void fatfs_tcache_init(fatfs_disk_t *disk, fatfs_tcache_t *tcache);
-
-void fatfs_tcache_flush(fatfs_disk_t *disk, fatfs_tcache_t *tcache);
-
-bool fatfs_tcache_get(fatfs_disk_t   *disk,
-                      fatfs_tcache_t *tcache, 
-                      cyg_uint32      num, 
-                      cyg_uint32     *cluster);
-
-bool fatfs_tcache_get_last(fatfs_disk_t   *disk,
-                           fatfs_tcache_t *tcache, 
-                           cyg_uint32     *num, 
-                           cyg_uint32     *cluster);
-
-bool fatfs_tcache_set(fatfs_disk_t   *disk,
-                      fatfs_tcache_t *tcache, 
-                      cyg_uint32      num, 
-                      cyg_uint32      cluster);
 
 // --------------------------------------------------------------------------
 // Support routines

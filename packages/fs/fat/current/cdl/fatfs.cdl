@@ -8,7 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
-## Copyright (C) 2003 Savin Zlobec 
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -38,7 +38,7 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      savin 
+# Author(s):      Savin Zlobec <savin@elatec.si> 
 # Contributors:   
 # Date:           2003-06-25
 #
@@ -63,8 +63,7 @@ cdl_package CYGPKG_FS_FAT {
     
     compile         -library=libextras.a fatfs.c        \
                                          fatfs_supp.c   \
-                                         fatfs_ncache.c \
-                                         fatfs_tcache.c
+                                         fatfs_ncache.c 
 
     cdl_option      CYGNUM_FS_FAT_NODE_HASH_TABLE_SIZE {
         display         "Node hash table size"
@@ -76,32 +75,16 @@ cdl_package CYGPKG_FS_FAT {
                          as keys."
     }
 
-    cdl_option      CYGNUM_FS_FAT_NODE_ALLOC_THRESHOLD {
-        display         "Node allocation treshold"
+    cdl_option      CYGNUM_FS_FAT_NODE_POOL_SIZE {
+        display         "Node pool size"
         flavor          data
-        default_value   16
+        default_value   { (CYGNUM_FILEIO_NFILE + 2) }
         legal_values    1 to 9999999999
-        description     "This option controls at which point the filesystem 
-                         starts reusing dead file nodes rather then allocating
-                         memory for new nodes."
-    }
-   
-    cdl_option      CYGNUM_FS_FAT_FAT_TABLE_CACHE_MEMSIZE {
-        display         "FAT table cache memory size"
-        flavor          data
-        default_value   10240
-        legal_values    1 to 9999999999
-        description     "This option controls the amount of memory used
-                         for the FAT table cache."
-    }
-
-    cdl_option      CYGNUM_FS_FAT_FAT_TABLE_CACHE_INCREMENT {
-        display         "FAT table cache size increment"
-        flavor          data
-        default_value   10
-        legal_values    1 to 9999999999
-        description     "This option controls the amount of memory by which 
-                         the per-file FAT table cache will grow."
+        requires        { CYGNUM_FS_FAT_NODE_POOL_SIZE >= (CYGNUM_FILEIO_NFILE+2) }
+        description     "This option controls the size of the node pool used
+                         for storing file nodes. This value should be set to
+                         the maximum required number of simultaneously open 
+                         files plus the desired size of unused node cache."
     }
    
     cdl_option      CYGNUM_FS_FAT_BLOCK_CACHE_MEMSIZE {
