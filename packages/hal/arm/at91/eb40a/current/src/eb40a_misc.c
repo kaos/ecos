@@ -62,16 +62,16 @@
 void
 hal_at91_set_leds(int val)
 {
-    HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_SODR, 0x000F0078); // turn all LEDs off
+    HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_SODR, EB40A_LED_ALL); // turn all LEDs off
     HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_CODR,
-                     ((val&0xf)<<3)|((val&0xf0)<<12));        // turn desired LEDs on
+                     ((val&0xf)<<16)|(((val&0xf0)>>4)<<3));        // turn desired LEDs on
 }
 
 void
 hal_at91_led_on(int val)
 {
     HAL_WRITE_UINT32(AT91_PIO+AT91_PIO_CODR,
-                     ((val&0xf)<<3)|((val&0xf0)<<12));
+                     ((val&0xf)<<16)|(((val&0xf0)>>4)<<3));
 }
 
 void
@@ -82,11 +82,11 @@ hal_at91_led_off(int val)
 }
 
 int
-hal_at91_get_leds()
+hal_at91_get_leds(void)
 {
     int leds = 0;
     HAL_READ_UINT32(AT91_PIO+AT91_PIO_PDSR, leds);
-    return ((leds>>3)&0xf)|((leds>>12)&0xf0);
+    return (((leds>>3)&0xf)<<4)|((leds>>16)&0xf);
 }
 
 //--------------------------------------------------------------------------

@@ -1,3 +1,12 @@
+2003-06-11  Oyvind Harboe  <oyvind.harboe@zylin.com>
+	
+	* src/eb40a_misc.c:
+	LED routines were using the wrong bits.
+	
+	* include/plf_io.h
+	LED defines were using the wrong bits
+	Added defines for the EB40a board push buttons
+	
 2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/eb40a_misc.c:

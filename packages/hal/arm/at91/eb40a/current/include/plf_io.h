@@ -53,15 +53,30 @@
 //
 //=============================================================================
 
-// EB40A onboard LEDs mapped to PIO pins
-#define EB40A_LED1 0x00010000
-#define EB40A_LED2 0x00020000
-#define EB40A_LED3 0x00040000
-#define EB40A_LED4 0x00080000
-#define EB40A_LED5 0x00000008
-#define EB40A_LED6 0x00000010
-#define EB40A_LED7 0x00000020
-#define EB40A_LED8 0x00000040
+// these io pins are for the LEDs.
+#define EB40A_LED1 0x00000008
+#define EB40A_LED2 0x00000010
+#define EB40A_LED3 0x00000020
+#define EB40A_LED4 0x00000040
+// these PIOs double as TCLK1, TIOA1, TIOB1, TCLK2 respectively.
+#define EB40A_LED5 0x00010000
+#define EB40A_LED6 0x00020000
+#define EB40A_LED7 0x00040000
+#define EB40A_LED8 0x00080000
+
+#define EB40A_LED_ALL 0x00f00078
+
+// Push buttons. Note that these are connected to interrupt lines.
+#define EB40A_SW1 0x00001000
+#define EB40A_SW2 0x00000100
+#define EB40A_SW3 0x00000002
+#define EB40A_SW4 0x00000004
+
+// Push buttons. Note that these are connected to interrupt lines.
+#define EB40A_SW1 0x00001000 
+#define EB40A_SW2 0x00000100 
+#define EB40A_SW3 0x00000002
+#define EB40A_SW4 0x00000004
 
 //-----------------------------------------------------------------------------
 // end of plf_io.h
