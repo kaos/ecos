@@ -59,3 +59,8 @@ cdl_option CYGOPT_REDBOOT_FIS {
 cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {
     user_value 0
 };
+
+
+cdl_option CYGBLD_BUILD_REDBOOT_WITH_EXEC {
+    user_value 0
+};
