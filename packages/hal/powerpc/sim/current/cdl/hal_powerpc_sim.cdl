@@ -53,6 +53,7 @@ cdl_package CYGPKG_HAL_POWERPC_SIM {
     display       "PSIM minimal simulator"
     parent        CYGPKG_HAL_POWERPC
     requires      CYGPKG_HAL_POWERPC_PPC60x
+    requires      { CYGSEM_HAL_USE_ROM_MONITOR==0 }
     define_header hal_powerpc_sim.h
     include_dir   cyg/hal
     description   "

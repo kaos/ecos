@@ -1,3 +1,9 @@
+2003-02-04  Nick Garnett  <nickg@calivar.com>
+
+	* cdl/hal_powerpc_sim.cdl: Added requirement for
+	CYGSEM_HAL_USE_ROM_MONITOR==0. Otherwise the exception vectors do
+	not get included.
+
 2003-01-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_regs.h: 
