@@ -174,4 +174,45 @@ cdl_package CYGPKG_HAL_POWERPC_MPC8XXX {
     }
 
     compile       var_intr.c var_misc.c variant.S quicc2_diag.c cpm.c
+
+    cdl_component CYGPKG_HAL_POWERPC_MPC8XXX_OPTIONS {
+        display "MPC8XXX build options"
+        flavor  none
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+
+        cdl_option CYGPKG_HAL_POWERPC_MPC8XXX_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the MPC8XXX HAL. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_HAL_POWERPC_MPC8XXX_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building the MPC8XXX HAL. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_HAL_POWERPC_MPC8XXX_TESTS {
+            display "MPC8XXX tests"
+            flavor  data
+            no_define
+            calculated { "tests/mpc8xxx_timer" }
+            description   "
+                This option specifies the set of tests for the MPC8XXX HAL."
+        }
+    }
 }

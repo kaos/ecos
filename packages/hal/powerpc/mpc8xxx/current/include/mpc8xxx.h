@@ -1362,6 +1362,30 @@ struct cp_bufdesc {
 #define SMCE_Rx  0x0001                 // Rx buffer interrupt
 
 //
+// Timer/counter registers
+//
+
+// Timer/counter general control
+#define _TC_TGCR_CAS  0x80  // Cascade timers (1/2, 3/4)
+#define _TC_TGCR_STP2 0x20  // Stop timer 2
+#define _TC_TGCR_RST2 0x10  // Reset timer 2
+#define _TC_TGCR_GM   0x08  // Gate mode
+#define _TC_TGCR_STP1 0x02  // Stop timer 1
+#define _TC_TGCR_RST1 0x01  // Reset timer 1
+
+// Timer/counter mode
+#define _TC_TMR_ORI         0x0010  // Output reference interrupt enable
+#define _TC_TMR_FRR         0x0008  // Free run
+#define _TC_TMR_ICLK_CAS    0x0000  // Input clock - cascade from other timer
+#define _TC_TMR_ICLK_BUS    0x0002  // Input clock = bus clock
+#define _TC_TMR_ICLK_BUS16  0x0004  // Input clock = bus clock / 16
+#define _TC_TMR_ICLK_TIN    0x0006  // Input clock = TINx
+
+// Timer/counter event register 
+#define _TC_TER_REF         0x0002  // Reference event occurred
+#define _TC_TER_CAP         0x0001  // Capture event occurred
+
+//
 // Routines which help manage the CPM
 //
 externC void _mpc8xxx_reset_cpm(void);

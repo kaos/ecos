@@ -1,3 +1,11 @@
+2003-11-19  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/mpc8xxx.h: Add definitions for CPM timers.
+
+	* tests/mpc8xxx_timer.c: 
+	* cdl/hal_powerpc_mpc8xxx.cdl: Add simple test to show how interrupts
+	and timers work on this platform.
+
 2003-11-09  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc2_diag.c: 
