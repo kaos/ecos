@@ -122,7 +122,3 @@ cdl_option CYGPKG_HAL_GDB_FILEIO {
     user_value 1
 };
 
-cdl_component CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM {
-    user_value 1
-};
-

@@ -1,3 +1,8 @@
+2003-04-02  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_ROM.ecm: Don't set I82559_WRITE_EEPROM.
+	* misc/redboot_RAM.ecm: Ditto.
+
 2003-03-26  Mark Salter  <msalter@redhat.com>
 
 	* src/ixdp425_misc.c (plf_hardware_init): Set up NPE PHY chip

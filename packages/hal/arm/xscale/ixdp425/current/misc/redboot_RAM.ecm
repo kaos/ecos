@@ -117,8 +117,3 @@ cdl_option CYGPKG_HAL_GDB_FILEIO {
 cdl_option CYGOPT_DEVS_FLASH_STRATA_NOT_IN_RAM {
    inferred_value 0
 }
-
-cdl_component CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM {
-    user_value 1
-};
-
