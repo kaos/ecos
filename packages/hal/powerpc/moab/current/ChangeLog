@@ -1,3 +1,7 @@
+2003-12-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/moab.S: Fix cycle time on NAND FLASH.
+
 2003-10-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_moab.cdl: Remove [unused] tests so "make tests" works.

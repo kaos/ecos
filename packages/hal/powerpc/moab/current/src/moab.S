@@ -167,7 +167,14 @@ sdram_ok:
         mtdcr   DCR_EBC0_CFGADDR,r3
         mtdcr   DCR_EBC0_CFGDATA,r4
         li      r3,DCR_EBC0_B1AP          // MAIN FLASH at 0xCxxxxxxx, R/W
-        lwi     r4,0x7F8FFE00
+#if CYGHWR_HAL_POWERPC_CPU_SPEED == 250        
+        lwi     r4,0x03840000             // Cycle time = 50ns
+#elif CYGHWR_HAL_POWERPC_CPU_SPEED == 333
+        lwi     r4,0x05840000            
+#else
+        lwi     r4,0x0C840000            
+#error "Unsupported board/CPU speed"        
+#endif
         mtdcr   DCR_EBC0_CFGADDR,r3
         mtdcr   DCR_EBC0_CFGDATA,r4
         li      r3,DCR_EBC0_B1CR
