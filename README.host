@@ -294,7 +294,7 @@ If not, the install location should be specified with --prefix:
 
 It is also necessary to use the right version of Tcl. For a VC++ build
 the cygwin release of Tcl should not be used. Instead a suitable
-prebuilt Tcl package can be obtained from http://www.scriptics.com/.
+prebuilt Tcl package can be obtained from http://www.tcl.tk/.
 It is necessary to tell the configure script where this has been
 installed, for example:
 

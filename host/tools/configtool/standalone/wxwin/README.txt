@@ -312,7 +312,7 @@ You will need:
 
   o other tools:
 
-    - Tcl/Tk 8.2 or above. See http://dev.scriptics.com/
+    - Tcl/Tk 8.2 or above. See http://www.tcl.tk/
 
 Summary:
 
@@ -421,7 +421,7 @@ You will need:
   o other tools:
 
     - Cygwin (sometimes called GNUPro). See http://sources.redhat.com/cygwin/
-    - Tcl/Tk 8.2 or above. See http://dev.scriptics.com/
+    - Tcl/Tk 8.2 or above. See http://www.tcl.tk/
 
 Summary:
 
