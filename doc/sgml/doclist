@@ -5,6 +5,7 @@ language/c/libc/common/current/doc/libc.sgml
 io/common/current/doc/io.sgml
 io/fileio/current/doc/fileio.sgml
 io/pci/current/doc/pci.sgml
+io/flash/current/doc/flash.sgml
 compat/posix/current/doc/posix.sgml
 compat/uitron/current/doc/uitron.sgml
 net/common/current/doc/tcpip.sgml

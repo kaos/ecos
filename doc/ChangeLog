@@ -1,3 +1,7 @@
+2004-06-20  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* sgml/doclist: Added flash API documentation.
+
 2004-06-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* sgml/makemakefile: Replace plusses with x'es in all entities.
