@@ -1928,6 +1928,9 @@ flash_get_config(char *key, void *val, int type)
                 memcpy(val, val_ptr, sizeof(enet_addr_t));
                 break;
 #endif
+#if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
+	    case CONFIG_NETPORT:
+#endif
             case CONFIG_STRING:
             case CONFIG_SCRIPT:
                 // Just return a pointer to the script/line
