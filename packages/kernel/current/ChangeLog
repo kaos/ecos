@@ -1,3 +1,10 @@
+2003-07-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/common/clock.cxx (Cyg_Counter::tick): In unsorted list case:
+	moved saving of next node details to before re-insertion of alarms
+	with intervals. The call to add_alarm() can make enough of a
+	difference to the list to need to force a rescan.
+
 2003-07-06  Bart Veer  <bartv@ecoscentric.com>
 
 	* include/test/stackmon.h (cyg_test_size_a_stack):

@@ -235,6 +235,12 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
                 
                 alarm_list_ptr->remove(alarm);
 
+                // Save some details of the list state so we can
+                // detect if it has changed.
+                next_next = next->get_next();
+                next_prev = next->get_prev();
+                head = alarm_list_ptr->get_head();
+                
                 if( alarm->interval != 0 )
                 {
                     // The alarm has a retrigger interval.
@@ -245,12 +251,6 @@ void Cyg_Counter::tick( cyg_uint32 ticks )
                 }
                 else alarm->enabled = false;
 
-                // Save some details of the list state so we can
-                // detect if it has changed.
-                next_next = next->get_next();
-                next_prev = next->get_prev();
-                head = alarm_list_ptr->get_head();
-                
                 CYG_INSTRUMENT_ALARM( CALL, this, alarm );
                 
                 // Call alarm function
