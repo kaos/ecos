@@ -1,3 +1,7 @@
+2001-08-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_cache.h: Support ARM variants 920, 922, 925 and 940.
+
 2001-04-30  Gary Thomas  <gthomas@redhat.com>
 
 	* src/arm9_misc.c (hal_hardware_init): Use CDL configuration to

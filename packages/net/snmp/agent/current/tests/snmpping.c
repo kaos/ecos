@@ -22,7 +22,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -105,7 +105,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -135,9 +135,8 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //==========================================================================
 
 
-
 // -------------------------------------------------------------------------
-// Configuration of the test...
+// Configuration of the test... now from CDL
 
 // Do we test the interfaces in promiscuous mode?
 //#define PROMISC_TEST
@@ -146,7 +145,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //#define RUN_FOREVER
 
 // Do we initialize SNMP v3 MIBs and authentication database?
-#define TEST_SNMPv3
+//#define TEST_SNMPv3
 
 // ------------------------------------------------------------------------
 
@@ -157,9 +156,10 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
+#include <pkgconf/snmpagent.h>
 
 
-#ifdef  TEST_SNMPv3
+#ifdef  CYGSEM_SNMPAGENT_TEST_SNMPv3
 #include <ucd-snmp/config.h>
 #include <ucd-snmp/asn1.h>
 #include <ucd-snmp/snmp_api.h>
@@ -169,7 +169,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <ucd-snmp/usmUser.h>
 #include <ucd-snmp/usmStats.h>
 #include <ucd-snmp/snmpEngine.h>
-#endif // TEST_SNMPv3
+#endif // CYGSEM_SNMPAGENT_TEST_SNMPv3
 
 #include <cyg/infra/testcase.h>
 
@@ -409,7 +409,7 @@ ping_test_loopback( int lo )
     close(s);
 }
 
-#ifdef PROMISC_TEST
+#ifdef CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 static void 
 interface_promisc(const char *intf)
 {
@@ -429,21 +429,18 @@ interface_promisc(const char *intf)
   }
   close(s);
 }
-#endif // PROMISC_TEST
+#endif // CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 
 void
 net_test(cyg_addrword_t p)
 {
-#ifdef RUN_FOREVER
-    int i = 9999999;
-#else
-    int i = 1;
-#endif
+    int i = CYGNUM_SNMPAGENT_TESTS_ITERATIONS;
     int j;
+
     diag_printf("Start PING test\n");
     TNR_INIT();
     init_all_network_interfaces();
-#ifdef PROMISC_TEST
+#ifdef CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 #ifdef CYGHWR_NET_DRIVER_ETH0
         if (eth0_up)
             interface_promisc("eth0");
@@ -452,17 +449,17 @@ net_test(cyg_addrword_t p)
         if (eth1_up)
             interface_promisc("eth1");
 #endif
-#endif // PROMISC_TEST
+#endif // CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS
 #ifdef CYGPKG_SNMPAGENT
     {
         extern void cyg_net_snmp_init(void);
         cyg_net_snmp_init();
-#ifdef  TEST_SNMPv3
+#ifdef  CYGSEM_SNMPAGENT_TEST_SNMPv3
         init_usmUser();             /* MIBs to support SNMPv3             */
         init_usmStats();
         init_snmpEngine();
         usm_parse_create_usmUser(NULL, "root MD5 md5passwd DES DESpasswd");
-#endif //  TEST_SNMPv3
+#endif //  CYGSEM_SNMPAGENT_TEST_SNMPv3
     }
 #endif // CYGPKG_SNMPAGENT
     do {

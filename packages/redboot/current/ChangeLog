@@ -1,3 +1,7 @@
+2001-08-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/io.c (gets): Allow $'s and +'s to be escaped.
+
 2001-08-10  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c (do_flash_init): Print error message instead of

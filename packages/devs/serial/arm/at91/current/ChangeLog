@@ -1,3 +1,8 @@
+2001-08-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/at91_serial.c (at91_serial_stop_xmit): Write to IDR, not IER.
+	(at91_serial_ISR): Return CYG_ISR_HANDLED.
+
 2001-07-24  Gary Thomas  <gthomas@redhat.com>
 
 	* src/at91_serial.h: 

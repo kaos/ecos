@@ -305,16 +305,24 @@ gets(char *buf, int buflen, int timeout)
             }
             break;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        case '+':
-            // If start of line, treat as GDB protocol. Otherwise fall
-            // through to default.
-            if (ptr == buf)
+        case '\\':                 // escape character
+            if (console_echo) {
+                mon_write_char(c);
+            }
+            if (last_ch != '\\') // if last was also an escape, 
+                break;             // don't add to buffer, just move on
+            *ptr++ = c;
+            c = '\0';    // cheat so that the "shift" state resets
+            break;
+        case '+': // fall through
         case '$':
+            if (ptr == buf || last_ch != '\\')
             {
                 // Give up and try GDB protocol
                 ungetDebugChar(c);  // Push back character so stubs will see it
                 return _GETS_GDB;
             }
+            // else fall through
 #endif
         default:
             if (console_echo) {

@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//        mutex3.cxx
+//        kmutex3.c
 //
 //        Mutex test 3 - priority inheritance
 //
@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -33,22 +33,19 @@
 //
 // Author(s):     hmt
 // Contributors:  hmt
-// Date:          2000-01-06
-// Description:   Tests mutex priority inheritance
+// Date:          2000-01-06, 2001-08-10
+// Description:   Tests mutex priority inheritance.  This is simply a
+//                translation of the similarly named kernel test to the
+//                KAPI, with the intention of also testing the new
+//                "set the protocol at run-time" extensions.
 //####DESCRIPTIONEND####
 
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 
-#include <cyg/kernel/sched.hxx>        // Cyg_Scheduler::start()
-#include <cyg/kernel/thread.hxx>       // Cyg_Thread
-
-#include <cyg/kernel/mutex.hxx>
-
 #include <cyg/infra/testcase.h>
 
-#include <cyg/kernel/sched.inl>
-#include <cyg/kernel/thread.inl>
+#include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
 
 #include <cyg/infra/diag.h>             // diag_printf
 
@@ -65,10 +62,19 @@ cyg_hal_invoke_constructors();
 
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK) &&    \
     (CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&    \
+    defined(CYGFUN_KERNEL_API_C) &&             \
     !defined(CYGPKG_KERNEL_SMP_SUPPORT)
 
+
+#include <cyg/kernel/kapi.h>
+
+#include <cyg/infra/cyg_ass.h>
+#include <cyg/infra/cyg_trac.h>
+#include <cyg/infra/diag.h>             // diag_printf
+
+
 // ------------------------------------------------------------------------
-// Manufacture a simpler feature test macro for priority inheritance than
+// manufacture a simpler feature test macro for priority inheritance than
 // the configuration gives us. We have priority inheritance if it is configured
 // as the only protocol, or if it is the default protocol for dynamic protocol
 // choice.
@@ -119,20 +125,18 @@ cyg_hal_invoke_constructors();
 //
 // Stolen from testaux.hxx and copied in here because I want to be able to
 // reset the world also.
+//
+// Translated into KAPI also.
 
 #define NTHREADS 7
 
-static inline void *operator new(size_t size, void *ptr) { return ptr; };
-
 #define STACKSIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 
-static Cyg_Thread *thread[NTHREADS] = { 0 };
+static  cyg_handle_t thread[NTHREADS] = { 0 };
 
-typedef CYG_WORD64 CYG_ALIGNMENT_TYPE;
+typedef cyg_uint64 CYG_ALIGNMENT_TYPE;
 
-static CYG_ALIGNMENT_TYPE thread_obj[NTHREADS] [
-   (sizeof(Cyg_Thread)+sizeof(CYG_ALIGNMENT_TYPE)-1)
-     / sizeof(CYG_ALIGNMENT_TYPE)                     ];
+static cyg_thread thread_obj[NTHREADS];
 
 static CYG_ALIGNMENT_TYPE stack[NTHREADS] [
    (STACKSIZE+sizeof(CYG_ALIGNMENT_TYPE)-1)
@@ -140,22 +144,28 @@ static CYG_ALIGNMENT_TYPE stack[NTHREADS] [
 
 static int nthreads = 0;
 
-static Cyg_Thread *new_thread( cyg_thread_entry *entry,
-                               CYG_ADDRWORD data,
-                               CYG_ADDRWORD priority,
-                               int do_resume )
+#undef NULL
+#define NULL (0)
+
+static cyg_handle_t new_thread( cyg_thread_entry_t *entry,
+                                cyg_addrword_t data,
+                                cyg_addrword_t priority,
+                                int do_resume )
 {
     CYG_ASSERT(nthreads < NTHREADS, 
                "Attempt to create more than NTHREADS threads");
 
-    thread[nthreads] = new( (void *)&thread_obj[nthreads] )
-        Cyg_Thread(priority,
-                   entry, data, 
-                   NULL,                // no name
-                   (CYG_ADDRESS)stack[nthreads], STACKSIZE );
+    cyg_thread_create( priority,
+                       entry,
+                       data, 
+                       NULL,                // no name
+                       (void *)(stack[nthreads]),
+                       STACKSIZE,
+                       &thread[nthreads],
+                       &thread_obj[nthreads] );
 
     if ( do_resume )
-        thread[nthreads]->resume();
+        cyg_thread_resume( thread[nthreads] );
 
     return thread[nthreads++];
 }
@@ -165,13 +175,14 @@ static void kill_threads( void )
 {
     CYG_ASSERT(nthreads <= NTHREADS, 
                "More than NTHREADS threads");
-    CYG_ASSERT( Cyg_Thread::self() == thread[0],
+    CYG_ASSERT( cyg_thread_self() == thread[0],
                 "kill_threads() not called from thread 0");
     while ( nthreads > 1 ) {
         nthreads--;
         if ( NULL != thread[nthreads] ) {
-            thread[nthreads]->kill();
-            thread[nthreads]->~Cyg_Thread();
+            do
+                cyg_thread_kill( thread[nthreads] );
+            while ( ! cyg_thread_delete ( thread[nthreads] ) );
             thread[nthreads] = NULL;
         }
     }
@@ -185,7 +196,8 @@ static void kill_threads( void )
 
 // ------------------------------------------------------------------------
 
-static Cyg_Mutex mutex;
+static cyg_mutex_t mutex_obj;
+static cyg_mutex_t *mutex;
 
 // These are for reporting back to the master thread
 volatile int got_it  = 0;
@@ -199,8 +211,10 @@ volatile int go_flag = 0; // but this one controls thread 3 from thread 2
 // 0 to 3 of these run generally to interfere with the other processing,
 // to cause multiple prio inheritances, and clashes in any orders.
 
-static void extra_thread( CYG_ADDRWORD data )
+static void extra_thread( cyg_addrword_t data )
 {
+    cyg_handle_t self = cyg_thread_self();
+
 #define XINFO( z ) \
     do { z[13] = '0' + data; CYG_TEST_INFO( z ); } while ( 0 )
 
@@ -212,17 +226,15 @@ static void extra_thread( CYG_ADDRWORD data )
 
     XINFO( running );
 
-    Cyg_Thread *self = Cyg_Thread::self();
-
-    self->suspend();
+    cyg_thread_suspend( self );
 
     XINFO( resumed );
 
-    mutex.lock();
+    cyg_mutex_lock( mutex );
 
     XINFO( locked );
 
-    mutex.unlock();
+    cyg_mutex_unlock( mutex );
 
     XINFO( unlocked );
 
@@ -234,21 +246,21 @@ static void extra_thread( CYG_ADDRWORD data )
 
 // ------------------------------------------------------------------------
 
-static void t1( CYG_ADDRWORD data )
+static void t1( cyg_addrword_t data )
 {
-    Cyg_Thread *self = Cyg_Thread::self();
+    cyg_handle_t self = cyg_thread_self();
 
     CYG_TEST_INFO( "Thread 1 running" );
 
-    self->suspend();
+    cyg_thread_suspend( self );
 
-    mutex.lock();
+    cyg_mutex_lock( mutex );
 
     got_it++;
 
     CYG_TEST_CHECK( 0 == t3ended, "T3 ended prematurely [T1,1]" );
 
-    mutex.unlock();
+    cyg_mutex_unlock( mutex );
 
     CYG_TEST_CHECK( 0 == t3ended, "T3 ended prematurely [T1,2]" );
 
@@ -259,48 +271,47 @@ static void t1( CYG_ADDRWORD data )
 
 // ------------------------------------------------------------------------
 
-static void t2( CYG_ADDRWORD data )
+static void t2( cyg_addrword_t data )
 {
-    Cyg_Thread *self = Cyg_Thread::self();
+    cyg_handle_t self = cyg_thread_self();
     int i;
-    cyg_tick_count then, now;
-
+    cyg_tick_count_t then, now;
 
     CYG_TEST_INFO( "Thread 2 running" );
 
     CYG_TEST_CHECK( 0 == (data & ~0x77), "Bad T2 arg: extra bits" );
     CYG_TEST_CHECK( 0 == (data & (data >> 4)), "Bad T2 arg: overlap" );
 
-    self->suspend();
+    cyg_thread_suspend( self );
 
     // depending on our config argument, optionally restart some of the
     // extra threads to throw noise into the scheduler:
     for ( i = 0; i < 3; i++ )
         if ( (1 << i) & data )          // bits 0-2 control
-            thread[i+4]->resume();      // made sure extras are thread[4-6]
+            cyg_thread_resume( thread[i+4] ); // extras are thread[4-6]
 
-    self->delay( DELAYFACTOR * 10 );    // let those threads run
+    cyg_thread_delay( DELAYFACTOR * 10 ); // let those threads run
 
-    Cyg_Scheduler::lock();              // do this next lot atomically
+    cyg_scheduler_lock();               // do this next lot atomically
 
     go_flag = 1;                        // unleash thread 3
-    thread[1]->resume();                // resume thread 1
+    cyg_thread_resume( thread[1] );     // resume thread 1
 
     // depending on our config argument, optionally restart some of the
     // extra threads to throw noise into the scheduler at this later point:
     for ( i = 4; i < 7; i++ )
         if ( (1 << i) & data )          // bits 4-6 control
-            thread[i]->resume();        // made sure extras are thread[4-6]
+            cyg_thread_resume( thread[i] ); // extras are thread[4-6]
 
-    Cyg_Scheduler::unlock();           // let scheduling proceed
+    cyg_scheduler_unlock();             // let scheduling proceed
 
     // Need a delay (but not a CPU yield) to allow t3 to awaken and act on
     // the go_flag, otherwise we check these details below too soon.
     // Actually, waiting for the clock to tick a couple of times would be
     // better, so that is what we will do.  Must be a busy-wait.
-    then = Cyg_Clock::real_time_clock->current_value();
+    then = cyg_current_time();
     do {
-        now = Cyg_Clock::real_time_clock->current_value();
+        now = cyg_current_time();
         // Wait longer than the delay in t3 waiting on go_flag
     } while ( now < (then + 3) );
 
@@ -320,7 +331,7 @@ static void t2( CYG_ADDRWORD data )
 
     CYG_TEST_CHECK( 0 == t3ended, "Thread 3 ended prematurely [T2,1]" );
 
-    self->delay( DELAYFACTOR * 20 );    // let those threads run
+    cyg_thread_delay( DELAYFACTOR * 20 ); // let those threads run
 
     CYG_TEST_CHECK( 1 == t3ran, "Thread 3 did not run" );
     CYG_TEST_CHECK( 1 == got_it, "Thread 1 did not get the mutex" );
@@ -334,31 +345,29 @@ static void t2( CYG_ADDRWORD data )
 
     CYG_TEST_PASS( "Thread 2 exiting, AOK" );
     // That's all: restart the control thread.
-    thread[0]->resume();
+    cyg_thread_resume( thread[0] );
 }
 
 // ------------------------------------------------------------------------
 
-static void t3( CYG_ADDRWORD data )
+static void t3( cyg_addrword_t data )
 {
-    Cyg_Thread *self = Cyg_Thread::self();
-
     CYG_TEST_INFO( "Thread 3 running" );
 
-    mutex.lock();
+    cyg_mutex_lock( mutex );
 
-    self->delay( DELAYFACTOR * 5 );    // let thread 3a run
+    cyg_thread_delay( DELAYFACTOR * 5 ); // let thread 3a run
 
-    thread[2]->resume();                // resume thread 2
+    cyg_thread_resume( thread[2] );     // resume thread 2
 
     while ( 0 == go_flag )
-        self->delay(1);                 // wait until we are told to go
+        cyg_thread_delay(1);            // wait until we are told to go
 
     t3ran ++;                           // record the fact
 
     CYG_TEST_CHECK( 0 == got_it, "Thread 1 claims to have got my mutex" );
     
-    mutex.unlock();
+    cyg_mutex_unlock( mutex );
     
     t3ended ++;                         // record that we came back
 
@@ -369,10 +378,10 @@ static void t3( CYG_ADDRWORD data )
 
 // ------------------------------------------------------------------------
 
-static void control_thread( CYG_ADDRWORD data )
+static void control_thread( cyg_addrword_t data )
 {
-    Cyg_Thread *self = Cyg_Thread::self();
-    int i;
+    cyg_handle_t self = cyg_thread_self();
+    int i, z;
 
     CYG_TEST_INIT();
     CYG_TEST_INFO( "Control Thread running" );
@@ -406,12 +415,13 @@ static void control_thread( CYG_ADDRWORD data )
             break;                      //     priority inheritance at all.
 #endif
 
-        mutex = Cyg_Mutex();            // Reinitialize this
+        mutex = &mutex_obj;
+        cyg_mutex_init( mutex );
 
         got_it  = 0;
         t3ran   = 0;
         t3ended = 0;
-        for ( int z = 0; z < 4; z++ ) extras[z] = 0;
+        for ( z = 0; z < 4; z++ ) extras[z] = 0;
         go_flag = 0;
         
         new_thread( t1, 0,  5, 1 );            // Slot 1
@@ -428,10 +438,10 @@ static void control_thread( CYG_ADDRWORD data )
                          i, d,  a[j], a[k], a[l] );
         }
 
-        self->suspend();
+        cyg_thread_suspend( self );
         
         kill_threads();
-        mutex.~Cyg_Mutex();
+        cyg_mutex_destroy( mutex );
     }
     CYG_TEST_EXIT( "Control Thread exit" );
 }
@@ -453,7 +463,8 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Mutex3 test requires:\n"
+    CYG_TEST_PASS_FINISH("KMutex3 test requires:\n"
+                         "CYGFUN_KERNEL_API_C &&\n"
                          "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
                          "(CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&\n"
                          "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");

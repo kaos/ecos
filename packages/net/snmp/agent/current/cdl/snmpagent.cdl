@@ -276,7 +276,7 @@ cdl_package CYGPKG_SNMPAGENT {
                 the set of global flags if present."
         }
 
-        cdl_option CYGPKG_SNMPAGENT_TESTS {
+        cdl_component CYGPKG_SNMPAGENT_TESTS {
             display "SNMP agent tests"
             flavor  data
             no_define
@@ -285,6 +285,34 @@ cdl_package CYGPKG_SNMPAGENT {
             }
             description   "
                 This option specifies the set of tests for the eCos SMNP agent."
+
+            cdl_option CYGSEM_SNMPAGENT_TESTS_PROMISCUOUS {
+                display "Run SNMP agent tests in promiscuous mode"
+                flavor  bool
+                default_value 0
+                description   "
+                    This option controls the tests for the eCos SMNP agent.
+                    Enabling it will enable promiscuous mode on the hardware
+                    interface."
+            }
+
+            cdl_option CYGSEM_SNMPAGENT_TESTS_SNMPv3 {
+                display "SNMP agent test for SNMP version 3"
+                flavor  bool
+                default_value 1
+                description   "
+                    This option controls the tests for the eCos SMNP agent.
+                    Enabling it will include setup and testing of SNMP v3 interfaces."
+            }
+
+            cdl_option CYGNUM_SNMPAGENT_TESTS_ITERATIONS {
+                display "Number of test iterations for SNMP agent test"
+                flavor  data	
+                default_value 1
+                description   "
+                    This option controls the number of times the basic test will
+                    be run for testing the eCos SMNP agent."
+            }
         }
     }
 }

@@ -57,15 +57,75 @@
 //-----------------------------------------------------------------------------
 // Cache dimensions
 
-#define HAL_ICACHE_SIZE                 0x4000
-#define HAL_ICACHE_LINE_SIZE            16
-#define HAL_ICACHE_WAYS                 2
-#define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+#if defined(CYGPKG_HAL_ARM_ARM9_ARM920T)
+# define HAL_ICACHE_SIZE                 0x4000
+# define HAL_ICACHE_LINE_SIZE            32
+# define HAL_ICACHE_WAYS                 64
+# define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
 
-#define HAL_DCACHE_SIZE                 0x4000
-#define HAL_DCACHE_LINE_SIZE            16
-#define HAL_DCACHE_WAYS                 2
-#define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+# define HAL_DCACHE_SIZE                 0x4000
+# define HAL_DCACHE_LINE_SIZE            32
+# define HAL_DCACHE_WAYS                 64
+# define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+
+# define HAL_WRITE_BUFFER                64
+
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP  0x20
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT 0xe0
+
+#elif defined(CYGPKG_HAL_ARM_ARM9_ARM922T)
+# define HAL_ICACHE_SIZE                 0x2000
+# define HAL_ICACHE_LINE_SIZE            32
+# define HAL_ICACHE_WAYS                 64
+# define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+
+# define HAL_DCACHE_SIZE                 0x2000
+# define HAL_DCACHE_LINE_SIZE            32
+# define HAL_DCACHE_WAYS                 64
+# define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+
+# define HAL_WRITE_BUFFER                64
+
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP  0x20
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT 0x60
+
+#elif defined(CYGPKG_HAL_ARM_ARM9_ARM925T)
+# define HAL_ICACHE_SIZE                 0x4000
+# define HAL_ICACHE_LINE_SIZE            32
+# define HAL_ICACHE_WAYS                 2
+# define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+
+# define HAL_DCACHE_SIZE                 0x2000
+# define HAL_DCACHE_LINE_SIZE            32
+# define HAL_DCACHE_WAYS                 2
+# define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+
+# define HAL_WRITE_BUFFER                64
+
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE // has instruction to clean D-cache
+
+#elif defined(CYGPKG_HAL_ARM_ARM9_ARM940T)
+# define HAL_ICACHE_SIZE                 0x1000
+# define HAL_ICACHE_LINE_SIZE            16
+# define HAL_ICACHE_WAYS                 4
+# define HAL_ICACHE_SETS (HAL_ICACHE_SIZE/(HAL_ICACHE_LINE_SIZE*HAL_ICACHE_WAYS))
+
+# define HAL_DCACHE_SIZE                 0x1000
+# define HAL_DCACHE_LINE_SIZE            16
+# define HAL_DCACHE_WAYS                 4
+# define HAL_DCACHE_SETS (HAL_DCACHE_SIZE/(HAL_DCACHE_LINE_SIZE*HAL_DCACHE_WAYS))
+
+# define HAL_WRITE_BUFFER                32
+
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP  0x10
+# define CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT 0x40
+
+#else
+# error "No cache details defined"
+#endif
 
 // FIXME: much of the code below should make better use of
 // the definitions from hal_mmu.h
@@ -228,6 +288,7 @@ CYG_MACRO_START  /* this macro can discard dirty cache lines. */        \
 CYG_MACRO_END
 
 // Synchronize the contents of the cache with memory.
+#ifdef CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE
 #define HAL_DCACHE_SYNC()                                               \
 CYG_MACRO_START                                                         \
     asm volatile (                                                      \
@@ -244,6 +305,33 @@ CYG_MACRO_START                                                         \
         : "r0" /* Clobber list */                                       \
         );                                                              \
 CYG_MACRO_END
+#elif defined(CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX)
+#define HAL_DCACHE_SYNC()                                               \
+CYG_MACRO_START                                                         \
+    cyg_uint32 _tmp1, _tmp2;                                            \
+    asm volatile (                                                      \
+        "mov    %0, #0;"                                                \
+        "1: "                                                           \
+        "mov    %1, #0;"                                                \
+        "2: "                                                           \
+        "orr    r0,%0,%1;"                                              \
+        "mcr    p15,0,r0,c7,c14,2;"  /* clean index in DCache */        \
+        "add    %1,%1,%2;"                                              \
+        "cmp    %1,%3;"                                                 \
+        "bne    2b;"                                                    \
+        "add    %0,%0,#0x04000000;"  /* get to next index */            \
+        "cmp    %0,#0;"                                                 \
+        "bne    1b;"                                                    \
+        "mcr    p15,0,r0,c7,c10,4;" /* drain the write buffer */        \
+        : "=r" (_tmp1), "=r" (_tmp2)                                    \
+        : "I" (CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_STEP),            \
+          "I" (CYGHWR_HAL_ARM_ARM9_CLEAN_DCACHE_INDEX_LIMIT)            \
+        : "r0" /* Clobber list */                                       \
+        );                                                              \
+CYG_MACRO_END
+#else
+# error "Don't know how to sync Dcache"
+#endif
 
 // Set the data cache refill burst size
 //#define HAL_DCACHE_BURST_SIZE(_size_)

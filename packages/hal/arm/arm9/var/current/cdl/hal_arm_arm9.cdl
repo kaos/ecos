@@ -54,4 +54,54 @@ cdl_package CYGPKG_HAL_ARM_ARM9 {
 
     compile       arm9_misc.c
 
+    cdl_interface CYGINT_HAL_ARM_ARM9_VARIANT {
+        display  "Number of variant implementations in this configuration"
+        no_define
+        requires 1 == CYGINT_HAL_ARM_ARM9_VARIANT
+    }
+
+    # CPU variant supported
+    cdl_option CYGPKG_HAL_ARM_ARM9_ARM920T {
+        display       "ARM ARM920T microprocessor"
+        implements    CYGINT_HAL_ARM_ARM9_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_ARM_ARM9_ARM920T
+        description "
+            The ARM920T has 16k data cache, 16k instruction cache, 16 word
+            write buffer and an MMU."
+    }
+
+    cdl_option CYGPKG_HAL_ARM_ARM9_ARM922T {
+        display       "ARM ARM922T microprocessor"
+        implements    CYGINT_HAL_ARM_ARM9_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_ARM_ARM9_ARM922T
+        description "
+            The ARM922T has 8k data cache, 8k instruction cache, 16 word
+            write buffer and an MMU."
+    }
+
+    cdl_option CYGPKG_HAL_ARM_ARM9_ARM925T {
+        display       "ARM ARM925T microprocessor"
+        implements    CYGINT_HAL_ARM_ARM9_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_ARM_ARM9_ARM925T
+        description "
+            The ARM925T has 8k data cache, 16k instruction cache, 16 word
+            write buffer and an MMU."
+    }
+
+    cdl_option CYGPKG_HAL_ARM_ARM9_ARM940T {
+        display       "ARM ARM940T microprocessor"
+        implements    CYGINT_HAL_ARM_ARM9_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_ARM_ARM9_ARM940T
+        description "
+            The ARM920T has 4k data cache, 4k instruction cache, 8 word
+            write buffer and a protection unit."
+    }
 }

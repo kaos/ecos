@@ -317,7 +317,7 @@ at91_serial_stop_xmit(serial_channel *chan)
     at91_serial_info *at91_chan = (at91_serial_info *)chan->dev_priv;
     CYG_ADDRWORD base = at91_chan->base;
 
-    HAL_WRITE_UINT32(base+AT91_US_IER, AT91_US_IER_TxRDY);
+    HAL_WRITE_UINT32(base+AT91_US_IDR, AT91_US_IER_TxRDY);
 }
 
 // Serial I/O - low level interrupt handler (ISR)
@@ -326,7 +326,7 @@ at91_serial_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
     cyg_drv_interrupt_mask(vector);
     cyg_drv_interrupt_acknowledge(vector);
-    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+    return (CYG_ISR_CALL_DSR|CYG_ISR_HANDLED);  // Cause DSR to be run
 }
 
 // Serial I/O - high level interrupt handler (DSR)

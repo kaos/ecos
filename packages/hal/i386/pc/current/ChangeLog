@@ -1,3 +1,7 @@
+2001-08-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_i386_pc.cdl: Fix CYG_HAL_STARTUP description.
+
 2001-07-13  Nick Garnett  <nickg@redhat.com>
 
 	* cdl/hal_i386_pc.cdl: Added requires statement to

@@ -184,7 +184,7 @@ public:
 
     ~Cyg_SpinLock()
     {
-        CYG_ASSERT( !test(), "spinlock still claimed");
+//        CYG_ASSERT( !test(), "spinlock still claimed");
     };
     
     // Spin on the lock.
@@ -223,7 +223,9 @@ public:
     // we have it.
     void spin_intsave(CYG_INTERRUPT_STATE *state)
     {
-        HAL_DISABLE_INTERRUPTS(*state);
+        CYG_INTERRUPT_STATE s;
+        HAL_DISABLE_INTERRUPTS(s);
+        *state = s;
         spin();
     };
 
@@ -380,7 +382,9 @@ public:
     // we have it.
     void spin_intsave(CYG_INTERRUPT_STATE *state)
     {
-        HAL_DISABLE_INTERRUPTS(*state);
+        CYG_INTERRUPT_STATE s;
+        HAL_DISABLE_INTERRUPTS(s);
+        *state = s;
         spin();
     };
 

@@ -75,9 +75,13 @@ cdl_package CYGPKG_HAL_I386_PC {
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
-            At the moment only RAM startup is supported. This should
-            be extended to include ROM startup which would be used to
-            test early initialization code copying data/code to \"RAM\"."
+            It is possible to configure eCos for the PC target to build for
+            RAM startup (generally when being run under an existing
+            Monitor program like RedBoot), FLOPPY startup (for writing
+            to a floppy disk, which can then be used for booting
+            on PCs with a standard BIOS), or ROM startup (for writing
+            straight to a boot ROM/Flash). ROM startup is experimental
+            at this time."
     }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {

@@ -350,6 +350,7 @@ get_banksel(struct eth_drv_sc *sc)
 
 // ------------------------------------------------------------------------
 // Write on PCMCIA attribute memory
+#if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE					
 static __inline__ void
 put_att(struct eth_drv_sc *sc, int offs, unsigned char val)
 {
@@ -377,6 +378,7 @@ get_att(struct eth_drv_sc *sc, int offs)
 #endif
     return val;
 }
+#endif // #if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE					
 
 // ------------------------------------------------------------------------
 #endif CYGONCE_DEVS_ETH_SMSC_LAN91CXX_LAN91CXX_H

@@ -1,3 +1,27 @@
+2001-08-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/common/kapi.cxx (cyg_spinlock_spin_intsave): Cast to istate
+	to CYG_INTERRUPT_STATE * since that's what is needed.
+	(cyg_spinlock_clear_intsave): Similarly.
+
+2001-08-10  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/synch.cdl: Re-organize the options for mutexes so they are
+	active a bit more sensibly; place the default ceiling within
+	selection of ceiling protocol, and only have a default protocol if
+	there is more than one protocol active.
+
+	* tests/mutex3.cxx: More detailed handling of the possibility of
+	ceiling protocol instead of the inherit or none cases; we can run
+	the test ok and treat as inherit if the ceiling prio is higher
+	than 5, treat as none if lower than 15, and don't check anything
+	if in between - the test runs happily.
+
+	* tests/kmutex3.c (cyg_start): New test, a KAPI translation of the
+	now-classic mutex3.cxx.
+
+	* cdl/kernel.cdl: Build tests/kmutex3.c
+
 2001-08-06  Hugo Tyson  <hmt@redhat.com>
 
 	* src/sched/sched.cxx (unlock_inner): Fix assignment to current,

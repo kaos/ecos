@@ -67,7 +67,7 @@ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
 	    of the threads waiting for access to the mutex."
     }
 
-    cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING {
+    cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING {
 	display       "Enable priority ceiling protocol"
 	default_value 1
 	implements CYGINT_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_COUNT	
@@ -75,6 +75,18 @@ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
 	    This option enables priority ceiling protocol. This protocol
 	    causes the owner of a mutex to be executed at a  priority
 	    associated with the mutex."
+	cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY {
+	    display       "Default priority ceiling"
+	    flavor        data
+	    legal_values  0 to { CYGNUM_KERNEL_SCHED_PRIORITIES - 1 }
+	    default_value 0
+	    active_if     CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+	    description   "
+	    This option defines the default priority ceiling to be
+	    used if the chosen default priority inversion protocol is
+	    priority ceoptioniling protocol. The default value for this is zero,
+	    making all such mutexes boost threads to the maximum priority."
+	}
     }
 
     cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_NONE {
@@ -91,6 +103,7 @@ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
     cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT {
 	display      "Default priority inversion protocol"
 	flavor       data
+	active_if      { CYGINT_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_COUNT > 1 }
 	legal_values { "INHERIT" "CEILING" "NONE" }
 	default_value { CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_INHERIT ?
                         "INHERIT" :
@@ -101,19 +114,6 @@ cdl_component CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL {
 	    are created without an explicit protocol being specified. The protocol
 	    chosen by default is to use priority inheritance if it is present otherwise
 	    priority ceiling, or none if neither is present."
-    }
-
-    cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT_PRIORITY {
-	display       "Default priority ceiling"
-	flavor        data
-	legal_values  0 to { CYGNUM_KERNEL_SCHED_PRIORITIES - 1 }
-	default_value 0
-	active_if     { CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DEFAULT == "CEILING" }
-	description   "
-	    This option defines the default priority ceiling to be
-	    used if the chosen default priority inversion protocol is
-	    priority ceiling protocol. The default value for this is zero,
-	    making all such mutexes boost threads to the maximum priority."
     }
 
     cdl_option CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC {

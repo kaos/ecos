@@ -1008,13 +1008,13 @@ externC cyg_bool_t cyg_spinlock_test( cyg_spinlock_t *lock )
 externC void cyg_spinlock_spin_intsave( cyg_spinlock_t *lock,
                                 cyg_addrword_t *istate )
 {
-    ((Cyg_SpinLock *)lock)->spin_intsave(istate);
+    ((Cyg_SpinLock *)lock)->spin_intsave((CYG_INTERRUPT_STATE *)istate);
 }
     
 externC void cyg_spinlock_clear_intsave( cyg_spinlock_t *lock,
                                  cyg_addrword_t istate )
 {
-    ((Cyg_SpinLock *)lock)->clear_intsave(istate);
+    ((Cyg_SpinLock *)lock)->clear_intsave((CYG_INTERRUPT_STATE)istate);
 }
     
 

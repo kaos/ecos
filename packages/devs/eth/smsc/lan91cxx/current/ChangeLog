@@ -1,3 +1,9 @@
+2001-08-13  Hugo Tyson  <hmt@redhat.com>
+
+	* src/smsc_lan91cxx.h (get_att,put_att): Condition out the inline
+	functions if not CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE -
+	because they don't compile.  Inlines are not like macros.
+
 2001-07-27  Jordi Colomer  <jco@ict.es>
 
 	* cdl/smsc_lan91cxx_eth_drivers.cdl:

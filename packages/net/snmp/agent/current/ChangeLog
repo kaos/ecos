@@ -1,3 +1,8 @@
+2001-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/snmpping.c: 
+	* cdl/snmpagent.cdl: Add CDL options to configure tests.
+
 2001-07-31  Hugo Tyson <hmt@redhat.com>
 2001-07-31  Ron Kundla <rkundla@nband.com>
 
