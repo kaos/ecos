@@ -58,6 +58,8 @@ cdl_package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
 	active_if     CYGPKG_IO_ETH_DRIVERS
     implements    CYGHWR_NET_DRIVERS
     implements    CYGHWR_NET_DRIVER_ETH0
+    requires      (CYGPKG_CRC || (!(CYG_HAL_CPUTYPE == \"KS32C5000A\" )))
+
     include_dir   net
     description   "Ethernet driver for Samsung KS32C5000"
     compile       -library=libextras.a ks5000_ether.c

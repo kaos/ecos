@@ -1,3 +1,9 @@
+2002-10-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/ks32c5000_eth.cdl
+	* src/ks5000_ether.c (ks32c5000_eth_get_recv_buffer): Use the 
+	cyg_crc32 function in the CRC package.
+
 2002-07-10  Gary Thomas  <gary@chez-thomas.org>
 2002-07-10  Simon Sudler <sudlersn@iis.fhg.de>
 
