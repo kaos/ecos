@@ -94,7 +94,8 @@ MTAB_ENTRY( jffs2_mte1,
 //==========================================================================
 
 #define SHOW_RESULT( _fn, _res ) \
-diag_printf("<FAIL>: " #_fn "() returned %d %s\n", _res, _res<0?strerror(errno):"");
+diag_printf("<FAIL>: " #_fn "() returned %ld %s\n",  \
+            (unsigned long)_res, _res<0?strerror(errno):"");
 
 //==========================================================================
 
@@ -163,8 +164,9 @@ static void listdir( char *name, int statp, int numexpected, int *numgot )
             }
             else
             {
-                diag_printf(" [mode %08x ino %08x nlink %d size %d]",
-                            sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,sbuf.st_size);
+                diag_printf(" [mode %08x ino %08x nlink %d size %ld]",
+                            sbuf.st_mode,sbuf.st_ino,sbuf.st_nlink,
+                            (unsigned long) sbuf.st_size);
             }
         }
 
@@ -281,7 +283,8 @@ static void checkfile( char *name )
         for( i = 0; i < done; i++ )
             if( buf[i] != i%256 )
             {
-                diag_printf("buf[%d+%d](%02x) != %02x\n",pos,i,buf[i],i%256);
+                diag_printf("buf[%ld+%d](%02x) != %02x\n",
+                            (unsigned long)pos,i,buf[i],i%256);
                 CYG_TEST_FAIL("Data read not equal to data written\n");
             }
         
