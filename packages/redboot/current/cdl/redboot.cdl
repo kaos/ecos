@@ -966,6 +966,14 @@ cdl_package CYGPKG_REDBOOT {
                   When this option is enabled, RedBoot will support IDE disks."
                 compile -library=libextras.a fs/ide.c
                 implements    CYGINT_REDBOOT_DISK_DRIVERS
+
+                cdl_option CYGSEM_REDBOOT_DISK_IDE_VMWARE {
+                    display       "Work with VMware virtual disks"
+                    flavor        bool
+                    default_value 0
+                    description "
+			This option controls the disk driver beaviour at ide-init"
+		}
             }
     
             cdl_component CYGSEM_REDBOOT_DISK_EXT2FS {

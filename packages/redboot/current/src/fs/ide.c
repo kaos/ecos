@@ -99,11 +99,18 @@ ide_reset(int ctlr)
 {
     cyg_uint8 status;
     int delay;
-
+//
+// VMware note:
+// VMware virtual IDE device handler obviously expects that
+// the reset and setup functions were already done
+// by it's bios and complais if one uses reset here...
+//
+#ifndef CYGSEM_REDBOOT_DISK_IDE_VMWARE
     HAL_IDE_WRITE_CONTROL(ctlr, 6);	// polled mode, reset asserted
     CYGACC_CALL_IF_DELAY_US(5000);
     HAL_IDE_WRITE_CONTROL(ctlr, 2);	// polled mode, reset cleared
     CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
+#endif
 
     // wait 30 seconds max for not busy and drive ready
     for (delay = 0; delay < 300; ++delay) {
@@ -132,8 +139,10 @@ ide_presence_detect(int ctlr)
 	CYGACC_CALL_IF_DELAY_US((cyg_uint32)50000);
 	HAL_IDE_READ_UINT8(ctlr, IDE_REG_DEVICE, val);
 	if (val == sel) {
+#ifndef CYGSEM_REDBOOT_DISK_IDE_VMWARE
 	    if (i)
 		HAL_IDE_WRITE_UINT8(ctlr, IDE_REG_DEVICE, 0);
+#endif
 	    return 1;
 	}
     }
