@@ -96,6 +96,11 @@ cyg_start(void)
 // Percentage error before we declare fail: range 0 - 100
 #define TOLERANCE 40
 
+// Permissible absolute deviation from mean value to take care of incorrect
+// failure conclusions in case of small mean values (if absolute values of
+// clock() are small, percentage variation can be large)
+#define FUDGE_FACTOR 6
+
 // Number of samples to take
 #define SAMPLES 30
 
@@ -160,6 +165,7 @@ main(int argc, char *argv[])
 {
     unsigned long mean=0, sum=0, maxerr=0;
     int i;
+    unsigned int absdev;
 
     CYG_TEST_INIT();
 
@@ -221,9 +227,10 @@ main(int argc, char *argv[])
     for (i=SKIPPED_SAMPLES;i<SAMPLES;i++) {
         unsigned long err;
 
+        absdev = my_abs(ctrs[i]-mean);
         // use mean+1 as divisor to avoid div-by-zero
-        err = (100 * my_abs(ctrs[i]-mean)) / (mean+1);
-        if (err > TOLERANCE) {
+        err = (100 * absdev) / (mean+1);
+        if (err > TOLERANCE && absdev > FUDGE_FACTOR) {
             diag_printf("mean=%d, ctrs[%d]=%d, err=%d\n", mean, i, ctrs[i],
                         err);
             CYG_TEST_FAIL_FINISH("clock() within tolerance");
