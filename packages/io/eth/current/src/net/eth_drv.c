@@ -697,7 +697,7 @@ eth_drv_send(struct ifnet *ifp)
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
             if (cyg_io_eth_net_debug) {
                 START_CONSOLE();
-                diag_printf("xmit %d bytes at %x sg[%d]\n", len, data, sg_len);
+                diag_printf("xmit %d bytes at %p sg[%d]\n", len, data, sg_len);
                 if ( cyg_io_eth_net_debug > 1)
                     diag_dump_buf(data, len);
                 END_CONSOLE();
