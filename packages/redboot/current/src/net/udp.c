@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -219,7 +219,7 @@ static void
 __udp_recvfrom_handler(udp_socket_t *skt, char *buf, int len,
                        ip_route_t *src_route, word src_port)
 {
-    if (recvfrom_server == NULL)
+    if (recvfrom_server == NULL || recvfrom_buf == NULL)
 	return;
 
     if (recvfrom_server->sin_port && recvfrom_server->sin_port != htons(src_port))

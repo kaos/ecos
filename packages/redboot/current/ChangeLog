@@ -1,3 +1,8 @@
+2004-03-30  Mark Salter  <msalter@redhat.com>
+
+	* src/net/udp.c (__udp_recvfrom_handler): Protect against back-to-back
+	duplicate packets.
+
 2004-03-17  Thomas Koeller <thomas.koeller@baslerweb.com>
 
        * src/fs/fileio.c: Only include IO package headers if required.
