@@ -124,20 +124,26 @@ void hal_clock_read(cyg_uint32 *pvalue)
 // -------------------------------------------------------------------------
 //
 // Delay for some number of micro-seconds
-//   Use timer #2 in 1MHz mode
+//   Use timer #2 in MCLOCK/32 mode.
 //
 void hal_delay_us(cyg_int32 usecs)
 {
     CYG_ADDRESS timer = AT91_TC+AT91_TC_TC2;
     cyg_uint32 stat;
+    cyg_uint64 ticks;
 
+    // Calculate how many timer ticks the required number of
+    // microseconds equate to. We do this calculation in 64 bit
+    // arithmetic to avoid overflow.
+    ticks = (((cyg_uint64)usecs) * ((cyg_uint64)CYGNUM_HAL_ARM_AT91_CLOCK_SPEED))/32000000LL;
+    
     // Disable counter
     HAL_WRITE_UINT32(timer+AT91_TC_CCR, AT91_TC_CCR_CLKDIS);
 
     // Set registers
     HAL_WRITE_UINT32(timer+AT91_TC_CMR, AT91_TC_CMR_CLKS_MCK32);  // 1MHz
     HAL_WRITE_UINT32(timer+AT91_TC_RA, 0);
-    HAL_WRITE_UINT32(timer+AT91_TC_RC, usecs);
+    HAL_WRITE_UINT32(timer+AT91_TC_RC, ticks);
 
     // Start timer
     HAL_WRITE_UINT32(timer+AT91_TC_CCR, AT91_TC_CCR_TRIG | AT91_TC_CCR_CLKEN);

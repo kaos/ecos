@@ -1,3 +1,10 @@
+2003-05-15  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/at91_misc.c (hal_delay_us): Added calculation to better
+	approximate the number of timer ticks for a given number of
+	microseconds. This code also now adjust to the actual CPU clock
+	speed on different platforms.
+
 2003-05-12  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/at91_misc.c: Change definition of hal_IRQ_handler() to be
