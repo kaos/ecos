@@ -1,3 +1,9 @@
+2003-04-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/vectors.S: Pass saved interrupt state pointer to interrupt
+	handlers as (undeclared) third argument. Suggested by
+	Ryouzaburou Suzuki.
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.

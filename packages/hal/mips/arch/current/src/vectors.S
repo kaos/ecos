@@ -618,6 +618,7 @@ FUNC_START(__default_interrupt_vsr)
 	lw	a1,0(a1)			# Data pointer
 
 	move	a0,s2				# pass interrupt number
+	move	a2,s0				# pass saved interrupt state
 
 	jalr	t2				# call ISR via t2
 	nop					# (delay slot)
