@@ -1,3 +1,9 @@
+2004-04-21  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/if_8139.c:
+	add known device 0x11db/0x1234 from Dreamcast Broadband Adapter.
+	add Platform depend Initialize entry.
+
 2003-11-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_8139.c: Use cyg_drv_isr_lock/unlock functions for ISR

@@ -136,6 +136,10 @@
 #include CYGDAT_DEVS_ETH_RLTK_8139_INL
 #endif
 
+#ifndef CYGHWR_RLTK_8139_PLF_INIT
+#define CYGHWR_RLTK_8139_PLF_INIT(sc) do {} while(0)
+#endif
+
 /*
  * If software cache coherency is required, the HAL_DCACHE_INVALIDATE
  * hal macro must be defined as well.
@@ -270,10 +274,11 @@ static inline cyg_uint32 INL(cyg_uint32 io_address)
  * Table of all known PCI device/vendor ID combinations for the RealTek 8139.
  * Add them as you get to know them.
  */
-#define CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES 1
+#define CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES 2
 static pci_identifier_t
 known_8139_aliases[CYGNUM_DEVS_ETH_RLTK_8139_KNOWN_ALIASES] = {
-  { 0x10ec, 0x8139, NULL } /* This is the offical RealTek vendor/device code */
+  { 0x10ec, 0x8139, NULL }, /* This is the offical RealTek vendor/device code */
+  { 0x11db, 0x1234, NULL} /* SEGA DreamCast BroadBandAdapter */
 };
 
 
@@ -609,6 +614,9 @@ rltk8139_init(struct cyg_netdevtab_entry *tab)
 #endif
     return false;
   }
+
+  /* platform depends initialize */
+  CYGHWR_RLTK_8139_PLF_INIT(sc);
 
   /*
    * The initial tx threshold is set here to prevent it from being reset
