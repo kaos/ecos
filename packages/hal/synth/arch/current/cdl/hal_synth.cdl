@@ -71,7 +71,7 @@ cdl_package CYGPKG_HAL_SYNTH {
         @echo >> $(notdir $@).deps
         @rm target.tmp
     }
-    compile       synth_entry.c synth_diag.c synth_intr.c
+    compile       synth_entry.c synth_diag.c synth_intr.c synth_syscalls.c
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_synth.h>"

@@ -477,6 +477,33 @@ externC int             cyg_hal_sys_pipe(int []);
 externC int             cyg_hal_sys_close(int);
 externC int             cyg_hal_sys_dup2(int, int);
  
+#define CYG_HAL_SYS_IPCOP_semop          1
+#define CYG_HAL_SYS_IPCOP_semget         2
+#define CYG_HAL_SYS_IPCOP_semctl         3
+#define CYG_HAL_SYS_IPCOP_msgsnd        11
+#define CYG_HAL_SYS_IPCOP_msgrcv        12
+#define CYG_HAL_SYS_IPCOP_msgget        13
+#define CYG_HAL_SYS_IPCOP_msgctl        14
+#define CYG_HAL_SYS_IPCOP_shmat         21
+#define CYG_HAL_SYS_IPCOP_shmdt         22
+#define CYG_HAL_SYS_IPCOP_shmget        23
+#define CYG_HAL_SYS_IPCOP_shmctl        24
+
+/*The ipc system call, which is used by the following shmem
+  functions. These may be unportable*/
+
+// Generic system call. Depending on the value of call, it will
+// perform the following functions.
+externC int             cyg_hal_sys_ipc(int call, int first, int second, 
+                                        int third, void* ptr);
+//get an identifier for a shared memory segment
+externC int             cyg_hal_sys_shmget (int key, int size, int shmflg);
+//attach to an shared memory segment
+externC void *          cyg_hal_sys_shmat (int shmid, const void* shmaddr, 
+                                           int shmflg);
+//detach from it again
+externC int             cyg_hal_sys_shmdt (const void* shmaddr);
+
 // The actual implementation appears to return the new brk() value.
 externC void*           cyg_hal_sys_brk(void*);
 
@@ -484,8 +511,18 @@ externC void*           cyg_hal_sys_brk(void*);
 // not a char*. 
 externC int             cyg_hal_sys_getcwd(char*, int);
 
-// mmap on the "host" system - this may be unportable.
-externC int             cyg_hal_sys_mmap(struct cyg_hal_sys_mmap_args *);
+// mmap on the "host" system - this may be unportable. This is the
+// really system call into the kernel which passes one structure
+// containing all the arguments.
+externC int             cyg_hal_sys_mmapx(struct cyg_hal_sys_mmap_args *);
+
+// This is the mmap call that users are used to.
+externC int             cyg_hal_sys_mmap(void *addr, 
+                                         unsigned long length, 
+                                         unsigned long prot, 
+                                         unsigned long flags, 
+                                         unsigned long fd, 
+                                         unsigned long off);
 
 externC int cyg_hal_sys_readdir(unsigned int fd, 
                                 struct cyg_hal_sys_dirent *dp, 
