@@ -1,4 +1,4 @@
-2002-04-03  Jani Monoses <jani@iv.ro>
+2003-04-03  Jani Monoses <jani@iv.ro>
 
 	* src/flash_erase_block.c (flash_erase_block): 
 	* src/flash_query.c (flash_query): 
