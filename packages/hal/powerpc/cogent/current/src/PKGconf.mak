@@ -32,7 +32,7 @@ PACKAGE       := hal_powerpc_cogent
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c cogent.S plf_stub.c
+COMPILE       := hal_diag.c hal_aux.c cogent.S plf_stub.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

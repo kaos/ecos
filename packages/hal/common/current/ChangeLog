@@ -1,3 +1,9 @@
+1999-06-17  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Added CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+	to enable inclusion of ^C interrupt handler. Added CDL to control
+	it.
+
 1999-06-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/hal_stub.c: Need to init register pointer.

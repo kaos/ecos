@@ -111,16 +111,18 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 /*------------------------------------------------------------------------*/
 /* data copy and bss zero functions                                       */
 
-typedef void (CYG_ROM_ADDRESS)(void);
+typedef void (CYG_SYM_ADDRESS)(void);
 
-extern char __ram_data_start;
-extern char __ram_data_end;
-extern CYG_ROM_ADDRESS __rom_data_start;    
+// All these must use this type of address to stop them being given relocations
+// relative to $gp (i.e. assuming they would be in .sdata)
+extern CYG_SYM_ADDRESS __ram_data_start;
+extern CYG_SYM_ADDRESS __ram_data_end;
+extern CYG_SYM_ADDRESS __rom_data_start;    
 
 #ifdef CYG_HAL_STARTUP_ROM      
 void hal_copy_data(void)
 {
-    char *p = &__ram_data_start;
+    char *p = (char *)&__ram_data_start;
     char *q = (char *)&__rom_data_start;
     
     while( p != (char *)&__ram_data_end )
@@ -128,8 +130,8 @@ void hal_copy_data(void)
 }
 #endif
 
-extern CYG_ROM_ADDRESS __bss_start;
-extern CYG_ROM_ADDRESS __bss_end;
+extern CYG_SYM_ADDRESS __bss_start;
+extern CYG_SYM_ADDRESS __bss_end;
 
 void hal_zero_bss(void)
 {

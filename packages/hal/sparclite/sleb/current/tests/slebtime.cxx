@@ -112,11 +112,11 @@ static void entry2( CYG_ADDRWORD arg )
         s[9] = '0';
         s[8] = '0';
         for ( i = 0; i < LOOPS; i++ ) {
-            s[ sizeof( s ) - 1 ] = '0' + loops[ i ] / 1       % 10;
-            s[ sizeof( s ) - 2 ] = '0' + loops[ i ] / 10      % 10;
-            s[ sizeof( s ) - 3 ] = '0' + loops[ i ] / 100     % 10;
-            s[ sizeof( s ) - 4 ] = '0' + loops[ i ] / 1000    % 10;
-            s[ sizeof( s ) - 5 ] = '0' + loops[ i ] / 10000   % 10;
+            s[ sizeof( s ) - 2 ] = '0' + loops[ i ] / 1       % 10;
+            s[ sizeof( s ) - 3 ] = '0' + loops[ i ] / 10      % 10;
+            s[ sizeof( s ) - 4 ] = '0' + loops[ i ] / 100     % 10;
+            s[ sizeof( s ) - 5 ] = '0' + loops[ i ] / 1000    % 10;
+            s[ sizeof( s ) - 6 ] = '0' + loops[ i ] / 10000   % 10;
             CYG_TEST_INFO( s );
             if ( '9' == s[9]++ ) {
                 s[9] = '0';

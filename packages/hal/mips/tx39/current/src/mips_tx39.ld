@@ -155,24 +155,27 @@ GROUP(libtarget.a libgcc.a)
     __bss_end = ABSOLUTE (.); } \
     > _region_
 
+// The /DISCARD/ section ensures that the output will not contain a
+// .mdebug section as it confuses GDB. This is a workaround for CR 100804.
 #define SECTIONS_END . = ALIGN(4); _end = .; PROVIDE (end = .); \
-    .debug          0 : { *(.debug) } \
-    .line           0 : { *(.line) } \
-    .debug_srcinfo  0 : { *(.debug_srcinfo) } \
-    .debug_sfnames  0 : { *(.debug_sfnames) } \
-    .debug_aranges  0 : { *(.debug_aranges) } \
-    .debug_pubnames 0 : { *(.debug_pubnames) } \
-    .debug_info     0 : { *(.debug_info) } \
-    .debug_abbrev   0 : { *(.debug_abbrev) } \
-    .debug_line     0 : { *(.debug_line) } \
-    .debug_frame    0 : { *(.debug_frame) } \
-    .debug_str      0 : { *(.debug_str) } \
-    .debug_loc      0 : { *(.debug_loc) } \
-    .debug_macinfo  0 : { *(.debug_macinfo) } \
+    .debug           0 : { *(.debug) } \
+    .line            0 : { *(.line) } \
+    .debug_srcinfo   0 : { *(.debug_srcinfo) } \
+    .debug_sfnames   0 : { *(.debug_sfnames) } \
+    .debug_aranges   0 : { *(.debug_aranges) } \
+    .debug_pubnames  0 : { *(.debug_pubnames) } \
+    .debug_info      0 : { *(.debug_info) } \
+    .debug_abbrev    0 : { *(.debug_abbrev) } \
+    .debug_line      0 : { *(.debug_line) } \
+    .debug_frame     0 : { *(.debug_frame) } \
+    .debug_str       0 : { *(.debug_str) } \
+    .debug_loc       0 : { *(.debug_loc) } \
+    .debug_macinfo   0 : { *(.debug_macinfo) } \
     .debug_weaknames 0 : { *(.debug_weaknames) } \
     .debug_funcnames 0 : { *(.debug_funcnames) } \
     .debug_typenames 0 : { *(.debug_typenames) } \
-    .debug_varnames  0 : { *(.debug_varnames) }
+    .debug_varnames  0 : { *(.debug_varnames) }  \
+    /DISCARD/        0 : { *(.mdebug) }
 
 #include CYGHWR_MEMORY_LAYOUT_LDI
 

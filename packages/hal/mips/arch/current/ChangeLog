@@ -1,3 +1,18 @@
+1999-06-17  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/vectors.S: Added code to discriminate different entry
+	conditions to the reset vector. Added code to translate an NMI
+	into a standard exception and added a new vector in the VSR table
+	for it.
+	Made above code not be present in RAM. Tidied away some debug
+	code.
+
+1999-06-11  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_misc.c: Make sure all symbol addresses are given an
+	appropriate type that they won't be relocated relative to $gp
+	Fix for CR 100800
+	
 1999-06-10  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/hal_arch.h: Added macros to copy FPU registers between

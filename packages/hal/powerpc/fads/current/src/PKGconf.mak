@@ -53,7 +53,7 @@ PACKAGE       := hal_powerpc_fads
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c fads.S quicc_smc2.c
+COMPILE       := hal_diag.c hal_aux.c fads.S quicc_smc2.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

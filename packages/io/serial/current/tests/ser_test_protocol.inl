@@ -213,7 +213,6 @@ typedef enum {
 // A few predefined configurations. These must all be valid for any
 // given target until change_config is behaving correctly.
 cyg_ser_cfg_t test_configs[] = {
-
 #if !defined(CYGPKG_HAL_MIPS_TX39_JMR3904) && !defined(CYGPKG_HAL_ARM_PID)
     { CYGNUM_SERIAL_BAUD_9600, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },

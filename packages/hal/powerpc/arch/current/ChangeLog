@@ -1,3 +1,30 @@
+1999-06-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (CYG_MSR): define correctly for copying vectors,
+	even if ROM start.  Complete system init for ROM start.
+
+1999-06-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/ppc.inc: Add definitions of FUNC_START and FUNC_END.
+	They are needed by platform code.
+
+	* src/vectors.S: Remove definition of FUNC_START.
+
+1999-06-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (_start): remove some platform-conditional
+	initialization code; it is now in hal_hardware_init in the
+	platform HAL.
+
+	* src/hal_misc.c: remove very-platform-conditional definition of
+	memory descriptor table - it is now in platform HALs.
+	
+	* include/ppc_regs.h: simplify definition of CYGARC_REG_IMM_BASE.
+
+	* include/hal_cache.h (CYGARC_MEMDESC_CACHE): ...and other
+	macros... add support for external definitions of memory
+	descriptor table used in platform-specific initialization of MMU.
+
 1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/vectors.S (_start): Add better support for various startup

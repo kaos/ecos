@@ -1,3 +1,8 @@
+1999-06-11  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/stdio.h: Make FILEs array types so they won't be
+	given $gp relocations on MIPS targets
+
 1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/time/ctime.c: Fixed compiler warning.

@@ -61,8 +61,30 @@ typedef struct {
     cyg_uint8    flags;
 } cyg_memdesc_t;
 
+// each platform HAL must provide one of these to describe how memory
+// should be mapped/cached, ideally weak aliased so that apps can override:
+externC cyg_memdesc_t cyg_hal_mem_map[];
+
 #define CYGARC_MEMDESC_CI       1       // cache inhibit
 #define CYGARC_MEMDESC_GUARDED  2       // guarded
+
+// these macros should ease that task, and ease any future extension of the
+// structure (physical == virtual addresses):
+#define CYGARC_MEMDESC_CACHE( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), 0 }
+
+#define CYGARC_MEMDESC_NOCACHE( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_CI }
+
+#define CYGARC_MEMDESC_CACHEGUARD( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_GUARDED }
+
+#define CYGARC_MEMDESC_NOCACHEGUARD( _va_, _sz_ ) \
+        { (_va_), (_va_), (_sz_), CYGARC_MEMDESC_GUARDED|CYGARC_MEMDESC_CI }
+
+#define CYGARC_MEMDESC_TABLE_END      {0, 0, 0, 0}
+#define CYGARC_MEMDESC_TABLE          cyg_memdesc_t cyg_hal_mem_map[]
+#define CYGARC_MEMDESC_EMPTY_TABLE    { CYGARC_MEMDESC_TABLE_END }
 
 //=============================================================================
 // PowerPC simulator

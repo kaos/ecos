@@ -85,12 +85,18 @@
 typedef cyg_ucount32 fpos_t;
 
 
-typedef CYG_ADDRESS FILE; // FILE is just cast to an address here. It is
-                          // uncast internally to the C library in stream.hxx
-                          // as the C++ Cyg_StdioStream class. Optional
-                          // run-time checking can be enabled to ensure that
-                          // the cast is valid, using the standard assertion
-                          // functionality
+// FILE is just cast to an address here. It is uncast internally to the
+// C library in stream.hxx  as the C++ Cyg_StdioStream class.
+// Optional run-time checking can be enabled to ensure that the cast is
+// valid, using the standard assertion functionality.
+//
+// The array size is irrelevant other than being more than 8, and is present
+// to stop references to FILEs being marked as able to be put in the small
+// data section. We can't just mark it as in the ".data" section as on some
+// targets it may actually be ".common". Maybe this doesn't matter?
+// FIXME: This doesn't work if things are larger than 16 are put in sdata,
+// e.g. on mips by specifying -G 32
+typedef CYG_ADDRESS FILE[16];
 
 // EXTERNAL VARIABLES
 
@@ -106,7 +112,7 @@ typedef CYG_ADDRESS FILE; // FILE is just cast to an address here. It is
 
 #ifndef CYGPRI_LIBC_STDIO_NO_DEFAULT_STREAMS
 extern FILE cyg_libc_stdio_stdin, cyg_libc_stdio_stdout,
-            cyg_libc_stdio_stderr; 
+            cyg_libc_stdio_stderr;
 
 #define stdin  (&cyg_libc_stdio_stdin)
 #define stdout (&cyg_libc_stdio_stdout)

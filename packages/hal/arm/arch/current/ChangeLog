@@ -1,3 +1,8 @@
+1999-06-15  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (vectors): Some boards have an MMU, but the
+	reset vector needs to have an unmapped address!
+
 1999-06-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (reset_vector): Streamline ROM/STUBS code.

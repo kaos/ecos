@@ -1,3 +1,7 @@
+1999-06-16  Jesper Skov  <jskov@cygnus.co.uk>
+        CR 100804 workaround
+	* src/mips_tx39.ld: Suppress .mdebug in the final output.
+
 1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/mips_tx39.ld: 

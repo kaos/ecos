@@ -64,6 +64,29 @@
 	
 FUNC_START(reset_vector)
 
+#ifndef CYG_HAL_STARTUP_RAM
+	# Decide whether this is an NMI, cold or warm boot.
+
+	mfc0	k0,status		# get status reg
+	lui	k1,0x0008		# isolate NMI bit
+	and	k1,k1,k0		
+	beqz	k1,1f			# skip if zero
+	nop
+
+	lar	k1,__nmi_entry		# jump to ROM nmi code
+	jalr	k1
+	nop
+1:	
+	lui	k1,0x0010		# isolate soft reset bit
+	and	k1,k1,k0		
+	beqz	k1,2f			# skip if zero
+	nop
+
+	lar	k1,__warm_start		# jump to ROM warm_start code
+	jr	k1
+	nop
+2:
+#endif	
 	lar	v0,_start		# jump to start
 	jr	v0
 	nop				# (delay slot)
@@ -95,6 +118,7 @@ FUNC_START(other_vector)
 	lw	k1,0(k1)		# k1 = pointer to VSR
 	jr	k1			# go there
 	nop				# (delay slot)
+
 FUNC_END(other_vector)
 	
 	.section ".utlb_vector","ax"
@@ -181,6 +205,75 @@ FUNC_START(_start)
 	
 FUNC_END(_start	)
 
+
+##-----------------------------------------------------------------------------
+		
+FUNC_START(__warm_start)
+
+	## The following is debug code left in here for now in case it
+	## proves useful in the near future.	
+#if 0
+	move	s0,t0
+	move	s1,a1
+	
+#	hal_diag_init
+
+	hal_diag_writec '$'
+	mfc0	a0,$30			# get ErrorEPC
+	lar	k0,hal_diag_ai_write_hex8
+	jalr	k0
+	nop
+	hal_diag_writec '-'	
+	move	a0,s0
+	jalr	k0
+	nop
+	hal_diag_writec '-'	
+	move	a0,s1
+	jalr	k0
+	nop
+1:	
+	b	1b
+	nop
+#endif
+	
+	# At present we treat this like an NMI. 
+	b	__nmi_entry
+	nop
+	
+FUNC_END(__warm_start)		
+
+##-----------------------------------------------------------------------------
+	
+FUNC_START(__nmi_entry)		
+
+	# Clear exception state
+	hal_cpu_except_enable
+	
+	# Move the ErrorEPC register to the EPC register so that the
+	# default exception handler saves the right PC value.
+	mfc0	k0,$30
+	nop; nop; nop;
+	mtc0	k0,epc
+	nop; nop; nop;	
+
+#if (INITIAL_SR & 0x00400000) == 0
+	# Taking this exception will have set the BEV bit to 1.
+	# If we normally run with it zero, we must clear it here.
+	mfc0	k0,status	
+	la	k1,0xFFBFFFFF
+	and	k0,k0,k1
+	mtc0	k0,status
+#endif	
+
+	la	k0,34*4
+	la	k1,hal_vsr_table	# Get VSR table
+	lw	k1,34*4(k1)		# load NMI vector
+	jr	k1			# go there
+	nop				# (delay slot)
+	
+FUNC_END(__nmi_entry)
+
+	
 ##-----------------------------------------------------------------------------
 ## Default exception VSR.
 ## Saves machine state and calls external handling code.
@@ -202,8 +295,6 @@ FUNC_START(__default_exception_vsr)
 	addi	sp,sp,-mips_exception_decrement
 				# space for registers + safety margin
 
-	mfc0	k0,cause
-	andi	k0,k0,0x7F		# isolate exception code	
 	sw	k0,mipsreg_vector(sp)	# store vector
 
 	# store GPRs
@@ -294,7 +385,7 @@ FUNC_START(__default_exception_vsr)
 	# go back to restore_state, below.
 			
 FUNC_END(__default_exception_vsr)
-	
+
 ##------------------------------------------------------------------------------
 ## Default interrupt VSR.
 ## Saves machine state and calls appropriate ISR. When done, calls

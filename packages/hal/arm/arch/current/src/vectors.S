@@ -66,6 +66,15 @@ _name:
 #define PTR(name) 		\
 .##name: .word	name
 
+#ifdef CYGHWR_HAL_ARM_HAS_MMU
+#define UNMAPPED(x) ((x)-__exception_handlers)
+#else
+#define UNMAPPED(x) (x)
+#endif
+                                
+#define UNMAPPED_PTR(name) 		\
+.##name: .word	UNMAPPED(name)
+
 
 	.file	"vectors.S"
 
@@ -91,7 +100,7 @@ __exception_handlers:
 // they are copied in pairs.
 	.global	vectors
 vectors:
-PTR(reset_vector)
+UNMAPPED_PTR(reset_vector)
 PTR(undefined_instruction)
 PTR(software_interrupt)
 PTR(abort_prefetch)

@@ -32,7 +32,7 @@ PACKAGE       := hal_powerpc_sim
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := sim.S
+COMPILE       := sim.S hal_aux.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

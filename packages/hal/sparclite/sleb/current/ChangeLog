@@ -1,3 +1,8 @@
+1999-06-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/slebtime.cxx (entry2): Fix a dumb fencepost prob in some
+	string poking code for output without printf...
+
 1999-04-23  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/hal_diag.c (hal_bsp_console_write): Added a workaround for PR

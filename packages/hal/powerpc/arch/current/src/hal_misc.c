@@ -385,31 +385,9 @@ hal_clear_MMU (void)
 #endif
 }
 
-// The memory map is weakly defined, allowing the application to redefine
-// it if necessary. The regions defined below are the minimum requirements.
-cyg_memdesc_t cyg_hal_mem_map[] CYGBLD_ATTRIB_WEAK = {
-#ifdef CYGPKG_HAL_POWERPC_COGENT
-    // Mapping for the Cogent CMA101/102 boards.
-    {0xfff00000, 0xfff00000, 0x00100000,
-     CYGARC_MEMDESC_CI},            // ROM region
-    {0xff000000, 0xff000000, 0x00100000, 
-     CYGARC_MEMDESC_CI},            // MCP registers
-    {0x0e000000, 0x0e000000, 0x01000000, 
-     CYGARC_MEMDESC_CI},            // IO registers
-    {0x00000000, 0x00000000, 0x00800000,
-     0},                            // Main memory
-#endif
-#ifdef CYGPKG_HAL_POWERPC_SIM
-    // Mapping for the simulator. This is only used for special debugging:
-    // CYG_MSR in vectors.S must be changed to enable the MMU.
-    {0x00000000, 0x00000000, 0x00800000,
-     0},                            // Main memory
-    {0xf0000000, 0xf0000000, 0x00020000, 
-     CYGARC_MEMDESC_CI},            // diag registers
-#endif
-    {0, 0, 0, 0}                    // Table end
-};
-
+// NB this demands that the platform HAL has provided an
+//          externC cyg_memdesc_t cyg_hal_mem_map[];
+// as detailed in hal_cache.h:
 externC void hal_MMU_init (void)
 {
     int id = 0;

@@ -98,6 +98,14 @@
 	.endm
 #endif
 
+#define FUNC_START(name)        \
+        .type name,@function;   \
+        .globl name;            \
+name:   
+
+#define FUNC_END(name)          \
+	/* nothing for now */
+
 #------------------------------------------------------------------------------
 # Exception, interrupt and thread context save area layout
 # The layout of this structure is also defined in "hal_arch.h", for C

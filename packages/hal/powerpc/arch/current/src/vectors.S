@@ -52,11 +52,6 @@
 #include "cyg/hal/ppc_regs.h"        
 #include "cyg/hal/ppc.inc"
 
-#define FUNC_START(name)        \
-        .type name,@function;   \
-        .globl name;            \
-name:   
-
 #===========================================================================
                 
         .file   "vectors.S"
@@ -81,7 +76,11 @@ name:
 
 #define CYG_MSR_COMMON (MSR_FP | MSR_ME | MSR_IR | MSR_DR | MSR_RI)
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
-#define CYG_MSR (CYG_MSR_COMMON | MSR_IP)
+# ifdef CYG_HAL_POWERPC_COPY_VECTORS
+#  define CYG_MSR CYG_MSR_COMMON
+# else
+#  define CYG_MSR (CYG_MSR_COMMON | MSR_IP)
+# endif
 #endif
 #ifdef CYG_HAL_STARTUP_RAM      
 #define CYG_MSR CYG_MSR_COMMON
@@ -92,7 +91,6 @@ name:
 #undef CYG_MSR
 #define CYG_MSR (CYG_MSR_COMMON & ~(MSR_IR | MSR_DR))
 #endif
-
 
 #===========================================================================
 # If the following option is enabled, we only save registers up to R12.
@@ -244,6 +242,10 @@ _start:
         # Disable special MPC8xx "development support" which
 	# suppresses trace exceptions. The CPU seems to hang, not 
         # executing from offset 0x1e00(?) as expected.
+
+        lwi	r3,0x00000007
+        mtspr	ICTRL,r3
+
         li      r3,0
         mtspr   DER, r3
 #endif
@@ -260,7 +262,7 @@ _start:
         # Call platform specific hardware initialization
         # This may include memory controller initialization. It is not
         # safe to access RAM until after this point.
-        bl      hal_hardware_init
+        bl      hal_hardware_init	# this is platform dependent
 
         # set up stack
         lwi     sp,__interrupt_stack
@@ -368,7 +370,6 @@ _start:
         bl      initialize_stub
 #endif
 
-	
         .extern cyg_start
         bl      cyg_start                       # call cyg_start
 9:      
