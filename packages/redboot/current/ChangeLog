@@ -1,3 +1,8 @@
+2003-04-14  Jani Monoses  <jani@iv.ro>	
+	
+	* src/load.c:
+	Change #else if to #elif so it compiles when TFTP is disabled. 
+	
 2003-04-08  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/main.c (do_go): Silence unused variable warning when no net.

@@ -689,7 +689,7 @@ do_load(int argc, char *argv[])
 #ifdef CYGSEM_REDBOOT_NET_TFTP_DOWNLOAD        
         which = "TFTP";
         io = &tftp_io;
-#else if defined(CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD)
+#elif defined(CYGSEM_REDBOOT_NET_HTTP_DOWNLOAD)
         which = "HTTP";
         io = &http_io;
 #endif
