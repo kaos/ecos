@@ -1,3 +1,7 @@
+2002-06-20  Gary Thomas  <gary@chez-thomas.org>
+
+	* include/var_regs.h (MI_RPN_LPS): Fix define.
+
 2002-05-03  Gary Thomas  <gthomas@redhat.com>
 
 	* tests/intr0.c: Fiddle to make this test run on all current MPC8xx

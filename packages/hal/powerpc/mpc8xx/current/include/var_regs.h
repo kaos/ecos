@@ -155,7 +155,7 @@
 
 #define MI_RPN_RPNMASK  0xfffff000      // real page no mask
 #define MI_RPN_PPRWRW   0x000008f0      // page protection (rw/rw, page valid)
-#define MI_RPN_LPS      0x00000008      // large page size
+#define MI_RPN_LPS      0x0000000C      // large page size
 #define MI_RPN_SH       0x00000004      // shared page (1 = no ASID cmp)
 #define MI_RPN_CI       0x00000002      // cache inhibited
 #define MI_RPN_V        0x00000001      // entry valid
