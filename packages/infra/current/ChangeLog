@@ -1,3 +1,8 @@
+2003-04-25  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/cxxsupp.cxx: don't include <pkgconf/kernel.h> as it's not
+	needed.
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* tests/cxxsupp.cxx: Added this test program to check that basic

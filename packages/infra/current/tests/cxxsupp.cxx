@@ -48,7 +48,6 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
-#include <pkgconf/kernel.h>
 #include <pkgconf/hal.h>
 #include <pkgconf/isoinfra.h>
 
