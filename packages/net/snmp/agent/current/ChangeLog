@@ -1,3 +1,9 @@
+2003-10-09  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
+  
+	* src/mibgroup/mibII/dot3.c: Make sure the agent responses with
+        a null object oid, if there is no specific oid set by the driver
+        for the ethernet chipset.
+ 
 2003-06-17  Michael Checky  <Michael_Checky@ThermoKing.com>
   
         * src/mibgroup/mibII/helpers.c: Changed the definition of

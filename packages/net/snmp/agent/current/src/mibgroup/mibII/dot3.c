@@ -342,8 +342,16 @@ var_dot3StatsTable(struct variable *vp,
                 break;
             i++;
         }
-        *var_len = i;
-        return (unsigned char *) etherobjid;
+        if (i)
+        {
+            *var_len = i;
+            return (unsigned char *) etherobjid;
+        }
+        else
+        {
+            *var_len = sizeof(nullobjid);
+            return (unsigned char *) nullobjid;
+        }
         
     case DOT3STATSDUPLEXSTATUS:
         long_ret = x.duplex;
