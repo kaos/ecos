@@ -1,6 +1,6 @@
 //==========================================================================
 //
-//      redboot_linux_boot.c
+//      redboot_linux_exec.c
 //
 //      RedBoot command to boot Linux
 //
