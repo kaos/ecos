@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -71,6 +72,7 @@
 #include <stddef.h>             // NULL, size_t
 
 #include <limits.h>
+#include <signal.h>
 
 #include <sys/types.h>
 
@@ -87,6 +89,23 @@ __externC void cyg_posix_function_finish();
 #define CYG_POSIX_FUNCTION_START() cyg_posix_function_start()
 
 #define CYG_POSIX_FUNCTION_FINISH() cyg_posix_function_finish()
+
+//-----------------------------------------------------------------------------
+// Signal mask management
+//
+// These are exported to allow functions in other packages to
+// manipulate the current threads signal mask. they are currently only
+// used in the implementation of cyg_pselect() in the FILEIO package.
+
+__externC void cyg_pthread_sigmask_set (const sigset_t *set, sigset_t *oset);
+__externC cyg_bool cyg_posix_sigpending(void);
+__externC void cyg_posix_deliver_signals(const sigset_t *mask);
+
+#define CYG_PTHREAD_SIGMASK_SET cyg_pthread_sigmask_set
+
+#define CYG_POSIX_SIGPENDING() cyg_posix_sigpending()
+
+#define CYG_POSIX_DELIVER_SIGNALS cyg_posix_deliver_signals
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_POSIX_EXPORT_H

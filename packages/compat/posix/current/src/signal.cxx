@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Nick Garnett
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -709,6 +710,66 @@ externC int pthread_sigmask (int how, const sigset_t *set, sigset_t *oset)
     cyg_deliver_signals();
     
     SIGNAL_RETURN(err);
+}
+
+// -------------------------------------------------------------------------
+// Exported routine to set calling thread's blocked signal mask
+//
+// Optionally set and return the current thread's signal mask. This is
+// exported to other packages so that they can manipulate the signal
+// mask without necessarily having them delivered (as calling
+// pthread_sigmask() would). Signals can be delivered by calling
+// cyg_posix_deliver_signals().
+
+externC void cyg_pthread_sigmask_set (const sigset_t *set, sigset_t *oset)
+{
+    pthread_info *self = pthread_self_info();
+
+    if( oset != NULL )
+        *oset = self->sigmask;
+
+    if( set != NULL )
+        self->sigmask = *set;
+}
+
+// -------------------------------------------------------------------------
+// Exported routine to test for any pending signals.
+//
+// This routine tests for any pending undelivered, unmasked
+// signals. If there are any it returns true.  This is exported to
+// other packages, such as FILEIO, so that they can detect whether to
+// abort a current API call with an EINTR result.
+
+externC cyg_bool cyg_posix_sigpending(void)
+{
+    pthread_info *self = pthread_self_info();
+
+    return ( ((sig_pending | self->sigpending) & ~self->sigmask) != 0 );
+}
+
+// -------------------------------------------------------------------------
+// Exported routine to deliver selected signals
+//
+// This routine optionally sets the given mask and then tries to
+// deliver any pending signals that have been unmasked. This is
+// exported to other packages so that they can cause signals to be
+// delivered at controlled points during execution.
+
+externC void cyg_posix_deliver_signals( const sigset_t *mask )
+{
+    sigset_t oldmask;
+    pthread_info *self = pthread_self_info();
+
+    if( mask != NULL )
+    {
+        oldmask = self->sigmask;
+        self->sigmask = *mask;
+    }
+
+    cyg_deliver_signals();
+
+    if( mask != NULL )        
+        self->sigmask = oldmask;
 }
 
 // -------------------------------------------------------------------------
