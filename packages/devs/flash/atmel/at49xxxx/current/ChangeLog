@@ -1,3 +1,9 @@
+2004-05-11  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* cdl/flash_atmel_at49xxxx.cdl:
+	* include/flash_at49xxxx.inl: Added workaround for Atmel
+	AT91FR40162 erase bug.
+
 2003-11-10  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/flash_at49xxxx_parts.inl: Add AT29LV200BB

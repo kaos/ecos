@@ -59,6 +59,18 @@ cdl_package CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX {
     implements    CYGHWR_IO_FLASH_DEVICE
 
     include_dir   cyg/io
+    
+    cdl_option    CYGHWR_DEVS_FLASH_ATMEL_AT49XXXX_ERASE_BUG_WORKAROUND {
+        display       "AT91FR40162 erase bug workaround"
+        flavor        bool
+        default_value 0
+        description   "
+            The flash chips used in Atmel AT91FR40162 microcontrollers have a silicon bug
+            that causes erase operations to be unreliable unless any data to be erased is
+            cleared first, see http://www.atmel.com/dyn/resources/prod_documents/doc6076.pdf.
+            Selecting this option enables that workaround. Of course, erase operations will be
+            slower then."
+    }
 }
 
 # EOF flash_atmel_49xxxx.cdl

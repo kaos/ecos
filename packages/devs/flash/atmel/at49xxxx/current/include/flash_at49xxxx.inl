@@ -56,6 +56,7 @@
 //==========================================================================
 
 #include <pkgconf/hal.h>
+#include <pkgconf/devs_flash_atmel_at49xxxx.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
 #include <cyg/hal/hal_diag.h>
@@ -272,7 +273,7 @@ flash_erase_block(void* block, unsigned int size)
     volatile flash_data_t* b_p = (volatile flash_data_t*) block;
 
     int res = FLASH_ERR_OK;
-    int len = 0;
+    unsigned int len = 0;
     cyg_bool bootblock = false;
     cyg_uint32 *bootblocks = (cyg_uint32 *)0;
 
@@ -281,6 +282,32 @@ flash_erase_block(void* block, unsigned int size)
     // Base address of device(s) being programmed.
     ROM = (volatile flash_data_t*) ((unsigned long)block & flash_dev_info->base_mask);
 
+
+#if defined(CYGHWR_DEVS_FLASH_ATMEL_AT49XXXX_ERASE_BUG_WORKAROUND)
+
+    // Before erasing the data, overwrite it with all zeroes. This is a workaround
+    // for a silicon bug that affects erasing of some devices, see
+    // http://www.atmel.com/dyn/resources/prod_documents/doc6076.pdf.
+    for (len = size / sizeof *b_p; (FLASH_ERR_OK == res) && (len > 0); len--, b_p++) {
+        // Program data [byte] - 4 step sequence
+        ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
+        ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
+        ROM[FLASH_Setup_Addr1] = FLASH_Program;
+        *b_p = 0;
+                
+        res = wait_while_busy(5000000, b_p, 0);
+
+        if (*b_p != 0)
+            // Only update return value if operation was OK
+            if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
+    }
+    
+    if (FLASH_ERR_OK != res)
+        return res;
+    
+    b_p = (volatile flash_data_t*) block;
+
+#endif // defined(CYGHWR_DEVS_FLASH_ATMEL_AT49XXXX_ERASE_BUG_WORKAROUND)
 
     // Assume not "boot" sector, full size
     bootblock = false;
