@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -56,6 +57,7 @@
 #include <pkgconf/system.h>
 #include <pkgconf/devs_eth_powerpc_fec.h>
 #include <pkgconf/io_eth_drivers.h>
+#include CYGDAT_DEVS_FEC_ETH_INL
 
 #ifdef CYGPKG_NET
 #include <pkgconf/net.h>
@@ -145,21 +147,28 @@ static void fec_fake_int(cyg_addrword_t);
 #endif // CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 static void          fec_eth_int(struct eth_drv_sc *data);
 
-#define FEC_ETH_INT CYGNUM_HAL_INTERRUPT_SIU_LVL1
+#ifndef FEC_ETH_INT
+#error  FEC_ETH_INT must be defined
+#endif
 
-#ifdef CYGPKG_HAL_POWERPC_VIPER
-extern int  hal_viper_get_led(void);
-extern void hal_viper_set_led(int);
-#define _get_led()  hal_viper_get_led()
-#define _set_led(v) hal_viper_set_led(v)
-#else
+#ifndef FEC_ETH_PHY
+#error  FEC_ETH_PHY must be defined
+#endif
+
+#ifndef FEC_ETH_RESET_PHY
+#define FEC_ETH_RESET_PHY()
+#endif
+
+// LED activity [exclusive of hardware bits]
+#ifndef _get_led
 #define _get_led()  
 #define _set_led(v) 
 #endif
-
+#ifndef LED_TxACTIVE
 #define LED_TxACTIVE  7
 #define LED_RxACTIVE  6
 #define LED_IntACTIVE 5
+#endif
 
 static void
 set_led(int bit)
@@ -452,14 +461,13 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     }
 
     // Reset PHY (transceiver)
-    eppc->pip_pbdat &= ~0x00004000;  // Reset PHY chip
-    CYGACC_CALL_IF_DELAY_US(10000);   // 10ms
-    eppc->pip_pbdat |= 0x00004000;   // Enable PHY chip
+    FEC_ETH_RESET_PHY();
+
     // Enable transceiver (PHY)    
     phy_ok = 0;
-    phy_write(PHY_BMCR, 0, PHY_BMCR_RESET);
+    phy_write(PHY_BMCR, FEC_ETH_PHY, PHY_BMCR_RESET);
     for (i = 0;  i < 10;  i++) {
-        phy_ok = phy_read(PHY_BMCR, 0, &phy_state);
+        phy_ok = phy_read(PHY_BMCR, FEC_ETH_PHY, &phy_state);
         if (!phy_ok) break;
         if (!(phy_state & PHY_BMCR_RESET)) break;
     }
@@ -468,13 +476,13 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
         return false;
     }
     fec->iEvent = 0xFFFFFFFF;  // Clear all interrupts
-    phy_write(PHY_BMCR, 0, PHY_BMCR_AUTO_NEG|PHY_BMCR_RESTART);
+    phy_write(PHY_BMCR, FEC_ETH_PHY, PHY_BMCR_AUTO_NEG|PHY_BMCR_RESTART);
     while (phy_timeout-- >= 0) {
         int ev = fec->iEvent;
         unsigned short state;
         fec->iEvent = ev;
         if (ev & iEvent_MII) {
-            phy_ok = phy_read(PHY_BMSR, 0, &state);
+            phy_ok = phy_read(PHY_BMSR, FEC_ETH_PHY, &state);
             if (phy_ok && (state & PHY_BMSR_AUTO_NEG)) {
 //                os_printf("State: %x\n", state);
                 break;

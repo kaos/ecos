@@ -1,3 +1,8 @@
+2002-09-03  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_fec.c: Make driver more generic - platform specifics are
+	now contained in an include file CYGDAT_DEVS_FEC_ETH_INL.
+
 2002-08-15  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/if_fec.c (fec_eth_send): 
