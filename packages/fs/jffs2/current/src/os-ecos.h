@@ -14,6 +14,7 @@
 #ifndef __JFFS2_OS_ECOS_H__
 #define __JFFS2_OS_ECOS_H__
 
+#include <pkgconf/fs_jffs2.h>
 #include <cyg/io/io.h>
 #include <sys/types.h>
 #include <asm/atomic.h>

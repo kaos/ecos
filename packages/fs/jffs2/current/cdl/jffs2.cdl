@@ -148,6 +148,21 @@ cdl_package CYGPKG_FS_JFFS2 {
             effective."
     }
 
+    cdl_option CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE {
+        display         "Memory pool size"
+        flavor          data
+        default_value   0
+        description     "
+            In order to manage data stored in flash, the file system
+            needs to use data structures (jffs2_raw_node_ref) allocated
+            in RAM. You can specify here the maximum number of such
+            structures you expect to be used, which will then be allocated
+            statically. If this option is set to 0, the structures will
+            be allocated dynamically via malloc(), which may incur some
+            memory overhead depending on the particular malloc()
+            implementation used."
+    }
+
     cdl_option CYGPKG_FS_JFFS2_CFLAGS_ADD {
 	display "Additional compiler flags"
 	flavor  data
