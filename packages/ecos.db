@@ -1535,6 +1535,16 @@ This package provides support for CRC functions, including the
 POSIX 1003 defined CRC algorithm."
 }  
 
+package CYGPKG_CPULOAD {
+        alias           { "cpuload support" cpuload }
+        directory       services/cpuload
+        script          cpuload.cdl
+        description "
+This package measures the CPU load over the last 100ms, 1second 
+and 10 second. All loads are returned as a percentage, ie 0-100.
+This is only a rough measure."
+}     
+                                   
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }
 	directory	compat/uitron
