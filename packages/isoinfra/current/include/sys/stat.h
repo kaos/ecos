@@ -107,23 +107,23 @@
 #define S_TYPEISSHM(__buf)  ((__buf)->st_mode & __stat_mode_SHM )
 
 
-#define S_IRUSR  (1<<8)
-#define S_IWUSR  (1<<9)
-#define S_IXUSR  (1<<10)
+#define S_IRUSR  (1<<16)
+#define S_IWUSR  (1<<17)
+#define S_IXUSR  (1<<18)
 #define S_IRWXU  (S_IRUSR|S_IWUSR|S_IXUSR)
 
-#define S_IRGRP  (1<<11)
-#define S_IWGRP  (1<<12)
-#define S_IXGRP  (1<<13)
+#define S_IRGRP  (1<<19)
+#define S_IWGRP  (1<<20)
+#define S_IXGRP  (1<<21)
 #define S_IRWXG  (S_IRGRP|S_IWGRP|S_IXGRP)
 
-#define S_IROTH  (1<<14)
-#define S_IWOTH  (1<<15)
-#define S_IXOTH  (1<<16)
+#define S_IROTH  (1<<22)
+#define S_IWOTH  (1<<23)
+#define S_IXOTH  (1<<24)
 #define S_IRWXO  (S_IROTH|S_IWOTH|S_IXOTH)
 
-#define S_ISUID  (1<<17)
-#define S_ISGID  (1<<18)
+#define S_ISUID  (1<<25)
+#define S_ISGID  (1<<25)
 
 
 struct stat {
