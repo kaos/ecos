@@ -1,3 +1,13 @@
+2003-07-15  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/net/net.h: 
+	* src/net/arp.c (__arp_request): Allow ARP of self - used during
+	initialization to "broadcast" that an IP address is in use.
+
+	* src/net/net_io.c (net_init): When using a static IP, send an
+	initial ARP to see if any other node is using this address.
+	Also, some minor cosmetic cleanups to remove warnings.
+
 2003-07-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot_installing.sgml (AT91): Tell users to switch JP1

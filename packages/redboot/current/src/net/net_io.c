@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -679,8 +679,7 @@ net_init(void)
     flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
     flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
     flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
-    if (!use_bootp)
-    {
+    if (!use_bootp) {
         flash_get_IP("bootp_my_ip", &__local_ip_addr);
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
         flash_get_IP("bootp_my_ip_mask", &__local_ip_mask);
@@ -717,7 +716,7 @@ net_init(void)
 	else
 #endif
 	{
-	    for (index = 0; t = net_devtab_entry(index); index++) {
+	    for (index = 0; (t = net_devtab_entry(index)) != NULL; index++) {
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
 		if (index == default_index)
 		    continue;
@@ -761,7 +760,12 @@ net_init(void)
             }
         }
     } else {
+        enet_addr_t enet_addr;
         have_net = true;  // Assume values in FLASH were OK
+        // Tell the world that we are using this fixed IP address
+        if (__arp_request((ip_addr_t *)__local_ip_addr, &enet_addr, 1) >= 0) {
+            diag_printf("Warning: IP address %s in use\n", inet_ntoa((in_addr_t *)&__local_ip_addr));
+        }
     }
     if (have_net) {
         diag_printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -825,7 +829,8 @@ do_ip_addr(int argc, char *argv[])
             unsigned long mask;
             *slash_pos = '\0';
             slash_pos++;
-            if( !parse_num(slash_pos, &mask_len, 0, 0) ||  mask_len <= 0 || mask_len > 32 ) {
+            if( !parse_num(slash_pos, (unsigned long *)&mask_len, 0, 0) ||  
+                mask_len <= 0 || mask_len > 32 ) {
                 diag_printf("Invalid mask length: %s\n", slash_pos);
                 return;
             }

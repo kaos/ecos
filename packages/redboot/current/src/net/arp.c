@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -113,7 +113,7 @@ __arp_handler(pktbuf_t *pkt)
  *       -1 if unsuccessful.
  */
 int
-__arp_request(ip_addr_t *ip_addr, enet_addr_t *eth_addr)
+__arp_request(ip_addr_t *ip_addr, enet_addr_t *eth_addr, int allow_self)
 {
     pktbuf_t *pkt;
     arp_header_t *arp;
@@ -121,10 +121,12 @@ __arp_request(ip_addr_t *ip_addr, enet_addr_t *eth_addr)
     enet_addr_t   bcast_addr;
     int           retry;
 
-    // Special case request for self
-    if (!memcmp(ip_addr, __local_ip_addr, 4)) {
-        memcpy(eth_addr, __local_enet_addr, sizeof(enet_addr_t));
-        return 0;
+    if (!allow_self) {
+        // Special case request for self
+        if (!memcmp(ip_addr, __local_ip_addr, 4)) {
+            memcpy(eth_addr, __local_enet_addr, sizeof(enet_addr_t));
+            return 0;
+        }
     }
 
     /* just fail if can't get a buffer */
@@ -199,7 +201,7 @@ __arp_lookup(ip_addr_t *host, ip_route_t *rt)
         host = &__local_ip_gate;
 #endif
     }
-    if (__arp_request(host, &rt->enet_addr) < 0) {
+    if (__arp_request(host, &rt->enet_addr, 0) < 0) {
         return -1;
     } else {
         memcpy(&routes[next_arp], rt, sizeof(*rt));
