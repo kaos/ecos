@@ -55,36 +55,44 @@
 #ifndef _SERVICES_CRC_CRC_H_
 #define _SERVICES_CRC_CRC_H_
 
+#ifndef __externC
+# ifdef __cplusplus
+#  define __externC extern "C"
+# else
+#  define __externC extern
+# endif
+#endif
+
 // Compute a CRC, using the POSIX 1003 definition
 
-unsigned long 
+__externC unsigned long 
 cyg_posix_crc32(unsigned char *s, int len);
 
 // Gary S. Brown's 32 bit CRC
 
-unsigned long 
+__externC unsigned long 
 cyg_crc32(unsigned char *s, int len);
 
 // Gary S. Brown's 32 bit CRC, but accumulate the result from a
 // previous CRC calculation
 
-unsigned long 
+__externC unsigned long 
 cyg_crc32_accumulate(unsigned long crc, unsigned char *s, int len);
 
 // Ethernet FCS Algorithm
 
-unsigned long 
+__externC unsigned long 
 cyg_ether_crc32(unsigned char *s, int len);
 
 // Ethernet FCS algorithm, but accumulate the result from a previous
 // CRC calculation.
 
-unsigned long 
+__externC unsigned long 
 cyg_ether_crc32_accumulate(unsigned long crc, unsigned char *s, int len);
 
 // 16 bit CRC with polynomial x^16+x^12+x^5+1
 
-unsigned short
+__externC unsigned short
 cyg_crc16(unsigned char *s, int len);
 
 #endif // _SERVICES_CRC_CRC_H_
