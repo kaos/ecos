@@ -1,3 +1,7 @@
+2003-03-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_quicc.c: Align data buffers on cache boundary.
+
 2003-03-14  Nick Garnett  <nickg@calivar.com>
 
 	* src/if_quicc.c: Fixed several bugs, mostly dealing with getting

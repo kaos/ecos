@@ -1,8 +1,8 @@
 2003-03-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/if_fec.c: Use new CPM/DPRAM buffer allocation scheme.  Also,
-	better handling when aligning buffers to cache lines.
-
+	better handling when aligning buffers to cache lines.	
+	
 2003-01-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/fec_eth_drivers.cdl: Increase number of allowed buffers.

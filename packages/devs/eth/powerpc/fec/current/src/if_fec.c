@@ -79,12 +79,10 @@
 #include "fec.h"
 
 // Align buffers on a cache boundary
-#define CACHE_ALIGN(b) (((unsigned long)(b) + (HAL_DCACHE_LINE_SIZE-1)) & ~(HAL_DCACHE_LINE_SIZE-1))
-
-#define RxBUFSIZE CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM*CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE+HAL_DCACHE_LINE_SIZE
-#define TxBUFSIZE CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM*CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE+HAL_DCACHE_LINE_SIZE
-static unsigned char fec_eth_rxbufs[RxBUFSIZE];
-static unsigned char fec_eth_txbufs[TxBUFSIZE];
+#define RxBUFSIZE CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM*CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE
+#define TxBUFSIZE CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM*CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE
+static unsigned char fec_eth_rxbufs[RxBUFSIZE] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
+static unsigned char fec_eth_txbufs[TxBUFSIZE] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 
 static struct fec_eth_info fec_eth0_info;
 static unsigned char _default_enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x7A, 0xBA};
@@ -296,8 +294,8 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     qi->rbase = qi->rxbd = qi->rnext = rxbd;
     qi->txactive = 0;
 
-    RxBUF = (unsigned char *)CACHE_ALIGN(&fec_eth_rxbufs[0]);
-    TxBUF = (unsigned char *)CACHE_ALIGN(&fec_eth_txbufs[0]);
+    RxBUF = &fec_eth_rxbufs[0];
+    TxBUF = &fec_eth_txbufs[0];
 
     // setup buffer descriptors
     for (i = 0;  i < CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM;  i++) {

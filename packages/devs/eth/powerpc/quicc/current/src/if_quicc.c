@@ -87,9 +87,9 @@
 #include "quicc_eth.h"
 
 static unsigned char quicc_eth_rxbufs[CYGNUM_DEVS_ETH_POWERPC_QUICC_RxNUM]
-                                     [CYGNUM_DEVS_ETH_POWERPC_QUICC_BUFSIZE];
+                                     [CYGNUM_DEVS_ETH_POWERPC_QUICC_BUFSIZE] __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 static unsigned char quicc_eth_txbufs[CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM]
-                                     [CYGNUM_DEVS_ETH_POWERPC_QUICC_BUFSIZE];
+                                     [CYGNUM_DEVS_ETH_POWERPC_QUICC_BUFSIZE]  __attribute__((aligned(HAL_DCACHE_LINE_SIZE)));
 
 static struct quicc_eth_info quicc_eth0_info;
 static unsigned char _default_enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x79, 0xB8};
