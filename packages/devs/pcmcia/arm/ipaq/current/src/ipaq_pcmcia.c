@@ -230,6 +230,11 @@ cf_hwr_change_state(struct cf_slot *slot, int new_state)
             do_delay(30);  // At least 300 ms
             slot->state = CF_SLOT_STATE_Powered;
             ipaq_EGPIO( SA1110_EIO_CF_RESET, SA1110_EIO_CF_RESET_ENABLE);
+            *(volatile unsigned short *)IPAQ_CF_CTRL = IPAQ_CF_CTRL_V5_DISABLE | 
+                                                       IPAQ_CF_CTRL_V3_ENABLE | 
+                                                       IPAQ_CF_CTRL_RESET_ENABLE | 
+                                                       IPAQ_CF_CTRL_APOE_ENABLE | 
+                                                       IPAQ_CF_CTRL_SOE_ENABLE;
             do_delay(1);  // At least 10 us
             slot->state = CF_SLOT_STATE_Reset;
             ipaq_EGPIO( SA1110_EIO_CF_RESET, SA1110_EIO_CF_RESET_DISABLE);
@@ -238,6 +243,7 @@ cf_hwr_change_state(struct cf_slot *slot, int new_state)
             // hurt on the single slot versions.  Note: only 3.3V is ever used!
             *(volatile unsigned short *)IPAQ_CF_CTRL = IPAQ_CF_CTRL_V5_DISABLE | 
                                                        IPAQ_CF_CTRL_V3_ENABLE | 
+                                                       IPAQ_CF_CTRL_RESET_DISABLE | 
                                                        IPAQ_CF_CTRL_APOE_ENABLE | 
                                                        IPAQ_CF_CTRL_SOE_ENABLE;
             do_delay(5); // At least 20 ms
