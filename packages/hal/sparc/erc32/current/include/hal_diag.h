@@ -79,8 +79,8 @@
 #define SPARC_MEC_UART_B_RX         ((volatile cyg_uint32 *)(SPARC_MEC_UART + 4))
 #define SPARC_MEC_UART_B_TX         ((volatile cyg_uint32 *)(SPARC_MEC_UART + 4))
 #define SPARC_MEC_UART_STATUS       ((volatile cyg_uint32 *)(SPARC_MEC_UART + 8))
-#define SPARC_MEC_UART_TXAMASK      (0x00006)
-#define SPARC_MEC_UART_TXBMASK      (0x60000)
+#define SPARC_MEC_UART_TXAMASK      (0x00004)
+#define SPARC_MEC_UART_TXBMASK      (0x40000)
 #define SPARC_MEC_UART_RXAMASK      (0x00001)
 #define SPARC_MEC_UART_RXBMASK      (0x10000)
 
