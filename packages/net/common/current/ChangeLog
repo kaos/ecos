@@ -1,3 +1,8 @@
+2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* cdl/net.cdl: Added control for IPSEC 
+	* doc/ipsec.sgml: General documentation of ipsec.
+
 2003-10-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/ping_test.c: Enable profiling if configured in - example use only.
