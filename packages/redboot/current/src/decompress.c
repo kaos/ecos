@@ -57,6 +57,7 @@
 #ifdef CYGPKG_COMPRESS_ZLIB
 #include <cyg/compress/zlib.h>
 static z_stream stream;
+static bool stream_end;
 
 #define __ZLIB_MAGIC__ 0x5A4C4942   // 'ZLIB'
 
@@ -260,6 +261,7 @@ gzip_init(_pipe_t* p)
     stream.next_out = NULL;
     stream.avail_out = 0;
     err = inflateInit(&stream);
+    stream_end = false;
 
     return err;
 }
@@ -273,6 +275,9 @@ gzip_inflate(_pipe_t* p)
 {
     int err, bytes_out;
 
+    if (stream_end)
+	return Z_STREAM_END;
+	
     stream.next_in = p->in_buf;
     stream.avail_in = p->in_avail;
     stream.next_out = p->out_buf;
@@ -285,23 +290,13 @@ gzip_inflate(_pipe_t* p)
     p->in_avail = stream.avail_in;
     p->in_buf = stream.next_in;
 
-    switch (err) {
-    case Z_STREAM_END:
-	p->in_avail = 0;
-	err = 0;
-	break;
-    case Z_OK:
-	if (bytes_out == 0) {
-	    // Decompression didn't complete
-	    err = -1;
-	    p->msg = "premature end of input";
-	} else
-	    err = 0;
-	break;
-    default:
-	err = -1;
-	break;
+    // Let upper layers process any inflated bytes at
+    // end of stream.
+    if (err == Z_STREAM_END && bytes_out) {
+	stream_end = true;
+	err = Z_OK;
     }
+
     return err;
 }
 
@@ -313,6 +308,19 @@ gzip_inflate(_pipe_t* p)
 static int
 gzip_close(_pipe_t* p, int err)
 {
+    switch (err) {
+    case Z_STREAM_END:
+        err = 0;
+        break;
+    case Z_OK:
+        // Decompression didn't complete
+        p->msg = "premature end of input";
+        // fall-through
+    default:
+        err = -1;
+        break;
+    }
+
     inflateEnd(&stream);
 
     return err;
