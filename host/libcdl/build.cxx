@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2002 Bart Veer
+// Copyright (C) 2002, 2003 Bart Veer
 // Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
@@ -1992,7 +1992,7 @@ compare_and_copy(CdlInterpreter interp, std::string file1, std::string file2)
 
     static char compare_and_copy_script[] = "\
 if {[file exists \"$::cdl_compare_and_copy_file2\"] == 0} {                                   \n\
-    file rename -- \"$::cdl_compare_and_copy_file1\" \"$::cdl_compare_and_copy_file2\"        \n\
+    catch { file rename -- $::cdl_compare_and_copy_file1 $::cdl_compare_and_copy_file2}       \n\
     return                                                                                    \n\
 }                                                                                             \n\
 set fd [open \"$::cdl_compare_and_copy_file1\" r]                                             \n\
@@ -2004,7 +2004,7 @@ close $fd                                                                       
 if {$data1 == $data2} {                                                                       \n\
     file delete \"$::cdl_compare_and_copy_file1\"                                             \n\
 } else {                                                                                      \n\
-    file rename -force -- \"$::cdl_compare_and_copy_file1\" \"$::cdl_compare_and_copy_file2\" \n\
+    catch { file rename -force -- $::cdl_compare_and_copy_file1 $::cdl_compare_and_copy_file2 } \n\
 }                                                                                             \n\
 ";
 

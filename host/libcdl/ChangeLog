@@ -1,3 +1,9 @@
+2003-02-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* build.cxx (compare_and_copy):
+	Work around problem with cygwin tclsh84 - "file rename" may
+	spuriously report failure.
+
 2003-02-03  John Dallaway  <jld@ecoscentric.com>
 
 	* cdl.dsp: Call tclsh rather than cygtclsh80 in custom build rule.
