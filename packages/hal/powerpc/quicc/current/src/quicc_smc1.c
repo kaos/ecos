@@ -71,6 +71,7 @@
 #include <cyg/hal/hal_if.h>             // Calling interface definitions
 #include <cyg/hal/hal_misc.h>           // Helper functions
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
+#include <string.h>                     // memset
 
 #define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
 #define UART_BAUD_RATE CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
@@ -143,8 +144,6 @@ cyg_hal_smcx_init_channel(struct port_info *info, int port)
 
     if (info->init) return;
     info->init = 1;
-
-    _mpc8xx_reset_cpm();
 
     switch (port) {
 #if CYGNUM_HAL_QUICC_SMC1 > 0
@@ -239,7 +238,7 @@ cyg_hal_smcx_init_channel(struct port_info *info, int port)
      *  (Section 16.15.7.14 and 16.15.7.15)
      */
     regs->smc_smce = 0xff;
-    regs->smc_smcm = 5;
+    regs->smc_smcm = 1; // RX interrupts only, for ctrl-c
 
     /*
      *  Set 8,n,1 characters, then also enable rx and tx.
@@ -571,8 +570,6 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
     if (info->init) return;
     info->init = 1;
 
-    _mpc8xx_reset_cpm();
-
     /*
      *  Set up the Port pins for UART operation.
      */
@@ -703,8 +700,7 @@ cyg_hal_sccx_init_channel(struct port_info *info, int port)
      *  (Section 16.15.7.14 and 16.15.7.15)
      */
     regs->scc_scce = 0xffff;
-    regs->scc_sccm = 5;
-    regs->scc_sccm = 3;
+    regs->scc_sccm = 1; // RX interrupts only, for ctrl-c
 
     /*
      *  Set 8,n,1 characters

@@ -1,3 +1,15 @@
+2003-03-31  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/quicc_smc1.c (cyg_hal_smcx_init_channel): 
+	(cyg_hal_sccx_init_channel): 
+
+	* src/cpm.c: Include <string.h> for memset().
+	(_mpc8xx_reset_cpm): use CPM busy flag to check reset completion.
+	* src/quicc_smc1.c: Include <string.h> for memset().
+	(cyg_hal_smcx_init_channel): Don't reset CPM here - let variant
+	initialization do it. Only let through RX interrupts.
+	(cyg_hal_sccx_init_channel): Ditto.
+
 2003-03-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc1.c: Use new baud rate generator allocation functions.
