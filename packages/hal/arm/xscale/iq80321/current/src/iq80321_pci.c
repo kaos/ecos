@@ -91,20 +91,17 @@ cyg_uint32 hal_pci_inbound_window_mask;
 //
 
 
+#ifdef CYG_HAL_STARTUP_ROM
 #ifdef CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
+// state of retry bit in PCSR prior to bit being cleared at sdram scrub time.
+extern int hal_pcsr_cfg_retry;
+
 // Wait for BIOS to configure Verde PCI.
 // Returns true if BIOS done, false if timeout
 bool
 cyg_hal_plf_wait_for_bios(void)
 {
     int delay = 200;  // 20 seconds, tops
-
-    // 64-bit prefetchable
-    *ATU_IABAR1 = CYG_PRI_CFG_BAR_MEM_TYPE_64 | CYG_PRI_CFG_BAR_MEM_PREFETCH;
-    *ATU_IAUBAR1 = 0;
-
-    // clear RETRY
-    *ATU_PCSR &= ~PCSR_CFG_RETRY;
 
     while (delay-- > 0) {
 	if (*ATU_ATUCMD & CYG_PCI_CFG_COMMAND_MEMORY)
@@ -114,6 +111,7 @@ cyg_hal_plf_wait_for_bios(void)
     return false;
 }
 #endif // CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
+#endif // CYG_HAL_STARTUP_ROM
 
 void
 cyg_hal_plf_pci_init(void)
@@ -125,25 +123,13 @@ cyg_hal_plf_pci_init(void)
     *GPIO_GPOE &= ~(1 << IQ80321_GBE_GPIO_PIN);
     *GPIO_GPOD |= (1 << IQ80321_GBE_GPIO_PIN);
 
-    // Inbound window 2 is used for SDRAM access.
-    // set inbound ATU translate value register to base of local DRAM
-    *ATU_IATVR2 = SDRAM_PHYS_BASE;
-
-    //  set inbound ATU limit register to include all of installed DRAM.
-    //  This value used as a mask.
-    //  Allow pci access to all memory
-    *ATU_IALR2 = dram_limit;
-
     hal_pci_inbound_window_mask = ~dram_limit;
 
-    //  set inbound ATU limit 1  to reserve 64MB for outbound window 0.
-    *ATU_IALR1 = (0xFFFFFFFF - ((64 * 1024 * 1024) - 1)) & 0xFFFFFFC0;
-
+#ifdef CYG_HAL_STARTUP_ROM
 #ifdef CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
-    if (!(*ATU_PCSR & PCSR_CFG_RETRY) || !cyg_hal_plf_wait_for_bios())
+    if (!hal_pcsr_cfg_retry || !cyg_hal_plf_wait_for_bios())
 #endif  // CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
     {
-#ifdef CYG_HAL_STARTUP_ROM
 	// 64-bit prefetchable
 	*ATU_IABAR2 = SDRAM_PHYS_BASE | \
                       CYG_PRI_CFG_BAR_MEM_TYPE_64 | \
@@ -156,14 +142,15 @@ cyg_hal_plf_pci_init(void)
 	              CYG_PRI_CFG_BAR_MEM_TYPE_64 | \
                       CYG_PRI_CFG_BAR_MEM_PREFETCH;
 
-	// allow ATU to act as a bus master, respond to PCI memory accesses,
-	// and assert S_SERR#
-	*ATU_ATUCMD = (CYG_PCI_CFG_COMMAND_SERR   | \
-		       CYG_PCI_CFG_COMMAND_PARITY | \
-		       CYG_PCI_CFG_COMMAND_MASTER | \
-		       CYG_PCI_CFG_COMMAND_MEMORY);
-#endif  // CYG_HAL_STARTUP_ROM
     }
+#endif  // CYG_HAL_STARTUP_ROM
+
+    // allow ATU to act as a bus master, respond to PCI memory accesses,
+    // and assert S_SERR#
+    *ATU_ATUCMD = (CYG_PCI_CFG_COMMAND_SERR   | \
+		   CYG_PCI_CFG_COMMAND_PARITY | \
+		   CYG_PCI_CFG_COMMAND_MASTER | \
+		   CYG_PCI_CFG_COMMAND_MEMORY);
 
     hal_pci_alloc_base_memory = *ATU_IABAR1 & CYG_PRI_CFG_BAR_MEM_MASK;
     hal_pci_alloc_base_io = _PCI_IO_BASE;

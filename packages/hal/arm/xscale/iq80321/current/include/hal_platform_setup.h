@@ -756,6 +756,33 @@ icache_boundary:
 
   no_ecc1:
 
+#ifdef CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
+	// Minimally setup ATU and release "retry" bit.
+	ldr     r1, =ATU_IATVR2
+	mov     r0, #SDRAM_PHYS_BASE
+	str     r0, [r1]
+	ldr	r0, =0xffffffff
+	sub	r1, r4, #1
+	sub	r0, r0, r1
+	bic	r0, r0, #0x3f
+	ldr	r1, =ATU_IALR2
+	str     r0, [r1]
+	ldr     r0, =((0xFFFFFFFF - ((64 * 1024 * 1024) - 1)) & 0xFFFFFFC0)
+        ldr     r1, =ATU_IALR1
+	str     r0, [r1]
+	mov	r0, #0xc
+        ldr     r1, =ATU_IABAR1
+	str     r0, [r1]
+	mov	r0, #0
+        ldr     r1, =ATU_IAUBAR1
+	str     r0, [r1]
+        ldr     r1, =ATU_PCSR
+	ldr	r0, [r1]
+	and	r13, r0, #4     // save retry bit for later
+	bic	r0, r0, #4
+	str	r0, [r1]
+#endif
+	
         // scrub init
 	mov	r12, r4		// size of memory to scrub
 	mov	r8, r4		// save DRAM size
@@ -843,6 +870,12 @@ icache_boundary:
         ldr     r1, =hal_dram_size  /* [see hal_intr.h] */
 	str	r8, [r1]
 
+#ifdef CYGSEM_HAL_ARM_IQ80321_CLEAR_PCI_RETRY
+	// Save boot time retry flag.
+        ldr     r1, =hal_pcsr_cfg_retry
+	str	r13, [r1]
+#endif
+
 	// Move mmu tables into RAM so page table walks by the cpu
 	// don't interfere with FLASH programming.
 	ldr	r0, =mmu_table
@@ -909,6 +942,8 @@ icache_boundary:
 
 #define PLATFORM_VECTORS         _platform_vectors
         .macro  _platform_vectors
+        .globl  hal_pcsr_cfg_retry
+hal_pcsr_cfg_retry:   .long   0  // Boot-time value of PCSR Retry bit.
         .endm                                        
 
 /*---------------------------------------------------------------------------*/
