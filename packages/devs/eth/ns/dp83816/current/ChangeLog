@@ -1,14 +1,9 @@
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
-	* include/moab_eth_dp83816.inl: 
-	* cdl/moab_eth_drivers.cdl: Add support for 2nd LAN device, based
-	on National Semiconductor DP83816.
-
-2003-09-19  Gary Thomas  <gary@mlbassoc.com>
-
-	* include/moab_eth.inl: 
-	* cdl/moab_eth_drivers.cdl: New package - ethernet support for
-	TAMS MOAB (PowerPC 405GPr) board
+	* src/if_dp83816.c: 
+	* src/dp83816.h: 
+	* cdl/ns_dp83816_eth_drivers.cdl: New package - ethernet driver for
+	National Semiconductor DP83816 PCI
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

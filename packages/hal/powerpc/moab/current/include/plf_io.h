@@ -60,6 +60,7 @@
 // PCI support
 //
 #define CYGARC_PHYSICAL_ADDRESS(x) ((unsigned long)(x) & 0x7FFFFFFF)
+#define CYGARC_VIRTUAL_ADDRESS(x) ((unsigned long)(x) & 0x7FFFFFFF)
 
 // Restrict device [slot] space
 #define CYG_PCI_MAX_BUS                       1  // Only one BUS

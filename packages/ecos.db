@@ -1593,6 +1593,14 @@ package CYGPKG_DEVS_ETH_NS_DP83902A {
         description     "Ethernet driver for NS DP83902A controller."
 }
 
+package CYGPKG_DEVS_ETH_NS_DP83816 {
+	alias 		{ "NS DP83816 ethernet driver" dp83816_eth_driver }
+	hardware
+	directory	devs/eth/ns/dp83816
+	script		ns_dp83816_eth_drivers.cdl
+        description     "Ethernet driver for NS DP83816 controller."
+}
+
 package CYGPKG_DEVS_ETH_CL_CS8900A {
 	alias 		{ "Cirrus Logic CS8900A ethernet driver" cs8900a_eth_driver }
 	hardware
@@ -5113,6 +5121,7 @@ target moab {
                           CYGPKG_DEVS_FLASH_TOSHIBA_TC58XXX
                           CYGPKG_DEVS_ETH_POWERPC_MOAB
                           CYGPKG_DEVS_ETH_POWERPC_PPC405
+                          CYGPKG_DEVS_ETH_NS_DP83816
                           CYGPKG_DEVS_ETH_PHY
                           CYGPKG_IO_PCI
                           CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1307
