@@ -2010,6 +2010,22 @@ package CYGPKG_IO_WATCHDOG {
            This package provides a watchdog device."
 }
 
+package CYGPKG_DEVS_SPI_ARM_AT91 {
+    alias         { "Atmel AT91 SPI device driver" devs_spi_arm_at91 spi_at91_driver }
+    hardware
+    directory     devs/spi/arm/at91
+    script        spi_at91.cdl
+    description   "Atmel AT91 on-chip spi device driver."
+}
+
+package CYGPKG_DEVS_SPI_ARM_EB55 {
+    alias         { "Atmel AT91EB55 SPI devices" devs_spi_arm_eb55 spi_eb55_devices }
+    hardware
+    directory     devs/spi/arm/eb55
+    script        spi_eb55.cdl
+    description   "Atmel AT91EB55 spi devices."
+}
+
 package CYGPKG_IO_SPI {
         alias      { "Generic SPI support" spi io_spi spi_io }
         directory  io/spi
@@ -4002,6 +4018,8 @@ target eb55 {
                    CYGPKG_DEVS_FLASH_EB55
                    CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
                    CYGPKG_IO_SERIAL_ARM_AT91
+                   CYGPKG_DEVS_SPI_ARM_EB55
+                   CYGPKG_DEVS_SPI_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
         }
         description "
