@@ -71,7 +71,7 @@
 // All the MM table layout is here:
 #include <cyg/hal/hal_mm.h>
 
-externC void* memset(void *, int, size_t);
+#include <string.h> // memset
 
 void
 hal_mmu_init(void)
