@@ -836,6 +836,7 @@ fis_delete(int argc, char *argv[])
     if ((stat = flash_erase((void *)img->flash_base, img->size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing at %p: %s\n", err_addr, flash_errmsg(stat));
     } else {
+        img->name[0] = (unsigned char)0xFF;    
         fis_update_directory();
     }
 }

@@ -90,7 +90,7 @@ http_stream_open(connection_info_t *info, int *err)
         *err = HTTP_OPEN;
         return -1;
     }
-    diag_sprintf(s->data, "GET %s HTTP 1.0\r\n\r\n", info->filename);
+    diag_sprintf(s->data, "GET %s HTTP/1.0\r\n\r\n", info->filename);
     __tcp_write_block(&s->sock, s->data, strlen(s->data));    
     s->avail = 0;
     s->open = true;
