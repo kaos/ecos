@@ -24,7 +24,7 @@
      MPC823 - Cogent CMA287-23
      MPC850 - Cogent CMA287-50
      MPC860 - Cogent CMA286-60
-     MPC860 - MPC8xxFADS (NB unsupported by Cygnus,
+     MPC860 - MPC8xxFADS (NB unsupported by Red Hat,
                           contributed by Kevin Hester)
      MPC823, MPC850, MPC860 - PSIM simulator
 

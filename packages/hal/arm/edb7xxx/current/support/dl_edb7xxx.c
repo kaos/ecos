@@ -5,7 +5,7 @@
 //
 // Copyright (c) 1999 Cirrus Logic, Inc.
 //
-// Adapted for Linux by Cygnus Solutions, Inc.
+// Adapted for Linux by Red Hat, Inc.
 //   Renamed 'dl_edb7xxx' to indicate support for all Cirrus Logic eval boards.
 //
 //****************************************************************************

@@ -8,25 +8,27 @@
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
-//
-// -------------------------------------------
-// The contents of this file are subject to the Cygnus eCos Public License
-// Version 1.0 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://sourceware.cygnus.com/ecos
-// 
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
-// 
-// The Original Code is eCos - Embedded Cygnus Operating System, released
-// September 30, 1998.
-// 
-// The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
-// -------------------------------------------
-//
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
@@ -868,6 +870,24 @@ static char vpool1[ 2000 ], \
 // These are declared without uninitialization; they must be defined in
 // order to use them.
 
+
+/* {{CFG_DATA
+    cdl_option CYGSEM_UITRON_TIME_IS_MILLISECONDS {
+       display       "uITRON time unit is mS"
+       type          boolean
+       parent        CYGPKG_UITRON
+       requires      CYGVAR_KERNEL_COUNTERS_CLOCK
+       description   "
+            Setting this option enables a conversion feature so that
+            time parameters to uITRON APIs are converted from milliSeconds
+            to whatever the eCos kernel real-time clock's units are,
+            or vice versa.
+            If this option is not set, time parameters are expressed in
+            kernel clock ticks."
+    }
+}}CFG_DATA */
+
+#undef CYGSEM_UITRON_TIME_IS_MILLISECONDS
 
 /* {{CFG_DATA
    cdl_component CYGPKG_UITRON_ALARMS {

@@ -1,17 +1,46 @@
-/* ppc_stub.c - helper functions for stub, generic to all PowerPC processors
- * 
- * Copyright (c) 1998,1999 Cygnus Solutions
- *
- * The authors hereby grant permission to use, copy, modify, distribute,
- * and license this software and its documentation for any purpose, provided
- * that existing copyright notices are retained in all copies and that this
- * notice is included verbatim in any distributions. No written agreement,
- * license, or royalty fee is required for any of the authorized uses.
- * Modifications to this software may be copyrighted by their authors
- * and need not follow the licensing terms described here, provided that
- * the new terms are clearly indicated on the first page of each file where
- * they apply.
- */
+//========================================================================
+//
+//      ppc_stub.c
+//
+//      Helper functions for stub, generic to all PowerPC processors
+//
+//========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     Red Hat, jskov
+// Contributors:  Red Hat, jskov
+// Date:          1998-08-20
+// Purpose:       
+// Description:   Helper functions for stub, generic to all PowerPC processors
+// Usage:         
+//
+//####DESCRIPTIONEND####
+//
+//========================================================================
 
 #include <stddef.h>
 

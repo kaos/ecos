@@ -1,25 +1,52 @@
+//========================================================================
+//
+//      dbg-threads-api.h
+//
+//      Supports thread-aware debugging
+//
+//========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     Red Hat, nickg
+// Contributors:  Red Hat, nickg
+// Date:          1998-08-25
+// Purpose:       
+// Description:   These are the calls used to extract operating system
+//                specific information used in supporting thread aware
+//                debugging. The Operating Environment being debugged
+//                needs to supply these functions.
+// Usage:         This header is not to be included by user code.
+//
+//####DESCRIPTIONEND####
+//
+//========================================================================
+
 #if !defined(DBG_THREADS_API_INCLUDED)
 #define DBG_THREADS_API_INCLUDED 1
-/* These are the calls used to extract operating system specific information
- * used in supporting thread aware debugging.
- * The Operating Environment being debugged needs to supply these functions.
- *
- * This header is not to be included by user code
- */
-
-/* 
- * Copyright (c) 1998,1999 Cygnus Solutions
- *
- * The authors hereby grant permission to use, copy, modify, distribute,
- * and license this software and its documentation for any purpose, provided
- * that existing copyright notices are retained in all copies and that this
- * notice is included verbatim in any distributions. No written agreement,
- * license, or royalty fee is required for any of the authorized uses.
- * Modifications to this software may be copyrighted by their authors
- * and need not follow the licensing terms described here, provided that
- * the new terms are clearly indicated on the first page of each file where
- * they apply.
- */
 
 #include <cyg/infra/cyg_type.h>         /* externC */
 

@@ -6,26 +6,27 @@
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
-//
-// -------------------------------------------
-// The contents of this file are subject to the Cygnus eCos Public License
-// Version 1.0 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://sourceware.cygnus.com/ecos
-// 
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
-// 
-// The Original Code is eCos - Embedded Cygnus Operating System, released
-// September 30, 1998.
-// 
-// The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998, 1999 Cygnus Solutions.  
-// All Rights Reserved.
-// -------------------------------------------
-//
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
@@ -466,29 +467,7 @@ externC void hal_MMU_init (void)
 
 //---------------------------------------------------------------------------
 // Initial cache enabling
-
-// These are "indirected" to make it easier to support other platform
-// variants in the future:
-
-#ifdef CYGPKG_HAL_POWERPC_COGENT
-# define CYGPRI_INIT_CACHES 1
-# ifdef CYG_HAL_STARTUP_RAM
-#  define CYGPRI_ENABLE_CACHES 1
-# endif
-#endif
-
-#ifdef CYGPKG_HAL_POWERPC_MBX           // Enable all caches for MBX860
-# ifndef CYGSEM_HAL_ROM_MONITOR         // unless we are making a stub rom
-#  define CYGPRI_INIT_CACHES 1
-#  define CYGPRI_ENABLE_CACHES 1
-# endif
-#endif
-
-
-// Do not enable caches for the FADS port pro tem; the memory mapping is
-// not set up.
-
-// Do not enable caches for the simulator, it just slows it down.
+// Specific behavior for each platform configured via plf_cache.h
 
 externC void
 hal_enable_caches(void)

@@ -6,25 +6,27 @@
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
-//
-// -------------------------------------------
-// The contents of this file are subject to the Cygnus eCos Public License
-// Version 1.0 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://sourceware.cygnus.com/ecos
-// 
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
-// 
-// The Original Code is eCos - Embedded Cygnus Operating System, released
-// September 30, 1998.
-// 
-// The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
-// -------------------------------------------
-//
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
@@ -104,7 +106,7 @@ __restore_debug_traps(void)
 void
 exception_handler(HAL_SavedRegisters *regs)
 {
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGDAT_CYGMON_ENABLE)
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
     if (__mem_fault_handler && 
         regs->vector == CYGNUM_HAL_EXCEPTION_DATA_ACCESS) {
         regs->pc = (unsigned long)__mem_fault_handler;

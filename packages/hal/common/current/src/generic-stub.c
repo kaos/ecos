@@ -49,8 +49,8 @@ static uint32 crc32 (unsigned char *ptr, int len, uint32 crc);
  *
  *  NOTES:           See Below $
  *
- *  Modified for SPARC by Stu Grossman, Cygnus Solutions.
- *  Modified for generic CygMON stub support by Bob Manson, Cygnus Solutions.
+ *  Modified for SPARC by Stu Grossman, Red Hat.
+ *  Modified for generic CygMON stub support by Bob Manson, Red Hat.
  *
  *  To enable debugger support, two things need to happen.  One, a
  *  call to set_debug_traps () is necessary in order to allow any breakpoints

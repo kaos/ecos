@@ -9,26 +9,27 @@
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
-//
-// -------------------------------------------
-// The contents of this file are subject to the Cygnus eCos Public License
-// Version 1.0 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://sourceware.cygnus.com/ecos
-// 
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
-// 
-// The Original Code is eCos - Embedded Cygnus Operating System, released
-// September 30, 1998.
-// 
-// The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999,2000 Cygnus Solutions.
-// All Rights Reserved.
-// -------------------------------------------
-//
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
@@ -148,6 +149,31 @@ public:
         cyg_resolution resolution
         ); 
 
+    // There is a need for converting from "other" ticks to clock ticks.
+    // We will construct 4 numbers to do the conversion as:
+    //   clock_ticks = (((otherticks*mul1)/div1)*mul2/div2)
+    // with the values chosen to minimize the possibility of overflow.
+    // Do the arithmetic in cyg_uint64s throughout.
+    struct converter {
+        cyg_uint64 mul1, div1, mul2, div2;
+    };
+
+    // There are two of these because the 4 numbers are different depending
+    // on the direction of the conversion, to prevent loss of significance.
+    // NB these relate to the resolution of the clock object they are
+    // called against, not necessarily "the" system real time clock.
+    void get_other_to_clock_converter( cyg_uint64 ns_per_other_tick,
+                                       struct converter *pcc );
+
+    void get_clock_to_other_converter( cyg_uint64 ns_per_other_tick,
+                                       struct converter *pcc );
+
+    // A utility to perform the conversion in the obvious way, with
+    // rounding to nearest at each stage.  Static because it uses a
+    // previously acquired converter.
+    static cyg_tick_count convert( cyg_tick_count value,
+                                   struct converter *pcc );
+        
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK 
     
     // There is a system supplied real time clock...

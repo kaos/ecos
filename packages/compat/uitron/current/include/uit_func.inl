@@ -8,25 +8,27 @@
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
-//
-// -------------------------------------------
-// The contents of this file are subject to the Cygnus eCos Public License
-// Version 1.0 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://sourceware.cygnus.com/ecos
-// 
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
-// 
-// The Original Code is eCos - Embedded Cygnus Operating System, released
-// September 30, 1998.
-// 
-// The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
-// -------------------------------------------
-//
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
 //####COPYRIGHTEND####
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
@@ -273,6 +275,40 @@ CYG_MACRO_END
 // Interrupts disabled?
 #define CYG_UITRON_CHECK_CPU_UNLOC()                                    \
     CYG_UIT_PARAMCHECK( (Cyg_Interrupt::interrupts_enabled()), E_CTX )
+
+// ------------------------------------------------------------------------
+// Timing: is it in eCos clock ticks or milliSeconds (or something else?)
+
+#ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
+
+#ifdef CYGSEM_UITRON_TIME_IS_MILLISECONDS
+extern Cyg_Clock::converter uit_clock_to_system;
+extern Cyg_Clock::converter uit_clock_from_system;
+
+#define CYG_UITRON_TIME_UIT_TO_SYS32( t ) \
+Cyg_Clock::convert( (cyg_uint64)(t), &uit_clock_to_system )
+
+#define CYG_UITRON_TIME_SYS_TO_UIT32( t ) \
+Cyg_Clock::convert( (cyg_uint64)(t), &uit_clock_from_system )
+
+// long (cyg_uint64) versions:
+#define CYG_UITRON_TIME_UIT_TO_SYS64( t ) \
+Cyg_Clock::convert( (t), &uit_clock_to_system )
+
+#define CYG_UITRON_TIME_SYS_TO_UIT64( t ) \
+Cyg_Clock::convert( (t), &uit_clock_from_system )
+
+#else // Time is whatever the system clock is doing:
+
+// Straight through - int (cyg_int32) argument versions:
+#define CYG_UITRON_TIME_UIT_TO_SYS32( t )  ( t )
+#define CYG_UITRON_TIME_SYS_TO_UIT32( t )  ( t )
+// long (cyg_uint64) versions:
+#define CYG_UITRON_TIME_UIT_TO_SYS64( t )  ( t )
+#define CYG_UITRON_TIME_SYS_TO_UIT64( t )  ( t )
+#endif
+
+#endif // CYGVAR_KERNEL_COUNTERS_CLOCK - otherwise these should not be used.
 
 // ------------------------------------------------------------------------
 // the function definitions themselves:
@@ -740,7 +776,8 @@ tslp_tsk ( TMO tmout )
     if ( TMO_FEVR == tmout )
         Cyg_Thread::counted_sleep();
     else
-        Cyg_Thread::counted_sleep( (cyg_tick_count)tmout );
+        Cyg_Thread::counted_sleep(
+            (cyg_tick_count)CYG_UITRON_TIME_UIT_TO_SYS32( tmout ) );
     if ( Cyg_Thread::DONE != self->get_wake_reason() )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     return E_OK;
@@ -889,7 +926,7 @@ twai_sem ( ID semid, TMO tmout )
     else
         result = p->wait(
             Cyg_Clock::real_time_clock->current_value() +
-            (cyg_tick_count)tmout );
+            (cyg_tick_count)CYG_UITRON_TIME_UIT_TO_SYS32( tmout ) );
     if ( ! result )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     return E_OK;
@@ -1046,8 +1083,8 @@ twai_flg ( UINT *p_flgptn, ID flgid, UINT waiptn, UINT wfmode,
         result = p->poll( waiptn, wfmode );
     else
         result = p->wait( waiptn, wfmode,
-                          Cyg_Clock::real_time_clock->current_value() +
-                          (cyg_tick_count)tmout );
+            Cyg_Clock::real_time_clock->current_value() +
+            (cyg_tick_count)CYG_UITRON_TIME_UIT_TO_SYS32( tmout ) );
     if ( ! result )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     *p_flgptn  = result;
@@ -1215,7 +1252,7 @@ trcv_msg ( T_MSG **ppk_msg, ID mbxid, TMO tmout )
     else
         result = (T_MSG *)p->get(
             Cyg_Clock::real_time_clock->current_value() +
-            (cyg_tick_count)tmout );
+            (cyg_tick_count)CYG_UITRON_TIME_UIT_TO_SYS32( tmout ) );
     if ( ! result )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     CYG_UIT_TMSG_FIXUP_OUT( result );
@@ -1438,7 +1475,7 @@ tget_blk ( VP *p_blk, ID mplid, INT blksz, TMO tmout )
     else
         result = p->alloc( blksz,
             Cyg_Clock::real_time_clock->current_value() +
-            (cyg_tick_count)tmout );
+            (cyg_tick_count)CYG_UITRON_TIME_UIT_TO_SYS32( tmout ) );
     if ( ! result )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     *p_blk = result;
@@ -1584,7 +1621,7 @@ tget_blf ( VP *p_blf, ID mpfid, TMO tmout )
     else
         result = p->alloc(
             Cyg_Clock::real_time_clock->current_value() +
-            (cyg_tick_count)tmout );
+            (cyg_tick_count)CYG_UITRON_TIME_UIT_TO_SYS32( tmout ) );
     if ( ! result )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     *p_blf = result;
@@ -1635,7 +1672,8 @@ ER
 set_tim ( SYSTIME *pk_tim )
 {
     CYG_UIT_PARAMCHECK_PTR( pk_tim );
-    Cyg_Clock::real_time_clock->set_value( *pk_tim );
+    Cyg_Clock::real_time_clock->set_value(
+        CYG_UITRON_TIME_UIT_TO_SYS64( *pk_tim ) );
     return E_OK;
 }
 
@@ -1644,7 +1682,8 @@ ER
 get_tim ( SYSTIME *pk_tim )
 {
     CYG_UIT_PARAMCHECK_PTR( pk_tim );
-    *pk_tim = Cyg_Clock::real_time_clock->current_value();
+    *pk_tim = CYG_UITRON_TIME_SYS_TO_UIT64(
+        Cyg_Clock::real_time_clock->current_value() );
     return E_OK;
 }
 #endif // CYGVAR_KERNEL_COUNTERS_CLOCK
@@ -1661,7 +1700,7 @@ dly_tsk ( DLYTIME dlytim )
         return E_OK;
     Cyg_Thread *self = Cyg_Thread::self();
     CYG_UITRON_CHECK_TASK_CONTEXT_SELF( self );
-    self->delay( dlytim );
+    self->delay( CYG_UITRON_TIME_UIT_TO_SYS64( dlytim ) );
     if ( Cyg_Thread::DONE != self->get_wake_reason() )
         CYG_UITRON_FAIL_RETURN_SELF( self );
     return E_OK;
@@ -1679,7 +1718,7 @@ def_cyc ( HNO cycno, T_DCYC *pk_dcyc )
     // The only relevant attribute is TA_HLNG/TA_ASM.
     // This can be ignored as assembler routines are defined to be
     // more conservative with registers than the procedure call standard.
-
+    cyg_tick_count t;
     Cyg_Timer *p;
     CYG_UITRON_CHECK_AND_GETHDLR( CYCLICS, cycno, p );
 #ifndef CYGSEM_UITRON_PARAMS_NULL_IS_GOOD_PTR
@@ -1691,12 +1730,13 @@ def_cyc ( HNO cycno, T_DCYC *pk_dcyc )
     }
     CYG_UIT_PARAMCHECK( 0 == (pk_dcyc->cycact & ~TCY_ON), E_PAR );
     CYG_UIT_PARAMCHECK( 0 < pk_dcyc->cyctim, E_PAR );
+    t = CYG_UITRON_TIME_UIT_TO_SYS64( pk_dcyc->cyctim );
     p->initialize(
         Cyg_Clock::real_time_clock,
         (cyg_alarm_fn *)pk_dcyc->cychdr,
         (CYG_ADDRWORD)pk_dcyc->exinf,
-        Cyg_Clock::real_time_clock->current_value() + pk_dcyc->cyctim,
-        pk_dcyc->cyctim,
+        Cyg_Clock::real_time_clock->current_value() + t,
+        t,
         pk_dcyc->cycact);
     return E_OK;
 }
@@ -1728,7 +1768,7 @@ ref_cyc ( T_RCYC *pk_rcyc, HNO cycno )
     Cyg_Scheduler::lock();
     t = p->get_trigger() - Cyg_Clock::real_time_clock->current_value();
     Cyg_Scheduler::unlock();
-    pk_rcyc->lfttim = t;
+    pk_rcyc->lfttim = CYG_UITRON_TIME_SYS_TO_UIT64( t );
     pk_rcyc->cycact = (UINT)p->is_enabled();
     return E_OK;
 }
@@ -1753,10 +1793,11 @@ def_alm ( HNO almno, T_DALM *pk_dalm )
     }
 
     CYG_UIT_PARAMCHECK( 0 == (pk_dalm->tmmode & ~TTM_REL), E_PAR );
+    CYG_UIT_PARAMCHECK( 0 < pk_dalm->almtim, E_PAR );
 
     // make the time arithmetic safe without locking
     now = Cyg_Clock::real_time_clock->current_value();
-    t = pk_dalm->almtim;
+    t = CYG_UITRON_TIME_UIT_TO_SYS64( pk_dalm->almtim );
     if( TTM_REL & pk_dalm->tmmode )
         t += now;
 
@@ -1785,7 +1826,7 @@ ref_alm ( T_RALM *pk_ralm, HNO almno )
     t = p->get_trigger() - Cyg_Clock::real_time_clock->current_value();
     Cyg_Scheduler::unlock();
     pk_ralm->exinf  = (VP)p->get_data();
-    pk_ralm->lfttim = t;
+    pk_ralm->lfttim = CYG_UITRON_TIME_SYS_TO_UIT64( t );
     return E_OK;
 }
 #endif // 0 < CYG_UITRON_NUM( ALARMS )

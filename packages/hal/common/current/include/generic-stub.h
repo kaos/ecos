@@ -1,27 +1,50 @@
-/* Definitions for the generic GDB remote stub
- *
- * Copyright (c) 1997, 1998, 1999 Cygnus Solutions
- *
- * The contents of this file are subject to the Cygnus eCos Public
- * License Version 1.0 (the "License"); you may not use this file
- * except in compliance with the License. You may obtain a copy of
- * the License at http://sourceware.cygnus.com/ecos/
- * 
- * Software distributed under the License is distributed on an
- * "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
- * implied. See the License for the specific language governing rights
- * and limitations under the License.
- * 
- * The Original Code is eCos - Embedded Cygnus Operating System,
- * released September 30, 1998. The Initial Developer of the Original
- * Code is Cygnus. Portions created by Cygnus are Copyright (C) 1998, 1999
- * Cygnus Solutions. All Rights Reserved.
- */
+//========================================================================
+//
+//      generic-stub.h
+//
+//      Definitions for the generic GDB remote stub
+//
+//========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):     Red Hat, nickg
+// Contributors:  Red Hat, nickg
+// Date:          1998-06-08
+// Purpose:       
+// Description:   Definitions for the generic GDB remote stub
+// Usage:         This header is not to be included by user code, and is
+//                only placed in a publically accessible directory so
+//                that platform stub packages are able to include it
+//                if required.
+//
+//####DESCRIPTIONEND####
+//
+//========================================================================
 
-/* This header is not to be included by user code, and is only placed in a
- * publically accessible directory so that platform stub packages
- * are able to include it if required.
- */
 
 #ifndef GENERIC_STUB_H
 #define GENERIC_STUB_H

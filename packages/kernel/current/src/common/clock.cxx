@@ -6,25 +6,27 @@
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
-//
-// -------------------------------------------
-// The contents of this file are subject to the Cygnus eCos Public License
-// Version 1.0 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://sourceware.cygnus.com/ecos
-// 
-// Software distributed under the License is distributed on an "AS IS"
-// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
-// License for the specific language governing rights and limitations under
-// the License.
-// 
-// The Original Code is eCos - Embedded Cygnus Operating System, released
-// September 30, 1998.
-// 
-// The Initial Developer of the Original Code is Cygnus.  Portions created
-// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
-// -------------------------------------------
-//
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.0 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://sourceware.cygnus.com/ecos                                        
+//                                                                          
+// Software distributed under the License is distributed on an       
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
 //####COPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
@@ -484,6 +486,171 @@ bool Cyg_Clock::check_this( cyg_assert_class_zeal zeal) const
 }
 
 #endif
+
+// -------------------------------------------------------------------------
+// 
+// Clock Converters: split a rational into 4 factors to try to prevent
+// overflow whilst retaining reasonable accuracy.
+// 
+// typically we get numbers like 1,000,000 for ns_per and
+// 100 and 1,000,000,000 for the dividend and divisor.
+// So we want answers like 1/10 and 10/1 out of these routines.
+
+static void construct_converter( Cyg_Clock::converter *pcc,
+                                        cyg_uint64 m1, cyg_uint64 d1,
+                                        cyg_uint64 m2, cyg_uint64 d2 )
+{
+    cyg_uint64 upper, lower;
+    unsigned int i;
+    static cyg_uint16 primes[] = {
+        3,5,7,11,13,17,19,23,29,31,37,41,43,47,
+        53,59,61,67,71,73,79,83,89,97,
+        101,103,107,109,113,127,131,137,139,149,
+        151,157,163,167,173,179,181,191,193,197,199,
+        239,                            // for 1,111,111
+        541,                            // for 10,101,011
+        1667,                           // for 8,333,333
+    };
+
+    int rounding = 0;
+
+    // Here we assume that our workings will fit in a 64; the point is to
+    // allow calculations with a number of ticks that may be large.
+    upper = m1 * m2;
+    lower = d1 * d2;
+#ifdef CYGDBG_USE_ASSERTS
+    cyg_uint64 save_upper = upper;
+    cyg_uint64 save_lower = lower;
+#endif
+
+ retry_rounding:
+    // First strip out common powers of 2
+    while ( (0 == (1 & upper)) && ( 0 == (1 & lower)) ) {
+        upper >>= 1;
+        lower >>= 1;
+    }
+
+    // then common factors - use lazy table above
+    for ( i = 0 ; i < (sizeof( primes )/sizeof( primes[0] )); i++ ) {
+        cyg_uint64 j, k, p = (cyg_uint64)(primes[i]);
+        j = upper / p;
+        while ( j * p == upper ) {
+            k = lower / p;
+            if ( k * p != lower )
+                break;
+            upper = j;
+            lower = k;
+            j = upper / p;
+        }
+    }
+
+    m1 = upper;
+    d1 = lower;
+    m2 = 1;
+    d2 = 1;
+
+    if ( m1 > 0x10000 ) {
+        // only bother if there are more than 16 bits consumed here
+
+        // now move powers of 2 from d1 to d2
+        // keeping them the same order of magnitude
+        while ( (0 == (1 & d1)) && (d2 < d1) ) {
+            d1 >>= 1;
+            d2 <<= 1;
+        }
+
+        // and factors from the table - go too far, if anything
+        int cont = (d2 < d1);
+        for ( i = 0 ; cont && (i < (sizeof( primes )/sizeof( primes[0] ))); i++ ) {
+            cyg_uint64 k, p = (cyg_uint64)(primes[i]);
+            k = d1 / p;
+            while ( cont && ((k * p) == d1) ) {
+                // we can extract a prime
+                d1 = k;
+                d2 *= p;
+                k = d1 / p;
+                cont = (d2 < d1);
+            }
+        }
+        
+        // move powers of 2 from m1 to m2 so long as we do not go less than d1
+        while ( (0 == (1 & m1)) && (m2 < m1) && (m1 > (d1 << 5)) ) {
+            m1 >>= 1;
+            m2 <<= 1;
+            if ( m1 < 0x10000 )
+                break;
+        }
+        
+        // and factors from the table - ensure m1 stays well larger than d1
+        cont = ((m2 < m1) && (m1 > (d1 << 4)) && (m1 > 0x10000));
+        for ( i = 0 ; cont && (i < (sizeof( primes )/sizeof( primes[0] ))); i++ ) {
+            cyg_uint64 k, p = (cyg_uint64)(primes[i]);
+            k = m1 / p;
+            cont = cont && (k > (d1 << 4) && (k > 0x10000));
+            while ( cont && ((k * p) == m1) ) {
+                // we can extract a prime
+                m1 = k;
+                m2 *= p;
+                k = m1 / p; // examine k for getting too small
+                cont = ((m2 < m1) && (k > (d1 << 4)) && (k > 0x10000));
+            }
+        }
+
+        // if, after all that, m1 odd and unchanged, and too large,
+        // decrement it just the once and try again: then try it
+        // incremented once.
+        if ( (m1 & 1) && (m1 == upper) && (m1 > 0x10000) && (rounding < 2) ) {
+            CYG_ASSERT( 1 == m2, "m2 should be 1 to try rounding" );
+            m1--;
+            upper = m1;
+            rounding++;
+            goto retry_rounding;
+        }
+        // likewise for d1 - each of the pair can be odd only once each
+        if ( (d1 & 1) && (d1 == lower) && (d1 > 0x10000) && (rounding < 2) ) {
+            CYG_ASSERT( 1 == d2, "d2 should be 1 to try rounding" );
+            d1--;
+            lower = d1;
+            rounding++;
+            goto retry_rounding;
+        }
+    }
+
+    CYG_ASSERT( 0 != m1, "m1 zero" );
+    CYG_ASSERT( 0 != m2, "m2 zero" );
+    CYG_ASSERT( 0 != d1, "d1 zero" );
+    CYG_ASSERT( 0 != d2, "d2 zero" );
+    CYG_ASSERT( rounding || save_upper/save_lower == (m1 * m2)/(d1 * d2),
+                "Unequal in forwards direction" );
+    CYG_ASSERT( rounding || save_lower/save_upper == (d1 * d2)/(m1 * m2),
+                "Unequal in reverse direction" );
+
+    pcc->mul1 = m1;
+    pcc->div1 = d1;
+    pcc->mul2 = m2;
+    pcc->div2 = d2;
+}
+
+// other to clocks is (other * ns_per * dividend / divisor)
+void Cyg_Clock::get_other_to_clock_converter(
+    cyg_uint64 ns_per_other_tick,
+    struct converter *pcc )
+{
+    construct_converter( pcc,
+                         ns_per_other_tick, 1,
+                         resolution.divisor, resolution.dividend );
+}
+
+// clocks to other is (ticks * divisor / dividend / ns_per)
+void Cyg_Clock::get_clock_to_other_converter(
+    cyg_uint64 ns_per_other_tick,
+    struct converter *pcc )
+{
+    construct_converter( pcc,
+                         1, ns_per_other_tick,
+                         resolution.dividend, resolution.divisor );
+}
+
 
 //==========================================================================
 // Constructor for alarm object
