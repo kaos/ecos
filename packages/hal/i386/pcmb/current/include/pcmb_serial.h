@@ -85,7 +85,7 @@ __externC channel_data_t pc_ser_channels[];
 
 __externC void cyg_hal_plf_serial_init(void);
 
-#ifdef CYGSEM_HAL_I386_PCMB_SCREEN_SUPPORT
+#if CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT > 0
 
 __externC void cyg_hal_plf_screen_init(void);
 

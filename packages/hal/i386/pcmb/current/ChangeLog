@@ -1,3 +1,9 @@
+2003-07-23  Nick Garnett  <nickg@balti.calivar.com>
+
+	* include/pcmb_serial.h: Fixed bogus test on
+	CYGSEM_HAL_I386_PCMB_SCREEN_SUPPORT defined to test
+	CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT > 0 instead.
+
 2002-08-14  Gary Thomas  <gthomas@ecoscentric.com>
 2002-08-14  Drew Moseley <drew.moseley@intel.com>	
 
