@@ -77,12 +77,30 @@
 #define __stat_mode_MQ     (1<<5)
 #define __stat_mode_SEM    (1<<6)
 #define __stat_mode_SHM    (1<<7)
+#define __stat_mode_LNK    (1<<8)
+#define __stat_mode_SOCK   (1<<9)
+
+#if !defined(_POSIX_C_SOURCE) || (_POSIX_C_SOURCE >= 200112L)
+#define S_IFDIR          (__stat_mode_DIR)
+#define S_IFCHR          (__stat_mode_CHR)
+#define S_IFBLK          (__stat_mode_BLK)
+#define S_IFREG          (__stat_mode_REG)
+#define S_IFFIFO         (__stat_mode_FIFO)
+#define S_IFLNK          (__stat_mode_LNK)
+#define S_IFSOCK         (__stat_mode_SOCK)
+#define S_IFMT           (S_IFDIR|S_IFCHR|S_IFBLK|S_IFREG| \
+                          S_IFFIFO|S_IFLNK|S_IFSOCK)
+#endif
 
 #define S_ISDIR(__mode)  ((__mode) & __stat_mode_DIR )
 #define S_ISCHR(__mode)  ((__mode) & __stat_mode_CHR )
 #define S_ISBLK(__mode)  ((__mode) & __stat_mode_BLK )
 #define S_ISREG(__mode)  ((__mode) & __stat_mode_REG )
 #define S_ISFIFO(__mode) ((__mode) & __stat_mode_FIFO )
+#if !defined(_POSIX_C_SOURCE) || (_POSIX_C_SOURCE >= 200112L)
+#define S_ISLNK(__mode)  ((__mode) & __stat_mode_LNK )
+#define S_ISSOCK(__mode)  ((__mode) & __stat_mode_SOCK )
+#endif
 
 #define S_TYPEISMQ(__buf)   ((__buf)->st_mode & __stat_mode_MQ )
 #define S_TYPEISSEM(__buf)  ((__buf)->st_mode & __stat_mode_SEM )

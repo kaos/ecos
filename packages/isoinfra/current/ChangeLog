@@ -1,3 +1,13 @@
+2003-05-26  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/stat.h (S_IF*): Added macros to test the type of a
+	file.
+
+2003-05-23  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/sys/stat.h: Added various S_IF macros for the st_mode
+	flags.
+
 2003-01-13  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/mqueue.h: Define POSIX 1003.1d draft mq_timedsend() and
