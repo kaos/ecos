@@ -1,3 +1,8 @@
+2003-11-01  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/redboot.cdl: Reorg to allow disk operations on other than
+	IDE drives.
+
 2003-10-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/main.c (cyg_start): Try to catch illegal memory accesses and

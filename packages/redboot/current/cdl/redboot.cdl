@@ -843,11 +843,19 @@ cdl_package CYGPKG_REDBOOT {
             display       "Allow RedBoot to support disks"
             flavor        bool
             default_value 1
-            active_if     { CYGINT_HAL_PLF_IF_IDE != 0 }
             description   "
               If this option is enabled then RedBoot will provide commands
               to load disk files."
-            compile -library=libextras.a fs/disk.c
+
+            cdl_option CYGSEM_REDBOOT_DISK {
+                display   "Include Redboot commands for disk access"
+                default_value { CYGINT_REDBOOT_DISK_DRIVERS != 0 }
+                compile -library=libextras.a fs/disk.c
+            }
+
+            cdl_interface CYGINT_REDBOOT_DISK_DRIVERS {
+                display  "Hardware drivers for disk-type devices"
+            }
     
             cdl_option CYGNUM_REDBOOT_MAX_DISKS {
                 display       "Maximum number of supported disks"
@@ -869,9 +877,11 @@ cdl_package CYGPKG_REDBOOT {
                 display       "Support IDE disks."
                 flavor        bool
                 default_value 1
+                active_if     { CYGINT_HAL_PLF_IF_IDE != 0 }
                 description "
                   When this option is enabled, RedBoot will support IDE disks."
                 compile -library=libextras.a fs/ide.c
+                implements    CYGINT_REDBOOT_DISK_DRIVERS
             }
     
             cdl_component CYGSEM_REDBOOT_DISK_EXT2FS {
