@@ -1,3 +1,13 @@
+1999-05-14  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18956
+	* src/i386.ld: Fixed problem with rel_got.
+	Encode . in section name as __.
+
+1999-05-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Align stack
+	(rather conservatively) before use.
+
 1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
 
 	* src/PKGconf.mak: 

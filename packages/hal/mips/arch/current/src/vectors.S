@@ -42,8 +42,6 @@
 ##
 ##=============================================================================
 
-#	.file	"vectors.S"
-
 #include <pkgconf/system.h>	
 #include <pkgconf/hal.h>
 
@@ -51,47 +49,9 @@
 # include <pkgconf/kernel.h>	
 #endif
 			
-#include <cyg/hal/mips.inc>
-		
-	.extern cyg_instrument
-
-##-----------------------------------------------------------------------------
-
-#define MAX_SAVE_REG	31	
+#include <cyg/hal/arch.inc>	
 			
-#if defined(CYG_HAL_STARTUP_RAM)
-# if defined(CYG_HAL_MIPS_SIM) || !defined(CYG_HAL_USE_ROM_MONITOR)
-#  define INITIAL_SR	0x1000ff00	/* CP0 usable, Ints enabled	*/
-//#define INITIAL_SR	0x10000000	/* CP0 usable, Ints disabled	*/
-# else
-#  define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
-# endif	
-#elif defined(CYG_HAL_STARTUP_ROM)
-# define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
-#endif
-
-## ROM timing characteristics dependent on the clock speed.
-		
-#if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
-#define ROM_CCR0_INIT	0x00000420
-#define DRAM_DREFC_INIT	0x00000180
-#elif (CYGHWR_HAL_MIPS_CPU_FREQ == 66)
-#define ROM_CCR0_INIT	0x00000520
-#define DRAM_DREFC_INIT	0x00000200
-#else
-#error Unsupported clock frequency		
-#endif
-
-## DRAM configuration dependent on the DRAM device used.
-      ## for 16MByte (4MBit (x4bit) x 8)           0x08024030
-      ## for 4MByte (1MBit (x4bit) x 8)            0x08013020
-      ## for 8MByte (1MBit (x4bit) x 8 x 2 banks)  0x08013020
-
-#if defined CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT
-#define DRAM_CONFIG_INIT CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT
-#else
-#define DRAM_CONFIG_INIT 0x08024030
-#endif
+	.extern cyg_instrument
 
 ##-----------------------------------------------------------------------------
 ## Hardware supplied vectors
@@ -103,30 +63,29 @@
 
 	# Reset vector at 0xBFC00000
 	
-	.globl	reset_vector
-reset_vector:
+FUNC_START(reset_vector)
 	la	v0,_start		# jump to start
 	jr	v0
 	nop				# (delay slot)
-
+FUNC_END(reset_vector)
+	
 	.section ".debug_vector","ax"
 		
 	# Debug vector at 0xBFC00200
 	
-	.globl	debug_vector
-debug_vector:
+FUNC_START(debug_vector)
 	la	k0,32
 	la	k1,hal_vsr_table	# Get VSR table
 	lw	k1,32*4(k1)		# load debug vector
 	jr	k1			# go there
 	nop				# (delay slot)
+FUNC_END(debug_vector)
 
 	.section ".other_vector","ax"
 
 	# Common vector at 0x80000080 or 0xBFC00180
 	
-	.globl	other_vector	
-other_vector:
+FUNC_START(other_vector)
 	mfc0	k0,cause		# K0 = exception cause
 	nop
 	andi	k0,k0,0x7F		# isolate exception code
@@ -135,119 +94,36 @@ other_vector:
 	lw	k1,0(k1)		# k1 = pointer to VSR
 	jr	k1			# go there
 	nop				# (delay slot)
-		
+FUNC_END(other_vector)
+	
 	.section ".utlb_vector","ax"
 
-	.globl	utlb_vector
-utlb_vector:	
+FUNC_START(utlb_vector)
 	la	k0,33
 	la	k1,hal_vsr_table	# Get VSR table
 	lw	k1,33*4(k1)		# load utlb vector
 	jr	k1			# go there
 	nop				# (delay slot)
+FUNC_END(utlb_vector)
 
-	
 ##-----------------------------------------------------------------------------
 ## Startup code
 	
 	.text
 	
-	.globl	_start
-	.ent	_start
-_start:
-	# init CPU registers
-	mtc0	zero,cause		# zero cause reg
-	la	v0,INITIAL_SR
-	mtc0	v0,sr
-	mfc0	v0,config
-	nop
-	.set	at
-	and	v0,v0,0xffffffcf
-#	la	v0,0
-	.set	noat
-	mtc0	v0,config
+FUNC_START(_start)
 
-	
 	# Initialize hardware
 
-#ifdef CYG_HAL_MIPS_JMR3904
-	
-	# These mappings need to be set up before we
-	# can use the stack and make calls to other
-	# functions
-
-	# If we have been started from Cygmon, it should have
-	# already done a lot of this, but it should do no harm
-	# to reinitialize the following registers.
-			
-	# SCS0,1 base addr of ISA & PCI
-	la	a0,0xffffe010
-	la	a1,0x20201410
-	sw	a1,0(a0)	
-
-	la	a0,0xffffe014
-	la	a1,0xfffffcfc
-	sw	a1,0(a0)	
-
-	# ROM configuration
-	.set	at
-	la	a0,0xffff9000
-	lw	a1,0(a0)
-	and	a1,a1,0xffff0004	# keep hardware defaults
-	or	a1,ROM_CCR0_INIT	# install our values
-	sw	a1,0(a0)	
-	.set	noat
-
-	# SRAM config
-	la	a0,0xffff9100
-	la	a1,0x00000000
-	sw	a1,0(a0)	
-
-	# ISA bus setup
-	la	a0,0xb2100000
-	la	a1,4
-	sb	a1,0(a0)	
-	
-	# Clear IMR (to cope with JMON)
-	la	a0,0xffffc004
-	la	a1,0x00000000
-	sw	a1,0(a0)
-
-#if defined(CYG_HAL_STARTUP_ROM)
-
-	# Only do this in ROM configurations.
-	
-	# DRAM Configuration
-	la	a0, 0xffff8000
-	la	a1, DRAM_CONFIG_INIT
-	sw	a1, 0(a0)
-	
-	# DBMR0
-	la	a0, 0xffff8004
-	la	a1, 0x00000000	
-	sw	a1, 0(a0)
-	
-	# DWR0
-	la	a0, 0xffff8008
-	la	a1, 0x00000000
-	sw	a1, 0(a0)
-	
-        # DREFC - Depends on clock requency
-	la	a0, 0xffff8800
-	la	a1, DRAM_DREFC_INIT
-	sw	a1, 0(a0)
-
-#endif
-
-	# Set up PIO0 for output
-	la	a0,0xfffff500
-	la	a1,0xff
-	sb	a1,0(a0)
-	la	a1,0
-	sb	a1,4(a0)	
-				
-#endif	
-	
+	hal_cpu_init
+	hal_mmu_init
+	hal_fpu_init
+	hal_memc_init
+	hal_intc_init
+	hal_cache_init
+	hal_diag_init
+	hal_timer_init
+		
 	# Load Global Pointer register.
 	la	gp,_gp
 
@@ -255,71 +131,15 @@ _start:
 	la	a0,__interrupt_stack
 	move	sp,a0
 
-#if defined(CYG_HAL_STARTUP_ROM) || \
-    (defined(CYG_HAL_STARTUP_RAM) && !defined(CYG_HAL_USE_ROM_MONITOR))
-	
-	# If we are starting up from ROM, or we are starting in
-	# RAM and NOT using a ROM monitor, initialize the VSR table.
-
-	la	a0,__default_interrupt_vsr
-	la	a1,__default_exception_vsr
-	la	a3,hal_vsr_table
-	sw	a0,0(a3)
-	sw	a1,1*4(a3)
-	sw	a1,2*4(a3)
-	sw	a1,3*4(a3)
-	sw	a1,4*4(a3)
-	sw	a1,5*4(a3)
-	sw	a1,6*4(a3)
-	sw	a1,7*4(a3)
-	sw	a1,8*4(a3)
-	sw	a1,9*4(a3)
-	sw	a1,10*4(a3)
-	sw	a1,11*4(a3)
-	sw	a1,12*4(a3)
-	sw	a1,13*4(a3)
-	sw	a1,14*4(a3)
-	sw	a1,15*4(a3)
-
-	sw	a1,32*4(a3)
-	sw	a1,33*4(a3)
-	
-#ifdef CYG_HAL_ROM_MONITOR
-
-	# Install vectors to debug read and write functions
-	
-	.extern	hal_diag_write_char
-	.extern	hal_diag_read_char
-	.extern	breakpoint	
-
-	la	a0,hal_diag_write_char
-	sw	a0,63*4(a3)
-	la	a1,hal_diag_read_char
-	sw	a1,62*4(a3)
-	la	a0,breakpoint
-	sw	a0,61*4(a3)	
-	
-#endif		
+	hal_mon_init
 		
-#endif	
-#if defined(CYG_HAL_STARTUP_RAM) && defined(CYG_HAL_USE_ROM_MONITOR)
-
-	# initialize the VSR table
-	# We only take control of the interrupt vector,
-	# the rest are left to the ROM for now...
-
-	la	a0,__default_interrupt_vsr
-	la	a3,hal_vsr_table
-	sw	a0,0(a3)
-		
-#endif
-			
 #ifdef CYG_HAL_STARTUP_ROM
 	# Copy data from ROM to RAM
 
 	.extern	hal_copy_data
 	jal	hal_copy_data
 	nop
+
 #endif
 		
 	# Zero BSS
@@ -328,18 +148,20 @@ _start:
 	jal	hal_zero_bss
 	nop
 
-	# Call constructors
+	# Cal variant and platform HAL
+	# initialization routines.
 
+	.extern	hal_variant_init
+	jal	hal_variant_init
+	nop
+
+	.extern	hal_platform_init
+	jal	hal_platform_init
+	nop
+	
+	# Call constructors
 	.extern cyg_hal_invoke_constructors
 	jal     cyg_hal_invoke_constructors
-	nop
-
-	.extern cyg_hal_enable_caches
-	jal     cyg_hal_enable_caches
-	nop
-
-	.extern cyg_hal_debug_init
-	jal     cyg_hal_debug_init
 	nop
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -354,34 +176,35 @@ _start:
 	jal	cyg_start
 	nop
 
-9:	
-	j	9b		# Loop if we return
+9:	j	9b		# Loop if we return
 	nop			# (delay slot)
 	
-	.end	_start	
+FUNC_END(_start	)
 
 ##-----------------------------------------------------------------------------
 ## Default exception VSR.
 ## Saves machine state and calls external handling code.
 	
-	.globl	__default_exception_vsr
-	.ent	__default_exception_vsr
-__default_exception_vsr:
+FUNC_START(__default_exception_vsr)
 
 	# We enter here with all of the CPU state still
 	# in its registers except:
 	# K0 = vector index
 	# K1 = address of this function
 
+		
+	move	k1,sp			# K1 = original SP
+	
 #ifdef CYG_HAL_ROM_MONITOR
 	# Switch to interrupt stack to handle exception
-	move	k1,sp
 	la	sp,__interrupt_stack
 #endif
 			
 	addi	sp,sp,-mips_exception_decrement
 				# space for registers + safety margin
 
+	mfc0	k0,cause
+	andi	k0,k0,0x7F		# isolate exception code	
 	sw	k0,mipsreg_vector(sp)	# store vector
 
 	.set	noat
@@ -424,28 +247,17 @@ __default_exception_vsr:
 	sw	a0,mipsreg_hi(sp)
 	sw	a1,mipsreg_lo(sp)
 
-#ifdef CYG_HAL_ROM_MONITOR
 	# K1 contains original SP
 	sw	k1,(mipsreg_regs+29*4)(sp)	# store in reg dump	
-#else		
-	# synthesize original SP value
-	move	a2,sp				# a2 = sp
-	addi	a2,a2,mips_exception_decrement	# a2 = original sp
-	sw	a2,(mipsreg_regs+29*4)(sp)	# store in reg dump	
-#endif
 	
 	# save remaining machine state registers	
 	mfc0	t0,cause
-	mfc0	t1,sr
-#	mfc0	t2,cache
+	mfc0	t1,status
+	mfc0	t2,cache
 	mfc0	t3,badvr
 	mfc0	t4,config
 	mfc0	t5,prid
 	mfc0	t6,epc
-
-#ifndef CYG_HAL_MIPS_SIM 
-	mfc0	t2,cache
-#endif
 	
 	sw	t0,mipsreg_cause(sp)
 	sw	t1,mipsreg_sr(sp)
@@ -455,9 +267,12 @@ __default_exception_vsr:
 	sw	t5,mipsreg_prid(sp)
 	sw	t6,mipsreg_pc(sp)
 
+	hal_fpu_save sp
 	
 	# The machine state is now all saved on the stack.
 
+	hal_diag_excpt_start
+	
 	# Load Global Pointer register.
 	la	gp,_gp
 	
@@ -468,7 +283,9 @@ __default_exception_vsr:
 	# Need to set up back pointers etc. ???
 
 	la	ra,restore_state		# load return address
-	
+
+	hal_cpu_except_enable			# reenable exceptions
+		
 	.extern	exception_handler
 	j	exception_handler		# call C code
 	move	a0,s0				# arg0 = register dump (delay slot)
@@ -476,16 +293,14 @@ __default_exception_vsr:
 	# When the exception handler returns, it will
 	# go back to restore_state, below.
 			
-	.end	__default_exception_vsr
+FUNC_END(__default_exception_vsr)
 	
 ##------------------------------------------------------------------------------
 ## Default interrupt VSR.
 ## Saves machine state and calls appropriate ISR. When done, calls
 ## interrupt_end() to finish up and possibly reschedule.	
 
-	.globl	__default_interrupt_vsr
-	.ent	__default_interrupt_vsr
-__default_interrupt_vsr:
+FUNC_START(__default_interrupt_vsr)
 
 	
 	# We enter here with all of the CPU state still
@@ -493,6 +308,8 @@ __default_interrupt_vsr:
 	# K0 = vector index
 	# K1 = address of this function
 
+	move	k1,sp			# K1 = original SP
+		
 	addi	sp,sp,-mips_exception_decrement
 				# space for registers + safety margin
 
@@ -537,22 +354,22 @@ __default_interrupt_vsr:
 	sw	a0,mipsreg_hi(sp)
 	sw	a1,mipsreg_lo(sp)
 
-	# synthesize original SP value
-	move	a2,sp				# a2 = sp
-	addi	a2,a2,mips_exception_decrement	# a2 = original sp
-	sw	a2,(mipsreg_regs+29*4)(sp)	# store in reg dump	
-	
-	mfc0	t1,sr
+	# K1 contains original SP
+	sw	k1,(mipsreg_regs+29*4)(sp)	# store in reg dump	
+		
+	mfc0	t1,status
+	mfc0	t2,cache
 	mfc0	t3,epc
 	
-#ifndef CYG_HAL_MIPS_SIM
-	mfc0	t2,cache
-#endif
 	sw	t1,mipsreg_sr(sp)
 	sw	t2,mipsreg_cache(sp)
 	sw	t3,mipsreg_pc(sp)
 
+	hal_fpu_save sp
+		
 	# The machine state is now all saved on the stack.
+
+	hal_diag_intr_start
 
 	# Load Global Pointer register.
 	la	gp,_gp
@@ -591,14 +408,8 @@ __default_interrupt_vsr:
 
 	# Decode external interrupt via interrupt controller
 
-	mfc0	a1,cause			# get cause register
-	nop
-	srl	a1,a1,10			# shift IP bits to ls bits
-	andi	a1,a1,0x7F			# isolate IP bits
-	la	t0,interrupt_translation_table	# address of translation table
-	add	t0,t0,a1			# offset of index byte
-	lb	s2,0(t0)			# load it
-
+	hal_intc_decode	s2
+	
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 	move	s1,zero				# Just vector zero is supported
 #else			
@@ -672,11 +483,6 @@ __default_interrupt_vsr:
 
 	move	a2,s0				# arg3 = saved register dump
 	
-	# interrupt_end() must be called with interrupts enabled.
-	
-	rfe					# restore previous status bits
-						# this may enable interrupts
-			
 	.extern	interrupt_end
 	jal	interrupt_end			# call into C to finish off 
 	nop					# (delay slot)
@@ -688,25 +494,21 @@ restore_state:
 	# All done, restore CPU state and continue
 
 	addi	sp,sp,mips_stack_frame_size	# retrieve CPU state ptr
-	
-	# Load status register and cache control register.
-	# This will put the interrupt, mode and cache control
-	# bits back to their post-exception values, so we will
-	# need to do another RFE before we finish.
-		
-	lw	t1,mipsreg_sr(sp)
-	lw	t2,mipsreg_cache(sp)
 
-	mtc0	t1,sr
-#ifndef CYG_HAL_MIPS_SIM
-	mtc0	t2,cache
-#endif
-		
-	lw	a0,mipsreg_hi(sp)
-	lw	a1,mipsreg_lo(sp)
-	mthi	a0
-	mtlo	a1
+	# Disable interrupts again while we restore state. 
+
+	hal_diag_restore
+
+	hal_fpu_load sp
 	
+	lw	t0,mipsreg_cache(sp)
+	lw	t1,mipsreg_hi(sp)
+	lw	t2,mipsreg_lo(sp)
+
+	mtc0	t0,cache
+	mthi	t1
+	mtlo	t2
+
 		# load GPRs
 #	lw	$0,(mipsreg_regs+0*4)(sp)
 	lw	$1,(mipsreg_regs+1*4)(sp)
@@ -742,21 +544,60 @@ restore_state:
 	lw	$31,(mipsreg_regs+31*4)(sp)	# == RA
 
 	lw	k0,mipsreg_pc(sp)		# K0 = return PC
+	lw	k1,mipsreg_sr(sp)		# K1 = saved SR
 	lw	sp,(mipsreg_regs+29*4)(sp)	# load SP
-	sync
-	jr	k0				# jump back to interrupted code
-	rfe					# restore state		(delay slot)
-		
-	.end	__default_interrupt_vsr
 
-# This table translates from the 6 bit value supplied in the IP bits
-# of the cause register into a 0..16 offset into the ISR tables.
-interrupt_translation_table:	
-	.byte	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
-	.byte	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
-	.byte	16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
-	.byte	16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
+	# Invoke CPU specific mechanism for returning from this
+	# exception
+	
+	hal_cpu_eret k0,k1
 		
+FUNC_END(__default_interrupt_vsr)
+
+	hal_intc_decode_data
+
+##-----------------------------------------------------------------------------
+## Execute pending DSRs on the interrupt stack with interrupts enabled.
+## Note: this can only be called from code running on a thread stack
+	
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+	.extern cyg_interrupt_call_pending_DSRs
+
+FUNC_START(hal_interrupt_stack_call_pending_DSRs)
+	mfc0	t0,status			# get status register value
+	la	v0,__interrupt_stack		# v0 = interrupt stack
+	move	v1,sp				# v1 = original stack ptr
+	move	sp,v0				# sp = interrupt stack
+	addi	sp,sp,-32			# make a null frame
+	sw	v1,16(sp)			# save old sp
+	sw	ra,20(sp)			# save old ra
+	sw	t0,24(sp)			# save old sr
+
+	hal_cpu_int_enable
+
+	jal	cyg_interrupt_call_pending_DSRs	# call back to kernel
+	nop
+
+	lw	a0,24(sp)			# get status reg
+
+	hal_cpu_int_merge a0			# merge with current SR
+	
+	lw	ra,20(sp)			# restore ra
+	lw	sp,16(sp)			# restore sp
+
+	jr	ra				# go back
+	nop					# delay slot
+	
+FUNC_END(hal_interrupt_stack_call_pending_DSRs)	
+#endif		
+
+
+// Short circuit in case any code tries to use "__gccmain()"
+FUNC_START(__gccmain)
+	jr	ra
+FUNC_END(__gccmain)
+
+	
 ##-----------------------------------------------------------------------------
 ## Interrupt Stack.
 ## Used during intialization and for executing ISRs.
@@ -780,12 +621,11 @@ __interrupt_stack:
 ## This is only used for simulated targets, on real targets a fixed location VSR
 ## table is now allocated at 0x80000100.
 
-#if defined(CYG_HAL_MIPS_SIM) ||	\
-    ( defined(CYG_HAL_MIPS_TX3904) &&	\
-      defined(CYG_HAL_STARTUP_RAM) &&	\
-      !defined(CYG_HAL_USE_ROM_MONITOR) \
-    )
-	.section ".vsr_table","a"
+#ifndef CYG_HAL_MIPS_VSR_TABLE_DEFINED
+	
+##	.section ".vsr_table","a"
+	
+	.data
 			
 	.globl	hal_vsr_table
 
@@ -803,8 +643,12 @@ hal_vsr_table:
 # interrupts to user code.
 # hal_interrupt_level contains the interrupt level set by 
 # HAL_INTERRUPT_CONFIGURE().
-	
+# This is a default set that provide support only for the 6 external
+# interrupts in the status/cause registers. Platforms or boards are expected
+# to define their own versions of these if they have their own interrupt mappings.
 
+#ifndef CYG_HAL_MIPS_ISR_TABLES_DEFINED
+	
 	.extern hal_default_isr
 	
 	.data
@@ -817,35 +661,23 @@ hal_interrupt_handlers:
 	.long	hal_default_isr
 	.long	hal_default_isr
 	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
-	.long	hal_default_isr
+
 
 	.globl	hal_interrupt_data
 hal_interrupt_data:
-	.rept	17
+	.rept	6
 	.long	0
 	.endr
 
 	.globl	hal_interrupt_objects
 hal_interrupt_objects:
-	.rept	17
+	.rept	6
 	.long	0
 	.endr
 
-	.globl	hal_interrupt_level
-hal_interrupt_level:
-	.rept	17
-	.byte	7
-	.endr
-
+#endif	
+	
 ##-----------------------------------------------------------------------------
 ## end of vectors.S
+
+

@@ -1,3 +1,6 @@
+#ifndef CYGONCE_HAL_MIPS_INC
+#define CYGONCE_HAL_MIPS_INC
+
 ##=============================================================================
 ##
 ##	mips.inc
@@ -81,33 +84,73 @@
 #define ra	$31	/* return address */
 #define pc	$pc	/* pc, used on mips16 */
 
-#define config	$3	// Configuration register	
-#define cache	$7	// Cache control
-#define badvr	$8	// Bad virtual address		
-#define sr	$12	// Status register	
-#define cause	$13	// Exception cause
-#define	epc	$14	// Exception pc value
-#define prid	$15	// processor ID	
+#define f0	$f0
+#define f1	$f1
+#define f2	$f2
+#define f3	$f3
+#define f4	$f4
+#define f5	$f5
+#define f6	$f6
+#define f7	$f7
+#define f8	$f8
+#define f9	$f9
+#define f10	$f10
+#define f11	$f11
+#define f12	$f12
+#define f13	$f13
+#define f14	$f14
+#define f15	$f15
+#define f16	$f16
+#define f17	$f17
+#define f18	$f18
+#define f19	$f19
+#define f20	$f20
+#define f21	$f21
+#define f22	$f22
+#define f23	$f23
+#define f24	$f24
+#define f25	$f25
+#define f26	$f26
+#define f27	$f27
+#define f28	$f28
+#define f29	$f29
+#define f30	$f30
+#define f31	$f31
 
-##-----------------------------------------------------------------------------
-## MIPS saved state
-	
-#define	mipsreg_regs	0
-#define	mipsreg_hi	(4*32)
-#define	mipsreg_lo	(mipsreg_hi+4)
-#define	mipsreg_vector	(mipsreg_lo+4)
-#define	mipsreg_pc	(mipsreg_vector+4)
-#define	mipsreg_sr	(mipsreg_pc+4)
-#define	mipsreg_cache	(mipsreg_sr+4)
-#define	mipsreg_cause	(mipsreg_cache+4)
-#define	mipsreg_badvr	(mipsreg_cause+4)
-#define	mipsreg_prid	(mipsreg_badvr+4)
-#define	mipsreg_config	(mipsreg_prid+4)
-#define	mipsreg_size	(mipsreg_config+4)
+// Coprocessor 0 registers
 
-#define mips_exception_decrement	(mipsreg_size*2)	
+#define	index		$0	// TLB entry index register
+#define random		$1	// TLB random index register
+#define	tlblo0		$2	// TLB even page entry register
+#define	tlblo1		$3	// TLB odd page entry register
+#define config		$3	// Configuration register (TX39 only)
+#define	context		$4	// TLB context register
+#define pagemask	$5	// TLB page size mask
+#define	wired		$6	// TLB wired boundary
+#define cache		$7	// Cache control
+#define badvr		$8	// Bad virtual address
+#define count		$9	// Timer cycle count register
+#define	tlbhi		$10	// TLB virtual address match register
+#define compare		$11	// Timer compare register
+#define status		$12	// Status register	
+#define cause		$13	// Exception cause
+#define	epc		$14	// Exception pc value
+#define prid		$15	// processor ID
+#define config0		$16	// Config register 0
 
-#define mips_stack_frame_size		24	// 3 (64 bit) args worth
 
 #------------------------------------------------------------------------------
+
+#define FUNC_START(name)	\
+        .type name,@function;	\
+        .globl name;		\
+        .ent   name;		\
+name:
+
+#define FUNC_END(name)		\
+name##_end:			\
+        .end name		\
+
+#------------------------------------------------------------------------------
+#endif // ifndef CYGONCE_HAL_MIPS_INC
 # end of mips.inc

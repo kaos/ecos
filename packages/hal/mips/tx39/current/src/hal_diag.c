@@ -246,7 +246,7 @@ void hal_diag_write_char(char c)
             hal_diag_write_char_serial0(hex[(csum>>4)&0xF]);
             hal_diag_write_char_serial0(hex[csum&0xF]);
 
-#ifndef CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
+#if 1
             hal_diag_read_char_serial0( &c1 );
 
             if( c1 == '+' ) break;
@@ -256,7 +256,7 @@ void hal_diag_write_char(char c)
             
             if( c1 == 3 )
                 HAL_BREAKPOINT(_breakinst);                
-#endif // ! CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR          
+#endif            
 #if 0
 
             // We must ack the interrupt caused by that read to avoid
@@ -362,7 +362,7 @@ void hal_diag_read_char(char *c)
 
 /*---------------------------------------------------------------------------*/
 
-#ifdef CYG_KERNEL_DIAG_LCD
+#if defined(CYGPKG_HAL_MIPS_TX39_JMR3904) && defined(CYG_KERNEL_DIAG_LCD)
 
 /* ----------------------------------------------------------- */
 #define ISA_BASE 0xA0000000

@@ -1,3 +1,23 @@
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	The following changes were made in a branch and imported to the
+	main trunk at a later date:
+
+	
+    1999-04-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: Reorder IO & HAL packages to allow ConfigTool to
+	handle rearranged hierarchy.
+
+    1999-04-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* packages: Place architecture package description strings in
+	alphabetic order.
+
+1999-05-13  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 17809
+	* targets: Use -msoft-float instead of defining _SOFT_FLOAT.
+
 1999-05-10  Bart Veer  <bartv@cygnus.co.uk>
 
 	* pkgconf.tcl:

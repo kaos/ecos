@@ -135,11 +135,14 @@ cyg_bool cyg_hal_stop_constructors;
 
 typedef void (*pfunc) (void);
 extern pfunc __CTOR_LIST__[];
-extern void patch_dbg_syscalls(void * vector);
 
 void
 cyg_hal_invoke_constructors(void)
 {
+#if 0
+
+#else    
+
     pfunc p;
 
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
@@ -165,67 +168,10 @@ cyg_hal_invoke_constructors(void)
         p ();
     }
 #endif
-} // cyg_hal_invoke_constructors()
 
-void
-cyg_hal_enable_caches(void)
-{
-#ifdef CYG_HAL_MIPS_TX3904
-
-    // On the real hardware we also enable the cache.
-    // doing this here is a temporary measure until we
-    // have a proper platform specific place to do it.
+#endif    
     
-#if !defined(CYGHWR_HAL_TX39_JMR3904_ENABLE_TOE)
-
-    HAL_ICACHE_INVALIDATE_ALL();    
-    HAL_ICACHE_ENABLE();
-    HAL_DCACHE_INVALIDATE_ALL();
-    HAL_DCACHE_ENABLE();
-
-    HAL_TX39_DEBUG_TOE_DISABLE();
-
-#else
-
-    // If TOE is enabled, caches are disabled by default
-    // until spurious Bus Timeout problem is fixed.
-
-    HAL_ICACHE_INVALIDATE_ALL();    
-    HAL_ICACHE_DISABLE();
-    HAL_DCACHE_INVALIDATE_ALL();
-    HAL_DCACHE_DISABLE();
-
-    HAL_TX39_DEBUG_TOE_ENABLE();
-
-#endif
-
-#endif
-} // cyg_hal_enable_caches()
-
-void
-cyg_hal_debug_init(void)
-{
-#ifdef CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
-#if defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    !defined(CYGDBG_INFRA_DIAG_USE_DEVICE)      && \
-        defined(CYG_HAL_TX39_JMR3904)
-
-        {
-            static void hal_init_ctrlc_intr(void);
-            hal_init_ctrlc_intr();
-        }
-
-#endif
-#endif // CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
-        
-#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
-    defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-    {
-        patch_dbg_syscalls( (void *)(&hal_vsr_table[0]) );
-    }
-#endif
-} // cyg_hal_debug_init()
+} // cyg_hal_invoke_constructors()
 
 /*------------------------------------------------------------------------*/
 /* Determine the index of the ls bit of the supplied mask.                */
@@ -276,6 +222,8 @@ cyg_uint32 hal_msbit_index(cyg_uint32 mask)
 /*------------------------------------------------------------------------*/
 /* Idle thread action                                                     */
 
+#include <cyg/infra/diag.h>
+
 void hal_idle_thread_action( cyg_uint32 count )
 {
 #if 0 //def CYG_HAL_MIPS_SIM
@@ -298,9 +246,10 @@ void hal_idle_thread_action( cyg_uint32 count )
 #endif
 #if 0 //def CYG_HAL_MIPS_JMR3904
 
+    if( (count % 100000 ) == 0 )
     {
 //        cyg_uint32 tval, isr, imr, ilr;
-          cyg_uint32 sr, cr;
+          cyg_uint32 sr = 0, cr = 0, ctr = 0, cpr = 0;
 //        HAL_CLOCK_READ( &tval );
 //        HAL_READ_UINT32( 0xFFFFC000, isr );
 //        HAL_READ_UINT32( 0xFFFFC004, imr );
@@ -308,14 +257,85 @@ void hal_idle_thread_action( cyg_uint32 count )
 //        CYG_TRACE2(1, "Timer value, ISR ",tval, isr);
 //        CYG_TRACE2(1, "IMR ILR0 ", imr, ilr);
 
+//        asm volatile (
+//            "mfc0  %0,$12;"
+//            "nop; nop; nop;"
+//            "mfc0  %1,$13;"
+//            "nop; nop; nop;"
+//            "mfc0  %2,$9;"
+//            "nop; nop; nop;"
+//            "mfc0  %3,$11;"
+//            "nop; nop; nop;"
+//            : "=r"(sr), "=r"(cr), "=r"(ctr), "=r"(cpr)
+//            );
+
+        
+//        diag_printf("Status %08x ", sr );
+//       diag_printf("Cause %08x ", cr );
+//        diag_printf("Counter %08x ", ctr );
+//        diag_printf("Compare %08x\n", cpr);
+
+#if 0
         asm volatile (
             "mfc0  %0,$12;"
-            "mfc0  %1,$13;"
-            : "=r"(sr), "=r"(cr)
+            "nop; nop; nop;"
+            : "=r"(sr)
+            );
+        diag_write_string("Status "); diag_write_hex( sr );
+
+        asm volatile (
+            "mfc0  %0,$13;"
+            "nop; nop; nop;"
+            : "=r"(cr)
+            );
+        diag_write_string(" Cause "); diag_write_hex( cr );
+
+        asm volatile (
+            "mfc0  %0,$9;"
+            "nop; nop; nop;"
+            : "=r"(ctr)
+            );
+        diag_write_string(" Counter "); diag_write_hex( ctr );
+
+        asm volatile (
+            "mfc0  %0,$11;"
+            "nop; nop; nop;"
+            : "=r"(cpr)
+            );
+        diag_write_string(" Compare "); diag_write_hex( cpr );
+        diag_write_string( "\n" );
+        
+#endif
+#if 1         
+        asm volatile (
+            "mfc0  %0,$12;"
+            "nop; nop; nop;"
+            : "=r"(sr)
             );
 
-        CYG_TRACE2(1, "Status Cause ", sr, cr);
+        asm volatile (
+            "mfc0  %0,$13;"
+            "nop; nop; nop;"
+            : "=r"(cr)
+            );
 
+        CYG_INSTRUMENT_USER( 1, sr, cr );
+
+        asm volatile (
+            "mfc0  %0,$9;"
+            "nop; nop; nop;"
+            : "=r"(ctr)
+            );
+
+        asm volatile (
+            "mfc0  %0,$11;"
+            "nop; nop; nop;"
+            : "=r"(cpr)
+            );
+        
+        CYG_INSTRUMENT_USER( 2, ctr, cpr );
+#endif
+        
 //        if( count == 4 )
 //        {
 //            HAL_ENABLE_INTERRUPTS();
@@ -326,125 +346,6 @@ void hal_idle_thread_action( cyg_uint32 count )
     }
 #endif
 }
-
-/*------------------------------------------------------------------------*/
-/* Functions to support the detection and execution of a user provoked    */
-/* program break. These are usually called from interrupt routines.       */
-
-cyg_bool cyg_hal_is_break(char *buf, int size)
-{
-    while( size )
-        if( buf[--size] == 0x03 ) return true;
-
-    return false;
-}
-
-void cyg_hal_user_break( CYG_ADDRWORD *regs )
-{
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-
-    // Ctrl-C: breakpoint.
-    extern void breakpoint(void);
-    breakpoint();
-
-#elif defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_GDB_STUBS)
-
-    // Ctrl-C: breakpoint.
-    typedef void bpt_fn(void);
-    bpt_fn *bfn = ((bpt_fn **)0x80000100)[61];
-    bfn();
-
-#elif defined(CYG_HAL_USE_ROM_MONITOR) && defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-
-    // Ctrl-C: breakpoint.
-    typedef void install_bpt_fn(void *epc);
-    HAL_SavedRegisters *sreg = (HAL_SavedRegisters *)regs;
-    install_bpt_fn *ibp = (install_bpt_fn *)hal_vsr_table[35];
-    if( ibp != NULL ) ibp((void *)sreg->pc);
-
-#endif
-
-}
-
-/*------------------------------------------------------------------------*/
-/* This code installs an interrupt handler to capture Ctrl-C.             */
-/* It's here for lack of anywhere more suitable to put it.                */
-
-#ifdef CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
-#if defined(CYG_HAL_USE_ROM_MONITOR) && \
-    !defined(CYGDBG_INFRA_DIAG_USE_DEVICE)    && \
-    defined(CYG_HAL_TX39_JMR3904)
-
-#define DIAG_BASE       0xfffff300
-#define DIAG_SLCR       (DIAG_BASE+0x00)
-#define DIAG_SLSR       (DIAG_BASE+0x04)
-#define DIAG_SLDICR     (DIAG_BASE+0x08)
-#define DIAG_SLDISR     (DIAG_BASE+0x0C)
-#define DIAG_SFCR       (DIAG_BASE+0x10)
-#define DIAG_SBRG       (DIAG_BASE+0x14)
-#define DIAG_TFIFO      (DIAG_BASE+0x20)
-#define DIAG_RFIFO      (DIAG_BASE+0x30)
-
-#define BRG_T0          0x0000
-#define BRG_T2          0x0100
-#define BRG_T4          0x0200
-#define BRG_T5          0x0300
-
-typedef cyg_uint32 (*original_isr_ptr_t)(CYG_ADDRWORD vector, CYG_ADDRWORD data);
-static original_isr_ptr_t original_isr_ptr;
-static CYG_ADDRWORD original_data, original_object;
-
-static cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data, CYG_ADDRWORD* regs)
-{
-    char c;
-    CYG_WORD16 disr;
-    
-    HAL_READ_UINT16( DIAG_SLDISR , disr );
-
-    if( disr & 0x0001 )
-    {
-
-        disr = disr & ~0x0001;
-    
-        HAL_READ_UINT8( DIAG_RFIFO, c );
-    
-        HAL_WRITE_UINT16( DIAG_SLDISR , disr );
-        
-        if( cyg_hal_is_break( &c , 1 ) )
-            cyg_hal_user_break( regs );
-        return 0;
-    }
-    /* else */
-    return (*original_isr_ptr)(vector, data);
-}
-
-    
-static void hal_init_ctrlc_intr(void)
-{
-    CYG_WORD16 dicr;
-    
-    cyg_uint32 index;
-    HAL_TRANSLATE_VECTOR(CYGNUM_HAL_INTERRUPT_SIO_0, index);
-
-    original_data    = hal_interrupt_data[index];
-    original_object  = hal_interrupt_objects[index];
-    original_isr_ptr = (original_isr_ptr_t) hal_interrupt_handlers[index];
-
-    hal_interrupt_handlers[index] =
-        (CYG_ADDRESS)hal_default_isr;
-
-    HAL_INTERRUPT_ATTACH( CYGNUM_HAL_INTERRUPT_SIO_0, hal_ctrlc_isr, original_data,
-                          original_object );
-
-    HAL_INTERRUPT_UNMASK( CYGNUM_HAL_INTERRUPT_SIO_0 );
-
-    HAL_READ_UINT16( DIAG_SLDICR , dicr );
-    dicr = 0x0001;
-    HAL_WRITE_UINT16( DIAG_SLDICR , dicr );    
-}
-
-#endif
-#endif // CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
 
 /*------------------------------------------------------------------------*/
 /* End of hal_misc.c                                                      */

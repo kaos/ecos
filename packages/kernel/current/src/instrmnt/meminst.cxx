@@ -144,10 +144,16 @@ void cyg_instrument( cyg_uint32 type, CYG_ADDRWORD arg1, CYG_ADDRWORD arg2 )
         p->arg2             = arg2;
     
         p++;
+#ifdef CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP
         if( p == &instrument_buffer_end )
             instrument_buffer_pointer = &instrument_buffer_start;
         else instrument_buffer_pointer = p;
-
+#else
+        // when not wrapping, just continue to put further entries
+        // in the last slot.
+        if( p != &instrument_buffer_end )
+            instrument_buffer_pointer = p;
+#endif
         HAL_RESTORE_INTERRUPTS(old_ints);
     }
     

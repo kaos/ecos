@@ -16,9 +16,11 @@
  * they apply.
  */
 
+#include <pkgconf/system.h>
+
 #define NUMREGS    90
 
-#ifdef __mips64
+#if defined(__mips64)
   #define REGSIZE(X) 8
   typedef unsigned long long target_register_t;
 #else

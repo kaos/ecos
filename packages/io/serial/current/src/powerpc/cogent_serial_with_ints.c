@@ -373,10 +373,10 @@ cogent_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     cyg_uint8 _iir;
 
     HAL_READ_UINT8(port+SER_16550_IIR, _iir);
-    if ((_iir & SIO_IIR_ID_MASK) == ISR_Tx) {
+    _iir &= SIO_IIR_ID_MASK;
+    if ( ISR_Tx == _iir ) {
         (chan->callbacks->xmt_char)(chan);
-    } else {
-        // Assume receive interrupt
+    } else if ( ISR_Rx == _iir ) {
         cyg_uint8 _c;
         HAL_READ_UINT8(port+SER_16550_RBR, _c);
         (chan->callbacks->rcv_char)(chan, _c);

@@ -1,3 +1,10 @@
+1999-05-14  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 18956
+	* include/pkgconf/mlt_i386_linux_ram.mlt: 
+	* include/pkgconf/mlt_i386_linux_ram.ldi: 
+	Fixed problem with rel_got.
+	Encode . in section name as __.
+	
 1999-04-08  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/mlt_*.*: Use double underscore substitution

@@ -80,6 +80,10 @@
 #define MMU_InvalidateCache  c7       // Invalidate cache data
 #define MMU_TLB              c8       // Translation Lookaside Buffer
 
+// These seem to be 710 specific
+#define MMU_FlushTLB         c5
+#define MMU_FlushIDC         c7
+
 #define MMU_Control_M  0x001    // Enable MMU
 #define MMU_Control_A  0x002    // Enable address alignment faults
 #define MMU_Control_C  0x004    // Enable cache
@@ -90,7 +94,7 @@
 #define MMU_Control_B  0x080    // Enable Big-Endian
 #define MMU_Control_S  0x100    // Enable system protection
 #define MMU_Control_R  0x200    // Enable ROM protection
-#define MMU_Control_Init (MMU_Control_M|MMU_Control_P|MMU_Control_D)
+#define MMU_Control_Init (MMU_Control_P|MMU_Control_D|MMU_Control_L)
 
 //-----------------------------------------------------------------------------
 

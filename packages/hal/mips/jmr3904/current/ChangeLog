@@ -1,3 +1,35 @@
+1999-05-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/platform.S: Moved ISR tables out to variant directory.
+
+	* include/platform.inc: Moved definition of
+	CYG_HAL_MIPS_ISR_TABLES_DEFINED out to variant.inc.
+
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	The following changes were made on a branch and merged:
+	
+    1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_tx39_jmr3904.h:
+	* include/pkgconf/hal_mips_tx39_jmr3904.h: 
+	File hal_tx39_jmr3904.h renamed to match name synthesized by
+	pkgconf.tcl.
+
+    1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/plf_misc.c: Added this file. it contains all of the TX39
+	specific code that was in hal_misc.c.
+
+	* src/platform.S: Added this file. It contains platform specific
+	code and data, specifically the ISR tables.
+
+	* src/PKGconf.mak (COMPILE): Substituted platform.S for jmr3904.S.
+	Added plf_misc.c.
+
+	* include/platform.inc: Added CYG_HAL_MIPS_ISR_TABLES_DEFINED to
+	indicate that the tables are defined in platform.S.
+
 1999-04-30  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	Merge the following changes from the 1.2.1 release branch.

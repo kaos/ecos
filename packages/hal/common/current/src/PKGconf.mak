@@ -32,7 +32,7 @@ PACKAGE         := hal
 include ../../../../pkgconf/pkgconf.mak
 
 LIBRARY         := libtarget.a
-COMPILE         := generic-stub.c thread-packets.c hal_stub.c drv_api.c
+COMPILE         := generic-stub.c thread-packets.c hal_stub.c drv_api.c dbg-threads-syscall.c
 EXTRAS_COMPILE  := dummy.c
 
 OTHER_OBJS      :=

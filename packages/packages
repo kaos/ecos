@@ -159,6 +159,20 @@ package CYGPKG_HAL_I386_LINUX {
 	hardware
 }
 
+package CYGPKG_HAL_MIPS {
+	alias		{ "MIPS common HAL" hal_mips mips_hal mips_arch_hal }
+	directory	hal/mips/arch/
+        include_dir	cyg/hal
+	hardware
+}
+
+package CYGPKG_HAL_MIPS_SIM {
+	alias		{ "MIPS simulator support" hal_mips_sim mips_sim_hal }
+	directory	hal/mips/sim
+        include_dir	cyg/hal
+	hardware
+}
+
 package CYGPKG_HAL_MN10300 {
 	alias		{ "MN10300 common HAL" hal_mn10300 mn10300_hal mn10300_arch_hal }
 	directory	hal/mn10300/arch
@@ -229,26 +243,20 @@ package CYGPKG_HAL_SPARCLITE_SIM {
 	hardware
 }
 
-package CYGPKG_HAL_TX39 {
-	alias		{ "TX39 common HAL" hal_tx39 tx39_hal tx39_arch_hal }
-	directory	hal/mips/arch/
+package CYGPKG_HAL_MIPS_TX39 {
+	alias		{ "TX39 chip HAL" hal_tx39 tx39_hal tx39_arch_hal }
+	directory	hal/mips/tx39/
         include_dir	cyg/hal
 	hardware
 }
 
-package CYGPKG_HAL_TX39_JMR3904 {
+package CYGPKG_HAL_MIPS_TX39_JMR3904 {
 	alias		{ "TX39 jmr3904 support" hal_tx39_jmr3904 tx39_jmr3904_hal }
 	directory	hal/mips/jmr3904
         include_dir	cyg/hal
 	hardware
 }
 
-package CYGPKG_HAL_TX39_SIM {
-	alias		{ "TX39 simulator support" hal_tx39_sim tx39_sim_hal }
-	directory	hal/mips/sim
-        include_dir	cyg/hal
-	hardware
-}
 
 package CYGPKG_IO	{
 	alias		{ "Common I/O Code" io io_common }
@@ -256,7 +264,6 @@ package CYGPKG_IO	{
 	default_value	1
 	include_dir	cyg/io
 }
-
 
 package CYGPKG_IO_SERIAL	{
 	alias		{ "Serial Device Drivers" io_serial io_serial_common }
@@ -278,3 +285,4 @@ package CYGPKG_DEVICES_WATCHDOG {
 	default_value	1
 	include_dir	cyg/devs
 }
+

@@ -32,7 +32,7 @@ PACKAGE       := io_serial
 include ../../../../pkgconf/pkgconf.mak
 include ../../../../pkgconf/system.mak
 
-LIBRARY         := 
+LIBRARY         := libtarget.a
 EXTRAS_COMPILE  := common/serial.c common/tty.c common/haldiag.c
 ifdef CYG_HAL_ARM_PID
 EXTRAS_COMPILE  += arm/pid_serial_with_ints.c

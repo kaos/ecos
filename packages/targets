@@ -107,10 +107,10 @@ target mn10300 {
 }
 
 
-target tx39 {
+target mips_tx39 {
     alias		{ TX39 mips-tx39 mips-tx39-elf }
     command_prefix	mips-tx39-elf
-    packages		CYGPKG_HAL_TX39
+    packages		{ CYGPKG_HAL_MIPS CYGPKG_HAL_MIPS_TX39 }
 
     cflags {
         ERRFLAGS        "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
@@ -126,17 +126,18 @@ target tx39 {
 	hal		hal/mips/jmr3904
 	startup		{ ram rom }
 	packages	{
-	    CYGPKG_HAL_TX39_JMR3904
+	    CYGPKG_HAL_MIPS_TX39_JMR3904
         }
     }
     platform	sim {
         alias		{ "Simulator" }
 	startup		{ ram }
         packages	{
-	    CYGPKG_HAL_TX39_SIM
+	    CYGPKG_HAL_MIPS_SIM
         }
     }
 }
+
 
 target powerpc {
     alias	        { PowerPC powerpc-eabi }
@@ -144,7 +145,7 @@ target powerpc {
     packages		{ CYGPKG_HAL_POWERPC }
 
     cflags {
-	ARCHFLAGS	"-mcpu=860 -D_SOFT_FLOAT"
+	ARCHFLAGS	"-msoft-float -mcpu=860"
 	ERRFLAGS	"-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
         CXXERRFLAGS     "-Woverloaded-virtual"
         LANGFLAGS       "-ffunction-sections -fdata-sections"

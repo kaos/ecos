@@ -1,8 +1,8 @@
-#ifndef CYGONCE_PKGCONF_HAL_TX39_H
-#define CYGONCE_PKGCONF_HAL_TX39_H
+#ifndef CYGONCE_PKGCONF_HAL_MIPS_H
+#define CYGONCE_PKGCONF_HAL_MIPS_H
 // ====================================================================
 //
-//      pkgconf/hal_tx39.h
+//      pkgconf/hal_mips.h
 //
 //      HAL configuration file
 //
@@ -45,22 +45,30 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
 
-   cdl_package CYGPKG_HAL_TX39 {
-       display "TX39 architecture"
+   cdl_package CYGPKG_HAL_MIPS {
+       display "MIPS architecture"
        type    radio
        parent  CYGPKG_HAL
-       target  tx39
        description "
-           The TX39 architecture HAL package provides generic support
+           The MIPS architecture HAL package provides generic support
            for this processor architecture. It is also necessary to
-           select a specific target platform HAL package."
+           select a CPU variant and a specific target platform HAL
+           package."
+   }
+
+   cdl_component CYGFUN_HAL_MIPS_VARIANTS {
+       display "MIPS variants"
+       type dummy
+       parent CYGPKG_HAL_MIPS
+       description "
+           A number MIPS variants are supported."
    }
 
    cdl_option CYGHWR_HAL_MIPS_CPU_FREQ {
        display "CPU frequency"
        type     count
        legal_values 0 to 1000000
-       parent  CYGPKG_HAL_TX39
+       parent  CYGPKG_HAL_MIPS
        description "
            This option contains the frequency of the CPU in MegaHertz.
            Choose the frequency to match the processor you have. This
@@ -70,34 +78,8 @@
    
    }}CFG_DATA */
 
-
 #define CYGHWR_HAL_MIPS_CPU_FREQ        50
 
-/* NO CDL for this because we want it enabled always. */
-#define CYGDBG_HAL_MIPS_INSTALL_CTRL_C_ISR
-
 /* -------------------------------------------------------------------*/
-/* Workaround for TX3904 Timer TRR register problem                   */
-/*                                                                    */
-/* We do it conditionally so that it is possible to override it on    */
-/* the command line, for example, for a simulator build               */
-#ifndef CYGARC_TX39_PR19846
-# define CYGHWR_HAL_MIPS_TX3904_TRR_REQUIRES_SYNC
-#endif
-
-
-/* -------------------------------------------------------------------*/
-/* translate the user defined CPU frequency into a the real number of */
-/* cycles.                                                            */
-
-#if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
-#define CYGHWR_HAL_MIPS_CPU_FREQ_ACTUAL 49152000
-#elif (CYGHWR_HAL_MIPS_CPU_FREQ == 66)
-#define CYGHWR_HAL_MIPS_CPU_FREQ_ACTUAL 66355200
-#else
-#error Unsupported TX39 CPU frequency
-#endif
-
-/* -------------------------------------------------------------------*/
-#endif  /* CYGONCE_PKGCONF_HAL_TX39_H */
-/* EOF hal_tx39.h */
+#endif  /* CYGONCE_PKGCONF_HAL_MIPS_H */
+/* EOF hal_mips.h */

@@ -1,7 +1,6 @@
 //===========================================================================
 //
-// MLT linker script for TX39
-// adapted from packages\hal\mips\jmr3904\v1_1\src\jmr3904.ld
+// MLT linker script for MIPS TX39
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -156,6 +155,6 @@ GROUP(libtarget.a libgcc.a)
 
 #include CYGHWR_MEMORY_LAYOUT_LDI
 
-#ifndef CYGPKG_HAL_TX39_SIM
+#ifndef CYGPKG_HAL_MIPS_SIM
 hal_vsr_table = 0x80000100;
 #endif

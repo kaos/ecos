@@ -28,15 +28,15 @@
 #####COPYRIGHTEND####
 #==============================================================================
 
-PACKAGE       := hal_tx39
+PACKAGE       := hal_mips
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
 COMPILE       := hal_misc.c context.S mips-stub.c
 OTHER_OBJS    :=
-OTHER_TARGETS := vectors.stamp ldscript.stamp
-OTHER_DEPS    := $(PACKAGE)_vectors.d ldscript.d
-OTHER_CLEAN   := vectors.clean ldscript.clean
+OTHER_TARGETS := vectors.stamp
+OTHER_DEPS    := $(PACKAGE)_vectors.d
+OTHER_CLEAN   := vectors.clean
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 
@@ -50,17 +50,3 @@ vectors.clean:
 
 $(PACKAGE)_vectors.o: $(BUILD_TREE)/pkgconf/pkgconf.mak \
     $(BUILD_TREE)/pkgconf/makevars $(PACKAGE_RULES_FILE)
-
-.PHONY: ldscript.clean
-
-ldscript.stamp: tx39.ld
-	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
-	@echo > ldscript.d
-	@echo $@ ':' $< '\' >> ldscript.d
-	@tail +2 ldscript.tmp >> ldscript.d
-	@rm ldscript.tmp
-	$(TOUCH) $@
-
-ldscript.clean:
-	$(RM) -f $(PREFIX)/lib/target.ld
-	$(RM) -f ldscript.stamp

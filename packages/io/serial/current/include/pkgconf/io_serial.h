@@ -182,6 +182,7 @@
 #undef  CYGPKG_IO_SERIAL_TTY_TTY2
 #define CYGDAT_IO_SERIAL_TTY_TTY2_DEV "/dev/ser2"
 
+
 /* ----------------------------------------------------------------------------
    {{CFG_DATA
    cdl_component CYGPKG_IO_SERIAL_ARM_PID {
@@ -602,7 +603,7 @@
        type    bool
        requires CYGPKG_IO_SERIAL
 #       parent CYGPKG_IO_SERIAL
-       parent CYGPKG_HAL_TX39_JMR3904
+       parent CYGPKG_HAL_MIPS_TX39_JMR3904
        description "
            This option enables the serial device drivers for the TX39 JMR3904."
            doc ref/ecos-ref/ecos-device-drivers.html
@@ -710,6 +711,7 @@
 #define CYGDAT_IO_SERIAL_TX39_JMR3904_SERIAL1_NAME "/dev/ser2"
 #define CYGNUM_IO_SERIAL_TX39_JMR3904_SERIAL1_BAUD 38400
 #define CYGNUM_IO_SERIAL_TX39_JMR3904_SERIAL1_BUFSIZE 128
+
 
 // Note: this is not currently tied to a specific board since the ports are "on chip"
 

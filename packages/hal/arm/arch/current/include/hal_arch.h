@@ -124,7 +124,7 @@ externC int hal_msbindex(int);
 
 #define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )         \
     CYG_MACRO_START                                                         \
-    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_);                           \
+    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_) &~15;                      \
     register HAL_SavedRegisters *_regs_;                                    \
     int _i_;                                                                \
     _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters));   \

@@ -1,3 +1,12 @@
+1999-05-13  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Align stack
+	(rather conservatively) before use.
+
+1999-05-11  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S: No separate interrupt stack if no kernel.
+
 1999-05-10  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S: 

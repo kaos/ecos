@@ -80,7 +80,7 @@ typedef struct {
     cyg_drv_cond_t           wait;
     cyg_drv_mutex_t          lock;
     bool                     waiting;
-    bool                     abort;       // Set by an outsider to kill processing
+    volatile bool            abort;       // Set by an outsider to kill processing
     volatile cyg_int32       pending;     // This many bytes waiting to be sent
 } cbuf_t;
 

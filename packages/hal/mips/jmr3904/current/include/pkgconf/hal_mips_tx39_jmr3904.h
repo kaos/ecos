@@ -45,10 +45,11 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
 
-   cdl_package CYGPKG_HAL_TX39_JMR3904 {
+   cdl_package CYGPKG_HAL_MIPS_TX39_JMR3904 {
        display  "JMR3904 evaluation board"
        type     radio
-       parent   CYGPKG_HAL_TX39
+       parent   CYGPKG_HAL_MIPS
+       requires CYGPKG_HAL_MIPS_TX39
        platform jmr3904
        description "
            The JMR3904 HAL package should be used when targetting the
@@ -59,9 +60,9 @@
            `target sim --board=jmr3904' should be used from inside gdb."
    }
    
-   cdl_option CYGHWR_HAL_TX39_JMR3904_STARTUP {
+   cdl_option CYGHWR_HAL_MIPS_TX39_JMR3904_STARTUP {
        display          "Startup type"
-       parent           CYGPKG_HAL_TX39_JMR3904
+       parent           CYGPKG_HAL_MIPS_TX39_JMR3904
        #type             count
        type             enum
        legal_values     ram rom
@@ -79,7 +80,7 @@
                 
    }}CFG_DATA */
 
-#define CYGHWR_HAL_TX39_JMR3904_STARTUP         ram
+#define CYGHWR_HAL_MIPS_TX39_JMR3904_STARTUP         ram
 
 /* -------------------------------------------------------------------*/
 /* Manually edited configuration option, these should only be touched */
@@ -90,8 +91,8 @@
 /* for 4MByte (1MBit (x4bit) x 8)            0x08013020               */
 /* for 8MByte (1MBit (x4bit) x 8 x 2 banks)  0x08013020               */
 
-#define CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT  0x08024030  // 16MByte
-//#define CYGHWR_HAL_TX39_JMR3904_DRAM_CONFIG_INIT 0x08013020 // 4 or 8MByte
+#define CYGHWR_HAL_MIPS_TX39_JMR3904_DRAM_CONFIG_INIT  0x08024030  // 16MByte
+//#define CYGHWR_HAL_MIPS_TX39_JMR3904_DRAM_CONFIG_INIT 0x08013020 // 4 or 8MByte
 
 /* Bus Timeout Detection */
 
@@ -100,7 +101,7 @@
  *  fire.
  */
 
-// #define CYGHWR_HAL_TX39_JMR3904_ENABLE_TOE
+// #define CYGHWR_HAL_MIPS_TX39_JMR3904_ENABLE_TOE
 
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_TX39_JMR3904_H */

@@ -1,8 +1,8 @@
-#ifndef CYGONCE_PKGCONF_HAL_TX39_SIM_H
-#define CYGONCE_PKGCONF_HAL_TX39_SIM_H
+#ifndef CYGONCE_PKGCONF_HAL_MIPS_SIM_H
+#define CYGONCE_PKGCONF_HAL_MIPS_SIM_H
 // ====================================================================
 //
-//      pkgconf/hal_tx39_sim.h
+//      pkgconf/hal_mips_sim.h
 //
 //      HAL configuration file
 //
@@ -45,10 +45,10 @@
 /* ---------------------------------------------------------------------
    {{CFG_DATA
 
-   cdl_package CYGPKG_HAL_TX39_SIM {
+   cdl_package CYGPKG_HAL_MIPS_SIM {
        display  "Minimal simulator"
        type     radio
-       parent   CYGPKG_HAL_TX39
+       parent   CYGPKG_HAL_MIPS
        platform sim
        description "
            The minimal simulator HAL package is provided for when only
@@ -63,5 +63,5 @@
    }}CFG_DATA */
 
 /* -------------------------------------------------------------------*/
-#endif  /* CYGONCE_PKGCONF_HAL_TX39_SIM_H */
-/* EOF hal_tx39_sim.h */
+#endif  /* CYGONCE_PKGCONF_HAL_MIPS_SIM_H */
+/* EOF hal_mips_sim.h */

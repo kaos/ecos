@@ -122,6 +122,16 @@ static void call_dsrs(void)
 }
 
 //--------------------------------------------------------------------------
+// This is referenced from the HAL, although it does not actually get called.
+
+externC void
+cyg_interrupt_call_pending_DSRs(void)
+{
+    call_dsrs();
+}
+
+
+//--------------------------------------------------------------------------
 // Interrupt end function called from HAL VSR to tidy up. This is where
 // DSRs will be called if necessary.
 

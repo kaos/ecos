@@ -141,7 +141,7 @@ serial_test( void )
     cyg_uint32 stamp;
 #endif
 
-    res = cyg_io_lookup("/dev/tty1", &handle);
+    res = cyg_io_lookup("/dev/tty0", &handle);
     if (res != ENOERR) {
         diag_printf("Can't lookup - DEVIO error: %d\n", res);
         return;

@@ -1,3 +1,22 @@
+1999-05-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/plf_misc.c:
+	* src/platform.S:
+	* src/sim.S:
+	* src/PKGconf.mak (COMPILE): Added platform.S and plf_misc.c and
+	removed sim.S.
+
+	* include/plf_intr.h:
+	* include/plf_cache.h:
+	* include/platform.inc:
+	Added these files to complete support for TX39 sim builds using
+	new HAL organization.
+
+1999-05-14  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_mips_tx39_sim.h: New file to include
+	the common MIPS simulator configuration header file.
+
 1999-04-08  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/mlt_*.*: Use double underscore substitution

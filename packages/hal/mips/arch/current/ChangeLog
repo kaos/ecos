@@ -1,3 +1,141 @@
+1999-05-12  Nick Garnett  <nickg@cygnus.co.uk>
+
+	The following have been merged from a branch:
+	
+	(1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>)
+
+	* include/hal_arch.h: 
+	* include/hal_intr.h: 
+	* include/hal_cache.h: 
+	* include/arch.inc:
+	Changed references to "imp" and "implementation" to "var" and
+	"variant" respectively. These are better names for these files and
+	functions.
+
+	* src/vectors.S: 
+	Removed or disabled some development/debug code.
+	Same imp->var changes as above.
+	
+	(1999-05-06  Nick Garnett  <nickg@cygnus.co.uk>)
+
+	* src/vectors.S: Added call to hal_cpu_except_enable in
+	__default_exception_vsr to re-enable nested exceptions.
+
+	* src/mips-stub.c: Use _registers[X] rather that register[X] for
+	accessing CPU registers, since the former may point to per-thread
+	register sets while the latter only refers to the current trap
+	register set.
+
+	* include/arch.inc: Added hal_cpu_except_enable macro to
+	(re-)enable exception processing and disable interrupts. This is
+	necessary if we are to allow nested exceptions (like breakpoints
+	in exception handlers).
+
+	(1999-04-29  Nick Garnett  <nickg@cygnus.co.uk>)
+
+	* src/vectors.S: Reenable interrupts while processing exceptions.
+	Several temporary kludges to permit us to test ROM code from RAM
+	under PMON.
+
+	* include/mips.inc: Extended list of CP0 register aliases.
+
+	
+	* include/arch.inc: Added generic version of hal_cache_init to
+	disable kseg0 caching in config0 register.
+
+	* include/hal_cache.h: Moved dummy addresses used in index
+	operations to 0x80000000, zero caused MMU exceptions.
+	Fixed looping bugs in all macros that use them.
+
+	(1999-04-28  Gary Thomas  <gthomas@cygnus.co.uk>)
+
+	[v1_2_2_beta branch]
+	* src/vectors.S: Add dummy "__gccmain()"
+
+	(1999-04-27  Gary Thomas  <gthomas@cygnus.co.uk>)
+
+	* include/hal_arch.h: Make minimum stack sizes more realistic.
+	Also fix size of interrupt stack frame when FPU present.
+
+	(1999-04-23  Nick Garnett  <nickg@cygnus.co.uk>)
+
+	* src/vectors.S: Added support for floating point register save
+	and restore. Fixed hal_interrupt_stack_call_pending_DSRs to use
+	hal_cpu_int_merge macro.
+
+	* src/context.S: Added support for floating point register save
+	and restore. Started some preparations for 64 bit processor
+	support.
+
+	* include/mips.inc: Added floating point register aliases. Moved
+	saved state to arch.inc.
+
+	* include/hal_arch.h: Completed support for floating point state
+	save and restore. Parameterized GDB support macros a little to
+	enable GDB to work properly.
+
+	* include/arch.inc: Added support for floating point state save
+	and restore. Moved assembler version of saved state layout here
+	from mips.inc.
+
+	(1999-04-22  Nick Garnett  <nickg@cygnus.co.uk>)
+
+	* src/context.S (hal_thread_load_context): Substituted explicit
+	code to reload the interrupt enable state with a macro.
+
+	* include/hal_cache.h: Removed default implementations of
+	HAL_[D/I]CACHE_[EN/DIS]ABLE since these were actually TX39
+	specific. There is aparrently no standard way of implementing
+	these function in the MIPS architecture.
+
+	* include/mips.inc: Added a comment to point out a TX39-only
+	register.
+	
+	* src/vectors.S: Modified hal_interrupt_stack_call_pending_DSRs()
+	to also call DSRs with interrupts enabled. Returns interrupt state
+	to original value when finished.
+	Use hal_cpu_int_ensable macro in place of explicit code in
+	hal_interrupt_stack_call_pending_DSRs().
+
+	(1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>)
+
+	* include/arch.inc: Ifdeffed definition of hal_intc_init macro to
+	allow it to be defined elsewhere. Added default versions of diag
+	macros.
+
+	* src/vectors.S: Added some low-level diagnostic macros to show
+	HAL events if there is adequate hardware (such as leds).
+	Removed interrupt enable/disables in interrupt processing since we
+	can now go through a thread switch with interrupts disabled.
+	Ifdeffed ISR tables so they can be defined elsewhere.
+	Added implementation of hal_interrupt_stack_call_pending_DSRs.
+	Added calls to implementation and platform init routines.
+	
+	* src/hal_misc.c: Many changes to hal_idle_thread_action() to
+	print or instrument various CPU registers. Left with code to
+	wiggle an led in the idle loop.
+	Stripped out TX39 specific code and moved it to plf_misc.c.
+	
+	* src/context.S: Added code to save and restore the interrupt mask
+	state in thread contexts.
+
+	* include/hal_intr.h:
+	Renamed default interrupts to match the hardware more closely.
+	Added ifdef around HAL_TRANSLATE_VECTOR() so it can be made
+	platform/variant specific. Added implementation of
+	HAL_INTERRUPT_ACKNOWLEDGE().
+
+	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Aligned the
+	intitial stack pointer to 16 byte boundary, added an initial value
+	for the status register.
+
+	* include/arch.inc: Added some nops to eret macros.
+
+	(1999-04-13  John Dallaway  <jld@cygnus.co.uk>)
+
+	* src/mips.ld: Migrate global MIPS linker script to individual
+	MIPS variant directories
+
 1999-04-30  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	Merge the following changes from the 1.2.1 release branch,

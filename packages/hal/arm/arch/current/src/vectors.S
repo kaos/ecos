@@ -48,6 +48,7 @@
 #include <pkgconf/kernel.h>
 #else
 # undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+# undef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 #endif
 #include <cyg/hal/hal_platform_setup.h>
 
@@ -216,8 +217,7 @@ start:
 	mov	r0,#0
 	cmp	r1,r2
 	beq	2f
-	sub	r1,r1,#4
-1:	str	r0,[r1,#4]!
+1:	str	r0,[r1],#4
 	cmp	r1,r2
 	bne	1b
 2:

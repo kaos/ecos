@@ -31,11 +31,6 @@ MEMORY
     ram : ORIGIN = 0x00000000, LENGTH = 0x800000
 }
 
-// The rel__got section doesn't result in any output but the linker
-// complains if it is not present. It is necessary when compiling
-// with CYGIMP_LIBC_MALLOC_CXX_DELETE_CALLS_FREE=true but causes
-// problems with BFD when this option is false.
-
 SECTIONS
 {
     SECTIONS_BEGIN
@@ -46,7 +41,7 @@ SECTIONS
     SECTION_rodata (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_fixup (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (ram, ALIGN (0x1), LMA_EQ_VMA)
-//    SECTION_rel__got (ram, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_rel__got (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)

@@ -118,7 +118,8 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 
 #define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )           \
     CYG_MACRO_START                                                           \
-    register CYG_WORD _sp_ = ((CYG_WORD)_sparg_)-CYGARC_PPC_STACK_FRAME_SIZE; \
+    register CYG_WORD _sp_ = (((CYG_WORD)_sparg_) &~15)                       \
+                                 - CYGARC_PPC_STACK_FRAME_SIZE;               \
     register HAL_SavedRegisters *_regs_;                                      \
     int _i_;                                                                  \
     _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters));     \

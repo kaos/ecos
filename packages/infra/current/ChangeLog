@@ -1,3 +1,9 @@
+1999-05-14  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/cyg_type.h (CYG_INIT_COMPAT): add a new init priority
+	level for compatibility layers (for uITRON that is, but
+	potentially POSIX also perhaps, after libc anyway).
+
 1999-04-14  John Dallaway  <jld@cygnus.co.uk>
 
 	* include/pkgconf/infra.h: Add cdl_package doc attribute.

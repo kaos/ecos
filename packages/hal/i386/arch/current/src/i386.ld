@@ -90,10 +90,10 @@ GROUP(libtarget.a libgcc.a)
       _EXCEPT_END_ = ABSOLUTE(.);}                                      \
     > _region_
 
+// Note: The __ in the name is an encoding of the .
 #define SECTION_rel__got(_region_, _vma_, _lma_)        \
     .rel.got _vma_ : _lma_                                            \
-    { FORCE_OUTPUT;                           \
-      *(.rel.got)      }                                        \
+    { *(.rel.got)      }                                        \
     > _region_
 
 #define SECTION_data(_region_, _vma_, _lma_)                       \

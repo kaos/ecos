@@ -71,6 +71,7 @@
 
 // Interrupt status register
 #define ISR_Tx  0x02
+#define ISR_Rx  0x04
 
 // FIFO control register
 #define FCR_ENABLE     0x01

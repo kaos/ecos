@@ -28,11 +28,11 @@
 #####COPYRIGHTEND####
 #==============================================================================
 
-PACKAGE       := hal_tx39_sim
+PACKAGE       := hal_mips_sim
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c sim.S
+COMPILE       := hal_diag.c platform.S plf_misc.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

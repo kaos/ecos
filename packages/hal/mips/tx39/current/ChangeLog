@@ -1,0 +1,52 @@
+1999-05-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/var_misc.c: Added definition of hal_interrupt_level[].
+
+	* include/variant.inc:
+	* src/variant.S:
+	Added these files. They contain stuff that was previously in the
+	jmr3904 platform files.
+
+	* src/PKGconf.mak (COMPILE): Added variant.S
+
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported whole directory tree into main trunk of repository.
+	
+1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/imp_cache.h
+	* include/imp_intr.h
+	* include/impl.h
+	* src/imp_misc.c: 	
+	* include/var_cache.h
+	* include/var_intr.h
+	* include/variant.inc
+	* src/var_misc.c: 
+	Changed references to "imp" and "implementation" to "var" and
+	"variant" respectively.
+
+	* include/var_arch.h
+	File added.
+	
+	* include/pkgconf/hal_tx39.h: 
+	* include/pkgconf/hal_mips_tx39.h:
+	File hal_tx39.h renamed to match name synthesized by pkgconf.tcl.
+
+1999-04-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/imp_cache.h: Move cache enables and disables here from
+	hal_cache.h since they are tx39 specific.
+
+1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/imp_misc.c: Added this file to contain
+	hal_implementation_init().
+
+	* src/PKGconf.mak (COMPILE): Added imp_misc.c.
+
+1999-04-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_tx39.h: Removed superfluous variant level
+	from configuration data.
+

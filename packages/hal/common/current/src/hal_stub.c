@@ -317,9 +317,9 @@ __build_t_packet (int sigval, char *buf)
 {
     target_register_t addr;
     char *ptr = buf;
-    target_register_t *sp;
+    target_register_t sp;
 
-    sp = (target_register_t *) get_register (SP);
+    sp = (target_register_t) get_register (SP);
 
     *ptr++ = 'T';
     *ptr++ = __tohex (sigval >> 4);

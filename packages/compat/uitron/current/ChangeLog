@@ -1,3 +1,9 @@
+1999-05-14  Hugo Tyson  <hmt@masala.cygnus.co.uk>
+
+	* include/uit_objs.hxx: object array declaration macro now
+	contains constructor priority ordering rune; if 0'd out pending 
+	99r1 compiler cutover.
+
 1999-04-23  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/testcx7.cxx: T2_MALLOC definition; only make it smaller

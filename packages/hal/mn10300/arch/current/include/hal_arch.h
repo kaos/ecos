@@ -106,7 +106,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 #define HAL_THREAD_INIT_CONTEXT( _sp_, _thread_, _entry_, _id_ )            \
 {                                                                           \
     register HAL_SavedRegisters *_regs_;                                    \
-    _regs_ = (HAL_SavedRegisters *)(((CYG_ADDRWORD)(_sp_)&(~3)) -           \
+    _regs_ = (HAL_SavedRegisters *)(((CYG_ADDRWORD)(_sp_)&~15) -            \
                                     sizeof(HAL_SavedRegisters)*2);          \
     _regs_->d0    = (CYG_WORD)(_thread_);                                   \
     _regs_->d1    = (_id_)|0xddd1;                                          \

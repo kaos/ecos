@@ -41,10 +41,15 @@
 //####DESCRIPTIONEND####
 //
 
+#include <pkgconf/hal.h>
+
 //-----------------------------------------------------------------------------
 // Characterize the architecture
 
-#define CYG_BYTEORDER           CYG_MSBFIRST    // Big endian
+#if 0
+#else
+# define CYG_BYTEORDER           CYG_MSBFIRST    // Big endian
+#endif
 
 //-----------------------------------------------------------------------------
 // MIPS does not usually use labels with undersores. Some labels generated

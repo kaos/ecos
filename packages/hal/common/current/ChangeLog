@@ -1,3 +1,33 @@
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	The following changes were all made on a branch and imported into
+	the main trunk later.
+	
+    1999-05-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal.h:
+	tidied up all MIPS targets to include CYGBLD_HAL_TARGET_H. This
+	will eventually apply to all configurations.
+
+    1999-05-06  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/PKGconf.mak (COMPILE): Added dbg-threads-syscall.c.
+
+	* include/dbg-thread-syscall.h: 
+	* src/dbg-threads-syscall.c:
+	Files added to enable support for thread-awareness in GDB stub
+	ROMs. The .h file has been moved from kernel/src/debug.
+
+    1999-04-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_stub.c (__build_t_packet): Changed sp variable to a
+	non-pointer type to force it to be installed in the T packet with
+	the right size.
+
+	* src/drv_api.c: Added cyg_interrupt_call_pending_DSRs() to keep
+	HAL happy in non-kernel configurations.
+
+	
 1999-04-28  Bart Veer  <bartv@cygnus.co.uk>
 
 	* src/PKGconf.mak:

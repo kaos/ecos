@@ -1,8 +1,10 @@
+#ifndef CYGONCE_HAL_PLATFORM_INC
+#define CYGONCE_HAL_PLATFORM_INC
 ##=============================================================================
 ##
-##	sim.S
+##	platform.inc
 ##
-##	Simulator hardware setup
+##	JMR-TX3904 board assembler header file
 ##
 ##=============================================================================
 #####COPYRIGHTBEGIN####
@@ -31,25 +33,25 @@
 ##
 ## Author(s): 	nickg
 ## Contributors:	nickg
-## Date:	1998-02-05
-## Purpose:	Simulator hardware setup
-## Description:	This file contains any code needed to initialize the
-##		hardware on the MIPS simulator.
+## Date:	1999-04-06
+## Purpose:	JMR-TX3904 board definitions.
+## Description:	This file contains various definitions and macros that are
+##              useful for writing assembly code for the JMR-TX3904 board.
+## Usage:
+##		#include <cyg/hal/platform.inc>
+##		...
+##		
 ##
 ######DESCRIPTIONEND####
 ##
 ##=============================================================================
 
-#include <pkgconf/hal.h>
-	
-##include <cyg/hal/mips.inc>
-
-#------------------------------------------------------------------------------	
-		
-	.globl	hal_hardware_init
-hal_hardware_init:
-
-	jr	$31
+#include <cyg/hal/mips.inc>
 
 #------------------------------------------------------------------------------
-# end of sim.S		
+
+# Nothing to define here
+
+#------------------------------------------------------------------------------
+#endif // ifndef CYGONCE_HAL_PLATFORM_INC
+# end of platform.inc

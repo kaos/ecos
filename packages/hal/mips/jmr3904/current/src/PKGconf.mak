@@ -28,11 +28,11 @@
 #####COPYRIGHTEND####
 #==============================================================================
 
-PACKAGE       := hal_tx39_jmr3904
+PACKAGE       := hal_mips_tx39_jmr3904
 include ../../../../../pkgconf/pkgconf.mak
 
 LIBRARY       := libtarget.a
-COMPILE       := hal_diag.c jmr3904.S plf_stub.c
+COMPILE       := platform.S plf_misc.c plf_stub.c
 OTHER_OBJS    :=
 OTHER_TARGETS :=
 OTHER_CLEAN   :=

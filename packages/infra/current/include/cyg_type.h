@@ -255,6 +255,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #define CYG_INIT_KERNEL                 40000
 #define CYG_INIT_IO                     49000
 #define CYG_INIT_LIBC                   50000
+#define CYG_INIT_COMPAT                 55000
 #define CYG_INIT_APPLICATION            60000
 #define CYG_INIT_PREDEFAULT             65534
 #define CYG_INIT_DEFAULT                65535

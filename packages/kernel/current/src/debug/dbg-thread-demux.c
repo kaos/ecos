@@ -73,7 +73,7 @@
 #include <cyg/infra/cyg_type.h>
 
 #include "cyg/hal/dbg-threads-api.h"
-#include "dbg-thread-syscall.h" 
+#include "cyg/hal/dbg-thread-syscall.h" 
 
 // -------------------------------------------------------------------------
 
@@ -125,10 +125,10 @@ static int dbg_thread_syscall_rmt(
 }
 
 // -------------------------------------------------------------------------
-// When Cygmon calls us on the TX39 It has its own value in GP. We need to
+// When Cygmon calls us on the MIPS It has its own value in GP. We need to
 // save that and set our own before proceeding.
 
-#ifdef CYG_HAL_TX39
+#ifdef CYGPKG_HAL_MIPS
 static int dbg_thread_syscall_rmt_1(
                        enum dbg_syscall_ids id,
                        union dbg_thread_syscall_parms * p
@@ -137,15 +137,15 @@ static int dbg_thread_syscall_rmt_1(
 
   register long gp_save;
   int r;
-  asm ( "move   %0,$28;"
-        ".extern _gp;"
-        "la     $gp,_gp;"
-        : "=r"(gp_save)
-      );
+  asm volatile ( "move   %0,$28;"
+                 ".extern _gp;"
+                 "la     $gp,_gp;"
+                 : "=r"(gp_save)
+                 );
 
   r = dbg_thread_syscall_rmt( id, p );
   
-  asm ( "move   $gp,%0;" :: "r"(gp_save) );
+  asm volatile ( "move   $gp,%0;" :: "r"(gp_save) );
 
   return r;
   
@@ -177,7 +177,7 @@ void patch_dbg_syscalls(void * vector)
 
 #ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
 
-#ifdef CYG_HAL_TX39
+#ifdef CYGPKG_HAL_MIPS
    f[DBG_SYSCALL_THREAD_VEC_NUM] = dbg_thread_syscall_rmt_1 ;
 #else   
    f[DBG_SYSCALL_THREAD_VEC_NUM] = dbg_thread_syscall_rmt ;

@@ -74,6 +74,8 @@ Cyg_HardwareThread::thread_entry( Cyg_Thread *thread )
     Cyg_Scheduler::scheduler.need_reschedule = false; // finished rescheduling
     Cyg_Scheduler::scheduler.current_thread = thread; // restore current thread pointer
 
+    CYG_INSTRUMENT_THREAD(ENTER,thread,0);
+    
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
     // Reset the timeslice counter so that this thread gets a full
     // quantum. 

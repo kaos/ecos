@@ -99,7 +99,7 @@ hal_thread_init_context(  CYG_WORD sparg,
     if ( 0 == (id & 0xffff0000) )
         id <<= 16;
 
-    fp &= ~7;                           // round down to double alignment
+    fp &= ~15;                          // round down to double alignment
 
     frame = (HAL_FrameStructure *)(
         fp - sizeof( HAL_FrameStructure ) );

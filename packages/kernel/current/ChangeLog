@@ -1,3 +1,31 @@
+1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	The following changes were all made in a branch and are now being
+	merged:
+	
+    1999-05-06  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/debug/dbg-thread-demux.c:
+	Use dbg-thread-syscall.h from HAL rather than local version.
+	Made dbg_thread_syscall_rmt_1() generic to all MIPS targets.
+
+	* src/debug/dbg-thread-syscall.h:
+	Removed. Replaced by identical file in hal/common.
+	
+    1999-04-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/kernel.h:
+	Added CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP option.
+
+	* include/instrmnt.h: Added CYG_INSTRUMENT_EVENT_THREAD_ENTER
+	event.
+
+	* src/instrmnt/meminst.cxx (cyg_instrument): Added implementation
+	of CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP option.
+
+	* src/common/thread.cxx: Added extra instrumentation point on
+	thread entry.
+
 1999-05-10  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/stress_threads.c (main_program): Added workaround for a

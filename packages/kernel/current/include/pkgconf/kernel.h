@@ -791,6 +791,17 @@
          of memory."
  }
 
+ cdl_option CYGNUM_KERNEL_INSTRUMENT_BUFFER_WRAP {
+     display            "Wrap instrument buffer"
+     parent             CYGPKG_KERNEL_INSTRUMENT
+     description "
+         When the instrumentation buffer is full it can either be restarted
+         from the beginning, overwriting older data, or it can stop at the
+         end. The former is useful if you want to look at the last entries
+         made while the latter is useful if you want to look at the first
+         few."
+ }
+
  cdl_option CYGDBG_KERNEL_INSTRUMENT_FLAGS {
      display            "Perform selective instrumentation"
      parent             CYGPKG_KERNEL_INSTRUMENT
@@ -946,6 +957,7 @@
 #undef  CYGPKG_KERNEL_INSTRUMENT
 #undef  CYGVAR_KERNEL_INSTRUMENT_EXTERNAL_BUFFER
 #define CYGNUM_KERNEL_INSTRUMENT_BUFFER_SIZE           256
+#define CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP
 #define CYGDBG_KERNEL_INSTRUMENT_FLAGS
 #define CYGDBG_KERNEL_INSTRUMENT_SCHED
 #define CYGDBG_KERNEL_INSTRUMENT_THREAD
@@ -1120,7 +1132,7 @@
 
 #endif
 
-#if defined(CYG_HAL_MIPS_JMR3904)
+#if defined(CYG_HAL_MIPS_TX39_JMR3904)
 
 #define CYGNUM_KERNEL_COUNTERS_RTC_RESOLUTION   {1000000000, 100}
 #if (CYGHWR_HAL_MIPS_CPU_FREQ == 50)
@@ -1138,6 +1150,7 @@
 #define CYGNUM_KERNEL_COUNTERS_RTC_PERIOD       999
 
 #endif
+
 
 #if defined(CYG_HAL_POWERPC_MPC860)
 

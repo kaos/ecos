@@ -313,7 +313,7 @@
      parent     CYGPKG_HAL_DEBUG
      requires   !CYGPKG_HAL_POWERPC_SIM
      requires   !CYGPKG_HAL_MN10300_SIM
-     requires   !CYGPKG_HAL_TX39_SIM
+     requires   !CYGPKG_HAL_MIPS_SIM
      requires   !CYGPKG_HAL_I386_LINUX
      requires   !CYGPKG_HAL_SPARCLITE
      description "
@@ -329,7 +329,7 @@
      display    "Include GDB external break support"
      parent     CYGPKG_HAL_DEBUG
      requires   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-     requires   !CYGPKG_HAL_TX39_JMR3904
+     requires   !CYGPKG_HAL_MIPS_TX39_JMR3904
      requires   !CYGPKG_HAL_POWERPC_FADS
      description "
         This option causes the GDB stub to add a serial interrupt handler
@@ -381,7 +381,7 @@
 
 //#define CYG_HAL_USE_ROM_MONITOR
 
-#if defined(CYG_HAL_TX39_JMR3904) && defined(CYG_HAL_STARTUP_RAM)
+#if defined(CYG_HAL_MIPS_TX39_JMR3904) && defined(CYG_HAL_STARTUP_RAM)
 #define CYG_HAL_USE_ROM_MONITOR
 #define CYG_HAL_USE_ROM_MONITOR_CYGMON
 #endif
@@ -395,6 +395,7 @@
 //#define CYG_HAL_USE_ROM_MONITOR_SLOAD
 //#define CYG_HAL_USE_ROM_MONITOR_GDB_STUBS
 //#define CYG_HAL_USE_ROM_MONITOR_CYGMON
+//#define CYG_HAL_USE_ROM_MONITOR_PMON
 
 #endif
 
@@ -432,19 +433,8 @@
 # define CYG_HAL_POWERPC_MPC603
 #endif
 
-#ifdef CYG_HAL_TX39_JMR3904
-# define CYG_HAL_MIPS
-# define CYG_HAL_MIPS_TX39
-# define CYG_HAL_MIPS_TX3904
-# define CYG_HAL_MIPS_JMR3904
-#endif
-#ifdef CYG_HAL_TX39_SIM
-# define CYG_HAL_MIPS
-# define CYG_HAL_MIPS_TX39
-# define CYG_HAL_MIPS_SIM
-#endif
-#ifdef CYG_HAL_MIPS_TX39
-#include <pkgconf/hal_tx39.h>
+#ifdef CYGPKG_HAL_MIPS
+#include CYGBLD_HAL_TARGET_H
 #endif
 
 /* -------------------------------------------------------------------*/

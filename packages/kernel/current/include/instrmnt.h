@@ -120,6 +120,7 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_EVENT_THREAD_PRIORITY    6
 #define CYG_INSTRUMENT_EVENT_THREAD_DELAY       7
 #define CYG_INSTRUMENT_EVENT_THREAD_ALARM       8
+#define CYG_INSTRUMENT_EVENT_THREAD_ENTER       9
 
 // Interrupt events
 #define CYG_INSTRUMENT_EVENT_INTR_RAISE         1

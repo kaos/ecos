@@ -306,11 +306,10 @@ aeb_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     aeb_serial_info *aeb_chan = (aeb_serial_info *)chan->dev_priv;
     volatile struct serial_port *port = (volatile struct serial_port *)aeb_chan->base;
     unsigned char isr;
-    isr = port->isr;
-    if ((isr & 0x0E) == ISR_Tx) {
+    isr = port->isr & 0x0E;
+    if (isr == ISR_Tx) {
         (chan->callbacks->xmt_char)(chan);
-    } else {
-        // Assume receive interrupt
+    } else if (isr == ISR_Rx) {
         (chan->callbacks->rcv_char)(chan, port->rhr);
     }
     cyg_drv_interrupt_unmask(aeb_chan->int_num);

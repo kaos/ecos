@@ -54,6 +54,8 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_io.h>
 
+#include <cyg/hal/var_intr.h>
+
 //--------------------------------------------------------------------------
 // MIPS vectors. 
 
@@ -88,12 +90,14 @@
 #define CYGNUM_HAL_VECTOR_OVERFLOW             12
 // Reserved
 #define CYGNUM_HAL_VECTOR_RESERVED_13          13
-// Floating point exception - not applicable yet
-// #define CYGNUM_HAL_VECTOR_FPE                  15
+// Floating point exception
+#ifdef  CYGHWR_HAL_MIPS_FPU
+#define CYGNUM_HAL_VECTOR_FPE                  15
+#endif
 
 #define CYGNUM_HAL_VSR_MIN                     0
-#define CYGNUM_HAL_VSR_MAX                     13
-#define CYGNUM_HAL_VSR_COUNT                   14
+#define CYGNUM_HAL_VSR_MAX                     15
+#define CYGNUM_HAL_VSR_COUNT                   16
 
 // Exception vectors. These are the values used when passed out to an
 // external exception handler using cyg_hal_deliver_exception()
@@ -121,38 +125,33 @@
 #define CYGNUM_HAL_EXCEPTION_MAX               13
 #define CYGNUM_HAL_EXCEPTION_COUNT             13
 
-// Interrupt vectors.
 
-#if defined(CYG_HAL_MIPS_TX3904) || defined(CYG_HAL_MIPS_SIM)
+#ifndef CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED
 
-// These are decoded via the IP bits of the cause
-// register when an external interrupt is delivered.
+// the default for all MIPS variants is to use the 6 bits
+// in the cause register.
 
-#define CYGNUM_HAL_INTERRUPT_1                0
-#define CYGNUM_HAL_INTERRUPT_2                1
-#define CYGNUM_HAL_INTERRUPT_3                2
-#define CYGNUM_HAL_INTERRUPT_4                3
-#define CYGNUM_HAL_INTERRUPT_5                4
-#define CYGNUM_HAL_INTERRUPT_6                5
-#define CYGNUM_HAL_INTERRUPT_7                6
-#define CYGNUM_HAL_INTERRUPT_DMAC1_CH3        7
-#define CYGNUM_HAL_INTERRUPT_DMAC1_CH2        8
-#define CYGNUM_HAL_INTERRUPT_DMAC0_CH1        9
-#define CYGNUM_HAL_INTERRUPT_DMAC0_CH0        10
-#define CYGNUM_HAL_INTERRUPT_SIO_0            11
-#define CYGNUM_HAL_INTERRUPT_SIO_1            12
-#define CYGNUM_HAL_INTERRUPT_TMR_0            13
-#define CYGNUM_HAL_INTERRUPT_TMR_1            14
-#define CYGNUM_HAL_INTERRUPT_TMR_2            15
-#define CYGNUM_HAL_INTERRUPT_0                16
+#define CYGNUM_HAL_INTERRUPT_0                0
+#define CYGNUM_HAL_INTERRUPT_1                1
+#define CYGNUM_HAL_INTERRUPT_2                2
+#define CYGNUM_HAL_INTERRUPT_3                3
+#define CYGNUM_HAL_INTERRUPT_4                4
+#define CYGNUM_HAL_INTERRUPT_5                5
 
 // Min/Max ISR numbers and how many there are
 #define CYGNUM_HAL_ISR_MIN                     0
-#define CYGNUM_HAL_ISR_MAX                     16
-#define CYGNUM_HAL_ISR_COUNT                   17
+#define CYGNUM_HAL_ISR_MAX                     5
+#define CYGNUM_HAL_ISR_COUNT                   6
 
-// The vector used by the Real time clock
-#define CYGNUM_HAL_INTERRUPT_RTC            CYGNUM_HAL_INTERRUPT_TMR_0
+// The vector used by the Real time clock. The default here is to use
+// interrupt 5, which is connected to the counter/comparator registers
+// in many MIPS variants.
+
+#ifndef CYGNUM_HAL_INTERRUPT_RTC
+#define CYGNUM_HAL_INTERRUPT_RTC            CYGNUM_HAL_INTERRUPT_5
+#endif
+
+#define CYGHWR_HAL_INTERRUPT_VECTORS_DEFINED
 
 #endif
 
@@ -179,8 +178,9 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 
 //--------------------------------------------------------------------------
 // Interrupt control macros
-// Beware of the nops in this code. These fill load/store delay slots to
-// prevent following code being run in the wrong state.
+// Beware of nops in this code. They fill delay slots and avoid CP0 hazards
+// that might otherwise cause following code to run in the wrong state or
+// cause a resource conflict.
 
 #define HAL_DISABLE_INTERRUPTS(_old_)           \
 {                                               \
@@ -240,6 +240,8 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 // For chained interrupts we only have a single vector though which all
 // are passed. For unchained interrupts we have a vector per interrupt.
 
+#ifndef HAL_TRANSLATE_VECTOR
+
 #if defined(CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN)
 
 #define HAL_TRANSLATE_VECTOR(_vector_,_index_) (_index_) = 0
@@ -247,6 +249,8 @@ typedef cyg_uint32 CYG_INTERRUPT_STATE;
 #else
 
 #define HAL_TRANSLATE_VECTOR(_vector_,_index_) (_index_) = (_vector_)
+
+#endif
 
 #endif
 
@@ -318,171 +322,120 @@ CYG_MACRO_END
 
 //--------------------------------------------------------------------------
 // Interrupt controller access
+// The default code here simply uses the fields present in the CP0 status
+// and cause registers to implement this functionality.
+// Beware of nops in this code. They fill delay slots and avoid CP0 hazards
+// that might otherwise cause following code to run in the wrong state or
+// cause a resource conflict.
 
-#if defined(CYG_HAL_MIPS_TX3904) || defined(CYG_HAL_MIPS_SIM)
+#ifndef CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
 
-#define CYG_HAL_MIPS_TX3904_ILR0     0xFFFFC010
-#define CYG_HAL_MIPS_TX3904_CConR    0xFFFFE000
+#define HAL_INTERRUPT_MASK( _vector_ )          \
+CYG_MACRO_START                                 \
+    asm volatile (                              \
+        "mfc0   $3,$12\n"                       \
+        "la     $2,0x00000400\n"                \
+        "sllv   $2,$2,%0\n"                     \
+        "nor    $2,$2,$0\n"                     \
+        "and    $3,$3,$2\n"                     \
+        "mtc0   $3,$12\n"                       \
+        "nop; nop; nop\n"                       \
+        :                                       \
+        : "r"(_vector_)                         \
+        : "$2", "$3"                            \
+        );                                      \
+CYG_MACRO_END
 
-// Array which stores the configured priority levels for the configured
-// interrupts.
-externC volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
+#define HAL_INTERRUPT_UNMASK( _vector_ )        \
+CYG_MACRO_START                                 \
+    asm volatile (                              \
+        "mfc0   $3,$12\n"                       \
+        "la     $2,0x00000400\n"                \
+        "sllv   $2,$2,%0\n"                     \
+        "or     $3,$3,$2\n"                     \
+        "mtc0   $3,$12\n"                       \
+        "nop; nop; nop\n"                       \
+        :                                       \
+        : "r"(_vector_)                         \
+        : "$2", "$3"                            \
+        );                                      \
+CYG_MACRO_END
 
+#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )   \
+CYG_MACRO_START                                 \
+    asm volatile (                              \
+        "mfc0   $3,$13\n"                       \
+        "la     $2,0x00000400\n"                \
+        "sllv   $2,$2,%0\n"                     \
+        "nor    $2,$2,$0\n"                     \
+        "and    $3,$3,$2\n"                     \
+        "mtc0   $3,$13\n"                       \
+        "nop; nop; nop\n"                       \
+        :                                       \
+        : "r"(_vector_)                         \
+        : "$2", "$3"                            \
+        );                                      \
+CYG_MACRO_END
 
-#define HAL_INTERRUPT_MASK( _vector_ )                       \
-{                                                            \
-    HAL_IO_REGISTER _reg_ = CYG_HAL_MIPS_TX3904_ILR0;        \
-    CYG_WORD32 _ilr_;                                        \
-    _reg_ += (_vector_)&0xC;                                 \
-    HAL_READ_UINT32( _reg_, _ilr_ );                         \
-    _ilr_ &= ~(7 << (((_vector_)&0x3)<<3));                  \
-    HAL_WRITE_UINT32( _reg_, _ilr_ );                        \
-}
+#define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )
 
-#define HAL_INTERRUPT_UNMASK( _vector_ )                                \
-{                                                                       \
-    HAL_IO_REGISTER _reg_ = CYG_HAL_MIPS_TX3904_ILR0;                   \
-    CYG_WORD32 _ilr_;                                                   \
-    _reg_ += (_vector_)&0xC;                                            \
-    HAL_READ_UINT32( _reg_, _ilr_ );                                    \
-    _ilr_ |= hal_interrupt_level[_vector_] << (((_vector_)&0x3)<<3);    \
-    HAL_WRITE_UINT32( _reg_, _ilr_ );                                   \
-}
+#define HAL_INTERRUPT_SET_LEVEL( _vector_, _level_ )
 
-#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                           \
-{                                                                       \
-    if( _vector_ <= CYGNUM_HAL_INTERRUPT_7 ||                           \
-        _vector_ == CYGNUM_HAL_INTERRUPT_0 )                            \
-    {                                                                   \
-        cyg_uint32 _val_ = _vector_ + 1;                                \
-        if( _val_ == CYGNUM_HAL_INTERRUPT_0 + 1 ) _val_ = 0;            \
-        HAL_WRITE_UINT8( CYG_HAL_MIPS_TX3904_CConR+1, _val_);           \
-    }                                                                   \
-}
-
-#define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )              \
-{                                                                       \
-    if( _vector_ <= CYGNUM_HAL_INTERRUPT_7 ||                           \
-        _vector_ == CYGNUM_HAL_INTERRUPT_0 )                            \
-    {                                                                   \
-        cyg_uint32 _val_ = 0;                                           \
-        if( _up_ ) _val_ |= 1;                                          \
-        if( !(_level_) ) _val_ |= 2;                                    \
-        HAL_WRITE_UINT16( CYG_HAL_MIPS_TX3904_CConR+2, _val_ );         \
-    }                                                                   \
-}
-
-#define HAL_INTERRUPT_SET_LEVEL( _vector_, _level_ )    \
-{                                                       \
-    HAL_IO_REGISTER _reg_ = CYG_HAL_MIPS_TX3904_ILR0;   \
-    CYG_WORD32 _ilr_;                                   \
-    _reg_ += (_vector_)&0xC;                            \
-    HAL_READ_UINT32( _reg_, _ilr_ );                    \
-    _ilr_ |= (_level_) << (((_vector_)&0x3)<<3);        \
-    HAL_WRITE_UINT32( _reg_, _ilr_ );                   \
-    hal_interrupt_level[_vector_] = _level_;            \
-}
-
-#else
-
-#error Unspecified platform for MIPS
+#define CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
 
 #endif
 
 //--------------------------------------------------------------------------
-// Clock control
+// Clock control.
+// This code uses the count and compare registers that are present in many
+// MIPS variants.
+// Beware of nops in this code. They fill delay slots and avoid CP0 hazards
+// that might otherwise cause following code to run in the wrong state or
+// cause a resource conflict.
 
-#if defined(CYG_HAL_MIPS_TX3904) || defined(CYG_HAL_MIPS_SIM)
+#ifndef CYGHWR_HAL_CLOCK_CONTROL_DEFINED
 
-#define CYG_HAL_MIPS_TX3904_TIMER_BASE 0xFFFFF000
-#define CYG_HAL_MIPS_TX3904_TIMER_CR  (CYG_HAL_MIPS_TX3904_TIMER_BASE + 0x00)
-#define CYG_HAL_MIPS_TX3904_TIMER_SR  (CYG_HAL_MIPS_TX3904_TIMER_BASE + 0x04)
-#define CYG_HAL_MIPS_TX3904_TIMER_CPR (CYG_HAL_MIPS_TX3904_TIMER_BASE + 0x08)
-#define CYG_HAL_MIPS_TX3904_TIMER_IMR (CYG_HAL_MIPS_TX3904_TIMER_BASE + 0x10)
-#define CYG_HAL_MIPS_TX3904_TIMER_DR  (CYG_HAL_MIPS_TX3904_TIMER_BASE + 0x20)
-#define CYG_HAL_MIPS_TX3904_TIMER_RR  (CYG_HAL_MIPS_TX3904_TIMER_BASE + 0xF0)
-
-#define HAL_CLOCK_INITIALIZE( _period_ )                             \
-{                                                                    \
-    HAL_WRITE_UINT32( CYG_HAL_MIPS_TX3904_TIMER_DR, 0x00000003 );    \
-    HAL_WRITE_UINT32( CYG_HAL_MIPS_TX3904_TIMER_CPR, _period_ );     \
-    HAL_WRITE_UINT32( CYG_HAL_MIPS_TX3904_TIMER_SR, 0x00000000 );    \
-    HAL_WRITE_UINT32( CYG_HAL_MIPS_TX3904_TIMER_IMR, 0x00008001 );   \
-    HAL_WRITE_UINT32( CYG_HAL_MIPS_TX3904_TIMER_CR, 0x000000C0 );    \
-}
-
-#define HAL_CLOCK_RESET( _vector_, _period_ )                        \
-{                                                                    \
-    HAL_WRITE_UINT32( CYG_HAL_MIPS_TX3904_TIMER_SR, 0x00000000 );    \
-}
-
-#if defined(CYGHWR_HAL_MIPS_TX3904_TRR_REQUIRES_SYNC) && \
-    !defined(CYG_HAL_MIPS_SIM)
-
-// We need to sync and check the coprocessor 0 condition - this indicates
-// whether data is present in the write buffer. We need to wait until
-// that data to be written is flushed out. This works around a tx39 bug.
-// gcc will insert a NOP after the asm insns.
-
-# define HAL_CLOCK_READ( _pvalue_ )                                  \
-CYG_MACRO_START                                                      \
-    asm volatile (                                                   \
-        "sync; nop; 1: ; bc0f 1b"                                    \
-        :                                                            \
-        :                                                            \
-        : "$0"                                                       \
-        );                                                           \
-    HAL_READ_UINT32( CYG_HAL_MIPS_TX3904_TIMER_RR, *(_pvalue_) );    \
+#define HAL_CLOCK_INITIALIZE( _period_ )        \
+CYG_MACRO_START                                 \
+    asm volatile (                              \
+        "mtc0 $0,$9\n"                          \
+        "nop; nop; nop\n"                       \
+        "mtc0 %0,$11\n"                         \
+        "nop; nop; nop\n"                       \
+        :                                       \
+        : "r"(_period_)                         \
+        );                                      \
 CYG_MACRO_END
 
-#else
-
-# define HAL_CLOCK_READ( _pvalue_ )                                  \
-CYG_MACRO_START                                                      \
-    HAL_READ_UINT32( CYG_HAL_MIPS_TX3904_TIMER_RR, *(_pvalue_) );    \
+#define HAL_CLOCK_RESET( _vector_, _period_ )   \
+CYG_MACRO_START                                 \
+    asm volatile (                              \
+        "mtc0 $0,$9\n"                          \
+        "nop; nop; nop\n"                       \
+        "mtc0 %0,$11\n"                         \
+        "nop; nop; nop\n"                       \
+        :                                       \
+        : "r"(_period_)                         \
+        );                                      \
 CYG_MACRO_END
+
+#define HAL_CLOCK_READ( _pvalue_ )              \
+CYG_MACRO_START                                 \
+    register CYG_WORD32 result;                 \
+    asm volatile (                              \
+        "mfc0   %0,$9\n"                        \
+        : "=r"(result)                          \
+        );                                      \
+    *(_pvalue_) = result;                       \
+CYG_MACRO_END
+
+#define CYGHWR_HAL_CLOCK_CONTROL_DEFINED
 
 #endif
 
-#ifdef CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && \
+    !defined(HAL_CLOCK_LATENCY)
 #define HAL_CLOCK_LATENCY( _pvalue_ ) HAL_CLOCK_READ(_pvalue_)
-#endif
-
-#else
-
-#error Unspecified platform for MIPS
-
-#endif
-
-//--------------------------------------------------------------------------
-// Timeout exception support. This is only enabled on the real TX39 hardware.
-
-#if defined(CYG_HAL_MIPS_TX3904)
-
-#define HAL_TX39_DEBUG_TOE_ENABLE()                     \
-{                                                       \
-    HAL_IO_REGISTER _reg_ = CYG_HAL_MIPS_TX3904_CConR;  \
-    CYG_WORD32 _cconr_;                                 \
-    HAL_READ_UINT32( _reg_, _cconr_);                   \
-    _cconr_ |= 0x04000000;                              \
-    HAL_WRITE_UINT32( _reg_, _cconr_);                  \
-}
-
-#define HAL_TX39_DEBUG_TOE_DISABLE()                    \
-{                                                       \
-    HAL_IO_REGISTER _reg_ = CYG_HAL_MIPS_TX3904_CConR;  \
-    CYG_WORD32 _cconr_;                                 \
-    HAL_READ_UINT32( _reg_, _cconr_);                   \
-    _cconr_ &= 0xFBFFFFFF;                              \
-    HAL_WRITE_UINT32( _reg_, _cconr_);                  \
-}
-
-#else
-
-#define HAL_TX39_DEBUG_TOE_ENABLE()
-
-#define HAL_TX39_DEBUG_TOE_DISABLE()
-
 #endif
 
 //--------------------------------------------------------------------------

@@ -142,11 +142,6 @@
 #endif
 
 //----------------------------------------------------------------------------
-// FIXME: The PPC sometimes sees a spurious byte. There is workaround code
-// that can be enabled here.
-#define HANDLE_SPURIOUS 1
-
-//----------------------------------------------------------------------------
 // The data in buffer and the cmd buffer
 #define IN_BUFFER_SIZE 1024
 cyg_uint8 in_buffer[IN_BUFFER_SIZE];
@@ -666,7 +661,6 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
     int icrc, host_crc;
     cyg_uint8 *p1;
     cyg_int8 host_status = 'O';         // host is happy by default
-    int spurious = 0;
 
     // Verify that the test can be run with available ressources.
     if (MODE_EOP_ECHO == mode && size > IN_BUFFER_SIZE)
@@ -738,20 +732,6 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
         Tcyg_io_read(handle, &in_buffer[0], &chunk_len);
         host_status = in_buffer[0];
 
-#if HANDLE_SPURIOUS
-        // FIXME: This occassionally reads back a spurious character
-        // from the transmission. It's not just noise, it's definitely
-        // a byte from the previously transmitted data.
-        if (in_buffer[0] != 'O' && in_buffer[1] == 'O') {
-            spurious = in_buffer[0];
-            chunk_len = 1;
-            Tcyg_io_read(handle, &in_buffer[0], &chunk_len);
-            if (in_buffer[0] == 'K') {
-                host_status = 'O';
-            }
-        }
-#endif
-
         // Reply that we have completed the test.
         {
             const char msg_done[] = "DONE";
@@ -759,13 +739,6 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
             chunk_len = strlen(&msg_done[0]);
             Tcyg_io_write(handle, &msg_done[0], &chunk_len);
         }
-
-#if HANDLE_SPURIOUS
-        if (spurious) {
-            diag_printf("******* Spurious byte 0x%02x *******\n", spurious);
-        }
-#endif
-
     }
     break;
     case MODE_DUPLEX_ECHO:
@@ -820,20 +793,6 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
         Tcyg_io_read(handle, &in_buffer[0], &chunk_len);
         host_status = in_buffer[0];
 
-#if HANDLE_SPURIOUS
-        // FIXME: This occassionally reads back a spurious character
-        // from the transmission. It's not just noise, it's definitely
-        // a byte from the previously transmitted data.
-        if (in_buffer[0] != 'O' && in_buffer[1] == 'O') {
-            spurious = in_buffer[0];
-            chunk_len = 1;
-            Tcyg_io_read(handle, &in_buffer[0], &chunk_len);
-            if (in_buffer[0] == 'K') {
-                host_status = 'O';
-            }
-        }
-#endif
-
         // Reply that we have completed the test.
         {
             const char msg_done[] = "DONE";
@@ -841,12 +800,6 @@ test_binary(cyg_io_handle_t handle, int size, cyg_mode_t mode)
             chunk_len = strlen(&msg_done[0]);
             Tcyg_io_write(handle, &msg_done[0], &chunk_len);
         }
-
-#if HANDLE_SPURIOUS
-        if (spurious) {
-            diag_printf("******* Spurious byte 0x%02x *******\n", spurious);
-        }
-#endif
     }
     break;
     default:

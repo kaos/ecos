@@ -1,8 +1,8 @@
 ##=============================================================================
 ##
-##	sim.S
+##	platform.S
 ##
-##	Simulator hardware setup
+##	MIPS JMR-TX3904 platform code
 ##
 ##=============================================================================
 #####COPYRIGHTBEGIN####
@@ -31,25 +31,30 @@
 ##
 ## Author(s): 	nickg
 ## Contributors:	nickg
-## Date:	1998-02-05
-## Purpose:	Simulator hardware setup
-## Description:	This file contains any code needed to initialize the
-##		hardware on the MIPS simulator.
+## Date:	1999-04-20
+## Purpose:	MIPS JMR-TX3904 platform code
+## Description:	Platform specific code for JMR-TX3904 board.
+##              
+##		
+##		
 ##
 ######DESCRIPTIONEND####
 ##
 ##=============================================================================
 
+#include <pkgconf/system.h>	
 #include <pkgconf/hal.h>
+
+#ifdef CYGPKG_KERNEL
+# include <pkgconf/kernel.h>	
+#endif
+			
+#include <cyg/hal/arch.inc>	
+
+##-----------------------------------------------------------------------------
+
+## nothing here at present.	
 	
-##include <cyg/hal/mips.inc>
-
-#------------------------------------------------------------------------------	
-		
-	.globl	hal_hardware_init
-hal_hardware_init:
-
-	jr	$31
-
-#------------------------------------------------------------------------------
-# end of sim.S
+##-----------------------------------------------------------------------------
+## end of platform.S
+	

@@ -98,6 +98,7 @@ struct serial_port {
 
 // Interrupt status register
 #define ISR_Tx  0x02
+#define ISR_Rx  0x04
 
 static unsigned char select_word_length[] = {
     LCR_WL5,    // 5 bits / word (char)
