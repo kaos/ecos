@@ -1,3 +1,4 @@
+* TFTP client and TFTP server now work with both IPv4 and IPv6.
 * New port for Analogue & Micro Adder-II (PPC 852T) boards
 * New ports for Intel XScale IXP425 boards (IXDP425 and Generic Residential
   Gateway).
