@@ -1,3 +1,8 @@
+2003-02-05  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* doc/snmp.sgml: Fix a doc build failure, and tweak some duff links and
+	a few typos.
+
 2003-02-03  Andrew Lunn <andrew.lunn@ascom.ch>
 
         * doc/prepare-manpages.sh: New file. Convert from man to sgml.

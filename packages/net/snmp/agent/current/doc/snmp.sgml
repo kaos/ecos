@@ -246,7 +246,9 @@ again.
 <PARA>
 Apart from adding the networking, common ethernet device drivers,
 snmp library and snmp agent packages, there is no configuration
-required.
+required. However there are a number of configuration options
+that can be set such as some details for the System MIB, and
+disabling SNMPv3 support (see below).
 </PARA>
 <PARA>
 Starting the SNMP agent is not integrated into network
@@ -266,21 +268,22 @@ following implications :
 <PARA>2. Security provided by v3 can be bypassed by using v1/v2c protocol.</PARA>
 <PARA>
 To provide the dispatcher with rfc 2571 type functionality, it is required to
-setup security models and access profiles. This can be provided in the normal
+set up security models and access profiles. This can be provided in the normal
 Unix style by writing the required configurations in <LITERAL>snmpd.conf</LITERAL> 
 file. Application code may setup profiles in <LITERAL>snmpd.conf</LITERAL> and 
 optionally set the environment variable <LITERAL>SNMPCONFPATH</LITERAL> to 
 point to the file if it is not in the usual location. The whole concept works
 in the usual way as with the standard UCD-SNMP distribution.
 </PARA>
+</SECT2>
 <SECT2 id="Traps">
 <TITLE>Traps</TITLE>
 <PARA>
-The support of <LITERAL>trapsink</LITERAL> command in  
-<ulink url="net-snmp-snmpd.conf.html"> snmpd.conf</ulink> file is not tested 
-and may have problems in working as expected. Moreover, in systems that do not 
-filesystem support, there is no way to configure a trap-session in conventional
-way.
+The support of the <LITERAL>trapsink</LITERAL> command in the
+<link linkend="SNMPD.CONF">snmpd.conf</link> file is not tested 
+and there may be problems for it working as expected. Moreover, in systems that do not 
+have filesystem support, there is no way to configure a trap-session in the
+conventional way.
 </PARA>
 <PARA>
 For reasons mentioned above, applications need to initialize their own trap
@@ -321,17 +324,17 @@ Using snmpd.conf requires the inclusion of one of the file-system packages
 SNMP sub-system will read the snmpd.conf file from the location specified in
 <LITERAL>SNMPCONFPATH</LITERAL>, or the standard builtin locations, and use
 these profiles. Only the profiles specified in the <LITERAL>ACCESS-CONTROL</LITERAL>
-section of <ulink url="net-snmp-snmpd.conf.html">snmpd.conf</ulink> file have 
+section of <link linkend="SNMPD.CONF">snmpd.conf</link> file have 
 been tested and shown to work. Other profiles which have been implemented in 
 <LITERAL>UCD-SNMP-4.1.2</LITERAL>'s <LITERAL>snmpd.conf</LITERAL> may not work
 because the sole purpose of adding support for the snmpd.conf file has been to
-setup <LITERAL>ACCESS-CONTROL</LITERAL> models.
+set up <LITERAL>ACCESS-CONTROL</LITERAL> models.
 </PARA>
 <PARA>
 At startup, the SNMP module tries to look for file <FILENAME>snmp.conf</FILENAME>. 
 If this file is not available, the module successively looks for files
 <FILENAME>snmpd.conf</FILENAME>, <FILENAME>snmp.local.conf</FILENAME> and 
-<FILENAME>snmpd.local.conf</FILENAME> at location pointed to by <LITERAL>
+<FILENAME>snmpd.local.conf</FILENAME> at the locations pointed to by <LITERAL>
 SNMPCONFPATH</LITERAL> environment variable. In case <LITERAL>SNMPCONFPATH
 </LITERAL> is not defined, the search sequence is carried out in default directories.
 The default directories are :<FILENAME>/usr/share/snmp</filename>, <filename>
@@ -471,8 +474,8 @@ an empty list.
 contains two systems:
 </PARA>
 <PARA>
-The first tries to read the configuration file as described in
-<ulink url="net-snmp-configuring-ecos.html">snmpd.conf file</ulink> section and 
+The first tries to read the configuration file as described in the
+<link linkend="net-snmp-configuring-ecos">snmpd.conf file</link> section and 
 the second system contains code to record persistent data as files in a
 directory (typically <filename>/var/ucd-snmp</filename>) thus preserving the 
 state permanently.
