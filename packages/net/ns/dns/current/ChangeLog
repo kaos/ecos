@@ -1,3 +1,11 @@
+2002-08-29  Roland Caßebohm <roland.cassebohm@visionsystems.de>
+
+        * include/dns_priv.h: Make dns_header structure endian dependent.
+
+        * include/dns_impl.inl: Don't use htons() for bitfields <= 8 bit.
+        Change the way setting the type and class fields in build_query()
+        to work with big-endian.
+
 2002-05-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/dns.c: fixed index->ptdindex oversight.

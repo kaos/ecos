@@ -201,7 +201,7 @@ build_query(char * msg, const char * hostname, short rr_type)
     dns_hdr = (struct dns_header *) msg;
     dns_hdr->id = htons(id++);
     dns_hdr->rd = true;
-    dns_hdr->opcode = htons(DNS_QUERY);
+    dns_hdr->opcode = DNS_QUERY;
     dns_hdr->qdcount = htons(1);
   
     /* Now the question we want to ask */
@@ -216,10 +216,10 @@ build_query(char * msg, const char * hostname, short rr_type)
     ptr += len;
 
     /* Set the type and class fields */
-    *ptr++ = htons(rr_type) & 0xff;
-    *ptr++ = htons(rr_type) >> 8;
-    *ptr++ = htons(DNS_CLASS_IN) & 0xff;
-    *ptr++ = htons(DNS_CLASS_IN) >> 8;
+    *ptr++ = (rr_type >> 8) & 0xff;
+    *ptr++ = rr_type & 0xff;
+    *ptr++ = (DNS_CLASS_IN >> 8) & 0xff;
+    *ptr++ = DNS_CLASS_IN & 0xff;
 
     len = ptr - msg;
 
@@ -279,7 +279,7 @@ parse_answer(char * msg, short rr_type)
     }
 
     if ((dns_hdr->qr != 1) || 
-        (dns_hdr->opcode != htons(DNS_QUERY)) ||
+        (dns_hdr->opcode != DNS_QUERY) ||
         (dns_hdr->rcode != DNS_REPLY_NOERR)) {
         h_errno = NO_RECOVERY;
         return NULL;
