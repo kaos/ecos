@@ -2,9 +2,9 @@
 
 	* include/hal_var_ints.h (CYGHWR_HAL_GDB_PORT_VECTORS_MATCH): Define.
 
-	* src/ixp425_misc.c (hal_interrupt_mask): Mask QM1 interrupt is all
+	* src/ixp425_misc.c (hal_interrupt_mask): Mask QM1 interrupt if all
 	NPE interrupts are masked.
-	(hal_interrupt_unmask): Unmask QM1 is any NPE interrupts unmasked.
+	(hal_interrupt_unmask): Unmask QM1 if any NPE interrupts unmasked.
 
 	* include/hal_ixp425.h (IXP425_INTR_FIQ_ENC_ST): Fix offset.
  
