@@ -63,7 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_ARM_AEB {
     description   "
            This option enables the serial device drivers for the
            ARM AEB-1."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   aeb_serial.c
 
