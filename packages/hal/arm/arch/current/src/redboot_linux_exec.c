@@ -159,7 +159,14 @@ struct tag_ramdisk {
     u32 start;
 };
 
+/*
+ * this one accidentally used virtual addresses - as such,
+ * its depreciated.
+ */
 #define ATAG_INITRD	0x54410005
+
+/* describes where the compressed ramdisk image lives (physical address) */
+#define ATAG_INITRD2	0x54420005
 struct tag_initrd {
     u32 start;
     u32 size;
@@ -265,6 +272,9 @@ do_exec(int argc, char *argv[])
 
     base_addr = load_address;
     length = load_address_end - load_address;
+    // Round length up to the next quad word
+    length = (length + 3) & ~0x3;
+
     ramdisk_size = 4096*1024;
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
               (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
@@ -301,13 +311,12 @@ do_exec(int argc, char *argv[])
      * Don't double it if it's already a power of two, though.
      */
     params->u.mem.size  = 1<<hal_msbindex(CYGMEM_REGION_ram_SIZE);
-    if (params->u.mem.size < CYGMEM_REGION_ram_SIZE << 1)
+    if (params->u.mem.size < CYGMEM_REGION_ram_SIZE)
 	    params->u.mem.size <<= 1;
     params = (struct tag *)((long *)params + params->hdr.size);
-
     if (ramdisk_addr_set) {
         params->hdr.size = (sizeof(struct tag_initrd) + sizeof(struct tag_header))/sizeof(long);
-        params->hdr.tag = ATAG_INITRD;
+        params->hdr.tag = ATAG_INITRD2;
         params->u.initrd.start = CYGARC_PHYSICAL_ADDRESS(ramdisk_addr);
         params->u.initrd.size = ramdisk_size;
         params = (struct tag *)((long *)params + params->hdr.size);

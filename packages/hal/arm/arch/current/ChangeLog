@@ -1,3 +1,19 @@
+2003-01-17  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/redboot_linux_exec.c (do_exec): Round the length up to a
+	multiple of 4 so that the copy loop (which decrements the count by
+	4 each time through) runs a finite length of time.
+	
+	Fixed the calculation of params->u.mem.size so that it doesn't
+	double the memory size if it is already a power of two.
+
+2003-01-06  Patrick Doyle  <wpd@delcomsys.com>
+
+	* src/redboot_linux_exec.c (do_exec): Added support for, and
+	changed to use, ATAG_INITRD2 instead of ATAG_INITRD.  ATAG_INITRD
+	specifies the virtual address of the ramdisk while ATAG_INITRD2
+	specifies the physical address.
+
 2002-12-11  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_io.h: Allow variant or platform HALs to override
