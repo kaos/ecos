@@ -54,6 +54,7 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
     include_dir   cyg/io/eth
     parent        CYGPKG_IO
     description   "Platform independent ethernet drivers"
+    doc           ref/io-eth-drv-generic.html
 
     implements    CYGPKG_NET_DRIVER_FRAMEWORK
 
