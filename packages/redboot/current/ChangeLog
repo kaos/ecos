@@ -1,3 +1,9 @@
+2004-02-04  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/redboot.cdl: Do not build with "common" interrupt stack
+	support.  This can cause problems when running programs (via
+	the "go" command) as interrupts will corrupt RedBoot's stack.
+
 2004-01-18  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/main.c: Fix build problem if GDB stubs are not included.
