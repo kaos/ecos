@@ -1,3 +1,8 @@
+2003-06-10  Øyvind Harboe  <oyvind.harboe@zylin.com>
+
+	* include/flash_at49xxxx.inl: wait_while_busy needs to be in RAM
+	since its called while the flash is not readable.
+	
 2002-07-12  Tim Drury (tdrury@siliconmotorsports.com>
 
 	* include/flash_at49xxxx.inl: added support for AT49LV1614

@@ -124,7 +124,8 @@ int  flash_erase_block(void* block, unsigned int size)
     __attribute__ ((section (".2ram.flash_erase_block")));
 int  flash_program_buf(void* addr, void* data, int len)
     __attribute__ ((section (".2ram.flash_program_buf")));
-
+static int wait_while_busy(int timeout, volatile flash_data_t* addr_ptr)
+    __attribute__ ((section (".2ram.text")));
 
 //----------------------------------------------------------------------------
 // Initialize driver details
