@@ -309,12 +309,12 @@ do_load(int argc, char *argv[])
               (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP, xyzMODEM, or disk)");
     num_options = 4;
 #ifdef CYGPKG_REDBOOT_NETWORKING
-    init_opts(&opts[4], 'h', true, OPTION_ARG_TYPE_STR, 
+    init_opts(&opts[num_options], 'h', true, OPTION_ARG_TYPE_STR, 
               (void **)&hostname, (bool *)&hostname_set, "host name (IP address)");
     num_options++;
 #endif
 #ifdef CYGPKG_COMPRESS_ZLIB
-    init_opts(&opts[5], 'd', false, OPTION_ARG_TYPE_FLG, 
+    init_opts(&opts[num_options], 'd', false, OPTION_ARG_TYPE_FLG, 
               (void **)&decompress, 0, "decompress");
     num_options++;
 #endif

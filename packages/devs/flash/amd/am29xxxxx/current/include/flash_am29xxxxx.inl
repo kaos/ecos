@@ -309,7 +309,7 @@ flash_erase_block(void* block, unsigned int size)
         *b_v = FLASH_Block_Erase;
 
         // Now poll for the completion of the sector erase timer (50us)
-        timeout = 5000000;              // how many retries?
+        timeout = 10000000;              // how many retries?
         while (true) {
             state = *b_v;
             if ((state & FLASH_Sector_Erase_Timer) == 0) break;
@@ -322,7 +322,7 @@ flash_erase_block(void* block, unsigned int size)
 
         // Then wait for erase completion.
         if (FLASH_ERR_OK == res) {
-            timeout = 5000000;
+            timeout = 10000000;
             while (true) {
                 state = *b_v;
                 if (FLASH_BlankValue == state) {
@@ -411,7 +411,7 @@ flash_program_buf(void* addr, void* data, int len)
         *f_s1 = FLASH_Program;
         *addr_v = *data_ptr;
 
-        timeout = 5000000;
+        timeout = 10000000;
         while (true) {
             state = *addr_v;
             if (*data_ptr == state) {

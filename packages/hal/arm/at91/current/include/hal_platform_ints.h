@@ -61,7 +61,8 @@
 
 #define CYGNUM_HAL_ISR_MIN                     2
 #define CYGNUM_HAL_ISR_MAX                     18
-#define CYGNUM_HAL_ISR_COUNT                   (CYGNUM_HAL_ISR_MAX - CYGNUM_HAL_ISR_MIN + 1)
+// Note: extra slots (0,1) to avoid messing with vector translation
+#define CYGNUM_HAL_ISR_COUNT                   (CYGNUM_HAL_ISR_MAX + 1)
 
 // The vector used by the Real time clock
 #define CYGNUM_HAL_INTERRUPT_RTC               CYGNUM_HAL_INTERRUPT_TIMER0

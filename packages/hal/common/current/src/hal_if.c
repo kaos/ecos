@@ -386,12 +386,12 @@ cyg_hal_diag_mangler_gdb_getc(void* __ch_data)
     return __ch;
 }
 
-
 static void
 cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
 {
     static char line[100];
     static int pos = 0;
+    int tries = CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES;
 
     // No need to send CRs
     if( c == '\r' ) return;
@@ -416,6 +416,9 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
         CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
 #endif
         
+        // Only wait 500ms for data to arrive - avoid "stuck" connections
+        CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT);
+
         while(1)
         {
             static const char hex[] = "0123456789ABCDEF";
@@ -440,7 +443,10 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
             CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
 
         nak:
-            c1 = CYGACC_COMM_IF_GETC(*__chan);
+            if (CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, &c1) == 0) {
+                c1 = '-';
+                if (--tries == 0) c1 = '+';
+            }
 
             if( c1 == '+' ) break;
 
@@ -653,7 +659,7 @@ void
 hal_if_diag_write_char(char c)
 {
     hal_virtual_comm_table_t* __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
-    
+
     if (__chan)
         CYGACC_COMM_IF_PUTC(*__chan, c);
     else {
@@ -827,13 +833,6 @@ hal_if_init(void)
     }
 #endif
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL
-    // ICTRL and EXC tables - I assume these to be the equivalents of
-    // ISR and VSR tables.
-    CYGACC_CALL_IF_ICTRL_TABLE_SET(hal_interrupt_handlers);
-    CYGACC_CALL_IF_EXC_TABLE_SET(hal_vsr_table);
-#endif
-
     // Miscellaneous services with wrappers in this file.
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
     CYGACC_CALL_IF_RESET_SET(reset);
@@ -855,8 +854,6 @@ hal_if_init(void)
 
     // Data entries not currently supported in eCos
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DATA
-    CYGACC_CALL_IF_CPU_DATA_SET(0);
-    CYGACC_CALL_IF_BOARD_DATA_SET(0);
     CYGACC_CALL_IF_DBG_DATA_SET(0);
 #endif
 

@@ -183,6 +183,14 @@ cdl_package CYGPKG_HAL {
                 services."
         }                
 
+        cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT {
+            display     "Target supports baud rate control via vectors"
+            no_define
+            description "
+                Whether this target supports the __COMMCTL_GETBAUD
+                and __COMMCTL_SETBAUD virtual vector comm control operations."
+        }
+
         cdl_component CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT {
             display     "Enable use of virtual vector calling interface"
             active_if   CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
@@ -231,7 +239,6 @@ cdl_package CYGPKG_HAL {
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE {
                 display       "Initialize whole of virtual vector table"
                 default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR || CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED }
-                requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_CACHE
@@ -286,17 +293,6 @@ cdl_package CYGPKG_HAL {
                     will be used)."
             }
 
-            cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL {
-                display       "Claim ictrl/exc virtual vectors"
-                default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
-                                || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
-                description   "
-                    This option will cause the ictrl/exc virtual
-                    vectors to be claimed. These are pointers to
-                    the HAL interrupt handlers table and the HAL VSR
-                    table."
-            }
-
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET {
                 display       "Claim reset virtual vectors"
                 default_value { CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE \
@@ -330,8 +326,8 @@ cdl_package CYGPKG_HAL {
                                 || CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DEFAULT }
                 description   "
                     This option will cause the data virtual vectors
-                    to be claimed. These are (unused at present)
-                    pointers to CPU, board and debug information."
+                    to be claimed. At present there is only one, used
+                    by the RedBoot ethernet driver to share diag output."
             }
 
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS {

@@ -77,11 +77,11 @@ CYG_MACRO_END
     if (  4 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 0 from  0-4Mb */ \
         _v_ += 0xc00u * SZ_1M;                                             \
     if (  8 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 1 from  4-8Mb */ \
-        _v_ += 0xc80u * SZ_1M;                                             \
+        _v_ += (0xc80u * SZ_1M) - (4 * SZ_1M);                             \
     if ( 12 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 2 from 8-12Mb */ \
-        _v_ += 0xd00u * SZ_1M;                                             \
+        _v_ += (0xd00u * SZ_1M) - (8 * SZ_1M);                             \
     if ( 16 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 3 from 12-16M */ \
-        _v_ += 0xd80u * SZ_1M;                                             \
+        _v_ += (0xd80u * SZ_1M) - (12 * SZ_1M);                            \
     else if ( 0x400u * SZ_1M > _v_ ) /* Space between RAM and mapped ROM */\
         /* no change */ ;                                                  \
     else if ( 0x401u * SZ_1M > _v_ ) /* Mapped boot ROM size  1Mb */       \
@@ -107,15 +107,15 @@ CYG_MACRO_END
     else if ( 0xc80u * SZ_1M > _p_ ) /* Space between SDRAM banks */       \
         /* no change */ ;                                                  \
     else if ( 0xc84u * SZ_1M > _p_ ) /* Raw RAM bank 1, 4Mb at 0xc80 */    \
-        _p_ -= 0xc80u * SZ_1M;                                             \
+        _p_ -= (0xc80u * SZ_1M) - (4 * SZ_1M);                             \
     else if ( 0xd00u * SZ_1M > _p_ ) /* Space between SDRAM banks */       \
         /* no change */ ;                                                  \
     else if ( 0xd04u * SZ_1M > _p_ ) /* Raw RAM bank 2, 4Mb at 0xd00 */    \
-        _p_ -= 0xd00u * SZ_1M;                                             \
+        _p_ -= (0xd00u * SZ_1M) - (8 * SZ_1M);                             \
     else if ( 0xd80u * SZ_1M > _p_ ) /* Space between SDRAM banks */       \
         /* no change */ ;                                                  \
     else if ( 0xd84u * SZ_1M > _p_ ) /* Raw RAM bank 3, 4Mb at 0xd80 */    \
-        _p_ -= 0xd80u * SZ_1M;                                             \
+        _p_ -= (0xd80u * SZ_1M) - (12 * SZ_1M);                            \
     else                            /* Rest of it */                       \
         /* no change */ ;                                                  \
     (vaddr) = _p_ ;                                                        \
@@ -132,11 +132,11 @@ CYG_MACRO_END
     if (  4 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 0 from  0-4Mb */ \
         _v_ += 0xc00u * SZ_1M;                                             \
     if (  8 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 1 from  4-8Mb */ \
-        _v_ += 0xc80u * SZ_1M;                                             \
+        _v_ += (0xc80u * SZ_1M) - (4 * SZ_1M);                             \
     if ( 12 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 2 from 8-12Mb */ \
-        _v_ += 0xd00u * SZ_1M;                                             \
+        _v_ += (0xd00u * SZ_1M) - (8 * SZ_1M);                             \
     if ( 16 * SZ_1M > _v_ )         /*  4Mb of SDRAM Bank 3 from 12-16M */ \
-        _v_ += 0xd80u * SZ_1M;                                             \
+        _v_ += (0xd80u * SZ_1M) - (12 * SZ_1M);                            \
     else            /* Everything else is already uncacheable or is ROM */ \
         /* no change */ ;                                                  \
     (uaddr) = _v_ ;                                                        \

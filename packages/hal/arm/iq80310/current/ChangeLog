@@ -1,3 +1,10 @@
+2001-08-15  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_iq80310.h: Fix size of PATUSR, SATUSR, PSR, and SSR regs.
+	Make all register pointers volatile.
+
+	* src/diag/flash.c: First page of flash now remapped to 0xd0000000.
+
 2001-08-04  Mark Salter  <msalter@redhat.com>
 
 	* include/hal_platform_setup.h: Fix mapping so first MB of SDRAM has

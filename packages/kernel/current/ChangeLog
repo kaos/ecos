@@ -1,3 +1,21 @@
+2001-08-17  Nick Garnett  <nickg@redhat.com>
+
+	* src/sched/mlqueue.cxx (timeslice): Fix timeslice_count comparison.
+
+2001-08-16  Hugo Tyson  <hmt@redhat.com>
+
+	* include/kapi.h (cyg_mutex_protocol): Tidy up names of mutex
+	protocol type and values.  These polluted rather in 'C'.
+
+	* src/common/kapi.cxx (cyg_mutex_set_protocol): ditto.
+
+2001-08-15  Hugo Tyson  <hmt@redhat.com>
+2001-08-15  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* src/common/kapi.c (cyg_thread_get_current_priority): Export
+	this function into the C api.
+	* include/kapi.h: Declaration of new function.
+
 2001-08-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/common/kapi.cxx (cyg_spinlock_spin_intsave): Cast to istate

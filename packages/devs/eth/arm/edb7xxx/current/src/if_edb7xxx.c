@@ -340,9 +340,21 @@ cs8900_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     cpd->txstart = cyg_current_time();
 #endif
     // Start the xmit sequence
-// Note: this can go back once the 'dump' is removed
-    CS8900_TxCMD = PP_TxCmd_TxStart_5;  // Start more-or-less immediately
-//    CS8900_TxCMD = PP_TxCmd_TxStart_Full;  // Start only when all data sent to chip
+
+    // The hardware indicates that there are options as to when the actual
+    // packet transmission will start wrt moving of data into the transmit
+    // buffer.  However, impirical results seem to indicate that if the
+    // packet is large and transmission is allowed to start before the
+    // entire packet has been pushed into the buffer, the hardware gets
+    // confused and the packet is lost, along with a "lost" Tx interrupt.
+    // This may be a case of the copy loop below being interrupted, e.g.
+    // a system timer interrupt, and the hardware getting unhappy that 
+    // not all of the data was provided before the transmission should
+    // have completed (i.e. buffer underrun).
+    // For now, the solution is to not allow this overlap.
+//    CS8900_TxCMD = PP_TxCmd_TxStart_5;  // Start more-or-less immediately
+    CS8900_TxCMD = PP_TxCmd_TxStart_Full;  // Start only when all data sent to chip
+
     CS8900_TxLEN = total_len;
     stat = get_reg(PP_BusStat);  // This actually starts the xmit
 

@@ -174,6 +174,7 @@ cyg_handle_t cyg_thread_idle_thread(void);
 void cyg_thread_set_priority(cyg_handle_t thread, cyg_priority_t priority );
 
 cyg_priority_t cyg_thread_get_priority(cyg_handle_t thread);              
+cyg_priority_t cyg_thread_get_current_priority(cyg_handle_t thread); 
 
 /* Deadline scheduling control (optional) */
 
@@ -521,11 +522,11 @@ cyg_bool_t cyg_flag_waiting( cyg_flag_t *flag );
 /* Mutex                                                                     */
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
-enum cyg_protcol
+enum cyg_mutex_protocol
 {
-  NONE = 0,                       // no inversion protocol
-  INHERIT,                        // priority inheritance protocol
-  CEILING                         // priority ceiling protocol
+  CYG_MUTEX_NONE = 0,                   // no inversion protocol
+  CYG_MUTEX_INHERIT,                    // priority inheritance protocol
+  CYG_MUTEX_CEILING                     // priority ceiling protocol
 };
 #endif
 
@@ -548,7 +549,7 @@ void cyg_mutex_set_ceiling( cyg_mutex_t *mutex, cyg_priority_t priority );
 #endif
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
-void cyg_mutex_set_protocol ( cyg_mutex_t *mutex, enum cyg_protcol protocol );
+void cyg_mutex_set_protocol ( cyg_mutex_t *mutex, enum cyg_mutex_protocol protocol );
 #endif
 
 /*---------------------------------------------------------------------------*/

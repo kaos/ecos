@@ -24,7 +24,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -826,16 +826,16 @@ static cyg_uint16 readMDI (long ioaddr, cyg_uint8 phyAdd, cyg_uint8 regAdd)
     mdiCtrl.bits.regAdd = regAdd & 0x1f;
 
     // start the operation
-    OUTW(mdiCtrl.word, mdi_addr);
+    OUTL(mdiCtrl.word, mdi_addr);
 
     // delay a bit
     udelay (1000);
 
     // poll for completion */
-    mdiCtrl.word = INW(mdi_addr);
+    mdiCtrl.word = INL(mdi_addr);
 
     while ((mdiCtrl.bits.ready == MDI_NOT_READY) && (num_ms != 2000)) { // wait max 2secs
-	mdiCtrl.word = INW(mdi_addr);
+	mdiCtrl.word = INL(mdi_addr);
 	udelay(1000);
 	num_ms++;
     }	
@@ -864,16 +864,16 @@ static void writeMDI (long ioaddr, cyg_uint8 phyAdd, cyg_uint8 regAdd, cyg_uint1
     mdiCtrl.bits.data = data & 0xffff;
 
     // start the operation
-    OUTW(mdiCtrl.word, mdi_addr);
+    OUTL(mdiCtrl.word, mdi_addr);
 
     // delay a bit
     udelay(1000);
 
     // poll for completion
-    mdiCtrl.word = INW(mdi_addr);
+    mdiCtrl.word = INL(mdi_addr);
 
     while ((mdiCtrl.bits.ready == MDI_NOT_READY) && (num_ms != 2000)) {
-	mdiCtrl.word = INW(mdi_addr);
+	mdiCtrl.word = INL(mdi_addr);
 	udelay(1000);
 	num_ms++;
     }	

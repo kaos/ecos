@@ -1,3 +1,10 @@
+2001-08-15  Gary Thomas  <gthomas@redhat.com>
+
+	* include/plf_mmap.h (HAL_VIRT_TO_PHYS_ADDRESS): 
+	(HAL_PHYS_TO_VIRT_ADDRESS): 
+	(HAL_VIRT_TO_UNCACHED_ADDRESS): Fix these macros - they didn't
+	handle the holes in DRAM properly.
+
 2001-03-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_sa11x0_brutus.cdl:  Removed

@@ -228,6 +228,52 @@ mon_set_read_char_timeout(int ms)
     }
 }
 
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
+#define __STRINGIFY(x) #x
+#define _STRINGIFY(x) __STRINGIFY(x)
+#define _STARTUP_STR _STRINGIFY(CYG_HAL_STARTUP) "}"
+
+//
+// Read a character from script.
+// Return true if script character found, false if not.
+//
+static int
+getc_script(char *cp)
+{
+    static bool newline = true;
+    bool skip;
+
+    while (script && *script) {
+	if (newline && *script == '{') {
+	    skip = false;
+	    ++script;
+
+	    // skip if it isn't for this startup type
+	    if (strncmp(script, _STARTUP_STR, strlen(_STARTUP_STR)))
+		skip = true;
+
+	    // skip past "{...}"
+	    while (*script && *script++ != '}')
+		;
+
+	    // skip script line if neccessary
+	    if (skip) {
+		while (*script && *script++ != '\n')
+		    ;
+	    } else
+		newline = false;
+
+	} else {
+	    *cp = *script++;
+	    if (*cp == '\n')
+		newline = true;
+	    return true;
+	}
+    }
+    return false;
+}
+#endif
+
 //
 // Read a line of input from the user
 // Return:
@@ -246,10 +292,9 @@ gets(char *buf, int buflen, int timeout)
 
     while (true) {
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
-        if (script && *script) {
-            c = *script++;
+        if (getc_script(&c))
             do_idle(false);
-        } else
+        else
 #endif
         if ((timeout > 0) && (ptr == buf)) {
             mon_set_read_char_timeout(timeout);

@@ -471,6 +471,27 @@ eth_drv_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 }
 
 //
+// Control whether any special locking needs to take place if we intend to
+// cooperate with a ROM monitor (e.g. RedBoot) using this hardware.  
+//
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR) && \
+    defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) && \
+   !defined(CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS)
+
+// Indicate that special locking precautions are warranted.
+#define _LOCK_WITH_ROM_MONITOR
+
+// This defines the [well known] channel that RedBoot will use when it is
+// using the network hardware for the debug channel.
+#define RedBoot_TCP_CHANNEL CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
+
+// Define this if you ever need to call 'diag_printf()' from interrupt level
+// code (ISR) and the debug channel might be using the network hardware. If
+// this is not the case, then disabling interrupts here is over-kill.
+//#define _LOCK_USING_INTERRUPTS
+#endif
+
+//
 // This routine is called to start transmitting if there is data
 // available.
 //
@@ -483,6 +504,13 @@ eth_drv_send(struct ifnet *ifp)
     struct mbuf *m0, *m;
     int len, total_len;
     unsigned char *data;
+#ifdef _LOCK_WITH_ROM_MONITOR
+#ifdef _LOCK_USING_INTERRUPTS
+    cyg_uint32 ints;
+#endif
+    bool need_lock = false;
+    int debug_chan;
+#endif // _LOCK_WITH_ROM_MONITOR
 
     // This is now only called from network threads, so no guarding is
     // required; locking is in place via the splfoo() mechanism already.
@@ -540,10 +568,46 @@ eth_drv_send(struct ifnet *ifp)
             }
         }
 
+#ifdef _LOCK_WITH_ROM_MONITOR
+        // Firm lock on this portion of the driver.  Since we are about to
+        // start messing with the actual hardware, it is imperative that the
+        // current thread not loose control of the CPU at this time.  Otherwise,
+        // the hardware could be left in an unusable state.  This caution is
+        // only warranted if there is a possibility of some other thread trying
+        // to use the hardware simultaneously.  The network stack would prevent
+        // this implicitly since all accesses are controlled by the "splX()"
+        // locks, but if there is a ROM monitor, such as RedBoot, also using
+        // the hardware, all bets are off.
+
+        // Note: these operations can be avoided if it were well known that
+        // RedBoot was not using the network hardware for diagnostic I/O.  This
+        // can be inferred by checking which I/O channel RedBoot is currently
+        // hooked to.
+        debug_chan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+        if (debug_chan == RedBoot_TCP_CHANNEL) {
+            need_lock = true;
+#ifdef _LOCK_USING_INTERRUPTS
+            HAL_DISABLE_INTERRUPTS(ints);
+#endif
+            cyg_drv_dsr_lock();
+        }
+#endif // _LOCK_WITH_ROM_MONITOR
+
         // Tell hardware to send this packet
         if ( sg_len )
             (sc->funs->send)(sc, sg_list, sg_len, total_len, (unsigned long)m0);
+
+#ifdef _LOCK_WITH_ROM_MONITOR
+        // Unlock the driver & hardware.  It can once again be safely shared.
+        if (need_lock) {
+            cyg_drv_dsr_unlock();
+#ifdef _LOCK_USING_INTERRUPTS
+            HAL_RESTORE_INTERRUPTS(ints);
+#endif
+        }
     }
+#endif // _LOCK_WITH_ROM_MONITOR
+#undef _LOCK_WITH_ROM_MONITOR
 }
 
 //

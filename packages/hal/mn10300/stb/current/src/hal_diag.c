@@ -49,6 +49,7 @@
 
 #include <cyg/hal/hal_diag.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_misc.h>
 
 /*---------------------------------------------------------------------------*/
 /* Select default diag channel to use                                        */

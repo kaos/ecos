@@ -116,3 +116,21 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT {
 
     compile dbg-threads-syscall.c
 }
+
+cdl_option CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES {
+    display       "Number of times to retry sending a \$O packet"
+    default_value 3
+    description   "
+        This option controls the number of attempts that eCos programs
+        will make to send a \$O packet to a host GDB process."
+}
+
+cdl_option CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT {
+    display       "Timeout period for GDB packets"
+    default_value 500
+    description   "
+        This option controls the time (in milliseconds) that eCos programs
+        will wait for a response when sending packets to a host GDB process.
+        If this time elapses, then the packet will be resent, up to some
+        maximum number of times (CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES)."
+}

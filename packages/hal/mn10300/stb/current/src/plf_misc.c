@@ -55,6 +55,7 @@
 #include <cyg/hal/hal_cache.h>          // Cache handling
 
 #include <cyg/hal/hal_if.h>
+#include <cyg/hal/hal_misc.h>
 
 #include <cyg/hal/plf_io.h>
 
@@ -112,7 +113,6 @@ void hal_platform_init(void)
     defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
     defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
     {
-        extern CYG_ADDRESS hal_virtual_vector_table[32];
         extern void patch_dbg_syscalls(void * vector);
         patch_dbg_syscalls( (void *)(&hal_virtual_vector_table[0]) );
     }

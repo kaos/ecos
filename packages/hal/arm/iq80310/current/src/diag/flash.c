@@ -115,9 +115,9 @@ typedef unsigned char FLASH_TYPE;
 #define BLOCK_UNLOCKED		0
 
 // First 4K page of flash at physical address zero is
-// virtually mapped at address 0xa0000000.
+// virtually mapped at address 0xd0000000.
 #define FLASH_P2V(x) ((volatile FLASH_TYPE *)(((unsigned)(x) < 0x1000) ?  \
-                           ((unsigned)(x) | 0xa0000000) :  \
+                           ((unsigned)(x) | 0xd0000000) :  \
                            (unsigned)(x)))
 
 

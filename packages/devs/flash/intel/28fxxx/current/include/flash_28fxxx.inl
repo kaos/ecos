@@ -58,30 +58,38 @@
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
+#define nDEBUG
+
+#ifdef DEBUG
+typedef void (*call_t)(char* str, ...);
+extern void diag_printf(char* str, ...);
+call_t d_print = &diag_printf;
+#endif
+
 //----------------------------------------------------------------------------
 // Common device details.
 #define FLASH_Read_ID                   FLASHWORD( 0x90 )
 #define FLASH_Reset                     FLASHWORD( 0xFF )
 #define FLASH_Program                   FLASHWORD( 0x40 )
 #define FLASH_Write_Buffer              FLASHWORD( 0xe8 )
-#define FLASH_Block_Erase  		FLASHWORD( 0x20 )
-#define FLASH_Confirm      		FLASHWORD( 0xD0 )
-#define FLASH_Resume      		FLASHWORD( 0xD0 )
+#define FLASH_Block_Erase               FLASHWORD( 0x20 )
+#define FLASH_Confirm                   FLASHWORD( 0xD0 )
+#define FLASH_Resume                    FLASHWORD( 0xD0 )
 
 #define FLASH_Set_Lock                  FLASHWORD( 0x60 )
 #define FLASH_Set_Lock_Confirm          FLASHWORD( 0x01 )
 #define FLASH_Clear_Lock                FLASHWORD( 0x60 )
 #define FLASH_Clear_Lock_Confirm        FLASHWORD( 0xd0 )
 
-#define FLASH_Read_Status  		FLASHWORD( 0x70 )
-#define FLASH_Clear_Status 		FLASHWORD( 0x50 )
-#define FLASH_Status_Ready 		FLASHWORD( 0x80 )
+#define FLASH_Read_Status               FLASHWORD( 0x70 )
+#define FLASH_Clear_Status              FLASHWORD( 0x50 )
+#define FLASH_Status_Ready              FLASHWORD( 0x80 )
 
 // Status that we read back:                         
-#define FLASH_ErrorMask			FLASHWORD( 0x7E )
-#define FLASH_ErrorProgram		FLASHWORD( 0x10 )
-#define FLASH_ErrorErase		FLASHWORD( 0x20 )
-#define FLASH_ErrorLock  		FLASHWORD( 0x30 )
+#define FLASH_ErrorMask                 FLASHWORD( 0x7E )
+#define FLASH_ErrorProgram              FLASHWORD( 0x10 )
+#define FLASH_ErrorErase                FLASHWORD( 0x20 )
+#define FLASH_ErrorLock                 FLASHWORD( 0x30 )
 #define FLASH_ErrorLowVoltage           FLASHWORD( 0x08 )
 #define FLASH_ErrorLocked               FLASHWORD( 0x02 )
 
@@ -314,7 +322,6 @@ flash_program_buf(void* addr, void* data, int len,
 {
     flash_data_t stat = 0;
     int timeout;
-    int wc, i;
 
     volatile flash_data_t* ROM;
     volatile flash_data_t* BA;
@@ -336,6 +343,7 @@ flash_program_buf(void* addr, void* data, int len,
     // parts yet.
     // FIXME: This code does not appear to work anymore
     if (0 && flash_dev_info->buffered_w) {
+        int i, wc;
         // Write any big chunks first
         while (len >= buffer_size) {
             wc = buffer_size;
@@ -431,6 +439,10 @@ flash_lock_block(void* block)
     if (!flash_dev_info->locking)
         return res;
 
+#ifdef DEBUG
+    d_print("flash_lock_block %08x\n", block);
+#endif
+
     ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
 
     // Is this the boot sector?
@@ -460,6 +472,9 @@ flash_lock_block(void* block)
 
         // Restore ROM to "normal" mode
         ROM[0] = FLASH_Reset;
+
+        // Go to next block
+        b_p += len / sizeof( flash_data_t );
         len = 0;
 
         if (FLASH_ErrorLock == (state & FLASH_ErrorLock))
@@ -495,6 +510,10 @@ flash_unlock_block(void* block, int block_size, int blocks)
 
     ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
 
+#ifdef DEBUG
+    d_print("flash_unlock_block dev %08x block %08x size %08x count %08x\n", ROM, block, block_size, blocks);
+#endif
+
     // Is this the boot sector?
     bootblock = (flash_dev_info->bootblock &&
                  (flash_dev_info->bootblocks[0] == ((unsigned long)block - (unsigned long)ROM)));
@@ -523,6 +542,9 @@ flash_unlock_block(void* block, int block_size, int blocks)
 
         // Restore ROM to "normal" mode
         ROM[0] = FLASH_Reset;
+
+        // Go to next block
+        b_p += len / sizeof( flash_data_t );
         len = 0;
 
         if (FLASH_ErrorLock == (state & FLASH_ErrorLock))
@@ -603,4 +625,3 @@ flash_unlock_block(void* block, int block_size, int blocks)
 #endif // CYGHWR_IO_FLASH_BLOCK_LOCKING
 
 #endif // CYGONCE_DEVS_FLASH_INTEL_28FXXX_INL
-

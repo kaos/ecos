@@ -75,8 +75,9 @@
 #define _s(x) __s(x)
 
 char RedBoot_version[] CYGBLD_ATTRIB_WEAK =
-   "\nRedBoot(tm) bootstrap and debug environment, version " 
-   _s(_REDBOOT_VERSION) " - built " __TIME__ ", " __DATE__ "\n\n";
+   "\nRedBoot(tm) bootstrap and debug environment [" _s(CYG_HAL_STARTUP) "]"
+   "\n            version " _s(_REDBOOT_VERSION) 
+   " - built " __TIME__ ", " __DATE__ "\n\n";
 
 // Override default GDB stubs 'info'
 // Note: this can still be a "weak" symbol since it will occur in the .o

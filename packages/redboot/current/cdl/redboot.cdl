@@ -175,7 +175,8 @@ cdl_package CYGPKG_REDBOOT {
     cdl_option CYGSEM_REDBOOT_VARIABLE_BAUD_RATE {
         display       "Allow RedBoot to adjust the baud rate on the serial console."
         flavor        bool
-        default_value 0
+        default_value 1
+        active_if     CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
         description   "
           If this option is enabled then RedBoot will support commands to set
           and query the baud rate on the selected console."     
@@ -525,7 +526,7 @@ cdl_package CYGPKG_REDBOOT {
 
     cdl_option CYGPRI_REDBOOT_ROM_MONITOR {
 	display      "Behave like a ROM monitor"
-        active_if    { CYG_HAL_STARTUP == "ROM" }
+        active_if    { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMRAM" }
         requires     CYGSEM_HAL_ROM_MONITOR
         calculated   1
         no_define

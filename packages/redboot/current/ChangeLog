@@ -1,3 +1,33 @@
+2001-08-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/version.c: Augment version information with startup mode.
+
+	* src/flash.c (fis_find_free): Fix error in size comparisons.
+	(load_flash_config): Fix 'fconfig' alignment now that it's
+	size is no longer fixed.
+
+2001-08-16  Jesper Skov  <jskov@redhat.com>
+	[from branch]
+	* cdl/redboot.cdl: Also behave as ROM monitor in ROMRAM
+	configurations.
+
+	* src/load.c (do_load): Fix handling of conditional options.
+
+	* src/flash.c (fis_load): Fix handling of conditional options.
+	(fis_delete): Fix behavior on failure.
+
+	* src/flash.c (fis_write): Fix output.
+	(fis_create): Only update directory when programming succeeded.
+
+2001-08-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/redboot.cdl (CYGSEM_REDBOOT_VARIABLE_BAUD_RATE): Default
+	on, but only if platform supports it.
+
+2001-08-15  Mark Salter  <msalter@redhat.com>
+
+	* src/io.c: Add support for "{...}" notation in boot scripts.
+
 2001-08-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/io.c (gets): Allow $'s and +'s to be escaped.

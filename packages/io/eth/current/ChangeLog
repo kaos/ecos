@@ -1,3 +1,27 @@
+2001-08-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/eth_drivers.cdl (CYGSEM_IO_ETH_DRIVERS_DEBUG): Now booldata.
+	* src/stand_along/eth_drv.c (eth_drv_tx_done): Use different
+	value of CYGSEM_IO_ETH_DRIVERS_DEBUG for verbosity.
+
+2001-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c (eth_drv_write): 
+	(eth_drv_tx_done): 
+	(eth_drv_read): Better handling of stacking (layering) of drivers.
+	RedBoot (stand alone code) is designed to call into the eCos 
+	stack and these changes make sure that this is done properly
+	nested/stacked.  These changes also affect the behaviour positively
+	for CR 902745-CR.
+
+	* src/net/eth_drv.c (eth_drv_send): Add locking of driver while
+	actual hardware routines are involved.  Since the same driver
+	can be shared by both eCos and RedBoot, it is imperative that
+	additional locking (in the form of locking the scheduler) be
+	employed during this window to make sure that the hardware is
+	handled in complete, consistent steps.  This helps with known
+	bug CR 902745-CR.
+
 2001-08-09  Hugo Tyson  <hmt@redhat.com>
 
 	* src/net/eth_drv.c (eth_drv_recv): Add a pair of

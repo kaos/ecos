@@ -1,3 +1,8 @@
+2001-08-15  Mark Salter  <msalter@redhat.com>
+
+	* src/if_iq80310.c: Use 32-bit access to MDI. Problem discovered
+	by bruce.daly@spirentcom.com.
+
 2000-12-21  Mark Salter  <msalter@redhat.com>
 
 	* src/if_iq80310.c (i82559_start): Fix syntax error when DEBUG defined.

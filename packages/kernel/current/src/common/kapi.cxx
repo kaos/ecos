@@ -241,10 +241,25 @@ externC void cyg_thread_set_priority(
 #endif
 }
 
+
+/* Get the normal priority, ie without any applied mutex inheritance or
+ * ceiling protocol. */
 externC cyg_priority_t cyg_thread_get_priority(cyg_handle_t thread)
 {
 #ifdef CYGIMP_THREAD_PRIORITY
     return ((Cyg_Thread *)thread)->get_priority();
+#else
+    return 0;
+#endif
+}
+
+
+/* Get the current priority, ie any applied mutex inheritance or
+ * ceiling protocol. */
+externC cyg_priority_t cyg_thread_get_current_priority(cyg_handle_t thread)
+{
+#ifdef CYGIMP_THREAD_PRIORITY
+    return ((Cyg_Thread *)thread)->get_current_priority();
 #else
     return 0;
 #endif
@@ -910,7 +925,7 @@ externC void cyg_mutex_set_ceiling(
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
 externC void cyg_mutex_set_protocol( 
     cyg_mutex_t *mutex,
-    enum cyg_protcol protocol )
+    enum cyg_mutex_protocol protocol )
 {
     ((Cyg_Mutex *)mutex)->set_protocol((Cyg_Mutex::cyg_protcol)protocol);
 }

@@ -212,16 +212,20 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     void *dbg = CYGACC_CALL_IF_DBG_DATA();
     int old_state;
     int wait_time = 5;  // Timeout before giving up
+    void *eth_drv_old = 0;
 
     if (dbg) {
         sc = (struct eth_drv_sc *)dbg;  // Use control from installed driver
-        sc->funs->eth_drv_old = sc->funs->eth_drv;
-        sc->funs->eth_drv = &eth_drv_funs;    // Substitute stand-alone driver
-        old_state = sc->state;
-        if (!old_state & ETH_DRV_STATE_ACTIVE) {
-            // This interface not fully initialized, do it now
-            (sc->funs->start)(sc, (unsigned char *)&__local_enet_addr, 0);
-            sc->state |= ETH_DRV_STATE_ACTIVE;
+        eth_drv_old = sc->funs->eth_drv_old;
+        if (eth_drv_old == 0) {
+            sc->funs->eth_drv_old = sc->funs->eth_drv;        
+            sc->funs->eth_drv = &eth_drv_funs;    // Substitute stand-alone driver
+            old_state = sc->state;
+            if (!old_state & ETH_DRV_STATE_ACTIVE) {
+                // This interface not fully initialized, do it now
+                (sc->funs->start)(sc, (unsigned char *)&__local_enet_addr, 0);
+                sc->state |= ETH_DRV_STATE_ACTIVE;
+            }
         }
     }
 
@@ -248,6 +252,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
         end_console(old_console);
     }
 #endif
+
     (sc->funs->send)(sc, sg_list, sg_len, len+14, (CYG_ADDRWORD)&packet_sent);
 
     wait_time = 500;
@@ -267,8 +272,10 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
 //            // This interface was not fully initialized, shut it back down
 //            (sc->funs->stop)(sc);
 //        }
-        sc->funs->eth_drv = sc->funs->eth_drv_old;
-        sc->funs->eth_drv_old = (struct eth_drv_funs *)0;
+        if (eth_drv_old == 0) {
+            sc->funs->eth_drv = sc->funs->eth_drv_old;
+            sc->funs->eth_drv_old = (struct eth_drv_funs *)0;
+        }
     }
 }
 
@@ -285,7 +292,8 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
     } else {
         // It's possible that this acknowledgement is for a different
         // [logical] driver.  Try and pass it on.
-#ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
+#if defined(CYGSEM_IO_ETH_DRIVERS_DEBUG) && (CYGSEM_IO_ETH_DRIVERS_DEBUG>=2)
+        // Note: not normally enabled - too verbose
         if (net_debug) {
             int old_console;
             old_console = start_console();
@@ -293,7 +301,11 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
             end_console(old_console);
         }
 #endif
-        (sc->funs->eth_drv_old->tx_done)(sc, key, status);
+        if (sc->funs->eth_drv_old) {
+            (sc->funs->eth_drv_old->tx_done)(sc, key, status);
+        } else {
+            (sc->funs->eth_drv->tx_done)(sc, key, status);
+        }
     }
     CYGARC_HAL_RESTORE_GP();
 }
@@ -309,16 +321,20 @@ eth_drv_read(char *eth_hdr, char *buf, int len)
     int res;
     void *dbg = CYGACC_CALL_IF_DBG_DATA();
     int old_state;
+    void *eth_drv_old = 0;
 
     if (dbg) {
         sc = (struct eth_drv_sc *)dbg;  // Use control from installed driver
-        sc->funs->eth_drv_old = sc->funs->eth_drv;
-        sc->funs->eth_drv = &eth_drv_funs;    // Substitute stand-alone driver
-        old_state = sc->state;
-        if (!old_state & ETH_DRV_STATE_ACTIVE) {
-            // This interface not fully initialized, do it now
-            (sc->funs->start)(sc, (unsigned char *)&__local_enet_addr, 0);
-            sc->state |= ETH_DRV_STATE_ACTIVE;
+        eth_drv_old = sc->funs->eth_drv_old;
+        if (eth_drv_old == 0) {
+            sc->funs->eth_drv_old = sc->funs->eth_drv;
+            sc->funs->eth_drv = &eth_drv_funs;    // Substitute stand-alone driver
+            old_state = sc->state;
+            if (!old_state & ETH_DRV_STATE_ACTIVE) {
+                // This interface not fully initialized, do it now
+                (sc->funs->start)(sc, (unsigned char *)&__local_enet_addr, 0);
+                sc->state |= ETH_DRV_STATE_ACTIVE;
+            }
         }
     }
     (sc->funs->poll)(sc);  // Give the driver a chance to fetch packets
@@ -333,8 +349,10 @@ eth_drv_read(char *eth_hdr, char *buf, int len)
     }
    
     if (dbg) {
-        sc->funs->eth_drv = sc->funs->eth_drv_old;
-        sc->funs->eth_drv_old = (struct eth_drv_funs *)0;
+        if (eth_drv_old == 0) {
+            sc->funs->eth_drv = sc->funs->eth_drv_old;
+            sc->funs->eth_drv_old = (struct eth_drv_funs *)0;
+        }
 //        if (!old_state & ETH_DRV_STATE_ACTIVE) {
 //            // This interface was not fully initialized, shut it back down
 //            (sc->funs->stop)(sc);

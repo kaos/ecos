@@ -1,3 +1,8 @@
+2001-08-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_edb7xxx.c (cs8900_send): Only start transmitter after
+	a full packet has been staged.  This prevents lost Tx interrupts.
+
 2001-06-19  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/if_edb7xxx.c (edb7xxx_cs8900_init): Don't retrieve ESA if

@@ -58,6 +58,24 @@
 // Architecture/var/platform may override the accessor macros.
 #include <cyg/hal/hal_arch.h>
 
+// Special monitor locking procedures.  These are necessary when the monitor
+// and eCos share facilities, e.g. the network hardware.
+#ifdef CYGPKG_NET
+#include <cyg/hal/hal_intr.h>
+#include <cyg/hal/drv_api.h>            // cyg_drv_dsr_lock(), etc
+#define _ENTER_MONITOR()                        \
+    cyg_uint32 ints;                            \
+    HAL_DISABLE_INTERRUPTS(ints);               \
+    cyg_drv_dsr_lock()
+
+#define _EXIT_MONITOR()                         \
+    cyg_drv_dsr_unlock();                       \
+    HAL_RESTORE_INTERRUPTS(ints)
+#else // !CYGPKG_NET
+#define _ENTER_MONITOR() CYG_EMPTY_STATEMENT
+#define _EXIT_MONITOR()  CYG_EMPTY_STATEMENT
+#endif
+
 //--------------------------------------------------------------------------
 #ifndef _BSP_HANDLER_T_DEFINED
 #define _BSP_HANDLER_T_DEFINED
@@ -158,44 +176,146 @@ typedef int (*__comm_if_dbg_isr_t)(void *__ch_data,
                                CYG_ADDRWORD __data);
 typedef cyg_bool (*__comm_if_getc_timeout_t)(void* __ch_data, cyg_uint8* __ch);
 
+#define __call_COMM0(_n_,_rt_,_t_)                              \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t)                   \
+{                                                               \
+    _rt_ res;                                                   \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    res = ((_t_)(t[CYGNUM_COMM_##_n_]))(dp);                    \
+    _EXIT_MONITOR();                                            \
+    return res;                                                 \
+}
+
+#define __call_voidCOMM(_n_,_rt_,_t_)                           \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t)                   \
+{                                                               \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    ((_t_)(t[CYGNUM_COMM_##_n_]))(dp);                          \
+    _EXIT_MONITOR();                                            \
+}
+
+#define __call_COMM1(_n_,_rt_,_t_,_t1_)                         \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t, _t1_ _p1_)        \
+{                                                               \
+    _rt_ res;                                                   \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    res = ((_t_)(t[CYGNUM_COMM_##_n_]))(dp, _p1_);              \
+    _EXIT_MONITOR();                                            \
+    return res;                                                 \
+}
+
+#define __call_voidCOMM1(_n_,_rt_,_t_,_t1_)                     \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t, _t1_ _p1_)        \
+{                                                               \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    ((_t_)(t[CYGNUM_COMM_##_n_]))(dp, _p1_);                    \
+    _EXIT_MONITOR();                                            \
+}
+
+#define __call_COMM2(_n_,_rt_,_t_,_t1_,_t2_)                    \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t, _t1_ _p1_, _t2_ _p2_)        \
+{                                                               \
+    _rt_ res;                                                   \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    res = ((_t_)(t[CYGNUM_COMM_##_n_]))(dp, _p1_, _p2_);        \
+    _EXIT_MONITOR();                                            \
+    return res;                                                 \
+}
+
+#define __call_voidCOMM2(_n_,_rt_,_t_,_t1_,_t2_)                \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t, _t1_ _p1_, _t2_ _p2_)        \
+{                                                               \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    ((_t_)(t[CYGNUM_COMM_##_n_]))(dp, _p1_, _p2_);              \
+    _EXIT_MONITOR();                                            \
+}
+
+#define __call_COMM3(_n_,_rt_,_t_,_t1_,_t2_,_t3_)               \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t, _t1_ _p1_, _t2_ _p2_, _t3_ _p3_)        \
+{                                                               \
+    _rt_ res;                                                   \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    res = ((_t_)(t[CYGNUM_COMM_##_n_]))(dp, _p1_, _p2_, _p3_);              \
+    _EXIT_MONITOR();                                            \
+    return res;                                                 \
+}
+
+#define __call_voidCOMM3(_n_,_rt_,_t_,_t1_,_t2_,_t3_)           \
+static __inline__ _rt_                                          \
+__call_COMM_##_n_(hal_virtual_comm_table_t t, _t1_ _p1_, _t2_ _p2_, _t3_ _p3_)        \
+{                                                               \
+    void *dp = (__comm_if_ch_data_t)t[CYGNUM_COMM_IF_CH_DATA];  \
+    _ENTER_MONITOR();                                           \
+    ((_t_)(t[CYGNUM_COMM_##_n_]))(dp, _p1_, _p2_, _p3_);        \
+    _EXIT_MONITOR();                                            \
+}
+
 #ifndef CYGACC_COMM_IF_DEFINED
+
 #define CYGACC_COMM_IF_CH_DATA(_t_) \
  ((__comm_if_ch_data_t)((_t_)[CYGNUM_COMM_IF_CH_DATA]))
 #define CYGACC_COMM_IF_CH_DATA_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_CH_DATA]=(CYG_ADDRWORD)(_x_)
 
+__call_voidCOMM2(IF_WRITE, void, __comm_if_write_t, const cyg_uint8 *, cyg_uint32)
 #define CYGACC_COMM_IF_WRITE(_t_, _b_, _l_) \
- ((__comm_if_write_t)((_t_)[CYGNUM_COMM_IF_WRITE]))(CYGACC_COMM_IF_CH_DATA(_t_), (_b_), (_l_))
+ __call_COMM_IF_WRITE(_t_, _b_, _l_)
 #define CYGACC_COMM_IF_WRITE_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_WRITE]=(CYG_ADDRWORD)(_x_)
 
+__call_voidCOMM2(IF_READ, void, __comm_if_read_t, cyg_uint8 *, cyg_uint32)
 #define CYGACC_COMM_IF_READ(_t_, _b_, _l_) \
- ((__comm_if_read_t)((_t_)[CYGNUM_COMM_IF_READ]))(CYGACC_COMM_IF_CH_DATA(_t_), (_b_), (_l_))
+ __call_COMM_IF_READ(_t_, _b_, _l_)
 #define CYGACC_COMM_IF_READ_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_READ]=(CYG_ADDRWORD)(_x_)
 
+__call_voidCOMM1(IF_PUTC, void, __comm_if_putc_t, cyg_uint8)
 #define CYGACC_COMM_IF_PUTC(_t_, _c_) \
- ((__comm_if_putc_t)((_t_)[CYGNUM_COMM_IF_PUTC]))(CYGACC_COMM_IF_CH_DATA(_t_), (_c_))
+ __call_COMM_IF_PUTC(_t_,_c_)
 #define CYGACC_COMM_IF_PUTC_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_PUTC]=(CYG_ADDRWORD)(_x_)
 
+__call_COMM0(IF_GETC, cyg_uint8, __comm_if_getc_t)
 #define CYGACC_COMM_IF_GETC(_t_) \
- ((__comm_if_getc_t)((_t_)[CYGNUM_COMM_IF_GETC]))(CYGACC_COMM_IF_CH_DATA(_t_))
+ __call_COMM_IF_GETC(_t_)
 #define CYGACC_COMM_IF_GETC_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_GETC]=(CYG_ADDRWORD)(_x_)
 
-#define CYGACC_COMM_IF_CONTROL(_t_, args...) \
- ((__comm_if_control_t)((_t_)[CYGNUM_COMM_IF_CONTROL]))(CYGACC_COMM_IF_CH_DATA(_t_), args)
+// This macro has not been changed to use inline functions like the
+// others, simply because it uses variable arguments, and the change
+// would break binary compatibility.
+#define CYGACC_COMM_IF_CONTROL(_t_, args...)                                                            \
+ ({ int res;                                                                                            \
+    _ENTER_MONITOR();                                                                                   \
+    res = ((__comm_if_control_t)((_t_)[CYGNUM_COMM_IF_CONTROL]))(CYGACC_COMM_IF_CH_DATA(_t_), args);    \
+    _EXIT_MONITOR();                                                                                    \
+    res;})
 #define CYGACC_COMM_IF_CONTROL_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_CONTROL]=(CYG_ADDRWORD)(_x_)
 
+__call_COMM3(IF_DBG_ISR, int, __comm_if_dbg_isr_t, int *, CYG_ADDRWORD, CYG_ADDRWORD)
 #define CYGACC_COMM_IF_DBG_ISR(_t_, _c_, _v_, _d_) \
- ((__comm_if_dbg_isr_t)((_t_)[CYGNUM_COMM_IF_DBG_ISR]))(CYGACC_COMM_IF_CH_DATA(_t_), (_c_), (_v_), (_d_))
+ __call_COMM_IF_DBG_ISR(_t_, _c_, _v_, _d_)
 #define CYGACC_COMM_IF_DBG_ISR_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_DBG_ISR]=(CYG_ADDRWORD)(_x_)
 
+__call_COMM1(IF_GETC_TIMEOUT, cyg_bool, __comm_if_getc_timeout_t, cyg_uint8 *)
 #define CYGACC_COMM_IF_GETC_TIMEOUT(_t_, _c_) \
- ((__comm_if_getc_timeout_t)((_t_)[CYGNUM_COMM_IF_GETC_TIMEOUT]))(CYGACC_COMM_IF_CH_DATA(_t_), (_c_))
+ __call_COMM_IF_GETC_TIMEOUT(_t_, _c_)
 #define CYGACC_COMM_IF_GETC_TIMEOUT_SET(_t_, _x_) \
  (_t_)[CYGNUM_COMM_IF_GETC_TIMEOUT]=(CYG_ADDRWORD)(_x_)
 
@@ -206,20 +326,20 @@ typedef cyg_bool (*__comm_if_getc_timeout_t)(void* __ch_data, cyg_uint8* __ch);
 // linker script. Both ROM and RAM startup applications will know about
 // the location.
 #define CYGNUM_CALL_IF_VERSION                    0
-#define CYGNUM_CALL_IF_ICTRL_TABLE                1
-#define CYGNUM_CALL_IF_EXC_TABLE                  2
-#define CYGNUM_CALL_IF_DBG_VECTOR                 3
+#define CYGNUM_CALL_IF_available_1                1
+#define CYGNUM_CALL_IF_available_2                2
+#define CYGNUM_CALL_IF_available_3                3
 #define CYGNUM_CALL_IF_KILL_VECTOR                4
 #define CYGNUM_CALL_IF_CONSOLE_PROCS              5
 #define CYGNUM_CALL_IF_DEBUG_PROCS                6
 #define CYGNUM_CALL_IF_FLUSH_DCACHE               7
 #define CYGNUM_CALL_IF_FLUSH_ICACHE               8
-#define CYGNUM_CALL_IF_CPU_DATA                   9
-#define CYGNUM_CALL_IF_BOARD_DATA                 10
-#define CYGNUM_CALL_IF_SYSINFO                    11
+#define CYGNUM_CALL_IF_available_9                9
+#define CYGNUM_CALL_IF_available_10               10
+#define CYGNUM_CALL_IF_available_11               11
 #define CYGNUM_CALL_IF_SET_DEBUG_COMM             12
 #define CYGNUM_CALL_IF_SET_CONSOLE_COMM           13
-#define CYGNUM_CALL_IF_SET_SERIAL_BAUD            14
+#define CYGNUM_CALL_IF_available_14               14
 #define CYGNUM_CALL_IF_DBG_SYSCALL                15
 #define CYGNUM_CALL_IF_RESET                      16
 #define CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG     17
@@ -273,13 +393,8 @@ typedef hal_virtual_comm_table_t *__call_if_console_procs_t;
 typedef hal_virtual_comm_table_t *__call_if_debug_procs_t;
 typedef void (__call_if_flush_dcache_t)(void *__p, int __nbytes);
 typedef void (__call_if_flush_icache_t)(void *__p, int __nbytes);
-typedef void* __call_if_cpu_data_t;
-typedef void* __call_if_board_data_t;
-typedef int (__call_if_sysinfo_t)(int __id, void* __ap);
-//typedef int (__call_if_sysinfo_t)(enum bsp_info_id __id, va_list __ap);
 typedef int (__call_if_set_debug_comm_t)(int __comm_id);
 typedef int (__call_if_set_console_comm_t)(int __comm_id);
-typedef int (__call_if_set_serial_baud_t)(int __comm_id, int __baud);
 typedef void* __call_if_dbg_data_t;
 typedef int (__call_if_dbg_syscall_t) (enum dbg_syscall_ids id,
                                         union dbg_thread_syscall_parms  *p );
@@ -292,40 +407,118 @@ typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, char *__key,
 
 #ifndef CYGACC_CALL_IF_DEFINED
 
+#define __data_VV(_n_,_tt_)                             \
+static __inline__ _tt_                                  \
+__call_vv_##_n_(void)                                   \
+{                                                       \
+    return ((_tt_)hal_virtual_vector_table[_n_]);       \
+}
+
+#define __call_VV0(_n_,_tt_,_rt_)                                       \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(void)                                                   \
+{                                                                       \
+    _rt_ res;                                                           \
+    _ENTER_MONITOR();                                                   \
+    res = ((_tt_ *)hal_virtual_vector_table[_n_])();                    \
+    _EXIT_MONITOR();                                                    \
+    return res;                                                         \
+}
+
+#define __call_voidVV0(_n_,_tt_,_rt_)                                   \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(void)                                                   \
+{                                                                       \
+    _ENTER_MONITOR();                                                   \
+    ((_tt_ *)hal_virtual_vector_table[_n_])();                          \
+    _EXIT_MONITOR();                                                    \
+}
+
+#define __call_VV1(_n_,_tt_,_rt_,_t1_)                                  \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_)                                              \
+{                                                                       \
+    _rt_ res;                                                           \
+    _ENTER_MONITOR();                                                   \
+    res = ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_);                \
+    _EXIT_MONITOR();                                                    \
+    return res;                                                         \
+}
+
+#define __call_voidVV1(_n_,_tt_,_rt_,_t1_)                              \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_)                                              \
+{                                                                       \
+    _ENTER_MONITOR();                                                   \
+    ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_);                      \
+    _EXIT_MONITOR();                                                    \
+}
+
+#define __call_VV2(_n_,_tt_,_rt_,_t1_,_t2_)                             \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_, _t2_ _p2_)                                   \
+{                                                                       \
+    _rt_ res;                                                           \
+    _ENTER_MONITOR();                                                   \
+    res = ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_);           \
+    _EXIT_MONITOR();                                                    \
+    return res;                                                         \
+}
+
+#define __call_voidVV2(_n_,_tt_,_rt_,_t1_,_t2_)                         \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_, _t2_ _p2_)                                   \
+{                                                                       \
+    _ENTER_MONITOR();                                                   \
+    ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_);                 \
+    _EXIT_MONITOR();                                                    \
+}
+
+#define __call_VV4(_n_,_tt_,_rt_,_t1_,_t2_,_t3_,_t4_)                   \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_, _t2_ _p2_, _t3_ _p3_, _t4_ _p4_)             \
+{                                                                       \
+    _rt_ res;                                                           \
+    _ENTER_MONITOR();                                                   \
+    res = ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_,_p3_,_p4_); \
+    _EXIT_MONITOR();                                                    \
+    return res;                                                         \
+}
+
+#define __call_voidVV4(_n_,_tt_,_rt_,_t1_,_t2_,_t3_,_t4_)               \
+static __inline__ _rt_                                                  \
+__call_vv_##_n_(_t1_ _p1_, _t2_ _p2_, _t3_ _p3_, _t4_ _p4_)             \
+{                                                                       \
+    _ENTER_MONITOR();                                                   \
+    ((_tt_ *)hal_virtual_vector_table[_n_])(_p1_,_p2_,_p3_,_p4_);       \
+    _EXIT_MONITOR();                                                    \
+}
+
+
+#define CYGACC_DATA_VV(t,e)              __call_vv_##e()
+#define CYGACC_CALL_VV0(t,e)             __call_vv_##e
+#define CYGACC_CALL_VV1(t,e,p1)          __call_vv_##e((p1))
+#define CYGACC_CALL_VV2(t,e,p1,p2)       __call_vv_##e((p1),(p2))
+#define CYGACC_CALL_VV3(t,e,p1,p2,p3)    __call_vv_##e((p1),(p2),(p3))
+#define CYGACC_CALL_VV4(t,e,p1,p2,p3,p4) __call_vv_##e((p1),(p2),(p3),(p4))
+
 #define CYGACC_CALL_IF_VERSION() \
- ((__call_if_version_t)hal_virtual_vector_table[CYGNUM_CALL_IF_VERSION])
+ CYGACC_DATA_VV(__call_if_version_t, CYGNUM_CALL_IF_VERSION)
+__data_VV(CYGNUM_CALL_IF_VERSION, __call_if_version_t)
 #define CYGACC_CALL_IF_VERSION_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_VERSION]=(CYG_ADDRWORD)(_x_)
 
-#define CYGACC_CALL_IF_ICTRL_TABLE() \
- ((__call_if_ictrl_table_t)hal_virtual_vector_table[CYGNUM_CALL_IF_ICTRL_TABLE])
-#define CYGACC_CALL_IF_ICTRL_TABLE_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_ICTRL_TABLE]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_EXC_TABLE() \
- ((__call_if_exc_table_t)hal_virtual_vector_table[CYGNUM_CALL_IF_EXC_TABLE])
-#define CYGACC_CALL_IF_EXC_TABLE_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_EXC_TABLE]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_DBG_VECTOR() \
- ((__call_if_dbg_vector_t)hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_VECTOR])
-#define CYGACC_CALL_IF_DBG_VECTOR_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_VECTOR]=(CYG_ADDRWORD)(_x_)
-
 #define CYGACC_CALL_IF_KILL_VECTOR() \
- ((__call_if_kill_vector_t)hal_virtual_vector_table[CYGNUM_CALL_IF_KILL_VECTOR])
+ CYGACC_DATA_VV(__call_if_kill_vector_t, CYGNUM_CALL_IF_KILL_VECTOR)
+__data_VV(CYGNUM_CALL_IF_KILL_VECTOR, __call_if_kill_vector_t)
 #define CYGACC_CALL_IF_KILL_VECTOR_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_KILL_VECTOR]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_CONSOLE_PROCS() \
- ((__call_if_console_procs_t)hal_virtual_vector_table[CYGNUM_CALL_IF_CONSOLE_PROCS])
+ CYGACC_DATA_VV(__call_if_console_procs_t, CYGNUM_CALL_IF_CONSOLE_PROCS)
+__data_VV(CYGNUM_CALL_IF_CONSOLE_PROCS, __call_if_console_procs_t)
 #define CYGACC_CALL_IF_CONSOLE_PROCS_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_CONSOLE_PROCS]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_DEBUG_PROCS() \
- ((__call_if_debug_procs_t)hal_virtual_vector_table[CYGNUM_CALL_IF_DEBUG_PROCS])
-#define CYGACC_CALL_IF_DEBUG_PROCS_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_DEBUG_PROCS]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_FLUSH_DCACHE(_p_, _n_) \
  ((__call_if_flush_dcache_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_DCACHE])((_p_), (_n_))
@@ -337,70 +530,64 @@ typedef cyg_bool (__call_if_flash_cfg_op_fn_t)(int __oper, char *__key,
 #define CYGACC_CALL_IF_FLUSH_ICACHE_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLUSH_ICACHE]=(CYG_ADDRWORD)(_x_)
 
-#define CYGACC_CALL_IF_CPU_DATA() \
- ((__call_if_cpu_data_t)hal_virtual_vector_table[CYGNUM_CALL_IF_CPU_DATA])
-#define CYGACC_CALL_IF_CPU_DATA_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_CPU_DATA]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_BOARD_DATA() \
- ((__call_if_board_data_t)hal_virtual_vector_table[CYGNUM_CALL_IF_BOARD_DATA])
-#define CYGACC_CALL_IF_BOARD_DATA_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_BOARD_DATA]=(CYG_ADDRWORD)(_x_)
-
-#define CYGACC_CALL_IF_SYSINFO(_i_, _a_) \
- ((__call_if_sysinfo_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_SYSINFO])((_i_), (_a_))
-#define CYGACC_CALL_IF_SYSINFO_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_SYSINFO]=(CYG_ADDRWORD)(_x_)
+#define CYGACC_CALL_IF_DEBUG_PROCS() \
+ CYGACC_DATA_VV(__call_if_debug_procs_t, CYGNUM_CALL_IF_DEBUG_PROCS)
+__data_VV(CYGNUM_CALL_IF_DEBUG_PROCS, __call_if_debug_procs_t)
+#define CYGACC_CALL_IF_DEBUG_PROCS_SET(_x_) \
+ hal_virtual_vector_table[CYGNUM_CALL_IF_DEBUG_PROCS]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_SET_DEBUG_COMM(_i_) \
- ((__call_if_set_debug_comm_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_DEBUG_COMM])((_i_))
+ CYGACC_CALL_VV1(__call_if_set_debug_comm_t*, CYGNUM_CALL_IF_SET_DEBUG_COMM, (_i_))
+__call_VV1(CYGNUM_CALL_IF_SET_DEBUG_COMM, __call_if_set_debug_comm_t, int, int)
 #define CYGACC_CALL_IF_SET_DEBUG_COMM_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_SET_DEBUG_COMM]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_SET_CONSOLE_COMM(_i_) \
- ((__call_if_set_console_comm_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_CONSOLE_COMM])((_i_))
+ CYGACC_CALL_VV1(__call_if_set_console_comm_t*, CYGNUM_CALL_IF_SET_CONSOLE_COMM, (_i_))
+__call_VV1(CYGNUM_CALL_IF_SET_CONSOLE_COMM, __call_if_set_console_comm_t, int, int)
 #define CYGACC_CALL_IF_SET_CONSOLE_COMM_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_SET_CONSOLE_COMM]=(CYG_ADDRWORD)(_x_)
 
-#define CYGACC_CALL_IF_SET_SERIAL_BAUD(_i_, _b_) \
- ((__call_if_set_serial_baud_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_SET_SERIAL_BAUD])((_i_), (_b_))
-#define CYGACC_CALL_IF_SET_SERIAL_BAUD_SET(_x_) \
- hal_virtual_vector_table[CYGNUM_CALL_IF_SET_SERIAL_BAUD]=(CYG_ADDRWORD)(_x_)
-
 #define CYGACC_CALL_IF_DBG_DATA() \
- ((__call_if_dbg_data_t)hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_DATA])
+ CYGACC_DATA_VV(__call_if_dbg_data_t, CYGNUM_CALL_IF_DBG_DATA)
+__data_VV(CYGNUM_CALL_IF_DBG_DATA, __call_if_dbg_data_t)
 #define CYGACC_CALL_IF_DBG_DATA_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_DATA]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_DBG_SYSCALL() \
- ((__call_if_dbg_syscall_t)hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_SYSCALL])
+ CYGACC_CALL_VV2(__call_if_dbg_syscall_t, CYGNUM_CALL_IF_DBG_SYSCALL)
 #define CYGACC_CALL_IF_DBG_SYSCALL_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_DBG_SYSCALL]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_RESET() \
- ((__call_if_reset_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_RESET])()
+ CYGACC_CALL_VV0(__call_if_reset_t*, CYGNUM_CALL_IF_RESET)()
+__call_voidVV0(CYGNUM_CALL_IF_RESET, __call_if_reset_t, void)
 #define CYGACC_CALL_IF_RESET_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_RESET]=(CYG_ADDRWORD)(_x_)
 #define CYGACC_CALL_IF_RESET_GET() \
  ((__call_if_reset_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_RESET])
 
 #define CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG() \
- ((__call_if_console_interrupt_flag_t)hal_virtual_vector_table[CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG])
+ CYGACC_DATA_VV(__call_if_console_interrupt_flag_t, CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG)
+__data_VV(CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG, __call_if_console_interrupt_flag_t)
 #define CYGACC_CALL_IF_CONSOLE_INTERRUPT_FLAG_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_CONSOLE_INTERRUPT_FLAG]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_DELAY_US(_u_) \
- ((__call_if_delay_us_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_DELAY_US])((_u_))
+ CYGACC_CALL_VV1(__call_if_delay_us_t*, CYGNUM_CALL_IF_DELAY_US, (_u_))
+__call_voidVV1(CYGNUM_CALL_IF_DELAY_US, __call_if_delay_us_t, void, cyg_int32)
 #define CYGACC_CALL_IF_DELAY_US_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_DELAY_US]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_INSTALL_BPT_FN(_e_) \
- ((__call_if_install_bpt_fn_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN])((_e_))
+ CYGACC_CALL_VV1(__call_if_install_bpt_fn_t*, CYGNUM_CALL_IF_INSTALL_BPT_FN, (_e_))
+__call_voidVV1(CYGNUM_CALL_IF_INSTALL_BPT_FN, __call_if_install_bpt_fn_t, void, void *)
 #define CYGACC_CALL_IF_INSTALL_BPT_FN_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_INSTALL_BPT_FN]=(CYG_ADDRWORD)(_x_)
 
 #define CYGACC_CALL_IF_FLASH_CFG_OP(_o_,_k_,_d_,_t_) \
- ((__call_if_flash_cfg_op_fn_t*)hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_CFG_OP])((_o_),(_k_),(_d_),(_t_))
+ CYGACC_CALL_VV4(__call_if_flash_cfg_op_fn_t*, CYGNUM_CALL_IF_FLASH_CFG_OP, (_o_),(_k_),(_d_),(_t_))
+__call_VV4(CYGNUM_CALL_IF_FLASH_CFG_OP, __call_if_flash_cfg_op_fn_t, cyg_bool, int, char *, void *, int)
 #define CYGACC_CALL_IF_FLASH_CFG_OP_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_CFG_OP]=(CYG_ADDRWORD)(_x_)
 #define CYGNUM_CALL_IF_FLASH_CFG_GET (0)

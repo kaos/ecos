@@ -1,3 +1,34 @@
+2001-08-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal.cdl: Add CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
+	interface.
+
+2001-08-16  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: Add CDL options to control GDB protocol retries.
+
+2001-08-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_if.c (cyg_hal_diag_mangler_gdb_putc): Use timeout
+	functions to allow for retries.  This should improve the case
+	where [for whatever reason] the host GDB misses or ignores 
+	a $O packet - it will get resent after a reasonable timeout.
+
+2001-08-03  Gary Thomas  <gthomas@redhat.com>
+2001-08-03  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_if.h: Use inline functions for calls - allowing
+	interrupts to be disabled while services are called
+	[CYGACC_COMM_IF_CONTROL is an exception since it's using variable
+	arguments - so it's still a macro].
+	Pruned unused IF vectors: ICTRL_TABLE, EXC_TABLE, DBG_VECTOR,
+	CPU_DATA, BOARD_DATA, SYSINFO, SET_SERIAL_BAUD.
+	Note: this should fix bug CR 902745-CR.
+
+	* cdl/hal.cdl: Removed CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL.
+	* src/hal_if.c (hal_if_init): Removed initialization of
+	ICTRL_TABLE, EXC_TABLE, CPU_DATA and BOARD_DATA entries.
+
 2001-08-03  Nick Garnett  <nickg@redhat.com>
 
         Imported from a development branch:

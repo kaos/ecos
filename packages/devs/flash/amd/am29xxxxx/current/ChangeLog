@@ -1,3 +1,7 @@
+2001-08-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/flash_am29xxxxx.inl: Double erase timeouts for faster CPUs.
+
 2001-08-10  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx.inl (flash_hwr_init): Fix block number.

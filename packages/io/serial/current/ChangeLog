@@ -1,3 +1,8 @@
+2001-08-15  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/ser_test_protocol.inl: Change NONE in 'cyg_verbosity_level_t'
+	to be _NONE [unused] to avoid name clash with <kernel/kapi.h>.
+
 2000-12-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/common/serial.c: Fix CYGOPT_IO_SERIAL_FLOW_CONTROL_HW ->

@@ -210,7 +210,7 @@ typedef enum {
 } cyg_option_t;
 
 typedef enum {
-    NONE = 0,
+    _NONE = 0,
     PROTOCOL_PROGRESS,
     PROTOCOL_DATA,
 } cyg_verbosity_level_t;

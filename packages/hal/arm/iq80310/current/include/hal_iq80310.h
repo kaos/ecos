@@ -481,19 +481,19 @@
 
 /* Reserved 0x0000183C through 0x000018FF */
 
-#define X6ISR_REG ((cyg_uint32 *)X6ISR_ADDR)
+#define X6ISR_REG ((volatile cyg_uint32 *)X6ISR_ADDR)
 #  define X6ISR_DIP0 0x01
 #  define X6ISR_DIP1 0x02
 #  define X6ISR_DIP2 0x04
 #  define X6ISR_EMIP 0x10
 #  define X6ISR_AAIP 0x20
 
-#define X7ISR_REG ((cyg_uint32 *)X7ISR_ADDR)
+#define X7ISR_REG ((volatile cyg_uint32 *)X7ISR_ADDR)
 #  define X7ISR_ISQC 0x02
 #  define X7ISR_INDB 0x04
 #  define X7ISR_BIST 0x08
 
-#define NISR_REG ((cyg_uint32 *)NISR_ADDR)
+#define NISR_REG ((volatile cyg_uint32 *)NISR_ADDR)
 #  define NISR_MCU  0x01    
 #  define NISR_PATU 0x02
 #  define NISR_SATU 0x04
@@ -506,46 +506,45 @@
 #  define NISR_AAU  0x400
 #  define NISR_BIU  0x800
 
-#define PIRSR_REG ((cyg_uint32 *)PIRSR_ADDR)
-#define IISR_REG  ((cyg_uint32 *)IISR_ADDR)
-#define IIMR_REG  ((cyg_uint32 *)IIMR_ADDR)
-#define OISR_REG  ((cyg_uint32 *)OISR_ADDR)
-#define OIMR_REG  ((cyg_uint32 *)OIMR_ADDR)
-#define EMISR_REG ((cyg_uint32 *)EMISR_ADDR)
-#define ISR_REG   ((cyg_uint32 *)ISR_ADDR)
-#define GTMR_REG  ((cyg_uint32 *)GTMR_ADDR)
-#define ESR_REG   ((cyg_uint32 *)ESR_ADDR)
-#define ADCR_REG  ((cyg_uint32 *)ADCR_ADDR)
-#define ICR_REG   ((cyg_uint32 *)ICR_ADDR)
-#define ATUCR_REG ((cyg_uint32 *)ATUCR_ADDR)
+#define PIRSR_REG ((volatile cyg_uint32 *)PIRSR_ADDR)
+#define IISR_REG  ((volatile cyg_uint32 *)IISR_ADDR)
+#define IIMR_REG  ((volatile cyg_uint32 *)IIMR_ADDR)
+#define OISR_REG  ((volatile cyg_uint32 *)OISR_ADDR)
+#define OIMR_REG  ((volatile cyg_uint32 *)OIMR_ADDR)
+#define EMISR_REG ((volatile cyg_uint32 *)EMISR_ADDR)
+#define ISR_REG   ((volatile cyg_uint32 *)ISR_ADDR)
+#define GTMR_REG  ((volatile cyg_uint32 *)GTMR_ADDR)
+#define ESR_REG   ((volatile cyg_uint32 *)ESR_ADDR)
+#define ADCR_REG  ((volatile cyg_uint32 *)ADCR_ADDR)
+#define ICR_REG   ((volatile cyg_uint32 *)ICR_ADDR)
+#define ATUCR_REG ((volatile cyg_uint32 *)ATUCR_ADDR)
 
-#define DCR0_REG ((cyg_uint32 *)DCR0_ADDR)
-#define DCR1_REG ((cyg_uint32 *)DCR1_ADDR)
-#define DCR2_REG ((cyg_uint32 *)DCR2_ADDR)
+#define DCR0_REG ((volatile cyg_uint32 *)DCR0_ADDR)
+#define DCR1_REG ((volatile cyg_uint32 *)DCR1_ADDR)
+#define DCR2_REG ((volatile cyg_uint32 *)DCR2_ADDR)
 
-#define ECCR_REG ((cyg_uint32 *)ECCR_ADDR)
-#define MCISR_REG ((cyg_uint32 *)MCISR_ADDR)
-#define ELOG0_REG ((cyg_uint32 *)ELOG0_ADDR)
-#define ELOG1_REG ((cyg_uint32 *)ELOG1_ADDR)
-#define ECAR0_REG ((cyg_uint32 *)ECAR0_ADDR)
-#define ECAR1_REG ((cyg_uint32 *)ECAR1_ADDR)
+#define ECCR_REG  ((volatile cyg_uint32 *)ECCR_ADDR)
+#define MCISR_REG ((volatile cyg_uint32 *)MCISR_ADDR)
+#define ELOG0_REG ((volatile cyg_uint32 *)ELOG0_ADDR)
+#define ELOG1_REG ((volatile cyg_uint32 *)ELOG1_ADDR)
+#define ECAR0_REG ((volatile cyg_uint32 *)ECAR0_ADDR)
+#define ECAR1_REG ((volatile cyg_uint32 *)ECAR1_ADDR)
 
-#define PATUISR_REG ((cyg_uint32 *)PATUISR_ADDR)
-#define SATUISR_REG ((cyg_uint32 *)SATUISR_ADDR)
-#define PBISR_REG   ((cyg_uint32 *)PBISR_ADDR)
-#define SBISR_REG   ((cyg_uint32 *)SBISR_ADDR)
-#define CSR0_REG    ((cyg_uint32 *)CSR0_ADDR)
-#define CSR1_REG    ((cyg_uint32 *)CSR1_ADDR)
-#define CSR2_REG    ((cyg_uint32 *)CSR2_ADDR)
-#define IISR_REG    ((cyg_uint32 *)IISR_ADDR)
-#define ASR_REG     ((cyg_uint32 *)ASR_ADDR)
-#define BIUISR_REG  ((cyg_uint32 *)BIUISR_ADDR)
+#define PATUISR_REG ((volatile cyg_uint32 *)PATUISR_ADDR)
+#define SATUISR_REG ((volatile cyg_uint32 *)SATUISR_ADDR)
+#define PBISR_REG   ((volatile cyg_uint32 *)PBISR_ADDR)
+#define SBISR_REG   ((volatile cyg_uint32 *)SBISR_ADDR)
+#define CSR0_REG    ((volatile cyg_uint32 *)CSR0_ADDR)
+#define CSR1_REG    ((volatile cyg_uint32 *)CSR1_ADDR)
+#define CSR2_REG    ((volatile cyg_uint32 *)CSR2_ADDR)
+#define IISR_REG    ((volatile cyg_uint32 *)IISR_ADDR)
+#define ASR_REG     ((volatile cyg_uint32 *)ASR_ADDR)
+#define BIUISR_REG  ((volatile cyg_uint32 *)BIUISR_ADDR)
 
-#define PATUSR_REG  ((cyg_uint32 *)PATUSR_ADDR)
-#define SATUSR_REG  ((cyg_uint32 *)SATUSR_ADDR)
-#define PSR_REG  ((cyg_uint32 *)PSR_ADDR)
-#define SSR_REG  ((cyg_uint32 *)SSR_ADDR)
-
+#define PATUSR_REG  ((volatile cyg_uint16 *)PATUSR_ADDR)
+#define SATUSR_REG  ((volatile cyg_uint16 *)SATUSR_ADDR)
+#define PSR_REG     ((volatile cyg_uint16 *)PSR_ADDR)
+#define SSR_REG     ((volatile cyg_uint16 *)SSR_ADDR)
 
 #define MEMBASE_DRAM 0xa0000000
 

@@ -490,7 +490,7 @@ Cyg_Scheduler_Implementation::timeslice(void)
 
 #else    
 
-    if( --timeslice_count[CYG_KERNEL_CPU_THIS()] )
+    if( --timeslice_count[CYG_KERNEL_CPU_THIS()] == 0 )
         timeslice_cpu();
     
 #endif
