@@ -70,7 +70,7 @@ local_cmd_entry("init",
 #endif
 local_cmd_entry("list",
                 "Display contents of FLASH Image System [FIS]",
-		FIS_LIST_OPTS,
+                FIS_LIST_OPTS,
                 fis_list,
                 FIS_cmds
     );
@@ -270,18 +270,18 @@ fis_init(int argc, char *argv[])
 
     if (full_init) {
         unsigned long erase_start, erase_size;
-	// Erase everything except default RedBoot images, fis block, and config block.
-	// FIXME! This still assumes that fis and config blocks can use top of FLASH.
+        // Erase everything except default RedBoot images, fis block, and config block.
+        // FIXME! This still assumes that fis and config blocks can use top of FLASH.
 
         // first deal with the possible first part, before RedBoot images:
         erase_start = (unsigned long)flash_start + CYGNUM_REDBOOT_FLASH_RESERVED_BASE;
         erase_size =  (unsigned long)flash_start + CYGBLD_REDBOOT_FLASH_BOOT_OFFSET;
         if ( erase_size > erase_start ) {
             erase_size -= erase_start;
-	    if ((stat = flash_erase((void *)erase_start, erase_size,
-				    (void **)&err_addr)) != 0) {
-		printf("   initialization failed %p: 0x%x(%s)\n",
-		       err_addr, stat, flash_errmsg(stat));
+            if ((stat = flash_erase((void *)erase_start, erase_size,
+                                    (void **)&err_addr)) != 0) {
+                printf("   initialization failed %p: 0x%x(%s)\n",
+                       err_addr, stat, flash_errmsg(stat));
             }
         }
         // second deal with the larger part in the main:
@@ -535,6 +535,11 @@ fis_create(int argc, char *argv[])
          (stat = flash_verify_addr((void *)(flash_addr+img_size-1))))) {
         printf("Invalid FLASH address: %p (%s)\n", (void *)flash_addr, flash_errmsg(stat));
         printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
+        return;
+    }
+    if (flash_addr_set && flash_addr & (block_size-1)) {
+        printf("Invalid FLASH address: %p\n", (void *)flash_addr);
+        printf("   must be 0x%x aligned\n", block_size);
         return;
     }
     if (strlen(name) >= sizeof(img->name)) {
@@ -857,6 +862,11 @@ fis_write(int argc, char *argv[])
         printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
         return;
     }
+    if (flash_addr_set && flash_addr & (block_size-1)) {
+        printf("Invalid FLASH address: %p\n", (void *)flash_addr);
+        printf("   must be 0x%x aligned\n", block_size);
+        return;
+    }
     if ((mem_addr < (unsigned long)ram_start) ||
         ((mem_addr+length) >= (unsigned long)ram_end)) {
         printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
@@ -918,6 +928,11 @@ fis_erase(int argc, char *argv[])
          (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
         printf("Invalid FLASH address: %p (%s)\n", (void *)flash_addr, flash_errmsg(stat));
         printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
+        return;
+    }
+    if (flash_addr_set && flash_addr & (block_size-1)) {
+        printf("Invalid FLASH address: %p\n", (void *)flash_addr);
+        printf("   must be 0x%x aligned\n", block_size);
         return;
     }
     // Safety check - make sure the address range is not within the code we're running

@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -32,7 +32,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	nickg
-## Contributors:	nickg, dmoseley
+## Contributors:	nickg, dmoseley, dhowells
 ## Date:	1997-10-16
 ## Purpose:	MN10300 exception vectors
 ## Description:	This file defines the code placed into the exception
@@ -53,6 +53,7 @@
 #endif		
 
 #include <cyg/hal/arch.inc>	
+#include <cyg/hal/basetype.h>	
 		
 	
 ##-----------------------------------------------------------------------------
@@ -121,35 +122,74 @@
 #endif // CYGPKG_CYGMON
 
 ##-----------------------------------------------------------------------------
+#define EXCEPTION_HANDLER(VECTOR,NAME,HANDLER) .org VECTOR; \
+NAME##_vector: \
+jmp HANDLER
 		
 	.section ".vectors","ax"
-
-	.globl	reset_vector
 	
-reset_vector:	
+	.globl	reset_vector
+
+	.org 0x000	
+reset_vector:
 	# Reset vector
 	jmp	_start
 
-	.p2align 3
-
-	# NMI vector
-	jmp	__nmi
-
-	.p2align 3
-	
-	# Trap vector
-	jmp	__trap
-
-#ifdef CYGPKG_CYGMON
-#ifdef CYGPKG_HAL_MN10300_AM33
+EXCEPTION_HANDLER(0x008, nmi					,__nmi)
+EXCEPTION_HANDLER(0x010, trap					,__trap)
+EXCEPTION_HANDLER(0x100, ins_tlb_miss_exception			,__unknown)
+EXCEPTION_HANDLER(0x108, data_tlb_miss_exception		,__unknown)
+EXCEPTION_HANDLER(0x110, ins_access_exception			,__unknown)
+EXCEPTION_HANDLER(0x118, data_access_exception			,__unknown)
+EXCEPTION_HANDLER(0x160, priv_ins_exception			,__unknown)
+EXCEPTION_HANDLER(0x168, unimpl_ins_exception			,__unknown)
+EXCEPTION_HANDLER(0x170, unimpl_ext_ins_exception		,__unknown)
+EXCEPTION_HANDLER(0x180, misalignment_exception			,__unknown)
+EXCEPTION_HANDLER(0x188, bus_error				,__unknown)
+EXCEPTION_HANDLER(0x190, illegal_ins_access_exception		,__unknown)
+EXCEPTION_HANDLER(0x198, illegal_data_access_exception		,__unknown)
+EXCEPTION_HANDLER(0x1a0, iospace_ins_access_exception		,__unknown)
+EXCEPTION_HANDLER(0x1a8, priv_space_ins_access_exception	,__unknown)
+EXCEPTION_HANDLER(0x1b0, priv_space_data_access_exception	,__unknown)
+EXCEPTION_HANDLER(0x1b8, data_space_ins_access_exception	,__unknown)
+EXCEPTION_HANDLER(0x1c0, fpu_disabled_exception			,__unknown)
+EXCEPTION_HANDLER(0x1c8, fpu_unimplemented_exception		,__unknown)
+EXCEPTION_HANDLER(0x1d0, fpu_operation_exception		,__unknown)
+EXCEPTION_HANDLER(0x200, double_fault				,__unknown)
+EXCEPTION_HANDLER(0x240, wdt_overflow				,__unknown)
+EXCEPTION_HANDLER(0x248, nmi_pin				,__nmi)
+EXCEPTION_HANDLER(0x280, maskable_int0				,__unknown)
+EXCEPTION_HANDLER(0x288, maskable_int1				,__unknown)
+EXCEPTION_HANDLER(0x290, maskable_int2				,__unknown)
+EXCEPTION_HANDLER(0x298, maskable_int3				,__unknown)
+EXCEPTION_HANDLER(0x2a0, maskable_int4				,__unknown)
+EXCEPTION_HANDLER(0x2a8, maskable_int5				,__unknown)
+EXCEPTION_HANDLER(0x2b0, maskable_int6				,__unknown)
+		
 	// We need to put the syscall handler at 0x300
 	// For cygmon, we will use the am33 "syscall 0" as the syscall trap.
-	.p2align 8
-	.rept 0x200
-	nop
-	.endr
-	jmp	__nmi
-#endif
+EXCEPTION_HANDLER(0x300, syscall0				,__nmi)
+EXCEPTION_HANDLER(0x308, syscall1				,__unknown)
+EXCEPTION_HANDLER(0x310, syscall2				,__unknown)
+EXCEPTION_HANDLER(0x318, syscall3				,__unknown)
+EXCEPTION_HANDLER(0x320, syscall4				,__unknown)
+EXCEPTION_HANDLER(0x328, syscall5				,__unknown)
+EXCEPTION_HANDLER(0x330, syscall6				,__unknown)
+EXCEPTION_HANDLER(0x338, syscall7				,__unknown)
+EXCEPTION_HANDLER(0x340, syscall8				,__unknown)
+EXCEPTION_HANDLER(0x348, syscall9				,__unknown)
+EXCEPTION_HANDLER(0x350, syscalla				,__unknown)
+EXCEPTION_HANDLER(0x358, syscallb				,__unknown)
+EXCEPTION_HANDLER(0x360, syscallc				,__unknown)
+EXCEPTION_HANDLER(0x368, syscalld				,__unknown)
+EXCEPTION_HANDLER(0x370, syscalle				,__unknown)
+EXCEPTION_HANDLER(0x378, syscallf				,__unknown)
+
+##-----------------------------------------------------------------------------
+## unknown interrupt or exception vector
+__unknown:
+#ifdef CYG_HAL_HANDLE_UNKNOWN_INT_DEFINED
+	hal_handle_unknown_int
 #endif
 
 ##-----------------------------------------------------------------------------

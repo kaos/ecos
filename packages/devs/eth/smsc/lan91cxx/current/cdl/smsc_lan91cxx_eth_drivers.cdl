@@ -77,6 +77,13 @@ cdl_package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
 	    this driver with all its details."
     }
 
+    cdl_interface CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE {
+	display "Chip is wired in PCMCIA mode"
+	description "
+	    If this is nonzero, then the chip is assumed to be hardware
+            configured in PCMCIA mode."
+    }
+
     cdl_component CYGPKG_DEVS_ETH_SMSC_LAN91CXX_OPTIONS {
         display "LAN91CXX ethernet driver build options"
         flavor  none

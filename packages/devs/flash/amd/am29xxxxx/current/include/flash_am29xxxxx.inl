@@ -63,7 +63,6 @@
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
 
-
 //----------------------------------------------------------------------------
 // Common device details.
 #define FLASH_Read_ID                   FLASHWORD( 0x90 )
@@ -79,8 +78,19 @@
 
 #define FLASH_unlocked                  FLASHWORD( 0x00 )
 
-#define FLASH_Setup_Addr1               (0x555)
-#define FLASH_Setup_Addr2               (0x2AA)
+#ifndef CYGNUM_FLASH_16AS8
+# define FLASH_Setup_Addr1              (0x555)
+# define FLASH_Setup_Addr2              (0x2AA)
+# define FLASH_VendorID_Addr            (0)
+# define FLASH_DeviceID_Addr            (1)
+# define FLASH_WP_Addr                  (2)
+#else
+# define FLASH_Setup_Addr1              (0xAAA)
+# define FLASH_Setup_Addr2              (0x555)
+# define FLASH_VendorID_Addr            (0)
+# define FLASH_DeviceID_Addr            (2)
+# define FLASH_WP_Addr                  (4)
+#endif
 #define FLASH_Setup_Code1               FLASHWORD( 0xAA )
 #define FLASH_Setup_Code2               FLASHWORD( 0x55 )
 #define FLASH_Setup_Erase               FLASHWORD( 0x80 )
@@ -115,6 +125,10 @@ typedef struct flash_dev_info {
     cyg_uint32   device_size;
     cyg_bool     bootblock;
     cyg_uint32   bootblocks[12];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
+    cyg_bool     banked;
+    cyg_uint32   banks[2];               // bank offets, highest to lowest (lowest should be 0)
+                                         // (only one entry for now, increase to support devices
+                                         // with more banks).
 } flash_dev_info_t;
 
 static const flash_dev_info_t* flash_dev_info;
@@ -151,16 +165,20 @@ flash_query(void* data)
     f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
     f_s2 = FLASH_P2V(ROM+FLASH_Setup_Addr2);
 
+    *f_s1 = FLASH_Reset;
     w = *(FLASH_P2V(ROM));
 
     *f_s1 = FLASH_Setup_Code1;
     *f_s2 = FLASH_Setup_Code2;
     *f_s1 = FLASH_Read_ID;
 
+    id[0] = -1;
+    id[1] = -1;
+
     // Manufacturers' code
-    id[0] = *(FLASH_P2V(ROM));
+    id[0] = *(FLASH_P2V(ROM+FLASH_VendorID_Addr));
     // Part number
-    id[1] = *(FLASH_P2V(ROM+1));
+    id[1] = *(FLASH_P2V(ROM+FLASH_DeviceID_Addr));
 
     *(FLASH_P2V(ROM)) = FLASH_Reset;
 
@@ -228,19 +246,37 @@ flash_code_overlaps(void *start, void *end)
 int
 flash_erase_block(void* block, unsigned int size)
 {
-    volatile flash_data_t* ROM;
+    volatile flash_data_t* ROM, *BANK;
     volatile flash_data_t* b_p = (flash_data_t*) block;
     volatile flash_data_t *b_v;
-    volatile flash_data_t *f_s1, *f_s2;
+    volatile flash_data_t *f_s0, *f_s1, *f_s2;
     int timeout = 50000;
     int len, len_ix = 1;
     int res = FLASH_ERR_OK;
     flash_data_t state;
     cyg_bool bootblock;
+    CYG_ADDRWORD bank_offset;
 
-    ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
-    f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
-    f_s2 = FLASH_P2V(ROM+FLASH_Setup_Addr2);
+    BANK = ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
+
+    // If this is a banked device, find the bank where commands should
+    // be addressed to.
+    if (flash_dev_info->banked) {
+        int b = 0;
+        bank_offset = (unsigned long)block & ~(flash_dev_info->block_size-1);
+        bank_offset -= (unsigned long) ROM;
+        for(;;) {
+            if (bank_offset >= flash_dev_info->banks[b]) {
+                BANK = (volatile flash_data_t*) ((unsigned long)ROM + flash_dev_info->banks[b]);
+                break;
+            }
+            b++;
+        }
+    }
+
+    f_s0 = FLASH_P2V(BANK);
+    f_s1 = FLASH_P2V(BANK + FLASH_Setup_Addr1);
+    f_s2 = FLASH_P2V(BANK + FLASH_Setup_Addr2);
 
     // Is this the boot sector?
     bootblock = (flash_dev_info->bootblock &&
@@ -256,8 +292,8 @@ flash_erase_block(void* block, unsigned int size)
         *f_s1 = FLASH_Setup_Code1;
         *f_s2 = FLASH_Setup_Code2;
         *f_s1 = FLASH_WP_State;
-        state = *FLASH_P2V(b_p+2);
-        *FLASH_P2V(ROM) = FLASH_Reset;
+        state = *FLASH_P2V(b_p+FLASH_WP_Addr);
+        *f_s0 = FLASH_Reset;
 
         if (FLASH_unlocked != state)
             return FLASH_ERR_PROTECT;
@@ -326,31 +362,47 @@ flash_erase_block(void* block, unsigned int size)
 
 //----------------------------------------------------------------------------
 // Program Buffer
-
 int
 flash_program_buf(void* addr, void* data, int len)
 {
     volatile flash_data_t* ROM;
+    volatile flash_data_t* BANK;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
     volatile flash_data_t* addr_v;
     volatile flash_data_t* addr_p = (flash_data_t*) addr;
     volatile flash_data_t *f_s1, *f_s2;
-
+    CYG_ADDRWORD bank_offset;
     int timeout;
     int res = FLASH_ERR_OK;
+
+    // check the address is suitably aligned
+    if ((unsigned long)addr & (CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_WIDTH / 8 - 1))
+        return FLASH_ERR_INVALID;
+
+    // Base address of device(s) being programmed.
+    BANK = ROM = (volatile flash_data_t*)((unsigned long)addr_p & flash_dev_info->base_mask);
+
+    // If this is a banked device, find the bank where commands should
+    // be addressed to.
+    if (flash_dev_info->banked) {
+        int b = 0;
+        bank_offset = (unsigned long)addr & ~(flash_dev_info->block_size-1);
+        bank_offset -= (unsigned long) ROM;
+        for(;;) {
+            if (bank_offset >= flash_dev_info->banks[b]) {
+                BANK = (volatile flash_data_t*) ((unsigned long)ROM + flash_dev_info->banks[b]);
+                break;
+            }
+            b++;
+        }
+    }
+
+    f_s1 = FLASH_P2V(BANK + FLASH_Setup_Addr1);
+    f_s2 = FLASH_P2V(BANK + FLASH_Setup_Addr2);
 
     while (len > 0) {
         int state;
 
-        // Note: Should really only do the address calculations on
-        // section/device boundaries - but then, we're likely to be
-        // spinning for a while down below anyway, so no point in
-        // making the loop more complicated.
-
-        // Base address of device(s) being programmed.
-        ROM = (volatile flash_data_t*)((unsigned long)addr_p & flash_dev_info->base_mask);
-        f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
-        f_s2 = FLASH_P2V(ROM+FLASH_Setup_Addr2);
         addr_v = FLASH_P2V(addr_p++);
 
         // Program data [byte] - 4 step sequence

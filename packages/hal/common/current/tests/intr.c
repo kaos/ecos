@@ -42,6 +42,7 @@
 #include <cyg/infra/testcase.h>
 
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/drv_api.h>
 
 // Include HAL/Platform specifics
 #include CYGBLD_HAL_PLATFORM_H
@@ -64,6 +65,8 @@
 // -------------------------------------------------------------------------
 
 volatile cyg_count32 ticks = 0;
+static cyg_interrupt intr;
+static cyg_handle_t  intr_handle;
 
 // -------------------------------------------------------------------------
 
@@ -79,20 +82,21 @@ cyg_uint32 isr( cyg_uint32 vector, CYG_ADDRWORD data )
     
     ticks++;
 
-    return 0;
+    return CYG_ISR_HANDLED;
 }
 
 // -------------------------------------------------------------------------
+
 
 void intr_main( void )
 {
     CYG_INTERRUPT_STATE oldints;
 
-    HAL_INTERRUPT_ATTACH( CYGNUM_HAL_INTERRUPT_RTC, isr, ISR_DATA, 0 );
-
+    cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_RTC, 1,
+                             ISR_DATA, isr, NULL, &intr_handle, &intr);
+    cyg_drv_interrupt_attach(intr_handle);
     HAL_CLOCK_INITIALIZE( CYGNUM_HAL_RTC_PERIOD );
-
-    HAL_INTERRUPT_UNMASK( CYGNUM_HAL_INTERRUPT_RTC );
+    cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_RTC);
 
     HAL_ENABLE_INTERRUPTS();
 
@@ -104,7 +108,6 @@ void intr_main( void )
     HAL_DISABLE_INTERRUPTS(oldints);
 
     CYG_TEST_PASS_FINISH("HAL interrupt test");
-
 }
 
 
@@ -130,4 +133,4 @@ cyg_start( void )
 
 
 // -------------------------------------------------------------------------
-/* EOF intr.c */
+// EOF intr.c

@@ -4,13 +4,13 @@
 
 [Setup]
     MinVersion=4.0,4.0
-    AppName=eCos Configuration Tool 2.03
+    AppName=eCos Configuration Tool 2.04
     AppId=eCos Configuration Tool
     CreateUninstallRegKey=1
     UsePreviousAppDir=1
     UsePreviousGroup=1
-    AppVersion=2.03
-    AppVerName=eCos Configuration Tool 2.03
+    AppVersion=2.04
+    AppVerName=eCos Configuration Tool 2.04
     AppCopyright=Copyright © Red Hat Inc., 2001
     BackColor=$FF0000
     BackColor2=$000000
@@ -186,9 +186,9 @@
   Source: v:\deliver\configtool\TODO.txt; DestDir: {app}\
 
     Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
-    Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
-    Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
-    Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall restartreplace
+    Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall restartreplace
+    Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall restartreplace
 
 [Icons]
     Name: {group}\Configuration Tool; Filename: {app}\configtool.exe; WorkingDir: {app}; IconFilename: {app}\configtool.exe; IconIndex: 0
@@ -217,7 +217,7 @@
 ; DO NOT DELETE THEM or you may be unable to reload the script
 
 ;[ScriptSetup]
-;VerNum=2.03
+;VerNum=2.04
 ;InnoVer=1.3
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe

@@ -1,3 +1,14 @@
+2001-07-27  Jordi Colomer  <jco@ict.es>
+
+	* cdl/smsc_lan91cxx_eth_drivers.cdl:
+	Add interface for whether the hardware is in PCMCIA mode.
+	* src/if_lan91cxx.c (smsc_lan91cxx_init):
+	Allow for hardware shift addresses
+	Initialize appropriately if PCMCIA mode.
+	* src/smsc_lan91cxx.h:
+	Support address shifts in get_reg,put_Reg, get_data, put_data
+	Add new functions get_banksel , put_att and get_att.
+
 2001-07-11  Hugo Tyson  <hmt@redhat.com>
 
 	* src/if_lan91cxx.c (lan91cxx_stop): Clean up any pending tx both

@@ -102,10 +102,10 @@ flash_dev_query(void* data)
 #ifdef CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     {
         extern char flash_query[], flash_query_end[];
-        int code_len;
+        CYG_ADDRESS code_len;
 
         // Query the device driver - copy 'query' code to RAM for execution
-        code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
+        code_len = (CYG_ADDRESS)&flash_query_end - (CYG_ADDRESS)&flash_query;
         _flash_query = (code_fun *)flash_info.work_space;
         memcpy(_flash_query, &flash_query, code_len);
     }
@@ -127,8 +127,8 @@ flash_verify_addr(void *target)
     if (!flash_info.init) {
         return FLASH_ERR_NOT_INIT;
     }
-    if (((unsigned long)target >= (unsigned long)flash_info.start) &&
-        ((unsigned long)target < (unsigned long)flash_info.end)) {
+    if (((CYG_ADDRESS)target >= (CYG_ADDRESS)flash_info.start) &&
+        ((CYG_ADDRESS)target < (CYG_ADDRESS)flash_info.end)) {
         return FLASH_ERR_OK;
     } else {
         return FLASH_ERR_INVALID;
@@ -170,13 +170,18 @@ flash_erase(void *addr, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+    if (plf_flash_query_soft_wp(addr,len))
+        return FLASH_ERR_PROTECT;
+#endif
+
 #ifdef CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     {
         extern char flash_erase_block[], flash_erase_block_end[];
-        int code_len;
+        CYG_ADDRESS code_len;
 
         // Copy 'erase' code to RAM for execution
-        code_len = (unsigned long)&flash_erase_block_end - (unsigned long)&flash_erase_block;
+        code_len = (CYG_ADDRESS)&flash_erase_block_end - (CYG_ADDRESS)&flash_erase_block;
         _flash_erase_block = (code_fun *)flash_info.work_space;
         memcpy(_flash_erase_block, &flash_erase_block, code_len);
     }
@@ -187,8 +192,8 @@ flash_erase(void *addr, int len, void **err_addr)
     }
 #endif
 
-    block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
-    end_addr = (unsigned short *)((unsigned long)addr+len);
+    block = (unsigned short *)((CYG_ADDRESS)addr & flash_info.block_mask);
+    end_addr = (unsigned short *)((CYG_ADDRESS)addr+len);
 
     (*flash_info.pf)("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
 
@@ -216,22 +221,28 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
 {
     int stat = 0;
     int size;
-    typedef int code_fun(unsigned short *, unsigned short *, int, unsigned long, int);
+    typedef int code_fun(void *, void *, int, unsigned long, int);
     code_fun *_flash_program_buf;
-    unsigned short *addr = (unsigned short *)_addr;
-    unsigned short *data = (unsigned short *)_data;
+    unsigned char *addr = (unsigned char *)_addr;
+    unsigned char *data = (unsigned char *)_data;
+    CYG_ADDRESS tmp;
     int d_cache, i_cache;
 
     if (!flash_info.init) {
         return FLASH_ERR_NOT_INIT;
     }
 
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+    if (plf_flash_query_soft_wp(addr,len))
+        return FLASH_ERR_PROTECT;
+#endif
+
 #ifdef CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     {
-        int code_len;
+        CYG_ADDRESS code_len;
         extern char flash_program_buf[], flash_program_buf_end[];
         // Copy 'program' code to RAM for execution
-        code_len = (unsigned long)&flash_program_buf_end - (unsigned long)&flash_program_buf;
+        code_len = (CYG_ADDRESS)&flash_program_buf_end - (CYG_ADDRESS)&flash_program_buf;
         _flash_program_buf = (code_fun *)flash_info.work_space;
         memcpy(_flash_program_buf, &flash_program_buf, code_len);
     }
@@ -243,13 +254,20 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
 #endif
 
     (*flash_info.pf)("... Program from %p-%p at %p: ", (void*)data, 
-                     (void*)(((unsigned long)data)+len), (void*)addr);
+                     (void*)(((CYG_ADDRESS)data)+len), (void*)addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
-    FLASH_Enable(addr, addr+len);
+    FLASH_Enable((unsigned short*)addr, (unsigned short *)(addr+len));
     while (len > 0) {
         size = len;
         if (size > flash_info.block_size) size = flash_info.block_size;
+
+        tmp = (CYG_ADDRESS)addr & ~flash_info.block_mask;
+        if (tmp) {
+                tmp = flash_info.block_size - tmp;
+                if (size>tmp) size = tmp;
+
+        }
 
         stat = (*_flash_program_buf)(addr, data, size, 
                                      flash_info.block_mask, flash_info.buffer_size);
@@ -270,7 +288,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         addr += size/sizeof(*addr);
         data += size/sizeof(*data);
     }
-    FLASH_Disable(addr, addr+len);
+    FLASH_Disable((unsigned short*)addr, (unsigned short *)(addr+len));
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
     (*flash_info.pf)("\n");
     return (stat);
@@ -291,12 +309,17 @@ flash_lock(void *addr, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+    if (plf_flash_query_soft_wp(addr,len))
+        return FLASH_ERR_PROTECT;
+#endif
+
 #ifdef CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     {
         extern char flash_lock_block[], flash_lock_block_end[];
-        int code_len;
+        CYG_ADDRESS code_len;
         // Copy 'lock' code to RAM for execution
-        code_len = (unsigned long)&flash_lock_block_end - (unsigned long)&flash_lock_block;
+        code_len = (CYG_ADDRESS)&flash_lock_block_end - (CYG_ADDRESS)&flash_lock_block;
         _flash_lock_block = (code_fun *)flash_info.work_space;
         memcpy(_flash_lock_block, &flash_lock_block, code_len);
     }
@@ -307,8 +330,8 @@ flash_lock(void *addr, int len, void **err_addr)
     }
 #endif
 
-    block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
-    end_addr = (unsigned short *)((unsigned long)addr+len);
+    block = (unsigned short *)((CYG_ADDRESS)addr & flash_info.block_mask);
+    end_addr = (unsigned short *)((CYG_ADDRESS)addr+len);
 
     (*flash_info.pf)("... Lock from %p-%p: ", block, end_addr);
 
@@ -343,12 +366,17 @@ flash_unlock(void *addr, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+    if (plf_flash_query_soft_wp(addr,len))
+        return FLASH_ERR_PROTECT;
+#endif
+
 #ifdef CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     {
         extern char flash_unlock_block[], flash_unlock_block_end[];
-        int code_len;
+        CYG_ADDRESS code_len;
         // Copy 'lock' code to RAM for execution
-        code_len = (unsigned long)&flash_unlock_block_end - (unsigned long)&flash_unlock_block;
+        code_len = (CYG_ADDRESS)&flash_unlock_block_end - (CYG_ADDRESS)&flash_unlock_block;
         _flash_unlock_block = (code_fun *)flash_info.work_space;
         memcpy(_flash_unlock_block, &flash_unlock_block, code_len);
     }
@@ -359,8 +387,8 @@ flash_unlock(void *addr, int len, void **err_addr)
     }
 #endif
 
-    block = (unsigned short *)((unsigned long)addr & flash_info.block_mask);
-    end_addr = (unsigned short *)((unsigned long)addr+len);
+    block = (unsigned short *)((CYG_ADDRESS)addr & flash_info.block_mask);
+    end_addr = (unsigned short *)((CYG_ADDRESS)addr+len);
 
     (*flash_info.pf)("... Unlock from %p-%p: ", block, end_addr);
 

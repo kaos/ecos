@@ -1,3 +1,16 @@
+2001-07-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sys/select.h: Renamed to....
+	* include/sys/bsdselect.h: New file.
+	* include/sys/socketvar.h: Include <sys/bsdselect.h> instead of
+	<sys/select.h>
+	* src/lib/select.c: Include <sys/bsdselect.h>
+
+2001-07-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl (CYGPKG_NET_API_LOCAL): Implements select()
+	* include/sys/bsdtypes.h: No need for these select definitions.
+
 2001-06-20  Grant Edwards <grante@visi.com>
 2001-06-20  Hugo Tyson  <hmt@redhat.com>
 

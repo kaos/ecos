@@ -56,6 +56,7 @@
 #include <cyg/io/file.h>
 #include <cyg/kernel/kapi.h>
 #include <sys/select.h>
+#include <sys/bsdselect.h>
 
 static cyg_flag_t select_flag;
 static cyg_bool   select_flag_init = false;

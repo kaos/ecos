@@ -1,3 +1,8 @@
+2001-07-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add flexanet HAL, eth driver, flash driver and target.
+	Contributed by Jordi Colomer <jco@ict.es>
+
 2001-07-16  Bart Veer  <bartv@redhat.com>
 
 	* pkgconf/fixhtml.tcl:

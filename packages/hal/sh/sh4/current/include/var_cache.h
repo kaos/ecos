@@ -115,10 +115,11 @@ externC void cyg_hal_dcache_write_mode(int mode);
 #define HAL_DCACHE_SYNC() cyg_hal_dcache_sync()
 
 // Query the state of the cache (does not affect the caching)
-#define HAL_DCACHE_IS_ENABLED(_state_)          \
-    CYG_MACRO_START                             \
-    HAL_READ_UINT32(CYGARC_REG_CCR, (_state_)); \
-    (_state_) &= ~CYGARC_REG_CCR_OCE;           \
+#define HAL_DCACHE_IS_ENABLED(_state_)                  \
+    CYG_MACRO_START                                     \
+    cyg_uint32 _tmp;                                    \
+    HAL_READ_UINT32(CYGARC_REG_CCR, _tmp);              \
+    (_state_) = (_tmp & CYGARC_REG_CCR_OCE) ? 1 : 0;    \
     CYG_MACRO_END
 
 // Set the cache refill burst size
@@ -203,10 +204,11 @@ externC void cyg_hal_icache_invalidate_all(void);
 #define HAL_ICACHE_SYNC() HAL_ICACHE_INVALIDATE_ALL()
 
 // Query the state of the cache (does not affect the caching)
-#define HAL_ICACHE_IS_ENABLED(_state_)          \
-    CYG_MACRO_START                             \
-    HAL_READ_UINT32(CYGARC_REG_CCR, (_state_)); \
-    (_state_) &= ~CYGARC_REG_CCR_ICE;           \
+#define HAL_ICACHE_IS_ENABLED(_state_)                  \
+    CYG_MACRO_START                                     \
+    cyg_uint32 _tmp;                                    \
+    HAL_READ_UINT32(CYGARC_REG_CCR, _tmp);              \
+    (_state_) = (_tmp & CYGARC_REG_CCR_ICE) ? 1 : 0;    \
     CYG_MACRO_END
 
 // Set the instruction cache refill burst size
@@ -228,6 +230,26 @@ externC void cyg_hal_icache_invalidate_all(void);
 
 // Invalidate cache lines in the given range without writing to memory.
 //#define HAL_ICACHE_INVALIDATE( _base_ , _size_ )
+
+//-----------------------------------------------------------------------------
+// Flash related cache macros
+
+#define HAL_FLASH_CACHES_OFF(_d_, _i_)          \
+    CYG_MACRO_START                             \
+    HAL_ICACHE_IS_ENABLED(_i_);                 \
+    HAL_DCACHE_IS_ENABLED(_d_);                 \
+    HAL_DCACHE_SYNC();                          \
+    HAL_DCACHE_INVALIDATE_ALL();                \
+    HAL_DCACHE_DISABLE();                       \
+    HAL_ICACHE_INVALIDATE_ALL();                \
+    HAL_ICACHE_DISABLE();                       \
+    CYG_MACRO_END
+
+#define HAL_FLASH_CACHES_ON(_d_, _i_)           \
+    CYG_MACRO_START                             \
+    if (_d_) HAL_DCACHE_ENABLE();               \
+    if (_i_) HAL_ICACHE_ENABLE();               \
+    CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_VAR_CACHE_H

@@ -25,7 +25,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -61,6 +61,7 @@
 #define DCR	0xC0000030	// Debug control register
 #define ISR	0xC0000034	// Interrupt control register
 #define TBR	0xC0000024	// Trap Base Register
+#define CHCTR	0xC0000070	// Cache Control Register
 
 #define DCR_DE	0x0001		// DE bit in DCR
 
@@ -79,8 +80,10 @@
 	# Set up the PSW
 	mov	0x00000700,d0
 	mov	d0,epsw
-#	mov	reset_vector,a0		# set TBR to reset address
-#	mov	a0,(TBR)
+#ifndef CYGSEM_HAL_USE_ROM_MONITOR
+	mov	reset_vector,a0		# set TBR to vector table
+	mov	a0,(TBR)
+#endif
 	.endm
 
 #define CYGPKG_HAL_MN10300_CPU_INIT_DEFINED
@@ -126,6 +129,36 @@
 	.endm
 
 #define CYGPKG_HAL_MN10300_MEMC_DEFINED
+
+#endif	
+	
+#------------------------------------------------------------------------------
+# Cache macros.
+	
+#ifndef CYGPKG_HAL_MN10300_CACHE_DEFINED
+
+	.macro	hal_cache_init
+
+#if defined(CYG_HAL_STARTUP_ROM)
+    # Note that the hardware seems to come up with the
+    # caches containing random data. Hence they must be
+    # invalidated before being enabled.
+    # However, we only do this if we are in ROM. If we are
+    # in RAM, then we leave the caches in the state chosen
+    # by the ROM monitor. If we enable them when the monitor
+    # is not expecting it, we can end up breaking things if the
+    # monitor is not doing cache flushes.
+	mov	CHCTR,a0
+	mov	0x0030,d0
+	mov	d0,(a0)				# Invalidate the ICACHE and DCACHE
+	mov	0x0003,d0
+	mov	d0,(a0)				# Enable both caches
+#else
+	nop
+#endif
+	.endm
+
+#define CYGPKG_HAL_MN10300_CACHE_DEFINED
 
 #endif	
 

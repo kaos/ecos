@@ -1,3 +1,19 @@
+2001-07-27  Jesper Skov  <jskov@redhat.com>
+
+	* tests/intr.c: Set up interrupt ISR using driver API so it works
+	properly in chained mode in the presence of arbiters.
+
+	* src/drv_api.c (chain_isr): Call default ISR when
+	appropriate. Return ISR return value.
+
+	* include/hal_arbiter.h (hal_call_isr): Added version to be used
+	with interrupt chaining.
+
+2001-07-24  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal.cdl (CYGINT_HAL_PLF_IF_IDE): New interface which
+	indicates platform supports IDE controller I/F macros.
+
 2001-06-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal.cdl (CYGPKG_HAL_TESTS): Remove redundant .c extension

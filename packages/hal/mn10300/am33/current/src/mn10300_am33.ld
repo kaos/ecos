@@ -22,7 +22,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -86,6 +86,10 @@ GROUP(libtarget.a libgcc.a)
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) \
     . = ALIGN(4); \
+    __s2ram = ABSOLUTE(.); \
+      *(.2ram*) \
+    __e2ram = ABSOLUTE(.); \
+    . = ALIGN(4); \
     _GOT1_START_ = ABSOLUTE (.); *(.got1) _GOT1_END_ = ABSOLUTE (.); \
     _GOT2_START_ = ABSOLUTE (.); *(.got2) _GOT2_END_ = ABSOLUTE (.); \
     . = ALIGN (4); \
@@ -118,8 +122,10 @@ _mn10300_interrupt_vectors = 0xC0000000;
 
 #if CYGHWR_HAL_MN10300_AM33_REVISION == 1
 
+#ifndef CYG_HAL_PLATFORM_HAL_VSR_TABLE_DEFINED
 _hal_vsr_table = 0x50000100;
 _hal_virtual_vector_table = 0x50000200;
+#endif
 
 #else
 

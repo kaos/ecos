@@ -1,3 +1,9 @@
+2001-07-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/ds12887.cxx (init_ds_hwclock): Use BCD mode since Century is
+	NA in binary mode. Force sane settings in registers if they are
+	undefined.
+
 2001-07-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/ds12887.cxx (get_ds_hwclock): Instead of locking while

@@ -43,7 +43,7 @@
 //
 // Author(s):    hmt, based on lan900 (for LAN91C110) driver by jskov
 //               jskov, based on CS8900 driver by Gary Thomas
-// Contributors: gthomas, jskov, hmt
+// Contributors: gthomas, jskov, hmt, jco@ict.es
 // Date:         2001-01-22
 // Purpose:      
 // Description:  hardware driver for LAN91CXX "LAN9000" ethernet
@@ -57,6 +57,9 @@
 //               time anyway.
 //               We may want to pingpong in future for throughput reasons.
 //
+//               <jco@ict.es> Added support for PCMCIA mode and shifted
+//               address buses.
+//
 //####DESCRIPTIONEND####
 //
 //==========================================================================
@@ -68,6 +71,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_diag.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
@@ -167,14 +171,59 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short val;
     int i;
+#if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE
+    unsigned char ecor, ecsr;
+#endif
 
     DEBUG_FUNCTION();
 
     cpd->txbusy = cpd->within_send = 0;
+        
+#ifdef CYGNUM_DEVS_ETH_SMSC_LAN91CXX_SHIFT_ADDR
+    cpd->addrsh = CYGNUM_DEVS_ETH_SMSC_LAN91CXX_SHIFT_ADDR;
+#else
+    cpd->addrsh = 0;
+#endif
+
+#if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE
+
+    // If the chip is configured in PCMCIA mode, the internal
+    // registers mapped in the attribute memory should be
+    // initialized (i.e. to enable the I/O map)
+    
+    ecor = get_att(sc, LAN91CXX_ECOR);
+    
+    // pulse SRESET on ECOR
+    ecor |= LAN91CXX_ECOR_RESET;
+    put_att(sc, LAN91CXX_ECOR, ecor);
+    
+    HAL_DELAY_US(1);
+    
+    ecor &= ~LAN91CXX_ECOR_RESET;
+    put_att(sc, LAN91CXX_ECOR, ecor);
+
+    // then, enable I/O map
+    ecor |= LAN91CXX_ECOR_ENABLE;    
+    put_att(sc, LAN91CXX_ECOR, ecor);
+
+    // verify the register contents
+    if (ecor != get_att(sc, LAN91CXX_ECOR))
+        diag_printf("LAN91CXX - Cannot access PCMCIA attribute registers\n");
+	
+    ecsr = get_att(sc, LAN91CXX_ECSR);
+#ifdef CYGSEM_DEVS_ETH_SMSC_LAN91CXX_8_BIT
+#error "91CXX 8-bit mode not yet supported."
+    ecsr |= LAN91CXX_ECSR_IOIS8;
+#else
+    ecsr &= ~LAN91CXX_ECSR_IOIS8;
+#endif
+    put_att(sc, LAN91CXX_ECSR, ecsr);
+        
+#endif
 
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
-                             99, // Priority - what goes here?
+                            99, // Priority - what goes here?
                              (cyg_addrword_t)sc, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)lan91cxx_isr,
                              (cyg_DSR_t *)eth_drv_dsr, // The logical driver DSR
@@ -183,8 +232,9 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     cyg_drv_interrupt_attach(lan91cxx_interrupt_handle);
     cyg_drv_interrupt_acknowledge(cpd->interrupt);
     cyg_drv_interrupt_unmask(cpd->interrupt);
-
-    HAL_READ_UINT16(cpd->base+LAN91CXX_BS, val);
+    
+    // probe chip by reading the signature in BS register
+    val = get_banksel(sc);
 #if DEBUG & 9
     diag_printf("LAN91CXX - supposed BankReg @ %x = %04x\n",
                 cpd->base+LAN91CXX_BS, val );

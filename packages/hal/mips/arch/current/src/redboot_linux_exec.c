@@ -45,15 +45,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
-
-// Not all platforms define this the same way
-#if defined(CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD)
-#define DEFAULT_BAUD CYGNUM_HAL_VIRTUAL_VECTOR_CHANNELS_DEFAULT_BAUD
-#elif defined(CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD)
-#define DEFAULT_BAUD CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
-#else
-#define DEFAULT_BAUD 38400  // Probably wrong
-#endif
+#include <cyg/hal/hal_if.h>
 
 #define xstr(s) str(s)
 #define str(s...) #s
@@ -96,6 +88,8 @@ do_exec(int argc, char *argv[])
     struct parmblock *pb;
     void (*linux)(int, char **, void *);
     int oldints;
+    hal_virtual_comm_table_t *__chan;
+    int baud;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&base_addr, &base_addr_set, "base address");
@@ -109,6 +103,9 @@ do_exec(int argc, char *argv[])
         return;
 
     linux = (void *)entry;
+
+    __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+    baud = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);
 
     printf("Now booting linux kernel:\n");
     printf(" Base address 0x%08x Entry 0x%08x\n", base_addr, entry);
@@ -136,7 +133,7 @@ do_exec(int argc, char *argv[])
     pb->modetty0.name = ++pcmd;
     pcmd += sprintf(pcmd, "modetty0");
     pb->modetty0.val = ++pcmd;
-    pcmd += sprintf(pcmd, "%d,n,8,1,hw", DEFAULT_BAUD);
+    pcmd += sprintf(pcmd, "%d,n,8,1,hw", baud);
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     pb->ethaddr.name = ++pcmd;

@@ -1,3 +1,8 @@
+2001-07-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/fileio.cdl: Implements select().
+	* src/select.cxx: Include <sys/select.h> from isoinfra.
+
 2001-07-19  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/devfs.cxx (dev_fo_read): Treat non-blocking reads returning

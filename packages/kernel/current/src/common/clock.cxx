@@ -869,8 +869,8 @@ void Cyg_RealTimeClock::dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD 
 
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY)
     if (measure_clock_latency) {
-        cyg_uint32 delta;
-        HAL_CLOCK_READ(&delta);
+        cyg_int32 delta;
+        HAL_CLOCK_READ((cyg_uint32 *)&delta);
         delta -= clock_dsr_start;
         // Note: Ignore a latency of <= 0 when finding min_clock_latency.
         if (delta > 0 ) {

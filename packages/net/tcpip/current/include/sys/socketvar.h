@@ -94,7 +94,7 @@
 #ifndef _SYS_SOCKETVAR_H_
 #define _SYS_SOCKETVAR_H_
 
-#include <sys/select.h>			/* for struct selinfo */
+#include <sys/bsdselect.h>			/* for struct selinfo */
 
 /*
  * Kernel structure per socket.

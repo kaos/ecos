@@ -219,6 +219,18 @@ cdl_package CYGPKG_REDBOOT {
             five bytes are available initially so this is the minimum."
     }
 
+    cdl_option CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS {
+        display       "Validate RAM addresses during load"
+        flavor        bool
+        default_value 1
+        description   "
+          This option controls whether or not RedBoot will make sure that
+          memory being used by the \"load\" command is in fact in user RAM.
+          Leaving the option enabled makes for a safer environment, but this
+          check may not be valid on all platforms, thus the ability to
+          disable it.  ** Disable this only with great care **"
+    }
+
     cdl_component CYGPKG_REDBOOT_FLASH {
         display       "Allow RedBoot to support FLASH programming"
         flavor        bool
@@ -407,6 +419,51 @@ cdl_package CYGPKG_REDBOOT {
               When this option is enabled, RedBoot will use CRC checksums
               when reading and writing flash images."
         }
+    }
+
+    cdl_component CYGPKG_REDBOOT_DISK {
+        display       "Allow RedBoot to support disks"
+        flavor        bool
+        default_value 1
+        active_if     { CYGINT_HAL_PLF_IF_IDE != 0 }
+        description   "
+          If this option is enabled then RedBoot will provide commands
+          to load disk files."
+        compile -library=libextras.a fs/disk.c
+
+        cdl_option CYGNUM_REDBOOT_MAX_DISKS {
+            display       "Maximum number of supported disks"
+            flavor        data
+            default_value 4
+            description "
+              This option controls the number of disks supported by RedBoot."
+        }
+
+        cdl_option CYGNUM_REDBOOT_MAX_PARTITIONS {
+            display       "Maximum number of partitions per disk"
+            flavor        data
+            default_value 8
+            description "
+              This option controls the maximum number of supported partitions per disk."
+        }
+
+        cdl_component CYGSEM_REDBOOT_DISK_IDE {
+            display       "Support IDE disks."
+            flavor        bool
+            default_value 1
+            description "
+              When this option is enabled, RedBoot will support IDE disks."
+	    compile -library=libextras.a fs/ide.c
+	}
+
+        cdl_component CYGSEM_REDBOOT_DISK_EXT2FS {
+            display       "Support Linux second extended filesystems."
+            flavor        bool
+            default_value 1
+            description "
+              When this option is enabled, RedBoot will support IDE disks."
+	    compile -library=libextras.a fs/e2fs.c
+	}
     }
 
     cdl_component CYGPKG_REDBOOT_BOOT_SCRIPT {

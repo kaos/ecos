@@ -4,7 +4,7 @@
 //
 //      hal_platform_ints.h
 //
-//      HAL Interrupt and clock support
+//      HAL extended support for platform specific interrupts
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -47,62 +47,50 @@
 //
 //==========================================================================
 
-#define CYGNUM_HAL_INTERRUPT_GPIO0   0
-#define CYGNUM_HAL_INTERRUPT_GPIO1   1
-#define CYGNUM_HAL_INTERRUPT_GPIO2   2
-#define CYGNUM_HAL_INTERRUPT_GPIO3   3
-#define CYGNUM_HAL_INTERRUPT_GPIO4   4
-#define CYGNUM_HAL_INTERRUPT_GPIO5   5
-#define CYGNUM_HAL_INTERRUPT_GPIO6   6
-#define CYGNUM_HAL_INTERRUPT_GPIO7   7
-#define CYGNUM_HAL_INTERRUPT_GPIO8   8
-#define CYGNUM_HAL_INTERRUPT_GPIO9   9
-#define CYGNUM_HAL_INTERRUPT_GPIO10  10
-#define CYGNUM_HAL_INTERRUPT_GPIO    11  // Don't use directly!
-#define CYGNUM_HAL_INTERRUPT_LCD     12
-#define CYGNUM_HAL_INTERRUPT_UDC     13
-#define CYGNUM_HAL_INTERRUPT_UART1   15
-#define CYGNUM_HAL_INTERRUPT_UART2   16
-#define CYGNUM_HAL_INTERRUPT_UART3   17
-#define CYGNUM_HAL_INTERRUPT_MCP     18
-#define CYGNUM_HAL_INTERRUPT_SSP     19
-#define CYGNUM_HAL_INTERRUPT_TIMER0  26
-#define CYGNUM_HAL_INTERRUPT_TIMER1  27
-#define CYGNUM_HAL_INTERRUPT_TIMER2  28
-#define CYGNUM_HAL_INTERRUPT_TIMER3  29
-#define CYGNUM_HAL_INTERRUPT_HZ      30
-#define CYGNUM_HAL_INTERRUPT_ALARM   31
+#include CYGBLD_HAL_VAR_INTS_H   // Generic interrupt support
 
-// GPIO bits 31..11 can generate interrupts as well, but they all
-// end up clumped into interrupt signal #11.  Using the symbols
-// below allow for detection of these separately.
+// Define here extended support for this particular platform
 
-#define CYGNUM_HAL_INTERRUPT_GPIO11  (32+11)
-#define CYGNUM_HAL_INTERRUPT_GPIO12  (32+12)
-#define CYGNUM_HAL_INTERRUPT_GPIO13  (32+13)
-#define CYGNUM_HAL_INTERRUPT_GPIO14  (32+14)
-#define CYGNUM_HAL_INTERRUPT_GPIO15  (32+15)
-#define CYGNUM_HAL_INTERRUPT_GPIO16  (32+16)
-#define CYGNUM_HAL_INTERRUPT_GPIO17  (32+17)
-#define CYGNUM_HAL_INTERRUPT_GPIO18  (32+18)
-#define CYGNUM_HAL_INTERRUPT_GPIO19  (32+19)
-#define CYGNUM_HAL_INTERRUPT_GPIO20  (32+20)
-#define CYGNUM_HAL_INTERRUPT_GPIO21  (32+21)
-#define CYGNUM_HAL_INTERRUPT_GPIO22  (32+22)
-#define CYGNUM_HAL_INTERRUPT_GPIO23  (32+23)
-#define CYGNUM_HAL_INTERRUPT_GPIO24  (32+24)
-#define CYGNUM_HAL_INTERRUPT_GPIO25  (32+25)
-#define CYGNUM_HAL_INTERRUPT_GPIO26  (32+26)
-#define CYGNUM_HAL_INTERRUPT_GPIO27  (32+27)
+// IRQ handler for extended interrupts
+#define HAL_EXTENDED_IRQ_HANDLER(index)                                 \
+{  /* Check for extended interrupt source.  If present, decode it into  \
+      a valid eCos interrupt number and return.  Fall through if no     \
+      extended interrupt is present. */                                 \
+}
 
-#define CYGNUM_HAL_INTERRUPT_NONE    -1
+// Mask an extended interrupt
+#define HAL_EXTENDED_INTERRUPT_MASK(vector)                             \
+{  /* Mask an interrupt source.  If 'vector' corresponds to an extended \
+      interrupt, handle it and return.  Otherwise, fall through for     \
+      normal processing. */                                             \
+}
 
-#define CYGNUM_HAL_ISR_MIN            0
-#define CYGNUM_HAL_ISR_MAX           (27+32)
+// Unmask an extended interrupt
+#define HAL_EXTENDED_INTERRUPT_UNMASK(vector)                             \
+{  /* Unmask an interrupt source.  If 'vector' corresponds to an extended \
+      interrupt, handle it and return.  Otherwise, fall through for       \
+      normal processing. */                                               \
+}
 
-#define CYGNUM_HAL_ISR_COUNT            (CYGNUM_HAL_ISR_MAX+1)
+// Acknowledge an extended interrupt
+#define HAL_EXTENDED_INTERRUPT_ACKNOWLEDGE(vector)                      \
+{  /* Ack an interrupt source.  If 'vector' corresponds to an extended  \
+      interrupt, handle it and return.  Otherwise, fall through for     \
+      normal processing. */                                             \
+}
 
-// The vector used by the Real time clock
-#define CYGNUM_HAL_INTERRUPT_RTC        CYGNUM_HAL_INTERRUPT_TIMER0
+// Configure an extended interrupt
+#define HAL_EXTENDED_INTERRUPT_CONFIGURE(vector, level, up)                  \
+{  /* Configure an interrupt source.  If 'vector' corresponds to an extended \
+      interrupt, handle it and return.  Otherwise, fall through for          \
+      normal processing. */                                                  \
+}
+
+// Configure an extended interrupt
+#define HAL_EXTENDED_INTERRUPT_SET_LEVEL(vector, level)                      \
+{  /* Configure an interrupt source.  If 'vector' corresponds to an extended \
+      interrupt, handle it and return.  Otherwise, fall through for          \
+      normal processing. */                                                  \
+}
 
 #endif // CYGONCE_HAL_PLATFORM_INTS_H

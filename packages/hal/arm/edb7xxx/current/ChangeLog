@@ -1,3 +1,11 @@
+2001-07-25  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_arm_edb7211_ram.h:
+	* include/pkgconf/mlt_arm_edb7211_ram.ldi:
+	* include/pkgconf/mlt_arm_edb7211_ram.mlt:
+	* include/pkgconf/mlt_arm_edb7212_ram.h:
+	RAM size should default to 0xfd7000 consistently.
+
 2001-07-18  Franck Mamalet  <franck.mamalet@rd.francetelecom.com>
 2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
 

@@ -222,6 +222,17 @@ package CYGPKG_DEVS_FLASH_IPAQ {
 	   on the Intel StrongARM SA-1110 iPAQ platform."
 }
 
+package CYGPKG_DEVS_FLASH_FLEXANET {
+      alias           { "FLASH memory support for Flexanet" flash_flexanet }
+      directory       devs/flash/arm/flexanet
+      script          flash_flexanet.cdl
+      hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the SA-1100 Flexanet platform."
+}
+
+
 package CYGPKG_DEVS_FLASH_NANO {
 	alias 		{ "FLASH memory support for Intel SA1110 nanoEngine" flash_nano }
 	directory	devs/flash/arm/nano
@@ -634,6 +645,15 @@ package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	directory	devs/eth/arm/ebsa285
 	script		ebsa285_eth_drivers.cdl
         description     "Ethernet driver for Intel EBSA285 with PRO/100+ boards."
+}
+
+package CYGPKG_DEVS_ETH_ARM_FLEXANET {
+      alias           { "SA11x0/Flexanet onboard ethernet support" devs_eth_arm_flexanet }
+      hardware
+      directory       devs/eth/arm/flexanet
+      script          flexanet_eth_drivers.cdl
+      description "This package contains hardware support for onboard SMC91C96
+                   ethernet device on the Flexanet board."
 }
 
 package CYGPKG_DEVS_ETH_POWERPC_QUICC {
@@ -1119,6 +1139,16 @@ package CYGPKG_HAL_ARM_SA11X0_IPAQ {
         description "
         The IPAQ HAL package provides the support needed to run
         eCos on a Intel StrongARM SA1110 pocket PC (Compaq iPAQ)."
+}
+
+package CYGPKG_HAL_ARM_SA11X0_FLEXANET {
+      alias           { "SA1110 Flexanet board" hal_arm_sa11x0_flexanet }
+      directory       hal/arm/sa11x0/flexanet
+      script          hal_arm_sa11x0_flexanet.cdl
+      hardware
+      description "
+        The FLEXANET HAL package provides the support needed to run
+        eCos on an SA1110 Flexanet board."
 }
 
 package CYGPKG_DEVS_ETH_SMSC_LAN91CXX {
@@ -1850,6 +1880,27 @@ target nano {
         The nanoEngine target provides the packages needed to run
         eCos on a Bright Star Engineering nanoEngine StrongARM SA1110 board."
 }
+
+target flexanet {
+      alias { "Flexanet StrongARM SA1110 platform" flexanet }
+      packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_SA11X0
+                   CYGPKG_HAL_ARM_SA11X0_FLEXANET
+                   CYGPKG_IO_SERIAL_ARM_SA11X0
+                   CYGPKG_DEVS_FLASH_STRATA
+                   CYGPKG_DEVS_FLASH_FLEXANET
+                   CYGPKG_DEVS_ETH_SMSC_LAN91CXX
+                   CYGPKG_DEVS_ETH_ARM_FLEXANET
+                   CYGPKG_IO_USB
+                   CYGPKG_IO_USB_SLAVE
+                   CYGPKG_DEVS_USB_SA11X0
+                   CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0
+        }
+        description "
+          The Flexanet target provides the packages needed to run
+          eCos on an SA1110 Flexanet board."
+}
+
 target brutus {
 	alias { "Intel StrongARM SA1100 board" brutus }
 	packages { CYGPKG_HAL_ARM

@@ -723,7 +723,7 @@ static int findbuffer_direct( off_t pos,
     *buffer = NULL;
     *size = 0;
     
-    if( bi > nblocks )
+    if( bi >= nblocks )
         return ENOERR;
 
     b = blocks[bi];
@@ -774,7 +774,7 @@ static int findbuffer_indirect1( off_t pos,
     // Use findbuffer_direct() to index and allocate
     // the first level indirect block.
     
-    err = findbuffer_direct( bi,
+    err = findbuffer_direct( bi*CYGNUM_RAMFS_BLOCK_SIZE,
                              (ramfs_block **)blocks,
                              nblocks,
                              &b,
@@ -827,7 +827,7 @@ static int findbuffer_indirect2( off_t pos,
     // Use findbuffer_direct() to index and allocate
     // the first level indirect block.
 
-    err = findbuffer_direct( bi,
+    err = findbuffer_direct( bi*CYGNUM_RAMFS_BLOCK_SIZE,
                              (ramfs_block **)blocks,
                              nblocks,
                              &b,

@@ -107,10 +107,11 @@ externC void cyg_hal_cache_write_mode(int mode);
 #define HAL_UCACHE_SYNC() cyg_hal_cache_sync()
 
 // Query the state of the cache (does not affect the caching)
-#define HAL_UCACHE_IS_ENABLED(_state_)          \
-    CYG_MACRO_START                             \
-    HAL_READ_UINT32(CYGARC_REG_CCR, (_state_)); \
-    (_state_) &= ~CYGARC_REG_CCR_CE;            \
+#define HAL_UCACHE_IS_ENABLED(_state_)                  \
+    CYG_MACRO_START                                     \
+    cyg_uint32 _tmp;                                    \
+    HAL_READ_UINT32(CYGARC_REG_CCR, _tmp);              \
+    (_state_) = (_tmp & CYGARC_REG_CCR_CE) ? 1 : 0;     \
     CYG_MACRO_END
 
 // Set the cache refill burst size

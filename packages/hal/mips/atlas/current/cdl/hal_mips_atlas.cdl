@@ -314,8 +314,6 @@ cdl_package CYGPKG_HAL_MIPS_ATLAS {
             This option lists the target's requirements for a valid Redboot
             configuration."
 
-        compile -library=libextras.a redboot_cmds.c 
-    
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
             active_if     CYGBLD_BUILD_REDBOOT

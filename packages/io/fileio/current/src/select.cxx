@@ -52,9 +52,11 @@
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
-#include <stdarg.h>                     // for fcntl()
+#include <stdarg.h>                    // for fcntl()
 
 #include "fio.h"                       // Private header
+
+#include <sys/select.h>                // select header
 
 #include <cyg/kernel/sched.hxx>        // scheduler definitions
 #include <cyg/kernel/thread.hxx>       // thread definitions

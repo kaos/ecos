@@ -86,8 +86,11 @@ cyg_libc_stdio_flush_all_but( Cyg_StdioStream *not_this_stream )
                 } // if
                 else {
                     // valid stream
+#ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
                     // only buffers which we've written to need flushing
-                    if ( !stream->flags.last_buffer_op_was_read) {
+                    if ( !stream->flags.last_buffer_op_was_read)
+#endif
+		      {
                         if ( stream->trylock_me() ) {
                             err = stream->flush_output_unlocked();
                             stream->unlock_me();

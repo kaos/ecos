@@ -273,5 +273,19 @@ externC void cyg_hal_dcache_store(CYG_ADDRWORD base, int size);
 //#define HAL_ICACHE_INVALIDATE( _base_ , _size_ )
 
 //-----------------------------------------------------------------------------
+// flash caching control
+#ifdef CYGSEM_HAL_UNCACHED_FLASH_ACCESS
+#define HAL_FLASH_CACHES_OFF(_d_, _i_)		\
+    CYG_MACRO_START                             \
+    _d_ = 0; /* avoids warning */               \
+    _i_ = 0; /* avoids warning */               \
+    CYG_MACRO_END
+
+#define HAL_FLASH_CACHES_ON(_d_, _i_)           \
+    CYG_MACRO_START                             \
+    CYG_MACRO_END
+#endif
+
+//-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_VAR_CACHE_H
 // End of var_cache.h

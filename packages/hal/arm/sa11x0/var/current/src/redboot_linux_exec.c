@@ -28,11 +28,21 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
+//####OTHERCOPYRIGHTBEGIN####
+//
+//  The structure definitions below are taken from include/asm-arm/setup.h in
+//  the Linux kernel, Copyright (C) 1997-1999 Russell King. Their presence
+//  here is for the express purpose of communication with the Linux kernel
+//  being booted and is considered 'fair use' by the original author and
+//  are included with his permission.
+//
+//####OTHERCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
 // Contributors: gthomas
+//               Russell King <rmk@arm.linux.org.uk>
 // Date:         2001-02-20
 // Purpose:      
 // Description:  
@@ -75,6 +85,9 @@ typedef void code_fun(void);
 typedef unsigned long  u32;
 typedef unsigned short u16;
 typedef unsigned char  u8;
+
+//=========================================================================
+//  From Linux <asm-arm/setup.h>
 
 #define ATAG_NONE	0x00000000
 struct tag_header {
@@ -193,6 +206,8 @@ struct tag {
     } u;
 };
 
+// End of inclusion from <asm-arm/setup.h>
+//=========================================================================
 
 static void 
 do_exec(int argc, char *argv[])

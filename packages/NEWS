@@ -1,3 +1,8 @@
+* Added port to Bright Star Engineering SA11x0 based Flexanet handheld board,
+  including flash and ethernet support.
+  Contributed by Jordi Colomer <jco@ict.es>
+* Added support for loading files from disk. Currently supports IDE drives
+  with Linux EXT2 filesystems.
 * Added wallclock driver for DS12887
 * AM33 STB flash driver added.
 * C library now supports multiple locales with multibyte character set support,

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -49,7 +49,7 @@
 
 typedef int _printf(char* fmt, ...);
 
-#define FLASH_MIN_WORKSPACE CYGINT_FLASH_WORKSPACE_SIZE  // Space used by FLASH code
+#define FLASH_MIN_WORKSPACE CYGNUM_FLASH_WORKSPACE_SIZE  // Space used by FLASH code
 
 externC int flash_init(void *work_space, int work_space_length, _printf *pf);
 externC int flash_erase(void *base, int len, void **err_address);
@@ -114,6 +114,14 @@ extern void CYGIMP_FLASH_ENABLE(void *, void *);
 extern void CYGIMP_FLASH_DISABLE(void *, void *);
 #else
 #define FLASH_Disable(_start_, _end_)
+#endif
+
+//
+// Some platforms have a DIP switch or jumper that tells the software that
+// the flash is write protected.
+//
+#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
+externC cyg_bool plf_flash_query_soft_wp(void *addr, int len);
 #endif
 
 //---------------------------------------------------------------------------

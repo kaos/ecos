@@ -52,6 +52,7 @@
 
 #ifndef __ASSEMBLER__
 #include <cyg/infra/cyg_type.h>
+#include <cyg/hal/plf_io.h>
 #endif
 
 //-----------------------------------------------------------------------------

@@ -523,7 +523,6 @@ set_console_baud_rate(int rate)
     static int current_rate = CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD;
 
     if (rate != current_rate) {
-        CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
         __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SETBAUD, rate);
         if (ret <= 0) {
@@ -549,7 +548,6 @@ do_baud_rate(int argc, char *argv[])
     if (!scan_opts(argc, argv, 1, opts, 1, 0, 0, "")) {
         return;
     }
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     if (new_rate_set) {
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG

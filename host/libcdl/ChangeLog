@@ -1,3 +1,10 @@
+2001-07-20  Bart Veer  <bartv@redhat.com>
+
+	* value.cxx (save):
+	Complicated "requires" expressions spread over multiple lines
+	were not being turned into multiline comments, leading to
+	illegal savefiles.
+
 2001-07-11  Bart Veer  <bartv@redhat.com>
 
 	* transact.cxx (is_preferable_to):

@@ -1,3 +1,11 @@
+2001-07-27  David Howells  <dhowells@redhat.com>
+
+	* include/mn10300_stub.h: set NUMREGS to be the correct value to
+	keep gdb happy.
+	* include/hal_io.h: refer to plf_io.h
+	* src/vectors.S: Adjusted exception handling to be able to cope
+	with AM33v2 exceptions.
+
 2001-01-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added underscore to reference to

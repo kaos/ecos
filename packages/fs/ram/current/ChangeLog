@@ -1,3 +1,11 @@
+2001-07-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/ramfs.c (findbuffer_indirect1): Determine correct offset in
+	indirect block list.
+	(findbuffer_indirect2): Ditto.
+	(findbuffer_direct): Compare block index with number of blocks
+	correctly.
+
 2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* tests/fileio1.c:

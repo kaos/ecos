@@ -83,6 +83,8 @@ typedef cyg_uint32 cyg_ISR(cyg_uint32 vector, CYG_ADDRWORD data);
 
 extern void cyg_interrupt_post_dsr( CYG_ADDRWORD intr_obj );
 
+#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
+
 static inline cyg_uint32
 hal_call_isr (cyg_uint32 vector)
 {
@@ -103,6 +105,28 @@ hal_call_isr (cyg_uint32 vector)
 
     return isr_ret & ~CYG_ISR_CALL_DSR;
 }
+
+#else
+
+// In chained mode, assume vector 0 points to the chain
+// handler. Simply call it with the vector number and let it find the
+// ISR to call - it will also post DSRs as required.
+static inline cyg_uint32
+hal_call_isr (cyg_uint32 vector)
+{
+    cyg_ISR *isr;
+    CYG_ADDRWORD data;
+    cyg_uint32 isr_ret;
+
+    isr = (cyg_ISR*) hal_interrupt_handlers[0];
+    data = hal_interrupt_data[0];
+
+    isr_ret = (*isr) (vector, data);
+
+    return isr_ret;
+}
+
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // CYGONCE_HAL_HAL_ARBITER_H

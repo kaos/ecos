@@ -62,6 +62,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_arm_sa11x0.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_arm_sa11x0_ipaq.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_PLF_INTS_H <cyg/hal/hal_platform_ints.h>"
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"StrongARM 1110\""
         puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Compaq iPAQ Pocket PC\""
         puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""

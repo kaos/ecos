@@ -1,3 +1,53 @@
+2001-07-27  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c (load_srec_image, do_load): 
+	* cdl/redboot.cdl: New option CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
+	which can be used to disable user RAM checks in 'load' command.
+
+	* src/load.c: Fix build problem if no IDE support.
+
+	* src/net/tftp_client.c (tftp_stream_read): Only ACK data when it
+	has been processed and we're ready for the next block.  This fixes
+	a race/timing issue which was exacerbated by the "spinner" in 'load'.
+
+2001-07-27  David Howells  <dhowells@redhat.com>
+
+	* src/xyzModem.c: Fixed an uninitialised variable warning.
+
+2001-07-27  Mark Salter  <msalter@redhat.com>
+
+	* cdl/redboot.cdl (CYGNUM_REDBOOT_MAX_PARTITIONS): New option.
+	Rename CYGBLD_REDBOOT_MAX_DISKS to CYGNUM_REDBOOT_MAX_DISKS.
+
+	* include/fs/disk.h: Exported functions declared "externC".
+	Replace MAX_PARTITIONS with CYGNUM_REDBOOT_MAX_PARTITIONS.
+	
+	* src/fs/disk.c: Make exported functions "externC".
+	Rename CYGBLD_REDBOOT_MAX_DISKS to CYGNUM_REDBOOT_MAX_DISKS.
+	Replace MAX_PARTITIONS with CYGNUM_REDBOOT_MAX_PARTITIONS.
+
+	* src/fs/e2fs.c: Add support for symbolic links.
+	* include/fs/e2fs.h: Add dir filetype support.
+
+2001-07-24  Mark Salter  <msalter@redhat.com>
+
+	* src/load.c: Add disk load support.
+	* src/fs/disk.c: New file. RedBoot disk management.
+	* src/fs/ide.c: New file. IDE disk I/O.
+	* src/fs/e2fs.c: New file. Linux ext2 filesystem support.
+	* cdl/redboot.cdl: Add options for disk/ide/filesystem support.
+
+2001-07-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/main.c (set_console_baud_rate): No need to query the console
+	number if we don't care what it is.
+	(do_baud_rate): Likewise.
+
+2001-07-23  David Howells  <dhowells@redhat.com>
+
+	* src/flash.c: Force block-alignment for flash addresses in write
+	and erase functions.
+
 2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/net_io.c (net_init): Don't overwrite static IP

@@ -44,6 +44,7 @@
 //==========================================================================
 
 #include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_ass.h>          // assertions
 
 // -------------------------------------------------------------------------
 // Some helper functions
@@ -67,6 +68,13 @@ _simple_mktime(cyg_uint32 year, cyg_uint32 mon,
 {
     time_t secs;
     cyg_uint32 y, m, days;
+
+    CYG_ASSERT(year <= 3124, "Year is unreasonably large");
+    CYG_ASSERT(mon <= 12, "Month is invalid");
+    CYG_ASSERT(day <= 31, "Day is invalid");
+    CYG_ASSERT(hour <= 23, "Hour is invalid");
+    CYG_ASSERT(min <= 59, "Minutes is invalid");
+    CYG_ASSERT(sec <= 62, "Seconds is invalid");
 
     // Number of days due to years
     days = 0;

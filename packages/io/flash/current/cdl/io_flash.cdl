@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -51,13 +51,13 @@ cdl_package CYGPKG_IO_FLASH {
     compile       flash.c
  
     define_proc {
-	puts $::cdl_header "#include <pkgconf/system.h>"
-	puts $::cdl_header "#ifdef CYGDAT_IO_FLASH_DEVICE_HEADER"
-	puts $::cdl_header "# include CYGDAT_IO_FLASH_DEVICE_HEADER"
-	puts $::cdl_header "#endif "
+        puts $::cdl_header "#include <pkgconf/system.h>"
+        puts $::cdl_header "#ifdef CYGDAT_IO_FLASH_DEVICE_HEADER"
+        puts $::cdl_header "# include CYGDAT_IO_FLASH_DEVICE_HEADER"
+        puts $::cdl_header "#endif "
     }
 
-    cdl_option CYGINT_FLASH_WORKSPACE_SIZE {
+    cdl_option CYGNUM_FLASH_WORKSPACE_SIZE {
         display       "Extra memory required by FLASH device drivers"
 	flavor        data
         default_value 0x1000
@@ -74,7 +74,7 @@ cdl_package CYGPKG_IO_FLASH {
         display       "Hardware FLASH device drivers"
         description   "
             This option enables the hardware device drivers
-	    for the current platform."
+            for the current platform."
     }
 
     cdl_interface CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM {
@@ -101,5 +101,14 @@ cdl_package CYGPKG_IO_FLASH {
         description      "
            Selecting this option will cause verification of data
            programmed to flash."
+    }
+    cdl_option CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT {
+        display          "Platform has flash soft DIP switch write-protect"
+        flavor           bool
+        default_value    0
+        description      "
+           Selecting this option will cause the state of a hardware jumper or
+           dipswitch to be read by software to determine whether the flash is
+           write-protected or not."
     }
 }

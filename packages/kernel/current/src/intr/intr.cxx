@@ -364,7 +364,8 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
         HAL_DEFAULT_ISR( vector, 0 );
     }
 #endif    
-    return 0;
+
+    return isr_ret & ~Cyg_Interrupt::CALL_DSR;
 }
 
 #endif

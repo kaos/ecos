@@ -87,57 +87,15 @@ typedef int pid_t;
 # include CYGBLD_ISO_PTHREADTYPES_HEADER
 #endif
 
+/* Include <sys/select.h> for backward compatibility for now */
+#include <sys/select.h>
+
 #if !defined(_POSIX_SOURCE)
-
-#define	NBBY	8		/* number of bits in a byte */
-
-/*
- * Select uses bit masks of file descriptors in longs.  These macros
- * manipulate such bit fields (the filesystem macros use chars).
- * FD_SETSIZE may be defined by the user, but the default here should
- * be enough for most uses.
- */
-#ifndef	FD_SETSIZE
-#define	FD_SETSIZE	256
-#endif
-
-typedef unsigned int	fd_mask;
-#define __NFDBITS	(sizeof(fd_mask) * NBBY)	/* bits per mask */
-
-#ifndef __howmany
-#define	__howmany(x, y)	(((x) + ((y) - 1)) / (y))
-#endif
-
-typedef	struct fd_set {
-	fd_mask	fds_bits[__howmany(FD_SETSIZE, __NFDBITS)];
-} fd_set;
-
-#define	FD_SET(n, p)	((p)->fds_bits[(n)/__NFDBITS] |= (1 << ((n) % __NFDBITS)))
-#define	FD_CLR(n, p)	((p)->fds_bits[(n)/__NFDBITS] &= ~(1 << ((n) % __NFDBITS)))
-#define	FD_ISSET(n, p)	((p)->fds_bits[(n)/__NFDBITS] & (1 << ((n) % __NFDBITS)))
-
-#define	FD_COPY(f, t)                                           \
-{                                                               \
-    unsigned int _i;                                            \
-    for( _i = 0; _i < __howmany(FD_SETSIZE, __NFDBITS) ; _i++ ) \
-        (t)->fds_bits[_i] = (f)->fds_bits[_i];                  \
-}
-
-#define	FD_ZERO(p)                                              \
-{                                                               \
-    unsigned int _i;                                            \
-    for( _i = 0; _i < __howmany(FD_SETSIZE, __NFDBITS) ; _i++ ) \
-        (p)->fds_bits[_i] = 0;                                  \
-}
-
-#define CYG_FD_SET_DEFINED 1
-
-#if CYGINT_ISO_BSDTYPES
-# ifdef CYGBLD_ISO_BSDTYPES_HEADER
-#  include CYGBLD_ISO_BSDTYPES_HEADER
+# if CYGINT_ISO_BSDTYPES
+#  ifdef CYGBLD_ISO_BSDTYPES_HEADER
+#   include CYGBLD_ISO_BSDTYPES_HEADER
+#  endif
 # endif
-#endif
-
 #endif // !defined(_POSIX_SOURCE)
 
 #endif /* CYGONCE_ISO_SYS_TYPES_H multiple inclusion protection */

@@ -1,3 +1,17 @@
+2001-07-23  David Howells  <dhowells@redhat.com>
+
+	* cdl/io_flash.cdl: Added software write protect option.
+	* include/flash.h: Ditto.
+	* src/flash.c: Added software write protect option and bank
+	support, and prevented low-level writes from being handed
+	cross-block data chunks.
+
+2001-07-20  Gary Thomas  <gthomas@redhat.com>
+
+	* include/flash.h: 
+	* cdl/io_flash.cdl: Name convention: CYGINT_FLASH_WORKSPACE_SIZE 
+	renamed to be CYGNUM_FLASH_WORKSPACE_SIZE.
+
 2001-07-19  Gary Thomas  <gthomas@redhat.com>
 
 	* include/flash.h: 

@@ -169,6 +169,8 @@ interrupt_end(
 cyg_uint32 chain_isr(cyg_vector_t vector, CYG_ADDRWORD data)
 {
     cyg_interrupt *p = *(cyg_interrupt **)data;
+    register cyg_uint32 isr_ret = 0;
+    register cyg_uint32 isr_chain_ret = 0;
 
     CYG_REPORT_FUNCTION();
 
@@ -176,7 +178,9 @@ cyg_uint32 chain_isr(cyg_vector_t vector, CYG_ADDRWORD data)
     {
         if( p->vector == vector )
         {
-            register cyg_uint32 isr_ret = p->isr(vector, p->data);
+            isr_ret = p->isr(vector, p->data);
+
+            isr_chain_ret |= isr_ret;
 
             if( isr_ret & CYG_ISR_CALL_DSR ) post_dsr(p);
 
@@ -186,9 +190,21 @@ cyg_uint32 chain_isr(cyg_vector_t vector, CYG_ADDRWORD data)
         p = p->next;
     }
 
+#ifdef HAL_DEFAULT_ISR
+    if( (isr_chain_ret & (CYG_ISR_CALL_DSR|CYG_ISR_HANDLED)) == 0 )
+    {
+        // If we finished the loop for some reason other than that an
+        // ISR has handled the interrupt, call any default ISR to either
+        // report the spurious interrupt, or do some other HAL level processing
+        // such as GDB interrupt detection etc.
+
+        HAL_DEFAULT_ISR( vector, 0 );
+    }
+#endif    
+
     CYG_REPORT_RETURN();
     
-    return 0;
+    return isr_ret & CYG_ISR_CALL_DSR;
 }
 
 #endif

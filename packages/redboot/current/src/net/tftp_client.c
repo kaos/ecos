@@ -287,6 +287,17 @@ tftp_stream_read(char *buf,
             tftp_stream.avail -= size;
             total_bytes += size;
         } else {
+            if (tftp_stream.last_good_block != 0) {
+                // Send out the ACK
+                hdr->th_opcode = htons(ACK);
+                hdr->th_block = htons(tftp_stream.last_good_block);
+                if (__udp_sendto(tftp_stream.data, 4 /* FIXME */, 
+                                 &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
+                    // Problem sending ACK
+                    *err = TFTP_NETERR;
+                    return -1;
+                }
+            }
             if ((tftp_stream.actual_len >= 0) && (tftp_stream.actual_len < SEGSIZE)) {
                 // Out of data
                 break;
@@ -303,15 +314,6 @@ tftp_stream_read(char *buf,
                     *err = TFTP_TIMEOUT;
                     return -1;
                 }
-                // Try resending last ACK
-                hdr->th_opcode = htons(ACK);
-                hdr->th_block = htons(tftp_stream.last_good_block);
-                if (__udp_sendto(tftp_stream.data, 4 /* FIXME */,
-                                 &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
-                    // Problem sending request
-                    *err = TFTP_NETERR;
-                    return -1;
-                }
             } else {
                 if (ntohs(hdr->th_opcode) == DATA) {
                     if (ntohs(hdr->th_block) == (tftp_stream.last_good_block+1)) {
@@ -320,15 +322,6 @@ tftp_stream_read(char *buf,
                         tftp_stream.avail = tftp_stream.actual_len = data_len;
                         tftp_stream.bufp = hdr->th_data;
                         tftp_stream.last_good_block++;
-                    }
-                    // Send out the ACK
-                    hdr->th_opcode = htons(ACK);
-                    hdr->th_block = htons(tftp_stream.last_good_block);
-                    if (__udp_sendto(tftp_stream.data, 4 /* FIXME */, 
-                                     &tftp_stream.from_addr, &tftp_stream.local_addr) < 0) {
-                        // Problem sending ACK
-                        *err = TFTP_NETERR;
-                        return -1;
                     }
                 } else {
                     if (ntohs(hdr->th_opcode) == ERROR) {

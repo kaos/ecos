@@ -118,10 +118,40 @@
 static inline void
 init_ds_hwclock(void)
 {
-    // Set binary and 24H mode
-    DS_WRITE(DS_REG_B, DS_REG_B_DM | DS_REG_B_24H);
+    cyg_uint8 _regb, _tmp;
+
+    // Set 24H mode
+    DS_WRITE(DS_REG_B, DS_REG_B_24H);
     // Enable clock
     DS_WRITE(DS_REG_A, DS_REG_A_ENABLE);
+    
+    // Verify that there are reasonable default settings - otherwise
+    // set them.
+
+    // Stop counting
+    DS_READ(DS_REG_B, _regb);
+    _regb |= DS_REG_B_SET;
+    DS_WRITE(DS_REG_B, _regb);
+
+    DS_READ(DS_CENTURY, _tmp);
+    if (0xff == _tmp)
+	DS_WRITE(DS_CENTURY, TO_BCD(20));
+
+    DS_READ(DS_MONTH, _tmp);
+    if (0x00 == _tmp)
+	DS_WRITE(DS_MONTH, TO_BCD(1));
+
+    DS_READ(DS_DOM, _tmp);
+    if (0x00 == _tmp)
+	DS_WRITE(DS_DOM, TO_BCD(1));
+
+    DS_READ(DS_DOM, _tmp);
+    if (0x00 == _tmp)
+	DS_WRITE(DS_DOM, TO_BCD(1));
+
+    // Restart counting
+    _regb &= ~DS_REG_B_SET;
+    DS_WRITE(DS_REG_B, _regb);
 }
 
 
@@ -135,13 +165,13 @@ set_ds_hwclock(cyg_uint32 year, cyg_uint32 month, cyg_uint32 mday,
     _regb |= DS_REG_B_SET;
     DS_WRITE(DS_REG_B, _regb);
 
-    DS_WRITE(DS_CENTURY, (cyg_uint8)(year / 100));
-    DS_WRITE(DS_YEAR, (cyg_uint8)(year % 100));
-    DS_WRITE(DS_MONTH, (cyg_uint8)month);
-    DS_WRITE(DS_DOM, (cyg_uint8)mday);
-    DS_WRITE(DS_HOURS, (cyg_uint8)hour);
-    DS_WRITE(DS_MINUTES, (cyg_uint8)minute);
-    DS_WRITE(DS_SECONDS, (cyg_uint8)second);
+    DS_WRITE(DS_CENTURY, TO_BCD((cyg_uint8)(year / 100)));
+    DS_WRITE(DS_YEAR, TO_BCD((cyg_uint8)(year % 100)));
+    DS_WRITE(DS_MONTH, TO_BCD((cyg_uint8)month));
+    DS_WRITE(DS_DOM, TO_BCD((cyg_uint8)mday));
+    DS_WRITE(DS_HOURS, TO_BCD((cyg_uint8)hour));
+    DS_WRITE(DS_MINUTES, TO_BCD((cyg_uint8)minute));
+    DS_WRITE(DS_SECONDS, TO_BCD((cyg_uint8)second));
 
     // Restart counting
     _regb &= ~DS_REG_B_SET;
@@ -178,22 +208,22 @@ get_ds_hwclock(cyg_uint32* year, cyg_uint32* month, cyg_uint32* mday,
 
     DS_READ(DS_CENTURY, _t1);
     DS_READ(DS_YEAR, _t2);
-    *year = (cyg_uint32)_t1*100 + (cyg_uint32)_t2;
+    *year = (cyg_uint32)TO_DEC(_t1)*100 + (cyg_uint32)TO_DEC(_t2);
 
     DS_READ(DS_MONTH, _t1);
-    *month = (cyg_uint32)_t1;
+    *month = (cyg_uint32)TO_DEC(_t1);
 
     DS_READ(DS_DOM, _t1);
-    *mday = (cyg_uint32)_t1;
+    *mday = (cyg_uint32)TO_DEC(_t1);
 
     DS_READ(DS_HOURS, _t1);
-    *hour = (cyg_uint32)_t1;
+    *hour = (cyg_uint32)TO_DEC(_t1);
 
     DS_READ(DS_MINUTES, _t1);
-    *minute = (cyg_uint32)_t1;
+    *minute = (cyg_uint32)TO_DEC(_t1);
 
     DS_READ(DS_SECONDS, _t1);
-    *second = (cyg_uint32)_t1;
+    *second = (cyg_uint32)TO_DEC(_t1);
 
     // Reenable interrupts
     HAL_RESTORE_INTERRUPTS(_old);

@@ -108,12 +108,6 @@ hal_interrupt_update_level(int vector)
     level = cyg_hal_IMASK_table[vector] ? cyg_hal_ILVL_table[vector] : 0;
 
     switch( (vector) ) {
-    case CYGNUM_HAL_INTERRUPT_NMI:
-        /* fall through */
-    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:
-        /* Cannot change levels */
-        break;
-
     /* IPRA */
     case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0:
         HAL_READ_UINT16(CYGARC_REG_IPRA, iprX);
@@ -206,6 +200,13 @@ hal_interrupt_update_level(int vector)
     case CYGNUM_HAL_INTERRUPT_RESERVED_6E0:
         /* Do nothing for these reserved vectors. */
         break;
+
+    // Platform extensions
+    CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF(vector, level)
+
+    default:
+        CYG_FAIL("Unknown interrupt vector");                             
+        break;
     }
 }
 
@@ -226,10 +227,12 @@ hal_interrupt_mask(int vector)
 {
     switch( vector ) {
     case CYGNUM_HAL_INTERRUPT_NMI:
-        /* fall through */
-    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:
-        /* Can only be masked by fiddling Imask in SR. */
         break;
+    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:
+        /* Normally can only be masked by fiddling Imask in SR,
+           but some platforms use external interrupt controller,
+           so allow regular handling. */
+        // fall through
     case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0 ... CYGNUM_HAL_ISR_MAX:
         cyg_hal_IMASK_table[vector] = 0;
         hal_interrupt_update_level(vector);
@@ -249,10 +252,12 @@ hal_interrupt_unmask(int vector)
 {
     switch( (vector) ) {
     case CYGNUM_HAL_INTERRUPT_NMI:
-        /* fall through */
-    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:
-        /* Can only be unmasked by fiddling Imask in SR. */
         break;
+    case CYGNUM_HAL_INTERRUPT_LVL0 ... CYGNUM_HAL_INTERRUPT_LVL14:
+        /* Normally can only be masked by fiddling Imask in SR,
+           but some platforms use external interrupt controller,
+           so allow regular handling. */
+        // fall through
     case CYGNUM_HAL_INTERRUPT_TMU0_TUNI0 ... CYGNUM_HAL_ISR_MAX: 
         cyg_hal_IMASK_table[vector] = 1;
         hal_interrupt_update_level(vector);

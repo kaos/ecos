@@ -1056,6 +1056,38 @@ cdl_package CYGPKG_ISOINFRA {
     }
 
 # ====================================================================
+
+    cdl_component CYGPKG_ISO_SELECT {
+        display       "select()/poll() functions"
+        flavor        none
+        no_define
+
+        cdl_interface CYGINT_ISO_SELECT {
+            display       "select() implementations"
+            flavor        booldata
+            requires      { 1 >= CYGINT_ISO_SELECT }
+        }
+    
+        cdl_option CYGBLD_ISO_SELECT_HEADER {
+            display       "select() implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
+        cdl_interface CYGINT_ISO_POLL {
+            display       "poll() implementations"
+            flavor        booldata
+            requires      { 1 >= CYGINT_ISO_POLL }
+        }
+    
+        cdl_option CYGBLD_ISO_POLL_HEADER {
+            display       "poll() implementation header"
+            flavor        booldata
+            default_value 0
+        }
+    }
+
+# ====================================================================
     
         cdl_component CYGPKG_ISOINFRA_OPTIONS {
         display "Build options"

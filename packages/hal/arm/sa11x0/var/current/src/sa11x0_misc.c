@@ -196,6 +196,14 @@ int hal_IRQ_handler(void)
 {
     cyg_uint32 sources, index;
 
+#ifdef HAL_EXTENDED_IRQ_HANDLER
+    // Use platform specific IRQ handler, if defined
+    // Note: this macro should do a 'return' with the appropriate
+    // interrupt number if such an extended interrupt exists.  The
+    // assumption is that the line after the macro starts 'normal' processing.
+    HAL_EXTENDED_IRQ_HANDLER(index);
+#endif
+
 #if 0 // test FIQ and print alert if active - really for debugging
     sources = *SA11X0_ICFP;
     if ( 0 != sources )
@@ -251,10 +259,19 @@ int hal_IRQ_handler(void)
 
 void hal_interrupt_mask(int vector)
 {
+
+#ifdef HAL_EXTENDED_INTERRUPT_MASK
+    // Use platform specific handling, if defined
+    // Note: this macro should do a 'return' for "extended" values of 'vector'
+    // Normal vectors are handled by code subsequent to the macro call.
+    HAL_EXTENDED_INTERRUPT_MASK(vector);
+#endif
+
     // Non-GPIO interrupt sources can be masked separately.
     // Note: masking any non-unique GPIO signal (31..11) results in
     // all GPIO signals (31..11) being masked as only the "lump"
     // source will be changed.
+    
     if (vector >= CYGNUM_HAL_INTERRUPT_GPIO11) {
         vector = CYGNUM_HAL_INTERRUPT_GPIO;
     }
@@ -263,6 +280,14 @@ void hal_interrupt_mask(int vector)
 
 void hal_interrupt_unmask(int vector)
 {
+
+#ifdef HAL_EXTENDED_INTERRUPT_UNMASK
+    // Use platform specific handling, if defined
+    // Note: this macro should do a 'return' for "extended" values of 'vector'
+    // Normal vectors are handled by code subsequent to the macro call.
+    HAL_EXTENDED_INTERRUPT_UNMASK(vector);
+#endif
+
     if (vector >= CYGNUM_HAL_INTERRUPT_GPIO11) {
         vector = CYGNUM_HAL_INTERRUPT_GPIO;
     }
@@ -271,6 +296,14 @@ void hal_interrupt_unmask(int vector)
 
 void hal_interrupt_acknowledge(int vector)
 {
+
+#ifdef HAL_EXTENDED_INTERRUPT_UNMASK
+    // Use platform specific handling, if defined
+    // Note: this macro should do a 'return' for "extended" values of 'vector'
+    // Normal vectors are handled by code subsequent to the macro call.
+    HAL_EXTENDED_INTERRUPT_ACKNOWLEDGE(vector);
+#endif
+
     // GPIO interrupts are driven by an edge detection mechanism.  This
     // is latching so these interrupts must be acknowledged directly.
     // All other interrupts simply go away when the interrupting unit
@@ -286,6 +319,14 @@ void hal_interrupt_acknowledge(int vector)
 
 void hal_interrupt_configure(int vector, int level, int up)
 {
+
+#ifdef HAL_EXTENDED_INTERRUPT_CONFIGURE
+    // Use platform specific handling, if defined
+    // Note: this macro should do a 'return' for "extended" values of 'vector'
+    // Normal vectors are handled by code subsequent to the macro call.
+    HAL_EXTENDED_INTERRUPT_CONFIGURE(vector, level, up);
+#endif
+
     // This function can be used to configure the GPIO interrupts.  All
     // of these pins can potentially generate an interrupt, but only
     // 0..10 are unique.  Thus the discontinuity in the numbers.
@@ -321,6 +362,14 @@ void hal_interrupt_configure(int vector, int level, int up)
 
 void hal_interrupt_set_level(int vector, int level)
 {
+
+#ifdef HAL_EXTENDED_INTERRUPT_SET_LEVEL
+    // Use platform specific handling, if defined
+    // Note: this macro should do a 'return' for "extended" values of 'vector'
+    // Normal vectors are handled by code subsequent to the macro call.
+    HAL_EXTENDED_INTERRUPT_SET_LEVEL(vector, level);
+#endif
+
     // Interrupt priorities are not configurable on the SA11X0.
 }
 

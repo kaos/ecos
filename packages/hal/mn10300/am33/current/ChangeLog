@@ -1,3 +1,13 @@
+2001-07-27  David Howells  <dhowells@redhat.com>
+
+	* cdl/hal_mn10300_am33.cdl: Added option for disabling caching
+	when accessing flash (CYGSEM_HAL_UNCACHED_FLASH_ACCESS).
+	* include/var_cache.h: Ditto.
+	* include/variant.inc: Initialise the cache and the trap base
+	register if appropriate.
+	* src/mn10300_am33.ld: Handle code kept in RAM for flash drivers
+	and permit the VSR table to reside in on-CPU RAM.
+
 2000-08-12  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/var_misc.c: More rearranging of GDB regnames.

@@ -8,7 +8,7 @@
 
 #endif
 #define CYGMEM_REGION_ram (0)
-#define CYGMEM_REGION_ram_SIZE (0xfd6000)
+#define CYGMEM_REGION_ram_SIZE (0xfd7000)
 #define CYGMEM_REGION_ram_ATTR (CYGMEM_REGION_ATTR_R | CYGMEM_REGION_ATTR_W)
 #define CYGMEM_REGION_sram (0x60000000)
 #define CYGMEM_REGION_sram_SIZE (0x9c00)

@@ -45,6 +45,9 @@
 
 #include <redboot.h>
 #include <xyzModem.h>
+#ifdef CYGPKG_REDBOOT_DISK
+#include <fs/disk.h>
+#endif
 
 // Buffer used by redboot_getc
 getc_info_t getc_info;
@@ -53,8 +56,11 @@ static char usage[] = "[-r] [-v] "
 #ifdef CYGPKG_COMPRESS_ZLIB
                       "[-d] "
 #endif
-                      "[-h <host>] [-m {TFTP | xyzMODEM}]\n"
-                      "        [-b <base_address>] <file_name>";
+                      "[-h <host>] [-m {TFTP | xyzMODEM"
+#ifdef CYGPKG_REDBOOT_DISK
+                      " | disk"
+#endif
+                      "}]\n        [-b <base_address>] <file_name>";
 
 // Exported CLI function
 RedBoot_cmd("load", 
@@ -158,11 +164,13 @@ load_srec_image(int (*getc)(void), unsigned long base)
             if ((unsigned long)(addr-addr_offset) < lowest_address) {
                 lowest_address = (unsigned long)(addr - addr_offset);
             }
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
             if ((addr < user_ram_start) || (addr > user_ram_end)) {
                 if (!verify_action("Attempt to load S-record data to address: %p\n"
                                    "RedBoot does not believe this is in RAM", (void*)addr))
                     return 0;
             }
+#endif
             count -= ((type-'1'+2)+1);
             offset += count;
             while (count-- > 0) {
@@ -251,9 +259,10 @@ redboot_getc_rewind(void)
 }
 
 #define MODE_TFTP   0
-#define MODE_XMODEM xyzModem_xmodem
-#define MODE_YMODEM xyzModem_ymodem
-#define MODE_ZMODEM xyzModem_zmodem
+#define MODE_XMODEM xyzModem_xmodem  // 1
+#define MODE_YMODEM xyzModem_ymodem  // 2
+#define MODE_ZMODEM xyzModem_zmodem  // 3
+#define MODE_DISK   4
 
 void 
 do_load(int argc, char *argv[])
@@ -297,7 +306,7 @@ do_load(int argc, char *argv[])
     init_opts(&opts[2], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&base, (bool *)&base_addr_set, "load address");
     init_opts(&opts[3], 'm', true, OPTION_ARG_TYPE_STR, 
-              (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP or xyzMODEM)");
+              (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP, xyzMODEM, or disk)");
     num_options = 4;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     init_opts(&opts[4], 'h', true, OPTION_ARG_TYPE_STR, 
@@ -341,6 +350,10 @@ do_load(int argc, char *argv[])
             // When using a serial download type, override verbose
             // setting: spinner interferes with the protocol.
             verbose = false;
+#ifdef CYGPKG_REDBOOT_DISK
+	} else if (strcmpci(mode_str, "disk") == 0) {
+            mode = MODE_DISK;
+#endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
         } else if (strcmpci(mode_str, "tftp") == 0) {
             mode = MODE_TFTP;
@@ -354,19 +367,21 @@ do_load(int argc, char *argv[])
             return;
         }
     }
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    if ((mode == MODE_TFTP) && !filename) {
+#if defined(CYGPKG_REDBOOT_NETWORKING) || defined(CYGPKG_REDBOOT_DISK)
+    if ((mode == MODE_TFTP || mode == MODE_DISK) && !filename) {
         printf("File name missing\n");
         printf("usage: load %s\n", usage);
         return;
     }
 #endif
+#ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
     if (base_addr_set &&
         ((base < (unsigned long)user_ram_start) ||
          (base > (unsigned long)user_ram_end))) {
         if (!verify_action("Specified address (%p) is not believed to be in RAM", (void*)base))
             return;
     }
+#endif
     if (raw && !base_addr_set) {
         printf("Raw load requires a memory address\n");
         return;
@@ -381,8 +396,18 @@ do_load(int argc, char *argv[])
         redboot_getc_init(tftp_stream_read, verbose);
     }
 #endif
+#ifdef CYGPKG_REDBOOT_DISK
+    else if (mode == MODE_DISK) {
+        res = disk_stream_open(filename, &err);
+        if (res < 0) {
+            printf("Can't load '%s': %s\n", filename, disk_error(err));
+            return;
+        }
+        redboot_getc_init(disk_stream_read, verbose);
+    }
+#endif
     else {
-        res = xyzModem_stream_open(filename, mode, &err);    
+        res = xyzModem_stream_open(filename, mode, &err);
         if (res < 0) {
             printf("Can't load '%s': %s\n", filename, xyzModem_error(err));
             return;
@@ -458,13 +483,21 @@ do_load(int argc, char *argv[])
             }
         }
     }
-#ifdef CYGPKG_REDBOOT_NETWORKING
-    if (mode == MODE_TFTP) {
-        tftp_stream_close(&err);
-    }
+
+    switch (mode) {
+#ifdef CYGPKG_REDBOOT_DISK
+      case MODE_DISK:
+        disk_stream_close(&err);
+	break;
 #endif
-    if (mode != MODE_TFTP) {
+#ifdef CYGPKG_REDBOOT_NETWORKING
+      case MODE_TFTP:
+        tftp_stream_close(&err);
+	break;
+#endif
+      default:
         xyzModem_stream_close(&err);
+	break;
     }
     return;
 }

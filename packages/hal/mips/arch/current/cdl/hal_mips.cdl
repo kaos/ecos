@@ -130,7 +130,7 @@ cdl_package CYGPKG_HAL_MIPS {
             flavor         bool
             default_value  1
             description    "
-               This option enables RedBoot to support booting of a Linux kernel."
+               This option allows RedBoot to support booting of a Linux kernel."
             compile -library=libextras.a redboot_linux_exec.c
 
             cdl_option CYGDAT_REDBOOT_MIPS_LINUX_BOOT_ENTRY {

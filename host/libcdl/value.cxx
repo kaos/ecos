@@ -3923,7 +3923,8 @@ CdlValuableBody::save(CdlInterpreter interp, Tcl_Channel chan, int indentation, 
             this->get_requires_goals(requires_goals);
             std::vector<CdlProperty_GoalExpression>::const_iterator expr_i;
             for (expr_i = requires_goals.begin(); expr_i != requires_goals.end(); expr_i++) {
-                data += indent_string + "# Requires: " + (*expr_i)->get_original_string() + "\n";
+                data += indent_string + "# Requires: " +
+                    CdlInterpreterBody::extend_comment((*expr_i)->get_original_string(), indentation, 4) + "\n";
 
                 CdlExpression expr = (*expr_i)->get_expression();
                 data += CdlInterpreterBody::multiline_comment(follow_expr_references(*expr_i, expr), indentation, 4);

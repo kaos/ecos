@@ -1,3 +1,25 @@
+2001-07-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_cache.h: Define flash cache macros that also disable
+	instruction cache. Not at all clear to me why it should make a
+	difference, but it does.
+
+	* src/var_misc.c (cyg_var_enable_caches): Don't allow caches to be
+	enabled when the flash IO driver has been included. This is a
+	temporary workaround for an unidentified caching problem.
+	(cyg_var_enable_caches): Enabled again.
+
+	* include/var_cache.h: Fix cache enabled query macros.
+
+2001-07-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h: Define CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF
+	if the platform didn't.
+
+2001-07-24  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c: Allow platform to handle IRL vectors.
+
 2001-07-18  Jesper Skov  <jskov@redhat.com>
 
 	* src/var_misc.c (cyg_var_enable_caches): Small hack to prevent

@@ -114,6 +114,7 @@ cdl_package CYGPKG_NET {
         flavor bool
         active_if !CYGPKG_IO_FILEIO
         default_value 1
+        implements CYGINT_ISO_SELECT
         
         compile sys/kern/uipc_syscalls.c \
         sys/kern/sys_socket.c \

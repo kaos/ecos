@@ -355,6 +355,7 @@ xyzModem_stream_read(char *buf, int size, int *err)
     int retries;
 
     total = 0;
+    stat = xyzModem_cancel;
     // Try and get 'size' bytes into the buffer
     while (!xyz.at_eof && (size > 0)) {
         if (xyz.len == 0) {

@@ -1,3 +1,17 @@
+2001-07-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx.inl: Made code deal with multiple
+	banks. Use flag to identify banked devices.
+	* include/flash_am29xxxxx_parts.inl: Updated with banked flag.
+
+2001-07-23  David Howells  <dhowells@redhat.com>
+
+	* include/flash_am29xxxxx.inl: Added support for chips divided
+	into banks, and added correct addresses for 16-bit chips
+	configured in 8-bit mode
+	* include/flash_am29xxxxx_parts.inl: Added data for chips divided
+	into banks
+
 2001-06-11  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx.inl: Traverse by incrementing

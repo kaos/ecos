@@ -55,6 +55,7 @@ cdl_package CYGPKG_IO_FILEIO {
     implements	   CYGINT_ISO_FCNTL
     implements     CYGINT_ISO_OPEN
     implements     CYGINT_ISO_DIRENT
+    implements     CYGINT_ISO_SELECT
 
     requires       { CYGBLD_ISO_DIRENT_HEADER == "<cyg/fileio/dirent.h>" }
     requires       { CYGBLD_ISO_OPEN_MAX_HEADER == "<cyg/fileio/limits.h>" }

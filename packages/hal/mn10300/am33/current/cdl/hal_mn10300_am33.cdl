@@ -83,4 +83,13 @@ cdl_package CYGPKG_HAL_MN10300_AM33 {
         calculated  { "src/mn10300_am33.ld" }
     }
 
+    cdl_option CYGSEM_HAL_UNCACHED_FLASH_ACCESS {
+        display       "Caching needn't be disabled to access flash"
+        flavor        bool
+        default_value 0
+        description   "
+            Enable this option if the hardware is able to program the flash
+            without turning off CPU data caching."
+    }
+
 }

@@ -71,12 +71,81 @@
 #endif // if DBL_MAX_EXP == 1024
 
 
+// TYPES
+
+typedef cyg_int32   __int32_t;
+typedef cyg_uint32  __uint32_t;
+typedef Cyg_libm_ieee_double_shape_type ieee_double_shape_type;
+
 // MACRO DEFINITIONS
 
+#ifndef __STDC__
+# define __STDC__ 1
+#endif
 #define CYG_LIBM_HI(__x)  (((Cyg_libm_ieee_double_shape_type *)&__x)->parts.msw)
 #define CYG_LIBM_LO(__x)  (((Cyg_libm_ieee_double_shape_type *)&__x)->parts.lsw)
 #define CYG_LIBM_HIp(__x) (((Cyg_libm_ieee_double_shape_type *)__x)->parts.msw)
 #define CYG_LIBM_LOp(__x) (((Cyg_libm_ieee_double_shape_type *)__x)->parts.lsw)
+
+
+
+/* Get two 32 bit ints from a double.  */
+
+#define EXTRACT_WORDS(ix0,ix1,d)                                \
+do {                                                            \
+  Cyg_libm_ieee_double_shape_type ew_u;                         \
+  ew_u.value = (d);                                             \
+  (ix0) = ew_u.parts.msw;                                       \
+  (ix1) = ew_u.parts.lsw;                                       \
+} while (0)
+
+/* Get the more significant 32 bit int from a double.  */
+
+#define GET_HIGH_WORD(i,d)                                      \
+do {                                                            \
+  Cyg_libm_ieee_double_shape_type gh_u;                         \
+  gh_u.value = (d);                                             \
+  (i) = gh_u.parts.msw;                                         \
+} while (0)
+
+/* Get the less significant 32 bit int from a double.  */
+
+#define GET_LOW_WORD(i,d)                                       \
+do {                                                            \
+  Cyg_libm_ieee_double_shape_type gl_u;                         \
+  gl_u.value = (d);                                             \
+  (i) = gl_u.parts.lsw;                                         \
+} while (0)
+
+/* Set a double from two 32 bit ints.  */
+
+#define INSERT_WORDS(d,ix0,ix1)                                 \
+do {                                                            \
+  Cyg_libm_ieee_double_shape_type iw_u;                         \
+  iw_u.parts.msw = (ix0);                                       \
+  iw_u.parts.lsw = (ix1);                                       \
+  (d) = iw_u.value;                                             \
+} while (0)
+
+/* Set the more significant 32 bits of a double from an int.  */
+
+#define SET_HIGH_WORD(d,v)                                      \
+do {                                                            \
+  Cyg_libm_ieee_double_shape_type sh_u;                         \
+  sh_u.value = (d);                                             \
+  sh_u.parts.msw = (v);                                         \
+  (d) = sh_u.value;                                             \
+} while (0)
+
+/* Set the less significant 32 bits of a double from an int.  */
+
+#define SET_LOW_WORD(d,v)                                       \
+do {                                                            \
+  Cyg_libm_ieee_double_shape_type sl_u;                         \
+  sl_u.value = (d);                                             \
+  sl_u.parts.lsw = (v);                                         \
+  (d) = sl_u.value;                                             \
+} while (0)
 
 
 // REPLACEMENTS FOR STUFF FROM MATH.H DUE TO CONFIG OPTION

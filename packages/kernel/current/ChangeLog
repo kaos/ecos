@@ -1,3 +1,13 @@
+2001-07-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/intr/intr.cxx (chain_isr): Return isr_ret so caller (which
+	may be an arbiter) can tell if the interrupt was handled.
+
+2001-07-26  Gary Thomas  <gthomas@redhat.com>
+
+	* src/common/clock.cxx (dsr): Fix problems mixing signed and
+	unsigned values.  Normally only generated warnings, but...
+
 2001-07-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/sched.inl (unlock_reschedule): Fix commenting.

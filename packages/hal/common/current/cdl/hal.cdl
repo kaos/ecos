@@ -398,6 +398,15 @@ cdl_package CYGPKG_HAL {
           needs to be called."
     }
 
+    # Does platform provide IDE I/O macros?
+    cdl_interface     CYGINT_HAL_PLF_IF_IDE {
+        display       "Platform IDE I/O support."
+        description   "
+          Platforms which provide IDE controllers can implement
+          this interface, indicating that IDE I/O macros are
+          available."
+    }
+
     define_proc {
         puts $::cdl_header "/***** proc output start *****/"
         puts $::cdl_header "#include <pkgconf/system.h>"

@@ -1,3 +1,12 @@
+2001-07-26  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sys/types.h: Move select() related stuff into separate
+	sys/select header. Include it still for now.
+	* include/sys/select.h: New header, as per upcoming POSIX 200x standard.
+
+	* cdl/isoinfra.cdl: Add configury for select() and poll().
+	
+
 2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/stdlib.h: Use correct macro names for abs and div.

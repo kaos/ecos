@@ -44,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov, hmt
+// Contributors: jskov, hmt, jco
 // Date:         2001-01-22
 // Purpose:      Hardware description of LAN9000 series, LAN91C96/110.
 // Description:  
@@ -198,6 +198,20 @@
 #define LAN91CXX_RX_STATUS_HASHVALMASK 0x007e // MASK
 #define LAN91CXX_RX_STATUS_MCAST       0x0001
 
+
+// Attribute memory registers in PCMCIA mode
+#define LAN91CXX_ECOR                  0x8000
+#define LAN91CXX_ECOR_RESET            (1<<7)
+#define LAN91CXX_ECOR_LEVIRQ           (1<<6)
+#define LAN91CXX_ECOR_ATTWR            (1<<2)
+#define LAN91CXX_ECOR_ENABLE           (1<<0)
+
+#define LAN91CXX_ECSR                  0x8002
+#define LAN91CXX_ECSR_IOIS8            (1<<5)
+#define LAN91CXX_ECSR_PWRDWN           (1<<2)
+#define LAN91CXX_ECSR_INTR             (1<<1)
+
+
 // ------------------------------------------------------------------------
 
 #ifdef KEEP_STATISTICS
@@ -235,8 +249,12 @@ struct smsc_lan91cxx_stats {
 typedef struct lan91cxx_priv_data {
     int txbusy;                         // A packet has been sent
     unsigned long txkey;                // Used to ack when packet sent
-    unsigned short* base;               // Base address of controller
+    unsigned short* base;               // Base I/O address of controller
                                         // (as it comes out of reset)
+#if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE					
+    unsigned char* attbase;             // Base attribute address of controller
+                                        // only used in PCMCIA mode
+#endif				
     int interrupt;                      // Interrupt vector used by controller
     unsigned char enaddr[6];            // Controller ESA
     // Function to configure the ESA - may fetch ESA from EPROM or 
@@ -245,6 +263,7 @@ typedef struct lan91cxx_priv_data {
     int txpacket;
     int rxpacket;
     int within_send;
+    int addrsh;                         // Address bits to shift
 #ifdef KEEP_STATISTICS
     struct smsc_lan91cxx_stats stats;
 #endif
@@ -258,9 +277,9 @@ get_reg(struct eth_drv_sc *sc, int regno)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short val;
-    HAL_WRITE_UINT16(cpd->base+LAN91CXX_BS, regno>>3);
-    HAL_READ_UINT16(cpd->base+(regno&0x7), val);
-
+    
+    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), regno>>3);
+    HAL_READ_UINT16(cpd->base+((regno&0x7) << cpd->addrsh), val);
 #if DEBUG & 2
     diag_printf("read reg %d val 0x%04x\n", regno, val);
 #endif
@@ -272,8 +291,9 @@ put_reg(struct eth_drv_sc *sc, int regno, unsigned short val)
 {
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
-    HAL_WRITE_UINT16(cpd->base+LAN91CXX_BS, regno>>3);
-    HAL_WRITE_UINT16(cpd->base+(regno&0x7), val);
+	
+    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), regno>>3);
+    HAL_WRITE_UINT16(cpd->base+((regno&0x7) << cpd->addrsh), val);
 
 #if DEBUG & 2
     diag_printf("write reg %d val 0x%04x\n", regno, val);
@@ -287,7 +307,8 @@ put_data(struct eth_drv_sc *sc, unsigned short val)
 {
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
-    HAL_WRITE_UINT16(cpd->base+(LAN91CXX_DATA & 0x7), val);
+	
+    HAL_WRITE_UINT16(cpd->base+((LAN91CXX_DATA & 0x7) << cpd->addrsh), val);
 
 #if DEBUG & 2
     diag_printf("write data 0x%04x\n", val);
@@ -301,10 +322,58 @@ get_data(struct eth_drv_sc *sc)
     unsigned short val;
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
-    HAL_READ_UINT16(cpd->base+(LAN91CXX_DATA & 0x7), val);
+	
+    HAL_READ_UINT16(cpd->base+((LAN91CXX_DATA & 0x7) << cpd->addrsh), val);
 
 #if DEBUG & 2
     diag_printf("read data 0x%04x\n", val);
+#endif
+    return val;
+}
+
+// ------------------------------------------------------------------------
+// Read the bank register (this one is bank-independent)
+static __inline__ unsigned short
+get_banksel(struct eth_drv_sc *sc)
+{
+    struct lan91cxx_priv_data *cpd =
+        (struct lan91cxx_priv_data *)sc->driver_private;
+    unsigned short val;
+    
+    HAL_READ_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), val);
+#if DEBUG & 2
+    diag_printf("read bank val 0x%04x\n", regno, val);
+#endif
+    return val;
+}
+
+
+// ------------------------------------------------------------------------
+// Write on PCMCIA attribute memory
+static __inline__ void
+put_att(struct eth_drv_sc *sc, int offs, unsigned char val)
+{
+    struct lan91cxx_priv_data *cpd =
+        (struct lan91cxx_priv_data *)sc->driver_private;
+	
+    HAL_WRITE_UINT8(cpd->attbase + (offs << cpd->addrsh), val);
+
+#if DEBUG & 2
+    diag_printf("write attr %d val 0x%02x\n", offs, val);
+#endif
+}
+
+// Read from PCMCIA attribute memory
+static __inline__ unsigned char
+get_att(struct eth_drv_sc *sc, int offs)
+{
+    struct lan91cxx_priv_data *cpd =
+        (struct lan91cxx_priv_data *)sc->driver_private;
+    unsigned char val;
+    
+    HAL_READ_UINT8(cpd->attbase + (offs << cpd->addrsh), val);
+#if DEBUG & 2
+    diag_printf("read attr %d val 0x%02x\n", offs, val);
 #endif
     return val;
 }

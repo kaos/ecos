@@ -1,3 +1,8 @@
+2001-07-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/fflush.cxx (cyg_libc_stdio_flush_all_but): The check
+	for last operation being a read is only valid in buffered IO mode.
+
 2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/stream.inl (set_position): Take read buffer into account

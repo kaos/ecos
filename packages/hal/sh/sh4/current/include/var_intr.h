@@ -55,7 +55,14 @@
 
 // More include statements below. First part of this file must be
 // usable for both assembly and C files, so only use defines here.
+
+//--------------------------------------------------------------------------
+// Optional platform overrides and fallbacks
 #include <cyg/hal/plf_intr.h>
+
+#ifndef CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF
+# define CYGPRI_HAL_INTERRUPT_UPDATE_LEVEL_PLF(x,y)
+#endif
 
 //--------------------------------------------------------------------------
 // Additional SH4 exception vectors. 
