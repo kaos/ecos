@@ -359,6 +359,12 @@ extern ip_addr_t   __local_ip_gate;
 extern ip_addr_t   __local_ip_mask;
 #endif
 
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+extern struct in_addr __bootp_dns_addr;
+extern cyg_bool __bootp_dns_set;
+#endif
+
+
 /*
  * Set a timer. Caller is responsible for providing the timer_t struct.
  */

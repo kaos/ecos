@@ -288,6 +288,13 @@ __bootp_find_local_ip(bootp_header_t *info)
                                 memcpy(__local_ip_gate,p,4); 
                                 break;
 #endif
+#ifdef CYGPKG_REDBOOT_NETWORKING_DNS
+			    case TAG_DOMAIN_SERVER:
+				diag_printf(" DNS server found!\n");
+				memcpy(&__bootp_dns_addr, p, 4);
+				__bootp_dns_set = 1;
+				break;
+#endif
                             default:
                                 break;
                             }

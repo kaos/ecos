@@ -1,5 +1,10 @@
 2003-11-07  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/net/dns.c: 
+	* src/net/bootp.c: 
+	* include/net/net.h: Use DNS server address from DHCP if provided.
+	Inspired by John Newlin <jnewlin@rawbw.com>
+
 	* src/flash.c (fis_init): Take out misleading warning - since the
 	new [default] behaviour of "fis free" means free space need not
 	be necessarily erased on the device.

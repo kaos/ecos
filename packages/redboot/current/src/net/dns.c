@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -81,6 +82,10 @@ static int get_port = 7700;
 
 /* Some magic to make dns_impl.inl compile under RedBoot */
 #define sprintf diag_sprintf
+
+/* DNS server address possibly returned from bootp */
+struct in_addr __bootp_dns_addr;
+cyg_bool __bootp_dns_set = false;
 
 struct sockaddr_in server;
 
@@ -252,6 +257,12 @@ redboot_dns_res_init(void)
     server.sin_port = htons(DOMAIN_PORT);
     cyg_drv_mutex_init(&dns_mutex);
 
+    /* If we got a DNS server address from the DHCP/BOOTP, then use that address */
+    if ( __bootp_dns_set ) {
+	memcpy(&server.sin_addr, &__bootp_dns_addr, sizeof(__bootp_dns_addr) );
+	s = 0;
+    }
+    else {
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     {
         ip_addr_t dns_ip;
@@ -264,9 +275,10 @@ redboot_dns_res_init(void)
         s = 0;
     }
 #else
-    // Use static configuration
-    set_dns(__Xstr(CYGPKG_REDBOOT_NETWORKING_DNS_IP));
+      // Use static configuration
+	set_dns(__Xstr(CYGPKG_REDBOOT_NETWORKING_DNS_IP));
 #endif
+    }
 
     return 0;
 }
