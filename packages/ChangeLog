@@ -1,8 +1,13 @@
+2003-08-05  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+	ecos.db: Added new package CYGPKG_DEVS_FLASH_EB40 and updated the
+	eb40 target to use it instead of the old CYGPKG_DEVS_FLASH_AT91.
+	
 2003-07-23  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
-    * ecos.db: Added new packages CYGPKG_DEVS_FLASH_SST_39VF400
-    and CYGPKG_DEVS_FLASH_ARM_E7T.  Updated e7t target to include
-    FLASH drivers.
+        * ecos.db: Added new packages CYGPKG_DEVS_FLASH_SST_39VF400 and
+	CYGPKG_DEVS_FLASH_ARM_E7T.  Updated e7t target to include FLASH
+	drivers.
 
 2003-06-12  John Dallaway  <jld@ecoscentric.com>
 

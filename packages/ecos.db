@@ -342,6 +342,16 @@ package CYGPKG_DEVS_FLASH_AT91 {
 	   on the Atmel AT91/EB40 platform(s)."
 }
 
+package CYGPKG_DEVS_FLASH_EB40 {
+	alias 		{ "FLASH memory support for Atmel AT91/EB40" flash_eb40 }
+	directory	devs/flash/arm/eb40
+	script		flash_eb40.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Atmel AT91/EB40 platform(s)."
+}
+
 package CYGPKG_DEVS_FLASH_EB40A {
 	alias 		{ "FLASH memory support for Atmel AT91/EB40A" flash_eb40a }
 	directory	devs/flash/arm/eb40a
@@ -3509,7 +3519,8 @@ target eb40 {
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_AT91
                    CYGPKG_HAL_ARM_AT91_EB40
-                   CYGPKG_DEVS_FLASH_AT91
+                   CYGPKG_DEVS_FLASH_EB40
+                   CYGPKG_DEVS_FLASH_ATMEL_AT29CXXXX
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVICES_WATCHDOG_ARM_AT91
         }
