@@ -1,3 +1,7 @@
+2003-11-27  David Woodhouse  <dwmw2@infradead.org>
+
+	* include/config_keys.h: Add CYG_IO_SET_CONFIG_FLASH_FIS_NAME
+
 2003-11-06   Billy <billy@babababa.net>
 
 	* doc/io.sgml: In the TTY section swap "\n\r" to "\r\n" to match

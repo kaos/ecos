@@ -238,7 +238,6 @@ flashiodev_get_config( cyg_io_handle_t handle,
     }
 } // flashiodev_get_config()
 
-#if 0
 static Cyg_ErrNo
 flashiodev_set_config( cyg_io_handle_t handle,
                        cyg_uint32 key,
@@ -249,11 +248,28 @@ flashiodev_set_config( cyg_io_handle_t handle,
 	struct flashiodev_priv_t *dev = (struct flashiodev_priv_t *)tab->priv;
 
     switch (key) {
+#ifdef CYGNUM_IO_FLASH_BLOCK_CFG_FIS_1
+    case CYG_IO_SET_CONFIG_FLASH_FIS_NAME:
+    {
+        CYG_ADDRESS     flash_base;
+	unsigned long   size;
+
+	if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_FLASH_BASE, 
+                                        (char *)buf, &flash_base))
+	    return -ENOENT;
+	if(!CYGACC_CALL_IF_FLASH_FIS_OP(CYGNUM_CALL_IF_FLASH_FIS_GET_SIZE, 
+					(char *)buf, &size))
+	    return -ENOENT;
+			
+	dev->start = (char *)flash_base;
+	dev->end = (char *)flash_base + size;
+	return ENOERR;
+    }
+#endif
     default:
         return -EINVAL;
     }
 } // flashiodev_set_config()
-#endif
 
 // get_config/set_config should be added later to provide the other flash
 // operations possible, like erase etc.
@@ -263,7 +279,7 @@ BLOCK_DEVIO_TABLE( cyg_io_flashdev1_ops,
                    &flashiodev_bread,
                    0, // no select
                    &flashiodev_get_config,
-                   0 // &flashiodev_set_config
+                   &flashiodev_set_config
     ); 
                    
 

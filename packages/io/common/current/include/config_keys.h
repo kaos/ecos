@@ -121,6 +121,8 @@
 #define CYG_IO_GET_CONFIG_FLASH_DEVSIZE          0x605
 #define CYG_IO_GET_CONFIG_FLASH_BLOCKSIZE        0x606
 
+#define CYG_IO_SET_CONFIG_FLASH_FIS_NAME         0x680
+
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one
 // class of device.

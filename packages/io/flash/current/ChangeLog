@@ -1,3 +1,8 @@
+2003-11-27  David Woodhouse  <dwmw2@infradead.org>
+
+	* src/flashiodev.c: Enable set_config() and implement
+	CYG_IO_SET_CONFIG_FLASH_FIS_NAME.
+	
 2003-11-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/flash.c: gcc 3.x vs gcc 2.x problems. 
