@@ -283,6 +283,7 @@ cdl_package CYGPKG_NET {
                 display "DHCP host name maximum length"
                 flavor  data
                 default_value 60
+                legal_values 0 to 255
                 active_if CYGOPT_NET_DHCP_OPTION_HOST_NAME
                 description "
                     This option defines the maximum length allowed for the 

@@ -1,3 +1,15 @@
+2003-10-16  Jay Foster  <jay@systech.com>
+            Andrew Lunn <andrew.lunn@ascom.ch>
+	
+         * doc/tcpip.sgml: Added documentation for
+         CYGOPT_NET_DHCP_OPTION_HOST_NAME, 
+         CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN,
+         CYGOPT_NET_DHCP_OPTION_DHCP_CLIENTID_MAC,
+         CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE and
+         CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL.
+         * cdl/net.cdl: Added legal_values definition for the 
+         CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN option.
+ 
 2003-10-21  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * src/dhcp_prot.c (set_default_dhcp_tags): 

@@ -608,6 +608,31 @@ thread will shut down all interfaces and attempt to initialize all
 the interfaces again from scratch.  This may cause chaos in the
 app, which is why managing the DHCP state in an application aware
 thread is actually better, just far less convenient for testing.</PARA>
+
+<PARA>If the configuration option CYGOPT_NET_DHCP_OPTION_HOST_NAME
+is defined, then the TAG_HOST_NAME DHCP option will be included
+in any DHCP lease requests.  The text for the hostname is set by
+calling <function>dhcp_set_hostname()</function>.  Any DHCP lease requests
+made prior to calling <function>dhcp_set_hostname()</function> will not
+include the TAG_HOST_NAME DHCP option.  The configuration option
+CYGNUM_NET_DHCP_OPTION_HOST_NAME_LEN controls the maximum length allowed
+for the hostname.  This permits the hostname text to be determined at
+run-time.  Setting the hostname to the empty string will have the effect
+of disabling the TAG_HOST_NAME DHCP option.</PARA>
+<PARA>If the configuration option CYGOPT_NET_DHCP_OPTION_DHCP_CLIENTID_MAC
+is defined, then the TAG_DHCP_CLIENTID DHCP option will be included
+in any DHCP lease requests.  The client ID used will be the current
+MAC address of the network interface.</PARA>
+
+<PARA>The option CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL allows
+additional DHCP options to be added to the request sent to the DHCP
+server. This option should be set to a comma separated list of options.
+</PARA>
+
+<PARA> The option CYGOPT_NET_DHCP_PARM_REQ_LIST_REPLACE is similar to
+CYGOPT_NET_DHCP_PARM_REQ_LIST_ADDITIONAL but in this case it
+completely replaces the default list of options with the configured
+set of comma separated options.</para>
 </SECT1>
 </CHAPTER>
     &net-common-tcpip-manpages-sgml;
