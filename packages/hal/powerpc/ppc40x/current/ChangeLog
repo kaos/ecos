@@ -1,3 +1,7 @@
+2004-09-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_diag.c: Assert RTS/DTR modem signals.
+
 2004-02-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ppc405_pci.c: 
