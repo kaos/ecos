@@ -59,12 +59,10 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
            The STB HAL package should be used when targetting the
            actual hardware for the AM33 STB evaluation board."
 
-    compile       hal_diag.c plf_stub.c plf_misc.c ser_stb.c
+    compile       hal_diag.c plf_stub.c plf_misc.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_COMM_BAUD_SUPPORT
 
     requires CYGSEM_HAL_UNCACHED_FLASH_ACCESS == 1;
 
@@ -149,27 +147,30 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
            This option controls the baud rate used for the GDB connection."
    }
 
+    cdl_option CYGSEM_HAL_AM33_PLF_USES_SERIAL0 {
+        display       "ASB2303 uses AM33 SERIAL0"
+        flavor        bool
+        default_value 1
+        description   "
+            Enable this option if AM33 SERIAL0 is to be used as a virtual vector
+            communications channel."
+    }
+
+    cdl_option CYGSEM_HAL_AM33_PLF_USES_SERIAL1 {
+        display       "ASB2303 uses AM33 SERIAL1"
+        flavor        bool
+        default_value 1
+        description   "
+            Enable this option if AM33 SERIAL1 is to be used as a virtual vector
+            communications channel."
+    }
+
 
     # Real-time clock/counter specifics
-    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
-        display       "Real-time clock constants."
-        flavor        none
-    
-        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
-            display       "Real-time clock numerator"
-            flavor        data
-            calculated    1000000000
-        }
-        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
-            display       "Real-time clock denominator"
-            flavor        data
-            calculated    100
-        }
-        cdl_option CYGNUM_HAL_RTC_PERIOD {
-            display       "Real-time clock period"
-            flavor        data
-            calculated    303750
-        }
+    cdl_option CYGHWR_HAL_MN10300_PROCESSOR_OSC_DEFAULT {
+        display       "Processor clock rate"
+        calculated    30375000
+        flavor        data
     }
 
     cdl_component CYGBLD_GLOBAL_OPTIONS {
@@ -246,35 +247,6 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
         description   "
             This option determines the number of breakpoints supported by the HAL."
     }
-
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
-        display      "Number of communication channels on the board"
-        flavor       data
-        calculated   1
-    }
-
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
-        display          "Debug serial port"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The STB board has two serial ports.  Currently,
-           only the first serial port is supported. This option
-           chooses which port will be used to connect to a host
-           running GDB."
-    }
- 
-     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
-        display          "Diagnostic serial port"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The STB board has two serial ports. Currently,
-           only the first serial port is supported. This option
-           chooses which port will be used for diagnostic output."
-     }
 
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"

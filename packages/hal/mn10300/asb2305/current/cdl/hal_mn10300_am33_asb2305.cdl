@@ -65,7 +65,6 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
 
     requires CYGSEM_HAL_UNCACHED_FLASH_ACCESS == 1;
 
@@ -190,51 +189,19 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
             This option determines the number of breakpoints supported by the HAL."
     }
 
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
-        display      "Number of communication channels on the board"
-        flavor       data
-        calculated   1
-    }
-
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
-        display          "Debug serial port"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The ASB2305 board has two serial ports.  Currently,
-           only the first serial port is supported. This option
-           chooses which port will be used to connect to a host
-           running GDB."
-    }
-
-     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
-        display          "Diagnostic serial port"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The ASB2305 board has two serial ports. Currently,
-           only the first serial port is supported. This option
-           chooses which port will be used for diagnostic output."
-     }
-
-     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
-        display          "Diagnostic serial port baudrates"
-        flavor data
-        legal_values     9600 19200 38400 57600 115200
-        default_value    38400
-        description      "
-           The ASB2305 debug serial port baud rate setting."
-     }
-
-     cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_RTSCTS {
+    cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_RTSCTS {
         display          "Diagnostic serial port RTS/CTS flow control"
         flavor           bool
         default_value    0
         description      "
            The ASB2305 debug serial port RTS/CTS flow control setting."
-     }
+    }
+
+    cdl_option CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS {
+        display       "ASB2305 has one comm channels."
+        flavor        data
+        default_value 1
+    }
 
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
@@ -313,6 +280,8 @@ cdl_package CYGPKG_HAL_MN10300_AM33_ASB2305 {
     
             make -priority 325 {
                 <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) --strip-debug $< $(@:.bin=.img) 
+                $(OBJCOPY) -O srec $< $(@:.bin=.srec)
                 $(OBJCOPY) -O binary $< $@
             }
         }

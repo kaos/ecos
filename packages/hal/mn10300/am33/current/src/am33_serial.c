@@ -1,8 +1,8 @@
 //=============================================================================
 //
-//      ser_asb.c
+//      am33_serial.c
 //
-//      Simple driver for the serial controllers on the AM33 ASB303 board
+//      Simple driver for the serial controllers on AM33 (MN103E) CPUs
 //
 //=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
@@ -40,16 +40,18 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   dmoseley
-// Contributors:dmoseley
-// Date:        2000-08-11
-// Description: Simple driver for the 16c550c serial controller
+// Author(s):   dmoseley, dhowells
+// Contributors:msalter
+// Date:        2002-11-15
+// Description: Simple driver for the AM33 UARTs
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
 #include <pkgconf/hal.h>
+#include CYGBLD_HAL_TARGET_H
+#include CYGBLD_HAL_PLATFORM_H
 
 #include <cyg/hal/hal_arch.h>           // SAVE/RESTORE GP macros
 #include <cyg/hal/hal_io.h>             // IO macros
@@ -58,13 +60,23 @@
 #include <cyg/hal/hal_misc.h>           // Helper functions
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 
+#if !defined(CYGSEM_HAL_AM33_PLF_USES_SERIAL0) && !defined(CYGSEM_HAL_AM33_PLF_USES_SERIAL1)
+#define AM33_NUM_UARTS 0
+#elif defined(CYGSEM_HAL_AM33_PLF_USES_SERIAL0) && defined(CYGSEM_HAL_AM33_PLF_USES_SERIAL1)
+#define AM33_NUM_UARTS 2
+#else
+#define AM33_NUM_UARTS 1
+#endif
+
+#if AM33_NUM_UARTS > 0
+
 //-----------------------------------------------------------------------------
 // Base Registers
-#define ASB2303_SER0_BASE      0xD4002000
-#define ASB2303_SER1_BASE      0xD4002010
+#define AM33_SER0_BASE      0xD4002000
+#define AM33_SER1_BASE      0xD4002010
 
 /*---------------------------------------------------------------------------*/
-// MN10300 Serial line
+// AM33 Serial line
 
 #define _SERIAL_CR       0x00
 #define _SERIAL_ICR      0x04
@@ -72,17 +84,17 @@
 #define _SERIAL_RXR      0x09
 #define _SERIAL_SR       0x0c
 
-#define SERIAL0_CR       ((volatile cyg_uint16 *)(ASB2303_SER0_BASE + _SERIAL_CR))
-#define SERIAL0_ICR      ((volatile cyg_uint8 *) (ASB2303_SER0_BASE + _SERIAL_ICR))
-#define SERIAL0_TXR      ((volatile cyg_uint8 *) (ASB2303_SER0_BASE + _SERIAL_TXR))
-#define SERIAL0_RXR      ((volatile cyg_uint8 *) (ASB2303_SER0_BASE + _SERIAL_RXR))
-#define SERIAL0_SR       ((volatile cyg_uint16 *)(ASB2303_SER0_BASE + _SERIAL_SR))
+#define SERIAL0_CR       ((volatile cyg_uint16 *)(AM33_SER0_BASE + _SERIAL_CR))
+#define SERIAL0_ICR      ((volatile cyg_uint8 *) (AM33_SER0_BASE + _SERIAL_ICR))
+#define SERIAL0_TXR      ((volatile cyg_uint8 *) (AM33_SER0_BASE + _SERIAL_TXR))
+#define SERIAL0_RXR      ((volatile cyg_uint8 *) (AM33_SER0_BASE + _SERIAL_RXR))
+#define SERIAL0_SR       ((volatile cyg_uint16 *)(AM33_SER0_BASE + _SERIAL_SR))
 
-#define SERIAL1_CR       ((volatile cyg_uint16 *)(ASB2303_SER1_BASE + _SERIAL_CR))
-#define SERIAL1_ICR      ((volatile cyg_uint8 *) (ASB2303_SER1_BASE + _SERIAL_ICR))
-#define SERIAL1_TXR      ((volatile cyg_uint8 *) (ASB2303_SER1_BASE + _SERIAL_TXR))
-#define SERIAL1_RXR      ((volatile cyg_uint8 *) (ASB2303_SER1_BASE + _SERIAL_RXR))
-#define SERIAL1_SR       ((volatile cyg_uint16 *)(ASB2303_SER1_BASE + _SERIAL_SR))
+#define SERIAL1_CR       ((volatile cyg_uint16 *)(AM33_SER1_BASE + _SERIAL_CR))
+#define SERIAL1_ICR      ((volatile cyg_uint8 *) (AM33_SER1_BASE + _SERIAL_ICR))
+#define SERIAL1_TXR      ((volatile cyg_uint8 *) (AM33_SER1_BASE + _SERIAL_TXR))
+#define SERIAL1_RXR      ((volatile cyg_uint8 *) (AM33_SER1_BASE + _SERIAL_RXR))
+#define SERIAL1_SR       ((volatile cyg_uint16 *)(AM33_SER1_BASE + _SERIAL_SR))
 
 // Timer 0 provides a prescaler for lower baud rates
 #define TIMER0_MD       ((volatile cyg_uint8 *)0xd4003000)
@@ -111,6 +123,7 @@
 
 
 //-----------------------------------------------------------------------------
+
 typedef struct {
     cyg_uint8* base;
     cyg_int32 msec_timeout;
@@ -118,9 +131,16 @@ typedef struct {
     cyg_int32 baud_rate;
 } channel_data_t;
 
-static channel_data_t channels[2] = {
-    { (cyg_uint8*)ASB2303_SER1_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_1_RX },
-    { (cyg_uint8*)ASB2303_SER0_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_0_RX },
+static channel_data_t channels[AM33_NUM_UARTS] = {
+#if defined(CYGSEM_HAL_AM33_PLF_USES_SERIAL0) && !defined(HAL_PLATFORM_SERIAL1_FIRST)
+    { (cyg_uint8*)AM33_SER0_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_0_RX },
+#endif
+#ifdef CYGSEM_HAL_AM33_PLF_USES_SERIAL1
+    { (cyg_uint8*)AM33_SER1_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_1_RX },
+#endif
+#if defined(CYGSEM_HAL_AM33_PLF_USES_SERIAL0) && defined(HAL_PLATFORM_SERIAL1_FIRST)
+    { (cyg_uint8*)AM33_SER0_BASE, 1000, CYGNUM_HAL_INTERRUPT_SERIAL_0_RX },
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -148,12 +168,12 @@ cyg_hal_plf_serial_set_baud(cyg_uint8* port, cyg_uint32 baud_rate)
     volatile cyg_uint8 *timer_mode_reg;
     cyg_uint32 divisor, prescaler;
 
-    if (port == (cyg_uint8*)ASB2303_SER0_BASE)
+    if (port == (cyg_uint8*)AM33_SER0_BASE)
     {
         // SER0 uses TMR2
         timer_base_reg = TIMER2_BR;
         timer_mode_reg = TIMER2_MD;
-    } else if (port == (cyg_uint8*)ASB2303_SER1_BASE) {
+    } else if (port == (cyg_uint8*)AM33_SER1_BASE) {
         // SER1 uses TMR3
         timer_base_reg = TIMER3_BR;
         timer_mode_reg = TIMER3_MD;
@@ -206,7 +226,7 @@ cyg_hal_plf_serial_set_baud(cyg_uint8* port, cyg_uint32 baud_rate)
 //-----------------------------------------------------------------------------
 // The minimal init, get and put functions. All by polling.
 
-void
+static void
 cyg_hal_plf_serial_init_channel(void* __ch_data)
 {
     cyg_uint8* port;
@@ -225,7 +245,7 @@ cyg_hal_plf_serial_init_channel(void* __ch_data)
     HAL_WRITE_UINT16(port + _SERIAL_CR, 0xc085);
 }
 
-void
+static void
 cyg_hal_plf_serial_putc(void* __ch_data, cyg_uint8 __ch)
 {
     cyg_uint8* port;
@@ -271,7 +291,7 @@ cyg_hal_plf_serial_getc_nonblock(void* __ch_data, cyg_uint8* ch)
     return true;
 }
 
-cyg_uint8
+static cyg_uint8
 cyg_hal_plf_serial_getc(void* __ch_data)
 {
     cyg_uint8 ch;
@@ -288,7 +308,7 @@ cyg_hal_plf_serial_getc(void* __ch_data)
     return ch;
 }
 
-void
+static void
 cyg_hal_plf_serial_write(void* __ch_data, const cyg_uint8* __buf, 
                          cyg_uint32 __len)
 {
@@ -321,7 +341,7 @@ cyg_hal_plf_serial_read(void* __ch_data, cyg_uint8* __buf, cyg_uint32 __len)
     CYGARC_HAL_RESTORE_GP();
 }
 
-cyg_bool
+static cyg_bool
 cyg_hal_plf_serial_getc_timeout(void* __ch_data, cyg_uint8* ch)
 {
     int delay_count;
@@ -475,64 +495,38 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     return res;
 }
 
-static void
-cyg_hal_plf_serial_init(void)
+
+void
+cyg_hal_am33_serial_init(int first_chan)
 {
     hal_virtual_comm_table_t* comm;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int i;
 
-    // Disable interrupts.
-    HAL_INTERRUPT_MASK(channels[0].isr_vector);
-    HAL_INTERRUPT_MASK(channels[1].isr_vector);
+    for (i = 0; i < AM33_NUM_UARTS; i++) {
 
-    // Init channels
-    cyg_hal_plf_serial_init_channel((void*)&channels[0]);
-    cyg_hal_plf_serial_set_baud(channels[0].base, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
+	// Disable interrupts.
+	HAL_INTERRUPT_MASK(channels[0].isr_vector);
 
-    cyg_hal_plf_serial_init_channel((void*)&channels[1]);
-    cyg_hal_plf_serial_set_baud(channels[1].base, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
-    
-    // Setup procs in the vector table
+	// Init channel
+	cyg_hal_plf_serial_init_channel((void*)&channels[i]);
+	cyg_hal_plf_serial_set_baud(channels[i].base, CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD);
 
-    // Set channel 0
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[0]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
-    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-
-    // Set channel 1
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[1]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
-    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+	// Setup procs in the vector table
+	CYGACC_CALL_IF_SET_CONSOLE_COMM(i + first_chan);
+	comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+	CYGACC_COMM_IF_CH_DATA_SET(*comm, &channels[i]);
+	CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+	CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+	CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+	CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+	CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+	CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+	CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+    }
 
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
-}
-
-void
-cyg_hal_plf_comms_init(void)
-{
-    static int initialized = 0;
-
-    if (initialized)
-        return;
-
-    initialized = 1;
-
-    cyg_hal_plf_serial_init();
 }
 
 void
@@ -550,5 +544,25 @@ cyg_hal_plf_serial_setbaud(void *__ch_data, cyg_uint32 baud_rate)
     cyg_hal_plf_serial_set_baud(port, baud_rate);
 }
 
+
+// If the platform provides some channels of its own, then this function will be
+// provided by that platform.
+#if !defined(CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS) || !CYGNUM_HAL_AM33_PLF_SERIAL_CHANNELS 
+void
+cyg_hal_plf_comms_init(void)
+{
+    static int initialized = 0;
+
+    if (initialized)
+        return;
+
+    initialized = 1;
+
+    cyg_hal_am33_serial_init(0);
+}
+#endif
+
+#endif // AM33_NUM_UARTS > 0
+
 /*---------------------------------------------------------------------------*/
-/* End of ser_asb.c */
+/* End of am33_serial.c */
