@@ -275,10 +275,12 @@ cdl_package CYGPKG_NET_FREEBSD_STACK {
     cdl_option CYGPKG_NET_MEM_USAGE {
         display "Memory designated for networking buffers."
         flavor  data
-        default_value 256*1024
+        default_value (256*1024)+(CYGPKG_NET_MAXSOCKETS*1024)
         description   "
             This option controls the amount of memory pre-allocated
-        for buffers used by the networking code."
+        for buffers used by the networking code.  The number is an
+        upper limit, with at least enough space to get the stack
+        initialized."
     }
 
     cdl_option CYGPKG_NET_MAXSOCKETS {
