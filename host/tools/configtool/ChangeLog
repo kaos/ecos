@@ -1,5 +1,8 @@
 2003-02-19  John Dallaway  <jld@ecoscentric.com>
 
+	* standalone/wxwin/platformeditordlg.cpp:
+	Fix erroneously disabled OK button and duplicate entries in prefix list.
+
 	* standalone/wxwin/makefile.gnu:
 	Use libtcl.a rather than libcygtcl83.a for Cygwin build
 

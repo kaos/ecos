@@ -83,7 +83,7 @@ BEGIN_EVENT_TABLE(ecPlatformEditorDialog, ecDialog)
     EVT_BUTTON(wxID_OK, ecPlatformEditorDialog::OnOK)
     EVT_BUTTON(wxID_CANCEL, ecPlatformEditorDialog::OnCancel)
     EVT_COMBOBOX(ecID_MODIFY_PLATFORM_PREFIX, ecPlatformEditorDialog::OnChangeNewPlatformPrefix)
-    //EVT_TEXT(ecID_MODIFY_PLATFORM_NAME, ecPlatformEditorDialog::OnChangeNewPlatform)
+    EVT_TEXT(ecID_MODIFY_PLATFORM_NAME, ecPlatformEditorDialog::OnChangeNewPlatform)
     EVT_INIT_DIALOG(ecPlatformEditorDialog::OnInitDialog)
 END_EVENT_TABLE()
 
@@ -115,7 +115,8 @@ void ecPlatformEditorDialog::OnInitDialog(wxInitDialogEvent& event)
     unsigned int i;
     for ( i=0 ; i < CeCosTestPlatform::Count() ; i++ )
     {
-        comboBox->Append(CeCosTestPlatform::Get(i)->Prefix());
+        if (wxNOT_FOUND == comboBox->FindString(CeCosTestPlatform::Get(i)->Prefix()))
+            comboBox->Append(CeCosTestPlatform::Get(i)->Prefix());
     }
 
     wxDialog::OnInitDialog(event);
@@ -234,14 +235,14 @@ void ecPlatformEditorDialog::CreateControls(wxWindow* parent)
 
 void ecPlatformEditorDialog::OnChangeNewPlatformPrefix(wxCommandEvent& event)
 {
-    TransferDataFromWindow();
-    FindWindow(wxID_OK)->Enable(!m_strPlatform.IsEmpty() && !m_strPrefix.IsEmpty());
+    FindWindow(wxID_OK)->Enable(!((wxTextCtrl*)FindWindow(ecID_MODIFY_PLATFORM_NAME))->GetValue().IsEmpty() &&
+        !((wxComboBox*)FindWindow(ecID_MODIFY_PLATFORM_PREFIX))->GetValue().IsEmpty());
 }
 
 void ecPlatformEditorDialog::OnChangeNewPlatform(wxCommandEvent& event)
 {
-    TransferDataFromWindow();
-    FindWindow(wxID_OK)->Enable(!m_strPlatform.IsEmpty() && !m_strPrefix.IsEmpty());
+    FindWindow(wxID_OK)->Enable(!((wxTextCtrl*)FindWindow(ecID_MODIFY_PLATFORM_NAME))->GetValue().IsEmpty() &&
+        !((wxComboBox*)FindWindow(ecID_MODIFY_PLATFORM_PREFIX))->GetValue().IsEmpty());
 }
 
 void ecPlatformEditorDialog::OnCancel(wxCommandEvent& event)
