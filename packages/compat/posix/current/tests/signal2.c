@@ -82,9 +82,7 @@ static jmp_buf jbuf;
 
 //--------------------------------------------------------------------------
 
-// PowerPC is a special case as it has the alignment exception, but it
-// doesn't trigger unless in little-endian mode.
-#if defined(CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS)
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS
 
 static void
 cause_unaligned_access(void)
@@ -245,9 +243,7 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-    // PowerPC is a special case as it has the alignment exception, but it
-    // doesn't trigger unless in little-endian mode.
-#if defined(CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS)
+#ifdef CYGNUM_HAL_EXCEPTION_DATA_UNALIGNED_ACCESS
     
     CYG_TEST_INFO("Test 1 - provoke unaligned access");
     
