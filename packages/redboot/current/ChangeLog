@@ -1,3 +1,16 @@
+2002-07-09  Gary Thomas  <gary@chez-thomas.org>
+2002-07-09  Grant Edwards <grante@visi.com>
+
+	* src/net/udp.c: 
+	* src/net/net_io.c: 
+	* src/net/ip.c: 
+	* src/net/bootp.c: 
+	* src/net/arp.c: 
+	* include/net/net.h: 
+	* include/net/bootp.h: 
+	* cdl/redboot.cdl: Add basic support for non-local networking
+	using a single gateway.  Based on contribution from Grant Edwards.
+
 2002-07-01  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/net/tftp_client.c: 

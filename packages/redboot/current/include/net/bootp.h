@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -88,7 +89,7 @@ SOFTWARE.
 #define BP_CHADDR_LEN	 16
 #define BP_SNAME_LEN	 64
 #define BP_FILE_LEN	128
-#define BP_VEND_LEN	 64
+#define BP_VEND_LEN	312
 #define BP_MINPKTSZ	300	/* to check sizeof(struct bootp) */
 
 typedef struct bootp {

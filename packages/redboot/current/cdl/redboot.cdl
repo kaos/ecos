@@ -218,6 +218,41 @@ cdl_package CYGPKG_REDBOOT {
             }
         }
 
+        cdl_component CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY {
+            display          "Use a gateway for non-local IP traffic"
+            flavor           bool
+            default_value    1
+            description      "
+              Enabling this option will allow the RedBoot networking
+            stack to use a \[single\] gateway to reach a non-local
+            IP address.  If disabled, RedBoot will only be able to
+            reach nodes on the same subnet."
+
+            cdl_component CYGDAT_REDBOOT_DEFAULT_GATEWAY_IP_ADDR {
+                display          "Default gateway IP address"
+                flavor           booldata
+                default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
+                                    { "0, 0, 0, 0" }
+                description      "
+                    This IP address is the default used by RedBoot if a BOOTP/DHCP
+                    server does not respond. The numbers should be separated by
+                    *commas*, and not dots. If an IP address is configured into
+                    the Flash configuration, that will be used in preference."
+            }
+
+            cdl_component CYGDAT_REDBOOT_DEFAULT_IP_ADDR_MASK {
+                display          "Default IP address mask"
+                flavor           booldata
+                default_value    CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
+                                    { "255, 255, 255, 0" }
+                description      "
+                    This IP address mask is the default used by RedBoot if a BOOTP/DHCP
+                    server does not respond. The numbers should be separated by
+                    *commas*, and not dots. If an IP address is configured into
+                    the Flash configuration, that will be used in preference."
+            }
+        }
+
         cdl_option CYGNUM_REDBOOT_NETWORKING_TCP_PORT {
             display          "TCP port to listen for incoming connections"
             flavor           data

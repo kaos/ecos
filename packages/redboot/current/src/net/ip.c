@@ -13,6 +13,7 @@
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
 // Software Foundation; either version 2 or (at your option) any later version.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is distributed in the hope that it will be useful, but WITHOUT ANY
 // WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -57,11 +58,35 @@
 #ifndef CYGDAT_REDBOOT_DEFAULT_IP_ADDR
 # define CYGDAT_REDBOOT_DEFAULT_IP_ADDR 0, 0, 0, 0
 #endif
+#ifndef CYGDAT_REDBOOT_DEFAULT_IP_ADDR_MASK
+# define CYGDAT_REDBOOT_DEFAULT_IP_ADDR_MASK 255, 255, 255, 0
+#endif
+#ifndef CYGDAT_REDBOOT_DEFAULT_GATEWAY_IP_ADDR
+# define CYGDAT_REDBOOT_DEFAULT_GATEWAY_IP_ADDR 0, 0, 0, 0
+#endif
 
 ip_addr_t __local_ip_addr = { CYGDAT_REDBOOT_DEFAULT_IP_ADDR };
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+ip_addr_t __local_ip_mask = { CYGDAT_REDBOOT_DEFAULT_IP_ADDR_MASK };
+ip_addr_t __local_ip_gate = { CYGDAT_REDBOOT_DEFAULT_GATEWAY_IP_ADDR };
+#endif
 
 static word ip_ident;
 
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+/*
+ * See if an address is on the local network
+ */
+int 
+__ip_addr_local(ip_addr_t *addr)
+{
+  return !(
+           ((__local_ip_addr[0] ^ (*addr)[0]) & __local_ip_mask[0]) |
+           ((__local_ip_addr[1] ^ (*addr)[1]) & __local_ip_mask[1]) |
+           ((__local_ip_addr[2] ^ (*addr)[2]) & __local_ip_mask[2]) |
+           ((__local_ip_addr[3] ^ (*addr)[3]) & __local_ip_mask[3]));
+}
+#endif
 
 /*
  * Match given IP address to our address.
@@ -152,7 +177,7 @@ __ip_handler(pktbuf_t *pkt, enet_addr_t *src_enet_addr)
  * IP options are assumed to be already in place in the IP
  * options field.
  */
-void
+int
 __ip_send(pktbuf_t *pkt, int protocol, ip_route_t *dest)
 {
     ip_header_t *ip = pkt->ip_hdr;
@@ -185,6 +210,7 @@ __ip_send(pktbuf_t *pkt, int protocol, ip_route_t *dest)
     ip->checksum = htons(cksum);
 
     __enet_send(pkt, &dest->enet_addr, ETH_TYPE_IP);    
+    return 0;
 }
 
 

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -62,7 +63,7 @@ static int udp_rx_cksum;
 static int udp_rx_dropped;
 #endif
 
-#define MAX_UDP_DATA (ETH_MAX_PKTLEN - (sizeof(eth_header_t) + \
+#define MAX_UDP_DATA (ETH_MAX_PKTLEN - (ETH_HDR_SIZE + \
 					sizeof(ip_header_t)  + \
 					sizeof(udp_header_t)))
 
@@ -151,7 +152,7 @@ __udp_handler(pktbuf_t *pkt, ip_route_t *r)
 /*
  * Send a UDP packet.
  */
-void
+int
 __udp_send(char *buf, int len, ip_route_t *dest_ip,
 	   word dest_port, word src_port)
 {
@@ -159,15 +160,15 @@ __udp_send(char *buf, int len, ip_route_t *dest_ip,
     udp_header_t *udp;
     ip_header_t *ip;
     unsigned short cksum;
-
+    int ret;
 
     /* dumb */
     if (len > MAX_UDP_DATA)
-	return;
+	return -1;
 
     /* just drop it if can't get a buffer */
     if ((pkt = __pktbuf_alloc(ETH_MAX_PKTLEN)) == NULL)
-	return;
+	return -1;
 
     udp = pkt->udp_hdr;
     ip = pkt->ip_hdr;
@@ -190,9 +191,9 @@ __udp_send(char *buf, int len, ip_route_t *dest_ip,
     cksum = __sum((word *)udp, pkt->pkt_bytes, __pseudo_sum(ip));
     udp->checksum = htons(cksum);
 
-    __ip_send(pkt, IP_PROTO_UDP, dest_ip);
-
+    ret = __ip_send(pkt, IP_PROTO_UDP, dest_ip);
     __pktbuf_free(pkt);
+    return ret;
 }
 
 int
@@ -201,13 +202,13 @@ __udp_sendto(char *data, int len, struct sockaddr_in *server,
 {
     ip_route_t rt;
 
-    if (__arp_lookup((ip_addr_t *)&server->sin_addr, &rt) < 0) {
-        diag_printf("%s: Can't find address of server\n", __FUNCTION__);
-        return -1;
-    } else {
-	__udp_send(data, len, &rt, ntohs(server->sin_port), ntohs(local->sin_port));
-        return 0;
-    }
+   if (__arp_lookup((ip_addr_t *)&server->sin_addr, &rt) < 0) {
+       diag_printf("%s: Can't find address of server\n", __FUNCTION__);
+       return -1;
+   } else {
+      __udp_send(data, len, &rt, ntohs(server->sin_port), ntohs(local->sin_port));
+       return 0;
+   }
 }
 
 static char               *recvfrom_buf;

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -98,6 +99,7 @@ extern unsigned long  ntohs(unsigned short x);
  */
 #define ETH_MIN_PKTLEN  60
 #define ETH_MAX_PKTLEN  (1540-14)
+#define ETH_HDR_SIZE    14
 
 typedef unsigned char enet_addr_t[6];
 typedef unsigned char ip_addr_t[4];
@@ -184,7 +186,7 @@ typedef struct {
 } arp_header_t;
 
 
-#define ARP_PKT_SIZE  (sizeof(arp_header_t) + sizeof(eth_header_t))
+#define ARP_PKT_SIZE  (sizeof(arp_header_t) + ETH_HDR_SIZE)
 
 /*
  * Internet Protocol header.
@@ -212,7 +214,7 @@ typedef struct {
 } ip_header_t;
 
 
-#define IP_PKT_SIZE (60 + sizeof(eth_header_t))
+#define IP_PKT_SIZE (60 + ETH_HDR_SIZE)
 
 
 /*
@@ -351,7 +353,10 @@ typedef struct _tcp_socket {
  */
 extern enet_addr_t __local_enet_addr;
 extern ip_addr_t   __local_ip_addr;
-
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+extern ip_addr_t   __local_ip_gate;
+extern ip_addr_t   __local_ip_mask;
+#endif
 
 /*
  * Set a timer. Caller is responsible for providing the timer_t struct.
@@ -410,6 +415,12 @@ extern void __enet_poll(void);
  */
 extern void __enet_send(pktbuf_t *pkt, enet_addr_t *dest, int eth_type);
 
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+/*
+ * return true if addr is on local subnet
+ */
+extern int __ip_addr_local(ip_addr_t *addr);
+#endif
 
 /*
  * Handle incoming ARP packets.
@@ -454,9 +465,9 @@ extern void __ip_handler(pktbuf_t *pkt, enet_addr_t *src_enet_addr);
  * The IP data field should contain pkt->pkt_bytes of data.
  * pkt->[udp|tcp|icmp]_hdr points to the IP data field. Any
  * IP options are assumed to be already in place in the IP
- * options field.
+ * options field.  Returns 0 for success.
  */
-extern void __ip_send(pktbuf_t *pkt, int protocol, ip_route_t *dest);
+extern int __ip_send(pktbuf_t *pkt, int protocol, ip_route_t *dest);
 
 
 /*
@@ -487,7 +498,7 @@ extern void __udp_remove_listener(word port);
 /*
  * Send a UDP packet.
  */
-extern void __udp_send(char *buf, int len, ip_route_t *dest_ip,
+extern int __udp_send(char *buf, int len, ip_route_t *dest_ip,
 		       word dest_port, word src_port);
 
 // Send a UDP packet

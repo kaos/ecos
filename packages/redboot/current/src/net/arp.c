@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -189,6 +190,15 @@ __arp_lookup(ip_addr_t *host, ip_route_t *rt)
         }
     }
     memcpy(&rt->ip_addr, host, sizeof(*host));
+    if (((*host)[0] == 0xFF) && ((*host)[1] == 0xFF) && ((*host)[2] == 0xFF)) {
+        memset(&rt->enet_addr, 0xFF, sizeof(&rt->enet_addr));
+        return 0;
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+    } else if (!__ip_addr_local(host)) {
+        // non-local IP address -- look up Gateway's Ethernet address
+        host = &__local_ip_gate;
+#endif
+    }
     if (__arp_request(host, &rt->enet_addr) < 0) {
         return -1;
     } else {

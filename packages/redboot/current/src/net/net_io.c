@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -94,6 +95,20 @@ RedBoot_config_option("Local IP address",
                       CONFIG_IP,
                       0
     );
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+RedBoot_config_option("Local IP address mask",
+                      bootp_my_ip_mask,
+                      "bootp", false,
+                      CONFIG_IP,
+                      0
+    );
+RedBoot_config_option("Gateway IP address",
+                      bootp_my_gateway_ip,
+                      "bootp", false,
+                      CONFIG_IP,
+                      0
+    );
+#endif
 RedBoot_config_option("Default server IP address",
                       bootp_server_ip,
                       "bootp", false,
@@ -562,6 +577,21 @@ show_addrs(void)
     diag_printf("\n");
 }
 
+static void
+flash_get_IP(char *id, ip_addr_t *val)
+{
+    ip_addr_t my_ip;
+    int i;
+    
+    flash_get_config(id, &my_ip, CONFIG_IP);
+    if (my_ip[0] != 0 || my_ip[1] != 0 ||
+        my_ip[2] != 0 || my_ip[3] != 0) {
+        // 'id' is set to something so let it override any static IP
+        for (i=0; i<4; i++)
+            (*val)[i] = my_ip[i];
+    }        
+}
+
 void
 net_init(void)
 {
@@ -586,15 +616,11 @@ net_init(void)
     flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
     if (!use_bootp)
     {
-        ip_addr_t bootp_my_ip;
-        int i;
-        flash_get_config("bootp_my_ip", &bootp_my_ip, CONFIG_IP);
-        if (bootp_my_ip[0] != 0 || bootp_my_ip[1] != 0 ||
-            bootp_my_ip[2] != 0 || bootp_my_ip[3] != 0) {
-            // bootp_my_ip is set to something so let it override any static IP
-            for (i=0; i<4; i++)
-                __local_ip_addr[i] = bootp_my_ip[i];
-        }        
+        flash_get_IP("bootp_my_ip", &__local_ip_addr);
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
+        flash_get_IP("bootp_my_ip_mask", &__local_ip_mask);
+        flash_get_IP("bootp_my_gateway_ip", &__local_ip_gate);
+#endif
         flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr,
                          CONFIG_IP);
     }
