@@ -1,3 +1,7 @@
+2002-10-15  Iztok Zupet <iz@vsr.si>
+
+	* pkgconf/rules.doc: modified for pdf target
+
 2002-09-23  Mark Salter  <msalter@redhat.com>
 
 	* ecos.db: Change XScale core dirname to "cores".

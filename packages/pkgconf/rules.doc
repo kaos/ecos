@@ -91,6 +91,7 @@ endif
 # Rules for generating pictures
 GIFS := $(foreach x,$(PICTURES),$(x).gif)
 EPS  := $(foreach x,$(PICTURES),$(x).eps)
+PNGS :=$(foreach x,$(PICTURES),$(x).png)
 
 %.gif: %.fig
 	convert -crop 0x0 $< $@
@@ -100,7 +101,7 @@ EPS  := $(foreach x,$(PICTURES),$(x).eps)
 
 default: check
 
-# Validating an sgml document can be achieved with 
+# Validating an sgml document can be achieved with
 check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
 	nsgmls -vs -c $(CATALOG) $<
 
@@ -116,11 +117,11 @@ $(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(ECOS_STYLESHEET) $(FIXHTML)
 # PDF files can be generated in a similar fashion.
 pdf: $(MAIN_PDF)
 
-$(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(EPS) $(ECOS_STYLESHEET)
-	jade -o $(subst .sgml,.tex,$(MAIN_SGML)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#print $<
-	pdfjadetex $(subst .sgml,.tex,$(MAIN_SGML))
-	pdfjadetex $(subst .sgml,.tex,$(MAIN_SGML))
-	pdfjadetex $(subst .sgml,.tex,$(MAIN_SGML))
+$(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(PNGS) $(ECOS_STYLESHEET)
+	jade -o $(subst .pdf,.tex,$(MAIN_PDF)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#print $<
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDF))
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDF))
+	pdfjadetex $(subst .pdf,.tex,$(MAIN_PDF))
 
 #$(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(EPS) $(ECOS_STYLESHEET)
 #	jade -o $(subst .sgml,.tex,$(MAIN_SGML)) -t tex -V tex-backend -d $(ECOS_STYLESHEET)#print $<
