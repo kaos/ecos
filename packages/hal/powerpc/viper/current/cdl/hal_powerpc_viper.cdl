@@ -115,7 +115,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
        default_value    0
        description      "
-           The VIPER board has only one serial port. This option
+           The VIPER board has two serial ports (SMC1 & SCC1). This option
            chooses which port will be used to connect to a host
            running GDB."
     }
@@ -127,7 +127,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
         default_value    0
         description      "
-           The VIPER board has only one serial port.  This option
+           The VIPER board has two serial ports (SMC1 & SCC1).  This option
            chooses which port will be used for diagnostic output."
     }
 
@@ -140,7 +140,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
         default_value    0
         description      "
-            The VIPER board has only one serial port.  This
+            The VIPER board has two serial ports (SMC1 & SCC1).  This
             option tells the code which port is in use by the ROM
             monitor. It should only be necessary to change this
             option if a non-standard configurated eCos GDB stub is
