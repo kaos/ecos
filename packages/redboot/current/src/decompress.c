@@ -230,12 +230,9 @@ static int
 gzip_init(_pipe_t* p)
 {
     int err;
-    struct _block *bp;
 
-    bp = (struct _block *)zlib_workspace;
-    memlist = bp;
-    bp->next = bp->prev = 0;
-    bp->size = ZLIB_COMPRESSION_OVERHEAD;
+    // Note: this code used to [re]initialize the memory pool used
+    // by zlib.  This is now done in _zlib_init(), but only once.
     stream.zalloc = zcalloc;
     stream.zfree = zcfree;
     stream.next_in = NULL;

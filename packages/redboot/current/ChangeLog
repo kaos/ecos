@@ -1,3 +1,8 @@
+2003-12-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/decompress.c (gzip_init): Memory pool initialization should
+	only be done in _zlib_init().
+
 2003-12-05  Ian Campbell  <icampbell@arcom.com>
 
 	* src/decompress.c: Ensure that free'd blocks are returned to the
