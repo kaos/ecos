@@ -64,7 +64,7 @@ requirements.</PARA>
 
 <PARA>If you are downloading the <productname>eCos</productname>
 release distribution from <ULINK
-URL="http://sources.redhat.com/ecos">sources.redhat.com/ecos</ULINK>,
+URL="http://ecos.sourceware.org">ecos.sourceware.org</ULINK>,
 you will also need space to store that image and to compile the
 toolchain and <productname>eCos</productname> from source.</PARA>
 
@@ -79,7 +79,7 @@ toolchain and <productname>eCos</productname> from source.</PARA>
 
 <para>
 Full instructions for the <ULINK
-URL="http://sources.redhat.com/ecos/getstart.html">downloading and
+URL="http://ecos.sourceware.org/getstart.html">downloading and
 installation of eCos</ULINK> on Linux hosts are provided on the eCos
 website.
 </para>
@@ -94,7 +94,7 @@ website.
 
 <para>
 Full instructions for the <ULINK
-URL="http://sources.redhat.com/ecos/getstart.html">downloading and
+URL="http://ecos.sourceware.org/getstart.html">downloading and
 installation of eCos</ULINK> on Windows hosts are provided on the
 eCos website.
 </para>

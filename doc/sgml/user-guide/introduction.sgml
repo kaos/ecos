@@ -64,7 +64,7 @@ free.
 <para>As an Open Source project, <productname>eCos</productname> is
 under constant improvement, with an active developer community, based
 around the <productname>eCos</productname> web site at <ULINK
-URL="http://sources.redhat.com/ecos/">http://sources.redhat.com/ecos/</ULINK>.
+URL="http://ecos.sourceware.org/">http://ecos.sourceware.org/</ULINK>.
 </para>
 </listitem>
 
@@ -262,7 +262,7 @@ simulators.</PARA>
 <PARA>To get the most out of <productname>eCos</productname> you
 should visit the <productname>eCos</productname> open source
 developers site: <ULINK
-URL="http://sources.redhat.com/ecos/">http://sources.redhat.com/ecos/</ULINK>.
+URL="http://ecos.sourceware.org/">http://ecos.sourceware.org/</ULINK>.
 </para>
 
 <PARA>The site is dedicated to the <productname>eCos</productname>
@@ -387,7 +387,7 @@ received from the <productname>eCos</productname> project completely
 free of charge.  The <productname>eCos</productname> maintainers are
 responsible for deciding whether such contributions should be applied
 to the public repository. In addition, a <ulink
-url="http://sources.redhat.com/ecos/assign.html">copyright
+url="http://ecos.sourceware.org/assign.html">copyright
 assignment</ulink> is required for any significant changes to the core
 <productname>eCos</productname> packages.</para>
 
@@ -439,7 +439,7 @@ RHEPL code, but I updated my anonymous CVS checkout.</para>
 <para><emphasis>A.</emphasis> You can check out the final
 version of anonymous CVS before the license change using the CVS tag
 <literal>last-rhepl</literal>. See <ulink
-url="http://sources.redhat.com/ecos/anoncvs.html">the anonymous CVS
+url="http://ecos.sourceware.org/anoncvs.html">the anonymous CVS
 access page</ulink>
 for details.</para>
 
@@ -451,7 +451,7 @@ for details.</para>
 <para>
 
 Prior to May 2002, <productname>eCos</productname> was released under
-the <ulink url="http://sources.redhat.com/ecos/old-license.html">Red
+the <ulink url="http://ecos.sourceware.org/old-license.html">Red
 Hat eCos Public License (RHEPL)</ulink>. The RHEPL required any
 modifications to <productname>eCos</productname> code to be made
 available under preferential terms to Red Hat and was therefore

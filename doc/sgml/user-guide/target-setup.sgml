@@ -3030,7 +3030,7 @@ configuration value "Global command prefix" (CYGBLD_GLOBAL_COMMAND_PREFIX)
 in your eCos configuration. If left empty (i.e. set to the empty
 string) eCos will use your native tools when building.</PARA>
 <PARA>If you have any difficulties, it is almost certainly easiest
-overall to rebuild the tools as described on: <ULINK URL="http://sources.redhat.com/ecos/getstart.html">http://sources.redhat.com/ecos/getstart.html</ULINK></PARA>
+overall to rebuild the tools as described on: <ULINK URL="http://ecos.sourceware.org/getstart.html">http://ecos.sourceware.org/getstart.html</ULINK></PARA>
 </SECT2>
 </SECT1>
 

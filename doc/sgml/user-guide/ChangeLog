@@ -1,3 +1,11 @@
+2003-10-17  Alex Schuilenburg <alex@schuilenburg.org>
+        * user-guide/installation.sgml:
+        * user-guide/introduction.sgml:
+        * user-guide/makefile:
+        * user-guide/target-setup.sgml:
+        Brought URLs up to date and amended header which was incaccurate
+        (referred to alternative licenses no longer available)
+
 2003-07-09  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* user-guide.sgml: Update trademark info and sort.

@@ -32,9 +32,6 @@
 #
 # This exception does not invalidate any other reasons why a work based on
 # this file might be covered by the GNU General Public License.
-#
-# Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-# at http://sources.redhat.com/ecos/ecos-license/
 # -------------------------------------------
 #####ECOSGPLCOPYRIGHTEND####
 #=============================================================================
