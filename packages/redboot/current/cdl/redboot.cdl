@@ -178,6 +178,13 @@ cdl_package CYGPKG_REDBOOT {
             compile -library=libextras.a mcmp.c
         }
 
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_MCOPY {
+            display       "Include memory copy command"
+            doc           ref/mcopy-command.html
+            default_value 1
+            compile -library=libextras.a mcopy.c
+        }
+
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_DUMP {
             display       "Include memory dump command"
             doc           ref/dump-command.html

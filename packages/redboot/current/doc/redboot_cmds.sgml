@@ -1305,6 +1305,105 @@ Buffers don't match - 0x00100020=0x6000, 0x00200020=0x0000
     </refsect1>
   </refentry>
 
+<!-- ******** mcopy *************************************************** -->
+  <refentry id="mcopy-command">
+    <refnamediv>
+      <refname>mcopy</refname>
+      <refpurpose>Copy memory</refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <cmdsynopsis>
+	<command>mcopy</command>
+	    <arg choice="req">-s <replaceable>source</replaceable></arg>
+	    <arg choice="req">-d <replaceable>destination</replaceable></arg>
+	    <arg choice="req">-l <replaceable>length</replaceable></arg>
+	  <group>
+	    <arg>-1</arg>
+	    <arg>-2</arg>
+	    <arg>-4</arg>
+	  </group>
+      </cmdsynopsis>
+    </refsynopsisdiv>
+    <refsect1>
+      <title>Arguments</title>
+      <informaltable frame="all">
+	<tgroup cols="4" colsep="1" rowsep="1" align="left">
+	  <colspec colname="c1">
+	  <colspec colname="c2">
+	  <colspec colname="c3">
+	  <colspec colname="c4">
+	  <thead>
+	    <row>
+	      <entry>Name</entry>
+	      <entry>Type</entry>
+	      <entry>Description</entry>
+	      <entry>Default</entry>
+	    </row>
+	  </thead>
+	  <tbody>
+	    <row>
+	      <entry>-s <replaceable>location1</replaceable></entry>	     
+	      <entry>Memory address</entry>
+	      <entry>Location of data to copy.</entry>	     
+	      <entry><emphasis>none</emphasis></entry>	     
+	    </row>
+	    <row>
+	      <entry>-d <replaceable>location2</replaceable></entry>	     
+	      <entry>Memory address</entry>
+	      <entry>Destination for copied data.</entry>	     
+	      <entry><emphasis>none</emphasis></entry>	     
+	    </row>
+	    <row>
+	      <entry>-l <replaceable>length</replaceable></entry>	     
+	      <entry>Number</entry>
+	      <entry>Length of data</entry>	     
+	      <entry><emphasis>none</emphasis></entry>	     
+	    </row>
+	    <row>
+	      <entry>-1</entry>	     
+	      <entry></entry>
+	      <entry>Copy one byte (8 bits) at a time.</entry>
+	      <entry>-4</entry>	     
+	    </row>
+	    <row>
+	      <entry>-2</entry>	     
+	      <entry></entry>
+	      <entry>Copy two bytes (16 bits) at a time.</entry>
+	      <entry>-4</entry>	     
+	    </row>
+	    <row>
+	      <entry>-4</entry>	     
+	      <entry></entry>
+	      <entry>Copy one word (32 bits) at a time.</entry>	     
+	      <entry>-4</entry>	     
+	    </row>
+	  </tbody>
+	</tgroup>
+      </informaltable>
+    </refsect1>
+    <refsect1>
+      <title>Description</title>
+	<para>Copies memory (RAM, ROM, FLASH, etc) from one area to another.</para>
+    </refsect1>
+    <refsect1>
+      <title>Examples</title>
+      <para>
+Copy 16 bits at a time.
+<screen> 
+RedBoot> <userinput>mfill -b 0x100000 -l 0x20 -2 -p 0xDEAD</userinput>
+RedBoot> <userinput>mfill -b 0x200000 -l 0x20 -2 -p 0x0</userinput>
+RedBoot> <userinput>dump  -b 0x200000 -l 0x20 -2</userinput>
+00200000: 0000 0000 0000 0000  0000 0000 0000 0000
+00200010: 0000 0000 0000 0000  0000 0000 0000 0000
+RedBoot> <userinput>mcopy -s 0x100000 -d 0x200000 -2 -l 0x20</userinput>
+RedBoot> <userinput>dump  -b 0x200000 -l 0x20 -2</userinput>
+00200000: DEAD DEAD DEAD DEAD  DEAD DEAD DEAD DEAD
+00200010: DEAD DEAD DEAD DEAD  DEAD DEAD DEAD DEAD
+</screen> 
+</para>
+    </refsect1>
+  </refentry>
+
 <!-- ******** mfill *************************************************** -->
   <refentry id="mfill-command">
     <refnamediv>

@@ -1,3 +1,9 @@
+2003-07-01  Mark Salter  <msalter@redhat.com>
+
+	* cdl/redboot.cdl (CYGBLD_BUILD_REDBOOT_WITH_MCOPY): New option.
+	* src/mcopy.c: New file adding mcopy command.
+	* doc/redboot_cmds.sgml: Add mcopy.
+
 2003-06-26  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot_installing.sgml: Clarify use of correct cables with
