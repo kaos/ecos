@@ -166,10 +166,12 @@ void cyg_hal_interrupt_acknowledge (cyg_uint32 vector)
 	{
         case CYGNUM_HAL_INTERRUPT_SIO_0:
             HAL_WRITE_UINT32(INTR_CLEAR_COM0, 1);
+            HAL_WRITE_UINT32(INTR_CLEAR_REG, (reg | ((1 << SERIAL_PORT0_GROUP))));
             break;
 
         case CYGNUM_HAL_INTERRUPT_SIO_1:
             HAL_WRITE_UINT32(INTR_CLEAR_COM1, 1);
+            HAL_WRITE_UINT32(INTR_CLEAR_REG, (reg | ((1 << SERIAL_PORT1_GROUP))));
             break;
 
         default:
@@ -187,7 +189,7 @@ hal_extended_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     
     HAL_READ_UINT32 (INTR_STATUS_PTR, pendingIsr);
 
-    for (isrNum=0; isrNum <=31; isrNum)
+    for (isrNum=0; isrNum <=31; isrNum++)
         if ( (1 << isrNum) & pendingIsr)
             break;
 
