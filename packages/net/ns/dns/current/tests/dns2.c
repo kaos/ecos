@@ -68,11 +68,14 @@ static cyg_handle_t thread_handle;
 #define __string(_x) #_x
 #define __xstring(_x) __string(_x)
 
-#define _DNS_IP            __xstring(172.16.19.254) // farmnet dns0 address
-#define _LOOKUP_FQDN       __xstring(dell-paw-2.cambridge.redhat.com.)
-#define _LOOKUP_DOMAINNAME __xstring(cambridge.redhat.com)
-#define _LOOKUP_HOSTNAME   __xstring(dell-paw-2)
-#define _LOOKUP_IP         __xstring(195.224.55.226)
+#define USE_HARDCODED_DOMAIN 1
+
+// Change the following if you aren't using BOOTP! It's almost certainly not right for you.
+#define _DNS_IP            __xstring(172.16.1.254) // test farm host addr
+#define _LOOKUP_FQDN       __xstring(b.root-servers.net.) // should stay the same?
+#define _LOOKUP_DOMAINNAME __xstring(root-servers.net.)
+#define _LOOKUP_HOSTNAME   __xstring(b)
+#define _LOOKUP_IP         __xstring(128.9.0.107) // must be same as _LOOKUP_FQDN
 #define _LOOKUP_IP_BAD     __xstring(10.0.0.0)
 
 void
@@ -86,10 +89,15 @@ dns_test(cyg_addrword_t p)
 
     init_all_network_interfaces();
 
+    CYG_TEST_INFO("Starting dns2 test");
+
     getdomainname(dn,sizeof(dn));
     diag_printf("INFO:<DHCP said domain name is %s>\n",dn);
+#ifndef USE_HARDCODED_DOMAIN
+    // If not hard-coded we can't tell what it's _meant_ to be
     CYG_TEST_CHECK(!strncmp(dn,_LOOKUP_DOMAINNAME,sizeof(_LOOKUP_DOMAINNAME)),
                    "DHCP got the wrong domainname");
+#endif //ifdef _LOOKUP_DOMAINNAME
     
     /* Expect _LOOKUP_IP as the answer. This is a CNAME lookup */
     inet_aton(_LOOKUP_IP, &addr);
@@ -104,6 +112,10 @@ dns_test(cyg_addrword_t p)
     }
 
     /* Now just the hostname */
+#ifdef USE_HARDCODED_DOMAIN
+    // set the domain by hand if required.
+    setdomainname(_LOOKUP_DOMAINNAME, sizeof(_LOOKUP_DOMAINNAME));
+#endif //ifdef _LOOKUP_DOMAINNAME
     hent = gethostbyname(_LOOKUP_HOSTNAME);
     if (hent != NULL) {
         diag_printf("PASS:<%s is %s>\n", _LOOKUP_HOSTNAME, inet_ntoa(*(struct in_addr *)hent->h_addr));

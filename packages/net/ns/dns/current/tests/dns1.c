@@ -68,11 +68,12 @@ static cyg_handle_t thread_handle;
 #define __string(_x) #_x
 #define __xstring(_x) __string(_x)
 
-#define _DNS_IP            __xstring(172.16.19.254) // farmnet dns0 address
-#define _LOOKUP_FQDN       __xstring(dell-paw-2.cambridge.redhat.com.)
-#define _LOOKUP_DOMAINNAME __xstring(cambridge.redhat.com)
-#define _LOOKUP_HOSTNAME   __xstring(dell-paw-2)
-#define _LOOKUP_IP         __xstring(195.224.55.226)
+// Change the following if you aren't using BOOTP! It's almost certainly not right for you.
+#define _DNS_IP            __xstring(172.16.1.254) // test farm host addr
+#define _LOOKUP_FQDN       __xstring(b.root-servers.net.) // should stay the same?
+#define _LOOKUP_DOMAINNAME __xstring(root-servers.net.)
+#define _LOOKUP_HOSTNAME   __xstring(b)
+#define _LOOKUP_IP         __xstring(128.9.0.107) // must be same as _LOOKUP_FQDN
 #define _LOOKUP_IP_BAD     __xstring(10.0.0.0)
 
 void
@@ -81,26 +82,33 @@ dns_test(cyg_addrword_t p)
     struct in_addr addr;
     struct hostent *hent;
     char dn[256];
+    int i;
 
     CYG_TEST_INIT();
 
     init_all_network_interfaces();
 
-    CYG_TEST_INFO("Connecting to DNS at " _DNS_IP);
-    inet_aton(_DNS_IP, &addr);
-    CYG_TEST_CHECK(cyg_dns_res_init(&addr) == 0, "Failed to initialize resolver");
+    CYG_TEST_INFO("Starting dns1 test");
+
     setdomainname(NULL,0);
     
-    /* Expect _LOOKUP_IP as the answer. This is a CNAME lookup */
-    inet_aton(_LOOKUP_IP, &addr);
-    hent = gethostbyname(_LOOKUP_FQDN);
-    if (hent != NULL) {
-        diag_printf("PASS:<%s is %s>\n", hent->h_name, inet_ntoa(*(struct in_addr *)hent->h_addr));
-        if (0 != memcmp((void*)&addr, (void*)(hent->h_addr), sizeof(struct in_addr))) {
-          diag_printf("FAIL:<expected " _LOOKUP_FQDN " to be " _LOOKUP_IP ">\n");
+    for (i=0; i<2; i++) {
+        /* Expect _LOOKUP_IP as the answer. This is a CNAME lookup */
+        inet_aton(_LOOKUP_IP, &addr);
+        hent = gethostbyname(_LOOKUP_FQDN);
+        if (hent != NULL) {
+            diag_printf("PASS:<%s is %s>\n", hent->h_name, inet_ntoa(*(struct in_addr *)hent->h_addr));
+            if (0 != memcmp((void*)&addr, (void*)(hent->h_addr), sizeof(struct in_addr))) {
+                diag_printf("FAIL:<expected " _LOOKUP_FQDN " to be " _LOOKUP_IP ">\n");
+            }
+            break;
+        } else {
+            diag_printf("FAIL:<Asked for " _LOOKUP_FQDN ". No answer: %s>\n", hstrerror(h_errno));
+            CYG_TEST_INFO("Retrying with explicit DNS server");
+            CYG_TEST_INFO("Connecting to DNS at " _DNS_IP);
+            inet_aton(_DNS_IP, &addr);
+            CYG_TEST_CHECK(cyg_dns_res_init(&addr) == 0, "Failed to initialize resolver");
         }
-    } else {
-        diag_printf("FAIL:<Asked for " _LOOKUP_FQDN ". No answer: %s>\n", hstrerror(h_errno));
     }
 
     /* Reverse lookup the _LOOKUP_IP addres, expect _LOOKUP_FQDN
