@@ -1,12 +1,13 @@
-2002-08-14  Yoshinori Sato  <qzb04471@nifty.ne.jp>
+#ifndef CYGONCE_MOD_REGS_WDT_H
+#define CYGONCE_MOD_REGS_WDT_H
 
-	* include/mod_regs_wdt.h: New file. Providing watchdog hardware data.
-
-2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
-
-	* New package.
-
-//===========================================================================
+//==========================================================================
+//
+//      mod_regs_wdt.h
+//
+//      Watchdog Timer Register
+//
+//==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
@@ -39,4 +40,36 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================
+//==========================================================================
+//#####DESCRIPTIONBEGIN####
+//
+// Author(s):    yoshinori sato
+// Contributors: yoshinori sato
+// Date:         2002-02-19
+//              
+//####DESCRIPTIONEND####
+//
+//==========================================================================
+
+#define CYGARC_TCSR    0xFFFF8C
+#define CYGARC_TCNT    0xFFFF8D
+#define CYGARC_RSTCSRW 0xFFFF8E
+#define CYGARC_RSTCSRR 0xFFFF8F
+
+#define CYGARC_TCNT_MAGIC 0x5A00
+#define CYGARC_TCSR_MAGIC 0xA500
+
+#define CYGARC_WDT_OVF  0x80
+#define CYGARC_WDT_WT   0x40
+#define CYGARC_WDT_TME  0x20
+#define CYGARC_WDT_CKS2 0x04
+#define CYGARC_WDT_CKS1 0x02
+#define CYGARC_WDT_CKS0 0x01
+
+#define CYGARC_WDT_CKS  0x07  //Max Delay
+
+#define CYGARC_WDT_PERIOD ((1000000000/(CYGHWR_HAL_H8300_PROCESSOR_SPEED/4096))*256)
+
+#endif
+
+// EOF mod_regs_wdt.h

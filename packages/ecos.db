@@ -1461,6 +1461,16 @@ package CYGPKG_DEVICES_WATCHDOG_SH_SH3 {
            Hitachi SH3 chip."
 }
 
+package CYGPKG_DEVICES_WATCHDOG_H8300_H8300H {
+	alias		{ "Watchdog driver for the Hitachi H8/300H chip" devices_watchdog_h8300h device_watchdog_h8300h }
+	directory	devs/watchdog/h8300/h8300h
+	script          watchdog_h8300h.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for the
+           Hitachi H8/300H chip."
+}
+
 package CYGPKG_IO_WATCHDOG {
 	alias		{ "Watchdog IO device" watchdog io_watchdog }
 	directory	io/watchdog

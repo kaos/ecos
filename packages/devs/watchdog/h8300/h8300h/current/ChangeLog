@@ -1,12 +1,7 @@
 2002-08-14  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 
-	* include/mod_regs_wdt.h: New file. Providing watchdog hardware data.
-
-2002-04-24  Yoshinori Sato  <qzb04471@nifty.ne.jp>
-
 	* New package.
 
-//===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
@@ -39,4 +34,3 @@
 // at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
-//===========================================================================

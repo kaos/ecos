@@ -1,3 +1,4 @@
+* Yoshinori Sato has contributed a watchdog driver for the Hitachi H8/300H.
 * Add AT91 watchdog driver. Contributed by Thomas Koeller of Basler Vision
   Technologies.
 * SMP support added for x86.
