@@ -1,3 +1,8 @@
+2004-01-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/fc_test.c: 
+	* src/tcdiag.cxx (cyg_assert_msg): 'fconfig' API changed again.
+
 2003-12-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* tests/fc_test.c: New test/demonstration of 'fconfig' access.

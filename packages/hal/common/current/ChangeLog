@@ -1,3 +1,10 @@
+2004-01-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/hal_if.h: Minor fixup - new 'fconfig' functions broke 
+	existing uses of CYGACC_CALL_IF_FLASH_CFG_OP.  Added a new macro
+	CYGACC_CALL_IF_FLASH_CFG_OP2 which handles new API and a wrapper
+	to handle the old way (backwards compatability).
+
 2003-12-21  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_if.c (flash_config_op): 

@@ -1,3 +1,7 @@
+2004-01-05  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/if_i82559.c: Names of FLASH config types changed.
+
 2003-02-27  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82559.c (eth_set_mac_address): Correct writing

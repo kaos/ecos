@@ -191,11 +191,11 @@
         int i;                                                                          \
         if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,                 \
                                           "info_console_force", &i,                     \
-                                          CYGNUM_FLASH_CFG_OP_CONFIG_BOOL ) ) {         \
+                                          CYGNUM_FLASH_CFG_TYPE_CONFIG_BOOL ) ) {       \
             if ( i ) {                                                                  \
                 if ( CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,         \
                                                   "info_console_number", &i,            \
-                                                  CYGNUM_FLASH_CFG_OP_CONFIG_INT ) ) {  \
+                                                  CYGNUM_FLASH_CFG_TYPE_CONFIG_INT ) ){ \
                     /* Then i is the console to force it to: */                         \
                     CYGACC_CALL_IF_SET_CONSOLE_COMM( i );                               \
                 }                                                                       \

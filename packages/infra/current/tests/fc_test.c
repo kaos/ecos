@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -72,7 +72,7 @@ main(void)
     fc.offset = 0;
     fc.key = key;
     fc.keylen = sizeof(key);
-    while (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_NEXT, &fc)) {
+    while (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_NEXT, &fc)) {
         diag_printf("  Offset: %d, key: '%s', type: %d\n", fc.offset, fc.key, fc.type);
         fc.keylen = sizeof(key);
     }
@@ -80,18 +80,18 @@ main(void)
     fc.key = "gdb_port";
     fc.val = &port;
     fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_INT;
-    if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
+    if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
         diag_printf("gdb_port = %d\n", port);
         port++;
-        if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_SET, &fc)) {
-            if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
+        if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_SET, &fc)) {
+            if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
                 diag_printf("now = %d\n", port);
             } else {
                 diag_printf("Can't re-fetch 'gdb_port'\n");
                 exit(1);
             }
             port--;
-            if (!CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_SET, &fc)) {
+            if (!CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_SET, &fc)) {
                 diag_printf("Can't update 'gdb_port'\n");
                 exit(1);
             }

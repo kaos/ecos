@@ -12,7 +12,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -652,9 +652,22 @@ __call_voidVV1(CYGNUM_CALL_IF_INSTALL_BPT_FN, __call_if_install_bpt_fn_t, void, 
 #define CYGNUM_CALL_IF_FLASH_CFG_GET  (0)     // Get a particular fconfig key
 #define CYGNUM_CALL_IF_FLASH_CFG_NEXT (1)     // Enumerate keys (get the next one)
 #define CYGNUM_CALL_IF_FLASH_CFG_SET  (2)     // Update particular fconfig key
-#define CYGACC_CALL_IF_FLASH_CFG_OP(_o_,_d_) \
+#define CYGACC_CALL_IF_FLASH_CFG_OP2(_o_,_d_) \
  CYGACC_CALL_VV2(__call_if_flash_cfg_op_fn_t*, CYGNUM_CALL_IF_FLASH_CFG_OP, (_o_),(_d_))
 __call_VV2(CYGNUM_CALL_IF_FLASH_CFG_OP, __call_if_flash_cfg_op_fn_t, cyg_bool, int, struct cyg_fconfig *)
+
+static __inline__ cyg_bool
+__call_if_flash_cfg_op(int op, char *key, void *data, int type)
+{
+    struct cyg_fconfig info;
+    info.key = key;
+    info.val = data;
+    info.type = type;
+    info.offset = 0;
+    return CYGACC_CALL_IF_FLASH_CFG_OP2(op, &info);
+}
+#define CYGACC_CALL_IF_FLASH_CFG_OP(_o_,_k_,_d_,_t_) \
+  __call_if_flash_cfg_op(_o_,_k_,_d_,_t_)
 #define CYGACC_CALL_IF_FLASH_CFG_OP_SET(_x_) \
  hal_virtual_vector_table[CYGNUM_CALL_IF_FLASH_CFG_OP]=(CYG_ADDRWORD)(_x_)
 

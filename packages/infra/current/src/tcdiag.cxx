@@ -159,11 +159,11 @@ cyg_assert_msg( const char *psz_func, const char *psz_file,
         fc.key = "info_console_force";
         fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_BOOL;
         fc.val = (void *)&i;
-        if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
+        if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
             if (i) {
                 fc.key = "info_console_number";
                 fc.type = CYGNUM_FLASH_CFG_TYPE_CONFIG_INT;
-                if (CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
+                if (CYGACC_CALL_IF_FLASH_CFG_OP2(CYGNUM_CALL_IF_FLASH_CFG_GET, &fc)) {
                     // Then i is the console to force it to:
                     CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
                 }
