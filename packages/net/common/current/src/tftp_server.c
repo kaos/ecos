@@ -433,7 +433,7 @@ tftpd_read_file(struct tftp_server *server,
         return;
     }
 
-    if ((fd = (server->ops->open)(hdr->th_stuff, O_WRONLY)) < 0) {
+    if ((fd = (server->ops->open)(hdr->th_stuff, O_RDONLY)) < 0) {
         tftpd_send_error(s,reply,TFTP_ENOTFOUND,from_addr, from_len);
         close(s);
 	freeaddrinfo(res);
