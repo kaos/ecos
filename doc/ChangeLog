@@ -1,3 +1,8 @@
+2002-10-15  Iztok Zupet <iz@vsr.si>
+
+	* sgml/README-PDF: added
+	* sgml/makemakefile: defined MAIN_PDF
+
 2002-10-15  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* sgml/makemakefile: Only put ecos.sgml in MAIN_SGML. Put all others

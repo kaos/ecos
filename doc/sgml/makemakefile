@@ -81,7 +81,7 @@ echo "<!ENTITY hal-common-current-doc-porting-sgml SYSTEM \"../../packages/hal/c
 cat >> makefile <<EOF
 
 MAIN_HTML  := ecos.html
-MAIN_PDF   := 
+MAIN_PDF   := ecos.pdf
 OTHER_SGML :=
 PICTURES   :=
 
