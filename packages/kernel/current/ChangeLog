@@ -1,3 +1,8 @@
+2003-02-25  Nick Garnett  <nickg@calivar.com>
+
+	* tests/fptest.c (alarm_fn): Added CYG_TEST_PASS() call to keep
+	configtool happy.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/kernel.cdl: Update doc links.

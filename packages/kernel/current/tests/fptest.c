@@ -205,6 +205,8 @@ static void alarm_fn(cyg_handle_t alarm, cyg_addrword_t data)
     {
         if( errors )
             CYG_TEST_FAIL("Errors detected");
+        else
+            CYG_TEST_PASS("OK");            
         
         CYG_TEST_FINISH("FP Test done");
     }
