@@ -1,5 +1,7 @@
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
+	* src/generic-stub.c (crc32): Fix crctable option name typo.
+
 	* src/hal_if.c (hal_if_init): Remove kill_by_reset.
 	(kill_by_reset): Remove, unused.
 	(reset): ifdef test on HAL_PLATFORM_RESET and assert on reset failure.

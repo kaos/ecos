@@ -1924,7 +1924,7 @@ crc32 (target_addr_t mem, int len, uint32 crc)
   int  is_progmem = TARGET_ADDR_IS_PROGMEM(mem);
 #endif
 
-#ifdef CYGDBG_HAL_CRCTABLE_RAM
+#ifdef CYGDBG_HAL_CRCTABLE_LOCATION_RAM
   if (! tableInit)
     {
       /* Initialize the CRC table and the decoding table. */
