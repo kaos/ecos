@@ -1,3 +1,7 @@
+2004-01-07  Uwe Kindler <ukindler@htwm.de>
+
+	* src/if_lan91cxx.c: Fail initialization if no link found.
+
 2004-01-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
         * cdl/smsc_lan91cxx_eth_drivers.cdl: 

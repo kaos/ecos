@@ -331,6 +331,15 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
     put_reg(sc, LAN91CXX_RCR, 0);
 
     val = get_reg(sc, LAN91CXX_EPH_STATUS);
+#ifndef LAN91CXX_IS_LAN91C111
+    // LINK_OK on 91C111 is just a general purpose input and may not
+    // have anything to do with the link.
+    if (!(val & LAN91CXX_STATUS_LINK_OK)) {
+ db_printf("no link\n");
+        return false;  // Link not connected
+    }
+#endif
+
 
 #if DEBUG & 9
     db_printf("LAN91CXX - status: %04x\n", val);
