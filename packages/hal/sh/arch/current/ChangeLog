@@ -1,3 +1,9 @@
+2004-05-27  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/redboot_linux_exec.c (do_exec): Be sensitive to value in
+	"entry_address" as this can indicate if the image to be executed
+	is valid (the "load" functions set it to "NO_MEMORY" when invalid)
+
 2004-04-30  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* src/sh.ld: Add entry section for targets, like Dreamcast, that

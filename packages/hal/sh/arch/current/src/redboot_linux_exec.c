@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -123,6 +124,10 @@ do_exec(int argc, char *argv[])
     if (!scan_opts(argc, argv, 1, opts, 8, (void *)&entry, 
                    OPTION_ARG_TYPE_NUM, "entry address"))
         return;
+    if (entry == (unsigned long)NO_MEMORY) {
+        diag_printf("Can't execute Linux - invalid entry address\n");
+        return;
+    }
   
     diag_printf("Now booting linux kernel:\n");
     diag_printf(" Base address 0x%08x Entry 0x%08x\n", base_addr, entry);
