@@ -279,7 +279,9 @@ $hal_vsr_table_int:
 	 nop
         .align  2        
 1:	.long   CYG_SR
+#ifdef CYGHWR_HAL_SH_FPU
 3:      .long   CYG_FPSCR
+#endif
         # ------------------------------------------------------------
         # Register bank has changed now. 
 2:

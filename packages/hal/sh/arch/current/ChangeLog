@@ -1,3 +1,8 @@
+2004-02-05  Kelvin Lawson  <klawson@ad-holdings.co.uk>
+
+	* include/hal_var_bank.inc: Fix build error on non-FPU systems due to
+	CYG_FPSCR.
+
 2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* include/hal_intr_excevt.h: 
