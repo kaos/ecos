@@ -1,3 +1,14 @@
+2003-03-28  Jani Monoses  <jani@iv.ro>
+
+	* include/hal_platform_setup.h: EDB7211 has two 8M FLASH chips
+	with different chip selects, so map them contiguously.
+	Also fix compiler warning with #if to #ifdef.
+
+	* include/pkgconf/mlt_arm_edb7211_rom.mlt: Update to reflect ROM
+	being 16M not 8M now.
+	* include/pkgconf/mlt_arm_edb7211_rom.ldi: Ditto.
+	* include/pkgconf/mlt_arm_edb7211_rom.h: Ditto.
+
 2003-02-13  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_io.h: Add CYG_MACRO_START/END markers to match

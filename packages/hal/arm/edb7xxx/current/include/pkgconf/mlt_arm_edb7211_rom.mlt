@@ -1,7 +1,7 @@
 version 0
 region ram 0 fd7000 0 !
 region sram 60000000 9c00 0 !
-region rom e0000000 800000 1 !This is ROM bank 0, physical address 0x00000000.When running eCos, this space is remapped to 0xE0000000.
+region rom e0000000 1000000 1 !This is ROM bank 0, physical address 0x00000000.When running eCos, this space is remapped to 0xE0000000.
 section fixed_vectors 0 1 0 1 1 0 1 0 20 20 !
 section data 0 1 1 1 1 1 0 0 1000 bss !
 section bss 0 4 0 1 0 1 0 1 heap1 heap1 !
