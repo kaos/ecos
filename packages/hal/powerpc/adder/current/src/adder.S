@@ -95,7 +95,9 @@ FUNC_START( hal_hardware_init )
 	
 	lwi     r4,CYGARC_REG_IMM_BASE  # base address of control registers
 	mtspr	CYGARC_REG_IMMR,r4
-	
+
+#ifndef CYG_HAL_STARTUP_RAM
+                	
 #define CACHE_UNLOCKALL		0x0a00
 #define CACHE_DISABLE		0x0400
 #define CACHE_INVALIDATEALL	0x0c00
@@ -142,6 +144,8 @@ FUNC_START( hal_hardware_init )
 	isync
 	
 	sync
+
+#endif // ! CYG_HAL_STARTUP_RAM        
 	
 	/*
 	 * SIU Initialization.

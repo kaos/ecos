@@ -137,7 +137,7 @@
 
 2002-04-11  Gary Thomas  <gthomas@redhat.com>
 
-	* src/hal_misc.c (hal_enable_caches): Chance cache handling & setup to
+	* src/hal_misc.c (hal_enable_caches): Change cache handling & setup to
 	be controlled by common CDL (like other platforms/architectures).
 
 	* src/hal_intr.c (hal_delay_us): Didn't work if there are less than

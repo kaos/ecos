@@ -1,3 +1,9 @@
+2003-12-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/adder.S: Only clear caches on non-RAM startup modes.  This fixes
+	some problems when using network debug connections (messing with the
+	caches seems to confuse the CPM)
+
 2003-12-10  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_adder.cdl: System clock was using wrong frequency

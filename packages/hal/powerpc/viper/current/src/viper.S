@@ -105,7 +105,9 @@ FUNC_START( hal_hardware_init )
 	mtspr	CYGARC_REG_IMMR,r4
 	
 	LED( 0 )			# turn all LEDs off
-	
+
+#ifndef CYG_HAL_STARTUP_RAM
+                	
 #define CACHE_UNLOCKALL		0x0a00
 #define CACHE_DISABLE		0x0400
 #define CACHE_INVALIDATEALL	0x0c00
@@ -152,7 +154,8 @@ FUNC_START( hal_hardware_init )
 	isync
 	
 	sync
-	
+#endif // ! CYG_HAL_STARTUP_RAM
+        	
 	LED( 0x01 )
 	
 	/*
