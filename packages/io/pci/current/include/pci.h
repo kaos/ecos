@@ -68,6 +68,15 @@
 #include <cyg/io/pci_hw.h>
 
 //------------------------------------------------------------------
+// Map a logical (CPU local) address to one used by a PCI master
+// Normally, this is just the physical address of the object, but
+// it may differ if the platform has different address maps from 
+// the CPU side vs. the PCI side
+#ifndef CYGARC_PCI_DMA_ADDRESS
+#define CYGARC_PCI_DMA_ADDRESS(_x_) CYGARC_PHYSICAL_ADDRESS(_x_)
+#endif
+
+//------------------------------------------------------------------
 // The PCI memory space can span 64 bits, IO space only 32 bits
 typedef CYG_WORD64 CYG_PCI_ADDRESS64;
 typedef CYG_WORD32 CYG_PCI_ADDRESS32;

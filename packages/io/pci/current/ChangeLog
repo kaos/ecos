@@ -1,3 +1,8 @@
+2003-08-08  Gary Thomas  <gary@mind.be>
+
+	* include/pci.h: Add CYGARC_PCI_DMA_ADDRESS() macro - used to
+	map CPU addresses to ones usable by PCI masters.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/io_pci.cdl: Fix doc link.
