@@ -119,7 +119,7 @@ static SERIAL_CHANNEL_USING_INTERRUPTS(e7t_serial_channel0,
                                        &e7t_serial_out_buf0[0], sizeof(e7t_serial_out_buf0),
                                        &e7t_serial_in_buf0[0], sizeof(e7t_serial_in_buf0)
     );
-#else                                           CYGNUM_HAL_INTERRUPT_UART0_TX
+#else 
 static SERIAL_CHANNEL(e7t_serial_channel0,
                       e7t_serial_funs, 
                       e7t_serial_info0,
@@ -312,7 +312,10 @@ e7t_serial_start_xmit(serial_channel *chan)
 {
     e7t_serial_info *e7t_chan = (e7t_serial_info *)chan->dev_priv;
     e7t_chan->tx_enabled = true;
-    cyg_drv_interrupt_unmask(e7t_chan->tx_int_num);
+    (chan->callbacks->xmt_char)(chan);
+    if (e7t_chan->tx_enabled) {
+        cyg_drv_interrupt_unmask(e7t_chan->tx_int_num);
+    }
 }
 
 // Disable the transmitter on the device

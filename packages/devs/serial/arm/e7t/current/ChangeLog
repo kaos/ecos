@@ -1,3 +1,9 @@
+2004-02-11  Roland Caßebohm  <roland.cassebohm@visionsystem.de>
+
+	* src/e7t_serial.c: The UART doesn't generate an interrupt befor the
+          first time a character was send. Changed e7t_serial_start_xmit()
+          to first try to send characters. 
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ser_arm_e7t.cdl: Remove irrelevant doc link.
