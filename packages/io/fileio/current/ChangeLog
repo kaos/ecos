@@ -1,3 +1,9 @@
+2005-02-24  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/fileio.h: Only include kapi.h when
+	CYGFUN_IO_FILEIO_SELECT is enabled and then define the select
+	support structures.
+
 2005-01-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* src/io.cxx (ioctl): Change ioctl to use varargs so that it works

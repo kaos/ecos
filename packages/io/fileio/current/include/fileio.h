@@ -63,7 +63,9 @@
 
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_tables.h>
+#ifdef CYGFUN_IO_FILEIO_SELECT
 #include <cyg/kernel/kapi.h>
+#endif
 
 #include <stddef.h>             // NULL, size_t
 #include <limits.h>
@@ -391,6 +393,7 @@ __externC int cyg_fs_setinfo( const char *path, int key, void *buf, int len );
 __externC int cyg_fs_fgetinfo( int fd, int key, void *buf, int len );
 __externC int cyg_fs_fsetinfo( int fd, int key, void *buf, int len );
 
+#ifdef CYGFUN_IO_FILEIO_SELECT
 //=============================================================================
 // Select support
 
@@ -417,7 +420,7 @@ __externC void cyg_selrecord( CYG_ADDRWORD info, struct CYG_SELINFO_TAG *sip );
 // cyg_selwakeup() is called when the client device matches the select
 // criterion, and needs to wake up a selector.
 __externC void cyg_selwakeup( struct CYG_SELINFO_TAG *sip );
-
+#endif
 //=============================================================================
 // Timestamp support
 
