@@ -67,10 +67,21 @@ cdl_package CYGPKG_REDBOOT {
         puts $::cdl_header "#include <pkgconf/hal.h>"
     }
 
-    cdl_option CYGSEM_REDBOOT_ELF {
+    cdl_component CYGSEM_REDBOOT_ELF {
         flavor bool
         display       "Include support for ELF file format"
         default_value 1
+
+        cdl_option CYGOPT_REDBOOT_ELF_VIRTUAL_ADDRESS {
+            display "Use the virtual address in the ELF headers"
+            flavor bool
+            default_value 0
+            description "
+                The ELF headers contain both a virtual and a physical address
+                for where code/data should be loaded. By default the physical
+                address is used but sometimes it is necassary to use the
+                virtual address because of bugy toolchains"
+        }
     }
 
 
@@ -344,6 +355,20 @@ cdl_package CYGPKG_REDBOOT {
                          use this option to avoid to wait until the
                          timeout. This option is overriden by the
                          configuration stored in flash."
+                }
+                cdl_option CYGDAT_REDBOOT_DEFAULT_BOOTP_SERVER_IP_ADDR {
+                     display           "Default bootp server"
+                     flavor            booldata
+                     default_value     CYGSEM_REDBOOT_FLASH_CONFIG ? 0 : \
+                                          { "0, 0, 0, 0" }
+                     description       "
+                          This IP address is the default server
+                          address used by RedBoot if a BOOTP/DHCP
+                          server does not respond. The numbers should
+                          be separated by *commas*, and not dots. If
+                          an IP address is configured into the Flash
+                          configuration, that will be used in
+                          preference."
                 }
             }
     
@@ -864,6 +889,16 @@ cdl_package CYGPKG_REDBOOT {
               If this option is enabled then RedBoot will provide commands
               to load files from fileio file systems such as JFFS2."
             compile -library=libextras.a fs/fileio.c
+
+            cdl_option CYGBLD_REDBOOT_FILEIO_WITH_LS {
+                display       "Include an ls command"
+                flavor        bool
+                default_value 1
+                description   "
+                   If this option is enabled a simple ls command will be
+                   included in redboot so the contents of a directory
+                   can be listed"
+            }
         }
 
         cdl_component CYGPKG_REDBOOT_DISK {
@@ -1057,6 +1092,16 @@ cdl_package CYGPKG_REDBOOT {
                     size of one flash sector."
             }
         }
+        cdl_option CYGNUM_REDBOOT_GETC_BUFFER {
+            display       "Buffer size in getc when loading images"
+            flavor        data
+            default_value { CYGPKG_REDBOOT_FILEIO ? 4096 : 256 }
+            description   "
+                When loading images a buffer is used between redboot and the
+                underlying storage medium, eg a filesystem, or a socket etc.
+                The size of this buffer can have a big impart on load speed."
+        }
+
     }
 }
 

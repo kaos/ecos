@@ -91,11 +91,15 @@ RedBoot_config_option("Default network device",
 // ordered, thus the peculiar naming.  In this case, the 'use' option is
 // negated (if false, the others apply) which makes the names even more
 // confusing.
+
+#ifndef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
+#define CYGSEM_REDBOOT_DEFAULT_NO_BOOTP 0
+#endif
 RedBoot_config_option("Use BOOTP for network configuration",
                       bootp, 
                       ALWAYS_ENABLED, true,
                       CONFIG_BOOL,
-                      true
+                      !CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
     );
 RedBoot_config_option("Local IP address",
                       bootp_my_ip,
@@ -672,6 +676,9 @@ net_init(void)
     char *default_devname;
     int default_index;
 #endif
+#ifdef CYGDAT_REDBOOT_DEFAULT_BOOTP_SERVER_IP_ADDR
+    char ip_addr[16];
+#endif
 
     // Set defaults as appropriate
 #ifdef CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
@@ -762,7 +769,11 @@ net_init(void)
     }
     if (have_net) {
         show_eth_info();
-
+#ifdef CYGDAT_REDBOOT_DEFAULT_BOOTP_SERVER_IP_ADDR
+        diag_sprintf(ip_addr, "%d.%d.%d.%d", 
+                     CYGDAT_REDBOOT_DEFAULT_BOOTP_SERVER_IP_ADDR);
+        inet_aton(ip_addr, &my_bootp_info.bp_siaddr);
+#endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
         flash_get_IP("bootp_server_ip", (ip_addr_t *)&my_bootp_info.bp_siaddr);
 #endif

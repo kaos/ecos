@@ -159,6 +159,9 @@ do_mount(int argc, char *argv[])
     } else {
 //        diag_printf("Mount %s file system succeeded\n", type_str);
         fileio_mounted = 1;
+#ifdef CYGBLD_REDBOOT_FILEIO_WITH_LS
+        chdir("/");
+#endif        
     }
 }
 
@@ -172,6 +175,89 @@ do_umount(int argc, char *argv[])
     fileio_mounted = 0;
 }
 
+#ifdef CYGBLD_REDBOOT_FILEIO_WITH_LS
+#include <dirent.h>
+
+static char rwx[8][4] = { "---", "r--", "-w-", "rw-", "--x", "r-x", "-wx", "rwx" }; 
+
+static void 
+do_ls(int argc, char * argv[])
+{
+     char * dir_str;
+     struct option_info opts[1];
+     bool dir_set = false;
+     DIR *dirp;
+     char cwd[PATH_MAX];
+     char filename[PATH_MAX];
+     struct stat sbuf;
+     int err;
+     
+     init_opts(&opts[0], 'd', true, OPTION_ARG_TYPE_STR,
+               (void *)&dir_str, &dir_set, "directory");
+     
+     if (!fileio_mounted) {
+          diag_printf("No filesystem mounted\n");
+          return;
+     }
+     
+     if (!scan_opts(argc, argv, 1, opts, 1, NULL, 0, NULL))
+          return;
+
+     if (!dir_set) {
+          diag_printf("getcwd\n");
+          
+          getcwd(cwd,sizeof(cwd));
+          dir_str = cwd;
+     }
+     
+     diag_printf("directory %s\n",dir_str);
+     dirp = opendir(dir_str);
+     if (dirp==NULL) {
+          diag_printf("no such directory %s\n",dir_str);
+          return;
+     }
+     
+     for (;;) {
+          struct dirent *entry = readdir(dirp);
+          
+          if( entry == NULL )
+               break;
+    
+          strcpy(filename, dir_str);
+          strcat(filename, "/");
+          strcat(filename, entry->d_name);
+          
+          err = stat(filename, &sbuf);
+          if (err < 0) {
+               diag_printf("Unable to stat file %s\n", filename);
+               continue;
+          }
+          diag_printf("%4d ", sbuf.st_ino);
+          if (S_ISDIR(sbuf.st_mode)) diag_printf("d");
+          if (S_ISCHR(sbuf.st_mode)) diag_printf("c");
+          if (S_ISBLK(sbuf.st_mode)) diag_printf("b");
+          if (S_ISREG(sbuf.st_mode)) diag_printf("-");
+          if (S_ISLNK(sbuf.st_mode)) diag_printf("l");
+          diag_printf("%s%s%s",    // Ho, humm, have to hard code the shifts
+                      rwx[(sbuf.st_mode & S_IRWXU) >> 16],
+                      rwx[(sbuf.st_mode & S_IRWXG) >> 19],
+                      rwx[(sbuf.st_mode & S_IRWXO) >> 22]);
+          diag_printf(" %2d size %6d %s\n",
+                      sbuf.st_nlink,sbuf.st_size, 
+                      entry->d_name);
+     }
+     
+     closedir(dirp);
+     return;
+}
+
+RedBoot_cmd("ls", 
+            "list directory contents",
+            "[-d directory]",
+            do_ls
+    );
+
+#endif // CYGBLD_REDBOOT_FILEIO_WITH_LS
 static int fd;
 
 externC int 

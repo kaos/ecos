@@ -1,8 +1,35 @@
+2004-08-17  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * cdl/redboot.cdl:
+        * src/net/net_io.c: added CDL to allow the default server to
+        be configured. Also respect the CYGSEM_REDBOOT_DEFAULT_NO_BOOTP
+        setting.
+
+2004-08-16  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * cdl/redboot.cdl:
+        * src/load.c: Added cdl to control the size of the buffer used
+        by getc. The size can have significant affect on load speed
+        when loading from a filesystem.
+
 2004-08-13  Jani Monoses <jani@iv.ro>
 
 	* src/net/http_client.c: Fix off-by-one error in checking
 	the HTTP response header, so the ending CRLF-CRLF is detected 
 	even if it's the last 4 bytes in the buffer.
+
+2004-08-10  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * cdl/redboot.cdl
+        * src/load.c (load_elf_image): Added a CDL option to configure
+        if the physical or virtual address in the headers should be used
+        when loading the image.
+
+2004-08-09  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * cdl/redboot.cdl
+        * src/fs/fileio.c (do_ls) Added an ls command so we can see what
+        is inside the mounted filesystem.
 
 2004-06-25  Andrew Lunn  <andrew.lunn@ascom.ch>
 

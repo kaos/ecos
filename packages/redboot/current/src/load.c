@@ -104,7 +104,7 @@ CYG_HAL_TABLE_END( __RedBoot_LOAD_TAB_END__, RedBoot_load );
 extern struct load_io_entry __RedBoot_LOAD_TAB__[], __RedBoot_LOAD_TAB_END__;
 
 // Buffers, data used by redboot_getc
-#define BUF_SIZE 256
+#define BUF_SIZE CYGNUM_REDBOOT_GETC_BUFFER
 struct {
     getc_io_funcs_t *io;
     int (*fun)(char *, int len, int *err);
@@ -346,9 +346,14 @@ load_elf_image(getc_t getc, unsigned long base)
     if (base) {
         // Set address offset based on lowest address in file.
         addr_offset = 0xFFFFFFFF;
-        for (phx = 0;  phx < ehdr.e_phnum;  phx++) {    
+        for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
+#ifdef CYGOPT_REDBOOT_ELF_VIRTUAL_ADDRESS     
+            if ((phdr[phx].p_type == PT_LOAD) && (phdr[phx].p_vaddr < addr_offset)) {
+                addr_offset = phdr[phx].p_vaddr;
+#else
             if ((phdr[phx].p_type == PT_LOAD) && (phdr[phx].p_paddr < addr_offset)) {
                 addr_offset = phdr[phx].p_paddr;
+#endif
             }
         }
         addr_offset = (unsigned long)base - addr_offset;
@@ -358,7 +363,11 @@ load_elf_image(getc_t getc, unsigned long base)
     for (phx = 0;  phx < ehdr.e_phnum;  phx++) {
         if (phdr[phx].p_type == PT_LOAD) {
             // Loadable segment
+#ifdef CYGOPT_REDBOOT_ELF_VIRTUAL_ADDRESS
+            addr = (unsigned char *)phdr[phx].p_vaddr;
+#else     
             addr = (unsigned char *)phdr[phx].p_paddr;
+#endif
             len = phdr[phx].p_filesz;
             if ((unsigned long)addr < lowest_address) {
                 lowest_address = (unsigned long)addr;
@@ -379,6 +388,7 @@ load_elf_image(getc_t getc, unsigned long base)
                     offset++;
                 }
             }
+
             // Copy data into memory
             while (len-- > 0) {
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
@@ -400,6 +410,7 @@ load_elf_image(getc_t getc, unsigned long base)
             }
         }
     }
+
     // Save load base/top and entry
     if (base) {
         load_address = base;
