@@ -203,7 +203,7 @@ cyg_net_malloc(u_long size, int type, int flags)
     void *res;
 
     START_STATS();
-    log(LOG_MDEBUG, "Net malloc[%d] = ", size);
+    log(LOG_MDEBUG, "Net malloc[%ld] = ", size);
     if (flags & M_NOWAIT) {
         res = cyg_mempool_var_try_alloc(net_mem, size);
     } else {
@@ -411,15 +411,15 @@ void cyg_kmem_print_stats( void )
     struct vm_zone *zone;
 
     diag_printf( "Network stack mbuf stats:\n" );
-    diag_printf( "   mbufs %d, clusters %d, free clusters %d\n",
+    diag_printf( "   mbufs %ld, clusters %ld, free clusters %ld\n",
                  mbstat.m_mbufs,	/* mbufs obtained from page pool */
                  mbstat.m_clusters,	/* clusters obtained from page pool */
                  /* mbstat.m_spare, */	/* spare field */
                  mbstat.m_clfree	/* free clusters */
         );
-    diag_printf( "   Failed to get %d times\n"
-                 "   Waited to get %d times\n"
-                 "   Drained queues to get %d times\n",
+    diag_printf( "   Failed to get %ld times\n"
+                 "   Waited to get %ld times\n"
+                 "   Drained queues to get %ld times\n",
                  mbstat.m_drops,	/* times failed to find space */
                  mbstat.m_wait, 	/* times waited for space */
                  mbstat.m_drain         /* times drained protocols for space */
@@ -558,7 +558,7 @@ void
 microtime(struct timeval *tp)
 {
     *tp = ktime;
-    log(LOG_DEBUG, "%s: = %d.%d\n", __FUNCTION__, tp->tv_sec, tp->tv_usec);
+    log(LOG_DEBUG, "%s: = %ld.%ld\n", __FUNCTION__, tp->tv_sec, tp->tv_usec);
     ktime.tv_usec++;  // In case clock isn't running yet
 }
 
@@ -566,7 +566,7 @@ void
 getmicrotime(struct timeval *tp)
 {
     *tp = ktime;
-    log(LOG_DEBUG, "%s: = %d.%d\n", __FUNCTION__, tp->tv_sec, tp->tv_usec);
+    log(LOG_DEBUG, "%s: = %ld.%ld\n", __FUNCTION__, tp->tv_sec, tp->tv_usec);
     ktime.tv_usec++;  // In case clock isn't running yet
 }
 
@@ -574,7 +574,7 @@ void
 getmicrouptime(struct timeval *tp)
 {
     *tp = ktime;
-    log(LOG_DEBUG, "%s: = %d.%d\n", __FUNCTION__, tp->tv_sec, tp->tv_usec);
+    log(LOG_DEBUG, "%s: = %ld.%ld\n", __FUNCTION__, tp->tv_sec, tp->tv_usec);
     ktime.tv_usec++;  // In case clock isn't running yet
 }
 

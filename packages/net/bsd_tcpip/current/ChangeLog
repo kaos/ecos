@@ -1,3 +1,10 @@
+2005-03-27  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/sys/net/if.c (ifioctl): Fixed a compiler warning about 
+	types to printf.
+	* src/sys/netinet/if_ether.c (in_arpinput): Ditto
+	* src/sys/net/if.c: Ditto
+
 2005-03-10	Matt Jerdonek	<maj1224@yahoo.com>
 
 	* cdl/freebsd_net.cdl:

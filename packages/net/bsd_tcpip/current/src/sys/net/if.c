@@ -1084,7 +1084,7 @@ _ioctl_name(u_long cmd)
         _NAME(SIOCGIFSTATSUD);
         _NAME(SIOCGIFSTATS);
     default:
-        diag_sprintf(unknown, "0x%08x", cmd);
+        diag_sprintf(unknown, "0x%08lx", cmd);
         return unknown;
     }
 }

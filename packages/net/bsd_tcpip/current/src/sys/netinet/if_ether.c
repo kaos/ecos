@@ -480,8 +480,8 @@ arpintr()
 		if (ntohs(ar->ar_hrd) != ARPHRD_ETHER
 		    && ntohs(ar->ar_hrd) != ARPHRD_IEEE802) {
 			log(LOG_ERR,
-			    "arp: unknown hardware address format (0x%2D)\n",
-			    (unsigned char *)&ar->ar_hrd, "");
+			    "arp: unknown hardware address format (0x%d)\n",
+			    ntohs(ar->ar_hrd));
 			m_freem(m);
 			continue;
 		}
@@ -590,7 +590,7 @@ in_arpinput(m)
 	}
 	if (isaddr.s_addr == myaddr.s_addr) {
 		log(LOG_ERR,
-		   "arp: %6D is using my IP address %s!\n",
+		   "arp: %6p is using my IP address %s!\n",
 		   ea->arp_sha, inet_ntoa(isaddr));
 		itaddr = myaddr;
 		goto reply;
@@ -600,7 +600,7 @@ in_arpinput(m)
 		/* the following is not an error when doing bridging */
 		if (!BRIDGE_TEST && rt->rt_ifp != &ac->ac_if) {
 		    if (log_arp_wrong_iface)
-			log(LOG_ERR, "arp: %s is on %s%d but got reply from %6D on %s%d\n",
+			log(LOG_ERR, "arp: %s is on %s%d but got reply from %6p on %s%d\n",
 			    inet_ntoa(isaddr),
 			    rt->rt_ifp->if_name, rt->rt_ifp->if_unit,
 			    ea->arp_sha, 
@@ -610,13 +610,13 @@ in_arpinput(m)
 		if (sdl->sdl_alen &&
 		    bcmp((caddr_t)ea->arp_sha, LLADDR(sdl), sdl->sdl_alen)) {
 			if (rt->rt_expire)
-			    log(LOG_INFO, "arp: %s moved from %6D to %6D on %s%d\n",
+			    log(LOG_INFO, "arp: %s moved from %6p to %6p on %s%d\n",
 				inet_ntoa(isaddr), (u_char *)LLADDR(sdl),
 				ea->arp_sha,
 				ac->ac_if.if_name, ac->ac_if.if_unit);
 			else {
 			    log(LOG_ERR,
-				"arp: %6D attempts to modify permanent entry for %s on %s%d\n",
+				"arp: %6p attempts to modify permanent entry for %s on %s%d\n",
 				ea->arp_sha, inet_ntoa(isaddr),
 				ac->ac_if.if_name, ac->ac_if.if_unit);
 			    goto reply;
