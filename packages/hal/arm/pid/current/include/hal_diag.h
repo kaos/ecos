@@ -93,7 +93,7 @@ externC void hal_diag_led(int n);
 /*---------------------------------------------------------------------------*/
 // delay
 
-extern void hal_delay_us(cyg_int32 usecs);
+externC void hal_delay_us(cyg_int32 usecs);
 #define HAL_DELAY_US(n) hal_delay_us(n);
 
 /*---------------------------------------------------------------------------*/

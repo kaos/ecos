@@ -1,3 +1,8 @@
+2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_intr_excevt.h: 
+	* include/hal_intr_vecs.h: hal_delay_us() is a C function.
+
 2003-07-29  Gary Thomas  <gary@mlbassoc.com> on behalf of
 2003-07-29  Yoshinori Sato <ysato@users.sourceforge.jp>	
 

@@ -558,7 +558,7 @@ extern cyg_uint32 __hal_period__;
     *(_pvalue_) = __hal_period__ - ((t5<<16) + t4);                     \
 }
 
-extern void hal_delay_us(cyg_int32 usecs);
+externC void hal_delay_us(cyg_int32 usecs);
 
 #define HAL_DELAY_US(n)          hal_delay_us(n);
 

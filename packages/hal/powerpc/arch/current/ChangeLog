@@ -1,3 +1,7 @@
+2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_intr.h: hal_delay_us() is a C function.
+
 2003-10-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/vectors.S: Revert change to interrupt handling (see below) which

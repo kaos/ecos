@@ -1,3 +1,7 @@
+2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_diag.h: hal_delay_us() is a C function.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_arm_arm9_excalibur.cdl:

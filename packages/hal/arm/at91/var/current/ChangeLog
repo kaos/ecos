@@ -1,3 +1,7 @@
+2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/hal_diag.h: hal_delay_us() is a C function.
+
 2003-12-02  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* include/var_io.h: Improved accuracy for baud rate divider

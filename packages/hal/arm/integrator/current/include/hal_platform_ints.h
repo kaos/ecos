@@ -92,7 +92,7 @@
 //----------------------------------------------------------------------------
 // Microsecond delay support.
 
-extern void hal_delay_us(cyg_uint32 usecs);
+externC void hal_delay_us(cyg_uint32 usecs);
 #define HAL_DELAY_US(n)          hal_delay_us(n);
 
 //----------------------------------------------------------------------------

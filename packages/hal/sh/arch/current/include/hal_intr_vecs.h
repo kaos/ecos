@@ -170,7 +170,7 @@
 
 #include <cyg/infra/cyg_type.h>
 
-extern void hal_delay_us(int);
+externC void hal_delay_us(int);
 #define HAL_DELAY_US(n) hal_delay_us(n)
 
 #endif // __ASSEMBLER__

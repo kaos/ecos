@@ -245,7 +245,7 @@
 #define HAL_CLOCK_LATENCY( _pvalue_ ) HAL_CLOCK_READ(_pvalue_)
 #endif
 
-extern void hal_delay_us(int);
+externC void hal_delay_us(int);
 #define HAL_DELAY_US(n) hal_delay_us(n)
 
 #endif // __ASSEMBLER__

@@ -1,3 +1,7 @@
+2003-12-05  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/var_intr.h:  hal_delay_us() is a C function.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_mn10300_am33.cdl:

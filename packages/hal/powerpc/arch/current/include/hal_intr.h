@@ -405,7 +405,7 @@ externC void cyg_hal_default_exception_vsr( void );
 #endif
 
 #ifndef HAL_DELAY_US
-extern void hal_delay_us(int);
+externC void hal_delay_us(int);
 #define HAL_DELAY_US(n) hal_delay_us(n)
 #endif
 
