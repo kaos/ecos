@@ -1,3 +1,7 @@
+2003-09-18  Thomas Koeller  <thomas.koeller@baslerweb.com>
+
+	* src/fs-ecos.c: Inode number returned by stat() was bogus.
+
 2003-07-27  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/os-ecos.h: Added new #defines require for the recent jffs2

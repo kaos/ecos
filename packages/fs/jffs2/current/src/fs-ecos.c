@@ -1143,7 +1143,7 @@ static int jffs2_stat(cyg_mtab_entry * mte, cyg_dir dir, const char *name,
 
 	// Fill in the status
 	buf->st_mode = ds.node->i_mode;
-	buf->st_ino = (ino_t) ds.node;
+	buf->st_ino = ds.node->i_ino;
 	buf->st_dev = 0;
 	buf->st_nlink = ds.node->i_nlink;
 	buf->st_uid = 0;
