@@ -1,3 +1,14 @@
+2004-04-08  Bob Koninckx <bob.koninckx@o-3s.com>
+	
+	* cdl/ec555_eth_drivers.cdl: Made
+	CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_BASE	a calculated option that is
+	always consistent with the memory map. Added the possibility to set
+	the esa as a configuration option.
+	
+	* include/devs_eth_powerpc_ec555.inl: Made hardware swapping or
+	software swapping of data bytes (mostly relevant to big endian
+	machines) a configuration option
+
 2003-11-05  Bob Koninckx <bob.koninckx@mech.kuleuven.ac.be>
 
 	* include/devs_eth_powerpc_ec555.inl: 

@@ -110,11 +110,9 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_EC555 {
         cdl_option CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_BASE {
             display       "Base address to use for accessing the device"
             flavor        data
-            default_value 0xd0000000
+			calculated    { CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_CS == 2 ? 0x04000000 : 0x08000000 }
             description   "
-                This option determines the base address to use for the memory controller.
-                Make sure that it does not conflict with aother settings. Leaving it to the
-                default should be ok"
+                This option determines the base address to use for the memory controller"
         }
 
         cdl_option CYGNUM_DEVS_ETH_POWERPC_EC555_ETH0_IRQ {
@@ -130,7 +128,6 @@ cdl_package CYGPKG_DEVS_ETH_POWERPC_EC555 {
         cdl_component CYGSEM_DEVS_ETH_POWERPC_EC555_ETH0_SET_ESA {
             display       "Set the ethernet station address"
             flavor        bool
-            calculated    0
             description   "Enabling this option will allow the ethernet
             station address to be forced to the value set by the
             configuration.  This may be required if the hardware does

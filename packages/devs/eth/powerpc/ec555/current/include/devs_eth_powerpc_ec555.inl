@@ -114,44 +114,48 @@ _ec555_provide_eth0_esa(struct cs8900a_priv_data* cpd)
 // ------------------------------------------------------------------------
 // EEPROM access functions
 // These are byte swapped
-#define PP_ECR          0x4000
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
+#define PP_ECR          0x4000    // EEPROM Command Register
 #define PP_EE_READ_CMD  0x0002
 #define PP_EE_WRITE_CMD 0x0001
 #define PP_EE_DATA		0x4200
+#else
+#define PP_ECR          0x0040    // EEPROM Command Register
+#define PP_EE_READ_CMD  0x0200
+#define PP_EE_WRITE_CMD 0x0100
+#define PP_EE_DATA      0x0042
+#endif
 
 #define PP_EE_ADDR_W0   0x001C    // Notice that the EEPROM is not programmed when you got the
 #define PP_EE_ADDR_W1   0x001D    // Module from Wuerz. Make sure to program the address to these
 #define PP_EE_ADDR_W2   0x001E    // locations before using the adapter. This is fairly easy using GDB
 
-// The example below programs the MAC address aa bb cc dd ee ff to the eeprom, supposed that the module
-// is mapped to adresses 0xd000 0000
+// The example below programs the MAC address 0050 c4ff fc07 to the eeprom, supposed that the module
+// is mapped to adresses 0x0400 0000, and supposed that the data bus is _not_ byte swapped
 //
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x3000        erase/write enable
-// set *(unsigned short *)0xd000030a = 0x4200        select eeprom data
-// set *(unsigned short *)0xd000030c = 0xaabb        write data
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x1c01        write to offset 1c
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x0000        erase/write disable
-
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x3000        erase/write enable
-// set *(unsigned short *)0xd000030a = 0x4200        select eeprom data
-// set *(unsigned short *)0xd000030c = 0xccdd        write data
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x1d01        write to offset 1d
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x0000        erase/write disable
-
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x3000        erase/write enable
-// set *(unsigned short *)0xd000030a = 0x4200        select eeprom data
-// set *(unsigned short *)0xd000030c = 0xeeff        write data
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x1e01        write to offset 1c
-// set *(unsigned short *)0xd000030a = 0x4000        select eeprom command
-// set *(unsigned short *)0xd000030c = 0x0000        erase/write disable
+// set *(unsigned short *)0x0400030a = 0x0040        Make the eeprom writable / erasable
+// set *(unsigned short *)0x0400030c = 0x0030        
+//
+// set *(unsigned short *)0x0400030a = 0x0040        erase the old esa
+// set *(unsigned short *)0x0400030c = 0x031c       
+// set *(unsigned short *)0x0400030c = 0x031d       
+// set *(unsigned short *)0x0400030c = 0x031e       
+// 
+// set *(unsigned short *)0x0400030a = 0x0042        program the new esa
+// set *(unsigned short *)0x0400030c = 0x5000
+// set *(unsigned short *)0x0400030a = 0x0040
+// set *(unsigned short *)0x0400030c = 0x011c
+// set *(unsigned short *)0x0400030a = 0x0042
+// set *(unsigned short *)0x0400030c = 0xffc4
+// set *(unsigned short *)0x0400030a = 0x0040
+// set *(unsigned short *)0x0400030c = 0x011d
+// set *(unsigned short *)0x0400030a = 0x0042
+// set *(unsigned short *)0x0400030c = 0x07fc
+// set *(unsigned short *)0x0400030a = 0x0040
+// set *(unsigned short *)0x0400030c = 0x011e
+//
+// set *(unsigned short *)0x0400030a = 0x0040        Write protect the eeprom
+// set *(unsigned short *)0x0400030c = 0x0030         
 
 static __inline__ cyg_uint16 
 read_eeprom(cyg_addrword_t base, cyg_uint16 offset)
@@ -159,8 +163,11 @@ read_eeprom(cyg_addrword_t base, cyg_uint16 offset)
     while (get_reg(base, PP_SelfStat) & PP_SelfStat_SIBSY)
         ;
 
-	// Swap the offset, this is a BIG-ENDIAN machine
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
     put_reg(base, PP_ECR, (CYG_SWAP16(offset) | PP_EE_READ_CMD));
+#else
+    put_reg(base, PP_ECR, (offset | PP_EE_READ_CMD));
+#endif
 
     while (get_reg(base, PP_SelfStat) & PP_SelfStat_SIBSY)
         ;
@@ -176,14 +183,18 @@ copy_eeprom(cyg_addrword_t base)
     for (i = 0;  i < 6;  i += 2)
     {    // Offset in the eeprom is WORD oriented, in the packetpage BYTE oriented
          esa_word = read_eeprom(base, PP_EE_ADDR_W0 + (i/2));
+#ifdef CYGIMP_DEVS_ETH_CL_CS8900A_DATABUS_BYTE_SWAPPED
          put_reg(base, (PP_IA + CYG_SWAP16(i)), esa_word);
+#else
+         put_reg(base, (PP_IA + i), esa_word);
+#endif
     }
 }
 
 // Not so nice, but reading these will never conflict on the ec555
 // They certainly differ in A18
-#define FIRSTRAM 0x00400000
-#define LASTRAM  0x004ffffe
+#define FIRSTRAM 0x01000000
+#define LASTRAM  0x010ffffe
 
 static __inline__ void 
 post_reset(cyg_addrword_t base)
