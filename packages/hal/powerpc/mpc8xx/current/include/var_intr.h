@@ -12,6 +12,7 @@
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003 Jonathan Larmour <jifl@eCosCentric.com>
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -430,8 +431,7 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
         // When IRQx is configured as an edge interrupt it needs to be
         // cleared. Write to INTx and IRQ/level bits are ignore so
         // it's safe to do always.
-        HAL_READ_UINT32 (CYGARC_REG_IMM_SIPEND, sipend);
-        sipend |= (((cyg_uint32) CYGARC_REG_IMM_SIPEND_IRQ0) 
+        sipend = (((cyg_uint32) CYGARC_REG_IMM_SIPEND_IRQ0) 
                    >> (vector - CYGNUM_HAL_INTERRUPT_SIU_IRQ0));
         HAL_WRITE_UINT32 (CYGARC_REG_IMM_SIPEND, sipend);
         break;
@@ -443,6 +443,8 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
 
         HAL_READ_UINT16 (CYGARC_REG_IMM_TBSCR, tbscr);
         tbscr |= CYGARC_REG_IMM_TBSCR_REFA;
+        // take care not to accidently reset potential pending REFB
+        tbscr &= ~CYGARC_REG_IMM_TBSCR_REFB;
         HAL_WRITE_UINT16 (CYGARC_REG_IMM_TBSCR, tbscr);
         break;
     }
@@ -453,6 +455,8 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
 
         HAL_READ_UINT16 (CYGARC_REG_IMM_TBSCR, tbscr);
         tbscr |= CYGARC_REG_IMM_TBSCR_REFB;
+        // take care not to accidently reset potential pending REFA
+        tbscr &= ~CYGARC_REG_IMM_TBSCR_REFA;
         HAL_WRITE_UINT16 (CYGARC_REG_IMM_TBSCR, tbscr);
         break;
     }
@@ -473,6 +477,8 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
 
         HAL_READ_UINT16 (CYGARC_REG_IMM_RTCSC, rtcsc);
         rtcsc |= CYGARC_REG_IMM_RTCSC_SEC;
+        // take care not to accidently reset potential pending RTCSC_ALR
+        rtcsc &= ~CYGARC_REG_IMM_RTCSC_ALR;
         HAL_WRITE_UINT16 (CYGARC_REG_IMM_RTCSC, rtcsc);
         break;
     }
@@ -483,6 +489,8 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
 
         HAL_READ_UINT16 (CYGARC_REG_IMM_RTCSC, rtcsc);
         rtcsc |= CYGARC_REG_IMM_RTCSC_ALR;
+        // take care not to accidently reset potential pending RTCSC_SEC
+        rtcsc &= ~CYGARC_REG_IMM_RTCSC_SEC;
         HAL_WRITE_UINT16 (CYGARC_REG_IMM_RTCSC, rtcsc);
         break;
     }
@@ -499,8 +507,7 @@ cyg_hal_interrupt_acknowledge ( cyg_uint32 vector )
         // CPM interrupts
         cyg_uint32 cisr;
 
-        HAL_READ_UINT32 (CYGARC_REG_IMM_CISR, cisr);
-        cisr |= (((cyg_uint32) 0x80000000) 
+        cisr = (((cyg_uint32) 0x80000000) 
                  >> (vector - CYGNUM_HAL_INTERRUPT_CPM_FIRST));
         HAL_WRITE_UINT32 (CYGARC_REG_IMM_CISR, cisr);
         break;
