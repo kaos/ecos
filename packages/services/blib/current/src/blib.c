@@ -47,12 +47,12 @@
 //==========================================================================
 
 #include <cyg/io/io.h>
+#include <cyg/infra/cyg_type.h>    
 #include <cyg/infra/cyg_ass.h>      // assertion support
 #include <cyg/infra/diag.h>         // diagnostic output
-#include <cyg/kernel/kapi.h>
 #include <blib/blib.h>
 
-#include <string.h>
+#include <string.h>  // memcpy
 
 #include <linux/rbtree.h>
 #include <linux/list.h>
@@ -66,6 +66,8 @@
 #else
 # define D(_args_) CYG_EMPTY_STATEMENT
 #endif
+
+#define ALIGN(_x_) (((_x_) + (CYGARC_ALIGNMENT-1)) & ~(CYGARC_ALIGNMENT-1))
 
 #ifdef CYGIMP_BLOCK_LIB_STATISTICS
 
@@ -184,6 +186,53 @@ list_move_block_to_head(cyg_blib_t *bl, blib_block_t *block)
 
 // --------------------------------------------------------------------
 
+static __inline__ void
+free_block(cyg_blib_t *bl, blib_block_t *block)
+{
+    list_add(&block->list_node, &bl->free_list_head);
+}
+
+static __inline__ blib_block_t *
+alloc_block(cyg_blib_t *bl)
+{
+    if ( !list_empty(&bl->free_list_head) )
+    {
+        blib_block_t *new;
+
+        new = list_entry(bl->free_list_head.next, blib_block_t, list_node);
+        list_del(bl->free_list_head.next);
+       
+        return new; 
+    }
+    else
+        return NULL;
+}
+
+static void
+init_block_mem_pool(cyg_blib_t *bl)
+{
+    cyg_uint8  *block_mem;
+    cyg_uint32  avail_mem_size, block_mem_size;
+    
+    INIT_LIST_HEAD(&bl->free_list_head);    
+
+    block_mem      = bl->mem_base;
+    avail_mem_size = bl->mem_size;
+    block_mem_size = ALIGN(sizeof(blib_block_t) + bl->block_size);
+    
+    while (avail_mem_size >= block_mem_size)
+    {
+        blib_block_t *block = (blib_block_t *)block_mem;
+        
+        list_add(&block->list_node, &bl->free_list_head);
+        
+        block_mem      += block_mem_size;
+        avail_mem_size -= block_mem_size;
+    }
+}
+
+// --------------------------------------------------------------------
+
 static cyg_uint32
 get_val_log2(cyg_uint32 val)
 {
@@ -281,7 +330,7 @@ blib_get_block(cyg_blib_t    *bl,
 
     D(("blib block=%d NOT found in cache\n", num)); 
 
-    block = (blib_block_t *)cyg_mempool_fix_try_alloc(bl->mem_pool_h);
+    block = alloc_block(bl);
 
     if (NULL == block)
     {
@@ -312,7 +361,7 @@ blib_get_block(cyg_blib_t    *bl,
         ret = bl->bread_fn(bl->priv, (void *)block->data, &len, block->num);
         if (ENOERR != ret)
         {
-            cyg_mempool_fix_free(bl->mem_pool_h, block);
+            free_block(bl, block);
             return ret;
         }
     }
@@ -324,16 +373,6 @@ blib_get_block(cyg_blib_t    *bl,
 }
 
 static int 
-blib_free_cache(cyg_blib_t *bl)
-{
-    int ret = ENOERR;
-    ret = blib_sync(bl);
-    if (ENOERR == ret)
-        cyg_mempool_fix_delete(bl->mem_pool_h);
-    return ret;
-}
-
-static int
 blib_init_cache(cyg_blib_t *bl, 
                 void       *mem_base,
                 cyg_uint32  mem_size,
@@ -341,11 +380,10 @@ blib_init_cache(cyg_blib_t *bl,
                 cyg_bool    reinit)
 {
     int ret = ENOERR;
-    cyg_uint32 mem_block_size;
     
     if (reinit)
     {
-        ret = blib_free_cache(bl); 
+        ret = blib_sync(bl);
         if (ENOERR != ret)
             return ret;
     }
@@ -361,10 +399,7 @@ blib_init_cache(cyg_blib_t *bl,
     if (0 == bl->block_size_log2)
         return -EINVAL;
     
-    mem_block_size = bl->block_size + sizeof(blib_block_t);
-
-    cyg_mempool_fix_create(bl->mem_base, bl->mem_size, mem_block_size,
-                           &bl->mem_pool_h, &bl->mem_pool);
+    init_block_mem_pool(bl);
 
     STAT_INIT(bl);
 
@@ -420,7 +455,7 @@ cyg_blib_io_create(cyg_io_handle_t     handle,
 int
 cyg_blib_delete(cyg_blib_t *bl)
 {
-    return blib_free_cache(bl);
+    return blib_sync(bl);
 }
 
 int 

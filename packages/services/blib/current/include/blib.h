@@ -49,7 +49,6 @@
 //==========================================================================
 
 #include <cyg/infra/cyg_type.h> 
-#include <cyg/kernel/kapi.h> 
 #include <cyg/io/io.h> 
 
 #include <linux/rbtree.h>
@@ -85,8 +84,7 @@ typedef struct {
     cyg_uint32            block_size_log2; // block size log2
     cyg_uint8            *mem_base;        // memory base
     cyg_uint32            mem_size;        // memory size
-    cyg_mempool_fix       mem_pool;        // memory pool struct
-    cyg_handle_t          mem_pool_h;      // memory pool handle
+    struct list_head      free_list_head;  // list of free blocks
     cyg_blib_bread_fn     bread_fn;        // block read function
     cyg_blib_bwrite_fn    bwrite_fn;       // block write function
 #ifdef CYGIMP_BLOCK_LIB_STATISTICS
