@@ -58,7 +58,7 @@
 #define CYGNUM_FLASH_INTERLEAVE	(4)
 #define CYGNUM_FLASH_SERIES	(1)
 #define CYGNUM_FLASH_WIDTH	(8)
-#define CYGNUM_FLASH_16AS8
+#define CYGNUM_FLASH_16AS8      (1)
 #define CYGNUM_FLASH_BASE 	(0x82C00000u) /* uncached shadow region */
 
 //--------------------------------------------------------------------------

@@ -1,3 +1,8 @@
+2002-12-05  Mark Salter  <msalter@redhat.com>
+
+	* src/mn10300_asb2303_flash.c (CYGNUM_FLASH_16AS8): Define
+	as 1 due to recent change in generic driver.
+
 2002-12-04  Mark Salter  <msalter@redhat.com>
 
 	* cdl/flash_asb2303.cdl: Support AM29DL322D.
