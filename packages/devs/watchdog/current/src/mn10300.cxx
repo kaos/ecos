@@ -43,7 +43,7 @@
 #include <pkgconf/system.h>             // system configuration file
 #include <pkgconf/watchdog.h>           // configuration for this package
 
-#if defined(CYG_HAL_MN10300_MN103002) && !defined(CYGIMP_WATCHDOG_EMULATE)
+#if defined(CYGPKG_HAL_MN10300) && !defined(CYGIMP_WATCHDOG_EMULATE)
 
 #include <pkgconf/kernel.h>             // Kernel config
 
@@ -64,6 +64,8 @@
 // -------------------------------------------------------------------------
 // MN10300 watchdog timer registers
 
+#if defined(CYGPKG_HAL_MN10300_AM31)
+
 #define WATCHDOG_BASE           0x34004000
 #define WATCHDOG_COUNTER        (WATCHDOG_BASE)
 #define WATCHDOG_CONTROL        (WATCHDOG_BASE+2)
@@ -73,6 +75,14 @@
 #define WATCHDOG_WDCK0_DEFAULT  0x04    // 1016.801ms cycle
 #define WATCHDOG_WDRST          0x40
 #define WATCHDOG_WDCNE          0x80
+
+#define WATCHDOG_RESOLUTION     1016801000      // cycle time in nanoseconds
+
+#else
+
+#error Unsupported MN10300 variant
+
+#endif
 
 // -------------------------------------------------------------------------
 // Forward definitions
@@ -98,14 +108,26 @@ static Cyg_Interrupt interrupt(
 // -------------------------------------------------------------------------
 // Constructor
 
+
 Cyg_Watchdog::Cyg_Watchdog()
 {
     CYG_REPORT_FUNCTION();
     
     action_list         = 0;
 
+    resolution          = WATCHDOG_RESOLUTION;
+        
     CYG_REPORT_RETURN();
 }
+
+// -------------------------------------------------------------------------
+// Return reset resolution
+
+cyg_uint64 Cyg_Watchdog::get_resolution()
+{
+    return resolution;
+}
+
 
 // -------------------------------------------------------------------------
 // Start the watchdog running.
@@ -243,7 +265,7 @@ watchdog_dsr(cyg_vector vector, cyg_ucount32 count, CYG_ADDRWORD data)
 {
 }
 
-#endif // defined(CYG_HAL_MN10300_MN103002) &&
+#endif // defined(CYGPKG_HAL_MN10300) &&
        // !defined(CYGIMP_WATCHDOG_EMULATE)
 // -------------------------------------------------------------------------
 // EOF watchdog/mn10300.cxx

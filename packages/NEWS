@@ -33,6 +33,12 @@
 *** The following are the new target platforms...
 
 
+**** ARM:
+     ARM720  - Cirrus Logic CL7211 board
+     ARM710C - Cirrus Logic CL7111 board
+
+**** PowerPC
+     Motorola MBX PowerPC Evaluation Board
 
 
 ** Host side platforms

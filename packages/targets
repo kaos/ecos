@@ -169,6 +169,14 @@ target powerpc {
 	    CYGPKG_HAL_POWERPC_FADS
 	}
     }
+    platform mbx {
+        alias		{ "MBX8xx board" }
+	startup		{ ram rom }
+	packages	{
+	    CYGPKG_HAL_POWERPC_MBX
+	    CYGPKG_HAL_QUICC
+	}
+    }
     platform sim {
 	alias		{ "Simulator" }
 	startup		{ ram }
@@ -232,6 +240,40 @@ target arm {
 	}
         cflags {
             ARCHFLAGS        "-mcpu=arm7di"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
+    platform cl7111 {
+        alias		{ "Cirrus Logic Eval Board (CL7111)" }
+	startup		{ ram rom stubs }
+	base_platform	cl7211
+	packages	{
+	    CYGPKG_HAL_ARM_CL7211
+	}
+        cflags {
+            ARCHFLAGS        "-mcpu=arm710c -D__CL7111"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
+# FIXME:           ARCHFLAGS        "-mcpu=arm720"
+    platform cl7211 {
+        alias		{ "Cirrus Logic Eval Board (CL7211)" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_CL7211
+	}
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7tdmi -D__CL7211"
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"

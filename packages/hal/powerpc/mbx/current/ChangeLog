@@ -1,0 +1,192 @@
+1999-07-27  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S: Fix typo in PLL setup value.  Reported from the net.
+
+1999-06-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_init): Fix a "default type" warning.
+
+1999-06-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_diag.c (hal_diag_write_char): Only gobble the GDB ACK
+	characters if there is no pre-ISR polling call to look for ^C
+	chars to interrupt the prog.  (CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+	- should not be enabled if devices are in use)
+
+1999-06-28  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S (__upmtbl_start): We do not trust rewriting the UPMs
+	for DRAM timing whilst running out of that very DRAM.  So only
+	init UPMs in ROM start (including when making a stub rom).
+
+1999-06-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c: Support buffering of diagnostic data for later
+	display.  Controlled by CYGDBG_DIAG_BUF.  Also, turn on code to
+	handle GDB ACK characters when stubs are enabled.
+
+1999-06-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S (__upmtbl_start): depending on CYG_HAL_ROM_MONITOR, we
+	use the OLD TABLES if making a stub rom.  For greatest commonality
+	of startup code between RAM startup development binaries and ROM
+	startup "product" binaries we completely re-initialize the UPMs
+	that control DRAM timing even in RAM start when executing out of
+	that very DRAM.
+	
+	It appears that it is OK to rewrite the UPMs with the new timing
+	data when already running with the old timing data, but not OK to
+	update from new to new.  So we use the old timing data when
+	building stubs.
+
+	An alternative would be to conditionally not perform the UPM
+	initialization in RAM startup, but that would weaken the testing
+	value of RAM startup programs.
+
+1999-06-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S (__upmtbl_start): Use the new tables recently supplied
+	by email from Motorola; without them, the cache-line-zero
+	operation only zeros 12 bytes rather than 16.  [PR 20226]
+
+1999-06-24  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_INIT_BREAK_IRQ): Define
+	this (empty) for it is required if HAL_DEBUG_GDB_BREAK_SUPPORT is
+	enabled.  Improve HAL_STUB_PLATFORM_SET_BAUD_RATE.
+
+1999-06-18  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt:
+	Fix MLT save files to match the default linker script
+	fragments.
+
+1999-06-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt:
+	Initial attempt at getting these to match the reality of the
+	linker script fragment; we'll have to see whether they're right.
+
+1999-06-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S: Data cache setup in hal_hardware_init: set
+	force-writethrough mode and explicitly disable little-endian swap
+	mode, whatever _that_ is.  Force-writethrough is required if you
+	are to enable the data cache, it crashes otherwise.  Cause
+	unknown, could be the memory system doesn't support whatever
+	access regime is used, or caching problems with loading code
+	through the stubs?  In any case, this is a fine workaround.
+	
+	* src/hal_aux.c (CYGARC_MEMDESC_TABLE): Enable caching of the ROM;
+	seems to do no harm, and helps ROM-based performance.
+
+1999-06-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_powerpc_mbx.h: Fixed CDL description.
+
+1999-06-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* misc/stubrom.perm: New file: a perm for creating an eCos stub
+	ROM for the MBX.  Pro tem, ^C to break is not supported, so the
+	feature must remain disabled.
+
+	* include/plf_stub.h (HAL_STUB_PLATFORM_INIT): Diddle the LEDs if
+	ROM start to distinguish eCos stub ROM from CygMon ROM from eCos
+	app running/internal stubs.
+
+1999-06-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.ldi: Move RAM usage in ROM
+	startup to 2000 so that we can build stubs that don't fight with
+	RAM started apps' RAM use from 10000.
+
+1999-06-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/PKGconf.mak: New file, to build that below.
+
+	* tests/mbxtime.cxx: New file, a simple test of the system timer
+	for a human to check it's roughly seconds.
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.ldi: ROM startup supported.
+
+	* include/pkgconf/hal_powerpc_mbx.h
+	(CYGHWR_HAL_POWERPC_MBX_BOARD_SPEED): Add this config option to
+	select 40MHz or 50MHz system clock speed.
+
+	* src/mbx.S (hal_hardware_init): Complete system init for ROM
+	start; move return address to inside the ROM from wherever we
+	booted.  Proper board clock speed selection.
+
+	* src/hal_diag.c (hal_diag_write_char_serial): Do not encode
+	packets for GDB if using ROM start.
+
+	* src/hal_aux.c (CYGARC_MEMDESC_TABLE): Map the ROM correctly so
+	that ROM start works.
+
+1999-06-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S (hal_hardware_init): Add full ROM-type startup code
+	and some useful LED-diddling routines and macro, to assist in
+	debugging ROM startup.
+	
+	* src/hal_aux.c (CYGARC_MEMDESC_TABLE): Enable memory mapping to
+	the LED control register so that we can treak them with mem mgt
+	enabled ie. in a normal execution context.	
+
+1999-06-11  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/mbx.S (hal_hardware_init): Set up the base address of the
+	control registers in IMMR to 0xff000000 (as defined in arch).
+	Turn off external interrupts, initialize the decrementer.
+
+	* src/PKGconf.mak: Build the new file.
+
+	* src/hal_aux.c (CYGARC_MEMDESC_TABLE): New file, to define this
+	object for per-platform table-driven memory map initialization.
+	The table used to be in hal_misc.c in the architectural HAL; this
+	is platform dependent so better and cleaner here.
+
+1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* ChangeLog: Component created, based partly on the FADS work and
+	on CygMon's serial IO code for the MBX860, to support the Motorola
+	MBX860 development board.  Actual serial support lies in
+	neighbouring component HAL_QUICC [hal/powerpc/quicc/...]
+
+	* include/hal_diag.h
+	* include/plf_stub.h
+	* include/pkgconf/hal_powerpc_mbx.h
+	* include/pkgconf/mlt_powerpc_mbx_ram.ldi
+	* include/pkgconf/mlt_powerpc_mbx_ram.mlt
+	* include/pkgconf/mlt_powerpc_mbx_rom.ldi
+	* include/pkgconf/mlt_powerpc_mbx_rom.mlt
+	* src/PKGconf.mak
+	* src/hal_diag.c
+	* src/mbx.S
+	New files.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//
+// -------------------------------------------
+// The contents of this file are subject to the Cygnus eCos Public License
+// Version 1.0 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://sourceware.cygnus.com/ecos
+// 
+// Software distributed under the License is distributed on an "AS IS"
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the
+// License for the specific language governing rights and limitations under
+// the License.
+// 
+// The Original Code is eCos - Embedded Cygnus Operating System, released
+// September 30, 1998.
+// 
+// The Initial Developer of the Original Code is Cygnus.  Portions created
+// by Cygnus are Copyright (C) 1998,1999 Cygnus Solutions.  All Rights Reserved.
+// -------------------------------------------
+//
+//####COPYRIGHTEND####
+//===========================================================================

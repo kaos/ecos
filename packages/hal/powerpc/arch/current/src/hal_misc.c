@@ -118,6 +118,38 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 
     __handle_exception();
 
+#ifdef CYGPKG_HAL_QUICC
+    {
+        // This is unpleasant: it appears that if we interrupt the board
+        // using ^C coming in on the QUICC's SMC1, by planting a breakpoint
+        // at the interrupt return address, the decrementer interrupt is
+        // not taken when the bp exception returns AND WORSE no other
+        // interrupt is possible until the decrementer fires again.  This
+        // does not apply to simple "incoming character" interrupts; it
+        // seems it has to be combined with an immediate trap on RTI for
+        // this to occur.
+        // 
+        // The solution is to test for decrementer underflow after the
+        // (any) exception, and maybe reinitialize the decrementer.  If the
+        // decrementer interrupt gets taken, that causes decrementer reinit
+        // too, and no harm is done.
+
+        cyg_uint32 result;
+        asm volatile(
+            "mfdec  %0;"
+            : "=r"(result)
+            );
+
+        if ( CYGNUM_HAL_RTC_PERIOD < result ) {
+            // then we missed a tick, but the exception masked it
+            // reset the decrementer here
+            asm volatile(
+                "mtdec  %0;"
+                : : "r"(CYGNUM_HAL_RTC_PERIOD)
+                );
+        }
+    }
+#endif
 
 #elif defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && \
       defined(CYGPKG_HAL_EXCEPTIONS)
@@ -189,6 +221,23 @@ hal_default_decrementer_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 void
 hal_idle_thread_action( cyg_uint32 count )
 {
+#if 0
+#ifdef CYG_HAL_POWERPC_MPC860
+    register cyg_uint32 result;
+
+    cyg_uint32 *psivec  = (cyg_uint32*)CYGARC_REG_IMM_SIVEC ;
+    cyg_uint32 *psimask = (cyg_uint32*)CYGARC_REG_IMM_SIMASK;
+    cyg_uint32 *psipend = (cyg_uint32*)CYGARC_REG_IMM_SIPEND;
+    cyg_uint16 *ptbscr =  (cyg_uint16*)CYGARC_REG_IMM_TBSCR;
+
+    asm volatile(
+        "mfdec  %0;"
+        : "=r"(result)
+        );
+    diag_printf( "Dec %08x, TBSCR %04x, vec %d: sivec %08x, simask %08x, sipend %08x\n",
+          result, (cyg_uint32)(*ptbscr), (*psivec)>>26, *psivec,    *psimask,    *psipend   );
+#endif
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -422,6 +471,12 @@ externC void hal_MMU_init (void)
 # endif
 #endif
 
+#ifdef CYGPKG_HAL_POWERPC_MBX           // Enable all caches for MBX860
+# ifndef CYG_HAL_ROM_MONITOR            // unless we are making a stub rom
+#  define CYGPRI_INIT_CACHES 1
+#  define CYGPRI_ENABLE_CACHES 1
+# endif
+#endif
 
 // Do not enable caches for the FADS port pro tem; the memory mapping is
 // not set up.

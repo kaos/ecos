@@ -296,6 +296,9 @@ _start:
         
 #ifdef CYG_HAL_POWERPC_COPY_VECTORS // only for StubRom-supported startup
 
+#ifdef CYG_HAL_POWERPC_MBX
+# define CYGPRI_STUBROM_HAS_RAM_VECTORS
+#endif
 
 #ifdef CYGPRI_STUBROM_HAS_RAM_VECTORS
 # ifdef CYG_HAL_STARTUP_RAM

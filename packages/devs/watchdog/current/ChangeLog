@@ -1,3 +1,17 @@
+1999-08-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/watchdog.h: Made test for use of a non-emulated
+	watchdog more generic for MN10300 targets.
+
+	* src/emulate.cxx: 
+	* include/watchdog.hxx (class Cyg_Watchdog):
+	Added get_resolution() to return maximum time, in nanoseconds,
+	between calls to reset().
+
+	* tests/watchdog.cxx: 
+	Modified to use the value returned from get_resolution() to
+	control the timing of reset() calls.
+	
 1999-07-14  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/mn10300.cxx: 

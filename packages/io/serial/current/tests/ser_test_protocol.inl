@@ -74,6 +74,15 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY2_DEV
 # endif
 #endif
+#if defined(CYGPKG_HAL_POWERPC_MBX)                          \
+    && defined(CYGPKG_HAL_QUICC)                 \
+    && defined(CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC)                 \
+    && defined(CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1)
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
+# endif
+#endif
 #if defined(CYGPKG_HAL_ARM_PID)                         \
     && defined(CYGPKG_IO_SERIAL_ARM_PID)                \
     && defined(CYGPKG_IO_SERIAL_ARM_PID_SERIAL0)
@@ -86,6 +95,14 @@
     && defined(CYGPKG_IO_SERIAL_ARM_AEB)                \
     && defined(CYGPKG_IO_SERIAL_ARM_AEB_SERIAL1)
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_AEB_SERIAL1_NAME
+# if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
+#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
+# endif
+#endif
+#if defined(CYGPKG_HAL_ARM_CL7211)                         \
+    && defined(CYGPKG_IO_SERIAL_ARM_CL7211)                \
+    && defined(CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1)
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
@@ -245,6 +262,7 @@ cyg_ser_cfg_t test_configs[] = {
     !defined(CYGPKG_HAL_ARM_PID) &&             \
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
+    !defined(CYGPKG_HAL_ARM_CL7211) &&          \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB)
     { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },

@@ -40,6 +40,9 @@ endif
 ifdef CYG_HAL_ARM_AEB
 EXTRAS_COMPILE  += arm/aeb_serial.c
 endif
+ifdef CYG_HAL_ARM_CL7211
+EXTRAS_COMPILE  += arm/cl7211_serial.c
+endif
 ifdef CYG_HAL_MN10300_AM31
 EXTRAS_COMPILE  += mn10300/mn10300_serial.c
 endif
@@ -48,6 +51,9 @@ EXTRAS_COMPILE  += mips/tx3904_serial.c
 endif
 ifdef CYG_HAL_POWERPC_COGENT
 EXTRAS_COMPILE  += powerpc/cogent_serial_with_ints.c
+endif
+ifdef CYGPKG_HAL_QUICC
+EXTRAS_COMPILE  += powerpc/quicc_smc_serial.c
 endif
 ifdef CYG_HAL_SPARCLITE_SLEB
 EXTRAS_COMPILE  += sparclite/sleb_sdtr.c

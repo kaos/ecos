@@ -34,7 +34,9 @@ include ../../../../pkgconf/system.mak
 
 TESTS	:=
 ifndef CYGPKG_HAL_I386_LINUX
+ifdef  CYGPKG_KERNEL
 TESTS	+=  serial1 serial2 serial3 serial4 serial5 tty1 tty2
+endif
 endif
 
 include $(COMPONENT_REPOSITORY)/pkgconf/makrules.tst

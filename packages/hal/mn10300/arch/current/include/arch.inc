@@ -77,11 +77,13 @@
 	# Merge the interrupt enable state of the status register in
 	# \sr with the current sr.
 	.macro	hal_cpu_int_merge sr
-	and	0x00000F00,\sr		# isolate IE bit
-	mov	psw,d0
-	and	0xfffff0ff,d0
-	or	d0,\sr
-	mov	\sr,psw
+	movm	[d3],(sp)
+	and	0x00000F00,\sr		# isolate IE and IM bits
+	hal_cpu_get_psw d3
+	and	0xfffff0ff,d3
+	or	\sr,d3
+	hal_cpu_set_psw d3
+	movm	(sp),[d3]
 	.endm
 
 	# Enable further exception processing, and disable
@@ -183,7 +185,7 @@
 #------------------------------------------------------------------------------
 # temporary trace macros
 
-#if 0
+#if 1
 
 #ifdef CYGPKG_HAL_MN10300_AM31_STDEVAL1
 #define TRACE_BASE 0x48100000

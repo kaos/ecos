@@ -1,3 +1,8 @@
+1999-08-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* tests/intr.c (cyg_start): Use CYG_TEST_NA rather than a pass saying
+	it's inapplicable
+
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/hal.h: Rename CYG_HAL_MN10300_AM32_STDEVAL1 to
@@ -37,6 +42,11 @@
 	* include/pkgconf/hal.h: Added CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
 	to enable inclusion of ^C interrupt handler. Added CDL to control
 	it.
+
+1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Add support for the PowerPC target MBX860
+	platform, CYG_HAL_POWERPC_MBX.
 
 1999-06-10  Gary Thomas  <gthomas@cygnus.co.uk>
 

@@ -87,8 +87,18 @@ Cyg_Watchdog::Cyg_Watchdog()
     Cyg_Clock::cyg_resolution res = Cyg_Clock::real_time_clock->get_resolution();
 
     one_sec             = ( res.divisor * 1000000000LL ) / res.dividend ;
+
+    resolution          = 1000000000LL;
     
     CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+// Return reset resolution
+
+cyg_uint64 Cyg_Watchdog::get_resolution()
+{
+    return resolution;
 }
 
 // -------------------------------------------------------------------------

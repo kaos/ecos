@@ -382,6 +382,104 @@
 #define CYGNUM_IO_SERIAL_ARM_AEB_SERIAL1_BAUD 38400
 #define CYGNUM_IO_SERIAL_ARM_AEB_SERIAL1_BUFSIZE 128
 
+/* ----------------------------------------------------------------------------
+   {{CFG_DATA
+   cdl_component CYGPKG_IO_SERIAL_ARM_CL7211 {
+       display "ARM CL7x11 (CL7111/CL7211) serial device drivers"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_HAL_ARM_CL7211
+       description "
+           This option enables the serial device drivers for the ARM CL7x11."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_component CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1 {
+       display "ARM CL7x11 serial port 1 driver"
+       type    bool
+       parent CYGPKG_IO_SERIAL_ARM_CL7211
+       description "
+           This option includes the serial device driver for the ARM CL7x11 port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME {
+       display "Device name for the ARM CL7x11 serial port 1 driver"
+       type    string
+       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+       description "
+           This option specifies the name of serial device for the ARM CL7x11 port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BAUD {
+       display "Baud rate for the ARM CL7x11 serial port 1 driver"
+       type    enum
+       legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
+       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+       description "
+           This option specifies the default baud rate (speed) for the ARM CL7x11 port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BUFSIZE {
+       display "Buffer size for the ARM CL7x11 serial port 1 driver"
+       type    count
+       legal_values 0 to 8192
+       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+       description "
+           This option specifies the size of the internal buffers used for the ARM CL7x11 port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_component CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2 {
+       display "ARM CL7x11 serial port 2 driver"
+       type    bool
+       parent CYGPKG_IO_SERIAL_ARM_CL7211
+       description "
+           This option includes the serial device driver for the ARM CL7x11 port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL2_NAME {
+       display "Device name for the ARM CL7x11 serial port 2 driver"
+       type    string
+       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+       description "
+           This option specifies the name of serial device for the ARM CL7x11 port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BAUD {
+       display "Baud rate for the ARM CL7x11 serial port 2 driver"
+       type    enum
+       legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
+       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+       description "
+           This option specifies the default baud rate (speed) for the ARM CL7x11 port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BUFSIZE {
+       display "Buffer size for the ARM CL7x11 serial port 2 driver"
+       type    count
+       legal_values 0 to 8192
+       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+       description "
+           This option specifies the size of the internal buffers used for the ARM CL7x11 port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   }}CFG_DATA */
+#undef  CYGPKG_IO_SERIAL_ARM_CL7211
+#undef  CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+#define CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME "/dev/ser1"
+#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BAUD 38400
+#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BUFSIZE 128
+#undef  CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+#define CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL2_NAME "/dev/ser2"
+#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BAUD 38400
+#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BUFSIZE 128
 
 
 
@@ -489,6 +587,228 @@
 #define CYGNUM_IO_SERIAL_POWERPC_COGENT_SERIAL_B_BAUD 38400
 #define CYGNUM_IO_SERIAL_POWERPC_COGENT_SERIAL_B_BUFSIZE 128
 
+/* ----------------------------------------------------------------------------
+   {{CFG_DATA
+   cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC {
+       display "PowerPC QUICC/SMC serial device drivers"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_HAL_QUICC
+       description "
+           This option enables the serial device drivers for the PowerPC QUICC/SMC."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1 {
+       display "PowerPC QUICC/SMC serial port 1 driver"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+       description "
+           This option includes the serial device driver for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME {
+       display "Device name for PowerPC QUICC/SMC serial port 1"
+       type    string
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the device name for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BAUD {
+       display "Baud rate for the PowerPC QUICC/SMC serial port 1"
+       type    enum
+       legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the default baud rate (speed) for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BUFSIZE {
+       display "Buffer size for the PowerPC QUICC/SMC serial port 1"
+       type    count
+       legal_values 0 to 8192
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the size of the internal buffers used for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BRG {
+       display "Which baud rate generator to use for the PowerPC QUICC/SMC serial port 1"
+       type    count
+       legal_values 1 to 4
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies which of the four baud rate generators
+           to use for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE {
+       display "Output buffer size for the PowerPC QUICC/SMC serial port 1"
+       type    count
+       legal_values 16 to 128
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the maximum number of characters per transmit
+           request to be used for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM {
+       display "Number of output buffers for the PowerPC QUICC/SMC serial port 1"
+       type    count
+       legal_values 2 to 16
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the number of output buffer packets
+           to be used for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE {
+       display "Input buffer size for the PowerPC QUICC/SMC serial port 1"
+       type    count
+       legal_values 16 to 128
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the maximum number of characters per receive
+           request to be used for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM {
+       display "Number of input buffers for the PowerPC QUICC/SMC serial port 1"
+       type    count
+       legal_values 2 to 16
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+       description "
+           This option specifies the number of input buffer packets
+           to be used for the PowerPC QUICC/SMC port 1."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_component CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2 {
+       display "PowerPC QUICC/SMC serial port 2 driver"
+       type    bool
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+       description "
+           This option includes the serial device driver for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_NAME {
+       display "Device name for PowerPC QUICC/SMC serial port 2"
+       type    string
+       requires CYGPKG_IO_SERIAL
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the device name for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BAUD {
+       display "Baud rate for the PowerPC QUICC/SMC serial port 2"
+       type    enum
+       legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the default baud rate (speed) for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BUFSIZE {
+       display "Buffer size for the PowerPC QUICC/SMC serial port 2"
+       type    count
+       legal_values 0 to 8192
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the size of the internal buffers used for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BRG {
+       display "Which baud rate generator to use for the PowerPC QUICC/SMC serial port 2"
+       type    count
+       legal_values 1 to 4
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies which of the four baud rate generators
+           to use for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE {
+       display "Output buffer size for the PowerPC QUICC/SMC serial port 2"
+       type    count
+       legal_values 16 to 128
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the maximum number of characters per transmit
+           request to be used for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM {
+       display "Number of output buffers for the PowerPC QUICC/SMC serial port 2"
+       type    count
+       legal_values 2 to 16
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the number of output buffer packets
+           to be used for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE {
+       display "Input buffer size for the PowerPC QUICC/SMC serial port 2"
+       type    count
+       legal_values 16 to 128
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the maximum number of characters per receive
+           request to be used for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   cdl_option CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM {
+       display "Number of output buffers for the PowerPC QUICC/SMC serial port 2"
+       type    count
+       legal_values 2 to 16
+       parent CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+       description "
+           This option specifies the number of input buffer packets
+           to be used for the PowerPC QUICC/SMC port 2."
+           doc ref/ecos-ref/ecos-device-drivers.html
+   }
+
+   }}CFG_DATA */
+#undef  CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
+#undef  CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC1
+#define CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_NAME "/dev/ser1"
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BAUD 38400
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BUFSIZE 256
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_BRG 1
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxSIZE 16
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_TxNUM 4
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxSIZE 16
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC1_RxNUM 4
+#undef  CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
+#define CYGDAT_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_NAME "/dev/ser2"
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BAUD 38400
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BUFSIZE 256
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BRG 2
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxSIZE 16
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_TxNUM 4
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxSIZE 16
+#define CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_RxNUM 4
 
 /* ----------------------------------------------------------------------------
    {{CFG_DATA

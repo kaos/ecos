@@ -144,6 +144,12 @@ package CYGPKG_HAL_ARM_AEB {
 	hardware
 }
 
+package CYGPKG_HAL_ARM_CL7211 {
+	alias		{ "Cirrus Logic CL7211 evaulation board support" hal_arm_cl7211 arm_cl7211_hal }
+	directory	hal/arm/cl7211
+        include_dir	cyg/hal
+	hardware
+}
 
 
 
@@ -224,6 +230,18 @@ package CYGPKG_HAL_POWERPC_FADS {
 	hardware
 }
 
+package CYGPKG_HAL_POWERPC_MBX {
+	alias		{ "PowerPC Motorola MBX860/821 board support" hal_powerpc_mbx powerpc_mbx_hal }
+	directory	hal/powerpc/mbx
+        include_dir	cyg/hal
+	hardware
+}
+package CYGPKG_HAL_QUICC {
+	alias		{ "PowerPC MBX860/821 QUICC support" hal_quicc quicc_hal quicc }
+	directory	hal/powerpc/quicc
+        include_dir	cyg/hal/quicc
+	hardware
+}
 package CYGPKG_HAL_POWERPC_SIM {
 	alias		{ "PowerPC simulator support" hal_powerpc_sim powerpc_sim_hal }
 	directory	hal/powerpc/sim

@@ -1,0 +1,12 @@
+version 0
+region ram 1000 7000 0 !
+region rom e0000000 800000 1 !This is ROM bank 0, physical address 0x00000000.When running eCos, this space is remapped to 0xE0000000.
+section data 0 1 1 1 1 1 0 0 1000 bss !
+section bss 0 4 0 1 0 0 0 0 !
+section rom_vectors 0 1 0 1 1 1 1 1 e0000000 e0000000 text text !
+section text 0 1 0 1 0 1 0 1 fini fini !
+section fini 0 1 0 1 0 1 0 1 rodata rodata !
+section rodata 0 1 0 1 0 1 0 1 rodata1 rodata1 !
+section rodata1 0 1 0 1 0 1 0 1 fixup fixup !
+section fixup 0 1 0 1 0 1 0 1 gcc_except_table gcc_except_table !
+section gcc_except_table 0 1 0 1 0 0 0 1 data !

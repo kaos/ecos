@@ -4,6 +4,11 @@
 	* targets:
 	Rename all mentions of am32 to am31
 
+1999-06-10  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* packages, targets: Add support for the PowerPC target MBX860
+	platform and QUICC companion components.
+
 1999-06-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* pkgconf.tcl (pkgconf::produce_misc_files): MLT files need
@@ -22,6 +27,8 @@
 
 1999-06-03  Gary Thomas  <gthomas@cygnus.co.uk>
 
+	* targets: Add 'base_platform' for CL7111, based on CL7211.
+
 	* pkgconf.tcl: Support 'base_platform' in target specification.  This
 	performs the inverse of what the "platform" entry in CDL options does.
 
@@ -29,6 +36,15 @@
 
 	* NEWS: Added Kernel/Debugging entry.
 
+1999-05-18  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: Remove errant CL7111 package.
+
+1999-05-17  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* packages: 
+	* targets: Add new platform CL7111 - substantially the same as
+	the CL7211 but different processor core.
 1999-05-13  Nick Garnett  <nickg@cygnus.co.uk>
 
 	The following changes were made in a branch and imported to the
@@ -78,6 +94,10 @@
 	* pkgconf.tcl:
 	Add $(ARCHFLAGS) and $(LDARCHFLAGS) to the command line when
 	generating extras.o from libextras.a
+1999-04-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Add Cirrus Logic CL7211 support.
+
 
 1999-04-16  Bart Veer  <bartv@cygnus.co.uk>
 

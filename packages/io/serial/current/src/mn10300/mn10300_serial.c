@@ -50,6 +50,8 @@
 
 #ifdef CYGPKG_IO_SERIAL_MN10300
 
+#define CYG_HAL_MN10300_SERIAL_RX_FIFO
+
 //-------------------------------------------------------------------------
 
 extern void diag_printf(const char *fmt, ...);
@@ -265,16 +267,21 @@ static struct
 // Info for each serial device controlled
 
 typedef struct mn10300_serial_info {
-    CYG_ADDRWORD   base;
-    CYG_ADDRWORD   timer_base;
-    CYG_WORD       timer_select;
-    CYG_WORD       rx_int;
-    CYG_WORD       tx_int;
-    cyg_bool       is_serial2;
-    cyg_interrupt  rx_interrupt;
-    cyg_interrupt  tx_interrupt;
-    cyg_handle_t   rx_interrupt_handle;
-    cyg_handle_t   tx_interrupt_handle;
+    CYG_ADDRWORD        base;
+    CYG_ADDRWORD        timer_base;
+    CYG_WORD            timer_select;
+    CYG_WORD            rx_int;
+    CYG_WORD            tx_int;
+    cyg_bool            is_serial2;
+    cyg_interrupt       rx_interrupt;
+    cyg_interrupt       tx_interrupt;
+    cyg_handle_t        rx_interrupt_handle;
+    cyg_handle_t        tx_interrupt_handle;
+#ifdef CYG_HAL_MN10300_SERIAL_RX_FIFO
+    volatile cyg_int32  fifo_head;
+    volatile cyg_int32  fifo_tail;
+    volatile cyg_uint8  fifo[16];
+#endif    
 } mn10300_serial_info;
 
 //-------------------------------------------------------------------------
@@ -747,6 +754,51 @@ mn10300_serial_stop_xmit(serial_channel *chan)
 
 #ifndef CYGPKG_IO_SERIAL_MN10300_POLLED_MODE
 
+#ifdef CYG_HAL_MN10300_SERIAL_RX_FIFO
+
+// This version of the RX ISR implements a simple receive FIFO. The
+// MN10300 serial devices do not have hardware FIFOs (as found in
+// 16550s for example), and it can be difficult at times to keep up
+// with higher baud rates without overrunning. This ISR implements a
+// software equivalent of the hardware FIFO, placing recieved
+// characters into the FIFO as soon as they arrive. Whenever the DSR
+// is run, it collects all the pending characters from the FIFO for
+// delivery to the application. Neither the ISR or DSR disable
+// interrupts, instead we rely on being able to write the head and
+// tail pointers atomically, to implement lock-free synchronization.
+
+static cyg_uint32 
+mn10300_serial_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
+{
+    serial_channel *chan = (serial_channel *)data;
+    mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
+    cyg_uint8 sr = mn10300_read_sr( mn10300_chan);
+
+    while( (sr & SR_RBF) != 0 )
+    {
+        register cyg_int32 head = mn10300_chan->fifo_head;
+        cyg_uint8 c;
+        int i;
+        HAL_READ_UINT8( mn10300_chan->base+SERIAL_RXB, c );
+
+        mn10300_chan->fifo[head++] = c;
+
+        if( head >= sizeof(mn10300_chan->fifo) )
+            head = 0;
+
+        mn10300_chan->fifo_head = head;
+
+        sr = mn10300_read_sr( mn10300_chan);
+
+    }
+
+    cyg_drv_interrupt_acknowledge(mn10300_chan->rx_int);
+    
+    return CYG_ISR_CALL_DSR;  // Cause DSR to be run
+}
+
+#else
+
 static cyg_uint32 
 mn10300_serial_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
 {
@@ -759,6 +811,7 @@ mn10300_serial_rx_ISR(cyg_vector_t vector, cyg_addrword_t data)
     return CYG_ISR_CALL_DSR;  // Cause DSR to be run
 }
 
+#endif
 
 static cyg_uint32 
 mn10300_serial_tx_ISR(cyg_vector_t vector, cyg_addrword_t data)
@@ -779,6 +832,30 @@ mn10300_serial_tx_ISR(cyg_vector_t vector, cyg_addrword_t data)
 
 #ifndef CYGPKG_IO_SERIAL_MN10300_POLLED_MODE
 
+#ifdef CYG_HAL_MN10300_SERIAL_RX_FIFO
+
+static void       
+mn10300_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+{
+    serial_channel *chan = (serial_channel *)data;
+    mn10300_serial_info *mn10300_chan = (mn10300_serial_info *)chan->dev_priv;
+    register cyg_int32 head = mn10300_chan->fifo_head;
+    register cyg_int32 tail = mn10300_chan->fifo_tail;
+    
+    while( head != tail )
+    {
+        cyg_uint8 c = mn10300_chan->fifo[tail++];
+
+        if( tail >= sizeof(mn10300_chan->fifo) ) tail = 0;
+
+        (chan->callbacks->rcv_char)(chan, c);
+    }
+
+    mn10300_chan->fifo_tail = tail;
+}
+
+#else
+
 static void       
 mn10300_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
@@ -796,6 +873,8 @@ mn10300_serial_rx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t da
 
     cyg_drv_interrupt_unmask(mn10300_chan->rx_int);
 }
+
+#endif
 
 static void       
 mn10300_serial_tx_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)

@@ -64,7 +64,11 @@ extern diag_printf( char *format, ... );
 // interrupt handlers.
 #define PIT_PERIOD 5000
 
+#ifdef CYG_HAL_POWERPC_MBX
+#define TB_PERIOD (PIT_PERIOD*384)      // PTA period is 15.36 uS
+#else
 #define TB_PERIOD (PIT_PERIOD*32)       // assuming 512/16 divisors
+#endif
 
 #define ID_RTC_SEC   12345
 #define ID_RTC_ALR   23451

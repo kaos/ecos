@@ -181,7 +181,7 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs, CYG_WORD32 isr)
 
 #elif defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)
     
-    if( vector == CYGNUM_HAL_INTERRUPT_WATCHDOG )
+    if( vector == CYGNUM_HAL_EXCEPTION_WATCHDOG )
     {
         // Special case the watchdog timer exception, look for an
         // ISR for it and call it if present. Otherwise pass on to

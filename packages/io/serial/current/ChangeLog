@@ -1,3 +1,20 @@
+1999-08-18  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/tty1.c: 
+	* tests/tty2.c: 
+	* tests/serial1.c: 
+	* tests/serial2.c: 
+	* tests/serial3.c: 
+	* tests/serial4.c: 
+	* tests/serial5.c: 
+	* tests/PKGconf.mak:
+	Require kernel and kernel C API.
+	
+1999-08-17  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/mn10300/mn10300_serial.c: Added a simple implementation of a
+	receive FIFO to try and reduce the overhead of receiving bytes.
+
 1999-08-16  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/PKGconf.mak:
@@ -29,18 +46,68 @@
         Reparent CYGPKG_IO_SERIAL_MN10300 from under CYGPKG_HAL_MN10300 to
         CYGPKG_HAL_MN10300_AM32_STDEVAL1 since it's stdeval1 specific
 
+1999-07-28  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h: Update descriptions to be more
+ 	generic (CL7x11 instead of CL7211).
+
+1999-07-28  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h: Correct typos in CDL description
+	for serial port 2 driver
+
 1999-07-08  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl (change_config): Changed implementation.
+
+1999-06-27  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/powerpc/quicc_smc_serial.c (quicc_smc_serial_init): More robust
+	initialization, with data cache disabled.  This seems to fix the
+	random failures described below.
+
+	* tests/ser_test_protocol.inl: Add configuration for QUICC/MBX860.
+	Added some delays in the configuration change code to make QUICC
+	happy [didn't help much although the manual says they are required].
+
+	* src/powerpc/quicc_smc_serial.h (UART_BITRATE): Rewrote macro to 
+	match what the Linux driver uses - still doesn't work well, though.
+
+	* src/powerpc/quicc_smc_serial.c: Lots of changes trying to get the
+	serial driver working and robust.  At this point it works quite well,
+	using the default buffer sizes.  Changing from the defaults seem to
+	easily break it though, certainly on input.  Also, changing the baud
+	rate seems to not work reliably.
+
+	* src/common/serial.c: Add some tracing/debug info to try and debug
+	problems with QUICC serial driver.  These are hard disabled with
+	"XX_" prepended to "CYGDBG_DIAG_BUF".  Enabling them gives information
+	about how/when data are delivered from the serial driver.
+
+	* include/pkgconf/io_serial.h: Adjust limits and defaults on number and
+	size of buffers with values that seem to work.
+
+1999-06-21  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h: Fix CDL for number of buffers.
+
+	* src/powerpc/quicc_smc_serial.c: Force number of buffers = 1.
 
 1999-06-20  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/io_serial.h: Some clean up (removed commented
 	obsolete CDL parenting structure).
+	Add support for Motorola PowerPC QUICC/SMC.
 
+	* src/arm/cl7211_serial.c: 
 	* src/arm/aeb_serial.c: 
 	* src/arm/pid_serial_with_ints.c: Use #include to get 'diag_printf()'
 	prototypes.
+
+1999-06-17  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm/cl7211_serial.c (cl7211_serial_start_xmit): Fix race which
+	cause xmitter to get stuck.
 
 1999-05-27  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -56,6 +123,9 @@
 	Fix for PR 20047
 	
 
+1999-05-26  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/ser_test_protocol.inl: Add Cirrus Logic CL7211 setup.
 1999-05-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* tests/ser_test_protocol.inl: 
@@ -70,6 +140,15 @@
         PR 19926
 	* src/sparclite/sleb_sdtr.c (sleb_sdtr_rx_DSR): Only read chan if
 	there is one.
+
+1999-05-18  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 19926
+	* src/arm/cl7211_serial.c (cl7211_serial_rx_DSR): Only read char
+	if there is one.
+
+1999-05-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm/cl7211_serial.c: Clean up, first working version.
 
 1999-05-14  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -94,6 +173,9 @@
 	* include/pkgconf/io_serial.h: Fix CYGPKG_IO_SERIAL_TX39_JMR3904
 	parent attribute.
 
+1999-05-11  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm/cl7211_serial.c: Fix compile problems from merged code.
 
 1999-05-05  Jesper Skov  <jskov@cygnus.co.uk>
 
@@ -144,6 +226,10 @@
 
 	* src/PKGconf.mak (EXTRAS_COMPILE):
 	Use the new rules for generating libextras.a
+
+1999-04-26  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/io_serial.h: Add support for Cirrus Logic CL7211.
 
 
 1999-04-20  Gary Thomas  <gthomas@cygnus.co.uk>

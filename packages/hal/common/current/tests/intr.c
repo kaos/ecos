@@ -121,7 +121,7 @@ cyg_start( void )
 
 #else
 
-    CYG_TEST_PASS_FINISH("N/A: Cannot override kernel real-time clock.");
+    CYG_TEST_NA("Cannot override kernel real-time clock.");
 
 #endif
 }

@@ -42,18 +42,19 @@
 #include <cyg/infra/testcase.h>         // test macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
+// Package requirements
 #if defined(CYGPKG_IO_SERIAL) && defined(CYGPKG_KERNEL)
 
-#ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
-#ifdef CYGFUN_KERNEL_API_C
+
+// Package option requirements
+#if defined(CYGFUN_KERNEL_API_C)
+
 #include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
 #include <cyg/kernel/kapi.h>
 unsigned char stack[CYGNUM_HAL_STACK_SIZE_TYPICAL];
 cyg_thread thread_data;
 cyg_handle_t thread_handle;
-#endif
-#endif
 
 #include "ser_test_protocol.inl"
 
@@ -119,7 +120,6 @@ void
 cyg_start(void)
 {
     CYG_TEST_INIT();
-#ifdef CYGFUN_KERNEL_API_C
     cyg_thread_create(10,                   // Priority - just a number
                       (cyg_thread_entry_t*)tty_test,         // entry
                       0,                    // 
@@ -131,20 +131,22 @@ cyg_start(void)
         );
     cyg_thread_resume(thread_handle);
     cyg_scheduler_start();
-#else
-    tty_test();
-#endif
 }
 
+#else // CYGFUN_KERNEL_API_C
+#define N_A_MSG "Needs kernel C API"
+#endif
 
-#else // ifdef CYGPKG_IO_SERIAL
+#else // CYGPKG_IO_SERIAL && CYGPKG_KERNEL
+#define N_A_MSG "Needs IO/serial and Kernel"
+#endif
 
+#ifdef N_A_MSG
 void
-cyg_start(void)
+cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_NA("Requires serial device driver and kernel");
+    CYG_TEST_NA( N_A_MSG);
 }
-
-#endif
+#endif // N_A_MSG
 // EOF tty1.c

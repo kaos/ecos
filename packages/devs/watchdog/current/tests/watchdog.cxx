@@ -77,15 +77,16 @@ char thread[sizeof(Cyg_Thread)];
 
 Cyg_Thread *th;
 
-cyg_tick_count one_sec;
+//cyg_tick_count one_sec;
+cyg_tick_count watchdog_delay;
 volatile bool watchdog_fired;
 volatile cyg_tick_count watchdog_time;
 
-#define WATCHDOG_LOOPS_HW           5
-#define WATCHDOG_LOOPS_SIM          1
-#define WATCHDOG_SECS_PER_LOOP_HW   10
-#define WATCHDOG_SECS_PER_LOOP_SIM  2
-#define WATCHDOG_SECS_TILL_TIMEOUT  10
+#define WATCHDOG_LOOPS_HW               5
+#define WATCHDOG_LOOPS_SIM              1
+#define WATCHDOG_CYCLES_PER_LOOP_HW     10
+#define WATCHDOG_CYCLES_PER_LOOP_SIM    2
+#define WATCHDOG_TICKS_TILL_TIMEOUT     10
 
 // -------------------------------------------------------------------------
 // Action functions:
@@ -109,14 +110,14 @@ void watchdog_thread( CYG_ADDRWORD id )
 {
     cyg_tick_count watchdog_start_time;
     cyg_tick_count thread_start_time, thread_end_time;
-    cyg_ucount8 watchdog_loops, watchdog_secs_per_loop;
+    cyg_ucount8 watchdog_loops, watchdog_cycles_per_loop;
 
     if (cyg_test_is_simulator) {
         watchdog_loops = WATCHDOG_LOOPS_SIM;
-        watchdog_secs_per_loop = WATCHDOG_SECS_PER_LOOP_SIM;
+        watchdog_cycles_per_loop = WATCHDOG_CYCLES_PER_LOOP_SIM;
     } else {
         watchdog_loops = WATCHDOG_LOOPS_HW;
-        watchdog_secs_per_loop = WATCHDOG_SECS_PER_LOOP_HW;
+        watchdog_cycles_per_loop = WATCHDOG_CYCLES_PER_LOOP_HW;
     }
 
     watchdog_fired = false;
@@ -125,8 +126,8 @@ void watchdog_thread( CYG_ADDRWORD id )
     CYG_TEST_INFO("Testing that watchdog does not fire early");
 
     for (cyg_ucount8 tries = 0;  tries < watchdog_loops;  tries++) {
-        diag_printf("Iteration #%d (testing over %d seconds)\n",
-                    tries, watchdog_secs_per_loop);
+        diag_printf("Iteration #%d (testing over %d cycles)\n",
+                    tries, watchdog_cycles_per_loop);
 
         // First test that the watchdog does not trigger when being reset.
         Cyg_Watchdog_Action wdaction( watchdog_action1, 0 );
@@ -137,9 +138,9 @@ void watchdog_thread( CYG_ADDRWORD id )
         watchdog_start_time = Cyg_Clock::real_time_clock->current_value();
         watchdog_fired = false;
         
-        for( cyg_ucount8 i = 0; i < watchdog_secs_per_loop; i++ ) {
+        for( cyg_ucount8 i = 0; i < watchdog_cycles_per_loop; i++ ) {
             thread_start_time = Cyg_Clock::real_time_clock->current_value();
-            th->delay( one_sec-2 );
+            th->delay( watchdog_delay-2 );
             Cyg_Watchdog::watchdog.reset();
             if (watchdog_fired) {
                 thread_end_time = Cyg_Clock::real_time_clock->current_value();
@@ -167,7 +168,7 @@ void watchdog_thread( CYG_ADDRWORD id )
         
         Cyg_Watchdog::watchdog.reset();
         
-        th->delay( one_sec*WATCHDOG_SECS_TILL_TIMEOUT );        
+        th->delay( watchdog_delay*WATCHDOG_TICKS_TILL_TIMEOUT );        
     }
 
     CYG_TEST_FAIL_FINISH("Watchdog failed to trigger");    
@@ -180,17 +181,23 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    
-    Cyg_Clock::cyg_resolution res = Cyg_Clock::real_time_clock->get_resolution();
-    
+
 #if !defined(CYGIMP_WATCHDOG_EMULATE) && defined(CYGPKG_HAL_MN10300_STDEVAL1)
     // Workaround for PR 17974
     if( cyg_test_is_simulator )
         CYG_TEST_NA("Watchdog device not implemented in MN10300 simulator.");
 #endif
 
-    one_sec = ( res.divisor * 1000000000LL ) / res.dividend ;
 
+    Cyg_Clock::cyg_resolution res = Cyg_Clock::real_time_clock->get_resolution();
+    
+    cyg_uint64 wres = Cyg_Watchdog::watchdog.get_resolution();
+
+    // Calculate how many clock ticks there are in a watchdog cycle.
+    
+    watchdog_delay = ((cyg_tick_count)wres * (cyg_tick_count)res.divisor );
+    watchdog_delay /= res.dividend;
+    
     th = new((void *)&thread) Cyg_Thread(CYG_SCHED_DEFAULT_INFO,
                                          watchdog_thread,
                                          0,

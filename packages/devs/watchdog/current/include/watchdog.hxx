@@ -48,7 +48,6 @@
 #include <cyg/kernel/ktypes.h>
 #include <cyg/infra/cyg_ass.h>            // assertion macros
 
-
 class Cyg_Watchdog_Action;
 
 // -------------------------------------------------------------------------
@@ -59,10 +58,16 @@ class Cyg_Watchdog
 
     Cyg_Watchdog_Action         *action_list;
 
+    cyg_uint64                  resolution;
+    
 public:
 
     Cyg_Watchdog();
 
+    // Return time interval allowed between resets before watchdog
+    // triggers, in nanoseconds.
+    cyg_uint64 get_resolution();
+    
     // Start the watchdog running.
     void start();
 
