@@ -52,6 +52,7 @@
 cdl_package CYGPKG_CRC {
     display       "Compute CRCs"
     include_dir   cyg/crc
+    doc           ref/services-crc.html
 
     compile       posix_crc.c crc16.c crc32.c
     description "
