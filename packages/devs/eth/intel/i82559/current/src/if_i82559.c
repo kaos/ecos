@@ -131,6 +131,9 @@
 //               int32 argument is used to hold a eg. the value of a
 //               fast-running hardware timer.
 //
+//               CYGHWR_DEVS_ETH_INTEL_I82559_ENDIAN_NEUTRAL_IO if PCI IO
+//               access is not affected by CPU endianess.
+//
 //        FIXME: replace -1/-2 return values with proper E-defines
 //        FIXME: For 82557/8 compatibility i82559_configure() function
 //               probably needs some tweaking - config bits differ
@@ -330,6 +333,19 @@ static struct {
 #define HAL_CTOLE16(x)  ((((x) & 0xff) << 8) | (((x) & 0xff00) >> 8))
 #define HAL_LE16TOC(x)  ((((x) & 0xff) << 8) | (((x) & 0xff00) >> 8))
 
+#else
+// Maintaining the same styleee as above...
+#define HAL_CTOLE32(x)  ((((x))))
+#define HAL_LE32TOC(x)  ((((x))))
+
+#define HAL_CTOLE16(x)  ((((x))))
+#define HAL_LE16TOC(x)  ((((x))))
+
+#endif
+
+
+#if (CYG_BYTEORDER == CYG_MSBFIRST) && !defined(CYGHWR_DEVS_ETH_INTEL_I82559_ENDIAN_NEUTRAL_IO)
+
 static inline void OUTB(cyg_uint8 value, cyg_uint32 io_address)
 {
     HAL_WRITE_UINT8( io_address, value);
@@ -367,13 +383,6 @@ static inline cyg_uint32 INL(cyg_uint32 io_address)
     return ((((d) & 0xff) << 24) | (((d) & 0xff00) << 8) | (((d) & 0xff0000) >> 8) | (((d) >> 24) & 0xff));
 }
 #else
-
-// Maintaining the same styleee as above...
-#define HAL_CTOLE32(x)  ((((x))))
-#define HAL_LE32TOC(x)  ((((x))))
-
-#define HAL_CTOLE16(x)  ((((x))))
-#define HAL_LE16TOC(x)  ((((x))))
 
 static inline void OUTB(cyg_uint8  value, cyg_uint32 io_address)
 {   HAL_WRITE_UINT8( io_address, value );   }

@@ -1,3 +1,9 @@
+2002-12-17  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82559.c (CYGHWR_DEVS_ETH_INTEL_I82559_ENDIAN_NEUTRAL_IO): New
+	flag to support systems where PCI IO operations are not affected by
+	CPU endianess.
+
 2002-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/if_i82559.c (pci_init_find_82559s): Changed scope of 
