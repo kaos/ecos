@@ -1,3 +1,8 @@
+2004-02-12  Jani Monoses <jani@iv.ro>
+
+	* cdl/hal_arm_at91_eb55.cdl: Move configuration options 
+	common to all AT91 EB boards up to AT91 variant .cdl.
+	
 2003-12-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* misc/redboot_ROMRAM.ecm: 
