@@ -93,10 +93,10 @@ FUNC_START(_reset)
         .align   2
 $_reset_platform:
 #ifdef CYG_HAL_STARTUP_RAM
-        .long   CYG_LABEL_NAME(_reset_platform)
+        .long   CYG_LABEL_DEFN(_reset_platform)
 #else
         // Uncached "shadow" address
-        .long   CYG_LABEL_NAME(_reset_platform)+0x20000000
+        .long   CYG_LABEL_DEFN(_reset_platform)+0x20000000
 #endif
                 
 #---------------------------------------------------------------------------
@@ -281,7 +281,7 @@ __interrupt:
 
         .align   2
 $hal_vsr_table_int:
-        .long    CYG_LABEL_NAME(hal_vsr_table)+CYGNUM_HAL_VECTOR_INTERRUPT*4
+        .long    CYG_LABEL_DEFN(hal_vsr_table)+CYGNUM_HAL_VECTOR_INTERRUPT*4
 
 #---------------------------------------------------------------------------
 # Common interrupt handling code.
@@ -614,8 +614,12 @@ $unmasked_SR:
         
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
         SYM_PTR_REF(cyg_interrupt_call_pending_DSRs)
-        SYM_PTR_REF(cyg_scheduler_sched_lock)
         SYM_PTR_REF(interrupt_end)
+        # cyg_scheduler_sched_lock is special as it is defined as an asm alias
+        
+        .globl cyg_scheduler_sched_lock
+$cyg_scheduler_sched_lock:	.long	cyg_scheduler_sched_lock
+        
 #endif
 
 #---------------------------------------------------------------------------
@@ -704,7 +708,7 @@ FUNC_START(_reset_platform)
 #else
 
         # Jump to remaining setup code. Relative branch is OK since VMA=LMA.
-        bra   CYG_LABEL_NAME(complete_setup)
+        bra   CYG_LABEL_DEFN(complete_setup)
          nop
                 
 #endif
@@ -806,7 +810,7 @@ FUNC_START(complete_setup)
 
         .data
 
-        .extern CYG_LABEL_NAME(hal_default_isr)
+        .extern CYG_LABEL_DEFN(hal_default_isr)
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
 #define CYG_ISR_TABLE_SIZE    1
 #else
@@ -815,7 +819,7 @@ FUNC_START(complete_setup)
 
 SYM_DEF(hal_interrupt_handlers)
         .rept   CYG_ISR_TABLE_SIZE
-        .long   CYG_LABEL_NAME(hal_default_isr)
+        .long   CYG_LABEL_DEFN(hal_default_isr)
         .endr
 
 SYM_DEF(hal_interrupt_data)

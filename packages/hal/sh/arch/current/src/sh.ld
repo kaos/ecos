@@ -44,7 +44,7 @@
 #include <cyg/hal/basetype.h>
 
 STARTUP(vectors.o)
-ENTRY(CYG_LABEL_NAME(_reset))
+ENTRY(CYG_LABEL_DEFN(_reset))
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif

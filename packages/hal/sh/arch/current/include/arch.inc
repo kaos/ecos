@@ -68,16 +68,16 @@ CYG_LABEL_DEFN(name):
 CYG_LABEL_DEFN(name):
 
 #define SYM_PTR_REF(name)	\
-        .globl CYG_LABEL_NAME(name);		\
-$##name:	.long	CYG_LABEL_NAME(name)
+        .globl CYG_LABEL_DEFN(name);		\
+$##name:	.long	CYG_LABEL_DEFN(name)
 
 # We need this macro because the SH assembler is lacking the nice
 # inline immediate constant feature of the ARM assembler. So we have
 # to define constants ourselves, and sometimes we need more than one of
 # the same type. This allows the symbols used to change.
 #define SYM_PTR_REFn(name,n)	\
-        .globl CYG_LABEL_NAME(name);		\
-$##name##n:	.long	CYG_LABEL_NAME(name)
+        .globl CYG_LABEL_DEFN(name);		\
+$##name##n:	.long	CYG_LABEL_DEFN(name)
 
 #include <cyg/hal/platform.inc>
 	        

@@ -1,3 +1,13 @@
+2000-11-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sh.ld: _reset should be adorned with CYG_LABEL_DEFN
+	* src/vectors.S: CYG_LABEL_DEFN should have been used everywhere
+	that CYG_LABEL_NAME was used, except for the scheduler lock which
+	is special as it is defined in C as an asm alias.
+	* include/arch.inc: Similarly here for symbol macros
+
+	* include/basetype.h (CYG_LABEL_NAME): Delete. This is now obsolete.
+
 2000-11-22  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh.ld: Added mangling to all symbols.

@@ -231,9 +231,9 @@ cdl_package CYGPKG_MEMALLOC {
         # an absolute path.
         make -priority 50 {
             heaps.cxx : heapgeninc.tcl <PACKAGE>/src/heapgen.tcl
-            sh -c "cd $(REPOSITORY)/$(PACKAGE)/src ; sh heapgen.tcl $(PREFIX) `pwd`"
-            @cp heaps.hxx $(PREFIX)/include/pkgconf/heaps.hxx
-            @chmod u+w $(PREFIX)/include/pkgconf/heaps.hxx
+            sh -c "PWD=`pwd` ; cd $(REPOSITORY)/$(PACKAGE)/src ; sh heapgen.tcl \"$(PREFIX)\" \"$$PWD\""
+            @cp heaps.hxx "$(PREFIX)"/include/pkgconf/heaps.hxx
+            @chmod u+w "$(PREFIX)"/include/pkgconf/heaps.hxx
         }
 
         make_object {

@@ -1,9 +1,9 @@
 #!/bin/sh
 # these lines restart using the tcl shell \
-  exec sh -c "if ( echo | tclsh ) 2>/dev/null ; then \
+    exec sh -c "if ( echo | cygtclsh80 ) 2>/dev/null ; then \
+      exec cygtclsh80 \"${0}\" \"\`echo \\\"\\\`cygpath -ws \\\"${1}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" \"\`echo \\\"\\\`cygpath -ws \\\"${2}\\\" \\\`\\\" |sed 's#\\\\\\\\#/#g'\`\" ; \
+    elif ( echo | tclsh ) 2>/dev/null ; then \
       exec tclsh \"${0}\" ${1+${*}} ; \
-    elif ( echo | cygtclsh80 ) 2>/dev/null ; then \
-      exec cygtclsh80 \"${0}\" `echo "\`cygpath -w ${1} 2>/dev/null\`" |sed 's#\\\\#/#g'` `echo "\`cygpath -w ${2} 2>/dev/null\`" |sed 's#\\\\#/#g'` ; \
     else \
       echo Could not find TCL interpreter ; \
       exit 1 ; \
@@ -56,10 +56,6 @@
 
 set debug 0
 
-if { $argc != 2 } {
-    error "Usage: heapgen.tcl installdir builddir"
-}
-
 proc dputs { args } {
     global debug
     if { $debug > 0 } {
@@ -71,15 +67,23 @@ proc dputs { args } {
     }
 }
 
+dputs "argc=" $argc
+dputs "argv=" $argv
+
+if { $argc != 2 } {
+    error "Usage: heapgen.tcl installdir builddir"
+}
+
 set installdir [ lindex $argv 0 ]
 set builddir   [ lindex $argv 1 ]
-
-# Fetch relevant config data placed in the generated file heapgeninc.tcl
-source [ file join $builddir heapgeninc.tcl ]
 
 dputs "builddir=" $builddir
 dputs "installdir=" $installdir
 dputs "pwd=" [pwd]
+
+# Fetch relevant config data placed in the generated file heapgeninc.tcl
+source [ file join $builddir heapgeninc.tcl ]
+
 dputs "memlayout_h=" $memlayout_h
 
 # ----------------------------------------------------------------------------

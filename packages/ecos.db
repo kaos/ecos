@@ -427,6 +427,7 @@ package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
         description     "Ethernet driver for Cirrus Logic EDB7xxx development boards."
 }
 
+
 package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	alias 		{ "Intel EBSA285 with PRO/100+ ethernet driver"
 			   devs_eth_arm_ebsa285 ebsa285_eth_driver }

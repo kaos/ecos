@@ -1,3 +1,12 @@
+2000-11-24  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/memalloc.cdl: Invoke heapgen.tcl with build directory
+	surrounded by quotes (and do so in a portable way).
+
+	* src/heapgen.tcl: recurse back in on cygwin with correct quoting
+	to allow directories containing spaces. Also in a Solaris shell
+	compatible way.
+
 2000-11-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/memalloc.cdl (CYGSEM_MEMALLOC_MALLOC_ZERO_RETURNS_NULL): 
