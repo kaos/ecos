@@ -613,27 +613,27 @@ do_load(int argc, char *argv[])
 #endif
 
     init_opts(&opts[0], 'v', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&verbose, 0, "verbose");
+              (void *)&verbose, 0, "verbose");
     init_opts(&opts[1], 'r', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&raw, 0, "load raw data");
+              (void *)&raw, 0, "load raw data");
     init_opts(&opts[2], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&base, (bool *)&base_addr_set, "load address");
+              (void *)&base, (bool *)&base_addr_set, "load address");
     init_opts(&opts[3], 'm', true, OPTION_ARG_TYPE_STR, 
-              (void **)&mode_str, (bool *)&mode_str_set, "download mode (TFTP, xyzMODEM, or disk)");
+              (void *)&mode_str, (bool *)&mode_str_set, "download mode (TFTP, xyzMODEM, or disk)");
     num_options = 4;
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
     init_opts(&opts[num_options], 'c', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&chan, (bool *)&chan_set, "I/O channel");
+              (void *)&chan, (bool *)&chan_set, "I/O channel");
     num_options++;
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING
     init_opts(&opts[num_options], 'h', true, OPTION_ARG_TYPE_STR, 
-              (void **)&hostname, (bool *)&hostname_set, "host name or IP address");
+              (void *)&hostname, (bool *)&hostname_set, "host name or IP address");
     num_options++;
 #endif
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
     init_opts(&opts[num_options], 'd', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&decompress, 0, "decompress");
+              (void *)&decompress, 0, "decompress");
     num_options++;
 #endif
 
@@ -717,7 +717,7 @@ do_load(int argc, char *argv[])
         diag_printf("Using default protocol (%s)\n", which);
     }
 #ifdef CYGSEM_REDBOOT_VALIDATE_USER_RAM_LOADS
-    if (base_addr_set && !valid_address(base)) {
+    if (base_addr_set && !valid_address((unsigned char *)base)) {
         if (!verify_action("Specified address (%p) is not believed to be in RAM", (void*)base))
             return;
         spillover_ok = true;

@@ -1,3 +1,17 @@
+2004-02-23  Uwe Kindler  <uwe_kindler@web.de>
+
+	* src/cksum.c:
+	* src/dump.c:
+	* src/fconfig.c:
+	* src/flash.c:
+	* src/load.c:
+	* src/main.c:
+	* src/mcmp.c:
+	* src/mcopy.c:
+	* src/mfill.c:
+	* src/net/net_io.c:
+	* src/net/ping.c: Minor cleanups to remove warnings.
+
 2004-02-20  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/redboot.sgml: Document lowering security level for TFTP to

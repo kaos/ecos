@@ -60,6 +60,7 @@
 
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
 // Note horrid intertwining of functions, to save precious FLASH
+externC void fis_update_directory(void);
 #endif
 
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_EEPROM
@@ -69,6 +70,11 @@ externC void read_eeprom(void *buf, int len);
 
 #ifdef CYGSEM_REDBOOT_PLF_ESA_VALIDATE
 externC bool cyg_plf_redboot_esa_validate(unsigned char *val);
+#endif
+
+#ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
+externC bool do_flash_init(void);
+externC int flash_read(void *flash_base, void *ram_base, int len, void **err_address);
 #endif
 
 // Round a quantity up
@@ -466,15 +472,15 @@ do_flash_config(int argc, char *argv[])
     script = (unsigned char *)0;
 
     init_opts(&opts[0], 'l', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&list_only, (bool *)0, "list configuration only");
+              (void *)&list_only, (bool *)0, "list configuration only");
     init_opts(&opts[1], 'n', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&nicknames, (bool *)0, "show nicknames");
+              (void *)&nicknames, (bool *)0, "show nicknames");
     init_opts(&opts[2], 'f', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&fullnames, (bool *)0, "show full names");
+              (void *)&fullnames, (bool *)0, "show full names");
     init_opts(&opts[3], 'i', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&init, (bool *)0, "initialize configuration database");
+              (void *)&init, (bool *)0, "initialize configuration database");
     init_opts(&opts[4], 'd', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&dumbterminal, (bool *)0, "dumb terminal: no clever edits");
+              (void *)&dumbterminal, (bool *)0, "dumb terminal: no clever edits");
 
     // First look to see if we are setting or getting a single option
     // by just quoting its nickname
@@ -684,8 +690,10 @@ void
 flash_write_config(bool prompt)
 {
 #if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
-    int stat;
     void *err_addr;
+#if !defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG)
+    int stat;
+#endif
 #endif
 
     config->len = sizeof(struct _config);
@@ -695,9 +703,9 @@ flash_write_config(bool prompt)
     if (!prompt || verify_action("Update RedBoot non-volatile configuration")) {
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-        memcpy(fis_work_block, fis_addr, fisdir_size);
+        flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
         fis_update_directory();
-#else //  CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
+#else 
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config page is unlocked before trying to update
         flash_unlock((void *)cfg_base, cfg_size, (void **)&err_addr);
@@ -715,8 +723,8 @@ flash_write_config(bool prompt)
         // Insure [quietly] that the config data is locked after the update
         flash_lock((void *)cfg_base, cfg_size, (void **)&err_addr);
 #endif
-#endif
-#else
+#endif // CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
+#else  // CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
         write_eeprom(config, sizeof(struct _config));  // into 'config'
 #endif
     }
@@ -1028,8 +1036,10 @@ static void
 load_flash_config(void)
 {
     bool use_boot_script;
-    void *err_addr;
     unsigned char *cfg_temp = (unsigned char *)workspace_end;
+#ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
+    void *err_addr;
+#endif
 
     config_ok = false;
     script = (unsigned char *)0;

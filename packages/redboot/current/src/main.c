@@ -467,7 +467,7 @@ do_help(int argc, char *argv[])
     struct cmd *cmd;
     char *which = (char *)0;
 
-    if (!scan_opts(argc, argv, 1, 0, 0, (void **)&which, OPTION_ARG_TYPE_STR, "<topic>")) {
+    if (!scan_opts(argc, argv, 1, 0, 0, (void *)&which, OPTION_ARG_TYPE_STR, "<topic>")) {
         diag_printf("Invalid argument\n");
         return;
     }
@@ -527,13 +527,13 @@ do_go(int argc, char *argv[])
     __mem_fault_handler = 0; // Let GDB handle any faults directly
     entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
+              (void *)&wait_time, (bool *)&wait_time_set, "wait timeout");
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&cache_enabled, (bool *)0, "go with caches enabled");
+              (void *)&cache_enabled, (bool *)0, "go with caches enabled");
     num_options = 2;
 #ifdef CYGPKG_IO_ETH_DRIVERS
     init_opts(&opts[2], 'n', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&stop_net, (bool *)0, "go with network driver stopped");
+              (void *)&stop_net, (bool *)0, "go with network driver stopped");
     num_options++;
 #endif
     if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
@@ -687,7 +687,7 @@ do_baud_rate(int argc, char *argv[])
 #endif
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&new_rate, (bool *)&new_rate_set, "new baud rate");
+              (void *)&new_rate, (bool *)&new_rate_set, "new baud rate");
     if (!scan_opts(argc, argv, 1, opts, 1, 0, 0, "")) {
         return;
     }

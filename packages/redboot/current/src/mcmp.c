@@ -72,17 +72,17 @@ do_mcmp(int argc, char *argv[])
     bool set_32bit, set_16bit, set_8bit;
 
     init_opts(&opts[0], 's', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&src_base, (bool *)&src_base_set, "base address");
+              (void *)&src_base, (bool *)&src_base_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
+              (void *)&len, (bool *)&len_set, "length");
     init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&dst_base, (bool *)&dst_base_set, "base address");
+              (void *)&dst_base, (bool *)&dst_base_set, "base address");
     init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
               (void *)&set_32bit, (bool *)0, "fill 32 bit units");
     init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_16bit, (bool *)0, "fill 16 bit units");
+              (void *)&set_16bit, (bool *)0, "fill 16 bit units");
     init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_8bit, (bool *)0, "fill 8 bit units");
+              (void *)&set_8bit, (bool *)0, "fill 8 bit units");
     if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
         return;
     }

@@ -110,19 +110,19 @@ do_ping(int argc, char *argv[])
     ip_route_t dest_ip;
 
     init_opts(&opts[0], 'n', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&count, (bool *)&count_set, "<count> - number of packets to test");
+              (void *)&count, (bool *)&count_set, "<count> - number of packets to test");
     init_opts(&opts[1], 't', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&timeout, (bool *)&timeout_set, "<timeout> - max #ms per packet [rount trip]");
+              (void *)&timeout, (bool *)&timeout_set, "<timeout> - max #ms per packet [rount trip]");
     init_opts(&opts[2], 'i', true, OPTION_ARG_TYPE_STR, 
-              (void **)&local_ip_addr, (bool *)&local_ip_addr_set, "local IP address");
+              (void *)&local_ip_addr, (bool *)&local_ip_addr_set, "local IP address");
     init_opts(&opts[3], 'h', true, OPTION_ARG_TYPE_STR, 
-              (void **)&host_ip_addr, (bool *)&host_ip_addr_set, "host name or IP address");
+              (void *)&host_ip_addr, (bool *)&host_ip_addr_set, "host name or IP address");
     init_opts(&opts[4], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "<length> - size of payload");
+              (void *)&length, (bool *)&length_set, "<length> - size of payload");
     init_opts(&opts[5], 'v', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&verbose, (bool *)0, "verbose operation");
+              (void *)&verbose, (bool *)0, "verbose operation");
     init_opts(&opts[6], 'r', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&rate, (bool *)&rate_set, "<rate> - time between packets");
+              (void *)&rate, (bool *)&rate_set, "<rate> - time between packets");
     if (!scan_opts(argc, argv, 1, opts, 7, (void **)0, 0, "")) {
         diag_printf("PING - Invalid option specified\n");
         return;

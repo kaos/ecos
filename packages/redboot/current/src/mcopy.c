@@ -64,17 +64,17 @@ do_mcopy(int argc, char *argv[])
     int incr = 1;
 
     init_opts(&opts[0], 's', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&src, (bool *)&src_set, "base address");
+              (void *)&src, (bool *)&src_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
+              (void *)&len, (bool *)&len_set, "length");
     init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&dst, (bool *)&dst_set, "base address");
+              (void *)&dst, (bool *)&dst_set, "base address");
     init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
               (void *)&sz32, (bool *)0, "copy 32 bit data");
     init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
-              (void **)&sz16, (bool *)0, "copy 16 bit data");
+              (void *)&sz16, (bool *)0, "copy 16 bit data");
     init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
-              (void **)&sz8, (bool *)0, "copy 8 bit data");
+              (void *)&sz8, (bool *)0, "copy 8 bit data");
     if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
         return;
     }

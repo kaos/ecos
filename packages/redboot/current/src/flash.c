@@ -249,7 +249,7 @@ fis_init(int argc, char *argv[])
     unsigned long redboot_image_size;
 
     init_opts(&opts[0], 'f', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&full_init, (bool *)0, "full initialization, erases all of flash");
+              (void *)&full_init, (bool *)0, "full initialization, erases all of flash");
     if (!scan_opts(argc, argv, 2, opts, 1, 0, 0, ""))
     {
         return;
@@ -459,10 +459,10 @@ fis_list(int argc, char *argv[])
 #endif
 
     init_opts(&opts[0], 'd', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&show_datalen, (bool *)0, "display data length");
+              (void *)&show_datalen, (bool *)0, "display data length");
 #ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&show_cksums, (bool *)0, "display checksums");
+              (void *)&show_cksums, (bool *)0, "display checksums");
     i = 2;
 #else
     i = 1;
@@ -705,19 +705,19 @@ fis_create(int argc, char *argv[])
     bool prog_ok = true;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&mem_addr, (bool *)&mem_addr_set, "memory base address");
+              (void *)&mem_addr, (bool *)&mem_addr_set, "memory base address");
     init_opts(&opts[1], 'r', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&exec_addr, (bool *)&exec_addr_set, "ram base address");
+              (void *)&exec_addr, (bool *)&exec_addr_set, "ram base address");
     init_opts(&opts[2], 'e', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&entry_addr, (bool *)&entry_addr_set, "entry point address");
+              (void *)&entry_addr, (bool *)&entry_addr_set, "entry point address");
     init_opts(&opts[3], 'f', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+              (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[4], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "image length [in FLASH]");
+              (void *)&length, (bool *)&length_set, "image length [in FLASH]");
     init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&img_size, (bool *)&img_size_set, "image size [actual data]");
+              (void *)&img_size, (bool *)&img_size_set, "image size [actual data]");
     init_opts(&opts[6], 'n', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&no_copy, (bool *)0, "don't copy from RAM to FLASH, just update directory");
+              (void *)&no_copy, (bool *)0, "don't copy from RAM to FLASH, just update directory");
     if (!scan_opts(argc, argv, 2, opts, 7, (void *)&name, OPTION_ARG_TYPE_STR, "file name"))
     {
         fis_usage("invalid arguments");
@@ -920,7 +920,7 @@ fis_delete(int argc, char *argv[])
     void *err_addr;
     struct fis_image_desc *img;
 
-    if (!scan_opts(argc, argv, 2, 0, 0, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
+    if (!scan_opts(argc, argv, 2, 0, 0, (void *)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
         return;
@@ -992,17 +992,17 @@ fis_load(int argc, char *argv[])
     void *err_addr;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
+              (void *)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&show_cksum, (bool *)0, "display checksum");
+              (void *)&show_cksum, (bool *)0, "display checksum");
     num_options = 2;
 #ifdef CYGPRI_REDBOOT_ZLIB_FLASH
     init_opts(&opts[num_options], 'd', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&decompress, 0, "decompress");
+              (void *)&decompress, 0, "decompress");
     num_options++;
 #endif
 
-    if (!scan_opts(argc, argv, 2, opts, num_options, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
+    if (!scan_opts(argc, argv, 2, opts, num_options, (void *)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
         return;
@@ -1094,11 +1094,11 @@ fis_write(int argc, char *argv[])
     bool prog_ok;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&mem_addr, (bool *)&mem_addr_set, "memory base address");
+              (void *)&mem_addr, (bool *)&mem_addr_set, "memory base address");
     init_opts(&opts[1], 'f', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+              (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[2], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "image length [in FLASH]");
+              (void *)&length, (bool *)&length_set, "image length [in FLASH]");
     if (!scan_opts(argc, argv, 2, opts, 3, 0, 0, 0))
     {
         fis_usage("invalid arguments");
@@ -1169,9 +1169,9 @@ fis_erase(int argc, char *argv[])
     struct option_info opts[2];
 
     init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+              (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "length");
+              (void *)&length, (bool *)&length_set, "length");
     if (!scan_opts(argc, argv, 2, opts, 2, (void **)0, 0, ""))
     {
         fis_usage("invalid arguments");
@@ -1218,9 +1218,9 @@ fis_lock(int argc, char *argv[])
     struct option_info opts[2];
 
     init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+              (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "length");
+              (void *)&length, (bool *)&length_set, "length");
     if (!scan_opts(argc, argv, 2, opts, 2, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
@@ -1265,9 +1265,9 @@ fis_unlock(int argc, char *argv[])
     struct option_info opts[2];
 
     init_opts(&opts[0], 'f', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+              (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&length, (bool *)&length_set, "length");
+              (void *)&length, (bool *)&length_set, "length");
     if (!scan_opts(argc, argv, 2, opts, 2, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");

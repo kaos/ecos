@@ -763,7 +763,7 @@ net_init(void)
         show_eth_info();
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-        flash_get_IP("bootp_server_ip", &my_bootp_info.bp_siaddr);
+        flash_get_IP("bootp_server_ip", (ip_addr_t *)&my_bootp_info.bp_siaddr);
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
 	redboot_dns_res_init();
@@ -797,13 +797,13 @@ do_ip_addr(int argc, char *argv[])
     int num_opts;
 
     init_opts(&opts[0], 'l', true, OPTION_ARG_TYPE_STR, 
-              (void **)&ip_addr, (bool *)&ip_addr_set, "local IP address");
+              (void *)&ip_addr, (bool *)&ip_addr_set, "local IP address");
     init_opts(&opts[1], 'h', true, OPTION_ARG_TYPE_STR, 
-              (void **)&host_addr, (bool *)&host_addr_set, "default server address");
+              (void *)&host_addr, (bool *)&host_addr_set, "default server address");
     num_opts = 2;
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
     init_opts(&opts[2], 'd', true, OPTION_ARG_TYPE_STR, 
-              (void **)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
+              (void *)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
     num_opts++;
 #endif
     if (!scan_opts(argc, argv, 1, opts, num_opts, 0, 0, "")) {

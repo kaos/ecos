@@ -71,9 +71,9 @@ do_cksum(int argc, char *argv[])
     bool base_set, len_set;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&base, (bool *)&base_set, "base address");
+              (void *)&base, (bool *)&base_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
+              (void *)&len, (bool *)&len_set, "length");
     if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, "")) {
         return;
     }

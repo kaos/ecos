@@ -79,17 +79,17 @@ do_dump(int argc, char *argv[])
     cyg_uint8 ch;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&base, (bool *)&base_set, "base address");
+              (void *)&base, (bool *)&base_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&len, (bool *)&len_set, "length");
+              (void *)&len, (bool *)&len_set, "length");
     init_opts(&opts[2], 's', false, OPTION_ARG_TYPE_FLG, 
-              (void **)&srec_dump, 0, "dump data using Morotola S-records");
+              (void *)&srec_dump, 0, "dump data using Morotola S-records");
     init_opts(&opts[3], '4', false, OPTION_ARG_TYPE_FLG,
               (void *)&set_32bit, (bool *)0, "dump 32 bit units");
     init_opts(&opts[4], '2', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_16bit, (bool *)0, "dump 16 bit units");
+              (void *)&set_16bit, (bool *)0, "dump 16 bit units");
     init_opts(&opts[5], '1', false, OPTION_ARG_TYPE_FLG,
-              (void **)&set_8bit, (bool *)0, "dump 8 bit units");
+              (void *)&set_8bit, (bool *)0, "dump 8 bit units");
     if (!scan_opts(argc, argv, 1, opts, 6, 0, 0, "")) {
         return;
     }
