@@ -144,6 +144,8 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
                                  - CYGARC_PPC_STACK_FRAME_SIZE;               \
     register HAL_SavedRegisters *_regs_;                                      \
     int _i_;                                                                  \
+    ((CYG_WORD *)_sp_)[0] = 0;            /* Zero old FP and LR for EABI */   \
+    ((CYG_WORD *)_sp_)[1] = 0;            /* to make GDB backtraces sane */   \
     _regs_ = (HAL_SavedRegisters *)((_sp_) - sizeof(HAL_SavedRegisters));     \
     for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->d[_i_] = (_id_)|_i_;            \
     (_regs_)->d[01] = (CYG_WORD)(_sp_);        /* SP = top of stack      */   \

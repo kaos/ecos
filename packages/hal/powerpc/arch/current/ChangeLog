@@ -1,3 +1,9 @@
+2003-03-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/hal_arch.h (HAL_THREAD_INIT_CONTEXT): Initialize
+	what would be FP and LR in the previous stack frame to make
+	GDB backtraces happy.
+
 2003-01-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/hal_mem.h (CYGARC_MEMDESC_NOCACHE_PA): New macro which
