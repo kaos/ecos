@@ -56,7 +56,7 @@
   #include <malloc.h>     // malloc
   #include <stdlib.h>     // atoi
   #include <errno.h>
-  #define WOULDBLOCK EWOULDBLOCK
+  #define WOULDBLOCK WSAEWOULDBLOCK
 
   #include "wcharunix.h"
   #include <sys/time.h>
