@@ -54,8 +54,10 @@
 //==========================================================================
 
 #include <redboot.h>
-#include <xyzModem.h>
 #include <elf.h>
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM
+#include <xyzModem.h>
+#endif
 #ifdef CYGPKG_REDBOOT_DISK
 #include <fs/disk.h>
 #endif
@@ -693,9 +695,14 @@ do_load(int argc, char *argv[])
 #endif
 #endif
         if (!io) {
+#ifdef CYGBLD_BUILD_REDBOOT_WITH_XYZMODEM
             which = "Xmodem";
             io = &xyzModem_io;
             verbose = false;
+#else
+            diag_printf("No default protocol!\n");
+            return;
+#endif
         }
         diag_printf("Using default protocol (%s)\n", which);
     }
