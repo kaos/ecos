@@ -77,14 +77,14 @@ __fgetc( FILE *stream )
 
     err = real_stream->read( &c, 1, &bytes_read );
 
-    // FIXME: Why do we need this?
-    if (!err && !bytes_read)  // if no err, but nothing to read, try again
-    {
-        real_stream->refill_read_buffer();
-        err = real_stream->read( &c, 1, &bytes_read );
+    // Why do we need this?  Because the buffer might be empty.
+    if (!err && !bytes_read) { // if no err, but nothing to read, try again
+        err = real_stream->refill_read_buffer();
+        if ( !err )
+            err = real_stream->read( &c, 1, &bytes_read );
     } // if
 
-    CYG_ASSERT( 1 == bytes_read, "Didn't read 1 byte!" );
+    CYG_ASSERT( (ENOERR != err) || (1 == bytes_read), "Didn't read 1 byte!" );
 
     if (err)
     {

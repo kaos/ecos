@@ -76,8 +76,9 @@ _fgets( char *s, int n, FILE *stream )
     err = real_stream->read( (cyg_uint8 *)s, n-1, &bytes_read );
 
     if (!err && !bytes_read) { // if no err, but nothing to read, try again
-        real_stream->refill_read_buffer();
-        err = real_stream->read( (cyg_uint8 *)s, n-1, &bytes_read );
+        err = real_stream->refill_read_buffer();
+        if ( !err )
+            err = real_stream->read( (cyg_uint8 *)s, n-1, &bytes_read );
 
     } // if
 

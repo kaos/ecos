@@ -1,3 +1,13 @@
+2000-05-25  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/clibincl/stream.inl (set_error): If the error is EEOF, set
+	the EOF flag (flags.at_eof) so that clients know.
+
+	* src/stdio/input/fgetc.cxx (__fgetc):
+	* src/stdio/input/fgets.cxx (_fgets):
+	* src/stdio/input/fread.cxx (_fread): Correctly handle an error,
+	or EOF indication, from real_stream->refill_read_buffer().
+
 2000-05-16  Jesper Skov  <jskov@redhat.com>
 
 	* tests/signal/signal2.c: Also reset DIV_BY_ZERO vector.

@@ -284,6 +284,9 @@ Cyg_StdioStream::set_error( Cyg_ErrNo errno_to_set )
     
     errno = error = errno_to_set;
 
+    if ( EEOF == error )
+        flags.at_eof = 1;
+
     unlock_me();
 } // set_error()
 

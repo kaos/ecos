@@ -59,7 +59,7 @@
 ## Hardware supplied vectors
 	
 	.set	noreorder
- 
+
 	.section ".reset_vector","ax"
 
 	# Reset vector at 0xBFC00000
@@ -195,6 +195,11 @@ FUNC_START(_start)
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
         .extern initialize_stub
         jal     initialize_stub
+        nop
+#endif
+#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
+        .extern hal_ctrlc_isr_init
+        jal     hal_ctrlc_isr_init
         nop
 #endif
 
@@ -604,13 +609,16 @@ FUNC_START(__default_interrupt_vsr)
 #endif
 				
 restore_state:
+#if defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
 	move	k0,v0
+#endif
 
 	# All done, restore CPU state and continue
 
 	addi	sp,sp,mips_stack_frame_size	# retrieve CPU state ptr
 
 	# Disable interrupts again while we restore state. 
+	hal_cpu_int_disable
 
 	hal_diag_restore
 

@@ -1,3 +1,13 @@
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_diag.c: Removed CTRLC init hacks.
+
+	* src/plf_misc.c (hal_ctrlc_isr_init): Made public.
+
+2000-05-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_misc.c: Let arch call ctrlc_init.
+
 2000-02-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* cdl/hal_mips_vr4300_vrc4373.cdl (CYGBLD_BUILD_GDB_STUBS): When

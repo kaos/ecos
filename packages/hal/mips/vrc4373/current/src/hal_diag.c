@@ -81,11 +81,7 @@ int fd;
 
 static unsigned char _diag_init[] = {
     0x00, /* Register 0 */
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
-    0x10, /* Register 1 - rx interrupts only */
-#else    
     0x00, /* Register 1 - no interrupts */
-#endif    
     0x00, /* Register 2 */
     0xC1, /* Register 3 - Rx enable, 8 data */
     0x44, /* Register 4 - x16 clock, 1 stop, no parity */
@@ -93,11 +89,7 @@ static unsigned char _diag_init[] = {
     0x00, /* Register 6 */
     0x00, /* Register 7 */
     0x00, /* Register 8 */
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
-    0x0a, /* Register 9 */
-#else    
     0x00, /* Register 9 */
-#endif    
     0x00, /* Register 10 */
     0x56, /* Register 11 - Rx, Tx clocks from baud rate generator */
     0x00, /* Register 12 - baud rate LSB */

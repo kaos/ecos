@@ -67,9 +67,6 @@
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST) // Big endian
 
-// Note: there do not seem to be any current machines which are Big Endian but
-// have a mixed up double layout. 
-
 typedef union 
 {
     cyg_int32 asi32[2];
@@ -80,17 +77,26 @@ typedef union
     
     struct 
     {
+#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST)
         unsigned int sign : 1;
         unsigned int exponent: 11;
         unsigned int fraction0:4;
         unsigned int fraction1:16;
         unsigned int fraction2:16;
         unsigned int fraction3:16;
-        
+#else
+        unsigned int fraction2:16;
+        unsigned int fraction3:16;
+        unsigned int sign : 1;
+        unsigned int exponent: 11;
+        unsigned int fraction0:4;
+        unsigned int fraction1:16;
+#endif        
     } number;
     
     struct 
     {
+#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST)
         unsigned int sign : 1;
         unsigned int exponent: 11;
         unsigned int quiet:1;
@@ -98,12 +104,26 @@ typedef union
         unsigned int function1:16;
         unsigned int function2:16;
         unsigned int function3:16;
+#else
+        unsigned int function2:16;
+        unsigned int function3:16;
+        unsigned int sign : 1;
+        unsigned int exponent: 11;
+        unsigned int quiet:1;
+        unsigned int function0:3;
+        unsigned int function1:16;
+#endif
     } nan;
     
     struct 
     {
+#if (CYG_DOUBLE_BYTEORDER == CYG_MSBFIRST)
         cyg_uint32 msw;
         cyg_uint32 lsw;
+#else
+        cyg_uint32 lsw;
+        cyg_uint32 msw;
+#endif
     } parts;
 
     
@@ -284,8 +304,25 @@ reg2flt( CYG_HAL_FPU_REG *fpu_reg_p, Cyg_libm_ieee_float_shape_type *flt)
 static __inline__ void
 flt2reg( Cyg_libm_ieee_float_shape_type *flt, CYG_HAL_FPU_REG *fpu_reg_p )
 {
-    *fpu_reg_p = flt->asi32;
+#if defined(CYGHWR_HAL_MIPS_FPU_32BIT) || (CYG_BYTEORDER == CYG_LSBFIRST)
+    *(cyg_int32 *)fpu_reg_p = flt->asi32;
+#else
+    *((cyg_int32 *)fpu_reg_p + 1) = flt->asi32;
+# endif
 } // flt2reg()
+
+static __inline__ void
+reg2dbl( CYG_HAL_FPU_REG *fpu_reg_p, Cyg_libm_ieee_double_shape_type *flt)
+{
+    flt->asi64 = *(cyg_int64 *)fpu_reg_p;
+} // reg2dbl()
+
+static __inline__ void
+dbl2reg( Cyg_libm_ieee_double_shape_type *flt, CYG_HAL_FPU_REG *fpu_reg_p )
+{
+    *(cyg_uint64*)fpu_reg_p = flt->asi64;
+} // dbl2reg()
+
 
 // This function returns non-zero if the exception has been handled
 // successfully.
@@ -379,8 +416,8 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
             if (fp64bit) {
                 Cyg_libm_ieee_double_shape_type s1, s2;
 
-                s1.asi64 = *srcreg1;
-                s2.asi64 = *srcreg2;
+                reg2dbl( srcreg1, &s1 );
+                reg2dbl( srcreg2, &s2 );
 
                 if ( issubnormal( s1 ) ) {  // flush to 0 and restart
                     // but preserve sign
@@ -388,7 +425,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                         s1.value = -0.0;
                     else
                         s1.value = 0.0;
-                    *srcreg1 = s1.asi64;
+                    dbl2reg( &s1, srcreg1 );
                     handled++;
                 }
 
@@ -404,7 +441,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                         s2.value = -0.0;
                     else
                         s2.value = 0.0;
-                    *srcreg2 = s2.asi64;
+                    dbl2reg( &s2, srcreg2 );
                     handled++;
                 }
 
@@ -439,8 +476,8 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
             if ( fp64bit ) {
                 Cyg_libm_ieee_double_shape_type d, s;
 
-                d.asi64 = *dstreg;
-                s.asi64 = *srcreg1;
+                reg2dbl( dstreg, &d );
+                reg2dbl( srcreg1, &s );
 
                 if ( issubnormal( s ) ) {  // Sqrt of something tiny is 0
                     // if this is a delay slot, we can't restart properly
@@ -451,14 +488,14 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                             s.value = -0.0;
                         else
                             s.value = 0.0;
-                        *srcreg1 = s.asi64;
+                        dbl2reg( &s, srcreg1 );
                     } else {
                         // but preserve sign
                         if (s.number.sign)
                             d.value = -0.0;
                         else
                             d.value = 0.0;
-                        *dstreg = d.asi64;
+                        dbl2reg( &d, dstreg );
                         regs->pc += 4; // We've dealt with this so move on
                     }
                     handled++;
@@ -499,8 +536,8 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
             if ( fp64bit ) {
                 Cyg_libm_ieee_double_shape_type d, s;
 
-                d.asi64 = *dstreg;
-                s.asi64 = *srcreg1;
+                reg2dbl( dstreg, &d );
+                reg2dbl( srcreg1, &s );
 
                 // if this is a delay slot, we can't restart properly
                 // so if it is subnormal, clear the source register instead
@@ -513,13 +550,13 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                             s.value = -0.0;
                         else
                             s.value = 0.0;
-                        *srcreg1 = s.asi64;
+                        dbl2reg( &s, srcreg1 );
                         handled++;
                     }
                 } else {
                     d.asi64 = s.asi64;
                     d.number.sign = 0;
-                    *dstreg = d.asi64;
+                    dbl2reg( &d, dstreg );
                     regs->pc += 4;
                     handled++;
                 }
@@ -558,8 +595,8 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
             if ( fp64bit ) {
                 Cyg_libm_ieee_double_shape_type d, s;
 
-                d.asi64 = *dstreg;
-                s.asi64 = *srcreg1;
+                reg2dbl( dstreg, &d );
+                reg2dbl( srcreg1, &s );
 
                 // if this is a delay slot, we can't restart properly
                 // so if it is subnormal, clear the source register instead
@@ -570,12 +607,12 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                             s.value = -0.0;
                         else
                             s.value = 0.0;
-                        *srcreg1 = s.asi64;
+                        dbl2reg( &s, srcreg1 );
                         handled++;
                     }
                 } else {
                     d.asi64 = s.asi64;
-                    *dstreg = d.asi64;
+                    dbl2reg( &d, dstreg );
                     regs->pc += 4;
                     handled++;
                 }
@@ -613,8 +650,8 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
             if ( fp64bit ) {
                 Cyg_libm_ieee_double_shape_type d, s;
 
-                d.asi64 = *dstreg;
-                s.asi64 = *srcreg1;
+                reg2dbl( dstreg, &d );
+                reg2dbl( srcreg1, &s );
 
                 // if this is a delay slot, we can't restart properly
                 // so if it is subnormal, clear the source register instead
@@ -625,13 +662,13 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                             s.value = -0.0;
                         else
                             s.value = 0.0;
-                        *srcreg1 = s.asi64;
+                        dbl2reg( &s, srcreg1 );
                         handled++;
                     }
                 } else {
                     d.asi64 = s.asi64;
                     d.number.sign = s.number.sign ? 0 : 1;
-                    *dstreg = d.asi64;
+                    dbl2reg( &d, dstreg );
                     regs->pc += 4;
                     handled++;
                 }
@@ -682,7 +719,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
             if ( fp64bit ) {
                 Cyg_libm_ieee_double_shape_type s;
 
-                s.asi64 = *srcreg1;
+                reg2dbl( srcreg1, &s );
 
                 // just try and 0 the source register if it is subnormal
                 if ( issubnormal( s ) ) {
@@ -691,7 +728,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                         s.value = -0.0;
                     else
                         s.value = 0.0;
-                    *srcreg1 = s.asi64;
+                    dbl2reg( &s, srcreg1 );
                     handled++;
                 }
             } else { // 32-bit
@@ -718,8 +755,8 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                 if (fp64bit) {
                     Cyg_libm_ieee_double_shape_type s1, s2;
                     
-                    s1.asi64 = *srcreg1;
-                    s2.asi64 = *srcreg2;
+                    reg2dbl( srcreg1, &s1 );
+                    reg2dbl( srcreg2, &s2 );
                     
                     if ( issubnormal( s1 ) ) {  // flush to 0 and restart
                         // but preserve sign
@@ -727,7 +764,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                             s1.value = -0.0;
                         else
                             s1.value = 0.0;
-                        *srcreg1 = s1.asi64;
+                        dbl2reg( &s1, srcreg1 );
                         handled++;
                     }
                     
@@ -737,7 +774,7 @@ cyg_hal_mips_process_fpe( HAL_SavedRegisters *regs )
                             s2.value = -0.0;
                         else
                             s2.value = 0.0;
-                        *srcreg2 = s2.asi64;
+                        dbl2reg( &s2, srcreg2 );
                         handled++;
                     }
                     

@@ -89,9 +89,10 @@ _fread( void *ptr, size_t object_size, size_t num_objects, FILE *stream )
                              &bytes_read );
 
     if (!err && !bytes_read) { // if no err, but nothing to read, try again
-        real_stream->refill_read_buffer();
-        err = real_stream->read( (cyg_uint8 *)ptr, object_size*num_objects,
-                                 &bytes_read );
+        err = real_stream->refill_read_buffer();
+        if ( !err )
+            err = real_stream->read( (cyg_uint8 *)ptr, object_size*num_objects,
+                                     &bytes_read );
     } // if
 
     if (err) {

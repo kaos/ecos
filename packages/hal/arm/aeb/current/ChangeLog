@@ -1,3 +1,7 @@
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash_cksum.tcl: Use correct intepreter.
+
 2000-04-07  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/flash_cksum.tcl:

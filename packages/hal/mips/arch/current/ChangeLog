@@ -1,3 +1,29 @@
+2000-05-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: 
+	* src/mipsfp.c: 
+	Support FPU double-LE layout in BE mode.
+
+2000-05-24  Jesper Skov  <jskov@redhat.com>
+
+	* src/mipsfp.c: Also handle doubles in 32bit FPU mode.
+
+2000-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/arch.inc: 
+	* src/vectors.S:
+	Made exception return safe.
+
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: Call CTRLC init after stub initialization.
+
+	* cdl/hal_mips.cdl: Only include CTRLC support if not prevented
+	by platform.
+
+	* include/hal_cache.h: When using 'cache' instruction, hit all
+	ways, not only way0.
+
 2000-05-18  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_io.h: Allow platforms to override IO macro

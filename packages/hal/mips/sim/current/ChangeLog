@@ -1,3 +1,7 @@
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_sim.cdl: Doesn't support CTRLC.
+
 2000-04-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_sim_ram.ldi,

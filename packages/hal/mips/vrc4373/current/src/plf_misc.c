@@ -70,14 +70,6 @@ void hal_platform_init(void)
         patch_dbg_syscalls( (void *)(&hal_virtual_vector_table[0]) );
     }
 #endif
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)
-
-    {
-        static void hal_ctrlc_isr_init(void);
-        hal_ctrlc_isr_init();
-    }
-#endif    
-    
 }
 
 /*------------------------------------------------------------------------*/
@@ -141,7 +133,7 @@ void cyg_hal_user_break( CYG_ADDRWORD *regs )
 
 struct Hal_SavedRegisters *hal_saved_interrupt_state;
 
-static void hal_ctrlc_isr_init(void)
+void hal_ctrlc_isr_init(void)
 {
     HAL_DUART_WRITE_CR( DUART_CHAN, 1, 0x10 );
     HAL_DUART_WRITE_CR( DUART_CHAN, 9, 0x0a );    

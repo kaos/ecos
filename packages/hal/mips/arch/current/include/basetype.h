@@ -56,6 +56,14 @@
 # error MIPS endianess not defined by configuration
 #endif
 
+#if defined(CYGPKG_HAL_MIPS_DOUBLE_MSBFIRST)
+# define CYG_DOUBLE_BYTEORDER    CYG_MSBFIRST    // Big endian
+#elif defined(CYGPKG_HAL_MIPS_DOUBLE_LSBFIRST)
+# define CYG_DOUBLE_BYTEORDER    CYG_LSBFIRST    // Little endian
+#else
+# define CYG_DOUBLE_BYTEORDER CYG_BYTEORDER      // default to CPU endianess
+#endif
+
 //-----------------------------------------------------------------------------
 // MIPS does not usually use labels with undersores. Some labels generated
 // by the linker do, so add an underscore where required.

@@ -1,3 +1,7 @@
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* src/plf_misc.c: Let arch call ctrlc_init.
+
 2000-05-10  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt: Fix mistake in last

@@ -252,11 +252,12 @@
 #else
 	.macro	hal_cpu_eret pc,sr
         .set mips3
-	mtc0	\pc,epc				# put PC in EPC
-	nop
-	nop
-	nop
+	ori     \sr,\sr,2                       # prevent interrupts until eret
 	mtc0	\sr,status			# put SR back
+	nop
+	nop
+	nop
+	mtc0	\pc,epc				# put PC in EPC
 	nop
 	nop
 	nop

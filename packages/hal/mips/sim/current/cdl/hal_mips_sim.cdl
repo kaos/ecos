@@ -56,6 +56,7 @@ cdl_package CYGPKG_HAL_MIPS_SIM {
 
     compile       hal_diag.c platform.S plf_misc.c
 
+    implements CYGINT_HAL_DEBUG_GDB_CTRLC_UNSUPPORTED
 
     cdl_option CYGBLD_HAL_TARGET_H {
         display "architecture header file"

@@ -78,14 +78,6 @@ void hal_platform_init(void)
 
 #endif
 
-#if defined(CYGDBG_HAL_MIPS_DEBUG_GDB_CTRLC_SUPPORT)    
-        {
-            void hal_ctrlc_isr_init(void);
-            hal_ctrlc_isr_init();
-        }
-
-#endif
-        
 #if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
     defined(CYGSEM_HAL_USE_ROM_MONITOR_CygMon)
     {

@@ -1,3 +1,12 @@
+2000-05-25  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Allow thread support to included for ROM
+	monitor builds.
+
+2000-05-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/debugging.cdl: Allow platform to prevent CTRLC inclusion.
+
 2000-04-12  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/debugging.cdl: Don't let interfaces define anything.

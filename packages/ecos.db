@@ -262,6 +262,7 @@ package CYGPKG_DEVICES_WALLCLOCK_SH3 {
            Hitachi SH3 CPU's RTC module."
 }
 
+
 package CYGPKG_DEVICES_WATCHDOG {
 	alias		{ "Watchdog device code" watchdog devices_watchdog device_watchdog }
 	directory	devs/watchdog

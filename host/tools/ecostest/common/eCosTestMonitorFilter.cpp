@@ -45,7 +45,7 @@
 
 #include "eCosStd.h"
 
-#define SER_FILTER_VER "$Id: eCosTestMonitorFilter.cpp,v 1.7 2000/05/19 12:47:51 jlarmour Exp $"
+#define SER_FILTER_VER "$Id: eCosTestMonitorFilter.cpp,v 1.8 2000/05/26 13:46:34 jlarmour Exp $"
 #include "eCosTestMonitorFilter.h"
 
 CeCosTestMonitorFilter::CeCosTestMonitorFilter():
