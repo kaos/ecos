@@ -36,7 +36,8 @@
 
 <!-- }}} -->
 
-<reference id="devs-usb-sa11x0-ref">
+<part id="devs-usb-sa11x0-ref">
+<!-- reference id="devs-usb-sa11x0-ref" -->
   <title>SA11X0 USB Device Driver</title>
 
 <refentry id="devs-usb-sa11x0">
@@ -231,4 +232,5 @@ will be raised and performance will suffer accordingly.
 </refsect1>
 
 </refentry>
-</reference>
+</part>
+<!-- /reference -->
