@@ -473,6 +473,17 @@
 
 #else // 16 bit devices
 
+#ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV128
+    {   // AM29LV128
+        device_id  : FLASHWORD(0x227e),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 256,
+        device_size: 0x1000000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x1000000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false,
+        banked     : false
+    },
+#endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV160
     {   // MBM29LV160-T | AM29LV160-T
         device_id  : FLASHWORD(0x22c4),
