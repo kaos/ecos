@@ -4341,6 +4341,8 @@ target dreamcast {
                    CYGPKG_HAL_SH_SH4
                    CYGPKG_HAL_SH_SH7750_DREAMCAST
                    CYGPKG_IO_PCI
+		   CYGPKG_DEVS_ETH_RLTK_8139
+	           CYGPKG_DEVS_ETH_SH_DREAMCAST_RLTK8139
                    CYGPKG_IO_SERIAL_SH_SCIF }
         description "
            The sh7750 target provides the packages needed to run
@@ -5402,6 +5404,14 @@ package CYGPKG_DEVS_ETH_I386_PC_RLTK8139 {
 	directory	devs/eth/i386/pc/rltk8139
 	script		i386_pc_rltk8139_eth_drivers.cdl
         description     "Intel PC using Realtek 8139 (PCI) card."
+}
+
+package CYGPKG_DEVS_ETH_SH_DREAMCAST_RLTK8139 {
+	alias 		{ "SEGA Dreamcast with BroadBandAdapter driver" dreamcast_rltk8139_eth_driver }
+	hardware
+	directory	devs/eth/sh/dreamcast
+	script		sh_dreamcast_rltk8139_eth_drivers.cdl
+        description     "SEGA Dreamcast with BroadBandAdapter."
 }
 
 target pc_rltk8139 {

@@ -1,3 +1,8 @@
+2004-04-21  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* ecos.db: New Packages:
+	CYGPKG_DEVS_ETH_DREAMCAST_RLTK8139 - SEGA Dreamcast Broadband Adapter support
+
 2004-04-14  Nick Garnett  <nickg@calivar.com>
 
 	* ecos.db: Added PPP package.
@@ -2394,7 +2399,7 @@ Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -2418,9 +2423,6 @@ Mon Jul 27 19:36:53 BST 1998  Chris Provenzano  <proven@cygnus.com>
 //
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
