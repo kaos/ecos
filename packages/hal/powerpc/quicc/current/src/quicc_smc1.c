@@ -73,7 +73,7 @@
 #include <cyg/hal/drv_api.h>            // CYG_ISR_HANDLED
 #include <string.h>                     // memset
 
-#define UART_BIT_RATE(n) (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
+#define UART_BIT_RATE(n) ((((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)-1)
 #define UART_BAUD_RATE CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
 
 // Note: buffers will be placed just after descriptors

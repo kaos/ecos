@@ -130,7 +130,7 @@ static cyg_int32 select_baud[] = {
     0,      // 230400
 };
 
-#define UART_BITRATE(n) (((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)
+#define UART_BITRATE(n) ((((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/16)/n)-1)
 #define UART_SLOW_BITRATE(n) ((CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000)/n))
 
 // Channel type select

@@ -60,7 +60,7 @@
 #define ALIGN_TO_CACHELINES(b) ((cyg_uint8 *)(((CYG_ADDRESS)(b) + (HAL_DCACHE_LINE_SIZE-1)) & ~(HAL_DCACHE_LINE_SIZE-1)))
 
 #define UART_BIT_RATE(n) \
-    (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000))/(n * 64))
+    ((((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000))/(n * 64))-1)
 
 // SCC PSMR masks ....
 #define QUICC2_SCC_PSMR_ASYNC     0x8000

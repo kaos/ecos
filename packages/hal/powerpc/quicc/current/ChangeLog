@@ -1,3 +1,8 @@
+2003-09-08  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/quicc_smc1.c: Fix baud rate clock setup - was off by 1.
+	Reported by Tord Andersson <Tord.Andersson@combitechsystems.com>
+
 2003-03-31  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/quicc_smc1.c (cyg_hal_sccx_init_channel): Proper handling

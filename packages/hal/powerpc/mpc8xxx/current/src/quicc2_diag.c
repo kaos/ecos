@@ -118,7 +118,7 @@ static struct port_info ports[] = {
 // For Baud Rate Calculation, see MPC8260 PowerQUICC II User's Manual
 // 16.3 UART Baud Rate Examples, page 16-5.
 #define UART_BIT_RATE(n) \
-    (((int)(((CYGHWR_HAL_POWERPC_CPM_SPEED*2)*1000000)/16))/(n * 16))
+    ((((int)(((CYGHWR_HAL_POWERPC_CPM_SPEED*2)*1000000)/16))/(n * 16))-1)
 #define UART_BAUD_RATE CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD
 
 
