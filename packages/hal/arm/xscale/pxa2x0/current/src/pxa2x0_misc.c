@@ -70,33 +70,35 @@ externC void plf_hardware_init(void);
 
 void hal_hardware_init(void)
 {
-	hal_xscale_core_init();
+    hal_xscale_core_init();
 
-    *PXA2X0_ICMR = 0;			// IRQ Mask
-    *PXA2X0_ICLR = 0;			// Route interrupts to IRQ
+    *PXA2X0_ICMR = 0;           // IRQ Mask
+    *PXA2X0_ICLR = 0;           // Route interrupts to IRQ
     *PXA2X0_ICCR = 1;
 
-	*PXA2X0_GRER0 = 0;			// Disable rising edge detect
-	*PXA2X0_GRER1 = 0;
-	*PXA2X0_GRER2 = 0;
+    *PXA2X0_GRER0 = 0;          // Disable rising edge detect
+    *PXA2X0_GRER1 = 0;
+    *PXA2X0_GRER2 = 0;
 
-	*PXA2X0_GFER0 = 0;			// Disable falling edge detect
-	*PXA2X0_GFER1 = 0;
-	*PXA2X0_GFER2 = 0;
+    *PXA2X0_GFER0 = 0;          // Disable falling edge detect
+    *PXA2X0_GFER1 = 0;
+    *PXA2X0_GFER2 = 0;
 
-	*PXA2X0_GEDR0 = 0xffffffff;	// Clear edge detect status
-	*PXA2X0_GEDR1 = 0xffffffff;
-	*PXA2X0_GEDR2 = 0x0001ffff;
+    *PXA2X0_GEDR0 = 0xffffffff; // Clear edge detect status
+    *PXA2X0_GEDR1 = 0xffffffff;
+    *PXA2X0_GEDR2 = 0x0001ffff;
 
-	plf_hardware_init();		// Perform any platform specific initializations
+    plf_hardware_init();        // Perform any platform specific initializations
 
-	*PXA2X0_OSCR = 0;			// Let the "OS" counter run
-	*PXA2X0_OSMR0 = 0;
+    *PXA2X0_OSCR = 0;           // Let the "OS" counter run
+    *PXA2X0_OSMR0 = 0;
 
-	hal_if_init();				// Set up eCos/ROM interfaces
-
-	HAL_DCACHE_ENABLE();		// Enable caches
-	HAL_ICACHE_ENABLE();
+#ifdef CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP
+    HAL_DCACHE_ENABLE();        // Enable caches
+#endif
+#ifdef CYGSEM_HAL_ENABLE_ICACHE_ON_STARTUP
+    HAL_ICACHE_ENABLE();
+#endif
 }
 
 // Initialize the clock

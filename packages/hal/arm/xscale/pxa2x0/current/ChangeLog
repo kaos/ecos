@@ -1,3 +1,9 @@
+2003-02-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/pxa2x0_misc.c (hal_hardware_init): Move call to hal_if_init()
+	into platform code (so it can do I/O).  Also, support common CDL
+	for CACHE startup enables.
+
 2003-01-24  Knud Woehler <knud.woehler@microplex.de>
 2003-01-24  Mark Salter <msalter@redhat.com>
 
