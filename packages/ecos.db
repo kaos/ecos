@@ -1726,11 +1726,11 @@ package CYGPKG_DEVS_ETH_H8300_H8MAX {
 }
 
 package CYGPKG_DEVS_ETH_H8300_EDOSK2674 {
-	alias 		{ "EDOSK-2674R Board ethernet driver" edosk2674_eth_drivers }
+	alias 		{ "EDOSK-2674 Board ethernet driver" edosk2674_eth_drivers }
 	directory	devs/eth/h8300/edosk2674
 	script		h8300_edosk2674_eth_drivers.cdl
         hardware
-        description     "Ethernet drivers for EDOSK-2674R board."
+        description     "Ethernet drivers for EDOSK-2674 board."
 }
 
 package CYGPKG_DEVS_ETH_MCF5272 {
@@ -2849,13 +2849,13 @@ package CYGPKG_HAL_H8300_H8S_SIM {
 }
 
 package CYGPKG_HAL_H8300_H8S_EDOSK2674 {
-	alias		{ "EDOSK-2674R board" hal_h8s_edosk2674 h8s_edosk2674_hal }
+	alias		{ "EDOSK-2674 board" hal_h8s_edosk2674 h8s_edosk2674_hal }
 	directory	hal/h8300/edosk2674
 	script		hal_h8300_h8s_edosk2674.cdl
 	hardware
         description "
            The edosk2674 HAL package provides the support needed to run
-           eCos on a Hitachi Micro System Europe EDOSK-2674R Evalution board." 
+           eCos on a Hitachi Micro System Europe EDOSK-2674 Evalution board." 
 }
 
 # ==========================================================================
@@ -5010,7 +5010,7 @@ target h8max {
 }
 
 target edosk2674 {
-        alias		{ "EDOSK-2674R" }
+        alias		{ "EDOSK-2674" }
 	packages        { CYGPKG_HAL_H8300
                           CYGPKG_HAL_H8300_H8S
                           CYGPKG_HAL_H8300_H8S_EDOSK2674
@@ -5019,7 +5019,7 @@ target edosk2674 {
         }
         description "
            The h8max target provides the packages need to run
-           eCos in the Hitachi Micro System Europe EDOSK-2674R Evalution board."
+           eCos in the Hitachi Micro System Europe EDOSK-2674 Evalution board."
 }
 
 # --------------------------------------------------------------------------
