@@ -480,7 +480,6 @@
     },
 #endif
 #ifdef CYGHWR_DEVS_FLASH_AMD_AM29LV320D
-#warning *** Untested ***
     {   // AM29LV320DT
         device_id  : FLASHWORD(0x01F6),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
@@ -502,7 +501,7 @@
         banked     : false
     },
     {   // AM29LV320D
-        device_id  : FLASHWORD(0x01F9),
+        device_id  : FLASHWORD(0x22F9),
         block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
         block_count: 64,
         device_size: 0x400000 * CYGNUM_FLASH_INTERLEAVE,

@@ -89,6 +89,12 @@
 #define FLASH_unlocked                  FLASHWORD( 0x00 )
 
 #ifndef CYGNUM_FLASH_16AS8
+#define _16AS8 0
+#else
+#define _16AS8 CYGNUM_FLASH_16AS8
+#endif
+
+#if (_16AS8 == 0)
 # define FLASH_Setup_Addr1              (0x555)
 # define FLASH_Setup_Addr2              (0x2AA)
 # define FLASH_VendorID_Addr            (0)
