@@ -1,3 +1,8 @@
+2005-03-07 Alexander Neundorf <alexander.neundorf@jenoptik.com>
+
+        * src/net/arp.c: use correct sizeof(rt->enet_addr) in
+	__arp_lookup()
+	
 2005-01-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/main.c (cyg_start): Fix compiler warning with 

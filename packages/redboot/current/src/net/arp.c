@@ -193,7 +193,7 @@ __arp_lookup(ip_addr_t *host, ip_route_t *rt)
     }
     memcpy(&rt->ip_addr, host, sizeof(*host));
     if (((*host)[0] == 0xFF) && ((*host)[1] == 0xFF) && ((*host)[2] == 0xFF)) {
-        memset(&rt->enet_addr, 0xFF, sizeof(&rt->enet_addr));
+        memset(&rt->enet_addr, 0xFF, sizeof(rt->enet_addr));
         return 0;
 #ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
     } else if (!__ip_addr_local(host)) {
