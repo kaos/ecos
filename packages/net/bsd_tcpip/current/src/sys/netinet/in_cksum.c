@@ -88,11 +88,19 @@
     }
 
 static const u_int32_t in_masks[] = {
+#if BYTE_ORDER == BIG_ENDIAN
+	/*0 bytes*/ /*1 byte*/	/*2 bytes*/ /*3 bytes*/
+	0x00000000, 0xFF000000, 0xFFFF0000, 0xFFFFFF00,	/* offset 0 */
+	0x00000000, 0x00FF0000, 0x00FFFF00, 0x00FFFFFF,	/* offset 1 */
+	0x00000000, 0x0000FF00, 0x0000FFFF, 0x0000FFFF,	/* offset 2 */
+	0x00000000, 0x000000FF, 0x000000FF, 0x000000FF,	/* offset 3 */
+#else
 	/*0 bytes*/ /*1 byte*/	/*2 bytes*/ /*3 bytes*/
 	0x00000000, 0x000000FF, 0x0000FFFF, 0x00FFFFFF,	/* offset 0 */
 	0x00000000, 0x0000FF00, 0x00FFFF00, 0xFFFFFF00,	/* offset 1 */
 	0x00000000, 0x00FF0000, 0xFFFF0000, 0xFFFF0000,	/* offset 2 */
 	0x00000000, 0xFF000000, 0xFF000000, 0xFF000000,	/* offset 3 */
+#endif
 };
 
 union l_util {
