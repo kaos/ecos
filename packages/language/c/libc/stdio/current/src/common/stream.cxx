@@ -394,7 +394,7 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
     //
     // unless we do this, we could end up reading byte-by-byte from the filing system
     // due to the readbuf_char scheme.
-    if ((*bytes_read<buffer_length) && !flags.buffering) {
+    if (!flags.buffering && (*bytes_read<buffer_length)) {
         cyg_uint32 len;
         len=buffer_length-*bytes_read;
         read_err = cyg_stdio_read(my_device, user_buffer + *bytes_read, &len);      
