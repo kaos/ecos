@@ -1,3 +1,9 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_SE7709RP01_RAM.ecm: 
+	* misc/redboot_SE7709RP01_ROM.ecm: Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2002-08-06  Gary Thomas  <gary@chez-thomas.org>
 2002-08-06  Motoya Kurotsu <kurotsu@allied-telesis.co.jp>	
 

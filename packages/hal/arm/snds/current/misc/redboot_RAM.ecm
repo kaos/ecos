@@ -18,7 +18,6 @@ cdl_configuration eCos {
     package -template CYGPKG_REDBOOT current ;
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
-    package -template CYGPKG_NS_DNS current ;
 };
 
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
@@ -61,12 +60,5 @@ cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
     inferred_value 1 <cyg/libc/string/string.h>
 };
 
-cdl_option CYGBLD_ISO_DNS_HEADER {
-    inferred_value 1 <cyg/ns/dns/dns.h>
-};
-
-cdl_option CYGPKG_NS_DNS_BUILD {
-    inferred_value 0
-};
 
 

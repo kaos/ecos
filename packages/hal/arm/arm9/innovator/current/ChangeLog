@@ -1,3 +1,10 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_RAM.ecm: 
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_SRAM.ecm:  Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2003-02-12  Patrick Doyle  <wpd@delcomsys.com>
 
 	* src/innovator_misc.c: Replaced explicit prototype of memset with

@@ -1,3 +1,8 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/redboot.cdl: Make DNS truly optional (remove from template).
+	BUG #57316
+
 2003-09-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/fs/ide.c: Improve IDE handling by having init function return

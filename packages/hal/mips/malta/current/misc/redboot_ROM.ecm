@@ -24,7 +24,7 @@ cdl_configuration eCos {
     package -template CYGPKG_REDBOOT current ;
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
-    package -template CYGPKG_NS_DNS current ;
+    package CYGPKG_NS_DNS current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
     package CYGPKG_COMPRESS_ZLIB current ;

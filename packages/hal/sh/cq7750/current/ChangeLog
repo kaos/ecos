@@ -1,3 +1,9 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_RAM.ecm: 
+	* misc/redboot_ROM.ecm:  Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2002-03-05  Jesper Skov  <jskov@redhat.com>
 
 	* misc/redboot_RAM.ecm: Added.

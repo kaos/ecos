@@ -1,3 +1,11 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_RAM.ecm: 
+	* misc/redboot_RAM_5kc.ecm: 
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_ROM_5kc.ecm:  Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2003-09-20  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/plf_misc.c: IDE init needs to return number of controllers found.

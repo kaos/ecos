@@ -1,3 +1,7 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* current.ect: DNS now must be enabled manually.
+
 2003-02-14  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* current.ect: Update inferred values.

@@ -1,3 +1,9 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_RAM.ecm: 
+	* misc/redboot_ROM.ecm:  Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2002-09-20  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* src/lcd_support.c (lcd_comm_control): Need to ingore BAUD commands

@@ -387,7 +387,7 @@ cdl_package CYGPKG_REDBOOT {
             cdl_component CYGPKG_REDBOOT_NETWORKING_DNS {
                 display         "DNS support"
                 default_value   1
-                requires        CYGPKG_NS_DNS
+                active_if       CYGPKG_NS_DNS
                 requires        !CYGPKG_NS_DNS_BUILD
                 compile         net/dns.c
                 description     "

@@ -1,3 +1,8 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_ROMRAM.ecm:  Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_arm_integrator.cdl:

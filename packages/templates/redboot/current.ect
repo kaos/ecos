@@ -15,7 +15,6 @@ This is the RedBoot configuration, used when building the RedBoot environment." 
     package     CYGPKG_REDBOOT current ;
     package     CYGPKG_ISOINFRA current ;
     package     CYGPKG_LIBC_STRING current ; 
-    package     CYGPKG_NS_DNS current ;
     package     CYGPKG_CRC current ;
 };
 
@@ -47,10 +46,6 @@ cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
     user_value 4096
 };
 
-cdl_option CYGBLD_ISO_DNS_HEADER {
-    inferred_value 1 <cyg/ns/dns/dns.h>
-};
-
 cdl_option CYGBLD_ISO_STRING_BSD_FUNCS_HEADER {
     inferred_value 1 <cyg/libc/string/bsdstring.h>
 };
@@ -61,10 +56,6 @@ cdl_option CYGDBG_HAL_COMMON_CONTEXT_SAVE_MINIMUM {
 
 cdl_option CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS {
     inferred_value 1
-};
-
-cdl_option CYGPKG_NS_DNS_BUILD {
-    inferred_value 0
 };
 
 cdl_option CYGFUN_LIBC_STRING_BSD_FUNCS {

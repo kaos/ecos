@@ -1,3 +1,9 @@
+2003-09-21  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_RAM.ecm: 
+	* misc/redboot_ROM.ecm:  Adjust for changes in RedBoot
+	template - DNS now must be enabled manually.
+
 2003-08-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c: Obsolete file - removed.

@@ -17,14 +17,14 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_ETH_CL_CS8900A current ;
     package -hardware CYGPKG_IO_SERIAL_ARM_EDB7XXX current ;
     package -hardware CYGPKG_DEVS_FLASH_EDB7XXX current ;
+    package -hardware CYGPKG_DEVS_FLASH_STRATA current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
     package -template CYGPKG_ISOINFRA current ;
     package -template CYGPKG_LIBC_STRING current ;
-    package -template CYGPKG_NS_DNS current ;
     package -template CYGPKG_CRC current ;
-    package -hardware CYGPKG_DEVS_FLASH_STRATA current ;
+    package CYGPKG_NS_DNS current ;
     package CYGPKG_IO_FLASH current ;
     package CYGPKG_IO_ETH_DRIVERS current ;
     package CYGPKG_COMPRESS_ZLIB current ;
