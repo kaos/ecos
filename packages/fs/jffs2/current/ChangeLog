@@ -1,3 +1,15 @@
+2004-02-20  Vincent Catros  <Vincent.Catros@elios-informatique.fr>
+
+	* src/fs-ecos.c :
+	(jffs2_find) Policy to skip path separator is no longer
+	"if '/' then skip" but "while '/' then skip" allowing
+	multi '/' separators (i.e : /tmp////foo).
+	(find_entry) Policy to detect end of path is no longer
+	"if '\0' then end_of_path"
+	but "while '/' skip it and then if '\0' then end_of_path"
+	allowing path terminated with any number of '/'
+	(i.e : chdir(/tmp///)).
+
 2004-02-17  David Woodhouse  <dwmw2@redhat.com>
 
 	* src/fs-ecos.c:

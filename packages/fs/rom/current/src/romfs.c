@@ -450,7 +450,8 @@ static int find_entry( romfs_dirsearch *ds )
     while( *n != '\0' && *n != '/' )
         n++, namelen++;
 
-    // If we terminated on a NUL, set last flag.
+    // Check if this is the last path element.
+    while( *n == '/') n++;
     if( *n == '\0' ) 
         ds->last = true;
 
@@ -501,7 +502,7 @@ static int romfs_find( romfs_dirsearch *d )
         // Update dirsearch object to search next directory.
         d->dir = d->node;
         d->path += d->namelen;
-        if( *(d->path) == '/' ) d->path++; // skip dirname separators
+        while( *(d->path) == '/' ) d->path++; // skip dirname separators
     }
 }
 
