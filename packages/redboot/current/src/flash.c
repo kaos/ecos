@@ -1988,10 +1988,10 @@ flash_config_insert_value(unsigned char *dp, struct config_option *opt)
         break;
 #ifdef CYGPKG_REDBOOT_NETWORKING
     case CONFIG_IP:
-        memcpy(dp, (void *)&opt->dflt, sizeof(in_addr_t));
+        memcpy(dp, (void *)opt->dflt, sizeof(in_addr_t));
         break;
     case CONFIG_ESA:
-        memcpy(dp, (void *)&opt->dflt, sizeof(enet_addr_t));
+        memcpy(dp, (void *)opt->dflt, sizeof(enet_addr_t));
         break;
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)
     case CONFIG_NETPORT:
