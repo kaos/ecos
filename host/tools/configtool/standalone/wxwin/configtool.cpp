@@ -488,7 +488,7 @@ bool ecApp::OnInit()
                     wxString msg;
                     msg.Printf(wxT("Sorry, there was a problem compiling the help index."));
                     wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
-                    return FALSE;                   
+                    return FALSE;
                 }
             }
             else
@@ -496,7 +496,7 @@ bool ecApp::OnInit()
                 wxString msg;
                 msg.Printf(wxT("Sorry, there was no current document when compiling the help index."));
                 wxMessageBox(msg, wxGetApp().GetSettings().GetAppName(), wxICON_EXCLAMATION|wxOK);
-                return FALSE;                   
+                return FALSE;
             }
 
             // Return FALSE in order to quit the application
@@ -505,6 +505,21 @@ bool ecApp::OnInit()
     }
     else
     {
+        if (GetSettings().m_strRepository.IsEmpty()) // first invocation by this user
+        {
+            // we have no clues as to the location of the repository so
+            // test for ../../packages relative to the configtool location
+            wxFileName repository = wxFileName (m_appDir, wxEmptyString);
+            repository.Normalize(); // remove trailing "./" if present
+            repository.RemoveDir (repository.GetDirCount()-1);
+            repository.RemoveDir (repository.GetDirCount()-1);
+            repository.AppendDir (wxT("packages"));
+            if (repository.DirExists()) // we've found a repository
+            {
+                repository.RemoveDir (repository.GetDirCount()-1);
+                GetSettings().m_strRepository = repository.GetFullPath();
+            }
+        }
         m_docManager->CreateDocument(wxString(""), wxDOC_NEW);
     }
 
@@ -849,7 +864,7 @@ void ecApp::Log(const wxString& msg)
         if ((msg == wxEmptyString) || (msg.Last() != wxT('\n')))
             frame->GetOutputWindow()->AppendText(wxT("\n"));
 
-        frame->GetOutputWindow()->ShowPosition(frame->GetOutputWindow()->GetLastPosition());
+//        frame->GetOutputWindow()->ShowPosition(frame->GetOutputWindow()->GetLastPosition());
     }
 }
 
@@ -1457,7 +1472,7 @@ bool ecPipedProcess::HasInput()
     bool hasInput = FALSE;
 
     wxInputStream& is = *GetInputStream();
-    if ( !is.Eof() )
+    if ( IsInputAvailable() )
     {
         wxTextInputStream tis(is);
 
@@ -1471,7 +1486,7 @@ bool ecPipedProcess::HasInput()
     }
 
     wxInputStream& es = *GetErrorStream();
-    if ( !es.Eof() )
+    if ( IsErrorAvailable() )
     {
         wxTextInputStream tis(es);
 

@@ -32,8 +32,8 @@ ifeq "$(OSTYPE)" "cygwin"
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
 else
   PROGRAM=configtool
-  CPPFLAGS=-I$(WXDIR)/include -I$(WXDIR)/lib/wx/include -DGTK_NO_CHECK_CASTS -D__WXGTK__ -D__USE_WXCONFIG__
-  LDFLAGS=-L$(WXDIR)/lib -L/usr/X11R6/lib -lwx_gtk -lgtk -lgdk -rdynamic -lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm
+  CPPFLAGS=`$(WXDIR)/bin/wx-config --cppflags`
+  LDFLAGS=`$(WXDIR)/bin/wx-config --libs`
   EXTRAOBJECTS=
 endif
 

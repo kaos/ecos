@@ -549,7 +549,7 @@ void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 {
 //    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
 //    dialog.ShowModal();
-    wxMessageBox(_("eCos Configuration Tool 2.12.net\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003"), _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
+    wxMessageBox(_("eCos Configuration Tool 2.13.net\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003"), _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
 }
 
 void ecMainFrame::OnSize(wxSizeEvent& WXUNUSED(event))
@@ -1329,7 +1329,7 @@ bool ecMainFrame::ProcessEvent(wxEvent& event)
     if (& event == s_lastEvent)
         return FALSE;
 
-    if (event.IsCommandEvent())
+    if (event.IsCommandEvent() && !event.IsKindOf(CLASSINFO(wxChildFocusEvent)))
     {
         s_lastEvent = & event;
         

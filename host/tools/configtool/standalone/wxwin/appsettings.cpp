@@ -770,8 +770,8 @@ wxString ecSettings::FindLatestVersion()
             cont = dir.GetNext(& filename);
         }
     }
-    if (latestDir.IsEmpty())
-        latestDir = wxGetCwd();
+//    if (latestDir.IsEmpty())
+//        latestDir = wxGetCwd();
     return latestDir;
 #else
     wxMessageBox(wxT("FindLatestVersion() is only implemented for Unix."));

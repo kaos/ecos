@@ -1,3 +1,19 @@
+2003-03-18  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/appsettings.cpp,
+	  standalone/wxwin/configtool.cpp: Look for a default repository
+	at ../../packages relative to the configtool location as a last
+	resort.
+
+	* standalone/wxwin/configtool.cpp: Eliminate scroll bar jitter in
+	the output pane during eCos builds.
+
+	* standalone/wxwin/configtool.cpp (HasInput),
+	  standalone/wxwin/mainwin.cpp,
+	  standalone/wxwin/configtool.rc,
+	  standalone/wxwin/makefile.gnu: Allow configtool to build and run
+	against wxWindows 2.4.0.
+
 2003-03-07  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/appsettings.cpp: Look in the right place for the
