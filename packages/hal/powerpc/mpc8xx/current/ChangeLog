@@ -1,3 +1,10 @@
+2003-07-14  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/var_cache.h: Data cache flush on 850 fails when using 
+	cache SPR commands, so use brute force.  This fixes some problems
+	with network based debugging (RedBoot got lost because of cache
+	not being flushed properly).
+
 2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/var_intr.h (cyg_hal_interrupt_acknowledge): Don't 

@@ -140,6 +140,17 @@
                       "r" (CYGARC_REG_DC_CMD_IA))
 
 // Synchronize the contents of the cache with memory.
+#if defined(CYGHWR_HAL_POWERPC_MPC8XX_850)
+// Note: the data cache flush seems to be broken on this chip :-(
+#define HAL_DCACHE_SYNC()                                       \
+    CYG_MACRO_START                                             \
+    cyg_int32 i;                                                \
+    cyg_uint32 *__base = (cyg_uint32 *) (0);                    \
+    for(i=0;i< (2 * HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE);i++,__base += HAL_DCACHE_LINE_SIZE/4){ \
+        asm volatile ("lwz %%r0,0(%0);"::"r"(__base):"r0");     \
+    }                                                           \
+    CYG_MACRO_END
+#else
 #define HAL_DCACHE_SYNC()                                                     \
     CYG_MACRO_START                                                           \
     cyg_int32 i;                                                              \
@@ -159,6 +170,7 @@
                         /* %4 */ "r" (CYGARC_REG_DC_CMD_FL));                 \
     }                                                                         \
     CYG_MACRO_END
+#endif
 
 // Query the state of the data cache
 #define HAL_DCACHE_IS_ENABLED(_state_)                          \
