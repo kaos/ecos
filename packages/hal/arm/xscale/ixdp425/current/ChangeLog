@@ -1,3 +1,8 @@
+2004-09-27  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_ROMRAM.ecm: Remove CYGHWR_HAL_IXP425_PCI_NP_WORKAROUND.
+	* misc/redboot_ROMRAMLE.ecm: Ditto.
+
 2004-09-20  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_arm_xscale_ixdp425.cdl: Add -mcpu=xscale to LDFLAGS.
