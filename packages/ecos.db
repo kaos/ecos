@@ -5433,3 +5433,47 @@ package CYGPKG_VNC_SERVER {
 }
 
 # --------------------------------------------------------------------------
+
+package CYGPKG_DEVS_DISK_V85X_EDB_V850 {
+    alias           { "Elatec v850 development board disk driver" edb_v850_disk }
+    directory       devs/disk/v85x/edb_v850
+    script          v85x_edb_v850_disk.cdl
+    hardware
+    description     "Disk driver for the Elatec v850 development board." 
+}
+
+package CYGPKG_DEVS_DISK_ECOSYNTH {
+    alias           { "Synthetic target disk driver" ecosynthdisk ecosynth_disk_driver }
+    directory       devs/disk/synth
+    script          synthdisk.cdl
+    hardware
+    description     "Disk driver for the synthetic target."
+}
+
+package CYGPKG_IO_DISK {
+    alias           { "Disk device drivers" disk io_disk }
+    directory       io/disk
+    script          io_disk.cdl
+    description "
+        This package contains drivers for basic I/O services on
+        disk devices."
+}
+
+package CYGPKG_BLOCK_LIB {
+    alias       { "Block cache and access library" blib block_lib }
+    directory   services/blib
+    script      blib.cdl
+    description "
+        This package contains the block cache and access library."
+}
+
+package CYGPKG_FS_FAT {
+    alias       { "FAT Filesystem" fatfs fat_fs fs_fat }
+    directory   fs/fat
+    script      fatfs.cdl
+    description "
+        This package contains a FAT filesystem implementation."
+}
+
+
+# --------------------------------------------------------------------------

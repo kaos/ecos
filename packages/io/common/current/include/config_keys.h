@@ -123,6 +123,11 @@
 
 #define CYG_IO_SET_CONFIG_FLASH_FIS_NAME         0x680
 
+// ======== 0x700 DISK =======================================================
+// Get/Set configuration 'key' values for DISK I/O 
+
+#define CYG_IO_GET_CONFIG_DISK_INFO              0x700
+
 // ======== 0x1000 Generic ===================================================
 // Get/Set configuration 'key' values that can apply to more than one
 // class of device.

@@ -1,3 +1,5 @@
+* Added support for FAT12/16 filesystems. Contributed by
+  Savin Zlobec of Elatec Engineering.
 * Support for Spanning Tree Protocol in the old OpenBSD stack
 * Add support for GPS-4020 (embedded ARM7 GPS receiver/controller)
 * Basic IPSEC and libipsec support. 

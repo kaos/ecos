@@ -1,3 +1,9 @@
+2004-01-19  Nick Garnett  <nickg@calivar.com>
+
+	* ecos.db: Added FAT12/16 filesystem packages.
+
+	* NEWS: Added line about FAT filesystem support.
+	
 2003-11-22  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* ecos.db: Added libipsec package.
