@@ -1,3 +1,9 @@
+2001-02-14  Julian Smart  <julians@redhat.com>
+
+    * standalone/win32/configtool.cpp
+    
+    Added support for Cygwin 00r1 when searching for registry hints.     
+
 2000-08-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* common/win32/memmap.cpp (export_files): In header file, wrap parts

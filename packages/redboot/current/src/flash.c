@@ -1327,12 +1327,12 @@ load_flash_config(void)
         config_init();
         return;
     }
+    config_ok = true;
     flash_get_config("boot_script", &use_boot_script, CONFIG_BOOL);
     if (use_boot_script) {
         flash_get_config("boot_script_data", &script, CONFIG_SCRIPT);
         flash_get_config("boot_script_timeout", &script_timeout, CONFIG_INT);
     }
-    config_ok = true;
 }
 
 RedBoot_init(load_flash_config, RedBoot_INIT_FIRST);

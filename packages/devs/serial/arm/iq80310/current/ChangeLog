@@ -1,40 +1,7 @@
-2001-02-14  Jonathan Larmour  <jlarmour@redhat.com>
+2000-10-25  Mark Salter  <msalter@redhat.com>
 
-	* src/rand.cxx: Fix typo
-
-2000-08-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
-
-	* src/getenv.cxx: Revert nickg's change of 2000-06-07. environ is
-	meant to be determined by the startup environment (normally in
-	CYGPKG_LIBC_STARTUP), not getenv.
-
-2000-07-27  Jonathan Larmour  <jlarmour@redhat.co.uk>
-
-	* cdl/stdlib.cdl: Require CYGINT_ISO_CTYPE because we need the iswhite()
-	etc. funs
-
-2000-07-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
-
-	* cdl/stdlib.cdl: Remove all parts of malloc implementation and
-	move to new separate package CYGPKG_MEMALLOC
-
-	* src/malloc.cxx, tests/malloc1.c, tests/malloc2.c, tests/malloc3.c,
-	tests/realloc.c: remove - moved to CYGPKG_MEMALLOC
-
-2000-06-07  Nick Garnett  <nickg@cygnus.co.uk>
-
-	* tests/realloc.c: Include correct pkgconf file.
-
-	* src/getenv.cxx: Removed externC from definition of environ, so
-	that is actually gets defined.
-
-2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
-
-	* New package
-	Separated original libc out into separate packages on functional
-	boundaries.
-	Header files are now managed by isoinfra package
-	Plenty of cleanups done, but no major functionality changes
+	* include/arm_iq80310_ser.inl: Initial checkin.
+	* cdl/ser_arm_iq80310.cdl: Ditto.
 
 //===========================================================================
 //####COPYRIGHTBEGIN####

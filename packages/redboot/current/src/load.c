@@ -49,7 +49,8 @@
 // Buffer used by redboot_getc
 getc_info_t getc_info;
 
-static char usage[] = "[-r] [-v] [-h <host>] [-m {TFTP | xyzMODEM}] [-b <base_address>] <file_name>";
+static char usage[] = "[-r] [-v] [-h <host>] [-m {TFTP | xyzMODEM}]\r\n"
+"               [-b <base_address>] <file_name>";
 
 // Exported CLI function
 RedBoot_cmd("load", 
@@ -338,7 +339,9 @@ do_load(int argc, char *argv[])
         printf("usage: load %s\n", usage);
         return;
     }
-    if (base_addr_set && ((base < ram_start) || (base > ram_end))) {
+    if (base_addr_set &&
+        ((base < (unsigned long)ram_start) ||
+         (base > (unsigned long)ram_end))) {
         printf("Specified address (%p) is not in RAM.\n", (void*)base);
         return;
     }

@@ -78,7 +78,7 @@ static int rand_trace = CYGNUM_LIBC_RAND_TRACE_LEVEL;
 
 #ifdef CYGSEM_LIBC_PER_THREAD_RAND
 static cyg_ucount32 rand_data_index=CYGNUM_KERNEL_THREADS_DATA_MAX;
-static Cyg_Mutex rand_data_mutex CYGBLD_ATTRIB_INIT_PRIORITY(CYG_INIT_LIBC);
+static Cyg_Mutex rand_data_mutex CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC);
 #else
 static unsigned int cyg_libc_rand_seed = CYGNUM_LIBC_RAND_SEED;
 #endif

@@ -221,6 +221,10 @@ externC cyg_uint32 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 #endif // def CYGSEM_HAL_USE_ROM_MONITOR_CygMon
 #endif
 
+#ifdef CYGPKG_REDBOOT
+    hal_ctrlc_isr( vector, data );
+#endif    
+    
     return 0;
 }
 

@@ -1,3 +1,14 @@
+2001-02-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/flash.c (load_flash_config): Move setting of config_ok to
+	true to before we look for a script to run. Otherwise scripts just
+	don't work.
+
+2001-02-14  Hugo Tyson  <hmt@redhat.com>
+
+	* src/load.c (do_load): Wrap the help message at < 80 cols and fix
+	a coupla warnings.
+
 2001-02-13  Hugo Tyson  <hmt@redhat.com>
 
 	* src/flash.c: Fix token/string pasting thinko: ## operators are

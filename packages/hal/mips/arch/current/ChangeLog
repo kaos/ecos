@@ -1,3 +1,8 @@
+2001-02-15  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c: Added option to call hal_ctrlc_isr() in default
+	ISR when in RedBoot.
+
 2001-02-12  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/mips.inc: Added some extra CP0 register names.
@@ -5,6 +10,131 @@
 2001-02-09  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: Small tweak of comments to work around tools problem
+
+2001-01-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/mips-stub.h: Added prototypes for __is_bsp_syscall() and
+	hal_syscall_handler().
+
+	* include/hal_arch.h:
+	Reorganized HAL_SavedRegisters structure to work properly with a
+	64 bit processor. Fields are now correctly sized, and aligned on
+	the right boundaries.
+
+	* include/arch.inc:
+	Added option for variant and platform to supply extra bits to be
+	added to INITIAL_SR.
+	Reorganized register save area layout to match changes in
+	hal_arch.h.
+	Added macros sva, lva, mvatc0, mvafc0 to transfer 64 bit items to
+	and from memory/CP0 (*va* is used because most such values are
+	(virtual) addresses).
+
+	* src/vectors.S: Added use of *va* macros where appropriate.
+	
+	* src/mips-stub.c: Added __is_bsp_syscall() function.
+
+	* src/hal_syscall.c: Added this file to support GNUPro system
+	calls in RedBoot.
+
+	* cdl/hal_mips.cdl: Added hal_syscall.c to compile list.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added extern for hal_delay_us.
+
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Make hal_intc_decode macro mask the cause
+	register with the status (interrupt mask) register.
+
+2001-01-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/arch.inc: Allow hal_intc_decode to be defined by variant
+	or platform.
+
+2000-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h (HAL_DELAY_US): Added.
+	* src/hal_misc.c (hal_delay_us): Added. And fixed to work with an
+	incrementer that ticks at the pipeline clock rate.
+
+2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_cache.h: IWAY->_IWAY, DWAY->_DWAY for namespace 
+	cleanliness
+
+2000-12-05  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_cache.h: Use variant specific method to select cache
+	WAY.
+
+2000-10-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c: Update __mem_fault_handler declaration.
+
+2000-09-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h (HAL_DEFAULT_ISR): Fix warning.
+	(HAL_DEFAULT_ISR): Undo that change.
+
+2000-09-14  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Only define _FPE when there's a FPU.
+
+2000-09-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h (HAL_VSR_SET_TO_ECOS_HANDLER): Fix compiler
+	warning.
+
+	* src/vectors.S: Fully decode TLB related exceptions.
+	* src/hal_misc.c (cyg_hal_exception_handler): Undid below change.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Base vector
+	calculation on cause register, not the provided vector value.
+
+2000-09-12  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added definition for decoded FPU
+	exceptions.
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Decode FPU
+	exceptions.
+
+2000-09-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: Removed change from yesterday.
+
+	* include/hal_intr.h (CYGNUM_HAL_EXCEPTION_FPU): Associated to FPE
+	exceptions.
+
+2000-09-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/basetype.h: Override the alignment macros for the MIPS
+	architecture. The MIPS compiler only alows a maximum of 4 bytes
+	of alignment where as the default is 8
+
+	* include/hal_cache.h (_HAL_ASM_DCACHE_ALL_WAYS): Force d-cache
+	selection.
+
+2000-09-01  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/mips-stub.h: No longer need to define
+	CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
+	(CYGARC_SIGN_EXTEND_REGISTERS): 
+
+        * include/mips-stub.h: Change vr4300 register sizes to use 32-bit
+        target_register_t, and tell the generic stub to use sign extension.
+ 	Ditto for tx49
+	* include/hal_cache.h (_HAL_ASM_SET_MIPS_ISA): Don't use pasting
+	when it doesn't result in a preprocessing token. Just use string
+	concatenation.
+
+2000-07-21  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/vectors.S: Only jump uncached to _start if
+	CYGARC_START_FUNC_UNCACHED is defined.
+
 2000-07-14  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/vectors.S: Added hal_reset_vector_first_code and

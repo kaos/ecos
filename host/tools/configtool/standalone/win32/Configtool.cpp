@@ -359,18 +359,36 @@ void CConfigToolApp::LoadStdProfileSettings()
       }
     }
   }
-  
-  GetRepositoryRegistryClues(m_arstrUserToolPaths, _T("GNUPro unsupported"));
-  for(i=0;i<m_arstrUserToolPaths.GetSize();i++){
-    CFileName str(m_arstrUserToolPaths[i]);
-    str+="H-i686-cygwin32\\bin";
-    if(str.IsDir()){
-      m_arstrUserToolPaths.SetAt(i,str);
-    } else {
-      m_arstrUserToolPaths.RemoveAt(i);
-      i--;
+
+  // Look for Cygwin 00r1 first, since it's the latest and greatest user tools.   
+  GetRepositoryRegistryClues(m_arstrUserToolPaths, _T("Cygwin 00r1"));
+  if (m_arstrUserToolPaths.GetSize() > 0)
+  {
+    for(i=0;i<m_arstrUserToolPaths.GetSize();i++){
+        CFileName str(m_arstrUserToolPaths[i]);
+        str+="H-i686-pc-cygwin\\bin";
+        if(str.IsDir()){
+        m_arstrUserToolPaths.SetAt(i,str);
+        } else {
+        m_arstrUserToolPaths.RemoveAt(i);
+        i--;
+        }
     }
   }
+  else
+  {   
+    GetRepositoryRegistryClues(m_arstrUserToolPaths, _T("GNUPro unsupported"));
+    for(i=0;i<m_arstrUserToolPaths.GetSize();i++){
+        CFileName str(m_arstrUserToolPaths[i]);
+        str+="H-i686-cygwin32\\bin";
+        if(str.IsDir()){
+        m_arstrUserToolPaths.SetAt(i,str);
+        } else {
+        m_arstrUserToolPaths.RemoveAt(i);
+        i--;
+        }
+    }
+ }
   
   // Include the path in the set of potential user paths
   {
