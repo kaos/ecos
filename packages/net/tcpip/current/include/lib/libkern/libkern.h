@@ -94,6 +94,8 @@
 #ifndef __LIBKERN_H__
 #define __LIBKERN_H__
 
+#ifdef __INSIDE_NET
+
 #include <sys/types.h>
 
 #ifndef LIBKERN_INLINE
@@ -235,5 +237,7 @@ int	 getsn __P((char *, int));
 extern u_int8_t const __bcd2bin[], __bin2bcd[];
 #define	bcd2bin(b)	(__bcd2bin[(b)&0xff])
 #define	bin2bcd(b)	(__bin2bcd[(b)&0xff])
+
+#endif /* __INSIDE_NET */
 
 #endif /* __LIBKERN_H__ */

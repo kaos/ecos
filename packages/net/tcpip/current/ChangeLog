@@ -1,3 +1,12 @@
+2001-10-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/net.cdl (CYGPKG_NET_CFLAGS_ADD): Define __INSIDE_NET within
+	this package to allow segregation of definitions only relevant for
+	internal consumption, and definitions allowable for external
+	consumption.
+
+	* include/lib/libkern/libkern.h: Conditionalize on __INSIDE_NET.
+
 2001-10-04  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/net.cdl (CYGHWR_NET_DRIVER_ETH0): Make flavor bool so it isn't

@@ -88,7 +88,9 @@
 #include <eth_drv.h>
 #include <netdev.h>
 
-
+#ifndef min
+#define min( _x_, _y_ ) ((_x_) < (_y_) ? (_x_) : (_y_))
+#endif
 
 // ------------------------------------------------------------------------
 #ifdef CYGPKG_IO_ETH_DRIVERS_SIMULATED_FAILURES

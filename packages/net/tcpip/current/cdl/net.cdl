@@ -439,7 +439,7 @@ cdl_package CYGPKG_NET {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "-D_KERNEL -D__ECOS" }
+            default_value { "-D_KERNEL -D__ECOS -D__INSIDE_NET" }
             description   "
                 This option modifies the set of compiler flags for
                 building the networking package.
