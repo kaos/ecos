@@ -173,12 +173,21 @@ static void do_test( double *values,
 
         if( sum != last_sum )
         {
+            union double_int_union {
+                double d;
+                cyg_uint32 i[2];
+            } diu_sum, diu_lastsum;
+
+            diu_sum.d = sum;
+            diu_lastsum.d = last_sum;
+            
             errors++;
+            if (sizeof(double) != 2*sizeof(cyg_uint32)) {
+                diag_printf("Warning: sizeof(double) != 2*sizeof(cyg_uint32), therefore next line may\n"
+                            "have invalid sum/last_sum values\n");
+            }
             diag_printf("%s: Sum mismatch! %d sum=[%08x:%08x] last_sum=[%08x:%08x]\n",
-                        name,j,
-                        ((cyg_uint32 *)&sum)[0],((cyg_uint32 *)&sum)[1],
-                        ((cyg_uint32 *)&last_sum)[0],((cyg_uint32 *)&last_sum)[1]
-                        );
+                        name,j, diu_sum.i[0], diu_sum.i[1], diu_lastsum.i[0], diu_lastsum.i[1] );
         }
         
 #if 0

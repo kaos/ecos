@@ -1,3 +1,8 @@
+2004-04-15  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/fptest.c (do_test): Silence aliasing warning when breaking
+	doubles into two ints.
+
 2004-04-11  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* doc/kernel.sgml: Expanded the documentation about the use of
