@@ -280,10 +280,10 @@ __bootp_find_local_ip(bootp_header_t *info)
                             optlen = p[1];
                             p += 2;
                             switch (tag) {
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
                             case TAG_SUBNET_MASK:  // subnet mask
                                 memcpy(__local_ip_mask,p,4); 
                                 break;
-#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
                             case TAG_GATEWAY:  // router
                                 memcpy(__local_ip_gate,p,4); 
                                 break;

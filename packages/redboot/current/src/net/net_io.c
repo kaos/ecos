@@ -823,6 +823,7 @@ do_ip_addr(int argc, char *argv[])
         return;
     }
     if (ip_addr_set) {
+#ifdef CYGSEM_REDBOOT_NETWORKING_USE_GATEWAY
         char *slash_pos;
         /* see if the (optional) mask length was given */
         if( (slash_pos = strchr(ip_addr, '/')) ) {
@@ -838,7 +839,7 @@ do_ip_addr(int argc, char *argv[])
             mask = htonl((0xffffffff << (32-mask_len))&0xffffffff);
             memcpy(&__local_ip_mask, &mask, 4);
         }
-        
+#endif        
         if (!_gethostbyname(ip_addr, (in_addr_t *)&host)) {
             diag_printf("Invalid local IP address: %s\n", ip_addr);
             return;

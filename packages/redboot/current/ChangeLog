@@ -1,5 +1,8 @@
 2003-10-06  Gary Thomas  <gary@mlbassoc.com>
 
+	* src/net/net_io.c: 
+	* src/net/bootp.c: Fix some compile problems if GATEWAY support is disabled.
+
 	* src/flash.c (fis_list): Display FIS directory entries in FLASH
 	address (sorted) order.
 
