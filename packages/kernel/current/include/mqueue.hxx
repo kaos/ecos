@@ -69,6 +69,7 @@
 #include <cyg/infra/cyg_type.h>      /* Types */
 #include <cyg/infra/cyg_ass.h>       /* CYGDBG_DEFINE_CHECK_THIS,
                                         CYGDBG_USE_ASSERTS */
+#include <cyg/kernel/ktypes.h>       /* Kernel package types */
 #include <cyg/kernel/sema.hxx>       /* Cyg_Counting_Semaphore */
 
 /* CLASSES */
@@ -83,6 +84,9 @@ public:
         OK=0,
         NOMEM,
         WOULDBLOCK,
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+        TIMEOUT,
+#endif
         INTR
     } qerr_t;
 
@@ -122,15 +126,21 @@ public:
     Cyg_Mqueue( long maxmsgs, long maxmsgsize,
                 qalloc_fn_t qalloc, qfree_fn_t qfree, qerr_t *err );
     ~Cyg_Mqueue();
-
     // put() copies len bytes of *buf into the queue at priority prio
-    qerr_t put( const char *buf, size_t len, unsigned int prio,
-                bool block=true);
+    qerr_t put( const char *buf, size_t len, unsigned int prio, bool block=true
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+                ,cyg_tick_count timeout = 0
+#endif
+              );
 
     // get() returns the oldest highest priority message in the queue in *buf
     // and sets *prio to the priority (if prio is non-NULL) and *len to the
     // actual message size
-    qerr_t get( char *buf, size_t *len, unsigned int *prio, bool block=true ); 
+    qerr_t get( char *buf, size_t *len, unsigned int *prio, bool block=true
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+                ,cyg_tick_count timeout = 0
+#endif
+              ); 
 
     // count() returns the number of messages in the queue
     long count();

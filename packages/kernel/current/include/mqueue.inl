@@ -272,7 +272,11 @@ Cyg_Mqueue::~Cyg_Mqueue()
 
 // put() copies len bytes of *buf into the queue at priority prio
 CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE Cyg_Mqueue::qerr_t
-Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block )
+Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+                 , cyg_tick_count timeout
+#endif
+               )
 {
     CYG_REPORT_FUNCTYPE( "err=%d");
     CYG_REPORT_FUNCARG4( "buf=%08x, len=%ld, prio=%ud, block=%d",
@@ -286,6 +290,15 @@ Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block )
 
     // wait till a freelist entry is available
     if ( true == block ) {
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+        if ( timeout != 0) {
+	    if ( false == putsem.wait(timeout) ) {
+                err = TIMEOUT;
+                goto exit;
+            }
+        }
+        else
+#endif
         if ( false == putsem.wait() ) {
             err = INTR;
             goto exit;
@@ -379,7 +392,11 @@ Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block )
 // actual message size
 
 CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE Cyg_Mqueue::qerr_t
-Cyg_Mqueue::get( char *buf, size_t *len, unsigned int *prio, bool block )
+Cyg_Mqueue::get( char *buf, size_t *len, unsigned int *prio, bool block
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+                 , cyg_tick_count timeout
+#endif
+               )
 {
     CYG_REPORT_FUNCTYPE( "err=%d");
     CYG_REPORT_FUNCARG4( "buf=%08x, len=%08x, prio=%08x, block=%d",
@@ -395,6 +412,15 @@ Cyg_Mqueue::get( char *buf, size_t *len, unsigned int *prio, bool block )
 
     // wait till a q entry is available
     if ( true == block ) {
+#ifdef CYGFUN_KERNEL_THREADS_TIMER
+        if ( timeout != 0) {
+            if ( false == getsem.wait(timeout) ) {
+                err = TIMEOUT;
+                goto exit;
+            }
+        }
+        else
+#endif
         if ( false == getsem.wait() ) {
             err = INTR;
             goto exit;
