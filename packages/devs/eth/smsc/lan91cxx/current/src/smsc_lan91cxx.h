@@ -328,6 +328,12 @@ typedef struct lan91cxx_priv_data {
 
 #include CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL
 
+#ifdef LAN91CXX_32BIT_RX
+typedef cyg_uint32 rxd_t;
+#else
+typedef cyg_uint16 rxd_t;
+#endif
+
 #ifndef SMSC_PLATFORM_DEFINED_GET_REG
 static __inline__ unsigned short
 get_reg(struct eth_drv_sc *sc, int regno)
@@ -380,17 +386,21 @@ put_data(struct eth_drv_sc *sc, unsigned short val)
 
 #ifndef SMSC_PLATFORM_DEFINED_GET_DATA
 // Assumes bank2 has been selected
-static __inline__ unsigned short
+static __inline__ rxd_t
 get_data(struct eth_drv_sc *sc)
 {
-    unsigned short val;
+    rxd_t val;
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
 	
+#ifdef LAN91CXX_32BIT_RX
+    HAL_READ_UINT32(cpd->base+((LAN91CXX_DATA_HIGH & 0x7) << cpd->addrsh), val);
+#else
     HAL_READ_UINT16(cpd->base+((LAN91CXX_DATA & 0x7) << cpd->addrsh), val);
+#endif
 
 #if DEBUG & 2
-    diag_printf("read data 0x%04x\n", val);
+    diag_printf("read data 0x%x\n", val);
 #endif
     return val;
 }

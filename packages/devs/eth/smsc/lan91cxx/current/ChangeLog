@@ -1,3 +1,9 @@
+2002-08-28  Mark Salter  <msalter@redhat.com>
+
+	* src/smsc_lan91cxx.h: Support 32-bit data reads.
+	* src/if_lan91cxx.c: Fix standalone (RedBoot) interrupt handling.
+	Support 32-bit data reads.
+
 2002-08-16  Mark Salter  <msalter@redhat.com>
 
 	* src/if_lan91cxx.c: Add support for 91C111. Platform-specific

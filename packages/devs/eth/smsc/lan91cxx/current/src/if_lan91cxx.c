@@ -135,6 +135,8 @@ static cyg_uint16 lan91cxx_read_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr,
 #endif
 
 static void lan91cxx_poll(struct eth_drv_sc *sc);
+
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
 static cyg_interrupt lan91cxx_interrupt;
 static cyg_handle_t  lan91cxx_interrupt_handle;
 
@@ -155,6 +157,7 @@ lan91cxx_isr(cyg_vector_t vector, cyg_addrword_t data
     cyg_drv_interrupt_acknowledge(cpd->interrupt);
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
+#endif
 
 // The deliver function (ex-DSR)  handles the ethernet [logical] processing
 static void
@@ -238,6 +241,7 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
         
 #endif
 
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     // Initialize environment, setup interrupt handler
     cyg_drv_interrupt_create(cpd->interrupt,
                             99, // Priority - what goes here?
@@ -247,8 +251,11 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
                              &lan91cxx_interrupt_handle,
                              &lan91cxx_interrupt);
     cyg_drv_interrupt_attach(lan91cxx_interrupt_handle);
+#endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     cyg_drv_interrupt_acknowledge(cpd->interrupt);
+#ifndef CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     cyg_drv_interrupt_unmask(cpd->interrupt);
+#endif // !CYGPKG_IO_ETH_DRIVERS_STAND_ALONE
     
     // probe chip by reading the signature in BS register
     val = get_banksel(sc);
@@ -362,6 +369,8 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     DEBUG_FUNCTION();
 
 #ifdef LAN91CXX_IS_LAN91C111
+    HAL_DELAY_US(100000);
+
     // 91C111 Errata. Internal PHY comes up disabled. Must enable here.
     phy_ctl = lan91cxx_read_phy(sc, 0, LAN91CXX_PHY_CTRL);
     phy_ctl &= ~LAN91CXX_PHY_CTRL_MII_DIS;
@@ -918,6 +927,9 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short stat, len;
+#ifdef LAN91CXX_32BIT_RX
+    cyg_uint32 val;
+#endif
 
     DEBUG_FUNCTION();
 
@@ -945,8 +957,14 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     // Read status and (word) length
     put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
                                  LAN91CXX_POINTER_AUTO_INCR | 0x0000));
+#ifdef LAN91CXX_32BIT_RX
+    val = get_data(sc);
+    stat = val & 0xffff;
+    len = ((val >> 16) & 0xffff) - 6;   // minus header/footer words
+#else
     stat = get_data(sc);
     len = get_data(sc) - 6;             // minus header/footer words
+#endif
 
 #ifdef KEEP_STATISTICS
     if ( stat & LAN91CXX_RX_STATUS_ALIGNERR ) INCR_STAT( rx_align_errors );
@@ -1002,7 +1020,7 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
         (struct lan91cxx_priv_data *)sc->driver_private;
 #endif
     int i, mlen=0, plen;
-    unsigned short *data=NULL, val;
+    rxd_t *data=NULL, val;
     unsigned char *cp, cval;
 
     DEBUG_FUNCTION();
@@ -1011,16 +1029,23 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
 
     put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
                                  LAN91CXX_POINTER_AUTO_INCR));
-    // Skip status word
-    (void)get_data(sc);
+    val = get_data(sc);
 
-    plen = get_data(sc) - 6;            // packet length (minus header/footer)
+    // packet length (minus header/footer)
+#ifdef LAN91CXX_32BIT_RX
+    plen = (val >> 16) - 6;
+#else
+    plen = get_data(sc) - 6;
+#endif
+    if (val & LAN91CXX_RX_STATUS_ODDFRM)
+	plen++;
 
     for (i = 0;  i < sg_len;  i++) {
-        data = (unsigned short *)sg_list[i].buf;
+        data = (rxd_t *)sg_list[i].buf;
         mlen = sg_list[i].len;
 
-        CYG_ASSERT(0 == (mlen & 1) || (i == (sg_len-1)), "odd length");
+        CYG_ASSERT(0 == (mlen & (sizeof(*data) - 1)) || (i == (sg_len-1)), "odd length");
+
 #if DEBUG & 1
         diag_printf("%s : mlen %x, plen %x\n", __FUNCTION__, mlen, plen);
 #endif
@@ -1039,14 +1064,24 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
             }
         }
     }
-    val = get_data(sc); // Read control word unconditionally
+    val = get_data(sc); // Read control word (and potential data) unconditionally
+#ifdef LAN91CXX_32BIT_RX
+    if (plen & 2) {
+	if (data)
+	    *(cyg_uint16 *)data = val & 0xffff;
+	cp = (unsigned char *)data + 2;
+	val >>= 16;
+	mlen -= 2;
+    } else
+#endif
+	cp = (unsigned char *)data;
+
     CYG_ASSERT(val & LAN91CXX_CONTROLBYTE_RX, 
                "Controlbyte is not for Rx");
     CYG_ASSERT( (1 == mlen) == (0 != (val & LAN91CXX_CONTROLBYTE_ODD)), 
                 "Controlbyte does not match");
     if (data && (1 == mlen) && (val & LAN91CXX_CONTROLBYTE_ODD)) {
         cval = val & 0x00ff;    // last byte contains data
-        cp = (unsigned char*)data;
         *cp = cval;
     }
 
