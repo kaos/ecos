@@ -42,7 +42,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, sorin@netappi.com ("Sorin Babeanu"), hmt
+// Contributors: gthomas, sorin@netappi.com ("Sorin Babeanu"), hmt, jlarmour,
+//               andrew.lunn@ascom.ch
 // Date:         2000-01-10
 // Purpose:      
 // Description:  
@@ -470,7 +471,7 @@ init_all_network_interfaces(void)
 #ifdef CYGDAT_NS_DNS_DOMAINNAME_NAME
 #define _NAME string(CYGDAT_NS_DNS_DOMAINNAME_NAME)
     {
-      char buf[] = _NAME;
+      const char buf[] = _NAME;
       int len = strlen(_NAME);
       
       setdomainname(buf,len);
