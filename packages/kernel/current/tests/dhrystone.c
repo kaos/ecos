@@ -18,12 +18,6 @@
 // should be directed to the 'ecos-discuss' mailing list (see
 // http://sourceware.cygnus.com/ecos/intouch.html for details).
 //
-// Contributed by: Kevin Hester <khester@opticworks.com>
-// Maintained by:  <Unmaintained>
-// See also:
-//   Motorola's "Example Software Initializing the SMC as a UART" package 
-//   (smc2.zip) at:
-//    http://www.mot.com/SPS/RISC/netcomm/tools/index.html#MPC860_table
 // -------------------------------------------
 //
 //####UNSUPPORTEDEND####
@@ -46,6 +40,8 @@
 #if defined(CYGFUN_KERNEL_API_C) \
     && defined(CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT)
 
+#ifdef __OPTIMIZE__
+
 #include <cyg/hal/hal_cache.h>
 #include <cyg/kernel/kapi.h>
 #include <stdlib.h>
@@ -58,7 +54,11 @@ dtime(void)
 }
 
 // Number of loops to run.
-#define PASSES 500000
+#if defined(CYGPKG_HAL_ARM_AEB) || defined(CYGPKG_HAL_ARM_PID)
+#define PASSES 100000
+#else
+#define PASSES 400000
+#endif
 
 // Used in the code below to mark changes to the code.
 #define __ECOS__
@@ -584,7 +584,19 @@ int main (void)
   REG   int             Run_Index;
   REG   int             Number_Of_Runs;
 
-#ifndef __ECOS__
+
+#ifdef __ECOS__
+
+    CYG_TEST_INIT();
+
+#ifdef CYG_HAL_I386_LINUX
+    CYG_TEST_NA("Only runs on hardware...");
+#else
+    if (cyg_test_is_simulator)
+        CYG_TEST_NA("Only runs on hardware...");
+#endif
+
+#else // __ECOS__
         FILE            *Ap;
 
   /* Initializations */
@@ -1138,11 +1150,15 @@ Enumeration Enum_Par_Val;
 } /* Func_3 */
 
 #else
-#define NA_MSG "CYGFUN_KERNEL_API_C && CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT"
+#define NA_MSG "Only makes sense to run with optimized code"
+#endif // __OPTIMIZE__
+
+#else
+#define NA_MSG "Requires CYGFUN_KERNEL_API_C && CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT"
 #endif // CYGFUN_KERNEL_API_C && CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT
 
 #else
-#define NA_MSG "CYGPKG_KERNEL && CYGPKG_LIBC"
+#define NA_MSG "Requires CYGPKG_KERNEL && CYGPKG_LIBC"
 #endif // CYGPKG_KERNEL && CYGPKG_LIBC
 
 #ifdef NA_MSG
@@ -1150,6 +1166,6 @@ externC void
 cyg_start( void )
 {
     CYG_TEST_INIT();
-    CYG_TEST_NA("Requires " NA_MSG);
+    CYG_TEST_NA(NA_MSG);
 }
 #endif

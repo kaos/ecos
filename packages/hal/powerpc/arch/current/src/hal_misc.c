@@ -42,7 +42,10 @@
 //
 //===========================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
+#include CYGBLD_HAL_TARGET_H
+#include CYGBLD_HAL_PLATFORM_H 
 
 #define CYGARC_HAL_COMMON_EXPORT_CPU_MACROS
 #include <cyg/hal/ppc_regs.h>           // SPR definitions
@@ -114,6 +117,7 @@ cyg_hal_exception_handler(HAL_SavedRegisters *regs)
     _hal_registers = regs;
 
     __handle_exception();
+
 
 #elif defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && \
       defined(CYGPKG_HAL_EXCEPTIONS)
@@ -407,10 +411,27 @@ externC void hal_MMU_init (void)
 
 //---------------------------------------------------------------------------
 // Initial cache enabling
+
+// These are "indirected" to make it easier to support other platform
+// variants in the future:
+
+#ifdef CYGPKG_HAL_POWERPC_COGENT
+# define CYGPRI_INIT_CACHES 1
+# ifdef CYG_HAL_STARTUP_RAM
+#  define CYGPRI_ENABLE_CACHES 1
+# endif
+#endif
+
+
+// Do not enable caches for the FADS port pro tem; the memory mapping is
+// not set up.
+
+// Do not enable caches for the simulator, it just slows it down.
+
 externC void
 hal_enable_caches(void)
 {
-#ifdef CYGPKG_HAL_POWERPC_COGENT
+#ifdef CYGPRI_INIT_CACHES
     // Initialize caches.
     HAL_ICACHE_UNLOCK_ALL();    
     HAL_DCACHE_UNLOCK_ALL();
@@ -418,7 +439,7 @@ hal_enable_caches(void)
     HAL_DCACHE_INVALIDATE_ALL();
 
     // Enable caches.
-#if defined(CYG_HAL_STARTUP_RAM)
+#ifdef CYGPRI_ENABLE_CACHES
     // Cogent board doesn't support burst access to the ROM and on the
     // MPC8xx caches require burst.
     HAL_ICACHE_ENABLE();

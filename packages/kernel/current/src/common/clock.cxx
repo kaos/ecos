@@ -694,7 +694,7 @@ cyg_uint32 Cyg_RealTimeClock::isr(cyg_vector vector, CYG_ADDRWORD data)
 
     Cyg_Interrupt::acknowledge_interrupt(CYGNUM_HAL_INTERRUPT_RTC);
         
-    return Cyg_Interrupt::CALL_DSR;
+    return Cyg_Interrupt::CALL_DSR|Cyg_Interrupt::HANDLED;
 }
 
 // -------------------------------------------------------------------------

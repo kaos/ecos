@@ -340,7 +340,11 @@ hal_intc_translation_table:
 #else
 #error MIPS FPU register size not defined
 #endif		
-			
+
+#ifndef CYG_HAL_MIPS_FSR_INIT
+#define CYG_HAL_MIPS_FSR_INIT 0
+#endif
+
 	.macro	hal_fpu_init
 	mfc0	v0,status			# Get sr
 	la	v1,0xDBFFFFFF			# Clear bits to be changed
@@ -351,7 +355,8 @@ hal_intc_translation_table:
 	nop
 	nop
 	nop
-	ctc1	zero,$31			# clear Fp control reg
+        la	v0,CYG_HAL_MIPS_FSR_INIT	# Get initial value for FSR
+	ctc1	v0,$31				# set Fp control reg
 	nop
 	.endm
 

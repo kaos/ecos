@@ -255,6 +255,25 @@
 
 //-----------------------------------------------------------------------------
 // Instruction cache line control
+// On the TX39, the instruction cache must be disabled to use the index-invalidate
+// cache operation.
+
+// Invalidate the entire cache
+// This uses the index-invalidate cache operation.
+#define HAL_ICACHE_INVALIDATE_ALL_DEFINED
+#define HAL_ICACHE_INVALIDATE_ALL()                                             \
+{                                                                               \
+    register CYG_ADDRESS _baddr_ = 0x80000000;                                  \
+    register CYG_ADDRESS _addr_ = 0x80000000;                                   \
+    register CYG_WORD _state_;                                                  \
+    HAL_ICACHE_IS_ENABLED(_state_);                                             \
+    HAL_ICACHE_DISABLE();                                                       \
+    for( ; _addr_ < _baddr_+HAL_ICACHE_SIZE; _addr_ += HAL_ICACHE_LINE_SIZE )   \
+    {                                                                           \
+        asm volatile ("cache 0x00,0(%0)" : : "r"(_addr_) );                     \
+    }                                                                           \
+    if( _state_ ) HAL_ICACHE_ENABLE();                                          \
+}
 
 // Invalidate cache lines in the given range without writing to memory.
 // This uses the index-invalidate cache operation since the TX39 does not
@@ -264,15 +283,17 @@
 {                                                                       \
     register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                \
     register CYG_WORD _size_ = (_asize_);                               \
+    register CYG_WORD _state_;                                          \
+    HAL_ICACHE_IS_ENABLED(_state_);                                     \
     HAL_ICACHE_DISABLE();                                               \
     for( ; _addr_ <= _addr_+_size_; _addr_ += HAL_ICACHE_LINE_SIZE )    \
     {                                                                   \
         asm volatile ("cache 0,0(%0)" : : "r"(_addr_) );                \
     }                                                                   \
-    HAL_ICACHE_ENABLE();                                                \
+    if( _state_ ) HAL_ICACHE_ENABLE();                                  \
 }
 
-#endif
+#endif // CYGPKG_HAL_MIPS_TX3904
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_IMP_CACHE_H

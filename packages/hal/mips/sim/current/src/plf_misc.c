@@ -53,4 +53,13 @@ void hal_platform_init(void)
 }
 
 /*------------------------------------------------------------------------*/
+/* Location to save interrupt state in for debug purposes.                */
+
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+
+struct Hal_SavedRegisters *hal_saved_interrupt_state;
+
+#endif
+
+/*------------------------------------------------------------------------*/
 /* End of plf_misc.c                                                      */

@@ -29,10 +29,10 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   gthomas
-// Contributors:  gthomas
-// Date:        1999-02-04
-// Purpose:     PID Serial I/O module (interrupt driven version)
+// Author(s):    gthomas
+// Contributors: gthomas
+// Date:         1999-02-04
+// Purpose:      PID Serial I/O module (interrupt driven version)
 // Description: 
 //
 //####DESCRIPTIONEND####
@@ -46,12 +46,10 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/io/devtab.h>
 #include <cyg/io/serial.h>
+#include <cyg/infra/diag.h>
 
 #ifdef CYGPKG_IO_SERIAL_ARM_PID
-
 #include "pid_serial.h"
-
-extern void diag_printf(const char *fmt, ...);
 
 typedef struct pid_serial_info {
     CYG_ADDRWORD   base;

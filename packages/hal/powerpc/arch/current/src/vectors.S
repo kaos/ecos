@@ -183,6 +183,11 @@ __exception_\name:
         # the GDB stub.
         # It is _not_ a generic solution to the problem; in particular it
         # is not possible to continue after a breakpoint is hit.
+        # 
+        # Note that for platforms where StubROM vectors are copied into RAM
+        # at 0x00000000, simply skipping the copy of vector 0x700 is a
+        # better solution.  See CYGPRI_STUBROM_HAS_RAM_VECTORS below.
+
         .p2align 8
         .globl  __exception_program
 __exception_program:
@@ -289,11 +294,25 @@ _start:
 #endif
         
         
-#ifdef CYG_HAL_POWERPC_COPY_VECTORS // only for CygMon-supported startup
+#ifdef CYG_HAL_POWERPC_COPY_VECTORS // only for StubRom-supported startup
+
+
+#ifdef CYGPRI_STUBROM_HAS_RAM_VECTORS
+# ifdef CYG_HAL_STARTUP_RAM
+#  ifndef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+#   define CYGPRI_SKIP_BREAKPOINT_VECTOR
+#  endif  // no stubs
+# endif  // RAM startup
+#endif  // Stubrom vectors are in RAM
+
         # Copy RAM exception vectors from ROM (or load place) to RAM
         lwi     r3,rom_vectors          # r3 = rom start
         lwi     r4,0                    # r4 = ram start
+#ifdef CYGPRI_SKIP_BREAKPOINT_VECTOR
+        lwi     r5,__exception_program	# r5 = end of first leg of copy
+#else
         lwi     r5,rom_vectors_end      # r5 = rom end
+#endif
 
         cmplw   r3,r5                   # skip if no vectors
         beq     2f
@@ -306,6 +325,15 @@ _start:
         cmplw   r3,r5                   # compare
         blt     1b                      # loop if not yet done
 2:
+#ifdef CYGPRI_SKIP_BREAKPOINT_VECTOR
+	cmplwi	r4,__exception_program@L
+	bne	3f			# is it the breakpoint vector?
+	addi	r4,r4,0x100		# if so, leave it well alone
+	addi	r3,r3,0x100
+	lwi     r5,rom_vectors_end      # r5 = rom end
+	b	1b			# and do the rest of the copy
+3:	
+#endif // Skip copying the breakpoint vector
 #endif
 
         # clear BSS

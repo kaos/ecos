@@ -417,6 +417,9 @@ CYG_MACRO_END
 
 #ifndef CYGHWR_HAL_CLOCK_CONTROL_DEFINED
 
+externC CYG_WORD32 cyg_hal_clock_period;
+#define CYGHWR_HAL_CLOCK_PERIOD_DEFINED
+
 #define HAL_CLOCK_INITIALIZE( _period_ )        \
 CYG_MACRO_START                                 \
     asm volatile (                              \
@@ -427,6 +430,7 @@ CYG_MACRO_START                                 \
         :                                       \
         : "r"(_period_)                         \
         );                                      \
+    cyg_hal_clock_period = _period_;            \
 CYG_MACRO_END
 
 #define HAL_CLOCK_RESET( _vector_, _period_ )   \
@@ -457,7 +461,12 @@ CYG_MACRO_END
 
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && \
     !defined(HAL_CLOCK_LATENCY)
-#define HAL_CLOCK_LATENCY( _pvalue_ ) HAL_CLOCK_READ(_pvalue_)
+#define HAL_CLOCK_LATENCY( _pvalue_ )                   \
+CYG_MACRO_START                                         \
+    register CYG_WORD32 _cval_;                         \
+    HAL_CLOCK_READ(&_cval_);                            \
+    *(_pvalue_) = _cval_ - cyg_hal_clock_period;        \
+CYG_MACRO_END
 #endif
 
 //--------------------------------------------------------------------------

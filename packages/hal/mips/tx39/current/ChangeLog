@@ -1,3 +1,11 @@
+1999-06-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/var_intr.h: Added TX39 specific variant of
+	HAL_CLOCK_LATENCY().
+
+	* include/var_cache.h: Added TX39 specific implementation of
+	HAL_ICACHE_INVALIDATE_ALL().
+
 1999-06-16  Jesper Skov  <jskov@cygnus.co.uk>
         CR 100804 workaround
 	* src/mips_tx39.ld: Suppress .mdebug in the final output.

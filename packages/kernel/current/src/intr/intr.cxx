@@ -340,7 +340,7 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
         p = p->next;
     }
 
-#ifdef CYG_HAL_DEFAULT_ISR    
+#ifdef HAL_DEFAULT_ISR
     if( (isr_ret & Cyg_Interrupt::HANDLED) == 0 )
     {
         // If we finished the loop for some reason other than that an
@@ -348,7 +348,7 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
         // report the spurious interrupt, or do some other HAL level processing
         // such as GDB interrupt detection etc.
 
-        CYG_HAL_DEFAULT_ISR( vector, NULL );
+        HAL_DEFAULT_ISR( vector, NULL );
     }
 #endif    
     return 0;

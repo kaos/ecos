@@ -119,7 +119,7 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 #define HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ )                             \
 {                                                                               \
     for( _i_ = 0; _i_ < 32; _i_++ ) (_regs_)->f[_i_] = (_id_)|0xFF00|_i_;       \
-    (_regs_)->fcr31 = 0;                                                        \
+    (_regs_)->fcr31 = 0x01000000;                                               \
 }
 #else
 #define HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _id_ )

@@ -1,3 +1,8 @@
+1999-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/plf_misc.c: Added hal_saved_interrupt_state variable to
+	allow code to link.
+
 1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_sim_ram.ldi: 

@@ -1,3 +1,26 @@
+1999-06-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/arch.inc:
+	* include/hal_arch.h:
+	Added initializer for FPU FSR register.
+
+1999-06-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_default_isr): When chaining, always try the
+	ctrlc ISR, the passed-in vector number can be bogus.
+
+1999-06-18  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/hal_misc.c:
+	Added cyg_hal_clock_period variable.	
+	
+	* include/hal_intr.h:
+	Modified HAL_CLOCK_LATENCY() macro to do the right thing.
+	Added cyg_hal_clock_period variable.	
+
+	* include/hal_cache.h: Modified implementations of cache macros to
+	only do anything if the appropriate cache is enabled.
+
 1999-06-17  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* src/vectors.S: Added code to discriminate different entry

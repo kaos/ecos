@@ -211,7 +211,7 @@ cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
             cyg_hal_user_break( (CYG_ADDRWORD *)hal_saved_interrupt_state );
     }
 
-    return 0;
+    return 2;
 }
 
 #endif

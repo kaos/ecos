@@ -230,6 +230,11 @@ CYG_MACRO_END
 
 #endif
 
+#if defined(CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY) && \
+    !defined(HAL_CLOCK_LATENCY)
+#define HAL_CLOCK_LATENCY( _pvalue_ ) HAL_CLOCK_READ(_pvalue_)
+#endif
+
 #define CYGHWR_HAL_CLOCK_CONTROL_DEFINED
 
 #else

@@ -53,6 +53,15 @@
 #include <cyg/hal/hal_cache.h>          // Cache handling
 
 /*------------------------------------------------------------------------*/
+/* If required, define a variable to store the clock period.              */
+
+#ifdef CYGHWR_HAL_CLOCK_PERIOD_DEFINED
+
+CYG_WORD32 cyg_hal_clock_period;
+
+#endif
+
+/*------------------------------------------------------------------------*/
 /* First level C exception handler.                                       */
 
 externC void __handle_exception (void);
@@ -95,7 +104,9 @@ externC cyg_uint32 hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
     defined(CYGHWR_HAL_GDB_PORT_VECTOR) &&              \
     defined(HAL_CTRLC_ISR)
 
+#ifndef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN    
     if( vector == CYGHWR_HAL_GDB_PORT_VECTOR )
+#endif        
     {
         cyg_uint32 result = HAL_CTRLC_ISR( vector, data );
         if( result != 0 ) return result;

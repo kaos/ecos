@@ -1,3 +1,9 @@
+1999-06-24  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal.h: Clarify descriptions of
+	CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT and
+	CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT.
+
 1999-06-17  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/pkgconf/hal.h: Added CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT

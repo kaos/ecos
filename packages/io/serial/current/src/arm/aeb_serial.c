@@ -46,12 +46,11 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/io/devtab.h>
 #include <cyg/io/serial.h>
+#include <cyg/infra/diag.h>
 
 #ifdef CYGPKG_IO_SERIAL_ARM_AEB
 
 #include "aeb_serial.h"
-
-extern void diag_printf(const char *fmt, ...);
 
 typedef struct aeb_serial_info {
     CYG_ADDRWORD   base;

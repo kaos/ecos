@@ -326,8 +326,8 @@
  }
 
  cdl_option CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT {
-     display    "Include GDB external break support"
-     parent     CYGPKG_HAL_DEBUG
+     display    "Include GDB external break support for stubs"
+     parent     CYGDBG_HAL_DEBUG
      requires   CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
      requires   !CYGPKG_HAL_MIPS_TX39_JMR3904
      requires   !CYGPKG_HAL_POWERPC_FADS
@@ -336,11 +336,13 @@
         This option causes the GDB stub to add a serial interrupt handler
         which will listen for GDB break packets. This lets you stop the
         target asynchronously when using GDB, usually by hitting Control+C
-        or pressing the STOP button."
+        or pressing the STOP button. This option differs from
+        CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT in that it is used when
+        GDB stubs are present."
  }
 
   cdl_option CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT {
-     display    "Include GDB external break support"
+     display    "Include GDB external break support when no stubs"
      parent     CYGPKG_HAL_DEBUG
      requires   !CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
      description "

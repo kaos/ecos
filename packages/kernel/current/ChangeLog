@@ -1,3 +1,21 @@
+1999-06-23  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20209
+	* tests/dhrystone.c: Use fewer loops on ARM targets - they don't
+	have a cache.
+
+1999-06-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/intr/intr.cxx (Cyg_Interrupt::chain_isr): Was testing the wrong
+	macro for the default ISR. Fixed.
+
+	* src/common/clock.cxx (Cyg_RealTimeClock::isr): Add HANDLED bit
+	to returned value.
+
+1999-06-21  Jesper Skov  <jskov@cygnus.co.uk>
+        PR 20209
+	* tests/dhrystone.c: Don't run test on sims or synthetic target.
+	Only run test when compiled with optimization.
+
 1999-06-18  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/dhrystone.c: Added unsupported header.

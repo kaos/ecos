@@ -189,7 +189,6 @@
        display "ARM PID serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-#       parent CYGPKG_IO_SERIAL
        parent CYGPKG_HAL_ARM_PID
        description "
            This option enables the serial device drivers for the ARM PID."
@@ -290,7 +289,6 @@
        display "ARM AEB-1 serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-#       parent CYGPKG_IO_SERIAL
        parent CYGPKG_HAL_ARM_AEB
        description "
            This option enables the serial device drivers for the ARM AEB-1."
@@ -392,7 +390,6 @@
        display "Cogent PowerPC serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-#       parent CYGPKG_IO_SERIAL
        parent CYGPKG_HAL_POWERPC_COGENT
        description "
            This option enables the serial device drivers for the Cogent PowerPC."
@@ -491,13 +488,13 @@
 #define CYGNUM_IO_SERIAL_POWERPC_COGENT_SERIAL_B_BAUD 38400
 #define CYGNUM_IO_SERIAL_POWERPC_COGENT_SERIAL_B_BUFSIZE 128
 
+
 /* ----------------------------------------------------------------------------
    {{CFG_DATA
    cdl_component CYGPKG_IO_SERIAL_SPARCLITE_SLEB {
        display "SPARClite SLEB serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-#       parent CYGPKG_IO_SERIAL
        parent CYGPKG_HAL_SPARCLITE_SLEB
        description "
            This option enables the serial device drivers for the SPARClite SLEB."
@@ -601,7 +598,6 @@
        display "TX39 JMR3904 serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-#       parent CYGPKG_IO_SERIAL
        parent CYGPKG_HAL_MIPS_TX39_JMR3904
        description "
            This option enables the serial device drivers for the TX39 JMR3904."
@@ -720,7 +716,6 @@
        display "MN10300 serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-#       parent CYGPKG_IO_SERIAL
        parent CYGPKG_HAL_MN10300
        description "
            This option enables the serial device drivers for the MN10300."

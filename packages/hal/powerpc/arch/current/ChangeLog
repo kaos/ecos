@@ -1,3 +1,22 @@
+1999-06-24  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* misc/CPUMask8xx.c: Added.
+
+1999-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/vectors.S (_start): Support breaking back into the stub ROM
+	when we see a breakpoint, if RAM start and RAM-based vectors for
+	the stub.  Rather than using a direct jump, instead skip copying
+	the program exception vectors - leave the stub's vec in place.
+	Controlled by CYGPRI_STUBROM_HAS_RAM_VECTORS, which varies from
+	platform to platform.
+
+1999-06-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/hal_misc.c (hal_enable_caches): Change the configuration,
+	the better to accommodate differing platform requirements viz a
+	viz cache enabling and so on.
+
 1999-06-17  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/vectors.S (CYG_MSR): define correctly for copying vectors,

@@ -1,3 +1,8 @@
+1999-06-21  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/plf_misc.c (hal_ctrlc_isr): Changed return value from 0 to 2
+	to indicate that the interrupt has been handled.
+
 1999-06-02  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.mlt: 
