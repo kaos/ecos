@@ -274,10 +274,9 @@ cdl_package CYGPKG_LIBC_STDIO {
             scanf() family of functions."
     }
     
-    cdl_option CYGPKG_LIBC_STDIO_OPEN {
+    cdl_component CYGPKG_LIBC_STDIO_OPEN {
         display       "Dynamic opening/closing of files"
         requires      CYGINT_ISO_MALLOC
-        implements    CYGINT_ISO_STDIO_POSIX_FDFUNCS
         default_value { 0 != CYGINT_ISO_MALLOC }
         description   "
             fopen() and fclose() use dynamic memory
@@ -288,6 +287,16 @@ cdl_package CYGPKG_LIBC_STDIO {
             fopen() and fclose(). If disabled, only the
             default console streams - stdin, stdout and
             stderr - will be available."
+
+        cdl_option CYGFUN_LIBC_STDIO_OPEN_POSIX_FDFUNCS {
+            display       "POSIX fdopen/fileno functions"
+            active_if     CYGPKG_LIBC_STDIO_FILEIO
+            implements    CYGINT_ISO_STDIO_POSIX_FDFUNCS
+            calculated    1
+            description   "This identifies to the rest of the system
+                           whether the POSIX fdopen() and
+                           fileno() functions are implemented."
+        }
     }
     
     cdl_option CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE {
