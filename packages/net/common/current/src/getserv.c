@@ -32,6 +32,7 @@
 
 #include <sys/param.h>
 #include <netdb.h>
+#include <errno.h>
 
 // These must return the port in network byte order.
 //
