@@ -1,3 +1,7 @@
+2002-07-15  Mark Salter  <msalter@redhat.com>
+
+	* include/arm_stub.h: Comment out NUMREGBYTES.
+
 2002-05-28  Mark Salter  <msalter@redhat.com>
 
 	* cdl/hal_arm.cdl: Tweaked description for

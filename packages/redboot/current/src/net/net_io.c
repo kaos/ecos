@@ -146,7 +146,7 @@ static int in_buflen = 0;
 static unsigned char in_buf[64];
 static unsigned char *in_bufp;
 static int out_buflen = 0;
-static unsigned char out_buf[64];
+static unsigned char out_buf[1024];
 static unsigned char *out_bufp;
 
 // Functions in this module
