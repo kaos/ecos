@@ -156,9 +156,8 @@ cyg_pselect(int nfd, fd_set *in, fd_set *out, fd_set *ex,
     cyg_tick_count ticks;
     int mode_type[] = {CYG_FREAD, CYG_FWRITE, 0};
     cyg_uint32 wake_count;
-#ifdef CYGPKG_POSIX
     sigset_t oldmask;
-#endif
+
     Cyg_FlagValue myFlag = SELECT_WAIT_FLAG_GET ();
     int    maxFdIndex = __howmany(nfd, __NFDBITS); // size of fd sets
 

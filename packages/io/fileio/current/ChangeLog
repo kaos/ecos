@@ -1,3 +1,8 @@
+2004-12-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/select.cxx (cyg_pselect): We need the oldmask under all
+	conditions.
+
 2004-12-01  Alex Paulis and Cameron Taylor  <ctaylor@waverider.com>
 
 	* include/fileio.h: Changed si_thread to si_waitFlag
