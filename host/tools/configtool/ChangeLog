@@ -1,3 +1,7 @@
+2003-01-22  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/makefile.gnu: Tidy up
+
 2003-01-21  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/configtool.h:

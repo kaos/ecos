@@ -6,17 +6,8 @@
 #   cd emptydir
 #   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation ECOSSRCDIR=/path/to/ecos/tools/src OSTYPE=$OSTYPE
 
-ifeq ($(WXDIR),)
-	echo WXDIR not defined - specify path to wxWindows installation
-endif
-
-ifeq ($(ECOSSRCDIR),)
-	echo ECOSSRCDIR not defined - specify path to eCos tools source
-endif
-
-ifeq ($(OSTYPE),)
-	echo OSTYPE not defined - specify "cygwin" or "linux-gnu"
-endif
+WXDIR=WXDIR_not_defined
+ECOSSRCDIR=ECOSSRCDIR_not_defined
 
 CTBUILDDIR=$(shell pwd)
 CTDIR=$(ECOSSRCDIR)/tools/configtool/standalone/wxwin
