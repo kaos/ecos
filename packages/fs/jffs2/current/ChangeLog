@@ -1,3 +1,7 @@
+2003-04-23  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+
+	* src/fs-ecos.c: mtab -> cyg_mtab. Ditto cyg_mtab_end. 
+
 2003-03-25  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* src/fs-ecos.c

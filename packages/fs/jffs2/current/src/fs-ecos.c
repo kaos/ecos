@@ -502,7 +502,7 @@ static int jffs2_read_super(struct super_block *sb)
 
 static int jffs2_mount(cyg_fstab_entry * fste, cyg_mtab_entry * mte)
 {
-	extern cyg_mtab_entry mtab[], mtab_end;
+	extern cyg_mtab_entry cyg_mtab[], cyg_mtab_end;
 	struct super_block *jffs2_sb = NULL;
 	struct jffs2_sb_info *c;
 	cyg_mtab_entry *m;
@@ -518,10 +518,10 @@ static int jffs2_mount(cyg_fstab_entry * fste, cyg_mtab_entry * mte)
 	// Iterate through the mount table to see if we're mounted
 	// FIXME: this should be done better - perhaps if the superblock
 	// can be stored as an inode in the icache.
-	for (m = &mtab[0]; m != &mtab_end; m++) {
+	for (m = &cyg_mtab[0]; m != &cyg_mtab_end; m++) {
 		// stop if there are more than the configured maximum
-		if (m - &mtab[0] >= CYGNUM_FILEIO_MTAB_MAX) {
-			m = &mtab_end;
+		if (m - &cyg_mtab[0] >= CYGNUM_FILEIO_MTAB_MAX) {
+			m = &cyg_mtab_end;
 			break;
 		}
 		if (m->valid && strcmp(m->fsname, "jffs2") == 0 &&
