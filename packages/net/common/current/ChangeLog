@@ -1,3 +1,14 @@
+2003-04-11  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* tests/linux_echo.c: Renamed to....
+	* tests/host_echo.c: this new file. Change comment to indicate this.
+
+	* tests/make.linux: Renamed to....
+	* tests/make.host: this new file. Change comment to indicate this.
+	Also linux_echo -> host_echo, and add clean target.
+
+	* doc/tcpip.sgml: Reflect above.
+
 2003-04-11  Michael Checky  <Michael_Checky@Thermoking.com>
 
 	* tests/nc_test_framework.h: deleted '#include <net/route.h>'.

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      tests/linux_echo.c
+//      tests/host_echo.c
 //
-//      Simple TCP throughput test - echo component FOR LINUX HOST
+//      Simple TCP throughput test - echo component FOR *HOST*
 //      * CAUTION: host, i.e. non eCos, only *
 //
 //==========================================================================

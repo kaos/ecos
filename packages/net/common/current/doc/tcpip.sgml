@@ -246,26 +246,26 @@ purpose networks unless protected by a switch.</PARA>
 <PARA><command>tcp_echo</command> is one
 part of the standard performance test we use.  The other parts are
 host programs <LITERAL>tcp_source</LITERAL> and <LITERAL>tcp_sink</LITERAL>.
- To make these (under LINUX) cd to the tests source directory in
-the eCos repository and type &ldquo;<LITERAL>make -f make.linux</LITERAL>&rdquo; -
+ To make these (under your <emphasis>HOST</emphasis> system) cd to the tests source directory in
+the eCos repository and type &ldquo;<LITERAL>make -f make.host</LITERAL>&rdquo; -
 this should build <LITERAL>tcp_source</LITERAL> and <LITERAL>tcp_sink</LITERAL>.</PARA>
-<PARA>The LINUX program &ldquo;<LITERAL>tcp_source</LITERAL>&rdquo; sends
+<PARA>The host program &ldquo;<LITERAL>tcp_source</LITERAL>&rdquo; sends
 data to the target.  On the target, &ldquo;<LITERAL>tcp_echo</LITERAL>&rdquo; sends
 it onwards to &ldquo;<LITERAL>tcp_sink</LITERAL>&rdquo; running
-on LINUX.  So the target must receive and send on all the data that <LITERAL>tcp_source</LITERAL> sends
+on your host.  So the target must receive and send on all the data that <LITERAL>tcp_source</LITERAL> sends
 it; the time taken for this is measured and the data rate is calculated.</PARA>
 <PARA>To invoke the test, first start <LITERAL>tcp_echo</LITERAL> on
 the target board and wait for it to become quiescent - it will report
 work to calibrate a CPU load which can be used to simulate real
 operating conditions for the stack.</PARA>
-<PARA>Then on your LINUX machine, in one terminal window, invoke <LITERAL>tcp_sink</LITERAL> giving
+<PARA>Then on your host machine, in one terminal window, invoke <LITERAL>tcp_sink</LITERAL> giving
 it the IP address (or hostname) of one interface of the target board.
  For example &ldquo;<LITERAL>tcp_sink 10.130.39.66</LITERAL>&rdquo;.
  <LITERAL>tcp_echo</LITERAL> on the target
 will print something like &ldquo;<LITERAL>SINK connection
 from 10.130.39.13:1143</LITERAL>&rdquo; when <LITERAL>tcp_sink</LITERAL> is
 correctly invoked.</PARA>
-<PARA>Next, in another LINUX terminal window, invoke <LITERAL>tcp_source</LITERAL>,
+<PARA>Next, in another host terminal window, invoke <LITERAL>tcp_source</LITERAL>,
 giving it the IP address (or hostname) of an interface of the target
 board, and optionally a background load to apply to the target while
 the test runs.  For example, &ldquo;<LITERAL>tcp_source
@@ -279,15 +279,15 @@ tcp_source is correctly invoked.</PARA>
 <PARA>You can connect tcp_sink to one target interface
 and tcp_source to another, or both to the same interface.
  Similarly, you can run <LITERAL>tcp_sink</LITERAL> and <LITERAL>tcp_source</LITERAL> on
-the same LINUX machine or different ones.  TCP/IP and ARP
+the same host machine or different ones.  TCP/IP and ARP
 look after them finding one another, as intended.</PARA>
 <PROGRAMLISTING><EMPHASIS>nc_test_master</EMPHASIS> - network characterization master
 <EMPHASIS>nc_test_slave</EMPHASIS> - network characterization slave</PROGRAMLISTING>
 <PARA>These tests talk to each other to measure network performance.
-They can each run on either a test target or a LINUX host computer
+They can each run on either a test target or a host computer
 given some customization to your local environment. As provided, <literal>nc_test_slave</literal> must
 run on the test target, and <literal>nc_test_master</literal> must
-be run on a LINUX host, and be given the test target's
+be run on a host computer, and be given the test target's
 IP address or hostname.</PARA>
 <PARA>The tests print network performance for various packet sizes
 over UDP and TCP, versus various additional CPU loads on the target.</PARA>
