@@ -57,7 +57,6 @@ cdl_package CYGPKG_IO_SERIAL_LOOP {
     requires      CYGPKG_ERROR
     include_dir   cyg/io
     include_files ; # none _exported_ whatsoever
-    doc           redirect/ecos-device-drivers.html
 
     description   "
        This package contains the loop serial device driver."
