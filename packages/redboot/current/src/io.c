@@ -595,8 +595,10 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
             }
         }
         last_ch = c;
-        if (ip == buf + buflen) // Buffer full
+        if (ip == buf + buflen - 1) { // Buffer full
+            *ip = '\0';
             return buflen;
+        }
     }
 }
 
