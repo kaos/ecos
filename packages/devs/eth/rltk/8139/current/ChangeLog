@@ -1,3 +1,9 @@
+2004-10-18  Andrew Dyer  <adyer@righthandtech.com>
+
+	* src/if_8139.c (rltk8139_recv): if eth_drv_recv() wants to
+	discard an incoming packet it sets the buffer address == 0. Add a
+	check for this and skip the memcpy if found.
+
 2004-04-21  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* src/if_8139.c:

@@ -1006,8 +1006,10 @@ rltk8139_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list,
 #endif
 
   for (last_sg = &sg_list[sg_len]; sg_list < last_sg; ++sg_list) {
-    memcpy((void *)(sg_list->buf), rx_buffer, sg_list->len);
-    rx_buffer += sg_list->len;
+    if (sg_list->buf != (CYG_ADDRESS)0) {
+      memcpy((void *)(sg_list->buf), rx_buffer, sg_list->len);
+      rx_buffer += sg_list->len;
+    }
   }
 }
 
