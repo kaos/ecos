@@ -64,7 +64,6 @@ cdl_package CYGPKG_IO_SERIAL_H8300_SCI {
     description   "
            This option enables the serial device drivers for the
            SCI module in Hitachi H8/300 CPUs."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a h8300_sci_serial.c
 
