@@ -135,7 +135,7 @@
 #define AT91_US_TPR 0x38  // Transmit pointer register
 #define AT91_US_TCR 0x3c  // Transmit counter register
 
-#define AT91_US_BAUD(baud) (CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/(16*(baud)))
+#define AT91_US_BAUD(baud) ((CYGNUM_HAL_ARM_AT91_CLOCK_SPEED/(8*(baud))+1)/2)
 
 //=============================================================================
 // PIO
