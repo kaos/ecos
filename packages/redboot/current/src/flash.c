@@ -773,7 +773,7 @@ fis_create(int argc, char *argv[])
         img->size = length;
         img->data_length = img_size;
 #ifdef CYGSEM_REDBOOT_FIS_CRC_CHECK
-        img->file_cksum = crc32((unsigned char *)flash_addr, img_size);
+        img->file_cksum = cyg_crc32((unsigned char *)flash_addr, img_size);
 #endif
         fis_update_directory();
     }
@@ -927,7 +927,7 @@ fis_load(int argc, char *argv[])
     entry_address = (unsigned long)img->entry_point;
 
 #ifdef CYGPKG_REDBOOT_FIS_CRC_CHECK
-    cksum = crc32((unsigned char *)mem_addr, img->data_length);
+    cksum = cyg_crc32((unsigned char *)mem_addr, img->data_length);
     if (show_cksum) {
         diag_printf("Checksum: 0x%08lx\n", cksum);
     }
@@ -1804,7 +1804,7 @@ flash_write_config(void)
     config->len = sizeof(struct _config);
     config->key1 = CONFIG_KEY1;  
     config->key2 = CONFIG_KEY2;
-    config->cksum = crc32((unsigned char *)config, sizeof(struct _config)-sizeof(config->cksum));
+    config->cksum = cyg_crc32((unsigned char *)config, sizeof(struct _config)-sizeof(config->cksum));
     if (verify_action("Update RedBoot non-volatile configuration")) {
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
         memcpy(fis_work_block, fis_addr, fisdir_size);
@@ -1904,13 +1904,13 @@ flash_get_config(char *key, void *val, int type)
     // Check to see if the config data is valid, if not, revert to 
     // readonly mode, by setting config to readonly_config.  We
     // will set it back before we leave this function.
-    if ( (config != readonly_config) && ((crc32((unsigned char *)config, 
+    if ( (config != readonly_config) && ((cyg_crc32((unsigned char *)config, 
                sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
         (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2))) {
         save_config = config;
         config = readonly_config;
-        if ((crc32((unsigned char *)config, 
-                   sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
+        if ((cyg_crc32((unsigned char *)config, 
+                       sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
             (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
             diag_printf("FLASH configuration checksum error or invalid key\n");
             config = save_config;
@@ -2079,8 +2079,8 @@ load_flash_config(void)
     readonly_config = cfg_base;
 #endif
     memcpy(config, cfg_base, sizeof(struct _config));
-    if ((crc32((unsigned char *)config, 
-               sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
+    if ((cyg_crc32((unsigned char *)config, 
+                   sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
         (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
         diag_printf("FLASH configuration checksum error or invalid key\n");
         config_init();

@@ -61,6 +61,7 @@
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/hal_tables.h>
 #include <cyg/infra/diag.h>
+#include <cyg/crc/crc.h>
 #include <string.h>
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
@@ -138,10 +139,6 @@ externC int  _rb_gets_preloaded(char *line, int len, int timeout);
 // "console" selection
 externC int  start_console(void);
 externC void end_console(int old_console);
-
-// CRC support
-unsigned short crc16(unsigned char *buf, int len);
-unsigned long  crc32(unsigned char *buf, int len);
 
 // Alias functions
 #ifdef CYGSEM_REDBOOT_FLASH_ALIASES

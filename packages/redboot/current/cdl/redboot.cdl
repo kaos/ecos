@@ -186,7 +186,7 @@ cdl_package CYGPKG_REDBOOT {
                      stripping before being converted to a binary image.
                      This is handled by a rule in the target CDL."
 
-        compile main.c crc.c
+        compile main.c
         compile misc_funs.c io.c parse.c ticks.c syscall.c alias.c
         compile -library=libextras.a load.c
 
