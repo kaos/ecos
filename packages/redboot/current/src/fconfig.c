@@ -67,6 +67,10 @@ externC void write_eeprom(void *buf, int len);
 externC void read_eeprom(void *buf, int len);
 #endif
 
+#ifdef CYGSEM_REDBOOT_PLF_ESA_VALIDATE
+externC bool cyg_plf_redboot_esa_validate(unsigned char *val);
+#endif
+
 // Round a quantity up
 #define _rup(n,s) ((((n)+(s-1))/s)*s)
 
@@ -342,6 +346,12 @@ get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
             }
             ((unsigned char *)val_ptr)[esa_ptr] = esa_byte;
         }
+#ifdef CYGSEM_REDBOOT_PLF_ESA_VALIDATE
+        if (!cyg_plf_redboot_esa_validate(val_ptr)) {
+            memcpy(val_ptr, &hold_esa_val, sizeof(enet_addr_t));
+            return CONFIG_BAD;
+        }
+#endif
         return CONFIG_CHANGED;
         break;
 #if defined(CYGHWR_NET_DRIVERS) && (CYGHWR_NET_DRIVERS > 1)

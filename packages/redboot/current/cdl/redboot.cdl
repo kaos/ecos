@@ -461,6 +461,17 @@ cdl_package CYGPKG_REDBOOT {
               RedBoot environment will already be initialized at this point."
         }
     
+        cdl_option CYGSEM_REDBOOT_PLF_ESA_VALIDATE {
+            display       "Run a platform specific ESA validation function."
+            flavor        bool
+            default_value 0
+            description   "
+              If this option is enabled then RedBoot will execute a platform
+              specific function to validate an ethernet ESA.  This would be
+              useful if the address must conform to standards set by the
+              hardware manufacturer, etc."
+        }
+    
         cdl_option CYGPKG_REDBOOT_MAX_CMD_LINE {
             display       "Maximum command line length"
             flavor        data

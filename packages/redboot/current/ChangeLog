@@ -1,3 +1,9 @@
+2003-10-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/fconfig.c: 
+	* cdl/redboot.cdl: Allow platforms to provide a function to validate
+	ethernet station addresses.
+
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/fconfig.c (do_flash_config): Fix typo in error message.
