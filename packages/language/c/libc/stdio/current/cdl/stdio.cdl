@@ -54,7 +54,7 @@ cdl_package CYGPKG_LIBC_STDIO {
         This package provides standard input/output functions associated
         with the header file <stdio.h> as specified by the
         ISO C standard - ISO/IEC 9899:1990."
-    doc           redirect/the-iso-standard-c-and-math-libraries.html
+    doc           ref/libc.html
     include_dir   cyg/libc/stdio
     parent        CYGPKG_LIBC
     requires      CYGPKG_IO
@@ -342,6 +342,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     
     cdl_option CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS {
         display       "Thread safe I/O streams"
+        doc           ref/libc-thread-safety.html
         requires      CYGPKG_KERNEL
         default_value { 0 != CYGPKG_KERNEL }
         description   "
