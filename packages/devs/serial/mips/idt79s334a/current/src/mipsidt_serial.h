@@ -101,6 +101,8 @@
 #define IDTMIPS_SER_16550_BASE_A    0xB8000803
 #define IDTMIPS_SER_16550_BASE_B    0xB8000823
 #define SER_16550_BASE              IDTMIPS_SER_16550_BASE_A
+#define INTR_COM0_REG               0xB8000554
+#define INTR_COM1_REG               0xB8000564
 
 //-----------------------------------------------------------------------------
 // Define the serial registers. The IDT board is equipped with a 16550C

@@ -84,7 +84,7 @@ cdl_option CYGPKG_IO_SERIAL_MIPS_POLLED_MODE {
 }
 
 cdl_component CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A {
-    display       "MIPS IDT79S334A serial port driver"
+    display       "MIPS IDT79S334A serial port driver 0"
     flavor        bool
     default_value 1
     description   "
@@ -92,7 +92,7 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A {
         MIPS IDT79S334A."
 
     cdl_option CYGDAT_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A_NAME {
-        display       "Device name for MIPS IDT79S334A serial port"
+        display       "Device name for MIPS IDT79S334A serial port 0"
         flavor        data
         default_value {"\"/dev/ser0\""}
         description   "
@@ -100,7 +100,7 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A {
     }
 
     cdl_option CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A_BAUD {
-        display       "Baud rate for the MIPS IDT79S334A serial port driver"
+        display       "Baud rate for the MIPS IDT79S334A serial port driver 0"
         flavor        data
         legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
                       4800 7200 9600 14400 19200 38400 57600 115200 230400
@@ -112,7 +112,46 @@ cdl_component CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A {
     }
 
     cdl_option CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A_BUFSIZE {
-        display       "Buffer size for the MIPS IDT79S334A serial port driver"
+        display       "Buffer size for the MIPS IDT79S334A serial port driver 0"
+        flavor        data
+        legal_values  0 to 8192
+        default_value 512
+        description   "
+            This option specifies the size of the internal buffers used
+            for the MIPS IDT79S334A 16c550c port."
+    }
+}
+
+cdl_component CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B {
+    display       "MIPS IDT79S334A serial port driver 1"
+    flavor        bool
+    default_value 1
+    description   "
+        This option includes the serial device driver for the 16C550 on the
+        MIPS IDT79S334A."
+
+    cdl_option CYGDAT_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_NAME {
+        display       "Device name for MIPS IDT79S334A serial port 1"
+        flavor        data
+        default_value {"\"/dev/ser1\""}
+        description   "
+            This option specifies the device name on the MIPS IDT79S334A."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BAUD {
+        display       "Baud rate for the MIPS IDT79S334A serial port driver 1"
+        flavor        data
+        legal_values  { 50 75 110 "134_5" 150 200 300 600 1200 1800 2400 3600
+                      4800 7200 9600 14400 19200 38400 57600 115200 230400
+        }
+        default_value 115200
+        description   "
+            This option specifies the default baud rate (speed) for the
+            MIPS 16c550 port."
+    }
+
+    cdl_option CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BUFSIZE {
+        display       "Buffer size for the MIPS IDT79S334A serial port driver 1"
         flavor        data
         legal_values  0 to 8192
         default_value 512

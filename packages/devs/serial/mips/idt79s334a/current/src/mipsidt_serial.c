@@ -98,8 +98,10 @@ static SERIAL_FUNS(mipsidt_serial_funs,
                    mipsidt_serial_stop_xmit
     );
 
+
+#ifdef CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A
 static mipsidt_serial_info mipsidt_serial_info0 ={IDTMIPS_SER_16550_BASE_A,  
-                                              CYGNUM_HAL_INTERRUPT_SIO_0};
+						  CYGNUM_HAL_INTERRUPT_SIO_0};
 
 #if CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A_BUFSIZE > 0
 static unsigned char mipsidt_serial_out_buf0[CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_A_BUFSIZE];
@@ -139,7 +141,51 @@ DEVTAB_ENTRY(mipsidt_serial_io0,
              &mipsidt_serial_channel0
     );
 
+#endif
 
+#ifdef CYGPKG_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B
+static mipsidt_serial_info mipsidt_serial_info1 ={IDTMIPS_SER_16550_BASE_B,
+						  CYGNUM_HAL_INTERRUPT_SIO_1};
+
+#if CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BUFSIZE > 0
+static unsigned char mipsidt_serial_out_buf1[CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BUFSIZE];
+static unsigned char mipsidt_serial_in_buf1[CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BUFSIZE];
+
+static SERIAL_CHANNEL_USING_INTERRUPTS(mipsidt_serial_channel1,
+                                       mipsidt_serial_funs,
+                                       mipsidt_serial_info1,
+                                       CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BAUD),
+                                       CYG_SERIAL_STOP_DEFAULT,
+                                       CYG_SERIAL_PARITY_DEFAULT,
+                                       CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                                       CYG_SERIAL_FLAGS_DEFAULT,
+                                       &mipsidt_serial_out_buf1[0],
+                                       sizeof(mipsidt_serial_out_buf1),
+                                       &mipsidt_serial_in_buf1[0],
+                                       sizeof(mipsidt_serial_in_buf1)
+    );
+#else
+static SERIAL_CHANNEL(mipsidt_serial_channel1,
+                      mipsidt_serial_funs,
+                      mipsidt_serial_info1,
+                      CYG_SERIAL_BAUD_RATE(CYGNUM_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_BAUD),
+                      CYG_SERIAL_STOP_DEFAULT,
+                      CYG_SERIAL_PARITY_DEFAULT,
+                      CYG_SERIAL_WORD_LENGTH_DEFAULT,
+                      CYG_SERIAL_FLAGS_DEFAULT
+    );
+#endif
+
+DEVTAB_ENTRY(mipsidt_serial_io1,
+             CYGDAT_IO_SERIAL_MIPS_IDT79S334A_SERIAL_B_NAME,
+             0,                 // Does not depend on a lower level interface
+             &cyg_io_serial_devio,
+             mipsidt_serial_init,
+             mipsidt_serial_lookup,     // Serial driver may need initializing
+             &mipsidt_serial_channel1
+    );
+
+#endif
 
 // Internal function to actually configure the hardware to desired baud rate, etc.
 static bool
@@ -243,7 +289,7 @@ mipsidt_serial_putc(serial_channel *chan, unsigned char c)
     cyg_uint8 _lsr;
 
     HAL_READ_UINT8(port+SER_16550_LSR, _lsr);
-    if (_lsr & SIO_LSR_THRE) {
+    if (((_lsr & (SIO_LSR_THRE | SIO_LSR_TEMT)) == 0x60)) {
         // Transmit buffer is empty
         HAL_WRITE_UINT8(port+SER_16550_THR, c);
         return true;
