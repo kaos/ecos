@@ -75,6 +75,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_endian.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #undef __ECOS
@@ -168,7 +169,7 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
     cs8900a_priv_data_t *cpd = (cs8900a_priv_data_t *)sc->driver_private;
     cyg_addrword_t base = cpd->base;
     cyg_uint16 chip_type, chip_rev, chip_status;
-    int i;
+    cyg_uint16 i;
     long timeout = 500000;
     cyg_bool esa_configured = false;
     
@@ -212,7 +213,7 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 #if DEBUG & 8
     diag_printf("CS8900A[%p] - type: 0x%04x, rev: 0x%04x\n", base, chip_type, chip_rev);
 #endif
-    if (chip_type != 0x630e) {
+    if (chip_type != PP_ChipID_CL) {
 #if DEBUG & 8
         diag_printf("CS8900 - invalid type (0x%04x), must be 0x630e\n", chip_type);
 #endif
@@ -263,9 +264,17 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
         // Get ESA from EEPROM - via the PP_IA registers
         cyg_uint16 esa_word;
         for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
+#if(CYG_BYTEORDER == CYG_LSBFIRST)
             esa_word = get_reg(base, PP_IA+i);
             cpd->esa[i] = (esa_word & 0xFF);
             cpd->esa[i+1] = (esa_word >> 8) & 0xFF;
+#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+            esa_word = get_reg(base, PP_IA+CYG_SWAP16(i));
+            cpd->esa[i+1] = (esa_word & 0xFF);
+            cpd->esa[i] = (esa_word >> 8) & 0xFF;
+#else
+# error You must define CYG_BYTEORDER to equal CYG_LSBFIRST or CYG_MSBFIRST
+#endif
         }
         esa_configured = true;
     }
@@ -278,11 +287,19 @@ cs8900a_init(struct cyg_netdevtab_entry *tab)
 
     // Tell the chip what ESA to use
     for (i = 0;  i < sizeof(cpd->esa);  i += 2) {
+#if(CYG_BYTEORDER == CYG_LSBFIRST)
         put_reg(base, PP_IA+i, cpd->esa[i] | (cpd->esa[i+1] << 8));
+#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+        put_reg(base, PP_IA+CYG_SWAP16(i), cpd->esa[i+1] | (cpd->esa[i] << 8));
+#endif
     }
     // Set logical address mask
     for (i = 0;  i < 8;  i += 2) {
+#if(CYG_BYTEORDER == CYG_LSBFIRST)
         put_reg(base, PP_LAF+i, 0xFFFF);
+#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+        put_reg(base, PP_LAF+CYG_SWAP16(i), 0xFFFF);
+#endif
     }
 # if DEBUG & 8
     diag_printf("ESA %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -419,8 +436,12 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #ifdef CYGPKG_KERNEL
     cpd->txstart = cyg_current_time();
 #endif
-    // Start the xmit sequence
 
+    // Start the xmit sequence
+#if(CYG_BYTEORDER == CYG_MSBFIRST)      
+    total_len = CYG_SWAP16(total_len);
+#endif
+        
     // The hardware indicates that there are options as to when the actual
     // packet transmission will start wrt moving of data into the transmit
     // buffer.  However, impirical results seem to indicate that if the
@@ -451,20 +472,39 @@ cs8900a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         if (len > 0) {
             /* Finish the last word. */
             if (odd_byte) {
+                // Add data to the most significant byte
+#if(CYG_BYTEORDER == CYG_LSBFIRST)                              
                 saved_data |= ((cyg_uint16)*data++) << 8;
+#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+                saved_data = ((cyg_uint16)*data++) | (saved_data << 8);
+#endif
                 HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
                 len--;
                 odd_byte = false;
             }
-            /* Output contiguous words. */
-            sdata = (cyg_uint16 *)data;
-            while (len > 1) {
-                HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, *sdata++);
-                len -= sizeof(cyg_uint16);
+            if ((CYG_ADDRESS)data & 0x1 == 0) {
+                /* Aligned on 16-bit boundary, so output contiguous words. */
+                sdata = (cyg_uint16 *)data;
+                while (len > 1) {
+                    HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, *sdata++);
+                    len -= sizeof(cyg_uint16);
+                }
+                data = (cyg_uint8 *)sdata;
+            } else {
+                /* Not 16-bit aligned, so byte copy */
+                while (len > 1) {
+                    saved_data = (cyg_uint16)*data++;   // reuse saved_data
+#if CYG_BYTEORDER == CYG_MSBFIRST
+                    saved_data =  ((cyg_uint16)*data++) | (saved_data << 8);
+#else
+                    saved_data |= ((cyg_uint16)*data++) << 8;
+#endif
+                    HAL_WRITE_UINT16(cpd->base+CS8900A_RTDATA, saved_data);
+                    len -= sizeof(cyg_uint16);
+                }
             }
             /* Save last byte, if necessary. */
             if (len == 1) {
-                data = (cyg_uint8 *)sdata;
                 saved_data = (cyg_uint16)*data;
                 odd_byte = true;
             }
@@ -489,6 +529,11 @@ cs8900a_RxEvent(struct eth_drv_sc *sc)
 
     HAL_READ_UINT16(base+CS8900A_RTDATA, stat);
     HAL_READ_UINT16(base+CS8900A_RTDATA, len);
+
+#if(CYG_BYTEORDER == CYG_MSBFIRST)
+    len = CYG_SWAP16(len);
+#endif
+        
 #ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
     if (cyg_io_eth_net_debug) {
         diag_printf("RxEvent - stat: %x, len: %d\n", stat, len);
@@ -522,9 +567,15 @@ cs8900a_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
             mlen -= sizeof(*data);
         }
         if (mlen) {
-            // Fetch last odd byte
-            HAL_READ_UINT16(base+CS8900A_RTDATA, cval);
-            cval &= 0xFF;
+            HAL_READ_UINT16(base+CS8900A_RTDATA, val);
+#if(CYG_BYTEORDER == CYG_LSBFIRST)                      
+            // last odd byte will be in the LSB
+            cval = (cyg_uint8)(val);
+#elif(CYG_BYTEORDER == CYG_MSBFIRST)
+            // last odd byte will be in the MSB
+            cval = (cyg_uint8)(val >> 8);
+#endif
+            cval &= 0xff;
             if ((cp = (cyg_uint8 *)data) != 0) {
                 *cp = cval;
             }

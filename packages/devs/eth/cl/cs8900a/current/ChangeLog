@@ -1,3 +1,15 @@
+2003-04-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/if_cs8900a.c (cs8900a_send): Allow for data not being 16-bit
+	aligned. Thanks to Laurent Gonzalez <laurent.gonzalez@ri.silicomp.fr>
+	for reporting this and his initial patch.
+
+2003-03-03  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
+	
+	* src/if_cs8900a.c:
+	* include/cs8900a.h:
+	Changes to support both little and big endian targets
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_cs8900a.c: 
