@@ -53,10 +53,10 @@
 //--------------------------------------------------------------------------
 // Device properties
 
-#define CYGNUM_FLASH_INTERLEAVE	(2)
-#define CYGNUM_FLASH_SERIES	(1)
+#define CYGNUM_FLASH_INTERLEAVE (2)
+#define CYGNUM_FLASH_SERIES     (1)
 #define CYGNUM_FLASH_WIDTH      (16)
-#define CYGNUM_FLASH_BASE 	(0x00800000)
+#define CYGNUM_FLASH_BASE       (0x02000000)
 
 //--------------------------------------------------------------------------
 // Platform specific extras

@@ -1,3 +1,8 @@
+2004-04-08  Bob Koninckx  <bob.koninckx@o-3s.com>
+
+	* src/powerpc_ec555_flash.c: Adapted flash start address to new
+	memory map. Up to 16 MB of flash is now supported.
+
 2002-04-24  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
 	* New package.
