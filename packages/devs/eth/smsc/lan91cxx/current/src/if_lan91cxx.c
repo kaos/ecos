@@ -126,7 +126,13 @@ int lan91cxx_txfifo_bad = 0;
 #endif
 
 #include "smsc_lan91cxx.h"
-#include CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL
+
+#ifdef LAN91CXX_IS_LAN91C111
+static void lan91cxx_write_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr,
+			       cyg_uint8 phyreg, cyg_uint16 value);
+static cyg_uint16 lan91cxx_read_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr,
+				    cyg_uint8 phyreg);
+#endif
 
 static void lan91cxx_poll(struct eth_drv_sc *sc);
 static cyg_interrupt lan91cxx_interrupt;
@@ -345,14 +351,43 @@ lan91cxx_stop(struct eth_drv_sc *sc)
 static void
 lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
+    cyg_uint16 intr;
+#ifdef LAN91CXX_IS_LAN91C111
+    cyg_uint16 phy_ctl;
+    int delay;
+#endif
 #ifdef CYGPKG_NET
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 #endif
     DEBUG_FUNCTION();
+
+#ifdef LAN91CXX_IS_LAN91C111
+    // 91C111 Errata. Internal PHY comes up disabled. Must enable here.
+    phy_ctl = lan91cxx_read_phy(sc, 0, LAN91CXX_PHY_CTRL);
+    phy_ctl &= ~LAN91CXX_PHY_CTRL_MII_DIS;
+    lan91cxx_write_phy(sc, 0, LAN91CXX_PHY_CTRL, phy_ctl);
+
+    // Start auto-negotiation
+    put_reg(sc, LAN91CXX_RPCR,
+	    LAN91CXX_RPCR_LEDA_RX | LAN91CXX_RPCR_LEDB_LINK | LAN91CXX_RPCR_ANEG);
+
+    // wait for auto-negotiation to finish.
+    // give it ~5 seconds before giving up (no cable?)
+    delay = 50;
+    while (!(lan91cxx_read_phy(sc, 0, LAN91CXX_PHY_STAT) & 0x20)) {
+	if (--delay <= 0)
+	    break;
+	HAL_DELAY_US(100000);
+    }
+#endif
+
+    put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_reset_mmu);
+
     put_reg(sc, LAN91CXX_INTERRUPT, 0);   // disable interrupts
-    put_reg(sc, LAN91CXX_INTERRUPT,       // ack old interrupts
-            LAN91CXX_INTERRUPT_TX_INT | LAN91CXX_INTERRUPT_TX_EMPTY_INT | 
-            LAN91CXX_INTERRUPT_RX_OVRN_INT | LAN91CXX_INTERRUPT_ERCV_INT);
+    intr = get_reg(sc, LAN91CXX_INTERRUPT);
+    put_reg(sc, LAN91CXX_INTERRUPT, intr &      // ack old interrupts
+            (LAN91CXX_INTERRUPT_TX_INT | LAN91CXX_INTERRUPT_TX_EMPTY_INT | 
+            LAN91CXX_INTERRUPT_RX_OVRN_INT | LAN91CXX_INTERRUPT_ERCV_INT));
     put_reg(sc, LAN91CXX_RCR, 
 #ifdef RCR_HAS_ABORT_ENB // 91C96 does not - page 46.
             LAN91CXX_RCR_ABORT_ENB |
@@ -363,6 +398,7 @@ lan91cxx_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     put_reg(sc, LAN91CXX_CONTROL, 0);
     put_reg(sc, LAN91CXX_INTERRUPT,       // enable interrupts
             LAN91CXX_INTERRUPT_RCV_INT_M);
+
 #ifdef CYGPKG_NET
     if (( 0
 #ifdef ETH_DRV_FLAGS_PROMISC_MODE
@@ -588,14 +624,18 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
 {
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
-    unsigned short stat;
     int tcr;
 
     DEBUG_FUNCTION();
-    stat = get_reg(sc, LAN91CXX_EPH_STATUS);
-    if ((stat & LAN91CXX_STATUS_LINK_OK) == 0) {
+
+#ifndef LAN91CXX_IS_LAN91C111
+    // LINK_OK on 91C111 is just a general purpose input and may not
+    // have anything to do with the link.
+    if ((get_reg(sc, LAN91CXX_EPH_STATUS) & LAN91CXX_STATUS_LINK_OK) == 0) {
+	diag_printf("no link\n");
         return false;  // Link not connected
     }
+#endif
 
     CYG_ASSERT( cpd->within_send < 10, "can_send: Excess send recursions" );
     cpd->within_send++;
@@ -670,8 +710,12 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     
     // Alloc new TX packet
     do {
-        put_reg(sc, LAN91CXX_MMU_COMMAND, 
-                LAN91CXX_MMU_alloc_for_tx | ((plen >> 8) & 0x07));
+        put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_alloc_for_tx
+#ifndef LAN91CXX_IS_LAN91C111
+		| ((plen >> 8) & 0x07)
+#endif
+	    );
+
         i = 1024 * 1024;
         do {
             status = get_reg(sc, LAN91CXX_INTERRUPT);
@@ -742,11 +786,9 @@ lan91cxx_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_enq_packet);
 
     // Ack TX empty int and unmask it.
-    ints = get_reg(sc, LAN91CXX_INTERRUPT);
-    ints |= LAN91CXX_INTERRUPT_TX_SET_ACK;
-    put_reg(sc, LAN91CXX_INTERRUPT, ints);
-    ints |= LAN91CXX_INTERRUPT_TX_SET_M;
-    put_reg(sc, LAN91CXX_INTERRUPT, ints);
+    ints = get_reg(sc, LAN91CXX_INTERRUPT) & 0xff00;
+    put_reg(sc, LAN91CXX_INTERRUPT, ints | LAN91CXX_INTERRUPT_TX_SET_ACK);
+    put_reg(sc, LAN91CXX_INTERRUPT, ints | LAN91CXX_INTERRUPT_TX_SET_M);
 
 #if DEBUG & 1
     ints = get_reg(sc, LAN91CXX_INTERRUPT);
@@ -767,9 +809,8 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     INCR_STAT( tx_complete );
 
     // Ack and mask TX interrupt set
-    ints = get_reg(sc, LAN91CXX_INTERRUPT);
-    ints &=~LAN91CXX_INTERRUPT_TX_FIFO_ACK; // Do NOT ACK this one here.
-    ints |= LAN91CXX_INTERRUPT_TX_SET_ACK; // Also ACKs other sources!
+    ints = get_reg(sc, LAN91CXX_INTERRUPT) & 0xff00;
+    ints |= LAN91CXX_INTERRUPT_TX_SET_ACK;
     ints &= ~LAN91CXX_INTERRUPT_TX_SET_M;
     put_reg(sc, LAN91CXX_INTERRUPT, ints);
 
@@ -826,12 +867,6 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
 
     packet &= 0xff;
 
-    // Ack the TX int which is supposed to clear the packet from the TX
-    // completion queue.
-    ints = get_reg(sc, LAN91CXX_INTERRUPT);
-    ints |= LAN91CXX_INTERRUPT_TX_FIFO_ACK;
-    put_reg(sc, LAN91CXX_INTERRUPT, ints);
-
     // It certainly appears that occasionally the tx fifo tells lies; we
     // get the wrong packet number.  Freeing the one we allocated seems to
     // give correct operation.
@@ -849,6 +884,12 @@ lan91cxx_TxEvent(struct eth_drv_sc *sc, int stat)
     // and then free the packet
     put_reg(sc, LAN91CXX_PNR, cpd->txpacket);
     put_reg(sc, LAN91CXX_MMU_COMMAND, LAN91CXX_MMU_rel_packet);
+
+    // Ack the TX int which is supposed to clear the packet from the TX
+    // completion queue.
+    ints = get_reg(sc, LAN91CXX_INTERRUPT) & 0xff00;
+    ints |= LAN91CXX_INTERRUPT_TX_FIFO_ACK;
+    put_reg(sc, LAN91CXX_INTERRUPT, ints);
 
 #if DEBUG & 1
     // Hm... The free doesn't seem to have the desired effect?!?
@@ -876,7 +917,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
 {
     struct lan91cxx_priv_data *cpd = 
         (struct lan91cxx_priv_data *)sc->driver_private;
-    unsigned short stat, len, controlbyte;
+    unsigned short stat, len;
 
     DEBUG_FUNCTION();
 
@@ -884,9 +925,13 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
 #if DEBUG & 1
     diag_printf("RxEvent - FIFOs: 0x%04x\n", stat);
 #endif
-    if ( 0x8000 & stat )
+    if ( 0x8000 & stat ) {
         // Then the Rx FIFO is empty
+#if DEBUG & 4
+        diag_printf("#####RxEvent with empty fifo\n");
+#endif
         return;
+    }
 
     INCR_STAT( rx_count );
 
@@ -902,10 +947,6 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
                                  LAN91CXX_POINTER_AUTO_INCR | 0x0000));
     stat = get_data(sc);
     len = get_data(sc) - 6;             // minus header/footer words
-    // Read control byte at end of packet to get last bit of length
-    put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
-                                 LAN91CXX_POINTER_AUTO_INCR | (len + 4)));
-    controlbyte = get_data(sc);
 
 #ifdef KEEP_STATISTICS
     if ( stat & LAN91CXX_RX_STATUS_ALIGNERR ) INCR_STAT( rx_align_errors );
@@ -916,10 +957,11 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
     //if ( stat & LAN91CXX_RX_STATUS_MCAST    ) INCR_STAT(  );
 #endif // KEEP_STATISTICS
 
-    if (controlbyte & LAN91CXX_CONTROLBYTE_RX) {
+    if ((stat & LAN91CXX_RX_STATUS_BAD) == 0) {
         INCR_STAT( rx_good );
         // Then it's OK
-        if (controlbyte & LAN91CXX_CONTROLBYTE_ODD)
+
+	if (stat & LAN91CXX_RX_STATUS_ODDFRM)
             len++;
 
 #if DEBUG & 1
@@ -938,18 +980,7 @@ lan91cxx_RxEvent(struct eth_drv_sc *sc)
 
     // Not OK for one reason or another...
 #if DEBUG & 1
-    diag_printf("RxEvent - No RX bit: stat: 0x%04x, len: 0x%04x, control'byte' 0x%04x\n",
-                stat, len, controlbyte);
-#endif
-
-#if DEBUG & 4
-    stat = get_reg(sc, LAN91CXX_FIFO_PORTS);
-    if ( 0x8000 & stat ) // Then the Rx FIFO is empty
-        diag_printf("#####Rx packet (bad controlbyte) NOT freed, stat is %x (expected %x)\n",
-                    stat, cpd->rxpacket );
-    else
-        diag_printf("#####Rx packet (bad controlbyte) freed %x (expected %x)\n",
-                    0xff & (stat >> 8), cpd->rxpacket );
+    diag_printf("RxEvent - bad rx: stat: 0x%04x, len: 0x%04x\n", stat, len);
 #endif
 
     // Free packet
@@ -979,8 +1010,10 @@ lan91cxx_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     INCR_STAT( rx_deliver );
 
     put_reg(sc, LAN91CXX_POINTER, (LAN91CXX_POINTER_RCV | LAN91CXX_POINTER_READ |
-                                 LAN91CXX_POINTER_AUTO_INCR | 0x0002));
-    // Status is skipped by starting at 2 above.
+                                 LAN91CXX_POINTER_AUTO_INCR));
+    // Skip status word
+    (void)get_data(sc);
+
     plen = get_data(sc) - 6;            // packet length (minus header/footer)
 
     for (i = 0;  i < sg_len;  i++) {
@@ -1065,15 +1098,173 @@ lan91cxx_poll(struct eth_drv_sc *sc)
         if (event & LAN91CXX_INTERRUPT_TX_SET) {
             lan91cxx_TxEvent(sc, event);
         }
-        else if (event & LAN91CXX_INTERRUPT_RCV_INT) {
+        if (event & LAN91CXX_INTERRUPT_RCV_INT) {
             lan91cxx_RxEvent(sc);
         }
-        else {
+        if (event & ~(LAN91CXX_INTERRUPT_TX_SET | LAN91CXX_INTERRUPT_RCV_INT))
             diag_printf("%s: Unknown interrupt: 0x%04x\n",
-                        __FUNCTION__, event);
-        }
+			__FUNCTION__, event);
     }
 }
 
+#ifdef LAN91CXX_IS_LAN91C111
+
+static cyg_uint16
+lan91cxx_read_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr, cyg_uint8 phyreg)
+{
+    int i, mask, input_idx, clk_idx = 0;
+    cyg_uint16 mii_reg, value;
+    cyg_uint8 bits[64];
+
+    // 32 consecutive ones on MDO to establish sync
+    for (i = 0; i < 32; ++i)
+	bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+
+    // Start code <01>
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+
+    // Read command <10>
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+
+    // Output the PHY address, msb first
+    for (mask = 0x10; mask; mask >>= 1) {
+	if (phyaddr & mask)
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+	else
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    }
+
+    // Output the phy register number, msb first
+    for (mask = 0x10; mask; mask >>= 1) {
+	if (phyreg & mask)
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+	else
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    }
+
+    // Tristate and turnaround (1 bit times)
+    bits[clk_idx++] = 0;
+
+    // Input starts at this bit time
+    input_idx = clk_idx;
+
+    // Will input 16 bits
+    for (i = 0; i < 16; ++i)
+	bits[clk_idx++] = 0;
+
+    // Final clock bit
+    bits[clk_idx++] = 0;
+
+    // Get the current MII register value
+    mii_reg = get_reg(sc, LAN91CXX_MGMT);
+
+    // Turn off all MII Interface bits
+    mii_reg &= ~(LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MCLK | 
+		 LAN91CXX_MGMT_MDI | LAN91CXX_MGMT_MDO);
+
+    // Clock all 64 cycles
+    for (i = 0; i < sizeof(bits); ++i) {
+	// Clock Low - output data
+	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i]);
+	HAL_DELAY_US(50);
+
+	// Clock Hi - input data
+	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i] | LAN91CXX_MGMT_MCLK);
+	HAL_DELAY_US(50);
+
+	bits[i] |= get_reg(sc, LAN91CXX_MGMT) & LAN91CXX_MGMT_MDI;
+    }
+
+    // Return to idle state
+    put_reg(sc, LAN91CXX_MGMT, mii_reg);
+    HAL_DELAY_US(50);
+
+    // Recover input data
+    for (value = 0, i = 0; i < 16; ++i) {
+	value <<= 1;
+	if (bits[input_idx++] & LAN91CXX_MGMT_MDI)
+	    value |= 1;
+    }
+    return value;
+}
+
+static void
+lan91cxx_write_phy(struct eth_drv_sc *sc, cyg_uint8 phyaddr,
+		   cyg_uint8 phyreg, cyg_uint16 value)
+{
+    int i, mask, clk_idx = 0;
+    cyg_uint16 mii_reg;
+    cyg_uint8 bits[65];
+
+    // 32 consecutive ones on MDO to establish sync
+    for (i = 0; i < 32; ++i)
+	bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+
+    // Start code <01>
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+
+    // Write command <01>
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+
+    // Output the PHY address, msb first
+    for (mask = 0x10; mask; mask >>= 1) {
+	if (phyaddr & mask)
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+	else
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    }
+
+    // Output the phy register number, msb first
+    for (mask = 0x10; mask; mask >>= 1) {
+	if (phyreg & mask)
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+	else
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    }
+
+    // Tristate and turnaround (2 bit times)
+    bits[clk_idx++] = 0;
+    bits[clk_idx++] = 0;
+
+    // Write out 16 bits of data, msb first
+    for (mask = 0x8000; mask; mask >>= 1) {
+	if (value & mask)
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MDO;
+	else
+	    bits[clk_idx++] = LAN91CXX_MGMT_MDOE;
+    }
+
+    // Final clock bit (tristate)
+    bits[clk_idx++] = 0;
+
+    // Get the current MII register value
+    mii_reg = get_reg(sc, LAN91CXX_MGMT);
+
+    // Turn off all MII Interface bits
+    mii_reg &= ~(LAN91CXX_MGMT_MDOE | LAN91CXX_MGMT_MCLK | 
+		 LAN91CXX_MGMT_MDI | LAN91CXX_MGMT_MDO);
+
+    // Clock all cycles
+    for (i = 0; i < sizeof(bits); ++i) {
+	// Clock Low - output data
+	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i]);
+	HAL_DELAY_US(50);
+
+	// Clock Hi - input data
+	put_reg(sc, LAN91CXX_MGMT, mii_reg | bits[i] | LAN91CXX_MGMT_MCLK);
+	HAL_DELAY_US(50);
+
+//	bits[i] |= get_reg(sc, LAN91CXX_MGMT) & LAN91CXX_MGMT_MDI;
+    }
+
+    // Return to idle state
+    put_reg(sc, LAN91CXX_MGMT, mii_reg);
+    HAL_DELAY_US(50);
+}
+#endif // LAN91CXX_IS_LAN91C111
 
 // EOF if_lan91cxx.c

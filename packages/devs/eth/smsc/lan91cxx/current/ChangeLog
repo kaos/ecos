@@ -1,3 +1,10 @@
+2002-08-16  Mark Salter  <msalter@redhat.com>
+
+	* src/if_lan91cxx.c: Add support for 91C111. Platform-specific
+	include file is now included from within smsc_lan91cxx.h so
+	that register access functions may be overridden if necessary.
+	* src/smsc_lan91cxx.h: Ditto.
+
 2002-06-14  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/if_lan91cxx.c: 

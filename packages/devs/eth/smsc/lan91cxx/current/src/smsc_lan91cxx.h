@@ -70,7 +70,8 @@
 #define LAN91CXX_RCR         0x02
 #define LAN91CXX_COUNTER     0x03
 #define LAN91CXX_MIR         0x04
-#define LAN91CXX_MCR         0x05
+#define LAN91CXX_MCR         0x05 // Other than 91C111
+#define LAN91CXX_RPCR        0x05 // 91C111 only
 #define LAN91CXX_RESERVED_0  0x06
 #define LAN91CXX_BS          0x07
 #define LAN91CXX_CONFIG      0x08
@@ -206,7 +207,11 @@
 #define LAN91CXX_RX_STATUS_TOOSHORT    0x0400
 #define LAN91CXX_RX_STATUS_HASHVALMASK 0x007e // MASK
 #define LAN91CXX_RX_STATUS_MCAST       0x0001
-
+#define LAN91CXX_RX_STATUS_BAD     \
+    (LAN91CXX_RX_STATUS_ALIGNERR | \
+     LAN91CXX_RX_STATUS_BADCRC   | \
+     LAN91CXX_RX_STATUS_TOOLONG  | \
+     LAN91CXX_RX_STATUS_TOOSHORT)
 
 // Attribute memory registers in PCMCIA mode
 #define LAN91CXX_ECOR                  0x8000
@@ -219,6 +224,47 @@
 #define LAN91CXX_ECSR_IOIS8            (1<<5)
 #define LAN91CXX_ECSR_PWRDWN           (1<<2)
 #define LAN91CXX_ECSR_INTR             (1<<1)
+
+// These are for manipulating the MII interface
+#define LAN91CXX_MGMT_MDO              0x0001
+#define LAN91CXX_MGMT_MDI              0x0002
+#define LAN91CXX_MGMT_MCLK             0x0004
+#define LAN91CXX_MGMT_MDOE             0x0008
+
+// Internal PHY registers (91c111)
+#define LAN91CXX_PHY_CTRL              0
+#define LAN91CXX_PHY_STAT              1
+#define LAN91CXX_PHY_ID1               2
+#define LAN91CXX_PHY_ID2               3
+#define LAN91CXX_PHY_AUTO_AD           4
+#define LAN91CXX_PHY_AUTO_CAP          5
+#define LAN91CXX_PHY_CONFIG1          16
+#define LAN91CXX_PHY_CONFIG2          17
+#define LAN91CXX_PHY_STATUS_OUT       18
+#define LAN91CXX_PHY_MASK             19
+
+// PHY control bits
+#define LAN91CXX_PHY_CTRL_COLTST      (1 << 7)
+#define LAN91CXX_PHY_CTRL_DPLX        (1 << 8)
+#define LAN91CXX_PHY_CTRL_ANEG_RST    (1 << 9)
+#define LAN91CXX_PHY_CTRL_MII_DIS     (1 << 10)
+#define LAN91CXX_PHY_CTRL_PDN         (1 << 11)
+#define LAN91CXX_PHY_CTRL_ANEG_EN     (1 << 12)
+#define LAN91CXX_PHY_CTRL_SPEED       (1 << 13)
+#define LAN91CXX_PHY_CTRL_LPBK        (1 << 14)
+#define LAN91CXX_PHY_CTRL_RST         (1 << 15)
+
+#define LAN91CXX_RPCR_LEDA_LINK       (0 << 2)
+#define LAN91CXX_RPCR_LEDA_TXRX       (4 << 2)
+#define LAN91CXX_RPCR_LEDA_RX         (6 << 2)
+#define LAN91CXX_RPCR_LEDA_TX         (7 << 2)
+#define LAN91CXX_RPCR_LEDB_LINK       (0 << 5)
+#define LAN91CXX_RPCR_LEDB_TXRX       (4 << 5)
+#define LAN91CXX_RPCR_LEDB_RX         (6 << 5)
+#define LAN91CXX_RPCR_LEDB_TX         (7 << 5)
+#define LAN91CXX_RPCR_ANEG            (1 << 11)
+#define LAN91CXX_RPCR_DPLX            (1 << 12)
+#define LAN91CXX_RPCR_SPEED           (1 << 13)
 
 
 // ------------------------------------------------------------------------
@@ -280,6 +326,9 @@ typedef struct lan91cxx_priv_data {
 
 // ------------------------------------------------------------------------
 
+#include CYGDAT_DEVS_ETH_SMSC_LAN91CXX_INL
+
+#ifndef SMSC_PLATFORM_DEFINED_GET_REG
 static __inline__ unsigned short
 get_reg(struct eth_drv_sc *sc, int regno)
 {
@@ -294,7 +343,9 @@ get_reg(struct eth_drv_sc *sc, int regno)
 #endif
     return val;
 }
+#endif // SMSC_PLATFORM_DEFINED_GET_REG
 
+#ifndef SMSC_PLATFORM_DEFINED_PUT_REG
 static __inline__ void
 put_reg(struct eth_drv_sc *sc, int regno, unsigned short val)
 {
@@ -308,7 +359,9 @@ put_reg(struct eth_drv_sc *sc, int regno, unsigned short val)
     diag_printf("write reg %d val 0x%04x\n", regno, val);
 #endif
 }
+#endif // SMSC_PLATFORM_DEFINED_PUT_REG
 
+#ifndef SMSC_PLATFORM_DEFINED_PUT_DATA
 // ------------------------------------------------------------------------
 // Assumes bank2 has been selected
 static __inline__ void
@@ -323,7 +376,9 @@ put_data(struct eth_drv_sc *sc, unsigned short val)
     diag_printf("write data 0x%04x\n", val);
 #endif
 }
+#endif // SMSC_PLATFORM_DEFINED_PUT_DATA
 
+#ifndef SMSC_PLATFORM_DEFINED_GET_DATA
 // Assumes bank2 has been selected
 static __inline__ unsigned short
 get_data(struct eth_drv_sc *sc)
@@ -339,6 +394,7 @@ get_data(struct eth_drv_sc *sc)
 #endif
     return val;
 }
+#endif // SMSC_PLATFORM_DEFINED_GET_DATA
 
 // ------------------------------------------------------------------------
 // Read the bank register (this one is bank-independent)
@@ -351,7 +407,7 @@ get_banksel(struct eth_drv_sc *sc)
     
     HAL_READ_UINT16(cpd->base+(LAN91CXX_BS << cpd->addrsh), val);
 #if DEBUG & 2
-    diag_printf("read bank val 0x%04x\n", regno, val);
+    diag_printf("read bank val 0x%04x\n", val);
 #endif
     return val;
 }
@@ -390,5 +446,5 @@ get_att(struct eth_drv_sc *sc, int offs)
 #endif // #if CYGINT_DEVS_ETH_SMSC_LAN91CXX_PCMCIA_MODE					
 
 // ------------------------------------------------------------------------
-#endif CYGONCE_DEVS_ETH_SMSC_LAN91CXX_LAN91CXX_H
+#endif // CYGONCE_DEVS_ETH_SMSC_LAN91CXX_LAN91CXX_H
 // EOF smsc_lan91cxx.h
