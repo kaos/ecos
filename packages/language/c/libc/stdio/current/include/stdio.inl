@@ -77,7 +77,7 @@ extern __inline__ void
 setbuf( FILE *stream, char *buf )
 {
     if (buf == NULL)
-        setvbuf( stream, NULL, _IONBF, BUFSIZ );
+        setvbuf( stream, NULL, _IONBF, 0 );
     else
         // NB: Should use full buffering by default ordinarily, but in
         // the current system we're always connected to an interactive

@@ -1,3 +1,8 @@
+2003-02-15  Fabrice Gautier  <Fabrice_Gautier@sdesigns.com>
+
+	* include/stdio.inl (setbuf): Don't supply size with _IONBF.
+	* src/common/stdioinlines.cxx (setbuf): Ditto.
+
 2003-01-29  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/output/vfnprintf.cxx: Add support for C99 'z' flag (size_t).
