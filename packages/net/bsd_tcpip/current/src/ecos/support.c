@@ -626,7 +626,7 @@ copyin(const void *s, void *d, size_t len)
 void
 ovbcopy(const void *s, void *d, size_t len)
 {
-    memcpy(d, s, len);
+    memmove(d, s, len);
 }
 
 

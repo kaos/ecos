@@ -1,3 +1,10 @@
+2002-07-26  Gary Thomas  <gary@chez-thomas.org>
+2002-07-26  Ken Cox <jkc@redhat.com>
+
+	* src/ecos/support.c (ovbcopy): ovbcopy() must handle the case 
+	where the src and dst regions are overlayed.  memcpy() does not 
+	handle this case, but memmove() does.
+
 2002-07-10  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/sys/netinet/udp_usrreq.c: 
