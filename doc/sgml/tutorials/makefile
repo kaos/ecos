@@ -48,7 +48,7 @@
 TOPLEVEL   := ../../../packages
 MAIN_SGML  := ecos-tutorial.sgml
 MAIN_HTML  := ecos-tutorial.html
-MAIN_PDF   := 
+MAIN_PDF   := ecos-tutorial.pdf
 OTHER_SGML :=
 PICTURES   :=
 

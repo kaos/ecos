@@ -3,7 +3,6 @@
 <!-- Begin Document Specific Declarations -->
 
 <?Fm: Validation Off>
-
 <!ENTITY foreword SYSTEM "foreword.sgml">
 
 <!ENTITY ui "&micro;ITRON">
@@ -14,19 +13,20 @@
 <!ENTITY version CDATA "2.0.x">
 <!ENTITY Version CDATA "v2_0_x">
 <!NOTATION cgm SYSTEM>
-<!ENTITY graphic1 SYSTEM "pix/configtool01.gif" NDATA gif>
-<!ENTITY graphic2 SYSTEM "pix/templates01.gif" NDATA gif>
-<!ENTITY graphic3 SYSTEM "pix/ARMStartup01.gif" NDATA gif>
-<!ENTITY graphic4 SYSTEM "pix/build-lib01.gif" NDATA gif>
-<!ENTITY graphic5 SYSTEM "pix/save-dialog01.gif" NDATA gif>
-<!ENTITY graphic6 SYSTEM "pix/build-tools01.gif" NDATA gif>
-<!ENTITY graphic7 SYSTEM "pix/user-tools01.gif" NDATA gif>
-<!ENTITY graphic8 SYSTEM "pix/build-tests01.gif" NDATA gif>
-<!ENTITY graphic9 SYSTEM "pix/twothreads2.gif" NDATA gif>
-<!ENTITY figure-welcome-page-entity SYSTEM "pix/supp_welcome.gif" NDATA gif>
-<!ENTITY figure-new-case-web-page-entity SYSTEM "pix/supp_newcase.gif" NDATA gif>
-<!ENTITY figure-case-profile-entity SYSTEM "pix/supp_profile.gif" NDATA gif>
-<!ENTITY figure-build-process-entity SYSTEM "pix/build-processalt.gif" NDATA gif>
+<!NOTATION PNG SYSTEM "PNG">
+<!ENTITY graphic1 SYSTEM "pix/configtool01.png" NDATA png>
+<!ENTITY graphic2 SYSTEM "pix/templates01.png" NDATA png>
+<!ENTITY graphic3 SYSTEM "pix/ARMStartup01.png" NDATA png>
+<!ENTITY graphic4 SYSTEM "pix/build-lib01.png" NDATA png>
+<!ENTITY graphic5 SYSTEM "pix/save-dialog01.png" NDATA png>
+<!ENTITY graphic6 SYSTEM "pix/build-tools01.png" NDATA png>
+<!ENTITY graphic7 SYSTEM "pix/user-tools01.png" NDATA png>
+<!ENTITY graphic8 SYSTEM "pix/build-tests01.png" NDATA png>
+<!ENTITY graphic9 SYSTEM "pix/twothreads2.png" NDATA png>
+<!ENTITY figure-welcome-page-entity SYSTEM "pix/supp_welcome.png" NDATA png>
+<!ENTITY figure-new-case-web-page-entity SYSTEM "pix/supp_newcase.png" NDATA png>
+<!ENTITY figure-case-profile-entity SYSTEM "pix/supp_profile.png" NDATA png>
+<!ENTITY figure-build-process-entity SYSTEM "pix/build-processalt.png" NDATA png>
 <!-- End Document Specific Declarations -->
 
 ]>
