@@ -1,3 +1,9 @@
+2003-11-07  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/DP83847.c: 
+	* src/AM79C874.c: 
+	* cdl/phy_eth_drivers.cdl: Make auto-negotiation timeout configurable.
+
 2003-09-11  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/eth_phy.h: Minor improvement in status bitfield [comments]

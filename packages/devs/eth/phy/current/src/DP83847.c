@@ -52,6 +52,8 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/devs_eth_phy.h>
+
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/diag.h>
 
@@ -72,7 +74,7 @@ static bool dp83847_stat(eth_phy_access_t *f, int *state)
     if (_eth_phy_read(f, 0x10, f->phy_addr, &phy_state)) {
         if ((phy_state & 0x10) == 0) {
             diag_printf("... waiting for auto-negotiation");
-            for (tries = 0;  tries < 15;  tries++) {
+            for (tries = 0;  tries < CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME;  tries++) {
                 if (_eth_phy_read(f, 0x10, f->phy_addr, &phy_state)) {
                     if ((phy_state & 0x10) != 0) {
                         break;

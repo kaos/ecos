@@ -60,6 +60,15 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
 
     compile eth_phy.c
 
+    cdl_option CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME {
+        display       "Time period (seconds) to wait for auto-negotiation"
+        flavor        data
+        default_value 5
+        description "
+           The length of time to wait for auto-negotiation to complete
+           before giving up and declaring the link dead/missing."
+    }
+
     cdl_option CYGHWR_DEVS_ETH_PHY_DP83847 {
         display       "NSDP83847"
         flavor        bool
