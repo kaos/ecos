@@ -138,7 +138,7 @@ cdl_package CYGPKG_REDBOOT {
           that port."
     }
 
-    cdl_option CYGSEM_REDBOOT_VARIBLE_BAUD_RATE {
+    cdl_option CYGSEM_REDBOOT_VARIABLE_BAUD_RATE {
         display       "Allow RedBoot to adjust the baud rate on the serial console."
         flavor        bool
         default_value 0
@@ -306,10 +306,29 @@ cdl_package CYGPKG_REDBOOT {
             cdl_option CYGNUM_REDBOOT_FLASH_CONFIG_SIZE {
                 display       "Length of configuration data in FLASH"
                 flavor        data
-                default_value 1024
+                default_value 4096
                 description "
                   This option is used to control the amount of memory and FLASH
                   to be used for configuration options (persistent storage)."
+            }
+
+            cdl_option CYGSEM_REDBOOT_FLASH_ALIASES {
+                display       "Support simple macros/aliases in FLASH"
+                flavor        bool
+                default_value 1
+                description "
+                  This option is used to allow support for simple text-based
+                  macros (aliases).  These aliases are kept in the FLASH
+                  configuration data (persistent storage)."
+            }
+
+            cdl_option CYGNUM_REDBOOT_FLASH_STRING_SIZE {
+                display       "Length of strings in FLASH configuration data"
+                flavor        data
+                default_value 128
+                description "
+                  This option is used to control the amount of memory and FLASH
+                  to be used for string configuration options (persistent storage)."
             }
 
             cdl_option CYGNUM_REDBOOT_FLASH_SCRIPT_SIZE {

@@ -296,6 +296,26 @@ var_ifTable(struct variable *vp,
     if ( ! ifp )
         return NULL;
 
+// This is to assist customers with their own special interfaces; if they
+// define IFT_CUSTOMER_SPECIAL to whatever their own device is, then its
+// ioctl() will be called to handle these enquiries.
+#ifdef IFT_CUSTOMER_SPECIAL
+    if ( (ifp->if_type == IFT_CUSTOMER_SPECIAL) && (NULL != ifp->if_ioctl) )
+    {
+       if( (vp->magic == IFDESCR) || (vp->magic == IFPHYSADDRESS) )
+       {
+            (*ifp->if_ioctl)(ifp, vp->magic, (caddr_t)string);
+	    *var_len = strlen(string);
+	    return (unsigned char *) string;
+       }
+       else
+       {
+            (*ifp->if_ioctl)(ifp, vp->magic, (caddr_t)&long_ret);
+	    return (unsigned char *) &long_ret;
+       }
+    }
+#endif // IFT_CUSTOMER_SPECIAL
+
     if ( IFT_ETHER == ifp->if_type &&
          ((IFDESCR == vp->magic) ||
           (IFSPEED == vp->magic) ||

@@ -2154,6 +2154,24 @@ usm_check_secLevel_vs_protocols(int level,
 }  /* end usm_check_secLevel_vs_protocols() */
 
 
+/* usm_update_engine_time(): Updates engine_time for all registered users. 
+ * This function would be useful for systems that start up with default time
+ * settings and then update their timing reference using NTP at a later stage
+ */
+void usm_update_engine_time(void) {
+
+  struct usmUser *ptr;
+  long            boots_long;
+  long            time_long;
+
+  boots_long = snmpv3_local_snmpEngineBoots();
+  time_long  = snmpv3_local_snmpEngineTime();
+
+  for (ptr = userList; ptr != NULL; ptr = ptr->next) {
+    set_enginetime( ptr->engineID, ptr->engineIDLen, 
+                    boots_long, time_long, TRUE );
+  }
+}
 
 
 /* usm_get_user(): Returns a user from userList based on the engineID,

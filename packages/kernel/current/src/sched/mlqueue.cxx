@@ -147,7 +147,6 @@ Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     if( thread->queue != NULL )
     {
         thread->queue->remove(thread);
-        thread->queue = NULL;
     }
     
     if( queue->empty() )

@@ -1,0 +1,38 @@
+; Inno Setup Script
+; Created with ScriptMaker Version 1.3.22
+; 14 February 2001 at 10:38
+
+[Setup]
+    MinVersion=4.0,4.0
+    AppName=eCos Configuration Tool %VERSION%
+    AppId=eCos Configuration Tool
+    CreateUninstallRegKey=1
+    UsePreviousAppDir=1
+    UsePreviousGroup=1
+    AppVersion=%VERSION%
+    AppVerName=eCos Configuration Tool %VERSION%
+    AppCopyright=Copyright © Red Hat Inc., 2001
+    BackColor=$FF0000
+    BackColor2=$000000
+    BackColorDirection=toptobottom
+    WindowShowCaption=1
+    WindowStartMaximized=1
+    WindowVisible=1
+    WindowResizable=1
+    UninstallLogMode=Append
+    DirExistsWarning=auto
+    UninstallFilesDir={app}
+    DisableDirPage=0
+    DisableStartupPrompt=0
+    CreateAppDir=1
+    DisableProgramGroupPage=0
+    AlwaysCreateUninstallIcon=1
+    Uninstallable=1
+    DefaultDirName=c:\Program Files\Red Hat\eCos Configuration Tool
+    DefaultGroupName=eCos Configuration Tool
+    LicenseFile=v:\deliver\configtool\license.txt
+    InfoBeforeFile=v:\deliver\configtool\readme.txt
+    MessagesFile=compiler:default.isl
+    SourceDir=v:\deliver\configtool
+    OutputDir=v:\deliver
+

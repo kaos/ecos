@@ -125,6 +125,18 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_IPAQ {
             diagnostic and GDB port are the same."
     }
 
+    cdl_option CYGSEM_HAL_PARROT_BOOT {
+        display        "Include Flash signature used by WinCE parrot mode"
+        flavor         bool
+        active_if      { CYG_HAL_STARTUP == "ROM" }
+        default_value  1
+        description    "
+          Enabling this option will add an additional header to the
+          executable image making it suitable for booting directly from
+          the native (WinCE Parrot) environment.  This mode should be
+          the default for ROM based programs, such as RedBoot."
+    }
+
     cdl_option CYGSEM_IPAQ_LCD_COMM {
         display        "Support LCD/touchscreen for comminication channel"
         active_if      CYGPKG_REDBOOT

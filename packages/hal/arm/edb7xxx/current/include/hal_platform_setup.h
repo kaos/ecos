@@ -170,7 +170,7 @@
         bne     15b                             ;\
 20:
 
-#ifdef CYGPKG_HAL_ARM_EDB7209
+#ifdef CYGHWR_HAL_ARM_EDB7XXX_VARIANT_EP7209
 // No DRAM controller
 #define INIT_MEMORY_CONFIG                       \
 /* Initialize memory configuration */           ;\

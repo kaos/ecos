@@ -1,3 +1,7 @@
+2001-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* src/mips_rm7000.ld: Added .2ram handling.
+
 2001-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/variant.inc: Remove hal_intc_decode macro since it's a

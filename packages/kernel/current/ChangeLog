@@ -1,3 +1,17 @@
+2001-05-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/thread.hxx (class Cyg_HardwareThread): Remove unused
+	load_context() method.
+	* include/thread.inl: Ditto.
+
+2001-05-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sched/bitmap.cxx (rem_thread): No need to set need_reschedule...
+	rescheduling will happen automatically when the state changes.
+
+	* src/sched/mlqueue.cxx (add_thread): No need to explicitly clear
+	thread->queue.
+
 2001-04-17  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/kernel.cdl: Do cache tests on E7T.
@@ -3443,7 +3457,7 @@ Wed Mar 11 13:18:17 GMT 1998  Chris Provenzano  <proven@cygnus.com>
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -1,3 +1,9 @@
+2001-05-24  Gary Thomas  <gthomas@redhat.com>
+
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: Remove 'RedBoot[backup]' image by
+	default - to make room for Linux kernel.
+
 2001-05-16  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_platform_setup.h: Always init UART3.  Add support

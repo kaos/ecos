@@ -44,10 +44,9 @@
 //--------------------------------------------------------------------------
 // Device properties
 
-// We use the single AM29F040B on the MBX board.
-#define CYGPKG_DEVS_FLASH_AMD_AM29F040B
 #define CYGNUM_FLASH_INTERLEAVE	(1)
 #define CYGNUM_FLASH_SERIES	(1)
+#define CYGNUM_FLASH_WIDTH      (8)
 #define CYGNUM_FLASH_BASE 	(0xfe000000u)
 
 //--------------------------------------------------------------------------

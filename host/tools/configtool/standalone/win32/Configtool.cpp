@@ -360,8 +360,12 @@ void CConfigToolApp::LoadStdProfileSettings()
     }
   }
 
-  // Look for Cygwin 00r1 first, since it's the latest and greatest user tools.   
-  GetRepositoryRegistryClues(m_arstrUserToolPaths, _T("Cygwin 00r1"));
+  // Look for GNUPro 00r1 first, since it's the latest and greatest user tools.   
+  GetRepositoryRegistryClues(m_arstrUserToolPaths, _T("GNUPro 00r1"));
+  if (m_arstrUserToolPaths.GetSize() == 0)
+  {
+      GetRepositoryRegistryClues(m_arstrUserToolPaths, _T("Cygwin 00r1"));
+  }
   if (m_arstrUserToolPaths.GetSize() > 0)
   {
     for(i=0;i<m_arstrUserToolPaths.GetSize();i++){

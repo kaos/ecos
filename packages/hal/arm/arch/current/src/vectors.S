@@ -156,6 +156,15 @@ _name_:
 //
         .code   32
         .section ".vectors","ax"
+
+// This macro allows platforms to add their own code at the very start of
+// the image.  This may be required in some circumstances where eCos ROM 
+// based code does not run immediately upon reset and/or when some sort of
+// special header is required at the start of the image.        
+#ifdef PLATFORM_PREAMBLE
+        PLATFORM_PREAMBLE
+#endif
+                        
         .global __exception_handlers
 __exception_handlers:
 #ifdef CYGSEM_HAL_ROM_RESET_USES_JUMP

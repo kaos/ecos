@@ -122,6 +122,16 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         default_value 1
         compile       stand_alone/eth_drv.c
 
+        cdl_option CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS {
+            display          "Pass packets to an alternate stack"
+            flavor           bool
+            default_value    { 0 != CYGPKG_REDBOOT_NETWORKING }
+            description      "
+                 Define this to allow packets seen by this layer to be
+                 passed on to the previous logical layer, i.e. when
+                 stand-alone processing replaces system (eCos) processing."
+        }
+
         cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
             display          "Number of \[network\] buffers"
             flavor           data

@@ -1099,13 +1099,14 @@ static int
 lcd_comm_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 {
     static int vector = 0;
-    int ret = 0;
+    int ret = -1;
     static int irq_state = 0;
 
     CYGARC_HAL_SAVE_GP();
 
     switch (__func) {
     case __COMMCTL_IRQ_ENABLE:
+        ret = irq_state;
         irq_state = 1;
 #if 0
         if (vector == 0) {
@@ -1137,6 +1138,7 @@ lcd_comm_control(void *__ch_data, __comm_control_cmd_t __func, ...)
 	break;
     }
     case __COMMCTL_FLUSH_OUTPUT:
+        ret = 0;
 	break;
     default:
         break;

@@ -62,7 +62,7 @@
 //                            (unsigned)(x)))
 
 #ifndef FLASH_P2V
-#define FLASH_P2V( _a_ ) ((volatile flash_t *)((unsigned int)(_a_)))
+#define FLASH_P2V( _a_ ) ((volatile flash_t *)((CYG_ADDRWORD)(_a_)))
 #endif
 
 // ------------------------------------------------------------------------
@@ -109,7 +109,7 @@ typedef cyg_uint64 flash_data_t;
 
 # if 1 == CYGNUM_FLASH_INTERLEAVE
 #  define FLASHWORD( k ) (k)
-typedef cyg_uin16 flash_data_t;
+typedef cyg_uint16 flash_data_t;
 # elif 2 == CYGNUM_FLASH_INTERLEAVE
 // 2 devices to make 32-bit
 #  define FLASHWORD( k ) ((k)+((k)<<16))

@@ -162,23 +162,14 @@ package CYGPKG_DEVS_FLASH_ARM_PID {
 	   on the ARM PID platform."
 }
 
-package CYGPKG_DEVS_FLASH_AMD_AM29F040B {
-	alias 		{ "Support for AMD AM29F040B flash memory" flash_amd_am29f040b }
-	directory	devs/flash/amd/am29f040b
-	script		flash_amd_am29f040b.cdl
-	hardware
-        description "
-           This package contains hardware support for AMD AM29F040B
-           flash memory."
-}
-package CYGPKG_DEVS_FLASH_MIPS_QED_OCELOT {
-	alias 		{ "Support for flash memory on QED/Ocelot board" flash_qed_ocelot }
+package CYGPKG_DEVS_FLASH_MIPS_OCELOT {
+	alias 		{ "Support for flash memory on PMC-Sierra/Ocelot board" flash_qed_ocelot }
 	directory	devs/flash/mips/ocelot
-	script		flash_mips_qed_ocelot.cdl
+	script		flash_mips_ocelot.cdl
 	hardware
         description "
            This package contains hardware support for flash memory
-	   on the QED Ocelot platform."
+	   on the PMC-Sierra Ocelot platform."
 }
 
 package CYGPKG_DEVS_FLASH_EBSA285 {
@@ -618,15 +609,6 @@ package CYGPKG_SNMPAGENT {
         description     "UCD SNMP agent."
 }
 
-package CYGPKG_NET_AUTOTEST {
-	alias 		{ "Network Autotesting" autotest net_autotest }
-	directory	net/autotest
-	script		net_autotest.cdl
-        description     "
-	Automated network testing support. 
-	***Red Hat internal use only***"
-}
-
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
 	hardware
@@ -675,7 +657,7 @@ package CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT {
 	hardware
 	directory	devs/eth/mips/ocelot
 	script		mips_rm7000_ocelot_eth_drivers.cdl
-        description     "Ethernet driver for QED Ocelot board."
+        description     "Ethernet driver for PMC-Sierra Ocelot board."
 }
 
 package CYGPKG_DEVS_ETH_ARM_IQ80310 {
@@ -1523,7 +1505,7 @@ package CYGPKG_HAL_MIPS_RM7000 {
 }
 
 package CYGPKG_HAL_MIPS_RM7000_OCELOT {
-	alias		{ "QED Ocelot platform" hal_rm7000_ocelot rm7000_ocelot_hal }
+	alias		{ "PMC-Sierra Ocelot platform" hal_rm7000_ocelot rm7000_ocelot_hal }
 	directory	hal/mips/rm7000/ocelot
 	script		hal_mips_rm7000_ocelot.cdl
 	hardware
@@ -1659,7 +1641,11 @@ The CEB-V850/SA1 HAL package provides the support needed to run eCos on a Cosmo 
 evaluation board."
 }
 
+
+
 # ==========================================================================
+
+
 # --------------------------------------------------------------------------
 # ARM targets
 
@@ -2067,20 +2053,20 @@ target ref4955 {
 }
 
 target ocelot {
-        alias		{ "QED Ocelot platform" ocelot }
+        alias		{ "PMC-Sierra Ocelot platform" ocelot }
 	packages        { CYGPKG_HAL_MIPS
                           CYGPKG_HAL_MIPS_RM7000
                           CYGPKG_HAL_MIPS_RM7000_OCELOT
                           CYGPKG_IO_PCI
-                          CYGPKG_DEVS_FLASH_MIPS_QED_OCELOT
-                          CYGPKG_DEVS_FLASH_AMD_AM29F040B
+                          CYGPKG_DEVS_FLASH_MIPS_OCELOT
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                           CYGPKG_IO_SERIAL_GENERIC_16X5X
                           CYGPKG_DEVS_ETH_INTEL_I82559
                           CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT
         }
         description "
            The ocelot target provides the packages needed to run
-           eCos on a QED Ocelot Hot-Swap Computer."
+           eCos on a PMC-Sierra Ocelot Hot-Swap Computer."
 }
 
 target vrc4373 {

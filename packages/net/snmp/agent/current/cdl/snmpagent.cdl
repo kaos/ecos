@@ -77,6 +77,9 @@ cdl_package CYGPKG_SNMPAGENT {
 		mibgroup/mibII/udp.c		\
 		mibgroup/util_funcs.c		\
 		mibgroup/mibII/dot3.c		\
+                mibgroup/snmpv3/usmStats.c      \
+                mibgroup/snmpv3/usmUser.c       \
+                mibgroup/snmpv3/snmpEngine.c    \
 
 
 
@@ -166,10 +169,7 @@ cdl_package CYGPKG_SNMPAGENT {
 #		 mibgroup/smux/smux.c			\
 #		 mibgroup/smux/snmp_ospf.c		\
 #		 mibgroup/smux/snmp_rip2.c		\
-#		 mibgroup/snmpv3/snmpEngine.c		\
 #		 mibgroup/snmpv3/snmpMPDStats.c		\
-#		 mibgroup/snmpv3/usmStats.c		\
-#		 mibgroup/snmpv3/usmUser.c		\
 #		 mibgroup/target/snmpTargetAddrEntry.c	\
 #		 mibgroup/target/snmpTargetParamsEntry.c	\
 #		 mibgroup/ucd-snmp/diskio.c		\

@@ -597,14 +597,15 @@ proc ecosadmin::read_data { } {
 	
 		set pkgdir [file join $ecosadmin::component_repository $ecosadmin::package_data($pkg,dir)]
 		if { ![file exists $pkgdir] || ![file isdir $pkgdir] } {
-			fatal_error "package $pkg at $pkgdir missing"
-		}
+			warning "package $pkg at $pkgdir missing"
+		} else {
 
-		# Each subdirectory should correspond to a release. A utility routine
-		# is available for this.
-		set ecosadmin::package_data($pkg,versions) [locate_subdirs $pkgdir]
-		if { $ecosadmin::package_data($pkg,versions) == "" } {
-			fatal_error "package $pkg has no version directories"
+                        # Each subdirectory should correspond to a release. A utility routine
+                        # is available for this.
+                        set ecosadmin::package_data($pkg,versions) [locate_subdirs $pkgdir]
+                        if { $ecosadmin::package_data($pkg,versions) == "" } {
+                            fatal_error "package $pkg has no version directories"
+                        }
 		}
 
 		# Sort all the versions using a version-aware comparison version

@@ -1,3 +1,8 @@
+2001-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/flash_iq80310.cdl: Needs IO controller to copy functions to
+	RAM.
+
 2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/iq80310_flash.c (flash_code_overlaps): Define stext/etext

@@ -1,3 +1,22 @@
+2001-05-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/eth_drivers.cdl: New option: CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
+	which replaces the static define in...
+	* src/stand_alone_eth_drv.c: Rename ETH_DRV_PASS_PACKETS to
+	new CDL option above.
+	Also, ensure references to start_console/end_console are conditional
+	on CYGSEM_IO_ETH_DRIVERS_DEBUG.
+
+2001-05-22  Hugo Tyson  <hmt@redhat.com>
+2001-05-22  Sanjay Bisen <Sanjay.Bisen@ascom.ch>
+
+	* src/net/eth_drv.c (eth_drv_recv): Patch from Sanjay at Ascom; it
+	leaked one mbuf if you run out of clusters.  Fix is simply to
+	free m in addition to top.
+
+	* src/net/eth_drv.c (eth_drv_run_deliveries): Fixed a warning with
+	an int cast in HAL_CTRLC_CHECK().
+
 2001-03-21  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/eth_drivers.cdl: Fewer buffers needed in stand-alone mode.

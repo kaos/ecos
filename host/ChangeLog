@@ -1,3 +1,9 @@
+2001-05-23  Julian Smart <julians@redhat.com>
+
+    * Added Srdjan Sobajic's most excellent host/README improvements,
+    and listed the directories more clearly with a brief reference
+    to the new Configtool and its own readme.
+
 2001-05-16  Bart Veer  <bartv@redhat.com>
 
 	* acinclude.m4 :

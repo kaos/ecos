@@ -133,7 +133,11 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define USE_INTERNAL_MD5 1
 
 /* ... or define this if you're using openssl support */
+#ifdef CYGPKG_OPENSSL
+#define USE_OPENSSL
+#else
 /* #undef USE_OPENSSL */
+#endif
 
 /* add in recent CMU library extensions (not complete) */
 /* #undef CMU_COMPATIBLE */

@@ -1,3 +1,14 @@
+2001-05-21  Bart Veer  <bartv@redhat.com>
+
+	* src/usbs_sa11x0.c (usbs_sa11x0_ep2_dsr):
+	Fix the boundary condition where the transmission is an exact
+	multiple of 64 bytes. ep2_process_packet() already did the
+	right thing but was not getting called.
+	Also, some cosmetic changes to the receive code for the
+	same boundary condition. These actually have no effect
+	because of the hardware, but may be useful for other
+	people writing USB device drivers.
+
 2001-04-05  Bart Veer  <bartv@redhat.com>
 
 	* src/usbs_sa11x0.c (usbs_sa11x0_ep0_fill_fifo):

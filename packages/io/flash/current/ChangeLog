@@ -1,3 +1,17 @@
+2001-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_dev.h (FLASH_P2V): Use CYG_ADDRWORD instead of int.
+
+	* src/flash.c: Copy functions to RAM iff
+	CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM defined.
+
+	* cdl/io_flash.cdl: Changed CYGHWR_IO_FLASH_DEVICE_IN_RAM to
+	CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM.
+
+2001-05-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/flash_dev.h: Fix cyg_uin16 typo.
+
 2001-03-29  Mark Salter  <msalter@redhat.com>
 
 	* cdl/io_flash.cdl (CYGSEM_IO_FLASH_VERIFY_PROGRAM): New option

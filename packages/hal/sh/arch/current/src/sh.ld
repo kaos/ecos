@@ -75,6 +75,7 @@ GROUP(libtarget.a libgcc.a)
 # define SECTION_data(_region_, _vma_, _lma_)				 \
     .data _vma_ : _lma_							 \
     { CYG_LABEL_DEFN(_ram_data_start) = ABSOLUTE(.); *(.data*)		 \
+      *( .2ram.*) ;                                                      \
      . = ALIGN(8); CYG_LABEL_DEFN(__CTOR_LIST__) = ABSOLUTE(.);		 \
       KEEP(*(SORT(.ctors*))) CYG_LABEL_DEFN(__CTOR_END__) = ABSOLUTE(.); \
     CYG_LABEL_DEFN(__DTOR_LIST__) = ABSOLUTE(.);			 \

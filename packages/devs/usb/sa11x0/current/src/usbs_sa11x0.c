@@ -1441,7 +1441,7 @@ ep1_clear_error(void)
 // A packet has been received. Some of it may still be in the fifo
 // and must be extracted by hand. The data then has to copied to
 // a higher-level buffer.
-static void
+static int
 ep1_process_packet(void)
 {
     // First, work out how much data has been processed by the DMA
@@ -1462,7 +1462,6 @@ ep1_process_packet(void)
     if ((pkt_size > 0) && ((ep1.fetched + pkt_size) < ep1.common.buffer_size)) {
         memcpy(ep1.common.buffer + ep1.fetched, ep1_dma_buf, pkt_size);
     } 
-    ep1.fetched += pkt_size;
 
     // Copy remaining bytes into the target buffer directly.
     // The DMA buffer could be used instead, moving the memcpy()
@@ -1478,11 +1477,13 @@ ep1_process_packet(void)
         } else {
             int datum = *EP1_DATA;
             if (ep1.fetched < ep1.common.buffer_size) {
-                ep1.common.buffer[ep1.fetched] = datum;
+                ep1.common.buffer[ep1.fetched + pkt_size] = datum;
             }
-            ep1.fetched++;
+            pkt_size++;
         }
     }
+    ep1.fetched += pkt_size;
+    return pkt_size;
 }
 
 #else
@@ -1505,16 +1506,18 @@ ep1_clear_error(void)
                      EP1_PACKET_COMPLETE | EP1_SENT_STALL | EP1_FORCE_STALL);
 }
 
-static void
+static int
 ep1_process_packet(void)
 {
+    int pkt_size = 0;
     while (0 != (*EP1_CONTROL & EP1_FIFO_NOT_EMPTY)) {
         int datum = *EP1_DATA;
-        ep1.fetched++;
+        pkt_size++;
         if (ep1.fetched < ep1.common.buffer_size) {
-            ep1.common.buffer[ep1.fetched] = datum;
+            ep1.common.buffer[ep1.fetched + pkt_size] = datum;
         }
     }
+    return pkt_size;
 }
 #endif
 
@@ -1577,7 +1580,7 @@ ep1_start_rx(usbs_rx_endpoint* endpoint)
 #ifdef CYGNUM_DEVS_USB_SA11X0_EP1_DMA_CHANNEL
             *EP1_DMA_BUF_A_SIZE         = EP1_MTU;
 #endif            
-            ep1_process_packet();
+            (void) ep1_process_packet();
             ep1_rx_complete(ep1.fetched);
         } else {
             // Start a new transfer.
@@ -1661,13 +1664,12 @@ usbs_sa11x0_ep1_dsr(void)
     } else {
         // Another packet has been received. Process it, which may
         // complete the transfer or it may leave more to be done.
+        int pkt_size = ep1_process_packet();
         INCR_STAT(ep1_receives);
-        ep1_process_packet();
         if (0 != (EP1_PACKET_ERROR & *EP1_CONTROL)) {
-
             CYG_ASSERT( 0, "an error has occurred inside ep1_process_packet()\n");
-            
-        } else if ((ep1.fetched != ep1.common.buffer_size) && (0 == (ep1.fetched % EP1_MTU))) {
+
+        } else if ((ep1.fetched != ep1.common.buffer_size) && (0 != pkt_size) && (0 == (ep1.fetched % EP1_MTU))) {
             ep1_start_rx_packet();
         } else if (ep1.fetched > ep1.common.buffer_size) {
             // The host has sent too much data.
@@ -2044,7 +2046,8 @@ usbs_sa11x0_ep2_dsr(void)
         // Another packet has gone out.
         INCR_STAT(ep2_transmits);
         ep2.transmitted += ep2.pkt_size;
-        if (ep2.transmitted < ep2.common.buffer_size) {
+        if ((ep2.transmitted < ep2.common.buffer_size) ||
+            ((ep2.transmitted == ep2.common.buffer_size) && (0 == (ep2.common.buffer_size % EP2_MTU)))) {
             ep2_process_packet();
             ep2_tx_packet();
         } else {

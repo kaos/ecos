@@ -134,12 +134,42 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
 //==========================================================================
 
+
+
+// -------------------------------------------------------------------------
+// Configuration of the test...
+
+// Do we test the interfaces in promiscuous mode?
+//#define PROMISC_TEST
+
+// Do we make the test run forever?
+//#define RUN_FOREVER
+
+// Do we initialize SNMP v3 MIBs and authentication database?
+#define TEST_SNMPv3
+
+// ------------------------------------------------------------------------
+
+
 // PING test code
 
 #include <network.h>
 
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
+
+
+#ifdef  TEST_SNMPv3
+#include <ucd-snmp/config.h>
+#include <ucd-snmp/asn1.h>
+#include <ucd-snmp/snmp_api.h>
+#include <ucd-snmp/snmp_vars.h>
+
+#include <ucd-snmp/snmpv3.h>
+#include <ucd-snmp/usmUser.h>
+#include <ucd-snmp/usmStats.h>
+#include <ucd-snmp/snmpEngine.h>
+#endif // TEST_SNMPv3
 
 #include <cyg/infra/testcase.h>
 
@@ -174,6 +204,12 @@ static cyg_handle_t thread_handle;
 
 #define NUM_PINGS 16
 #define MAX_PACKET 4096
+#define MIN_PACKET   64
+#define MAX_SEND   4000
+
+#define PACKET_ADD  ((MAX_SEND - MIN_PACKET)/NUM_PINGS)
+#define nPACKET_ADD  1 
+
 static unsigned char pkt1[MAX_PACKET], pkt2[MAX_PACKET];
 
 #define UNIQUEID 0x1234
@@ -230,10 +266,15 @@ show_icmp(unsigned char *pkt, int len,
     }
     icmp = (struct icmp *)(pkt + sizeof(*ip));
     len -= (sizeof(*ip) + 8);
+    if ( 0 >= len ) {
+        diag_printf("%s: Completely bogus short packet%s\n",
+                    inet_ntoa(from->sin_addr), 0 == len ? "" : " [no ICMP header]");
+        return 0;
+    }
     tp = (cyg_tick_count_t *)&icmp->icmp_data;
     if (icmp->icmp_type != ICMP_ECHOREPLY) {
-        diag_printf("%s: Invalid ICMP - type: %d\n", 
-                    inet_ntoa(from->sin_addr), icmp->icmp_type);
+        diag_printf("%s: Invalid ICMP - type: %d, len (databytes): %d\n", 
+                    inet_ntoa(from->sin_addr), icmp->icmp_type, len);
         return 0;
     }
     if (icmp->icmp_id != UNIQUEID) {
@@ -250,7 +291,7 @@ static void
 ping_host(int s, struct sockaddr_in *host)
 {
     struct icmp *icmp = (struct icmp *)pkt1;
-    int icmp_len = 64;
+    int icmp_len = MIN_PACKET;
     int seq, ok_recv, bogus_recv;
     cyg_tick_count_t *tp;
     long *dp;
@@ -261,7 +302,7 @@ ping_host(int s, struct sockaddr_in *host)
     bogus_recv = 0;
     TNR_OFF();
     diag_printf("PING server %s\n", inet_ntoa(host->sin_addr));
-    for (seq = 0;  seq < NUM_PINGS;  seq++) {
+    for (seq = 0;  seq < NUM_PINGS;  seq++, icmp_len += PACKET_ADD ) {
         TNR_ON();
         // Build ICMP packet
         icmp->icmp_type = ICMP_ECHO;
@@ -290,6 +331,7 @@ ping_host(int s, struct sockaddr_in *host)
         TNR_OFF();
         if (len < 0) {
             perror("recvfrom");
+            icmp_len = MIN_PACKET - PACKET_ADD; // just in case - long routes
         } else {
             if (show_icmp(pkt2, len, &from, host)) {
                 ok_recv++;
@@ -328,7 +370,10 @@ ping_test(struct bootp *bp)
     host.sin_port = 0;
     ping_host(s, &host);
     // Now try a bogus host
-    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
+    // (also, map 76 <-> 191 so that if a pair runs they ping each other)
+    host.sin_addr = bp->bp_yiaddr; // *my* address.
+//    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) ^ 0xf3);
+    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) ^ 2);
     ping_host(s, &host);
     close(s);
 }
@@ -364,20 +409,62 @@ ping_test_loopback( int lo )
     close(s);
 }
 
+#ifdef PROMISC_TEST
+static void 
+interface_promisc(const char *intf)
+{
+  struct ifreq ifr;
+  int s;
+
+  s = socket(AF_INET, SOCK_DGRAM, 0);
+  if (s < 0) {
+    perror("socket");
+    return;
+  }
+
+  strcpy(ifr.ifr_name, intf);
+  ifr.ifr_flags = IFF_UP | IFF_BROADCAST | IFF_RUNNING | IFF_PROMISC;
+  if (ioctl(s, SIOCSIFFLAGS, &ifr)) {
+    perror("SIOCSIFFLAGS");
+  }
+  close(s);
+}
+#endif // PROMISC_TEST
+
 void
 net_test(cyg_addrword_t p)
 {
-    int i = 0;
+#ifdef RUN_FOREVER
+    int i = 9999999;
+#else
+    int i = 1;
+#endif
     int j;
     diag_printf("Start PING test\n");
     TNR_INIT();
     init_all_network_interfaces();
+#ifdef PROMISC_TEST
+#ifdef CYGHWR_NET_DRIVER_ETH0
+        if (eth0_up)
+            interface_promisc("eth0");
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
+        if (eth1_up)
+            interface_promisc("eth1");
+#endif
+#endif // PROMISC_TEST
 #ifdef CYGPKG_SNMPAGENT
     {
         extern void cyg_net_snmp_init(void);
         cyg_net_snmp_init();
+#ifdef  TEST_SNMPv3
+        init_usmUser();             /* MIBs to support SNMPv3             */
+        init_usmStats();
+        init_snmpEngine();
+        usm_parse_create_usmUser(NULL, "root MD5 md5passwd DES DESpasswd");
+#endif //  TEST_SNMPv3
     }
-#endif
+#endif // CYGPKG_SNMPAGENT
     do {
         TNR_ON();
 #ifdef CYGHWR_NET_DRIVER_ETH0

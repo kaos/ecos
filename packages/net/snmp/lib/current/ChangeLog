@@ -1,3 +1,13 @@
+2001-05-28  Andrew Lunn  <Andrew.Lunn@ascom.ch>
+2001-05-28  Manu Sharma  <Manu.Sharma@ascom.ch>
+
+	* src/snmpusm.c, include/snmpusm.h: Added the ability to tell the
+	agent the time of day has changed. This is used when an NTP client
+	finds out the correct time and jumps time forward by 30 odd years.
+
+	* include/config.h: If we have the OpenSSL package let the SNMP
+	agent use it.
+	
 2001-01-10  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/snmplib.cdl: Clarify ISO C requirements

@@ -56,16 +56,6 @@
 
 // High-level ethernet driver
 
-// Define this to allow packets seen by this layer to be passed on to
-// the previous logical layer, i.e. when stand-alone processing replaces
-// system [eCos] processing.
-//
-// CAUTION! Observations indicate that this cannot work.  When TCP packets
-// destined for the stand-alone layer are passed up, the eCos stack treats
-// them as evil and sends "disconnect" responses.
-//
-#undef ETH_DRV_PASS_PACKETS
-#define ETH_DRV_PASS_PACKETS
 
 // Interfaces exported to drivers
 
@@ -80,7 +70,7 @@ int net_debug;  // FIXME
 unsigned char      __local_enet_addr[ETHER_ADDR_LEN+2];
 struct eth_drv_sc *__local_enet_sc;
 
-#ifdef ETH_DRV_PASS_PACKETS
+#ifdef CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
 //
 // Horrible hack: In order to allow the stand-alone networking code to work
 // alongside eCos (or any other stack), separate IP addresses must be used.
@@ -248,6 +238,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     sg_list[1].buf = (CYG_ADDRESS)buf;
     sg_list[1].len = len;
     packet_sent = 0;
+#ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
     if (net_debug) {
         int old_console;
         old_console = start_console();
@@ -256,6 +247,7 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
         dump_buf((CYG_ADDRWORD)buf, len);
         end_console(old_console);
     }
+#endif
     (sc->funs->send)(sc, sg_list, sg_len, len+14, (CYG_ADDRWORD)&packet_sent);
 
     while (!packet_sent) {
@@ -339,7 +331,7 @@ eth_drv_read(char *eth_hdr, char *buf, int len)
     return res;
 }
 
-#ifdef ETH_DRV_PASS_PACKETS
+#ifdef CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
 //
 // This function is called to copy a message up to the next level.
 // It is only used when this driver has usurped the processing of
@@ -391,6 +383,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     sg_len = 1;
 
     (sc->funs->recv)(sc, sg_list, sg_len);
+#ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
     if (net_debug) {
         int old_console;
         old_console = start_console();
@@ -399,7 +392,8 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         dump_buf((CYG_ADDRWORD)buf+14, total_len-14);
         end_console(old_console);
     }
-#ifdef ETH_DRV_PASS_PACKETS
+#endif
+#ifdef CYGSEM_IO_ETH_DRIVERS_PASS_PACKETS
     if (sc->funs->eth_drv_old != (struct eth_drv_funs *)0) {
         void (*hold_recv)(struct eth_drv_sc *sc,
                           struct eth_drv_sg *sg_list,

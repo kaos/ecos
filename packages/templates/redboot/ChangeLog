@@ -1,3 +1,8 @@
+2001-05-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* current.ect: Set default interrupt stack size down to 4096
+	for RedBoot. It's enough.
+
 2001-03-19  Jesper Skov  <jskov@redhat.com>
 
 	* current.ect: Don't set CYGBLD_BUILD_GDB_STUBS - it should be

@@ -1,3 +1,9 @@
+2001-05-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S: Allow platforms to define a 'preamble' which gets
+	included _before_ the vectors.  This is often required for modules
+	which are run from ROM/Flash.
+
 2001-04-30  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S (__exception_handlers): Platforms must explicitly 

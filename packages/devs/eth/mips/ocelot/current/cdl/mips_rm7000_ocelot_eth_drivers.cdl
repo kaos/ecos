@@ -3,7 +3,7 @@
 #      ocelot_eth_drivers.cdl
 #
 #      Ethernet drivers - support for i82559 ethernet controller
-#      on the QED Ocelot board.
+#      on the PMC-Sierra Ocelot board.
 #
 # ====================================================================
 #####COPYRIGHTBEGIN####
@@ -41,8 +41,8 @@
 # ====================================================================
 
 cdl_package CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT {
-    display       "QED Ocelot board ethernet driver"
-    description   "Ethernet driver for QED Ocelot board."
+    display       "PMC-Sierra Ocelot board ethernet driver"
+    description   "Ethernet driver for PMC-Sierra Ocelot board."
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_IO_ETH_DRIVERS

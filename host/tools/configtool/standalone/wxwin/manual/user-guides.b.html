@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<TITLE> Execution</TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Win32)">
+	<META NAME="CREATED" CONTENT="20010406;14103702">
+	<META NAME="CHANGEDBY" CONTENT="Julian Smart">
+	<META NAME="CHANGED" CONTENT="20010406;14162766">
+	<STYLE>
+	<!--
+		P.body { font-family: "Times New Roman"; font-size: 12pt; font-weight: medium; text-align: left; text-decoration: none }
+		H2.chaptertitle { margin-bottom: 0.04cm; color: #000077; font-family: "Arial"; font-size: 28pt; text-align: left; text-decoration: none }
+		P.figuretitle { margin-top: 0.14cm; font-family: "Times New Roman"; font-size: 12pt; text-align: left }
+		P.gotos { margin-top: 0.28cm; color: #000077; font-family: "Arial"; font-size: 10pt; text-decoration: none }
+		H3.heading1 { margin-right: 1.69cm; margin-bottom: 0.04cm; color: #000077; font-family: "Arial"; font-size: 22pt; text-align: left; text-decoration: none }
+		H3.heading2 { margin-top: 0.14cm; margin-bottom: 0.04cm; font-family: "Arial"; font-size: 16pt; text-align: left }
+		A:link { color: #0000ff }
+		A:visited { color: #800080 }
+		EM.emphasis { font-family: "Times New Roman"; font-size: 12pt; font-weight: medium }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LINK="#0000ff" VLINK="#800080" BGCOLOR="#ffffff">
+<P><TABLE ALIGN=LEFT WIDTH=98% BORDER=0 CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD COLSPAN=3>
+			<P CLASS="gotos" ALIGN=CENTER>Execution</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.2.html">To
+			Contents</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.a.html">To&nbsp;previous&nbsp;page</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.c.html">To&nbsp;next&nbsp;page</A></P>
+		</TD>
+	</TR>
+</TABLE>&nbsp;</P>
+<P><BR><BR>
+</P>
+<HR>
+<H2 CLASS="chaptertitle" STYLE="margin-top: 0cm; margin-bottom: 0cm"><A NAME="pgfId=1127612"></A><A NAME="marker=1154190"></A>
+Execution</H2>
+<H2 CLASS="chaptertitle"><IMG SRC="botclear.gif" NAME="Graphic1" ALIGN=BOTTOM WIDTH=1024 HEIGHT=16 BORDER=0>
+</H2>
+<P CLASS="body"><A NAME="pgfId=1118124"></A>Test executables that
+have been linked using the Build/Tests operation against the current
+configuration can be executed by selecting Tools 
+<IMG SRC="pix/arrow.gif" NAME="Graphic2" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+Run Tests. 
+</P>
+<P CLASS="body">PLEASE NOTE: this functionality is not yet
+implemented.</P>
+<P CLASS="body"><A NAME="pgfId=1156334"></A>When tests are run, the
+Configuration Tool looks for a platform name corresponding to the
+currently loaded hardware template. If no such platform is found, a
+dialog will be displayed for you to define one; this dialog is
+similar to that displayed by the Add function in the Tools<IMG SRC="pix/arrow.gif" NAME="Graphic3" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>Platforms
+dialog, but in this case the platform name cannot be changed.</P>
+<P CLASS="body"><A NAME="pgfId=1148346"></A>When a test run is
+invoked, a property sheet is displayed, comprising three tabs:
+Executables, Output and Summary. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1118126"></A>Note that the property
+sheet is resizable.</P>
+<P CLASS="body"><A NAME="pgfId=1118128"></A>Three buttons appear on
+the property sheet itself: Run/Stop, Close and Properties. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1118130"></A>The Run button is used to
+initiate a test run. Those tests selected on the Executables tab are
+run, and the output recorded on the Output and Summary tabs. During
+the course of a run, the Run button changes to &quot;Stop&quot;. The
+button may be used to interrupt a test run at any point.</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1118133"></A><A NAME="_Toc445367137"></A><A NAME="marker=1150603"></A>
+Properties</H3>
+<P CLASS="body"><A NAME="pgfId=1118135"></A>The Run Tests settings
+dialog can be invoked using the Properties button on the Run Tests
+dialog, or by selecting the View<IMG SRC="pix/arrow.gif" NAME="Graphic8" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>Settings
+menu and choosing the Run Tests tab. This dialog allows you choose
+connectivity settings.</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1127859"></A>Properties dialog
+box 
+</P>
+<P><IMG SRC="pix/new-configtool-run-options.gif" NAME="Graphic4" ALIGN=BOTTOM WIDTH=380 HEIGHT=420 BORDER=0>
+</P>
+<H3 CLASS="heading2"><A NAME="pgfId=1118142"></A><A NAME="_Toc445367138"></A><A NAME="marker=1154198"></A>
+Download Timeout</H3>
+<P CLASS="body"><A NAME="pgfId=1118144"></A>This group of controls
+serves to set the maximum time that is allowed for downloading a test
+to the target board. If the time is exceeded, the test will be deemed
+to have failed for reason of &quot;Download Timeout&quot; and the
+execution of that particular test will be abandoned. This option only
+applies to tests run on hardware, not to those executed in a
+simulator. Times are in units of elapsed seconds.</P>
+<P CLASS="body"><A NAME="pgfId=1118146"></A>Three options are
+available using the drop-down list:</P>
+<UL>
+	<LI><P><A NAME="pgfId=1118148"></A>Calculated from file size - an
+	estimate of the maximum time required for download is made using the
+	(stripped) executable size and the currently used baud rate 
+	</P>
+	<LI><P><A NAME="pgfId=1118149"></A>Specified - a user-specified
+	value may be entered in the adjacent edit box 
+	</P>
+	<LI><P><A NAME="pgfId=1118150"></A>None - no maximum download time
+	is to be applied. 
+	</P>
+</UL>
+<H3 CLASS="heading2"><A NAME="pgfId=1118152"></A><A NAME="_Toc445367139"></A><A NAME="marker=1154205"></A>
+Run time Timeout</H3>
+<P CLASS="body"><A NAME="pgfId=1118154"></A>This group of controls
+serves to set the maximum time that is allowed for executing a test
+on the target board or in a simulator. If the time is exceeded, the
+test will be deemed to have failed for reason of &quot;Timeout&quot;
+and the execution of that particular test will be abandoned. In the
+case of hardware, the time is measured in elapsed seconds: in the
+case of a simulator it is in CPU seconds.</P>
+<P CLASS="body"><A NAME="pgfId=1118156"></A>Three options are
+available using the drop-down list:</P>
+<UL>
+	<LI><P><A NAME="pgfId=1118158"></A>None - no maximum download time
+	is to be applied. 
+	</P>
+	<LI><P><A NAME="pgfId=1118159"></A>Specified - a user-specified
+	value may be entered in the adjacent edit box 
+	</P>
+	<LI><P><A NAME="pgfId=1118160"></A>Default - a default value of 30
+	seconds is used 
+	</P>
+</UL>
+<H3 CLASS="heading2"><A NAME="pgfId=1118162"></A><A NAME="_Toc445367140"></A><A NAME="marker=1154212"></A>
+Connection</H3>
+<P CLASS="body"><A NAME="pgfId=1118164"></A>The Connection controls
+may be used to specify how the target board is to be accessed:</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1118170"></A>If the target
+board is connected using a serial cable, the Serial radio button
+should be checked. In this case you can select a port (COM1, COM2,
+...) and an appropriate baud rate using drop-list boxes.</P>
+<P CLASS="body"><A NAME="pgfId=1118172"></A>If the target board is
+accessed remotely using GDB remote protocol, the &quot;TCP/IP&quot;
+radio button should be checked. In this case you can select a host
+name and TCP/IP port number using edit boxes.</P>
+<H3 CLASS="heading2"><A NAME="pgfId=1118177"></A><A NAME="_Toc445367141"></A><A NAME="marker=1154219"></A>
+Executables Tab</H3>
+<P CLASS="body"><A NAME="pgfId=1118179"></A>This is used to adjust
+the set of tests available for execution. A check box against each
+executable name indicates whether that executable will be included
+when the Run button is pressed. The Check All and Uncheck All buttons
+may be used to check or uncheck all items.</P>
+<P CLASS="body"><A NAME="pgfId=1118181"></A>When the property sheet
+is first displayed, it will be pre-populated with those test
+executables that have been linked using the Build/Tests operation
+against the current configuration. 
+</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1128629"></A>Run tests 
+</P>
+<P><IMG SRC="pix/run-tests.gif" NAME="Graphic6" ALIGN=BOTTOM WIDTH=75 HEIGHT=38 BORDER=0>
+</P>
+<P CLASS="body"><A NAME="pgfId=1118188"></A>You can right-click in
+the window to display a context menu containing Add and Remove items.
+Clicking Remove will remove those executables selected. Clicking Add
+will display a dialog box that allows you to add to the set of items.
+Equivalently the Add button may be used to add executables, and the
+DEL key may be used to remove them.</P>
+<P CLASS="body"><A NAME="pgfId=1118190"></A>You can use the Add from
+Folder button to add a number of executables in a specified folder
+(optionally including subfolders).</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1128881"></A>Add files from
+folder 
+</P>
+<P><IMG SRC="pix/addfromfolder.gif" NAME="Graphic7" ALIGN=BOTTOM WIDTH=75 HEIGHT=38 BORDER=0>
+</P>
+<P CLASS="body"><A NAME="pgfId=1118197"></A>The &quot;Add from
+subfolders&quot; check box should be checked if you wish the search
+for executables to descend into subfolders (in the example above the
+whole of the C drive would be searched).</P>
+<P CLASS="body"><A NAME="pgfId=1118199"></A>The &quot;Files of type&quot;
+edit box should be used to specify the extension of those files to be
+matched [for example, &quot;*.exe&quot;].</P>
+<H3 CLASS="heading2"><A NAME="pgfId=1118202"></A><A NAME="_Toc445367142"></A><A NAME="marker=1150609"></A>
+Output Tab</H3>
+<P CLASS="body"><A NAME="pgfId=1118204"></A>This tab is used to
+display the output from running tests. The output can be saved to a
+file or cleared by means of the popup menu displayed when you
+right-click in the window.</P>
+<H3 CLASS="heading2"><A NAME="pgfId=1118207"></A><A NAME="_Toc445367143"></A><A NAME="marker=1150610"></A>
+Summary Tab</H3>
+<P CLASS="body"><A NAME="pgfId=1118209"></A>This tab is used to
+display a record, in summary form, of those tests executed. For each
+execution, the following information is displayed:</P>
+<UL>
+	<LI><P><A NAME="pgfId=1118211"></A><EM CLASS="emphasis">Time</EM> -
+	the date and time of execution 
+	</P>
+	<LI><P><A NAME="pgfId=1118212"></A><EM CLASS="emphasis">Host</EM> -
+	the host name of the machine from which the test was downloaded 
+	</P>
+	<LI><P><A NAME="pgfId=1118213"></A><EM CLASS="emphasis">Platform</EM>
+	- the platform on which the test was executed 
+	</P>
+	<LI><P><A NAME="pgfId=1118214"></A><EM CLASS="emphasis">Executable</EM>
+	- the executable (file name) of the test executed 
+	</P>
+	<LI><P><A NAME="pgfId=1118215"></A><EM CLASS="emphasis">Status</EM>
+	- the result of executing the test. This will be one of the
+	following: 
+	</P>
+	<UL>
+		<LI><P><A NAME="pgfId=1118216"></A>Not started 
+		</P>
+		<LI><P><A NAME="pgfId=1148401"></A>No result 
+		</P>
+		<LI><P><A NAME="pgfId=1148404"></A>Inapplicable 
+		</P>
+		<LI><P><A NAME="pgfId=1118217"></A>Pass 
+		</P>
+		<LI><P><A NAME="pgfId=1148408"></A>DTimeout 
+		</P>
+		<LI><P><A NAME="pgfId=1148412"></A>Timeout 
+		</P>
+		<LI><P><A NAME="pgfId=1148411"></A>Cancelled 
+		</P>
+		<LI><P><A NAME="pgfId=1139649"></A>Fail 
+		</P>
+		<LI><P><A NAME="pgfId=1148413"></A>Assert fail 
+		</P>
+	</UL>
+	<LI><P><A NAME="pgfId=1139651"></A><EM CLASS="emphasis">Size</EM> -
+	the size [stripped/unstripped] of the test executed 
+	</P>
+	<LI><P><A NAME="pgfId=1118221"></A><EM CLASS="emphasis">Download</EM>
+	- the download time [mm:ss/mm:ss] used. The first of the two times
+	displayed represents the actual time used: the second the limit
+	time. 
+	</P>
+	<LI><P><A NAME="pgfId=1118222"></A><EM CLASS="emphasis">Elapsed</EM>
+	- the elapsed time [mm:ss] used. 
+	</P>
+	<LI><P><A NAME="pgfId=1118223"></A><EM CLASS="emphasis">Execution</EM>
+	- the execution time [mm:ss/mm:ss] used. The first of the two times
+	displayed represents the actual time used: the second the limit
+	time. 
+	</P>
+</UL>
+<P CLASS="body"><A NAME="pgfId=1118225"></A>The output can be saved
+to a file or cleared by means of the popup menu displayed when you
+right-click in the window.</P>
+<TABLE CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD></TD>
+	</TR>
+</TABLE>
+<HR>
+<P><TABLE ALIGN=LEFT WIDTH=98% BORDER=0 CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD COLSPAN=3>
+			<P CLASS="gotos" ALIGN=CENTER>Execution</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.2.html">To
+			Contents</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.a.html">To&nbsp;previous&nbsp;page</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.c.html">To&nbsp;next&nbsp;page</A></P>
+		</TD>
+	</TR>
+</TABLE><BR><BR>
+</P>
+</BODY>
+</HTML>

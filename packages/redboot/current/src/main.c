@@ -102,7 +102,7 @@ RedBoot_cmd("reset",
             do_reset 
     );
 #endif
-#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+#ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
 RedBoot_cmd("baudrate", 
             "Set/Query the system console baud rate", 
             "[-b <rate>]",
@@ -125,6 +125,10 @@ extern struct idle_tab_entry __RedBoot_IDLE_TAB__[], __RedBoot_IDLE_TAB_END__;
 
 #ifdef HAL_ARCH_PROGRAM_NEW_STACK
 extern void HAL_ARCH_PROGRAM_NEW_STACK(void *fun);
+#endif
+
+#ifdef CYGSEM_REDBOOT_FLASH_ALIASES
+externC void expand_aliases(char *line, int len);
 #endif
 
 void
@@ -276,7 +280,10 @@ cyg_start(void)
 		dbgchan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 		CYGACC_CALL_IF_SET_CONSOLE_COMM(dbgchan);
             } else {
-                if (strlen(line) > 0) {
+#ifdef CYGSEM_REDBOOT_FLASH_ALIASES
+                expand_aliases(line, sizeof(line));
+#endif
+                if (strlen(line) > 0) {                    
                     if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
                         (cmd->fun)(argc, argv);
                     } else {
@@ -466,21 +473,26 @@ do_reset(int argc, char *argv[])
 }
 #endif
 
-#ifdef CYGSEM_REDBOOT_VARIBLE_BAUD_RATE
+#ifdef CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#include <flash_config.h>
+#endif
 
 void
 set_console_baud_rate(int rate)
 {
     hal_virtual_comm_table_t *__chan;
     int ret;
+    static int current_rate = CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD;
 
-    if (rate != CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD) {
+    if (rate != current_rate) {
         CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
         __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SETBAUD, rate);
         if (ret <= 0) {
             printf("Failed\n");
         }
+        current_rate = rate;
     }
 }
 
@@ -491,6 +503,9 @@ do_baud_rate(int argc, char *argv[])
     bool new_rate_set;
     hal_virtual_comm_table_t *__chan;
     struct option_info opts[1];
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+    struct config_option opt;
+#endif
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&new_rate, (bool *)&new_rate_set, "new baud rate");
@@ -500,6 +515,14 @@ do_baud_rate(int argc, char *argv[])
     CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
     if (new_rate_set) {
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+        opt.type = CONFIG_INT;
+        opt.enable = (char *)0;
+        opt.enable_sense = 1;
+        opt.key = "console_baud_rate";
+        opt.dflt = new_rate;
+        flash_add_config(&opt);
+#endif
         set_console_baud_rate(new_rate);
     } else {
         ret = CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_GETBAUD);

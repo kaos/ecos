@@ -244,6 +244,7 @@ int usm_process_in_msg (int, size_t, u_char *, int, int, u_char *, size_t,
 			    size_t *, void **);
 
 int             usm_check_secLevel(int level, struct usmUser *user);
+void            usm_update_engine_time(void);
 struct usmUser *usm_get_userList(void);
 struct usmUser *usm_get_user(u_char *engineID, size_t engineIDLen, char *name);
 struct usmUser *usm_get_user_from_list(u_char *engineID, size_t engineIDLen,

@@ -93,6 +93,19 @@
 
 //#define DEBUG_INIT
 
+// Special image header - required when run via Parrot loader
+#ifdef CYGSEM_HAL_PARROT_BOOT
+#define PLATFORM_PREAMBLE _platform_preamble
+        .macro  _platform_preamble
+        b       100f
+        .org    0x40
+        .long   0x43454345      // CECE
+        .long   0x8C0B3000      // Unknown magic
+        .org    0x1000
+100:            
+        .endm
+#endif
+
         .macro  InitUART3
 #define EGPIOBase 0x49000000
 #define EGPIO_BITSY_RS232_ON     (1 << 7)   /* UART3 transceiver force on.  Active high. */

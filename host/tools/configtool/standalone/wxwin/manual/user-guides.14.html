@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML EXPERIMENTAL 970324//EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="cygnus.css">
+<TITLE> Managing the Package Repository</TITLE></HEAD>
+<BODY BGCOLOR="#ffffff">
+<DIV>
+<TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">Managing the Package Repository</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.13.html">To&nbsp;previous&nbsp;page</A></P></TD><TD ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.15.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE><P ALIGN="LEFT">&nbsp;</P><BR><BR><HR ALIGN="center"></DIV>
+<H2 CLASS="ChapterTitle">
+<A NAME="pgfId=1137700">
+ </A>
+<A NAME="34759">
+ </A>
+Managing the <A NAME="marker=1137699">
+ </A>
+Package Repository<DIV>
+<IMG SRC="botclear.gif">
+</DIV>
+</H2>
+<P CLASS="Body">
+<A NAME="pgfId=1137701">
+ </A>
+A source distribution of eCos consists of a number of packages, such as the kernel, the C library, and the <EM CLASS="FmSymbol">
+&#181</EM>
+ITRON subsystems. These are individually versioned in the tree structure of the source code, to support distribution on a per-package basis and to support third party packages whose versioning systems might be different. The <SPAN CLASS="Bold">
+eCos</SPAN>
+ <SPAN CLASS="Bold">
+Package Administration Tool</SPAN>
+ is used to manage the installation and removal of packages from a variety of sources with potentially multiple versions.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137702">
+ </A>
+The presence of the version information in the source tree structure might be a hindrance to the use of a separate source control system such as <SPAN CLASS="Bold">
+CVS</SPAN>
+ or <SPAN CLASS="Bold">
+SourceSafe</SPAN>
+<EM CLASS="FmSymbol">
+&#153.</EM>
+ To work in this way, you can rename all the version components to some common name (such as &quot;current&quot;) thus unifying the structure of source trees from distinct eCos releases.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137703">
+ </A>
+The eCos build system will treat any such name as just another version of the package(s), and support building in exactly the same way. However, performing this rename invalidates any existing build trees that referred to the versioned source tree, so do the rename first, before any other work, and do a complete rebuild afterwards.</P>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1137704">
+ </A>
+Package Installation</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1137705">
+ </A>
+Package installation and removal is performed using the <SPAN CLASS="BOLD">
+eCos Package Adminstration Tool.</SPAN>
+ This tool is a Tcl script named <TT CLASS="Code">
+ecosadmin.tcl</TT>
+ which allows the user to add new eCos packages and new versions of existing packages to an eCos repository. Such packages must be distributed as a single file in the eCos package distribution format. Unwanted packages may also be removed from the repository using this tool. A graphical version of the tool is provided as part of the <SPAN CLASS="Bold">
+eCos</SPAN>
+ <SPAN CLASS="BOLD">
+Developer's Kit.</SPAN>
+</P>
+<H4 CLASS="Heading3">
+<A NAME="pgfId=1150731">
+ </A>
+Using the Administration Tool</H4>
+<P CLASS="Body">
+<A NAME="pgfId=1150747">
+ </A>
+The graphical version of the <SPAN CLASS="BOLD">
+eCos Package Administration Tool,</SPAN>
+ provided as part of the <SPAN CLASS="BOLD">
+eCos Developer's Kit,</SPAN>
+ provides functions equivalent to the command-line version for those who prefer a Windows-based interface.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1150750">
+ </A>
+It may be invoked in one of two ways:</P>
+<UL>
+<P><P><LI>
+<A NAME="pgfId=1150752">
+ </A>
+from the start menu (by default <SPAN CLASS="Bold">
+Start<IMG SRC="pix/arrow.gif">Programs<IMG SRC="pix/arrow.gif">Red Hat eCos<IMG SRC="pix/arrow.gif">Package Administration Tool</SPAN>
+)</LI>
+<P><P><LI>
+<A NAME="pgfId=1150755">
+ </A>
+from the eCos<SPAN CLASS="Bold">
+ </SPAN>
+Configuration Tool<SPAN CLASS="Bold">
+ </SPAN>
+via the <SPAN CLASS="Bold">
+Tools<IMG SRC="pix/arrow.gif">Administration</SPAN>
+ menu item</LI>
+</UL>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1150958">
+ </A>
+</P>
+<DIV>
+<IMG SRC="pix/admin.gif">
+</DIV>
+<P CLASS="Body">
+<A NAME="pgfId=1150758">
+ </A>
+The main window of the tool displays the packages which are currently installed in the form of a tree. The installed versions of each package may be examined by expanding the tree.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1150762">
+ </A>
+Packages may be added to the eCos repository by clicking on the <SPAN CLASS="Bold">
+Add</SPAN>
+ button. The eCos package distribution file to be added is then selected via a <SPAN CLASS="Bold">
+File Open</SPAN>
+ dialog box.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1150810">
+ </A>
+Packages may be removed by selecting a package in the tree and then clicking on the <SPAN CLASS="Bold">
+Remove</SPAN>
+ button. If a package node is selected, all versions of the selected package will be removed. If a package version node is selected, only the selected version of the package will be removed.</P>
+<H4 CLASS="Heading3">
+<A NAME="pgfId=1150811">
+ </A>
+Using the command line</H4>
+<P CLASS="Body">
+<A NAME="pgfId=1150812">
+ </A>
+The <TT CLASS="Code">
+ecosadmin.tcl</TT>
+ script is located in the base of the eCos repository. Use a command of the following form under versions of UNIX:</P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137707"> </A>
+<TT CLASS="Code">$ tclsh ecosadmin.tcl &lt;command&gt;</TT>
+</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137708">
+ </A>
+Under Windows, a command of the following form may be used at the Cygwin command line prompt:</P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137709"> </A>
+<TT CLASS="Code">$ cygtclsh80 ecosadmin.tcl &lt;command&gt;</TT>
+</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137710">
+ </A>
+The following commands are available:</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137712">
+ </A>
+<TT CLASS="Code">
+add &lt;file&gt;</TT>
+ <A NAME="marker=1137711">
+ </A>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137713">
+ </A>
+Adds the packages contained with the specified package distribution file to the eCos repository and updates the package database accordingly. By convention, eCos package distribution files are given the <TT CLASS="Code">
+.epk</TT>
+ suffix.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137715">
+ </A>
+<TT CLASS="Code">
+remove &lt;package&gt; [ --version=&lt;version&gt; ]</TT>
+ <A NAME="marker=1137714">
+ </A>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137716">
+ </A>
+Removes the specified package from the eCos repository and updates the package database accordingly. Where the optional version qualifier is used, only the specified version of the package is removed.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137718">
+ </A>
+<TT CLASS="Code">
+list</TT>
+ <A NAME="marker=1137717">
+ </A>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137719">
+ </A>
+Produces a list of the packages which are currently installed and their versions. The available templates and hardware targets are also listed.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137720">
+ </A>
+Note that is is possible to remove critical packages such as the common HAL package using this tool. Users should take care to avoid such errors since core eCos packages may only be re-installed in the context of a complete re-installation of eCos.</P>
+</DIV>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1137721">
+ </A>
+Package Structure</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1137722">
+ </A>
+The files in an installed eCos source tree are organized in a natural tree structure, grouping together files which work together into <EM CLASS="Emphasis">
+Packages.</EM>
+ For example, the kernel files are all together in: </P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137726"> </A>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/kernel/</TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+/include/
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/kernel/</TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+/src/
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/kernel/</TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+/tests/
+	</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137733">
+ </A>
+and <EM CLASS="FmSymbol">
+&#181</EM>
+ITRON compatibility layer files are in: </P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137737"> </A>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/compat/uitron/</TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+/include/
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/compat/uitron/</TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+/src/
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/compat/uitron/</TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+/tests/
+	</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137744">
+ </A>
+The feature of these names which is of interest here is the v1_3_x near the end. If you start using eCos after the Version 1.2 release, you might see a different name here, e.g. v1_4 for version 1.4; if you received pre-release Beta versions you might have seen v0_2 or v0_3 for versions 0.2 and 0.3. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137745">
+ </A>
+It may seem odd to place a version number deep in the path, rather than having something like <KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<TT CLASS="Code">
+/</TT>
+<EM CLASS="Filename22">
+v1_3_x</EM>
+<TT CLASS="Code">
+/...everything...</TT>
+</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137749">
+ </A>
+or leaving it up to you to choose a different install-place when a new release of the system arrives. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137750">
+ </A>
+There is a rationale for this organization: as indicated, the kernel and the <EM CLASS="FmSymbol">
+&#181</EM>
+ITRON compatibility subsystem are examples of software packages. For the first few releases of eCos, all the Red Hat packages will move along in step, i.e. Release 1.3.x will feature Version 1.3.x of every package, and so forth. But in future, especially when third party packages become available, it is intended that the package be the unit of software distribution, so it will be possible to build a system from a selection of packages with different version numbers, and even differing versioning <EM CLASS="Emphasis">
+schemes.</EM>
+ A Tcl script <TT CLASS="Code">
+ecosadmin.tcl</TT>
+ is provided in the eCos repository to manage the installation and removal of packages in this way.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137757">
+ </A>
+Many users will have their own source code control system, version control system or equivalent, and will want to use it with eCos sources. In that case, since a new release of eCos comes with different pathnames for all the source files, a bit of work is necessary to import a new release into your source repository. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137758">
+ </A>
+One way of handling the import is to rename all the version parts to some common name, for example &quot;current&quot;, and continue to work. &quot;current&quot; is suggested because <TT CLASS="Code">
+ecosconfig</TT>
+ recognizes it and places it first in any list of versions. In the future, Red Hat may provide a tool to help with this, or an option in the install wizard. Alternatively, in a POSIX shell environment (Linux or Cygwin on Windows) use the following command: </P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137762"> </A>
+<TT CLASS="Code">find . -name </TT>
+<EM CLASS="Prompt">v1_3_x</EM>
+<TT CLASS="Code"> -type d -printf 'mv %p %h/current\n' | sh
+</TT>
+	</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137763">
+ </A>
+Having carried out such a renaming operation, your source tree will now look like this: </P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137764"> </A>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/kernel/current/include/
+</TT>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/kernel/current/src/
+</TT>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/kernel/current/tests/
+</TT>
+	...
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/compat/uitron/current/include/
+</TT>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/compat/uitron/current/src/
+</TT>
+<KBD CLASS="CodeVariant">BASE_DIR</KBD>
+<TT CLASS="Code">/compat/uitron/current/tests/
+</TT>
+	</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137765">
+ </A>
+which is a suitable format for import into your own source code control system. When you get a subsequent release of eCos, do the same thing and use your own source code control system to manage the new source base, by importing the new version from </P>
+<PRE CLASS="CodeExample"><A NAME="pgfId=1137766"> </A>
+	<KBD CLASS="CodeVariant">NEW_BASE_DIR</KBD>
+/kernel/current/include/
+	</PRE>
+<P CLASS="Body">
+<A NAME="pgfId=1137767">
+ </A>
+and so on. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137768">
+ </A>
+The eCos build tool will now offer only the &quot;current&quot; version of each package; select this for the packages you wish to use. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137769">
+ </A>
+Making such a change has implications for any build trees you already have in use. A configured build tree contains information about the selected packages and their selected versions. Changing the name of the &quot;versioning&quot; folder in the source tree invalidates this information, and in consequence it also invalidates any local configuration options you have set up in this build tree. So if you want to change the version information in the source tree, do it first, before investing any serious time in configuring and building your system. When you create a new build tree to deal with the new source layout, it will contain default settings for all the configuration options, just like the old build tree did before you configured it. You will need to redo that configuration work in the new tree. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137770">
+ </A>
+Moving source code around also invalidates debugging information in any programs or libraries built from the old tree; these will need to be rebuilt. </P>
+</DIV>
+<HR ALIGN="center"><TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">Managing the Package Repository</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.13.html">To&nbsp;previous&nbsp;page</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.15.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE></BODY>
+</HTML>

@@ -47,6 +47,7 @@ cdl_package CYGPKG_DEVS_FLASH_STRATA {
     active_if	  CYGPKG_IO_FLASH
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
 
     active_if     CYGINT_DEVS_FLASH_STRATA_REQUIRED
 

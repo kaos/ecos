@@ -1,3 +1,9 @@
+2001-05-21  Bart Veer  <bartv@redhat.com>
+
+	* host/ecos_usbeth.c (ecos_usbeth_start_tx):
+	Cope with targets that have problems receiving zero-byte
+	packets.
+
 2001-02-02  Bart Veer  <bartv@redhat.com>
 
 	* cdl/usbs_eth.cdl:

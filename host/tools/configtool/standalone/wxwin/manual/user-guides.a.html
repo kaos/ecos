@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML EXPERIMENTAL 970324//EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="cygnus.css">
+<TITLE> Building</TITLE></HEAD>
+<BODY BGCOLOR="#ffffff">
+<DIV>
+<TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">Building</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.9.html">To&nbsp;previous&nbsp;page</A></P></TD><TD ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.b.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE><P ALIGN="LEFT">&nbsp;</P><BR><BR><HR ALIGN="center"></DIV>
+<H2 CLASS="ChapterTitle">
+<A NAME="pgfId=1118060">
+ </A>
+<A NAME="BUILD-TAB">
+ </A>
+<A NAME="_Toc445367133">
+ </A>
+<A NAME="marker=1154182">
+ </A>
+Building<DIV>
+<IMG SRC="botclear.gif">
+</DIV>
+</H2>
+<P CLASS="Body">
+<A NAME="pgfId=1118062">
+ </A>
+When you have configured eCos, you may build the configuration.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1144426">
+ </A>
+On the <SPAN CLASS="Bold">
+Build</SPAN>
+ menu, click:</P>
+<UL>
+<P><P><LI>
+<A NAME="pgfId=1144427">
+ </A>
+			<SPAN CLASS="Bold">
+Library</SPAN>
+ (or click the Build Library icon on the toolbar) - this causes the eCos configuration to be built. The result of a successful build will be (among other things) a library against which user code can be linked</LI>
+<P><P><LI>
+<A NAME="pgfId=1144428">
+ </A>
+			<SPAN CLASS="Bold">
+Tests</SPAN>
+ - this causes the eCos configuration to be built, and additionally builds the relevant test cases linked against the eCos library</LI>
+<P><P><LI>
+<A NAME="pgfId=1144429">
+ </A>
+			<SPAN CLASS="Bold">
+Clean</SPAN>
+ - this removes all intermediate files, thus causing a subsequent build/library or build/tests operation to cause recompilation of all relevant files.</LI>
+<P><P><LI>
+<A NAME="pgfId=1144430">
+ </A>
+			<SPAN CLASS="Bold">
+Stop</SPAN>
+ - this causes a currently executing build (any of the above steps) to be interrupted</LI>
+</UL>
+<P CLASS="Body">
+<A NAME="pgfId=1144431">
+ </A>
+Build options may be displayed by using the <SPAN CLASS="Bold">
+Build<IMG SRC="pix/arrow.gif">Options</SPAN>
+ menu item. This displays a dialog box containing a drop-list control and two windows. The drop-list control allows you to select the type of build option to be displayed (for example &quot;LDFLAGS&quot; are the options applied at link-time. The left-hand window is a tree view of the packages loaded in the current configuration. The right-hand window is a list of the build options that will be used for the currently selected package.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1144432">
+ </A>
+Note that this dialog box currently affords only read-only access to the build options. In order to change build options you must edit the relevant string configuration item.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1144433">
+ </A>
+A single level of inheritance is supported: each package's build options are combined with the global options (these are to be found in the &quot;Global build options&quot; folder in the configuration view).</P>
+<P CLASS="Body">
+<A NAME="pgfId=1154280">
+ </A>
+</P>
+<DIV>
+<IMG SRC="pix/buildoptions.gif">
+</DIV>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1144435">
+ </A>
+<A NAME="_Toc445367134">
+ </A>
+Selecting <A NAME="marker=1150569">
+ </A>
+Build Tools</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1144437">
+ </A>
+Normally the installation process will supply the information required for the eCos<SPAN CLASS="Bold">
+ </SPAN>
+Configuration Tool to locate the build tools (compiler, linker, etc...) necessary to perform a build. However if this information is not registered, or it is necessary to specify the location manually (for example, when a new toolchain installation has been made), select <SPAN CLASS="Bold">
+Tools</SPAN>
+<IMG SRC="pix/arrow.gif"><SPAN CLASS="Bold">
+Paths</SPAN>
+<IMG SRC="pix/arrow.gif"><SPAN CLASS="BOLD">
+Build Tools.</SPAN>
+ The following dialog box will be displayed:</P>
+<P CLASS="FigureTitle">
+<A NAME="pgfId=1144441">
+ </A>
+Build tools </P>
+<DIV>
+<IMG SRC="pix/build-tools2.gif">
+</DIV>
+<P CLASS="Body">
+<A NAME="pgfId=1144442">
+ </A>
+This dialog box allows you to locate the folder containing the build tools. </P>
+</DIV>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1144444">
+ </A>
+<A NAME="_Toc445367135">
+ </A>
+Selecting <A NAME="marker=1150599">
+ </A>
+User Tools</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1144446">
+ </A>
+Normally the installation process will supply the information required for the eCos<SPAN CLASS="Bold">
+ </SPAN>
+Configuration Tool to locate the user tools (cat, ls, etc...) necessary to perform a build. However if this information is not registered, or it is necessary to specify the location manually (for example, when a new toolchain installation has been made), select <SPAN CLASS="Bold">
+Tools</SPAN>
+<IMG SRC="pix/arrow.gif"><SPAN CLASS="Bold">
+Paths</SPAN>
+<IMG SRC="pix/arrow.gif"><SPAN CLASS="BOLD">
+User Tools.</SPAN>
+ The following dialog box will be displayed:</P>
+<P CLASS="FigureTitle">
+<A NAME="pgfId=1144450">
+ </A>
+User tools </P>
+<DIV>
+<IMG SRC="pix/user-tools-dialog.gif">
+</DIV>
+<TABLE>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<HR ALIGN="center"><TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">Building</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.9.html">To&nbsp;previous&nbsp;page</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.b.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE></BODY>
+</HTML>

@@ -1,3 +1,32 @@
+2001-05-29  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/snmpping.c (net_test): Committed the improved version of
+	this that I've been using for a while - with new improved SNMPv3
+	testing.  This requires (in the current setup) explicit init of
+	the SNMPv3 MIBs and a "user" for authentication purposes.  The
+	test can also be set to run the interfaces in promiscuous mode,
+	and/or to run forever, and it has lots better diagnostics if you
+	see mangled ping packets.  And the ping size varies too, to test
+	ICMP defragmentation.
+
+2001-05-29  Hugo Tyson  <hmt@redhat.com>
+2001-05-28  Manu Sharma <Manu.Sharam@ascom.ch>
+2001-05-28  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/mibgroup/mibII/interfaces.c (var_ifTable): Support a direct
+	call into a customer's device ioctl() for devices of type
+	IFT_CUSTOMER_SPECIAL - if they have defined it.  This is to make
+	it easier to add a custom interface type and have SNMP deal with
+	it properly without editting the SNMP sources.
+
+	* include/snmpEngine.h, include/usmState.h, include/usmUser.h:
+	* src/mibgroup/snmpv3/snmpEngine.c, src/mibgroup/snmpv3/usmStats.c:
+	* src/mibgroup/snmpv3/usmUser.c: NEW FILES: Added support of
+	SNMPv3 User based Security Module (USM). This adds
+	authentification and encryption to snmp requests and replies.
+
+	* cdl/snmpagent.cdl: Build the new files above.
+
 2001-05-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* utils/mib2c/README-eCos: Clarify usage of mib2c a bit.

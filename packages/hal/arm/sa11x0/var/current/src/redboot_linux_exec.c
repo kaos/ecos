@@ -263,14 +263,18 @@ do_exec(int argc, char *argv[])
 
     if (wait_time_set) {
         int script_timeout_ms = wait_time * 1000;
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
         unsigned char *hold_script = script;
+        script = (unsigned char *)0;
+#endif
         printf("About to start execution at %p - abort with ^C within %d seconds\n",
                (void *)entry, wait_time);
-        script = (unsigned char *)0;
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
             res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res == _GETS_CTRLC) {
+#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
                 script = hold_script;  // Re-enable script
+#endif
                 return;
             }
             script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;

@@ -226,7 +226,7 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
             display "Global command prefix"
             flavor  data
             no_define
-            default_value { "v850e-elf" }
+            default_value { "v850-elf" }
             description "
                 This option specifies the command prefix used when
                 invoking the build tools."
@@ -236,7 +236,7 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
             display "Global compiler flags"
             flavor  data
             no_define
-            default_value { "-mv850 -Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
+            default_value { "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fvtable-gc -finit-priority" }
             description   "
                 This option controls the global compiler flags which
                 are used to compile all packages by

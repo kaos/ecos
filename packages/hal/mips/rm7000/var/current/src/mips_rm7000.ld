@@ -21,7 +21,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -191,6 +191,7 @@ GROUP(libtarget.a libgcc.a)
     {                                                 \
       __ram_data_start = ABSOLUTE (.); _fdata = . ;   \
       *(.data) *(.data.*) *(.gnu.linkonce.d*)         \
+      *( .2ram.*)                                     \
     . = ALIGN (8);                                    \
     SORT(CONSTRUCTORS)                                \
     } > _region_                                      \

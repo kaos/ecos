@@ -1,3 +1,7 @@
+2001-05-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_io.h: Added. Includes plf_io.h
+
 2001-03-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/var_misc.c: Ensure case ranges have spaces around identifiers

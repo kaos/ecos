@@ -48,7 +48,6 @@ cdl_package CYGPKG_DEVS_FLASH_AMD_AM29XXXXX {
     active_if     CYGINT_DEVS_FLASH_AMD_AM29XXXXX_REQUIRED
 
     implements    CYGHWR_IO_FLASH_DEVICE
-    implements    CYGHWR_IO_FLASH_DEVICE_IN_RAM
 
     include_dir   cyg/io
 }

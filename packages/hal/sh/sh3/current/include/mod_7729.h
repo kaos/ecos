@@ -57,6 +57,7 @@
 #define CYGARC_SH_MOD_SCIF 1
 #define CYGARC_SH_MOD_UBC  3
 
+
 //-----------------------------------------------------------------------------
 // Extra details for Cache Module (CAC)
 

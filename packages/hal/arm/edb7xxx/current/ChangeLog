@@ -1,3 +1,7 @@
+2001-05-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_platform_setup.h: Use correct 7209 define.
+
 2001-05-01  Gary Thomas  <gthomas@redhat.com>
 
 	* misc/edb7212_redboot_ROM.ecm: 

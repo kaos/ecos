@@ -1,0 +1,540 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML EXPERIMENTAL 970324//EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="cygnus.css">
+<TITLE> CDL Concepts</TITLE></HEAD>
+<BODY BGCOLOR="#ffffff">
+<DIV>
+<TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">CDL Concepts</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.d.html">To&nbsp;previous&nbsp;page</A></P></TD><TD ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.f.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE><P ALIGN="LEFT">&nbsp;</P><BR><BR><HR ALIGN="center"></DIV>
+<H2 CLASS="ChapterTitle">
+<A NAME="pgfId=1151526">
+ </A>
+<A NAME="40966">
+ </A>
+CDL Concepts<DIV>
+<IMG SRC="botclear.gif">
+</DIV>
+</H2>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151527">
+ </A>
+About this Chapter</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151528">
+ </A>
+This chapter serves as a brief introduction to the concepts involved in eCos (Embedded Configurable Operating System).  It describes the configuration architecture and the underlying technology to a level required for the embedded systems developer to configure eCos.  It does not describe in detail aspects such as how to write reusable components for eCos: this information is given in the <EM CLASS="Emphasis">
+CDL Writer's Guide.</EM>
+</P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151529">
+ </A>
+Background</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151530">
+ </A>
+Software solutions for the embedded space place particularly stringent demands on the developer, typically represented as requirements for small memory footprint, high performance and robustness.  These demands are addressed in eCos by providing the ability to perform compile-time specialization: the developer can tailor the operating system to suit the needs of the application.  In order to make this process manageable, eCos is built in the context of a Configuration Infrastructure: a set of tools including a <EM CLASS="Emphasis">
+Configuration Tool</EM>
+ and a formal description of the process of configuration by means of a <EM CLASS="Emphasis">
+Component Definition Language.</EM>
+</P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151531">
+ </A>
+Configurations</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151532">
+ </A>
+eCos is tailored at source level (that is, before compilation or assembly) in order to create an eCos <EM CLASS="Emphasis">
+configuration.</EM>
+  In concrete terms, an eCos configuration takes the form of a configuration save file (with extension .ecc) and set of files used to build user applications (including, when built, a library file against which the application is linked). </P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151533">
+ </A>
+Component Repository</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151534">
+ </A>
+eCos is shipped in source in the form of a <EM CLASS="Emphasis">
+component repository</EM>
+ - a directory hierarchy that contains the sources and other files which are used to build a configuration.  The component repository can be added to by, for example, downloading from the net.</P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151535">
+ </A>
+Component Definition Language</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151536">
+ </A>
+Part of the component repository is a set of files containing a definition of its structure.  The form used for this purpose is the <EM CLASS="Emphasis">
+Component Definition Language</EM>
+ (CDL).  CDL defines the relationships between components and other information used by tools such as the eCos<SPAN CLASS="Bold">
+ </SPAN>
+Configuration Tool.  CDL is generally formulated by the writers of components: it is not necessary to write or understand CDL in order for the embedded systems developer to construct an eCos configuration. </P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151537">
+ </A>
+Packages</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151538">
+ </A>
+The building blocks of an eCos configuration are called <EM CLASS="Emphasis">
+packages.</EM>
+  Packages are the units of software distribution.  A set of core packages (such as kernel, C library and math library) is provided by Red Hat: additional third-party packages will be available in future.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1151539">
+ </A>
+A package may exist in one of a number of <EM CLASS="Emphasis">
+versions.</EM>
+  The default version is the <EM CLASS="Emphasis">
+current</EM>
+ version.  Only one version of a given package may be present in the component repository at any given time.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1151540">
+ </A>
+Packages are organized in a tree hierarchy.  Each package is either at the top-level or is the child of another package.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1151541">
+ </A>
+The eCos Administration Tool can be used to add or remove packages from the component repository.  The eCos<SPAN CLASS="Bold">
+ </SPAN>
+Configuration Tool can be used to include or exclude packages from the configuration being built.</P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151542">
+ </A>
+ Configuration Items</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151543">
+ </A>
+<EM CLASS="Emphasis">
+Configuration items</EM>
+ are the individual entities that form a configuration.  Each item corresponds to the setting of a C pre-processor macro (for example, CYGHWR_HAL_ARM_PID_GDB_BAUD).  The code of eCos itself is written to test such preprocessor macros so as to tailor the code.  User code can do likewise.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1151544">
+ </A>
+Configuration items come in the following flavors:</P>
+<UL>
+<P><P><LI>
+<A NAME="pgfId=1151545">
+ </A>
+<EM CLASS="Emphasis">
+None</EM>
+: such entities serve only as placeholders in the hierarchy, allowing other entities to be grouped more easily.</LI>
+<P><P><LI>
+<A NAME="pgfId=1151546">
+ </A>
+<EM CLASS="Emphasis">
+Boolean</EM>
+ entities are the most common flavor; they correspond to units of functionality that can be either enabled or disabled.  If the entity is enabled then there will be a #define; code will check the setting using, for example, #ifdef</LI>
+<P><P><LI>
+<A NAME="pgfId=1151547">
+ </A>
+<EM CLASS="Emphasis">
+Data</EM>
+ entities encapsulate some arbitrary data. Other properties such as a set or range of legal values can be used to constrain the actual values, for example to an integer or floating point value within a certain range.</LI>
+<P><P><LI>
+<A NAME="pgfId=1151548">
+ </A>
+<EM CLASS="Emphasis">
+Booldata</EM>
+ entities combine the attributes of <EM CLASS="Emphasis">
+Boolean</EM>
+ and <EM CLASS="Emphasis">
+Data</EM>
+: they can be enabled or disabled and, if enabled, will hold a data value.</LI>
+</UL>
+<P CLASS="Body">
+<A NAME="pgfId=1151549">
+ </A>
+Like packages, configuration items exist in a tree-based hierarchy: each configuration item has a parent which may be another configuration item or a package.  Under some conditions (such as when packages are added or removed from a configuration), items may be &quot;re-parented&quot; such that their position in the tree changes. </P>
+<H4 CLASS="Heading3">
+<A NAME="pgfId=1151550">
+ </A>
+Expressions</H4>
+<P CLASS="Body">
+<A NAME="pgfId=1151551">
+ </A>
+Expressions are relationships between CDL items.  There are three types of expression in CDL:</P>
+<TABLE>
+<CAPTION>
+<P CLASS="TableTitle">
+<A NAME="pgfId=1151554">
+ </A>
+CDL Expressions</P>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151560">
+ </A>
+<SPAN CLASS="Bold">
+Expression Type</SPAN>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151562">
+ </A>
+<SPAN CLASS="Bold">
+Result</SPAN>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151564">
+ </A>
+<SPAN CLASS="Bold">
+Common Use [see Table 2] </SPAN>
+</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151566">
+ </A>
+Ordinary</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151568">
+ </A>
+A single value</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151570">
+ </A>
+legal_values property</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151572">
+ </A>
+List</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151574">
+ </A>
+A range of values (for example &quot;1 to 10&quot;)</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151576">
+ </A>
+legal_values property </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151578">
+ </A>
+Goal</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151580">
+ </A>
+True or False</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151582">
+ </A>
+requires and active_if properties</P>
+</TD>
+</TR>
+</TABLE>
+<H4 CLASS="Heading3">
+<A NAME="pgfId=1151583">
+ </A>
+Properties</H4>
+<P CLASS="Body">
+<A NAME="pgfId=1151584">
+ </A>
+Each configuration item has a set of properties.  The following table describes the most commonly used:</P>
+<TABLE>
+<CAPTION>
+<P CLASS="TableTitle">
+<A NAME="pgfId=1151587">
+ </A>
+Configuration properties</P>
+</CAPTION>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151591">
+ </A>
+<SPAN CLASS="Bold">
+Property</SPAN>
+</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151593">
+ </A>
+<SPAN CLASS="Bold">
+Use </SPAN>
+</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151595">
+ </A>
+Flavor</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151597">
+ </A>
+The &quot;type&quot; of the item, as described above </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151599">
+ </A>
+Enabled</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151601">
+ </A>
+Whether the item is enabled </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151603">
+ </A>
+Current_value</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151605">
+ </A>
+The current value of the item </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151607">
+ </A>
+Default_value</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151609">
+ </A>
+An ordinary expression defining the default value of the item</P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151611">
+ </A>
+Legal_values</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151613">
+ </A>
+A list expression defining the values the item may hold (for example, 1 to10) </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151615">
+ </A>
+Active_if</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151617">
+ </A>
+A goal expression denoting the requirement for this item to be active (see below: <EM CLASS="Emphasis">
+Inactive Items</EM>
+) </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151619">
+ </A>
+Requires</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151621">
+ </A>
+A goal expression denoting requirements this item places on others (see below: <EM CLASS="Emphasis">
+Conflicts</EM>
+) </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151623">
+ </A>
+Calculated</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151625">
+ </A>
+Whether the item as non-modifiable </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151627">
+ </A>
+Macro</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151629">
+ </A>
+The corresponding C pre-processor macro </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151631">
+ </A>
+File</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151633">
+ </A>
+The C header file in which the macro is defined </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151635">
+ </A>
+URL</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151637">
+ </A>
+The URL of a documentation page describing the item </P>
+</TD>
+</TR>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151639">
+ </A>
+Hardware</P>
+</TD>
+<TD ROWSPAN="1" COLSPAN="1">
+<P CLASS="CellBody">
+<A NAME="pgfId=1151641">
+ </A>
+Indicates that a particular package is related to specific hardware</P>
+</TD>
+</TR>
+</TABLE>
+<P CLASS="Body">
+<A NAME="pgfId=1151642">
+ </A>
+A complete description of properties is contained in the <EM CLASS="Emphasis">
+CDL Writer's Guide.</EM>
+</P>
+<H4 CLASS="Heading3">
+<A NAME="pgfId=1151643">
+ </A>
+Inactive Items</H4>
+<P CLASS="Body">
+<A NAME="pgfId=1151644">
+ </A>
+Descendants of an item that is disabled are inactive: their values may not be changed.  Items may also become <EM CLASS="Emphasis">
+inactive</EM>
+ if an active_if expression is used to make the item dependent on an expression involving other items. </P>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151645">
+ </A>
+Conflicts</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151646">
+ </A>
+Not all settings of configuration items will lead to a coherent configuration; for example, the use of a timeout facility might require the existence of timer support, so if the one is required the other cannot be removed.  Coherence is policed by means of consistency rules (in particular, the goal expressions that appear as CDL items <EM CLASS="Emphasis">
+requires</EM>
+ and <EM CLASS="Emphasis">
+active_if</EM>
+ attributes [see above]).  A violation of consistency rules creates a <EM CLASS="Emphasis">
+conflict,</EM>
+ which must be resolved in order to ensure a consistent configuration.  Conflict resolution can be performed manually or with the assistance of the eCos tools.  Conflicts come in the following flavors:</P>
+<UL>
+<P><P><LI>
+<A NAME="pgfId=1151647">
+ </A>
+An <EM CLASS="Emphasis">
+unresolved</EM>
+ conflict means that there is a reference to an entity that is not yet in the current configuration </LI>
+<P><P><LI>
+<A NAME="pgfId=1151648">
+ </A>
+An <EM CLASS="Emphasis">
+illegal value</EM>
+ conflict is caused when a configuration item is set to a value that is not permitted (that is, a <EM CLASS="Emphasis">
+legal_values</EM>
+ goal expression is failing) </LI>
+<P><P><LI>
+<A NAME="pgfId=1151649">
+ </A>
+An <EM CLASS="Emphasis">
+evaluation exception</EM>
+ conflict is caused when the evaluation of an expression would fail (for example, because of a division by zero) </LI>
+<P><P><LI>
+<A NAME="pgfId=1151650">
+ </A>
+An <EM CLASS="Emphasis">
+unsatisfied goal</EM>
+ conflict is caused by a failing <EM CLASS="Emphasis">
+requires</EM>
+ goal expression </LI>
+<P><P><LI>
+<A NAME="pgfId=1151651">
+ </A>
+A <EM CLASS="Emphasis">
+bad data</EM>
+ conflict arises only rarely, and corresponds to badly constructed CDL.  Such a conflict can only be resolved by reference to the CDL writer.</LI>
+</UL>
+<H3 CLASS="Heading2">
+<A NAME="pgfId=1151749">
+ </A>
+Templates</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1151410">
+ </A>
+A <EM CLASS="Emphasis">
+template</EM>
+ is a saved configuration - that is, a set of packages and configuration item settings.  Templates are provided with eCos to allow you to get started quickly by instantiating (copying) a saved configuration corresponding to one of a number of common scenarios; for example, a basic eCos configuration template is supplied that contains the infrastructure, kernel, C and math libraries, plus their support packages.</P>
+<TABLE>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+</TD>
+</TR>
+</TABLE>
+<HR ALIGN="center"><TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">CDL Concepts</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.d.html">To&nbsp;previous&nbsp;page</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.f.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE></BODY>
+</HTML>

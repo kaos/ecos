@@ -655,6 +655,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
             MCLGET(m, M_DONTWAIT);
             if ((m->m_flags & M_EXT) == 0) {
                 m_freem(top);
+                m_free(m);
 #ifdef CYGPKG_IO_ETH_DRIVERS_WARN_NO_MBUFS
                 diag_printf("warning: eth_recv out of MBUFs\n");
 #endif
@@ -674,7 +675,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         sg_len++;
         *mp = m;
         mp = &m->m_next;
-    }
+    } // endwhile
 
     // Ask hardware to unload buffers
     (sc->funs->recv)(sc, sg_list, sg_len);
@@ -749,7 +750,7 @@ void eth_drv_run_deliveries( void )
 #endif
             sc->state &=~ETH_DRV_NEEDS_DELIVERY;
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
-            was_ctrlc_int = HAL_CTRLC_CHECK((*sc->funs->int_vector)(sc), sc);
+            was_ctrlc_int = HAL_CTRLC_CHECK((*sc->funs->int_vector)(sc), (int)sc);
             if (!was_ctrlc_int) // Fall through and run normal code
 #endif
             (*sc->funs->deliver)(sc);

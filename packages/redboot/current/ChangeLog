@@ -1,3 +1,44 @@
+2001-05-29  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c (fis_load): Fix compiler warning.
+
+2001-05-25  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (set_console_baud_rate): Couldn't restore baud
+	rate to default value!
+	(do_baud_rate): Update baud rate in flash config database.
+
+	* src/flash.c (do_flash_config): Add "-i" option to force 
+	initialization of entire configuration database.
+	(do_alias): Improve handling of existing aliases.
+
+2001-05-24  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (get_config): 
+	(do_alias): Be more careful about length of strings accepted.
+
+	* cdl/redboot.cdl: Make 'fconfig' data space and strings larger.
+
+	* src/main.c (cyg_start): Expand aliases on input commands.
+
+	* src/flash.c: Add support for aliases (macros).  Also update
+	support for 'fconfig' strings.
+
+	* include/flash_config.h (MAX_STRING_LENGTH): Infer from CDL.
+
+	* cdl/redboot.cdl: Add options for [FLASH based] aliases.
+	Also, 'fconfig' now supports strings.
+
+2001-05-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: Fixed typo as below.
+
+2001-05-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/redboot.cdl: Fix typo: CYGSEM_REDBOOT_VARIBLE_BAUD_RATE ->
+	CYGSEM_REDBOOT_VARIABLE_BAUD_RATE
+	* src/main.c: Ditto.
+
 2001-05-17  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/tftp_client.c: include redboot.h for have_net.

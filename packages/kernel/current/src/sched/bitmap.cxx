@@ -142,9 +142,6 @@ void Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
                 "Run queue bit not set" );
 
     run_queue &= ~(1<<thread->priority);
-
-    if( thread == Cyg_Scheduler::get_current_thread() )
-        need_reschedule = true;
 }
 
 // -------------------------------------------------------------------------

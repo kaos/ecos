@@ -1,0 +1,389 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML EXPERIMENTAL 970324//EN">
+<HTML>
+<HEAD>
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="cygnus.css">
+<TITLE> The Component Repository and Working Directories</TITLE></HEAD>
+<BODY BGCOLOR="#ffffff">
+<DIV>
+<TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">The Component Repository and Working Directories</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.e.html">To&nbsp;previous&nbsp;page</A></P></TD><TD ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.10.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE><P ALIGN="LEFT">&nbsp;</P><BR><BR><HR ALIGN="center"></DIV>
+<H2 CLASS="ChapterTitle">
+<A NAME="pgfId=1151411">
+ </A>
+The Component Repository and Working Directories<DIV>
+<IMG SRC="botclear.gif">
+</DIV>
+</H2>
+<P CLASS="Body">
+<A NAME="pgfId=1137315">
+ </A>
+Each of the file trees involved in eCos development has a different role. </P>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1137316">
+ </A>
+Component Repository</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1137318">
+ </A>
+The eCos <A NAME="marker=1137317">
+ </A>
+component repository contains directories for all the packages that are shipped with eCos or provided by third parties.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137319">
+ </A>
+The component repository should not be modified as part of application development. </P>
+<P CLASS="FigureTitle">
+<A NAME="pgfId=1137323">
+ </A>
+Component repository</P>
+<DIV>
+<IMG SRC="pix/comprepos.gif">
+</DIV>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137324">
+ </A>
+Purpose</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137325">
+ </A>
+The component respository is the master copy of source code for all system and third party components. It also contains some files needed to administer and build the system, such as <TT CLASS="Code">
+ecosadmin.tcl</TT>
+.</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137326">
+ </A>
+How is it modified?</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137327">
+ </A>
+You modify it by importing new versions of packages from a distribution or removing existing packages. These activities are undertaken using the <SPAN CLASS="BOLD">
+eCos Package Administration Tool.</SPAN>
+</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137328">
+ </A>
+When is it edited manually?</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137329">
+ </A>
+Files in the component repository should only be edited manually as determined by the component maintainer.</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137330">
+ </A>
+User applications</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137331">
+ </A>
+User application source code should <EM CLASS="Emphasis">
+not</EM>
+ go into the component repository.</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137332">
+ </A>
+Examples of files in this hierarchy:</H5>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137333">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/doc/ref/ecos-ref.html</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137334">
+ </A>
+The top level HTML file for the <EM CLASS="ProductName">
+eCos</EM>
+<EM CLASS="Emphasis">
+ Reference Manual.</EM>
+ </P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137349">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/prebuilt/pid/tests/kernel/v1_3_x/tests/thread_gdb.exe </EM>
+</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1160115">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/prebuilt/linux/tests/kernel/v1_3_x/tests/thread_gdb.exe </EM>
+</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137350">
+ </A>
+Prebuilt tests for the supported platforms, and the synthetic Linux target.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137351">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/examples/twothreads.c</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137352">
+ </A>
+One of the example programs.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137353">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/ecosadmin.tcl</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137354">
+ </A>
+The Tcl program which is used to  import new versions of packages from a distribution or remove existing packages.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137358">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/packages/language/c/libm/</EM>
+<EM CLASS="Filename">
+v1_3_x</EM>
+<EM CLASS="Emphasis">
+/src/double/portable-api/s_tanh.c</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137359">
+ </A>
+Implementation of the hyperbolic tangent function in the standard math library.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137360">
+ </A>
+<KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<EM CLASS="Emphasis">
+/pkgconf/rules.mak</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137361">
+ </A>
+A file with <TT CLASS="Code">
+make</TT>
+ rules, used by the <TT CLASS="Code">
+makefile</TT>
+.</P>
+</DIV>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1137362">
+ </A>
+<A NAME="marker=1150625">
+ </A>
+Build Tree</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1137364">
+ </A>
+The <A NAME="marker=1137363">
+ </A>
+build tree is the directory hierarchy in which all <EM CLASS="Emphasis">
+generated</EM>
+ files are placed. Generated files consist of the <TT CLASS="Code">
+makefile</TT>
+, the compiled object files, and a dependency file (with a <TT CLASS="Code">
+.d</TT>
+ extension) for each source file.</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137369">
+ </A>
+Purpose</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137370">
+ </A>
+The build tree is where all intermediate object files are placed. </P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137371">
+ </A>
+How is it modified?</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137372">
+ </A>
+Recompiling can modify the object files.</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137373">
+ </A>
+User applications</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137374">
+ </A>
+User application source or binary code should <EM CLASS="Emphasis">
+not</EM>
+ go in the build tree. </P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137375">
+ </A>
+Examples of files in this hierarchy</H5>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137379">
+ </A>
+<EM CLASS="Emphasis">
+ecos-work/language/c/libc/</EM>
+v1_3_x/src 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137380">
+ </A>
+The directory in which object files for the C library are built.</P>
+</DIV>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1137381">
+ </A>
+<A NAME="marker=1154649">
+ </A>
+Install Tree</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1137383">
+ </A>
+The <A NAME="marker=1137382">
+ </A>
+install tree is the location for all files needed for application development. The <TT CLASS="Code">
+libtarget.a</TT>
+ library, which contains the custom-built eCos kernel and other components, is placed in the install tree, along with all packages' public header files. If you build the tests, the test executable programs will also be placed in the install tree. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137384">
+ </A>
+By default, the install tree is created by <TT CLASS="Code">
+ecosconfig</TT>
+ in a subdirectory of the build tree called <TT CLASS="Code">
+install</TT>
+. This can be modified with the <TT CLASS="Code">
+--prefix</TT>
+ option (see <A HREF="user-guides.13.html#41758" CLASS="XRef">
+ Manual Configuration</A>
+). </P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137392">
+ </A>
+Purpose</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137393">
+ </A>
+The install tree is where the custom-built <TT CLASS="Code">
+libtarget.a</TT>
+ library, which contains the eCos kernel and other components, is located. The install tree is also the location for all the header files that are part of a published interface for their component. </P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137394">
+ </A>
+How is it modified?</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137395">
+ </A>
+Recompiling can replace <TT CLASS="Code">
+libtarget.a</TT>
+ and the test executables. </P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137396">
+ </A>
+When is it edited manually?</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137397">
+ </A>
+Where a memory layout requires modification without use of the eCos Configuration Tool, the memory layout files must be edited directly in the install tree. These files are located at <TT CLASS="Code">
+install/include/pkgconf/mlt_*.*</TT>
+. Note that subsequent modification of the install tree using the Configuration Tool will result in such manual edits being lost.</P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137398">
+ </A>
+User applications</H5>
+<P CLASS="Body">
+<A NAME="pgfId=1137399">
+ </A>
+User application source or binary code should <EM CLASS="Emphasis">
+not</EM>
+ go in the install tree. </P>
+<H5 CLASS="Heading4">
+<A NAME="pgfId=1137400">
+ </A>
+Examples of files in this hierarchy</H5>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137401">
+ </A>
+<EM CLASS="Emphasis">
+install/lib/libtarget.a</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137402">
+ </A>
+The library containing the kernel and other components.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137403">
+ </A>
+<EM CLASS="Emphasis">
+install/include/cyg/kernel/kapi.h</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137404">
+ </A>
+The header file for the kernel C language API.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137405">
+ </A>
+<EM CLASS="Emphasis">
+install/include/pkgconf/mlt_arm_pid_ram.ldi</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137406">
+ </A>
+The linker script fragment describing the memory layout for linking applications intended for execution on an ARM PID development board using RAM startup.</P>
+<P CLASS="BodyHang1">
+<A NAME="pgfId=1137407">
+ </A>
+<EM CLASS="Emphasis">
+install/include/stdio.h</EM>
+ 	</P>
+<P CLASS="BodyListFollow">
+<A NAME="pgfId=1137408">
+ </A>
+The C library header file for standard I/O. </P>
+</DIV>
+<DIV>
+<H3 CLASS="Heading1">
+<A NAME="pgfId=1137410">
+ </A>
+<A NAME="marker=1137409">
+ </A>
+Application <A NAME="marker=1154658">
+ </A>
+Build Tree</H3>
+<P CLASS="Body">
+<A NAME="pgfId=1137411">
+ </A>
+This tree is not part of eCos itself: it is the directory in which eCos end users write their own applications.</P>
+<P CLASS="Body">
+<A NAME="pgfId=1137412">
+ </A>
+Example applications and their <TT CLASS="Code">
+Makefile</TT>
+ are located in the component repository, in the directory <KBD CLASS="CodeVariant">
+BASE_DIR</KBD>
+<TT CLASS="Code">
+/examples</TT>
+. </P>
+<P CLASS="Body">
+<A NAME="pgfId=1137413">
+ </A>
+There is no imposed format on this directory, but there are certain compiler and linker flags that must be used to compile an eCos application. The basic set of flags is shown in the example <TT CLASS="Code">
+Makefile</TT>
+, and additional details can be found in <A HREF="user-guides.10.html#40839" CLASS="XRef">
+ Compiler and Linker Options</A>
+. </P>
+<TABLE>
+<TR>
+<TD ROWSPAN="1" COLSPAN="1">
+</TD>
+</TR>
+</TABLE>
+</DIV>
+<HR ALIGN="center"><TABLE STYLE="ECOS" WIDTH="98%" BORDER="0" ALIGN="LEFT" CELLPADDING="1"><TR><TH COLSPAN="3" ALIGN="center"><P CLASS="Gotos">The Component Repository and Working Directories</P></TH></TR><TR><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.2.html">To Contents</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.e.html">To&nbsp;previous&nbsp;page</A></P></TD><TD  ALIGN="center"><P CLASS="Gotos"><A HREF="user-guides.10.html">To&nbsp;next&nbsp;page</A></P></TD></TR></TABLE></BODY>
+</HTML>

@@ -1,0 +1,1793 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<TITLE> Manual Configuration</TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Win32)">
+	<META NAME="CREATED" CONTENT="20010406;14183596">
+	<META NAME="CHANGEDBY" CONTENT="Julian Smart">
+	<META NAME="CHANGED" CONTENT="20010406;14201546">
+	<STYLE>
+	<!--
+		P.body { font-family: "Times New Roman"; font-size: 12pt; font-weight: medium; text-align: left; text-decoration: none }
+		P.bodyhang1 { margin-top: 0.11cm; font-family: "Times New Roman"; font-size: 12pt; font-weight: medium; text-align: left }
+		P.bodylistfollow { margin-left: 1.06cm; margin-top: 0.11cm; font-family: "Times New Roman"; font-size: 12pt; font-weight: medium; text-align: left }
+		H2.chaptertitle { margin-bottom: 0.04cm; color: #000077; font-family: "Arial"; font-size: 28pt; text-align: left; text-decoration: none }
+		P.exampletitle { font-family: "Times New Roman"; font-size: 12pt; text-align: left }
+		P.gotos { margin-top: 0.28cm; color: #000077; font-family: "Arial"; font-size: 10pt; text-decoration: none }
+		H3.heading1 { margin-right: 1.69cm; margin-bottom: 0.04cm; color: #000077; font-family: "Arial"; font-size: 22pt; text-align: left; text-decoration: none }
+		H3.heading2 { margin-top: 0.14cm; margin-bottom: 0.04cm; font-family: "Arial"; font-size: 16pt; text-align: left }
+		H4.heading3 { margin-top: 0.25cm; font-family: "Arial"; font-size: 14pt; text-align: left }
+		PRE.codeexample { margin-left: 0.56cm; margin-top: 0.04cm; margin-bottom: 0.04cm; font-family: "Courier"; font-size: 9pt; font-weight: medium; text-align: left; text-decoration: none }
+		PRE.codeexample2 { margin-left: 0.85cm; margin-top: 0.07cm; margin-bottom: 0.07cm; font-family: "Courier"; font-size: 9pt; font-weight: medium; text-align: left }
+		PRE.codeexamplewide { margin-top: 0.07cm; margin-bottom: 0.07cm; font-family: "Courier"; font-size: 9pt; font-weight: medium; text-align: left }
+		A:link { color: #0000ff }
+		A:visited { color: #800080 }
+		TT.code { font-family: "Courier"; font-size: 9pt; font-weight: medium }
+		EM.emphasis { font-family: "Times New Roman"; font-size: 12pt; font-weight: medium }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LINK="#0000ff" VLINK="#800080" BGCOLOR="#ffffff">
+<P ALIGN=LEFT><TABLE ALIGN=LEFT WIDTH=98% BORDER=0 CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD COLSPAN=3>
+			<P CLASS="gotos" ALIGN=CENTER>Manual Configuration</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.2.html">To
+			Contents</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.12.html">To&nbsp;previous&nbsp;page</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.14.html">To&nbsp;next&nbsp;page</A></P>
+		</TD>
+	</TR>
+</TABLE>&nbsp;</P>
+<P><BR><BR>
+</P>
+<HR>
+<H2 CLASS="chaptertitle" STYLE="margin-bottom: 0cm"><A NAME="pgfId=1137514"></A><A NAME="41758"></A>
+Manual Configuration</H2>
+<H2 CLASS="chaptertitle"><IMG SRC="botclear.gif" NAME="Graphic1" ALIGN=BOTTOM WIDTH=1024 HEIGHT=16 BORDER=0>
+</H2>
+<P CLASS="body"><A NAME="pgfId=1137515"></A>eCos developers using
+Windows NT or Linux can choose whether to use either the graphical
+Configuration Tool, or the command line <FONT FACE="Courier, monospace">ecosconfig</FONT>
+program, for configuring an eCos system and building the target
+library. The command line tools can also be used for batch operations
+on all platforms, for example as part of a nightly rebuild procedure.
+</P>
+<P CLASS="body"><A NAME="pgfId=1137516"></A>In the current release of
+the system the command line tools do not provide exactly the same
+functionality as the graphical tool. Most importantly, there is no
+facility to resolve configuration conflicts interactively.</P>
+<P CLASS="body"><A NAME="pgfId=1137517"></A>The eCos configuration
+system, both graphical and command line tools, are under constant
+development and enhancement. Developers should note that the
+procedures described may change considerably in future releases. 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1137518"></A>Directory Tree
+Structure</H3>
+<P CLASS="body"><A NAME="pgfId=1137519"></A>When building eCos there
+are three main directory trees to consider: the source tree, the
+build tree, and the install tree.</P>
+<P CLASS="body"><A NAME="pgfId=1137521"></A><A NAME="marker=1137520"></A>
+The source tree, also known as the component repository, is
+read-only. It is possible to use a single component repository for
+any number of different configurations, and it is also possible to
+share a component repository between multiple users by putting it on
+a network drive. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137522"></A>The build tree contains
+everything that is specific to a particular configuration, including
+header and other files that contain configuration data, and the
+object files that result from compiling the system sources for this
+configuration. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137523"></A>The install tree is
+usually located in the <TT CLASS="code">install</TT> subdirectory of
+the build tree. Once an eCos system has been built, the install tree
+contains all the files needed for application development including
+the header files and the target library. By making copies of the
+install tree after a build it is possible to separate application
+development and system configuration, which may be desirable for some
+organizations. 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1137525"></A><A NAME="marker=1137524"></A>
+Creating the Build Tree</H3>
+<P CLASS="body"><A NAME="pgfId=1137526"></A><A NAME="marker=1137527"></A>
+Generating a build tree is a non-trivial operation and should not be
+attempted manually. Instead, eCos is shipped with a tool called
+<TT CLASS="code">ecosconfig</TT> that should be used to create a
+build tree.</P>
+<P CLASS="body"><A NAME="pgfId=1137528"></A>Usually <TT CLASS="code">ecosconfig</TT>
+will be run inside the build tree itself. If you are creating a new
+build tree then typically you will create a new empty directory using
+the <TT CLASS="code">mkdir</TT> command, <TT CLASS="code">cd</TT>
+into that directory, and then invoke <TT CLASS="code">ecosconfig</TT>
+to create a configuration. By default, the configuration is stored in
+a file <TT CLASS="code">ecos.ecc</TT> in the current directory. The
+configuration may be modified by editing this file directly.
+<TT CLASS="code">ecosconfig</TT> itself deals with a number of
+coarse-grained configuration options such as the target platform and
+the packages that should be used.</P>
+<P CLASS="body"><A NAME="pgfId=1137529"></A>The <TT CLASS="code">ecosconfig</TT>
+tool is also used subsequently to generate a build tree for a
+configuration. Once a build tree exists, it is possible to run
+<TT CLASS="code">ecosconfig</TT> again inside the same build tree.
+This will be neccessary if your wish to change some of the
+configuration options.</P>
+<P CLASS="body"><A NAME="pgfId=1137530"></A><TT CLASS="code">ecosconfig</TT>
+does not generate the top-level directory of the build tree; you must
+do this yourself. 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137531"></A> 
+$ mkdir ecos-work
+$ cd ecos-work</PRE><P CLASS="body">
+<A NAME="pgfId=1137532"></A>The next step is to run <TT CLASS="code">ecosconfig</TT>
+: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137533"></A> 
+$ ecosconfig &lt;qualifiers&gt; &lt;command&gt;</PRE><H3 CLASS="heading2">
+<A NAME="pgfId=1137534"></A><A NAME="marker=1150678"></A>ecosconfig
+qualifiers</H3>
+<P CLASS="body"><A NAME="pgfId=1137535"></A>The available command
+line qualifiers for <TT CLASS="code">ecosconfig</TT> are as follows.
+Multiple qualifiers may be used on the command line: 
+</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137537"></A><A NAME="marker=1137536"></A>
+<TT CLASS="code">--help</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137538"></A>Provides basic
+usage guidelines for the available commands and qualifiers. All other
+qualifiers and commands are ignored if --help is used.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137540"></A><A NAME="marker=1137539"></A>
+<TT CLASS="code">--config=&lt;file&gt; </TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137541"></A>Specifies an
+eCos configuration save file for use by the tool. By default, the
+file <TT CLASS="code">ecos.ecc</TT> in the current directory is used.
+Developers may prefer to use a common location for all their eCos
+configurations rather than keep the configuration information in the
+base of the build tree.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137543"></A><A NAME="marker=1137542"></A>
+<TT CLASS="code">--prefix=&lt;dir&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137544"></A>Specifies an
+alternative location for the install tree. By default, the install
+tree resides inside the <TT CLASS="code">install</TT> directory in
+the build tree. Developers may prefer to locate the build tree in a
+temporary file hierarchy but keep the install tree in a more
+permanent location.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137546"></A><A NAME="marker=1137545"></A>
+<TT CLASS="code">--srcdir=&lt;dir&gt; </TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137547"></A>Specifies the
+location of the component repository. By default, the tool uses the
+location specified in the <EM CLASS="emphasis">ECOS_REPOSITORY</EM>
+environment variable. Developers may prefer to use of this qualifier
+if they are working with more than one repository.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1152267"></A><A NAME="marker=1152266"></A>
+<TT CLASS="code">--no-resolve </TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1152268"></A>Disables the
+implicit resolution of conflicts while manipulating the configuration
+data. Developers may prefer to resolve conflicts by editing the eCos
+configuration save file manually. The check command implicitely uses
+--no-resolve.</P>
+<P CLASS="bodyhang1"><A NAME="marker=11522661"></A><TT CLASS="code">--ignore-errors<BR>-i
+</TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=11522681"></A>By default,
+<TT>ecosconfig</TT> will exit with an error code if the current
+configuration contains any conflicts, and it is not possible to
+generate or update a build tree for such configurations. This
+qualifier causes <TT>ecosconfig</TT> to ignore such problems, and
+hence it is possible to generate a build tree even if there are still
+conflicts. Of course, there are no guarantees that the resulting
+system will actually do anything.</P>
+<P CLASS="bodyhang1"><A NAME="marker=11522662"></A><TT CLASS="code">--verbose<BR>-v
+</TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=11522682"></A>Display more
+information.</P>
+<P CLASS="bodyhang1"><A NAME="marker=11522663"></A><TT CLASS="code">--quiet<BR>-q
+</TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=11522683"></A>Display less
+information.</P>
+<P CLASS="bodylistfollow">The --config, --prefix and --srcdir
+qualifiers can also be written with two arguments, for example:</P>
+<P CLASS="bodylistfollow"><TT>ecosconfig --srcdir &lt;dir&gt; ...</TT></P>
+<P CLASS="bodylistfollow">This simplifies filename completion with
+some shells.</P>
+<H3 CLASS="heading2"><A NAME="pgfId=1137548"></A><A NAME="marker=1150676"></A>
+ecosconfig commands</H3>
+<P CLASS="body"><A NAME="pgfId=1137549"></A>The available commands
+for <TT CLASS="code">ecosconfig</TT> are as follows:</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137551"></A><A NAME="marker=1137550"></A>
+<TT CLASS="code">list</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137552"></A>Lists the
+available packages, targets and templates as installed in the eCos
+repository. Aliases and package versions are also reported.</P>
+<P CLASS="body"><A NAME="pgfId=1137554"></A><A NAME="marker=1137553"></A>
+<TT CLASS="code">new &lt;target&gt; [&lt;template&gt; [&lt;version&gt;]]</TT>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137555"></A>Creates a new
+eCos configuration for the specified target hardware and saves it. A
+software template may also be specified. By default, the template
+named 'default' is used. If the template version is not specified,
+the latest version is used.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137557"></A><A NAME="marker=1137556"></A>
+<TT CLASS="code">target &lt;target&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137558"></A>Changes the
+target hardware selection for the eCos configuration. This has the
+effect of unloading packages supporting the target selected
+previously and loading the packages which support the new hardware.
+This command will be used typically when switching between a
+simulator and real hardware.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137560"></A><A NAME="marker=1137559"></A>
+<TT CLASS="code">template &lt;template&gt; [&lt;version&gt;]</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137561"></A>Changes the
+template selection for the eCos configuration. This has the effect of
+unloading packages specified by the template selected previously and
+loading the packages specified by the new template. By default, the
+latest version of the specified template is used.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137563"></A><A NAME="marker=1137562"></A>
+<TT CLASS="code">remove &lt;packages&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137564"></A>Removes the
+specified packages from the eCos configuration. This command will be
+used typically when the template on which a configuration is based
+contains packages which are not required.</P>
+<P CLASS="body"><A NAME="pgfId=1137566"></A><A NAME="marker=1137565"></A>
+<TT CLASS="code">add &lt;packages&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137567"></A>Adds the
+specified packages to the eCos configuration. This command will be
+used typically when the template on which a configuration is based
+does not contain all the packages which are required. For example,
+add-on packages provided by third parties will not be known to the
+standard templetes, so they will have to be added explicitely. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137569"></A><A NAME="marker=1137568"></A>
+<TT CLASS="code">version &lt;version&gt; &lt;packages&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137570"></A>Selects the
+specified version of a number of packages in the eCos configuration.
+By default, the most recent version of each package is used. This
+command will be used typically when an older version of a package is
+required.</P>
+<P CLASS="body"><A NAME="pgfId=1137572"></A><A NAME="marker=1137571"></A>
+<TT CLASS="code">check</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137573"></A>Presents the
+following information concerning the current configuration:</P>
+<OL>
+	<LI><P><A NAME="pgfId=1137574"></A>the selected target hardware 
+	</P>
+	<LI><P><A NAME="pgfId=1137575"></A>the selected template 
+	</P>
+	<LI><P><A NAME="pgfId=1137576"></A>additional packages 
+	</P>
+	<LI><P><A NAME="pgfId=1137577"></A>removed packages 
+	</P>
+	<LI><P><A NAME="pgfId=1137578"></A>the selected version of packages
+	where this is not the most recent version 
+	</P>
+</OL>
+<P>The check command will never perform automatic conflict
+resolution, so there is no need to use --no-resolve. 
+</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137581"></A><A NAME="marker=1137580"></A>
+<TT CLASS="code">resolve</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137582"></A>Resolves
+conflicts identified in the current eCos configuration by invoking an
+inference capability. Resolved conflicts are reported, but not all
+conflicts may be resolvable. This command will be used typically
+following manual editing of the configuration.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1150481"></A><TT CLASS="code">export
+&lt;file&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1150482"></A>Exports a
+minimal eCos configurastion save file with the specified name. This
+file contains only those options which do not have their default
+value. Such files are used typically to transfer option values from
+one configuration to another.</P>
+<P CLASS="body"><A NAME="pgfId=1150483"></A><TT CLASS="code">import
+&lt;file&gt;</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1150484"></A>Imports a
+minimal eCos configuration save file with the specified name. The
+values of those options specified in the file are applied to the
+current configuration.</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137584"></A><A NAME="marker=1137583"></A>
+<TT CLASS="code">tree</TT> 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137585"></A>Generates a
+build tree based on the current eCos configuration. This command will
+be used typically just before building eCos. Normally a build tree
+can only be generated if if the configuration has no unresolved
+conflicts, but --ignore-errors can be used to override this.</P>
+<H3 CLASS="heading2"><A NAME="pgfId=Conflicts"></A><A NAME="marker=Conflicts"></A>
+Conflicts and constraints</H3>
+<P CLASS="body">Configuration options are not completely independent.
+For example the C library's strtod() and atof() functions rely on the
+math library package to provide certain functionality. If the math
+library package is removed then the C library can no longer provide
+these functions. Each package describes constraints like these in CDL
+&quot;requires&quot; properties. If a constraint is not satisfied,
+then the configuration contains a conflict. For any given conflict
+there can be several rtesolution options. For example, it would be
+possible to add the math library package back to the configuration,
+or to disable the strtod() and atof() functions. 
+</P>
+<P CLASS="body">The eCos configuration tools will report any
+conflicts in the current configuration. If there are any such
+conflicts then the configuration is usually unsafe and it makes no
+sense to build and run eCos in such circumstances. In fact, any
+attempt at building eCos is likely to fail. In exceptional cases it
+is possible to override this by using e.g. the --ignore-errors
+qualifier with ecosconfig. 
+</P>
+<P CLASS="body">Many constraints are fairly simple in nature, and the
+configuration tools contain an inference engine which can resolve the
+associated conflicts automatically. For example, if the math library
+package is removed then the inference engine can resolve the
+resulting conflict by disabling the configuration option for strtod()
+and atof(). All such changes will be reported. Sometimes the
+inference engine cannot resolve a conflict, for example it is not
+allowed to override a change that has been made explicitly by the
+user. Sometimes it will find a solution which does not match the
+application's requirements. 
+</P>
+<P CLASS="body">A typical session involving conflicts would look
+something like this: 
+</P>
+<PRE STYLE="margin-bottom: 0.5cm">$ ecosconfig new </PRE><P CLASS="body">
+This creates a new configuration with the default template. For most
+targets this will not result in any conflicts, because the default
+settings for the various options meet the requirements of the default
+template. For some targets there may be conflicts and the inference
+engine would come into play. 
+</P>
+<PRE>$ ecosconfig remove libm 
+U CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT, new inferred value 0 
+U CYGFUN_LIBC_strtod, new inferred value 0 
+U CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT, new inferred value 0 </PRE><P CLASS="body">
+ecosconfig reports that this change caused three conflicts, all in
+the C library. The inference engine was able to resolve all the
+conflicts and update the relevant configuration options accordingly. 
+</P>
+<P CLASS="body">To suppress the inference engine --no-resolve can be
+used: 
+</P>
+<PRE>$ ecosconfig new  
+$ ecosconfig --no-resolve remove libm 
+C CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT, &quot;requires&quot; constraint not satisfied:      CYGPKG_LIBM 
+C CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT, &quot;requires&quot; constraint not satisfied:      CYGPKG_LIBM 
+C CYGFUN_LIBC_strtod, &quot;requires&quot; constraint not satisfied: CYGPKG_LIBM </PRE><P CLASS="body">
+Three unresolved conflicts are reported. The check command can be
+used to get the current state of the configuration, and the --verbose
+qualifier will provide additional information: 
+</P>
+<PRE>$ ecosconfig --srcdir /home/bartv/ecc/ecc --verbose      check 
+Target: pid 
+Template: default 
+Removed:
+ CYGPKG_LIBM 
+3 conflict(s): 
+C CYGFUN_LIBC_strtod, &quot;requires&quot; constraint not satisfied: CYGPKG_LIBM
+ Possible solution: 
+    CYGFUN_LIBC_strtod -&gt; 0 
+    CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT -&gt; 0 
+C CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT, &quot;requires&quot; constraint not satisfied:      CYGPKG_LIBM 
+ Possible solution: 
+    CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT -&gt; 0 
+C CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT, &quot;requires&quot; constraint not satisfied:      CYGPKG_LIBM 
+ Possible solution: 
+    CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT -&gt; 0 </PRE><P CLASS="body">
+If the proposed solutions are acceptable, the resolve command can be
+used to apply them: 
+</P>
+<PRE>$ ecosconfig resolve 
+U CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT, new inferred value 0 
+U CYGFUN_LIBC_strtod, new inferred value 0 
+U CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT, new inferred value 0 </PRE><P CLASS="body">
+The current configuration is again conflict-free and it is possible
+to generate a build tree. The --quiet qualifier can be used to
+suppress the change messages, if desired.</P>
+<P CLASS="body">When changing individual configuration options by
+editing the ecos.ecc file (as described below), the resulting system
+should be checked and any problems should be resolved. For example,
+if CYGFUN_LIBC_strtod is explicitly enabled in the savefile: 
+</P>
+<PRE>$ edit ecos.ecc
+$ ecosconfig check 
+Target: pid 
+Template: default 
+Removed: 
+    CYGPKG_LIBM 
+1 conflict(s): 
+C CYGFUN_LIBC_strtod, &quot;requires&quot; constraint not satisfied: CYGPKG_LIBM 
+$ ecosconfig resolve 
+C CYGFUN_LIBC_strtod, &quot;requires&quot; constraint not satisfied: CYGPKG_LIBM </PRE><P CLASS="body">
+In this case the inference engine cannot resolve the conflict
+automatically because that would involve changing a user setting. Any
+attempt to generate a build tree will fail: 
+</P>
+<PRE>$ ecosconfig --srcdir /home/bartv/ecc/ecc tree 
+C CYGFUN_LIBC_strtod, &quot;requires&quot; constraint not satisfied: CYGPKG_LIBM </PRE><P CLASS="body">
+Unable to generate build tree, this configuration still contains
+conflicts. Either resolve the conflicts or use --ignore-errors 
+</P>
+<P CLASS="body">It is still possible to generate a build tree: 
+</P>
+<PRE>$ ecosconfig --srcdir /home/bartv/ecc/ecc --ignore-errors      tree 
+C CYGFUN_LIBC_strtod, &quot;requires&quot; constraint not satisfied: CYGPKG_LIBM 
+$ make </PRE><P CLASS="body">
+In this case eCos will fail to build. In other cases of unresolved
+conflicts eCos may build, but may not run. In general all conflicts
+should be resolved by editing the ecos.ecc file, by letting the
+inference engine make appropriate changes, or by other means, before
+any attempt is made to build or run eCos. 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1137586"></A><A NAME="marker=1150687"></A>
+Building the System</H3>
+<P CLASS="body"><A NAME="pgfId=1137588"></A><A NAME="marker=1137587"></A>
+Once a build tree has been generated with <TT CLASS="code">ecosconfig</TT>
+, building eCos is straightforward:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137589"></A> 
+$ make</PRE><P CLASS="body">
+<A NAME="pgfId=1137590"></A>The build tree contains the
+subdirectories, makefiles, and everything else that is needed to
+generate the default configuration for the selected architecture and
+platform. The only requirement is that the tools needed for that
+architecture, for example <TT CLASS="code">powerpc-eabi-g++</TT> ,
+are available using the standard search path. If this is not the case
+then the <TT CLASS="code">make</TT> will fail with an error message.
+If you have a multiprocessor system then it may be more efficient to
+use:</P>
+<PRE CLASS="codeexample2"><A NAME="pgfId=1137591"></A> 
+$ make -j 
+n</PRE><P CLASS="body">
+<A NAME="pgfId=1137592"></A>where n is equal to the number of
+processors on your system.</P>
+<P CLASS="body"><A NAME="pgfId=1137593"></A>Once the <TT CLASS="code">make</TT>
+process has completed, the install tree will contain the header files
+and the target library that are needed for application development. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137594"></A>It is also possible to
+build the system's test cases for the current configuration:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137595"></A> 
+$ make tests
+ </PRE><P CLASS="body">
+<A NAME="pgfId=1137597"></A><A NAME="marker=1137596"></A>The
+resulting test executables will end up in a <TT CLASS="code">tests</TT>
+subdirectory of the install tree. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137598"></A>If disk space is scarce
+then it is possible to make the copy of the install tree for
+application development purposes, and then use: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137599"></A> 
+$ make clean</PRE><P CLASS="body">
+<A NAME="pgfId=1137600"></A>The build tree will now use up a minimum
+of disk space -- the bulk of what is left consists of configuration
+header files that you may have edited and hence should not be deleted
+automatically. However, it is possible to rebuild the system at any
+time without reinvoking <TT CLASS="code">ecosconfig</TT> , just by
+running <TT CLASS="code">make</TT> again. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137601"></A>Under exceptional
+circumstances it may be necessary to run <TT CLASS="code">make clean</TT>
+for other reasons, such as when a new release of the toolchain is
+installed. The toolchain includes a number of header files which are
+closely tied to the compiler, for example <TT CLASS="code">limits.h</TT>
+, and these header files are not and should not be duplicated by
+eCos. The makefiles perform header file dependency analysis, so that
+when a header file is changed all affected sources will be rebuilt
+during the next <TT CLASS="code">make</TT> . This is very useful when
+the configuration header files are changed, but it also means that a
+build tree containing information about the locations of header files
+must be rebuilt. If a new version of the toolchain is installed and
+the old version is removed then this location information is no
+longer accurate, and <TT CLASS="code">make</TT> will complain that
+certain dependencies cannot be satisfied. Under such circumstances it
+is necessary to do a <TT CLASS="code">make clean</TT> first. 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1137602"></A>Packages</H3>
+<P CLASS="body"><A NAME="pgfId=1137604"></A><A NAME="marker=1137603"></A>
+eCos is a component architecture. The system comes as a number of
+packages which can be enabled or disabled as required, and new
+packages can be added as they become available. Unfortunately, the
+packages are not completely independent: for example the <EM>&micro;</EM>
+ITRON compatibility package relies almost entirely on functionality
+provided by the kernel package, and it would not make sense to try to
+build <EM>&micro;</EM> ITRON if the kernel was disabled. The C
+library has fewer dependencies: some parts of the C library rely on
+kernel functionality, but it is possible to disable these parts and
+thus build a system that has the C library but no kernel. The
+<TT CLASS="code">ecosconfig</TT> tool has the capability of checking
+that all the dependencies are satisfied, but it may still be possible
+to produce configurations that will not build or (conceivably) that
+will build but not run. Developers should be aware of this and take
+appropriate care.</P>
+<P CLASS="body"><A NAME="pgfId=1137606"></A><A NAME="marker=1137605"></A><A NAME="marker=1137607"></A>
+By default, <TT CLASS="code">ecosconfig</TT> will include all
+packages that are appropriate for the specified hardware in the
+configuration. The common HAL package and the eCos infrastructure
+must be present in every configuration. In addition, it is always
+necessary to have one architectural HAL package and one platform HAL
+package. Other packages are optional, and can be added or removed
+from a configuration as required.</P>
+<P CLASS="body"><A NAME="pgfId=1137608"></A>The application may not
+require all of the packages; for example, it might not need the <EM>&micro;</EM>
+ITRON compatibility package, or the floating point support provided
+by the math library. There is a slight overhead when eCos is built
+because the packages will get compiled, and there is also a small
+disk space penalty. However, any unused facilities will get stripped
+out at link-time, so having redundant packages will not affect the
+final executable. 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1137609"></A>Coarse-grained
+Configuration</H3>
+<P CLASS="body"><A NAME="pgfId=1137611"></A><A NAME="marker=1137610"></A>
+Coarse-grained configuration of an eCos system means making
+configuration changes using the <TT CLASS="code">ecosconfig</TT>
+tool. These changes include: 
+</P>
+<OL>
+	<LI><P><A NAME="pgfId=1137612"></A>switching to different target
+	hardware 
+	</P>
+	<LI><P><A NAME="pgfId=1137613"></A>switching to a different template
+		</P>
+	<LI><P><A NAME="pgfId=1137614"></A>adding or removing a package 
+	</P>
+	<LI><P><A NAME="pgfId=1137615"></A>changing the version of a package
+		</P>
+</OL>
+<P CLASS="body"><A NAME="pgfId=1137616"></A>Whenever <TT CLASS="code">ecosconfig</TT>
+generates or updates an eCos configuration, it generates a
+configuration save file.</P>
+<P CLASS="body"><A NAME="pgfId=1137617"></A>Suppose that the
+configuration was first created using the following command line: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137618"></A> 
+$ ecosconfig new stdeval1</PRE><P CLASS="body">
+<A NAME="pgfId=1137619"></A>To change the target hardware to the
+Cogent CMA28x PowerPC board, the following command would be needed: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137620"></A> 
+$ ecosconfig target cma28x</PRE><P CLASS="body">
+<A NAME="pgfId=1137621"></A>To switch to the PowerPC simulator
+instead: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137622"></A> 
+$ ecosconfig target psim</PRE><P CLASS="body">
+<A NAME="pgfId=1137623"></A>As the hardware changes, hardware-related
+packages such as the HAL packages and device drivers will be added to
+and removed from the configuration as appropriate. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137624"></A>To remove any package
+from the current configuration, use the <TT CLASS="code">remove</TT>
+command: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137625"></A> 
+$ ecosconfig remove uitron</PRE><P CLASS="body">
+<A NAME="pgfId=1137626"></A>You can disable multiple packages using
+multiple arguments, for example: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137627"></A> 
+$ ecosconfig remove uitron libm</PRE><P CLASS="body">
+<A NAME="pgfId=1137628"></A>If this turns out to have been a mistake
+then you can reenable one or more packages with the <TT CLASS="code">add</TT>
+command: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137629"></A> 
+$ ecosconfig add libm</PRE><P CLASS="body">
+<A NAME="pgfId=1137630"></A>Changing the desired version for a
+package is also straightforward:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137631"></A> 
+$ ecosconfig version v1_3_x kernel</PRE><P CLASS="body">
+<A NAME="pgfId=1137632"></A>where x may be a one or two digit number</P>
+<P CLASS="body">It is necessary to regenerate the build tree and
+header files following any changes to the configuration before
+rebuilding eCos:</P>
+<PRE CLASS="codeexample">$ ecosconfig tree</PRE><H3 CLASS="heading1">
+<A NAME="pgfId=1137634"></A>Fine-grained Configuration</H3>
+<P CLASS="body"><A NAME="pgfId=1137635"></A><A NAME="marker=1137636"></A>
+<TT CLASS="code">ecosconfig</TT> only provides coarse-grained control
+over the configuration: the hardware, the template and the packages
+that should be built. Unlike the Configuration Tool, <TT CLASS="code">ecosconfig</TT>
+does not provide any facilities for manipulating finer-grained
+configuration options such as how many priority levels the scheduler
+should support. There are hundreds of these options, and manipulating
+them by means of command line arguments would not be sensible. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137637"></A>In the current system
+fine-grained configuration options may be manipulated by manual
+editing of the configuration file. When a file has been edited in
+this way, the <TT CLASS="code">ecosconfig</TT> tool should be used to
+check the configuration for any conflicts which may have been
+introduced:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137638"></A> 
+$ ecosconfig check</PRE><P CLASS="body">
+<A NAME="pgfId=1137639"></A>The <TT CLASS="code">check</TT> command
+will list all conflicts and will also rewrite the configuration file,
+propogating any changes which affect other options. The user may
+choose to resolve the conflicts either by re-editing the
+configuration file manually or by invoking the inference engine using
+the <TT CLASS="code">resolve</TT> command:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137640"></A> 
+$ ecosconfig resolve</PRE><P CLASS="body">
+<A NAME="pgfId=1137641"></A>The <TT CLASS="code">resolve</TT> command
+will list all conflicts which can be resolved and save the resulting
+changes to the configuration.</P>
+<P CLASS="body"><A NAME="pgfId=1137642"></A>It is necessary to
+regenerate the build tree and header files following any changes to
+the configuration before rebuilding eCos:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1137643"></A> 
+$ ecosconfig tree</PRE><P CLASS="body">
+<A NAME="pgfId=1137644"></A>All the configuration options and their
+descriptions are listed in the <EM CLASS="emphasis">eCos Reference
+Manual.</EM> 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1152285"></A>Editing an eCos
+Savefile</H3>
+<P CLASS="body"><A NAME="pgfId=1152294"></A>The eCos configuration
+information is held in a single savefile, typically <TT CLASS="code">ecos.ecc</TT>
+, which can be generated by either the GUI configuration tool or by
+the command line <EM CLASS="emphasis">ecosconfig</EM> tool. The file
+normally exists at the toplevel of the build tree. It is a text file,
+allowing the various configurations options to be edited inside a
+suitable text editor or by other programs or scripts, as well as in
+the GUI config tool.</P>
+<P CLASS="body"><A NAME="pgfId=1153996"></A>An eCos savefile is
+actually a script in the <EM CLASS="emphasis">Tcl</EM> programming
+language, so any modifications to the file need to preserve Tcl
+syntax. For most configuration options, any modifications will be
+trivial and there is no need to worry about Tcl syntax. For example,
+changing a 1 to a 0 to disable an option. For more complicated
+options, for example<EM CLASS="emphasis"> CYGDAT_UITRON_TASK_EXTERNS
+, </EM>which involves some lines of C code, more care has to be
+taken. If an edited savefile is no longer a valid Tcl script then the
+configuration tools will be unable to read back the data for further
+processing, for example to generate a build tree. An outline of Tcl
+syntax is given below. One point worth noting here is that a line
+that begins with a &quot;#&quot; is usually a comment, and the bulk
+of an eCos savefile actually consists of such comments, to make it
+easier to edit.</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1152296"></A>Header</H4>
+<P CLASS="body"><A NAME="pgfId=1152297"></A>An eCos savefile begins
+with a header, which typically looks something like this:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152432"></A><A NAME="pgfId=1152402"></A> 
+# eCos saved configuration
+# ---- commands -------------------------------------------------------- 
+# This section contains information about the savefile format. 
+# It should not be edited. Any modifications made to this section 
+# may make it impossible for the configuration tools to read 
+# the savefile.
+
+cdl_savefile_version 1; 
+cdl_savefile_command cdl_savefile_version {};
+cdl_savefile_command cdl_savefile_command {}; 
+cdl_savefile_command 
+cdl_configuration { description hardware template package }; 
+cdl_savefile_command cdl_package { value_source user_value wizard_value inferred_value }; 
+cdl_savefile_command cdl_component { value_source user_value wizard_value inferred_value }; 
+cdl_savefile_command cdl_option { value_source user_value wizard_value inferred_value }; 
+cdl_savefile_command cdl_interface { value_source user_value wizard_value inferred_value }; </PRE><P CLASS="body">
+<A NAME="pgfId=1152301"></A>This section of the savefile is intended
+for use by the configuration system, and should not be edited. If
+this section is edited then the various configuration tools may no
+longer be able to read in the modified savefile.</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1152302"></A>Toplevel Section</H4>
+<P CLASS="body"><A NAME="pgfId=1152303"></A>The header is followed by
+a section that defines the configuration as a whole. A typical
+example would be:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152304"></A> 
+
+# ---- toplevel -------------------------------------------------------- 
+# This section defines the toplevel configuration object. The only 
+# values that can be changed are the name of the configuration and 
+# the description field. It is not possible to modify the target, 
+# the template or the set of packages simply by editing the lines 
+# below because these changes have wide-ranging effects. Instead 
+# the appropriate tools should be used to make such modifications.
+
+cdl_configuration eCos {     
+description &quot;&quot; ;         
+
+# These fields should not be modified.     
+hardware    pid ;     
+template    uitron ;     
+package -hardware CYGPKG_HAL_ARM current ;     
+package -hardware CYGPKG_HAL_ARM_PID current ;     
+package -hardware CYGPKG_IO_SERIAL current ;     
+package -template CYGPKG_HAL current ;     
+package -template CYGPKG_IO current ;     
+package -template CYGPKG_INFRA current ;     
+package -template CYGPKG_KERNEL current ;     
+package -template CYGPKG_UITRON current ;     
+package -template CYGPKG_LIBC current ;     
+package -template CYGPKG_LIBM current ;     
+package -template CYGPKG_DEVICES_WALLCLOCK current ;     
+package -template CYGPKG_ERROR current ; 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152431"></A><A NAME="pgfId=1152306"></A>This section
+allows the configuration tools to reload the various packages that
+make up the configuration. Most of the information should not be
+edited. If it is necessary to add a new package or to remove an
+existing one then the appropriate tools should be used for this, for
+example:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152307"></A> 
+$ ecosconfig remove CYGPKG_LIBM</PRE><P CLASS="body">
+<A NAME="pgfId=1152308"></A>There are two fields which can be edited.
+Configurations have a name; in this case eCos. They can also have a
+description, which is some arbitrary text. The configuration tools do
+not make use of these fields, they exist so that users can store
+additional information about a configuration.</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1152309"></A>Conflicts Section</H4>
+<P CLASS="body"><A NAME="pgfId=1152310"></A>The toplevel section is
+followed by details of all the conflicts (if any) in the
+configuration, for example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152311"></A> 
+ 
+# ---- conflicts ------------------------------------------------------- 
+# There are 2 conflicts. 
+# 
+# option CYGNUM_LIBC_TIME_DST_DEFAULT_OFFSET 
+#   Property LegalValues 
+#   Illegal current value 100000 
+#   Legal values are: -90000 to 90000 
+# 
+# option CYGSEM_LIBC_TIME_CLOCK_WORKING 
+#   Property Requires 
+#   Requires constraint not satisfied: CYGFUN_KERNEL_THREADS_TIMER </PRE><P CLASS="body">
+<A NAME="pgfId=1152446"></A><A NAME="pgfId=1152312"></A>When editing
+a configuration you may end up with something that is invalid. Any
+problems in the configuration will be reported in the conflicts
+section. In this case there are two conflicts. The option
+<EM CLASS="emphasis">CYGNUM_LIBC_TIME_DST_DEFAULT_OFFSET</EM> has
+been given an illegal value: typically this would be fixed by
+searching for the definition of that option later on in the savefile
+and modifying the value. The second conflict is more interesting, an
+unsatisfied <EM CLASS="emphasis">requires</EM> constraint.
+Configuration options are not independent: disabling some
+functionality in, say, the kernel, can have an impact elsewhere; in
+this case the C library. The various dependencies between the options
+are specified by the component developers and checked by the
+configuration system. In this case there are two obvious ways in
+which the conflict could be resolved: re-enabling
+<EM CLASS="emphasis">CYGFUN_KERNEL_THREADS_TIMER,</EM> or disabling
+<EM CLASS="emphasis">CYGSEM_LIBC_TIME_CLOCK_WORKING.</EM> Both of
+these options will be listed later on in the file.</P>
+<P CLASS="body"><A NAME="pgfId=1152313"></A>Some care has to be taken
+when modifying configuration options, to avoid introducing new
+conflict. For instance it is possible that there might be other
+options in the system which have a dependency on
+<EM CLASS="emphasis">CYGSEM_LIBC_TIME_CLOCK_WORKING,</EM> so
+disabling that option may not be the best way to resolve the
+conflict. Details of all such dependencies are provided in the
+appropriate places in the savefile.</P>
+<P CLASS="body"><A NAME="pgfId=1152314"></A>It is not absolutely
+required that a configuration be conflict-free before generating a
+build tree and building eCos. It is up to the developers of each
+component to decide what would happen if an attempt is made to build
+eCos while there are still conflicts. In serious cases there is
+likely to be a compile-time failure, or possibly a link-time failure.
+In less serious cases the system may build happily and the
+application can be linked with the resulting library, but the
+component may not quite function as intended - although it may still
+be good enough for the specific needs of the application. It is also
+possible that everything builds and links, but once in a while the
+system will unaccountably crash. Using a configuration that still has
+conflicts is done entirely at the user's risk.</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1152315"></A>Data Section</H4>
+<P CLASS="body"><A NAME="pgfId=1152316"></A>The bulk of the savefile
+lists the various packages, components, and options, including their
+values and the various dependencies. A number of global options come
+first, especially those related to the build process such as compiler
+flags. These are followed by the various packages, and the components
+and options within those packages, in order.</P>
+<P CLASS="body"><A NAME="pgfId=1152317"></A>Packages, components and
+options are organized in a hierarchy. If a particular component is
+disabled then all options and sub-components below it will be
+inactive: any changes made to these will have no effect. The savefile
+contains information about the hierarchy in the form of comments, for
+example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152537"></A><A NAME="pgfId=1152318"></A> 
+cdl_package CYGPKG_KERNEL ... 
+# &gt; 
+cdl_component CYGPKG_KERNEL_EXCEPTIONS ... 
+# &gt; 
+cdl_option CYGSEM_KERNEL_EXCEPTIONS_DECODE ... 
+cdl_option CYGSEM_KERNEL_EXCEPTIONS_GLOBAL ... 
+# &lt; 
+cdl_component CYGPKG_KERNEL_SCHED ... 
+# &gt; 
+cdl_option CYGSEM_KERNEL_SCHED_MLQUEUE ... 
+cdl_option CYGSEM_KERNEL_SCHED_BITMAP ... 
+# &lt; 
+# &lt; </PRE><P CLASS="body">
+<A NAME="pgfId=1152319"></A>This corresponds to the following
+hierarchy:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152320"></A> 
+ CYGPKG_KERNEL
+   CYGPKG_KERNEL_EXCEPTIONS
+     CYGSEM_KERNEL_EXCEPTIONS_DECODE
+     CYGSEM_KERNEL_EXCEPTIONS_GLOBAL
+   CYGPKG_KERNEL_SCHED
+     CYGSEM_KERNEL_SCHED_MLQUEUE
+     CYGSEM_KERNEL_SCHED_BITMAP </PRE><P CLASS="body">
+<A NAME="pgfId=1152321"></A>Providing the hierarchy information in
+this way allows programs or scripts to analyze the savefile and
+readily determine the hierarchy. It could also be used by a
+sufficiently powerful editor to support structured editing of eCos
+savefiles. The information is not used by the configuration tools
+themselves since they obtain the hierarchy from the original CDL
+scripts.</P>
+<P CLASS="body"><A NAME="pgfId=1152322"></A>Each configurable entity
+is preceded by a comment, of the following form:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152552"></A><A NAME="pgfId=1152323"></A> 
+
+# Kernel schedulers 
+# doc: ref/ecos-ref/ecos-kernel-overview.html#THE-SCHEDULER 
+# The eCos kernel provides a choice of schedulers. In addition 
+# there are a number of configuration options to control the 
+# detailed behaviour of these schedulers. 
+cdl_component CYGPKG_KERNEL_SCHED {     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152324"></A>This provides a short textual alias
+<TT CLASS="code">Kernel schedulers</TT> for the component. If online
+documentation is available for the configurable entity then this will
+come next. Finally there is a short description of the entity as a
+whole. All this information is provided by the component developers.</P>
+<P CLASS="body"><A NAME="pgfId=1152325"></A>Each configurable entity
+takes the form:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152326"></A> 
+&lt;type&gt; &lt;name&gt; {
+     &lt;data&gt;
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1152327"></A>Configurable entities may not be active.
+This can be either because the parent is disabled or inactive, or
+because there are one or more <EM CLASS="emphasis">active_if</EM>
+properties. Modifying the value of an inactive entity has no effect
+on the configuration, so this information is provided first:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152328"></A><A NAME="pgfId=1152579"></A> 
+cdl_option CYGSEM_KERNEL_EXCEPTIONS_DECODE {     
+# This option is not active     
+# The parent CYGPKG_KERNEL_EXCEPTIONS is disabled     
+... 
+};
+ 
+...
+
+cdl_option CYGIMP_IDLE_THREAD_YIELD {     
+# This option is not active     
+# ActiveIf constraint: (CYGNUM_KERNEL_SCHED_PRIORITIES == 1)     
+#     CYGNUM_KERNEL_SCHED_PRIORITIES == 32     
+#   -<IMG SRC="pix/arrow.gif" NAME="Graphic2" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0> 0     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152331"></A>For <EM CLASS="emphasis">CYGIMP_IDLE_THREAD_YIELD</EM>
+the savefile lists the expression that must be satisfied if the
+option is to be active, followed by the current value of all entities
+that are referenced in the expression, and finally the result of
+evaluating that expression.</P>
+<P CLASS="body"><A NAME="pgfId=1152332"></A>Not all options are
+directly modifiable in the savefile. First, the value of packages
+(which is the version of that package loaded into the configuration)
+cannot be modified here.</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152333"></A> 
+
+cdl_package CYGPKG_KERNEL {     
+# Packages cannot be added or removed, nor can their version be changed,     
+# simply by editing their value. Instead the appropriate configuration     
+# should be used to perform these actions.     .
+..; 
+} </PRE><P CLASS="body">
+<A NAME="pgfId=1152334"></A>The version of a package can be changed
+using e.g.: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152335"></A> 
+$ ecosconfig version 1.3 CYGPKG_KERNEL</PRE><P CLASS="body">
+<A NAME="pgfId=1152336"></A>Even though a package's value cannot be
+modified here, it is still important for the savefile to contain the
+details. In particular packages may impose constraints on other
+configurable entities and may be referenced by other configurable
+entities. Also it would be difficult to understand or extract the
+configuration's hierarchy if the packages were not listed in the
+appropriate places in the savefile.</P>
+<P CLASS="body"><A NAME="pgfId=1152337"></A>Some components (or,
+conceivably, options) do not have any associated data. Typically they
+serve only to introduce another level in the hierarchy, which can be
+useful in the context of the GUI configuration tool.</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152338"></A> 
+
+cdl_component CYGPKG_HAL_COMMON_INTERRUPTS {     
+# There is no associated value. 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152339"></A>Other components or options have a
+calculated value. These are not user-modifiable, but typically the
+value will depend on other options which can be modified. Such
+calculated options can be useful when controlling what gets built or
+what ends up in the generated configuration header files. A
+calculated value may also effect other parts of the configuration,
+for instance, via a <EM CLASS="emphasis">requires</EM> constraint.</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152340"></A> 
+
+cdl_option BUFSIZ {     
+# Calculated value: CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO ? CYGNUM_LIBC_STDIO_BUFSIZE : 0     
+#     CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO == 1     
+#     CYGNUM_LIBC_STDIO_BUFSIZE == 256     
+# Current_value: 256 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152341"></A>A special type of calculated value is the
+<EM CLASS="emphasis">interface.</EM> The value of an interface is the
+number of active and enabled options which <EM CLASS="emphasis">implement</EM>
+that interface. Again the value of an interface cannot be modified
+directly; only by modifying the options which implement the
+interface. However, an interface can be referenced by other parts of
+the configuration. 
+</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152342"></A> 
+cdl_interface CYGINT_KERNEL_SCHEDULER {     
+# Implemented by CYGSEM_KERNEL_SCHED_MLQUEUE, active, enabled     
+# Implemented by CYGSEM_KERNEL_SCHED_BITMAP, active, disabled     
+# This value cannot be modified here.     
+# Current_value: 1     
+# Requires: 1 == CYGINT_KERNEL_SCHEDULER     
+#     CYGINT_KERNEL_SCHEDULER == 1     
+#   -<IMG SRC="pix/arrow.gif" NAME="Graphic3" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0> 1
+<A NAME="pgfId=1152343"></A> 
+# The following properties are affected by this value     
+# interface CYGINT_KERNEL_SCHEDULER     
+#     Requires: 1 == CYGINT_KERNEL_SCHEDULER 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152788"></A>If the configurable entity is modifiable
+then there will be lines like the following:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152831"></A> 
+ 
+cdl_option CYGSEM_KERNEL_SCHED_MLQUEUE {     
+...     
+# Flavor: bool     
+# No user value, uncomment the following line to provide one.     
+# user_value 1     
+# value_source default     
+# Default value: 1     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152832"></A>Configurable entities can have one of
+four different flavors: none, bool, data and booldata. Flavor none
+indicates that there is no data associated with the entity, typically
+it just acts as a placeholder in the overall hierarchy. Flavor bool
+is the most common, it is a simple yes-or-no choice. Flavor data is
+for more complicated configuration choices, for instance the size of
+an array or the name of a device. Flavor booldata is a combination of
+bool and data: the option can be enabled or disabled, and there is
+some additional data associated with the option as well.</P>
+<P CLASS="body"><A NAME="pgfId=1152833"></A>In the above example the
+user has not modified this particular option, as indicated by the
+comment and by the commented-out <TT CLASS="code">user_value</TT>
+line. To disable this option the file should be edited to:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152976"></A> 
+
+cdl_option CYGSEM_KERNEL_SCHED_MLQUEUE {     
+...     
+# Flavor: bool     
+# No user value, uncomment the following line to provide one.     
+user_value 0     
+# value_source default     
+# Default value: 1     
+... 
+} </PRE><P CLASS="body">
+<A NAME="pgfId=1152835"></A>The comment preceding the <TT CLASS="code">user_value
+0</TT> line can be removed if desired, otherwise it will be removed
+automatically the next time the file is read and updated by the
+configuration tools.</P>
+<P CLASS="body"><A NAME="pgfId=1152836"></A>Much the same process
+should be used for options with the data flavor, for example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152837"></A> 
+ 
+cdl_option CYGNUM_LIBC_TIME_DST_DEFAULT_OFFSET {     
+# Flavor: data     
+# No user value, uncomment the following line to provide one.     
+# user_value 3600     
+# value_source default     
+# Default value: 3600     
+# Legal values: -90000 to 90000 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152838"></A>can be changed to:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152839"></A> 
+
+cdl_option CYGNUM_LIBC_TIME_DST_DEFAULT_OFFSET {     
+# Flavor: data     
+user_value 7200     
+# value_source default     
+# Default value: 3600     
+# Legal values: -90000 to 90000 }; </PRE><P CLASS="body">
+<A NAME="pgfId=1152840"></A>Note that the original text provides the
+default value in the <TT CLASS="code">user_value</TT> comment, on the
+assumption that the desired new value is likely to be similar to the
+default value. The <TT CLASS="code">value_source </TT>comment does
+not need to be updated, it will be fixed up if the savefile is fed
+back into the configuration system and regenerated.</P>
+<P CLASS="body"><A NAME="pgfId=1152841"></A>For options with the
+booldata flavor, the <TT CLASS="code">user_value</TT> line needs take
+two arguments. The first argument is for the boolean part, the second
+for the data part. For example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152842"></A> 
+ 
+cdl_component CYGNUM_LIBM_COMPATIBILITY {     
+# Flavor: booldata     
+# No user value, uncomment the following line to provide one.    
+# user_value 1 POSIX     
+# value_source default     
+# Default value: 1 POSIX     
+# Legal values:  &quot;POSIX&quot; &quot;IEEE&quot; &quot;XOPEN&quot; &quot;SVID&quot;     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152843"></A>could be changed to:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152844"></A> 
+ 
+cdl_component CYGNUM_LIBM_COMPATIBILITY {     
+# Flavor: booldata     
+user_value 1 IEEE     
+# value_source default     
+# Default value: 1 POSIX     
+# Legal values:  &quot;POSIX&quot; &quot;IEEE&quot; &quot;XOPEN&quot; &quot;SVID&quot;     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152845"></A>or alternatively, if the whole component
+should be disabled, to:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152846"></A> 
+ 
+cdl_component CYGNUM_LIBM_COMPATIBILITY {     
+# Flavor: booldata     
+user_value 0 POSIX     
+# value_source default     
+# Default value: 1 POSIX     
+# Legal values:  &quot;POSIX&quot; &quot;IEEE&quot; &quot;XOPEN&quot; &quot;SVID&quot;     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152847"></A>Some options take values that span
+multiple lines. An example would be:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152848"></A> 
+
+cdl_option CYGDAT_UITRON_MEMPOOLVAR_INITIALIZERS {     
+# Flavor: data     
+# No user value, uncomment the following line to provide one.     
+# user_value \     
+# &quot;CYG_UIT_MEMPOOLVAR( vpool1, 2000 ), \\     
+#  CYG_UIT_MEMPOOLVAR( vpool2, 2000 ), \\     
+#  CYG_UIT_MEMPOOLVAR( vpool3, 2000 ),&quot;     
+# value_source default     
+# Default value: \     
+#     &quot;CYG_UIT_MEMPOOLVAR( vpool1, 2000 ), \\     
+#      CYG_UIT_MEMPOOLVAR( vpool2, 2000 ), \\     
+#      CYG_UIT_MEMPOOLVAR( vpool3, 2000 ),&quot; 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152849"></A>Setting a user value for this option
+involves uncommenting and modifying all relevant lines, for example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152850"></A> 
+
+cdl_option CYGDAT_UITRON_MEMPOOLVAR_INITIALIZERS {     
+# Flavor: data     
+user_value \     
+&quot;CYG_UIT_MEMPOOLVAR( vpool1, 4000 ), \\      
+CYG_UIT_MEMPOOLVAR( vpool2, 4000 ),&quot;     
+# value_source default     
+# Default value: \     
+#     &quot;CYG_UIT_MEMPOOLVAR( vpool1, 2000 ), \\     
+#      CYG_UIT_MEMPOOLVAR( vpool2, 2000 ), \\     
+#      CYG_UIT_MEMPOOLVAR( vpool3, 2000 ),&quot; 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152851"></A>In such cases appropriate care has to be
+taken to preserve Tcl syntax, as discussed below.</P>
+<P CLASS="body"><A NAME="pgfId=1152852"></A>The configuration system
+has the ability to keep track of several different values for any
+given option. All options start off with a default value, in other
+words their value source is set to <TT CLASS="code">default</TT> . If
+a configuration involves conflicts and the configuration system's
+inference engine is allowed to resolve these automatically then it
+may provide an <TT CLASS="code">inferred</TT> value instead, for
+example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152853"></A> 
+
+cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {     
+# Flavor: bool     
+# No user value, uncomment the following line to provide one.     
+# user_value 1     
+# The inferred value should not be edited directly.     
+inferred_value 0     
+# value_source inferred     
+# Default value: 1     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152854"></A>Inferred values are calculated by the
+configuration system and should not be edited by the user. If the
+inferred value is not correct then a user value should be substituted
+instead:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152855"></A> 
+
+cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {     
+# Flavor: bool     
+user_value 1     
+# The inferred value should not be edited directly.     
+inferred_value 0     
+# value_source inferred     
+# Default value: 1     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152856"></A>The inference engine will not override a
+user value with an inferred one. Making a change like this may well
+re-introduce a conflict, since the inferred value was only calculated
+to resolve a conflict. Another run of the inference engine may find a
+different and more acceptable way of resolving the conflict, but this
+is not guaranteed and it may be up to the user to examine the various
+dependencies and work out an acceptable solution.</P>
+<P CLASS="body"><A NAME="pgfId=1152857"></A>Inferred values are
+listed in the savefile because the exact inferred value may depend on
+the order in which changes were made and conflicts were resolved. If
+the inferred values were absent then it is possible that reloading a
+savefile would not exactly restore the configuration. Default values
+on the other hand are entirely deterministic so there is no actual
+need for the values to be listed in the savefile. However, the
+default value can be very useful information so it is provided in a
+comment.</P>
+<P CLASS="body"><A NAME="pgfId=1152858"></A>Occasionally the user
+will want to do some experimentation, and temporarily switch an
+option from a user value back to a default or inferred one to see
+what the effect would be. This could be achieved by simply commenting
+out the user value. For instance, if the current savefile contains:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152859"></A> 
+ 
+cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {     
+# Flavor: bool     
+user_value 1     
+# The inferred value should not be edited directly.     
+inferred_value 0     
+# value_source user     
+# Default value: 1     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152860"></A>then the inferred value could be restored
+by commenting out or removing the <TT CLASS="code">user_value</TT>
+line:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152861"></A> 
+ 
+cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {     
+# Flavor: bool     
+# user_value 1     
+# The inferred value should not be edited directly.     
+inferred_value 0     
+# value_source user     
+# Default value: 1     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152862"></A>This is fine for simple values. However
+if the value is complicated then there is a problem: commenting out
+the <TT CLASS="code">user_value</TT> line or lines means that the
+user value becomes invisible to the configuration system, so if the
+savefile is loaded and then regenerated the information will be lost.
+An alternative approach is to keep the <TT CLASS="code">user_value</TT>
+but explicitly set the <TT CLASS="code">value_source</TT> line, for
+example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152863"></A> 
+
+cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT {     
+# Flavor: bool     
+user_value 1     
+# The inferred value should not be edited directly.     
+inferred_value 0     
+value_source inferred     
+# Default value: 1     
+... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152864"></A>In this case the configuration system
+will use the inferred value for the purposes of dependency analysis
+etc., even though a user value is present. To restore the user value
+the <TT CLASS="code">value_source</TT> line can be commented out
+again. If there is no explicit <TT CLASS="code">value_source</TT>
+then the configuration system will just use the highest priority one:
+the user value if it exists; otherwise the inferred value if it
+exists; otherwise the default value which always exists.</P>
+<P CLASS="body"><A NAME="pgfId=1152865"></A>The default value for an
+option can be a simple constant, or it can be an expression involving
+other options. In the latter case the expression will be listed,
+together with the values for all options referenced in the expression
+and the current result of evaluating that expression. This is for
+informational purposes only, the default value is always recalculated
+deterministically when loading in a savefile.</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152866"></A> 
+
+cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {     
+# Flavor: data     
+# No user value, uncomment the following line to provide one.     
+# user_value arm-elf     
+# value_source default     
+# Default value:  CYGHWR_THUMB ? &quot;thumb-elf&quot; : &quot;arm-elf&quot;     
+#     CYGHWR_THUMB == 0     
+#   -<IMG SRC="pix/arrow.gif" NAME="Graphic4" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0> arm-elf 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152867"></A>For options with the data or booldata
+flavor, there are likely to be constraints on the possible values. If
+the value is supposed to be a number in a given range and a user
+value of &quot;<TT CLASS="code"> hello world</TT> &quot; is provided
+instead then there are likely to be compile-time failures. Component
+developers can specify constraints on the legal values, and these
+will be listed in the savefile.</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152868"></A> 
+ 
+cdl_option X_TLOSS {     
+# Flavor: data     
+# No user value, uncomment the following line to provide one.     
+# user_value 1.41484755040569E+16     
+# value_source default     
+# Default value: 1.41484755040569E+16     
+# Legal values: 1 to 1e308 
+};
+<A NAME="pgfId=1152869"></A> 
+cdl_component CYGNUM_LIBM_COMPATIBILITY {     
+# Flavor: booldata     
+# No user value, uncomment the following line to provide one.     
+# user_value 1 POSIX     
+# value_source default     
+# Default value: 1 POSIX     
+# Legal values:  &quot;POSIX&quot; &quot;IEEE&quot; &quot;XOPEN&quot; &quot;SVID&quot;     
+... 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1152870"></A>In some cases the legal values list may
+be an expression involving other options. If so then the current
+values of the referenced options will be listed, together with the
+result of evaluating the list expression, just as for default value
+expressions.</P>
+<P CLASS="body"><A NAME="pgfId=1152871"></A>If an illegal value is
+provided then this will result in a conflict, listed in the conflicts
+section of the savefile. For more complicated options a simple legal
+values list is not sufficient to allow the current value to be
+validated, and the configuration system will be unable to flag
+conflicts. This issue will be addressed in future releases of the
+configuration system.</P>
+<P CLASS="body"><A NAME="pgfId=1152872"></A>Following the
+value-related fields for a given option, any <EM CLASS="emphasis">requires</EM>
+constraints belonging to this option will be listed. These
+constraints are only effective if the option is active and, for bool
+and booldata flavors, enabled. If some aspect of eCos functionality
+is inactive or disabled then it cannot impose any constraints on the
+rest of the system. As usual, the full expression will be listed
+followed by the current values of all options that are referenced and
+the result of evaluating the expression:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152873"></A> 
+
+cdl_option CYGSEM_LIBC_TIME_TIME_WORKING {     
+...     
+# Requires: CYGPKG_DEVICES_WALLCLOCK     
+#     CYGPKG_DEVICES_WALLCLOCK == current     
+#   -<IMG SRC="pix/arrow.gif" NAME="Graphic5" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0> 1 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1152874"></A>When modifying the value of an option it
+is useful to know not only what constraints the option imposes on the
+rest of the system but also what other options in the system depend
+in some way on this one. The savefile provides this information:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152875"></A> 
+
+cdl_option CYGFUN_KERNEL_THREADS_TIMER {     
+...     
+# The following properties are affected by this value     
+# option CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT     
+#     Requires: CYGFUN_KERNEL_THREADS_TIMER     
+# option CYGIMP_UITRON_STRICT_CONFORMANCE     
+#     Requires: CYGFUN_KERNEL_THREADS_TIMER     
+# option CYGSEM_LIBC_TIME_CLOCK_WORKING     
+#     Requires: CYGFUN_KERNEL_THREADS_TIMER 
+}; </PRE><H3 CLASS="heading2">
+<A NAME="pgfId=1152876"></A>Tcl Syntax</H3>
+<P CLASS="body"><A NAME="pgfId=1152877"></A>eCos savefiles are
+implemented as Tcl scripts, and are read in by running the data
+through a standard Tcl interpreter that has been extended with a
+small number of additional commands such as <TT CLASS="code">cdl_option</TT>
+and <TT CLASS="code">cdl_configuration</TT> . In many cases this is
+an implementation detail that can be safely ignored while editing a
+savefile: simply replacing a <TT CLASS="code">1</TT> with a <TT CLASS="code">0</TT>
+to disable some functionality is not going to affect whether or not
+the savefile is still a valid Tcl script and can be processed by a
+Tcl interpreter. However, there are more complicated cases where an
+understanding of Tcl syntax is at least desirable, for example:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1153165"></A> 
+
+cdl_option CYGDAT_UITRON_MEMPOOLVAR_EXTERNS {
+     # Flavor: data
+     user_value \
+      &quot;static char vpool1\[ 2000 \], \\
+      vpool2\[ 2000 \], \\
+       vpool3\[ 2000 \];&quot;     
+# value_source default     
+# Default value: \
+     #     &quot;static char vpool1\[ 2000 \], \\
+     #      vpool2\[ 2000 \], \\
+    #      vpool3\[ 2000 \];&quot; 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1153166"></A>The backslash at the end of the
+<TT CLASS="code">user_value</TT> line is processed by the Tcl
+interpreter as a line continuation character. The quote marks around
+the user data are also interpreted by the Tcl interpreter and serve
+to turn the entire data field into a single argument. The backslashes
+preceding the opening and closing square brackets prevent the Tcl
+interpreter from treating these characters specially, otherwise there
+would be an attempt at <EM CLASS="emphasis">command substitution</EM>
+as described below. The double backslashes at the end of each line of
+the data will be turned into a single backslash by the Tcl
+interpreter, rather than escaping the newline character, so that the
+actual data seen by the configuration system is:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152880"></A> 
+
+static char vpool1[ 2000 ], \
+      vpool2[ 2000 ], \
+      vpool3[ 2000 ];</PRE><P CLASS="body">
+<A NAME="pgfId=1152881"></A>This is of course the data that should
+end up in the <EM>&micro;</EM> ITRON configuration header file. The
+opening and closing braces surrounding the entire body of the option
+data are also significant and cause this body to be passed as a
+single argument to the <TT CLASS="code">cdl_option</TT> command. The
+closing semicolon is optional in this example, but provides a small
+amount of additional robustness if the savefile is edited such that
+it is no longer a valid Tcl script. If the data contained any <TT CLASS="code">$</TT>
+characters then these would have to be treated specially as well, via
+a backslash escape.</P>
+<P CLASS="body"><A NAME="pgfId=1152882"></A>In spite of what all the
+above might seem to suggest, Tcl is actually a very simple yet
+powerful scripting language: the syntax is defined by just eleven
+rules. On occasion this simplicity means that Tcl's behaviour is
+subtly different from other languages, which can confuse newcomers.</P>
+<P CLASS="body"><A NAME="pgfId=1152883"></A>When the Tcl interpreter
+is passed some data such as <TT CLASS="code">puts Hello</TT> , it
+splits this data into a command and its arguments. The command will
+be terminated by a newline or by a semicolon, unless one of the
+quoting mechanisms is used. The command and each of its arguments are
+separated by white space. So in the following example:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152884"></A> 
+puts Hello 
+set x 42 </PRE><P CLASS="body">
+<A NAME="pgfId=1152885"></A>will result in two separate commands
+being executed. The first command is <TT CLASS="code">puts</TT> and
+is passed a single argument, <TT CLASS="code">Hello</TT> . The second
+command is <TT CLASS="code">set</TT> and is passed two arguments, <TT CLASS="code">x</TT>
+and <TT CLASS="code">42</TT> . The intervening newline character
+serves to terminate the first command, and a semi-colon separator
+could be used instead: 
+</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152886"></A> 
+puts Hello;set x 42</PRE><P CLASS="body">
+<A NAME="pgfId=1152887"></A>Any white space surrounding the semicolon
+is just ignored because it does not serve to separate arguments.</P>
+<P CLASS="body"><A NAME="pgfId=1152888"></A>Now consider the
+following:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152889"></A> 
+set x Hello world</PRE><P CLASS="body">
+<A NAME="pgfId=1153315"></A>This is not valid Tcl. It is an attempt
+to invoke the <TT CLASS="code">set</TT> command with three arguments:
+<TT CLASS="code">x</TT> , <TT CLASS="code">Hello</TT> , and <TT CLASS="code">world</TT>
+. The <TT CLASS="code">set</TT> only takes two arguments, a variable
+name and a value, so it is necessary to combine the data into a
+single argument by quoting:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152891"></A> 
+set x &quot;Hello world&quot;</PRE><P CLASS="body">
+<A NAME="pgfId=1152892"></A>When the Tcl interpreter encounters the
+first quote character it treats all subsequent data up to but not
+including the closing quote as part of the current argument. The
+quote marks are removed by the interpreter, so the second argument
+passed to the <TT CLASS="code">set</TT> command is just <TT CLASS="code">Hello
+world</TT> without the quote characters. This can be significant in
+the context of eCos savefiles. For instance, consider the following
+configuration option:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152893"></A> 
+
+cdl_option CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE {     
+# Flavor: data     
+# No user value, uncomment the following line to provide one.     
+# user_value &quot;\&quot;/dev/ttydiag\&quot;&quot;     
+# value_source default     
+# Default value: &quot;\&quot;/dev/ttydiag\&quot;&quot; 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152894"></A>The desired value of the configuration
+option should be a valid C string, complete with quote characters. If
+the savefile was edited to: 
+</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152895"></A> 
+
+cdl_option CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE {     
+# Flavor: data     
+user_value &quot;/dev/ttydiag&quot;     
+# value_source default     
+# Default value: &quot;\&quot;/dev/ttydiag\&quot;&quot; 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152896"></A>then the Tcl interpreter would remove the
+quote marks when the savefile is read back in, so the option's value
+would not have any quote marks and would not be a valid C string. The
+configuration system is not yet able to perform the required
+validation so the following <TT CLASS="code">#define</TT> would be
+generated in the configuration header file:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152897"></A> 
+#define CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE /dev/ttydiag </PRE><P CLASS="body">
+<A NAME="pgfId=1153391"></A>This is likely to cause a compile-time
+failure when building eCos.</P>
+<P CLASS="body"><A NAME="pgfId=1152899"></A>A quoted argument
+continues until the closing quote character is encountered, which
+means that it can span multiple lines. This can also be encountered
+in eCos savefiles, for instance, in the
+<EM CLASS="emphasis">CYGDAT_UITRON_MEMPOOLVAR_EXTERNS</EM> example
+mentioned earlier. Newline or semicolon characters do not terminate
+the current command in such cases.</P>
+<P CLASS="body"><A NAME="pgfId=1152900"></A>The Tcl interpreter
+supports much the same forms of backslash substitution as other
+common programming languages. Some backslash sequences such as <TT CLASS="code">\n</TT>
+will be replaced by the appropriate character. The sequence <TT CLASS="code">\\</TT>
+will be replaced by a single backslash. A backslash at the very end
+of a line will cause that backslash, the newline character, and any
+white space at the start of the next line to be replaced by a single
+space. Hence the following two Tcl commands are equivalent:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152901"></A> 
+puts  &quot;Hello\nworld\n&quot; 
+puts \ 
+&quot;Hello 
+world 
+&quot;</PRE><P CLASS="body">
+<A NAME="pgfId=1153420"></A>In addition to quote and backslash
+characters, the Tcl interpreter treats square brackets, the <TT CLASS="code">$</TT>
+character, and braces specially. Square brackets are used for command
+substitution, for example:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152903"></A> 
+puts &quot;The answer is [expr 6 * 9]&quot;</PRE><P CLASS="body">
+<A NAME="pgfId=1152904"></A>When the Tcl interpreter encounters the
+square brackets it will treat the contents as another command that
+should be executed first, and the result of executing that is used
+when continuing to process the script. In this case the Tcl
+interpreter will execute the command <TT CLASS="code">expr 6 * 9</TT>
+, yielding a result of 54, and then the Tcl interpreter will execute
+<TT CLASS="code">puts &quot;The answer is 54&quot;</TT> . It should
+be noted that the interpreter contains only one level of
+substitution: if the result of performing command substitution
+performs further special characters such as square brackets then
+these will not be treated specially.</P>
+<P CLASS="body"><A NAME="pgfId=1152905"></A>Command line substitution
+is very unlikely to prove useful in the context of an eCos savefile,
+but it is part of the Tcl language and hence cannot be easily
+suppressed while reading in a savefile. As a result care has to be
+taken when savefile data involves square brackets. Consider the
+following:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1153455"></A> 
+
+cdl_option CYGDAT_UITRON_MEMPOOLFIXED_EXTERNS {
+     ...
+     user_value \ 
+&quot;static char fpool1[ 2000 ], 
+fpool2[ 2000 ];&quot;
+     ... 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1152907"></A>The Tcl interpreter will interpret the
+square brackets as an attempt at command substitution and hence it
+will attempt to execute the command <TT CLASS="code">2000</TT> with
+no arguments. No such command is defined by the Tcl language or by
+the savefile-related extensions provided by the configuration system,
+so this will result in an error when an attempt is made to read back
+the savefile. Instead it is necessary to backslash-escape the square
+brackets and thus suppress command substitution:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152908"></A> 
+
+cdl_option CYGDAT_UITRON_MEMPOOLFIXED_EXTERNS {
+     ...
+     user_value \ 
+&quot;static char fpool1\[ 2000 \], 
+fpool2\[ 2000 \];&quot;
+     ... 
+}; </PRE><P CLASS="body">
+<A NAME="pgfId=1152909"></A>Similarly the <TT CLASS="code">$</TT>
+character is used in Tcl scripts to perform variable substitution:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152910"></A> 
+set x [expr 6 * 9] 
+puts &quot;The answer is $x&quot; </PRE><P CLASS="body">
+<A NAME="pgfId=1153494"></A>Variable substitution, like command
+substitution, is very unlikely to prove useful in the context of an
+eCos savefile. Should it be necessary to have a <TT CLASS="code">$</TT>
+character in configuration data then again a backslash escape needs
+to be used.</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1153495"></A> 
+cdl_option FOODAT_MONITOR_PROMPT {
+     ...
+     user_value &quot;\$ &quot;
+     ... 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1153510"></A>Braces are used to collect a sequence of
+characters into a single argument, just like quotes. The difference
+is that variable, command and backslash substitution do not occur
+inside braces (with the sole exception of backslash substitution at
+the end of a line). So, for example, the
+<EM CLASS="emphasis">CYGDAT_UITRON_MEMPOOL_EXTERNFIXED_EXTERNS</EM>
+value could be written as:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1153516"></A> 
+cdl_option CYGDAT_UITRON_MEMPOOLFIXED_EXTERNS {
+     ...
+     user_value \ 
+{static char fpool1[ 2000 ], 
+fpool2[ 2000 ];}
+     ... 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1153517"></A>The configuration system does not use
+this when generating savefiles because for simple edits of a savefile
+by inexperienced users the use of brace characters is likely to be a
+little bit more confusing than the use of quotes.</P>
+<P CLASS="body"><A NAME="pgfId=1152916"></A>At this stage it is worth
+noting that the basic format of each configuration option in the
+savefile makes use of braces:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152917"></A> 
+cdl_option &lt;name&gt; {
+     ... 
+};</PRE><P CLASS="body">
+<A NAME="pgfId=1152918"></A>The configuration system extends the Tcl
+language with a small number of additional commands such as
+<TT CLASS="code">cdl_option</TT> . These commands take two arguments,
+a name and a body, where the body consists of all the text between
+the braces. First a check is made that the specified option is
+actually present in the configuration. Then the body is executed in a
+recursive invocation of the Tcl interpreter, this time with
+additional commands such as <TT CLASS="code">user_value</TT> and
+<TT CLASS="code">value_source</TT> . If, after editing, the braces
+are not correctly matched up then the savefile will no longer be a
+valid Tcl script and errors will be reported when the savefile is
+loaded again.</P>
+<P CLASS="body"><A NAME="pgfId=1152919"></A>Comments in Tcl scripts
+are introduced by a hash character <TT CLASS="code">#</TT> . However,
+a hash character only introduces a comment if it occurs where a
+command is expected. Consider the following:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152920"></A> 
+# This is a comment 
+puts &quot;Hello&quot; # world </PRE><P CLASS="body">
+<A NAME="pgfId=1152921"></A>The first line is a valid comment, since
+the hash character occurs right at the start where a command name is
+expected. The second line does not contain a comment. Instead it is
+an attempt to invoke the <TT CLASS="code">puts</TT> command with
+three arguments: <TT CLASS="code">Hello</TT> , <TT CLASS="code">#</TT>
+and <TT CLASS="code">world</TT> . These are not valid arguments for
+the <TT CLASS="code">puts</TT> command so an error will be raised.</P>
+<P CLASS="body"><A NAME="pgfId=1152922"></A>If the second line was
+rewritten as:</P>
+<PRE CLASS="codeexample"><A NAME="pgfId=1152923"></A> 
+puts &quot;Hello&quot;; # world</PRE><P CLASS="body">
+<A NAME="pgfId=1152924"></A>then this is a valid Tcl script. The
+semicolon identifies the end of the current command, so the hash
+character occurs at a point where the next command would start and
+hence it is interpreted as the start of a comment.</P>
+<P CLASS="body"><A NAME="pgfId=1152925"></A>This handling of comments
+can lead to subtle behaviour. Consider the following:</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1152926"></A> 
+cdl_option WHATEVER {
+     # This is a comment }
+     user_value 42
+     ... 
+}</PRE><P CLASS="body">
+<A NAME="pgfId=1152927"></A>Consider the way the Tcl interpreter
+processes this. The command name and the first argument do not pose
+any special difficulties. The opening brace is interpreted as the
+start of the next argument, which continues until a closing brace is
+encountered. In this case the closing brace occurs on the second
+line, so the second argument passed to <TT CLASS="code">cdl_option</TT>
+is <TT CLASS="code">\n # This is a comment</TT> . This second
+argument is processed in a recursive invocation of the Tcl
+interpreter and does not contain any commands, just a comment.
+Toplevel savefile processing then resumes, and the next command that
+is encountered is <TT CLASS="code">user_value</TT> . Since the
+relevant savefile code is not currently processing a configuration
+option this is an error. Later on the Tcl interpreter would encounter
+a closing brace by itself, which is also an error. Fortunately this
+sequence of events is very unlikely to occur when editing generated
+savefiles.</P>
+<P CLASS="body"><A NAME="pgfId=1152928"></A>This should be sufficient
+information about Tcl to allow for safe editing of eCos savefiles.
+Further information is available from a wide variety of sources, for
+example the book <EM CLASS="emphasis">Tcl and the Tk Toolkit </EM>by
+John K Ousterhout.</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1152929"></A><A NAME="pgfId=1152287"></A>
+Editing the Sources</H3>
+<P CLASS="body"><A NAME="pgfId=1137646"></A><A NAME="marker=1137647"></A>
+For many users, controlling the packages and manipulating the
+available configuration options will be sufficient to create an
+embedded operating system that meets the application's requirements.
+However, since eCos is shipped entirely in source form, it is
+possible to go further when necessary: you can edit the eCos sources
+themselves. This requires some understanding of the way the eCos
+build system works. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137649"></A><A NAME="marker=1137648"></A>
+The most obvious place to edit the source code is directly in the
+component repository. For example, you could edit the file
+<TT CLASS="code">kernel/v1_3_x/src/sync/mutex.cxx</TT> to change the
+way kernel mutexes work, or possibly just to add some extra
+diagnostics or assertions. Once the file has been edited, it is
+possible to invoke <TT CLASS="code">make</TT> at the top level of the
+build tree and the target library will be rebuilt as required. A
+small optimization is possible: the build tree is largely a mirror of
+the component repository, so it too will contain a subdirectory
+<TT CLASS="code">kernel/v1_3_x</TT> ; if <TT CLASS="code">make</TT>
+is invoked in this directory then it will only check for changes to
+the kernel sources, which is a bit more efficient than checking for
+changes throughout the component repository. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137656"></A>Editing a file in the
+component repository is fine if this tree is used for only one eCos
+configuration. If the repository is used for several different
+configurations, however, and especially if it is shared by multiple
+users, then making what may be experimental changes to the master
+sources would be a bad idea. The build system provides an
+alternative. It is possible to make a copy of the file in the build
+tree, in other words copy <TT CLASS="code">mutex.cxx</TT> from the
+<TT CLASS="code">kernel/v1_3_x/src/sync</TT> directory in the
+component repository to <TT CLASS="code">kernel/v1_3_x/src/sync</TT>
+in the build tree, and edit the file in the build tree. When <TT CLASS="code">make</TT>
+is invoked it will pick up local copies of any of the sources in
+preference to the master versions in the component repository. Once
+you have finished modifying the eCos sources you can install the
+final version back in the component repository. If the changes were
+temporary in nature and only served to aid the debugging process,
+then you can discard the modified version of the sources. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137663"></A>The situation is slightly
+more complicated for the header files that a package may export, such
+as the C library's <TT CLASS="code">stdio.h</TT> header file, which
+can be found in the directory <TT CLASS="code">language/c/libc/v1_3_x/include</TT>
+. If such a header file is changed, either directly in the component
+repository or after copying it to the build tree, then <TT CLASS="code">make</TT>
+must be invoked at the top level of the build tree. In cases like
+this it is not safe to rebuild just the C library because other
+packages may depend on the contents of <TT CLASS="code">stdio.h</TT>
+. 
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1137667"></A>Modifying the Memory
+Layout</H3>
+<P CLASS="body"><A NAME="pgfId=1137668"></A><A NAME="marker=1137669"></A>
+Each eCos platform package is supplied with linker script fragments
+which describe the location of memory regions on the evaluation board
+and the location of memory sections within these regions. The correct
+linker script fragment is selected and included in the eCos linker
+script <TT CLASS="code">target.ld</TT> when eCos is built.</P>
+<P CLASS="body"><A NAME="pgfId=1137671"></A><A NAME="marker=1137670"></A>
+It is not necessary to modify the default memory layouts in order to
+start development with eCos. However, it will be necessary to edit a
+linker script fragment when the memory map of the evaluation board is
+changed. For example, if additional memory is added, the linker must
+be notified that the new memory is available for use. As a minimum,
+this would involve modifying the length of the corresponding memory
+region. Where the available memory is non-contiguous, it may be
+necessary to declare a new memory region and reassign certain linker
+output sections to the new region.</P>
+<P CLASS="body"><A NAME="pgfId=1137673"></A><A NAME="marker=1137672"></A>
+Linker script fragments and memory layout header files should be
+edited within the eCos install tree. They are located at
+<TT CLASS="code">include/pkgconf/mlt_*.*</TT> . Where multiple
+start-up types are in use, it will be necessary to edit multiple
+linker script fragments and header files. The information provided in
+the header file and the corresponding linker script fragment must
+always match. A typical linker script fragment is shown below:</P>
+<P CLASS="exampletitle"><A NAME="pgfId=1137675"></A><A NAME="marker=1137674"></A>
+eCos linker script fragment</P>
+<PRE CLASS="codeexamplewide"><A NAME="pgfId=1137676"></A> 
+MEMORY
+{
+ rom : ORIGIN = 0x40000000, LENGTH = 0x80000
+ ram : ORIGIN = 0x48000000, LENGTH = 0x200000
+}
+
+SECTIONS
+{
+ SECTIONS_BEGIN
+ SECTION_rom_vectors (rom, 0x40000000, LMA_EQ_VMA)
+ SECTION_text (rom, ALIGN (0x1), LMA_EQ_VMA)
+ SECTION_fini (rom, ALIGN (0x1), LMA_EQ_VMA)
+ SECTION_rodata (rom, ALIGN (0x1), LMA_EQ_VMA)
+ SECTION_rodata1 (rom, ALIGN (0x1), LMA_EQ_VMA)
+ SECTION_fixup (rom, ALIGN (0x1), LMA_EQ_VMA)
+ SECTION_gcc_except_table (rom, ALIGN (0x1), LMA_EQ_VMA)
+ SECTION_data (ram, 0x48000000, FOLLOWING (.gcc_except_table))
+ SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
+ SECTIONS_END
+}</PRE><P CLASS="body">
+<A NAME="pgfId=1137677"></A>The file consists of two blocks, the
+<TT CLASS="code">MEMORY</TT> block contains lines describing the
+address (<TT CLASS="code"> ORIGIN</TT> ) and the size (<TT CLASS="code">
+LENGTH</TT> ) of each memory region. The <TT CLASS="code">MEMORY</TT>
+block is followed by the <TT CLASS="code">SECTIONS</TT> block which
+contains lines describing each of the linker output sections. Each
+section is represented by a macro call. The arguments of these macros
+are ordered as follows: 
+</P>
+<OL>
+	<LI><P><A NAME="pgfId=1137678"></A>The memory region in which the
+	section will finally reside. 
+	</P>
+	<LI><P><A NAME="pgfId=1137679"></A>The final address (<TT CLASS="code">
+	VMA</TT> ) of the section. This is expressed using one of the
+	following forms: 
+	</P>
+</OL>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137680"></A><EM CLASS="emphasis">n</EM>
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137681"></A>at the absolute
+address specified by the unsigned integer <EM CLASS="emphasis">n</EM>
+</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137682"></A>ALIGN (<EM CLASS="emphasis">
+n</EM> ) 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137683"></A>following the
+final location of the previous section with alignment to the next <EM CLASS="emphasis">n</EM>
+-byte boundary</P>
+<OL>
+	<LI><P><A NAME="pgfId=1137684"></A>The initial address (<TT CLASS="code">
+	LMA</TT> ) of the section. This is expressed using one of the
+	following forms: 
+	</P>
+</OL>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137685"></A>LMA_EQ_VMA 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137686"></A>the <TT CLASS="code">LMA</TT>
+<EM>equals the </EM><TT CLASS="code">VMA</TT> <EM>(no relocation)</EM>
+</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137687"></A>AT (<EM CLASS="emphasis">
+n</EM> ) 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137688"></A>at the absolute
+address specified by the unsigned integer <EM CLASS="emphasis">n</EM>
+</P>
+<P CLASS="bodyhang1"><A NAME="pgfId=1137689"></A>FOLLOWING (.<EM CLASS="emphasis">
+name</EM> ) 
+</P>
+<P CLASS="bodylistfollow"><A NAME="pgfId=1137690"></A>following the
+initial location of section <EM CLASS="emphasis">name</EM> 
+</P>
+<P CLASS="body"><A NAME="pgfId=1137691"></A><A NAME="pgfId=1137692"></A>
+In order to maintain compatibility with linker script fragments and
+header files exported by the eCos Configuration Tool, the use of
+other expressions within these files is not recommended.</P>
+<P CLASS="body"><A NAME="pgfId=1137693"></A>Note that the names of
+the linker output sections will vary between target architectures. A
+description of these sections can be found in the specific <EM CLASS="emphasis">GNUPro
+Toolkit Reference manual</EM> for your architecture.</P>
+<TABLE CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD></TD>
+	</TR>
+</TABLE>
+<HR>
+<P><TABLE ALIGN=LEFT WIDTH=98% BORDER=0 CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD COLSPAN=3>
+			<P CLASS="gotos" ALIGN=CENTER>Manual Configuration</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.2.html">To
+			Contents</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.12.html">To&nbsp;previous&nbsp;page</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.14.html">To&nbsp;next&nbsp;page</A></P>
+		</TD>
+	</TR>
+</TABLE><BR><BR>
+</P>
+</BODY>
+</HTML>

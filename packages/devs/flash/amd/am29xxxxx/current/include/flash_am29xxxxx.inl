@@ -38,11 +38,21 @@
 // Date:         2001-02-21
 // Purpose:      
 // Description:  AMD AM29xxxxx series flash device driver
-// Notes:        While the parts support sector locking, this is controlled
-//               using a 12V source (on F parts anyway) - so it is left
-//               unimplemented for now.  When it does get implemented, let
-//               the platform CDL control the availability of that feature.
-//               FIXME: Does not use FLASH_P2V
+// Notes:        While the parts support sector locking, some only do so
+//               via crufty magic and the use of programmer hardware
+//               (specifically by applying 12V to one of the address
+//               pins) so the driver does not support write protection.
+//
+// FIXME:        Make support for specific devices CDL configurable. Make
+//               support for bootblock (and associated code/structs)
+//               configurable.
+//
+// FIXME:        Should support SW locking on the newer devices.
+//
+// FIXME:        Figure out how to do proper error checking when there are
+//               devices in parallel. Presently the driver will return
+//               driver timeout error on device errors which is not very
+//               helpful.
 //
 //####DESCRIPTIONEND####
 //
@@ -60,6 +70,7 @@
 //----------------------------------------------------------------------------
 // Common device details.
 #define FLASH_Read_ID                   FLASHWORD( 0x90 )
+#define FLASH_WP_State                  FLASHWORD( 0x90 )
 #define FLASH_Reset                     FLASHWORD( 0xFF )
 #define FLASH_Program                   FLASHWORD( 0xA0 )
 #define FLASH_Block_Erase               FLASHWORD( 0x30 )
@@ -68,6 +79,8 @@
 #define FLASH_Busy                      FLASHWORD( 0x40 ) // "Toggle" bit
 #define FLASH_Err                       FLASHWORD( 0x20 )
 #define FLASH_Sector_Erase_Timer        FLASHWORD( 0x08 )
+
+#define FLASH_unlocked                  FLASHWORD( 0x00 )
 
 #define FLASH_Setup_Addr1               (0x555)
 #define FLASH_Setup_Addr2               (0x2AA)
@@ -78,26 +91,111 @@
 // Platform code must define the below
 // #define CYGNUM_FLASH_INTERLEAVE      : Number of interleaved devices (in parallel)
 // #define CYGNUM_FLASH_SERIES          : Number of devices in series
+// #define CYGNUM_FLASH_WIDTH           : Width of devices on platform
 // #define CYGNUM_FLASH_BASE            : Address of first device
-// And select one of the below device variants
 
-#ifdef CYGPKG_DEVS_FLASH_AMD_AM29F040B
-# define FLASH_BLOCK_SIZE               (0x10000*CYGNUM_FLASH_INTERLEAVE)
-# define FLASH_NUM_REGIONS              (8)
-# define CYGNUM_FLASH_BASE_MASK         (0xFFF80000u) // 512kB devices
-# define CYGNUM_FLASH_WIDTH             (8)
-# define CYGNUM_FLASH_BLANK             (1)
-# define CYGNUM_FLASH_ID_MANUFACTURER   FLASHWORD(0x01)
-# define CYGNUM_FLASH_ID_DEVICE         FLASHWORD(0xA4)
+#define CYGNUM_FLASH_BLANK              (1)
+
+#ifndef FLASH_P2V
+# define FLASH_P2V( _a_ ) ((volatile flash_data_t *)((CYG_ADDRWORD)(_a_)))
 #endif
-
-#define FLASH_DEVICE_SIZE               (FLASH_BLOCK_SIZE*FLASH_NUM_REGIONS)
-#define CYGNUM_FLASH_DEVICES            (CYGNUM_FLASH_INTERLEAVE*CYGNUM_FLASH_SERIES)
+#ifndef CYGHWR_FLASH_AM29XXXXX_PLF_INIT
+# define CYGHWR_FLASH_AM29XXXXX_PLF_INIT()
+#endif
 
 //----------------------------------------------------------------------------
 // Now that device properties are defined, include magic for defining
 // accessor type and constants.
 #include <cyg/io/flash_dev.h>
+
+//----------------------------------------------------------------------------
+// Information about supported devices
+typedef struct flash_dev_info {
+    flash_data_t device_id;
+    cyg_uint32   block_size;
+    cyg_int32    block_count;
+    cyg_uint32   base_mask;
+    cyg_uint32   device_size;
+    cyg_bool     bootblock;
+    cyg_uint32   bootblocks[6];         // 0 is bootblock offset, 1-5 sub-sector sizes (or 0)
+} flash_dev_info_t;
+
+static const flash_dev_info_t supported_devices[] = {
+#if CYGNUM_FLASH_WIDTH == 8
+    { 
+        device_id  : FLASHWORD(0xa4),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 8,
+        device_size: 0x80000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x80000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : false
+    },
+    {   // MBM29LV160-T | AM29LV160-T
+        device_id  : FLASHWORD(0xc4),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x1f0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+    {   // MBM29LV160-B | AM29LV160-B
+        device_id  : FLASHWORD(0x49),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    }
+#else // 16 bit devices
+    {   // MBM29LV160-T | AM29LV160-T
+        device_id  : FLASHWORD(0x22c4),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x1f0000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    },
+    {   // MBM29LV160-B | AM29LV160-B
+        device_id  : FLASHWORD(0x2249),
+        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
+        block_count: 32,
+        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
+        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
+        bootblock  : true,
+        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
+                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
+                       0
+                     }
+    }
+#endif
+};
+#define NUM_DEVICES (sizeof(supported_devices)/sizeof(flash_dev_info_t))
+
+static const flash_dev_info_t* flash_dev_info;
 
 //----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside
@@ -119,24 +217,29 @@ void
 flash_query(void* data)
 {
     volatile flash_data_t *ROM;
+    volatile flash_data_t *f_s1, *f_s2;
     flash_data_t* id = (flash_data_t*) data;
-    int i;
+    flash_data_t w;
 
-    ROM = (volatile flash_data_t*) CYGNUM_FLASH_BASE;
+    ROM = (flash_data_t*) CYGNUM_FLASH_BASE;
+    f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
+    f_s2 = FLASH_P2V(ROM+FLASH_Setup_Addr2);
 
-    ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-    ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-    ROM[FLASH_Setup_Addr1] = FLASH_Read_ID;
+    w = *(FLASH_P2V(ROM));
+
+    *f_s1 = FLASH_Setup_Code1;
+    *f_s2 = FLASH_Setup_Code2;
+    *f_s1 = FLASH_Read_ID;
 
     // Manufacturers' code
-    id[0] = ROM[0];
+    id[0] = *(FLASH_P2V(ROM));
     // Part number
-    id[1] = ROM[1];
+    id[1] = *(FLASH_P2V(ROM+1));
 
-    ROM[0] = FLASH_Reset;
+    *(FLASH_P2V(ROM)) = FLASH_Reset;
 
-    // Allow device to settle.
-    for (i = 500; i > 0; i--);
+    // Stall, waiting for flash to return to read mode.
+    while (w != *(FLASH_P2V(ROM)));
 }
 
 //----------------------------------------------------------------------------
@@ -145,20 +248,28 @@ int
 flash_hwr_init(void)
 {
     flash_data_t id[2];
+    int i;
+
+    CYGHWR_FLASH_AM29XXXXX_PLF_INIT();
 
     flash_dev_query(id);
 
-    // Check that flash_id data is matching the one the driver was
-    // configured for.
-    if (id[0] != CYGNUM_FLASH_ID_MANUFACTURER
-        || id[1] != CYGNUM_FLASH_ID_DEVICE)
+    // Look through table for device data
+    flash_dev_info = supported_devices;
+    for (i = 0; i < NUM_DEVICES; i++) {
+        if (flash_dev_info->device_id == id[1])
+            break;
+    }
+
+    // Did we find the device? If not, return error.
+    if (NUM_DEVICES == i)
         return FLASH_ERR_DRV_WRONG_PART;
 
     // Hard wired for now
-    flash_info.block_size = FLASH_BLOCK_SIZE * CYGNUM_FLASH_INTERLEAVE;
-    flash_info.blocks = FLASH_NUM_REGIONS;
+    flash_info.block_size = flash_dev_info->block_size;
+    flash_info.blocks = flash_dev_info->block_count;
     flash_info.start = (void *)CYGNUM_FLASH_BASE;
-    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (FLASH_NUM_REGIONS * FLASH_BLOCK_SIZE * CYGNUM_FLASH_INTERLEAVE * CYGNUM_FLASH_SERIES));
+    flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (flash_dev_info->device_size * CYGNUM_FLASH_SERIES));
     return FLASH_ERR_OK;
 }
 
@@ -191,71 +302,98 @@ int
 flash_erase_block(void* block, unsigned int size)
 {
     volatile flash_data_t* ROM;
-    volatile flash_data_t* block_ptr = (volatile flash_data_t*) block;
+    volatile flash_data_t* b_p = (flash_data_t*) block;
+    volatile flash_data_t *b_v;
+    volatile flash_data_t *f_s1, *f_s2;
     int timeout = 50000;
-    int len;
-    flash_data_t res = FLASH_ERR_OK;
-    int state;
+    int len, len_ix = 1;
+    int res = FLASH_ERR_OK;
+    flash_data_t state;
+    cyg_bool bootblock;
 
-    ROM = (volatile flash_data_t*)((unsigned long)block & ~(FLASH_DEVICE_SIZE-1));
+    ROM = (volatile flash_data_t*)((unsigned long)block & flash_dev_info->base_mask);
+    f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
+    f_s2 = FLASH_P2V(ROM+FLASH_Setup_Addr2);
 
-    // Send erase block command - six step sequence
-    ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-    ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-    ROM[FLASH_Setup_Addr1] = FLASH_Setup_Erase;
-    ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-    ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-    *block_ptr = FLASH_Block_Erase;
-
-    // Now poll for the completion of the sector erase timer (50us)
-    timeout = 5000000;              // how many retries?
-    while (true) {
-        state = *block_ptr;
-        if ((state & FLASH_Sector_Erase_Timer) == 0) break;
-        if (state & FLASH_Err) {
-            res = FLASH_ERR_ERASE;
-            break;
-        }
-        if (--timeout == 0) {
-            res = FLASH_ERR_DRV_TIMEOUT;
-            break;
-        }
+    // Is this the boot sector?
+    bootblock = (flash_dev_info->bootblock &&
+                 (flash_dev_info->bootblocks[0] == ((unsigned long)block - (unsigned long)ROM)));
+    if (bootblock) {
+        len = flash_dev_info->bootblocks[len_ix++];
+    } else {
+        len = flash_dev_info->block_size;
     }
 
-    // Then wait for erase completion.
-    if (FLASH_ERR_OK == res) {
-        timeout = 5000000;
+    while (len > 0) {
+        // First check whether the block is protected
+        *f_s1 = FLASH_Setup_Code1;
+        *f_s2 = FLASH_Setup_Code2;
+        *f_s1 = FLASH_WP_State;
+        state = *FLASH_P2V(b_p+2);
+        *FLASH_P2V(ROM) = FLASH_Reset;
+
+        if (FLASH_unlocked != state)
+            return FLASH_ERR_PROTECT;
+
+        b_v = FLASH_P2V(b_p);
+    
+        // Send erase block command - six step sequence
+        *f_s1 = FLASH_Setup_Code1;
+        *f_s2 = FLASH_Setup_Code2;
+        *f_s1 = FLASH_Setup_Erase;
+        *f_s1 = FLASH_Setup_Code1;
+        *f_s2 = FLASH_Setup_Code2;
+        *b_v = FLASH_Block_Erase;
+
+        // Now poll for the completion of the sector erase timer (50us)
+        timeout = 5000000;              // how many retries?
         while (true) {
-            state = *block_ptr;
-            if (FLASH_BlankValue == state) {
-                break;
-            }
-            if (state & FLASH_Err) {
-                res = FLASH_ERR_ERASE;
-                break;
-            }
+            state = *b_v;
+            if ((state & FLASH_Sector_Erase_Timer) == 0) break;
+
             if (--timeout == 0) {
                 res = FLASH_ERR_DRV_TIMEOUT;
                 break;
             }
         }
-    }
 
-    if (FLASH_ERR_OK != res)
-        ROM[0] = FLASH_Reset;
+        // Then wait for erase completion.
+        if (FLASH_ERR_OK == res) {
+            timeout = 5000000;
+            while (true) {
+                state = *b_v;
+                if (FLASH_BlankValue == state) {
+                    break;
+                }
 
-    // Verify erase operation
-    len = (FLASH_BLOCK_SIZE*CYGNUM_FLASH_INTERLEAVE);
-    while (len > 0) {
-        if (*block_ptr != FLASH_BlankValue) {
-            // Only update return value if erase operation was OK
-            if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
-            break;
+                // Don't check for FLASH_Err here since it will fail
+                // with devices in parallel because these may finish
+                // at different times.
+
+                if (--timeout == 0) {
+                    res = FLASH_ERR_DRV_TIMEOUT;
+                    break;
+                }
+            }
         }
-        block_ptr++;
-        len -= sizeof(*block_ptr);
-    }
 
+        if (FLASH_ERR_OK != res)
+            *FLASH_P2V(ROM) = FLASH_Reset;
+
+        // Verify erase operation
+        while (len > 0) {
+            b_v = FLASH_P2V(b_p++);
+            if (*b_v != FLASH_BlankValue) {
+                // Only update return value if erase operation was OK
+                if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
+                return res;
+            }
+            len -= sizeof(*b_p);
+        }
+
+        if (bootblock)
+            len = flash_dev_info->bootblocks[len_ix++];
+    }
     return res;
 }
 
@@ -266,41 +404,44 @@ int
 flash_program_buf(void* addr, void* data, int len)
 {
     volatile flash_data_t* ROM;
-    volatile flash_data_t* addr_ptr = (volatile flash_data_t*) addr;
     volatile flash_data_t* data_ptr = (volatile flash_data_t*) data;
+    volatile flash_data_t* addr_v;
+    volatile flash_data_t* addr_p = (flash_data_t*) addr;
+    volatile flash_data_t *f_s1, *f_s2;
 
     int timeout;
     int res = FLASH_ERR_OK;
 
-#if 0
-    CYG_ASSERT((unsigned long)data_ptr & (sizeof(flash_data_t)-1) == 0, 
-               "Data not properly aligned");
-    CYG_ASSERT((unsigned long)addr_ptr & (CYGNUM_FLASH_INTERLEAVE*sizeof(flash_data_t)-1) == 0, 
-               "Addr not properly aligned (to first interleaved device)");
-#endif
-
     while (len > 0) {
         int state;
 
-        // Base address of device(s) being programmed. 
-        ROM = (volatile flash_data_t*)((unsigned long)addr & ~(FLASH_DEVICE_SIZE-1));
+        // Note: Should really only do the address calculations on
+        // section/device boundaries - but then, we're likely to be
+        // spinning for a while down below anyway, so no point in
+        // making the loop more complicated.
+
+        // Base address of device(s) being programmed.
+        ROM = (volatile flash_data_t*)((unsigned long)addr_p & flash_dev_info->base_mask);
+        f_s1 = FLASH_P2V(ROM+FLASH_Setup_Addr1);
+        f_s2 = FLASH_P2V(ROM+FLASH_Setup_Addr2);
+        addr_v = FLASH_P2V(addr_p++);
 
         // Program data [byte] - 4 step sequence
-        ROM[FLASH_Setup_Addr1] = FLASH_Setup_Code1;
-        ROM[FLASH_Setup_Addr2] = FLASH_Setup_Code2;
-        ROM[FLASH_Setup_Addr1] = FLASH_Program;
-        *addr_ptr = *data_ptr;
+        *f_s1 = FLASH_Setup_Code1;
+        *f_s2 = FLASH_Setup_Code2;
+        *f_s1 = FLASH_Program;
+        *addr_v = *data_ptr;
 
         timeout = 5000000;
         while (true) {
-            state = *addr_ptr;
+            state = *addr_v;
             if (*data_ptr == state) {
                 break;
             }
-            if (state & FLASH_Err) {
-                res = FLASH_ERR_PROGRAM;
-                break;
-            }
+
+            // Can't check for FLASH_Err since it'll fail in parallel
+            // configurations.
+
             if (--timeout == 0) {
                 res = FLASH_ERR_DRV_TIMEOUT;
                 break;
@@ -308,9 +449,9 @@ flash_program_buf(void* addr, void* data, int len)
         }
 
         if (FLASH_ERR_OK != res)
-            ROM[0] = FLASH_Reset;
+            *FLASH_P2V(ROM) = FLASH_Reset;
 
-        if (*addr_ptr++ != *data_ptr++) {
+        if (*addr_v != *data_ptr++) {
             // Only update return value if erase operation was OK
             if (FLASH_ERR_OK == res) res = FLASH_ERR_DRV_VERIFY;
             break;

@@ -18,6 +18,9 @@ cdl_configuration eCos {
     package -hardware CYGPKG_DEVS_PCMCIA_IPAQ current ;
     package -hardware CYGPKG_DEVS_FLASH_IPAQ current ;
     package -hardware CYGPKG_DEVS_FLASH_STRATA current ;
+    package -hardware CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0 current ;
+    package -hardware CYGPKG_DEVS_TOUCH_IPAQ current ;
+    package -hardware CYGPKG_DEVS_KBD_IPAQ current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -36,6 +39,10 @@ cdl_option CYGBLD_BUILD_GDB_STUBS {
 
 cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
     user_value 4
+};
+
+cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
+    user_value 4096
 };
 
 cdl_option CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT {
@@ -68,6 +75,18 @@ cdl_component CYG_HAL_STARTUP {
 
 cdl_component CYGBLD_BUILD_REDBOOT {
     user_value 1
+};
+
+cdl_option CYGSEM_REDBOOT_VARIABLE_BAUD_RATE {
+    user_value 1
+};
+
+cdl_option CYGNUM_REDBOOT_FLASH_RESERVED_BASE {
+    user_value 0x40000
+};
+
+cdl_option CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP {
+    user_value 0
 };
 
 

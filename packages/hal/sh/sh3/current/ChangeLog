@@ -1,3 +1,7 @@
+2001-05-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_io.h: Added. Includes plf_io.h
+
 2001-02-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/variant.S (cyg_hal_cache_enable): Write ORed value, not just

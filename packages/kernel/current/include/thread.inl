@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                    
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -286,18 +286,6 @@ inline void Cyg_HardwareThread::init_context(Cyg_Thread *thread)
 }
 
 
-
-// -------------------------------------------------------------------------
-// Load thread context without saving current context.
-// This function is only really here for completeness, the
-// kernel generally calls the HAL macros directly.
-
-inline void Cyg_HardwareThread::load_context()
-{
-    CYG_ADDRESS dummy_stack_ptr;
-    
-    HAL_THREAD_SWITCH_CONTEXT( &dummy_stack_ptr, &stack_ptr );
-}
 
 // -------------------------------------------------------------------------
 // Save current thread's context and load that of the given next thread.

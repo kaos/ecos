@@ -1,3 +1,23 @@
+2001-05-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx.inl (flash_hwr_init): Call platform init
+	code if defined.
+
+2001-05-28  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx.inl: Rewritten to handle bootblock
+	parts, autodetect part and configure accordingly.
+	Fixed erase and program code to work with devices in parallel.
+	Fixed buglet in bootblock detect code.
+
+2001-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/flash_amd_am29xxxxx.cdl: Links function in RAM. IO driver
+	need not copy.
+
+	* include/flash_am29xxxxx.inl: Check for WP before trying to erase
+	block. Use P2V macro.
+
 2001-02-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx.inl (flash_query): Allow device to

@@ -8,7 +8,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 2000 Red Hat, Inc.
+// Copyright (C) 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos USB support.
 //
@@ -263,6 +263,12 @@ ecos_usbeth_start_tx(struct sk_buff* skb, struct net_device* net)
     usbeth->tx_buffer[1]        = (skb->len >> 8) & 0x00FF;
     memcpy(&(usbeth->tx_buffer[2]), skb->data, skb->len);
     usbeth->tx_urb.transfer_buffer_length = skb->len + 2;
+
+    // Some targets are unhappy about receiving 0-length packets, not
+    // just sending them.
+    if (0 == (usbeth->tx_urb.transfer_buffer_length % 64)) {
+        usbeth->tx_urb.transfer_buffer_length++;
+    }
 #if 0
     {
         int i;

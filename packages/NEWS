@@ -1,3 +1,4 @@
+* Added ethernet drivers for SMSC lan91cxx 
 * Added driver for Motorola PowerPC 8xxT "Fast Ethernet Controller".
 * Added support for Analogue & Micro "viper" - PowerPC 860T based
   board.  Currently this is only alpha since full test farm testing
@@ -24,7 +25,7 @@
   full eCos.
 * Added simple ROM based file system support, contributed by 
   Richard Panton of 3G Lab.
-* Added support for MIPS QED RM7000 variant and Ocelot board, including
+* Added support for MIPS PMC-Sierra RM7000 variant and Ocelot board, including
   PCI, ethernet and FLASH support.
 * Added gzip/zlib decompression support to RedBoot.
 * Added zlib decompression library.

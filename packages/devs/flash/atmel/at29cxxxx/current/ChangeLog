@@ -1,3 +1,8 @@
+2001-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/flash_atmel_at29cxxxx.cdl: Links functions to RAM. IO driver
+	need not copy.
+
 2001-02-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_at29cxxxx.inl: Include type macros from IO driver.

@@ -15,8 +15,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_MIPS_RM7000 current ;
     package -hardware CYGPKG_HAL_MIPS_RM7000_OCELOT current ;
     package -hardware CYGPKG_IO_PCI current ;
-    package -hardware CYGPKG_DEVS_FLASH_MIPS_QED_OCELOT current ;
-    package -hardware CYGPKG_DEVS_FLASH_AMD_AM29F040B current ;
+    package -hardware CYGPKG_DEVS_FLASH_MIPS_OCELOT current ;
+    package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -hardware CYGPKG_IO_SERIAL_GENERIC_16X5X current ;
     package -hardware CYGPKG_DEVS_ETH_INTEL_I82559 current ;
     package -template CYGPKG_HAL current ;

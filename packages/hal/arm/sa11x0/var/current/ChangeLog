@@ -1,3 +1,8 @@
+2001-05-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Protect compilation - scripting
+	is configurable.
+
 2001-05-17  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_diag.c: Allow baud rate to be settable.

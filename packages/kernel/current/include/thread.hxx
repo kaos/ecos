@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -106,9 +106,6 @@ protected:
     
     // Save current thread's context and load that of the given next thread.
     void    switch_context(Cyg_HardwareThread *next);
-
-    // load this thread's context without saving current context
-    void    load_context();
 
     // attach a stack to this thread
     void    attach_stack(CYG_ADDRESS stack, cyg_uint32 stack_size);

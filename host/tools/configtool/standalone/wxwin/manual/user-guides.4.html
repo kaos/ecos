@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+	<TITLE> Getting Started</TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice/5.1 (Win32)">
+	<META NAME="CREATED" CONTENT="20010405;13194907">
+	<META NAME="CHANGEDBY" CONTENT="Julian Smart">
+	<META NAME="CHANGED" CONTENT="20010405;14125643">
+	<STYLE>
+	<!--
+		P.body { font-family: "Times New Roman"; font-size: 12pt; font-weight: medium; text-align: left; text-decoration: none }
+		H2.chaptertitle { margin-bottom: 0.01in; color: #000077; font-family: "Arial"; font-size: 28pt; text-align: left; text-decoration: none }
+		P.figuretitle { margin-top: 0.06in; font-family: "Times New Roman"; font-size: 12pt; text-align: left }
+		P.gotos { margin-top: 0.11in; color: #000077; font-family: "Arial"; font-size: 10pt; text-decoration: none }
+		H3.heading1 { margin-right: 0.67in; margin-bottom: 0.01in; color: #000077; font-family: "Arial"; font-size: 22pt; text-align: left; text-decoration: none }
+		H3.heading2 { margin-top: 0.06in; margin-bottom: 0.01in; font-family: "Arial"; font-size: 16pt; text-align: left }
+		H4.heading3 { margin-top: 0.1in; font-family: "Arial"; font-size: 14pt; text-align: left }
+		A:link { color: #0000ff }
+		A:visited { color: #800080 }
+		EM.emphasis { font-family: "Times New Roman"; font-size: 12pt; font-weight: medium }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LINK="#0000ff" VLINK="#800080" BGCOLOR="#ffffff">
+<P><TABLE ALIGN=LEFT WIDTH=98% BORDER=0 CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD COLSPAN=3>
+			<P CLASS="gotos" ALIGN=CENTER>Getting Started</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.2.html">To
+			Contents</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.3.html">To&nbsp;previous&nbsp;page</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.5.html">To&nbsp;next&nbsp;page</A></P>
+		</TD>
+	</TR>
+</TABLE>&nbsp;</P>
+<P><BR><BR>
+</P>
+<HR>
+<H2 CLASS="chaptertitle" STYLE="margin-top: 0in; margin-bottom: 0in"><A NAME="pgfId=1133591"></A><A NAME="marker=1142249"></A>
+Getting Started</H2>
+<H2 CLASS="chaptertitle"><IMG SRC="botclear.gif" NAME="Graphic1" ALIGN=BOTTOM WIDTH=1024 HEIGHT=16 BORDER=0>
+</H2>
+<H3 CLASS="heading1"><A NAME="pgfId=1136137"></A><A NAME="marker=1150503"></A>
+Introduction</H3>
+<P CLASS="body"><A NAME="pgfId=1139544"></A>The eCos Configuration
+Tool is used to tailor eCos at source level, prior to compilation or
+assembly, and provides a configuration file and a set of files used
+to build user applications. The sources and other files used for
+building a configuration are provided in a <EM CLASS="emphasis">component
+repository,</EM> which is loaded when the eCos Configuration Tool is
+invoked. The component repository includes a set of files defining
+the structure of relationships between the Configuration Tool and
+other components, and is written in a <EM CLASS="emphasis">Component
+Definition Language</EM> (CDL). For a description of the concepts
+underlying component configuration, see <A HREF="user-guides.e.html#40966">CDL
+Concepts</A> .</P>
+<P CLASS="body">The Configuration Tool runs on both Linux and MS
+Windows, adopting the appropriate look and feel on each platform.
+There are some minor differences in look and feel, and sometimes
+functionality, between the Linux and the MS Windows versions. Where
+these differences are significant, they will be described, but
+generally screenshots are provided for one platform only.</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1117368"></A><A NAME="marker=1150504"></A>
+Invoking the eCos Configuration Tool</H3>
+<H2>On Linux</H2>
+<P CLASS="body">Add the eCos Configuration Tool install directory to your PATH,
+for example:</P>
+<P CLASS="body">export PATH=/opt/ecos/ecos1.5.0/bin:$PATH</P>
+<P CLASS="body">You may run configtool with zero, one or two arguments. You can
+specify the eCos repository location, and/or an eCos save file
+(extension .ecc) on the command line. The ordering of these two
+arguments is not significant. For example:</P>
+<P CLASS="body">configtool /opt/ecos/ecos1.5.0/packages myfile.ecc</P>
+<P CLASS="body">The Configuration Tool will be displayed (see Figure 1 below).</P>
+<H2>On Windows</H2>
+<P CLASS="body"><A NAME="pgfId=1144008"></A>There are two ways in
+which to invoke the eCos Configuration Tool:</P>
+<UL>
+	<LI><P CLASS="body"><A NAME="pgfId=1144009"></A>from the desktop explorer or
+	program set up at installation time (by default Start 
+	<IMG SRC="pix/arrow.gif" NAME="Graphic2" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+	Programs 
+	<IMG SRC="pix/arrow.gif" NAME="Graphic3" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+	Red Hat eCos 
+	<IMG SRC="pix/arrow.gif" NAME="Graphic4" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+	Configuration Tool ). 
+	</P>
+	<LI><P CLASS="body"><A NAME="pgfId=1144010"></A><A NAME="pgfId=1142429"></A>type
+	(at a command prompt or in the Start menu's Run item):
+	&lt;foldername&gt;\ConfigTool.exe where &lt;foldername&gt; is the
+	full path of the directory in which you installed the eCos
+	Configuration Tool. The Configuration Tool will be displayed (see
+	Figure 1 below).</P>
+</UL>
+<P CLASS="body">You may run configtool with zero, one or two arguments. You can
+specify the eCos repository location, and/or an eCos save file
+(extension .ecc) on the command line. The ordering of these two
+arguments is not significant. For example:</P>
+<P CLASS="body">configtool &quot;c:\Program Files\Red Hat\eCos\packages&quot;
+myfile.ecc</P>
+<P CLASS="body">Figure 1: Configuration Tool</P>
+<P CLASS="body"><IMG SRC="pix/new-configtool-f1.gif" NAME="Graphic5" ALIGN=LEFT WIDTH=603 HEIGHT=443 BORDER=0><BR CLEAR=LEFT><BR><BR>
+</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1117581"></A><A NAME="_Toc445367098"></A><A NAME="marker=1150515"></A>
+The Component Repository</H3>
+<P CLASS="body"><A NAME="pgfId=1117583"></A>When you invoke the eCos
+Configuration Tool, it accesses the Component Repository, a read-only
+location of configuration information. For an explanation of
+&quot;Component Repository&quot; see <A HREF="user-guides.e.html#40966">CDL
+Concepts</A> .</P>
+<P CLASS="body"><A NAME="pgfId=1117587"></A>The eCos Configuration
+Tool will look for a component repository using (in descending order
+of preference):</P>
+<UL>
+	<LI><P CLASS="body">A location specified on the command line</P>
+	<LI><P CLASS="body"><A NAME="pgfId=1117589"></A>The component repository most
+	recently used by the current user 
+	</P>
+	<LI><P CLASS="body">An eCos distribution under /opt/ecos (under Linux) or a
+	default location set by the installation procedure (under MS
+	Windows)</P>
+	<LI><P CLASS="body"><A NAME="pgfId=1117591"></A>User input 
+	</P>
+</UL>
+<P CLASS="body"><A NAME="pgfId=1117593"></A>The final case above will
+normally only occur if the previous repository has been moved or
+(under Windows) installation information stored in the NT registry
+has been modified; it will result in a dialog box being displayed
+that allows you to specify the repository location:</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1119387"></A>Repository
+relocation dialog box 
+</P>
+<P CLASS="body"><A NAME="pgfId=1119391"></A><IMG SRC="pix/repos-relocate.gif" NAME="Graphic6" ALIGN=BOTTOM WIDTH=413 HEIGHT=128 BORDER=0>
+</P>
+<P CLASS="body"><A NAME="pgfId=1119398"></A>Note that in order to use
+the eCos Configuration Tool you are obliged to provide a valid
+repository location. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1144271"></A>In the rare event that
+you subsequently wish to change the component location, select Build
+<IMG SRC="pix/arrow.gif" NAME="Graphic7" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+Repository and the above dialog box will then be displayed.</P>
+<H3 CLASS="heading1"><A NAME="pgfId=1117607"></A><A NAME="_Toc445367099"></A><A NAME="marker=1150516"></A>
+eCos Configuration Tool Documents</H3>
+<H3 CLASS="heading2"><A NAME="pgfId=1117610"></A><A NAME="_Toc445367100"></A><A NAME="marker=1150517"></A>
+Configuration Save File</H3>
+<P CLASS="body"><A NAME="pgfId=1144276"></A>eCos configuration
+settings and other information (such as disabled conflicts) that are
+set using the eCos Configuration Tool are saved to a file between
+sessions. By default, when the eCos Configuration Tool is first
+invoked, it reads and displays information from the Component
+Registry and displays the information in an untitled blank document.
+You can perform the following operations on a document:</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1144277"></A>Save the currently
+active document 
+</H4>
+<P CLASS="body"><A NAME="pgfId=1144278"></A>Use the &quot; File<IMG SRC="pix/arrow.gif" NAME="Graphic8" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>Save
+&quot; menu item or click the Save Document icon on the toolbar; if
+the current document is unnamed, you will be prompted to supply a
+name for the configuration save file.</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1144282"></A>Save As dialog box
+</P>
+<P CLASS="body"><IMG SRC="pix/save-as-dialog.gif" NAME="Graphic9" ALIGN=BOTTOM WIDTH=424 HEIGHT=264 BORDER=0>
+</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1144283"></A>Open an existing
+document</H4>
+<P CLASS="body"><A NAME="pgfId=1144284"></A>Select File 
+<IMG SRC="pix/arrow.gif" NAME="Graphic10" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+Open, or click the Open Document icon on the toolbar. You will be
+prompted to supply a name for the configuration save file. 
+</P>
+<P CLASS="figuretitle"><A NAME="pgfId=1144288"></A>Open dialog box 
+</P>
+<P CLASS="body"><IMG SRC="pix/open-dialog.gif" NAME="Graphic11" ALIGN=BOTTOM WIDTH=425 HEIGHT=264 BORDER=0>
+</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1144289"></A>Open a document you
+have used recently</H4>
+<P CLASS="body"><A NAME="pgfId=1144290"></A>Click its name at the
+bottom of the File menu. 
+</P>
+<P CLASS="body"><A NAME="pgfId=1146034"></A>Documents may also be
+opened by:</P>
+<UL>
+	<LI><P CLASS="body"><A NAME="pgfId=1146036"></A>double-clicking a Configuration
+	Save File in the desktop explorer (MS Windows only)</P>
+	<LI><P CLASS="body"><A NAME="pgfId=1146037"></A>invoking the eCos Configuration
+	Tool with the name of a Configuration File as command-line argument,
+	or (under MS Windows) by creating a shortcut to the eCos
+	Configuration Tool with such an argument. 
+	</P>
+</UL>
+<H4 CLASS="heading3"><A NAME="pgfId=1144291"></A>Create a new blank
+document based on the Component Registry</H4>
+<P CLASS="body"><A NAME="pgfId=1144292"></A>Select File 
+<IMG SRC="pix/arrow.gif" NAME="Graphic12" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+New, or click the New Document icon on the toolbar.</P>
+<H4 CLASS="heading3"><A NAME="pgfId=1144293"></A>Save to a different
+file name</H4>
+<P CLASS="body"><A NAME="pgfId=1145857"></A>Select File 
+<IMG SRC="pix/arrow.gif" NAME="Graphic13" ALIGN=BOTTOM WIDTH=16 HEIGHT=8 BORDER=0>
+Save As. You will be prompted to supply a new name for the
+configuration save file.</P>
+<H3 CLASS="heading2"><A NAME="pgfId=1117655"></A><A NAME="_Toc445367101"></A><A NAME="marker=1150518"></A>
+Build and Install Trees</H3>
+<P CLASS="body"><A NAME="pgfId=1117659"></A>The location of the build
+and install trees are derived from the eCos save file name as
+illustrated in the following example using MS Windows filename
+conventions:</P>
+<P CLASS="body"><A NAME="pgfId=1117661"></A>Save file name = &quot;c:\My
+eCos\config1.ecc&quot;</P>
+<P CLASS="body"><A NAME="pgfId=1117662"></A>Install tree folder =
+&quot;c:\My eCos\config1_install&quot;</P>
+<P CLASS="body"><A NAME="pgfId=1117663"></A>Build tree folder =
+&quot;c:\My eCos\config1_build&quot;</P>
+<P CLASS="body"><A NAME="pgfId=1142675"></A>These names are
+automatically generated from the name of the save file.</P>
+<P CLASS="body"><A NAME="pgfId=1142669"></A>See also <A HREF="user-guides.e.html#40966">CDL
+Concepts</A> .</P>
+<TABLE CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD></TD>
+	</TR>
+</TABLE>
+<HR>
+<P CLASS="body"><TABLE ALIGN=LEFT WIDTH=98% BORDER=0 CELLPADDING=2 CELLSPACING=2>
+	<TR>
+		<TD COLSPAN=3>
+			<P CLASS="gotos" ALIGN=CENTER>Getting Started</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.2.html">To
+			Contents</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.3.html">To&nbsp;previous&nbsp;page</A></P>
+		</TD>
+		<TD>
+			<P CLASS="gotos" ALIGN=CENTER><A HREF="user-guides.5.html">To&nbsp;next&nbsp;page</A></P>
+		</TD>
+	</TR>
+</TABLE><BR><BR>
+</P>
+</BODY>
+</HTML>

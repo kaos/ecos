@@ -48,6 +48,7 @@ cdl_package CYGPKG_DEVS_FLASH_IQ80310 {
     requires	  CYGPKG_HAL_ARM_IQ80310
 
     implements    CYGHWR_IO_FLASH_DEVICE
+    implements    CYGHWR_IO_FLASH_DEVICE_NOT_IN_RAM
     implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
 
     include_dir   .

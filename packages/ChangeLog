@@ -1,3 +1,12 @@
+2001-05-31  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecosadmin.tcl (set_value): Only warn if packages are missing.
+
+2001-05-23  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Ocelot now uses generic AMD flash driver.
+	Removed AMD29F040B driver.
+
 2001-04-30  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add generic 16x5x driver to iq80310 target.
@@ -93,7 +102,7 @@
 2001-01-25  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added generic i82559 ethernet driver.
-	Added QED Ocelot driver.
+	Added PMC-Sierra Ocelot driver.
 
 2001-01-10  Jesper Skov  <jskov@redhat.com>
 
