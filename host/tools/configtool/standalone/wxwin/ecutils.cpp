@@ -63,11 +63,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// Otherwise we get a strange link error under Linux
 #ifndef __WXMSW__
-#ifdef errno
-#undef errno
-#endif
+#include <errno.h>
 #endif
 
 #ifdef __WXMSW__
@@ -191,7 +188,6 @@ int ecUtils::vMessageBox(UINT nType, LPCTSTR  pszFormat, va_list marker)
 
 bool ecUtils::StrToItemIntegerType(const wxString & str, long &d)
 {
-	extern int errno;
 	wxChar* pEnd;
 	bool rc;
 	errno=0;
@@ -218,7 +214,6 @@ const wxString ecUtils::DoubleToStr (double dValue)
 
 bool ecUtils::StrToDouble (const wxString & strValue, double &dValue)
 {
-	extern int errno;
 	wxChar* pEnd;
 	errno = 0;
 	//dValue = _tcstod (strValue, &pEnd);

@@ -44,8 +44,8 @@
 //
 //===========================================================================
 
-#ifndef _WX_FILENAME_H_
-#define _WX_FILENAME_H_
+#ifndef _ECOS_FILENAME_H_
+#define _ECOS_FILENAME_H_
 
 #include "wx/wxchar.h"
 #include "wx/dir.h"
@@ -179,5 +179,5 @@ public:
     bool Ok() const { return !m_strPrevDir.IsEmpty(); }
 };
 
-#endif	
-// _WX_FILENAME_H_
+#endif
+// _ECOS_FILENAME_H_
