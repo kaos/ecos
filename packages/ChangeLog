@@ -1,3 +1,7 @@
+2002-08-06  Jonathan Larmour  <jifl@ecoscentric.com>
+
+	* ecos.db: Include AT91 watchdog driver in at91 target.
+
 2002-08-06  Thomas Koeller  <thomas@koeller.dyndns.org>
 
 	* ecos.db: Add AT91 watchdog driver.
