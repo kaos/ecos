@@ -75,11 +75,7 @@ CL-PS7111 and EP7xxx based development boards."
     cdl_option CYGHWR_HAL_ARM_EDB7XXX_VARIANT {
         display       "Cirrus Logic processor variant"
         flavor        data
-        if (1) {
         legal_values  { "CL_PS7111" "EP7209" "EP7211" "EP7212" "EP7312" }
-        } else {
-        legal_values  { "CL_PS7111" "EP7209" "EP7211" "EP7212" }
-        }
         default_value { "EP7211" }
         description   "
             The Cirrus Logic processor variant."
@@ -89,7 +85,6 @@ CL-PS7111 and EP7xxx based development boards."
     cdl_option CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT {
         display       "Cirrus Logic board variant"
         flavor        data
-        if (1) {
         legal_values  { "CL7111" "EDB7209" "EDB7211" "EDB7212" "EDB7312" }
         default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "CL7111" : \
                         CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? "EDB7209" : \
@@ -97,14 +92,6 @@ CL-PS7111 and EP7xxx based development boards."
                         CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ? "EDB7212" : \
                         CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7312" ? "EDB7312" : \
                         "" }
-        } else {
-        legal_values  { "CL7111" "EDB7209" "EDB7211" "EDB7212" }
-        default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? "CL7111" : \
-                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? "EDB7209" : \
-                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7211" ? "EDB7211" : \
-                        CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7212" ? "EDB7212" : \
-                        "" }
-        }
         description   "
             The board type which uses a Cirrus Logic processor variant."
         define -file system.h CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT
@@ -139,7 +126,6 @@ CL-PS7111 and EP7xxx based development boards."
             puts $::cdl_header "#define __EDB7212"
             puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7212"
             puts $::cdl_header ""
-        if (1) {
             puts $::cdl_header "#ifdef CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7312"
             puts $::cdl_header "#define HAL_PLATFORM_CPU    \"ARM 720T\""
             puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"Cogent EDB7312\""
@@ -147,22 +133,15 @@ CL-PS7111 and EP7xxx based development boards."
             puts $::cdl_header "#define __EDB7312"
             puts $::cdl_header "#endif //CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT_EDB7312"
             puts $::cdl_header ""
-        }
 	}
     }
 
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
-        if (1) {
         legal_values  { "ROM"
                         ((CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209") ? "" : "RAM")
                         ((CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7312") ? "ROMRAM" : "")
-        }
-        } else {
-        legal_values  { "ROM"
-                        ((CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209") ? "" : "RAM")
-        }
         }
         default_value  { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "EP7209" ? "ROM" : "RAM"}
 	no_define
@@ -229,11 +208,7 @@ CL-PS7111 and EP7xxx based development boards."
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
         display      "Number of communication channels on the board"
         flavor       data
-        if (1) {
         calculated   2+CYGSEM_EDB7XXX_LCD_COMM
-        } else {
-        calculated   2
-        }
     }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
@@ -269,11 +244,7 @@ CL-PS7111 and EP7xxx based development boards."
     cdl_option CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK {
         display       "Processor clock rate (kHz)"
         flavor        data
-        if (1) {
 	    legal_values  18432 36864 49152 73728 90317
-        } else {
-	    legal_values  18432 36864 49152 73728
-        }
         default_value { CYGHWR_HAL_ARM_EDB7XXX_VARIANT == "CL_PS7111" ? 18432 : 73728 }
         description   "
             The processor can run at various frequencies."
@@ -539,7 +510,6 @@ CL-PS7111 and EP7xxx based development boards."
         display "Memory layout"
         flavor data
         no_define
-        if (1) {
         calculated { 
           CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ? 
             (CYG_HAL_STARTUP == "RAM" ? "arm_cl7111_ram" : \
@@ -556,21 +526,7 @@ CL-PS7111 and EP7xxx based development boards."
             (CYG_HAL_STARTUP == "RAM" ? "arm_edb7312_ram" : \
              CYG_HAL_STARTUP == "ROMRAM" ? "arm_edb7312_romram" : \
              CYG_HAL_STARTUP == "ROM" ? "arm_edb7312_rom" : "BOGUS.mlt" ) : \
-          "BOGUS.mlt" }
-        } else {
-        calculated { 
-          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ? 
-            (CYG_HAL_STARTUP == "RAM" ? "arm_cl7111_ram" : \
-             CYG_HAL_STARTUP == "ROM" ? "arm_cl7111_rom" : "BOGUS.mlt" ) : \
-          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ? 
-            (CYG_HAL_STARTUP == "ROM" ? "arm_edb7209_rom" : "BOGUS.mlt" ) : \
-          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7211" ? 
-            (CYG_HAL_STARTUP == "RAM" ? "arm_edb7211_ram" : \
-             CYG_HAL_STARTUP == "ROM" ? "arm_edb7211_rom" : "BOGUS.mlt" ) : \
-          CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7212" ? 
-            (CYG_HAL_STARTUP == "RAM" ? "arm_edb7212_ram" : \
-             CYG_HAL_STARTUP == "ROM" ? "arm_edb7212_rom" : "BOGUS.mlt" ) : \
-          "BOGUS.mlt" }
+          "BOGUS.mlt"
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
@@ -578,7 +534,6 @@ CL-PS7111 and EP7xxx based development boards."
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
-        if (1) {
             calculated { 
               CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_cl7111_ram.ldi>" :  \
@@ -596,21 +551,6 @@ CL-PS7111 and EP7xxx based development boards."
                  CYG_HAL_STARTUP == "ROMRAM" ? "<pkgconf/mlt_arm_edb7312_romram.ldi>" : \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7312_rom.ldi>" :  "BOGUS.ldi" ) : \
               "BOGUS.ldi" }
-        } else {
-            calculated { 
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ?
-                (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_cl7111_ram.ldi>" :  \
-                 CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_cl7111_rom.ldi>" :  "BOGUS.ldi" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ?
-                (CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7209_rom.ldi>" :  "BOGUS.ldi" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7211" ?
-                (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7211_ram.ldi>" :  \
-                 CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7211_rom.ldi>" :  "BOGUS.ldi" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7212" ?
-                (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7212_ram.ldi>" :  \
-                 CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7212_rom.ldi>" :  "BOGUS.ldi" ) : \
-              "BOGUS.ldi" }
-        }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -618,7 +558,6 @@ CL-PS7111 and EP7xxx based development boards."
             flavor data
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
-        if (1) {
             calculated {
               CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ?
                 (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_cl7111_ram.h>" :  \
@@ -636,21 +575,6 @@ CL-PS7111 and EP7xxx based development boards."
                  CYG_HAL_STARTUP == "ROMRAM" ? "<pkgconf/mlt_arm_edb7312_romram.h>" : \
                  CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7312_rom.h>" :  "BOGUS.h" ) : \
               "BOGUS.h" }
-        } else {
-            calculated {
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "CL7111" ?
-                (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_cl7111_ram.h>" :  \
-                 CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_cl7111_rom.h>" :  "BOGUS.h" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7209" ?
-                (CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7209_rom.h>" :  "BOGUS.h" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7211" ?
-                (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7211_ram.h>" :  \
-                 CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7211_rom.h>" :  "BOGUS.h" ) : \
-              CYGHWR_HAL_ARM_EDB7XXX_BOARD_VARIANT == "EDB7212" ?
-                (CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_edb7212_ram.h>" :  \
-                 CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_edb7212_rom.h>" :  "BOGUS.h" ) : \
-              "BOGUS.h" }
-        }
         }
     }
 
