@@ -22,6 +22,7 @@ net/tcpip/current/doc/openbsd-manpages-stp.sgml
 net/ns/dns/current/doc/dns.sgml
 net/common/current/doc/ipsec.sgml
 net/ipsec/libipsec/current/doc/libipsec-manpages.sgml
+net/ppp/current/doc/ppp.sgml
 io/eth/current/doc/ethdrv.sgml
 devs/eth/phy/current/doc/eth_phy.sgml
 net/snmp/agent/current/doc/snmp.sgml

@@ -1,3 +1,7 @@
+2004-04-14  Nick Garnett  <nickg@calivar.com>
+
+	* sgml/doclist: Added PPP package documentation.
+
 2003-11-25  Manu Sharma <manu.sharma@ascom.com>
 
         * sgml/doclist: Add OpenBSD specific documentation.
