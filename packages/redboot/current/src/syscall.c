@@ -72,6 +72,7 @@
 #define SYS_chmod       16
 #define SYS_utime       17
 #define SYS_time        18
+#define SYS_times       20
 
 #define SYS_interrupt   1000
 #define SYS_meminfo     1001
@@ -259,7 +260,7 @@ sys_lseek(int fd,  int offset, int whence)
 #define HZ 60
 
 static int
-sys_utime(unsigned long *p)
+sys_times(unsigned long *p)
 {
     static int inited = 0;
 
@@ -313,7 +314,12 @@ __do_syscall(CYG_ADDRWORD func,                 // syscall function number
         break;
 
       case SYS_utime:
-        err = sys_utime((unsigned long *)arg1);
+        // FIXME. Some libglosses depend on this behavior.
+        err = sys_times((unsigned long *)arg1);
+        break;
+
+      case SYS_times:
+        err = sys_times((unsigned long *)arg1);
         break;
 
       case SYS_meminfo:

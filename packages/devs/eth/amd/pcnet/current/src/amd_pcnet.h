@@ -256,12 +256,21 @@
 // ANR registers
 #define PCNET_ANR_PHYCTRL ( 0 |PCNET_ANR_FLAG)
 #define PCNET_ANR_PHYSTAT ( 1 |PCNET_ANR_FLAG)
+#define PCNET_ANR_AAR     ( 4 |PCNET_ANR_FLAG)
 
-#define PCNET_ANR_PHYCTRL_100MBPS 0x2000
-#define PCNET_ANR_PHYCTRL_DUPLEX  0x0100
+#define PCNET_ANR_PHYCTRL_100MBPS     0x2000
+#define PCNET_ANR_PHYCTRL_RENEGOTIATE 0x0200
+#define PCNET_ANR_PHYCTRL_DUPLEX      0x0100
 
-#define PCNET_ANR_PHYSTAT_LINK    0x0004
+#define PCNET_ANR_PHYSTAT_AUTONEG_COMP    0x0020
+#define PCNET_ANR_PHYSTAT_LINK            0x0004
 
+#define PCNET_ANR_AAR_100_FD      0x0100
+#define PCNET_ANR_AAR_100_HD      0x0080
+#define PCNET_ANR_AAR_100         0x0180
+#define PCNET_ANR_AAR_10_FD       0x0040
+#define PCNET_ANR_AAR_10_HD       0x0020
+#define PCNET_ANR_AAR_10          0x0060
 
 //----------------------------------------------------------------------------
 // Receive buffer Descriptor

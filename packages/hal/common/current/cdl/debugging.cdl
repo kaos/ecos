@@ -119,15 +119,21 @@ cdl_option CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT {
 
 cdl_option CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES {
     display       "Number of times to retry sending a \$O packet"
-    default_value 3
+    default_value 0
+    flavor        data
     description   "
         This option controls the number of attempts that eCos programs
-        will make to send a \$O packet to a host GDB process."
+        will make to send a \$O packet to a host GDB process.  If it is
+        set non-zero, then the target process will attempt to resend the
+        \$O packet data up to this number of retries.  Caution: use of
+        this option is not recommended as it can thoroughly confuse the
+        host GDB process."
 }
 
 cdl_option CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT {
     display       "Timeout period for GDB packets"
     default_value 500
+    flavor        data
     description   "
         This option controls the time (in milliseconds) that eCos programs
         will wait for a response when sending packets to a host GDB process.

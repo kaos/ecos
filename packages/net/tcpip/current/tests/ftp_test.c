@@ -161,12 +161,16 @@ net_test(cyg_addrword_t param)
 {
     diag_printf("Start FTP test\n");
     init_all_network_interfaces();
+#ifdef CYGHWR_NET_DRIVER_ETH0
     if (eth0_up) {
         ftp_test(&eth0_bootp_data);
     }
+#endif
+#ifdef CYGHWR_NET_DRIVER_ETH1
     if (eth1_up) {
         ftp_test(&eth1_bootp_data);
     }
+#endif
     cyg_test_exit();
 }
 

@@ -1,3 +1,8 @@
+2001-10-11  Fabrice Gautier  <Fabrice_Gautier@sdesigns.com>
+
+	* include/hal_io.h: Add _STRING variants of I/O macros to allow
+	writing of consecutive items to the same registers.
+
 2001-10-02  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_arch.h: Remove CYG_HAL_TABLE_BEGIN and CYG_HAL_TABLE_END

@@ -1,3 +1,14 @@
+2001-10-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7709r.h: Added. I don't know if the module content
+	is correct as I have no docs for the CPU.
+
+	* cdl/hal_sh_sh3.cdl: Added option for 7709r. 
+
+2001-10-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_mk_defs.c (main): Fixed warning.
+
 2001-09-25  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_intr.h: Default CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF

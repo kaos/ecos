@@ -67,7 +67,7 @@ cdl_package CYGPKG_HAL_MN10300 {
             control C handling."
     }
 
-    compile       hal_misc.c context.S mn10300_stub.c
+    compile       hal_misc.c hal_syscall.c context.S mn10300_stub.c
 
     make {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S

@@ -128,6 +128,24 @@ cdl_package CYGPKG_HAL_SH_SH3 {
         }
     }
 
+    cdl_option CYGPKG_HAL_SH_7709R {
+        display       "SH 7709R microprocessor"
+        parent        CYGPKG_HAL_SH_CPU
+        implements    CYGINT_HAL_SH_VARIANT
+        implements    CYGINT_HAL_SH_CPG_T3
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_SH_7709R
+        description "
+            The SH3 7709R microprocessor. This is an embedded part that in
+            addition to the SH3 processor core has built in peripherals
+            such as memory controllers, DMA controllers, A/D and D/A
+            converters, serial ports and timers/counters."               
+        define_proc {
+            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7709r.h>"
+        }
+    }
+
     cdl_option CYGPKG_HAL_SH_7709S {
         display       "SH 7709S microprocessor"
         parent        CYGPKG_HAL_SH_CPU

@@ -213,13 +213,13 @@ package CYGPKG_DEVS_FLASH_SA1100MM {
 }
 
 package CYGPKG_DEVS_FLASH_EDB7XXX {
-	alias 		{ "FLASH memory support for Cirrus Logic EDB7xxx" flash_edb7xxx }
+	alias 		{ "FLASH support for Cirrus Logic EP7xxx based boards" flash_edb7xxx }
 	directory	devs/flash/arm/edb7xxx
 	script		flash_edb7xxx.cdl
 	hardware
         description "
            This package contains hardware support for FLASH memory
-	   on the Cirrus Logic EDB7xxx platform(s)."
+	   on the Cirrus Logic EP7xxx based platform(s)."
 }
 
 package CYGPKG_DEVS_FLASH_AT91 {
@@ -406,12 +406,13 @@ package CYGPKG_IO_SERIAL_ARM_AEB {
 }
 
 package CYGPKG_IO_SERIAL_ARM_EDB7XXX {
-    alias             { "ARM EDB7XXX serial device drivers"
+    alias             { "Cirrus Logic ARM based board serial device drivers"
                         devs_serial_arm_edb7xxx edb7xxx_serial_driver }
     hardware
     directory	      devs/serial/arm/edb7xxx
     script	      ser_arm_edb7xxx.cdl	
-    description       "ARM EDB7XXX serial device drivers"
+    description       "Cirrus Logic ARM based development board serial
+                       device drivers"
 }
 
 package CYGPKG_IO_SERIAL_ARM_CMA230 {
@@ -421,6 +422,15 @@ package CYGPKG_IO_SERIAL_ARM_CMA230 {
     directory	      devs/serial/arm/cma230
     script	      ser_arm_cma230.cdl	
     description       "Cogent ARM/CMA230 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_ARM_E7T {
+    alias             { "ARM AEB-2 (E7T) serial device drivers"
+                        devs_serial_arm_e7t e7t_serial_driver }
+    hardware
+    directory         devs/serial/arm/e7t
+    script            ser_arm_e7t.cdl   
+    description       "ARM AEB-2 (E7T) serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_ARM_AT91 {
@@ -669,11 +679,12 @@ package CYGPKG_SNMPAGENT {
 }
 
 package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
-	alias 		{ "Cirrus Logic ethernet driver" edb7xxx_eth_driver }
+	alias 		{ "Cirrus Logic ethernet driver for EP7xxx boards" edb7xxx_eth_driver }
 	hardware
 	directory	devs/eth/arm/edb7xxx
 	script		edb7xxx_eth_drivers.cdl
-        description     "Ethernet driver for Cirrus Logic EDB7xxx development boards."
+        description     "Ethernet driver for Cirrus Logic EP7xxx based
+                         development boards."
 }
 
 package CYGPKG_DEVS_ETH_AMD_PCNET {
@@ -1288,12 +1299,12 @@ package CYGPKG_HAL_ARM_SA11X0_SA1100MM {
 }
 
 package CYGPKG_HAL_ARM_EDB7XXX {
-	alias		{ "Cirrus Logic development board" hal_arm_edb7xxx arm_edb7xxx_hal }
+	alias		{ "Cirrus Logic ARM7 based development boards" hal_arm_edb7xxx arm_edb7xxx_hal }
 	directory	hal/arm/edb7xxx
 	script		hal_arm_edb7xxx.cdl
 	hardware
         description "
-The EDB7XXX HAL package provides the support needed to run eCos on Cirrus Logic development boards."
+The EDB7XXX HAL package provides the support needed to run eCos on Cirrus Logic CL-PS7111 and EP7xxx based development boards."
 }
 
 package CYGPKG_HAL_ARM_CMA230 {
@@ -1911,6 +1922,7 @@ target e7t {
 	alias { "ARM Evaluator7T board (AEB-2)" aeb2 }
 	packages { CYGPKG_HAL_ARM
                    CYGPKG_HAL_ARM_E7T
+	           CYGPKG_IO_SERIAL_ARM_E7T
         }
         description "
 The aeb target provides the packages needed to run eCos on an ARM

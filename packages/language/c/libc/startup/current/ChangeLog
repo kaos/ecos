@@ -1,3 +1,8 @@
+2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/invokemain.cxx (cyg_libc_invoke_main): CYGINT_ISO_PTHREAD_IMPL
+	needs #ifdef not #if now.
+
 2000-12-22  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/startup.cdl: Allow others to say whether main() can be invoked

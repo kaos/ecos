@@ -1,3 +1,18 @@
+2001-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* include/sepmetaimpl.inl: CYGINT_ISO_STRING_MEMFUNCS checks
+	changed to ifdef.
+
+2001-10-11  Jesper Skov  <jskov@redhat.com>
+
+	* tests/testaux.hxx (new_thread): Fixed allocation: increase
+	counter before starting threads which have been allocated
+	resources.
+
+2001-10-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/memalloc.cdl: Only build malloc.cxx and kapi.cxx when needed.
+
 2001-09-20  Jesper Skov  <jskov@redhat.com>
 
 	* tests/heaptest.c: Fix failure reporting.

@@ -108,28 +108,6 @@ extern I82559_COUNTERS i82559_counters[2];
 //                      DEVICES AND PACKET QUEUES
 //
 // ------------------------------------------------------------------------
-// The system seems to work OK with as few as 8 of RX and TX descriptors.
-// It limps very painfully with only 4.
-// Performance is better with more than 8.
-// But the size of non-cached (so useless for anything else)
-// memory window is 1Mb, so we might as well use it all.
-//
-// 128 for these uses the whole 1Mb, near enough.
-
-#ifndef MAX_RX_DESCRIPTORS
-#ifdef CYGPKG_REDBOOT
-#define MAX_RX_DESCRIPTORS	4       // number of Rx descriptors
-#else
-#define MAX_RX_DESCRIPTORS	128     // number of Rx descriptors
-#endif
-#endif
-#ifndef MAX_TX_DESCRIPTORS
-#ifdef CYGPKG_REDBOOT
-#define MAX_TX_DESCRIPTORS	4       // number of Tx descriptors
-#else
-#define MAX_TX_DESCRIPTORS	128     // number of Tx descriptors
-#endif
-#endif
 
 
 typedef struct i82559 {

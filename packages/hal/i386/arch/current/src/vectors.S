@@ -240,7 +240,7 @@ __default_exception_vsr:
 	pushl	36(%ebp)	# PC
 	mov	%ebp,%esp
 	popa
-	movl	-20(%esp),%esp	# popa doesn't restore %esp
+	movl	-20(%esp),%esp	# popa does not restore %esp
 	sub	$12,%esp	# adjust for EFLAGS, CS, and PC
 	iret	
 1:
@@ -466,15 +466,52 @@ __fpu_switch_vsr:
 	cmpl	$0,%eax				# is FPU even in use?
 	je	1f				# if not, skip save
 	fsave	i386reg_fpucontext_state(%eax)	# save FPU state
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# Save SIMD state.
+
+	# FIXME. This is awfully inefficient. Need to use FXSAVE to
+	# save FPU and SIMD at same time. FXSAVE requires a 16 byte
+	# alignment and does not have an implicit finit as does FSAVE.
+
+	stmxcsr	i386reg_simd_mxcsr(%eax)
+	movups	%xmm0,i386reg_simd_xmm0(%eax)
+	movups	%xmm1,i386reg_simd_xmm1(%eax)
+	movups	%xmm2,i386reg_simd_xmm2(%eax)
+	movups	%xmm3,i386reg_simd_xmm3(%eax)
+	movups	%xmm4,i386reg_simd_xmm4(%eax)
+	movups	%xmm5,i386reg_simd_xmm5(%eax)
+	movups	%xmm6,i386reg_simd_xmm6(%eax)
+	movups	%xmm7,i386reg_simd_xmm7(%eax)
+#endif
 	movl	$1,i386reg_fpucontext_valid(%eax) # mark valid
 1:
 	movl	%ebx,0(%esi)            	# Set new owner
 	btl	$0,i386reg_fpucontext_valid(%ebx) # Valid state?
 	jc	2f				# If yes, go to restore it
 	finit					# Otherwise init FPU
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# FIXME. Anything needed here?
+#endif
 	jmp	9f				# skip restore
 2:
 	frstor	i386reg_fpucontext_state(%ebx)	# restore FPU state
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# Restore SIMD state.
+
+	# FIXME. This is awfully inefficient. Need to use FXRSTOR to
+	# restore FPU and SIMD at same time. FXRSTOR requires a 16 byte
+	# alignment.
+
+	movups	i386reg_simd_xmm0(%ebx),%xmm0
+	movups	i386reg_simd_xmm1(%ebx),%xmm1
+	movups	i386reg_simd_xmm2(%ebx),%xmm2
+	movups	i386reg_simd_xmm3(%ebx),%xmm3
+	movups	i386reg_simd_xmm4(%ebx),%xmm4
+	movups	i386reg_simd_xmm5(%ebx),%xmm5
+	movups	i386reg_simd_xmm6(%ebx),%xmm6
+	movups	i386reg_simd_xmm7(%ebx),%xmm7
+	ldmxcsr	i386reg_simd_mxcsr(%ebx)
+#endif
 9:
 	popa					# restore all our registers.
 	addl	$4, %esp			# skip the vector number.

@@ -106,7 +106,7 @@ cyg_libc_invoke_main( CYG_ADDRWORD )
     CYG_TRACE1( true, "main() has returned with code %d. Calling exit()",
                 rc );
 
-#if CYGINT_ISO_PTHREAD_IMPL > 0
+#ifdef CYGINT_ISO_PTHREAD_IMPL
     // It is up to pthread_exit() to call exit() if needed
     pthread_exit( (void *)rc );
     CYG_FAIL( "pthread_exit() returned!!!" );

@@ -28,16 +28,6 @@
 // -------------------------------------------                              
 //                                                                          
 //####COPYRIGHTEND####
-//####BSDCOPYRIGHTBEGIN####
-//
-// -------------------------------------------
-//
-// Portions of this software may have been derived from OpenBSD or other sources,
-// and are covered by the appropriate copyright disclaimers included herein.
-//
-// -------------------------------------------
-//
-//####BSDCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
@@ -278,7 +268,9 @@ simulate_fail_corrupt_sglist( struct eth_drv_sg *sg_list, int sg_len )
 static int  eth_drv_ioctl(struct ifnet *, u_long, caddr_t);
 static void eth_drv_send(struct ifnet *);
 
-extern int net_debug;  // FIXME
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG 
+int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
+#endif
 
 // Interfaces exported to drivers
 
@@ -536,8 +528,10 @@ eth_drv_send(struct ifnet *ifp)
         }
 #endif
 
-        if (net_debug)
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+        if (cyg_io_eth_net_debug)
             diag_printf("Sending %d bytes\n", m0->m_pkthdr.len);
+#endif
 
         /* We need to use m->m_pkthdr.len, so require the header */
         if ((m0->m_flags & M_PKTHDR) == 0)
@@ -559,11 +553,13 @@ eth_drv_send(struct ifnet *ifp)
             sg_list[sg_len].len = len;
             if ( len )
                 sg_len++;
-            if (net_debug) {
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+            if (cyg_io_eth_net_debug) {
                 diag_printf("xmit %d bytes at %x sg[%d]\n", len, data, sg_len);
-                if ( 1 & net_debug )
+                if ( cyg_io_eth_net_debug > 1)
                     diag_dump_buf(data, len);
             }
+#endif
             if ( MAX_ETH_DRV_SG < sg_len ) {
                 diag_printf("too many mbufs to tx, %d > %d\n", sg_len, MAX_ETH_DRV_SG );
                 sg_len = 0;
@@ -764,16 +760,17 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     }
 #endif
 
-    if (net_debug) {
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+    if (cyg_io_eth_net_debug) {
         for (i = 0;  i < sg_len;  i++) {
             if (sg_list[i].buf) {
                 diag_printf("rx %d bytes at %x sg[%d]\n", sg_list[i].len, sg_list[i].buf, i);
-                if ( 1 & net_debug )
+                if ( cyg_io_eth_net_debug > 1 )
                     diag_dump_buf((void *)sg_list[i].buf, sg_list[i].len);
             }
         }
     }
-
+#endif
     m = top;
     if (m == 0) {
         ifp->if_ierrors++;

@@ -87,6 +87,15 @@
 #include <cyg/devs/eth/iq80310_info.h>
 #include <eth_drv_stats.h>
 
+extern char cyg_io_iq80310_i82559_shmem[];
+#define CYGHWR_HAL_ARM_IQ80310_PCI_MEM_MAP_BASE ((cyg_addrword_t)cyg_io_iq80310_i82559_shmem)
+// This must match actual size in if_shmem.S:
+#define CYGHWR_HAL_ARM_IQ80310_PCI_MEM_MAP_SIZE        \
+  ((MAX_RX_PACKET_SIZE + sizeof(RFD)) *                \
+   (CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS +   \
+    CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS))
+
+
 // ------------------------------------------------------------------------
 
 #ifdef CYGDBG_DEVS_ETH_ARM_IQ80310_CHATTER
@@ -2109,7 +2118,6 @@ pci_init_find_82559s( void )
     cyg_pci_device dev_info;
     cyg_uint16 cmd;
     int device_index;
-    extern char cyg_io_iq80310_i82559_shmem[];
 
 #ifdef DEBUG
     db_printf("pci_init_find_82559s()\n");
@@ -2124,11 +2132,11 @@ pci_init_find_82559s( void )
     }
 
     // First initialize the heap in PCI window'd memory
-    i82559_heap_size = 16*1024;  // match actual size in if_shmem.S
-    i82559_heap_base = cyg_io_iq80310_i82559_shmem;
+    i82559_heap_size = CYGHWR_HAL_ARM_IQ80310_PCI_MEM_MAP_SIZE;  
+    i82559_heap_base = (cyg_uint8*)CYGHWR_HAL_ARM_IQ80310_PCI_MEM_MAP_BASE;
 
     // only first 1MB of board uses 4K page table
-    if (cyg_io_iq80310_i82559_shmem > (char *)0xa0100000) {
+    if (CYGHWR_HAL_ARM_IQ80310_PCI_MEM_MAP_BASE > (cyg_addrword_t)0xa0100000) {
 #ifdef DEBUG
         db_printf("Can't get shared mem\n");
 #endif

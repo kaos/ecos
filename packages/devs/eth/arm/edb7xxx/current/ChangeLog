@@ -1,3 +1,13 @@
+2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_edb7xxx.c (cs8900_TxEvent): Use cyg_io_eth_net_debug now,
+	conditionally on CYGDBG_IO_ETH_DRIVERS_DEBUG in common eth driver.
+	(cs8900_RxEvent): Ditto.
+
+2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/edb7xxx_eth_drivers.cdl: Clarify package description strings.
+
 2001-09-25  Gary Thomas  <gthomas@redhat.com>
 
 	* src/if_edb7xxx.c (edb7xxx_cs8900_init): Handle case where device

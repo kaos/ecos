@@ -73,45 +73,6 @@ cdl_package CYGPKG_HAL_I386 {
     }
 
         
-    cdl_option CYGBLD_BUILD_I386_ROMBOOT {
-	display       "Build ROM bootstrap code"
-	calculated    { CYG_HAL_STARTUP == "ROM" }
-
-	make {
-	    <PREFIX>/lib/romboot.ld: <PACKAGE>/src/romboot.ld
-	    cp $< $@
-	}
-	
-	make {
-	    <PREFIX>/bin/romboot.elf : <PACKAGE>/src/romboot.S
-	    @sh -c "mkdir -p $(dir $@)"
-	    $(CC) -Wp,-MD,romboot.tmp $(INCLUDE_PATH) -nostdlib -Wl,-static -T$(PREFIX)/lib/romboot.ld -o $@ $<
-	    @echo $@ ": \\" > $(notdir $@).deps
-	    @tail +2 romboot.tmp >> $(notdir $@).deps
-	    @echo >> $(notdir $@).deps
-	    @rm romboot.tmp
-	}
-    }
-
-    cdl_option CYGBLD_BUILD_REDBOOT_BIN_ROM {
-	display       "Build Redboot ROM binary image"
-	active_if     CYGBLD_BUILD_REDBOOT
-	active_if     { CYG_HAL_STARTUP == "ROM" }
-	default_value { CYG_HAL_STARTUP == "ROM" }
-	no_define
-	description "This option enables the conversion of the Redboot ELF
-	image to a binary image suitable for ROM programming."
-    
-	make -priority 325 {
-	    <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
-	    $(OBJCOPY) -O binary $< $(@:.bin=.img)
-	    $(OBJCOPY) -O binary $(PREFIX)/bin/romboot.elf $(PREFIX)/bin/romboot.img
-	    dd if=/dev/zero of=$@ bs=1024 count=64 conv=sync
-	    dd if=$(@:.bin=.img) of=$@ bs=512 conv=notrunc,sync
-	    dd if=$(PREFIX)/bin/romboot.img of=$@ bs=256 count=1 seek=255 conv=notrunc
-	}
-    }
-    
     cdl_component CYGHWR_HAL_I386_FPU {
 	display       "Enable I386 FPU support"
 	default_value 1
@@ -136,6 +97,38 @@ cdl_package CYGPKG_HAL_I386 {
 	                a new thread only if it actually uses the FPU. Where
 	                only one or two threads use the FPU this can avoid a
 	                lot of unnecessary state switching."
+	}
+    }
+    
+    cdl_component CYGHWR_HAL_I386_PENTIUM {
+	display       "Enable Pentium class CPU features"
+	default_value 0
+	description   "This component enables support for various
+	              features of Pentium class CPUs."
+
+	cdl_option CYGHWR_HAL_I386_PENTIUM_SSE {
+	    display       "Save/Restore SSE registers on context switch"
+	    flavor        bool
+	    default_value 0
+
+	    description "
+	                This option enables SSE state switching. The default
+                        behaviour for eCos is to ignore the SSE registers.
+                        Enabling this option adds SSE state information to
+                        every thread context."
+	}
+
+	cdl_option CYGHWR_HAL_I386_PENTIUM_GDB_REGS {
+	    display       "Support extra Pentium registers in GDB stub"
+	    flavor        bool
+	    default_value 0
+
+	    description "
+	                This option enables support for extra Pentium registers
+			in the GDB stub. These are registers such as CR0-CR4, and
+                        all MSRs. Not all GDBs support these registers, so the
+                        default behaviour for eCos is to not include them in the
+			GDB stub support code."
 	}
     }
     

@@ -984,28 +984,6 @@ externC int pause( void )
     SIGNAL_RETURN(EINTR);
 }
 
-// -------------------------------------------------------------------------
-// Wait for a signal, or the given number of seconds
-
-externC unsigned int sleep( unsigned int seconds )
-{
-    SIGNAL_ENTRY();
-
-    struct timespec timeout;
-
-    timeout.tv_sec = seconds;
-    timeout.tv_nsec = 0;
-
-    if( nanosleep( &timeout, &timeout ) != 0 )
-    {
-        CYG_REPORT_RETVAL(timeout.tv_sec);
-        return timeout.tv_sec;
-    }
-
-    CYG_REPORT_RETVAL(0);
-    return 0;
-} 
-
 //==========================================================================
 // Signal sets
 

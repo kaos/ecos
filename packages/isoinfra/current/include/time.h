@@ -108,8 +108,8 @@ struct timeval {
 #endif
 
 
-#if CYGINT_ISO_POSIX_TIMER_TYPES
-# include CYGBLD_ISO_POSIX_TIMER_TYPES_HEADER
+#ifdef CYGINT_ISO_POSIX_CLOCK_TYPES
+# include CYGBLD_ISO_POSIX_CLOCK_TYPES_HEADER
 #else
 
 /* Provide a default struct timespec. */
@@ -121,19 +121,36 @@ struct timespec
 };
 #endif
 
-#if CYGINT_ISO_C_TIME_TYPES
+#ifdef CYGINT_ISO_POSIX_TIMER_TYPES
+# include CYGBLD_ISO_POSIX_TIMER_TYPES_HEADER
+#else
+
+/* Provide a default struct itimerspec. */
+struct itimerspec
+{
+    struct timespec     it_interval;
+    struct timespec     it_value;
+};
+
+#endif
+
+#ifdef CYGINT_ISO_C_TIME_TYPES
 # include CYGBLD_ISO_C_TIME_TYPES_HEADER
 #endif
 
-#if CYGINT_ISO_POSIX_TIMERS
+#ifdef CYGINT_ISO_POSIX_CLOCKS
+# include CYGBLD_ISO_POSIX_CLOCKS_HEADER
+#endif
+
+#ifdef CYGINT_ISO_POSIX_TIMERS
 # include CYGBLD_ISO_POSIX_TIMERS_HEADER
 #endif
 
-#if CYGINT_ISO_C_CLOCK_FUNCS
+#ifdef CYGINT_ISO_C_CLOCK_FUNCS
 # include CYGBLD_ISO_C_CLOCK_FUNCS_HEADER
 #endif
 
-#if CYGINT_ISO_TZSET
+#ifdef CYGINT_ISO_TZSET
 # include CYGBLD_ISO_TZSET_HEADER
 #endif
 

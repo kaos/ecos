@@ -1,3 +1,7 @@
+2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_atlas.c: net_debug is no longer used.
+
 2001-10-05  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_atlas.c: Use new HAL endian conversion macros.

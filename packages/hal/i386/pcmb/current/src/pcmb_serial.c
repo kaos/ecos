@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -338,40 +338,33 @@ void cyg_hal_plf_serial_init(void)
 {
     hal_virtual_comm_table_t* comm;
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int i, num_serial = CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;
 
-    // Disable interrupts.
-    HAL_INTERRUPT_MASK(pc_ser_channels[0].isr_vector);
-    HAL_INTERRUPT_MASK(pc_ser_channels[1].isr_vector);
+#ifdef CYGSEM_HAL_I386_PC_DIAG_SCREEN
+    --num_serial;
+#endif
 
-    // Init channels
-    cyg_hal_plf_serial_init_channel(&pc_ser_channels[0]);
-    cyg_hal_plf_serial_init_channel(&pc_ser_channels[1]);
+    for (i = 0; i < num_serial; i++) {
+	// Disable interrupts.
+	HAL_INTERRUPT_MASK(pc_ser_channels[i].isr_vector);
 
-    // Setup procs in the vector table
+	// Init
+	cyg_hal_plf_serial_init_channel(&pc_ser_channels[i]);
 
-    // Set channel 0
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(0);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &pc_ser_channels[0]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
-    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
-    
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(1);
-    comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &pc_ser_channels[1]);
-    CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
-    CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
-    CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
-    CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
-    CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
-    CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
-    CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+	// Setup procs in the vector table
 
+	// Set channel 0
+	CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+	comm = CYGACC_CALL_IF_CONSOLE_PROCS();
+	CYGACC_COMM_IF_CH_DATA_SET(*comm, &pc_ser_channels[i]);
+	CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_serial_write);
+	CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_serial_read);
+	CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_serial_putc);
+	CYGACC_COMM_IF_GETC_SET(*comm, cyg_hal_plf_serial_getc);
+	CYGACC_COMM_IF_CONTROL_SET(*comm, cyg_hal_plf_serial_control);
+	CYGACC_COMM_IF_DBG_ISR_SET(*comm, cyg_hal_plf_serial_isr);
+	CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, cyg_hal_plf_serial_getc_timeout);
+    }
     
     // Restore original console
     CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);

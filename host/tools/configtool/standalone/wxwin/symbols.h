@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2001/05/14
-// Version:     $Id: symbols.h,v 1.11 2001/09/25 09:52:56 julians Exp $
+// Version:     $Id: symbols.h,v 1.12 2001/10/11 12:31:42 julians Exp $
 // Purpose:
 // Description: Some important symbols, such as the version
 // Requires:
@@ -44,4 +44,7 @@
 //===========================================================================
 
 #define ecCONFIGURATION_TOOL_VERSION        2.08
+
+// Use /ecos-x notation for drive specification
+#define ecUSE_ECOS_X_NOTATION               1
 

@@ -502,6 +502,22 @@ void CMainFrame::Build(const CString &strWhat/*=_T("")*/)
       strCmd+=GetApp()->m_strMakeOptions;
     }
 
+    strCmd += _T(" --directory ");
+    
+    // Quoting the name may not mix with the 'sh' command on Unix, so only do it
+    // under Windows where it's more likely there will be spaces needing quoting.
+#ifdef _WINDOWS
+    CString buildDir(pDoc->BuildTree());
+    
+#if 1 // ecUSE_ECOS_X_NOTATION
+    std::string cPath = cygpath(std::string(pDoc->BuildTree()));
+    buildDir = cPath.c_str();
+#endif
+    strCmd += CString(_T("\"")) + buildDir + CString(_T("\""));
+#else
+    strCmd += CString(pDoc->BuildTree()) ;
+#endif
+
     if(PrepareEnvironment()){
       m_strBuildTarget=strWhat;
       SetThermometerMax(250); // This is just a guess.  The thread we are about to spawn will work out the correct answer
@@ -519,8 +535,6 @@ void CMainFrame::Build(const CString &strWhat/*=_T("")*/)
     }
   }
 }
-
-
 
 
 CConfigToolApp * CMainFrame::GetApp()
@@ -1216,14 +1230,17 @@ void CMainFrame::OnUpdateToolsAdministration(CCmdUI* pCmdUI)
 
 void CMainFrame::CygMount(TCHAR c)
 {
-  ASSERT(_istalpha(c));
+  // May not be alpha if it's e.g. a UNC network path
+  if (!_istalpha(c))
+      return;
+
   c=towlower(c);
   if(!m_arMounted[c-_TCHAR('a')]){
     m_arMounted[c-_TCHAR('a')]=true;
     CString strCmd;
     String strOutput;
 
-    strCmd.Format(_T("mount %c: /%c"),c,c);
+    strCmd.Format(_T("mount %c: /ecos-%c"),c,c);
     CSubprocess sub;
     sub.Run(strOutput,strCmd);
   }

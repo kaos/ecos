@@ -87,13 +87,13 @@ RedBoot_cmd("go",
     );
 RedBoot_cmd("dump", 
             "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>]",
+            "-b <location> [-l <length>] [-s]",
             do_dump 
     );
 RedBoot_cmd("x", 
             "Display (hex dump) a range of memory", 
-            "-b <location> [-l <length>]",
-            do_x 
+            "-b <location> [-l <length>] [-s]",
+            do_x
     );
 RedBoot_cmd("cksum", 
             "Compute a 32bit checksum [POSIX algorithm] for a range of memory", 
@@ -240,13 +240,9 @@ cyg_start(void)
         (*init_entry->fun)();
     }
 
-#ifdef CYGPKG_COMPRESS_ZLIB
-#define ZLIB_COMPRESSION_OVERHEAD 0xB800
-#else
-#define ZLIB_COMPRESSION_OVERHEAD 0
-#endif
-    user_ram_start = workspace_start + ZLIB_COMPRESSION_OVERHEAD;
+    user_ram_start = workspace_start;
     user_ram_end = workspace_end;
+
     do_version(0,0);
 
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
@@ -404,16 +400,21 @@ do_help(int argc, char *argv[])
 void
 do_dump(int argc, char *argv[])
 {
-    struct option_info opts[2];
+    struct option_info opts[3];
     unsigned long base, len;
     bool base_set, len_set;
     static unsigned long _base, _len;
+    bool srec_dump;
+    int i, n, off, cksum;
+    cyg_uint8 ch;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&base, (bool *)&base_set, "base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void **)&len, (bool *)&len_set, "length");
-    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, "")) {
+    init_opts(&opts[2], 's', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&srec_dump, 0, "dump data using Morotola S-records");
+    if (!scan_opts(argc, argv, 1, opts, 3, 0, 0, "")) {
         return;
     }
     if (!base_set) {
@@ -430,7 +431,26 @@ do_dump(int argc, char *argv[])
     if (!len_set) {
         len = 32;
     }
-    diag_dump_buf((void *)base, len);
+    if (srec_dump) {
+        off = 0;
+        while (off < len) {
+            n = (len > 16) ? 16 : len;
+            cksum = n+5;
+            diag_printf("S3%02X%08X", n+5, off+base);
+            for (i = 0;  i < 4;  i++) {
+                cksum += (((base+off)>>(i*8)) & 0xFF);
+            }
+            for (i = 0;  i < n;  i++) {
+                ch = *(cyg_uint8 *)(base+off+i);
+                diag_printf("%02X", ch);
+                cksum += ch;
+            }
+            diag_printf("%02X\n", ~cksum & 0xFF);
+            off += n;
+        }
+    } else {
+        diag_dump_buf((void *)base, len);
+    }
     _base = base + len;
     _len = len;
 }

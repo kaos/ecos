@@ -25,3 +25,5 @@
 #include "cdl.hxx"
 extern bool generate_build_tree (const CdlConfiguration config, const std::string build_tree, const std::string install_tree = "");
 extern std::string get_tests (const CdlConfiguration config, const CdlBuildInfo_Loadable & build_info);
+extern std::string cygpath (const std::string input);
+

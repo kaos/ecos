@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -59,6 +59,17 @@ typedef struct
 {
     cyg_uint32  fpstate_valid;
     cyg_uint32  fpstate[108/sizeof(cyg_uint32)];
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+    cyg_uint32  xmm0[4];
+    cyg_uint32  xmm1[4];
+    cyg_uint32  xmm2[4];
+    cyg_uint32  xmm3[4];
+    cyg_uint32  xmm4[4];
+    cyg_uint32  xmm5[4];
+    cyg_uint32  xmm6[4];
+    cyg_uint32  xmm7[4];
+    cyg_uint32  mxcsr;
+#endif
 } HAL_FPU_Context;
 
 #endif

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -115,8 +115,8 @@ void output_threadid(char * title,threadref * ref) ;
 
 extern target_register_t * _registers ;
     /* A pointer to the current set of registers */
-extern target_register_t registers[NUMREGS]; /* The current saved registers */
-extern target_register_t alt_registers[NUMREGS] ;
+extern target_register_t registers[]; /* The current saved registers */
+extern target_register_t alt_registers[] ;
     /* Thread or saved process state */
 
 

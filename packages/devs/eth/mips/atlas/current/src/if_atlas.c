@@ -105,8 +105,6 @@ RedBoot_config_option("Network hardware address [MAC]",
 
 #define ETHER_ADDR_LEN 6
 
-extern int net_debug; // FIXME
-
 static unsigned poll_count = 0;  // for bug workaround
 static void __tx_poll(struct eth_drv_sc *sc);
 

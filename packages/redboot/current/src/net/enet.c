@@ -121,7 +121,9 @@ __enet_poll(void)
     pktbuf_t *pkt;
     eth_header_t eth_hdr;
     int i, type;
+#ifdef DEBUG_PKT_EXHAUSTION
     static bool was_exhausted = false;
+#endif
 
     while (true) {
         /*
@@ -129,6 +131,7 @@ __enet_poll(void)
          * are available.
          */
         if ((pkt = __pktbuf_alloc(ETH_MAX_PKTLEN)) == NULL) {
+#ifdef DEBUG_PKT_EXHAUSTION
             if (!was_exhausted) {
                 int old = start_console();  // Force output to standard port
                 diag_printf("__enet_poll: no more buffers\n");
@@ -136,9 +139,12 @@ __enet_poll(void)
                 was_exhausted = true;
                 end_console(old);
             } 
+#endif
             return;
         }
+#ifdef DEBUG_PKT_EXHAUSTION
         was_exhausted = false;  // Report the next time we're out of buffers
+#endif
 
         if ((pkt->pkt_bytes = eth_drv_read((char *)&eth_hdr, (char *)pkt->buf,
                                            ETH_MAX_PKTLEN)) > 0) {

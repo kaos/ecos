@@ -1,3 +1,18 @@
+2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/iq80310_info.h: Remove MAX_TX_DESCRIPTORS and 
+	MAX_RX_DESCRIPTORS, to be replaced by...
+	* cdl/iq80310_eth_drivers.cdl: Add
+	CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS and
+	CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS.
+	* src/if_shmem.S: Use above definitions to calculate size of
+	shared mem.	
+	* src/if_iq80310.c (CYGHWR_HAL_ARM_IQ80310_PCI_MEM_MAP_SIZE): Ditto.
+
+2001-10-09  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_iq80310.c: Made code build with assertions.
+
 2001-08-24  Mark Salter  <msalter@redhat.com>
 
 	* src/if_iq80310.c (PacketRxReady): Break out of Rx loop after

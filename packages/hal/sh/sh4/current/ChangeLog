@@ -1,3 +1,7 @@
+2001-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_ubc.h (CYGARC_REG_BRCR_ONE_STEP): Added.
+
 2001-09-25  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_intr.h: Default CYGPRI_HAL_INTERRUPT_ACKNOWLEDGE_PLF

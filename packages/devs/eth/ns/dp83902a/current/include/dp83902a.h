@@ -94,6 +94,7 @@
 typedef struct dp83902a_priv_data {
     cyg_uint8* base;
     cyg_uint8* data;
+    cyg_uint8* reset;
     int tx_next;           // First free Tx page
     int tx_int;            // Expecting interrupt from this buffer
     int rx_next;           // First free Rx page
@@ -111,6 +112,10 @@ typedef struct dp83902a_priv_data {
     // For debugging
     volatile int cr_lock;
     volatile int cr_owner;
+
+    // Buffer allocation
+    int tx_buf1, tx_buf2;
+    int rx_buf_start, rx_buf_end;
 } dp83902a_priv_data_t;
 
 // ------------------------------------------------------------------------
@@ -177,6 +182,10 @@ typedef struct dp83902a_priv_data {
 
 #ifndef CYGHWR_NS_DP83902A_PLF_INT_CLEAR
 # define CYGHWR_NS_DP83902A_PLF_INT_CLEAR(_dp_)
+#endif
+
+#ifndef CYGHWR_NS_DP83902A_PLF_INIT
+#define CYGHWR_NS_DP83902A_PLF_INIT(dp) do { } while (0)
 #endif
 
 // ------------------------------------------------------------------------
@@ -360,14 +369,6 @@ static void dp83902a_poll(struct eth_drv_sc *sc);
 #define DP_TSR_FU     0x20   // FIFO underrun
 #define DP_TSR_CDH    0x40   // Collision Detect Heartbeat
 #define DP_TSR_OWC    0x80   // Collision outside normal window
-
-// Page (buffer) allocation
-// FIXME: Driver should use more RX and (in particular) TX buffers,
-// limit these on variants where required (CF Low Power)
-#define DP_TX_BUF1    0x40
-#define DP_TX_BUF2    0x48
-#define DP_RX_START   0x50
-#define DP_RX_STOP    0x80
 
 #define IEEE_8023_MAX_FRAME         1518    // Largest possible ethernet frame
 #define IEEE_8023_MIN_FRAME           64    // Smallest possible ethernet frame

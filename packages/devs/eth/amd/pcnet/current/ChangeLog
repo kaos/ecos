@@ -1,3 +1,21 @@
+2001-10-16  David Howells  <dhowells@redhat.com>
+
+	* src/if_pcnet.c: don't invert the logic of the auto-negotiation
+	completion flag.
+
+2001-10-16  David Howells  <dhowells@redhat.com>
+
+	* src/if_pcnet.c: check the correct flag to determine end of
+	auto-negotiation.
+	* src/amd_pcnet.h: ditto	
+	
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* cdl/amd_pcnet_eth_drivers.cdl: added option to force 10Mbps only
+	speed negotiation.
+	* src/amd_pcnet.h: ditto
+	* src/if_pcnet.c: ditto
+
 2001-09-12  Jesper Skov  <jskov@redhat.com>
 
 	* src/amd_pcnet.h: fix warning.

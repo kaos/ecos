@@ -404,7 +404,7 @@ __externC time_t cyg_timestamp()
     
     return (time_t) Cyg_WallClock::wallclock->get_current_time();
 
-#elif CYGINT_ISO_POSIX_TIMERS
+#elif defined(CYGINT_ISO_POSIX_TIMERS)
 
     // If POSIX is present, use the current value of the realtime
     // clock.

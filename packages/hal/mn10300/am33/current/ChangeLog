@@ -1,3 +1,8 @@
+2001-10-18  David Howells  <dhowells@redhat.com>
+
+	* include/variant.inc: Suppress as many interrupt sources as
+	possible whilst booting.
+
 2001-07-27  David Howells  <dhowells@redhat.com>
 
 	* cdl/hal_mn10300_am33.cdl: Added option for disabling caching

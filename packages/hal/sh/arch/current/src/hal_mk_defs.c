@@ -103,6 +103,8 @@ main(void)
     DEFINE(CYGNUM_HAL_VSR_MAX, CYGNUM_HAL_VSR_MAX);
     DEFINE(CYGNUM_HAL_VSR_COUNT, CYGNUM_HAL_VSR_COUNT);
     DEFINE(CYGNUM_HAL_VSR_EXCEPTION_COUNT, CYGNUM_HAL_VSR_EXCEPTION_COUNT);
+
+    return 0;
 }
 
 //--------------------------------------------------------------------------

@@ -135,7 +135,9 @@ public:
     
 }; /* class Cyg_Mqueue */
 
-#include <cyg/kernel/mqueue.inl>
+#ifndef CYGIMP_KERNEL_SYNCH_MQUEUE_NOT_INLINE
+# include <cyg/kernel/mqueue.inl>
+#endif
 
 #endif /* CYGONCE_KERNEL_MQUEUE_HXX multiple inclusion protection */
 

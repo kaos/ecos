@@ -36,22 +36,24 @@
 // # Contributors:  msalter
 // # Date:          2000-11-03
 // # Purpose:       
-// # Description:   This file defines a chunk of 4Kbyte aligned memory for use
+// # Description:   This file defines a chunk of aligned memory for use
 // #                by bus-mastering PCI ethernet device.
 // #
 // #####DESCRIPTIONEND####
 // #
 // #========================================================================
 
+#include <pkgconf/devs_eth_arm_iq80310.h>
+        
+#define MAX_PACKET_SIZE   1536
+#define SIZEOF_DESCRIPTOR 16
 	
 	.bss
 	.p2align(12)
 	.globl cyg_io_iq80310_i82559_shmem
 cyg_io_iq80310_i82559_shmem:
-	.rept 16*1024
+	.rept ((MAX_PACKET_SIZE + SIZEOF_DESCRIPTOR) * \
+               (CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS + \
+                CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS))
 	.byte 0
 	.endr
-
-
-	
-	

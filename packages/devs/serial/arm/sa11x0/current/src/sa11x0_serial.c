@@ -334,6 +334,13 @@ sa11x0_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
         }
         port->stat0 = SA11X0_UART_RX_IDLE;  // Need to clear this manually
     }
+    if (stat0 & (SA11X0_UART_RX_BEGIN_OF_BREAK |
+                 SA11X0_UART_RX_END_OF_BREAK ) ) {
+        // Need to clear any of these manually also or noise
+        // from plugging in can cause an interrupt loop!
+        port->stat0 = stat0 & (SA11X0_UART_RX_BEGIN_OF_BREAK |
+                               SA11X0_UART_RX_END_OF_BREAK );
+    }
     cyg_drv_interrupt_unmask(vector);
 }
 #endif

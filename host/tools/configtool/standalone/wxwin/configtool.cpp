@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.cpp,v 1.47 2001/09/25 09:50:23 julians Exp $
+// Version:     $Id: configtool.cpp,v 1.50 2001/10/15 15:33:02 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool application class
 // Requires:
@@ -88,6 +88,8 @@
 #include "conflictwin.h"
 #include "propertywin.h"
 #include "symbols.h"
+#include "build.hxx"
+#include "Subprocess.h"
 
 // ----------------------------------------------------------------------------
 // resources
@@ -605,7 +607,7 @@ bool ecApp::VersionStampSplashScreen()
 
         int x = 339; int y = 231;
 #ifdef __WXMSW__
-	y += 6; // For some reason
+        y += 5; // For some reason
 #endif
         int w, h;
         dc.GetTextExtent(verString, & w, & h);
@@ -1073,15 +1075,13 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
                     // Useful for ecosconfig
                     wxSetEnv(wxT("ECOS_REPOSITORY"), pDoc->GetPackagesDir());
 
-                     // No longer necessary because we're using /cygdrive notation
-#if 0
-                    if (! pDoc->GetBuildTree().IsEmpty())
+                    // Mount /ecos-x so we can access these in text mode
+                    if (! pDoc->GetBuildTree().IsEmpty() && wxIsalpha(pDoc->GetBuildTree()[0]))
                         CygMount(pDoc->GetBuildTree()[0]);
-                    if (! pDoc->GetInstallTree().IsEmpty())
+                    if (! pDoc->GetInstallTree().IsEmpty() && wxIsalpha(pDoc->GetInstallTree()[0]))
                         CygMount(pDoc->GetInstallTree()[0]);
-                    if (! pDoc->GetRepository().IsEmpty())
+                    if (! pDoc->GetRepository().IsEmpty() && wxIsalpha(pDoc->GetRepository()[0]))
                         CygMount(pDoc->GetRepository()[0]);
-#endif
                 }
             }
         }
@@ -1181,6 +1181,26 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
 
 void ecApp::CygMount(wxChar c)
 {
+    // May not be alpha if it's e.g. a UNC network path
+    if (!wxIsalpha(c))
+        return;
+    
+    c = wxTolower(c);
+    
+    if(!sm_arMounted[c-_TCHAR('a')])
+    {
+        sm_arMounted[c-wxChar('a')]=true;
+        wxString strCmd;
+        String strOutput;
+        
+        strCmd.Printf(wxT("mount %c: /ecos-%c"),c,c);
+        CSubprocess sub;
+        sub.Run(strOutput,strCmd);
+    }
+
+
+    // Doing it with wxExecute results in a flashing DOS box unfortunately
+#if 0
     wxASSERT(wxIsalpha(c));
     c = wxTolower(c);
     if(!sm_arMounted[c-wxChar('a')])
@@ -1191,6 +1211,52 @@ void ecApp::CygMount(wxChar c)
         strCmd.Printf(wxT("mount.exe %c: /%c"),c,c);
 
         wxExecute(strCmd, TRUE);
+    }
+#endif
+}
+
+// Fiddling directly with the registry DOESN'T WORK because Cygwin mount tables
+// get out of synch with the registry
+void ecApp::CygMountText(wxChar c)
+{
+    wxASSERT(wxIsalpha(c));
+    c = wxTolower(c);
+//    if(!sm_arMounted[c-wxChar('a')])
+    {
+//        sm_arMounted[c-wxChar('a')] = TRUE;
+
+#if 0        
+        wxString strCmd;
+        
+        strCmd.Printf(wxT("mount.exe %c: /ecos-%c"),c,c);
+
+        wxExecute(strCmd, TRUE);
+#else
+        wxString key, value;
+        key.Printf(wxT("/ecos-%c"), c);
+        value.Printf(wxT("%c:"), c);
+
+        // Mount by fiddling with registry instead, so we don't see ugly flashing windows
+#ifdef __WXMSW__
+        HKEY hKey = 0;
+        if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Cygnus Solutions\\Cygwin\\mounts v2",
+            0, KEY_READ, &hKey))
+        {
+            DWORD disposition;
+            HKEY hSubKey = 0;
+
+            if (ERROR_SUCCESS == RegCreateKeyEx(hKey, key, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS,
+                NULL, & hSubKey, & disposition))
+            {
+                RegSetValueEx(hSubKey, "native", 0, REG_SZ, (unsigned char*) (const wxChar*) value, value.Length() + 1);
+                RegCloseKey(hSubKey);
+            }
+            
+            RegCloseKey(hKey);
+        }
+#endif
+
+#endif
     }
 }
 
@@ -1238,7 +1304,13 @@ void ecApp::Build(const wxString &strWhat /*=wxT("")*/ )
         // Quoting the name may not mix with the 'sh' command on Unix, so only do it
         // under Windows where it's more likely there will be spaces needing quoting.
 #ifdef __WXMSW__
-        strCmd += wxString(wxT("\"")) + wxString(pDoc->GetBuildTree()) + wxString(wxT("\""));
+        wxString buildDir(pDoc->GetBuildTree());
+
+#if ecUSE_ECOS_X_NOTATION
+        std::string cPath = cygpath(std::string(pDoc->GetBuildTree()));
+        buildDir = cPath.c_str();
+#endif
+        strCmd += wxString(wxT("\"")) + buildDir + wxString(wxT("\""));
 #else
         strCmd += wxString(pDoc->GetBuildTree()) ;
 #endif

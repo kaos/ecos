@@ -1,3 +1,26 @@
+2001-10-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/dp83902a.h: Removed hardwired buffer
+	allocation. Replaced with per-device configuration.
+	* src/if_dp83902a.c: Same.
+
+2001-10-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/dp83902a.h: Added new page allocation layout.
+
+2001-10-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_dp83902a.c: Leave out interrupt code - not needed in 
+	non-NET configurations.
+
+2001-10-10  Gary Thomas  <gthomas@redhat.com>
+
+	* src/if_dp83902a.c: 
+	* include/dp83902a.h: More flexible setup.  Chip reset address is
+	now in device data, along with changes to the PLF reset functions.
+	Also, a new PLF init function can be defined which allows the driver
+	to work in a PCI enviroment (addresses unknown at compile time).
+
 2001-09-12  Jesper Skov  <jskov@redhat.com>
 
 	* src/if_dp83902a.c: Apply a little more DMA magic.

@@ -78,7 +78,11 @@ cdl_package CYGPKG_FS_ROM {
             <PREFIX>/include/cyg/romfs/testromfs.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
             $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs.bin
             @mkdir -p "$(dir $@)"
-            sh $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl testromfs.bin $@
+            # work around cygwin path problems by copying to build dir
+            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl .
+            sh file2c.tcl testromfs.bin testromfs.h
+            @rm -f $@ file2c.tcl
+            @cp testromfs.h $@
         }
     
     

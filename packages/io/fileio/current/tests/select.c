@@ -45,9 +45,10 @@
 //==========================================================================
 
 #include <pkgconf/system.h>
+#include <pkgconf/isoinfra.h>
 
-#ifndef CYGPKG_POSIX
-# define NA_MSG "POSIX package needed to run test"
+#ifndef CYGINT_ISO_PTHREAD_IMPL
+# define NA_MSG "POSIX threads needed to run test"
 #endif
 
 #include <cyg/infra/testcase.h>

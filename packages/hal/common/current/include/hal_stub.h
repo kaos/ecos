@@ -234,7 +234,7 @@ do {                                                                         \
 do {                                                                          \
     cyg_hal_gdb_remove_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
     HAL_RESTORE_INTERRUPTS(_old_);                                            \
-cyg_hal_gdb_break_place:                                                      \
+cyg_hal_gdb_break_place:;                                                     \
 } while ( 0 )
 
 #else // use __builtin_return_address instead.
@@ -257,10 +257,14 @@ do {                                                                          \
 
 // so define these just to do interrupts:
 #define CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION( _old_ )   \
-    HAL_DISABLE_INTERRUPTS(_old_)
+do {                                                    \
+    HAL_DISABLE_INTERRUPTS(_old_);                      \
+} while (0);
 
 #define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )   \
-    HAL_RESTORE_INTERRUPTS(_old_)
+do {                                                    \
+    HAL_RESTORE_INTERRUPTS(_old_);                      \
+} while (0);
 
 #endif
 
@@ -275,8 +279,14 @@ extern HAL_SavedRegisters *_hal_registers;
 
 extern int cyg_hal_gdb_break;
 
-//---------------------------------------------------------------------------
-// Local strcpy/strlen functions removes libc dependency.
+#ifdef CYGPKG_ISOINFRA
+# include <pkgconf/isoinfra.h>
+#endif
+#ifdef CYGINT_ISO_STRING_STRFUNCS
+# include <string.h>
+#else
+//-----------------------------------------------------------------------------
+// String helpers. These really should come from ISOINFRA
 static inline char *strcpy( char *s, const char *t)
 {
     char *r = s;
@@ -295,6 +305,7 @@ static inline size_t strlen( const char *s )
     while( *s++ ) r++;
     return r;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // Repeat the cache definitions here to avoid too much hackery in 

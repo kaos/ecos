@@ -46,12 +46,19 @@
 #ifndef _NET_H_
 #define _NET_H_
 
+#include <pkgconf/system.h>
 #include <pkgconf/redboot.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/basetype.h>
 #include <string.h>
 
 extern bool net_debug;
+#ifdef CYGPKG_IO_ETH_DRIVERS
+#  include <pkgconf/io_eth_drivers.h>
+# ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+extern int cyg_io_eth_net_debug;
+# endif
+#endif
 
 extern unsigned long do_ms_tick(void);
 extern unsigned long get_ms_ticks(void);

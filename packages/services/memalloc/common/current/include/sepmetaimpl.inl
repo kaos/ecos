@@ -65,7 +65,7 @@
 // list has the same structure but its memnext/memprev fields are zero.
 // Always having at least one item on the list simplifies the alloc and
 // free code.
-#if CYGINT_ISO_STRING_MEMFUNCS
+#ifdef CYGINT_ISO_STRING_MEMFUNCS
 # include <string.h>
 #endif
 
@@ -74,7 +74,7 @@ Cyg_Mempool_Sepmeta_Implementation::copy_data( cyg_uint8 *dst,
                                                cyg_uint8 *src, 
                                                cyg_int32 nbytes )
 {
-#if CYGINT_ISO_STRING_MEMFUNCS
+#ifdef CYGINT_ISO_STRING_MEMFUNCS
     memmove( dst, src, nbytes );
 #else
     if ((src < dst) && (dst < (src + nbytes))) {

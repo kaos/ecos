@@ -61,6 +61,7 @@
 #include <pkgconf/net.h>
 #include <cyg/kernel/kapi.h>
 #endif
+#include <pkfconf/io_eth_drivers.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
@@ -99,7 +100,9 @@ static void cs8900_fake_int(cyg_addrword_t);
 #include "cs8900.h"
 #define ETHER_ADDR_LEN 6
 
-extern int net_debug; // FIXME
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+extern int cyg_io_eth_net_debug;
+#endif
 
 struct cs8900_priv_data {
     int txbusy;            // A packet has been sent
@@ -413,9 +416,11 @@ cs8900_RxEvent(struct eth_drv_sc *sc)
 
     stat = CS8900_RTDATA;
     len = CS8900_RTDATA;
-    if (net_debug) {
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+    if (cyg_io_eth_net_debug) {
         diag_printf("RxEvent - stat: %x, len: %d\n", stat, len);
     }
+#endif
     (sc->funs->eth_drv->recv)(sc, len);
 }
 
@@ -459,9 +464,11 @@ cs8900_TxEvent(struct eth_drv_sc *sc, int stat)
     struct cs8900_priv_data *cpd = (struct cs8900_priv_data *)sc->driver_private;
 
     stat = get_reg(PP_TER);
-    if (net_debug) {
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+    if (cyg_io_eth_net_debug) {
         diag_printf("Tx event: %x\n", stat);
     }
+#endif
     cpd->txbusy = 0;
     (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 0);
 }

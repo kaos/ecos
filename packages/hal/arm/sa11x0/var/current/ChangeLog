@@ -1,3 +1,10 @@
+2001-10-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/hal_diag.c (cyg_hal_plf_serial_isr): As well as the sticky
+	Rx Idle bit, clear the sticky bits for interrupts for start or end
+	of a line break, otherwise messing with the wiring can cause an
+	interrupt loop and hang the target.
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_linux_exec.c: 

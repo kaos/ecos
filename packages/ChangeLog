@@ -1,3 +1,12 @@
+2001-10-19  Lars Lindqvist  <Lars.Lindqvist@combitechsystems.com>
+2001-10-19  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add AEB-2 (E7T) serial drivers.
+
+2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Clarify Cirrus Logic related packages' descriptions.
+
 2001-09-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Add i386 PC wallclock driver package, and include it

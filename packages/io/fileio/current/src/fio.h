@@ -52,6 +52,7 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
 #include <pkgconf/io_fileio.h>
+#include <pkgconf/isoinfra.h>
 
 #include <cyg/infra/cyg_type.h>
 
@@ -129,15 +130,15 @@ CYG_MACRO_END
 // in the routines that are defined to contain them.
 // The macro CYG_CANCELLATION_POINT does this.
 
-#ifdef CYGPKG_POSIX
+#ifdef CYGINT_ISO_PTHREAD_IMPL
 
-#include <pthread.h>
+# include <pthread.h>
 
-#define CYG_CANCELLATION_POINT pthread_testcancel()
+# define CYG_CANCELLATION_POINT pthread_testcancel()
 
 #else
 
-#define CYG_CANCELLATION_POINT CYG_EMPTY_STATEMENT
+# define CYG_CANCELLATION_POINT CYG_EMPTY_STATEMENT
 
 #endif
 

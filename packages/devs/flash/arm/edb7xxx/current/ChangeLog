@@ -1,3 +1,7 @@
+2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/flash_edb7xxx.cdl: Move EP72xx flash into separate subcomponent.
+	Clarify package description strings.
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/edb7xxx_flash.c: Remove dependency on printf() via user functions.

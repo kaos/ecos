@@ -52,6 +52,9 @@
 #include <cyg/infra/cyg_type.h>      // common types and externC
 #include <cyg/kernel/thread.hxx>     // Cyg_Thread
 #include <cyg/kernel/thread.inl>
+// Specially avoid inlining here due to the way we abuse the mqueue
+// implementation by making lots and lots of calls.
+#define CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE
 #include <cyg/kernel/mqueue.hxx>     // Mqueue Header
 #include <cyg/kernel/sema.hxx>       // semaphores
 #include <cyg/infra/testcase.h>      // test API

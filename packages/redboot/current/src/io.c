@@ -297,7 +297,8 @@ _rb_gets(char *buf, int buflen, int timeout)
         else
 #endif
         if ((timeout > 0) && (ptr == buf)) {
-            mon_set_read_char_timeout(timeout);
+#define MIN_TIMEOUT 50
+            mon_set_read_char_timeout(timeout > MIN_TIMEOUT ? MIN_TIMEOUT : timeout);
             while (timeout > 0) {
                 res = mon_read_char_with_timeout(&c);
                 if (res) {
@@ -305,7 +306,7 @@ _rb_gets(char *buf, int buflen, int timeout)
                     do_idle(false);
                     break;
                 }
-                timeout -= 50;
+                timeout -= MIN_TIMEOUT;
             }
             if (res == false) {
                 do_idle(true);
@@ -349,15 +350,6 @@ _rb_gets(char *buf, int buflen, int timeout)
                 ptr--;
             }
             break;
-        case '\\':                 // escape character
-            if (console_echo) {
-                mon_write_char(c);
-            }
-            if (last_ch != '\\') // if last was also an escape, 
-                break;             // don't add to buffer, just move on
-            *ptr++ = c;
-            c = '\0';    // cheat so that the "shift" state resets
-            break;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         case '+': // fall through
         case '$':
@@ -366,6 +358,9 @@ _rb_gets(char *buf, int buflen, int timeout)
                 // Give up and try GDB protocol
                 ungetDebugChar(c);  // Push back character so stubs will see it
                 return _GETS_GDB;
+            }
+            if (last_ch == '\\') {
+                ptr--;  // Save \$ as $
             }
             // else fall through
 #endif

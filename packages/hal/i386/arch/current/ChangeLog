@@ -1,3 +1,39 @@
+2001-10-15  Mark Salter  <msalter@redhat.com>
+
+	* src/i386_stub.c (hal_get_gdb_registers): Save idt/gdt in GDB regs.
+	({put,get}_register_as_bytes): Support idt/gdt.
+
+2001-10-12  Mark Salter  <msalter@redhat.com>
+
+	* include/i386_stub.h: Add support for FPU and other regs.
+	* src/i386_stub.c: Ditto.
+
+	* src/vectors.S: Add SSE support.
+	* include/i386.inc: Ditto.
+	* include/arch.inc: Ditto.
+	* include/hal_arch.h: Add SSE state to HAL_FPU_Context.
+	* cdl/hal_i386.cdl: Add CYGHWR_HAL_I386_PENTIUM and
+	CYGHWR_HAL_I386_PENTIUM_SSE.
+	* cdl/hal_i386.cdl: Add CYGHWR_HAL_I386_PENTIUM_GDB_REGS.
+
+2001-10-08  Ian Campbell  <icampbell@arcom.co.uk>
+
+	* cdl/hal_i386.cdl: move CYGBLD_BUILD_I386_ROMBOOT and
+	CYGBLD_BUILD_REDBOOT_BIN_ROM to pc package.
+	* src/romboot.S: Moved to pc package
+	* src/romboot.ld: Moved to pc package
+
+2001-10-11  Fabrice Gautier  <Fabrice_Gautier@sdesigns.com>
+
+	* include/hal_io.h: Add _STRING variants of I/O macros to allow
+	writing of consecutive items to the same registers.
+
+2001-10-10  Fabrice Gautier  <Fabrice_Gautier@sdesigns.com>
+2001-10-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S: Don't use apostrophes in comments as it can confuse
+	preprocessors sometimes.
+
 2001-10-05  Mark Salter  <msalter@redhat.com>
 
 	* src/vectors.S: Support separate stub stack.

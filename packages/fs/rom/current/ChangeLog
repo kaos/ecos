@@ -1,3 +1,10 @@
+2001-10-17  Drew Moseley  <dmoseley@redhat.com>
+2001-10-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* support/mk_romfs.c: Open input files in binary mode (for cygwin).
+	* cdl/romfs.cdl: Work around cygwin path problems by copying files
+	into build tree.
+
 2001-07-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/fileio1.c (main): Get this to actually pass! Remove

@@ -115,7 +115,7 @@ static int all_exit;
 // argument is 
 static CYG_ADDRWORD thread_data[NTHREADS];
 
-static int nthreads = 0;
+static volatile int nthreads = 0;
 
 // Sleep for 1 tick...
 static struct timespec sleeptime;
@@ -127,31 +127,32 @@ static pthread_t new_thread( void *(*entry)(void *),
                              int do_resume)
 {
     pthread_attr_t attr;
+    int _nthreads = nthreads++;
 
     struct sched_param schedparam;
     schedparam.sched_priority = priority;
         
     pthread_attr_init( &attr );
-    pthread_attr_setstackaddr( &attr, (void *)((char *)(&stack[nthreads])+STACKSIZE) );        
+    pthread_attr_setstackaddr( &attr, (void *)((char *)(&stack[_nthreads])+STACKSIZE) );        
     pthread_attr_setstacksize( &attr, STACKSIZE );
     pthread_attr_setinheritsched( &attr, PTHREAD_EXPLICIT_SCHED );
     pthread_attr_setschedpolicy( &attr, SCHED_RR );
     pthread_attr_setschedparam( &attr, &schedparam );
     
-    CYG_ASSERT(nthreads < NTHREADS, 
+    CYG_ASSERT(_nthreads < NTHREADS, 
                "Attempt to create more than NTHREADS threads");
 
-    thread_data[nthreads] = data;
+    thread_data[_nthreads] = data;
 
-    sem_init( &hold[nthreads], 0, do_resume ? 1 : 0 );
+    sem_init( &hold[_nthreads], 0, do_resume ? 1 : 0 );
     all_exit = 0;
-    
-    pthread_create( &thread[nthreads],
+
+    pthread_create( &thread[_nthreads],
                     &attr,
                     entry,
-                    (void *)nthreads);
+                    (void *)_nthreads);
 
-    return thread[nthreads++];
+    return thread[_nthreads];
 }
 
 
@@ -234,6 +235,7 @@ static void *extra_thread( void *arg )
 
     XINFO( exiting );
 
+    return NULL;
 }
 
 // ------------------------------------------------------------------------

@@ -66,7 +66,9 @@ static void eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
 
 struct eth_drv_funs eth_drv_funs = {eth_drv_init, eth_drv_recv, eth_drv_tx_done};
 
-int net_debug;  // FIXME
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+int cyg_io_eth_net_debug = CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY;
+#endif
 
 unsigned char      __local_enet_addr[ETHER_ADDR_LEN+2];
 struct eth_drv_sc *__local_enet_sc;
@@ -246,8 +248,8 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
     sg_list[1].buf = (CYG_ADDRESS)buf;
     sg_list[1].len = len;
     packet_sent = 0;
-#ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
-    if (net_debug) {
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+    if (cyg_io_eth_net_debug) {
         int old_console;
         old_console = start_console();
         diag_printf("Ethernet send:\n");
@@ -296,9 +298,10 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
     } else {
         // It's possible that this acknowledgement is for a different
         // [logical] driver.  Try and pass it on.
-#if defined(CYGSEM_IO_ETH_DRIVERS_DEBUG) && (CYGSEM_IO_ETH_DRIVERS_DEBUG>=2)
+#if defined(CYGDBG_IO_ETH_DRIVERS_DEBUG) && \
+           (CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY >=2 )
         // Note: not normally enabled - too verbose
-        if (net_debug) {
+        if (cyg_io_eth_net_debug > 1) {
             int old_console;
             old_console = start_console();
             diag_printf("tx_done for other key: %x\n", key);
@@ -402,6 +405,15 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     unsigned char *buf;
     CYGARC_HAL_SAVE_GP();
 
+    if ((total_len > MAX_ETH_MSG) || (total_len < 0)) {        
+#ifdef CYGSEM_IO_ETH_DRIVERS_WARN
+        int old_console;
+        old_console = start_console();
+        diag_printf("%s: packet of %d bytes truncated\n", __FUNCTION__, total_len);
+        end_console(old_console);
+#endif
+        total_len = MAX_ETH_MSG;
+    }
     msg = eth_drv_msg_get(&eth_msg_free);
     if (msg) {
         buf = msg->data;
@@ -419,8 +431,8 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     sg_len = 1;
 
     (sc->funs->recv)(sc, sg_list, sg_len);
-#ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
-    if (net_debug) {
+#ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+    if (cyg_io_eth_net_debug) {
         int old_console;
         old_console = start_console();
         diag_printf("Ethernet recv:\n");

@@ -59,11 +59,15 @@ GROUP(libtarget.a libgcc.a)
 #elif defined(CYG_HAL_STARTUP_ROM)
 
 /* this version for ROM startup */
-#define SECTION_rom_vectors(_region_, _vma_, _lma_) \
-    .rom_vectors _vma_ : _lma_ \
-    { KEEP (*(.reset_vector)) \
-    . = ALIGN(0x100); KEEP (*(.utlb_vector)) \
-    . = ALIGN(0x80); KEEP(*(.other_vector)) \
+#define SECTION_rom_vectors(_region_, _vma_, _lma_)     \
+    .rom_vectors _vma_ : _lma_                          \
+    {                                                   \
+        KEEP (*(.reset_vector))                         \
+        . = ALIGN(0x200);                               \
+        KEEP (*(.utlb_vector))                          \
+        . = ALIGN(0x100);                               \
+        . = . + (0x80);                                 \
+        KEEP(*(.other_vector))                          \
     } > _region_
 
 #elif defined(CYG_HAL_STARTUP_ROMRAM)

@@ -269,12 +269,16 @@ static void posix_asr( CYG_ADDRWORD data )
 {
     pthread_info *self = (pthread_info *)data;
 
+#ifdef CYGPKG_POSIX_TIMERS
     // Call into timer subsystem to deliver any pending
     // timer expirations.
     cyg_posix_timer_asr(self);
+#endif
     
+#ifdef CYGPKG_POSIX_SIGNALS
     // Call signal subsystem to deliver any signals
     cyg_posix_signal_asr(self);
+#endif
     
     // Check for cancellation
     if( self->cancelpending &&
@@ -341,8 +345,10 @@ static void pthread_reap()
             // destroy the joiner condvar
             thread->joiner->~Cyg_Condition_Variable();
 
+#ifdef CYGPKG_POSIX_SIGNALS
             // Destroy signal handling fields
             cyg_posix_thread_sigdestroy( thread );
+#endif
             
             // Free the stack if we allocated it
             if( thread->freestack )
@@ -390,6 +396,7 @@ externC void cyg_posix_pthread_start( void )
     pthread_create( &main_thread, &attr, call_main, NULL );    
 }
 
+#ifdef CYGPKG_POSIX_SIGNALS
 //-----------------------------------------------------------------------------
 // Look for a thread that can accept delivery of any of the signals in
 // the mask and release it from any wait it is in.  Since this may be
@@ -426,6 +433,7 @@ externC void cyg_posix_pthread_release_thread( sigset_t *mask )
             count--;
     }
 }
+#endif
 
 //=============================================================================
 // General thread operations
@@ -580,8 +588,10 @@ externC int pthread_create ( pthread_t *thread,
 
     nthread->joiner = new(nthread->joiner_obj) Cyg_Condition_Variable( pthread_mutex );
 
+#ifdef CYGPKG_POSIX_SIGNALS
     // Initialize signal specific fields.
     cyg_posix_thread_siginit( nthread, self );
+#endif
 
     // create the underlying eCos thread
 

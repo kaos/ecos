@@ -1,3 +1,5 @@
+* Added ARM E7T (AEB-2) serial device drivers contributed by 
+  Lars Lindqvist at Combitech <Lars.Lindqvist@combitechsystems.com>
 * Flash driver added for the SH EDK7708 platform.
 * Added rudimentary ELF loader, including support for dynamic objects under
   services/loader.

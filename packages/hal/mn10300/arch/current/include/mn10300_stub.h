@@ -112,6 +112,10 @@ extern void __install_breakpoint_list (void);
 
 extern void __clear_breakpoint_list (void);
 
+extern int __is_bsp_syscall(void);
+
+extern int hal_syscall_handler(void);
+
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif

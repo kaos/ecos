@@ -75,12 +75,20 @@
 //-----------------------------------------------------------------------------
 // Extra eCos data.
 
+// Some architectures use registers of different sizes, so NUMREGS
+// alone is not suffucient to size the register save area. For those
+// architectures, HAL_STUB_REGISTERS_SIZE is defined as the number
+// of target_register_t sized elements in the register save area.
+#ifndef HAL_STUB_REGISTERS_SIZE
+#define HAL_STUB_REGISTERS_SIZE NUMREGS
+#endif
+
 // Saved registers.
 HAL_SavedRegisters *_hal_registers;
-target_register_t registers[NUMREGS];
-target_register_t alt_registers[NUMREGS] ;  // Thread or saved process state
-target_register_t * _registers = registers; // Pointer to current set of registers
-target_register_t orig_registers[NUMREGS];  // Registers to get back to original state
+target_register_t registers[HAL_STUB_REGISTERS_SIZE];
+target_register_t alt_registers[HAL_STUB_REGISTERS_SIZE] ;  // Thread or saved process state
+target_register_t * _registers = registers;                 // Pointer to current set of registers
+target_register_t orig_registers[HAL_STUB_REGISTERS_SIZE];  // Registers to get back to original state
 
 #if defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
 static int  _hw_stop_reason;   // Reason we were stopped by hw.
@@ -116,6 +124,7 @@ static volatile __PFI __interruptible_control;
 //-----------------------------------------------------------------------------
 // Register access
 
+#ifndef CYGARC_STUB_REGISTER_ACCESS_DEFINED
 // Return the currently-saved value corresponding to register REG of
 // the exception context.
 target_register_t 
@@ -123,6 +132,7 @@ get_register (regnames_t reg)
 {
     return _registers[reg];
 }
+#endif
 
 #ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
 // Return the validity of register REG.
@@ -133,6 +143,7 @@ get_register_valid (regnames_t reg)
 }
 #endif
 
+#ifndef CYGARC_STUB_REGISTER_ACCESS_DEFINED
 // Store VALUE in the register corresponding to WHICH in the exception
 // context.
 void 
@@ -152,6 +163,7 @@ put_register (regnames_t which, target_register_t value)
 #endif    
     _registers[which] = value;
 }
+#endif // CYGARC_STUB_REGISTER_ACCESS_DEFINED
 
 //-----------------------------------------------------------------------------
 // Serial stuff

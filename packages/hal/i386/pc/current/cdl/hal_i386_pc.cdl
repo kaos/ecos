@@ -83,6 +83,26 @@ cdl_package CYGPKG_HAL_I386_PC {
             straight to a boot ROM/Flash). ROM startup is experimental
             at this time."
     }
+        
+    cdl_option CYGBLD_BUILD_I386_ROMBOOT {
+	display       "Build ROM bootstrap code"
+	calculated    { CYG_HAL_STARTUP == "ROM" }
+
+	make {
+	    <PREFIX>/lib/romboot.ld: <PACKAGE>/src/romboot.ld
+	    cp $< $@
+	}
+	
+	make {
+	    <PREFIX>/bin/romboot.elf : <PACKAGE>/src/romboot.S
+	    @sh -c "mkdir -p $(dir $@)"
+	    $(CC) -Wp,-MD,romboot.tmp $(INCLUDE_PATH) -nostdlib -Wl,-static -T$(PREFIX)/lib/romboot.ld -o $@ $<
+	    @echo $@ ": \\" > $(notdir $@).deps
+	    @tail +2 romboot.tmp >> $(notdir $@).deps
+	    @echo >> $(notdir $@).deps
+	    @rm romboot.tmp
+	}
+    }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Diagnostic serial port baud rate"
@@ -300,22 +320,49 @@ cdl_package CYGPKG_HAL_I386_PC {
             This option lists the target's requirements for a valid Redboot
             configuration."
     
-        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
-            display       "Build Redboot ROM binary image"
-            active_if     CYGBLD_BUILD_REDBOOT
-            default_value 1
+        cdl_component CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build RedBoot binary image"
             no_define
-            description "This option enables the conversion of the Redboot ELF
-                         image to a binary image suitable for copying to a floppy
-	                 disk."
-    
-            compile -library=libextras.a
-    
-            make -priority 325 {
-                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
-                $(OBJCOPY) -O binary $< $@
+            default_value 1
+
+            cdl_option CYGBLD_BUILD_REDBOOT_BIN_FLOPPY {
+                display       "Build Redboot FLOPPY binary image"
+                active_if     CYGBLD_BUILD_REDBOOT
+                active_if     { CYG_HAL_STARTUP == "FLOPPY" }
+                calculated    1
+                no_define
+                description "This option enables the conversion of the Redboot 
+                             ELF image to a binary image suitable for
+                             copying to a floppy disk."
+        
+                compile -library=libextras.a
+        
+                make -priority 325 {
+                    <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                    $(OBJCOPY) -O binary $< $@
+                }
             }
-        }
-    }
-     
+    
+            cdl_option CYGBLD_BUILD_REDBOOT_BIN_ROM {
+                display       "Build Redboot ROM binary image"
+                active_if     CYGBLD_BUILD_REDBOOT
+                active_if     { CYG_HAL_STARTUP == "ROM" }
+                calculated    1
+                no_define
+                description "This option enables the conversion of the Redboot
+                             ELF image to a binary image suitable for ROM
+                             programming."
+                
+                make -priority 325 {
+                    <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                    $(OBJCOPY) -O binary $< $(@:.bin=.img)
+                    $(OBJCOPY) -O binary $(PREFIX)/bin/romboot.elf $(PREFIX)/bin/romboot.img
+                    dd if=/dev/zero of=$@ bs=1024 count=64 conv=sync
+                    dd if=$(@:.bin=.img) of=$@ bs=512 conv=notrunc,sync
+                    dd if=$(PREFIX)/bin/romboot.img of=$@ bs=256 count=1 seek=255 conv=notrunc
+                }
+            }
+        }            
+    }     
 }
+

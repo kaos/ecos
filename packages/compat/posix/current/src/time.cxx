@@ -46,7 +46,7 @@
 
 #include <pkgconf/posix.h>
 
-#ifdef CYGPKG_POSIX_TIMERS
+#ifdef CYGPKG_POSIX_CLOCKS
 
 #include <pkgconf/hal.h>
 #include <pkgconf/kernel.h>
@@ -87,6 +87,7 @@ CYG_MACRO_END
 //==========================================================================
 // Timer control structures
 
+#ifdef CYGPKG_POSIX_TIMERS
 typedef struct
 {
     timer_t             id;             // id value for checking
@@ -116,6 +117,8 @@ static int timer_next = 0;
 #define TIMER_ID_COOKIE_INC 0x00000400
 #define TIMER_ID_COOKIE_MASK (TIMER_ID_COOKIE_INC-1)
 static timer_t timer_id_cookie = TIMER_ID_COOKIE_INC;
+
+#endif // ifdef CYGPKG_POSIX_TIMERS
 
 //-----------------------------------------------------------------------------
 // new operator to allow us to invoke the constructor on
@@ -232,6 +235,7 @@ externC void cyg_posix_clock_start()
     init_converters();
 }
 
+#ifdef CYGPKG_POSIX_TIMERS
 //==========================================================================
 // Alarm action routine
 // This is called each time an alarm set up by a timer expires.
@@ -294,6 +298,8 @@ externC void cyg_posix_timer_asr( pthread_info *self )
         }
     }
 }
+
+#endif // ifdef CYGPKG_POSIX_TIMERS
 
 //==========================================================================
 // Clock functions
@@ -361,6 +367,8 @@ externC int clock_getres( clockid_t clock_id, struct timespec *tp)
 
 //==========================================================================
 // Timer functions
+
+#ifdef CYGPKG_POSIX_TIMERS
 
 //-----------------------------------------------------------------------------
 // Create a timer based on the given clock.
@@ -598,6 +606,8 @@ externC int timer_getoverrun( timer_t timerid )
     return overrun;
 }
 
+#endif // ifdef CYGPKG_POSIX_TIMERS
+
 //==========================================================================
 // Nanosleep
 // Sleep for the given time.
@@ -610,7 +620,7 @@ externC int nanosleep( const struct timespec *rqtp,
     TIME_ENTRY();
 
     // check for cancellation first.
-    pthread_testcancel();
+    PTHREAD_TESTCANCEL();
 
     // Fail an invalid timespec
     if( !valid_timespec( rqtp ) )
@@ -625,13 +635,12 @@ externC int nanosleep( const struct timespec *rqtp,
 
     CYG_ASSERT( ticks != 0, "Zero tick count");
     
-    pthread_info *self = pthread_self_info();
-
+    Cyg_Thread *self = Cyg_Thread::self();
     
     // Do the delay, keeping track of how long we actually slept for.
     then = Cyg_Clock::real_time_clock->current_value();
 
-    self->thread->delay( ticks );
+    self->delay( ticks );
 
     now = Cyg_Clock::real_time_clock->current_value();
 
@@ -649,12 +658,33 @@ externC int nanosleep( const struct timespec *rqtp,
     }
     
     // check if we were woken up because we were cancelled.
-    pthread_testcancel();
+    PTHREAD_TESTCANCEL();
 
     TIME_RETURN(0);
 }    
 
-#endif // ifdef CYGPKG_POSIX_TIMERS
+// -------------------------------------------------------------------------
+// Wait for a signal, or the given number of seconds
+
+externC unsigned int sleep( unsigned int seconds )
+{
+    TIME_ENTRY();
+
+    struct timespec timeout;
+
+    timeout.tv_sec = seconds;
+    timeout.tv_nsec = 0;
+
+    if( nanosleep( &timeout, &timeout ) != 0 )
+    {
+        CYG_REPORT_RETVAL(timeout.tv_sec);
+        return timeout.tv_sec;
+    }
+
+    TIME_RETURN(0);
+} 
+
+#endif // ifdef CYGPKG_POSIX_CLOCKS
 
 // -------------------------------------------------------------------------
 // EOF time.cxx

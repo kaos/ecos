@@ -492,7 +492,7 @@ void start_handler(void)
 {
     int prio;
     char* name;
-    int handler_slot;
+    int handler_slot = 0;
     int found = 0;
 
     while (!found) {

@@ -1,3 +1,21 @@
+2001-10-16  David Howells  <dhowells@redhat.com>
+
+	* src/hal_syscall.c: mustn't increment the return address by 4.
+
+2001-10-16  David Howells  <dhowells@redhat.com>
+
+	* src/vectors.S: conditionally call diagnostic macros on entry and
+	exit to default NMI handler and make inclusion of RedBoot header
+	file conditional.
+
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* include/mn10300_stub.h: added syscall handling.
+	* src/hal_syscall.c: ditto
+	* src/mn10300_stub.c: ditto
+	* src/vectors.S: ditto
+	* cdl/hal_mn10300.cdl: added RTC configuration.
+
 2001-07-27  David Howells  <dhowells@redhat.com>
 
 	* include/mn10300_stub.h: set NUMREGS to be the correct value to

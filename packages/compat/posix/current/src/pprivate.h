@@ -104,8 +104,10 @@ typedef struct
 
     struct pthread_cleanup_buffer *cancelbuffer; // stack of cleanup buffers
 
+#ifdef CYGPKG_POSIX_SIGNALS
     sigset_t            sigpending;     // Set of pending signals
     sigset_t            sigmask;        // Thread's signal mask
+#endif
     
     // The following is space for the eCos thread object that underlies
     // this POSIX thread. It is allocated like this to avoid constructing
@@ -199,7 +201,9 @@ externC pthread_info *pthread_self_info(void);
 
 externC pthread_info *pthread_info_id( pthread_t id );
 
+# ifdef CYGPKG_POSIX_SIGNALS
 externC void cyg_posix_pthread_release_thread( sigset_t *mask );
+# endif
 #endif
 
 //-----------------------------------------------------------------------------

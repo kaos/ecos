@@ -147,7 +147,13 @@ cdl_package CYGPKG_HAL_SH {
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {
         display       "Real-time clock constants."
         description   "
-            The HAL uses TMU counter 0 for driving the real-time
+            The NUMERATOR divided by the DENOMINATOR gives the number of
+            nanoseconds per tick. The PERIOD is the divider to be programmed
+            into a hardware timer that is driven from an appropriate hardware
+            clock, such that the timer overflows once per tick (normally
+            generating a CPU interrupt to mark the end of a tick). The tick
+            rate is typically 100Hz.
+            The SH HAL uses TMU counter 0 for driving the real-time
             clock."
         flavor        none
     

@@ -59,7 +59,7 @@
         locking    : true,
         buffered_w : false,
         bootblock  : true,
-        bootblocks : { 0x3e0000 * CYGNUM_FLASH_INTERLEAVE,
+        bootblocks : { 0x3f0000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,
                        0x002000 * CYGNUM_FLASH_INTERLEAVE,

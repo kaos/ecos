@@ -278,4 +278,11 @@ typedef uLong FAR uLongf;
 #   pragma map(inflate_trees_free,"INTRFR")
 #endif
 
+#ifdef __ECOS__
+#include <pkgconf/compress_zlib.h>
+#if CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC != 0
+#define MY_ZCALLOC
+#endif
+#endif
+
 #endif /* _ZCONF_H */

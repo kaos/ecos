@@ -61,6 +61,7 @@
 #define CYGARC_REG_BRCR_PCBB            0x0040 // post execute channel B
 #define CYGARC_REG_BRCR_SEQ             0x0008 // sequence condition select
 #define CYGARC_REG_BRCR_UBDE            0x0001 // User Break Debug Enable
+#define CYGARC_REG_BRCR_ONE_STEP        (CYGARC_REG_BRCR_PCBA)
 
 #if defined(CYGARC_SH_MOD_UBC) && (CYGARC_SH_MOD_UBC == 1)
 #define CYGARC_REG_BAMRA_BASMA          0x04   // BASRA masked

@@ -1,3 +1,73 @@
+2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/net/net_io.c (net_init): Set cyg_io_eth_net_debug from net_debug.
+	* include/net/net.h: Declare cyg_io_eth_net_debug.
+
+2001-10-18  David Howells  <dhowells@redhat.com>
+
+	* src/syscall.c: Added support for the times() syscall and marked
+	the utime() syscall as being implemented incorrectly.
+
+2001-10-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/io.c (_rb_gets): Fix parsing of \" in strings.
+
+2001-10-16  Jesper Skov  <jskov@zoftcorp.adsl.dk>
+
+	* cdl/redboot.cdl: Require ISOINFA.
+
+2001-10-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/net/dns.c (send_recv): Clear from_addr before passing it to
+	__udp_recvfrom. Fixed return value.
+
+2001-10-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (_do_flash_init): 
+	Add wrapper function for do_flash_init() to avoid compiler warning.
+
+	* src/io.c (_rb_gets): 
+	Use sub-timeouts when calling mon_read_char_with_timeout() as it
+	was intended that this routine should timeout quickly to allow
+	for other processing to take place if no data is available.  In
+	practice this won't make any difference unless the global "idle"
+	timeout value is changed to be something quite large.
+
+	* src/decompress.c: Improve memory allocators.  Also use 'init'
+	style function so that this is the only file that knows anything
+	of the details of the decompression process or packaging.
+
+	* src/main.c: 
+	* include/redboot.h: 
+	* cdl/redboot.cdl: Rework decompression to be totally encapsulated.
+	This keeps the details of this functionality in a single file, rather
+	than scattered throughout RedBoot.
+
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* src/xyzModem.c: put semicolon between goto-label and close curly.
+
+2001-10-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (_expand_aliases): Change around some ambiguous code.
+
+	* src/main.c: 
+	* src/decompress.c: 
+	* include/redboot.h: 
+	* cdl/redboot.cdl: Provide RedBoot specific memory allocators
+	for ZLIB.  Allows much finer control over memory map.
+
+	* src/main.c (do_dump): Add option "-s" to dump data as S-records.
+
+2001-10-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/enet.c (__enet_poll): Suppress warning messages.
+
+2001-10-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/flash.c (do_flash_init): Only set __flash_init when init is
+	successful.
+
 2001-10-04  Jesper Skov  <jskov@redhat.com>
 
 	* src/fs/disk.c: Fix ISO9660 build error.

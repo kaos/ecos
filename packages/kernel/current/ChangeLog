@@ -1,3 +1,34 @@
+2001-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* tests/dhrystone.c: CYGINT_ISO_STRING_STRFUNCS check changed to
+	ifdef.
+
+2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/synch.cdl (CYGIMP_KERNEL_SYNCH_MQUEUE_NOT_INLINE): New option
+	to avoid inliningn mqueue implementation.
+
+	* src/sync/mqueue.cxx: New file to provide non-inline version of
+	mqueue functions.
+
+	* include/mqueue.hxx: Don't include .inl if user doesn't want inlining.
+
+	* include/mqueue.inl: Allow choice of inlining or not to be
+	overridden by macro.
+
+	* tests/mqueue1.cxx: Never use inline version.
+
+2001-10-11  Jesper Skov  <jskov@redhat.com>
+
+	* tests/kmutex3.c (new_thread): Fixed allocation: increase counter
+	before starting threads which have been allocated resources.
+	* tests/kmutex4.c (new_thread): Same.
+	* tests/mutex3.cxx (new_thread): Same.
+	* tests/testaux.hxx (new_thread): Same.
+
+	* tests/kcache2.c: Fixed warning.
+	* tests/stress_threads.c: Same.
+
 2001-09-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* host/instr/dump_instr.c (main): Fix argc check.

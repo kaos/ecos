@@ -46,7 +46,7 @@ cdl_package CYGPKG_MEMALLOC {
         dynamic memory allocators, including the ISO standard malloc
         interface. It also contains some sample implementations."
     include_dir   cyg/memalloc
-    compile       dlmalloc.cxx kapi.cxx malloc.cxx memfixed.cxx memvar.cxx \
+    compile       dlmalloc.cxx memfixed.cxx memvar.cxx \
                   sepmeta.cxx
 
 # ====================================================================
@@ -205,6 +205,7 @@ cdl_package CYGPKG_MEMALLOC {
         description   "
             This option must be enabled to provide the extensions required
             to support integration into the kernel C API."
+        compile       kapi.cxx
     }       
 
     cdl_option CYGSEM_MEMALLOC_MALLOC_ZERO_RETURNS_NULL {
@@ -224,6 +225,7 @@ cdl_package CYGPKG_MEMALLOC {
         implements    CYGINT_ISO_MALLOC
         implements    CYGINT_ISO_MALLINFO
         default_value 1
+        compile       malloc.cxx
         description   "
             This component enables support for dynamic memory
             allocation as supplied by the functions malloc(),

@@ -83,15 +83,22 @@ static __call_if_flash_cfg_op_fn_t flash_config_op;
 static cyg_bool
 flash_config_op( int op, char * key, void *val, int type)
 {
+    cyg_bool res = false;
+
+    CYGARC_HAL_SAVE_GP();
+
     switch ( op ) {
     case CYGNUM_CALL_IF_FLASH_CFG_GET:
-        return flash_get_config( key, val, type );
+        res = flash_get_config( key, val, type );
+        break;
     default:
         // nothing else supported yet - though it is expected that "set"
         // will fit the same set of arguments, potentially.
         break;
     }
-    return 0;
+
+    CYGARC_HAL_RESTORE_GP();
+    return res;
 }
 #endif
 
@@ -391,7 +398,9 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
 {
     static char line[100];
     static int pos = 0;
+#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
     int tries = CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES;
+#endif
 
     // No need to send CRs
     if( c == '\r' ) return;
@@ -416,8 +425,10 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
         CYG_HAL_GDB_ENTER_CRITICAL_IO_REGION(old);
 #endif
         
+#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
         // Only wait 500ms for data to arrive - avoid "stuck" connections
         CYGACC_COMM_IF_CONTROL(*__chan, __COMMCTL_SET_TIMEOUT, CYGNUM_HAL_DEBUG_GDB_PROTOCOL_TIMEOUT);
+#endif
 
         while(1)
         {
@@ -443,10 +454,14 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
             CYGACC_COMM_IF_PUTC(*__chan, hex[csum&0xF]);
 
         nak:
+#if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES != 0
             if (CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, &c1) == 0) {
                 c1 = '-';
-                if (--tries == 0) c1 = '+';
+                if (tries && (--tries == 0)) c1 = '+';
             }
+#else
+            c1 = CYGACC_COMM_IF_GETC(*__chan);
+#endif
 
             if( c1 == '+' ) break;
 

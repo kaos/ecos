@@ -47,6 +47,7 @@
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
+#include <string.h>
 
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>

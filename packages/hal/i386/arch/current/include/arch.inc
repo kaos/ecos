@@ -25,7 +25,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -91,7 +91,7 @@
 #------------------------------------------------------------------------------
 # Stack switching macros
 
-#ifndef CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+#ifndef CYG_HAL_I386_INTSTACK_MACROS_DEFINED
 
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
@@ -126,7 +126,7 @@
 	popl	%esp				# pop old SP from stack
 	.endm
 
-#define CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+#define CYG_HAL_I386_INTSTACK_MACROS_DEFINED
 
 
 #else // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
@@ -146,11 +146,11 @@
 	.macro	hal_from_intstack
 	.endm
 
-#define CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+#define CYG_HAL_I386_INTSTACK_MACROS_DEFINED
 
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 
-#endif // CYG_HAL_PPC_INTSTACK_MACROS_DEFINED
+#endif // CYG_HAL_I386_INTSTACK_MACROS_DEFINED
 	
 #------------------------------------------------------------------------------
 # FPU macros.
@@ -184,6 +184,28 @@
         movl	%eax,0(%esp)	# put back into memory
         fldcw	0(%esp)		# reload
 	addl	$4,%esp		# pop value
+
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+        # set CR4.OSFXSR to safely use stmxcsr/ldmxcsr
+        movl	%cr4, %eax
+        orl	$0x200, %eax
+        movl	%eax, %cr4
+
+        ## Enable SIMD exceptions. Bit mask:
+        ## 0x0080 - invalid operation
+        ## 0x0100 - denormalized operand
+        ## 0x0200 - zero divide
+        ## 0x0400 - overflow
+        ## 0x0800 - underflow
+        ## 0x1000 - precision
+        pushl   $0              # space for MXCSR
+        stmxcsr 0(%esp)         # store MXCSR to stack	
+        movl    0(%esp),%eax    # get into EAX
+        andw    $(~0x0200),%ax  # allow only zero divide exceptions
+        movl    %eax,0(%esp)    # put back into memory
+        ldmxcsr 0(%esp)         # reload
+        addl    $4,%esp         # pop value
+#endif
 
 #ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
 	# Tell the CPU to generate an FPU unavailable exception
@@ -230,6 +252,28 @@
         fldcw	0(%esp)		# reload
 	addl	$4,%esp		# pop value
 
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+        # set CR4.OSFXSR to safely use stmxcsr/ldmxcsr
+        movl	%cr4, %eax
+        orl	$0x200, %eax
+        movl	%eax, %cr4
+
+        ## Enable SIMD exceptions. Bit mask:
+        ## 0x0080 - invalid operation
+        ## 0x0100 - denormalized operand
+        ## 0x0200 - zero divide
+        ## 0x0400 - overflow
+        ## 0x0800 - underflow
+        ## 0x1000 - precision
+        pushl   $0              # space for MXCSR
+        stmxcsr 0(%esp)         # store MXCSR to stack	
+        movl    0(%esp),%eax    # get into EAX
+        andw    $(~0x0200),%ax  # allow only zero divide exceptions
+        movl    %eax,0(%esp)    # put back into memory
+        ldmxcsr 0(%esp)         # reload
+        addl    $4,%esp         # pop value
+#endif
+
 #ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
 	# Tell the CPU to generate an FPU unavailable exception
 	# when the FPU is first used.
@@ -259,6 +303,23 @@
 	.macro	hal_fpu_push_ctx
 	subl	$i386reg_fpstate_size,%esp	# make space
 	fsave	i386reg_fpstate(%esp)		# save FPU state
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# Save SIMD state.
+
+	# FIXME. This is awfully inefficient. Need to use FXSAVE to
+	# save FPU and SIMD at same time. FXSAVE requires a 16 byte
+	# alignment and does not have an implicit finit as does FSAVE.
+
+	stmxcsr	i386reg_simd_mxcsr(%esp)
+	movups	%xmm0,i386reg_simd_xmm0(%esp)
+	movups	%xmm1,i386reg_simd_xmm1(%esp)
+	movups	%xmm2,i386reg_simd_xmm2(%esp)
+	movups	%xmm3,i386reg_simd_xmm3(%esp)
+	movups	%xmm4,i386reg_simd_xmm4(%esp)
+	movups	%xmm5,i386reg_simd_xmm5(%esp)
+	movups	%xmm6,i386reg_simd_xmm6(%esp)
+	movups	%xmm7,i386reg_simd_xmm7(%esp)
+#endif
 	movl	$1,i386reg_fpstate_valid(%esp)	# indicate it is valid
 	.endm
 
@@ -266,9 +327,29 @@
 	btl	$0,i386reg_fpstate_valid(%esp)	# check ls bit of valid flag
 	jc	1f				# if set, restore state
 	finit					# otherwise init FPU
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# FIXME. Anything needed here?
+#endif
 	jmp	2f				# and skip restore
 1:
 	frstor  i386reg_fpstate(%esp)		# restore FPU state
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# Restore SIMD state.
+
+	# FIXME. This is awfully inefficient. Need to use FXRSTOR to
+	# restore FPU and SIMD at same time. FXRSTOR requires a 16 byte
+	# alignment.
+
+	movups	i386reg_simd_xmm0(%esp),%xmm0
+	movups	i386reg_simd_xmm1(%esp),%xmm1
+	movups	i386reg_simd_xmm2(%esp),%xmm2
+	movups	i386reg_simd_xmm3(%esp),%xmm3
+	movups	i386reg_simd_xmm4(%esp),%xmm4
+	movups	i386reg_simd_xmm5(%esp),%xmm5
+	movups	i386reg_simd_xmm6(%esp),%xmm6
+	movups	i386reg_simd_xmm7(%esp),%xmm7
+	ldmxcsr	i386reg_simd_mxcsr(%esp)
+#endif
 2:
 	addl	$i386reg_fpstate_size,%esp	# pop space used
 	.endm
@@ -414,6 +495,23 @@
 	cmpl	$0,%eax				# test it
 	je	1f				# skip if zero
 	fsave	i386reg_fpucontext_state(%eax)	# save state
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	# Save SIMD state.
+
+	# FIXME. This is awfully inefficient. Need to use FXSAVE to
+	# save FPU and SIMD at same time. FXSAVE requires a 16 byte
+	# alignment and does not have an implicit finit as does FSAVE.
+
+	stmxcsr	i386reg_simd_mxcsr(%eax)
+	movups	%xmm0,i386reg_simd_xmm0(%eax)
+	movups	%xmm1,i386reg_simd_xmm1(%eax)
+	movups	%xmm2,i386reg_simd_xmm2(%eax)
+	movups	%xmm3,i386reg_simd_xmm3(%eax)
+	movups	%xmm4,i386reg_simd_xmm4(%eax)
+	movups	%xmm5,i386reg_simd_xmm5(%eax)
+	movups	%xmm6,i386reg_simd_xmm6(%eax)
+	movups	%xmm7,i386reg_simd_xmm7(%eax)
+#endif
 	movl	$1,i386reg_fpucontext_valid(%eax) # set valid
 	movl	$0,0(%ecx,%ebx,4)		# zero owner pointer
 1:

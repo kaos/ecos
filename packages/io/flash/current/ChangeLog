@@ -1,3 +1,14 @@
+2001-10-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c: Include string.h
+
+	* cdl/io_flash.cdl: Package requires ISOINFRA and string
+	functions.
+
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* src/flash.c: Include string.h to get mem*() functions.
+
 2001-09-25  Gary Thomas  <gthomas@redhat.com>
 
 	* include/flash.h: Remove warning on printf() prototype.

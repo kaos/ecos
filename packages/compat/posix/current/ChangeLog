@@ -1,3 +1,50 @@
+2001-10-11  Jesper Skov  <jskov@redhat.com>
+
+	* tests/mutex3.c: Fixed warning. 
+	(new_thread): Fixed allocation: increase counter
+	before starting threads which have been allocated resources.
+
+	* tests/signal2.c (cause_illegal_access): Fix warning.
+
+2001-10-10  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/posix.cdl: Only build sem.cxx when the semaphores component
+	is enabled.
+
+2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/pprivate.h (pthread_info): Conditionalize signal specific
+	members. Conditionalize declaration of 
+	cyg_posix_pthread_release_thread().	
+
+	* cdl/posix.cdl (CYGPKG_POSIX_CLOCKS): new option to separately
+	configure posix clocks from timers.
+	(CYGPKG_POSIX_TIMERS): require clocks and signals.
+
+	* include/time.h: Make proper ISO C. Conditionalize on
+	CYGPKG_POSIX_TIMERS correctly wrt the above change.
+
+	* src/pthread.cxx (posix_asr): Call signal and timer subsystems
+	conditionally.
+
+	* src/pthread.cxx (pthread_reap): Don't destroy signal handling
+	fields if there is no signal handling subsystem.
+	(cyg_posix_pthread_release_thread): Conditionalize on signals.
+	(pthread_create): Init signal subsys conditionally.
+
+	* src/signal.cxx (sleep): Move to...
+
+	* src/time.cxx: ...here.
+	Conditionalize throughout depending on whether it's POSIX clocks
+	or more specifically POSIX timers.
+	(nanosleep): Use PTHREAD_TESTCANCEL() not pthread_testcancel().
+	Get current thread from kernel not pthreads to remove pthread
+	dependency.
+
+2001-10-09  Jesper Skov  <jskov@redhat.com>
+
+	* tests/signal2.c: Also do NA check for signals.
+
 2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/mqueue.cxx (mq_open): Conditionalize use of sigev correctly.

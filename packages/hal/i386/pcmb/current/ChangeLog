@@ -1,3 +1,10 @@
+2001-10-16  Mark Salter  <msalter@redhat.com>
+
+	* src/pcmb_serial.c (cyg_hal_plf_serial_init): Use CDL to determine
+	how many serial ports to support.
+	* src/pcmb_screen.c (cyg_hal_plf_screen_init): Use CDL to determine
+	channel number for keyboard/screen.
+
 2001-10-01  Ian Campbell  <icampbell@arcom.co.uk>
 
 	* include/pcmb_io.h: Include CYGBLD_HAL_PLATFORM_H rather than

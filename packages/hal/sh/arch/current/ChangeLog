@@ -1,3 +1,12 @@
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* cdl/hal_sh.cdl: improved the description on the RTC constants
+	component.
+
+2001-10-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_mk_defs.c (main): Fixed warning.
+
 2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/sh.ld: Make separate section for GOT and .eh_frame.

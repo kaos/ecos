@@ -1,3 +1,63 @@
+2001-10-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_if.c (cyg_hal_diag_mangler_gdb_putc): 
+	* cdl/debugging.cdl: CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES is now
+	defined as CDL 'data' flavor (tested via #if vs. #ifdef)
+
+2001-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/generic-stub.c: Prefixed local version of memcpy and memset
+	with _.
+
+2001-10-17  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/debugging.cdl: 
+	* src/hal_if.c (cyg_hal_diag_mangler_gdb_putc): Make retry/abort optional,
+	only attemped if CYGNUM_HAL_DEBUG_GDB_PROTOCOL_RETRIES is configured to
+	be non-zero (default now 0).
+
+2001-10-16  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_stub.h: Allow ISOINFRA/LIBC to provide string
+	functions.
+
+2001-10-16  Gary Thomas  <gthomas@redhat.com>
+
+	* include/generic-stub.h: Add prototypes for breakpoint_list functions.
+
+2001-10-15  David Howells  <dhowells@redhat.com>
+
+	* include/hal_stub.h: put semicolon between goto-label and close curly.
+
+2001-10-12  Mark Salter  <msalter@redhat.com>
+
+	* src/thread-packets.c: Don't specify array sizes in extern decls.
+
+	* src/hal_stub.c: Use HAL_STUB_REGISTERS_SIZE to set number of elements
+	in register save areas. Default to NUMREGS if not defined by HAL.
+	Allow HALs to provide specialized get_register()/put_register().
+
+	* src/generic-stub.c (stub_format_registers): Support 'p' packet.
+	(__process_packet): Rearrange ifdefs so error is sent for unsupported
+	Z packet types.
+	(process_query): Add hook for HAL specific queries.
+	(process_set): Add hook for HAL specific sets.
+
+	* include/generic-stub.h: Add extern decls to quiet compiler warnings.
+
+2001-10-11  Gary Thomas  <gthomas@redhat.com>
+
+	* include/generic-stub.h: 
+	* src/generic-stub.c: Improve error handling more.  Make sure that
+	packets are consumed, even if they are going to be tossed (overflow).
+	This keeps TCP based connections going, even when the data is bad.
+	(getpacket): Only send NAK in case of overflow.
+
+2001-10-09  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c (flash_config_op): Protect with
+	CYGARC_HAL_SAVE_GP.
+
 2001-10-04  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_endian.h: Added.

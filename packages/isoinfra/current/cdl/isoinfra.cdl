@@ -447,6 +447,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_STRERROR {
             display       "Number of implementations of strerror() function"
             requires      { 1 >= CYGINT_ISO_STRERROR }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_STRERROR_HEADER {
@@ -470,6 +471,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_STRTOK_R {
             display       "Number of implementations of strtok_r() function"
             requires      { 1 >= CYGINT_ISO_STRTOK_R }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_STRTOK_R_HEADER {
@@ -485,6 +487,7 @@ cdl_package CYGPKG_ISOINFRA {
                 This covers locale-dependent string functions such as strcoll()
                 and strxfrm()."
             requires      { 1 >= CYGINT_ISO_STRING_LOCALE_FUNCS }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_STRING_LOCALE_FUNCS_HEADER {
@@ -500,6 +503,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_STRING_BSD_FUNCS {
             display       "Number of implementations of BSD string functions"
             requires      { 1 >= CYGINT_ISO_STRING_BSD_FUNCS }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_STRING_BSD_FUNCS_HEADER {
@@ -511,6 +515,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_STRING_MEMFUNCS {
             display       "Number of implementations of other mem*() functions"
             requires      { 1 >= CYGINT_ISO_STRING_MEMFUNCS }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_STRING_MEMFUNCS_HEADER {
@@ -525,6 +530,7 @@ cdl_package CYGPKG_ISOINFRA {
             description   "
                 This covers the other str*() functions defined by ISO C."
             requires      { 1 >= CYGINT_ISO_STRING_STRFUNCS }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
@@ -565,6 +571,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_POSIX_TIMER_TYPES {
             display       "Number of implementations of POSIX timer types"
             requires      { 1 >= CYGINT_ISO_POSIX_TIMER_TYPES }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_POSIX_TIMER_TYPES_HEADER {
@@ -573,9 +580,22 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_interface CYGINT_ISO_POSIX_CLOCK_TYPES {
+            display       "Number of implementations of POSIX clock types"
+            requires      { 1 >= CYGINT_ISO_POSIX_CLOCK_TYPES }
+            flavor        booldata
+        }
+    
+        cdl_option CYGBLD_ISO_POSIX_CLOCK_TYPES_HEADER {
+            display       "POSIX clock types implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
         cdl_interface CYGINT_ISO_C_TIME_TYPES {
             display       "Number of implementations of ISO C types"
             requires      { 1 >= CYGINT_ISO_C_TIME_TYPES }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_C_TIME_TYPES_HEADER {
@@ -587,12 +607,8 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_POSIX_TIMERS {
             display       "Number of implementations of POSIX timers"
             requires      { 1 >= CYGINT_ISO_POSIX_TIMERS }
-# FIXME  should use this:   define _POSIX_TIMERS        
-            define_proc {
-                puts $::cdl_header "#if CYGINT_ISO_POSIX_TIMERS"
-                puts $::cdl_header "# define _POSIX_TIMERS 1"
-                puts $::cdl_header "#endif"
-            }
+            define        _POSIX_TIMERS
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_POSIX_TIMERS_HEADER {
@@ -601,9 +617,22 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_interface CYGINT_ISO_POSIX_CLOCKS {
+            display       "Number of implementations of POSIX clocks"
+            requires      { 1 >= CYGINT_ISO_POSIX_CLOCKS }
+            flavor        booldata
+        }
+    
+        cdl_option CYGBLD_ISO_POSIX_CLOCKS_HEADER {
+            display       "POSIX clocks implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
         cdl_interface CYGINT_ISO_C_CLOCK_FUNCS {
             display       "Number of implementations of ISO C clock functions"
             requires      { 1 >= CYGINT_ISO_C_CLOCK_FUNCS }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_C_CLOCK_FUNCS_HEADER {
@@ -615,6 +644,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_TZSET {
             display       "Number of implementations of tzset() function"
             requires      { 1 >= CYGINT_ISO_TZSET }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_TZSET_HEADER {
@@ -957,6 +987,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_PTHREAD_IMPL {
             display       "POSIX pthread implementations"
             requires      { 1 >= CYGINT_ISO_PTHREAD_IMPL }
+            flavor        booldata
         }
     
         cdl_option CYGBLD_ISO_PTHREAD_IMPL_HEADER {
@@ -968,6 +999,7 @@ cdl_package CYGPKG_ISOINFRA {
         cdl_interface CYGINT_ISO_PTHREAD_MUTEX {
             display       "POSIX mutex/cond var implementations"
             requires      { 1 >= CYGINT_ISO_PTHREAD_MUTEX }
+            flavor booldata
         }
     
         cdl_option CYGBLD_ISO_PTHREAD_MUTEX_HEADER {
@@ -1070,6 +1102,18 @@ cdl_package CYGPKG_ISOINFRA {
     
         cdl_option CYGBLD_ISO_POSIX_TIMER_OPS_HEADER {
             display       "POSIX timer operations implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
+        cdl_interface CYGINT_ISO_POSIX_SLEEP {
+            display       "POSIX sleep() implementations"
+            flavor        booldata
+            requires      { 1 >= CYGINT_ISO_POSIX_SLEEP }
+        }
+    
+        cdl_option CYGBLD_ISO_POSIX_SLEEP_HEADER {
+            display       "POSIX sleep() implementation header"
             flavor        booldata
             default_value 0
         }

@@ -89,6 +89,38 @@ cdl_package CYGPKG_DEVS_ETH_ARM_IQ80310 {
             be supported by the driver."
     }
 
+    cdl_option CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS {
+        display       "Maximum number of RX descriptors"
+        default_value { CYGPKG_REDBOOT ? 4 : 128 }
+        define        MAX_RX_DESCRIPTORS
+        description   "
+                An RX descriptor is used for each ethernet frame required
+                to be passed to the upper networking layers. This option
+                sets the maximum number of these. Higher numbers use more
+                memory, lower numbers will reduce performance. The system
+                appears to work OK with as few as 8 descriptors but limps
+                painfully with only 4. Performance is better with more than
+                8, but since the size of non-cached (so useless for anything
+                else) memory window is 1Mb, we might as well use it all.
+                128 RX and TX descriptors uses the whole 1Mb, near enough."
+    }
+
+    cdl_option CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS {
+        display       "Maximum number of TX descriptors"
+        default_value { CYGPKG_REDBOOT ? 4 : 128 }
+        define        MAX_TX_DESCRIPTORS
+        description   "
+                A TX descriptor is used for each ethernet frame passed down
+                from upper networking layers for transmission. This option
+                sets the maximum number of these. Higher numbers use more
+                memory, lower numbers will reduce performance. The system
+                appears to work OK with as few as 8 descriptors but limps
+                painfully with only 4. Performance is better with more than
+                8, but since the size of non-cached (so useless for anything
+                else) memory window is 1Mb, we might as well use it all.
+                128 RX and TX descriptors uses the whole 1Mb, near enough."
+    }
+
     cdl_component CYGDBG_DEVS_ETH_ARM_IQ80310_KEEP_STATISTICS {
 	display "Keep Ethernet statistics"
 	default_value 1

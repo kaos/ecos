@@ -1,3 +1,7 @@
+2001-10-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/flash_28fxxx_parts.inl: Fix boot block start address.
+
 2001-08-15  Jesper Skov  <jskov@redhat.com>
 	[from branch]
 	* include/flash_28fxxx_parts.inl: Set correct bootblock sub-block

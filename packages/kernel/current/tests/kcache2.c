@@ -346,6 +346,7 @@ static void test_dsync(void)
 //  o Requires write-back cache.
 //  o Check that flushed data is written to memory.
 //  o Simple range check of macro.
+#ifdef HAL_DCACHE_QUERY_WRITE_MODE // only if we know this, can we test:
 #ifdef HAL_DCACHE_FLUSH
 static void test_dflush(void)
 {
@@ -388,6 +389,7 @@ static void test_dflush(void)
 
     HAL_DCACHE_ENABLE();
 }
+#endif
 #endif
 
 // -------------------------------------------------------------------------

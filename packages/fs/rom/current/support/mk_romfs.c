@@ -542,6 +542,10 @@ static void WriteNodeTable( int fd ) {
     }
 }
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 static void WriteData( int fd, node *np ) {
     char newpath[1024];
     int ffd;
@@ -562,7 +566,7 @@ static void WriteData( int fd, node *np ) {
 	return;
     }
     
-    if ( (ffd=open(np->path, O_RDONLY)) < 0 )
+    if ( (ffd=open(np->path, O_RDONLY | O_BINARY )) < 0 )
 	fatal_error(EXIT_FILESYS, "Error opening \"%s\": %s\n", np->path, strerror(errno) );
 
     if ( dowrite && lseek( fd, np->offset, SEEK_SET ) != np->offset )

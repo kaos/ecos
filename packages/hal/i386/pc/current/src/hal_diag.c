@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -68,27 +68,44 @@
 #if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG) \
     || defined(CYGPRI_HAL_IMPLEMENTS_IF_SERVICES)
 
-//FIXME: HardCode
-channel_data_t pc_ser_channels[3] = {
-    { 0x3F8, 1000, 36 },
-    { 0x2F8, 1000, 35 },
-    { 0x060, 1000, 33 }
-};
+channel_data_t pc_ser_channels[CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS];
 
 void
 cyg_hal_plf_comms_init(void)
 {
     static int initialized = 0;
+    int num_serial;
 
     if (initialized)
         return;
 
     initialized = 1;
 
+    num_serial = CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;
+#ifdef CYGSEM_HAL_I386_PC_DIAG_SCREEN
+    --num_serial;
+#endif
+    if (num_serial > 0) {
+	// COM1
+	pc_ser_channels[0].base = 0x3F8;
+	pc_ser_channels[0].msec_timeout = 1000;
+	pc_ser_channels[0].isr_vector = 36;
+    }
+    if (num_serial > 1) {
+	// COM2
+	pc_ser_channels[1].base = 0x2F8;
+	pc_ser_channels[1].msec_timeout = 1000;
+	pc_ser_channels[1].isr_vector = 35;
+    }
+
     cyg_hal_plf_serial_init();
 
 #ifdef CYGSEM_HAL_I386_PC_DIAG_SCREEN
     
+    pc_ser_channels[num_serial].base = 0x060;
+    pc_ser_channels[num_serial].msec_timeout = 1000;
+    pc_ser_channels[num_serial].isr_vector = 33;
+
     cyg_hal_plf_screen_init();
 
 #endif    

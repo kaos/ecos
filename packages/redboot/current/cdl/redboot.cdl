@@ -56,6 +56,7 @@ cdl_package CYGPKG_REDBOOT {
         display "Build Redboot ROM ELF image"
         default_value 0
         requires CYGPKG_INFRA
+        requires CYGPKG_ISOINFRA
 # Someday the tools will handle this
 #        requires { CYGINT_HAL_DEBUG_GDB_STUBS implies CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS }
 #        requires { CYGINT_HAL_DEBUG_GDB_STUBS implies CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT }
@@ -70,6 +71,15 @@ cdl_package CYGPKG_REDBOOT {
 
         requires CYGINT_ISO_STRING_MEMFUNCS 
         requires CYGINT_ISO_STRING_STRFUNCS
+
+        cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
+            display       "Include support gzip/zlib decompression"
+            active_if     CYGPKG_COMPRESS_ZLIB
+            no_define
+            default_value 1
+            implements    CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC
+            compile       decompress.c
+        }
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
             display "Threads debugging support"
@@ -102,7 +112,6 @@ cdl_package CYGPKG_REDBOOT {
 
         compile main.c crc.c
         compile misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
-        compile decompress.c
         compile -library=libextras.a load.c
 
         make -priority 320 {

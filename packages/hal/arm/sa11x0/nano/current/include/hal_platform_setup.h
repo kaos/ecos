@@ -263,14 +263,13 @@
 
         // Enable DRAM controller
         ldr     r1,=SA11X0_DRAM_CONFIGURATION
-        ldr     r2,=0x00007255 // read from nanoEngine; plc2 => 0x0000a257
+        ldr     r2,=0x00007255 // read from nanoEngine
         str     r2,[r1]
 
         b       19f
         
 // DRAM controller initialization        
 dram_table:
-#if 1
         // Data extracted from the setup of the nanoEngine
         .word   SA11X0_DRAM0_CAS_0,           0xAAAAAA7F
         .word   SA11X0_DRAM0_CAS_1,           0xAAAAAAAA
@@ -286,23 +285,6 @@ dram_table:
         .word   SA11X0_SMROM_CONFIGURATION,   0xf070c040
         .word   SA11X0_DRAM_CONFIGURATION,    0x72547254        // Disabled
         .word   0, 0
-#else
-        // Original data for the plc2
-        .word   SA11X0_DRAM0_CAS_0,           0xAAAAAA7F
-        .word   SA11X0_DRAM0_CAS_1,           0xAAAAAAAA
-        .word   SA11X0_DRAM0_CAS_2,           0xAAAAAAAA
-        .word   SA11X0_STATIC_CONTROL_0,      0xbdf6fffc
-        .word   SA11X0_STATIC_CONTROL_1,      0xd9caebeb
-        .word   SA11X0_EXP_BUS_CONFIGURATION, 0x00000421
-        .word   SA11X0_REFRESH_CONFIGURATION, 0x00300321
-        .word   SA11X0_DRAM2_CAS_0,           0xAAAAAA7F
-        .word   SA11X0_DRAM2_CAS_1,           0xAAAAAAAA
-        .word   SA11X0_DRAM2_CAS_2,           0xAAAAAAAA
-        .word   SA11X0_STATIC_CONTROL_2,      0x1466f135
-        .word   SA11X0_SMROM_CONFIGURATION,   0x00000000
-        .word   SA11X0_DRAM_CONFIGURATION,    0x72547254        // Disabled
-        .word   0, 0
-#endif
 19:
 
         // Release peripheral hold (set by RESET)

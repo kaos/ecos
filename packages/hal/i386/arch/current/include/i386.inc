@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -63,12 +63,25 @@
 #else
 	.equ	i386reg_fpstate_valid,	0
 	.equ	i386reg_fpstate,	i386reg_fpstate_valid+4
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	.equ	i386reg_simd_xmm0,	i386reg_fpstate+108
+	.equ	i386reg_simd_xmm1,	i386reg_simd_xmm0+16
+	.equ	i386reg_simd_xmm2,	i386reg_simd_xmm1+16
+	.equ	i386reg_simd_xmm3,	i386reg_simd_xmm2+16
+	.equ	i386reg_simd_xmm4,	i386reg_simd_xmm3+16
+	.equ	i386reg_simd_xmm5,	i386reg_simd_xmm4+16
+	.equ	i386reg_simd_xmm6,	i386reg_simd_xmm5+16
+	.equ	i386reg_simd_xmm7,	i386reg_simd_xmm6+16
+	.equ	i386reg_simd_mxcsr,	i386reg_simd_xmm7+16
+	.equ	i386reg_fpstate_size,	i386reg_simd_mxcsr+4
+#else
 	.equ	i386reg_fpstate_size,	i386reg_fpstate+108
+#endif
 	.equ	i386reg_edi,		i386reg_fpstate_size
 #endif
 #else
 	.equ	i386reg_edi,		0
-#endif
+# endif
 	.equ	i386reg_esi,		i386reg_edi+4
 	.equ	i386reg_ebp,		i386reg_esi+4
 	.equ	i386reg_esp,		i386reg_ebp+4
@@ -86,7 +99,20 @@
 #if defined(CYGHWR_HAL_I386_FPU) && defined(CYGHWR_HAL_I386_FPU_SWITCH_LAZY)
 	.equ	i386reg_fpucontext_valid,	0
 	.equ	i386reg_fpucontext_state,	i386reg_fpucontext_valid+4
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+	.equ	i386reg_simd_xmm0,		i386reg_fpucontext_state+108
+	.equ	i386reg_simd_xmm1,		i386reg_simd_xmm0+16
+	.equ	i386reg_simd_xmm2,		i386reg_simd_xmm1+16
+	.equ	i386reg_simd_xmm3,		i386reg_simd_xmm2+16
+	.equ	i386reg_simd_xmm4,		i386reg_simd_xmm3+16
+	.equ	i386reg_simd_xmm5,		i386reg_simd_xmm4+16
+	.equ	i386reg_simd_xmm6,		i386reg_simd_xmm5+16
+	.equ	i386reg_simd_xmm7,		i386reg_simd_xmm6+16
+	.equ	i386reg_simd_mxcsr,		i386reg_simd_xmm7+16
+	.equ	i386reg_fpucontext_size,	i386reg_simd_mxcsr+4
+#else
 	.equ	i386reg_fpucontext_size,	i386reg_fpucontext_state+108
+#endif
 #endif
 
 #------------------------------------------------------------------------------

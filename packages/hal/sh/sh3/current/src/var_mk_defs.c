@@ -82,6 +82,8 @@ main(void)
     DEFINE(CYGNUM_HAL_ISR_MAX, CYGNUM_HAL_ISR_MAX);
     DEFINE(CYGNUM_HAL_INTERRUPT_RESERVED_3E0, CYGNUM_HAL_INTERRUPT_RESERVED_3E0);
 
+
+    return 0;
 }
 
 //--------------------------------------------------------------------------

@@ -42,7 +42,7 @@
 # ====================================================================
 
 cdl_package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
-    display       "Cirrus Logic ethernet driver"
+    display       "Cirrus Logic ethernet driver for EP7xxx boards"
 
     parent        CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_IO_ETH_DRIVERS
@@ -52,7 +52,8 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
     implements    CYGHWR_NET_DRIVER_ETH0
     include_dir   .
     include_files ; # none _exported_ whatsoever
-    description   "Ethernet driver for Cirrus Logic EDB7xxx boards."
+    description   "Ethernet driver for Cirrus Logic EP7xxx based
+                  development boards."
     compile       -library=libextras.a if_edb7xxx.c
 
     cdl_component CYGSEM_ARM_EDB7XXX_SET_ESA {

@@ -67,6 +67,7 @@
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_if.h>             // delays
+#include <string.h>
 #include <netdev.h>
 #include <eth_drv.h>
 #ifdef CYGPKG_NET
@@ -463,9 +464,40 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
                 cpd->esa[3], cpd->esa[4], cpd->esa[5] );
 #endif
 
+#if CYGSEM_DEVS_ETH_AMD_PCNET_FORCE_10MBPS
+    if (get_reg(sc,PCNET_ANR_AAR) & PCNET_ANR_AAR_100) {
+        cyg_uint16 anr;
+	int loop;
+
+#if DEBUG & 9
+	diag_printf("%s: Forcing 10Mbps negotiation\n", __FUNCTION__);
+#endif
+	// adjust speed/duplex auto-negotiation mask to clear 100Mbps bits
+	anr = get_reg(sc,PCNET_ANR_AAR);
+	anr &= ~PCNET_ANR_AAR_100;
+	put_reg(sc,PCNET_ANR_AAR,anr);
+	// renegotiate
+	anr = get_reg(sc,PCNET_ANR_PHYCTRL);
+	anr |= PCNET_ANR_PHYCTRL_RENEGOTIATE;
+	put_reg(sc,PCNET_ANR_PHYCTRL,anr);
+	loop = 100000;
+	while (loop>0 && !(get_reg(sc,PCNET_ANR_PHYSTAT) & PCNET_ANR_PHYSTAT_AUTONEG_COMP))
+		loop--;
+#if DEBUG & 9
+	diag_printf("ANR0: %04x\n",get_reg(sc,PCNET_ANR_PHYCTRL));
+	diag_printf("ANR1: %04x\n",get_reg(sc,PCNET_ANR_PHYSTAT));
+	diag_printf("ANR4: %04x\n",get_reg(sc,PCNET_ANR_AAR));
+#endif
+    }
+#endif
+
     // Prepare RX and TX rings
     p = cpd->rx_ring = (cyg_uint8*) CYGARC_UNCACHED_ADDRESS((cyg_uint32)pciwindow_mem_alloc((1<<cpd->rx_ring_log_cnt)*PCNET_RD_SIZE));
+    memset(cpd->rx_ring,0,(1<<cpd->rx_ring_log_cnt)*PCNET_RD_SIZE);
+
     d = cpd->rx_buffers = (cyg_uint8*) CYGARC_UNCACHED_ADDRESS((cyg_uint32)pciwindow_mem_alloc(_BUF_SIZE*cpd->rx_ring_cnt));
+    memset(cpd->rx_buffers,0,_BUF_SIZE*cpd->rx_ring_cnt);
+
     for (i = 0; i < cpd->rx_ring_cnt; i++) {
         HAL_PCI_CPU_TO_BUS(d, b);
         _SU32(p, PCNET_RD_PTR) = (b & PCNET_RD_PTR_MASK) | PCNET_RD_PTR_OWN;
@@ -476,6 +508,8 @@ amd_pcnet_init(struct cyg_netdevtab_entry *tab)
     cpd->rx_ring_next = 0;
 
     p = cpd->tx_ring = (cyg_uint8*) CYGARC_UNCACHED_ADDRESS((cyg_uint32)pciwindow_mem_alloc((1<<cpd->tx_ring_log_cnt)*PCNET_TD_SIZE));
+    memset(cpd->tx_ring,0,(1<<cpd->tx_ring_log_cnt)*PCNET_TD_SIZE);
+
     d = cpd->tx_buffers = (cyg_uint8*) CYGARC_UNCACHED_ADDRESS((cyg_uint32)pciwindow_mem_alloc(_BUF_SIZE*cpd->tx_ring_cnt));
     for (i = 0; i < cpd->tx_ring_cnt; i++) {
         HAL_PCI_CPU_TO_BUS(d, b);

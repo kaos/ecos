@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -34,16 +34,16 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg, gthomas
-// Contributors:        nickg, gthomas
-// Date:        1998-09-11
-// Purpose:     Define IO register support
-// Description: The macros defined here provide the HAL APIs for handling
-//              device IO control registers.
+// Author(s):    nickg, gthomas
+// Contributors: Fabrice Gautier
+// Date:         1998-09-11
+// Purpose:      Define IO register support
+// Description:  The macros defined here provide the HAL APIs for handling
+//               device IO control registers.
 //              
 // Usage:
-//              #include <cyg/hal/hal_io.h>
-//              ...
+//               #include <cyg/hal/hal_io.h>
+//               ...
 //              
 //
 //####DESCRIPTIONEND####
@@ -89,6 +89,20 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
         ((volatile CYG_BYTE *)(_register_))[_j_] = (_buf_)[_i_];        \
     CYG_MACRO_END
 
+#define HAL_READ_UINT8_STRING( _register_, _buf_, _count_ )             \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        (_buf_)[_i_] = ((volatile CYG_BYTE *)(_register_));             \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT8_STRING( _register_, _buf_, _count_ )            \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        ((volatile CYG_BYTE *)(_register_)) = (_buf_)[_i_];             \
+    CYG_MACRO_END
+
 #else // Big-endian version
 
 #define HAL_READ_UINT8( _register_, _value_ ) \
@@ -111,6 +125,22 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
     volatile CYG_BYTE* _r_ = ((CYG_ADDRWORD)(_register_)^3);            \
     for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
         _r_[_j_] = (_buf_)[_i_];                                        \
+    CYG_MACRO_END
+
+#define HAL_READ_UINT8_STRING( _register_, _buf_, _count_ )             \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    volatile CYG_BYTE* _r_ = ((CYG_ADDRWORD)(_register_)^3);            \
+    for( _i_ = 0; _i_ < (_count_); _i_++;                               \
+        (_buf_)[_i_] = _r_;                                             \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT8_STRING( _register_, _buf_, _count_ )            \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    volatile CYG_BYTE* _r_ = ((CYG_ADDRWORD)(_register_)^3);            \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        _r_ = (_buf_)[_i_];                                             \
     CYG_MACRO_END
 
 #endif // Big-endian
@@ -142,6 +172,21 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
         ((volatile CYG_WORD16 *)(_register_))[_j_] = (_buf_)[_i_];      \
     CYG_MACRO_END
 
+#define HAL_READ_UINT16_STRING( _register_, _buf_, _count_)             \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        (_buf_)[_i_] = ((volatile CYG_WORD16 *)(_register_));           \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT16_STRING( _register_, _buf_, _count_)            \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        ((volatile CYG_WORD16 *)(_register_)) = (_buf_)[_i_];           \
+    CYG_MACRO_END
+
+
 #else // Big-endian version
 
 #define HAL_READ_UINT16( _register_, _value_ ) \
@@ -165,6 +210,23 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
     for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
         _r_[_j_] = (_buf_)[_i_];                                        \
     CYG_MACRO_END
+
+#define HAL_READ_UINT16_STRING( _register_, _buf_, _count_)             \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    volatile CYG_WORD16* _r_ = ((CYG_ADDRWORD)(_register_)^3);          \
+    for( _i_ = 0 = 0; _i_ < (_count_); _i_++)                           \
+        (_buf_)[_i_] = _r_;                                             \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT16_STRING( _register_, _buf_, _count_)            \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    volatile CYG_WORD16* _r_ = ((CYG_ADDRWORD)(_register_)^3);          \
+    for( _i_ = 0 = 0; _i_ < (_count_); _i_++)                           \
+        _r_ = (_buf_)[_i_];                                             \
+    CYG_MACRO_END
+
 
 #endif // Big-endian
 
@@ -192,6 +254,20 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
     cyg_count32 _i_,_j_;                                                \
     for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
         ((volatile CYG_WORD32 *)(_register_))[_j_] = (_buf_)[_i_];      \
+    CYG_MACRO_END
+
+#define HAL_READ_UINT32_STRING( _register_, _buf_, _count_)             \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        (_buf_)[_i_] = ((volatile CYG_WORD32 *)(_register_));           \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT32_STRING( _register_, _buf_, _count_)            \
+    CYG_MACRO_START                                                     \
+    cyg_count32 _i_;                                                    \
+    for( _i_ = 0; _i_ < (_count_); _i_++)                               \
+        ((volatile CYG_WORD32 *)(_register_)) = (_buf_)[_i_];           \
     CYG_MACRO_END
 
 // Enforce a flow "barrier" to prevent optimizing compiler from reordering 

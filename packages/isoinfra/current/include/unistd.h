@@ -74,18 +74,32 @@ extern "C" {
 #  endif
 
 extern unsigned int
-alarm( unsigned int __seconds );
+alarm( unsigned int /* seconds */ );
 
 extern int 
 pause( void );
-
-unsigned int
-sleep( unsigned int __seconds );
 
 #  ifdef __cplusplus
 }   /* extern "C" */
 #  endif
 
+# endif
+#endif
+
+#ifdef CYGINT_ISO_POSIX_SLEEP
+# ifdef CYGBLD_ISO_POSIX_SLEEP_HEADER
+#  include CYGBLD_ISO_POSIX_SLEEP_HEADER
+# else
+#  ifdef __cplusplus
+extern "C" {
+#  endif
+
+unsigned int
+sleep( unsigned int /* seconds */ );
+
+#  ifdef __cplusplus
+}   /* extern "C" */
+#  endif
 # endif
 #endif
 

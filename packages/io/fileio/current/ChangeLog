@@ -1,3 +1,16 @@
+2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/fio.h: Make cancellation point dependand on
+	CYGINT_ISO_PTHREAD_IMPL from <pkgconf/isoinfra.h> really.
+	* tests/select.c: Ditto.
+
+2001-10-09  Jesper Skov  <jskov@redhat.com>
+
+	* tests/select.c: Do NA check for posix threads.
+
+	* src/fio.h: Make cancellation point dependant on
+	CYGPKG_POSIX_PTHREAD as in the POSIX package.
+
 2001-07-26  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/fileio.cdl: Implements select().

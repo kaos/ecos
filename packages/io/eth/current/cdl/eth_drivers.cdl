@@ -50,6 +50,29 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
 
     implements    CYGPKG_NET_DRIVER_FRAMEWORK
 
+
+    cdl_component CYGDBG_IO_ETH_DRIVERS_DEBUG {
+        display          "Support printing driver debug information"
+        flavor           bool
+        default_value    1
+        description      "
+           Selecting this option will include code to allow the driver to
+           print lots of information on diagnostic output such as full
+           packet dumps."
+
+        cdl_option    CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY {
+            display       "Driver debug output verbosity"
+            flavor        data
+            default_value 0
+            description   "
+                The value of this option indicates the default verbosity
+                level of debugging output. 0 means no debugging output
+                is made by default. Higher values indicate higher verbosity.
+                The verbosity level may also be changed at run time by
+                changing the variable cyg_io_eth_net_debug."
+        }
+    }
+
     cdl_component CYGPKG_IO_ETH_DRIVERS_NET {
         display       "Support for standard eCos TCP/IP stack."
         flavor        bool
@@ -154,17 +177,6 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
                Selecting this option will allows the stand-alone ethernet driver
                to display warnings on the system console when incoming network
                packets are being discarded due to lack of buffer space."
-        }
-
-        cdl_option CYGSEM_IO_ETH_DRIVERS_DEBUG {
-            display          "Print driver debug information"
-            active_if        CYGPKG_REDBOOT
-            flavor           booldata
-            default_value    { 0 != CYGPKG_REDBOOT ? 1 : 0}
-            description      "
-               Selecting this option will enable the stand-alone driver to print
-               lots of information.  Useful only when getting a low-level hardware
-               driver to work."
         }
     }
 

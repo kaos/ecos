@@ -183,3 +183,15 @@ cdl_option CYGMFN_KERNEL_SYNCH_CONDVAR_WAIT_MUTEX {
         different mutex as an argument. This makes no difference to the semantics
         the wait operation except that a different mutex will be used during it."
 }
+
+cdl_option CYGIMP_KERNEL_SYNCH_MQUEUE_NOT_INLINE {
+    display       "Avoid inlines in mqueue implementation"
+    default_value 0
+    description   "
+        With this option disabled, the 'mqueue' message queue implementation
+        provides most of its implementation via inlines. However this can
+        adversely affect code size in application that make lots of mqueue
+        calls from different places, so enabling this option provides
+        non-inline versions to be used instead."
+    compile       sync/mqueue.cxx
+}

@@ -77,6 +77,7 @@
 #include CYGDAT_DEVS_ETH_NS_DP83902A_INL
 #undef __WANT_DEVS
 
+#ifdef CYGPKG_NET
 // This ISR is called when the ethernet interrupt occurs
 static cyg_uint32
 dp83902a_isr(cyg_vector_t vector, cyg_addrword_t data)
@@ -112,7 +113,7 @@ dp83902a_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 # endif
 #endif
 }
-
+#endif // CYGPKG_NET
 
 // The deliver function (ex-DSR)  handles the ethernet [logical] processing
 static void
@@ -133,15 +134,19 @@ dp83902a_init(struct cyg_netdevtab_entry *tab)
 {
     struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
     dp83902a_priv_data_t *dp = (dp83902a_priv_data_t *)sc->driver_private;
-    cyg_uint8* base = dp->base;
+    cyg_uint8* base;
     int i;
 
     DEBUG_FUNCTION();
 
+    CYGHWR_NS_DP83902A_PLF_INIT(dp);
+    base = dp->base;
+    if (!base) return false;  // No device found
+
     dp->tab = tab;
     dp->cr_lock = 0;
 
-    CYGHWR_NS_DP83902A_PLF_RESET(base);
+    CYGHWR_NS_DP83902A_PLF_RESET(dp);
 
     DEBUG_LINE();
 
@@ -167,6 +172,7 @@ dp83902a_init(struct cyg_netdevtab_entry *tab)
                 dp->esa[4],
                 dp->esa[5] );
 
+#ifdef CYGPKG_NET
     cyg_drv_interrupt_create(
         dp->interrupt,
         0,                  // Priority - unused
@@ -178,6 +184,7 @@ dp83902a_init(struct cyg_netdevtab_entry *tab)
 
     cyg_drv_interrupt_attach(dp->interrupt_handle);
     cyg_drv_interrupt_unmask(dp->interrupt);
+#endif
 
     // Initialize upper level driver
     (sc->funs->eth_drv->init)(sc, dp->esa);
@@ -224,18 +231,18 @@ dp83902a_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     DP_OUT(base, DP_RBCL, 0);
     DP_OUT(base, DP_RCR, DP_RCR_MON);     // Accept no packets
     DP_OUT(base, DP_TCR, DP_TCR_LOCAL);   // Transmitter [virtually] off
-    DP_OUT(base, DP_TPSR, DP_TX_BUF1);    // Transmitter start page
+    DP_OUT(base, DP_TPSR, dp->tx_buf1);    // Transmitter start page
     dp->tx1 = dp->tx2 = 0;
-    dp->tx_next = DP_TX_BUF1;
+    dp->tx_next = dp->tx_buf1;
     dp->tx_started = false;
-    DP_OUT(base, DP_PSTART, DP_RX_START); // Receive ring start page
-    DP_OUT(base, DP_BNDRY, DP_RX_STOP-1); // Receive ring boundary
-    DP_OUT(base, DP_PSTOP, DP_RX_STOP);   // Receive ring end page
-    dp->rx_next = DP_RX_START-1;
+    DP_OUT(base, DP_PSTART, dp->rx_buf_start); // Receive ring start page
+    DP_OUT(base, DP_BNDRY, dp->rx_buf_end-1); // Receive ring boundary
+    DP_OUT(base, DP_PSTOP, dp->rx_buf_end);   // Receive ring end page
+    dp->rx_next = dp->rx_buf_start-1;
     DP_OUT(base, DP_ISR, 0xFF);               // Clear any pending interrupts
     DP_OUT(base, DP_IMR, DP_IMR_All);     // Enable all interrupts
     DP_OUT(base, DP_CR, DP_CR_NODMA | DP_CR_PAGE1);  // Select page 1
-    DP_OUT(base, DP_P1_CURP, DP_RX_START);   // Current page - next free page for Rx
+    DP_OUT(base, DP_P1_CURP, dp->rx_buf_start);   // Current page - next free page for Rx
     for (i = 0;  i < ETHER_ADDR_LEN;  i++) {
         DP_OUT(base, DP_P1_PAR0+i, enaddr[i]);
     }
@@ -337,16 +344,16 @@ dp83902a_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
 #endif
 
     start_page = dp->tx_next;
-    if (dp->tx_next == DP_TX_BUF1) {
+    if (dp->tx_next == dp->tx_buf1) {
         dp->tx1 = start_page;
         dp->tx1_len = pkt_len;
         dp->tx1_key = key;
-        dp->tx_next = DP_TX_BUF2;
+        dp->tx_next = dp->tx_buf2;
     } else {
         dp->tx2 = start_page;
         dp->tx2_len = pkt_len;
         dp->tx2_key = key;
-        dp->tx_next = DP_TX_BUF1;
+        dp->tx_next = dp->tx_buf1;
     }
     CR_UP();
 
@@ -493,7 +500,7 @@ dp83902a_RxEvent(struct eth_drv_sc *sc, int stat)
             CR_DOWN();
             break;
         }
-        if (pkt == DP_RX_STOP) pkt = DP_RX_START;
+        if (pkt == dp->rx_buf_end) pkt = dp->rx_buf_start;
         DP_OUT(base, DP_RBCL, sizeof(rcv_hdr));
         DP_OUT(base, DP_RBCH, 0);
         DP_OUT(base, DP_RSAL, 0);

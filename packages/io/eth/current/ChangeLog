@@ -1,3 +1,22 @@
+2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/eth_drivers.cdl: Rename CYGSEM_IO_ETH_DRIVERS_DEBUG to
+	CYGDBG_IO_ETH_DRIVERS_DEBUG and make it a common option.
+	Add separate CYGDBG_IO_ETH_DRIVERS_DEBUG_VERBOSITY config.
+
+	* include/eth_drv.h: Don't claim BSD if it isn't.
+	* include/eth_drv_stats.h: Ditto.
+	* include/netdev.h: Ditto.
+	* src/net/eth_drv.c: Ditto.
+	Also use above CDL options to conditionalize debugging (and the
+	verbosity level).
+	* src/stand_alone/eth_drv.c: Use above renamed CDL options.
+
+2001-10-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/stand_alone/eth_drv.c (eth_drv_recv): 
+	Defensive programming - insure valid packet size.
+
 2001-10-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/net/eth_drv.c: Add default implementation of min().

@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -34,16 +34,16 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:nickg
-// Date:        1998-02-17
-// Purpose:     Define IO register support
-// Description: The macros defined here provide the HAL APIs for handling
-//              device IO control registers.
+// Author(s):    nickg
+// Contributors: Fabrice Gautier
+// Date:         1998-02-17
+// Purpose:      Define IO register support
+// Description:  The macros defined here provide the HAL APIs for handling
+//               device IO control registers.
 //              
 // Usage:
-//              #include <cyg/hal/hal_io.h>
-//              ...
+//               #include <cyg/hal/hal_io.h>
+//               ...
 //
 //####DESCRIPTIONEND####
 //
@@ -69,8 +69,8 @@ CYG_MACRO_START                                 \
 {                                               \
     asm volatile ( "xor %%eax,%%eax ;"          \
                    "inb %%dx, %%al"             \
-                   : "=a" (_value_)           \
-                   :  "d"(_register_)         \
+                   : "=a" (_value_)             \
+                   :  "d"(_register_)           \
         );                                      \
 }                                               \
 CYG_MACRO_END
@@ -86,14 +86,30 @@ CYG_MACRO_START                                         \
 CYG_MACRO_END
 
 #define HAL_READ_UINT8_VECTOR( _register_, _buf_, _count_, _step_ )     \
-    CYG_MACRO_START                                                     \
-    ! Not supported MACRO !						\
-    CYG_MACRO_END
+CYG_MACRO_START                                                         \
+    ! Not supported MACRO !                                             \
+CYG_MACRO_END
 
 #define HAL_WRITE_UINT8_VECTOR( _register_, _buf_, _count_, _step_ )    \
-    CYG_MACRO_START                                                     \
-    ! Not supported MACRO !						\
-    CYG_MACRO_END
+CYG_MACRO_START                                                         \
+    ! Not supported MACRO !                                             \
+CYG_MACRO_END
+
+#define HAL_READ_UINT8_STRING( _register_, _buf_, _count_)      \
+CYG_MACRO_START                                                 \
+    asm volatile ( "insb"                                       \
+                   :                                            \
+                   : "c" (_count_), "d"(_register_), "D"(_buf_) \
+        );                                                      \
+CYG_MACRO_END
+
+#define HAL_WRITE_UINT8_STRING( _register_, _buf_, _count_)     \
+CYG_MACRO_START                                                 \
+    asm volatile ( "outsb"                                      \
+                   :                                            \
+                   : "c" (_count_), "d"(_register_), "S"(_buf_) \
+        );                                                      \
+CYG_MACRO_END
 
 
 //-----------------------------------------------------------------------------
@@ -105,8 +121,8 @@ CYG_MACRO_START                                 \
 {                                               \
     asm volatile ( "xor %%eax,%%eax ;"          \
                    "inw %%dx, %%ax"             \
-                   : "=a" (_value_)           \
-                   :  "d"(_register_)         \
+                   : "=a" (_value_)             \
+                   :  "d"(_register_)           \
         );                                      \
 }                                               \
 CYG_MACRO_END
@@ -121,16 +137,34 @@ CYG_MACRO_START                                         \
 }                                                       \
 CYG_MACRO_END
 
-
 #define HAL_READ_UINT16_VECTOR( _register_, _buf_, _count_, _step_ )    \
     CYG_MACRO_START                                                     \
-    ! Not supported MACRO !						\
+    ! Not supported MACRO !                                             \
     CYG_MACRO_END
+
 
 #define HAL_WRITE_UINT16_VECTOR( _register_, _buf_, _count_, _step_ )   \
     CYG_MACRO_START                                                     \
-    ! Not supported MACRO !						\
+    ! Not supported MACRO !                                             \
     CYG_MACRO_END
+
+#define HAL_READ_UINT16_STRING( _register_, _buf_, _count_)             \
+    CYG_MACRO_START                                                     \
+    asm volatile ( "insw"                                               \
+                   :                                                    \
+                   : "c" (_count_), "d"(_register_), "D"(_buf_)         \
+        );                                                              \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT16_STRING( _register_, _buf_, _count_)            \
+    CYG_MACRO_START                                                     \
+    asm volatile ( "outsw"                                              \
+                   :                                                    \
+                   : "c" (_count_), "d"(_register_), "S"(_buf_)         \
+        );                                                              \
+    CYG_MACRO_END
+
+
 
 //-----------------------------------------------------------------------------
 // 32 bit access.
@@ -140,8 +174,8 @@ CYG_MACRO_END
 CYG_MACRO_START                                 \
 {                                               \
     asm volatile ( "inl %%dx, %%eax"            \
-                   : "=a" (_value_)           \
-                   :  "d"(_register_)         \
+                   : "=a" (_value_)             \
+                   :  "d"(_register_)           \
         );                                      \
 }                                               \
 CYG_MACRO_END
@@ -151,20 +185,37 @@ CYG_MACRO_START                                         \
 {                                                       \
     asm volatile ( "outl %%eax,%%dx"                    \
                    :                                    \
-                   : "a" (_value_), "d"(_register_) \
+                   : "a" (_value_), "d"(_register_)     \
         );                                              \
 }                                                       \
 CYG_MACRO_END
 
 #define HAL_READ_UINT32_VECTOR( _register_, _buf_, _count_, _step_ )    \
     CYG_MACRO_START                                                     \
-    ! Not supported MACRO !						\
+    ! Not supported MACRO !                                             \
     CYG_MACRO_END
 
 #define HAL_WRITE_UINT32_VECTOR( _register_, _buf_, _count_, _step_ )   \
     CYG_MACRO_START                                                     \
-    ! Not supported MACRO !						\
+    ! Not supported MACRO !                                             \
     CYG_MACRO_END
+
+#define HAL_READ_UINT32_STRING( _register_, _buf_, _count_)             \
+    CYG_MACRO_START                                                     \
+    asm volatile ( "insl"                                               \
+                   :                                                    \
+                   : "c" (_count_), "d"(_register_), "D"(_buf_)         \
+        );                                                              \
+    CYG_MACRO_END
+
+#define HAL_WRITE_UINT32_STRING( _register_, _buf_, _count_)            \
+    CYG_MACRO_START                                                     \
+    asm volatile ( "outsl"                                              \
+                   :                                                    \
+                   : "c" (_count_), "d"(_register_), "S"(_buf_)         \
+        );                                                              \
+    CYG_MACRO_END
+
 
 //-----------------------------------------------------------------------------
 

@@ -1,3 +1,25 @@
+2001-10-16  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_FLOPPY_D850GB.ecm: New file. RedBoot config for
+	Intel D850GB motherboard.
+
+	* src/hal_diag.c: Setup pc_ser_channels based on CDL.
+
+2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_i386_pc.cdl: Parent CYGBLD_BUILD_REDBOOT_BIN_ROM and
+	CYGBLD_BUILD_REDBOOT_BIN_FLOPPY under a CYGBLD_BUILD_REDBOOT_BIN_ROM
+	component for better cross-platform consistency.
+
+2001-10-08  Ian Campbell  <icampbell@arcom.co.uk>
+
+	* cdl/hal_i386_pc.cdl: CYGBLD_BUILD_I386_ROMBOOT and
+	CYGBLD_BUILD_REDBOOT_BIN_ROM moved here from hal_i386.cdl in the
+	arch package. Rename CYGBLD_BUILD_REDBOOT_BIN to
+	CYGBLD_BUILD_REDBOOT_BIN_FLOPPY for consistency.
+	* src/romboot.S: Moved from arch package.
+	* src/romboot.ld: Moved from arch package.
+
 2001-10-05  Mark Salter  <msalter@redhat.com>
 
 	* src/plf_stub.c (hal_pc_stubs_init): Install idt entry for GNUPro

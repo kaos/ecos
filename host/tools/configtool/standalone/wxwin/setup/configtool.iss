@@ -4,13 +4,13 @@
 
 [Setup]
     MinVersion=4.0,4.0
-    AppName=eCos Configuration Tool 2.07
+    AppName=eCos Configuration Tool 2.08
     AppId=eCos Configuration Tool
     CreateUninstallRegKey=1
     UsePreviousAppDir=1
     UsePreviousGroup=1
-    AppVersion=2.07
-    AppVerName=eCos Configuration Tool 2.07
+    AppVersion=2.08
+    AppVerName=eCos Configuration Tool 2.08
     AppCopyright=Copyright © Red Hat Inc., 2001
     BackColor=$FF0000
     BackColor2=$000000
@@ -213,7 +213,7 @@
 ; DO NOT DELETE THEM or you may be unable to reload the script
 
 ;[ScriptSetup]
-;VerNum=2.07
+;VerNum=2.08
 ;InnoVer=1.3
 ;AddVerTo=AppVerName
 ;SetupFilename=setup.exe

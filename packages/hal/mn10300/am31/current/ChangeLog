@@ -1,3 +1,9 @@
+2001-10-15  Nick Garnett  <nickg@redhat.com>
+
+	* src/mn10300_am31.ld: Added test for __GNUC__ >= 3 so that
+	libsupc++.a can be included. Aparrently the mn10300 compiler is
+	now GCC3.
+
 2000-09-07  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/variant.inc:

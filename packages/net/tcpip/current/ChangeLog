@@ -1,3 +1,13 @@
+2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/sys/netinet/in.c (in_lifaddr_ioctl): Silence warnings about
+	trigraphs.
+
+2001-10-10  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/ftp_test.c (net_test): This was lacking #ifdefs for
+	CYGHWR_NET_DRIVER_ETH0 and CYGHWR_NET_DRIVER_ETH1.  Ooops.
+
 2001-10-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/net.cdl (CYGPKG_NET_CFLAGS_ADD): Define __INSIDE_NET within
@@ -11,7 +21,7 @@
 
 	* cdl/net.cdl (CYGHWR_NET_DRIVER_ETH0): Make flavor bool so it isn't
 	defined when 0.
-	(CYGHWR_NET_DRIVER_ETH0): Ditto.
+	(CYGHWR_NET_DRIVER_ETH1): Ditto.
 
 2001-10-04  Hugo Tyson  <hmt@redhat.com>
 

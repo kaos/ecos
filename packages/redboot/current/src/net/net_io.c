@@ -568,6 +568,12 @@ net_init(void)
                          CONFIG_IP);
     }
 #endif
+# ifdef CYGDBG_IO_ETH_DRIVERS_DEBUG
+    // Don't override if the user has deliberately set something more
+    // verbose.
+    if (0 == cyg_io_eth_net_debug)
+        cyg_io_eth_net_debug = net_debug;
+# endif
     have_net = false;
     // Make sure the recv buffers are set up
     eth_drv_buffers_init();

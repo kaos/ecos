@@ -66,6 +66,16 @@ cdl_package CYGPKG_DEVS_ETH_AMD_PCNET {
             be supported by the driver."
     }
 
+    cdl_option CYGSEM_DEVS_ETH_AMD_PCNET_FORCE_10MBPS {
+        display       "Force negotiation of a 10Mbps link"
+        flavor        bool
+        default_value 0
+        description   "
+          If this option is enabled then the driver will force the chipset
+          to negotiate only for a 10Mbps link (rather than a 100Mbps
+          link)."
+    }
+
     cdl_component CYGPKG_DEVS_ETH_AMD_PCNET_OPTIONS {
         display "PCNET ethernet driver build options"
         flavor  none

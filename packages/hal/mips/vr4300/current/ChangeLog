@@ -1,3 +1,11 @@
+2001-10-12  Nick Garnett  <nickg@redhat.com>
+
+	* src/mips_vr4300.ld (SECTION_rom_vectors): Updated this section
+	to make ROM startup work.
+	Note: this still does not fix all ROM startup problems, since the
+	ROM is still too slow to execute code from at anything like a
+	relistic speed.
+
 2001-10-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_mips_vr4300.cdl: Define endianness in platform CDL instead.

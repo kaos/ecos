@@ -1,3 +1,21 @@
+2001-10-17  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/isoinfra.cdl: Changed string interfaces to flavor booldata.
+
+	* include/string.h: Changed feature checks to ifdef.
+
+2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/isoinfra.cdl: Make all CYGPKG_ISO_TIME interfaces be booldata.
+	Add config for POSIX clock types and implementations.
+	Make all CYGPKG_ISO_PTHREAD interfaces be booldata.
+	Add POSIX sleep() config.
+
+	* include/pthread.h: Reflect booldata interfaces.
+	* include/time.h: Ditto.
+	Also add default struct itimerspec and POSIX clock includes.
+	* include/unistd.h: Add sleep includes, with default proto.
+
 2001-09-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/isoinfra.cdl: Add netdb services and proto function support.

@@ -112,7 +112,7 @@ char GDB_stubs_version[] CYGBLD_ATTRIB_WEAK =
 // We cannot share memcpy and memset with the rest of the system since
 // the user may want to step through it.
 static inline void*
-memcpy(void* dest, void* src, int size)
+_memcpy(void* dest, void* src, int size)
 {
     unsigned char* __d = (unsigned char*) dest;
     unsigned char* __s = (unsigned char*) src;
@@ -124,7 +124,7 @@ memcpy(void* dest, void* src, int size)
 }
 
 static inline void*
-memset(void* s, int c, int size)
+_memset(void* s, int c, int size)
 {
     unsigned char* __s = (unsigned char*) s;
     unsigned char __c = (unsigned char) c;
@@ -138,6 +138,8 @@ memset(void* s, int c, int size)
 #else
 #include <string.h>
 #include <signal.h>
+#define _memcpy memcpy
+#define _memset memset
 #endif // __ECOS__
 
 /************************************************************************/
@@ -227,10 +229,13 @@ getpacket (buffer)
 
     packet.state = 0;
     packet.contents = buffer;
+    packet.err = 0;
     while ((res = __add_char_to_packet (readDebugChar () & 0xff, &packet)) != 1) {
         if (res == -2) {
-            putDebugChar ('+'); // Pretend we took the packet
-            __putpacket("E01"); // ... but didn't process it
+            putDebugChar ('-'); // Tell host packet was not processed
+            // Reset for the next packet
+            packet.state = 0;
+            packet.err = 0;
         }
     }
 }
@@ -262,11 +267,12 @@ __add_char_to_packet (ch, packet)
       else
         {
           if (packet->length == BUFMAX) {
-            packet->state = 0;
-            return -2;
+              packet->state = 0;
+              packet->err = 1;
+          } else {
+              packet->checksum += ch;
+              packet->contents[packet->length++] = ch;
           }
-          packet->checksum += ch;
-          packet->contents[packet->length++] = ch;
         }
       return 0;
     }
@@ -281,6 +287,10 @@ __add_char_to_packet (ch, packet)
   if (packet->state == 3)
     {
       packet->xmitcsum |= stubhex (ch);
+      if (packet->err) {
+          // Packet was too long - just tell the consumer
+          return -2;
+      }
       if ((packet->checksum & 255) != packet->xmitcsum)
         {
           putDebugChar ('-');   /* failed checksum */
@@ -994,11 +1004,29 @@ __handle_exception (void)
 int   (*_get_trace_register_hook) (regnames_t, target_register_t *);
 
 void
-stub_format_registers(char *ptr)
+stub_format_registers(char *packet, char *ptr)
 {
     int regnum;
+    int sr = 0, er = NUMREGS_GDB;
 
-    for (regnum = 0; regnum < NUMREGS_GDB; regnum++) {
+    if (packet[0] == 'p')
+      {
+	 target_register_t regno;
+         char *p = &packet[1];
+	 if (__hexToInt (&p, &regno))
+	   {
+	     sr = regno;
+	     er = regno + 1;
+	   }
+	 else
+	   {
+	     strcpy (ptr, "INVALID");
+	     return;
+	   }
+      }
+
+    for (regnum = sr; regnum < er; regnum++)
+      {
         /* We need to compensate for the value offset within the
            register. */
         char dummyDat[32];
@@ -1046,11 +1074,11 @@ stub_format_registers(char *ptr)
 #if defined(__LITTLE_ENDIAN__) || defined(_LITTLE_ENDIAN)
                 for (x = 0; x < off; x++)
                     dummyDat[x + sizeof(addr)] = extend_val;
-                memcpy (dummyDat, &addr, sizeof (addr));
+                _memcpy (dummyDat, &addr, sizeof (addr));
 #else
                 for (x = 0; x < off; x++)
                     dummyDat[x] = extend_val;
-                memcpy (dummyDat + off, &addr, sizeof (addr));
+                _memcpy (dummyDat + off, &addr, sizeof (addr));
 #endif
                 vptr = dummyDat;
             }
@@ -1061,7 +1089,7 @@ stub_format_registers(char *ptr)
             /* Trace component returned a failure code.
                This means that the register value is not available.
                We'll fill it with 'x's, and GDB will understand.  */
-            memset (ptr, 'x', 2 * REGSIZE (regnum));
+            _memset (ptr, 'x', 2 * REGSIZE (regnum));
             ptr += 2 * REGSIZE (regnum);
         }
     }
@@ -1164,10 +1192,10 @@ __process_packet (char *packet)
       process_set (&packet[1]);
       break;
 
+    case 'p':		/* return the value of  a single CPU register */
     case 'g':           /* return the value of the CPU registers */
       {
-        char *ptr = remcomOutBuffer;
-        stub_format_registers(ptr);
+        stub_format_registers(&packet[0], remcomOutBuffer);
         break;
       }
 
@@ -1500,28 +1528,26 @@ __process_packet (char *packet)
 		      else
 			strcpy (remcomOutBuffer, "E02");
 		      break;
-#ifdef HAL_STUB_HW_BREAKPOINT
 		    case 1:
 		      /* hw breakpoint */
+#ifdef HAL_STUB_HW_BREAKPOINT
 		      if (!HAL_STUB_HW_BREAKPOINT(is_Z, (void *)addr, length))
 			strcpy (remcomOutBuffer, "OK");
 		      else
+#endif
 			strcpy (remcomOutBuffer, "E02");
 		      break;
-#endif
-#ifdef HAL_STUB_HW_WATCHPOINT
 		    case 2:
 		    case 3:
 		    case 4:
-			{
 		      /* hw watchpoint */
+#ifdef HAL_STUB_HW_WATCHPOINT
 		      if (!HAL_STUB_HW_WATCHPOINT(is_Z, (void *)addr, length, ztype))
 			strcpy (remcomOutBuffer, "OK");
 		      else
-			strcpy (remcomOutBuffer, "E02");
-			}
-		      break;
 #endif
+			strcpy (remcomOutBuffer, "E02");
+		      break;
 		  }
 	      }
 	  }
@@ -1808,7 +1834,7 @@ __set_program_args (int argc, char **argv)
           if (s == NULL)
             return;
 
-          memcpy (s, argv[x], len);
+          _memcpy (s, argv[x], len);
         }
     }
 }
@@ -1915,6 +1941,10 @@ process_query (char *pkt)
         }
       return;
     }
+#ifdef CYG_HAL_STUB_PROCESS_QUERY
+  else if (CYG_HAL_STUB_PROCESS_QUERY (pkt, remcomOutBuffer, sizeof(remcomOutBuffer)))
+    return;
+#endif
   else
     {
       char ch ;
@@ -1945,8 +1975,13 @@ static void
 process_set (char *pkt)
 {
   char ch ;
-  ch = *pkt ;
   
+#ifdef CYG_HAL_STUB_PROCESS_SET
+  if (CYG_HAL_STUB_PROCESS_SET (pkt, remcomOutBuffer, sizeof(remcomOutBuffer)))
+    return;
+#endif
+
+  ch = *pkt ;
   switch (ch)
     {
     case 'p' : /* Set current process or thread */

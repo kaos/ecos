@@ -4,6 +4,7 @@ Release History for eCos Configuration Tool 2
 *** Version 2.08, September 25th 2001
 
 - Looks in PATH for gcc locations on UNIX.
+
 - Uses current directory for initial save directory, instead of configtool
   directory.
 

@@ -215,6 +215,7 @@ xyzModem_get_hdr(void)
                 }
             default:
                 // Ignore, waiting for start of header
+                ;
             }
         } else {
             // Data stream timed out

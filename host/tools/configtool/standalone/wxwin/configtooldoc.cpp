@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.cpp,v 1.41 2001/09/03 17:18:18 julians Exp $
+// Version:     $Id: configtooldoc.cpp,v 1.42 2001/10/11 12:31:42 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolDoc class
 // Requires:
@@ -296,7 +296,7 @@ bool ecConfigToolDoc::OnSaveDocument(const wxString& filename)
 
             if (!wxGetApp().GetSettings().m_editSaveFileOnly)
             {
-                if (!buildFilename.CreateDirectory() || !installFilename.CreateDirectory())
+                if (!buildFilename.CreateDirectory(FALSE) || !installFilename.CreateDirectory(FALSE))
                 {
                     wxString msg;
                     msg.Printf(_("Failed to save %s"), (const wxChar*) filename);

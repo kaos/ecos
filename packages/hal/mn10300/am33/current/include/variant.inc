@@ -72,6 +72,28 @@
 
 #define INIT_SDRAMCONFIG	0x0000002f
 
+#define SC0ICR			0xD4002004
+#define SC1ICR			0xD4002014
+#define SC2ICR			0xD4002024
+#define TM0MD			0xD4003000
+#define TM1MD			0xD4003001
+#define TM2MD			0xD4003002
+#define TM3MD			0xD4003003
+#define TM4MD			0xD4003080
+#define TM5MD			0xD4003082
+#define TM6MD			0xD4003084
+#define TM7MD			0xD4003086
+#define TM8MD			0xD4003088
+#define TM9MD			0xD400308A
+#define TM10MD			0xD400308C
+#define TM11MD			0xD400308E
+#define DM0CTR			0xD2000000
+#define DM1CTR			0xD2000100
+#define DM2CTR			0xD2000200
+#define DM3CTR			0xD2000300
+#define WDCTR			0xC0001002
+#define RTCRB			0xD860000B
+	
 #------------------------------------------------------------------------------
 # AM33 specific CPU initialization:
 
@@ -84,6 +106,44 @@
 	mov	reset_vector,a0		# set TBR to vector table
 	mov	a0,(TBR)
 #endif
+
+	# stop as many internal interrupt sources as possible
+	mov	0,d0
+	movhu	d0,(SC0ICR)
+	movhu	d0,(SC1ICR)
+	movhu	d0,(SC2ICR)
+	movbu	d0,(TM0MD)
+	movbu	d0,(TM1MD)
+	movbu	d0,(TM2MD)
+	movbu	d0,(TM3MD)
+	movbu	d0,(TM4MD)
+	movbu	d0,(TM5MD)
+	movhu	d0,(TM6MD)
+	movbu	d0,(TM7MD)
+	movbu	d0,(TM8MD)
+	movbu	d0,(TM9MD)
+	movbu	d0,(TM10MD)
+	movbu	d0,(TM11MD)
+	movhu	d0,(WDCTR)
+
+	movbu	(RTCRB),d0
+	and	0x8F,d0
+	movbu	d0,(RTCRB)
+
+	mov	0x80000000,d0
+	mov	d0,(DM0CTR)
+	mov	d0,(DM1CTR)
+	mov	d0,(DM2CTR)
+	mov	d0,(DM3CTR)
+	
+	# disable all interrupts
+	mov	_mn10300_interrupt_control,a0
+	mov	_mn10300_interrupt_control+(41*4),a1
+	mov	0x0010,d0
+1:	movhu	d0,(a0)
+	add	4,a0
+	cmp	a0,a1
+	bcc	1b
 	.endm
 
 #define CYGPKG_HAL_MN10300_CPU_INIT_DEFINED
@@ -249,8 +309,9 @@
 	hal_mon_init_vsr
 	.endm
 
-#if defined(CYG_HAL_STARTUP_ROM)
+#if defined(CYG_HAL_STARTUP_ROM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
 	.macro	hal_mon_init_vectors
+	# direct external interrupts
 	mov	_mn10300_interrupt_vectors,a0
 	mov	__hardware_vector_0,d0
 	movhu	d0,(0,a0)

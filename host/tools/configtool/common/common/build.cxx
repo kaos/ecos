@@ -60,7 +60,8 @@
 // ECOS_USE_CYGDRIVE = 0: use e.g. //c/, but this is deprecated in new versions of Cygwin
 // ECOS_USE_CYGDRIVE = 1: use e.g. /cygdrive/c/
 // ECOS_USE_CYGDRIVE = 2: use e.g. c:/ notation
-#define ECOS_USE_CYGDRIVE 1
+// ECOS_USE_CYGDRIVE = 3: use e.g. /ecos-x notation where x is a drive name.
+#define ECOS_USE_CYGDRIVE 3
 
 // Use registry functions to find out location of /cygdrive
 #define ECOS_USE_REGISTRY 1
@@ -195,6 +196,37 @@ std::string cygpath (const std::string input) {
     // Convert to c:/foo/bar notation
 	for (unsigned int n = 0; n < path.size (); n++) { // for each char
 			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
+	}
+#elif ECOS_USE_CYGDRIVE == 3
+    // Convert to /ecos-x notation, assuming that this mount point will be created
+    // by the application.
+
+    std::string output1;
+
+    if (path.size() > 1 && path[1] == ':')
+    {
+        output1 = "/ecos-";
+        output1 += tolower(path[0]);
+        output1 += "/";
+
+        // Append the rest of the path
+        if (path.size() > 2)
+        {
+            unsigned int n = 2;
+            unsigned int i;
+
+            if (path[n] == '\\' || path[n] == '//')
+                n ++;
+            
+            for (i = n; i < path.size(); i++)
+                output1 += path[i];
+        }
+    }
+    else
+        output1 = path;
+
+    for (unsigned int n = 0; n < output1.size (); n++) { // for each char
+    	output += ('\\' == output1 [n]) ? '/' : output1 [n]; // convert backslash to slash
 	}
 #else
 	for (unsigned int n = 0; n < path.size (); n++) { // for each char
@@ -416,7 +448,7 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "\n\n");
 	for (count = 0; count < info.headers.size (); count++) { // for each header
 		fprintf (stream, "$(PREFIX)/include/%s: $(REPOSITORY)/$(PACKAGE)/%s\n", info.headers [count].destination.c_str (), info.headers [count].source.c_str ());
-#if (defined(_WIN32) || defined(__CYGWIN__)) && (ECOS_USE_CYGDRIVE == 1)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && (ECOS_USE_CYGDRIVE > 0)
         fprintf (stream, "ifeq ($(HOST),CYGWIN)\n");
 	    fprintf (stream, "\t@mkdir -p `cygpath -w \"$(dir $@)\" | sed \"s/\\\\\\\\\\/\\\\//g\"`\n");
         fprintf (stream, "else\n");

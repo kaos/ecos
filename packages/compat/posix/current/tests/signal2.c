@@ -53,6 +53,8 @@
 
 #if CYGINT_ISO_SETJMP == 0
 # define NA_MSG "Requires setjmp/longjmp implementation"
+#elif !defined(CYGPKG_POSIX_SIGNALS)
+# define NA_MSG "POSIX signals not enabled"
 #endif
 
 #ifdef NA_MSG
@@ -117,7 +119,7 @@ cause_illegal_access(void)
     {
         x = *(volatile int *)(p);
         p += (CYG_ADDRESS)0x100000;
-    } while( p != &jbuf );
+    } while( p != (CYG_ADDRESS)&jbuf );
 
 #endif    
 } // cause_illegal_access()

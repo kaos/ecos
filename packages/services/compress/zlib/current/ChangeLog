@@ -1,3 +1,10 @@
+2001-10-15  Gary Thomas  <gthomas@redhat.com>
+
+	* include/zconf.h: 
+	* cdl/compress_zlib.cdl: 
+	Define new interface CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC which allows
+	users of this code (applications) to provide their own allocators.
+
 2001-04-02  Jesper Skov  <jskov@redhat.com>
 
 	* tests/zlib2.c: Removed BAD_CRC state.

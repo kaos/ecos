@@ -63,6 +63,10 @@ externC bool cyg_sc_lpe_init(struct cyg_netdevtab_entry *tab);
 #ifdef CYGPKG_DEVS_ETH_CF_ETH0
 
 static dp83902a_priv_data_t dp83902a_eth0_priv_data = { 
+    tx_buf1: 0x40,
+    tx_buf2: 0x48,
+    rx_buf_start: 0x50,
+    rx_buf_end: 0x80,
 #ifdef CYGSEM_DEVS_ETH_CF_ETH0_SET_ESA
     esa : CYGDAT_DEVS_ETH_CF_ETH0_ESA,
     hardwired_esa : true,

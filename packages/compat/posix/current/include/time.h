@@ -1,6 +1,6 @@
 #ifndef CYGONCE_POSIX_TIME_H
 #define CYGONCE_POSIX_TIME_H
-//=============================================================================
+/*=============================================================================
 //
 //      time.h
 //
@@ -45,23 +45,27 @@
 //
 //####DESCRIPTIONEND####
 //
-//=============================================================================
+//===========================================================================*/
 
+#include <pkgconf/posix.h>
 #include <cyg/infra/cyg_type.h>
 
-//-----------------------------------------------------------------------------
-// Types for timers and clocks
+/*---------------------------------------------------------------------------*/
+/* Types for timers and clocks */
 
 typedef int clockid_t;
 
+#ifdef CYGPKG_POSIX_TIMERS
 typedef int timer_t;
 
-// forward declaration - if the app uses it it will have to include
-// signal.h anyway
+/* forward declaration - if the app uses it it will have to include
+ * signal.h anyway
+ */
 struct sigevent;
+#endif
 
-//-----------------------------------------------------------------------------
-// Structures
+/*---------------------------------------------------------------------------*/
+/* Structures */
 
 struct timespec
 {
@@ -69,62 +73,70 @@ struct timespec
     long        tv_nsec;
 };
 
+#ifdef CYGPKG_POSIX_TIMERS
 struct itimerspec
 {
     struct timespec     it_interval;
     struct timespec     it_value;
 };
+#endif
 
-//-----------------------------------------------------------------------------
-// Manifest constants
+/*---------------------------------------------------------------------------*/
+/* Manifest constants */
 
 #define CLOCK_REALTIME          0
 
+#ifdef CYGPKG_POSIX_TIMERS
 #define TIMER_ABSTIME           1
+#endif
 
-//-----------------------------------------------------------------------------
-// Clock functions
+/*---------------------------------------------------------------------------*/
+/* Clock functions */
 
-// Set the clocks current time
-externC int clock_settime( clockid_t clock_id, const struct timespec *tp);
+/* Set the clocks current time */
+__externC int clock_settime( clockid_t clock_id, const struct timespec *tp);
 
-// Get the clocks current time
-externC int clock_gettime( clockid_t clock_id, struct timespec *tp);
+/* Get the clocks current time */
+__externC int clock_gettime( clockid_t clock_id, struct timespec *tp);
 
-// Get the clocks resolution
-externC int clock_getres( clockid_t clock_id, struct timespec *tp);
-
-
-//-----------------------------------------------------------------------------
-// Timer functions
-
-// Create a timer based on the given clock.
-externC int timer_create( clockid_t clock_id,
-                          struct sigevent *evp,
-                          timer_t *timer_id);
-
-// Delete the timer
-externC int timer_delete( timer_t timer_id );
-
-// Set the expiration time of the timer.
-externC int timer_settime( timer_t timerid, int flags,
-                           const struct itimerspec *value,
-                           struct itimerspec *ovalue );
-
-// Get current timer values
-externC int timer_gettime( timer_t timerid, struct itimerspec *value );
-
-// Get number of missed triggers
-externC int timer_getoverrun( timer_t timerid );
-
-//-----------------------------------------------------------------------------
-// Nanosleep
-
-// Sleep for the given time.
-externC int nanosleep( const struct timespec *rqtp,
-                       struct timespec *rmtp);
+/* Get the clocks resolution */
+__externC int clock_getres( clockid_t clock_id, struct timespec *tp);
 
 
-//-----------------------------------------------------------------------------
-#endif // ifndef CYGONCE_POSIX_TIME_H
-// End of time.h
+/*---------------------------------------------------------------------------*/
+/* Timer functions */
+
+#ifdef CYGPKG_POSIX_TIMERS
+
+/* Create a timer based on the given clock. */
+__externC int timer_create( clockid_t clock_id,
+                            struct sigevent *evp,
+                            timer_t *timer_id);
+
+/* Delete the timer */
+__externC int timer_delete( timer_t timer_id );
+
+/* Set the expiration time of the timer. */
+__externC int timer_settime( timer_t timerid, int flags,
+                             const struct itimerspec *value,
+                             struct itimerspec *ovalue );
+
+/* Get current timer values */
+__externC int timer_gettime( timer_t timerid, struct itimerspec *value );
+
+/* Get number of missed triggers */
+__externC int timer_getoverrun( timer_t timerid );
+
+#endif
+
+/*---------------------------------------------------------------------------*/
+/* Nanosleep */
+
+/* Sleep for the given time. */
+__externC int nanosleep( const struct timespec *rqtp,
+                         struct timespec *rmtp);
+
+
+/*---------------------------------------------------------------------------*/
+#endif /* ifndef CYGONCE_POSIX_TIME_H */
+/* End of time.h */

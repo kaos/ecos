@@ -548,8 +548,8 @@ const ecFileName ecFileName::CygPath () const
     ecFileName rc = ShortName();
     if(wxIsalpha(rc[(size_t)0]) && wxTChar(':')==rc[(size_t)1])
     {
-        // Convert c:\ to //c/
-        wxString s = wxString(wxT("//")) + wxString(rc[(size_t)0]) + rc.Mid(2);
+        // Convert c:\ to /cygdrive/c/
+        wxString s = wxString(wxT("/cygdrive/")) + wxString(rc[(size_t)0]) + rc.Mid(2);
         rc = s;
     }
     size_t i;
@@ -576,6 +576,18 @@ bool ecFileName::CreateDirectory(bool bParentsToo,bool bFailIfAlreadyExists) con
         wxString rest = * this;
         size_t lastPos = 0;
         int len = rest.Len();
+
+#ifdef __WXMSW__
+        // If the path is a network path, ignore the first part of the path
+        if (len > 2 && (rest[0] == wxT('\\') || rest[0] == wxT('/')) && (rest[1] == wxT('\\') || rest[1] == wxT('/')))
+        {
+            rest[(size_t) 0] = wxT('_'); rest[(size_t) 1] = wxT('_');
+            lastPos = rest.Find(cSep);
+            if (lastPos != -1 && lastPos >= 0)
+                rest[lastPos] = wxT('_');
+        }
+#endif
+        
         while (lastPos != -1)
         {
             lastPos = rest.Find(cSep);

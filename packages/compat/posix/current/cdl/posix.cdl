@@ -63,7 +63,7 @@ cdl_package CYGPKG_POSIX {
     requires       { CYGBLD_ISO_PTHREAD_MUTEX_HEADER == \
                          "<cyg/posix/mutex.h>" }
     
-    compile        mqueue.cxx mutex.cxx sem.cxx misc.cxx
+    compile        mqueue.cxx mutex.cxx misc.cxx
     compile       -library=libextras.a startup.cxx
 
     cdl_option _POSIX_THREAD_PRIO_INHERIT {
@@ -124,6 +124,27 @@ cdl_package CYGPKG_POSIX {
     # ----------------------------------------------------------------
     # Timers component
 
+    cdl_option CYGPKG_POSIX_CLOCKS {
+	display          "POSIX clocks"
+	flavor           bool
+	default_value    1
+        implements       CYGINT_ISO_POSIX_CLOCK_TYPES
+        implements       CYGINT_ISO_POSIX_CLOCKS
+        implements       CYGINT_ISO_POSIX_SLEEP
+        requires         { CYGBLD_ISO_POSIX_CLOCK_TYPES_HEADER == \
+                             "<cyg/posix/time.h>" }
+        requires         { CYGBLD_ISO_POSIX_CLOCKS_HEADER == \
+                             "<cyg/posix/time.h>" }
+        requires         CYGPKG_KERNEL
+        requires         CYGVAR_KERNEL_COUNTERS_CLOCK
+        compile          time.cxx
+	description      "This component provides configuration controls for
+	                  the POSIX clocks."
+    }
+
+    # ----------------------------------------------------------------
+    # Timers component
+
     cdl_option CYGPKG_POSIX_TIMERS {
 	display          "POSIX timers"
 	flavor           bool
@@ -138,7 +159,8 @@ cdl_package CYGPKG_POSIX {
         requires         CYGPKG_KERNEL
         requires         CYGVAR_KERNEL_COUNTERS_CLOCK
         requires         CYGPKG_POSIX_PTHREAD
-        compile          time.cxx
+        requires         CYGPKG_POSIX_CLOCKS
+        requires         CYGPKG_POSIX_SIGNALS
 	description      "This component provides configuration controls for
 	                  the POSIX timers."
     }
@@ -155,6 +177,8 @@ cdl_package CYGPKG_POSIX {
                              "<cyg/posix/semaphore.h>" }
 	description      "This component provides configuration controls for
 	                  POSIX semaphores."
+
+        compile          sem.cxx
     }
 
     # ----------------------------------------------------------------

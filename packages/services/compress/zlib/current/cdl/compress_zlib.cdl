@@ -46,12 +46,28 @@ cdl_package CYGPKG_COMPRESS_ZLIB {
                   decompression."
     include_dir   cyg/compress
 
-    requires      CYGPKG_MEMALLOC
     requires      CYGPKG_ISOINFRA
 
     compile       infblock.c infcodes.c inffast.c inflate.c
     compile       inftrees.c infutil.c adler32.c crc32.c
     compile       zutil.c deflate.c trees.c compress.c uncompr.c
+
+    cdl_interface CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC {
+        display "Override memory allocation routines."
+    }
+
+    cdl_option CYGSEM_COMPRESS_ZLIB_NEEDS_MALLOC {
+        display        "Does this library need malloc?"
+        flavor         bool
+        active_if      { CYGINT_COMPRESS_ZLIB_LOCAL_ALLOC == 0 }
+        requires       CYGPKG_MEMALLOC
+        no_define
+        default_value  1
+        description    "
+           This pseudo-option will force the memalloc library to be
+           required iff the application does not provide it's own
+           infrastructure."
+    }
 
 
 # ====================================================================

@@ -35,7 +35,11 @@ ENTRY(reset_vector)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 
 #define ALIGN_LMA 4

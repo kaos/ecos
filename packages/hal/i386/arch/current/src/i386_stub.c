@@ -44,6 +44,20 @@
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
 
+// We need a local memcpy so we don't rely on libc.
+static inline void*
+memcpy(void* dest, void* src, int size)
+{
+    unsigned char* __d = (unsigned char*) dest;
+    unsigned char* __s = (unsigned char*) src;
+    
+    while(size--)
+        *__d++ = *__s++;
+
+    return dest;
+}
+
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 /* Given a trap value TRAP, return the corresponding signal. */
@@ -123,6 +137,337 @@ void set_pc (target_register_t pc)
     put_register (PC, pc);
 }
 
+static target_register_t
+reg_offset(regnames_t reg)
+{
+    switch(reg) {
+      case EAX ... GS:
+	return reg * 4;
+#ifdef CYGHWR_HAL_I386_FPU
+      case REG_FST0 ... REG_FST7:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->st0[0]
+	    + ((reg - REG_FST0) * 10);
+      case REG_FCTRL:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->fcw;
+      case REG_FSTAT:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->fsw;
+      case REG_FTAG:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->ftw;
+      case REG_FISEG:
+      case REG_FOP:
+	// REG_FISEG is lsw, REG_FOP is msw
+	return (target_register_t)&((GDB_SavedRegisters *)0)->cssel;
+      case REG_FIOFF:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->ipoff;
+      case REG_FOSEG:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->opsel;
+      case REG_FOOFF:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->dataoff;
+#endif
+#if 0  // GDB never asks for MMX regs directly, but it did...
+      case REG_MMX0 ... REG_MMX7:
+	  {
+	      target_register_t tos = (get_register (REG_FSTAT) >> 11) & 7;
+	      return reg_offset((((8 - tos) + reg - REG_MMX0) & 7) + REG_FST0);
+	  }
+#endif
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+      case REG_XMM0 ... REG_XMM7:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->xmm0[0]
+	    + ((reg - REG_XMM0) * 16);
+      case REG_MXCSR:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->mxcsr;
+#endif
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+      case REG_CR0 ... REG_CR4:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->cr0
+	    + ((reg - REG_CR0) * 4);
+      case REG_GDT:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->gdtr[0];
+      case REG_IDT:
+	return (target_register_t)&((GDB_SavedRegisters *)0)->idtr[0];
+#endif
+      default:
+	return -1;
+    }
+    return -1;
+}
+
+
+// Return the currently-saved value corresponding to register REG of
+// the exception context.
+target_register_t 
+get_register (regnames_t reg)
+{
+    target_register_t val;
+    target_register_t offset = reg_offset(reg);
+
+    if (REGSIZE(reg) > sizeof(target_register_t) || offset == -1)
+	return -1;
+
+    val = _registers[offset/sizeof(target_register_t)];
+
+#ifdef CYGHWR_HAL_I386_FPU
+    if (reg == REG_FISEG)
+        val &= 0xffff;
+    else if (reg == REG_FOP)
+        val = (val >> 16) & 0xffff;
+#endif
+
+    return val;
+}
+
+// Store VALUE in the register corresponding to WHICH in the exception
+// context.
+void 
+put_register (regnames_t which, target_register_t value)
+{
+    target_register_t index;
+    target_register_t offset = reg_offset(which);
+
+    if (REGSIZE(which) > sizeof(target_register_t) || offset == -1)
+	return;
+
+    index = offset / sizeof(target_register_t);
+
+    switch (which) {
+#ifdef CYGHWR_HAL_I386_FPU
+      case REG_FISEG:
+	value = (_registers[index] & 0xffff0000) | (value & 0xffff);
+	break;
+      case REG_FOP:
+	value = (_registers[index] & 0x0000ffff) | (value << 16);
+	break;
+#endif
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+      case REG_CR0:
+	value &= REG_CR0_MASK;
+	break;
+      case REG_CR2:
+	value &= REG_CR2_MASK;
+	break;
+      case REG_CR3:
+	value &= REG_CR3_MASK;
+	break;
+      case REG_CR4:
+	value &= REG_CR4_MASK;
+	break;
+#endif
+      default:
+	break;
+    }
+    _registers[index] = value;
+}
+
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+// Handle the Model Specific Registers
+static target_register_t _msrval[2];
+static int _which_msr = 0;
+
+static void
+__do_read_msr (void)
+{
+    asm volatile ("movl %2,%%ecx\n"
+		  "rdmsr\n"
+		  "movl %%edx,%1\n"
+		  "movl %%eax,%0\n"
+		  : "=m" (_msrval[0]), "=m" (_msrval[1])
+		  : "m" (_which_msr)
+		  : "ecx", "ebx", "edx", "eax", "memory");
+}
+
+static void
+__do_write_msr (void)
+{
+    asm volatile ("movl %1,%%edx\n"
+		  "movl %0,%%eax\n"
+		  "movl %2,%%ecx\n"
+		  "wrmsr\n"
+		  : /* no outputs */
+		  : "m" (_msrval[0]), "m" (_msrval[1]), "m" (_which_msr)
+		  : "ecx", "ebx", "edx", "eax", "memory");
+}
+
+static int
+rdmsr (int msrnum, target_register_t *msrval)
+{
+    _which_msr = msrnum;
+    __set_mem_fault_trap (__do_read_msr);
+    if (__mem_fault)
+	return 0;
+
+    msrval[0] = _msrval[0];
+    msrval[1] = _msrval[1];
+    return 1;
+}
+
+static int
+wrmsr (int msrnum, target_register_t *msrval)
+{
+    _which_msr = msrnum;
+    _msrval[0] = msrval[0];
+    _msrval[1] = msrval[1];
+
+    __set_mem_fault_trap (__do_write_msr);
+    if (__mem_fault)
+	return 0;
+
+    return 1;
+}
+
+int
+cyg_hal_stub_process_query (char *pkt, char *buf, int bufsize)
+{
+    unsigned long val1, val2, val3, val4;
+    int i = 0, max_input = 0;
+
+    if ('C' == pkt[0] &&
+	'P' == pkt[1] &&
+	'U' == pkt[2] &&
+	'I' == pkt[3] &&
+	'D' == pkt[4]) {
+
+	for (i = 0; i <= max_input; i++) {
+
+	    asm volatile ("movl %4,%%eax\n"
+			  "cpuid\n"
+			  "movl %%eax,%0\n"
+			  "movl %%ebx,%1\n"
+			  "movl %%ecx,%2\n"
+			  "movl %%edx,%3\n"
+			  : "=m" (val1), "=m" (val2), "=m" (val3), "=m" (val4)
+			  : "m" (i)
+			  : "eax", "ebx", "ecx", "edx", "memory");
+
+	    /*
+	     * get the max value to use to get all the CPUID info.
+	     */
+	    if (i == 0)
+		max_input = val1;
+
+	    /*
+	     * Swap the bytes around to handle endianness conversion:
+	     * ie 12345678 --> 78563412
+	     */
+	    val1 = (((val1 & 0x000000ff) << 24) | ((val1 & 0x0000ff00) <<  8) |
+		    ((val1 & 0x00ff0000) >>  8) | ((val1 & 0xff000000) >> 24));
+	    val2 = (((val2 & 0x000000ff) << 24) | ((val2 & 0x0000ff00) <<  8) |
+		    ((val2 & 0x00ff0000) >>  8) | ((val2 & 0xff000000) >> 24));
+	    val3 = (((val3 & 0x000000ff) << 24) | ((val3 & 0x0000ff00) <<  8) |
+		    ((val3 & 0x00ff0000) >>  8) | ((val3 & 0xff000000) >> 24));
+	    val4 = (((val4 & 0x000000ff) << 24) | ((val4 & 0x0000ff00) <<  8) |
+		    ((val4 & 0x00ff0000) >>  8) | ((val4 & 0xff000000) >> 24));
+
+	    /*
+	     * Generate the packet
+	     */
+	    __mem2hex ((char *)&val1, buf, 8, 0);  buf[8] = ',';  buf += 9;
+	    __mem2hex ((char *)&val2, buf, 8, 0);  buf[8] = ',';  buf += 9;
+	    __mem2hex ((char *)&val3, buf, 8, 0);  buf[8] = ',';  buf += 9;
+	    __mem2hex ((char *)&val4, buf, 8, 0);  buf[8] = ';';  buf += 9;
+        }
+
+	/*
+	 * The packet is complete.  buf points just past the final semicolon.
+	 * Remove that semicolon and properly terminate the packet.
+	 */
+	*(buf - 1) = '\0';
+
+	return 1;
+    }
+
+    if ('M' == pkt[0] &&
+	'S' == pkt[1] &&
+	'R' == pkt[2]) {
+
+	pkt += 4;
+	if (__hexToInt (&pkt, &val1)) {
+	    target_register_t msrval[2];
+
+	    // rdmsr implicitly sets _which_msr for subsequent REG_MSR read/write.
+	    if (rdmsr(val1, msrval))
+		__mem2hex ((char*)msrval, buf, 8, 0);
+	    else
+		memcpy (buf, "INVALID", 8);
+        }
+	return 1;
+    }
+
+    return 0;
+}
+#endif // CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+
+// Write the contents of register WHICH into VALUE as raw bytes. We
+// only support this for the MMX, FPU, and SSE registers.
+// Return true if it is a valid register.
+int
+get_register_as_bytes (regnames_t which, char *value)
+{
+    target_register_t offset;
+
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+    // Read the currently selected MSR
+    if (which == REG_MSR) {
+	if (rdmsr(_which_msr, _msrval)) {
+	    memcpy (value, _msrval, REGSIZE(which));
+	    return 1;
+	}
+	return 0;
+    }
+    // We can't actually read the LDT or TR in software, so just return invalid.
+    if (which == REG_LDT || which == REG_TR)
+	return 0;
+
+    if (which == REG_GDT || which == REG_IDT) {
+        // GDB requires these to be sent base first though the CPU stores them
+	// limit first in 6 bytes. Weird.
+        offset = reg_offset(which);
+        memcpy (value, (char *)_registers + offset + 2, 4);
+        memcpy (value + 4, (char *)_registers + offset, 2);
+        return 1;
+    }
+#endif
+
+    offset = reg_offset(which);
+    if (offset != -1) {
+	memcpy (value, (char *)_registers + offset, REGSIZE(which));
+	return 1;
+    }
+    return 0;
+}
+
+// Alter the contents of saved register WHICH to contain VALUE.  We only
+// support this for the MMX, FPU, and SSE registers.
+int
+put_register_as_bytes (regnames_t which, char *value)
+{
+    target_register_t offset;
+
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+    // Write the currently selected MSR
+    if (which == REG_MSR)
+	return wrmsr(_which_msr, (target_register_t*)value);
+
+    // We can't actually write the LDT OR TR in software, so just return invalid.
+    if (which == REG_LDT || which == REG_TR)
+	return 0;
+    if (which == REG_GDT || which == REG_IDT) {
+        // GDB sends these base first, though the CPU stores them
+	// limit first. Weird.
+        offset = reg_offset(which);
+        memcpy ((char *)_registers + offset + 2, value, 4);
+        memcpy ((char *)_registers + offset, value + 4, 2);
+        return 1;
+    }
+#endif
+
+    offset = reg_offset(which);
+    if (offset != -1) {
+	memcpy ((char *)_registers + offset, value, REGSIZE(which));
+	return 1;
+    }
+    return 0;
+}
 
 /*----------------------------------------------------------------------
  * Single-step support
@@ -184,34 +529,113 @@ void __skipinst (void)
 // We apparently need these function even when no stubinclude
 // for Thread Debug purposes
 
-void hal_get_gdb_registers(CYG_ADDRWORD * d, HAL_SavedRegisters * s)
+
+void hal_get_gdb_registers(CYG_ADDRWORD *dest, HAL_SavedRegisters * s)
 {
-	d[ESP] = s->esp ;
-	d[EBP] = s->ebp ;
-	d[ESI] = s->esi ;
-	d[EDI] = s->edi ;
-	d[EAX] = s->eax ;
-	d[EBX] = s->ebx ;
-	d[ECX] = s->ecx ;
-	d[EDX] = s->edx ;
-	d[PC]  = s->pc ;
-	d[CS]  = s->cs ;
-	d[PS]  = s->eflags ;
+    GDB_SavedRegisters *d = (GDB_SavedRegisters *)dest;
+
+    d->eax = s->eax;
+    d->ebx = s->ebx;
+    d->ecx = s->ecx;
+    d->edx = s->edx;
+    d->ebp = s->ebp;
+    d->esp = s->esp;
+    d->edi = s->edi;
+    d->esi = s->esi;
+    d->pc = s->pc;
+    d->cs = s->cs;
+    d->ps = s->eflags;
+
+    d->ss = 0;
+    asm volatile ("movw %%ss,%0\n" :"=m" (d->ss));
+    d->ds = 0;
+    asm volatile ("movw %%ds,%0\n" :"=m" (d->ds));
+    d->es = 0;
+    asm volatile ("movw %%es,%0\n" :"=m" (d->es));
+    d->fs = 0;
+    asm volatile ("movw %%fs,%0\n" :"=m" (d->fs));
+    d->gs = 0;
+    asm volatile ("movw %%gs,%0\n" :"=m" (d->gs));
+
+#ifdef CYGHWR_HAL_I386_FPU
+#ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+    asm volatile ("fnop\n");  // force state save
+    memcpy(&d->fcw, &s->fpucontext->fpstate[0], sizeof(s->fpucontext->fpstate));
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+    memcpy(&d->xmm0[0], &s->fpucontext->xmm0[0], (16 * 8) + 4);
+#endif
+#else
+    memcpy(&d->fcw, &s->fpucontext.fpstate[0], sizeof(s->fpucontext.fpstate));
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+    memcpy(&d->xmm0[0], &s->fpucontext.xmm0[0], (16 * 8) + 4);
+#endif
+#endif
+#endif
+
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+    {
+	unsigned long val;
+
+	asm volatile ("movl %%cr0,%0\n"
+		      "movl %0,%1\n"
+		      : "=r" (val), "=m" (d->cr0));
+	asm volatile ("movl %%cr2,%0\n"
+		      "movl %0,%1\n"
+		      : "=r" (val), "=m" (d->cr2));
+	asm volatile ("movl %%cr3,%0\n"
+		      "movl %0,%1\n"
+		      : "=r" (val), "=m" (d->cr3));
+	asm volatile ("movl %%cr4,%0\n"
+		      "movl %0,%1\n"
+		      : "=r" (val), "=m" (d->cr4));
+	asm volatile ("sgdt %0\n" :"=m" (d->gdtr));
+	asm volatile ("sidt %0\n" :"=m" (d->idtr));
+    }
+#endif // CYGHWR_HAL_I386_PENTIUM_GDB_REGS
 }
 
-void hal_set_gdb_registers(HAL_SavedRegisters * d, CYG_ADDRWORD * s)
+void hal_set_gdb_registers(HAL_SavedRegisters * d, CYG_ADDRWORD * src)
 {
-	d->esp    = s[ESP] ;
-	d->ebp    = s[EBP] ;
-	d->eax    = s[EAX] ;
-	d->ebx    = s[EBX] ;
-	d->ecx    = s[ECX] ;
-	d->edx    = s[EDX] ;
-	d->esi    = s[ESI] ;
-	d->edi    = s[EDI] ;
-	d->pc     = s[PC] ;
-	d->cs     = s[CS] ;
-	d->eflags = s[PS] ;
+    GDB_SavedRegisters *s = (GDB_SavedRegisters *)src;
+
+    d->eax = s->eax;
+    d->ebx = s->ebx;
+    d->ecx = s->ecx;
+    d->edx = s->edx;
+    d->ebp = s->ebp;
+    d->esp = s->esp;
+    d->edi = s->edi;
+    d->esi = s->esi;
+    d->pc = s->pc;
+    d->cs = s->cs;
+    d->eflags = s->ps;
+#ifdef CYGHWR_HAL_I386_FPU
+#ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+    memcpy(&d->fpucontext->fpstate[0], &s->fcw, sizeof(d->fpucontext->fpstate));
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+    memcpy(&d->fpucontext->xmm0[0], &s->xmm0[0], (16 * 8) + 4);
+#endif
+#else
+    memcpy(&d->fpucontext.fpstate[0], &s->fcw, sizeof(d->fpucontext.fpstate));
+#ifdef CYGHWR_HAL_I386_PENTIUM_SSE
+    memcpy(&d->fpucontext.xmm0[0], &s->xmm0[0], (16 * 8) + 4);
+#endif
+#endif
+#endif
+#ifdef CYGHWR_HAL_I386_PENTIUM_GDB_REGS
+    {
+	unsigned long val;
+
+	val = s->cr0;
+	asm volatile ("movl %0,%%cr0\n" : : "r" (val));
+	val = s->cr2;
+	asm volatile ("movl %0,%%cr2\n" : : "r" (val));
+	val = s->cr3;
+	asm volatile ("movl %0,%%cr3\n" : : "r" (val));
+	val = s->cr4;
+	asm volatile ("movl %0,%%cr4\n" : : "r" (val));
+    }
+#endif // CYGHWR_HAL_I386_PENTIUM_GDB_REGS
 }
 
 

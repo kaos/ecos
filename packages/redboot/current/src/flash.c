@@ -1076,7 +1076,6 @@ do_flash_init(void)
     int stat;
 
     if (!__flash_init) {
-        __flash_init = 1;
         if ((stat = flash_init((void *)(workspace_end-FLASH_MIN_WORKSPACE), 
                                FLASH_MIN_WORKSPACE, diag_printf)) != 0) {
             diag_printf("FLASH: driver init failed: %s\n", flash_errmsg(stat));
@@ -1092,12 +1091,20 @@ do_flash_init(void)
         fis_work_block = workspace_end;
         fisdir_size = block_size;
 #endif
+        __flash_init = 1;
     }
     return true;
 }
 
+// Wrapper to avoid compiler warnings
+static void
+_do_flash_init(void)
+{
+    do_flash_init();
+}
+
 #ifndef CYGOPT_REDBOOT_FLASH_CONFIG
-RedBoot_init(do_flash_init, RedBoot_INIT_FIRST);
+RedBoot_init(_do_flash_init, RedBoot_INIT_FIRST);
 #endif
 
 static void
@@ -1691,12 +1698,14 @@ _expand_aliases(char *line, int len)
 			if (offset > 1) {
                             ep[offset] = '\0';
                             while (ep != (lp-1)) {
-                                ep[offset-1] = *ep--;
+                                ep[offset-1] = *ep;
+                                ep--;
                             }           
 			} else {
                             if (offset <=0) {
                                 while ((lp-1) != ep) {
-                                    lp[offset-1] = *lp++;
+                                    lp[offset-1] = *lp;
+                                    lp++;
                                 }
                                 lp[offset-1]='\0';
                             }

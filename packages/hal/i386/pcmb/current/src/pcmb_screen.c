@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -56,6 +56,9 @@
 #include <cyg/hal/hal_misc.h>
 
 #include <cyg/hal/pcmb_serial.h>
+
+// Index into pc_ser_channels[] for screen entry.
+#define PCMB_PORT_INDEX (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS - 1)
 
 //-----------------------------------------------------------------------------
 // Screen output definitions...
@@ -803,17 +806,17 @@ void cyg_hal_plf_screen_init(void)
     int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 
     // Disable interrupts.
-    HAL_INTERRUPT_MASK(pc_ser_channels[2].isr_vector);
+    HAL_INTERRUPT_MASK(pc_ser_channels[PCMB_PORT_INDEX].isr_vector);
 
     // Init channels
-    cyg_hal_plf_screen_init_channel(&pc_ser_channels[2]);
+    cyg_hal_plf_screen_init_channel(&pc_ser_channels[PCMB_PORT_INDEX]);
 
     // Setup procs in the vector table
 
     // Set channel 2
-    CYGACC_CALL_IF_SET_CONSOLE_COMM(2);
+    CYGACC_CALL_IF_SET_CONSOLE_COMM(PCMB_PORT_INDEX);
     comm = CYGACC_CALL_IF_CONSOLE_PROCS();
-    CYGACC_COMM_IF_CH_DATA_SET(*comm, &pc_ser_channels[2]);
+    CYGACC_COMM_IF_CH_DATA_SET(*comm, &pc_ser_channels[PCMB_PORT_INDEX]);
     CYGACC_COMM_IF_WRITE_SET(*comm, cyg_hal_plf_screen_write);
     CYGACC_COMM_IF_READ_SET(*comm, cyg_hal_plf_screen_read);
     CYGACC_COMM_IF_PUTC_SET(*comm, cyg_hal_plf_screen_putc);
@@ -832,7 +835,7 @@ void cyg_hal_plf_screen_init(void)
 
 //-----------------------------------------------------------------------------
 
-#endif // CYGSEM_HAL_I386_PC_DIAG_SCREEN
+#endif // CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT
 
 //-----------------------------------------------------------------------------
 // End of pcmb_screen.c

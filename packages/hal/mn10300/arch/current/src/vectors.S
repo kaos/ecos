@@ -46,6 +46,10 @@
 
 #include <pkgconf/hal.h>
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#endif
+	
 #ifdef CYGPKG_KERNEL
 
 #include <pkgconf/kernel.h>
@@ -580,7 +584,9 @@ __default_nmi_vsr:
 	# We come here with all the registers saved
 	# on the stack.
 
+#ifdef CYG_HAL_DIAG_EXCPT_END
 	hal_diag_excpt_start
+#endif
 	
 	# Decode the cause of the NMI and cancel all the bits in all
 	# the registers. We need to clear any bits set in the ISR and
@@ -611,7 +617,7 @@ __default_nmi_vsr:
 
 	add	9,d1				# offset into exception number space
 	
-#ifdef CYGPKG_CYGMON
+#if defined(CYGPKG_CYGMON) || defined(CYGSEM_REDBOOT_BSP_SYSCALLS)
 	# Check to see if this was a syscall.
 	# If so, set d1 appropriately
 #define TBR 0xC0000024
@@ -639,6 +645,10 @@ __default_nmi_vsr:
 	calls	_cyg_hal_exception_handler	# call C code
 
 	add	16,sp				# pop args
+
+#ifdef CYG_HAL_DIAG_EXCPT_END
+	hal_diag_excpt_end
+#endif
 
 	hal_cpu_load_all
 
@@ -686,19 +696,31 @@ sp_save:
 	.globl	__default_trap_vsr
 __default_trap_vsr:
 
+#ifdef CYG_HAL_DIAG_EXCPT_END
+	hal_diag_excpt_start
+#endif
+
 	# We come here with all the registers saved
 	# on the stack.
+	mov	8,d1
+	mov	d1,(sp)				# set the VSR vector number
+	mov	sp,a1				# a1 = saved state
+	mov	a1,d0				# d0 = arg1 = saved state
 
-	add	-8,sp				# return link + arg
-	mov	3,d1				# 3 == TRAP trap
-	mov	d1,(0,sp)			# save in spare save slot
+	add	-16,sp				# return link + arg
+	mov	3,d1				# d1 = arg2 = ISR value (3 == TRAP trap)
 	calls	_cyg_hal_exception_handler	# call C code
-	add	8,sp				# pop args
+	add	16,sp				# pop args
+
+#ifdef CYG_HAL_DIAG_EXCPT_END
+	hal_diag_excpt_end
+#endif
 	hal_cpu_load_all
 #ifdef CYGPKG_CYGMON
 	hal_cygmon_restore_app_stack
-#else
 	add	4,sp
+#else
+	add	8,sp
 #endif
 	rets
 

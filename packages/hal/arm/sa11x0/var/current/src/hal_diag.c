@@ -299,9 +299,12 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     // interrupt loop
     c = (char)chan->base->utdr;
 
-    //Clear receiver idle status bit, to allow another interrupt to
-    //occur in the case where the receive fifo is almost empty.
-    chan->base->utsr0 = SA11X0_UART_RX_IDLE;
+    // Clear receiver idle status bit, to allow another interrupt to
+    // occur in the case where the receive fifo is almost empty.
+    // Also for a break interrupt; these are sticky and nonmaskable.
+    chan->base->utsr0 = (SA11X0_UART_RX_IDLE |
+                         SA11X0_UART_RX_BEGIN_OF_BREAK |
+                         SA11X0_UART_RX_END_OF_BREAK      );
 
     cyg_drv_interrupt_acknowledge(chan->isr_vector);
 

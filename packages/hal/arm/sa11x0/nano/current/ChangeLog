@@ -140,7 +140,7 @@
 
 2001-02-14  Hugo Tyson  <hmt@redhat.com>
 
-	* hal/arm/sa11x0/nano: New package, based on Assabet
+	* hal/arm/sa11x0/nano: New package, based on Assabet 
 	HAL.  This is the nanoEngine from Bright Star Engineering; an
 	SA1110 CPU + 2x i82559 ethernets.
 

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.h,v 1.26 2001/09/05 14:35:53 julians Exp $
+// Version:     $Id: configtool.h,v 1.27 2001/10/11 12:31:42 julians Exp $
 // Purpose:
 // Description: main header file for the ConfigTool application
 // Requires:
@@ -128,7 +128,10 @@ public:
     // Fire off a subprocess to build the library or tests
     void Build(const wxString& strWhat = wxEmptyString) ;
 
+    // Mount drive e.g. /c
     static void CygMount(wxChar c);
+    // Mount in text mode e.g. /ecos-c
+    static void CygMountText(wxChar c);
 
     bool InitializeHelpController();
 

@@ -122,7 +122,7 @@ static CYG_ALIGNMENT_TYPE stack[NTHREADS] [
    (STACKSIZE+sizeof(CYG_ALIGNMENT_TYPE)-1)
      / sizeof(CYG_ALIGNMENT_TYPE)                     ];
 
-static int nthreads = 0;
+static volatile int nthreads = 0;
 
 #undef NULL
 #define NULL (0)
@@ -133,22 +133,24 @@ static cyg_handle_t new_thread( cyg_thread_entry_t *entry,
                                 int do_resume,
                                 char *name )
 {
-    CYG_ASSERT(nthreads < NTHREADS, 
+    int _nthreads = nthreads++;
+
+    CYG_ASSERT(_nthreads < NTHREADS, 
                "Attempt to create more than NTHREADS threads");
 
     cyg_thread_create( priority,
                        entry,
                        data, 
                        name,
-                       (void *)(stack[nthreads]),
+                       (void *)(stack[_nthreads]),
                        STACKSIZE,
-                       &thread[nthreads],
-                       &thread_obj[nthreads] );
+                       &thread[_nthreads],
+                       &thread_obj[_nthreads] );
 
     if ( do_resume )
-        cyg_thread_resume( thread[nthreads] );
+        cyg_thread_resume( thread[_nthreads] );
 
-    return thread[nthreads++];
+    return thread[_nthreads];
 }
 
 

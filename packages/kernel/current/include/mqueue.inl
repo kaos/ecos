@@ -88,9 +88,13 @@ externC void * memcpy( void *, const void *, size_t );
 
 /* INLINE FUNCTIONS */
 
+#ifndef CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE
+# define CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE inline
+#endif
+
 //------------------------------------------------------------------------
 
-inline cyg_bool
+CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE cyg_bool
 Cyg_Mqueue::check_this( cyg_assert_class_zeal zeal ) const
 {
     if (zeal != cyg_none) {
@@ -175,7 +179,7 @@ Cyg_Mqueue::check_this( cyg_assert_class_zeal zeal ) const
 
 //------------------------------------------------------------------------
 
-inline
+CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE
 Cyg_Mqueue::Cyg_Mqueue( long maxmsgs, long maxmsgsize,
                         qalloc_fn_t qalloc, qfree_fn_t qfree, qerr_t *err )
     : putsem(maxmsgs), getsem(0)
@@ -237,7 +241,7 @@ Cyg_Mqueue::Cyg_Mqueue( long maxmsgs, long maxmsgsize,
 
 //------------------------------------------------------------------------
 
-inline
+CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE
 Cyg_Mqueue::~Cyg_Mqueue()
 {
     CYG_REPORT_FUNCTION();
@@ -258,7 +262,7 @@ Cyg_Mqueue::~Cyg_Mqueue()
 //------------------------------------------------------------------------
 
 // put() copies len bytes of *buf into the queue at priority prio
-inline Cyg_Mqueue::qerr_t
+CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE Cyg_Mqueue::qerr_t
 Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block )
 {
     CYG_REPORT_FUNCTYPE( "err=%d");
@@ -365,7 +369,7 @@ Cyg_Mqueue::put( const char *buf, size_t len, unsigned int prio, bool block )
 // and sets *prio to the priority (if prio is non-NULL) and *len to the
 // actual message size
 
-inline Cyg_Mqueue::qerr_t
+CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE Cyg_Mqueue::qerr_t
 Cyg_Mqueue::get( char *buf, size_t *len, unsigned int *prio, bool block )
 {
     CYG_REPORT_FUNCTYPE( "err=%d");
@@ -467,7 +471,7 @@ Cyg_Mqueue::count()
 // when the queue goes from empty to non-empty (unless someone's already
 // doing a get()). This returns the old callback_fn, and if olddata is
 // non-NULL sets it to the old data (yes, really!)
-inline Cyg_Mqueue::callback_fn_t
+CYGPRI_KERNEL_SYNCH_MQUEUE_INLINE Cyg_Mqueue::callback_fn_t
 Cyg_Mqueue::setnotify( callback_fn_t callback_fn, CYG_ADDRWORD data,
                        CYG_ADDRWORD *olddata)
 {

@@ -84,10 +84,14 @@ struct gdb_packet
    *  3 = looking for second byte of checksum (indicating end of packet)
    */
   char state;
+  char err;  // This is set if the packet should be tossed because of overflow
 };
 
 /* Return the currently-saved value corresponding to register REG. */
 extern target_register_t get_register (regnames_t reg);
+
+/* Write the contents of register WHICH into VALUE as raw bytes */
+extern int get_register_as_bytes (regnames_t which, char *value);
 
 #ifdef CYGHWR_REGISTER_VALIDITY_CHECKING
 // Return the validity of register REG.
@@ -96,6 +100,8 @@ extern int get_register_valid (regnames_t reg);
 
 /* Store VALUE in the register corresponding to WHICH. */
 extern void put_register (regnames_t which, target_register_t value);
+
+extern int put_register_as_bytes (regnames_t which, char *value);
 
 /* Set the next instruction to be executed when the user program resumes
    execution to PC. */
@@ -320,6 +326,13 @@ extern void __putDebugStr (char *str);
 #if defined(NO_MALLOC) && !defined(MAX_BP_NUM)
 #define MAX_BP_NUM 64 /* Maximum allowed # of breakpoints */
 #endif
+
+extern int hal_syscall_handler(void);
+extern int __is_bsp_syscall(void);
+
+extern void __install_breakpoint_list (void);
+extern void __clear_breakpoint_list (void);
+extern int __display_breakpoint_list (void (*print_func)(target_register_t));
 
 #endif /* ASM */
 
