@@ -36,7 +36,8 @@
 
 <!-- }}} -->
 
-<reference id="io-usb-slave-eth">
+<part id="io-usb-slave-eth">
+<!-- reference id="io-usb-slave-eth" -->
   <title>eCos Support for Developing USB-ethernet Peripherals</title>
 
 <!-- {{{ Intro                          -->
@@ -811,4 +812,5 @@ driver has been activated.
 
 <!-- }}} -->
 
-</reference>
+</part>
+<!-- /reference -->
