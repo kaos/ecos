@@ -157,7 +157,7 @@ cdl_package CYGPKG_HAL_SPARC_LEON {
             display "Additional compiler flags"
             flavor  data
             no_define
-            default_value { "-msoft-float" }
+            default_value { "" }
             description   "
                 This option modifies the set of compiler flags for
                 building the LEON processor HAL. These flags are

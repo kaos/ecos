@@ -78,7 +78,7 @@
 #define SPARC_LEON_UART_A_TX         ((volatile cyg_uint32 *)(SPARC_LEON_REG + 0x70))
 #define SPARC_LEON_UART_STATUS       ((volatile cyg_uint32 *)(SPARC_LEON_REG + 0x74))
 #define SPARC_LEON_UART_RXAMASK      (0x00001)
-#define SPARC_LEON_UART_TXAMASK      (0x00006)
+#define SPARC_LEON_UART_TXAMASK      (0x00004)
 
   
 /*---------------------------------------------------------------------------*/
