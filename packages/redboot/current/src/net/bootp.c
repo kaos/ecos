@@ -241,6 +241,9 @@ __bootp_find_local_ip(bootp_header_t *info)
             memset(&b.bp_yiaddr, 0x00, 4);
             memset(&b.bp_siaddr, 0x00, 4);
             break;
+        case DHCP_ACK:
+            // Ignore these states (they won't happen)
+            break;
         }
      
         // Some servers insist on a minimum amount of "vendor" data

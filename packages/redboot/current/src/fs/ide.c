@@ -207,7 +207,7 @@ send_packet_command(int ctlr, int dev, cyg_uint16 len, cyg_uint16 *pkt, int pktl
           HAL_IDE_READ_UINT8(ctlr, IDE_REG_LBAMID, tmp); \
           (x) = tmp;                                     \
           HAL_IDE_READ_UINT8(ctlr, IDE_REG_LBAHI, tmp);  \
-          (x) = cdcount |= (tmp << 8);                   \
+          (x) = (x) | (tmp << 8);                        \
         }
 
 
