@@ -1,3 +1,9 @@
+2002-11-28  Nick Garnett  <nickg@ecoscentric.com>
+
+	* src/vectors.S: Added GRUB startup option to tests for IDT
+	initialization. Added call to breakpoint() before cyg_start(),
+	controlled by CYGDBG_HAL_DEBUG_GDB_INITIAL_BREAK.
+
 2002-05-17  Nick Garnett  <nickg@redhat.com>
 
 	* src/vectors.S: Rearranged interrupt stack definitions to make it

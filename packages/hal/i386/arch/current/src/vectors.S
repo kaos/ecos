@@ -91,7 +91,9 @@ _start:
 	
 	movl	$__interrupt_stack, %esp
 
-#if defined(CYG_HAL_STARTUP_FLOPPY) || defined(CYG_HAL_STARTUP_ROM)
+#if defined(CYG_HAL_STARTUP_FLOPPY) \
+    || defined(CYG_HAL_STARTUP_ROM) \
+    || defined(CYG_HAL_STARTUP_GRUB)
 	# If we are here first, initialize the IDT. RAM startup
 	# configurations can assume that Redboot has already set
 	# the IDT up.
@@ -153,15 +155,19 @@ _start:
 
 #ifndef CYG_HAL_STARTUP_RAM
 	# Only start other CPUs when we are the original boot executable.
-	# RAM executables are loaded via RedBoot, so only FLOPPY and ROM 
-	# startups count here.
+	# RAM executables are loaded via RedBoot, so only FLOPPY, GRUB 
+        # and ROM startups count here.
 	
 	.extern cyg_hal_smp_cpu_start_all
 	call cyg_hal_smp_cpu_start_all
 #endif
 		
 #endif
-		
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INITIAL_BREAK
+        .extern breakpoint
+        call breakpoint
+#endif        
 	.extern cyg_start
 	call	cyg_start
 
