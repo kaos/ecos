@@ -1,3 +1,15 @@
+2002-06-05  Gary Thomas  <gary@chez-thomas.org>
+
+	* src/dhcp_prot.c (_dhcp_copy): New function used to better handle
+	replies that can be variable length.
+
+2002-05-30  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/tcp_echo.c: Build with either stack (no libkern.h).
+
+	* tests/bridge.c: Don't do anything (should not even be built,
+	but that's a CDL complication) if no BRIDGE support in system.
+
 2002-05-30  Jesper Skov  <jskov@redhat.com>
 
 	* tests/flood.c (floodsend): Fixed warning.

@@ -512,6 +512,26 @@ static void set_default_dhcp_tags( struct bootp *xmit )
     set_fixed_tag( xmit, TAG_DHCP_MAX_MSGSZ, BP_MINPKTSZ, 2 );
 }
 
+//
+// Make a copy of a BOOTP/DHCP record.  Note that this can
+// be [somewhat] arbitrarily long, thus it needs to be allocated
+// dynamically.  Reset certain fields within the record that are
+// supposed to only be returned by the server.
+//
+static struct bootp *
+_dhcp_copy(struct bootp *xmit, int xlen)
+{
+    struct bootp *xmit2;
+    xmit2 = (struct bootp *)cyg_net_malloc(xlen, 0, 0);
+    if (xmit2) {
+        bcopy(xmit, xmit2, xlen);
+        xmit2->bp_yiaddr.s_addr = 0;
+        xmit2->bp_siaddr.s_addr = 0;
+        xmit2->bp_hops = 0;
+    }
+    return xmit2;
+}
+
 // ------------------------------------------------------------------------
 // the DHCP state machine - this does all the work
 
@@ -546,7 +566,8 @@ do_dhcp(const char *intf, struct bootp *res,
     struct bootp rx_local;
     struct bootp *received = &rx_local;
     struct bootp *xmit = res;
-    struct bootp xmit2;
+    struct bootp *xmit2 = (struct bootp *)NULL;
+    int xlen;
 
     // First, get a socket on the interface in question.  But Zeroth, if
     // needs be, bring it to the half-up broadcast only state if needs be.
@@ -786,11 +807,13 @@ do_dhcp(const char *intf, struct bootp *res,
 #endif            
             // Send back a [modified] copy.  Note that some fields are explicitly
             // cleared, as per the RFC.  We need the copy because these fields are
-            // still useful to us (and currently stored in the 'result' structure)
-            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
-            xmit2.bp_yiaddr.s_addr = 0;
-            xmit2.bp_siaddr.s_addr = 0;
-            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
+            // still useful to us (and currently stored in the 'result' structure)            
+            xlen = dhcp_size_for_send(xmit);
+            if ((xmit2 = _dhcp_copy(xmit, xlen)) == (struct bootp *)NULL) {
+                *pstate = DHCPSTATE_FAILED;
+                break;
+            }
+            if(sendto(s, xmit2, xlen, 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -923,10 +946,12 @@ do_dhcp(const char *intf, struct bootp *res,
             // Send back a [modified] copy.  Note that some fields are explicitly
             // cleared, as per the RFC.  We need the copy because these fields are
             // still useful to us (and currently stored in the 'result' structure)
-            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
-            xmit2.bp_yiaddr.s_addr = 0;
-            xmit2.bp_siaddr.s_addr = 0;
-            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
+            xlen = dhcp_size_for_send(xmit);
+            if ((xmit2 = _dhcp_copy(xmit, xlen)) == (struct bootp *)NULL) {
+                *pstate = DHCPSTATE_FAILED;
+                break;
+            }
+            if(sendto(s, xmit2, xlen, 0, 
                        // UNICAST address of the server:
                       (struct sockaddr *)&server_addr,
                       sizeof(server_addr)) < 0) {
@@ -1027,10 +1052,12 @@ do_dhcp(const char *intf, struct bootp *res,
             // Send back a [modified] copy.  Note that some fields are explicitly
             // cleared, as per the RFC.  We need the copy because these fields are
             // still useful to us (and currently stored in the 'result' structure)
-            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
-            xmit2.bp_yiaddr.s_addr = 0;
-            xmit2.bp_siaddr.s_addr = 0;
-            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
+            xlen = dhcp_size_for_send(xmit);
+            if ((xmit2 = _dhcp_copy(xmit, xlen)) == (struct bootp *)NULL) {
+                *pstate = DHCPSTATE_FAILED;
+                break;
+            }
+            if(sendto(s, xmit2, xlen, 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -1174,10 +1201,12 @@ do_dhcp(const char *intf, struct bootp *res,
             // Send back a [modified] copy.  Note that some fields are explicitly
             // cleared, as per the RFC.  We need the copy because these fields are
             // still useful to us (and currently stored in the 'result' structure)
-            bcopy(xmit, &xmit2, dhcp_size_for_send(xmit));
-            xmit2.bp_yiaddr.s_addr = 0;
-            xmit2.bp_siaddr.s_addr = 0;
-            if(sendto(s, &xmit2, dhcp_size_for_send(xmit), 0, 
+            xlen = dhcp_size_for_send(xmit);
+            if ((xmit2 = _dhcp_copy(xmit, xlen)) == (struct bootp *)NULL) {
+                *pstate = DHCPSTATE_FAILED;
+                break;
+            }
+            if(sendto(s, xmit2, xlen, 0, 
                        // UNICAST address of the server:
                       (struct sockaddr *)&server_addr,
                       sizeof(server_addr)) < 0) {
@@ -1192,6 +1221,11 @@ do_dhcp(const char *intf, struct bootp *res,
             no_lease( lease );
             close(s);
             return false;
+        }
+        // Clean up temporary buffer(s)
+        if (xmit2) {
+            cyg_net_free(xmit2, 0);
+            xmit2 = (struct bootp *)NULL;
         }
     }
     /* NOTREACHED */
