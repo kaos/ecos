@@ -162,18 +162,22 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// Size adjustment
-// These macros adjust the size argument up to a whole multiple of the
-// cache line size. This ensures that we apply the cache operation to
-// all cache lines covered by the address[size] arguments in the
-// macros below.
+// Address adjustment.
+// Given an address and a size, these macros return the first 
+// cacheline containing the requested range and a terminating address.
 
-#define HAL_DCACHE_ADJUST_SIZE(_size_) \
-(((_size_)+HAL_DCACHE_LINE_SIZE-1) & ~(HAL_DCACHE_LINE_SIZE-1))
+#define HAL_DCACHE_START_ADDRESS(_addr_) \
+(((CYG_ADDRESS)(_addr_)) & ~(HAL_DCACHE_LINE_SIZE-1))
 
-#define HAL_ICACHE_ADJUST_SIZE(_size_) \
-(((_size_)+HAL_ICACHE_LINE_SIZE-1) & ~(HAL_ICACHE_LINE_SIZE-1))
-    
+#define HAL_DCACHE_END_ADDRESS(_addr_, _asize_) \
+((CYG_ADDRESS)((_addr_) + (_asize_)))
+
+#define HAL_ICACHE_START_ADDRESS(_addr_) \
+(((CYG_ADDRESS)(_addr_)) & ~(HAL_ICACHE_LINE_SIZE-1))
+
+#define HAL_ICACHE_END_ADDRESS(_addr_, _asize_) \
+((CYG_ADDRESS)((_addr_) + (_asize_)))
+
 //-----------------------------------------------------------------------------
 // Global control of data cache
 
@@ -228,19 +232,18 @@
 // and then lock the cache so that it stays there.
 // This uses the fetch-and-lock cache operation.
 #ifndef HAL_DCACHE_LOCK_DEFINED
-#define HAL_DCACHE_LOCK(_base_, _asize_)                                  \
-    CYG_MACRO_START                                                       \
-    register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                 \
-    register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                  \
-    register CYG_WORD _size_ = HAL_DCACHE_ADJUST_SIZE(_asize_);           \
-    register CYG_WORD _state_;                                            \
-    HAL_DCACHE_IS_ENABLED( _state_ );                                     \
-    if( _state_ ) {                                                       \
-        _HAL_ASM_SET_MIPS_ISA(3);                                         \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE ) \
-        { _HAL_ASM_DCACHE_ALL_WAYS(0x1d, _addr_); }                       \
-        _HAL_ASM_SET_MIPS_ISA(0);                                         \
-    }                                                                     \
+#define HAL_DCACHE_LOCK(_base_, _asize_)                                    \
+    CYG_MACRO_START                                                         \
+    register CYG_ADDRESS _addr_  = HAL_DCACHE_START_ADDRESS(_base_);        \
+    register CYG_ADDRESS _eaddr_ = HAL_DCACHE_END_ADDRESS(_base_, _asize_); \
+    register CYG_WORD _state_;                                              \
+    HAL_DCACHE_IS_ENABLED( _state_ );                                       \
+    if( _state_ ) {                                                         \
+        _HAL_ASM_SET_MIPS_ISA(3);                                           \
+        for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
+        { _HAL_ASM_DCACHE_ALL_WAYS(0x1d, _addr_); }                         \
+        _HAL_ASM_SET_MIPS_ISA(0);                                           \
+    }                                                                       \
     CYG_MACRO_END
 #endif
 
@@ -268,53 +271,50 @@
 // for the given address range.
 // This uses the hit-writeback-invalidate cache operation.
 #ifndef HAL_DCACHE_FLUSH_DEFINED
-#define HAL_DCACHE_FLUSH( _base_ , _asize_ )                              \
-    CYG_MACRO_START                                                       \
-    register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                 \
-    register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                  \
-    register CYG_WORD _size_ = HAL_DCACHE_ADJUST_SIZE(_asize_);           \
-    register CYG_WORD _state_;                                            \
-    HAL_DCACHE_IS_ENABLED( _state_ );                                     \
-    if( _state_ ) {                                                       \
-        _HAL_ASM_SET_MIPS_ISA(3);                                         \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE ) \
-        { _HAL_ASM_DCACHE_ALL_WAYS(0x15, _addr_); }                       \
-        _HAL_ASM_SET_MIPS_ISA(0);                                         \
-    }                                                                     \
+#define HAL_DCACHE_FLUSH( _base_ , _asize_ )                                \
+    CYG_MACRO_START                                                         \
+    register CYG_ADDRESS _addr_  = HAL_DCACHE_START_ADDRESS(_base_);        \
+    register CYG_ADDRESS _eaddr_ = HAL_DCACHE_END_ADDRESS(_base_, _asize_); \
+    register CYG_WORD _state_;                                              \
+    HAL_DCACHE_IS_ENABLED( _state_ );                                       \
+    if( _state_ ) {                                                         \
+        _HAL_ASM_SET_MIPS_ISA(3);                                           \
+        for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
+        { _HAL_ASM_DCACHE_ALL_WAYS(0x15, _addr_); }                         \
+        _HAL_ASM_SET_MIPS_ISA(0);                                           \
+    }                                                                       \
     CYG_MACRO_END
 #endif
 
 // Invalidate cache lines in the given range without writing to memory.
 // This uses the hit-invalidate cache operation.
 #ifndef HAL_DCACHE_INVALIDATE_DEFINED
-#define HAL_DCACHE_INVALIDATE( _base_ , _asize_ )                       \
-    CYG_MACRO_START                                                     \
-    register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);               \
-    register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                \
-    register CYG_WORD _size_ = HAL_DCACHE_ADJUST_SIZE(_asize_);         \
-    _HAL_ASM_SET_MIPS_ISA(3);                                           \
-    for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE )   \
-    { _HAL_ASM_DCACHE_ALL_WAYS(0x11, _addr_); }                         \
-    _HAL_ASM_SET_MIPS_ISA(0);                                           \
+#define HAL_DCACHE_INVALIDATE( _base_ , _asize_ )                           \
+    CYG_MACRO_START                                                         \
+    register CYG_ADDRESS _addr_  = HAL_DCACHE_START_ADDRESS(_base_);        \
+    register CYG_ADDRESS _eaddr_ = HAL_DCACHE_END_ADDRESS(_base_, _asize_); \
+    _HAL_ASM_SET_MIPS_ISA(3);                                               \
+    for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )               \
+    { _HAL_ASM_DCACHE_ALL_WAYS(0x11, _addr_); }                             \
+    _HAL_ASM_SET_MIPS_ISA(0);                                               \
     CYG_MACRO_END
 #endif
 
 // Write dirty cache lines to memory for the given address range.
 // This uses the hit-writeback cache operation.
 #ifndef HAL_DCACHE_STORE_DEFINED
-#define HAL_DCACHE_STORE( _base_ , _asize_ )                              \
-    CYG_MACRO_START                                                       \
-    register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                 \
-    register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                  \
-    register CYG_WORD _size_ = HAL_DCACHE_ADJUST_SIZE(_asize_);           \
-    register CYG_WORD _state_;                                            \
-    HAL_DCACHE_IS_ENABLED( _state_ );                                     \
-    if( _state_ ) {                                                       \
-        _HAL_ASM_SET_MIPS_ISA(3);                                         \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE ) \
-        { _HAL_ASM_DCACHE_ALL_WAYS(0x19, _addr_); }                       \
-        _HAL_ASM_SET_MIPS_ISA(0);                                         \
-    }                                                                     \
+#define HAL_DCACHE_STORE( _base_ , _asize_ )                                \
+    CYG_MACRO_START                                                         \
+    register CYG_ADDRESS _addr_  = HAL_DCACHE_START_ADDRESS(_base_);        \
+    register CYG_ADDRESS _eaddr_ = HAL_DCACHE_END_ADDRESS(_base_, _asize_); \
+    register CYG_WORD _state_;                                              \
+    HAL_DCACHE_IS_ENABLED( _state_ );                                       \
+    if( _state_ ) {                                                         \
+        _HAL_ASM_SET_MIPS_ISA(3);                                           \
+        for( ; _addr_ < _eaddr_; _addr_ += HAL_DCACHE_LINE_SIZE )           \
+        { _HAL_ASM_DCACHE_ALL_WAYS(0x19, _addr_); }                         \
+        _HAL_ASM_SET_MIPS_ISA(0);                                           \
+    }                                                                       \
     CYG_MACRO_END
 #endif
 
@@ -374,19 +374,18 @@
 // and then lock the cache so that it stays there.
 // This uses the fetch-and-lock cache operation.
 #ifndef HAL_ICACHE_LOCK_DEFINED
-#define HAL_ICACHE_LOCK(_base_, _asize_)                                  \
-    CYG_MACRO_START                                                       \
-    register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);                 \
-    register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                  \
-    register CYG_WORD _size_ = HAL_ICACHE_ADJUST_SIZE(_asize_);           \
-    register CYG_WORD _state_;                                            \
-    HAL_ICACHE_IS_ENABLED( _state_ );                                     \
-    if( _state_ ) {                                                       \
-        _HAL_ASM_SET_MIPS_ISA(3);                                         \
-        for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_DCACHE_LINE_SIZE ) \
-        { _HAL_ASM_ICACHE_ALL_WAYS(0x1c, _addr_); }                       \
-        _HAL_ASM_SET_MIPS_ISA(0);                                         \
-    }                                                                     \
+#define HAL_ICACHE_LOCK(_base_, _asize_)                                    \
+    CYG_MACRO_START                                                         \
+    register CYG_ADDRESS _addr_  = HAL_ICACHE_START_ADDRESS(_base_);        \
+    register CYG_ADDRESS _eaddr_ = HAL_ICACHE_END_ADDRESS(_base_, _asize_); \
+    register CYG_WORD _state_;                                              \
+    HAL_ICACHE_IS_ENABLED( _state_ );                                       \
+    if( _state_ ) {                                                         \
+        _HAL_ASM_SET_MIPS_ISA(3);                                           \
+        for( ; _addr_ < _eaddr_; _addr_ += HAL_ICACHE_LINE_SIZE )           \
+        { _HAL_ASM_ICACHE_ALL_WAYS(0x1c, _addr_); }                         \
+        _HAL_ASM_SET_MIPS_ISA(0);                                           \
+    }                                                                       \
     CYG_MACRO_END
 #endif
 
@@ -406,15 +405,14 @@
 // Invalidate cache lines in the given range without writing to memory.
 // This uses the hit-invalidate cache operation.
 #ifndef HAL_ICACHE_INVALIDATE_DEFINED
-#define HAL_ICACHE_INVALIDATE( _base_ , _asize_ )                       \
-    CYG_MACRO_START                                                     \
-    register CYG_ADDRESS _baddr_ = (CYG_ADDRESS)(_base_);               \
-    register CYG_ADDRESS _addr_ = (CYG_ADDRESS)(_base_);                \
-    register CYG_WORD _size_ = HAL_ICACHE_ADJUST_SIZE(_asize_);         \
-    _HAL_ASM_SET_MIPS_ISA(3);                                           \
-    for( ; _addr_ <= _baddr_+_size_; _addr_ += HAL_ICACHE_LINE_SIZE )   \
-    { _HAL_ASM_ICACHE_ALL_WAYS(0x10, _addr_); }                         \
-    _HAL_ASM_SET_MIPS_ISA(0);                                           \
+#define HAL_ICACHE_INVALIDATE( _base_ , _asize_ )                           \
+    CYG_MACRO_START                                                         \
+    register CYG_ADDRESS _addr_  = HAL_ICACHE_START_ADDRESS(_base_);        \
+    register CYG_ADDRESS _eaddr_ = HAL_ICACHE_END_ADDRESS(_base_, _asize_); \
+    _HAL_ASM_SET_MIPS_ISA(3);                                               \
+    for( ; _addr_ < _eaddr_; _addr_ += HAL_ICACHE_LINE_SIZE )               \
+    { _HAL_ASM_ICACHE_ALL_WAYS(0x10, _addr_); }                             \
+    _HAL_ASM_SET_MIPS_ISA(0);                                               \
     CYG_MACRO_END
 #endif
 
