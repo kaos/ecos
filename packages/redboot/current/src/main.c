@@ -80,9 +80,19 @@ extern void breakpoint(void);
 // Builtin Self Test (BIST)
 externC void bist(void);
 
-// Return path for code run from a go command
+// Path to code run from a go command or to GDB stubs
+static void trampoline(unsigned long entry);
+
+// Return path for code run from a go command or for GDB stubs
 static void return_to_redboot(int status);
 
+// Address of area where current context is saved before executing
+// trampoline procedure
+static void * saved_context;
+
+// Status returned after trampoline execution
+static int return_status;
+ 
 
 // CLI command processing (defined in this file)
 RedBoot_cmd("version", 
@@ -316,11 +326,16 @@ cyg_start(void)
                 }
     
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
-#ifdef HAL_ARCH_PROGRAM_NEW_STACK
-                HAL_ARCH_PROGRAM_NEW_STACK(breakpoint);
-#else
-                breakpoint();  // Get GDB stubs started, with a proper environment, etc.
-#endif
+
+                // set up a temporary context that will take us to the trampoline
+                HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end,
+                                        breakpoint, trampoline, 0);
+
+                // switch context to trampoline (get GDB stubs started)
+                HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);
+
+                gdb_active = false;
+
 		dbgchan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
 		CYGACC_CALL_IF_SET_CONSOLE_COMM(dbgchan);
             } else 
@@ -388,11 +403,8 @@ do_help(int argc, char *argv[])
     return;
 }
 
-static void * go_saved_context;
-static int go_return_status;
-
 static void
-go_trampoline(unsigned long entry)
+trampoline(unsigned long entry)
 {
     typedef void code_fun(void);
     code_fun *fun = (code_fun *)entry;
@@ -405,6 +417,8 @@ go_trampoline(unsigned long entry)
 #else
     (*fun)();
 #endif
+
+    HAL_THREAD_LOAD_CONTEXT(&saved_context);
 }
 
 static void
@@ -412,8 +426,8 @@ return_to_redboot(int status)
 {
     CYGARC_HAL_SAVE_GP();
 
-    go_return_status = status;
-    HAL_THREAD_LOAD_CONTEXT(&go_saved_context);
+    return_status = status;
+    HAL_THREAD_LOAD_CONTEXT(&saved_context);
     // never returns
 
     // need this to balance above CYGARC_HAL_SAVE_GP on
@@ -500,10 +514,10 @@ do_go(int argc, char *argv[])
     HAL_DCACHE_INVALIDATE_ALL();
 
     // set up a temporary context that will take us to the trampoline
-    HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end, entry, go_trampoline, 0);
+    HAL_THREAD_INIT_CONTEXT((CYG_ADDRESS)workspace_end, entry, trampoline, 0);
 
     // switch context to trampoline
-    HAL_THREAD_SWITCH_CONTEXT(&go_saved_context, &workspace_end);
+    HAL_THREAD_SWITCH_CONTEXT(&saved_context, &workspace_end);
 
     // we get back here by way of return_to_redboot()
 
@@ -517,7 +531,7 @@ do_go(int argc, char *argv[])
 
     HAL_RESTORE_INTERRUPTS(oldints);
 
-    diag_printf("\nProgram completed with status %d\n", go_return_status);
+    diag_printf("\nProgram completed with status %d\n", return_status);
 }
 
 #ifdef HAL_PLATFORM_RESET

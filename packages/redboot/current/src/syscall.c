@@ -631,12 +631,16 @@ __do_syscall(CYG_ADDRWORD func,                 // syscall function number
         break;
 
       case SYS_exit:
+	*sig = -1;    // signal exit
+	err = arg1;
+
 	if (gdb_active) {
+#ifdef CYGOPT_REDBOOT_BSP_SYSCALLS_EXIT_WITHOUT_TRAP
+	    __send_exit_status((int)arg1);
+#else
 	    *sig = SIGTRAP;
 	    err = func;
-	} else {
-	    CYGACC_CALL_IF_MONITOR_RETURN(arg1);
-	    // never returns
+#endif // CYGOPT_REDBOOT_BSP_SYSCALLS_EXIT_WITHOUT_TRAP
 	}
 	break;
 

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -528,7 +528,12 @@ target_ins(unsigned long *pc, unsigned long ins)
             }
         }
     case 0x3:  // Coprocessor & SWI
-        return (pc+1);
+        if (((ins & 0x03000000) == 0x03000000) && ins_will_execute(ins)) {
+           // SWI
+           return (CYGNUM_HAL_VECTOR_SOFTWARE_INTERRUPT * 4);
+        } else {
+           return (pc+1);
+        }
     default:
         // Never reached - but fixes compiler warning.
         return 0;
@@ -570,10 +575,13 @@ target_thumb_ins(unsigned long pc, unsigned short ins)
         }
         break;
     case 0xd:
-        // Bcc
+        // Bcc | SWI
         // Use ARM function to check condition
         arm_ins = ((unsigned long)(ins & 0x0f00)) << 20;
-        if (ins_will_execute(arm_ins)) {
+        if ((arm_ins & 0xF0000000) == 0xF0000000) {
+            // SWI
+            new_pc = CYGNUM_HAL_VECTOR_SOFTWARE_INTERRUPT * 4;
+        } else if (ins_will_execute(arm_ins)) {
             offset = (ins & 0x00FF) << 1;
             if (ins & 0x0080) offset |= 0xFFFFFE00;  // sign extend
             new_pc = MAKE_THUMB_ADDR((unsigned long)(pc+4) + offset);

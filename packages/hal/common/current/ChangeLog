@@ -1,3 +1,13 @@
+2003-05-06  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_stub.c (handle_exception_exit): Call sys_profile_reset from
+	here. Setup to return through return_from_stub() when appropriate.
+	(return_from_stub): New function to call CYGACC_CALL_IF_MONITOR_RETURN
+	from thread context.
+
+	* src/generic-stub.c (__handle_exception): Call exit_vec if
+	hal_syscall_handler returns negative number.
+
 2003-04-08  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_misc.c (hal_default_isr): Allow HAL to override default

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -109,6 +109,7 @@ main(void)
     DEFINE(CPSR_IRQ_DISABLE, CPSR_IRQ_DISABLE);
     DEFINE(CPSR_FIQ_DISABLE, CPSR_FIQ_DISABLE);
     DEFINE(CPSR_THUMB_ENABLE, CPSR_THUMB_ENABLE);
+    DEFINE(CPSR_USER_MODE, CPSR_USER_MODE);
     DEFINE(CPSR_IRQ_MODE, CPSR_IRQ_MODE);
     DEFINE(CPSR_FIQ_MODE, CPSR_FIQ_MODE);
     DEFINE(CPSR_SUPERVISOR_MODE, CPSR_SUPERVISOR_MODE);

@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -97,7 +97,9 @@ HAL_SavedRegisters *_hal_registers;
 target_register_t registers[HAL_STUB_REGISTERS_SIZE];
 target_register_t alt_registers[HAL_STUB_REGISTERS_SIZE] ;  // Thread or saved process state
 target_register_t * _registers = registers;                 // Pointer to current set of registers
+#ifndef CYGPKG_REDBOOT
 target_register_t orig_registers[HAL_STUB_REGISTERS_SIZE];  // Registers to get back to original state
+#endif
 
 #if defined(HAL_STUB_HW_WATCHPOINT) || defined(HAL_STUB_HW_BREAKPOINT)
 static int  _hw_stop_reason;   // Reason we were stopped by hw.
@@ -378,21 +380,42 @@ interruptible(int state)
 int cyg_hal_gdb_break;
 #endif
 
+#ifdef CYGPKG_REDBOOT
+// Trampoline for returning to RedBoot from exception/stub code
+static void
+return_from_stub(int exit_status)
+{
+    CYGACC_CALL_IF_MONITOR_RETURN(exit_status);
+}
+#endif
+
 // Called at stub *kill*
 static void 
 handle_exception_exit( void )
 {
+#ifdef CYGPKG_REDBOOT
+#ifdef CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
+    {   // Reset the timer to default and cancel any callback
+	extern void sys_profile_reset(void);
+	sys_profile_reset();
+    }
+#endif // CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
+    set_pc((target_register_t)return_from_stub);
+#else
     int i;
 
     for (i = 0; i < (sizeof(registers)/sizeof(registers[0])); i++)
 	registers[i] = orig_registers[i];
+#endif
 }
 
 // Called at stub *entry*
 static void 
 handle_exception_cleanup( void )
 {
+#ifndef CYGPKG_REDBOOT
     static int orig_registers_set = 0;
+#endif
 
     interruptible(0);
 
@@ -401,6 +424,7 @@ handle_exception_cleanup( void )
     HAL_GET_GDB_REGISTERS(&registers[0], _hal_registers);
     _registers = &registers[0];
 
+#ifndef CYGPKG_REDBOOT
     if (!orig_registers_set) {
 	int i;
 	for (i = 0; i < (sizeof(registers)/sizeof(registers[0])); i++)
@@ -411,6 +435,7 @@ handle_exception_cleanup( void )
 	_registers = &registers[0];
 	orig_registers_set = 1;
     }
+#endif
 	
 #ifdef HAL_STUB_PLATFORM_STUBS_FIXUP
     // Some architectures may need to fix the PC in case of a partial

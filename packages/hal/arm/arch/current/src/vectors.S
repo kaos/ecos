@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -490,6 +490,8 @@ init_done:
 //
 // Exception handlers
 // Assumption: get here from a non-user context [mode]
+//             except in case of standalone app. running in user mode
+//             (CYGOPT_HAL_ARM_WITH_USER_MODE should have been defined)
 //
         .code   32
 undefined_instruction:
@@ -582,6 +584,17 @@ call_exception_handler:
 
         stmfd   sp!,{r0-r2,r4,r5}       // push svc_sp, svc_lr, vector, psr, pc
         
+#ifdef CYGOPT_HAL_ARM_WITH_USER_MODE
+        // did exception occur in user mode ?
+        and     r2, r1, #CPSR_MODE_BITS
+        cmp     r2, #CPSR_USER_MODE
+        bne     1f
+        stmfd   sp, {r8-r12, sp, lr}^   // get user mode regs
+	nop
+        sub     sp, sp, #4*7
+        bal     2f
+1:
+#endif
         // switch to pre-exception mode to get banked regs
         mov     r0,sp                   // r0 survives mode switch
         mrs     r2,cpsr                 // Save current psr for return
@@ -591,7 +604,7 @@ call_exception_handler:
         stmfd   r0!,{r8-r12,sp,lr}
         msr     cpsr,r2                 // back to svc mode
         mov     sp,r0                   // update stack pointer
-
+2:
         // now save pre-exception r0-r7 on current stack
         ldmfd   r3,{r0-r5}
         stmfd   sp!,{r0-r7}
@@ -636,14 +649,42 @@ return_from_exception:
         // return to supervisor mode is simple
         and     r1,r0,#CPSR_MODE_BITS
         cmp     r1,#CPSR_SUPERVISOR_MODE
-        ldmeqfd sp,{r0-r14,pc}^
 
+#ifndef CYGOPT_HAL_ARM_PRESERVE_SVC_SPSR
+        msr     spsr,r0
+        ldmeqfd sp,{r0-r14,pc}^
+#else
+        // we must take care of not corrupting the current (svc)
+        // spsr which happens to be also the pre-exception spsr
+        bne     1f
+        // we are returning to svc mode thus we must restore the
+        // pre-exception cpsr before returning to interrupted code
+        msr     cpsr, r0
+        ldmfd   sp, {r0-r14, pc}
+1:
+        // we are not returning to svc mode thus we can safely restore
+        // svc spsr
+        msr     spsr, r0
+#endif
+
+#ifdef CYGOPT_HAL_ARM_WITH_USER_MODE
+        // are we returning to user mode ?
+        and     r2, r1, #CPSR_MODE_BITS
+        cmp     r2, #CPSR_USER_MODE
+        add     r2, sp, #armreg_r8
+        bne     1f
+        ldmfd   r2, {r8-r14}^           // restore user mode regs
+	nop
+        bal     2f
+1:
+#else
+        add     r2, sp, #armreg_r8
+#endif
         //
         // return to other non-user modes is a little trickier
         //
 
         // switch to pre-exception mode and restore r8-r14
-        add     r2,sp,#armreg_r8
         mrs     r1,cpsr
         orr     r0,r0,#CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE
         bic     r0,r0,#CPSR_THUMB_ENABLE
@@ -651,6 +692,7 @@ return_from_exception:
         ldmfd   r2,{r8-r14}
         msr     cpsr, r1        // back to svc mode
 
+2:	
         // move sp,lr and pc for final load
         ldr     r0,[sp,#armreg_svcsp]
         str     r0,[sp,#armreg_r8]
@@ -676,6 +718,8 @@ __dump_procs:
 // Handle device interrupts
 // This is slightly more complicated than the other exception handlers because
 // it needs to interface with the kernel (if present).
+// Assumption: can get here from any mode, including user mode
+// (spurious interrupt while standalone app. is running in user mode)
 
         .code   32
 FIQ:
@@ -723,6 +767,17 @@ handle_IRQ_or_FIQ:
 	mov	r4,lr			// save original svc lr
         stmfd   sp!,{r0-r2,r4,r5}       // push svc_sp, svc_lr, vector, psr, pc
 		
+#ifdef CYGOPT_HAL_ARM_WITH_USER_MODE
+        // did exception occur in user mode ?
+        and     r2, r1, #CPSR_MODE_BITS
+        cmp     r2, #CPSR_USER_MODE
+        bne     1f
+        stmfd   sp, {r8-r12, sp, lr}^   // get user mode regs
+	nop
+        sub     sp, sp, #4*7
+        bal     2f
+1:
+#endif
         // switch to pre-exception mode to get banked regs
         mov     r0,sp                   // r0 survives mode switch
         mrs     r2,cpsr                 // Save current psr for return
@@ -733,6 +788,7 @@ handle_IRQ_or_FIQ:
         msr     cpsr,r2                 // back to svc mode
         mov     sp,r0                   // update stack pointer
 	
+2:
         // now save pre-exception r0-r7 on current stack
         ldmfd   r3,{r0-r5}
         stmfd   sp!,{r0-r7}

@@ -1,3 +1,21 @@
+2003-05-06  Pierre Habraken  <Pierre.Habraken@imag.fr>
+
+	* src/arm_stub.c (target_ins, target_thumb_ins): Added code to
+	enable stepping into swi instructions.
+	
+	* cdl/hal_arm.cdl: Added option CYGOPT_HAL_ARM_PRESERVE_SVC_SPSR for
+	securing exception and breakpoint processing triggered during
+	execution of application specific SWI handlers. Added option
+	CYGOPT_HAL_ARM_WITH_USER_MODE for supporting programs running in
+	user mode.
+	* src/vectors.S (return_from_exception): Added code to exception
+	handling for preserving svc spsr before returning to svc mode.
+	Added code to allow exceptions in user mode.
+	(call_exception_handler, handle_IRQ_or_FIQ): Added code to allow
+	exceptions in user mode.
+	* include/hal_arch.h: Defined CPSR_USER_MODE.
+	* src/hal_mk_defs.c.: Added definition for CPSR_USER_MODE.
+
 2003-04-30  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/vectors.S (handle_IRQ_or_FIQ): Tweak below to be conditional on

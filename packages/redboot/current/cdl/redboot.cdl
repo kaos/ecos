@@ -861,6 +861,15 @@ cdl_package CYGPKG_REDBOOT {
                 display	"Does the HAL support 'gprof' profiling?"
                 no_define
             }
+
+            cdl_option CYGOPT_REDBOOT_BSP_SYSCALLS_EXIT_WITHOUT_TRAP {
+                display "Do not raise SIGTRAP when program exits"
+                default_value 0
+                description "
+                    For some (single shot) newlib based programs,
+                    exiting and returning a termination status may be
+                    the normal expected behavior."
+            }
         }
     
         cdl_component CYGOPT_REDBOOT_FIS_ZLIB_COMMON_BUFFER {

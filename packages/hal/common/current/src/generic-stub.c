@@ -907,8 +907,11 @@ __handle_exception (void)
   if (__is_bsp_syscall())
   {
       sigval = hal_syscall_handler();
-      if (0 == sigval)
+      if (sigval <= 0)
       {
+	  if (sigval < 0)
+	      __process_exit_vec ();
+
 	  if (__init_vec != NULL)
               __init_vec ();
 	  return;
@@ -1436,12 +1439,6 @@ __process_packet (char *packet)
 #ifdef __ECOS__
       hal_flush_output();
 #endif
-#ifdef CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
-      {   // Reset the timer to default and cancel any callback
-          extern void sys_profile_reset(void);
-          sys_profile_reset();
-      }
-#endif // CYGSEM_REDBOOT_BSP_SYSCALLS_GPROF
       __process_exit_vec ();
       return -1;
 
