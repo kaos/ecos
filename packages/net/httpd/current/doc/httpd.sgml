@@ -434,7 +434,7 @@ value part of the string whose name part matches
 <title>Predefined Handlers</title>
 <programlisting width=72>
 
-int cyg_httpd_send_html( FILE *client, char *filename, char *request, void *arg );
+cyg_bool cyg_httpd_send_html( FILE *client, char *filename, char *request, void *arg );
 
 typedef struct
 {
@@ -444,7 +444,7 @@ typedef struct
 } cyg_httpd_data;
 #define CYG_HTTPD_DATA( __name, __type, __length, __data )
 
-int cyg_httpd_send_data( FILE *client, char *filename, char *request, void *arg );
+cyg_bool cyg_httpd_send_data( FILE *client, char *filename, char *request, void *arg );
 
 </programlisting>
 <para>

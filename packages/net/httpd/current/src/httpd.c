@@ -265,7 +265,6 @@ static void cyg_httpd_server( cyg_addrword_t arg )
 {
     do
     {
-        int err;
         int client_socket;
         struct sockaddr client_address;
         int calen = sizeof(client_address);

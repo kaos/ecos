@@ -92,8 +92,8 @@ cyg_httpd_table_entry __name CYG_HAL_TABLE_ENTRY( httpd_table ) = { __pattern, _
 /*
  */
 
-__externC int cyg_httpd_send_html( FILE *client, char *filename,
-                                   char *request, void *arg );
+__externC cyg_bool cyg_httpd_send_html( FILE *client, char *filename,
+                                        char *request, void *arg );
 
 /* ----------------------------------------------------------------- */
 /*
@@ -106,8 +106,8 @@ typedef struct
     cyg_uint8   *data;
 } cyg_httpd_data;
 
-__externC int cyg_httpd_send_data( FILE *client, char *filename,
-                                   char *request, void *arg );
+__externC cyg_bool cyg_httpd_send_data( FILE *client, char *filename,
+                                        char *request, void *arg );
 
 #define CYG_HTTPD_DATA( __name, __type, __length, __data ) \
 cyg_httpd_data __name = { __type, __length, __data }
