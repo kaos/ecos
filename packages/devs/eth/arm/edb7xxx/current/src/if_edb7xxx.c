@@ -61,7 +61,7 @@
 #include <pkgconf/net.h>
 #include <cyg/kernel/kapi.h>
 #endif
-#include <pkfconf/io_eth_drivers.h>
+#include <pkgconf/io_eth_drivers.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
