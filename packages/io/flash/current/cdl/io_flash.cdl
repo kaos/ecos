@@ -68,19 +68,6 @@ cdl_package CYGPKG_IO_FLASH {
         puts $::cdl_header "#endif "
     }
 
-    cdl_option CYGNUM_FLASH_WORKSPACE_SIZE {
-        display       "Extra memory required by FLASH device drivers"
-	flavor        data
-        default_value 0x1000
-        description   "
-            Use this option to control how much extra memory is used
-            by the FLASH drivers to perform certain operations. This
-            memory is used to hold driver functions in RAM (for platforms
-            which require it).  The value should thus be large enough
-            to hold any such driver.  Reducing this value will make
-            more RAM available to general programs."
-    }
-
     cdl_interface CYGHWR_IO_FLASH_DEVICE {
         display       "Hardware FLASH device drivers"
         description   "
