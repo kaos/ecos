@@ -53,6 +53,10 @@
 //
 //=============================================================================
 
+// Platform doesn't need address munging even if configures as big-endian
+
+#define HAL_IO_MACROS_NO_ADDRESS_MUNGING
+
 // non-caching by accessing addr|0x04000000
 
 #define KS32C_REG_BASE              0x07ff0000

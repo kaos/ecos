@@ -1,3 +1,9 @@
+2003-11-05  Roland Caﬂebohm  <roland.cassebohm@visionsystems.de>
+
+        * include/plf_io.h: Define HAL_IO_MACROS_NO_ADDRESS_MUNGING to
+        force the IO macros not to mung the addresses. This platform
+        don't need this.
+
 2003-10-06  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
         * include/plf_io.h: Correct (unused) defines for
