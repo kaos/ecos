@@ -1,3 +1,7 @@
+2003-02-10  Nick Garnett  <nickg@calivar.com>
+
+	* misc/redboot_RAM.ecm: Brought up to date with ROM version.
+
 2002-05-13  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_cme555.cdl: Removed implemntation of

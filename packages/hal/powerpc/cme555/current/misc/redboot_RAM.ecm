@@ -14,8 +14,8 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_POWERPC current ;
     package -hardware CYGPKG_HAL_POWERPC_MPC5xx current ;
     package -hardware CYGPKG_HAL_POWERPC_CME555 current ;
-    package -hardware CYGPKG_DEVS_FLASH_MPC5XX current ;
-    package -hardware CYGPKG_DEVS_FLASH_MOTOROLA_CDRMONET current ;
+    package -hardware CYGPKG_DEVS_FLASH_CME555 current ;
+    package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package CYGPKG_REDBOOT current ;
@@ -23,6 +23,7 @@ cdl_configuration eCos {
     package CYGPKG_LIBC_STRING current ;
     package CYGPKG_ISOINFRA current ;
     package CYGPKG_IO_FLASH current ;
+    package CYGPKG_COMPRESS_ZLIB current ;
 };
 
 cdl_option CYGBLD_GLOBAL_CFLAGS {
@@ -162,11 +163,11 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 };
 
 cdl_option CYGBLD_BUILD_REDBOOT_WITH_ZLIB {
-    user_value 0
+    user_value 1
 };
 
 cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
-    user_value 0
+    user_value 1
 };
 
 cdl_option CYGDAT_REDBOOT_CUSTOM_VERSION {
@@ -265,20 +266,21 @@ cdl_option CYGBLD_ISO_STRING_STRFUNCS_HEADER {
     user_value 1 <cyg/libc/string/string.h>
 };
 
-cdl_option CYGHWR_DEVS_FLASH_MOTOROLA_CMF5 {
+cdl_option CYGNUM_FLASH_WORKSPACE_SIZE {
+    user_value 0x00000000
+};
+
+cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV200 {
     user_value 1
 };
 
-cdl_option CYGHWR_DEVS_FLASH_MOTOROLA_CMF6 {
+cdl_option CYGHWR_DEVS_FLASH_ST_M29W200B {
     user_value 1
 };
 
-cdl_option CYGHWR_DEVS_FLASH_MOTOROLA_CMF7 {
-    user_value 1
+cdl_option CYGSEM_COMPRESS_ZLIB_NEEDS_MALLOC {
+    user_value 0
 };
 
-cdl_option CYGHWR_DEVS_FLASH_MOTOROLA_CMF9 {
-    user_value 1
-};
 
 
