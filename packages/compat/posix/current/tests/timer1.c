@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -39,13 +39,29 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
+#include <cyg/infra/testcase.h>
+#include <pkgconf/posix.h>
+
+#ifndef CYGPKG_POSIX_SIGNALS
+#define NA_MSG "No POSIX signals"
+#elif !defined(CYGPKG_POSIX_TIMERS)
+#define NA_MSG "No POSIX timers"
+#endif
+
+#ifdef NA_MSG
+void
+cyg_start(void)
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(NA_MSG);
+}
+#else
+
 #include <sys/types.h>
 #include <pthread.h>
 #include <signal.h>
 #include <semaphore.h>
 #include <time.h>
-
-#include <cyg/infra/testcase.h>
 
 //--------------------------------------------------------------------------
 // Thread stack.
@@ -311,6 +327,8 @@ int main(int argc, char **argv)
 
     CYG_TEST_PASS_FINISH( "timer1" );
 }
+
+#endif
 
 //--------------------------------------------------------------------------
 // end of timer1.c

@@ -297,8 +297,6 @@ cdl_package CYGPKG_HAL_MIPS_RM7000_OCELOT {
 
             make -priority 320 {
                 <PREFIX>/bin/gdb_module.srec : <PREFIX>/bin/gdb_module.img
-                $(OBJCOPY) --strip-unneeded -O srec $< pre-swap.srec
-                $(OBJCOPY) --change-address 0xbfc00000 -I binary -O srec be.bin $@
             }
         }
     }

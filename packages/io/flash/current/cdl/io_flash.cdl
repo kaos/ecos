@@ -89,6 +89,7 @@ cdl_package CYGPKG_IO_FLASH {
 
     cdl_interface CYGHWR_IO_FLASH_BLOCK_LOCKING {
         display       "Hardware can support block locking"
+        flavor        booldata
         description   "
             This option will be enabled by devices which can support
             locking (write-protection) of individual blocks."

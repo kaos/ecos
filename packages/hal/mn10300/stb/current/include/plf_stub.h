@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -54,19 +54,18 @@
 #include <cyg/hal/mn10300_stub.h>       // architecture stub support
 
 //----------------------------------------------------------------------------
-// Define serial stuff.
-extern void hal_stb_init_serial( void );
-extern int  hal_stb_get_char( void );
-extern void hal_stb_put_char( int c );
-extern int  hal_stb_interruptible(int state);
-extern void hal_stb_init_break_irq( void );
+// Define some platform specific communication details. This is mostly
+// handled by hal_if now, but we need to make sure the comms tables are
+// properly initialized.
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_stb_init_serial()
-#define HAL_STUB_PLATFORM_GET_CHAR()          hal_stb_get_char()
-#define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_stb_put_char((c))
-#define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
+externC void cyg_hal_plf_comms_init(void);
+
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+#define HAL_STUB_PLATFORM_GET_CHAR()          cyg_hal_plf_serial_getc(0)
+#define HAL_STUB_PLATFORM_PUT_CHAR(c)         cyg_hal_plf_serial_putc(0, (c))
+#define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) cyg_hal_plf_serial_setbaud(0, (baud))
 #define HAL_STUB_PLATFORM_INTERRUPTIBLE       (&hal_stb_interruptible)
-#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    hal_stb_init_break_irq()
+#define HAL_STUB_PLATFORM_INIT_BREAK_IRQ()    CYG_EMPTY_STATEMENT
 
 //----------------------------------------------------------------------------
 // Stub initializer.

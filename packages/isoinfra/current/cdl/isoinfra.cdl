@@ -794,6 +794,17 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_interface CYGINT_ISO_PMUTEXTYPES {
+            display       "POSIX mutex types implementations"
+            requires      { 1 >= CYGINT_ISO_PTHREADTYPES }
+        }
+    
+        cdl_option CYGBLD_ISO_PMUTEXTYPES_HEADER {
+            display       "POSIX mutex types implementation header"
+            flavor        booldata
+            default_value 0
+        }
+
         cdl_option CYGBLD_ISO_SSIZE_T_HEADER {
             display       "ssize_t implementation header"
             flavor        booldata

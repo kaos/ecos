@@ -80,15 +80,27 @@
 // We start with sched_lock at 1 so that any kernel code we
 // call during initialization will not try to reschedule.
 
-volatile cyg_ucount32 Cyg_Scheduler_Base::sched_lock = 1;
+CYGIMP_KERNEL_SCHED_LOCK_DEFINITIONS;
 
-Cyg_Thread            *Cyg_Scheduler_Base::current_thread = NULL;
+Cyg_Thread              *volatile Cyg_Scheduler_Base::current_thread[CYGNUM_KERNEL_CPU_MAX];
 
-cyg_bool              Cyg_Scheduler_Base::need_reschedule = false;
+volatile cyg_bool       Cyg_Scheduler_Base::need_reschedule[CYGNUM_KERNEL_CPU_MAX];
 
-Cyg_Scheduler         Cyg_Scheduler::scheduler CYG_INIT_PRIORITY( SCHEDULER );
+Cyg_Scheduler           Cyg_Scheduler::scheduler CYG_INIT_PRIORITY( SCHEDULER );
 
-cyg_ucount32          Cyg_Scheduler_Base::thread_switches = 0;
+volatile cyg_ucount32   Cyg_Scheduler_Base::thread_switches[CYGNUM_KERNEL_CPU_MAX];
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+CYG_BYTE cyg_sched_cpu_interrupt[CYGNUM_KERNEL_CPU_MAX][sizeof(Cyg_Interrupt)]
+                                 CYGBLD_ANNOTATE_VARIABLE_SCHED;
+
+__externC cyg_ISR cyg_hal_cpu_message_isr;
+__externC cyg_DSR cyg_hal_cpu_message_dsr;
+
+inline void *operator new(size_t size, void *ptr) { return ptr; };
+
+#endif
 
 // -------------------------------------------------------------------------
 // Scheduler unlock function.
@@ -124,14 +136,14 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
     // it fail if the current thread that was about to sleep is awoken by
     // the DSR!  Going round the loop to run new DSRs does the same.
     CYG_ASSERT( (new_lock == 0) ||
-                (current_thread->state != Cyg_Thread::RUNNING ||
-                 need_reschedule) ,
+                (get_current_thread()->state != Cyg_Thread::RUNNING ||
+                 get_need_reschedule()) ,
                 "Unnecessary call to unlock_inner()" );
         
     do {
 
-        CYG_PRECONDITION( new_lock==0 ? sched_lock == 1 :
-                          ((sched_lock == new_lock) || (sched_lock == new_lock+1)),
+        CYG_PRECONDITION( new_lock==0 ? get_sched_lock() == 1 :
+                          ((get_sched_lock() == new_lock) || (get_sched_lock() == new_lock+1)),
                           "sched_lock not at expected value" );
         
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS
@@ -143,7 +155,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
             Cyg_Interrupt::call_pending_DSRs();
 #endif
 
-        Cyg_Thread *current = current_thread;
+        Cyg_Thread *current = get_current_thread();
 
         CYG_ASSERTCLASS( current, "Bad current thread" );
 
@@ -154,7 +166,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
             current->check_stack();
             current = current->get_list_next();
         }
-        current = current_thread;
+        current = get_current_thread();
 #endif
 
 #ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
@@ -164,7 +176,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
         // If the current thread is going to sleep, or someone
         // wants a reschedule, choose another thread to run
 
-        if( current->state != Cyg_Thread::RUNNING || need_reschedule ) {
+        if( current->state != Cyg_Thread::RUNNING || get_need_reschedule() ) {
 
             CYG_INSTRUMENT_SCHED(RESCHEDULE,0,0);
             
@@ -180,11 +192,12 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
                 CYG_INSTRUMENT_THREAD(SWITCH,current,next);
 
                 // Count this thread switch
-                thread_switches++;
-                
+                thread_switches[CYG_KERNEL_CPU_THIS()]++;
+
 #ifdef CYGFUN_KERNEL_THREADS_STACK_CHECKING
                 next->check_stack(); // before running it
 #endif
+
                 // Switch contexts
                 HAL_THREAD_SWITCH_CONTEXT( &current->stack_ptr,
                                            &next->stack_ptr );
@@ -206,8 +219,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
                 CYG_CHECK_DATA_PTR( current, "Invalid current thread pointer");
                 CYG_ASSERTCLASS( current, "Bad current thread" );
 
-                current_thread = current;   // restore current thread pointer
-
+                current_thread[CYG_KERNEL_CPU_THIS()] = current;   // restore current thread pointer
             }
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
@@ -216,7 +228,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
             reset_timeslice_count();
 #endif
 
-            need_reschedule = false;        // finished rescheduling
+            clear_need_reschedule();    // finished rescheduling
         }
 
         if( new_lock == 0 )
@@ -242,7 +254,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
             
             HAL_REORDER_BARRIER(); // Make sure everything above has happened
                                    // by this point
-            sched_lock = 0;        // Clear the lock
+            zero_sched_lock();     // Clear the lock
             HAL_REORDER_BARRIER();
                 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS
@@ -254,14 +266,14 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
             // not be run until the _next_ time we release the sched lock.
 
             if( Cyg_Interrupt::DSRs_pending() ) {
-                sched_lock = 1;     // reclaim the lock
+                inc_sched_lock();   // reclaim the lock
                 continue;           // go back to head of loop
             }
 
 #endif
             // Otherwise the lock is zero, we can return.
 
-            CYG_POSTCONDITION( sched_lock == 0, "sched_lock not zero" );
+//            CYG_POSTCONDITION( get_sched_lock() == 0, "sched_lock not zero" );
 
 #ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
             // If the test within the sched_lock indicating that the ASR
@@ -280,7 +292,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
             
             HAL_REORDER_BARRIER();
             
-            sched_lock = new_lock;
+            set_sched_lock(new_lock);
             
             HAL_REORDER_BARRIER();            
         }
@@ -297,19 +309,66 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 
 // -------------------------------------------------------------------------
 // Start the scheduler. This is called after the initial threads have been
-// created to start scheduling.
+// created to start scheduling. It gets any other CPUs running, and then
+// enters the scheduler.
 
 void Cyg_Scheduler::start()
 {
     CYG_REPORT_FUNCTION();
-        
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    HAL_SMP_CPU_TYPE cpu;
+    
+    for( cpu = 0; cpu < CYG_KERNEL_CPU_COUNT(); cpu++ )
+    {
+        // Don't start this CPU, it is running already!
+        if( cpu == CYG_KERNEL_CPU_THIS() )
+            continue;
+
+        CYG_KERNEL_CPU_START( cpu );
+    }
+
+#endif    
+    
+    start_cpu();
+}
+
+// -------------------------------------------------------------------------
+// Start scheduling on this CPU. This is called on each CPU in the system
+// when it is started.
+
+void Cyg_Scheduler::start_cpu()
+{
+    CYG_REPORT_FUNCTION();
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    // Set up the inter-CPU interrupt for this CPU
+
+    Cyg_Interrupt * intr = new( (void *)&cyg_sched_cpu_interrupt[HAL_SMP_CPU_THIS()] )
+        Cyg_Interrupt( CYGNUM_HAL_SMP_CPU_INTERRUPT_VECTOR( HAL_SMP_CPU_THIS() ),
+                       0,
+                       0,
+                       cyg_hal_cpu_message_isr,
+                       cyg_hal_cpu_message_dsr
+                     );
+
+    intr->set_cpu( intr->get_vector(), HAL_SMP_CPU_THIS() );
+    
+    intr->attach();
+
+    intr->unmask_interrupt( intr->get_vector() );
+    
+#endif    
+    
     // Get the first thread to run from scheduler
     register Cyg_Thread *next = scheduler.schedule();
 
     CYG_ASSERTCLASS( next, "Bad initial thread" );
 
-    need_reschedule = false;    // finished rescheduling
-    current_thread = next;      // restore current thread pointer
+    clear_need_reschedule();            // finished rescheduling
+    set_current_thread(next);           // restore current thread pointer
 
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
     // Reference the real time clock. This ensures that at least one
@@ -318,12 +377,38 @@ void Cyg_Scheduler::start()
     CYG_REFERENCE_OBJECT( Cyg_Clock::real_time_clock );
 #endif
 
-    // Let the interrupts go
-    Cyg_Interrupt::enable_interrupts();
+    // Load the first thread. This will also enable interrupts since
+    // the initial state of all threads is to have interrupts enabled.
     
     HAL_THREAD_LOAD_CONTEXT( &next->stack_ptr );    
     
 }
+
+// -------------------------------------------------------------------------
+// SMP support functions
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+// This is called on each secondary CPU on its interrupt stack after
+// the initial CPU has initialized the world.
+
+externC void cyg_kernel_smp_startup()
+{
+    CYG_INSTRUMENT_SMP( CPU_START, CYG_KERNEL_CPU_THIS(), 0 );
+    Cyg_Scheduler::lock();
+    Cyg_Scheduler::start_cpu();
+}
+
+// This is called from the DSR of the inter-CPU interrupt to cause a
+// reschedule when the scheduler lock is zeroed.
+
+__externC void cyg_scheduler_set_need_reschedule()
+{
+    CYG_INSTRUMENT_SMP( RESCHED_RECV, 0, 0 );    
+    Cyg_Scheduler::need_reschedule[HAL_SMP_CPU_THIS()] = true;
+}
+
+#endif
 
 // -------------------------------------------------------------------------
 // Consistency checker
@@ -342,7 +427,7 @@ cyg_bool Cyg_Scheduler::check_this( cyg_assert_class_zeal zeal) const
     case cyg_system_test:
     case cyg_extreme:
     case cyg_thorough:
-        if( !current_thread->check_this(zeal) ) return false;
+        if( !get_current_thread()->check_this(zeal) ) return false;
     case cyg_quick:
     case cyg_trivial:
     case cyg_none:
@@ -382,9 +467,6 @@ Cyg_SchedThread::Cyg_SchedThread(Cyg_Thread *thread, CYG_ADDRWORD sched_info)
     CYG_REPORT_FUNCTION();
         
     queue = NULL;
-    
-    if( Cyg_Scheduler::current_thread == NULL )
-        Cyg_Scheduler::current_thread = thread;
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL
 

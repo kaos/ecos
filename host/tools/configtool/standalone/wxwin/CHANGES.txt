@@ -1,6 +1,14 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
+*** Version 2.05, August 10th 2001
+
+- Fixed a bug in the administration dialog that only looked at the filename of the
+  .epk to add and not the path.
+
+- Added "Tools | Generate Build Tree" menu so the build tree can be regenerated
+  without having to change values in the configuration and save the file.
+
 
 *** Version 2.04, July 16th 2001
 
@@ -9,6 +17,9 @@ Release History for eCos Configuration Tool 2
   is that we no longer mount drives from the tool, so we don't get the
   flashing DOS box under Windows. Makefiles now define HOST=CYGWIN
   so that makefiles can use mkdir the right way under Windows.
+
+- Installation program will install run-time DLLs if newer than those
+  on the system.
 
 
 *** Version 2.03, July 9nd 2001

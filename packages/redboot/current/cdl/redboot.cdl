@@ -100,7 +100,7 @@ cdl_package CYGPKG_REDBOOT {
         compile main.c crc.c
         compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
         compile decompress.c
-        compile -library=libextras.a load.c 
+        compile -library=libextras.a load.c
 
         make -priority 320 {
             <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
@@ -463,6 +463,15 @@ cdl_package CYGPKG_REDBOOT {
             description "
               When this option is enabled, RedBoot will support IDE disks."
 	    compile -library=libextras.a fs/e2fs.c
+	}
+
+        cdl_component CYGSEM_REDBOOT_DISK_ISO9660 {
+            display       "Support ISO9660 filesystems."
+            flavor        bool
+            calculated    0
+            description "
+              When this option is enabled, RedBoot will support ISO9660 filesystems."
+	    compile -library=libextras.a fs/iso9660fs.c
 	}
     }
 

@@ -50,7 +50,7 @@
 
 #define CYGARC_SH_MOD_CPG  1
 #define CYGARC_SH_MOD_SCIF 1
-#define CYGARC_SH_MOD_UBC  1
+//#define CYGARC_SH_MOD_UBC  1
 #define CYGARC_SH_MOD_INTC 1
 
 

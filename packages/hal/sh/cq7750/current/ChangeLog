@@ -1,3 +1,9 @@
+2001-08-08  Jesper Skov  <jskov@redhat.com>
+
+	* misc/redboot_ROM.ecm: Added.
+
+	* cdl/hal_sh_sh7750_cq7750.cdl: Added RedBoot build rule.
+
 2001-07-13  Jesper Skov  <jskov@redhat.com>
 
 	* include/platform.inc (BSC_settings_table): Replaced

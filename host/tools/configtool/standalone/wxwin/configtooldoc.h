@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtooldoc.h,v 1.14 2001/06/29 13:48:22 julians Exp $
+// Version:     $Id: configtooldoc.h,v 1.15 2001/08/10 14:58:21 julians Exp $
 // Purpose:
 // Description: Header file for ecConfigToolDoc
 // Requires:
@@ -157,6 +157,11 @@ public:
     bool ExportFile();
     bool ImportFile();
     void RunTests();
+
+    // A standalone method for generating a build tree without saving first
+    bool GenerateBuildTree();
+    // Can we generate the build tree yet?
+    bool CanGenerateBuildTree() ;
 
     void SelectTemplate (const wxString& newTemplate, const wxString& newTemplateVersion);
     void SelectHardware (const wxString& newTemplate);

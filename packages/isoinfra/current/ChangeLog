@@ -1,3 +1,10 @@
+2001-08-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/isoinfra.cdl: Add a separate POSIX mutex types header option.
+	* include/sys/types.h: Include it.
+	* include/time.h: Provide a default struct timespec even if the
+	implementation doesn't provide something better.
+
 2001-07-26  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/sys/types.h: Move select() related stuff into separate

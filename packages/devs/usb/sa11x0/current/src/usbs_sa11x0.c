@@ -958,6 +958,8 @@ usbs_sa11x0_ep0_dsr(void)
                                  EP0_FORCE_STALL,
                                  EP0_OUT_READY);
             }
+            // Also remember to switch back to IDLE state 
+            ep0.ep_state = EP0_STATE_IDLE;
         }
         
     } else if (0 != (EP0_OUT_READY & hw_state)) {
@@ -2424,3 +2426,55 @@ usbs_sa11x0_init(void)
     cyg_drv_interrupt_attach(usbs_sa11x0_intr_handle);
     cyg_drv_interrupt_unmask(SA11X0_IRQ_USB_SERVICE_REQUEST);
 }
+
+// ----------------------------------------------------------------------------
+// Testing support.
+usbs_testing_endpoint usbs_testing_endpoints[] = {
+    {
+        endpoint_type   : USB_ENDPOINT_DESCRIPTOR_ATTR_CONTROL, 
+        endpoint_number : 0,
+        in_endpoint     : false,
+        endpoint        : (void*) &ep0.common,
+#ifdef CYGVAR_DEVS_USB_SA11X0_EP0_DEVTAB_ENTRY
+        devtab_entry    : CYGDAT_DEVS_USB_SA11X0_DEVTAB_BASENAME "0c",
+#else        
+        devtab_entry    : (const char*) 0,
+#endif        
+        min_size        : 1,            // zero-byte control transfers are meaningless
+        max_size        : 0x0FFFF,      // limit imposed by protocol
+        max_in_padding  : 0
+    },
+#ifdef CYGPKG_DEVS_USB_SA11X0_EP1
+    {
+        endpoint_type   : USB_ENDPOINT_DESCRIPTOR_ATTR_BULK,
+        endpoint_number : 1,
+        in_endpoint     : false,        // ep1 is an rx endpoint
+        endpoint        : (void*) &ep1.common,
+#ifdef CYGVAR_DEVS_USB_SA11X0_EP1_DEVTAB_ENTRY
+        devtab_entry    : CYGDAT_DEVS_USB_SA11X0_DEVTAB_BASENAME "1r",
+#else        
+        devtab_entry    : (const char*) 0,
+#endif        
+        min_size        : 0,
+        max_size        : -1,           // No hardware or driver limitation
+        max_in_padding  : 0
+    },
+#endif
+#ifdef CYGPKG_DEVS_USB_SA11X0_EP2
+    {
+        endpoint_type   : USB_ENDPOINT_DESCRIPTOR_ATTR_BULK,
+        endpoint_number : 2,
+        in_endpoint     : true,         // ep2 is a tx endpoint
+        endpoint        : (void*) &ep2.common,
+#ifdef CYGVAR_DEVS_USB_SA11X0_EP2_DEVTAB_ENTRY
+        devtab_entry    : CYGDAT_DEVS_USB_SA11X0_DEVTAB_BASENAME "2w",
+#else        
+        devtab_entry    : (const char*) 0,
+#endif        
+        min_size        : 0,
+        max_size        : -1,           // No hardware or driver limitation
+        max_in_padding  : 1             // hardware limitation
+    },
+#endif
+    USBS_TESTING_ENDPOINTS_TERMINATOR
+};

@@ -1,3 +1,26 @@
+2001-08-03  Nick Garnett  <nickg@redhat.com>
+
+        Imported from a development branch:
+	
+	2001-07-11  Nick Garnett  <nickg@redhat.com>
+
+		* include/drv_api.h: 
+		* src/drv_api.c:
+		Added API for controlling routing of interrupts to CPUs in SMP
+		configurations.
+
+	2001-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/drv_api.h: 
+		* src/drv_api.c:
+		Added API for using spinlocks.
+
+2001-08-03  Jesper Skov  <jskov@redhat.com>
+
+	* tests/vaargs.c: Added.
+	* cdl/hal.cdl: Added CYGPKG_HAL_BUILD_COMPILER_TESTS to allow cpp1
+	and vaargs tests to be compiled conditionally.
+
 2001-07-27  Jesper Skov  <jskov@redhat.com>
 
 	* tests/intr.c: Set up interrupt ISR using driver API so it works

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -127,15 +127,18 @@ __externC long sysconf( int name )
         SC_CASE( _SC_SEM_VALUE_MAX,                     SEM_VALUE_MAX );
         SC_CASE( _SC_SIGQUEUE_MAX,                      SIGQUEUE_MAX );
         SC_CASE( _SC_STREAM_MAX,                        STREAM_MAX );
+#ifdef CYGPKG_POSIX_PTHREAD
         SC_CASE( _SC_THREAD_DESTRUCTOR_ITERATIONS,      PTHREAD_DESTRUCTOR_ITERATIONS );
         SC_CASE( _SC_THREAD_KEYS_MAX,                   PTHREAD_KEYS_MAX );
         SC_CASE( _SC_THREAD_STACK_MIN,                  PTHREAD_STACK_MIN );
         SC_CASE( _SC_THREAD_THREADS_MAX,                PTHREAD_THREADS_MAX );
+#endif
         SC_CASE( _SC_TIMER_MAX,                         TIMER_MAX );
         SC_CASE( _SC_TTY_NAME_MAX,                      TTY_NAME_MAX );
         SC_CASE( _SC_TZNAME_MAX,                        TZNAME_MAX );
         SC_CASE( _SC_VERSION,                           _POSIX_VERSION );
 
+#ifdef CYGPKG_POSIX_TIMERS
     case _SC_CLK_TCK:
     {
         struct timespec ts;
@@ -144,6 +147,7 @@ __externC long sysconf( int name )
         cyg_tick_count ticks = cyg_timespec_to_ticks( &ts );
         return ticks;
     }
+#endif
 
     case _SC_ASYNCHRONOUS_IO:
     #ifdef _POSIX_ASYNCHRONOUS_IO

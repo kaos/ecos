@@ -55,6 +55,103 @@
 
 #include <cyg/hal/plf_intr.h>
 
+//--------------------------------------------------------------------------
+// Interrupt controller information
+
+#ifndef CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
+#define HAL_INTERRUPT_MASK( _vector_ )                                      \
+    CYG_MACRO_START                                                         \
+    if( (_vector_) <= CYGNUM_HAL_INTERRUPT_COMPARE )                        \
+    {                                                                       \
+        asm volatile (                                                      \
+            "mfc0   $3,$12\n"                                               \
+            "la     $2,0x00000400\n"                                        \
+            "sllv   $2,$2,%0\n"                                             \
+            "nor    $2,$2,$0\n"                                             \
+            "and    $3,$3,$2\n"                                             \
+            "mtc0   $3,$12\n"                                               \
+            "nop; nop; nop\n"                                               \
+            :                                                               \
+            : "r"(_vector_)                                                 \
+            : "$2", "$3"                                                    \
+            );                                                              \
+    }                                                                       \
+    else                                                                    \
+    {                                                                       \
+        /* int 6:9 are masked in the Interrupt Control register */          \
+        asm volatile (                                                      \
+            "cfc0   $3,$20\n"                                               \
+            "la     $2,0x00000004\n"                                        \
+            "sllv   $2,$2,%0\n"                                             \
+            "nor    $2,$2,$0\n"                                             \
+            "and    $3,$3,$2\n"                                             \
+            "ctc0   $3,$20\n"                                               \
+            "nop; nop; nop\n"                                               \
+            :                                                               \
+            : "r"((_vector_) )				                    \
+            : "$2", "$3"                                                    \
+            );                                                              \
+    }                                                                       \
+    CYG_MACRO_END
+
+#define HAL_INTERRUPT_UNMASK( _vector_ )                                    \
+    CYG_MACRO_START                                                         \
+    if( (_vector_) <= CYGNUM_HAL_INTERRUPT_COMPARE )                        \
+    {                                                                       \
+        asm volatile (                                                      \
+            "mfc0   $3,$12\n"                                               \
+            "la     $2,0x00000400\n"                                        \
+            "sllv   $2,$2,%0\n"                                             \
+            "or     $3,$3,$2\n"                                             \
+            "mtc0   $3,$12\n"                                               \
+            "nop; nop; nop\n"                                               \
+            :                                                               \
+            : "r"(_vector_)                                                 \
+            : "$2", "$3"                                                    \
+            );                                                              \
+    }                                                                       \
+    else								    \
+    {                                                                       \
+        /* int 6:9 are masked in the Interrupt Control register */          \
+        asm volatile (                                                      \
+            "cfc0   $3,$20\n"                                               \
+            "la     $2,0x00000004\n"                                        \
+            "sllv   $2,$2,%0\n"                                             \
+            "or     $3,$3,$2\n"                                             \
+            "ctc0   $3,$20\n"                                               \
+            "nop; nop; nop\n"                                               \
+            :                                                               \
+            : "r"((_vector_) )                                              \
+            : "$2", "$3"                                                    \
+            );                                                              \
+    }                                                                       \
+    CYG_MACRO_END
+
+#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                           \
+    CYG_MACRO_START                                                     \
+    /* All 10 interrupts have pending bits in the cause register */     \
+    cyg_uint32 _srvector_ = _vector_;                                   \
+    asm volatile (                                                      \
+        "mfc0   $3,$13\n"                                               \
+        "la     $2,0x00000400\n"                                        \
+        "sllv   $2,$2,%0\n"                                             \
+        "nor    $2,$2,$0\n"                                             \
+        "and    $3,$3,$2\n"                                             \
+        "mtc0   $3,$13\n"                                               \
+        "nop; nop; nop\n"                                               \
+        :                                                               \
+        : "r"(_srvector_)                                               \
+        : "$2", "$3"                                                    \
+        );                                                              \
+    CYG_MACRO_END
+
+#define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )
+
+#define HAL_INTERRUPT_SET_LEVEL( _vector_, _level_ )
+
+#define CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
+
+#endif
 
 //--------------------------------------------------------------------------
 // Interrupt vectors.

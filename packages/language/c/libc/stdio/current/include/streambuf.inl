@@ -90,7 +90,7 @@ Cyg_StdioStreamBuffer::Cyg_StdioStreamBuffer( cyg_ucount32 size=BUFSIZ,
 inline
 Cyg_StdioStreamBuffer::~Cyg_StdioStreamBuffer()
 {
-#ifdef CYGSEM_LIBC_STDIO_DYNAMIC_SETVBUF
+#ifdef CYGSEM_LIBC_STDIO_SETVBUF_MALLOC
     if ((buffer_bottom != NULL) && call_free)
         free( buffer_bottom );
 #endif        

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.h,v 1.24 2001/07/13 15:17:43 julians Exp $
+// Version:     $Id: configtool.h,v 1.25 2001/08/10 14:58:21 julians Exp $
 // Purpose:
 // Description: main header file for the ConfigTool application
 // Requires:
@@ -302,6 +302,7 @@ protected:
 #define ecID_BUILD_REPOSITORY           2185
 #define ecID_BUILD_TEMPLATES            2186
 #define ecID_BUILD_PACKAGES             2187
+#define ecID_GENERATE_BUILD_TREE        2188
 
 // Tools menu
 #define ecID_PATHS                      2200

@@ -1,3 +1,14 @@
+2001-08-10  Robin Farine  <acnrf@dial.eunet.ch>
+
+	* src/memchr.cxx (__memchr): Don't check string validity if number
+	of bytes to operate on is 0.
+	* src/memcmp.cxx (__memcmp): Ditto.
+	* src/memmove.cxx (__memmove): Ditto.
+	* src/strncat.cxx (__strncat): Ditto.
+	* src/strncmp.cxx (__strncmp): Ditto.
+	* src/strncpy.cxx (__strncpy): Ditto.
+	* src/strxfrm.cxx (__strxfrm): Ditto.
+
 2000-05-20  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/strtok.cxx: Remove aliases

@@ -25,7 +25,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -48,11 +48,8 @@
 //
 //=============================================================================
 
-#include <pkgconf/hal.h>
-#include <pkgconf/kernel.h>
-#include <pkgconf/posix.h>
-
 #include <signal.h>
+#include <cyg/hal/hal_arch.h>       // hal_jmp_buf
 
 //=============================================================================
 // sigjmp_buf structure
@@ -62,18 +59,20 @@
 // sizeof(hal_jmp_buf)                    savemask value (an int)
 // sizeof(hal_jmp_buf)+sizeof(int)...     sigset_t containing saved mask
 
-typedef cyg_uint8 sigjmp_buf[sizeof(hal_jmp_buf)+sizeof(int)+(sizeof(sigset_t))];
+typedef struct {
+    hal_jmp_buf __jmp_buf;
+    int  __savemask;
+    sigset_t __sigsavemask;
+} sigjmp_buf[1];
 
 //=============================================================================
 // sigsetjmp() macro
 
 #define sigsetjmp( _env_, _savemask_ )                                        \
 (                                                                             \
- (*(int *)&((_env_)[sizeof(hal_jmp_buf)])=(_savemask_)),                      \
- ((_savemask_)?pthread_sigmask(SIG_BLOCK,NULL,                                \
-                                  (sigset_t *)&(_env_)[sizeof(hal_jmp_buf)+   \
-                                                      sizeof(int)]):0),       \
- hal_setjmp(*(hal_jmp_buf *)&_env_[0])                                        \
+ ((_env_)[0].__savemask = _savemask_),                                        \
+ ((_savemask_)?pthread_sigmask(SIG_BLOCK,NULL,&((_env_)[0].__sigsavemask)):0),\
+ hal_setjmp((_env_)[0].__jmp_buf)                                             \
 )
 
 //=============================================================================

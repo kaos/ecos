@@ -279,19 +279,23 @@ eth_drv_write(char *eth_hdr, char *buf, int len)
 static void
 eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
 {
+    CYGARC_HAL_SAVE_GP();
     if ((int *)key == &packet_sent) {
         *(int *)key = 1;
     } else {
         // It's possible that this acknowledgement is for a different
         // [logical] driver.  Try and pass it on.
 #ifdef CYGSEM_IO_ETH_DRIVERS_DEBUG
-        int old_console;
-        old_console = start_console();
-        printf("tx_done for other key: %x\n", key);
-        end_console(old_console);
+        if (net_debug) {
+            int old_console;
+            old_console = start_console();
+            printf("tx_done for other key: %x\n", key);
+            end_console(old_console);
+        }
 #endif
         (sc->funs->eth_drv_old->tx_done)(sc, key, status);
     }
+    CYGARC_HAL_RESTORE_GP();
 }
 
 //
@@ -352,12 +356,13 @@ eth_drv_copy_recv(struct eth_drv_sc *sc,
                   int sg_len)
 {
     int i;   
-
+    CYGARC_HAL_SAVE_GP();
     for (i = 0;  i < sg_len;  i++) {
         memcpy((unsigned char *)sg_list[i].buf, 
                eth_drv_copy_recv_buf, sg_list[i].len);
         eth_drv_copy_recv_buf += sg_list[i].len;
     }
+    CYGARC_HAL_RESTORE_GP();
 }
 #endif
 
@@ -373,6 +378,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     int               sg_len = 0;
     struct eth_msg *msg;
     unsigned char *buf;
+    CYGARC_HAL_SAVE_GP();
 
     msg = eth_drv_msg_get(&eth_msg_free);
     if (msg) {
@@ -427,6 +433,7 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         dump_buf(sg_list[0].buf, sg_list[0].len);
 #endif
     }
+    CYGARC_HAL_RESTORE_GP();
 }
 
 //

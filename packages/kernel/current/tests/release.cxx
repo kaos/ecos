@@ -77,6 +77,12 @@ static void entry0( CYG_ADDRWORD data )
 
 static void entry1( CYG_ADDRWORD data )
 {
+    Cyg_Thread *self = Cyg_Thread::self();    
+
+    // Give the other thread a chance to wait in SMP systems.
+    for( int i = 0; i < 100; i++ )
+        self->yield();
+    
     thread[0]->release();
 
     s1.wait();

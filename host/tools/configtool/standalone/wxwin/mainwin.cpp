@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.47 2001/07/09 14:21:32 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.48 2001/08/10 14:58:21 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -165,6 +165,7 @@ BEGIN_EVENT_TABLE(ecMainFrame, wxDocParentFrame)
     EVT_MENU(ecID_CLEAN, ecMainFrame::OnClean)
     EVT_MENU(ecID_SHELL, ecMainFrame::OnShell)
     EVT_MENU(ecID_INDEX_DOCS, ecMainFrame::OnIndexDocs)
+    EVT_MENU(ecID_GENERATE_BUILD_TREE, ecMainFrame::OnGenerateBuildTree)
 
     EVT_UPDATE_UI(ecID_PLATFORMS, ecMainFrame::OnUpdatePlatforms)
     EVT_UPDATE_UI(ecID_BUILD_OPTIONS, ecMainFrame::OnUpdateBuildOptions)
@@ -205,6 +206,7 @@ BEGIN_EVENT_TABLE(ecMainFrame, wxDocParentFrame)
     EVT_UPDATE_UI(ecID_STOP_BUILD, ecMainFrame::OnUpdateStopBuild)
     EVT_UPDATE_UI(ecID_BUILD_LIBRARY, ecMainFrame::OnUpdateBuildLibrary)
     EVT_UPDATE_UI(ecID_BUILD_TESTS, ecMainFrame::OnUpdateBuildTests)
+    EVT_UPDATE_UI(ecID_GENERATE_BUILD_TREE, ecMainFrame::OnUpdateGenerateBuildTree)
 
     EVT_UPDATE_UI(ecID_SHELL, ecMainFrame::OnUpdateShell)
 
@@ -327,6 +329,8 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     buildMenu->Append(ecID_BUILD_TESTS, _("&Tests\tShift+F7"), _("Builds the tests"));
     buildMenu->Append(ecID_CLEAN, _("&Clean"), _("Deletes intermediate and output files"));
     buildMenu->Append(ecID_STOP_BUILD, _("&Stop"), _("Stops the build"));
+    buildMenu->AppendSeparator();
+    buildMenu->Append(ecID_GENERATE_BUILD_TREE, _("&Generate Build Tree"), _("Explicitly recreates the build tree"));
     buildMenu->AppendSeparator();
     buildMenu->Append(ecID_BUILD_OPTIONS, _("&Options..."), _("Changes build options"));
     buildMenu->Append(ecID_BUILD_REPOSITORY, _("&Repository..."), _("Selects repository"));
@@ -1513,6 +1517,9 @@ void ecMainFrame::OnWebUitron(wxCommandEvent& event)
 
 void ecMainFrame::OnBuildLibrary(wxCommandEvent& event)
 {
+    // TODO: possibly add wxT("clean build") to ensure library is
+    // cleanly built. No, can't do that because it would clean
+    // out any user code too :-(
     wxGetApp().Build();
 }
 
@@ -1668,4 +1675,20 @@ void ecMainFrame::OnIndexDocs(wxCommandEvent& event)
 void ecMainFrame::OnUpdateIndexDocs(wxUpdateUIEvent& event)
 {
     event.Enable( wxGetApp().GetConfigToolDoc() != NULL );
+}
+
+void ecMainFrame::OnGenerateBuildTree(wxCommandEvent& event)
+{
+    if (wxGetApp().GetConfigToolDoc() && wxGetApp().GetConfigToolDoc()->CanGenerateBuildTree())
+    {
+        if (!wxGetApp().GetConfigToolDoc()->GenerateBuildTree())
+        {
+            // Error probably already reported
+        }
+    }
+}
+
+void ecMainFrame::OnUpdateGenerateBuildTree(wxUpdateUIEvent& event)
+{
+    event.Enable( (wxGetApp().GetConfigToolDoc() != NULL) && wxGetApp().GetConfigToolDoc()->CanGenerateBuildTree());
 }

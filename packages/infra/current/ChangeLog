@@ -1,3 +1,25 @@
+2001-08-03  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported from a development branch:
+	
+	2001-06-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* src/diag.cxx: 
+		* src/tcdiag.cxx:
+		Added use of CYG_HAL_DIAG_LOCK() and CYG_HAL_DIAG_UNLOCK() to
+		diag_printf(), cyg_assert_msg() and cyg_test_output() to prevent
+		messages from different CPUs being mingled.
+
+	2001-05-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/cyg_type.h (CYGBLD_ANNOTATE_VARIABLE_*):
+		Added better way of supplying default definitions for these.
+
+	2001-04-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/cyg_type.h:
+		Added default variable annotation macros.
+
 2001-07-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/cyg_type.h (CYG_INIT_MEMALLOC): Add.

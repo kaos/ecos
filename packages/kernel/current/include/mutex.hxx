@@ -123,6 +123,12 @@ public:
     cyg_priority get_ceiling(void) { return ceiling; };
     
 #endif
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+
+    // set inversion protocol
+    void        set_protocol( cyg_protcol new_protocol );
+#endif
     
 };
 

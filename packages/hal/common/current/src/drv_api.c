@@ -62,6 +62,8 @@
 
 static volatile cyg_int32 isr_disable_counter = 1;  // ISR disable counter
 
+static CYG_INTERRUPT_STATE isr_disable_state;
+
 volatile cyg_int32 dsr_disable_counter  // DSR disable counter
                       CYGBLD_ATTRIB_ASM_ALIAS( cyg_scheduler_sched_lock );
 
@@ -215,11 +217,10 @@ cyg_uint32 chain_isr(cyg_vector_t vector, CYG_ADDRWORD data)
 
 externC void cyg_drv_isr_lock()
 {
-    CYG_INTERRUPT_STATE dummy;
-
     CYG_REPORT_FUNCTION();
 
-    HAL_DISABLE_INTERRUPTS(dummy);
+    if( isr_disable_counter == 0 )
+        HAL_DISABLE_INTERRUPTS(isr_disable_state);
 
     CYG_ASSERT( isr_disable_counter >= 0 , "Disable counter negative");
     
@@ -242,7 +243,7 @@ externC void cyg_drv_isr_unlock()
 
     if ( isr_disable_counter == 0 )
     {
-        HAL_ENABLE_INTERRUPTS();
+        HAL_RESTORE_INTERRUPTS(isr_disable_state);
     }
 
     CYG_REPORT_RETURN();
@@ -351,6 +352,8 @@ externC cyg_bool_t cyg_drv_mutex_trylock( cyg_drv_mutex_t *mutex )
     CYG_REPORT_FUNCTION();
 
     if( mutex->lock == 1 ) result = false;
+
+    mutex->lock = 1;
     
     CYG_REPORT_RETURN();
 
@@ -476,7 +479,107 @@ externC void cyg_drv_cond_broadcast( cyg_drv_cond_t *cond )
     
     CYG_REPORT_RETURN();    
 }
+
+//--------------------------------------------------------------------------
+// Spinlock support.
+// Since we can only support a single CPU in this version of the API, we only
+// set and clear the lock variable to keep track of what's happening.
+
+void cyg_drv_spinlock_init(
+    cyg_drv_spinlock_t  *lock,          /* spinlock to initialize            */
+    cyg_bool_t          locked          /* init locked or unlocked           */
+)
+{
+    CYG_REPORT_FUNCTION();
     
+    lock->lock = locked;
+
+    CYG_REPORT_RETURN();    
+}
+
+void cyg_drv_spinlock_destroy( cyg_drv_spinlock_t *lock )
+{
+    CYG_REPORT_FUNCTION();
+    
+    lock->lock = -1;
+
+    CYG_REPORT_RETURN();    
+}
+
+void cyg_drv_spinlock_spin( cyg_drv_spinlock_t *lock )
+{
+    CYG_REPORT_FUNCTION();
+    
+    CYG_ASSERT( lock->lock == 0 , "Trying to lock locked spinlock");
+
+    lock->lock = 1;
+
+    CYG_REPORT_RETURN();
+}
+
+void cyg_drv_spinlock_clear( cyg_drv_spinlock_t *lock )
+{
+    CYG_REPORT_FUNCTION();
+
+    CYG_ASSERT( lock->lock == 1 , "Trying to clear cleared spinlock");
+
+    lock->lock = 0;
+    
+    CYG_REPORT_RETURN();    
+}
+
+cyg_bool_t cyg_drv_spinlock_try( cyg_drv_spinlock_t *lock )
+{
+    cyg_bool_t result = true;
+    
+    CYG_REPORT_FUNCTION();
+
+    if( lock->lock == 1 ) result = false;
+
+    lock->lock = 1;
+    
+    CYG_REPORT_RETURN();
+
+    return result;
+}
+
+cyg_bool_t cyg_drv_spinlock_test( cyg_drv_spinlock_t *lock )
+{
+    cyg_bool_t result = true;
+    
+    CYG_REPORT_FUNCTION();
+
+    if( lock->lock == 1 ) result = false;
+
+    CYG_REPORT_RETURN();
+
+    return result;
+}
+
+void cyg_drv_spinlock_spin_intsave( cyg_drv_spinlock_t *lock,
+                                    cyg_addrword_t *istate )
+{
+    CYG_REPORT_FUNCTION();
+
+    HAL_DISABLE_INTERRUPTS( *istate );
+
+    lock->lock = 1;
+    
+    CYG_REPORT_RETURN();
+}
+    
+
+void cyg_drv_spinlock_clear_intsave( cyg_drv_spinlock_t *lock,
+                                     cyg_addrword_t istate )
+{
+    CYG_REPORT_FUNCTION();
+
+    lock->lock = 0;
+    
+    HAL_RESTORE_INTERRUPTS( istate );
+    
+    CYG_REPORT_RETURN();
+}
 
 //--------------------------------------------------------------------------
 // Create an interrupt object.
@@ -725,6 +828,42 @@ externC void cyg_drv_interrupt_level( cyg_vector_t vector, cyg_priority_t level 
     CYG_REPORT_RETURN();
 }
 
+// -------------------------------------------------------------------------
+// CPU interrupt routing
+
+externC void cyg_drv_interrupt_set_cpu( cyg_vector_t vector, cyg_cpu_t cpu )
+{
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG2("vector = %d, cpu = %d", vector, cpu);
+
+    CYG_ASSERT( vector >= CYGNUM_HAL_ISR_MIN, "Invalid vector");    
+    CYG_ASSERT( vector <= CYGNUM_HAL_ISR_MAX, "Invalid vector");
+
+#ifdef CYGPKG_HAL_SMP_SUPPORT    
+    HAL_INTERRUPT_SET_CPU( vector, cpu );
+#endif
+    
+    CYG_REPORT_RETURN();
+}
+
+externC cyg_cpu_t cyg_drv_interrupt_get_cpu( cyg_vector_t vector )
+{
+    cyg_cpu_t cpu = 0;
+    
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("vector = %d", vector);
+
+    CYG_ASSERT( vector >= CYGNUM_HAL_ISR_MIN, "Invalid vector");    
+    CYG_ASSERT( vector <= CYGNUM_HAL_ISR_MAX, "Invalid vector");
+
+#ifdef CYGPKG_HAL_SMP_SUPPORT    
+    HAL_INTERRUPT_GET_CPU( vector, cpu );
+#endif
+    
+    CYG_REPORT_RETURN();
+
+    return cpu;
+}
 
 // -------------------------------------------------------------------------
 // Exception delivery function called from the HAL as a result of a

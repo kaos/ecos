@@ -400,7 +400,10 @@ thread_name(char *basename, int indx) {
 void
 test0(cyg_uint32 indx)
 {
+#ifndef CYGPKG_KERNEL_SMP_SUPPORT
+    // In SMP, somw of these threads will execute
     diag_printf("test0.%d executed?\n", indx);
+#endif    
     cyg_thread_exit();
 }
 
@@ -1531,11 +1534,13 @@ run_all_tests(CYG_ADDRESS id)
 
     disable_clock_latency_measurement();
 
+#ifndef CYGPKG_KERNEL_SMP_SUPPORT
     cyg_test_dump_thread_stack_stats( "Startup, main stack", thread[0] );
     cyg_test_dump_interrupt_stack_stats( "Startup" );
     cyg_test_dump_idlethread_stack_stats( "Startup" );
     cyg_test_clear_interrupt_stack();
-
+#endif
+    
     diag_printf("\neCos Kernel Timings\n");
     diag_printf("Notes: all times are in microseconds (.000001) unless otherwise stated\n");
 #ifdef STATS_WITHOUT_FIRST_SAMPLE
@@ -1546,6 +1551,7 @@ run_all_tests(CYG_ADDRESS id)
 
     ns_per_system_clock = 1000000/rtc_resolution[1];
 
+    wait_for_tick();
     for (i = 0;  i < nsamples;  i++) {
         HAL_CLOCK_READ(&tv[i]);
     }
@@ -1626,6 +1632,7 @@ run_all_tests(CYG_ADDRESS id)
     enable_clock_latency_measurement();
 #endif
 
+#ifndef CYGPKG_KERNEL_SMP_SUPPORT    
     disable_clock_latency_measurement();
     min_stack = STACK_SIZE;
     max_stack = 0;
@@ -1649,7 +1656,8 @@ run_all_tests(CYG_ADDRESS id)
     cyg_test_dump_thread_stack_stats( "All done, main stack", thread[0] );
     cyg_test_dump_interrupt_stack_stats( "All done" );
     cyg_test_dump_idlethread_stack_stats( "All done" );
-
+#endif
+    
     enable_clock_latency_measurement();
 
     ticks = cyg_current_time();

@@ -1,3 +1,16 @@
+2001-08-10  Robin Farine  <robin.farine@terminus.org>
+
+        * src/output/vfnprintf.cxx (cvt): Handles the cases of finite,
+        NaN and infinite numbers separately.
+
+	* src/common/stream.cxx (read): Read correct number of bytes when
+	a character has been "ungot".
+
+2001-08-03  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/streambuf.inl (~Cyg_StdioStreamBuffer): use correct configury
+	to decide when to call free.
+
 2001-07-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/common/fflush.cxx (cyg_libc_stdio_flush_all_but): The check

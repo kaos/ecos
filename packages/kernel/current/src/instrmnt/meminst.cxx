@@ -117,6 +117,20 @@ cyg_uint32 instrument_flags[(CYG_INSTRUMENT_CLASS_MAX>>8)+1];
 
 // -------------------------------------------------------------------------
 
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+HAL_SPINLOCK_TYPE instrument_lock = HAL_SPINLOCK_INIT_CLEAR;
+
+#else
+
+#define HAL_SPINLOCK_SPIN( __lock )
+
+#define HAL_SPINLOCK_CLEAR( __lock )
+
+#endif
+
+// -------------------------------------------------------------------------
+
 void cyg_instrument( cyg_uint32 type, CYG_ADDRWORD arg1, CYG_ADDRWORD arg2 )
 {
 
@@ -131,11 +145,16 @@ void cyg_instrument( cyg_uint32 type, CYG_ADDRWORD arg1, CYG_ADDRWORD arg2 )
 #endif        
     {
         HAL_DISABLE_INTERRUPTS(old_ints);
-
+        HAL_SPINLOCK_SPIN( instrument_lock );
+        
         Instrument_Record *p = instrument_buffer_pointer;
         Cyg_Thread *t = Cyg_Scheduler::get_current_thread();
         p->type             = type;
-        p->thread           = (t==0)?0xFFFF:t->get_unique_id();
+        p->thread           = (t==0)?0x0FFF:t->get_unique_id();
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+        // Add CPU id to in top 4 bytes of thread id
+        p->thread           = (p->thread&0x0FFF)|(CYG_KERNEL_CPU_THIS()<<12);
+#endif        
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK        
 //        p->timestamp        = Cyg_Clock::real_time_clock->current_value_lo();
         HAL_CLOCK_READ( &p->timestamp );
@@ -156,6 +175,7 @@ void cyg_instrument( cyg_uint32 type, CYG_ADDRWORD arg1, CYG_ADDRWORD arg2 )
         if( p != &instrument_buffer_end )
             instrument_buffer_pointer = p;
 #endif
+        HAL_SPINLOCK_CLEAR( instrument_lock );        
         HAL_RESTORE_INTERRUPTS(old_ints);
     }
     

@@ -421,11 +421,18 @@ cdl_package CYGPKG_HAL {
 
     }
 
+    cdl_option     CYGPKG_HAL_BUILD_COMPILER_TESTS {
+        display       "Build Compiler sanity checking tests"
+        description   "
+            Enabling this option causes compiler tests to be built."
+    }
+
     cdl_option CYGPKG_HAL_TESTS {
         display "Common HAL tests"
         flavor  data
         no_define
-        calculated { "tests/cache tests/context tests/intr tests/cpp1" }
+        calculated { (!CYGPKG_HAL_BUILD_COMPILER_TESTS) ? "tests/cache tests/context tests/intr" :
+                     "tests/cache tests/context tests/intr tests/cpp1 tests/vaargs" }
         description   "
             This option specifies the set of tests for the common HAL."
     }

@@ -49,6 +49,7 @@
 #include <cyg/kernel/ktypes.h>
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
+#include <cyg/kernel/smp.hxx>          // SMP support
 
 // -------------------------------------------------------------------------
 // Miscellaneous types
@@ -59,6 +60,8 @@ typedef void Cyg_ASR( CYG_ADDRWORD data );      // ASR type signature
 
 #endif
 
+__externC void cyg_scheduler_set_need_reschedule();
+
 // -------------------------------------------------------------------------
 // Scheduler base class. This defines stuff that is needed by the
 // specific scheduler implementation. Each scheduler comprises three
@@ -66,6 +69,7 @@ typedef void Cyg_ASR( CYG_ADDRWORD data );      // ASR type signature
 // inherits from it and Cyg_Scheduler which inherits from _it_ in turn.
 
 class Cyg_Scheduler_Base
+     : public Cyg_Scheduler_SchedLock
 {
     friend class Cyg_HardwareThread;
     friend class Cyg_SchedThread;
@@ -74,14 +78,43 @@ protected:
     // The following variables are implicit in the API, but are
     // not publically visible.
 
-    static volatile cyg_ucount32 sched_lock         // lock counter
-                    CYGBLD_ATTRIB_ASM_ALIAS( cyg_scheduler_sched_lock );
+    // Current running thread    
+    static Cyg_Thread * volatile current_thread[CYGNUM_KERNEL_CPU_MAX]
+                                                CYGBLD_ANNOTATE_VARIABLE_SCHED; 
+
+    // Set when reschedule needed
+    static volatile cyg_bool     need_reschedule[CYGNUM_KERNEL_CPU_MAX]
+                                                 CYGBLD_ANNOTATE_VARIABLE_SCHED; 
+
+    // Count of number of thread switches
+    static volatile cyg_ucount32 thread_switches[CYGNUM_KERNEL_CPU_MAX]
+                                                 CYGBLD_ANNOTATE_VARIABLE_SCHED; 
+
+public:
+
+    // return a pointer to the current thread
+    static Cyg_Thread *get_current_thread();
+
+    // Set current thread pointer
+    static void set_current_thread(Cyg_Thread *thread);
+    static void set_current_thread(Cyg_Thread *thread, HAL_SMP_CPU_TYPE cpu);
     
-    static Cyg_Thread   *current_thread;        // current running thread
+    // Set need_reschedule flag
+    static void set_need_reschedule();
+    static void set_need_reschedule(Cyg_Thread *thread);
 
-    static cyg_bool     need_reschedule;        // set when schedule needed
+    // Get need_reschedule flag
+    static cyg_bool get_need_reschedule();
 
-    static cyg_ucount32 thread_switches;        // count of number of thread switches
+    // Return current value of lock
+    static cyg_ucount32 get_sched_lock();
+
+    // Clear need_reschedule flag
+    static void clear_need_reschedule();
+    
+    // Return current number of thread switches
+    static cyg_ucount32 get_thread_switches();
+    
 };
 
 // -------------------------------------------------------------------------
@@ -135,20 +168,14 @@ public:
     // release the preemption lock without rescheduling
     static void             unlock_simple();
     
-    // return a pointer to the current thread
-    static Cyg_Thread       *get_current_thread();
-
-    // Return current value of lock
-    static cyg_ucount32 get_sched_lock();
-
-    // Return current number of thread switches
-    static cyg_ucount32 get_thread_switches();
-    
     // Start execution of the scheduler
     static void start() __attribute__ ((noreturn));
+
+    // Start execution of the scheduler on the current CPU
+    static void start_cpu() __attribute__ ((noreturn));    
     
     // The only  scheduler instance should be this one...
-    static Cyg_Scheduler scheduler;
+    static Cyg_Scheduler scheduler CYGBLD_ANNOTATE_VARIABLE_SCHED;
 
 };
 
@@ -318,21 +345,51 @@ public:
 // -------------------------------------------------------------------------
 // Simple inline accessor functions
 
-inline Cyg_Thread *Cyg_Scheduler::get_current_thread()
+inline Cyg_Thread *Cyg_Scheduler_Base::get_current_thread()
 {
-    return current_thread;
+    return current_thread[CYG_KERNEL_CPU_THIS()];
 }
 
-// Return current value of lock
-inline cyg_ucount32 Cyg_Scheduler::get_sched_lock()
+inline void Cyg_Scheduler_Base::set_current_thread(Cyg_Thread *thread )
 {
-    return sched_lock;
+    current_thread[CYG_KERNEL_CPU_THIS()] = thread;
+}
+
+inline void Cyg_Scheduler_Base::set_current_thread(Cyg_Thread *thread,
+                                                   HAL_SMP_CPU_TYPE cpu)
+{
+    current_thread[cpu] = thread;
+}
+
+inline cyg_bool Cyg_Scheduler_Base::get_need_reschedule()
+{
+    return need_reschedule[CYG_KERNEL_CPU_THIS()];
+}
+
+inline void Cyg_Scheduler_Base::set_need_reschedule()
+{
+    need_reschedule[CYG_KERNEL_CPU_THIS()] = true;
+}
+
+inline void Cyg_Scheduler_Base::set_need_reschedule(Cyg_Thread *thread)
+{
+    need_reschedule[CYG_KERNEL_CPU_THIS()] = true;
+}
+
+inline void Cyg_Scheduler_Base::clear_need_reschedule()
+{
+    need_reschedule[CYG_KERNEL_CPU_THIS()] = false;
+}
+
+inline cyg_ucount32 Cyg_Scheduler_Base::get_sched_lock()
+{
+    return Cyg_Scheduler_SchedLock::get_sched_lock();
 }
 
 // Return current number of thread switches
-inline cyg_ucount32 Cyg_Scheduler::get_thread_switches()
+inline cyg_ucount32 Cyg_Scheduler_Base::get_thread_switches()
 {
-    return thread_switches;
+    return thread_switches[CYG_KERNEL_CPU_THIS()];
 }
 
 // Return current queue pointer

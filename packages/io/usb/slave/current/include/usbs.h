@@ -345,6 +345,68 @@ extern Cyg_ErrNo usbs_devtab_get_config(cyg_io_handle_t, cyg_uint32, void*, cyg_
 extern Cyg_ErrNo usbs_devtab_set_config(cyg_io_handle_t, cyg_uint32, const void*, cyg_uint32*);
 #endif
 
+// Additional support for testing.
+// Test cases need to have some way of finding out about what support is
+// actually provided by the USB device driver, for example what endpoints
+// are available. There is no perfect way of achieving this. One approach
+// would be to scan through the devtab table looking for devices of the
+// form /dev/usbs1r. That is not reliable: the devtab entries may have been
+// configured out if higher-level code uses the usb-specific API; or the
+// devtab entries may have been renamed. Also having a devtab entry does not
+// really give the kind of information a general-purpose testcase needs,
+// for example upper bounds on transfer size.    
+// 
+// An alternative approach is to have a data structure that somehow
+// defines the USB hardware, and the USB device driver then creates an
+// instance of this. This is the approach actually taken. The problem
+// now is how the test code can access this instance. Accessing by
+// unique name is simple, as long as there is only one USB device in
+// the system (which of course will usually be the case on the USB
+// slave side). Alternative approaches such as creating a table at
+// link time or a list during static construction time are vulnerable
+// either to selective linking or to having these structures present
+// in applications other than the test cases. In future it might be
+// possible to address the latter issue by extending the build system
+// support, e.g. a new library libtesting.a and a new object file
+// testing.o.
+//
+// Note that a given endpoint could be used for bulk transfers some
+// of the time, then for isochronous transfers, etc. It is the
+// responsibility of the host to only perform one type of IN operation
+// for a given endpoint number, and ditto for OUT.    
+
+typedef struct usbs_testing_endpoint {
+    int         endpoint_type;          // One of ATTR_CONTROL, ATTR_BULK, ...
+    int         endpoint_number;        // Between 0 and 15
+    cyg_bool    in_endpoint;            // host->slave?
+    void*       endpoint;               // pointer to the usbs_control_endpoint, usbs_rx_endpoint, ...
+    const char* devtab_entry;           // e.g. "/dev/usbs1r", or 0 if inaccessible via devtab
+    int         min_size;               // Minimum transfer size
+    int         max_size;               // -1 indicates no specific upper bound
+    int         max_in_padding;         // extra bytes that the target may send, usually 0.
+                                        // Primarily for SA11x0 hardware. It is assumed
+                                        // for now that no other hardware will exhibit
+                                        // comparable problems.
+} usbs_testing_endpoint;
+
+// A specific instance provided by the device driver. The end of
+// the table is indicated by a NULL endpoint field.    
+extern usbs_testing_endpoint usbs_testing_endpoints[];    
+
+#define USBS_TESTING_ENDPOINTS_TERMINATOR                       \
+    {                                                           \
+        endpoint_type   : USB_ENDPOINT_DESCRIPTOR_ATTR_CONTROL, \
+        endpoint_number : 0,                                    \
+        in_endpoint     : false,                                \
+        endpoint        : (void*) 0,                            \
+        devtab_entry    : (const char*) 0,                      \
+        min_size        : 0,                                    \
+        max_size        : 0,                                    \
+        max_in_padding  : 0                                     \
+    }
+
+#define USBS_TESTING_ENDPOINTS_IS_TERMINATOR(_endpoint_) ((void*)0 == (_endpoint_).endpoint)
+    
 #ifdef __cplusplus
 } // extern "C" {
 #endif

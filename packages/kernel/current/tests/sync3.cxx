@@ -64,9 +64,8 @@
 
 #include <cyg/kernel/sched.inl>
 
-#ifndef CYGIMP_THREAD_PRIORITY
-#error "Thread priorities disabled"
-#endif
+#if defined(CYGIMP_THREAD_PRIORITY) && \
+    !defined(CYGPKG_KERNEL_SMP_SUPPORT)
 
 // ------------------------------------------------------------------------
 // Manufacture a simpler feature test macro for priority inheritance than
@@ -205,5 +204,19 @@ cyg_start( void )
 #endif
     sync3_main();
 }
-   
+
+#else // defined(CYGIMP_THREAD_PRIORITY) etc
+
+externC void
+cyg_start( void )
+{ 
+    CYG_TEST_INIT();
+    CYG_TEST_PASS_FINISH("Sync3 test requires:\n"
+                         "defined(CYGIMP_THREAD_PRIORITY) &&\n"
+                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+
+}
+
+#endif // defined(CYGIMP_THREAD_PRIORITY) etc
+
 // EOF sync3.cxx

@@ -212,7 +212,7 @@ flash_hwr_init(void)
 
     // Hard wired for now
     flash_info.block_size = flash_dev_info->block_size;
-    flash_info.blocks = flash_dev_info->block_count;
+    flash_info.blocks = flash_dev_info->block_count * CYGNUM_FLASH_SERIES;
     flash_info.start = (void *)CYGNUM_FLASH_BASE;
     flash_info.end = (void *)(CYGNUM_FLASH_BASE+ (flash_dev_info->device_size * CYGNUM_FLASH_SERIES));
     return FLASH_ERR_OK;

@@ -67,11 +67,11 @@ inline void Cyg_Scheduler::lock()
 
     HAL_REORDER_BARRIER();
 
-    sched_lock++;
+    inc_sched_lock();
 
     HAL_REORDER_BARRIER();
 
-    CYG_INSTRUMENT_SCHED(LOCK,sched_lock,0);
+    CYG_INSTRUMENT_SCHED(LOCK,get_sched_lock(),0);
 };
 
 inline void Cyg_Scheduler::unlock()
@@ -83,14 +83,14 @@ inline void Cyg_Scheduler::unlock()
     // decrement and return. As with lock() we do not need any special code
     // to decrement the lock counter.
 
-    CYG_INSTRUMENT_SCHED(UNLOCK,sched_lock,0);
-
+    CYG_INSTRUMENT_SCHED(UNLOCK,get_sched_lock(),0);
+    
     HAL_REORDER_BARRIER();
     
-    cyg_ucount32 __lock = sched_lock - 1;
+    cyg_ucount32 __lock = get_sched_lock() - 1;
     
     if( __lock == 0 ) unlock_inner(0);
-    else sched_lock = __lock;
+    else set_sched_lock(__lock);
 
     HAL_REORDER_BARRIER();
 }
@@ -102,9 +102,9 @@ inline void Cyg_Scheduler::reschedule()
     // leave a brief window between the calls when the lock is unclaimed
     // by the current thread.
     
-    CYG_INSTRUMENT_SCHED(RESCHEDULE,sched_lock,0);
+    CYG_INSTRUMENT_SCHED(RESCHEDULE,get_sched_lock(),0);
     
-    unlock_inner( sched_lock );
+    unlock_inner( get_sched_lock() );
 }
 
 inline void Cyg_Scheduler:: unlock_reschedule()
@@ -115,9 +115,9 @@ inline void Cyg_Scheduler:: unlock_reschedule()
     // lock is being decremented to a non-zero value, it is more or less
     // equivalent to reschedule() followed by unlock().
     
-    CYG_INSTRUMENT_SCHED(UNLOCK,sched_lock,0);
+    CYG_INSTRUMENT_SCHED(UNLOCK,get_sched_lock(),0);
     
-    unlock_inner( sched_lock - 1 );
+    unlock_inner( get_sched_lock() - 1 );
 }
 
 inline void Cyg_Scheduler::unlock_simple()
@@ -128,12 +128,13 @@ inline void Cyg_Scheduler::unlock_simple()
     // indeterminate future time.  This is mainly for use by
     // debuggers, it should not normally be used anywhere else.
 
-    CYG_INSTRUMENT_SCHED(UNLOCK,sched_lock,0);
+    CYG_INSTRUMENT_SCHED(UNLOCK,get_sched_lock(),0);
 
     HAL_REORDER_BARRIER();
         
-    if (sched_lock > 0)
-        sched_lock = sched_lock - 1;
+    if (get_sched_lock() > 1)
+        set_sched_lock(get_sched_lock() - 1);
+    else zero_sched_lock();
 
     HAL_REORDER_BARRIER();
 }

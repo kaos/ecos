@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -50,10 +50,13 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
            The STB HAL package should be used when targetting the
            actual hardware for the AM33 STB evaluation board."
 
-    compile       hal_diag.c plf_stub.c plf_misc.c
+    compile       hal_diag.c plf_stub.c plf_misc.c ser_stb.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+
+    requires CYGSEM_HAL_UNCACHED_FLASH_ACCESS == 1;
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_mn10300_am33.h>"
@@ -79,6 +82,18 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
            possible to download ROM executables into either SDRAM cards
            or program them into a FLASH ROM."
     }
+
+    cdl_option CYGBLD_ROM_SLOT {
+        display          "ROM startup slot"
+        flavor data
+        legal_values     {"ROM" "SRAM1"}
+        default_value    {"ROM"}
+        description      "
+           This option can be used to request that the image is to be
+           linked to be run from the SRAM1 SLOT (0x82400000) rather than
+           the system boot ROM slot (0x40000000).
+	   "
+   }
 
     cdl_option CYGHWR_HAL_MN10300_AM33_STB_DIAG_PORT {
         display          "Diagnostic Serial Port"
@@ -213,12 +228,50 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
         }
     }
 
+    cdl_option CYGNUM_HAL_BREAKPOINT_LIST_SIZE {
+        display       "Number of breakpoints supported by the HAL."
+        flavor        data
+        default_value 25
+        description   "
+            This option determines the number of breakpoints supported by the HAL."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display      "Number of communication channels on the board"
+        flavor       data
+        calculated   1
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           The STB board has two serial ports.  Currently,
+           only the first serial port is supported. This option
+           chooses which port will be used to connect to a host
+           running GDB."
+    }
+ 
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+        display          "Diagnostic serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           The STB board has two serial ports. Currently,
+           only the first serial port is supported. This option
+           chooses which port will be used for diagnostic output."
+     }
+
     cdl_component CYGHWR_MEMORY_LAYOUT {
         display "Memory layout"
         flavor data
         no_define
         calculated { CYG_HAL_STARTUP == "RAM" ? "mn10300_am33_stb_ram" : \
-	                                        "mn10300_am33_stb_rom" }
+                     CYGBLD_ROM_SLOT == "ROM" ? "mn10300_am33_stb_rom" : \
+                                                "mn10300_am33_stb_sram1" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
@@ -226,7 +279,8 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mn10300_am33_stb_ram.ldi>" : \
-                                                    "<pkgconf/mlt_mn10300_am33_stb_rom.ldi>" }
+                         CYGBLD_ROM_SLOT == "ROM" ? "<pkgconf/mlt_mn10300_am33_stb_rom.ldi>" : \
+                                                    "<pkgconf/mlt_mn10300_am33_stb_sram1.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -235,7 +289,8 @@ cdl_package CYGPKG_HAL_MN10300_AM33_STB {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_mn10300_am33_stb_ram.h>" : \
-                                                    "<pkgconf/mlt_mn10300_am33_stb_rom.h>" }
+                         CYGBLD_ROM_SLOT == "ROM" ? "<pkgconf/mlt_mn10300_am33_stb_rom.h>" : \
+                                                    "<pkgconf/mlt_mn10300_am33_stb_sram1.h>" }
         }
     }
 

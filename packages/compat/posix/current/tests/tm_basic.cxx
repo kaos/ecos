@@ -31,12 +31,47 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):     gthomas
-// Contributors:  gthomas
+// Author(s):     gthomas,nickg
+// Contributors:  jlarmour
 // Date:          1998-10-19
 // Description:   Very simple kernel timing test
 //####DESCRIPTIONEND####
 //==========================================================================
+
+
+#include <cyg/infra/testcase.h>
+#include <pkgconf/posix.h>
+#include <pkgconf/system.h>
+#ifdef CYGPKG_KERNEL
+#include <pkgconf/kernel.h>
+#endif
+
+#ifndef CYGPKG_POSIX_SIGNALS
+#define NA_MSG "No POSIX signals"
+#elif !defined(CYGPKG_POSIX_TIMERS)
+#define NA_MSG "No POSIX timers"
+#elif !defined(CYGPKG_POSIX_PTHREAD)
+#define NA_MSG "POSIX threads not enabled"
+#elif !defined(CYGFUN_KERNEL_API_C)
+#define NA_MSG "Kernel C API not enabled"
+#elif !defined(CYGSEM_KERNEL_SCHED_MLQUEUE)
+#define NA_MSG "Kernel mlqueue scheduler not enabled"
+#elif !defined(CYGVAR_KERNEL_COUNTERS_CLOCK)
+#define NA_MSG "Kernel clock not enabled"
+#elif CYGNUM_KERNEL_SCHED_PRIORITIES <= 12
+#define NA_MSG "Kernel scheduler properties <= 12"
+#endif
+
+//==========================================================================
+
+#ifdef NA_MSG
+extern "C" void
+cyg_start(void)
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(NA_MSG);
+}
+#else
 
 #include <pkgconf/kernel.h>
 #include <pkgconf/hal.h>
@@ -71,15 +106,6 @@
 // This can expose the effects of caches on the speed of operations.
 
 #undef STATS_WITHOUT_FIRST_SAMPLE
-
-//==========================================================================
-
-#if defined(CYGPKG_POSIX) &&                    \
-    defined(CYGFUN_KERNEL_API_C) &&             \
-    defined(CYGSEM_KERNEL_SCHED_MLQUEUE) &&     \
-    defined(CYGVAR_KERNEL_COUNTERS_CLOCK) &&    \
-    !defined(CYGDBG_INFRA_DIAG_USE_DEVICE) &&   \
-    (CYGNUM_KERNEL_SCHED_PRIORITIES > 12)
 
 //==========================================================================
 
@@ -1656,18 +1682,6 @@ int main( int argc, char **argv )
    
 }
 
-#else // CYGFUN_KERNEL_API_C
-
-int main( int argc, char **argv )
-{
-    CYG_TEST_INIT();
-    CYG_TEST_NA("Timing tests require:\n"
-                "CYGFUN_KERNEL_API_C && \n"
-                "CYGSEM_KERNEL_SCHED_MLQUEUE &&\n"
-                "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
-                "!CYGDBG_INFRA_DIAG_USE_DEVICE &&\n"
-                "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
-}
 #endif // CYGFUN_KERNEL_API_C, etc.
 
 // EOF tm_basic.cxx

@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -71,7 +71,14 @@ externC cyg_uint32 hal_ctrlc_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data);
 
 //----------------------------------------------------------------------------
 // Reset.
+#ifndef CYGHWR_HAL_RESET_DEFINED
+extern void hal_stb_reset( void );
+#define CYGHWR_HAL_RESET_DEFINED
 #define HAL_PLATFORM_RESET()             CYG_EMPTY_STATEMENT
+
+#define HAL_PLATFORM_RESET_ENTRY           0x40000000
+
+#endif // CYGHWR_HAL_RESET_DEFINED
 
 //--------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

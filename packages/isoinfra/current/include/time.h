@@ -110,6 +110,15 @@ struct timeval {
 
 #if CYGINT_ISO_POSIX_TIMER_TYPES
 # include CYGBLD_ISO_POSIX_TIMER_TYPES_HEADER
+#else
+
+/* Provide a default struct timespec. */
+
+struct timespec
+{
+    time_t      tv_sec;
+    long        tv_nsec;
+};
 #endif
 
 #if CYGINT_ISO_C_TIME_TYPES

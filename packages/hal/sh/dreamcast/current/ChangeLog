@@ -1,3 +1,7 @@
+2001-08-06  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh7750_dreamcast.cdl: Set linux boot parameters.
+
 2001-07-30  Jesper Skov  <jskov@redhat.com>
 
 	* New platform HAL, contributed by Takeshi Yaegashi (t@keshi.org)

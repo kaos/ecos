@@ -1,3 +1,19 @@
+2001-08-09  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_recv): Add a pair of
+	CYGARC_HAL_SAVE_GP()/CYGARC_HAL_RESTORE_GP() on entry and exit;
+	this function is intercalled between RedBoot and the application.
+	A minor re-org at the ending to accommodate these macros' nesting.
+	(eth_drv_tx_done): CYGARC_HAL_SAVE_GP()/CYGARC_HAL_RESTORE_GP().
+
+	* src/stand_alone/eth_drv.c (eth_drv_tx_done): Add a pair of
+	CYGARC_HAL_SAVE_GP()/CYGARC_HAL_RESTORE_GP() on entry and exit;
+	this function is intercalled between RedBoot and the application.
+	Also make printing message about "tx_done for other key" also
+	conditional on net_debug variable - it's commonplace.
+	(eth_drv_recv): CYGARC_HAL_SAVE_GP()/CYGARC_HAL_RESTORE_GP().
+	(eth_drv_copy_recv): CYGARC_HAL_SAVE_GP()/CYGARC_HAL_RESTORE_GP().
+
 2001-07-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/net/eth_drv.c (eth_drv_recv): Better cleanup when running

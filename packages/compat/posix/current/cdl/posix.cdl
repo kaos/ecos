@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -56,18 +56,17 @@ cdl_package CYGPKG_POSIX {
     implements     CYGINT_ISO_SIGNAL_NUMBERS
     implements     CYGINT_ISO_SIGNAL_IMPL
     implements     CYGINT_ISO_POSIX_LIMITS
-    implements     CYGINT_ISO_SIGSETJMP
+    implements     CYGINT_ISO_PMUTEXTYPES
     requires       { CYGBLD_ISO_SIGNAL_NUMBERS_HEADER == \
                          "<cyg/posix/signal.h>" }
     requires       { CYGBLD_ISO_SIGNAL_IMPL_HEADER == \
                          "<cyg/posix/signal.h>" }
     requires       { CYGBLD_ISO_POSIX_LIMITS_HEADER == \
                          "<cyg/posix/limits.h>" }
-    requires       { CYGBLD_ISO_SIGSETJMP_HEADER == \
-                         "<cyg/posix/sigsetjmp.h>" }
+    requires       { CYGBLD_ISO_PMUTEXTYPES_HEADER == \
+                         "<cyg/posix/muttypes.h>" }
     
-    compile        pthread.cxx mqueue.cxx sem.cxx time.cxx signal.cxx \
-                   sched.cxx except.cxx misc.cxx
+    compile        mqueue.cxx mutex.cxx sem.cxx misc.cxx
     compile       -library=libextras.a startup.cxx
 
     # ----------------------------------------------------------------
@@ -79,6 +78,8 @@ cdl_package CYGPKG_POSIX {
 	default_value    1
 	description      "This component provides controls over scheduling
 	                  in POSIX."
+        requires         CYGPKG_POSIX_TIMERS
+        compile          sched.cxx
 
 	cdl_option _POSIX_PRIORITY_SCHEDULING {
 	    display       "POSIX priority scheduling feature test macro"
@@ -98,10 +99,9 @@ cdl_package CYGPKG_POSIX {
 	display          "POSIX pthread configuration"
 	flavor           bool
 	default_value    1
-	requires         CYGPKG_POSIX_SCHED
 	description      "This component provides configuration controls for
 	                  the POSIX pthreads package."
-
+        compile          pthread.cxx
 	script           pthread.cdl
     }
 
@@ -122,6 +122,7 @@ cdl_package CYGPKG_POSIX {
         requires         CYGPKG_KERNEL
         requires         CYGVAR_KERNEL_COUNTERS_CLOCK
         requires         CYGPKG_POSIX_PTHREAD
+        compile          time.cxx
 	description      "This component provides configuration controls for
 	                  the POSIX timers."
     }
@@ -201,8 +202,12 @@ cdl_package CYGPKG_POSIX {
         requires         CYGPKG_POSIX_PTHREAD
         requires         CYGPKG_POSIX_TIMERS
         implements       CYGINT_POSIX_REALTIME_SIGNALS
+        implements       CYGINT_ISO_SIGSETJMP
+        requires         { CYGBLD_ISO_SIGSETJMP_HEADER == \
+                             "<cyg/posix/sigsetjmp.h>" }
 	description      "This component provides configuration controls for
 	                  the POSIX signals."
+        compile          signal.cxx except.cxx 
     }
 
     # ----------------------------------------------------------------

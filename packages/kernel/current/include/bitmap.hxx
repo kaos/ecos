@@ -120,6 +120,9 @@ protected:
     
     // Test the given priority for uniqueness
     cyg_bool    unique( cyg_priority priority);
+
+public:
+    void set_idle_thread( Cyg_Thread *thread, HAL_SMP_CPU_TYPE cpu );
     
 };
 

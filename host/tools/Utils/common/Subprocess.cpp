@@ -259,6 +259,8 @@ void CSubprocess::ThreadFunc()
   
   DWORD dwAvail;
   
+  DWORD dwExitCode;
+
   while (!m_bKillThread && m_pfnContinue(m_pContinuationFuncParam) && ::PeekNamedPipe(m_hrPipe, NULL, 0, 0, &dwAvail, NULL)){
 //TRACE(_T("P%d\n"),dwAvail);
     if(dwAvail){
@@ -274,15 +276,23 @@ void CSubprocess::ThreadFunc()
       buf[dwRead]='\0';
       Output(String::CStrToUnicodeStr(buf));
       delete [] buf;
-    } else if(!ProcessAlive()){
-      TRACE(_T("m_bThreadTerminated=%d\n"),m_bThreadTerminated);
-      break;
-    } else {
+    }
+    else if (!ProcessAlive())
+    {
+        TRACE(_T("m_bThreadTerminated=%d\n"),m_bThreadTerminated);
+        break;
+    }
+    // Fix for hanging in an endless loop under Windows ME, by Bill Diehls <billabloke@yahoo.com>
+    else if (::GetExitCodeProcess(m_hProcess, &dwExitCode) && dwExitCode!=STILL_ACTIVE) 
+    {
+		break;
+    }
+    else
+    {
       CeCosThreadUtils::Sleep(250);
     }
   }
 
-  DWORD dwExitCode;
   ::GetExitCodeProcess(m_hProcess, &dwExitCode);
   m_nExitCode=dwExitCode;
   

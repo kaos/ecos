@@ -77,8 +77,8 @@ Cyg_HardwareThread::thread_entry( Cyg_Thread *thread )
 {
     CYG_REPORT_FUNCTION();
 
-    Cyg_Scheduler::scheduler.need_reschedule = false; // finished rescheduling
-    Cyg_Scheduler::scheduler.current_thread = thread; // restore current thread pointer
+    Cyg_Scheduler::scheduler.clear_need_reschedule(); // finished rescheduling
+    Cyg_Scheduler::scheduler.set_current_thread(thread); // restore current thread pointer
 
     CYG_INSTRUMENT_THREAD(ENTER,thread,0);
     
@@ -90,11 +90,11 @@ Cyg_HardwareThread::thread_entry( Cyg_Thread *thread )
     
     // Zero the lock
     HAL_REORDER_BARRIER ();            // Prevent the compiler from moving
-    Cyg_Scheduler::sched_lock = 0;     // the assignment into the code above.
+    Cyg_Scheduler::zero_sched_lock();     // the assignment into the code above.
     HAL_REORDER_BARRIER();
 
     // Call entry point in a loop.
-    
+
     for(;;)
     {
         thread->entry_point(thread->entry_data);
@@ -190,6 +190,8 @@ Cyg_Thread::Cyg_Thread(
 {
     CYG_REPORT_FUNCTION();
 
+    CYG_INSTRUMENT_THREAD(CREATE,this,0);
+    
     // Start the thread in suspended state.
     state               = SUSPENDED;
     suspend_count       = 1;
@@ -592,7 +594,7 @@ Cyg_Thread::resume()
     CYG_REPORT_FUNCTION();
 
     CYG_INSTRUMENT_THREAD(RESUME,this,Cyg_Scheduler::current_thread);
-            
+ 
     // Prevent preemption
     Cyg_Scheduler::lock();
 
@@ -619,6 +621,7 @@ Cyg_Thread::resume()
 
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
+
     CYG_REPORT_RETURN();
 }
 
@@ -736,13 +739,17 @@ Cyg_Thread::exit()
     // clear the timer; if there was none, no worries.
     clear_timer();
 
-    self->state = EXITED;
+    // It is possible that we have already been killed by another
+    // thread, in which case we do not want to try and take ourself
+    // out of the scheduler again.
+    if( self->state != EXITED )
+    {
+        self->state = EXITED;
 
-    Cyg_Scheduler::scheduler.rem_thread(self);
+        Cyg_Scheduler::scheduler.rem_thread(self);
+    }
 
-    // Un-nest any scheduler locks we have until we
-    // suspend.
-    for( ;; ) Cyg_Scheduler::unlock();
+    Cyg_Scheduler::reschedule();
 }
 
 // -------------------------------------------------------------------------
@@ -910,9 +917,13 @@ Cyg_Thread::set_priority( cyg_priority new_priority )
     // priority is less than that of some other runnable thread, in
     // practice checking that is as expensive as what the scheduler
     // will do anyway).
+    // If it is not the current thread then we need to see whether
+    // it is more worthy of execution than any current thread and
+    // rescheduled if necessary.
     
     if( this == Cyg_Scheduler::get_current_thread() )
-        Cyg_Scheduler::need_reschedule = true;
+         Cyg_Scheduler::set_need_reschedule();
+    else Cyg_Scheduler::set_need_reschedule(this);
     
     // Unlock the scheduler and maybe switch threads
     Cyg_Scheduler::unlock();
@@ -1177,10 +1188,10 @@ Cyg_ThreadTimer::alarm(
 # endif // CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE
 #endif // CYGNUM_HAL_STACK_SIZE_MINIMUM
 
-static char idle_thread_stack[CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE];
+static char idle_thread_stack[CYGNUM_KERNEL_CPU_MAX][CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE];
 
 // Loop counter for debugging/housekeeping
-cyg_uint32 idle_thread_loops = 1;
+cyg_uint32 idle_thread_loops[CYGNUM_KERNEL_CPU_MAX];
 
 // -------------------------------------------------------------------------
 // Idle thread code.
@@ -1192,9 +1203,9 @@ idle_thread_main( CYG_ADDRESS data )
 
     for(;;)
     {
-        idle_thread_loops++;
+        idle_thread_loops[CYG_KERNEL_CPU_THIS()]++;
 
-        HAL_IDLE_THREAD_ACTION(idle_thread_loops);
+        HAL_IDLE_THREAD_ACTION(idle_thread_loops[CYG_KERNEL_CPU_THIS()]);
 
 #if 0
         // For testing, it is useful to be able to fake
@@ -1217,47 +1228,35 @@ idle_thread_main( CYG_ADDRESS data )
 class Cyg_IdleThread : public Cyg_Thread
 {
 public:
-    Cyg_IdleThread(
-        cyg_thread_entry        *entry,           // entry point function
-        CYG_ADDRWORD            entry_data,       // entry data
-        cyg_ucount32            stack_size = 0,   // stack size, 0 = use default
-        CYG_ADDRESS             stack_base = 0    // stack base, NULL = allocate
-        );
+    Cyg_IdleThread();
         
 };
 
 // -------------------------------------------------------------------------
+// Instantiate the idle thread
+
+Cyg_IdleThread idle_thread[CYGNUM_KERNEL_CPU_MAX] CYG_INIT_PRIORITY( IDLE_THREAD );
+
+// -------------------------------------------------------------------------
 // Idle threads constructor
 
-Cyg_IdleThread::Cyg_IdleThread(
-    cyg_thread_entry        *entry,           // entry point function
-    CYG_ADDRWORD            entry_data,       // entry data
-    cyg_ucount32            stack_size,       // stack size, 0 = use default
-    CYG_ADDRESS             stack_base        // stack base, NULL = allocate
-    )
+Cyg_IdleThread::Cyg_IdleThread()
     : Cyg_Thread( CYG_THREAD_MIN_PRIORITY,
-                  entry,
-                  entry_data,
+                  idle_thread_main,
+                  0,
                   "Idle Thread",
-                  stack_base,
-                  stack_size)
+                  (CYG_ADDRESS)idle_thread_stack[this-&idle_thread[0]],
+                  CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE)
 {
     CYG_REPORT_FUNCTION();
 
-    resume();
+    // Call into scheduler to set up this thread as the default
+    // current thread for its CPU.
+    
+    Cyg_Scheduler::scheduler.set_idle_thread( this, this-&idle_thread[0] );
+
     CYG_REPORT_RETURN();
 }
-
-// -------------------------------------------------------------------------
-// Instantiate the idle thread
-
-Cyg_IdleThread idle_thread CYG_INIT_PRIORITY( IDLE_THREAD ) =
-Cyg_IdleThread( idle_thread_main,
-                0,
-                CYGNUM_KERNEL_THREADS_IDLE_STACK_SIZE,
-                CYG_ADDRESS(idle_thread_stack)
-    ); 
-
 
 // -------------------------------------------------------------------------
 // EOF common/thread.cxx

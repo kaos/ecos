@@ -1,3 +1,10 @@
+2001-08-10  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/io_flash.cdl: Changed flavor of
+	CYGHWR_IO_FLASH_BLOCK_LOCKING to booldata.
+	* include/flash.h: Matching changes.
+	* src/flash.c: Matching changes.
+
 2001-07-23  David Howells  <dhowells@redhat.com>
 
 	* cdl/io_flash.cdl: Added software write protect option.

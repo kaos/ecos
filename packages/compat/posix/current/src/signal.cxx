@@ -63,8 +63,9 @@
 #include <unistd.h>                     // _exit
 
 #include <cyg/kernel/clock.hxx>
-
+#include <cyg/kernel/thread.hxx>
 #include <cyg/kernel/clock.inl>
+#include <cyg/kernel/thread.inl>
 
 // -------------------------------------------------------------------------
 // Internal definitions
@@ -241,12 +242,29 @@ cyg_bool cyg_sigqueue( const struct sigevent *sev, int code,
     // else A non-queuable signal, just set it pending
 
     if( thread != NULL )
+    {
         sigaddset( &thread->sigpending, signo );
-    else sigaddset( &sig_pending, signo );
+        // just wake the thread up now if it's blocked somewhere
+        if ((thread->sigpending & ~thread->sigmask) != 0)
+        {
+            thread->thread->set_asr_pending();
+            thread->thread->release();
+        }
+    }
+    else
+    {
+        sigaddset( &sig_pending, signo );
+        // Wake up any threads in sigsuspend() and sigwait().
+        if (!signal_sigwait.get_queue()->empty())
+        {
+            signal_sigwait.broadcast();
+        } 
+        else
+        {
+            cyg_posix_pthread_release_thread( &sig_pending );
+        }
+    }
 
-    // Wake up any threads in sigsuspend() and sigwait().
-    signal_sigwait.broadcast();
-    
     if( !locked ) signal_mutex.unlock();
     
     return true;
@@ -648,7 +666,6 @@ externC int pthread_sigmask (int how, const sigset_t *set, sigset_t *oset)
     SIGNAL_ENTRY();
 
     pthread_info *self = pthread_self_info();
-
     // Save old set
     if( oset != NULL )
         *oset = self->sigmask;
@@ -1124,11 +1141,11 @@ __externC void siglongjmp( sigjmp_buf env, int val )
     if( val == 0 )
         val = 1;
 
-    if( *(int *)&env[sizeof(hal_jmp_buf)] )
-        pthread_sigmask( SIG_SETMASK, (sigset_t *)&(env)[sizeof(hal_jmp_buf)+sizeof(int)], NULL );
+    if( env[0].__savemask )
+        pthread_sigmask( SIG_SETMASK, &env[0].__sigsavemask, NULL );
     
     HAL_REORDER_BARRIER(); // prevent any chance of optimisation re-ordering
-    hal_longjmp( (hal_jmp_buf)env, val );
+    hal_longjmp( env[0].__jmp_buf, val );
     HAL_REORDER_BARRIER(); // prevent any chance of optimisation re-ordering
 
 #ifdef CYGDBG_USE_ASSERTS

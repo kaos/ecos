@@ -62,6 +62,10 @@
 #include <cyg/io/io_diag.h>
 #endif
 
+#ifdef CYG_HAL_DIAG_LOCK_DATA_DEFN
+CYG_HAL_DIAG_LOCK_DATA_DEFN;
+#endif
+
 /*----------------------------------------------------------------------*/
 
 externC void diag_write_num(
@@ -454,8 +458,17 @@ externC void diag_printf(const char *fmt, ... )
     args[7] = va_arg(a,CYG_ADDRWORD);
 
     va_end(a);
+
+#ifdef CYG_HAL_DIAG_LOCK
+    CYG_HAL_DIAG_LOCK();
+#endif    
     
     diag_vprintf( fmt, args);
+
+#ifdef CYG_HAL_DIAG_UNLOCK
+    CYG_HAL_DIAG_UNLOCK();
+#endif    
+    
 }
 
 #else
@@ -484,8 +497,18 @@ externC void diag_printf(const char *fmt, CYG_ADDRWORD a1, CYG_ADDRWORD a2,
     args[5] = a6;
     args[6] = a7;
     args[7] = a8;
+
+
+#ifdef CYG_HAL_DIAG_LOCK
+    CYG_HAL_DIAG_LOCK();
+#endif    
     
     diag_vprintf( fmt, args);
+
+#ifdef CYG_HAL_DIAG_UNLOCK
+    CYG_HAL_DIAG_UNLOCK();
+#endif    
+
 }
 
 #endif

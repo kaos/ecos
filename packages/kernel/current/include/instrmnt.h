@@ -104,6 +104,8 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_CLASS_CLOCK              0x0800
 #define CYG_INSTRUMENT_CLASS_ALARM              0x0900
 #define CYG_INSTRUMENT_CLASS_MBOXT              0x0a00
+#define CYG_INSTRUMENT_CLASS_SMP                0x0b00
+#define CYG_INSTRUMENT_CLASS_MLQ                0x0c00
 
 #define CYG_INSTRUMENT_CLASS_USER               0x0f00
 
@@ -125,6 +127,9 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_EVENT_THREAD_DELAY       7
 #define CYG_INSTRUMENT_EVENT_THREAD_ALARM       8
 #define CYG_INSTRUMENT_EVENT_THREAD_ENTER       9
+#define CYG_INSTRUMENT_EVENT_THREAD_CHECK_STACK 10
+#define CYG_INSTRUMENT_EVENT_THREAD_ATTACH_STACK 11
+#define CYG_INSTRUMENT_EVENT_THREAD_CREATE      12
 
 // Interrupt events
 #define CYG_INSTRUMENT_EVENT_INTR_RAISE         1
@@ -142,6 +147,8 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_EVENT_INTR_CONFIGURE     13
 #define CYG_INSTRUMENT_EVENT_INTR_ACK           14
 #define CYG_INSTRUMENT_EVENT_INTR_CHAIN_ISR     15
+#define CYG_INSTRUMENT_EVENT_INTR_SET_CPU       16
+#define CYG_INSTRUMENT_EVENT_INTR_GET_CPU       17
 
 // Mutex events
 #define CYG_INSTRUMENT_EVENT_MUTEX_LOCK         1
@@ -200,6 +207,27 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #define CYG_INSTRUMENT_EVENT_MBOXT_TRY          6
 #define CYG_INSTRUMENT_EVENT_MBOXT_PUT          7
 
+// SMP events
+#define CYG_INSTRUMENT_EVENT_SMP_LOCK_INC       1
+#define CYG_INSTRUMENT_EVENT_SMP_LOCK_ZERO      2
+#define CYG_INSTRUMENT_EVENT_SMP_LOCK_SET       3
+#define CYG_INSTRUMENT_EVENT_SMP_CPU_START      4
+#define CYG_INSTRUMENT_EVENT_SMP_LOCK_WAIT      5
+#define CYG_INSTRUMENT_EVENT_SMP_LOCK_GOT       6
+#define CYG_INSTRUMENT_EVENT_SMP_RESCHED_SEND   8
+#define CYG_INSTRUMENT_EVENT_SMP_RESCHED_RECV   9
+
+// MLQ scheduler events
+
+#define CYG_INSTRUMENT_EVENT_MLQ_SCHEDULE       1
+#define CYG_INSTRUMENT_EVENT_MLQ_RESCHEDULE     2
+#define CYG_INSTRUMENT_EVENT_MLQ_ADD            3
+#define CYG_INSTRUMENT_EVENT_MLQ_REM            4
+#define CYG_INSTRUMENT_EVENT_MLQ_TIMESLICE      5
+#define CYG_INSTRUMENT_EVENT_MLQ_YIELD          6
+#define CYG_INSTRUMENT_EVENT_MLQ_ENQUEUE        7
+#define CYG_INSTRUMENT_EVENT_MLQ_DEQUEUE        8
+#define CYG_INSTRUMENT_EVENT_MLQ_REMOVE         9
 
 
 // User events
@@ -373,12 +401,41 @@ externC void cyg_instrument_disable( cyg_uint32 cl, cyg_uint32 event );
 #endif
 
 // -------------------------------------------------------------------------
+// SMP instrumentation
+
+#ifdef CYGDBG_KERNEL_INSTRUMENT_SMP
+            
+#define CYG_INSTRUMENT_SMP(_event_,_arg1_,_arg2_) \
+    CYG_INSTRUMENT(CYGINST_EVENT(SMP,_event_),_arg1_,_arg2_)
+
+#else
+
+#define CYG_INSTRUMENT_SMP(_event_,_arg1_,_arg2_)
+
+#endif
+
+
+// -------------------------------------------------------------------------
+// MLQ instrumentation
+
+#if 1 //def CYGDBG_KERNEL_INSTRUMENT_MLQ
+            
+#define CYG_INSTRUMENT_MLQ(_event_,_arg1_,_arg2_) \
+    CYG_INSTRUMENT(CYGINST_EVENT(MLQ,_event_),_arg1_,_arg2_)
+
+#else
+
+#define CYG_INSTRUMENT_MLQ(_event_,_arg1_,_arg2_)
+
+#endif
+
+// -------------------------------------------------------------------------
 // User instrumentation
 
 #ifdef CYGDBG_KERNEL_INSTRUMENT_USER
             
 #define CYG_INSTRUMENT_USER(_event_,_arg1_,_arg2_) \
-    CYG_INSTRUMENT(CYGINST_EVENT(USER,_event_),_arg1_,_arg2_)
+    CYG_INSTRUMENT((CYG_INSTRUMENT_CLASS_USER|(_event_)),_arg1_,_arg2_)
 
 #else
 

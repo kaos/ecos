@@ -49,6 +49,19 @@
 
 #include <cyg/kernel/ktypes.h>
 
+#include <cyg/kernel/smp.hxx>
+
+// -------------------------------------------------------------------------
+// Default definitions
+
+// Some HALs define the ISR table to be a different size to the number
+// of ISR vectors. These HALs will define CYGNUM_HAL_ISR_TABLE_SIZE. All
+// other HALs will have the table size equal to the number of vectors.
+
+#ifndef CYGNUM_HAL_ISR_TABLE_SIZE
+# define CYGNUM_HAL_ISR_TABLE_SIZE      CYGNUM_HAL_ISR_COUNT
+#endif
+
 // -------------------------------------------------------------------------
 // Function prototype typedefs
 
@@ -154,20 +167,24 @@ class Cyg_Interrupt
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_TABLE
     
-    static Cyg_Interrupt *dsr_table[CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE];
+    static Cyg_Interrupt *dsr_table[CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE]
+                                    CYGBLD_ANNOTATE_VARIABLE_INTR;
 
-    static cyg_ucount32 dsr_table_head;
+    static cyg_ucount32 dsr_table_head CYGBLD_ANNOTATE_VARIABLE_INTR;
 
-    static volatile cyg_ucount32 dsr_table_tail;
+    static volatile cyg_ucount32 dsr_table_tail CYGBLD_ANNOTATE_VARIABLE_INTR;
 
 #endif
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-    volatile cyg_ucount32 dsr_count;	      // Number of DSR posts made
+    // Number of DSR posts made
+    volatile cyg_ucount32 dsr_count CYGBLD_ANNOTATE_VARIABLE_INTR; 
 
-    Cyg_Interrupt* volatile next_dsr; // next DSR in list
-    
-    static Cyg_Interrupt* volatile dsr_list; // static list of pending DSRs
+    // next DSR in list
+    Cyg_Interrupt* volatile next_dsr CYGBLD_ANNOTATE_VARIABLE_INTR; 
+
+    // static list of pending DSRs
+    static Cyg_Interrupt* volatile dsr_list CYGBLD_ANNOTATE_VARIABLE_INTR;
     
 #endif
 
@@ -184,11 +201,45 @@ class Cyg_Interrupt
     static cyg_uint32 chain_isr(cyg_vector vector, CYG_ADDRWORD data);    
 
     // Table of interrupt chains
-    static Cyg_Interrupt *chain_list[CYGNUM_HAL_ISR_COUNT];
+    static Cyg_Interrupt *chain_list[CYGNUM_HAL_ISR_TABLE_SIZE];
     
 #endif
 
-    static cyg_int32 disable_counter;   // Disable level counter
+    // Interrupt disable data. Interrupt disable can be nested. On
+    // each CPU this is controlled by disable_counter[cpu]. When the
+    // counter is first incremented from zero to one, the
+    // interrupt_disable_spinlock is claimed using spin_intsave(), the
+    // original interrupt enable state being saved in
+    // interrupt_disable_state[cpu].  When the counter is decremented
+    // back to zero the spinlock is cleared using clear_intsave().
+
+    // The spinlock is necessary in SMP systems since a thread
+    // accessing data shared with an ISR may be scheduled on a
+    // different CPU to the one that handles the interrupt. So, merely
+    // blocking local interrupts would be ineffective. SMP aware
+    // device drivers should either use their own spinlocks to protect
+    // data, or use the API supported by this class, via
+    // cyg_drv_isr_lock()/_unlock(). Note that it now becomes
+    // essential that ISRs do this if they are to be SMP-compatible.
+
+    // In a single CPU system, this mechanism reduces to just
+    // disabling/enabling interrupts.
+
+    // Disable level counter. This counts the number of times
+    // interrupts have been disabled.
+    static volatile cyg_int32 disable_counter[CYGNUM_KERNEL_CPU_MAX]
+                                              CYGBLD_ANNOTATE_VARIABLE_INTR;
+
+    // Interrupt disable spinlock. This is claimed by any CPU that has
+    // disabled interrupts via the Cyg_Interrupt API.
+    static Cyg_SpinLock interrupt_disable_spinlock CYGBLD_ANNOTATE_VARIABLE_INTR;
+
+    // Saved interrupt state. When each CPU first disables interrupts
+    // the original state of the interrupts are saved here to be
+    // restored later.
+    static CYG_INTERRUPT_STATE interrupt_disable_state[CYGNUM_KERNEL_CPU_MAX]
+                                                       CYGBLD_ANNOTATE_VARIABLE_INTR;
+
     
 public:
 
@@ -241,7 +292,7 @@ public:
     // Are interrupts enabled at the CPU?
     static inline cyg_bool interrupts_enabled()
     {
-        return (0 == disable_counter);
+        return (0 == disable_counter[CYG_KERNEL_CPU_THIS()]);
     }
     
     // Get the vector for the following calls
@@ -267,7 +318,15 @@ public:
         cyg_bool level,                 // level or edge triggered
         cyg_bool up                     // hi/lo level, rising/falling edge
         );
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    // SMP support for associating an interrupt with a specific CPU.
     
+    static void set_cpu( cyg_vector, HAL_SMP_CPU_TYPE cpu );
+    static HAL_SMP_CPU_TYPE get_cpu( cyg_vector );
+    
+#endif    
 };
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS

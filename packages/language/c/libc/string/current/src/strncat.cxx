@@ -70,8 +70,11 @@ __strncat( char *s1, const char *s2, size_t n)
     CYG_REPORT_FUNCNAMETYPE( "__strncat", "returning %08x" );
     CYG_REPORT_FUNCARG3( "s1=%08x, s2=%08x, n=%d", s1, s2, n );
 
-    CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
-    CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
+    if (n)
+    {
+        CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
+        CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
+    }
 
 #if defined(CYGIMP_LIBC_STRING_PREFER_SMALL_TO_FAST) || defined(__OPTIMIZE_SIZE__)
     char *s = s1;

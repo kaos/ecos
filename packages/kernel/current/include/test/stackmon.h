@@ -61,6 +61,7 @@
 #  include <cyg/kernel/thread.hxx>
 #  include <cyg/kernel/thread.inl>
 # endif
+# include <cyg/kernel/smp.hxx>
 #endif
 
 #ifndef STACKMON_PRINTF
@@ -129,13 +130,17 @@ inline void cyg_test_dump_thread_stack_stats( char *comment,
 inline void cyg_test_dump_idlethread_stack_stats( char *comment )
 {
 #if defined(CYGPKG_KERNEL)
-    extern Cyg_Thread idle_thread;
-    // idle thread is not really a plain CygThread; danger.
-    char *ibase  = (char *)idle_thread.get_stack_base();
-    char *istack = ibase + idle_thread.get_stack_size();
-    cyg_test_size_a_stack( comment,
-              "%20s : Idlethread stack used %5d size %5d\n",
-              ibase, istack );
+    int i;
+    extern Cyg_Thread idle_thread[CYGNUM_KERNEL_CPU_MAX];
+    for( i = 0; i < CYGNUM_KERNEL_CPU_MAX; i++ )
+    {
+        // idle thread is not really a plain CygThread; danger.
+        char *ibase  = (char *)idle_thread[i].get_stack_base();
+        char *istack = ibase + idle_thread[i].get_stack_size();
+        cyg_test_size_a_stack( comment,
+                               "%20s : Idlethread stack used %5d size %5d\n",
+                               ibase, istack );
+    }
 #endif
 }
 

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2001/05/14
-// Version:     $Id: symbols.h,v 1.7 2001/07/16 14:02:56 julians Exp $
+// Version:     $Id: symbols.h,v 1.8 2001/08/10 14:58:21 julians Exp $
 // Purpose:
 // Description: Some important symbols, such as the version
 // Requires:
@@ -43,5 +43,5 @@
 //
 //===========================================================================
 
-#define ecCONFIGURATION_TOOL_VERSION        2.04
+#define ecCONFIGURATION_TOOL_VERSION        2.05
 

@@ -72,8 +72,10 @@ __strxfrm( char *s1, const char *s2, size_t n )
     CYG_REPORT_FUNCNAMETYPE( "__strxfrm", "returning size %d" );
     CYG_REPORT_FUNCARG3( "s1=%08x, s2=%08x, n=%d", s1, s2, n );
 
-    if (s1 != NULL)
+    if (n)
+    {
         CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
+    }
     CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
 
     while (n-- > 0)

@@ -50,4 +50,37 @@ cdl_package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
     implements    CYGHWR_IO_FLASH_DEVICE
 
     include_dir   cyg/io
+
+    requires      { CYGINT_DEVS_FLASH_INTEL_VARIANTS != 0 }
+
+    cdl_interface CYGINT_DEVS_FLASH_INTEL_VARIANTS {
+        display   "Number of included variants"
+    }
+
+    cdl_interface CYGHWR_DEVS_FLASH_INTEL_BUFFERED_WRITES {
+        flavor    booldata
+        display   "Must support buffered writes"
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_INTEL_28F160S5 {
+        display       "Intel 28F160S5 flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_INTEL_VARIANTS
+        implements    CYGHWR_DEVS_FLASH_INTEL_BUFFERED_WRITES
+        description   "
+            When this option is enabled, the Intel flash driver will be
+            able to recognize and handle the 28F160S5
+            part in the family."
+    }
+
+    cdl_option CYGHWR_DEVS_FLASH_INTEL_28F320C3 {
+        display       "Intel 28F320C3 flash memory support"
+        default_value 0
+        implements    CYGHWR_IO_FLASH_BLOCK_LOCKING
+        implements    CYGINT_DEVS_FLASH_INTEL_VARIANTS
+        description   "
+            When this option is enabled, the Intel flash driver will be
+            able to recognize and handle the 28F320C3
+            part in the family."
+    }
 }

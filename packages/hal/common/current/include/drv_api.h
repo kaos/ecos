@@ -94,6 +94,17 @@
 #define cyg_drv_interrupt_acknowledge  cyg_interrupt_acknowledge
 #define cyg_drv_interrupt_configure    cyg_interrupt_configure
 #define cyg_drv_interrupt_level        cyg_interrupt_level
+#define cyg_drv_interrupt_set_cpu      cyg_interrupt_set_cpu
+#define cyg_drv_interrupt_get_cpu      cyg_interrupt_get_cpu
+
+#define cyg_drv_spinlock_t             cyg_spinlock_t
+#define cyg_drv_spinlock_init          cyg_spinlock_init
+#define cyg_drv_spinlock_spin          cyg_spinlock_spin
+#define cyg_drv_spinlock_clear         cyg_spinlock_clear
+#define cyg_drv_spinlock_try           cyg_spinlock_try
+#define cyg_drv_spinlock_test          cyg_spinlock_test
+#define cyg_drv_spinlock_spin_intsave  cyg_spinlock_spin_intsave
+#define cyg_drv_spinlock_clear_intsave cyg_spinlock_clear_intsave
 
 #else /* CYGPKG_KERNEL */
 
@@ -104,8 +115,9 @@ typedef CYG_ADDRWORD cyg_addrword_t;        /* May hold pointer or word   */
 typedef cyg_addrword_t cyg_handle_t;        /* Object handle              */
 typedef cyg_uint32   cyg_priority_t;        /* type for priorities        */
 typedef cyg_uint32   cyg_vector_t;          /* Interrupt vector id        */
-typedef int cyg_bool_t;
-typedef cyg_int32      cyg_code_t;          /* type for various codes        */       
+typedef cyg_uint32   cyg_cpu_t;             /* CPU id                     */
+typedef int          cyg_bool_t;
+typedef cyg_int32    cyg_code_t;            /* type for various codes        */       
 
 typedef cyg_uint32 cyg_ISR_t( cyg_vector_t vector, cyg_addrword_t data);
 typedef void cyg_DSR_t(cyg_vector_t vector,
@@ -182,6 +194,8 @@ externC void cyg_drv_interrupt_configure(
                      cyg_bool_t          up
                      );
 externC void cyg_drv_interrupt_level( cyg_vector_t vector, cyg_priority_t level );
+externC void cyg_drv_interrupt_set_cpu( cyg_vector_t vector, cyg_cpu_t cpu );
+externC cyg_cpu_t cyg_drv_interrupt_get_cpu( cyg_vector_t vector );
 
 
 enum cyg_ISR_results
@@ -189,6 +203,33 @@ enum cyg_ISR_results
     CYG_ISR_HANDLED  = 1,               /* Interrupt was handled             */
     CYG_ISR_CALL_DSR = 2                /* Schedule DSR                      */
 };
+
+
+typedef struct
+{
+    cyg_atomic          lock;
+} cyg_drv_spinlock_t;
+
+void cyg_drv_spinlock_init(
+    cyg_drv_spinlock_t  *lock,          /* spinlock to initialize            */
+    cyg_bool_t          locked          /* init locked or unlocked           */
+);
+
+void cyg_drv_spinlock_destroy( cyg_drv_spinlock_t *lock );
+
+void cyg_drv_spinlock_spin( cyg_drv_spinlock_t *lock );
+
+void cyg_drv_spinlock_clear( cyg_drv_spinlock_t *lock );
+
+cyg_bool_t cyg_drv_spinlock_try( cyg_drv_spinlock_t *lock );
+
+cyg_bool_t cyg_drv_spinlock_test( cyg_drv_spinlock_t *lock );
+
+void cyg_drv_spinlock_spin_intsave( cyg_drv_spinlock_t *lock,
+                                    cyg_addrword_t *istate );
+
+void cyg_drv_spinlock_clear_intsave( cyg_drv_spinlock_t *lock,
+                                     cyg_addrword_t istate );
 
 #endif /* CYGPKG_KERNEL */
 

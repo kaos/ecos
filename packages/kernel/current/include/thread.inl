@@ -88,6 +88,8 @@ inline void Cyg_HardwareThread::check_stack(void)
     cyg_uint32 *top =  (cyg_uint32 *)(stack_base + stack_size);
     cyg_ucount32 i;
 
+    CYG_INSTRUMENT_THREAD(CHECK_STACK, base, top );
+    
     CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)base), "stack base not word aligned" );
     CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)top),  "stack  top not word aligned" );
 
@@ -165,6 +167,8 @@ inline void Cyg_HardwareThread::attach_stack(CYG_ADDRESS s_base, cyg_uint32 s_si
 
         unsigned int i;
 
+        CYG_INSTRUMENT_THREAD(ATTACH_STACK, base, top );
+        
         CYG_ASSERT( NULL != base, "stack base non-NULL" );
         CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)base), "stack base alignment" );
         CYG_ASSERT( 0 == ((sizeof(CYG_WORD)-1) & (cyg_uint32)top),  "stack  top alignment" );

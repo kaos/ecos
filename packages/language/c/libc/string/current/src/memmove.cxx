@@ -73,8 +73,11 @@ __memmove( void *s1, const void *s2, size_t n )
     CYG_REPORT_FUNCNAMETYPE( "__memmove", "returning %08x" );
     CYG_REPORT_FUNCARG3( "s1=%08x, s2=%08x, n=%d", s1, s2, n );
 
-    CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
-    CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
+    if (n)
+    {
+        CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
+        CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
+    }
 
     if ((src < dst) && (dst < (src + n)))
     {

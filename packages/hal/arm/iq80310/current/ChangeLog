@@ -1,3 +1,8 @@
+2001-08-04  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_platform_setup.h: Fix mapping so first MB of SDRAM has
+	ECC turned on. Now map first 4K of flash at 0xd0000000.
+
 2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* images/*: Remove. Don't bloat repository with things already on

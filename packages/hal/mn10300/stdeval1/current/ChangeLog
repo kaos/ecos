@@ -1,3 +1,9 @@
+2001-08-02  Nick Garnett  <nickg@redhat.com>
+
+	* include/plf_io.h:
+	Added this file to match assumption now made in arch files that it
+	exists.	
+
 2001-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h: Reset macros moved

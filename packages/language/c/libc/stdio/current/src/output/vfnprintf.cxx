@@ -735,20 +735,23 @@ static int
 cvt(double number, int prec, int flags, char *signp, int fmtch, char *startp,
     char *endp)
 {
-        char *p, *t;
+    Cyg_libm_ieee_double_shape_type ieeefp;
+    char *t = startp;
+
+    ieeefp.value = number;
+    *signp = 0;
+    if ( ieeefp.number.sign ){  // this checks for <0.0 and -0.0
+        number = -number;
+        *signp = '-';
+    }
+
+    if (finite(number)) {
+        char *p;
         double fract;
         int dotrim, expcnt, gformat;
         double integer, tmp;
-        Cyg_libm_ieee_double_shape_type ieeefp;
 
         dotrim = expcnt = gformat = 0;
-        ieeefp.value = number;
-        if ( ieeefp.number.sign ){  // this checks for <0.0 and -0.0
-                number = -number;
-                *signp = '-';
-        } else
-                *signp = 0;
-
         fract = modf(number, &integer);
 
         /* get an extra slot for rounding. */
@@ -917,7 +920,28 @@ eformat:        if (expcnt) {
                                 ++t;
                 }
         }
-        return (t - startp);
+    } else {
+	unsigned case_adj;
+	switch (fmtch) {
+	case 'f':
+	case 'g':
+	case 'e':
+	    case_adj = 'a' - 'A';
+	    break;
+	default:
+	    case_adj = 0;
+	}
+	if (isnan(number)) {
+	    *t++ = 'N' + case_adj;
+	    *t++ = 'A' + case_adj;
+	    *t++ = 'N' + case_adj;
+	} else { // infinite
+	    *t++ = 'I' + case_adj;
+	    *t++ = 'N' + case_adj;
+	    *t++ = 'F' + case_adj;
+	}
+    }
+    return (t - startp);
 } // cvt()
 
 #endif // ifdef CYGSEM_LIBC_STDIO_PRINTF_FLOATING_POINT

@@ -1,3 +1,7 @@
+2001-08-03  David Howells  <dhowells@redhat.com>
+
+	* src/mn10300_stb_flash.c: updated to latest AMD flash interface.
+
 2001-06-08  Jesper Skov  <jskov@redhat.com>
         From dhowells@redhat.com
 	* cdl/flash_stb.cdl: New package/file(s).

@@ -1,3 +1,7 @@
+2001-08-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7750.h: Don't use UBC as handling of it is broken.
+
 2001-07-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_cache.h: Define flash cache macros that also disable

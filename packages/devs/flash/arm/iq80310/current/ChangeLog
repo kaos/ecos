@@ -1,3 +1,7 @@
+2001-08-04  Mark Salter  <msalter@redhat.com>
+
+	* src/flash.h (FLASH_P2V): First 4K of flash now mapped at 0xd0000000.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/iq80310_flash.c: Remove dependency on printf() via user functions.

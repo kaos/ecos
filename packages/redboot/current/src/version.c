@@ -59,6 +59,11 @@
 // outlined above.
 //
 
+// Please do not edit the line below by hand: it is changed by the RedBoot
+// release process. In a CVS branch, the line is commented out.
+// In a release, it is defined to be the RedBoot release number.
+//#define CYGDAT_REDBOOT_CUSTOM_VERSION current
+
 #if defined(CYGDAT_REDBOOT_CUSTOM_VERSION)
 #define _REDBOOT_VERSION CYGDAT_REDBOOT_CUSTOM_VERSION
 #elif defined(CYGPKG_REDBOOT_current)

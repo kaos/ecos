@@ -71,14 +71,17 @@ __strncmp( const char *s1, const char *s2, size_t n )
 
     CYG_REPORT_FUNCNAMETYPE( "__strncmp", "returning %d" );
     CYG_REPORT_FUNCARG3( "s1=%08x, s2=%08x, n=%d", s1, s2, n );
+    
+    if (n == 0)
+    {
+        CYG_REPORT_RETVAL( 0 );
+        return 0;
+    }
 
     CYG_CHECK_DATA_PTR( s1, "s1 is not a valid pointer!" );
     CYG_CHECK_DATA_PTR( s2, "s2 is not a valid pointer!" );
 
 #if defined(CYGIMP_LIBC_STRING_PREFER_SMALL_TO_FAST) || defined(__OPTIMIZE_SIZE__)
-    if (n == 0)
-        return 0;
-
     while (n-- != 0 && *s1 == *s2)
     {
         if (n == 0 || *s1 == '\0' || *s2 == '\0')
@@ -95,12 +98,6 @@ __strncmp( const char *s1, const char *s2, size_t n )
 #else
     const CYG_WORD *aligned_s1;
     const CYG_WORD *aligned_s2;
-    
-    if (n == 0)
-    {
-        CYG_REPORT_RETVAL( 0 );
-        return 0;
-    } // if
     
     // If s1 or s2 are unaligned, then compare bytes.
     if (CYG_LIBC_STR_UNALIGNED2 (s1, s2))

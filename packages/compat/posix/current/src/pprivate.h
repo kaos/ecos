@@ -25,7 +25,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -82,6 +82,7 @@
 // This is pointed to by the CYGNUM_KERNEL_THREADS_DATA_POSIX entry of the
 // per-thread data.
 
+#ifdef CYGPKG_POSIX_PTHREAD
 typedef struct
 {
     unsigned int        state:4,                // Thread state
@@ -133,6 +134,45 @@ typedef struct
                                         // to be joined
 #define PTHREAD_STATE_EXITED    4       // The thread has exited and is ready to
                                         // be reaped
+#endif // ifdef CYGPKG_POSIX_PTHREAD
+//-----------------------------------------------------------------------------
+// Internal definitions
+
+// Handle entry to a pthread package function. 
+#define PTHREAD_ENTRY() CYG_REPORT_FUNCTYPE( "returning %d" )
+
+// Handle entry to a pthread package function with no args. 
+#define PTHREAD_ENTRY_VOID() CYG_REPORT_FUNCTION()
+
+// Do a pthread package defined return. This requires the error code to be
+// returned as the result of the function. This also gives us a place to
+// put any generic tidyup handling needed for things like signal delivery
+// and cancellation.
+#define PTHREAD_RETURN(err)                     \
+CYG_MACRO_START                                 \
+    CYG_REPORT_RETVAL( err );                   \
+    return err;                                 \
+CYG_MACRO_END
+
+// A void variant of the above.
+#define PTHREAD_RETURN_VOID                     \
+CYG_MACRO_START                                 \
+    CYG_REPORT_RETURN();                        \
+    return;                                     \
+CYG_MACRO_END
+
+// Check that a pointer passed in as an argument is valid and return
+// EINVAL if it is not. This should be used to check pointers that are
+// required to be valid. Pointers that may optionally be NULL should
+// be checked within the function.
+#define PTHREAD_CHECK(ptr) if( (ptr) == NULL ) PTHREAD_RETURN(EINVAL);
+
+#ifdef CYGPKG_POSIX_PTHREAD
+# define PTHREAD_TESTCANCEL() pthread_testcancel()
+#else
+# define PTHREAD_TESTCANCEL()
+#endif
+
 //-----------------------------------------------------------------------------
 // Priority translation.
 // eCos priorities run from 0 as the highest to 31 as the lowest. POSIX priorities
@@ -152,6 +192,7 @@ extern Cyg_Mutex pthread_mutex;
 //-----------------------------------------------------------------------------
 // Functions exported by pthread.cxx to the other parts of the POSIX subsystem.
 
+#ifdef CYGPKG_POSIX_PTHREAD
 externC void cyg_posix_pthread_start( void );
 
 externC pthread_info *pthread_self_info(void);
@@ -159,10 +200,12 @@ externC pthread_info *pthread_self_info(void);
 externC pthread_info *pthread_info_id( pthread_t id );
 
 externC void cyg_posix_pthread_release_thread( sigset_t *mask );
+#endif
 
 //-----------------------------------------------------------------------------
 // Functions exported by signal.cxx to the other parts of the POSIX subsystem.
 
+#ifdef CYGPKG_POSIX_SIGNALS
 externC void cyg_posix_signal_start();
 
 externC void cyg_posix_signal_asr(pthread_info *self);
@@ -176,10 +219,12 @@ externC void cyg_posix_thread_siginit( pthread_info *thread,
                                        pthread_info *parentthread );
 
 externC void cyg_posix_thread_sigdestroy( pthread_info *thread );
+#endif
 
 //-----------------------------------------------------------------------------
 // Functions exported by time.cxx to other parts of the POSIX subsystem.
 
+#ifdef CYGPKG_POSIX_TIMERS
 externC void cyg_posix_clock_start();
 
 externC cyg_tick_count cyg_timespec_to_ticks( const struct timespec *tp,
@@ -188,15 +233,18 @@ externC cyg_tick_count cyg_timespec_to_ticks( const struct timespec *tp,
 externC void cyg_ticks_to_timespec( cyg_tick_count ticks, struct timespec *tp );
 
 externC void cyg_posix_timer_asr( pthread_info *self );
+#endif
 
 //-----------------------------------------------------------------------------
 // Functions exported by except.cxx
 
+#ifdef CYGPKG_POSIX_SIGNALS
 externC void cyg_posix_exception_start();
 
 externC void cyg_pthread_exception_init(pthread_info *thread);
 
 externC void cyg_pthread_exception_destroy(pthread_info *thread);
+#endif
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_PPRIVATE_H

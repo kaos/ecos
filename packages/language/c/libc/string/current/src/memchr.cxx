@@ -69,7 +69,10 @@ __memchr( const void *s, int c, size_t n )
     CYG_REPORT_FUNCNAMETYPE( "__memchr", "returning addr %08x" );
     CYG_REPORT_FUNCARG3( "s=%08x, c=%d, n=%d", s, c, n );
 
-    CYG_CHECK_DATA_PTR( s, "s is not a valid pointer!" );
+    if (n)
+    {
+        CYG_CHECK_DATA_PTR( s, "s is not a valid pointer!" );
+    }
 
 #if defined(CYGIMP_LIBC_STRING_PREFER_SMALL_TO_FAST) || defined(__OPTIMIZE_SIZE__)
     const unsigned char *src = (const unsigned char *) s;

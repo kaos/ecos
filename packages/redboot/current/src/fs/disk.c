@@ -49,6 +49,9 @@
 #ifdef CYGSEM_REDBOOT_DISK_EXT2FS
 #include <fs/e2fs.h>
 #endif
+#ifdef CYGSEM_REDBOOT_DISK_ISO9660
+#include <fs/iso9660fs.h>
+#endif
 
 static void do_disks(int argc, char *argv[]);
 
@@ -168,6 +171,9 @@ find_partitions(disk_t *d)
 	p->disk = d;
 	p->start_sector = 0;
 	p->nr_sectors = d->nr_sectors;
+#ifdef CYGSEM_REDBOOT_DISK_ISO9660
+	p->funs = &redboot_iso9660fs_funs;
+#endif
 	return 1;
     }
 
@@ -182,13 +188,6 @@ find_partitions(disk_t *d)
     } else {
 	// Might want to handle other MBR types, here...
     }
-
-#ifdef CYGSEM_REDBOOT_DISK_ISO9660
-    if (d->kind == DISK_IDE_CDROM) {
-	p->funs = &redboot_iso9660_funs;
-	return found;
-    }
-#endif
 
     // Now go through all partitions and install the correct
     // funcs for supported filesystems.

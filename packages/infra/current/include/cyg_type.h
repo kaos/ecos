@@ -363,6 +363,26 @@ typedef cyg_haladdrword CYG_ADDRWORD;
         CYGBLD_ATTRIB_WEAK CYGBLD_ATTRIB_ALIAS(__symbol__)
 
 // -------------------------------------------------------------------------
+// Variable annotations
+// These annotations may be added to various static variables in the
+// HAL and kernel to indicate which component they belong to. These
+// are used by some targets to optimize memory placement of these
+// variables.
+
+#ifndef CYGBLD_ANNOTATE_VARIABLE_HAL
+#define CYGBLD_ANNOTATE_VARIABLE_HAL
+#endif
+#ifndef CYGBLD_ANNOTATE_VARIABLE_SCHED
+#define CYGBLD_ANNOTATE_VARIABLE_SCHED
+#endif
+#ifndef CYGBLD_ANNOTATE_VARIABLE_CLOCK
+#define CYGBLD_ANNOTATE_VARIABLE_CLOCK
+#endif
+#ifndef CYGBLD_ANNOTATE_VARIABLE_INTR
+#define CYGBLD_ANNOTATE_VARIABLE_INTR
+#endif
+
+// -------------------------------------------------------------------------
 // Various "flavours" of memory regions that can be described by the 
 // Memory Layout Tool (MLT).
 

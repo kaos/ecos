@@ -49,18 +49,27 @@
 #include <cyg/kernel/sched.inl>
 #include <cyg/kernel/thread.inl>
 
+// ------------------------------------------------------------------------
+
+#if !defined(CYGPKG_KERNEL_SMP_SUPPORT)
+
+// ------------------------------------------------------------------------
 
 #define NTHREADS 4
 #include "testaux.hxx"
 #include "testaux.h"
+
+// ------------------------------------------------------------------------
 
 static Cyg_Mutex m0, m1;
 static Cyg_Condition_Variable cvar0( m0 ), cvar1( m0 ), cvar2( m1 );
 
 volatile int thread_state[NTHREADS];
 
+// ------------------------------------------------------------------------
 // This thread is meant to get hung up trying to re-acquire m0
 // after waiting on the cv.
+
 static void entry0( CYG_ADDRWORD data )
 {
     CYG_TEST_INFO( "thread0: lock mutex 0");
@@ -88,7 +97,9 @@ static void entry0( CYG_ADDRWORD data )
     thread[data]->exit();
 }
 
+// ------------------------------------------------------------------------
 // This thread is meant to claim and keep m0.
+
 static void entry1( CYG_ADDRWORD data )
 {
     CYG_TEST_INFO( "thread1: lock mutex 0");
@@ -128,6 +139,7 @@ static void entry1( CYG_ADDRWORD data )
     thread[data]->exit();
 }
 
+// ------------------------------------------------------------------------
 // This thread is meant to get hung trying to acquire m0, and then get
 // released out of it by thread3.
 
@@ -154,6 +166,8 @@ static void entry2( CYG_ADDRWORD data )
     
     thread[data]->exit();    
 }
+
+// ------------------------------------------------------------------------
 
 static void entry3( CYG_ADDRWORD data )
 {
@@ -193,6 +207,8 @@ static void entry3( CYG_ADDRWORD data )
     thread[data]->exit();    
 }
 
+// ------------------------------------------------------------------------
+
 void mutex2_main( void )
 {
     CYG_TEST_INIT();
@@ -214,6 +230,8 @@ void mutex2_main( void )
     CYG_TEST_FAIL_FINISH("Not reached");
 }
 
+// ------------------------------------------------------------------------
+
 externC void
 cyg_start( void )
 { 
@@ -223,4 +241,24 @@ cyg_start( void )
     mutex2_main();
 }
 
+// ------------------------------------------------------------------------
+
+#else // CYGPKG_KERNEL_SMP_SUPPORT
+
+// ------------------------------------------------------------------------
+
+externC void
+cyg_start( void )
+{ 
+    CYG_TEST_INIT();
+    CYG_TEST_PASS_FINISH("Mutex2 test requires:\n"
+                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+
+}
+
+// ------------------------------------------------------------------------
+
+#endif // CYGPKG_KERNEL_SMP_SUPPORT
+
+// ------------------------------------------------------------------------
 // EOF mutex2.cxx

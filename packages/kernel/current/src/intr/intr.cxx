@@ -58,10 +58,11 @@
 // -------------------------------------------------------------------------
 // Statics
 
-// Interrupt disable counter. Note that this is initialized to 1 since
-// enable_interrupts() is called in Cyg_Scheduler::start().
+volatile cyg_int32 Cyg_Interrupt::disable_counter[CYGNUM_KERNEL_CPU_MAX];
 
-cyg_int32 Cyg_Interrupt::disable_counter = 1;
+Cyg_SpinLock Cyg_Interrupt::interrupt_disable_spinlock CYG_INIT_PRIORITY( INTERRUPTS );
+
+CYG_INTERRUPT_STATE Cyg_Interrupt::interrupt_disable_state[CYGNUM_KERNEL_CPU_MAX];
 
 // -------------------------------------------------------------------------
 
@@ -200,7 +201,6 @@ Cyg_Interrupt::call_pending_DSRs(void)
 {
     CYG_ASSERT( Cyg_Scheduler::get_sched_lock() == 1,
                 "DSRs being called with sched_lock not equal to 1");
-    
     HAL_INTERRUPT_STACK_CALL_PENDING_DSRS();
 }
 
@@ -271,6 +271,10 @@ interrupt_end(
 {
 //    CYG_REPORT_FUNCTION();
 
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT    
+    Cyg_Scheduler::lock();
+#endif
+    
     // Sometimes we have a NULL intr object pointer.
     cyg_vector vector = (intr!=NULL)?intr->vector:0;
 
@@ -319,7 +323,7 @@ interrupt_end(
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_CHAIN
 
-Cyg_Interrupt *Cyg_Interrupt::chain_list[CYGNUM_HAL_ISR_COUNT];
+Cyg_Interrupt *Cyg_Interrupt::chain_list[CYGNUM_HAL_ISR_TABLE_SIZE];
 
 #endif
 
@@ -545,15 +549,22 @@ Cyg_Interrupt::disable_interrupts(void)
 {
     CYG_REPORT_FUNCTION();
 
-    CYG_INSTRUMENT_INTR(DISABLE, disable_counter+1, 0);
+    CYG_INSTRUMENT_INTR(DISABLE, disable_counter[CYG_KERNEL_CPU_THIS()]+1, 0);
 
-    CYG_INTERRUPT_STATE dummy;
+    HAL_SMP_CPU_TYPE cpu_this = CYG_KERNEL_CPU_THIS();
 
-    HAL_DISABLE_INTERRUPTS(dummy);
-
-    CYG_ASSERT( disable_counter >= 0 , "Disable counter negative");
+    // If the disable_counter is zero, disable interrupts and claim the spinlock.
     
-    disable_counter++;
+    if( 0 == disable_counter[cpu_this] )
+    {
+        // Claim the spinlock and disable interrupts. We save the original interrupt
+        // enable state to restore later.
+        interrupt_disable_spinlock.spin_intsave(&interrupt_disable_state[cpu_this]);
+    }
+
+    // Now increment our disable counter.
+    
+    disable_counter[cpu_this]++;
     
     CYG_REPORT_RETURN();
 }
@@ -567,15 +578,18 @@ Cyg_Interrupt::enable_interrupts(void)
 {
     CYG_REPORT_FUNCTION();
         
-    CYG_INSTRUMENT_INTR(ENABLE, disable_counter, 0);
+    CYG_INSTRUMENT_INTR(ENABLE, disable_counter[CYG_KERNEL_CPU_THIS()], 0);
 
-    CYG_ASSERT( disable_counter > 0 , "Disable counter not greater than zero");
+    HAL_SMP_CPU_TYPE cpu_this = CYG_KERNEL_CPU_THIS();
+
+    CYG_ASSERT( disable_counter[cpu_this] > 0 , "Disable counter not greater than zero");
     
-    disable_counter--;
-
-    if ( disable_counter == 0 )
+    // If the disable counter goes to zero, then release the spinlock and restore
+    // the previous interrupt state.
+    
+    if( --disable_counter[cpu_this] == 0 )
     {
-        HAL_ENABLE_INTERRUPTS();
+        interrupt_disable_spinlock.clear_intsave(interrupt_disable_state[cpu_this]);
     }
 
     CYG_REPORT_RETURN();
@@ -658,6 +672,54 @@ Cyg_Interrupt::configure_interrupt(
 
     CYG_REPORT_RETURN();
 }
+
+// -------------------------------------------------------------------------
+// SMP support for setting/getting interrupt CPU
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+void
+Cyg_Interrupt::set_cpu(
+    cyg_vector vector,              // vector to control
+    HAL_SMP_CPU_TYPE cpu            // CPU to set
+    )
+{
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG2("vector = %d, cpu = %d", vector, cpu );
+
+    CYG_ASSERT( vector >= CYGNUM_HAL_ISR_MIN, "Invalid vector");    
+    CYG_ASSERT( vector <= CYGNUM_HAL_ISR_MAX, "Invalid vector");
+
+    CYG_INSTRUMENT_INTR(SET_CPU, vector, cpu);
+
+    HAL_INTERRUPT_SET_CPU( vector, cpu );
+
+    CYG_REPORT_RETURN();
+}
+
+HAL_SMP_CPU_TYPE
+Cyg_Interrupt::get_cpu(
+    cyg_vector vector              // vector to control
+    )
+{
+    CYG_REPORT_FUNCTION();
+    CYG_REPORT_FUNCARG1("vector = %d", vector);
+
+    CYG_ASSERT( vector >= CYGNUM_HAL_ISR_MIN, "Invalid vector");    
+    CYG_ASSERT( vector <= CYGNUM_HAL_ISR_MAX, "Invalid vector");
+
+    HAL_SMP_CPU_TYPE cpu;
+    
+    HAL_INTERRUPT_GET_CPU( vector, cpu );
+
+    CYG_INSTRUMENT_INTR(GET_CPU, vector, cpu);
+    
+    CYG_REPORT_RETURN();
+
+    return cpu;
+}
+
+#endif
 
 // -------------------------------------------------------------------------
 // EOF intr/intr.cxx

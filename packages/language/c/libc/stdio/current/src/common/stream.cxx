@@ -355,11 +355,13 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
         bytes_available = io_buf.get_buffer_addr_to_read(
               (cyg_uint8 **)&buff_to_read_from );
         
-        *bytes_read += (bytes_available < buffer_length) ? bytes_available
-                                                         : buffer_length;
-        if (*bytes_read) {
-            memcpy( user_buffer, buff_to_read_from, *bytes_read );
-            io_buf.set_bytes_read( *bytes_read );
+        cyg_ucount32 count =
+            (bytes_available < buffer_length) ? bytes_available : buffer_length;
+
+        if (count) {
+            memcpy( user_buffer, buff_to_read_from, count );
+            io_buf.set_bytes_read( count );
+            *bytes_read += count;
         } // if
 
     } // if

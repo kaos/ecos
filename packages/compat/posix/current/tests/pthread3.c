@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -39,11 +39,25 @@
 //####DESCRIPTIONEND####
 //==========================================================================
 
+#include <cyg/infra/testcase.h>
+#include <pkgconf/posix.h>
+
+#ifndef CYGPKG_POSIX_PTHREAD
+#define NA_MSG "POSIX threads not enabled"
+#endif
+
+#ifdef NA_MSG
+void
+cyg_start(void)
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(NA_MSG);
+}
+#else
+
 #include <sys/types.h>
 #include <pthread.h>
 #include <unistd.h> // sleep()
-
-#include <cyg/infra/testcase.h>
 
 //--------------------------------------------------------------------------
 // Thread info
@@ -185,7 +199,7 @@ void *pthread_entry3( void *arg)
 
 int main(int argc, char **argv)
 {
-    int i;
+    int i, j;
     int ret;
     void *retval[NTHREADS];
 
@@ -207,12 +221,17 @@ int main(int argc, char **argv)
         CYG_TEST_CHECK( ret == 0, "pthread_create() returned error");
     }
 
-    // Let the threads get going
+    // Let the threads get going    
     for ( i = 0; i < NTHREADS ; i++ ) {
         while ( thread_ready[i] == false )
             sched_yield();
     }
 
+    // Now wait a bit to be sure that the other threads have reached
+    // their cancellation points.
+    for ( j = 0; j < 20 ; j++ )
+        sched_yield();
+    
     // Now cancel them
     for( i = 0; i < NTHREADS; i++ )    
         pthread_cancel( thread[i] );
@@ -234,6 +253,8 @@ int main(int argc, char **argv)
     CYG_TEST_PASS_FINISH( "pthread3" );
         
 }
+
+#endif
 
 //--------------------------------------------------------------------------
 // end of pthread3.c

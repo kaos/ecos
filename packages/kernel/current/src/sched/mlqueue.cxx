@@ -78,8 +78,7 @@
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
 
-cyg_ucount32 Cyg_Scheduler_Implementation::timeslice_count =
-                                        CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+cyg_ucount32 Cyg_Scheduler_Implementation::timeslice_count[CYGNUM_KERNEL_CPU_MAX];
 
 #endif
 
@@ -96,6 +95,21 @@ Cyg_Scheduler_Implementation::Cyg_Scheduler_Implementation()
         
     queue_map   = 0;
 
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    pending_map = 0;
+    
+    for( int i = 0; i < CYGNUM_KERNEL_SCHED_PRIORITIES; i++ )
+        pending[i] = 0;
+
+#endif
+    
+    for( int i = 0; i < CYGNUM_KERNEL_CPU_MAX; i++ )
+    {
+        timeslice_count[i] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+        need_reschedule[i] = true;
+    }
+    
     CYG_REPORT_RETURN();
 }
 
@@ -113,15 +127,71 @@ Cyg_Scheduler_Implementation::schedule(void)
     CYG_ASSERT( queue_map != 0, "Run queue empty");
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
     CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    Cyg_Thread *current = get_current_thread();
+    register cyg_uint32 index;
+
+    CYG_ASSERT( current->cpu != CYG_KERNEL_CPU_NONE, "Current thread does not have CPU set!");
+
+    // If the current thread is still runnable, return it to pending
+    // state so that it can be considered alongside any other threads
+    // for execution.
+    if( current->get_state() == Cyg_Thread::RUNNING )
+    {
+        current->cpu = CYG_KERNEL_CPU_NONE;
+        pending[current->priority]++;
+        pending_map |= (1<<current->priority);
+    }
+    else
+    {
+        // Otherwise, ensure that the thread is no longer marked as
+        // running.
+        current->cpu = CYG_KERNEL_CPU_NONE;        
+    }
+
     
+    HAL_LSBIT_INDEX(index, pending_map);
+
+    Cyg_RunQueue *queue = &run_queue[index];
+    
+    CYG_ASSERT( !queue->empty(), "Queue for index empty");
+    CYG_ASSERT( pending[index] > 0, "Pending array and map disagree");
+
+    Cyg_Thread *thread = queue->get_head();
+
+    // We know there is a runnable thread in this queue, If the thread
+    // we got is not it, scan until we find it. While not constant time,
+    // this search has an upper bound of the number of CPUs in the system.
+    
+    while( thread->cpu != CYG_KERNEL_CPU_NONE )
+        thread = thread->get_next();
+
+    // Take newly scheduled thread out of pending map
+    thread->cpu = CYG_KERNEL_CPU_THIS();
+    if( --pending[index] == 0 )
+        pending_map &= ~(1<<index);
+    
+#else    
+
     register cyg_uint32 index;
 
     HAL_LSBIT_INDEX(index, queue_map);
 
-    Cyg_Thread *thread = run_queue[index].highpri();
+    Cyg_RunQueue *queue = &run_queue[index];
+    
+    CYG_ASSERT( !queue->empty(), "Queue for index empty");
 
+    Cyg_Thread *thread = queue->get_head();
+
+#endif
+    
+    CYG_INSTRUMENT_MLQ( SCHEDULE, thread, index);
+    
     CYG_ASSERT( thread != NULL , "No threads in run queue");
-
+    CYG_ASSERT( thread->queue == NULL , "Runnable thread on a queue!");
+   
     CYG_REPORT_RETVAL(thread);
 
     return thread;
@@ -136,11 +206,15 @@ Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
     cyg_priority pri                               = thread->priority;
-    Cyg_SchedulerThreadQueue_Implementation *queue = &run_queue[pri];
+    Cyg_RunQueue *queue = &run_queue[pri];
 
+    CYG_INSTRUMENT_MLQ( ADD, thread, pri);
+    
     CYG_ASSERT((CYG_THREAD_MIN_PRIORITY >= pri) 
                && (CYG_THREAD_MAX_PRIORITY <= pri),
                "Priority out of range!");
+
+    CYG_ASSERT( ((queue_map & (1<<pri))!=0) == ((!run_queue[pri].empty())!=0), "Map and queue disagree");
 
     // If the thread is on some other queue, remove it
     // here.
@@ -156,21 +230,38 @@ Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
       
         queue_map |= (1<<pri);
 
-        // If the new thread is higher priority than the
-        // current thread, request a reschedule.
-
-        if( pri < Cyg_Scheduler::get_current_thread()->priority )
-            need_reschedule = true;
-        
     }
     // else the queue already has an occupant, queue behind him
 
+    queue->add_tail(thread);
+
+    // If the new thread is higher priority than any
+    // current thread, request a reschedule.
+
+    set_need_reschedule(thread);
+    
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    // If the thread is not currently running, increment the pending
+    // count for the priority, and if necessary set the bit in the
+    // pending map.
+
+    if( thread->cpu == CYG_KERNEL_CPU_NONE )
+    {
+        if( pending[pri]++ == 0 )
+            pending_map |= (1<<pri);
+    }
+    // Otherwise the pending count will be dealt with in schedule().
+    
+#endif    
+    
+    CYG_ASSERT( thread->queue == NULL , "Runnable thread on a queue!");
     CYG_ASSERT( queue_map != 0, "Run queue empty");
     CYG_ASSERT( queue_map & (1<<pri), "Queue map bit not set for pri");
+    CYG_ASSERT( !run_queue[pri].empty(), "Queue for pri empty");
+    CYG_ASSERT( ((queue_map & (1<<pri))!=0) == ((!run_queue[pri].empty())!=0), "Map and queue disagree");    
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
-//    CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
-    
-    queue->enqueue(thread);
+    CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
     
     CYG_REPORT_RETURN();
 }
@@ -184,13 +275,39 @@ Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
         
     CYG_ASSERT( queue_map != 0, "Run queue empty");
-      
-    cyg_priority pri                               = thread->priority;
-    Cyg_SchedulerThreadQueue_Implementation *queue = &run_queue[pri];
 
+    cyg_priority pri    = thread->priority;
+    Cyg_RunQueue *queue = &run_queue[pri];
+
+    CYG_INSTRUMENT_MLQ( REM, thread, pri);
+    
     CYG_ASSERT( pri != CYG_THREAD_MIN_PRIORITY, "Idle thread trying to sleep!");
-    CYG_ASSERT( queue_map & (1<<pri), "Queue map bit not set for pri");
     CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    if( thread->cpu == CYG_KERNEL_CPU_NONE )
+    {
+        // If the thread is not running, then we need to adjust the
+        // pending count array and map if necessary.
+
+        if( --pending[pri] == 0 )
+            pending_map &= ~(1<<pri);
+    }
+    else
+    {
+        // If the target thread is currently running on a different
+        // CPU, send a reschedule interrupt there to deschedule it.        
+        if( thread->cpu != CYG_KERNEL_CPU_THIS() )
+            CYG_KERNEL_CPU_RESCHEDULE_INTERRUPT( thread->cpu, 0 );
+    }
+    // If the thread is current running on this CPU, then the pending
+    // count will be dealt with in schedule().
+    
+#endif
+        
+    CYG_ASSERT( queue_map & (1<<pri), "Queue map bit not set for pri");
+    CYG_ASSERT( !run_queue[pri].empty(), "Queue for pri empty");
     
     // remove thread from queue
     queue->remove(thread);
@@ -206,8 +323,104 @@ Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
     CYG_ASSERT( queue_map != 0, "Run queue empty");
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
     CYG_ASSERT( !run_queue[CYG_THREAD_MIN_PRIORITY].empty(), "Idle thread vanished!!!");
-
+    CYG_ASSERT( ((queue_map & (1<<pri))!=0) == ((!run_queue[pri].empty())!=0), "Map and queue disagree");
+    
     CYG_REPORT_RETURN();
+}
+
+// -------------------------------------------------------------------------
+// Set the need_reschedule flag
+// This function overrides the definition in Cyg_Scheduler_Base and tests
+// for a reschedule condition based on the priorities of the given thread
+// and the current thread(s).
+
+void Cyg_Scheduler_Implementation::set_need_reschedule(Cyg_Thread *thread)
+{
+#ifndef CYGPKG_KERNEL_SMP_SUPPORT
+
+    if( current_thread[0]->priority > thread->priority ||
+        current_thread[0]->get_state() != Cyg_Thread::RUNNING )
+        need_reschedule[0] = true;
+    
+#else
+
+    HAL_SMP_CPU_TYPE cpu_this = CYG_KERNEL_CPU_THIS();
+    HAL_SMP_CPU_TYPE cpu_count = CYG_KERNEL_CPU_COUNT();
+
+    // Start with current CPU. If we can do the job locally then
+    // that is most efficient. Only go on to other CPUs if that is
+    // not possible.
+        
+    HAL_SMP_CPU_TYPE cpu = cpu_this;
+    HAL_SMP_CPU_TYPE cpu_last = (cpu + cpu_count - 1) % cpu_count;
+
+    for(;;)
+    {
+        
+        // If a CPU is not already marked for rescheduling, and its
+        // current thread is of lower priority than _thread_, then
+        // set its need_reschedule flag.
+
+        Cyg_Thread *cur = current_thread[cpu];
+        
+        if( !need_reschedule[cpu] &&
+            (cur->priority > thread->priority)
+          )
+        {
+            need_reschedule[cpu] = true;
+
+            if( cpu != cpu_this )
+            {
+                CYG_INSTRUMENT_SMP( RESCHED_SEND, cpu, 0 );
+                CYG_KERNEL_CPU_RESCHEDULE_INTERRUPT( cpu, 0 );
+            }
+
+            // Having notionally rescheduled _thread_ onto the cpu, we
+            // now see if we can reschedule the former current thread of
+            // that CPU onto another.
+            
+            thread = cur;
+            cpu = (cpu + 1) % cpu_count;
+            cpu_last = (cpu + cpu_count - 1) % cpu_count;
+            continue;
+        }
+
+        // If that was the last CPU in the circle, stop here.
+        if( cpu == cpu_last )
+            break;
+
+        // Otherwise go on to the next.
+        cpu = (cpu + 1) % cpu_count;
+    } 
+
+#endif  
+}
+
+// -------------------------------------------------------------------------
+// Set up initial idle thread
+
+void Cyg_Scheduler_Implementation::set_idle_thread( Cyg_Thread *thread, HAL_SMP_CPU_TYPE cpu )
+{
+    // Make the thread the current thread for this CPU.
+    
+    current_thread[cpu] = thread;
+
+    // This will insert the thread in the run queues and make it
+    // available to execute.
+    thread->resume();
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    thread->cpu = cpu;
+    
+    // In SMP, we need to take this thread out of the pending array
+    // and map.
+    
+    cyg_priority pri    = thread->priority;
+    if( --pending[pri] == 0 )
+        pending_map &= ~(1<<pri);
+#endif    
+    
 }
 
 // -------------------------------------------------------------------------
@@ -252,19 +465,61 @@ Cyg_Scheduler_Implementation::unique( cyg_priority priority)
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
 
+// -------------------------------------------------------------------------
+
 void
 Cyg_Scheduler_Implementation::timeslice(void)
 {
 #ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
     CYG_REPORT_FUNCTION();
 #endif
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    HAL_SMP_CPU_TYPE cpu;
+    HAL_SMP_CPU_TYPE cpu_count = CYG_KERNEL_CPU_COUNT();
+    HAL_SMP_CPU_TYPE cpu_this = CYG_KERNEL_CPU_THIS();
+    
+    for( cpu = 0; cpu < cpu_count; cpu++ )
+    {
+        if( --timeslice_count[cpu] == 0 )
+            if( cpu == cpu_this )
+                timeslice_cpu();
+            else CYG_KERNEL_CPU_TIMESLICE_INTERRUPT( cpu, 0 );
+    }
+
+#else    
+
+    if( --timeslice_count[CYG_KERNEL_CPU_THIS()] )
+        timeslice_cpu();
+    
+#endif
+
+#ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
+    CYG_REPORT_RETURN();
+#endif    
+}
+
+// -------------------------------------------------------------------------
+
+void
+Cyg_Scheduler_Implementation::timeslice_cpu(void)
+{
+#ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
+    CYG_REPORT_FUNCTION();
+#endif
+
+    Cyg_Thread *thread = get_current_thread();
+    HAL_SMP_CPU_TYPE cpu_this = CYG_KERNEL_CPU_THIS();
+    
     CYG_ASSERT( queue_map != 0, "Run queue empty");
     CYG_ASSERT( queue_map & (1<<CYG_THREAD_MIN_PRIORITY), "Idle thread vanished!!!");
 
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
-    if( current_thread->timeslice_enabled && --timeslice_count == 0 )
+    if( thread->timeslice_enabled &&
+        timeslice_count[cpu_this] == 0 )
 #else    
-    if( --timeslice_count == 0 )
+    if( timeslice_count[cpu_this] == 0 )
 #endif
     {
         CYG_INSTRUMENT_SCHED(TIMESLICE,0,0);
@@ -272,9 +527,7 @@ Cyg_Scheduler_Implementation::timeslice(void)
         CYG_TRACE0( true, "quantum consumed, time to reschedule" );
 #endif
 
-        CYG_ASSERT( sched_lock > 0 , "Timeslice called with zero sched_lock");
-
-        Cyg_Thread *thread = current_thread;
+        CYG_ASSERT( get_sched_lock() > 0 , "Timeslice called with zero sched_lock");
 
         // Only try to rotate the run queue if the current thread is running.
         // Otherwise we are going to reschedule anyway.
@@ -282,18 +535,30 @@ Cyg_Scheduler_Implementation::timeslice(void)
         {
             Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
 
+            CYG_INSTRUMENT_MLQ( TIMESLICE, thread, 0);
+                
             CYG_ASSERTCLASS( thread, "Bad current thread");
             CYG_ASSERTCLASS( sched, "Bad scheduler");
     
-            cyg_priority pri                               = thread->priority;
-            Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
+            cyg_priority pri    = thread->priority;
+            Cyg_RunQueue *queue = &sched->run_queue[pri];
 
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+            // In SMP systems we set the head of the queue to point to
+            // the thread immediately after the current
+            // thread. schedule() will then pick that thread, or one
+            // after it to run next.
+            
+            queue->to_head( thread->get_next() );
+#else            
             queue->rotate();
+#endif
+            
+            if( queue->get_head() != thread )
+                sched->set_need_reschedule();
 
-            if( queue->highpri() != thread )
-                sched->need_reschedule = true;
-
-            timeslice_count = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+//            timeslice_count[cpu_this] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
         }
     }
 
@@ -303,6 +568,13 @@ Cyg_Scheduler_Implementation::timeslice(void)
 #ifdef CYGDBG_KERNEL_TRACE_TIMESLICE
     CYG_REPORT_RETURN();
 #endif
+}
+
+// -------------------------------------------------------------------------
+
+__externC void cyg_scheduler_timeslice_cpu(void)
+{
+    Cyg_Scheduler::scheduler.timeslice_cpu();
 }
 
 #endif
@@ -324,6 +596,9 @@ Cyg_SchedThread_Implementation::Cyg_SchedThread_Implementation
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
     // If timeslice_enabled exists, set it true by default
     timeslice_enabled = true;
+#endif
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+    cpu = CYG_KERNEL_CPU_NONE;
 #endif
     
     CYG_REPORT_RETURN();
@@ -352,19 +627,32 @@ Cyg_SchedThread_Implementation::yield(void)
         // To yield we simply rotate the appropriate
         // run queue to the next thread and reschedule.
 
+        CYG_INSTRUMENT_MLQ( YIELD, thread, 0);
+        
         CYG_ASSERTCLASS( thread, "Bad current thread");
     
         Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
 
         CYG_ASSERTCLASS( sched, "Bad scheduler");
     
-        cyg_priority pri                               = thread->priority;
-        Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
+        cyg_priority pri    = thread->priority;
+        Cyg_RunQueue *queue = &sched->run_queue[pri];
 
-        queue->rotate();
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
 
-        if( queue->highpri() != thread )
-            sched->need_reschedule = true;
+            // In SMP systems we set the head of the queue to point to
+            // the thread immediately after the current
+            // thread. schedule() will then pick that thread, or one
+            // after it to run next.
+            
+            queue->to_head( thread->get_next() );
+#else            
+            queue->rotate();
+#endif
+        
+        if( queue->get_head() != thread )
+            sched->set_need_reschedule();
+
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
             // Reset the timeslice counter so that this thread gets a full
             // quantum. 
@@ -376,7 +664,7 @@ Cyg_SchedThread_Implementation::yield(void)
 #ifdef CYGDBG_USE_ASSERTS
     // This test keeps the assertions in unlock_inner() happy if
     // need_reschedule was not set above.
-    if( !Cyg_Scheduler::need_reschedule )
+    if( !Cyg_Scheduler::get_need_reschedule() )
         Cyg_Scheduler::unlock();
     else 
 #endif    
@@ -388,7 +676,7 @@ Cyg_SchedThread_Implementation::yield(void)
 
 // -------------------------------------------------------------------------
 // Rotate the run queue at a specified priority.
-// (pri is the decider, no this, so the routine is static)
+// (pri is the decider, not this, so the routine is static)
 
 void
 Cyg_SchedThread_Implementation::rotate_queue( cyg_priority pri )
@@ -403,11 +691,11 @@ Cyg_SchedThread_Implementation::rotate_queue( cyg_priority pri )
 
     CYG_ASSERTCLASS( sched, "Bad scheduler");
     
-    Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
+    Cyg_RunQueue *queue = &sched->run_queue[pri];
 
     if ( !queue->empty() ) {
         queue->rotate();
-        sched->need_reschedule = true;
+        sched->set_need_reschedule();
     }
 
     // Unlock the scheduler and switch threads
@@ -454,6 +742,8 @@ Cyg_ThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
+    CYG_INSTRUMENT_MLQ( ENQUEUE, this, thread );
+    
 #ifdef CYGIMP_KERNEL_SCHED_SORTED_QUEUES
 
     // Insert the thread into the queue in priority order.
@@ -537,6 +827,8 @@ Cyg_ThreadQueue_Implementation::dequeue(void)
     CYG_REPORT_FUNCTYPE("returning thread %08x");
         
     Cyg_Thread *thread = rem_head();
+
+    CYG_INSTRUMENT_MLQ( DEQUEUE, this, thread );
     
     if( thread != NULL )
         thread->queue = NULL;
@@ -553,6 +845,8 @@ Cyg_ThreadQueue_Implementation::remove( Cyg_Thread *thread )
     CYG_REPORT_FUNCTION();
     CYG_REPORT_FUNCARG1("thread=%08x", thread);
 
+    CYG_INSTRUMENT_MLQ( REMOVE, this, thread );
+    
     thread->queue = NULL;
 
     Cyg_CList_T<Cyg_Thread>::remove( thread );
@@ -578,22 +872,6 @@ Cyg_ThreadQueue_Implementation::set_thread_queue(Cyg_Thread *thread,
 
 {
     thread->queue = tq;
-}
-
-// -------------------------------------------------------------------------
-
-void
-Cyg_SchedulerThreadQueue_Implementation::enqueue(Cyg_Thread *thread)
-{
-    CYG_REPORT_FUNCTION();
-    CYG_REPORT_FUNCARG1("thread=%08x", thread);
-
-    add_tail( thread );
-    
-    set_thread_queue( thread, CYG_CLASSFROMBASE(Cyg_ThreadQueue,
-                                      Cyg_SchedulerThreadQueue_Implementation,
-                                                this));
-    CYG_REPORT_RETURN();
 }
 
 // -------------------------------------------------------------------------

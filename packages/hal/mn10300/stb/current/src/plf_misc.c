@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg, jlarmour
+// Contributors: nickg, jlarmour, dhowells
 // Date:         1999-01-21
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
@@ -54,10 +54,41 @@
 
 #include <cyg/hal/hal_cache.h>          // Cache handling
 
+#include <cyg/hal/hal_if.h>
+
+#include <cyg/hal/plf_io.h>
+
+/*------------------------------------------------------------------------*/
+/* LED support                                                            */
+cyg_uint8 cyg_hal_plf_led_val(CYG_WORD hexdig)
+{
+    static cyg_uint8 map[] = {
+        0x81, // 0
+        0xf3, // 1
+        0x49, // 2
+        0x61, // 3
+        0x33, // 4
+        0x25, // 5
+        0x05, // 6
+        0xf1, // 7
+        0x01, // 8
+        0x21, // 9
+        0x11, // A
+        0x07, // B
+        0x8d, // C
+        0x43, // D
+        0x0d, // E
+        0x1d  // F
+    };
+    return map[(hexdig & 0xF)];
+}
+
 /*------------------------------------------------------------------------*/
 
 void hal_platform_init(void)
 {
+    HAL_WRITE_UINT8(HAL_LED_ADDRESS, cyg_hal_plf_led_val(8));
+
 #if defined(CYG_HAL_STARTUP_ROM)
     // Note that the hardware seems to come up with the
     // caches containing random data. Hence they must be
@@ -68,11 +99,14 @@ void hal_platform_init(void)
     // is not expecting it, we can end up breaking things if the
     // monitor is not doing cache flushes.
 
-    HAL_ICACHE_INVALIDATE_ALL();    
-    HAL_ICACHE_ENABLE();
-    HAL_DCACHE_INVALIDATE_ALL();
-    HAL_DCACHE_ENABLE();
+    //HAL_ICACHE_INVALIDATE_ALL();    
+    //HAL_ICACHE_ENABLE();
+    //HAL_DCACHE_INVALIDATE_ALL();
+    //HAL_DCACHE_ENABLE();
 #endif
+
+    // Set up eCos/ROM interfaces
+    hal_if_init();
     
 #if defined(CYGPKG_KERNEL)                      && \
     defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
@@ -89,50 +123,6 @@ void hal_platform_init(void)
         hal_ctrlc_isr_init();
     }
 #endif    
-}
-
-/*------------------------------------------------------------------------*/
-/* Functions to support the detection and execution of a user provoked    */
-/* program break. These are usually called from interrupt routines.       */
-
-cyg_bool cyg_hal_is_break(char *buf, int size)
-{
-    while( size )
-        if( buf[--size] == 0x03 ) return true;
-
-    return false;
-}
-
-void cyg_hal_user_break( CYG_ADDRWORD *regs )
-{
-#if defined(CYGSEM_HAL_USE_ROM_MONITOR_GDB_stubs)
-
-        {
-            extern CYG_ADDRESS hal_virtual_vector_table[64];        
-            typedef void install_bpt_fn(void *pc);
-            CYG_WORD32 retpc = ((CYG_WORD32 *)(&regs))[-1];
-            CYG_WORD32 pc;
-            HAL_SavedRegisters *sreg = (HAL_SavedRegisters *)regs;
-            install_bpt_fn *ibp = (install_bpt_fn *)hal_virtual_vector_table[35];
-
-            if( regs == NULL ) pc = retpc;
-            else pc = sreg->pc;
-
-            if( ibp != NULL ) ibp((void *)pc);
-        }
-    
-#elif defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
-
-        {
-            extern void breakpoint(void);
-            breakpoint();
-        }
-    
-#else
-
-        HAL_BREAKPOINT(breakinst);
-
-#endif
 }
 
 /*------------------------------------------------------------------------*/

@@ -456,6 +456,27 @@ externC void cyg_interrupt_configure(
     Cyg_Interrupt::configure_interrupt( (cyg_vector)vector, level, up );
 }
 
+externC void cyg_interrupt_set_cpu(
+    cyg_vector_t        vector,         /* vector to control                 */
+    cyg_cpu_t           cpu             /* CPU to set                        */
+)
+{
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT    
+    Cyg_Interrupt::set_cpu( vector, cpu );
+#endif    
+}
+
+externC cyg_cpu_t cyg_interrupt_get_cpu(
+    cyg_vector_t        vector          /* vector to control                 */
+)
+{
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT        
+    return Cyg_Interrupt::get_cpu( vector );
+#else
+    return CYG_KERNEL_CPU_THIS();
+#endif    
+    
+}
 
 /*---------------------------------------------------------------------------*/
 /* Counters, Clocks and Alarms                                               */
@@ -877,6 +898,24 @@ externC void cyg_mutex_release( cyg_mutex_t *mutex )
     ((Cyg_Mutex *)mutex)->release();
 }
 
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+externC void cyg_mutex_set_ceiling( 
+    cyg_mutex_t *mutex, 
+    cyg_priority_t priority )
+{
+    ((Cyg_Mutex *)mutex)->set_ceiling(priority);
+}
+#endif
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+externC void cyg_mutex_set_protocol( 
+    cyg_mutex_t *mutex,
+    enum cyg_protcol protocol )
+{
+    ((Cyg_Mutex *)mutex)->set_protocol((Cyg_Mutex::cyg_protcol)protocol);
+}
+#endif
+
 /*---------------------------------------------------------------------------*/
 /* Condition Variables                                                       */
 
@@ -923,6 +962,62 @@ externC cyg_bool_t cyg_cond_timed_wait(
 
 #endif
 
+/*---------------------------------------------------------------------------*/
+/* Spinlocks                                                                 */
+
+externC void cyg_spinlock_init(
+    cyg_spinlock_t      *lock,          /* spinlock to initialize            */
+    cyg_bool_t          locked          /* init locked or unlocked           */
+)
+{
+    CYG_ASSERT_SIZES( cyg_spinlock_t, Cyg_SpinLock );
+
+    // Create the spinlock in cleared state
+    Cyg_SpinLock *t = new((void *)lock) Cyg_SpinLock();
+
+    // If the lock is to start locked, then lock it now.
+    if( locked )
+        t->spin();
+}
+
+externC void cyg_spinlock_destroy( cyg_spinlock_t *lock )
+{
+    ((Cyg_SpinLock *)lock)->~Cyg_SpinLock();
+}
+
+externC void cyg_spinlock_spin( cyg_spinlock_t *lock )
+{
+    ((Cyg_SpinLock *)lock)->spin();
+}
+
+externC void cyg_spinlock_clear( cyg_spinlock_t *lock )
+{
+    ((Cyg_SpinLock *)lock)->clear();
+}
+
+externC cyg_bool_t cyg_spinlock_try( cyg_spinlock_t *lock )
+{
+    return ((Cyg_SpinLock *)lock)->trylock();
+}
+
+externC cyg_bool_t cyg_spinlock_test( cyg_spinlock_t *lock )
+{
+    return ((Cyg_SpinLock *)lock)->test();
+}
+
+externC void cyg_spinlock_spin_intsave( cyg_spinlock_t *lock,
+                                cyg_addrword_t *istate )
+{
+    ((Cyg_SpinLock *)lock)->spin_intsave(istate);
+}
+    
+externC void cyg_spinlock_clear_intsave( cyg_spinlock_t *lock,
+                                 cyg_addrword_t istate )
+{
+    ((Cyg_SpinLock *)lock)->clear_intsave(istate);
+}
+    
+
 // -------------------------------------------------------------------------
 // Check structure sizes.
 // This class and constructor get run automatically in debug versions
@@ -965,6 +1060,7 @@ Cyg_Check_Structure_Sizes::Cyg_Check_Structure_Sizes(int x)
     CYG_CHECK_SIZES( cyg_flag_t, Cyg_Flag );
     CYG_CHECK_SIZES( cyg_mutex_t, Cyg_Mutex );
     CYG_CHECK_SIZES( cyg_cond_t, Cyg_Condition_Variable );
+    CYG_CHECK_SIZES( cyg_spinlock_t, Cyg_SpinLock );
     
     CYG_ASSERT( !fail, "Size checks failed");
 }

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.      
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     hmt
-// Contributors:  hmt, nickg
+// Contributors:  hmt, nickg, jlarmour
 // Date:          2000-01-06
 // Description:   Tests mutex priority inheritance. This is simply a translation
 //                of the similarly named kernel test to the POSIX API
@@ -40,20 +40,15 @@
 
 // ------------------------------------------------------------------------
 
-#include <sys/types.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <time.h>
-
-
 #include <cyg/infra/testcase.h>
+#include <pkgconf/posix.h>
+#include <pkgconf/system.h>
+#ifdef CYGPKG_KERNEL
+#include <pkgconf/kernel.h>
+#endif
 
-#include <cyg/infra/cyg_ass.h>
-#include <cyg/infra/cyg_trac.h>
-#include <cyg/infra/diag.h>             // diag_printf
-
-#include <cyg/kernel/kapi.h>            // Some extras
-
+#if !defined(CYGPKG_POSIX_PTHREAD)
+#define NA_MSG "POSIX threads not enabled"
 
 // ------------------------------------------------------------------------
 //
@@ -61,8 +56,35 @@
 // should manifest as having no priority inheritance, but otherwise fine,
 // so the test should work correctly.
 
-#if defined(_POSIX_THREAD_PRIORITY_SCHEDULING) &&    \
-    defined(_POSIX_THREAD_PRIO_INHERIT)
+#elif !defined(_POSIX_THREAD_PRIORITY_SCHEDULING)
+#define NA_MSG "No POSIX thread priority scheduling enabled"
+#elif !defined(_POSIX_THREAD_PRIO_INHERIT)
+#define NA_MSG "No POSIX thread priority inheritance enabled"
+#elif !defined(CYGFUN_KERNEL_API_C)
+#define NA_MSG "Kernel C API not enabled"
+#elif defined(CYGPKG_KERNEL_SMP_SUPPORT)
+#define NA_MSG "Test cannot run with SMP support"
+#endif
+
+#ifdef NA_MSG
+void
+cyg_start(void)
+{
+    CYG_TEST_INIT();
+    CYG_TEST_NA(NA_MSG);
+}
+#else
+
+#include <sys/types.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
+
+#include <cyg/infra/cyg_ass.h>
+#include <cyg/infra/cyg_trac.h>
+#include <cyg/infra/diag.h>             // diag_printf
+
+#include <cyg/kernel/kapi.h>            // Some extras
 
 // ------------------------------------------------------------------------
 // Management functions
@@ -474,19 +496,6 @@ main( int argc, char **argv )
     for(;;) sem_wait( &main_sem );
 }
 
-#else // CYGVAR_KERNEL_COUNTERS_CLOCK &c
-
-externC int
-main( int argc, char **argv )
-{
-    CYG_TEST_INIT();
-    CYG_TEST_PASS_FINISH("Mutex3 test requires:\n"
-                         "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
-                         "(CYGNUM_KERNEL_SCHED_PRIORITIES > 20)\n");
-}
-#endif // CYGVAR_KERNEL_COUNTERS_CLOCK &c
-
-
 // ------------------------------------------------------------------------
 // Documentation: enclosed is the design of this test.
 //
@@ -641,5 +650,7 @@ main( int argc, char **argv )
 // 
 // 
 // ------------------------------------------------------------------------
+
+#endif
 
 // EOF mutex3.cxx

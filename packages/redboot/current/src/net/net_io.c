@@ -593,6 +593,15 @@ net_init(void)
         have_net = true;  // Assume values in FLASH were OK
     }
     if (have_net) {
+        printf("Ethernet %s: MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",
+               __local_enet_sc->dev_name,
+               __local_enet_addr[0],
+               __local_enet_addr[1],
+               __local_enet_addr[2],
+               __local_enet_addr[3],
+               __local_enet_addr[4],
+               __local_enet_addr[5]);
+
         printf("IP: %s", inet_ntoa((in_addr_t *)&__local_ip_addr));
         printf(", Default server: %s\n", inet_ntoa(&my_bootp_info.bp_siaddr));
         net_io_init();

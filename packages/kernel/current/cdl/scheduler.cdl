@@ -72,6 +72,7 @@ cdl_option CYGSEM_KERNEL_SCHED_BITMAP {
     default_value 0
     implements    CYGINT_KERNEL_SCHEDULER
     implements    CYGINT_KERNEL_SCHEDULER_UNIQUE_PRIORITIES
+    requires      !CYGPKG_KERNEL_SMP_SUPPORT
     description   "
         The bitmap scheduler supports multiple priority levels but
         only one thread can exist at each priority level. This means

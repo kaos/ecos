@@ -126,7 +126,7 @@ void Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
     // current thread, request a reschedule.
 
     if( thread->priority < Cyg_Scheduler::get_current_thread()->priority )
-        need_reschedule = true;
+        set_need_reschedule();
 }
 
 // -------------------------------------------------------------------------
@@ -142,6 +142,25 @@ void Cyg_Scheduler_Implementation::rem_thread(Cyg_Thread *thread)
                 "Run queue bit not set" );
 
     run_queue &= ~(1<<thread->priority);
+
+    if( thread == Cyg_Scheduler::get_current_thread() )
+        set_need_reschedule();
+}
+
+// -------------------------------------------------------------------------
+// Set up initial idle thread
+
+void Cyg_Scheduler_Implementation::set_idle_thread( Cyg_Thread *thread, HAL_SMP_CPU_TYPE cpu )
+{
+    CYG_REPORT_FUNCTION();
+
+    // Make the thread the current thread for this CPU.
+    
+    current_thread[cpu] = thread;
+    
+    // This will insert the thread in the run queues and make it
+    // available to execute.
+    thread->resume();
 }
 
 // -------------------------------------------------------------------------

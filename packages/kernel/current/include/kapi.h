@@ -67,6 +67,7 @@ typedef cyg_addrword_t cyg_handle_t;        /* Object handle                 */
 typedef cyg_uint32     cyg_priority_t;      /* type for priorities           */
 typedef cyg_int32      cyg_code_t;          /* type for various codes        */
 typedef cyg_uint32     cyg_vector_t;        /* Interrupt vector id           */
+typedef cyg_uint32     cyg_cpu_t;           /* CPU id type                   */
 
 typedef cyg_uint64 cyg_tick_count_t;
 
@@ -109,6 +110,9 @@ typedef struct cyg_mutex_t cyg_mutex_t;
 
 struct cyg_cond_t;
 typedef struct cyg_cond_t cyg_cond_t;
+
+struct cyg_spinlock_t;
+typedef struct cyg_spinlock_t cyg_spinlock_t;
 
 /*---------------------------------------------------------------------------*/
 /* Scheduler operations */
@@ -239,8 +243,9 @@ void cyg_exception_call_handler(
 /* Interrupt handling                                                        */
 typedef void            cyg_VSR_t(void);
 typedef cyg_uint32      cyg_ISR_t(cyg_vector_t vector, cyg_addrword_t data);
-typedef void            cyg_DSR_t(
-    cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
+typedef void            cyg_DSR_t( cyg_vector_t vector,
+                                   cyg_ucount32 count,
+                                   cyg_addrword_t data);
 
 
 enum cyg_ISR_results
@@ -295,6 +300,15 @@ void cyg_interrupt_configure(
     cyg_bool_t          up              /* rising/faling edge, high/low level*/
 );
 
+void cyg_interrupt_set_cpu(
+    cyg_vector_t        vector,         /* vector to control                 */
+    cyg_cpu_t           cpu             /* CPU to set                        */
+);
+
+cyg_cpu_t cyg_interrupt_get_cpu(
+    cyg_vector_t        vector          /* vector to control                 */
+);
+    
 /*---------------------------------------------------------------------------*/
 /* Counters, Clocks and Alarms                                               */
 
@@ -506,6 +520,15 @@ cyg_bool_t cyg_flag_waiting( cyg_flag_t *flag );
 /*---------------------------------------------------------------------------*/
 /* Mutex                                                                     */
 
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+enum cyg_protcol
+{
+  NONE = 0,                       // no inversion protocol
+  INHERIT,                        // priority inheritance protocol
+  CEILING                         // priority ceiling protocol
+};
+#endif
+
 void cyg_mutex_init(
     cyg_mutex_t        *mutex          /* Mutex to init                      */
 );
@@ -519,6 +542,14 @@ cyg_bool_t cyg_mutex_trylock( cyg_mutex_t *mutex );
 void cyg_mutex_unlock( cyg_mutex_t *mutex );
 
 void cyg_mutex_release( cyg_mutex_t *mutex );
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
+void cyg_mutex_set_ceiling( cyg_mutex_t *mutex, cyg_priority_t priority );
+#endif
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+void cyg_mutex_set_protocol ( cyg_mutex_t *mutex, enum cyg_protcol protocol );
+#endif
 
 /*---------------------------------------------------------------------------*/
 /* Condition Variables                                                       */
@@ -543,10 +574,36 @@ cyg_bool_t cyg_cond_timed_wait(
     );
 #endif
 
+/*---------------------------------------------------------------------------*/
+/* Spinlocks                                                                 */
 
+void cyg_spinlock_init(
+    cyg_spinlock_t      *lock,          /* spinlock to initialize            */
+    cyg_bool_t          locked          /* init locked or unlocked           */
+);
+
+void cyg_spinlock_destroy( cyg_spinlock_t *lock );
+
+void cyg_spinlock_spin( cyg_spinlock_t *lock );
+
+void cyg_spinlock_clear( cyg_spinlock_t *lock );
+
+cyg_bool_t cyg_spinlock_try( cyg_spinlock_t *lock );
+
+cyg_bool_t cyg_spinlock_test( cyg_spinlock_t *lock );
+
+void cyg_spinlock_spin_intsave( cyg_spinlock_t *lock,
+                                cyg_addrword_t *istate );
+
+void cyg_spinlock_clear_intsave( cyg_spinlock_t *lock,
+                                 cyg_addrword_t istate );
+
+/*---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 }
 #endif
+
+/*---------------------------------------------------------------------------*/
 
 #include <cyg/kernel/kapidata.h>
 

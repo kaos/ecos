@@ -54,6 +54,7 @@
 //    CYGSEM_KERNEL_SCHED_BITMAP
 //    CYGSEM_KERNEL_SCHED_MLQUEUE
 //####DESCRIPTIONEND####
+//==========================================================================
 
 #include <pkgconf/kernel.h>
 
@@ -67,9 +68,12 @@
 
 #include <cyg/kernel/sched.inl>
 
-#ifndef CYGIMP_THREAD_PRIORITY
-#error "Test requires thread priorities"
-#endif
+// ------------------------------------------------------------------------
+
+#if defined(CYGIMP_THREAD_PRIORITY) && \
+    !defined(CYGPKG_KERNEL_SMP_SUPPORT)
+
+// ------------------------------------------------------------------------
 
 static Cyg_Counting_Semaphore s0, s1, s2;
 
@@ -79,6 +83,8 @@ static Cyg_Thread *thread0, *thread1, *thread2;
 
 #define NTHREADS 3
 #include "testaux.hxx"
+
+// ------------------------------------------------------------------------
 
 static void entry0( CYG_ADDRWORD data )
 {
@@ -91,6 +97,8 @@ static void entry0( CYG_ADDRWORD data )
     s0.wait();
     CYG_TEST_PASS_FINISH("Thread 2 OK");
 }
+
+// ------------------------------------------------------------------------
 
 static void entry1( CYG_ADDRWORD data )
 {
@@ -124,6 +132,8 @@ static void entry1( CYG_ADDRWORD data )
     s1.wait();
 }
 
+// ------------------------------------------------------------------------
+
 static void entry2( CYG_ADDRWORD data )
 {
     CHECK(  2 == q++ );
@@ -153,6 +163,8 @@ static void entry2( CYG_ADDRWORD data )
 }
 
 
+// ------------------------------------------------------------------------
+
 void thread2_main( void )
 {
     CYG_TEST_INIT();
@@ -180,6 +192,8 @@ void thread2_main( void )
     CYG_TEST_FAIL_FINISH("Unresolved");
 }
 
+// ------------------------------------------------------------------------
+
 externC void
 cyg_start( void )
 {
@@ -188,5 +202,26 @@ cyg_start( void )
 #endif
     thread2_main();
 }
+// ------------------------------------------------------------------------
 
+
+#else // CYGPKG_KERNEL_SMP_SUPPORT etc
+
+// ------------------------------------------------------------------------
+
+externC void
+cyg_start( void )
+{ 
+    CYG_TEST_INIT();
+    CYG_TEST_PASS_FINISH("Thread2 test requires:\n"
+                         "defined(CYGIMP_THREAD_PRIORITY) &&\n"
+                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
+
+}
+
+// ------------------------------------------------------------------------
+
+#endif // CYGPKG_KERNEL_SMP_SUPPORT etc
+
+// ------------------------------------------------------------------------
 // EOF thread2.cxx

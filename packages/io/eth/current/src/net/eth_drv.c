@@ -557,6 +557,7 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRESS key, int status)
 {
     struct ifnet *ifp = &sc->sc_arpcom.ac_if;
     struct mbuf *m0 = (struct mbuf *)key;
+    CYGARC_HAL_SAVE_GP();
 
     // Check for errors here (via 'status')
     ifp->if_opackets++;
@@ -565,6 +566,7 @@ eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRESS key, int status)
     m_freem(m0);
     // Start another if possible
     eth_drv_send(ifp);
+    CYGARC_HAL_RESTORE_GP();
 }
 
 //
@@ -604,6 +606,8 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
         return;
     }
 #endif
+
+    CYGARC_HAL_SAVE_GP();  // This is down here to make matching restore neat
 
     /* Pull packet off interface. */
     MGETHDR(m, M_DONTWAIT, MT_DATA);
@@ -701,24 +705,24 @@ eth_drv_recv(struct eth_drv_sc *sc, int total_len)
     m = top;
     if (m == 0) {
         ifp->if_ierrors++;
-        return;
     }
-
-    ifp->if_ipackets++;
-
+    else {
+        ifp->if_ipackets++;
 
 #if NBPFILTER > 0
 #error FIXME - Need mbuf with ethernet header attached
-    /*
-     * Check if there's a BPF listener on this interface.
-     * If so, hand off the raw packet to bpf.
-     */
-    if (ifp->if_bpf)
-        bpf_mtap(ifp->if_bpf, m);
+        /*
+         * Check if there's a BPF listener on this interface.
+         * If so, hand off the raw packet to bpf.
+         */
+        if (ifp->if_bpf)
+            bpf_mtap(ifp->if_bpf, m);
 #endif
 
-    // Push data into protocol stacks
-    ether_input(ifp, eh, m);
+        // Push data into protocol stacks
+        ether_input(ifp, eh, m);
+    }
+    CYGARC_HAL_RESTORE_GP();
 }
 
 

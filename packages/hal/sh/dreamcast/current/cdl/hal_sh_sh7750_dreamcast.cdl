@@ -50,6 +50,10 @@ cdl_package CYGPKG_HAL_SH_SH7750_DREAMCAST {
         The HAL package provides the support needed to run
         eCos on SEGA Dreamcast."
 
+    requires      { CYGDAT_REDBOOT_SH_LINUX_BOOT_ENTRY == 0x8c210000 }
+    requires      { CYGDAT_REDBOOT_SH_LINUX_BOOT_BASE_ADDR == 0x8c001000 }
+    requires      { CYGDAT_REDBOOT_SH_LINUX_BOOT_COMMAND_LINE == "mem=16M" }
+
     compile       hal_diag.c plf_misc.c dreamcast_pci.c fb_support.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS

@@ -1,3 +1,303 @@
+2001-08-06  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sched/sched.cxx (unlock_inner): Fix assignment to current,
+	wouldn't build if stack checking after merger from SMP branch.
+
+2001-08-06  Andrew Lunn   <andrew.lunn@ascom.ch>
+2001-08-06  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sync/mutex.cxx: (set_protocol) Added a function to set the
+	priority inversion protocol for a mutex.
+
+	* src/common/kapi.cxx: Export the new function above and
+	set_ceiling into the C API.
+	
+	* include/mutex.hxx (class Cyg_Mutex): New member function
+	set_protocol().
+
+	* include/kapi.h (cyg_protcol): Define new emumeration for mutex
+	priority protocol setting, and headers for the new function to set
+	it.
+
+2001-08-03  Nick Garnett  <nickg@redhat.com>
+
+	Imported from a development branch:
+	
+	2001-07-11  Nick Garnett  <nickg@redhat.com>
+
+		* src/sched/mlqueue.cxx: Changed behaviour of
+		set_need_reschedule() to a better implementation of the intended
+		algorithm.
+
+		* include/kapi.h: 
+		* src/common/kapi.cxx:
+		Added API for controlling routing of interrupts to CPUs in SMP
+		configurations.
+
+	2001-07-03  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* cdl/scheduler.cdl:
+		* include/bitmap.hxx:
+		* src/sched/bitmap.cxx:
+		Fixed up bitmap scheduler so it still works within the
+		SMP-modified scheduling infrastructure. The bitmap scheduler
+		is not currently SMP-enabled, only single CPU configurations are
+		supported - hence the CDL change to require this.
+
+	2001-06-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* src/sched/sched.cxx:
+		Removed the call to Cyg_Interrupt::enable_interrupts() in
+		Cyg_Scheduler::start_cpu(). This was a relic from the days when
+		the interrupt enable state was not part of the thread state. Now
+		it is, and loading the first thread will cause interrupts to be
+		enabled.
+
+		* src/intr/intr.cxx:
+		Changed initial values of Cyg_Interrupt::disable_counter[]s to
+		zero as a result of the change in Cyg_Scheduler::start_cpu().
+
+		* include/kapi.h:
+		* include/kapidata.h:
+		* src/common/kapi.cxx: 
+		Added API for using spinlocks. Largely so that it may be extended
+		to the driver API.
+
+		* include/mlqueue.hxx:
+		* include/intr.hxx:
+		* include/sched.hxx:
+		Added annotations to various static variables.
+
+	2001-06-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/intr.hxx:
+		* src/intr/intr.cxx:
+		Changed behaviour of Cyg_Interrupt::disable_interrupts() and
+		Cyg_Interrupt::enable_interrupts(). These now claim and release a
+		spinlock in addition to disabling and enabling interrupts. The
+		original interrupt state is also preserved and restored. This is
+		necessary in SMP systems to allow drivers etc. to correctly
+		synchronize with threads and DSRs that may be running on different
+		CPUs. In the single CPU case this mechanism reduces to the
+		original simple interrupt disable code.
+		[Later change] Backed off addition of volatile modifier to
+		interrupt_disable_state.
+
+		* include/smp.hxx: Some minor tidies.
+
+	2001-06-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* tests/release.cxx: Added spin loop in thread1 to allow thread0
+		to execute its wait. This is necessary in SMP systems where the
+		threads will execute in parallel, but is also benign in single CPU
+		systems.
+
+		* tests/mutex2.cxx:
+		* tests/mutex3.cxx:
+		* tests/sync3.cxx: 
+		* tests/thread2.cxx: 
+		These tests depend on predicting the behaviour of threads at
+		different priorities to pass. In an SMP system, several threads
+		will run in parallel, and the execution order will not be as
+		expected. These tests are therefore disabled in SMP
+		configurations.
+
+		* src/sched/mlqueue.cxx (add_thread): Moved call to
+		set_need_reschedule() out of test for empty queue. In SMP systems,
+		any addition to a queue may require a reschedule on another CPU.
+
+	2001-06-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/mlqueue.hxx:
+		* src/sched/mlqueue.cxx:
+		A major change to the way in which this scheduler works in SMP
+		systems. The previous version removed all runnable threads from
+		the run queues when they were executing. This resulted in serious
+		complications and messy code, particularly when dealing with
+		priority changes and timeslicing. The new version keeps running
+		threads in the run queues, just like the single-CPU version. The
+		main disadvantage of this is that we may have to search past
+		threads running on other CPUs before we find one available to run
+		on this CPU. However, the pending count array and map mean that we
+		only need search one run queue, and in any case the search remains
+		bounded by the number of CPUs available.
+		Another change is in the way that timeslicing is handled. Now, the
+		CPU that takes the clock interrupt decrements the timeslice counts
+		for all CPUs and if any go zero, sends a TIMESLICE message to
+		that CPU.
+
+		* src/sched/sched.cxx (unlock_inner):
+		Removed call to requeue(), no longer needed as a result of
+		scheduler reorganization.
+
+		* src/common/thread.cxx:
+		Added test in Cyg_Thread::exit() to check that the thread has not
+		already been killed. This is only an issue if the thread is
+		calling exit() when it is kill()ed from another CPU. The test is
+		redundant in single-CPU systems, but it does no harm having it.
+		Added code to Cyg_Thread::set_priority() to check for reschedule
+		when another thread is being changed in priority.
+		Added call in idle thread constructor to scheduler to install the
+		idle thread as the default current thread for a CPU.
+
+		* include/smp.hxx:
+		Added CYG_KERNEL_CPU_TIMESLICE_INTERRUPT(), did some miscellaneous
+		tidying.
+
+		* include/instrmnt.h: Added SMP_RESCHED_SEND and SMP_RESCHED_RECV
+		events.
+
+		* cdl/kernel.cdl: Added smp test program.
+
+		* tests/smp.cxx: Added this program to test SMP functionality.
+
+	2001-06-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* src/sched/sched.cxx:
+		Removed code to set up initial current thread, this is now done
+		in the idle thread constructor.
+		Added code here to set up interrupts for SMP inter-processor
+		interrupts. This is not very tidy and may need to be
+		changed in the future.
+
+		* src/sched/mlqueue.cxx:
+		Added local set_need_reschedule() function to set the
+		need_reschedule flag on a suitable CPU.
+		Many more changes to cope with SMP systems.
+		NOTE: This code has all become somthing of a mess, it need to be
+		tidied up and the SMP-specific changes integrated better into the
+		code. Also, timesliceing currently only works on the CPU that
+		takes clock interrupts - this needs fixing.
+
+		* src/common/thread.cxx:
+		Moved assignment of initial current thread to here from sched.cxx.
+
+		* include/smp.hxx:
+		Changed CYG_KERNEL_CPU_INTERRUPT()
+		CYG_KERNEL_CPU_RESCHEDULE_INTERRUPT() since there may be other
+		interrupt types to worry about.
+		Added annotations to scheduler data items.
+
+		* include/sched.hxx:
+		Split set_current_thread() into two functions, the original works
+		only on the current CPU, the new one sets another CPU's current
+		thread. This latter function is only used to prime the current
+		threads during initialization.
+		Added second need_reschedule() function that takes a thread
+		argument. This is intended to be overridden by a scheduler
+		specific function that sets the need_reschedule flag if the
+		supplied thread is more deserving of CPU time that any current
+		thread.
+
+		* include/mlqueue.hxx:
+		Made cyg_scheduler_set_need_reschedule() a friend of
+		Cyg_Scheduler_Implementation class.
+		Added override set_need_reschedule() functions.
+
+		* include/kapidata.h: Added cpu field to cyg_thread structure when
+		in SMP systems.
+
+		* include/intr.hxx:
+		* src/intr/intr.cxx:
+		Added Cyg_Interrupt::set_cpu() and Cyg_Interrupt::get_cpu() for
+		SMP systems.
+
+		* include/instrmnt.h: Added events for INTR_GET_CPU and
+		INTR_SET_CPU.
+
+	2001-05-29  Nick Garnett  <nickg@cygnus.co.uk>
+
+		The following changes were all imported from the SMP branch:
+
+		* tests/tm_basic.cxx:
+		Modified to work in SMP configuration - mostly at present by
+		ifdeffing out code I didn't want to fix.
+
+		* include/sched.hxx:
+		Moved scheduler lock operation into Cyg_Scheduler_SchedLock class.
+		Converted current_thread, need_reschedule, and thread_switches
+		into CPU indexed arrays. Added member functions to get and set
+		these indirectly.
+		Added start_cpu() to do per-CPU scheduler startup.
+
+		* include/sched.inl:
+		Converted scheduler lock/unlock functions to use new schedlock
+		class.
+
+		* src/sched/sched.cxx:
+		Changed in line with sched.hxx.
+		Added call to requeue() in unlock_inner() to restore current
+		thread to run queue if necessary.	
+		Moved most of scheduler startup to Cyg_Scheduler::start_cpu().
+		Cyg_Scheduler::start() now also starts secondary CPUs in SMP
+		systems.
+		Added cyg_kernel_smp_startup() as entry point from HAL into kernel
+		for secondary CPUs.
+
+		* include/mlqueue.hxx:
+		Added Cyg_RunQueue type and removed
+		Cyg_SchedulerThreadQueue_Implementation type.
+		Converted timeslice_count to CPU indexed array.
+		Added requeue() member function to scheduler class.
+		Added cpu member to thread implementation class, to record
+		thread's current CPU.
+
+		* src/sched/mlqueue.cxx:
+		Changed behaviour when in SMP system to remove scheduled thread
+		from run queue and replace it when preempted.
+		Added some extra asserts, and removed some that are no longer true
+		in an SMP system.
+
+		* src/instrmnt/meminst.cxx: In SMP systems: added spinlock to
+		protect instrument buffer, added CPU Id in top 4 bits of thread Id
+		field.
+
+		* src/common/thread.cxx:
+		Converted to use accessor functions for need_reschedule and
+		current_thread.
+		Rearranged idle thread creation to create one for each CPU.
+
+		* include/test/stackmon.h: Extended to handle stack usage for
+		multiple idle threads.
+
+		* include/thread.inl:
+		Added some extra instrumentation.
+
+		* include/smp.hxx:
+		Added this file to contain all kernel SMP support. The main
+		definitions exported by this file are spin lock and scheduler lock
+		implementation classes, for both SMP and uniprocessor
+		configurations.
+
+		* src/intr/intr.cxx: 
+		* include/intr.hxx:
+		Converted interrupt disable counter to CPU indexed array. In
+		intr.cxx: added lock of scheduler lock in interrupt_end() rather
+		than in default interrupt VSR.
+
+		* cdl/kernel.cdl: Added option to enable SMP support.
+
+		* include/instrmnt.h: 
+		* cdl/instrument.cdl: Added SMP instrumentation.
+
+	2001-05-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/intr.hxx:
+		* src/intr/intr.cxx: 
+		Added default definition of CYGNUM_HAL_ISR_TABLE_SIZE. This is now
+		used to declare the chain table so that architectures which have
+		different sizes for the interrupt table and vector count will work
+		correctly.
+
+	2001-05-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* include/sched.hxx (class Cyg_Scheduler_Base):
+		Added annotation to sched_lock.
+
+		* cdl/instrument.cdl:
+		Rename CYGNUM_KERNEL_INSTRUMENT_BUFFER_WRAP to
+		CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP as it appears in the code.
+
 2001-07-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/intr/intr.cxx (chain_isr): Return isr_ret so caller (which

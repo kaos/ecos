@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg, jskov (based on the old mn10300 hal_stub.c)
-// Contributors:nickg, jskov
+// Contributors:nickg, jskov, dhowells
 // Date:        1999-02-12
 // Purpose:     Platform specific code for GDB stub support.
 //              
@@ -121,50 +121,6 @@ void hal_stb_init_break_irq( void )
     HAL_ENABLE_INTERRUPTS();
 }
 #endif
-
-// Initialize the current serial port.
-void hal_stb_init_serial( void )
-{
-    // 99 translates to 38400 baud.
-    HAL_WRITE_UINT8 (TIMER0_BR, 99);
-
-    // Timer0 sourced from IOCLK
-    HAL_WRITE_UINT8 (TIMER0_MD, 0x80);
-
-    // No interrupts for now.
-    HAL_WRITE_UINT8 (SERIAL0_ICR, 0x00);
-
-    // Source from timer 1, 8bit chars, enable tx and rx
-    HAL_WRITE_UINT16 (SERIAL0_CR, 0xc085);
-
-}
-
-// Write C to the current serial port.
-void hal_stb_put_char( int c )
-{
-    cyg_uint16 sr;
-
-    do {
-        HAL_READ_UINT16 (SERIAL0_SR, sr);
-    } while ((sr & SIO1_LSTAT_TRDY) != 0);
-
-    HAL_WRITE_UINT8 (SERIAL0_TXR, c);
-}
-
-// Read one character from the current serial port.
-int hal_stb_get_char( void )
-{
-    char c;
-    cyg_uint16 sr;
-
-    do {
-        HAL_READ_UINT16 (SERIAL0_SR, sr);
-    } while ((sr & SIO1_LSTAT_RRDY) == 0);
-
-    HAL_READ_UINT8 (SERIAL0_RXR, c);
-
-    return c;
-}
 
 //-----------------------------------------------------------------------------
 

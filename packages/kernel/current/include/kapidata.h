@@ -215,6 +215,10 @@ typedef struct
 
     cyg_priority_t      priority;       /* current thread priority */
 
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+    cyg_uint32          cpu;            // CPU id of cpu currently running
+#endif
+    
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE_ENABLE
     cyg_bool            timeslice_enabled; /* per-thread timeslice enable */
 #endif    
@@ -361,6 +365,13 @@ struct cyg_cond_t
 {
     cyg_mutex_t         *mutex;         /* Associated mutex             */
     cyg_threadqueue     queue;          /* Queue of waiting threads     */
+};
+
+/*------------------------------------------------------------------------*/
+
+struct cyg_spinlock_t
+{
+    cyg_atomic          lock;           /* lock word                     */
 };
 
 /*------------------------------------------------------------------------*/

@@ -83,6 +83,10 @@ typedef unsigned short uid_t;
 typedef int pid_t;
 #endif
 
+#if CYGINT_ISO_PMUTEXTYPES
+# include CYGBLD_ISO_PMUTEXTYPES_HEADER
+#endif
+
 #if CYGINT_ISO_PTHREADTYPES
 # include CYGBLD_ISO_PTHREADTYPES_HEADER
 #endif

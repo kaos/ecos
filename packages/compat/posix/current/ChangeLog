@@ -1,3 +1,74 @@
+2001-08-06  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/posix.cdl: Reorganize dependencies so that signals, timers
+	and pthreads really can be disabled, and the relevant files don't
+	get built.
+	Build new mutex.cxx file.
+	Remove duplicate CYGPKG_POSIX_SCHED dependency for pthreads.
+
+	* include/limits.h: Don't include irrelevant header dependencies.
+
+	* include/muttypes.h: New type defining mutex/cond var types separately
+	from other pthread types.
+
+	* include/types.h: Remove mutex/cond var types.
+
+	* include/signal.h: Conditionalize on CYGPKG_POSIX_SIGNALS
+
+	* include/sigsetjmp.h: Don't include irrelevant header dependencies.
+	Rewrite sigsetjmp in a much more compiler friendly (and readable)
+	way with less type punning.
+
+	* src/misc.cxx: Don't include sysconf cases when pthreads or
+	CYGPKG_POSIX_TIMERS not enabled.
+
+	* src/mutex.cxx: New file, broken out of pthreads.cxx, as most
+	of it is not fixed to the pthreads implementation, and I've fixed
+	the bits that were too tied to it.
+
+	* src/pprivate.h: Conditionalize definitions that are specific
+	to CYGPKG_POSIX_PTHREAD. Ditto for prototypes for CYGPKG_POSIX_SIGNALS
+	and CYGPKG_POSIX_TIMERS. Move PTHREAD_ENTRY/RETURN etc. macros
+	here so they can be used throughout the package.
+
+	* src/pthread.cxx: Remove mutex/cond var implementation, and
+	entry/return macros, as per above.
+
+	* src/signal.cxx (cyg_sigqueue): Don't just set non-queueable signals 
+	pending - also forcibly wake up any blocked threads.
+	(siglongjmp): Use new layout of sigjmp_buf.
+
+	* tests/mutex3.c:
+	* tests/pthread1.c:
+	* tests/pthread2.c:
+	* tests/pthread3.c:
+	* tests/signal1.c:
+	* tests/sigsetjmp.c:
+	* tests/timer1.c:
+	* tests/tm_basic.cxx:
+	Correct configuration dependencies, and do NA appropriately.
+	
+2001-08-03  Nick Garnett  <nickg@cygnus.co.uk>
+
+	Imported from a development branch:
+	
+	2001-06-27  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* tests/pthread3.c:
+		Modified the loop that waits for the threads to get going so that
+		it will function correctly in an SMP system, where the threads
+		will run in parallel.
+
+		* tests/mutex3.c: Disabled this test for SMP systems. It depends
+		too much on predicting the priority-driven execution order of the
+		threads. In an SMP system, some threads will run in parallel and
+		falsify the assumptions.
+
+	2001-05-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+		* src/signal.cxx (siglongjmp): Minor change to satisfy latest C++
+		compiler.
+
 2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/pthread.cxx (pthread_attr_setstacksize): Correct stack

@@ -47,7 +47,7 @@
 // First 4K page of flash at physical address zero is
 // virtually mapped at address 0xa0000000.
 #define FLASH_P2V(x) ((volatile unsigned char *)(((unsigned)(x) < 0x1000) ?  \
-                           ((unsigned)(x) | 0xa0000000) :  \
+                           ((unsigned)(x) | 0xd0000000) :  \
                            (unsigned)(x)))
 
 #define FLASH_BOOT_BLOCK_SIZE   0x4000

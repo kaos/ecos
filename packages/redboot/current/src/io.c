@@ -306,13 +306,15 @@ gets(char *buf, int buflen, int timeout)
             break;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         case '+':
+            // If start of line, treat as GDB protocol. Otherwise fall
+            // through to default.
+            if (ptr == buf)
         case '$':
-            if (ptr == buf) {
+            {
                 // Give up and try GDB protocol
                 ungetDebugChar(c);  // Push back character so stubs will see it
                 return _GETS_GDB;
             }
-            // Fall through - accept '$' at other than start of line
 #endif
         default:
             if (console_echo) {

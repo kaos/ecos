@@ -1,3 +1,12 @@
+2001-08-10  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/flash_intel_28fxxx.cdl: Added options for variants.
+
+	* include/flash_28fxxx.inl: Support bootblock parts. Support
+	locking. Buffered writes are broken though.
+
+	* include/flash_28fxxx_parts.inl: Created.
+
 2001-06-29  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_28fxxx.inl: Fix 28F160 block size.

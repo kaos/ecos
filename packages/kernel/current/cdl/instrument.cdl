@@ -68,7 +68,7 @@ cdl_option CYGNUM_KERNEL_INSTRUMENT_BUFFER_SIZE {
         of memory."
 }
 
-cdl_option CYGNUM_KERNEL_INSTRUMENT_BUFFER_WRAP {
+cdl_option CYGDBG_KERNEL_INSTRUMENT_BUFFER_WRAP {
     display       "Wrap instrument buffer"
     default_value 1
     description   "
@@ -222,6 +222,19 @@ cdl_option CYGDBG_KERNEL_INSTRUMENT_ALARM {
         reducing the code size overheads. This option controls
         whether or not instrumentation support is compiled into
         the code related to alarm operations."
+}
+
+cdl_option CYGDBG_KERNEL_INSTRUMENT_SMP {
+    display       "Instrument SMP-related operations"
+    default_value 1
+    active_if     CYGVAR_KERNEL_COUNTERS_CLOCK
+    description   "
+        It is possible to perform selective instrumentation at
+        run-time. It is also possible to disable instrumentation
+        in various kernel components at compile-time, thus
+        reducing the code size overheads. This option controls
+        whether or not instrumentation support is compiled into
+        the code related to SMP operations."
 }
 
 cdl_option CYGDBG_KERNEL_INSTRUMENT_USER {

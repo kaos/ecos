@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/28
-// Version:     $Id: admindlg.cpp,v 1.4 2001/03/23 13:38:04 julians Exp $
+// Version:     $Id: admindlg.cpp,v 1.5 2001/08/10 14:58:21 julians Exp $
 // Purpose:
 // Description: Implementation file for ecAdminDialog
 // Requires:
@@ -223,7 +223,7 @@ void ecAdminDialog::OnAdd(wxCommandEvent& event)
         bool bRepositoryChanged = FALSE;
         //POSITION posPathName = dlg.GetStartPosition ();
         wxArrayString filenames;
-        dlg.GetFilenames(filenames);
+        dlg.GetPaths(filenames);
         size_t i;
         for (i = (size_t) 0; i < filenames.GetCount(); i++)
         {

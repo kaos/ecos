@@ -135,11 +135,11 @@
 	.endm
 
 	// form a first-level page table entry
-	.macro FL_PT_ENTRY base,d
+	.macro FL_PT_ENTRY base,p,d
 	// I wanted to use logical operations here, but since I am using symbols later 
 	// to fill in the parameters, I had to use addition to force the assembler to
 	// do it right
-	.word \base + (\d << 5) + 1
+	.word \base + (\p << 9) + (\d << 5) + 1
 	.endm
 
 	// form a second level small page entry
@@ -170,7 +170,7 @@
 
 	// 1MB of FLASH with i80312 MMRs mapped in using 4K small pages so we can
 	// set the access permission on flash and memory-mapped registers properly.
-	FL_PT_ENTRY mmu_table_flashbase,0
+	FL_PT_ENTRY mmu_table_flashbase,0,0
 
 	// Remaining 7MB of FLASH
 	//   rw, cacheable, non-bufferable
@@ -186,13 +186,11 @@
 	.set	__base,__base+1
 	.endr
 
-	// up to 512MB ECC SDRAM
+	// up to 512MB ECC SDRAM mapped 1-to-1
+	// first 1MB mapped in 4K chunks
 	//   x=c=b=1
-	// first 1MB mapped by second level table
-	FL_PT_ENTRY mmu_table_rambase,0
+	FL_PT_ENTRY mmu_table_rambase,1,0
 	.set	__base,__base+1
-	
-	// remainder of SDRAM mapped 1-to-1
 	.rept	0xC00 - 0xA01
 	FL_SECTION_ENTRY __base,1,3,1,0,1,1
 	.set	__base,__base+1
@@ -205,8 +203,13 @@
 	.set	__base,__base+1
 	.endr
 	
+	// Alias for first 1MB of FLASH
+	//  rw, cacheable, non-bufferable
+	FL_SECTION_ENTRY 0x000,0,3,0,0,1,0
+	.set	__base,__base+1
+
 	// Invalid
-	.rept	0xF00 - 0xD00
+	.rept	0xF00 - 0xD01
 	.word 0
 	.set	__base,__base+1
 	.endr
@@ -246,15 +249,10 @@
 	// Now is the second level table for the first megabyte
 	// of DRAM.
     mmu_table_rambase:
-	// Map 4k page at 0xa0000000 virt --> 0x00000000 physical
-	//   Read-Write, cacheable, non-bufferable
-	SL_SMPAGE_ENTRY 0x00000,3,3,3,3,1,0
-	.set	__base,__base+1		   
-
-	// Map remainder of first meg of SDRAM
+	// Map first meg of SDRAM
 	//   Read-Write, cacheable, bufferable
-	.set    __base,0xA0001
-	.rept	0x100 - 0x1
+	.set    __base,0xA0000
+	.rept	0x100
 	SL_XSMPAGE_ENTRY __base,1,3,1,1
 	.set	__base,__base+1
 	.endr
@@ -727,8 +725,20 @@ SDRAM_DRIVE_2_BANK_X8:
 	stmia	r11!, {r0-r7}
 	beq	15f
 	b	10b
-    15:	
+    15:
 	
+	// now copy 1st 4K page of flash into first 4K of RAM.
+	ldr	r1, =RAM_BASE	// base address of SDRAM
+	mov     r2, #0xd0000000 // alias for first 1M of flash
+	mov     r3, #0x1000
+    16:
+	ldr     r4, [r2]
+	add	r2, r2, #4
+	str	r4, [r1]
+	add	r1, r1, #4
+	subs    r3, r3, #4
+	bne     16b
+
 	// Battery Backup SDRAM Memory Test
 	// Store 4 byte Test Pattern back into memory
 	str r10, [r9, #0x0]

@@ -467,6 +467,28 @@ void Cyg_Mutex::set_ceiling( cyg_priority priority )
 
 #endif
 
+// -------------------------------------------------------------------------
+// Set priority inversion protocol
+
+#ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
+void Cyg_Mutex::set_protocol( cyg_protcol new_protocol )
+{
+    CYG_REPORT_FUNCTION();
+
+    // Prevent preemption
+    Cyg_Scheduler::lock();
+    
+    protocol = new_protocol;
+    
+    // Unlock the scheduler
+    Cyg_Scheduler::unlock();
+    
+    CYG_REPORT_RETURN();    
+}
+
+#endif
+
+
 //==========================================================================
 // Condition variables
 

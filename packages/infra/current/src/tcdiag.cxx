@@ -94,6 +94,10 @@ cyg_test_output(Cyg_test_code status, const char *msg, int line,
         break;
     }
 
+#ifdef CYG_HAL_DIAG_LOCK
+    CYG_HAL_DIAG_LOCK();
+#endif    
+    
     diag_write_string(st);
     diag_write_char('<');
     diag_write_string(msg);
@@ -105,6 +109,12 @@ cyg_test_output(Cyg_test_code status, const char *msg, int line,
         diag_write_string(file);
     }
     diag_write_char('\n');
+
+#ifdef CYG_HAL_DIAG_UNLOCK
+    CYG_HAL_DIAG_UNLOCK();
+#endif    
+    
+    
 }
 
 // This is an appropriate function to set a breakpoint on

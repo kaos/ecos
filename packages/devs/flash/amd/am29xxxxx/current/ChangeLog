@@ -1,3 +1,7 @@
+2001-08-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx.inl (flash_hwr_init): Fix block number.
+
 2001-07-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx.inl: Made code deal with multiple

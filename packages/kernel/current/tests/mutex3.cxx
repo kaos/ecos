@@ -64,7 +64,8 @@ cyg_hal_invoke_constructors();
 // so the test should work correctly.
 
 #if defined(CYGVAR_KERNEL_COUNTERS_CLOCK) &&    \
-    (CYGNUM_KERNEL_SCHED_PRIORITIES > 20)
+    (CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&    \
+    !defined(CYGPKG_KERNEL_SMP_SUPPORT)
 
 // ------------------------------------------------------------------------
 // Manufacture a simpler feature test macro for priority inheritance than
@@ -426,7 +427,8 @@ cyg_start( void )
     CYG_TEST_INIT();
     CYG_TEST_PASS_FINISH("Mutex3 test requires:\n"
                          "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
-                         "(CYGNUM_KERNEL_SCHED_PRIORITIES > 20)\n");
+                         "(CYGNUM_KERNEL_SCHED_PRIORITIES > 20) &&\n"
+                         "!defined(CYGPKG_KERNEL_SMP_SUPPORT)\n");
 }
 #endif // CYGVAR_KERNEL_COUNTERS_CLOCK &c
 

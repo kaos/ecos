@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.h,v 1.18 2001/07/13 15:17:43 julians Exp $
+// Version:     $Id: mainwin.h,v 1.19 2001/08/10 14:58:21 julians Exp $
 // Purpose:
 // Description: Header file for the ConfigTool main window
 // Requires:
@@ -112,6 +112,7 @@ public:
     void OnStopBuild(wxCommandEvent& event);
     void OnClean(wxCommandEvent& event);
     void OnShell(wxCommandEvent& event);
+    void OnGenerateBuildTree(wxCommandEvent& event);
 
     void OnNewRegion(wxCommandEvent& event);
     void OnNewSection(wxCommandEvent& event);
@@ -148,6 +149,7 @@ public:
     void OnUpdateFind(wxUpdateUIEvent& event);
     void OnUpdateFindNext(wxUpdateUIEvent& event);
     void OnUpdateIndexDocs(wxUpdateUIEvent& event);
+    void OnUpdateGenerateBuildTree(wxUpdateUIEvent& event);
 
     void OnUpdateNewRegion(wxUpdateUIEvent& event);
     void OnUpdateNewSection(wxUpdateUIEvent& event);

@@ -90,7 +90,7 @@
 #endif
 
 //--------------------------------------------------------------------------
-// Interrupt controler information
+// Interrupt controller information
 
 // V320USC 
 #define CYGARC_REG_INT_STAT   0xb80000ec
@@ -112,99 +112,6 @@
 
 #define CYGARC_REG_IO_STAT    0xb5300010
 #define CYGARC_REG_IO_MASK    0xb5300040
-
-
-#define HAL_INTERRUPT_MASK( _vector_ )                                      \
-    CYG_MACRO_START                                                         \
-    if( (_vector_) <= CYGNUM_HAL_INTERRUPT_COMPARE )                        \
-    {                                                                       \
-        asm volatile (                                                      \
-            "mfc0   $3,$12\n"                                               \
-            "la     $2,0x00000400\n"                                        \
-            "sllv   $2,$2,%0\n"                                             \
-            "nor    $2,$2,$0\n"                                             \
-            "and    $3,$3,$2\n"                                             \
-            "mtc0   $3,$12\n"                                               \
-            "nop; nop; nop\n"                                               \
-            :                                                               \
-            : "r"(_vector_)                                                 \
-            : "$2", "$3"                                                    \
-            );                                                              \
-    }                                                                       \
-    else if ((_vector_) >= CYGNUM_HAL_INTERRUPT_UART2)                      \
-    {                                                                       \
-        /* int 6:9 are masked in the Interrupt Control register */          \
-        asm volatile (                                                      \
-            "mfc1   $3,$20\n"                                               \
-            "la     $2,0x00000100\n"                                        \
-            "sllv   $2,$2,%0\n"                                             \
-            "nor    $2,$2,$0\n"                                             \
-            "and    $3,$3,$2\n"                                             \
-            "mtc1   $3,$20\n"                                               \
-            "nop; nop; nop\n"                                               \
-            :                                                               \
-            : "r"((_vector_) - CYGNUM_HAL_INTERRUPT_PMC1)                   \
-            : "$2", "$3"                                                    \
-            );                                                              \
-    }                                                                       \
-    CYG_MACRO_END
-
-#define HAL_INTERRUPT_UNMASK( _vector_ )                                    \
-    CYG_MACRO_START                                                         \
-    if( (_vector_) <= CYGNUM_HAL_INTERRUPT_COMPARE )                        \
-    {                                                                       \
-        asm volatile (                                                      \
-            "mfc0   $3,$12\n"                                               \
-            "la     $2,0x00000400\n"                                        \
-            "sllv   $2,$2,%0\n"                                             \
-            "or     $3,$3,$2\n"                                             \
-            "mtc0   $3,$12\n"                                               \
-            "nop; nop; nop\n"                                               \
-            :                                                               \
-            : "r"(_vector_)                                                 \
-            : "$2", "$3"                                                    \
-            );                                                              \
-    }                                                                       \
-    else if ((_vector_) >= CYGNUM_HAL_INTERRUPT_UART2)                      \
-    {                                                                       \
-        /* int 6:9 are masked in the Interrupt Control register */          \
-        asm volatile (                                                      \
-            "mfc1   $3,$20\n"                                               \
-            "la     $2,0x00000100\n"                                        \
-            "sllv   $2,$2,%0\n"                                             \
-            "or     $3,$3,$2\n"                                             \
-            "mtc1   $3,$20\n"                                               \
-            "nop; nop; nop\n"                                               \
-            :                                                               \
-            : "r"((_vector_) - CYGNUM_HAL_INTERRUPT_PMC1)                   \
-            : "$2", "$3"                                                    \
-            );                                                              \
-    }                                                                       \
-    CYG_MACRO_END
-
-#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                           \
-    CYG_MACRO_START                                                     \
-    /* All 10 interrupts have pending bits in the cause register */     \
-    cyg_uint32 _srvector_ = _vector_;                                   \
-    asm volatile (                                                      \
-        "mfc0   $3,$13\n"                                               \
-        "la     $2,0x00000400\n"                                        \
-        "sllv   $2,$2,%0\n"                                             \
-        "nor    $2,$2,$0\n"                                             \
-        "and    $3,$3,$2\n"                                             \
-        "mtc0   $3,$13\n"                                               \
-        "nop; nop; nop\n"                                               \
-        :                                                               \
-        : "r"(_srvector_)                                               \
-        : "$2", "$3"                                                    \
-        );                                                              \
-    CYG_MACRO_END
-
-#define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )
-
-#define HAL_INTERRUPT_SET_LEVEL( _vector_, _level_ )
-
-#define CYGHWR_HAL_INTERRUPT_CONTROLLER_ACCESS_DEFINED
 
 
 //----------------------------------------------------------------------------

@@ -1,3 +1,32 @@
+2001-08-10  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c (do_flash_init): Print error message instead of
+	error code on init failure.
+	Don't print error codes where error messages are printed. Make
+	failure reporting strings look consistent.
+ 	CYGHWR_IO_FLASH_BLOCK_LOCKING flavor changed to booldata.
+
+2001-08-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/io.c (gets): Match $ as indicating GDB anywhere in a line.
+
+2001-08-07  Julian Smart <julians@redhat.com>
+
+	* src/version.c: added commented-out CYGDAT_REDBOOT_CUSTOM_VERSION
+	define that can be replaced using the RedBoot release script by
+	a specific version in a customer branch.
+
+2001-08-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/fs/disk.c: Simple fix for DISK_IDE_CDROM partition type.
+
+	* cdl/redboot.cdl: Added (unused) CYGSEM_REDBOOT_DISK_ISO9660 option.
+
+2001-08-03  David Howells  <dhowells@redhat.com>
+
+	* src/net/net_io.c: Show the MAC address of the ethernet device
+	amongst the boot banners.
+
 2001-08-01  Mark Salter  <msalter@redhat.com>
 
 	* src/fs/ide.c (ide_reset): Check for bogus status and timeout. Add

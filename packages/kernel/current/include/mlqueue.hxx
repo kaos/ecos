@@ -92,6 +92,11 @@ typedef cyg_ucount32 cyg_sched_bitmap;
 #define CYG_SCHED_DEFAULT_INFO  CYG_THREAD_MAX_PRIORITY
 
 // -------------------------------------------------------------------------
+// scheduler Run queue object
+
+typedef Cyg_CList_T<Cyg_Thread> Cyg_RunQueue;
+
+// -------------------------------------------------------------------------
 // Thread queue implementation.
 // This class provides the (scheduler specific) implementation of the
 // thread queue class.
@@ -101,7 +106,6 @@ class Cyg_ThreadQueue_Implementation
 {
     friend class Cyg_Scheduler_Implementation;
     friend class Cyg_SchedThread_Implementation;
-    friend class Cyg_SchedulerThreadQueue_Implementation;
 
     void                set_thread_queue(Cyg_Thread *thread,
                                          Cyg_ThreadQueue *tq );
@@ -126,15 +130,6 @@ protected:
 
 };
 
-// thread queue used exclusively by the scheduler, with simpler enqueueing
-
-class Cyg_SchedulerThreadQueue_Implementation
-    : public Cyg_ThreadQueue_Implementation
-{
-public:    
-    void                enqueue(Cyg_Thread *thread);  // Add thread to queue
-};
-
 // -------------------------------------------------------------------------
 // This class contains the implementation details of the scheduler, and
 // provides a standard API for accessing it.
@@ -145,13 +140,25 @@ class Cyg_Scheduler_Implementation
     friend class Cyg_ThreadQueue_Implementation;
     friend class Cyg_SchedThread_Implementation;
     friend class Cyg_HardwareThread;
+    friend void cyg_scheduler_set_need_reschedule();
     
     // Mask of which run queues have ready threads
     cyg_sched_bitmap    queue_map;
 
     // Each run queue is a double linked circular list of threads.
     // These pointers point to the head element of each list.
-    Cyg_SchedulerThreadQueue_Implementation run_queue[CYGNUM_KERNEL_SCHED_PRIORITIES];
+    Cyg_RunQueue run_queue[CYGNUM_KERNEL_SCHED_PRIORITIES];
+
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+
+    // In SMP systems we additionally keep a counter for each priority
+    // of the number of pending but not running threads in each queue.
+    
+    cyg_uint32 pending[CYGNUM_KERNEL_SCHED_PRIORITIES];
+
+    cyg_sched_bitmap pending_map;
+
+#endif    
 
 protected:
     
@@ -161,7 +168,8 @@ protected:
     // clock tick, and a timeslice is performed each
     // time it zeroes.
     
-    static cyg_ucount32                 timeslice_count;
+    static cyg_ucount32 timeslice_count[CYGNUM_KERNEL_CPU_MAX]
+                                        CYGBLD_ANNOTATE_VARIABLE_SCHED;
 
     static void reset_timeslice_count();
 
@@ -191,13 +199,22 @@ protected:
     // Test the given priority for uniqueness
     cyg_bool    unique( cyg_priority priority);
 
+    // Set need_reschedule if the supplied thread is of lower
+    // priority than any that are currently running.
+    static void set_need_reschedule( Cyg_Thread *thread );
+    static void set_need_reschedule();
+
+public:
+    void set_idle_thread( Cyg_Thread *thread, HAL_SMP_CPU_TYPE cpu );
+    
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
 
     // If timeslicing is enbled, define a scheduler
-    // entry point to do timeslicing. This will be
+    // entry points to do timeslicing. This will be
     // called from the RTC DSR.
 public:    
     void timeslice();
+    void timeslice_cpu();
 
 #endif
 
@@ -206,11 +223,16 @@ public:
 // -------------------------------------------------------------------------
 // Cyg_Scheduler_Implementation inlines
 
+inline void Cyg_Scheduler_Implementation::set_need_reschedule()
+{
+    need_reschedule[CYG_KERNEL_CPU_THIS()] = true;
+}
+
 #ifdef CYGSEM_KERNEL_SCHED_TIMESLICE
 
 inline void Cyg_Scheduler_Implementation::reset_timeslice_count()
 {
-    timeslice_count = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+    timeslice_count[CYG_KERNEL_CPU_THIS()] = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
 }
 
 #endif
@@ -225,12 +247,17 @@ class Cyg_SchedThread_Implementation
 {
     friend class Cyg_Scheduler_Implementation;
     friend class Cyg_ThreadQueue_Implementation;
-    friend class Cyg_SchedulerThreadQueue_Implementation;
 
 protected:
 
     cyg_priority        priority;       // current thread priority
 
+#ifdef CYGPKG_KERNEL_SMP_SUPPORT
+    HAL_SMP_CPU_TYPE    cpu;            // CPU id of cpu currently running
+                                        // this thread, or CYG_KERNEL_CPU_NONE
+                                        // if not running.
+#endif
+    
     Cyg_SchedThread_Implementation(CYG_ADDRWORD sched_info);
 
     void yield();                       // Yield CPU to next thread
