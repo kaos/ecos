@@ -105,6 +105,8 @@ tftp_stream_open(connection_info_t *info,
 
     if (info->server->sin_port == 0) {
         info->server->sin_port = htons(TFTP_PORT);
+    } else {
+        info->server->sin_port = htons(info->server->sin_port);
     }
 
     // Send request - note: RFC 1350 (TFTP rev 2) indicates that this should be

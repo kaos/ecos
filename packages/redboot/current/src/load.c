@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -72,6 +72,7 @@
 #include <net/http.h>
 #endif
 #endif
+#include <cyg/infra/cyg_ass.h>         // assertion macros
 
 static char usage[] = "[-r] [-v] "
 #ifdef CYGBLD_BUILD_REDBOOT_WITH_ZLIB
@@ -599,7 +600,7 @@ do_load(int argc, char *argv[])
     unsigned long end = 0;
     char type[4];
     char *filename = 0;
-    struct option_info opts[7];
+    struct option_info opts[8];
     connection_info_t info;
     getc_io_funcs_t *io = NULL;
     struct load_io_entry *io_tab;
@@ -644,6 +645,8 @@ do_load(int argc, char *argv[])
     num_options++;
 #endif
 
+    CYG_ASSERT(num_options <= NUM_ELEMS(opts), "Too many options");
+    
     if (!scan_opts(argc, argv, 1, opts, num_options, 
                    (void *)&filename, OPTION_ARG_TYPE_STR, "file name")) {
         return;

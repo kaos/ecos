@@ -1,3 +1,18 @@
+2004-04-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/main.c: 
+	* src/fs/fileio.c: 
+	* src/net/net_io.c: 
+	* src/load.c: 
+	* src/flash.c: 
+	* include/redboot.h: Add asserts to check that option arrays
+	are not overrun (when used with variable number of options).
+
+2004-04-23  Gary Parnes  <garyp@logicpd.com>
+
+	* src/net/tftp_client.c: The port, if specified by the user,
+	is now corrected for endianness issues.
+
 2004-04-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/fs/fileio.c: Can't test for CYGPKG_IO_FLASH_BLOCK_DEVICE without

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -66,6 +66,7 @@
 #endif
 
 #include <cyg/hal/hal_tables.h>
+#include <cyg/infra/cyg_ass.h>         // assertion macros
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #ifdef CYGBLD_HAL_PLATFORM_STUB_H
@@ -536,6 +537,9 @@ do_go(int argc, char *argv[])
               (void *)&stop_net, (bool *)0, "go with network driver stopped");
     num_options++;
 #endif
+
+    CYG_ASSERT(num_options <= NUM_ELEMS(opts), "Too many options");
+
     if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
     {
         return;

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -59,6 +59,7 @@
 #include <cyg/hal/hal_if.h>     // HAL I/O interfaces
 #include <cyg/hal/drv_api.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/infra/cyg_ass.h>         // assertion macros
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
 #include <flash_config.h>
@@ -806,6 +807,9 @@ do_ip_addr(int argc, char *argv[])
               (void *)&dns_addr, (bool *)&dns_addr_set, "DNS server address");
     num_opts++;
 #endif
+
+    CYG_ASSERT(num_opts <= NUM_ELEMS(opts), "Too many options");
+
     if (!scan_opts(argc, argv, 1, opts, num_opts, 0, 0, "")) {
         return;
     }

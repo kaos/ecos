@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -57,6 +57,7 @@
 #include <cyg/io/flash.h>
 #include <fis.h>
 #include <sib.h>
+#include <cyg/infra/cyg_ass.h>         // assertion macros
 
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
 // Note horrid intertwining of functions, to save precious FLASH
@@ -1001,6 +1002,8 @@ fis_load(int argc, char *argv[])
               (void *)&decompress, 0, "decompress");
     num_options++;
 #endif
+
+    CYG_ASSERT(num_options <= NUM_ELEMS(opts), "Too many options");
 
     if (!scan_opts(argc, argv, 2, opts, num_options, (void *)&name, OPTION_ARG_TYPE_STR, "image name"))
     {

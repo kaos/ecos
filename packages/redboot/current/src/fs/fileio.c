@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002, 2003 Gary Thomas
+// Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -69,6 +69,7 @@
 #include <cyg/io/config_keys.h>
 #endif
 #include <cyg/fileio/fileio.h>
+#include <cyg/infra/cyg_ass.h>         // assertion macros
 
 static void do_mount(int argc, char *argv[]);
 static void do_umount(int argc, char *argv[]);
@@ -110,6 +111,8 @@ do_mount(int argc, char *argv[])
               (void *)&part_str, &part_set, "partition");
     num_opts++;
 #endif
+
+    CYG_ASSERT(num_opts <= NUM_ELEMS(opts), "Too many options");
 
     if (!scan_opts(argc, argv, 1, opts, num_opts, NULL, 0, NULL))
         return;
