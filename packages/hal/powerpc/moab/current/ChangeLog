@@ -1,3 +1,8 @@
+2003-09-28  Gary Thomas  <gary@mlbassoc.com>
+
+	* cdl/hal_powerpc_moab.cdl: Remove conflicting constraint - prevented
+	non-RedBoot builds.
+
 2003-09-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_io.h: PCI IRQ mapping is platform dependent - moved here.

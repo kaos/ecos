@@ -74,7 +74,6 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
 # having the MMU enabled just seems to cause no end of problems
     requires      { !CYGHWR_HAL_POWERPC_ENABLE_MMU }
 #
-    requires      { CYGSEM_REDBOOT_FLASH_CONFIG == 1 }
     requires      { !CYGSEM_REDBOOT_FLASH_CONFIG || 
                     ((CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA == "EEPROM") &&
                      (CYGNUM_REDBOOT_FLASH_CONFIG_SIZE == CYGNUM_HAL_EEPROM_SIZE) &&
@@ -131,13 +130,10 @@ cdl_package CYGPKG_HAL_POWERPC_MOAB {
     cdl_component CYGNUM_HAL_EEPROM_SIZE {
         display       "Size of EEPROM device"
         flavor        data
-        legal_values  { 1024 2048 4192 }
+        legal_values  { 1024 2048 4096 }
         default_value { 2048 }
         description   "
-           This option is used to control where the application program will
-           run, either from RAM or ROM (flash) memory.  ROM based applications
-           must be self contained, while RAM applications will typically assume
-           the existence of a debug environment, such as GDB stubs."
+           This option indicates the size (and type) of EEPROM fitted on the board"
     }
 
     cdl_component CYGSEM_HAL_IDE_SUPPORT {
