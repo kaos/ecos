@@ -547,7 +547,7 @@ diag_snprintf(char *buf, size_t len, const char *fmt, ...)
     va_start(ap, fmt);
     info.ptr = buf;
     info.len = 0;
-    info.max = len;
+    info.max = len-1;
     ret = _vprintf(_sputc, (void **)&info, fmt, ap);
     va_end(ap);
     return (info.len);

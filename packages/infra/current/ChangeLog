@@ -1,3 +1,15 @@
+2005-02-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* tests/diag_sprintf1.c 
+	* tests/diag_sprintf2.c
+	* cdl/infra.cdl: Used the sprintf test from libc to test 
+	  diag_sprintf.
+
+2005-02-08  Christoph Csebits <Christoph.CSEBITS@frequentis.com>
+
+	* src/diag.cxx (diag_snprintf): Off by one error could cause the
+	end of the buffer to be overrun.
+
 2004-07-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/diag.cxx (_vprintf): Fix return length for %%

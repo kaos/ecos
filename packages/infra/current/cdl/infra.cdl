@@ -316,7 +316,7 @@ cdl_package CYGPKG_INFRA {
             display "Infra package tests"
             flavor  data
             no_define
-            calculated { "tests/cxxsupp" }
+            calculated { "tests/cxxsupp tests/diag_sprintf1 tests/diag_sprintf2" }
 
             cdl_option CYGNUM_TESTS_RUN_COUNT {
                 display "Number of times a test runs"
