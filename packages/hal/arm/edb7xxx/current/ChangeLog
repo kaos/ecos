@@ -1,3 +1,58 @@
+1999-11-29  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c: Fix typoe: CYGDGB_HAL_DIAG_DISABLE_GDB_PROTOCOL
+	-> CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+
+1999-11-27  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_edb7xxx.h (HAL_PLATFORM_BOARD): Add missing endif
+
+1999-11-26  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_edb7xxx.h: Add platform info defines.
+
+1999-11-26  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Backslash wrapped
+	line properly
+
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/hal_platform_setup.h (PLATFORM_SETUP1): Fix typo
+	Init_MEMORY_CONFIG -> INIT_MEMORY_CONFIG
+
+	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
+	explicitly wanted and someone hacks the code
+	(hal_diag_write_char): Likewise
+
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_edb7211_stubs.h: 
+	* include/pkgconf/mlt_arm_cl7111_stubs.h: New file.
+
+	* include/pkgconf/mlt_arm_edb7211_ram.h: 
+	* include/pkgconf/mlt_arm_edb7211_rom.h: 
+	* include/pkgconf/mlt_arm_cl7111_rom.h: 
+	* include/pkgconf/mlt_arm_cl7111_ram.h: Update 'do not edit' strings.
+
+1999-11-23  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/edb7xxx_misc.c (hal_clock_reset): Fix DRAM "idle" time > 200us.
+
+1999-11-22  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_edb7211_stubs.h: New file.
+	
+	* include/pkgconf/mlt_arm_edb7211_stubs.mlt: 
+	* include/pkgconf/mlt_arm_edb7211_stubs.ldi: Add MMU tables section.
+
+	* misc/STUBS_config: Add patch to set up for static MMU tables.
+
+	* include/hal_platform_setup.h: Some rearranging to allow for
+	static MMU tables.
+
+	* include/hal_platform_extras.h: New file.
+
 1999-11-19  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/hal_arm_edb7xxx.h: Fix bogus comment.

@@ -1,3 +1,8 @@
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_rom.h: 
+	* include/pkgconf/mlt_mn10300_am31_stdeval1_ram.h: New file(s).
+
 1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/plf_stub.h: Include proper config header file.

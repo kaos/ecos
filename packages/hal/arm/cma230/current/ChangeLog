@@ -1,12 +1,20 @@
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
+	explicitly wanted and someone hacks the code
+	(hal_diag_write_char): Likewise
+
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_cma230_stubs.h: New file.
+	* include/pkgconf/mlt_arm_cma230_rom.h: 
+	* include/pkgconf/mlt_arm_cma230_ram.h:  Update "do not edit" strings.
+
 1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
-	* include/pkgconf/mlt_arm_cma230T_ram.h:
-	* include/pkgconf/mlt_arm_cma230T_rom.h:
 	* include/pkgconf/mlt_arm_cma230_ram.h:
 	* include/pkgconf/mlt_arm_cma230_rom.h: New files.
 
-	* include/pkgconf/mlt_arm_cma230T_ram.ldi: 
-	* include/pkgconf/mlt_arm_cma230T_ram.ldi: 
 	* include/pkgconf/mlt_arm_cma230_rom.ldi: 
 	* include/pkgconf/mlt_arm_cma230_rom.mlt: Update with correct memory layout.
 

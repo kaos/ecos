@@ -36,6 +36,7 @@
 //####DESCRIPTIONEND####
 
 #include <pkgconf/kernel.h>
+#include <pkgconf/hal.h>
 
 #include <cyg/kernel/sched.hxx>
 #include <cyg/kernel/thread.hxx>
@@ -50,6 +51,7 @@
 #include <cyg/infra/testcase.h>
 
 #include <cyg/kernel/test/stackmon.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 // Define this to see the statistics with the first sample datum removed.
 // This can expose the effects of caches on the speed of operations.
@@ -70,15 +72,34 @@ typedef struct fun_times {
     cyg_uint32 end;
 } fun_times;
 
-#define NSAMPLES         32
+#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
+
+#ifdef CYGMEM_REGION_ram_SIZE
+#define CYG_THREAD_OVERHEAD  (STACK_SIZE+sizeof(cyg_thread)+(sizeof(fun_times)*2))
+#define NTEST_THREADS        ((CYGMEM_REGION_ram_SIZE/8)/CYG_THREAD_OVERHEAD)
+#define CYG_MUTEX_OVERHEAD   (sizeof(cyg_mutex_t)+sizeof(fun_times))
+#define NMUTEXES             ((CYGMEM_REGION_ram_SIZE/16)/CYG_MUTEX_OVERHEAD)
+#define CYG_MBOX_OVERHEAD    (sizeof(cyg_mbox)+sizeof(fun_times))
+#define NMBOXES              ((CYGMEM_REGION_ram_SIZE/16)/CYG_MBOX_OVERHEAD)
+#define CYG_SEMAPHORE_OVERHEAD (sizeof(cyg_sem_t)+sizeof(fun_times))
+#define NSEMAPHORES          ((CYGMEM_REGION_ram_SIZE/16)/CYG_SEMAPHORE_OVERHEAD)
+#define CYG_COUNTER_OVERHEAD (sizeof(cyg_counter)+sizeof(fun_times))
+#define NCOUNTERS            ((CYGMEM_REGION_ram_SIZE/16)/CYG_COUNTER_OVERHEAD)
+#define CYG_ALARM_OVERHEAD   (sizeof(cyg_alarm)+sizeof(fun_times))
+#define NALARMS              ((CYGMEM_REGION_ram_SIZE/16)/CYG_ALARM_OVERHEAD)
+#else
+// Defaults
 #define NTEST_THREADS    16
-#define NTHREAD_SWITCHES 128
 #define NMUTEXES         32
 #define NMBOXES          32
 #define NSEMAPHORES      32
-#define NSCHEDS          128
 #define NCOUNTERS        32
 #define NALARMS          32
+#endif
+
+#define NSAMPLES         32
+#define NTHREAD_SWITCHES 128
+#define NSCHEDS          128
 
 #define NSAMPLES_SIM         2
 #define NTEST_THREADS_SIM    2
@@ -99,8 +120,6 @@ static int nsemaphores;
 static int nscheds;
 static int ncounters;
 static int nalarms;
-
-#define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
 
 static char stacks[NTEST_THREADS][STACK_SIZE];
 static cyg_thread test_threads[NTEST_THREADS];
@@ -166,6 +185,10 @@ void run_semaphore_tests(void);
 void run_semaphore_circuit_test(void);
 void run_counter_tests(void);
 void run_alarm_tests(void);
+
+#ifndef max
+#define max(n,m) (m > n ? n : m)
+#endif
 
 // Wait until a clock tick [real time clock] has passed.  This should keep it
 // from happening again during a measurement, thus minimizing any fluctuations
@@ -344,15 +367,15 @@ show_test_parameters(void)
 {
     disable_clock_latency_measurement();
     diag_printf("\nTesting parameters:\n");
-    diag_printf("   Clock samples:         %3d\n", nsamples);
-    diag_printf("   Threads:               %3d\n", ntest_threads);
-    diag_printf("   Thread switches:       %3d\n", nthread_switches);
-    diag_printf("   Mutexes:               %3d\n", nmutexes);
-    diag_printf("   Mailboxes:             %3d\n", nmboxes);
-    diag_printf("   Semaphores:            %3d\n", nsemaphores);
-    diag_printf("   Scheduler operations:  %3d\n", nscheds);
-    diag_printf("   Counters:              %3d\n", ncounters);
-    diag_printf("   Alarms:                %3d\n", nalarms);
+    diag_printf("   Clock samples:         %5d\n", nsamples);
+    diag_printf("   Threads:               %5d\n", ntest_threads);
+    diag_printf("   Thread switches:       %5d\n", nthread_switches);
+    diag_printf("   Mutexes:               %5d\n", nmutexes);
+    diag_printf("   Mailboxes:             %5d\n", nmboxes);
+    diag_printf("   Semaphores:            %5d\n", nsemaphores);
+    diag_printf("   Scheduler operations:  %5d\n", nscheds);
+    diag_printf("   Counters:              %5d\n", ncounters);
+    diag_printf("   Alarms:                %5d\n", nalarms);
     diag_printf("\n"); 
     enable_clock_latency_measurement();
 }
@@ -1556,7 +1579,7 @@ run_all_tests(CYG_ADDRESS id)
     min_stack = STACK_SIZE;
     max_stack = 0;
     total_stack = 0;
-    for (i = 0;  i < NTEST_THREADS;  i++) {
+    for (i = 0;  i < (int)NTEST_THREADS;  i++) {
         for (j = 0;  j < STACK_SIZE;  j++) {
             if (stacks[i][j]) break;
         }
@@ -1609,6 +1632,23 @@ void tm_basic_main( void )
         ncounters = NCOUNTERS;
         nalarms = NALARMS;
     }
+
+    // Sanity
+#ifdef WORKHORSE_TEST
+    ntest_threads = max(512, ntest_threads);
+    nmutexes = max(1024, nmutexes);
+    nsemaphores = max(1024, nsemaphores);
+    nmboxes = max(1024, nmboxes);
+    ncounters = max(1024, ncounters);
+    nalarms = max(1024, nalarms);
+#else
+    ntest_threads = max(64, ntest_threads);
+    nmutexes = max(32, nmutexes);
+    nsemaphores = max(32, nsemaphores);
+    nmboxes = max(32, nmboxes);
+    ncounters = max(32, ncounters);
+    nalarms = max(32, nalarms);
+#endif
 
     new_thread(run_all_tests, 0);
     

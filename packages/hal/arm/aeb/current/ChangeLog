@@ -1,3 +1,19 @@
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
+	explicitly wanted and someone hacks the code
+	(hal_diag_write_char): Likewise
+
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_aeb_stubs.h: 
+	* include/pkgconf/mlt_arm_aebC_stubs.h: New file.
+
+	* include/pkgconf/mlt_arm_aeb_rom.h: 
+	* include/pkgconf/mlt_arm_aeb_ram.h: 
+	* include/pkgconf/mlt_arm_aebC_rom.h: 
+	* include/pkgconf/mlt_arm_aebC_ram.h: Update "do not edit" string.
+
 1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_arm_aebC_ram.h: 

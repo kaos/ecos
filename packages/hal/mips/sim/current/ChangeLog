@@ -1,3 +1,8 @@
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_sim_ram.h:
+	Add
+
 1999-08-19  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/plf_io.h: Added this file to match other platforms.

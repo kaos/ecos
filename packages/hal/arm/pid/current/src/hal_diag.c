@@ -193,6 +193,7 @@ void hal_diag_init(void)
     while (*msg) hal_diag_write_char(*msg++);
 }
 
+#ifdef DEBUG_DIAG
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 #define DIAG_BUFSIZE 32
 #else
@@ -200,6 +201,7 @@ void hal_diag_init(void)
 #endif
 static char diag_buffer[DIAG_BUFSIZE];
 static int diag_bp = 0;
+#endif
 
 void hal_diag_write_char(char c)
 {
@@ -211,8 +213,10 @@ void hal_diag_write_char(char c)
     } while ((lsr & SIO_LSR_THRE) == 0);
 
     HAL_WRITE_UINT8 (CYG_DEVICE_SERIAL_RS232_16550_THR, c);
+#ifdef DEBUG_DIAG
     diag_buffer[diag_bp++] = c;
     if (diag_bp == DIAG_BUFSIZE) diag_bp = 0;
+#endif
 }
 
 void hal_diag_read_char(char *c)

@@ -325,5 +325,12 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 #endif
 
 // -------------------------------------------------------------------------
+// Various "flavours" of memory regions that can be described by the 
+// Memory Layout Tool (MLT).
+
+#define CYGMEM_REGION_ATTR_R  0x01  // Region can be read
+#define CYGMEM_REGION_ATTR_W  0x02  // Region can be written
+
+// -------------------------------------------------------------------------
 #endif // CYGONCE_INFRA_CYG_TYPE_H multiple inclusion protection
 // EOF cyg_type.h

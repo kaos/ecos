@@ -45,7 +45,11 @@
 //-----------------------------------------------------------------------------
 // Characterize the architecture
 
-#define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
+#ifdef __ARMEB__
+# define CYG_BYTEORDER           CYG_MSBFIRST    // Big endian
+#else
+# define CYG_BYTEORDER           CYG_LSBFIRST    // Little endian
+#endif
 #define CYG_DOUBLE_BYTEORDER    CYG_MSBFIRST    // Big? endian
 
 //-----------------------------------------------------------------------------

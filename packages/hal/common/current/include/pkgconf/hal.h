@@ -111,7 +111,7 @@
 
  cdl_option CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL {
      display    "Disable GDB protocol for diagnostic output"
-     parent     CYGPKG_HAL
+     parent     CYGPKG_HAL_COMMON
      description "
          This option forces diagnostic output to not use the GDB
          protocol.  Most programs will use the GDB protocol for
@@ -322,6 +322,33 @@
    }}CFG_DATA */
 
 #undef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
+
+/* {{CFG_DATA
+
+   cdl_option CYGSEM_HAL_INSTALL_MMU_TABLES {
+       display     "Install MMU tables."
+       description "This option controls whether this application installs
+       it's own Memory Management Unit (MMU) tables, or relies on the
+       existing environment to run."
+       type        boolean
+       parent      CYGPKG_HAL_COMMON
+   }
+
+   cdl_option CYGSEM_HAL_STATIC_MMU_TABLES {
+       display     "Use static MMU tables."
+       description "This option defines an environment where any Memory
+       Management Unit (MMU) tables are constant.  Normally used by ROM
+       based environments, this provides a way to save RAM usage which
+       would otherwise be required for these tables."
+       type        boolean
+       requires    CYGSEM_HAL_INSTALL_MMU_TABLES
+       parent      CYGPKG_HAL_COMMON
+   }
+
+   }}CFG_DATA */
+
+#define CYGSEM_HAL_INSTALL_MMU_TABLES
+#undef  CYGSEM_HAL_STATIC_MMU_TABLES
 
 /* ---------------------------------------------------------------------
  * Options related to source-level debugging and diagnostics.

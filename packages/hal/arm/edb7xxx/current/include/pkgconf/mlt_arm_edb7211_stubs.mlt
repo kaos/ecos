@@ -10,4 +10,5 @@ section fini 0 1 0 1 0 1 0 1 rodata rodata !
 section rodata 0 1 0 1 0 1 0 1 rodata1 rodata1 !
 section rodata1 0 1 0 1 0 1 0 1 fixup fixup !
 section fixup 0 1 0 1 0 1 0 1 gcc_except_table gcc_except_table !
-section gcc_except_table 0 1 0 1 0 0 0 1 data !
+section gcc_except_table 0 1 0 1 0 1 0 1 mmu_tables mmu_tables !
+section mmu_tables 0 4000 0 1 0 0 0 1 data !

@@ -1,3 +1,18 @@
+1999-11-22  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/arm.ld: Add section for definining static MMU tables.
+
+	* src/vectors.S: Introduce PLATFORM_EXTRAS, which if defined provides
+	a hook to include platform code in the "vectors.S" file.  In particular,
+	some platforms will define this to be <cyg/hal/hal_platform_extras.h> 
+	and define static MMU tables there.
+
+1999-11-19  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/basetype.h (CYG_BYTEORDER): If the toolchain tells us to be
+	big-endian, be big-endian
+	Reported by Grant Edwards
+
 1999-11-12  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/vectors.S (reset_platform): New function used to reset board

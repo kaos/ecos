@@ -114,6 +114,11 @@ OUTPUT_FORMAT(elf32-bigarm)
     { FORCE_OUTPUT; *(.gcc_except_table) } \
     > _region_
 
+#define SECTION_mmu_tables(_region_, _vma_, _lma_) \
+    .mmu_tables _vma_ : _lma_ \
+    { FORCE_OUTPUT; *(.mmu_tables) } \
+    > _region_
+
 #define SECTION_data(_region_,  _vma_, _lma_) \
     .data _vma_ : _lma_ \
     { __ram_data_start = ABSOLUTE (.); *(.data*) *(.data1) MERGE_IN_RODATA \

@@ -222,6 +222,18 @@
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
 #define CYGNUM_HAL_RTC_PERIOD        5120   // Assumes 512KHz clock
 
+//---------------------------------------------------------------------------
+// Platform information - descriptive only
+
+#ifdef __CL7111
+#define HAL_PLATFORM_CPU    "ARM 710C"
+#define HAL_PLATFORM_BOARD  "CL-PS7111"
+#else
+#define HAL_PLATFORM_CPU    "ARM 720T"
+#define HAL_PLATFORM_BOARD  "EDB7211"
+#endif
+#define HAL_PLATFORM_EXTRA  ""
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_ARM_EDB7XXX_H */
 /* EOF hal_arm_edb7xxx.h */

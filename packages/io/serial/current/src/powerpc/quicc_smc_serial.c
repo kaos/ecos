@@ -166,7 +166,7 @@ DEVTAB_ENTRY(quicc_smc_serial_io1,
 
 #ifdef CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC_SMC2
 static quicc_smc_serial_info quicc_smc_serial_info2 = {
-    0xB0,                             // Channel indicator
+    0xD0,                             // Channel indicator
     CYGNUM_HAL_INTERRUPT_CPM_SMC2_PIP // interrupt
 };
 #if CYGNUM_IO_SERIAL_POWERPC_QUICC_SMC_SMC2_BUFSIZE > 0

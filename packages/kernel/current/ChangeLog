@@ -1,3 +1,20 @@
+1999-11-30  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/common/kapi.cxx (cyg_scheduler_lock, cyg_scheduler_unlock):
+	assert good range for sched lock, and be defensive anyway.  This
+	is in response to a long time taken to track down a "unlocked too
+	many times" bug.
+
+1999-11-24  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* tests/tm_basic.cxx: Size tests based on available resources,
+	using MLT files.  Fall back if not available.
+
+1999-11-22  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sched/bitmap.cxx (Cyg_Scheduler_Implementation::add_thread):
+	Fixed typo in assertion, and moved it to a more useful place.
+
 1999-10-29  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* tests/PKGconf.mak: Enable cache tests for Cirrus Logic boards.

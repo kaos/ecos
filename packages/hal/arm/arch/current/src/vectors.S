@@ -878,5 +878,9 @@ __startup_stack_base:
 	.balign 16
 __startup_stack:
 
+#ifdef PLATFORM_EXTRAS
+#include PLATFORM_EXTRAS
+#endif                                
+
 // --------------------------------------------------------------------------
 //  end of vectors.S

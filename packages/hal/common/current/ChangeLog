@@ -1,3 +1,9 @@
+1999-11-20  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/hal.h (CYGSEM_HAL_INSTALL_MMU_TABLES): 
+	(CYGSEM_HAL_STATIC_MMU_TABLES): New options to control MMU table
+	flavour and placement.
+
 1999-11-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/dbg-threads-api.h, include/generic-stub.h,

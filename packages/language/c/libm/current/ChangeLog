@@ -1,3 +1,8 @@
+1999-11-23  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/pkgconf/libm.h: Cooperate with permtest combo10 setting
+	an intermediate variable CYGNUM_LIBM_COMPAT_DEFAULT directly.
+
 1999-06-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/mathincl/fdlibm.h: Fix for alias problem

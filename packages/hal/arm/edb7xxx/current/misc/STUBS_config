@@ -1,6 +1,9 @@
 #! /bin/sh
 
-# usage: STUBS_config <repository> [edb7211 | cl7111]
+# usage: STUBS_config <repository> <platform>
+#   where <platform> is one of:
+#     edb7211
+#     cl7111
 
 if [ "$2"x = "x" ]; then
   EDB7xxx="edb7211"
@@ -25,7 +28,10 @@ $TCL $1/pkgconf.tcl                                              \
   --disable CYGPKG_IO_SERIAL --disable CYGPKG_DEVICES_WALLCLOCK \
   --disable CYGPKG_DEVICES_WATCHDOG --disable-cygmon
 
-patch <<END_OF_PATCH -p0
+patch <<END_OF_PATCHES -p0
+
+// This patch enables GDB stub support
+
 --- pkgconf/hal.h~      Thu Jul  8 08:26:44 1999
 +++ pkgconf/hal.h       Wed Jul 28 10:51:07 1999
 @@ -369,10 +369,10 @@
@@ -42,4 +48,19 @@ patch <<END_OF_PATCH -p0
  
  /*
   * NOTE:
-END_OF_PATCH
+
+// This patch selects statis MMU tables, in ROM
+
+--- pkgconf/hal.h~      Mon Nov 22 07:42:33 1999
++++ pkgconf/hal.h       Mon Nov 22 08:33:32 1999
+@@ -348,7 +348,7 @@
+    }}CFG_DATA */
+ 
+ #define CYGSEM_HAL_INSTALL_MMU_TABLES
+-#undef  CYGSEM_HAL_STATIC_MMU_TABLES
++#define CYGSEM_HAL_STATIC_MMU_TABLES
+ 
+ /* ---------------------------------------------------------------------
+  * Options related to source-level debugging and diagnostics.
+
+END_OF_PATCHES

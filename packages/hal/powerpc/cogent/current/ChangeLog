@@ -1,3 +1,9 @@
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_cogent_stubs.h: 
+	* include/pkgconf/mlt_powerpc_cogent_rom.h: 
+	* include/pkgconf/mlt_powerpc_cogent_ram.h: New file(s).
+
 1999-09-02  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/STUBS_config: Added.

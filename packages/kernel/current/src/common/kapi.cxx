@@ -108,12 +108,19 @@ externC void cyg_scheduler_start(void)
 externC void cyg_scheduler_lock(void)
 {
     Cyg_Scheduler::lock();
+    // get_sched_lock() is unsigned, see below "cyg_ucount32 lock"
+    CYG_ASSERT( (0xff000000 & (Cyg_Scheduler::get_sched_lock())) == 0,
+                "Scheduler overlocked" );
 }
 
 /* Unlock the scheduler. */
 externC void cyg_scheduler_unlock(void)
 {
-    Cyg_Scheduler::unlock();
+    cyg_ucount32 slock = Cyg_Scheduler::get_sched_lock();
+    CYG_ASSERT( 0 < slock, "Scheduler not locked" );
+    // And program defensively too:
+    if ( 0 < slock )
+        Cyg_Scheduler::unlock();
 }
 
 /*---------------------------------------------------------------------------*/

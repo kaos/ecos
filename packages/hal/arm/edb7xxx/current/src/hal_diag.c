@@ -82,7 +82,7 @@
 #if defined(CYG_HAL_STARTUP_ROM) && !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 #define HAL_DIAG_USES_HARDWARE
 #else
-#if defined(CYGDGB_HAL_DIAG_DISABLE_GDB_PROTOCOL)
+#if defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
 #define HAL_DIAG_USES_HARDWARE
 #elif CYGHWR_HAL_ARM_EDB7XXX_DIAG_PORT != CYGHWR_HAL_ARM_EDB7XXX_GDB_PORT
 #define HAL_DIAG_USES_HARDWARE
@@ -141,18 +141,22 @@ void hal_diag_init(void)
 #endif
 }
 
+#ifdef DEBUG_DIAG
 #ifndef CYG_HAL_STARTUP_ROM
 #define DIAG_BUFSIZE 2048
 static char diag_buffer[DIAG_BUFSIZE];
 static int diag_bp = 0;
 #endif
+#endif
 
 void hal_diag_write_char(char c)
 {
     hal_diag_init();
+#ifdef DEBUG_DIAG
 #ifndef CYG_HAL_STARTUP_ROM
     diag_buffer[diag_bp++] = c;
     if (diag_bp == sizeof(diag_buffer)) diag_bp = 0;
+#endif
 #endif
     hal_diag_write_char_serial(c);
 }

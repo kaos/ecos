@@ -133,7 +133,7 @@ void hal_clock_reset(cyg_uint32 vector, cyg_uint32 period)
     // Temporary fix for DRAM starvation problem
     if (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK > 37000) {
         int i;
-        for (i = 0;  i < (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK*2)/50;  i++) ;  // approx 200 us
+        for (i = 0;  i < (CYGHWR_HAL_ARM_EDB7XXX_PROCESSOR_CLOCK*2)/30;  i++) ;  // approx 250 us
     }
 #endif 
 }

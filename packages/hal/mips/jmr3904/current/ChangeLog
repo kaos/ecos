@@ -1,3 +1,8 @@
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_mips_tx39_jmr3904_rom.h: 
+	* include/pkgconf/mlt_mips_tx39_jmr3904_ram.h: New file(s).
+
 1999-10-29  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* include/plf_intr.h:

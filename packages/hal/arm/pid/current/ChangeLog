@@ -1,11 +1,29 @@
+1999-11-25  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_pid.h:
+	Allow selection of big-endian mode
+
+	* src/hal_diag.c: Conditionalize def of diag_buffer for only when it's
+	explicitly wanted and someone hacks the code
+	(hal_diag_write_char): Likewise
+
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_pid_ram.h: 
+	* include/pkgconf/mlt_arm_pid_rom.h: 
+	* include/pkgconf/mlt_arm_pidBE_rom.h: 
+	* include/pkgconf/mlt_arm_pidBE_ram.h: Update 'do not edit' strings.
+
+	* include/pkgconf/mlt_arm_pid_stubs.h: 
+	* include/pkgconf/mlt_arm_pidBE_stubs.h: 
+	* include/pkgconf/mlt_arm_pid9_stubs.h: 
+	* include/pkgconf/mlt_arm_pid9_rom.h: 
+	* include/pkgconf/mlt_arm_pid9_ram.h: New file(s).
+
 1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* include/pkgconf/mlt_arm_pidBE_ram.h: 
 	* include/pkgconf/mlt_arm_pidBE_rom.h: 
-	* include/pkgconf/mlt_arm_pidTBE_ram.h: 
-	* include/pkgconf/mlt_arm_pidTBE_rom.h: 
-	* include/pkgconf/mlt_arm_pidT_ram.h: 
-	* include/pkgconf/mlt_arm_pidT_rom.h: 
 	* include/pkgconf/mlt_arm_pid_ram.h: 
 	* include/pkgconf/mlt_arm_pid_rom.h: New file(s).
 
@@ -13,14 +31,6 @@
 	* include/pkgconf/mlt_arm_pidBE_ram.mlt: 
 	* include/pkgconf/mlt_arm_pidBE_rom.ldi: 
 	* include/pkgconf/mlt_arm_pidBE_rom.mlt: 
-	* include/pkgconf/mlt_arm_pidTBE_ram.ldi: 
-	* include/pkgconf/mlt_arm_pidTBE_ram.mlt: 
-	* include/pkgconf/mlt_arm_pidTBE_rom.ldi: 
-	* include/pkgconf/mlt_arm_pidTBE_rom.mlt: 
-	* include/pkgconf/mlt_arm_pidT_ram.ldi: 
-	* include/pkgconf/mlt_arm_pidT_ram.mlt: 
-	* include/pkgconf/mlt_arm_pidT_rom.ldi: 
-	* include/pkgconf/mlt_arm_pidT_rom.mlt: 
 	* include/pkgconf/mlt_arm_pid_ram.ldi: 
 	* include/pkgconf/mlt_arm_pid_ram.mlt: 
 	* include/pkgconf/mlt_arm_pid_rom.ldi: 

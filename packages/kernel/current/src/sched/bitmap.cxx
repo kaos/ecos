@@ -99,13 +99,13 @@ void Cyg_Scheduler_Implementation::add_thread(Cyg_Thread *thread)
 {
     CYG_REPORT_FUNCTION();
         
+    CYG_ASSERT((CYG_THREAD_MIN_PRIORITY >= thread->priority) 
+               && (CYG_THREAD_MAX_PRIORITY <= thread->priority),
+               "Priority out of range!");
+
     CYG_ASSERT( thread_table[thread->priority] == NULL ||
                 thread_table[thread->priority] == thread,
                 "Duplicate thread priorities" );
-
-    CYG_ASSERT((CYG_THREAD_MIN_PRIORITY >= pri) 
-               && (CYG_THREAD_MAX_PRIORITY <= pri),
-               "Priority out of range!");
 
     CYG_ASSERT( (run_queue & (1<<thread->priority)) == 0,
                 "Run queue bit already set" );

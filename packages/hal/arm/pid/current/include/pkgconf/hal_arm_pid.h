@@ -65,6 +65,16 @@
             The PID board comes with an ARM7 CPU as standard."
    }
 
+   cdl_option CYGHWR_HAL_ARM_PID_ARM7BE {
+       display       "ARM PID evaluation board with ARM7 CPU (big-endian mode)"
+       parent        CYGPKG_HAL_ARM_PID
+       platform      pidBE
+       type          radio
+       description      "
+            The PID board comes with an ARM7 CPU which can be operated in big-endian
+            mode instead of little-endian mode."
+   }
+
    cdl_option CYGHWR_HAL_ARM_PID_ARM9 {
        display       "ARM PID evaluation board with ARM9 CPU"
        parent        CYGPKG_HAL_ARM_PID

@@ -1,3 +1,7 @@
+1999-11-26  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/cyg_type.h: Add MLT symbols CYGMEM_REGION_ATTR_R/W.
+
 1999-05-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/cyg_type.h (CYG_INIT_COMPAT): add a new init priority

@@ -1,6 +1,6 @@
 // eCos memory layout - Wed Oct 27 13:28:21 1999
 
-// This is a generated file - do not edit
+// This is a generated file - changes will be lost if ConfigTool(MLT) is run
 
 #include <cyg/infra/cyg_type.h>
 #include <stddef.h>

@@ -44,8 +44,9 @@
 //===========================================================================*/
 
 #include <pkgconf/system.h>           // System-wide configuration info
+#include <pkgconf/hal.h>              // Architecture independent configuration
 #include CYGBLD_HAL_PLATFORM_H        // Platform specific configuration
-#include <cyg/hal/hal_edb7xxx.h>       // Platform specific hardware definitions
+#include <cyg/hal/hal_edb7xxx.h>      // Platform specific hardware definitions
 #include <cyg/hal/hal_mmu.h>          // MMU definitions
 
 #define CYGHWR_HAL_ARM_HAS_MMU        // This processor has an MMU
@@ -73,7 +74,7 @@
 #endif
 #define DRAM_PA_START    0xC0000000
 #define MMU_BASE         DRAM_PA_START+LCD_BUFFER_SIZE
-#define PTE_BASE         DRAM_PA_START+0x4000+LCD_BUFFER_SIZE
+#define PTE_BASE         MMU_BASE+0x4000
 #if (CYGHWR_HAL_ARM_EDB7XXX_DRAM_SIZE == 2)
 #define MMU_TABLES_SIZE  (0x4000+0x1000+0x1000)   // RAM used for PTE entries
 #define DRAM_LA_END      (0x00200000-MMU_TABLES_SIZE-LCD_BUFFER_SIZE)
@@ -108,7 +109,84 @@
 #define IO_PA            0x80000000
 
 // Define startup code [macros]
-#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
+#if defined(CYGSEM_HAL_INSTALL_MMU_TABLES) && !defined(CYG_HAL_STARTUP_RAM)
+
+#ifdef CYG_HAL_ARM_CL7111 // CL7111, 710 processor
+#define MMU_INITIALIZE                                                   \
+	ldr	r2,=MMU_Control_Init                                    ;\
+	mcr	MMU_CP,0,r2,MMU_Control,c0	/* MMU off */           ;\
+	mcr	MMU_CP,0,r1,MMU_Base,c0                                 ;\
+	mcr	MMU_CP,0,r1,MMU_FlushTLB,c0,0	/* Invalidate TLB */    ;\
+	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0	/* Invalidate Caches */ ;\
+	ldr	r1,=0xFFFFFFFF                                          ;\
+	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0                         ;\
+	ldr	r2,=10f                                                 ;\
+	ldr	r1,=MMU_Control_Init|MMU_Control_M                      ;\
+	mcr	MMU_CP,0,r1,MMU_Control,c0                              ;\
+	mov	pc,r2    /* Change address spaces */                    ;\
+	nop                                                             ;\
+	nop                                                             ;\
+	nop                                                             ;\
+10:
+#else // EP7211, 720T processor
+#define MMU_INITIALIZE                                                   \
+	ldr	r2,=MMU_Control_Init                                    ;\
+	mcr	MMU_CP,0,r2,MMU_Control,c0    /* MMU off */             ;\
+	mcr	MMU_CP,0,r1,MMU_Base,c0                                 ;\
+	mcr	MMU_CP,0,r1,MMU_TLB,c7,0      /* Invalidate TLB */      ;\
+	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0 /* Invalidate Caches */   ;\
+	ldr	r1,=0xFFFFFFFF                                          ;\
+	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0                         ;\
+	ldr	r2,=10f                                                 ;\
+	ldr     r3,=__exception_handlers                                ;\
+	sub     r2,r2,r3                                                ;\
+	ldr     r3,=ROM0_LA_START                                       ;\
+ 	add     r2,r2,r3                                                ;\
+	ldr	r1,=MMU_Control_Init|MMU_Control_M                      ;\
+	mcr	MMU_CP,0,r1,MMU_Control,c0                              ;\
+	mov	pc,r2    /* Change address spaces */                    ;\
+	nop                                                             ;\
+ 	nop                                                             ;\
+	nop                                                             ;\
+10:
+#endif
+
+#define RELOCATE_TEXT_SEGMENT                    \
+        ldr     r2,=__exception_handlers        ;\
+        ldr     r3,=ROM0_LA_START               ;\
+        cmp     r2,r3                           ;\
+        beq     20f                             ;\
+        ldr     r4,=__rom_data_end              ;\
+15:                                             ;\
+        ldr     r0,[r3],#4                      ;\
+        str     r0,[r2],#4                      ;\
+        cmp     r2,r4                           ;\
+        bne     15b                             ;\
+20:
+
+#define INIT_MEMORY_CONFIG                                       \
+/* Initialize memory configuration */                           ;\
+	ldr	r1,=MEMCFG1                                     ;\
+	ldr	r2,=0x8200A080                                  ;\
+	str	r2,[r1]                                         ;\
+	ldr	r1,=MEMCFG2                                     ;\
+	ldr	r2,=0xFEFC0000                                  ;\
+	str	r2,[r1]                                         ;\
+	ldr	r1,=DRFPR                                       ;\
+	ldr	r2,=0x81	/* DRAM refresh = 64KHz */      ;\
+	strb	r2,[r1]
+
+#if defined(CYGSEM_HAL_STATIC_MMU_TABLES)
+#define PLATFORM_SETUP1                          \
+        INIT_MEMORY_CONFIG                      ;\
+        ldr     r1,=_MMU_table-0xE0000000       ;\
+        MMU_INITIALIZE                          ;\
+        RELOCATE_TEXT_SEGMENT
+
+#define PLATFORM_EXTRAS <cyg/hal/hal_platform_extras.h>
+
+#else
+// MMU tables placed in DRAM
 
 #if (CYGHWR_HAL_ARM_EDB7XXX_DRAM_SIZE == 2)
 // Note: The DRAM on this board is very irregular in that every
@@ -124,299 +202,241 @@
 //      etc.
 // The MMU mapping code takes this into consideration and creates
 // a continuous logical map for the DRAM.
-#define MAP_DRAM                                                                         \
-/* Map DRAM */                                                                          ;\
-	ldr	r3,=DRAM_LA_START                                                       ;\
-	ldr	r4,=DRAM_LA_END                                                         ;\
-	ldr	r5,=DRAM_PA                                                             ;\
-/* 0x00000000..0x000FFFFF */                                                            ;\
-	mov	r6,r2		/* Set up page table descriptor */                      ;\
-	ldr	r7,=MMU_L1_TYPE_Page                                                    ;\
-	orr	r6,r6,r7                                                                ;\
-	str	r6,[r1],#4	/* Store PTE, update pointer */                         ;\
-10:	mov	r6,r5		/* Build page table entry */                            ;\
-	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable           ;\
-	orr	r6,r6,r7                                                                ;\
-	ldr	r7,=MMU_PAGE_SIZE                                                       ;\
-	str	r6,[r2],#4	/* Next page */                                         ;\
-	add	r3,r3,r7                                                                ;\
-	add	r5,r5,r7                                                                ;\
-	ldr	r8,=DRAM_LA_START+MMU_SECTION_SIZE                                      ;\
-	cmp	r3,r8		/* Done with first 1M? */                               ;\
-	beq	20f                                                                     ;\
-	ldr	r7,=0x40000	/* Special check for 256K boundary */                   ;\
-	and	r7,r7,r5                                                                ;\
-	cmp	r7,#0                                                                   ;\
-	beq	10b                                                                     ;\
-	add	r5,r5,r7	/* Skip 256K hole */                                    ;\
-	ldr	r7,=0x100000                                                            ;\
-	and	r7,r5,r7                                                                ;\
-	beq	10b                                                                     ;\
-	add	r5,r5,r7	/* Nothing at 0xC0100000 */                             ;\
-	ldr	r7,=0x400000	/* Also nothing at 0xC0400000 */                        ;\
-	and	r7,r5,r7                                                                ;\
-	beq	10b                                                                     ;\
-	add	r5,r5,r7                                                                ;\
-	b	10b                                                                     ;\
-20:                                                                                     ;\
-/* 0x00100000..0x001FFFFF */                                                            ;\
-	mov	r6,r2		/* Set up page table descriptor */                      ;\
-	ldr	r7,=MMU_L1_TYPE_Page                                                    ;\
-	orr	r6,r6,r7                                                                ;\
-	str	r6,[r1],#4	/* Store PTE, update pointer */                         ;\
-10:	mov	r6,r5		/* Build page table entry */                            ;\
-	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable           ;\
-	orr	r6,r6,r7                                                                ;\
-	ldr	r7,=MMU_PAGE_SIZE                                                       ;\
-	str	r6,[r2],#4	/* Next page */                                         ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4		/* Done with first DRAM? */                             ;\
-	beq	20f                                                                     ;\
-	add	r5,r5,r7                                                                ;\
-	ldr	r7,=0x40000	/* Special check for 256K boundary */                   ;\
-	and	r7,r7,r5                                                                ;\
-	cmp	r7,#0                                                                   ;\
-	beq	10b                                                                     ;\
-	add	r5,r5,r7	/* Skip 256K hole */                                    ;\
-	ldr	r7,=0x100000                                                            ;\
-	and	r7,r5,r7                                                                ;\
-	beq	10b                                                                     ;\
-	add	r5,r5,r7	/* Nothing at 0xC0300000 */                             ;\
-	ldr	r7,=0x400000	/* Also nothing at 0xC0400000 */                        ;\
-	and	r7,r5,r7                                                                ;\
-	beq	10b                                                                     ;\
-	add	r5,r5,r7                                                                ;\
-	b	10b                                                                     ;\
-20:                                                                                     ;
+#define MAP_DRAM                                                              \
+/* Map DRAM */                                                               ;\
+	ldr	r3,=DRAM_LA_START                                            ;\
+	ldr	r4,=DRAM_LA_END                                              ;\
+	ldr	r5,=DRAM_PA                                                  ;\
+/* 0x00000000..0x000FFFFF */                                                 ;\
+	mov	r6,r2		/* Set up page table descriptor */           ;\
+	ldr	r7,=MMU_L1_TYPE_Page                                         ;\
+	orr	r6,r6,r7                                                     ;\
+	str	r6,[r1],#4	/* Store PTE, update pointer */              ;\
+10:	mov	r6,r5		/* Build page table entry */                 ;\
+	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable;\
+	orr	r6,r6,r7                                                     ;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+	str	r6,[r2],#4	/* Next page */                              ;\
+	add	r3,r3,r7                                                     ;\
+	add	r5,r5,r7                                                     ;\
+	ldr	r8,=DRAM_LA_START+MMU_SECTION_SIZE                           ;\
+	cmp	r3,r8		/* Done with first 1M? */                    ;\
+	beq	20f                                                          ;\
+	ldr	r7,=0x40000	/* Special check for 256K boundary */        ;\
+	and	r7,r7,r5                                                     ;\
+	cmp	r7,#0                                                        ;\
+	beq	10b                                                          ;\
+	add	r5,r5,r7	/* Skip 256K hole */                         ;\
+	ldr	r7,=0x100000                                                 ;\
+	and	r7,r5,r7                                                     ;\
+	beq	10b                                                          ;\
+	add	r5,r5,r7	/* Nothing at 0xC0100000 */                  ;\
+	ldr	r7,=0x400000	/* Also nothing at 0xC0400000 */             ;\
+	and	r7,r5,r7                                                     ;\
+	beq	10b                                                          ;\
+	add	r5,r5,r7                                                     ;\
+	b	10b                                                          ;\
+20:                                                                          ;\
+/* 0x00100000..0x001FFFFF */                                                 ;\
+	mov	r6,r2		/* Set up page table descriptor */           ;\
+	ldr	r7,=MMU_L1_TYPE_Page                                         ;\
+	orr	r6,r6,r7                                                     ;\
+	str	r6,[r1],#4	/* Store PTE, update pointer */              ;\
+10:	mov	r6,r5		/* Build page table entry */                 ;\
+	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable;\
+	orr	r6,r6,r7                                                     ;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+	str	r6,[r2],#4	/* Next page */                              ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4		/* Done with first DRAM? */                  ;\
+	beq	20f                                                          ;\
+	add	r5,r5,r7                                                     ;\
+	ldr	r7,=0x40000	/* Special check for 256K boundary */        ;\
+	and	r7,r7,r5                                                     ;\
+	cmp	r7,#0                                                        ;\
+	beq	10b                                                          ;\
+	add	r5,r5,r7	/* Skip 256K hole */                         ;\
+	ldr	r7,=0x100000                                                 ;\
+	and	r7,r5,r7                                                     ;\
+	beq	10b                                                          ;\
+	add	r5,r5,r7	/* Nothing at 0xC0300000 */                  ;\
+	ldr	r7,=0x400000	/* Also nothing at 0xC0400000 */             ;\
+	and	r7,r5,r7                                                     ;\
+	beq	10b                                                          ;\
+	add	r5,r5,r7                                                     ;\
+	b	10b                                                          ;\
+20:
+
 #elif (CYGHWR_HAL_ARM_EDB7XXX_DRAM_SIZE == 16)
 // The 16M board is arranged as:
 //   0xC0000000..0xC07FFFFF
 //   0xC1000000..0xC17FFFFF
-#define MAP_DRAM                                                                         \
-/* Map DRAM */                                                                          ;\
-	ldr	r3,=DRAM_LA_START                                                       ;\
-	ldr	r4,=DRAM_LA_END                                                         ;\
-	ldr	r5,=DRAM_PA                                                             ;\
-/* 0xXXX00000..0xXXXFFFFF */                                                            ;\
-10:	mov	r6,r2		/* Set up page table descriptor */                      ;\
-	ldr	r7,=MMU_L1_TYPE_Page                                                    ;\
-	orr	r6,r6,r7                                                                ;\
-	str	r6,[r1],#4	/* Store PTE, update pointer */                         ;\
-        ldr     r8,=MMU_SECTION_SIZE/MMU_PAGE_SIZE                                      ;\
-	ldr	r9,=DRAM_PA_START+0x00800000   /* Need to skip at 8M boundary */        ;\
-12:     cmp     r5,r9                                                                   ;\
-        bne     15f                                                                     ;\
-	ldr	r5,=DRAM_PA_START+0x01000000   /* Next chunk of DRAM */                 ;\
-15:	mov	r6,r5		/* Build page table entry */                            ;\
-	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable           ;\
-	orr	r6,r6,r7                                                                ;\
-	ldr	r7,=MMU_PAGE_SIZE                                                       ;\
-	str	r6,[r2],#4	/* Next page */                                         ;\
-	add	r3,r3,r7                                                                ;\
-	add	r5,r5,r7                                                                ;\
-        cmp     r3,r4           /* End of DRAM? */                                      ;\
-        beq     20f                                                                     ;\
-        sub     r8,r8,#1        /* End of 1M section? */                                ;\
-        cmp     r8,#0                                                                   ;\
-        bne     12b             /* Next page */                                         ;\
-        b       10b             /* Next section */                                      ;\
-20:                                                                                     
-#else
-#err Invalid DRAM size selected
-#endif
-
-#ifdef CYG_HAL_ARM_CL7111 // CL7111, 710 processor
-#define MMU_INITIALIZE                                                                   \
-	ldr	r1,=MMU_Control_Init                                                    ;\
-	mcr	MMU_CP,0,r1,MMU_Control,c0	/* MMU off */                           ;\
-	ldr	r1,=MMU_BASE                                                            ;\
-	mcr	MMU_CP,0,r1,MMU_Base,c0                                                 ;\
-	mcr	MMU_CP,0,r1,MMU_FlushTLB,c0,0	/* Invalidate TLB */                    ;\
-	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0	/* Invalidate Caches */                 ;\
-	ldr	r1,=0xFFFFFFFF                                                          ;\
-	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0	                                        ;\
-	ldr	r2,=10f                 	                                        ;\
-	ldr	r1,=MMU_Control_Init|MMU_Control_M                                      ;\
-	mcr	MMU_CP,0,r1,MMU_Control,c0	                                        ;\
-	mov	pc,r2    /* Change address spaces */                                    ;\
-	nop	                                                                        ;\
-	nop	                                                                        ;\
-	nop	                                                                        ;\
-10:
-#else // EP7211, 720T processor
-#define MMU_INITIALIZE                                                                   ;\
-	ldr	r1,=MMU_Control_Init                                                     ;\
-        mcr	MMU_CP,0,r1,MMU_Control,c0	/* MMU off */                            ;\
-	ldr	r1,=MMU_BASE                                                             ;\
-	mcr	MMU_CP,0,r1,MMU_Base,c0                                                  ;\
-	mcr	MMU_CP,0,r1,MMU_TLB,c7,0	/*  Invalidate TLB - 720 style */        ;\
-	mcr	MMU_CP,0,r1,MMU_FlushIDC,c0,0	/* Invalidate Caches */                  ;\
-	ldr	r1,=0xFFFFFFFF                                                           ;\
-	mcr	MMU_CP,0,r1,MMU_DomainAccess,c0	                                         ;\
-	ldr	r2,=10f                 	                                         ;\
-        ldr     r3,=__exception_handlers                                                 ;\
-        sub     r2,r2,r3                                                                 ;\
-        ldr     r3,=ROM0_LA_START                                                        ;\
-        add     r2,r2,r3                                                                 ;\
-	ldr	r1,=MMU_Control_Init|MMU_Control_M                                       ;\
-	mcr	MMU_CP,0,r1,MMU_Control,c0	                                         ;\
-	mov	pc,r2    /* Change address spaces */                                     ;\
-	nop	                                                                         ;\
-	nop	                                                                         ;\
-	nop	                                                                         ;\
-10:
-#endif
-
-#define PLATFORM_SETUP1                                                                 \
-/* Initialize memory configuration */                                                   ;\
-	ldr	r1,=MEMCFG1                                                             ;\
-	ldr	r2,=0x8200A080	/* FIXME - what is this? */                             ;\
-	str	r2,[r1]                                                                 ;\
-	ldr	r1,=MEMCFG2                                                             ;\
-	ldr	r2,=0xFEFC0000                                                          ;\
-	str	r2,[r1]                                                                 ;\
-	ldr	r1,=DRFPR                                                               ;\
-	ldr	r2,=0x81	/* DRAM refresh = 64KHz */                              ;\
-	strb	r2,[r1]                                                                 ;\
-/* Initialize MMU to create new memory map */                                           ;\
-	ldr	r1,=MMU_BASE                                                            ;\
-	ldr	r2,=PTE_BASE                                                            ;\
-	MAP_DRAM                                                                        ;\
-/* Nothing until PCMCIA0 */                                                             ;\
-	ldr	r3,=0x3FF	/* Page tables need 2K boundary */                      ;\
-	add	r2,r2,r3                                                                ;\
-	ldr	r3,=~0x3FF                                                              ;\
-	and	r2,r2,r3                                                                ;\
-	ldr	r3,=(DRAM_LA_END+0x000FFFFF)&0xFFF00000                                 ;\
-	ldr	r4,=EXPANSION2_LA_START                                                 ;\
-	ldr	r5,=MMU_L1_TYPE_Fault                                                   ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-10:	str	r5,[r1],#4                                                              ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-/* EXPANSION2, EXPANSION3, PCMCIA0, PCMCIA1 */                                          ;\
-	ldr	r3,=EXPANSION2_LA_START                                                 ;\
-	ldr	r4,=SRAM_LA_START                                                       ;\
-	ldr	r5,=EXPANSION2_PA                                                       ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                                      ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-10:	orr	r0,r5,r6                                                                ;\
-	str	r0,[r1],#4                                                              ;\
-	add	r5,r5,r7                                                                ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-/* SRAM */                                                                              ;\
-	ldr	r3,=SRAM_LA_START                                                       ;\
-	ldr	r4,=MMU_L1_TYPE_Page|MMU_DOMAIN(0)                                      ;\
-	orr	r4,r4,r2                                                                ;\
-	str	r4,[r1],#4                                                              ;\
-	ldr	r4,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable           ;\
-	orr	r4,r3,r4                                                                ;\
-	str	r4,[r2],#4                                                              ;\
-	ldr	r3,=SRAM_LA_START+MMU_PAGE_SIZE                                         ;\
-	ldr	r4,=SRAM_LA_START+MMU_SECTION_SIZE                                      ;\
-	ldr	r5,=MMU_L2_TYPE_Fault                                                   ;\
-	ldr	r7,=MMU_PAGE_SIZE                                                       ;\
-10:	str	r5,[r2],#4                                                              ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-	ldr	r4,=IO_LA_START                                                         ;\
-	ldr	r5,=MMU_L1_TYPE_Fault                                                   ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-20:	str	r5,[r1],#4                                                              ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	20b                                                                     ;\
-/* I/O */                                                                               ;\
-	ldr	r3,=0x3FF	/* Page tables need 2K boundary */                      ;\
-	add	r2,r2,r3                                                                ;\
-	ldr	r3,=~0x3FF                                                              ;\
-	and	r2,r2,r3                                                                ;\
-	ldr	r4,=MMU_L1_TYPE_Page|MMU_DOMAIN(0)                                      ;\
-	orr	r4,r4,r2                                                                ;\
-	str	r4,[r1],#4                                                              ;\
-	ldr	r3,=IO_LA_START                                                         ;\
-	ldr	r4,=IO_LA_END                                                           ;\
-	ldr	r7,=MMU_PAGE_SIZE                                                       ;\
-	ldr	r5,=IO_PA|MMU_L2_TYPE_Small|MMU_AP_All                                  ;\
-10:	str	r5,[r2],#4                                                              ;\
-	add	r5,r5,r7                                                                ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-	ldr	r4,=IO_LA_START+MMU_SECTION_SIZE                                        ;\
-	ldr	r5,=MMU_L2_TYPE_Fault                                                   ;\
-	ldr	r7,=MMU_PAGE_SIZE                                                       ;\
-10:	str	r5,[r2],#4                                                              ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-	ldr	r4,=LCD_LA_START                                                        ;\
-	ldr	r5,=MMU_L1_TYPE_Fault                                                   ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-20:	str	r5,[r1],#4                                                              ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	20b                                                                     ;\
-/* LCD Buffer & Unmapped DRAM (holes and all) */                                        ;\
-	ldr	r3,=LCD_LA_START                                                        ;\
-	ldr	r4,=ROM0_LA_START                                                       ;\
-	ldr	r5,=LCD_PA                                                              ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable         ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-10:	orr	r0,r5,r6                                                                ;\
-	str	r0,[r1],#4                                                              ;\
-	add	r5,r5,r7                                                                ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-/* ROM0 */                                                                              ;\
-	ldr	r3,=ROM0_LA_START                                                       ;\
-	ldr	r4,=ROM0_LA_END                                                         ;\
-	ldr	r5,=ROM0_PA                                                             ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any|MMU_Cacheable                        ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-10:	orr	r0,r5,r6                                                                ;\
-	str	r0,[r1],#4                                                              ;\
-	add	r5,r5,r7                                                                ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-/* ROM1 */                                                                              ;\
-	ldr	r3,=ROM1_LA_START                                                       ;\
-	ldr	r4,=ROM1_LA_END                                                         ;\
-	ldr	r5,=ROM1_PA                                                             ;\
-	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                                      ;\
-	ldr	r7,=MMU_SECTION_SIZE                                                    ;\
-10:	orr	r0,r5,r6                                                                ;\
-	str	r0,[r1],#4                                                              ;\
-	add	r5,r5,r7                                                                ;\
-	add	r3,r3,r7                                                                ;\
-	cmp	r3,r4                                                                   ;\
-	bne	10b                                                                     ;\
-/* Now initialize the MMU to use this new page table */                                 ;\
-        MMU_INITIALIZE                                                                  ;\
-        ldr     r2,=__exception_handlers                                                ;\
-        ldr     r3,=ROM0_LA_START                                                       ;\
-        cmp     r2,r3                                                                   ;\
-        beq     20f                                                                     ;\
-        ldr     r4,=__rom_data_end                                                      ;\
-15:                                                                                     ;\
-        ldr     r0,[r3],#4                                                              ;\
-        str     r0,[r2],#4                                                              ;\
-        cmp     r2,r4                                                                   ;\
-        bne     15b                                                                     ;\
+#define MAP_DRAM                                                              \
+/* Map DRAM */                                                               ;\
+	ldr	r3,=DRAM_LA_START                                            ;\
+	ldr	r4,=DRAM_LA_END                                              ;\
+	ldr	r5,=DRAM_PA                                                  ;\
+/* 0xXXX00000..0xXXXFFFFF */                                                 ;\
+10:	mov	r6,r2		/* Set up page table descriptor */           ;\
+	ldr	r7,=MMU_L1_TYPE_Page                                         ;\
+	orr	r6,r6,r7                                                     ;\
+	str	r6,[r1],#4	/* Store PTE, update pointer */              ;\
+        ldr     r8,=MMU_SECTION_SIZE/MMU_PAGE_SIZE                           ;\
+	ldr	r9,=DRAM_PA_START+0x00800000   /* Skip at 8M boundary */     ;\
+12:     cmp     r5,r9                                                        ;\
+        bne     15f                                                          ;\
+	ldr	r5,=DRAM_PA_START+0x01000000   /* Next chunk of DRAM */      ;\
+15:	mov	r6,r5		/* Build page table entry */                 ;\
+	ldr	r7,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable;\
+	orr	r6,r6,r7                                                     ;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+	str	r6,[r2],#4	/* Next page */                              ;\
+	add	r3,r3,r7                                                     ;\
+	add	r5,r5,r7                                                     ;\
+        cmp     r3,r4           /* End of DRAM? */                           ;\
+        beq     20f                                                          ;\
+        sub     r8,r8,#1        /* End of 1M section? */                     ;\
+        cmp     r8,#0                                                        ;\
+        bne     12b             /* Next page */                              ;\
+        b       10b             /* Next section */                           ;\
 20:
-
 #else
+#err Invalid DRAM size select
+#endif
+
+#define PLATFORM_SETUP1                                                       \
+        INIT_MEMORY_CONFIG                                                   ;\
+/* Initialize MMU to create new memory map */                                ;\
+	ldr	r1,=MMU_BASE                                                 ;\
+	ldr	r2,=PTE_BASE                                                 ;\
+	MAP_DRAM                                                             ;\
+/* Nothing until PCMCIA0 */                                                  ;\
+	ldr	r3,=0x3FF	/* Page tables need 2K boundary */           ;\
+	add	r2,r2,r3                                                     ;\
+	ldr	r3,=~0x3FF                                                   ;\
+	and	r2,r2,r3                                                     ;\
+	ldr	r3,=(DRAM_LA_END+0x000FFFFF)&0xFFF00000                      ;\
+	ldr	r4,=EXPANSION2_LA_START                                      ;\
+	ldr	r5,=MMU_L1_TYPE_Fault                                        ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+10:	str	r5,[r1],#4                                                   ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+/* EXPANSION2, EXPANSION3, PCMCIA0, PCMCIA1 */                               ;\
+	ldr	r3,=EXPANSION2_LA_START                                      ;\
+	ldr	r4,=SRAM_LA_START                                            ;\
+	ldr	r5,=EXPANSION2_PA                                            ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                           ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+10:	orr	r0,r5,r6                                                     ;\
+	str	r0,[r1],#4                                                   ;\
+	add	r5,r5,r7                                                     ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+/* SRAM */                                                                   ;\
+	ldr	r3,=SRAM_LA_START                                            ;\
+	ldr	r4,=MMU_L1_TYPE_Page|MMU_DOMAIN(0)                           ;\
+	orr	r4,r4,r2                                                     ;\
+	str	r4,[r1],#4                                                   ;\
+	ldr	r4,=MMU_L2_TYPE_Small|MMU_AP_Any|MMU_Bufferable|MMU_Cacheable;\
+	orr	r4,r3,r4                                                     ;\
+	str	r4,[r2],#4                                                   ;\
+	ldr	r3,=SRAM_LA_START+MMU_PAGE_SIZE                              ;\
+	ldr	r4,=SRAM_LA_START+MMU_SECTION_SIZE                           ;\
+	ldr	r5,=MMU_L2_TYPE_Fault                                        ;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+10:	str	r5,[r2],#4                                                   ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+	ldr	r4,=IO_LA_START                                              ;\
+	ldr	r5,=MMU_L1_TYPE_Fault                                        ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+20:	str	r5,[r1],#4                                                   ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	20b                                                          ;\
+/* I/O */                                                                    ;\
+	ldr	r3,=0x3FF	/* Page tables need 2K boundary */           ;\
+	add	r2,r2,r3                                                     ;\
+	ldr	r3,=~0x3FF                                                   ;\
+	and	r2,r2,r3                                                     ;\
+	ldr	r4,=MMU_L1_TYPE_Page|MMU_DOMAIN(0)                           ;\
+	orr	r4,r4,r2                                                     ;\
+	str	r4,[r1],#4                                                   ;\
+	ldr	r3,=IO_LA_START                                              ;\
+	ldr	r4,=IO_LA_END                                                ;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+	ldr	r5,=IO_PA|MMU_L2_TYPE_Small|MMU_AP_All                       ;\
+10:	str	r5,[r2],#4                                                   ;\
+	add	r5,r5,r7                                                     ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+	ldr	r4,=IO_LA_START+MMU_SECTION_SIZE                             ;\
+	ldr	r5,=MMU_L2_TYPE_Fault                                        ;\
+	ldr	r7,=MMU_PAGE_SIZE                                            ;\
+10:	str	r5,[r2],#4                                                   ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+	ldr	r4,=LCD_LA_START                                             ;\
+	ldr	r5,=MMU_L1_TYPE_Fault                                        ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+20:	str	r5,[r1],#4                                                   ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	20b                                                          ;\
+/* LCD Buffer & Unmapped DRAM (holes and all) */                             ;\
+	ldr	r3,=LCD_LA_START                                             ;\
+	ldr	r4,=ROM0_LA_START                                            ;\
+	ldr	r5,=LCD_PA                                                   ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                           \
+                   |MMU_Bufferable|MMU_Cacheable                             ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+10:	orr	r0,r5,r6                                                     ;\
+	str	r0,[r1],#4                                                   ;\
+	add	r5,r5,r7                                                     ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+/* ROM0 */                                                                   ;\
+	ldr	r3,=ROM0_LA_START                                            ;\
+	ldr	r4,=ROM0_LA_END                                              ;\
+	ldr	r5,=ROM0_PA                                                  ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any|MMU_Cacheable             ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+10:	orr	r0,r5,r6                                                     ;\
+	str	r0,[r1],#4                                                   ;\
+	add	r5,r5,r7                                                     ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+/* ROM1 */                                                                   ;\
+	ldr	r3,=ROM1_LA_START                                            ;\
+	ldr	r4,=ROM1_LA_END                                              ;\
+	ldr	r5,=ROM1_PA                                                  ;\
+	ldr	r6,=MMU_L1_TYPE_Section|MMU_AP_Any                           ;\
+	ldr	r7,=MMU_SECTION_SIZE                                         ;\
+10:	orr	r0,r5,r6                                                     ;\
+	str	r0,[r1],#4                                                   ;\
+	add	r5,r5,r7                                                     ;\
+	add	r3,r3,r7                                                     ;\
+	cmp	r3,r4                                                        ;\
+	bne	10b                                                          ;\
+/* Now initialize the MMU to use this new page table */                      ;\
+	ldr	r1,=MMU_BASE                                                 ;\
+        MMU_INITIALIZE                                                       ;\
+        RELOCATE_TEXT_SEGMENT
+#endif // CYGSEM_HAL_STATIC_MMU_TABLES
+
+#else  // CYGSEM_HAL_INSTALL_MMU_TABLES
 
 #define PLATFORM_SETUP1                                                 
 #endif
 
-										
 /*---------------------------------------------------------------------------*/
 /* end of hal_platform_setup.h                                               */
 #endif /* CYGONCE_HAL_PLATFORM_SETUP_H */

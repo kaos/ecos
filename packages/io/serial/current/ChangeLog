@@ -1,3 +1,7 @@
+1999-11-19  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/powerpc/quicc_smc_serial.c: Channel select for SMC2 was wrong.
+
 1999-10-26  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* src/arm/pid_serial.h: Added BE support.

@@ -1,3 +1,7 @@
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_i386_linux_ram.h: New file(s).
+
 1999-10-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/linux_misc.c: Fix some really minor spelling typos

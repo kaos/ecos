@@ -1,3 +1,7 @@
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_sim_ram.h: New file.
+
 1999-09-23  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* runtime/tree: Delete. Now obsolete.

@@ -1,3 +1,8 @@
+1999-11-25  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_powerpc_mbx_rom.h: 
+	* include/pkgconf/mlt_powerpc_mbx_ram.h: New file(s).
+
 1999-10-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/hal_diag.c (hal_diag_write_char): Call new hal_stub.h macro
