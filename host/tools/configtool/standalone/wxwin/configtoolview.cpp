@@ -469,7 +469,7 @@ ecConfigItem *ecConfigToolView::DoFind(const wxString& what, wxWindow* parent)
         if (0==hv)
         {
             // we want to record the highest unexpanded item
-            for(hv=wxGetApp().GetTreeCtrl()->GetParent(h);hv;hv=wxGetApp().GetTreeCtrl()->GetParent(hv))
+            for(hv=wxGetApp().GetTreeCtrl()->GetItemParent(h);hv;hv=wxGetApp().GetTreeCtrl()->GetItemParent(hv))
             {
                 if (!wxGetApp().GetTreeCtrl()->IsExpanded( hv))
                 {

@@ -1,3 +1,15 @@
+2003-05-14  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/admindlg.cpp,
+	  standalone/wxwin/buildoptionsdlg.cpp,
+	  standalone/wxwin/configtool.cpp,
+	  standalone/wxwin/configtoolview.cpp,
+	  standalone/wxwin/pacakgesdlg.cpp,
+	  standalone/wxwin/runtestsdlg.cpp: Minor changes to allow building
+	against current wxWindows CVS sources. [ contributed by Julian Smart ]
+
+	* standalone/wxwin/makefile.gnu: Remove msgdlgex.cpp from the build.
+
 2003-05-02  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/appsettings.cpp: Don't use "." in the PATH to

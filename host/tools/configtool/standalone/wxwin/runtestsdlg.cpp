@@ -650,7 +650,7 @@ void ecRunTestsDialog::Populate(const wxString& test, bool select)
 
     checkListBox->Append(test);
     if (select)
-        checkListBox->Check(checkListBox->Number() - 1, TRUE);
+        checkListBox->Check(checkListBox->GetCount() - 1, TRUE);
 }
 
 
@@ -737,7 +737,7 @@ void ecRunTestsExecutablesDialog::OnCheckAll(wxCommandEvent& event)
         return;
 
     int i;
-    int n = checkList->Number();
+    int n = checkList->GetCount();
     for (i = 0; i < n; i++)
         checkList->Check(i, TRUE);
 }
@@ -749,7 +749,7 @@ void ecRunTestsExecutablesDialog::OnUncheckAll(wxCommandEvent& event)
         return;
 
     int i;
-    int n = checkList->Number();
+    int n = checkList->GetCount();
     for (i = 0; i < n; i++)
         checkList->Check(i, FALSE);
 }
@@ -784,7 +784,7 @@ void ecRunTestsExecutablesDialog::OnAdd(wxCommandEvent& event)
             if (-1 == checkList->FindString(paths[i]))
             {
                 checkList->Append(paths[i]);
-                checkList->Check(checkList->Number()-1, TRUE);
+                checkList->Check(checkList->GetCount()-1, TRUE);
             }
             else
                 err = TRUE;
@@ -855,7 +855,7 @@ void ecRunTestsExecutablesDialog::AddFromFolder(const wxString& folder, bool rec
             if (-1 == checkList->FindString(path))
             {
                 checkList->Append(path);
-                checkList->Check(checkList->Number()-1, TRUE);
+                checkList->Check(checkList->GetCount()-1, TRUE);
             }       
             
             success = dir.GetNext(& filename);
@@ -922,7 +922,7 @@ void ecRunTestsExecutablesDialog::OnUpdateCheckAll(wxUpdateUIEvent& event)
         return;
 
     // If there were no unchecked items, we can disable the check all button
-    event.Enable( checkList->Number() != SelectedTestCount() );
+    event.Enable( checkList->GetCount() != SelectedTestCount() );
 }
 
 void ecRunTestsExecutablesDialog::OnUpdateUncheckAll(wxUpdateUIEvent& event)
@@ -938,7 +938,7 @@ int ecRunTestsExecutablesDialog::SelectedTestCount()
 
     int selCount = 0;
     int i;
-    int n = checkList->Number();
+    int n = checkList->GetCount();
     for (i = 0; i < n; i++)
     {
         if (checkList->IsChecked(i))
@@ -957,7 +957,7 @@ wxString ecRunTestsExecutablesDialog::SelectedTest(int nIndex)
         return str;
 
     int i;
-    for (i=0; i < checkList->Number(); i++)
+    for (i=0; i < checkList->GetCount(); i++)
     {
         if (checkList->IsChecked(i))
         {

@@ -581,7 +581,7 @@ bool ecApp::LoadBitmapResource(wxBitmap& bitmap, const wxString& filename, int b
         wxInputStream* stream = file->GetStream();
         
         wxImage image(* stream, bitmapType);
-        bitmap = image.ConvertToBitmap();
+        bitmap = wxBitmap(image);
         
         delete file;
     }

@@ -79,7 +79,6 @@ OBJECTS = \
  $(CTBUILDDIR)/licensedlg.o \
  $(CTBUILDDIR)/mainwin.o \
  $(CTBUILDDIR)/mltwin.o \
- $(CTBUILDDIR)/msgdlgex.o \
  $(CTBUILDDIR)/outputwin.o \
  $(CTBUILDDIR)/packagesdlg.o \
  $(CTBUILDDIR)/platformeditordlg.o \
@@ -191,9 +190,6 @@ $(CTBUILDDIR)/mainwin.o: $(CTDIR)/mainwin.cpp $(CTDIR)/mainwin.h
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(CTBUILDDIR)/mltwin.o: $(CTDIR)/mltwin.cpp $(CTDIR)/mltwin.h
-	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
-
-$(CTBUILDDIR)/msgdlgex.o: $(CTDIR)/msgdlgex.cpp $(CTDIR)/msgdlgex.h
 	$(CC) $(CPPDEBUGOPTIONS) -c $(EXTRACPPFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(CTBUILDDIR)/outputwin.o: $(CTDIR)/outputwin.cpp $(CTDIR)/outputwin.h

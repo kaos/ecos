@@ -343,7 +343,7 @@ void ecAdminDialog::OnRemove(wxCommandEvent& event)
     {
         // remove the version node
         
-        const wxTreeItemId hParentItem = treeCtrl->GetParent (hTreeItem);
+        const wxTreeItemId hParentItem = treeCtrl->GetItemParent (hTreeItem);
         wxASSERT (hParentItem && hParentItem.IsOk() );
         if (RemovePackageVersion (hTreeItem) && ! treeCtrl->ItemHasChildren (hParentItem)) // if the only version was deleted
         {
@@ -386,7 +386,7 @@ bool ecAdminDialog::RemovePackageVersion (wxTreeItemId hTreeItem)
 {
     wxTreeCtrl* treeCtrl = (wxTreeCtrl*) FindWindow( ecID_ADMIN_DIALOG_TREE) ;
 
-    const wxTreeItemId hParentItem = treeCtrl->GetParent (hTreeItem);
+    const wxTreeItemId hParentItem = treeCtrl->GetItemParent (hTreeItem);
     wxASSERT (hParentItem);
 
     ecAdminItemData* data = (ecAdminItemData*) treeCtrl->GetItemData (hParentItem);

@@ -765,7 +765,7 @@ bool ecPackagesDialog::IsAdded(const wxString& str)
 static int ecPositionInStringList(const wxStringList& list, const wxString& item)
 {
     int i;
-    for (i = 0 ; i < list.Number(); i++)
+    for (i = 0 ; i < list.GetCount(); i++)
         if (list[i] == item)
             return i;
         else
@@ -1070,7 +1070,7 @@ void ecPackagesDialog::UpdateAddRemoveButtons()
 void ecPackagesDialog::ClearSelections(wxListBox& lbox)
 {
     int i;
-    for (i = 0; i < lbox.Number(); i++)
+    for (i = 0; i < lbox.GetCount(); i++)
     {
         lbox.Deselect(i);
     }

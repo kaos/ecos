@@ -318,7 +318,7 @@ void ecBuildOptionsDialog::Redisplay (wxTreeItemId item)
     wxListBox* listBox = (wxListBox*) FindWindow( ecID_BUILD_OPTIONS_FLAGS );
     
     wxString strEdit;
-    bool bRedraw=(listBox->Number() != ar.GetCount());
+    bool bRedraw=(listBox->GetCount() != ar.GetCount());
     if(!bRedraw)
     {
         for(int i=0;i<ar.GetCount();i++){
