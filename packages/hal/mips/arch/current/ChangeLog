@@ -1,3 +1,12 @@
+2003-08-06  Andy Dyer <adyer@righthandtech.com>
+
+	* include/arch.inc: Changed mask for cause register interrupt bits
+	to 0x3f from 0x7f. The extra bit was wrong, but in all current
+	implementations, benign.
+
+	* include/mips-stub.h: Disabled use of 64 bit registers for TX49,
+	so we can work with the public release compiler.
+
 2003-04-27  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/vectors.S: Pass saved interrupt state pointer to interrupt

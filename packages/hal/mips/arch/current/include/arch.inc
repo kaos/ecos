@@ -347,7 +347,7 @@
 	nop				# delay slot
 	and	v0,v0,v1		# apply interrupt mask
 	srl	v0,v0,10		# shift interrupt bits down
-	andi	v0,v0,0x7f		# isolate 6 interrupt bits
+	andi	v0,v0,0x3f		# isolate 6 interrupt bits
 	la	v1,hal_intc_translation_table
 	add	v0,v0,v1		# index into table
 	lb	\vnum,0(v0)		# pick up vector number
