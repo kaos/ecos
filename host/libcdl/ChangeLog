@@ -1,3 +1,7 @@
+2002-12-22  Nick Garnett  <nickg@ecoscentric.com>
+
+	* doc/.cvsignore: Added this file to ignore generated HTML files.
+
 2002-09-21  Bart Veer  <bartv@ecoscentric.com>
 
 	* cdlcore.hxx, cdl.hxx, build.cxx, component.cxx, config.cxx,
