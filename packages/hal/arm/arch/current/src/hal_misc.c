@@ -76,10 +76,9 @@ externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-// Historical - this datum is defined by the GDB stubs if present
-externC 
+externC void* volatile __mem_fault_handler;
 #endif
-        void* volatile __mem_fault_handler;
+
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 /* Force exception handling into the GDB stubs.  This is done by taking over
@@ -126,11 +125,13 @@ exception_handler(HAL_SavedRegisters *regs)
     // This is common in discovery code, e.g. checking for a particular
     // device which may generate an exception when probing if the
     // device is not present
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
     if (__mem_fault_handler && 
         regs->vector == CYGNUM_HAL_EXCEPTION_DATA_ACCESS) {
         regs->pc = (unsigned long)__mem_fault_handler;
         return; // Caught an exception inside stubs        
     }
+#endif
 
 #if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
     if (++exception_level == 1) __take_over_debug_traps();

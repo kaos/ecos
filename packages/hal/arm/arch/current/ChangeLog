@@ -1,3 +1,9 @@
+2004-05-24   Ian Campbell <icampbell@arcom.com>
+
+	* src/hal_misc.c: __mem_fault_handler: Only do this if we have
+	CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS. This allows the HAL to be 
+	compiled without stubs.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_arm.cdl :
