@@ -1,3 +1,8 @@
+2003-04-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (hal_platform_init): Set up GPIO bits according
+	to platform type.
+
 2003-03-31  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_adder.cdl: Enable use of SCC3 on AdderII.

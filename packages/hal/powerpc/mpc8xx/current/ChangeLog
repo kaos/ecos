@@ -1,3 +1,7 @@
+2003-04-16  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/var_misc.c (hal_variant_init): Errata setup for MPC852T
+
 2003-03-23  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/var_intr.c: 

@@ -86,9 +86,17 @@ hal_platform_init(void)
     eppc->cpmi_cicr &= ~0xFF0000;  // Routing bits
     eppc->cpmi_cicr |= 0x240000;   // SCC2, SCC3 on "normal" bit positions
 
+#if defined(CYGHWR_HAL_POWERPC_ADDER_I)
     eppc->pip_pbpar &= ~0x0000400E;   // PB29..30 AS GPIO
     eppc->pip_pbdir |=  0x0000400E;
     eppc->pip_pbdat  =  0x00004000;
+#endif
+
+#if defined(CYGHWR_HAL_POWERPC_ADDER_II)  
+    eppc->pip_pbpar &= ~0x00000007;   // PB29..31 AS GPIO for LEDS
+    eppc->pip_pbdir |=  0x00000007;
+    eppc->pip_pbdat |=  0x00000007;
+#endif
 
     hal_if_init();
 
