@@ -1,5 +1,7 @@
 2004-06-20  Andrew Lunn  <andrew.lunn@ascom.ch>
 
+	* src/flash.c (flash_read): Don't check if the flash is write 
+  	  protected before performing a read.
         * doc/flash.sgml
 	* cdl/io_flash.cdl: Added documentation of the FLASH API
 

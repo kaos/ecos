@@ -330,11 +330,6 @@ flash_read(void *_addr, void *_data, int len, void **err_addr)
         return FLASH_ERR_NOT_INIT;
     }
 
-#ifdef CYGSEM_IO_FLASH_SOFT_WRITE_PROTECT
-    if (plf_flash_query_soft_wp(addr,len))
-        return FLASH_ERR_PROTECT;
-#endif
-
     _flash_read_buf = (code_fun*) __anonymizer(&flash_read_buf);
 
 #ifdef CYGSEM_IO_FLASH_CHATTER
