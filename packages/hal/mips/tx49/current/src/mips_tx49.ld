@@ -50,7 +50,11 @@ ENTRY(reset_vector)
 #if defined(EXTRAS) && defined(CYGPKG_IO)
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 /* FIXME: The MLT should pass in the required alignment since it must be
  * the same as the VMA's alignment. As a result of this bug, all the REF4955

@@ -14,6 +14,7 @@ SECTIONS
     SECTIONS_BEGIN
     CYG_LABEL_DEFN(__reserved) = 0xfc0000; . = CYG_LABEL_DEFN(__reserved) + 0x4000;
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_ram_vectors (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x4), LMA_EQ_VMA)

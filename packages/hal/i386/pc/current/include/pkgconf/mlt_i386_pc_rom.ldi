@@ -19,6 +19,9 @@ SECTIONS
     SECTION_rodata1 (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_rodata (rom, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_data (ram, 0x02000, FOLLOWING(.rodata))
+    SECTION_fixup (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_gcc_except_table (ram, ALIGN (0x1), LMA_EQ_VMA)
+    SECTION_rel__got (ram, ALIGN (0x1), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__pci_window) = ALIGN(0x10); . = CYG_LABEL_DEFN(__pci_window) + 0x64000;

@@ -1,3 +1,9 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/i386.ld:
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.
+
 2003-01-31  Mark Salter  <msalter@redhat.com>
 
 	* src/hal_syscall.c (hal_syscall_handler): Let generic syscall code

@@ -1,3 +1,9 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/hal_mips_upd985xx.ld: 
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.
+
 2002-04-02  Hugo Tyson  <hmt@redhat.com>
 2002-04-02  Anssi Pulkkinen <anssi.pulkkinen@ascom.com>
 

@@ -1,3 +1,15 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/h8300_h8300h.ld: 
+	Added .eh_frame to data section. This is a stopgap fix to allow
+	C++ programs that define exceptions to link and run. It does not
+	allow them to actually throw exceptions, since that depends on
+	compiler changes that have not been made. Further, more
+	far-reaching, linker script changes will also be needs when that
+	happens.
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.	
+
 2002-08-14  Yoshinori Sato  <qzb04471@nifty.ne.jp>
 
 	* include/mod_regs_wdt.h: New file. Providing watchdog hardware data.

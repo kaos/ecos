@@ -1,3 +1,9 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/synth.ld: 
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.
+
 2003-03-30  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/synth_intr.c (synth_auxiliary_xchgmsg): fix typo reported

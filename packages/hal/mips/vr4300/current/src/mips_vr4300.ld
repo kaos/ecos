@@ -45,7 +45,11 @@ OUTPUT_FORMAT("elf32-bigmips", "elf32-bigmips", "elf32-littlemips")
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 #define ALIGN_LMA 8
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))

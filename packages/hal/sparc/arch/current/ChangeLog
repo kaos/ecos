@@ -1,3 +1,9 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/sparc.ld: 
+	Added libsupc++.a to GROUP() directive for GCC versions later than
+	3.0.
+
 2002-10-19  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	Patch from Jiri Gaisler:

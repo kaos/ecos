@@ -51,7 +51,11 @@ ENTRY(reset_vector)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 #define ALIGN_LMA 4
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -126,6 +130,7 @@ GROUP(libtarget.a libgcc.a)
     KEEP(*( SORT (.ecos.table.*))) ; \
     ___CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) ___CTOR_END__ = ABSOLUTE (.); \
     ___DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) ___DTOR_END__ = ABSOLUTE (.); \
+    *(.eh_frame) \
     *(.dynamic) *(.sdata*) *(.sbss*) } \
     > _region_ \
     ___rom_data_start = LOADADDR (.data); \

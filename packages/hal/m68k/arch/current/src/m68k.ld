@@ -45,7 +45,11 @@ ENTRY(__exception_reset)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 #define ALIGN_LMA 4
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -111,6 +115,7 @@ GROUP(libtarget.a libgcc.a)
     __GOT_START = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768);   \
     _SDA_BASE_ = ABSOLUTE(.); *(.got.plt) *(.got)                             \
     __GOT_END__ = ABSOLUTE(.);  *(.dynamic)                                   \
+    *(.eh_frame)                                                              \
       /* We want the small data sections together, so single-instruction */   \
       /* offsets can access them all, and initialized data all before    */   \
       /* uninitialized, so we can shorten the on-disk segment size.      */   \

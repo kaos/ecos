@@ -44,9 +44,11 @@ ENTRY(CYG_LABEL_DEFN(_start))
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
-
-
+#endif
 
 #define ALIGN_LMA 4
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -113,6 +115,7 @@ GROUP(libtarget.a libgcc.a)
     CYG_LABEL_DEFN(__DTOR_LIST__) = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) CYG_LABEL_DEFN(__DTOR_END__) = ABSOLUTE (.); \
     CYG_LABEL_DEFN(_GOT_START) = ABSOLUTE (.); CYG_LABEL_DEFN(_GLOBAL_OFFSET_TABLE_) = ABSOLUTE (.) + 32768; CYG_LABEL_DEFN(_SDA_BASE_) = ABSOLUTE (.); \
     *(.got.plt) *(.got) CYG_LABEL_DEFN(_GOT_END_) = ABSOLUTE (.); \
+    *(.eh_frame) \
     *(.dynamic) *(.sdata*) *(.sbss*) } \
     > _region_ \
     CYG_LABEL_DEFN(__rom_data_start) = LOADADDR (.data); \

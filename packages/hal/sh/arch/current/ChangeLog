@@ -1,3 +1,8 @@
+2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
+
+	* src/sh.ld:
+	Added entry for .stack section in data section.
+
 2003-03-11  Mark Salter  <msalter@redhat.com>
 
 	* src/redboot_linux_exec.c (do_exec): Call eth_drv_stop as necessary.

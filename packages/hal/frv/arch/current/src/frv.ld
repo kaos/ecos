@@ -44,7 +44,11 @@ ENTRY(_start)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
+#if (__GNUC__ >= 3)
+GROUP(libtarget.a libgcc.a libsupc++.a)
+#else
 GROUP(libtarget.a libgcc.a)
+#endif
 
 #define ALIGN_LMA 8
 #define FOLLOWING(_section_) AT ((LOADADDR (_section_) + SIZEOF (_section_) + ALIGN_LMA - 1) & ~ (ALIGN_LMA - 1))
@@ -126,6 +130,7 @@ GROUP(libtarget.a libgcc.a)
     __CTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.ctors*))) __CTOR_END__ = ABSOLUTE (.); \
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
     *(.sdata*) \
+    *(.eh_frame) \
     . = ALIGN (8); *(.2ram.*) \
     /* Global pointer stuff */ \
     . = ALIGN(8);    _gp = . + 2048;     __global = _gp; \

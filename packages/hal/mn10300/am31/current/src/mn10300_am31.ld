@@ -109,6 +109,7 @@ GROUP(libtarget.a libgcc.a)
     __DTOR_LIST__ = ABSOLUTE (.); KEEP (*(SORT (.dtors*))) __DTOR_END__ = ABSOLUTE (.); \
     _GOT_START = ABSOLUTE (.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE (.) + 32768; _SDA_BASE_ = ABSOLUTE (.); \
     *(.got.plt) *(.got) _GOT_END_ = ABSOLUTE (.); \
+    *(.eh_frame) \
     *(.dynamic) *(.sdata*) *(.sbss*) } \
     > _region_ \
     __rom_data_start = LOADADDR (.data); \
