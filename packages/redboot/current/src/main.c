@@ -408,7 +408,9 @@ cyg_start(void)
             } else 
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
             {
+#ifdef CYGSEM_REDBOOT_FLASH_ALIASES              
                 expand_aliases(line, sizeof(line));
+#endif
 		command = (char *)&line;
                 if ((*command == '#') || (*command == '=')) {
                     // Special cases

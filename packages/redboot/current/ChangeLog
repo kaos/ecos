@@ -1,3 +1,7 @@
+2004-05-21  Ian Campbell  <icampbell@arcom.com>
+	 
+	* src/main.c: Make it build without CYGSEM_REDBOOT_FLASH_ALIASES.
+	
 2004-05-05  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/flash.c (fis_load): CRC check on load was broken (the CDL
