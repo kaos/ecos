@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -64,9 +65,11 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGNUM_HAL_QUICC_SMC1
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_powerpc_mpc8xx.h>"
+        puts $::cdl_system_header "#define CYGBLD_HAL_VARIANT_H  <pkgconf/hal_powerpc_quicc.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_powerpc_mbx.h>"
 
 	puts $::cdl_header "#define HAL_PLATFORM_CPU    \"PowerPC 860\""
@@ -113,51 +116,6 @@ cdl_package CYGPKG_HAL_POWERPC_MBX {
            does apply to RAM start eCos applications as well as ROM start
            or stub ROMs."
    }
-
-   cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
-       display      "Number of communication channels on the board"
-       flavor       data
-       calculated   1
-   }
-
-   cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
-       display          "Debug serial port"
-       active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
-       flavor data
-       legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-       default_value    0
-       description      "
-           The MBX board has only one serial port. This option
-           chooses which port will be used to connect to a host
-           running GDB."
-    }
-
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
-        display          "Diagnostic serial port"
-        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-           The MBX board has only one serial port.  This option
-           chooses which port will be used for diagnostic output."
-    }
-
-    # This option is only used when USE_ROM_MONITOR is enabled - but
-    # it cannot be a sub-option to that option, since the code uses the
-    # definition in a preprocessor comparison.
-    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL {
-        display          "Debug serial port used by ROM monitor"
-        flavor data
-        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
-        default_value    0
-        description      "
-            The MBX board has only one serial port.  This
-            option tells the code which port is in use by the ROM
-            monitor. It should only be necessary to change this
-            option if a non-standard configurated eCos GDB stub is
-            used."
-    }
 
     # Real-time clock/counter specifics
     cdl_component CYGNUM_HAL_RTC_CONSTANTS {

@@ -59,8 +59,22 @@ cdl_package CYGPKG_HAL_QUICC {
            The QUICC package provides some of the support needed
            to run eCos on a Motorola MPC8xx (MBX) board, using the QUICC
            feature of the MPC860 and MPC821 CPUs.
-           Currently only serial IO via SMC1 and SCC1 is provided by
+           Currently only serial IO via SMC1/2 and SCC1 is provided by
            this package."
+
+    cdl_interface CYGNUM_HAL_QUICC_SMC1 {
+        display    "SMC1 is available for serial I/O"
+        description "
+          This interface indicates that SMC1 can be outfitted as
+          a serial device."
+    }
+
+    cdl_interface CYGNUM_HAL_QUICC_SMC2 {
+        display    "SMC2 is available for serial I/O"
+        description "
+          This interface indicates that SMC2 can be outfitted as
+          a serial device."
+    }
 
     cdl_interface CYGNUM_HAL_QUICC_SCC1 {
         display    "SCC1 is available for serial I/O"
@@ -70,7 +84,62 @@ cdl_package CYGPKG_HAL_QUICC {
         serial since there is a separate ethernet machine."
     }
 
+    cdl_interface CYGNUM_HAL_QUICC_SCC2 {
+        display    "SCC2 is available for serial I/O"
+        description "
+          Port SCC2 is available for serial I/O"
+    }
+
+    cdl_interface CYGNUM_HAL_QUICC_SCC3 {
+        display    "SCC3 is available for serial I/O"
+        description "
+          Port SCC3 is available for serial I/O"
+    }
+
     compile       quicc_smc1.c
+
+   cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+       display      "Number of communication channels on the board"
+       flavor       data
+       calculated   CYGNUM_HAL_QUICC_SMC1+CYGNUM_HAL_QUICC_SMC2+CYGNUM_HAL_QUICC_SCC1+CYGNUM_HAL_QUICC_SCC2+CYGNUM_HAL_QUICC_SCC3
+   }
+
+   cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+       display          "Debug serial port"
+       active_if        CYGPRI_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_CONFIGURABLE
+       flavor data
+       legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+       default_value    0
+       description      "
+           This option chooses which port will be used to connect to a host
+           via the GDB remote protocol."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+        display          "Diagnostic serial port"
+        active_if        CYGPRI_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_CONFIGURABLE
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+           This option chooses which port will be used for diagnostic output."
+    }
+
+    # This option is only used when USE_ROM_MONITOR is enabled - but
+    # it cannot be a sub-option to that option, since the code uses the
+    # definition in a preprocessor comparison.
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL {
+        display          "Debug serial port used by ROM monitor"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+            If a platform has multiple serial ports, then this
+            option tells the code which port is in use by the ROM
+            monitor. It should only be necessary to change this
+            option if a non-standard configurated eCos GDB stub is
+            used."
+    }
 
     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
         display       "Baud rate for the HAL diagnostic port"

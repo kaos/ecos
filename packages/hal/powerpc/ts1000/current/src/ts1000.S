@@ -52,10 +52,7 @@
 ##
 ##=============================================================================
 
-#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
-#include <pkgconf/hal_powerpc.h>
-#include <pkgconf/hal_powerpc_ts1000.h>
         
 #include <cyg/hal/arch.inc>		/* register symbols et al */
 #include <cyg/hal/ppc_regs.h>		/* on-chip resource layout, special */

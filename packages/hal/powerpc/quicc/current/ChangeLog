@@ -1,3 +1,10 @@
+2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/quicc_smc1.c: Support any combination of SMC1/SMC2 and
+	SCC1/SCC2/SCC3 [or at least lay foundation for it]
+
+	* cdl/hal_powerpc_quicc.cdl: Add more controls over port layout.
+
 2002-07-18  Gary Thomas  <gary@chez-thomas.org>
 
 	* src/quicc_smc1.c (cyg_hal_scc1_init_channel): Fix init which

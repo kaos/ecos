@@ -130,7 +130,28 @@ NETDEVTAB_ENTRY(quicc_netdev,
                 quicc_eth_init, 
                 &quicc_eth0_sc);
 
-extern int _mbx_fetch_VPD(int, void *, int);
+// LED activity [exclusive of hardware bits]
+#ifndef _get_led
+#define _get_led()  
+#define _set_led(v) 
+#endif
+#ifndef LED_TxACTIVE
+#define LED_TxACTIVE  7
+#define LED_RxACTIVE  6
+#define LED_IntACTIVE 5
+#endif
+
+static void
+set_led(int bit)
+{
+  _set_led(_get_led() | (1<<bit));
+}
+
+static void
+clear_led(int bit)
+{
+  _set_led(_get_led() & ~(1<<bit));
+}
 
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
 static cyg_interrupt quicc_eth_interrupt;
@@ -143,8 +164,8 @@ static void          quicc_eth_int(struct eth_drv_sc *data);
 static int
 quicc_eth_isr(cyg_vector_t vector, cyg_addrword_t data, HAL_SavedRegisters *regs)
 {
-    cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
-    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+    cyg_drv_interrupt_mask(QUICC_ETH_INT);
+    cyg_drv_interrupt_acknowledge(QUICC_ETH_INT);
     return (CYG_ISR_HANDLED|CYG_ISR_CALL_DSR);  // Run the DSR
 }
 #endif
@@ -156,7 +177,7 @@ quicc_eth_deliver(struct eth_drv_sc * sc)
     quicc_eth_int(sc);
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     // Allow interrupts to happen again
-    cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+    cyg_drv_interrupt_unmask(QUICC_ETH_INT);
 #endif
 }
 
@@ -178,11 +199,13 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     int TxBD, RxBD;
     int cache_state;
     int i;
-    bool esa_ok;
+    bool esa_ok = false;
 
-    // Fetch the board address from the VPD
-#define VPD_ETHERNET_ADDRESS 0x08
-    if (_mbx_fetch_VPD(VPD_ETHERNET_ADDRESS, enaddr, sizeof(enaddr)) == 0) {
+#ifdef QUICC_ETH_FETCH_ESA
+    QUICC_ETH_FETCH_ESA(esa_ok);
+#endif
+
+    if (!esa_ok) {
 #if defined(CYGPKG_REDBOOT) && \
     defined(CYGSEM_REDBOOT_FLASH_CONFIG)
         esa_ok = flash_get_config("quicc_esa", enaddr, CONFIG_ESA);
@@ -204,7 +227,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
 
 #ifdef CYGINT_IO_ETH_INT_SUPPORT_REQUIRED
     // Set up to handle interrupts
-    cyg_drv_interrupt_create(CYGNUM_HAL_INTERRUPT_CPM_SCC1,
+    cyg_drv_interrupt_create(QUICC_ETH_INT,
                              CYGARC_SIU_PRIORITY_HIGH,
                              (cyg_addrword_t)sc, //  Data item passed to interrupt handler
                              (cyg_ISR_t *)quicc_eth_isr,
@@ -212,20 +235,20 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
                              &quicc_eth_interrupt_handle,
                              &quicc_eth_interrupt);
     cyg_drv_interrupt_attach(quicc_eth_interrupt_handle);
-    cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
-    cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+    cyg_drv_interrupt_acknowledge(QUICC_ETH_INT);
+    cyg_drv_interrupt_unmask(QUICC_ETH_INT);
 #endif
 
-    qi->pram = enet_pram = &eppc->pram[0].enet_scc;
-    qi->ctl = scc = &eppc->scc_regs[0];  // Use SCC1
+    qi->pram = enet_pram = &eppc->pram[QUICC_ETH_SCC].enet_scc;
+    qi->ctl = scc = &eppc->scc_regs[QUICC_ETH_SCC];  // Use SCCx
 
     // Shut down ethernet, in case it is already running
     scc->scc_gsmr_l &= ~(QUICC_SCC_GSML_ENR | QUICC_SCC_GSML_ENT);
 
     memset((void *)enet_pram, 0, sizeof(*enet_pram));
 
-    TxBD = 0x2C00;  // FIXME
-    RxBD = TxBD + CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM * sizeof(struct cp_bufdesc);
+    TxBD = cyg_hal_allocBd(CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM * sizeof(struct cp_bufdesc));
+    RxBD = cyg_hal_allocBd(CYGNUM_DEVS_ETH_POWERPC_QUICC_RxNUM * sizeof(struct cp_bufdesc));
 
     txbd = (struct cp_bufdesc *)((char *)eppc + TxBD);
     rxbd = (struct cp_bufdesc *)((char *)eppc + RxBD);
@@ -235,6 +258,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     qi->rbase = rxbd;
     qi->rxbd = rxbd;
     qi->rnext = rxbd;
+    qi->txactive = 0;
 
     RxBUF = &quicc_eth_rxbufs[0][0];
     TxBUF = &quicc_eth_txbufs[0][0];
@@ -259,22 +283,22 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     txbd--;
     txbd->ctrl |= QUICC_BD_CTL_Wrap;  // Last buffer
 
-    // Set up parallel ports for connection to MC68160 ethernet tranceiver
-    eppc->pio_papar |= (QUICC_MBX_PA_RXD | QUICC_MBX_PA_TXD);
-    eppc->pio_padir &= ~(QUICC_MBX_PA_RXD | QUICC_MBX_PA_TXD);
-    eppc->pio_paodr &= ~QUICC_MBX_PA_TXD;
+    // Set up parallel ports for connection to ethernet tranceiver
+    eppc->pio_papar |= (QUICC_ETH_PA_RXD | QUICC_ETH_PA_TXD);
+    eppc->pio_padir &= ~(QUICC_ETH_PA_RXD | QUICC_ETH_PA_TXD);
+    eppc->pio_paodr &= ~QUICC_ETH_PA_TXD;
 
-    eppc->pio_pcpar &= ~(QUICC_MBX_PC_COLLISION | QUICC_MBX_PC_Rx_ENABLE);
-    eppc->pio_pcdir &= ~(QUICC_MBX_PC_COLLISION | QUICC_MBX_PC_Rx_ENABLE);
-    eppc->pio_pcso  |= (QUICC_MBX_PC_COLLISION | QUICC_MBX_PC_Rx_ENABLE);
+    eppc->pio_pcpar &= ~(QUICC_ETH_PC_COLLISION | QUICC_ETH_PC_Rx_ENABLE);
+    eppc->pio_pcdir &= ~(QUICC_ETH_PC_COLLISION | QUICC_ETH_PC_Rx_ENABLE);
+    eppc->pio_pcso  |= (QUICC_ETH_PC_COLLISION | QUICC_ETH_PC_Rx_ENABLE);
 
-    eppc->pio_papar |= (QUICC_MBX_PA_Tx_CLOCK | QUICC_MBX_PA_Rx_CLOCK);
-    eppc->pio_padir &= ~(QUICC_MBX_PA_Tx_CLOCK | QUICC_MBX_PA_Rx_CLOCK);
+    eppc->pio_papar |= (QUICC_ETH_PA_Tx_CLOCK | QUICC_ETH_PA_Rx_CLOCK);
+    eppc->pio_padir &= ~(QUICC_ETH_PA_Tx_CLOCK | QUICC_ETH_PA_Rx_CLOCK);
 
     // Set up clock routing
-    eppc->si_sicr &= ~QUICC_MBX_SICR_MASK;
-    eppc->si_sicr |= QUICC_MBX_SICR_ENET;
-    eppc->si_sicr &= ~QUICC_MBX_SICR_SCC1_ENABLE;
+    eppc->si_sicr &= ~QUICC_ETH_SICR_MASK;
+    eppc->si_sicr |= QUICC_ETH_SICR_ENET;
+    eppc->si_sicr &= ~QUICC_ETH_SICR_ENABLE;
 
     // Set up DMA mode
     eppc->dma_sdcr = 0x0001;
@@ -339,7 +363,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     enet_pram->taddr_l = 0;
 
     // Initialize the CPM (set up buffer pointers, etc).
-    eppc->cp_cr = QUICC_CPM_SCC1 | QUICC_CPM_CR_INIT_TXRX | QUICC_CPM_CR_BUSY;
+    eppc->cp_cr = QUICC_CPM_SCCx | QUICC_CPM_CR_INIT_TXRX | QUICC_CPM_CR_BUSY;
     while (eppc->cp_cr & QUICC_CPM_CR_BUSY) ;
 
     // Clear any pending interrupt/exceptions
@@ -348,7 +372,7 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     // Enable interrupts
     scc->scc_sccm = QUICC_SCCE_INTS;
 
-    // Set up SCC1 to run in ethernet mode
+    // Set up SCCx to run in ethernet mode
     scc->scc_gsmr_h = 0;
     scc->scc_gsmr_l = QUICC_SCC_GSML_TCI | QUICC_SCC_GSML_TPL_48 |
         QUICC_SCC_GSML_TPP_01 | QUICC_SCC_GSML_MODE_ENET;
@@ -360,18 +384,32 @@ quicc_eth_init(struct cyg_netdevtab_entry *tab)
     scc->scc_psmr = QUICC_PMSR_ENET_CRC | QUICC_PMSR_SEARCH_AFTER_22 |
         QUICC_PMSR_RCV_SHORT_FRAMES;
 
-    // Configure board interface
-    *MBX_CTL1 = MBX_CTL1_ETEN | MBX_CTL1_TPEN;  // Enable ethernet, TP mode
+#ifdef QUICC_ETH_ENABLE
+    QUICC_ETH_ENABLE();
+#endif
+
+#ifdef QUICC_ETH_RESET_PHY
+    QUICC_ETH_RESET_PHY();
+#endif
 
     // Enable ethernet interface
-    eppc->pio_pcpar |= QUICC_MBX_PC_Tx_ENABLE;
-    eppc->pio_pcdir &= ~QUICC_MBX_PC_Tx_ENABLE;
+#ifdef QUICC_ETH_PC_Tx_ENABLE
+    eppc->pio_pcpar |= QUICC_ETH_PC_Tx_ENABLE;
+    eppc->pio_pcdir &= ~QUICC_ETH_PC_Tx_ENABLE;
+#else
+    eppc->pip_pbpar |= QUICC_ETH_PB_Tx_ENABLE;
+    eppc->pip_pbdir |= QUICC_ETH_PB_Tx_ENABLE;
+#endif
 
     if (cache_state)
         HAL_DCACHE_ENABLE();
 
     // Initialize upper level driver
     (sc->funs->eth_drv->init)(sc, (unsigned char *)&enaddr);
+
+    // Set LED state
+    clear_led(LED_TxACTIVE);
+    clear_led(LED_RxACTIVE);
 
     return true;
 }
@@ -431,9 +469,8 @@ static int
 quicc_eth_can_send(struct eth_drv_sc *sc)
 {
     struct quicc_eth_info *qi = (struct quicc_eth_info *)sc->driver_private;
-    volatile struct cp_bufdesc *txbd = qi->txbd;
 
-    return ((txbd->ctrl & QUICC_BD_CTL_Ready) == 0);
+    return (qi->txactive < CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM);
 }
 
 //
@@ -480,7 +517,7 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         memcpy((void *)bp, (void *)sg_list[i].buf, sg_list[i].len);
         bp += sg_list[i].len;
     }
-    // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC8xx does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_FLUSH(txbd->buffer, txbd->length);  // Make sure no stale data
@@ -492,6 +529,8 @@ quicc_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     }
     txbd->ctrl = ctrl | QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int | 
         QUICC_BD_TX_LAST | QUICC_BD_TX_TC;
+    qi->txactive++;
+    set_led(LED_TxACTIVE);
 }
 
 //
@@ -510,7 +549,9 @@ quicc_eth_RxEvent(struct eth_drv_sc *sc)
     rxbd = qi->rnext;
     while ((rxbd->ctrl & (QUICC_BD_CTL_Ready | QUICC_BD_CTL_Int)) == QUICC_BD_CTL_Int) {
         qi->rxbd = rxbd;  // Save for callback
+        set_led(LED_RxACTIVE);
         (sc->funs->eth_drv->recv)(sc, rxbd->length);
+        clear_led(LED_RxACTIVE);
         rxbd->ctrl |= QUICC_BD_CTL_Ready;
         if (rxbd->ctrl & QUICC_BD_CTL_Wrap) {
             rxbd = qi->rbase;
@@ -537,7 +578,7 @@ quicc_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     int i, cache_state;
 
     bp = (unsigned char *)qi->rxbd->buffer;
-    // Note: the MBX860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC8xx does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_INVALIDATE(qi->rxbd->buffer, qi->rxbd->length);  // Make sure no stale data
@@ -567,6 +608,9 @@ quicc_eth_TxEvent(struct eth_drv_sc *sc, int stat)
         } else {
             txbd++;
         }
+	if (--qi->txactive == 0) {
+	  clear_led(LED_TxACTIVE);
+	}
     }
     // Remember where we left off
     qi->tnext = (struct cp_bufdesc *)txbd;
@@ -599,5 +643,5 @@ quicc_eth_int(struct eth_drv_sc *sc)
 static int          
 quicc_eth_int_vector(struct eth_drv_sc *sc)
 {
-    return (CYGNUM_HAL_INTERRUPT_CPM_SCC1);
+    return (QUICC_ETH_INT);
 }

@@ -1,52 +1,15 @@
 2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
 
-	* src/ts1000.S: Minor include file cleanup.
-
-	* cdl/hal_powerpc_ts1000.cdl: Update port layout CDL.
-
-2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
-
-	* cdl/hal_powerpc_ts1000.cdl: Fix clock rate calculation.
-
-	* misc/redboot_ROMRAM.ecm: 
-	* misc/redboot_ROM.ecm: 
-	* misc/redboot_RAM.ecm: FLASH package name change.
-
-	* include/plf_cache.h: No need for "old" FLASH cache support.
-
-	* src/hal_diag.c: 
-	* include/hal_diag.h: Remove old !VIRTUAL_VECTORS cruft.
-
-2002-10-15  Gary Thomas  <gary@mlbassoc.com>
-
-	* src/ts1000.S: Don't reset PHY on RAM startup.
-
-2002-09-03  Gary Thomas  <gary@mlbassoc.com>
-
-	* src/ts1000.S: 
-	* src/hal_diag.c: 
-	* src/hal_aux.c: 
-	* include/pkgconf/mlt_powerpc_ts1000_romram.mlt: 
-	* include/pkgconf/mlt_powerpc_ts1000_romram.ldi: 
-	* include/pkgconf/mlt_powerpc_ts1000_romram.h: 
-	* include/pkgconf/mlt_powerpc_ts1000_rom.mlt: 
-	* include/pkgconf/mlt_powerpc_ts1000_rom.ldi: 
-	* include/pkgconf/mlt_powerpc_ts1000_rom.h: 
-	* include/pkgconf/mlt_powerpc_ts1000_ram.mlt: 
-	* include/pkgconf/mlt_powerpc_ts1000_ram.ldi: 
-	* include/pkgconf/mlt_powerpc_ts1000_ram.h: 
-	* include/plf_stub.h: 
-	* include/plf_regs.h: 
-	* include/plf_intr.h: 
-	* include/plf_cache.h: 
-	* include/hal_diag.h: 
-	* cdl/hal_powerpc_ts1000.cdl: New platform - Allied Telesyn TS1000.
+	* include/mbx_eth.inl: 
+	* cdl/mbx_eth_drivers.cdl: New package - platform specifics for
+	Motorola MBX (PowerPC 860) board.
 
 //===========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -76,3 +39,6 @@
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //===========================================================================
+	
+	
+

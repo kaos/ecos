@@ -107,6 +107,8 @@
 
 #else
 
+#include <cyg/infra/cyg_type.h>
+
 /*****************************************************************
 	Communications Processor Buffer Descriptor
 *****************************************************************/
@@ -934,6 +936,12 @@ static inline EPPC *eppc_base(void)
     return retval;
 }
 
+
+// Function used to allocate space in shared memory area
+// typically used for buffer descriptors, etc.
+__externC unsigned short cyg_hal_allocBd(int len);
+
+#define QUICC_BD_BASE               0x2000  // Start of shared memory
 
 
 #endif /* __ASSEMBLER__ */

@@ -1,3 +1,8 @@
+2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* src/viper.S: Minor include file cleanups.
+	* cdl/hal_powerpc_viper.cdl: Update port layout CDL.
+
 2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* include/plf_cache.h: No need for old FLASH cache support.

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -72,6 +73,7 @@ struct quicc_eth_info {
     struct cp_bufdesc              *tbase, *rbase;   // First Tx,Rx descriptor
     struct cp_bufdesc              *tnext, *rnext;   // Next descriptor to check for interrupt
     int                             txsize, rxsize;  // Length of individual buffers
+    int                             txactive;        // Count of active Tx buffers
     unsigned long                   txkey[CYGNUM_DEVS_ETH_POWERPC_QUICC_TxNUM];
 };
 
@@ -155,24 +157,7 @@ struct quicc_eth_info {
 #define QUICC_BD_TX_UN              0x0002  // Tx underrun
 #define QUICC_BD_TX_CSL             0x0001  // Carrier lost
 
-// MBX specific "wiring" - aux connections to MX68160 Ethernet support chip
-#define QUICC_MBX_PA_RXD            0x0001  // Rx Data on Port A
-#define QUICC_MBX_PA_TXD            0x0002  // Tx Data on Port A
-#define QUICC_MBX_PA_Tx_CLOCK       0x0200  // Tx Clock = CLK2
-#define QUICC_MBX_PA_Rx_CLOCK       0x0800  // Rx Clock = CLK4
-#define QUICC_MBX_PC_Tx_ENABLE      0x0001  // Tx Enable (TENA)
-#define QUICC_MBX_PC_COLLISION      0x0010  // Collision detect
-#define QUICC_MBX_PC_Rx_ENABLE      0x0020  // Rx Enable (RENA)
-#define QUICC_MBX_SICR_MASK         0x00FF  // SI Clock Route - important bits
-#define QUICC_MBX_SICR_ENET  (7<<3)|(5<<0)  //   Rx=CLK4, Tx=CLK2
-#define QUICC_MBX_SICR_SCC1_ENABLE  0x0040  // Enable SCC1 to use NMSI
-
-#define MBX_CTL1   (cyg_uint8 *)0xFA100000  // System control register
-#define MBX_CTL1_ETEN                 0x80  // 1 = Enable ethernet tranceiver
-#define MBX_CTL1_ELEN                 0x40  // 1 = Enable ethernet loopback
-#define MBX_CTL1_EAEN                 0x20  // 1 = Auto select ethernet interface
-#define MBX_CTL1_TPEN                 0x10  // 0 = AUI, 1 = TPI
-#define MBX_CTL1_FDDIS                0x08  // 1 = Disable full duplex (if TP mode)
+#include CYGDAT_DEVS_QUICC_ETH_INL  // Platform specifics
 
 #define IEEE_8023_MAX_FRAME         1518    // Largest possible ethernet frame
 #define IEEE_8023_MIN_FRAME           64    // Smallest possible ethernet frame
