@@ -55,7 +55,8 @@ cat > makefile <<EOF
 
 TOPLEVEL   := ../../packages
 EOF
-/bin/echo -n MAIN_SGML   := ecos.sgml >> makefile
+/bin/echo MAIN_SGML   := ecos.sgml >> makefile
+/bin/echo -n OTHER_SGML   :=  >> makefile
 
 cat >ecos.sgml <<EOF
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
