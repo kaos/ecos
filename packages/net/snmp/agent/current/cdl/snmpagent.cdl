@@ -41,7 +41,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      hmt
-# Original data:  hmt
+# Original data:  hmt, Andrew Lunn
 # Contributors:   gthomas
 # Date:           2000-05-30
 #
@@ -63,8 +63,6 @@ cdl_package CYGPKG_SNMPAGENT {
     requires      { 0 != CYGINT_ISO_ERRNO }
     requires      { 0 != CYGINT_ISO_ERRNO_CODES }
     requires      CYGPKG_NET
-# For now we only work with the OpenBSD stack, not FreeBSD
-    requires      CYGPKG_NET_OPENBSD_STACK
     requires      CYGPKG_SNMPLIB
     description   "SNMP agent based on the UCD-SNMP project."
 
@@ -78,6 +76,7 @@ cdl_package CYGPKG_SNMPAGENT {
 		snmp_vars.c			\
 		snmpd.c				\
                 snmptask.c			\
+		mibgroup/mibII/helpers.c        \
 		mibgroup/mibII/system_mib.c	\
 		mibgroup/mibII/sysORTable.c	\
 		mibgroup/mibII/snmp_mib.c	\

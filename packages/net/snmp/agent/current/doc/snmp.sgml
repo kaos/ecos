@@ -244,23 +244,10 @@ again.
 <SECT1 id="net-snmp-configuring-ecos">
 <TITLE>Configuring eCos</TITLE>
 <PARA>
-To use the SNMP agent, the SNMP library and agent packages must
-be included in your configuration. In addition, at this point, the SNMP
-stack only works with the OpenBSD-based TCP/IP stack, not the FreeBSD-based
-stack. The "old_net" template can be used as a starting point for using
-the OpenBSD-based TCP/IP stack, for example:
-<SCREEN>
-$ <USERINPUT>ecosconfig new mytarget old_net</USERINPUT>
-</SCREEN>
-or you can add the various required packages to an existing configuration with:
-<SCREEN>
-$ <USERINPUT>ecosconfig add net openbsd_net eth_drivers</USERINPUT>
-</SCREEN>
-</PARA>
-<PARA>
-To incorporate the stack into your configuration select the SNMP library
-and SNMP agent packages in the eCos Configuration Tool, or at the command
-line type:
+To use the SNMP agent, the SNMP library and agent packages must be
+included in your configuration. To incorporate the stack into your
+configuration select the SNMP library and SNMP agent packages in the
+eCos Configuration Tool, or at the command line type:
 <SCREEN>
 $ <USERINPUT>ecosconfig add snmplib snmpagent</USERINPUT>
 </SCREEN>

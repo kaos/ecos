@@ -101,8 +101,13 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mibincl.h"
 #include "mibgroup/util_funcs.h"
 #include "mibgroup/mibII/dot3.h"
+#include "mibgroup/mibII/ifr_helper.h"
 
 #include <net/if_types.h>
+#include <net/if.h>
+#ifdef CYGPKG_NET_FREEBSD_STACK
+#include <net/if_var.h>
+#endif
 
 // Get info about the device
 #include <pkgconf/system.h>
@@ -226,19 +231,15 @@ var_dot3StatsTable(struct variable *vp,
     int supports_dot3 = 0, i;
     struct ether_drv_stats x;
     
-    for (ifp = ifnet.tqh_first; ifp != 0; ifp = ifp->if_list.tqe_next)
-        interface_count++;
-        
+    interface_count = cyg_snmp_num_interfaces();
+
     if ( header_simple_table( vp,name,length,exact,var_len,write_method,
                               interface_count)
          == MATCH_FAILED )
         return NULL;
 
-    for ( interface_count = name[ (*length)-1 ], ifp = ifnet.tqh_first;
-          interface_count > 1 && ifp != 0;
-          interface_count-- )
-        ifp = ifp->if_list.tqe_next;
-    
+    ifp = cyg_snmp_get_if(name[ (*length)-1 ]);
+
     if ( ! ifp )
         return NULL;
 

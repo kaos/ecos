@@ -1,3 +1,18 @@
+2003-02-28  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+        * include/mibgroup/mibII/itf_helpers.h:
+	* src/mibgroup/mibII/helpers.c: (New) Functions for finding the
+	interface structure for Free and open BSD.
+	* src/mibgroup/mibII/interfaces.c: Use the helper functions and
+	other changes needed for the FreeBSD stack.
+	* src/mibgroup/mibII/ip.c: Ditto
+	* src/mibgroup/mibII/udp.c: Ditto
+	* src/mibgroup/mibII/tcp.c: Ditto
+	* src/mibgroup/mibII/dot3.c: Ditto
+	* cdl/snmpagent.cdl: Removed the requirement for the OpenBSD stack.
+	* doc/snmp.sgml: Removed the documented requirement for the OpenBSD
+	stack.
+	
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/snmpagent.cdl: Add doc link.
