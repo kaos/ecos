@@ -303,6 +303,16 @@ package CYGPKG_DEVS_FLASH_SH_SE7751 {
            on the Hitachi/SE7751 platform."
 }
 
+package CYGPKG_DEVS_FLASH_SH_MICRODEV {
+        alias           { "SuperH SH4-202 MicroDev CPU board FLASH memory support" flash_microdev }
+        directory       devs/flash/sh/microdev
+        script          flash_microdev.cdl
+        hardware
+        description "
+           This package contains hardware support for FLASH memory
+           on the SuperH SH4-202 MicroDev CPU board platform."
+}
+
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
 	directory	devs/flash/arm/ebsa285
@@ -1093,6 +1103,16 @@ package CYGPKG_IO_SERIAL_SH_SE77X9 {
     description       "SH3 SE77x9 serial device driver"
 }
 
+package CYGPKG_IO_SERIAL_SH_SH4_202_MD {
+    alias             { "SH4-202 MicroDev serial device driver"
+                        devs_serial_sh3_se77x9 se77x9_serial_driver }
+    hardware
+    directory	      devs/serial/sh/sh4_202_md
+    script	      ser_sh4_202_md.cdl	
+    description       "This option enables the serial device drivers for the
+        SuperH SH4-202 MicroDev board, based on the generic SH SCIF driver."
+}
+
 package CYGPKG_IO_SERIAL_V85X_V850 {
     alias             { "NEC V850 serial device drivers"
                         devs_serial_v85x_v850 v850_serial_driver }
@@ -1400,6 +1420,16 @@ package CYGPKG_DEVS_ETH_SH_ETHERC {
 	script		sh_etherc_eth_drivers.cdl
         description     "Ethernet driver for SH2 etherc controller."
 }
+
+package CYGPKG_DEVS_ETH_SH_MICRODEV {
+      alias           { "SH4-202 MicroDev onboard ethernet support" devs_eth_sh_md }
+      hardware
+      directory       devs/eth/sh/sh4_202_md
+      script          sh4_202_md_eth_drivers.cdl
+      description "This package contains hardware support for onboard SMC91C111
+                   ethernet device on the MicroDev board."
+}
+
 package CYGPKG_DEVS_ETH_ARM_EBSA285 {
 	alias 		{ "Intel EBSA285 with PRO/100+ ethernet driver"
 			   devs_eth_arm_ebsa285 ebsa285_eth_driver }
@@ -2711,6 +2741,16 @@ package CYGPKG_HAL_SH_SH7751_SE7751 {
         description "
            This SH HAL package provides the support needed to run
            eCos on a Hitachi Solution Engine 7751 board."
+}
+
+package CYGPKG_HAL_SH_SH4_202_MD {
+    alias         { "SuperH SH4-202 MicroDev CPU Board" hal_sh_sh4_202_md }
+    directory     hal/sh/sh4_202_md
+    script        hal_sh_sh4_202_md.cdl
+    hardware
+    description   "
+        The SH4-202 HAL package provides generic
+        support for the SuperH SH4-202 MicroDev CPU board."
 }
 
 # --------------------------------------------------------------------------
@@ -4280,6 +4320,23 @@ target dreamcast {
         description "
            The sh7750 target provides the packages needed to run
            eCos on SEGA Dreamcast."
+}
+
+target sh4_202_md {
+        alias       { "SuperH SH4-202 MicroDev CPU board" }
+        packages    { CYGPKG_HAL_SH
+                      CYGPKG_HAL_SH_SH4
+                      CYGPKG_HAL_SH_SH4_202_MD
+                      CYGPKG_DEVS_FLASH_STRATA
+                      CYGPKG_DEVS_FLASH_SH_MICRODEV
+                      CYGPKG_IO_SERIAL_SH_SCIF
+                      CYGPKG_IO_SERIAL_SH_SH4_202_MD
+                      CYGPKG_DEVS_ETH_SH_MICRODEV
+                      CYGPKG_DEVS_ETH_SMSC_LAN91CXX
+        }
+        description "
+           The sh4_202_md target provides the packages needed to run
+           eCos on a SuperH SH4-202 MicroDev CPU board."
 }
 
 # --------------------------------------------------------------------------

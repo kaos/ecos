@@ -37,6 +37,11 @@
 
 	* ecos.db: New package - National Semiconductor DP83816 PCI ethernet
 
+2003-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* ecos.db: Add sh4_202_md serial driver package
+	(CYGPKG_IO_SERIAL_SH_SH4_202_MD)
+	
 2003-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: 
@@ -44,6 +49,11 @@
 	New NAND FLASH drivers - Toshiba 58CXXX
 	New RTC driver - Dallas DS1307
 
+2003-09-05  Nick Garnett  <nickg@balti.calivar.com>
+
+	* ecos.db: Added Packages and target for SuperH SH4-202 part and
+	MicroDev CPU board.
+	
 2003-08-22  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
 	* ecos.db: Add new VNC server package.
