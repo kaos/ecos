@@ -5,7 +5,7 @@
 //
 //      plf_intr.h
 //
-//      EDOSK-2674R interrupt and clock support
+//      H8S SIM interrupt and clock support
 //
 //==========================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####

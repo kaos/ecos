@@ -173,7 +173,7 @@ cdl_package CYGPKG_HAL_H8300_H8S_SIM {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -ms -mint32" }
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mrelax -ms -mint32" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."

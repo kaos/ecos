@@ -58,7 +58,7 @@
 
 #define SCI_BASE ((cyg_uint8*)CYGHAL_PLF_SCI_BASE)
 
-const static channel_data_t channel = { (cyg_uint8*)SCI_BASE, 0, 0};
+static channel_data_t channel = { (cyg_uint8*)SCI_BASE, 0, 0};
 
 void
 cyg_hal_plf_comms_init(void)
