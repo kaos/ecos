@@ -156,7 +156,7 @@
  * FCR<0>       1       turn on fifo mode
  */
 #define FIFO_ENABLE 0x07
-#define INT_ENABLE      (IER_RLS)   /* default interrupt mask */
+#define INT_ENABLE  (IER_RLS)   /* default interrupt mask */
 
 
 

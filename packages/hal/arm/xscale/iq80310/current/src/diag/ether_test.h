@@ -92,42 +92,42 @@
 
 /* Command codes for the command fields of command descriptor blocks */
 
-#define NOP			0
+#define NOP		0
 #define IA_SETUP	1
 #define CONFIGURE	2
 #define MC_SETUP	3
 #define TRANSMIT	4
-#define TDR			5
+#define TDR		5
 #define DUMP		6
 #define DIAGNOSE	7
 
 /* Commands for CUC in command word of SCB */
-#define CU_NOP				0
-#define CU_START			1
-#define CU_RESUME			2
+#define CU_NOP			0
+#define CU_START		1
+#define CU_RESUME		2
 #define LOAD_DUMPCTR_ADDR	4	/* Load Dump Counters Address */
 #define DUMP_STAT_COUNTERS	5	/* Dump Statistical Counters  */
 #define LOAD_CU_BASE		6	/* Load CU Base Register      */
 #define DUMP_RESET_COUNTERS	7	/* Dump and Reset Statistical
 					   Counters		      */
 /* Commands for RUC in command word of SCB */
-#define RU_NOP			0
-#define RU_START		1
-#define RU_RESUME		2
-#define RU_ABORT		4
-#define LOAD_HDS		5		/* Load Header Data Size      */
+#define RU_NOP		0
+#define RU_START	1
+#define RU_RESUME	2
+#define RU_ABORT	4
+#define LOAD_HDS	5		/* Load Header Data Size      */
 #define LOAD_RU_BASE	6		/* Load RU Base Register      */
-#define RBD_RESUME		7		/* Resume frame reception     */
+#define RBD_RESUME	7		/* Resume frame reception     */
 
 /* Misc. defines */
 #define END_OF_LIST	1
 #define BUSY		1
 
 /* RU Status field */
-#define RU_IDLE			0x0
+#define RU_IDLE		0x0
 #define RU_SUSPENDED	0x1
 #define RU_NORESOURCE	0x2
-#define RU_READY		0x4
+#define RU_READY	0x4
 #define RU_SUSP_NORBD	0x5
 #define RU_NORSRC_NORBD	0x6
 #define RU_READY_NORBD	0xc
@@ -136,10 +136,10 @@
 #define I557_INT	0xfc00
 
 /* MDI definitions */
-#define MDI_WRITE_OP		0x01
-#define MDI_READ_OP			0x02
-#define MDI_NOT_READY		0
-#define MDI_POLLED			0
+#define MDI_WRITE_OP	0x01
+#define MDI_READ_OP	0x02
+#define MDI_NOT_READY	0
+#define MDI_POLLED	0
 #define MDI_DEFAULT_PHY_ADDR 1	/* when only one PHY */
 
 /* PHY device register addresses */
@@ -184,9 +184,9 @@
 #define PHY_ADDR_SPEED_100_MBPS	(0 << 6)
 
 #define DP83840_LOOPBACK_REG	0x18
-#define TWISTER_LOOPBACK		(0x1 << 8)
-#define REMOTE_LOOPBACK			(0x2 << 8)
-#define CLEAR_LOOP_BITS			~(TWISTER_LOOPBACK | REMOTE_LOOPBACK)
+#define TWISTER_LOOPBACK	(0x1 << 8)
+#define REMOTE_LOOPBACK		(0x2 << 8)
+#define CLEAR_LOOP_BITS		~(TWISTER_LOOPBACK | REMOTE_LOOPBACK)
 
 /* 82553 specific register information */
 #define I82553_PHY_EXT_REG0	0x10
@@ -195,30 +195,30 @@
 #define I82553_PHY_EXT_REG1	0x14
 
 /* MDI Control Register bits */
-#define MDI_CTRL_COLL_TEST		(1 << 7)
+#define MDI_CTRL_COLL_TEST	(1 << 7)
 #define MDI_CTRL_FULL_DUPLEX	(1 << 8)
 #define MDI_CTRL_RESTART_AUTO	(1 << 9)
-#define MDI_CTRL_ISOLATE		(1 << 10)
-#define MDI_CTRL_POWER_DOWN		(1 << 11)
-#define MDI_CTRL_AUTO_ENAB		(1 << 12)
-#define MDI_CTRL_AUTO_DISAB		(0 << 12)
-#define MDI_CTRL_100_MBPS		(1 << 13)
-#define MDI_CTRL_10_MBPS		(0 << 13)
-#define MDI_CTRL_LOOPBACK		(1 << 14)
-#define MDI_CTRL_RESET			(1 << 15)
+#define MDI_CTRL_ISOLATE	(1 << 10)
+#define MDI_CTRL_POWER_DOWN	(1 << 11)
+#define MDI_CTRL_AUTO_ENAB	(1 << 12)
+#define MDI_CTRL_AUTO_DISAB	(0 << 12)
+#define MDI_CTRL_100_MBPS	(1 << 13)
+#define MDI_CTRL_10_MBPS	(0 << 13)
+#define MDI_CTRL_LOOPBACK	(1 << 14)
+#define MDI_CTRL_RESET		(1 << 15)
 
 /* MDI Status Register bits */
-#define MDI_STAT_EXTENDED		(1 << 0)
-#define MDI_STAT_JABBER			(1 << 1)
-#define MDI_STAT_LINK			(1 << 2)
+#define MDI_STAT_EXTENDED	(1 << 0)
+#define MDI_STAT_JABBER		(1 << 1)
+#define MDI_STAT_LINK		(1 << 2)
 #define MDI_STAT_AUTO_CAPABLE	(1 << 3)
-#define MDI_STAT_REMOTE_FLT		(1 << 4)
+#define MDI_STAT_REMOTE_FLT	(1 << 4)
 #define MDI_STAT_AUTO_COMPLETE	(1 << 5)
 #define MDI_STAT_10BASET_HALF	(1 << 11)
 #define MDI_STAT_10BASET_FULL	(1 << 12)
-#define MDI_STAT_TX_HALF		(1 << 13)
-#define MDI_STAT_TX_FULL		(1 << 14)
-#define MDI_STAT_T4_CAPABLE		(1 << 15)
+#define MDI_STAT_TX_HALF	(1 << 13)
+#define MDI_STAT_TX_FULL	(1 << 14)
+#define MDI_STAT_T4_CAPABLE	(1 << 15)
 
 /*
  * Structure allignments.  All addresses passed to the 557 must be
@@ -227,8 +227,8 @@
  */
 
 #define SELF_TEST_ALIGN	16
-#define DUMP_ALIGN		16
-#define DEF_ALIGN		4
+#define DUMP_ALIGN	16
+#define DEF_ALIGN	4
 
 /*
  * Bit definitions for the configure command.  NOTE:  Byte offsets are
@@ -237,7 +237,7 @@
  */
 
 /* Byte 0 */
-#define BYTE_COUNT		0x16		/* use all 22 configure bytes */
+#define BYTE_COUNT	0x16		/* use all 22 configure bytes */
 #define CONFIG_BYTE_00	(BYTE_COUNT)
 
 /* Byte 1 */
@@ -245,7 +245,7 @@
 #define CONFIG_BYTE_01	(RX_FIFO_LIMIT)
 
 /* Byte 2 */
-#define ADAPT_IFS		0x00
+#define ADAPT_IFS	0x00
 #define CONFIG_BYTE_02	(ADAPT_IFS)
 
 /* Byte 3 - must be 0x00 */
@@ -261,12 +261,12 @@
 #define CONFIG_BYTE_05	(DMA_BCOUNT_ENAB | TX_DMA_BCOUNT)
 
 /* Byte 6 */
-#define NO_LATE_SCB		0x00
-#define NO_TNO_INT		0x00	/* no interrupt on xmit failure */
-#define INT_CU_IDLE		0x08	/* interrupt when CU goes idle */
+#define NO_LATE_SCB	0x00
+#define NO_TNO_INT	0x00	/* no interrupt on xmit failure */
+#define INT_CU_IDLE	0x08	/* interrupt when CU goes idle */
 #define NO_SV_BAD_FRAME	0x00	/* don't save bad frames */
 #define DISCARD_RX_OVER	0x00	/* discard overrun frames */
-#define BYTE6_REQUD		0x32	/* required "1" bits */
+#define BYTE6_REQUD	0x32	/* required "1" bits */
 
 #define CONFIG_BYTE_06	(NO_LATE_SCB | NO_TNO_INT | INT_CU_IDLE |\
 			 NO_SV_BAD_FRAME | DISCARD_RX_OVER | BYTE6_REQUD)
@@ -299,7 +299,7 @@
 
 /* Byte 12 */
 #define LIN_PRIORITY_MODE	0
-#define IF_SPACING			96	/* inter-frame spacing */
+#define IF_SPACING		96	/* inter-frame spacing */
 #define CONFIG_BYTE_12		(IF_SPACING | LIN_PRIORITY_MODE)
 
 /* Byte 13 */
@@ -309,9 +309,9 @@
 #define CONFIG_BYTE_14	(0xf2)
 
 /* Byte 15 */
-#define PROM_MODE		0	/* not promiscuous */
-#define BROADCAST		0	/* disabled */
-#define CRS				0x80	/* CDT = carrier */
+#define PROM_MODE	0	/* not promiscuous */
+#define BROADCAST	0	/* disabled */
+#define CRS		0x80	/* CDT = carrier */
 #define BYTE15_REQUD	0x48	/* required "1" bits */
 #define CONFIG_BYTE_15	(PROM_MODE | BROADCAST | CRS | BYTE15_REQUD)
 
@@ -325,14 +325,14 @@
 #define STRIPPING_DISABLE	0x00
 #define STRIPPING_ENABLE	0x01
 #define PADDING_ENABLE  	0x02
-#define XFER_CRC			0x04	/* store CRC */
-#define NO_XFER_CRC			0x00
+#define XFER_CRC		0x04	/* store CRC */
+#define NO_XFER_CRC		0x00
 #define BYTE18_REQUD		0xf0	/* required "1" bits */
 #define CONFIG_BYTE_18	(NO_XFER_CRC | PADDING_ENABLE | STRIPPING_ENABLE | BYTE18_REQUD)
 
 /* Byte 19 */
 #define NO_FORCE_FDX		0x00
-#define FORCE_FDX			0x40
+#define FORCE_FDX		0x40
 #define FDX_PIN_ENAB		0x80
 #define CONFIG_BYTE_19_10T	FORCE_FDX
 #define CONFIG_BYTE_19_100T	NO_FORCE_FDX
@@ -578,12 +578,12 @@ struct rfd {
 };
 
 /* Forward declarations */
-static void portWrite ();
-static void resetChip ();
-static void makePacket ();
-static int checkPacket ();
+static void portWrite (UINT32 val);
+static void resetChip (void);
+static void makePacket (UINT8 *, int);
+static int checkPacket (UINT8 *, UINT8 *, int);
 static int i557IntHandler (int);
-static int waitForInt();
+static int waitForInt(void);
 
 static void sendCommand (UINT8  cuc,
                          UINT8  ruc,

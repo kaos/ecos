@@ -1,3 +1,17 @@
+2002-11-13  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_RAM.ecm: Remove CYGPKG_IO_SERIAL_ARM_XSCALE_IQ80310.
+	* misc/redboot_RAMA.ecm: Ditto.
+	* misc/redboot_ROM.ecm: Ditto
+	* misc/redboot_ROMA.ecm: Ditto
+
+	* cdl/hal_arm_xscale_iq80310.cdl (CYGBLD_INTEL_DIAGNOSTICS): Change
+	default to 1.
+	* include/hal_platform_setup.h: Use IOP310_EARLY_PCI_SETUP to make
+	some BIOSes happy. BTB_INIT macro provided elsewhere.
+	* src/diag/*: General cleanup to get rid of warnings and to eliminate
+	functionality provided by the HAL. 
+
 2002-11-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/diag/xscale_test.c: 

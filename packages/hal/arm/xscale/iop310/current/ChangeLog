@@ -1,3 +1,12 @@
+2002-11-13  Mark Salter  <msalter@redhat.com>
+
+	* src/iop310_pci.c (cyg_hal_plf_pci_init): Reorganize to deal with
+	early PCI setup. Also fix support for primary side bridges when
+	acting as PCI host.
+	
+	* include/hal_iop310.h (IOP310_EARLY_PCI_SETUP): Define asm macro to
+	be used by platform setup code to do early (pre-ECC scrub) PCI setup.
+
 2002-11-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/iop310_pci.c: 

@@ -1,3 +1,7 @@
+2002-11-13  Mark Salter  <msalter@redhat.com>
+	* include/hal_platform_setup.h: Use IOP310_EARLY_PCI_SETUP to make
+	some BIOSes happy. BTB_INIT and MMU macros provided elsewhere.
+
 2002-11-12  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/npwr_misc.c: 

@@ -73,15 +73,13 @@ extern void hex32out (unsigned int num);
 #if 0
 extern int printf(char*,...);
 #endif
-extern load_runtime_reg();
-extern store_runtime_reg();
 
 /* 02/02/01 jwf */
 #ifndef TRUE
-#define TRUE			1
+#define TRUE	1
 #endif
 #ifndef FALSE
-#define FALSE			0
+#define FALSE	0
 #endif
 
 

@@ -595,6 +595,48 @@ extern unsigned int _80312_EMISR;  // Only valid for PEC ISR
 #endif
 
 // ------------------------------------------------------------------------
+#ifdef __ASSEMBLER__
+// Macro to perform early setup (in hal_platform_setup.h) of some PCI
+// registers. This should be used prior to the ECC scrup loop to prevent
+// timeouts with some Plug 'n Play PC BIOSes. Before the 'retry' bit is
+// cleared, this macro must setup the vendor/device ID and the primary
+// inbound window BAR to allow primary side access to SDRAM.
+//
+//  Input: reg, reg1      -- scratch registers
+//         reg_dram_size  -- register holding size of SDRAM
+//         vendor_id      -- PCI vendor ID
+//         device_id      -- PCI device ID
+
+.macro IOP310_EARLY_PCI_SETUP reg0, reg1, reg_dram_size, vendor_id, device_id
+	// Setup vendor/device ID for 80312
+	ldr	\reg0, =ASVIR_ADDR
+	ldr	\reg1, =\vendor_id
+	strh	\reg1, [\reg0]
+	ldr	\reg0, =ASIR_ADDR
+	ldr	\reg1, =\device_id
+	strh	\reg1, [\reg0]
+	// Make all secondary bus devices private
+	ldr	\reg0, =SISR_ADDR
+	ldr	\reg1, =0x03FF
+	strh	\reg1, [\reg0]
+	// Setup primary inbound window into SDRAM
+	ldr	\reg0, =PIATVR_ADDR
+	mov	\reg1, #0xa0000000
+	str	\reg1, [\reg0]
+	ldr	\reg0, =PIALR_ADDR
+	sub	\reg1, \reg_dram_size, #1  // dram_size - 1
+	mvn	\reg1, \reg1               // 1s complement
+	str	\reg1, [\reg0]
+#ifdef CYGSEM_HAL_ARM_IQ80310_CLEAR_PCI_RETRY
+	ldr	\reg0, =EBCR_ADDR
+	mov	\reg1, #0x0008
+	strh	\reg1, [\reg0]
+#endif	
+.endm
+
+#endif // __ASSEMBLER__
+
+// ------------------------------------------------------------------------
 
 // Override the default MMU off code. This is intended
 // to be included in an inline asm statement.

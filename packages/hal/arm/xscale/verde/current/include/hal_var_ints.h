@@ -61,6 +61,10 @@
 
 #include <cyg/hal/hal_verde.h>         // registers
 
+//
+// Values for the vector argument of cyg_drv_interrupt_create() and
+// other interrupt related interfaces.
+//
 #define CYGNUM_HAL_INTERRUPT_NONE         -1
 #define CYGNUM_HAL_INTERRUPT_DMA0_EOT      0
 #define CYGNUM_HAL_INTERRUPT_DMA0_EOC      1

@@ -498,7 +498,7 @@ find_watch_address(unsigned wa0, int mode0, unsigned wa1, int mode1)
 {
     unsigned pc = get_register(PC) - 4;
     unsigned cpsr = get_register(PS);
-    unsigned opcode, Rn, Rd, Rm, base, addr, val, wd0, wd1;
+    unsigned opcode, Rn, Rd, Rm, base, addr, val = 0, wd0, wd1;
     int  is_store, use_val, i, offset, shift, size;
 
     if (cpsr & CPSR_THUMB_ENABLE)

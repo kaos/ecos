@@ -46,7 +46,7 @@
 // Author(s):    msalter
 // Contributors: 
 // Date:         2000-10-10
-// Purpose:      Intel IOP310 platform specific support routines
+// Purpose:      Intel IQ80310 platform specific support routines
 // Description: 
 // Usage:       #include <cyg/hal/hal_platform_setup.h>
 //
@@ -55,9 +55,11 @@
 //===========================================================================*/
 
 #include <pkgconf/system.h>             // System-wide configuration info
+#include <cyg/hal/hal_mmu.h>            // MMU definitions
+#include <cyg/hal/hal_mm.h>             // More MMU definitions
+#include CYGBLD_HAL_VARIANT_H           // Variant specific configuration
 #include CYGBLD_HAL_PLATFORM_H          // Platform specific configuration
 #include <cyg/hal/hal_iop310.h>         // Platform specific hardware definitions
-#include <cyg/hal/hal_mmu.h>            // MMU definitions
 
 // Define macro used to diddle the LEDs during early initialization.
 // Can use r0+r1.  Argument in \x.
@@ -91,8 +93,6 @@
 #define	RAM_BASE	0xa0000000
 #define	DRAM_SIZE	(512*1024*1024)		// max size of available SDRAM
 #define	DCACHE_SIZE	(32*1024)		// size of the Dcache
-
-#define MMU_Control_BTB 0x800
 
 // Reserved area for battery backup SDRAM memory test
 // This area is not zeroed out by initialization code
@@ -134,42 +134,6 @@
 	mov  \reg,\reg
 	sub  pc,pc,#4
 	.endm
-
-	// Enable the BTB
-	.macro BTB_INIT reg
-#ifdef CYGSEM_HAL_ARM_IOP310_BTB
-	mrc	p15, 0, \reg, c1, c0, 0
-	orr	\reg, \reg, #MMU_Control_BTB
-	mcr	p15, 0, \reg, c1, c0, 0
-	CPWAIT  \reg
-#endif
-	.endm
-
-	// form a first-level section entry
-	.macro FL_SECTION_ENTRY base,x,ap,p,d,c,b
-	.word (\base << 20) | (\x << 12) | (\ap << 10) | (\p << 9) |\
-	      (\d << 5) | (\c << 3) | (\b << 2) | 2
-	.endm
-
-	// form a first-level page table entry
-	.macro FL_PT_ENTRY base,p,d
-	// I wanted to use logical operations here, but since I am using symbols later 
-	// to fill in the parameters, I had to use addition to force the assembler to
-	// do it right
-	.word \base + (\p << 9) + (\d << 5) + 1
-	.endm
-
-	// form a second level small page entry
-	.macro SL_SMPAGE_ENTRY base,ap3,ap2,ap1,ap0,c,b
-	.word (\base << 12) | (\ap3 << 10) | (\ap2 << 8) | (\ap1 << 6) |\
-	      (\ap0 << 4) | (\c << 3) | (\b << 2) | 2
-	.endm
-
-	// form a second level extended small page entry
-	.macro SL_XSMPAGE_ENTRY base,x,ap,c,b
-	.word (\base << 12) | (\x << 6) | (\ap << 4) | (\c << 3) | (\b << 2) | 3
-	.endm
-
 
 	// start of platform setup
 	.macro _platform_setup1
@@ -724,6 +688,8 @@ SDRAM_DRIVE_2_BANK_X8:
 	ldr	r9, =SDRAM_BATTERY_TEST_BASE
 	ldr	r10, [r9]
 
+	IOP310_EARLY_PCI_SETUP  r0, r1, r4, 0x113C, 0x0700
+	
 	// scrub/init SDRAM if enabled/present
 	ldr	r11, =RAM_BASE	// base address of SDRAM
 	mov	r12, r4		// size of memory to scrub

@@ -1,3 +1,7 @@
+2002-11-13  Mark Salter  <msalter@redhat.com>
+
+	* src/xscale_stub.c (find_watch_address): Squelch compiler warning.
+
 2002-10-01  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/hal_cache.h: SA11X0 -> XScale

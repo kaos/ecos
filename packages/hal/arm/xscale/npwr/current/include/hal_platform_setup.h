@@ -56,9 +56,11 @@
 //===========================================================================*/
 
 #include <pkgconf/system.h>             // System-wide configuration info
+#include <cyg/hal/hal_mmu.h>            // MMU definitions
+#include <cyg/hal/hal_mm.h>             // More MMU definitions
+#include CYGBLD_HAL_VARIANT_H           // Variant specific configuration
 #include CYGBLD_HAL_PLATFORM_H          // Platform specific configuration
 #include <cyg/hal/hal_iop310.h>         // Platform specific hardware definitions
-#include <cyg/hal/hal_mmu.h>            // MMU definitions
 
 // Define macro used to diddle the LEDs during early initialization.
 // Can use r0+r1.  Argument in \x.
@@ -94,8 +96,6 @@
 #define	RAM_BASE	0xa0000000
 #define	DRAM_SIZE	(512*1024*1024)		// max size of available SDRAM
 #define	DCACHE_SIZE	(32*1024)		// size of the Dcache
-
-#define MMU_Control_BTB 0x800
 
 // Reserved area for battery backup SDRAM memory test
 // This area is not zeroed out by initialization code
@@ -136,16 +136,6 @@
         mrc  p15,0,\reg,c2,c0,0
 	mov  \reg,\reg
 	sub  pc,pc,#4
-	.endm
-
-	// Enable the BTB
-	.macro BTB_INIT reg
-#ifdef CYGSEM_HAL_ARM_IOP310_BTB
-	mrc	p15, 0, \reg, c1, c0, 0
-	orr	\reg, \reg, #MMU_Control_BTB
-	mcr	p15, 0, \reg, c1, c0, 0
-	CPWAIT  \reg
-#endif
 	.endm
 
 	// form a first-level section entry
@@ -727,6 +717,8 @@ SDRAM_DRIVE_2_BANK_X8:
 	ldr	r9, =SDRAM_BATTERY_TEST_BASE
 	ldr	r10, [r9]
 
+	IOP310_EARLY_PCI_SETUP  r0, r1, r4, 0x113C, 0x0700
+	
 	// scrub/init SDRAM if enabled/present
 	ldr	r11, =RAM_BASE	// base address of SDRAM
 	mov	r12, r4		// size of memory to scrub

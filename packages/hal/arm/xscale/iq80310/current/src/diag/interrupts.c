@@ -65,10 +65,11 @@
 
 extern int(*board_fiq_handler)(void);
 extern int(*board_irq_handler)(void);
-extern long _cspr_enable_fiq_int();
-extern long _cspr_enable_irq_int();
-extern long _read_cpsr();
-extern long _scrub_ecc();
+extern long _cspr_enable_fiq_int(void);
+extern long _cspr_enable_irq_int(void);
+extern long _read_cpsr(void);
+extern long _scrub_ecc(unsigned);
+extern void _flushICache(void);
 
 
 #define AND_WORD(addr,val)   *addr = *addr & val
@@ -83,7 +84,7 @@ extern int pci_config_error;
 
 typedef struct
 {
-	FUNCPTR	handler;
+	INTFUNCPTR	handler;
 	int		arg;
 	int		bus;
 	int		device;
@@ -93,7 +94,7 @@ extern UINT	secondary_busno;
 extern UINT	primary_busno;
 
 extern STATUS pci_to_xint(int device, int intpin, int *xint);
-extern int isHost();
+extern int isHost(void);
 extern int off_ppci_bus (int busno);
 
 #define MAX_SPURIOUS_CNT	5
@@ -138,14 +139,14 @@ int usr_mu_arg = 0;
 void (*usr_patu_isr)(int) = NULL;
 int usr_patu_arg = 0;
 
-int ecc_int_handler();
+int ecc_int_handler(void);
 
 
 
 /*********************************
 * PCI interrupt wrappers 
 */
-int sinta_handler()
+int sinta_handler(void)
 {
     int x, serviced = 0;
 	/* cycle through connected interrupt handlers to determine which caused int */
@@ -172,7 +173,7 @@ int sinta_handler()
 
 }
 
-int sintb_handler()
+int sintb_handler(void)
 {
     int x, serviced = 0;
 	
@@ -200,7 +201,7 @@ int sintb_handler()
 
 }
 
-int sintc_handler()
+int sintc_handler(void)
 {
 
     int x, serviced = 0;
@@ -229,7 +230,7 @@ int sintc_handler()
 
 }
 
-int sintd_handler()
+int sintd_handler(void)
 {
 
     int x, serviced = 0;
@@ -364,7 +365,7 @@ STATUS pci_isr_disconnect (int intline, int bus, int device)
 * IRQ Interrupts are multiplexed from SPCI INTA - INTD, External Device Interrupts,
 * and XINT6 and XINT7 Internal device interrupts.
 */
-int iq80310_irq_handler()
+int iq80310_irq_handler(void)
 {
 UINT8* int_status_reg;
 UINT8  int_status;	
@@ -653,7 +654,7 @@ void nmi_ecc_isr(void)
 *
 *
 */
-int iq80310_fiq_handler()
+int iq80310_fiq_handler(void)
 {
 	
 unsigned long nmi_status = *(volatile unsigned long *)NISR_ADDR;
@@ -1098,7 +1099,7 @@ void error_print (
 extern void __diag_IRQ(void);
 extern void __diag_FIQ(void);
 
-void config_ints()
+void config_ints(void)
 {
 int xint, x;
 	

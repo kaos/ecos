@@ -104,7 +104,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IQ80310 {
 
     cdl_option CYGBLD_INTEL_DIAGNOSTICS {
          display         "Build Intel Xscale diagnostics"
-         default_value   0
+         default_value   1
          parent          CYGPKG_REDBOOT_HAL_OPTIONS
          active_if       CYGBLD_BUILD_REDBOOT_BIN
          no_define

@@ -92,7 +92,7 @@
 	#define REDHAT_REDBOOT_OS		TRUE
 #endif
 
-typedef int				STATUS;
+typedef int		STATUS;
 typedef unsigned char	UCHAR;
 typedef unsigned char	UINT8;
 typedef unsigned short	USHORT;
@@ -100,8 +100,9 @@ typedef unsigned short	UINT16;
 typedef unsigned long	ULONG;
 typedef unsigned int	UINT;
 typedef unsigned int	UINT32;
-typedef int 			(*FUNCPTR) ();	   
-typedef void 			(*VOIDFUNCPTR) (); 
+typedef int 		(*INTFUNCPTR) (int);
+typedef int 		(*FUNCPTR) (void);
+typedef void 		(*VOIDFUNCPTR) (int);
 
 /* board specific definitions */
 
@@ -117,15 +118,15 @@ typedef void 			(*VOIDFUNCPTR) ();
 #define XTAL				1843200		/* frequency of baud rate generation crystal */
 
 /* Backplane Detect Register */
-#define BACKPLANE_DET_REG		(volatile unsigned char *)0xfe870000
+//#define BACKPLANE_DET_REG		(volatile unsigned char *)0xfe870000
 #define BP_HOST_BIT				0x1 
 
 /* PAL-based external timer definitions */
-#define TIMER_LA0_REG_ADDR		(volatile unsigned char *)0xfe880000
-#define TIMER_LA1_REG_ADDR		(volatile unsigned char *)0xfe890000
-#define TIMER_LA2_REG_ADDR		(volatile unsigned char *)0xfe8a0000
-#define TIMER_LA3_REG_ADDR		(volatile unsigned char *)0xfe8b0000
-#define TIMER_ENABLE_REG_ADDR	(volatile unsigned char *)0xfe8c0000
+//#define TIMER_LA0_REG_ADDR		(volatile unsigned char *)0xfe880000
+//#define TIMER_LA1_REG_ADDR		(volatile unsigned char *)0xfe890000
+//#define TIMER_LA2_REG_ADDR		(volatile unsigned char *)0xfe8a0000
+//#define TIMER_LA3_REG_ADDR		(volatile unsigned char *)0xfe8b0000
+//#define TIMER_ENABLE_REG_ADDR	(volatile unsigned char *)0xfe8c0000
 
 #define TIMER_COUNT_MASK		0x5f	/* 6 bits of timer data with the MSB in bit 6 not bit 5 */
 #define TIMER_CNT_ENAB			0x1

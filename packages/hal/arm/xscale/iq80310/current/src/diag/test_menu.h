@@ -105,11 +105,11 @@ For example:
  * routine to call when that item is chosen, and an argument to pass when the
  * action routine is called.
  */
-typedef void (*MENU_RTN) ();
 typedef volatile void *MENU_ARG;
+typedef void (*MENU_RTN) (MENU_ARG);
 typedef struct menuItem
 {
-    char		*itemName;	/* string to print with the menu */
+    char	*itemName;	/* string to print with the menu */
     MENU_RTN	actionRoutine;	/* routine to call when item is chosen */
     MENU_ARG	arg;		/* argument to actionRoutine */
 } MENU_ITEM;
