@@ -268,7 +268,7 @@ typedef cyg_fileop_readwrite cyg_fileop_write;
 typedef int cyg_fileop_lseek   (struct CYG_FILE_TAG *fp, off_t *pos, int whence );
 typedef int cyg_fileop_ioctl   (struct CYG_FILE_TAG *fp, CYG_ADDRWORD com,
                                 CYG_ADDRWORD data);
-typedef int cyg_fileop_select  (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info);
+typedef cyg_bool cyg_fileop_select  (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info);
 typedef int cyg_fileop_fsync   (struct CYG_FILE_TAG *fp, int mode );        
 typedef int cyg_fileop_close   (struct CYG_FILE_TAG *fp);
 typedef int cyg_fileop_fstat   (struct CYG_FILE_TAG *fp, struct stat *buf );

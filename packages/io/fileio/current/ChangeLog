@@ -1,3 +1,15 @@
+2003-10-06  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/fio.h (CYG_FILEIO_SIGMASK_SET): Fixed a compiler warning
+	about an unused variable.
+
+2003-09-22 Eric Doenges <Eric.Doenges@DynaPel.com>
+	* src/devfs.cxx: prototype of dev_fo_select now matches
+	implementation
+	* include/fileio.h: changed definition of cyg_fileop_select to
+	return a cyg_bool instead of int to match current implementations
+	* src/misc.cxx: changed cyg_fileio_seltrue() to match prototype.
+
 2003-07-11  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/socket.cxx (socket): If there are no network stacks configured

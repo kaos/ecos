@@ -113,7 +113,8 @@
 
 #define CYG_FILEIO_FUNCTION_FINISH() CYG_EMPTY_STATEMENT
 
-#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) CYG_EMPTY_STATEMENT
+#define CYG_FILEIO_SIGMASK_SET( __set, __oset ) \
+            CYG_UNUSED_PARAM(sigset_t *, __oset)
 
 #define CYG_FILEIO_SIGPENDING() (0)
 

@@ -100,7 +100,7 @@ static int dev_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio);
 static int dev_fo_lseek     (struct CYG_FILE_TAG *fp, off_t *pos, int whence );
 static int dev_fo_ioctl     (struct CYG_FILE_TAG *fp, CYG_ADDRWORD com,
                              CYG_ADDRWORD data);
-static int dev_fo_select    (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info);
+static cyg_bool dev_fo_select (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info);
 static int dev_fo_fsync     (struct CYG_FILE_TAG *fp, int mode );        
 static int dev_fo_close     (struct CYG_FILE_TAG *fp);
 static int dev_fo_fstat     (struct CYG_FILE_TAG *fp, struct stat *buf );

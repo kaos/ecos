@@ -471,7 +471,7 @@ __externC int cyg_fileio_erofs() { return EROFS; }
 __externC int cyg_fileio_enoerr() { return ENOERR; }
 __externC int cyg_fileio_enotdir() { return ENOTDIR; }
 
-__externC int cyg_fileio_seltrue (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info)
+__externC cyg_bool cyg_fileio_seltrue (struct CYG_FILE_TAG *fp, int which, CYG_ADDRWORD info)
 { return 1; }
 
 // -------------------------------------------------------------------------
