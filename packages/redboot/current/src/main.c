@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -178,7 +178,7 @@ do_version(int argc, char *argv[])
 #ifdef HAL_PLATFORM_CPU
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
-    diag_printf("Copyright (C) 2000, 2001, 2002, Red Hat, Inc.\n\n");
+    diag_printf("Copyright (C) 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.\n\n");
     diag_printf("RAM: %p-%p, ", (void*)ram_start, (void*)ram_end);
     diag_printf("[%p-%p]", mem_segments[0].start, mem_segments[0].end);
     diag_printf(" available\n");

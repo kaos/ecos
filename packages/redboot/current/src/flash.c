@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -61,6 +61,7 @@
 
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
 // Note horrid intertwining of functions, to save precious FLASH
+extern void conf_endian_fixup(void *p);
 #endif
 
 // Round a quantity up
@@ -191,14 +192,45 @@ _show_invalid_flash_address(CYG_ADDRESS flash_addr, int stat)
 }
 
 #ifdef CYGOPT_REDBOOT_FIS
+
+// fis_endian_fixup() is used to swap endianess if required.
+//
+static inline void fis_endian_fixup(void *addr)
+{
+#ifdef REDBOOT_FLASH_REVERSE_BYTEORDER
+    struct fis_image_desc *p = addr;
+    int cnt = fisdir_size / sizeof(struct fis_image_desc);
+
+    while (cnt-- > 0) {
+        p->flash_base = CYG_SWAP32(p->flash_base);
+        p->mem_base = CYG_SWAP32(p->mem_base);
+        p->size = CYG_SWAP32(p->size);
+        p->entry_point = CYG_SWAP32(p->entry_point);
+        p->data_length = CYG_SWAP32(p->data_length);
+        p->desc_cksum = CYG_SWAP32(p->desc_cksum);
+        p->file_cksum = CYG_SWAP32(p->file_cksum);
+        p++;
+    }
+#endif
+}
+
+void
+fis_read_directory(void)
+{
+    void *err_addr;
+
+    FLASH_READ(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_endian_fixup(fis_work_block);
+}
+
 struct fis_image_desc *
 fis_lookup(char *name, int *num)
 {
     int i;
     struct fis_image_desc *img;
-    void *err_addr;
 
-    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_read_directory();
+
     img = (struct fis_image_desc *)fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
         if ((img->name[0] != (unsigned char)0xFF) && 
@@ -216,8 +248,10 @@ fis_update_directory(void)
     int stat;
     void *err_addr;
 
+    fis_endian_fixup(fis_work_block);
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
     memcpy((char *)fis_work_block+fisdir_size, config, cfg_size);
+    conf_endian_fixup((char *)fis_work_block+fisdir_size);
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
     // Ensure [quietly] that the directory is unlocked before trying to update
@@ -226,8 +260,8 @@ fis_update_directory(void)
     if ((stat = flash_erase(fis_addr, flash_block_size, (void **)&err_addr)) != 0) {
         diag_printf("Error erasing FIS directory at %p: %s\n", err_addr, flash_errmsg(stat));
     } else {
-        if ((stat = flash_program(fis_addr, fis_work_block, flash_block_size,
-                                  (void **)&err_addr)) != 0) {
+        if ((stat = FLASH_PROGRAM(fis_addr, fis_work_block,
+                                  flash_block_size, (void **)&err_addr)) != 0) {
             diag_printf("Error writing FIS directory at %p: %s\n", 
                         err_addr, flash_errmsg(stat));
         }
@@ -236,6 +270,7 @@ fis_update_directory(void)
     // Ensure [quietly] that the directory is locked after the update
     flash_lock((void *)fis_addr, flash_block_size, (void **)&err_addr);
 #endif
+    fis_endian_fixup(fis_work_block);
 }
 
 static void
@@ -450,7 +485,6 @@ fis_list(int argc, char *argv[])
     bool show_cksums = false;
     bool show_datalen = false;
     struct option_info opts[2];
-    void *err_addr;
     unsigned long last_addr, lowest_addr;
     bool image_found;
 
@@ -473,7 +507,8 @@ fis_list(int argc, char *argv[])
     if (!scan_opts(argc, argv, 2, opts, i, 0, 0, "")) {
         return;
     }
-    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_read_directory();
+
     // Let diag_printf do the formatting in both cases, rather than counting
     // cols by hand....
     diag_printf("%-16s  %-10s  %-10s  %-10s  %-s\n",
@@ -523,7 +558,6 @@ static int
 find_free(struct free_chunk *chunks)
 {
     CYG_ADDRESS *fis_ptr, *fis_end;
-    void *err_addr;
     struct fis_image_desc *img;
     int i, idx;
     int num_chunks = 1;
@@ -535,7 +569,7 @@ find_free(struct free_chunk *chunks)
     fis_end = (CYG_ADDRESS *)flash_end;
     chunks[num_chunks-1].start = (CYG_ADDRESS)fis_ptr;
     chunks[num_chunks-1].end = (CYG_ADDRESS)fis_end;
-    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_read_directory();
     img = (struct fis_image_desc *) fis_work_block;
     for (i = 0;  i < fisdir_size/sizeof(*img);  i++, img++) {
         if (img->name[0] != (unsigned char)0xFF) {
@@ -728,7 +762,7 @@ fis_create(int argc, char *argv[])
         return;
     }
 
-    flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+    fis_read_directory();
     defaults_assumed = false;
     if (name) {
         // Search existing files to acquire defaults for params not specified:
@@ -888,7 +922,7 @@ fis_create(int argc, char *argv[])
         }
         if (prog_ok) {
             // Now program it
-            if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, img_size, (void **)&err_addr)) != 0) {
+            if ((stat = FLASH_PROGRAM((void *)flash_addr, (void *)mem_addr, img_size, (void **)&err_addr)) != 0) {
                 diag_printf("Can't program region at %p: %s\n", err_addr, flash_errmsg(stat));
                 prog_ok = false;
             }
@@ -1056,8 +1090,8 @@ fis_load(int argc, char *argv[])
         load_address = mem_addr;
         load_address_end = (unsigned long)p->out_buf;
 
-    	// Reload fis directory
-        flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+        // Reload fis directory
+        fis_read_directory();
     } else // dangling block
 #endif
     {
@@ -1156,7 +1190,7 @@ fis_write(int argc, char *argv[])
     }
     if (prog_ok) {
         // Now program it
-        if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, length, (void **)&err_addr)) != 0) {
+        if ((stat = FLASH_PROGRAM((void *)flash_addr, (void *)mem_addr, length, (void **)&err_addr)) != 0) {
             diag_printf("Can't program region at %p: %s\n", err_addr, flash_errmsg(stat));
             prog_ok = false;
         }
@@ -1227,7 +1261,7 @@ fis_lock(int argc, char *argv[])
               (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void *)&length, (bool *)&length_set, "length");
-    if (!scan_opts(argc, argv, 2, opts, 2, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
+    if (!scan_opts(argc, argv, 2, opts, 2, &name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
         return;
@@ -1274,7 +1308,7 @@ fis_unlock(int argc, char *argv[])
               (void *)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
     init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
               (void *)&length, (bool *)&length_set, "length");
-    if (!scan_opts(argc, argv, 2, opts, 2, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
+    if (!scan_opts(argc, argv, 2, opts, 2, &name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
         return;
@@ -1321,7 +1355,6 @@ bool
 do_flash_init(void)
 {
     int stat;
-    void *err_addr;
 
     if (!__flash_init) {
         __flash_init = 1;
@@ -1357,7 +1390,7 @@ do_flash_init(void)
             diag_printf("FIS directory doesn't fit\n");
             return false;
         }
-        flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+        fis_read_directory();
 #endif
     }
     return true;

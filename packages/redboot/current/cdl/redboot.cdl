@@ -574,6 +574,16 @@ cdl_package CYGPKG_REDBOOT {
               into memory for execution or executed in place."
             compile -library=libextras.a flash.c
     
+            cdl_option CYGOPT_REDBOOT_FLASH_BYTEORDER {
+                display         "Byte order used to store info in flash."
+                flavor          data
+                default_value   { "NATURAL" }
+                legal_values    {"NATURAL" "MSBFIRST" "LSBFIRST" }
+                description "
+                    This option controls the byte ordering used to store
+                    the FIS directory info and flash config info."
+            }
+    
             cdl_option CYGOPT_REDBOOT_FIS {
                 display         "RedBoot Flash Image System support"
                 default_value   1

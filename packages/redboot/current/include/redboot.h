@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 // Copyright (C) 2002, 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -60,6 +60,7 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_if.h>
 #include <cyg/hal/hal_tables.h>
+#include <cyg/hal/hal_endian.h>
 #include <cyg/infra/diag.h>
 #include <cyg/crc/crc.h>
 #include <string.h>
@@ -480,5 +481,28 @@ isalnum(int c)
 #define SYS_system          3003
 
 #endif // CYGSEM_REDBOOT_BSP_SYSCALLS
+
+
+//----------------------------------------------------------------------------
+// Allow HAL to override RedBoot flash read/program operations.
+#ifdef HAL_FLASH_READ
+#define FLASH_READ(f, r, l, e) HAL_FLASH_READ((f),(r),(l),(e))
+#else
+#define FLASH_READ(f, r, l, e) flash_read((f), (r), (l), (e))
+#endif
+
+#ifdef HAL_FLASH_PROGRAM
+#define FLASH_PROGRAM(f, r, l, e) HAL_FLASH_PROGRAM((f),(r),(l),(e))
+#else
+#define FLASH_PROGRAM(f, r, l, e) flash_program((f), (r), (l), (e))
+#endif
+
+
+// Define REDBOOT_FLASH_REVERSE_BYTEORDER if config and fis info is stored in flash
+// with byte ordering opposite from CYG_BYTEORDER. 
+#if (defined(CYGOPT_REDBOOT_FLASH_BYTEORDER_MSBFIRST) && (CYG_BYTEORDER != CYG_MSBFIRST)) || \
+    (defined(CYGOPT_REDBOOT_FLASH_BYTEORDER_LSBFIRST) && (CYG_BYTEORDER != CYG_LSBFIRST))
+#define REDBOOT_FLASH_REVERSE_BYTEORDER
+#endif
 
 #endif // _REDBOOT_H_

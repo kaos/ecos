@@ -1,3 +1,14 @@
+2004-09-01  Mark Salter  <msalter@redhat.com>
+
+	* cdl/redboot.cdl (CYGOPT_REDBOOT_FLASH_BYTEORDER): New option.
+	* include/redboot.h: Define FLASH_{READ,PROGRAM} macros.
+	Define REDBOOT_FLASH_REVERSE_BYTEORDER if appropriate.
+	* src/flash.c: Add support for CYGOPT_REDBOOT_FLASH_BYTEORDER.
+	Use FLASH_{READ,PROGRAM} macros instead of flash driver api.
+	* src/fconfig.c: Ditto.
+
+	* src/main.c (do_version): Update copyright message.
+
 2004-08-31  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/flash.c (fis_init): Avoid potentially unnecessary erase

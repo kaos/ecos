@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -54,12 +54,14 @@
 //==========================================================================
 
 #include <redboot.h>
+#include <cyg/io/flash.h>
 #ifdef CYGOPT_REDBOOT_FIS
 #include <fis.h>
 #endif
 
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
 // Note horrid intertwining of functions, to save precious FLASH
+externC void fis_read_directory(void);
 externC void fis_update_directory(void);
 #endif
 
@@ -191,6 +193,60 @@ extern struct config_option __CONFIG_options_TAB__[], __CONFIG_options_TAB_END__
 #define LIST_OPT_DUMBTERM  (8)
 
 static void config_init(void);
+static int  config_length(int type);
+
+// Change endianness of config data
+void
+conf_endian_fixup(void *ptr)
+{
+#ifdef REDBOOT_FLASH_REVERSE_BYTEORDER
+    struct _config *p = (struct _config *)ptr;
+    unsigned char *dp = p->config_data;
+    void *val_ptr;
+    int len;
+    cyg_uint16 u16;
+    cyg_uint32 u32;
+
+    p->len = CYG_SWAP32(p->len);
+    p->key1 = CYG_SWAP32(p->key1);
+    p->key2 = CYG_SWAP32(p->key2);
+    p->cksum = CYG_SWAP32(p->cksum);
+
+    while (dp < &p->config_data[sizeof(config->config_data)]) {
+        len = 4 + CONFIG_OBJECT_KEYLEN(dp) + CONFIG_OBJECT_ENABLE_KEYLEN(dp) +
+            config_length(CONFIG_OBJECT_TYPE(dp));
+        val_ptr = (void *)CONFIG_OBJECT_VALUE(dp);
+
+        switch (CONFIG_OBJECT_TYPE(dp)) {
+            // Note: the data may be unaligned in the configuration data
+        case CONFIG_BOOL:
+            if (sizeof(bool) == 2) {
+                memcpy(&u16, val_ptr, 2);
+                u16 = CYG_SWAP16(u16);
+                memcpy(val_ptr, &u16, 2);
+            } else if (sizeof(bool) == 4) {
+                memcpy(&u32, val_ptr, 4);
+                u32 = CYG_SWAP32(u32);
+                memcpy(val_ptr, &u32, 4);
+            }
+            break;
+        case CONFIG_INT:
+            if (sizeof(unsigned long) == 2) {
+                memcpy(&u16, val_ptr, 2);
+                u16 = CYG_SWAP16(u16);
+                memcpy(val_ptr, &u16, 2);
+            } else if (sizeof(unsigned long) == 4) {
+                memcpy(&u32, val_ptr, 4);
+                u32 = CYG_SWAP32(u32);
+                memcpy(val_ptr, &u32, 4);
+            }
+            break;
+        }
+
+        dp += len;
+    }
+#endif
+}
 
 static int
 get_config(unsigned char *dp, char *title, int list_opt, char *newvalue )
@@ -683,6 +739,28 @@ flash_lookup_alias(char *alias, char *alias_buf)
 
 #endif //  CYGSEM_REDBOOT_FLASH_ALIASES
 
+cyg_uint32
+flash_crc(struct _config *conf)
+{
+    cyg_uint32 crc;
+#ifdef REDBOOT_FLASH_REVERSE_BYTEORDER
+    int        swabbed = 0;
+
+    if (conf->key1 == CONFIG_KEY1 && conf->key2 == CONFIG_KEY2) {
+        swabbed = 1;
+        conf_endian_fixup(conf);
+    }
+#endif
+ 
+    crc = cyg_crc32((unsigned char *)conf, sizeof(*conf)-sizeof(conf->cksum));
+
+#ifdef REDBOOT_FLASH_REVERSE_BYTEORDER
+    if (swabbed)
+        conf_endian_fixup(conf);
+#endif
+    return crc;
+}
+
 //
 // Write the in-memory copy of the configuration data to the flash device.
 //
@@ -699,11 +777,11 @@ flash_write_config(bool prompt)
     config->len = sizeof(struct _config);
     config->key1 = CONFIG_KEY1;  
     config->key2 = CONFIG_KEY2;
-    config->cksum = cyg_crc32((unsigned char *)config, sizeof(struct _config)-sizeof(config->cksum));
+    config->cksum = flash_crc(config);
     if (!prompt || verify_action("Update RedBoot non-volatile configuration")) {
 #ifdef CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH
 #ifdef CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG
-        flash_read(fis_addr, fis_work_block, fisdir_size, (void **)&err_addr);
+        fis_read_directory();
         fis_update_directory();
 #else 
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
@@ -713,11 +791,12 @@ flash_write_config(bool prompt)
         if ((stat = flash_erase(cfg_base, cfg_size, (void **)&err_addr)) != 0) {
             diag_printf("   initialization failed at %p: %s\n", err_addr, flash_errmsg(stat));
         } else {
-            if ((stat = flash_program(cfg_base, (void *)config, sizeof(struct _config), 
-                                      (void **)&err_addr)) != 0) {
+            conf_endian_fixup(config);
+            if ((stat = FLASH_PROGRAM(cfg_base, config, sizeof(struct _config), (void **)&err_addr)) != 0) {
                 diag_printf("Error writing config data at %p: %s\n", 
                             err_addr, flash_errmsg(stat));
             }
+            conf_endian_fixup(config);
         }
 #ifdef CYGSEM_REDBOOT_FLASH_LOCK_SPECIAL
         // Insure [quietly] that the config data is locked after the update
@@ -828,13 +907,11 @@ flash_get_config(char *key, void *val, int type)
     // Check to see if the config data is valid, if not, revert to 
     // readonly mode, by setting config to readonly_config.  We
     // will set it back before we leave this function.
-    if ( (config != readonly_config) && ((cyg_crc32((unsigned char *)config, 
-               sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
+    if ( (config != readonly_config) && ((flash_crc(config) != config->cksum) ||
         (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2))) {
         save_config = config;
         config = readonly_config;
-        if ((cyg_crc32((unsigned char *)config, 
-                       sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
+        if ((flash_crc(config) != config->cksum) ||
             (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
             diag_printf("FLASH configuration checksum error or invalid key\n");
             config = save_config;
@@ -1076,15 +1153,15 @@ load_flash_config(void)
            _rup(_rup((CYGNUM_REDBOOT_FLASH_CONFIG_BLOCK*flash_block_size), cfg_size), flash_block_size));
     }
 #endif
-    flash_read((void *)cfg_base, (void *)config, sizeof(struct _config), (void **)&err_addr);
+    FLASH_READ(cfg_base, config, sizeof(struct _config), &err_addr);
+    conf_endian_fixup(config);
 #else
     read_eeprom(config, sizeof(struct _config));  // into 'config'
 #endif
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG_READONLY_FALLBACK
     memcpy(readonly_config, config, sizeof(struct _config));
 #endif
-    if ((cyg_crc32((unsigned char *)config, 
-                   sizeof(struct _config)-sizeof(config->cksum)) != config->cksum) ||
+    if ((flash_crc(config) != config->cksum) ||
         (config->key1 != CONFIG_KEY1)|| (config->key2 != CONFIG_KEY2)) {
         diag_printf("**Warning** FLASH configuration checksum error or invalid key\n");
         diag_printf("Use 'fconfig -i' to [re]initialize database\n");
