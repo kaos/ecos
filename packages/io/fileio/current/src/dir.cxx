@@ -180,7 +180,12 @@ extern int readdir_r( DIR *dirp, struct dirent *entry, struct dirent **result )
     ssize_t res;
 
     *result = NULL;
-    
+
+    if( NULL == dirp )
+    {
+        FILEIO_RETURN_VALUE( EBADF );
+    }
+
     res = read( fd, (void *)entry, sizeof(struct dirent));
 
     if( res < 0 )

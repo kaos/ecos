@@ -1,3 +1,8 @@
+2003-12-21  Sandeep Kumar <sandeep@codito.com>
+
+	* src/dir.cxx (readdir_r): Handle NULL dirp argument and return
+	EBADF
+
 2003-12-03  Dan Jakubiec  <djakubiec@yahoo.com>
 
 	* src/select.cxx (pselect): Fixed the pselect() call to correctly
