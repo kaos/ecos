@@ -56,7 +56,7 @@ endif
 # a single dependency rule is generated (file extension = ".o.d")
 %.o.d : %.c
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif
@@ -66,7 +66,7 @@ endif
 
 %.o.d : %.cxx
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif
@@ -76,7 +76,7 @@ endif
 
 %.o.d : %.S
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif	
@@ -89,7 +89,7 @@ endif
 # a single dependency rule is generated (file extension = ".d")
 %.d : %.c
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif
@@ -99,7 +99,7 @@ endif
 
 %.d : %.cxx
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif
@@ -109,7 +109,7 @@ endif
 
 %.d : %.S
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif	
@@ -120,7 +120,7 @@ endif
 # rule to generate a test executable from object code
 $(PREFIX)/tests/$(PACKAGE)/%$(EXEEXT): %.d $(wildcard $(PREFIX)/lib/target.ld) $(wildcard $(PREFIX)/lib/*.[ao])
 ifeq ($(HOST),CYGWIN)
-	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\@/@g"`
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s@\\\\\\\\@/@g"`
 else
 	@mkdir -p $(dir $@)
 endif	
