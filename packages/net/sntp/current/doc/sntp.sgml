@@ -1,0 +1,100 @@
+<PART ID="net-sntp">
+<TITLE>Simple Network Time Protocol Client</TITLE>
+<PARTINTRO>
+<PARA>
+The SNTP package provides implementation of a client for RFC 2030, the
+Simple Network Time Protocol (SNTP). The client listens for broadcasts
+from an NTP server and uses the information received to set the system
+clock.
+</PARA>
+</PARTINTRO>
+<CHAPTER id="sntp-the">
+<TITLE>The SNTP Client</TITLE>
+<SECT1 id="sntp-starting">
+<TITLE>Starting the SNTP client</TITLE>
+<para>
+The sntp client is implemented as a thread which listens for NTP
+broadcasts. This thread is not automatically start by the
+system. Instead it must be started by the user application. The header
+file <filename>cyg/sntp/sntp.h</filename> declares the function to be
+called.  The thread is then started by calling the function:
+</para>
+<programlisting>
+void cyg_sntp_start(void);
+</programlisting>
+<para>
+
+Once started, the thread will run forever.
+</sect1>
+
+<sect1 id="net-sntp-operation">
+<title>What it does</title>
+<para>
+The SNTP client listens for NTP broadcasts from any NTP servers. Such
+broadcasts contain a timestamp indicating the current time. The packet
+also contains information about where the server is in the hierarchy
+of time servers. A server at the root of the time server tree normally
+has an atomic clock. Such a server is said to be at stratum 0. A time
+server which is synchronised to a stratum 0 server is said to be at
+stratum 1 etc. The client will accept any NTP broadcast packets from
+servers using version 3 or 4 of the protocol. When receiving packets
+from multiple servers, it will use the packets from the server with
+the lowest stratum. However, if there are no packets from this server
+for 10 minute and another server is broadcasting, the client will
+change server.
+</para>
+<para>
+The system clock in eCos is accurate to 1 second. The SNTP client will
+change the system clock when the time difference with the received
+timestamp is greater than 2 seconds. The change is made as a step. 
+</para>
+</sect1>
+
+<sect1 id="net-sntp-warning">
+<title>Warning: timestamp wrap around</title>
+<para>
+The timestamp in the NTP packet is a 32bit integer which represents
+the number of seconds after 00:00 01/01/1900. This 32bit number will
+wrap around at 06:28:16 Feb 7 2036. At this point in time, the eCos
+time will jump back to around 00:00:00 Jan 1 1900 when the next
+broadcast is received. 
+</para>
+<para>
+YOU HAVE BEEN WARNED!
+</para>
+</SECT1>
+<sect1 id="net-sntp-testing">
+<title>The SNTP test program</title>
+<para>
+The SNTP package contains a simple test program. Testing an SNTP
+client is not easy, so the test program should be considered as more a
+proof of concept. It shows that a broadcast packet has been received,
+at is accurate to within a few days. 
+</para>
+<para>
+The test program starts the network interfaces using the standard
+call. It then starts the SNTP thread. A loop is then entered printing
+the current system time every second for two minutes. When the client
+receives a broadcast the time will jump from 1970 to hopefully the
+present day. Once the two minutes have expired, two simple tests are
+made. If the time is still less than 5 minutes since 00:00:00
+01/01/1970 the test fails. This indicates no broadcast messages have
+been received. Check that the server is actually broadcasting, using
+the correct port (123), and at a sufficiently frequent rate that the
+target has a chance to receive a message within the 2 minute
+interval. If all this is correct, assume the target is broken. 
+</para>
+<para>
+The second test is that the current system time is compared with the
+build time as reported by the CPP macro __DATE__. If the build date is
+in the future relative to the system time, the test fails. If the
+build date is more than 10 days in the past relative to the system
+time the test also fails. If such failures are seen, use walk-clock
+time to verify the time printed during the test. If this seems correct
+check the build date for the test. This is printed at startup. If all
+else fails check that the computer used to build the test has the
+correct time. 
+</para>
+</SECT1>
+</CHAPTER>
+</PART>
