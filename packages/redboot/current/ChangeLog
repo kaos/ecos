@@ -1,3 +1,10 @@
+2002-08-26  Thomas Koeller <thomas@koeller.dyndns.org>
+
+    	* src/flash.c: Do not warn about overwriting image data if
+	-n option is used with 'fis create'. For 'fis load',
+	perform load size check based on actual data length, not
+	image size.
+
 2002-08-22  Mark Salter  <msalter@redhat.com>
 
 	* src/net/net_io.c (net_io_putc): Don't flush on every \n.

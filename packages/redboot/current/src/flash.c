@@ -727,7 +727,8 @@ fis_create(int argc, char *argv[])
             return;
         } else {                
             if (defaults_assumed) {
-                if (!verify_action("* CAUTION * about to program '%s'\n            at %p..%p from %p", 
+                if (no_copy &&
+                    !verify_action("* CAUTION * about to program '%s'\n            at %p..%p from %p", 
                                    name, (void *)flash_addr, (void *)(flash_addr+img_size-1),
                                    (void *)mem_addr)) {
                     return;  // The guy gave up
@@ -886,7 +887,7 @@ fis_load(int argc, char *argv[])
     }
     // Load image from FLASH into RAM
     if ((mem_addr < (CYG_ADDRESS)user_ram_start) ||
-        ((mem_addr+img->size) >= (CYG_ADDRESS)user_ram_end)) {
+        ((mem_addr+img->data_length) >= (CYG_ADDRESS)user_ram_end)) {
         diag_printf("Not a loadable image\n");
         return;
     }
