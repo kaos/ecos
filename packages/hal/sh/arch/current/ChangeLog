@@ -1,3 +1,79 @@
+2000-10-11  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S (__reset_platform): Clear watchdog control flags.
+	Added missing NOP in bra delay slot.
+
+	* src/hal_misc.c (hal_delay_us): Updated to use the correct config
+	constants.
+
+	* cdl/hal_sh.cdl: Fix typo.
+
+	* include/sh_regs.h: Added macros to compute CYGARC_RTCSR init
+	values for SDRAM refresh. Needs to be backed up by generic CDL
+	configury for memory controller.
+
+2000-10-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh_regs.h: Compute CPG init value for all versions.
+
+	* include/mod_7707a.h: Added CPG version.
+	* include/mod_7708.h: Same.
+	* include/mod_7709a.h: Same.
+	* include/mod_7729.h: Same.
+
+	* cdl/hal_sh.cdl: Support various CPG versions. 
+
+2000-10-05  Jesper Skov  <jskov@redhat.co.uk>
+
+	* src/sh_stub.c: Handle UBC versions in CPUs currently supported
+	by HAL.
+	* include/sh_regs.h: Added UBC version differences.
+	* include/mod_7707a.h: Specify UBC version.
+	* include/mod_7708.h: Ditto.
+	* include/mod_7709a.h: Ditto.
+	* include/mod_7729.h: Ditto.
+
+	* src/hal_misc.c: Skip IRQ0-3 handling in IRQIRL mode.
+	* include/sh_regs.h: Define interrupt controler init value.
+	* src/vectors.S: Use interrupt controller init value.
+	* cdl/hal_sh.cdl: Put CPU type/endian mode in a component. Added
+	interrupt control options.
+
+2000-10-03  Jesper Skov  <jskov@redhat.co.uk>
+
+	* src/vectors.S: Added flush function. Changes to cache_write_mode
+	function.
+
+	* src/hal_mk_defs.c: Added cache definitions.
+
+	* src/hal_misc.c (cyg_hal_enable_caches): Let config control cache
+	init.  
+	* include/hal_cache.h: Added flush macro. Changes to allow
+	mode function to handle different settings for the two
+	controllable areas.
+
+	* cdl/hal_sh.cdl: Added cache controls.
+
+2000-09-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh_regs.h: Added computation of initial FRQCR
+	value. Made watchdog timeout time depend on the proper clock
+	setting.
+
+	* include/hal_intr.h (HAL_CLOCK_INITIALIZE): Allow timer
+	prescaling to be controlled. Fix typo.
+
+	* cdl/hal_sh.cdl: Added options to properly compute/control the
+	various clock signals.
+
+2000-09-25  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh3_scif.c (cyg_hal_plf_scif_init_channel): Use _SCBRR_
+	macros.
+
+	* include/sh_regs.h (CYGARC_SCBRR_CKSx, CYGARC_SCBRR_N): Removed
+	duplicates of the macros. Compute _CKSx properly.
+
 2000-09-06  Gary Thomas  <gthomas@redhat.com>
 
 	* include/mod_7729.h: Includes PFC (programmable I/O) module.

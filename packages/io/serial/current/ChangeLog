@@ -1,3 +1,29 @@
+2000-10-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/serial.c (serial_rcv_char): Register overruns.
+	
+	* src/common/serial.c: Made block request functions return cause
+	of failure. Necessary for the device driver to be able to
+	fall-back to other transfer method efficiently.
+	* include/serial.h: Added enum with failure types.
+
+2000-10-03  Jesper Skov  <jskov@redhat.co.uk>
+
+	* tests/ser_test_protocol.inl: Moved testing parameters to device
+	driver CDL for SH targets.
+
+2000-09-29  Jesper Skov  <jskov@redhat.com>
+
+	* include/serialio.h: Fix compiler warning and errors due to
+	non-default flow control config.
+
+2000-09-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/common/serial.c (serial_data_rcv_done,
+	serial_data_xmt_done): Buffer pointers updated in _done instead of
+	in _req to avoid race in xmt. Same change in rcv for consistency.
+	* include/serial.h: Changed prototype accordingly.
+
 2000-09-18  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/io_serial.cdl: Added interfaces to allow test tweaking.

@@ -113,38 +113,75 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
            chooses which port will be used for diagnostic output."
     }
 
-    cdl_option CYGHWR_HAL_SH_BOARD_SPEED {
-        display          "Development board clock speed (MHz)"
-        flavor           data
-        calculated       15
+    cdl_component CYGHWR_HAL_SH_PLF_CLOCK_SETTINGS {
+        display          "SH on-chip platform clock controls"
         description      "
-           The EDK/7708 board uses a 15MHz crystal."
-   }
-
-    # Real-time clock/counter specifics
-    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
-        display       "Real-time clock constants."
-        description   "
-            Using TMU counter 0, clocked at p/4, with peripheral clock
-            sourced directly from the 15MHz crystal (which is the
-            default setup on the EDK).  This means 150000/4
-            oscillations in 1/100 second."
+            The various clocks used by the system are derived from
+            these options."
         flavor        none
-    
-        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
-            display       "Real-time clock numerator"
-            flavor        data
-            calculated    1000000000
+        no_define
+                     
+        cdl_option CYGHWR_HAL_SH_OOC_XTAL {
+            display          "SH clock crystal"
+            flavor           data
+            legal_values     8000000 to 50000000
+            default_value    15000000
+            no_define
+            description      "
+                This option specifies the frequency of the crystal all
+                other clocks are derived from."
         }
-        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
-            display       "Real-time clock denominator"
-            flavor        data
-            calculated    100
+
+        cdl_option CYGHWR_HAL_SH_OOC_PLL_1 {
+            display          "SH clock PLL circuit 1"
+            flavor           data
+            default_value    1
+            legal_values     { 0 1 2 4 }
+            description      "
+                This selects the multiplication factor provided by
+                PLL1. If PLL1 is disabled via CAP1, this option should
+                be set to zero."
         }
-        cdl_option CYGNUM_HAL_RTC_PERIOD {
-            display       "Real-time clock period"
-            flavor        data
-            calculated    { CYGHWR_HAL_SH_BOARD_SPEED*1000000/CYGNUM_HAL_RTC_DENOMINATOR/4 }
+
+        cdl_option CYGHWR_HAL_SH_OOC_PLL_2 {
+            display          "SH clock PLL circuit 2"
+            flavor           data
+            default_value    4
+            legal_values     { 0 1 4 }
+            no_define
+            description      "
+                This selects the multiplication factor provided by
+                PLL2. If PLL2 is disabled via CAP2, this option should
+                be set to zero."
+        }
+
+        cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_1 {
+            display          "SH clock divider 1"
+            flavor           data
+            default_value    1
+            legal_values     { 1 2 3 4 }
+            description      "
+                This divider option affects the CPU core clock."
+        }
+
+        cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_2 {
+            display          "SH clock divider 2"
+            flavor           data
+            default_value    4
+            legal_values     { 1 2 3 4 }
+            description      "
+                This divider option affects the peripheral clock."
+        }
+
+        cdl_option CYGHWR_HAL_SH_OOC_CLOCK_MODE {
+            display          "SH clock mode"
+            flavor           data
+            default_value    2
+            legal_values     { 0 1 2 3 4 7 }
+            description      "
+                This option must mirror the clock mode hardwired on
+                the MD0-MD2 pins of the CPU in order to correctly
+                initialize the FRQCR register."
         }
     }
 
@@ -152,6 +189,7 @@ cdl_package CYGPKG_HAL_SH_EDK7708 {
         display "Global build options"
         flavor  none
         parent  CYGPKG_NONE
+        no_define
         description   "
 	    Global build options including control over
 	    compiler flags, linker flags and choice of toolchain."

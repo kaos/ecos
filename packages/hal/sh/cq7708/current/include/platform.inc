@@ -72,6 +72,9 @@
 BSC_settings_table:
         # These are the settings set by the ROM Monitor.
 
+	.word   CYGARC_REG_FRQCR
+	.word   CYGARC_REG_FRQCR_INIT
+
         # BCR1: Areas 3 are SDRAM
         .word   CYGARC_REG_BCR1
         .word   0x0010

@@ -103,11 +103,15 @@ _cyg_select(int nfd, fd_set *in, fd_set *out, fd_set *ex,
     // Scan sets for possible I/O until something found, timeout or error.
     while (true) {
         num = 0;  // Total file descriptors "ready"
+
+        cyg_scheduler_lock(); // Scan the list atomically wrt electing to sleep
+
         for (mode = 0;  mode < 3;  mode++) {
             if (selection[mode]) {
                 for (fd = 0;  fd < nfd;  fd++) {
                     if (FD_ISSET(fd, selection[mode])) {
                         if (getfp(fd, &fp)) {
+                            cyg_scheduler_unlock(); // return.
                             errno = EBADF;
                             return -1;
                         }
@@ -120,6 +124,9 @@ _cyg_select(int nfd, fd_set *in, fd_set *out, fd_set *ex,
             }
         }
         if (num) {
+
+            cyg_scheduler_unlock(); // Happy, about to return.
+
             // Found something, update user's sets
             if (in) {
                 memcpy(in, &in_res, sizeof(in_res));
@@ -136,6 +143,7 @@ _cyg_select(int nfd, fd_set *in, fd_set *out, fd_set *ex,
         if (tv) {
             if (ticks == 0) {
                 // Special case of "poll"
+                cyg_scheduler_unlock(); // About to return.
                 return 0;
             }
             flag = cyg_flag_timed_wait(&select_flag, wait_flag,
@@ -146,6 +154,9 @@ _cyg_select(int nfd, fd_set *in, fd_set *out, fd_set *ex,
             flag = cyg_flag_wait(&select_flag, wait_flag,
                                  CYG_FLAG_WAITMODE_OR);
         }
+
+        cyg_scheduler_unlock(); // waited atomically
+
         if (flag & SELECT_ABORT) {
             errno = EINTR;
             return -1;
@@ -175,12 +186,12 @@ selrecord(void *selector, struct selinfo *info)
 void    
 selwakeup(struct selinfo *info)
 {
-    cyg_scheduler_lock();  // Need this test to be indivisible
-    if (cyg_flag_waiting(&select_flag)) {
-        // Signal any threads doing a 'select()' that I/O may be possible
-        cyg_flag_setbits(&select_flag, SELECT_WAKE);
-        cyg_flag_maskbits(&select_flag,    0      ); // clear all
-    }
+    // Need these ops to be atomic to make sure the clear occurs -
+    // otherwise a higher prio thread could hog the CPU when its fds are
+    // not ready, but the flag is (already) set, or set for someone else.
+    cyg_scheduler_lock();
+    cyg_flag_setbits(&select_flag, SELECT_WAKE);
+    cyg_flag_maskbits(&select_flag,    0      ); // clear all
     cyg_scheduler_unlock();
 }
 
@@ -213,12 +224,10 @@ cyg_select_with_abort(int nfd, fd_set *in, fd_set *out, fd_set *ex,
 void
 cyg_select_abort(void)
 {
-    cyg_scheduler_lock();  // Need this test to be indivisible
-    if (cyg_flag_waiting(&select_flag)) {
-        // Signal any threads doing a 'select()' that I/O may be possible
-        cyg_flag_setbits(&select_flag, SELECT_ABORT); 
-        cyg_flag_maskbits(&select_flag,    0       ); // clear all
-    }
+    // See comments in selwakeup()...
+    cyg_scheduler_lock();
+    cyg_flag_setbits(&select_flag, SELECT_ABORT); 
+    cyg_flag_maskbits(&select_flag,    0       );
     cyg_scheduler_unlock();
 }
 

@@ -100,7 +100,7 @@ do_exec(int argc, char *argv[])
     HAL_DCACHE_INVALIDATE_ALL();
     ip = (unsigned long *)_prg;
     // Not call this code
-    fun = (code_fun *)(entry + SA11X0_RAM_BANK0_BASE);  // Absolute address
+    fun = (code_fun *)((entry & 0x0FFFFFFF) + SA11X0_RAM_BANK0_BASE);  // Absolute address
     prg = (code_fun *)((unsigned long)ip + SA11X0_RAM_BANK0_BASE);  // Absolute address
     asm volatile ("mov r5,%0" : : "r"(fun) : "r5");
     asm volatile ("mov r1,%0; mov pc,r1" : : "r"(prg));

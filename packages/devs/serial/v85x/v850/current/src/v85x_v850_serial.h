@@ -127,7 +127,7 @@ static struct v850_baud {
 } select_baud[] = {
 #if CYGINT_HAL_V85X_VARIANT_SB1
 // Baud rate values, using defined system clock
-#define BAUD_COUNT (CYGHWR_HAL_V85X_V850_BOARD_FREQUENCY)/19200
+#define BAUD_COUNT (CYGHWR_HAL_V85X_V850_BOARD_FREQUENCY/2)/19200
       {0, 0},  // Unused
       {0, 0},  // 50
       {0, 0},  // 75

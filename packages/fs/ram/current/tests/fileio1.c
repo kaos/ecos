@@ -374,6 +374,23 @@ static void comparefiles( char *name2, char *name1 )
 }
 
 //==========================================================================
+
+void checkcwd( const char *cwd )
+{
+    static char cwdbuf[PATH_MAX];
+    char *ret;
+
+    ret = getcwd( cwdbuf, sizeof(cwdbuf));
+    if( ret == NULL ) SHOW_RESULT( getcwd, ret );    
+
+    if( strcmp( cwdbuf, cwd ) != 0 )
+    {
+        diag_printf( "cwdbuf %s cwd %s\n",cwdbuf, cwd );
+        CYG_TEST_FAIL( "Current directory mismatch");
+    }
+}
+
+//==========================================================================
 // main
 
 int main( int argc, char **argv )
@@ -389,6 +406,8 @@ int main( int argc, char **argv )
 
     err = chdir( "/" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
+
+    checkcwd( "/" );
     
     // --------------------------------------------------------------
 
@@ -411,6 +430,8 @@ int main( int argc, char **argv )
     err = chdir( "bar" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
 
+    checkcwd( "/bar" );
+    
     diag_printf("<INFO>: rename /foo bundy\n");    
     err = rename( "/foo", "bundy" );
     if( err < 0 ) SHOW_RESULT( rename, err );
@@ -456,6 +477,8 @@ int main( int argc, char **argv )
     err = chdir( "/" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
 
+    checkcwd( "/" );
+    
     diag_printf("<INFO>: rmdir /bar\n");        
     err = rmdir( "/bar" );
     if( err < 0 ) SHOW_RESULT( rmdir, err );
@@ -478,6 +501,8 @@ int main( int argc, char **argv )
     err = chdir( "/ram" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
 
+    checkcwd( "/ram" );
+        
     diag_printf("<INFO>: mkdir noonoo\n");    
     err = mkdir( "noonoo", 0 );
     if( err < 0 ) SHOW_RESULT( mkdir, err );
@@ -488,6 +513,7 @@ int main( int argc, char **argv )
     err = chdir( "noonoo" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
 
+    checkcwd( "/ram/noonoo" );
     
     createfile( "tinky", 678 );
     checkfile( "tinky" );
@@ -519,11 +545,69 @@ int main( int argc, char **argv )
     diag_printf("<INFO>: cd ..\n"); 
     err = chdir( ".." );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-
+    checkcwd( "/ram" );
+    
     diag_printf("<INFO>: rmdir noonoo\n"); 
     err = rmdir( "noonoo" );
     if( err < 0 ) SHOW_RESULT( rmdir, err );
 
+    // --------------------------------------------------------------
+
+    err = mkdir( "x", 0 );
+    if( err < 0 ) SHOW_RESULT( mkdir, err );
+    
+    err = mkdir( "x/y", 0 );
+    if( err < 0 ) SHOW_RESULT( mkdir, err );
+    
+    err = mkdir( "x/y/z", 0 );
+    if( err < 0 ) SHOW_RESULT( mkdir, err );
+
+    err = mkdir( "x/y/z/w", 0 );
+    if( err < 0 ) SHOW_RESULT( mkdir, err );
+    
+    diag_printf("<INFO>: cd /ram/x/y/z/w\n");
+    err = chdir( "/ram/x/y/z/w" );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+    checkcwd( "/ram/x/y/z/w" );
+
+    diag_printf("<INFO>: cd ..\n");
+    err = chdir( ".." );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+    checkcwd( "/ram/x/y/z" );
+    
+    diag_printf("<INFO>: cd .\n");
+    err = chdir( "." );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+    checkcwd( "/ram/x/y/z" );
+
+    diag_printf("<INFO>: cd ../../y\n");
+    err = chdir( "../../y" );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+    checkcwd( "/ram/x/y" );
+
+    diag_printf("<INFO>: cd ../..\n");
+    err = chdir( "../.." );
+    if( err < 0 ) SHOW_RESULT( chdir, err );
+    checkcwd( "/ram" );
+
+    diag_printf("<INFO>: rmdir x/y/z/w\n"); 
+    err = rmdir( "x/y/z/w" );
+    if( err < 0 ) SHOW_RESULT( rmdir, err );
+
+    diag_printf("<INFO>: rmdir x/y/z\n"); 
+    err = rmdir( "x/y/z" );
+    if( err < 0 ) SHOW_RESULT( rmdir, err );
+
+    diag_printf("<INFO>: rmdir x/y\n"); 
+    err = rmdir( "x/y" );
+    if( err < 0 ) SHOW_RESULT( rmdir, err );
+
+    diag_printf("<INFO>: rmdir x\n"); 
+    err = rmdir( "x" );
+    if( err < 0 ) SHOW_RESULT( rmdir, err );
+    
+    // --------------------------------------------------------------
+    
     diag_printf("<INFO>: unlink tinky\n");    
     err = unlink( "tinky" );
     if( err < 0 ) SHOW_RESULT( unlink, err );
@@ -535,7 +619,8 @@ int main( int argc, char **argv )
     diag_printf("<INFO>: cd /\n");    
     err = chdir( "/" );
     if( err < 0 ) SHOW_RESULT( chdir, err );
-
+    checkcwd( "/" );
+    
     diag_printf("<INFO>: umount /ram\n");    
     err = umount( "/ram" );
     if( err < 0 ) SHOW_RESULT( umount, err );    

@@ -1,11 +1,10 @@
-#ifndef CYGONCE_HAL_MOD_77xx_H
-#define CYGONCE_HAL_MOD_77xx_H
-
+#ifndef CYGONCE_POSIX_EXPORT_H
+#define CYGONCE_POSIX_EXPORT_H
 //=============================================================================
 //
-//      mod_7709a.h
+//      export.h
 //
-//      List modules available on CPU
+//      POSIX export header
 //
 //=============================================================================
 //####COPYRIGHTBEGIN####
@@ -34,50 +33,52 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jskov
-// Contributors:jskov
-// Date:        2000-03-16
-// Purpose:     Define modules (and versions) available on this CPU.
-// Usage:       Included from <cyg/hal/sh_regs.h>
-//
+// Author(s):     nickg
+// Contributors:  nickg
+// Date:          2000-09-18
+// Purpose:       POSIX export header
+// Description:   This header contains definitions that the POSIX package exports
+//                to other packages. These are generally interfaces that are not
+//                provided by the public API.
+//                
 //              
+// Usage:
+//              #ifdef CYGPKG_POSIX
+//              #include <export.h>
+//              #endif
+//              ...
+//              
+//
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
-//-----------------------------------------------------------------------------
-// Modules provided by the CPU
+#include <pkgconf/hal.h>
+#include <pkgconf/kernel.h>
+#include <pkgconf/posix.h>
 
-#define CYGARC_SH_MOD_BCN_V2
-#define CYGARC_SH_MOD_INTC_V2
-#define CYGARC_SH_MOD_IRDA
-#define CYGARC_SH_MOD_SCIF
-#define CYGARC_SH_MOD_PFC
-#define CYGARC_SH_MOD_UBC_V2
-#define CYGARC_SH_MOD_DMAC
-#define CYGARC_SH_MOD_CPG_V3
+#include <cyg/infra/cyg_type.h>
 
-//-----------------------------------------------------------------------------
-// Extra details for Cache Module (CAC)
+#include <stddef.h>             // NULL, size_t
 
-// Cache dimenions - one unified cache
-#define CYGARC_SH_MOD_CAC_SIZE        16384 // Size of cache in bytes
-#define CYGARC_SH_MOD_CAC_LINE_SIZE   16    // Size of a cache line
-#define CYGARC_SH_MOD_CAC_WAYS        4     // Associativity of the cache
+#include <limits.h>
 
-// Cache addressing information
-// way:   bits 13 - 12
-// entry: bits 11 -  4
-#define CYGARC_SH_MOD_CAC_ADDRESS_BASE   0xf0000000
-#define CYGARC_SH_MOD_CAC_ADDRESS_TOP    0xf0004000
-#define CYGARC_SH_MOD_CAC_ADDRESS_STEP   0x00000010
-// U : bit 1
-// V : bit 0
-// Writing zero to both forces a flush of the line if it is dirty.
-#define CYGARC_SH_MOD_CAC_ADDRESS_FLUSH  0x00000000
+#include <sys/types.h>
+
+#include <sched.h>              // SCHED_*
+
+//=============================================================================
+// POSIX API function management.
+// These macros should be inserted near the start and all returns of
+// any function that is part of the POSIX API.
+
+__externC void cyg_posix_function_start();
+__externC void cyg_posix_function_finish();
+
+#define CYG_POSIX_FUNCTION_START() cyg_posix_function_start()
+
+#define CYG_POSIX_FUNCTION_FINISH() cyg_posix_function_finish()
 
 //-----------------------------------------------------------------------------
-// Extra details for interrupt handling
-#define CYGARC_SH_SOFTWARE_IP_UPDATE
-
-#endif // CYGONCE_HAL_MOD_77xx_H
+#endif // ifndef CYGONCE_POSIX_EXPORT_H
+// End of export.h

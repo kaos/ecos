@@ -106,5 +106,19 @@ cdl_package CYGPKG_IO_SERIAL_SH_EDK7708 {
                 used for the SCI port."
         }
     }
+
+    cdl_component CYGPKG_IO_SERIAL_SH_EDK7708_TESTING {
+        display    "Testing parameters"
+        flavor     bool
+        calculated 1
+        no_define
+        active_if  CYGPKG_IO_SERIAL_SH_EDK7708_SERIAL1
+
+        define_proc {
+            puts $::cdl_header "#define CYGPRI_SER_TEST_CRASH_ID \"sh-edk7708\""
+            puts $::cdl_header "#define CYGPRI_SER_TEST_SER_DEV  CYGDAT_IO_SERIAL_SH_EDK7708_SERIAL1_NAME"
+            puts $::cdl_header "#define CYGPRI_SER_TEST_TTY_DEV  \"/dev/tty1\""
+        }
+    }
 }
 # EOF ser_sh_edk7708.cdl

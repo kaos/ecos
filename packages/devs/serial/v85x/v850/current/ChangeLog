@@ -1,3 +1,11 @@
+2000-10-09  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850_serial.c (v850_serial_config_port): Fix baud clock setup.
+
+2000-10-04  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850_serial.c (v850_serial_tx_timeout): Correct arguments.
+
 2000-09-06  Gary Thomas  <gthomas@redhat.com>
 
 	* src/v85x_v850_serial.h: 

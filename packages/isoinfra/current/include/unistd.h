@@ -181,10 +181,10 @@ extern int      fsync( int fd );
 extern int	ftruncate(int fd, unsigned long length);
 
 extern int 	chdir(const char *path);
-extern char 	*getcwd(char *buf, int size);
+extern char 	*getcwd(char *buf, size_t size);
 
-extern int 	getpid(void);
-extern int 	getppid(void);
+extern pid_t 	getpid(void);
+extern pid_t	getppid(void);
 extern uid_t 	getuid(void);
 extern uid_t 	geteuid(void);
 extern uid_t 	getgid(void);

@@ -260,7 +260,8 @@ cdl_package CYGPKG_LIBC_STARTUP {
     cdl_option CYGSEM_LIBC_INVOKE_DEFAULT_STATIC_CONSTRUCTORS {
         display        "Invoke default static constructors"
         requires       CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
-        requires       CYGSEM_LIBC_STARTUP_MAIN_THREAD
+        requires       { CYGSEM_LIBC_STARTUP_MAIN_THREAD || \
+                  (CYGSEM_LIBC_STARTUP_MAIN_OTHER && CYGPKG_POSIX_PTHREAD) }
         default_value  0
         description    "
             This option causes the C library to call

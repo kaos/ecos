@@ -207,7 +207,7 @@ void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 
             cyg_bool call_asr = false;
             
-            if( !current->asr_inhibit && current->asr_pending )
+            if( (current->asr_inhibit == 0) && current->asr_pending )
             {
                 call_asr = true;
                 current->asr_pending = false;
@@ -373,7 +373,7 @@ Cyg_SchedThread::Cyg_SchedThread(Cyg_Thread *thread, CYG_ADDRWORD sched_info)
 
 #ifdef CYGSEM_KERNEL_SCHED_ASR_SUPPORT
 
-    asr_inhibit = false;
+    asr_inhibit = 0;
     asr_pending = false;
 
 #ifndef CYGSEM_KERNEL_SCHED_ASR_GLOBAL

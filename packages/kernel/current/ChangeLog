@@ -1,3 +1,30 @@
+2000-10-05  Jesper Skov  <jskov@redhat.co.uk>
+
+	* src/intr/intr.cxx: Made dsr_table_tail volatile as well.
+	* include/intr.hxx: Ditto.
+
+2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sched/sched.cxx: 
+	* include/sched.hxx: Converted asr_inhibit from a bool to a
+	counter. This is necessary to permit nesting of ASR inhibiting
+	functions.
+
+2000-10-04  Jesper Skov  <jskov@redhat.co.uk>
+
+	* include/intr.hxx: Made dsr_list volatile.
+	* src/intr/intr.cxx: Same. Also fix compiler warning.
+
+2000-09-25  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/sched/mlqueue.cxx:
+	Added test for current thread not runnable in
+	Cyg_Scheduler_Implementation::timeslice().  This is possible if a
+	prior DSR has caused the current thread to be descheduled. Added
+	an assert to Cyg_ThreadQueue_Implementation::rotate() for
+	additional paranoia. (This problem was originally identified and
+	fixed (differently) by Andrew Lunn <andrew.lunn@ascom.ch>.)
+
 2000-09-13  Jesper Skov  <jskov@redhat.com>
 
 	* tests/kexcept1.c (cause_exception): Use separate cause_fpe function.

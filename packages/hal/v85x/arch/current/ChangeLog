@@ -1,3 +1,7 @@
+2000-10-09  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (start): Need to handle ^C for all applications.
+
 2000-09-13  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S: When calling C functions, ensure there is 16 bytes

@@ -157,7 +157,7 @@ v850_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
     count = select_baud[new_config->baud].count;
     while (count > 0xFF) {
         count >>= 1;
-        mode <<= 1;
+        mode++;
     }
     port->brgc = count;
 #if CYGINT_HAL_V85X_VARIANT_SB1
@@ -189,7 +189,7 @@ v850_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
 // sufficiently long so as to not interfere with normal interrupt handling.
 //
 static void
-v850_serial_tx_timeout(cyg_addrword_t p)
+v850_serial_tx_timeout(cyg_handle_t alarm, cyg_addrword_t p)
 {
     v850_serial_info *v850_chan = (v850_serial_info *)p;
     v850_chan->tx_busy = false;

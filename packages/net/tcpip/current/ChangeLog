@@ -1,3 +1,77 @@
+2000-10-10  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/tftp_server.c (tftpd_server): Modify the server to
+	support multiple sessions - ie. starting N servers at once.
+	Mainly this means closing the initial socket whilst servicing a
+	request, so that another server can then bind to it; tell another
+	server to retry that bind via a semaphore, that it waited on when
+	the bind failed initially, rather than just returning.
+
+	* src/lib/tftp_dummy_file.c (dummy_open): Trivial bugfix: scan the
+	list of files as well as incrementing the counter.
+
+2000-10-05  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* src/ecos/support.c (cyg_ktime_func,cyg_ktime_init,cyg_net_init): 
+	Make 'ktime' value valid.
+
+2000-10-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/tftp_server.c (tftpd_write_file): Restructure this
+	function to match the loop layout of the tftpd_read_file; so that
+	it retries sensibly, and so that a delayed/duplicated packet does
+	not cause a doubling of all traffic with a less smart host.
+
+2000-10-05  Hugo Tyson  <hmt@redhat.com>
+
+	* include/tftp_support.h (TFTP_TIMEOUT_MAX): Change this to 50; it
+	refers to total timeouts for a whole session, so it should be
+	greater than the retry count for each packet.
+
+2000-10-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/tftp_dummy_file.c: Make the fake file slots be a Mb
+	instead of 10k so that you can do meaningful timing tests with it.
+	(dummy_open): Allow re-write of an existing file so that you can
+	do repeated put tests without running out of slots.
+
+2000-10-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/select.c (_cyg_select): Unlock the scheduler in a couple
+	of other places I missed.  Doh.
+
+2000-09-28  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/select.c (_cyg_select): Elect to wait for the flags
+	atomically wrt sockets possibly becoming ready - this was a race
+	condition that would apparently delay a packet until another
+	arrived, eg. a tftp retry.  Then two came along all at once.
+
+2000-09-28  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/tftp_server.c: Add lots of instrumentation for
+	debugging.  It's switched off, and doesn't have a real config opt,
+	though it easily could have.
+
+2000-09-26  Hugo Tyson  <hmt@redhat.com>
+
+	* src/lib/tftp_server.c (tftpd_read_file): Doh! TFTP_TIMEOUT is an
+	internal API thing, not an error we can send in an ERROR packet.
+
+	* include/tftp_support.h: Comment to this effect.
+
+2000-09-26  Hugo Tyson  <hmt@redhat.com>
+2000-09-25  Andrew Lunn <Andrew.Lunn@ascom.ch>
+
+	* src/lib/tftp_server.c: Send an ERROR packet when giving up after
+	too many timeouts.  This should cause the client to give up as
+	well.  Also moved all the replicated code to send an ERROR packet
+	into one function.
+
+	[Huge] I collected another point where we can use the common
+	function also, and used ETIMEOUT instead of EBADOP for the new
+	error packet returns. Thanks Andrew!
+	
 2000-09-14  Hugo Tyson  <hmt@redhat.com>
 
 	* cdl/net.cdl (CYGOPT_NET_DHCP_DHCP_THREAD_PARAM): Set default to

@@ -61,7 +61,9 @@ cdl_package CYGPKG_IO_SERIAL_SH_SCIF {
 
     define_proc {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"
+        puts $::cdl_system_header "#ifndef CYGDAT_IO_SERIAL_DEVICE_HEADER"
         puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_sh_scif.h>"
+        puts $::cdl_system_header "#endif"
         puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
 
         puts $::cdl_header "#include <pkgconf/system.h>";

@@ -88,6 +88,8 @@ externC void cyg_hal_cache_enable(void);
 externC void cyg_hal_cache_disable(void);
 externC void cyg_hal_cache_invalidate_all(void);
 externC void cyg_hal_cache_sync(void);
+externC void cyg_hal_cache_sync_region(cyg_haladdress base, 
+                                       cyg_haladdrword len);
 externC void cyg_hal_cache_write_mode(int mode);
 
 // Enable the cache
@@ -113,10 +115,22 @@ externC void cyg_hal_cache_write_mode(int mode);
 //#define HAL_UCACHE_BURST_SIZE(_size_)
 
 // Set the cache write mode
-#define HAL_UCACHE_WRITE_MODE( _mode_ ) cyg_hal_cache_write_mode(_mode_)
+#define HAL_UCACHE_WRITE_MODE( _mode_ )         \
+    CYG_MACRO_START                             \
+    cyg_uint32 _m_;                             \
+    if (HAL_UCACHE_WRITETHRU_MODE == _mode_)    \
+      _m_ = CYGARC_REG_CCR_WT;                  \
+    else                                        \
+      _m_ = CYGARC_REG_CCR_CB;                  \
+    cyg_hal_cache_write_mode(_m_);              \
+    CYG_MACRO_END
 
 #define HAL_UCACHE_WRITETHRU_MODE       0
 #define HAL_UCACHE_WRITEBACK_MODE       1
+
+// This macro allows the client to specify separate modes for the two
+// regions.
+#define HAL_UCACHE_WRITE_MODE_SH( _mode_ ) cyg_hal_cache_write_mode(_mode_)
 
 // Load the contents of the given address range into the cache
 // and then lock the cache so that it stays there.
@@ -137,13 +151,15 @@ externC void cyg_hal_cache_write_mode(int mode);
 
 // Write dirty cache lines to memory and invalidate the cache entries
 // for the given address range.
-//#define HAL_UCACHE_FLUSH( _base_ , _size_ )
+#define HAL_UCACHE_FLUSH( _base_ , _size_ ) \
+ cyg_hal_cache_sync_region(_base_, _size_)
 
 // Invalidate cache lines in the given range without writing to memory.
 //#define HAL_UCACHE_INVALIDATE( _base_ , _size_ )
 
 // Write dirty cache lines to memory for the given address range.
 //#define HAL_UCACHE_STORE( _base_ , _size_ )
+
 
 // Preread the given range into the cache with the intention of reading
 // from it later.
@@ -211,7 +227,7 @@ externC void cyg_hal_cache_write_mode(int mode);
 
 // Write dirty cache lines to memory and invalidate the cache entries
 // for the given address range.
-//#define HAL_DCACHE_FLUSH( _base_ , _size_ )
+#define HAL_DCACHE_FLUSH( _base_ , _size_ ) HAL_UCACHE_FLUSH( _base_, _size_ )
 
 // Invalidate cache lines in the given range without writing to memory.
 //#define HAL_DCACHE_INVALIDATE( _base_ , _size_ )

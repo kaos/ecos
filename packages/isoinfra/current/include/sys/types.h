@@ -80,7 +80,7 @@ typedef unsigned long off_t;
 #else
 typedef unsigned short gid_t;
 typedef unsigned short uid_t;
-typedef unsigned int pid_t;
+typedef int pid_t;
 #endif
 
 #if CYGINT_ISO_PTHREADTYPES

@@ -1,3 +1,13 @@
+2000-10-05  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/net_io.c (net_io_revert_console): 
+	(net_io_assume_console): 
+	* src/main.c (cyg_start): 
+	* src/io.c (gets): 
+	* include/redboot.h: Add notion of "console_echo" so that telnet 
+	connections don't echo doubly.  Note: there is no telnet negotiation
+	at this time, so some things are still not perfect.
+
 2000-09-17  Gary Thomas  <gthomas@redhat.com>
 
 	* src/main.c: Display platform/cpu identification strings if available.

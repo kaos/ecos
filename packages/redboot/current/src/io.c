@@ -210,19 +210,24 @@ gets(char *buf, int buflen, int timeout)
             // If previous character was the "other" end-of-line, ignore this one
             if (((c == '\n') && (last_ch == '\r')) ||
                 ((c == '\r') && (last_ch == '\n'))) {
+                c = '\0';
                 break;
             }
             // End of line
-            mon_write_char('\r');
-            mon_write_char('\n');
+	    if (console_echo) {
+                mon_write_char('\r');
+                mon_write_char('\n');
+	    }
             last_ch = c;
             return 1;
         case '\b':
         case 0x7F:  // DEL
             if (ptr != buf) {
-                mon_write_char('\b');
-                mon_write_char(' ');
-                mon_write_char('\b');
+                if (console_echo) {
+                    mon_write_char('\b');
+                    mon_write_char(' ');
+                    mon_write_char('\b');
+                }
                 ptr--;
             }
             break;
@@ -235,7 +240,9 @@ gets(char *buf, int buflen, int timeout)
             }
             // Fall through - accept '$' at other than start of line
         default:
-            mon_write_char(c);
+            if (console_echo) {
+                mon_write_char(c);
+            }
             *ptr++ = c;
         }
         last_ch = c;

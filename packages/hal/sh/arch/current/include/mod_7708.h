@@ -49,7 +49,8 @@
 // Modules provided by the CPU
 
 #define CYGARC_SH_MOD_SCI_V2
-#define CYGARC_SH_MOD_UBC
+#define CYGARC_SH_MOD_UBC_V1
+#define CYGARC_SH_MOD_CPG_V1
 
 
 //-----------------------------------------------------------------------------

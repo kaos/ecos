@@ -276,7 +276,7 @@ $_hal_vsr_table2:
         .org    0x600
 __interrupt:        
 
-#ifdef CYGHWR_HAL_SH_HANDLE_SPURIOUS_INTERRUPTS
+#ifdef CYGHWR_HAL_SH_IRQ_HANDLE_SPURIOUS_INTERRUPTS
         # A spurious interrupt with INTEVT=0 may be caused by
         # clearing of BL. Those interrupts need to be ignored.
         mov     #CYGARC_REG_INTEVT,r0
@@ -706,9 +706,13 @@ __reset_platform:
         mov.l   $CYGARC_REG_IPRF,r1
         mov.w   r0,@r1
 #endif
+	mov.w   $nCYG_ICR1_INIT,r0
         mov.l   $CYGARC_REG_ICR1,r1     ! Set interrupt controller to IRQ mode
         mov.w   r0,@r1
 #endif
+	mov.w	$nCYG_WTCSR,r0          ! Clear watchdog
+	mov	#CYGARC_REG_WTCSR,r1
+	mov.w	r0,@r1
 
         # Initialize VBR if necessary
 #if     !defined(CYG_HAL_STARTUP_RAM) ||                \
@@ -810,10 +814,14 @@ $_complete_setup:
 
         # Jump to remaining setup code. Relative branch is OK since VMA=LMA.
         bra   _complete_setup
+         nop
                 
 #endif
 
-        .align  2
+$nCYG_WTCSR:
+	.word	0xa500		! clear all CSR bits
+
+	.align	2
 
 $nCYG_SR:
         .long   CYG_SR
@@ -836,8 +844,10 @@ $CYGARC_REG_ICR1:
 #ifdef CYGARC_SH_MOD_INTC_V2
 $CYGARC_REG_IPRF:
         .long   CYGARC_REG_IPRF
+$nCYG_ICR1_INIT:
+	.word	CYGARC_REG_ICR1_INIT
+	.align	2
 #endif
-
 $__reset:
         .long   __reset
 
@@ -1024,31 +1034,61 @@ _cyg_hal_cache_sync:
         rts
          nop
 
+	! r4 = base
+	! r5 = size
+        .globl _cyg_hal_cache_sync_region
+_cyg_hal_cache_sync_region:
+        GOTO_NONCACHED_SHADOW
+	mov.l   10f,r0
+	and	r4,r0		! array index
+        mov.l   11f,r1
+	add	r0,r1           ! base (aligned, A set)
+
+	! make sure top is aligned to start of _next_ cache line
+	mov	r1,r0
+	add     r5,r0		! top (non-aligned)
+	add	#2*HAL_UCACHE_LINE_SIZE-1,r0
+	mov.l	13f,r2
+	and	r0,r2
+
+        mov.l   $CYGARC_REG_CACHE_ADDRESS_STEP,r3
+        mov.l   12f,r5
+1:      cmp/hi  r1,r2
+        bf      3f
+	mov	r4,r0		! create address tag
+	and	r5,r0
+	mov.l   r0,@r1          ! store tag in array, causing (sync+)invalidate
+		                ! if the tag matches any of the lines
+        add     r3,r4		! inc address tag
+        bra     1b        
+         add     r3,r1          ! inc array index, delay slot!
+3:      nop
+        rts
+         nop
+
+	.align 2
+10:	.long	((HAL_UCACHE_SIZE/HAL_UCACHE_WAYS)-1)&~0xf ! mask
+11:	.long   CYGARC_REG_CACHE_ADDRESS_BASE|CYGARC_REG_CACHE_ADDRESS_ADDRESS
+12:	.long	CYGARC_REG_CACHE_ADDRESS_TAG_Mask
+13:	.long   ~(HAL_UCACHE_LINE_SIZE-1)
+	
         .globl _cyg_hal_cache_write_mode
 _cyg_hal_cache_write_mode:
         GOTO_NONCACHED_SHADOW
-        # Mode argument in r4. Compute the WT and CB states from this
-        mov     r4,r0
-        and     #1,r0
-        shll    r0                      ! shift to WT position
-        mov     r0,r1                   ! duplicate at CB position
-        shll    r1
-        or      r1,r0
-        xor     #CYGARC_REG_CCR_WT,r0   ! WT must be 0 for write-back
+        # Mode argument in r4.
         # Read current state and mask out the two caching mode bits
         mov     #CYGARC_REG_CCR,r1
         mov.l   @r1,r3
         mov     #CYGARC_REG_CCR_CB|CYGARC_REG_CCR_WT,r2
+	and	r2,r4
         not     r2,r2
         and     r2,r3
         # Or in the new settings and restore to CCR
-        or      r0,r3
+        or      r4,r3
         mov.l   r3,@r1
         nop
         rts
          nop
-        
-
 
         .align  2
 $CYGARC_REG_CACHE_ADDRESS_FLUSH:

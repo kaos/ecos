@@ -1,3 +1,35 @@
+2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/file.cxx: Added support for getcwd(). There are three
+	mechanisms provided here. The first is to use the FS_INFO_GETCWD
+	key on the filesystem to use any support it has for this. If that
+	fails it falls back on one of the two other mechanisms. If
+	CYGPKG_IO_FILEIO_TRACK_CWD is set then the current directory is
+	tracked textually in chdir() and the result of that is reported in
+	getcwd(). Otherwise an attempt is made to traverse the directory
+	tree to its root using ".." entries. This last option is
+	complicated and expensive, so the other two mechanisms are to be
+	preferred if possible.
+
+	* include/fileio.h: Added FS_INFO_GETCWD gtinfo option and a
+	matching struct cyg_getcwd_info. These are used to access getcwd()
+	support in a filesystem.
+
+	* src/fio.h: Added initial support for POSIX API function entry
+	and return. 
+
+	* cdl/fileio.cdl: Added CYGPKG_IO_FILEIO_TRACK_CWD option to
+	enable current directory tracking.
+
+2000-09-28  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/select.cxx (cyg_selwakeup):
+	Removed test for whether the waiting thread is actually waiting
+	for this event. This lead to a race condition when the thread is
+	still polling other objects but has already checked this
+	event. Now all waiting selectors are woken up by each selectable
+	event.
+
 2000-09-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/select.cxx: Apply constructor prioritization to mutexes and

@@ -52,6 +52,9 @@
 #include <cyg/infra/cyg_trac.h>        // tracing macros
 #include <cyg/infra/cyg_ass.h>         // assertion macros
 
+#include <string.h>                    // string functions
+#include <dirent.h>
+
 #include "fio.h"                       // Private header
 
 #include <cyg/kernel/mutex.hxx>        // mutex definitions
@@ -62,6 +65,101 @@
 #define LOCK_FS( _mte_ ) cyg_fs_lock( _mte_, (_mte_)->fs->syncmode)
 
 #define UNLOCK_FS( _mte_ ) cyg_fs_unlock( _mte_, (_mte_)->fs->syncmode)
+
+//==========================================================================
+// A local strcpy clone that returns a pointer to the end of the copied
+// string, not the beginning.
+
+static char *my_strcpy( char *s1, const char *s2 )
+{
+    while( (*s1++ = *s2++) != 0);
+    return s1-1;
+}
+
+//==========================================================================
+// Compare a pathname fragment with an element in a pathname. This
+// deals with zero or separator termination and avoids substring
+// matches.
+
+static int pathcmp( const char *path, const char *name )
+{
+    while( *path == *name && *path != '\0' )
+        path++, name++;
+    if( *name != '\0' ) return false;
+    if( *path == '/' || *path == '\0' ) return true;
+    return false;
+}
+
+//==========================================================================
+// CWD support
+
+#ifdef CYGPKG_IO_FILEIO_TRACK_CWD
+
+// buffer for storing CWD path
+static char cwd[PATH_MAX];
+static size_t cwd_size = 0;
+
+
+static void update_cwd( cyg_mtab_entry *mte, cyg_dir dir, const char *path )
+{
+    char *p = cwd;
+
+    if( mte != cdir_mtab_entry || dir != cdir_dir )
+    {
+        // Here, the path is relative to the root of the filesystem,
+        // or in a totally new filesystem, initialize the cwd with the
+        // mount point name of the filesystem.
+
+        p = my_strcpy( p, mte->name );
+    }
+    else p = cwd+cwd_size;
+
+    // We must now copy the path into the cwd buffer while dealing
+    // with any "." and ".."  components textually.
+
+    while( *path != '\0' )
+    {
+        // skip any stray directory separators.
+        if( *path == '/' ) path++;
+
+        // Look for a "." entry and just ignore it.
+        if( pathcmp( path, "." ) )
+        {
+            path++;
+            continue;
+        }
+
+        // Look for a ".." entry. If found, chew off the last cwd
+        // entry.
+        if( pathcmp( path, ".." ) )
+        {
+            while( *(--p) != '/' );     // back up to last '/'
+            path += 2;                  // skip "..".
+            continue;
+        }
+
+        // Otherwise just copy the name fragment over to the cwd.
+
+        if( *(p-1) != '/' )
+            *p++ = '/';        // add a directory separator
+        while( *path != '/' && *path != '\0' )
+            *p++ = *path++;
+
+    }
+
+    // Zero terminate the cwd.
+    *p = '\0';
+    
+    // update size
+    cwd_size = p-cwd;
+}
+
+#else
+
+static Cyg_Mutex getcwd_lock CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_IO);
+
+#endif
+
 
 //==========================================================================
 // Open a file
@@ -297,6 +395,7 @@ __externC int chdir( const char *path )
     int ret = 0;
     cyg_mtab_entry *mte = cdir_mtab_entry;
     cyg_dir dir = cdir_dir;
+    cyg_dir newdir;
     const char *name = path;
 
     ret = cyg_mtab_lookup( &dir, &name, &mte );
@@ -306,13 +405,17 @@ __externC int chdir( const char *path )
 
     LOCK_FS(mte);
     
-    ret = mte->fs->chdir( mte, dir, name, &dir );
+    ret = mte->fs->chdir( mte, dir, name, &newdir );
 
     UNLOCK_FS(mte);
     
     if( 0 != ret )
         FILEIO_RETURN(ret);
 
+#ifdef CYGPKG_IO_FILEIO_TRACK_CWD
+    update_cwd( mte, dir, name );
+#endif
+    
     if( cdir_mtab_entry != NULL )
     {
         // Now detach from current cdir. We call the current directory's
@@ -330,7 +433,7 @@ __externC int chdir( const char *path )
     }
     
     cdir_mtab_entry = mte;
-    cdir_dir = dir;
+    cdir_dir = newdir;
     
     FILEIO_RETURN(ENOERR);
 }
@@ -422,6 +525,211 @@ extern int 	access(const char *path, int amode)
     // to test.  Just return success for all access modes.
     
     FILEIO_RETURN(ENOERR);
+}
+
+//==========================================================================
+// getcwd()
+
+__externC char *getcwd( char *buf, size_t size )
+{
+    FILEIO_ENTRY();
+
+    int err = ENOERR;
+    cyg_mtab_entry *mte = cdir_mtab_entry;
+    cyg_dir dir = cdir_dir;
+    cyg_getcwd_info info;
+
+    if( size == 0 )
+    {
+        errno = EINVAL;
+        FILEIO_RETURN_VALUE(NULL);        
+    }
+        
+    info.buf = buf;
+    info.size = size;
+
+    LOCK_FS( mte );
+    
+    err = mte->fs->getinfo( mte, dir, "",
+                            FS_INFO_GETCWD, (char *)&info, sizeof(info) );
+    
+    UNLOCK_FS( mte );
+
+    if( err == ENOERR )
+        FILEIO_RETURN_VALUE(buf);
+
+    // Attempting to use filesystem support for getcwd() has
+    // failed.
+
+#ifdef CYGPKG_IO_FILEIO_TRACK_CWD
+
+    // If this option is set, the current directory path has been
+    // tracked in chdir(). Just report that value here.
+    
+    if( size < cwd_size+1 )
+    {
+        errno = ERANGE;
+        FILEIO_RETURN_VALUE(NULL);        
+    }
+
+    char *p = my_strcpy( buf, cwd );
+    *p = '\0';
+
+#else
+
+    // As a fallback we try to use ".." entries in the directory tree
+    // to climb back up to the root.  Because we cannot assume that
+    // any filesystem can handle more than one directory pointer we
+    // have to do the climbing textually, by manufacturing a path name
+    // consisting of ".."s. At each level we then scan the parent
+    // directory looking for the entry for the lower level directory
+    // by matching st_ino values. This is not guaranteed to work at
+    // all since there is no requirement on filesystems to support "."
+    // and "..", or for them to report distinct inode values in
+    // stat().
+
+    static char ddbuf[PATH_MAX];
+    char *p = buf+size-1;
+    int ddbufpos;
+
+    // Claim lock to serialize use of ddbuf.
+    getcwd_lock.lock();
+
+    // Initialize ddbuf with ".".
+    ddbuf[0] = '.';
+    ddbuf[1] = '\0';
+    ddbufpos = 1;
+
+    // Start result buffer with a zero terminator. We accumulate the
+    // path name in the top end of the result buffer.
+    *p = '\0';
+    
+    for(;;)
+    {
+        struct stat sdbuf;
+        struct stat sddbuf;
+
+        // Get status for "." and "..". If the filesystem does not
+        // support these, then this whole function will fail here.
+        
+        err = stat( ddbuf, &sdbuf );
+        if( err < 0 ) break;
+
+        ddbuf[ddbufpos++] = '/';
+        ddbuf[ddbufpos++] = '.';
+        ddbuf[ddbufpos++] = '.';
+        ddbuf[ddbufpos] = '\0';
+        
+        err = stat( ddbuf, &sddbuf );
+        if( err < 0 ) break;
+
+        // See whether we are at the root. This will be true when
+        // the inode numbers of "." and ".." are the same.
+        if( sdbuf.st_ino == sddbuf.st_ino )
+            break;
+
+        // We now need to find an entry in the ".." directory that
+        // matches the inode number of ".".
+
+        struct dirent de;
+        DIR *d = opendir( ddbuf );
+        if( d == NULL )
+        {
+            err = -1;
+            break;
+        }
+        
+        for(;;)
+        {
+            struct dirent *res;
+            struct stat objstat;
+            int i;
+            
+            err = readdir_r( d, &de, &res );
+            if( err < 0 || res == NULL ) break;
+
+            // Skip "." and ".." entries.
+            if( pathcmp( de.d_name, "." ) || pathcmp( de.d_name, ".." ) )
+                continue;
+            
+            // Tack the name of the directory entry on to the ddbuf
+            // and stat the object.
+            
+            ddbuf[ddbufpos] = '/';
+            for( i = 0; de.d_name[i] != '\0'; i++ )
+                ddbuf[ddbufpos+i+1] = de.d_name[i];
+            ddbuf[ddbufpos+i+1] = '\0';
+
+            // Take a look at it
+            err = stat( ddbuf, &objstat );
+            if( err < 0 ) break;
+
+            // Cast out directories
+            if( !S_ISDIR(objstat.st_mode) )
+                continue;
+
+            // We have a directory. Compare its inode with that of "."
+            // and if they are the same, we have found our entry.
+
+            if( sdbuf.st_ino == objstat.st_ino )
+                break;
+        }
+
+        ddbuf[ddbufpos] = '\0'; // reterminate ddbuf
+        
+        closedir( d );
+
+        // Halt on any errors.
+        if( err < 0 )
+            break;
+
+        // Here de contains the name of the directory entry in ".."
+        // that has the same inode as ".". Add the name to the path we
+        // are accumulating in the buffer.
+
+        char *q = de.d_name;
+        while( *q != '\0' ) q++;        // skip to end of name
+
+        do
+        {
+            *--p = *--q;
+        } while( q != de.d_name );
+
+        *--p = '/';                     // add a separator
+    }
+
+    // We have finished using ddbuf now.
+    getcwd_lock.unlock();
+    
+    if( err < 0 )
+        FILEIO_RETURN_VALUE(NULL);
+
+    // We have the directory path in the top end of the buffer.  Add
+    // the mount point name at the beginning and copy the rest of the
+    // name down.
+
+    char *bp = buf;
+    
+    bp = my_strcpy( bp, mte->name );
+
+    // Sort out the separators between the mount name and the
+    // pathname.  This is a bit messy since we have to deal with mount
+    // names of both "/" and "/foo" and pathnames that start with '/'
+    // or are empty.
+    if( *(bp-1) != '/' && *p != '\0' ) *bp++ = '/';
+    if( *p == '/' ) p++;
+
+    // Now copy the path over.
+    while( *p )
+        *bp++ = *p++;
+
+    *bp = '\0';                         // Terminate the string
+
+    // All done!
+    
+#endif
+    
+    FILEIO_RETURN_VALUE(buf);
 }
 
 // -------------------------------------------------------------------------

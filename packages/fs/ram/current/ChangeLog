@@ -1,3 +1,8 @@
+2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/fileio1.c:
+	Extended to check getcwd() and chdir() functionality more fully.
+
 2000-08-18  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* cdl/ramfs.cdl:

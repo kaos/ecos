@@ -192,9 +192,9 @@ public:
 
 private:
 
-    volatile cyg_bool   asr_inhibit;    // If true, blocks calls to ASRs
+    volatile cyg_ucount32       asr_inhibit;    // If > 0, blocks calls to ASRs
 
-    volatile cyg_bool   asr_pending;    // If true, this thread's ASR should be called.
+    volatile cyg_bool           asr_pending;    // If true, this thread's ASR should be called.
 
 #ifdef CYGSEM_KERNEL_SCHED_ASR_GLOBAL
     static
@@ -213,9 +213,9 @@ public:
     // Public interface to ASR mechanism
 
     // Set, clear and get inhibit flag.
-    inline void set_asr_inhibit() { asr_inhibit = true; }
-    inline void clear_asr_inhibit() { asr_inhibit = false; }
-    inline cyg_bool get_asr_inhibit() { return asr_inhibit; }
+    inline void set_asr_inhibit() { asr_inhibit++; }
+    inline void clear_asr_inhibit() { asr_inhibit--; }
+    inline cyg_ucount32 get_asr_inhibit() { return asr_inhibit; }
 
     // Set and get pending flag. The flag is only cleared when the
     // ASR is called.

@@ -1,3 +1,11 @@
+2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/sys/types.h: Changed type of pid_t to plain int. It
+	needs to be signed.
+
+	* include/unistd.h: Fixed prototypes of several functions to match
+	POSIX standard.
+
 2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/isoinfra.cdl: Add CYGBLD_ISO_{OPEN,LINK,NAME,PATH}_MAX_HEADER

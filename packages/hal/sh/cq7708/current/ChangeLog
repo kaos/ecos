@@ -1,3 +1,14 @@
+2000-10-10  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh7708_cq7708.cdl: Fix legal OCC ranges.
+
+2000-09-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc (BSC_settings_table): Use the calculated
+	FRQCR init value.
+
+	* cdl/hal_sh_sh7708_cq7708.cdl: Updated clock options.
+
 2000-07-07  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh_sh7708_cq7708.cdl: Require sub-variant package.

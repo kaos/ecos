@@ -71,6 +71,9 @@
 BSC_settings_table:
         # These are the settings set by the Hitachi ROM Monitor.
 
+	.word   CYGARC_REG_FRQCR
+	.word   CYGARC_REG_FRQCR_INIT
+
         # BCR2: Bus size of areas 1-6 to 32 bits
         .word   CYGARC_REG_BCR2
         .word   0x3ffc

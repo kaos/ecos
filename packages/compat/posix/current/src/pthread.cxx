@@ -310,7 +310,7 @@ static void pthread_reap()
 
     // Loop over the thread table looking for exited threads. The
     // pthreads_exited counter springs us out of this once we have
-    // found then all (and keeps us out if there are none to do).
+    // found them all (and keeps us out if there are none to do).
    
     for( i = 0; pthreads_exited && i < CYGNUM_POSIX_PTHREAD_THREADS_MAX ; i++ )
     {
@@ -418,7 +418,7 @@ externC void cyg_posix_pthread_release_thread( sigset_t *mask )
         pthread_info *thread = thread_table[i];
 
         if( (thread != NULL) &&
-            (thread->state == PTHREAD_STATE_RUNNING) &&
+            (thread->state <= PTHREAD_STATE_RUNNING) &&
             ((*mask & ~thread->sigmask) != 0) )
         {
             // This thread can service at least one of the signals in
@@ -429,7 +429,8 @@ externC void cyg_posix_pthread_release_thread( sigset_t *mask )
             break;
         }
 
-        if( thread->state != PTHREAD_STATE_FREE )
+        // Decrement count for each valid thread we find.
+        if( thread != NULL && thread->state != PTHREAD_STATE_FREE )
             count--;
     }
 }

@@ -59,6 +59,7 @@
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_arch.h>
+#include <cyg/hal/hal_intr.h>
 #include <cyg/infra/diag.h>
 #include <cyg/hal/drv_api.h>
 #include <netdev.h>
@@ -413,7 +414,8 @@ ETH_DRV_SC(ebsa285_sc0,
            i82559_recv,
            i82559_deliver,
            i82559_poll,
-           i82559_int_vector);
+           i82559_int_vector
+    );
 
 NETDEVTAB_ENTRY(ebsa285_netdev0, 
                 "ebsa285-0", 
@@ -435,7 +437,8 @@ ETH_DRV_SC(ebsa285_sc1,
            i82559_recv,
            i82559_deliver,
            i82559_poll,
-           i82559_int_vector);
+           i82559_int_vector
+    );
 
 NETDEVTAB_ENTRY(ebsa285_netdev1, 
                 "ebsa285-1", 
@@ -513,16 +516,38 @@ void wait_for_cmd_done(long scb_ioaddr)
     CYG_ASSERT( wait > 0, "wait_for_cmd_done" );
 }
 
-static inline void Mask82559Interrupt(struct i82559* p_i82559)
+// Short circuit the drv_interrupt_XXX API once we are started:
+
+static inline int Mask82559Interrupt(struct i82559* p_i82559)
 {
-    cyg_drv_interrupt_mask(p_i82559->vector);
-    cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+    int cpu_intr;
+    int old;
+    int mybits = 
+        (1 << (p_i82559->vector)) |
+        (1 << CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+
+    HAL_DISABLE_INTERRUPTS( cpu_intr );
+    old = *SA110_IRQCONT_IRQENABLE;
+    *SA110_IRQCONT_IRQENABLECLEAR = mybits; // clear mybits
+    HAL_RESTORE_INTERRUPTS( cpu_intr );
+
+    /* it may prove necessary to do something like this
+    if ( mybits != (mybits & old) )
+        /# then at least one of them was disabled, so
+         # omit both from any restoration: #/
+        old = 0;
+    */
+
+    return old;
 }
 
-static inline void UnMask82559Interrupt(struct i82559* p_i82559)
+static inline void UnMask82559Interrupt(struct i82559* p_i82559, int old)
 {
-    cyg_drv_interrupt_unmask(p_i82559->vector);
-    cyg_drv_interrupt_unmask(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
+    // We must only unmask (enable) those which were unmasked before,
+    // according to the bits in old.
+    *SA110_IRQCONT_IRQENABLESET = old &
+        ((1 << (p_i82559->vector)) |
+         (1 << CYGNUM_HAL_INTERRUPT_PCI_IRQ));
 }
 
 #ifdef CYGDBG_USE_ASSERTS // an indication of a debug build
@@ -535,6 +560,11 @@ static void Acknowledge82559Interrupt(struct i82559* p_i82559)
     cyg_uint32 ioaddr;
     cyg_uint16 status;
     int loops = 64;
+
+    // EBSA does nothing in interrupt_acknowledge, so we can comment these
+    // all out.  So this routine really boils down to
+    //   "wait for the device to stop interrupting before we unmask"
+    // The calls are all left in place, for documentary purposes.
 
     cyg_drv_interrupt_acknowledge(p_i82559->vector);
     cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_PCI_IRQ);
@@ -788,7 +818,7 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
     cyg_uint32 ioaddr;
     cyg_uint16 checksum;
     int count;
-    int i;
+    int i, ints;
     int addr_length;
     cyg_uint8 mac_address[6];
     struct i82559 *p_i82559;
@@ -829,7 +859,7 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
               p_i82559->index, (int)ndp);
 #endif
 
-    Mask82559Interrupt(p_i82559);
+    ints = Mask82559Interrupt(p_i82559);
 
     wait_for_cmd_done(ioaddr); // make sure no command operating
 
@@ -848,7 +878,7 @@ ebsa285_i82559_init(struct cyg_netdevtab_entry * ndp)
     } while ( (p_selftest[1] == -1)  &&  (--count >= 0) );
 
     Acknowledge82559Interrupt(p_i82559);
-    UnMask82559Interrupt(p_i82559);
+    UnMask82559Interrupt(p_i82559, ints );
     
     if (count < 0) {
         // Test timed out.
@@ -1146,7 +1176,7 @@ static void PacketRxReady(struct i82559* p_i82559)
 {
     RFD *p_rfd;
     int next_descriptor;
-    int length;
+    int length, ints;
     struct cyg_netdevtab_entry *ndp;
     struct eth_drv_sc *sc;
     cyg_uint32 ioaddr;
@@ -1212,7 +1242,7 @@ static void PacketRxReady(struct i82559* p_i82559)
 
     // See if the RU has gone idle (usually because of out of resource
     // condition) and restart it if needs be.
-    Mask82559Interrupt(p_i82559);
+    ints = Mask82559Interrupt(p_i82559);
     status = INW(ioaddr + SCBStatus);
     if ( RU_STATUS_READY != (status & RU_STATUS_MASK) ) {
         // Acknowledge the RX INT sources
@@ -1234,7 +1264,7 @@ static void PacketRxReady(struct i82559* p_i82559)
         OUTW(RUC_START, ioaddr + SCBCmd);
         Acknowledge82559Interrupt(p_i82559);
     }
-    UnMask82559Interrupt(p_i82559);
+    UnMask82559Interrupt(p_i82559, ints);
 
     p_i82559->next_rx_descriptor = next_descriptor;
 }
@@ -1486,9 +1516,8 @@ static void TxDone(struct i82559* p_i82559)
 static int 
 i82559_can_send(struct eth_drv_sc *sc)
 {
-//    return 1;
-
     struct i82559 *p_i82559;
+    int ints;
 
     p_i82559 = (struct i82559 *)sc->driver_private;
 
@@ -1500,10 +1529,11 @@ i82559_can_send(struct eth_drv_sc *sc)
     }
     
     // Advance TxMachine atomically
-    Mask82559Interrupt(p_i82559);
+    ints = Mask82559Interrupt(p_i82559);
     TxMachine(p_i82559);
-    Acknowledge82559Interrupt(p_i82559);
-    UnMask82559Interrupt(p_i82559);
+    Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
+    PacketRxReady(p_i82559);
+    UnMask82559Interrupt(p_i82559,ints);
 
     return ! p_i82559->tx_queue_full;
 }
@@ -1520,7 +1550,7 @@ i82559_send(struct eth_drv_sc *sc,
             unsigned long key)
 {
     struct i82559 *p_i82559;
-    int tx_descriptor_add;
+    int tx_descriptor_add, ints;
     TxCB *p_txcb;
     cyg_uint32 ioaddr;
 
@@ -1622,7 +1652,7 @@ i82559_send(struct eth_drv_sc *sc,
     // Try advancing the Tx Machine regardless
 
     // no more interrupts until started
-    Mask82559Interrupt(p_i82559);
+    ints = Mask82559Interrupt(p_i82559);
 
     // Check that either:
     //     tx is already active, there is other stuff queued,
@@ -1641,8 +1671,9 @@ i82559_send(struct eth_drv_sc *sc,
 
     // Advance TxMachine atomically
     TxMachine(p_i82559);
-    Acknowledge82559Interrupt(p_i82559);
-    UnMask82559Interrupt(p_i82559);
+    Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
+    PacketRxReady(p_i82559);
+    UnMask82559Interrupt(p_i82559, ints);
 }
 
 // ------------------------------------------------------------------------
@@ -1795,6 +1826,7 @@ void i82559_deliver(struct eth_drv_sc *sc)
 void i82559_poll(struct eth_drv_sc *sc)
 {
     struct i82559 *p_i82559;
+    int ints;
     p_i82559 = (struct i82559 *)sc->driver_private;
     
     IF_BAD_82559( p_i82559 ) {
@@ -1804,10 +1836,17 @@ void i82559_poll(struct eth_drv_sc *sc)
         return;
     }
 
+    // Do these atomically
+    ints = Mask82559Interrupt(p_i82559);
+
     // As it happens, this driver always requests the DSR to be called:
     (void)eth_isr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, (cyg_addrword_t)p_i82559 );
 
+    // (no harm in calling this ints-off also, when polled)
     uni_deliver( p_i82559 );
+
+    Acknowledge82559Interrupt(p_i82559);
+    UnMask82559Interrupt(p_i82559, ints);
 }
 
 // ------------------------------------------------------------------------
@@ -1820,6 +1859,24 @@ i82559_int_vector(struct eth_drv_sc *sc)
     p_i82559 = (struct i82559 *)sc->driver_private;
     return (p_i82559->vector);
 }
+
+#if 0
+int
+i82559_int_op( struct eth_drv_sc *sc, int mask)
+{
+    struct i82559 *p_i82559;
+    p_i82559 = (struct i82559 *)sc->driver_private;
+
+    if ( 1 == mask )
+        return Mask82559Interrupt( p_i82559 );
+
+    if ( 0 == mask )
+        UnMask82559Interrupt( p_i82559, 0x0fffffff ); // enable all
+
+    return 0;
+}
+#endif
+    
 
 // ------------------------------------------------------------------------
 //
@@ -2555,9 +2612,9 @@ void update_statistics(struct i82559* p_i82559)
     I82559_COUNTERS *p_statistics;
     cyg_uint32 *p_counter;
     cyg_uint32 *p_register;
-    int reg_count;
+    int reg_count, ints;
     
-    Mask82559Interrupt(p_i82559);
+    ints = Mask82559Interrupt(p_i82559);
 
     // This points to the sthared memory stats area/command block
     p_statistics = (I82559_COUNTERS *)(p_i82559->p_statistics);
@@ -2578,8 +2635,10 @@ void update_statistics(struct i82559* p_i82559)
         // start register dump
         OUTW(CU_DUMPSTATS, p_i82559->io_address + SCBCmd);
     }
-    Acknowledge82559Interrupt(p_i82559);
-    UnMask82559Interrupt(p_i82559);
+    Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
+    PacketRxReady(p_i82559);
+
+    UnMask82559Interrupt(p_i82559, ints);
 }
 #endif
 #endif // KEEP_STATISTICS

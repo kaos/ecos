@@ -51,6 +51,11 @@
 #include <pkgconf/io_serial.h>
 #include <pkgconf/io.h>
 
+// FIXME: This is necessary since the SCIF driver may be overriding
+// CYGDAT_IO_SERIAL_DEVICE_HEADER. Need a better way to include two
+// different drivers.
+#include <pkgconf/io_serial_sh_sci.h>
+
 #include <cyg/io/io.h>
 #include <cyg/hal/hal_intr.h>
 #include <cyg/io/devtab.h>

@@ -276,20 +276,26 @@ Cyg_Scheduler_Implementation::timeslice(void)
         CYG_ASSERT( sched_lock > 0 , "Timeslice called with zero sched_lock");
 
         Cyg_Thread *thread = current_thread;
-        Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
 
-        CYG_ASSERTCLASS( thread, "Bad current thread");
-        CYG_ASSERTCLASS( sched, "Bad scheduler");
+        // Only try to rotate the run queue if the current thread is running.
+        // Otherwise we are going to reschedule anyway.
+        if( thread->get_state() == Cyg_Thread::RUNNING )
+        {
+            Cyg_Scheduler *sched = &Cyg_Scheduler::scheduler;
+
+            CYG_ASSERTCLASS( thread, "Bad current thread");
+            CYG_ASSERTCLASS( sched, "Bad scheduler");
     
-        cyg_priority pri                               = thread->priority;
-        Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
+            cyg_priority pri                               = thread->priority;
+            Cyg_SchedulerThreadQueue_Implementation *queue = &sched->run_queue[pri];
 
-        queue->rotate();
+            queue->rotate();
 
-        if( queue->highpri() != thread )
-            sched->need_reschedule = true;
+            if( queue->highpri() != thread )
+                sched->need_reschedule = true;
 
-        timeslice_count = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+            timeslice_count = CYGNUM_KERNEL_SCHED_TIMESLICE_TICKS;
+        }
     }
 
     
@@ -656,7 +662,9 @@ void
 Cyg_ThreadQueue_Implementation::rotate(void)
 {
     CYG_REPORT_FUNCTION();
-        
+
+    CYG_ASSERT(queue != 0, "Rotating an empty queue");
+    
     queue = queue->next;
 
     CYG_REPORT_RETURN();

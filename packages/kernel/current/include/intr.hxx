@@ -158,16 +158,16 @@ class Cyg_Interrupt
 
     static cyg_ucount32 dsr_table_head;
 
-    static cyg_ucount32 dsr_table_tail;
+    static volatile cyg_ucount32 dsr_table_tail;
 
 #endif
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-    cyg_ucount32 dsr_count;             // Number of DSR posts made
+    cyg_ucount32 dsr_count;	      // Number of DSR posts made
 
-    Cyg_Interrupt *next_dsr;            // next DSR in list
+    volatile Cyg_Interrupt *next_dsr; // next DSR in list
     
-    static Cyg_Interrupt *dsr_list;     // static list of pending DSRs
+    static volatile Cyg_Interrupt *dsr_list; // static list of pending DSRs
     
 #endif
 

@@ -71,12 +71,14 @@ static void serial_indicate_status(serial_channel *chan,
                                    cyg_serial_line_status_t *s);
 #endif
 #if CYGINT_IO_SERIAL_BLOCK_TRANSFER
-static bool serial_data_rcv_req(serial_channel *chan, int avail, 
-                                int* space_avail, unsigned char** space);
-static void serial_data_rcv_done(serial_channel *chan);
-static bool serial_data_xmt_req(serial_channel *chan, int space,
-                                int* chars_avail, unsigned char** chars);
-static void serial_data_xmt_done(serial_channel *chan);
+static rcv_req_reply_t serial_data_rcv_req(serial_channel *chan, int avail, 
+                                           int* space_avail, 
+                                           unsigned char** space);
+static void serial_data_rcv_done(serial_channel *chan, int chars_rcvd);
+static xmt_req_reply_t serial_data_xmt_req(serial_channel *chan, int space,
+                                           int* chars_avail, 
+                                           unsigned char** chars);
+static void serial_data_xmt_done(serial_channel *chan, int chars_sent);
 # ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_HW
 SERIAL_CALLBACKS(cyg_io_serial_callbacks, 
                  serial_init, 
@@ -269,6 +271,12 @@ serial_init(serial_channel *chan)
     chan->status_callback = NULL;
 #endif
 
+#ifdef CYGDBG_USE_ASSERTS
+#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+    chan->in_cbuf.block_mode_xfer_running = false;
+    chan->out_cbuf.block_mode_xfer_running = false;
+#endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#endif // CYGDBG_USE_ASSERTS
     chan->init = true;
 }
 
@@ -299,7 +307,8 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
                     ((funs->putc)(chan, *buf) == false) ) 
                 ;  // Ignore full, keep trying
 #else
-            while ((funs->putc)(chan, *buf) == false) ;  // Ignore full, keep trying
+            while ((funs->putc)(chan, *buf) == false) 
+                ;  // Ignore full, keep trying
 #endif
             buf++;
         }
@@ -316,7 +325,8 @@ serial_write(cyg_io_handle_t handle, const void *_buf, cyg_uint32 *len)
 #endif
                     (funs->start_xmit)(chan);  // Make sure xmit is running
 
-                // Check flag: 'start_xmit' may have obviated the need to wait :-)
+                // Check flag: 'start_xmit' may have obviated the need
+                // to wait :-)
                 if (cbuf->waiting) {
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_NONBLOCKING
                     // Optionally return if configured for non-blocking mode.
@@ -527,7 +537,8 @@ serial_select(cyg_io_handle_t handle, cyg_uint32 which, CYG_ADDRWORD info)
 // ---------------------------------------------------------------------------
 
 static Cyg_ErrNo 
-serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32 *len)
+serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf,
+                  cyg_uint32 *len)
 {
     cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
     serial_channel *chan = (serial_channel *)t->priv;
@@ -656,7 +667,8 @@ serial_get_config(cyg_io_handle_t handle, cyg_uint32 key, void *xbuf, cyg_uint32
 // ---------------------------------------------------------------------------
 
 static Cyg_ErrNo 
-serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *xbuf, cyg_uint32 *len)
+serial_set_config(cyg_io_handle_t handle, cyg_uint32 key, const void *xbuf, 
+                  cyg_uint32 *len)
 {
     Cyg_ErrNo res = ENOERR;
     cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)handle;
@@ -795,8 +807,13 @@ serial_xmt_char(serial_channel *chan)
     unsigned char c;
     int space;
 
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
+    CYG_ASSERT(false == cbuf->block_mode_xfer_running,
+               "Attempting char xmt while block transfer is running");
+#endif
 #ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
-    // if we are required to send an XON/XOFF char, send it before anything else
+    // if we are required to send an XON/XOFF char, send it before
+    // anything else
     // FIXME: what if XON gets corrupted in transit to the other end?
     // Should we resend XON even though the other end may not be wanting
     // to send us stuff at this point?
@@ -859,6 +876,10 @@ serial_rcv_char(serial_channel *chan, unsigned char c)
 {
     cbuf_t *cbuf = &chan->in_cbuf;
 
+#if CYGINT_IO_SERIAL_BLOCK_TRANSFER
+    CYG_ASSERT(false == cbuf->block_mode_xfer_running,
+               "Attempting char rcv while block transfer is running");
+#endif
 #ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
     // for software flow control, if the driver returns one of the characters
     // we act on it and then drop it (the app must not see it)
@@ -888,12 +909,20 @@ serial_rcv_char(serial_channel *chan, unsigned char c)
     // If the flow control is not enabled/sufficient and the buffer is
     // already full, just throw new characters away.
 
-    if( cbuf->nb < cbuf->len )
-    {
+    if ( cbuf->nb < cbuf->len ) {
         cbuf->data[cbuf->put++] = c;
         if (cbuf->put == cbuf->len) cbuf->put = 0;
         cbuf->nb++;
+    } // note trailing else
+#ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
+    else {
+        // Overrun. Report the error.
+        cyg_serial_line_status_t stat;
+        stat.which = CYGNUM_SERIAL_STATUS_OVERRUNERR;
+        serial_indicate_status(chan, &stat);
     }
+#endif
+
     if (cbuf->waiting) {
 #ifdef XX_CYGDBG_DIAG_BUF
             extern int enable_diag_uart;
@@ -932,20 +961,47 @@ serial_indicate_status(serial_channel *chan, cyg_serial_line_status_t *s )
 #endif // ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
 
 //----------------------------------------------------------------------------
-// Block transfer functions. Not all drivers require these.
+// Block transfer functions. Not all drivers require these. Those that
+// do must follow the required semantics:
+//
+// Attempt to transfer as much via the block transfer function as
+// possible, _but_ if that fails, do the remaining bytes via the
+// single-char function. That ensures that all policy decisions can be
+// made in this driver, and not in the device driver.
+//
+// Note: if the driver uses DMA for transmission, an initial failing
+// call to the xmt_req function must cause the start_xmit function to
+// fall-back to regular CPU-interrupt based single-character
+// transmission.
+
 #if CYGINT_IO_SERIAL_BLOCK_TRANSFER
 
-static bool
+static rcv_req_reply_t
 serial_data_rcv_req(serial_channel *chan, int avail, 
                     int* space_avail, unsigned char** space)
 {
     cbuf_t *cbuf = &chan->in_cbuf;
     int gap;
 
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    // When there is software flow-control, force the serial device
+    // driver to use the single-char xmt/rcv functions, since these
+    // have to make policy decision based on the data. Rcv function
+    // may also have to transmit data to throttle the xmitter.
+    if (chan->config.flags & (CYGNUM_SERIAL_FLOW_XONXOFF_TX|CYGNUM_SERIAL_FLOW_XONXOFF_RX))
+        return CYG_RCV_DISABLED;
+#endif
+
+    CYG_ASSERT(false == cbuf->block_mode_xfer_running,
+               "Attempting new block transfer while another is running");
     // Check for space
     gap = cbuf->nb;
     if (gap == cbuf->len)
-        return false;                   // full
+        return CYG_RCV_FULL;
+
+#ifdef CYGDBG_USE_ASSERTS
+    cbuf->block_mode_xfer_running = true;
+#endif
 
     if (0 == gap) {
         // Buffer is empty. Reset put/get indexes to get max transfer in
@@ -970,42 +1026,80 @@ serial_data_rcv_req(serial_channel *chan, int avail,
     
     *space_avail = gap;
     *space = &cbuf->data[cbuf->put];
-    cbuf->put += gap;
-    cbuf->nb += gap;
 
-    if (cbuf->put == cbuf->len) cbuf->put = 0;
+    CYG_ASSERT((gap+cbuf->nb) <= cbuf->len, "Buffer will overflow");
+    CYG_ASSERT(cbuf->put < cbuf->len, "Invalid put ptr");
+    CYG_ASSERT(cbuf->get < cbuf->len, "Invalid get ptr");
 
-    return true;
+    return CYG_RCV_OK;
 }
 
 static void
-serial_data_rcv_done(serial_channel *chan)
+serial_data_rcv_done(serial_channel *chan, int chars_rcvd)
 {
     cbuf_t *cbuf = &chan->in_cbuf;
+
+    cbuf->put += chars_rcvd;
+    cbuf->nb += chars_rcvd;
+
+    if (cbuf->put == cbuf->len) cbuf->put = 0;
+
+    CYG_ASSERT(cbuf->nb <= cbuf->len, "Buffer overflow");
+    CYG_ASSERT(cbuf->put < cbuf->len, "Invalid put ptr");
+    CYG_ASSERT(cbuf->get < cbuf->len, "Invalid get ptr");
+
     if (cbuf->waiting) {
         cbuf->waiting = false;
         cyg_drv_cond_signal(&cbuf->wait);
     }
+#ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
+    // If we've hit the high water mark, tell the other side to stop
+    if ( cbuf->nb >= cbuf->high_water ) {
+        throttle_rx( chan, false );
+    }
+#endif
 #ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT
     // Wake up any pending selectors if we have
     // put some data into a previously empty buffer.
-    cyg_selwakeup( &cbuf->selinfo );
+    if (chars_rcvd == cbuf->nb)
+        cyg_selwakeup( &cbuf->selinfo );
+#endif
+
+#ifdef CYGDBG_USE_ASSERTS
+    cbuf->block_mode_xfer_running = false;
 #endif
 }
 
-static bool
+static xmt_req_reply_t
 serial_data_xmt_req(serial_channel *chan, int space,
                     int* chars_avail, unsigned char** chars)
 {
     cbuf_t *cbuf = &chan->out_cbuf;
     int avail;
 
+#ifdef CYGOPT_IO_SERIAL_FLOW_CONTROL_SOFTWARE
+    // When there is software flow-control, force the serial device
+    // driver to use the single-char xmt/rcv functions, since these
+    // have to make policy decision based on the data. Rcv function
+    // may also have to transmit data to throttle the xmitter.
+    if (chan->config.flags & (CYGNUM_SERIAL_FLOW_XONXOFF_TX|CYGNUM_SERIAL_FLOW_XONXOFF_RX))
+        return CYG_XMT_DISABLED;
+#endif
+
+    CYG_ASSERT(false == cbuf->block_mode_xfer_running,
+               "Attempting new block transfer while another is running");
+
     // Available data (G = get, P = put, x = data, . = empty)
     //  0:        no data
     //  negative: xxxxP.....Gxxx        [offer last chunk only]
     //  positive: ..GxxxxxP.....
     if (0 == cbuf->nb)
-        return false;
+        return CYG_XMT_EMPTY;
+
+#ifdef CYGDBG_USE_ASSERTS
+    cbuf->block_mode_xfer_running = true;
+#endif
+
     if (cbuf->get >= cbuf->put) {
         avail = cbuf->len - cbuf->get;
     } else {
@@ -1016,22 +1110,36 @@ serial_data_xmt_req(serial_channel *chan, int space,
     
     *chars_avail = avail;
     *chars = &cbuf->data[cbuf->get];
-    cbuf->get += avail;
-    cbuf->nb -= avail;
 
-    if (cbuf->get == cbuf->len) cbuf->get = 0;
+    CYG_ASSERT(avail <= cbuf->len, "Avail overflow");
+    CYG_ASSERT(cbuf->nb <= cbuf->len, "Buffer overflow");
+    CYG_ASSERT(cbuf->put < cbuf->len, "Invalid put ptr");
+    CYG_ASSERT(cbuf->get < cbuf->len, "Invalid get ptr");
 
-    return true;
+    return CYG_XMT_OK;
 }
 
 static void
-serial_data_xmt_done(serial_channel *chan)
+serial_data_xmt_done(serial_channel *chan, int chars_sent)
 {
     cbuf_t *cbuf = &chan->out_cbuf;
     serial_funs *funs = chan->funs;
     int space;
 
-    (funs->stop_xmit)(chan);  // Done with transmit
+    cbuf->get += chars_sent;
+    cbuf->nb -= chars_sent;
+
+    if (cbuf->get == cbuf->len) cbuf->get = 0;
+
+    CYG_ASSERT(cbuf->nb <= cbuf->len, "Buffer overflow");
+    CYG_ASSERT(cbuf->nb >= 0, "Buffer underflow");
+    CYG_ASSERT(cbuf->put < cbuf->len, "Invalid put ptr");
+    CYG_ASSERT(cbuf->get < cbuf->len, "Invalid get ptr");
+
+    if (0 == cbuf->nb) {
+        (funs->stop_xmit)(chan);  // Done with transmit
+        cbuf->get = cbuf->put = 0; // reset ptrs if empty
+    }
 
     // See if there is now enough room to restart writer
     space = cbuf->len - cbuf->nb;
@@ -1044,6 +1152,10 @@ serial_data_xmt_done(serial_channel *chan)
         cyg_selwakeup( &cbuf->selinfo );
 #endif                    
     }
+
+#ifdef CYGDBG_USE_ASSERTS
+    cbuf->block_mode_xfer_running = false;
+#endif
 }
 
 #endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER

@@ -61,6 +61,10 @@
 #include <limits.h>
 #include <time.h>
 
+#include <cyg/kernel/sched.hxx>
+
+#include <cyg/kernel/sched.inl>
+
 // -------------------------------------------------------------------------
 // Supply some suitable values for constants that may not be present
 // in all configurations.
@@ -78,7 +82,7 @@
 #define __xstring(_x) __string(_x)
 
 // -------------------------------------------------------------------------
-// utsname()
+// uname()
 
 __externC int uname( struct utsname *name )
 {
@@ -314,6 +318,55 @@ __externC long sysconf( int name )
         errno = EINVAL;
         return -1;
     }
+}
+
+//==========================================================================
+// Some trivial compatibility functions.
+// These are merely present to permit existing code to be ported a little
+// more easily, and to provide adequate standards compatibility.
+
+__externC pid_t getpid    ( void ) { return 42; }
+__externC pid_t getppid   ( void ) { return 41; }
+__externC uid_t getuid    ( void ) { return 666; }
+__externC uid_t geteuid   ( void ) { return 666; }
+__externC gid_t getgid    ( void ) { return 88; }
+__externC gid_t getegid   ( void ) { return 88; }
+__externC int   setuid    ( uid_t uid ) { errno = EPERM; return -1; }
+__externC int   setgid    ( uid_t gid ) { errno = EPERM; return -1; }
+__externC int   getgroups ( int gidsetsize, gid_t grouplist[] ) { return 0; };
+__externC pid_t getpgrp   ( void ) { return 42; }
+__externC pid_t setsid    ( void ) { errno = EPERM; return -1; }
+__externC int   setpgid   ( pid_t pid, pid_t pgid ) { errno = ENOSYS; return -1; }
+
+//==========================================================================
+// Exports to other packages
+
+// -------------------------------------------------------------------------
+// POSIX API function entry
+
+__externC void cyg_posix_function_start()
+{
+    Cyg_Thread *self = Cyg_Scheduler::get_current_thread();
+
+    // Inhibit ASR delivery in this function until it returns.
+    
+    self->set_asr_inhibit();
+}
+
+// -------------------------------------------------------------------------
+
+__externC void cyg_posix_function_finish()
+{
+    Cyg_Thread *self = Cyg_Scheduler::get_current_thread();
+
+    // Re-allow ASR delivery.
+    
+    self->clear_asr_inhibit();
+
+    // After clearing the inhibit flag, blip the scheduler lock
+    // to get any pending ASRs delivered.
+    Cyg_Scheduler::lock();
+    Cyg_Scheduler::unlock();
 }
 
 // -------------------------------------------------------------------------

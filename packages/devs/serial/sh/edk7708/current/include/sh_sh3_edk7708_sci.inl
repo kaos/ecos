@@ -46,11 +46,14 @@
 
 #include <pkgconf/io_serial_sh_edk7708.h>
 
-static sh_sci_info sh_serial_info = {CYGARC_REG_SCSPTR,
-                                     CYGNUM_HAL_INTERRUPT_SCI_ERI,
-                                     CYGNUM_HAL_INTERRUPT_SCI_RXI,
-                                     CYGNUM_HAL_INTERRUPT_SCI_TXI,
-                                     SH_SERIAL_SCI_BASE};
+static sh_sci_info sh_serial_info =
+{
+    data       : CYGARC_REG_SCSPTR,
+    er_int_num : CYGNUM_HAL_INTERRUPT_SCI_ERI,
+    rx_int_num : CYGNUM_HAL_INTERRUPT_SCI_RXI,
+    tx_int_num : CYGNUM_HAL_INTERRUPT_SCI_TXI,
+    ctrl_base  : SH_SERIAL_SCI_BASE
+};
 
 #if CYGNUM_IO_SERIAL_SH_EDK7708_SERIAL1_BUFSIZE > 0
 static unsigned char sh_serial_out_buf[CYGNUM_IO_SERIAL_SH_EDK7708_SERIAL1_BUFSIZE];

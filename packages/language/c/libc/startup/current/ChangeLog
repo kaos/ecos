@@ -1,3 +1,9 @@
+2000-10-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/startup.cdl (CYGSEM_LIBC_INVOKE_DEFAULT_STATIC_CONSTRUCTORS):
+	Special case for POSIX package startup since we know it calls
+	cyg_libc_invoke_main() rather than main directly.
+
 2000-08-07  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/invokemain.cxx: Declare cyg_hal_stop_constructors

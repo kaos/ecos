@@ -197,17 +197,32 @@ hal_idle_thread_action( cyg_uint32 count )
 
 //---------------------------------------------------------------------------
 // Initial cache enabling
+
+#ifdef CYGHWR_HAL_SH_CACHE_MODE_P0_WRITE_BACK
+# define CACHE_MODE_P0 0
+#else
+# define CACHE_MODE_P0 CYGARC_REG_CCR_WT
+#endif
+
+#ifdef CYGHWR_HAL_SH_CACHE_MODE_P1_WRITE_BACK
+# define CACHE_MODE_P1 CYGARC_REG_CCR_CB
+#else
+# define CACHE_MODE_P1 0
+#endif
+
 externC void
 cyg_hal_enable_caches(void)
 {
     // Initialize cache.
     HAL_UCACHE_INVALIDATE_ALL();    
 
-    // Enable writeback.
-    HAL_UCACHE_WRITE_MODE(HAL_UCACHE_WRITEBACK_MODE);
+    // Set cache modes
+    HAL_UCACHE_WRITE_MODE_SH(CACHE_MODE_P0|CACHE_MODE_P1);
 
+#ifdef CYGHWR_HAL_SH_CACHE_ENABLE
     // Enable cache.
     HAL_UCACHE_ENABLE();
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -227,7 +242,7 @@ hal_delay_us(int usecs)
     volatile unsigned char *tstr = (volatile unsigned char *)CYGARC_REG_TSTR;
     volatile unsigned long *tcnt = (volatile unsigned long *)CYGARC_REG_TCNT1;
     volatile unsigned long *tcor = (volatile unsigned long *)CYGARC_REG_TCOR1;
-    unsigned long clocks_per_us = (CYGHWR_HAL_SH_BOARD_SPEED+(4-1))/4;  // Rounded up
+    unsigned long clocks_per_us = (CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED+(CYGHWR_HAL_SH_TMU_PRESCALE_0-1))/CYGHWR_HAL_SH_TMU_PRESCALE_0;  // Rounded up
     int diff, diff2;
     cyg_uint32 val1, val2;
 
@@ -330,6 +345,7 @@ hal_interrupt_set_level(int vector, int level)
         HAL_WRITE_UINT16(CYGARC_REG_IPRB, iprX);                         
         break;                                                           
                                                                          
+#ifndef CYGHWR_HAL_SH_IRQ_USE_IRQLVL
         /* IPRC */                                                           
     case CYGNUM_HAL_INTERRUPT_IRQ_IRQ0:                                  
         HAL_READ_UINT16(CYGARC_REG_IPRC, iprX);                          
@@ -355,7 +371,7 @@ hal_interrupt_set_level(int vector, int level)
         iprX |= (level)*CYGARC_REG_IPRC_IRQ3_PRI1;                     
         HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);                         
         break;                                                           
-                                                                         
+#endif
         /* IPRD */                                                           
     case CYGNUM_HAL_INTERRUPT_PINT_PINT07:                               
         HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);                          
@@ -441,6 +457,10 @@ hal_interrupt_set_level(int vector, int level)
     case CYGNUM_HAL_INTERRUPT_RESERVED_3E0:                              
         /* Do nothing for these reserved vectors. */                     
         break;                                                           
+
+    default:
+        CYG_FAIL("Unknown interrupt vector");                             
+        break;
     }                                                                    
 }
 
@@ -498,6 +518,7 @@ hal_interrupt_acknowledge(int vector)
                                                                           
         HAL_READ_UINT8(CYGARC_REG_IRR0, irr0);                            
         switch ( vector ) {                                             
+#ifndef CYGHWR_HAL_SH_IRQ_USE_IRQLVL
         case CYGNUM_HAL_INTERRUPT_IRQ_IRQ0:                               
             irr0 &= ~CYGARC_REG_IRR0_IRQ0;                                
             break;                                                        
@@ -510,12 +531,15 @@ hal_interrupt_acknowledge(int vector)
         case CYGNUM_HAL_INTERRUPT_IRQ_IRQ3:                               
             irr0 &= ~CYGARC_REG_IRR0_IRQ3;                                
             break;                                                        
+#endif
         case CYGNUM_HAL_INTERRUPT_IRQ_IRQ4:                               
             irr0 &= ~CYGARC_REG_IRR0_IRQ4;                                
             break;                                                        
         case CYGNUM_HAL_INTERRUPT_IRQ_IRQ5:                               
             irr0 &= ~CYGARC_REG_IRR0_IRQ5;                                
             break;                                                        
+        default:
+            CYG_FAIL("Unhandled interrupt vector");
         }                                                                 
         HAL_WRITE_UINT8(CYGARC_REG_IRR0, irr0);                           
     }                                                                     
@@ -546,6 +570,7 @@ hal_interrupt_configure(int vector, int level, int up)
             ss <<= CYGARC_REG_ICR1_SENSE_IRQ4_shift;                     
             mask <<= CYGARC_REG_ICR1_SENSE_IRQ4_shift;                   
             break;                                                       
+#ifndef CYGHWR_HAL_SH_IRQ_USE_IRQLVL
         case CYGNUM_HAL_INTERRUPT_IRQ_IRQ3:                              
             ss <<= CYGARC_REG_ICR1_SENSE_IRQ3_shift;                     
             mask <<= CYGARC_REG_ICR1_SENSE_IRQ3_shift;                   
@@ -562,7 +587,10 @@ hal_interrupt_configure(int vector, int level, int up)
             ss <<= CYGARC_REG_ICR1_SENSE_IRQ0_shift;                     
             mask <<= CYGARC_REG_ICR1_SENSE_IRQ0_shift;                   
             break;                                                       
-        }                                                                
+#endif
+        default:
+            CYG_FAIL("Unhandled interrupt vector");
+        }
                                                                          
         HAL_READ_UINT16(CYGARC_REG_ICR1, icr1);                          
         icr1 &= ~mask;                                                   

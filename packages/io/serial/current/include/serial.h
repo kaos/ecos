@@ -60,6 +60,20 @@
 typedef struct serial_channel serial_channel;
 typedef struct serial_funs serial_funs;
 
+// The block transfer request functions may fail for one of two
+// reasons. It's important for the caller to know which.
+typedef enum {
+    CYG_RCV_OK,
+    CYG_RCV_FULL,
+    CYG_RCV_DISABLED
+} rcv_req_reply_t;
+
+typedef enum {
+    CYG_XMT_OK,
+    CYG_XMT_EMPTY,
+    CYG_XMT_DISABLED
+} xmt_req_reply_t;
+
 // Pointers into upper-level driver which interrupt handlers need
 typedef struct {
     // Initialize the channel
@@ -70,15 +84,15 @@ typedef struct {
     void (*rcv_char)(serial_channel *chan, unsigned char c);
 #if CYGINT_IO_SERIAL_BLOCK_TRANSFER
     // Request space for input characters
-    bool (*data_rcv_req)(serial_channel *chan, int avail, 
-                         int* space_avail, unsigned char** space);
+    rcv_req_reply_t (*data_rcv_req)(serial_channel *chan, int avail, 
+                                    int* space_avail, unsigned char** space);
     // Receive operation completed
-    void (*data_rcv_done)(serial_channel *chan);
+    void (*data_rcv_done)(serial_channel *chan, int chars_rcvd);
     // Request characters for transmission
-    bool (*data_xmt_req)(serial_channel *chan, int space,
-                         int* chars_avail, unsigned char** chars);
+    xmt_req_reply_t (*data_xmt_req)(serial_channel *chan, int space,
+                                    int* chars_avail, unsigned char** chars);
     // Transmit operation completed
-    void (*data_xmt_done)(serial_channel *chan);
+    void (*data_xmt_done)(serial_channel *chan, int chars_sent);
 #endif
 #if defined(CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS)
     void (*indicate_status)(serial_channel *chan, cyg_serial_line_status_t *s );
@@ -136,7 +150,7 @@ typedef struct {
     volatile int             put;
     volatile int             get;
     int                      len;
-    int                      nb;          // count of bytes currently in buffer
+    volatile int             nb;          // count of bytes currently in buffer
     int                      low_water;   // For tx: min space in buffer before restart
                                           // For rx: max buffer used before flow unthrottled
 #ifdef CYGPKG_IO_SERIAL_FLOW_CONTROL
@@ -154,6 +168,12 @@ typedef struct {
 #ifdef CYGPKG_IO_SERIAL_SELECT_SUPPORT    
     struct CYG_SELINFO_TAG   selinfo;     // select info
 #endif
+
+#ifdef CYGDBG_USE_ASSERTS
+#ifdef CYGINT_IO_SERIAL_BLOCK_TRANSFER
+    bool                     block_mode_xfer_running;
+#endif // CYGINT_IO_SERIAL_BLOCK_TRANSFER
+#endif // CYGDBG_USE_ASSERTS
 } cbuf_t;
 
 #define CBUF_INIT(_data, _len) \

@@ -161,7 +161,7 @@
 #define CYGNUM_HAL_INTERRUPT_IRDA_BRI1       56
 #define CYGNUM_HAL_INTERRUPT_IRDA_TXI1       57
 #define CYGNUM_HAL_INTERRUPT_SCIF_ERI2       58
-#define CYGNUM_HAL_INTERRUPT_SCIF_RXI2       69
+#define CYGNUM_HAL_INTERRUPT_SCIF_RXI2       59
 #define CYGNUM_HAL_INTERRUPT_SCIF_BRI2       60
 #define CYGNUM_HAL_INTERRUPT_SCIF_TXI2       61
 #define CYGNUM_HAL_INTERRUPT_ADC_ADI         62
@@ -440,32 +440,35 @@ externC void hal_interrupt_configure(int, int, int);
     hal_interrupt_configure(_vector_, _level_, _up_);
 
 //--------------------------------------------------------------------------
-// Clock control
+// Clock control, using TMU counter 0.
 
-// Using TMU counter 0, clocked at p/4, with peripheral clock
-// sourced directly from the 15MHz crystal (which is the default setup
-// on the EDK).  This means 150000/4 oscillations in 1/100 second.
-#define HAL_CLOCK_INITIALIZE( _period_ )                                \
-    CYG_MACRO_START                                                     \
-    register cyg_uint8 _tstr_;                                          \
-                                                                        \
-    /* Disable timer while programming it. */                           \
-    HAL_READ_UINT8(CYGARC_REG_TSTR, _tstr_);                            \
-    _tstr_ &= ~CYGARC_REG_TSTR_STR0;                                    \
-    HAL_WRITE_UINT8(CYGARC_REG_TSTR, _tstr_);                           \
-                                                                        \
-    /* Set counter registers. */                                        \
-    HAL_WRITE_UINT32(CYGARC_REG_TCOR0, (_period_));                     \
-    HAL_WRITE_UINT32(CYGARC_REG_TCNT0, (_period_));                     \
-                                                                        \
-    /* Set interrupt on underflow, decrement frequency at 1/4 of */     \
-    /* peripheral clock.                                         */     \
-    HAL_WRITE_UINT16(CYGARC_REG_TCR0, CYGARC_REG_TCR_UNIE);             \
-                                                                        \
-    /* Enable timer. */                                                 \
-    _tstr_ |= CYGARC_REG_TSTR_STR0;                                     \
-    HAL_WRITE_UINT8(CYGARC_REG_TSTR, _tstr_);                           \
-                                                                        \
+#define HAL_CLOCK_INITIALIZE( _period_ )                                    \
+    CYG_MACRO_START                                                         \
+    register cyg_uint8 _tstr_;                                              \
+                                                                            \
+    /* Disable timer while programming it. */                               \
+    HAL_READ_UINT8(CYGARC_REG_TSTR, _tstr_);                                \
+    _tstr_ &= ~CYGARC_REG_TSTR_STR0;                                        \
+    HAL_WRITE_UINT8(CYGARC_REG_TSTR, _tstr_);                               \
+                                                                            \
+    /* Set counter registers. */                                            \
+    HAL_WRITE_UINT32(CYGARC_REG_TCOR0, (_period_));                         \
+    HAL_WRITE_UINT32(CYGARC_REG_TCNT0, (_period_));                         \
+                                                                            \
+    /* Set interrupt on underflow and decrement frequency */                \
+    HAL_WRITE_UINT16(CYGARC_REG_TCR0, CYGARC_REG_TCR_UNIE |                 \
+                     ((4==CYGHWR_HAL_SH_TMU_PRESCALE_0) ?                   \
+                          CYGARC_REG_TCR_TPSC_4 :                           \
+                      (16==CYGHWR_HAL_SH_TMU_PRESCALE_0) ?                  \
+                          CYGARC_REG_TCR_TPSC_16:                           \
+                      (64==CYGHWR_HAL_SH_TMU_PRESCALE_0) ?                  \
+                          CYGARC_REG_TCR_TPSC_64:CYGARC_REG_TCR_TPSC_256)); \
+                                                                            \
+                                                                            \
+    /* Enable timer. */                                                     \
+    _tstr_ |= CYGARC_REG_TSTR_STR0;                                         \
+    HAL_WRITE_UINT8(CYGARC_REG_TSTR, _tstr_);                               \
+                                                                            \
     CYG_MACRO_END
 
 #define HAL_CLOCK_RESET( _vector_, _period_ )           \

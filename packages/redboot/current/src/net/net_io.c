@@ -370,6 +370,7 @@ net_io_revert_console(void)
 #endif
     CYGACC_CALL_IF_SET_CONSOLE_COMM(orig_console);
     CYGACC_CALL_IF_SET_DEBUG_COMM(orig_debug);
+    console_echo = true;
 }
 
 static void
@@ -378,6 +379,7 @@ net_io_assume_console(void)
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     console_selected = true;
 #endif
+    console_echo = false;
     orig_console = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     CYGACC_CALL_IF_SET_CONSOLE_COMM(TCP_CHANNEL);
     orig_debug = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);

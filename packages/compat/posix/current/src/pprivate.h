@@ -60,6 +60,8 @@
 #include <signal.h>                     // sigset_t
 #include <limits.h>                     // PTHREAD_KEYS_MAX
 
+#include <cyg/posix/export.h>           // POSIX exports header
+
 #include <cyg/kernel/thread.hxx>        // thread definitions
 #include <cyg/kernel/mutex.hxx>         // mutex definitions
 
@@ -121,6 +123,7 @@ typedef struct
 // Values for the state field. These are solely concerned with the
 // states visible to POSIX. The thread's run state is stored in the
 // eCos thread object.
+// Note: numerical order here is important, do not rearrange.
 
 #define PTHREAD_STATE_FREE      0       // This structure is free for reuse
 #define PTHREAD_STATE_DETACHED  1       // The thread is running but detached

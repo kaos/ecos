@@ -196,24 +196,6 @@
 #  endif
 # endif
 #endif
-#if defined(CYGPKG_HAL_SH)                      \
-    && defined(CYGPKG_IO_SERIAL_SH_EDK7708)     \
-    && defined(CYGPKG_IO_SERIAL_SH_EDK7708_SERIAL1)
-# define TEST_CRASH_ID "sh7708"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_SH_EDK7708_SERIAL1_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
-#if defined(CYGPKG_HAL_SH)                      \
-    && defined(CYGPKG_IO_SERIAL_SH_CQ7708)     \
-    && defined(CYGPKG_IO_SERIAL_SH_CQ7708_SERIAL1)
-# define TEST_CRASH_ID "cq7708"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_SH_CQ7708_SERIAL1_NAME
-# if defined(CYGPKG_IO_SERIAL_TTY_TTY2)
-#  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
-# endif
-#endif
 #if defined(CYGPKG_HAL_I386_PC)                         \
     && defined(CYGPKG_IO_SERIAL_I386_PC)                \
     && defined(CYGPKG_IO_SERIAL_I386_PC_SERIAL0)

@@ -50,7 +50,7 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
         support for the Intel StrongARM SA1110 based evalation board, 
 	known as 'assabet'."
 
-    compile       assabet_misc.c
+    compile       assabet_misc.c lcd_support.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
@@ -320,16 +320,6 @@ cdl_package CYGPKG_HAL_ARM_SA11X0_ASSABET {
             This option lists the target's requirements for a valid Redboot
             configuration."
 
-        cdl_option CYGDAT_REDBOOT_CONSOLE_DEV {
-            display       "Serial port for default console"
-            flavor data
-            default_value { "\"/dev/ser1\"" }
-            description   "
-               This option selects the physical device to use as the default
-               console device for Redboot."
-    
-        }
-    
         cdl_option CYGBLD_BUILD_REDBOOT_BIN {
             display       "Build Redboot ROM binary image"
             active_if     CYGBLD_BUILD_REDBOOT

@@ -76,6 +76,7 @@ EXTERN bool config_ok;
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
 EXTERN bool console_selected;
 #endif
+EXTERN bool console_echo;
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
 EXTERN bool have_net, use_bootp;

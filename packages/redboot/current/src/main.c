@@ -106,6 +106,7 @@ cyg_start(void)
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     console_selected = false;
 #endif
+    console_echo = true;
     CYGACC_CALL_IF_DELAY_US(2*100000);
 
     ram_start = (unsigned char *)CYGMEM_REGION_ram;

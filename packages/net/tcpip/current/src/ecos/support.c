@@ -478,6 +478,36 @@ setsoftnet(void)
     // schednetisr(NETISR_SOFTNET);
 }
 
+
+/* Update the kernel globel ktime. */
+static void 
+cyg_ktime_func(cyg_handle_t alarm,cyg_addrword_t data)
+{
+  cyg_tick_count_t now = cyg_current_time();
+
+  ktime.tv_usec = (now % hz) * tick;
+  ktime.tv_sec = now / hz;
+}
+
+static void
+cyg_ktime_init(void)
+{
+  static cyg_handle_t ktime_alarm_handle;
+  static cyg_alarm ktime_alarm;
+  cyg_handle_t counter;
+  
+  cyg_clock_to_counter(cyg_real_time_clock(),&counter);
+  cyg_alarm_create(counter,
+		   cyg_ktime_func,
+		   0,
+		   &ktime_alarm_handle,
+		   &ktime_alarm);
+
+  /* We want one alarm every 10ms. */
+  cyg_alarm_initialize(ktime_alarm_handle,cyg_current_time()+1,1);
+  cyg_alarm_enable(ktime_alarm_handle);
+}
+
 //
 // Network initialization
 //   This function is called during system initialization to setup the whole
@@ -510,6 +540,7 @@ cyg_net_init(void)
     // Initialize network memory system
     cyg_kmem_init();
     mbinit();
+    cyg_ktime_init();
 
     // Create network background thread
     cyg_thread_create(CYGPKG_NET_THREAD_PRIORITY, // Priority

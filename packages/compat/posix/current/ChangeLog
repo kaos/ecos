@@ -1,3 +1,30 @@
+2000-10-11  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/pthread.cxx: Fixed cyg_posix_pthread_release_thread() to
+	work for _DETACHED threads as well as for _RUNNING ones. Also
+	fixed a bug in test to decrement counter in this routine.
+
+	* src/pprivate.h: Added note about retaining numerical order of
+	PTHREAD_STATE_* defines.
+
+	* tests/timer1.c: Fixed some bugs of the how-did-it-ever-work
+	variety.
+
+2000-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/misc.cxx:
+	Added a set of compatibility functions to aid portability and
+	improve standards compliance.
+	Added cyg_posix_function_[start|finish] to set up and terminate
+	POSIX API functionality wrt signal and cancellation behaviour.
+	(Lots more to do here).
+
+	* include/export.h:
+	Added this file to contain definitions that can be exported from
+	the POSIX package to others.
+
+	* src/pprivate.h: Added include of export.h
+	
 2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/limits.h (OPEN_MAX): Don't define here - let FS infra do

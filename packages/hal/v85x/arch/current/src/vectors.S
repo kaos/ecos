@@ -172,13 +172,6 @@ start:
         bne     10b
 #endif
         jarl    _initialize_stub,r31
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
-#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
-    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
-        .extern hal_ctrlc_isr_init
-        jarl    _hal_ctrlc_isr_init,r31
-#endif
-#endif
 #else // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 // All programs need to provide for NMI handlers        
         lea     _hal_vsr_table+4,r6
@@ -186,6 +179,13 @@ start:
         st.w    r8,0[r6]
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
+    || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+        .extern hal_ctrlc_isr_init
+        jarl    _hal_ctrlc_isr_init,r31
+#endif
+#endif
         // Run through static constructors
         jarl    _cyg_hal_invoke_constructors,r31
 

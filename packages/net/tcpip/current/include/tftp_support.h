@@ -64,6 +64,8 @@
 /*
  * Errors
  */
+
+// These initial 7 are passed across the net in "ERROR" packets.
 #define	TFTP_ENOTFOUND   1   /* file not found */
 #define	TFTP_EACCESS     2   /* access violation */
 #define	TFTP_ENOSPACE    3   /* disk full or allocation exceeded */
@@ -71,6 +73,7 @@
 #define	TFTP_EBADID      5   /* unknown transfer ID */
 #define	TFTP_EEXISTS     6   /* file already exists */
 #define	TFTP_ENOUSER     7   /* no such user */
+// These extensions are return codes in our API, *never* passed on the net.
 #define TFTP_TIMEOUT     8   /* operation timed out */
 #define TFTP_NETERR      9   /* some sort of network error */
 #define TFTP_INVALID    10   /* invalid parameter */
@@ -104,8 +107,8 @@ extern int tftpd_stop(int);
 extern int tftp_get(char *, struct sockaddr_in *, char *, int, int, int *);
 extern int tftp_put(char *, struct sockaddr_in *, char *, int, int, int *);
 
-#define TFTP_TIMEOUT_PERIOD 5
-#define TFTP_TIMEOUT_MAX    5
-#define TFTP_RETRIES_MAX    5
+#define TFTP_TIMEOUT_PERIOD  5          // Seconds between retries
+#define TFTP_TIMEOUT_MAX    50          // Max timeouts over all blocks
+#define TFTP_RETRIES_MAX     5          // retries per block before giving up
 
 #endif // _TFTP_SUPPORT_H_

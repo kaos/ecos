@@ -730,9 +730,8 @@ void eth_drv_run_deliveries( void )
     cyg_netdevtab_entry_t *t;
     for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
         struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
-        int state = sc->state;
-        sc->state &=~ETH_DRV_NEEDS_DELIVERY;
-        if ( ETH_DRV_NEEDS_DELIVERY & state ) {
+        if ( ETH_DRV_NEEDS_DELIVERY & sc->state ) {
+            sc->state &=~ETH_DRV_NEEDS_DELIVERY;
             (*sc->funs->deliver)(sc);
         }
     }

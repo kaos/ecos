@@ -101,9 +101,9 @@ and so dedicated, can long endure.
 6666666666666666666666666666666666
 ";
 
-static char _f0_data[10*1024];
-static char _f1_data[10*1024];
-static char _f2_data[10*1024];
+static char _f0_data[1024*1024];
+static char _f1_data[1024*1024];
+static char _f2_data[1024*1024];
 
 static char _name0[256] = "", _name1[256] = "", _name2[256] = "";
 
@@ -115,7 +115,7 @@ static struct _file_info file_list[] = {
     { 0, 0, 0}  // End of list
 };
 
-static struct _file *
+static inline struct _file *
 dummy_fp(int fd)
 {
     struct _file *fp;
@@ -134,7 +134,7 @@ dummy_open(const char *fn, int flags)
     struct _file_info *fi;
 
     fp = files;
-    for (fd = 0;  fd < NUM_FILES;  fd++) {
+    for (fd = 0;  fd < NUM_FILES;  fd++, fp++) {
         if (!(fp->flags & FILE_OPEN)) break;
     }
     if (fd == NUM_FILES) {
@@ -158,9 +158,10 @@ dummy_open(const char *fn, int flags)
         // Search for a non-existant file
         fi = file_list;
         while (fi->name) {
-            if (fi->name[0] == '\0') {
-                // Empty slot found
-                strcpy(fi->name, fn);
+            if (fi->name[0] == '\0' || strcmp(fi->name, fn) == 0) {
+                if ( !fi->name[0] )
+                    // Empty slot found
+                    strcpy(fi->name, fn);
                 fp->pos = fi->data;
                 fp->eof = fi->data + fi->size;
                 fp->file = fi;  // So we can update file info later
@@ -215,3 +216,6 @@ dummy_read(int fd, void *buf, int len)
     fp->pos += res;
     return res;
 }
+
+
+// EOF tftp_dummy_file.c

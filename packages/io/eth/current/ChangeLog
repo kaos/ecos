@@ -1,3 +1,9 @@
+2000-09-28  Hugo Tyson  <hmt@redhat.com>
+
+	* src/net/eth_drv.c (eth_drv_run_deliveries): Remove race
+	condition; a chance to deliver could be delayed until "next time"
+	if the DSR snuck in just right.
+
 2000-09-14  Hugo Tyson  <hmt@redhat.com>
 
 	* cdl/eth_drivers.cdl: Add configury to control new features.  All

@@ -285,31 +285,15 @@ void cyg_selwakeup( struct CYG_SELINFO_TAG *sip )
     if( sip->si_thread != 0 )
     {
         // If the thread pointer is still present, this selection has
-        // not been fired before. Test whether the thread is still
-        // waiting on the selwait condvar and if so, wake all waiters
-        // on it.
+        // not been fired before. We just wake up all threads waiting,
+        // regardless of whether they are waiting for this event or
+        // not.  This avoids any race conditions, and is consistent
+        // with the behaviour of the BSD kernel.
         
-        // Note that this code has to be a bit careful with accessing
-        // the thread. Since there is no select cancel mechanism, the
-        // information in si_thread may be old, and the thread may
-        // have been deleted in the meantime. However, we do know that
-        // any address in si_thread was for a thread object at some
-        // time in the past, so will not be an illegal address, and
-        // the get_current_queue() member is a simple memory
-        // access. Hence the worse that this code could do is give a
-        // false positive and wake up some selectors when it
-        // shouldn't. However, care should be taken in making any
-        // changes to this code to avoid adding assumptions that the
-        // thread pointer is always valid.
-        
-        Cyg_Thread *thread = (Cyg_Thread *)sip->si_thread;
-        
-        if( thread->get_current_queue() == selwait.get_queue() )
-        {
-            sip->si_thread = 0;
-            selwait.broadcast();
-            selwake_count++;
-        }
+        sip->si_thread = 0;
+        selwait.broadcast();
+        selwake_count++;
+
     }
 
     Cyg_Scheduler::unlock();    

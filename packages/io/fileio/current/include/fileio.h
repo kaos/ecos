@@ -145,12 +145,22 @@ struct cyg_fstab_entry
 
 #define FS_INFO_CONF            1       /* pathconf() */
 #define FS_INFO_ACCESS          2       /* access() */
+#define FS_INFO_GETCWD          3       /* getcwd() */
 
 //-----------------------------------------------------------------------------
 // Types for link()
 
 #define CYG_FSLINK_HARD         1       /* form a hard link */
 #define CYG_FSLINK_SOFT         2       /* form a soft link */
+
+//-----------------------------------------------------------------------------
+// getinfo() and setinfo() buffers structures.
+
+struct cyg_getcwd_info
+{
+    char        *buf;           /* buffer for cwd string */
+    size_t      size;           /* size of buffer */
+};
 
 //-----------------------------------------------------------------------------
 // Macro to define an initialized fstab entry

@@ -129,6 +129,21 @@ cdl_package CYGPKG_IO_FILEIO {
 			  network stacks that can be handled by the fileio system."
     }
 
+    cdl_option CYGPKG_IO_FILEIO_TRACK_CWD {
+	display          "Enable current directory tracking"
+	flavor           bool
+	default_value    1
+	description      "This option enables tracking of the name of the current
+	                  directory in the FILEIO package, to support the getcwd()
+	                  function. When this option is enabled the FILEIO package
+	                  will attempt to maintain a string that names the current
+	                  directory. It does this textually, dealing with \".\" and
+	                  \"..\" entries by textual manipulation. While this should
+	                  always provide a path for the current directory, it may not
+	                  be the best, if symbolic links are present. This tracked CWD
+	                  is only used if a filesystem does not support the
+	                  FS_INFO_GETCWD key. "
+    }
 
     # ----------------------------------------------------------------
     # Tests

@@ -119,13 +119,13 @@ Cyg_Interrupt::dsr_table[CYGNUM_KERNEL_INTERRUPTS_DSRS_TABLE_SIZE];
 
 cyg_ucount32 Cyg_Interrupt::dsr_table_head = 0;
 
-cyg_ucount32 Cyg_Interrupt::dsr_table_tail = 0;
+volatile cyg_ucount32 Cyg_Interrupt::dsr_table_tail = 0;
 
 #endif
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_DSRS_LIST
 
-Cyg_Interrupt *Cyg_Interrupt::dsr_list = NULL;
+volatile Cyg_Interrupt *Cyg_Interrupt::dsr_list = NULL;
 
 #endif
 
@@ -160,7 +160,7 @@ Cyg_Interrupt::call_pending_DSRs_inner(void)
 
     while( dsr_list != NULL )
     {
-        Cyg_Interrupt *intr;
+        volatile Cyg_Interrupt *intr;
         cyg_uint32 old_intr;
         cyg_count32 count;
         
@@ -358,7 +358,7 @@ Cyg_Interrupt::chain_isr(cyg_vector vector, CYG_ADDRWORD data)
         // report the spurious interrupt, or do some other HAL level processing
         // such as GDB interrupt detection etc.
 
-        HAL_DEFAULT_ISR( vector, NULL );
+        HAL_DEFAULT_ISR( vector, 0 );
     }
 #endif    
     return 0;

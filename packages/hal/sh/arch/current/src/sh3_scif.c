@@ -84,9 +84,9 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
     // Set speed to 38400
     HAL_READ_UINT8(base+_REG_SCSMR, tmp);
     tmp &= ~CYGARC_REG_SCSMR2_CKSx_MASK;
-    tmp |= CYGARC_SCBRR2_CKSx(38400);
+    tmp |= CYGARC_SCBRR_CKSx(38400);
     HAL_WRITE_UINT8(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR2_N(38400));
+    HAL_WRITE_UINT8(base+_REG_SCBRR, CYGARC_SCBRR_N(38400));
 
     // Let things settle: Here we should should wait the equivalent of
     // one bit interval, i.e. 1/38400 second, but until we have
@@ -108,22 +108,23 @@ cyg_hal_plf_scif_init_channel(const channel_data_t* chan)
                     CYGARC_REG_SCSCR2_TE|CYGARC_REG_SCSCR2_RE);
 }
 
-static cyg_bool
+//static 
+cyg_bool
 cyg_hal_plf_scif_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 {
     cyg_uint8* base = ((channel_data_t*)__ch_data)->base;
     cyg_uint16 fdr, sr;
 
     HAL_READ_UINT16(base+_REG_SCFDR, fdr);
-    if ((fdr & CYGARC_REG_SCFDR2_RCOUNT_MASK) == 0)
+    if (0 == (fdr & CYGARC_REG_SCFDR2_RCOUNT_MASK))
         return false;
 
     HAL_READ_UINT8(base+_REG_SCFRDR, *ch);
 
-    // Clear FIFO full flag (read before clearing)
+    // Clear DR/RDF flags
     HAL_READ_UINT16(base+_REG_SCSSR, sr);
     HAL_WRITE_UINT16(base+_REG_SCSSR,
-                    CYGARC_REG_SCSSR2_CLEARMASK & ~CYGARC_REG_SCSSR2_RDF);
+                     CYGARC_REG_SCSSR2_CLEARMASK & ~(CYGARC_REG_SCSSR2_RDF | CYGARC_REG_SCSSR2_DR));
 
     return true;
 }

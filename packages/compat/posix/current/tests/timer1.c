@@ -235,11 +235,11 @@ int main(int argc, char **argv)
         value.it_interval.tv_sec        = 0;
         value.it_interval.tv_nsec       = 250000000;
         
-        ret = timer_create( CLOCK_REALTIME, &sev, &timer1 );
+        ret = timer_create( CLOCK_REALTIME, &sev, &timer2 );
 
         CYG_TEST_CHECK( ret == 0 , "timer_create returned error");
 
-        ret = timer_settime( timer1, 0, &value, NULL );
+        ret = timer_settime( timer2, 0, &value, NULL );
 
         CYG_TEST_CHECK( ret == 0 , "timer_settime returned error");
     }

@@ -67,12 +67,35 @@
 
 #include <cyg/kernel/mutex.hxx>        // mutex definitions
 
+
+//=============================================================================
+// POSIX API support
+
+#ifdef CYGPKG_POSIX
+
+#include <cyg/posix/export.h>
+
+#define CYG_FILEIO_FUNCTION_START() CYG_POSIX_FUNCTION_START()
+
+#define CYG_FILEIO_FUNCTION_FINISH() CYG_POSIX_FUNCTION_FINISH()
+
+#else
+
+#define CYG_FILEIO_FUNCTION_START() CYG_EMPTY_STATEMENT
+
+#define CYG_FILEIO_FUNCTION_FINISH() CYG_EMPTY_STATEMENT
+
+#endif
+
 //=============================================================================
 // Fileio function entry and return macros.
 
-
 // Handle entry to a fileio package function. 
-#define FILEIO_ENTRY() CYG_REPORT_FUNCTYPE( "returning %d" );
+#define FILEIO_ENTRY()                          \
+CYG_MACRO_START                                 \
+    CYG_REPORT_FUNCTYPE( "returning %d" );      \
+    CYG_FILEIO_FUNCTION_START();                \
+CYG_MACRO_END
 
 // Do a fileio package defined return. This requires the error code
 // to be placed in errno, and if it is non-zero, -1 returned as the
@@ -82,6 +105,7 @@
 #define FILEIO_RETURN(err)                      \
 CYG_MACRO_START                                 \
     int __retval = 0;                           \
+    CYG_FILEIO_FUNCTION_FINISH();               \
     if( err != 0 ) __retval = -1, errno = err;  \
     CYG_REPORT_RETVAL( __retval );              \
     return __retval;                            \
@@ -89,12 +113,14 @@ CYG_MACRO_END
 
 #define FILEIO_RETURN_VALUE(val)                \
 CYG_MACRO_START                                 \
-      CYG_REPORT_RETVAL( val );                 \
-      return val;                               \
+    CYG_FILEIO_FUNCTION_FINISH();               \
+    CYG_REPORT_RETVAL( val );                   \
+    return val;                                 \
 CYG_MACRO_END
 
 #define FILEIO_RETURN_VOID()                    \
 CYG_MACRO_START                                 \
+    CYG_FILEIO_FUNCTION_FINISH();               \
     CYG_REPORT_RETURN();                        \
     return;                                     \
 CYG_MACRO_END

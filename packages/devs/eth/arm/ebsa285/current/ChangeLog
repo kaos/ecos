@@ -1,3 +1,19 @@
+2000-10-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_ebsa285.c: Deal with device interrupts in a nested
+	fashion - disable/restore is the semantics now, rather than
+	unconditionally unmasking.  Also go directly to the 21285 PIC's
+	interrupt control registers to gain atomicity for these.  Poll for
+	ready received packets when acknowledging an interrupt in the
+	tranmitting world; a race here could lose an Rx interrupt.  Which
+	doesn't matter on a busy system, but in quieter times...  there
+	will always be such a race because of the vague way the i82559's
+	status bits reflect how it's yanking the interrupt line; you have
+	to poll until the interrupt is gone before returning else spurious
+	interrupt failures occur.  The issue is to close the window as
+	tightly as possible, which this change achieves at a minor cost in
+	performance - because of the time spent polling when not required.
+
 2000-09-11  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* src/if_ebsa285.c (i82559_poll): Only diddle the interface we
