@@ -54,6 +54,7 @@ cdl_package CYGPKG_IO_FILEIO {
     description    "This package enables the POSIX compatibility
                     layer that implements IEEE 1003.1 file IO."
     include_dir    cyg/fileio
+    doc            ref/fileio.html
     
     requires       CYGPKG_ISOINFRA
     requires       CYGPKG_ERROR
