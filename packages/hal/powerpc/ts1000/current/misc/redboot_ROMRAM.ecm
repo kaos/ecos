@@ -15,7 +15,7 @@ cdl_configuration eCos {
     package -hardware CYGPKG_HAL_POWERPC_MPC8xx current ;
     package -hardware CYGPKG_HAL_POWERPC_TS1000 current ;
     package -hardware CYGPKG_HAL_QUICC current ;
-    package -hardware CYGPKG_DEVS_FLASH_TS1000 current ;
+    package -hardware CYGPKG_DEVS_FLASH_POWERPC_TS1000 current ;
     package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_FEC current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_TS1000 current ;

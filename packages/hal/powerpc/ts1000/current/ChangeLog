@@ -1,3 +1,14 @@
+2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* misc/redboot_ROMRAM.ecm: 
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: FLASH package name change.
+
+	* include/plf_cache.h: No need for "old" FLASH cache support.
+
+	* src/hal_diag.c: 
+	* include/hal_diag.h: Remove old !VIRTUAL_VECTORS cruft.
+
 2002-10-15  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ts1000.S: Don't reset PHY on RAM startup.

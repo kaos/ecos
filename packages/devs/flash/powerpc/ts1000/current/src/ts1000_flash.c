@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -55,13 +56,10 @@
 //--------------------------------------------------------------------------
 // Device properties
 
-#define CYGNUM_FLASH_INTERLEAVE	(1)
-#define CYGNUM_FLASH_SERIES	(1)
+#define CYGNUM_FLASH_INTERLEAVE (1)
+#define CYGNUM_FLASH_SERIES     (1)
 #define CYGNUM_FLASH_WIDTH      (16)
-#define CYGNUM_FLASH_BASE 	(0xFE000000)
-// #define CYGNUM_FLASH_16AS8      (0)
-
-//static cyg_uint32 plf_flash_base;
+#define CYGNUM_FLASH_BASE       (0xFE000000)
 
 //--------------------------------------------------------------------------
 // Platform specific extras

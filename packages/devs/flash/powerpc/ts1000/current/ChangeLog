@@ -1,3 +1,7 @@
+2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* cdl/flash_ts1000.cdl: Package renamed for consistency.
+
 2002-09-19  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/flash_ts1000.cdl: Part is AM29DL640D (not LV640D).

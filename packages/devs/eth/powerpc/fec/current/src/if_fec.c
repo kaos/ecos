@@ -208,6 +208,7 @@ fec_eth_deliver(struct eth_drv_sc * sc)
 #endif
 }
 
+#ifdef CYGSEM_DEVS_ETH_POWERPC_FEC_RESET_PHY
 //
 // PHY unit access (via MII channel)
 //
@@ -240,6 +241,7 @@ phy_read(int reg, int addr, unsigned short *val)
     *val = fec->MiiData & 0x0000FFFF;
     return true;
 }
+#endif // CYGSEM_DEVS_ETH_POWERPC_FEC_RESET_PHY
 
 //
 // [re]Initialize the ethernet controller
@@ -394,12 +396,14 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile EPPC *eppc = (volatile EPPC *)eppc_base();
     volatile struct fec *fec = (volatile struct fec *)((unsigned char *)eppc + FEC_OFFSET);
-    unsigned short phy_state = 0;
     int cache_state;
-    int i;
     unsigned long proc_rev;
-    bool esa_ok, phy_ok;
+    bool esa_ok;
+#ifdef CYGSEM_DEVS_ETH_POWERPC_FEC_RESET_PHY
     int phy_timeout = 5*1000;  // Wait 5 seconds max for link to clear
+    bool phy_ok;
+    unsigned short phy_state = 0;
+#endif
 
     // Ensure consistent state between cache and what the FEC sees
     HAL_DCACHE_IS_ENABLED(cache_state);
@@ -480,6 +484,7 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
     if (phy_read(PHY_BMSR, FEC_ETH_PHY, &phy_state)) {
         if ((phy_state & PHY_BMSR_LINK) !=  PHY_BMSR_LINK) {
             unsigned short reset_mode;
+            int i;
             phy_write(PHY_BMCR, FEC_ETH_PHY, PHY_BMCR_RESET);
             for (i = 0;  i < 10;  i++) {
                 phy_ok = phy_read(PHY_BMCR, FEC_ETH_PHY, &phy_state);

@@ -50,7 +50,7 @@
 #
 # ====================================================================
 
-cdl_package CYGPKG_DEVS_FLASH_TS1000 {
+cdl_package CYGPKG_DEVS_FLASH_POWERPC_TS1000 {
     display       "Allied Telesyn TS1000 (PPC855) FLASH memory support"
 
     parent        CYGPKG_IO_FLASH

@@ -3982,7 +3982,7 @@ package CYGPKG_HAL_POWERPC_TS1000 {
             eCos on a Allied Telesyn TS1000 board equipped with a PowerPC processor."
 }
 
-package CYGPKG_DEVS_FLASH_TS1000 {
+package CYGPKG_DEVS_FLASH_POWERPC_TS1000 {
 	alias 		{ "FLASH memory support for Allied Telesyn TS1000 (PPC855) board" flash_ts1000 }
 	directory	devs/flash/powerpc/ts1000
 	script		flash_ts1000.cdl
@@ -4006,7 +4006,7 @@ target ts1000 {
                           CYGPKG_HAL_POWERPC_MPC8xx
                           CYGPKG_HAL_POWERPC_TS1000
                           CYGPKG_HAL_QUICC 
-                          CYGPKG_DEVS_FLASH_TS1000
+                          CYGPKG_DEVS_FLASH_POWERPC_TS1000
                           CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                           CYGPKG_DEVS_ETH_POWERPC_FEC
                           CYGPKG_DEVS_ETH_POWERPC_TS1000

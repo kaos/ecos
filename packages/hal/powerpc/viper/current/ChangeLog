@@ -1,3 +1,10 @@
+2002-10-18  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* include/plf_cache.h: No need for old FLASH cache support.
+
+	* src/hal_diag.c: 
+	* include/hal_diag.h: Remove old !VIRTUAL_VECTOR cruft.
+
 2002-09-02  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* cdl/hal_powerpc_viper.cdl: Fix descriptions for serial ports 
