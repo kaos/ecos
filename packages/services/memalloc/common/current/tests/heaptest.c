@@ -127,7 +127,8 @@ test_pat(unsigned char *buf, int size,
             bpat = ((int)bufptr)&0xFF;
         if ( *bufptr != bpat ) {
             diag_printf( "FAIL:<Memory at 0x%08x: expected 0x%02x, read 0x%02x>\n", 
-                         bufptr, (int)bpat, (int)*bufptr );
+                         (unsigned int)bufptr, (unsigned int)bpat, 
+                         (unsigned int)*bufptr );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -141,7 +142,7 @@ test_pat(unsigned char *buf, int size,
             pat = (unsigned int)ibufptr;
         if ( *ibufptr != pat ) {
             diag_printf( "FAIL:<Memory at 0x%08x: expected 0x%08x, read 0x%08x>\n", 
-                         ibufptr, pat, *ibufptr );
+                         (unsigned int) ibufptr, pat, *ibufptr );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -154,7 +155,8 @@ test_pat(unsigned char *buf, int size,
             bpat = ((int)bufptr)&0xFF;
         if ( *bufptr != bpat ) {
             diag_printf( "FAIL:<Memory at 0x%08x: expected 0x%02x, read 0x%02x>\n", 
-                         bufptr, (int)bpat, (int)*bufptr );
+                         (unsigned int) bufptr, (unsigned int)bpat, 
+                         (unsigned int)*bufptr );
             if ( errors++ == ERRORTHRESHOLD )
                 CYG_TEST_FAIL_FINISH( testname );
         }
@@ -208,7 +210,7 @@ cyg_start(void)
         }
 
         diag_printf( "INFO:<Testing memory at 0x%08x of size %d for %d iterations>\n",
-                     buf, info.maxfree, ITERS );
+                     (unsigned int)buf, info.maxfree, ITERS );
         for (i=0; i<ITERS; i++) {
             errors += test_pat( buf, info.maxfree, 0, 0, "all zeroes" );
             errors += test_pat( buf, info.maxfree, allonesint, 0,

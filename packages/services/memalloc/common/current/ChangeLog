@@ -2,6 +2,8 @@
 
 	* cdl/memalloc.cdl: Added reference to documentation
 	* doc/memalloc.sgml: Basic user documentation.
+	* tests/heaptest.c (test_pat): Fix compiler error with 
+	  diag_printf.
 
 2004-10-04  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
