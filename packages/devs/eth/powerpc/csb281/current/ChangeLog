@@ -1,3 +1,7 @@
+2003-01-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/devs_eth_csb281.inl: Add RedBoot management of ESA.
+
 2003-01-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/devs_eth_csb281.inl: PCI window is now in specially

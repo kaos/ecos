@@ -113,4 +113,49 @@ i82559_sc_array[CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT] = {
 };
 #endif // CYGDBG_USE_ASSERTS
 
+// --------------------------------------------------------------
+// RedBoot configuration options for managing ESAs for us
+
+// tell the driver there is no EEPROM on this board
+#define CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+
+// Decide whether to have redboot config vars for it...
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#ifdef CYGPKG_REDBOOT_NETWORKING
+#include <redboot.h>
+#include <flash_config.h>
+
+#ifdef CYGVAR_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA_ETH0
+RedBoot_config_option("Network hardware address [MAC] for eth0",
+                      eth0_esa,
+                      ALWAYS_ENABLED, true,
+                      CONFIG_ESA, 0
+    );
+#endif
+
+#endif
+#endif
+#endif
+
+// and initialization code to read them
+// - independent of whether we are building RedBoot right now:
+#ifdef CYGPKG_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA
+
+#include <cyg/hal/hal_if.h>
+
+#ifndef CONFIG_ESA
+#define CONFIG_ESA (6)
+#endif
+
+#define CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA( p_i82559, mac_address, ok )       \
+CYG_MACRO_START                                                                 \
+    ok = false;                                                                 \
+        ok = CYGACC_CALL_IF_FLASH_CFG_OP( CYGNUM_CALL_IF_FLASH_CFG_GET,         \
+                                          "eth0_esa", mac_address, CONFIG_ESA); \
+CYG_MACRO_END
+
+#endif // CYGPKG_DEVS_ETH_I82559_ETH_REDBOOT_HOLDS_ESA
+
 // EOF devs_eth_csb281.inl

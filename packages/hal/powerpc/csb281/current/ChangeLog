@@ -1,3 +1,12 @@
+2003-01-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_ROMRAM.ecm: 
+	* misc/redboot_ROM.ecm: 
+	* misc/redboot_RAM.ecm: New config - with ESA in RedBoot/fconfig.
+
+	* cdl/hal_powerpc_csb281.cdl: Deprecate "tests" since there are none
+	at the moment, but leave the code as comments in case they return.
+
 2003-01-03  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_diag.c (cyg_hal_plf_serial_error): New function - fixed

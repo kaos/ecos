@@ -34,10 +34,6 @@ cdl_option CYGFUN_LIBC_STRING_BSD_FUNCS {
     inferred_value 0
 };
 
-cdl_component CYGSEM_DEVS_ETH_CSB281_ETH0_SET_ESA {
-    user_value 1
-};
-
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {
     user_value 4096
 };
