@@ -1,3 +1,8 @@
+2003-07-09  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* real-time-characterization.sgml: real-time characterization is
+	discussed in ref manual, not user guide.
+
 2003-05-04  John Dallaway  <jld@ecoscentric.com>
 
 	* installation.sgml: Refer to installation instructions on the

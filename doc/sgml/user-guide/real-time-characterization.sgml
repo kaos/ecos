@@ -32,8 +32,8 @@
 <APPENDIX ID="REAL-TIME-CHARACTERIZATION">
 <TITLE>Real-time characterization</TITLE>
 
-<PARA>For a discussion of real-time performance measurement for eCos, see the eCos 
-Users' Guide.
+<PARA>For a discussion of real-time performance measurement for eCos, see the
+kernel documentation in the eCos Reference Manual.
 </PARA>
 
 <caution>
