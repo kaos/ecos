@@ -107,6 +107,8 @@
 #include <netinet/udp_var.h>
 #include <netinet/tcp_var.h>
 
+#include <sys/mbuf.h>
+
 #include <cyg/io/eth/eth_drv_stats.h>
 
 /* ================================================================= */
@@ -1015,6 +1017,89 @@ static cyg_bool cyg_monitor_network( FILE * client, char *filename,
         }
         html_table_end( client );
 
+        html_para_begin( client, "" );
+        html_heading(client, 3, "Mbufs" );
+
+        html_table_begin( client, "border" );
+        {
+            html_table_header( client, "Summary", "" );
+            html_table_header( client, "Types", "" );
+
+            html_table_row_begin( client, "" );
+            {
+                html_table_data_begin( client, "valign=\"top\"" );                        
+                html_table_begin( client, "" );
+                {
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Mbufs",
+                             mbstat.m_mbufs );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Clusters",
+                             mbstat.m_clusters );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Free Clusters",
+                             mbstat.m_clfree );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Drops",
+                             mbstat.m_drops );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Waits",
+                             mbstat.m_wait );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Drains",
+                             mbstat.m_drain );
+#if defined(CYGPKG_NET_FREEBSD_STACK)
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Copy Fails",
+                             mbstat.m_mcfail );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "Pullup Fails",
+                             mbstat.m_mpfail );
+#endif                    
+
+                }
+                html_table_end( client );
+
+                html_table_data_begin( client, "valign=\"top\"" );                        
+                html_table_begin( client, "" );
+                {
+                    u_long *mtypes;
+#if defined(CYGPKG_NET_FREEBSD_STACK)
+                    mtypes = mbtypes;
+#else
+                    mtypes = mbstat.m_mtypes;
+#endif
+                    
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "FREE",
+                             mtypes[MT_FREE] );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "DATA",
+                             mtypes[MT_DATA] );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "HEADER",
+                             mtypes[MT_HEADER] );
+#if !defined(CYGPKG_NET_FREEBSD_STACK)                    
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "SOCKET",
+                             mtypes[MT_SOCKET] );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "PCB",
+                             mtypes[MT_PCB] );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "RTABLE",
+                             mtypes[MT_RTABLE] );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "HTABLE",
+                             mtypes[MT_HTABLE] );
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "ATABLE",
+                             mtypes[MT_ATABLE] );
+#endif
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "SONAME",
+                             mtypes[MT_SONAME] );
+#if !defined(CYGPKG_NET_FREEBSD_STACK)                                        
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "SOOPTS",
+                             mtypes[MT_SOOPTS] );
+#endif
+                    fprintf( client, "<tr><td>%s<td>%ld</tr>\n", "FTABLE",
+                             mtypes[MT_FTABLE] );
+
+                    /* Ignore the rest for now... */
+                    
+                }
+                html_table_end( client );
+                
+            }
+            html_table_row_end( client );
+            
+        }
+        html_table_end( client );
+        
         
         draw_navbar(client);
     }
