@@ -1,6 +1,10 @@
+2004-10-5  Andrea Michelotti <amichelotti@atmel.com> 
+ 
+	* ecos.db: Added atmel jtst watchdog support
+ 
 2004-10-05  Savin Zlobec  <savin@elatec.si>
  
-     * ecos.db: Added Atmel AT91 SPI bus driver and AT91EB55 devices.
+        * ecos.db: Added Atmel AT91 SPI bus driver and AT91EB55 devices.
  
 2004-09-16  Andrea Michelotti <amichelotti@atmel.com> 
 

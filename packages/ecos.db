@@ -3975,6 +3975,7 @@ target jtst {
                    CYGPKG_IO_SERIAL_ARM_AT91
                    CYGPKG_DEVS_FLASH_JTST
                    CYGPKG_DEVS_FLASH_ATMEL_AT49XXXX
+		   CYGPKG_DEVICES_WATCHDOG_ARM_AT91
         }
         description "
         The jtst target provides the packages needed to run eCos on an Atmel
