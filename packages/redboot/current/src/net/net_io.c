@@ -543,11 +543,18 @@ net_init(void)
     flash_get_config("net_debug", &net_debug, CONFIG_BOOL);
     flash_get_config("gdb_port", &gdb_port, CONFIG_INT);
     flash_get_config("bootp", &use_bootp, CONFIG_BOOL);
-    if (use_bootp) {
-        flash_get_config("bootp_my_ip", &__local_ip_addr, CONFIG_IP);
-        flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr, CONFIG_IP)
-;
+    {
+        ip_addr_t bootp_my_ip;
+        char i;
+        flash_get_config("bootp_my_ip", &bootp_my_ip, CONFIG_IP);
+        if (bootp_my_ip[0] != 0 || bootp_my_ip[1] != 0 ||
+            bootp_my_ip[2] != 0 || bootp_my_ip[3] != 0) {
+            // bootp_my_ip is set to something so let it override any static IP
+            for (i=0; i<4; i++)
+                __local_ip_addr[i] = bootp_my_ip[i];
+        }        
     }
+    flash_get_config("bootp_server_ip", &my_bootp_info.bp_siaddr, CONFIG_IP);
 #endif
     have_net = false;
     // Make sure the recv buffers are set up
