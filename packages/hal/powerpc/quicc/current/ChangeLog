@@ -1,5 +1,9 @@
 2002-11-26  Gary Thomas  <gthomas@ecoscentric.com>
 
+	* src/quicc_smc1.c: Initialize BD allocation point.  Note that it is
+	different from when the CPM get's reset directly.  This is to allow
+	sharing of the space between ROM (RedBoot) code and applications.
+
 	* cdl/hal_powerpc_quicc.cdl: Move platform define here, where it belongs.
 
 2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>

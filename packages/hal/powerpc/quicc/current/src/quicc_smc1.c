@@ -136,7 +136,7 @@ static struct port_info ports[] = {
  * Reset the communications processor
  */
 
-static short nextBd;
+static short nextBd = QUICC_BD_BASE + 0x400;
 
 static void
 reset_cpm(void)
