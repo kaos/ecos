@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: read.c,v 1.35 2004/03/08 15:29:09 dwmw2 Exp $
+ * $Id: read.c,v 1.36 2004/05/25 11:12:32 havasi Exp $
  *
  */
 
@@ -18,6 +18,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/compiler.h>
 #include "nodelist.h"
+#include "compr.h"
 
 int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		     struct jffs2_full_dnode *fd, unsigned char *buf,
@@ -129,7 +130,7 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	if (ri->compr != JFFS2_COMPR_NONE) {
 		D2(printk(KERN_DEBUG "Decompress %d bytes from %p to %d bytes at %p\n",
 			  je32_to_cpu(ri->csize), readbuf, je32_to_cpu(ri->dsize), decomprbuf)); 
-		ret = jffs2_decompress(c, f, ri->compr, readbuf, decomprbuf, je32_to_cpu(ri->csize), je32_to_cpu(ri->dsize));
+		ret = jffs2_decompress(c, f, ri->compr | (ri->usercompr << 8), readbuf, decomprbuf, je32_to_cpu(ri->csize), je32_to_cpu(ri->dsize));
 		if (ret) {
 			printk(KERN_WARNING "Error: jffs2_decompress returned %d\n", ret);
 			goto out_decomprbuf;

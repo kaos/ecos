@@ -1420,7 +1420,7 @@ static int jffs2_fo_lseek(struct CYG_FILE_TAG *fp, off_t * apos, int whence)
 
         // Check that pos is still within current file size, or at the
         // very end.
-        if (pos < 0 || pos > node->i_size)
+        if (pos < 0 )
                 return EINVAL;
 
 	// All OK, set fp offset and return new position.

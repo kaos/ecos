@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: compr_zlib.c,v 1.25 2003/12/03 09:25:43 dwmw2 Exp $
+ * $Id: compr_zlib.c,v 1.28 2004/06/23 16:34:40 havasi Exp $
  *
  */
 
@@ -22,6 +22,7 @@
 #include <linux/zutil.h>
 #include <asm/semaphore.h>
 #include "nodelist.h"
+#include "compr.h"
 
 	/* Plan: call deflate() with avail_in == *sourcelen, 
 		avail_out = *dstlen - 12 and flush == Z_FINISH. 
@@ -40,7 +41,7 @@ static z_stream inf_strm, def_strm;
 #include <linux/vmalloc.h>
 #include <linux/init.h>
 
-int __init jffs2_zlib_init(void)
+static int __init alloc_workspaces(void)
 {
 	def_strm.workspace = vmalloc(zlib_deflate_workspacesize());
 	if (!def_strm.workspace) {
@@ -58,15 +59,18 @@ int __init jffs2_zlib_init(void)
 	return 0;
 }
 
-void jffs2_zlib_exit(void)
+static void free_workspaces(void)
 {
 	vfree(def_strm.workspace);
 	vfree(inf_strm.workspace);
 }
+#else
+#define alloc_workspaces() (0)
+#define free_workspaces() do { } while(0)
 #endif /* __KERNEL__ */
 
 int jffs2_zlib_compress(unsigned char *data_in, unsigned char *cpage_out, 
-		   uint32_t *sourcelen, uint32_t *dstlen)
+		   uint32_t *sourcelen, uint32_t *dstlen, void *model)
 {
 	int ret;
 
@@ -131,8 +135,8 @@ int jffs2_zlib_compress(unsigned char *data_in, unsigned char *cpage_out,
 	return ret;
 }
 
-void jffs2_zlib_decompress(unsigned char *data_in, unsigned char *cpage_out,
-		      uint32_t srclen, uint32_t destlen)
+int jffs2_zlib_decompress(unsigned char *data_in, unsigned char *cpage_out,
+		      uint32_t srclen, uint32_t destlen, void *model)
 {
 	int ret;
 	int wbits = MAX_WBITS;
@@ -166,7 +170,7 @@ void jffs2_zlib_decompress(unsigned char *data_in, unsigned char *cpage_out,
 	if (Z_OK != zlib_inflateInit2(&inf_strm, wbits)) {
 		printk(KERN_WARNING "inflateInit failed\n");
 		up(&inflate_sem);
-		return;
+		return 1;
 	}
 
 	while((ret = zlib_inflate(&inf_strm, Z_FINISH)) == Z_OK)
@@ -176,4 +180,39 @@ void jffs2_zlib_decompress(unsigned char *data_in, unsigned char *cpage_out,
 	}
 	zlib_inflateEnd(&inf_strm);
 	up(&inflate_sem);
+        return 0;
+}
+
+static struct jffs2_compressor jffs2_zlib_comp = {
+    .priority = JFFS2_ZLIB_PRIORITY,
+    .name = "zlib",
+    .compr = JFFS2_COMPR_ZLIB,
+    .compress = &jffs2_zlib_compress,
+    .decompress = &jffs2_zlib_decompress,
+#ifdef JFFS2_ZLIB_DISABLED
+    .disabled = 1,
+#else
+    .disabled = 0,
+#endif
+};
+
+int __init jffs2_zlib_init(void)
+{
+    int ret;
+
+    ret = alloc_workspaces();
+    if (ret)
+        return ret;
+
+    ret = jffs2_register_compressor(&jffs2_zlib_comp);
+    if (ret)
+        free_workspaces();
+
+    return ret;
+}
+
+void jffs2_zlib_exit(void)
+{
+    jffs2_unregister_compressor(&jffs2_zlib_comp);
+    free_workspaces();
 }

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: gc.c,v 1.133 2004/03/08 15:29:09 dwmw2 Exp $
+ * $Id: gc.c,v 1.137 2004/07/20 13:44:55 dwmw2 Exp $
  *
  */
 
@@ -19,6 +19,7 @@
 #include <linux/compiler.h>
 #include <linux/stat.h>
 #include "nodelist.h"
+#include "compr.h"
 
 static int jffs2_garbage_collect_pristine(struct jffs2_sb_info *c, 
 					  struct jffs2_inode_cache *ic,
@@ -80,7 +81,7 @@ static struct jffs2_eraseblock *jffs2_find_gc_block(struct jffs2_sb_info *c)
 		nextlist = &c->erasable_list;
 	} else {
 		/* Eep. All were empty */
-		printk(KERN_NOTICE "jffs2: No clean, dirty _or_ erasable blocks to GC from! Where are they all?\n");
+		D1(printk(KERN_NOTICE "jffs2: No clean, dirty _or_ erasable blocks to GC from! Where are they all?\n"));
 		return NULL;
 	}
 
@@ -204,7 +205,7 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 		jeb = jffs2_find_gc_block(c);
 
 	if (!jeb) {
-		printk(KERN_NOTICE "jffs2: Couldn't find erase block to garbage collect!\n");
+		D1 (printk(KERN_NOTICE "jffs2: Couldn't find erase block to garbage collect!\n"));
 		spin_unlock(&c->erase_completion_lock);
 		up(&c->alloc_sem);
 		return -EIO;
@@ -358,10 +359,14 @@ int jffs2_garbage_collect_pass(struct jffs2_sb_info *c)
 	spin_unlock(&c->inocache_lock);
 
 	f = jffs2_gc_fetch_inode(c, inum, nlink);
-	if (IS_ERR(f))
-		return PTR_ERR(f);
-	if (!f)
-		return 0;
+	if (IS_ERR(f)) {
+		ret = PTR_ERR(f);
+		goto release_sem;
+	}
+	if (!f) {
+		ret = 0;
+		goto release_sem;
+	}
 
 	ret = jffs2_garbage_collect_live(c, jeb, raw, f);
 
@@ -1176,7 +1181,7 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 	while(offset < orig_end) {
 		uint32_t datalen;
 		uint32_t cdatalen;
-		char comprtype = JFFS2_COMPR_NONE;
+		uint16_t comprtype = JFFS2_COMPR_NONE;
 
 		ret = jffs2_reserve_space_gc(c, sizeof(ri) + JFFS2_MIN_DATA_LEN, &phys_ofs, &alloclen);
 
@@ -1209,7 +1214,8 @@ static int jffs2_garbage_collect_dnode(struct jffs2_sb_info *c, struct jffs2_era
 		ri.offset = cpu_to_je32(offset);
 		ri.csize = cpu_to_je32(cdatalen);
 		ri.dsize = cpu_to_je32(datalen);
-		ri.compr = comprtype;
+		ri.compr = comprtype & 0xff;
+		ri.usercompr = (comprtype >> 8) & 0xff;
 		ri.node_crc = cpu_to_je32(crc32(0, &ri, sizeof(ri)-8));
 		ri.data_crc = cpu_to_je32(crc32(0, comprbuf, cdatalen));
 	

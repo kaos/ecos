@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: scan.c,v 1.109 2004/03/19 16:40:50 dwmw2 Exp $
+ * $Id: scan.c,v 1.111 2004/07/27 14:13:43 gleixner Exp $
  *
  */
 #include <linux/kernel.h>
@@ -103,6 +103,10 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 			buf_size = c->sector_size;
 		else
 			buf_size = PAGE_SIZE;
+
+		/* Respect kmalloc limitations */
+		if (buf_size > 128*1024)
+			buf_size = 128*1024;
 
 		D1(printk(KERN_DEBUG "Allocating readbuf of %d bytes\n", buf_size));
 		flashbuf = kmalloc(buf_size, GFP_KERNEL);
@@ -337,8 +341,6 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 			switch (ret) {
 			case 0:		return cleanmarkerfound ? BLK_STATE_CLEANMARKER : BLK_STATE_ALLFF;
 			case 1: 	return BLK_STATE_ALLDIRTY;
-			case 2: 	return BLK_STATE_BADBLOCK; /* case 2/3 are paranoia checks */
-			case 3:		return BLK_STATE_ALLDIRTY; /* Block has failed to erase min. once */
 			default: 	return ret;
 			}
 		}

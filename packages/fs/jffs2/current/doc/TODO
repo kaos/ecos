@@ -17,7 +17,8 @@ $Id: TODO,v 1.16 2004/03/20 15:01:34 dwmw2 Exp $
  - test, test, test
 
  - NAND flash support:
-	- done :)
+	- almost done :)
+	- use bad block check instead of the hardwired byte check
 
  - Optimisations:
    - Split writes so they go to two separate blocks rather than just c->nextblock.

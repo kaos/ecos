@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: os-ecos.h,v 1.19 2003/11/28 11:38:45 dwmw2 Exp $
+ * $Id: os-ecos.h,v 1.20 2004/05/05 12:00:31 dwmw2 Exp $
  *
  */
 
@@ -191,8 +191,8 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
 #define jffs2_flush_wbuf_pad(c) ({ (void)(c), 0; })
 #define jffs2_flush_wbuf_gc(c, i) ({ (void)(c), (void) i, 0; })
 #define jffs2_nand_read_failcnt(c,jeb) do { ; } while(0)
-#define jffs2_write_nand_badblock(c,jeb) do { ; } while(0)
-#define jffs2_nand_flash_setup(c) (0)
+#define jffs2_write_nand_badblock(c,jeb,p) (0)
+#define jffs2_flash_setup(c) (0)
 #define jffs2_nand_flash_cleanup(c) do {} while(0)
 #define jffs2_wbuf_dirty(c) (0)
 #define jffs2_flash_writev(a,b,c,d,e,f) jffs2_flash_direct_writev(a,b,c,d,e)
@@ -205,5 +205,7 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
 #ifndef BUG_ON
 #define BUG_ON(x) do { if (unlikely(x)) BUG(); } while(0)
 #endif
+
+#define __init
 
 #endif /* __JFFS2_OS_ECOS_H__ */

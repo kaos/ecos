@@ -1,3 +1,8 @@
+2004-08-12  Andrew Lunn <andrew.lunn@ascom.ch>
+	    Gary Thomas <gary@mlbassoc.com>
+
+	* Merge from public MTD.
+	
 2004-04-19  Oyvind Harboe <oyvind.harboe@zylin.com>
 	
 	* src/build.c: JFFS2 can now be used as a write-once, read many mode

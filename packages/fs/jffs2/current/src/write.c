@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: write.c,v 1.83 2004/03/30 09:36:09 dwmw2 Exp $
+ * $Id: write.c,v 1.85 2004/07/13 08:58:25 dwmw2 Exp $
  *
  */
 
@@ -18,6 +18,7 @@
 #include <linux/pagemap.h>
 #include <linux/mtd/mtd.h>
 #include "nodelist.h"
+#include "compr.h"
 
 
 int jffs2_do_new_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f, uint32_t mode, struct jffs2_raw_inode *ri)
@@ -91,7 +92,7 @@ struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c, struct jffs2
 	struct jffs2_raw_node_ref *raw;
 	struct jffs2_full_dnode *fn;
 	size_t retlen;
-	struct iovec vecs[2];
+	struct kvec vecs[2];
 	int ret;
 	int retried = 0;
 	unsigned long cnt = 2;
@@ -232,7 +233,7 @@ struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jff
 	struct jffs2_raw_node_ref *raw;
 	struct jffs2_full_dirent *fd;
 	size_t retlen;
-	struct iovec vecs[2];
+	struct kvec vecs[2];
 	int retried = 0;
 	int ret;
 
@@ -358,7 +359,7 @@ int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	while(writelen) {
 		struct jffs2_full_dnode *fn;
 		unsigned char *comprbuf = NULL;
-		unsigned char comprtype = JFFS2_COMPR_NONE;
+		uint16_t comprtype = JFFS2_COMPR_NONE;
 		uint32_t phys_ofs, alloclen;
 		uint32_t datalen, cdatalen;
 		int retried = 0;
@@ -388,7 +389,8 @@ int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		ri->offset = cpu_to_je32(offset);
 		ri->csize = cpu_to_je32(cdatalen);
 		ri->dsize = cpu_to_je32(datalen);
-		ri->compr = comprtype;
+		ri->compr = comprtype & 0xff;
+		ri->usercompr = (comprtype >> 8 ) & 0xff;
 		ri->node_crc = cpu_to_je32(crc32(0, ri, sizeof(*ri)-8));
 		ri->data_crc = cpu_to_je32(crc32(0, comprbuf, cdatalen));
 

@@ -7,7 +7,7 @@
  *
  * For licensing information, see the file 'LICENCE' in this directory.
  *
- * $Id: nodelist.h,v 1.116 2004/03/08 15:29:09 dwmw2 Exp $
+ * $Id: nodelist.h,v 1.119 2004/05/26 12:28:12 gleixner Exp $
  *
  */
 
@@ -42,6 +42,39 @@
 #define D2(x) x
 #else
 #define D2(x)
+#endif
+
+#define JFFS2_NATIVE_ENDIAN
+
+/* Note we handle mode bits conversion from JFFS2 (i.e. Linux) to/from
+   whatever OS we're actually running on here too. */
+
+#if defined(JFFS2_NATIVE_ENDIAN)
+#define cpu_to_je16(x) ((jint16_t){x})
+#define cpu_to_je32(x) ((jint32_t){x})
+#define cpu_to_jemode(x) ((jmode_t){os_to_jffs2_mode(x)})
+
+#define je16_to_cpu(x) ((x).v16)
+#define je32_to_cpu(x) ((x).v32)
+#define jemode_to_cpu(x) (jffs2_to_os_mode((x).m))
+#elif defined(JFFS2_BIG_ENDIAN)
+#define cpu_to_je16(x) ((jint16_t){cpu_to_be16(x)})
+#define cpu_to_je32(x) ((jint32_t){cpu_to_be32(x)})
+#define cpu_to_jemode(x) ((jmode_t){cpu_to_be32(os_to_jffs2_mode(x))})
+
+#define je16_to_cpu(x) (be16_to_cpu(x.v16))
+#define je32_to_cpu(x) (be32_to_cpu(x.v32))
+#define jemode_to_cpu(x) (be32_to_cpu(jffs2_to_os_mode((x).m)))
+#elif defined(JFFS2_LITTLE_ENDIAN)
+#define cpu_to_je16(x) ((jint16_t){cpu_to_le16(x)})
+#define cpu_to_je32(x) ((jint32_t){cpu_to_le32(x)})
+#define cpu_to_jemode(x) ((jmode_t){cpu_to_le32(os_to_jffs2_mode(x))})
+
+#define je16_to_cpu(x) (le16_to_cpu(x.v16))
+#define je32_to_cpu(x) (le32_to_cpu(x.v32))
+#define jemode_to_cpu(x) (le32_to_cpu(jffs2_to_os_mode((x).m)))
+#else 
+#error wibble
 #endif
 
 /*
@@ -439,15 +472,6 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			   unsigned char *buf, uint32_t offset, uint32_t len);
 char *jffs2_getlink(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
-/* compr.c */
-unsigned char jffs2_compress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
-			     unsigned char *data_in, unsigned char **cpage_out, 
-			     uint32_t *datalen, uint32_t *cdatalen);
-void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig);
-int jffs2_decompress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
-		     unsigned char comprtype, unsigned char *cdata_in, 
-		     unsigned char *data_out, uint32_t cdatalen, uint32_t datalen);
-
 /* scan.c */
 int jffs2_scan_medium(struct jffs2_sb_info *c);
 void jffs2_rotate_lists(struct jffs2_sb_info *c);
@@ -465,11 +489,6 @@ int jffs2_flush_wbuf_gc(struct jffs2_sb_info *c, uint32_t ino);
 int jffs2_flush_wbuf_pad(struct jffs2_sb_info *c);
 int jffs2_check_nand_cleanmarker(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 int jffs2_write_nand_cleanmarker(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
-int jffs2_nand_read_failcnt(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 #endif
-
-/* compr_zlib.c */
-int jffs2_zlib_init(void);
-void jffs2_zlib_exit(void);
 
 #endif /* __JFFS2_NODELIST_H__ */
