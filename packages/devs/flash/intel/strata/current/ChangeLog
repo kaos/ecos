@@ -1,3 +1,13 @@
+2003-09-10  Jani Monoses <jani@iv.ro>
+	
+	* cdl/flash_strata.cdl:
+	* src/flash_lock_block.c (flash_lock_block): 
+	* src/flash_unlock_block.c (flash_unlock_block): 
+	* src/flash_erase_block.c (flash_erase_block): 
+	* src/flash_query.c (flash_query): 
+	* src/flash_program_buf.c (flash_program_buf): Use .2ram sections 
+	for putting flash functions to RAM instead of the old method.
+	
 2003-05-02  Jani Monoses <jani@iv.ro>
 
 	* src/strata.c: Switch to using generic flash_query_dev.

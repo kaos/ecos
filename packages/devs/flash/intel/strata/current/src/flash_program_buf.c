@@ -55,11 +55,10 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
-
+int
+flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
+                  unsigned long block_mask, int buffer_size)
+ __attribute__ ((section (".2ram.flash_program_buf")));
 int
 flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
                   unsigned long block_mask, int buffer_size)

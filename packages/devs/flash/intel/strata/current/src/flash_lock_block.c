@@ -53,11 +53,9 @@
 #include "strata.h"
 
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
-
+int
+flash_lock_block(volatile flash_t *block)
+	__attribute__ ((section (".2ram.flash_lock_block")));
 int
 flash_lock_block(volatile flash_t *block)
 {
