@@ -63,9 +63,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#ifdef CYGPKG_IO_FLASH_BLOCK_DEVICE
 #include <cyg/io/io.h>
 #include <cyg/io/flash.h>
 #include <cyg/io/config_keys.h>
+#endif
 #include <cyg/fileio/fileio.h>
 
 static void do_mount(int argc, char *argv[]);

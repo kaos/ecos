@@ -1,3 +1,7 @@
+2004-03-17  Thomas Koeller <thomas.koeller@baslerweb.com>
+
+       * src/fs/fileio.c: Only include IO package headers if required.
+
 2004-03-02  Andrew Dyer  <adyer@righthandtech.com>
 
 	* src/load.c: add -p option to help string and only print it and -h if
