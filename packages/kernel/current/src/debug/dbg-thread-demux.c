@@ -89,6 +89,7 @@
 
 // -------------------------------------------------------------------------
 
+#ifdef CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
 static int dbg_thread_syscall_rmt(
                        enum dbg_syscall_ids id,
                        union dbg_thread_syscall_parms * p
@@ -140,7 +141,7 @@ static int dbg_thread_syscall_rmt(
     CYGARC_HAL_RESTORE_GP();
     return ret;
 }
-
+#endif /* CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT */
 
 // Note: This constant is the same as the one defined in hal_if.h:
 // #define CYGNUM_CALL_IF_DBG_SYSCALL                15

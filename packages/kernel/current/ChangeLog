@@ -1,3 +1,8 @@
+2004-03-27  Sebastien Couret	<sebastien.couret@elios-informatique.fr>
+
+	* src/debug/dbg-thread-demux.c (dbg_thread_syscall_rmt): Only
+	needed if CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT is enabled.
+
 2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* include/kapi.h: Add throw specifications throughout.
