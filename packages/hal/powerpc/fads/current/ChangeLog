@@ -1,3 +1,7 @@
+2002-06-27  Gary Thomas  <gary@chez-thomas.org>
+
+	* include/plf_regs.h: New file - platform overrides.
+
 2002-04-11  Gary Thomas  <gthomas@redhat.com>
 
 	* include/plf_cache.h: Cache control is in hal/common CDL.

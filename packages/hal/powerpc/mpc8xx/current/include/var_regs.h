@@ -44,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jskov
-// Contributors: jskov
+// Contributors: jskov, gthomas
 // Date:         2000-02-04
 // Purpose:      Provide MPC8xx register definitions
 // Description:  Provide MPC8xx register definitions
@@ -58,6 +58,8 @@
 //####DESCRIPTIONEND####
 //
 //==========================================================================
+
+#include <cyg/hal/plf_regs.h>
 
 //--------------------------------------------------------------------------
 // Instruction cache control.
@@ -193,7 +195,9 @@
 #define CYGARC_REG_IMMR_PARTNUM    0x0000ff00 // part number mask (ro)
 #define CYGARC_REG_IMMR_MASKNUM    0x000000ff // mask number mask (ro)
 
+#ifndef CYGARC_REG_IMM_BASE        // Can be defined by platform
 #define CYGARC_REG_IMM_BASE        0xfa200000 // the internal memory map base
+#endif
 
 // CP Microcode Revision Number
 #define CYGARC_REG_REV_NUM         (CYGARC_REG_IMM_BASE + 0x3cb0)
