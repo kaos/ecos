@@ -70,7 +70,7 @@
 
 // Special monitor locking procedures.  These are necessary when the monitor
 // and eCos share facilities, e.g. the network hardware.
-#ifdef CYGPKG_NET
+#if defined (CYGPKG_NET) || defined (CYGPKG_NET_LWIP)
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/drv_api.h>            // cyg_drv_dsr_lock(), etc
 #define _ENTER_MONITOR()                        \
@@ -81,7 +81,7 @@
 #define _EXIT_MONITOR()                         \
     cyg_drv_dsr_unlock();                       \
     HAL_RESTORE_INTERRUPTS(ints)
-#else // !CYGPKG_NET
+#else // !CYGPKG_NET && !CYGPKG_NET_LWIP
 #define _ENTER_MONITOR() CYG_EMPTY_STATEMENT
 #define _EXIT_MONITOR()  CYG_EMPTY_STATEMENT
 #endif
