@@ -1,3 +1,9 @@
+2003-12-11  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (_rattler_reset): Machine check needs to be disabled
+	for checkstop to happen.  Interestingly enough, this fact seems to
+	differ from version to version of the 82xx chips.
+
 2003-11-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/hal_aux.c (_rattler_leds): New function.  Also set up I/O bits
