@@ -55,7 +55,7 @@ static const char *weekdays[] = {
 static const char *month[] = {
     "January",
     "February",
-    "Mars",
+    "March",
     "April",
     "May",
     "June",
