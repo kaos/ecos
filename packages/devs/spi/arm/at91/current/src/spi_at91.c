@@ -266,7 +266,7 @@ spi_at91_start_transfer(cyg_spi_at91_device_t *dev)
                      AT91_SPI_PIO_NPCS(~dev->dev_num));
 #else
     HAL_WRITE_UINT32(AT91_SPI_PIO+AT91_PIO_CODR,
-                     AT91_SPI_PIO_NPCS((~(1<<dev->dev_num)) & 0x0F));
+                      AT91_SPI_PIO_NPCS(1<<dev->dev_num));
 #endif
     CYGACC_CALL_IF_DELAY_US(dev->cs_up_udly);
    

@@ -1,3 +1,8 @@
+2004-11-11  Sebastian Block <sebastianblock@gmx.net>
+
+        * src/spi_at91.c: Fixed negation of the chip select signal when
+	not using a 4 to 16 decoder
+
 2004-10-13  Savin Zlobec  <savin@elatec.si> 
 
         * src/spi_at91.c: Fixed a typo in spi_at91_transfer reported by
