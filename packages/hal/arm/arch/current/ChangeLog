@@ -1,3 +1,8 @@
+2002-12-11  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_io.h: Allow variant or platform HALs to override
+	default IO macros.
+
 2002-11-12  Mark Salter  <msalter@redhat.com>
 
 	* src/arm_stub.c (target_ins): Account for PC prefetch when PC is

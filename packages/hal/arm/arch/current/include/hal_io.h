@@ -79,6 +79,9 @@
 
 typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 
+//-----------------------------------------------------------------------------
+// HAL IO macros.
+#ifndef HAL_IO_MACROS_DEFINED
 
 //-----------------------------------------------------------------------------
 // BYTE Register access.
@@ -287,6 +290,11 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
     for( _i_ = 0; _i_ < (_count_); _i_++)                               \
         ((volatile CYG_WORD32 *)(_register_))[_i_] = (_buf_)[_i_];      \
     CYG_MACRO_END
+
+
+#define HAL_IO_MACROS_DEFINED
+
+#endif // !HAL_IO_MACROS_DEFINED
 
 // Enforce a flow "barrier" to prevent optimizing compiler from reordering 
 // operations.
