@@ -3752,8 +3752,8 @@ target adder {
                           CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
                           CYGPKG_DEVS_ETH_POWERPC_QUICC
                           CYGPKG_DEVS_ETH_POWERPC_ADDER
+                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
         }
-#                          CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC
         description "
             The adder target provides the packages needed to run
             eCos on a A&M Adder PPC850 board."

@@ -1,3 +1,7 @@
+2002-12-10  Gary Thomas  <gthomas@ecoscentric.com>
+
+	* ecos.db: Enable serial devices for A&M 'adder' platform.
+
 2002-11-25  Gary Thomas  <gthomas@ecoscentric.com>
 
 	* ecos.db: Add support for A&M "Adder" (PowerPC 850)
