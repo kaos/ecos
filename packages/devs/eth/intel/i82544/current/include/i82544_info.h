@@ -9,7 +9,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -138,7 +138,8 @@ typedef struct i82544 {
         mac_addr_ok:1,                  // can we bring up?
         active:1,                       // has this if been brung up?
         hardwired_esa:1,                // set if ESA is hardwired via CDL
-        spare1:4; 
+        link:1,                         // set if link is up
+        spare1:3; 
     cyg_uint8                           // Count nested sends to reject
         within_send:8;                  //     nested requests to send
     cyg_uint8

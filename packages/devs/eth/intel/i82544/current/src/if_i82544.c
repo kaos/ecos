@@ -1358,6 +1358,9 @@ i82544_setup( struct i82544 *p_i82544 )
     OUTL( ctrl, ioaddr + I82544_CTRL );
     udelay(20);
 
+    // we can assume link is up with autonegotiation
+    p_i82544->link = 1;
+
     // wait up to 5 seconds for link to come up
     {
 	int delay_cnt = 500;
@@ -1448,17 +1451,22 @@ i82544_setup( struct i82544 *p_i82544 )
     {
         cyg_uint16 phy_ctrl;
         cyg_uint16 phy_stat;
+	int delay_cnt = 100 * 5;  // wait five seconds, then give up
         
+	p_i82544->link = 0;
         phy_ctrl = mii_read_register( p_i82544, PHY_ADDRESS, 0 );
         phy_ctrl |= 0x1200;
 //        os_printf("PHY ctrl %04x\n",phy_ctrl);
         mii_write_register( p_i82544, PHY_ADDRESS, 0, phy_ctrl );
         // Wait for it to complete
         do {
-            udelay(100);
+            udelay(10000);
             phy_stat = mii_read_register( p_i82544, PHY_ADDRESS, 1 );
             phy_stat = mii_read_register( p_i82544, PHY_ADDRESS, 1 );
-        } while( (phy_stat & 0x0020) == 0 );
+        } while( (phy_stat & 0x0020) == 0 && (delay_cnt-- > 0) );
+
+        if (phy_stat & 0x0020)
+            p_i82544->link = 1;
     }
 
 #ifdef DEBUG    
@@ -1487,7 +1495,7 @@ i82544_setup( struct i82544 *p_i82544 )
     // bogus, so we read the values out of the PHY specific status
     // register instead.
     
-    {
+    if (p_i82544->link) {
         cyg_uint16 phy_pssr;
         
         phy_pssr = mii_read_register( p_i82544, PHY_ADDRESS, 17 );
@@ -2146,6 +2154,43 @@ TxDone(struct i82544* p_i82544)
 }
 
 
+static cyg_bool
+check_link(struct i82544 *p_i82544)
+{
+    if ( p_i82544->link == 0 ) 
+    {
+        cyg_uint16 phy_pssr;
+        cyg_uint16 phy_stat;
+
+	phy_stat = mii_read_register( p_i82544, PHY_ADDRESS, 1 );
+        if (phy_stat & 0x20)
+	{
+            cyg_uint32 ioaddr;
+	    cyg_uint32 ctrl;
+
+	    p_i82544->link = 1;
+
+	    ioaddr = p_i82544->io_address;      // get device I/O address
+
+	    phy_pssr = mii_read_register( p_i82544, PHY_ADDRESS, 17 );
+
+	    ctrl = INL( ioaddr + I82544_CTRL );
+	    ctrl &= ~(I82544_CTRL_SPEED | I82544_CTRL_FD);
+	    if( phy_pssr & (1<<13) )
+		ctrl |= I82544_CTRL_FD;
+
+	    // Transfer speed
+	    ctrl |= ((phy_pssr>>14)&3)<<8;
+	    ctrl |= I82544_CTRL_FRCDPLX | I82544_CTRL_FRCSPD;
+
+	    OUTL( ctrl, ioaddr + I82544_CTRL );
+	}
+    }
+
+    return p_i82544->link == 1;
+}
+
+
 // ------------------------------------------------------------------------
 //
 //  Function : i82544_can_send
@@ -2172,11 +2217,15 @@ i82544_can_send(struct eth_drv_sc *sc)
     }
 
     ioaddr = p_i82544->io_address;      // get device I/O address
-    
+
     if ( p_i82544->active )
     {
         cyg_int32 txh, txt, diff;
         
+
+	if (!check_link(p_i82544))
+	    return 0;
+
         // Poll for Tx completion
         TxDone( p_i82544 );
 
@@ -2428,6 +2477,9 @@ i82544_poll(struct eth_drv_sc *sc)
 #endif
         return;
     }
+
+    if (!check_link(p_i82544))
+        return;
 
     // As it happens, this driver always requests the DSR to be called:
     (void)eth_isr( p_i82544->vector, (cyg_addrword_t)p_i82544 );
