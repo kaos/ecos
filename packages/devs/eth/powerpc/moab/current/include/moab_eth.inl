@@ -72,7 +72,7 @@ static mal_bd_t ppc405_eth_txbd[CYGNUM_DEVS_ETH_POWERPC_PPC405_TxNUM] __attribut
 
 extern char _moab_eth0_ESA[];
 static struct ppc405_eth_info ppc405_eth0_info = {
-    0, // Interrupt vector
+    0,                                     // Interrupt vector
     "eth0_esa",
     _moab_eth0_ESA,
     CYGNUM_DEVS_ETH_POWERPC_PPC405_RxNUM,  // Number of Rx buffers
