@@ -130,21 +130,21 @@ typedef struct cyg_spinlock_t cyg_spinlock_t;
 /* Scheduler operations */
 
 /* Starts scheduler with created threads.  Never returns. */
-void cyg_scheduler_start(void) CYGBLD_ATTRIB_NORET;
+void cyg_scheduler_start(void) __THROW CYGBLD_ATTRIB_NORET;
 
 /* Lock and unlock the scheduler. When the scheduler is   */
 /* locked thread preemption is disabled.                  */
-void cyg_scheduler_lock(void);
+void cyg_scheduler_lock(void) __THROW;
 
-void cyg_scheduler_unlock(void);
+void cyg_scheduler_unlock(void) __THROW;
 
 /* Just like 'cyg_scheduler_lock()', but never take the lock higher than 1  */
 /* Thus this call is safe even if the scheduler is already locked and a     */
 /* subsequent call to 'cyg_scheduler_unlock()' will completely unlock.      */
-void cyg_scheduler_safe_lock(void);
+void cyg_scheduler_safe_lock(void) __THROW;
     
 /* Read the scheduler lock value. */
-cyg_ucount32 cyg_scheduler_read_lock(void);
+cyg_ucount32 cyg_scheduler_read_lock(void) __THROW;
 
 /*---------------------------------------------------------------------------*/
 /* Thread operations */
@@ -160,33 +160,33 @@ void cyg_thread_create(
     cyg_ucount32        stack_size,             /* stack size, 0 = default   */
     cyg_handle_t        *handle,                /* returned thread handle    */
     cyg_thread          *thread                 /* put thread here           */
-);
+) __THROW;
     
-void cyg_thread_exit(void);
+void cyg_thread_exit(void) __THROW;
 
 /* It may be necessary to arrange for the victim to run for it to disappear */
-cyg_bool_t cyg_thread_delete(cyg_handle_t thread); /* false if NOT deleted */
+cyg_bool_t cyg_thread_delete(cyg_handle_t thread) __THROW; /* false if NOT deleted */
 
-void cyg_thread_suspend(cyg_handle_t thread);
+void cyg_thread_suspend(cyg_handle_t thread) __THROW;
 
-void cyg_thread_resume(cyg_handle_t thread);
+void cyg_thread_resume(cyg_handle_t thread) __THROW;
 
-void cyg_thread_kill(cyg_handle_t thread);
+void cyg_thread_kill(cyg_handle_t thread) __THROW;
 
-void cyg_thread_release(cyg_handle_t thread);    
+void cyg_thread_release(cyg_handle_t thread) __THROW;    
     
-void cyg_thread_yield(void);
+void cyg_thread_yield(void) __THROW;
 
-cyg_handle_t cyg_thread_self(void);
+cyg_handle_t cyg_thread_self(void) __THROW;
 
-cyg_handle_t cyg_thread_idle_thread(void);
+cyg_handle_t cyg_thread_idle_thread(void) __THROW;
 
 /* Priority manipulation */
 
-void cyg_thread_set_priority(cyg_handle_t thread, cyg_priority_t priority );
+void cyg_thread_set_priority(cyg_handle_t thread, cyg_priority_t priority ) __THROW;
 
-cyg_priority_t cyg_thread_get_priority(cyg_handle_t thread);              
-cyg_priority_t cyg_thread_get_current_priority(cyg_handle_t thread); 
+cyg_priority_t cyg_thread_get_priority(cyg_handle_t thread) __THROW;              
+cyg_priority_t cyg_thread_get_current_priority(cyg_handle_t thread) __THROW; 
 
 /* Deadline scheduling control (optional) */
 
@@ -194,17 +194,17 @@ void cyg_thread_deadline_wait(
     cyg_tick_count_t    start_time,             /* abs earliest start time   */
     cyg_tick_count_t    run_time,               /* worst case execution time */
     cyg_tick_count_t    deadline                /* absolute deadline         */
-); 
+) __THROW; 
 
-void cyg_thread_delay(cyg_tick_count_t delay);
+void cyg_thread_delay(cyg_tick_count_t delay) __THROW;
 
 /* Stack information */
-cyg_addrword_t cyg_thread_get_stack_base(cyg_handle_t thread);
+cyg_addrword_t cyg_thread_get_stack_base(cyg_handle_t thread) __THROW;
 
-cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread);
+cyg_uint32 cyg_thread_get_stack_size(cyg_handle_t thread) __THROW;
 
 #ifdef CYGFUN_KERNEL_THREADS_STACK_MEASUREMENT
-cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread);
+cyg_uint32 cyg_thread_measure_stack_usage(cyg_handle_t thread) __THROW;
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -223,30 +223,30 @@ typedef struct
     cyg_uint32          stack_used;
 } cyg_thread_info;
     
-cyg_bool_t cyg_thread_get_next( cyg_handle_t *thread, cyg_uint16 *id );
+cyg_bool_t cyg_thread_get_next( cyg_handle_t *thread, cyg_uint16 *id ) __THROW;
 
 cyg_bool_t cyg_thread_get_info( cyg_handle_t thread,
                                 cyg_uint16 id,
-                                cyg_thread_info *info );
+                                cyg_thread_info *info ) __THROW;
 
-cyg_uint16 cyg_thread_get_id( cyg_handle_t thread );
+cyg_uint16 cyg_thread_get_id( cyg_handle_t thread ) __THROW;
 
-cyg_handle_t cyg_thread_find( cyg_uint16 id );
+cyg_handle_t cyg_thread_find( cyg_uint16 id ) __THROW;
     
 /*---------------------------------------------------------------------------*/
 /* Per-thread Data                                                           */
 
 #ifdef CYGVAR_KERNEL_THREADS_DATA
 
-cyg_ucount32 cyg_thread_new_data_index(void);
+cyg_ucount32 cyg_thread_new_data_index(void) __THROW;
 
-void cyg_thread_free_data_index(cyg_ucount32 index);
+void cyg_thread_free_data_index(cyg_ucount32 index) __THROW;
 
-CYG_ADDRWORD cyg_thread_get_data(cyg_ucount32 index);
+CYG_ADDRWORD cyg_thread_get_data(cyg_ucount32 index) __THROW;
 
-CYG_ADDRWORD *cyg_thread_get_data_ptr(cyg_ucount32 index);
+CYG_ADDRWORD *cyg_thread_get_data_ptr(cyg_ucount32 index) __THROW;
 
-void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD data);
+void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD data) __THROW;
 
 #endif
     
@@ -258,9 +258,9 @@ void cyg_thread_set_data(cyg_ucount32 index, CYG_ADDRWORD data);
 typedef void (*cyg_thread_destructor_fn)(cyg_addrword_t);
 
 cyg_bool_t cyg_thread_add_destructor( cyg_thread_destructor_fn fn,
-                                      cyg_addrword_t data );
+                                      cyg_addrword_t data ) __THROW;
 cyg_bool_t cyg_thread_rem_destructor( cyg_thread_destructor_fn fn,
-                                      cyg_addrword_t data );
+                                      cyg_addrword_t data ) __THROW;
 #endif
     
 /*---------------------------------------------------------------------------*/
@@ -276,19 +276,19 @@ void cyg_exception_set_handler(
     cyg_addrword_t                new_data,
     cyg_exception_handler_t     **old_handler,
     cyg_addrword_t                *old_data
-);
+) __THROW;
 
 /* Clear exception hander to default value                                   */
 void cyg_exception_clear_handler(
     cyg_code_t                  exception_number
-);
+) __THROW;
     
 /* Invoke exception handler                                                  */
 void cyg_exception_call_handler(
     cyg_handle_t                thread,
     cyg_code_t                  exception_number,
     cyg_addrword_t              exception_info
-);
+) __THROW;
 
 
 /*---------------------------------------------------------------------------*/
@@ -314,54 +314,54 @@ void cyg_interrupt_create(
     cyg_DSR_t           *dsr,           /* Deferred Service Routine          */
     cyg_handle_t        *handle,        /* returned handle                   */
     cyg_interrupt       *intr           /* put interrupt here                */
-);
+) __THROW;
 
-void cyg_interrupt_delete( cyg_handle_t interrupt );
+void cyg_interrupt_delete( cyg_handle_t interrupt ) __THROW;
 
-void cyg_interrupt_attach( cyg_handle_t interrupt );
+void cyg_interrupt_attach( cyg_handle_t interrupt ) __THROW;
 
-void cyg_interrupt_detach( cyg_handle_t interrupt );
+void cyg_interrupt_detach( cyg_handle_t interrupt ) __THROW;
     
 /* VSR manipulation */
 
 void cyg_interrupt_get_vsr(
     cyg_vector_t        vector,         /* vector to get                     */
     cyg_VSR_t           **vsr           /* vsr got                           */
-);
+) __THROW;
 
 void cyg_interrupt_set_vsr(
     cyg_vector_t        vector,         /* vector to set                     */
     cyg_VSR_t           *vsr            /* vsr to set                        */
-);
+) __THROW;
 
 /* CPU level interrupt mask                                                  */
-void cyg_interrupt_disable(void);
+void cyg_interrupt_disable(void) __THROW;
 
-void cyg_interrupt_enable(void);
+void cyg_interrupt_enable(void) __THROW;
 
 /* Interrupt controller access                                               */
-void cyg_interrupt_mask(cyg_vector_t vector);
-void cyg_interrupt_mask_intunsafe(cyg_vector_t vector);
+void cyg_interrupt_mask(cyg_vector_t vector) __THROW;
+void cyg_interrupt_mask_intunsafe(cyg_vector_t vector) __THROW;
 
-void cyg_interrupt_unmask(cyg_vector_t vector);
-void cyg_interrupt_unmask_intunsafe(cyg_vector_t vector);
+void cyg_interrupt_unmask(cyg_vector_t vector) __THROW;
+void cyg_interrupt_unmask_intunsafe(cyg_vector_t vector) __THROW;
 
-void cyg_interrupt_acknowledge(cyg_vector_t vector);
+void cyg_interrupt_acknowledge(cyg_vector_t vector) __THROW;
 
 void cyg_interrupt_configure(
     cyg_vector_t        vector,         /* vector to configure               */
     cyg_bool_t          level,          /* level or edge triggered           */
     cyg_bool_t          up              /* rising/faling edge, high/low level*/
-);
+) __THROW;
 
 void cyg_interrupt_set_cpu(
     cyg_vector_t        vector,         /* vector to control                 */
     cyg_cpu_t           cpu             /* CPU to set                        */
-);
+) __THROW;
 
 cyg_cpu_t cyg_interrupt_get_cpu(
     cyg_vector_t        vector          /* vector to control                 */
-);
+) __THROW;
     
 /*---------------------------------------------------------------------------*/
 /* Counters, Clocks and Alarms                                               */
@@ -369,24 +369,24 @@ cyg_cpu_t cyg_interrupt_get_cpu(
 void cyg_counter_create(
     cyg_handle_t        *handle,        /* returned counter handle           */
     cyg_counter         *counter        /* put counter here                  */
-);
+) __THROW;
 
-void cyg_counter_delete(cyg_handle_t counter);
+void cyg_counter_delete(cyg_handle_t counter) __THROW;
 
 /* Return current value of counter                                           */
-cyg_tick_count_t cyg_counter_current_value(cyg_handle_t counter);
+cyg_tick_count_t cyg_counter_current_value(cyg_handle_t counter) __THROW;
 
 /* Set new current value                                                     */
 void cyg_counter_set_value(
     cyg_handle_t        counter,
     cyg_tick_count_t new_value
-);
+) __THROW;
 
 /* Advance counter by one tick                                               */
-void cyg_counter_tick(cyg_handle_t counter);
+void cyg_counter_tick(cyg_handle_t counter) __THROW;
 
 /* Advance counter by multiple ticks                                         */
-void cyg_counter_multi_tick(cyg_handle_t counter, cyg_tick_count_t _ticks);
+void cyg_counter_multi_tick(cyg_handle_t counter, cyg_tick_count_t _ticks) __THROW;
 
 
 #define CYG_RESOLUTION_T_MEMBERS  \
@@ -403,32 +403,32 @@ void cyg_clock_create(
     cyg_resolution_t    resolution,     /* Initial resolution                */
     cyg_handle_t        *handle,        /* Returned clock handle             */
     cyg_clock           *clock          /* put clock here                    */    
-);
+) __THROW;
 
-void cyg_clock_delete(cyg_handle_t clock);
+void cyg_clock_delete(cyg_handle_t clock) __THROW;
 
 /* convert a clock handle to a counter handle so we can use the              */
 /* counter API on it.                                                        */
 void cyg_clock_to_counter(
     cyg_handle_t        clock,
     cyg_handle_t        *counter
-);
+) __THROW;
 
 void cyg_clock_set_resolution(
     cyg_handle_t        clock,
     cyg_resolution_t    resolution      /* New resolution                    */
-);
+) __THROW;
 
-cyg_resolution_t cyg_clock_get_resolution(cyg_handle_t clock);
+cyg_resolution_t cyg_clock_get_resolution(cyg_handle_t clock) __THROW;
 
 /* handle of real time clock                                                 */
-cyg_handle_t cyg_real_time_clock(void);
+cyg_handle_t cyg_real_time_clock(void) __THROW;
 
 /* returns value of real time clock's counter.
    This is the same as:
    (cyg_clock_to_counter(cyg_real_time_clock(), &h),
     cyg_counter_current_value(h))                                            */
-cyg_tick_count_t cyg_current_time(void);
+cyg_tick_count_t cyg_current_time(void) __THROW;
 
 /* Alarm handler function                                                    */
 typedef void cyg_alarm_t(cyg_handle_t alarm, cyg_addrword_t data);
@@ -439,67 +439,67 @@ void cyg_alarm_create(
     cyg_addrword_t      data,           /* Call-back data                    */
     cyg_handle_t        *handle,        /* Returned alarm object             */
     cyg_alarm           *alarm          /* put alarm here                    */    
-);
+) __THROW;
 
 /* Disable alarm, detach from counter and invalidate handles                 */
-void cyg_alarm_delete( cyg_handle_t alarm);
+void cyg_alarm_delete( cyg_handle_t alarm) __THROW;
 
 void cyg_alarm_initialize(
     cyg_handle_t        alarm,
     cyg_tick_count_t    trigger,        /* Absolute trigger time             */
     cyg_tick_count_t    interval        /* Relative retrigger interval       */
-);
+) __THROW;
 
 void cyg_alarm_get_times(
     cyg_handle_t        alarm,
     cyg_tick_count_t    *trigger,       /* Next trigger time                 */
     cyg_tick_count_t    *interval       /* Current interval                  */
-);
+) __THROW;
 
-void cyg_alarm_enable( cyg_handle_t alarm );
+void cyg_alarm_enable( cyg_handle_t alarm ) __THROW;
 
-void cyg_alarm_disable( cyg_handle_t alarm );
+void cyg_alarm_disable( cyg_handle_t alarm ) __THROW;
 
 /*---------------------------------------------------------------------------*/
 /* Mail boxes                                                                */
 void cyg_mbox_create(
     cyg_handle_t        *handle,
     cyg_mbox            *mbox
-);
+) __THROW;
 
-void cyg_mbox_delete(cyg_handle_t mbox);
+void cyg_mbox_delete(cyg_handle_t mbox) __THROW;
 
-void *cyg_mbox_get(cyg_handle_t mbox);
+void *cyg_mbox_get(cyg_handle_t mbox) __THROW;
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
 void *cyg_mbox_timed_get(
     cyg_handle_t mbox,
     cyg_tick_count_t abstime
-    );
+    ) __THROW;
 #endif
 
-void *cyg_mbox_tryget(cyg_handle_t mbox);
+void *cyg_mbox_tryget(cyg_handle_t mbox) __THROW;
 
-void *cyg_mbox_peek_item(cyg_handle_t mbox);
+void *cyg_mbox_peek_item(cyg_handle_t mbox) __THROW;
 
 #ifdef CYGMFN_KERNEL_SYNCH_MBOXT_PUT_CAN_WAIT
-cyg_bool_t cyg_mbox_put(cyg_handle_t mbox, void *item);
+cyg_bool_t cyg_mbox_put(cyg_handle_t mbox, void *item) __THROW;
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
 cyg_bool_t cyg_mbox_timed_put(
     cyg_handle_t mbox,
     void *item,
     cyg_tick_count_t abstime
-    );
+    ) __THROW;
 #endif
 #endif
 
-cyg_bool_t cyg_mbox_tryput(cyg_handle_t mbox, void *item);
+cyg_bool_t cyg_mbox_tryput(cyg_handle_t mbox, void *item) __THROW;
 
-cyg_count32 cyg_mbox_peek(cyg_handle_t mbox);
+cyg_count32 cyg_mbox_peek(cyg_handle_t mbox) __THROW;
 
-cyg_bool_t cyg_mbox_waiting_to_get(cyg_handle_t mbox);
+cyg_bool_t cyg_mbox_waiting_to_get(cyg_handle_t mbox) __THROW;
 
-cyg_bool_t cyg_mbox_waiting_to_put(cyg_handle_t mbox);
+cyg_bool_t cyg_mbox_waiting_to_put(cyg_handle_t mbox) __THROW;
 
 
 /*-----------------------------------------------------------------------*/
@@ -518,24 +518,24 @@ cyg_bool_t cyg_mbox_waiting_to_put(cyg_handle_t mbox);
 void      cyg_semaphore_init(
     cyg_sem_t           *sem,            /* Semaphore to init                */
     cyg_count32         val              /* Initial semaphore value          */
-);
+) __THROW;
 
-void cyg_semaphore_destroy( cyg_sem_t *sem );
+void cyg_semaphore_destroy( cyg_sem_t *sem ) __THROW;
 
-cyg_bool_t cyg_semaphore_wait( cyg_sem_t *sem );
+cyg_bool_t cyg_semaphore_wait( cyg_sem_t *sem ) __THROW;
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
 cyg_bool_t cyg_semaphore_timed_wait(
     cyg_sem_t          *sem,
     cyg_tick_count_t   abstime
-    );
+    ) __THROW;
 #endif
 
-cyg_bool_t cyg_semaphore_trywait( cyg_sem_t *sem );
+cyg_bool_t cyg_semaphore_trywait( cyg_sem_t *sem ) __THROW;
 
-void cyg_semaphore_post( cyg_sem_t *sem );
+void cyg_semaphore_post( cyg_sem_t *sem ) __THROW;
 
-void cyg_semaphore_peek( cyg_sem_t *sem, cyg_count32 *val );
+void cyg_semaphore_peek( cyg_sem_t *sem, cyg_count32 *val ) __THROW;
 
 /*---------------------------------------------------------------------------*/
 /* Flags                                                                     */
@@ -548,17 +548,17 @@ typedef cyg_uint8  cyg_flag_mode_t;
 
 void cyg_flag_init(
     cyg_flag_t        *flag             /* Flag to init                      */
-);
+) __THROW;
 
-void cyg_flag_destroy( cyg_flag_t *flag );
+void cyg_flag_destroy( cyg_flag_t *flag ) __THROW;
 
 /* bitwise-or in the bits in value; awaken any waiting tasks whose
    condition is now satisfied */
-void cyg_flag_setbits( cyg_flag_t *flag, cyg_flag_value_t value);
+void cyg_flag_setbits( cyg_flag_t *flag, cyg_flag_value_t value) __THROW;
 
 /* bitwise-and with the the bits in value; this clears the bits which
    are not set in value.  No waiting task can be awoken. */
-void cyg_flag_maskbits( cyg_flag_t *flag, cyg_flag_value_t value);
+void cyg_flag_maskbits( cyg_flag_t *flag, cyg_flag_value_t value) __THROW;
 
 /* wait for the flag value to match the pattern, according to the mode.
    If mode includes CLR, set the flag value to zero when
@@ -567,23 +567,23 @@ void cyg_flag_maskbits( cyg_flag_t *flag, cyg_flag_value_t value);
    Value must not itself be zero. */
 cyg_flag_value_t cyg_flag_wait( cyg_flag_t        *flag,
                                 cyg_flag_value_t   pattern, 
-                                cyg_flag_mode_t    mode );
+                                cyg_flag_mode_t    mode ) __THROW;
 
 #ifdef CYGFUN_KERNEL_THREADS_TIMER
 cyg_flag_value_t cyg_flag_timed_wait( cyg_flag_t        *flag,
                                       cyg_flag_value_t   pattern, 
                                       cyg_flag_mode_t    mode,
-                                      cyg_tick_count_t   abstime );
+                                      cyg_tick_count_t   abstime ) __THROW;
 
 #endif
 
 cyg_flag_value_t cyg_flag_poll( cyg_flag_t         *flag,
                                 cyg_flag_value_t    pattern, 
-                                cyg_flag_mode_t     mode );
+                                cyg_flag_mode_t     mode ) __THROW;
 
-cyg_flag_value_t cyg_flag_peek( cyg_flag_t *flag );
+cyg_flag_value_t cyg_flag_peek( cyg_flag_t *flag ) __THROW;
 
-cyg_bool_t cyg_flag_waiting( cyg_flag_t *flag );
+cyg_bool_t cyg_flag_waiting( cyg_flag_t *flag ) __THROW;
 
 /*---------------------------------------------------------------------------*/
 /* Mutex                                                                     */
@@ -599,24 +599,24 @@ enum cyg_mutex_protocol
 
 void cyg_mutex_init(
     cyg_mutex_t        *mutex          /* Mutex to init                      */
-);
+) __THROW;
 
-void cyg_mutex_destroy( cyg_mutex_t *mutex );
+void cyg_mutex_destroy( cyg_mutex_t *mutex ) __THROW;
 
-cyg_bool_t cyg_mutex_lock( cyg_mutex_t *mutex );
+cyg_bool_t cyg_mutex_lock( cyg_mutex_t *mutex ) __THROW;
 
-cyg_bool_t cyg_mutex_trylock( cyg_mutex_t *mutex );
+cyg_bool_t cyg_mutex_trylock( cyg_mutex_t *mutex ) __THROW;
 
-void cyg_mutex_unlock( cyg_mutex_t *mutex );
+void cyg_mutex_unlock( cyg_mutex_t *mutex ) __THROW;
 
-void cyg_mutex_release( cyg_mutex_t *mutex );
+void cyg_mutex_release( cyg_mutex_t *mutex ) __THROW;
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_CEILING
-void cyg_mutex_set_ceiling( cyg_mutex_t *mutex, cyg_priority_t priority );
+void cyg_mutex_set_ceiling( cyg_mutex_t *mutex, cyg_priority_t priority ) __THROW;
 #endif
 
 #ifdef CYGSEM_KERNEL_SYNCH_MUTEX_PRIORITY_INVERSION_PROTOCOL_DYNAMIC
-void cyg_mutex_set_protocol ( cyg_mutex_t *mutex, enum cyg_mutex_protocol protocol );
+void cyg_mutex_set_protocol ( cyg_mutex_t *mutex, enum cyg_mutex_protocol protocol ) __THROW;
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -625,21 +625,21 @@ void cyg_mutex_set_protocol ( cyg_mutex_t *mutex, enum cyg_mutex_protocol protoc
 void cyg_cond_init(
     cyg_cond_t          *cond,          /* condition variable to init        */
     cyg_mutex_t         *mutex          /* associated mutex                  */
-);
+) __THROW;
 
-void cyg_cond_destroy( cyg_cond_t *cond );
+void cyg_cond_destroy( cyg_cond_t *cond ) __THROW;
 
-cyg_bool_t cyg_cond_wait( cyg_cond_t *cond );
+cyg_bool_t cyg_cond_wait( cyg_cond_t *cond ) __THROW;
 
-void cyg_cond_signal( cyg_cond_t *cond );
+void cyg_cond_signal( cyg_cond_t *cond ) __THROW;
 
-void cyg_cond_broadcast( cyg_cond_t *cond );
+void cyg_cond_broadcast( cyg_cond_t *cond ) __THROW;
 
 #ifdef CYGMFN_KERNEL_SYNCH_CONDVAR_TIMED_WAIT
 cyg_bool_t cyg_cond_timed_wait(
     cyg_cond_t        *cond,
     cyg_tick_count_t  abstime
-    );
+    ) __THROW;
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -648,23 +648,23 @@ cyg_bool_t cyg_cond_timed_wait(
 void cyg_spinlock_init(
     cyg_spinlock_t      *lock,          /* spinlock to initialize            */
     cyg_bool_t          locked          /* init locked or unlocked           */
-);
+) __THROW;
 
-void cyg_spinlock_destroy( cyg_spinlock_t *lock );
+void cyg_spinlock_destroy( cyg_spinlock_t *lock ) __THROW;
 
-void cyg_spinlock_spin( cyg_spinlock_t *lock );
+void cyg_spinlock_spin( cyg_spinlock_t *lock ) __THROW;
 
-void cyg_spinlock_clear( cyg_spinlock_t *lock );
+void cyg_spinlock_clear( cyg_spinlock_t *lock ) __THROW;
 
-cyg_bool_t cyg_spinlock_try( cyg_spinlock_t *lock );
+cyg_bool_t cyg_spinlock_try( cyg_spinlock_t *lock ) __THROW;
 
-cyg_bool_t cyg_spinlock_test( cyg_spinlock_t *lock );
+cyg_bool_t cyg_spinlock_test( cyg_spinlock_t *lock ) __THROW;
 
 void cyg_spinlock_spin_intsave( cyg_spinlock_t *lock,
-                                cyg_addrword_t *istate );
+                                cyg_addrword_t *istate ) __THROW;
 
 void cyg_spinlock_clear_intsave( cyg_spinlock_t *lock,
-                                 cyg_addrword_t istate );
+                                 cyg_addrword_t istate ) __THROW;
 
 /*---------------------------------------------------------------------------*/
 #ifdef __cplusplus

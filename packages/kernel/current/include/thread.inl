@@ -518,57 +518,6 @@ inline void Cyg_Thread::set_data( Cyg_Thread::cyg_data_index index,
 
 // -------------------------------------------------------------------------
 
-#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
-
-// Add and remove destructors. Returns true on success, false on failure.
-inline cyg_bool
-Cyg_Thread::add_destructor( destructor_fn fn, CYG_ADDRWORD data )
-{
-    cyg_ucount16 i;
-#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-    Cyg_Scheduler::lock();
-#endif
-    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
-        if (NULL == destructors[i].fn) {
-            destructors[i].data = data;
-            destructors[i].fn = fn;
-#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-            Cyg_Scheduler::unlock();
-#endif
-            return true;
-        }
-    }
-#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-    Cyg_Scheduler::unlock();
-#endif
-    return false;
-}
-
-inline cyg_bool
-Cyg_Thread::rem_destructor( destructor_fn fn, CYG_ADDRWORD data )
-{
-    cyg_ucount16 i;
-#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-    Cyg_Scheduler::lock();
-#endif
-    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
-        if (destructors[i].fn == fn && destructors[i].data == data) {
-            destructors[i].fn = NULL;
-#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-            Cyg_Scheduler::unlock();
-#endif
-            return true;
-        }
-    }
-#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
-    Cyg_Scheduler::unlock();
-#endif
-    return false;
-}
-#endif
-
-// -------------------------------------------------------------------------
-
 #ifdef CYGVAR_KERNEL_THREADS_NAME
 
 inline char *Cyg_Thread::get_name()
@@ -684,5 +633,61 @@ inline cyg_bool Cyg_ThreadQueue::empty()
 }
 
 // -------------------------------------------------------------------------
+
+#ifdef CYGPKG_KERNEL_THREADS_DESTRUCTORS
+
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+# include <cyg/kernel/sched.inl>
+#endif
+
+// Add and remove destructors. Returns true on success, false on failure.
+inline cyg_bool
+Cyg_Thread::add_destructor( destructor_fn fn, CYG_ADDRWORD data )
+{
+    cyg_ucount16 i;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    Cyg_Scheduler::lock();
+#endif
+    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
+        if (NULL == destructors[i].fn) {
+            destructors[i].data = data;
+            destructors[i].fn = fn;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+            Cyg_Scheduler::unlock();
+#endif
+            return true;
+        }
+    }
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    Cyg_Scheduler::unlock();
+#endif
+    return false;
+}
+
+inline cyg_bool
+Cyg_Thread::rem_destructor( destructor_fn fn, CYG_ADDRWORD data )
+{
+    cyg_ucount16 i;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    Cyg_Scheduler::lock();
+#endif
+    for (i=0; i<CYGNUM_KERNEL_THREADS_DESTRUCTORS; i++) {
+        if (destructors[i].fn == fn && destructors[i].data == data) {
+            destructors[i].fn = NULL;
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+            Cyg_Scheduler::unlock();
+#endif
+            return true;
+        }
+    }
+#ifndef CYGSEM_KERNEL_THREADS_DESTRUCTORS_PER_THREAD
+    Cyg_Scheduler::unlock();
+#endif
+    return false;
+}
+#endif
+
+// -------------------------------------------------------------------------
+
 #endif // ifndef CYGONCE_KERNEL_THREAD_INL
 // EOF thread.inl

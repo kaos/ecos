@@ -1,3 +1,13 @@
+2004-03-12  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/kapi.h: Add throw specifications throughout.
+	* src/kapi.cxx: Ditto.
+	* include/sched.inl: Move include of thread.inl further down to
+	allow Cyg_Scheduler inlines to be defined first.
+	* include/thread.inl: Reorder destructors section and include
+	sched.inl right before it to solve mutual header dependency
+	problems.
+
 2004-03-04  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/kernel.sgml: Document cyg_thread_delete return value.

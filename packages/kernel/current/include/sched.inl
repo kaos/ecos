@@ -61,8 +61,7 @@
 //==========================================================================
 
 #include <cyg/kernel/instrmnt.h>
-
-#include <cyg/kernel/thread.inl>   // we use some thread inlines here
+#include <cyg/hal/hal_arch.h>
 
 // -------------------------------------------------------------------------
 // Inlines for Cyg_Scheduler class
@@ -151,6 +150,8 @@ inline void Cyg_Scheduler::unlock_simple()
 
 // -------------------------------------------------------------------------
 // Inlines for Cyg_SchedThread class
+
+#include <cyg/kernel/thread.inl>   // we use some thread inlines here
 
 inline void Cyg_SchedThread::remove()
 {
