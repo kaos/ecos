@@ -1,3 +1,10 @@
+2003-02-22  Mark Salter  <msalter@redhat.com>
+
+	* src/if_i82559.c: Fix endian issues with EEPROM writing.
+	Use read-modify-write to set EEPROM mac address. Support
+	writing to EEPROM the mac address obtained from
+	CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA.
+
 2003-02-12  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82559.c: Remove restriction preventing combination of

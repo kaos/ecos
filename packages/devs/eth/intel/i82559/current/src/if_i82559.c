@@ -1276,6 +1276,67 @@ read_eeprom(long ioaddr, int location, int addr_len)
     
     return retval;
 }
+
+static int
+read_eeprom_esa(struct i82559 *p_i82559, char *addr)
+{
+    int addr_length, i, count;
+    cyg_uint16 checksum;
+    cyg_uint32 ioaddr = p_i82559->io_address;
+
+    // read eeprom and get 82559's mac address
+    addr_length = get_eeprom_size(ioaddr);
+    // (this is the length of the *EEPROM*s address, not MAC address)
+
+    // If length is 1, it _probably_ means there's no EEPROM
+    // present.  Couldn't find an explicit mention of this in the
+    // docs, but length=1 appears to be the behaviour in that case.
+    if (1 == addr_length) {
+#ifdef DEBUG_EE
+	os_printf("Error: No EEPROM present for device %d\n", 
+		  p_i82559->index);
+#endif
+    } else {
+	for (checksum = 0, i = 0, count = 0; count < 64; count++) {
+	    cyg_uint16 value;
+	    // read word from eeprom
+	    value = read_eeprom(ioaddr, count, addr_length);
+#ifdef DEBUG_EE
+	    os_printf( "%2d: %04x\n", count, value );
+#endif
+	    checksum += value;
+	    if (count < 3) {
+		addr[i++] = value & 0xFF;
+		addr[i++] = (value >> 8) & 0xFF;
+	    }
+	}
+
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_WITHOUT_CRC
+	// If the EEPROM checksum is wrong, the MAC address read
+	// from the EEPROM is probably wrong as well. In that
+	// case, we don't set mac_addr_ok, but continue the
+	// initialization. If then somebody calls i82559_start
+	// without calling eth_set_mac_address() first, we refuse
+	// to bring up the interface, because running with an
+	// invalid MAC address is not a very brilliant idea.
+        
+	if ((checksum & 0xFFFF) != 0xBABA)  {
+	    // selftest verified checksum, verify again
+#ifdef DEBUG_EE
+	    os_printf("Warning: Invalid EEPROM checksum %04X for device %d\n",
+		      checksum, p_i82559->index);
+#endif
+	} else // trailing block
+#endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_WITHOUT_CRC
+        {
+#ifdef DEBUG_EE
+	    os_printf("Valid EEPROM checksum\n");
+#endif
+	    return 1;
+	}
+    }
+    return 0;
+}
 #endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
 
 // ------------------------------------------------------------------------
@@ -1408,80 +1469,51 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
 
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
         int ok = false;
+        int wflag = 0;
         CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA( p_i82559, mac_address, ok );
-        if ( ok )
-            eth_set_mac_address(p_i82559, mac_address, 0);
+        if ( ok ) {
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+	    if ( CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM == p_i82559->index )
+#endif // CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
+	    {
+		cyg_uint8 tmp_addr[ETHER_ADDR_LEN];
 
+		// write eeprom address unless it is already there
+		wflag = 1;
+		if (read_eeprom_esa(p_i82559, tmp_addr)) {
+		    int i;
+		    for (i = 0; i < ETHER_ADDR_LEN; i++)
+			if (tmp_addr[i] != mac_address[i])
+			    break;
+		    if (i >= ETHER_ADDR_LEN)
+			wflag = 0;
+		}
+	    }
+#endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+	    eth_set_mac_address(p_i82559, mac_address, wflag);
+	}
 #else // ! CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
 
 #ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
-        int addr_length, i;
-        cyg_uint16 checksum;
 
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
         if ( CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM == p_i82559->index ) {
 #endif // CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
 
-        // read eeprom and get 82559's mac address
-        addr_length = get_eeprom_size(ioaddr);
-        // (this is the length of the *EEPROM*s address, not MAC address)
+	    if (read_eeprom_esa(p_i82559, mac_address)) {
+		// record the MAC address in the device structure
+		p_i82559->mac_address[0] = mac_address[0];
+		p_i82559->mac_address[1] = mac_address[1];
+		p_i82559->mac_address[2] = mac_address[2];
+		p_i82559->mac_address[3] = mac_address[3];
+		p_i82559->mac_address[4] = mac_address[4];
+		p_i82559->mac_address[5] = mac_address[5];
 
-        // If length is 1, it _probably_ means there's no EEPROM
-        // present.  Couldn't find an explicit mention of this in the
-        // docs, but length=1 appears to be the behaviour in that case.
-        if (1 == addr_length) {
-#ifdef DEBUG_EE
-            os_printf("Error: No EEPROM present for device %d\n", 
-                      p_i82559->index);
-#endif
-        } else {
-            for (checksum = 0, i = 0, count = 0; count < 64; count++) {
-                cyg_uint16 value;
-                // read word from eeprom
-                value = read_eeprom(ioaddr, count, addr_length);
-#ifdef DEBUG_EE
-                // os_printf( "%2d: %04x\n", count, value );
-#endif
-                checksum += value;
-                if (count < 3) {
-                    mac_address[i++] = value & 0xFF;
-                    mac_address[i++] = (value >> 8) & 0xFF;
-                }
-            }
-
-#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM_WITHOUT_CRC
-            // If the EEPROM checksum is wrong, the MAC address read
-            // from the EEPROM is probably wrong as well. In that
-            // case, we don't set mac_addr_ok, but continue the
-            // initialization. If then somebody calls i82559_start
-            // without calling eth_set_mac_address() first, we refuse
-            // to bring up the interface, because running with an
-            // invalid MAC address is not a very brilliant idea.
-        
-            if ((checksum & 0xFFFF) != 0xBABA)  {
-                // selftest verified checksum, verify again
-#ifdef DEBUG_EE
-                os_printf("Warning: Invalid EEPROM checksum %04X for device %d\n",
-                          checksum, p_i82559->index);
-#endif
-            } else // trailing block
-#endif
-            {
                 p_i82559->mac_addr_ok = 1;
-#ifdef DEBUG_EE
-                os_printf("Valid EEPROM checksum\n");
-#endif
-                eth_set_mac_address(p_i82559, mac_address, 0);
-            }
-        }
 
-        // record the MAC address in the device structure
-        p_i82559->mac_address[0] = mac_address[0];
-        p_i82559->mac_address[1] = mac_address[1];
-        p_i82559->mac_address[2] = mac_address[2];
-        p_i82559->mac_address[3] = mac_address[3];
-        p_i82559->mac_address[4] = mac_address[4];
-        p_i82559->mac_address[5] = mac_address[5];
+                eth_set_mac_address(p_i82559, mac_address, 0);
+	    }
 
 #ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_ONE_EEPROM
         }
@@ -3189,6 +3221,12 @@ static int i82559_configure(struct i82559* p_i82559, int promisc,
 }
 
 // ------------------------------------------------------------------------
+#if 0
+// The following table below doesn't really work with all cards.
+// The safest way to proceed is to do a read-modify-write of the
+// EEPROM contents rather than relying on a static table.
+
+#ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
 // We use this as a templete when writing a new MAC address into the
 // eeproms. The MAC address in the first few bytes is over written
 // with the correct MAC address and then the whole lot is programmed
@@ -3196,32 +3234,26 @@ static int i82559_configure(struct i82559* p_i82559, int promisc,
 // sent instead of the last two bytes.
 // The values are copied from the Intel EtherPro10/100+ &c devices
 // in the EBSA boards.
-
-#ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
-
-#define ee00 0x00, 0x00 // shorthand
-
-static char eeprom_burn[126] = { 
+static cyg_uint16 eeprom_burn[64] = { 
 /* halfword addresses! */
-/*  0: */  0x00, 0x90,   0x27, 0x8c,       0x57, 0x82,   0x03, 0x02,
-/*  4: */     ee00   ,   0x01, 0x02,       0x01, 0x47,      ee00   ,
-/*  8: */  0x13, 0x72,   0x06, 0x83,       0xa2, 0x40,   0x0c, 0x00,
-/*  C: */  0x86, 0x80,      ee00   ,          ee00   ,      ee00   ,
-/* 10: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 14: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 18: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 1C: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 20: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 24: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 28: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 2C: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 30: */  0x28, 0x01,      ee00   ,          ee00   ,      ee00   ,
-/* 34: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 38: */     ee00   ,      ee00   ,          ee00   ,      ee00   ,
-/* 3C: */     ee00   ,      ee00   ,          ee00   
+/*  0: */  0x9000, 0x8c27, 0x8257, 0x0203,
+/*  4: */  0x0000, 0x0201, 0x4701, 0x0000,
+/*  8: */  0x7213, 0x8306, 0x40A2, 0x000c,
+/*  C: */  0x8086, 0x0000, 0x0000, 0x0000,
+/* 10: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 14: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 18: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 1C: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 20: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 24: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 28: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 2C: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 30: */  0x0128, 0x0000, 0x0000, 0x0000,
+/* 34: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 38: */  0x0000, 0x0000, 0x0000, 0x0000,
+/* 3C: */  0x0000, 0x0000, 0x0000, 0x0000,
 };
-#undef ee00
-
+#endif
 #endif
 
 // ------------------------------------------------------------------------
@@ -3316,11 +3348,17 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr, int eeprom)
         int checksum, i, count;
         // (this is the length of the *EEPROM*s address, not MAC address)
         int addr_length;
+        cyg_uint16 eeprom_burn[64];
 
         addr_length = get_eeprom_size( ioaddr );
 
+        for (i = 0; i < 63; i++)
+            eeprom_burn[i] = read_eeprom( ioaddr, i, addr_length );
+
         // now set this address in the device eeprom ....
-        (void)memcpy(eeprom_burn,addr,6);
+        eeprom_burn[0] = p_i82559->mac_address[0] | (p_i82559->mac_address[1] << 8);
+        eeprom_burn[1] = p_i82559->mac_address[2] | (p_i82559->mac_address[3] << 8);
+        eeprom_burn[2] = p_i82559->mac_address[4] | (p_i82559->mac_address[5] << 8);
 
         // No idea what these were for...
         // eeprom_burn[20] &= 0xfe;   
