@@ -263,6 +263,12 @@ cdl_package CYGPKG_REDBOOT {
             # Implemented within the platform HAL
         }
 
+	cdl_option CYGBLD_BUILD_REDBOOT_WITH_IOMEM {
+	    display       "Include I/O Memory commands 'in' and 'out'"
+	    default_value CYGPKG_HAL_I386
+	    compile -library=libextras.a iomem.c
+	}
+
         no_define
         description "This option enables the building of the Redboot ELF image.
                      The image may require further relocation or symbol
@@ -732,14 +738,14 @@ cdl_package CYGPKG_REDBOOT {
                 }
     
                 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
-                    display       "Minimum image size"
+                    display       "Maximum RedBoot image size"
                     flavor        data
-                    default_value 0x20000
+                    default_value { CYGOPT_REDBOOT_FIS_REDBOOT ? 0x20000 : 0 }
                     description "
-                      This option controls the minimum length of images kept by
-                      the FIS.  In particular, it should be large enough to hold
-                      the RedBoot primary image itself, as well as be a natural
-                      multiple of the FLASH erase block size."
+                      This option controls the maximum length reserved
+                      for the RedBoot boot image in the FIS table.
+                      This should be a multiple of the flash's erase
+                      block size."
                 }
         
                 cdl_option CYGBLD_REDBOOT_FLASH_BOOT_OFFSET {

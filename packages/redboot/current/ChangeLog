@@ -1,3 +1,12 @@
+2004-11-09  David Vrabel  <dvrabel@arcom.com>
+
+	* cdl/redboot.cdl (CYGBLD_REDBOOT_MIN_IMAGE_SIZE): Correct the
+        description to match what the option is actually used for.
+
+	* src/flash.c (find_free, fis_free, fis_find_free): Don't ignore
+        an extra CYGBLD_REDBOOT_MIN_IMAGE_SIZE amount from the start.
+        This fixes the case where nothing uses the start of flash.
+
 2004-11-04  Peter Korsgaard  <jacmet@sunsite.dk>
 
 	* src/fconfig.c (flash_write_config): Removed compiler warning
