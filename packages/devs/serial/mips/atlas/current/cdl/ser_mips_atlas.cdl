@@ -63,7 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_MIPS_ATLAS {
     description   "
            This option enables the serial device drivers for the
            MIPS ATLAS."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   atlas_serial.c
 
