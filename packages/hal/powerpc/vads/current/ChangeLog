@@ -1,3 +1,7 @@
+2003-03-23  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/plf_cache.h: Remove some unused #defines
+
 2003-03-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* include/plf_stub.h: Remove [confusing] platform specific include.

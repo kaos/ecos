@@ -69,13 +69,6 @@
 # define CYGPRI_INIT_CACHES
 # define CYGPRI_ENABLE_CACHES
 
-// Hack to enable "quicc_smc1.c" to compile
-#if 0 // I don't think the MPC8260 needs this stuff
-#define CYGPKG_HAL_POWERPC_MPC860
-#define HAL_DCACHE_INVALIDATE(x, y)
-#define CYGNUM_HAL_INTERRUPT_CPM_SMC1 0
-#endif
-
 #endif
 
 //-----------------------------------------------------------------------------
