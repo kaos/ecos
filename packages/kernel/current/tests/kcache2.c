@@ -395,7 +395,6 @@ static void test_dsync(void)
 
     HAL_DCACHE_INVALIDATE_ALL();
 
-    diag_printf("Data: %x %x\n", aligned_p[0], aligned_p[HAL_DCACHE_LINE_SIZE]);
     CYG_TEST_CHECK(42 == aligned_p[0],
                    "memory didn't contain flushed data after invalidate");
     CYG_TEST_CHECK(43 == aligned_p[HAL_DCACHE_LINE_SIZE], 
