@@ -55,11 +55,9 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
-
+int
+flash_erase_block(volatile unsigned long *block) 
+	__attribute__ ((section (".2ram.flash_erase_block")));
 int
 flash_erase_block(volatile unsigned long *block)
 {

@@ -55,13 +55,12 @@
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
 
-//
-// CAUTION!  This code must be copied to RAM before execution.  Therefore,
-// it must not contain any code which might be position dependent!
-//
 
 #define CNT 20*1000*10  // Approx 200ms
 
+int
+flash_query(unsigned char *data)
+	__attribute__ ((section (".2ram.flash_query")));
 int
 flash_query(unsigned char *data)
 {
@@ -69,8 +68,8 @@ flash_query(unsigned char *data)
     volatile unsigned char *cROM;
     int i, cnt;
 
-    lROM = 0x41000000;
-    cROM = 0x41000000;
+    lROM = (unsigned long *)0x41000000;
+    cROM = (unsigned char *)0x41000000;
 
     lROM[0] = FLASH_Read_ID;
     for (cnt = CNT;  cnt > 0;  cnt--) ;

@@ -52,7 +52,7 @@
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
-#include <cyg/hal/hal_cache.h>
+#include <cyg/infra/diag.h>
 
 #define  _FLASH_PRIVATE_
 #include <cyg/io/flash.h>
@@ -63,23 +63,9 @@ int
 flash_hwr_init(void)
 {
     unsigned char data[96];
-    extern char flash_query, flash_query_end;
-    typedef int code_fun(unsigned char *);
-    code_fun *_flash_query;
-    int code_len, stat, num_regions, region_size, icache_isenabled;
+    int num_regions, region_size;
 
-    // Copy 'program' code to RAM for execution
-    code_len = (unsigned long)&flash_query_end - (unsigned long)&flash_query;
-    _flash_query = (code_fun *)flash_info.work_space;
-    memcpy(_flash_query, &flash_query, code_len);
-    HAL_ICACHE_IS_ENABLED(icache_isenabled);
-    HAL_DCACHE_SYNC();  // Should guarantee this code will run
-    HAL_ICACHE_DISABLE(); // is also required to avoid old contents
-
-    stat = (*_flash_query)(data);
-
-    if (icache_isenabled)
-        HAL_ICACHE_ENABLE();
+    flash_dev_query(&data);
 
     if ((data[0] == FLASH_Intel_code) && ((data[4] == FLASH_28F008SA) ||
 					  (data[4] == FLASH_28F008SC))) {
