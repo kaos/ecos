@@ -672,7 +672,7 @@ flash_lookup_alias(char *alias, char *alias_buf)
 void
 flash_write_config(void)
 {
-#if defined(CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG) && defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
+#if defined(CYGHWR_REDBOOT_FLASH_CONFIG_MEDIA_FLASH)
     int stat;
     void *err_addr;
 #endif
