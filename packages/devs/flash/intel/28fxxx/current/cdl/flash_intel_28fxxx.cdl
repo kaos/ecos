@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2002 Gary Thomas
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      jskov
-# Contributors:   jskov
+# Contributors:   jskov, gthomas
 # Date:           2001-03-21
 #
 #####DESCRIPTIONEND####
@@ -81,6 +82,17 @@ cdl_package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
             able to recognize and handle the 28F160S5
             part in the family."
     }
+
+    cdl_option CYGHWR_DEVS_FLASH_INTEL_28F320B3 {
+        display       "Intel 28F320B3 flash memory support"
+        default_value 0
+        implements    CYGINT_DEVS_FLASH_INTEL_VARIANTS
+        description   "
+            When this option is enabled, the Intel flash driver will be
+            able to recognize and handle the 28F320B3
+            part in the family."
+    }
+
 
     cdl_option CYGHWR_DEVS_FLASH_INTEL_28F320C3 {
         display       "Intel 28F320C3 flash memory support"

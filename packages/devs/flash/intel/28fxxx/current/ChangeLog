@@ -1,3 +1,9 @@
+2002-08-05  Gary Thomas  <gary@chez-thomas.org>
+2002-08-05  Jani Monoses <jani@iv.ro>	
+
+	* include/flash_28fxxx_parts.inl: 
+	* cdl/flash_intel_28fxxx.cdl: Add support for 28F320B3.
+
 2002-03-06  Nick Garnett  <nickg@redhat.com>
 
 	* include/flash_28fxxx.inl: 
