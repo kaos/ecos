@@ -1,3 +1,8 @@
+2004-02-26  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ppc405_pci.c: 
+	* cdl/hal_powerpc_ppc40x.cdl: Make display of PCI "contents" optional.
+
 2004-02-17  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/hal_powerpc_ppc40x.cdl: Fix real time clock - this counter

@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2003 Gary Thomas
+// Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -102,7 +102,9 @@ hal_ppc405_pci_init(void)
                             CYG_PCI_CFG_COMMAND, cmd_state);
     cyg_pci_init();
     if ((cmd_state & CYG_PCI_CFG_COMMAND_MEMORY) == 0) {
+#if defined(CYGPKG_IO_PCI_DEBUG)
         diag_printf("Configure PCI bus\n");
+#endif
         HAL_PCI_CFG_WRITE_UINT32(0, CYG_PCI_DEV_MAKE_DEVFN(0,0),
                                  CYG_PCI_CFG_COMMAND,
                                  CYG_PCI_CFG_COMMAND_MEMORY |
@@ -118,7 +120,8 @@ hal_ppc405_pci_init(void)
         next_bus = 1;
         cyg_pci_configure_bus(0, &next_bus);
     }
-    if (1){
+#if defined(CYGSEM_HAL_POWERPC_PPC405_PCI_SHOW_BUS)
+    if (1) {
         cyg_uint8 req;                                                            
         cyg_uint8 devfn;
         cyg_pci_device_id devid;
@@ -146,6 +149,7 @@ hal_ppc405_pci_init(void)
             }
         }
     }
+#endif
 }
 
 externC void 
@@ -168,7 +172,9 @@ hal_ppc405_pci_translate_interrupt(int bus, int devfn, int *vec, int *valid)
             /* Device will not generate interrupt requests. */                      
             *valid = false;                                                        
         }                                                                           
+#if defined(CYGPKG_IO_PCI_DEBUG)
         diag_printf("Int - dev: %d, req: %d, vector: %d\n", dev, req, *vec);
+#endif
     } else {
         *valid = false;  // Invalid device
     }
