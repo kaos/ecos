@@ -52,6 +52,7 @@
 #include <pkgconf/profile_gprof.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include <cyg/infra/diag.h>
 #include <network.h>
 #include <tftp_support.h>
@@ -231,6 +232,7 @@ profile_on(void *_start, void *_end, int _bucket_size, int resolution)
         diag_printf("Can't allocate profile buffer - ignored\n");
         return;
     }
+    memset(profile, 0, (num_buckets*2));
     enabled = 1;
     diag_printf("Profile from %p..%p[%p], in %d buckets of size %d\n", 
                 start_addr, end_addr, _end, num_buckets, bucket_size);
@@ -240,3 +242,5 @@ profile_on(void *_start, void *_end, int _bucket_size, int resolution)
     // Create a TFTP server to provide the data
     tftp_server_id = tftpd_start(CYGNUM_PROFILE_TFTP_PORT, &profile_fileops);
 }
+
+// EOF profile.c

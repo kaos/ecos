@@ -1,3 +1,8 @@
+2003-04-27  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/profile.c (profile_on): Clear profile before use. Reported
+	by Suzuki, Ryouzaburou.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/profile_gprof.cdl: Add doc link.
