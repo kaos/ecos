@@ -396,7 +396,7 @@ typedef cyg_haladdrword CYG_ADDRWORD;
 
 # define CYGBLD_ATTRIB_ALIGN_MAX !!!-- Alignment alias not defined --!!!
 
-# define CYGBLD_ATTRIB_ALIGNOFTYPE !!!-- Alignment alias not defined --!!!
+# define CYGBLD_ATTRIB_ALIGNOFTYPE( _type_ ) !!!-- Alignment alias not defined --!!!
 
 # define CYGBLD_ATTRIB_PRINTF_FORMAT(__format__, __args__)
 
