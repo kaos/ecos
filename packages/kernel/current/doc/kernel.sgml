@@ -1364,7 +1364,7 @@ can give some useful indication of the thread's stack requirements.
       </para>
       <para>
 <function>cyg_thread_get_next</function> is used to enumerate all the
-current threads in the system. It should be called intially with the
+current threads in the system. It should be called initially with the
 locations pointed to by <parameter>thread</parameter> and
 <parameter>id</parameter> set to zero. On return these will be set to
 the handle and ID of the first thread. On subsequent calls, these
@@ -1381,6 +1381,26 @@ thread described by the <parameter>thread</parameter> and
 the thread's handle and id, its state and name, priorities and stack
 parameters. If the thread does not exist the function returns
 <literal>false</literal>.
+    </para>
+    <para>
+The <type>cyg_thread_info</type> structure is defined as follows by
+&lt;<filename class=headerfile>cyg/kernel/kapi.h</filename>&gt;, but may
+be extended in future with additional members, and so its size should
+not be relied upon:
+<programlisting>
+typedef struct
+{
+    <type>cyg_handle_t</type>        <structfield>handle</structfield>;
+    <type>cyg_uint16</type>          <structfield>id</structfield>;
+    <type>cyg_uint32</type>          <structfield>state</structfield>;
+    <type>char</type>                <structfield>*name</structfield>;
+    <type>cyg_priority_t</type>      <structfield>set_pri</structfield>;
+    <type>cyg_priority_t</type>      <structfield>cur_pri</structfield>;
+    <type>cyg_addrword_t</type>      <structfield>stack_base</structfield>;
+    <type>cyg_uint32</type>          <structfield>stack_size</structfield>;
+    <type>cyg_uint32</type>          <structfield>stack_used</structfield>;
+} cyg_thread_info;
+</programlisting>
     </para>
     <para>
 <function>cyg_thread_find</function> returns a handle for the thread
