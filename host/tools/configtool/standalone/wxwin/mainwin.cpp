@@ -552,7 +552,7 @@ void ecMainFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
 //    ecAboutDialog dialog(this, ecID_ABOUT_DIALOG, _("About eCos Configuration Tool"));
 //    dialog.ShowModal();
 	wxString msg;
-	msg.Printf("eCos Configuration Tool %s (%s %s)\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003\nCopyright (C) eCosCentric Limited 2004", ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__);
+	msg.Printf("eCos Configuration Tool %s (%s %s)\n\nCopyright (c) Red Hat, Inc. 1998-2002\nCopyright (c) John Dallaway 2003\nCopyright (c) eCosCentric Limited 2004", ecCONFIGURATION_TOOL_VERSION, __DATE__, __TIME__);
     wxMessageBox(msg, _("About eCos Configuration Tool"), wxICON_INFORMATION | wxOK);
 }
 

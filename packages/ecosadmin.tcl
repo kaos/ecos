@@ -19,6 +19,7 @@
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ## Copyright (C) 2003 John Dallaway
+## Copyright (C) 2004 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -555,6 +556,7 @@ proc ecosadmin::read_data { silentflag } {
 		set_package_data "$name,alias" ""
 		set_package_data "$name,versions" ""
 		set_package_data "$name,dir" ""
+		set_package_data "$name,hardware" 0
 		set ::current_package $name
 		eval $body
 		set ::current_package ""
@@ -599,10 +601,13 @@ proc ecosadmin::read_data { silentflag } {
 		}
 	}
 
+	proc hardware { } {
+		set_package_data "$::current_package,hardware" 1
+	}
+
 	proc description { str } { }
 	proc disable { str } { }
 	proc enable { str } { }
-	proc hardware { } { }
 	proc script { str } { }
 	proc set_value { str1 str2 } { }
 	}
@@ -1036,7 +1041,16 @@ proc ecosadmin::filter_old_packages { old_packages } {
 			if { [ catch { file delete -force -- $package_dir } message ] != 0 } {
 				# issue a warning if package deletion failed - this is not fatal
 				ecosadmin::warning $message
-			}			
+			}
+			set dir [ file dirname $package_dir ]
+			while { [ llength [ glob -nocomplain -- [ file join $dir "*" ] ] ] == 0 } {
+				# the parent of the deleted directory is now empty so delete it
+				if { [ catch { file delete -- $dir } message ] != 0 } {
+					# issue a warning if empty directory deletion failed - this is not fatal
+					ecosadmin::warning $message
+				}
+				set dir [ file dirname $dir ]
+			}
 		}
 	}
 

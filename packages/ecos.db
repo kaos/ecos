@@ -11,6 +11,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2004 eCosCentric Limited
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -1343,6 +1344,7 @@ package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
 
 package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
 	alias 		{ "Samsung KS32C5000 ethernet driver" eth_ks32c5000 }
+	hardware
 	directory	devs/eth/arm/ks32c5000
 	script		ks32c5000_eth.cdl
         description     "Ethernet driver for Samsung ks32c5000/S3c4510."

@@ -1,3 +1,11 @@
+2004-01-30  John Dallaway  <jld@ecoscentric.com>
+
+	* ecos.db: Add 'hardware' attribute to CYGPKG_DEVS_ETH_ARM_KS32C5000.
+
+	* ecosadmin.tcl: Delete empty directories in the repository following
+	eCos package removal. Read the hardware attribute from package records
+	in ecos.db.
+
 2004-01-19  Nick Garnett  <nickg@calivar.com>
 
 	* ecos.db: Added FAT12/16 filesystem packages.
