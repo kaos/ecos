@@ -1,3 +1,7 @@
+2003-04-08  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/main.c (do_go): Silence unused variable warning when no net.
+
 2003-04-04  Mark Salter  <msalter@redhat.com>
 
 	* src/main.c (do_go): Add -n switch to optionally stop network

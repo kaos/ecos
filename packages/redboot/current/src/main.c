@@ -430,7 +430,9 @@ do_go(int argc, char *argv[])
     bool wait_time_set;
     int  wait_time, res;
     bool cache_enabled = false;
+#ifdef CYGPKG_IO_ETH_DRIVERS
     bool stop_net = false;
+#endif
     struct option_info opts[3];
     char line[8];
     hal_virtual_comm_table_t *__chan;
