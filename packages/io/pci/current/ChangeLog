@@ -1,3 +1,7 @@
+2003-02-20  Gary Thomas  <gary@mlbassoc.com>
+
+	* tests/pcihdr.h: Update to latest published version.
+
 2002-05-14  Jesper Skov  <jskov@redhat.com>
 
 	* tests/pci1.c: Fix warning.
