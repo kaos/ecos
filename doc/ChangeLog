@@ -1,3 +1,8 @@
+2003-01-03  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* sgml/makemakefile: Try to shorten generated entity names.
+	* sgml/doclist: add terminating LF.
+
 2002-12-22  Nick Garnett  <nickg@ecoscentric.com>
 
 	* sgml/doclist: Added HTTPD package documentation.

@@ -182,7 +182,7 @@ EOF
 for i in `cat doclist`; do
   line="`echo $i | sed 's/#.*//;'`"
   if (test ! -z $line); then
-   entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g'`"
+   entityi="`echo $i | sed 's@/@-@g; s@\.@-@g; s@_@-@g; s@-current-doc@@g; s@-current@@g'`"
    # special kludge
    if [ "`basename $i`" != "tcpip-manpages.sgml" ]; then
      echo "&$entityi;" >> ecos.sgml
