@@ -59,6 +59,10 @@ cdl_component CYG_HAL_STARTUP {
     user_value ROMRAM
 };
 
+cdl_option CYGHWR_HAL_POWERPC_BOARD_SPEED {
+    user_value 63
+};
+
 cdl_component CYGBLD_BUILD_REDBOOT {
     user_value 1
 };

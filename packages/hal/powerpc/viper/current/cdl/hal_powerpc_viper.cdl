@@ -94,7 +94,7 @@ cdl_package CYGPKG_HAL_POWERPC_VIPER {
         display          "Development board clock speed (MHz)"
         flavor           data
         legal_values     { 47 51 55 59 63 }
-        default_value    47
+        default_value    63
         description      "
            VIPER Development Boards have various system clock speeds
            depending on the processor fitted.  Select the clock speed
