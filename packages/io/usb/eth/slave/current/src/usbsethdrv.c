@@ -573,6 +573,7 @@ usbs_ethdrv_ioctl(struct eth_drv_sc* sc, unsigned long key, void* data, int data
             p->rx_count             = eth->rx_count;
             p->tx_count             = eth->tx_count;
             p->tx_queue_len         = 1;
+            result=0;
         }
         break;
 #endif

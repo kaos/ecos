@@ -1,3 +1,9 @@
+2003-06-27  Manu Sharma  <manu.sharma@ascom.ch>
+
+	* src/usbsethdrv.c (usbs_ethdrv_ioctl): Return 0 when we handle
+	ETH_DRV_GET_IF_STATS* otherwise the caller thinks we don't support
+	these ioctl calls.
+
 2003-03-23  Iztok Zupet <iz@vsr.si>
 
 	* doc/usbseth.sgml: Remove .eps and .gif and introduce .png for
