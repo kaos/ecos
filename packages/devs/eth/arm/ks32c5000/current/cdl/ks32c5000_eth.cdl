@@ -147,6 +147,14 @@ cdl_package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
             }
         }
 
+        cdl_option CYGPKG_DEVS_ETH_ARM_KS32C5000_PHY_RTL8201 {
+            display     "RTL8201 PHY support"
+            flavor bool
+            default_value 0
+            implements CYGINT_DEVS_ETH_ARM_KS32C5000_PHY
+            compile -library=libextras.a rtl8201.c
+        }
+
         cdl_option CYGPKG_DEVS_ETH_ARM_KS32C5000_PHYADDR {
             display "PHY MII address"
             flavor  data

@@ -1,3 +1,8 @@
+2003-10-09  Roland Cassebohm  <roland.cassebohm@visionsystems.de>
+
+	* src/rtl8201.c: New file. Added RTL8201 PHY support.
+	* cdl/ks32c5000_eth.cdl: CDL to allow configuration of the above.
+
 2003-10-09  Roland Cassebohm  <roland.cassebohm@visionsystems.de> 
  
  	* src/ks5000_ether.c: Set ifStats.description only one time while
