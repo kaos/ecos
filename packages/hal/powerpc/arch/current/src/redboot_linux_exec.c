@@ -112,9 +112,9 @@ do_exec(int argc, char *argv[])
     unsigned long sp = CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE;
     
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
-              (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
+              (void *)&wait_time, (bool *)&wait_time_set, "wait timeout");
     init_opts(&opts[1], 'c', true, OPTION_ARG_TYPE_STR, 
-              (void **)&cmd_line, (bool *)&cmd_line_set, "kernel command line");
+              (void *)&cmd_line, (bool *)&cmd_line_set, "kernel command line");
     entry = entry_address;  // Default from last 'load' operation
     if (!scan_opts(argc, argv, 1, opts, 2, (void *)&entry, OPTION_ARG_TYPE_NUM, 
                    "[physical] starting address")) {
