@@ -58,5 +58,11 @@
 ##
 ##=============================================================================
 
+#ifdef CYG_HAL_STARTUP_ROMRAM
+        .macro hal_reserved_vector_00000
+        b   _start
+        .endm
+#define CYG_HAL_RESERVED_VECTOR_00000
+#endif
 
 #endif // CYGONCE_HAL_PLF_INC
