@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,7 +28,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians, jld
 // Contact(s):  julians
 // Date:        2000/09/06
 // Version:     $Id: platformeditordlg.cpp,v 1.4 2001/07/05 10:42:16 julians Exp $
@@ -72,11 +73,11 @@
 #include "wx/msw/winundef.h"
 #endif
 
-#ifdef __WXMSW__
-static const wxChar* g_NewLineToReplace = wxT("\r\n");
-#else
+//#ifdef __WXMSW__
+//static const wxChar* g_NewLineToReplace = wxT("\r\n");
+//#else
 static const wxChar* g_NewLineToReplace = wxT("\n");
-#endif
+//#endif
 
 BEGIN_EVENT_TABLE(ecPlatformEditorDialog, ecDialog)
     EVT_BUTTON(wxID_OK, ecPlatformEditorDialog::OnOK)

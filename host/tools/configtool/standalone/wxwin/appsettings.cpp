@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,7 +28,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians, jld
 // Contact(s):  julians
 // Date:        2000/08/29
 // Version:     $Id: appsettings.cpp,v 1.27 2001/12/14 17:34:03 julians Exp $
@@ -239,7 +240,7 @@ wxString ecSettings::GenerateFilename(const wxString& rootName)
 // Load config info
 bool ecSettings::LoadConfig()
 {
-    wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+    wxConfig config(wxGetApp().GetSettings().GetConfigAppName());
     
     config.Read(_("/Window Status/FrameStatus"), & m_frameStatus);
     config.Read(_("/Window Status/ShowToolBar"), (bool*) & m_showToolBar);
@@ -330,7 +331,7 @@ bool ecSettings::LoadConfig()
     {
         // This should look in HKEY_LOCAL_MACHINE
 
-        wxConfig config2(wxT("eCos"), wxT("Red Hat"), wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
+        wxConfig config2(wxT("eCos"), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
 
         wxString versionKey = GetInstallVersionKey();
         wxConfigPathChanger path(& config2, wxString(wxT("/")) + versionKey + wxT("/"));
@@ -530,13 +531,13 @@ bool ecSettings::LoadConfig()
         }
     }
     
-    // Load current repository from eCos/Common/Repository/Folder
+    // Load current repository from eCos Configuration Tool/Paths/RepositoryDir
     {
-        wxConfig eCosConfig(wxT("eCos"), wxT("Red Hat"), wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
-        wxConfigPathChanger path(& config, wxT("/Common/Repository/"));
+        wxConfig eCosConfig(wxT("eCos Configuration Tool"), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE|wxCONFIG_USE_LOCAL_FILE);
+        wxConfigPathChanger path(& config, wxT("/Repository/"));
         
         //if (!eCosConfig.Read(wxT("Folder"), & m_strRepository))
-        if (!eCosConfig.Read(wxT("/Common/Repository/Folder"), & m_strRepository))
+        if (!eCosConfig.Read(wxT("/Paths/RepositoryDir"), & m_strRepository))
         {
 #ifdef __WXMSW__
             // If we can't find the current folder, look for clues in the registry.
@@ -587,7 +588,7 @@ bool ecSettings::LoadConfig()
 // Save config info
 bool ecSettings::SaveConfig()
 {
-    wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+    wxConfig config(wxGetApp().GetSettings().GetConfigAppName());
     
     config.Write(_("/Files/LastFile"), m_lastFilename);
     
@@ -647,18 +648,16 @@ bool ecSettings::SaveConfig()
     config.Write(_("/Packages/OmitHardwarePackages"), m_omitHardwarePackages);
     config.Write(_("/Packages/MatchPackageNamesExactly"), m_matchPackageNamesExactly);
 
-    // Save current repository to eCos/Common/Repository/Folder
+    // Save current repository to eCos Configuration Tool/Paths/RepositoryDir
     // UNLESS it was overridden by ECOS_REPOSITORY
     {
-        wxConfig eCosConfig(wxT("eCos"), wxT("Red Hat"));
-        
         wxString envVarValue = wxGetenv(wxT("ECOS_REPOSITORY"));
         if (m_strRepository == envVarValue)
         {
             // Don't override the value in the local settings
         }
         else
-            eCosConfig.Write(wxT("/Common/Repository/Folder"), m_strRepository);
+            config.Write(wxT("/Paths/RepositoryDir"), m_strRepository);
     }
     
     // Run tests settings
@@ -788,7 +787,7 @@ wxString ecSettings::GetInstallVersionKey ()
 #define MAX_PATH 1024
 #endif
 
-    wxString strKey = wxT("SOFTWARE\\Red Hat\\eCos");
+    wxString strKey = wxT("SOFTWARE\\eCos");
     wxString strVersionKey = wxT("");
     wxString rc = wxT("");
     wxChar pszBuffer [MAX_PATH + 1];
@@ -875,7 +874,8 @@ bool ecRunTestsSettings::LoadConfig(wxConfig& config)
     config.Read(_("/Run Tests/Baud"), & m_nBaud);
     config.Read(_("/Run Tests/LocalTCPIPHost"), & m_strLocalTCPIPHost);
     config.Read(_("/Run Tests/LocalTCPIPPort"), & m_nLocalTCPIPPort);
-    config.Read(_("/Run Tests/ResetType"), & m_nReset);
+//  Reset type is determined at run-time for standalone configtool
+//    config.Read(_("/Run Tests/ResetType"), & m_nReset);
     config.Read(_("/Run Tests/ResetString"), & m_strReset);
     config.Read(_("/Run Tests/ResourceHost"), & m_strResourceHost);
     config.Read(_("/Run Tests/ResourcePort"), & m_nResourcePort);

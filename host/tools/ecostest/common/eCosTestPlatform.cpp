@@ -2,6 +2,7 @@
 //                                                                          
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -152,12 +153,12 @@ bool CeCosTestPlatform::Load()
 #ifdef _WIN32
 
   // get target info from the registry
-  String strPlatformsKey = _T("Software\\Red Hat\\eCos\\");
-  strPlatformsKey += GetGreatestSubkey (_T("Software\\Red Hat\\eCos"));
-  strPlatformsKey += _T("\\Platforms");
+  String strPlatformsKey = _T("Software\\eCos Configuration Tool\\Platforms");
+//  strPlatformsKey += GetGreatestSubkey (_T("Software\\eCos"));
+//  strPlatformsKey += _T("\\Platforms");
 
   HKEY hKey;
-  bool rc=ERROR_SUCCESS==RegOpenKeyEx (HKEY_LOCAL_MACHINE, strPlatformsKey, 0L, KEY_READ, &hKey);
+  bool rc=ERROR_SUCCESS==RegOpenKeyEx (HKEY_CURRENT_USER, strPlatformsKey, 0L, KEY_READ, &hKey);
   DWORD dwSubKeys=0;
   if(rc){
     // Found the given key.
@@ -236,11 +237,11 @@ bool CeCosTestPlatform::Save()
   const String strDir(CeCosTestUtils::HomeFile(_T(".eCosPlatforms")));
 #ifdef _WIN32
   if(!CeCosTestUtils::Exists(strDir)){
-    String strPlatformsKey = _T("Software\\Red Hat\\eCos\\");
-    strPlatformsKey += GetGreatestSubkey (_T("Software\\Red Hat\\eCos"));
-    strPlatformsKey += _T("\\Platforms");
+    String strPlatformsKey = _T("Software\\eCos Configuration Tool\\Platforms");
+//    strPlatformsKey += GetGreatestSubkey (_T("Software\\eCos"));
+//    strPlatformsKey += _T("\\Platforms");
 
-    return SaveToRegistry(HKEY_LOCAL_MACHINE,strPlatformsKey);
+    return SaveToRegistry(HKEY_CURRENT_USER,strPlatformsKey);
   }
 #endif
   return SaveToDir(strDir);

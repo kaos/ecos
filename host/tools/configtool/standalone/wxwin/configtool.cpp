@@ -769,7 +769,7 @@ int ecApp::OnExit(void)
     m_settings.SaveConfig();
 
     {
-        wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+        wxConfig config(wxGetApp().GetSettings().GetConfigAppName());
         if (config.HasGroup(wxT("FileHistory")))
             config.DeleteGroup(wxT("FileHistory"));
 	config.SetPath(wxT("FileHistory/"));

@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,7 +28,7 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
+// Author(s):   julians,jld
 // Contact(s):  julians
 // Date:        2000/09/28
 // Version:     $Id: admindlg.cpp,v 1.6 2001/08/22 16:50:32 julians Exp $
@@ -360,7 +361,7 @@ bool ecAdminDialog::FindUserToolsPath()
 {
 #ifdef __WXMSW__
     HKEY hKey;
-    if (ERROR_SUCCESS != RegOpenKeyEx (HKEY_CURRENT_USER, _T("Software\\Red Hat\\eCos\\Configuration Tool\\User Tools"), 0, KEY_READ, &hKey))
+    if (ERROR_SUCCESS != RegOpenKeyEx (HKEY_CURRENT_USER, _T("Software\\eCos Configuration Tool\\Paths\\UserToolsDir"), 0, KEY_READ, &hKey))
         return FALSE;
     
     TCHAR szBuffer [MAX_PATH + 1];

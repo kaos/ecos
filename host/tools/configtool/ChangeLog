@@ -1,3 +1,28 @@
+2003-02-13  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/admindlg.cpp,
+	  standalone/wxwin/configtooldoc.cpp,
+	  standalone/wxwin/configtool.cpp,
+	  standalone/wxwin/mainwin.cpp,
+	  standalone/wxwin/appsettings.cpp:
+	Look for all persistent application settings under
+        "HKEY_CURRENT_USER\Software\eCos Configuration Tool\"
+	for consistency.
+
+	* standalone/wxwin/appsettings.cpp:
+	Board 'reset type' is determined at run-time and no longer persistent.
+
+	* standalone/wxwin/configtooldoc.cpp:
+	Determine board reset type by looking for "cyg_test_is_simulator=1"
+	rather than just "cyg_test_is_simulator" since "cyg_test_simulator=0"
+	is also possible.
+
+	* standalone/wxwin/mainwin.cpp:
+	Supress obsolete menu items.
+
+	* standalone/wxwin/platformeditordialog.cpp:
+	Replace LF (rather than CRLF) with ';' when storing GDB commands.
+
 2003-02-10  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/runtestsdlg.cpp,

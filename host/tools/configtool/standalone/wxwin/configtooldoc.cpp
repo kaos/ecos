@@ -2,6 +2,7 @@
 //
 // ----------------------------------------------------------------------------
 // Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 2003 John Dallaway
 //
 // This program is part of the eCos host tools.
 //
@@ -27,8 +28,8 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   julians
-// Contact(s):  julians
+// Author(s):   julians, jld
+// Contact(s):  julians, jld
 // Date:        2000/10/05
 // Version:     $Id: configtooldoc.cpp,v 1.43 2002/02/13 13:58:18 julians Exp $
 // Purpose:
@@ -1187,7 +1188,7 @@ wxString ecConfigToolDoc::GetDefaultHardware ()
 {
 #ifdef __WXMSW__
     // get the greatest eCos version subkey
-    wxConfig config(wxT("eCos"), wxT("Red Hat"), wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE);
+    wxConfig config(wxT("eCos"), wxEmptyString, wxEmptyString, wxEmptyString, wxCONFIG_USE_GLOBAL_FILE);
 
     wxString versionKey(wxT(""));
     wxString key(wxT(""));
@@ -2268,7 +2269,7 @@ void ecConfigToolDoc::RunTests()
     const CeCosTestPlatform * etPlatform = CeCosTestPlatform::Get(strTarget);
     wxASSERT (NULL != etPlatform);
 
-    if (-1 != wxString (etPlatform->GdbCmds ()).Find (wxT("cyg_test_is_simulator")))
+    if (-1 != wxString (etPlatform->GdbCmds ()).Find (wxT("cyg_test_is_simulator=1")))
     {   // if a simulator target, disable 'reset hardware' message box
         wxGetApp().GetSettings().GetRunTestsSettings().m_nReset = RESET_NONE ;
     }

@@ -283,7 +283,7 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     wxGetApp().GetDocManager()->FileHistoryUseMenu(fileMenu);
     // Load file history
     {
-        wxConfig config(wxGetApp().GetSettings().GetConfigAppName(), wxT("Red Hat"));
+        wxConfig config(wxGetApp().GetSettings().GetConfigAppName());
 	config.SetPath(wxT("FileHistory/"));
         wxGetApp().GetDocManager()->FileHistoryLoad(config);
     }
@@ -371,8 +371,8 @@ ecMainFrame::ecMainFrame(wxDocManager *manager, const wxString& title, const wxP
     webMenu->AppendSeparator();
     webMenu->Append(ecID_REDHAT_WEB_UITRON, _("µ&ITRON"), _("Opens the µITRON specification page"));
     
-    helpMenu->Append(ecID_REDHAT_WEB, _("&Red Hat on the Web"), webMenu);
-    helpMenu->AppendSeparator();
+//    helpMenu->Append(ecID_REDHAT_WEB, _("&Red Hat on the Web"), webMenu);
+//    helpMenu->AppendSeparator();
     helpMenu->Append(ecID_REPOSITORY_INFO, _("Repository &Information...\tCtrl+I"), _("Displays information about the current repository"));
     helpMenu->Append(wxID_ABOUT, _("&About the Configuration Tool..."), _("Displays program information, version and copyright"));
     

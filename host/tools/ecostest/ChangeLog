@@ -1,3 +1,10 @@
+2003-02-13  John Dallaway  <jld@ecoscentric.com>
+
+	* common/eCosTestPlatform.cpp:
+	Look for all persistent application settings under
+        "HKEY_CURRENT_USER\Software\eCos Configuration Tool\"
+	for consistency.
+
 2003-02-05  John Dallaway  <jld@ecoscentric.com>
 
 	* common/eCosTest.cpp (CygPath): Get the cygdrive prefix from
