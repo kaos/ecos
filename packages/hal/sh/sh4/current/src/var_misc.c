@@ -101,6 +101,12 @@ cyg_var_enable_caches(void)
 void
 hal_variant_init(void)
 {
+#ifdef CYGHWR_HAL_SH_FPU
+    __externC void __set_fpscr(cyg_uint32 __fpscr);
+    // Call __set_fpscr to allow GCC (in libgcc) to update its internal
+    // state for the floating point mode.
+    __set_fpscr(CYG_FPSCR);
+#endif
 }
 
 //---------------------------------------------------------------------------

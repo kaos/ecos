@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, nickg
 // Date:        2000-10-30
 //              
 //####DESCRIPTIONEND####
@@ -50,6 +51,8 @@
 
 //--------------------------------------------------------------------------
 // Interrupt registers, module type 1
+
+#define CYGARC_REG_TRA                  0xFF000020
 #define CYGARC_REG_EXCEVT               0xFF000024
 #define CYGARC_REG_INTEVT               0xFF000028
 

@@ -9,6 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -41,7 +42,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:jskov
+// Contributors:jskov, nickg
 // Date:        2000-10-30
 //              
 //####DESCRIPTIONEND####
@@ -55,6 +56,10 @@
 #define CYGARC_REG_WTCNT                0xFFC00008 // read 8bit, write 16bit
 #define CYGARC_REG_WTCSR                0xFFC0000C // read 8bit, write 16bit
 #define CYGARC_REG_STBCR2               0xFFC00010
+
+#ifdef CYGPKG_HAL_SH_202
+#define CYGARC_REG_FRQCR3               0xFE0A0018
+#endif
 
 #define CYGARC_REG_WTCNT_WRITE          0x5a00     // top 8bit value for write
 
@@ -81,7 +86,11 @@
 // PLL1
 #if   (CYGHWR_HAL_SH_OOC_PLL_1 == 0)
 # define CYGARC_REG_FRQCR_INIT_PLL1 0x0000
+#elif (CYGHWR_HAL_SH_OOC_PLL_1 == 4)
+# define CYGARC_REG_FRQCR_INIT_PLL1 0x0400
 #elif (CYGHWR_HAL_SH_OOC_PLL_1 == 6)
+# define CYGARC_REG_FRQCR_INIT_PLL1 0x0400
+#elif (CYGHWR_HAL_SH_OOC_PLL_1 == 8)
 # define CYGARC_REG_FRQCR_INIT_PLL1 0x0400
 #else
 # error "Unsupported PLL1 setting"

@@ -1,14 +1,18 @@
+#ifndef CYGONCE_HAL_MOD_77xx_H
+#define CYGONCE_HAL_MOD_77xx_H
+
 //=============================================================================
 //
-//      sh4_scif.h
+//      mod_202.h
 //
-//      Simple driver for the sh4 Serial Communication Interface with FIFO
+//      List modules available on CPU
 //
 //=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -40,64 +44,63 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jskov
-// Contributors:Haruki Kashiwaya
-// Date:        2000-08-09
-// Description: Simple driver for the SH Serial Communication Interface
-//              The driver can be used for the SCIF modules.
-//              Clients of this file can configure the behavior with:
-//              CYGNUM_SCIF_PORTS: number of SCI ports
+// Author(s):   nickg
+// Date:        2003-08-20
+// Purpose:     Define modules (and versions) available on this CPU.
+// Usage:       Included from <cyg/hal/sh_regs.h>
 //
+//              
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
-#include <pkgconf/hal.h>
-
-#ifdef CYGNUM_HAL_SH_SH4_SCIF_PORTS
-
-//--------------------------------------------------------------------------
-// Exported functions
-
-externC cyg_uint8 cyg_hal_plf_scif_getc(void* __ch_data);
-externC void cyg_hal_plf_scif_putc(void* __ch_data, cyg_uint8 c);
-void cyg_hal_plf_scif_init(int scif_index, int comm_index, 
-                           int rcv_vect, cyg_uint8* base);
-
-#ifdef CYGPRI_HAL_SH_SH4_SCIF_PRIVATE
-
-//--------------------------------------------------------------------------
-// SCIF register offsets
-#define _REG_SCSMR  0x00
-#define _REG_SCBRR  0x04
-#define _REG_SCSCR  0x08
-#define _REG_SCFTDR 0x0c
-#define _REG_SCFSR  0x10
-#define _REG_SCFRDR 0x14
-#define _REG_SCFCR  0x18
-#define _REG_SCFDR  0x1c
-#define _REG_SCSPTR 0x20
-#define _REG_SCLSR  0x24
-
-//--------------------------------------------------------------------------
-
-typedef struct {
-    cyg_uint8* base;
-    cyg_int32 msec_timeout;
-    int isr_vector;
-    cyg_uint32 baud_rate;
-} channel_data_t;
-
-//--------------------------------------------------------------------------
-
-#if !defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
-// This one should only be used by old-stub compatibility code!
-externC void cyg_hal_plf_scif_init_channel(channel_data_t* chan);
-#warning "You should not be using anything but vv diag"
-#endif
-
-#endif // CYGPRI_HAL_SH_SH4_SCIF_PRIVATE
-
-#endif // CYGNUM_HAL_SH_SH4_SCIF_PORTS
 //-----------------------------------------------------------------------------
-// end of sh4_scif.h
+// Modules provided by the CPU
+
+#define CYGARC_SH_MOD_CPG  1
+#define CYGARC_SH_MOD_SCIF 1
+#define CYGARC_SH_MOD_UBC  1
+#define CYGARC_SH_MOD_INTC 2
+
+//-----------------------------------------------------------------------------
+// Extra details for Cache Module (CAC)
+
+//=============================================================================
+// Icache
+// Cache dimenions
+#define CYGARC_SH_MOD_CAC_I_SIZE        16384 // Size of cache in bytes
+#define CYGARC_SH_MOD_CAC_I_LINE_SIZE   32    // Size of a cache line
+#define CYGARC_SH_MOD_CAC_I_WAYS        2     // Associativity of the cache
+
+// Cache addressing information
+// entry: bits 12 -  5
+#define CYGARC_SH_MOD_ICAC_ADDRESS_BASE   0xf0000000
+#define CYGARC_SH_MOD_ICAC_ADDRESS_TOP    0xf0004000
+#define CYGARC_SH_MOD_ICAC_ADDRESS_STEP   0x00000020
+// V : bit 0
+// Writing zero to V forces an invalidate of the line
+#define CYGARC_SH_MOD_ICAC_ADDRESS_FLUSH  0x00000000
+
+
+//=============================================================================
+// Dcache
+// Cache dimenions
+#define CYGARC_SH_MOD_CAC_D_SIZE        32768 // Size of cache in bytes
+#define CYGARC_SH_MOD_CAC_D_LINE_SIZE   32    // Size of a cache line
+#define CYGARC_SH_MOD_CAC_D_WAYS        2     // Associativity of the cache
+
+// Cache addressing information
+// entry: bits 13 -  5
+#define CYGARC_SH_MOD_DCAC_ADDRESS_BASE   0xf4000000
+#define CYGARC_SH_MOD_DCAC_ADDRESS_TOP    0xf4008000
+#define CYGARC_SH_MOD_DCAC_ADDRESS_STEP   0x00000020
+// U : bit 1
+// V : bit 0
+// Writing zero to both forces a flush of the line if it is dirty.
+#define CYGARC_SH_MOD_DCAC_ADDRESS_FLUSH  0x00000000
+
+//-----------------------------------------------------------------------------
+// Extra details for interrupt handling
+#define CYGARC_SH_SOFTWARE_IP_UPDATE
+
+#endif // CYGONCE_HAL_MOD_202_H

@@ -1,14 +1,13 @@
 //=============================================================================
 //
-//      mod_regs_cac.h
+//      mod_regs_femi.h
 //
-//      CAC (cache) Module register definitions
+//      FEMI (FLASH External Memory Interface) Module register definitions
 //
 //=============================================================================
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -34,44 +33,57 @@
 // This exception does not invalidate any other reasons why a work based on
 // this file might be covered by the GNU General Public License.
 //
-// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
-// at http://sources.redhat.com/ecos/ecos-license/
+// Alternative licenses for eCos may be arranged by contacting the copyright
+// holder.
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jskov
-// Contributors:jskov, nickg
-// Date:        2000-10-30
+// Author(s):   nickg
+// Contributors:nickg
+// Date:        2003-08-20
 //              
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
-// Besides the below, cache sizes are defined in the CPU variant module
-// headers (mod_77xx.h).
-
 //--------------------------------------------------------------------------
-// Cache registers
-#define CYGARC_REG_CCR                  0xFF00001C
 
-#define CYGARC_REG_CCR_IIX              0x00008000  // IC index enable
-#define CYGARC_REG_CCR_ICI              0x00000800  // IC invalidation
-#define CYGARC_REG_CCR_ICE              0x00000100  // IC Enable
-#define CYGARC_REG_CCR_OIX              0x00000080  // OC index enable
-#define CYGARC_REG_CCR_ORA              0x00000020  // OC RAM enable
-#define CYGARC_REG_CCR_OCI              0x00000008  // OC Invalidation
-#define CYGARC_REG_CCR_CB               0x00000004  // Copy-Back enable
-#define CYGARC_REG_CCR_WT               0x00000002  // Write Through enable
-#define CYGARC_REG_CCR_OCE              0x00000001  // OC Enable
+#define CYGARC_REG_FEMI_BASE    0xFF800000
+#define CYGARC_REG_FEMI_VCR_L   (CYGARC_REG_FEMI_BASE+0x00)
+#define CYGARC_REG_FEMI_VCR_H   (CYGARC_REG_FEMI_BASE+0x04)
+#define CYGARC_REG_FEMI_MDCR    (CYGARC_REG_FEMI_BASE+0x0c)
+#define CYGARC_REG_FEMI_A0MCR   (CYGARC_REG_FEMI_BASE+0x14)
+#define CYGARC_REG_FEMI_A1MCR   (CYGARC_REG_FEMI_BASE+0x1c)
+#define CYGARC_REG_FEMI_A2MCR   (CYGARC_REG_FEMI_BASE+0x24)
+#define CYGARC_REG_FEMI_A3MCR   (CYGARC_REG_FEMI_BASE+0x2c)
+#define CYGARC_REG_FEMI_A4MCR   (CYGARC_REG_FEMI_BASE+0x34)
 
-#ifdef CYGPKG_HAL_SH_202
-#define CYGARC_REG_CCR_EMODE            0x80000000  // Enhanced mode
-#else
-#define CYGARC_REG_CCR_EMODE            0x00000000  // No enhanced mode
-#endif
+#define CYGARC_REG_FEMI_VCR_L_ID        0x0000FFFF
+#define CYGARC_REG_FEMI_VCR_L_BOT_MB    0x00FF0000
+#define CYGARC_REG_FEMI_VCR_L_TOP_MB    0xFF000000
 
-#define CYGARC_REG_CCR_CE               0x00000101  // IC, OC Enable
-#define CYGARC_REG_CCR_CF               0x00000808  // IC, OC Invalidation
+#define CYGARC_REG_FEMI_VCR_H_PERR      0x000000FF
+#define CYGARC_REG_FEMI_VCR_H_MERR      0x0000FF00
+#define CYGARC_REG_FEMI_VCR_H_VERS      0xFFFF0000
+
+#define CYGARC_REG_FEMI_MDCR_HIZMEM     0x00000001
+#define CYGARC_REG_FEMI_MDCR_BREQEN     0x00000002
+#define CYGARC_REG_FEMI_MDCR_ENDIAN     0x00000004
+#define CYGARC_REG_FEMI_MDCR_MERGE      0x00000008
+
+#define CYGARC_REG_FEMI_ANMCR_TYPE      0x00000007
+#define CYGARC_REG_FEMI_ANMCR_SZ        0x00000018
+#define CYGARC_REG_FEMI_ANMCR_BST       0x000000e0
+#define CYGARC_REG_FEMI_ANMCR_FLMD      0x00000100
+#define CYGARC_REG_FEMI_ANMCR_FLWP      0x00000200
+#define CYGARC_REG_FEMI_ANMCR_MBC       0x00000400
+#define CYGARC_REG_FEMI_ANMCR_IW        0x00007000
+#define CYGARC_REG_FEMI_ANMCR_BP        0x00070000
+#define CYGARC_REG_FEMI_ANMCR_WS        0x00700000
+#define CYGARC_REG_FEMI_ANMCR_HLD       0x03000000
+#define CYGARC_REG_FEMI_ANMCR_STUP      0x08000000
+
+// end of mod_regs_femi.h
 

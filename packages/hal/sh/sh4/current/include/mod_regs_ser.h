@@ -127,9 +127,7 @@
      (4 == CYGARC_SCBRR_PRESCALE(_b_)) ? 1 : \
      (16 == CYGARC_SCBRR_PRESCALE(_b_)) ? 2 : 3)
 #define CYGARC_SCBRR_N(_b_)     \
-    (((_b_) < 4800) ? 0 :       \
-      ((_b_) > 115200) ? 0 :    \
-       (((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED+CYGARC_SCBRR_ROUNDING(_b_))/32/CYGARC_SCBRR_PRESCALE(_b_)/(_b_))-1))
+       (((CYGHWR_HAL_SH_ONCHIP_PERIPHERAL_SPEED+CYGARC_SCBRR_ROUNDING(_b_))/32/CYGARC_SCBRR_PRESCALE(_b_)/(_b_))-1)
 
 //++++++ Module SCIF +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #ifdef CYGARC_SH_MOD_SCIF
@@ -224,5 +222,8 @@
 #define CYGARC_REG_SCIF_SCFDR_RCOUNT_shift   0
 #define CYGARC_REG_SCIF_SCFDR_TCOUNT_MASK    0x1f00 // number of chars in t fifo
 #define CYGARC_REG_SCIF_SCFDR_TCOUNT_shift   8
+
+// Serial line status register
+#define CYGARC_REG_SCIF_SCLSR_ORER           0x01   // overrun error
 
 #endif // CYGARC_SH_MOD_SCIF

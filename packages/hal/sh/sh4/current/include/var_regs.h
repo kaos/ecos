@@ -11,6 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 2003 Nick Garnett 
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -43,7 +44,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   jskov
-// Contributors:Ryozaburo Suzuki
+// Contributors:Ryozaburo Suzuki, nickg
 // Date:        2000-04-18
 // Purpose:     Define CPU memory mapped registers etc.
 // Usage:       Included via the acrhitecture register header:
@@ -83,6 +84,11 @@
 #define CYGARC_REG_SR_T                 0x00000001
 #define CYGARC_REG_SR_FD                0x00008000
 
+//--------------------------------------------------------------------------
+// FPSCR register initial value
+
+#define CYG_FPSCR 0x000C0000
+
 //==========================================================================
 //                             Module Definitions
 //==========================================================================
@@ -96,6 +102,11 @@
 #include <cyg/hal/mod_regs_ser.h>
 #include <cyg/hal/mod_regs_tmu.h>
 #include <cyg/hal/mod_regs_ubc.h>
+
+#ifdef CYGPKG_HAL_SH_202
+#include <cyg/hal/mod_regs_femi.h>
+#include <cyg/hal/mod_regs_emi.h>
+#endif
 
 #ifdef CYGARC_SH_MOD_PCIC
 #include <cyg/hal/mod_regs_pcic.h>

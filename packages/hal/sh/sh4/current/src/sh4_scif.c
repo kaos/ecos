@@ -70,11 +70,29 @@
 
 //--------------------------------------------------------------------------
 
+static void
+cyg_hal_plf_scif_set_baud(cyg_uint8 *base, cyg_uint32 baud)
+{
+    cyg_uint16 tmp;
+    
+    // Set desired baudrate
+    HAL_READ_UINT16(base+_REG_SCSMR, tmp);
+    tmp &= ~CYGARC_REG_SCIF_SCSMR_CKSx_MASK;
+    tmp |= CYGARC_SCBRR_CKSx(baud);
+    HAL_WRITE_UINT16(base+_REG_SCSMR, tmp);
+    HAL_WRITE_UINT8(base+_REG_SCBRR, 
+                    CYGARC_SCBRR_N(baud));
+
+    // Let things settle: Here we should wait the equivalent of
+    // one bit interval, i.e. 1/<baudrate> second, but we'll wait twice
+    // that to be sure.
+    CYGACC_CALL_IF_DELAY_US(2000000/baud);
+}
+
 void
 cyg_hal_plf_scif_init_channel(channel_data_t* chan)
 {
     cyg_uint8* base = chan->base;
-    cyg_uint16 tmp;
     cyg_uint16 sr;
 
     // Disable everything.
@@ -87,19 +105,8 @@ cyg_hal_plf_scif_init_channel(channel_data_t* chan)
     // 8-1-no parity.
     HAL_WRITE_UINT16(base+_REG_SCSMR, 0);
 
-    // Set desired baudrate
-    HAL_READ_UINT16(base+_REG_SCSMR, tmp);
-    tmp &= ~CYGARC_REG_SCIF_SCSMR_CKSx_MASK;
-    tmp |= CYGARC_SCBRR_CKSx(CYGNUM_HAL_SH_SH4_SCIF_BAUD_RATE);
-    HAL_WRITE_UINT16(base+_REG_SCSMR, tmp);
-    HAL_WRITE_UINT8(base+_REG_SCBRR, 
-                    CYGARC_SCBRR_N(CYGNUM_HAL_SH_SH4_SCIF_BAUD_RATE));
-
-    // Let things settle: Here we should should wait the equivalent of
-    // one bit interval, i.e. 1/<baudrate> second, but until we have
-    // something like the Linux delay loop, it's hard to do reliably. So
-    // just move on and hope for the best (this is unlikely to cause
-    // problems since the CPU has just come out of reset anyway).
+    chan->baud_rate = CYGNUM_HAL_SH_SH4_SCIF_BAUD_RATE;
+    cyg_hal_plf_scif_set_baud(base, CYGNUM_HAL_SH_SH4_SCIF_BAUD_RATE);
 
     // Clear status register (read back first).
     HAL_READ_UINT16(base+_REG_SCFSR, sr);
@@ -259,7 +266,24 @@ cyg_hal_plf_scif_control(void *__ch_data, __comm_control_cmd_t __func, ...)
         chan->msec_timeout = va_arg(ap, cyg_uint32);
 
         va_end(ap);
-    }        
+    }
+    break;
+    case __COMMCTL_SETBAUD:
+    {
+        cyg_uint8* base = chan->base;
+        va_list ap;
+
+        va_start(ap, __func);
+        chan->baud_rate = va_arg(ap, cyg_uint32);
+        va_end(ap);
+
+        // Set desired baudrate
+        cyg_hal_plf_scif_set_baud(base, chan->baud_rate);
+    }
+    break;
+    case __COMMCTL_GETBAUD:
+        ret = chan->baud_rate;
+        break;
     default:
         break;
     }

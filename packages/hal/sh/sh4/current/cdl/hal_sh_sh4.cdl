@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -40,7 +41,7 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      jskov
+# Author(s):      jskov, nickg
 # Original data:  jskov
 # Contributors:
 # Date:           1999-10-29
@@ -91,7 +92,7 @@ cdl_package CYGPKG_HAL_SH_SH4 {
         implements    CYGINT_HAL_SH_VARIANT
         implements    CYGINT_HAL_SH_CPG_T1
         requires      ! CYGHWR_HAL_SH_CACHE_ENABLE
-        default_value 1
+        default_value 0
         no_define
         define        -file=system.h CYGPKG_HAL_SH_7750
         description "
@@ -120,6 +121,26 @@ cdl_package CYGPKG_HAL_SH_SH4 {
             timers/counters."               
         define_proc {
             puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7751.h>"
+        }
+    }
+
+    cdl_component CYGPKG_HAL_SH_202 {
+        display       "SH 202 microprocessor"
+        parent        CYGPKG_HAL_SH_CPU
+        implements    CYGINT_HAL_SH_VARIANT
+        implements    CYGINT_HAL_SH_CPG_T1
+        requires      CYGHWR_HAL_SH_FPU
+        requires      { CYGHWR_HAL_SH_FPU_REGS == 16 }
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_SH_202
+        description "
+            The SH4-202 microprocessor. This is an embedded part that in
+            addition to the SH4 processor core has built in peripherals
+            such as memory controllers, DMA controllers, serial ports and
+            timers/counters."               
+        define_proc {
+            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_202.h>"
         }
     }
 

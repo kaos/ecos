@@ -1,3 +1,54 @@
+2003-09-21  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/var_misc.c (hal_variant_init): Set FPSCR on startup.
+
+	* src/sh4_scif.c (cyg_hal_plf_scif_set_baud):  New function, taken
+	from init code, but with fix to wait for hardware to settle.
+	(cyg_hal_plf_scif_control): Add __COMMCTL_GETBAUD and _SETBAUD support
+	using above function.
+
+	* include/sh4_scif.h: Add baud_rate to channel data.
+
+	* include/mod_regs_ser.h (CYGARC_SCBRR_N): Don't tweak BRR for
+	values < 4800 or > 115200 as it gets the values wrong. Instead trust
+	the developer to DTRT.
+	(CYGARC_REG_SCIF_SCLSR_ORER): Add definition for overrun in line status
+	reg.
+
+2003-09-19  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/hal_sh_sh4.cdl: Specify default CDL values for sh4_202_md
+	target.
+
+2003-09-11  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/var_regs.h (CYG_FPSCR): Changed initial value of fpscr
+	to do round-to-nearest rather than round-to-zero.
+
+2003-09-08  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/mod_202.h: Added define for UBC. The 202 appears to have
+	one, although there is no documented info. It is also not clear
+	what version it is. Setting this to 1 seems to work.
+
+	* include/mod_regs_cac.h:
+	* include/variant.inc:
+	Updated cache dimensions and initialization to support larger, two
+	way cache in sh4-202.
+
+2003-09-05  Nick Garnett  <nickg@ecoscentric.com>
+
+	* include/variant.inc:	
+	* include/var_reg.h:
+	* include/mod_202.h:
+	* include/mod_regs_cpg.h:
+	* include/mod_regs_emi.h:
+	* include/mod_regs_femi.h:
+	* include/mod_regs_intc.h:
+	* cdl/hal_sh_sh4.cdl: Added SH-202 sub-variant, extra
+	functional units, and modifications to existing units for this
+	variant.
+
 2003-02-05  Nick Garnett  <nickg@calivar.com>
 
 	* include/var_cache.h: Added include for hal_io.h since this file

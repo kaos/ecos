@@ -11,6 +11,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2003 Nick Garnett 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -43,7 +44,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s):   jskov
-## Contributors:jskov
+## Contributors:jskov, nickg
 ## Date:        2000-10-30
 ## Purpose:     SH4 variant definitions and init code
 ## Description: This file contains various definitions and macros that are
@@ -77,15 +78,33 @@
 #define CYG_SR_BANK1 (CYGARC_REG_SR_MD|CYGARC_REG_SR_IMASK|CYGARC_REG_SR_RB)
 
 ##-----------------------------------------------------------------------------
+## Cache control register initialization
+##
+## If we are starting from ROM, or are a RAM resident monitor, disable the cache
+## initially. Otherwise we are a RAM loaded application, so keep the cache
+## enabled.
+
+#if     !defined(CYG_HAL_STARTUP_RAM) ||                \
+        (       defined(CYG_HAL_STARTUP_RAM) &&         \
+                !defined(CYGSEM_HAL_USE_ROM_MONITOR))
+#define CYGARC_REG_CCR_INIT     CYGARC_REG_CCR_EMODE
+#else
+#define CYGARC_REG_CCR_INIT     (CYGARC_REG_CCR_CE|CYGARC_REG_CCR_EMODE)
+#endif
+
+##-----------------------------------------------------------------------------
 ## Hardware init macros
 #ifndef CYGPKG_HAL_SH_POST_RESET_INIT
         .macro  hal_post_reset_init
         # Initialize CPU
         mov.l   $nCYG_SR,r1             ! Put CPU in a well-known state
         ldc     r1,sr
-        mov     #0,r0
+        mov.l   $nCYG_FPSCR,r1
+        lds     r1,fpscr
+        mov.l   $nCYGARC_REG_CCR_INIT,r0
         mov.l   $nCYGARC_REG_CCR,r1     ! Disable cache
         mov.l   r0,@r1
+        mov     #0,r0
         mov.l   $nCYGARC_REG_MMUCR,r1   ! Disable MMU
         mov.l   r0,@r1
         mov.l   $nCYGARC_REG_BBRA,r1    ! Disable UBC Channel A
@@ -129,8 +148,12 @@ $nCYG_WTCSR:
         .align  2
 $nCYG_SR:
         .long   CYG_SR
+$nCYG_FPSCR:
+        .long   CYG_FPSCR
 $nCYGARC_REG_CCR:
         .long   CYGARC_REG_CCR
+$nCYGARC_REG_CCR_INIT:
+        .long   CYGARC_REG_CCR_INIT
 $nCYGARC_REG_MMUCR:
         .long   CYGARC_REG_MMUCR
 $nCYGARC_REG_BBRA:
