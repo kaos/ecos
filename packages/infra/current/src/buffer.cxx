@@ -374,11 +374,10 @@ static void increment_buffer_pos()
 #elif defined(CYGDBG_INFRA_DEBUG_TRACE_BUFFER_HALT)
         cyg_infra_trace_buffer_enable = false;
 #elif defined(CYGDBG_INFRA_DEBUG_TRACE_BUFFER_PRINT)
-        print_trace_buffer();
         cyg_infra_trace_buffer_pos = 0;
-        cyg_infra_trace_buffer_wrap = false;
-#else        
-#error No trace buffer full mode set        
+        print_trace_buffer();
+#else
+#error No trace buffer full mode set
 #endif
     }
 

@@ -757,6 +757,10 @@ unlock_thread_scheduler ()
 #endif /* DEBUG_THREADS */
 }
 
+#ifdef CYGPKG_CYGMON
+extern int processing_breakpoint_function;
+#endif
+
 void
 __handle_exception (void)
 {
@@ -791,7 +795,16 @@ __handle_exception (void)
 #endif // __ECOS__
 
   if (__is_breakpoint_function ())
+  {
+#ifdef CYGPKG_CYGMON
+    processing_breakpoint_function = 1;
+#endif
     __skipinst ();
+  } else {
+#ifdef CYGPKG_CYGMON
+    processing_breakpoint_function = 0;
+#endif
+  }
 
 #ifndef __ECOS__
   if (__cleanup_vec != NULL)
@@ -890,10 +903,26 @@ stub_format_registers(char *ptr)
             } else if (sizeof (addr) < REGSIZE (regnum)) {
                 int off = REGSIZE (regnum) - sizeof (addr);
                 int x;
+                char extend_val = 0;
 
+#if defined(CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T) && defined(CYGARC_SIGN_EXTEND_REGISTERS)
+                {
+                    unsigned long bits_in_addr = (sizeof(addr) << 3);  // ie Size in bytes * 8
+                    target_register_t sign_bit_mask = (1 << (bits_in_addr - 1));
+                    if ((addr & sign_bit_mask) == sign_bit_mask)
+                        extend_val = ~0;
+                }
+#endif
+
+#if defined(__LITTLE_ENDIAN__) || defined(_LITTLE_ENDIAN)
                 for (x = 0; x < off; x++)
-                    dummyDat[x] = 0;
+                    dummyDat[x + sizeof(addr)] = extend_val;
+                memcpy (dummyDat, &addr, sizeof (addr));
+#else
+                for (x = 0; x < off; x++)
+                    dummyDat[x] = extend_val;
                 memcpy (dummyDat + off, &addr, sizeof (addr));
+#endif
                 vptr = dummyDat;
             }
         }
@@ -1439,6 +1468,13 @@ void
 __switch_to_stub (void)
 {
   __process_exception_vec = process_exception;
+#ifdef CYGPKG_CYGMON
+  // Cygmon will have consumed the '$' character for this packet.
+  // Let's put one in the unget buffer.
+  // Actually, Cygmon does an unget, but since it uses different
+  // unget handling, we need to do this here.
+  ungetDebugChar('$');
+#endif
 }
 
 #if ! defined(BOARD_SPECIFIC_STUB_INIT)

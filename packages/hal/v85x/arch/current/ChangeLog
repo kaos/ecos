@@ -1,3 +1,8 @@
+2000-07-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (_hal_plf_reset_board): Needs to be defined in all
+	configurations.
+
 2000-06-27  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S:

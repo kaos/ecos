@@ -248,19 +248,19 @@ cyg_hal_plf_serial_isr(void *__ch_data, int* __ctrlc,
     CYGARC_HAL_SAVE_GP();
 
     if ( CYGNUM_HAL_INTERRUPT_SERIAL_RX == __vector ) {
-      reg = base->flag_register;
-      // read it anyway just in case - no harm done and we might
-      // prevent an interrup loop
-      c = (char)(base->data_register & 0xFF);
+        reg = base->flag_register;
+        // read it anyway just in case - no harm done and we might
+        // prevent an interrup loop
+        c = (char)(base->data_register & 0xFF);
 
-      cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_SERIAL_RX);
-      *__ctrlc = 0;
-      if ( (reg & SA110_RX_FIFO_STATUS_MASK) != SA110_RX_FIFO_EMPTY ) {
-        if( cyg_hal_is_break( &c , 1 ) )
-          *__ctrlc = 1;
-
+        cyg_drv_interrupt_acknowledge(CYGNUM_HAL_INTERRUPT_SERIAL_RX);
+        *__ctrlc = 0;
+        if ( (reg & SA110_RX_FIFO_STATUS_MASK) != SA110_RX_FIFO_EMPTY ) {
+            if( cyg_hal_is_break( &c , 1 ) )
+                *__ctrlc = 1;
+            
+        }
         res = CYG_ISR_HANDLED;
-      }
     }
 
     CYGARC_HAL_RESTORE_GP();

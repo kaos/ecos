@@ -387,13 +387,17 @@ start:
         ldr     r2,[r1,#0x24]   
         str     r2,[r0,#0x24]
 #endif
-        
+
+	// FIXME: The line with the thumb check is a hack, allowing
+	// the farm to run test. Problem is that virtual vector table
+	// API needs to be ARM/Thumb consistent. Will fix later.
+#if !defined(__thumb__) || defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
         .extern hal_ctrlc_isr_init
         bl      hal_ctrlc_isr_init
 #endif
-
+#endif
         LED 2
         
         // Run through static constructors

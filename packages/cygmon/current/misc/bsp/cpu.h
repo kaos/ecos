@@ -47,8 +47,12 @@
 
 #include <pkgconf/system.h>
 
-#ifdef CYG_HAL_ARM
+#ifdef CYGPKG_HAL_ARM
 #include "arm/cpu.h"
+#endif
+
+#ifdef CYGPKG_HAL_MIPS
+#include "mips/cpu.h"
 #endif
 
 #endif // __BSP_CPU_H__

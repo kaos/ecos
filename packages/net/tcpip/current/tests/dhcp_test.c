@@ -223,6 +223,7 @@ ping_host(int s, struct sockaddr_in *host)
         TNR_OFF();
         if (len < 0) {
             perror("recvfrom");
+            icmp_len = MIN_PACKET - PACKET_ADD; // go back to small packet size
             seq+=4;
         } else {
             if (show_icmp(pkt2, len, &from, host)) {
@@ -270,7 +271,8 @@ void
 net_test(cyg_addrword_t p)
 {
 #ifndef CYGPKG_NET_DHCP
-    CYG_TEST_NA_FINISH( "DHCP is not enabled" );
+    CYG_TEST_NA( "DHCP is not enabled" );
+    CYG_TEST_EXIT( "DHCP is not enabled" );
 #else
     int i;
     diag_printf("Start DHCP test\n");

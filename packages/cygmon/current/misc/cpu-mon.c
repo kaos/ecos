@@ -39,6 +39,10 @@
 
 #include <pkgconf/system.h>   // Configuration header
 
-#ifdef CYG_HAL_ARM
+#ifdef CYGPKG_HAL_ARM
 #include "arm/arm-mon.c"
+#endif
+
+#ifdef CYGPKG_HAL_MIPS
+#include "mips/mips-mon.c"
 #endif

@@ -132,9 +132,13 @@ void hal_hardware_init(void)
     // Any hardware/platform initialization that needs to be done.
     HAL_WRITE_UINT32(CYG_DEVICE_IRQ_EnableClear, 0xFFFF); // Clear all
                                                          // interrupt sources
-
+    // FIXME: The line with the thumb check is a hack, allowing
+    // the farm to run test. Problem is that virtual vector table
+    // API needs to be ARM/Thumb consistent. Will fix later.
+#ifndef __thumb__
     // Set up eCos/ROM interfaces
     hal_if_init();
+#endif
 }
 
 //

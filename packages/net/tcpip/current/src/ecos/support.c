@@ -203,6 +203,21 @@ cyg_splnet(void)
     return old_ints;
 }
 
+cyg_uint32
+#ifdef CYGIMPL_TRACE_SPLX   
+cyg_splhigh(const char *file, const int line)
+#else
+cyg_splhigh(void)
+#endif
+{
+    // splhigh did SPLSOFTNET in the contrib, so this is the same
+    return cyg_splsoftnet(
+#ifdef CYGIMPL_TRACE_SPLX   
+        file, line
+#endif
+        );
+}
+
 //
 // Prevent all other stack processing, including interrupts (DSRs), etc.
 //
@@ -734,6 +749,12 @@ cyg_netint(cyg_addrword_t param)
             ip6intr();
         }
 #endif
+#if NBRIDGE > 0
+        if (curisr & (1 << NETISR_BRIDGE)) {
+            // Pending bridge input
+            bridgeintr();
+        }
+#endif
         splx(s);
     }
 }
@@ -746,6 +767,7 @@ cyg_netint(cyg_addrword_t param)
 extern void cyg_do_net_init(void);  // Linker magic to execute this function as 'init'
 extern void ifinit(void);
 extern void loopattach(int);
+extern void bridgeattach(int);
 
 void
 cyg_net_init(void)
@@ -795,6 +817,9 @@ cyg_net_init(void)
 #if 0 < CYGPKG_NET_NLOOP
     loopattach(0);
 #endif
+#endif
+#if NBRIDGE > 0
+    bridgeattach(0);
 #endif
     // Start up the network processing
     ifinit();

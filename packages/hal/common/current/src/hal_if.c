@@ -161,7 +161,15 @@ nop_service(void)
 //----------------------------------
 // Comm controls
 
-static hal_virtual_comm_table_t comm_channels[CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+1];
+#ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
+#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
+  (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS)
+#else
+#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
+  CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
+#endif
+
+static hal_virtual_comm_table_t comm_channels[CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS+1];
 
 static int
 set_debug_comm(int __comm_id)
@@ -173,7 +181,7 @@ set_debug_comm(int __comm_id)
     CYGARC_HAL_SAVE_GP();
 
     CYG_ASSERT(__comm_id >= CYGNUM_CALL_IF_SET_COMM_ID_MANGLER
-               && __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS,
+               && __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS,
                "Invalid channel");
 
     switch (__comm_id) {
@@ -231,7 +239,7 @@ set_console_comm(int __comm_id)
     CYGARC_HAL_SAVE_GP();
 
     CYG_ASSERT(__comm_id >= CYGNUM_CALL_IF_SET_COMM_ID_MANGLER
-               && __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS,
+               && __comm_id < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS,
                "Invalid channel");
 
     switch (__comm_id) {
@@ -422,7 +430,7 @@ hal_if_init(void)
         for (i = 0; i < CYGNUM_CALL_IF_TABLE_SIZE; i++)
             hal_virtual_vector_table[i] = (CYG_ADDRWORD) &nop_service;
 
-        for (j = 0; j < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+1; j++)
+        for (j = 0; j < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS+1; j++)
             for (i = 0; i < CYGNUM_COMM_IF_TABLE_SIZE; i++)
                 comm_channels[j][i] = (CYG_ADDRWORD) &nop_service;
 

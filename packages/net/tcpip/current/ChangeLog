@@ -1,3 +1,113 @@
+2000-07-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/sys/net/if_bridge.c: Move the include of stdio.h lower,
+	apparently it confuses local x86 compilers if their host tree is
+	malformed.  Or something.
+
+2000-07-21  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/net.cdl: Add a lot of description about the way the various
+	fields are used in interface initialization: specifically that
+	"server" so-called is just "someone to talk to" in the absence of
+	bootp - and our tests depend on it!
+
+	* src/lib/bootp_support.c (init_net): Only set up a route if the
+	route address is nonzero - or all manner of confusion occurs with
+	multiple interfaces and route that sends to 0.0.0.0...
+	For setting up the default route, use
+	      (SIOCADDRT, 0, 0, TAG_GATEWAY)
+	rather than the bogus
+	      (SIOCADDRT, yiaddr & netmask, netmask, TAG_GATEWAY)
+	that we did before.
+
+	* tests/ftp_test.c (ftp_test): Try it with eth1 if available also.
+
+	* tests/ping_test.c (ping_host): If a ping fails, reset the packet
+	size to small just in case the huge packet size is what's causing
+	confusion - helps it as a debug tool.
+
+	* tests/dhcp_test.c (net_test): It didn't compile if DHCP is
+	disabled!  Doh.  Same change as ping_test also.
+
+2000-07-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/tftp_server.c (tftpd_read_file): Deal with a) [assumed]
+	timeouts on the select, and b) ACKs for old packets.
+	[CASE 104052 and CASE 104055]
+
+2000-07-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/select.c (_cyg_select): Return 0 and do not perturb
+	errno when the timeout occurs.  That matches the man page!
+	[CASE 104054]
+
+2000-07-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/machine/param.h: Be more defensive against warnings from
+	external defines such as __linux__/__bsdi__/__FreeBSD__/...
+	[CASE 104090]
+
+2000-07-19  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* tests/multi_lo_select.c: New test program to test for proper
+	broadcast behaviour of select() implementation.  Took some
+	fiddling to get it to work, but it really did fail before the
+	select change below.
+
+	* cdl/net.cdl: Build the new test.
+
+	* src/lib/select.c (_cyg_select): Don't use the CLR flag in the
+	flag wait because that gives unicast semantics.  Flags have
+	producer-does-all-the-work behaviour, so setting a value then
+	clearing it right afterwards does the right thing, with broadcast
+	semantics so long as no waiter has set the CLR part.
+	[CASE 104058]
+
+2000-07-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	All part of the bridge contribution from Andrew Lunn/ASCOM
+	(andrew.lunn@ascom.ch).  Bridginess is controlled by NBRIDGE which
+	is itself controlled by CDL option CYGPKG_NET_NBRIDGE aka "Number
+	of bridge buffers?"
+
+	* include/machine/param.h: Add proper definition of untimeout().
+
+	* include/sys/sockio.h (SIOCBRDGFRL): Add this and the other 2
+	bridge ioctl() call definitions. 
+
+	* include/sys/param.h (splhigh): Added.
+
+	* src/ecos/timeout.c (untimeout): Implement this properly, it was
+	never used before.
+
+	* src/ecos/support.c: implement cyg_splhigh(), call bridgeintr()
+	when it is scheduled and bridgeattach() if configured.
+
+	* tests/bridge.c: New "test" file - implements an ethernet bridge.
+	Contributed by Andrew Lunn/ASCOM, from the usual OpenBSD external
+	source original.
+
+	* include/net/if_bridge.h: New file, contributed by Andrew Lunn/
+	ASCOM, from OpenBSD original.  (Actually did exist in eCos source
+	tree but was not released)
+
+	* src/sys/net/if_bridge.c: New file, contributed by Andrew Lunn/
+	ASCOM, from OpenBSD original.
+
+	* cdl/net.cdl: Build the new files.
+
+2000-07-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/tftp_client.c (tftp_get): Fix edge condition when 
+	penultimate block is full and end of file which implies that
+	the last block has zero data bytes.
+
+2000-07-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/lib/dhcp_prot.c: Ignore NAK messages from the wrong server -
+	we get these because the REQUEST for our chosen IP is broadcast,
+	so other servers think we've asked to use the wrong IP.
+
 2000-07-14  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/bootp.h: export init_loopback_interface();

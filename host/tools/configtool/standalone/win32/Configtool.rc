@@ -199,7 +199,7 @@ BEGIN
     LTEXT           "Copyright © 1998-2000 Red Hat, Inc.",IDC_STATIC,40,36,
                     170,8
     LTEXT           "The eCos engineering team is:",IDC_STATIC,7,50,109,8
-    CTEXT           "\r\nPaul Beskeen\r\nJohn Dallaway\r\nRobert Erskine\r\nNick Garnett\r\nJonathan Larmour\r\nAlex Schuilenburg\r\nJesper Skov\r\nGary Thomas\r\nHugo Tyson\r\nBart Veer",
+    CTEXT           "\r\nPaul Beskeen\r\nJohn Dallaway\r\nRobert Erskine\r\nNick Garnett\r\nEugene Kulesha\r\nJonathan Larmour\r\nAlex Schuilenburg\r\nJesper Skov\r\nJulian Smart\r\nGary Thomas\r\nHugo Tyson\r\nBart Veer",
                     IDC_STATIC_ABOUT,7,69,203,114,SS_SUNKEN,WS_EX_CLIENTEDGE
 END
 
@@ -456,7 +456,7 @@ BEGIN
     IDC_PANECOMBO           "Selects a window for which the font is to be changed."
     IDC_FONT                "Changes the font of the chosen window."
     IDS_ECOS_HOME_URL       "http://www.redhat.com/products/ecos"
-    IDS_ECOS_SOURCEWARE_URL "http://sourceware.cygnus.com/ecos"
+    IDS_ECOS_SOURCEWARE_URL "http://sources.redhat.com/ecos"
     IDS_RED_HAT_HOME_URL    "http://www.redhat.com"
     IDS_UITRON_HOME_URL     "http://www.itron.gr.jp/"
     IDS_ECOS_PR_URL         "http://www.cygnus.com/ecos/ecos-pr.html"

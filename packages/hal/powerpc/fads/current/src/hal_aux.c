@@ -60,7 +60,9 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
 void
 hal_platform_init(void)
 {
+#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     hal_if_init();
+#endif
 }
 
 // EOF hal_aux.c

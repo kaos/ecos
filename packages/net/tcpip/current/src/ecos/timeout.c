@@ -131,14 +131,17 @@ timeout(timeout_fun *fun, void *arg, cyg_int32 delta)
 }
 
 void
-untimeout(cyg_uint32 stamp)
+untimeout(timeout_fun *fun, void * arg)
 {
-    if (stamp != 0) {
-        timeout_entry *e = (timeout_entry *)stamp;
-        if (e->fun != 0) {
+  int i;
+  timeout_entry *e = timeouts;
+
+  for (i = 0; i < NTIMEOUTS; i++, e++) {
+    if (e->delta && (e->fun == fun) && (e->arg == arg)) {
             e->delta = 0;
             e->fun = 0;
-            e->arg = 0;
+      return;
         }
     }
 }
+

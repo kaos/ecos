@@ -63,6 +63,7 @@
 #include <cyg/hal/drv_api.h>
 #include <netdev.h>
 #include <eth_drv.h>
+#include <net/if.h>  /* Needed for struct ifnet */
 
 #ifdef CYGPKG_IO_PCI
 #include <cyg/io/pci.h>
@@ -398,7 +399,8 @@ ETH_DRV_SC(ebsa285_sc0,
            i82559_ioctl,
            i82559_can_send,
            i82559_send,
-           i82559_recv);
+           i82559_recv,
+           i82559_poll);
 
 NETDEVTAB_ENTRY(ebsa285_netdev0, 
                 "ebsa285-0", 
@@ -417,7 +419,8 @@ ETH_DRV_SC(ebsa285_sc1,
            i82559_ioctl,
            i82559_can_send,
            i82559_send,
-           i82559_recv);
+           i82559_recv,
+           i82559_poll);
 
 NETDEVTAB_ENTRY(ebsa285_netdev1, 
                 "ebsa285-1", 
@@ -927,6 +930,7 @@ static void i82559_start( struct eth_drv_sc *sc,
 #ifdef KEEP_STATISTICS
     void *p_statistics;
 #endif
+    struct ifnet *ifp = &sc->sc_arpcom.ac_if;
 
     p_i82559 = (struct i82559 *)sc->driver_private;
     
@@ -976,10 +980,11 @@ static void i82559_start( struct eth_drv_sc *sc,
     
     p_i82559->active = 1;
 
-    if ( 0
+    if (( 0
 #ifdef ETH_DRV_FLAGS_PROMISC_MODE
          != (flags & ETH_DRV_FLAGS_PROMISC_MODE)
 #endif
+        ) || (ifp->if_flags & IFF_PROMISC)
         ) {
         eth_set_promiscuous_mode(p_i82559);
     }
@@ -1732,6 +1737,26 @@ void eth_mux_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 }
 
 // ------------------------------------------------------------------------
+// Device table entry to operate the chip in a polled mode.
+
+void i82559_poll(struct eth_drv_sc *sc)
+{
+    struct i82559 *p_i82559;
+    p_i82559 = (struct i82559 *)sc->driver_private;
+    
+    IF_BAD_82559( p_i82559 ) {
+#ifdef DEBUG
+        os_printf( "i82559_poll: Bad device pointer %x\n", p_i82559 );
+#endif
+        return;
+    }
+
+    // As it happens, this driver always requests the DSR to be called:
+    (void)eth_mux_isr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, (cyg_addrword_t)p_i82559 );
+    eth_dsr( CYGNUM_HAL_INTERRUPT_PCI_IRQ, 1, (cyg_addrword_t)p_i82559 );
+}
+
+// ------------------------------------------------------------------------
 //
 //  Function : pci_init_find_82559s
 //
@@ -2003,11 +2028,21 @@ static int eth_set_promiscuous_mode(struct i82559* p_i82559)
     OUTL(VIRT_TO_BUS(ccs), ioaddr + SCBPointer); 
     OUTW(SCB_M | CU_START, ioaddr + SCBCmd);    
   
+    udelay(10000);
+
     // now check for result ...
     wait_for_cmd_done(ioaddr);   
   
     if ( (!ccs->cb_entry.cb_ok) || (!ccs->cb_entry.cb_complete) )
         return 1; // Failed
+
+    wait_for_cmd_done(ioaddr);
+    /* load pointer to Rx Ring */
+    
+    OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]),
+         ioaddr + SCBPointer);
+    OUTW(RUC_START, ioaddr + SCBCmd);
+
     return 0; // OK
 }
 

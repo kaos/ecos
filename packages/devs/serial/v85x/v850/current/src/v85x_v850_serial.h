@@ -58,7 +58,7 @@ struct serial_port {
     unsigned char txs;         // Transmit shift register
     unsigned char _filler3;
     unsigned char rxs;         // Receive shift register
-    unsigned char _filler4;
+    unsigned char _filler4[5];
     unsigned char brgm;        // Baud rate mode
     unsigned char _filler5;
 };
@@ -114,12 +114,11 @@ static unsigned char select_parity[] = {
     ASIM_Parity_space,            // Space parity
 };
 
-// Baud rate values, based on raw 17MHz clock
-
 static struct v850_baud {
     unsigned char count;
     unsigned char mode;
 } select_baud[] = {
+// Baud rate values, based on raw 17MHz clock
       {0, 0},  // Unused
       {0, 0},  // 50
       {0, 0},  // 75

@@ -1,3 +1,8 @@
+2000-07-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_aux.c (hal_platform_init): Don't call hal_if_init just
+	yet.
+
 2000-06-26  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_powerpc_fads.cdl: Removed ROM_DEBUG_CHANNEL option.

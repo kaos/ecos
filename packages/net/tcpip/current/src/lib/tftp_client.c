@@ -208,7 +208,7 @@ tftp_get(char *filename,
                     close(s);
                     return -1;
                 }
-                if ((actual_len > 0) && (actual_len < SEGSIZE)) {
+                if ((actual_len >= 0) && (actual_len < SEGSIZE)) {
                     // End of data
                     close(s);
                     return res;

@@ -34,7 +34,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	nickg
-## Contributors:	nickg
+## Contributors:	nickg, dmoseley
 ## Date:	1997-10-16
 ## Purpose:	Architecture definitions.
 ## Description:	This file contains various definitions and macros that are
@@ -59,7 +59,7 @@
 
 #if defined(CYG_HAL_STARTUP_RAM)
 # if defined(CYGPKG_HAL_MIPS_SIM) || !defined(CYGSEM_HAL_USE_ROM_MONITOR)
-#  define INITIAL_SR	0x1000ff00	/* CP0 usable, Ints enabled	*/
+#  define INITIAL_SR	0x1000ff00	/* CP0 usable, Ints enabled, master interrupt disable	*/
 # else
 #  define INITIAL_SR	0x1040ff00	/* as above + ROM vectors used	*/
 # endif	
@@ -152,6 +152,7 @@
 	
 	# Initialize CPU
 	.macro	hal_cpu_init
+
 	mtc0	zero,cause		# zero cause reg
 	nop
 	la	v0,INITIAL_SR		# initialize status register

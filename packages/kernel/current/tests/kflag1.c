@@ -63,6 +63,9 @@ static cyg_flag_t f2;
 #endif
 
 static volatile cyg_ucount8 q = 0;
+#define FIRST_THREAD_WAIT_TIME   5
+#define SECOND_THREAD_WAIT_TIME 10
+#define THIRD_THREAD_WAIT_TIME  20
 
 static void entry0( cyg_addrword_t data )
 {
@@ -98,7 +101,7 @@ static void entry0( cyg_addrword_t data )
     cyg_flag_wait( &f2, 0x2, CYG_FLAG_WAITMODE_OR);    
     CYG_TEST_CHECK(20==q,"bad synchronization");
     cyg_flag_timed_wait( &f2, 0x10, CYG_FLAG_WAITMODE_AND,
-                         cyg_current_time()+20);
+                         cyg_current_time()+THIRD_THREAD_WAIT_TIME);
     CYG_TEST_CHECK(21==q++,"bad synchronization");
 #endif
     cyg_flag_wait( &f0, 1, CYG_FLAG_WAITMODE_OR);
@@ -159,7 +162,7 @@ static void entry1( cyg_addrword_t data )
     cyg_flag_setbits( &f2, 0x2);                    // synchronize with t0,t2
     CYG_TEST_CHECK(20==q,"bad synchronization");
     cyg_flag_timed_wait( &f2, 0x20, CYG_FLAG_WAITMODE_AND,
-                         cyg_current_time()+10);
+                         cyg_current_time()+SECOND_THREAD_WAIT_TIME);
     CYG_TEST_CHECK(22==q++,"bad synchronization");
 #endif
 
@@ -176,7 +179,7 @@ static void entry2( cyg_addrword_t data )
     cyg_flag_wait( &f2, 0x2, CYG_FLAG_WAITMODE_OR);
     CYG_TEST_CHECK(20==q,"bad synchronization");
     CYG_TEST_CHECK(0==cyg_flag_timed_wait( &f2, 0x40, CYG_FLAG_WAITMODE_AND,
-                                           cyg_current_time()+2),
+                                           cyg_current_time()+FIRST_THREAD_WAIT_TIME),
                    "timed wait() wrong");
     CYG_TEST_CHECK(20==q++,"bad synchronization");
     // Now wake t0 before it times out

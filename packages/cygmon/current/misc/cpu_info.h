@@ -46,7 +46,11 @@
 #include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 
-#ifdef CYG_HAL_ARM
+#ifdef CYGPKG_HAL_ARM
 #include "arm/cpu_info.h"
+#endif
+
+#ifdef CYGPKG_HAL_MIPS
+#include "mips/cpu_info.h"
 #endif
 #endif // __CYGMON_CPU_INFO_H__

@@ -56,7 +56,10 @@
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 //--------------------------------------------------------------------------
+#ifndef _BSP_HANDLER_T_DEFINED
+#define _BSP_HANDLER_T_DEFINED
 typedef int (*bsp_handler_t)(int __irq_nr, void *__regs);
+#endif // _BSP_HANDLER_T_DEFINED
 
 //--------------------------------------------------------------------------
 // Communication interface table. CYGNUM_CALL_IF_CONSOLE_PROCS and

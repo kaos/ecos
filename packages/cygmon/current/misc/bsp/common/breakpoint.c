@@ -50,6 +50,10 @@
 #define DEBUG_BREAKPOINT 0
 #endif
 
+#ifdef __ECOS__
+#include <cyg/hal/hal_arch.h>
+#endif /* __ECOS__ */
+
 /*
  *  Trigger a breakpoint exception.
  */
@@ -59,14 +63,24 @@ bsp_breakpoint(void)
 #if DEBUG_BREAKPOINT
     bsp_printf("Before BP\n");
 #endif
-#ifdef __NEED_UNDERSCORE__
+
+#ifdef __ECOS__
+#  ifdef __NEED_UNDERSCORE__
+    HAL_BREAKPOINT(_bsp_breakinsn);
+#  else
+    HAL_BREAKPOINT(bsp_breakinsn);
+#  endif
+#else
+#  ifdef __NEED_UNDERSCORE__
     asm volatile (".globl _bsp_breakinsn\n"
 		  "_bsp_breakinsn:\n");
-#else
+#  else
     asm volatile (".globl bsp_breakinsn\n"
 		  "bsp_breakinsn:\n");
-#endif
+#  endif
     BREAKPOINT();
+#endif
+
 #if DEBUG_BREAKPOINT
     bsp_printf("After BP\n");
 #endif

@@ -80,6 +80,24 @@
 #define ALIGN(p)        (((u_int)(p) + ALIGNBYTES) &~ ALIGNBYTES)
 
 // These symbols are used in the IPV6 stuff
+// (be more defensive about external setup)
+#ifdef __linux__
+#undef __linux__
+#endif
+#ifdef __bsdi__
+#undef __bsdi__
+#endif
+#ifdef __FreeBSD__
+#undef __FreeBSD__
+#endif
+#ifdef __OpenBSD__
+#undef __OpenBSD__
+#endif
+#ifdef __NetBSD__
+#undef __NetBSD__
+#endif
+
+
 #define __linux__   0
 #define __bsdi__    0
 #define __FreeBSD__ 0
@@ -127,7 +145,7 @@ struct net_stats {
 // timeout support
 typedef void (timeout_fun)(void *);
 extern cyg_uint32 timeout(timeout_fun *fun, void *arg, cyg_int32 delta);
-
+extern void untimeout(timeout_fun *fun, void *arg);
 extern int uiomove(caddr_t cp, int n, struct uio *uio);
 extern int copyout(const void *s, void *d, size_t len);
 extern int copyin(const void *s, void *d, size_t len);

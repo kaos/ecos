@@ -1,3 +1,21 @@
+2000-07-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/vectors.S: Added hal_reset_vector_first_code and
+	hal_early_init macros.
+
+	* src/mips-stub.c (__install_breakpoints): Also install any
+	breakpoints in the list.
+
+	* include/mips-regs.h: Added a few new register definitions.
+
+	* include/hal_intr.h: Added CYGNUM_HAL_EXCEPTION_INTERRUPT.
+
+	* include/hal_arch.h: Added some macros for jumping between cached
+	and uncached.
+
+	* include/mips-stub.h: Renamed some enums to work around namespace
+	corruption.  Added breakpoint support in the HAL.
+
 2000-06-08  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_misc.c (hal_arch_default_isr): Removed what's now a

@@ -63,7 +63,7 @@
 #include "generic-stub.h" /* from libstub */
 #endif /* USE_CYGMON_PROTOTYPES */
 
-int switch_to_stub_flag = 0;
+volatile int switch_to_stub_flag = 0;
 
 /* Input routine for the line editor. */
 int
@@ -224,6 +224,11 @@ hex2bytes (char *str, char *dest, int maxsize)
   for (i = 0; i < maxsize; i++)
     dest[i] = 0;
   maxsize--;
+
+  // Don't try and convert 0x prefix
+  if ((str[0] == '0') && (str[1] == 'x'))
+      str += 2;
+
   ptr = str + strlen(str) - 1;
   while (maxsize >= 0 && ptr >= str)
     {
@@ -355,19 +360,11 @@ strdup(const char *str)
 target_register_t
 get_pc(void)
 {
-#ifdef HAVE_BSP
-    target_regval_t pc;
-
-    pc = get_register(REG_PC);
-
-    return pc.i;
-#else
-    return get_register(PC);
-#endif
+    return get_register(REG_PC);
 }
 
 
-#ifdef HAVE_BSP
+#if defined(HAVE_BSP) && !defined(__ECOS__)
 static int
 get_register_type(regnames_t which)
 {
@@ -392,32 +389,7 @@ get_register_str (regnames_t which, int detail)
       return res;
     }
 #endif
-#ifdef HAVE_BSP
-  {
-    target_regval_t reg;
-
-    reg = get_register (which);
-    switch (get_register_type (which))
-      {
-	case REGTYPE_INT:
-	  return ull2str (reg.i, 16, sizeof(reg.i) * 2);
-	  break;
-#if HAVE_FLOAT_REGS
-	case REGTYPE_FLOAT:
-	  return float2str (reg.f);
-	  break;
-#endif
-#if HAVE_DOUBLE_REGS
-	case REGTYPE_DOUBLE:
-	  return double2str (reg.d);
-	  break;
-#endif
-      }
-    return "...help...";
-  }
-#else
   return int2str (get_register (which), 16, sizeof (target_register_t) * 2);
-#endif
 }
 
 
@@ -428,31 +400,7 @@ store_register (regnames_t which, char *string)
   if (SPECIAL_REG_STORE(which, string))
     return;
 #endif
-#ifdef HAVE_BSP
-  {
-    target_regval_t reg;
-
-    switch (get_register_type(which))
-      {
-	case REGTYPE_INT:
-	  reg.i = str2int (string, 16);
-	  break;
-#if HAVE_FLOAT_REGS
-	case REGTYPE_FLOAT:
-	  reg.f = str2float (string, 16);
-	  break;
-#endif
-#if HAVE_DOUBLE_REGS
-	case REGTYPE_DOUBLE:
-	  reg.d = str2double (string, 16);
-	  break;
-#endif
-      }
-    put_register (which, reg);
-  }
-#else
   put_register (which, str2int (string, 16));
-#endif
 }
 
 

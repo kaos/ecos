@@ -1,3 +1,7 @@
+2000-07-19  Gary Thomas  <gthomas@redhat.com>
+
+	* src/v85x_v850_serial.h: Base baud rate calculations on CPU frequency.
+
 2000-06-22  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/<yournamehere>.cdl: Remove the comment on the empty

@@ -1,8 +1,10 @@
+* DHCP support has been added to the TCP/IP support, in addition to the
+  existing BOOTP support
 * CDL now supports type bool and booldata for interfaces
 * CDL now exports extra macros in header files, to indicate package version
   numbers
 * A port of the University of California at Davis (UCD) SNMP stack has been
-  added, including SNMP clients
+  added
 * Hitachi SH7709A variant support added
 * NEC V85x architecture support added
 * NEC Cosmo CEB-V850/SA1 evaluation board platform HAL added

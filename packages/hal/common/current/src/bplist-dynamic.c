@@ -2,7 +2,8 @@
 //
 //      bplist-dynamic.c
 //
-//      Breakpoint list using dynamic memory.
+//      Dynamic breakpoint list.
+//      Currently only statically allocated.  (ie NO_MALLOC is assumed)
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -32,9 +33,9 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    
-// Contributors: gthomas
-// Date:         1999-10-20
-// Purpose:      Breakpoint list using dynamic memory.
+// Contributors: dmoseley
+// Date:         2000-07-11
+// Purpose:      Dynamic breakpoint list.
 // Description:  
 //               
 //
@@ -42,51 +43,33 @@
 //
 //=========================================================================
 
-#include "board.h"
+#include <cyg/hal/hal_stub.h>
 
-#ifndef USE_ECOS_HAL_BREAKPOINTS
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-#include <stdlib.h>
-
-#ifndef NO_MALLOC
-#ifndef NO_MALLOC_H
-#include "malloc.h"
-#else
-void free ();
-char *malloc ();
-#endif
-#endif
-
-#ifdef __ECOS__
-#include <cyg/hal/plf_stub.h>
-#endif /* __ECOS__ */
+#if defined(CYGNUM_HAL_BREAKPOINT_LIST_SIZE) && (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
 
 /*
- * A simple target breakpoint list using malloc.
- * To use this package, you must define TRAP_SIZE to be the size
+ * A simple target breakpoint list without using malloc.
+ * To use this package, you must define HAL_BREAKINST_SIZE to be the size
  * in bytes of a trap instruction (max if there's more than one),
- * and export a char array called _breakinst that contains a
- * breakpoint trap.  This package will copy trap instructions
- * from _breakinst into the breakpoint locations.
+ * HAL_BREAKINST to the opcode value of the instruction, and
+ * HAL_BREAKINST_TYPE to be the type necessary to hold the opcode value.
  */
 
-static struct breakpoint_list {
+struct breakpoint_list {
   target_register_t  addr;
-  char old_contents [TRAP_SIZE];
+  char old_contents [HAL_BREAKINST_SIZE];
   struct breakpoint_list *next;
   char in_memory;
 } *breakpoint_list = NULL;
 
-#ifdef NO_MALLOC
-static struct breakpoint_list bp_list [MAX_BP_NUM];
+static HAL_BREAKINST_TYPE break_inst = HAL_BREAKINST;
+static void *_break_inst = &break_inst;
+
+static struct breakpoint_list bp_list [CYGNUM_HAL_BREAKPOINT_LIST_SIZE];
 static struct breakpoint_list *free_bp_list = NULL;
 static int curr_bp_num = 0;
-#endif
-
-#ifndef BREAKINST_DEFINED
-#define BREAKINST_DEFINED
-extern unsigned char _breakinst[];
-#endif
 
 int
 __set_breakpoint (target_register_t addr)
@@ -104,7 +87,6 @@ __set_breakpoint (target_register_t addr)
   if (l != NULL && l->addr == addr)
     return 2;
 
-#ifdef NO_MALLOC
   if (free_bp_list != NULL)
     {
       newent = free_bp_list;
@@ -112,7 +94,7 @@ __set_breakpoint (target_register_t addr)
     }
   else
     {
-      if (curr_bp_num < MAX_BP_NUM)
+      if (curr_bp_num < CYGNUM_HAL_BREAKPOINT_LIST_SIZE)
 	{
 	  newent = &bp_list[curr_bp_num++];
 	}
@@ -121,9 +103,7 @@ __set_breakpoint (target_register_t addr)
 	  return 1;
 	}
     }
-#else
-  newent = (struct breakpoint_list *) malloc (sizeof (struct breakpoint_list));
-#endif
+
   newent->addr = addr;
   newent->in_memory = 0;
   newent->next = l;
@@ -143,7 +123,7 @@ __remove_breakpoint (target_register_t addr)
       l = l->next;
     }
 
-  if (l == NULL)
+  if ((l == NULL) || (l->addr != addr))
     return 1;
 
   if (l->in_memory)
@@ -158,19 +138,14 @@ __remove_breakpoint (target_register_t addr)
   else
     prev->next = l->next;
 
-#ifdef NO_MALLOC
   l->next = free_bp_list;
   free_bp_list = l;
-#else
-  free (l);
-#endif
+
   return 0;
 }
 
-#include <cyg/hal/generic-stub.h>
-#include <cyg/hal/hal_stub.h>
 void
-__cygmon_install_breakpoints (void)
+__install_breakpoint_list (void)
 {
   struct breakpoint_list *l = breakpoint_list;
 
@@ -179,18 +154,14 @@ __cygmon_install_breakpoints (void)
       if (! l->in_memory)
 	{
 	  int len = sizeof (l->old_contents);
-
 	  if (__read_mem_safe (&l->old_contents[0], (void*)l->addr, len) == len)
 	    {
-#ifdef WRITE_MEM_IS_MEMCPY
-	      if (__write_mem_safe (_breakinst, (void*)l->addr, len) == (void*)l->addr)
-#else
-	      if (__write_mem_safe (_breakinst, (void*)l->addr, len) == len)
-#endif
+	      if (__write_mem_safe (_break_inst, (void*)l->addr, len) == len)
 		{
 		  l->in_memory = 1;
 		}
 	    }
+
 	}
       l = l->next;
     }
@@ -198,7 +169,7 @@ __cygmon_install_breakpoints (void)
 }
 
 void
-__cygmon_clear_breakpoints (void)
+__clear_breakpoint_list ()
 {
   struct breakpoint_list *l = breakpoint_list;
 
@@ -207,12 +178,7 @@ __cygmon_clear_breakpoints (void)
       if (l->in_memory)
 	{
 	  int len = sizeof (l->old_contents);
-
-#ifdef WRITE_MEM_IS_MEMCPY
-      if (__write_mem_safe (_breakinst, (void*)l->addr, len) == (void*)l->addr)
-#else
 	  if (__write_mem_safe (&l->old_contents[0], (void*)l->addr, len) == len)
-#endif
 	    {
 	      l->in_memory = 0;
 	    }
@@ -222,4 +188,51 @@ __cygmon_clear_breakpoints (void)
   flush_i_cache ();
 }
 
-#endif // USE_ECOS_HAL_BREAKPOINTS
+int
+__display_breakpoint_list (void (*print_func)(target_register_t))
+{
+  struct breakpoint_list *l = breakpoint_list;
+
+  while (l != NULL)
+    {
+      print_func(l->addr);
+      l = l->next;
+    }
+
+  return 0;
+}
+
+#else  // (CYGNUM_HAL_BREAKPOINT_LIST_SIZE == 0) or UNDEFINED
+
+#include <cyg/hal/hal_stub.h>           // Our header
+
+int
+__set_breakpoint (target_register_t addr)
+{
+  return 1;
+}
+
+int
+__remove_breakpoint (target_register_t addr)
+{
+  return 1;
+}
+
+void
+__install_breakpoint_list (void)
+{
+}
+
+void
+__clear_breakpoint_list (void)
+{
+}
+
+int
+__display_breakpoint_list (void (*print_func)(target_register_t))
+{
+}
+#endif // (CYGNUM_HAL_BREAKPOINT_LIST_SIZE > 0)
+
+#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+

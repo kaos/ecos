@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg
+// Contributors: nickg, dmoseley
 // Date:         1999-02-17
 // Purpose:      Define architecture abstractions
 // Usage:        #include <cyg/hal/hal_arch.h>
@@ -44,6 +44,7 @@
 //
 //==========================================================================
 
+#ifndef __ASSEMBLER__
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
@@ -195,6 +196,7 @@ externC void hal_thread_load_context( CYG_ADDRESS to )
 // happen if executed.
 // HAL_BREAKINST is the value of the breakpoint instruction and
 // HAL_BREAKINST_SIZE is its size in bytes.
+// HAL_BREAKINST_TYPE is the type.
 
 #define HAL_BREAKPOINT(_label_)                 \
 asm volatile (" .globl  " #_label_ ";"          \
@@ -205,6 +207,8 @@ asm volatile (" .globl  " #_label_ ";"          \
 #define HAL_BREAKINST           0x0005000d
 
 #define HAL_BREAKINST_SIZE      4
+
+#define HAL_BREAKINST_TYPE      cyg_uint32
 
 //--------------------------------------------------------------------------
 // Thread register state manipulation for GDB support.
@@ -367,6 +371,26 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 #define CYGNUM_HAL_STACK_SIZE_TYPICAL (4096)
 
 #endif
+
+#endif /* __ASSEMBLER__ */
+
+// Convenience macros for accessing memory cached or uncached
+#define CYGARC_KSEG_MASK                               (0xE0000000)
+#define CYGARC_KSEG_CACHED                             (0x80000000)
+#define CYGARC_KSEG_UNCACHED                           (0xA0000000)
+#define CYGARC_KSEG_CACHED_BASE                        (0x80000000)
+#define CYGARC_KSEG_UNCACHED_BASE                      (0xA0000000)
+#define CYGARC_CACHED_ADDRESS(x)                       (((x) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_CACHED)
+#define CYGARC_UNCACHED_ADDRESS(x)                     (((x) & ~CYGARC_KSEG_MASK) | CYGARC_KSEG_UNCACHED)
+#define CYGARC_PHYSICAL_ADDRESS(x)                     ((x) & ~CYGARC_KSEG_MASK)
+#ifdef __ASSEMBLER__
+#define CYGARC_ADDRESS_REG_CACHED(reg)                 \
+        and     reg, reg, ~CYGARC_KSEG_MASK;           \
+        or      reg, reg, CYGARC_KSEG_CACHED
+#define CYGARC_ADDRESS_REG_UNCACHED(reg)               \
+        and     reg, reg, ~CYGARC_KSEG_MASK;           \
+        or      reg, reg, CYGARC_KSEG_UNCACHED
+#endif /* __ASSEMBLER__ */
 
 //--------------------------------------------------------------------------
 // Macros for switching context between two eCos instances (jump from

@@ -1,3 +1,9 @@
+2000-07-18  John Dallaway  <jld@redhat.com>
+
+	* standalone/win32/Configtool.rc:
+
+	Update IDS_ECOS_SOURCEWARE_URL.
+
 2000-07-03  John Dallaway  <jld@redhat.com>
 
 	* common/win32/CTCommonDoc.cpp:

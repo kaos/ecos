@@ -55,6 +55,10 @@
 #endif
 #include <monitor_cmd.h>
 
+#ifdef __ECOS__
+#include <cyg/hal/plf_stub.h>
+#endif
+
 #ifndef ASM
 
 #ifdef HAVE_BSP
@@ -66,9 +70,22 @@
 #define xungetchar bsp_debug_ungetc
 #define __getTty() bsp_set_debug_comm(-1)
 #define set_pc(x)  bsp_set_pc((x), mon_saved_regs)
-#define __single_step() bsp_singlestep_setup(mon_saved_regs)
-#define __reset    bsp_reset
+
+#ifndef USE_ECOS_HAL_SINGLESTEP
+#define __single_step()            bsp_singlestep_setup(mon_saved_regs)
+#define __clear_single_step()      bsp_singlestep_cleanup(mon_saved_regs)
+#endif /* USE_ECOS_HAL_SINGLESTEP */
+
+#ifndef USE_ECOS_HAL_BREAKPOINTS
 #define breakpoint() bsp_breakpoint()
+#endif /* USE_ECOS_HAL_BREAKPOINTS */
+
+#if defined(__ECOS__) && defined(CYGHWR_HAL_RESET_DEFINED)
+   extern void __reset(void);
+#else // defined(__ECOS__) && defined(CYGHWR_HAL_RESET_DEFINED)
+#  define __reset    bsp_reset
+#endif // defined(__ECOS__) && defined(CYGHWR_HAL_RESET_DEFINED)
+
 #else
 extern void xprintf(const char *fmt, ...);
 extern void xsprintf(char *str, const char *fmt, ...);
@@ -87,19 +104,23 @@ extern int  getDebugChar(void);
 #endif
 
 
+#ifndef USE_ECOS_HAL_BREAKPOINTS
 struct bp {
   mem_addr_t address;
   bp_inst_t  old_inst;
   char       in_memory;
   struct bp  *next;
 };
+#endif // USE_ECOS_HAL_BREAKPOINTS
 
 struct regstruct
 {
   char *registername;
   int  registernumber;
 #ifdef HAVE_BSP
+#if defined(CYGPKG_HAL_ARM) || !defined(__ECOS__)
   int  registertype;
+#endif // defined(CYGPKG_HAL_ARM) || !defined(__ECOS__)
 #endif
 };
 
@@ -232,6 +253,7 @@ extern target_register_t get_pc(void);
 extern char *get_register_str (regnames_t which, int detail);
 extern void store_register (regnames_t which, char *string);
 
+#ifndef USE_ECOS_HAL_BREAKPOINTS
 /*
  * From breakpoints.c
  */
@@ -240,6 +262,7 @@ extern void install_breakpoints (void);
 extern void clear_breakpoints (void);
 extern int  show_breakpoints (void);
 extern int clear_mon_breakpoint (mem_addr_t location);
+#endif /* USE_ECOS_HAL_BREAKPOINTS */
 
 
 /*
@@ -254,8 +277,8 @@ extern void flush_dis (void);
  */
 #ifdef HAVE_BSP
 extern void initialize_mon(void);
-extern target_regval_t get_register(int regnum);
-extern void put_register(int regnum, target_regval_t val);
+extern target_register_t get_register(regnames_t reg);
+extern void put_register (regnames_t which, target_register_t value);
 #endif
 
 

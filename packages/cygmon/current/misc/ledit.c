@@ -124,7 +124,7 @@ printHistoryList ()
 static void
 outputParamStr (char *str, int val)
 {
-  char *i = index (str, '%');
+  char *i = strchr (str, '%');
   char *ptr;
   int dist = val;
 
@@ -209,7 +209,7 @@ absMoveCursor (int pos)
 }
 
 static void
-clrScrToEol ()
+clrScrToEol (void)
 {
   int len = linebuf.ebuf - linebuf.buffer;
 
@@ -238,7 +238,7 @@ clrScrToEol ()
 }
 
 static void
-redrawCmd ()
+redrawCmd (void)
 {
   xprintf (terminal.gobol);
   xprintf (linebuf.prompt);
@@ -257,7 +257,7 @@ instCmd (char *ncmd)
 }
 
 static void
-prevCmd () 
+prevCmd (void) 
 {
   if (curl == &currLine)
     {
@@ -287,7 +287,7 @@ prevCmd ()
 }
 
 static void
-nextCmd ()
+nextCmd (void)
 {
   if (curl->next == NULL)
     {
@@ -304,7 +304,7 @@ nextCmd ()
 static int initted = 0;
 
 void
-initVt100 () 
+initVt100 (void) 
 {
   terminal.gobol = "\r";
   terminal.oneleft = "\010";
@@ -319,7 +319,7 @@ initVt100 ()
 }
 
 void
-initDumb ()
+initDumb (void)
 {
   terminal.gobol = "\r";
   terminal.oneleft = "\010";
@@ -398,7 +398,7 @@ deleteEol (int putInCutBuffer)
 }
 
 static void
-deleteCurrChar ()
+deleteCurrChar (void)
 {
   int len = linebuf.ebuf - linebuf.buffer;
   char *ptr;
@@ -423,7 +423,7 @@ deleteCurrChar ()
 }
 
 static void
-deleteChar ()
+deleteChar (void)
 {
   if (linebuf.cursor == 0)
     {

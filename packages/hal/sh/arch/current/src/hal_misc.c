@@ -51,7 +51,7 @@
 
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/hal/hal_cache.h>          // HAL cache
-#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT) && \
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) || \
     defined(CYGPKG_HAL_EXCEPTIONS)
 # include <cyg/hal/hal_intr.h>           // HAL interrupts/exceptions
 #endif
@@ -95,11 +95,20 @@ cyg_hal_invoke_constructors (void)
 externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+externC volatile void *__mem_fault_handler;
+#endif
 
 void
 cyg_hal_exception_handler(HAL_SavedRegisters *regs)
 {
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+    if (__mem_fault_handler && 
+        ((regs->event >= CYGNUM_HAL_EXCEPTION_TLBMISS_ACCESS) &&
+         (regs->event <= CYGNUM_HAL_EXCEPTION_DATA_WRITE))) {
+        regs->pc = (unsigned long)__mem_fault_handler;
+        return; // Caught an exception inside stubs        
+    }
 
     // Set the pointer to the registers of the current exception
     // context. At entry the GDB stub will expand the
@@ -207,6 +216,34 @@ cyg_hal_enable_caches(void)
 void
 hal_variant_init(void)
 {
+}
+
+// Low-level delay (in microseconds)
+
+void
+hal_delay_us(int usecs)
+{
+    unsigned char _tstr;  // Current clock control
+    volatile unsigned char *tstr = (volatile unsigned char *)CYGARC_REG_TSTR;
+    volatile unsigned long *tcnt = (volatile unsigned long *)CYGARC_REG_TCNT1;
+    volatile unsigned long *tcor = (volatile unsigned long *)CYGARC_REG_TCOR1;
+    unsigned long clocks_per_us = (CYGHWR_HAL_SH_BOARD_SPEED+(4-1))/4;  // Rounded up
+    int diff, diff2;
+    cyg_uint32 val1, val2;
+
+    _tstr = *tstr;
+    *tstr |= CYGARC_REG_TSTR_STR1;  // Enable channel 1
+    while (usecs-- > 0) {
+        diff = 0;
+        while (diff < clocks_per_us) {
+            val1 = *tcnt;
+            while ((val2 = *tcnt) == val1) ;
+            diff2 = val2 - val1;
+            if (diff2 < 0) diff2 += *tcor;
+            diff += diff2;
+        }
+    }
+    *tstr = _tstr;                  // Restore timer to previous state
 }
 
 //---------------------------------------------------------------------------

@@ -64,6 +64,10 @@
 #include "tservice.h"
 #endif
 
+#ifdef __ECOS__
+#include <cyg/hal/hal_stub.h>
+#endif
+
 #if USE_CYGMON_PROTOTYPES
 /* Use common prototypes */
 /* Some of the composed board.h files compose these
@@ -652,6 +656,13 @@ displayed.\n");
 #endif /* NVRAM_TCP_PORT */
 
 
+#ifdef __ECOS__
+#  if (CYG_BYTEORDER == CYG_LSBFIRST)
+#    define LITTLE_ENDIAN_TARGET
+#  else
+#    define BIG_ENDIAN_TARGET
+#  endif
+#endif
 
 #ifdef LITTLE_ENDIAN_TARGET
 static int swap_bytes = 1;
@@ -683,7 +694,7 @@ get_cmd_size (void)
   int size = 0;
   char *sizestr;
 
-  sizestr = index (argvect[0], '.');
+  sizestr = strchr (argvect[0], '.');
 
   if (sizestr == NULL || sizestr[0] == '\0' || sizestr[1] == '\0')
     {
@@ -1523,7 +1534,10 @@ Removes a previously set breakpoint at memory location 4ff5.");
     {
       mem_addr_t location;
       str2addr (argvect[1], &location);
-      clear_mon_breakpoint (location);
+      if (clear_mon_breakpoint (location))
+      {
+          xprintf("Unable to remove breakpoint at 0x%08lx\n", location.addr);
+      }
     }
   return 0;
 }
@@ -1569,7 +1583,10 @@ Sets a breakpoint at address 4ff5.");
       mem_addr_t location;
       
       str2addr (argvect[1], &location);
-      add_mon_breakpoint (location);
+      if (add_mon_breakpoint (location))
+      {
+          xprintf("Unable to set breakpoint at 0x08lx\n", location.addr);
+      }
     }
   return 0;
 }
@@ -2142,6 +2159,18 @@ Fills the region between 0x10000 and 0x20000 with the 32 bit value 0x32.");
       else
         {
           int x;
+	  if (get_memory_display_mode ())
+	    {
+	      /* Gotta swap this puppy. */
+	      int x;
+
+	      for (x = 0; x < (size / 2); x++)
+		{
+		  char tmp = value[x];
+		  value [x] = value [size - 1 - x];
+		  value [size - 1 - x] = tmp;
+		}
+	    }
 
           xprintf ("Writing %d units\n", amt / size + 1);
           for (x = amt / size; x >= 0; x--)
@@ -2416,7 +2445,7 @@ monitor_loop (void)
 	  strcpy (cmd, argvect[0]);
 
 	  /* Function to split off . delimiters. */
-	  ptr = index (cmd, '.');
+	  ptr = strchr (cmd, '.');
 
 	  if (ptr != NULL && *ptr == '.')
 	    *ptr = '\0';

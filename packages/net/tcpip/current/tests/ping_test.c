@@ -221,6 +221,7 @@ ping_host(int s, struct sockaddr_in *host)
         TNR_OFF();
         if (len < 0) {
             perror("recvfrom");
+            icmp_len = MIN_PACKET - PACKET_ADD; // just in case - long routes
         } else {
             if (show_icmp(pkt2, len, &from, host)) {
                 ok_recv++;

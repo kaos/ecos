@@ -32,7 +32,7 @@
 #######DESCRIPTIONBEGIN####
 ##
 ## Author(s): 	nickg
-## Contributors:	nickg
+## Contributors:	nickg, dmoseley
 ## Date:	1998-02-04
 ## Purpose:	MIPS exception vectors
 ## Description:	This file defines the code placed into the exception
@@ -52,7 +52,11 @@
 #endif
 			
 #include <cyg/hal/arch.inc>	
-			
+#include <cyg/hal/hal_arch.h>	
+	
+#ifdef at
+#undef at
+#endif
 	.extern cyg_instrument
 
 ##-----------------------------------------------------------------------------
@@ -67,6 +71,12 @@
 FUNC_START(reset_vector)
 
 #ifndef CYG_HAL_STARTUP_RAM
+#  if defined(CYGPKG_HAL_RESET_VECTOR_FIRST_CODE)
+	hal_reset_vector_first_code
+#  endif
+#  if defined(CYGPKG_HAL_EARLY_INIT)
+	hal_early_init
+#  endif
 	# Decide whether this is an NMI, cold or warm boot.
 
 	mfc0	k0,status		# get status reg
@@ -92,6 +102,7 @@ FUNC_START(reset_vector)
 	mtc0	k0,config0		# to disable cache
 #endif	
 	lar	v0,_start		# jump to start
+	CYGARC_ADDRESS_REG_UNCACHED(v0)
 	jr	v0
 	nop				# (delay slot)
 

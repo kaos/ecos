@@ -1,3 +1,54 @@
+2000-07-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* misc/bsp/mips/gdb-cpu.c: New files. Mips based Cygmon now running on top of eCos HAL.
+	* misc/bsp/mips/gdb-cpu.h: Ditto.
+	* misc/bsp/mips/gdb.h: Ditto.
+	* misc/bsp/mips/insn.h: Ditto.
+	* misc/bsp/mips/singlestep.c: Ditto.
+	* misc/mips/board.h: Ditto.
+	* misc/mips/cpu.h: Ditto.
+	* misc/mips/cpu_info.h: Ditto.
+	* misc/mips/mips-mon.c: Ditto.
+
+	* misc/bsp/common/syscall.c: Added SYS_meminfo call to find out
+	how much RAM we have.
+	* misc/bsp/common/syscall.h: Ditto.
+
+	* misc/bsp/common/breakpoint.c: Added __ECOS__ support.
+
+	* misc/monitor_cmd.c: Cleanup.  Added some more error handling.
+	* misc/utils.c: Ditto.
+
+	* misc/monitor.c: Added basic syscall handling to support libgloss.
+	Added support for using more features of the HAL (ie breakpoints
+	and exceptions).
+	* misc/monitor.h: Ditto.
+	* misc/tservice.h: Ditto.
+	* misc/bsp/bsp.h: Ditto.
+	* misc/arm/cpu_info.h: Ditto.
+
+	* misc/ledit.c: Cleanup.
+
+	* misc/ecos_dummy.c: Support for reset through the HAL.
+
+	* misc/ecos_bsp.c: Filled in uart_control function for setting baud rate
+	through the HAL.  Also added VIRTUAL_VECTOR_SUPPORT and support of the
+	low-level HAL-based serial driver.  Also added set_memsize() support.
+
+	* misc/bplist-dynamic.c: Added option for using breakpoints in the HAL.
+	Also, various cleanups of build warnings, etc.	
+	* misc/breakpoints.c: Ditto.
+
+	* cdl/cygmon.cdl: Allow cygmon to be built for either Arm or Mips.
+	
+	* misc/board.h: Move architecture-dependent things out.
+	* misc/cpu-mon.c: Ditto.
+	* misc/cpu_info.h: Ditto.
+	* misc/bsp/cpu.h: Ditto.
+	* misc/bsp/common/gdb-cpu.c: Ditto.
+	* misc/bsp/common/gdb-cpu.h: Ditto.
+	* misc/bsp/common/singlestep.c: Ditto.
+
 2000-01-28  Jesper Skov  <jskov@redhat.com>
 
 	* misc/Notes_CygMon_PID: Added.

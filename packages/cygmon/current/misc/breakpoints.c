@@ -42,6 +42,10 @@
 //
 //=========================================================================
 
+#include "board.h"
+
+#ifndef USE_ECOS_HAL_BREAKPOINTS
+
 #include <stdlib.h>
 #ifdef HAVE_BSP
 #include <bsp/bsp.h>
@@ -204,3 +208,4 @@ clear_mon_breakpoint (mem_addr_t location)
   return error;
 }	
 
+#endif /* USE_ECOS_HAL_BREAKPOINTS */

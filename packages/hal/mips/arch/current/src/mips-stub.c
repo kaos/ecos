@@ -348,10 +348,14 @@ void __install_breakpoints ()
       __data_cache (CACHE_FLUSH) ;
       __instruction_cache (CACHE_FLUSH) ;
     }
+
+  /* Install the breakpoints in the breakpoint list */
+  __install_breakpoint_list();
 }
 
 void __clear_breakpoints (void)
 {
+  __clear_breakpoint_list();
 }
 
 

@@ -67,6 +67,7 @@
 #define __set_breakpoint        set_breakpoint
 #define __remove_breakpoint     clear_breakpoint
 #define __write_mem_safe        memcpy
+#define WRITE_MEM_IS_MEMCPY
 #define _breakinst              bsp_breakinsn
 
 #endif //  __CYGMON_ARM_BOARD_H__

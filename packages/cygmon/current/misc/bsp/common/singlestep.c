@@ -43,6 +43,10 @@
 //=========================================================================
 #include <pkgconf/system.h>
 
-#ifdef CYG_HAL_ARM
+#ifdef CYGPKG_HAL_ARM
 #include "bsp/arm/singlestep.c"
+#endif
+
+#ifdef CYGPKG_HAL_MIPS
+#include "bsp/mips/singlestep.c"
 #endif

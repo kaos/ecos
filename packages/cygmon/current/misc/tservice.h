@@ -56,10 +56,10 @@ extern int read_memory (mem_addr_t *src, int size, int amt, char *dst);
 extern int write_memory (mem_addr_t *dst, int size, int amt, char *src);
 
 
-
+#ifndef USE_ECOS_HAL_BREAKPOINTS
 extern void set_breakpoint (struct bp *bp);
 extern void clear_breakpoint (struct bp *bp);
-
+#endif // USE_ECOS_HAL_BREAKPOINTS
 
 #ifndef HAVE_BSP
 extern void set_pc (target_register_t pc);

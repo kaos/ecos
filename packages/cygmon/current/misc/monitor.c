@@ -75,22 +75,39 @@ static void monitor_take_control (void);
 
 #if CYGMON_SYSTEM_SERVICES
 extern int process_syscall (int syscall_num);
+#elif defined (USE_ECOS_HAL_EXCEPTIONS)
+static int cygmon_process_syscall (int sigval);
 #endif
 
 int stub_is_active = 0;
 mem_addr_t last_pc;
 
 #ifdef HAVE_BSP
+
+#if !defined(USE_ECOS_HAL_EXCEPTIONS)
 static int mon_dbg_handler(int exc_nr, void *regs);
 static int mon_kill_handler(int exc_nr, void *regs);
+#endif // USE_ECOS_HAL_EXCEPTIONS
 
+#ifndef USE_ECOS_HAL_BREAKPOINTS
 #define __is_breakpoint_function() (get_pc() == (target_register_t)bsp_breakinsn)
+#endif
+
+#ifdef __ECOS__
+/*
+ * This global flag is used by generic-stub.c to communicate to us that we
+ * are processing the breakpoint function within Cygmon itself.
+ */
+int processing_breakpoint_function = 0;
+#endif
 
 /* Global pointer to current set of saved registers. */
 void *mon_saved_regs;
 
 /* Original BSP debug vector replaced by monitor. */
+#if !defined(USE_ECOS_HAL_EXCEPTIONS)
 static bsp_handler_t old_dbg_vec;
+#endif // !defined(USE_ECOS_HAL_EXCEPTIONS)
 
 #else
 static int handle_signal (int signal_val);
@@ -98,8 +115,13 @@ static int handle_signal (int signal_val);
 __PFI user_signal_handler = NULL;
 #endif
 
-#ifdef __ECOS__
-extern (*__process_exception_vec)(int);
+#if defined(__ECOS__)
+#include <cyg/hal/hal_stub.h>
+#endif
+
+#if defined(__ECOS__) && !defined(PROCESS_EXCEPTION_VEC_PROTOTYPE_EXISTS)
+#define PROCESS_EXCEPTION_VEC_PROTOTYPE_EXISTS
+extern volatile __PFI (*__process_exception_vec)(int);
 #endif
 
 
@@ -141,8 +163,15 @@ int main (int argc, char **argv)
       version ();
 
       /* replace original BSP debug and kill handler with ours */
+#if !defined(USE_ECOS_HAL_EXCEPTIONS)
       old_dbg_vec = bsp_install_dbg_handler(mon_dbg_handler);
       (void)bsp_install_kill_handler(mon_kill_handler);
+#else
+      /* replace original BSP debug and kill handler with ours using eCos stuff */
+      __process_exception_vec = (__PFI)cygmon_handle_exception;
+      __process_syscall_vec = cygmon_process_syscall;
+      __process_exit_vec = monitor_take_control;
+#endif // __ECOS__
     }
   else
     {
@@ -191,7 +220,7 @@ transfer_to_stub ()
 {
   /* Return back to the exception handler, but the exception handler
      should invoke the stub's exception handler instead of ours. */
-#ifdef HAVE_BSP
+#if defined(HAVE_BSP) && !defined(USE_ECOS_HAL_EXCEPTIONS)
   (void)bsp_install_dbg_handler(old_dbg_vec);
 #else
   __switch_to_stub ();
@@ -212,20 +241,24 @@ clear_user_state (void)
 
   clear_breakpoints ();
 
-#ifdef HAVE_BSP
-  bsp_singlestep_cleanup(mon_saved_regs);
-#else
+#ifndef HAVE_BSP
   user_signal_handler = NULL;
-  __clear_single_step ();
 #endif
+
+  __clear_single_step ();
 }
 
 static void
 monitor_take_control (void)
 {
   stub_is_active = 0;
+  switch_to_stub_flag = 0;
 
-#ifdef HAVE_BSP
+  // Flush the unget state.  This is because the ecos stub and Cygmon track this
+  // stuff separately.
+  bsp_debug_ungetc('\0');
+
+#if defined(HAVE_BSP) && !defined(USE_ECOS_HAL_EXCEPTIONS)
   /* replace original BSP debug trap handler with ours */
   (void)bsp_install_dbg_handler(mon_dbg_handler);
 #else
@@ -254,6 +287,16 @@ int
 monitor_interrupt_state (void)
 {
   return monitor_interrupts_enabled;
+}
+#endif
+
+#if defined(USE_ECOS_HAL_EXCEPTIONS)
+externC HAL_SavedRegisters *_hal_registers;
+extern int machine_syscall(HAL_SavedRegisters *regs);
+static int
+cygmon_process_syscall (int sigval)
+{
+    return machine_syscall(_hal_registers);
 }
 #endif
 
@@ -291,7 +334,11 @@ cygmon_handle_exception (int sigval)
   pc = get_pc();
   MAKE_STD_ADDR (pc, &last_pc);
 
+#ifdef __ECOS__
+  if ((sigval == SIGTRAP) && (__is_breakpoint_function() || processing_breakpoint_function))
+#else
   if ((sigval == SIGTRAP) && __is_breakpoint_function())
+#endif
     {
       /*
        * This is the initial breakpoint inserted by the BSP
@@ -398,14 +445,16 @@ version (void)
 
 
 #ifdef HAVE_BSP
+#if !defined(USE_ECOS_HAL_EXCEPTIONS)
 static int
 mon_kill_handler(int exc_nr, void *regs)
 {
     monitor_take_control();
     return 1;
 }
+#endif // !defined(USE_ECOS_HAL_EXCEPTIONS)
 
-
+#if !defined(USE_ECOS_HAL_EXCEPTIONS)
 static int
 mon_dbg_handler(int exc_nr, void *regs)
 {
@@ -426,4 +475,6 @@ mon_dbg_handler(int exc_nr, void *regs)
 
     return 1;
 }
+#endif // !defined(USE_ECOS_HAL_EXCEPTIONS)
+
 #endif

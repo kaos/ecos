@@ -45,10 +45,14 @@
 #include <cyg/hal/hal_cache.h>
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
-#include <cyg/io/io.h>
 #include "bsp/common/bsp_if.h"
+#include <cyg/hal/hal_if.h>
 #include <signal.h>
 #include CYGHWR_MEMORY_LAYOUT_H
+ 
+#ifdef CYGPKG_IO
+#include <cyg/io/io.h>
+#endif
 
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_MINIMUM
 static char stack[STACK_SIZE];
@@ -72,7 +76,7 @@ cyg_start( void )
 {
     // Create a main thread, so we can run the scheduler and have time 'pass'
     cyg_thread_create(10,                // Priority - just a number
-                      cygmon_main,       // entry
+                      (cyg_thread_entry_t*)cygmon_main,       // entry
                       0,                 // entry parameter
                       "Cygmon",          // Name
                       &stack[0],         // Stack
@@ -91,11 +95,12 @@ extern void (*__cleanup_vec)(void);
 extern void __install_traps(void);
 #endif
 
+extern int machine_syscall(HAL_SavedRegisters *regs);
 void
 _bsp_handle_exception(cyg_addrword_t data, cyg_code_t num, cyg_addrword_t info)
 {
     if (num == CYGNUM_HAL_EXCEPTION_INTERRUPT) {
-        if (machine_syscall(info)) {
+        if (machine_syscall((HAL_SavedRegisters*)info)) {
             return;
         }
         // Fall through to "normal" exception handling if system call failed
@@ -129,7 +134,7 @@ _bsp_cpu_init(void)
     int d0;
     cyg_exception_set_handler(CYGNUM_HAL_EXCEPTION_ILLEGAL_INSTRUCTION,
                               _bsp_handle_exception,
-                              &d0,
+                              (cyg_addrword_t)&d0,
                               0,
                               0);
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -141,6 +146,8 @@ _bsp_cpu_init(void)
 }
 
 #define FAIL() diag_printf("fail: %s\n", __FUNCTION__);  while (1) ;
+
+#ifndef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 struct BSP_IO {
     char            *name;
@@ -159,6 +166,8 @@ uart_putchar(void *base, char c)
         cyg_io_write(io->chan, &buf, &len);
     }
 }
+
+extern int __output_gdb_string (const char *str, int string_len);
 
 // This function is mostly used by the 'write()' system call
 static void
@@ -202,7 +211,59 @@ uart_getchar(void *base)
 static int
 uart_control(void *base, int func, ...)
 {
-    // FIXME - need to fill this in!
+    int rc = 0;
+    va_list ap;
+    int arg;
+    struct BSP_IO *io = (struct BSP_IO *)base;
+
+    va_start(ap, func);
+
+    if (func == COMMCTL_SETBAUD)
+    {
+        cyg_serial_info_t buffer = {
+            CYG_SERIAL_BAUD_DEFAULT, 
+            CYG_SERIAL_STOP_DEFAULT, 
+            CYG_SERIAL_PARITY_DEFAULT,
+            CYG_SERIAL_WORD_LENGTH_DEFAULT,
+            CYG_SERIAL_FLAGS_DEFAULT
+        };
+        int len = sizeof(buffer);
+        arg = va_arg(ap, int);
+
+        switch (arg)
+        {
+        case 50:         buffer.baud = CYG_SERIAL_BAUD_RATE(50);       break;
+        case 75:         buffer.baud = CYG_SERIAL_BAUD_RATE(75);       break;
+        case 110:        buffer.baud = CYG_SERIAL_BAUD_RATE(110);      break;
+        case 134:        buffer.baud = CYG_SERIAL_BAUD_RATE(134_5);    break;
+        case 135:        buffer.baud = CYG_SERIAL_BAUD_RATE(134_5);    break;
+        case 150:        buffer.baud = CYG_SERIAL_BAUD_RATE(150);      break;
+        case 200:        buffer.baud = CYG_SERIAL_BAUD_RATE(200);      break;
+        case 300:        buffer.baud = CYG_SERIAL_BAUD_RATE(300);      break;
+        case 600:        buffer.baud = CYG_SERIAL_BAUD_RATE(600);      break;
+        case 1200:       buffer.baud = CYG_SERIAL_BAUD_RATE(1200);     break;
+        case 1800:       buffer.baud = CYG_SERIAL_BAUD_RATE(1800);     break;
+        case 2400:       buffer.baud = CYG_SERIAL_BAUD_RATE(2400);     break;
+        case 3600:       buffer.baud = CYG_SERIAL_BAUD_RATE(3600);     break;
+        case 4800:       buffer.baud = CYG_SERIAL_BAUD_RATE(4800);     break;
+        case 7200:       buffer.baud = CYG_SERIAL_BAUD_RATE(7200);     break;
+        case 9600:       buffer.baud = CYG_SERIAL_BAUD_RATE(9600);     break;
+        case 14400:      buffer.baud = CYG_SERIAL_BAUD_RATE(14400);    break;
+        case 19200:      buffer.baud = CYG_SERIAL_BAUD_RATE(19200);    break;
+        case 38400:      buffer.baud = CYG_SERIAL_BAUD_RATE(38400);    break;
+        case 57600:      buffer.baud = CYG_SERIAL_BAUD_RATE(57600);    break;
+        case 115200:     buffer.baud = CYG_SERIAL_BAUD_RATE(115200);   break;
+        case 230400:     buffer.baud = CYG_SERIAL_BAUD_RATE(230400);   break;
+        default:         buffer.baud = -1; rc = -1;                    break;
+        }
+
+        if ((io->chan) && (buffer.baud != -1)) {
+            rc = cyg_io_set_config(io->chan, CYG_IO_SET_CONFIG_SERIAL_INFO, &buffer, &len);
+        }
+    }
+
+    va_end(ap);
+    return rc;
 }
 
 /*
@@ -241,6 +302,34 @@ _bsp_init_board_comm(void)
         }
     }
 }
+
+#else // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+
+struct bsp_comm_channel _bsp_comm_list[1];
+int _bsp_num_comms = 1;
+
+// Yuck! Two things need doing:
+
+// FIXME: Make bsp code use pointers in the bsp_comm_channel instead
+//        of sub-structures.
+
+// FIXME: Make HAL provide the bsp_comm_info structure - I missed that
+//        initially because it cannot be accessed via the virtual table API.
+void
+_bsp_init_board_comm(void)
+{
+    struct bsp_comm_channel* channel;
+    hal_virtual_comm_table_t* comm;
+
+    channel = &_bsp_comm_list[0];
+    channel->info.name = "fixme";
+    channel->info.kind = BSP_COMM_SERIAL;
+    channel->info.protocol = BSP_PROTO_NONE;
+
+    comm = CYGACC_CALL_IF_DEBUG_PROCS();
+    channel->procs = *(struct bsp_comm_procs*)comm;
+}
+#endif // CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
 /*
  * Array of memory region descriptors. We just list RAM.
@@ -335,4 +424,10 @@ ecos_bsp_console_getc(void)
     } else {
         return '?';
     }
+}
+
+void
+ecos_bsp_set_memsize(unsigned long size)
+{
+    _bsp_memory_list[0].nbytes = size;
 }

@@ -111,7 +111,7 @@ $__reset_platform:
 #ifdef CYG_HAL_STARTUP_RAM
         .long   __reset_platform
 #else
-        .long   __reset_platform-__reset+0xA0000000
+        .long   __reset_platform+0x20000000  // Uncached "shadow" address
 #endif
                 
 #---------------------------------------------------------------------------

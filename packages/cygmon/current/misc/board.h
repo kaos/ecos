@@ -48,25 +48,12 @@
 #include <pkgconf/hal.h>
 #include <pkgconf/cygmon.h>
 
-#define HAVE_FLOAT_REGS         0
-#define HAVE_DOUBLE_REGS        0
-#define HAVE_CACHE              0 // FIXME
-#define HAVE_USAGE              0 // FIXME
-#define USE_CYGMON_PROTOTYPES   1
-#define NOMAIN                  1
-#define CYGMON_SYSTEM_SERVICES  0 // Not used, fall back to BSP support
-#ifdef CYGDAT_CYGMON_USE_HELP
-#define USE_HELP                1
+#ifdef CYGPKG_HAL_ARM
+#include "arm/board.h"
 #endif
 
-// For breakpoint support
-#define NO_MALLOC               1
-#define MAX_BP_NUM              8
-#include "cpu_info.h"
-#define TRAP_SIZE               4
-#define __set_breakpoint        set_breakpoint
-#define __remove_breakpoint     clear_breakpoint
-#define __write_mem_safe        memcpy
-#define _breakinst              bsp_breakinsn
+#ifdef CYGPKG_HAL_MIPS
+#include "mips/board.h"
+#endif
 
 #endif //  __CYGMON_BOARD_H__

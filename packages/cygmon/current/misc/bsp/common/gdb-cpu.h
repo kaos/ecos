@@ -45,7 +45,12 @@
 //=========================================================================
 #include <pkgconf/system.h>
 
-#ifdef CYG_HAL_ARM
+#ifdef CYGPKG_HAL_ARM
 #include "../arm/gdb-cpu.h"
 #endif
+
+#ifdef CYGPKG_HAL_MIPS
+#include "../mips/gdb-cpu.h"
+#endif
+
 #endif // __BSP_COMMON_GDB_CPU_H__

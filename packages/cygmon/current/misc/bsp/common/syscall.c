@@ -172,6 +172,32 @@ _bsp_do_syscall(int func,		/* syscall function number */
 	*(bsp_shared_t **)arg1 = bsp_shared_data;
 	break;
 
+      case SYS_meminfo:
+        {
+          // Return the top and size of memory.
+          struct bsp_mem_info      mem;
+          int                      i;
+          unsigned long            u, totmem, topmem, numbanks;
+
+          i = totmem = topmem = numbanks = 0;
+          while (bsp_sysinfo(BSP_INFO_MEMORY, i++, &mem) == 0)
+            {
+              if (mem.kind == BSP_MEM_RAM)
+                {
+                  numbanks++;
+                  totmem += mem.nbytes;
+                  u = (unsigned long)mem.virt_start + mem.nbytes;
+                  if (u > topmem)
+                    topmem = u;
+                }
+            }
+          *(unsigned long *)arg1 = totmem;
+          *(unsigned long *)arg2 = topmem;
+          *retval = numbanks;
+        }
+        return 1;
+        break;
+
       default:
 	return 0;
     }    

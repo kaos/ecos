@@ -48,16 +48,18 @@
 
 #define IS_ARM 1
 
-typedef unsigned int uint32 ;
+#ifndef __CYGMON_TYPES
+#define __CYGMON_TYPES
+typedef unsigned int uint32;
 typedef int          int32;
+#endif // __CYGMON_TYPES
+
 
 /* Temporary as long a multiple protypes are copied in multiple files */
 /* This variation does NOT clone the prototypes */
 #define NO_MALLOC 1
 #define MAX_NUM_BP 32
 #define MAX_HIST_ENTS 10
-
-typedef int regnames_t;
 
 /* big enuf to store a trap in the BP structure */
 
@@ -69,15 +71,14 @@ typedef struct mem_addr {
   unsigned long addr;
 } mem_addr_t ;
 
-typedef unsigned int target_register_t;
+#ifndef TARGET_REGISTER_T_DEFINED
+#define TARGET_REGISTER_T_DEFINED
+typedef unsigned long target_register_t;
+#endif
 
 #if defined(__ARMEB__)
-#define BIG_ENDIAN_TARGET
-#undef  LITTLE_ENDIAN_TARGET
 #define PRINT_INSN print_insn_big_arm
 #else
-#define LITTLE_ENDIAN_TARGET
-#undef  BIG_ENDIAN_TARGET
 #define PRINT_INSN print_insn_little_arm
 #endif
 

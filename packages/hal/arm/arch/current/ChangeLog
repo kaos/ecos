@@ -1,3 +1,8 @@
+2000-07-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S (start): Hack to allow thumb tests to run in farm
+	until vector table Thumb/ARM API is fixed.
+
 2000-07-07  Jesper Skov  <jskov@redhat.com>
 
 	* src/arm_stub.c: Changes to support CygMon changes.

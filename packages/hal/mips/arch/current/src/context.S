@@ -46,6 +46,10 @@
 
 #include <cyg/hal/arch.inc>
 
+#ifdef at
+#undef at
+#endif
+
 #------------------------------------------------------------------------------
 # hal_thread_switch_context
 # Switch thread contexts

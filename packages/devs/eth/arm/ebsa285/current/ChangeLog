@@ -1,3 +1,17 @@
+2000-07-18  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (i82559_poll): Fill in the flesh of this, it
+	just calls ISR and DSR repeatedly.
+	(i82559_start): Look in the device record for promiscuous mode
+	flag; it should be passed though the common layer, but it's not
+	[yet] - this change from Andrew Lunn/ASCOM.  Also a fix and delay
+	to the promisc mode code per se.
+
+2000-07-17  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* src/if_ebsa285.c (i82559_poll): New function, just to fill in
+	the interface record; not used.
+
 2000-06-27  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* cdl/ebsa285_eth_drivers.cdl: Add sesquipedalian option

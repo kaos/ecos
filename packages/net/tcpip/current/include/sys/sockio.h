@@ -171,6 +171,10 @@
 #define	SIOCBRDGDADDR	_IOWR('i', 71, struct ifbareq)	/* delete addr */
 #define	SIOCBRDGFLUSH	_IOWR('i', 72, struct ifbreq)	/* flush addr cache */
 
+#define SIOCBRDGARL     _IOWR('i', 77, struct ifbrlreq) /* add bridge rule */
+#define SIOCBRDGFRL     _IOWR('i', 78, struct ifbrlreq) /* flush brdg rules */
+#define SIOCBRDGGRL     _IOWR('i', 79, struct ifbrlconf)/* get bridge rules */
+
 #define	SIOCSIFMTU	 _IOW('i', 127, struct ifreq)	/* set ifnet mtu */
 #define	SIOCGIFMTU	_IOWR('i', 126, struct ifreq)	/* get ifnet mtu */
 #define	SIOCSIFASYNCMAP  _IOW('i', 125, struct ifreq)	/* set ppp asyncmap */

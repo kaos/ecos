@@ -446,7 +446,6 @@ _hal_interrupt_stack_call_pending_DSRs:
 call_via_r1:    
         jmp     [r1]
                                         
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 //
 // Reset the board
 //
@@ -454,7 +453,6 @@ call_via_r1:
 _hal_plf_reset_board:   
         di                      // Turn off interrupts
         jmp     [r0]            // Restart machine        
-#endif
 
 #if !defined(CYGSEM_HAL_NEC_INLINE_INTERRUPT_FUNCTIONS)
         .globl  _hal_disable_interrupts

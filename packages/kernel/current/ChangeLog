@@ -1,3 +1,10 @@
+2000-07-17  Gary Thomas  <gthomas@redhat.com>
+
+	* tests/kflag1.c (FIRST_THREAD_WAIT_TIME): Parameterize thread 
+	synchronization wait times (for understanding) and adjust for
+	incredibly slow platforms.  [Previous value allowed for the test
+	to get out of sync because the code ran so slowly]
+
 2000-06-23  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* include/kapi.h (cyg_scheduler_read_lock): New function, to

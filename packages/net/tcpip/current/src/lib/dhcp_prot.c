@@ -41,6 +41,8 @@
 //
 //========================================================================*/
 
+#define nDHCP_CHATTER // report as we go along?
+
 #include <pkgconf/system.h>
 #include <pkgconf/net.h>
 
@@ -634,12 +636,15 @@ do_dhcp(const char *intf, struct bootp *res,
                     *pstate = DHCPSTATE_BOUND;
                     break;
                 }
-                if ( DHCPNAK == msgtype ) { // we're bounced!
+                if ( DHCPNAK == msgtype // Same server?
+                     && received->bp_siaddr.s_addr == xmit->bp_siaddr.s_addr) {
+                    // we're bounced!
                     *pstate = DHCPSTATE_INIT;  // So back the start of the rigmarole.
                     reset_timeout( &tv );
                     break;
                 }
-                // otherwise it's something else, maybe another offer.
+                // otherwise it's something else, maybe another offer, or a bogus
+                // NAK from someone we are not asking!
                 // Just listen again, which implicitly discards it.
             }
             break;

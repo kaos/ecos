@@ -53,7 +53,10 @@
 /*
  * Exception and interrupt handler type.
  */
+#ifndef _BSP_HANDLER_T_DEFINED
+#define _BSP_HANDLER_T_DEFINED
 typedef int (*bsp_handler_t)(int __irq_nr, void *__regs);
+#endif // _BSP_HANDLER_T_DEFINED
 
 /*
  *  Vector descriptor. This is needed for chaining vectors. The interfaces use
@@ -148,18 +151,24 @@ extern bsp_handler_t bsp_install_kill_handler(bsp_handler_t __new_handler);
  * Architecure specific routine to prepare CPU to execute
  * a single machine instruction.
  */
+#ifndef USE_ECOS_HAL_SINGLESTEP
 extern void bsp_singlestep_setup(void *__saved_regs);
+#endif /* USE_ECOS_HAL_SINGLESTEP */
 
 /*
  * Architecure specific routine to cleanup after a single-step
  * completes.
  */
+#ifndef USE_ECOS_HAL_SINGLESTEP
 extern void bsp_singlestep_cleanup(void *__saved_regs);
+#endif /* USE_ECOS_HAL_SINGLESTEP */
 
 /*
  * Architecture specific routine to skip past the current machine instruction.
  */
+#ifndef USE_ECOS_HAL_SINGLESTEP
 extern void bsp_skip_instruction(void *__saved_regs);
+#endif /* USE_ECOS_HAL_SINGLESTEP */
 
 /*
  * Return byte offset within the saved register area of the
@@ -175,12 +184,16 @@ extern int bsp_regsize(int __regno);
 /*
  * Setup the saved registered to establish the given Program Counter.
  */
+#ifndef bsp_set_pc
 extern void bsp_set_pc(unsigned long __pc, void *__saved_regs);
+#endif
 
 /*
  * Get the current Program Counter from the saved registers.
  */
+#ifndef bsp_get_pc
 unsigned long bsp_get_pc(void *__saved_regs);
+#endif
 
 extern int bsp_memory_read(void *__addr,    /* start addr of memory to read */
 			   int  __asid,     /* address space id */
@@ -205,7 +218,9 @@ extern void bsp_get_register(int __regno, void *__saved_regs, void *__val);
  * Architecture specific conversion of raw exception info into
  * a signal value.
  */
+#ifndef bsp_get_signal
 extern int  bsp_get_signal(int __exc_nr, void *__saved_regs);
+#endif
 
 /* light-weight bsp printf to console port */
 extern void bsp_printf(const char *__fmt, ...);

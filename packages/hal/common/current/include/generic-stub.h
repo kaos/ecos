@@ -94,7 +94,10 @@ extern void put_register (regnames_t which, target_register_t value);
 
 /* Set the next instruction to be executed when the user program resumes
    execution to PC. */
+#if !defined(SET_PC_PROTOTYPE_EXISTS) && !defined(set_pc)
+#define SET_PC_PROTOTYPE_EXISTS
 extern void set_pc (target_register_t pc);
+#endif
 
 /* Set the return value of the currently-pending syscall to VALUE. */
 extern void set_syscall_value (target_register_t value);
@@ -115,11 +118,15 @@ extern void __skipinst (void);
 
 /* If the address in the PC register corresponds to the breakpoint()
    instruction, return a non-zero value. */
+#ifndef __is_breakpoint_function
 extern int __is_breakpoint_function (void);
+#endif
 
 /* Execute a breakpoint instruction. Restarting will cause the instruction
    to be skipped. */
+#ifndef breakpoint
 extern void breakpoint (void);
+#endif
 
 /* Return the syscall # corresponding to this system call. */
 extern int __get_syscall_num (void);
@@ -142,9 +149,11 @@ extern int __read_mem_safe (void *buf,
    ADDR is assumed to live in the user program's space. 
    Returns number of bytes successfully read 
    (caller must check to see if less than requested).  */
+#ifndef __write_mem_safe
 extern int __write_mem_safe (void *buf, 
                              void *addr, 
                              int count);
+#endif
 
 /* Set to a non-zero value if a memory fault occurs while 
    __set_mem_fault_trap () is running. */
@@ -189,7 +198,10 @@ typedef void (*__PFV)(void);
    should return zero if it wishes execution to resume from the saved
    register values; a non-zero value indicates that the exception handler
    should be reinvoked. */
+#if !defined(PROCESS_EXCEPTION_VEC_PROTOTYPE_EXISTS)
+#define PROCESS_EXCEPTION_VEC_PROTOTYPE_EXISTS
 extern volatile __PFI __process_exception_vec;
+#endif
 
 /* __process_exit_vec is invoked when a 'k' kill packet is received
    from GDB. */
@@ -292,7 +304,7 @@ extern int __process_packet (char *packetContents);
    Used for printing debug messages. */
 extern void __putDebugStr (char *str);
 
-#ifdef NO_MALLOC
+#if defined(NO_MALLOC) && !defined(MAX_BP_NUM)
 #define MAX_BP_NUM 64 /* Maximum allowed # of breakpoints */
 #endif
 

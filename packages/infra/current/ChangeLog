@@ -1,3 +1,10 @@
+2000-07-18  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* src/buffer.cxx (increment_buffer_pos): Reset buffer pos *before*
+	we try to print the buffer
+	Thanks to Chris Morrow (cmorrow at YottaYotta.com ) for spotting
+	the problem.
+
 2000-04-12  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/infra.cdl: Allow build flags to be tweaked.

@@ -234,6 +234,7 @@ tftpd_read_file(struct tftp_server *server,
                 ok = false;
                 break;
             }
+        repeat_select:
             timeout.tv_sec = TFTP_TIMEOUT_PERIOD;
             timeout.tv_usec = 0;
             FD_ZERO(&fds);
@@ -243,17 +244,26 @@ tftpd_read_file(struct tftp_server *server,
                     ok = false;
                     break;
                 }
+                continue; // retry the send, using up one retry.
             }
             data_len = sizeof(data_in);
             client_len = sizeof(client_addr);
             if ((data_len = recvfrom(s, data_in, data_len, 0, 
-                                     (struct sockaddr *)&client_addr, &client_len)) < 0) {
-                // What happened?
-                ok = false;
-                break;
+                                     (struct sockaddr *)&client_addr,
+                                     &client_len)) < 0) {
+                // What happened?  Maybe someone lied to us...
+                continue; // retry the send, using up one retry.
+            }
+            if ((ntohs(response->th_opcode) == ACK) &&
+                (ntohs(response->th_block) < block)) {
+                // Then it is a repeat ACK for an old block; listen again,
+                // but do not repeat sending the current block, and do not
+                // use up a retry count.
+                goto repeat_select;
             }
             if ((ntohs(response->th_opcode) == ACK) &&
                 (ntohs(response->th_block) == block)) {
+                // Happy!  Break out of the retries loop.
                 break;
             }
         }

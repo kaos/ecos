@@ -1,3 +1,8 @@
+2000-07-17  Jesper Skov  <jskov@redhat.com>
+
+	* src/pid_misc.c (hal_hardware_init): Hack to allow thumb tests to
+	run in farm until vector table Thumb/ARM API is fixed.
+
 2000-07-07  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_pid.cdl: CygMon changed to use virtual vectors.

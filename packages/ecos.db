@@ -179,6 +179,7 @@ package CYGPKG_IO_SERIAL_TX39_JMR3904 {
     description       "TX39 JMR3904 serial device drivers"
 }
 
+
 package CYGPKG_IO_SERIAL_MIPS_VRC4373 {
     alias             { "VRC4373 serial device drivers"
                         devs_serial_mips_vrc4373 vrc4373_serial_driver }
@@ -776,6 +777,8 @@ package CYGPKG_HAL_MIPS_TX39_JMR3904 {
            To use the simulator in this mode the command
            `target sim --board=jmr3904' should be used from inside gdb."
 }
+
+
 
 package CYGPKG_HAL_MIPS_VR4300 {
 	alias		{ "VR4300 chip HAL" hal_vr4300 vr4300_hal vr4300_arch_hal }

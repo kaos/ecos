@@ -160,6 +160,9 @@ net_test(cyg_addrword_t param)
     if (eth0_up) {
         ftp_test(&eth0_bootp_data);
     }
+    if (eth1_up) {
+        ftp_test(&eth1_bootp_data);
+    }
     cyg_test_exit();
 }
 

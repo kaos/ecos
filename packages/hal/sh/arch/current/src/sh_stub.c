@@ -223,7 +223,7 @@ void __single_step (void)
     } else if (opcode == RTE_INSTR) {
         instrMem = (short *) get_register(SP);
     } else if ((opcode & TRAPA_MASK) == TRAPA_INSTR) {
-        instrMem = (short *) ((opcode & ~TRAPA_MASK) << 2);
+        instrMem += 1;                  // skip traps
     } else {
         instrMem += 1;
     }

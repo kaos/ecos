@@ -46,4 +46,5 @@
 
 #define SYS_interrupt   1000
 
+#define SYS_meminfo     1001
 #endif

@@ -256,6 +256,7 @@ arm_othernames (void)
 
 #include <pkgconf/hal.h>
 #include <cyg/hal/hal_arch.h>
+#include "bsp/common/bsp_if.h"
 
 int
 machine_syscall(HAL_SavedRegisters *regs)

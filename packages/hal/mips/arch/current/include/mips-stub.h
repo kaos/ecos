@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Red Hat, nickg
-// Contributors:  Red Hat, nickg
+// Contributors:  Red Hat, nickg, dmoseley
 // Date:          1998-06-08
 // Purpose:       
 // Description:   MIPS-specific definitions for generic stub
@@ -65,13 +65,14 @@ extern "C" {
 #endif
 
 enum regnames {
-        ZERO,   AT,     V0,     V1,     A0,     A1,     A2,     A3,
-        T0,     T1,     T2,     T3,     T4,     T5,     T6,     T7,
-        S0,     S1,     S2,     S3,     S4,     S5,     S6,     S7,
-        T8,     T9,     K0,     K1,     GP,     SP,     S8,     RA,
-        SR,     LO,     HI,     BAD,    CAUSE,  PC,
-        CONFIG = 84,    CACHE,  DEBUG,  DEPC,   EPC
+        REG_ZERO,   REG_AT,     REG_V0,     REG_V1,     REG_A0,     REG_A1,     REG_A2,     REG_A3,
+        REG_T0,     REG_T1,     REG_T2,     REG_T3,     REG_T4,     REG_T5,     REG_T6,     REG_T7,
+        REG_S0,     REG_S1,     REG_S2,     REG_S3,     REG_S4,     REG_S5,     REG_S6,     REG_S7,
+        REG_T8,     REG_T9,     REG_K0,     REG_K1,     REG_GP,     REG_SP,     REG_S8,     REG_RA,
+        REG_SR,     REG_LO,     REG_HI,     REG_BAD,    REG_CAUSE,  REG_PC,
+        REG_CONFIG = 84,    REG_CACHE,  REG_DEBUG,  REG_DEPC,   REG_EPC
 };
+#define USE_LONG_NAMES_FOR_ENUM_REGNAMES
 
 typedef enum regnames regnames_t;
 
@@ -89,19 +90,26 @@ extern void put_register (regnames_t which, target_register_t value);
 
 /* Set the currently-saved pc register value to PC. This also updates NPC
    as needed. */
+#if !defined(SET_PC_PROTOTYPE_EXISTS) && !defined(set_pc)
+#define SET_PC_PROTOTYPE_EXISTS
 extern void set_pc (target_register_t pc);
+#endif
 
 /* Set things up so that the next user resume will execute one instruction.
    This may be done by setting breakpoints or setting a single step flag
    in the saved user registers, for example. */
+#ifndef __single_step
 void __single_step (void);
+#endif
 
 /* Clear the single-step state. */
 void __clear_single_step (void);
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
    non-zero value. */
+#ifndef __is_breakpoint_function
 extern int __is_breakpoint_function (void);
+#endif
 
 /* Skip the current instruction. */
 extern void __skipinst (void);
@@ -109,6 +117,10 @@ extern void __skipinst (void);
 extern void __install_breakpoints (void);
 
 extern void __clear_breakpoints (void);
+
+extern void __install_breakpoint_list (void);
+
+extern void __clear_breakpoint_list (void);
 
 #ifdef __cplusplus
 }      /* extern "C" */

@@ -1,3 +1,45 @@
+2000-07-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_if.c (CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS): Define to allow
+	the number of channels to be extended by "AUX" packages.
+
+2000-07-20  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/generic-stub.c (stub_format_registers): Make the previous patch
+	effective only if CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T is
+	defined so as to not affect any other targets.
+	* src/hal_stub.c: Ditto.
+
+2000-07-19  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/generic-stub.c (stub_format_registers): Handle the case
+	where GDB is expecting registers larger than we are storing.  ie
+	MIPS gdb expects 64 bit registers even if we are on a 32 bit
+	architecture.  Also, handle the sign-extension correctly if
+	necessary.
+	* src/hal_stub.c (__build_t_packet): Ditto.
+
+2000-07-18  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_misc.c (hal_default_isr): 
+	Version gets hacked by hal_if_init - check for the hacked value.
+
+2000-07-18  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_stub.c (__mem_fault_handler): Made volatile.
+	
+2000-07-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* src/generic-stub.c: Cleanups for better coexistence with Cygmon.
+	* include/generic-stub.h: Ditto.
+	* include/hal_if.h: Ditto.
+	* include/hal_stub.h: Ditto.
+	* src/hal_stub.c: Ditto.
+
+	* cdl/hal.cdl: Compile bplist-dynamic.c.
+
+	* src/bplist-dynamic.c: New file for supporting breakpoints in the HAL.
+
 2000-07-14  Gary Thomas  <gthomas@redhat.com>
 
 	* src/hal_if.c (delay_us): Use HAL_DELAY_US() if defined.

@@ -89,6 +89,7 @@ cdl_package CYGPKG_CYGMON {
         requires ! CYGSEM_LIBC_PER_THREAD_ERRNO
         requires ! CYGSEM_LIBC_TIME_TIME_WORKING
         requires ! CYGSEM_LIBC_TIME_SETTIME_WORKING
+        requires CYGPKG_HAL_ARM
 
         no_define
         description "This option enables the building of the CygMon ELF image.
@@ -99,33 +100,33 @@ cdl_package CYGPKG_CYGMON {
         make -priority 320 {
             <PREFIX>/bin/cygmon.elf : <PACKAGE>/misc/ecos_bsp.c <PACKAGE>/misc/ecos_dummy.c <PACKAGE>/misc/cpu-mon.c <PACKAGE>/misc/monitor.c <PACKAGE>/misc/monitor_cmd.c <PACKAGE>/misc/ledit.c <PACKAGE>/misc/breakpoints.c <PACKAGE>/misc/bplist-dynamic.c <PACKAGE>/misc/utils.c <PACKAGE>/misc/generic_fmt32.c <PACKAGE>/misc/generic_mem.c <PACKAGE>/misc/bsp/common/bsp.c <PACKAGE>/misc/bsp/common/bsp_if.c <PACKAGE>/misc/bsp/common/shared-data.c <PACKAGE>/misc/bsp/common/sysinfo.c <PACKAGE>/misc/bsp/common/console-io.c <PACKAGE>/misc/bsp/common/debug-io.c <PACKAGE>/misc/bsp/common/sprintf.c <PACKAGE>/misc/bsp/common/syscall.c <PACKAGE>/misc/bsp/common/printf.c <PACKAGE>/misc/bsp/common/vprintf.c <PACKAGE>/misc/bsp/common/breakpoint.c <PACKAGE>/misc/bsp/common/singlestep.c <PACKAGE>/misc/bsp/common/generic-mem.c <PACKAGE>/misc/bsp/common/bsp_cache.c <PACKAGE>/misc/bsp/common/gdb-cpu.c <PACKAGE>/misc/bsp/common/hex-utils.c
             @sh -c "mkdir -p misc/bsp/common $(dir $@)"
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/ecos_bsp.o $(REPOSITORY)/$(PACKAGE)/misc/ecos_bsp.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/ecos_dummy.o $(REPOSITORY)/$(PACKAGE)/misc/ecos_dummy.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/cpu-mon.o $(REPOSITORY)/$(PACKAGE)/misc/cpu-mon.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/monitor.o $(REPOSITORY)/$(PACKAGE)/misc/monitor.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/monitor_cmd.o $(REPOSITORY)/$(PACKAGE)/misc/monitor_cmd.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/ledit.o $(REPOSITORY)/$(PACKAGE)/misc/ledit.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/breakpoints.o $(REPOSITORY)/$(PACKAGE)/misc/breakpoints.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bplist-dynamic.o $(REPOSITORY)/$(PACKAGE)/misc/bplist-dynamic.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/utils.o $(REPOSITORY)/$(PACKAGE)/misc/utils.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/generic_fmt32.o $(REPOSITORY)/$(PACKAGE)/misc/generic_fmt32.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/generic_mem.o $(REPOSITORY)/$(PACKAGE)/misc/generic_mem.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/bsp.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/bsp_if.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp_if.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/shared-data.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/shared-data.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/sysinfo.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/sysinfo.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/console-io.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/console-io.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/debug-io.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/debug-io.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/sprintf.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/sprintf.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/syscall.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/syscall.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/printf.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/printf.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/vprintf.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/vprintf.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/breakpoint.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/breakpoint.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/singlestep.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/singlestep.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/generic-mem.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/generic-mem.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/bsp_cache.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp_cache.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/gdb-cpu.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/gdb-cpu.c
-            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -DCYG_HAL_ARM -o misc/bsp/common/hex-utils.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/hex-utils.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/ecos_bsp.o $(REPOSITORY)/$(PACKAGE)/misc/ecos_bsp.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/ecos_dummy.o $(REPOSITORY)/$(PACKAGE)/misc/ecos_dummy.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/cpu-mon.o $(REPOSITORY)/$(PACKAGE)/misc/cpu-mon.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/monitor.o $(REPOSITORY)/$(PACKAGE)/misc/monitor.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/monitor_cmd.o $(REPOSITORY)/$(PACKAGE)/misc/monitor_cmd.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/ledit.o $(REPOSITORY)/$(PACKAGE)/misc/ledit.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/breakpoints.o $(REPOSITORY)/$(PACKAGE)/misc/breakpoints.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bplist-dynamic.o $(REPOSITORY)/$(PACKAGE)/misc/bplist-dynamic.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/utils.o $(REPOSITORY)/$(PACKAGE)/misc/utils.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/generic_fmt32.o $(REPOSITORY)/$(PACKAGE)/misc/generic_fmt32.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/generic_mem.o $(REPOSITORY)/$(PACKAGE)/misc/generic_mem.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/bsp.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/bsp_if.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp_if.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/shared-data.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/shared-data.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/sysinfo.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/sysinfo.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/console-io.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/console-io.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/debug-io.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/debug-io.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/sprintf.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/sprintf.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/syscall.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/syscall.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/printf.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/printf.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/vprintf.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/vprintf.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/breakpoint.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/breakpoint.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/singlestep.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/singlestep.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/generic-mem.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/generic-mem.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/bsp_cache.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/bsp_cache.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/gdb-cpu.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/gdb-cpu.c
+            $(CC) -c -I$(REPOSITORY)/$(PACKAGE)/misc $(INCLUDE_PATH) $(CFLAGS) -DHAVE_BSP -D__ECOS__ -o misc/bsp/common/hex-utils.o $(REPOSITORY)/$(PACKAGE)/misc/bsp/common/hex-utils.c
             $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(patsubst $(REPOSITORY)/$(PACKAGE)/%.c,%.o,$^)
         }
     }

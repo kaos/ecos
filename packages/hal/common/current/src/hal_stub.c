@@ -63,6 +63,11 @@
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
 
+#ifdef USE_LONG_NAMES_FOR_ENUM_REGNAMES
+#define PC REG_PC
+#define SP REG_SP
+#endif
+
 //-----------------------------------------------------------------------------
 // Extra eCos data.
 
@@ -579,10 +584,6 @@ __break_opcode ()
 }
 #endif
 
-// FIXME: Add support for multiple breakpoints (libstub/bplist-dynamic.c)
-int __set_breakpoint (target_register_t addr)    { return 0; }
-int __remove_breakpoint (target_register_t addr) { return 0; }
-
 //-----------------------------------------------------------------------------
 // Write the 'T' packet in BUFFER. SIGVAL is the signal the program received.
 void 
@@ -590,9 +591,6 @@ __build_t_packet (int sigval, char *buf)
 {
     target_register_t addr;
     char *ptr = buf;
-    target_register_t sp;
-
-    sp = (target_register_t) get_register (SP);
 
     *ptr++ = 'T';
     *ptr++ = __tohex (sigval >> 4);
@@ -636,13 +634,54 @@ __build_t_packet (int sigval, char *buf)
     *ptr++ = __tohex (PC);
     *ptr++ = ':';
     addr = get_register (PC);
+#ifdef CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
+    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
+    if (sizeof(addr) < REGSIZE(PC))
+    {
+        // GDB is expecting REGSIZE(PC) number of bytes.
+        // We only have sizeof(addr) number.  Let's fill
+        // the appropriate number of bytes intelligently.
+        target_register_t extend_val = 0;
+#ifdef CYGARC_SIGN_EXTEND_REGISTERS
+        {
+            unsigned long bits_in_addr = (sizeof(addr) << 3);  // ie Size in bytes * 8
+            target_register_t sign_bit_mask = (1 << (bits_in_addr - 1));
+            if ((addr & sign_bit_mask) == sign_bit_mask)
+                extend_val = ~0;
+        }
+#endif
+        ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(PC) - sizeof(addr), 0);
+    }
+#else
     ptr = __mem2hex((char *)&addr, ptr, REGSIZE(PC), 0);
+#endif
     *ptr++ = ';';
 
     *ptr++ = __tohex (SP >> 4);
     *ptr++ = __tohex (SP);
     *ptr++ = ':';
-    ptr = __mem2hex((char *)&sp, ptr, REGSIZE(SP), 0);
+    addr = (target_register_t) get_register (SP);
+#ifdef CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
+    ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
+    if (sizeof(addr) < REGSIZE(SP))
+    {
+        // GDB is expecting REGSIZE(SP) number of bytes.
+        // We only have sizeof(addr) number.  Let's fill
+        // the appropriate number of bytes intelligently.
+        target_register_t extend_val = 0;
+#ifdef CYGARC_SIGN_EXTEND_REGISTERS
+        {
+            unsigned long bits_in_addr = (sizeof(addr) << 3);  // ie Size in bytes * 8
+            target_register_t sign_bit_mask = (1 << (bits_in_addr - 1));
+            if ((addr & sign_bit_mask) == sign_bit_mask)
+                extend_val = ~0;
+        }
+#endif
+        ptr = __mem2hex((char *)&extend_val, ptr, REGSIZE(SP) - sizeof(addr), 0);
+    }
+#else
+    ptr = __mem2hex((char *)&addr, ptr, REGSIZE(SP), 0);
+#endif
     *ptr++ = ';';
     
     *ptr++ = 0;
@@ -716,7 +755,7 @@ __data_cache (cache_control_t request)
 //-----------------------------------------------------------------------------
 // Memory accessor functions.
 
-void *__mem_fault_handler = (void *)0;
+volatile void *__mem_fault_handler = (void *)0;
 
 /* These are the "arguments" to __do_read_mem and __do_write_mem, 
    which are passed as globals to avoid squeezing them thru

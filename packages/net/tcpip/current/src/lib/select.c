@@ -139,20 +139,19 @@ _cyg_select(int nfd, fd_set *in, fd_set *out, fd_set *ex,
                 return 0;
             }
             flag = cyg_flag_timed_wait(&select_flag, wait_flag,
-                                       CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR,
+                                       CYG_FLAG_WAITMODE_OR,
                                        then);
         } else {
             // Wait forever (until something happens)
             flag = cyg_flag_wait(&select_flag, wait_flag,
-                                 CYG_FLAG_WAITMODE_OR|CYG_FLAG_WAITMODE_CLR);
+                                 CYG_FLAG_WAITMODE_OR);
         }
         if (flag & SELECT_ABORT) {
             errno = EINTR;
             return -1;
         }
         if (!flag) {
-            errno = ETIMEDOUT;
-            return -1;
+            return 0; // meaning no activity, ergo timeout occurred
         }
     }
     errno = ENOSYS;
@@ -179,7 +178,8 @@ selwakeup(struct selinfo *info)
     cyg_scheduler_lock();  // Need this test to be indivisible
     if (cyg_flag_waiting(&select_flag)) {
         // Signal any threads doing a 'select()' that I/O may be possible
-        cyg_flag_setbits(&select_flag, SELECT_WAKE); 
+        cyg_flag_setbits(&select_flag, SELECT_WAKE);
+        cyg_flag_maskbits(&select_flag,    0      ); // clear all
     }
     cyg_scheduler_unlock();
 }
@@ -217,6 +217,7 @@ cyg_select_abort(void)
     if (cyg_flag_waiting(&select_flag)) {
         // Signal any threads doing a 'select()' that I/O may be possible
         cyg_flag_setbits(&select_flag, SELECT_ABORT); 
+        cyg_flag_maskbits(&select_flag,    0       ); // clear all
     }
     cyg_scheduler_unlock();
 }

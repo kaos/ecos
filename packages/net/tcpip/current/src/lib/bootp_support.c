@@ -454,27 +454,33 @@ init_net(const char *intf, struct bootp *bp)
 
     // Set up routing
     if (get_bootp_option(bp, TAG_GATEWAY, &gateway)) {
-        memset(&route, 0, sizeof(route));
-        addrp->sin_family = AF_INET;
-        addrp->sin_port = 0;
-        addrp->sin_addr.s_addr = *(unsigned int *)&bp->bp_yiaddr & *(unsigned int *)&netmask;
-        memcpy(&route.rt_dst, addrp, sizeof(*addrp));
-        addrp->sin_addr = netmask;
-        memcpy(&route.rt_genmask, addrp, sizeof(*addrp));
-        addrp->sin_addr = gateway;
-        memcpy(&route.rt_gateway, addrp, sizeof(*addrp));
+        // ...and it's a nonzero address...
+        if ( 0 != gateway.s_addr ) {
+            memset(&route, 0, sizeof(route));
+            addrp->sin_family = AF_INET;
+            addrp->sin_port = 0;
+            addrp->sin_addr.s_addr = 0; // Use 0,0,GATEWAY for the default route
+            memcpy(&route.rt_dst, addrp, sizeof(*addrp));
+            addrp->sin_addr.s_addr = 0;
+            memcpy(&route.rt_genmask, addrp, sizeof(*addrp));
+            addrp->sin_addr = gateway;
+            memcpy(&route.rt_gateway, addrp, sizeof(*addrp));
 
-        route.rt_dev = ifr.ifr_name;
-        route.rt_flags = RTF_UP|RTF_GATEWAY;
-        route.rt_metric = 0;
+            route.rt_dev = ifr.ifr_name;
+            route.rt_flags = RTF_UP|RTF_GATEWAY;
+            route.rt_metric = 0;
 
-        if (ioctl(s, SIOCADDRT, &route)) {
-            diag_printf("Route - dst: %s", inet_ntoa(((struct sockaddr_in *)&route.rt_dst)->sin_addr));
-            diag_printf(", mask: %s", inet_ntoa(((struct sockaddr_in *)&route.rt_genmask)->sin_addr));
-            diag_printf(", gateway: %s\n", inet_ntoa(((struct sockaddr_in *)&route.rt_gateway)->sin_addr));
-            if (errno != EEXIST) {
-                perror("SIOCADDRT 3");
-                return false;
+            if (ioctl(s, SIOCADDRT, &route)) {
+                diag_printf("Route - dst: %s",
+                  inet_ntoa(((struct sockaddr_in *)&route.rt_dst)->sin_addr));
+                diag_printf(", mask: %s",
+                  inet_ntoa(((struct sockaddr_in *)&route.rt_genmask)->sin_addr));
+                diag_printf(", gateway: %s\n",
+                  inet_ntoa(((struct sockaddr_in *)&route.rt_gateway)->sin_addr));
+                if (errno != EEXIST) {
+                    perror("SIOCADDRT 3");
+                    return false;
+                }
             }
         }
     }

@@ -53,7 +53,10 @@ extern "C" {
 
 #define REGSIZE( _x_ ) (((_x_) < F0 || (_x_) >= FPS) ? 4 : 12)
 
+#ifndef TARGET_REGISTER_T_DEFINED
+#define TARGET_REGISTER_T_DEFINED
 typedef unsigned long target_register_t;
+#endif
 
 enum regnames {
     R0, R1, R2, R3, R4, R5, R6, R7, 

@@ -40,6 +40,7 @@
 #include <pkgconf/kernel.h>   // Configuration header
 #include <cyg/kernel/kapi.h>
 #include <cyg/infra/diag.h>
+#include <cyg/hal/plf_stub.h>
 
 // TEMP
 
@@ -50,6 +51,9 @@ void n(void)                                    \
     while (1) ;                                 \
 }
 
+#ifndef CYGHWR_HAL_RESET_DEFINED
     FAIL(bsp_reset)
+#endif
+
     FAIL(_bsp_gdb_handler)
     FAIL(_bsp_gdb_data)

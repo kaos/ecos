@@ -68,6 +68,7 @@ cdl_package CYGPKG_NET {
 	sys/net/radix.c \
 	sys/net/if_ethersubr.c \
 	sys/net/if_loop.c \
+	sys/net/if_bridge.c \
 	sys/netinet/igmp.c \
 	sys/netinet/raw_ip.c \
 	sys/netinet/in.c  \
@@ -262,7 +263,9 @@ cdl_package CYGPKG_NET {
         flavor  data
         default_value 0
         description   "
-            This option controls the number of bridge buffers."
+            This option controls the number of bridge buffers and indeed
+	    whether bridging code is enabled at all via 'standard'
+	    symbol NBRIDGE."
         define_proc {
             puts $::cdl_header "#define NBRIDGE CYGPKG_NET_NBRIDGE"
         }
@@ -362,17 +365,20 @@ cdl_package CYGPKG_NET {
 		    tests/tftp_server_test \
 		    tests/tcp_echo \
 		    tests/set_mac_address \
+		    tests/bridge \
 		    tests/flood \
 		    tests/ping_test \
 		    tests/dhcp_test \
 		    tests/ping_lo_test \
 		    tests/tcp_lo_test \
 		    tests/udp_lo_test \
+		    tests/multi_lo_select \
 		    tests/tcp_lo_select"
 	    :
 	            "tests/ping_lo_test \
 		    tests/tcp_lo_test \
 		    tests/udp_lo_test \
+		    tests/multi_lo_select \
 		    tests/tcp_lo_select"
 	}
 	    description   "
@@ -422,13 +428,23 @@ cdl_package CYGPKG_NET {
         cdl_component CYGHWR_NET_DRIVER_ETH0_MANUAL {
             display "Initialize 'eth0' manually?"
             default_value 0
-            implements CYGHWR_NET_DRIVER_ETH0_SETUP	
+            implements CYGHWR_NET_DRIVER_ETH0_SETUP
+	    description "
+	        If this option is selected, the eCos library provides no
+	        initialization code for this interface; you must perform
+	        all the initialization in the application, by means of
+	        appropriate ioctl() calls, or by calling init_net() with an
+	        appropriate bootp record you have constructed yourself."
         }
 
         cdl_component CYGHWR_NET_DRIVER_ETH0_BOOTP {
             display "Use BOOTP/DHCP to initialize 'eth0'?"
             default_value 1
             implements CYGHWR_NET_DRIVER_ETH0_SETUP	
+	    description "
+	        If this option is selected, init_all_network_interfaces()
+	        will use DHCP or BOOTP to acquire initialization data for
+	        this interface, and then set it up accordingly."
 
             cdl_option CYGHWR_NET_DRIVER_ETH0_DHCP {
                 display "Use DHCP rather than BOOTP for 'eth0'?"
@@ -448,6 +464,29 @@ cdl_package CYGPKG_NET {
             display "Address setups for 'eth0'"
             implements CYGHWR_NET_DRIVER_ETH0_SETUP	
             no_define
+
+	    description "
+	        These options let you configure all the initialization data
+	        that init_all_network_interfaces() will use
+	        for 'eth0' statically.  Be careful when doing this, because
+	        if you run the same application image on multiple boards,
+	        they will have identical IP addresses and so on; this is a
+	        Bad Thing.
+	        The values you set are inserted in a bootp-style record
+	        that is fed into a common setup routine to configure the
+	        interface.  That routine does not in fact use the 'Server
+	        IP address' field.
+	        The bootp record is also available to application code, and
+	        some eCos networking test programs use the 'Server IP
+	        address' field to mean 'a machine we can interact with' for
+	        example to ping or perform ftp with.  That is the rationale
+	        for its inclusion here.
+	        The gateway address is used to set up a default route if
+	        nonzero.  If you have more than one interface, setting up
+	        more than one default route is will cause malfunctions.  A
+	        gateway address of 0.0.0.0 can be set to prevent that route
+	        setup.  Of course, your application can add real routes
+	        once the interface(s) initialization is complete."
 
             cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_IP {
                 display "IP address for 'eth0'"
@@ -470,7 +509,7 @@ cdl_package CYGPKG_NET {
             cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_GATEWAY {
                 display "Gateway/router IP address for 'eth0'"
                 flavor  data
-                default_value { "192.168.1.101" }
+                default_value { "192.168.1.1" }
             }
 
             cdl_option CYGHWR_NET_DRIVER_ETH0_ADDRS_SERVER {
@@ -501,12 +540,22 @@ cdl_package CYGPKG_NET {
             display "Initialize 'eth1' manually?"
             default_value 0
             implements CYGHWR_NET_DRIVER_ETH1_SETUP	
+	    description "
+	        If this option is selected, the eCos library provides no
+	        initialization code for this interface; you must perform
+	        all the initialization in the application, by means of
+	        appropriate ioctl() calls, or by calling init_net() with an
+	        appropriate bootp record you have constructed yourself."
         }
 
         cdl_component CYGHWR_NET_DRIVER_ETH1_BOOTP {
             display "Use BOOTP/DHCP to initialize 'eth1'?"
             default_value 1
             implements CYGHWR_NET_DRIVER_ETH1_SETUP	
+	    description "
+	        If this option is selected, init_all_network_interfaces()
+	        will use DHCP or BOOTP to acquire initialization data for
+	        this interface, and then set it up accordingly."
 
             cdl_option CYGHWR_NET_DRIVER_ETH1_DHCP {
                 display "Use DHCP rather than BOOTP for 'eth1'?"
@@ -526,6 +575,31 @@ cdl_package CYGPKG_NET {
             display "Address setups for 'eth1'"
             implements CYGHWR_NET_DRIVER_ETH1_SETUP	
             no_define
+
+	    description "
+	        These options let you configure all the initialization data
+	        that init_all_network_interfaces() will use
+	        for 'eth1' statically.  Be careful when doing this, because
+	        if you run the same application image on multiple boards,
+	        they will have identical IP addresses and so on; this is a
+	        Bad Thing.
+	        The values you set are inserted in a bootp-style record
+	        that is fed into a common setup routine to configure the
+	        interface.  That routine does not in fact use the 'Server
+	        IP address' field.
+	        The bootp record is also available to application code, and
+	        some eCos networking test programs use the 'Server IP
+	        address' field to mean 'a machine we can interact with' for
+	        example to ping or perform ftp with.  That is the rationale
+	        for its inclusion here.
+	        The gateway address is used to set up a default route if
+	        nonzero.  If you have more than one interface, setting up
+	        more than one default route is will cause malfunctions.  A
+	        gateway address of 0.0.0.0 can be set to prevent that route
+	        setup.  Of course, your application can add real routes
+	        once the interface(s) initialization is complete.
+	        This interface 'eth1' has no route set up in the default
+	        configuration."
 
             cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_IP {
                 display "IP address for 'eth1'"
@@ -548,7 +622,7 @@ cdl_package CYGPKG_NET {
             cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_GATEWAY {
                 display "Gateway/router IP address for 'eth1'"
                 flavor  data
-                default_value { "192.168.1.101" }
+                default_value { "0.0.0.0" }
             }
 
             cdl_option CYGHWR_NET_DRIVER_ETH1_ADDRS_SERVER {

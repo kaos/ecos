@@ -53,12 +53,19 @@
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #define USE_GDBSTUB_PROTOTYPES 0        // avoid stub-tservice.h atm
+#ifndef __ECOS__
 #define __ECOS__                        // use to mark eCos hacks
+#endif
 
 #include <cyg/hal/basetype.h>           // HAL_LABEL_NAME
 #include <cyg/hal/hal_arch.h>           // HAL header
 #include <cyg/infra/cyg_type.h>         // cyg_uint32 and CYG_BYTEORDER
+
+#ifndef __CYGMON_TYPES
+#define __CYGMON_TYPES
 typedef cyg_uint32 uint32;
+typedef cyg_int32  int32;
+#endif // __CYGMON_TYPES
 
 #include <cyg/hal/plf_stub.h>
 #include <cyg/hal/generic-stub.h>
@@ -146,15 +153,22 @@ extern void ungetDebugChar (int ch);
 extern void __reset (void);
 
 // Multi-bp support.
+#ifndef __set_breakpoint
 extern int __set_breakpoint (target_register_t addr);
+#endif
+#ifndef __remove_breakpoint
 extern int __remove_breakpoint (target_register_t addr);
+#endif
 
 /* Install the standard set of trap handlers for the stub. */
 extern void __install_traps (void);
 
 /* Address in text section of a breakpoint instruction.  */
 
+#ifndef BREAKINST_DEFINED
+#define BREAKINST_DEFINED
 extern void CYG_LABEL_NAME(breakinst) (void);
+#endif
 
 /* The opcode for a breakpoint instruction.  */
 
@@ -261,6 +275,12 @@ static inline int strlen( const char *s )
 //-----------------------------------------------------------------------------
 // Repeat the cache definitions here to avoid too much hackery in 
 // generic-stub.h
+/* Flush the instruction cache. */
+extern void flush_i_cache (void);
+
+/* Flush the data cache. */
+extern void __flush_d_cache (void);
+
 typedef enum {
   CACHE_NOOP, CACHE_ENABLE, CACHE_DISABLE, CACHE_FLUSH
 } cache_control_t;

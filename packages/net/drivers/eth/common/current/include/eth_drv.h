@@ -45,7 +45,7 @@
 // Contributors: gthomas
 // Date:         2000-01-10
 // Purpose:      
-// Description:  
+// Description:  High level networking driver interfaces
 //              
 //
 //####DESCRIPTIONEND####
@@ -57,6 +57,9 @@
 #ifndef _ETH_DRV_H_
 #define _ETH_DRV_H_
 
+#include <pkgconf/system.h>
+
+#ifdef CYGPKG_NET
 #include <sys/param.h>
 #include <sys/socket.h>
 
@@ -73,6 +76,7 @@
 #if NBPFILTER > 0
 #include <net/bpf.h>
 #include <net/bpfdesc.h>
+#endif
 #endif
 
 struct eth_drv_sg {
@@ -110,7 +114,15 @@ struct eth_drv_funs {
     void (*recv)(struct eth_drv_sc *sc,
                  struct eth_drv_sg *sg_list,
                  int sg_len);
+    // Poll for interrupts/device service
+    void (*poll)(struct eth_drv_sc *sc);
 };
+
+#ifndef CYGPKG_NET
+struct arpcom {
+    unsigned char esa[6];
+};
+#endif
 
 struct eth_drv_sc {
     struct eth_drv_funs *funs;
@@ -119,21 +131,27 @@ struct eth_drv_sc {
     struct arpcom       sc_arpcom; /* ethernet common */
 };
 
-#define ETH_DRV_SC(sc,priv,name,start,stop,control,can_send,send,recv) \
+#define ETH_DRV_SC(sc,priv,name,start,stop,control,can_send,send,recv,poll) \
 static void start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags); \
 static void stop(struct eth_drv_sc *sc); \
 static int  control(struct eth_drv_sc *sc, unsigned long key, void *data, int data_length); \
 static int  can_send(struct eth_drv_sc *sc); \
 static void send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len, int total, unsigned long key); \
 static void recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len); \
-static struct eth_drv_funs sc##_funs = {start, stop, control, can_send, send, recv}; \
+static void poll(struct eth_drv_sc *sc); \
+static struct eth_drv_funs sc##_funs = {start, stop, control, can_send, send, recv, poll}; \
 struct eth_drv_sc sc = {&sc##_funs, priv, name};
 
 void eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr);
 void eth_drv_recv(struct eth_drv_sc *sc, int total_len);
 void eth_drv_tx_done(struct eth_drv_sc *sc, unsigned long key, int status);
 
+
 // Control 'key's
 #define ETH_DRV_SET_MAC_ADDRESS 0x0100
+
+#ifndef ETHER_ADDR_LEN
+#define ETHER_ADDR_LEN 6
+#endif
 
 #endif // _ETH_DRV_H_

@@ -1,3 +1,24 @@
+2000-07-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_stub.c (__single_step): Skip trap instructions.
+
+2000-07-18  Gary Thomas  <gthomas@redhat.com>
+
+	* src/vectors.S (__reset): Change calculation of uncached startup
+	address.
+
+2000-07-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_misc.c (cyg_hal_exception_handler): Handle exception caused by
+	GDB stubs memory accesses.
+
+2000-07-16  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_intr.h: Define HAL_DELAY_US() - see below.
+
+	* src/hal_misc.c (hal_delay_us): New function.  Used in ROM/stand-alone
+	applications when there is no kernel.
+
 2000-06-30  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S (__reset): Jump to VMA for RAM startup.

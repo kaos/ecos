@@ -34,7 +34,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     Red Hat, nickg
-// Contributors:  Red Hat, nickg
+// Contributors:  Red Hat, nickg, dmoseley
 // Date:          1998-06-08
 // Purpose:       
 // Description:   Register defines for MIPS processors
@@ -62,6 +62,7 @@
 
 #define zero            $0
 #define at              $1              /* assembler temporary */
+#define atmp            $1              /* assembler temporary */
 #define v0              $2              /* value holders */
 #define v1              $3
 #define a0              $4              /* arguments */
@@ -97,6 +98,7 @@
 /* MIPS registers, numbered in the order in which gdb expects to see them. */
 #define ZERO            0
 #define AT              1
+#define ATMP            1
 #define V0              2
 #define V1              3
 #define A0              4
@@ -181,6 +183,8 @@
 #define C0_STATUS       $12             /* Processor Status */
 #define C0_CAUSE        $13             /* Exception Cause */
 #define C0_EPC          $14             /* Exception PC */
+#define C0_WATCHLO      $18             /* Watchpoint LO */
+#define C0_WATCHHI      $19             /* Watchpoint HI */
 #define C0_XCONTEXT     $20             /* XContext */
 #define C0_ECC          $26             /* ECC */
 #define C0_CACHEERR     $27             /* CacheErr */

@@ -33,7 +33,7 @@
 #
 # Author(s):      bartv
 # Original data:  nickg,jskov,jlarmour
-# Contributors:
+# Contributors:   dmoseley
 # Date:           1999-06-13
 #
 #####DESCRIPTIONEND####
@@ -54,7 +54,7 @@ cdl_package CYGPKG_HAL {
         options that are common to all HAL packages."
     doc           redirect/the-ecos-hardware-abstraction-layer-hal.html
 
-    compile       generic-stub.c thread-packets.c hal_stub.c drv_api.c
+    compile       generic-stub.c thread-packets.c hal_stub.c drv_api.c bplist-dynamic.c
     compile       -library=libextras.a dummy.c
 
     make -priority 250 {

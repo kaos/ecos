@@ -349,11 +349,13 @@ extern cyg_uint32  cyg_splimp(void);
 extern cyg_uint32  cyg_splnet(void);
 extern cyg_uint32  cyg_splclock(void);
 extern cyg_uint32  cyg_splsoftnet(void);
+extern cyg_uint32  cyg_splhigh(void);
 extern void        cyg_splx(cyg_uint32);
 #define splimp     cyg_splimp
 #define splnet     cyg_splnet
 #define splclock   cyg_splclock
 #define splsoftnet cyg_splsoftnet
+#define splhigh    cyg_splhigh
 #define splx       cyg_splx
 #endif
 
