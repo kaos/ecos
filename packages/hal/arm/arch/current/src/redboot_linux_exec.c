@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Red Hat, Inc.
 // Copyright (C) 2003, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -100,15 +100,44 @@ RedBoot_cmd("exec",
 // address. Some ARM implementations may need special handling and define
 // their own version.
 #ifndef CYGARC_HAL_MMU_OFF
-#define CYGARC_HAL_MMU_OFF(__paddr__) \
-  "   mcr p15,0,r0,c7,c10,4\n"        \
-  "   mcr p15,0,r0,c7,c7,0\n"         \
-  "   mrc p15,0,r0,c1,c0,0\n"         \
+
+#define __CYGARC_GET_CTLREG \
+              "   mrc p15,0,r0,c1,c0,0\n"
+
+#define __CYGARC_CLR_MMU_BITS         \
   "   bic r0,r0,#0xd\n"               \
   "   bic r0,r0,#0x1000\n"            \
-  "   mcr p15,0,r0,c1,c0,0\n"         \
-  "   mov pc," #__paddr__ "\n"
+
+#ifdef CYGHWR_HAL_ARM_BIGENDIAN
+#define __CYGARC_CLR_MMU_BITS_X       \
+  "   bic r0,r0,#0x8d\n"              \
+  "   bic r0,r0,#0x1000\n"
+#else
+#define __CYGARC_CLR_MMU_BITS_X       \
+  "   bic r0,r0,#0xd\n"               \
+  "   bic r0,r0,#0x1000\n"            \
+  "   orr r0,r0,#0x80\n"
 #endif
+
+#define __CYGARC_SET_CTLREG(__paddr__) \
+  "   mcr p15,0,r0,c1,c0,0\n"          \
+  "   mov pc," #__paddr__ "\n"
+
+#define CYGARC_HAL_MMU_OFF(__paddr__)  \
+  "   mcr p15,0,r0,c7,c10,4\n"         \
+  "   mcr p15,0,r0,c7,c7,0\n"          \
+  __CYGARC_GET_CTLREG                  \  
+  __CYGARC_CLR_MMU_BITS                \
+  __CYGARC_SET_CTLREG(__paddr__)
+
+#define CYGARC_HAL_MMU_OFF_X(__paddr__)  \
+  "   mcr p15,0,r0,c7,c10,4\n"           \
+  "   mcr p15,0,r0,c7,c7,0\n"            \
+  __CYGARC_GET_CTLREG                    \  
+  __CYGARC_CLR_MMU_BITS_X                \
+  __CYGARC_SET_CTLREG(__paddr__)
+
+#endif  // CYGARC_HAL_MMU_OFF
 
 //
 // Parameter info for Linux kernel
@@ -280,15 +309,19 @@ do_exec(int argc, char *argv[])
     unsigned long entry;
     unsigned long oldints;
     bool wait_time_set;
-    int  wait_time, res;
+    int  wait_time, res, num_opts;
     bool base_addr_set, length_set, cmd_line_set;
     bool ramdisk_addr_set, ramdisk_size_set;
     unsigned long base_addr, length;
     unsigned long ramdisk_addr, ramdisk_size;
-    struct option_info opts[6];
+    struct option_info opts[7];
     char line[8];
     char *cmd_line;
     struct tag *params = (struct tag *)CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS;
+#ifdef CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH
+    bool swap_endian;
+    extern char __xtramp_start__[], __xtramp_end__[];
+#endif
     extern char __tramp_start__[], __tramp_end__[];
 
     // Check to see if a valid image has been loaded
@@ -317,7 +350,13 @@ do_exec(int argc, char *argv[])
               (void **)&ramdisk_addr, (bool *)&ramdisk_addr_set, "ramdisk_addr");
     init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
               (void **)&ramdisk_size, (bool *)&ramdisk_size_set, "ramdisk_size");
-    if (!scan_opts(argc, argv, 1, opts, 6, (void *)&entry, OPTION_ARG_TYPE_NUM, "[physical] starting address"))
+    num_opts = 6;
+#ifdef CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH
+    init_opts(&opts[6], 'x', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&swap_endian, 0, "swap endianess");
+    ++num_opts;
+#endif
+    if (!scan_opts(argc, argv, 1, opts, num_opts, (void *)&entry, OPTION_ARG_TYPE_NUM, "[physical] starting address"))
     {
         return;
     }
@@ -404,6 +443,48 @@ do_exec(int argc, char *argv[])
     // 
     // This magic was created in order to be able to execute standard
     // Linux kernels with as little change/perturberance as possible.
+
+#ifdef CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH
+    if (swap_endian) {
+	// copy the trampline code
+	memcpy((char *)CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS,
+	       __xtramp_start__,
+	       __xtramp_end__ - __xtramp_start__);
+
+	asm volatile (
+	    CYGARC_HAL_MMU_OFF_X(%5)
+	    "__xtramp_start__:\n"
+	    " cmp %1,%4;\n"       // Default kernel load address. Relocate
+	    " beq 2f;\n"          // kernel image there if necessary, and
+	    " cmp %2,#0;\n"       // if size is non-zero
+	    " beq 2f;\n"
+	    "1:\n"
+	    " ldr r0,[%1],#4;\n"
+	    " eor %5, r0, r0, ror #16;\n"
+	    " bic %5, %5, #0x00ff0000;\n"
+	    " mov r0, r0, ror #8;\n"
+	    " eor r0, r0, %5, lsr #8;\n"
+	    " str r0,[%4],#4;\n"
+	    " subs %2,%2,#4;\n"
+	    " bne 1b;\n"
+	    "2:\n"
+	    " mov r0,#0;\n"       // Set board type
+	    " mov r1,%3;\n"       // Machine type
+	    " mov r2,%6;\n"       // Kernel parameters
+	    " mov pc,%0;\n"       // Jump to kernel
+	    "__xtramp_end__:\n"
+	    : : 
+	    "r"(entry),
+	    "r"(CYGARC_PHYSICAL_ADDRESS(base_addr)),
+	    "r"(length),
+	    "r"(CYGHWR_REDBOOT_ARM_MACHINE_TYPE),
+	    "r"(CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS),
+	    "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS)),
+	    "r"(CYGARC_PHYSICAL_ADDRESS(CYGHWR_REDBOOT_ARM_LINUX_TAGS_ADDRESS))
+	    : "r0", "r1"
+	    );
+    }
+#endif // CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH
 
     // copy the trampline code
     memcpy((char *)CYGHWR_REDBOOT_ARM_TRAMPOLINE_ADDRESS,

@@ -249,6 +249,15 @@ cdl_package CYGPKG_HAL_ARM {
                 RedBoots CDL."
             compile -library=libextras.a redboot_linux_exec.c
 
+            cdl_option CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH {
+                display "Enable -x switch for exec command."
+                flavor bool
+                default_value 0
+                description "
+                    This option allows bi-endian platforms to launch kernels
+                    built for an endianess different than the RedBoot endianess"
+            }
+ 
             cdl_option CYGHWR_REDBOOT_ARM_LINUX_EXEC_ADDRESS {
                 display       "Physical base address of linux kernel"
                 flavor        data

@@ -1,3 +1,11 @@
+2004-09-02  Mark Salter  <msalter@redhat.com>
+
+	* cdl/hal_arm.cdl (CYGHWR_REDBOOT_LINUX_EXEC_X_SWITCH): New
+	option used to enable "-x" option to exec command.
+	
+	* src/redboot_linux_exec.c (do_exec): Add support for booting
+	kernels built for endianess oppposite of RedBoot.
+
 2004-07-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c (do_exec): Fix test for valid entry
