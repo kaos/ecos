@@ -839,12 +839,12 @@ port. It contains a bitmap comprised of the bits as defined by the
 <literal>CYG_TTY_OUT_FLAGS_xxx</literal> values below. </PARA>
 
 <PROGRAMLISTING>
-#define CYG_TTY_OUT_FLAGS_CRLF 0x0001 // Map '\n' =&gt; '\n\r' on output
+#define CYG_TTY_OUT_FLAGS_CRLF 0x0001 // Map '\n' =&gt; '\r\n' on output
 </PROGRAMLISTING>
 
 <PARA>If this bit is set in <structfield>tty_out_flags</structfield>,
 any occurrence of the character &quot;\n&quot; will
-be replaced by the sequence &quot;\n\r&quot; before
+be replaced by the sequence &quot;\r\n&quot; before
 being sent to the device.</PARA>
 
 <PARA>The field <structfield><!-- <index></index> -->tty_in_flags</structfield>
@@ -861,12 +861,12 @@ character &quot;\r&quot; (&ldquo;return&rdquo; or &ldquo;enter&rdquo; on
 most keyboards) will be mapped to &quot;\n&quot;.</PARA>
 
 <PROGRAMLISTING>
-#define CYG_TTY_IN_FLAGS_CRLF 0x0002 // Map '\n\r' =&gt; '\n' on input
+#define CYG_TTY_IN_FLAGS_CRLF 0x0002 // Map '\r\n' =&gt; '\n' on input
 </PROGRAMLISTING>
 
 <PARA>
 If this bit is set in <structfield>tty_in_flags</structfield>, the
-character sequence &quot;\n\r&quot; (often sent by DOS/Windows
+character sequence &quot;\r\n&quot; (often sent by DOS/Windows
 based terminals) will be mapped to &quot;\n&quot;. </PARA>
 
 <PROGRAMLISTING>
@@ -916,7 +916,7 @@ cyg_io_write(handle, buf, len)
 
 <PARA>This function is used to send data to the device. In the default
 case, the end-of-line character "\n" is replaced by the
-sequence "\n\r". </PARA>
+sequence "\r\n". </PARA>
 
 <PROGRAMLISTING>
 cyg_io_get_config(handle, key, buf, len)
