@@ -1,3 +1,15 @@
+2004-08-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/stdio.cdl (CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE): Only use
+	CYGDAT_IO_SERIAL_TTY_CONSOLE if set.
+
+2004-08-18  Fredrik Hederstierna  <fredrik@wespot.com>
+2004-08-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/input/vfscanf.cxx (vfscanf): Add long long and long double
+	support.
+	* cdl/stdio.cdl (CYGFUN_LIBC_STDIO_LONGLONG): Make it a new option.
+
 2004-08-16  Oyvind Harboe <oyvind.harboe@zylin.com>
 
 	* src/common/stream.cxx (read): fixed performance problem with

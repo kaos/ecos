@@ -109,7 +109,7 @@
  */
 
 #define LONG            0x01    /* l: long or double */
-#define LONGDBL         0x02    /* L: long double; unimplemented */
+#define LONGDBL         0x02    /* L: long double */
 #define SHORT           0x04    /* h: short */
 #define SUPPRESS        0x08    /* suppress assignment */
 #define POINTER         0x10    /* weird %p pointer (`fake hex') */
@@ -146,8 +146,10 @@
 #endif
 #define u_char char
 #define u_long unsigned long
+#define u_long_long unsigned long long
 
 typedef unsigned long (*strtoul_t)(const char *, char **endptr, int base);
+typedef unsigned long long (*strtoull_t)(const char *, char **endptr, int base);
 
 static u_char *
 __sccl (char *tab, u_char *fmt);
@@ -200,6 +202,10 @@ vfscanf (FILE *fp, const char *fmt0, va_list ap) __THROW
 #endif
     
     strtoul_t ccfn = NULL;      /* conversion function (strtol/strtoul) */
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+    strtoull_t ccfnL = NULL;      /* conversion function (strtoll/strtoull) */
+    long long *ll;
+#endif
     char ccltab[256];           /* character class table for %[...] */
     char buf[BUF];              /* buffer for numeric conversions */
 
@@ -280,11 +286,23 @@ literal:
             flags |= SUPPRESS;
             goto again;
         case 'l':
-            flags |= LONG;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+	    // check if we are using long long 'll'
+	    if (flags & LONG) {
+	      // change to long long
+	      flags &= ~LONG;
+	      flags |= LONGDBL;
+	    }
+	    else
+#endif
+	      flags |= LONG;
+	    
             goto again;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
         case 'L':
             flags |= LONGDBL;
             goto again;
+#endif
         case 'h':
             flags |= SHORT;
             goto again;
@@ -316,12 +334,20 @@ literal:
         case 'd':
             c = CT_INT;
             ccfn = (strtoul_t)strtol;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+	    if (flags & LONGDBL)
+	      ccfnL = (strtoull_t)strtoll;
+#endif
             base = 10;
             break;
 
         case 'i':
             c = CT_INT;
             ccfn = (strtoul_t)strtol;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+	    if (flags & LONGDBL)
+	      ccfnL = (strtoull_t)strtoll;
+#endif
             base = 0;
             break;
 
@@ -331,12 +357,20 @@ literal:
         case 'o':
             c = CT_INT;
             ccfn = strtoul;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+	    if (flags & LONGDBL)
+	      ccfnL = strtoull;
+#endif
             base = 8;
             break;
 
         case 'u':
             c = CT_INT;
             ccfn = strtoul;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+	    if (flags & LONGDBL)
+	      ccfnL = strtoull;
+#endif
             base = 10;
             break;
 
@@ -345,6 +379,10 @@ literal:
             flags |= PFXOK;     /* enable 0x prefixing */
             c = CT_INT;
             ccfn = strtoul;
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+	    if (flags & LONGDBL)
+	      ccfnL = strtoull;
+#endif
             base = 16;
             break;
 
@@ -733,10 +771,21 @@ literal:
             }
             if ((flags & SUPPRESS) == 0)
             {
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+                u_long_long res;
+#else
                 u_long res;
+#endif
 
                 *p = 0;
-                res = (*ccfn) (buf, (char **) NULL, base);
+		
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+		if (flags & LONGDBL)
+		  res = (*ccfnL) (buf, (char **) NULL, base);
+		else
+#endif
+		  res = (*ccfn) (buf, (char **) NULL, base);
+
                 if (flags & POINTER)
                     *(va_arg (ap, char **)) = (char *) (CYG_ADDRESS) res;
                 else if (flags & SHORT)
@@ -749,6 +798,13 @@ literal:
                     lp = va_arg (ap, long *);
                     *lp = res;
                 }
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
+                else if (flags & LONGDBL)
+                {
+                    ll = va_arg (ap, long long *);
+                    *ll = res;
+                }
+#endif
                 else
                 {
                     ip = va_arg (ap, int *);
@@ -859,10 +915,9 @@ literal:
             if ((flags & SUPPRESS) == 0)
             {
                 double res;
-
                 *p = 0;
 #ifdef CYGSEM_LIBC_STDIO_SCANF_FLOATING_POINT
-                res = atof (buf);
+                res = strtod( buf, NULL );
 #else
                 res = 0.0;
 #endif
@@ -871,11 +926,13 @@ literal:
                     dp = va_arg (ap, double *);
                     *dp = res;
                 }
+#ifdef CYGFUN_LIBC_STDIO_LONGLONG
                 else if (flags & LONGDBL)
                 {
                     ldp = va_arg (ap, long double *);
                     *ldp = res;
                 }
+#endif
                 else
                 {
                     flp = va_arg (ap, float *);

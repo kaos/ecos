@@ -293,7 +293,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     cdl_option CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE {
         display       "Default console device"
         flavor        data
-        default_value CYGDAT_IO_SERIAL_TTY_CONSOLE
+        default_value { CYGDAT_IO_SERIAL_TTY_CONSOLE ? CYGDAT_IO_SERIAL_TTY_CONSOLE : "\"/dev/null\"" }
         description   "
             This option allows you to choose the
             default console device. In the current
@@ -347,6 +347,16 @@ cdl_package CYGPKG_LIBC_STDIO {
                 (%e, %f, %g) are ignored, and nothing is
                 converted."
         }
+    }
+
+    cdl_option CYGFUN_LIBC_STDIO_LONGLONG {
+        display       "Long long support"
+        requires      CYGFUN_LIBC_STDLIB_CONV_LONGLONG
+        default_value 1
+        description   "
+                This option allows various functions in the C Standard I/O
+                library to support the 'long long' datatype. Doing so
+                will come with a noticeable code size penalty however."
     }
     
     cdl_option CYGSEM_LIBC_STDIO_THREAD_SAFE_STREAMS {
