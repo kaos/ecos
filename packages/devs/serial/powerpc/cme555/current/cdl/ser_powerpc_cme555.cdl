@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_POWERPC_CME555 {
     description   "
            This option enables the serial device drivers for the
            cme555 mpc555 development board."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   cme555_serial_with_ints.c
 

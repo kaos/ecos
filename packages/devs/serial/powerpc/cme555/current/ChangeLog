@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ser_powerpc_cme555.cdl: Remove irrelevant doc link.
+
 2002-04-24  Bob Koninckx  <bob.koninckx@mech.kuleuven.ac.be>
 
 	* New package.
