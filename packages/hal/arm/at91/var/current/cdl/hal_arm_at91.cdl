@@ -70,6 +70,7 @@ cdl_package CYGPKG_HAL_ARM_AT91 {
     # Let the architectural HAL see this variant's files
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_IO_H"
+        puts $::cdl_system_header "#define CYGBLD_HAL_ARM_VAR_ARCH_H"
     }
 
     cdl_option CYGHWR_HAL_ARM_AT91 {

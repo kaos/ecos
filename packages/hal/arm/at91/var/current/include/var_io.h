@@ -395,7 +395,7 @@
 #endif
 
 #define AT91_PS_CR        0x000    // Control
-#define AT91_PS_CR_CPU    (1<<0)   // Disable CPU clock
+#define AT91_PS_CR_CPU    (1<<0)   // Disable CPU clock (idle mode)
 #define AT91_PS_PCER      0x004    // Peripheral clock enable
 #define AT91_PS_PCDR      0x008    // Peripheral clock disable
 #define AT91_PS_PCSR      0x00c    // Peripheral clock status
@@ -412,7 +412,6 @@
 #define AT91_PMC_SCER           0x00
 #define AT91_PMC_SCDR           0x04
 #define AT91_PMC_SCSR           0x08
-#define AT91_PMC_SCER_CPU       0x01
 
 #define AT91_PMC_PCER           0x10
 #define AT91_PMC_PCDR           0x14

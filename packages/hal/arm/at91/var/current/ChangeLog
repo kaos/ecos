@@ -1,3 +1,15 @@
+2003-06-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* include/var_io.h: Remove not seemingly useful AT91_PMC_SCER_CPU.
+
+	* cdl/hal_arm_at91.cdl: We have a var_arch.h so define
+	CYGBLD_HAL_ARM_VAR_ARCH_H.
+
+	* include/var_arch.h: New file containing
+	overrides for hal_arch.h.
+	(HAL_IDLE_THREAD_ACTION): override here by defining power saving modes
+	for idle actions.
+
 2003-06-04  Daniel Néri  <daniel.neri@sigicom.se>
 
 	* src/at91_misc.c (hal_hardware_init): Make sure the AIC internal
