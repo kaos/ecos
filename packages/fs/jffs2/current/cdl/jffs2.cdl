@@ -51,7 +51,7 @@
 
 cdl_package CYGPKG_FS_JFFS2 {
     display        "JFFS2 filesystem"
-    doc            doc/index.html
+    doc            ref/fileio.html
     include_dir    ""
 
     requires       CYGPKG_IO_FILEIO
