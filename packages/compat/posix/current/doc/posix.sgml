@@ -29,8 +29,8 @@
 
 <!-- }}} -->
 
-<part id="elix-compatibility">
-<title>eCos EL/IX compatibility layer</title>
+<part id="posix-compatibility">
+<title>eCos POSIX compatibility layer</title>
 
 <chapter id="posix-standard-support">
 <title>POSIX Standard Support</title>
@@ -39,8 +39,7 @@
 
     <para>
       eCos contains support for the POSIX Specification (ISO&sol;IEC
-      9945-1)&lsqb;POSIX&rsqb;. This support follows EL&sol;IX level 1
-      in the functionality supplied &lsqb;ELIX&rsqb;.
+      9945-1)&lsqb;POSIX&rsqb;.
     </para>
     <para>
       POSIX support is divided between the POSIX and the FILEIO
@@ -1463,13 +1462,6 @@ int shutdown( int s, int how);
 <bibliography id="posix-references-and-bibliography">
 <title>References and Bibliography</title>
 
-    <bibliomixed>
-      <bibliomisc>[ELIX]</bibliomisc>
-      <title>Embedded Linux API Specification</title>
-      <bibliomisc><ulink
-	  url="http://sources.redhat.com/elix/">http://sources.redhat.com/elix/
-	</ulink></bibliomisc>
-    </bibliomixed>
     <bibliomixed>
       <bibliomisc>&lsqb;Lewine&rsqb;</bibliomisc>
       <author>

@@ -52,6 +52,7 @@ cdl_package CYGPKG_POSIX {
     display        "POSIX compatibility layer"
     description    "This package enables the POSIX compatibility
                     layer that implements IEEE 1003.1."
+    doc            ref/posix-compatibility.html
     include_dir    cyg/posix
     
     requires       CYGPKG_KERNEL
