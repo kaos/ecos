@@ -1170,7 +1170,7 @@ bridge_input(ifp, eh, m)
 		if (bcmp(ac->ac_enaddr, eh->ether_dhost, ETHER_ADDR_LEN) == 0) {
 			if (ifl->bif_flags & IFBIF_LEARNING)
 				bridge_rtupdate(sc,
-				    (struct ether_addr *)&eh->ether_dhost,
+				    (struct ether_addr *)&eh->ether_shost,
 				    ifp, 0, IFBAF_DYNAMIC);
 			m->m_pkthdr.rcvif = ifl->ifp;
 			return (m);

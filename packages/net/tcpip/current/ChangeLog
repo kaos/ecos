@@ -1,3 +1,9 @@
+2003-01-30  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/sys/net/if_bridge.c (bridge_input): Learn source host addr,
+	not dest host addr.
+	Fix pointed to by Daniel Néri.
+
 2002-12-14  Nick Garnett  <nickg@ecoscentric.com>
 
 	* src/sys/netinet/tcp_usrreq.c (tcp_usrreq): Rearranged ifndef on
