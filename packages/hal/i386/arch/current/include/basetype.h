@@ -55,6 +55,14 @@
 //#define CYG_LABEL_NAME(_name_) _name_
 
 //-----------------------------------------------------------------------------
+// Override the alignment definitions from cyg_type.h. x86 requires
+// 32 *byte* alignment because gcc sometimes tries to be clever with
+// aligning things on cache lines.
+
+#define CYGARC_ALIGNMENT 32
+#define CYGARC_P2ALIGNMENT 5
+
+//-----------------------------------------------------------------------------
 // Define the standard variable sizes
 
 // The ix86 architecture uses the default definitions of the base types,

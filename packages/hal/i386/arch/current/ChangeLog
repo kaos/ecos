@@ -1,3 +1,7 @@
+2000-09-05  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/basetype.h: Use 32-byte alignment
+
 2000-08-14  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	From Fabrice Gautier:
