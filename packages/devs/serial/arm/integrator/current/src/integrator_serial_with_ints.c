@@ -323,7 +323,7 @@ integrator_serial_set_config(serial_channel *chan, cyg_uint32 key, const void *x
     case CYG_IO_SET_CONFIG_SERIAL_HW_RX_FLOW_THROTTLE:
       {
           volatile struct serial_port *port = (volatile struct serial_port *)integrator_chan->base;
-          cyg_uint8 *f = (cyg_uint8 *)xbuf;
+          cyg_uint32 *f = (cyg_uint32 *)xbuf;
           unsigned char mask=0;
           if ( *len < *f )
               return -EINVAL;

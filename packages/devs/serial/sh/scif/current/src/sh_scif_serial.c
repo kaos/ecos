@@ -528,7 +528,7 @@ sh_scif_set_config(serial_channel *chan, cyg_uint32 key,
       {
           sh_scif_info *ser_chan = (sh_scif_info *)chan->dev_priv;
           cyg_addrword_t base = ser_chan->ctrl_base;
-          cyg_uint8 *f = (cyg_uint8 *)xbuf;
+          cyg_uint32 *f = (cyg_uint32 *)xbuf;
           if ( *len < *f )
               return -EINVAL;
 

@@ -423,7 +423,7 @@ pc_serial_set_config(serial_channel *chan, cyg_uint32 key, const void *xbuf,
           cyg_uint8 _mcr;
           pc_serial_info *ser_chan = (pc_serial_info *)chan->dev_priv;
           cyg_addrword_t base = ser_chan->base;
-          cyg_uint8 *f = (cyg_uint8 *)xbuf;
+          cyg_uint32 *f = (cyg_uint32 *)xbuf;
           unsigned char mask=0;
           if ( *len < sizeof(*f) )
               return -EINVAL;

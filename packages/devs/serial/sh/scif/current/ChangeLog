@@ -1,3 +1,8 @@
+2003-03-18  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/sh_scif_serial.c (sh_scif_set_config): 
+	Flag for CYG_IO_SET_CONFIG_SERIAL_HW_RX_FLOW_THROTTLE is 32 bits.
+
 2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* cdl/ser_sh_scif.cdl: Remove irrelevant doc link.
