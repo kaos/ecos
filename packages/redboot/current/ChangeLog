@@ -1,3 +1,9 @@
+2004-09-27  Mark Salter  <msalter@redhat.com>
+
+	* src/fs/ide.c (ide_presence_detect): New function.
+	* src/fs/disk.c (u32_unaligned): New function to read unaligned words.
+	(find_dos_partitions): Use u32_unaligned instead of memcpy.
+
 2004-9-25   Andrew Lunn <andrew.lunn@ascom.ch>
 
 	* doc/redboot_install.sgml: Added installation information for the

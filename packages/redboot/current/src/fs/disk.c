@@ -8,7 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
-// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Red Hat, Inc.
 // Copyright (C) 2002 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -74,6 +74,20 @@ RedBoot_cmd("disks",
 static disk_t disk_table[CYGNUM_REDBOOT_MAX_DISKS];
 static int    disk_count = 0;
 
+static inline cyg_uint32
+u32_unaligned(void *p)
+{
+    cyg_uint32 val;
+    char *d = (char *)&val;
+    char *s = p;
+    int i;
+
+    for (i = 0; i < 4; i++)
+	*d++ = *s++;
+
+    return val;
+}
+
 static int
 find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
 {
@@ -86,11 +100,8 @@ find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
     // Look for primary partitions
     for (i = 0; i < 4 && i < CYGNUM_REDBOOT_MAX_PARTITIONS; i++) {
 
-	// Have to use memcpy because of alignment
-	memcpy(&tmp, p->start_sect, 4);
-	s = SWAB_LE32(tmp);
-	memcpy(&tmp, p->nr_sects, 4);
-	n = SWAB_LE32(tmp);
+	s = SWAB_LE32(u32_unaligned(p->start_sect));
+	n = SWAB_LE32(u32_unaligned(p->nr_sects));
 
 	if (s && n) {
 	    ++found;
@@ -129,11 +140,8 @@ find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
 
 		    p = (struct mbr_partition *)((char *)buf + MBR_PTABLE_OFFSET);
 
-		    // Have to use memcpy because of alignment
-		    memcpy(&tmp, p->start_sect, 4);
-		    s = SWAB_LE32(tmp);
-		    memcpy(&tmp, p->nr_sects, 4);
-		    n = SWAB_LE32(tmp);
+		    s = SWAB_LE32(u32_unaligned(p->start_sect));
+		    n = SWAB_LE32(u32_unaligned(p->nr_sects));
 
 		    if (s && n) {
 			++found;
@@ -145,10 +153,8 @@ find_dos_partitions(disk_t *d, cyg_uint8 *mbr)
 		    }
 		    ++p;
 
-		    memcpy(&tmp, p->start_sect, 4);
-		    s = SWAB_LE32(tmp);
-		    memcpy(&tmp, p->nr_sects, 4);
-		    n = SWAB_LE32(tmp);
+		    s = SWAB_LE32(u32_unaligned(p->start_sect));
+		    n = SWAB_LE32(u32_unaligned(p->nr_sects));
 
 		    // more extended partitions?
 		    if (p->sys_ind != SYSTYPE_EXTENDED || !s || !n)
