@@ -18,6 +18,7 @@ cdl_configuration eCos {
     package -hardware CYGPKG_IO_SERIAL_POWERPC_QUICC_SMC current ;
     package -hardware CYGPKG_DEVS_ETH_POWERPC_FEC current ;
     package -hardware CYGPKG_DEVS_FLASH_VIPER current ;
+    package -hardware CYGPKG_DEVS_FLASH_AMD_AM29XXXXX current ;
     package -template CYGPKG_HAL current ;
     package -template CYGPKG_INFRA current ;
     package -template CYGPKG_REDBOOT current ;
@@ -70,6 +71,10 @@ cdl_option CYGOPT_REDBOOT_FIS_REDBOOT_BACKUP {
     user_value 0
 };
 
+cdl_option CYGSEM_REDBOOT_FLASH_COMBINED_FIS_AND_CONFIG {
+    user_value 1
+};
+
 cdl_option CYGBLD_ISO_STRTOK_R_HEADER {
     inferred_value 1 <cyg/libc/string/string.h>
 };
@@ -96,6 +101,14 @@ cdl_option CYGBLD_ISO_DNS_HEADER {
 
 cdl_option CYGPKG_NS_DNS_BUILD {
     inferred_value 0
+};
+
+cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV320D {
+    inferred_value 1
+};
+
+cdl_option CYGHWR_DEVS_FLASH_AMD_AM29LV800 {
+    inferred_value 1
 };
 
 
