@@ -47,66 +47,17 @@
 #include <cyg/hal/hal_arch.h>           /* CYGNUM_HAL_STACK_SIZE_TYPICAL */
 #include <sys/time.h>
 #include <network.h>                    /* init_all_network_interfaces() */
+#include <microwin/ecos_mw_app.h>
 
-#define STACKSIZE ( 65536 )
+// Define table boundaries
+CYG_HAL_TABLE_BEGIN( __MW_APP_TAB__, _mw_apps );
+CYG_HAL_TABLE_END( __MW_APP_TAB_END__, _mw_apps );
+extern struct _mw_app_entry __MW_APP_TAB__[], __MW_APP_TAB_END__;
 
-extern void ecos_nx_init(CYG_ADDRWORD data);
-extern void nanowm_thread(CYG_ADDRWORD data);
-extern void nanox_thread(CYG_ADDRWORD data);
-#ifdef USE_NXKBD
-extern void nxkbd_thread(CYG_ADDRWORD data);
-#endif
-#ifdef USE_NXSCRIBBLE
-extern void nxscribble_thread(CYG_ADDRWORD data);
-#endif
-#ifdef USE_LANDMINE
-extern void landmine_thread(CYG_ADDRWORD data);
-#endif
-#ifdef USE_NTETRIS
-extern void ntetris_thread(CYG_ADDRWORD data);
-#endif
-#ifdef USE_WORLD
-extern void world_thread(CYG_ADDRWORD data);
-#endif
-#ifdef USE_IMG_DEMO
-extern void img_demo_thread(CYG_ADDRWORD data);
-#endif
-static void startup_thread(CYG_ADDRWORD data);
+static char startup_stack[STACKSIZE];
+cyg_handle_t startup_thread;
+cyg_thread   startup_thread_obj;
 
-typedef void fun(CYG_ADDRWORD);
-struct nx_thread {
-    char         *name;
-    fun          *entry;
-    int          prio;
-    cyg_handle_t t;
-    cyg_thread   t_obj;
-    char         stack[STACKSIZE];
-};
-
-struct nx_thread _threads[] = {
-    { "System startup", startup_thread,    11 },
-    { "Nano-X server",  nanox_thread,      12 },
-    { "Nano-WM",        nanowm_thread,     14 },
-#ifdef USE_NXKBD
-    { "Nano-KBD",       nxkbd_thread,      13 },
-#endif    
-#ifdef USE_IMG_DEMO
-    { "Image demo",     img_demo_thread,   20 },
-#endif
-#ifdef USE_NXSCRIBBLE
-    { "Scribble",       nxscribble_thread, 20 },
-#endif
-#ifdef USE_LANDMINE
-    { "Landmine",       landmine_thread,   19 },
-#endif
-#ifdef USE_NTETRIS
-    { "Nano-Tetris",    ntetris_thread,    18 },
-#endif
-#ifdef USE_WORLD
-    { "World Map",      world_thread,      21 },
-#endif
-};
-#define NUM(x) (sizeof(x)/sizeof(x[0]))
 
 // Functions not provided in eCos by standard...
 char *
@@ -137,11 +88,10 @@ strcasecmp(const char *s1, const char *s2)
 }
 
 static void 
-startup_thread(CYG_ADDRESS data)
+startup(CYG_ADDRESS data)
 {
     cyg_ucount32 nanox_data_index;
-    int i;
-    struct nx_thread *nx;
+    struct _mw_app_entry *nx;
 
     printf("SYSTEM INITIALIZATION in progress\n");
     printf("NETWORK:\n");
@@ -197,8 +147,8 @@ startup_thread(CYG_ADDRESS data)
     printf("data index = %d\n", nanox_data_index);
 
     printf("Creating system threads\n");
-    nx = &_threads[1];
-    for (i = 1;  i < NUM(_threads);  i++, nx++) {
+    for (nx = __MW_APP_TAB__; nx != &__MW_APP_TAB_END__;  nx++) {
+        printf("Creating %s thread\n", nx->name);
         cyg_thread_create(nx->prio,
                           nx->entry,
                           (cyg_addrword_t) nanox_data_index,
@@ -207,16 +157,12 @@ startup_thread(CYG_ADDRESS data)
                           &nx->t,
                           &nx->t_obj);
     }
-
     printf("Starting threads\n");
-    nx = &_threads[1];
-    for (i = 1;  i < NUM(_threads);  i++, nx++) {
+    for (nx = __MW_APP_TAB__; nx != &__MW_APP_TAB_END__;  nx++) {
         printf("Starting %s\n", nx->name);
         cyg_thread_resume(nx->t);
-        // Special case - run additional code, specific to this environment
-        // only after the server has had a chance to startup
-        if (i == 2) {
-            ecos_nx_init(nanox_data_index);
+        if (nx->init) {
+            (nx->init)(nanox_data_index);
         }
     }
 
@@ -225,15 +171,13 @@ startup_thread(CYG_ADDRESS data)
 
 void cyg_user_start(void)
 {
-    struct nx_thread *nx;
-
-    nx = &_threads[0];
-    cyg_thread_create(nx->prio,
-                      nx->entry,
+    // Create the initial thread and start it up
+    cyg_thread_create(ECOS_MW_STARTUP_PRIORITY,
+                      startup,
                       (cyg_addrword_t) 0,
-                      nx->name,
-                      (void *)nx->stack, STACKSIZE,
-                      &nx->t,
-                      &nx->t_obj);
-    cyg_thread_resume(nx->t);
+                      "System startup",
+                      (void *)startup_stack, STACKSIZE,
+                      &startup_thread,
+                      &startup_thread_obj);
+    cyg_thread_resume(startup_thread);
 }

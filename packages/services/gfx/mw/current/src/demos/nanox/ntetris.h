@@ -73,7 +73,7 @@
 					(WELL_WIDTH * BLOCK_SIZE))
 #define MAIN_WINDOW_HEIGHT ((2 * BORDER_WIDTH) + \
 					(WELL_VISIBLE_HEIGHT * BLOCK_SIZE))
-#define MAIN_WINDOW_BACKGROUND_COLOUR BLUE
+#define MAIN_WINDOW_BACKGROUND_COLOUR LTBLUE
 
 #define SCORE_WINDOW_WIDTH BUTTON_WIDTH
 #define SCORE_WINDOW_HEIGHT 35
@@ -190,44 +190,44 @@ struct ntetris_state {
 };
 typedef struct ntetris_state nstate;
 
-void *my_malloc(size_t size);
-void msleep(long ms);
-void read_hiscore(nstate *state);
-void write_hiscore(nstate *state);
-int will_collide(nstate *state, int x, int y, int orientation);
-void draw_shape(nstate *state, GR_COORD x, GR_COORD y, int erase);
-void draw_well(nstate *state, int forcedraw);
-void draw_score(nstate *state);
-void draw_next_shape(nstate *state);
-void draw_new_game_button(nstate *state);
-void draw_anticlockwise_button(nstate *state);
-void draw_clockwise_button(nstate *state);
-void draw_left_button(nstate *state);
-void draw_right_button(nstate *state);
-void draw_drop_button(nstate *state);
-void draw_pause_continue_button(nstate *state);
-int block_is_all_in_well(nstate *state);
-void delete_line(nstate *state, int line);
-void block_reached_bottom(nstate *state);
-void move_block(nstate *state, int direction);
-void rotate_block(nstate *state, int direction);
-void drop_block(nstate *state);
-void handle_exposure_event(nstate *state);
-void handle_mouse_event(nstate *state);
-void handle_keyboard_event(nstate *state);
-void handle_event(nstate *state);
-void clear_well(nstate *state);
-int random8(int limit);
-void choose_new_shape(nstate *state);
-void new_game(nstate *state);
-void init_game(nstate *state);
-void calculate_timeout(nstate *state);
-unsigned long timeout_delay(nstate *state);
-void do_update(nstate *state);
-void do_pause(nstate *state);
-void wait_for_start(nstate *state);
-void run_game(nstate *state);
-void main_game_loop(nstate *state);
+static void *my_malloc(size_t size);
+static void msleep(long ms);
+static void read_hiscore(nstate *state);
+static void write_hiscore(nstate *state);
+static int will_collide(nstate *state, int x, int y, int orientation);
+static void draw_shape(nstate *state, GR_COORD x, GR_COORD y, int erase);
+static void draw_well(nstate *state, int forcedraw);
+static void draw_score(nstate *state);
+static void draw_next_shape(nstate *state);
+static void draw_new_game_button(nstate *state);
+static void draw_anticlockwise_button(nstate *state);
+static void draw_clockwise_button(nstate *state);
+static void draw_left_button(nstate *state);
+static void draw_right_button(nstate *state);
+static void draw_drop_button(nstate *state);
+static void draw_pause_continue_button(nstate *state);
+static int block_is_all_in_well(nstate *state);
+static void delete_line(nstate *state, int line);
+static void block_reached_bottom(nstate *state);
+static void move_block(nstate *state, int direction);
+static void rotate_block(nstate *state, int direction);
+static void drop_block(nstate *state);
+static void handle_exposure_event(nstate *state);
+static void handle_mouse_event(nstate *state);
+static void handle_keyboard_event(nstate *state);
+static void handle_event(nstate *state);
+static void clear_well(nstate *state);
+static int random8(int limit);
+static void choose_new_shape(nstate *state);
+static void new_game(nstate *state);
+static void init_game(nstate *state);
+static void calculate_timeout(nstate *state);
+static unsigned long timeout_delay(nstate *state);
+static void do_update(nstate *state);
+static void do_pause(nstate *state);
+static void wait_for_start(nstate *state);
+static void run_game(nstate *state);
+static void main_game_loop(nstate *state);
 
 #define LEVELS 12
 static const int delays[] = {600, 550, 500, 450, 400, 350,

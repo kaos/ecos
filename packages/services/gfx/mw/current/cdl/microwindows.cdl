@@ -135,12 +135,25 @@ cdl_package CYGPKG_MICROWINDOWS {
         fonts/X6x13.c
 
     # eCos stuff
-    cdl_option CYGBLD_MICROWINDOWS_ECOS {
+    cdl_component CYGBLD_MICROWINDOWS_ECOS {
         display   "Build MicroWindows eCos support"
         default_value 0
 
         # These files are unique to eCos
-        compile ecos/ecos_init.c ecos/nanox_thread.c
+        compile ecos/ecos_init.c 
+        compile -library=libextras.a ecos/nanox_thread.c
+
+        cdl_option CYGBLD_MICROWINDOWS_ECOS_APP {
+            display  "Build complete eCos+MicroWindows application"
+            default_value 0
+            make -priority 320 {
+                <PREFIX>/bin/ecos_mw.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a $(REPOSITORY)/$(PACKAGE)/src/ecos/ecos_app.c
+                        @sh -c "mkdir -p $(dir $@)"
+                        $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/ecos_app.o $(REPOSITORY)/$(PACKAGE)/src/ecos/ecos_app.c
+                        $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(PREFIX)/lib/ecos_app.o
+            }
+            
+        }
     }
 
     # eCos VNC server drivers
@@ -257,14 +270,13 @@ cdl_package CYGPKG_MICROWINDOWS {
         display   "Build MicroWindows NANOWM"
         default_value 0
 
-
         compile					\
             demos/nanowm/nanowm.c			\
             demos/nanowm/events.c			\
             demos/nanowm/wlist.c			\
             demos/nanowm/clients.c			\
-            demos/nanowm/actions.c                      \
-	    ecos/nanowm_thread.c
+            demos/nanowm/actions.c                      
+        compile -library=libextras.a ecos/nanowm_thread.c
     }
 
     # keyboard
@@ -282,13 +294,25 @@ cdl_package CYGPKG_MICROWINDOWS {
     }
 
     # keyboard
-    cdl_option CYGBLD_MICROWINDOWS_NANOX_DEMOS {
+    cdl_component CYGBLD_MICROWINDOWS_NANOX_DEMOS {
         display   "Build MicroWindows NanoX demos"
         default_value 0
 
-        compile					\
-            demos/nanox/world.c demos/nanox/ntetris.c \
-	    ecos/world_thread.c ecos/ntetris_thread.c
+        cdl_option CYGBLD_MICROWINDOWS_NANOX_DEMOS_WORLD {
+            display "Include 'world' demo"
+            default_value 0
+            no_define
+            compile demos/nanox/world.c 
+            compile -library=libextras.a ecos/world_thread.c
+        }
+
+        cdl_option CYGBLD_MICROWINDOWS_NANOX_DEMOS_NTETRIS {
+            display "Include 'nano-tetris' demo"
+            default_value 0
+            no_define
+            compile demos/nanox/ntetris.c 
+            compile -library=libextras.a ecos/ntetris_thread.c
+        }
     }
 
     cdl_component CYGPKG_MICROWINDOWS_OPTIONS {

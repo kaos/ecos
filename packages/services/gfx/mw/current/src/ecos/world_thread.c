@@ -32,6 +32,8 @@
 #define MWINCLUDECOLORS
 #include "nano-X.h"
 
+#include <microwin/ecos_mw_app.h>
+_mw_app("World demo", world, ECOS_MW_APP_PRIORITY, 0);
 
 //
 // Component interfaces
@@ -39,7 +41,7 @@
 
 externC int world_main(int argc, char *argv[]);
 
-int 
+static void
 world_thread(CYG_ADDRWORD data)
 {
     int argc = 1;

@@ -32,6 +32,10 @@
 #define MWINCLUDECOLORS
 #include "nano-X.h"
 
+#include <microwin/ecos_mw_app.h>
+
+extern void ecos_nx_init(CYG_ADDRWORD data);
+_mw_app("Nano-WM", nanowm, ECOS_MW_NANOX_PRIORITY, ecos_nx_init);
 
 //
 // Component interfaces
@@ -39,7 +43,7 @@
 
 externC int nanowm_main(int argc, char *argv[]);
 
-int 
+static void
 nanowm_thread(CYG_ADDRWORD data)
 {
     int argc = 0;

@@ -1,3 +1,21 @@
+2003-08-30  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/ecos/world_thread.c: 
+	* src/ecos/ntetris_thread.c: 
+	* src/ecos/nanox_thread.c: 
+	* src/ecos/nanowm_thread.c: 
+	* src/ecos/ecos_app.c: Use tables to define threads within
+	the actual application.
+
+	* src/demos/nanox/ntetris.h: 
+	* src/demos/nanox/ntetris.c: Adapt to eCos threaded environment.
+
+	* include/microwin/ecos_mw_app.h: New file - define table
+	driven API for plug-in MicroWindows applications under eCos.
+
+	* cdl/microwindows.cdl: Add support for building complete
+	application via CDL.  Also better selection of demos to run.
+
 2003-08-22  Chris Garry <cgarry@sweeneydesign.co.uk>
 
     * cdl/microwindows.cdl

@@ -32,6 +32,8 @@
 #define MWINCLUDECOLORS
 #include "nano-X.h"
 
+#include <microwin/ecos_mw_app.h>
+_mw_app("Nano-tetris demo", ntetris, ECOS_MW_NANOX_PRIORITY, 0);
 
 //
 // Component interfaces
@@ -39,7 +41,7 @@
 
 externC int ntetris_main(int argc, char *argv[]);
 
-int 
+static void
 ntetris_thread(CYG_ADDRWORD data)
 {
     int argc = 1;

@@ -91,7 +91,7 @@
 
 #include "ntetris.h"
 
-void *my_malloc(size_t size)
+static void *my_malloc(size_t size)
 {
 	void *ret;
 
@@ -104,12 +104,12 @@ void *my_malloc(size_t size)
 }
 
 #ifdef HAVE_USLEEP
-void msleep(long ms)
+static void msleep(long ms)
 {
 	usleep(ms * 1000);
 }
 #else
-void msleep(long ms)
+static void msleep(long ms)
 {
 	struct timespec req, rem;
 
@@ -130,7 +130,7 @@ void msleep(long ms)
 #endif
 
 #ifdef USE_HISCORE_FILE
-void read_hiscore(nstate *state)
+static void read_hiscore(nstate *state)
 {
 	FILE *f;
 	int i, n;
@@ -153,7 +153,7 @@ void read_hiscore(nstate *state)
 	state->hiscore = state->fhiscore = n;
 }
 
-void write_hiscore(nstate *state)
+static void write_hiscore(nstate *state)
 {
 	FILE *f;
 
@@ -172,15 +172,15 @@ void write_hiscore(nstate *state)
 	fclose(f);
 }
 #else
-void read_hiscore(nstate *state)
+static void read_hiscore(nstate *state)
 {
 	state->hiscore = 0;
 }
 
-void write_hiscore(nstate *state) {}
+static void write_hiscore(nstate *state) {}
 #endif
 
-int will_collide(nstate *state, int x, int y, int orientation)
+static int will_collide(nstate *state, int x, int y, int orientation)
 {
 	int r, c, xx, yy;
 	char ch = 0;
@@ -209,7 +209,7 @@ int will_collide(nstate *state, int x, int y, int orientation)
 	return 0;
 }
 
-void draw_shape(nstate *state, GR_COORD x, GR_COORD y, int erase)
+static void draw_shape(nstate *state, GR_COORD x, GR_COORD y, int erase)
 {
 	int r, c, yy, xx;
 	GR_COLOR col;
@@ -232,7 +232,7 @@ void draw_shape(nstate *state, GR_COORD x, GR_COORD y, int erase)
 	}
 }
 
-void draw_well(nstate *state, int forcedraw)
+static void draw_well(nstate *state, int forcedraw)
 {
 	int x, y;
 
@@ -254,7 +254,7 @@ void draw_well(nstate *state, int forcedraw)
 	GrFlush();
 }
 
-void draw_score(nstate *state)
+static void draw_score(nstate *state)
 {
 	char buf[32];
 
@@ -269,7 +269,7 @@ void draw_score(nstate *state)
 					TEXT_Y_POSITION, buf, strlen(buf), 0);
 }
 
-void draw_next_shape(nstate *state)
+static void draw_next_shape(nstate *state)
 {
 	int r, c, startx, starty, x, y;
 	char ch = 0;
@@ -302,7 +302,7 @@ void draw_next_shape(nstate *state)
 	}
 }
 
-void draw_new_game_button(nstate *state)
+static void draw_new_game_button(nstate *state)
 {
 	GrFillRect(state->new_game_button, state->buttongcb, 0, 0,
 			NEW_GAME_BUTTON_WIDTH, NEW_GAME_BUTTON_HEIGHT);
@@ -310,7 +310,7 @@ void draw_new_game_button(nstate *state)
 					TEXT_Y_POSITION, "New Game", 8, 0);
 }
 
-void draw_anticlockwise_button(nstate *state)
+static void draw_anticlockwise_button(nstate *state)
 {
 	if(!state->running_buttons_mapped) return;
 	GrFillRect(state->anticlockwise_button, state->buttongcb, 0, 0,
@@ -319,7 +319,7 @@ void draw_anticlockwise_button(nstate *state)
 					TEXT_Y_POSITION, "   /", 4, 0);
 }
 
-void draw_clockwise_button(nstate *state)
+static void draw_clockwise_button(nstate *state)
 {
 	if(!state->running_buttons_mapped) return;
 	GrFillRect(state->clockwise_button, state->buttongcb, 0, 0,
@@ -328,7 +328,7 @@ void draw_clockwise_button(nstate *state)
 					TEXT_Y_POSITION, "   \\", 4, 0);
 }
 
-void draw_left_button(nstate *state)
+static void draw_left_button(nstate *state)
 {
 	if(!state->running_buttons_mapped) return;
 	GrFillRect(state->left_button, state->buttongcb, 0, 0,
@@ -337,7 +337,7 @@ void draw_left_button(nstate *state)
 					TEXT_Y_POSITION, "  <", 3, 0);
 }
 
-void draw_right_button(nstate *state)
+static void draw_right_button(nstate *state)
 {
 	if(!state->running_buttons_mapped) return;
 	GrFillRect(state->right_button, state->buttongcb, 0, 0,
@@ -346,7 +346,7 @@ void draw_right_button(nstate *state)
 					TEXT_Y_POSITION, "   >", 4, 0);
 }
 
-void draw_drop_button(nstate *state)
+static void draw_drop_button(nstate *state)
 {
 	if(!state->running_buttons_mapped) return;
 	GrFillRect(state->drop_button, state->buttongcb, 0, 0,
@@ -355,7 +355,7 @@ void draw_drop_button(nstate *state)
 					TEXT_Y_POSITION, "    Drop", 8, 0);
 }
 
-void draw_pause_continue_button(nstate *state)
+static void draw_pause_continue_button(nstate *state)
 {
 	if((state->running_buttons_mapped) && (state->state == STATE_STOPPED)) {
 		GrUnmapWindow(state->pause_continue_button);
@@ -389,7 +389,7 @@ void draw_pause_continue_button(nstate *state)
 	}
 }
 
-int block_is_all_in_well(nstate *state)
+static int block_is_all_in_well(nstate *state)
 {
 	if(state->current_shape.y >= WELL_NOTVISIBLE)
 		return 1;
@@ -397,7 +397,7 @@ int block_is_all_in_well(nstate *state)
 	return 0;
 }
 
-void delete_line(nstate *state, int line)
+static void delete_line(nstate *state, int line)
 {
 	int x, y;
 
@@ -410,7 +410,7 @@ void delete_line(nstate *state, int line)
 	draw_well(state, 0);
 }
 
-void block_reached_bottom(nstate *state)
+static void block_reached_bottom(nstate *state)
 {
 	int x, y;
 
@@ -437,7 +437,7 @@ void block_reached_bottom(nstate *state)
 	draw_next_shape(state);
 }
 
-void move_block(nstate *state, int direction)
+static void move_block(nstate *state, int direction)
 {
 	if(direction == 0) {
  		if(!state->current_shape.x) return;
@@ -467,7 +467,7 @@ void move_block(nstate *state, int direction)
 	}
 }
 
-void rotate_block(nstate *state, int direction)
+static void rotate_block(nstate *state, int direction)
 {
 	int neworientation = 0;
 
@@ -491,7 +491,7 @@ void rotate_block(nstate *state, int direction)
 	}
 }
 
-int drop_block_1(nstate *state)
+static int drop_block_1(nstate *state)
 {
 	if(will_collide(state, state->current_shape.x,
 				(state->current_shape.y + 1),
@@ -509,12 +509,12 @@ int drop_block_1(nstate *state)
 	return 0;
 }
 
-void drop_block(nstate *state)
+static void drop_block(nstate *state)
 {
 	while(!drop_block_1(state)) msleep(DROP_BLOCK_DELAY);
 }
 
-void handle_exposure_event(nstate *state)
+static void handle_exposure_event(nstate *state)
 {
 	GR_EVENT_EXPOSURE *event = &state->event.exposure;
 
@@ -560,7 +560,7 @@ void handle_exposure_event(nstate *state)
 	}
 }
 
-void handle_mouse_event(nstate *state)
+static void handle_mouse_event(nstate *state)
 {
 	GR_EVENT_MOUSE *event = &state->event.mouse;
 
@@ -600,7 +600,7 @@ void handle_mouse_event(nstate *state)
 	}
 }
 
-void handle_keyboard_event(nstate *state)
+static void handle_keyboard_event(nstate *state)
 {
 	GR_EVENT_KEYSTROKE *event = &state->event.keystroke;
 
@@ -653,7 +653,7 @@ void handle_keyboard_event(nstate *state)
 	}
 }
 
-void handle_event(nstate *state)
+static void handle_event(nstate *state)
 {
 	switch(state->event.type) {
 		case GR_EVENT_TYPE_EXPOSURE:
@@ -677,7 +677,7 @@ void handle_event(nstate *state)
 	}
 }
 
-void clear_well(nstate *state)
+static void clear_well(nstate *state)
 {
 	int x, y;
 
@@ -689,7 +689,7 @@ void clear_well(nstate *state)
 }
 
 /* Dirty hack alert- this is to avoid using any floating point math */
-int random8(int limit)
+static int random8(int limit)
 {
 	int ret;
 
@@ -698,7 +698,7 @@ int random8(int limit)
 	return ret;
 }
 
-void choose_new_shape(nstate *state)
+static void choose_new_shape(nstate *state)
 {
 	state->current_shape.type = state->next_shape.type;
 	state->current_shape.orientation = state->next_shape.orientation;
@@ -712,7 +712,7 @@ void choose_new_shape(nstate *state)
 	state->next_shape.colour = block_colours[random8(MAX_BLOCK_COLOUR)];
 }
 
-void new_game(nstate *state)
+static void new_game(nstate *state)
 {
 	clear_well(state);
 	if(state->score > state->hiscore) state->hiscore = state->score;
@@ -725,7 +725,7 @@ void new_game(nstate *state)
 	if(state->state == STATE_NEWGAME) state->state = STATE_RUNNING;
 }
 
-void init_game(nstate *state)
+static void init_game(nstate *state)
 {
 	GR_WM_PROPERTIES props;
 
@@ -875,7 +875,7 @@ void init_game(nstate *state)
 	new_game(state);
 }
 
-void calculate_timeout(nstate *state)
+static void calculate_timeout(nstate *state)
 {
 	struct timeval t;
 	long u;
@@ -886,7 +886,7 @@ void calculate_timeout(nstate *state)
 	state->timeout.tv_usec = u % 1000000;
 }
 
-unsigned long timeout_delay(nstate *state)
+static unsigned long timeout_delay(nstate *state)
 {
 	struct timeval t;
 	signed long s, m, ret;
@@ -910,7 +910,7 @@ unsigned long timeout_delay(nstate *state)
 	else return ret;
 }
 
-void do_update(nstate *state)
+static void do_update(nstate *state)
 {
 	struct timeval t;
 
@@ -924,7 +924,7 @@ void do_update(nstate *state)
 	} 
 }
 
-void do_pause(nstate *state)
+static void do_pause(nstate *state)
 {
 	draw_pause_continue_button(state);
 	while(state->state == STATE_PAUSED) {
@@ -934,7 +934,7 @@ void do_pause(nstate *state)
 	draw_pause_continue_button(state);
 }
 
-void wait_for_start(nstate *state)
+static void wait_for_start(nstate *state)
 {
 	draw_pause_continue_button(state);
 	while(state->state == STATE_STOPPED) {
@@ -946,7 +946,7 @@ void wait_for_start(nstate *state)
 	calculate_timeout(state);
 }
 
-void run_game(nstate *state)
+static void run_game(nstate *state)
 {
 	while(state->state == STATE_RUNNING) {
 		GrGetNextEventTimeout(&state->event, timeout_delay(state));
@@ -956,7 +956,7 @@ void run_game(nstate *state)
 	}
 }
 
-void main_game_loop(nstate *state)
+static void main_game_loop(nstate *state)
 {
 	wait_for_start(state);
 	while(state->state != STATE_EXIT) {
@@ -966,10 +966,15 @@ void main_game_loop(nstate *state)
 	}
 }
 
+#ifdef __ECOS
+#define main ntetris_main
+#endif
+
 int main(int argc, char *argv[])
 {
 	nstate *state = my_malloc(sizeof(nstate));
 
+        printf("state = %x\n", state);
 	init_game(state);
 	main_game_loop(state);
 
