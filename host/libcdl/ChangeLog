@@ -1,3 +1,13 @@
+2000-05-11  Bart Veer  <bartv@redhat.com>
+
+	* value.cxx (implements_update_handler):
+	Cope gracefully with implements properties where the destination
+	is not an interface.
+
+	* transact.cxx (clear_structural_conflicts):
+	Prevent a structural conflict from being destroyed twice (only
+	likely to happen during a major delete operation).
+
 2000-04-14  Bart Veer  <bartv@redhat.com>
 
 	* infer.cxx (infer_set_valuable_value):

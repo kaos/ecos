@@ -48,7 +48,7 @@
 
 // invoke the inline function definition to create static C linkage
 // functions here:
-#define CYGIMP_UITRON_INLINE_FUNCS
+#define CYGIMP_UITRON_INLINE_FUNCS 1
 #include <cyg/compat/uitron/uit_func.h>
 
 // Now ensure that we create *outline* funcs for the ixxx_yyy() functions

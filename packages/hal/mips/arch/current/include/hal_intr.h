@@ -92,6 +92,11 @@
 #define CYGNUM_HAL_VECTOR_OVERFLOW             12
 // Reserved
 #define CYGNUM_HAL_VECTOR_RESERVED_13          13
+// Division-by-zero [reserved vector]
+// This is caused by 'trap 0x7' which GCC puts in the code to check
+// for division by zero. The break_vsr_springboard in vectors.S is the
+// only caller of this vector.
+#define CYGNUM_HAL_VECTOR_DIV_BY_ZERO          14
 // Floating point exception
 #ifdef  CYGHWR_HAL_MIPS_FPU
 #define CYGNUM_HAL_VECTOR_FPE                  15
@@ -121,6 +126,7 @@
           CYGNUM_HAL_VECTOR_RESERVED_INSTRUCTION
 #define CYGNUM_HAL_EXCEPTION_COPROCESSOR    CYGNUM_HAL_VECTOR_COPROCESSOR
 #define CYGNUM_HAL_EXCEPTION_OVERFLOW       CYGNUM_HAL_VECTOR_OVERFLOW
+#define CYGNUM_HAL_EXCEPTION_DIV_BY_ZERO    CYGNUM_HAL_VECTOR_DIV_BY_ZERO
 
 // Min/Max exception numbers and how many there are
 #define CYGNUM_HAL_EXCEPTION_MIN                1
@@ -336,11 +342,14 @@ CYG_MACRO_END
 
 externC void __default_exception_vsr(void);
 externC void __default_interrupt_vsr(void);
+externC void __break_vsr_springboard(void);
 
 #define HAL_VSR_SET_TO_ECOS_HANDLER( _vector_, _poldvsr_ ) CYG_MACRO_START  \
     HAL_VSR_SET( _vector_, _vector_ == CYGNUM_HAL_VECTOR_INTERRUPT          \
                               ? (CYG_ADDRESS)__default_interrupt_vsr        \
-                              : (CYG_ADDRESS)__default_exception_vsr,       \
+                              : _vector_ == CYGNUM_HAL_VECTOR_BREAKPOINT    \
+                                ? (CYG_ADDRESS)__break_vsr_springboard      \
+                                : (CYG_ADDRESS)__default_exception_vsr,     \
                  _poldvsr_ );                                               \
 CYG_MACRO_END
 

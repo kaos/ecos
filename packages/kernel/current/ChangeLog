@@ -1,3 +1,8 @@
+2000-05-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* cdl/counters.cdl (CYGVAR_KERNEL_COUNTERS_CLOCK_DSR_LATENCY): 
+	Default to CYGVAR_KERNEL_COUNTERS_CLOCK_LATENCY
+
 2000-05-04  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* include/instrmnt.h: Remove all CYG_UNUSED_PARAMs as they could

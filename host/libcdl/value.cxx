@@ -2148,17 +2148,49 @@ CdlValuableBody::implements_update_handler(CdlTransaction transaction, CdlNode s
     // change to the implementors. Currently no attempt is made to
     // optimise interface updates, although this may have to change in
     // future.
+
+    // Any changes to the interface itself can be ignored.
+    if ((CdlUpdate_ValueChange == change) || (CdlUpdate_ActiveChange == change)) {
+        CYG_REPORT_RETURN();
+        return;
+    }
+
+    // The second stage init is irrelevant
+    if (CdlUpdate_Init == change) {
+        CYG_REPORT_RETURN();
+        return;
+    }
+
+    // Possibilities:
+    // 1) source is being loaded, dest valid
+    // 2) source is being loaded, dest unknown
+    // 3) source is being unloaded, dest valid
+    // 4) source is being unloaded, dest unknown
+    // 5) dest has been created
+    // 6) dest is going away
     //
-    // As far as this code is concerned, any time that an implementor
-    // is loaded or unloaded the interface needs to be recalculated.
-    // Also if the destination is created then it needs to be
-    // recalculated, although that should really be the responsibility
-    // of the interface itself. In due course interfaces should be
-    // auto-generated if not explicitly defined.
-    if ((CdlUpdate_Loaded == change) || (CdlUpdate_Unloading == change) || (CdlUpdate_Created == change)) {
-        if (0 != dest) {
-            CdlInterface interface = dynamic_cast<CdlInterface>(dest);
-            CYG_ASSERT_CLASSC(interface);
+    // If we have a valid dest, it needs to be updated and any structural
+    // conflicts have to be cleared.
+    //
+    // If there is no dest, the implements property remains unbound.
+    // A suitable conflict is created in the base class.
+    //
+    // If the dest is invalid, a structural conflict has to be created.
+    if (CdlUpdate_Destroyed == change) {
+        // There is no need to do any clean-ups in the dest.
+        dest = 0;
+    }
+    if (0 == dest) {
+        transaction->clear_structural_conflicts(source, prop, &CdlConflict_DataBody::test);
+    } else {
+        CdlInterface interface = dynamic_cast<CdlInterface>(dest);
+
+        if (0 == interface) {
+            std::string msg = source->get_class_name() + " " + source->get_name() + " cannot implement " +
+                dest->get_name() + "\n    The latter is not an interface.";
+            CdlConflict_DataBody::make(transaction, source, prop, msg);
+        } else {
+            transaction->clear_structural_conflicts(source, prop, &CdlConflict_DataBody::test);
             interface->recalculate(transaction);
         }
     }

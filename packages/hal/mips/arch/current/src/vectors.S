@@ -63,7 +63,7 @@
 	.section ".reset_vector","ax"
 
 	# Reset vector at 0xBFC00000
-	
+
 FUNC_START(reset_vector)
 
 #ifndef CYG_HAL_STARTUP_RAM
@@ -236,11 +236,18 @@ FUNC_START(__warm_start)
 	b	1b
 	nop
 #endif
-	
-	# At present we treat this like an NMI. 
+
+	# Treat a warm-start either as a cold-start or an NMI
+#if defined(CYGHWR_HAL_MIPS_WARMSTART_COLDSTART)
+	lar	v0,_start		# jump to start
+	jr	v0
+	nop				# (delay slot)
+#else
+        # Defaults to NMI
 	b	__nmi_entry
 	nop
-	
+#endif        
+
 FUNC_END(__warm_start)		
 
 ##-----------------------------------------------------------------------------
@@ -730,14 +737,42 @@ FUNC_START(hal_interrupt_stack_call_pending_DSRs)
 FUNC_END(hal_interrupt_stack_call_pending_DSRs)	
 #endif		
 
-##-----------------------------------------------------------------------------	
+##-----------------------------------------------------------------------------
 ## Short circuit in case any code tries to use "__gccmain()"
 
 FUNC_START(__gccmain)
 	jr	ra
 	nop
 FUNC_END(__gccmain)
+
+##-----------------------------------------------------------------------------
+## VSR springboard for break instruction exceptions
+## Both GCC and GDB use break instructions. GCC for division-by-zero
+## notification and GDB for program-flow breakpoints. This springboard
+## looks for the d-b-z kind and directs them to another vector so libc
+## can handle these without affecting the debugger.
 	
+FUNC_START(__break_vsr_springboard)
+	mfc0	k0,epc
+	mfc0	k1,cause
+	bltzl   k1,1f
+	addi    k0,k0,4                 # delay slot (only executed if BD set)
+1:	lw      k1,0(k0)                # get break instruction
+	la      k0,0x0007000d           # break 0x7 used by GCC for d-b-z
+	bne     k0,k1,2f
+	nop
+	ori     k0,$0,14*4              # CYGNUM_HAL_VECTOR_DIV_BY_ZERO
+	la	k1,hal_vsr_table	# address of VSR table
+	add	k1,k1,k0		# offset of VSR entry
+	lw	k1,0(k1)		# k1 = pointer to VSR
+	jr	k1			# go there
+	nop				# (delay slot)
+2:	ori     k0,$0,9*4               # CYGNUM_HAL_VECTOR_BREAKPOINT
+	j       __default_exception_vsr
+	nop				# (delay slot)
+FUNC_END(__break_vsr_springboard)
+
+
 ##-----------------------------------------------------------------------------
 ## Interrupt Stack.
 ## Used during intialization and for executing ISRs.

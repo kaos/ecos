@@ -69,6 +69,7 @@
 //         u I T R O N   F U N C T I O N S
 // The function declarations themselves:
 
+// ------------------- These functions can be inline if so configured
 CYG_UIT_FUNC_EXTERN_BEGIN
 
 // ******************************************************
@@ -142,13 +143,19 @@ ER      isnd_msg ( ID mbxid, T_MSG *pk_msg );
         
 // (None)
         
+CYG_UIT_FUNC_EXTERN_END
+// ------------------- End of functions that can be inlined
+
+
 // ========================================================================
 // DSR: use this DSR with the uITRON-type ISR that uses the functions above
 // to get delayed/safe execution of the wakeup-type functions above.
 
+#ifdef __cplusplus
+extern "C"
+#endif
 void cyg_uitron_dsr( unsigned int vector, unsigned int count, unsigned int data );
 
-CYG_UIT_FUNC_EXTERN_END
 
 // ========================================================================
 

@@ -1389,7 +1389,8 @@ CdlTransactionBody::clear_structural_conflicts(CdlNode node, CdlProperty prop, b
     CYG_ASSERT_CLASSC(toplevel);
     for (conf_i = toplevel->structural_conflicts.begin(); conf_i != toplevel->structural_conflicts.end(); ) {
         CdlConflict conflict = *conf_i++;
-        if ((node == conflict->get_node()) && (prop == conflict->get_property()) && (*pFn)(conflict)) {
+        if ((node == conflict->get_node()) && (prop == conflict->get_property()) &&
+            !(this->has_conflict_been_cleared(conflict)) && (*pFn)(conflict)) {
             this->clear_conflict(conflict);
         }
     }

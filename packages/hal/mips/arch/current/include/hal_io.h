@@ -63,6 +63,10 @@
 typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
 
 //-----------------------------------------------------------------------------
+// HAL IO macros.
+#ifndef HAL_IO_MACROS_DEFINED
+
+//-----------------------------------------------------------------------------
 // BYTE Register access.
 // Individual and vectorized access to 8 bit registers.
 
@@ -134,6 +138,11 @@ typedef volatile CYG_ADDRWORD HAL_IO_REGISTER;
     for( _i_ = 0, _j_ = 0; _i_ < (_count_); _i_++, _j_ += (_step_))     \
         ((volatile CYG_WORD32 *)(_register_))[_j_] = (_buf_)[_i_];      \
 }
+
+#define HAL_IO_MACROS_DEFINED
+
+#endif
+
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_HAL_IO_H

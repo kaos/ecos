@@ -1,3 +1,11 @@
+2000-05-15  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* include/uit_ifnc.h (cyg_uitron_dsr): make this be extern "C"
+	always; it went wrong when uitron funcs are inline or C++.
+
+	* src/uit_ifnc.cxx (CYGIMP_UITRON_INLINE_FUNCS): When [re]defining
+	this, match what CDL defined.  Warnings--;
+
 2000-05-08  Jesper Skov  <jskov@redhat.com>
 
 	* tests/testintr.cxx (attach_isr, detach_isr): Don't check for

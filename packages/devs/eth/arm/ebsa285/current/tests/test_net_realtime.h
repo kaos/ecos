@@ -1,6 +1,5 @@
 #ifndef CYGONCE_DEVS_ETH_ARM_EBSA285_TESTS_TEST_NET_REALTIME_H
 #define CYGONCE_DEVS_ETH_ARM_EBSA285_TESTS_TEST_NET_REALTIME_H
-
 /*==========================================================================
 //
 //        test_net_realtime.h
@@ -44,9 +43,28 @@
 //####DESCRIPTIONEND####
 */
 
+// This is the API to this file:
+
+#define TNR_OFF() tnr_active = 0
+#define TNR_ON()  tnr_active = 1
+#define TNR_INIT() tnr_init()
+#define TNR_PRINT_ACTIVITY() tnr_print_activity() 
+
+// Tests should use these if they are defined to test that the realtime
+// characteristics of the world are preserved during a test.
+//
+// It is accepted that printing stuff via diag_printf() (and the test
+// infra) disables interrupts for a long time.  So invoke TNR_OFF/ON()
+// either side of diagnostic prints, to prevent boguf firings of the
+// realtime test.
+
+// ------------------------------------------------------------------------
+
 // This file rather assumes that the network is in use, and that therefore
 // there is also a kernel, and so on....
 
+#include <cyg/infra/testcase.h>         // CYG_TEST_FAIL et al
+#include <cyg/infra/diag.h>             // diag_printf()
 #include <cyg/kernel/kapi.h>            // Thread API
 
 #include <cyg/hal/hal_arch.h>           // CYGNUM_HAL_STACK_SIZE_TYPICAL
@@ -100,12 +118,22 @@ static cyg_handle_t tnr_thread_handle;
 static cyg_interrupt tnr_t1_intr, tnr_t2_intr;
 static cyg_handle_t tnr_t1_inth, tnr_t2_inth;
 
-
+struct {
+    int timer1_isr;
+    int timer2_isr;
+    int timer2_isr_active;
+    int timer2_dsr;
+    int timer2_thd;
+    int timer2_thd_active;
+} tnr_activity_counts = { 0,0,0,0,0,0 };
+        
 
 static cyg_uint32 tnr_timer1_isr(cyg_vector_t vector, cyg_addrword_t data)
 {
+    tnr_activity_counts.timer1_isr++;
+
     if ( tnr_active )
-        CYG_TEST_FAIL( "test_net_realtime: Timer1 fired" );
+        CYG_TEST_FAIL_EXIT( "test_net_realtime: Timer1 fired" );
 
     *SA110_TIMER1_CLEAR = 0; // Clear any pending interrupt (Data: don't care)
     HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_TIMER_1 );
@@ -115,13 +143,16 @@ static cyg_uint32 tnr_timer1_isr(cyg_vector_t vector, cyg_addrword_t data)
 
 static cyg_uint32 tnr_timer2_isr(cyg_vector_t vector, cyg_addrword_t data)
 {
+    tnr_activity_counts.timer2_isr++;
+
     *SA110_TIMER2_CLEAR = 0; // Clear any pending interrupt (Data: don't care)
     HAL_INTERRUPT_ACKNOWLEDGE( CYGNUM_HAL_INTERRUPT_TIMER_2 );
 
     if ( tnr_active ) {
+        tnr_activity_counts.timer2_isr_active++;
         if ( (*SA110_TIMER1_VALUE) > (4 * TNR_TIMER1_PERIOD_1mS) ) {
             // Then it has wrapped around, bad bad bad
-            CYG_TEST_FAIL( "tnr_timer2_isr: Timer1 wrapped" );
+            CYG_TEST_FAIL_EXIT( "tnr_timer2_isr: Timer1 wrapped" );
         }
     }
     tnr_t2_counter++;
@@ -144,8 +175,10 @@ static cyg_uint32 tnr_timer2_isr(cyg_vector_t vector, cyg_addrword_t data)
     
 static void tnr_timer2_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
+    tnr_activity_counts.timer2_dsr++;
+
     if ( CYGNUM_HAL_INTERRUPT_TIMER_2 != vector )
-        CYG_TEST_FAIL( "tnr_timer2_dsr: Bad vector" );
+        CYG_TEST_FAIL_EXIT( "tnr_timer2_dsr: Bad vector" );
 
     cyg_semaphore_post( &tnr_sema );
 }
@@ -154,10 +187,12 @@ static void tnr_timer2_service_thread( cyg_addrword_t param )
 {
     while (1) {
         cyg_semaphore_wait( &tnr_sema );
+        tnr_activity_counts.timer2_thd++;
         if ( tnr_active ) {
+            tnr_activity_counts.timer2_thd_active++;
             if ( (*SA110_TIMER1_VALUE) > (4 * TNR_TIMER1_PERIOD_1mS) ) {
                 // Then it has wrapped around, bad bad bad
-                CYG_TEST_FAIL( "tnr_timer2_service_thread: Timer1 wrapped" );
+                CYG_TEST_FAIL_EXIT( "tnr_timer2_service_thread: Timer1 wrapped" );
             }
         }
         // Reset timer1 again.  By doing this in time every time it should
@@ -222,6 +257,20 @@ static void tnr_init( void )
 
     cyg_interrupt_unmask( CYGNUM_HAL_INTERRUPT_TIMER_2 );
     cyg_interrupt_unmask( CYGNUM_HAL_INTERRUPT_TIMER_1 );
+}
+
+static void tnr_print_activity( void )
+{
+    int tmp = tnr_active;
+    tnr_active = 0;
+    diag_printf( "Test-net-realtime: interrupt activity log:\n" );
+    diag_printf( "    timer1_isr %10d\n", tnr_activity_counts.timer1_isr );
+    diag_printf( "    timer2_isr %10d\n", tnr_activity_counts.timer2_isr );
+    diag_printf( "      (active) %10d\n", tnr_activity_counts.timer2_isr_active );
+    diag_printf( "    timer2_dsr %10d\n", tnr_activity_counts.timer2_dsr );
+    diag_printf( "    timer2_thd %10d\n", tnr_activity_counts.timer2_thd );
+    diag_printf( "      (active) %10d\n", tnr_activity_counts.timer2_thd_active );
+    tnr_active = tmp;
 }
 
 #endif /* ifndef CYGONCE_DEVS_ETH_ARM_EBSA285_TESTS_TEST_NET_REALTIME_H */
