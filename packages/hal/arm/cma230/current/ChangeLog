@@ -1,3 +1,25 @@
+1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_cma230T_ram.h:
+	* include/pkgconf/mlt_arm_cma230T_rom.h:
+	* include/pkgconf/mlt_arm_cma230_ram.h:
+	* include/pkgconf/mlt_arm_cma230_rom.h: New files.
+
+	* include/pkgconf/mlt_arm_cma230T_ram.ldi: 
+	* include/pkgconf/mlt_arm_cma230T_ram.ldi: 
+	* include/pkgconf/mlt_arm_cma230_rom.ldi: 
+	* include/pkgconf/mlt_arm_cma230_rom.mlt: Update with correct memory layout.
+
+1999-11-09  John Dallaway  <jld@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_cma230.h:
+
+	Add platform attribute to CYGPKG_HAL_ARM_CMA230.
+
+1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/hal_diag.c: Honor GDB_DISABLE option.
+
 1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/PKGconf.mak: Don't strip symbols when making .img.
@@ -51,10 +73,6 @@
 	enabled.  Second, the interrupt mask register does not read
 	back properly, so a memory shadow is necessary.
 
-
-1999-05-20  Gary Thomas  <gthomas@cygnus.co.uk>
-
-	* include/pkgconf/hal_arm_cl7211.h: Move RTC setup here.
 
 //===========================================================================
 //####COPYRIGHTBEGIN####

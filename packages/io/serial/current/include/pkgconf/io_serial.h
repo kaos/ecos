@@ -384,102 +384,103 @@
 
 /* ----------------------------------------------------------------------------
    {{CFG_DATA
-   cdl_component CYGPKG_IO_SERIAL_ARM_CL7211 {
-       display "ARM CL7x11 (CL7111/CL7211) serial device drivers"
+   cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX {
+       display "Cirrus Logic EDB7xxx serial device drivers"
        type    bool
        requires CYGPKG_IO_SERIAL
-       parent CYGPKG_HAL_ARM_CL7211
+       parent CYGPKG_HAL_ARM_EDB7XXX
        description "
-           This option enables the serial device drivers for the ARM CL7x11."
+           This option enables the serial device drivers for the Cirrus Logic CL-PS7111
+           and EDB7xxx evaluation boards."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_component CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1 {
-       display "ARM CL7x11 serial port 1 driver"
+   cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1 {
+       display "Cirrus Logic EDB7xxx serial port 1 driver"
        type    bool
-       parent CYGPKG_IO_SERIAL_ARM_CL7211
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX
        description "
-           This option includes the serial device driver for the ARM CL7x11 port 1."
+           This option includes the serial device driver for the Cirrus Logic EDB7xxx port 1."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_option CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME {
-       display "Device name for the ARM CL7x11 serial port 1 driver"
+   cdl_option CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME {
+       display "Device name for the Cirrus Logic EDB7xxx serial port 1 driver"
        type    string
-       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1
        description "
-           This option specifies the name of serial device for the ARM CL7x11 port 1."
+           This option specifies the name of serial device for the Cirrus Logic EDB7xxx port 1."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BAUD {
-       display "Baud rate for the ARM CL7x11 serial port 1 driver"
+   cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL1_BAUD {
+       display "Baud rate for the Cirrus Logic EDB7xxx serial port 1 driver"
        type    enum
        legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
-       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1
        description "
-           This option specifies the default baud rate (speed) for the ARM CL7x11 port 1."
+           This option specifies the default baud rate (speed) for the Cirrus Logic EDB7xxx port 1."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BUFSIZE {
-       display "Buffer size for the ARM CL7x11 serial port 1 driver"
+   cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL1_BUFSIZE {
+       display "Buffer size for the Cirrus Logic EDB7xxx serial port 1 driver"
        type    count
        legal_values 0 to 8192
-       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1
        description "
-           This option specifies the size of the internal buffers used for the ARM CL7x11 port 1."
+           This option specifies the size of the internal buffers used for the Cirrus Logic EDB7xxx port 1."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_component CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2 {
-       display "ARM CL7x11 serial port 2 driver"
+   cdl_component CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2 {
+       display "Cirrus Logic EDB7xxx serial port 2 driver"
        type    bool
-       parent CYGPKG_IO_SERIAL_ARM_CL7211
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX
        description "
-           This option includes the serial device driver for the ARM CL7x11 port 2."
+           This option includes the serial device driver for the Cirrus Logic EDB7xxx port 2."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_option CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL2_NAME {
-       display "Device name for the ARM CL7x11 serial port 2 driver"
+   cdl_option CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL2_NAME {
+       display "Device name for the Cirrus Logic EDB7xxx serial port 2 driver"
        type    string
-       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2
        description "
-           This option specifies the name of serial device for the ARM CL7x11 port 2."
+           This option specifies the name of serial device for the Cirrus Logic EDB7xxx port 2."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BAUD {
-       display "Baud rate for the ARM CL7x11 serial port 2 driver"
+   cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL2_BAUD {
+       display "Baud rate for the Cirrus Logic EDB7xxx serial port 2 driver"
        type    enum
        legal_values 50 75 110 134_5 150 200 300 600 1200 1800 2400 3600 4800 7200 9600 14400 19200 38400 57600 115200 234000
-       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2
        description "
-           This option specifies the default baud rate (speed) for the ARM CL7x11 port 2."
+           This option specifies the default baud rate (speed) for the Cirrus Logic EDB7xxx port 2."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
-   cdl_option CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BUFSIZE {
-       display "Buffer size for the ARM CL7x11 serial port 2 driver"
+   cdl_option CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL2_BUFSIZE {
+       display "Buffer size for the Cirrus Logic EDB7xxx serial port 2 driver"
        type    count
        legal_values 0 to 8192
-       parent CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
+       parent CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2
        description "
-           This option specifies the size of the internal buffers used for the ARM CL7x11 port 2."
+           This option specifies the size of the internal buffers used for the Cirrus Logic EDB7xxx port 2."
            doc ref/ecos-ref/ecos-device-drivers.html
    }
 
    }}CFG_DATA */
-#undef  CYGPKG_IO_SERIAL_ARM_CL7211
-#undef  CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1
-#define CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME "/dev/ser1"
-#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BAUD 38400
-#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL1_BUFSIZE 128
-#undef  CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL2
-#define CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL2_NAME "/dev/ser2"
-#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BAUD 38400
-#define CYGNUM_IO_SERIAL_ARM_CL7211_SERIAL2_BUFSIZE 128
+#undef  CYGPKG_IO_SERIAL_ARM_EDB7XXX
+#undef  CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1
+#define CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME "/dev/ser1"
+#define CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL1_BAUD 38400
+#define CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL1_BUFSIZE 128
+#undef  CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL2
+#define CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL2_NAME "/dev/ser2"
+#define CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL2_BAUD 38400
+#define CYGNUM_IO_SERIAL_ARM_EDB7XXX_SERIAL2_BUFSIZE 128
 
 /* ----------------------------------------------------------------------------
    {{CFG_DATA

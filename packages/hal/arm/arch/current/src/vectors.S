@@ -139,6 +139,9 @@ reset_vector:
 				// which can set DRAM size at 0x40
 				// see <cyg/hal/hal_platform_setup.h>
 
+        // Come here to reset board
+warm_reset:                 
+
 #if defined(CYG_HAL_STARTUP_RAM) && \
     !defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 	mrs	r7,cpsr			// move back to IRQ mode
@@ -225,6 +228,11 @@ start:
 	LED 4
 
 #if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_STUBS)
+        // Set up reset vector
+        ldr     r2,[r1,#0x00]    // reset vector intstruction
+        str     r2,[r0,#0x00]
+        ldr     r2,=warm_reset
+        str     r2,[r0,#0x20]
 	// Relocate [copy] data from ROM to RAM
 	ldr	r3,.__rom_data_start
 	ldr	r4,.__ram_data_start
@@ -310,6 +318,19 @@ start:
 _start_hang:
 	b	_start_hang
 	.code	32
+        
+        .global reset_platform
+        .type   reset_platform,function
+reset_platform:         
+#ifdef CYG_HAL_STARTUP_STUBS        
+	// initialize CPSR (machine state register)
+	mov	r0,#(CPSR_IRQ_DISABLE|CPSR_FIQ_DISABLE|CPSR_SUPERVISOR_MODE)
+	msr	cpsr,r0
+        b       warm_reset
+#else
+        mov     r0,#0
+        mov     pc,r0           // Jump to reset vector        
+#endif                   
 
 init_done:
 	.long	0xDEADB00B
@@ -321,7 +342,6 @@ init_done:
 	.code	32
 undefined_instruction:
 	ldr	sp,.__undef_exception_stack	// get good stack
-	sub	lr,lr,#4		// PC at time of interrupt
 	stmfd	sp!,{r0,fp,ip,lr}		
 	mrs	r0,spsr
 	stmfd	sp!,{r0}
@@ -346,6 +366,7 @@ undefined_instruction:
 	sub	sp,sp,#ARMREG_SIZE	// make space for frame
 	stmea	sp,{r0-r10,fp}		// save immediately visible registers
 	ldmfd	ip,{r0-r4}		// saved registers
+	sub	r4,r4,#4		// PC at time of interrupt
 	str	r0,[sp,#armreg_cpsr]	// CPSR at time of interrupt
 	str	r1,[sp,#armreg_r0]	// saved R0
 	str	r2,[sp,#armreg_fp]	// saved FP
@@ -364,7 +385,6 @@ undefined_instruction:
 	.code	32
 software_interrupt:
 	ldr	sp,.__startup_stack	// get good stack
-	sub	lr,lr,#4		// PC at time of interrupt
 	stmfd	sp!,{r0,ip,lr}		
 	mrs	r0,spsr
 	stmfd	sp!,{r0}
@@ -379,6 +399,7 @@ software_interrupt:
 	sub	sp,sp,#ARMREG_SIZE+16	// make space for frame
 	stmea	sp,{r0-r10,fp}		// save immediately visible registers
 	ldmfd	ip,{r0-r3}		// saved registers
+	sub	r3,r3,#4		// PC at time of interrupt
 	str	r0,[sp,#armreg_cpsr]	// CPSR at time of interrupt
 	str	r1,[sp,#armreg_r0]	// saved R0
 	str	r2,[sp,#armreg_ip]	// saved IP

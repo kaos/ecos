@@ -47,6 +47,7 @@
 
    cdl_package CYGPKG_HAL_ARM_CMA230 {
        display  "Cogent Computer Systems CMA230 board"
+       platform cma230
        type     radio
        parent   CYGPKG_HAL_ARM
        description "

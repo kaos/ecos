@@ -85,8 +85,8 @@ OUTPUT_FORMAT(elf32-bigarm)
     .text _vma_ : _lma_ \
     { stext = ABSOLUTE(.); \
     PROVIDE (__stext = ABSOLUTE(.)); \
-    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) }\
-    > _region_ \
+    *(.text*) *(.gnu.warning) *(.gnu.linkonce*) *(.init) \
+    } > _region_ \
     etext = .; PROVIDE (__etext = .);
 
 #define SECTION_fini(_region_, _vma_, _lma_) \

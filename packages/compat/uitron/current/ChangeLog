@@ -1,3 +1,8 @@
+1999-11-09  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/uit_objs.cxx: Make the stack size failsafe be tested against
+	the minimum stack size, not the typical one.
+
 1999-09-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/uit_objs.hxx (CYG_UITRON_OBJS_INIT_PRIORITY): Revert the

@@ -1,3 +1,15 @@
+1999-11-15  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/dbg-threads-api.h, include/generic-stub.h,
+	include/hal_stub.h: Add comments to explain these header files should
+	not be included by user programs
+
+1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+	
+	* include/pkgconf/hal.h (CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL): 
+	New option which [explicitly] controls use of GDB protocol
+	for diagnostic I/O.
+
 1999-10-29  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* tests/PKGconf.mak: Add cache tests for Cirrus Logic boards.

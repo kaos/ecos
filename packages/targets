@@ -227,7 +227,7 @@ target arm {
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"
-            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
             CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
@@ -279,7 +279,7 @@ target arm {
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"
-            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
             CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
@@ -296,7 +296,7 @@ target arm {
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"
-            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
             CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
@@ -304,38 +304,39 @@ target arm {
     platform cl7111 {
         alias		{ "Cirrus Logic Eval Board (CL7111)" }
 	startup		{ ram rom stubs }
-	base_platform	cl7211
+	base_platform	edb7xxx
 	packages	{
-	    CYGPKG_HAL_ARM_CL7211
+	    CYGPKG_HAL_ARM_EDB7XXX
 	}
         cflags {
             ARCHFLAGS        "-mcpu=arm710c -D__CL7111"
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"
-            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
             CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
     }
 # FIXME:           ARCHFLAGS        "-mcpu=arm720"
-    platform eb7211 {
-        alias		{ "Cirrus Logic Eval Board (EB7211)" }
+    platform edb7211 {
+        alias		{ "Cirrus Logic Eval Board (EDB7211)" eb7211 }
 	startup		{ ram rom stubs }
-	base_platform	cl7211
+	base_platform	edb7xxx
 	packages	{
-	    CYGPKG_HAL_ARM_CL7211
+	    CYGPKG_HAL_ARM_EDB7XXX
 	}
         cflags {
-            ARCHFLAGS        "-mcpu=arm7tdmi -D__CL7211"
+            ARCHFLAGS        "-mcpu=arm7tdmi -D__EDB7211"
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"
-            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
             CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
     }
+
     platform cma230 {
         alias		{ "Cogent CMA230" }
 	startup		{ ram rom stubs }
@@ -347,7 +348,7 @@ target arm {
             ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
             CXXERRFLAGS      "-Woverloaded-virtual"
             DBGFLAGS         "-g -O2"
-            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            LANGFLAGS        "-ffunction-sections -fdata-sections -mno-sched-prolog"
             CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }

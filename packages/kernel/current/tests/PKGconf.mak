@@ -46,7 +46,7 @@ TESTS	+= kcache1 kcache2
 endif
 
 
-ifdef CYGPKG_HAL_ARM_CL7211
+ifdef CYGPKG_HAL_ARM_EDB7XXX
 TESTS	+= kcache1 kcache2
 endif
 

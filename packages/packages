@@ -144,9 +144,9 @@ package CYGPKG_HAL_ARM_AEB {
 	hardware
 }
 
-package CYGPKG_HAL_ARM_CL7211 {
-	alias		{ "Cirrus Logic CL7211 evaluation board support" hal_arm_cl7211 arm_cl7211_hal }
-	directory	hal/arm/cl7211
+package CYGPKG_HAL_ARM_EDB7XXX {
+	alias		{ "Cirrus Logic EDB7xxx evaluation board(s) support" hal_arm_edb7xxx arm_edb7xxx_hal }
+	directory	hal/arm/edb7xxx
         include_dir	cyg/hal
 	hardware
 }

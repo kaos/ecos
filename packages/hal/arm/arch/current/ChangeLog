@@ -1,3 +1,8 @@
+1999-11-12  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* src/vectors.S (reset_platform): New function used to reset board
+	in the absense of real hardware reset (not possible on all boards).
+
 1999-11-01  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_misc.c (exception_handler): Check for CYGDAT_CYGMON_ENABLE

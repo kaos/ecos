@@ -109,8 +109,25 @@
          code can be eliminated."
  }
 
+ cdl_option CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL {
+     display    "Disable GDB protocol for diagnostic output"
+     parent     CYGPKG_HAL
+     description "
+         This option forces diagnostic output to not use the GDB
+         protocol.  Most programs will use the GDB protocol for
+         diagnostic I/O because of the environment.  This option
+         allows for an explicit override in these cases."
+ }
+
  }}CFG_DATA */
 #define CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+#undef  CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+
+#ifdef CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL
+#if !defined(CYGPKG_HAL_ARM)
+#err GDB protocol cannot be explicitly disabled for this platform.
+#endif
+#endif
 
 /* {{CFG_DATA
    

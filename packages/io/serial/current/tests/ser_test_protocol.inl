@@ -103,11 +103,11 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
 #endif
-#if defined(CYGPKG_HAL_ARM_CL7211)                         \
-    && defined(CYGPKG_IO_SERIAL_ARM_CL7211)                \
-    && defined(CYGPKG_IO_SERIAL_ARM_CL7211_SERIAL1)
-# define TEST_CRASH_ID "armcl7"
-# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_CL7211_SERIAL1_NAME
+#if defined(CYGPKG_HAL_ARM_EDB7XXX)                         \
+    && defined(CYGPKG_IO_SERIAL_ARM_EDB7XXX)                \
+    && defined(CYGPKG_IO_SERIAL_ARM_EDB7XXX_SERIAL1)
+# define TEST_CRASH_ID "armedb7xxx"
+# define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_EDB7XXX_SERIAL1_NAME
 # if defined(CYGPKG_IO_SERIAL_TTY_TTY1)
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY1_DEV
 # endif
@@ -334,7 +334,7 @@ cyg_ser_cfg_t test_configs[] = {
     !defined(CYGPKG_HAL_ARM_AEB) &&             \
     !defined(CYGPKG_HAL_MN10300_STDEVAL1) &&    \
     !defined(CYGPKG_HAL_ARM_CMA230) &&          \
-    !defined(CYGPKG_HAL_ARM_CL7211) &&          \
+    !defined(CYGPKG_HAL_ARM_EDB7XXX) &&          \
     !defined(CYGPKG_HAL_SPARCLITE_SLEB)
     { CYGNUM_SERIAL_BAUD_115200, CYGNUM_SERIAL_WORD_LENGTH_8, 
       CYGNUM_SERIAL_STOP_1, CYGNUM_SERIAL_PARITY_NONE },

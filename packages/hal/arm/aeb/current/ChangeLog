@@ -1,3 +1,21 @@
+1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_aebC_ram.h: 
+	* include/pkgconf/mlt_arm_aebC_rom.h: 
+	* include/pkgconf/mlt_arm_aeb_ram.h: 
+	* include/pkgconf/mlt_arm_aeb_rom.h: New files.
+
+	* include/pkgconf/mlt_arm_aebC_ram.ldi: 
+	* include/pkgconf/mlt_arm_aebC_ram.mlt: 
+	* include/pkgconf/mlt_arm_aebC_rom.ldi: 
+	* include/pkgconf/mlt_arm_aebC_rom.mlt: 
+	* include/pkgconf/mlt_arm_aeb_ram.ldi: 
+	* include/pkgconf/mlt_arm_aeb_ram.mlt: 
+	* include/pkgconf/mlt_arm_aeb_rom.ldi: 
+	* include/pkgconf/mlt_arm_aeb_rom.mlt: Correct memory layout.
+
+	* src/hal_diag.c: Honor GDB_DISABLE option.
+
 1999-10-28  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/PKGconf.mak: Don't strip symbols when making .img.

@@ -85,10 +85,8 @@ void set_pc (target_register_t pc)
    This may be done by setting breakpoints or setting a single step flag
    in the saved user registers, for example. */
 
-#define NULL_PTR (unsigned long *)0
-static unsigned long *ss_saved_pc = NULL_PTR;
-static unsigned long ss_saved_instr;
-
+static unsigned long  ss_saved_pc = 0;
+static unsigned long  ss_saved_instr;
 
 #define FIXME() {diag_printf("FIXME - %s\n", __FUNCTION__); }
 
@@ -349,29 +347,32 @@ target_ins(unsigned long *pc, unsigned long ins)
     }
 }
 
+
 void __single_step (void)
 {
-    unsigned long *pc = (unsigned long *)get_register(PC);
-    unsigned long curins = *pc;
-    if (ins_will_execute(curins)) {
-        // Decode instruction to decide what the next PC will be
-        ss_saved_pc = target_ins(pc, curins);
-    } else {
-        // The current instruction will not execute (the conditions don't hold)
-        ss_saved_pc = (pc+1);
-    }
-    // For now
-    ss_saved_instr = *ss_saved_pc;
-    *ss_saved_pc = 0xE7FFDEFF;  // As used by ARM
+    unsigned long pc = get_register(PC);
+        unsigned long curins = *(unsigned long*)pc;
+        if (ins_will_execute(curins)) {
+            // Decode instruction to decide what the next PC will be
+            ss_saved_pc = (unsigned long) target_ins((unsigned long*)pc, 
+                                                     curins);
+        } else {
+            // The current instruction will not execute (the conditions 
+            // don't hold)
+            ss_saved_pc = pc+4;
+        }
+        ss_saved_instr = *(unsigned long*)ss_saved_pc;
+        *(unsigned long*)ss_saved_pc = HAL_BREAKINST_ARM;
 }
 
 /* Clear the single-step state. */
 
 void __clear_single_step (void)
 {
-    if (ss_saved_pc != NULL_PTR) {
-        *ss_saved_pc = ss_saved_instr;
-        ss_saved_pc = NULL_PTR;
+    if (ss_saved_pc != 0) {
+            // ARM instruction
+            *(unsigned long*)ss_saved_pc = ss_saved_instr;
+        ss_saved_pc = 0;
     }
 }
 
@@ -401,7 +402,10 @@ __is_breakpoint_function ()
 
 void __skipinst (void)
 {
-    put_register (PC, get_register (PC) + 4);
+    unsigned long pc = get_register(PC);
+        pc += 4;
+
+    put_register(PC, pc);
 }
 
 

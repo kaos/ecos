@@ -38,7 +38,12 @@
 // Date:        1999-02-12
 // Purpose:     Generic HAL stub header.
 // Usage:       #include <cyg/hal/hal_stub.h>
-//              
+// Description: This header is included by generic-stub.c to provide an
+//              interface to the eCos-specific stub implementation. It is
+//              not to be included by user code, and is only placed in a
+//              publically accessible directory so that platform stub packages
+//              are able to include it if required.
+//                           
 //####DESCRIPTIONEND####
 //
 //=============================================================================

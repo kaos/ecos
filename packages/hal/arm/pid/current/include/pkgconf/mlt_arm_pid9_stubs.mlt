@@ -1,4 +1,4 @@
-version 0
+!version 0
 region ram 800 3800 0 !
 region rom 4000000 80000 1 !
 section data 0 1 1 1 1 1 0 0 800 bss !

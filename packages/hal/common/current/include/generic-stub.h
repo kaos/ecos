@@ -17,6 +17,12 @@
  * Code is Cygnus. Portions created by Cygnus are Copyright (C) 1998, 1999
  * Cygnus Solutions. All Rights Reserved.
  */
+
+/* This header is not to be included by user code, and is only placed in a
+ * publically accessible directory so that platform stub packages
+ * are able to include it if required.
+ */
+
 #ifndef GENERIC_STUB_H
 #define GENERIC_STUB_H
 

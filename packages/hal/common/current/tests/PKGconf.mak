@@ -44,7 +44,7 @@ TESTS	+= cache
 endif
 
 
-ifdef CYGPKG_HAL_ARM_CL7211
+ifdef CYGPKG_HAL_ARM_EDB7XXX
 TESTS	+= cache
 endif
 

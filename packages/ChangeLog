@@ -1,3 +1,7 @@
+1999-11-16  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* targets: Add aliases for Cirrus Logic platforms.
+
 1999-10-27  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* targets: Reenabled stubs startup for pid9.

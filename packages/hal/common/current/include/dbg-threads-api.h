@@ -1,8 +1,10 @@
 #if !defined(DBG_THREADS_API_INCLUDED)
 #define DBG_THREADS_API_INCLUDED 1
 /* These are the calls used to extract operating system specific information
-   used in supporting thread aware debugging.
-   The Operating Environment being debugged needs to supply these functions.
+ * used in supporting thread aware debugging.
+ * The Operating Environment being debugged needs to supply these functions.
+ *
+ * This header is not to be included by user code
  */
 
 /* 

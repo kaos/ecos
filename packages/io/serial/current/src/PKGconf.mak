@@ -40,8 +40,8 @@ endif
 ifdef CYGPKG_HAL_ARM_AEB
 EXTRAS_COMPILE  += arm/aeb_serial.c
 endif
-ifdef CYGPKG_HAL_ARM_CL7211
-EXTRAS_COMPILE  += arm/cl7211_serial.c
+ifdef CYGPKG_HAL_ARM_EDB7XXX
+EXTRAS_COMPILE  += arm/edb7xxx_serial.c
 endif
 ifdef CYGPKG_HAL_ARM_CMA230
 EXTRAS_COMPILE  += arm/cma230_serial.c

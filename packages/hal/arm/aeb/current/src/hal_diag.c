@@ -57,7 +57,7 @@
 // Assumption: all diagnostic output must be GDB packetized unless this is a ROM (i.e.
 // totally stand-alone) system.
 
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYGDBG_HAL_DIAG_DISABLE_GDB_PROTOCOL)
 #define HAL_DIAG_USES_HARDWARE
 #endif
 

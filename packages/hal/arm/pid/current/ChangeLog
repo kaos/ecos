@@ -1,3 +1,33 @@
+1999-11-09  Gary Thomas  <gthomas@cygnus.co.uk>
+
+	* include/pkgconf/mlt_arm_pidBE_ram.h: 
+	* include/pkgconf/mlt_arm_pidBE_rom.h: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.h: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.h: 
+	* include/pkgconf/mlt_arm_pidT_ram.h: 
+	* include/pkgconf/mlt_arm_pidT_rom.h: 
+	* include/pkgconf/mlt_arm_pid_ram.h: 
+	* include/pkgconf/mlt_arm_pid_rom.h: New file(s).
+
+	* include/pkgconf/mlt_arm_pidBE_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidBE_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidBE_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidBE_rom.mlt: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidTBE_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidTBE_rom.mlt: 
+	* include/pkgconf/mlt_arm_pidT_ram.ldi: 
+	* include/pkgconf/mlt_arm_pidT_ram.mlt: 
+	* include/pkgconf/mlt_arm_pidT_rom.ldi: 
+	* include/pkgconf/mlt_arm_pidT_rom.mlt: 
+	* include/pkgconf/mlt_arm_pid_ram.ldi: 
+	* include/pkgconf/mlt_arm_pid_ram.mlt: 
+	* include/pkgconf/mlt_arm_pid_rom.ldi: 
+	* include/pkgconf/mlt_arm_pid_rom.mlt: Update with correct memory layout.
+
+	* src/hal_diag.c: Honor GDB_DISABLE option.
+
 1999-10-29  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* misc/PKGconf.mak: Also generate stripped .img files.
