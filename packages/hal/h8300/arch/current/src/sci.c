@@ -109,7 +109,6 @@ cyg_hal_plf_sci_getc_nonblock(void* __ch_data, cyg_uint8* ch)
 
     // Clear buffer full flag.
     HAL_WRITE_UINT8(base+_REG_SCSSR, sr & ~CYGARC_REG_SCSSR_RDRF);
-
     return true;
 }
 
@@ -210,17 +209,11 @@ cyg_hal_plf_sci_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     case __COMMCTL_IRQ_ENABLE:
         irq_state = 1;
         HAL_INTERRUPT_UNMASK(chan->isr_vector);
-        HAL_READ_UINT8(chan->base+_REG_SCSCR, scr);
-        scr |= CYGARC_REG_SCSCR_RIE;
-        HAL_WRITE_UINT8(chan->base+_REG_SCSCR, scr);
         break;
     case __COMMCTL_IRQ_DISABLE:
         ret = irq_state;
         irq_state = 0;
-        HAL_INTERRUPT_UNMASK(chan->isr_vector);
-        HAL_READ_UINT8(chan->base+_REG_SCSCR, scr);
-        scr &= ~CYGARC_REG_SCSCR_RIE;
-        HAL_WRITE_UINT8(chan->base+_REG_SCSCR, scr);
+        HAL_INTERRUPT_MASK(chan->isr_vector);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
         ret = chan->isr_vector;

@@ -1,3 +1,28 @@
+2004-03-18  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/context.S
+	fix broken ccr from context save.
+	* src/redboot_linux_exec.c
+	fix build error of undefined "CYGDAT_REDBOOT_H8300_LINUX_COMMAND_START"
+	* src/sci.c
+	delete waste code.
+
+2004-02-24  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/vectors.S
+	add CYGSEM_HAL_SAVE_STUB_VECTOR.
+	saved parent gdb-stub breakpoint vector.
+	* cdl/hal_h8300.cdl
+	add CYGSEM_HAL_SAVE_STUB_VECTOR
+	move CYGSEM_HAL_H8300_VECTOR_HOOK from target cdl's
+
+2003-12-04  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* src/vector.S
+	add runtime vector setup.
+	add trace exception pc adjust.
+
+
 2003-07-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* <general>: Added Yoshinori Sato's changes, see following

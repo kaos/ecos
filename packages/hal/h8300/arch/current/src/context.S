@@ -68,11 +68,14 @@
 #------------------------------------------------------------------------------
 # hal_thread_switch_context
 # Switch thread contexts
-# D0 = address of sp of next thread to execute
-# D1 = address of sp save location of current thread
+# er0 = address of sp of next thread to execute
+# er1 = address of sp save location of current thread
 
 	.global	CYG_LABEL_DEFN(hal_thread_switch_context)
 CYG_LABEL_DEFN(hal_thread_switch_context):
+	mov.w	@sp,r2		; save ccr
+	stc	ccr,r2h
+	mov.w	r2,@sp
 	hal_cpu_save_context
 	mov.l	sp,@er1
 	

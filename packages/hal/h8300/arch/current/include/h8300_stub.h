@@ -75,7 +75,7 @@ enum regnames {
 
 enum regnames {
   ER6,ER5,ER4,ER3,ER2,ER1,ER0,
-  SP, EXR,CCR,PC
+  SP, CCR,PC ,EXR
 };
 #endif
 

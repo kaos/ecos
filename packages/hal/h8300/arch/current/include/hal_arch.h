@@ -92,8 +92,8 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 #define HAL_THREAD_INIT_CONTEXT( _sp_, _thread_, _entry_, _id_ )            \
 {                                                                           \
     register HAL_SavedRegisters *_regs_;                                    \
-    _regs_ = (HAL_SavedRegisters *)(((CYG_ADDRWORD)(_sp_)&~15) -            \
-                                    sizeof(HAL_SavedRegisters)*2);          \
+    _regs_ = (HAL_SavedRegisters *)(((CYG_ADDRWORD)(_sp_)) -                \
+                                    sizeof(HAL_SavedRegisters));            \
     HAL_THREAD_INIT_CONTEXT_EXTRA(_regs_, _id_);                            \
     _regs_->er0   = (CYG_WORD)(_thread_);                                   \
     _regs_->er1   = (_id_)|0xddd1;                                          \
@@ -199,7 +199,7 @@ asm volatile (" .globl  " __HAL_BREAKPOINT(_label_) "\n" \
     (_regs_)->er4            = _regval_[4];                             \
     (_regs_)->er5            = _regval_[5];                             \
     (_regs_)->er6            = _regval_[6];                             \
-                                                                        \
+    (_regs_)->sp             = _regval_[7];                             \
     (_regs_)->ccr            = _regval_[8];                             \
     (_regs_)->pc             = (_regval_[9] & 0xffffff);                \
                                                                         \

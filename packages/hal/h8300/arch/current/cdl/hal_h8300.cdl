@@ -111,22 +111,6 @@ cdl_package CYGPKG_HAL_H8300 {
                 description    "
                    This option uClinux kernel entry address of default."
             }
-
-            cdl_option CYGDAT_REDBOOT_H8300_LINUX_COMMAND_START {
-                display        "Default kernel command line start address"
-                flavor         data
-                default_value  0x5ffe00
-                description    "
-                   This option uClinux kernel command line start address of default."
-            }
-
-            cdl_option CYGDAT_REDBOOT_H8300_LINUX_BOOT_COMMAND_LINE {
-                display        "Default command line"
-                flavor         data
-                default_value  { "console=/dev/ttyS1" }
-                description    "
-                   This option uClinux kernel startup command line of default."
-            }
         }
     }
     cdl_option CYGNUM_HAL_H8300_SCI_BAUD_RATE {
@@ -134,5 +118,22 @@ cdl_package CYGPKG_HAL_H8300 {
         flavor data
         legal_values     { 4800 9600 14400 19200 38400 57600 115200 }
         default_value    { 38400 }
+    }
+    cdl_option CYGSEM_HAL_H8300_VECTOR_HOOK {
+        display       "Interrupt Vector Hook"
+        flavor        bool
+        default_value 1
+        parent        CYGPKG_HAL_ROM_MONITOR
+        description   "
+            Interrupt Vector Table Hooking Support"
+    }
+    cdl_option CYGSEM_HAL_H8300_SAVE_STUB_VECTOR {
+        display       "Save gdb-stub breakpoint vector"
+        flavor        bool
+        default_value 0
+        parent        CYGPKG_HAL_ROM_MONITOR
+        description   "
+            Do not change vector of the breakpoint exception that 
+	    gdb-stub uses"
     }
 }
