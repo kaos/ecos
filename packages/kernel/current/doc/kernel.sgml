@@ -1178,7 +1178,7 @@ might be more appropriate to do this elsewhere, for example inside
 static unsigned char producer_stack[PRODUCER_STACKSIZE];
 static unsigned char worker_stacks[NUMBER_OF_WORKERS][WORKER_STACKSIZE];
 static cyg_handle_t producer_handle, worker_handles[NUMBER_OF_WORKERS];
-static cyg_thread_t producer_thread, worker_threads[NUMBER_OF_WORKERS];
+static cyg_thread   producer_thread, worker_threads[NUMBER_OF_WORKERS];
 
 static void
 producer(cyg_addrword_t data)
