@@ -290,7 +290,7 @@ __bootp_find_local_ip(bootp_header_t *info)
 #endif
 #ifdef CYGPKG_REDBOOT_NETWORKING_DNS
 			    case TAG_DOMAIN_SERVER:
-				diag_printf(" DNS server found!\n");
+//				diag_printf(" DNS server found!\n");
 				memcpy(&__bootp_dns_addr, p, 4);
 				__bootp_dns_set = 1;
 				break;
