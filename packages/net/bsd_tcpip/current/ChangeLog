@@ -1,3 +1,8 @@
+2003-11-08  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* src/sys/kern/kern_sysctl.c (sysctl): Update the oldlen value at
+	the end of the sysctl call.
+
 2003-10-28  Matt Jerdonek  <maj1224@yahoo.com>
 
 	* src/sys/netinet/tcp_output.c (tcp_setpersist): Use variable

@@ -979,6 +979,10 @@ sysctl(int *name, u_int namelen, void *old, size_t *oldlenp, void *new, size_t n
           return -1;
         }
 
+        if (oldlenp) {
+          *oldlenp = req.oldidx;
+        }
+        
         if (req.oldptr && req.oldidx > req.oldlen)
           retval = req.oldlen;
         else
