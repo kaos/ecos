@@ -92,6 +92,24 @@ cause_unaligned_access(void)
 static void
 cause_illegal_access(void)
 {
+#ifdef CYGPKG_HAL_I386
+
+    // In the x86 architecture, although we have the DATA_ACCESS
+    // exception available, it is not possible to provoke it using the
+    // normal code of this test. This is because the normal segments we
+    // have installed in the segment registers cover all of memory. Instead we
+    // set GS to a descriptor that does not cover 0xF0000000-0xFFFFFFFF and
+    // poke at that.
+
+    __asm__ ( "movw     $0x20,%%ax\n"
+              "movw     %%ax,%%gs\n"
+              "movl     %%gs:0xF0000000,%%eax\n"
+              :
+              :
+              : "eax"
+            );
+    
+#else    
     volatile int x;
     volatile CYG_ADDRESS p=(CYG_ADDRESS) &jbuf;
 
@@ -101,7 +119,8 @@ cause_illegal_access(void)
         p += (CYG_ADDRESS)0x100000;
     } while( p != &jbuf );
 
-} // cause_unaligned_access()
+#endif    
+} // cause_illegal_access()
 
 #endif
 

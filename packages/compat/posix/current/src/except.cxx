@@ -199,7 +199,7 @@ static void cyg_posix_exception_handler(
     )
 {
     int signo = 0;
-diag_printf("exh %d\n",exception_number);
+
     pthread_info *self = pthread_self_info();
 
     if( self == NULL )
@@ -216,7 +216,6 @@ diag_printf("exh %d\n",exception_number);
 
     for( int i = 0; exception_signal_mapping[i].signal != 0; i++ )    
     {
-diag_printf("exm %d -> %d\n",exception_signal_mapping[i].exception,exception_signal_mapping[i].signal);
         if( exception_signal_mapping[i].exception == exception_number )
         {
             signo = exception_signal_mapping[i].signal;
@@ -225,7 +224,7 @@ diag_printf("exm %d -> %d\n",exception_signal_mapping[i].exception,exception_sig
     }
 
 #endif
-diag_printf("signo %d %08x\n",signo, self->sigmask);
+
     if( sigismember( &self->sigmask, signo ) )
     {
         // The signal is masked in the current thread. POSIX says that

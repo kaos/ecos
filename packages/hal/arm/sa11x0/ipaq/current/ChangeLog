@@ -1,3 +1,8 @@
+2001-06-08  Gary Thomas  <gthomas@redhat.com>
+
+	* include/pkgconf/mlt_arm_sa11x0_ipaq_rom.mlt: 
+	* include/pkgconf/mlt_arm_sa11x0_ipaq_rom.ldi: Relax heap alignment.
+
 2001-05-24  Gary Thomas  <gthomas@redhat.com>
 
 	* misc/redboot_ROM.ecm: 

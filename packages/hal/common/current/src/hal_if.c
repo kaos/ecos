@@ -393,10 +393,11 @@ cyg_hal_diag_mangler_gdb_putc(void* __ch_data, cyg_uint8 c)
 {
     static char line[100];
     static int pos = 0;
-    CYGARC_HAL_SAVE_GP();
 
     // No need to send CRs
     if( c == '\r' ) return;
+
+    CYGARC_HAL_SAVE_GP();
 
     line[pos++] = c;
 

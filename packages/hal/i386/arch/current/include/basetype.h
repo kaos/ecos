@@ -55,12 +55,14 @@
 //#define CYG_LABEL_NAME(_name_) _name_
 
 //-----------------------------------------------------------------------------
-// Override the alignment definitions from cyg_type.h. x86 requires
-// 32 *byte* alignment because gcc sometimes tries to be clever with
-// aligning things on cache lines.
+// Override default alignment.
+// We need 32 byte alignment here because that is the granularity to which
+// the comptools align data sections. If the linker-constructed tables are
+// to be usable, their elements must be aligned to the same granularity.
 
-#define CYGARC_ALIGNMENT 32
-#define CYGARC_P2ALIGNMENT 5
+# define CYGARC_ALIGNMENT 32
+# define CYGARC_P2ALIGNMENT 5
+
 
 //-----------------------------------------------------------------------------
 // Define the standard variable sizes

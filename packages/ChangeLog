@@ -1,3 +1,24 @@
+2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: PC target uses generic 16x5x serial driver now.
+
+2001-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added MN10300 flash drivers.
+
+2001-06-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* ecos.db: Added CYGPKG_HAL_I386_GENERIC and CYGPKG_HAL_I386_PCMB
+	packages. Added these to PC target.
+
+2001-06-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* ecos.db:
+	Added CYGPKG_DEVS_ETH_I386_PC_I82559 package to provide support
+	for Intel i82559 ethernet device. Added this to PC target.
+
 2001-05-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecosadmin.tcl (set_value): Only warn if packages are missing.

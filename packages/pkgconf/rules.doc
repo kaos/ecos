@@ -46,9 +46,19 @@
 
 .PHONY: default check html pdf clean
 
-# Locations of the stylesheets and other SGML support files
-CATALOG          := /usr/lib/sgml/CATALOG
-MAIN_STYLESHEETS := /usr/lib/sgml/stylesheets/nwalsh-modular
+# Locations of the stylesheets and other SGML support files. These
+# have moved around in various releases of the tools.
+ifneq (,$(wildcard /usr/share/sgml/docbook))
+  CATALOG	:= /etc/sgml/catalog
+  DSSSL_CATALOG := $(firstword $(wildcard /usr/share/sgml/docbook/dsssl-stylesheets-*/catalog))
+else
+  ifneq (,$(wildcard /usr/lib/sgml/stylesheets/nwalsh-modular/catalog))
+    CATALOG          := /usr/lib/sgml/CATALOG
+    DSSSL_CATALOG    := /usr/lib/sgml/stylesheets/nwalsh-modular/catalog
+  else
+    Error: unable to locate DocBook tools.
+  endif
+endif
 ECOS_STYLESHEET  := $(TOPLEVEL)/pkgconf/stylesheet.dsl
 FIXHTML          := $(TOPLEVEL)/pkgconf/fixhtml.tcl
 
@@ -82,14 +92,14 @@ check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
 html: $(MAIN_HTML)
 
 $(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(ECOS_STYLESHEET) $(FIXHTML)
-	jade -t sgml -i html -d $(ECOS_STYLESHEET)#html $<
+	jade -t sgml -i html -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#html $<
 	tclsh $(FIXHTML)
 
 # PDF files can be generated in a similar fashion.
 pdf: $(MAIN_PDF)
 
 $(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(EPS) $(ECOS_STYLESHEET)
-	jade -o $(subst .sgml,.tex,$(MAIN_SGML)) -t tex -V tex-backend -d $(ECOS_STYLESHEET)#print $<
+	jade -o $(subst .sgml,.tex,$(MAIN_SGML)) -t tex -V tex-backend -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#print $<
 	pdfjadetex $(subst .sgml,.tex,$(MAIN_SGML))
 	pdfjadetex $(subst .sgml,.tex,$(MAIN_SGML))
 	pdfjadetex $(subst .sgml,.tex,$(MAIN_SGML))
@@ -104,5 +114,5 @@ $(MAIN_PDF):  $(MAIN_SGML) $(OTHER_SGML) $(EPS) $(ECOS_STYLESHEET)
 
 # Clean. For now assume that all .html, .gif etc files are generated
 clean:
-	rm -rf *.html *.tex *.dvi *.aux *.log *.ps *.pdf *.gif *.eps
+	rm -rf *.html *.tex *.dvi *.aux *.log *.out *.ps *.pdf *.gif *.eps
 

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -50,6 +50,9 @@
 #include <net/tftp.h>
 #include <net/tftp_support.h>
 
+// So we remember which ports have been used
+static int get_port = 7700;
+
 //
 // Read a file from a host into a local buffer.  Returns the
 // number of bytes actually read, or (-1) if an error occurs.
@@ -65,7 +68,6 @@ tftp_get(char *filename,
 {
     int res = 0;
     int actual_len, data_len, recv_len;
-    static int get_port = 7700;
     struct sockaddr_in local_addr, from_addr;
     char data[SEGSIZE+sizeof(struct tftphdr)];
     struct tftphdr *hdr = (struct tftphdr *)data;
@@ -193,7 +195,6 @@ tftp_stream_open(char *filename,
 {
     struct tftphdr *hdr = (struct tftphdr *)tftp_stream.data;
     char *cp, *fp;
-    static int get_port = 7700;
     char test_buf;
 
     if (!have_net || tftp_stream.open) {

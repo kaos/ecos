@@ -25,7 +25,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.          
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -448,14 +448,18 @@ ldiv( long /* numerator */, long /* denominator */ ) __attribute__((__const__));
 
 /*==========================================================================*/
 
+/* Maximum number of bytes in a multibyte character for the current locale */
+
+#ifdef CYGBLD_ISO_STDLIB_MB_CUR_MAX_HEADER
+# include CYGBLD_ISO_STDLIB_MB_CUR_MAX_HEADER
+#else
+# define MB_CUR_MAX 1
+#endif
+
 #if CYGINT_ISO_STDLIB_MULTIBYTE
 # ifdef CYGBLD_ISO_STDLIB_MULTIBYTE_HEADER
 #  include CYGBLD_ISO_STDLIB_MULTIBYTE_HEADER
 # else
-
-/* Maximum number of bytes in a multibyte character for the current locale */
-
-#define MB_CUR_MAX  1
 
 /* ISO C 7.10.7 - Multibyte character functions */
 

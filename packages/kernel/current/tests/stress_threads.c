@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -666,7 +666,7 @@ void setup_death_alarm(cyg_addrword_t data, cyg_handle_t *deathHp,
              *((double)DEATH_TIME_LIMIT)/((double)rtc_res.dividend));
         if ( cyg_test_is_simulator )
             tick_delay /= SIM_DELAY_DIVISOR;
-#ifdef CYGPKG_HAL_I386_LINUX 
+#ifdef CYGPKG_HAL_SYNTH
         // 20 seconds is a long time compared to the run time of other tests.
         // Reduce to 10 seconds, allowing more tests to get run.
         tick_delay /= 2;

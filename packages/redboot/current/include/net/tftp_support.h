@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -81,7 +81,7 @@ extern int   tftp_stream_open(char *file, struct sockaddr_in *server, int mode, 
 extern int   tftp_stream_read(char *buf, int len, int *err);
 extern int   tftp_stream_close(int *err);
 
-#define TFTP_TIMEOUT_PERIOD 1
+#define TFTP_TIMEOUT_PERIOD 5
 #define TFTP_TIMEOUT_MAX   15
 #define TFTP_RETRIES_MAX    5
 

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -45,7 +45,7 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/infra/diag.h>
 
-#if (HAL_DCACHE_SIZE > 0)
+#ifdef HAL_DCACHE_SIZE
 
 // -------------------------------------------------------------------------
 // If the HAL does not supply this, we supply our own version
@@ -211,9 +211,9 @@ cyg_start( void )
     cache_main();
 }
 
-#else // (HAL_DCACHE_SIZE > 0)
+#else // HAL_DCACHE_SIZE
 #define N_A_MSG "No cache"
-#endif // (HAL_DCACHE_SIZE > 0)
+#endif // HAL_DCACHE_SIZE
 
 #ifdef N_A_MSG
 externC void

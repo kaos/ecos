@@ -1,3 +1,6 @@
+#ifndef CYGONCE_PLF_MISC_H
+#define CYGONCE_PLF_MISC_H
+
 //==========================================================================
 //
 //      plf_misc.h
@@ -62,87 +65,8 @@ extern void patch_dbg_syscalls(void * vector);
 
 void hal_platform_init(void) ;
 
-#if 0
-static __inline__ int pc_outb(int port, int value)
-{
-	asm("
-		movl %0, %%eax
-		movl %1, %%edx
-		outb %%al, %%dx
-		"
-	:	/* No outputs. */
-	:	"g" (value), "g" (port)
-	:	"eax", "edx"
-	);
-
-	return value ;
-}
-
-
-static __inline__ int pc_inb(int port)
-{	int r ;
-
-	asm("
-		movl %1, %%edx
-		inb %%dx, %%al
-		cbtw
-		cwtl
-		movl %%eax, %0
-		"
-	:	"=g" (r)
-	:	"g" (port)
-	:	"eax", "edx"
-	);
-
-	return r ;
-}
-
-
-static __inline__ int pc_outw(int port, int value)
-{
-	asm("
-		movl %0, %%eax
-		movl %1, %%edx
-		outw %%ax, %%dx
-		"
-	:	/* No outputs. */
-	:	"g" (value), "g" (port)
-	:	"eax", "edx"
-	);
-
-	return value ;
-}
-
-
-static __inline__ int pc_inw(int port)
-{	int r ;
-
-	asm("
-		movl %1, %%edx
-		inw %%dx, %%ax
-		cwtl
-		movl %%eax, %0
-		"
-	:	"=g" (r)
-	:	"g" (port)
-	:	"eax", "edx"
-	);
-
-	return r ;
-}
-
-#else
-
-int pc_outb(int port, int value) ;
-int pc_inb(int port) ;
-int pc_outw(int port, int value) ;
-int pc_inw(int port) ;
-
-#endif
-
-
 void hal_pc_reset(void) ;
-
 
 /*------------------------------------------------------------------------*/
 /* End of plf_misc.h                                                      */
+#endif //CYGONCE_PLF_MISC_H

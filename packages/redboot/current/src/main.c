@@ -58,6 +58,14 @@
 #include <cyg/hal/plf_stub.h>
 #endif
 
+#ifdef CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS
+#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
+  (CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS+CYGNUM_HAL_VIRTUAL_VECTOR_AUX_CHANNELS)
+#else
+#define CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS \
+  CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS
+#endif
+
 // Builtin Self Test (BIST)
 externC void bist(void);
 
@@ -215,7 +223,7 @@ cyg_start(void)
     }
 
 #ifdef CYGPKG_COMPRESS_ZLIB
-#define ZLIB_COMPRESSION_OVERHEAD 0xB400
+#define ZLIB_COMPRESSION_OVERHEAD 0xB800
 #else
 #define ZLIB_COMPRESSION_OVERHEAD 0
 #endif
@@ -269,8 +277,17 @@ cyg_start(void)
         } else {
             if (res == _GETS_GDB) {
 		int dbgchan;
+                hal_virtual_comm_table_t *__chan;
+                int i;
                 // Special case of '$' - need to start GDB protocol
                 gdb_active = true;
+                // Mask interrupts on all channels
+                for (i = 0;  i < CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS;  i++) {
+                    CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+                    __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+                    CYGACC_COMM_IF_CONTROL( *__chan, __COMMCTL_IRQ_DISABLE );
+                }
+    
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 #ifdef HAL_ARCH_PROGRAM_NEW_STACK
                 HAL_ARCH_PROGRAM_NEW_STACK(breakpoint);
@@ -300,7 +317,7 @@ void
 do_caches(int argc, char *argv[])
 {
     unsigned long oldints;
-    int dcache_on, icache_on;
+    int dcache_on=0, icache_on=0;
 
     if (argc == 2) {
         if (strcmpci(argv[1], "on") == 0) {
@@ -321,8 +338,12 @@ do_caches(int argc, char *argv[])
             printf("Invalid cache mode: %s\n", argv[1]);
         }
     } else {
+#ifdef HAL_DCACHE_IS_ENABLED
         HAL_DCACHE_IS_ENABLED(dcache_on);
+#endif
+#ifdef HAL_ICACHE_IS_ENABLED
         HAL_ICACHE_IS_ENABLED(icache_on);
+#endif
         printf("Data cache: %s, Instruction cache: %s\n", dcache_on?"On":"Off", icache_on?"On":"Off");
     }
 }
@@ -521,7 +542,7 @@ do_baud_rate(int argc, char *argv[])
         opt.enable_sense = 1;
         opt.key = "console_baud_rate";
         opt.dflt = new_rate;
-        flash_add_config(&opt);
+        flash_add_config(&opt, true);
 #endif
         set_console_baud_rate(new_rate);
     } else {

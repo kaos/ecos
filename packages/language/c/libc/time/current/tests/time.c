@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -52,7 +52,7 @@
 
 // This defines how many loops before we decide that
 // time() doesn't work
-#define MAX_TIMEOUT 5000000
+#define MAX_TIMEOUT 50000000
 
 
 // FUNCTIONS

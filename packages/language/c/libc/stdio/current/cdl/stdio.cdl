@@ -50,6 +50,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     parent        CYGPKG_LIBC
     requires      CYGPKG_IO
     requires      CYGPKG_IO_SERIAL_HALDIAG
+    requires      CYGPKG_LIBC_I18N
     implements    CYGINT_ISO_STDIO_FILETYPES
     implements    CYGINT_ISO_STDIO_FILEACCESS
     implements    CYGINT_ISO_STDIO_FORMATTED_IO

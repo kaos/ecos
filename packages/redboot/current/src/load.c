@@ -164,8 +164,9 @@ load_srec_image(int (*getc)(void), unsigned long base)
                 lowest_address = (unsigned long)(addr - addr_offset);
             }
             if ((addr < user_ram_start) || (addr > user_ram_end)) {
-                printf("Attempt to load S-record data to address: %p [not in RAM]\n", (void*)addr);
-                return 0;
+                if (!verify_action("Attempt to load S-record data to address: %p\n"
+                                   "RedBoot does not believe this is in RAM\n", (void*)addr))
+                    return 0;
             }
             count -= ((type-'1'+2)+1);
             offset += count;
@@ -363,8 +364,8 @@ do_load(int argc, char *argv[])
     if (base_addr_set &&
         ((base < (unsigned long)user_ram_start) ||
          (base > (unsigned long)user_ram_end))) {
-        printf("Specified address (%p) is not in RAM.\n", (void*)base);
-        return;
+        if (!verify_action("Specified address (%p) is not believed to be in RAM", (void*)base))
+            return;
     }
     if (raw && !base_addr_set) {
         printf("Raw load requires a memory address\n");
@@ -415,8 +416,9 @@ do_load(int argc, char *argv[])
             // error value.
             err = (*_dc_close)(p, err);
 
-            if (0 != err && p->msg)
-                printf("zlib: %s\n", p->msg);
+            if (0 != err && p->msg) {
+                printf("decompression error: %s\n", p->msg);
+            }
 
             end = (unsigned long) base + p->out_size;
         } else // dangling block
@@ -449,7 +451,7 @@ do_load(int argc, char *argv[])
                        ((type[1] >= '0') && (type[1] <= '9'))) {
                 end = load_srec_image(redboot_getc, base);
             } else {
-                printf("Unrecognized image type: %lx\n", *(unsigned long *)type);
+                printf("Unrecognized image type: 0x%lx\n", *(unsigned long *)type);
             }
         }
     }

@@ -1,3 +1,11 @@
+2001-06-05  Hugo Tyson  <hmt@redhat.com>
+
+	* src/hal_if.c (cyg_hal_diag_mangler_gdb_putc): The nesting of
+	CYGARC_HAL_SAVE_GP() and the instant-out if sending a carriage
+	return "\r" was wrong - it scrambled the gp for the caller!  Since
+	the return-test is trivial, I simply re-ordered rather than making
+	the exit clause complex with a restore in it.
+
 2001-05-17  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/hal_if.c (delay_us): Warn if using default
@@ -25,6 +33,14 @@
 	* tests/cpp1.c: New test, to test for regressions in the tools.
 	This one is for a CPP bug in the XScale tools where '+' binds too
 	strongly following a ')' because it is mistaken for unary plus.
+
+2001-04-25  Bart Veer  <bartv@redhat.com>
+
+	* tests/cache.c:
+	Fix test for cache presence.
+
+	* src/drv_api.c (cyg_drv_interrupt_detach):
+	Added missing indirection.
 
 2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
 

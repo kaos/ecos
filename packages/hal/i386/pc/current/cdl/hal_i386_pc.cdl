@@ -41,7 +41,7 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_I386_PC {
-    display  "i386 PC target"
+    display  "i386 PC Target"
     parent        CYGPKG_HAL_I386
     define_header hal_i386_pc.h
     include_dir   cyg/hal
@@ -49,20 +49,28 @@ cdl_package CYGPKG_HAL_I386_PC {
            The i386 PC Target HAL package provides the 
            support needed to run eCos binaries on an i386 PC."
 
-    compile       hal_diag.c hal_startup.c hal_intr.c var_misc.c plf_misc.c plf_stub.c
+    compile       hal_diag.c plf_misc.c plf_stub.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
+    implements	  CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements	  CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_i386.h>"
         puts $::cdl_system_header "#define CYGBLD_HAL_PLATFORM_H <pkgconf/hal_i386_pc.h>"
+        puts $::cdl_header ""
+        puts $::cdl_header "#define HAL_PLATFORM_CPU    \"I386\""
+        puts $::cdl_header "#define HAL_PLATFORM_BOARD  \"PC\""
+        puts $::cdl_header "#define HAL_PLATFORM_EXTRA  \"\""
+	puts $::cdl_header "#include <pkgconf/hal_i386_pcmb.h>"
+        puts $::cdl_header ""
     }
 
     cdl_component CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
-        legal_values  {"RAM" "FLOPPY"}
+        legal_values  {"RAM" "FLOPPY" "ROM"}
         default_value {"RAM"}
 	no_define
 	define -file system.h CYG_HAL_STARTUP
@@ -72,32 +80,75 @@ cdl_package CYGPKG_HAL_I386_PC {
             test early initialization code copying data/code to \"RAM\"."
     }
 
-
-    # Real-time clock/counter specifics
-    cdl_component CYGNUM_HAL_RTC_CONSTANTS {
-        display       "Real-time clock constants."
-        description   "The RTC period is based
-	on the clock input to the 8254, which is 1193180 Hz.  CYGNUM_HAL_RTC_PERIOD
-	is set for 100 ticks per second."
-        flavor        none
-    
-        cdl_option CYGNUM_HAL_RTC_NUMERATOR {
-            display       "Real-time clock numerator"
-            flavor        data
-            calculated    1000000000
-        }
-        cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
-            display       "Real-time clock denominator"
-            flavor        data
-            calculated    100
-        }
-        cdl_option CYGNUM_HAL_RTC_PERIOD {
-            display       "Real-time clock period"
-            flavor        data
-           calculated     11932
-        }
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_BAUD {
+        display       "Diagnostic serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option selects the baud rate used for the diagnostic port.
+            Note: this should match the value chosen for the GDB port if the
+            diagnostic and GDB port are the same."
     }
 
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL_BAUD {
+        display       "GDB serial port baud rate"
+        flavor        data
+        legal_values  9600 19200 38400 57600 115200
+        default_value 38400
+        description   "
+            This option controls the baud rate used for the GDB connection."
+    }
+
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS {
+        display		"Number of communication channels on the board"
+        flavor		data
+        legal_values	1 to 3
+	default_value	{ CYGSEM_HAL_I386_PC_DIAG_SCREEN ? 3 : 2 }
+	description	"
+	    This define the number of serial ports that will be used by the HAL.
+	    Ports 0 and 1 equate to COM1 and COM2 and port 2 is the PC screen and
+	    keyboard."
+    }
+ 
+    cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL {
+        display          "Debug serial port"
+        flavor data
+        legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+        default_value    0
+        description      "
+            On PCs with two serial ports, this option
+            chooses which port will be used to connect to a host
+            running GDB."
+     }
+ 
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL {
+         display          "Diagnostic serial port"
+         flavor data
+         legal_values     0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+         default_value    0
+         description      "
+            On PCs with two serial ports, this option
+            chooses which port will be used for diagnostic output.
+	    Selecting port 2 will cause the PC screen to be used."
+     }
+
+     cdl_option CYGNUM_HAL_VIRTUAL_VECTOR_CONSOLE_CHANNEL_DEFAULT {
+          display      "Default console channel."
+          flavor       data
+          legal_values 0 to CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS-1
+          calculated   0
+     }
+
+     cdl_option CYGSEM_HAL_I386_PC_DIAG_SCREEN {
+	 display       "Output to PC screen"
+	 flavor        bool
+	 default_value 1
+	 implements CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT
+	 description "This option enables use of the PC screen and keyboard as a
+	             third virtual serial device."
+     }
+     
     cdl_component CYGBLD_GLOBAL_OPTIONS {
         display "Global build options"
         flavor  none
@@ -174,6 +225,7 @@ cdl_package CYGPKG_HAL_I386_PC {
         flavor data
         no_define
         calculated { CYG_HAL_STARTUP == "RAM" ? "i386_pc_ram" : \
+		     CYG_HAL_STARTUP == "ROM" ? "i386_pc_rom" : \
 	                                        "i386_pc_floppy" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
@@ -182,6 +234,7 @@ cdl_package CYGPKG_HAL_I386_PC {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_i386_pc_ram.ldi>" : \
+		         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_i386_pc_rom.ldi>" : \
                                                     "<pkgconf/mlt_i386_pc_floppy.ldi>" }
         }
 
@@ -191,32 +244,18 @@ cdl_package CYGPKG_HAL_I386_PC {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_i386_pc_ram.h>" : \
+		         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_i386_pc_rom.h>" : \
                                                     "<pkgconf/mlt_i386_pc_floppy.h>" }
         }
     }
-
-
-    cdl_option CYGSEM_HAL_I386_PC_STARTUP_RAM {
-	display       "Configure for downloaded RAM configuration"
-	flavor bool
-	no_define
-	calculated { CYG_HAL_STARTUP == "RAM" }
-	requires !CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
-	requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-	requires CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
-	requires CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-    }
-
 
     cdl_option CYGSEM_HAL_ROM_MONITOR {
         display       "Behave as a ROM monitor"
         flavor        bool
         default_value 0
+	
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYG_HAL_STARTUP == "FLOPPY" }
-	requires      !CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
-	requires      !CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-	requires      !CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT
+        requires      { CYG_HAL_STARTUP == "FLOPPY" || CYG_HAL_STARTUP == "ROM" }
         description   "
             Enable this option if this program is to be used as a ROM monitor,
             i.e. applications will be loaded into RAM on the board, and this
@@ -225,38 +264,53 @@ cdl_package CYGPKG_HAL_I386_PC {
             interrupt stack when exceptions are generated."
     }
 
-    cdl_component CYGSEM_HAL_I386_PC_DIAG {
-	display "Diagnostic output options"
-	flavor  none
+    cdl_option CYGSEM_HAL_USE_ROM_MONITOR {
+         display       "Work with a ROM monitor"
+         flavor        booldata
+         legal_values  { "Generic" "GDB_stubs" }
+         default_value { CYG_HAL_STARTUP == "RAM" ? "GDB_stubs" : 0 }
+         parent        CYGPKG_HAL_ROM_MONITOR
+         requires      { CYG_HAL_STARTUP == "RAM" }
+         description   "
+             Support can be enabled for different varieties of ROM monitor.
+             This support changes various eCos semantics such as the encoding
+             of diagnostic output, or the overriding of hardware interrupt
+             vectors.
+             Firstly there is \"Generic\" support which prevents the HAL
+             from overriding the hardware vectors that it does not use, to
+             instead allow an installed ROM monitor to handle them. This is
+             the most basic support which is likely to be common to most
+             implementations of ROM monitor.
+             \"GDB_stubs\" provides support when GDB stubs are included in
+             the ROM monitor or boot ROM."
+     }
 
-	cdl_option CYGSEM_HAL_I386_PC_DIAG_SCREEN {
-	    display "Output to PC screen"
-	    flavor  bool
-	    default_value 0
-	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL1
-	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL2
-	    description "This option causes any diagnostic output to
-	        be sent to the PC monitor screen."
-	}
-
-	cdl_option CYGSEM_HAL_I386_PC_DIAG_SERIAL1 {
-	    display "Output to serial line 1"
-	    flavor  bool
-	    default_value 1
-	    requires !CYGSEM_HAL_I386_PC_DIAG_SCREEN
-	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL2
-	    description "This option causes any diagnostic output to
-	        be sent to serial line 1."
-	}
-
-	cdl_option CYGSEM_HAL_I386_PC_DIAG_SERIAL2 {
-	    display "Output to serial line 1"
-	    flavor  bool
-	    default_value 0
-	    requires !CYGSEM_HAL_I386_PC_DIAG_SCREEN
-	    requires !CYGSEM_HAL_I386_PC_DIAG_SERIAL1
-	    description "This option causes any diagnostic output to
-	        be sent to serial line 2."
-	}
+    cdl_component CYGPKG_REDBOOT_HAL_OPTIONS {
+        display       "Redboot HAL options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+    
+        cdl_option CYGBLD_BUILD_REDBOOT_BIN {
+            display       "Build Redboot ROM binary image"
+            active_if     CYGBLD_BUILD_REDBOOT
+            default_value 1
+            no_define
+            description "This option enables the conversion of the Redboot ELF
+                         image to a binary image suitable for copying to a floppy
+	                 disk."
+    
+            compile -library=libextras.a
+    
+            make -priority 325 {
+                <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+                $(OBJCOPY) -O binary $< $@
+            }
+        }
     }
+     
 }

@@ -55,13 +55,39 @@
         # http://www.sco.com/products/layered/develop/devspecs/abi386-4.pdf
 
 	# Callee save registers (eax, ecx, and edx are scratch registers)
-	.equ	i386reg_esp,		0
-	.equ	i386reg_next_context,	4 # only used when dropping through...
-	.equ	i386reg_ebp,		8 # ...from switch_ to load_context.
-	.equ	i386reg_ebx,		12
-	.equ	i386reg_esi,		16
-	.equ	i386reg_edi,		20
-	.equ	i386reg_context_size, 	24
+
+#ifdef CYGHWR_HAL_I386_FPU
+#ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+	.equ	i386reg_fpucontext,	0
+	.equ	i386reg_edi,		i386reg_fpucontext+4
+#else
+	.equ	i386reg_fpstate_valid,	0
+	.equ	i386reg_fpstate,	i386reg_fpstate_valid+4
+	.equ	i386reg_fpstate_size,	i386reg_fpstate+108
+	.equ	i386reg_edi,		i386reg_fpstate_size
+#endif
+#else
+	.equ	i386reg_edi,		0
+#endif
+	.equ	i386reg_esi,		i386reg_edi+4
+	.equ	i386reg_ebp,		i386reg_esi+4
+	.equ	i386reg_esp,		i386reg_ebp+4
+	.equ	i386reg_ebx,		i386reg_esp+4
+	.equ	i386reg_edx,		i386reg_ebx+4
+	.equ	i386reg_ecx,		i386reg_edx+4
+	.equ	i386reg_eax,		i386reg_ecx+4
+	.equ	i386reg_vector,		i386reg_eax+4
+	.equ	i386reg_eip,		i386reg_vector+4
+	.equ	i386reg_cs,		i386reg_eip+4
+	.equ	i386reg_eflags,		i386reg_cs+4
+	.equ	i386reg_context_size, 	i386reg_eflags+4
+
+
+#if defined(CYGHWR_HAL_I386_FPU) && defined(CYGHWR_HAL_I386_FPU_SWITCH_LAZY)
+	.equ	i386reg_fpucontext_valid,	0
+	.equ	i386reg_fpucontext_state,	i386reg_fpucontext_valid+4
+	.equ	i386reg_fpucontext_size,	i386reg_fpucontext_state+108
+#endif
 
 #------------------------------------------------------------------------------
 # end of i386.inc

@@ -5,6 +5,12 @@
 	* cdl/tasks.cdl (CYGDAT_UITRON_TASK_EXTERNS and 
 	CYGDAT_UITRON_TASK_INITIALISERS): Ditto
 
+2001-04-21  Bart Veer  <bartv@redhat.com>
+
+	* tests/testintr.cxx (task1):
+	Disable one of the tests on the synthetic target, it requires
+	consistent cpu timing that cannot be guaranteed.
+
 2000-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* include/uit_func.inl: CYG_SCHED_UNIQUE_PRIORITIES changed to

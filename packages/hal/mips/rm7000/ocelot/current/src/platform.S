@@ -294,7 +294,7 @@ hal_memc_setup_table:
 	.long	GL_DEV_PAR_BANK0, CPU_TO_LE(0x000b6b33) // PLD
 	.long   GL_DEV_PAR_BANK1, CPU_TO_LE(0x000bad53) // NVRAM
 	.long   GL_DEV_PAR_BANK2, CPU_TO_LE(0x000bad54) // UART
-	.long	GL_DEV_PAR_BANK3, CPU_TO_LE(0x001fef73) // flash disk
+	.long	GL_DEV_PAR_BANK3, CPU_TO_LE(0x000fef73) // flash disk
 	.long	GL_DEV_PAR_BOOT,  CPU_TO_LE(0x144bee63) // boot flash
 
 	.long   GL_SDRAM_CFG, CPU_TO_LE(GL_SDRAM_CFG_init)

@@ -76,14 +76,14 @@ doinno()
 
     if [ "$COPYTOARCHIVE" = "1" ]; then
       echo Copying to $LOCALARCHIVEDIR...
-      if [ ! -d $LOCALARCHIVEDIR/`date +%Y-%m-%e` ]; then
+      if [ ! -d $LOCALARCHIVEDIR/`date +%Y-%m-%d` ]; then
         # Can't use -p because Cygwin mkdir fails on network paths
-        mkdir "$LOCALARCHIVEDIR/`date +%Y-%m-%e`"
+        mkdir "$LOCALARCHIVEDIR/`date +%Y-%m-%d`"
         exit 1
       fi
 
-      #echo About to: cp configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%e`"
-      cp configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%e`"
+      #echo About to: cp configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%d`"
+      cp configtool-$VERSION-setup.exe "$LOCALARCHIVEDIR/`date +%Y-%m-%d`"
     fi
 }
 

@@ -105,10 +105,10 @@ static int _timeout = 500;
 static int orig_console, orig_debug;
 
 static int in_buflen = 0;
-static unsigned char in_buf[128];
+static unsigned char in_buf[64];
 static unsigned char *in_bufp;
 static int out_buflen = 0;
-static unsigned char out_buf[256];
+static unsigned char out_buf[64];
 static unsigned char *out_bufp;
 
 // Functions in this module
@@ -359,6 +359,9 @@ net_io_control(void *__ch_data, __comm_control_cmd_t __func, ...)
     case __COMMCTL_IRQ_DISABLE:
         ret = irq_state;
         irq_state = 0;
+        if (vector == 0) {
+            vector = eth_drv_int_vector();
+        }
         HAL_INTERRUPT_MASK(vector);
         break;
     case __COMMCTL_DBG_ISR_VECTOR:
@@ -464,6 +467,10 @@ net_io_init(void)
         CYGACC_COMM_IF_DBG_ISR_SET(*comm, net_io_isr);
         CYGACC_COMM_IF_GETC_TIMEOUT_SET(*comm, net_io_getc_timeout);
 
+        // Disable interrupts via this interface to set static
+        // state into correct state.
+        net_io_control( comm, __COMMCTL_IRQ_DISABLE );
+        
         // Restore original console
         CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
 

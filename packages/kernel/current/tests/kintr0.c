@@ -123,8 +123,8 @@ void kintr0_main( void )
 {
     cyg_vector_t v = (CYGNUM_HAL_VSR_MIN + 11) % CYGNUM_HAL_VSR_COUNT;
     cyg_vector_t v1;
-    cyg_vector_t lvl1 = (CYGNUM_HAL_ISR_MIN + 1) % (CYGNUM_HAL_ISR_COUNT);
-    cyg_vector_t lvl2 = (CYGNUM_HAL_ISR_MIN + 15) % (CYGNUM_HAL_ISR_COUNT);
+    cyg_vector_t lvl1 = CYGNUM_HAL_ISR_MIN + (1 % CYGNUM_HAL_ISR_COUNT);
+    cyg_vector_t lvl2 = CYGNUM_HAL_ISR_MIN + (15 % CYGNUM_HAL_ISR_COUNT);
     int in_use;
 
     cyg_VSR_t *old_vsr, *new_vsr;
@@ -137,7 +137,7 @@ void kintr0_main( void )
         v1 = 12 % CYGNUM_HAL_ISR_COUNT;
     else /* NOTE TRAILING ELSE... */
 #endif
-    v1 = (CYGNUM_HAL_ISR_MIN + 6) % CYGNUM_HAL_ISR_COUNT;
+    v1 = CYGNUM_HAL_ISR_MIN + ( 6 % CYGNUM_HAL_ISR_COUNT);
 
     CHECK(flash());
     CHECK(flash());

@@ -82,6 +82,6 @@ void flash_write_config(void);
 bool flash_get_config(char *key, void *val, int type);
 // Add a new data item to configuration data base.  Returns 'false'
 // if no space is available.
-bool flash_add_config(struct config_option *opt);
+bool flash_add_config(struct config_option *opt, bool update);
 
 #endif // _FLASH_CONFIG_H_

@@ -1,3 +1,50 @@
+2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/mbtowc_jp.cxx (__mbtowc_jp): Fix nasty bug for mblen(NULL, x);
+
+	Some other cleanups across the board to the below changes before
+	checking in.
+
+2001-06-08  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* cdl/i18n.cdl: Added implements CYGINT_ISO_STDLIB_MULTIBYTE. 
+	(CYGPKG_LIBC_I18N_LOCALES): New component
+	encompassing supported locales.
+	(CYGFUN_LIBC_I18N_LOCALE_C_JIS): New configuration
+	item to support the new "C-JIS" C/Japanese locale.  Option defines
+	CYGINT_LIBC_I18N_MB_REQUIRED.
+	(CYGFUN_LIBC_I18N_LOCALE_C_SJIS): Similar except it is "C-SJIS" locale.
+	(CYGFUN_LIBC_I18N_LOCALE_C_EUCJP): Ditto except it is "C-EUCJP" locale.
+	(CYGSEM_LIBC_I18N_PER_THREAD_MB): New option that determines
+	if multibyte functions will keep state data per thread or not.
+	(CYGNUM_LIBC_I18N_MAX_LOCALE_NAME_SIZE): Changed legal_values and
+	default_value to be dependent on whether the Japanese locales
+	were supported or not.
+	(CYGPKG_LIBC_I18N_TESTS): Add multibyte test.
+	* src/locale.cxx: Moved Cyg_libc_locale_t to internal.h.
+	Changed current ctype locale to be externally accessible variable.
+	Added MB_CUR_MAX value into locale as well as pointers to mbtowc
+	and wctomb functions.
+	[CYGINT_LIBC_I18N_MB_REQUIRED]: Added __mb_cur_max external variable.
+	(all_locales)[CYGFUN_LIBC_I18N_LOCALE_C_JIS]: New "C-JIS" locale 
+	added to list.
+	(all_locales)[CYGFUN_LIBC_I18N_LOCALE_C_SJIS]: New "C-SJIS"
+	locale.
+	(all_locales)[CYGFUN_LIBC_I18N_LOCALE_C_EUCJP]: New "C-EUCJP"
+	locale.
+	(setlocale)[CYGINT_LIBC_I18N_MB_REQUIRED]: Added setting of __mb_cur_max
+	when locale changes ctype category.
+	(__get_current_locale_mbtowc_fn): New function.
+	* src/mblen.cxx: New file.
+	* src/mbtowc.cxx: Ditto.
+	* src/mbstowcs.cxx: Ditto.
+	* src/wctomb.cxx: Ditto.
+	* src/wcstombs.cxx: Ditto.
+	* src/mbtowc_jp.cxx: Ditto.
+	* src/mbtowc_c.cxx: Ditto.
+	* src/internal.h: New internal header file.
+	* tests/i18nmb.c: New test case for multibyte functionality.
+
 2000-05-02  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* New package
@@ -25,7 +72,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

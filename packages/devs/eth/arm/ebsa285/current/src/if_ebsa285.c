@@ -1494,7 +1494,10 @@ static void TxDone(struct i82559* p_i82559)
         os_printf("TxDone %d %x: KEY %x\n",
                   p_i82559->index, (int)p_i82559, key );
 #endif
-        (sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ );
+        if (key) {
+            (sc->funs->eth_drv->tx_done)( sc, key, 1 /* status */ ); 
+        }
+        p_i82559->tx_keys[ tx_descriptor_remove ] = 0;
         
         if ( ++tx_descriptor_remove >= MAX_TX_DESCRIPTORS )
             tx_descriptor_remove = 0;

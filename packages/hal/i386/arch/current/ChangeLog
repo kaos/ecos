@@ -1,3 +1,198 @@
+2001-05-01  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]	
+	* src/context.S: Fixed bug in hal_setjmp() that corrupted EBX.
+
+2001-04-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* include/hal_intr.h:
+	Tidied up mapping of exceptions to vectors. Added implementation
+	of HAL_VSR_SET_TO_ECOS_HANDLER().
+
+2001-04-19  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/vectors.S (__default_exception_vsr):
+	Disabled ROM monitor stack switching here. There are problems with
+	this that I do not have time to worry about now. 
+
+2001-03-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/romboot.S: Added code to call video BIOS to initialize
+	display.
+
+	* src/vectors.S: Added code to copy data section from ROM to RAM
+	in ROM booted systems.
+
+2001-03-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/romboot.S:
+	* src/romboot.ld:
+	Added these files to build 256 byte realmode bootstrap at the top
+	of ROM.
+	(This is work in progress and is not yet complete.)
+	
+	* cdl/hal_i386.cdl:
+	Added options for building a bootstrap ROM.
+	(This is work in progress and is not yet complete.)
+	
+	* include/basetype.h:
+	Returned alignment to 32 bytes, now that I have discovered, the
+	hard way, why it was that value in the first place.
+
+	* src/i386.ld: Force alignment of tables to 32 bytes.
+
+	* include/hal_arch.h (HAL_THREAD_INIT_FPU_CONTEXT_SPACE): Fixed
+	compiler warning.
+
+2001-03-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/vectors.S:
+	Removed memory size stuff.
+	Moved BSS zero code here to avoid doing a procedure call. The
+	interrupt stack is in the BSS so zeroing it would blow the return
+	address away.
+	Moved interrupt stack to BSS.
+
+	* src/hal_misc.c: Removed hal_zero_bss(), hal_lsbit_index() and
+	hal_msbit_index() functions.
+
+	* include/hal_arch.h:
+	Replaced hal_[lm]sbit_index() functions with inline assembler
+	using the bsf and bsr instructions.
+	Added support for dynamic memory size finder.	
+
+	* cdl/hal_i386.cdl:
+	Added interface CYGINT_HAL_I386_MEM_REAL_REGION_TOP.
+
+2001-03-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/vectors.S: Enabled FPU support.
+	Added FPU state save and restore macros to default exception and
+	interrupt VSRs.
+	Added __fpu_switch_vsr to perform lazy context switch of FPU
+	state.
+	Made use of i386reg_xxx definitions.
+
+	* src/context.S: Added FPU save and restore macros to thread
+	switch code. Made use of i386reg_xxx definitions.
+
+	* include/hal_arch.h: Added HAL_FPU_Context structure to contain
+	FPU state. Added code to HAL_THREAD_INIT_CONTEXT() to create
+	FPU context.
+
+	* include/i386.inc: Updated savestate format in line with hal_arch.h
+
+	* include/arch.inc: Added macros to implement FPU initialization,
+	save and restore for threads, exceptions and interrupts.
+
+	* cdl/hal_i386.cdl: Added initial FPU configuration options.
+
+2001-03-09  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/vectors.S:
+	Added support for use of interrupt stack, together with support
+	for running DSRs on it.
+	Added instrumentation support to default interrupt VSR.
+	Miscellaneous tidies to code and comments.
+
+	* src/context.S:
+	Rewrote context switch code to permit preservation of the
+	interrupt disable state of a thread. This is to support use of an
+	interrupt stack, calling DSRs on it and brings the i386 HAL in
+	line with other HALs.
+
+	* include/hal_intr.h:
+	Added HAL_INTERRUPT_STACK_CALL_PENDING_DSRS(),
+	HAL_INTERRUPT_STACK_BASE and HAL_INTERRUPT_STACK_TOP.
+
+	* include/i386.inc: 
+	* include/hal_arch.h:
+	* src/i386_stub.c:
+	Changed naming of last two HAL_SavedRegisters fields.
+	Modified HAL_THREAD_INIT_CONTEXT() to match new context switch
+	code.
+
+2001-03-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/vectors.S: Eliminated some unnecessary code. Tidied up some
+	comments.
+
+	* include/hal_intr.h:
+	Moved common exception vector definitions here.
+	Moved CPU interrupt enable/disable macros here.
+	
+	* include/hal_arch.h:
+	* src/i386_stub.c: 
+	Converted arguments to hal_[g|s]et_gdb_registers() to CYG_ADDRWORD
+	from target_register_t.
+
+	* include/arch.inc:
+	Moved FPU control stuff here - this still needs a lot of work to
+	get running.
+	Moved A20 gate enable macro here. Since the A20 gate stuff is part
+	of all recent CPUs, this has become an architectural feature.
+
+2001-03-06  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]	
+	* include/hal_arch.h: Added CYGARC_CACHED_ADDRESS() and friends.
+
+2001-03-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]	
+	* src/hal_misc.c (hal_arch_default_isr): Restored diag_printf() in
+	here. Without the reference, RedBoot does not include anything
+	from infra/diag.cxx, does not call HAL_DIAG_INIT() and will not
+	mangle diagnostic output. 
+
+2001-03-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	Some of these changes here were initially made by Fabrice Gautier
+	and then liberally modified by me.
+	
+	* src/vectors.S:
+	Removed Synthetic target support - this is moving to its own HAL.
+	Added __default_exception_vsr to capture exceptions.
+	Renamed hal_pc_generic_interrupt to __default_interrupt_vsr in
+	line with other HALs. Generally tidied and polished.
+	Added VSR entry trampolines.
+	Added interrupt stack definition.
+
+	* src/i386_stub.c: Removed a lot of unnecessary stuff.
+
+	* src/i386.ld: Added absolute defines for IDT, VSR and virtual
+	vector tables.
+
+	* src/hal_misc.c: Tidied up and added eCos exception support.
+
+	* src/context.S:
+	Modified to save and restore context in new format.
+
+	* include/i386_stub.h:
+	Added definition of HAL_STUB_PLATFORM_STUBS_FIXUP() macro.
+
+	* include/hal_io.h: Implemented these macros as inline assembler.
+
+	* include/hal_intr.h: Various changes to interrupt and VSR table
+	handling macros.
+
+	* include/hal_arch.h: 
+	* include/i386.inc:
+	Redfined HAL_SavedRegisters structure and init macro. Now all
+	contexts consist of a full register set, vector number, and
+	PC,CS,EFLAGS as pushed by the hardware.
+
+	* include/basetype.h: Changed alignment to 4 bytes.
+
 2000-11-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/vectors.S (hal_pc_irq): Use correct register for ISR return value
@@ -431,7 +626,7 @@ Mon Nov  9 15:18:11 GMT 1998   Chris Provenzano  <proven@cygnus.com>
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

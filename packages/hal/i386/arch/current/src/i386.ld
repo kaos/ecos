@@ -108,7 +108,7 @@ GROUP(libtarget.a libgcc.a)
       KEEP(*(SORT(.ctors*))) __CTOR_END__ = ABSOLUTE(.);                    \
     __DTOR_LIST__ = ABSOLUTE(.);                                            \
       KEEP(*(SORT(.dtors*))) __DTOR_END__ = ABSOLUTE(.);                    \
-    . = ALIGN(8);                                                           \
+    . = ALIGN(32);                                                           \
     KEEP(*( SORT (.ecos.table.*)));                                         \
     _GOT2_START_ = ABSOLUTE(.); *(.got2) _GOT2_END_ = ABSOLUTE(.);          \
     _GOT_START_ = ABSOLUTE(.); _GLOBAL_OFFSET_TABLE_ = ABSOLUTE(. + 32768); \
@@ -140,3 +140,14 @@ GROUP(libtarget.a libgcc.a)
 
 #include <pkgconf/system.h>
 #include CYGHWR_MEMORY_LAYOUT_LDI
+
+// Standard tables at base of memory
+
+idtStart                 = 0x00001000;
+//idtEnd                   = 0x00001800;
+hal_vsr_table            = 0x00001800;
+hal_virtual_vector_table = 0x00001900;
+
+
+
+

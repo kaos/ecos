@@ -71,6 +71,19 @@ typedef unsigned long target_register_t ;
 #define SP				(ESP)
 #define EIP				(PC)
 
+// We have to rewind the PC only in case of a breakpoint
+// set by a user interrupt (ie: a Ctrl-C)
+
+// There should be another way to do it
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+#define HAL_STUB_PLATFORM_STUBS_FIXUP()                         \
+    CYG_MACRO_START                                             \
+    if (break_buffer.targetAddr==get_register(PC)-1)		\
+        put_register(PC, get_register(PC) - 1);                 \
+    CYG_MACRO_END
+#endif //CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
+
 
 /* Find out what our last trap was. */
 extern int __get_trap_number(void) ;

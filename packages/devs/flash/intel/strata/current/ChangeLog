@@ -1,3 +1,14 @@
+2001-06-07  Hugo Tyson  <hmt@redhat.com>
+
+	* src/strata.c (flash_hwr_init): If we find a flash device that is
+	larger than is possible given the memory map, shrink to fit.
+	We know about the memory map from CYGNUM_FLASH_BASE_MASK (if
+	defined); it tells us the stride from one device to another.
+
+	This is to cope with installing, say, a 28F640 in a slot designed
+	for a 28F320 because of supply issues - it all works fine so long
+	as A22 is grounded.
+
 2001-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/flash_strata.cdl: Needs IO driver to copy functions to RAM.

@@ -23,6 +23,6 @@ SECTIONS
     SECTION_fixed_vectors (ram, 0x20, LMA_EQ_VMA)
     SECTION_data (ram, 0x8000, FOLLOWING (.gcc_except_table))
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
-    CYG_LABEL_DEFN(__heap1) = ALIGN (0x100);
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }

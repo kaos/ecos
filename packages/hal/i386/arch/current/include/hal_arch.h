@@ -47,21 +47,45 @@
 #include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
-#include <cyg/hal/i386_stub.h>
+#include <cyg/hal/var_arch.h>
 
 //-----------------------------------------------------------------------------
 // Processor saved states. This structure is also defined in i386.inc for
 // assembly code. Do not change this without changing that (or vice versa).
 
+#ifdef CYGHWR_HAL_I386_FPU
+
+typedef struct
+{
+    cyg_uint32  fpstate_valid;
+    cyg_uint32  fpstate[108/sizeof(cyg_uint32)];
+} HAL_FPU_Context;
+
+#endif
+
 typedef struct 
 {
-    cyg_uint32  esp;
-    cyg_uint32  next_context;           // only used when dropping through...
-    cyg_uint32  ebp;                    // ...from switch_ to load_context
-    cyg_uint32  ebx;
-    cyg_uint32  esi;
+#ifdef CYGHWR_HAL_I386_FPU
+#ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+    HAL_FPU_Context     *fpucontext;
+#else
+    HAL_FPU_Context     fpucontext;    
+#endif    
+#endif    
     cyg_uint32  edi;
+    cyg_uint32  esi;
+    cyg_uint32  ebp;
+    cyg_uint32  esp;
+    cyg_uint32  ebx;
+    cyg_uint32  edx;
+    cyg_uint32  ecx;
+    cyg_uint32  eax;    
+    cyg_uint32  vector; // if saved on interrupt contains intr vector
+    cyg_uint32  pc;
+    cyg_uint32  cs;
+    cyg_uint32  eflags;
 } HAL_SavedRegisters;
+
 
 //-----------------------------------------------------------------------------
 // Exception handling function.
@@ -74,12 +98,21 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
 //-----------------------------------------------------------------------------
 // Bit manipulation routines
 
-externC cyg_uint32 hal_lsbit_index(cyg_uint32 mask);
-externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
+#define HAL_LSBIT_INDEX(index, mask)            \
+CYG_MACRO_START                                 \
+    asm volatile( "bsfl %1,%0\n"                \
+                  : "=r" (index)                \
+                  : "r" (mask)                  \
+                );                              \
+CYG_MACRO_END
 
-#define HAL_LSBIT_INDEX(index, mask) index = hal_lsbit_index(mask);
-
-#define HAL_MSBIT_INDEX(index, mask) index = hal_msbit_index(mask);
+#define HAL_MSBIT_INDEX(index, mask)            \
+CYG_MACRO_START                                 \
+    asm volatile( "bsrl %1,%0\n"                \
+                  : "=r" (index)                \
+                  : "r" (mask)                  \
+                );                              \
+CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // Context Initialization
@@ -90,33 +123,71 @@ externC cyg_uint32 hal_msbit_index(cyg_uint32 mask);
 // _entry_ entry point address.
 // _id_ bit pattern used in initializing registers, for debugging.
 
-#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )       \
-    CYG_MACRO_START                                                       \
-    register CYG_WORD* _sp_ = ((CYG_WORD*)((_sparg_) &~15));              \
-    register HAL_SavedRegisters *_regs_;                                  \
-                                                                          \
-    /* The 'ret' executed at the end of hal_thread_load_context will  */  \
-    /* use the last entry on the stack as a return pointer (_entry_). */  \
-    /* Cyg_HardwareThread::thread_entry expects one argument at stack */  \
-    /* offset 4 (_thread_). The (0xDEADBEEF) entry is the return addr */  \
-    /* for thread_entry (which is never used).                        */  \
-    *(--_sp_) = (CYG_WORD)(0);                                            \
-    *(--_sp_) = (CYG_WORD)(0);                                            \
-    *(--_sp_) = (CYG_WORD)(0);                                            \
-    *(--_sp_) = (CYG_WORD)(0);                                            \
-    *(--_sp_) = (CYG_WORD)(_thread_);                                     \
-    *(--_sp_) = (CYG_WORD)(0);                                            \
-    *(--_sp_) = (CYG_WORD)(_entry_);                                      \
-                                                                          \
-    _regs_ = (HAL_SavedRegisters *)                                       \
-               ((unsigned long)_sp_ - sizeof(HAL_SavedRegisters));        \
-    _regs_->esp    = (CYG_WORD) _sp_;                                     \
-    _regs_->ebx    = (CYG_WORD)(_id_);                                    \
-    _regs_->ebp    = (CYG_WORD)(_id_);                                    \
-    _regs_->esi    = (CYG_WORD)(_id_);                                    \
-    _regs_->edi    = (CYG_WORD)(_id_);                                    \
-    (_sparg_)      = (CYG_ADDRESS) _regs_;                                \
-    CYG_MACRO_END
+#ifndef CYG_HAL_DEFAULT_CS
+#define CYG_HAL_DEFAULT_CS 0x0008
+#endif
+
+#ifdef CYGHWR_HAL_I386_FPU
+# ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
+# define HAL_THREAD_INIT_FPU_CONTEXT_SPACE( __sp, __fpspace )   \
+         __sp -= sizeof(HAL_FPU_Context);                       \
+         __fpspace = __sp;
+# define HAL_THREAD_INIT_FPU_CONTEXT( __regs, __fpspace )                               \
+CYG_MACRO_START                                                                         \
+    cyg_ucount8 __i;                                                                    \
+    HAL_FPU_Context *__fpspace_ = (HAL_FPU_Context *)(__fpspace);                       \
+    (__regs)->fpucontext = __fpspace_;                                                  \
+    __fpspace_->fpstate_valid = 0;                                                      \
+    for( __i = 0; __i < (sizeof(__fpspace_->fpstate)/sizeof(cyg_uint32)); __i++ )       \
+        __fpspace_->fpstate[__i] = 0;                                                   \
+CYG_MACRO_END
+# else
+# define HAL_THREAD_INIT_FPU_CONTEXT_SPACE( __sp, __fpspace )                   \
+         (__fpspace) = (__fpspace);
+# define HAL_THREAD_INIT_FPU_CONTEXT( __regs, __fpspace )                       \
+CYG_MACRO_START                                                                 \
+    cyg_ucount8 __i;                                                            \
+    (__regs)->fpstate_valid = 0;                                                \
+    for( __i = 0; __i < (sizeof((__regs)->fpstate)/sizeof(cyg_uint32)); __i++ ) \
+        (__regs)->fpstate[__i] = 0;                                             \
+CYG_MACRO_END
+# endif
+#else
+# define HAL_THREAD_INIT_FPU_CONTEXT_SPACE( __sp, __fpspace )                   \
+         (__fpspace) = (__fpspace);
+# define HAL_THREAD_INIT_FPU_CONTEXT( __regs, __fpspace )
+#endif
+
+
+#define HAL_THREAD_INIT_CONTEXT( _sparg_, _thread_, _entry_, _id_ )     \
+CYG_MACRO_START                                                         \
+    register CYG_WORD* _sp_ = ((CYG_WORD*)((_sparg_) &~15));            \
+    register CYG_WORD *_fpspace_ = NULL;                                \
+    register HAL_SavedRegisters *_regs_;                                \
+                                                                        \
+    HAL_THREAD_INIT_FPU_CONTEXT_SPACE( _sp_, _fpspace_ );               \
+    *(--_sp_) = (CYG_WORD)(0);                                          \
+    *(--_sp_) = (CYG_WORD)(0);                                          \
+    *(--_sp_) = (CYG_WORD)(_thread_);                                   \
+    *(--_sp_) = (CYG_WORD)(0);                                          \
+                                                                        \
+    _regs_ = (HAL_SavedRegisters *)                                     \
+               ((unsigned long)_sp_ - sizeof(HAL_SavedRegisters));      \
+    HAL_THREAD_INIT_FPU_CONTEXT( _regs_, _fpspace_ );                   \
+    _regs_->eflags = (CYG_WORD)(0x00000200);                            \
+    _regs_->cs     = (CYG_WORD)(CYG_HAL_DEFAULT_CS);                    \
+    _regs_->pc	   = (CYG_WORD)(_entry_);                               \
+    _regs_->vector = (CYG_WORD)(_id_);                                  \
+    _regs_->esp    = (CYG_WORD) _sp_-4;                                 \
+    _regs_->ebp    = (CYG_WORD)(_id_);                                  \
+    _regs_->esi    = (CYG_WORD)(_id_);                                  \
+    _regs_->edi    = (CYG_WORD)(_id_);                                  \
+    _regs_->eax    = (CYG_WORD)(_id_);                                  \
+    _regs_->ebx    = (CYG_WORD)(_id_);                                  \
+    _regs_->ecx    = (CYG_WORD)(_id_);                                  \
+    _regs_->edx    = (CYG_WORD)(_id_);                                  \
+    (_sparg_)      = (CYG_ADDRESS) _regs_;                              \
+CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 // Context switch macros.
@@ -171,15 +242,15 @@ CYG_MACRO_END
 // Copy a set of registers from a HAL_SavedRegisters structure into a
 // GDB ordered array.    
 
-externC void hal_get_gdb_registers(target_register_t *, HAL_SavedRegisters *);
-externC void hal_set_gdb_registers(HAL_SavedRegisters *, target_register_t *);
+externC void hal_get_gdb_registers(CYG_ADDRWORD *, HAL_SavedRegisters *);
+externC void hal_set_gdb_registers(HAL_SavedRegisters *, CYG_ADDRWORD *);
 
 #define HAL_GET_GDB_REGISTERS( _aregval_, _regs_ ) \
-		hal_get_gdb_registers((target_register_t *)(_aregval_), (_regs_))
+		hal_get_gdb_registers((CYG_ADDRWORD *)(_aregval_), (_regs_))
 
 // Copy a GDB ordered array into a HAL_SavedRegisters structure.
 #define HAL_SET_GDB_REGISTERS( _regs_ , _aregval_ ) \
-		hal_set_gdb_registers((_regs_), (target_register_t *)(_aregval_))
+		hal_set_gdb_registers((_regs_), (CYG_ADDRWORD *)(_aregval_))
 
 //-----------------------------------------------------------------------------
 // HAL setjmp
@@ -268,8 +339,27 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
          15 * (CYGNUM_HAL_STACK_FRAME_SIZE+(16*4)))
 
 //--------------------------------------------------------------------------
+// Memory access macros
+
+#define CYGARC_CACHED_ADDRESS(x)                       (x)
+#define CYGARC_UNCACHED_ADDRESS(x)                     (x)
+#define CYGARC_PHYSICAL_ADDRESS(x)                     (x)
+
+//--------------------------------------------------------------------------
+// Region size finder
+
+#if CYGINT_HAL_I386_MEM_REAL_REGION_TOP
+
+externC cyg_uint8 *hal_i386_mem_real_region_top( cyg_uint8 *_regionend_ );
+                                                
+# define HAL_MEM_REAL_REGION_TOP( _regionend_ ) \
+    hal_i386_mem_real_region_top( _regionend_ )
+#endif
+
+//--------------------------------------------------------------------------
 // Macros for switching context between two eCos instances (jump from
 // code in ROM to code in RAM or vice versa).
+
 #define CYGARC_HAL_SAVE_GP()
 #define CYGARC_HAL_RESTORE_GP()
 

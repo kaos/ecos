@@ -1,3 +1,16 @@
+2001-05-01  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* tests/signal2.c (cause_illegal_access): Added code for I386
+	architecture to provoke General Protection Fault. 
+
+	* src/except.cxx: Removed some extraneous diag_printf()s.
+
+2001-04-25  Bart Veer  <bartv@redhat.com>
+
+	* tests/tm_basic.cxx:
+	This test is now functional on the synthetic target.
+
 2001-04-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/time.cxx (cyg_ticks_to_timespec): Actually don't bother

@@ -67,7 +67,7 @@ extern int __bootp_find_local_ip(bootp_header_t *info);
 
 // Global variables
 EXTERN int argc;
-#define MAX_ARGV 32
+#define MAX_ARGV 16
 EXTERN char *argv[MAX_ARGV];
 EXTERN unsigned char *ram_start, *ram_end;
 EXTERN unsigned char *user_ram_start, *user_ram_end;

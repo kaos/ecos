@@ -47,7 +47,7 @@
 #include <net/net.h>
 #include <eth_drv.h>       // Logical driver interfaces
 
-#define ENET_STATS 1
+//#define ENET_STATS 1
 
 #ifdef ENET_STATS
 static int num_ip = 0;
@@ -142,13 +142,13 @@ __enet_poll(void)
 
         if ((pkt->pkt_bytes = eth_drv_read((char *)&eth_hdr, (char *)pkt->buf,
                                            ETH_MAX_PKTLEN)) > 0) {
-#if ENET_STATS
+#ifdef ENET_STATS
             ++num_received;
 #endif
             switch (type = ntohs(eth_hdr.type)) {
 
             case ETH_TYPE_IP:
-#if ENET_STATS
+#ifdef ENET_STATS
                 ++num_ip;
 #endif
                 pkt->ip_hdr = (ip_header_t *)pkt->buf;
@@ -156,7 +156,7 @@ __enet_poll(void)
                 break;
 
             case ETH_TYPE_ARP:
-#if ENET_STATS
+#ifdef ENET_STATS
                 ++num_arp;
 #endif
                 pkt->arp_hdr = (arp_header_t *)pkt->buf;
@@ -165,7 +165,7 @@ __enet_poll(void)
 
 #ifdef NET_SUPPORT_RARP
             case ETH_TYPE_RARP:
-#if ENET_STATS
+#ifdef ENET_STATS
                 ++num_rarp;
 #endif
                 pkt->arp_hdr = (arp_header_t *)pkt->buf;
@@ -207,7 +207,7 @@ __enet_send(pktbuf_t *pkt, enet_addr_t *dest, int eth_type)
     eth_hdr.type = htons(eth_type);
 
     eth_drv_write((char *)&eth_hdr, (char *)pkt->buf, pkt->pkt_bytes);
-#if ENET_STATS
+#ifdef ENET_STATS
     ++num_transmitted;
 #endif
 }

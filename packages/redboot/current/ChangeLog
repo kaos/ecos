@@ -1,3 +1,66 @@
+2001-06-08  Gary Thomas  <gthomas@redhat.com>
+
+	* src/parse.c (parse): Check for 'argv[]' overruns.
+
+	* src/main.c (ZLIB_COMPRESSION_OVERHEAD): Update - based on observations.
+
+	* src/net/tftp_client.c: 
+	* src/net/net_io.c: 
+	* src/net/enet.c: 
+	* include/redboot.h (MAX_ARGV): Minor memory reduction/tightening.
+
+2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/main.c (do_caches): HAL_DCACHE_IS_ENABLED is not present
+	on all arch's, so conditionalize. Ditto HAL_ICACHE_IS_ENABLED.
+
+2001-06-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* src/main.c (cyg_start): Added code to disable interrupts on all
+	comm channels before entering GDB. If this is not done then stray
+	interrupts from an otherwise idle ethernet controller can cause
+	mayhem in the application. 
+
+	* src/net/net_io.c (net_io_control): Added code to set static
+	vector number in disable case as well as enable case. 
+	(net_io_init): Added call to net_io_control() to disable network
+	interrupts initially. Mainly to get current disable state
+	correctly set.
+
+2001-06-07  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/load.c (do_load): Ask confirmation of RAM write addr, rather
+	than automatically denying.
+	(load_srec_image): Ditto.
+
+	* src/io.c (verify_action): Don't ask if we're executing a script.
+
+2001-06-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (expand_aliases): Allow aliases/macros to be nested.
+
+	* src/main.c (set_console_baud_rate): 
+	* src/flash.c (do_alias): Force 'fconfig' updates.
+
+	* include/flash_config.h (flash_add_config): New signature.
+	Parameter 'update' controls whether the Flash is updated.
+
+2001-06-07    <gthomas@redhat.com>
+
+	* src/load.c (do_load): Tidy some messages.
+
+	* src/flash.c (fis_load): Print image limits (memory range) when
+	loading a compressed image.
+
+2001-06-06  Mark Salter  <msalter@redhat.com>
+
+	* include/net/tftp_support.h (TFTP_TIMEOUT_PERIOD): Increase to 5.
+
+	* src/net/udp.c (__udp_recvfrom): Initialize server source port
+	to zero.
+	(__udp_recvfrom_handler): Validate server source port before
+	accepting packet.
+
 2001-05-29  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c (fis_load): Fix compiler warning.

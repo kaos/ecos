@@ -1,3 +1,168 @@
+2001-05-22  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/pkgconf/mlt_i386_pc_ram.mlt: Fix pci_window description.
+
+2001-05-03  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* cdl/hal_i386_pc.cdl: Changed option
+	CYGIMP_HAL_I386_PCMB_SCREEN_SUPPORT to interface
+	CYGINT_HAL_I386_PCMB_SCREEN_SUPPORT.
+
+2001-04-30  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* cdl/hal_i386_pc.cdl: Added options to convert ELF file to binary
+	for copying to a floppy disc.
+
+2001-03-16  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* misc/redboot_ROM.ecm:
+	Removed ETH_DRIVERS package for initial work.
+	(This is work in progress and is not yet complete.)
+
+	* include/pkgconf/mlt_i386_pc_rom.ldi: 
+	* include/pkgconf/mlt_i386_pc_rom.h:
+	Added these files to enable building of ROM images.
+	(This is work in progress and is not yet complete.)
+
+	* include/platform.inc: Modified ROM startup to work with romboot.S.
+
+	* cdl/hal_i386_pc.cdl: Modified options to allow for ROM startup.
+
+	* include/pkgconf/mlt_i386_pc_ram.mlt: 
+	* include/pkgconf/mlt_i386_pc_ram.ldi: 
+	* include/pkgconf/mlt_i386_pc_ram.h:
+	Fixed some bugs in these files with the size and layout of
+	RAM. This was causing the heap to be badly mangled.
+
+2001-03-14  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/plf_misc.c (hal_platform_init): Added call to
+	hal_pcmb_init().
+
+	* include/platform.inc:	Removed memory size stuff.
+
+2001-03-13  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]	
+	* src/plf_misc.c: Deleted old FP context switch code.
+
+	* include/platform.inc: Removed some now redundant code.
+
+2001-03-08  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/plf_misc.c: ISR tables and cyg_hal_pc_set_idt_entry() moved
+	here from hal_startup.c. ISR table setup code tidied.
+	hal_delay_us() now works in 1s bursts to avoid arithmetic
+	overflow.
+
+	* src/hal_diag.c: Most of contents of file moved out to
+	pcmb_serial.c and pcmb_screen.c. This remains as an intialization
+	interface for those.
+
+	* include/plf_io.h: Move contents out to pcmb_io.h.
+
+	* include/plf_intr.h: Added include of pcmb_intr.h and other
+	headers.
+
+	* include/plf_arch.h: File added. Currently contains nothing.
+
+	* include/platform.inc: floppy boot code moved to PCMB HAL. FPU
+	support moved to architectural HAL. Various tidies.
+
+	* cdl/hal_i386_pc.cdl: Many changes to bring this HAL in line with
+	reorganization of whole i386 HAL. Lots of stuff deleted, and other
+	things moved out to PCMB package.
+
+	* misc/redboot_FLOPPY.ecm: Added setting of CYGSEM_HAL_ROM_MONITOR
+	to 1.
+
+	* include/var_intr.h:
+	* include/variant.inc:
+	* src/hal_intr.c:
+	* src/hal_startup.c:
+	* src/var_misc.c:
+	Files removed. Most of the contents of these files has become
+	redundant. Those parts that are not have been moved to more
+	appropriate places.
+	
+2001-03-06  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* src/var_misc.c: Rewrote clock init and access functions in terms
+	of HAL IO macros.
+
+	* src/plf_misc.c:
+	Added call to HAL_CLOCK_INITIALIZE() to hal_platform_init() when
+	in RedBoot configurations.
+	Rewrote hal_delay_us() to use timer 0.
+
+	* misc/redboot_FLOPPY.ecm: Added ETH drivers to configuration.
+
+	* include/pkgconf/mlt_i386_pc_floppy.ldi: 
+	* include/pkgconf/mlt_i386_pc_floppy.h:
+	Added __pci_window label for use with PCI devices.
+
+	* include/plf_misc.h: Removed unnecessary port IO functions.
+
+	* include/plf_io.h:
+	Gave correct values to HAL_PCI_PHYSICAL_MEMORY_BASE and friends.
+	Tidied up a bit.	
+
+2001-03-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	Some of these changes were initially made by Fabrice Gautier and
+	then liberally modified by me.
+	
+	* src/var_misc.c: Miscellaneous tidies.
+
+	* src/plf_misc.c (hal_platform_init): Some redundant stuff
+	removed.
+
+	* src/plf_stub.c: 
+	* src/hal_startup.c: 
+	* src/hal_intr.c:
+	Lots of stuff removed from these files. When we reorganise the
+	HAL, these files should be eliminated.
+
+	* src/hal_diag.c:
+	Lots of changes to support IF vectors for both serial ports and
+	screen/keyboard.
+
+	* misc/redboot_FLOPPY.ecm: 
+	* misc/redboot_ROM.ecm:
+	ecosconfig import files to generate Redboot configs.
+
+	* include/pkgconf/mlt_i386_pc_floppy.ldi: 
+	* include/pkgconf/mlt_i386_pc_floppy.mlt: 
+	* include/pkgconf/mlt_i386_pc_ram.ldi: 
+	* include/pkgconf/mlt_i386_pc_ram.mlt:
+	Updated to reflect new memory layout for Redboot and RAM apps.
+
+	* include/var_intr.h: Tidied up and made consistent with rest of
+	HAL. HAL_TRANSLATE_VECTOR() used where necessary.
+
+	* include/plf_stub.h: Some minor changes and tidies.
+
+	* include/plf_misc.h: Tidied up. This file should eventually
+	become redundant.
+
+	* include/plf_io.h: New file - contains PCI support code.
+
+	* include/plf_intr.h: Added HAL_PLATFORM_RESET_ENTRY.
+
+	* include/platform.inc:
+	Better separation of startup types, added start of ROM startup.
+	Added IDT initialization. Various tidies.
+
+	* include/hal_diag.h: Added virtual vector support.
+
+	* cdl/hal_i386_pc.cdl: Many changes to support Redboot.
+
 2001-01-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/plf_stub.h: Reset macros moved

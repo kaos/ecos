@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.          
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -65,6 +65,7 @@
 // CONFIGURATION
 
 #include <pkgconf/libc_stdio.h>   // Configuration header
+#include <pkgconf/libc_i18n.h>    // Configuration header for mb support
 
 // We have to have ungetc for this to work
 #if defined(CYGFUN_LIBC_STDIO_ungetc) 
@@ -162,19 +163,32 @@ __sccl (char *tab, u_char *fmt);
 #define BufferEmpty ( !SPACE_LEFT && \
                       (REFILL, (!SPACE_LEFT)) )
 
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+typedef int (*mbtowc_fn_type)(wchar_t *, const char *, size_t, int *);
+externC mbtowc_fn_type __get_current_locale_mbtowc_fn();
+#endif
+
 externC int
 vfscanf (FILE *fp, const char *fmt0, va_list ap)
 {
     u_char *fmt = (u_char *) fmt0;
     int c;              /* character from format, or conversion */
+    wchar_t wc;         /* wide character from format */
     size_t width;       /* field width, or 0 */
     char *p;            /* points into all kinds of strings */
     int n;              /* handy integer */
     int flags;          /* flags as defined above */
     char *p0;           /* saves original value of p when necessary */
+    char *lptr;         /* literal pointer */
     int nassigned;      /* number of fields assigned */
     int nread;          /* number of characters consumed from fp */
     int base = 0;       /* base argument to strtol/strtoul */
+    int nbytes = 1;     /* number of bytes processed */
+
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+    mbtowc_fn_type mbtowc_fn;
+    int state = 0;      /* used for mbtowc_fn */
+#endif
     
     strtoul_t ccfn = NULL;      /* conversion function (strtol/strtoul) */
     char ccltab[256];           /* character class table for %[...] */
@@ -194,14 +208,24 @@ vfscanf (FILE *fp, const char *fmt0, va_list ap)
     static const short basefix[17] =
     {10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+    mbtowc_fn = __get_current_locale_mbtowc_fn();
+#endif
+
     nassigned = 0;
     nread = 0;
     for (;;)
     {
-        c = *fmt++;
-        if (c == 0)
-            return nassigned;
-        if (isspace (c))
+#ifndef CYGINT_LIBC_I18N_MB_REQUIRED
+        wc = *fmt;
+#else
+        nbytes = mbtowc_fn (&wc, fmt, MB_CUR_MAX, &state);
+#endif
+        fmt += nbytes;
+
+        if (wc == 0)
+           return nassigned;
+        if (nbytes == 1 && isspace (wc))
         {
             for (;;)
             {
@@ -213,7 +237,7 @@ vfscanf (FILE *fp, const char *fmt0, va_list ap)
             }
             continue;
         }
-        if (c != '%')
+        if (wc != '%')
             goto literal;
         width = 0;
         flags = 0;
@@ -230,12 +254,17 @@ again:
         {
         case '%':
 literal:
-            if (BufferEmpty)
-                goto input_failure;
-            if (*CURR_POS != c)
-                goto match_failure;
-            INC_CURR_POS;
-            nread++;
+            lptr = fmt - nbytes;
+            for (n = 0; n < nbytes; ++n)
+              {
+		if (BufferEmpty)
+		  goto input_failure;
+		if (*CURR_POS != *lptr)
+		  goto match_failure;
+		INC_CURR_POS;
+		nread++;
+		++lptr;
+	      }
         continue;
 
         case '*':

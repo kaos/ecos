@@ -12,7 +12,7 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
-    SECTION_vectors (ram, 0x1000, LMA_EQ_VMA)
+    SECTION_vectors (ram, 0x2000, LMA_EQ_VMA)
     SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)
@@ -23,6 +23,7 @@ SECTIONS
     SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
     SECTION_sbss (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_bss (ram, ALIGN (0x10), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__pci_window) = ALIGN(0x10); . = CYG_LABEL_DEFN(__pci_window) + 0x64000;
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END
 }

@@ -1,3 +1,19 @@
+2001-05-02  Nick Garnett  <nickg@cygnus.co.uk>
+
+	[x86 branch]
+	* tests/signal2.c (cause_memerror): Added code for I386
+	architecture to provoke General Protection Fault.
+
+2001-04-27  Bart Veer  <bartv@redhat.com>
+
+	* tests/signal2.c (main):
+	The FPE test is applicable to the updated synthetic target. 
+
+2001-04-17  Bart Veer  <bartv@redhat.com>
+
+	* cdl/signals.cdl:
+	Synthetic target now supports exceptions
+
 2000-09-14  Jesper Skov  <jskov@redhat.com>
 
 	* tests/signal/signal2.c: Prevent that GCC optimizes away the

@@ -58,19 +58,6 @@
 
     .file   "vectors.S"
 
-#==============================================================================	
-# The Linux synthetic target defines its own startup.
-
-#ifdef CYGPKG_HAL_I386_LINUX
-
-	.extern	_linux_entry
-	.text
-	.globl	_start
-
-_start:
-	jmp	_linux_entry
-
-#else  ## ifdef CYGPKG_HAL_I386_LINUX
 #==============================================================================
 # Real startup code. We jump here from the various reset vectors to set up the
 # world.
@@ -82,27 +69,53 @@ _start:
 	hal_cpu_init
 	hal_diag_init
 	hal_mmu_init
-	hal_fpu_init
 	hal_memc_init
 	hal_intc_init
 	hal_cache_init
 	hal_timer_init
 
-# loading the stack pointer seems appropriate now.
-	movl	$_start, %esp
+	# loading the stack pointer seems appropriate now.
+	movl	$__interrupt_stack, %esp
 
-# Save the sizes of memory on the stack.  These were initialized by hal_cpu_init.
-	movl	pc_standard_memory_size, %eax
-	movl	pc_extended_memory_size, %ebx
-	pushl	%ebx
-	pushl	%eax
-	pushl	%esp		# pointer to that, um, 'struct' that we just saved.
-	
+#if defined(CYG_HAL_STARTUP_FLOPPY) || defined(CYG_HAL_STARTUP_ROM)
+	# If we are here first, initialize the IDT. RAM startup
+	# configurations can assume that Redboot has already set
+	# the IDT up.
+	hal_idt_init
+#endif	
+						
 	hal_mon_init
 
-	.extern hal_zero_bss
-	call	hal_zero_bss
+	# Init FPU
+	# Do this after the monitor init so that we can plant our
+	# own FPU unavailable VSR.
+	
+	hal_fpu_init		# WARNING: may adjust stack pointer
+	
+	# Zero the BSS. If the BSS is not a whole number of words
+	# long we will write up to 3 extra bytes at the end.
+	# (This should not be a problem usually).
+	movl	$__bss_end,%ecx		# ECX = end of BSS
+	movl	$__bss_start,%edi	# EDI = base of BSS
+	subl	%edi,%ecx		# ECX = size of BSS
+	addl	$3,%ecx			# ECX += sizeof(long)-1
+	shrl	$2,%ecx			# ECX >>= 2 = number of words to fill
+	xorl	%eax,%eax		# EAX = 0 = fill value
+	rep     stosl			# Fill it in
 
+#ifdef CYG_HAL_STARTUP_ROM
+
+	# In a ROM booted system, we also need to copy the data section
+	# out to the RAM.
+	movl	$__rom_data_start,%esi	# ESI = base of ROM data area
+	movl	$__ram_data_start,%edi	# EDI = base of RAM data area
+	movl	$__ram_data_end,%ecx	# ECX = end of data
+	subl	%edi,%ecx		# ECX = size of data in bytes
+	shrl	$2,%ecx			# ECX >>= 2 = number of words to copy
+	rep     movsl			# Copy it over
+
+#endif	
+	
 	.extern hal_variant_init
 	call	hal_variant_init
 
@@ -110,191 +123,307 @@ _start:
 	call	hal_platform_init
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+	// This is here so we can debug the constructors.
 	.extern initialize_stub
 	call	initialize_stub
-#endif /* CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS */
+#endif
 
 	.extern cyg_hal_invoke_constructors
 	call	cyg_hal_invoke_constructors
 
-# Unused IRQ vector 15 points to our 'struct'...
-	popl	%eax
-	movl	%eax, (15 * 8)
-	
 	.extern cyg_start
 	call	cyg_start
 
-# Hmm.  Not expecting to return from cyg_start.
+	# Hmm.  Not expecting to return from cyg_start.
 1:	hlt
 	jmp	1b
 
 #==============================================================================
-# Add a bit of debugger support.
-#if 0	
-	.align	4
-	.globl	_breakinst
-_breakinst:
-	int	$3
-	ret
-#endif
-	
-#==============================================================================
-#
-#	hal_pc_generic_interrupt
-#
-#- Pushes the interrupt vector onto the stack, then
-#  jumps to hal_pc_irq.
-#
+# Default exception VSR
 
+	.align	4, 0xCC
+	.globl	__default_exception_vsr
+__default_exception_vsr:
+
+	## We enter here with the CPU state still in the registers and:
+	##  0(%esp)	vector number pushed by trampoline
+	##  4(%esp)	PC pushed by hardware
+	##  8(%esp)	CS pushed by hardware
+	## 12(%esp)	EFLAGS pushed by hardware
+
+	pusha			# save all registers
+	hal_fpu_push_exc	# save FPU state
+	
+	mov	%esp,%edi	# save state pointer in EDI
+		
+#if 0 //def CYGSEM_HAL_ROM_MONITOR
+	# In a monitor, switch to interrupt stack to handle this
+	movl	$__interrupt_stack,%esp
+#endif			
+
+	hal_fpu_push_exc_annex
+	
+	# Call exception handler
+	.extern	cyg_hal_exception_handler
+	pushl	%edi			# arg1 = saved state
+	call	cyg_hal_exception_handler
+	addl	$4,%esp			# pop arg
+	
+	hal_fpu_pop_exc_annex
+		
+#if 0 //def CYGSEM_HAL_ROM_MONITOR 
+	
+	# If we switched to the interrupt stack, switch back here
+	# %edi will have been preserved across the call to
+	# cyg_hal_exception_handler()
+	
+	movl	%edi,%esp
+#endif	
+
+	hal_fpu_pop_exc		# restore FPU state
+	popa			# restore all our registers.
+	addl	$4, %esp	# skip the vector number
+	iret			# and return to the program.
+			
+#==============================================================================
+# Default interrupt VSR
+#
+#
 	.extern	__interrupt_stack
 
 	.align	4, 0xCC
-	.globl	hal_pc_generic_interrupt
-	.globl	hal_pc_generic_interrupt_start
-	.globl	hal_pc_generic_interrupt_vector
-	.globl	hal_pc_generic_interrupt_end
-hal_pc_generic_interrupt_start:
-hal_pc_generic_interrupt:
-	pushl	$0xbad4c0de
-hal_pc_generic_interrupt_vector = . - 4
-	jmp	*hal_pc_irq_p
-hal_pc_generic_interrupt_end:
+	.globl	__default_interrupt_vsr
+__default_interrupt_vsr:
 
-	.align	4, 0xCC
-hal_pc_irq_p:
-	.long	hal_pc_irq
-
-#
-#	hal_pc_irq
-#
-#- Actually saves the CPU state, executes ISRs, etc.
-#- The stack has eflags, cs, eip, and vector; all 32 bits.
-#
-	.align	4, 0xCC
-	.globl	hal_pc_irq
-hal_pc_irq:
-	pusha
-
-# Maybe instrument for an interrupt.  Parameter==vector number.
-	hal_pc_irq_instrument 0x20(%esp)
-
-# Maybe instrument for idle detection.
-	hal_pc_unidle_instrument
+	## We enter here with the CPU state still in the registers and:
+	##  0(%esp)	vector number pushed by trampoline
+	##  4(%esp)	PC pushed by hardware
+	##  8(%esp)	CS pushed by hardware
+	## 12(%esp)	EFLAGS pushed by hardware
 	
-# Show how far nested we are.
-	.extern hal_pc_in_interrupt
-	incl	hal_pc_in_interrupt
-
+	pusha			# save registers
+	hal_fpu_push_int	# save FPU state
+	
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) || \
+    defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
+	# Save the context just to be able to set a breakpoint
+	# when we have a CTRL-C
+	.extern hal_saved_interrupt_state
+	movl %esp,hal_saved_interrupt_state
+#endif
 
 #ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+	# Increment scheduler lock
 	.extern cyg_scheduler_sched_lock
 	incl	cyg_scheduler_sched_lock
-#endif /* CYGFUN_HAL_COMMON_KERNEL_SUPPORT */
+#endif
 
-
-# Call cyg_hal_interrupt_handlers[vector](vector, cyg_hal_interrupt_data[vector])
-	movl	0x20(%esp), %ecx
-	movl	$cyg_hal_interrupt_handlers, %ebx
-	movl	(%ebx, %ecx, 4), %edx
-	movl	$cyg_hal_interrupt_data, %ebx
-	movl	(%ebx, %ecx, 4), %eax
-	pushl	%esp		# Save the pointer to registers.  Secret parameter!
-	pushl	%eax
-	pushl	%ecx
-	call	*%edx		# eax has the return value, needed for interrupt_end()
-	popl	%ebx
-	popl	%ebx
-	popl	%ebx
-
-# Fix our nesting figure.
-	decl	hal_pc_in_interrupt
-
-# Following code messes up eax, but not esi.
-	movl	%eax, %esi
+	movl	%esp,%ebp			# EBP = copy of ESP
 	
-# Send an EOI, maybe.
-	hal_intc_ack 0x20(%esp)
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
 
-# Reenable interrupts, if necessary.
-	movl	0x2C(%esp), %eax
-#	Turn off the single step flag.  GDB uses that to single step through
-#	the code; we'll use the tasks' version of this flag in the popf later.
-	andl	$~(0x100), %eax
+	# Switch to interrupt stack if we are not already on it
+
+	movl	$__interrupt_stack,%eax		# eax = stack top
+	cmpl	$__interrupt_stack_base,%ebp	# compare SP with istack base
+	jb	1f				# if sp < istack base, switch
+	cmpl	%eax,%ebp			# compare SP with istack top
+	jbe	2f				# if sp < istack top, dont switch
+1:	
+	movl	%eax,%esp			# move on to new stack
+2:		
+	pushl	%ebp				# Save old SP on new stack
+#endif		
+
+	hal_fpu_push_int_annex			# save extra FPU state
+	
+#ifdef CYGSEM_HAL_COMMON_INTERRUPTS_ALLOW_NESTING
+
+	# If we are allowing nested interrupts, restore the flags pushed
+	# by the hardware when this interrupt was taken.
+	
+	movl	i386reg_eflags(%ebp), %eax
+	btrl	$8,%eax			# Clear TF bit
 	pushl	%eax
 	popfl
+#endif
 
-#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
-# Call interrupt_end(r, cyg_hal_interrupt_objects[vector], regs)
-# - r is the return value from cyg_hal_interrupt_handlers;
-# - regs just points to the stack; we have already saved our context there;
-	movl	$cyg_hal_interrupt_objects, %ebx
-	movl	0x20(%esp), %ecx	
-	movl	(%ebx, %ecx, 4), %edx
-	# regs is left from the push of ebp above;
-	pushl	%edx
-	pushl	%esi         # the old eax was saved in esi before hal_intc_ack
-	call	interrupt_end
-	addl	$8, %esp
-#endif /* CYGFUN_HAL_COMMON_KERNEL_SUPPORT */
+#if defined(CYGPKG_KERNEL_INSTRUMENT) && defined(CYGDBG_KERNEL_INSTRUMENT_INTR)
 
-# Maybe uninstrument the irq handler.
-	hal_pc_irq_uninstrument 0x20(%esp)
+	# Call cyg_instrument to record that this interrupt is being raised.
+
+	movl	i386reg_vector(%ebp), %ecx # vector number from saved state
+	movl	%ecx,%edi		# EDI = copy of vector
+	subl	$0x20,%edi		# EDI = interrupt table offset
+			
+	pushl	%edi			# arg3 = interrupt number
+	pushl	%ecx			# arg2 = vector number
+	pushl	$0x0301			# arg1 = type = INTR.RAISE
+
+	call	cyg_instrument		# call instrument function
+	add	$12,%esp		# skip arguments
+#endif
 	
-	popa			# restore all our registers.
-	addl	$4, %esp	# dump the vector number
-	iret			# and return to the program.
+	# Call hal_interrupt_handlers[vector](vector, cyg_hal_interrupt_data[vector])
+	
+	movl	i386reg_vector(%ebp), %ecx # vector number from saved state
+	movl	%ecx,%edi		# EDI = copy of vector
+	subl	$0x20,%edi		# EDI = interrupt table offset
+	movl	$hal_interrupt_handlers, %ebx
+	movl	(%ebx, %edi, 4), %edx	# EDX = interrupt routine
+	movl	$hal_interrupt_data, %ebx
+	movl	(%ebx, %edi, 4), %eax	# EAX = interrupt data
+	pushl	%eax			# arg2 = data
+	pushl	%ecx			# arg1 = vector
+	call	*%edx			# EAX = return value, needed for interrupt_end()
+	addl	$8,%esp			# pop args
 
+	# At this point:
+	# EAX = ISR return code (returned by call)
+	# EDI = ISR table offset (saved across call)
+	# EBP = State pointer (saved across call)
+
+	hal_fpu_pop_int_annex		# Pop any saved interrupt state
+		
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK	
+
+	# If we are returning from the last nested interrupt, move back
+	# to the thread stack. interrupt_end() must be called on the
+	# thread stack since it potentially causes a context switch.
+	# Since we have arranged for the top of stack location to
+	# contain the sp we need to go back to here, just pop it off
+	# into ESP.
+	
+	popl	%esp
+#endif
+			
+#ifdef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
+
+	# Call interrupt_end(r, cyg_hal_interrupt_objects[vector], regs)
+	# - r is the return value from the ISR
+	# - regs points to saved CPU context
+
+	movl	$hal_interrupt_objects, %ebx
+	movl	(%ebx, %edi, 4), %edx	# EDX = interrupt object ptr
+	pushl	%ebp			# arg3 = ptr to saved registers
+	pushl	%edx			# arg2 = object
+	pushl	%eax			# arg1 = ISR return code
+	call	interrupt_end		# Call it
+	addl	$12, %esp		# pop args
+	
+#endif
+
+	# Now pull saved state from stack and return to 
+	# what thread was originally doing.
+	
+	hal_fpu_pop_int			# restore FPU state
+	popa				# restore all our registers.
+	addl	$4, %esp		# skip the vector number.
+	iret				# and return to the thread.
+
+#==============================================================================
+## Execute pending DSRs on the interrupt stack with interrupts enabled.
+## Note: this can only be called from code running on a thread stack
+
+#ifdef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
+
+	.extern cyg_interrupt_call_pending_DSRs
+	.global hal_interrupt_stack_call_pending_DSRs
+	
+hal_interrupt_stack_call_pending_DSRs:	
+
+	pushl	%esi			# save a work register
+	pushfl				# save flags
+	movl	%esp,%esi		# ESI = old stack
+
+	movl	$__interrupt_stack,%esp	# ESP = interrupt stack
+	
+	sti				# Enable interrupts
+
+	# Call back to kernel to run DSRs
+	call	cyg_interrupt_call_pending_DSRs
+
+	# On return ESI will still contain the old ESP since
+	# it is a callee saved register.
+	
+	movl	%esi,%esp		# restore original stack
+
+	# Now merge the original IF bit into the current
+	# EFLAGS. 
+	
+	popl	%esi			# ESI = saved flags
+	pushfl				# 0(%esp) = current flags
+	btrl	$9,0(%esp)		# clear IF bit in current flags
+	andl	$0x00000200,%esi	# isolate saved IF bit
+	orl	%esi,0(%esp)		# OR it in to the saved flags
+	popfl				# restore flags
+	
+	popl	%esi			# retrieve work register
+	ret				# and return
+	
+#endif				
+
+#==============================================================================
+# FPU lazy state switch VSR
+# This is invoked via hardware exception 7 (FPU unavailable) as a result of
+# setting the TS bit in CR0 whenever we context switch. If we discover here
+# that a different context from the current owner of the FPU has attempted
+# a floating point operation, we save the old context and load the new before 
+# allowing it to proceed.
+	
+#ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY		
+
+	.data
+	.global cyg_hal_fpustate_owner
+cyg_hal_fpustate_owner:	
+	.long	0				# pointer to FPU owning context
+	.global cyg_hal_fpustate_current	
+cyg_hal_fpustate_current:	
+	.long	0				# pointer to current threads FPU context
+		
+	.text	
+__fpu_switch_vsr:
+
+	clts					# clear CR0:TS bit
+	pusha					# save all regs
+
+	movl	cyg_hal_fpustate_owner,%eax	# EAX = FPU context owner
+	movl	cyg_hal_fpustate_current,%ebx	# EBX = current threads context
+	cmpl	%ebx,%eax			# current == owner ?
+	je	9f				# yes, nothing else to do
+	cmpl	$0,%eax				# is FPU even in use?
+	je	1f				# if not, skip save
+	fsave	i386reg_fpucontext_state(%eax)	# save FPU state
+	movl	$1,i386reg_fpucontext_valid(%eax) # mark valid
+1:
+	movl	%ebx,cyg_hal_fpustate_owner	# Set new owner
+	btl	$0,i386reg_fpucontext_valid(%ebx) # Valid state?
+	jc	2f				# If yes, go to restore it
+	finit					# Otherwise init FPU
+	jmp	9f				# skip restore
+2:
+	frstor	i386reg_fpucontext_state(%ebx)	# restore FPU state
+9:
+	popa					# restore all our registers.
+	addl	$4, %esp			# skip the vector number.
+	iret					# and return to the thread.
+		
+#endif
+		
 #==============================================================================	
 # hal_idle_thread_action(cyg_uint32 loop_count)
 	
 	.align	4
 	.globl	hal_idle_thread_action
 hal_idle_thread_action:
-	hal_pc_idle_instrument
 	hlt
 	ret
 	
+
 #==============================================================================
-# Port IO functions
+# Assembler swap routines
+	
 		
-# pc_outb(port, value)
-	.align	4
-	.globl	pc_outb
-pc_outb:
-	movl	4(%esp), %edx
-	movl	8(%esp), %eax
-	outb	%al, %dx
-	ret
-
-
-# x = pc_inb(port)
-	.align	4
-	.globl	pc_inb
-pc_inb:
-	movl	4(%esp), %edx
-	inb	%dx, %al
-	cbtw
-	cwtl
-	ret
-
-# pc_outw(port, value)
-	.align	4
-	.globl	pc_outw
-pc_outw:
-	movl	4(%esp), %edx
-	movl	8(%esp), %eax
-	outw	%ax, %dx
-	ret
-
-# x = pc_inw(port)
-	.align	4
-	.globl	pc_inw
-pc_inw:
-	movl	4(%esp), %edx
-	inw	%dx, %ax
-	cwtl
-	ret
-
 # x = CPU_swap_u16(x)
 	.align	4
 	.global CPU_swap_u16
@@ -316,7 +445,137 @@ CPU_swap_u32:
 	movb	7(%esp), %al
 	ret
 	
-#endif // ifndef CYGPKG_HAL_I386_LINUX
+#==============================================================================
+# Exception trampolines
+# IDT exception gates point to short code sequences that push the vector
+# number on to the stack and then indirect via the VSR table to a handler.
+# 
 
+	# Just for yuks we keep a count of the number of times each
+	# vector is called.
+	.bss
+	.globl hal_vsr_stats
+hal_vsr_stats:	
+	.rept 64	// Default VSR table is 64 entries long
+	.long 0
+	.endr
+
+	# When an exception which supplies an error code is generated,
+	# we move the code here. 
+hal_trap_error_code:
+	.long 0
+
+	.text
+	
+	# macro to create exception handler (no error code)
+	.macro  hal_pc_exception_noerr idx
+hal_pc_exception_\idx:
+	movl	$0,hal_trap_error_code
+	pushl	$\idx
+	incl	(hal_vsr_stats+\idx*4)
+	jmp	*(hal_vsr_table+\idx*4)
+	.endm
+
+	# macro to create exception handler (with error code)
+	.macro  hal_pc_exception_err idx
+hal_pc_exception_\idx:
+	popl	hal_trap_error_code
+	pushl	$\idx
+	incl	(hal_vsr_stats+\idx*4)
+	jmp	*(hal_vsr_table+\idx*4)
+	.endm
+
+	# Now generate all the default exception VSR trampolines.
+	
+	hal_pc_exception_noerr  0
+	hal_pc_exception_noerr  1
+	hal_pc_exception_noerr  2
+	hal_pc_exception_noerr  3	
+	hal_pc_exception_noerr  4
+	hal_pc_exception_noerr  5	
+	hal_pc_exception_noerr  6
+	hal_pc_exception_noerr  7	
+	hal_pc_exception_err    8
+	hal_pc_exception_noerr  9	
+	hal_pc_exception_err   10
+	hal_pc_exception_err   11	
+	hal_pc_exception_err   12
+	hal_pc_exception_err   13	
+	hal_pc_exception_err   14
+	hal_pc_exception_noerr 15	
+	hal_pc_exception_noerr 16
+	hal_pc_exception_err   17	
+	hal_pc_exception_noerr 18
+	hal_pc_exception_noerr 19	
+	hal_pc_exception_noerr 20
+	hal_pc_exception_noerr 21	
+	hal_pc_exception_noerr 22
+	hal_pc_exception_noerr 23	
+	hal_pc_exception_noerr 24
+	hal_pc_exception_noerr 25	
+	hal_pc_exception_noerr 26
+	hal_pc_exception_noerr 27	
+	hal_pc_exception_noerr 28
+	hal_pc_exception_noerr 29	
+	hal_pc_exception_noerr 30
+	hal_pc_exception_noerr 31	
+
+#==============================================================================
+# IRQ handler trampolines
+
+
+	# macro to create exception handler (no error code)
+	.macro  hal_pc_irq_handler idx
+hal_pc_irq_\idx:
+	pushl	$\idx
+	incl	(hal_vsr_stats+\idx*4)
+	jmp	*(hal_vsr_table+\idx*4)
+	.endm
+
+	hal_pc_irq_handler 32
+	hal_pc_irq_handler 33
+	hal_pc_irq_handler 34
+	hal_pc_irq_handler 35
+	hal_pc_irq_handler 36
+	hal_pc_irq_handler 37
+	hal_pc_irq_handler 38
+	hal_pc_irq_handler 39
+	hal_pc_irq_handler 40
+	hal_pc_irq_handler 41
+	hal_pc_irq_handler 42
+	hal_pc_irq_handler 43
+	hal_pc_irq_handler 44
+	hal_pc_irq_handler 45
+	hal_pc_irq_handler 46
+	hal_pc_irq_handler 47
+
+
+	# default vsr entries: pop the vector code from the stack and return.
+default_vsr_iret:
+	add $4,%esp
+	iret
+
+#==============================================================================
+# Initial and interrupt stack
+
+#ifndef CYG_HAL_PPC_INTERRUPT_STACK_DEFINED
+	        
+	.bss
+	
+	.global cyg_interrupt_stack_base
+cyg_interrupt_stack_base:
+__interrupt_stack_base:
+	.rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
+	.byte 0
+	.endr
+	.balign 16
+	.global cyg_interrupt_stack
+cyg_interrupt_stack:
+__interrupt_stack:
+        
+        .long   0,0,0,0,0,0,0,0
+
+#endif	
+		
 #------------------------------------------------------------------------------
 # end of vectors.S

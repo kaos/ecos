@@ -58,4 +58,5 @@ cdl_package CYGPKG_DEVS_FLASH_MBX {
     }
 
     implements    CYGINT_DEVS_FLASH_AMD_AM29XXXXX_REQUIRED
+    requires      CYGHWR_DEVS_FLASH_AMD_AM29F040B
 }

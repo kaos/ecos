@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.          
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    jlarmour
-// Contributors: 
+// Contributors: jjohnstn
 // Date:         2000-04-18
 // Purpose:     
 // Description: 
@@ -54,39 +54,91 @@
 #include <locale.h>                // struct lconv
 #include <string.h>                // several string functions
 #include <limits.h>                // CHAR_MAX
-
-// TYPE DEFINITIONS
-
-// define a type to encapsulate the locale. In time this will get much
-// richer and complete
-
-typedef struct {
-    
-    const char *name;
-    struct lconv numdata;
-
-} Cyg_libc_locale_t;
-
+#include "internal.h"              // locale type definitions
 
 // CONSTANTS
 
 // define the "C" locale
 static const Cyg_libc_locale_t
-C_locale = { "C",
-             { ".", "", "", "", "", "", "", "", "", "",
-               CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX,
-               CHAR_MAX, CHAR_MAX
-             }
-           };
+C_locale = { 
+  "C",
+  { ".", "", "", "", "", "", "", "", "", "",
+    CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX,
+    CHAR_MAX, CHAR_MAX
+  },
+  1,
+  NULL,
+  NULL,
+};
+
+// define the "C-EUCJP" locale (C locale with Japanese EUCJP mb support)
+#ifdef CYGFUN_LIBC_I18N_LOCALE_C_EUCJP
+static const Cyg_libc_locale_t
+C_EUCJP_locale = { 
+  "C-EUCJP",
+  { ".", "", "", "", "", "", "", "", "", "",
+    CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX,
+    CHAR_MAX, CHAR_MAX
+  },
+  2,
+  &__mbtowc_jp,
+  &__wctomb_jp,
+};
+#endif
+
+// define the "C-SJIS" locale (C locale with Japanese SJIS mb support)
+#ifdef CYGFUN_LIBC_I18N_LOCALE_C_SJIS
+static const Cyg_libc_locale_t
+C_SJIS_locale = { 
+  "C-SJIS",
+  { ".", "", "", "", "", "", "", "", "", "",
+    CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX,
+    CHAR_MAX, CHAR_MAX
+  },
+  2,
+  &__mbtowc_jp,
+  &__wctomb_jp,
+};
+#endif
+
+// define the "C-JIS" locale (C locale with Japanese JIS mb support)
+#ifdef CYGFUN_LIBC_I18N_LOCALE_C_JIS
+static const Cyg_libc_locale_t
+C_JIS_locale = { 
+  "C-JIS",
+  { ".", "", "", "", "", "", "", "", "", "",
+    CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX, CHAR_MAX,
+    CHAR_MAX, CHAR_MAX
+  },
+  8,
+  &__mbtowc_jp,
+  &__wctomb_jp,
+};
+#endif
 
 // only one locale now, but leave room for expansion
-static const Cyg_libc_locale_t *all_locales[] = { &C_locale };
+static const Cyg_libc_locale_t *all_locales[] = { &C_locale,
+#ifdef CYGFUN_LIBC_I18N_LOCALE_C_EUCJP
+						  &C_EUCJP_locale,
+#endif
+#ifdef CYGFUN_LIBC_I18N_LOCALE_C_SJIS
+						  &C_SJIS_locale,
+#endif
+#ifdef CYGFUN_LIBC_I18N_LOCALE_C_JIS
+						  &C_JIS_locale,
+#endif
+};
 
 // GLOBALS
 
+// the maximum size of a multibyte character including state info
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+int __mb_cur_max = 1;
+#endif
+
 // the current locales. Our default is the C locale
 static const Cyg_libc_locale_t *current_collate_locale  = &C_locale;
-static const Cyg_libc_locale_t *current_ctype_locale    = &C_locale;
+const        Cyg_libc_locale_t *__current_ctype_locale  = &C_locale;
 static const Cyg_libc_locale_t *current_monetary_locale = &C_locale;
 static const Cyg_libc_locale_t *current_numeric_locale  = &C_locale;
 static const Cyg_libc_locale_t *current_time_locale     = &C_locale;
@@ -121,6 +173,15 @@ find_locale_data( const char *locale_str, cyg_ucount32 checklen )
     return curr_locale;
 } // find_locale_data()
 
+typedef int (*mbtowc_fn_type)(wchar_t *, const char *, size_t, int *);
+// routine used to export mbtowc function to I/O routines
+externC mbtowc_fn_type
+__get_current_locale_mbtowc_fn ()
+{
+    if (__current_ctype_locale->mbtowc_fn)
+      return __current_ctype_locale->mbtowc_fn;
+    return &__mbtowc_c;
+}
 
 externC char *
 setlocale( int category, const char *locale )
@@ -144,7 +205,7 @@ setlocale( int category, const char *locale )
             str = current_collate_locale->name;
             break;
         case LC_CTYPE:
-            str = current_ctype_locale->name;
+            str = __current_ctype_locale->name;
             break;
         case LC_MONETARY:
             str = current_monetary_locale->name;
@@ -166,7 +227,7 @@ setlocale( int category, const char *locale )
             strcpy( my_str, "#" );
             strcat( my_str, current_collate_locale->name );
             strcat( my_str, "#" );
-            strcat( my_str, current_ctype_locale->name );
+            strcat( my_str, __current_ctype_locale->name );
             strcat( my_str, "#" );
             strcat( my_str, current_monetary_locale->name );
             strcat( my_str, "#" );
@@ -205,7 +266,12 @@ setlocale( int category, const char *locale )
     case LC_CTYPE:
         loc = find_locale_data( locale, CYGNUM_LIBC_I18N_MAX_LOCALE_NAME_SIZE );
         if (loc != NULL)      // found it
-            current_ctype_locale=loc;
+	  {
+            __current_ctype_locale=loc;
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+	    __mb_cur_max = loc->mb_cur_max;
+#endif
+	  }
         break;
         
     case LC_MONETARY:
@@ -232,9 +298,12 @@ setlocale( int category, const char *locale )
         if (loc != NULL) {     // found it
 
             CYG_TRACE0(true, "Matched locale string exactly");
-            current_collate_locale = current_ctype_locale = loc;
+            current_collate_locale = __current_ctype_locale = loc;
             current_monetary_locale = current_numeric_locale = loc;
             current_time_locale = loc;
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+	    __mb_cur_max = loc->mb_cur_max;
+#endif
         } // if
         else {
             CYG_TRACE0( true, "Attempting to parse string previously "
@@ -292,7 +361,10 @@ setlocale( int category, const char *locale )
                       // then everything's fine, and we've matched everything
                                         
                       current_collate_locale = temp_collate_locale;
-                      current_ctype_locale = temp_ctype_locale;
+                      __current_ctype_locale = temp_ctype_locale;
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+		      __mb_cur_max = temp_ctype_locale->mb_cur_max;
+#endif
                       current_monetary_locale = temp_monetary_locale;
                       current_numeric_locale = temp_numeric_locale;
                       current_time_locale = temp_time_locale;

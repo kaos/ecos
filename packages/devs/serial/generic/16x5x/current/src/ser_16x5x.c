@@ -50,7 +50,7 @@
 #include <cyg/io/devtab.h>
 #include <cyg/io/serial.h>
 #include <cyg/infra/diag.h>
-
+#include <cyg/infra/cyg_ass.h>
 #include <cyg/hal/hal_io.h>
 
 // Only compile driver if an inline file with driver details was selected.
@@ -110,17 +110,21 @@
 #define LSR_FIE 0x80
 
 // Modem Control Register
-#define MCR_DTR 0x01
-#define MCR_RTS 0x02
-#define MCR_INT 0x08   // Enable interrupts
+#define MCR_DTR  0x01
+#define MCR_RTS  0x02
+#define MCR_INT  0x08   // Enable interrupts
+#define MCR_LOOP 0x10   // Loopback mode
 
 // Interrupt status Register
-#define ISR_MS  0x00
-#define ISR_nIP 0x01
-#define ISR_Tx  0x02
-#define ISR_LS  0x06
-#define ISR_Rx  0x04
-#define ISR_RxTO  0x0C
+#define ISR_MS        0x00
+#define ISR_nIP       0x01
+#define ISR_Tx        0x02
+#define ISR_Rx        0x04
+#define ISR_LS        0x06
+#define ISR_RxTO      0x0C
+#define ISR_64BFIFO   0x20
+#define ISR_FIFOworks 0x40
+#define ISR_FIFOen    0x80
 
 // Modem Status Register
 #define MSR_DCTS 0x01
@@ -172,6 +176,15 @@ typedef struct pc_serial_info {
     int            int_num;
     cyg_interrupt  serial_interrupt;
     cyg_handle_t   serial_interrupt_handle;
+#ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
+    enum {
+        sNone = 0,
+        s8250,
+        s16450,
+        s16550,
+        s16550a
+    } deviceType;
+#endif
 } pc_serial_info;
 
 static bool pc_serial_init(struct cyg_devtab_entry *tab);
@@ -225,20 +238,61 @@ serial_config_port(serial_channel *chan,
     if (init) {
 #ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
         unsigned char _fcr_thresh;
+        cyg_uint8 b;
 
-        switch(CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO_RX_THRESHOLD) {
-        default:
-        case 1:
-            _fcr_thresh=FCR_RT1; break;
-        case 4:
-            _fcr_thresh=FCR_RT4; break;
-        case 8:
-            _fcr_thresh=FCR_RT8; break;
-        case 14:
-            _fcr_thresh=FCR_RT14; break;
+        /* First, find out what kind of device it is. */
+        ser_chan->deviceType = sNone;
+        HAL_WRITE_UINT8(base+REG_mcr, MCR_LOOP); // enable loopback mode
+        HAL_READ_UINT8(base+REG_msr, b);         
+        if (0 == (b & 0xF0)) {   // see if MSR had CD, RI, DSR or CTS set
+            HAL_WRITE_UINT8(base+REG_mcr, MCR_LOOP|MCR_DTR|MCR_RTS);
+            HAL_READ_UINT8(base+REG_msr, b);
+            if (0xF0 != (b & 0xF0))  // check that all of CD,RI,DSR and CTS set
+                ser_chan->deviceType = s8250;
         }
-        _fcr_thresh|=FCR_FE|FCR_CRF|FCR_CTF;
-        HAL_WRITE_UINT8(base+REG_fcr, _fcr_thresh);  // Enable and clear FIFO
+        HAL_WRITE_UINT8(base+REG_mcr, 0); // disable loopback mode
+
+        if (ser_chan->deviceType == s8250) {
+            // Check for a scratch register; scratch register 
+            // indicates 16450 or above.
+            HAL_WRITE_UINT8(base+REG_scr, 0x55);
+            HAL_READ_UINT8(base+REG_scr, b);
+            if (b == 0x55) {
+                HAL_WRITE_UINT8(base+REG_scr, 0xAA);
+                HAL_READ_UINT8(base+REG_scr, b);
+                if (b == 0xAA)
+                    ser_chan->deviceType = s16450;
+            }
+        }
+
+        if (ser_chan->deviceType == s16450) {
+            // Check for a FIFO
+            HAL_WRITE_UINT8(base+REG_fcr, FCR_FE);
+            HAL_READ_UINT8(base+REG_isr, b);
+            if (b & ISR_FIFOen)
+                ser_chan->deviceType = s16550; // but FIFO doesn't 
+                                               // necessarily work
+            if (b & ISR_FIFOworks)
+                ser_chan->deviceType = s16550a; // 16550a FIFOs work
+        }
+
+        if (ser_chan->deviceType == s16550a) {
+            switch(CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO_RX_THRESHOLD) {
+            default:
+            case 1:
+                _fcr_thresh=FCR_RT1; break;
+            case 4:
+                _fcr_thresh=FCR_RT4; break;
+            case 8:
+                _fcr_thresh=FCR_RT8; break;
+            case 14:
+                _fcr_thresh=FCR_RT14; break;
+            }
+            _fcr_thresh|=FCR_FE|FCR_CRF|FCR_CTF;
+            HAL_WRITE_UINT8(base+REG_fcr, _fcr_thresh); // Enable and clear FIFO
+        }
+        else
+            HAL_WRITE_UINT8(base+REG_fcr, 0); // make sure it's disabled
 #endif
         if (chan->out_cbuf.len != 0) {
             _ier = IER_RCV;
@@ -311,13 +365,12 @@ pc_serial_putc(serial_channel *chan, unsigned char c)
 
     HAL_READ_UINT8(base+REG_lsr, _lsr);
     if (_lsr & LSR_THE) {
-// Transmit buffer is empty
+        // Transmit buffer is empty
         HAL_WRITE_UINT8(base+REG_thr, c);
         return true;
-    } else {
-// No space
-        return false;
     }
+    // No space
+    return false;
 }
 
 // Fetch a character from the device input buffer, waiting if necessary
@@ -526,6 +579,11 @@ pc_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
             }
             break;
 #endif
+        default:
+            // Yes, this assertion may well not be visible. *But*
+            // if debugging, we may still successfully hit a breakpoint
+            // on cyg_assert_fail, which _is_ useful
+            CYG_FAIL("unhandled serial interrupt state");
         }
 
         HAL_READ_UINT8(base+REG_isr, _isr);

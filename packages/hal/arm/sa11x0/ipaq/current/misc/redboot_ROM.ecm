@@ -38,7 +38,7 @@ cdl_option CYGBLD_BUILD_GDB_STUBS {
 };
 
 cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
-    user_value 4
+    user_value 3
 };
 
 cdl_option CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE {

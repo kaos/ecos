@@ -22,7 +22,6 @@
 
 #include <pkgconf/hal.h>
 
-#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 #ifdef CYGPKG_HAL_I386_SIM
 #error "GDB Stub support not implemented for i386 SIM"
@@ -31,6 +30,7 @@
 #include <cyg/hal/hal_stub.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/i386_stub.h>
 
 #ifndef FALSE
 #define FALSE 0
@@ -40,6 +40,8 @@
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
 #include <cyg/hal/dbg-threads-api.h>    // dbg_currthread_id
 #endif
+
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 /* Given a trap value TRAP, return the corresponding signal. */
 
@@ -92,10 +94,16 @@ int __computeSignal (unsigned int trap_number)
 
 int __get_trap_number (void)
 {
+#if 1
+    // The vector is not not part of the GDB register set so get it
+    // directly from the HAL saved context.
+    return _hal_registers->vector;
+#else
 	extern int hal_pc_trap_number ;
     // The vector is not not part of the GDB register set so get it
     // directly from the save context.
     return hal_pc_trap_number ;
+#endif        
 }
 
 /* Set the currently-saved pc register value to PC. */
@@ -135,25 +143,7 @@ void __install_breakpoints (void)
 
 void __clear_breakpoints (void)
 {
-#ifdef CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
-	extern cyg_uint32 hal_pc_break_pc ;
-	if (hal_pc_break_pc)
-	{
-		cyg_hal_gdb_remove_break(hal_pc_break_pc) ;
-#if 0                
-		hal_pc_break_pc = 0 ;
-//		asm("movl %0, %%dr0" : /* No outputs */ : "m" (hal_pc_break_pc)) ;
-		asm("
-			movl %%dr7, %%eax
-			andl $0xFFFFFFFC, %%eax
-			movl %%eax, %%dr7"
-		:	/* No outputs. */
-		:	/* No inputs. */
-		:	"eax");
-#endif                
-	}
-#endif
-
+    __clear_breakpoint_list();
 }
 
 /* If the breakpoint we hit is in the breakpoint() instruction, return a
@@ -178,31 +168,42 @@ void __skipinst (void)
 //	FIXME() ;
 }
 
+#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
-#if 0
-void hal_get_gdb_registers(target_register_t * d, HAL_SavedRegisters * s)
+//----------------------------------------------------------------------
+// We apparently need these function even when no stubinclude
+// for Thread Debug purposes
+
+void hal_get_gdb_registers(CYG_ADDRWORD * d, HAL_SavedRegisters * s)
 {
-	d[ESP] = s->esp ;
 	d[ESP] = s->esp ;
 	d[EBP] = s->ebp ;
-	d[EBX] = s->ebx ;
 	d[ESI] = s->esi ;
 	d[EDI] = s->edi ;
-	d[PC] = s->eip ;
+	d[EAX] = s->eax ;
+	d[EBX] = s->ebx ;
+	d[ECX] = s->ecx ;
+	d[EDX] = s->edx ;
+	d[PC]  = s->pc ;
+	d[CS]  = s->cs ;
+	d[PS]  = s->eflags ;
 }
 
-
-void hal_set_gdb_registers(HAL_SavedRegisters * d, target_register_t * s)
+void hal_set_gdb_registers(HAL_SavedRegisters * d, CYG_ADDRWORD * s)
 {
-	d->esp = s[ESP] ;
-	d->next_context = 0 ;
-	d->ebp = s[EBP] ;
-	d->ebx = s[EBX] ;
-	d->esi = s[ESI] ;
-	d->edi = s[EDI] ;
-	d->eip = s[PC] ;
+	d->esp    = s[ESP] ;
+	d->ebp    = s[EBP] ;
+	d->eax    = s[EAX] ;
+	d->ebx    = s[EBX] ;
+	d->ecx    = s[ECX] ;
+	d->edx    = s[EDX] ;
+	d->esi    = s[ESI] ;
+	d->edi    = s[EDI] ;
+	d->pc     = s[PC] ;
+	d->cs     = s[CS] ;
+	d->eflags = s[PS] ;
 }
-#endif
 
 
-#endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+//----------------------------------------------------------------------
+// End

@@ -1,3 +1,11 @@
+2001-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Scrub cache according to erratum #31.
+
+	* src/var_mk_defs.c: Added.
+
+	* cdl/hal_mips_rm7000.cdl: Make var_defs.inc.
+
 2001-05-23  Jesper Skov  <jskov@redhat.com>
 
 	* src/mips_rm7000.ld: Added .2ram handling.

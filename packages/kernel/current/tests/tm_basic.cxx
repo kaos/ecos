@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -62,7 +62,6 @@
 #if defined(CYGFUN_KERNEL_API_C) &&             \
     defined(CYGSEM_KERNEL_SCHED_MLQUEUE) &&     \
     defined(CYGVAR_KERNEL_COUNTERS_CLOCK) &&    \
-    !defined(CYGPKG_HAL_I386_LINUX) &&          \
     !defined(CYGDBG_INFRA_DIAG_USE_DEVICE) &&   \
     (CYGNUM_KERNEL_SCHED_PRIORITIES > 12)
 
@@ -1732,7 +1731,6 @@ cyg_start( void )
                 "CYGFUN_KERNEL_API_C && \n"
                 "CYGSEM_KERNEL_SCHED_MLQUEUE &&\n"
                 "CYGVAR_KERNEL_COUNTERS_CLOCK &&\n"
-                "!CYGPKG_HAL_I386_LINUX &&\n"
                 "!CYGDBG_INFRA_DIAG_USE_DEVICE &&\n"
                 "(CYGNUM_KERNEL_SCHED_PRIORITIES > 12)\n");
 }

@@ -46,6 +46,7 @@
 
 
 #include <pkgconf/system.h>
+#include <pkgconf/hal_mips.h>
 
 #include <cyg/hal/hal_io.h>
 
@@ -56,8 +57,27 @@ extern "C" {
 #define NUMREGS    90
 
 #if defined(__mips64)
+  // The simple case of 64-bit regs represented to GDB as 64-bit regs.
+
   #define REGSIZE(X) 8
   typedef unsigned long long target_register_t;
+
+# ifdef CYGINT_HAL_MIPS_STUB_REPRESENT_32BIT_AS_64BIT
+#  error __mips64 & CYGINT_HAL_MIPS_STUB_REPRESENT_32BIT_AS_64BIT
+# endif
+
+#elif defined(CYGINT_HAL_MIPS_STUB_REPRESENT_32BIT_AS_64BIT)
+
+    // This is a catch-all for the common case:
+    // Even though we are only working with 32 bit registers, GDB expects 64 bits
+#define REGSIZE(X) 8
+typedef unsigned long target_register_t;
+    // We need to sign-extend the registers so GDB doesn't get confused.
+#define CYGARC_SIGN_EXTEND_REGISTERS
+
+    // The following platform-specific cases can be removed as/when/if they
+    // get modified to implement CYGINT_HAL_MIPS_STUB_REPRESENT_32BIT_AS_64BIT
+
 #elif defined(CYGPKG_HAL_MIPS_VR4300)
   // Even though we are only working with 32 bit registers, GDB expects 64 bits
   #define REGSIZE(X) 8
@@ -86,6 +106,8 @@ extern "C" {
   // We need to sign-extend the registers so GDB doesn't get confused.
   #define CYGARC_SIGN_EXTEND_REGISTERS
 #else
+
+  // The simplest case of 32-bit regs represented to GDB as 32-bit regs.
   #define REGSIZE(X) 4
   typedef unsigned long target_register_t;
 #endif

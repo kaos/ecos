@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.          
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -80,6 +80,7 @@
 // CONFIGURATION
 
 #include <pkgconf/libc_stdio.h>   // Configuration header
+#include <pkgconf/libc_i18n.h>    // Configuration header for mb support
 
 // INCLUDES
 
@@ -116,7 +117,10 @@ cvt( double, int, int, char *, int, char *, char * );
  * This code is large and complicated...
  */
 
-
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+typedef int (*mbtowc_fn_type)(wchar_t *, const char *, size_t, int *);
+externC mbtowc_fn_type __get_current_locale_mbtowc_fn();
+#endif
 
 /*
  * Macros for converting digits to letters and vice versa
@@ -138,18 +142,6 @@ cvt( double, int, int, char *, int, char *, char * );
 #define ZEROPAD         0x080           /* zero (as opposed to blank) pad */
 #define FPT             0x100           /* Floating point number */
 
-static int
-__mbtowc(char *pwc, const char *s, size_t n)
-{
-        if (s == NULL)
-                return 0;
-        if (n == 0)
-                return -1;
-        if (pwc)
-                *pwc = (char) *s;
-        return (*s != '\0');
-}
-
 externC int 
 vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg)
 {
@@ -158,11 +150,17 @@ vfnprintf ( FILE *stream, size_t n, const char *format, va_list arg)
         int x, y;      /* handy integers (short term usage) */
         char *cp;      /* handy char pointer (short term usage) */
         int flags;     /* flags as above */
+
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+	int state = 0; /* state for mbtowc conversion */
+	mbtowc_fn_type mbtowc_fn;
+#endif
+
         int ret;                /* return value accumulator */
         int width;              /* width from format (%8d), or 0 */
         int prec;               /* precision from format (%.3d), or -1 */
         char sign;              /* sign prefix (' ', '+', '-', or \0) */
-        char wc;
+        wchar_t wc;
 
 #define quad_t    long long
 #define u_quad_t  unsigned long long
@@ -243,13 +241,20 @@ CYG_MACRO_END
         xdigs = NULL;  // stop compiler whinging
         fmt = (char *)format;
         ret = 0;
+#ifdef CYGINT_LIBC_I18N_MB_REQUIRED
+	mbtowc_fn = __get_current_locale_mbtowc_fn();
+#endif
 
         /*
          * Scan the format for conversions (`%' character).
          */
         for (;;) {
                 cp = (char *)fmt;
-                while ((x = __mbtowc(&wc, fmt, 1)) > 0) {
+#ifndef CYGINT_LIBC_I18N_MB_REQUIRED
+		while ((x = ((wc = *fmt) != 0))) {
+#else
+                while ((x = mbtowc_fn (&wc, fmt, MB_CUR_MAX, &state)) > 0) {
+#endif
                         fmt += x;
                         if (wc == '%') {
                                 fmt--;

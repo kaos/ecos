@@ -1,3 +1,13 @@
+2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/stdlib.h: Actually set MB_CUR_MAX in i18n package via header.
+	* cdl/isoinfra.cdl: Define multibyte char headers/interfaces
+
+2000-06-08  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* include/stdlib.h: Add code to set MB_CUR_MAX to __mb_cur_max
+	if CYGFUN_LIBC_I18N_MB is defined, otherwise set it to 1.
+
 2001-02-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/isoinfra.cdl: Add CYGPKG_ISO_UNISTD to deal with unistd.h
@@ -241,7 +251,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc. 
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

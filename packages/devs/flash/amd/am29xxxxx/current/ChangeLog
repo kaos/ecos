@@ -1,3 +1,14 @@
+2001-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash_am29xxxxx_parts.inl: New file with just part
+	data.
+
+	* include/flash_am29xxxxx.inl: Leave more space for bootblock
+	offsets. Moved part table data to separate file.
+
+	* cdl/flash_amd_am29xxxxx.cdl: Added config options to control
+	inclusion of table data for various parts.
+
 2001-05-29  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash_am29xxxxx.inl (flash_hwr_init): Call platform init

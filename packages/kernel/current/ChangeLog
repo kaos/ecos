@@ -1,3 +1,9 @@
+2001-06-06  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/clocktruth.cxx: New file.  A test to get a sanity check on
+	whether the clock is accurate to wallclock time, only useful for
+	humans to watch really.  But important!
+
 2001-05-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/thread.hxx (class Cyg_HardwareThread): Remove unused
@@ -11,6 +17,30 @@
 
 	* src/sched/mlqueue.cxx (add_thread): No need to explicitly clear
 	thread->queue.
+
+2001-04-26  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* tests/intr0.cxx: 
+	* tests/kintr0.c:
+	Fixed these two tests so that they work properly on architectures
+	where CYGNUM_HAL_ISR_MIN is not zero. These include the x86 and
+	V850.
+
+2001-04-18  Bart Veer  <bartv@redhat.com>
+
+	* tests/dhrystone.c:
+	Fix the conditional for STDIO_FORMATTED_IO
+
+2001-04-17  Bart Veer  <bartv@redhat.com>
+
+	* tests/stress_threads.c (setup_death_alarm):
+	Cope with synthetic target reorg
+
+	* tests/except1.cxx, tests/kexcept1.c:
+	Reenable for the synthetic target
+
+	* tests/tm_basic.cxx:
+	Reenable for the synthetic target
 
 2001-04-17  Jesper Skov  <jskov@redhat.com>
 

@@ -1,3 +1,13 @@
+2001-06-08  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* src/input/vfscanf.cxx (vfscanf)[CYGINT_LIBC_I18N_MB_REQUIRED]: Added
+	call to mbtowc_fn for current locale to process format string.
+	Also added variable definitions needed in this circumstance.
+	* src/output/vfnprintf.cxx (vfnprintf)[CYGINT_LIBC_I18N_MB_REQUIRED]: Ditto.
+	(vfnprintf): Changed non-multibyte path to simply use the current
+	character rather than call the C mbtowc function since only
+	single byte characters would be possible. 
+
 2001-03-19  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/common/stream.cxx (refill_read_buffer): Flush all streams here...
@@ -214,7 +224,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.          
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

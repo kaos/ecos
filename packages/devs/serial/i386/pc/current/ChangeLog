@@ -1,3 +1,14 @@
+2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/i386_pc_ser.inl: Use generic 16x5x driver now.
+
+	* cdl/ser_i386_pc.cdl: Define necessary options to use generic
+	16x5x driver.
+	Fix IRQ->INT in CDL display strings.
+
+	* src/pc_serial.c: Removed in favour of generic driver.
+	* src/pc_serial.h: Ditto.
+
 2000-10-12  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/ser_i386_pc.cdl: Moved testing parameters here.
@@ -1170,7 +1181,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.  
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

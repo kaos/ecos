@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -73,7 +73,11 @@ parse(char *line, int *argc, char **argv)
         if (!*cp) {
             break;  // Line ended with a string of spaces
         }
-        argv[indx++] = cp;
+        if (indx < MAX_ARGV) {
+            argv[indx++] = cp;
+        } else {
+            printf("Too many arguments - stopped at: '%s'\n", cp);
+        }
         while (*cp) {
             if (*cp == ' ') {
                 *cp++ = '\0';

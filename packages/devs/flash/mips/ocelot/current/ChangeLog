@@ -1,3 +1,7 @@
+2001-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/flash_mips_ocelot.cdl: Require AM29F040B support.
+
 2001-05-28  Jesper Skov  <jskov@redhat.com>
 
 	* src/mips_ocelot_flash.c: Specify data width now driver

@@ -120,13 +120,13 @@ void intr0_main( void )
 
     // Make sure the chosen levels are not already in use.
     int in_use;
-    cyg_vector lvl1 = (CYGNUM_HAL_ISR_MIN + 1) % (CYGNUM_HAL_ISR_COUNT);
+    cyg_vector lvl1 = CYGNUM_HAL_ISR_MIN + (1 % CYGNUM_HAL_ISR_COUNT);
     HAL_INTERRUPT_IN_USE( lvl1, in_use );
     Cyg_Interrupt* intr0 = NULL;
     if (!in_use)
         intr0 = new((void *)&intr0_obj[0]) Cyg_Interrupt( lvl1, 1, (CYG_ADDRWORD)777, isr0, dsr0 );
      
-    cyg_vector lvl2 = (CYGNUM_HAL_ISR_MIN + 15) % (CYGNUM_HAL_ISR_COUNT);
+    cyg_vector lvl2 = CYGNUM_HAL_ISR_MIN + ( 15 % CYGNUM_HAL_ISR_COUNT);
     HAL_INTERRUPT_IN_USE( lvl2, in_use );
     Cyg_Interrupt* intr1 = NULL;
     if (!in_use && lvl1 != lvl2)
@@ -179,7 +179,7 @@ void intr0_main( void )
         v1 = 12 % CYGNUM_HAL_ISR_COUNT;
     else /* NOTE TRAILING ELSE... */
 #endif
-    v1 = (CYGNUM_HAL_ISR_MIN + 6) % CYGNUM_HAL_ISR_COUNT;
+    v1 = CYGNUM_HAL_ISR_MIN + (6 % CYGNUM_HAL_ISR_COUNT);
 
     Cyg_Interrupt::mask_interrupt(v1);
     Cyg_Interrupt::unmask_interrupt(v1);

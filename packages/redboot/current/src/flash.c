@@ -977,8 +977,11 @@ fis_load(int argc, char *argv[])
         // error value.
         err = (*_dc_close)(p, err);
 
-        if (0 != err && p->msg)
-            printf("zlib: %s\n", p->msg);
+        if (0 != err && p->msg) {
+            printf("decompression error: %s\n", p->msg);
+        } else {
+            printf("Image loaded from %p-%p\n", (unsigned char *)mem_addr, p->out_buf);
+        }
 
     } else // dangling block
 #endif
@@ -1498,7 +1501,7 @@ do_alias(int argc, char *argv[])
         opt.enable_sense = 1;
         opt.key = name;
         opt.dflt = (unsigned long)argv[2];
-        flash_add_config(&opt);
+        flash_add_config(&opt, true);
         break;
     default:
         printf("usage: alias name [value]\n");
@@ -1519,14 +1522,15 @@ lookup_alias(char *alias)
     }
 }
 
-void
-expand_aliases(char *line, int len)
+bool
+_expand_aliases(char *line, int len)
 {
     char *lp = line;
     char *ms, *me, *ep;
     char *alias;
     char c;
     int offset, line_len, alias_len;
+    bool macro_found = false;
 
     if ((line_len = strlen(line)) != 0) {
         while (*lp) {
@@ -1538,7 +1542,8 @@ expand_aliases(char *line, int len)
                 while (*lp && (*lp != '}')) lp++;
                 if (!*lp) {
                     printf("Invalid macro/alias '%s'\n", ms);
-                    return;
+                    line[0] = '\0';  // Destroy line
+                    return false;
                 }
                 me = lp;
                 *me = '\0';
@@ -1558,11 +1563,14 @@ expand_aliases(char *line, int len)
                         // Insert the macro/alias data
                         lp = ms-2;
                         while (*alias) {
+                            if ((alias[0] == '%') && (alias[1] == '{')) macro_found = true;
                             *lp++ = *alias++;
                         }
                         line_len = strlen(line);
                     } else {
                         printf("No room to expand '%s'\n", ms);
+                        line[0] = '\0';  // Destroy line
+                        return false;
                     }
                 } else {
                     printf("Alias '%s' not defined\n", ms);
@@ -1574,6 +1582,13 @@ expand_aliases(char *line, int len)
             }            
         }
     }
+    return macro_found;
+}
+
+void
+expand_aliases(char *line, int len)
+{
+    while (_expand_aliases(line, len)) ;
 }
 #endif //  CYGSEM_REDBOOT_FLASH_ALIASES
 
@@ -1714,7 +1729,7 @@ flash_config_insert_value(unsigned char *dp, struct config_option *opt)
 // Add a new option to the database
 //
 bool
-flash_add_config(struct config_option *opt)
+flash_add_config(struct config_option *opt, bool update)
 {
     unsigned char *dp, *kp;
     int len, elen, size;
@@ -1723,7 +1738,9 @@ flash_add_config(struct config_option *opt)
     // Note: only the data value can be thusly changed
     if ((dp = flash_lookup_config(opt->key)) != (unsigned char *)NULL) {
         flash_config_insert_value(CONFIG_OBJECT_VALUE(dp), opt);
-        flash_write_config();
+        if (update) {
+            flash_write_config();
+        }
         return true;
     }
     // Add the data item
@@ -1756,6 +1773,9 @@ flash_add_config(struct config_option *opt)
                 *dp++ = '\0';    
             }
             flash_config_insert_value(dp, opt);
+            if (update) {
+                flash_write_config();
+            }
             return true;
         } else {
             len = 4 + CONFIG_OBJECT_KEYLEN(dp) + CONFIG_OBJECT_ENABLE_KEYLEN(dp) +
@@ -1780,7 +1800,7 @@ config_init(void)
 
     memset(&config, 0, sizeof(config));
     while (opt != optend) {
-        if (!flash_add_config(opt)) {
+        if (!flash_add_config(opt, false)) {
             return;
         }
         opt++;

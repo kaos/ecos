@@ -47,173 +47,45 @@
 
 #include <cyg/hal/i386.inc>
 
+#include <cyg/hal/pcmb.inc>	
 
 ##=============================================================================
 ## CPU initialization
+
+#ifndef CYGPKG_HAL_I386_CPU_INIT_DEFINED
 	
 #define CYGPKG_HAL_I386_CPU_INIT_DEFINED
 
-	.macro 	hal_cpu_init
+##=============================================================================
+## ROM startup
 
-#ifdef CYG_HAL_STARTUP_FLOPPY
-	
-	/* This code is loaded from a floppy disk when the PC powers up.  */
+#ifdef CYG_HAL_STARTUP_ROM
 
-	.code16
+	.macro	hal_cpu_init
 
-	.extern _end
+hal_cpu_init_start:
 
-	sectorsPerTrack = 18
-	bytesPerSector = 512
-	esPerSector = 32	/* = 512/16 */
-
-	cld				/* always count up. */
-
-	/* Configure a stack that we can use. */
-	
-	movl 	$_start, %eax
-	movw 	%ax, %sp
-	shr 	$4, %eax
-	andl 	$0xF000, %eax
-	movw 	%ax, %ss
-
-	/* Ask the BIOS for info about the amount of RAM available.  We push
-         * these onto the stack for later use.
-	 */
-	
-	xorl 	%eax, %eax
-	movb 	$0x88, %ah		/* Get the amount of extended memory. */
-	int 	$0x15
-	shl 	$10, %eax
-	pushl 	%eax
-
-	xorl	%eax, %eax
-	int	$0x12			/* Get the amount of standard memory. */
-	shl	$10, %eax
-	pushl	%eax
-
-	/* reset floppy */
-	movb $0,%ah
-	movb $0,%dl
-	int $0x13
-	jc _error
-	
-	/* Read the rest of the image to _start.  This code works by reading
-	   only one sector at a time to avoid "buffer cross 64k boundary" fatal
-	   problem... This is slow but should work in almost all situations.
-	   _start should be aligned on a 512 bytes boundary to be sure.
-	*/
-	
-	/* destination pointer es:bx */
-	/* With correct alignement, bx should be 0 and es should be a multiple
-         * of 32. If not it may cause the "buffer cross 64k boundary" problem
-         * (cf above)
-	 */   
-	movl	$_start,%eax
-	movw	%ax,%bx
-	andw	$0xF,%bx
-	shrl	$4,%eax
-	movw	%ax, %es
-
-	/* initials head/track/sector */
-	movw	$0,%dx
-	movw	$1,%cx
-	
-	xorl	%edi,%edi
-	jmp	_loadsector
-
-_nextsector:
-	addw	$esPerSector, %di	/* advance buffer pointer */
-	shll	$4,%edi
-	cmpl	$_edata,%edi
-	jg	_endload	/* next sector ? */
-	shrl	$4,%edi
-	movw	%di,%es
-	incb	%cl
-        cmpb	$sectorsPerTrack, %cl 
-        jbe	_loadsector	/* next head ?*/
-	movb	$1, %cl
-        incb	%dh    
-        cmpb	$1, %dh
-        je	_loadsector	/* next track ? */
-        movb	$0, %dh
-        incb	%ch    
-
-_loadsector:
-
-	pushw	%es
-	movw	$0x0201, %ax
-	int	$0x13
-	popw	%di
-	jc _error
-
-	movw	$(0x0E*256+'.'), %ax	/* print a dot */
-	int	$0x10
-
-	/* So go ahead and resume execution at the real starting address.  This
-	only serves to move us quickly to the real starting location; and has
-	no effect after reading additional tracks.  If we didn't jump after
-	reading the first track, then we limit ourselves to reading images of
-	30k bytes max before overwriting ourselves at 0x7C00.
-	*/
-
-	ljmp $0,$_nextsector	
-
-_error:		/* halt on error */
-	cli
-	hlt
-	jmp _start
-	/* Write the 0x55/0xAA signature at the end of the first
-	block.  Without this signature the BIOS won't consider this
-	block to be bootable.  
-	*/
-	
-	. = _start + 510
-	.byte	0x55
-	.byte	0xAA
-
-_endload:
-1:
-
-	/* Lets be nice and wait for the diskette drive motor to go off
-         * before continuing. */
-	
-	movw	$0x40, %ax
-	movw	%ax, %es
-	movl	$0x40, %ebx
-2:	es
-	movb	(%bx), %al
-	cmpb	$0, %al
-	jne	2b
-
-	/* Now we're all loaded up in memory. */
-
-	/* Disable interrupt handling. */
+	# Disable interrupt handling.
 	cli
 
-	/* Load GDTR and IDTR. */
+	# Make a GDT pointer in location 0 and load new GDTR
+	movw	$(gdtEnd - gdtStart),%ax
+	movw	%ax,0
+	leal	gdtStart,%eax
+	movl	%eax,2
+	lgdt	0
 
-	lgdt	%cs:gdt
-	lidt	%cs:idt
+	# Make an IDT pointer in location 0 and load new LDTR
+	movw	$0x77F,%eax
+	movw	%eax,0
+	leal	idtStart,%eax
+	movl	%eax,2	
+	lidt	0
 
-	/* Switch to protected mode. */
-	movl	%cr0,%eax
-	orb	$1, %al
-	movl	%eax,%cr0
-	ljmp	$8, $3f
+	# Jump long to reload CS
+	jmpl	$8,$3f
 
-	hlt
-
-	.align	4, 0xFF
-gdt:
-	.word	gdtEnd - gdtStart
-	.long	gdtStart
-
-	.align	4, 0xFF
-idt:
-	.word	0x07FF		/* Allow space for 256 interrupt vectors. */
-	.long	0
-
+	.align	4, 0xFF	
 gdtStart:
 	/* Selector 0x00 == invalid. */
 	.word	0x0000
@@ -260,186 +132,106 @@ gdtStart:
 	.align	4, 0xFF
 gdtEnd:
 
-	.code32
 3:
-
+	# Set up data selectors
 	movw	$0x10, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
 	movw	%ax, %fs
 	movw	%ax, %gs
 
-	/* Make our new stack point to the same place as the old one. */
-	xorl	%ebx, %ebx
-	movw	%ss, %bx
-	shl	$4, %ebx
-	addl	%esp, %ebx
-	movw	%ax, %ss
-	movl	%ebx, %esp
-	movl	$0, %ebp
+	# Set up SP
+	movl	$__interrupt_stack,%esp
+	
+	/* Reset the flags register. */
+	push	$0
+	popf
 
-/* Reset the flags register. */
-	pushl	$0
-	popfl
+hal_cpu_init_end:
+        nop
 
-/* Save the standard and extended memory lengths into some static variables...
-	I'm predicting that someone is going to break our way of passing a
-        pointer to this structure...  may as well avoid that problem now.
-*/
-	.data
-	.align	4
-	.globl	pc_standard_memory_size
-pc_standard_memory_size:
-	.long		0
-	.globl	pc_extended_memory_size
-pc_extended_memory_size:
-	.long		0
-	.text
-	movl	0(%esp), %eax
-	movl	4(%esp), %ebx
-	movl	%eax, pc_standard_memory_size
-	movl	%ebx, pc_extended_memory_size
-
-/* _pc_entry() takes a pointer to our startup array (which only has standard
-	and extended memory sizes in it, on the stack).
-*/
-	movl	%esp, %ebx	/* They are the last parameters on the stack. */
-	pushl	%ebx
-
-#endif /* CYG_HAL_STARTUP_FLOPPY */
-
+	.endm	
+#endif	
+	
+	
+##=============================================================================
+## RAM startup	
+	
 #ifdef CYG_HAL_STARTUP_RAM
 
-	/* In this case, the sizes of memory are pointed to by a pointer in IRQ
-	vector 15.
-	*/
-	
-	/* Save the standard and extended memory lengths into some static
-         * variables...
-	 */
-	.data
-	.align	4
-	.globl	pc_standard_memory_size
-pc_standard_memory_size:
-	.long	0
-	.globl	pc_extended_memory_size
-pc_extended_memory_size:
-	.long	0
-	.text
-	movl	(15 * 8), %ebp
-	movl	0(%ebp), %eax
-	movl	4(%ebp), %ebx
-	movl	%eax, pc_standard_memory_size
-	movl	%ebx, pc_extended_memory_size
-
-#endif /* CYG_HAL_STARTUP_RAM */
-
-	.endm /* hal_cpu_init */
-
-
-##=============================================================================
-## Interrupt controller support
-	
-#define CYGPKG_HAL_I386_INTC_INIT_DEFINED
-	
-	.macro	hal_intc_init
-
-	# The interrupt controller is configured so that IRQ levels 0-7 trigger
-	#  interrupt vector 32-39; levels 8-15 trigger 40-47.
-	movb	$0x11, %al
-	outb	%al, $0x20
-	movb	$0x20, %al
-	outb	%al, $0x21
-	movb	$0x04, %al
-	outb	%al, $0x21
-	movb	$0x01, %al
-	outb	%al, $0x21
-	movb	$0xFF, %al			/* Mask off all interrupts. */
-	outb	%al, $0x21
-
-	movb	$0x11, %al
-	outb	%al, $0xA0
-	movb	$0x28, %al
-	outb	%al, $0xA1
-	movb	$0x02, %al
-	outb	%al, $0xA1
-	movb	$0x01, %al
-	outb	%al, $0xA1
-	movb	 $0xFF, %al			/* Mask off all interrupts. */
-	outb	%al, $0xA1
-
-	.endm /* hal_intc_init */
-
-	.macro hal_intc_ack vector
-	# Use any registers you like.
-	movl	\vector, %edx
-	movb	$0x20, %al
-	cmpl	$0x20, %edx
-	jl	8f
-	cmpl	$0x30, %edx
-	jl	9f
-	outb	%al, $0xA0
-9:	outb	%al, $0x20
-8:	nop
+	.macro	hal_cpu_init
 	.endm
 	
+#endif /* CYG_HAL_STARTUP_RAM */
+
+#endif // CYGPKG_HAL_I386_CPU_INIT_DEFINED
+
 ##=============================================================================
-## FPU support
+## IDT support
 		
-#define CYGPKG_HAL_I386_FPU_DEFINED
+	.macro set_IDT_entry idx,addr
+	pushl	$(idtStart+8*\idx) 
+	pushl	$\addr
+	.extern cyg_hal_pc_set_idt_entry
+	call	cyg_hal_pc_set_idt_entry
+	addl	$8,%esp
+	.endm
 
-	.macro hal_fpu_init
-	# Tell the CPU to use the math hardware.
-	movl	%cr0, %eax
-	orl	$0x32, %eax
-	movl	%eax, %cr0
+  
 
-	finit			# and initialize...
-
-        ## Enable floating point exceptions. Bit mask:
-        ##  1 - invalid operation
-        ##  2 - denormalized operand
-        ##  4 - zero divide
-        ##  8 - overflow
-        ## 16 - underflow
-        ## 32 - precision
-	pushl	$0
-        fstcw   0(%esp)
-        movl	0(%esp),%eax
-        andb	$(~0x04),%al
-        movl	%eax,0(%esp)
-        fldcw	0(%esp)
-	addl	$4,%esp
-
-	# Tell the CPU to generate a interrupt 7 when the math device is used.
-#if 0
-	movl	%cr0, %eax
-	orl	$0x3A, %eax
-	movl	%eax, %cr0
-#endif
+	.macro hal_idt_init
+	.text	
+hal_idt_init:
+	set_IDT_entry  0, hal_pc_exception_0
+	set_IDT_entry  1, hal_pc_exception_1
+	set_IDT_entry  2, hal_pc_exception_2
+	set_IDT_entry  3, hal_pc_exception_3
+	set_IDT_entry  4, hal_pc_exception_4
+	set_IDT_entry  5, hal_pc_exception_5
+	set_IDT_entry  6, hal_pc_exception_6
+	set_IDT_entry  7, hal_pc_exception_7
+	set_IDT_entry  8, hal_pc_exception_8
+	set_IDT_entry  9, hal_pc_exception_9
+	set_IDT_entry  10, hal_pc_exception_10
+	set_IDT_entry  11, hal_pc_exception_11
+	set_IDT_entry  12, hal_pc_exception_12
+	set_IDT_entry  13, hal_pc_exception_13
+	set_IDT_entry  14, hal_pc_exception_14
+	set_IDT_entry  15, hal_pc_exception_15
+	set_IDT_entry  16, hal_pc_exception_16
+	set_IDT_entry  17, hal_pc_exception_17
+	set_IDT_entry  18, hal_pc_exception_18
+	set_IDT_entry  19, hal_pc_exception_19
+	set_IDT_entry  20, hal_pc_exception_20
+	set_IDT_entry  21, hal_pc_exception_21
+	set_IDT_entry  22, hal_pc_exception_22
+	set_IDT_entry  23, hal_pc_exception_23
+	set_IDT_entry  24, hal_pc_exception_24
+	set_IDT_entry  25, hal_pc_exception_25
+	set_IDT_entry  26, hal_pc_exception_26
+	set_IDT_entry  27, hal_pc_exception_27
+	set_IDT_entry  28, hal_pc_exception_28
+	set_IDT_entry  29, hal_pc_exception_29
+	set_IDT_entry  30, hal_pc_exception_30
+	set_IDT_entry  31, hal_pc_exception_31
+	set_IDT_entry  32, hal_pc_irq_32
+	set_IDT_entry  33, hal_pc_irq_33
+	set_IDT_entry  34, hal_pc_irq_34
+	set_IDT_entry  35, hal_pc_irq_35
+	set_IDT_entry  36, hal_pc_irq_36
+	set_IDT_entry  37, hal_pc_irq_37
+	set_IDT_entry  38, hal_pc_irq_38
+	set_IDT_entry  39, hal_pc_irq_39
+	set_IDT_entry  40, hal_pc_irq_40
+	set_IDT_entry  41, hal_pc_irq_41
+	set_IDT_entry  42, hal_pc_irq_42
+	set_IDT_entry  43, hal_pc_irq_43
+	set_IDT_entry  44, hal_pc_irq_44
+	set_IDT_entry  45, hal_pc_irq_45
+	set_IDT_entry  46, hal_pc_irq_46
+	set_IDT_entry  47, hal_pc_irq_47
+	.endm
 	
-	.endm /* hal_fpu_init */
-
-
-	.macro	hal_fpu_save regs
-	.endm /* hal_fpu_save */
-
-	.macro	hal_fpu_save_caller regs
-	.endm /* hal_fpu_save_caller */
-
-	.macro	hal_fpu_save_callee regs
-	.endm /* hal_fpu_save_callee */
-
-	.macro	hal_fpu_load_caller regs
-	.endm /* hal_fpu_load_caller */
-
-	.macro	hal_fpu_load_callee regs
-	.endm /* hal_fpu_load_callee */
-
-	.macro	hal_fpu_load regs
-	.endm /* hal_fpu_load */
-
-
 ##=============================================================================
 #endif // ifndef CYGONCE_HAL_PLATFORM_INC	
 ## end of platform.inc

@@ -1,3 +1,9 @@
+2001-04-25  Bart Veer  <bartv@redhat.com>
+
+	* cdl/libm.cdl:
+	Ensure -ffloat-store is also used for the updated synthetic target
+	when running on x86 hardware.
+
 2000-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/misc/infconst.c: Revert below two changes - the gcc problem

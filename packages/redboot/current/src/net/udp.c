@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -209,6 +209,12 @@ static void
 __udp_recvfrom_handler(udp_socket_t *skt, char *buf, int len,
                        ip_route_t *src_route, word src_port)
 {
+    if (recvfrom_server == NULL)
+	return;
+
+    if (recvfrom_server->sin_port && recvfrom_server->sin_port != htons(src_port))
+	return;
+
     // Move data to waiting buffer
     recvfrom_len = len;
     memcpy(recvfrom_buf, buf, len);
@@ -229,6 +235,7 @@ __udp_recvfrom(char *data, int len, struct sockaddr_in *server,
     udp_socket_t skt;
     unsigned long start;
 
+    server->sin_port = 0;
     my_port = ntohs(local->sin_port);
     if (__udp_install_listener(&skt, my_port, __udp_recvfrom_handler) < 0) {
         return -1;

@@ -282,6 +282,15 @@ package CYGPKG_DEVS_FLASH_VIPER {
 	   on the A&M PowerPC/8xx VIPER platform."
 }
 
+package CYGPKG_DEVS_FLASH_MN10300_STB {
+	alias 		{ "FLASH memory support for Matsushita MN10300 STB" flash_stb }
+	directory	devs/flash/mn10300/stb
+	script		flash_stb.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Matsushita MN10300 STB platform (SRAM2 socket)."
+}
 package CYGPKG_DEVS_FLASH_ATLAS {
 	alias 		{ "FLASH memory support for MIPS Atlas" flash_atlas }
 	directory	devs/flash/mips/atlas
@@ -667,6 +676,16 @@ package CYGPKG_DEVS_ETH_ARM_IQ80310 {
 	directory	devs/eth/arm/iq80310
 	script		iq80310_eth_drivers.cdl
         description     "Ethernet driver for Intel IQ80310 with onboard 82559 NIC."
+}
+
+package CYGPKG_DEVS_ETH_I386_PC_I82559 {
+	alias 		{ "Standard PC with EtherPro 10/100 ethernet device"
+			   devs_eth_i386_pc_i82559 pc_etherpro }
+	hardware
+	directory	devs/eth/i386/pc/i82559
+	script		i386_pc_i82559_eth_drivers.cdl
+        description     "Ethernet driver for standard PC with Intel 82559 NIC. This is
+			 essentially support for a EtherPro 10/100 PCI card."
 }
 
 package CYGPKG_DEVS_ETH_MIPS_ATLAS {
@@ -1220,15 +1239,27 @@ package CYGPKG_HAL_I386 {
     	    package."
 }
 
-package CYGPKG_HAL_I386_LINUX {
-	alias		{ "Linux synthetic target" hal_i386_linux }
-	directory	hal/i386/linux
-	script		hal_i386_linux.cdl
+package CYGPKG_HAL_I386_GENERIC {
+	alias		{ "i386 Generic target" hal_i386_generic }
+	directory	hal/i386/generic
+	script		hal_i386_generic.cdl
 	hardware
         description "
-    	    The Linux/i386 Synthetic Target HAL package provides the 
-    	    support needed to run eCos binaries on top of the i386
-    	    Linux kernel."
+    	    The i386 generic Target HAL package provides support
+            for generic IA32 processors, from the 80386 to the latest
+            Pentium/Athlon."
+	    
+}
+package CYGPKG_HAL_I386_PCMB {
+	alias		{ "i386 PC Motherboard" hal_i386_pcmb }
+	directory	hal/i386/pcmb
+	script		hal_i386_pcmb.cdl
+	hardware
+        description "
+    	    The i386 PC Motherboard HAL package provides the 
+    	    support needed to run eCos binaries on a standard i386
+    	    PC motherboard. This is a support package for various
+            actual platform specific targets."
 }
 package CYGPKG_HAL_I386_PC {
 	alias		{ "i386 PC target" hal_i386_pc }
@@ -1238,7 +1269,29 @@ package CYGPKG_HAL_I386_PC {
         description "
     	    The i386 PC Target HAL package provides the 
     	    support needed to run eCos binaries on a standard i386
-    	    PC motherboard."
+    	    PC."
+}
+
+# --------------------------------------------------------------------------
+# Synthetic target.
+package CYGPKG_HAL_SYNTH {
+	alias		{ "Linux synthetic target" linux }
+	directory	hal/synth/arch
+	script		hal_synth.cdl
+	hardware
+        description "
+    	    The Linux Synthetic Target HAL package provides the 
+    	    support needed to run eCos binaries on top of the i386
+    	    Linux kernel."
+}
+
+package CYGPKG_HAL_SYNTH_I386 {
+	alias		{ "Linux/i386 synthetic target" i386_linux }
+	directory	hal/synth/i386linux
+	script		hal_synth_i386.cdl
+	hardware
+        description "
+            i386 processor-specific support for the Linux synthetic target"
 }
 
 # --------------------------------------------------------------------------
@@ -1861,26 +1914,35 @@ target cq7750 {
 
 # --------------------------------------------------------------------------
 # i386 targets
-target linux {
-        alias		{ "Linux synthetic target" }
-	packages        { CYGPKG_HAL_I386
-                          CYGPKG_HAL_I386_LINUX
-        }
-        description "
-    	    The linux target provides the 
-    	    packages needed to run eCos binaries on top of the i386
-    	    Linux kernel."
-}
 target pc {
         alias		{ "i386 PC target" }
 	packages        { CYGPKG_HAL_I386
+                          CYGPKG_HAL_I386_GENERIC
                           CYGPKG_HAL_I386_PC
+                          CYGPKG_HAL_I386_PCMB
+			  CYGPKG_IO_PCI
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
 	                  CYGPKG_IO_SERIAL_I386_PC
+			  CYGPKG_DEVS_ETH_INTEL_I82559
+			  CYGPKG_DEVS_ETH_I386_PC_I82559
         }
         description "
     	    The pc target provides the 
     	    packages needed to run eCos binaries on a standard i386
     	    PC motherboard."
+}
+
+# --------------------------------------------------------------------------
+# Synthetic targets.
+target linux {
+        alias		{ "Linux synthetic target" i386linux }
+	packages        { CYGPKG_HAL_SYNTH
+                          CYGPKG_HAL_SYNTH_I386
+        }
+        description "
+    	    The linux target provides the 
+    	    packages needed to run eCos binaries on top of the i386
+    	    Linux kernel."
 }
 
 # --------------------------------------------------------------------------
@@ -2118,6 +2180,8 @@ target stb {
                           CYGPKG_HAL_MN10300_AM33_STB
                           CYGPKG_HAL_MN10300_AM33
                           CYGPKG_IO_SERIAL_MN10300
+                          CYGPKG_DEVS_FLASH_AMD_AM29XXXXX
+                          CYGPKG_DEVS_FLASH_MN10300_STB
                           CYGPKG_DEVICES_WATCHDOG_MN10300_MN10300
         }
         description "

@@ -1,3 +1,7 @@
+2001-06-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_cache.h: Correctly indicate absence of cache.
+
 2001-04-16  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_pid.cdl: Add CDL to describe CPU family.

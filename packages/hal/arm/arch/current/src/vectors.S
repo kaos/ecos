@@ -707,6 +707,8 @@ handle_IRQ_or_FIQ:
         str     r4,[sp,#armreg_pc]      // PC at time of interrupt
         str     lr,[sp,#armreg_lr]      // LR at time of interrupt
         str     fp,[sp,#armreg_sp]      // SP at time of interrupt
+        mov     r0,#CYGNUM_HAL_VECTOR_IRQ       // FIXME: we don't distinguish
+        str     r0,[sp,#armreg_vector]          // FIQ and IRQ here
         mov     v6,sp                   // Save pointer to register frame
 
 //      mov     r0,sp
@@ -768,6 +770,7 @@ handle_IRQ_or_FIQ:
         cmp     r0,#CYGNUM_HAL_INTERRUPT_NONE   // spurious interrupt
         bne     10f
 #ifndef CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
+        mov     r0,v6                   // register frame
         bl      hal_spurious_IRQ
 #endif // CYGIMP_HAL_COMMON_INTERRUPTS_IGNORE_SPURIOUS
         b       spurious_IRQ
@@ -814,6 +817,9 @@ spurious_IRQ:
         // DSR is to be posted. Pass this together with a pointer to the
         // interrupt object we have just used to the interrupt tidy up routine.
 
+                              // don't run this for spurious interrupts!
+        cmp     v1,#CYGNUM_HAL_INTERRUPT_NONE
+        beq     17f
         ldr     r1,.hal_interrupt_objects
         ldr     r1,[r1,v1,lsl #2]
         mov     r2,v6           // register frame
@@ -822,9 +828,9 @@ spurious_IRQ:
 
         bl      interrupt_end   // post any bottom layer handler
                                 // threads and call scheduler
-#endif
-
         ARM_MODE(r1,10)
+17:
+#endif
 
 //      mov     r0,sp
 //      bl      show_frame_out

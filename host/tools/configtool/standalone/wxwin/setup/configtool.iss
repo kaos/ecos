@@ -182,11 +182,11 @@
   Source: v:\deliver\configtool\manual\user-guides.html; DestDir: {app}\manual
   Source: v:\deliver\configtool\README.txt; DestDir: {app}\
   Source: v:\deliver\configtool\rhlogo.png; DestDir: {app}\
-    Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall
-    Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall
-    Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall
-    Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: alwaysskipifsameorolder; Flags: uninsneveruninstall
 
+    Source: c:\winnt\system32\tcl82.dll; DestDir: {sys}\; DestName: tcl82.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\msvcirt.dll; DestDir: {sys}\; DestName: msvcirt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\msvcp60.dll; DestDir: {sys}\; DestName: msvcp60.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
+    Source: c:\winnt\system32\msvcrt.dll; DestDir: {sys}\; DestName: msvcrt.dll; CopyMode: onlyifdoesntexist; Flags: uninsneveruninstall
 
 [Icons]
     Name: {group}\Configuration Tool; Filename: {app}\configtool.exe; WorkingDir: {app}; IconFilename: {app}\configtool.exe; IconIndex: 0

@@ -56,6 +56,12 @@
 
 #include <cyg/hal/plf_misc.h>
 
+#include <cyg/hal/hal_io.h>
+
+#ifdef  CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
+#include <cyg/hal/hal_if.h>
+#endif
+
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
 #include <cyg/kernel/ktypes.h>
@@ -66,96 +72,51 @@
 
 extern void patch_dbg_syscalls(void * vector);
 
-/*------------------------------------------------------------------------*/
-/* Floating point context switch support.                                 */
-/* NOTE:  This code makes use of kernel API calls, which it should not do.*/
-/* We need to rewrite this to make use of only HAL supplied facilites,    */
-/* this may require the addition of some extra HAL level support.         */
+extern void hal_pcmb_init(void);
+
+//----------------------------------------------------------------------------
+// ISR tables
+
+volatile CYG_ADDRESS    hal_interrupt_handlers[CYGNUM_HAL_ISR_COUNT];
+volatile CYG_ADDRWORD   hal_interrupt_data[CYGNUM_HAL_ISR_COUNT];
+volatile CYG_ADDRESS    hal_interrupt_objects[CYGNUM_HAL_ISR_COUNT];
+
+//-----------------------------------------------------------------------------
+// IDT interrupt gate initialization
+
+externC void cyg_hal_pc_set_idt_entry(CYG_ADDRESS routine,short *idtEntry)
+{  
    
-#if !defined(CYGSEM_HAL_ROM_MONITOR)
-
-volatile int hal_pc_fpe_interrupts = 0 ;
-volatile int hal_pc_fpe_switches = 0 ;
-volatile cyg_uint32 hal_pc_fpe_owner = 0 ;
-
-cyg_uint32 hal_pc_fpe_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
-{
-    return 2 ;
+   idtEntry[0]=routine & 0xFFFF;
+   idtEntry[1]=8;
+   idtEntry[2]=0x8E00;
+   idtEntry[3]=routine >> 16;
 }
-
-void hal_pc_fpe_dsr(CYG_ADDRWORD vector, cyg_ucount32 count, CYG_ADDRWORD data)
-{
-    cyg_handle_t me ;
-    CYG_ADDRWORD stack ;
-    cyg_uint32 * p ;
-
-    hal_pc_fpe_interrupts++ ;
-
-/* Gotta turn that darn interrupt off!  Otherwise we're in a loop! */
-    asm("movl %%cr0, %%eax\n"
-        "andl $0xFFFFFFF7, %%eax\n"
-        "movl %%eax, %%cr0\n"
-	:	/* No outputs. */
-	:	/* No inputs. */
-	:	"eax"
-	);
-
-    me = cyg_thread_self() ;
-
-    if (hal_pc_fpe_owner != me)
-    {
-        if (hal_pc_fpe_owner)
-        {	/* Then save his state at the bottom of his stack. */
-            stack = cyg_thread_get_stack_base(hal_pc_fpe_owner) ;
-#ifdef CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE
-            // It might well be zero anyway
-            stack += CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
-#endif
-            p = (cyg_uint32*) stack ;
-            stack = (cyg_addrword_t) &(p[1]);
-            asm("movl %0, %%eax
-fsave (%%eax)"
-                :	/* No outputs. */
-                :	"g" (stack)
-                :	"eax") ;
-            p[0] = 0xCAFEBABE ;
-        }
-        hal_pc_fpe_owner = me ;
-        stack = cyg_thread_get_stack_base(hal_pc_fpe_owner) ;
-#ifdef CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE
-        stack += CYGNUM_KERNEL_THREADS_STACK_CHECK_DATA_SIZE;
-#endif
-        p = (cyg_uint32*) stack ;
-        if (p[0] == 0xCAFEBABE)
-        {
-            stack = (cyg_addrword_t) &(p[1]) ;
-            asm("movl %0, %%eax\n"
-                "frstor (%%eax)\n"
-                :	/* No outputs. */
-                :	"g" (stack)
-                :	"eax");
-        }
-
-        hal_pc_fpe_switches++ ;
-    }
-}
-
-
-cyg_interrupt hal_pc_fpe_interrupt_object ;
-cyg_handle_t hal_pc_fpe_interrupt ;
-
-#endif
 
 /*------------------------------------------------------------------------*/
 
 void hal_platform_init(void)
 {
+    int vector;
 
     HAL_ICACHE_INVALIDATE_ALL();    
     HAL_ICACHE_ENABLE();
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_DCACHE_ENABLE();
 
+    // Call motherboard init function
+    hal_pcmb_init();
+    
+    // ISR table setup: plant the default ISR in all interrupt handlers
+    // and the default interrupt VSR in the equivalent VSR table slots.
+    for (vector = CYGNUM_HAL_ISR_MIN; vector <= CYGNUM_HAL_ISR_MAX; vector++)        
+    {
+        cyg_uint32 index;
+        HAL_TRANSLATE_VECTOR( vector, index );
+        hal_interrupt_handlers[index] = (CYG_ADDRESS) HAL_DEFAULT_ISR;
+        HAL_VSR_SET( vector, __default_interrupt_vsr, NULL );
+    }
+    
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)    
     {
         void hal_ctrlc_isr_init(void);
@@ -164,21 +125,24 @@ void hal_platform_init(void)
 
 #endif
         
-#if defined(CYGFUN_HAL_COMMON_KERNEL_SUPPORT)   && \
-    defined(CYG_HAL_USE_ROM_MONITOR)            && \
-    defined(CYG_HAL_USE_ROM_MONITOR_CYGMON)
-    {
-        patch_dbg_syscalls( (void *)(&hal_vsr_table[0]) );
-    }
-#endif
-
-#if !defined(CYGSEM_HAL_ROM_MONITOR)
+#if 0 // !defined(CYGSEM_HAL_ROM_MONITOR)
     /* Connect to the floating point interrupt. */
     cyg_interrupt_create(CYGNUM_HAL_VECTOR_NO_DEVICE, 1, 0,
                          hal_pc_fpe_isr, hal_pc_fpe_dsr,
                          &hal_pc_fpe_interrupt, &hal_pc_fpe_interrupt_object);
     cyg_interrupt_attach(hal_pc_fpe_interrupt);
 #endif        
+
+#ifdef CYGPKG_REDBOOT
+
+    // Start the timer device running if we are in a RedBoot
+    // configuration. 
+    
+    HAL_CLOCK_INITIALIZE( CYGNUM_HAL_RTC_PERIOD );
+    
+#endif    
+    
+    hal_if_init();
 
 }
 
@@ -198,6 +162,54 @@ void hal_pc_reset(void)
         ".word		0\n"
         ".long		0\n"
         ) ;
+}
+
+/*------------------------------------------------------------------------*/
+
+void 
+hal_delay_us(int us)
+{
+    while( us > 0 )
+    {
+        cyg_uint32 us1 = us;
+        cyg_int32 ticks;
+        cyg_uint32 cval1, cval2;
+
+        // Wait in bursts of 1s to avoid overflow problems with the
+        // multiply by 1000 below.
+        
+        if( us1 > 1000000 )
+            us1 = 1000000;
+
+        us -= us1;
+        
+        // The PC clock ticks at 838ns per tick. So we convert the us
+        // value we were given to clock ticks and wait for that many
+        // to pass.
+
+        ticks = (us1 * 1000UL) / 838UL;
+
+        HAL_CLOCK_READ( &cval1 );
+
+        // We just loop, waiting for clock ticks to happen,
+        // and subtracting them from ticks when they do.
+        
+        while( ticks > 0 )
+        {
+            cyg_int32 diff;
+            HAL_CLOCK_READ( &cval2 );
+
+            diff = cval2 - cval1;
+
+            // Cope with counter wrap-around.
+            if( diff < 0 )
+                diff += CYGNUM_HAL_RTC_PERIOD;
+
+            ticks -= diff;
+            cval1 = cval2;
+
+        }
+    }
 }
 
 

@@ -321,18 +321,14 @@ verify_action(char *fmt, ...)
     va_list ap;
     char ans[8];
 #ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
-    unsigned char *hold_script = script;
+    // Don't ask if we're executing a script
+    if (script && *script)
+        return 1;
 #endif
 
     va_start(ap, fmt);
     vprintf(fmt, ap);
     printf(" - are you sure (y/n)? ");
-#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
-    script = (unsigned char *)0;
-#endif
     gets(ans, sizeof(ans), 0);
-#ifdef CYGFUN_REDBOOT_BOOT_SCRIPT
-    script = hold_script;
-#endif
     return ((ans[0] == 'y') || (ans[0] == 'Y'));
 }

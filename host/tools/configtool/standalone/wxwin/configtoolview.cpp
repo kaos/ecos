@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtoolview.cpp,v 1.9 2001/04/30 17:12:32 julians Exp $
+// Version:     $Id: configtoolview.cpp,v 1.10 2001/06/04 17:00:43 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolView class
 // Requires:
@@ -314,8 +314,8 @@ void ecConfigToolView::OnChangeFilename()
         wxString name(GetDocument()->GetFilename());
         wxStripExtension(name);
 
-        ((ecConfigToolDoc*) GetDocument())->SetInstallTree(name + wxT("_build"));
-        ((ecConfigToolDoc*) GetDocument())->SetBuildTree(name + wxT("_install"));
+        ((ecConfigToolDoc*) GetDocument())->SetInstallTree(name + wxT("_install"));
+        ((ecConfigToolDoc*) GetDocument())->SetBuildTree(name + wxT("_build"));
 
         wxString title;
 

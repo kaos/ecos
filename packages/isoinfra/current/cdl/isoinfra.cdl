@@ -419,6 +419,12 @@ cdl_package CYGPKG_ISOINFRA {
             default_value 0
         }
 
+        cdl_option CYGBLD_ISO_STDLIB_MB_CUR_MAX_HEADER {
+            display       "Header defining the implementation's MB_CUR_MAX"
+            flavor        booldata
+            default_value 0
+        }
+
         cdl_interface CYGINT_ISO_STDLIB_MULTIBYTE {
             display       "Multibyte character implementations"
             requires      { 1 >= CYGINT_ISO_STDLIB_MULTIBYTE }

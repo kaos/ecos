@@ -48,8 +48,10 @@
 
 #include <pkgconf/hal.h>
 
-#include "cyg/hal/i386.inc"
+#include <cyg/hal/i386.inc>
 
+#include <cyg/hal/arch.inc>
+	
 #------------------------------------------------------------------------------
 # function declaration macro
 
@@ -67,60 +69,68 @@ name:
 # %eax, %ecx, and %edx are ours to abuse.
         
 FUNC_START(hal_thread_switch_context)
-        movl    4(%esp),%eax            # next context ptr
-        movl    8(%esp),%edx            # this context ptr
 
-        # Make room on the stack for the context
-        movl    %esp,%ecx               # keep original SP
-        sub	$i386reg_context_size,%esp
+	# Pop the return address from the stack, but leave the
+	# arguments there so that the caller can remove them
+	# itself when we return.
+	
+	popl	%ecx		# pop return eip
+	movl	0(%esp),%eax	# get next context ptr
+	movl	4(%esp),%edx	# get this context ptr
 
-        # Save next context ptr in this context. Necessary because
-        # hal_thread_load_context expects to find the ptr on the stack,
-        # not in a register as on PPC.
-        movl    %eax,i386reg_next_context(%esp)
-
-        # Save registers
-        movl    %ecx,i386reg_esp(%esp)  # original esp
-        movl    %ebp,i386reg_ebp(%esp)
-        movl    %ebx,i386reg_ebx(%esp)
-        movl    %esi,i386reg_esi(%esp)
-        movl    %edi,i386reg_edi(%esp)
-        
+	# Save context in the same format as an
+	# exception
+		
+	pushfl			# save eflags
+	pushl	%cs		# save cs
+	pushl	%ecx		# save eip 
+	pushl	$-1		# push fake vector
+	pushal			# push general registers
+	hal_fpu_push_ctx	# push FPU state
+		
         # Store the context ptr
         movl    %esp,(%edx)
 
-        # Now fall through to hal_thread_load_context
+hal_thread_switch_context_load:
+	
+	# The pointer to the next context is in EAX
+	
+	movl	(%eax),%esp	# Point ESP at new state
+
+	# Merge the IF bit in the saved EFLAGS with the rest of the 
+	# bits currently in EFLAGS.
+
+	movl	i386reg_eflags(%esp),%ebx # EBX = saved EFLAGS
+	andl	$0x0200,%ebx	# isolate IF bit
+	pushfl			# push current flags
+	popl	%ecx		# pop into ECX
+	btrl	$9,%ecx		# clear IF flag in current EFLAGS
+	orl	%ebx,%ecx	# Or in saved IF bit
+	movl	%ecx,i386reg_eflags(%esp) # Restore to saved state for use by iret
+
+	# Now we can load the state and enter next thread
+
+	hal_fpu_pop_ctx		# Pop FPU state
+	popal			# unstack general registers
+	add	$4,%esp		# skip vector number
         
+        iret			# And return
         
 #------------------------------------------------------------------------------
 # hal_thread_load_context
 # Load thread context
-# : 4(%esp) = i386reg_next_context(%esp) = address of sp of thread to execute
-# Note that this function is also the second half of hal_thread_switch_context
-# and is simply dropped into from it.
+# : 4(%esp) = address of sp of thread to execute
 #
 # %eax, %ecx, and %edx are ours to abuse.
         
 FUNC_START(hal_thread_load_context)
 
-#ifdef CYGHWR_HAL_I386_FPU	
-	movl	%cr0, %eax
-	orl	$0x8, %eax
-	movl	%eax, %cr0
-#endif
+        movl    4(%esp),%eax	# get new context ptr
+
+	# Jump into hal_thread_switch_context at the right
+	# point to load this context.
 	
-        movl    i386reg_next_context(%esp),%eax # get new context ptr
-        movl    (%eax),%eax
-        
-        # Restore registers
-        movl    i386reg_ebp(%eax),%ebp
-        movl    i386reg_ebx(%eax),%ebx
-        movl    i386reg_esi(%eax),%esi
-        movl    i386reg_edi(%eax),%edi
-        movl    i386reg_esp(%eax),%esp
-
-        ret
-
+	jmp	hal_thread_switch_context_load
 
 #------------------------------------------------------------------------------
 # HAL longjmp, setjmp implementations
@@ -150,8 +160,8 @@ FUNC_START(hal_setjmp)
 
         # Stack and PC
         movl    %esp,CYGARC_JMP_BUF_SP*4(%eax)
-        movl    0(%esp),%ebx
-        movl    %ebx,CYGARC_JMP_BUF_PC*4(%eax)
+        movl    0(%esp),%edx
+        movl    %edx,CYGARC_JMP_BUF_PC*4(%eax)
 
         # Return 0
         xor     %eax,%eax

@@ -15,3 +15,8 @@ extern char CYG_LABEL_NAME (__heap1) [];
 #endif
 #define CYGMEM_SECTION_heap1 (CYG_LABEL_NAME (__heap1))
 #define CYGMEM_SECTION_heap1_SIZE (0xa0000 - (size_t) CYG_LABEL_NAME (__heap1))
+#ifndef __ASSEMBLER__
+extern char CYG_LABEL_NAME (__pci_window) [];
+#endif
+#define CYGMEM_SECTION_pci_window (CYG_LABEL_NAME (__pci_window))
+#define CYGMEM_SECTION_pci_window_SIZE (0x64000)

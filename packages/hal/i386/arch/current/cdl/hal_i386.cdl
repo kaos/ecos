@@ -72,10 +72,81 @@ cdl_package CYGPKG_HAL_I386 {
         @rm target.tmp
     }
 
+    cdl_option CYGBLD_BUILD_I386_ROMBOOT {
+	display       "Build ROM bootstrap code"
+	calculated    { CYG_HAL_STARTUP == "ROM" }
+
+	make {
+	    <PREFIX>/lib/romboot.ld: <PACKAGE>/src/romboot.ld
+	    cp $< $@
+	}
+	
+	make {
+	    <PREFIX>/bin/romboot.elf : <PACKAGE>/src/romboot.S
+	    @sh -c "mkdir -p $(dir $@)"
+	    $(CC) -Wp,-MD,romboot.tmp $(INCLUDE_PATH) -nostdlib -Wl,-static -T$(PREFIX)/lib/romboot.ld -o $@ $<
+	    @echo $@ ": \\" > $(notdir $@).deps
+	    @tail +2 romboot.tmp >> $(notdir $@).deps
+	    @echo >> $(notdir $@).deps
+	    @rm romboot.tmp
+	}
+    }
+
+    cdl_option CYGBLD_BUILD_REDBOOT_BIN_ROM {
+	display       "Build Redboot ROM binary image"
+	active_if     CYGBLD_BUILD_REDBOOT
+	active_if     { CYG_HAL_STARTUP == "ROM" }
+	default_value { CYG_HAL_STARTUP == "ROM" }
+	no_define
+	description "This option enables the conversion of the Redboot ELF
+	image to a binary image suitable for ROM programming."
+    
+	make -priority 325 {
+	    <PREFIX>/bin/redboot.bin : <PREFIX>/bin/redboot.elf
+	    $(OBJCOPY) -O binary $< $(@:.bin=.img)
+	    $(OBJCOPY) -O binary $(PREFIX)/bin/romboot.elf $(PREFIX)/bin/romboot.img
+	    dd if=/dev/zero of=$@ bs=1024 count=64 conv=sync
+	    dd if=$(@:.bin=.img) of=$@ bs=512 conv=notrunc,sync
+	    dd if=$(PREFIX)/bin/romboot.img of=$@ bs=256 count=1 seek=255 conv=notrunc
+	}
+    }
+    
+    cdl_component CYGHWR_HAL_I386_FPU {
+	display       "Enable I386 FPU support"
+	default_value 0
+	description   "This component enables support for the
+	              I386 floating point unit."
+
+	cdl_option CYGHWR_HAL_I386_FPU_SWITCH_LAZY {
+	    display       "Use lazy FPU state switching"
+	    flavor        bool
+	    default_value 0
+
+	    description "
+	                This option enables lazy FPU state switching.
+                        The default behaviour for eCos is to save and
+                        restore FPU state on every thread switch, interrupt
+	                and exception. While simple and deterministic, this
+	                approach can be expensive if the FPU is not used by
+	                all threads. The alternative, enabled by this option,
+	                is to use hardware features that allow the FPU state
+	                of a thread to be left in the FPU after it has been
+	                descheduled, and to allow the state to be switched to
+	                a new thread only if it actually uses the FPU. Where
+	                only one or two threads use the FPU this can avoid a
+	                lot of unnecessary state switching."
+	}
+    }
+    
     cdl_option CYGBLD_LINKER_SCRIPT {
         display "Linker script"
         flavor data
 	no_define
         calculated  { "src/i386.ld" }
     }
+
+    cdl_interface CYGINT_HAL_I386_MEM_REAL_REGION_TOP {
+        display  "Implementations of hal_i386_mem_real_region_top()"
+    }
+    
 }

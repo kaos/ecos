@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -41,6 +41,7 @@
 //
 //===========================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/uitron.h>             // uITRON setup CYGNUM_UITRON_SEMAS
                                         // CYGPKG_UITRON et al
 #include <cyg/infra/testcase.h>         // testing infrastructure
@@ -309,11 +310,6 @@ void task1( unsigned int arg )
     if ( cyg_test_is_simulator ) {
         // take less time
         events     = EVENTSSIM;
-// Don't output messages more frequently on synthetic target. It's
-// much faster than sims and will cause massive amounts of output.
-#ifndef CYGPKG_HAL_I386_LINUX
-        smalldelay = SMALLDELAYSIM;
-#endif
     }
 
 
@@ -326,6 +322,9 @@ void task1( unsigned int arg )
 #endif
 
     // This may take too long on a sim...
+    // On the synthetic target this test cannot run reliably - the
+    // loop counting assumes exclusive access to the processor.
+#ifndef CYGPKG_HAL_SYNTH    
     if ( ! cyg_test_is_simulator ) {
         SYSTIME t1, t2;
 
@@ -401,7 +400,7 @@ void task1( unsigned int arg )
         ercd = ena_int( clock_interrupt );
         CYG_TEST_CHECK( E_OK == ercd, "ena_int bad ercd" );
 #endif
-
+        
         ercd = get_tim( &t1 );
         CYG_TEST_CHECK( E_OK == ercd, "get_tim bad ercd" );
 
@@ -424,7 +423,8 @@ void task1( unsigned int arg )
 
         CYG_TEST_PASS( "dis_int(), ena_int() OK" );
     }
-
+#endif
+    
     intercom = 0;
 
     ercd = get_tid( &scratch );

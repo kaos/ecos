@@ -1,3 +1,18 @@
+2001-06-08  Jesper Skov  <jskov@redhat.com>
+
+	* include/mips.inc (FUNC_START): Added .noreorder.
+
+2001-06-05  Hugo Tyson  <hmt@redhat.com>
+
+	* include/mips-stub.h: Configuration messing to avoid the need to
+	add a platform-specific clause for every new 32-as-64-to-GDB
+	target that we make.  The header can now pick REGSIZE,
+	target_register_t and so on according to a generic define as well
+	as specific platform defs.
+
+	* cdl/hal_mips.cdl: Provide interface for the above, so targets
+	can implement it.  CYGINT_HAL_MIPS_STUB_REPRESENT_32BIT_AS_64BIT
+
 2001-02-27  Chris Morrow  <cmorrow@YottaYotta.com>
 
 	* src/vectors.S (hal_zero_bss): Oops, allow for bss being multiple

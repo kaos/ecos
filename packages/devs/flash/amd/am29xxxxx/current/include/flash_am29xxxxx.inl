@@ -43,10 +43,6 @@
 //               (specifically by applying 12V to one of the address
 //               pins) so the driver does not support write protection.
 //
-// FIXME:        Make support for specific devices CDL configurable. Make
-//               support for bootblock (and associated code/structs)
-//               configurable.
-//
 // FIXME:        Should support SW locking on the newer devices.
 //
 // FIXME:        Figure out how to do proper error checking when there are
@@ -117,85 +113,14 @@ typedef struct flash_dev_info {
     cyg_uint32   base_mask;
     cyg_uint32   device_size;
     cyg_bool     bootblock;
-    cyg_uint32   bootblocks[6];         // 0 is bootblock offset, 1-5 sub-sector sizes (or 0)
+    cyg_uint32   bootblocks[12];         // 0 is bootblock offset, 1-11 sub-sector sizes (or 0)
 } flash_dev_info_t;
 
+static const flash_dev_info_t* flash_dev_info;
 static const flash_dev_info_t supported_devices[] = {
-#if CYGNUM_FLASH_WIDTH == 8
-    { 
-        device_id  : FLASHWORD(0xa4),
-        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 8,
-        device_size: 0x80000 * CYGNUM_FLASH_INTERLEAVE,
-        base_mask  : ~(0x80000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblock  : false
-    },
-    {   // MBM29LV160-T | AM29LV160-T
-        device_id  : FLASHWORD(0xc4),
-        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 32,
-        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
-        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblock  : true,
-        bootblocks : { 0x1f0000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
-                     }
-    },
-    {   // MBM29LV160-B | AM29LV160-B
-        device_id  : FLASHWORD(0x49),
-        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 32,
-        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
-        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblock  : true,
-        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
-                     }
-    }
-#else // 16 bit devices
-    {   // MBM29LV160-T | AM29LV160-T
-        device_id  : FLASHWORD(0x22c4),
-        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 32,
-        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
-        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblock  : true,
-        bootblocks : { 0x1f0000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
-                     }
-    },
-    {   // MBM29LV160-B | AM29LV160-B
-        device_id  : FLASHWORD(0x2249),
-        block_size : 0x10000 * CYGNUM_FLASH_INTERLEAVE,
-        block_count: 32,
-        device_size: 0x200000 * CYGNUM_FLASH_INTERLEAVE,
-        base_mask  : ~(0x200000 * CYGNUM_FLASH_INTERLEAVE - 1),
-        bootblock  : true,
-        bootblocks : { 0x000000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x004000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x002000 * CYGNUM_FLASH_INTERLEAVE,
-                       0x008000 * CYGNUM_FLASH_INTERLEAVE,
-                       0
-                     }
-    }
-#endif
+#include <cyg/io/flash_am29xxxxx_parts.inl>
 };
 #define NUM_DEVICES (sizeof(supported_devices)/sizeof(flash_dev_info_t))
-
-static const flash_dev_info_t* flash_dev_info;
 
 //----------------------------------------------------------------------------
 // Functions that put the flash device into non-read mode must reside
@@ -463,5 +388,4 @@ flash_program_buf(void* addr, void* data, int len)
     // the address/device that reported the error.
     return res;
 }
-
 #endif // CYGONCE_DEVS_FLASH_AMD_AM29XXXXX_INL

@@ -121,7 +121,20 @@ cdl_package CYGPKG_HAL_MIPS_RM7000 {
         puts $::cdl_header "#include <pkgconf/hal_mips.h>"
     }
 
-    compile       var_misc.c variant.S
+    compile       var_misc.c variant.S var_mk_defs.c
+
+    # The "-o file" is a workaround for CR100958 - without it the
+    # output file would end up in the source directory under CygWin.
+    # n.b. grep does not behave itself under win32
+    make -priority 1 {
+        <PREFIX>/include/cyg/hal/var_defs.inc : <PACKAGE>/src/var_mk_defs.c
+        $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,var_defs.tmp -o var_mk_defs.tmp -S $<
+        fgrep .equ var_mk_defs.tmp | sed s/#// > $@
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail +2 var_defs.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm var_defs.tmp var_mk_defs.tmp
+    }
 
     make {
         <PREFIX>/lib/target.ld: <PACKAGE>/src/mips_rm7000.ld

@@ -31,10 +31,10 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      nickg
-# Original data:  gthomas, jskov, pjo
-# Contributors:
-# Date:           2000-02-14
+# Author(s):      jlarmour, nickg, gthomas, pjo
+# Original data:  
+# Contributors:   jskov
+# Date:           2001-06-08
 #
 #####DESCRIPTIONEND####
 #
@@ -46,21 +46,24 @@ cdl_package CYGPKG_IO_SERIAL_I386_PC {
 
     parent        CYGPKG_IO_SERIAL_DEVICES
     active_if     CYGPKG_IO_SERIAL
-    active_if     CYGPKG_HAL_I386_PC
+    active_if     CYGPKG_HAL_I386_PCMB
 
     requires      CYGPKG_ERROR
     include_dir   cyg/io
-    include_files ; # none _exported_ whatsoever
     description   "
            This option enables the serial device drivers for the
            PC."
     doc           redirect/ecos-device-drivers.html
 
-    compile       -library=libextras.a   pc_serial.c
+    # FIXME: This really belongs in the GENERIC_16X5X package
+    cdl_interface CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED {
+        display   "Generic 16x5x serial driver required"
+    }
 
     define_proc {
         puts $::cdl_system_header "/***** serial driver proc output start *****/"
-        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_DEVICE_HEADER <pkgconf/io_serial_i386_pc.h>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_INL <cyg/io/i386_pc_ser.inl>"
+        puts $::cdl_system_header "#define CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG <pkgconf/io_serial_i386_pc.h>"
         puts $::cdl_system_header "/*****  serial driver proc output end  *****/"
     }
 
@@ -71,6 +74,10 @@ cdl_component CYGPKG_IO_SERIAL_I386_PC_SERIAL0 {
     description   "
         This option includes the serial device driver for port 0 on the 
         PC."
+
+    implements    CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
+    implements    CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+    implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
 
     cdl_option CYGDAT_IO_SERIAL_I386_PC_SERIAL0_NAME {
         display       "Device name for PC serial port 0"
@@ -121,7 +128,7 @@ cdl_component CYGPKG_IO_SERIAL_I386_PC_SERIAL0 {
    }
 
     cdl_option CYGNUM_IO_SERIAL_I386_PC_SERIAL0_INT {
-	display "IRQ for the i386-PC serial port 0"
+	display "INT for the i386-PC serial port 0"
 	flavor    data
 	legal_values 32 to 47
 	default_value { CYGNUM_IO_SERIAL_I386_PC_SERIAL0_IRQ + 32 }
@@ -137,6 +144,10 @@ cdl_component CYGPKG_IO_SERIAL_I386_PC_SERIAL1 {
     description   "
         This option includes the serial device driver for port 1 on
         the PC."
+
+    implements    CYGINT_IO_SERIAL_GENERIC_16X5X_REQUIRED
+    implements    CYGINT_IO_SERIAL_FLOW_CONTROL_HW
+    implements    CYGINT_IO_SERIAL_LINE_STATUS_HW
 
     cdl_option CYGDAT_IO_SERIAL_I386_PC_SERIAL1_NAME {
         display       "Device name for PC serial port 1"
@@ -187,7 +198,7 @@ cdl_component CYGPKG_IO_SERIAL_I386_PC_SERIAL1 {
    }
 
     cdl_option CYGNUM_IO_SERIAL_I386_PC_SERIAL1_INT {
-	display "IRQ for the i386-PC serial port 1"
+	display "INT for the i386-PC serial port 1"
 	flavor    data
 	legal_values 32 to 47
 	default_value { CYGNUM_IO_SERIAL_I386_PC_SERIAL1_IRQ + 32 }

@@ -134,6 +134,24 @@ flash_hwr_init(void)
         flash_info.start = (void *)CYGNUM_FLASH_BASE;
         flash_info.end = (void *)(CYGNUM_FLASH_BASE +
                         (num_regions*region_size*CYGNUM_FLASH_DEVICES));
+#ifdef CYGNUM_FLASH_BASE_MASK
+        // Then this gives us a maximum size for the (visible) device.
+        // This is to cope with oversize devices fitted, with some high
+        // address lines ignored.
+        if ( ((unsigned int)flash_info.start & CYGNUM_FLASH_BASE_MASK) !=
+             (((unsigned int)flash_info.end - 1) & CYGNUM_FLASH_BASE_MASK ) ) {
+            // then the size of the device appears to span >1 device-worth!
+            unsigned int x;
+            x = (~(CYGNUM_FLASH_BASE_MASK)) + 1; // expected device size
+            x += (unsigned int)flash_info.start;
+            if ( x < (unsigned int)flash_info.end ) { // 2nd sanity check
+                printf("\nFLASH: Oversized device!  End addr %p changed to %p\n",
+                       flash_info.end, (void *)x );
+                flash_info.end = (void *)x;
+            }
+        }
+#endif // CYGNUM_FLASH_BASE_MASK
+
         return FLASH_ERR_OK;
     }
  flash_type_unknown:

@@ -62,7 +62,11 @@ externC int  hal_pc_interruptable(int);
 externC void hal_pc_stubs_init(void) ;
 externC void hal_pc_reset(void) ;
 
-#define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_pc_init_serial()
+externC void cyg_hal_plf_comms_init(void);
+
+// #define HAL_STUB_PLATFORM_INIT_SERIAL()       hal_pc_init_serial()
+#define HAL_STUB_PLATFORM_INIT_SERIAL()       cyg_hal_plf_comms_init()
+
 #define HAL_STUB_PLATFORM_GET_CHAR()          hal_pc_get_char()
 #define HAL_STUB_PLATFORM_PUT_CHAR(c)         hal_pc_put_char((c))
 #define HAL_STUB_PLATFORM_SET_BAUD_RATE(baud) CYG_UNUSED_PARAM(int, (baud))
@@ -74,6 +78,8 @@ externC void hal_pc_reset(void) ;
 // Stub initializer.
 
 #define HAL_STUB_PLATFORM_INIT()        hal_pc_stubs_init()
+
+//-----------------------------------------------------------------------------
 
 #endif // ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 

@@ -54,9 +54,19 @@
 //
 //==========================================================================
 
+#include <pkgconf/hal.h>
+#include <pkgconf/hal_i386.h>
+
+#include <cyg/infra/cyg_type.h>
+
+#include <cyg/hal/pcmb_intr.h>
+
 //----------------------------------------------------------------------------
 // Reset.
+
 #define HAL_PLATFORM_RESET()             hal_pc_reset()
+
+#define HAL_PLATFORM_RESET_ENTRY	 &hal_pc_reset
 
 //---------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLF_INTR_H

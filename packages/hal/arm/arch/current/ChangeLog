@@ -1,3 +1,9 @@
+2001-06-05  Gary Thomas  <gthomas@redhat.com>
+2001-06-05  Thomas Fähnle <thomas.faehnle@tst-ag.de>
+
+	* src/vectors.S (spurious_IRQ): Better handling of spurious ints.
+	Pass register frame to handler.
+
 2001-05-23  Gary Thomas  <gthomas@redhat.com>
 
 	* src/vectors.S: Allow platforms to define a 'preamble' which gets

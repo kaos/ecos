@@ -1,3 +1,14 @@
+2001-04-25  Bart Veer  <bartv@redhat.com>
+
+	* tests/time.c (MAX_TIMEOUT):
+	Increase timeout to cope with fast architectures such as the
+	synthetic target.
+
+2001-04-17  Bart Veer  <bartv@redhat.com>
+
+	* tests/clock.c:
+	Cope with synthetic target reorg
+
 2000-11-29  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* tests/clock.c: Some targets are quite inconsistent, so skip

@@ -134,9 +134,27 @@ std::string cygpath (const std::string input) {
 	cygwin_conv_to_posix_path (path.c_str (), buffer);
 	output = buffer;
 #else
+    std::string strCygdrive("/cygdrive");
+
+    HKEY hKey = 0;
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Cygnus Solutions\\Cygwin\\mounts v2",
+        0, KEY_READ, &hKey))
+    {
+        DWORD type;
+        BYTE value[256];
+        DWORD sz;
+        if (ERROR_SUCCESS == RegQueryValueEx(hKey, "cygdrive prefix", NULL, & type, value, & sz))
+        {
+            strCygdrive = (const char*) value;
+        }
+
+        RegCloseKey(hKey);
+    }
+    strCygdrive = strCygdrive + "/";
+
 	for (unsigned int n = 0; n < path.size (); n++) { // for each char
 		if ((1 == n) && (':' == path [n])) { // if a DOS logical drive letter is present
-			output = "//" + output; // convert to Cygwin notation
+			output = strCygdrive + output; // convert to Cygwin notation
 		} else {
 			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
 		}

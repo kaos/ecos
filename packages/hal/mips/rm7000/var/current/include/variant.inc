@@ -50,7 +50,9 @@
 
 #include <pkgconf/hal.h>
         
+#include <cyg/hal/mips.inc>
 #include <cyg/hal/platform.inc>
+#include <cyg/hal/var_defs.inc>
 
 ##-----------------------------------------------------------------------------
 ## Define CPU variant for architecture HAL.
@@ -104,12 +106,13 @@
         # cache tags and states to zero. This will render them all invalid on 
         # the RM7000.
 
+        mtc0    zero,taglo
+        mtc0    zero,taghi
+
         # D-cache:
         la      t0,0x80000000
-        ori     t1,t0,0x4000
+        ori     t1,t0,HAL_DCACHE_SIZE
 1:
-        mtc0    zero,$28
-        mtc0    zero,$29
         cache   0x09,0x0000(t0)
         cache   0x09,0x1000(t0)
         cache   0x09,0x2000(t0)
@@ -117,22 +120,31 @@
         addi    t0,t0,0x20
         sub     v0,t1,t0
         bgez    v0,1b
-        nop                             # delay slot
+         nop
 
         # I-cache:
         la      a0,0x80000000
-        ori     a1,a0,0x4000
+        ori     a1,a0,HAL_ICACHE_SIZE
 1:
-        mtc0    zero,$28
-        mtc0    zero,$29
         cache   0x08,0x0000(a0)
         cache   0x08,0x1000(a0)
         cache   0x08,0x2000(a0)
         cache   0x08,0x3000(a0)
+
+	# Needs extra scrubbing due to RM7000A erratum #31
+        cache   0x14,0x0000(a0)
+        cache   0x14,0x1000(a0)
+        cache   0x14,0x2000(a0)
+        cache   0x14,0x3000(a0)
+        cache   0x08,0x0000(a0)
+        cache   0x08,0x1000(a0)
+        cache   0x08,0x2000(a0)
+        cache   0x08,0x3000(a0)
+
         addi    a0,a0,0x20
         sub     v0,a1,a0
         bgez    v0,1b
-        nop                             # delay slot
+         nop
 
         .set mips0                      # reset ISA to default
 

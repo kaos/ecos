@@ -1,3 +1,8 @@
+2001-06-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/mibgroup/mibII/ip.c (var_ipNetToMediaTable): Only handle
+	IPNETTOMEDIAPHYSADDRESS for devices with associated hardware.
+
 2001-05-29  Hugo Tyson  <hmt@redhat.com>
 
 	* tests/snmpping.c (net_test): Committed the improved version of

@@ -583,6 +583,10 @@ var_ipNetToMediaTable(struct variable *vp,
 
     case IPNETTOMEDIAPHYSADDRESS: {
         struct eth_drv_sc *sc = low_ia->ia_ifa.ifa_ifp->if_softc;
+        if (!sc) {
+            // No hardware associated with this device.
+            return(NULL);
+        }
         bcopy(&sc->sc_arpcom.ac_enaddr, string, ETHER_ADDR_LEN);
         *var_len = ETHER_ADDR_LEN;
         //NOTSUPPORTED: *write_method = write_ipNetToMediaPhysAddress;

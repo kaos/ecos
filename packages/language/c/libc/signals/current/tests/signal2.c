@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -90,6 +90,24 @@ myhandler(int sig)
 static void
 cause_memerror(void)
 {
+#ifdef CYGPKG_HAL_I386
+
+    // In the x86 architecture, although we have the DATA_ACCESS
+    // exception available, it is not possible to provoke it using the
+    // normal code of this test. This is because the normal segments we
+    // have installed in the segment registers cover all of memory. Instead we
+    // set GS to a descriptor that does not cover 0xF0000000-0xFFFFFFFF and
+    // poke at that.
+
+    __asm__ ( "movw     $0x20,%%ax\n"
+              "movw     %%ax,%%gs\n"
+              "movl     %%gs:0xF0000000,%%eax\n"
+              :
+              :
+              : "eax"
+            );
+    
+#else    
     volatile int x;
     volatile CYG_ADDRESS p=(CYG_ADDRESS) &state;
 
@@ -100,6 +118,7 @@ cause_memerror(void)
         x = *(volatile int *)(p+1);
         p += (CYG_ADDRESS)0x100000;
     } while(p != 0);
+#endif    
 } // cause_memerror()
 
 // num must always be 0 - do it this way in case the optimizer tries to
@@ -136,13 +155,6 @@ main( int argc, char *argv[] )
     CYG_TEST_GDBCMD("handle SIGILL nostop");
     CYG_TEST_GDBCMD("handle SIGFPE nostop");
     CYG_TEST_GDBCMD("handle SIGSYS nostop");
-
-// Not sure about this - Jifl. Do any of our targets generate SIGTRAP anyway?
-#if 0
-#ifndef CYGPKG_HAL_I386_LINUX
-    CYG_TEST_GDBCMD("handle SIGTRAP nostop pass");
-#endif
-#endif
 #endif // ifdef CYGSEM_LIBC_SIGNALS_HWEXCEPTIONS
 
     CYG_TEST_INIT();
@@ -258,9 +270,6 @@ main( int argc, char *argv[] )
     CYG_TEST_PASS("Test 3 not applicable to mips-tx39");
 #elif defined(CYGPKG_HAL_SPARCLITE)
     CYG_TEST_PASS("Test 3 not applicable to sparclite");
-#elif defined(CYGPKG_HAL_I386_LINUX)
-    CYG_TEST_PASS("Test 3 not applicable to i386/Linux");
-    // See linux.S for details.
 #elif defined(CYGPKG_HAL_POWERPC)
     CYG_TEST_PASS("Test 3 not applicable to PowerPC");
 #elif defined(CYGPKG_HAL_ARM)

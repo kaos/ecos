@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -48,11 +48,11 @@
 
 #include <cyg/infra/testcase.h>
 
-// This test is bound to fail on Linux -- we don't have exclusive access
-// to the CPU.
+// This test is bound to fail often on the synthetic target -- we
+// don't have exclusive access to the CPU.
 
-#if defined(CYGPKG_HAL_I386_LINUX)
-# define NA_MSG "Cannot run on synthetic target"
+#if defined(CYGPKG_HAL_SYNTH)
+# define NA_MSG "Timing accuracy not guaranteed on synthetic target"
 #elif !defined(CYGINT_ISO_MAIN_STARTUP)
 # define NA_MSG "Requires main() startup"
 #elif defined(CYGDBG_USE_TRACING)

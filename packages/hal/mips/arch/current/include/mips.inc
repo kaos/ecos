@@ -152,12 +152,15 @@
 
 #define FUNC_START(name)	\
         .type name,@function;	\
+        .set push ;             \
         .globl name;		\
         .ent   name;		\
+        .set noreorder ;        \
 name:
 
 #define FUNC_END(name)		\
 name##_end:			\
+        .set pop;               \
         .end name		\
 
 #------------------------------------------------------------------------------
