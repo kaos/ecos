@@ -135,7 +135,7 @@ hardware for the application being developed.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="synth-io-overview.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="synth-io-overview.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -850,7 +850,7 @@ being run. However the overall layout is likely to remain the same.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="screen_main.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="screen_main.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -883,7 +883,7 @@ Usually there will be four menus on the menu bar:
       <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="menu_file.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="menu_file.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -936,7 +936,7 @@ terminate the application cleanly, and then exit.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="menu_edit.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="menu_edit.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -964,7 +964,7 @@ viewer.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="preferences.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="preferences.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -976,7 +976,7 @@ Filters</guimenuitem> entry, used to edit the settings for the current
      <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="menu_view.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="menu_view.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -989,7 +989,7 @@ dialog can be used to select the browser that will be used.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="menu_help.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="menu_help.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -1045,7 +1045,7 @@ the following:
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="filters.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="filters.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -1080,7 +1080,7 @@ the display.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="layout.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="layout.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>
@@ -2501,7 +2501,7 @@ update the widget hierarchy directly.
     <informalfigure PgWide=1>
       <mediaobject>
         <imageobject>
-          <imagedata fileref="layout.gif" format="gif" Scalefit=1 Align="Center">
+          <imagedata fileref="layout.png" Scalefit=1 Align="Center">
         </imageobject>
       </mediaobject>
     </informalfigure>

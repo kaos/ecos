@@ -1,3 +1,10 @@
+2003-02-25  Iztok Zupet  <iz@vsr.si>
+
+	* doc/synth.sgml: Replaced .gif with .png to get PDF
+	output.
+	* doc/*.gif: Delete.
+	* doc/*.png: Replacements for .gifs added.
+
 2003-04-10  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/synth.ld: 
