@@ -226,7 +226,7 @@ e2fs_inode_block(e2fs_desc_t *e2fs, e2fs_inode_t *inode,
 	// Indirect block
 	if (!__READ_BLOCK(SWAB_LE32(inode->block[E2FS_IND_BLOCK])))
 	    return 0;
-	*pblknr = blockbuf[bindex];
+	*pblknr = SWAB_LE32(blockbuf[bindex]);
 	return 1;
     }
     bindex -= e2fs->nr_ind_blocks;
@@ -237,7 +237,7 @@ e2fs_inode_block(e2fs_desc_t *e2fs, e2fs_inode_t *inode,
 	    return 0;
 	if (!__READ_BLOCK(SWAB_LE32(blockbuf[bindex / e2fs->nr_ind_blocks])))
 	    return 0;
-	*pblknr  = blockbuf[bindex % e2fs->nr_ind_blocks];
+	*pblknr  = SWAB_LE32(blockbuf[bindex % e2fs->nr_ind_blocks]);
 	return 1;
     }
     bindex -= e2fs->nr_dind_blocks;
@@ -250,7 +250,7 @@ e2fs_inode_block(e2fs_desc_t *e2fs, e2fs_inode_t *inode,
     bindex %= e2fs->nr_dind_blocks;
     if (!__READ_BLOCK(SWAB_LE32(blockbuf[bindex / e2fs->nr_ind_blocks])))
 	return 0;
-    *pblknr = blockbuf[bindex % e2fs->nr_ind_blocks];
+    *pblknr = SWAB_LE32(blockbuf[bindex % e2fs->nr_ind_blocks]);
     return 1;
 }
 

@@ -66,7 +66,7 @@
 #define __SWAB32(x)         \
    ((((x) & 0xff) << 24)   |  \
     (((x) & 0xff00) <<  8) |  \
-    (((x) >> 8) & 0xff)    |  \
+    (((x) >> 8) & 0xff00)  |  \
     (((x) >> 24) & 0xff))
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST)
