@@ -64,6 +64,7 @@
 #include <cyg/io/serial.h>
 #include <cyg/infra/diag.h>
 #include <cyg/infra/cyg_type.h>
+#include <cyg/infra/cyg_ass.h>
 
 externC void * memcpy( void *, const void *, size_t );
 
@@ -555,6 +556,9 @@ at91_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
                     break;
                 default:
                     // Buffer full or unknown error, can't do anything about it
+                    // Discard data
+                    CYG_FAIL("Serial receiver buffer overflow");
+                    p = end;
                     break;
             }
         }
