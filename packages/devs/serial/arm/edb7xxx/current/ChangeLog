@@ -1,3 +1,7 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/ser_arm_edb7xxx.cdl: Remove irrelevant doc link.
+
 2001-10-12  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/ser_arm_edb7xxx.cdl: Clarify package description strings.

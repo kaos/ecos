@@ -63,7 +63,6 @@ cdl_package CYGPKG_IO_SERIAL_ARM_EDB7XXX {
     description   "
            This option enables the serial device drivers for the
            Cirrus Logic ARM based development boards."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   edb7xxx_serial.c
 
