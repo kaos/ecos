@@ -58,6 +58,7 @@ cdl_package CYGPKG_DEVS_WATCHDOG_SYNTH {
         SIGPWR signal."
     
     parent      CYGPKG_IO_WATCHDOG
+    active_if   CYGPKG_IO_WATCHDOG
     implements  CYGINT_WATCHDOG_HW_IMPLEMENTATIONS
     implements  CYGINT_WATCHDOG_RESETS_ON_TIMEOUT
 
