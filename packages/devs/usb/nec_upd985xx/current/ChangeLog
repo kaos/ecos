@@ -1,3 +1,10 @@
+2002-12-01  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/usbs_upd985xx.c, cdl/usbs_upd985xx.cdl:
+	Make the control packet size configurable, to work around a
+	problem detected by USB compliance testing. Based on work
+	by Clark Williams and Andrew Lunn.
+
 2002-10-26  Bart Veer  <bartv@ecoscentric.com>
 
 	* src/usbs_upd985xx.c (ep0_rx_dsr):

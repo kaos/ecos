@@ -8,6 +8,7 @@
 #####ECOSGPLCOPYRIGHTBEGIN####
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 2002 Bart Veer
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
@@ -88,10 +89,37 @@ cdl_package CYGPKG_DEVS_USB_UPD985XX {
             "
         }
 
+	cdl_option CYGNUM_DEVS_USB_UPD985XX_EP0_PKTSIZE {
+	    display	  "Size of endpoint 0 control packets"
+	    flavor        data
+	    default_value 8
+	    legal_values  { 8 16 32 64 }
+	    description "
+                Control messages on endpoint 0 are split into packets of
+                8, 16, 32 or 64 bytes - these are the values permitted by the
+                USB specification. The same packet size is used for both
+                receives and transmits. This value must also be used for the
+                max_packet_size field of the device descriptor in the
+                application's USB enumeration data.
+
+                According to section 5.5.5 of the USB specification, if a new
+                control message is received before the previous transaction
+                has completed then the previous transaction must be aborted.
+                If that transaction involved transferring data to the host
+                then there is a problem: that data may still be queued for
+                transmission and the NEC USB device appears to provide no way
+                of aborting that transmit. The problem is unlikely to arise
+                with normal usage, but may be detected by compliance
+                testsuites. Increasing the packet size to its maximum value
+                of 64 reduces the probability of failure.
+            "
+	}
+	
 	cdl_option CYGNUM_DEVS_USB_UPD985XX_EP0_TXBUFSIZE {
 	    display       "Size of statically-allocated endpoint 0 transmit buffer"
 	    flavor        data
 	    default_value 256
+	    requires      { CYGNUM_DEVS_USB_UPD985XX_EP0_TXBUFSIZE >= CYGNUM_DEVS_USB_UPD985XX_EP0_PKTSIZE }
 	    description "
 	        The implementation of the support for endpoint 0 uses
 	        a single static buffer to hold the response to the
@@ -109,7 +137,7 @@ cdl_package CYGPKG_DEVS_USB_UPD985XX {
 	    display       "Size of statically-allocated endpoint 0 transmit buffer"
 	    flavor        data
 	    default_value 64
-	    requires      { CYGNUM_DEVS_USB_UPD985XX_EP0_RXBUFSIZE >= 8 }
+	    requires      { CYGNUM_DEVS_USB_UPD985XX_EP0_RXBUFSIZE >= CYGNUM_DEVS_USB_UPD985XX_EP0_PKTSIZE }
 	    description "
 	        The implementation of the support for endpoint 0 uses
 	        a single static buffer to hold incoming control messages.

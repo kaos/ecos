@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2002 Bart Veer
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -1113,7 +1114,8 @@ ep0_start_tx(void)
 //
 // There is one special case. If the host asked for e.g. a string
 // descriptor and asked for 255 bytes, but the string was only
-// e.g. 32 bytes, then there is a problem. The data will be
+// e.g. 32 bytes, then there is a problem. With a default value
+// for CYGNUM_DEVS_USB_UPD985XX_EP0_PKTSIZE, the data will be
 // transferred as four 8-byte packets, but it is necessary to
 // terminate the transfer with a 0-byte packet. Endpoint 0 always
 // operates in NZLP mode so the hardware will never generate
@@ -1535,7 +1537,7 @@ ep0_rx_dsr(void)
                     if (actual_length > length) {
                         actual_length = length;
                     } 
-                    if ((length != actual_length) && (0 == (actual_length % 8))) {
+                    if ((length != actual_length) && (0 == (actual_length % CYGNUM_DEVS_USB_UPD985XX_EP0_PKTSIZE))) {
                         ep0.tx_needs_zero_transfer = true;
                     } else {
                         ep0.tx_needs_zero_transfer = false;
@@ -1662,10 +1664,10 @@ ep0_init(void)
     // Start a receive operation for a control message.
     ep0_start_rx(8);
     
-    // The endpoint 0 control register. Sticking with the default
-    // 8-byte packet size seems like a good idea. Setting the
+    // The endpoint 0 control register. The control packet size is
+    // configurable, with a default value of 8. Setting the
     // enabled bit here affects the state as seen by the host.
-    *EP0_CR                     = IBUS_SWAP32(EP0_CR_EP0EN | 8);                    FLUSH_IBUS();
+    *EP0_CR                     = IBUS_SWAP32(EP0_CR_EP0EN | CYGNUM_DEVS_USB_UPD985XX_EP0_PKTSIZE); FLUSH_IBUS();
     
     // The other endpoint registers will be initialized by the appropriate
     // _init() functions. Note that those other _init() functions should
