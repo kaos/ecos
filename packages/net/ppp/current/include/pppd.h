@@ -85,6 +85,7 @@
 #include <sys/types.h>		/* for u_int32_t, if defined */
 #include <sys/time.h>		/* for struct timeval */
 #include <cyg/ppp/net/ppp_defs.h>
+#include <cyg/ppp/ppp.h>
 
 #if __STDC__
 #include <stdarg.h>
@@ -376,6 +377,7 @@ int  getword __P((FILE *f, char *word, int *newlinep, char *filename));
 void option_error __P((char *fmt, ...));
 				/* Print an error message about an option */
 int setipaddr __P((char *));	/* set IP addresses */
+int gettimeofday __P((struct timeval *tv, struct timezone *tz));
 
 
 /*

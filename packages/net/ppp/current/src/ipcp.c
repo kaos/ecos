@@ -83,6 +83,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <pkgconf/ppp.h>
 #include "cyg/ppp/pppd.h"
 #include "cyg/ppp/fsm.h"
 #include "cyg/ppp/ipcp.h"
@@ -363,8 +364,10 @@ ipcp_cilen(f)
     if (wo->neg_vj && !go->neg_vj && !go->old_vj) {
 	/* try an older style of VJ negotiation */
 	if (cis_received[f->unit] == 0) {
+#ifndef PPP_INHIBIT_OLD_VJ_COMPRESSION
 	    /* keep trying the new style until we see some CI from the peer */
 	    go->neg_vj = 1;
+#endif
 	} else {
 	    /* use the old style only if the peer did */
 	    if (ho->neg_vj && ho->old_vj) {

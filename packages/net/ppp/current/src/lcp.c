@@ -1018,6 +1018,7 @@ lcp_nakci(f, p, len)
 	    if (++try.numloops >= lcp_loopbackfail) {
 		syslog(LOG_NOTICE, "Serial line is looped back.");
 		lcp_close(f->unit, "Loopback detected");
+		cyg_ppp_stats.loopback++;
 	    }
 	} else
 	    try.numloops = 0;
@@ -1778,6 +1779,7 @@ void LcpLinkFailure (f)
 	syslog(LOG_INFO, "No response to %d echo-requests", lcp_echos_pending);
         syslog(LOG_NOTICE, "Serial link appears to be disconnected.");
         lcp_close(f->unit, "Peer not responding");
+        cyg_ppp_stats.no_response++;
     }
 }
 

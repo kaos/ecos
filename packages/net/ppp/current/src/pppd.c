@@ -193,6 +193,7 @@ u_char outpacket_buf[PPP_MRU+PPP_HDRLEN]; /* buffer for outgoing packet */
 u_char inpacket_buf[PPP_MRU+PPP_HDRLEN]; /* buffer for incoming packet */
 
 char *no_ppp_msg = "Sorry - this system lacks PPP kernel support\n";
+cyg_ppp_stats_t cyg_ppp_stats;
 
 /* Prototypes for procedures local to this file. */
 

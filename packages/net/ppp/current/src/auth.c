@@ -283,6 +283,7 @@ link_established(unit)
 	if (!wo->neg_upap || !null_login(unit)) {
 	    syslog(LOG_WARNING, "peer refused to authenticate");
 	    lcp_close(unit, "peer refused to authenticate");
+	    cyg_ppp_stats.auth_failures++;
 	    return;
 	}
     }
@@ -344,9 +345,11 @@ network_phase(unit)
 		++num_np_open;
 	}
 
-    if (num_np_open == 0)
+    if (num_np_open == 0) {
 	/* nothing to do */
 	lcp_close(0, "No network protocols running");
+	cyg_ppp_stats.no_proto++;
+    }
 }
 
 /*
@@ -360,6 +363,7 @@ auth_peer_fail(unit, protocol)
      * Authentication failure: take the link down
      */
     lcp_close(unit, "Authentication failed");
+    cyg_ppp_stats.auth_failures++;
 }
 
 /*
@@ -422,6 +426,7 @@ auth_withpeer_fail(unit, protocol)
      * He'll probably take the link down, and there's not much
      * we can do except wait for that.
      */
+   	cyg_ppp_stats.auth_failures++;
 }
 
 /*
@@ -512,6 +517,7 @@ np_finished(unit, proto)
     if (--num_np_open <= 0) {
 	/* no further use for the link: shut up shop. */
 	lcp_close(0, "No network protocols running");
+	cyg_ppp_stats.no_proto++;
     }
 }
 
@@ -533,6 +539,7 @@ check_idle(arg)
 	/* link is idle: shut it down. */
 	syslog(LOG_INFO, "Terminating connection due to lack of activity.");
 	lcp_close(0, "Link inactive");
+	cyg_ppp_stats.idle_timeout++;
     } else {
 	TIMEOUT(check_idle, NULL, idle_time_limit - itime);
     }
@@ -547,6 +554,7 @@ connect_time_expired(arg)
 {
     syslog(LOG_INFO, "Connect time expired");
     lcp_close(0, "Connect time expired");	/* Close connection */
+    cyg_ppp_stats.connect_time_expired++;
 }
 
 /*

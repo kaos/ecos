@@ -162,8 +162,8 @@ cdl_package CYGPKG_PPP {
         default_value 0
         description "This component provides control over
                      PPP compression features. WARNING: at
-                     present there are problems with this, and
-                     the compression code needs to allocate large
+                     present there are problems with BSD and ZLIB,
+                     and the compression code needs to allocate large
                      amounts of memory. Hence this is all currently
                      disabled."
         
@@ -183,6 +183,16 @@ cdl_package CYGPKG_PPP {
                          compression into the PPP protocol."
         }
         
+        cdl_option PPP_INHIBIT_OLD_VJ_COMPRESSION {
+			display			"Inhibit older-style VJ compression"
+			flavor			bool
+			default_value	0
+			description		"This option prevents the IPCP state machine
+			                 from negotiating the pre-RFC1332 Van Jacobson 
+			                 compression.  Checking this option could
+			                 improve IPCP negotiation time at the expense
+			                 of compatibility."
+		}            
     }
 
     cdl_component CYGPKG_PPP_CHAT {
@@ -310,6 +320,19 @@ cdl_package CYGPKG_PPP {
                          tests will execute."
         }
     }
+        cdl_option CYGBLD_PPP_WINDOWS_TELNET_APP {
+            display  "Build complete eCos PPP client interfacing to Windows PPP server"
+            default_value 0
+            make -priority 320 {
+                <PREFIX>/bin/windows_telnet.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a $(REPOSITORY)/$(PACKAGE)/tests/windows_telnet.c
+                        @sh -c "mkdir -p $(dir $@)"
+                        $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/windows_telnet.o $(REPOSITORY)/$(PACKAGE)/tests/windows_telnet.c
+                        $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(PREFIX)/lib/windows_telnet.o
+			$(OBJCOPY) -O binary $@ $(PREFIX)/bin/windows_telnet.bin			
+            }
+            
+        }
+
 }
 
 # EOF ppp.cdl

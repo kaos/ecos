@@ -538,6 +538,7 @@ void cyg_ppp_serial_callback( cyg_serial_line_status_t *s,
         if( s->value == 0 )
         {
             // CD lost
+            ppp_tty.carrier_detected = 0;
             kill_link = 1;
             cyg_thread_release( ppp_tty.pppd_thread );
             ppp_tty.pppd_wakeup = 1;
@@ -1692,6 +1693,9 @@ externC cyg_ppp_handle_t cyg_ppp_up( const char *devnam_arg,
     if( options == NULL || phase != PHASE_DEAD )
         return 0;
     
+    // Initialize control block    
+   	memset(&ppp_tty, 0, sizeof(struct tty));
+
     strncpy( devnam, devnam_arg, PATH_MAX );
 
     ppp_tty.options = options;

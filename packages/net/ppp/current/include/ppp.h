@@ -71,6 +71,20 @@
 typedef CYG_ADDRWORD cyg_ppp_handle_t;
 
 // -------------------------------------------------------------------------
+/* PPP statistics */
+
+typedef struct {
+	int auth_failures;        /* PAP or CHAP failures */
+	int no_proto;             /* No network protocol running */
+	int idle_timeout;         /* Idle timer expired */
+	int connect_time_expired; /* Max connect time expired */
+	int loopback;             /* Loopback detected */
+	int no_response;          /* Peer not responding */
+} cyg_ppp_stats_t;
+
+extern cyg_ppp_stats_t cyg_ppp_stats; /* PPP statistics */
+
+// -------------------------------------------------------------------------
 
 typedef struct
 {

@@ -111,7 +111,7 @@ static cyg_handle_t cyg_ppp_chat_thread;
 static cyg_io_handle_t cyg_ppp_chat_handle;
 
 // String buffers
-static char cyg_ppp_chat_buffer[CHAT_STRING_LENGTH];
+char cyg_ppp_chat_buffer[CHAT_STRING_LENGTH];
 static char cyg_ppp_chat_expect_buffer[CHAT_STRING_LENGTH];
 
 //=====================================================================
@@ -365,15 +365,25 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
     const char *s;
     Cyg_ErrNo err;
     cyg_int32 result = 1;
+    cyg_uint32 zero = 0;
+    cyg_uint32 len = sizeof(zero);    
 
     cyg_ppp_chat_thread = cyg_thread_self();
     cyg_ppp_chat_abort_count = 0;
     cyg_ppp_chat_timeout = 45;
     
+    // Clear the result area
+    memset(cyg_ppp_chat_buffer, 0, CHAT_STRING_LENGTH);
+       
     while ((err = cyg_io_lookup(devname, &cyg_ppp_chat_handle)) < 0) {
         if (err != 0)
             syslog(LOG_ERR, "Failed to open %s: %d", devname,err);
     }
+
+    // Flush the serial input before starting
+    cyg_io_get_config( cyg_ppp_chat_handle,
+                       CYG_IO_GET_CONFIG_SERIAL_INPUT_FLUSH,
+                       &zero, &len);
 
     // Set up timeout alarm.
     cyg_alarm_create( cyg_real_time_clock(),
@@ -433,16 +443,10 @@ externC cyg_int32 cyg_ppp_chat( const char *devname,
     }
     
     // Finally, wait for the serial device to drain 
-    {
-        cyg_uint32 zero = 0;
-        cyg_uint32 len = sizeof(zero);
-        
         cyg_io_get_config( cyg_ppp_chat_handle,
                            CYG_IO_GET_CONFIG_SERIAL_OUTPUT_DRAIN,
                            &zero, &len);
         
-    }
-    
     return result;
 }
 

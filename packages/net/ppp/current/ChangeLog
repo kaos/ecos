@@ -1,3 +1,30 @@
+2004-06-29	Matt Jerdonek <maj1224@yahoo.com>
+
+	* cdl/ppp.cdl:
+	* src/ipcp.c:
+		Add option to disallow negotiation of old-style VJ compression
+	* include/ppp.h:
+		Add structure to track ppp failure reasons
+	* include/pppd.h:
+		Fix compiler warning
+	* src/auth.c:
+	* src/lcp.c:
+	* src/pppd.c:
+		Add code to track ppp failure reasons
+	* src/chat.c:
+		Fixes to clear out buffer space to allow chat script to run 
+		multiple times.  Note: function is still not thread-safe
+	* src/sys-ecos.c:
+		Reset carrier detected bit when carrier lost
+		Reset ppp_tty control block when PPP started
+
+2004-06-24  Oyvind Harboe <oyvind.harboe@zylin.com>
+
+	* tests/windows_telnet.c:
+	* cdl/ppp.cdl:
+	Added windows_telnet example application. Connects to Windows PPP 
+	server and waits for a telnet session.
+		
 2004-05-06  Mark Retallack <mark.retallack@siemens.com>
 
 	* src/ppp_io.c: 
