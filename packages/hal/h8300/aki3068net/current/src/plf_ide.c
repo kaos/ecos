@@ -58,6 +58,7 @@
 #include <cyg/hal/hal_arch.h>           // architectural definitions
 #include <cyg/hal/hal_io.h>
 #include <cyg/hal/hal_if.h>
+#include <cyg/hal/hal_endian.h>
 #include <cyg/hal/plf_intr.h>
 #include <cyg/hal/var_arch.h>
 
@@ -68,12 +69,13 @@
 #define IDE_REG_FEATUERS 1
 #define IDE_REG_COMMAND  7
 
-void aki3068net_ide_setup(void)
+int aki3068net_ide_setup(void)
 {
 #if CYGHWR_HAL_IDE_BUSWIDTH == 8
     aki3068net_write_command(IDE_REG_FEATUERS,0x01); /* 8bit transfer mode */
     aki3068net_write_command(IDE_REG_COMMAND, 0xef); /* set featuers */
 #endif
+    return HAL_IDE_NUM_CONTROLLERS;
 }
 
 void aki3068net_read_command(cyg_uint16 r, cyg_uint8 *d)
@@ -81,7 +83,7 @@ void aki3068net_read_command(cyg_uint16 r, cyg_uint8 *d)
 #if CYGHWR_HAL_IDE_BUSWIDTH == 8
     *d = *(volatile cyg_uint8 *)(CYGHWR_HAL_IDE_REGISTER + r);
 #else
-    *d = *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_REGISTER + (r << 1)) & 0xff;
+    *d = *(volatile cyg_uint8 *)(CYGHWR_HAL_IDE_REGISTER + (r << 1) + 1);
 #endif
 }
 
@@ -90,7 +92,9 @@ void aki3068net_read_data   (cyg_uint16 r, cyg_uint16 *d)
 #if CYGHWR_HAL_IDE_BUSWIDTH == 8
     *d = *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_REGISTER + r);
 #else
-    *d = *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_REGISTER + (r << 1));
+    cyg_uint16 dt;
+    dt = *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_REGISTER + (r << 1));
+    *d = CYG_LE16_TO_CPU(dt);
 #endif
 }
 
@@ -99,7 +103,7 @@ void aki3068net_read_control(cyg_uint8 *d)
 #if CYGHWR_HAL_IDE_BUSWIDTH == 8
     *d = *(volatile cyg_uint8 *)(CYGHWR_HAL_IDE_ALT_REGS + 6);
 #else
-    *d = *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_ALT_REGS + 12) & 0xff;
+    *d = *(volatile cyg_uint8 *)(CYGHWR_HAL_IDE_ALT_REGS + 12 + 1);
 #endif
 }
 
@@ -108,7 +112,7 @@ void aki3068net_write_command(cyg_uint16 r, cyg_uint8 d)
 #if CYGHWR_HAL_IDE_BUSWIDTH == 8
     *(volatile cyg_uint8 *)(CYGHWR_HAL_IDE_REGISTER + r) = d;
 #else
-    *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_REGISTER + (r << 1) +1) = d;
+    *(volatile cyg_uint16 *)(CYGHWR_HAL_IDE_REGISTER + (r << 1)) = d;
 #endif
 }
 
@@ -117,7 +121,7 @@ void aki3068net_write_data   (cyg_uint16 r, cyg_uint16 d)
 #if CYGHWR_HAL_IDE_BUSWIDTH == 8
     *(volatile cyg_uint8 *)(CYGHWR_HAL_IDE_REGISTER + r) = d;
 #else
-    *(volatile CYG_WORD16 *)(CYGHWR_HAL_IDE_REGISTER + (__regno <<1)) = (__val >> 8) | (__val << 8);
+    *(volatile CYG_WORD16 *)(CYGHWR_HAL_IDE_REGISTER + (r <<1)) = CYG_CPU_TO_LE16(d);
 #endif
 }
 

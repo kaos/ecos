@@ -65,11 +65,11 @@
 #define HAL_IDE_INIT() aki3068net_ide_setup()
 
 #define HAL_IDE_READ_UINT8( __ctlr, __regno, __val )  \
-    aki3068net_read_command(__regno, __val)
+    aki3068net_read_command(__regno, &(__val))
 #define HAL_IDE_READ_UINT16( __ctlr, __regno, __val )  \
-    aki3068net_read_data(__regno, __val)
+    aki3068net_read_data(__regno, &(__val))
 #define HAL_IDE_READ_ALTSTATUS( __ctlr, __val )  \
-    aki3068net_read_control( __val)
+    aki3068net_read_control( &(__val))
 
 #define HAL_IDE_WRITE_UINT8( __ctlr, __regno, __val )  \
     aki3068net_write_command(__regno, __val)

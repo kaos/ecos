@@ -81,7 +81,7 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
         display       "Startup type"
         flavor        data
         legal_values  {"ROM" "RAM"}
-        default_value {"RAM"}
+        default_value {"ROM"}
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
@@ -204,7 +204,7 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
             display "Global linker flags"
             flavor  data
             no_define
-            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mh -mint32" }
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static -mrelax -mh -mint32" }
             description   "
                 This option controls the global linker flags. Individual
                 packages may define options which override these global flags."
@@ -300,20 +300,12 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
             application. This enables features such as utilizing a separate
             interrupt stack when exceptions are generated."
     }
-    cdl_option CYGSEM_HAL_H8300_VECTOR_HOOK {
-        display       "Interrupt Vector Hook"
-        flavor        bool
-        default_value 1
-        parent        CYGPKG_HAL_ROM_MONITOR
-        description   "
-            Interrupt Vector Table Hooking Support"
-    }
     cdl_option CYGHWR_HAL_H8300_VECTOR_ADDRESS {
         display       "Hook Vector Address"
         flavor        data
-        default_value 0xffbf20
+        default_value 0xfffd20
+	active_if CYGSEM_HAL_H8300_VECTOR_HOOK
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYGSEM_HAL_H8300_VECTOR_HOOK == 1 }
         description   "
             Hooking Vector Table Address"
     }
@@ -323,5 +315,20 @@ cdl_package CYGPKG_HAL_H8300_H8300H_AKI3068NET {
 	default_value 0xffffb8
         description   "
             Used SCI Channel base address."
+    }
+    cdl_option CYGDAT_REDBOOT_H8300_LINUX_COMMAND_START {
+        display        "Default kernel command line start address"
+        flavor         data
+        default_value  0x5ffe00
+        description    "
+           This option uClinux kernel command line start address of default."
+    }
+
+    cdl_option CYGDAT_REDBOOT_H8300_LINUX_BOOT_COMMAND_LINE {
+        display        "Default command line"
+        flavor         data
+        default_value  { "console=/dev/ttySC1" }
+        description    "
+           This option uClinux kernel startup command line of default."
     }
 }

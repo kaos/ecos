@@ -1,3 +1,34 @@
+2004-03-17  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/hal_diag.h
+	fix warning.
+
+2004-03-02  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* include/platform.inc
+	add h8300_save_vectors macro.
+	
+2004-02-24  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* cdl/hal_h8300_h8300h_aki3068net.cdl
+	add Linker flags "-mrelax"
+	move CYGSEM_HAL_H8300_VECTOR_HOOK to hal_h8300.cdl
+
+2004-01-16  Yoichi Koyanagi <yk@tinywillow.com>,Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/plf_ide.c  
+	HAL_IDE_INIT return to enumerate controlers.
+	aki3068net_read_command fix 16bit mode access.
+
+2003-12-26  Yoichi Koyanagi <yk@tinywillow.com>,Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/plf_ide.c  
+	16bit bus mode fix.
+
+2003-12-04  Yoshinori Sato  <ysato@users.sourceforge.jp>
+	* include/pkgconf/mlt_h8300_h8300h_aki3068net_rom.ldi
+	fix vector location from CYGSEM_HAL_H8300_VECTOR_HOOK == 0
+	
 2003-07-18  Nick Garnett  <nickg@balti.calivar.com>
 
 	* cdl/hal_h8300_h8300h_aki3068net.cdl:

@@ -65,11 +65,15 @@
 
 ##-----------------------------------------------------------------------------
 
-#if CYGINT_HAL_PLF_IF_IDE != 0
-#define ABWCR_VAL ~((1 << ((CYGHWR_HAL_IDE_REGISTER >> 25) & 7)) |\
-                    (1 << ((CYGHWR_HAL_IDE_ALT_REGS >> 25) & 7))) 
+#if (CYGINT_HAL_PLF_IF_IDE != 0 && (CYGHWR_HAL_IDE_BUSWIDTH == 16))
+#define ABWCR_VAL ~((1 << ((CYGHWR_HAL_IDE_REGISTER >> 21) & 7)) |\
+                    (1 << ((CYGHWR_HAL_IDE_ALT_REGS >> 21) & 7))) 
 #else
 #define ABWCR_VAL 0xff
+#endif
+#if (CYGINT_HAL_PLF_IF_IDE != 0)
+#define CSCR_VAL ((1 << ((CYGHWR_HAL_IDE_REGISTER >> 21) & 7)) |\
+                  (1 << ((CYGHWR_HAL_IDE_ALT_REGS >> 21) & 7))) 
 #endif
 
 #define CYGPKG_HAL_H8300_MEMC_DEFINED
@@ -79,13 +83,11 @@
 1:
 	mov.w	@er0+,r2
 	beq	1f
+	mov.w	#0x00ff,e2	; internal I/O regs (2) high address
 	cmp.w	#0xf000,r2
 	bhi	2f
-	mov.w	#0x00fe,e2
-	bra	3f
+	dec.w	#1,e2		; internal I/O regs (1) high address
 2:
-	mov.w	#0x00ff,e2
-3:
 	mov.w	@er0+,r1
 	mov.b	r1l,@er2
 	bra	1b
@@ -97,29 +99,28 @@ init_regs:
 INIT_REGS_DATA(CYGARC_RTCOR,9)
 INIT_REGS_DATA(CYGARC_RTMCSR,0x30)
 INIT_REGS_DATA(CYGARC_DRCRB,0x98)
-INIT_REGS_DATA(CYGARC_DRCRA,0x3c)
+INIT_REGS_DATA(CYGARC_DRCRA,0x38)
 INIT_REGS_DATA(CYGARC_ASTCR,0xfb)
 INIT_REGS_DATA(CYGARC_ABWCR,ABWCR_VAL)
+#if defined(CSCR_VAL)
+INIT_REGS_DATA(CYGARC_CSCR,((CSCR_VAL) & 0xf0) | 0x0f)
+#endif
+INIT_REGS_DATA(CYGARC_WCRH ,0xff)
+INIT_REGS_DATA(CYGARC_WCRL ,0xc8)
 INIT_REGS_DATA(CYGARC_P1DDR,0xff)
 INIT_REGS_DATA(CYGARC_P2DDR,0xff)
 INIT_REGS_DATA(CYGARC_P5DDR,0x01)
-INIT_REGS_DATA(CYGARC_P8DDR,0x0c)
+INIT_REGS_DATA(CYGARC_P8DDR,0x0e)
 	.word	0
 init_regs_end:
-;; Thanks Hiroyuki Senshu
+;; Thanks Hiroyuki Senshu & Hiroki Minematsu
 
-;; DRAM Setup delay
+;; External peripheral setup delay
 1:
-	mov.b	#8,r0h
+	mov.l	#420000,er0	;wait 50ms
 2:
-	mov.b	#0,r0l
-3:
-	dec.b	r0l
-	bne	3b
-	mov.b	@CYGARC_RTMCSR,r0l
+	dec.l	#1,er0
 	bpl	2b
-	dec	r0h
-	bne	2b
 #endif
 	.endm
 
@@ -143,6 +144,13 @@ init_regs_end:
 
 	.macro	hal_diag_data
 	.endm
+
+#if defined(CYGPKG_IO_ETH_DRIVERS)
+#define CYGPKG_HAL_H8300_SAVED_VECTORS
+	.macro	h8300_save_vectors
+	.byte	15
+	.endm
+#endif
 
 #------------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_PLATFORM_INC
