@@ -389,7 +389,7 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
 
     // Drain read buffer
     
-    for ( ; whence > 0 ; whence-- ) {
+    for ( ; pos > 0 ; pos-- ) {
         err = read_byte( &c );
         if (err == EAGAIN)
             err=refill_read_buffer();

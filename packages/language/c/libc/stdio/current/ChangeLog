@@ -1,3 +1,8 @@
+2002-09-02  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* include/stream.inl (set_position): Fixed typo in none buffered
+	case. Seek pos bytes, not whence bytes.
+
 2002-05-17  Martin Buck  <martin.buck@ascom.ch>
  
  	* include/stdio.h (fnprintf): Added printf-format-checking using
