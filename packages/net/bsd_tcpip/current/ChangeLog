@@ -1,3 +1,13 @@
+2003-09-17  Reinhard Jessich  <Reinhard.Jessich@frequentis.com>
+
+	* src/sys/kern/uipc_mbuf.c: Now using flags (how) argument in call to
+	cyg_net_mbuf_alloc, to avoid a (blocking) call to alloc method of mempool 
+	during interrupts. This problem occurred under heavy IP traffic in case the 
+	mempool became empty (alloc blocked).
+	* src/sys/net/if_ethersubr.c: Avoid dereferencing NULL pointer in case of
+	failing m_copy. Note that this problem was (at least sometimes) hidden 
+	due to the bug in uipc_mbuf.c (described above).
+
 2003-09-08  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* src/ecos/support.c (read_random): New function which is needed

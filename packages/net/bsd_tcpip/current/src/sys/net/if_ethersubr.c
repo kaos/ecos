@@ -339,6 +339,11 @@ ether_output(ifp, m, dst, rt0)
 	if ((ifp->if_flags & IFF_SIMPLEX) && (loop_copy != -1)) {
 		if ((m->m_flags & M_BCAST) || (loop_copy > 0)) {
 			struct mbuf *n = m_copy(m, 0, (int)M_COPYALL);
+            
+            if ( n == 0 ) {
+                error = 0;
+                goto bad;
+            }
 
 			(void) if_simloop(ifp, n, dst->sa_family, hlen);
 		} else if (bcmp(eh->ether_dhost,
