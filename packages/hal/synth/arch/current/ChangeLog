@@ -1,3 +1,9 @@
+2003-07-05  Bart Veer  <bartv@ecoscentric.com>
+
+	* src/synth_entry.c:
+	Add more dummy functions to cope with dependencies introduced by
+	various versions of g++.
+
 2003-06-27  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* src/synth.ld: Synthetic linux at least needs libgcc_eh.a in the

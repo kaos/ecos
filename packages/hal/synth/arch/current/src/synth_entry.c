@@ -169,6 +169,18 @@ void _linux_entry( void )
 }
 
 // ----------------------------------------------------------------------------
+// Stub functions needed for linking with various versions of gcc
+// configured for Linux rather than i386-elf.
+
+#if (__GNUC__ < 3)
+// 2.95.x libgcc.a __pure_virtual() calls __write().
+int __write(void)
+{
+    return -1;
+}
+#endif
+
+#if (__GNUC__ >= 3)
 // Versions of gcc/g++ after 3.0 (approx.), when configured for Linux
 // native development (specifically, --with-__cxa_enable), have
 // additional dependencies related to the destructors for static
@@ -186,6 +198,18 @@ __cxa_atexit(void (*arg1)(void*), void* arg2, void* arg3)
 {
 }
 void*   __dso_handle = (void*) &__dso_handle;
+
+// gcc 3.2.2 (approx). The libsupc++ version of the new operator pulls
+// in exception handling code, even when using the nothrow version and
+// building with -fno-exceptions. libgcc_eh.a provides the necessary
+// functions, but requires a dl_iterate_phdr() function. That is related
+// to handling dynamically loaded code so is not applicable to eCos.
+int
+dl_iterate_phdr(void* arg1, void* arg2)
+{
+    return -1;
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // End of entry.c
