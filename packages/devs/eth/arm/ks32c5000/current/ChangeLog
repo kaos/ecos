@@ -1,3 +1,9 @@
+2003-03-26  Chris Garry  <cgarry@sweeneydesign.co.uk>
+
+    * cdl/ks32c5000_eth.cdl
+    * src/ks5000_ether.c: Added CDL control for level of driver
+    debug output.
+
 2003-03-20  Chris Garry  <cgarry@sweeneydesign.co.uk>
 
 	* src/ks5000_ether.c:

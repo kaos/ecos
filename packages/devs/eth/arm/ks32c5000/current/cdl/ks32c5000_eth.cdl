@@ -77,6 +77,19 @@ cdl_package CYGPKG_DEVS_ETH_ARM_KS32C5000 {
             display     "PHY support"
         }
         
+        cdl_option CYGPKG_DEVS_ETH_ARM_KS32C5000_DEBUG_LEVEL {
+            display "KS32C5000 device driver debug output level"
+            flavor  data
+            legal_values {0 1 2}
+            default_value 1
+            description   "
+                This option specifies the level of debug data output by the
+                KS32C5000 device driver. A value of 0 signifies no debug data
+                output; 1 signifies normal debug data output; and 2 signifies
+                maximum debug data output (not suitable when GDB and
+                application are sharing an ethernet port)."
+        }
+        
         cdl_option CYGPKG_DEVS_ETH_ARM_KS32C5000_PHY_ICS1890 {
             display     "ICS1890 PHY support"
             flavor bool

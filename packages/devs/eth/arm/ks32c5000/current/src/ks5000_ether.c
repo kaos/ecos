@@ -100,11 +100,18 @@
 #include "phy.h"
 #endif
 
-#if 1
-#define debug_printf(args...) diag_printf(args)
+// Set up the level of debug output
+#if CYGPKG_DEVS_ETH_ARM_KS32C5000_DEBUG_LEVEL > 0
+#define debug1_printf(args...) diag_printf(args)
 #else
-#define debug_printf(args...) /* noop */
+#define debug1_printf(args...) /* noop */
 #endif
+#if CYGPKG_DEVS_ETH_ARM_KS32C5000_DEBUG_LEVEL > 1
+#define debug2_printf(args...) diag_printf(args)
+#else
+#define debug2_printf(args...) /* noop */
+#endif
+
 #define Bit(n) (1<<(n))
 
 // enable/disable software verification of rx CRC
@@ -476,8 +483,6 @@ static int ks32c5000_eth_buffer_send(tEthBuffer *buf)
     cyg_thread_delay(10);
 #endif
 
-  //diag_printf("Phy Status = %x\n",PhyStatus());
-  
   if (txWritePointer->FrameDataPtr & FRM_OWNERSHIP_BDMA)
     {
       // queue is full!  make sure transmit is running
@@ -631,11 +636,11 @@ static tEthBuffer *ks32c5000_eth_get_recv_buffer(void)
 static int EthInit(U08* mac_address)
 {
   if (mac_address)
-    debug_printf("EthInit(%02x:%02x:%02x:%02x:%02x:%02x)\n",
+    debug2_printf("EthInit(%02x:%02x:%02x:%02x:%02x:%02x)\n",
                 mac_address[0],mac_address[1],mac_address[2],
                 mac_address[3],mac_address[4],mac_address[5]);
   else
-    debug_printf("EthInit(NULL)\n");
+    debug2_printf("EthInit(NULL)\n");
 
 #if HavePHY  
   PhyReset();
@@ -679,7 +684,7 @@ static int EthInit(U08* mac_address)
   BDMATXCON = BDMATxConfigVar;
   MACTXCON =  MACTxConfigVar;
 
-  diag_printf("ks32C5000 eth: %02x:%02x:%02x:%02x:%02x:%02x  ",
+    debug2_printf("ks32C5000 eth: %02x:%02x:%02x:%02x:%02x:%02x  ",
               *((volatile unsigned char*)CAM_BaseAddr+0),
               *((volatile unsigned char*)CAM_BaseAddr+1),
               *((volatile unsigned char*)CAM_BaseAddr+2),
@@ -688,9 +693,9 @@ static int EthInit(U08* mac_address)
               *((volatile unsigned char*)CAM_BaseAddr+5));
 
 #if SoftwareCRC
-  diag_printf("Software CRC\n");
+  debug2_printf("Software CRC\n");
 #else
-  diag_printf("Hardware CRC\n");
+  debug2_printf("Hardware CRC\n");
 #endif
   
   return 0;
@@ -940,8 +945,8 @@ static cyg_uint32 BDMA_Tx_isr(cyg_vector_t vector, cyg_addrword_t data)
 #endif  
   if (IntBDMATxStatus & BDMASTAT_TX_CCP) 
     {
-      debug_printf("+-- Control Packet Transfered : %x\r",ERMPZCNT);
-      debug_printf("    Tx Control Frame Status : %x\r",ETXSTAT);
+      debug1_printf("+-- Control Packet Transfered : %x\r",ERMPZCNT);
+      debug1_printf("    Tx Control Frame Status : %x\r",ETXSTAT);
     }
 
   if (IntBDMATxStatus & (BDMASTAT_TX_NL|BDMASTAT_TX_NO|BDMASTAT_TX_EMPTY) )
@@ -1066,7 +1071,7 @@ static void installInterrupts(void)
   extern struct eth_drv_sc ks32c5000_sc;
   bool firstTime=true;
 
-  debug_printf("ks5000_ether: installInterrupts()\n");
+  debug1_printf("ks5000_ether: installInterrupts()\n");
   
   if (!firstTime)
     return;
@@ -1123,8 +1128,8 @@ static unsigned char myMacAddr[6] = { CYGPKG_DEVS_ETH_ARM_KS32C5000_MACADDR };
 static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 {
   struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
-  debug_printf("ks32c5000_eth_init()\n");
-  debug_printf("  MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",myMacAddr[0],myMacAddr[1],myMacAddr[2],myMacAddr[3],myMacAddr[4],myMacAddr[5]);
+  debug1_printf("ks32c5000_eth_init()\n");
+  debug1_printf("  MAC address %02x:%02x:%02x:%02x:%02x:%02x\n",myMacAddr[0],myMacAddr[1],myMacAddr[2],myMacAddr[3],myMacAddr[4],myMacAddr[5]);
 #if defined(CYGPKG_NET)  
   ifStats.duplex = 1;      //unknown
   ifStats.operational = 1; //unknown
@@ -1144,7 +1149,7 @@ static bool ks32c5000_eth_init(struct cyg_netdevtab_entry *tab)
 
 static void ks32c5000_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 {
-  debug_printf("ks32c5000_eth_start()\n");
+  debug2_printf("ks32c5000_eth_start()\n");
   if (!ethernetRunning)
     {
       cyg_drv_interrupt_mask(CYGNUM_HAL_INTERRUPT_ETH_BDMA_RX);
@@ -1162,7 +1167,7 @@ static void ks32c5000_eth_start(struct eth_drv_sc *sc, unsigned char *enaddr, in
 
 static void ks32c5000_eth_stop(struct eth_drv_sc *sc)
 {
-  debug_printf("ks32c5000_eth_stop()\n");
+  debug1_printf("ks32c5000_eth_stop()\n");
   ethernetRunning = 0;
 }
  
