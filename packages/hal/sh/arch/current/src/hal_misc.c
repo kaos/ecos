@@ -182,7 +182,7 @@ hal_msbit_index(cyg_uint32 mask)
     w = (w & 0x33333333) + ((w >> 2) & 0x33333333);
     w = w + (w >> 4);
     w = (w & 0x000F000F) + ((w >> 8) & 0x000F000F);
-    return (cyg_uint32)((w + (w >> 16)) & 0xFF);
+    return (cyg_uint32)((w + (w >> 16)) & 0xFF) - 1;
 
 }
 

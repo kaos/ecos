@@ -1243,7 +1243,7 @@ bool CeCosTest::InteractiveInferior(LPCTSTR pszHostPort,TCHAR **argv)
   //     any output so far
   //     (if target ready) host:port
   if(GetTargetReady(strHostPort)){
-    Log(_T("Use %s\n"),(LPCTSTR)strHostPort);
+    Log(_T("Use target remote %s\n"),(LPCTSTR)strHostPort);
     String strInferior(m_ep.Platform()->Prefix());
     strInferior+=_T("-gdb");
 #ifdef _WIN32

@@ -1,3 +1,22 @@
+2001-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* pkgconf/rules.mak: Added HOST_CC definition. This really belongs
+	in the top-level makefile, but requires tool changes.
+
+2001-11-21  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* pkgconf/rules.mak (tests.stamp): Be explicit about substitution
+	to avoid potential problems with trailing spaces.
+	[Bug #56239]
+
+2001-11-14  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: edb7xxx target now uses generic CS8900A driver.
+
+2001-11-02  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added CS8900A package.
+
 2001-10-30  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* ecos.db: Added ARM Integrator target including HAL, serial driver, 
@@ -254,7 +273,6 @@
 2000-11-21  Bart Veer  <bartv@redhat.com>
 
 	* ecos.db:
-	* customers:
 	Added USB support
 
 2000-11-16  Jesper Skov  <jskov@redhat.com>

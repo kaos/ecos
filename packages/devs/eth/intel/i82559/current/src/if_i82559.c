@@ -2035,7 +2035,8 @@ TxMachine(struct i82559* p_i82559)
 
     // is the CU idle, and there a next tx to set going?
     if ( ( ! p_i82559->tx_in_progress )
-         && p_i82559->tx_descriptor_add != tx_descriptor_active ) {
+         && (( p_i82559->tx_descriptor_add != tx_descriptor_active )
+            || p_i82559->tx_queue_full ) )  {
         TxCB *p_txcb = p_i82559->tx_ring[tx_descriptor_active];
         cyg_uint16 status;
 

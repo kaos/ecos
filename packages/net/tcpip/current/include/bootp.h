@@ -99,6 +99,9 @@ SOFTWARE.
 #define BP_SNAME_LEN	 64
 #define BP_FILE_LEN	128
 
+/* std min packet size to transmit for DHCP relays to work */
+#define BP_STD_TX_MINPKTSZ     (300)
+
 #ifdef CYGPKG_NET_DHCP
 // The standard requires only 312 bytes here
 #define BP_VEND_LEN	(312 + 32)

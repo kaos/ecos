@@ -1,3 +1,27 @@
+2001-11-15  Jesper Skov  <jskov@redhat.com>
+
+	* include/redboot.h: Added load_address and load_address_end
+	variables to hold bounds of a loaded image.
+	* src/load.c: Fill load_address and load_address_end after srec
+	and binary loads.
+	* src/flash.c: Same.
+	* src/main.c (do_go): removed unneeded cast.
+
+2001-11-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/io.c (_rb_gets_preloaded): More correct timeout handling.
+	n.b. in practice, this changes nothing, but it is more "correct".
+
+2001-11-05  Gary Thomas  <gthomas@redhat.com>
+
+	* src/load.c: Minor typo in help string.
+
+	* src/io.c (_rb_gets_preloaded): Clear buffer if ^C.
+
+2001-11-02  Jesper Skov  <jskov@redhat.com>
+
+	* src/flash.c (fis_init): Fix warning.
+
 2001-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* src/flash.c (fis_init): tweaks to the SIB protection code.

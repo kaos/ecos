@@ -296,7 +296,7 @@ fis_init(int argc, char *argv[])
         footer_p->blockBase = (char*)_ADDR_REDBOOT_TO_ARM(flash_start);
         footer_p->blockBase += CYGNUM_REDBOOT_FLASH_RESERVED_BASE + redboot_image_size;
 #else
-        footer_p->blockBase = _ADDR_REDBOOT_TO_ARM(fis_work_block);
+        footer_p->blockBase = (char*)_ADDR_REDBOOT_TO_ARM(fis_work_block);
 #endif
         footer_p->infoBase = NULL;
         footer_p->signature = FLASH_FOOTER_SIGNATURE;
@@ -890,12 +890,20 @@ fis_load(int argc, char *argv[])
             diag_printf("Image loaded from %p-%p\n", (unsigned char *)mem_addr, p->out_buf);
         }
 
+        // Set load address/top
+        load_address = mem_addr;
+        load_address_end = (unsigned long)p->out_buf;
     } else // dangling block
 #endif
     {
         memcpy((void *)mem_addr, (void *)img->flash_base, img->data_length);
+
+        // Set load address/top
+        load_address = mem_addr;
+        load_address_end = mem_addr + img->data_length;
     }
-    entry_address = (unsigned long *)img->entry_point;
+    entry_address = (unsigned long)img->entry_point;
+
 #ifdef CYGPKG_REDBOOT_FIS_CRC_CHECK
     cksum = crc32((unsigned char *)mem_addr, img->data_length);
     if (show_cksum) {

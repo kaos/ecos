@@ -1,0 +1,85 @@
+2001-11-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c: Added some more debug output. Set all 4 LAF
+	registers. Don't reset device to stop it - just disable TX & RX.
+
+2001-11-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c (cs8900a_send): Wait for controller ready
+	signal before starting transmission.
+
+2001-11-14  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c: Use platform init, reset and int_clear
+	macros.
+	* include/cs8900.h: Tidy up those (default) macros.
+
+2001-11-09  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c (cs8900a_init): Rewrote ESA setup to be more
+	consistent.
+
+	* include/cs8900.h: Added provide_esa field to driver structure.
+
+2001-11-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c: Made it build with faked interrupts.
+
+	* include/cs8900.h: Added debug output for put/get functions.
+
+	* src/if_cs8900a.c: Made it build when NET package enabled.
+
+	* include/cs8900.h: Added tab field.
+
+	* src/if_cs8900a.c: Renamed broken ints option, more diag_printf
+	#ifdefing and removed RedBoot ESA option code.
+
+2001-11-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c: Interrupt stuff cleaned up. Fix device
+	probing. Make driver fail when no ESA available and none has been
+	configured. Compiler warning fixes and some printout cleanups.
+
+	* src/if_cs8900a.c: Platform driver provides device
+	information. Renamed functions and definitions. Init code changed
+	some.
+
+	* include/cs8900.h: Renaming some definitions.
+
+	* cdl/cl_cs8900a_eth_drivers.cdl: Platform driver provides
+	options.
+
+2001-11-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/if_cs8900a.c: Assorted hacking.
+	* include/cs8900.h: Same.
+
+2001-11-02  Jesper Skov  <jskov@redhat.com>
+
+	* Cloned from edb7xxx driver.
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

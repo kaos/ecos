@@ -78,6 +78,9 @@ cdl_package CYGPKG_LIBC_STDIO {
     requires      CYGINT_ISO_STRERROR
     requires      CYGINT_ISO_STRING_STRFUNCS
     requires      CYGINT_ISO_STRING_MEMFUNCS
+    # The following is for scanf only. We could express this better,
+    # particularly since scanf is also dependent on the optional ungetc.
+    requires      CYGINT_ISO_STDLIB_STRCONV
 
     compile       common/fclose.cxx       common/feof.cxx        \
                   common/fflush.cxx       common/fopen.cxx       \

@@ -684,6 +684,13 @@ package CYGPKG_NET {
         description     "Generic networking support, including TCP/IP."
 }
 
+package CYGPKG_NET_FTPCLIENT {
+        alias           { "FTP Client" ftpclient }
+        directory       net/ftpclient
+        script          ftpclient.cdl
+        description     "FTP client support for get and put of files."
+}
+
 package CYGPKG_SNMPLIB {
 	alias 		{ "SNMP library" snmplib }
 	directory	net/snmp/lib
@@ -811,6 +818,15 @@ package CYGPKG_DEVS_ETH_NS_DP83902A {
 	script		ns_dp83902a_eth_drivers.cdl
         description     "Ethernet driver for NS DP83902A controller."
 }
+
+package CYGPKG_DEVS_ETH_CL_CS8900A {
+	alias 		{ "Cirrus Logic CS8900A ethernet driver" cs8900a_eth_driver }
+	hardware
+	directory	devs/eth/cl/cs8900a
+	script		cl_cs8900a_eth_drivers.cdl
+        description     "Ethernet driver for Cirrus Logic CS8900A controller."
+}
+
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
 # in all targets that can use it.
@@ -2137,6 +2153,7 @@ target edb7xxx {
 	packages	{ CYGPKG_HAL_ARM
                           CYGPKG_HAL_ARM_EDB7XXX
 			  CYGPKG_DEVS_ETH_ARM_EDB7XXX
+                          CYGPKG_DEVS_ETH_CL_CS8900A
 	                  CYGPKG_IO_SERIAL_ARM_EDB7XXX
 			  CYGPKG_DEVS_FLASH_EDB7XXX
         }

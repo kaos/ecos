@@ -1,3 +1,6 @@
+* EDB7xxx ethernet driver rewritten to be a generic Cirrus Logic CS8900A
+  package.
+* Incorporated FTP client code (library and test) from Andrew Lunn.
 * Incorporated ARM Development board aka INTEGRATOR port from Philippe Robin
   at ARM. Includes FLASH, ethernet and serial drivers, along with RedBoot
   support.

@@ -1,3 +1,12 @@
+2001-11-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/romfs.cdl (CYGTST_ROMFS_BUILD_TESTS): Try gcc and cc if $HOST_CC
+	doesn't exist or has a problem.
+
+2001-11-22  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/romfs.cdl: Use HOST_CC instead of 'cc'.
+
 2001-10-17  Drew Moseley  <dmoseley@redhat.com>
 2001-10-17  Jonathan Larmour  <jlarmour@redhat.com>
 

@@ -193,6 +193,7 @@ GROUP(libtarget.a libgcc.a)
     {                                                 \
       __ram_data_start = ABSOLUTE (.); _fdata = . ;   \
       *(.data) *(.data.*) *(.gnu.linkonce.d*)         \
+      *( .2ram.*)                                     \
     . = ALIGN (8);                                    \
     SORT(CONSTRUCTORS)                                \
     } > _region_                                      \

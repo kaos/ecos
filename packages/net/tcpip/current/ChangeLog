@@ -1,3 +1,23 @@
+2001-11-19  Hugo Tyson  <hmt@redhat.com>
+
+	* include/bootp.h (BP_STD_TX_MINPKTSZ): New symbol defining the
+	minimal DHCP packet size which we should send.
+
+	* src/lib/dhcp_prot.c (scan_dhcp_size): New routine to scan up to
+	the end of the packet, for length determination and padding.
+	(dhcp_size): Now uses scan_dhcp_size().
+	(dhcp_size_for_send): New, uses scan_dhcp_size() and pads with
+	zero up to the min packet size that we should send.
+	(do_dhcp): In every sendto() call, use dhcp_size_for_send(xmit) in
+	order to send padded, full size packets as needed.  5 instances.
+
+	Credit to "Anssi Pulkkinen" <Anssi.Pulkkinen@ascom.ch> for the
+	original version of this patch.
+
+2001-11-08  Jesper Skov  <jskov@redhat.com>
+
+	* tests/server_test.c (net_test): Fix compile error.
+
 2001-11-02  Gary Thomas  <gthomas@redhat.com>
 
 	* src/ecos/support.c: 

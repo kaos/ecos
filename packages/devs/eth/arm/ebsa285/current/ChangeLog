@@ -1,3 +1,15 @@
+2001-11-19  Hugo Tyson  <hmt@redhat.com>
+2001-11-19  Anssi Pulkkinen <Anssi.Pulkkinen@ascom.ch>
+
+	* src/if_ebsa285.c (TxMachine): The test to see if there is a new
+	tx to start must also say "go" if the tx queue is full.  Normally,
+	if the txqueue is full, a tx will be occurring at all times - so
+	one will complete soon, so the tx queue full flag will soon be
+	cleared, and this condition will recover.  I suspect a subtle race
+	which effectively means a new tx is queued and fills the queue in
+	between two tx's, so no TxDone() follows, causes the hang which we
+	get without this extra test under high load.  [CASE 106686]
+
 2001-08-31  Hugo Tyson  <hmt@redhat.com>
 2001-08-31  Sanjay Bisen <sanjay.bisen@ascom.ch>
 

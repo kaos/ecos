@@ -514,7 +514,7 @@ do_go(int argc, char *argv[])
     struct option_info opts[1];
     char line[8];
 
-    entry = (unsigned long)entry_address;  // Default from last 'load' operation
+    entry = entry_address;  // Default from last 'load' operation
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
               (void **)&wait_time, (bool *)&wait_time_set, "wait timeout");
     if (!scan_opts(argc, argv, 1, opts, 1, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))

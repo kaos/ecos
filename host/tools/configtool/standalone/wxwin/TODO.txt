@@ -15,10 +15,6 @@ To-Do List for Configuration Tool 2.x
 - Switching to Rich Edit control for Output Window causes scroll problems
   on Windows 98.
 
-- Added menu option Build | Generate Build Tree to simply recreate the
-  build tree, since otherwise one sometimes has to alter a value to convince the
-  tool to save and create the tree.
-
 - Resolve target makefile problems. A user:-
 
   "It looks like the Configuration Tool 2.0 builds the library by replacing

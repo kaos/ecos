@@ -138,6 +138,19 @@ do {                                                                        \
 } while ( 0 )
 
 #endif // __thumb_
+
+// Also define ..LEAVE.. with a trick to *use* the label - sometimes the
+// tools want to move the label, which is bad.
+#define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                         \
+do {                                                                          \
+    cyg_hal_gdb_remove_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
+    HAL_RESTORE_INTERRUPTS(_old_);                                            \
+    _old_ = 1; /* actually use the label as a label... */                     \
+cyg_hal_gdb_break_place:                                                      \
+    if ( (_old_)-- > 0 ) /* ...or the compiler might move it! */              \
+        goto cyg_hal_gdb_break_place;                                         \
+} while ( 0 )
+
 #endif // CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT
 
 

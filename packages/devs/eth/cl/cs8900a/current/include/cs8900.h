@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -42,27 +42,115 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-01-10
+// Contributors: gthomas, jskov
+// Date:         2001-11-07
 // Purpose:      
 // Description:  
-//              
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
-// Cirrus Logic CS8900A Ethernet
+#include <cyg/infra/cyg_type.h>
 
-// Assumption - all registers are 16 bits
+#include <cyg/hal/hal_io.h>
+#include <pkgconf/devs_eth_cl_cs8900a.h>
 
-// Directly visible registers
-#define CS8900_RTDATA *(volatile unsigned short *)(CS8900_BASE+0x00)
-#define CS8900_TxCMD  *(volatile unsigned short *)(CS8900_BASE+0x08)
-#define CS8900_TxLEN  *(volatile unsigned short *)(CS8900_BASE+0x0C)
-#define CS8900_ISQ    *(volatile unsigned short *)(CS8900_BASE+0x10)
-#define CS8900_PPTR   *(volatile unsigned short *)(CS8900_BASE+0x14)
-#define CS8900_PDATA  *(volatile unsigned short *)(CS8900_BASE+0x18)
+#define __WANT_CONFIG
+#include CYGDAT_DEVS_ETH_CL_CS8900A_INL
+#undef __WANT_CONFIG
+
+// ------------------------------------------------------------------------
+// Debugging details
+
+// Set to perms of:
+// 0 disables all debug output
+// 1 for process debug output
+// 2 for added data IO output: get_reg, put_reg
+// 4 for packet allocation/free output
+// 8 for only startup status, so we can tell we're installed OK
+#define DEBUG 0x0
+
+#if DEBUG & 1
+#define DEBUG_FUNCTION() do { diag_printf("%s\n", __FUNCTION__); } while (0)
+#define DEBUG_LINE() do { diag_printf("%d\n", __LINE__); } while (0)
+#else
+#define DEBUG_FUNCTION() do {} while(0)
+#define DEBUG_LINE() do {} while(0)
+#endif
+
+// ------------------------------------------------------------------------
+// Macros for keeping track of statistics
+#if defined(ETH_DRV_GET_IF_STATS) || defined (ETH_DRV_GET_IF_STATS_UD)
+#define KEEP_STATISTICS
+#endif
+
+#ifdef KEEP_STATISTICS
+#define INCR_STAT( _x_ )        (cpd->stats. _x_ ++)
+#else
+#define INCR_STAT( _x_ )        CYG_EMPTY_STATEMENT
+#endif
+
+// ------------------------------------------------------------------------
+// Private driver structure
+struct cs8900a_priv_data;
+typedef cyg_bool (*provide_esa_t)(struct cs8900a_priv_data* cpd);
+
+typedef struct cs8900a_priv_data {
+    bool txbusy, hardwired_esa;
+    cyg_uint8 esa[6];
+    provide_esa_t provide_esa;
+    cyg_vector_t interrupt;             // Interrupt vector used by controller
+    cyg_handle_t  interrupt_handle;
+    cyg_interrupt interrupt_object;
+    cyg_addrword_t base;
+    cyg_uint32 txkey;   // Used to ack when packet sent
+    struct cyg_netdevtab_entry *tab;
+#ifdef CYGPKG_NET
+    cyg_tick_count_t txstart;
+#endif
+} cs8900a_priv_data_t;
+
+// ------------------------------------------------------------------------
+// Macros for accessing CS registers
+// These can be overridden by the platform header
+
+#ifndef CS_IN
+# define CS_IN(_b_, _o_, _d_)  HAL_READ_UINT16 ((cyg_addrword_t)(_b_)+(_o_), (_d_))
+# define CS_OUT(_b_, _o_, _d_) HAL_WRITE_UINT16((cyg_addrword_t)(_b_)+(_o_), (_d_))
+#endif
+
+// ------------------------------------------------------------------------
+// Macros allowing platform to customize some of the driver details
+
+#ifndef CYGHWR_CL_CS8900A_PLF_RESET
+# define CYGHWR_CL_CS8900A_PLF_RESET(_b_) do { } while (0)
+#endif
+
+#ifndef CYGHWR_CL_CS8900A_PLF_INT_CLEAR
+# define CYGHWR_CL_CS8900A_PLF_INT_CLEAR(_cdp_)
+#endif
+
+#ifndef CYGHWR_CL_CS8900A_PLF_INIT
+#define CYGHWR_CL_CS8900A_PLF_INIT(_cdp_) do { } while (0)
+#endif
+
+
+// ------------------------------------------------------------------------
+// Directly visible registers. 
+// Platform can override stepping or layout if necessary.
+#ifndef CS8900A_step
+# define CS8900A_step 2
+#endif
+#ifndef CS8900A_RTDATA
+# define CS8900A_RTDATA (0*CS8900A_step)
+# define CS8900A_TxCMD  (2*CS8900A_step)
+# define CS8900A_TxLEN  (3*CS8900A_step)
+# define CS8900A_ISQ    (4*CS8900A_step)
+# define CS8900A_PPTR   (5*CS8900A_step)
+# define CS8900A_PDATA  (6*CS8900A_step)
+#endif
+
 #define ISQ_RxEvent     0x04
 #define ISQ_TxEvent     0x08
 #define ISQ_BufEvent    0x0C
@@ -70,6 +158,7 @@
 #define ISQ_TxColEvent  0x12
 #define ISQ_EventMask   0x3F
 
+// ------------------------------------------------------------------------
 // Registers available via "page pointer" (indirect access)
 #define PP_ChipID    0x0000  // Chip identifier - must be 0x630E
 #define PP_ChipRev   0x0002  // Chip revision, model codes
@@ -191,20 +280,26 @@
 #define PP_LAF       0x0150  // Logical address filter (6 bytes)
 #define PP_IA        0x0158  // Individual address (MAC)
 
+// ------------------------------------------------------------------------
 // "page pointer" access functions
-
-static __inline__ unsigned short
-get_reg(int regno)
+static __inline__ cyg_uint16
+get_reg(cyg_addrword_t base, int regno)
 {
-    unsigned short val;
-    CS8900_PPTR = regno;
-    val = CS8900_PDATA;
+    cyg_uint16 val;
+    HAL_WRITE_UINT16(base+CS8900A_PPTR, regno);
+    HAL_READ_UINT16(base+CS8900A_PDATA, val);
+#if DEBUG & 2
+    diag_printf("get_reg(%p, %d) => 0x%04x\n", base, regno, val);
+#endif
     return val;
 }
 
 static __inline__ void
-put_reg(int regno, unsigned short val)
+put_reg(cyg_addrword_t base, int regno, cyg_uint16 val)
 {
-    CS8900_PPTR = regno;
-    CS8900_PDATA = val;
+#if DEBUG & 2
+    diag_printf("put_reg(%p, %d, 0x%04x)\n", base, regno, val);
+#endif
+    HAL_WRITE_UINT16(base+CS8900A_PPTR, regno);
+    HAL_WRITE_UINT16(base+CS8900A_PDATA, val);
 }

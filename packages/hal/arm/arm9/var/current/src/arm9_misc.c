@@ -64,9 +64,12 @@ void hal_hardware_init(void)
     // Set up eCos/ROM interfaces
     hal_if_init();
 
-    // Enable caches
+#ifndef CYG_HAL_STARTUP_RAM
+    // Invalidate caches
     HAL_DCACHE_INVALIDATE_ALL();
     HAL_ICACHE_INVALIDATE_ALL();
+#endif
+    // Enable caches
 #ifdef CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP
     HAL_DCACHE_ENABLE();
 #endif
@@ -82,7 +85,12 @@ cyg_hal_arm9_soft_reset(CYG_ADDRESS entry)
     /* It would probably make more sense to have the
        clear/drain/invalidate after disabling the cache and MMU, but
        then we'd have to know the (unmapped) address of this code. */
-    asm volatile ("mov r1, #0;"
+    asm volatile ("mrs r1,cpsr;"
+                  "bic r1,r1,#0x1F;"  /* Put processor in SVC mode */
+                  "orr r1,r1,#0x13;"
+                  "msr cpsr,r1;"
+
+                  "mov r1, #0;"
                   "mcr p15,0,r1,c7,c7,0;"  /* clear I+DCache */
                   "mcr p15,0,r1,c7,c10,4;" /* Drain Write Buffer */
                   "mcr p15,0,r1,c8,c7,0;"  /* Invalidate TLBs */

@@ -1,3 +1,8 @@
+2001-11-19  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh7750_cq7750.cdl: Added CYGHWR_HAL_SH_OOC_DIVIDER_1
+	(found by Koichi Nagashima)
+
 2001-09-11  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/hal_sh_sh7750_cq7750.cdl: Default to big endian.

@@ -147,9 +147,11 @@ net_test(cyg_addrword_t param)
 {
     diag_printf("Start SERVER test\n");
     init_all_network_interfaces();
+#ifdef CYGHWR_NET_DRIVER_ETH0
     if (eth0_up) {
         server_test(&eth0_bootp_data);
     }
+#endif
     cyg_test_exit();
 }
 

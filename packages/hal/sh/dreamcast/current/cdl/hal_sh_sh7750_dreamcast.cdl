@@ -162,6 +162,17 @@ cdl_package CYGPKG_HAL_SH_SH7750_DREAMCAST {
                 This selects whether PLL2 is enabled."
         }
 
+        cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_1 {
+            display          "SH clock first clock divider"
+            flavor           data
+            legal_values     { 1 2 }
+            default_value    1
+            no_define
+            description      "
+                First stage clock divider according to the mode (MD0..2).
+                Set 2 for mode 2 and 4, otherwise set 1."
+        }
+
         cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_IFC {
             display          "SH clock divider, core"
             flavor           data

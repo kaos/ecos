@@ -1,3 +1,17 @@
+2001-11-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/arm9_misc.c (hal_hardware_init): Don't invalidate caches on
+	RAM startup.
+
+2001-11-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/arm9_misc.c (cyg_hal_arm9_soft_reset): Also put CPU in SVC
+	mode (as after a reset). Still broken though.
+
+2001-11-06  Gary Thomas  <gthomas@redhat.com>
+
+	* include/hal_cache.h: Add virtual->physical translation setup.
+
 2001-11-01  Jesper Skov  <jskov@redhat.com>
 
 	* src/arm9_misc.c (cyg_hal_arm9_soft_reset): Attempt at soft

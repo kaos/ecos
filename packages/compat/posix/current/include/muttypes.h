@@ -48,6 +48,7 @@
 //=============================================================================
 
 #include <pkgconf/posix.h>
+#include <pkgconf/kernel.h>
 
 #include <cyg/infra/cyg_type.h>
 

@@ -174,7 +174,8 @@ CYG_MACRO_END
 // Debug macros
 // Some simple macros for writing useful info to a PC ASCII display
 
-#define PC_WRITE_SCREEN( __pos, __ch ) (*((short *)(0xB8000)+(__pos)) = (0x0700+(__ch)))
+#define PC_WRITE_SCREEN( __pos, __ch ) \
+                       (*((short *)(0xB8000)+((__pos)%(80*25))) = (0x0700+(__ch)))
 
 #define PC_SCREEN_LINE( __line ) ((__line)*80)
 

@@ -1,3 +1,14 @@
+2001-11-23  Nick Garnett  <nickg@redhat.com>
+
+	* src/generic-stub.c (__process_packet): Fixed bogosity in
+	handling of 'r' packet. It tried to send two replies, messing up
+	the protocol and confusing GDB.
+
+2001-11-02  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_stub.h (CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION):
+	Permit this too to be defined externally ie. in a platform HAL.
+
 2001-10-25  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal.cdl: 

@@ -1,3 +1,19 @@
+2001-11-02  Andrew Lunn  <Andrew.Lunn@ascom.ch>
+2001-11-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_arm_ebsa285.cdl: Add ROMRAM startup type and MLT file config.
+
+	* include/hal_platform_setup.h: Support relocation of ROMRAM image.
+
+	* include/pkgconf/mlt_arm_ebsa285_romram.h: New MLT files for romram.
+	* include/pkgconf/mlt_arm_ebsa285_romram.ldi: Ditto.
+	* include/pkgconf/mlt_arm_ebsa285_romram.mlt: Ditto.
+	* include/pkgconf/mlt_arm_ebsa285_ram.mlt: Move app base to 0x30000 to
+	allow for romram space.
+	* include/pkgconf/mlt_arm_ebsa285_ram.ldi: Regenerate.
+
+	* misc/redboot_ROMRAM.ecm: New file.
+
 2001-08-22  Gary Thomas  <gthomas@redhat.com>
 
 	* src/redboot_cmds.c: 

@@ -1,3 +1,15 @@
+2001-11-20  Jesper Skov  <jskov@redhat.com>
+	From hmt:
+	* include/devs_eth_arm_edb7xxx.inl (_edb7xxx_provide_eth0_esa):
+	Use VV calls to get this even from an application; config changed
+	accordingly to include this function even in an application. 
+
+2001-11-14  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/edb7xxx_eth_drivers.cdl: Make use of the new generic Cirrus
+	Logic CS8900A driver.
+	* include/devs_eth_arm_edb7xxx.inl: Added.
+
 2001-10-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/if_edb7xxx.c (cs8900_TxEvent): Use cyg_io_eth_net_debug now,

@@ -1,3 +1,8 @@
+2001-11-23  Nick Garnett  <nickg@redhat.com>
+
+	* include/pcmb_io.h (PC_WRITE_SCREEN): Wrap positions beyond end
+	of screen back to start.
+	
 2001-11-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/pcmb_misc.c (hal_pcmb_init): Fix typo:

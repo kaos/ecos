@@ -263,10 +263,22 @@ put_register (regnames_t which, target_register_t value)
 // Handle the Model Specific Registers
 static target_register_t _msrval[2];
 static int _which_msr = 0;
+static int _dummy_flag = 0;
+
+extern void * volatile __mem_fault_handler;
 
 static void
 __do_read_msr (void)
 {
+    // _dummy_flag is always false but the goto is necessary to keep
+    // some compilers from reordering stuff across the 'err' label.
+    if (_dummy_flag)
+	goto err;
+
+    __mem_fault = 1;                      // Defaults to 'fail'. Is cleared
+                                          // when the wrmsr completes.
+    __mem_fault_handler = &&err;
+
     asm volatile ("movl %2,%%ecx\n"
 		  "rdmsr\n"
 		  "movl %%edx,%1\n"
@@ -274,11 +286,25 @@ __do_read_msr (void)
 		  : "=m" (_msrval[0]), "=m" (_msrval[1])
 		  : "m" (_which_msr)
 		  : "ecx", "ebx", "edx", "eax", "memory");
+
+    __mem_fault = 0;
+
+ err:
+    __mem_fault_handler = (void *)0;
 }
 
 static void
 __do_write_msr (void)
 {
+    // _dummy_flag is always false but the goto is necessary to keep
+    // some compilers from reordering stuff across the 'err' label.
+    if (_dummy_flag)
+	goto err;
+
+    __mem_fault = 1;                      // Defaults to 'fail'. Is cleared
+                                          // when the wrmsr completes.
+    __mem_fault_handler = &&err;
+
     asm volatile ("movl %1,%%edx\n"
 		  "movl %0,%%eax\n"
 		  "movl %2,%%ecx\n"
@@ -286,6 +312,11 @@ __do_write_msr (void)
 		  : /* no outputs */
 		  : "m" (_msrval[0]), "m" (_msrval[1]), "m" (_which_msr)
 		  : "ecx", "ebx", "edx", "eax", "memory");
+
+    __mem_fault = 0;
+
+ err:
+    __mem_fault_handler = (void *)0;
 }
 
 static int

@@ -290,6 +290,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
     char c;
     bool res = false;
     static char last_ch = '\0';
+    int _timeout;
 #if CYGNUM_REDBOOT_CMD_LINE_EDITING != 0
 //
 // Command line history support
@@ -322,7 +323,8 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
 #endif
         if ((timeout > 0) && (eol == buf)) {
 #define MIN_TIMEOUT 50
-            mon_set_read_char_timeout(timeout > MIN_TIMEOUT ? MIN_TIMEOUT : timeout);
+            _timeout = timeout > MIN_TIMEOUT ? MIN_TIMEOUT : timeout;
+            mon_set_read_char_timeout(_timeout);
             while (timeout > 0) {
                 res = mon_read_char_with_timeout(&c);
                 if (res) {
@@ -330,7 +332,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
                     do_idle(false);
                     break;
                 }
-                timeout -= MIN_TIMEOUT;
+                timeout -= _timeout;
             }
             if (res == false) {
                 do_idle(true);
@@ -449,6 +451,7 @@ _rb_gets_preloaded(char *buf, int buflen, int timeout)
         case CTRL('C'): // ^C
             // Abort current input
             diag_printf("^C\n");
+            *buf = '\0';  // Nothing useful in buffer
             return _GETS_CTRLC;
         case '\n':
         case '\r':

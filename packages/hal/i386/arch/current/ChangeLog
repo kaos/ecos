@@ -1,3 +1,8 @@
+2001-11-21  Mark Salter  <msalter@redhat.com>
+
+	* src/i386_stub.c (__do_read_msr): Add mem_fault handling.
+	(__do_write_msr): Ditto.
+
 2001-10-19  Ian Campbell  <icampbell@arcom.co.uk>
 
 	* include/hal_cache.h: Provide HAL_DCACHE_IS_ENABLED and

@@ -332,10 +332,16 @@ static int dev_fo_read      (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
     {
         cyg_iovec *iov = &uio->uio_iov[i];
         cyg_uint32 len = iov->iov_len;
-    
-        err = cyg_io_read( (cyg_io_handle_t)fp->f_data,
-                           iov->iov_base,
-                           &len);
+        cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)fp->f_data;    
+
+        if (t->status & CYG_DEVTAB_STATUS_BLOCK)
+            err = cyg_io_bread( (cyg_io_handle_t)t,
+                                iov->iov_base,
+                                &len, fp->f_offset);
+        else
+            err = cyg_io_read( (cyg_io_handle_t)t,
+                               iov->iov_base,
+                               &len);
 
         if( EAGAIN == err ) // must be in non-blocking mode
         {
@@ -363,10 +369,16 @@ static int dev_fo_write     (struct CYG_FILE_TAG *fp, struct CYG_UIO_TAG *uio)
     {
         cyg_iovec *iov = &uio->uio_iov[i];
         cyg_uint32 len = iov->iov_len;
-    
-        err = cyg_io_write( (cyg_io_handle_t)fp->f_data,
-                            iov->iov_base,
-                            &len);
+        cyg_devtab_entry_t *t = (cyg_devtab_entry_t *)fp->f_data;
+
+        if (t->status & CYG_DEVTAB_STATUS_BLOCK)  
+            err = cyg_io_bwrite( (cyg_io_handle_t)t,
+                                 iov->iov_base,
+                                 &len, fp->f_offset);
+        else
+            err = cyg_io_write( (cyg_io_handle_t)t,
+                                iov->iov_base,
+                                &len);
 
         if( EAGAIN == err ) // must be in non-blocking mode
         {

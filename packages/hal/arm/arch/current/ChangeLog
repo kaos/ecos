@@ -1,3 +1,10 @@
+2001-11-02  Hugo Tyson  <hmt@redhat.com>
+
+	* include/arm_stub.h (CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION): Nasty
+	bodge to fix a tools issue where an "unused" label is migrated to
+	where some real code is, ie. the wrong place in this case.
+	Problem applies to arm9e-elf tools and other arm variants also.
+
 2001-10-29  Hugo Tyson  <hmt@redhat.com>
 
 	* src/arm.ld (SECTION_rom_vectors): Define symbols used for ROMRAM

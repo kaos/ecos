@@ -443,5 +443,12 @@ CYG_MACRO_END
     CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
+// Virtual<->Physical translations
+
+extern cyg_uint32 hal_virt_to_phys_address(cyg_uint32 phys);
+#define HAL_VIRT_TO_PHYS_ADDRESS(_va, _pa) \
+   _pa = hal_virt_to_phys_address(_va)
+
+//-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H
 // End of hal_cache.h

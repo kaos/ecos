@@ -1435,10 +1435,6 @@ __process_packet (char *packet)
       return -1;
 
     case 'r':           /* Reset */
-#ifdef __ECOS__
-      __putpacket (remcomOutBuffer);
-      hal_flush_output();
-#endif
       /* With the next 'k' packet, reset the board */
       __process_exit_vec = &__reset;
       break;

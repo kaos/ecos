@@ -24,7 +24,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -33,8 +33,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      gthomas
-# Original data:  gthomas
-# Contributors:
+# Contributors:   gthomas, jskov
 # Date:           2000-01-25
 #
 #####DESCRIPTIONEND####
@@ -48,47 +47,60 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EDB7XXX {
     active_if	  CYGPKG_IO_ETH_DRIVERS
     active_if	  CYGPKG_HAL_ARM_EDB7XXX
 
-    implements    CYGHWR_NET_DRIVERS
-    implements    CYGHWR_NET_DRIVER_ETH0
-    include_dir   .
-    include_files ; # none _exported_ whatsoever
+    include_dir   cyg/io
+
     description   "Ethernet driver for Cirrus Logic EP7xxx based
                   development boards."
-    compile       -library=libextras.a if_edb7xxx.c
 
-    cdl_component CYGSEM_ARM_EDB7XXX_SET_ESA {
-        display       "Set the ethernet station address"
+    # FIXME: This really belongs in the CL CS8900A package
+    cdl_interface CYGINT_DEVS_ETH_CL_CS8900A_REQUIRED {
+        display   "Cirrus Logic CS8900A ethernet driver required"
+    }
+
+    define_proc {
+        puts $::cdl_system_header "/***** ethernet driver proc output start *****/"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_CL_CS8900A_INL <cyg/io/devs_eth_arm_edb7xxx.inl>"
+        puts $::cdl_system_header "#define CYGDAT_DEVS_ETH_CL_CS8900A_CFG <pkgconf/devs_eth_arm_edb7xxx.h>"
+        puts $::cdl_system_header "/*****  ethernet driver proc output end  *****/"
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_ARM_EDB7XXX_ETH0 {
+        display       "EDB7XXX ethernet port driver"
         flavor        bool
-        default_value 0
-        description   "Enabling this option will allow the ethernet
-          station address to be forced to the value set by the
-          configuration.  This may be required if the hardware does
-          not include a serial EEPROM for the ESA."
+        default_value 1
+        description   "
+            This option includes the ethernet device driver for the
+            EDB7XXX port."
 
-        cdl_option CYGDAT_ARM_EDB7XXX_ESA {
-          display       "The ethernet station address"
-          flavor        data
-          default_value {"{0x08, 0x88, 0x12, 0x34, 0x56, 0x78}"}
-          description   "The ethernet station address"
-        }
-    }
+        implements CYGHWR_NET_DRIVERS
+        implements CYGHWR_NET_DRIVER_ETH0
+        implements CYGINT_DEVS_ETH_CL_CS8900A_REQUIRED
 
-    cdl_component CYGPKG_DEVS_ETH_ARM_EDB7XXX_OPTIONS {
-        display "Cirrus Logic ethernet driver build options"
-        flavor  none
-	no_define
-
-        cdl_option CYGPKG_DEVS_ETH_ARM_EDB7XXX_CFLAGS_ADD {
-            display "Additional compiler flags"
-            flavor  data
-            no_define
-            default_value { "-D_KERNEL -D__ECOS" }
+        cdl_option CYGDAT_DEVS_ETH_ARM_EDB7XXX_ETH0_NAME {
+            display       "Device name for the ETH0 ethernet driver"
+            flavor        data
+            default_value {"\"eth0\""}
             description   "
-                This option modifies the set of compiler flags for
-                building the Cirrus Logic ethernet driver package.
-                These flags are used in addition
-                to the set of global flags."
+                This option sets the name of the ethernet device."
+        }
+
+        cdl_component CYGSEM_DEVS_ETH_ARM_EDB7XXX_ETH0_SET_ESA {
+            display       "Set the ethernet station address"
+            flavor        bool
+            calculated    0
+            description   "Enabling this option will allow the ethernet
+            station address to be forced to the value set by the
+            configuration.  This may be required if the hardware does
+            not include a serial EEPROM for the ESA."
+            
+            cdl_option CYGDAT_DEVS_ETH_ARM_EDB7XXX_ETH0_ESA {
+                display       "The ethernet station address"
+                flavor        data
+                default_value {"{0x08, 0x88, 0x12, 0x34, 0x56, 0x78}"}
+                description   "The ethernet station address"
+            }
         }
     }
+
 }
 

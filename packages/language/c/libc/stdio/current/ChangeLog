@@ -1,3 +1,8 @@
+2001-11-23  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/stdio.cdl: Add dependency on stdlib string conversion functions
+	for *scanf.
+
 2001-08-10  Robin Farine  <robin.farine@terminus.org>
 
         * src/output/vfnprintf.cxx (cvt): Handles the cases of finite,

@@ -106,8 +106,12 @@ externC void cyg_hal_deliver_exception( CYG_WORD code, CYG_ADDRWORD data );
           : "r11"                       \
         );
 
-#define HAL_MSBIT_INDEX(index, mask)                    \
-    asm ( "cntlzw %1,%0" : "=r" (mask) : "r" (index) );
+#define HAL_MSBIT_INDEX(index, mask)            \
+    asm ( "cntlzw %0,%1\n"                      \
+          "subfic %0,%0,31;"                    \
+          : "=r" (index)                        \
+          : "r" (mask)                          \
+        );
 
 //-----------------------------------------------------------------------------
 // eABI

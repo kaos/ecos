@@ -71,7 +71,7 @@ cdl_package CYGPKG_FS_ROM {
         make -priority 100 {
             <PREFIX>/bin/mk_romfs: <PACKAGE>/support/mk_romfs.c
             @mkdir -p "$(dir $@)"
-            @cc -g -O2 -o $@ $<
+            @$(HOST_CC) -g -O2 -o $@ $< || cc -g -O2 -o $@ $< || gcc -g -O2 -o $@ $<
         }
     
         make -priority 100 {

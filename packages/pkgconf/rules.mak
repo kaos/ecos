@@ -40,6 +40,9 @@
 #####DESCRIPTIONEND####
 #=============================================================================
 
+# FIXME: This definition belongs in the top-level makefile.
+export HOST_CC := gcc
+
 .PHONY: default build clean tests headers mlt_headers
 
 # include any dependency rules generated previously
@@ -137,7 +140,7 @@ TESTS := $(TESTS:.c=)
 TESTS := $(TESTS:.S=)
 tests.stamp: $(foreach target,$(TESTS),$(target).d $(PREFIX)/tests/$(PACKAGE)/$(target)$(EXEEXT))
 ifneq ($(strip $(TESTS)),)
-	@cat $(TESTS:=.d) > $(@:.stamp=.deps)
+	@cat $(TESTS:%=%.d) > $(@:.stamp=.deps)
 endif
 	@touch $@
 

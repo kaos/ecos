@@ -47,14 +47,20 @@
 
 #include <pkgconf/system.h>             // System-wide configuration info
 #include CYGBLD_HAL_PLATFORM_H          // Platform specific configuration
+#include CYGHWR_MEMORY_LAYOUT_H         // Location of the ROM
 #include <cyg/hal/hal_ebsa285.h>        // Platform specific hardware definitions
 #include <cyg/hal/hal_mmu.h>            // MMU definitions
 
 // Note that we do NOT define CYGHWR_HAL_ARM_HAS_MMU so that at reset we
 // jump straight into the ROM; this makes it unnecessary to take any
 // special steps to switch from executing in the ROM alias at low
-// addresses.  Make no difference for RAM start.
+// addresses.  Make no difference for RAM start. For ROMRAM startup the
+// application is linked with RAM addresses, but we have to jump to
+// the ROM address at startup. Diddle the UNMAPPED macro to do this
 
+#if defined (CYG_HAL_STARTUP_ROMRAM)
+#define UNMAPPED(x) (x + CYGMEM_REGION_rom)
+#endif
 
 // Define macro used to diddle the LEDs during early initialization.
 // Can use r0+r1.  Argument in \x.
@@ -73,7 +79,7 @@
 // divided into further macros to make it easier to manage what's enabled
 // when.
 
-#if defined(CYG_HAL_STARTUP_ROM) ||                     \
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM) || \
     defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) ||      \
     !defined(CYGSEM_HAL_USE_ROM_MONITOR)
 
@@ -96,6 +102,7 @@
         INIT_XBUS_ACCESS                        \
         ALLOW_CLOCK_SWITCHING                   \
         CALL_MEMINIT_CODE                       \
+        ROMRAM_COPY                             \
         BASIC_PCI_SETUP                         
 #else
 #define PLATFORM_SETUP1
@@ -157,6 +164,30 @@
         str     r0, [ r1 ]    /* store the top of memory address */       ;\
         mov     lr, r10       /* in hal_dram_size for future use */       ;\
         
+// If we are doing a ROMRAM startup copy all sections up to the start of 
+// the data section to RAM.
+#if defined(CYG_HAL_STARTUP_ROMRAM)
+#define ROMRAM_COPY                                                      \
+        ldr     r0,=(CYGMEM_REGION_rom)                                  ;\
+        ldr     r1,=0                                                    ;\
+        ldr     r2,=0x40                                                 ;\
+810:    ldr     r3,[r0],#4                                               ;\
+        str     r3,[r1],#4                                               ;\
+        cmp     r1,r2                                                    ;\
+        bne     810b                                                     ;\
+        ldr     r0,=(CYGMEM_REGION_rom+reset_vector)                     ;\
+        ldr     r1,=(reset_vector)                                       ;\
+        ldr     r2,=(CYGMEM_REGION_rom_SIZE)                             ;\
+820:    ldr     r3,[r0],#4                                               ;\
+        str     r3,[r1],#4                                               ;\
+        cmp     r1,r2                                                    ;\
+        bne     820b                                                     ;\
+        ldr     r0,=830f                                                 ;\
+        mov     pc,r0                                                    ;\
+830:                                                                   
+#else
+#define ROMRAM_COPY                                                      
+#endif
 
 #define BASIC_PCI_SETUP                                                   \
         /**************************************************************** \

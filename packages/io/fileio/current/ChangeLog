@@ -1,3 +1,9 @@
+2001-11-02  Felix Wong  <felixwong@i-technologies.cc>
+2001-11-02  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/devfs.cxx (dev_fo_read): Support block devices.
+	(dev_fo_write): Ditto.
+
 2001-10-09  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/fio.h: Make cancellation point dependand on

@@ -1,3 +1,8 @@
+2001-11-16  Nick Garnett  <nickg@redhat.com>
+
+	* src/hal_misc.c (hal_msbit_index): Fixed this function so that it
+	actually works!	
+
 2001-10-15  David Howells  <dhowells@redhat.com>
 
 	* cdl/hal_sh.cdl: improved the description on the RTC constants

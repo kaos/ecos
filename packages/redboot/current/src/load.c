@@ -62,7 +62,7 @@ static char usage[] = "[-r] [-v] "
                       " | disk"
 #endif
 #if CYGNUM_HAL_VIRTUAL_VECTOR_NUM_CHANNELS > 1
-                      "-c <channel_number>"
+                      " -c <channel_number>"
 #endif
                       "}]\n        [-b <base_address>] <file_name>";
 
@@ -208,11 +208,16 @@ load_srec_image(int (*getc)(void), void (*terminate)(int method,int (*getc)(void
         case '9':
             addr = (unsigned char *)_hex2(getc, ('9'-type+2), &sum);
             offset += ('9'-type+2);
-            entry_address = (unsigned long *)addr;
+            entry_address = (unsigned long)addr;
 	    if (terminate) (*terminate)(xyzModem_close, getc);
             if (addr_offset) diag_printf("Address offset = %p\n", (void *)addr_offset);
             diag_printf("Entry point: %p, address range: %p-%p\n", 
                    (void*)entry_address, (void *)lowest_address, (void *)highest_address);
+
+            // Save load base/top
+            load_address = lowest_address;
+            load_address_end = highest_address;
+
             return highest_address;
         default:
 	    if (terminate) (*terminate)(xyzModem_abort, getc);
@@ -502,6 +507,11 @@ do_load(int argc, char *argv[])
             err = 0;
             end = (unsigned long) mp;
         }
+
+        // Save load base/top
+        load_address = base;
+        load_address_end = end;
+
         if (0 == err)
             diag_printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
     } else {

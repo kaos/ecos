@@ -75,7 +75,12 @@ EXTERN unsigned char *ram_start, *ram_end;
 EXTERN unsigned char *user_ram_start, *user_ram_end;
 EXTERN unsigned char *workspace_start, *workspace_end;
 EXTERN unsigned long workspace_size;
-EXTERN unsigned long *entry_address;
+
+// Data squirreled away after a load operation
+EXTERN unsigned long entry_address;
+EXTERN unsigned long load_address;
+EXTERN unsigned long load_address_end;
+
 
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
 EXTERN bool console_selected;

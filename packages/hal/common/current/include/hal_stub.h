@@ -230,12 +230,15 @@ do {                                                                         \
 } while ( 0 )
 #endif
 
+// This macro may already have been defined by the architecture HAL
+#ifndef CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION
 #define CYG_HAL_GDB_LEAVE_CRITICAL_IO_REGION( _old_ )                         \
 do {                                                                          \
     cyg_hal_gdb_remove_break( (target_register_t)&&cyg_hal_gdb_break_place ); \
     HAL_RESTORE_INTERRUPTS(_old_);                                            \
 cyg_hal_gdb_break_place:;                                                     \
 } while ( 0 )
+#endif
 
 #else // use __builtin_return_address instead.
 

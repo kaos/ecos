@@ -56,10 +56,12 @@
 #include <cyg/infra/cyg_ass.h>
 
 // ------------------------------------------------------------------------
-// Get the actual packet size of an initialized buffer
+// Returns a pointer to the end of dhcp message (or NULL if invalid)
+// meaning the address of the byte *after* the TAG_END token in the vendor
+// data.
 
-static int
-dhcp_size( struct bootp *ppkt )
+static unsigned char *
+scan_dhcp_size( struct bootp *ppkt )
 {
     unsigned char *op;
     
@@ -70,17 +72,53 @@ dhcp_size( struct bootp *ppkt )
          op[2] !=  83 ||
          op[3] !=  99 ) {
         CYG_FAIL( "Bad DHCP cookie" );
-        return 0;
+        return NULL;
     }
     op += 4;
     while (*op != TAG_END) {
         op += *(op+1)+2;
         if ( op > &ppkt->bp_vend[BP_VEND_LEN-1] ) {
             CYG_FAIL( "Oversize DHCP packet in dhcp_size" );
-            return 0;
+            return NULL;
         }
     }
-    return (op - (unsigned char *)ppkt) + 1;
+    // Check op has not gone wild
+    CYG_ASSERT( op > (unsigned char *)(&ppkt[0]), "op pointer underflow!" );
+    // Compare op with non-existent "next" struct bootp in the array.
+    CYG_ASSERT( op < (unsigned char *)(&ppkt[1]), "op pointer overflow!" );
+    return op + 1; // Address of first invalid byte
+}
+
+// ------------------------------------------------------------------------
+// Get the actual packet size of an initialized buffer
+
+static int
+dhcp_size( struct bootp *ppkt )
+{
+    unsigned char *op;
+
+    op = scan_dhcp_size( ppkt );
+    if ( !op ) return 0;
+    return (op - (unsigned char *)ppkt);
+}
+
+
+// ------------------------------------------------------------------------
+// Get the actual packet size of an initialized buffer
+// This will also pad the packet with 0 if length is less
+// than BP_STD_TX_MINPKTSZ.
+
+static int
+dhcp_size_for_send( struct bootp *ppkt )
+{
+    unsigned char *op;
+
+    op = scan_dhcp_size( ppkt );
+    if ( !op ) return 0; // Better not scribble!
+    // Zero extra bytes until the packet is large enough.
+    for ( ; op < (((unsigned char *)ppkt) + BP_STD_TX_MINPKTSZ); op++ )
+        *op = 0;
+    return (op - (unsigned char *)ppkt);
 }
 
 // ------------------------------------------------------------------------
@@ -528,7 +566,7 @@ do_dhcp(const char *intf, struct bootp *res,
             diag_printf( "---------DHCPSTATE_INIT sending:\n" );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size(xmit), 0, 
+            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -621,7 +659,7 @@ do_dhcp(const char *intf, struct bootp *res,
             diag_printf( "---------DHCPSTATE_REQUESTING sending:\n" );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size(xmit), 0, 
+            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -746,7 +784,7 @@ do_dhcp(const char *intf, struct bootp *res,
             show_bootp( intf, xmit );
 #endif            
             
-            if(sendto(s, xmit, dhcp_size(xmit), 0, 
+            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
                        // UNICAST address of the server:
                       (struct sockaddr *)&server_addr,
                       sizeof(server_addr)) < 0) {
@@ -837,7 +875,7 @@ do_dhcp(const char *intf, struct bootp *res,
             diag_printf( "---------DHCPSTATE_REBINDING sending:\n" );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size(xmit), 0, 
+            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
                       (struct sockaddr *)&broadcast_addr, sizeof(broadcast_addr)) < 0) {
                 *pstate = DHCPSTATE_FAILED;
                 break;
@@ -972,7 +1010,7 @@ do_dhcp(const char *intf, struct bootp *res,
                          server_addr.sin_port );
             show_bootp( intf, xmit );
 #endif            
-            if(sendto(s, xmit, dhcp_size(xmit), 0, 
+            if(sendto(s, xmit, dhcp_size_for_send(xmit), 0, 
                        // UNICAST address of the server:
                       (struct sockaddr *)&server_addr,
                       sizeof(server_addr)) < 0) {

@@ -1,3 +1,8 @@
+2001-11-06  Gary Thomas  <gthomas@redhat.com>
+
+	* include/muttypes.h: Need <pkgconf/kernel.h> configuration info,
+	otherwise structures defined here could have the wrong size.
+
 2001-10-25  I-Jui Sung <ijsung@csie.nctu.edu.tw>
 
 	* src/mqueue.cxx (do_mq_unlink): Nullify table entries' mq as this
