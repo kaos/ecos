@@ -156,6 +156,7 @@
 // ------------------------------------------------------------------------
 
 #define FLASH_Intel_code   0x89 // NOT mapped to 16+16
+#define FLASH_STMicro_code 0x20 // NOT mapped to 16+16
 
 // Extended query information
 struct FLASH_query {

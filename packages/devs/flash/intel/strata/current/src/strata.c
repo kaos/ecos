@@ -74,7 +74,8 @@ flash_hwr_init(void)
 
     flash_dev_query(&data);
     qp = &data;
-    if ( (qp->manuf_code == FLASH_Intel_code)
+    if ( ((qp->manuf_code == FLASH_Intel_code) || 
+          (qp->manuf_code == FLASH_STMicro_code))
 #ifdef CYGOPT_FLASH_IS_BOOTBLOCK
          // device types go as follows: 0x90 for 16-bits, 0xD0 for 8-bits,
          // plus 0 or 1 for -T (Top Boot) or -B (Bottom Boot)
