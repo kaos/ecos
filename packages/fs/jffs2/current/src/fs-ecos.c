@@ -1019,7 +1019,7 @@ static int jffs2_ops_link(cyg_mtab_entry * mte, cyg_dir dir1, const char *name1,
 	this.len = hashname - (const char *) this.name;
 	this.hash = end_name_hash(hash);
 
-	err = jffs2_link(ds2.dir, ds1.node, &this);
+	err = jffs2_link(ds1.node, ds2.dir, &this);
 
 	if (err == 0)
 		ds1.node->i_ctime =
