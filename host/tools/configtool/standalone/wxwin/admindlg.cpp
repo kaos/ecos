@@ -529,12 +529,12 @@ bool ecAdminDialog::EvalTclFile(int nargc, const wxString& Argv, const wxString&
     Tcl_SetStdChannel (outchan, TCL_STDOUT); // direct standard output to NUL:
 #endif
 
-    char * pszStatus = Tcl_SetVar (interp, "argv0", (char*) argv0.c_str(), 0);
+    const char * pszStatus = Tcl_SetVar (interp, "argv0", (char*) argv0.c_str(), 0);
     pszStatus = Tcl_SetVar (interp, "argv", (char*) argv.c_str(), 0);
     pszStatus = Tcl_SetVar (interp, "argc", (char*) argc.c_str(), 0);
     pszStatus = Tcl_SetVar (interp, "gui_mode", "1", 0); // return errors in result string
     int nStatus = Tcl_EvalFile (interp, (char*) argv0.c_str());
-    char* result = Tcl_GetStringResult (interp);
+    const char* result = Tcl_GetStringResult (interp);
 
 #ifdef __WXMSW__
     Tcl_SetStdChannel (NULL, TCL_STDOUT);

@@ -1,3 +1,14 @@
+2003-02-19  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/makefile.gnu:
+	Use libtcl.a rather than libcygtcl83.a for Cygwin build
+
+	* standalone/wxwin/admindlg.cpp:
+	Accommodate const char * returned by Tcl_SetVar() and
+	Tcl_GetStringResult() in Tcl 8.4.
+
+	* standalone/wxwin/configtool.cpp: Call Tcl_FindExecutable().
+
 2003-02-17  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/mainwin.cpp: Update path to configtool HTML docs.

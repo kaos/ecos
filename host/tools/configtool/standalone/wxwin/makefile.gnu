@@ -21,18 +21,17 @@ EXTRACPPFLAGS=\
   -I$(ECOSSRCDIR)/tools/Utils/common \
   -I$(ECOSSRCDIR)/tools/ecostest/common \
   -DecUSE_EXPERIMENTAL_CODE=$(USEEXPERIMENTALCODE)
+EXTRALDFLAGS=-L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 
 ifeq "$(OSTYPE)" "cygwin"
   PROGRAM=configtool.exe
   CPPFLAGS=-I$(WXDIR)/include -I$(WXDIR)/lib/wx/include -DSTRICT -DWINVER=0x0400 -D_WIN32 -D__GNUWIN32__ -D__WIN95__ -D__WIN32__ -D_X86_=1 -DWIN32
   LDFLAGS=-L$(WXDIR)/lib -lwx -lstdc++ -lwinspool -lwinmm -lshell32 -lcomctl32 -lctl3d32 -ladvapi32 -lwsock32 -lglu32 -lgdi32 -lcomdlg32 -lole32 -luuid -lshlwapi -lpng -lzlib
-  EXTRALDFLAGS=-L$(INSTALLDIR)/lib -lcdl -lcyginfra -lcygtcl83
   EXTRAOBJECTS=$(CTBUILDDIR)/configtoolres.o
 else
   PROGRAM=configtool
-  CPPFLAGS=-I$(WXDIR)/include -I$(WXDIR)/lib/wx/include -DGTK_NO_CHECK_CASTS -D__WXGTK__
+  CPPFLAGS=-I$(WXDIR)/include -I$(WXDIR)/lib/wx/include -DGTK_NO_CHECK_CASTS -D__WXGTK__ -D__USE_WXCONFIG__
   LDFLAGS=-L$(WXDIR)/lib -L/usr/lib -L/usr/X11R6/lib -lwx_gtk -lgtk -lgdk -rdynamic -lgmodule -lgthread -lglib -lpthread -ldl -lXi -lXext -lX11 -lm
-  EXTRALDFLAGS=-L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
   EXTRAOBJECTS=
 endif
 

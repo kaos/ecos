@@ -163,7 +163,7 @@ bool ecApp::OnInit()
 
     CeCosSocket::Init();
     CeCosTestPlatform::Load();
-    
+
     wxHelpProvider::Set(new wxSimpleHelpProvider);
     //wxHelpProvider::Set(new wxHelpControllerHelpProvider(& m_helpController));
 
@@ -174,6 +174,9 @@ bool ecApp::OnInit()
 #if wxUSE_STREAMS && wxUSE_ZIPSTREAM && wxUSE_ZLIB
     wxFileSystem::AddHandler(m_zipHandler);
 #endif
+
+    // Mandatory initialisation for Tcl 8.4
+    Tcl_FindExecutable(argv[0]);
 
     wxString currentDir = wxGetCwd();
 
