@@ -410,7 +410,7 @@ _rattler_reset(void)
 
     // Need interrupts off to force checkstop
     HAL_DISABLE_INTERRUPTS(int_state);
-    IMM->clocks_rmr = 0x01;  // Checkstop Reset Enable
+    IMM->clocks_rmr |= 0x01;  // Checkstop Reset Enable
     // Force a checkstop by turning on parity which is not implemented
     CYGARC_MFSPR(CYGARC_REG_HID0, hid0); 
     hid0 |= 0x30000000;

@@ -1,3 +1,8 @@
+2003-09-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* src/hal_aux.c (_rattler_reset): Try to be more careful when
+	resetting the board - sometimes PCI vanished when this was done.
+
 2003-08-28  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/redboot_linux_exec.c: Obsolete file - removed.
