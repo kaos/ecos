@@ -130,6 +130,45 @@
 
 #define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_REF_ROVI
 
+//#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME
+#define CYGNUM_HAL_INTERRUPT_RESERVED_5C0    32
+#define CYGNUM_HAL_INTERRUPT_HUDI_HUDI       33
+#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ0        34
+#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ1        35
+#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ2        36
+#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ3        37
+#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ4        38
+#define CYGNUM_HAL_INTERRUPT_IRQ_IRQ5        39
+#define CYGNUM_HAL_INTERRUPT_RESERVED_6C0    40
+#define CYGNUM_HAL_INTERRUPT_RESERVED_6E0    41
+#define CYGNUM_HAL_INTERRUPT_PINT_PINT07     42
+#define CYGNUM_HAL_INTERRUPT_PINT_PINT8F     43
+#define CYGNUM_HAL_INTERRUPT_RESERVED_740    44
+#define CYGNUM_HAL_INTERRUPT_RESERVED_760    45
+#define CYGNUM_HAL_INTERRUPT_RESERVED_780    46
+#define CYGNUM_HAL_INTERRUPT_RESERVED_7A0    47
+#define CYGNUM_HAL_INTERRUPT_RESERVED_7C0    48
+#define CYGNUM_HAL_INTERRUPT_RESERVED_7E0    59
+#define CYGNUM_HAL_INTERRUPT_DMAC_DEI0       50
+#define CYGNUM_HAL_INTERRUPT_DMAC_DEI1       51
+#define CYGNUM_HAL_INTERRUPT_DMAC_DEI2       52
+#define CYGNUM_HAL_INTERRUPT_DMAC_DEI3       53
+#define CYGNUM_HAL_INTERRUPT_IRDA_ERI1       54
+#define CYGNUM_HAL_INTERRUPT_IRDA_RXI1       55
+#define CYGNUM_HAL_INTERRUPT_IRDA_BRI1       56
+#define CYGNUM_HAL_INTERRUPT_IRDA_TXI1       57
+#define CYGNUM_HAL_INTERRUPT_SCIF_ERI2       58
+#define CYGNUM_HAL_INTERRUPT_SCIF_RXI2       69
+#define CYGNUM_HAL_INTERRUPT_SCIF_BRI2       60
+#define CYGNUM_HAL_INTERRUPT_SCIF_TXI2       61
+#define CYGNUM_HAL_INTERRUPT_ADC_ADI         62
+
+#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME
+
+#undef  CYGNUM_HAL_ISR_MAX
+#define CYGNUM_HAL_ISR_MAX                   CYGNUM_HAL_INTERRUPT_ADC_ADI
+
+#endif // CYGARC_SH_MOD_INTC_V2
 
 // CYGNUM_HAL_ISR_COUNT must match CYG_ISR_TABLE_SIZE defined in vectors.S.
 #define CYGNUM_HAL_ISR_MIN                   CYGNUM_HAL_INTERRUPT_NMI
@@ -441,6 +480,93 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
         HAL_WRITE_UINT16(CYGARC_REG_IPRB, iprX);                         \
         break;                                                           \
                                                                          \
+    /* IPRC */                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRQ_IRQ0:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRC, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRC_IRQ0_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRC_IRQ0_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRQ_IRQ1:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRC, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRC_IRQ1_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRC_IRQ1_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRQ_IRQ2:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRC, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRC_IRQ2_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRC_IRQ2_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRQ_IRQ3:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRC, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRC_IRQ3_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRC_IRQ3_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);                         \
+        break;                                                           \
+                                                                         \
+    /* IPRD */                                                           \
+    case CYGNUM_HAL_INTERRUPT_PINT_PINT07:                               \
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRD_PINT07_MASK;                            \
+        iprX |= (_level_)*CYGARC_REG_IPRD_PINT07_PRI1;                   \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_PINT_PINT8F:                               \
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRD_PINT8F_MASK;                            \
+        iprX |= (_level_)*CYGARC_REG_IPRD_PINT8F_PRI1;                   \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRQ_IRQ5:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRD_IRQ5_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRD_IRQ5_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRQ_IRQ4:                                  \
+        HAL_READ_UINT16(CYGARC_REG_IPRD, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRD_IRQ4_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRD_IRQ4_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRD, iprX);                         \
+        break;                                                           \
+                                                                         \
+    /* IPRE */                                                           \
+    case CYGNUM_HAL_INTERRUPT_DMAC_DEI0:                                 \
+    case CYGNUM_HAL_INTERRUPT_DMAC_DEI1:                                 \
+    case CYGNUM_HAL_INTERRUPT_DMAC_DEI2:                                 \
+    case CYGNUM_HAL_INTERRUPT_DMAC_DEI3:                                 \
+        HAL_READ_UINT16(CYGARC_REG_IPRE, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRE_DMAC_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRE_DMAC_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRE, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_IRDA_ERI1:                                 \
+    case CYGNUM_HAL_INTERRUPT_IRDA_RXI1:                                 \
+    case CYGNUM_HAL_INTERRUPT_IRDA_BRI1:                                 \
+    case CYGNUM_HAL_INTERRUPT_IRDA_TXI1:                                 \
+        HAL_READ_UINT16(CYGARC_REG_IPRE, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRE_IRDA_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRE_IRDA_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRE, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_SCIF_ERI2:                                 \
+    case CYGNUM_HAL_INTERRUPT_SCIF_RXI2:                                 \
+    case CYGNUM_HAL_INTERRUPT_SCIF_BRI2:                                 \
+    case CYGNUM_HAL_INTERRUPT_SCIF_TXI2:                                 \
+        HAL_READ_UINT16(CYGARC_REG_IPRE, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRE_SCIF_MASK;                              \
+        iprX |= (_level_)*CYGARC_REG_IPRE_SCIF_PRI1;                     \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRE, iprX);                         \
+        break;                                                           \
+    case CYGNUM_HAL_INTERRUPT_ADC_ADI:                                   \
+        HAL_READ_UINT16(CYGARC_REG_IPRE, iprX);                          \
+        iprX &= ~CYGARC_REG_IPRE_ADC_MASK;                               \
+        iprX |= (_level_)*CYGARC_REG_IPRE_ADC_PRI1;                      \
+        HAL_WRITE_UINT16(CYGARC_REG_IPRE, iprX);                         \
+        break;                                                           \
+                                                                         \
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:                              \
     case CYGNUM_HAL_INTERRUPT_RESERVED_3E0:                              \
         /* Do nothing for these reserved vectors. */                     \
@@ -490,11 +616,86 @@ externC cyg_uint8 cyg_hal_ILVL_table[];
     }                                                                     \
     CYG_MACRO_END
 
+#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )                             \
+    CYG_MACRO_START                                                       \
+    if ( (_vector_) >= CYGNUM_HAL_INTERRUPT_IRQ_IRQ0                      \
+         && (_vector_) <= CYGNUM_HAL_INTERRUPT_IRQ_IRQ5) {                \
+                                                                          \
+        cyg_uint8 irr0;                                                   \
+                                                                          \
+        HAL_READ_UINT8(CYGARC_REG_IRR0, irr0);                            \
+        switch ( _vector_ ) {                                             \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ0:                               \
+            irr0 &= ~CYGARC_REG_IRR0_IRQ0;                                \
+            break;                                                        \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ1:                               \
+            irr0 &= ~CYGARC_REG_IRR0_IRQ1;                                \
+            break;                                                        \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ2:                               \
+            irr0 &= ~CYGARC_REG_IRR0_IRQ2;                                \
+            break;                                                        \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ3:                               \
+            irr0 &= ~CYGARC_REG_IRR0_IRQ3;                                \
+            break;                                                        \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ4:                               \
+            irr0 &= ~CYGARC_REG_IRR0_IRQ4;                                \
+            break;                                                        \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ5:                               \
+            irr0 &= ~CYGARC_REG_IRR0_IRQ5;                                \
+            break;                                                        \
+        }                                                                 \
+        HAL_WRITE_UINT8(CYGARC_REG_IRR0, irr0);                           \
+    }                                                                     \
+    CYG_MACRO_END
 
-#define HAL_INTERRUPT_ACKNOWLEDGE( _vector_ )
-
-#define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )
-
+// Note: The PINTs can be masked and configured individually, even
+// though there are only two vectors. Maybe add some fake vectors just
+// for masking/configuring?
+#define HAL_INTERRUPT_CONFIGURE( _vector_, _level_, _up_ )               \
+    CYG_MACRO_START                                                      \
+    if ( (_vector_) >= CYGNUM_HAL_INTERRUPT_IRQ_IRQ0                     \
+         && (_vector_) <= CYGNUM_HAL_INTERRUPT_IRQ_IRQ5) {               \
+                                                                         \
+        cyg_uint16 icr1, ss, mask;                                       \
+        ss = 0;                                                          \
+        mask = CYGARC_REG_ICR1_SENSE_UP|CYGARC_REG_ICR1_SENSE_LEVEL;     \
+        if (_up_) ss |= CYGARC_REG_ICR1_SENSE_UP;                        \
+        if (_level_) ss |= CYGARC_REG_ICR1_SENSE_LEVEL;                  \
+        CYG_ASSERT(!(_up_ && _level_), "Cannot trigger on high level!"); \
+                                                                         \
+        switch( (_vector_) ) {                                           \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ5:                              \
+            ss <<= CYGARC_REG_ICR1_SENSE_IRQ5_shift;                     \
+            mask <<= CYGARC_REG_ICR1_SENSE_IRQ5_shift;                   \
+            break;                                                       \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ4:                              \
+            ss <<= CYGARC_REG_ICR1_SENSE_IRQ4_shift;                     \
+            mask <<= CYGARC_REG_ICR1_SENSE_IRQ4_shift;                   \
+            break;                                                       \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ3:                              \
+            ss <<= CYGARC_REG_ICR1_SENSE_IRQ3_shift;                     \
+            mask <<= CYGARC_REG_ICR1_SENSE_IRQ3_shift;                   \
+            break;                                                       \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ2:                              \
+            ss <<= CYGARC_REG_ICR1_SENSE_IRQ2_shift;                     \
+            mask <<= CYGARC_REG_ICR1_SENSE_IRQ2_shift;                   \
+            break;                                                       \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ1:                              \
+            ss <<= CYGARC_REG_ICR1_SENSE_IRQ1_shift;                     \
+            mask <<= CYGARC_REG_ICR1_SENSE_IRQ1_shift;                   \
+            break;                                                       \
+        case CYGNUM_HAL_INTERRUPT_IRQ_IRQ0:                              \
+            ss <<= CYGARC_REG_ICR1_SENSE_IRQ0_shift;                     \
+            mask <<= CYGARC_REG_ICR1_SENSE_IRQ0_shift;                   \
+            break;                                                       \
+        }                                                                \
+                                                                         \
+        HAL_READ_UINT16(CYGARC_REG_ICR1, icr1);                          \
+        icr1 &= ~mask;                                                   \
+        icr1 |= ss;                                                      \
+        HAL_WRITE_UINT16(CYGARC_REG_ICR1, icr1);                         \
+    }                                                                    \
+    CYG_MACRO_END
 
 //--------------------------------------------------------------------------
 // Clock control

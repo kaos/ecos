@@ -62,7 +62,7 @@
  * to the original author and the contributors.
  *
  * @(#)ip_fil.h	1.35 6/5/96
- * $Id: ip_fil.h,v 1.1 2000/06/06 08:39:40 jlarmour Exp $
+ * $Id: ip_fil.h,v 1.2 2000/06/07 14:10:35 jlarmour Exp $
  */
 
 #ifndef	_NETINET_IP_FIL_H__

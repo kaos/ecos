@@ -1,3 +1,8 @@
+2000-06-06  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh7708_cq7708.cdl: Added CYGHWR_HAL_SH_BOARD_SPEED
+	(from Haruki Kashiwaya).
+
 2000-06-05  John Dallaway  <jld@redhat.com>
 
 	* cdl/hal_sh_sh7708_cq7708.cdl:

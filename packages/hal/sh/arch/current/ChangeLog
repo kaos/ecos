@@ -1,8 +1,19 @@
+2000-06-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: INTEVT2 is not defined on all variants. Protect
+	accordingly. (Haruki Kashiwaya)
+
 2000-05-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_sh.cdl: Make sure CPU variant definition ends up in
 	system.h
 
+2000-05-01  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7709a.h:
+	* include/sh_regs.h:
+	Add PFC/C definitions.
+	
 2000-04-26  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_mk_defs.c: Added some caching data.
@@ -16,6 +27,13 @@
 
 	* include/hal_cache.h (HAL_UCACHE_WRITE_MODE): Also wiggle the WT
 	bit. It has opposite polarity of the CB bit.
+
+2000-04-25  Jesper Skov  <jskov@redhat.com>
+
+	* src/vectors.S: Init IPRC-E. Force IRQ mode.
+	* include/hal_intr.h: Added IRQ0-IRQ3 entries. Added simple
+	interrupt configuration and acknowledge.
+	* include/sh_regs.h: Added more interrupt control definitions.
 
 2000-04-12  Jesper Skov  <jskov@redhat.com>
 
@@ -31,23 +49,66 @@
 
 2000-04-10  Jesper Skov  <jskov@redhat.com>
 
+	* src/vectors.S: Get interrupt event code from the proper register.
+	Removed some platform specific debug code. Let cyg_hal_gdb_isr
+	deal with C-c issues.
+	
+	* include/sh_regs.h: Moved module registers to
+	0xa0000000-0xc0000000 which is also non-cachable. The reason is
+	that EVENT2 can only be accessed at 0xa4000000.
+
+	* include/sh3_scif.inl: Read back SR before clearing it (or the
+	clear don't have an effect).
+
 	* include/hal_intr.h: Mask/unmask functions handle entire ISR
 	range now.
+
+2000-04-07  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh3_scif.inl: Status register is 16 bit wide, not 8.
+
+	* include/sh_regs.h: Access all module registers in the space
+	0xe0000000-0xffffffff since caching is disabled here.
 
 2000-04-06  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh.ld (_hal_vsr_table): Get address from platform CDL.
 
+2000-04-04  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh3_scif.inl: Should be able to work with FIFO enabled.
+	* include/sh_regs.h: Fixed RCOUNT/TCOUNT and added some comments.
+
+2000-04-03  Jesper Skov  <jskov@redhat.com>
+
+	* include/sh3_scif.inl: Can drive either IRDA or SCIF module.
+
+	* include/sh_regs.h: 
+	* include/mod_7709a.h:
+	Added IRDA definitions (mostly a copy of SCIF definitions).
+	
 2000-03-31  Jesper Skov  <jskov@redhat.com>
 
 	* include/sh_regs.h: Added bit definitions for BSC.
 
+	* include/sh3_scif.inl: Added.
+	* include/hal_intr.h: Added hack to work around macro
+	problem. Need to rewrite macro as inline function, but need to
+	investigate a optimization problem first.
 	* include/sh_regs.h: Replaced hardcoded baud rate constants with
 	a macro which calculates the proper values based on baud rate
 	and CPU clock speed.
 
+	* include/sh_regs.h:
+	* include/hal_intr.h (HAL_INTERRUPT_SET_LEVEL):
+	Level handling for 7709a added.
+
 	* src/vectors.S: ISR mask tables enabled per CPU variant, not
 	target.
+
+2000-03-30  Jesper Skov  <jskov@redhat.com>
+
+	* include/hal_intr.h: Added 7709a interrupt definitions.
 
 2000-03-20  Jesper Skov  <jskov@redhat.com>
 
@@ -59,6 +120,7 @@
 
 2000-03-16  Jesper Skov  <jskov@redhat.com>
 
+	* include/mod_7709a.h: 
 	* include/mod_7708.h: 
 	* include/sh_regs.h: 
 	Adding new module definitions, conditionally included depending on

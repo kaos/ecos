@@ -61,6 +61,8 @@ cdl_package CYGPKG_DEVS_ETH_ARM_EBSA285 {
     define_proc {
         puts $::cdl_header \
        "#define CYGTST_DEVS_ETH_TEST_NET_REALTIME <cyg/devs/eth/tests/test_net_realtime.h>"
+        puts $::cdl_header \
+       "#define CYGDAT_DEVS_ETH_DESCRIPTION \"Intel EtherPro 10/100+ for EBSA285 (i82559/PCI)\""
 	puts $::cdl_system_header \
        "#define CYGBLD_DEVS_ETH_DEVICE_H <pkgconf/devs_eth_arm_ebsa285.h>"
     }

@@ -136,9 +136,19 @@ externC volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
     if( _vector_ <= CYGNUM_HAL_INTERRUPT_7 ||                           \
         _vector_ == CYGNUM_HAL_INTERRUPT_0 )                            \
     {                                                                   \
-        cyg_uint32 _val_ = _vector_ + 1;                                \
-        if( _val_ == CYGNUM_HAL_INTERRUPT_0 + 1 ) _val_ = 0;            \
-        HAL_WRITE_UINT8( CYG_HAL_MIPS_TX3904_CConR+1, _val_);           \
+        cyg_uint32 _v_ = _vector_ + 1;                                  \
+        cyg_uint8 _reg_;                                                \
+                                                                        \
+        /* adjust vector to bit offset in CConR */                      \
+        if( _v_ == CYGNUM_HAL_INTERRUPT_0 + 1 ) _v_ = 0;                \
+                                                                        \
+        /* get CConR */                                                 \
+        HAL_READ_UINT8( CYG_HAL_MIPS_TX3904_CConR+1, _reg_ );           \
+                                                                        \
+        /* clear old value and set new */                               \
+        _reg_ &= ~(7 << 5);                                             \
+        _reg_ |= _v_ << 5;                                              \
+        HAL_WRITE_UINT8( CYG_HAL_MIPS_TX3904_CConR+1, _reg_);           \
     }                                                                   \
 }
 
@@ -147,10 +157,25 @@ externC volatile CYG_BYTE hal_interrupt_level[CYGNUM_HAL_ISR_COUNT];
     if( _vector_ <= CYGNUM_HAL_INTERRUPT_7 ||                           \
         _vector_ == CYGNUM_HAL_INTERRUPT_0 )                            \
     {                                                                   \
+        cyg_uint32 _v_ = _vector_ + 1;                                  \
         cyg_uint32 _val_ = 0;                                           \
+        cyg_uint16 _reg_;                                               \
+                                                                        \
+        /* adjust vector to bit offset in CConR */                      \
+        if( _v_ == CYGNUM_HAL_INTERRUPT_0 + 1 ) _v_ = 0;                \
+        _v_ <<= 1;                                                      \
+                                                                        \
+        /* set bits according to requirements */                        \
         if( _up_ ) _val_ |= 1;                                          \
         if( !(_level_) ) _val_ |= 2;                                    \
-        HAL_WRITE_UINT16( CYG_HAL_MIPS_TX3904_CConR+2, _val_ );         \
+                                                                        \
+        /* get CConR */                                                 \
+        HAL_READ_UINT16( CYG_HAL_MIPS_TX3904_CConR+2, _reg_ );          \
+                                                                        \
+        /* clear old value and set new */                               \
+        _reg_ &= ~(3 << _v_);                                           \
+        _reg_ |= _val_ << _v_;                                          \
+        HAL_WRITE_UINT16( CYG_HAL_MIPS_TX3904_CConR+2, _reg_ );         \
     }                                                                   \
 }
 

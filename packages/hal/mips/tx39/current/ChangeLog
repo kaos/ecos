@@ -1,3 +1,9 @@
+2000-06-06  Jesper Skov  <jskov@redhat.com>
+
+	* include/var_intr.h (HAL_INTERRUPT_ACKNOWLEDGE,
+	HAL_INTERRUPT_CONFIGURE): Change the right bits. 
+	(Haruki	Kashiwaya)
+
 2000-04-06  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* src/mips_tx39.ld: Define __CTOR_LIST__, __CTOR_END__, __DTOR_LIST__,

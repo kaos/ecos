@@ -1,3 +1,8 @@
+2000-06-06  Hugo Tyson  <hmt@cygnus.co.uk>
+
+	* cdl/ebsa285_eth_drivers.cdl (define_proc): Add #define of
+	CYGDAT_DEVS_ETH_DESCRIPTION in the config file for information.
+
 2000-05-12  Hugo Tyson  <hmt@cygnus.co.uk>
 
 	* tests/test_net_realtime.h (tnr_print_activity): New routine to

@@ -61,7 +61,7 @@
  * provided that this notice is preserved and due credit is given
  * to the original author and the contributors.
  *
- * $Id: ip_proxy.h,v 1.1 2000/06/06 08:39:40 jlarmour Exp $
+ * $Id: ip_proxy.h,v 1.2 2000/06/07 14:10:36 jlarmour Exp $
  */
 
 #ifndef	_NETINET_IP_PROXY_H__

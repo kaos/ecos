@@ -107,6 +107,21 @@ cdl_package CYGPKG_HAL_SH {
         }
     }
 
+    cdl_option CYGPKG_HAL_SH_7709A {
+        display       "SH 7709A microprocessor"
+        implements    CYGINT_HAL_SH_VARIANT
+        default_value 0
+        no_define
+        define        -file=system.h CYGPKG_HAL_SH_7709A
+        description "
+            The SH3 7709A microprocessor. This is an embedded part that in
+            addition to the SH3 processor core has built in peripherals
+            such as memory controllers, DMA controllers, A/D and D/A
+            converters, serial ports and timers/counters."               
+        define_proc {
+            puts $cdl_system_header "#define CYGBLD_HAL_CPU_MODULES_H <cyg/hal/mod_7709a.h>"
+        }
+    }
 
     cdl_option CYGHWR_HAL_SH_BIGENDIAN {
         display          "Use big-endian mode"

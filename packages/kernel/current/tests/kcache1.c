@@ -323,7 +323,7 @@ static void entry0( cyg_addrword_t data )
     // slow on the simulator, even with reduced loop counts.
     if (cyg_test_is_simulator)
         CYG_TEST_PASS_FINISH("End of test");
- 
+
     cyg_test_is_simulator = 1;
 #endif    
 #ifdef HAL_ICACHE_INVALIDATE_ALL

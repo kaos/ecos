@@ -120,6 +120,16 @@ __reset:
         mov.w   r0,@r1
         mov.l   $CYGARC_REG_IPRB,r1
         mov.w   r0,@r1
+#ifdef CYGARC_SH_MOD_INTC_V2
+        mov.l   $CYGARC_REG_IPRC,r1
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_IPRD,r1
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_IPRE,r1
+        mov.w   r0,@r1
+        mov.l   $CYGARC_REG_ICR1,r1     ! Set interrupt controller to IRQ mode
+        mov.w   r0,@r1
+#endif
 
         # Initialize VBR if necessary
 #if     !defined(CYG_HAL_STARTUP_RAM) ||                \
@@ -234,6 +244,17 @@ $CYGARC_REG_IPRA:
         .long   CYGARC_REG_IPRA
 $CYGARC_REG_IPRB:
         .long   CYGARC_REG_IPRB
+#ifdef CYGARC_SH_MOD_INTC_V2
+$CYGARC_REG_IPRC:
+        .long   CYGARC_REG_IPRC
+$CYGARC_REG_IPRD:
+        .long   CYGARC_REG_IPRD
+$CYGARC_REG_IPRE:
+        .long   CYGARC_REG_IPRE
+$CYGARC_REG_ICR1:
+        .long   CYGARC_REG_ICR1
+#endif
+
 $__reset:
         .long   __reset
 
@@ -856,8 +877,10 @@ $nCYG_SR2:
         .long   CYG_SR
 $nCYG_SR_BANK1:
         .long   CYG_SR_BANK1
+#ifdef CYGARC_SH_MOD_INTC_V2
 $nCYGARC_REG_INTEVT2:
         .long   CYGARC_REG_INTEVT2
+#endif
 $_hal_interrupt_handlers:
         .long   _hal_interrupt_handlers
 $_hal_interrupt_data:

@@ -327,6 +327,19 @@
 #define CYGARC_REG_IPRA                 0xfffffee2
 #define CYGARC_REG_IPRB                 0xfffffee4
 
+//#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME: HAL_INTERRUPT_SET_LEVEL needs these
+# define CYGARC_REG_INTEVT2             0xa4000000
+# define CYGARC_REG_IRR0                0xa4000004
+# define CYGARC_REG_IRR1                0xa4000006
+# define CYGARC_REG_IRR2                0xa4000008
+# define CYGARC_REG_ICR0                CYGARC_REG_ICR
+# define CYGARC_REG_ICR1                0xa4000010
+# define CYGARC_REG_ICR2                0xa4000012
+# define CYGARC_REG_INTER               0xa4000014
+# define CYGARC_REG_IPRC                0xa4000016
+# define CYGARC_REG_IPRD                0xa4000018
+# define CYGARC_REG_IPRE                0xa400001a
+//#endif
 
 #define CYGARC_REG_IPRA_TMU0_MASK       0xf000
 #define CYGARC_REG_IPRA_TMU0_PRI1       0x1000
@@ -344,6 +357,57 @@
 #define CYGARC_REG_IPRB_SCI_MASK        0x00f0
 #define CYGARC_REG_IPRB_SCI_PRI1        0x0010
 
+//#ifdef CYGARC_SH_MOD_INTC_V2 // FIXME: HAL_INTERRUPT_SET_LEVEL needs these
+#define CYGARC_REG_IPRC_IRQ3_MASK         0xf000
+#define CYGARC_REG_IPRC_IRQ3_PRI1         0x1000
+#define CYGARC_REG_IPRC_IRQ2_MASK         0x0f00
+#define CYGARC_REG_IPRC_IRQ2_PRI1         0x0100
+#define CYGARC_REG_IPRC_IRQ1_MASK         0x00f0
+#define CYGARC_REG_IPRC_IRQ1_PRI1         0x0010
+#define CYGARC_REG_IPRC_IRQ0_MASK         0x000f
+#define CYGARC_REG_IPRC_IRQ0_PRI1         0x0001
+
+#define CYGARC_REG_IPRD_PINT07_MASK       0xf000
+#define CYGARC_REG_IPRD_PINT07_PRI1       0x1000
+#define CYGARC_REG_IPRD_PINT8F_MASK       0x0f00
+#define CYGARC_REG_IPRD_PINT8F_PRI1       0x0100
+#define CYGARC_REG_IPRD_IRQ5_MASK         0x00f0
+#define CYGARC_REG_IPRD_IRQ5_PRI1         0x0010
+#define CYGARC_REG_IPRD_IRQ4_MASK         0x000f
+#define CYGARC_REG_IPRD_IRQ4_PRI1         0x0001
+
+#define CYGARC_REG_IPRE_DMAC_MASK         0xf000
+#define CYGARC_REG_IPRE_DMAC_PRI1         0x1000
+#define CYGARC_REG_IPRE_IRDA_MASK         0x0f00
+#define CYGARC_REG_IPRE_IRDA_PRI1         0x0100
+#define CYGARC_REG_IPRE_SCIF_MASK         0x00f0
+#define CYGARC_REG_IPRE_SCIF_PRI1         0x0010
+#define CYGARC_REG_IPRE_ADC_MASK          0x000f
+#define CYGARC_REG_IPRE_ADC_PRI1          0x0001
+
+#define CYGARC_REG_ICR1_MAI               0x8000
+#define CYGARC_REG_ICR1_IRQLVL            0x4000
+#define CYGARC_REG_ICR1_BLMSK             0x2000
+#define CYGARC_REG_ICR1_IRLSEN            0x1000
+#define CYGARC_REG_ICR1_SENSE_IRQ5_shift  10
+#define CYGARC_REG_ICR1_SENSE_IRQ4_shift  8
+#define CYGARC_REG_ICR1_SENSE_IRQ3_shift  6
+#define CYGARC_REG_ICR1_SENSE_IRQ2_shift  4
+#define CYGARC_REG_ICR1_SENSE_IRQ1_shift  2
+#define CYGARC_REG_ICR1_SENSE_IRQ0_shift  0
+#define CYGARC_REG_ICR1_SENSE_LEVEL       0x2
+#define CYGARC_REG_ICR1_SENSE_UP          0x1
+
+#define CYGARC_REG_IRR0_PINT07            0x80
+#define CYGARC_REG_IRR0_PINT8F            0x40
+#define CYGARC_REG_IRR0_IRQ5              0x20
+#define CYGARC_REG_IRR0_IRQ4              0x10
+#define CYGARC_REG_IRR0_IRQ3              0x08
+#define CYGARC_REG_IRR0_IRQ2              0x04
+#define CYGARC_REG_IRR0_IRQ1              0x02
+#define CYGARC_REG_IRR0_IRQ0              0x01
+
+//#endif
 
 //++++++ Module RTC ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -447,6 +511,357 @@
        (CYGHWR_HAL_SH_BOARD_SPEED*1000000/(32*(_b_))-1))
 #define CYGARC_SCBRR_CKSx(_b_) 0
 
+//++++++ Module IRDA +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifdef CYGARC_SH_MOD_IRDA
 
+//--------------------------------------------------------------------------
+// IrDA (infrared data association). Can also act as regular serial w FIFO
+
+#define CYGARC_REG_SCSMR1               0xa4000140
+#define CYGARC_REG_SCBRR1               0xa4000142
+#define CYGARC_REG_SCSCR1               0xa4000144
+#define CYGARC_REG_SCFTDR1              0xa4000146
+#define CYGARC_REG_SCSSR1               0xa4000148
+#define CYGARC_REG_SCFRDR1              0xa400014a
+#define CYGARC_REG_SCFCR1               0xa400014c
+#define CYGARC_REG_SCFDR1               0xa400014e
+
+// Serial Mode Register
+#define CYGARC_REG_SCSMR1_IRMOD          0x80 // IrDA Mode
+#define CYGARC_REG_SCSMR1_ICK_MASK       0x78 // IR pulse width
+#define CYGARC_REG_SCSMR1_PSEL           0x04 // IR pulse selector(?)
+#define CYGARC_REG_SCSMR1_CKS1           0x02 // clock select 1
+#define CYGARC_REG_SCSMR1_CKS0           0x01 // clock select 0
+#define CYGARC_REG_SCSMR1_CKSx_MASK      0x03 // mask
+
+// Serial Control Register
+#define CYGARC_REG_SCSCR1_TIE            0x80 // transmit interrupt enable
+#define CYGARC_REG_SCSCR1_RIE            0x40 // receive interrupt enable
+#define CYGARC_REG_SCSCR1_TE             0x20 // transmit enable
+#define CYGARC_REG_SCSCR1_RE             0x10 // receive enable
+#define CYGARC_REG_SCSCR1_CKE1           0x02 // clock enable 1
+#define CYGARC_REG_SCSCR1_CKE0           0x01 // clock enable 0
+
+// Serial Status Register
+#define CYGARC_REG_SCSSR1_PER_MASK       0xf000 // number of parity errors
+#define CYGARC_REG_SCSSR1_PER_shift      12
+#define CYGARC_REG_SCSSR1_FER_MASK       0x0f00 // number of framing errors
+#define CYGARC_REG_SCSSR1_FER_shift      8
+#define CYGARC_REG_SCSSR1_ER             0x0080 // receive error
+#define CYGARC_REG_SCSSR1_TEND           0x0040 // transmit end
+#define CYGARC_REG_SCSSR1_TDFE           0x0020 // transmit fifo data empty
+#define CYGARC_REG_SCSSR1_BRK            0x0010 // break detection
+#define CYGARC_REG_SCSSR1_FER            0x0008 // framing error
+#define CYGARC_REG_SCSSR1_PER            0x0004 // parity error
+#define CYGARC_REG_SCSSR1_RDF            0x0002 // receive fifo data full
+#define CYGARC_REG_SCSSR1_DR             0x0001 // receive data ready
+
+// When clearing the status register, always write the value:
+// CYGARC_REG_SCSSR2_CLEARMASK & ~bit
+// to prevent other bits than the one of interest to be cleared.
+#define CYGARC_REG_SCSSR1_CLEARMASK      0xf3
+
+// Serial FIFO Control Register
+#define CYGARC_REG_SCFCR1_RTRG_MASK      0xc0   // receive fifo data trigger
+#define CYGARC_REG_SCFCR1_RTRG_1         0x00   // trigger on 1 char 
+#define CYGARC_REG_SCFCR1_RTRG_4         0x40   // trigger on 4 chars
+#define CYGARC_REG_SCFCR1_RTRG_8         0x80   // trigger on 8 chars
+#define CYGARC_REG_SCFCR1_RTRG_14        0xc0   // trigger on 14 chars 
+
+#define CYGARC_REG_SCFCR1_TTRG_MASK      0x30   // transmit fifo data trigger
+#define CYGARC_REG_SCFCR1_TTRG_8         0x00   // trigger on 8 chars 
+#define CYGARC_REG_SCFCR1_TTRG_4         0x10   // trigger on 4 chars
+#define CYGARC_REG_SCFCR1_TTRG_2         0x20   // trigger on 2 chars
+#define CYGARC_REG_SCFCR1_TTRG_1         0x30   // trigger on 1 char
+
+#define CYGARC_REG_SCFCR1_MCE            0x08   // modem control enable
+#define CYGARC_REG_SCFCR1_TFRST          0x04   // transmit fifo reset
+#define CYGARC_REG_SCFCR1_RFRST          0x02   // receive fifo reset
+#define CYGARC_REG_SCFCR1_LOOP           0x01   // loop back test
+
+
+// Serial FIFO Data Count Set Register
+#define CYGARC_REG_SCFDR1_RCOUNT_MASK    0x001f // number of chars in r fifo
+#define CYGARC_REG_SCFDR1_RCOUNT_shift   0
+#define CYGARC_REG_SCFDR1_TCOUNT_MASK    0x1f00 // number of chars in t fifo
+#define CYGARC_REG_SCFDR1_TCOUNT_shift   8
+
+// Baud rate values calculated for peripheral clock = 15MHz (Pf = 15). 
+// n is CKS setting (0-3)
+// N = (Pf/(64*2^(2n-1)*B))*10^6-1
+// E(%) = ((Pf*10^6/((N+1)*B*(64^(n-1)))-1)*100
+//  So this macro is only valid when serial is configured for n=0:
+//       N = (Pf/(32*B))*10^6-1
+#define CYGARC_SCBRR1_N(_b_)     \
+    (((_b_) < 4800) ? 0 :       \
+      ((_b_) > 115200) ? 0 :    \
+       (CYGHWR_HAL_SH_BOARD_SPEED*1000000/(32*(_b_))-1))
+#define CYGARC_SCBRR1_CKSx(_b_) 0
+
+#endif // CYGARC_SH_MOD_IRDA
+
+//++++++ Module SCIF +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifdef CYGARC_SH_MOD_SCIF
+
+//--------------------------------------------------------------------------
+// Serial w FIFO registers
+
+#define CYGARC_REG_SCSMR2               0xa4000150 // Serial mode
+#define CYGARC_REG_SCBRR2               0xa4000152 // Bit rate
+#define CYGARC_REG_SCSCR2               0xa4000154 // Serial control
+#define CYGARC_REG_SCFTDR2              0xa4000156 // Transmit FIFO data
+#define CYGARC_REG_SCSSR2               0xa4000158 // Serial status
+#define CYGARC_REG_SCFRDR2              0xa400015a // Receive data FIFO
+#define CYGARC_REG_SCFCR2               0xa400015c // FIFO control register
+#define CYGARC_REG_SCFDR2               0xa400015e // FIFO data count set
+
+// Serial Mode Register
+#define CYGARC_REG_SCSMR2_CHR            0x40 // character length (7 if set)
+#define CYGARC_REG_SCSMR2_PE             0x20 // parity enable
+#define CYGARC_REG_SCSMR2_OE             0x10 // parity mode
+#define CYGARC_REG_SCSMR2_STOP           0x08 // stop bit length
+#define CYGARC_REG_SCSMR2_CKS1           0x02 // clock select 1
+#define CYGARC_REG_SCSMR2_CKS0           0x01 // clock select 0
+#define CYGARC_REG_SCSMR2_CKSx_MASK      0x03 // mask
+
+// Serial Control Register
+#define CYGARC_REG_SCSCR2_TIE            0x80 // transmit interrupt enable
+#define CYGARC_REG_SCSCR2_RIE            0x40 // receive interrupt enable
+#define CYGARC_REG_SCSCR2_TE             0x20 // transmit enable
+#define CYGARC_REG_SCSCR2_RE             0x10 // receive enable
+#define CYGARC_REG_SCSCR2_CKE1           0x02 // clock enable 1
+#define CYGARC_REG_SCSCR2_CKE0           0x01 // clock enable 0
+
+// Serial Status Register
+#define CYGARC_REG_SCSSR2_PER_MASK       0xf000 // number of parity errors
+#define CYGARC_REG_SCSSR2_PER_shift      12
+#define CYGARC_REG_SCSSR2_FER_MASK       0x0f00 // number of framing errors
+#define CYGARC_REG_SCSSR2_FER_shift      8
+#define CYGARC_REG_SCSSR2_ER             0x0080 // receive error
+#define CYGARC_REG_SCSSR2_TEND           0x0040 // transmit end
+#define CYGARC_REG_SCSSR2_TDFE           0x0020 // transmit fifo data empty
+#define CYGARC_REG_SCSSR2_BRK            0x0010 // break detection
+#define CYGARC_REG_SCSSR2_FER            0x0008 // framing error
+#define CYGARC_REG_SCSSR2_PER            0x0004 // parity error
+#define CYGARC_REG_SCSSR2_RDF            0x0002 // receive fifo data full
+#define CYGARC_REG_SCSSR2_DR             0x0001 // receive data ready
+
+// When clearing the status register, always write the value:
+// CYGARC_REG_SCSSR2_CLEARMASK & ~bit
+// to prevent other bits than the one of interest to be cleared.
+#define CYGARC_REG_SCSSR2_CLEARMASK      0xf3
+
+// Serial FIFO Control Register
+#define CYGARC_REG_SCFCR2_RTRG_MASK      0xc0   // receive fifo data trigger
+#define CYGARC_REG_SCFCR2_RTRG_1         0x00   // trigger on 1 char 
+#define CYGARC_REG_SCFCR2_RTRG_4         0x40   // trigger on 4 chars
+#define CYGARC_REG_SCFCR2_RTRG_8         0x80   // trigger on 8 chars
+#define CYGARC_REG_SCFCR2_RTRG_14        0xc0   // trigger on 14 chars 
+
+#define CYGARC_REG_SCFCR2_TTRG_MASK      0x30   // transmit fifo data trigger
+#define CYGARC_REG_SCFCR2_TTRG_8         0x00   // trigger on 8 chars 
+#define CYGARC_REG_SCFCR2_TTRG_4         0x10   // trigger on 4 chars
+#define CYGARC_REG_SCFCR2_TTRG_2         0x20   // trigger on 2 chars
+#define CYGARC_REG_SCFCR2_TTRG_1         0x30   // trigger on 1 char
+
+#define CYGARC_REG_SCFCR2_MCE            0x08   // modem control enable
+#define CYGARC_REG_SCFCR2_TFRST          0x04   // transmit fifo reset
+#define CYGARC_REG_SCFCR2_RFRST          0x02   // receive fifo reset
+#define CYGARC_REG_SCFCR2_LOOP           0x01   // loop back test
+
+
+// Serial FIFO Data Count Set Register
+#define CYGARC_REG_SCFDR2_RCOUNT_MASK    0x001f // number of chars in r fifo
+#define CYGARC_REG_SCFDR2_RCOUNT_shift   0
+#define CYGARC_REG_SCFDR2_TCOUNT_MASK    0x1f00 // number of chars in t fifo
+#define CYGARC_REG_SCFDR2_TCOUNT_shift   8
+
+// Baud rate values calculated for peripheral clock = 15MHz (Pf = 15). 
+// n is CKS setting (0-3)
+// N = (Pf/(64*2^(2n-1)*B))*10^6-1
+// E(%) = ((Pf*10^6/((N+1)*B*(64^(n-1)))-1)*100
+//  So this macro is only valid when serial is configured for n=0:
+//       N = (Pf/(32*B))*10^6-1
+#define CYGARC_SCBRR2_N(_b_)     \
+    (((_b_) < 4800) ? 0 :       \
+      ((_b_) > 115200) ? 0 :    \
+       (CYGHWR_HAL_SH_BOARD_SPEED*1000000/(32*(_b_))-1))
+#define CYGARC_SCBRR2_CKSx(_b_) 0
+
+
+#endif // CYGARC_SH_MOD_SCIF
+
+//++++++ Module DMAC +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifdef CYGARC_SH_MOD_DMAC
+
+//--------------------------------------------------------------------------
+// DMA Controller registers
+
+#define CYGARC_REG_SAR0                 0xa4000020
+#define CYGARC_REG_DAR0                 0xa4000024
+#define CYGARC_REG_DMATCR0              0xa4000028
+#define CYGARC_REG_CHCR0                0xa400002c
+#define CYGARC_REG_SAR1                 0xa4000030
+#define CYGARC_REG_DAR1                 0xa4000034
+#define CYGARC_REG_DMATCR1              0xa4000038
+#define CYGARC_REG_CHCR1                0xa400003c
+#define CYGARC_REG_SAR2                 0xa4000040
+#define CYGARC_REG_DAR2                 0xa4000044
+#define CYGARC_REG_DMATCR2              0xa4000048
+#define CYGARC_REG_CHCR2                0xa400004c
+#define CYGARC_REG_SAR3                 0xa4000050
+#define CYGARC_REG_DAR3                 0xa4000054
+#define CYGARC_REG_DMATCR3              0xa4000058
+#define CYGARC_REG_CHCR3                0xa400005c
+#define CYGARC_REG_DMAOR                0xa4000060
+
+// DMA Channel Control Register 0
+#define CYGARC_REG_CHCR0_RL             0x00040000 // request check level
+#define CYGARC_REG_CHCR0_AM             0x00020000 // acknowledge mode
+#define CYGARC_REG_CHCR0_AL             0x00010000 // acknowledge level
+#define CYGARC_REG_CHCR0_DM1            0x00008000 // destination address mode
+#define CYGARC_REG_CHCR0_DM0            0x00004000
+#define CYGARC_REG_CHCR0_SM1            0x00002000 // source address mode
+#define CYGARC_REG_CHCR0_SM2            0x00001000
+#define CYGARC_REG_CHCR0_RS3            0x00000800 // resource select
+#define CYGARC_REG_CHCR0_RS2            0x00000400
+#define CYGARC_REG_CHCR0_RS1            0x00000200
+#define CYGARC_REG_CHCR0_RS0            0x00000100
+#define CYGARC_REG_CHCR0_DS             0x00000040 // DREQ select
+#define CYGARC_REG_CHCR0_TM             0x00000020 // transmit mode
+#define CYGARC_REG_CHCR0_TS1            0x00000010 // transmit size
+#define CYGARC_REG_CHCR0_TS0            0x00000008
+#define CYGARC_REG_CHCR0_IE             0x00000004 // interrupt enable
+#define CYGARC_REG_CHCR0_TE             0x00000002 // transfer end
+#define CYGARC_REG_CHCR0_DE             0x00000001 // DMAC enable
+
+// DMA Channel Control Register 1
+#define CYGARC_REG_CHCR1_RL             0x00040000 // request check level
+#define CYGARC_REG_CHCR1_AM             0x00020000 // acknowledge mode
+#define CYGARC_REG_CHCR1_AL             0x00010000 // acknowledge level
+#define CYGARC_REG_CHCR1_DM1            0x00008000 // destination address mode
+#define CYGARC_REG_CHCR1_DM0            0x00004000
+#define CYGARC_REG_CHCR1_SM1            0x00002000 // source address mode
+#define CYGARC_REG_CHCR1_SM2            0x00001000
+#define CYGARC_REG_CHCR1_RS3            0x00000800 // resource select
+#define CYGARC_REG_CHCR1_RS2            0x00000400
+#define CYGARC_REG_CHCR1_RS1            0x00000200
+#define CYGARC_REG_CHCR1_RS0            0x00000100
+#define CYGARC_REG_CHCR1_DS             0x00000040 // DREQ select
+#define CYGARC_REG_CHCR1_TM             0x00000020 // transmit mode
+#define CYGARC_REG_CHCR1_TS1            0x00000010 // transmit size
+#define CYGARC_REG_CHCR1_TS0            0x00000008
+#define CYGARC_REG_CHCR1_IE             0x00000004 // interrupt enable
+#define CYGARC_REG_CHCR1_TE             0x00000002 // transfer end
+#define CYGARC_REG_CHCR1_DE             0x00000001 // DMAC enable
+
+// DMA Channel Control Register 2
+#define CYGARC_REG_CHCR2_RO             0x00080000 // source address reload
+#define CYGARC_REG_CHCR2_DM1            0x00008000 // destination address mode
+#define CYGARC_REG_CHCR2_DM0            0x00004000
+#define CYGARC_REG_CHCR2_SM1            0x00002000 // source address mode
+#define CYGARC_REG_CHCR2_SM2            0x00001000
+#define CYGARC_REG_CHCR2_RS3            0x00000800 // resource select
+#define CYGARC_REG_CHCR2_RS2            0x00000400
+#define CYGARC_REG_CHCR2_RS1            0x00000200
+#define CYGARC_REG_CHCR2_RS0            0x00000100
+#define CYGARC_REG_CHCR2_TM             0x00000020 // transmit mode
+#define CYGARC_REG_CHCR2_TS1            0x00000010 // transmit size
+#define CYGARC_REG_CHCR2_TS0            0x00000008
+#define CYGARC_REG_CHCR2_IE             0x00000004 // interrupt enable
+#define CYGARC_REG_CHCR2_TE             0x00000002 // transfer end
+#define CYGARC_REG_CHCR2_DE             0x00000001 // DMAC enable
+
+// DMA Channel Control Register 3
+#define CYGARC_REG_CHCR3_DI             0x00100000 // direct/indirect selection
+#define CYGARC_REG_CHCR3_DM1            0x00008000 // destination address mode
+#define CYGARC_REG_CHCR3_DM0            0x00004000
+#define CYGARC_REG_CHCR3_SM1            0x00002000 // source address mode
+#define CYGARC_REG_CHCR3_SM2            0x00001000
+#define CYGARC_REG_CHCR3_RS3            0x00000800 // resource select
+#define CYGARC_REG_CHCR3_RS2            0x00000400
+#define CYGARC_REG_CHCR3_RS1            0x00000200
+#define CYGARC_REG_CHCR3_RS0            0x00000100
+#define CYGARC_REG_CHCR3_TM             0x00000020 // transmit mode
+#define CYGARC_REG_CHCR3_TS1            0x00000010 // transmit size
+#define CYGARC_REG_CHCR3_TS0            0x00000008
+#define CYGARC_REG_CHCR3_IE             0x00000004 // interrupt enable
+#define CYGARC_REG_CHCR3_TE             0x00000002 // transfer end
+#define CYGARC_REG_CHCR3_DE             0x00000001 // DMAC enable     
+
+// DMA Operation Register
+#define CYGARC_REG_DMAOR_PR1            0x0200     // priority level
+#define CYGARC_REG_DMAOR_PR0            0x0100
+#define CYGARC_REG_DMAOR_AE             0x0004     // address error flag
+#define CYGARC_REG_DMAOR_NMIF           0x0002     // NMI flag
+#define CYGARC_REG_DMAOR_DME            0x0001     // DMA master enable
+
+
+#endif // CYGARC_SH_MOD_DMAC
+
+//++++++ Module PFC +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifdef CYGARC_SH_MOD_PFC
+
+#define CYGARC_REG_PACR                 0xa4000100 // port A control
+#define CYGARC_REG_PBCR                 0xa4000102 // port B control
+#define CYGARC_REG_PCCR                 0xa4000104 // port C control
+#define CYGARC_REG_PDCR                 0xa4000106 // port D control
+#define CYGARC_REG_PECR                 0xa4000108 // port E control
+#define CYGARC_REG_PFCR                 0xa400010a // port F control
+#define CYGARC_REG_PGCR                 0xa400010c // port G control
+#define CYGARC_REG_PHCR                 0xa400010e // port H control
+#define CYGARC_REG_PJCR                 0xa4000110 // port J control
+#define CYGARC_REG_PKCR                 0xa4000112 // port K control
+#define CYGARC_REG_PLCR                 0xa4000114 // port L control
+#define CYGARC_REG_SCPCR                0xa4000116 // SC port control
+
+#define CYGARC_REG_PADR                 0xa4000120 // port A data
+#define CYGARC_REG_PBDR                 0xa4000122 // port B data
+#define CYGARC_REG_PCDR                 0xa4000124 // port C data
+#define CYGARC_REG_PDDR                 0xa4000126 // port D data
+#define CYGARC_REG_PEDR                 0xa4000128 // port E data
+#define CYGARC_REG_PFDR                 0xa400012a // port F data
+#define CYGARC_REG_PGDR                 0xa400012c // port G data
+#define CYGARC_REG_PHDR                 0xa400012e // port H data
+#define CYGARC_REG_PJDR                 0xa4000130 // port J data
+#define CYGARC_REG_PKDR                 0xa4000132 // port K data
+#define CYGARC_REG_PLDR                 0xa4000134 // port L data
+#define CYGARC_REG_SCPDR                0xa4000136 // SC port data
+
+
+// Port C
+#define CYGARC_REG_PCCR_PC7_MASK        0xc000
+#define CYGARC_REG_PCCR_PC7_shift       14
+#define CYGARC_REG_PCCR_PC6_MASK        0x3000
+#define CYGARC_REG_PCCR_PC6_shift       12
+#define CYGARC_REG_PCCR_PC5_MASK        0x0c00
+#define CYGARC_REG_PCCR_PC5_shift       10
+#define CYGARC_REG_PCCR_PC4_MASK        0x0300
+#define CYGARC_REG_PCCR_PC4_shift       8
+#define CYGARC_REG_PCCR_PC3_MASK        0x00c0
+#define CYGARC_REG_PCCR_PC3_shift       6
+#define CYGARC_REG_PCCR_PC2_MASK        0x0030
+#define CYGARC_REG_PCCR_PC2_shift       4
+#define CYGARC_REG_PCCR_PC1_MASK        0x000c
+#define CYGARC_REG_PCCR_PC1_shift       2
+#define CYGARC_REG_PCCR_PC0_MASK        0x0003
+#define CYGARC_REG_PCCR_PC0_shift       0
+
+#define CYGARC_REG_PCCR_MD_OTHER        0x0
+#define CYGARC_REG_PCCR_MD_OUT          0x1
+#define CYGARC_REG_PCCR_MD_IN_ON        0x2
+#define CYGARC_REG_PCCR_MD_IN_OFF       0x3
+
+#define CYGARC_REG_PCDR_PC7DT           0x80
+#define CYGARC_REG_PCDR_PC6DT           0x40
+#define CYGARC_REG_PCDR_PC5DT           0x20
+#define CYGARC_REG_PCDR_PC4DT           0x10
+#define CYGARC_REG_PCDR_PC3DT           0x08
+#define CYGARC_REG_PCDR_PC2DT           0x04
+#define CYGARC_REG_PCDR_PC1DT           0x02
+#define CYGARC_REG_PCDR_PC0DT           0x01
+
+
+#endif // CYGARC_SH_MOD_PFC
 
 #endif // ifndef CYGONCE_HAL_SH_REGS_H
