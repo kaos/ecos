@@ -31,6 +31,11 @@
 // polution to a minimum
 
 // TEXT symbols
+#define MD5Final cyg_MD5Final
+#define MD5Init cyg_MD5Init
+#define MD5Pad cyg_MD5Pad
+#define MD5Transform cyg_MD5Transform
+#define MD5Update cyg_MD5Update
 #define _ip_mcast_src cyg__ip_mcast_src
 #define _ip_mforward cyg__ip_mforward
 #define _ip_mrouter_done cyg__ip_mrouter_done

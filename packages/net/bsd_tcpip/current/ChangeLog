@@ -1,3 +1,8 @@
+2003-12-21  Nick Garnett  <nickg@calivar.com>
+
+	* include/sys/param.h: Restored MD5 function mappings. These were
+	accidentally removed earlier.
+
 2003-12-16  Gary Thomas  <gary@mlbassoc.com>
 
 	* cdl/freebsd_net.cdl: Increase default memory pool size to
