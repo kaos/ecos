@@ -72,7 +72,7 @@ cdl_component CYGBLD_BUILD_REDBOOT {
 };
 
 cdl_option CYGBLD_REDBOOT_MIN_IMAGE_SIZE {
-    inferred_value 0x40000
+    inferred_value 0x80000
 };
 
 cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {

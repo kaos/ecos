@@ -83,7 +83,7 @@
 .endm
 
 
-#if defined(CYG_HAL_STARTUP_ROM)
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
 #define PLATFORM_SETUP1  _platform_setup1
 #define CYGHWR_HAL_ARM_HAS_MMU
 
@@ -234,6 +234,11 @@
 
 	// value to load into pc to jump to real runtime address
 	ldr     r0, =1f
+#if defined(CYG_HAL_STARTUP_ROMRAM)
+	// R0 holds a RAM address for ROMRAM startup,
+	// so convert to a flash address.
+	orr	r0, r0, #IXDP_FLASH_BASE
+#endif
 
 	// Setup EXP_CNFG0 value to switch EXP bus out of low memory
 	ldr 	r2, =IXP425_EXP_CFG_BASE
@@ -241,6 +246,7 @@
 	bic     r1, r1, #EXP_CNFG0_MEM_MAP
 	ldr     r3, =0xFFFF
 	ldr     r4, =IXDP425_LED_DATA
+
 
 	b       icache_boundary
 	.p2align 5
@@ -260,6 +266,21 @@ icache_boundary:
     1:
 
 	DISPLAY	0x1004, r7, r8
+
+#if defined(CYG_HAL_STARTUP_ROMRAM)
+        mov     r0, #IXDP_FLASH_BASE
+        mov     r1, #SDRAM_PHYS_BASE
+        ldr     r2, =__ram_data_end
+20:     ldr     r3, [r0],#4
+        str     r3, [r1],#4
+        cmp     r1, r2
+        bne     20b
+
+	// start executing from RAM
+	ldr     r0, =30f
+        mov     pc, r0
+30:
+#endif
 
 	// Build mmu tables into RAM so page table walks by the cpu
 	// don't interfere with FLASH programming.

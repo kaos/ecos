@@ -79,14 +79,16 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
         display       "Startup type"
         flavor        data
         default_value {"RAM"}
-        legal_values  {"RAM" "ROM" }
+        legal_values  {"RAM" "ROM" "ROMRAM" }
 	no_define
 	define -file system.h CYG_HAL_STARTUP
         description   "
            When targeting the IXDP425 eval board it is possible to build
            the system for either RAM bootstrap or ROM bootstrap(s). Select
            'ram' when building programs to load into RAM using onboard
-           debug software such as RedBoot or eCos GDB stubs."
+           debug software such as RedBoot or eCos GDB stubs. Select 'romram'
+           when building a stand-alone application which will be put
+           into ROM, but execute from RAM."
     }
 
     cdl_component CYGBLD_GLOBAL_OPTIONS {
@@ -135,7 +137,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
         cdl_option CYGBLD_BUILD_GDB_STUBS {
             display "Build GDB stub ROM image"
             default_value 0
-            requires { CYG_HAL_STARTUP == "ROM" }
+            requires { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMRAM" }
             requires CYGSEM_HAL_ROM_MONITOR
             requires CYGBLD_BUILD_COMMON_GDB_STUBS
             requires CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
@@ -221,7 +223,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
         flavor data
         no_define
         calculated { CYG_HAL_STARTUP == "RAM" ? "arm_xscale_ixdp425_ram" : \
-                                        "arm_xscale_ixdp425_rom" }
+                     CYG_HAL_STARTUP == "ROM" ? "arm_xscale_ixdp425_rom" : \
+					"arm_xscale_ixdp425_romram" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
@@ -229,7 +232,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_xscale_ixdp425_ram.ldi>" : \
-						    "<pkgconf/mlt_arm_xscale_ixdp425_rom.ldi>" }
+                         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_xscale_ixdp425_rom.ldi>" : \
+                                                    "<pkgconf/mlt_arm_xscale_ixdp425_romram.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -238,7 +242,8 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_arm_xscale_ixdp425_ram.h>" : \
-                                                    "<pkgconf/mlt_arm_xscale_ixdp425_rom.h>" }
+                         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_arm_xscale_ixdp425_rom.h>" : \
+                                                    "<pkgconf/mlt_arm_xscale_ixdp425_romram.h>" }
         }
     }
 
@@ -247,7 +252,7 @@ cdl_package CYGPKG_HAL_ARM_XSCALE_IXDP425 {
         flavor        bool
         default_value 0
         parent        CYGPKG_HAL_ROM_MONITOR
-        requires      { CYG_HAL_STARTUP == "ROM" }
+        requires      { CYG_HAL_STARTUP == "ROM" || CYG_HAL_STARTUP == "ROMRAM" }
         description   "
             Enable this option if this program is to be used as a ROM monitor,
             i.e. applications will be loaded into RAM on the board, and this

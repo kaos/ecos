@@ -1,3 +1,21 @@
+2004-09-07  Mark Salter  <msalter@redhat.com>
+
+	* misc/redboot_ROM.ecm (CYGBLD_REDBOOT_MIN_IMAGE_SIZE): Set to 0x80000.
+	* misc/redboot_RAM.ecm: Ditto.
+	* misc/redboot_ROMLE.ecm: Ditto.
+	* misc/redboot_RAMLE.ecm: Ditto.
+	
+	* include/pkgconf/mlt_arm_xscale_ixdp425_ram.mlt: Move .text to 0x80000.
+	* include/pkgconf/mlt_arm_xscale_ixdp425_ram.ldi: Ditto.
+
+	* include/pkgconf/mlt_arm_xscale_ixdp425_romram.h: New file.
+	* include/pkgconf/mlt_arm_xscale_ixdp425_romram.ldi: Ditto.
+	* include/pkgconf/mlt_arm_xscale_ixdp425_romram.mlt: Ditto.
+	* misc/redboot_ROMRAM.ecm: Ditto.
+	* misc/redboot_ROMRAMLE.ecm: 
+
+	* include/hal_platform_setup.h: Support ROMRAM.
+
 2004-09-02  Mark Salter  <msalter@redhat.com>
 
 	* src/ixdp425_pci.c: Fix compilation when not configured for PCI.

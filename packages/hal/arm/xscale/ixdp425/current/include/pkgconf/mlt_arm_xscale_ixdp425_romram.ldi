@@ -12,12 +12,13 @@ MEMORY
 SECTIONS
 {
     SECTIONS_BEGIN
+    SECTION_rom_vectors (ram, 0x00000000, LMA_EQ_VMA)
     SECTION_fixed_vectors (ram, 0x20, LMA_EQ_VMA)
-    SECTION_rom_vectors (ram, 0x80000, LMA_EQ_VMA)
-    SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_text (ram, 0x8000, LMA_EQ_VMA)
     SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_rodata1 (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_got (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fixup (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (ram, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_data (ram, ALIGN (0x4), LMA_EQ_VMA)
