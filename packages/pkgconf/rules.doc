@@ -53,7 +53,7 @@
 #####DESCRIPTIONEND####
 #=============================================================================
 
-.PHONY: default check html pdf clean
+.PHONY: default check html pdf clean copyfiles
 
 # Locations of the stylesheets and other SGML support files. These
 # have moved around in various releases of the tools.
@@ -99,6 +99,14 @@ PNGS :=$(foreach x,$(PICTURES),$(x).png)
 %.eps: %.fig
 	convert -crop 0x0 $< $@
 
+# This is a little grotty. In some cases we want to just copy files from
+# their source location to the destination's current dir and nothing
+# more.
+copyfiles:
+ifneq (,$(COPYFILES))
+	cp $(COPYFILES) .
+endif
+
 default: check
 
 # Validating an sgml document can be achieved with
@@ -108,7 +116,7 @@ check: $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(EPS)
 # Generating HTML from the SGML. In practice multiple .html files may
 # be generated, but for the purposes of dependency analysis the others
 # can be ignored.
-html: $(MAIN_HTML)
+html: copyfiles $(MAIN_HTML)
 
 $(MAIN_HTML): $(MAIN_SGML) $(OTHER_SGML) $(GIFS) $(ECOS_STYLESHEET) $(FIXHTML)
 	jade -t sgml -i html -c $(DSSSL_CATALOG) -d $(ECOS_STYLESHEET)#html $<

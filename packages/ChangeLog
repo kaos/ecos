@@ -1,3 +1,9 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* pkgconf/rules.doc: Allow support for copying files directly from
+	source doc dir to build dir. Primarily intended for copying over
+	pre-built GIFs for the moment.
+
 2003-02-20  Gary Thomas  <gary@mind.be>
 
 	* ecos.db: New platform - NMI uE250 (ARM Xscale PXA250)
