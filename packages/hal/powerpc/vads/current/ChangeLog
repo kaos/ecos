@@ -1,3 +1,10 @@
+2003-03-04  Paul Fine <pfine@delcomsys.com>
+	
+	* cdl/hal_powerpc_vads.cdl: Now that the cache control macros
+	are correct and quicc2 ethernet driver has been fixed with respect
+	to caching operations, allow the cache, and MMU, to be enabled at
+	startup.
+
 2002-12-12  Gary Thomas  <gthomas@ecoscentric.com>
 2002-12-12  Patrick Doyle <wpd@delcomsys.com>
 

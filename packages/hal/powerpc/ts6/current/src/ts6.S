@@ -1476,6 +1476,7 @@ count_done:
    #
    # Use two loops, the outer loop goes from 0 to 0x3ff and counts
    # by 1.  The inner loop goes from 0 to 0xfffc and counts by 4.
+ .globl     memory_test
 memory_test:	
 
    #Turn on Green Led
@@ -1527,6 +1528,14 @@ memwrite_loop2:
    add      r6,r3,r5
    stwx     r6,r5,r3      # Store the value at r6 in the memory addressed
 	                  # by the sum of r3 and r5
+   nop
+   nop
+   nop
+#   lwzx     r10,r5,r3     # Read the value into r10 from the memory addressed
+	                  # by the sum of r3 and r5
+#   cmpw     r6,r10        # compare values to confirm write 
+#   bne      mem_error
+	
    cmpi	    0,0,r5,0
    bne      memwrite_loop2 # branch if r5 != 0
 
@@ -1557,10 +1566,10 @@ memread_loop1:
 memread_loop2:
    addi     r5,r5,-4      # subtract 1 from r5
 	
-   add      r6,r3,r5
-   lwzx     r10,r5,r3     # Read the value into r10 from the memory addressed
+   add      r16,r3,r5
+   lwzx     r20,r5,r3     # Read the value into r20 from the memory addressed
 	                  # by the sum of r3 and r5
-   cmpw     r6,r10        # compare values
+   cmpw     r16,r20        # compare values
    bne      mem_error
 	
    cmpi	    0,0,r5,0

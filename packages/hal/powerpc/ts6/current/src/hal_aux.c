@@ -64,6 +64,36 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/mpc8260.h>            // Needed for IMMR structure
 
+#ifdef CYG_HAL_STARTUP_ROM
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#include <redboot.h>
+// Exported CLI function
+RedBoot_cmd("sdram_test", 
+            "test the sdram", 
+            "",
+            do_sdram_test 
+    );
+
+void
+do_sdram_test(int argc, char *argv[])
+{
+    unsigned long oldints;
+
+    diag_printf("Starting test for SDRAM.\n");
+    diag_printf("D18 will indicate PASS/FAIL (Green/Red).\n");
+    diag_printf("Resetting board will be necessary after test completion.\n");
+    HAL_DISABLE_INTERRUPTS(oldints);
+    memory_test();
+}
+#endif
+#endif
+// For Baud Rate Calculation, see MPC8260 PowerQUICC II User's Manual
+// 16.3 UART Baud Rate Examples, page 16-5.
+#define UART_BIT_RATE(n) \
+    (((int)(CYGHWR_HAL_POWERPC_BOARD_SPEED*1000000))/(n * 64))
+#define UART_BAUD_RATE CYGNUM_HAL_TS6_DIAG_BAUD
+
 // The memory map is weakly defined, allowing the application to redefine
 // it if necessary. The regions defined below are the minimum requirements.
 CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
@@ -86,12 +116,6 @@ CYGARC_MEMDESC_TABLE CYGBLD_ATTRIB_WEAK = {
 //#define USE_SMC1
 
 volatile t_PQ2IMM  *IMM;   /* IMM base pointer */
-
-// Define some space in high SDRAM that I can use for debugging
-#define nPFDEBUG
-#ifdef PFDEBUG
-cyg_uint32 *dbg_values = (cyg_uint32 *) 0x00FFFF00;
-#endif
 
 //--------------------------------------------------------------------------
 // Platform init code.
@@ -159,17 +183,20 @@ hal_platform_init(void)
     IMM->io_regs[PORT_D].podr |= 0x00000800;
     IMM->io_regs[PORT_D].pdat |= 0x09800000;
 
+#ifdef USE_CPM_SPI_CONTROLLER
     // Dedicated Pin assignments for SPI
     IMM->io_regs[PORT_D].ppar |= 0x0000F000;
     IMM->io_regs[PORT_D].podr &= 0xFFFF0FFF;
     IMM->io_regs[PORT_D].pdir |= 0x0000F000;
-
-
-#ifdef PFDEBUG
-  int i;
-  for(i = 0; i < 20;i++)
-    dbg_values[i] = 0;
+#else
+    // The ts6 board does not use the SPI controller provided by the CPM,
+    // instead it is left up to the application to control the SPI.
+    // Therefore, initialize the SPI specific pins as General Purpose I/O
+    // and Bi-directional.
+    IMM->io_regs[PORT_D].ppar &= 0xFFFF0FFF; /* General Purpose I/O */
+    IMM->io_regs[PORT_D].pdir &= 0xFFFF0FFF; /* input or Bi-directional */
 #endif
+
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
     hal_if_init();
 #endif
