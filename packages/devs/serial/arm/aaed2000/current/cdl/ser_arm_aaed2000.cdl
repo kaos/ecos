@@ -62,7 +62,6 @@ cdl_package CYGPKG_IO_SERIAL_ARM_AAED2000 {
     description   "
            This option enables the serial device drivers for the
            Agilent AAED2000."
-    doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   aaed2000_serial.c
 
