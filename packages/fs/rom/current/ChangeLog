@@ -1,3 +1,17 @@
+2004-08-08  Bart Veer  <bartv@ecoscentric.com>
+
+	* cdl/romfs.cdl: generate both little-endian and big-endian image
+	files.
+
+	* tests/fileio1.c: include either a little-endian or a big-endian
+	image. Totally fail the test early on if the file system cannot be
+	mounted.
+
+2004-06-14  John Dallaway  <jld@ecoscentric.com>
+
+	* cdl/romfs.cdl: Specify the test executable file name for
+	compatibility with the eCos Configuration Tool.
+
 2004-02-20  Vincent Catros  <Vincent.Catros@elios-informatique.fr>
 
 	* src/fs-ecos.c :

@@ -66,10 +66,17 @@
 
 #include <cyg/fileio/fileio.h>
 
+#include <cyg/infra/cyg_type.h>
 #include <cyg/infra/testcase.h>
 #include <cyg/infra/diag.h>            // HAL polled output
 
-#include <cyg/romfs/testromfs.h>  // Test ROMFS data
+// Test ROMFS data. Two example data files are generated so that
+// the test will work on both big-endian and little-endian targets.
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
+# include <cyg/romfs/testromfs_le.h>
+#else
+# include <cyg/romfs/testromfs_be.h>
+#endif
 
 //==========================================================================
 
@@ -288,7 +295,10 @@ int main( int argc, char **argv )
 
     diag_printf("<INFO>: cd /etc\n" );
     err = chdir( "/etc" );
-    if ( err < 0 ) SHOW_RESULT( chdir, err );
+    if ( err < 0 ) {
+        SHOW_RESULT( chdir, err );
+        CYG_TEST_FAIL_FINISH("fileio1");
+    }
 
     diag_printf("<INFO>: ROMFS list of '' follows\n");
     listdir( "", true );

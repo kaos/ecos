@@ -68,7 +68,7 @@ cdl_package CYGPKG_FS_ROM {
     # Tests
 
     cdl_component CYGTST_ROMFS_BUILD_TESTS {
-        display       "Build ROMFS tests"
+        display       "Build ROM filesystem tests"
         flavor        bool
         no_define
         default_value 0
@@ -76,7 +76,7 @@ cdl_package CYGPKG_FS_ROM {
         requires      CYGINT_ISO_STDIO_FORMATTED_IO
         requires      CYGINT_ISO_STRERROR
         description   "
-                This option enables the building of the ROMFS tests."
+                This option enables the building of the ROM filesystem tests."
 
         # FIXME: host compiler/flags should be provided by config system
         make -priority 100 {
@@ -86,24 +86,34 @@ cdl_package CYGPKG_FS_ROM {
         }
     
         make -priority 100 {
-            <PREFIX>/include/cyg/romfs/testromfs.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
-            $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs.bin
+            <PREFIX>/include/cyg/romfs/testromfs_le.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
+            $(PREFIX)/bin/mk_romfs $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_le.bin
             @mkdir -p "$(dir $@)"
             # work around cygwin path problems by copying to build dir
             @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl .
-            sh file2c.tcl testromfs.bin testromfs.h
+            sh file2c.tcl testromfs_le.bin testromfs_le.h
             @rm -f $@ file2c.tcl
-            @cp testromfs.h $@
+            @cp testromfs_le.h $@
         }
     
+        make -priority 100 {
+            <PREFIX>/include/cyg/romfs/testromfs_be.h : $(PREFIX)/bin/mk_romfs <PACKAGE>/support/file2c.tcl
+            $(PREFIX)/bin/mk_romfs -b $(REPOSITORY)/$(PACKAGE)/tests/testromfs testromfs_be.bin
+            @mkdir -p "$(dir $@)"
+            # work around cygwin path problems by copying to build dir
+            @cp $(REPOSITORY)/$(PACKAGE)/support/file2c.tcl .
+            sh file2c.tcl testromfs_be.bin testromfs_be.h
+            @rm -f $@ file2c.tcl
+            @cp testromfs_be.h $@
+        }
     
         cdl_option CYGPKG_FS_ROM_TESTS {
-            display "ROM FS tests"
+            display "ROM filesystem tests"
             flavor  data
             no_define
-            calculated { "tests/fileio1.c" }
+            calculated { "tests/fileio1" }
                 description   "
-                    This option specifies the set of tests for the ROM FS package."
+                    This option specifies the set of tests for the ROM filesystem package."
         }
     }
 }
