@@ -104,7 +104,11 @@ volatile struct timeval mono_time;
 int cyg_net_log_mask = CYGPKG_NET_FREEBSD_LOGGING;
 #endif
 
+#ifdef CYGPKG_NET_INET6
+#define STACK_SIZE (CYGNUM_HAL_STACK_SIZE_TYPICAL+2048)
+#else
 #define STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+#endif
 static char netint_stack[STACK_SIZE];
 static cyg_thread netint_thread_data;
 static cyg_handle_t netint_thread_handle;

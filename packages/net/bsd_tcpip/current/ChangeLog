@@ -1,3 +1,8 @@
+2003-06-23  Jay Foster  <jay@systech.com>
+
+	* src/ecos/support.c: Increase the stack size for the background
+	thread when IPv6 is enabled otherwise the stack overflows.
+
 2003-06-09  Nick Garnett  <nickg@balti.calivar.com>
 
 	* src/ecos/synch.c (spl_any): Put call to cyg_mutex_lock() into a
