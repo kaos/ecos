@@ -1790,8 +1790,7 @@ CdlConfigurationBody::savefile_package_command(CdlInterpreter interp, int argc, 
     int data_index = CdlParse::parse_options(interp, "cdl_configuration/package command", optlist, argc, argv, 1, options);
 
     if (data_index == (argc - 1)) {
-        CdlParse::report_warning(interp, "", std::string("Missing version information for package `")
-                                 + argv[argc - 1] + "'.");
+        // If no version is specified, silently default to the most recent.
         pkgname = argv[argc - 1];
         pkgversion = "";
     } else if (data_index == (argc - 2)) {

@@ -1,3 +1,10 @@
+2003-08-19  Bart Veer  <bartv@ecoscentric.com>
+
+	* config.cxx (savefile_package_command):
+	If no version is specified, silently default to the most recent.
+	That can avoid problems with templates specifying particular versions
+	and then providing an update epk.
+
 2003-05-01  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* doc/package.sgml: Use PNGs instead of GIFs.
