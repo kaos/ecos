@@ -1,3 +1,8 @@
+2003-07-28  Jay Foster  <jay@systech.com>
+
+	* src/sys/kern/sockio.c:
+	Fixed memory leak in accept() call.
+
 2003-07-24  Nick Garnett  <nickg@balti.calivar.com>
 
 	* include/netinet/in.h:

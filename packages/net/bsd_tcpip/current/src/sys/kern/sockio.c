@@ -445,8 +445,10 @@ done:
     m_freem(nam);
 #else
  done:
-#endif
     splx(s);
+    if (sa)
+        FREE(sa, M_SONAME);
+#endif
     
     return (error);
 }
