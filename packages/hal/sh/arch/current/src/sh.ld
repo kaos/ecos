@@ -203,6 +203,13 @@ GROUP(libtarget.a libgcc.a)
       CYG_LABEL_DEFN(_bss_end) = ABSOLUTE (.); }	\
     > _region_
 
+# define SECTION_entry(_region_, _vma_, _lma_)		\
+  .entry _vma_ : _lma_					\
+  { 							\
+	KEEP(*(.entry))					\
+  }							\
+  > _region_
+
 #define SECTIONS_END . = ALIGN(4); CYG_LABEL_DEFN(end) = .; PROVIDE (end = .);
 
 #include <pkgconf/system.h>

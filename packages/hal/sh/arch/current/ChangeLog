@@ -1,3 +1,8 @@
+2004-04-30  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/sh.ld: Add entry section for targets, like Dreamcast, that
+	need special entry code.
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_sh.cdl :
