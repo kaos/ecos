@@ -134,6 +134,8 @@
 #define DCR_CPC0_CR0         0xB1
 #define DCR_CPC0_CR1         0xB2
 #define DCR_CPC0_ECR         0xAA
+#define DCR_CPC0_ECID0       0xA8     // 64 bit unique chip serial number
+#define DCR_CPC0_ECID1       0xA9     // 64 bit unique chip serial number
 
 // External bus controller (indirect via EBC0_CFGADDR/EBC0_CFGDATA)
 #define DCR_EBC0_B0CR        0x00

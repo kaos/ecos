@@ -1,3 +1,7 @@
+2003-10-02  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/var_regs.h: Add CPU serial number registers (405 only)
+
 2003-09-26  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/ppc405_pci.c: IRQ mapping now defined by platform.
