@@ -11,7 +11,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2004 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -471,7 +471,7 @@ flash_program_buf(void* addr, void* data, int len)
                 rem_sect_size /= sizeof (flash_data_t);
             }
 
-            // Computer word count to write                
+            // Compute word count to write                
             nwords = flash_dev_info->bufsiz
                 - (((CYG_ADDRWORD) addr_v & mask) / sizeof (flash_data_t));
             if (nwords > len)
@@ -481,7 +481,7 @@ flash_program_buf(void* addr, void* data, int len)
             *f_s1 = FLASH_Setup_Code1;
             *f_s2 = FLASH_Setup_Code2;
             *SECT = FLASH_Load_Buffer;
-            *SECT = nwords - 1;
+            *SECT = FLASHWORD(nwords - 1);  // All devices need to see this
 
             // Load data into write buffer, flush buffer
             for(i = 0; i < nwords; i++)

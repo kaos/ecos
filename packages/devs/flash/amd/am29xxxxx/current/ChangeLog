@@ -1,3 +1,8 @@
+2004-04-06  Gary Thomas  <gary@mlbassoc.com>
+
+	* include/flash_am29xxxxx.inl (flash_program_buf): Buffered program
+	writes failed when configured for parallel devices.
+
 2003-10-21  Jay Foster   <jay@systech.com>
 
 	* include/flash_am29xxxxx_parts.inl (CYGHWR_DEVS_FLASH_AMD_AM29LV033C):
