@@ -6,6 +6,7 @@
 #   cd emptydir
 #   make -f /path/to/this/makefile WXDIR=/path/to/wx/installation ECOSSRCDIR=/path/to/ecos/tools/src OSTYPE=$OSTYPE
 
+TCLDIR=/usr
 WXDIR=WXDIR_not_defined
 ECOSSRCDIR=ECOSSRCDIR_not_defined
 
@@ -16,12 +17,13 @@ LEVEL=release
 USEEXPERIMENTALCODE=1
 
 EXTRACPPFLAGS=\
+  -I$(TCLDIR)/include \
   -I$(INSTALLDIR)/include \
   -I$(ECOSSRCDIR)/tools/configtool/common/common \
   -I$(ECOSSRCDIR)/tools/Utils/common \
   -I$(ECOSSRCDIR)/tools/ecostest/common \
   -DecUSE_EXPERIMENTAL_CODE=$(USEEXPERIMENTALCODE)
-EXTRALDFLAGS=-L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
+EXTRALDFLAGS=-L$(TCLDIR)/lib -L$(INSTALLDIR)/lib -lcdl -lcyginfra -ltcl
 
 ifeq "$(OSTYPE)" "cygwin"
   PROGRAM=configtool.exe

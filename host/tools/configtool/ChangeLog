@@ -1,3 +1,8 @@
+2003-02-21  John Dallaway  <jld@ecoscentric.com>
+
+	* standalone/wxwin/makefile.gnu: Allow a specific installation of Tcl/Tk
+	to be referenced using "make TCLDIR=/path/to/tcl".
+
 2003-02-19  John Dallaway  <jld@ecoscentric.com>
 
 	* standalone/wxwin/platformeditordlg.cpp:
