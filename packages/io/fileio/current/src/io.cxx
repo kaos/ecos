@@ -143,7 +143,12 @@ readwritev( int fd, const cyg_iovec *_iov, int iov_len, int direction )
     CYG_CANCELLATION_POINT;
 
     if( ret != 0 )
-        FILEIO_RETURN(ret);
+    {
+        if ((ret == EWOULDBLOCK || ret == EAGAIN) && cnt)
+            FILEIO_RETURN_VALUE(cnt);
+        else
+            FILEIO_RETURN(ret);
+    }
  
     FILEIO_RETURN_VALUE(cnt);
 }
