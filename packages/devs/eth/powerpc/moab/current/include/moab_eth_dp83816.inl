@@ -121,7 +121,7 @@ static dp83816_priv_data_t dp83816_eth1_priv_data = {
 
 ETH_DRV_SC(dp83816_sc,
            &dp83816_eth1_priv_data, // Driver specific data
-           CYGDAT_DEVS_ETH_MOAB_ETH1_NAME,
+           "eth1",
            dp83816_start,
            dp83816_stop,
            dp83816_control,
@@ -133,7 +133,7 @@ ETH_DRV_SC(dp83816_sc,
            dp83816_int_vector);
 
 NETDEVTAB_ENTRY(dp83816_netdev, 
-                CYGDAT_DEVS_ETH_MOAB_ETH1_NAME,
+                "eth1",
                 dp83816_init, 
                 &dp83816_sc);
 

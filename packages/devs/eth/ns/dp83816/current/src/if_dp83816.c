@@ -98,46 +98,18 @@ dp83816_deliver(struct eth_drv_sc *sc)
 #endif
 }
 
-static bool 
-dp83816_init(struct cyg_netdevtab_entry *tab)
+static bool
+dp83816_reset(dp83816_priv_data_t *dp)
 {
-    struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
-    dp83816_priv_data_t *dp = (dp83816_priv_data_t *)sc->driver_private;
-    cyg_uint8 *base;
-    cyg_uint32 stat;
-    dp83816_bd_t *bdp;
     unsigned char *bp;
+    dp83816_bd_t *bdp;
+    cyg_uint32 stat;
     int i, timeout;
-    bool esa_ok;
-    unsigned char enaddr[6];
 
-    // Get physical device address
-#ifdef CYGPKG_REDBOOT
-#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
-    esa_ok = flash_get_config(dp->esa_key, enaddr, CONFIG_ESA);
-#else
-    esa_ok = false;
-#endif
-#else
-    esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
-                                         dp->esa_key, enaddr, CONFIG_ESA);
-#endif
-    if (!esa_ok) {
-        // Can't figure out ESA
-        diag_printf("DP83816 - Warning! ESA unknown\n");
-        memcpy(&enaddr, dp->enaddr, sizeof(enaddr));
-    }
-
-    DEBUG_FUNCTION();
-
-    CYGHWR_NS_DP83816_PLF_INIT(dp);
-    base = dp->base;
-    if (!base) return false;  // No device found
-
-    DP_OUT(base, DP_CR, _CR_RST);  // Reset device
+    DP_OUT(dp->base, DP_CR, _CR_RST);  // Reset device
     timeout = 10000;
     do {
-        DP_IN(base, DP_CR, stat);
+        DP_IN(dp->base, DP_CR, stat);
     } while (((stat & _CR_RST) != 0) && (--timeout > 0));
     if (timeout == 0) {
         diag_printf("DP83816 - reset timed out! - stat: %x\n", stat);
@@ -152,7 +124,7 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
         bdp->buf = (unsigned char *)_h2le(CYGARC_PHYSICAL_ADDRESS(bp));
         bp += _DP83816_BUFSIZE;
     }
-    bdp--;  bdp->next = (dp83816_bd_t *)0;
+    bdp--;  bdp->next = (dp83816_bd_t *)_h2le(CYGARC_PHYSICAL_ADDRESS(dp->rxd));
     DP_OUT(dp->base, DP_RXCFG, _RXCFG_MXDMA_128 | ((64/32)<<_RXCFG_DRTH_SHIFT));
     DP_OUT(dp->base, DP_RXDP, CYGARC_PHYSICAL_ADDRESS(dp->rxd));
     // Tx ring
@@ -164,7 +136,7 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
         bdp->buf = (unsigned char *)_h2le(CYGARC_PHYSICAL_ADDRESS(bp));
         bp += _DP83816_BUFSIZE;
     }
-    bdp--;  bdp->next = (dp83816_bd_t *)0;
+    bdp--;  bdp->next = (dp83816_bd_t *)_h2le(CYGARC_PHYSICAL_ADDRESS(dp->txd));
     DP_OUT(dp->base, DP_TXCFG, _TXCFG_ATP |
                                _TXCFG_MXDMA_128 |
                                ((256/32)<<_TXCFG_FLTH_SHIFT) |
@@ -174,13 +146,52 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
     // Fill in ESA
     for (i = 0;  i < 6;  i+=2) {
         DP_OUT(dp->base, DP_RFCR, i);
-        DP_OUT(dp->base, DP_RFDR, enaddr[i] | (enaddr[i+1]<<8));
+        DP_OUT(dp->base, DP_RFDR, dp->enaddr[i] | (dp->enaddr[i+1]<<8));
     }
     // Setup up acceptance criteria
     DP_OUT(dp->base, DP_RFCR, _RFCR_RFEN | _RFCR_AAB | _RFCR_APM);
     // Set up interrupts
     DP_IN(dp->base, DP_ISR, stat);  // Clear any current interrupts
     DP_OUT(dp->base, DP_IMR, 0xFFFFFFFF);  // Enable them all!
+    DP_OUT(dp->base, DP_IER, 1);
+    return true;
+}
+
+static bool 
+dp83816_init(struct cyg_netdevtab_entry *tab)
+{
+    struct eth_drv_sc *sc = (struct eth_drv_sc *)tab->device_instance;
+    dp83816_priv_data_t *dp = (dp83816_priv_data_t *)sc->driver_private;
+    cyg_uint8 *base;
+    bool esa_ok;
+    unsigned char enaddr[6];
+
+    // Get physical device address
+#ifdef CYGPKG_REDBOOT
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+    esa_ok = flash_get_config(dp->esa_key, enaddr, CONFIG_ESA);
+#else
+    esa_ok = false;
+#endif
+#else
+    esa_ok = CYGACC_CALL_IF_FLASH_CFG_OP(CYGNUM_CALL_IF_FLASH_CFG_GET,         
+                                         dp->esa_key, enaddr, CONFIG_ESA);
+#endif
+    if (esa_ok) {
+        memcpy(dp->enaddr, enaddr, sizeof(enaddr));
+    } else {
+        // Can't figure out ESA
+        diag_printf("DP83816 - Warning! ESA unknown\n");
+    }
+
+    DEBUG_FUNCTION();
+
+    CYGHWR_NS_DP83816_PLF_INIT(dp);
+    base = dp->base;
+    if (!base) return false;  // No device found
+
+    if (!dp83816_reset(dp)) return false;
+
     diag_printf("DP83816 - ESA: %02x:%02x:%02x:%02x:%02x:%02x\n",
                 dp->enaddr[0], dp->enaddr[1], dp->enaddr[2],
                 dp->enaddr[3], dp->enaddr[4], dp->enaddr[5] );
@@ -197,11 +208,10 @@ dp83816_init(struct cyg_netdevtab_entry *tab)
 
     cyg_drv_interrupt_attach(dp->interrupt_handle);
     cyg_drv_interrupt_unmask(dp->interrupt);
-    DP_OUT(dp->base, DP_IER, 1);
 #endif
 
     // Initialize upper level driver
-    (sc->funs->eth_drv->init)(sc, enaddr);
+    (sc->funs->eth_drv->init)(sc, dp->enaddr);
 
     return true;
 }
@@ -281,13 +291,9 @@ dp83816_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
         data += sg_list[i].len;
     }
     bdp->key = key;
-    bdp->stat = _h2le(total_len | BD_OWN | BD_INTR);
+    bdp->stat = _h2le(len | BD_OWN | BD_INTR);
     dp->txbusy++;
-    if (bdp->next == (dp83816_bd_t *)0) {
-        bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
-    } else {
-        bdp++;
-    }
+    bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->next)));
     dp->txfill = bdp;
     // Kick the device, in case it went idle
     DP_OUT(dp->base, DP_CR, _CR_TXE);
@@ -304,12 +310,9 @@ dp83816_TxEvent(struct eth_drv_sc *sc)
         // Tell higher level we sent this packet
         (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
         bdp->stat = 0;  // retake buffer
+        bdp->key = 0;
         dp->txbusy--;
-        if (bdp->next == (dp83816_bd_t *)0) {
-            bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
-        } else {
-            bdp++;
-        }
+        bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->next)));
     }
     dp->txint = bdp;
 }
@@ -326,6 +329,7 @@ dp83816_RxEvent(struct eth_drv_sc *sc)
 {
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
     dp83816_bd_t *bdp = CYGARC_UNCACHED_ADDRESS(dp->rxd);
+    dp83816_bd_t *bdfirst = CYGARC_UNCACHED_ADDRESS(dp->rxd);
     int len;
 
     DEBUG_FUNCTION();
@@ -337,10 +341,9 @@ dp83816_RxEvent(struct eth_drv_sc *sc)
             (sc->funs->eth_drv->recv)(sc, len);
             bdp->stat = _h2le(BD_INTR | _DP83816_BUFSIZE);  // Give back buffer
         }
-        if (bdp->next == (dp83816_bd_t *)0) {
+        bdp = (dp83816_bd_t *)CYGARC_UNCACHED_ADDRESS(CYGARC_VIRTUAL_ADDRESS(_le2h((unsigned long)bdp->next)));
+        if (bdp == bdfirst) {
             break;
-        } else {
-            bdp++;
         }
     }
 }
@@ -371,7 +374,9 @@ static void
 dp83816_poll(struct eth_drv_sc *sc)
 {
     struct dp83816_priv_data *dp = (struct dp83816_priv_data *)sc->driver_private;
-    unsigned long stat;
+    unsigned long stat, cr_stat;
+    dp83816_bd_t *bdp;
+    int i;
 
     DP_IN(dp->base, DP_ISR, stat);
     do {
@@ -381,8 +386,34 @@ dp83816_poll(struct eth_drv_sc *sc)
         if ((stat & (_ISR_RXDESC|_ISR_RXOK)) != 0) {
             dp83816_RxEvent(sc);
         }
-        if ((stat & (_ISR_HIBERR|_ISR_TXURN|_ISR_RXORN)) != 0) {
-            diag_printf("DP83816 - major error: %x\n", stat);
+        if ((stat & (_ISR_HIBERR|_ISR_TXURN|_ISR_RXORN)) != 0) {            
+            diag_printf("DP83816 - major error: %x", stat);
+            DP_IN(dp->base, DP_CR, stat);
+            diag_printf(", cmd: %x\n", stat);
+            // Try to reset the device
+            bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
+            for (i = 0; i < dp->txnum; i++, bdp++) {
+                if (bdp->key) {
+                    (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
+                }
+            }
+            dp83816_reset(dp);
+            DP_OUT(dp->base, DP_CR, _CR_RXE | _CR_TXE);
+        }
+        DP_IN(dp->base, DP_CR, cr_stat);
+        if (((cr_stat & _CR_RXE) == 0) ||
+            ((dp->txbusy > 1) && ((cr_stat & _CR_TXE) == 0))) {
+            // What happened?
+            diag_printf("DP83816 went to lunch? - stat: %x, txbusy: %x\n", cr_stat, dp->txbusy);
+            // Try to reset the device
+            bdp = CYGARC_UNCACHED_ADDRESS(dp->txd);
+            for (i = 0; i < dp->txnum; i++, bdp++) {
+                if (bdp->key) {
+                    (sc->funs->eth_drv->tx_done)(sc, bdp->key, 0);
+                }
+            }
+            dp83816_reset(dp);
+            DP_OUT(dp->base, DP_CR, _CR_RXE | _CR_TXE);
         }
         DP_IN(dp->base, DP_ISR, stat);
     } while (stat != 0);
