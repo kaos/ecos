@@ -1,3 +1,8 @@
+2002-08-20  Thomas Koeller  <thomas@koeller.dyndns.org>
+ 
+     	* cdl/redboot.cdl:
+ 	* include/fis.h: Allow control of FIS descriptor padding.
+
 2002-08-16  Jani Monoses  <jani@iv.ro>
 
 	* src/io.c: Do not add empty lines to command history.

@@ -43,7 +43,7 @@
 #
 # Author(s):      gthomas
 # Original data:  gthomas
-# Contributors:   Philippe Robin, Andrew Lunn
+# Contributors:   Philippe Robin, Andrew Lunn, tkoeller
 # Date:           2000-05-01
 #
 #####DESCRIPTIONEND####
@@ -558,6 +558,17 @@ cdl_package CYGPKG_REDBOOT {
                   flash to be recognized as a reserved area for RedBoot
                   by an ARM BootRom monitor."
             }
+
+	    cdl_option CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE {
+                display         "Size of FIS directory entry"
+		flavor	    	data
+                default_value   256
+                description "
+                  The FIS directory is limited to one single flash
+		  sector. If your flash has tiny sectors, you may wish
+		  to reduce this value in order to get more slots in
+		  the FIS directory."
+ 	    }
         }
 
         cdl_component CYGSEM_REDBOOT_FLASH_CONFIG {

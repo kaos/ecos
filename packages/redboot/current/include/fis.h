@@ -43,7 +43,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
+// Contributors: gthomas, tkoeller
 // Date:         2000-07-28
 // Purpose:      
 // Description:  
@@ -54,6 +54,13 @@
 //
 //==========================================================================
 
+#include <pkgconf/redboot.h>
+#ifdef CYGOPT_REDBOOT_FIS
+#include <cyg/infra/cyg_type.h>
+
+#define FIS_IMAGE_DESC_SIZE_UNPADDED \
+  (16 + 4 * sizeof(unsigned long) + 3 * sizeof(CYG_ADDRESS))
+
 struct fis_image_desc {
     unsigned char name[16];      // Null terminated name
     CYG_ADDRESS   flash_base;    // Address within FLASH of image
@@ -61,11 +68,12 @@ struct fis_image_desc {
     unsigned long size;          // Length of image
     CYG_ADDRESS   entry_point;   // Execution entry point
     unsigned long data_length;   // Length of actual data
-    unsigned char _pad[256-(16+4*sizeof(unsigned long)+3*sizeof(CYG_ADDRESS))];
+    unsigned char _pad[CYGNUM_REDBOOT_FIS_DIRECTORY_ENTRY_SIZE-FIS_IMAGE_DESC_SIZE_UNPADDED];
     unsigned long desc_cksum;    // Checksum over image descriptor
     unsigned long file_cksum;    // Checksum over image data
 };
 
 struct fis_image_desc *fis_lookup(char *name, int *num);
 
+#endif // CYGOPT_REDBOOT_FIS
 #endif // _FIS_H_
