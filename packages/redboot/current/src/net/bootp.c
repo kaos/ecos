@@ -213,6 +213,7 @@ __bootp_find_local_ip(bootp_header_t *info)
         p = b.bp_vend;
         switch (dhcpState) {
         case DHCP_NONE:
+        case DHCP_DISCOVER:
             AddOption(p,dhcpCookie);
             AddOption(p,dhcpDiscover);
             AddOption(p,dhcpParamRequestList);
@@ -220,6 +221,7 @@ __bootp_find_local_ip(bootp_header_t *info)
             dhcpState = DHCP_DISCOVER;
             break;
         case DHCP_OFFER:
+        case DHCP_REQUEST:
             retry = MAX_RETRIES;
             AddOption(p,dhcpCookie);
             AddOption(p,dhcpRequest);
@@ -231,8 +233,6 @@ __bootp_find_local_ip(bootp_header_t *info)
             memset(&b.bp_yiaddr, 0xFF, 4);
             memset(&b.bp_siaddr, 0xFF, 4);
             break;
-        case DHCP_DISCOVER:
-        case DHCP_REQUEST:
         case DHCP_ACK:
             // These states should never occur here!
             diag_printf("Invalid DHCP state: %d\n", dhcpState);
