@@ -75,6 +75,14 @@
 
 #define CYGPKG_HAL_MIPS_TX3904
 
+/* -------------------------------------------------------------------
+ * Characterize the CPU so that the generic architecture part can
+ * configure itself.
+ */
+
+#undef  CYGHWR_HAL_MIPS_FPU             /* We have no FPU                  */
+#define CYGPKG_HAL_MIPS_MSBFIRST        /* Big-endian CPU                  */
+
 /* -------------------------------------------------------------------*/
 /* Workaround for TX3904 Timer TRR register problem                   */
 /*                                                                    */

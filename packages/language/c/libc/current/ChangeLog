@@ -1,3 +1,18 @@
+1999-10-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* include/libc.h: Add CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM to allow
+	the user to supply their own stack.
+	Rename CYGNUM_LIBC_MAIN_STACK_SIZE to
+	CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE and reparent under
+	CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
+	Add CYGNUM_LIBC_MAIN_THREAD_PRIORITY to provide main() thread
+	priority
+	
+	* src/support/mainthread.cxx: Add support for user-supplied stack
+	Allow user to specify thread priority
+
+	These changes fix CR 101069
+
 1999-10-01  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* include/pkgconf/libc.h (CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE): Change

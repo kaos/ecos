@@ -30,7 +30,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):     dsm
-// Contributors:    dsm, nickg
+// Contributors:  dsm, nickg
 // Date:          1998-06-18
 //####DESCRIPTIONEND####
 */
@@ -51,11 +51,12 @@
 // -------------------------------------------------------------------------
 // If the HAL does not supply this, we supply our own version
 
-#ifdef HAL_DCACHE_SYNC
+#ifndef HAL_DCACHE_PURGE_ALL
+# ifdef HAL_DCACHE_SYNC
 
-# define HAL_DCACHE_PURGE_ALL() HAL_DCACHE_SYNC()
+#define HAL_DCACHE_PURGE_ALL() HAL_DCACHE_SYNC()
 
-#else
+# else
 
 static cyg_uint8 dca[HAL_DCACHE_SIZE + HAL_DCACHE_LINE_SIZE*2];
 
@@ -70,6 +71,7 @@ CYG_MACRO_START                                                         \
     }                                                                   \
 CYG_MACRO_END
 
+# endif
 #endif
 
 // -------------------------------------------------------------------------
@@ -82,13 +84,11 @@ static cyg_handle_t thread[NTHREADS];
 static cyg_thread thread_obj[NTHREADS];
 static char stack[NTHREADS][STACKSIZE];
 
-#define MAXSIZE 1<<18
-
-volatile char m[MAXSIZE];
-
 #ifndef MAX_STRIDE
 #define MAX_STRIDE 64
 #endif
+
+volatile char m[(HAL_DCACHE_SIZE/HAL_DCACHE_LINE_SIZE)*MAX_STRIDE+1];
 
 // -------------------------------------------------------------------------
 

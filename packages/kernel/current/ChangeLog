@@ -1,3 +1,8 @@
+
+1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* tests/kcache1.c: Reduced memory footprint.
+
 1999-09-25  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* tests/stress_threads.c: Added date header and flush() calls.

@@ -278,9 +278,9 @@ void hal_hardware_init(void)
                      ICTL_ICR1_CH8_HL_AL);
     HAL_WRITE_UINT32(CYG_DEVICE_ICTL_ICLR, 0xFFFF);  // CLear all interrupts
     HAL_WRITE_UINT32(CYG_DEVICE_ICTL_IRQER, 0x0000);  // All disabled
-    // Clear and initialize instruction cache
-    HAL_ICACHE_INVALIDATE_ALL();
-    HAL_ICACHE_ENABLE();
+    // Clear and initialize cache
+    HAL_UCACHE_INVALIDATE_ALL();
+    HAL_UCACHE_ENABLE();
 }
 
 //

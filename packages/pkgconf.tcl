@@ -1312,10 +1312,6 @@ According to the packages file this package is not hardware-specific."
 	    continue
 	}
 
-	if { $pkgconf::target_data($target,prefix) == "" } {
-	    fatal_error "The targets file $filename does not list a command prefix for the $target architecture."
-	}
-
 	foreach platform $pkgconf::target_data($target,known_platforms) {
 	    if { [llength $pkgconf::target_data($target,$platform,startup)] == 0 } {
 		fatal_error \
@@ -5488,7 +5484,10 @@ proc pkgconf::produce_misc_files { } {
 	} else {
 	    set command_prefix $pkgconf::target_data($pkgconf::config_data(target),prefix)
 	}
-
+	if {"" != $command_prefix} {
+	    set command_prefix "${command_prefix}-"
+	}
+	
 	puts $file ""
 	puts $file "COMPONENT_REPOSITORY\t\t:= [get_pathname_for_make $pkgconf::component_repository]"
 	puts $file "BUILD_TREE\t\t\t:= [get_pathname_for_make $pkgconf::build_tree]"
@@ -5511,11 +5510,11 @@ proc pkgconf::produce_misc_files { } {
 	    puts $file "EXEEXT\t\t\t\t:= .exe"
 	}
 	puts $file ""
-	puts $file "PKGCONF_CC\t\t\t:= $command_prefix-gcc"
-	puts $file "PKGCONF_CXX\t\t\t:= $command_prefix-gcc"
-	puts $file "PKGCONF_AR\t\t\t:= $command_prefix-ar"
-	puts $file "PKGCONF_LD\t\t\t:= $command_prefix-ld"
-	puts $file "PKGCONF_OBJCOPY\t\t\t:= $command_prefix-objcopy"
+	puts $file "PKGCONF_CC\t\t\t:= ${command_prefix}gcc"
+	puts $file "PKGCONF_CXX\t\t\t:= ${command_prefix}gcc"
+	puts $file "PKGCONF_AR\t\t\t:= ${command_prefix}ar"
+	puts $file "PKGCONF_LD\t\t\t:= ${command_prefix}ld"
+	puts $file "PKGCONF_OBJCOPY\t\t\t:= ${command_prefix}objcopy"
 	puts $file ""
 
 	foreach flag $pkgconf::known_compiler_flags {

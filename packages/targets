@@ -248,6 +248,23 @@ target arm {
             LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
         }
     }
+    platform aebC {
+        alias		{ "ARM Eval Board (AEB) rev C" }
+	startup		{ ram rom stubs }
+	packages	{
+	    CYGPKG_HAL_ARM_AEB
+	}
+	base_platform	aeb
+        cflags {
+            ARCHFLAGS        "-mcpu=arm7di"
+            ERRFLAGS         "-Wall -Wpointer-arith -Wstrict-prototypes -Winline -Wundef"
+            CXXERRFLAGS      "-Woverloaded-virtual"
+            DBGFLAGS         "-g -O2"
+            LANGFLAGS        "-ffunction-sections -fdata-sections"
+            CXXLANGFLAGS     "-fno-rtti -fno-exceptions -fvtable-gc -finit-priority"
+            LDLANGFLAGS      "-Wl,--gc-sections -Wl,-static"
+        }
+    }
     platform cl7111 {
         alias		{ "Cirrus Logic Eval Board (CL7111)" }
 	startup		{ ram rom stubs }

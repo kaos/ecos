@@ -69,9 +69,21 @@ void hal_diag_write_char(char __c)
     }
 }
 
+// Hmm... we need the definition of EINTR, which normally lives in
+// <asm/errno.h> on linux. But we can't get at that here, so we just
+// hard-code it. The burden of binary compatibility means x86 linux will
+// never change it.
+#define x86_linux_EINTR 4
+
 void hal_diag_read_char(char *c)
 {
-    cyg_hal_sys_read(0, c, 1);
+    int rc;
+
+    // The read syscall will get woken up by the itimer alarm, but we don't
+    // want to stop reading if that's the case
+    do {
+        rc = cyg_hal_sys_read(0, c, 1);
+    } while (-x86_linux_EINTR == rc);
 }
 
 //-----------------------------------------------------------------------------

@@ -1,3 +1,12 @@
+1999-10-06  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/PKGconf.mak: Don't create extras.o here any more
+
+1999-10-05  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* include/pkgconf/hal_mips_tx39.h: Added define of
+	CYGPKG_HAL_MIPS_MSBFIRST.
+
 1999-09-17  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* src/hal_diag.c: Only avoid SERIAL0 if CYG_HAL_USE_ROM_MONITOR_CYGMON

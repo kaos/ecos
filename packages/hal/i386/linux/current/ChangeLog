@@ -1,3 +1,12 @@
+1999-10-05  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* src/linux_misc.c: Fix some really minor spelling typos
+
+	* src/hal_diag.c (hal_diag_read_char): Check if we were woken up by
+	the itimer alarm (which is used for rescheduling) - in which case
+	just read again.
+	
+
 1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/pkgconf/hal_i386_linux.h: Changed to use REAL TIME as

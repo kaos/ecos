@@ -36,6 +36,7 @@
 **** ARM:
      ARM720  - Cirrus Logic CL7211 board
      ARM710C - Cirrus Logic CL7111 board
+     Sharp LH77790 (ARM7DI core) - ARM AEB-1 rev C board
 
 **** PowerPC
      Motorola MBX PowerPC Evaluation Board
@@ -83,5 +84,9 @@
 ** ISO C library
 
 ** HAL changes
+
+*** i386/linux
+	The eCos idle loop will not load the host system anymore
+	(except in special configurations, see linux_misc.c).
 
 *** Common

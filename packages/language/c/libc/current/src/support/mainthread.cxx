@@ -93,29 +93,40 @@ static cyg_libc_dummy_constructor_class cyg_libc_dummy_constructor_obj
                                             CYG_INIT_PRIORITY(PREDEFAULT);
 #endif
 
+#ifdef CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
+
 // override stack size on some platforms
 #ifdef CYGNUM_HAL_STACK_SIZE_TYPICAL
-# if CYGNUM_LIBC_MAIN_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_TYPICAL
-#  undef CYGNUM_LIBC_MAIN_STACK_SIZE
-#  define CYGNUM_LIBC_MAIN_STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
+# if CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE < CYGNUM_HAL_STACK_SIZE_TYPICAL
+#  undef CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE
+#  define CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE CYGNUM_HAL_STACK_SIZE_TYPICAL
 # endif
 #endif
 
-// Make this weak so that users can override this from their own code
-// if they really want. FIXME: but its still allocated
-cyg_uint8 cyg_libc_main_stack[ CYGNUM_LIBC_MAIN_STACK_SIZE ]
-                                                        CYGBLD_ATTRIB_WEAK;
+static cyg_uint8 cyg_libc_main_stack[ CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE ];
+
+#else // !ifdef CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
+
+extern char *cyg_libc_main_stack;
+extern int cyg_libc_main_stack_size;
+
+#endif // !ifdef CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
 
 // GLOBALS
 
 // let the main thread be global so people can play with it (e.g. suspend
 // or resume etc.) if that's what they want to do
-Cyg_Thread cyg_libc_main_thread CYGBLD_ATTRIB_WEAK CYG_INIT_PRIORITY(LIBC) =
-     Cyg_Thread(CYG_SCHED_DEFAULT_INFO,
+Cyg_Thread cyg_libc_main_thread CYGBLD_ATTRIB_INIT_PRI(CYG_INIT_LIBC) =
+    Cyg_Thread(CYGNUM_LIBC_MAIN_THREAD_PRIORITY,
                 &cyg_libc_invoke_main, (CYG_ADDRWORD) 0,
                 "main",
-                (CYG_ADDRESS) &cyg_libc_main_stack,
-                CYGNUM_LIBC_MAIN_STACK_SIZE);
+                (CYG_ADDRESS) &cyg_libc_main_stack[0],
+#ifdef CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
+                CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE
+#else
+                cyg_libc_main_stack_size
+#endif
+              );
 
 #endif // ifdef CYGSEM_LIBC_STARTUP_MAIN_THREAD
 

@@ -46,9 +46,12 @@
 //-----------------------------------------------------------------------------
 // Characterize the architecture
 
-#if 0
+#if defined(CYGPKG_HAL_MIPS_MSBFIRST)
+# define CYG_BYTEORDER           CYG_MSBFIRST    // Little endian
+#elif defined(CYGPKG_HAL_MIPS_LSBFIRST)
+# define CYG_BYTEORDER           CYG_LSBFIRST    // Big endian
 #else
-# define CYG_BYTEORDER           CYG_MSBFIRST    // Big endian
+# error MIPS endianess not defined by configuration
 #endif
 
 //-----------------------------------------------------------------------------

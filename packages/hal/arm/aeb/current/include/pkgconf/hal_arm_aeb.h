@@ -82,6 +82,13 @@
 #define CYGNUM_HAL_RTC_DENOMINATOR   100
 #define CYGNUM_HAL_RTC_PERIOD        (240000/16)
 
+// Board revision
+#ifdef CYG_HAL_ARM_AEBC
+#define CYGHWR_HAL_ARM_AEB_REVISION_C
+#else
+#define CYGHWR_HAL_ARM_AEB_REVISION_B
+#endif
+
 /* -------------------------------------------------------------------*/
 #endif  /* CYGONCE_PKGCONF_HAL_ARM_AEB_H */
 /* EOF hal_arm_aeb.h */

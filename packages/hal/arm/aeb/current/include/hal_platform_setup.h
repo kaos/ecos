@@ -43,14 +43,33 @@
 //
 //===========================================================================*/
 
+// From <cyg/hal/hal_cache.h> Need to make that file assembly safe.
+#define CYG_DEVICE_CCR          0xFFFFA400
+#define CCR_I                   0x08      // Invalidate mode
+
 #if CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE==4096
 // Override default to a more sensible value
 #undef  CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE
 #define CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE 2048
 #endif
 
+#ifdef CYGHWR_HAL_ARM_AEB_REVISION_C
+// AEB rev C has 256kB of memory. Cache is working (set cachable)
+#define AEB_SRAM .long	0xFFFFA008,0x00008000,0x00048000,0x00007c04
+#define AEB_BAD  .long	0xFFFFA00C,0x00048000,0x01000000,0x00000000
+#else
+// AEB rev B has 128kB of memory. Cache is broken (clear cachable)
+#define AEB_SRAM .long	0xFFFFA008,0x00008000,0x00028000,0x00007804
+#define AEB_BAD  .long	0xFFFFA00C,0x00028000,0x01000000,0x00000000
+#endif
+
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 #define PLATFORM_SETUP1                                                       \
+        ldr     r1,=CYG_DEVICE_CCR                                           ;\
+        mov     r2,#CCR_I                                                    ;\
+        strb    r2,[r1,#0]      /* invalidate... */                          ;\
+        mov     r2,#0                                                        ;\
+        strb    r2,[r1,#0]      /* and disable the cache. */                 ;\
 	ldr	r1,=segment_register_setups                                  ;\
 10:	ldr	r2,[r1,#0]	/* segment address */                        ;\
 	cmp	r2,#0                                                        ;\
@@ -64,8 +83,8 @@
 	add	r1,r1,#16	/* next segment  */                          ;\
 	b	10b                                                          ;\
 segment_register_setups:                                                     ;\
-	.long	0xFFFFA008,0x00008000,0x00028000,0x00007804  /* segment 2 */ ;\
-	.long	0xFFFFA00C,0x00028000,0x01000000,0x00000000  /* segment 3 */ ;\
+	AEB_SRAM  /* segment 2 */                                            ;\
+	AEB_BAD   /* segment 3 */                                            ;\
 	.long 0                                                              ;\
 20:
 #else

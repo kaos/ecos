@@ -46,19 +46,19 @@
 # include <pkgconf/kernel.h>
 #endif
 
-// This in not correct, but it will do.
+// This is not correct, but it will do.
 externC int cyg_hal_sys__newselect(int,int,int,int,int);
 
 // Here we define an action to do in the idle thread. For the
-// synthetic architecture it makes no sence to spin eating processor
+// synthetic architecture it makes no sense to spin eating processor
 // time that other processes could make use of. Instead we call
-// select. The itimer will still go off and kick the schedular back
+// select. The itimer will still go off and kick the scheduler back
 // into life so giving up an escape path from the select. There is one
-// catch 22. This only works if we are using the real time clock for
+// catch-22: this only works if we are using the real time clock for
 // itimer, not the virtual clock.  The virtual clock works on time the
-// process actually uses. When its sitting in the select it does not
+// process actually uses. When it's sitting in the select it does not
 // use any time, so the timer does not expire!  Also we don't do a
-// select when the THREAD_YIELD optin is in use since we want the
+// select when the THREAD_YIELD option is in use since we want the
 // yield to be called regularly.
 
 void

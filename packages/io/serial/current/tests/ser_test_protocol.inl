@@ -94,8 +94,8 @@
 #  define TEST_TTY_DEV CYGDAT_IO_SERIAL_TTY_TTY0_DEV
 # endif
 #endif
-#if defined(CYGPKG_HAL_ARM_AEB)                         \
-    && defined(CYGPKG_IO_SERIAL_ARM_AEB)                \
+#if defined(CYGPKG_HAL_ARM_AEB) || defined(CYGPKG_HAL_ARM_AEBC) \
+    && defined(CYGPKG_IO_SERIAL_ARM_AEB)                        \
     && defined(CYGPKG_IO_SERIAL_ARM_AEB_SERIAL1)
 # define TEST_CRASH_ID "armaeb"
 # define TEST_SER_DEV CYGDAT_IO_SERIAL_ARM_AEB_SERIAL1_NAME

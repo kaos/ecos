@@ -1041,8 +1041,24 @@
             parent        CYGPKG_LIBC_STARTUP
         }
 
-        cdl_option CYGNUM_LIBC_MAIN_STACK_SIZE {
-            display        "main()'s thread stack size"
+        cdl_component CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM {
+            display        "System provides stack for main()'s thread"
+            description    "This option controls whether the stack of
+                            main()'s thread is provided by the application or
+                            provided by the system. When disabled, the
+                            application must declare a pointer variable
+                            cyg_libc_main_stack which is a pointer to an
+                            appropriately aligned region of memory. The
+                            application must also declare a variable of
+                            type `int' called cyg_libc_main_stack_size
+                            which contains the size of the stack in bytes.
+                            This must be a multiple of 8."
+            type           boolean
+            parent         CYGSEM_LIBC_STARTUP_MAIN_THREAD
+        }
+
+        cdl_option CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE {
+            display        "main()'s default thread stack size"
             description    "With an eCos kernel, when the cyg_iso_c_start()
                             function is used to invoke the user-supplied
                             main() function in an ISO C compatible fashion,
@@ -1055,7 +1071,20 @@
                             etc."
             type           count
             legal_values   16 to 0x7fffffff
-            parent         CYGSEM_LIBC_STARTUP_MAIN_THREAD
+            parent         CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
+        }
+        
+        cdl_option CYGNUM_LIBC_MAIN_THREAD_PRIORITY {
+            display         "Priority of main()'s thread"
+            description     "This option is used to provide the thread
+                             priority which main()'s thread runs at. Be
+                             sure to check that this number is appropriate
+                             for the kernel scheduler chosen. Different
+                             kernel schedulers impose different restrictions
+                             on the usable priorities."
+            type            count
+            legal_values    0 to 0x7fffffff
+            parent          CYGSEM_LIBC_STARTUP_MAIN_THREAD
         }
 
         cdl_component CYGFUN_LIBC_ATEXIT {
@@ -1158,7 +1187,9 @@
 #define CYGSEM_LIBC_STARTUP_MAIN_THREAD
 
 #ifdef CYGSEM_LIBC_STARTUP_MAIN_THREAD
-#define CYGNUM_LIBC_MAIN_STACK_SIZE 8192
+# define CYGSEM_LIBC_MAIN_STACK_FROM_SYSTEM
+# define CYGNUM_LIBC_MAIN_DEFAULT_STACK_SIZE 8192
+# define CYGNUM_LIBC_MAIN_THREAD_PRIORITY 16
 #endif
 
 #define CYGFUN_LIBC_ATEXIT

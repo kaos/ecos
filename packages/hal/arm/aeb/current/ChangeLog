@@ -1,3 +1,16 @@
+1999-10-07  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/pkgconf/hal_arm_aeb.h:
+	* include/hal_platform_setup.h:
+	Use CYGHWR_HAL_ARM_AEB_REVISION_C to select revision behavior.
+
+1999-10-05  Jesper Skov  <jskov@cygnus.co.uk>
+
+	* include/hal_platform_setup.h: Added support for AEB rev C.
+
+	* src/aeb_misc.c (hal_hardware_init): Use UCACHE macros.
+	* include/hal_cache.h: Fixed cache macros.
+
 1999-09-07  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/plf_stub.h: 

@@ -44,13 +44,8 @@ include $(COMPONENT_REPOSITORY)/pkgconf/makrules.src
 
 EXTRAS = $(wildcard $(PREFIX)/lib/libextras.a)
 
-ldscript.stamp: mips_tx39.ld $(EXTRAS)
-ifneq ($(EXTRAS),)
-	$(LD) --whole-archive $(PREFIX)/lib/libextras.a -r -o $(PREFIX)/lib/extras.o
-	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=$(EXTRAS) -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
-else
-	$(CC) -E -P -Wp,-MD,ldscript.tmp -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
-endif
+ldscript.stamp: mips_tx39.ld
+	$(CC) -E -P -Wp,-MD,ldscript.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/target.ld $<
 	@echo > ldscript.d
 	@echo $@ ':' $< '\' >> ldscript.d
 	@tail -n +2 ldscript.tmp >> ldscript.d
