@@ -48,7 +48,7 @@
 //==========================================================================
 
 #include <cyg/hal/hal_intr.h>           // CYGNUM_HAL_INTERRUPT_ETHR
-
+#include <cyg/hal/hal_if.h>
 
 #define CYGHWR_NS_DP83902A_PLF_INIT ns_dp83902a_plf_init
 
