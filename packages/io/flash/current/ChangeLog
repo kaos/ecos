@@ -1,3 +1,8 @@
+2003-02-24  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* cdl/io_flash.cdl: Remove irrelevant doc link - default to top
+	level.
+
 2002-01-31  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/flashiodev.c: Fix bounds checking and offsetting.

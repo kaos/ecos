@@ -55,7 +55,6 @@ cdl_package CYGPKG_IO_FLASH {
     description   "
         This option enables drivers for basic I/O services on
         flash devices."
-    doc           redirect/ecos-device-drivers.html
     requires CYGPKG_ISOINFRA
     requires CYGINT_ISO_STRING_STRFUNCS
 
