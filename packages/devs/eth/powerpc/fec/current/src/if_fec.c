@@ -9,7 +9,7 @@
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
-// Copyright (C) 2002 Gary Thomas
+// Copyright (C) 2002, 2003 Gary Thomas
 //
 // eCos is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -78,17 +78,13 @@
 
 #include "fec.h"
 
-// Define this to force the buffer descriptors into the EPPC memory
-#define FEC_USE_EPPC_BD
+// Align buffers on a cache boundary
+#define CACHE_ALIGN(b) (((unsigned long)(b) + (HAL_DCACHE_LINE_SIZE-1)) & ~(HAL_DCACHE_LINE_SIZE-1))
 
-#ifndef FEC_USE_EPPC_BD
-static struct fec_bd fec_eth_rxring[CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM];
-static struct fec_bd fec_eth_txring[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
-#endif
-static unsigned char fec_eth_rxbufs[CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM+1]
-                                   [CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE];
-static unsigned char fec_eth_txbufs[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM+1]
-                                   [CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE];
+#define RxBUFSIZE CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM*CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE+HAL_DCACHE_LINE_SIZE
+#define TxBUFSIZE CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM*CYGNUM_DEVS_ETH_POWERPC_FEC_BUFSIZE+HAL_DCACHE_LINE_SIZE
+static unsigned char fec_eth_rxbufs[RxBUFSIZE];
+static unsigned char fec_eth_txbufs[TxBUFSIZE];
 
 static struct fec_eth_info fec_eth0_info;
 static unsigned char _default_enaddr[] = { 0x08, 0x00, 0x3E, 0x28, 0x7A, 0xBA};
@@ -258,6 +254,7 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     unsigned char *RxBUF, *TxBUF;
     int cache_state, int_state;
     int i;
+    int TxBD, RxBD;
 
     // Ignore unless device is idle/stopped
     if ((qi->fec->eControl & eControl_EN) != 0) {
@@ -269,9 +266,10 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
 
     // Ensure consistent state between cache and what the FEC sees
     HAL_DCACHE_IS_ENABLED(cache_state);
-    if (cache_state)
+    if (cache_state) {
       HAL_DCACHE_SYNC();
-    HAL_DCACHE_DISABLE();
+      HAL_DCACHE_DISABLE();
+    }
 
     // Shut down ethernet controller, in case it is already running
     fec->eControl = eControl_RESET;
@@ -290,20 +288,16 @@ fec_eth_reset(struct eth_drv_sc *sc, unsigned char *enaddr, int flags)
     fec->iEvent = 0xFFFFFFFF; // Clear all interrupts
     fec->iVector = (1<<29);   // Caution - must match FEC_ETH_INT above
 
-#define ROUNDUP(b,s) (((unsigned long)(b) + (s-1)) & ~(s-1))
-#ifdef FEC_USE_EPPC_BD
-    txbd = (struct fec_bd *)(FEC_EPPC_BD_OFFSET + (cyg_uint32)eppc);
-    rxbd = &txbd[CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM];
-#else
-    txbd = fec_eth_txring;
-    rxbd = fec_eth_rxring;
-#endif
+    TxBD = _mpc8xx_allocBd(CYGNUM_DEVS_ETH_POWERPC_FEC_TxNUM * sizeof(struct cp_bufdesc));
+    RxBD = _mpc8xx_allocBd(CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM * sizeof(struct cp_bufdesc));
+    txbd = (struct fec_bd *)(TxBD + (cyg_uint32)eppc);
+    rxbd = (struct fec_bd *)(RxBD + (cyg_uint32)eppc);
     qi->tbase = qi->txbd = qi->tnext = txbd;
     qi->rbase = qi->rxbd = qi->rnext = rxbd;
     qi->txactive = 0;
 
-    RxBUF = (unsigned char *)ROUNDUP(&fec_eth_rxbufs[0][0], 32);
-    TxBUF = (unsigned char *)ROUNDUP(&fec_eth_txbufs[0][0], 32);
+    RxBUF = (unsigned char *)CACHE_ALIGN(&fec_eth_rxbufs[0]);
+    TxBUF = (unsigned char *)CACHE_ALIGN(&fec_eth_txbufs[0]);
 
     // setup buffer descriptors
     for (i = 0;  i < CYGNUM_DEVS_ETH_POWERPC_FEC_RxNUM;  i++) {
@@ -407,9 +401,10 @@ fec_eth_init(struct cyg_netdevtab_entry *tab)
 
     // Ensure consistent state between cache and what the FEC sees
     HAL_DCACHE_IS_ENABLED(cache_state);
-    if (cache_state)
+    if (cache_state) {
       HAL_DCACHE_SYNC();
-    HAL_DCACHE_DISABLE();
+      HAL_DCACHE_DISABLE();
+    }
 
     qi->fec = fec;
     fec_eth_stop(sc);  // Make sure it's not running yet
@@ -644,18 +639,13 @@ fec_eth_send(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len,
     txbd->length = total_len;
     txindex = ((unsigned long)txbd - (unsigned long)qi->tbase) / sizeof(*txbd);
     qi->txkey[txindex] = key;
-    // Note: the MPC860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC8xx does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_FLUSH(txbd->buffer, txbd->length);  // Make sure no stale data
     }
     // Send it on it's way
     txbd->ctrl |= FEC_BD_Tx_Ready | FEC_BD_Tx_Last | FEC_BD_Tx_TC;
-#ifndef FEC_USE_EPPC_BD
-    if (cache_state) {
-        HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
-    }
-#endif
     qi->txactive++;
     qi->fec->TxUpdate = 0x01000000;  // Any write tells machine to look for work
     set_led(LED_TxACTIVE);
@@ -681,13 +671,8 @@ fec_eth_RxEvent(struct eth_drv_sc *sc)
     volatile struct fec_bd *rxbd, *rxfirst;
     int cache_state;
 
-    // Note: the MPC860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC8xx does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
-#ifndef FEC_USE_EPPC_BD
-    if (cache_state) {
-        HAL_DCACHE_INVALIDATE(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
-    }
-#endif
     rxbd = rxfirst = qi->rnext;
     while (true) {
         if ((rxbd->ctrl & FEC_BD_Rx_Empty) == 0) {
@@ -706,11 +691,6 @@ fec_eth_RxEvent(struct eth_drv_sc *sc)
     }
     // Remember where we left off
     qi->rnext = (struct fec_bd *)rxbd;
-#ifndef FEC_USE_EPPC_BD
-    if (cache_state) {
-        HAL_DCACHE_INVALIDATE(fec_eth_rxring, sizeof(fec_eth_rxring));  // Make sure no stale data
-    }
-#endif
     qi->fec->RxUpdate = 0x0F0F0F0F;  // Any write tells machine to look for work
 }
 
@@ -729,7 +709,7 @@ fec_eth_recv(struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len)
     int i, cache_state;
 
     bp = (unsigned char *)qi->rxbd->buffer;
-    // Note: the MPC860 does not seem to snoop/invalidate the data cache properly!
+    // Note: the MPC8xx does not seem to snoop/invalidate the data cache properly!
     HAL_DCACHE_IS_ENABLED(cache_state);
     if (cache_state) {
         HAL_DCACHE_INVALIDATE(qi->rxbd->buffer, qi->rxbd->length);  // Make sure no stale data
@@ -749,14 +729,8 @@ fec_eth_TxEvent(struct eth_drv_sc *sc)
 {
     struct fec_eth_info *qi = (struct fec_eth_info *)sc->driver_private;
     volatile struct fec_bd *txbd;
-    int key, txindex, cache_state;
+    int key, txindex;
 
-    HAL_DCACHE_IS_ENABLED(cache_state);
-#ifndef FEC_USE_EPPC_BD
-    if (cache_state) {
-        HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
-    }
-#endif
     txbd = qi->tnext;
     // Note: TC field is used to indicate the buffer has/had data in it
     while ((txbd->ctrl & (FEC_BD_Tx_Ready|FEC_BD_Tx_TC)) == FEC_BD_Tx_TC) {
@@ -777,11 +751,6 @@ fec_eth_TxEvent(struct eth_drv_sc *sc)
     }
     // Remember where we left off
     qi->tnext = (struct fec_bd *)txbd;
-#ifndef FEC_USE_EPPC_BD
-    if (cache_state) {
-        HAL_DCACHE_FLUSH(fec_eth_txring, sizeof(fec_eth_txring));  // Make sure no stale data
-    }
-#endif
 }
 
 //
