@@ -1,3 +1,7 @@
+2003-11-12  Gary Thomas  <gary@mlbassoc.com>
+
+	* misc/redboot_XXX.ecm: Removed - since it was only a source of confusion.
+
 2003-11-07  Gary Thomas  <gary@mlbassoc.com>
 
 	* src/net/dns.c: 
