@@ -87,7 +87,6 @@
 	variant HAL routines which scan the true memory map installed.
 	This is necessary for dealing with eg. PCI window - also future
 	similar targets with different physical memory arrangements,
-	cf. the PLC2's "gappy" SDRAM ram.
 
 	* src/nano_misc.c (plf_hardware_init): Perform MMU initialization
 	even in RAM startup - so that different configurations of
@@ -141,8 +140,8 @@
 
 2001-02-14  Hugo Tyson  <hmt@redhat.com>
 
-	* hal/arm/sa11x0/nano: New package, based on Assabet and plc2
-	HALs.  This is the nanoEngine from Bright Star Engineering; an
+	* hal/arm/sa11x0/nano: New package, based on Assabet
+	HAL.  This is the nanoEngine from Bright Star Engineering; an
 	SA1110 CPU + 2x i82559 ethernets.
 
 //===========================================================================
