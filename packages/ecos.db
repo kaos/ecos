@@ -1760,6 +1760,16 @@ package CYGPKG_DEVICES_WALLCLOCK_SH_HS7729PCI {
            Hitachi HS7729PCI board."
 }
 
+package CYGPKG_DEVS_WALLCLOCK_SYNTH {
+        alias           { "Wallclock driver for synthetic target" devs_wallclock_synth wallclock_synth }
+        directory       devs/wallclock/synth
+        script          wallclock_synth.cdl
+        hardware
+        description "
+           This package provides a wallclock driver implementation for the
+           synthetic target."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
 	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
 	directory	devs/watchdog/arm/aeb
@@ -4226,8 +4236,9 @@ target linux {
 	packages        { CYGPKG_HAL_SYNTH
                           CYGPKG_HAL_SYNTH_I386
                           CYGPKG_DEVS_FLASH_SYNTH
-			  CYGPKG_DEVS_ETH_ECOSYNTH
+                          CYGPKG_DEVS_ETH_ECOSYNTH
                           CYGPKG_DEVS_WATCHDOG_SYNTH
+                          CYGPKG_DEVS_WALLCLOCK_SYNTH      
         }
         description "
     	    The linux target provides the 

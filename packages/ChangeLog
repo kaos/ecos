@@ -1,3 +1,7 @@
+2003-10-04  Savin Zlobec <savin@elatec.si>
+
+	* ecos.db: New package - Synth wall clock device
+	
 2003-09-30  Gary Thomas  <gary@mlbassoc.com>
 
 	* ecos.db: New package - National Semiconductor DP83816 PCI ethernet
