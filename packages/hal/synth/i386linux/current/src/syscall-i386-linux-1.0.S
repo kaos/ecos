@@ -8,6 +8,7 @@
 //####ECOSGPLCOPYRIGHTBEGIN####
 // -------------------------------------------
 // This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2005 eCosCentric Ltd.
 // Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 //
 // eCos is free software; you can redistribute it and/or modify it under
@@ -441,3 +442,28 @@ STATCALL2(lstat)
 STATCALL2(fstat)
 SYSCALL2(mkdir)
 SYSCALL5(ipc)
+
+// ----------------------------------------------------------------------------
+// Special support for returning from a signal handler. In theory no special
+// action is needed, but with some versions of the kernel on some
+// architectures that is not good enough. Instead returning has to happen
+// via another system call.         
+
+        .align 16
+        .global cyg_hal_sys_restore_rt
+cyg_hal_sys_restore_rt:
+        movl    $SYS_rt_sigreturn, %eax
+        int     $0x80
+1:              
+        .type __restore_rt,@function
+        .size __restore_rt,1b - __restore_rt
+                
+        .align 8
+        .global cyg_hal_sys_restore
+cyg_hal_sys_restore:
+        popl    %eax
+        movl    $SYS_sigreturn, %eax
+        int     $0x80
+1:              
+        .type __restore,@function
+        .size __restore,1b - __restore

@@ -1,3 +1,8 @@
+2005-03-11  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/var_io.h, src/syscall-i386-linux-1.0.S:
+	Improve support for returning from signal handlers
+
 2004-12-14  Alexander Neundorf <neundorf@kde.org>
 
 	* src/syscall-i386-linux-1.0.S:	Add ipc system call
