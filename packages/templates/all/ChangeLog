@@ -1,3 +1,10 @@
+2004-11-15  Andrew Lunn  <andrew.lunn@ascom.ch>
+
+	* current.ect: Removed packages which are listed as hardware.  in
+	ecos.db. Such packages should only be listed in the target section
+	and cannot be added to a configuration, unless you are using
+	ecosconfig, which does not care about this distinction.
+	
 2004-10-05  Andrew Lunn  <andrew.lunn@ascom.ch>
 
 	* current.ect: Added in many missing packages, plus some defaults
