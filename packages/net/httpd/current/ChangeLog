@@ -4,6 +4,7 @@
 	* src/init.cxx: 
 	* src/httpd.c: 
 	* src/init.cxx:
+	* doc/httpd.sgml:
 	Added option to enable auto-starting of HTTPD. This is set by
 	default so the current behaviour is retained. When this is
 	disabled the application has to call cyg_httpd_startup() to get

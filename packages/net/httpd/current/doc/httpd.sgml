@@ -58,10 +58,13 @@ defining content, the application does not need to do anything to
 start the HTTP server.
 </para>
 <para>
-The HTTP server is started by a static constructor. This simply
-creates an initial thread and sets it running. Since this is called
-before the scheduler is started, nothing will happen until the
-application calls <function>cyg_scheduler_start()</function>.
+The HTTP server is, by default, started by a static constructor. This
+simply creates an initial thread and sets it running. Since this is
+called before the scheduler is started, nothing will happen until the
+application calls <function>cyg_scheduler_start()</function>. The
+server thread can also be started explicitly by the application, see
+the <literal>CYGNUM_HTTPD_SERVER_AUTO_START</literal> option for
+details.
 </para>
 <para>
 When the thread gets to run it first optionally delays for some period
@@ -222,6 +225,17 @@ values of <literal>CYGNUM_HAL_STACK_SIZE_MINIMUM</literal> and
 This defines the size of the buffer used to receive the first line of
 each HTTP request. If you expect to use particularly long URLs or have
 very complex forms, this should be increased.
+</para>
+</sect2>
+
+<sect2>
+<title><literal>CYGNUM_HTTPD_SERVER_AUTO_START</literal></title>
+<para>
+This option causes the HTTP Daemon to be started automatically during
+system initialization. If this option is not set then the application
+must start the daemon explicitly by calling
+<function>cyg_httpd_startup()</function>. This option is set by
+default.
 </para>
 </sect2>
 
