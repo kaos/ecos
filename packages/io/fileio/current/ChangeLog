@@ -1,3 +1,13 @@
+2004-10-13  David Brennan  <eCos@brennanhome.com>
+
+	* include/fileio.h: 
+	* src/file.cxx: Added support for cyg_fs_fssync,
+	cyg_fs_get_attrib, and cyg_fs_set_attrib
+
+2004-10-13  David Brennan  <eCos@brennanhome.com>
+
+	* src/file.cxx: Added a check data ptr in LOCK_FS
+
 2004-10-06  David Brennan  <eCos@brennanhome.com>
 
 	* tests/pselect.c: Added check for POSIX signals while building

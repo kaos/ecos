@@ -71,6 +71,7 @@
 
 #define LOCK_FS( _mte_ )  {                             \
    CYG_ASSERT(_mte_ != NULL, "Bad mount table entry");  \
+   CYG_ASSERT(_mte_->fs != NULL, "Bad mount filesystem entry");  \
    cyg_fs_lock( _mte_, (_mte_)->fs->syncmode);          \
 }
 
@@ -521,6 +522,99 @@ __externC long pathconf( const char *path, int vname )
         FILEIO_RETURN(ret);
 
     FILEIO_RETURN_VALUE(info.value);
+}
+
+//==========================================================================
+// Sync filesystem without unmounting
+
+__externC int cyg_fs_fssync( const char *path )
+{
+    FILEIO_ENTRY();
+    
+    int ret = 0;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
+    const char *name = path;
+
+    ret = cyg_mtab_lookup( &dir, &name, &mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ENOENT);
+
+    LOCK_FS( mte );
+    
+    ret = mte->fs->setinfo( mte, dir, name, FS_INFO_SYNC, NULL, 0 );
+    
+    UNLOCK_FS( mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ret);
+
+    FILEIO_RETURN_VALUE(ENOERR);
+}
+
+//==========================================================================
+// Set file attributes
+
+__externC int cyg_fs_set_attrib( const char *fname, 
+                                 const cyg_fs_attrib_t new_attrib )
+{
+    FILEIO_ENTRY();
+    
+    int ret = 0;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
+    const char *name = fname;
+
+    ret = cyg_mtab_lookup( &dir, &name, &mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ENOENT);
+
+    LOCK_FS( mte );
+    
+    ret = mte->fs->setinfo( mte, dir, name,
+                            FS_INFO_ATTRIB, 
+                            (char *)&new_attrib, sizeof(new_attrib) );
+    
+    UNLOCK_FS( mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ret);
+
+    FILEIO_RETURN(ENOERR);
+}
+
+//==========================================================================
+// Get file attributes
+
+__externC int cyg_fs_get_attrib( const char *fname, 
+                                 cyg_fs_attrib_t * const file_attrib )
+{
+    FILEIO_ENTRY();
+    
+    int ret = 0;
+    cyg_mtab_entry *mte = cyg_cdir_mtab_entry;
+    cyg_dir dir = cyg_cdir_dir;
+    const char *name = fname;
+
+    ret = cyg_mtab_lookup( &dir, &name, &mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ENOENT);
+
+    LOCK_FS( mte );
+    
+    ret = mte->fs->getinfo( mte, dir, name,
+                            FS_INFO_ATTRIB, 
+                            (char *)file_attrib, sizeof(*file_attrib) );
+    
+    UNLOCK_FS( mte );
+    
+    if( 0 != ret )
+        FILEIO_RETURN(ret);
+
+    FILEIO_RETURN(ENOERR);
 }
 
 //==========================================================================

@@ -154,6 +154,8 @@ struct cyg_fstab_entry
 #define FS_INFO_CONF            1       /* pathconf() */
 #define FS_INFO_ACCESS          2       /* access() */
 #define FS_INFO_GETCWD          3       /* getcwd() */
+#define FS_INFO_SYNC            4       /* cyg_fs_fssync() */
+#define FS_INFO_ATTRIB          5       /* cyg_fs_(get|set)_attrib() */
 
 //-----------------------------------------------------------------------------
 // Types for link()
@@ -169,6 +171,8 @@ struct cyg_getcwd_info
     char        *buf;           /* buffer for cwd string */
     size_t      size;           /* size of buffer */
 };
+
+typedef cyg_uint32 cyg_fs_attrib_t;
 
 //-----------------------------------------------------------------------------
 // Macro to define an initialized fstab entry
@@ -330,7 +334,7 @@ struct CYG_FILE_TAG
 #define	CYG_FILE_TYPE_DEVICE	3	/* device */
 
 //-----------------------------------------------------------------------------
-// Keys for getinf() and setinfo()
+// Keys for getinfo() and setinfo()
 
 #define FILE_INFO_CONF          1       /* fpathconf() */
 
@@ -420,6 +424,21 @@ __externC void cyg_selwakeup( struct CYG_SELINFO_TAG *sip );
 // data strucures.
 
 __externC time_t cyg_timestamp(void);
+
+//=============================================================================
+// Miscellaneous functions.
+
+// Provide a function to synchronize an individual file system. (ie write
+// file and directory information to disk)
+__externC int cyg_fs_fssync(const char *path);
+
+// Functions to set and get attributes of a file, eg FAT attributes
+// like hidden and system.
+__externC int cyg_fs_set_attrib( const char *fname, 
+                                 const cyg_fs_attrib_t new_attrib );
+__externC int cyg_fs_get_attrib( const char *fname, 
+                                 cyg_fs_attrib_t * const file_attrib );
+
 
 //=============================================================================
 // Default functions.
