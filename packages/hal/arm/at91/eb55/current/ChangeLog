@@ -1,3 +1,8 @@
+2004-09-16  Andrea Michelotti <amichelotti@atmel.com>
+
+	* include/hal_platform_ints.h: When CYGHWR_HAL_ARM_AT91_FIQ is defined 
+	  CYGNUM_HAL_ISR_MIN is equal to zero.
+	
 2004-08-30  Thomas Koeller  <thomas.koeller@baslerweb.com>
 
 	* cdl/hal_arm_at91_eb55.cdl: Reversed change of 2004-02-12.

@@ -78,7 +78,12 @@
 #define CYGNUM_HAL_INTERRUPT_EXT1              30
 #define CYGNUM_HAL_INTERRUPT_EXT0              31
 
+#ifdef CYGHWR_HAL_ARM_AT91_FIQ
+#define CYGNUM_HAL_ISR_MIN                     0
+#else
 #define CYGNUM_HAL_ISR_MIN                     2
+#endif
+
 #define CYGNUM_HAL_ISR_MAX                     31
 // Note: extra slots (0,1) to avoid messing with vector translation
 #define CYGNUM_HAL_ISR_COUNT                   (CYGNUM_HAL_ISR_MAX + 1)
