@@ -119,7 +119,7 @@ cdl_package CYGPKG_FS_JFFS2 {
             fairly verbose output. Level 2 is insanely loquacious."
     }
 
-    cdl_option CYGOPT_FS_JFFS2_COMPRESS {
+    cdl_component CYGOPT_FS_JFFS2_COMPRESS {
         display         "Compress data"
         flavor          bool
         define          JFFS2_COMPRESSION
@@ -130,47 +130,56 @@ cdl_package CYGPKG_FS_JFFS2 {
             selecting this option increases the amount of RAM required and
             slows down read and write operations considerably if you have a
             slow CPU."
-    }
 
-    cdl_option CYGOPT_FS_JFFS2_COMPRESS_ZLIB {
-        display         "Compress data using zlib"
-        flavor          bool
-        define          JFFS2_USE_ZLIB
-        requires        CYGPKG_COMPRESS_ZLIB
-        requires        CYGOPT_FS_JFFS2_COMPRESS
-        compile         compr_zlib.c
-        default_value   1
-        description     "
-            Use zlib for compression of data. This is the slowest of the
-            compression options available but the most effective."
-    }
+        cdl_option CYGOPT_FS_JFFS2_COMPRESS_ZLIB {
+            display         "Compress data using zlib"
+            flavor          bool
+            define          CONFIG_JFFS2_ZLIB
+            requires        CYGPKG_COMPRESS_ZLIB
+            compile         compr_zlib.c
+            default_value   1
+            description     "
+                Use zlib for compression of data. This is the slowest of the
+                compression options available but the most effective."
+        }
 
-    cdl_option CYGOPT_FS_JFFS2_COMPRESS_RTIME {
-        display         "Compress data using rtime"
-        flavor          bool
-        define          JFFS2_USE_RTIME
-        requires        CYGOPT_FS_JFFS2_COMPRESS
-        compile         compr_rtime.c
-        default_value   1
-        description     "
-            Use the rtime algorithm for compression of data. This 
-            simple algorithm often manages to squeeze and extra few
-            bytes from data already compressed with gzip."
-    }
+        cdl_option CYGOPT_FS_JFFS2_COMPRESS_RTIME {
+            display         "Compress data using rtime"
+            flavor          bool
+            define          CONFIG_JFFS2_RTIME
+            compile         compr_rtime.c
+            default_value   1
+            description     "
+                Use the rtime algorithm for compression of data. This 
+                simple algorithm often manages to squeeze and extra few
+                bytes from data already compressed with gzip."
+        }
 
-    cdl_option CYGOPT_FS_JFFS2_COMPRESS_RUBIN {
-        display         "Compress data using rubin"
-        flavor          bool
-        define          JFFS2_USE_RTIME
-        requires        CYGOPT_FS_JFFS2_COMPRESS
-        compile         compr_rubin.c
-        default_value   !CYGOPT_FS_JFFS2_COMPRESS_ZLIB
-        description     "
-            Use the rubin algorithm for compression of data. This 
-            simple algorithm is faster than zlib but not quite as
-            effective."
+        cdl_option CYGOPT_FS_JFFS2_COMPRESS_RUBIN {
+            display         "Compress data using rubin"
+            flavor          bool
+            define          CONFIG_JFFS2_RUBIN
+            requires        CYGOPT_FS_JFFS2_COMPRESS
+            compile         compr_rubin.c
+            description     "
+                Use the rubin algorithm for compression of data. This 
+                simple algorithm is faster than zlib but not quite as
+                effective."
+        }
+        cdl_option CYGOPT_FS_JFFS2_COMPRESS_CMODE {
+            display         "Set the default compression mode"
+            flavor          data
+            default_value   { "PRIORITY" }
+            legal_values    { "NONE" "PRIORITY" "SIZE" }
+            define          CONFIG_JFFS2_CMODE
+            description     "
+                You can set here the default compression mode of JFFS2 from 
+                the avaiable compression modes. NONE causes no compression to
+                be performed. PRIORITY tries the compressors in a predefined
+                order and chooses the first successfull one. SIZE tries all 
+                compressors and chooses the one which has the smallest result"
+        }
     }
-
     cdl_option CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE {
         display         "Memory pool size"
         flavor          data

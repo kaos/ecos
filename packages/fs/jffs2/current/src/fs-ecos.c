@@ -21,6 +21,7 @@
 #include <linux/pagemap.h>
 #include <linux/crc32.h>
 #include "nodelist.h"
+#include "compr.h"
 
 #include <errno.h>
 #include <string.h>
@@ -543,14 +544,18 @@ static int jffs2_mount(cyg_fstab_entry * fste, cyg_mtab_entry * mte)
 			return ENOMEM;
 		}
 		memset(c->inocache_list, 0, sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
-                if (n_fs_mounted++ == 0)
+                if (n_fs_mounted++ == 0) {
                         jffs2_create_slab_caches(); // No error check, cannot fail
+			jffs2_compressors_init(); 
+		}
 
 		err = jffs2_read_super(jffs2_sb);
 
 		if (err) {
-                        if (--n_fs_mounted == 0)
+                        if (--n_fs_mounted == 0) {
                                 jffs2_destroy_slab_caches();
+				jffs2_compressors_exit();
+			}
                         
 			free(jffs2_sb);
 			free(c->inocache_list);
@@ -662,8 +667,10 @@ static int jffs2_umount(cyg_mtab_entry * mte)
 	} else {
 		jffs2_sb->s_mount_count--;
         }
-        if (--n_fs_mounted == 0)
+        if (--n_fs_mounted == 0) {
                 jffs2_destroy_slab_caches();        
+		jffs2_compressors_exit();
+	}
 	return ENOERR;
 }
 
