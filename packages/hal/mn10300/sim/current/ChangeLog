@@ -1,3 +1,8 @@
+2003-03-06  Bart Veer  <bartv@ecoscentric.com>
+
+	* include/plf_io.h: add dummy header file needed by the
+	mn10300 architectural hal.
+
 2000-10-20  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_mn10300_am31_sim_ram.mlt:
