@@ -1,3 +1,8 @@
+2001-07-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/ipaq_pcmcia.c (cf_hwr_change_state): Use VERS_1 instead of
+	MANID since some cards don't seem to support that.
+
 2001-03-14  Gary Thomas  <gthomas@redhat.com>
 
 	* src/ipaq_pcmcia.c (cf_hwr_init): Leave GPIO/timing setup to HAL code.

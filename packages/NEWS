@@ -1,3 +1,4 @@
+* Added wallclock driver for DS12887
 * AM33 STB flash driver added.
 * C library now supports multiple locales with multibyte character set support,
   and the possibility of plugging in more. Current locales supported

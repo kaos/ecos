@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -70,7 +70,8 @@ flash_hwr_init(void)
 
     HAL_ICACHE_ENABLE();
 
-    if ((data[0] == FLASH_Intel_code) && (data[4] == FLASH_28F008SA)) {
+    if ((data[0] == FLASH_Intel_code) && ((data[4] == FLASH_28F008SA) ||
+					  (data[4] == FLASH_28F008SC))) {
         num_regions = 16;
         region_size = 0x40000;
         flash_info.block_size = region_size;

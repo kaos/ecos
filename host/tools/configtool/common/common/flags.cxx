@@ -39,6 +39,7 @@
 //==========================================================================
 
 #include "flags.hxx"
+#include <cctype>
 
 static const std::string GLOBAL_FLAGS_PREFIX = "CYGBLD_GLOBAL_";
 static const std::string ADD_FLAGS_SUFFIX    = "_ADD";

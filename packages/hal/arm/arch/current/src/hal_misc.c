@@ -66,7 +66,11 @@ externC void diag_printf(const char *fmt, ...);
 externC void __handle_exception (void);
 
 externC HAL_SavedRegisters *_hal_registers;
-externC void* volatile __mem_fault_handler;
+#ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
+// Historical - this datum is defined by the GDB stubs if present
+externC 
+#endif
+        void* volatile __mem_fault_handler;
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 /* Force exception handling into the GDB stubs.  This is done by taking over
@@ -108,13 +112,18 @@ __restore_debug_traps(void)
 void
 exception_handler(HAL_SavedRegisters *regs)
 {
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
+    // Special case handler for code which has chosen to take care
+    // of data exceptions (i.e. code which expects them to happen)
+    // This is common in discovery code, e.g. checking for a particular
+    // device which may generate an exception when probing if the
+    // device is not present
     if (__mem_fault_handler && 
         regs->vector == CYGNUM_HAL_EXCEPTION_DATA_ACCESS) {
         regs->pc = (unsigned long)__mem_fault_handler;
         return; // Caught an exception inside stubs        
     }
 
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
     if (++exception_level == 1) __take_over_debug_traps();
 
     _hal_registers = regs;
@@ -165,7 +174,6 @@ extern pfunc __CTOR_END__[];
 void
 cyg_hal_invoke_constructors (void)
 {
-
 #ifdef CYGSEM_HAL_STOP_CONSTRUCTORS_ON_FLAG
     static pfunc *p = &__CTOR_END__[-1];
     

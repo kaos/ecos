@@ -1,3 +1,10 @@
+2001-07-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/malloc1.c (main): Accoutn for allocators that do allocate
+	space for allocs of 0.
+	Test that allocating all space works.
+	* src/dlmalloc.cxx (get_status): Correct again calculation of maxfree
+
 2001-06-28  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/memjoin.inl (~Cyg_Mempool_Joined): free even when asserts

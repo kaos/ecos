@@ -89,11 +89,16 @@
 //    switch statement and calls into various auxiliary functions when
 //    necessary.
 //
-// Forward declarations are needed to allow for active_if properties and
-// the like.
-//
 // For convenience the various entry points check whether or not the
 // desired condition is already satisfied.
+
+//}}}
+//{{{  Forward declarations                     
+
+// ----------------------------------------------------------------------------
+
+static bool infer_handle_interface_value(CdlTransaction, CdlInterface, CdlSimpleValue&, int);
+static bool infer_handle_reference_bool(CdlTransaction, CdlValuable, bool, int);
 
 //}}}
 //{{{  CdlInfer::make_active()                  
@@ -297,6 +302,9 @@ CdlInfer::set_valuable_value(CdlTransaction transaction, CdlValuable valuable, C
                   }
                   valuable->set_source(transaction, CdlValueSource_Inferred);
                   result = transaction->resolve_recursion(level);
+              } else if (0 != dynamic_cast<CdlInterface>(valuable)) {
+                  // Interfaces are not directly modifiable, but their implementors are.
+                  result = infer_handle_interface_value(transaction, dynamic_cast<CdlInterface>(valuable), goal, level);
               }
           }
           break;
@@ -314,6 +322,9 @@ CdlInfer::set_valuable_value(CdlTransaction transaction, CdlValuable valuable, C
                 valuable->set_value(transaction, goal, CdlValueSource_Inferred);
                 valuable->set_source(transaction, CdlValueSource_Inferred);
                 result = transaction->resolve_recursion(level);
+            } else if (0 != dynamic_cast<CdlInterface>(valuable)) {
+                // Interfaces are not directly modifiable, but their implementors are.
+                result = infer_handle_interface_value(transaction, dynamic_cast<CdlInterface>(valuable), goal, level);
             }
         }
         break;
@@ -413,47 +424,62 @@ CdlInfer::set_valuable_bool(CdlTransaction transaction, CdlValuable valuable, bo
 // preferred one. This happens for many binary operators.
 
 static bool
-infer_choose2(CdlTransaction lhs_transaction, bool lhs_result, CdlTransaction rhs_transaction, bool rhs_result)
+infer_lhs_preferable(CdlTransaction lhs_transaction, bool lhs_result, CdlTransaction rhs_transaction, bool rhs_result)
 {
     CYG_REPORT_FUNCNAMETYPE("infer_choose2", "result %d");
     CYG_REPORT_FUNCARG4XV(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
-    bool result = false;
+    CYG_PRECONDITIONC(lhs_result || rhs_result);
+    
+    bool result = true;
     
     if (lhs_result && !rhs_result) {
         // Only the lhs succeeded.
-        rhs_transaction->cancel();
-        lhs_transaction->commit();
         result = true;
     } else if (!lhs_result && rhs_result) {
         // Only the rhs succeeded.
-        lhs_transaction->cancel();
-        rhs_transaction->commit();
-        result = true;
+        result = false;
     } else if (lhs_result && rhs_result) {
         // Both sides succeeded. Next check for user_confirmation.
         bool lhs_confirm_needed = lhs_transaction->user_confirmation_required();
         bool rhs_confirm_needed = rhs_transaction->user_confirmation_required();
         if (lhs_confirm_needed && !rhs_confirm_needed) {
-            lhs_transaction->cancel();
-            rhs_transaction->commit();
-            result = true;
+            result = false;
         } else if (!lhs_confirm_needed && rhs_confirm_needed) {
-            rhs_transaction->cancel();
-            lhs_transaction->commit();
             result = true;
         } else {
             // Neither or both of the two sides need user confirmation, so they
             // are equal in that respect
             if (lhs_transaction->is_preferable_to(rhs_transaction)) {
-                rhs_transaction->cancel();
-                lhs_transaction->commit();
                 result = true;
             } else {
-                lhs_transaction->cancel();
-                rhs_transaction->commit();
-                result = true;
+                result = false;
             }
         }
+    }
+
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+// A variant which will actually do the commits and cancels. This is
+// commonly required when doing inferences of binary operators.
+static bool
+infer_choose2(CdlTransaction lhs_transaction, bool lhs_result, CdlTransaction rhs_transaction, bool rhs_result)
+{
+    CYG_REPORT_FUNCNAMETYPE("infer_choose2", "result %d");
+    CYG_REPORT_FUNCARG4XV(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
+    bool result = false;
+
+    if (lhs_result || rhs_result) {
+        bool lhs_preferable = infer_lhs_preferable(lhs_transaction, lhs_result, rhs_transaction, rhs_result);
+        if (lhs_preferable) {
+            rhs_transaction->cancel();
+            lhs_transaction->commit();
+        } else {
+            lhs_transaction->cancel();
+            rhs_transaction->commit();
+        }
+        result = true;
     } else {
         // Neither side succeeded.
         lhs_transaction->cancel();
@@ -465,6 +491,139 @@ infer_choose2(CdlTransaction lhs_transaction, bool lhs_result, CdlTransaction rh
     delete lhs_transaction;
     delete rhs_transaction;
 
+    CYG_REPORT_RETVAL(result);
+    return result;
+}
+
+//}}}
+//{{{  infer_handle_interface()                 
+
+// ----------------------------------------------------------------------------
+// Set an interface to a specific value, which should be some number n.
+// If (n == 0) then all implementers must be disabled or made inactive.
+// If (n == 1) then exactly one of the implementers must be active and enabled.
+// Other combinations are not considered here, they could lead to an
+// exponential explosion.
+
+static bool
+infer_handle_interface_value(CdlTransaction transaction, CdlInterface interface, CdlSimpleValue& goal, int level)
+{
+    CYG_REPORT_FUNCNAMETYPE("infer_handle_reference_bool", "result %d");
+    CYG_REPORT_FUNCARG4XV(transaction, interface, &goal, level);
+    bool result = false;
+
+    if (goal.has_integer_value()) {
+        cdl_int real_goal = goal.get_integer_value();
+        if (real_goal == interface->get_integer_value(transaction)) {
+            result = true;
+        } else if (0 == real_goal) {
+            // All implementers must be disabled or made inactive. This
+            // can be achieved by creating a sub-transaction and calling
+            // infer_handle_reference_bool() on all of the implementers.
+            //
+            // However there are no guarantees that the result is what
+            // is intended. Updating a later implementer may as a side
+            // effect cause an earlier one to become active again. Also
+            // there may be confusion with valuables with the data
+            // flavor being given a value of 0. Hence a final check is
+            // needed that the new interface value really is the desired goal.
+            CdlTransaction sub_transaction;
+            std::vector<CdlValuable> implementers;
+            std::vector<CdlValuable>::const_iterator impl_i;
+
+            sub_transaction = transaction->make(transaction->get_conflict());
+            try {
+                interface->get_implementers(implementers);
+                for (impl_i = implementers.begin(); impl_i != implementers.end(); impl_i++) {
+                    (void) infer_handle_reference_bool(sub_transaction, *impl_i, false, level);
+                }
+                if (0 == interface->get_integer_value(sub_transaction)) {
+                    sub_transaction->commit();
+                    result = true;
+                } else {
+                    sub_transaction->cancel();
+                }
+            } catch (...) {
+                delete sub_transaction;
+                throw;
+            }
+            delete sub_transaction;
+            sub_transaction = 0;
+            
+        } else if (1 == real_goal) {
+            // This is a bit trickier than the above. We need n
+            // sub-transactions, one per implementer. In each
+            // sub-transaction we try to set exactly one of the
+            // implementers to enabled and the rest to disabled.
+            std::vector<CdlValuable>    implementers;
+            unsigned int                impl_count;
+            unsigned int                i, j;
+            
+            interface->get_implementers(implementers);
+            impl_count = implementers.size();
+            std::vector<CdlTransaction> sub_transactions;
+            std::vector<bool>           results;
+
+            try {
+                for (i = 0; i < impl_count; i++) {
+                    CdlTransaction sub_transaction = transaction->make(transaction->get_conflict());
+                    sub_transactions.push_back(sub_transaction);
+                    results.push_back(false);
+                    results[i]          = false;
+                }
+                for (i = 0; i < impl_count; i++) {
+                    for (j = 0; j < impl_count; j++) {
+                        (void) infer_handle_reference_bool(sub_transactions[i], implementers[j], (i == j), level);
+                    }
+                    if (1 == interface->get_integer_value(sub_transactions[i])) {
+                        results[i] = true;
+                    }
+                }
+                
+                // At this point we may have some combination of successful and unsucessful
+                // sub-transactions, and it is time to choose the best one.
+                CdlTransaction  preferred = 0;
+                for (i = 0; i < impl_count; i++) {
+                    if (results[i]) {
+                        preferred = sub_transactions[i];
+                        break;
+                    }
+                }
+
+                for (j = i + 1; j < impl_count; j++) {
+                    if (results[j]) {
+                        if (!infer_lhs_preferable(preferred, true, sub_transactions[j], true)) {
+                            preferred = sub_transactions[j];
+                        }
+                    }
+                }
+
+                // Now either preferred == 0, i.e. all
+                // sub-transactions failed and we want to cancel them
+                // all. Or we have a viable sub-transaction.
+                for (i = 0; i < impl_count; i++) {
+                    if (preferred == sub_transactions[i]) {
+                        sub_transactions[i]->commit();
+                        result = true;
+                    } else {
+                        sub_transactions[i]->cancel();
+                    }
+                    delete sub_transactions[i];
+                    sub_transactions[i] = 0;
+                }
+                
+            } catch(...) {
+                for (i = 0; i < sub_transactions.size(); i++) {
+                    if (0 != sub_transactions[i]) {
+                        sub_transactions[i]->cancel();
+                        delete sub_transactions[i];
+                        sub_transactions[i] = 0;
+                    }
+                }
+            }
+        }
+    }
+    
     CYG_REPORT_RETVAL(result);
     return result;
 }

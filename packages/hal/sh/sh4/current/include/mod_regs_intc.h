@@ -49,6 +49,13 @@
 #define CYGARC_REG_IPRB                 0xFFD00008
 #define CYGARC_REG_IPRC                 0xFFD0000C
 
+#define CYGARC_REG_ICR_NMIL             0x8000
+#define CYGARC_REG_ICR_MAI              0x4000
+#define CYGARC_REG_ICR_NMIB             0x0200
+#define CYGARC_REG_ICR_NMIE             0x0100
+#define CYGARC_REG_ICR_IRLM             0x0080
+#define CYGARC_REG_ICR_SRST             0x0001
+
 #define CYGARC_REG_IPRA_TMU0_MASK       0xf000
 #define CYGARC_REG_IPRA_TMU0_PRI1       0x1000
 #define CYGARC_REG_IPRA_TMU1_MASK       0x0f00
@@ -74,3 +81,10 @@
 #define CYGARC_REG_IPRC_HUDI_MASK       0x000F
 #define CYGARC_REG_IPRC_HUDI_PRI1       0x0001
 
+
+// The (initial) IRQ mode is controlled by configuration.
+#ifdef CYGHWR_HAL_SH_IRQ_USE_IRQLVL
+# define CYGARC_REG_ICR_INIT 0x0000
+#else
+# define CYGARC_REG_ICR_INIT (CYGARC_REG_ICR_IRLM)
+#endif

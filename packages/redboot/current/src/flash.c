@@ -1004,14 +1004,23 @@ fis_unlock(int argc, char *argv[])
 }
 #endif
 
+static int __flash_init = 0;
+
+void
+_flash_info(void)
+{
+    if (!__flash_init) return;
+    printf("FLASH: %p - %p, %d blocks of %p bytes each.\n", 
+           flash_start, flash_end, blocks, (void *)block_size);
+}
+
 static bool
 do_flash_init(void)
 {
     int stat;
-    static int init = 0;
 
-    if (!init) {
-        init = 1;
+    if (!__flash_init) {
+        __flash_init = 1;
         if ((stat = flash_init((void *)(workspace_end-FLASH_MIN_WORKSPACE), 
                                FLASH_MIN_WORKSPACE, printf)) != 0) {
             printf("FLASH: driver init failed!, status: 0x%x\n", stat);
@@ -1019,10 +1028,9 @@ do_flash_init(void)
         }
         flash_get_limits((void *)0, (void **)&flash_start, (void **)&flash_end);
         flash_get_block_info(&block_size, &blocks);
-        printf("FLASH: %p - %p, %d blocks of %p bytes each.\n", 
-               flash_start, flash_end, blocks, (void *)block_size);
         fis_work_block = (unsigned char *)(workspace_end-FLASH_MIN_WORKSPACE-block_size);
         workspace_end = fis_work_block;
+        _flash_info();
     }
     return true;
 }

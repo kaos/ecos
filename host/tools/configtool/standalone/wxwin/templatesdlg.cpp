@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/09/27
-// Version:     $Id: templatesdlg.cpp,v 1.7 2001/06/28 15:54:25 julians Exp $
+// Version:     $Id: templatesdlg.cpp,v 1.8 2001/07/13 15:17:43 julians Exp $
 // Purpose:
 // Description: Implementation file for ecTemplatesDialog
 // Requires:
@@ -219,14 +219,14 @@ void ecTemplatesDialog::PopulateControls()
 
 		// use the first alias (if any) as the description
 		wxString strTargetDescription = aliases.size () ? aliases [0].c_str () : target_i->c_str ();
-		cdlHardwareCtrl->Append(strTargetDescription, (void*) target_i); // store the target iterator
+		cdlHardwareCtrl->Append(strTargetDescription, (void*) &(*target_i)); // store the target iterator
         std::string str(* (target_i));
 		if (m_hardware == str.c_str())            // if current target...
         {
             int sel = 0;
             int i;
             for (i = 0; i <= nIndex; i++)
-                if (cdlHardwareCtrl->GetClientData(i) == (void*) target_i)
+                if (cdlHardwareCtrl->GetClientData(i) == (void*) &(*target_i))
                     sel = i;
 			cdlHardwareCtrl->SetSelection (sel); // ...select the string
         }
@@ -244,7 +244,7 @@ void ecTemplatesDialog::PopulateControls()
 	for (template_i = templates.begin (); template_i != templates.end (); template_i++)
 	{
 		wxString strTemplateDescription = template_i->c_str ();
-		cdlPackageCtrl->Append(strTemplateDescription, (void*) template_i); // store the template iterator
+		cdlPackageCtrl->Append(strTemplateDescription, (void*) &(*template_i)); // store the template iterator
 		/// m_cboCdlTemplate.SetItemData (nIndex, (DWORD) template_i); // store the template iterator
 		std::string str(* (template_i));
 		if (m_template == str.c_str())          // if current template...
@@ -319,7 +319,8 @@ void ecTemplatesDialog::OnSelHardwareTemplates(wxCommandEvent& event)
 
 	// the target has changed so retrieve the new target description
 	const int nIndex = cdlHardwareCtrl->GetSelection ();
-	std::vector<std::string>::const_iterator template_i = (std::vector<std::string>::const_iterator) cdlHardwareCtrl->GetClientData (nIndex);
+	//std::vector<std::string>::const_iterator template_i = (std::vector<std::string>::const_iterator) cdlHardwareCtrl->GetClientData (nIndex);
+    std::string* template_i =  (std::string*) cdlHardwareCtrl->GetClientData (nIndex);
 	m_hardware = template_i->c_str();
 
 	m_strCdlHardwareDescription = doc->GetCdlPkgData ()->get_target_description ((const wxChar*) m_hardware).c_str ();
@@ -338,7 +339,8 @@ void ecTemplatesDialog::OnSelPackageTemplates(wxCommandEvent& event)
 	// the template has changed so update the version combo box
 	int nIndex = cdlPackageCtrl->GetSelection ();
 
-	std::vector<std::string>::const_iterator template_i = (std::vector<std::string>::const_iterator) cdlPackageCtrl->GetClientData (nIndex);
+	//std::vector<std::string>::const_iterator template_i = (std::vector<std::string>::const_iterator) cdlPackageCtrl->GetClientData (nIndex);
+    std::string *template_i = (std::string*) cdlPackageCtrl->GetClientData (nIndex);
 	m_template = template_i->c_str();
 	
 	UpdateVersionList (wxT("")); // repopulate template versions combo box and select most recent version

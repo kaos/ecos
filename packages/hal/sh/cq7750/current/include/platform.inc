@@ -135,7 +135,7 @@ BSC_settings_table:
         .long   0x10192194
         .long   2
         # SDMR2:
-        .long   CYGARC_REG_SDMR2
+        .long   0xFF90008c
         .long   0xaa
         .long   0
         # MCR:
@@ -143,7 +143,7 @@ BSC_settings_table:
         .long   0x50192194
         .long   2
         # SDMR2:
-        .long   CYGARC_REG_SDMR2
+        .long   0xFF90008c
         .long   0xaa
         .long   0
         # Table end

@@ -51,6 +51,7 @@
 #define CYGARC_SH_MOD_CPG  1
 #define CYGARC_SH_MOD_SCIF 1
 #define CYGARC_SH_MOD_UBC  1
+#define CYGARC_SH_MOD_INTC 1
 
 
 //-----------------------------------------------------------------------------
@@ -83,7 +84,7 @@
 // Cache addressing information
 // entry: bits 13 -  5
 #define CYGARC_SH_MOD_DCAC_ADDRESS_BASE   0xf4000000
-#define CYGARC_SH_MOD_DCAC_ADDRESS_TOP    0xf0004000
+#define CYGARC_SH_MOD_DCAC_ADDRESS_TOP    0xf4004000
 #define CYGARC_SH_MOD_DCAC_ADDRESS_STEP   0x00000020
 // U : bit 1
 // V : bit 0

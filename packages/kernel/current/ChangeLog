@@ -1,3 +1,8 @@
+2001-07-09  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/sched.inl (unlock_reschedule): Fix commenting.
+	* src/sched/sched.cxx: Improve description of unlock_inner().
+
 2001-06-21  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/common/thread.cxx (Cyg_Thread::Cyg_Thread): Initialize

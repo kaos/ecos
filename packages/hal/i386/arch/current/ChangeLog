@@ -1,3 +1,13 @@
+2001-07-13  Nick Garnett  <nickg@redhat.com>
+
+	* include/arch.inc:
+	Added code to clear CR0:TS bit in hal_fpu_init macro. If this bit
+	is not clear, then the following finit might trap, and we don't
+	want that.
+	Added a compare to hal_fpu_push_exc macro for a zero fpu state
+	owner. The code was assuming the move set the condition codes,
+	which it doesn't.
+
 2001-07-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_arch.h (HAL_THREAD_INIT_FPU_CONTEXT): Fix indirection to
@@ -296,12 +306,10 @@
 
 	* src/vectors.S: Added PC support code.
 
-start-sanitize-net	
 2000-01-28  Gary Thomas  <gthomas@cygnus.co.uk>
 
 	* src/i386.ld: Add support for network package.
 
-end-sanitize-net	
 2000-01-21  Jesper Skov  <jskov@cygnus.co.uk>
 
 	* include/hal_intr.h (HAL_INTERRUPT_MASK, HAL_INTERRUPT_UNMASK): 

@@ -211,7 +211,7 @@ bool
 cf_hwr_change_state(struct cf_slot *slot, int new_state)
 {    
     int i, ptr, len;
-    unsigned char buf[64];
+    unsigned char buf[256];
 
     if (new_state == CF_SLOT_STATE_Ready) {
         if (slot->state == CF_SLOT_STATE_Inserted) {
@@ -227,8 +227,7 @@ cf_hwr_change_state(struct cf_slot *slot, int new_state)
             // Wait until the card is ready to talk
             for (i = 0;  i < 10;  i++) {
                 ptr = 0;
-                if (cf_get_CIS(slot, CF_CISTPL_MANFID, buf, &len, &ptr)) {
-		    diag_printf("Ready!\n");
+                if (cf_get_CIS(slot, CF_CISTPL_VERS_1, buf, &len, &ptr)) {
                     slot->state = CF_SLOT_STATE_Ready;
                     break;
                 }

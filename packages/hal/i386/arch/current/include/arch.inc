@@ -91,7 +91,8 @@
 	.macro	hal_fpu_init
 	# Tell the CPU to use the math hardware.
 	movl	%cr0, %eax
-	orl	$0x32, %eax
+	orl	$0x32, %eax	# Set MP, ET, NE bits
+	andl	$~0x8, %eax	# And clear TS bit
 	movl	%eax, %cr0
 
 	finit			# and initialize...
@@ -278,7 +279,8 @@
 	.macro	hal_fpu_push_exc
 	pushl	cyg_hal_fpustate_current	# push our FPU state ptr
 	movl	cyg_hal_fpustate_owner,%eax	# EAX = FPU state owner
-	jz	1f				# skip if zero
+	cmpl	$0,%eax				# test it
+	je	1f				# skip if zero
 	fsave	i386reg_fpucontext_state(%eax)	# save state
 	movl	$1,i386reg_fpucontext_valid(%eax) # set valid
 	movl	$0,cyg_hal_fpustate_owner	# zero owner pointer

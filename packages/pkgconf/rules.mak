@@ -47,23 +47,36 @@ ifneq ($(wildcard *.deps),)
 include $(wildcard *.deps)
 endif
 
+
 # pattern matching rules to generate a library object from source code
 # object filenames are prefixed to avoid name clashes
 # a single dependency rule is generated (file extension = ".o.d")
 %.o.d : %.c
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
 %.o.d : %.cxx
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
 
 %.o.d : %.S
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif	
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.o.d=.tmp) -o $(dir $@)$(OBJECT_PREFIX)_$(notdir $(@:.o.d=.o)) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.o.d=.tmp)
@@ -72,26 +85,42 @@ endif
 # object filenames are not prefixed
 # a single dependency rule is generated (file extension = ".d")
 %.d : %.c
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 %.d : %.cxx
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 %.d : %.S
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif	
 	$(CC) -c $(INCLUDE_PATH) -I$(dir $<) $(CFLAGS) -Wp,-MD,$(@:.d=.tmp) -o $(@:.d=.o) $<
 	@sed -e '/^ *\\/d' -e "s#.*: #$@: #" $(@:.o.d=.tmp) > $@
 	@rm $(@:.d=.tmp)
 
 # rule to generate a test executable from object code
 $(PREFIX)/tests/$(PACKAGE)/%$(EXEEXT): %.d $(wildcard $(PREFIX)/lib/target.ld) $(wildcard $(PREFIX)/lib/*.[ao])
+ifeq ($(HOST),CYGWIN)
+	@mkdir -p `cygpath -w "$(dir $@)" | sed "s/\\\\\/\\//g"`
+else
 	@mkdir -p $(dir $@)
+endif	
 ifneq ($(IGNORE_LINK_ERRORS),)
 	-$(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(<:.d=.o)
 else

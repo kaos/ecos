@@ -69,7 +69,13 @@ cdl_package CYGPKG_REDBOOT {
         requires CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
 
         cdl_option CYGBLD_BUILD_REDBOOT_WITH_THREADS {
+            display "Threads debugging support"
             no_define
+            description "
+              Enabling this option will include special code in the GDB stubs to
+              support debugging of threaded programs.  In the case of eCos programs,
+              this support allows GDB to have complete access to the eCos threads
+              in the program."
             active_if { CYG_HAL_STARTUP != "RAM" }
             requires  CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
         }
@@ -94,7 +100,7 @@ cdl_package CYGPKG_REDBOOT {
     }
 
     cdl_component CYGPKG_REDBOOT_NETWORKING {
-        display       "Build Redboot ROM binary image"
+        display       "Redboot Networking"
         flavor        bool
         active_if     CYGPKG_IO_ETH_DRIVERS
         default_value 1
@@ -441,10 +447,14 @@ cdl_package CYGPKG_REDBOOT {
     }
 
     cdl_option CYGPRI_REDBOOT_ROM_MONITOR {
+	display      "Behave like a ROM monitor"
         active_if    { CYG_HAL_STARTUP == "ROM" }
         requires     CYGSEM_HAL_ROM_MONITOR
         calculated   1
         no_define
+	description  "
+          Enabling this option will allow RedBoot to provide ROM monitor-style
+          services to programs which it executes."
     }
 
     cdl_option CYGSEM_REDBOOT_BSP_SYSCALLS {

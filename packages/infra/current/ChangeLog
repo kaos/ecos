@@ -1,3 +1,11 @@
+2001-07-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/diag.cxx (diag_vprintf): Fix long longs (patch from
+	Motoya Kurotsu <kurotsu [at] allied-telesis.co.jp>
+
+	* cdl/debug.cdl: Make tracing styles be mutually exclusive properly
+	using an interface.
+
 2001-06-14  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/clist.hxx (Cyg_DNode_T): Don't qualify constructor or

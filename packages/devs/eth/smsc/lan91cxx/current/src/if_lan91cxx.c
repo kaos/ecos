@@ -255,10 +255,24 @@ smsc_lan91cxx_init(struct cyg_netdevtab_entry *tab)
 static void
 lan91cxx_stop(struct eth_drv_sc *sc)
 {
+    struct lan91cxx_priv_data *cpd =
+        (struct lan91cxx_priv_data *)sc->driver_private;
     DEBUG_FUNCTION();
+
+    CYG_ASSERT( cpd->within_send < 10, "stop: Excess send recursions" );
+    cpd->within_send++;
+    // Complete any outstanding activity:
+    if ( cpd->txbusy ) {
+        cpd->txbusy = 0;
+#if DEBUG & 9
+        diag_printf("LAN91CXX - Stopping, cleaning up pending TX\n" );
+#endif
+        (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 0);
+    }
     // Reset chip
     put_reg(sc, LAN91CXX_RCR, LAN91CXX_RCR_SOFT_RST);
     put_reg(sc, LAN91CXX_RCR, 0);
+    cpd->txbusy = cpd->within_send = 0;
 }
 
 //
@@ -514,6 +528,7 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
     struct lan91cxx_priv_data *cpd =
         (struct lan91cxx_priv_data *)sc->driver_private;
     unsigned short stat;
+    int tcr;
 
     DEBUG_FUNCTION();
     stat = get_reg(sc, LAN91CXX_EPH_STATUS);
@@ -523,6 +538,24 @@ lan91cxx_can_send(struct eth_drv_sc *sc)
 
     CYG_ASSERT( cpd->within_send < 10, "can_send: Excess send recursions" );
     cpd->within_send++;
+
+    tcr = get_reg(sc, LAN91CXX_TCR);
+    if ( 0 == (LAN91CXX_TCR_TXENA & tcr) ) {
+#if DEBUG & 1
+        diag_printf("%s: ENGINE RESTART: tcr %x\n", __FUNCTION__, tcr );
+#endif
+        // Complete any outstanding activity:
+        if ( cpd->txbusy ) {
+            cpd->txbusy = 0;
+#if DEBUG & 9
+            diag_printf("LAN91CXX - can_send, cleaning up pending TX\n" );
+#endif
+            (sc->funs->eth_drv->tx_done)(sc, cpd->txkey, 0);
+        }
+        tcr |= LAN91CXX_TCR_TXENA;
+        put_reg(sc, LAN91CXX_TCR, tcr);
+    }
+
     // This helps unstick deadly embraces.
     lan91cxx_poll( sc ); // Deal with any outstanding rx state
     cpd->within_send--;

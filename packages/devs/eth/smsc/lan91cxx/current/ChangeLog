@@ -1,3 +1,12 @@
+2001-07-11  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_lan91cxx.c (lan91cxx_stop): Clean up any pending tx both
+	to prevent mbuf leak due to noncompletion, and to clear tx_busy so
+	that the newly upbrung device can be used.
+	(lan91cxx_can_send): Similarly detect a stopped tx engine and
+	restart it, and clean up any pending tx, in here.  Otherwise the
+	system cannot progress.
+
 2001-03-27  Hugo Tyson  <hmt@redhat.com>
 2001-03-27  Robin Farine  <acnrf@dial.eunet.ch>
 	

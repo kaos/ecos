@@ -56,6 +56,12 @@
 #include "flags.hxx"
 #include "build.hxx"
 
+// Two methods of generating Cygwin filenames
+// CYGWIN_USE_CYGDRIVE = 0: use e.g. //c/, but this is deprecated in new versions of Cygwin
+// CYGWIN_USE_CYGDRIVE = 1: use e.g. /cygdrive/c/
+// CYGWIN_USE_CYGDRIVE = 2: use e.g. c:/ notation
+#define CYGWIN_USE_CYGDRIVE 1
+
 std::string makefile_header = "# eCos makefile\n\n# This is a generated file - do not edit\n\n";
 
 bool eval_tcl_command (const std::string command) {
@@ -129,11 +135,6 @@ std::string nospace_path (const std::string input) {
 }
 #endif
 
-// Two methods of generating Cygwin filenames
-// CYGWIN_USE_CYGDRIVE = 1: use e.g. /cygdrive/c/, but this can have problems with mkdir -p
-// CYGWIN_USE_CYGDRIVE = 0: use e.g. //c/, but this is deprecated in new versions of Cygwin
-#define CYGWIN_USE_CYGDRIVE 0
-
 // convert a DOS filepath to a Cygwin filepath
 std::string cygpath (const std::string input) {
 #ifdef _WIN32
@@ -148,7 +149,7 @@ std::string cygpath (const std::string input) {
 	output = buffer;
 #else
 
-#if CYGWIN_USE_CYGDRIVE
+#if CYGWIN_USE_CYGDRIVE == 1
     std::string strCygdrive("/cygdrive");
 
     HKEY hKey = 0;
@@ -173,6 +174,11 @@ std::string cygpath (const std::string input) {
 		} else {
 			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
 		}
+	}
+#elif CYGWIN_USE_CYGDRIVE == 2
+    // Convert to c:/foo/bar notation
+	for (unsigned int n = 0; n < path.size (); n++) { // for each char
+			output += ('\\' == path [n]) ? '/' : path [n]; // convert backslash to slash
 	}
 #else
 	for (unsigned int n = 0; n < path.size (); n++) { // for each char
@@ -301,6 +307,11 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "export COMMAND_PREFIX := %s\n", command_prefix.c_str ());
 	fprintf (stream, "export CC := $(COMMAND_PREFIX)gcc\n");
 	fprintf (stream, "export OBJCOPY := $(COMMAND_PREFIX)objcopy\n");
+#ifdef _WIN32
+    fprintf (stream, "export HOST := CYGWIN\n");
+#else
+    fprintf (stream, "export HOST := UNIX\n");
+#endif
 	fprintf (stream, "export AR := $(COMMAND_PREFIX)ar\n\n");
 
 	// generate the package variables
@@ -388,7 +399,17 @@ bool generate_makefile (const CdlConfiguration config, const CdlBuildInfo_Loadab
 	fprintf (stream, "\n\n");
 	for (count = 0; count < info.headers.size (); count++) { // for each header
 		fprintf (stream, "$(PREFIX)/include/%s: $(REPOSITORY)/$(PACKAGE)/%s\n", info.headers [count].destination.c_str (), info.headers [count].source.c_str ());
-		fprintf (stream, "\t@mkdir -p $(dir $@)\n");
+#if defined(_WIN32) && (CYGWIN_USE_CYGDRIVE == 1)
+        fprintf (stream, "ifeq ($(HOST),CYGWIN)\n");
+	    fprintf (stream, "\t@mkdir -p `cygpath -w \"$(dir $@)\" | sed \"s/\\\\\\\\\\/\\\\//g\"`\n");
+        fprintf (stream, "else\n");
+	    fprintf (stream, "\t@mkdir -p $(dir $@)\n");
+        fprintf (stream, "endif\n");
+#else
+        // This prevents older versions of mkdir failing
+        fprintf (stream, "\t@mkdir -p $(dir $@)\n");
+#endif
+
 		fprintf (stream, "\t@cp $< $@\n");
 		fprintf (stream, "\t@chmod u+w $@\n\n");
 	}
@@ -445,6 +466,11 @@ bool generate_toplevel_makefile (const CdlConfiguration config, const std::strin
 
 	// generate the variables
 	fprintf (stream, "export REPOSITORY := %s\n", cygpath (config->get_database ()->get_component_repository ()).c_str ());
+#ifdef _WIN32
+    fprintf (stream, "export HOST := CYGWIN\n");
+#else
+    fprintf (stream, "export HOST := UNIX\n");
+#endif
 	fprintf (stream, "export PREFIX := %s\n", cygpath (install_tree).c_str ());
 	fprintf (stream, "export COMMAND_PREFIX := %s\n", command_prefix.c_str ());
 	fprintf (stream, "export CC := $(COMMAND_PREFIX)gcc\n");

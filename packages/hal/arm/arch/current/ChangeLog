@@ -1,3 +1,12 @@
+2001-07-17  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_intr.h: Define range of exceptions more accurately.
+
+2001-07-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/hal_misc.c (exception_handler): Allow memory faults to be
+	caught, even when GDB stubs are not included.
+
 2001-06-22  Gary Thomas  <gthomas@redhat.com>
 
 	* include/arm_stub.h (NUMREGBYTES): Define - this tells GDB how 

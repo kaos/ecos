@@ -88,7 +88,7 @@ cdl_package CYGPKG_IO_USB_SLAVE_ETH {
 	cdl_option CYGDAT_USBS_ETHDRV_NAME {
 	    display       "Name to use for this network device"
 	    flavor        data
-	    default_value { "\"eth0\"" }
+	    default_value { (1 == CYGHWR_NET_DRIVERS) ? "\"eth0\"" : "\"eth1\"" }
 	    description "
 	        The name of this network device for control purposes.
 	    "
@@ -99,12 +99,15 @@ cdl_package CYGPKG_IO_USB_SLAVE_ETH {
 	    flavor        bool
 	    calculated    { "\"eth0\"" == CYGDAT_USBS_ETHDRV_NAME }
 	    implements    CYGHWR_NET_DRIVER_ETH0
+	    requires      !CYGHWR_NET_DRIVER_ETH0_BOOTP
 	}
+	
 	cdl_option CYGPRI_USBS_ETHDRV_ETH1 {
 	    display       "Enable/disable generic eth1 configury"
 	    flavor        bool
 	    calculated    { "\"eth1\"" == CYGDAT_USBS_ETHDRV_NAME }
 	    implements    CYGHWR_NET_DRIVER_ETH1
+	    requires      !CYGHWR_NET_DRIVER_ETH1_BOOTP
 	}
     }
 }

@@ -597,6 +597,7 @@ package CYGPKG_DEVS_USB_SA11X0 {
         description     "A device driver for the SA11X0 on-chip USB slave port"
 }
 
+
 package CYGPKG_NET {
 	alias 		{ "Networking" net }
 	directory	net/tcpip
@@ -734,7 +735,7 @@ package CYGPKG_IO_WALLCLOCK {
 
 package CYGPKG_DEVICES_WALLCLOCK_SH3 {
 	alias		{ "Wallclock driver for SH3 RTC module" devices_wallclock_sh3 device_wallclock_sh3 }
-	directory	devs/wallclock/sh3
+	directory	devs/wallclock/sh/sh3
 	script          wallclock_sh3.cdl
 	hardware
         description "
@@ -752,6 +753,16 @@ package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS1742 {
            the Dallas 1742 wallclock."
 }
 
+package CYGPKG_DEVICES_WALLCLOCK_DALLAS_DS12887 {
+	alias		{ "Wallclock driver for Dallas 12887" devices_wallclock_ds12887 device_wallclock_ds12887 }
+	directory	devs/wallclock/dallas/ds12887
+	script          wallclock_ds12887.cdl
+	hardware
+        description "
+           This package provides a driver implementation for 
+           the Dallas 12887 wallclock."
+}
+
 package CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955 {
 	alias		{ "Wallclock driver for REF4955 board" devices_wallclock_ref4955 device_wallclock_ref4955 }
 	directory	devs/wallclock/mips/ref4955
@@ -761,7 +772,6 @@ package CYGPKG_DEVICES_WALLCLOCK_MIPS_REF4955 {
            This package provides a wallclock driver implementation for the
            Toshiba REF4955 board."
 }
-
 package CYGPKG_DEVICES_WATCHDOG_ARM_AEB {
 	alias		{ "Watchdog driver for ARM/AEB board" devices_watchdog_aeb device_watchdog_aeb }
 	directory	devs/watchdog/arm/aeb
@@ -849,6 +859,7 @@ package CYGPKG_COMPRESS_ZLIB {
         description "
 This package provides zlib compression and decompression support."
 }
+
 
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }

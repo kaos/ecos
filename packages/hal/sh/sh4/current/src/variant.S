@@ -68,6 +68,19 @@
 10:
         .endm
 
+        .macro RETURN_FROM_NONCACHED_SHADOW
+        nop                             ! Wait for 8 instructions
+        nop                             ! before jumping to a non-P2
+        nop                             ! area
+        nop
+        nop
+        nop
+        nop
+        nop
+	rts
+	 nop
+	.endm
+
 FUNC_START(cyg_hal_dcache_enable)
         GOTO_NONCACHED_SHADOW
         mov.l   $nCYGARC_REG_CCR,r1
@@ -75,9 +88,7 @@ FUNC_START(cyg_hal_dcache_enable)
         mov     #CYGARC_REG_CCR_OCE,r2
         or      r2,r0
         mov.l   r0,@r1
-        nop
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
 
 FUNC_START(cyg_hal_dcache_disable)
         GOTO_NONCACHED_SHADOW
@@ -87,9 +98,7 @@ FUNC_START(cyg_hal_dcache_disable)
         not     r2,r2
         and     r2,r0
         mov.l   r0,@r1
-        nop
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
         
 FUNC_START(cyg_hal_dcache_invalidate_all)
         GOTO_NONCACHED_SHADOW
@@ -98,11 +107,7 @@ FUNC_START(cyg_hal_dcache_invalidate_all)
         mov     #CYGARC_REG_CCR_OCI,r2
         or      r2,r0
         mov.l   r0,@r1
-        nop                             ! Nothing in the docs suggest we need
-        nop                             ! nops here, but without them, the
-        nop                             ! CPU crashes.
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
 
 FUNC_START(cyg_hal_dcache_sync)
         GOTO_NONCACHED_SHADOW
@@ -115,9 +120,8 @@ FUNC_START(cyg_hal_dcache_sync)
         mov.l   r0,@r1
         bra     1b        
          add     r3,r1                  ! delay slot!
-2:      nop
-        rts
-         nop
+2:
+        RETURN_FROM_NONCACHED_SHADOW
 
         .align  2
 $CYGARC_REG_DCACHE_ADDRESS_FLUSH:
@@ -139,8 +143,7 @@ FUNC_START(cyg_hal_dcache_sync_region)
 	add     #-CYGARC_SH_MOD_DCAC_ADDRESS_STEP,r5
         cmp/pl  r5
 	bt	1b
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
 
 FUNC_START(cyg_hal_dcache_write_mode)
         GOTO_NONCACHED_SHADOW
@@ -155,10 +158,7 @@ FUNC_START(cyg_hal_dcache_write_mode)
         # Or in the new settings and restore to CCR
         or      r4,r3
         mov.l   r3,@r1
-        nop
-        rts
-         nop
-
+        RETURN_FROM_NONCACHED_SHADOW
 
 FUNC_START(cyg_hal_icache_enable)
         GOTO_NONCACHED_SHADOW
@@ -167,9 +167,7 @@ FUNC_START(cyg_hal_icache_enable)
         mov.l   $nCYGARC_REG_CCR_ICE,r2
         or      r2,r0
         mov.l   r0,@r1
-        nop
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
 
 FUNC_START(cyg_hal_icache_disable)
         GOTO_NONCACHED_SHADOW
@@ -179,9 +177,7 @@ FUNC_START(cyg_hal_icache_disable)
         not     r2,r2
         and     r2,r0
         mov.l   r0,@r1
-        nop
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
         
 FUNC_START(cyg_hal_icache_invalidate_all)
         GOTO_NONCACHED_SHADOW
@@ -190,11 +186,7 @@ FUNC_START(cyg_hal_icache_invalidate_all)
         mov.l   $nCYGARC_REG_CCR_ICI,r2
         or      r2,r0
         mov.l   r0,@r1
-        nop                             ! Nothing in the docs suggest we need
-        nop                             ! nops here, but without them, the
-        nop                             ! CPU crashes.
-        rts
-         nop
+        RETURN_FROM_NONCACHED_SHADOW
 
 	.align	2
 $MASK:

@@ -1,3 +1,9 @@
+2001-07-13  Nick Garnett  <nickg@redhat.com>
+
+	* cdl/hal_i386_pc.cdl: Added requires statement to
+	CYGSEM_HAL_ROM_MONITOR option to turn off lazy FPU switching. ROM
+	monitors should not be playing these kinds of games.
+
 2001-05-22  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/pkgconf/mlt_i386_pc_ram.mlt: Fix pci_window description.

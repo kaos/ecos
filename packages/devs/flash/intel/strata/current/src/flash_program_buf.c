@@ -85,7 +85,8 @@ flash_program_buf(volatile flash_t *addr, flash_t *data, int len,
         wc = buffer_size;
         if (wc > len) wc = len;
         len -= wc;
-        wc = wc / (CYGNUM_FLASH_DEVICES*2);  // Word count
+	// convert 'wc' in bytes to 'wc' in 'flash_t' 
+        wc = wc / sizeof(flash_t);  // Word count
         *BA = FLASH_Write_Buffer;
         timeout = 5000000;
         while(((stat = ROM[0]) & FLASH_Status_Ready) != FLASH_Status_Ready) {

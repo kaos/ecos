@@ -1,3 +1,12 @@
+2001-07-17 Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	* src/flash_query.c (flash_query): Query needs to be done on even
+	addresses for byte-enabled strata flash 
+
+	* src/flash_program_buf.c (flash_program_buf): Fix of conversion of
+	write buffer length (in bytes) to the length in 'flash_t' words.
+	
+
 2001-06-22  Hugo Tyson  <hmt@redhat.com>
 
 	* src/strata.c (flash_hwr_init): Need to refer to the query code

@@ -1,3 +1,8 @@
+2001-07-11  Andrew Lunn <andrew.lunn@ascom.ch>
+
+	* src/flash.h:
+	* src/ebsa285_flash.c (flash_hwr_init): Support new device 28F008SC.
+
 2001-06-11  Gary Thomas  <gthomas@redhat.com>
 
 	* src/ebsa285_flash.c: Remove dependency on printf() via user functions.

@@ -115,4 +115,42 @@ cdl_package CYGPKG_HAL_MIPS {
 	been compiled as 32-bit.  Do not use this for real 64-bit code."
     }
 
+    cdl_component CYGPKG_REDBOOT_MIPS_OPTIONS {
+        display       "Redboot for MIPS options"
+        flavor        none
+        no_define
+        parent        CYGPKG_REDBOOT
+        active_if     CYGPKG_REDBOOT
+        description   "
+            This option lists the target's requirements for a valid Redboot
+            configuration."
+
+        cdl_component CYGSEM_REDBOOT_MIPS_LINUX_BOOT {
+            display        "Support booting Linux via RedBoot"
+            flavor         bool
+            default_value  1
+            description    "
+               This option enables RedBoot to support booting of a Linux kernel."
+            compile -library=libextras.a redboot_linux_exec.c
+
+            cdl_option CYGDAT_REDBOOT_MIPS_LINUX_BOOT_ENTRY {
+                display        "Default kernel entry address"
+                flavor         data
+                default_value  0x80100750
+            }
+
+            cdl_option CYGDAT_REDBOOT_MIPS_LINUX_BOOT_ARGV_ADDR {
+                display        "Default argv address"
+                flavor         data
+                default_value  0x80080000
+            }
+
+            cdl_option CYGDAT_REDBOOT_MIPS_LINUX_BOOT_COMMAND_LINE {
+                display        "Default COMMAND_LINE"
+                flavor         data
+                default_value  { "" }
+            }
+        }
+    }
+
 }

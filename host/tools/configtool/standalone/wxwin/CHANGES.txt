@@ -1,7 +1,17 @@
 Release History for eCos Configuration Tool 2
 =============================================
 
-*** Version 2.03, July 2nd 2001
+
+*** Version 2.04, July 16th 2001
+
+- Now uses /cygdrive/ notation which is future-proof for newer Cygwins,
+  and works around a mkdir bug in older Cygwins. A side-effect of this
+  is that we no longer mount drives from the tool, so we don't get the
+  flashing DOS box under Windows. Makefiles now define HOST=CYGWIN
+  so that makefiles can use mkdir the right way under Windows.
+
+
+*** Version 2.03, July 9nd 2001
 
 - Corrected a bug introduced in the previous release, where the initial template
   selection was wrong.
@@ -19,6 +29,12 @@ Release History for eCos Configuration Tool 2
 
 - Fixed bug where message box with an empty repository name was shown if no repository
   was found at all.
+
+- Fixed long-term Configuration Tool bug where some conflicts weren't resolved properly
+  (bool-data options).
+
+- Added vertical scrollbar to Short Description window.
+
 
 *** Version 2.02, June 27th 2001
 
@@ -49,6 +65,7 @@ Release History for eCos Configuration Tool 2
 - Stopping a build now works.
 
 - Added CHANGES.txt and TODO.txt to the distribution.
+
 
 *** Version 2.01, June 2001
 

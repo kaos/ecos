@@ -206,6 +206,7 @@
 #include <cyg/infra/cyg_ass.h>         // assertions
 #include <stddef.h>                    // for size_t
 #include <cyg/memalloc/dlmalloc.hxx>
+//#include <cyg/infra/diag.h>
 
 /*
     Debugging:
@@ -1255,6 +1256,8 @@ Cyg_Mempool_dlmalloc_Implementation::try_alloc( cyg_int32 bytes )
   remainder_size = long_sub_size_t(chunksize(top), nb);
   if (chunksize(top) < nb || remainder_size < (long)MINSIZE)
   {
+      //diag_printf("chunksize(top)=%ld, nb=%d, remainder=%ld\n", chunksize(top),
+      //            nb, remainder_size);
       MALLOC_UNLOCK;
       return NULL; /* propagate failure */
   }
@@ -1619,9 +1622,15 @@ Cyg_Mempool_dlmalloc_Implementation::get_status(
             status.totalallocated = arenasize - avail;
         // as quick or quicker to just set most of these, rather than
         // test flag first
-        status.totalfree = avail  - (2*SIZE_SZ) - MINSIZE;
+        status.totalfree = (avail & ~(MALLOC_ALIGN_MASK)) - SIZE_SZ - MINSIZE;
+        CYG_ASSERT( ((avail + SIZE_SZ + MALLOC_ALIGN_MASK) & ~MALLOC_ALIGN_MASK)
+                    >= MINSIZE, "free mem negative!" );
         status.freeblocks = navail;
-        status.maxfree = maxfree  - (2*SIZE_SZ) - MINSIZE;
+        status.maxfree = (maxfree & ~(MALLOC_ALIGN_MASK)) - SIZE_SZ - MINSIZE;
+        //diag_printf("raw mf: %d, ret mf: %d\n", maxfree, status.maxfree);
+        CYG_ASSERT( ((maxfree + SIZE_SZ + MALLOC_ALIGN_MASK) & 
+                    ~MALLOC_ALIGN_MASK) >= MINSIZE, 
+                    "max free block size negative!" );
     } // if
 
     // as quick or quicker to just set most of these, rather than

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -147,6 +147,12 @@ void __single_step (void)
     HAL_WRITE_UINT16(CYGARC_REG_BBRA, 
                      CYGARC_REG_BBRA_IFETCH|CYGARC_REG_BBRA_READ);
 #endif
+
+#ifdef CYGPKG_HAL_SH_SH4
+    // Must execute at least 11 instructions before reaching
+    // any address that may be affected by the UBC settings.
+    asm volatile ("nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;");
+#endif
 }
 
 /* Clear the single-step state. */
@@ -157,6 +163,12 @@ void __clear_single_step (void)
     HAL_WRITE_UINT16(CYGARC_REG_BBRA, 0);
     // Clear status flags
     HAL_WRITE_UINT16(CYGARC_REG_BRCR, 0);
+
+#ifdef CYGPKG_HAL_SH_SH4
+    // Must execute at least 11 instructions before reaching
+    // any address that may be affected by the UBC settings.
+    asm volatile ("nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;nop;");
+#endif
 }
 
 #else // CYGARC_SH_MOD_UBC

@@ -70,7 +70,7 @@
 ##-----------------------------------------------------------------------------
 ## Hardware init macros
 #ifndef CYGPKG_HAL_SH_POST_RESET_INIT
-	.macro  hal_post_reset_init
+        .macro  hal_post_reset_init
         # Initialize CPU
         mov.l   $nCYG_SR,r1             ! Put CPU in a well-known state
         ldc     r1,sr
@@ -93,9 +93,12 @@
         mov.w   r0,@r1
         mov.l   $CYGARC_REG_IPRC,r1
         mov.w   r0,@r1
-	mov.w	$nCYG_WTCSR,r0          ! Clear watchdog
-	mov.l   $nCYGARC_REG_WTCSR,r1
-	mov.w	r0,@r1
+        mov.w   $nCYG_WTCSR,r0          ! Clear watchdog
+        mov.l   $nCYGARC_REG_WTCSR,r1
+        mov.w   r0,@r1
+        mov.w   $nCYG_ICR_INIT,r0
+        mov.l   $CYGARC_REG_ICR,r1      ! Set interrupt controller to IRQ mode
+        mov.w   r0,@r1
 
         # Initialize VBR if necessary
 #if     !defined(CYG_HAL_STARTUP_RAM) ||                \
@@ -104,25 +107,25 @@
         mov.l   $_reset,r1             ! Set VBR
         ldc     r1,vbr
 #endif
-	bra	1f
-	 nop
-	
+        bra     1f
+         nop
+        
 $nCYG_WTCSR:
-	.word	0xa500		! clear all CSR bits
+        .word   0xa500          ! clear all CSR bits
 
-	.align	2
+        .align  2
 $nCYG_SR:
         .long   CYG_SR
 $nCYGARC_REG_CCR:
-	.long	CYGARC_REG_CCR
+        .long   CYGARC_REG_CCR
 $nCYGARC_REG_MMUCR:
-	.long	CYGARC_REG_MMUCR
+        .long   CYGARC_REG_MMUCR
 $nCYGARC_REG_BBRA:
-	.long	CYGARC_REG_BBRA
+        .long   CYGARC_REG_BBRA
 $nCYGARC_REG_BBRB:
-	.long	CYGARC_REG_BBRB
+        .long   CYGARC_REG_BBRB
 $nCYGARC_REG_BRCR:
-	.long	CYGARC_REG_BRCR
+        .long   CYGARC_REG_BRCR
 $CYGARC_REG_TSTR:
         .long   CYGARC_REG_TSTR
 $CYGARC_REG_IPRA:
@@ -132,34 +135,38 @@ $CYGARC_REG_IPRB:
 $CYGARC_REG_IPRC:
         .long   CYGARC_REG_IPRC
 $nCYGARC_REG_WTCSR:
-	.long	CYGARC_REG_WTCSR
+        .long   CYGARC_REG_WTCSR
+$CYGARC_REG_ICR:
+        .long   CYGARC_REG_ICR
+        SYM_PTR_REF(_reset)
+	# Data below only need word alignment
+$nCYG_ICR_INIT:
+        .word   CYGARC_REG_ICR_INIT
 
-	SYM_PTR_REF(_reset)
-
-1:	
-	.endm
+1:      
+        .endm
 #define CYGPKG_HAL_SH_POST_RESET_INIT
 #endif
 
 ##-----------------------------------------------------------------------------
 ## Interrupt decode macros
-	.macro	hal_intc_decode tmp,inum
+        .macro  hal_intc_decode tmp,inum
         mov.l   $nCYGARC_REG_INTEVT,\tmp
         mov.l   @\tmp,\inum
         mov     #-5,\tmp                ! divide cause by 0x20
         shld    \tmp,\inum
         add     #-14,\inum              ! adjust so NMI becomes 0
-	.endm
-	
+        .endm
+        
 #ifdef CYGIMP_HAL_COMMON_INTERRUPTS_CHAIN
-	.macro	hal_intc_translate inum,vnum
-	mov     #0,\vnum		! Just vector zero is supported
-	.endm
-#else			
-	.macro	hal_intc_translate inum,vnum
-	mov	\inum,\vnum		! Vector == interrupt number
+        .macro  hal_intc_translate inum,vnum
+        mov     #0,\vnum                ! Just vector zero is supported
+        .endm
+#else                   
+        .macro  hal_intc_translate inum,vnum
+        mov     \inum,\vnum             ! Vector == interrupt number
         shll2   \vnum                   ! get from vector number to ISR index
-	.endm
+        .endm
 #endif
 
 #------------------------------------------------------------------------------

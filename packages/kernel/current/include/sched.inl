@@ -112,8 +112,8 @@ inline void Cyg_Scheduler:: unlock_reschedule()
     // This function decrements the scheduler lock and also looks for
     // a reschedule opportunity. When the lock is being decremented
     // from 1 to zero this function is equivalent to unlock. When the
-    // lock is being decremented to a non-zero value, it is equivalent
-    // to unlock() followed by reschedule().
+    // lock is being decremented to a non-zero value, it is more or less
+    // equivalent to reschedule() followed by unlock().
     
     CYG_INSTRUMENT_SCHED(UNLOCK,sched_lock,0);
     

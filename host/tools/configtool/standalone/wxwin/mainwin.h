@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.h,v 1.17 2001/04/24 17:01:45 julians Exp $
+// Version:     $Id: mainwin.h,v 1.18 2001/07/13 15:17:43 julians Exp $
 // Purpose:
 // Description: Header file for the ConfigTool main window
 // Requires:
@@ -74,7 +74,7 @@ class WXDLLEXPORT wxSashLayoutWindow;
 // Define a new frame type: this is going to be our main frame
 class ecMainFrame : public wxDocParentFrame
 {
-    friend ecFindDialog;
+    friend class ecFindDialog;
 
 public:
 // Ctor(s)

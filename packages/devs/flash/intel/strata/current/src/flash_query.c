@@ -86,6 +86,13 @@ flash_query(unsigned char *data)
         // It is very deliberate that data is chars NOT flash_t:
         // The info comes out in bytes regardless of device.
         *data++ = (unsigned char) (*ROM++);
+#ifndef CYGOPT_FLASH_IS_BOOTBLOCK
+# if  8 == CYGNUM_FLASH_WIDTH
+	// strata flash with 'byte-enable' contains the configuration data
+	// at even addresses
+	++ROM;
+# endif
+#endif
     }
     ROM[0] = FLASH_Reset;
 

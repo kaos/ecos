@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -2373,7 +2373,10 @@ CdlTransactionBody::is_preferable_to(CdlTransaction other) const
     CYG_PRECONDITIONC(this != other);
 
     bool result = false;
-    if (this->changes.size() < other->changes.size()) {
+    unsigned int this_changes  = this->changes.size()  + this->activated.size()  + this->deactivated.size();
+    unsigned int other_changes = other->changes.size() + other->activated.size() + other->deactivated.size();
+        
+    if (this_changes <= other_changes) {
         result = true;
     }
     

@@ -53,6 +53,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 
 //==========================================================================
 //
@@ -148,7 +149,7 @@ typedef struct romfs_disk {
 typedef struct node {
     const char *path;		// Filename (inc. path) of a link to this node
     size_t size;		// Size of file/directory/link
-    mode_t mode;		// Type and permissions
+    mode_t st_mode;		// Type and permissions
     uid_t uid;			// Owner id
     gid_t gid;			// Group id
     time_t ctime;		// File creation time
@@ -249,6 +250,28 @@ static void outputshort( unsigned char *b, unsigned short w ) {
     }
 }
 
+static unsigned long ConvertMode( unsigned long posix_mode ) {
+    unsigned long result = 0;
+    if ( S_ISDIR( posix_mode ) ) result |= 1<<0;
+    if ( S_ISCHR( posix_mode ) ) result |= 1<<1;
+    if ( S_ISBLK( posix_mode ) ) result |= 1<<2;
+    if ( S_ISREG( posix_mode ) ) result |= 1<<3;
+    if ( S_ISFIFO(posix_mode ) ) result |= 1<<4;
+    // We cannot create MQ, SEM, or SHM entries here
+    if ( posix_mode & S_IRUSR )  result |= 1<<8;
+    if ( posix_mode & S_IWUSR )  result |= 1<<9;
+    if ( posix_mode & S_IXUSR )  result |= 1<<10;
+    if ( posix_mode & S_IRGRP )  result |= 1<<11;
+    if ( posix_mode & S_IWGRP )  result |= 1<<12;
+    if ( posix_mode & S_IXGRP )  result |= 1<<13;
+    if ( posix_mode & S_IROTH )  result |= 1<<14;
+    if ( posix_mode & S_IWOTH )  result |= 1<<15;
+    if ( posix_mode & S_IXOTH )  result |= 1<<16;
+    if ( posix_mode & S_ISUID )  result |= 1<<17;
+    if ( posix_mode & S_ISGID )  result |= 1<<18;
+    return result;
+}
+
 static const char *AddDirEntry( const char *name, node *parent_node, int node_num ) {
     int this_size = ((strlen(name) + 4 + 4 + 1) + 31) & ~31;
     int start = parent_node->size;
@@ -313,7 +336,7 @@ static node * GetNodeInfo( const char *path, const char *name, int *hlink ) {
     node->path = strdup( newpath );
     // We re-calculate the size for directories
     node->size = IS_DIRECTORY( stbuff.st_mode ) ? 0 : stbuff.st_size;
-    node->mode = stbuff.st_mode;
+    node->st_mode = stbuff.st_mode;
     node->uid = stbuff.st_uid;
     node->gid = stbuff.st_gid;
     node->ctime = stbuff.st_ctime;
@@ -374,7 +397,7 @@ static void ScanDirectory(node *mynode, int p_node) {
     verb_printf(VERB_EXCESSIVE,"Completed '%s'. Checking for child directories...\n", mynode->path);
 
     for ( th = mynode->child ; th ; th = th->sibling ) {
-	if ( IS_DIRECTORY( th->mode ) ) {
+	if ( IS_DIRECTORY( th->st_mode ) ) {
 	    mynode->nlink++;
 	    ScanDirectory( th, mynode->nodenum );
 	}
@@ -385,7 +408,7 @@ static void AllocateSpaceToDirectories( node *first ) {
     node *np;
 
     for ( np = first ; np ; np = np->sibling ) {
-	if ( IS_DIRECTORY( np->mode ) ) {
+	if ( IS_DIRECTORY( np->st_mode ) ) {
 	    // The first node is a directory. Add its data
 	    np->offset = coffset;
 	    np->entry_size = ALIGN_TO( np->size, DIRECTORY_ALIGN );
@@ -403,7 +426,7 @@ static void AllocateSpaceToDirectories( node *first ) {
     
     // Now add any child directories
     for ( np = first ; np ; np = np->sibling ) {
-	if ( IS_DIRECTORY( np->mode ) && np->child )
+	if ( IS_DIRECTORY( np->st_mode ) && np->child )
 	    AllocateSpaceToDirectories( np->child );
     }
 }
@@ -417,7 +440,7 @@ static void AllocateSpaceToDataFiles( node *first ) {
 
     // Search for child data files
     for ( np = first->child ; np ; np = np->sibling ) {
-	if ( IS_DATAFILE( np->mode ) || IS_SYMLINK( np->mode ) ) {
+	if ( IS_DATAFILE( np->st_mode ) || IS_SYMLINK( np->st_mode ) ) {
 	    np->offset = coffset;
 	    np->entry_size = ALIGN_TO( np->size, DATA_ALIGN );
 	    coffset += np->entry_size;
@@ -433,7 +456,7 @@ static void AllocateSpaceToDataFiles( node *first ) {
 
     // Recurse into sub-directories
     for ( np = first->child ; np ; np = np->sibling ) {
-	if ( IS_DIRECTORY( np->mode ) ) {
+	if ( IS_DIRECTORY( np->st_mode ) ) {
 	    AllocateSpaceToDataFiles( np );
 	}
     }
@@ -446,7 +469,7 @@ static void AllocateSpaceToExecutables( node *first ) {
 
     // Search for child executables
     for ( np = first->child ; np ; np = np->sibling ) {
-	if ( IS_EXECUTABLE( np->mode ) ) {
+	if ( IS_EXECUTABLE( np->st_mode ) ) {
 	    np->offset = coffset;
 	    np->entry_size = ALIGN_TO( np->size, EXEC_ALIGN );
 	    coffset += np->entry_size;
@@ -462,7 +485,7 @@ static void AllocateSpaceToExecutables( node *first ) {
 
     // Recurse into sub-directories
     for ( np = first->child ; np ; np = np->sibling ) {
-	if ( IS_DIRECTORY( np->mode ) ) {
+	if ( IS_DIRECTORY( np->st_mode ) ) {
 	    AllocateSpaceToExecutables( np );
 	}
     }
@@ -471,7 +494,7 @@ static void AllocateSpaceToExecutables( node *first ) {
 static void WriteNode( int fd, node *np ) {
     romfs_node anode;
     char padhere[9];
-    outputlong( (char*) &anode.mode, np->mode );
+    outputlong( (char*) &anode.mode, ConvertMode( np->st_mode ) );
     outputlong( (char*) &anode.nlink, np->nlink );
     outputshort((char*) &anode.uid, np->uid );
     outputshort((char*) &anode.gid, np->gid );
@@ -495,7 +518,7 @@ static int WriteNodeAndSiblings( int fd, int nodenum, node *first ) {
     }
 
     for ( np = first ; np ; np = np->sibling ) {
-	if ( IS_DIRECTORY( np->mode ) && np->child ) {
+	if ( IS_DIRECTORY( np->st_mode ) && np->child ) {
 	    nodenum = WriteNodeAndSiblings( fd, nodenum, np->child );
 	}
     }
@@ -524,7 +547,7 @@ static void WriteData( int fd, node *np ) {
     int ffd;
     unsigned long todo;
 
-    if ( IS_SYMLINK( np->mode ) ) {
+    if ( IS_SYMLINK( np->st_mode ) ) {
 	if ( (ffd = readlink( np->path, newpath, sizeof(newpath) )) < 0 )
 	    fatal_error(EXIT_FILESYS, "Error reading symlink \"%s\": %s\n", np->path, strerror(errno) );
 
@@ -569,7 +592,7 @@ static void WriteDataBlocks( int fd, node *first ) {
     for ( ; first ; first = first->next_in_rom ) {
 	if ( dowrite && lseek( fd, first->offset, SEEK_SET ) != first->offset )
 	    fatal_error(EXIT_SEEK, "Error seeking to offset 0x%lX: %s\n", first->offset, strerror(errno) );
-	if ( IS_DIRECTORY( first->mode ) ) {
+	if ( IS_DIRECTORY( first->st_mode ) ) {
 	    if ( dowrite && write( fd, first->entry, first->size ) != first->size )
 		fatal_error(EXIT_WRITE, "Write error: %s\n", strerror(errno) );
 	} else {

@@ -68,11 +68,6 @@ set copyright_banner \
 <!-- standard (paper) book form is prohibited unless prior           -->
 <!-- permission is obtained from the copyright holder.               -->"
 
-# The generated files all have a .htm suffix rather than a .html
-# suffix. For now this is preserved, to avoid having to change all the
-# anchors. It might be better to rename all the files to .html in
-# future, and perhaps also to change book1.htm to index.htm
-
 set files [glob *.html]
 foreach file $files {
     set status [catch {
@@ -84,7 +79,6 @@ foreach file $files {
 	# If there is already a (C) message on the first line, skip this file.
 	if {[regexp {[^\n]*Copyright (C) [0-9]* Red Hat.*} $data] == 0} {
 
-
 	    # The DSSSL has the annoying habit of splitting tags over several lines.
 	    # This should sort things out.
             # REMOVED by jifl: doing this can add newlines in tags like
@@ -94,6 +88,13 @@ foreach file $files {
 	    # Add a copyright banner
 	    set data "[set copyright_banner]\n[set data]"
 
+	    # Look for a smarttags meta. If absent, insert one. There should
+	    # already be one meta present identifying the stylesheet, so
+	    # that identifies a sensible location for inserting another meta.
+	    if {[regexp {MSSmartTagsPreventParsing} $data] == 0} {
+		regsub -nocase {<META} $data "<meta name=\"MSSmartTagsPreventParsing\" content=\"TRUE\">\n<META" data
+	    }
+	    
 	    # Take care of some character entities that Netscape does not understand
 	    regsub -all "&mgr;"    $data "\\&#03BC;" data
 	    regsub -all "&mdash;"  $data "\\&#8212;" data

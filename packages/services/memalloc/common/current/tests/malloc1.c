@@ -193,10 +193,12 @@ main( int argc, char *argv[] )
         free(str);
     } // else       
 
-
     // Test 4
+#if defined(CYGIMP_MEMALLOC_MALLOC_VARIABLE_SIMPLE) && \
+      defined(CYGSEM_MEMALLOC_ALLOCATOR_VARIABLE_COALESCE)
+    poolmax = mallinfo().maxfree; // recalculate for non-coalescing allocator
+#endif
     str=(char *)malloc( poolmax+1 );
-
     CYG_TEST_PASS_FAIL( str==NULL, "malloc too much data returns NULL" );
 
     // Test 5
@@ -204,10 +206,10 @@ main( int argc, char *argv[] )
     CYG_TEST_PASS_FAIL( str==NULL, "calloc too much data returns NULL" );
 
     // Test 6
-    str=(char *)malloc(0);
-    str=(char *)calloc(0, 1);
-    str=(char *)calloc(1, 0);
-    str=(char *)calloc(0, 0);
+    str=(char *)malloc(0); if (str != NULL) free(str);
+    str=(char *)calloc(0, 1); if (str != NULL) free(str);
+    str=(char *)calloc(1, 0); if (str != NULL) free(str);
+    str=(char *)calloc(0, 0); if (str != NULL) free(str);
     // simply shouldn't barf by this point
 
     CYG_TEST_PASS_FAIL( 1, "malloc and calloc of 0 bytes doesn't crash" );
@@ -238,6 +240,16 @@ main( int argc, char *argv[] )
     free(i);
     free(str);
     free(str2);
+
+    // Test 9
+
+#if defined(CYGIMP_MEMALLOC_MALLOC_VARIABLE_SIMPLE) && \
+      defined(CYGSEM_MEMALLOC_ALLOCATOR_VARIABLE_COALESCE)
+    poolmax = mallinfo().maxfree; // recalculate for non-coalescing allocator
+#endif
+    str = (char *)malloc( poolmax );
+    CYG_TEST_PASS_FAIL( str != NULL, "malloc of maximum free block size works");
+    free(str);
 
     CYG_TEST_FINISH("Finished tests from testcase " __FILE__ " for C library "
                     "malloc(), calloc() and free() functions");

@@ -160,7 +160,7 @@ load_srec_image(int (*getc)(void), unsigned long base)
             }
             if ((addr < user_ram_start) || (addr > user_ram_end)) {
                 if (!verify_action("Attempt to load S-record data to address: %p\n"
-                                   "RedBoot does not believe this is in RAM\n", (void*)addr))
+                                   "RedBoot does not believe this is in RAM", (void*)addr))
                     return 0;
             }
             count -= ((type-'1'+2)+1);

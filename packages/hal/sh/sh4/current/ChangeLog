@@ -1,3 +1,53 @@
+2001-07-17  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh4.cdl: Allow caching.
+
+	* include/mod_regs_intc.h (CYGARC_REG_ICR_INIT): Revert
+	CYGHWR_HAL_SH_IRQ_USE_IRQLVL sense.
+
+	* include/variant.inc: Fix alignment bug.
+
+	* include/mod_regs_ubc.h: Compile when UBC disabled.
+
+2001-07-16  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (hal_interrupt_update_level): Fix typo.
+
+	* include/variant.inc: Added ICR initialization.
+
+	* include/mod_regs_intc.h: Added ICR definitions.
+
+	* cdl/hal_sh_sh4.cdl: Interrupt option cleanup.
+
+	* include/mod_regs_bsc.h: Added some BCR1 and MCR register bit
+	definitions. Deleted wrong register definitions.
+
+	* src/pcic.c (cyg_hal_sh_pcic_pci_init): Set PCIC MCR
+	register. Set BCR1 master flag. Set PCI cache line size.
+
+2001-07-13  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_bsc.h: Removed SDMR2 definition - it is
+	platform specific.
+
+2001-07-10  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_7750.h: define intc macro.
+
+2001-07-09  Jesper Skov  <jskov@redhat.com>
+
+	* include/mod_regs_ubc.h: Ignore ASID when stepping.
+
+	* include/mod_7750.h: Fix DCAC address top.
+
+	* src/variant.S: Let all cache functions delay for 8 nops before
+	returning.
+
+	* include/mod_regs_bsc.h: Added more registers.
+
+	* cdl/hal_sh_sh4.cdl: Tweak options, add options for interrupts
+	and cache settings.
+
 2001-05-29  Jesper Skov  <jskov@redhat.com>
 
 	* include/var_io.h: Added. Includes plf_io.h
@@ -94,7 +144,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

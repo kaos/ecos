@@ -140,6 +140,10 @@ void
 do_version(int argc, char *argv[])
 {
     extern char RedBoot_version[];
+#ifdef CYGPKG_IO_FLASH
+    externC void _flash_info(void);
+#endif
+
     printf(RedBoot_version);
 #ifdef HAL_PLATFORM_CPU
     printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
@@ -148,6 +152,9 @@ do_version(int argc, char *argv[])
     printf("RAM: %p-%p, %p-%p available\n", 
            (void*)ram_start, (void*)ram_end,
            (void*)user_ram_start, (void *)user_ram_end);
+#ifdef CYGPKG_IO_FLASH
+    _flash_info();
+#endif
 }
 
 void

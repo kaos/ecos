@@ -130,20 +130,14 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
                 other clocks are derived from."
         }
 
-        cdl_option CYGHWR_HAL_SH_OOC_CKIO {
-            display          "SH clock CKIO output enable"
-            default_value    1
-            description      "
-                This selects whether CKIO output is enabled."
-        }
-
         cdl_option CYGHWR_HAL_SH_OOC_PLL_1 {
             display          "SH clock PLL circuit 1"
             flavor           data
             default_value    6
             legal_values     { 0 6 }
             description      "
-                This selects whether PLL1 is enabled."
+                This selects the multiplication factor provided by
+                PLL1."
         }
 
         cdl_option CYGHWR_HAL_SH_OOC_PLL_2 {
@@ -152,20 +146,22 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
             default_value    1
             legal_values     { 0 1 }
             description      "
-                This selects whether PLL2 is enabled."
+                This selects the multiplication factor provided by
+                PLL2. If PLL2 is disabled this option should
+                be set to zero."
         }
 
         cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_IFC {
-            display          "SH clock divider, core"
+            display          "SH CPU clock divider"
             flavor           data
             default_value    1
             legal_values     { 1 2 3 4 6 8 }
             description      "
-                This divider option affects the CPU core clock."
+                This divider option affects the CPU clock."
         }
 
         cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_BFC {
-            display          "SH clock divider, bus"
+            display          "SH bus clock divider"
             flavor           data
             default_value    3
             legal_values     { 1 2 3 4 6 8 }
@@ -174,7 +170,7 @@ cdl_package CYGPKG_HAL_SH_SH7750_CQ7750 {
         }
 
         cdl_option CYGHWR_HAL_SH_OOC_DIVIDER_PFC {
-            display          "SH clock divider, peripheral"
+            display          "SH peripheral clock divider"
             flavor           data
             default_value    6
             legal_values     { 1 2 3 4 6 8 }

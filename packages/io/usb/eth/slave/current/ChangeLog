@@ -1,3 +1,17 @@
+2001-07-10  Bart Veer  <bartv@redhat.com>
+
+	* doc/usbseth.sgml, doc/*.html:
+	Document the below changes.
+
+	* cdl/usbs_eth.cdl:
+	The USB-ethernet device now registers itself as either eth0 or
+	eth1 by default, depending on what else is present in the system.
+	Also bootp/dhcp support is prohibited for this network device on
+	the ground that it is rather unlikely that a host will provide
+	a dhcp service for a network device that does not exist until the
+	host-target connection has been fully established.
+	
+
 2001-07-02  Bart Veer  <bartv@redhat.com>
 
 	* host/ecos_usbeth.c (ecos_usbeth_probe):

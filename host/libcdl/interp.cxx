@@ -59,6 +59,9 @@
 // in <tcl.h>
 #include <cdlcore.hxx>
 
+// quote() needs access to isspace()
+#include <cctype>
+
 //}}}
 
 //{{{  Statics                                                  

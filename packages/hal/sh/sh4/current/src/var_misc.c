@@ -192,8 +192,8 @@ hal_interrupt_update_level(int vector)
     case CYGNUM_HAL_INTERRUPT_SCIF_BRI:
     case CYGNUM_HAL_INTERRUPT_SCIF_TXI:
         HAL_READ_UINT16(CYGARC_REG_IPRC, iprX);
-        iprX &= ~CYGARC_REG_IPRC_DMAC_MASK;
-        iprX |= (level)*CYGARC_REG_IPRC_DMAC_PRI1;
+        iprX &= ~CYGARC_REG_IPRC_SCIF_MASK;
+        iprX |= (level)*CYGARC_REG_IPRC_SCIF_PRI1;
         HAL_WRITE_UINT16(CYGARC_REG_IPRC, iprX);
         break;
     case CYGNUM_HAL_INTERRUPT_RESERVED_1E0:

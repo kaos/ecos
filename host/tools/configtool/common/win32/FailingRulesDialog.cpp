@@ -182,8 +182,11 @@ void CFailingRulesDialog::OnOK()
               {
                 bool bEnabled=value.is_enabled();
                 str.Format(_T("%s %s and set value to %s\n"),bEnabled?_T("disable"):_T("enable"),strName,strValue);
-                CdlSimpleValue simple_value = valuable->get_simple_value ();
-                valuable->set_enabled_and_value (m_Transaction, bEnabled, simple_value, CdlValueSource_User);
+                // This is wrong: it should set the NEW value. This is the cause of a long-standing bug...
+                // CdlSimpleValue simple_value = valuable->get_simple_value ();
+                //valuable->set_enabled_and_value (m_Transaction, bEnabled, simple_value, CdlValueSource_User);
+                valuable->set_enabled_and_value (m_Transaction, bEnabled, CUtils::UnicodeToStdStr (strValue), CdlValueSource_User);
+
               }
               break;
             case CdlValueFlavor_Data :

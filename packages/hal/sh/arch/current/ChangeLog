@@ -1,3 +1,7 @@
+2001-07-09  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_stub.c: Fixed potential SH4 problem in UBC handling.
+
 2001-07-02  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_arch.h: CYGARC_PHYSICAL_ADDRESS renamed to

@@ -239,7 +239,7 @@ const ecFileName ecFileName::FullName() const
         return *this;
     }
 #else
-    return wxGetCwd() + wxString(cSep) + *this;
+    return wxGetCwd() + wxString(cSep) + wxString(*this);
 #endif
 }
 
@@ -706,7 +706,7 @@ int ecFileName::FindFiles (const wxString& pszDir,wxArrayString &ar,const wxStri
 void ecFileName::ReplaceExtension(const wxString& newExt)
 {
     wxString ext = newExt;
-    if (ext[0] == wxT('.'))
+    if (ext[(unsigned) 0] == wxT('.'))
         ext = ext.Mid(1);
 
     wxStripExtension(* this);

@@ -262,6 +262,9 @@ static cyg_bool diag_check_string( const char *str )
 
 externC void diag_vprintf( const char *fmt, CYG_ADDRWORD *args)
 {
+
+    cyg_bool pad = true;
+
     if( !diag_check_string(fmt) )
     {
         int i;
@@ -309,6 +312,13 @@ externC void diag_vprintf( const char *fmt, CYG_ADDRWORD *args)
                 }
             }
 
+            if (long_op) {
+                    if(pad) args++;
+                    pad=false;
+            } else {
+                    pad=!pad;
+            }
+               
             switch( c )
             {
             case 'd':

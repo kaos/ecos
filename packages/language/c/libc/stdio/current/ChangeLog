@@ -1,3 +1,10 @@
+2001-07-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/common/fflush.cxx (cyg_libc_stdio_flush_all_but): Don't
+	flush a stream that was last used for reading - it doesn't need it.
+	* include/stream.hxx: cyg_libc_stdio_flush_all_but needs to be a
+	friend of class Cyg_StdioStream to do the above.
+
 2001-06-18  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/input/fread.cxx (fread): Fix compilation problem with below

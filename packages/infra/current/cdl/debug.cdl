@@ -50,6 +50,7 @@
 cdl_component CYGDBG_USE_ASSERTS {
     display       "Use asserts"
     default_value 1
+    requires      { 1 == CYGINT_INFRA_DEBUG_TRACE_IMPL }
     description   "
         If this option is defined, asserts in the code are tested.
         Assert functions (CYG_ASSERT()) are defined in
@@ -63,6 +64,7 @@ cdl_component CYGDBG_USE_ASSERTS {
 cdl_component CYGDBG_USE_TRACING {
     display       "Use tracing"
     default_value 0
+    requires      { 1 == CYGINT_INFRA_DEBUG_TRACE_IMPL }
     description   "
         If this option is defined, tracing operations
         result in output or logging, depending on other options.
@@ -109,11 +111,14 @@ cdl_component CYGDBG_USE_TRACING {
     }
 }
 
-# FIXME: The below options should be mutually exclusive.
+cdl_interface CYGINT_INFRA_DEBUG_TRACE_IMPL {
+    display "Trace output implementations"
+}
+
 cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_NULL {
     display       "Null output"
-#          type             radio
     default_value 0
+    implements    CYGINT_INFRA_DEBUG_TRACE_IMPL
     description   "
         A null output module which is useful when
         debugging interactively; the output routines
@@ -122,24 +127,24 @@ cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_NULL {
 }
 cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_SIMPLE {
     display          "Simple output"
-#          type             radio
     default_value 0
+    implements    CYGINT_INFRA_DEBUG_TRACE_IMPL
     description   "
         An output module which produces simple output
         from tracing and assertion events."
 }
 cdl_option CYGDBG_INFRA_DEBUG_TRACE_ASSERT_FANCY {
     display       "Fancy output"
-#          type             radio
     default_value 0
+    implements    CYGINT_INFRA_DEBUG_TRACE_IMPL
     description "
         An output module which produces fancy output
         from tracing and assertion events."
 }
 cdl_component CYGDBG_INFRA_DEBUG_TRACE_ASSERT_BUFFER {
     display       "Buffered tracing"
-#          type             radio
     default_value 1
+    implements    CYGINT_INFRA_DEBUG_TRACE_IMPL
     description   "
         An output module which buffers output
         from tracing and assertion events. The stored

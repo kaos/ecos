@@ -2,7 +2,7 @@
 //
 //      devs/wallclock/sh3.cxx
 //
-//      Wallclock emulation implementation
+//      SH3 RTC module driver.
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####

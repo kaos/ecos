@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.h,v 1.23 2001/06/18 14:41:13 julians Exp $
+// Version:     $Id: configtool.h,v 1.24 2001/07/13 15:17:43 julians Exp $
 // Purpose:
 // Description: main header file for the ConfigTool application
 // Requires:
@@ -102,7 +102,7 @@ class ecPipedProcess;
 // Define a new application type, each program should derive a class from wxApp
 class ecApp : public wxApp
 {
-    friend ecMainFrame;
+    friend class ecMainFrame;
 public:
 //// Ctor & dtor
     ecApp();

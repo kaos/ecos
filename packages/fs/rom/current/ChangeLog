@@ -1,3 +1,8 @@
+2001-07-13  Richard Panton (richard.panton@3glab.com)
+
+	* support/mk_romfs.c: Convert between host FS file modes and eCos
+	ones.
+
 2000-10-25  Richard Panton (richard.panton@3glab.com)
 
 	* cdl/romfs.cdl:

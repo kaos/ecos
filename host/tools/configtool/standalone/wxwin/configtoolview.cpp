@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/10/05
-// Version:     $Id: configtoolview.cpp,v 1.10 2001/06/04 17:00:43 julians Exp $
+// Version:     $Id: configtoolview.cpp,v 1.11 2001/07/13 15:17:43 julians Exp $
 // Purpose:
 // Description: Implementation file for the ecConfigToolView class
 // Requires:
@@ -431,17 +431,17 @@ ecConfigItem *ecConfigToolView::DoFind(const wxString& what, wxWindow* parent)
             strName.MakeLower();
         }
 
-        int nIndex=strName.Find(strFind);
+        int nIndex = strName.Find(strFind);
         if(-1!=nIndex)
         {
             if (wxGetApp().GetSettings().m_findMatchWholeWord)
             {
                 // Enforce whole-word semantics: to left and right
-                if(nIndex>0 && IsWordChar(strName[nIndex-1])){
+                if(nIndex>0 && IsWordChar(strName[(unsigned) (nIndex-1)])){
                     continue;
                 }
                 nIndex += strFind.Length();
-                if (nIndex < strName.Length() && IsWordChar(strName[nIndex])){
+                if (nIndex < strName.Length() && IsWordChar(strName[(unsigned) nIndex])){
                     continue;
                 }
             }		

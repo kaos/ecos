@@ -93,17 +93,26 @@ cyg_ucount32          Cyg_Scheduler_Base::thread_switches = 0;
 // -------------------------------------------------------------------------
 // Scheduler unlock function.
 
-// This is only called when the lock is to be zeroed and there is the
-// potential for real work to be done. Other cases are handled in
-// Cyg_Scheduler::unlock() which is an inline.  The new_lock argument
-// contains the value that the scheduler lock should have after this
-// function has completed. If it is zero then the lock is being
-// released and some extra work (running ASRs, checking for DSRs) is
+// This is only called when there is the potential for real work to be
+// done. Other cases are handled in Cyg_Scheduler::unlock() which is
+// an inline; _or_ this function may have been called from
+// Cyg_Scheduler::reschedule(), or Cyg_Scheduler::unlock_reschedule. The
+// new_lock argument contains the value that the scheduler lock should
+// have after this function has completed. If it is zero then the lock is
+// being released and some extra work (running ASRs, checking for DSRs) is
 // done before returning. If it is non-zero then it must equal the
 // current value of the lock, and is used to indicate that we want to
 // reacquire the scheduler lock before returning. This latter option
 // only makes any sense if the current thread is no longer runnable,
-// otherwise this function will do nothing.
+// e.g. sleeping, otherwise this function will do nothing.
+// This approach of passing in the lock value at the end effectively
+// makes the scheduler lock a form of per-thread variable. Each call
+// to unlock_inner() carries with it the value the scheduler should
+// have when it reschedules this thread back, and leaves this function.
+// When it is non-zero, and the thread is rescheduled, no ASRS are run,
+// or DSRs processed. By doing this, it makes it possible for threads
+// that want to go to sleep to wake up with the scheduler lock in the
+// same state it was in before.
 
 void Cyg_Scheduler::unlock_inner( cyg_ucount32 new_lock )
 {

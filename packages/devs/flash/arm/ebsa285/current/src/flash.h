@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -61,5 +61,5 @@
 
 #define FLASH_Intel_code   0x89
 #define FLASH_28F008SA     0xA2
-
+#define FLASH_28F008SC     0xA6
 #endif  // _FLASH_HWR_H_

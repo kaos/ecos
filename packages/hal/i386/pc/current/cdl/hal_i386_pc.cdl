@@ -256,6 +256,7 @@ cdl_package CYGPKG_HAL_I386_PC {
 	
         parent        CYGPKG_HAL_ROM_MONITOR
         requires      { CYG_HAL_STARTUP == "FLOPPY" || CYG_HAL_STARTUP == "ROM" }
+	requires      { !CYGHWR_HAL_I386_FPU_SWITCH_LAZY }
         description   "
             Enable this option if this program is to be used as a ROM monitor,
             i.e. applications will be loaded into RAM on the board, and this

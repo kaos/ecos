@@ -1,3 +1,18 @@
+2001-07-17  David Woodhouse <dwmw2@redhat.com>
+
+	* src/redboot_linux_exec.c: Add environment stuff to the 'exec' 
+	command, also make it use the entry point from the last 'load' 
+	command if there is one.
+	Also add '-w' delay option.
+
+2001-07-09  David Woodhouse <dwmw2@redhat.com>
+
+	* src/redboot_linux_exec.c: New 'exec' command for RedBoot, mostly
+	copied from the SH version, hacked to pass arguments in argc/argv
+	form as that seems to be what most Linux/MIPS kernels expect to
+	receive from PMON.
+	* cdl/hal_mips.cdl: Add necessary magic for the above.
+	
 2001-07-03  Hugo Tyson  <hmt@redhat.com>
 
 	* src/vectors.S (restore_state): When restoring the CPU status

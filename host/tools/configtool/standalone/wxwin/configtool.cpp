@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: configtool.cpp,v 1.38 2001/07/05 10:42:16 julians Exp $
+// Version:     $Id: configtool.cpp,v 1.40 2001/07/16 14:02:56 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool application class
 // Requires:
@@ -880,12 +880,15 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
                     // Useful for ecosconfig
                     wxSetEnv(wxT("ECOS_REPOSITORY"), pDoc->GetPackagesDir());
 
+                     // No longer necessary because we're using /cygdrive notation
+#if 0
                     if (! pDoc->GetBuildTree().IsEmpty())
                         CygMount(pDoc->GetBuildTree()[0]);
                     if (! pDoc->GetInstallTree().IsEmpty())
                         CygMount(pDoc->GetInstallTree()[0]);
                     if (! pDoc->GetRepository().IsEmpty())
                         CygMount(pDoc->GetRepository()[0]);
+#endif
                 }
             }
         }
@@ -924,27 +927,27 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
     {
         if (!strBinDir.IsEmpty())
         {
-            (* cmdLine) += wxString(wxT("export PATH=")) + strBinDir + wxT(":$PATH; ");
-
+            (* cmdLine) += wxString(wxT("export PATH=")) + wxString(strBinDir) + wxT(":$PATH; ");
+            
             // Also set the path
             wxString oldPath(wxGetenv(wxT("PATH")));
             wxString path(strBinDir);
             if (!oldPath.IsEmpty())
-	    {
-		path += wxT(":");
+            {
+                path += wxT(":");
                 path += oldPath;
-	    }
+            }
             wxSetEnv(wxT("PATH"), path);
         }
         (* cmdLine) += wxString(wxT("unset GDBTK_LIBRARY; ")) ;
         wxUnsetEnv(wxT("GDBTK_LIBRARY"));
-
+        
         (* cmdLine) += wxString(wxT("unset GCC_EXEC_PREFIX; ")) ;
         wxUnsetEnv(wxT("GCC_EXEC_PREFIX"));
-
-        (* cmdLine) += wxString(wxT("export ECOS_REPOSITORY=")) + pDoc->GetPackagesDir()+ wxT("; ");
+        
+        (* cmdLine) += wxString(wxT("export ECOS_REPOSITORY=")) + wxString(pDoc->GetPackagesDir()) + wxT("; ");
         wxSetEnv(wxT("ECOS_REPOSITORY"), pDoc->GetPackagesDir());
-
+        
 #if 0
         ecFileName strUserBinDir(GetSettings().m_userToolsDir);
         if(strUserBinDir.IsEmpty())
@@ -966,16 +969,16 @@ bool ecApp::PrepareEnvironment(bool bWithBuildTools, wxString* cmdLine)
             strHostToolsBinDir = strHostToolsBinDir.Head ();
             
             // tools directories are in the order host-tools, user-tools, comp-tools, install/bin (if present), contrib-tools (if present) on the path
-
+            
             // TODO: is this right? Assuming that the user tools are already in the user's path.
             // const ecFileName strContribBinDir(strUserBinDir, wxT("..\\contrib\\bin"));
             // const ecFileName strUsrBinDir(strUserBinDir, wxT("..\\usr\\bin"));
             const ecFileName strInstallBinDir(pDoc->GetInstallTree (), wxT("bin"));
-
-            (* cmdLine) += wxString(wxT("export PATH=")) + strInstallBinDir + wxT(":$PATH; ");
+            
+            (* cmdLine) += wxString(wxT("export PATH=")) + wxString(strInstallBinDir) + wxT(":$PATH; ");
             (* cmdLine) += wxString(wxT("unset GDBTK_LIBRARY; ")) ;
             (* cmdLine) += wxString(wxT("unset GCC_EXEC_PREFIX; ")) ;
-            (* cmdLine) += wxString(wxT("export ECOS_REPOSITORY=")) + pDoc->GetPackagesDir()+ wxT("; ");
+            (* cmdLine) += wxString(wxT("export ECOS_REPOSITORY=")) + wxString(pDoc->GetPackagesDir()) + wxT("; ");
         }
 #endif
     }
@@ -1038,7 +1041,14 @@ void ecApp::Build(const wxString &strWhat /*=wxT("")*/ )
             strCmd += GetSettings().m_strMakeOptions;
         }
         strCmd += wxT(" --directory ");
-        strCmd += pDoc->GetBuildTree();
+
+        // Quoting the name may not mix with the 'sh' command on Unix, so only do it
+        // under Windows where it's more likely there will be spaces needing quoting.
+#ifdef __WXMSW__
+        strCmd += wxString(wxT("\"")) + wxString(pDoc->GetBuildTree()) + wxString(wxT("\""));
+#else
+        strCmd += wxString(pDoc->GetBuildTree()) ;
+#endif
 
         wxString variableSettings;
 

@@ -30,7 +30,7 @@
 // Author(s):   julians
 // Contact(s):  julians
 // Date:        2000/08/24
-// Version:     $Id: mainwin.cpp,v 1.46 2001/06/29 13:48:22 julians Exp $
+// Version:     $Id: mainwin.cpp,v 1.47 2001/07/09 14:21:32 julians Exp $
 // Purpose:
 // Description: Implementation file for the ConfigTool main window
 // Requires:
@@ -458,7 +458,7 @@ void ecMainFrame::CreateWindows()
     m_shortDescrSashWindow->SetOrientation(wxLAYOUT_HORIZONTAL);
     m_shortDescrSashWindow->SetAlignment(wxLAYOUT_TOP);
     //m_shortDescrSashWindow->SetSashVisible(wxSASH_TOP, TRUE);
-    m_shortDescrWindow = new ecShortDescriptionWindow(m_shortDescrSashWindow, ecID_SHORT_DESCR_WINDOW, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxCLIP_CHILDREN|wxTE_NO_VSCROLL|wxTE_READONLY);
+    m_shortDescrWindow = new ecShortDescriptionWindow(m_shortDescrSashWindow, ecID_SHORT_DESCR_WINDOW, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxCLIP_CHILDREN/*|wxTE_NO_VSCROLL*/|wxTE_READONLY);
     m_shortDescrWindow->SetBackgroundColour(wxColour(255, 255, 225));
     m_shortDescrWindow->SetHelpText(_("The short description window displays brief help on a selected configuration item."));
     

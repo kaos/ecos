@@ -41,13 +41,13 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_I386_GENERIC {
-    display  "i386 PC target"
+    display       "i386 generic target"
     parent        CYGPKG_HAL_I386
     define_header hal_i386_generic.h
     include_dir   cyg/hal
     description   "
     This package provides support for generic IA32 CPU variants.
-    Any CPU from a80386 to the latest Pentium/Athlon should work
+    Any CPU from an 80386 to the latest Pentium/Athlon should work
     with this variant HAL. Essentially this variant is empty, it
     just avoids providing any configuration to the generic architecture
     support in the architecture HAL."
