@@ -1,3 +1,10 @@
+2003-06-18  Jonathan Larmour  <jifl@eCosCentric.com>
+
+	* src/pthread.cxx (pthread_self_info): Just add some comments so
+	no-one's tempted to uncomment assert.
+	(pthread_create): Verify that self is a valid POSIX thread when
+	needed.
+
 2003-03-20  Mark Salter  <msalter@redhat.com>
 
 	* include/pthread.h: Avoid conflict with recently introduced gcc

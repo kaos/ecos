@@ -160,6 +160,10 @@ pthread_info *pthread_self_info(void)
     
     pthread_info *info = (pthread_info *)thread->get_data(CYGNUM_KERNEL_THREADS_DATA_POSIX);
 
+    // This assertion mustn't be enabled because sometimes we can legitimately
+    // carefully call this as long as we realise the value can be NULL.
+    // e.g. consider the use of this when inheriting sigmasks when in the
+    // context of creating the main() thread.
 //    CYG_CHECK_DATA_PTR(info, "Not a POSIX thread!!!");
 
     return info;
@@ -476,6 +480,17 @@ externC int pthread_create ( pthread_t *thread,
 
     if( use_attr.inheritsched == PTHREAD_INHERIT_SCHED )
     {
+        CYG_ASSERT( NULL != self,
+                    "Attempt to inherit sched policy from non-POSIX thread" );
+#ifdef CYGDBG_USE_ASSERTS
+        // paranoia check
+        int i;
+        for (i=(sizeof(thread_table)/sizeof(*thread_table))-1; i>=0; i--) {
+            if (thread_table[i] == self)
+                break;
+        }
+        CYG_ASSERT( i>=0, "Current pthread not found in table" );
+#endif
         use_attr.schedpolicy = self->attr.schedpolicy;
         use_attr.schedparam  = self->attr.schedparam;
     }
@@ -599,6 +614,19 @@ externC int pthread_create ( pthread_t *thread,
 
 #ifdef CYGPKG_POSIX_SIGNALS
     // Initialize signal specific fields.
+    if (NULL != self) {
+        CYG_CHECK_DATA_PTR( self,
+                            "Attempt to inherit signal mask from bogus pthread" );
+#ifdef CYGDBG_USE_ASSERTS
+        // paranoia check
+        int i;
+        for (i=(sizeof(thread_table)/sizeof(*thread_table))-1; i>=0; i--) {
+            if (thread_table[i] == self)
+                break;
+        }
+        CYG_ASSERT( i>=0, "Current pthread not found in table" );
+#endif
+    }
     cyg_posix_thread_siginit( nthread, self );
 #endif
 
