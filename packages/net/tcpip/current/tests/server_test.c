@@ -99,7 +99,7 @@ server_test(struct bootp *bp)
     memset(&local, 0, sizeof(local));
     local.sin_family = AF_INET;
     local.sin_len = sizeof(local);
-    local.sin_port = ntohs(7734);
+    local.sin_port = htons(7734);
     local.sin_addr.s_addr = INADDR_ANY;
     if(bind(s, (struct sockaddr *) &local, sizeof(local)) < 0) {
         pexit("bind error");

@@ -309,11 +309,7 @@ externC void hal_idle_thread_action(cyg_uint32 loop_count);
 
 // Stack needed for a context switch ( sizeof(HAL_SavedRegisters) ).
 #ifdef CYGHWR_HAL_I386_FPU
-# ifdef CYGHWR_HAL_I386_FPU_SWITCH_LAZY
-#  define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 13)
-# else
-#  define CYGNUM_HAL_STACK_CONTEXT_SIZE ((4 * 12) + 108)
-# endif
+# define CYGNUM_HAL_STACK_CONTEXT_SIZE ((4 * 12) + 108)
 #else
 # define CYGNUM_HAL_STACK_CONTEXT_SIZE (4 * 12)
 #endif

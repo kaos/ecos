@@ -1,3 +1,8 @@
+2002-01-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add synthetic flash driver package, and add it to the
+	synthetic linux target.
+
 2002-01-03  Mark Salter  <msalter@redhat.com>
 
 	* ecos.db: Use generic i82559 driver for iq80310.

@@ -54,15 +54,25 @@
 // no way of manipulating it. A minimal set of no-op #define's is
 // required.
 
+#include <cyg/infra/cyg_type.h>
+
 #define HAL_ICACHE_ENABLE()
 #define HAL_ICACHE_DISABLE()
 #define HAL_ICACHE_SYNC()
 #define HAL_ICACHE_INVALIDATE_ALL()
+#define HAL_ICACHE_IS_ENABLED(_state_)          \
+    CYG_MACRO_START                             \
+    (_state_) = 0;                              \
+    CYG_MACRO_END
 
 #define HAL_DCACHE_ENABLE()
 #define HAL_DCACHE_DISABLE()
 #define HAL_DCACHE_SYNC()
 #define HAL_DCACHE_INVALIDATE_ALL()
+#define HAL_DCACHE_IS_ENABLED(_state_)          \
+    CYG_MACRO_START                             \
+    (_state_) = 0;                              \
+    CYG_MACRO_END
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_HAL_CACHE_H

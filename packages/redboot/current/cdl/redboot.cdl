@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -638,7 +638,7 @@ cdl_package CYGPKG_REDBOOT {
           services to programs which it executes."
     }
 
-    cdl_option CYGSEM_REDBOOT_BSP_SYSCALLS {
+    cdl_component CYGSEM_REDBOOT_BSP_SYSCALLS {
         display       "Allow RedBoot to handle GNUPro application 'syscalls'."
         flavor        bool
         default_value 0

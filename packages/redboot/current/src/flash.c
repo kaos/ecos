@@ -1689,7 +1689,9 @@ lookup_alias(char *alias, char *alias_buf)
     int type;
     bool hold_bool_val;
     long hold_long_val;
+#ifdef CYGPKG_REDBOOT_NETWORKING
     int esa_ptr;
+#endif
 
     make_alias(name, alias);
     if (flash_get_config(name, &val, CONFIG_STRING)) {

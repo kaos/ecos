@@ -455,9 +455,9 @@ __fpu_switch_vsr:
 	pusha					# save all regs
 
 	hal_smp_cpu %ecx			# ECX = CPU id
-	movl	$cyg_hal_fpustate_owner,%esi	# ESI = FPU context owner table
+	movl	$cyg_hal_fpustate_owner,%eax	# EAX = FPU context owner table
 	leal	0(%eax,%ecx,4),%esi		# ESI = address of owner pointer
-	movl	$cyg_hal_fpustate_current,%edi	# EDI = current threads context table
+	movl	$cyg_hal_fpustate_current,%ebx	# EBX = current threads context table
 	leal	0(%ebx,%ecx,4),%edi		# EDI = address of context pointer
 	movl	0(%esi),%eax			# EAX = Current FPU context owner
 	movl	0(%edi),%ebx			# EBX = Current threads FPU context

@@ -1,3 +1,10 @@
+2002-01-09  Nick Garnett  <nickg@redhat.com>
+
+	* tests/clock.c (cyg_start): Added CYG_TEST_INIT() to
+	NOTAPPLICABLE version of cyg_start() so that the breakpoints are
+	correctly sequenced in the testfarm and it does not think that
+	this is a failure.
+
 2001-06-22  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/time.cdl (CYGFUN_LIBC_TIME_SUS_EXTNS): Added.

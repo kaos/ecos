@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -229,7 +229,7 @@
 	// should be cache aligned.
 	.set	__base,0xA00
 	.rept	0xF00 - 0xE00
-	FL_SECTION_ENTRY __base,0,3,0,0,0,0
+	FL_SECTION_ENTRY __base,0,3,1,0,0,0
 	.set	__base,__base+1
 	.endr
 

@@ -1,3 +1,9 @@
+2002-01-04  Mark Salter  <msalter@redhat.com>
+
+	* cdl/iq80310_eth_drivers.cdl: Remove
+	CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_TX_DESCRIPTORS and
+	CYGNUM_DEVS_ETH_ARM_IQ80310_MAX_RX_DESCRIPTORS.
+
 2002-01-03  Mark Salter  <msalter@redhat.com>
 
 	* cdl/iq80310_eth_drivers.cdl: Rewrite to use generic i82559 driver.

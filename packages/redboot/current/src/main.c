@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -153,7 +153,7 @@ do_version(int argc, char *argv[])
 #ifdef HAL_PLATFORM_CPU
     diag_printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
-    diag_printf("Copyright (C) 2000, 2001, Red Hat, Inc.\n\n");
+    diag_printf("Copyright (C) 2000, 2001, 2002, Red Hat, Inc.\n\n");
     diag_printf("RAM: %p-%p, %p-%p available\n", 
                 (void*)ram_start, (void*)ram_end,
                 (void*)user_ram_start, (void *)user_ram_end);

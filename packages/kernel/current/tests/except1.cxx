@@ -55,8 +55,12 @@
 #define NTHREADS 1
 #include "testaux.hxx"
 
+#ifndef CYGPKG_HAL_ARM_PID
+#define EXCEPTION_DATA_ACCESS
+#endif
+
 static int d0;
-#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+#ifdef EXCEPTION_DATA_ACCESS
 static cyg_exception_handler handler0;
 
 static void handler0(CYG_ADDRWORD data, cyg_code number, CYG_ADDRWORD info)
@@ -88,7 +92,7 @@ static void handler1(CYG_ADDRWORD data, cyg_code number, CYG_ADDRWORD info)
     CYG_TEST_CHECK((CYG_ADDRWORD)99 == info, "handler given wrong info");
 }
 
-#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+#ifdef EXCEPTION_DATA_ACCESS
 // The following function attempts to cause an exception in various
 // hacky ways.  It is machine dependent what exception is generated.
 // It does reads rather than writes hoping not to corrupt anything
@@ -127,7 +131,7 @@ void cause_exception(void)
 
 static void entry0( CYG_ADDRWORD data )
 {
-#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+#ifdef EXCEPTION_DATA_ACCESS
     cyg_code n;
 #endif
     cyg_exception_handler *old_handler, *old_handler1;
@@ -162,7 +166,7 @@ static void entry0( CYG_ADDRWORD data )
     p->deregister_exception(CYGNUM_HAL_EXCEPTION_MAX);
     p->deregister_exception(CYGNUM_HAL_EXCEPTION_MAX);
 
-#ifdef CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+#ifdef EXCEPTION_DATA_ACCESS
 
 #if 0
 #elif defined(CYGPKG_HAL_POWERPC_SIM)
@@ -185,7 +189,7 @@ static void entry0( CYG_ADDRWORD data )
     cause_exception();
 
     CYG_TEST_FAIL_FINISH("Couldn't cause exception");
-#else // CYGNUM_HAL_EXCEPTION_DATA_ACCESS
+#else // EXCEPTION_DATA_ACCESS
     CYG_TEST_NA("Platform does not support data exceptions");
 #endif
 

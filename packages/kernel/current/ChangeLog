@@ -1,3 +1,11 @@
+2002-01-07  Nick Garnett  <nickg@redhat.com>
+
+	* tests/except1.cxx: 
+	* tests/kexcept1.cxx:
+	Added ifdef to disable these tests in ARM PID platform. This
+	platform cannot generate any of the exceptions that this test
+	needs to work.
+
 2001-12-12  Jesper Skov  <jskov@redhat.com>
 
 	* tests/kcache2.c (time_ilock): Put some dummy goto statements in

@@ -1,3 +1,7 @@
+2002-01-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* tests/server_test.c (server_test): Correct port conversion.
+
 2001-12-14  Hugo Tyson  <hmt@redhat.com>
 
 	* src/sys/net/if_ethersubr.c (ether_output): Never ever print

@@ -362,6 +362,14 @@ package CYGPKG_DEVS_FLASH_ATLAS {
            This package contains hardware support for FLASH memory
 	   on the MIPS Atlas platform."
 }
+package CYGPKG_DEVS_FLASH_SYNTH {
+    alias               { "Synthetic FLASH memory support" synth_flash flash_synth }
+    directory           devs/flash/synth
+    script              flash_synth.cdl
+    hardware
+    description   "
+        FLASH memory device support for Synthetic target"
+}
 package CYGPKG_DEVS_TOUCH_IPAQ {
 	alias 		{ "Touch screen support for iPAQ" touch_ipaq }
 	directory	devs/touch/arm/ipaq
@@ -2256,6 +2264,7 @@ target linux {
         alias		{ "Linux synthetic target" i386linux }
 	packages        { CYGPKG_HAL_SYNTH
                           CYGPKG_HAL_SYNTH_I386
+                          CYGPKG_DEVS_FLASH_SYNTH
         }
         description "
     	    The linux target provides the 

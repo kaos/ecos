@@ -1,3 +1,18 @@
+2002-01-10  Hugo Tyson  <hmt@redhat.com>
+
+	* src/syscall.c (sys_timer_ticks): Explicitly initialize this.
+
+	* cdl/redboot.cdl (CYGSEM_REDBOOT_BSP_SYSCALLS): Changed to a
+	component; want to add stuff in here later.
+
+2002-01-10  Jesper Skov  <jskov@redhat.com>
+
+	* src/main.c (do_version): Added year 2002.
+
+2002-01-07  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (lookup_alias): Remove warning.
+
 2002-01-03  Gary Thomas  <gthomas@redhat.com>
 
 	* src/xyzModem.c (xyzModem_stream_read): BUG 57497

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 2000, 2001 Red Hat, Inc.                             
+// Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -77,7 +77,8 @@
 #define SYS_interrupt   1000
 #define SYS_meminfo     1001
 
-#define __GET_SHARED  0xbaad
+#define __GET_SHARED  0xbaad // 47789 decimal
+
 
 /*
  * Clients of this BSP will need to have access to BSP functions and
@@ -139,7 +140,7 @@ static inline void __putc(char c)
 
 static cyg_handle_t  sys_timer_handle;
 static cyg_interrupt sys_timer_interrupt;
-static cyg_uint32    sys_timer_ticks;
+static cyg_uint32    sys_timer_ticks = 0;
 
 static void
 sys_timer_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)

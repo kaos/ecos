@@ -1,3 +1,8 @@
+2002-01-10  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/if_i82559.c (find_82559s_match_func): Add some more compatible PCI
+	ids.
+
 2002-01-03  Mark Salter  <msalter@redhat.com>
 
 	* src/if_i82559.c (pci_init_find_82559s): Remove check that

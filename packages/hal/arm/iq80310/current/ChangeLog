@@ -1,3 +1,7 @@
+2002-01-04  Mark Salter  <msalter@redhat.com>
+
+	* include/hal_platform_setup.h: Turn on ECC for uncached alias of RAM.
+
 2002-01-03  Mark Salter  <msalter@redhat.com>
 
 	* misc/redboot_ROM.ecm: Use generic i82559 package.

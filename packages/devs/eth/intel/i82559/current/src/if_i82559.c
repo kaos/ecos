@@ -2667,7 +2667,9 @@ find_82559s_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
         (0x8086 == v) &&
         ((0x1030 == d) ||
          (0x1229 == d) ||
-         (0x1209 == d));
+         (0x1209 == d) ||
+         (0x1029 == d) ||
+         (0x2449 == d));
 }
 
 static int

@@ -1,3 +1,15 @@
+2002-01-08  Nick Garnett  <nickg@redhat.com>
+
+	* include/hal_arch.h:
+	Removed consideration of lazy FPU context switching in determining
+	the size of CYGNUM_HAL_STACK_CONTEXT_SIZE, since it does not
+	actually make any difference - and previously resulted in too
+	small a value for CYGNUM_HAL_STACK_SIZE_MINIMUM.
+
+2002-01-07  Nick Garnett  <nickg@redhat.com>
+
+	* src/vectors.S (__fpu_switch_vsr): Fixed register usage bug.
+
 2001-12-19  Mark Salter  <msalter@redhat.com>
 
 	* include/arch.inc: Use fnsave instead of fsave.

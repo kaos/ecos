@@ -1,3 +1,4 @@
+* Add synthetic target synthetic flash driver, contributed by Andrew Lunn.
 * CqREEK SH7750 FLASH driver added, contributed by Koichi Nagashima
 * EDB7xxx ethernet driver rewritten to be a generic Cirrus Logic CS8900A
   package.

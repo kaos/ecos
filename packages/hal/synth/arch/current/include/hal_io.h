@@ -35,7 +35,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):   nickg
-// Contributors:nickg, bartv
+// Contributors:nickg, bartv, alunn, jlarmour
 // Date:        1998-02-17
 // Purpose:     Define IO register support
 // Description: The macros defined here provide the HAL APIs for handling
@@ -307,10 +307,71 @@ struct cyg_hal_sys_itimerval {
     struct cyg_hal_sys_timeval  hal_it_interval;
     struct cyg_hal_sys_timeval  hal_it_value;
 };
+
+/* lseek whence flags */
+#define CYG_HAL_SYS_SEEK_SET        0       /* Seek from beginning of file.  */
+#define CYG_HAL_SYS_SEEK_CUR        1       /* Seek from current position.  */
+#define CYG_HAL_SYS_SEEK_END        2       /* Seek from end of file.  */
+
+/* open/fcntl flags */
+
+#define CYG_HAL_SYS_O_RDONLY        0
+#define CYG_HAL_SYS_O_WRONLY        1
+#define CYG_HAL_SYS_O_RDWR          2
+#define CYG_HAL_SYS_O_CREAT       100
+#define CYG_HAL_SYS_O_EXCL        200
+#define CYG_HAL_SYS_O_NOCTTY      400
+#define CYG_HAL_SYS_O_TRUNC      1000
+#define CYG_HAL_SYS_O_APPEND     2000
+#define CYG_HAL_SYS_O_NONBLOCK   4000
+#define CYG_HAL_SYS_O_NDELAY     CYG_HAL_SYS_O_NONBLOCK
+#define CYG_HAL_SYS_O_SYNC      10000
+#define CYG_HAL_SYS_O_FSYNC     CYG_HAL_SYS_O_SYNC
+#define CYG_HAL_SYS_O_ASYNC     20000
+
+/* open mode flags */
+#define CYG_HAL_SYS_S_IRUSR 400
+#define CYG_HAL_SYS_S_IREAD CYG_HAL_SYS_S_IRUSR
+#define CYG_HAL_SYS_S_IWUSR 200
+#define CYG_HAL_SYS_S_IWRITE CYG_HAL_SYS_S_IWUSR
+#define CYG_HAL_SYS_S_IXUSR 100
+#define CYG_HAL_SYS_S_IEXEC CYG_HAL_SYS_S_IXUSR
+#define CYG_HAL_SYS_S_IRWXU \
+  (CYG_HAL_SYS_S_IREAD|CYG_HAL_SYS_S_IWRITE|CYG_HAL_SYS_S_IEXEC)
+#define CYG_HAL_SYS_S_IRWXG (CYG_HAL_SYS_S_IRWXU>>3)
+#define CYG_HAL_SYS_S_IRGRP (CYG_HAL_SYS_S_IRUSR>>3)
+#define CYG_HAL_SYS_S_IWGRP (CYG_HAL_SYS_S_IWUSR>>3)
+#define CYG_HAL_SYS_S_IXGRP (CYG_HAL_SYS_S_IXUSR>>3)
+#define CYG_HAL_SYS_S_IRWXO (CYG_HAL_SYS_S_IRWXG>>3)
+#define CYG_HAL_SYS_S_IROTH (CYG_HAL_SYS_S_IRGRP>>3)
+#define CYG_HAL_SYS_S_IWOTH (CYG_HAL_SYS_S_IWGRP>>3)
+#define CYG_HAL_SYS_S_IXOTH (CYG_HAL_SYS_S_IXGRP>>3)
+
+struct cyg_hal_sys_mmap_args {
+        unsigned long addr;
+        unsigned long len;
+        unsigned long prot;
+        unsigned long flags;
+        unsigned long fd;
+        unsigned long offset;
+};
+
+/* Protection flags for mmap */
+#define CYG_HAL_SYS_PROT_READ       0x1     /* page can be read */
+#define CYG_HAL_SYS_PROT_WRITE      0x2     /* page can be written */
+#define CYG_HAL_SYS_PROT_EXEC       0x4     /* page can be executed */
+#define CYG_HAL_SYS_PROT_NONE       0x0     /* page can not be accessed */
+
+/* Sharing types and other flags */
+#define CYG_HAL_SYS_MAP_SHARED      0x01     /* Share changes.  */
+#define CYG_HAL_SYS_MAP_PRIVATE     0x02     /* Changes are private.  */
+#define CYG_HAL_SYS_MAP_FIXED       0x10     /* Interpret addr exactly.  */
  
 // System calls, or rather the subset that is needed internally.
 externC unsigned long   cyg_hal_sys_write(int, const void*, long);
 externC unsigned long   cyg_hal_sys_read(int, void*, long);
+externC int             cyg_hal_sys_lseek(int, int, int);
+externC int             cyg_hal_sys_open(const char *,int,int); 
 externC int             cyg_hal_sys_fdatasync(int); 
 externC int             cyg_hal_sys_sigaction(int, 
                                               const struct cyg_hal_sys_sigaction*,
@@ -335,7 +396,10 @@ externC void*           cyg_hal_sys_brk(void*);
 // Returns the number of characters placed in the buffer or <0 for error,
 // not a char*. 
 externC int             cyg_hal_sys_getcwd(char*, int);
- 
+
+// mmap on the "host" system - this may be unportable.
+externC int             cyg_hal_sys_mmap(struct cyg_hal_sys_mmap_args *);
+
 // ----------------------------------------------------------------------------
 // Interaction between the application and the auxiliary.
 // Not yet available, but there is a hardware-initialization routine.
