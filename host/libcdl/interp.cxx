@@ -10,7 +10,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -1166,7 +1166,7 @@ set pattern [file join \"$::cdl_locate_subdirs_path\" * .]  \n\
 set result {}                                               \n\
 foreach entry [glob -nocomplain -- $pattern] {              \n\
     set entry [file tail [file dirname $entry]]             \n\
-    if {$entry != \"CVS\"} {                                \n\
+    if {($entry != \"CVS\") && ($entry != \"cvs\")} {       \n\
         lappend result $entry                               \n\
     }                                                       \n\
 }                                                           \n\

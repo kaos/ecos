@@ -1,3 +1,22 @@
+2001-03-28  Richard Panton  <rpanton@3glab.com>
+
+	* include/bootp.h: Define func protos with C linkage
+	* include/netdb.h: Ditto
+	* include/network.h: Ditto
+	* include/tftp_support.h: Ditto
+
+	* src/lib/getserv.c: getservbynumber() -> getservbyport()	
+
+2001-03-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/network_support.c (init_all_network_interfaces): 
+	FIx slightly broken previous attempt in abort code.
+
+2001-03-11  Gary Thomas  <gthomas@redhat.com>
+
+	* src/lib/network_support.c (init_all_network_interfaces): 
+	Let initialization of PCMCIA devices abort after ~5 seconds.
+
 2001-02-23  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/lib/tftp_server.c (STACK_SIZE): Align

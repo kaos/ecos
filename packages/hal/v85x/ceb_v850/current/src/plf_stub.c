@@ -45,13 +45,6 @@
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 
 #include <cyg/hal/hal_stub.h>
-
-#include <cyg/hal/hal_io.h>             // HAL IO macros
-#include <cyg/hal/hal_diag.h>           // diag output. FIXME
-#include <cyg/hal/drv_api.h>
-
-#include <cyg/hal/hal_intr.h>
-
 #include <cyg/hal/v850_common.h>
 
 //-----------------------------------------------------------------------------
@@ -62,7 +55,9 @@ void hal_plf_stub_init(void)
     // Set up watchdog timer since we have to use it to emulate a breakpoint
     volatile unsigned char *wdcs = (volatile unsigned char *)V850_REG_WDCS;
     volatile unsigned char *wdtm = (volatile unsigned char *)V850_REG_WDTM;
-    *wdcs = 0x07;  // 246.7ms - lowest possible overhead
+
+    *wdcs = 0x07;  // lowest possible overhead - 246.7ms for 17MHz V850/SA1
+                   // 209.7ms for 20MHz SB1
     *wdtm = 0x90;  // Start watchdog
 }
 

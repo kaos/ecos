@@ -58,6 +58,7 @@ cdl_package CYGPKG_HAL_MIPS {
     }
 
     compile       hal_misc.c context.S mips-stub.c mipsfp.c
+    compile       hal_syscall.c
 
     make {
         <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S

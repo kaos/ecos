@@ -70,6 +70,9 @@ EXTERN int argc;
 #define MAX_ARGV 32
 EXTERN char *argv[MAX_ARGV];
 EXTERN unsigned char *ram_start, *ram_end;
+EXTERN unsigned char *user_ram_start, *user_ram_end;
+EXTERN unsigned char *workspace_start, *workspace_end;
+EXTERN unsigned long workspace_size;
 EXTERN unsigned long *entry_address;
 
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
@@ -101,6 +104,7 @@ int  strncmp(const char *s1, const char *s2, int len);
 int  strcmpci(const char *s1, const char *s2);
 int  strncmpci(const char *s1, const char *s2, int len);
 char *strcpy(char *s1, const char *s2);
+char *strncpy(char *s1, const char *s2, unsigned long n);
 
 void mon_write_char(char c);
 bool verify_action(char *fmt, ...);
@@ -123,6 +127,26 @@ void end_console(int old_console);
 // CRC support
 unsigned short crc16(unsigned char *buf, int len);
 unsigned long  crc32(unsigned char *buf, int len);
+
+#ifdef CYGPKG_COMPRESS_ZLIB
+// Decompression support
+typedef struct _pipe {
+    unsigned char* in_buf;              // only changed by producer
+    int in_avail;                       // only changed by producer
+    unsigned char* out_buf;             // only changed by consumer (init by producer)
+    int out_size;                       // only changed by consumer (init by producer)
+    const char* msg;                    // message from consumer
+    void* priv;                         // handler's data
+} _pipe_t;
+
+typedef int _decompress_fun_init(_pipe_t*);
+typedef int _decompress_fun_inflate(_pipe_t*);
+typedef int _decompress_fun_close(_pipe_t*, int);
+
+externC _decompress_fun_init* _dc_init;
+externC _decompress_fun_inflate* _dc_inflate;
+externC _decompress_fun_close* _dc_close;
+#endif // CYGPKG_COMPRESS_ZLIB
 
 // CLI support functions
 bool parse_num(char *s, unsigned long *val, char **es, char *delim);
@@ -167,12 +191,19 @@ struct init_tab_entry _init_tab_##_p_##_f_                              \
 #define RedBoot_IDLE_NETIO          5000
 #define RedBoot_IDLE_AFTER_NETIO    7000
 #define RedBoot_IDLE_LAST           9999
+typedef void idle_fun(bool);
+typedef idle_fun *idle_fun_ptr;
 struct idle_tab_entry {
-    void_fun_ptr fun;
+    idle_fun_ptr fun;
 } CYG_HAL_TABLE_TYPE;
 #define _RedBoot_idle(_f_,_p_)                                          \
-struct idle_tab_entry _idle_tab_##_p_##_f_ CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_idle,_f_) = { _f_ }; 
+struct idle_tab_entry _idle_tab_##_p_##_f_                              \
+   CYG_HAL_TABLE_QUALIFIED_ENTRY(RedBoot_idle,_p_##_f_) = { _f_ }; 
 #define RedBoot_idle(_f_,_p_) _RedBoot_idle(_f_,_p_)
+
+// This function called when changing idle/not - mostly used by I/O
+// to support idle when timeout, etc.
+void do_idle(bool state);
  
 // Option processing support
 

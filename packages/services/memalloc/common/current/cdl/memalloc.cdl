@@ -217,7 +217,7 @@ cdl_package CYGPKG_MEMALLOC {
 
         make -priority 50 {
             heapgeninc.tcl : <PACKAGE>/src/heapgen.cpp
-            $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,heapgen.tmp -E $< > $@
+            $(CC) $(CFLAGS) $(INCLUDE_PATH) -Wp,-MD,heapgen.tmp -E $< -o $@
             @echo $@ ':' $< '\' > $(notdir $@).deps
             @tail +2 heapgen.tmp >> $(notdir $@).deps
             @echo >> $(notdir $@).deps

@@ -23,7 +23,7 @@
 //
 // The Initial Developer of the Original Code is Red Hat.
 // Portions created by Red Hat are
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.
 // -------------------------------------------
 //
@@ -379,6 +379,7 @@
 #define SA11X0_OSMR3                             SA11X0_REGISTER(0x1000000C)
 #define SA11X0_OSCR                              SA11X0_REGISTER(0x10000010)
 #define SA11X0_OSSR                              SA11X0_REGISTER(0x10000014)
+#define SA11X0_OWER                              SA11X0_REGISTER(0x10000018)
 #define SA11X0_OIER                              SA11X0_REGISTER(0x1000001C)
 #define SA11X0_RCNR                              SA11X0_REGISTER(0x10010004)
 #define SA11X0_RTTR                              SA11X0_REGISTER(0x10010008)
@@ -396,12 +397,18 @@
 #define SA11X0_OIER_TIMER2  (1<<2)
 #define SA11X0_OIER_TIMER3  (1<<3)
 
+// OS Timer Watchdog Match Enable Register
+#define SA11X0_OWER_ENABLE  (1<<0) // write-once!
+
 /*
  * SA-1100 Reset Controller Register Definition
  */
 #define SA11X0_RESET_SOFTWARE_RESET              SA11X0_REGISTER(0x10030000)
 #define SA11X0_RESET_STATUS                      SA11X0_REGISTER(0x10030004)
 #define SA11X0_TUCR                              SA11X0_REGISTER(0x10030008)
+
+#define SA11X0_TUCR_EXTERNAL_MEMORY_MASTER       (1<<10)
+#define SA11X0_TUCR_RESERVED_BITS                0x1FFFF9FF
 
 /*
  * SA-1100 Reset Controller Bit Field Definitions

@@ -1,3 +1,16 @@
+2001-03-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash_unlock_block.c: 
+	* src/flash_query.c: 
+	* src/flash_program_buf.c: 
+	* src/flash_lock_block.c: 
+	* src/flash_erase_block.c: 
+	* src/flash.h: 
+	* src/assabet_flash.c: Removed - everything now generic.
+
+	* include/assabet_strataflash.inl: 
+	* cdl/flash_assabet.cdl: Change to use generic StrataFLASH driver.
+
 2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* src/assabet_flash.c (flash_code_overlaps): Define stext/etext

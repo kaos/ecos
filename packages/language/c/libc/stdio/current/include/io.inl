@@ -241,6 +241,6 @@ inline cyg_bool cyg_stdio_interactive( cyg_stdio_handle_t dev )
 #endif // !CYGPKG_LIBC_STDIO_FILEIO
 
 //========================================================================
-#endif CYGONCE_LIBC_STDIO_IO_INL multiple inclusion protection
+#endif // CYGONCE_LIBC_STDIO_IO_INL multiple inclusion protection
 // EOF io.inl
 

@@ -1,3 +1,8 @@
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_tx49_ref4955.cdl: Does not guarantee virtual vector
+	support.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_mips_tx49_ref4955.cdl: Respect channel configuration

@@ -1,3 +1,37 @@
+2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/vectors.S: Overhaul...
+	Make interrupt processing path faster, especially by implementing
+	CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
+	Add ROMRAM startup support
+	Pass in correct argument to exception_handler
+	Call DSRs with parameter flushback area
+	Add __allow_nmi as a somewhat kludgy means of determining
+	whether NMIs should be ignored - important if the board resets
+	and the vector tables are temporarily inconsistent.
+	Initialize __vsr_table statically.
+	Add some generic elements of ICE debugging support
+
+	* src/v85x.ld: Remove - redundant.
+
+	* src/hal_mk_defs.c (main): Update to reflect new vector names
+	(to match official NEC docs)
+
+	* src/hal_misc.c (exception_handler): Remove cygmon cruft.
+	(hal_arch_default_isr): Report spurious interrupts.
+	(hal_idle_thread_action): use halt instruction
+
+	* include/hal_arch.h: Remove obsolete comment reference to arch.inc.
+
+	* include/basetype.h: No need to include <pkgconf/hal.h>
+	* include/hal_io.h: Ditto.
+	* include/nec-stub.h: Similarly for <pkgconf/system.h>
+
+	* cdl/hal_v85x.cdl: Move CYGHWR_HAL_V85X_CPU_FREQ into platforms
+	(and make Hz, not MHz).
+	Add generic ICE debugging interface.
+	Description tidies.
+
 2001-01-26  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/hal_intr.h: Move HAL_STUB_PLATFORM_RESET and
@@ -191,7 +225,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                 
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

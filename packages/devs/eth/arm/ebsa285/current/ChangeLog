@@ -1,3 +1,8 @@
+2001-03-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_ebsa285.c: Make device config more consistent with that
+	used in other 82559 platforms, and fix a typo.
+
 2001-02-20  Hugo Tyson  <hmt@redhat.com>
 2001-02-15  Martin Buck  <martin.buck@ascom.ch>
 

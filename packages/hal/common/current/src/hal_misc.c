@@ -68,6 +68,12 @@ __backup_return_address:
 
 #endif
 
+//--------------------------------------------------------------------------
+// Macro for finding PC in saved regs
+#ifndef CYGARC_HAL_GET_PC_REG
+#define CYGARC_HAL_GET_PC_REG(_regs_,_val_) ((_val_) = (_regs_)->pc)
+#endif
+
 #if defined(CYGPKG_CYGMON)
 unsigned long cygmon_memsize = 0;
 #endif
@@ -99,7 +105,7 @@ cyg_hal_user_break( CYG_ADDRWORD *regs )
     CYGARC_HAL_GET_RETURN_ADDRESS(__ra);
 
     if( regs == NULL ) __pc = __ra;
-    else __pc = sreg->pc;
+    else  CYGARC_HAL_GET_PC_REG(sreg, __pc);
 
     CYGACC_CALL_IF_INSTALL_BPT_FN((void *)__pc);
 

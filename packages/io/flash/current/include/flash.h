@@ -79,6 +79,7 @@ externC int printf(char* fmt, ...);
 #define FLASH_ERR_DRV_VERIFY      0x0b  // Driver failed to verify data
 #define FLASH_ERR_DRV_TIMEOUT     0x0c  // Driver timed out waiting for device
 #define FLASH_ERR_DRV_WRONG_PART  0x0d  // Driver does not support device
+#define FLASH_ERR_LOW_VOLTAGE     0x0e  // Not enough juice to complete job
 
 #ifdef _FLASH_PRIVATE_
 
@@ -87,6 +88,7 @@ struct flash_info {
     int   work_space_size;
     int   block_size;   // Assuming fixed size "blocks"
     int   blocks;       // Number of blocks
+    int   buffer_size;  // Size of write buffer (only defined for some devices)
     unsigned long block_mask;
     void *start, *end;  // Address range
     int   init;
@@ -96,6 +98,22 @@ externC struct flash_info flash_info;
 externC int  flash_hwr_init(void);
 externC int  flash_hwr_map_error(int err);
 
+// 
+// Some FLASH devices may require additional support, e.g. to turn on
+// appropriate voltage drivers, before any operation.
+//
+#ifdef  CYGIMP_FLASH_ENABLE
+#define FLASH_Enable CYGIMP_FLASH_ENABLE
+extern void CYGIMP_FLASH_ENABLE(void *, void *);
+#else
+#define FLASH_Enable(_start_, _end_)
+#endif
+#ifdef  CYGIMP_FLASH_DISABLE
+#define FLASH_Disable CYGIMP_FLASH_DISABLE
+extern void CYGIMP_FLASH_DISABLE(void *, void *);
+#else
+#define FLASH_Disable(_start_, _end_)
+#endif
 
 //---------------------------------------------------------------------------
 // Execution of flash code must be done inside a

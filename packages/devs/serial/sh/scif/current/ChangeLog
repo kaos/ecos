@@ -1,3 +1,7 @@
+2001-02-27  Jesper Skov  <jskov@redhat.com>
+
+	* src/sh_scif_serial.c (sh3_scif_er_DSR): Clear break flag.
+
 2001-02-26  Jesper Skov  <jskov@redhat.com>
 
 	* src/sh_scif_serial.c (sh3_scif_er_DSR): Enable interrupts on

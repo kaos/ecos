@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                  
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -34,23 +34,21 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:        nickg
-// Date:        1998-02-17
-// Purpose:     Define IO register support
-// Description: The macros defined here provide the HAL APIs for handling
-//              device IO control registers.
+// Author(s):    nickg
+// Contributors: nickg
+// Date:         1998-02-17
+// Purpose:      Define IO register support
+// Description:  The macros defined here provide the HAL APIs for handling
+//               device IO control registers.
 //              
 // Usage:
-//              #include <cyg/hal/hal_io.h>
-//              ...
+//               #include <cyg/hal/hal_io.h>
+//               ...
 //              
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
-
-#include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>
 

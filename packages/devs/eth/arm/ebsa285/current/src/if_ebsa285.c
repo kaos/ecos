@@ -2154,7 +2154,7 @@ static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
     ccs->cb_entry.cb_suspend=1;
     ccs->cb_entry.cb_el=1;
     ccs->cb_entry.cb_complete=0;
-    ccs->cb_entry.cb_link_offset=VIRT_TO_BUS((cyg_uint32)&ccs);
+    ccs->cb_entry.cb_link_offset=VIRT_TO_BUS((cyg_uint32)ccs);
     
     // Default values from the Intel Manual
     ccs->config_bytes[0]=0x13;
@@ -2163,9 +2163,9 @@ static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
     ccs->config_bytes[3]=0x0;
     ccs->config_bytes[4]=0x0;
     ccs->config_bytes[5]=0x0;
-    ccs->config_bytes[6]=0x32 | (promisc ? 0x80 : 0); //   | 0x32 for small stats,
-    ccs->config_bytes[7]=0x0;                         //\  | 0x12 for stats with PAUSE stats
-    ccs->config_bytes[8]=0x0;                         // \ | 0x16 for PAUSE + TCO stats
+    ccs->config_bytes[6]=0x32 | (promisc ? 0x80 : 0x00); //   | 0x32 for small stats,
+    ccs->config_bytes[7]=0x00 | (promisc ? 0x00 : 0x01); //\  | 0x12 for stats with PAUSE stats
+    ccs->config_bytes[8]=0x0; // [7]:discard short frames   \ | 0x16 for PAUSE + TCO stats
     ccs->config_bytes[9]=0x0;
     ccs->config_bytes[10]=0x28;
     ccs->config_bytes[11]=0x0;

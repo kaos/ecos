@@ -1,3 +1,15 @@
+2001-03-21  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/eth_drivers.cdl: Fewer buffers needed in stand-alone mode.
+
+2001-03-12  Hugo Tyson  <hmt@redhat.com>
+
+	* cdl/eth_drivers.cdl: Permit defines for
+	CYGPKG_IO_ETH_DRIVERS_STAND_ALONE and CYGPKG_IO_ETH_DRIVERS_NET.
+	The generic i82559 driver needs to know, unfortunately; it calls
+	its own DSR directly to unblock after a lost interrupt.  And you
+	mustn't call the DSR under RedBoot == ....STAND_ALONE.
+
 2001-01-15  Jesper Skov  <jskov@redhat.com>
 
 	* src/net/eth_drv.c (eth_drv_init): Do not use enaddr if NULL.

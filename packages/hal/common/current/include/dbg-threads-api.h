@@ -73,6 +73,10 @@ externC int dbg_thread_capabilities(struct dbg_capabilities * cbp) ;
 /* return 1 if defined, 0 if not defined */
 externC int dbg_currthread(threadref * varparm) ;
 
+/* Return the unique ID number of a given thread. */
+/* Return 0 if not valid. */
+externC int dbg_thread_id(threadref *threadid);
+
 /* Return the unique ID number of the current thread. */
 externC int dbg_currthread_id(void);
 

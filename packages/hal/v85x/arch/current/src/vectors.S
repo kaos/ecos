@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -31,9 +31,9 @@
 // #========================================================================
 // ######DESCRIPTIONBEGIN####
 // #
-// # Author(s):     gthomas
-// # Contributors:  gthomas
-// # Date:          2000-03-10
+// # Author(s):     gthomas, jlarmour
+// # Contributors:  gthomas, jlarmour
+// # Date:          2001-03-21
 // # Purpose:       NEC/V85x exception vectors
 // # Description:   This file defines the code placed into the exception
 // #                vectors. It also contains the first level default VSRs
@@ -44,15 +44,17 @@
 // #
 // #========================================================================
 
+#include <pkgconf/system.h>
 #include <pkgconf/hal.h>
 #include <pkgconf/hal_v85x.h>
-#ifdef CYGPKG_KERNEL  // no CDL yet
+#ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
 #else
 # undef CYGFUN_HAL_COMMON_KERNEL_SUPPORT
 # undef CYGIMP_HAL_COMMON_INTERRUPTS_USE_INTERRUPT_STACK
 #endif
 #include <cyg/hal/hal_platform_setup.h>
+#include CYGHWR_MEMORY_LAYOUT_H
 
 #include <cyg/hal/nec_offsets.inc>
 
@@ -61,49 +63,69 @@
         .macro  EXCEPTION
         .org    reset_vector+(0x0010*VECTOR)
         addi    -CYGARC_EXCEPTION_FRAME_SIZE,sp,sp
-        st.w    r1,CYGARC_REG_R1[sp]
-        movea   VECTOR,r0,r1
-        .set    VECTOR, VECTOR+1
+        st.w    r8,CYGARC_REG_R8[sp]
+        movea   VECTOR,r0,r8
         jr      exception
+        .set    VECTOR, VECTOR+1
         .endm
 
         .macro  INTERRUPT
         .org    reset_vector+(0x0010*VECTOR)
         addi    -CYGARC_EXCEPTION_FRAME_SIZE,sp,sp
-        st.w    r1,CYGARC_REG_R1[sp]
-        movea   VECTOR,r0,r1
+        st.w    r8,CYGARC_REG_R8[sp]
+        movea   VECTOR,r0,r8
         jr      exception
         .set    VECTOR, VECTOR+1
         .endm
 
-        .text
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+        .section ".vectors","ax"
         .globl  reset_vector
 reset_vector:
         
-#ifdef CYG_HAL_STARTUP_ROM
 //
 // These are the hardware exception vectors.
 //
 __ROM_vsr:
-        // 0x000
+        // start of ROM
+        // This jump works even for ROMRAM because it is PC relative
         jr      start
 
         .set    VECTOR, 1
         .rept   CYGNUM_HAL_EXCEPTION_COUNT-1
         EXCEPTION
         .endr
-        .set    VECTOR, 8
+        .set    VECTOR, CYGNUM_HAL_ISR_MIN
         .rept   CYGNUM_HAL_ISR_COUNT
         INTERRUPT
         .endr
-#endif  // CYG_HAL_STARTUP_ROM
-
+#endif
+        
+        .text
         .globl  start
 start:
         // Perform hardware initialization
         PLATFORM_SETUP1
+
+        // Copy everything to the proper VMA base and jump to it.
+#if defined(CYG_HAL_STARTUP_ROMRAM)
+        lea     CYGMEM_REGION_rom,r6
+        lea     CYGMEM_REGION_ram,r7
+        lea     ___rom_data_end,r8 // Assume end of .data == end of ROM
+1:      ld.w    0[r6],r1
+        st.w    r1,0[r7]
+        addi    4,r6,r6
+        addi    4,r7,r7
+        cmp     r6,r8
+        bne     1b
         
-#ifdef CYG_HAL_STARTUP_ROM
+        // now jump to RAM
+        lea     ___romram_jump_vector,r1
+        jmp     [r1]
+
+___romram_jump_vector:
+        
+#elif defined( CYG_HAL_STARTUP_ROM )
 	// Relocate [copy] data from ROM to RAM
         lea     ___rom_data_start,r6
         lea     ___ram_data_start,r7
@@ -114,7 +136,19 @@ start:
         addi    4,r7,r7
         cmp     r7,r8
         bne     1b
+
+        // Initialize RAM vectors
+        lea     ___ram_vectors_loadaddr,r6
+        lea     ___ram_vectors_start,r7
+        lea     ___ram_vectors_end,r8
+1:      ld.w    0[r6],r1
+        st.w    r1,0[r7]
+        addi    4,r6,r6
+        addi    4,r7,r7
+        cmp     r7,r8
+        bne     1b
 #endif
+        
         // Initialize stack
         lea     __startup_stack-16,r1
         mov     r1,sp
@@ -127,28 +161,9 @@ start:
         cmp     r6,r7
         bne     1b
 
-#ifdef CYG_HAL_STARTUP_ROM
-        // Built initial trap VSR tables
-        lea     __vsr_table,r6
-        lea     __vsr_table_end,r9
-#if 0        
-        lea     __ROM_vsr,r7
-        mov     r6,r8
-        sub     r7,r8
-        lea     0x003FFFFF,r7
-        and     r7,r8
-        lea     0x07800000,r7
-        or      r7,r8
-#else
-        lea     0x00000794,r8   // jr 0x0100xx0
-#endif
-10:     st.w    r8,0[r6]
-        addi    16,r6,r6
-        cmp     r6,r9
-        bne     10b
-#else
+#if defined(CYG_HAL_STARTUP_RAM)
 // Set up VSR pointers into this application/image
-        lea     _hal_vsr_table+(CYGNUM_HAL_EXCEPTION_COUNT*4),r6
+        lea     _hal_vsr_table+(CYGNUM_HAL_ISR_MIN*4),r6
         movea   CYGNUM_HAL_ISR_COUNT,r0,r7
         lea     do_interrupt,r8
 10:     st.w    r8,0[r6]
@@ -161,7 +176,7 @@ start:
         jarl    _cyg_hal_hardware_init,r31
 
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-#ifndef CYG_HAL_STARTUP_ROM
+# ifdef CYG_HAL_STARTUP_RAM
 // Need to handle exceptions as well
         lea     _hal_vsr_table,r6
         movea   CYGNUM_HAL_EXCEPTION_COUNT,r0,r7
@@ -170,25 +185,36 @@ start:
         addi    4,r6,r6
         addi    -1,r7,r7
         bne     10b
-#endif
+# endif
         jarl    _initialize_stub,r31
 #else // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
 // All programs need to provide for NMI handlers        
         lea     _hal_vsr_table+4,r6
         lea     do_exception,r8
-        st.w    r8,0[r6]
+        st.w    r8,0[r6]    // NMI pin
 #endif // CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
-        
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
+
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+        // we can process NMIs now
+        lea     __allow_nmi,r1
+        addi    1,r0,r2
+        st.w    r2,0[r1]
+#endif        
+                
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
         .extern hal_ctrlc_isr_init
         jarl    _hal_ctrlc_isr_init,r31
 #endif
-#endif
+        
         // Run through static constructors
         jarl    _cyg_hal_invoke_constructors,r31
 
+#if CYGINT_HAL_V85x_ICE_DEBUG
+        // Initialize ICE debugging info
+        jarl    _hal_v85x_init_ice_syscall_info,r31
+#endif
+        
         // Ready to start the eCos kernel
         jarl    _cyg_start,r31
 
@@ -196,21 +222,22 @@ start:
 _start_hang:    
         br      _start_hang
         
-#ifdef CYG_HAL_STARTUP_ROM
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
         // Handle exception
 exception:
         // save exception context
         st.w    ep,CYGARC_REG_EP[sp]
         mov     sp,ep
-        st.w    r1,CYGARC_REG_VECTOR[ep]
+        sst.w   r8,CYGARC_REG_VECTOR[ep]
+        sst.w   r1,CYGARC_REG_R1[ep]
         addi    CYGARC_EXCEPTION_FRAME_SIZE,ep,r1
-        sst.w   r2,CYGARC_REG_R2[ep]        
-        sst.w   r1,CYGARC_REG_SP[ep] 
+        sst.w   r2,CYGARC_REG_R2[ep]
+        sst.w   r1,CYGARC_REG_SP[ep]
         sst.w   r4,CYGARC_REG_R4[ep]        
         sst.w   r5,CYGARC_REG_R5[ep]        
         sst.w   r6,CYGARC_REG_R6[ep]        
         sst.w   r7,CYGARC_REG_R7[ep]        
-        sst.w   r8,CYGARC_REG_R8[ep]        
+//        sst.w   r8,CYGARC_REG_R8[ep]        
         sst.w   r9,CYGARC_REG_R9[ep]        
         sst.w   r10,CYGARC_REG_R10[ep]        
         sst.w   r11,CYGARC_REG_R11[ep]        
@@ -222,6 +249,7 @@ exception:
         sst.w   r17,CYGARC_REG_R17[ep]        
         sst.w   r18,CYGARC_REG_R18[ep]        
         sst.w   r19,CYGARC_REG_R19[ep]        
+#ifndef CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
         sst.w   r20,CYGARC_REG_R20[ep]        
         sst.w   r21,CYGARC_REG_R21[ep]        
         sst.w   r22,CYGARC_REG_R22[ep]        
@@ -231,23 +259,35 @@ exception:
         sst.w   r26,CYGARC_REG_R26[ep]        
         sst.w   r27,CYGARC_REG_R27[ep]        
         sst.w   r28,CYGARC_REG_R28[ep]        
-        sst.w   r29,CYGARC_REG_R29[ep]        
-        ld.w    CYGARC_REG_VECTOR[ep],r8
+#endif
+        sst.w   r29,CYGARC_REG_R29[ep] // NB frame pointer
         sst.w   lp,CYGARC_REG_LP[ep]
-        cmp     CYGNUM_HAL_VECTOR_TRAP0,r8  // NMI?
+        cmp     CYGNUM_HAL_VECTOR_TRAP00,r8  // NMI?
         bge     05f
         stsr    FEPC,r6                 // saved state differs
         stsr    FEPSW,r7
-        br      20f
+        lea     __allow_nmi,r1          // is the system ready for NMIs?
+        tst1    0, 0[r1]
+        bne     10f
+        // if not processing NMIs, allow restore
+        sst.w   r6,CYGARC_REG_PC[ep]
+        sst.w   r7,CYGARC_REG_PSW[ep]
+        // Reenable exception processing
+        stsr    PSW,r6
+        andi    ~(CYGARC_PSW_EP|CYGARC_PSW_NP),r6,r6
+        ldsr    r6,PSW
+        lea     return_from_exception_or_interrupt,r1
+        jmp     [r1]
+
 05:     stsr    EIPC,r6
-        cmp     CYGNUM_HAL_VECTOR_ILLEGAL_OPCODE,r8 // Illegal opcode?
+        stsr    EIPSW,r7        
+        cmp     CYGNUM_HAL_VECTOR_ILGOP,r8 // Illegal opcode?
         bne     10f
         addi    -4,r6,r6                // yes, adjust PC
-10:     stsr    EIPSW,r7        
-20:     st.w    r6,CYGARC_REG_PC[ep]
-        st.w    r7,CYGARC_REG_PSW[ep]
+10:     sst.w   r6,CYGARC_REG_PC[ep]
+        sst.w   r7,CYGARC_REG_PSW[ep]
         stsr    ECR,r6
-        st.w    r6,CYGARC_REG_CAUSE[ep]
+        sst.w   r6,CYGARC_REG_CAUSE[ep]
         // Reenable exception processing
         stsr    PSW,r6
         andi    ~(CYGARC_PSW_EP|CYGARC_PSW_NP),r6,r6
@@ -260,11 +300,13 @@ exception:
 #endif
         
 do_exception:
+        // pass in saved registers
+        mov     sp,r6
+        
         // leave space for the parameter flush back area (as per calling
         // conventions)
         addi    -16,sp,sp
         
-        mov     sp,r6
         jarl    _exception_handler,r31
 
 return_from_exception_or_interrupt: 
@@ -272,14 +314,14 @@ return_from_exception_or_interrupt:
         // (as per calling conventions) at the same time
         addi    16,sp,ep
                 
-        ld.w    CYGARC_REG_PSW[ep],r7
+        sld.w   CYGARC_REG_PSW[ep],r7
         sld.w   CYGARC_REG_R1[ep],r1
-        ld.w    CYGARC_REG_PC[ep],r6
+        sld.w   CYGARC_REG_PC[ep],r6
         sld.w   CYGARC_REG_R2[ep],r2       
         // disable interrupts while restoring context
         ld.w    CYGARC_REG_VECTOR[ep],r4
         stsr    PSW,r8
-        cmp     CYGNUM_HAL_VECTOR_TRAP0,r4
+        cmp     CYGNUM_HAL_VECTOR_TRAP00,r4
         bge     10f
         ori     CYGARC_PSW_NP,r8,r8     // returning from NMI
         ori     CYGARC_PSW_ID,r8,r8     // disable interrupt
@@ -292,7 +334,7 @@ return_from_exception_or_interrupt:
         ori     CYGARC_PSW_EP,r8,r8     // returning from exception
 20:     ori     CYGARC_PSW_ID,r8,r8     // disable interrupt
         ldsr    r8,PSW
-        ldsr    r7,EIPSW                // Avoid pipline bubbles
+        ldsr    r7,EIPSW                // Avoid pipeline bubbles
         ldsr    r6,EIPC
 30:     sld.w   CYGARC_REG_R4[ep],r4
         sld.w   CYGARC_REG_R5[ep],r5      
@@ -310,6 +352,7 @@ return_from_exception_or_interrupt:
         sld.w   CYGARC_REG_R17[ep],r17       
         sld.w   CYGARC_REG_R18[ep],r18               
         sld.w   CYGARC_REG_R19[ep],r19       
+#ifndef CYGDBG_HAL_COMMON_INTERRUPTS_SAVE_MINIMUM_CONTEXT
         sld.w   CYGARC_REG_R20[ep],r20       
         sld.w   CYGARC_REG_R21[ep],r21       
         sld.w   CYGARC_REG_R22[ep],r22       
@@ -319,7 +362,8 @@ return_from_exception_or_interrupt:
         sld.w   CYGARC_REG_R26[ep],r26       
         sld.w   CYGARC_REG_R27[ep],r27       
         sld.w   CYGARC_REG_R28[ep],r28       
-        sld.w   CYGARC_REG_R29[ep],r29       
+#endif
+        sld.w   CYGARC_REG_R29[ep],r29 // NB frame pointer
         sld.w   CYGARC_REG_LP[ep],lp
         sld.w   CYGARC_REG_SP[ep],sp
         sld.w   CYGARC_REG_EP[ep],ep
@@ -366,7 +410,6 @@ do_interrupt:
         jarl    _cyg_instrument,r31
 #endif
 
-#ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT // this _check_ should go away
 #if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT) \
     || defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
 	// If we are supporting Ctrl-C interrupts from GDB, we must squirrel
@@ -377,7 +420,6 @@ do_interrupt:
 	lea     _hal_saved_interrupt_state,r8
         st.w    ep,0[r8]
 #endif
-#endif        
 
 #ifdef CYGIMP_KERNEL_INTERRUPTS_CHAIN
         mov     r0,r8                           // vector # (overloaded by kernel)
@@ -440,17 +482,19 @@ _hal_interrupt_stack_call_pending_DSRs:
         mov     1,r7                    // note: this can never be non-zero at this point
         st.w    r7,0[r6]
         mov     sp,r1                   // save old stack pointer
-        lea     __interrupt_stack-(4*4),r8
+        lea     __interrupt_stack-32,r8 // 32 for 16-byte parameter flush back
+                                        // plus 12 bytes for following reg saves
+                                        // plus 4 bytes to preserve alignment
         mov     r8,sp        
-        st.w    r1,0[sp]               
-        st.w    r9,4[sp]
-        st.w    lp,8[sp]
+        st.w    r1,16[sp]               
+        st.w    r9,20[sp]
+        st.w    lp,24[sp]
         ei
        	jarl    _cyg_interrupt_call_pending_DSRs,lp
         di
-        ld.w    8[sp],lp                // restore state
-        ld.w    4[sp],r6
-        ld.w    0[sp],sp
+        ld.w    24[sp],lp                // restore state
+        ld.w    20[sp],r6
+        ld.w    16[sp],sp
         lea     irq_level,r7
         st.w    r0,0[r7]
         ldsr    r6,PSW
@@ -469,6 +513,9 @@ call_via_r1:
         .globl  _hal_reset_board
 _hal_reset_board:   
         di                      // Turn off interrupts
+        // Don't process NMIs
+        lea     __allow_nmi,r1
+        st.w    r0,0[r1]
         jmp     [r0]            // Restart machine        
 
 #if !defined(CYGSEM_HAL_NEC_INLINE_INTERRUPT_FUNCTIONS)
@@ -491,15 +538,18 @@ _hal_restore_interrupts:
 #endif        
                 
 // -------------------------------------------------------------------------
-        .data
-#ifdef CYG_HAL_STARTUP_ROM
+        .section ".ram_vectors","awx",@progbits
+
+#if defined(CYG_HAL_STARTUP_ROM)
 // Trap jump table - used by builtin ROM
 __vsr_table:            
         .rept   CYGNUM_HAL_VSR_COUNT
-        .word   0,0,0,0
+        .word   0x00000794,0,0,0   // jr 0x0100xx0, nop, nop, nop
         .endr
 __vsr_table_end:
+#endif
 
+#if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)        
 _hal_vsr_table:
         .rept   CYGNUM_HAL_EXCEPTION_COUNT
         .word   do_exception
@@ -508,15 +558,21 @@ _hal_vsr_table:
         .word   do_interrupt
         .endr
 
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT)
+// Flag to indicate whether NMIs are allowed
+// Without this, if we do a soft reset (using hal_plf_reset_board above)
+// we may process NMIs like the watchdog timeout before the system can
+// accept them
+__allow_nmi:
+        .word 0
+        
         .balign 64
 _hal_virtual_vector_table:      
         .rept   CYGNUM_CALL_IF_TABLE_SIZE
         .word   0
         .endr
-#endif        
-#endif
-
+#endif // if defined(CYG_HAL_STARTUP_ROM) || defined(CYG_HAL_STARTUP_ROMRAM)
+        
+        .data
 // Initial stack        
         .rept   1024
         .byte   0
@@ -540,7 +596,8 @@ _cyg_interrupt_stack:
 __interrupt_stack:
 irq_level:
 	.long	0
-#endif  // CYG_HAL_STARTUP == ROM
+#endif
+
         
 // Interrupt vector tables.
 // These tables contain the isr, data and object pointers used to deliver
@@ -565,3 +622,14 @@ _hal_interrupt_objects:
 	.rept	CYGNUM_HAL_ISR_COUNT
 	.long	0
 	.endr
+
+#if CYGINT_HAL_V85x_ICE_DEBUG
+        .globl  _hal_v85x_ice_syscall_info
+_hal_v85x_ice_syscall_info:
+         .rept  32
+         .long  0
+         .endr
+#endif
+        
+// -------------------------------------------------------------------------
+// EOF vectors.S

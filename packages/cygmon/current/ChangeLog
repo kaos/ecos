@@ -77,6 +77,16 @@
 
 2000-07-14  Drew Moseley  <dmoseley@redhat.com>
 
+	* misc/bsp/mips/gdb-cpu.c: New files. Mips based Cygmon now running on top of eCos HAL.
+	* misc/bsp/mips/gdb-cpu.h: Ditto.
+	* misc/bsp/mips/gdb.h: Ditto.
+	* misc/bsp/mips/insn.h: Ditto.
+	* misc/bsp/mips/singlestep.c: Ditto.
+	* misc/mips/board.h: Ditto.
+	* misc/mips/cpu.h: Ditto.
+	* misc/mips/cpu_info.h: Ditto.
+	* misc/mips/mips-mon.c: Ditto.
+
 	* misc/bsp/common/syscall.c: Added SYS_meminfo call to find out
 	how much RAM we have.
 	* misc/bsp/common/syscall.h: Ditto.

@@ -172,6 +172,6 @@ Cyg_StdioStreamBuffer::drain_buffer( void )
 
 #endif // if defined(CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO)
 
-#endif CYGONCE_LIBC_STDIO_STREAMBUF_INL multiple inclusion protection
+#endif // CYGONCE_LIBC_STDIO_STREAMBUF_INL multiple inclusion protection
 
 // EOF streambuf.inl

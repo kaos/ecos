@@ -480,8 +480,9 @@ net_io_init(void)
 
 // Check for incoming TCP debug connection
 void
-net_io_test(void)
+net_io_test(bool is_idle)
 {
+    if (!is_idle) return;  // Only care about idle case
     if (!have_net) return;
     __tcp_poll();
     if (state != tcp_sock.state) {

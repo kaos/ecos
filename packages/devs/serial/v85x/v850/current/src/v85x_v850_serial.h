@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.  
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -35,8 +35,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-03-31
+// Contributors: gthomas,jlarmour
+// Date:         2001-03-21
 // Purpose:      Internal interfaces for serial I/O drivers
 // Description:
 //
@@ -64,7 +64,7 @@ struct serial_port {
     unsigned char _filler4[5];
     unsigned char brgm;        // Baud rate mode
     unsigned char _filler5;
-#if CYGINT_HAL_V85X_VARIANT_SB1
+#if CYGINT_HAL_V850_VARIANT_SB1
     unsigned char _filler6[0x10];
     unsigned char brgm1;       // Baud rate overflow
 #endif
@@ -122,59 +122,35 @@ static unsigned char select_parity[] = {
 };
 
 static struct v850_baud {
-    unsigned char count;
-    unsigned char mode;
+    unsigned int count;
+    unsigned int divisor;
 } select_baud[] = {
-#if CYGINT_HAL_V85X_VARIANT_SB1
 // Baud rate values, using defined system clock
-#define BAUD_COUNT (CYGHWR_HAL_V85X_V850_BOARD_FREQUENCY/2)/19200
-      {0, 0},  // Unused
-      {0, 0},  // 50
-      {0, 0},  // 75
-      {0, 0},  // 110
-      {0, 0},  // 134.5
-      {0, 0},  // 150
-      {0, 0},  // 200
-      {0, 0},  // 300
-      {0, 0},  // 600
-    {BAUD_COUNT, 5},  // 1200
-      {0, 0},  // 1800
-    {BAUD_COUNT, 4},  // 2400
-      {0, 0},  // 3600
-    {BAUD_COUNT, 3},  // 4800
-      {0, 0},  // 7200
-    {BAUD_COUNT, 2},  // 9600
-      {0, 0},  // 14400
-    {BAUD_COUNT, 1},  // 19200
-    {BAUD_COUNT, 0},  // 38400
-      {0, 0},  // 57600
-      {0, 0},  // 115200
-      {0, 0},  // 230400
-#else
-// Baud rate values, based on raw 17MHz clock
-      {0, 0},  // Unused
-      {0, 0},  // 50
-      {0, 0},  // 75
-      {0, 0},  // 110
-      {0, 0},  // 134.5
-      {0, 0},  // 150
-      {0, 0},  // 200
-      {0, 0},  // 300
-      {0, 0},  // 600
-    {221, 5},  // 1200
-      {0, 0},  // 1800
-    {221, 4},  // 2400
-      {0, 0},  // 3600
-    {221, 3},  // 4800
-      {0, 0},  // 7200
-    {221, 2},  // 9600
-      {0, 0},  // 14400
-    {221, 1},  // 19200
-    {221, 0},  // 38400
-      {0, 0},  // 57600
-      {0, 0},  // 115200
-      {0, 0},  // 230400
-#endif
+#define BAUDCOUNT(X) ((CYGHWR_HAL_V85X_CPU_FREQ/2)/(X))
+      {0, 0},                  // Unused
+      {0, 0},                  // 50
+      {0, 0},                  // 75
+      {0, 0},                  // 110
+      {0, 0},                  // 134.5
+      {0, 0},                  // 150
+      {0, 0},                  // 200
+      {0, 0},                  // 300
+      {0, 0},                  // 600
+      {BAUDCOUNT(1200), 1},    // 1200
+      {0, 0},                  // 1800
+      {BAUDCOUNT(2400), 1},    // 2400
+      {0, 0},                  // 3600
+      {BAUDCOUNT(4800), 1},    // 4800
+      {0, 0},                  // 7200
+      {BAUDCOUNT(9600), 1},    // 9600
+      {0, 0},                  // 14400
+      {BAUDCOUNT(19200), 1},   // 19200
+      {BAUDCOUNT(38400), 1},   // 38400
+      {0, 0},                  // 57600
+      {0, 0},                  // 115200
+      {0, 0},                  // 230400
 };
 
 #endif // CYGONCE_V85X_V850_SERIAL_H
+
+// EOF v85x_v850_serial.h

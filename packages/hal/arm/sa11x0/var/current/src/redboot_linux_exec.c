@@ -49,6 +49,8 @@
 #include <cyg/hal/hal_intr.h>
 #include <cyg/hal/hal_cache.h>
 
+#ifdef HAL_PLATFORM_MACHINE_TYPE
+
 // Exported CLI function(s)
 static void do_exec(int argc, char *argv[]);
 RedBoot_cmd("exec", 
@@ -210,7 +212,7 @@ do_exec(int argc, char *argv[])
     char *cmd_line;
     struct tag *params = (struct tag *)0x0100;
 
-    entry = (unsigned long)entry_address;  // Default from last 'load' operation
+    entry = (unsigned long)UNMAPPED_ADDR(0xC0008000);  // Default Linux execute address
     base_addr = 0x8000;
     ramdisk_size = 4096*1024;
     init_opts(&opts[0], 'w', true, OPTION_ARG_TYPE_NUM, 
@@ -225,7 +227,7 @@ do_exec(int argc, char *argv[])
               (void **)&ramdisk_addr, (bool *)&ramdisk_addr_set, "ramdisk_addr");
     init_opts(&opts[5], 's', true, OPTION_ARG_TYPE_NUM, 
               (void **)&ramdisk_size, (bool *)&ramdisk_size_set, "ramdisk_size");
-    if (!scan_opts(argc, argv, 1, opts, 6, (void *)&entry, OPTION_ARG_TYPE_NUM, "starting address"))
+    if (!scan_opts(argc, argv, 1, opts, 6, (void *)&entry, OPTION_ARG_TYPE_NUM, "[physical] starting address"))
     {
         return;
     }
@@ -260,11 +262,18 @@ do_exec(int argc, char *argv[])
     params->hdr.tag = ATAG_NONE;
 
     if (wait_time_set) {
+        int script_timeout_ms = wait_time * 1000;
+        unsigned char *hold_script = script;
         printf("About to start execution at %p - abort with ^C within %d seconds\n",
                (void *)entry, wait_time);
-        res = gets(line, sizeof(line), wait_time*1000);
-        if (res == _GETS_CTRLC) {
-            return;
+        script = (unsigned char *)0;
+        while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
+            res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+            if (res == _GETS_CTRLC) {
+                script = hold_script;  // Re-enable script
+                return;
+            }
+            script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
     }
     if (base_addr_set && !length_set) {
@@ -273,7 +282,7 @@ do_exec(int argc, char *argv[])
     }
     ip = (unsigned long *)&&lab1;
     _prg = (unsigned long *)0x1F00;  // Should be a very safe location to execute from
-    fun = (code_fun *)UNMAPPED_ADDR(entry);
+    fun = (code_fun *)entry;
     prg = (code_fun *)UNMAPPED_ADDR(_prg);
     base_addr = UNMAPPED_ADDR(base_addr);
     for (i = 0;  i < (unsigned long)&&end1-(unsigned long)&&lab1;  i++) {
@@ -328,3 +337,7 @@ do_exec(int argc, char *argv[])
                   "movs pc,lr" : : );
  end1:
 }
+
+#endif // HAL_PLATFORM_MACHINE_TYPE - otherwise we do not support this stuff...
+
+// EOF redboot_linux_exec.c

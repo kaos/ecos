@@ -504,6 +504,7 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 		    handle_ack(s, pkt);
 		    if (ntohl(tcp->acknum) == (s->seq + 1)) {
 			/* got ACK for FIN packet */
+			s->seq++;
 			if (tcp->flags & TCP_FLAG_FIN) {
 			    BSPLOG(bsp_log("_FIN_WAIT_1 --> _TIME_WAIT\n"));
 			    s->ack++;
@@ -548,7 +549,8 @@ __tcp_handler(pktbuf_t *pkt, ip_route_t *r)
 
 	      case _TIME_WAIT:
 		BSPLOG(bsp_log("_TIME_WAIT resend.\n"));
-		tcp_send(s, 0, 1); /* just resend ack */
+		if (tcp->flags & TCP_FLAG_FIN)
+		    tcp_send(s, 0, 1); /* just resend ack */
 		break;
 	    }
 	} else {

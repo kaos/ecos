@@ -108,6 +108,11 @@ int *_registers_valid = registers_valid;
 static volatile __PFI __interruptible_control;
 #endif
 
+// Some architectures need extras regs reported in T packet
+#ifndef HAL_STUB_ARCH_T_PACKET_EXTRAS
+#define HAL_STUB_ARCH_T_PACKET_EXTRAS(x)
+#endif
+
 //-----------------------------------------------------------------------------
 // Register access
 
@@ -358,6 +363,10 @@ handle_exception_cleanup( void )
 	int i;
 	for (i = 0; i < (sizeof(registers)/sizeof(registers[0])); i++)
 	    orig_registers[i] = registers[i];
+	_registers = &orig_registers[0];
+	if (__is_breakpoint_function ())
+	    __skipinst ();
+	_registers = &registers[0];
 	orig_registers_set = 1;
     }
 	
@@ -473,9 +482,9 @@ void
 __reset (void)
 {
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_SUPPORT
-    __call_if_reset_t __rom_reset = CYGACC_CALL_IF_RESET_GET();
+    __call_if_reset_t *__rom_reset = CYGACC_CALL_IF_RESET_GET();
     if (__rom_reset)
-        __rom_reset();
+        (*__rom_reset)();
 #else
     HAL_PLATFORM_RESET();
 #endif
@@ -519,34 +528,34 @@ __build_t_packet (int sigval, char *buf)
 #ifdef CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
     // Include thread ID if thread manipulation is required.
     {
-        int id;
-        
-        *ptr++ = 't';
-        *ptr++ = 'h';
-        *ptr++ = 'r';
-        *ptr++ = 'e';
-        *ptr++ = 'a';
-        *ptr++ = 'd';
-        *ptr++ = ':';
+        int id = dbg_currthread_id ();
 
-#if (CYG_BYTEORDER == CYG_MSBFIRST)
-        id = dbg_currthread_id ();
-#else
-        // FIXME: Temporary workaround for PR 18903. Thread ID must be
-        // big-endian in the T packet.
-        {
-            unsigned char* bep = (unsigned char*)&id;
-            int be_id;
+        if (id != 0) {
+	    *ptr++ = 't';
+	    *ptr++ = 'h';
+	    *ptr++ = 'r';
+	    *ptr++ = 'e';
+	    *ptr++ = 'a';
+	    *ptr++ = 'd';
+	    *ptr++ = ':';
 
-            be_id = dbg_currthread_id ();
-            *bep++ = (be_id >> 24) & 0xff ;
-            *bep++ = (be_id >> 16) & 0xff ;
-            *bep++ = (be_id >> 8) & 0xff ;
-            *bep++ = (be_id & 0xff) ;
-        }
+#if (CYG_BYTEORDER == CYG_LSBFIRST)
+	    // FIXME: Temporary workaround for PR 18903. Thread ID must be
+	    // big-endian in the T packet.
+	    {
+		unsigned char* bep = (unsigned char*)&id;
+		int be_id;
+
+		be_id = id;
+		*bep++ = (be_id >> 24) & 0xff ;
+		*bep++ = (be_id >> 16) & 0xff ;
+		*bep++ = (be_id >> 8) & 0xff ;
+		*bep++ = (be_id & 0xff) ;
+	    }
 #endif
-        ptr = __mem2hex((char *)&id, ptr, sizeof(id), 0);
-        *ptr++ = ';';
+	    ptr = __mem2hex((char *)&id, ptr, sizeof(id), 0);
+	    *ptr++ = ';';
+	}
     }
 #endif
 
@@ -617,6 +626,8 @@ __build_t_packet (int sigval, char *buf)
     }
     ptr = __mem2hex((char *)&addr, ptr, sizeof(addr), 0);
     *ptr++ = ';';
+
+    HAL_STUB_ARCH_T_PACKET_EXTRAS(ptr);
     
     *ptr++ = 0;
 }
@@ -779,6 +790,134 @@ __write_mem_safe (void *src, void *dst, int count)
   __do_copy_mem((unsigned char*) src, (unsigned char*) dst);
   return count - memCount;      // return number of bytes successfully written
 }
+
+#ifdef TARGET_HAS_HARVARD_MEMORY
+static void
+__do_copy_from_progmem (unsigned char* src, unsigned char* dst)
+{
+    unsigned long *long_dst;
+    unsigned long *long_src;
+    unsigned short *short_dst;
+    unsigned short *short_src;
+
+    __mem_fault = 1;                      /* Defaults to 'fail'. Is cleared */
+                                          /* when the copy loop completes.  */
+    __mem_fault_handler = &&err;
+
+    // See if it's safe to do multi-byte, aligned operations
+    while (memCount) {
+        if ((memCount >= sizeof(long)) &&
+            (((target_register_t)dst & (sizeof(long)-1)) == 0) &&
+            (((target_register_t)src & (sizeof(long)-1)) == 0)) {
+        
+            long_dst = (unsigned long *)dst;
+            long_src = (unsigned long *)src;
+
+            *long_dst++ = __read_prog_uint32(long_src++);
+            memCount -= sizeof(long);
+
+            dst = (unsigned char *)long_dst;
+            src = (unsigned char *)long_src;
+        } else if ((memCount >= sizeof(short)) &&
+                   (((target_register_t)dst & (sizeof(short)-1)) == 0) &&
+                   (((target_register_t)src & (sizeof(short)-1)) == 0)) {
+            
+            short_dst = (unsigned short *)dst;
+            short_src = (unsigned short *)src;
+
+            *short_dst++ = __read_prog_uint16(short_src++);
+            memCount -= sizeof(short);
+
+            dst = (unsigned char *)short_dst;
+            src = (unsigned char *)short_src;
+        } else {
+            *dst++ = __read_prog_uint8(src++);
+            memCount--;
+        }
+    }
+
+    __mem_fault = 0;
+
+ err:
+    __mem_fault_handler = (void *)0;
+}
+
+static void
+__do_copy_to_progmem (unsigned char* src, unsigned char* dst)
+{
+    unsigned long *long_dst;
+    unsigned long *long_src;
+    unsigned short *short_dst;
+    unsigned short *short_src;
+
+    __mem_fault = 1;                      /* Defaults to 'fail'. Is cleared */
+                                          /* when the copy loop completes.  */
+    __mem_fault_handler = &&err;
+
+    // See if it's safe to do multi-byte, aligned operations
+    while (memCount) {
+        if ((memCount >= sizeof(long)) &&
+            (((target_register_t)dst & (sizeof(long)-1)) == 0) &&
+            (((target_register_t)src & (sizeof(long)-1)) == 0)) {
+        
+            long_dst = (unsigned long *)dst;
+            long_src = (unsigned long *)src;
+
+            __write_prog_uint32(long_dst++, *long_src++);
+            memCount -= sizeof(long);
+
+            dst = (unsigned char *)long_dst;
+            src = (unsigned char *)long_src;
+        } else if ((memCount >= sizeof(short)) &&
+                   (((target_register_t)dst & (sizeof(short)-1)) == 0) &&
+                   (((target_register_t)src & (sizeof(short)-1)) == 0)) {
+            
+            short_dst = (unsigned short *)dst;
+            short_src = (unsigned short *)src;
+
+            __write_prog_uint16(short_dst++, *short_src++);
+            memCount -= sizeof(short);
+
+            dst = (unsigned char *)short_dst;
+            src = (unsigned char *)short_src;
+        } else {
+            __write_prog_uint8(dst++, *src++);
+            memCount--;
+        }
+    }
+
+    __mem_fault = 0;
+
+ err:
+    __mem_fault_handler = (void *)0;
+}
+
+/*
+ * __read_progmem_safe:
+ * Get contents of target memory, abort on error.
+ */
+
+int
+__read_progmem_safe (void *dst, void *src, int count)
+{
+  memCount = count;
+  __do_copy_from_progmem((unsigned char*) src, (unsigned char*) dst);
+  return count - memCount;      // return number of bytes successfully read
+}
+
+/*
+ * __write_progmem_safe:
+ * Set contents of target memory, abort on error.
+ */
+
+int
+__write_progmem_safe (void *src, void *dst, int count)
+{
+  memCount = count;
+  __do_copy_to_progmem((unsigned char*) src, (unsigned char*) dst);
+  return count - memCount;      // return number of bytes successfully written
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Target extras?!

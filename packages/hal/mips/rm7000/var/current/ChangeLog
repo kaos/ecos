@@ -1,0 +1,62 @@
+2001-01-26  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Remove hal_intc_decode macro since it's a
+	change needed in arch.
+
+2001-01-25  Jesper Skov  <jskov@redhat.com>
+
+	* include/variant.inc: Added hal_intc_decode macro which masks the
+	cause register with the status register. Works around what would
+	appear to be a HW bug.
+	
+2001-01-19  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (hal_variant_init): Enable caches.
+
+	* include/variant.inc: Fixed typos in icache clear code.
+
+2001-01-10  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_mips_rm7000.cdl: Fix typo.
+
+2000-12-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/var_misc.c (hal_variant_init): Disable caches until flash
+	stuff is working.
+
+2000-12-06  Jesper Skov  <jskov@redhat.com>
+
+	* src/mips_rm7000.ld: Include extras.o regardless of CYGPKG_IO
+	presence.
+
+	* src/var_misc.c: Enable caches.
+
+2000-11-30  Jesper Skov  <jskov@redhat.com>
+
+	* Cloned from hal/mips/tx49
+
+//===========================================================================
+//####COPYRIGHTBEGIN####
+//                                                                          
+// -------------------------------------------                              
+// The contents of this file are subject to the Red Hat eCos Public License 
+// Version 1.1 (the "License"); you may not use this file except in         
+// compliance with the License.  You may obtain a copy of the License at    
+// http://www.redhat.com/                                                   
+//                                                                          
+// Software distributed under the License is distributed on an "AS IS"      
+// basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+// License for the specific language governing rights and limitations under 
+// the License.                                                             
+//                                                                          
+// The Original Code is eCos - Embedded Configurable Operating System,      
+// released September 30, 1998.                                             
+//                                                                          
+// The Initial Developer of the Original Code is Red Hat.                   
+// Portions created by Red Hat are                                          
+// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// All Rights Reserved.                                                     
+// -------------------------------------------                              
+//                                                                          
+//####COPYRIGHTEND####
+//===========================================================================

@@ -1,3 +1,9 @@
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_sa11x0_brutus.cdl:  Removed
+	CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED which is now the
+	default.
+
 2001-02-23  Gary Thomas  <gthomas@redhat.com>
 
 	* misc/redboot_ROM.ecm: Renamed from redboot_ROM.cfg

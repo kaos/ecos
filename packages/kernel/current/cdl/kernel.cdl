@@ -61,7 +61,7 @@ cdl_package CYGPKG_KERNEL {
                   sched/sched.cxx                                          \
                   sync/bin_sem.cxx     sync/cnt_sem.cxx  sync/flag.cxx     \
                   sync/cnt_sem2.cxx    sync/mbox.cxx     sync/mutex.cxx    \
-                  debug/dbg-thread-demux.c debug/dbg_gdb.cxx
+                  debug/dbg-thread-demux.c
 
     # ---------------------------------------------------------------------
     # The first component within the kernel is related to interrupt
@@ -217,6 +217,7 @@ cdl_package CYGPKG_KERNEL {
             requires      CYGVAR_KERNEL_THREADS_LIST
             requires      CYGDBG_HAL_DEBUG_GDB_THREAD_SUPPORT
             default_value 1
+            compile       debug/dbg_gdb.cxx
             description "
             This option enables some extra kernel code which is needed
             to support multi-threaded source level debugging."

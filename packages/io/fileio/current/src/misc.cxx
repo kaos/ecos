@@ -220,7 +220,7 @@ __externC int cyg_mtab_lookup( cyg_dir *dir, const char **name, cyg_mtab_entry *
     // Otherwise search the mount table.
     for( m = &mtab[0]; m != &mtab_end; m++ )
     {
-        if( m->name != NULL )
+        if( m->name != NULL && m->valid )
         {
             int len = matchlen(*name,m->name);
             if( len > best_len )
@@ -252,7 +252,8 @@ __externC int mount( const char *devname,
     
     cyg_mtab_entry *m;
     cyg_fstab_entry *f;
-    
+    int result = ENOERR;
+
     // Search the mount table for an empty entry
     for( m = &mtab[0]; m != &mtab_end; m++ )
     {
@@ -289,7 +290,7 @@ __externC int mount( const char *devname,
     m->fsname = fsname;
     m->devname = devname;
     
-    if( f->mount( f, m ) == 0 )
+    if( (result = f->mount( f, m )) == 0 )
     {
         m->valid    = true;
         m->fs       = f;
@@ -300,8 +301,14 @@ __externC int mount( const char *devname,
         m->valid = false;
         m->name = NULL;
     }
-                
-    FILEIO_RETURN(ENOERR);
+
+    // Make sure that there is something to search (for open)
+
+    if (cdir_mtab_entry == (cyg_mtab_entry *)NULL) {
+        cdir_mtab_entry = m;
+    }
+
+    FILEIO_RETURN(result);
 }
 
 //==========================================================================
@@ -325,8 +332,8 @@ __externC int umount( const char *name)
             break;
         }
 
-        // Ignore empty entries
-         if( m->name == NULL ) continue;
+        // Ignore empty or invalid entries
+         if( m->name == NULL || !m->valid ) continue;
 
          // match names.
          if( strcmp(name,m->name) == 0 ) break;
@@ -355,20 +362,32 @@ __externC int umount( const char *name)
 
 void cyg_fs_lock( cyg_mtab_entry *mte, cyg_uint32 syncmode )
 {
-    if( syncmode & CYG_SYNCMODE_FILE_FILESYSTEM )
-        fstab_lock[mte->fs-&fstab[0]].lock();
+    CYG_ASSERT(mte != NULL, "Bad mount table entry");
 
-    if( syncmode & CYG_SYNCMODE_FILE_MOUNTPOINT )
+    if( syncmode & CYG_SYNCMODE_FILE_FILESYSTEM ) {
+        CYG_ASSERT(mte->fs-&fstab[0] < CYGNUM_FILEIO_FSTAB_MAX, "Bad file system");
+        fstab_lock[mte->fs-&fstab[0]].lock();
+    }
+
+    if( syncmode & CYG_SYNCMODE_FILE_MOUNTPOINT ) {
+        CYG_ASSERT(mte-&mtab[0] < CYGNUM_FILEIO_MTAB_MAX, "Bad mount point");
         mtab_lock[mte-&mtab[0]].lock();
+    }
 }
 
 void cyg_fs_unlock( cyg_mtab_entry *mte, cyg_uint32 syncmode )
 {
-    if( syncmode & CYG_SYNCMODE_FILE_FILESYSTEM )
-        fstab_lock[mte->fs-&fstab[0]].unlock();
+    CYG_ASSERT(mte != NULL, "Bad mount table entry");
 
-    if( syncmode & CYG_SYNCMODE_FILE_MOUNTPOINT )
+    if( syncmode & CYG_SYNCMODE_FILE_FILESYSTEM ) {
+        CYG_ASSERT(mte->fs-&fstab[0] < CYGNUM_FILEIO_FSTAB_MAX, "Bad file system");
+        fstab_lock[mte->fs-&fstab[0]].unlock();
+    }
+
+    if( syncmode & CYG_SYNCMODE_FILE_MOUNTPOINT ) {
+        CYG_ASSERT(mte-&mtab[0] < CYGNUM_FILEIO_MTAB_MAX, "Bad mount point");
         mtab_lock[mte-&mtab[0]].unlock();
+    }
 }
 
 //==========================================================================

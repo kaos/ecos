@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                    
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,8 +32,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg, gthomas
-// Contributors: nickg, gthomas
-// Date:         1999-02-20
+// Contributors: nickg, gthomas, jlarmour
+// Date:         2001-03-21
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
 //               HAL.
@@ -46,9 +46,6 @@
 #include <pkgconf/hal_v85x.h>
 #ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
-#endif
-#ifdef CYGPKG_CYGMON
-#include <pkgconf/cygmon.h>
 #endif
 
 #include <cyg/infra/cyg_type.h>
@@ -70,7 +67,7 @@ externC void* volatile __mem_fault_handler;
 void
 exception_handler(HAL_SavedRegisters *regs)
 {
-#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS) && !defined(CYGPKG_CYGMON)
+#if defined(CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS)
 //    diag_printf("Exception! Frame: %x\n", regs);
 //    show_regs(regs);
     static int gdb_active;
@@ -141,6 +138,11 @@ cyg_hal_invoke_constructors (void)
 externC cyg_uint32
 hal_arch_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 {
+    CYG_TRACE1(true, "Interrupt: %d", vector);
+
+    diag_printf("Spurious Interrupt!!! - vector: %d, data: %x\n", vector, 
+                data);
+    CYG_FAIL("Spurious Interrupt!!!");
     return 0;
 }
 #else
@@ -173,6 +175,8 @@ hal_default_isr(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 void
 hal_idle_thread_action( cyg_uint32 count )
 {
+    // power saving instruction
+    asm("halt");
 }
 
 /*-------------------------------------------------------------------------*/

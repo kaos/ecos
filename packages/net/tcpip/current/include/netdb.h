@@ -59,6 +59,10 @@
 #ifndef _NETDB_H_
 #define _NETDB_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Internet protocols
 struct protoent {
     char *p_name;
@@ -92,4 +96,7 @@ struct hostent {
 struct hostent *gethostbyname(const char *host);
 struct hostent *gethostbyaddr(const char *addr, int len, int type);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // _NETDB_H_

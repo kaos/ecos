@@ -55,6 +55,7 @@ cdl_package CYGPKG_HAL_ARM_PID {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
+    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_arm.h>"

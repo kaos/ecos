@@ -1,3 +1,8 @@
+2001-02-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* interp.cxx (locate_subdirs): Accept "cvs" as a synonym for "CVS"
+	* database.cxx (new_package): Ditto.
+
 2000-08-18  Bart Veer  <bartv@redhat.com>
 
 	* configure.in:
@@ -773,7 +778,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //

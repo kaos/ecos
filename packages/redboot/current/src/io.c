@@ -90,28 +90,35 @@ mon_read_char(char *c)
     }
 }
 
+#ifdef CYGPKG_REDBOOT_ANY_CONSOLE
+static int _mon_timeout;
+#endif
+
 static bool
 mon_read_char_with_timeout(char *c)
 {
-    bool res;
+    bool res = false;
     hal_virtual_comm_table_t *__chan;
 
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     if (!console_selected) {
         int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
-        int i;
+        int i, tot;
         // Try input from all channels
-        for (i = 0;  i < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;  i++) {
-            CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
-            __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
-            res = CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, c);
-            if (res) {
-                // Input available on this channel, make it be the console
-                if (*c != '\0') {
-                    // Don't chose this unless real data have arrived
-                    console_selected = true;
-                    CYGACC_CALL_IF_SET_DEBUG_COMM(i);
-                    return res;
+        tot = 0;
+        while (tot < _mon_timeout) {
+            for (i = 0;  i < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;  i++, tot++) {
+                CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
+                __chan = CYGACC_CALL_IF_CONSOLE_PROCS();
+                res = CYGACC_COMM_IF_GETC_TIMEOUT(*__chan, c);
+                if (res) {
+                    // Input available on this channel, make it be the console
+                    if (*c != '\0') {
+                        // Don't chose this unless real data have arrived
+                        console_selected = true;
+                        CYGACC_CALL_IF_SET_DEBUG_COMM(i);
+                        return res;
+                    }
                 }
             }
         }
@@ -139,8 +146,9 @@ mon_set_read_char_timeout(int ms)
     if (!console_selected) {
         int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
         int i;
-        // Set timeout on each channel so total amounts to desired value
-        ms = ms / CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;
+        // Set timeout to minimum on each channel; total amounts to desired value
+        _mon_timeout = ms;
+        ms = 1;
         for (i = 0;  i < CYGNUM_HAL_VIRTUAL_VECTOR_COMM_CHANNELS;  i++) {
             CYGACC_CALL_IF_SET_CONSOLE_COMM(i);
             if ((__chan = CYGACC_CALL_IF_CONSOLE_PROCS()) != 0) {
@@ -178,6 +186,7 @@ gets(char *buf, int buflen, int timeout)
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
         if (script && *script) {
             c = *script++;
+            do_idle(false);
         } else
 #endif
         if ((timeout > 0) && (ptr == buf)) {
@@ -186,11 +195,13 @@ gets(char *buf, int buflen, int timeout)
                 res = mon_read_char_with_timeout(&c);
                 if (res) {
                     // Got a character
+                    do_idle(false);
                     break;
                 }
                 timeout -= 50;
             }
             if (res == false) {
+                do_idle(true);
                 return _GETS_TIMEOUT;  // Input timed out
             }
         } else {

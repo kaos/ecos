@@ -75,14 +75,15 @@ cdl_package CYGPKG_REDBOOT {
                      This is handled by a rule in the target CDL."
 
         compile main.c crc.c
-	compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
+        compile printf.c misc_funs.c io.c parse.c ticks.c xyzModem.c syscall.c
+        compile decompress.c
         compile -library=libextras.a load.c 
 
         make -priority 320 {
             <PREFIX>/bin/redboot.elf : $(PREFIX)/lib/target.ld $(PREFIX)/lib/vectors.o $(PREFIX)/lib/libtarget.a $(PREFIX)/lib/libextras.a
                     @sh -c "mkdir -p $(dir $@)"
-                    $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
-	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ version.o
+                    $(CC) -c $(INCLUDE_PATH) $(CFLAGS) -o $(PREFIX)/lib/version.o $(REPOSITORY)/$(PACKAGE)/src/version.c
+	            $(CC) $(LDFLAGS) -L$(PREFIX)/lib -Ttarget.ld -o $@ $(PREFIX)/lib/version.o
         }
     }
 
@@ -114,7 +115,7 @@ cdl_package CYGPKG_REDBOOT {
             display          "Number of \[network\] packet buffers"
             flavor           data
             default_value    4
-            legal_values     2 to 8
+            legal_values     3 to 8
             description      "
                RedBoot may need to buffer network data to support various connections.
                This option allows control over the number of such buffered packets,
@@ -156,6 +157,22 @@ cdl_package CYGPKG_REDBOOT {
           number smaller will cause idle processing to take place
           more often, etc.  The default value of 10ms is a reasonable
           tradeoff between responsiveness and overhead."
+    }
+
+    cdl_option CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER {
+        display       "Size of zlib decompression buffer"
+        active_if     CYGPKG_COMPRESS_ZLIB
+        flavor        data
+        default_value 64
+        legal_values  5 to 256
+        description   "
+            This is the size of the buffer filled with incoming data
+            during load before calls are made to the decompressor
+            function. For ethernet downloads this can be made bigger
+            (at the cost of memory), but for serial downloads on slow
+            processors it may be necessary to reduce the size to
+            avoid serial overruns. zlib appears to bail out if less than
+            five bytes are available initially so this is the minimum."
     }
 
     cdl_component CYGPKG_REDBOOT_FLASH {

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.           
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,9 +32,9 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas, jskov
+// Contributors: gthomas, jskov, jlarmour
 // Date:         2000-02-21
-// Purpose:      SH architecture dependent definition generator
+// Purpose:      V850 architecture dependent definition generator
 // Description:  This file contains code that can be compiled by the target
 //               compiler and used to generate machine specific definitions
 //               suitable for use in assembly code.
@@ -142,10 +142,10 @@ main(void)
     DEFINE(CYGNUM_HAL_VSR_MAX, CYGNUM_HAL_VSR_MAX);
     DEFINE(CYGNUM_HAL_VSR_COUNT, CYGNUM_HAL_VSR_COUNT);
     DEFINE(CYGNUM_HAL_EXCEPTION_COUNT, CYGNUM_HAL_EXCEPTION_COUNT);
-    DEFINE(CYGNUM_HAL_VECTOR_WATCHDOG_TIMER, CYGNUM_HAL_VECTOR_WATCHDOG_TIMER);
-    DEFINE(CYGNUM_HAL_VECTOR_TRAP0, CYGNUM_HAL_VECTOR_TRAP0);
-    DEFINE(CYGNUM_HAL_VECTOR_TRAP1, CYGNUM_HAL_VECTOR_TRAP1);
-    DEFINE(CYGNUM_HAL_VECTOR_ILLEGAL_OPCODE, CYGNUM_HAL_VECTOR_ILLEGAL_OPCODE);
+    DEFINE(CYGNUM_HAL_VECTOR_INTWDT, CYGNUM_HAL_VECTOR_INTWDT);
+    DEFINE(CYGNUM_HAL_VECTOR_TRAP00, CYGNUM_HAL_VECTOR_TRAP00);
+    DEFINE(CYGNUM_HAL_VECTOR_TRAP10, CYGNUM_HAL_VECTOR_TRAP10);
+    DEFINE(CYGNUM_HAL_VECTOR_ILGOP, CYGNUM_HAL_VECTOR_ILGOP);
     
     DEFINE(CYGARC_PSW_ID, CYGARC_PSW_ID);
     DEFINE(CYGARC_PSW_EP, CYGARC_PSW_EP);

@@ -66,6 +66,27 @@ strcmp(const char *s1, const char *s2)
 }
 
 char *
+strncpy(char *s1, const char *s2, unsigned long n)
+{
+    char c;
+    char *_s1 = s1;
+
+    if (n) {
+        n--;                            // leave space for terminator
+        while (n != 0 && (c = *s2++) != '\0') {
+            *s1++ = c;
+            n--;
+        }
+        *s1 = '\0';
+        while (n != 0) {                // fill remainder with zero
+            *s1++ = 0;
+            n--;
+        }
+    }
+    return _s1;
+}
+
+char *
 strcpy(char *s1, const char *s2)
 {
     char c;

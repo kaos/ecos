@@ -1,3 +1,7 @@
+2001-03-20  Jesper Skov  <jskov@redhat.com>
+
+	* src/wallclock_sh3.cxx: Don't include kernel config.
+
 2000-05-26  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/wallclock_sh3.cdl: CYGSEM_WALLCLOCK_SET_GET_MODE moved to IO

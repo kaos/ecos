@@ -845,8 +845,7 @@ sh3_scif_er_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 #endif
     }
     if (_ssr & CYGARC_REG_SCSSR2_BRK) {
-        // don't bother clearing - it will be set immediately anyway
-        // _ssr2 &= ~CYGARC_REG_SCSSR2_BRK;
+        _ssr2 &= ~CYGARC_REG_SCSSR2_BRK;
 #ifdef CYGOPT_IO_SERIAL_SUPPORT_LINE_STATUS
         stat.which = CYGNUM_SERIAL_STATUS_BREAK;
         (chan->callbacks->indicate_status)(chan, &stat );

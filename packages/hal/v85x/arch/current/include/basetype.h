@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                    
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -34,16 +34,14 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:  nickg, gthomas
-// Date:        1998-02-05
-// Purpose:     Define architecture base types.
-// Usage:       Included by <cyg/infra/cyg_types.h>, do not use directly
+// Author(s):    nickg
+// Contributors: nickg, gthomas, jlarmour
+// Date:         2001-03-21
+// Purpose:      Define architecture base types.
+// Usage:        Included by <cyg/infra/cyg_types.h>, do not use directly
 //              
 //####DESCRIPTIONEND####
 //
-
-#include <pkgconf/hal.h>
 
 //-----------------------------------------------------------------------------
 // Characterize the architecture

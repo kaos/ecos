@@ -47,6 +47,7 @@
 #include <redboot.h>
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_intr.h>
+#include <cyg/hal/hal_if.h>
 #include <cyg/hal/hal_cache.h>
 #include CYGHWR_MEMORY_LAYOUT_H
 
@@ -83,6 +84,11 @@ RedBoot_cmd("dump",
             "Display (hex dump) a range of memory", 
             "-b <location> [-l <length>]",
             do_dump 
+    );
+RedBoot_cmd("cksum", 
+            "Compute a 32bit checksum [POSIX algorithm] for a range of memory", 
+            "-b <location> -l <length>",
+            do_cksum
     );
 RedBoot_cmd("cache", 
             "Manage machine caches", 
@@ -123,7 +129,20 @@ do_version(int argc, char *argv[])
     printf("Platform: %s (%s) %s\n", HAL_PLATFORM_BOARD, HAL_PLATFORM_CPU, HAL_PLATFORM_EXTRA);
 #endif
     printf("Copyright (C) 2000, 2001, Red Hat, Inc.\n\n");
-    printf("RAM: %p-%p\n", (void*)ram_start, (void*)ram_end);
+    printf("RAM: %p-%p, %p-%p available\n", 
+           (void*)ram_start, (void*)ram_end,
+           (void*)user_ram_start, (void *)user_ram_end);
+}
+
+void
+do_idle(bool is_idle)
+{
+    struct idle_tab_entry *idle_entry;
+
+    for (idle_entry = __RedBoot_IDLE_TAB__; 
+         idle_entry != &__RedBoot_IDLE_TAB_END__;  idle_entry++) {
+        (*idle_entry->fun)(is_idle);
+    }
 }
 
 //
@@ -136,10 +155,16 @@ cyg_start(void)
     bool prompt = true;
     static char line[CYGPKG_REDBOOT_MAX_CMD_LINE];
     struct cmd *cmd;
-    int cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+    int cur;
     struct init_tab_entry *init_entry;
-    struct idle_tab_entry *idle_entry;
 
+    // Make sure the channels are properly initialized.
+    hal_if_diag_init();
+
+    // Force console to output raw text - but remember the old setting
+    // so it can be restored if interaction with a debugger is
+    // required.
+    cur = CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
     CYGACC_CALL_IF_SET_CONSOLE_COMM(CYGNUM_HAL_VIRTUAL_VECTOR_DEBUG_CHANNEL);
 #ifdef CYGPKG_REDBOOT_ANY_CONSOLE
     console_selected = false;
@@ -155,14 +180,30 @@ cyg_start(void)
         ram_end = HAL_MEM_REAL_REGION_TOP( ram_end_tmp );
     }
 #endif
+#ifdef CYGMEM_SECTION_heap1
+    workspace_start = (unsigned char *)CYGMEM_SECTION_heap1;
+    workspace_end = (unsigned char *)(CYGMEM_SECTION_heap1+CYGMEM_SECTION_heap1_SIZE);
+    workspace_size = CYGMEM_SECTION_heap1_SIZE;
+#else
+    workspace_start = (unsigned char *)CYGMEM_REGION_ram;
+    workspace_end = (unsigned char *)(CYGMEM_REGION_ram+CYGMEM_REGION_ram_SIZE);
+    workspace_size = CYGMEM_REGION_ram_SIZE;
+#endif
 
     bist();
-
-    do_version(0,0);
 
     for (init_entry = __RedBoot_INIT_TAB__; init_entry != &__RedBoot_INIT_TAB_END__;  init_entry++) {
         (*init_entry->fun)();
     }
+
+#ifdef CYGPKG_COMPRESS_ZLIB
+#define ZLIB_COMPRESSION_OVERHEAD 0xB400
+#else
+#define ZLIB_COMPRESSION_OVERHEAD 0
+#endif
+    user_ram_start = workspace_start + ZLIB_COMPRESSION_OVERHEAD;
+    user_ram_end = workspace_end;
+    do_version(0,0);
 
 #ifdef CYGSEM_REDBOOT_FLASH_CONFIG
     // Give the guy a chance to abort any boot script
@@ -172,6 +213,7 @@ cyg_start(void)
         printf("== Executing boot script in %d.%03d seconds - enter ^C to abort\n", 
                script_timeout_ms/1000, script_timeout_ms%1000);
         script = (unsigned char *)0;
+        res = _GETS_CTRLC;  // Treat 0 timeout as ^C
         while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
             res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
             if (res == _GETS_OK) {
@@ -180,10 +222,6 @@ cyg_start(void)
                 continue;  // Ignore anything but ^C
             }
             if (res != _GETS_TIMEOUT) break;
-            for (idle_entry = __RedBoot_IDLE_TAB__; 
-                 idle_entry != &__RedBoot_IDLE_TAB_END__;  idle_entry++) {
-                (*idle_entry->fun)();
-            }
             script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
         if (res == _GETS_CTRLC) {
@@ -202,12 +240,9 @@ cyg_start(void)
         res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
         if (res == _GETS_TIMEOUT) {
             // No input arrived
-            for (idle_entry = __RedBoot_IDLE_TAB__; 
-                 idle_entry != &__RedBoot_IDLE_TAB_END__;  idle_entry++) {
-                (*idle_entry->fun)();
-            }
         } else {
             if (res == _GETS_GDB) {
+		int dbgchan;
                 // Special case of '$' - need to start GDB protocol
                 gdb_active = true;
                 CYGACC_CALL_IF_SET_CONSOLE_COMM(cur);
@@ -216,6 +251,8 @@ cyg_start(void)
 #else
                 breakpoint();  // Get GDB stubs started, with a proper environment, etc.
 #endif
+		dbgchan = CYGACC_CALL_IF_SET_DEBUG_COMM(CYGNUM_CALL_IF_SET_COMM_ID_QUERY_CURRENT);
+		CYGACC_CALL_IF_SET_CONSOLE_COMM(dbgchan);
             } else {
                 if (strlen(line) > 0) {
                     if ((cmd = parse(line, &argc, &argv[0])) != (struct cmd *)0) {
@@ -314,6 +351,29 @@ do_dump(int argc, char *argv[])
 }
 
 void
+do_cksum(int argc, char *argv[])
+{
+    struct option_info opts[2];
+    unsigned long base, len, crc;
+    bool base_set, len_set;
+
+    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&base, (bool *)&base_set, "base address");
+    init_opts(&opts[1], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&len, (bool *)&len_set, "length");
+    if (!scan_opts(argc, argv, 1, opts, 2, 0, 0, ""))
+    {
+        return;
+    }
+    if (!base_set || !len_set) {
+        printf("usage: cksum -b <addr> -l <length>\n");
+        return;
+    }
+    crc = posix_crc32((unsigned char *)base, len);
+    printf("POSIX cksum = 0x%08lx (%lu)\n", crc, crc);
+}
+
+void
 do_go(int argc, char *argv[])
 {
     typedef void code_fun(void);
@@ -333,11 +393,22 @@ do_go(int argc, char *argv[])
         return;
     }
     if (wait_time_set) {
+        int script_timeout_ms = wait_time * 1000;
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+        unsigned char *hold_script = script;
+        script = (unsigned char *)0;
+#endif
         printf("About to start execution at %p - abort with ^C within %d seconds\n",
                (void *)entry, wait_time);
-        res = gets(line, sizeof(line), wait_time*1000);
-        if (res == _GETS_CTRLC) {
-            return;
+        while (script_timeout_ms >= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT) {
+            res = gets(line, sizeof(line), CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT);
+            if (res == _GETS_CTRLC) {
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+                script = hold_script;  // Re-enable script
+#endif
+                return;
+            }
+            script_timeout_ms -= CYGNUM_REDBOOT_CLI_IDLE_TIMEOUT;
         }
     }
     fun = (code_fun *)entry;

@@ -70,7 +70,7 @@ local_cmd_entry("init",
     );
 local_cmd_entry("list",
                 "Display contents of FLASH Image System [FIS]",
-                "[-c]",
+                "[-c] [-d]",
                 fis_list,
                 FIS_cmds
     );
@@ -106,9 +106,16 @@ local_cmd_entry("delete",
                 fis_delete,
                 FIS_cmds
     );
+
+static char fis_load_usage[] = 
+#ifdef CYGPKG_COMPRESS_ZLIB
+                      "[-d] "
+#endif
+                      "[-b <memory_load_address>] [-c] name";
+
 local_cmd_entry("load",
                 "Load image from FLASH Image System [FIS] into RAM",
-                "[-b <memory_load_address>] [-c] name",
+                fis_load_usage,
                 fis_load,
                 FIS_cmds
     );
@@ -117,6 +124,12 @@ local_cmd_entry("create",
                 "-b <mem_base> -l <image_length> [-s <data_length>]\n"
                 "      [-f <flash_addr>] [-e <entry_point>] [-r <ram_addr>] [-n] <name>",
                 fis_create,
+                FIS_cmds
+    );
+local_cmd_entry("write",
+                "Write raw data directly to FLASH",
+                "-f <flash_addr> -b <mem_base> -l <image_length>",
+                fis_write,
                 FIS_cmds
     );
 
@@ -308,24 +321,33 @@ fis_list(int argc, char *argv[])
     struct fis_image_desc *img;
     int i;
     bool show_cksums = false;
-    struct option_info opts[1];
+    bool show_datalen = false;
+    struct option_info opts[2];
 
     init_opts(&opts[0], 'c', false, OPTION_ARG_TYPE_FLG, 
               (void **)&show_cksums, (bool *)0, "display checksums");
-    if (!scan_opts(argc, argv, 2, opts, 1, 0, 0, ""))
+    init_opts(&opts[1], 'd', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&show_datalen, (bool *)0, "display data length");
+    if (!scan_opts(argc, argv, 2, opts, 2, 0, 0, ""))
     {
         return;
     }
 
-    img = (struct fis_image_desc *)((unsigned long)flash_end - block_size);    
-    printf("Name              FLASH addr   %s    Length      Entry point\n",
-           show_cksums ? "Checksum" : "Mem addr");
+    img = (struct fis_image_desc *)((unsigned long)flash_end - block_size);
+    // Let printf do the formatting in both cases, rather than cnouting
+    // cols by hand....
+    printf("%-16s  %-10s  %-10s  %-10s  %-s\n",
+           "Name","FLASH addr",
+           show_cksums ? "Checksum" : "Mem addr",
+           show_datalen ? "Datalen" : "Length",
+           "Entry point" );
     for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
         if (img->name[0] != (unsigned char)0xFF) {
-            printf("%-16s  0x%08lX   0x%08lX  0x%08lX  0x%08lX\n", img->name, 
+            printf("%-16s  0x%08lX  0x%08lX  0x%08lX  0x%08lX\n", img->name, 
                    img->flash_base, 
                    show_cksums ? img->file_cksum : img->mem_base, 
-                   img->size, img->entry_point);
+                   show_datalen ? img->data_length : img->size, 
+                   img->entry_point);
         }
     }
 }
@@ -423,7 +445,7 @@ fis_create(int argc, char *argv[])
     bool no_copy = false;
     void *fis_addr, *err_addr;
     struct fis_image_desc *img;
-    bool slot_found;
+    bool slot_found, defaults_assumed;
     struct option_info opts[7];
     bool prog_ok;
 
@@ -447,7 +469,8 @@ fis_create(int argc, char *argv[])
         return;
     }
 
-    if ( name ) {
+    defaults_assumed = false;
+    if (name) {
         // Search existing files to acquire defaults for params not specified:
         fis_addr = (void *)((unsigned long)flash_end - block_size);
         memcpy(fis_work_block, fis_addr, block_size);
@@ -455,13 +478,26 @@ fis_create(int argc, char *argv[])
         for (i = 0;  i < block_size/sizeof(*img);  i++, img++) {
             if ((img->name[0] != (unsigned char)0xFF) && (strcmp(name, img->name) == 0)) {
                 // Found it, so get any unset but necessary params from there:
-                if ( !length_set ) {
+                if (!length_set) {
                     length_set = true;
                     length = img->size;
+                    defaults_assumed = true;
                 }
-                if ( !flash_addr_set ) {
+                // img_size can also be handled below, set from length
+                if (!img_size_set && 0 < img->data_length) {
+                    img_size_set = true;
+                    img_size = img->data_length;
+                    defaults_assumed = true;
+                }
+                if (!exec_addr_set) {
+                    // Preserve "normal" behaviour
+                    exec_addr_set = true;
+                    exec_addr = flash_addr_set ? flash_addr : mem_addr;
+                }           
+                if (!flash_addr_set) {
                     flash_addr_set = true;
                     flash_addr = img->flash_base;
+                    defaults_assumed = true;
                 }           
                 break;
             }
@@ -525,8 +561,15 @@ fis_create(int argc, char *argv[])
             }
             if (!verify_action("An image named '%s' exists", name)) {
                 return;
-            } else {
+            } else {                
                 slot_found = true;
+                if (defaults_assumed) {
+                    if (!verify_action("* CAUTION * about to program '%s'\n            at %p..%p from %p", 
+                                       name, (void *)flash_addr, (void *)(flash_addr+img_size-1),
+                                       (void *)mem_addr)) {
+                        return;  // The guy gave up
+                    }
+                }
                 break;
             }
         }
@@ -589,6 +632,76 @@ fis_create(int argc, char *argv[])
     // Insure [quietly] that the directory is locked after the update
     flash_lock((void *)fis_addr, block_size, (void **)&err_addr);
 #endif
+}
+
+static void
+fis_write(int argc, char *argv[])
+{
+    int stat;
+    unsigned long mem_addr, flash_addr, length;
+    bool mem_addr_set = false;
+    bool flash_addr_set = false;
+    bool length_set = false;
+    void *err_addr;
+    struct option_info opts[3];
+    bool prog_ok;
+
+    init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&mem_addr, (bool *)&mem_addr_set, "memory base address");
+    init_opts(&opts[1], 'f', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&flash_addr, (bool *)&flash_addr_set, "FLASH memory base address");
+    init_opts(&opts[2], 'l', true, OPTION_ARG_TYPE_NUM, 
+              (void **)&length, (bool *)&length_set, "image length [in FLASH]");
+    if (!scan_opts(argc, argv, 2, opts, 3, 0, 0, 0))
+    {
+        fis_usage("invalid arguments");
+        return;
+    }
+
+    if (!mem_addr_set || !flash_addr_set || !length_set)
+        fis_usage("required parameter missing");
+
+    // Round up length to FLASH block size
+#ifndef CYGPKG_HAL_MIPS // FIXME: compiler is b0rken
+    length = ((length + block_size - 1) / block_size) * block_size;
+#endif
+    if (flash_addr_set &&
+        ((stat = flash_verify_addr((void *)flash_addr)) ||
+         (stat = flash_verify_addr((void *)(flash_addr+length-1))))) {
+        printf("Invalid FLASH address: %p (%s)\n", (void *)flash_addr, flash_errmsg(stat));
+        printf("   valid range is %p-%p\n", (void *)flash_start, (void *)flash_end);
+        return;
+    }
+    if ((mem_addr < (unsigned long)ram_start) ||
+        ((mem_addr+length) >= (unsigned long)ram_end)) {
+        printf("** WARNING: RAM address: %p may be invalid\n", (void *)mem_addr);
+        printf("   valid range is %p-%p\n", (void *)ram_start, (void *)ram_end);
+    }
+    // Safety check - make sure the address range is not within the code we're running
+    if (flash_code_overlaps((void *)flash_addr, (void *)(flash_addr+length-1))) {
+        printf("Can't program this region - contains code in use!\n");
+        return;
+    }
+    if (!verify_action("* CAUTION * about to program FLASH at %p..%p from %p", 
+                       (void *)flash_addr, (void *)(flash_addr+length-1),
+                       (void *)mem_addr)) {
+        return;  // The guy gave up
+    }
+    prog_ok = true;
+    if (prog_ok) {
+        // Erase area to be programmed
+        if ((stat = flash_erase((void *)flash_addr, length, (void **)&err_addr)) != 0) {
+            printf("Can't erase region at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            prog_ok = false;
+        }
+    }
+    if (prog_ok) {
+        // Now program it
+        if ((stat = flash_program((void *)flash_addr, (void *)mem_addr, length, (void **)&err_addr)) != 0) {
+            printf("Can't program region at %p: 0x%x(%s)\n", err_addr, stat, flash_errmsg(stat));
+            prog_ok = false;
+        }
+    }
 }
 
 static void
@@ -794,14 +907,23 @@ fis_load(int argc, char *argv[])
     unsigned long mem_addr;
     bool mem_addr_set = false;
     bool show_cksum = false;
-    struct option_info opts[2];
+    struct option_info opts[3];
     unsigned long cksum;
+    int num_options;
+    bool decompress = false;
 
     init_opts(&opts[0], 'b', true, OPTION_ARG_TYPE_NUM, 
               (void **)&mem_addr, (bool *)&mem_addr_set, "memory [load] base address");
     init_opts(&opts[1], 'c', false, OPTION_ARG_TYPE_FLG, 
               (void **)&show_cksum, (bool *)0, "display checksum");
-    if (!scan_opts(argc, argv, 2, opts, 2, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
+    num_options = 2;
+#ifdef CYGPKG_COMPRESS_ZLIB
+    init_opts(&opts[2], 'd', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&decompress, 0, "decompress");
+    num_options++;
+#endif
+
+    if (!scan_opts(argc, argv, 2, opts, num_options, (void **)&name, OPTION_ARG_TYPE_STR, "image name"))
     {
         fis_usage("invalid arguments");
         return;
@@ -814,18 +936,45 @@ fis_load(int argc, char *argv[])
         mem_addr = img->mem_base;
     }
     // Load image from FLASH into RAM
-    if ((mem_addr < (unsigned long)ram_start) ||
-        ((mem_addr+img->size) >= (unsigned long)ram_end)) {
+    if ((mem_addr < (unsigned long)user_ram_start) ||
+        ((mem_addr+img->size) >= (unsigned long)user_ram_end)) {
         printf("Not a loadable image\n");
         return;
     }
-    memcpy((void *)mem_addr, (void *)img->flash_base, img->data_length);
+#ifdef CYGPKG_COMPRESS_ZLIB
+    if (decompress) {
+        int err;
+        _pipe_t fis_load_pipe;
+        _pipe_t* p = &fis_load_pipe;
+        p->out_buf = (unsigned char*) mem_addr;
+        p->out_size = -1;
+        p->in_buf = (unsigned char*) img->flash_base;
+        p->in_avail = img->data_length;
+
+        err = (*_dc_init)(p);
+
+        if (0 == err)
+            err = (*_dc_inflate)(p);
+
+        // Free used resources, do final translation of
+        // error value.
+        err = (*_dc_close)(p, err);
+
+        if (0 != err && p->msg)
+            printf("zlib: %s\n", p->msg);
+
+    } else // dangling block
+#endif
+    {
+        memcpy((void *)mem_addr, (void *)img->flash_base, img->data_length);
+    }
     entry_address = (unsigned long *)img->entry_point;
     cksum = crc32((unsigned char *)mem_addr, img->data_length);
     if (show_cksum) {
         printf("Checksum: 0x%08lx\n", cksum);
     }
-    if (img->file_cksum) {
+    // When decompressing, leave CRC checking to decompressor
+    if (!decompress && img->file_cksum) {
         if (cksum != img->file_cksum) {
             printf("** Warning - checksum failure.  stored: 0x%08lx, computed: 0x%08lx\n",
                    img->file_cksum, cksum);
@@ -841,7 +990,7 @@ do_flash_init(void)
 
     if (!init) {
         init = 1;
-        if ((stat = flash_init((void *)(ram_end-FLASH_MIN_WORKSPACE), 
+        if ((stat = flash_init((void *)(workspace_end-FLASH_MIN_WORKSPACE), 
                                FLASH_MIN_WORKSPACE)) != 0) {
             printf("FLASH: driver init failed!, status: 0x%x\n", stat);
             return false;
@@ -850,7 +999,8 @@ do_flash_init(void)
         flash_get_block_info(&block_size, &blocks);
         printf("FLASH: %p - %p, %d blocks of %p bytes each.\n", 
                flash_start, flash_end, blocks, (void *)block_size);
-        fis_work_block = (unsigned char *)(ram_end-FLASH_MIN_WORKSPACE-block_size);
+        fis_work_block = (unsigned char *)(workspace_end-FLASH_MIN_WORKSPACE-block_size);
+        workspace_end = fis_work_block;
     }
     return true;
 }

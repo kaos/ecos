@@ -11,7 +11,7 @@
 int stubhex (unsigned char ch);
 static void getpacket (char *buffer);
 static void unlock_thread_scheduler (void);
-static uint32 crc32 (unsigned char *ptr, int len, uint32 crc);
+static uint32 crc32 (target_addr_t mem, int len, uint32 crc);
 #endif
 
 #include "thread-pkts.h"
@@ -456,6 +456,9 @@ __write_mem_safe (unsigned char *src, target_register_t dst, int count)
 static int   hexMemCount;
 static char *hexMemSrc, *hexMemDst;
 static int   may_fault_mode;
+#ifdef TARGET_HAS_HARVARD_MEMORY
+static int   progMem;
+#endif
 
 /* Hamburger helper? */
 static void
@@ -481,6 +484,11 @@ __mem2hex_helper (void)
             } else {
                 len = 1;
             }
+#ifdef TARGET_HAS_HARVARD_MEMORY
+	    if (progMem)
+		__read_progmem_safe(&val.bytes[0], hexMemSrc, len);
+	    else
+#endif
             __read_mem_safe(&val.bytes[0], hexMemSrc, len);
         } else {
             len = 1;
@@ -523,6 +531,9 @@ __mem2hex (mem, buf, count, may_fault)
   hexMemSrc      = (unsigned char *) mem;
   hexMemCount    = count;
   may_fault_mode = may_fault;
+#ifdef TARGET_HAS_HARVARD_MEMORY
+  progMem = 0;
+#endif
   
   if (may_fault)
     {
@@ -536,6 +547,32 @@ __mem2hex (mem, buf, count, may_fault)
 
   return (char *) hexMemDst;
 }
+
+/* Convert the target memory identified by MEM into HEX, placing result in BUF.
+ * Return a pointer to the last char put in buf (NUL). In case of a memory
+ * fault, return 0.
+ */
+
+static char *
+__mem2hex_safe (target_addr_t mem, char *buf, int count)
+{
+  hexMemDst      = (unsigned char *) buf;
+  hexMemSrc      = (unsigned char *) TARGET_ADDR_TO_PTR(mem);
+  hexMemCount    = count;
+  may_fault_mode = 1;
+#ifdef TARGET_HAS_HARVARD_MEMORY
+  progMem = TARGET_ADDR_IS_PROGMEM(mem);
+#endif
+  
+  if (__set_mem_fault_trap (__mem2hex_helper))
+    return 0;
+
+  *hexMemDst = 0;
+
+  return (char *) hexMemDst;
+}
+
+
 
 static void
 __hex2mem_helper (void)
@@ -574,9 +611,14 @@ __hex2mem_helper (void)
             val.bytes[i] = ch;
         }
 
-        if (may_fault_mode)
+        if (may_fault_mode) {
+#ifdef TARGET_HAS_HARVARD_MEMORY
+	    if (progMem)
+		__write_progmem_safe (&val.bytes[0], hexMemDst, len);
+	    else
+#endif
             __write_mem_safe (&val.bytes[0], hexMemDst, len);
-        else
+        } else
             *hexMemDst = ch;
 
         if (__mem_fault)
@@ -606,6 +648,9 @@ __hex2mem (buf, mem, count, may_fault)
   hexMemDst      = (unsigned char *) mem;
   hexMemCount    = count;
   may_fault_mode = may_fault;
+#ifdef TARGET_HAS_HARVARD_MEMORY
+  progMem = 0;
+#endif
 
   if (may_fault)
     {
@@ -617,6 +662,28 @@ __hex2mem (buf, mem, count, may_fault)
 
   return (char *) hexMemDst;
 }
+
+/* Convert COUNT bytes of the hex array pointed to by BUF into binary
+   to be placed in target MEM.  Return a pointer to the character AFTER
+   the last byte written.
+*/
+char *
+__hex2mem_safe (char *buf, target_addr_t mem, int count)
+{
+  hexMemSrc      = (unsigned char *) buf;
+  hexMemDst      = (unsigned char *) TARGET_ADDR_TO_PTR(mem);
+  hexMemCount    = count;
+  may_fault_mode = 1;
+#ifdef TARGET_HAS_HARVARD_MEMORY
+  progMem = TARGET_ADDR_IS_PROGMEM(mem);
+#endif
+
+  if (__set_mem_fault_trap (__hex2mem_helper))
+    return 0;
+
+  return (char *) hexMemDst;
+}
+
 
 void
 set_debug_traps (void)
@@ -652,6 +719,35 @@ __hexToInt (char **ptr, target_register_t *intValue)
 
   return (numChars);
 }
+
+/*
+ * While we find nice hex chars, build a target memory address.
+ * Return number of chars processed.
+ */
+
+unsigned int
+__hexToAddr (char **ptr, target_addr_t *val)
+{
+  int numChars = 0;
+  int hexValue;
+
+  *val = 0;
+
+  while (**ptr)
+    {
+      hexValue = stubhex (**ptr);
+      if (hexValue < 0)
+        break;
+
+      *val = (*val << 4) | hexValue;
+      numChars ++;
+
+      (*ptr)++;
+    }
+
+  return (numChars);
+}
+
 
 /* 
  * Complement of __hexToInt: take an int of size "numBits", 
@@ -1121,14 +1217,15 @@ __process_packet (char *packet)
     case 'm':     /* mAA..AA,LLLL  Read LLLL bytes at address AA..AA */
       /* Try to read %x,%x.  */
       {
-        target_register_t addr, length;
+        target_register_t length;
         char *ptr = &packet[1];
+        target_addr_t addr;
 
-        if (__hexToInt (&ptr, &addr)
+        if (__hexToAddr (&ptr, &addr)
             && *ptr++ == ','
             && __hexToInt (&ptr, &length))
           {
-            if (__mem2hex ((char *) addr, remcomOutBuffer, length, 1))
+	    if (__mem2hex_safe (addr, remcomOutBuffer, length))
               break;
 
             strcpy (remcomOutBuffer, "E03");
@@ -1145,12 +1242,13 @@ __process_packet (char *packet)
     case 'M': /* MAA..AA,LLLL: Write LLLL bytes at address AA.AA return OK */
       /* Try to read '%x,%x:'.  */
       {
-        target_register_t addr, length;
+        target_register_t length;
         char *ptr = &packet[1], buf[128];
         int  i;
+        target_addr_t addr;
 
-        if (__hexToInt (&ptr, &addr)
-            && *ptr++ == ','
+        if (__hexToAddr (&ptr, &addr)
+	    && *ptr++ == ','
             && __hexToInt (&ptr, &length)
             && *ptr++ == ':')
           {
@@ -1162,8 +1260,15 @@ __process_packet (char *packet)
                       if ((buf[i] = *ptr++) == 0x7d)
                         buf[i] = 0x20 | (*ptr++ & 0xff);
 
-                    if (__write_mem_safe (buf, (void *)addr, i) != i)
-                      break;
+#ifdef TARGET_HAS_HARVARD_MEMORY
+		    if (TARGET_ADDR_IS_PROGMEM(addr)) {
+		      if (__write_progmem_safe (buf, (void *)TARGET_ADDR_TO_PTR(addr), i) != i)
+                        break;
+		    } else
+#endif
+		      if (__write_mem_safe (buf, (void *)TARGET_ADDR_TO_PTR(addr), i) != i)
+			break;
+
 
                     length -= i;
                     addr += i;
@@ -1175,7 +1280,7 @@ __process_packet (char *packet)
               }
               else
               {
-                if (__hex2mem (ptr, (char *) addr, length, 1) != NULL)
+                if (__hex2mem_safe (ptr, addr, length) != NULL)
                   strcpy (remcomOutBuffer, "OK");
                 else
                   strcpy (remcomOutBuffer, "E03");
@@ -1194,7 +1299,7 @@ __process_packet (char *packet)
 
       {
         char *ptr = &packet[1];
-        target_register_t addr;
+        target_addr_t addr;
         target_register_t sigval = 0;
 
         if (packet[0] == 'C' || packet[0] == 'S')
@@ -1204,8 +1309,8 @@ __process_packet (char *packet)
               ptr++;
           }
 
-        if (__hexToInt (&ptr, &addr))
-          set_pc (addr);
+        if (__hexToAddr (&ptr, &addr))
+          set_pc ((target_register_t)TARGET_ADDR_TO_PTR(addr));
 
       /* Need to flush the instruction cache here, as we may have
          deposited a breakpoint, and the icache probably has no way of
@@ -1340,10 +1445,11 @@ __process_packet (char *packet)
 	char *ptr = &packet[1];
 	target_register_t ztype, addr, length;
 	int err;
+	target_addr_t taddr;
 
 	if (__hexToInt (&ptr, &ztype) && *(ptr++) == ',')
 	  {
-	    if (__hexToInt (&ptr, &addr))
+	    if (__hexToAddr (&ptr, &taddr))
 	      {
 		if (*(ptr++) == ',')
 		  {
@@ -1356,6 +1462,8 @@ __process_packet (char *packet)
 		  }
 		else
 		  length = 0;
+
+		addr = (target_register_t)TARGET_ADDR_TO_PTR(taddr);
 
 		switch (ztype)
 		  {
@@ -1704,11 +1812,13 @@ static int tableInit = 0;
    PTR is assumed to be a pointer in the user program. */
 
 static uint32
-crc32 (ptr, len, crc)
-     unsigned char *ptr;
-     int len;
-     uint32 crc;
+crc32 (target_addr_t mem, int len, uint32 crc)
 {
+  unsigned char *ptr = (unsigned char *)TARGET_ADDR_TO_PTR(mem);
+#ifdef TARGET_HAS_HARVARD_MEMORY
+  int  is_progmem = TARGET_ADDR_IS_PROGMEM(mem);
+#endif
+
   if (! tableInit)
     {
       /* Initialize the CRC table and the decoding table. */
@@ -1729,6 +1839,11 @@ crc32 (ptr, len, crc)
     {
       unsigned char ch;
 
+#ifdef TARGET_HAS_HARVARD_MEMORY
+      if (is_progmem)
+	  __read_progmem_safe (&ch, (void *)ptr, 1);
+      else
+#endif
       __read_mem_safe (&ch, (void *)ptr, 1);
       if (__mem_fault)
         {
@@ -1755,16 +1870,16 @@ process_query (char *pkt)
   if (strncmp (pkt, "CRC:", 4) == 0)
 #endif // __ECOS__
     {
-      target_register_t startmem;
+      target_addr_t startmem;
       target_register_t length;
       uint32 our_crc;
 
       pkt += 4;
-      if (__hexToInt (&pkt, &startmem)
+      if (__hexToAddr (&pkt, &startmem)
           && *(pkt++) == ','
           && __hexToInt (&pkt, &length))
         {
-          our_crc = crc32 ((unsigned char *) startmem, length, 0xffffffff);
+          our_crc = crc32 (startmem, length, 0xffffffff);
           if (__mem_fault)
             {
               strcpy (remcomOutBuffer, "E01");

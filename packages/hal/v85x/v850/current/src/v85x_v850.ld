@@ -22,7 +22,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 #include <pkgconf/system.h>
 
 STARTUP(vectors.o)
-ENTRY(reset_vector)
+ENTRY(start)
 #ifdef EXTRAS
 INPUT(extras.o)
 #endif
@@ -59,6 +59,14 @@ GROUP(libtarget.a libgcc.a)
     .rom_vectors _vma_ : _lma_ \
     { FORCE_OUTPUT; KEEP (*(.vectors)) } \
     > _region_
+
+#define SECTION_ram_vectors(_region_, _vma_, _lma_) \
+    .ram_vectors _vma_ : _lma_ \
+    { ___ram_vectors_start = ABSOLUTE(.); \
+      FORCE_OUTPUT; KEEP (*(.ram_vectors)) \
+      ___ram_vectors_end = ABSOLUTE(.); \
+    } > _region_ \
+    ___ram_vectors_loadaddr = LOADADDR(.ram_vectors);
 
 #define SECTION_text(_region_, _vma_, _lma_) \
     .text _vma_ : _lma_ \
@@ -121,3 +129,5 @@ GROUP(libtarget.a libgcc.a)
 #include <pkgconf/hal_v85x.h>
 #include <pkgconf/hal_v85x_v850.h>
 #include CYGHWR_MEMORY_LAYOUT_LDI
+
+// EOF v85x_v850.ld

@@ -88,15 +88,15 @@ extern cyg_bool_t   eth1_up;
 extern const char  *eth1_name;
 #endif
 
-extern void init_all_network_interfaces(void);
+__externC void init_all_network_interfaces(void);
 
-extern void     route_reinit(void);
-extern void     perror(const char *);
-extern int      close(int);
-extern ssize_t  read(int, void *, size_t);
-extern ssize_t  write(int, const void *, size_t);
-extern char     *inet_ntoa(struct in_addr);
-extern int      select(int, fd_set *, fd_set *, fd_set *, struct timeval *tv);
+__externC void     route_reinit(void);
+__externC void     perror(const char *);
+__externC int      close(int);
+__externC ssize_t  read(int, void *, size_t);
+__externC ssize_t  write(int, const void *, size_t);
+__externC char     *inet_ntoa(struct in_addr);
+__externC int      select(int, fd_set *, fd_set *, fd_set *, struct timeval *tv);
 
 // This API is for our own automated network tests.
 // It's not at all supported.

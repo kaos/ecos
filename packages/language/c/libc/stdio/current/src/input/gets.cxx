@@ -2,7 +2,7 @@
 //
 //      gets.cxx
 //
-//      ANSI Stdio gets() function
+//      ISO C standard I/O gets() function
 //
 //===========================================================================
 //####COPYRIGHTBEGIN####
@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -31,10 +31,10 @@
 //===========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   jlarmour
-// Contributors:  jlarmour
-// Date:        1998-02-13
-// Purpose:     
+// Author(s):     jlarmour
+// Contributors: 
+// Date:          2001-03-15
+// Purpose:       Implementation of ISO C standard I/O gets() function
 // Description: 
 // Usage:       
 //
@@ -48,50 +48,68 @@
 
 // INCLUDES
 
-#include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
+#include <cyg/infra/cyg_type.h>     // Common type definitions
+#include <cyg/infra/cyg_ass.h>      // Assertion support
+#include <cyg/infra/cyg_trac.h>     // Tracing support
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
-#include <limits.h>                 // UINT_MAX
 #include <cyg/libc/stdio/stream.hxx>// Cyg_StdioStream
 
 // FUNCTIONS
+
+// FIXME: should be reworked to read buffer at a time, and scan that
+// for newlines, rather than reading byte at a time.
 
 externC char *
 gets( char *s )
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stdin;
-    cyg_ucount32 bytes_read;
-    Cyg_ErrNo err;
+    Cyg_ErrNo err=ENOERR;
+    cyg_uint8 c;
+    cyg_uint8 *str=(cyg_uint8 *)s;
+    int nch;
+
+    CYG_CHECK_DATA_PTRC( s );
+    CYG_CHECK_DATA_PTRC( real_stream );
+
+    CYG_REPORT_FUNCTYPE( "returning string %08x");
+    CYG_REPORT_FUNCARG1( "s=%08x", s );
     
+    for (nch=1;; nch++) {
+        err = real_stream->read_byte( &c );
+        
+        // if nothing to read, try again ONCE after refilling buffer
+        if (EAGAIN == err) {
+            err = real_stream->refill_read_buffer();
+            if ( !err )
+                err = real_stream->read_byte( &c );
 
-    err = real_stream->read( (cyg_uint8 *)s, UINT_MAX, &bytes_read );
-
-    if (!err && !bytes_read)  // if no err, but nothing to read, try again
-    {
-        real_stream->refill_read_buffer();
-        err = real_stream->read( (cyg_uint8 *)s, UINT_MAX, &bytes_read );
-
-    } // if
-
-    if (err)
-    {
+            if (EAGAIN == err) {
+                if (1 == nch) {   // indicates EOF at start
+                    CYG_REPORT_RETVAL( NULL );
+                    return NULL;
+                } else
+                    break; // EOF
+            } // if
+        } // if
+        
+        if ('\n' == c) // discard newlines
+            break;
+        *str++ = c;
+    } // while
+    
+    *str = '\0'; // NULL terminate it
+    
+    if (err && EAGAIN != err) {
         real_stream->set_error( err );
         errno = err;
+        CYG_REPORT_RETVAL( NULL );
         return NULL;
     } // if
-    
-    if (bytes_read > 0)
-    {
-        // NULL terminate it
-        if (s[bytes_read-1] == '\n')
-            s[bytes_read-1] = '\0';
-        else
-            s[bytes_read]='\0'; 
-    } // if
 
+    CYG_REPORT_RETVAL( s );
     return s;
-
 } // gets()
 
 // EOF gets.cxx

@@ -12,7 +12,7 @@
 //####COPYRIGHTBEGIN####
 //                                                                          
 // ----------------------------------------------------------------------------
-// Copyright (C) 1999, 2000 Red Hat, Inc.
+// Copyright (C) 1999, 2000, 2001 Red Hat, Inc.
 //
 // This file is part of the eCos host tools.
 //
@@ -221,7 +221,7 @@ CdlDbParser::new_package(CdlInterpreter interp, int argc, char** argv)
                 std::sort(subdirs.begin(), subdirs.end(), Cdl::version_cmp());
                 
                 for (i = 0; i < subdirs.size(); i++) {
-                    if ("CVS" == subdirs[i]) {
+                    if (("CVS" == subdirs[i]) || ("cvs" == subdirs[i])) {
                         continue;
                     }
                     if ("" != package.script) {

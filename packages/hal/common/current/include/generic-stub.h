@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -150,6 +150,10 @@ extern int __read_mem_safe (void *buf,
                             void *addr, 
                             int count);
 
+extern int __read_progmem_safe (void *buf, 
+				void *addr, 
+				int count);
+
 /* Copy COUNT bytes of memory from BUF to ADDR. 
    ADDR is assumed to live in the user program's space. 
    Returns number of bytes successfully read 
@@ -159,6 +163,10 @@ extern int __write_mem_safe (void *buf,
                              void *addr, 
                              int count);
 #endif
+
+extern int __write_progmem_safe (void *buf, 
+				 void *addr, 
+				 int count);
 
 /* Set to a non-zero value if a memory fault occurs while 
    __set_mem_fault_trap () is running. */

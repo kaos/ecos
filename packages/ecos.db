@@ -105,6 +105,16 @@ package CYGPKG_DEVS_PCMCIA_ASSABET {
            and Compact Flash devices on the SA11x0/Assabet board."
 }
 
+package CYGPKG_DEVS_PCMCIA_IPAQ {
+        alias           { "SA11x0/iPAQ PCMCIA & Compact Flash support" pcmcia_ipaq ipaq_pcmcia ipaq_cf io_ipaq_pcmcia}
+        directory       devs/pcmcia/arm/ipaq
+        script          pcmcia_ipaq.cdl
+        hardware
+        description "
+           This package contains hardware support for PCMCIA
+           and Compact Flash devices on the Compaq iPAQ pocket PC."
+}
+
 package CYGPKG_IO_FLASH {
 	alias 		{ "Generic FLASH memory support" flash }
 	directory	io/flash
@@ -152,6 +162,25 @@ package CYGPKG_DEVS_FLASH_ARM_PID {
 	   on the ARM PID platform."
 }
 
+package CYGPKG_DEVS_FLASH_AMD_AM29F040B {
+	alias 		{ "Support for AMD AM29F040B flash memory" flash_amd_am29f040b }
+	directory	devs/flash/amd/am29f040b
+	script		flash_amd_am29f040b.cdl
+	hardware
+        description "
+           This package contains hardware support for AMD AM29F040B
+           flash memory."
+}
+package CYGPKG_DEVS_FLASH_MIPS_QED_OCELOT {
+	alias 		{ "Support for flash memory on QED/Ocelot board" flash_qed_ocelot }
+	directory	devs/flash/mips/ocelot
+	script		flash_mips_qed_ocelot.cdl
+	hardware
+        description "
+           This package contains hardware support for flash memory
+	   on the QED Ocelot platform."
+}
+
 package CYGPKG_DEVS_FLASH_EBSA285 {
 	alias 		{ "FLASH memory support for StrongARM EBSA-285" flash_ebsa285 }
 	directory	devs/flash/arm/ebsa285
@@ -191,6 +220,37 @@ package CYGPKG_DEVS_FLASH_ASSABET {
            This package contains hardware support for FLASH memory
 	   on the Intel StrongARM SA-1110 Assabet platform."
 }
+
+package CYGPKG_DEVS_FLASH_IPAQ {
+	alias 		{ "FLASH memory support for Intel SA1110 (Ipaq)" flash_ipaq }
+	directory	devs/flash/arm/ipaq
+	script		flash_ipaq.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the Intel StrongARM SA-1110 iPAQ platform."
+}
+
+package CYGPKG_DEVS_FLASH_STRATA {
+	alias 		{ "Generic FLASH memory support for Intel StrataFLASH" strata }
+	directory	devs/flash/intel/strata
+	script		flash_strata.cdl
+	hardware
+        description "
+           This package contains generic hardware support for Intel
+	   StrataFLASH memory devices."
+}
+
+package CYGPKG_DEVS_FLASH_INTEL_28FXXX {
+	alias 		{ "Generic FLASH memory support for Intel 28Fxxx Flash parts" flashfile }
+	directory	devs/flash/intel/28fxxx
+	script		flash_intel_28fxxx.cdl
+	hardware
+        description "
+           This package contains generic hardware support for Intel
+	   Flash memory devices."
+}
+
 package CYGPKG_DEVS_FLASH_IQ80310 {
 	alias 		{ "FLASH memory support for Cyclone IQ80310" flash_iq80310 }
 	directory	devs/flash/arm/iq80310
@@ -211,6 +271,35 @@ package CYGPKG_DEVS_FLASH_MBX {
 	   on the Motorola PowerPC/860 MBX platform."
 }
 
+package CYGPKG_DEVS_FLASH_ATLAS {
+	alias 		{ "FLASH memory support for MIPS Atlas" flash_atlas }
+	directory	devs/flash/mips/atlas
+	script		flash_atlas.cdl
+	hardware
+        description "
+           This package contains hardware support for FLASH memory
+	   on the MIPS Atlas platform."
+}
+
+package CYGPKG_DEVS_TOUCH_IPAQ {
+	alias 		{ "Touch screen support for iPAQ" touch_ipaq }
+	directory	devs/touch/arm/ipaq
+	script		touch_ipaq.cdl
+	hardware
+        description "
+           This package contains hardware support for the touch screen
+	   on the Compaq iPAQ Pocket PC."
+}
+
+package CYGPKG_DEVS_KBD_IPAQ {
+	alias 		{ "Kaypad/button support for iPAQ" kbd_ipaq }
+	directory	devs/kbd/arm/ipaq
+	script		kbd_ipaq.cdl
+	hardware
+        description "
+           This package contains hardware support for the keyboard buttons
+	   on the Compaq iPAQ Pocket PC."
+}
 package CYGPKG_IO_SERIAL_ARM_EBSA285 {
     alias 	      { "Intel EBSA285 serial driver"
                         devs_serial_arm_ebsa285 ebsa285_serial_driver }
@@ -311,6 +400,16 @@ package CYGPKG_IO_SERIAL_TX39_JMR3904 {
     directory	      devs/serial/mips/jmr3904
     script	      ser_mips_jmr3904.cdl	
     description       "TX39 JMR3904 serial device drivers"
+}
+
+package CYGPKG_IO_SERIAL_MIPS_ATLAS {
+    alias             { "Atlas serial device drivers"
+                        devs_serial_atlas atlas_serial_driver
+                        devs_serial_mips_atlas mips_atlas_serial_driver }
+    hardware
+    directory	      devs/serial/mips/atlas
+    script	      ser_mips_atlas.cdl	
+    description       "Atlas serial device drivers"
 }
 
 package CYGPKG_IO_SERIAL_MIPS_REF4955 {
@@ -432,6 +531,14 @@ package CYGPKG_FS_RAM {
 	   This package contains a RAM resident filesystem."
 }
 
+package CYGPKG_FS_ROM {
+	alias 		{ "ROM Filesystem" romfs rom_fs fs_rom }
+	directory	fs/rom
+	script		romfs.cdl
+        description "
+	   This package contains a ROM resident filesystem."
+}
+
 package CYGPKG_IO_ETH_DRIVERS {
 	alias 		{ "Common ethernet support" net_drivers eth_drivers }
 	directory	io/eth
@@ -525,6 +632,15 @@ package CYGPKG_DEVS_ETH_INTEL_I82559 {
         description     "Ethernet driver for Intel 82559 NIC."
 }
 
+package CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT {
+	alias 		{ "Ocelot ethernet drivers"
+			   devs_eth_mips_rm7000_ocelot ocelot_eth_driver }
+	hardware
+	directory	devs/eth/mips/ocelot
+	script		mips_rm7000_ocelot_eth_drivers.cdl
+        description     "Ethernet driver for QED Ocelot board."
+}
+
 package CYGPKG_DEVS_ETH_ARM_IQ80310 {
 	alias 		{ "Intel IQ80310 with onboard 82559 ethernet driver"
 			   devs_eth_arm_iq80310 iq80310_eth_driver }
@@ -532,6 +648,15 @@ package CYGPKG_DEVS_ETH_ARM_IQ80310 {
 	directory	devs/eth/arm/iq80310
 	script		iq80310_eth_drivers.cdl
         description     "Ethernet driver for Intel IQ80310 with onboard 82559 NIC."
+}
+
+package CYGPKG_DEVS_ETH_MIPS_ATLAS {
+	alias 		{ "MIPS Atlas with onboard SAA9730 ethernet driver"
+			   devs_eth_mips_atlas atlas_eth_driver }
+	hardware
+	directory	devs/eth/mips/atlas
+	script		atlas_eth_drivers.cdl
+        description     "Ethernet driver for MIPS Atlas with onboard SAA9730 NIC."
 }
 
 # Not sure whether this should be "hardware"; if so, it should be mentioned
@@ -610,6 +735,16 @@ package CYGPKG_DEVICES_WATCHDOG_ARM_EBSA285 {
            ARM/EBSA285 board."
 }
 
+package CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0 {
+	alias		{ "Watchdog driver for StrongARM SA11x0 devices" devices_watchdog_sa11x0 device_watchdog_sa11x0 }
+	directory	devs/watchdog/arm/sa11x0
+	script          watchdog_sa11x0.cdl
+	hardware
+        description "
+           This package provides a watchdog driver implementation for
+           Intel StrongARM SA11x0 integrated devices."
+}
+
 package CYGPKG_DEVICES_WATCHDOG_MN10300_MN10300 {
 	alias		{ "Watchdog driver for MN10300 chip" devices_watchdog_mn10300 device_watchdog_mn10300 }
 	directory	devs/watchdog/mn10300/mn10300
@@ -659,6 +794,15 @@ This package provides memory allocator infrastructure required for
 dynamic memory allocators, including the ISO standard malloc
 interface. It also contains some sample implementations."
 }
+
+package CYGPKG_COMPRESS_ZLIB {
+        alias           { "Zlib compress/decompress" zlib_compress compress_zlib }
+        directory       services/compress/zlib
+        script          compress_zlib.cdl
+        description "
+This package provides zlib compression and decompression support."
+}
+
 package CYGPKG_UITRON {
 	alias		{ "uITRON compatibility" uitron }
 	directory	compat/uitron
@@ -858,6 +1002,7 @@ package CYGPKG_HAL_ARM_AEB {
 The aeb HAL package provides the support needed to run eCos on a ARM
 AEB-1 eval board."
 }
+
 package CYGPKG_HAL_ARM_EBSA285 {
 	alias		{ "Intel EBSA285 StrongARM board" hal_arm_ebsa285 arm_ebsa285_hal }
 	directory	hal/arm/ebsa285
@@ -886,6 +1031,16 @@ package CYGPKG_HAL_ARM_SA11X0_ASSABET {
         description "
         The ASSABET HAL package provides the support needed to run
         eCos on a Intel StrongARM SA1110 evaulation board (assabet)."
+}
+
+package CYGPKG_HAL_ARM_SA11X0_IPAQ {
+	alias		{ "Compaq iPAQ Pocket PC" hal_arm_sa11x0_ipaq }
+	directory	hal/arm/sa11x0/ipaq
+	script		hal_arm_sa11x0_ipaq.cdl
+	hardware
+        description "
+        The IPAQ HAL package provides the support needed to run
+        eCos on a Intel StrongARM SA1110 pocket PC (Compaq iPAQ)."
 }
 
 package CYGPKG_HAL_ARM_SA11X0_BRUTUS {
@@ -1226,6 +1381,37 @@ package CYGPKG_HAL_MIPS_TX39_JMR3904 {
            `target sim --board=jmr3904' should be used from inside gdb."
 }
 
+package CYGPKG_HAL_MIPS_MIPS32 {
+	alias		{ "MIPS32 HAL" hal_mips32 mips32_hal mips32_arch_hal }
+	directory	hal/mips/mips32/
+	script		hal_mips_mips32.cdl
+	hardware
+        description "
+           The MIPS 32 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_MIPS64 {
+	alias		{ "MIPS64 HAL" hal_mips64 mips64_hal mips64_arch_hal }
+	directory	hal/mips/mips64/
+	script		hal_mips_mips64.cdl
+	hardware
+        description "
+           The MIPS 64 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_ATLAS {
+	alias		{ "MIPS Atlas board" hal_atlas atlas_hal }
+	directory	hal/mips/atlas
+	script		hal_mips_atlas.cdl
+	hardware
+	description "
+           The Atlas HAL package should be used when targetting the
+           actual hardware. "
+}
 package CYGPKG_HAL_MIPS_TX49 {
 	alias		{ "TX49 chip HAL" hal_tx49 tx49_hal tx49_arch_hal }
 	directory	hal/mips/tx49/
@@ -1244,6 +1430,27 @@ package CYGPKG_HAL_MIPS_TX49_REF4955 {
 	hardware
 	description "
            The REF4955 HAL package should be used when targetting the
+           actual hardware."
+}
+
+package CYGPKG_HAL_MIPS_RM7000 {
+	alias		{ "RM7000 chip HAL" hal_rm7000 rm7000_hal rm7000_arch_hal }
+	directory	hal/mips/rm7000/var
+	script		hal_mips_rm7000.cdl
+	hardware
+        description "
+           The RM7000 architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+}
+
+package CYGPKG_HAL_MIPS_RM7000_OCELOT {
+	alias		{ "QED Ocelot platform" hal_rm7000_ocelot rm7000_ocelot_hal }
+	directory	hal/mips/rm7000/ocelot
+	script		hal_mips_rm7000_ocelot.cdl
+	hardware
+	description "
+           The Ocelot HAL package should be used when targetting the
            actual hardware."
 }
 
@@ -1404,6 +1611,7 @@ The aeb target provides the packages needed to run eCos on an ARM
 evaluation board (AEB-1)."
 }
 
+
 target ebsa285 {
 	alias { "Intel EBSA285 StrongARM board" ebsa }
 	packages { CYGPKG_HAL_ARM
@@ -1430,10 +1638,29 @@ target assabet {
                    CYGPKG_IO_USB
                    CYGPKG_IO_USB_SLAVE
                    CYGPKG_DEVS_USB_SA11X0
+		   CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0
         }
         description "
         The assabet target provides the packages needed to run
         eCos on an Intel StrongARM SA1110 evaluation board."
+}
+
+target ipaq {
+	alias { "Compaq iPAQ Pocket PC" ipaq }
+	packages { CYGPKG_HAL_ARM
+                   CYGPKG_HAL_ARM_SA11X0
+                   CYGPKG_HAL_ARM_SA11X0_IPAQ
+		   CYGPKG_IO_SERIAL_ARM_SA11X0
+		   CYGPKG_DEVS_PCMCIA_IPAQ
+                   CYGPKG_DEVS_FLASH_IPAQ
+                   CYGPKG_DEVS_FLASH_STRATA
+		   CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0
+                   CYGPKG_DEVS_TOUCH_IPAQ
+                   CYGPKG_DEVS_KBD_IPAQ
+        }
+        description "
+        The IPAQ target provides the packages needed to run
+        eCos on an Intel StrongARM SA1110 Pocket PC (Compaq iPAQ)."
 }
 
 target brutus {
@@ -1657,6 +1884,36 @@ target jmr3904 {
            `target sim --board=jmr3904' should be used from inside gdb."
 }
 
+target atlas_mips32_4kc {
+        alias		{ "MIPS Atlas board with Mips32 4Kc processor" atlas_mips32_4kc }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_MIPS32
+                          CYGPKG_HAL_MIPS_ATLAS
+                          CYGPKG_IO_SERIAL_MIPS_ATLAS
+                          CYGPKG_DEVS_FLASH_ATLAS
+                          CYGPKG_DEVS_ETH_MIPS_ATLAS
+                          CYGPKG_IO_PCI
+        }
+    set_value CYGHWR_HAL_MIPS_MIPS32_CORE "4Kc"
+        description "
+           The atlas_mips32_4Kc target provides the packages needed to run
+           eCos on a MIPS Atlas board with a Mips32 4Kc processor."
+}
+
+target atlas_mips64_5kc {
+        alias		{ "MIPS Atlas board with Mips64 5Kc processor" atlas_mips64_5kc ruby }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_MIPS64
+                          CYGPKG_HAL_MIPS_ATLAS
+                          CYGPKG_IO_SERIAL_MIPS_ATLAS
+                          CYGPKG_DEVS_FLASH_ATLAS
+                          CYGPKG_DEVS_ETH_MIPS_ATLAS
+        }
+    set_value CYGHWR_HAL_MIPS_MIPS64_CORE "5K"
+        description "
+           The atlas_mips32_5Kc target provides the packages needed to run
+           eCos on a MIPS Atlas board with a Mips64 5Kc processor."
+}
 target tx39_sim {
         alias		{ "TX39 minimal simulator" }
 	packages        { CYGPKG_HAL_MIPS
@@ -1684,6 +1941,23 @@ target ref4955 {
         description "
            The ref4955 target provides the packages needed to run
            eCos on a Toshiba TX4955 reference platform."
+}
+
+target ocelot {
+        alias		{ "QED Ocelot platform" ocelot }
+	packages        { CYGPKG_HAL_MIPS
+                          CYGPKG_HAL_MIPS_RM7000
+                          CYGPKG_HAL_MIPS_RM7000_OCELOT
+                          CYGPKG_IO_PCI
+                          CYGPKG_DEVS_FLASH_MIPS_QED_OCELOT
+                          CYGPKG_DEVS_FLASH_AMD_AM29F040B
+                          CYGPKG_IO_SERIAL_GENERIC_16X5X
+                          CYGPKG_DEVS_ETH_INTEL_I82559
+                          CYGPKG_DEVS_ETH_MIPS_RM7000_OCELOT
+        }
+        description "
+           The ocelot target provides the packages needed to run
+           eCos on a QED Ocelot Hot-Swap Computer."
 }
 
 target vrc4373 {
@@ -1746,7 +2020,7 @@ target stb {
 # NEC targets
 
 target ceb_v850 {
-	alias { "Cosmo CEB-V850/SA1 board" CEB ceb_v850_sa1 }
+	alias { "Cosmo CEB-V850 board" CEB ceb_v850_sa1 }
 	packages { CYGPKG_HAL_V85X
                    CYGPKG_HAL_V85X_V850
                    CYGPKG_HAL_V85X_V850_CEB
@@ -1754,7 +2028,7 @@ target ceb_v850 {
         }
         description "
 The ceb_v850 target provides the packages needed to run eCos on a
-Cosmo CEB-V850 evaluation board fitted with a V850/SA1 or V850/SB1."
+Cosmo CEB-V850 evaluation board fitted with a NEC V850/SA1 or NEC V850/SB1."
 }
 
 # --------------------------------------------------------------------------

@@ -223,7 +223,23 @@ serial_config_port(serial_channel *chan,
     HAL_WRITE_UINT8(base+REG_ldl, baud_divisor & 0xFF);
     HAL_WRITE_UINT8(base+REG_lcr, _lcr);
     if (init) {
-        HAL_WRITE_UINT8(base+REG_fcr, FCR_FE|FCR_CRF|FCR_CTF|FCR_RT1);  // Enable and clear FIFO
+#ifdef CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO
+        unsigned char _fcr_thresh;
+
+        switch(CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO_RX_THRESHOLD) {
+        default:
+        case 1:
+            _fcr_thresh=FCR_RT1; break;
+        case 4:
+            _fcr_thresh=FCR_RT4; break;
+        case 8:
+            _fcr_thresh=FCR_RT8; break;
+        case 14:
+            _fcr_thresh=FCR_RT14; break;
+        }
+        _fcr_thresh|=FCR_FE|FCR_CRF|FCR_CTF;
+        HAL_WRITE_UINT8(base+REG_fcr, _fcr_thresh);  // Enable and clear FIFO
+#endif
         if (chan->out_cbuf.len != 0) {
             _ier = IER_RCV;
         } else {

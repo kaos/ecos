@@ -20,6 +20,7 @@
 2001-02-09  Jesper Skov  <jskov@redhat.com>
 
 	* src/vectors.S: Small tweak of comments to work around tools problem
+	with mipsisa32 tools.
 
 2001-01-31  Nick Garnett  <nickg@cygnus.co.uk>
 
@@ -68,6 +69,8 @@
 	* include/hal_intr.h (HAL_DELAY_US): Added.
 	* src/hal_misc.c (hal_delay_us): Added. And fixed to work with an
 	incrementer that ticks at the pipeline clock rate.
+
+	* include/mips-stub.h: RM7000 is also a 64bit CPU.
 
 2000-12-05  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -145,6 +148,17 @@
 	* src/vectors.S: Only jump uncached to _start if
 	CYGARC_START_FUNC_UNCACHED is defined.
 
+2000-07-20  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/mips-stub.h: Define CYGARC_REGSIZE_DIFFERS_FROM_TARGET_REGISTER_T
+	for the MIPS32 targets since GDB needs 64 bit registers regardless of
+	what size we are really storing.
+
+2000-07-19  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/mips-stub.h (CYGARC_SIGN_EXTEND_REGISTERS): Make sure
+	the stub sign-extends the registers before returning them to GDB.
+
 2000-07-14  Drew Moseley  <dmoseley@redhat.com>
 
 	* src/vectors.S: Added hal_reset_vector_first_code and
@@ -162,6 +176,11 @@
 
 	* include/mips-stub.h: Renamed some enums to work around namespace
 	corruption.  Added breakpoint support in the HAL.
+
+2000-07-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* include/arch.inc: Support for mips3264.
+	* include/mips-stub.h: Ditto.
 
 2000-06-21  Nick Garnett  <nickg@cygnus.co.uk>
 

@@ -1,3 +1,15 @@
+2001-03-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/var_misc.c: Ensure case ranges have spaces around identifiers
+	to allow correct parsing by compiler.
+
+2001-02-28  Jesper Skov  <jskov@redhat.com>
+
+	* src/variant.S (cyg_hal_dcache_enable, cyg_hal_icache_enable):
+	Write ORed value, not just the enable bit.
+	* include/var_cache.h: Fix various macro typos.
+	Fixes from Ryouzaburou Suzuki <ryos@atom-tc.or.jp>
+
 2001-02-26  Jesper Skov  <jskov@redhat.com>
 
 	* include/mod_regs_ser.h: Add a couple of zeroes to SCIF clear

@@ -36,7 +36,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -658,14 +658,6 @@ proc ecosadmin::locate_files { dir { pattern "*"} } {
 	foreach file $filelist {
 		if { [string range $file end end] != "~" } {
 			lappend filenames [file tail $file]
-		}
-	}
-
-	# Eliminate any obviously spurious entries.
-	foreach file { CVS Makefile.am Makefile.in makefile acinclude.m4 aclocal.m4 configure.in configure } {
-		set index [lsearch -exact $filenames $file]
-		if { $index != -1 } {
-			set filenames [lreplace $filenames $index $index]
 		}
 	}
 

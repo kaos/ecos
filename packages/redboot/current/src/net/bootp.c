@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -63,6 +63,8 @@ bootp_handler(udp_socket_t *skt, char *buf, int len,
 
     b = (bootp_header_t *)buf;
     if (bp_info) {
+        if (len > sizeof *bp_info)
+            len = sizeof *bp_info;
         memcpy(bp_info, b, len);
     }
 

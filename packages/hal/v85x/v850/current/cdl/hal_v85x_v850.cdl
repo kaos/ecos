@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.  
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -32,7 +32,7 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      gthomas
-# Contributors:
+# Contributors:   jlarmour
 # Date:           2000-03-09
 #
 #####DESCRIPTIONEND####
@@ -42,7 +42,6 @@
 cdl_package CYGPKG_HAL_V85X_V850 {
     display       "V850 variant"
     parent        CYGPKG_HAL_V85X
-    implements    CYGINT_HAL_V85X_VARIANT
     hardware
     include_dir   cyg/hal
     define_header hal_v85x_v850.h
@@ -55,14 +54,33 @@ cdl_package CYGPKG_HAL_V85X_V850 {
         puts $::cdl_header "#include <pkgconf/hal_v85x.h>"
     }
 
-    compile v850_stub.c v850_misc.c context.S
+    compile v850_stub.c v850_misc.c context.S hal_diag.c
 
-    cdl_interface CYGINT_HAL_V85X_VARIANT_SA1 {
+    cdl_interface CYGINT_HAL_V850_DIAG_ONCHIP_SERIAL0 {
+        display  "Defined if platform uses standard on-chip serial0"
+    }
+
+    cdl_interface CYGINT_HAL_V850_VARIANT_SA1 {
         display  "Defined if CPU is a V850/SA1"
     }
 
-    cdl_interface CYGINT_HAL_V85X_VARIANT_SB1 {
+    cdl_interface CYGINT_HAL_V850_VARIANT_SB1 {
         display  "Defined if CPU is a V850/SB1"
+    }
+
+    requires 1 == CYGINT_HAL_V850_VARIANT_SA1 ^ 1 == CYGINT_HAL_V850_VARIANT_SB1
+    # by virtue of the above requires:
+    implements CYGINT_HAL_V85X_VARIANT
+
+    cdl_option CYGDBG_HAL_V850_ICE {
+        display   "Support debugging via ICE"
+        default_value { 0 != CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT }
+        requires   CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
+        implements CYGINT_HAL_V85X_ICE_DEBUG
+        description \
+               "This option enables additional support for debugging via
+                ICE, chiefly in the form of an interface to gdbserv which
+                allows it to provide eCos thread data in GDB."
     }
 
     make {

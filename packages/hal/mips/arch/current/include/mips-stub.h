@@ -71,6 +71,20 @@ extern "C" {
 
   // We need to sign-extend the registers so GDB doesn't get confused.
   #define CYGARC_SIGN_EXTEND_REGISTERS
+#elif defined(CYGPKG_HAL_MIPS_RM7000)
+  // Even though we are only working with 32 bit registers, GDB expects 64 bits
+  #define REGSIZE(X) 8
+  typedef unsigned long target_register_t;
+
+  // We need to sign-extend the registers so GDB doesn't get confused.
+  #define CYGARC_SIGN_EXTEND_REGISTERS
+#elif defined(CYGPKG_HAL_MIPS_MIPS32)
+  // Even though we are only working with 32 bit registers, GDB expects 64 bits
+  #define REGSIZE(X) 8
+  typedef unsigned long target_register_t;
+
+  // We need to sign-extend the registers so GDB doesn't get confused.
+  #define CYGARC_SIGN_EXTEND_REGISTERS
 #else
   #define REGSIZE(X) 4
   typedef unsigned long target_register_t;

@@ -1,6 +1,135 @@
+2001-03-28  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (update_statistics): Fix warning - only declare
+	op_i82559 if we use it - from previous change.
+
+2001-03-23  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (i82559_can_send, i82559_send): Count up and
+	down entries into these routines, and always say "no" to
+	can_send() if we are recursing, ie. within_send != 0.  This is a
+	good idea because it limits stack usage.  The recursion happens
+	because of the very neccessary polling of rx state within the tx
+	routines - which can deliver packets up into the stack, which can
+	trigger a response tx and so on...  Also fixed a harmless bug
+	where, after polling, the p_i82559 current device state pointer
+	pointer to the wrong device, if we polled both devs regardless; it
+	only caused problems with the within_send recursion count.
+
+	* include/i82559_info.h (I82559): Add within_send field.
+
+2001-03-15  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (i82559_init): Support external macro
+	CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA(...), which if defined, is
+	used to acquire a MAC address, on the assumption that there is no
+	EEPROM present.  CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+	confirms that there is no EEPROM attached to the 82559(s) so we
+	can omit all that code.  It's in the negative sense because it's
+	the unusual case.
+
+2001-03-13  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL): Fully
+	enable "DEMUX_ALL" option; all devices are scanned for
+	activity/wedging/interrupts at every opportunity.  Multiple
+	devices on the same interrupts are now supported.
+
+2001-03-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c (i82559_configure): New routine combines actions
+	of eth_set_promiscuous_mode() and eth_set_config() both of which
+	disappear.  Thus the device is always configured correctly from
+	the start.  [from a patch from Martin Buck  <martin.buck@ascom.ch>
+	via the EBSA285 driver]
+	(eth_dsr): Do not call upper layer unless we are in a networked
+	[non-RedBoot, non-polled] environment.  This is necessary because
+	we call our own DSR from foreground to unstick after a lost
+	interrupt.
+	(find_82559s_match_func): New routine to discover disparate
+	devices on the PCI bus.  Used in pci_init_find_82559s().
+	(dump_txcb): Various junk debug functions removed.
+
+2001-03-12  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c: Some tidying up, and two main additions to the
+	mechanisms used for managing this nasty entomological device.
+	(i82559_can_send): [amongst other places] if it is defined, use
+	CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) to detect
+	that we missed an interrupt - and if so, call the ISR and DSR
+	directly.  This is necessary for edge-triggered interrupt
+	controllers being fed by this level-sending device, where an
+	internal event in the device can keep the line low after the code
+	thinks that all events have been handled.
+	(Check82559TxLockupTimeout): This routine runs a timeout (if the
+	HAL provides a pair of watchdog-like macros) which performs a
+	selective reset of the device if it takes too long to transmit.
+	This happens rarely, but when it happens this is the only way out;
+	the tx machine is fixated on one tx and never comes out of it.
+	
+
+	Sadly these two techniques to escape lockup only work if the
+	driver is called (ie. the stack tries to tx); incoming packets
+	cannot unwedge a device.  We might need to add a poll from the
+	stack in future if this causes problems.
+	
+	* include/i82559_info.h (I82559): Added two words for managing tx
+	lockup timeouts since this must be per-device.
+
+2001-03-02  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c: Remove "Platform specific - defaults provided"
+	definitions for CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE/SIZE; all
+	platforms now provide these.
+	Added a little further disclaimer to the comment about LE/BE/GE.
+
+2001-03-01  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c: Global change: what was HAL_READ_UINTxx or
+	HAL_WRITE_UINTxx are now READMEMxx or WRITEMEMxx - just
+	convenience macros that do all the volatile casts we want there.
+	Definitions of INL, INW, INB and OUTL, OUTW, OUTB recast in terms
+	of HAL_READ_UINTxx or HAL_WRITE_UINTxx so that they will use
+	proper IO operations on those CISCy mainframes that have a special
+	way of doing IO.
+
+2001-03-01  Hugo Tyson  <hmt@redhat.com>
+
+	* src/if_i82559.c: Much more configury added, so that I can use it
+	with a new target board.  Including, but not limited to:
+
+	o An essay about addressing, big endian, little endian and GIB
+	endian (sic) and how we treat the various types of access within
+	this module.  In other words, a lot of comments.
+
+	o CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT to clarify
+	that such an interrupt is SEPARATE from any simplex intrs that are
+	also available.
+
+	o CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL for hardware where the
+	the only interrupt is a multiplexed (wire or'd) one.  Plus
+	associated macros for direct manipulation of interrupt masks and
+	acknowledgments.
+
+	o Support for external definition from the platform HAL or driver
+	config module of CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE and SIZE.
+	Also CYGHWR_INTEL_I82559_PCI_VIRT_TO_BUS.
+
+	o LE definitions of a few macros that were missing.
+
+	o Separated definitions of structure offsets from BE/LE
+	definitions of consts within the words.  Offsets vary with GIB
+	endian, for those CPUs who just flip bits.  No change for BE
+	machines, needed for LE machines to work.  To enable address-flip
+	within structures, define CYG_ADDRESSING_IS_GIBENDIAN.
+
+	o Re-org of mux/simplex deliver and isr's for new configuration.
+
+	o Couple of extra debug printouts.
+
 2001-01-26  Jesper Skov  <jskov@redhat.com>
 
-	* src/if_i82559.c: Added FIXME for promisuous mode.
+	* src/if_i82559.c: Added FIXME for promiscuous mode.
 
 2001-01-25  Jesper Skov  <jskov@redhat.com>
 

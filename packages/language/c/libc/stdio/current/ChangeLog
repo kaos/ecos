@@ -1,3 +1,37 @@
+2001-03-19  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/common/stream.cxx (refill_read_buffer): Flush all streams here...
+	(read): ...rather than here, or...
+	(read_byte): ...here.
+	This means less flushing, which improves performance.
+
+	* src/input/fgets.cxx: Add a reminder comment to improve this later.
+	* src/input/gets.cxx: Ditto.
+
+
+2001-03-16  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/stream.hxx (class Cyg_StdioStream): Improve member visibility.
+
+	* src/common/stream.cxx (refill_read_buffer): Ensure eof is set.
+	* src/common/feof.cxx: New file. Implements the long lost
+	feof(), ferror() and clearerr() functions which were MIA for
+	no good reason.
+	* cdl/stdio.cdl: Build it.
+
+2001-03-15  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/stdio.cdl (CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE): Default to
+	tty default console.
+
+	* src/input/fgets.cxx (fgets): Reimplement to work with EOF properly.
+	Add tracing.
+	* src/input/gets.cxx (gets): Ditto.
+
+	* include/io.hxx, include/io.inl, include/stream.hxx,
+	include/stream.inl, include/streambuf.hxx, include/streambuf.inl:
+	Silence warnings from recent compilers.
+
 2001-02-01  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* cdl/stdio.cdl (CYGPKG_LIBC_STDIO_OPEN): Implements

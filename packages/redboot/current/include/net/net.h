@@ -564,7 +564,7 @@ extern int __skt_write(tcp_socket_t *s, char *buf, int len);
 extern void net_init(void);
 
 // Test for new network I/O connections
-extern void net_io_test(void);
+extern void net_io_test(bool is_idle);
 
 // Conversion between IP addresses and printable strings
 extern bool  inet_aton(char *, in_addr_t *);

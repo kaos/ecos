@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -46,7 +46,6 @@
 //
 //==========================================================================
 
-#include <pkgconf/hal.h>
 #include <cyg/infra/cyg_type.h>
 
 #define CYG_HAL_GDB_REG CYG_WORD32

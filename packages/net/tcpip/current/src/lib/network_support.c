@@ -277,8 +277,15 @@ init_all_network_interfaces(void)
     if ( ! eth0_up ) { // Make this call idempotent
 #ifdef CYGPKG_IO_PCMCIA
         if ((t = eth_drv_netdev("eth0")) != (cyg_netdevtab_entry_t *)NULL) {
+            int tries = 0;
             while (t->status != CYG_NETDEVTAB_STATUS_AVAIL) {
-                diag_printf("... Waiting for PCMCIA device 'eth0'\n");
+                if (tries == 0) {
+                    diag_printf("... Waiting for PCMCIA device 'eth0'\n");
+                } 
+                if (++tries == 5) {
+                    diag_printf("... Giving up on PCMCIA device 'eth0'\n");
+                    goto bail_eth0;
+                }
                 cyg_thread_delay(100);
             }
         }
@@ -314,14 +321,22 @@ init_all_network_interfaces(void)
                        string(CYGHWR_NET_DRIVER_ETH0_ADDRS_SERVER));
         show_bootp(eth0_name, &eth0_bootp_data);
 #endif
+    bail_eth0:
     }
 #endif // CYGHWR_NET_DRIVER_ETH0
 #ifdef CYGHWR_NET_DRIVER_ETH1
     if ( ! eth1_up ) { // Make this call idempotent
 #ifdef CYGPKG_IO_PCMCIA
         if ((t = eth_drv_netdev("eth1")) != (cyg_netdevtab_entry_t *)NULL) {
+            int tries = 0;
             while (t->status != CYG_NETDEVTAB_STATUS_AVAIL) {
-                diag_printf("... Waiting for PCMCIA device 'eth1'\n");
+                if (tries == 0) {
+                    diag_printf("... Waiting for PCMCIA device 'eth1'\n");
+                } 
+                if (++tries == 5) {
+                    diag_printf("... Giving up on PCMCIA device 'eth1'\n");
+                    goto bail_eth1;
+                }
                 cyg_thread_delay(100);
             }
         }
@@ -357,6 +372,7 @@ init_all_network_interfaces(void)
                        string(CYGHWR_NET_DRIVER_ETH1_ADDRS_SERVER));
         show_bootp(eth1_name, &eth1_bootp_data);
 #endif
+    bail_eth1:
     }
 #endif // CYGHWR_NET_DRIVER_ETH1
 #ifdef CYGHWR_NET_DRIVER_ETH0

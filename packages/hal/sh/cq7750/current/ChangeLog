@@ -1,3 +1,13 @@
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_sh_sh7750_cq7750.cdl: Removed
+	CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED which is now the
+	default.
+
+2001-02-27  Jesper Skov  <jskov@redhat.com>
+
+	* include/platform.inc: Init correct vector with interrupt VSR.
+
 2001-01-31  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Included private parts of serial driver.

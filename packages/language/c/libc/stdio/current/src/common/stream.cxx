@@ -254,18 +254,18 @@ Cyg_StdioStream::refill_read_buffer( void )
     if (flags.buffering) {
         read_err = flush_output_unlocked();
 
+        // we're now reading
+        flags.last_buffer_op_was_read = true;
+
+        // flush ALL streams
+        if (read_err == ENOERR)
+            read_err = cyg_libc_stdio_flush_all_but(this);
+
         if (read_err != ENOERR) {
             unlock_me();
             return read_err;
         } // if
-    } // if
-#endif
 
-#ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
-    // we're now reading
-    flags.last_buffer_op_was_read = true;
-
-    if (flags.buffering) {
         len = io_buf.get_buffer_addr_to_write( (cyg_uint8**)&buffer );
         if (!len) { // no buffer space available
             unlock_me();
@@ -298,8 +298,12 @@ Cyg_StdioStream::refill_read_buffer( void )
     unlock_me();
 
     if (read_err == ENOERR) {
-        if (len == 0)
+        if (len == 0) {
             read_err = EAGAIN;
+            flags.at_eof = true;
+        }
+        else
+            flags.at_eof = false;
     } // if
     
     return read_err;
@@ -334,25 +338,20 @@ Cyg_StdioStream::read( cyg_uint8 *user_buffer, cyg_ucount32 buffer_length,
 
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
     if (flags.buffering) {
+
+        // need to flush output if we were writing before
+        if (!flags.last_buffer_op_was_read) {
+            Cyg_ErrNo err = flush_output_unlocked();
+
+            if (ENOERR != err) {
+                unlock_me();
+                return err;
+            }            
+        }
+            
         cyg_uint8 *buff_to_read_from;
         cyg_ucount32 bytes_available;
-        Cyg_ErrNo err;
     
-        // this should really only be called after refill_read_buffer, but
-        // just in case
-        err = flush_output_unlocked();
-        if (ENOERR == err)
-            err = cyg_libc_stdio_flush_all_but(this);
-
-        if (err != ENOERR) {
-            position += *bytes_read;
-            unlock_me();
-            return err;
-        }
-        
-        // we're now reading
-        flags.last_buffer_op_was_read = true;
-        
         bytes_available = io_buf.get_buffer_addr_to_read(
               (cyg_uint8 **)&buff_to_read_from );
         
@@ -397,21 +396,6 @@ Cyg_StdioStream::read_byte( cyg_uint8 *c )
         return EINVAL;
     }
 
-    // this should really only be called after refill_read_buffer, but just
-    // in case
-#ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
-    if (flags.buffering)
-        err = flush_output_unlocked();
-    if (ENOERR == err)
-        err = cyg_libc_stdio_flush_all_but(this);
-
-    if (err != ENOERR)
-        return err;
-
-    // we're now reading
-    flags.last_buffer_op_was_read = true;
-#endif
-
 # ifdef CYGFUN_LIBC_STDIO_ungetc
     if (flags.unread_char_buf_in_use) {
         *c = unread_char_buf;
@@ -424,6 +408,15 @@ Cyg_StdioStream::read_byte( cyg_uint8 *c )
 
 #ifdef CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO
     if (flags.buffering) {
+        // need to flush output if we were writing before
+        if (!flags.last_buffer_op_was_read)
+            err = flush_output_unlocked();
+
+        if (ENOERR != err) {
+            unlock_me();
+            return err;
+        }            
+            
         cyg_uint8 *buff_to_read_from;
         cyg_ucount32 bytes_available;
     

@@ -139,7 +139,7 @@ do_ping(int argc, char *argv[])
         length = DEFAULT_LENGTH;
     }
     if ((length < 64) || (length > 1400)) {
-        printf("Invalid length specified: %d\n", length);
+        printf("Invalid length specified: %ld\n", length);
         return;
     }
     if (!count_set) {

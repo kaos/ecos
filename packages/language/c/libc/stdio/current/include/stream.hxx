@@ -35,7 +35,7 @@
 //
 // Author(s):     jlarmour
 // Contributors:  
-// Date:          2000-04-19
+// Date:          2001-03-16
 // Purpose:     
 // Description: 
 // Usage:         #include <cyg/libc/stdio/stream.hxx>
@@ -275,18 +275,14 @@ public:
     void
     set_error( Cyg_ErrNo errno_to_set );
 
-public:
     // are we at EOF? true means we are, false means no
     cyg_bool
     get_eof_state( void );
-
-private:
 
     // Set whether we are at EOF.
     void
     set_eof_state( cyg_bool eof_to_set );
 
-public:
     // retrieve position
     Cyg_ErrNo
     get_position( fpos_t *pos );
@@ -305,6 +301,6 @@ public:
 
 #include <cyg/libc/stdio/stream.inl>
 
-#endif CYGONCE_LIBC_STDIO_STREAM_HXX multiple inclusion protection
+#endif // CYGONCE_LIBC_STDIO_STREAM_HXX multiple inclusion protection
 
 // EOF stream.hxx

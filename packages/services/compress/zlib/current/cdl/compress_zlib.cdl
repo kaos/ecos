@@ -1,0 +1,123 @@
+# ====================================================================
+#
+#      compress_zlib.cdl
+#
+#      Zlib compress/decompress configuration data
+#
+# ====================================================================
+#####COPYRIGHTBEGIN####
+#                                                                          
+# -------------------------------------------                              
+# The contents of this file are subject to the Red Hat eCos Public License 
+# Version 1.1 (the "License"); you may not use this file except in         
+# compliance with the License.  You may obtain a copy of the License at    
+# http://www.redhat.com/                                                   
+#                                                                          
+# Software distributed under the License is distributed on an "AS IS"      
+# basis, WITHOUT WARRANTY OF ANY KIND, either express or implied.  See the 
+# License for the specific language governing rights and limitations under 
+# the License.                                                             
+#                                                                          
+# The Original Code is eCos - Embedded Configurable Operating System,      
+# released September 30, 1998.                                             
+#                                                                          
+# The Initial Developer of the Original Code is Red Hat.                   
+# Portions created by Red Hat are                                          
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# All Rights Reserved.                                                     
+# -------------------------------------------                              
+#                                                                          
+#####COPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      jskov
+# Contributors:
+# Date:           2001-03-06
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_COMPRESS_ZLIB {
+    display       "Zlib compress and decompress package"
+    description   "
+                  This package provides support for compression and
+                  decompression."
+    include_dir   cyg/compress
+
+    requires      CYGPKG_MEMALLOC
+    requires      CYGPKG_ISOINFRA
+
+    compile       infblock.c infcodes.c inffast.c inflate.c
+    compile       inftrees.c infutil.c adler32.c crc32.c
+    compile       zutil.c deflate.c trees.c compress.c uncompr.c
+
+
+# ====================================================================
+
+    cdl_component CYGPKG_COMPRESS_ZLIB_OPTIONS {
+        display "Common memory allocator package build options"
+        flavor  none
+        no_define
+        description   "
+	    Package specific build options including control over
+	    compiler flags used only in building this package,
+	    and details of which tests are built."
+
+        cdl_option CYGPKG_COMPRESS_ZLIB_CFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "-D__ECOS__ -DNO_ERRNO_H" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_COMPRESS_ZLIB_CFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "-Wstrict-prototypes" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are removed from
+                the set of global flags if present."
+        }
+
+        cdl_option CYGPKG_COMPRESS_ZLIB_LDFLAGS_ADD {
+            display "Additional compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are used in addition
+                to the set of global flags."
+        }
+
+        cdl_option CYGPKG_COMPRESS_ZLIB_LDFLAGS_REMOVE {
+            display "Suppressed compiler flags"
+            flavor  data
+            no_define
+            default_value { "" }
+            description   "
+                This option modifies the set of compiler flags for
+                building this package. These flags are removed from
+                the set of global flags if present."
+        }
+	
+    }
+
+    cdl_option CYGPKG_COMPRESS_ZLIB_TESTS {
+        display "zlib tests"
+        flavor  data
+        no_define
+        calculated { "tests/zlib1.c tests/zlib2.c" }
+    }
+}
+
+# ====================================================================
+# EOF compress_zlib.cdl

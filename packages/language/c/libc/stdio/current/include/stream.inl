@@ -435,6 +435,6 @@ Cyg_StdioStream::set_position( fpos_t pos, int whence )
 } // set_position()
 
 
-#endif CYGONCE_LIBC_STDIO_STREAM_INL multiple inclusion protection
+#endif // CYGONCE_LIBC_STDIO_STREAM_INL multiple inclusion protection
 
 // EOF stream.inl

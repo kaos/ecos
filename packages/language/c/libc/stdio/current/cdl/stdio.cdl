@@ -78,23 +78,27 @@ cdl_package CYGPKG_LIBC_STDIO {
     requires      CYGINT_ISO_STRING_STRFUNCS
     requires      CYGINT_ISO_STRING_MEMFUNCS
 
-    compile       common/fclose.cxx       common/fflush.cxx      \
-                  common/fopen.cxx        common/freopen.cxx     \
-                  common/setvbuf.cxx      common/snprintf.cxx    \
-                  common/sprintf.cxx      common/sscanf.cxx      \
-                  common/stderr.cxx       common/stdin.cxx       \
-                  common/stdiofiles.cxx   common/fseek.cxx       \
-                  common/stdioinlines.cxx common/stdiosupp.cxx   \
-                  common/stdout.cxx       common/stream.cxx      \
-                  common/streambuf.cxx    common/ungetc.cxx      \
-                  common/vsnprintf.cxx    common/vsscanf.cxx     \
+    compile       common/fclose.cxx       common/feof.cxx        \
+                  common/fflush.cxx       common/fopen.cxx       \
+                  common/freopen.cxx      common/setvbuf.cxx     \
+                  common/snprintf.cxx     common/sprintf.cxx     \
+                  common/sscanf.cxx       common/stderr.cxx      \
+                  common/stdin.cxx        common/stdiofiles.cxx  \
+                  common/fseek.cxx        common/stdioinlines.cxx\
+                  common/stdiosupp.cxx    common/stdout.cxx      \
+                  common/stream.cxx       common/streambuf.cxx   \
+                  common/ungetc.cxx       common/vsnprintf.cxx   \
+                  common/vsscanf.cxx                             \
+                                                                 \
                   input/fgetc.cxx         input/fgets.cxx        \
                   input/fread.cxx         input/fscanf.cxx       \
                   input/gets.cxx          input/scanf.cxx        \
-                  input/vfscanf.cxx       output/fnprintf.cxx    \
-                  output/fprintf.cxx      output/fputc.cxx       \
-                  output/fputs.cxx        output/fwrite.cxx      \
-                  output/printf.cxx       output/vfnprintf.cxx
+                  input/vfscanf.cxx                              \
+                                                                 \
+                  output/fnprintf.cxx     output/fprintf.cxx     \
+                  output/fputc.cxx        output/fputs.cxx       \
+                  output/fwrite.cxx       output/printf.cxx      \
+                  output/vfnprintf.cxx
 
 # ====================================================================
 
@@ -267,7 +271,7 @@ cdl_package CYGPKG_LIBC_STDIO {
     cdl_option CYGDAT_LIBC_STDIO_DEFAULT_CONSOLE {
         display       "Default console device"
         flavor        data
-        default_value {"\"/dev/ttydiag\""}
+        default_value CYGDAT_IO_SERIAL_TTY_CONSOLE
         description   "
             This option allows you to choose the
             default console device. In the current

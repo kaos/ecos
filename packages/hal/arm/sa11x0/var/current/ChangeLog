@@ -1,3 +1,53 @@
+2001-03-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): 
+	Entry point must be a physical address.
+
+	* cdl/hal_arm_sa11x0.cdl: 
+	Allow platforms to override default clock speed.
+
+2001-03-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/redboot_linux_exec.c (do_exec): Improve wait timeout.
+
+2001-03-07  Hugo Tyson  <hmt@redhat.com>
+
+	* src/redboot_linux_exec.c: Do not build anything if
+	HAL_PLATFORM_MACHINE_TYPE is not defined.
+
+2001-03-02  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal_arm_sa11x0.cdl: HAL_PLF_INIT stuff moved to hal/common.
+
+2001-03-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sa11x0_misc.c: 
+	* cdl/hal_arm_sa11x0.cdl: New interface CYGINT_HAL_PLF_IF_INIT
+	which, if defined, indicates that the platform has plf_if_init.
+
+2001-03-01  Hugo Tyson  <hmt@redhat.com>
+
+	* src/sa11x0_misc.c: Remove warnings from lack of prototype for
+	plf_if_init() - for platforms that don't have it.
+
+2001-02-28  Gary Thomas  <gthomas@redhat.com>
+
+	* src/sa11x0_misc.c: Allow platform to perform additional
+	I/O initialization (virtual vector based).  The function
+	plf_if_init() can be overridden by platform code for this.
+
+2001-02-28  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_sa11x0.h (SA11X0_TUCR_RESERVED_BITS):
+	(SA11X0_TUCR_EXTERNAL_MEMORY_MASTER): Add definitions of these
+	bits for enabling an external bus master.
+
+2001-02-28  Hugo Tyson  <hmt@redhat.com>
+ 
+	* include/hal_sa11x0.h (SA11X0_OWER): Add OS Timer Watchdog Match
+	Enable Register for use by Watchdog package.
+	(SA11X0_OWER_ENABLE): And a long-winded "1" to enable it.
+
 2001-02-24  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_arm_sa11x0.cdl: Add RedBoot commands/options.

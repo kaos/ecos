@@ -125,14 +125,14 @@ externC void cyg_hal_dcache_write_mode(int mode);
 //#define HAL_ICACHE_BURST_SIZE(_size_)
 
 // Set the cache write mode
-#define HAL_ICACHE_WRITE_MODE( _mode_ )         \
+#define HAL_DCACHE_WRITE_MODE( _mode_ )         \
     CYG_MACRO_START                             \
     cyg_uint32 _m_;                             \
     if (HAL_DCACHE_WRITETHRU_MODE == _mode_)    \
       _m_ = CYGARC_REG_CCR_WT;                  \
     else                                        \
       _m_ = CYGARC_REG_CCR_CB;                  \
-    cyg_hal_cache_write_mode(_m_);              \
+    cyg_hal_dcache_write_mode(_m_);             \
     CYG_MACRO_END
 
 #define HAL_DCACHE_WRITETHRU_MODE       0
@@ -191,10 +191,10 @@ externC void cyg_hal_icache_disable(void);
 externC void cyg_hal_icache_invalidate_all(void);
 
 // Enable the cache
-#define HAL_ICACHE_ENABLE() cyg_hal_dcache_enable()
+#define HAL_ICACHE_ENABLE() cyg_hal_icache_enable()
 
 // Disable the cache
-#define HAL_ICACHE_DISABLE() cyg_hal_dcache_disable()
+#define HAL_ICACHE_DISABLE() cyg_hal_icache_disable()
 
 // Invalidate the entire cache
 #define HAL_ICACHE_INVALIDATE_ALL() cyg_hal_icache_invalidate_all()

@@ -1,3 +1,46 @@
+2001-03-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Add Atlas flash and ethernet drivers to target description.
+	Also PCI package.
+	Fix atlas flash package alias typo.
+
+2001-03-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* ecos.db: Update ceb_v850 description - no longer V850/SA1 specific
+
+2001-03-21  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added new Intel 28Fxxx package. Only supports flash
+	file at the moment.
+
+2001-03-15  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Add keyboard driver for iPAQ
+
+2001-03-08  Bart Veer  <bartv@redhat.com>
+
+	* ecosadmin.tcl, locate_files:
+	Do not eliminate makefile, configure.in, etc. It is now valid for
+	these to be present, e.g. in a package's host or doc subdirectory.
+
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added CYGPKG_COMPRESS_ZLIB.
+
+2001-03-05  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Adding iPAQ touch screen driver.
+
+2001-02-28  Hugo Tyson  <hmt@redhat.com>
+
+	* ecos.db: Add Watchdog for SA11x0 StrongARMs.  Package
+	CYGPKG_DEVICES_WATCHDOG_ARM_SA11X0.  Included in appropriate
+	targets - not sure whether it applies to SA1100, so SA1110 only.
+
+2001-02-24  Gary Thomas  <gthomas@redhat.com>
+
+	* ecos.db: Import initial iPAQ support from 3G Labs.
+
 2001-02-23  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: MBX uses new generic AMD flash driver.
@@ -6,6 +49,11 @@
 
 	* ecos.db: Add packages for new-style AMD and Atmel flash
 	drivers. Add flash support to PID.
+
+2001-02-14  Hugo Tyson  <hmt@redhat.com>
+
+	* ecos.db: Add generic strataFlash driver,
+	CYGPKG_DEVS_FLASH_STRATA located in devs/flash/intel/strata/... 
 
 2001-02-09  Jonathan Larmour  <jlarmour@redhat.com>
 
@@ -18,9 +66,37 @@
 	new gcc dependency output format (and preserve compatibility
 	with the old - it just generates a redundant dependency).
 
+2001-02-01  Julian Smart <julians@redhat.com>
+
+	* Added mips to list of directories to keep for devs/flash
+2001-01-31  Nick Garnett  <nickg@cygnus.co.uk>
+
+	* ecos.db: Added MIPS64 package and atlas_mips64_5kc target.
+
 2001-01-25  Jesper Skov  <jskov@redhat.com>
 
 	* ecos.db: Added generic i82559 ethernet driver.
+	Added QED Ocelot driver.
+
+2001-01-10  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Add i82559 driver.
+
+2000-12-21  Mark Salter  <msalter@redhat.com>
+
+	* ecos.db: Added MIPS Atlas ether and flash packages.
+
+2000-12-07  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Include PCI driver.
+
+2000-12-05  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added AMD flash driver.
+
+2000-11-30  Jesper Skov  <jskov@redhat.com>
+
+	* ecos.db: Added Ocelot packages.
 
 
 2000-11-25  Jonathan Larmour  <jlarmour@redhat.com>
@@ -136,6 +212,10 @@
 2000-07-26  Gary Thomas  <gthomas@redhat.com>
 
 	* ecos.db: Adding FLASH package - FLASH memory support.
+
+2000-07-14  Drew Moseley  <dmoseley@redhat.com>
+
+	* ecos.db: Added mips3264 stuff.
 
 2000-07-14  Gary Thomas  <gthomas@redhat.com>
 

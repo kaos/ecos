@@ -1,3 +1,10 @@
+2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/kernel.cdl: Only need to compile dbg_gdb.cxx with
+	CYGDBG_KERNEL_DEBUG_GDB_THREAD_SUPPORT
+
+	* src/debug/dbg_gdb.cxx: Add new dbg_thread_id() function.
+
 2001-02-23  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* include/thread.inl (attach_stack): Check for non-NULL stack base.

@@ -73,7 +73,8 @@ FUNC_START(cyg_hal_cache_enable)
         mov     #CYGARC_REG_CCR,r1
         mov.l   @r1,r0
         mov     #CYGARC_REG_CCR_CE,r2
-        mov.l   r2,@r1
+        or      r2,r0
+        mov.l   r0,@r1
         nop
         rts
          nop

@@ -1,5 +1,5 @@
 version 0
-region ram fc0000 40000 0 !
+region ram fc0000 3f000 0 !
 section reserved 4000 1 0 0 1 1 1 1 fc0000 fc0000 text text !
 section text 0 4 0 1 0 1 0 1 fini fini !
 section fini 0 4 0 1 0 1 0 1 rodata rodata !

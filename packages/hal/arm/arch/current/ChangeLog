@@ -1,3 +1,14 @@
+2001-03-28  Hugo Tyson  <hmt@redhat.com>
+
+	* src/vectors.S (__GDB_stack_base): Increase stubs stack size to
+	"enough".  We tend to have either RedBoot (with no interrupt
+	stack) or an app (with no stubs stack) these days, so I used
+	CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE.  It defaults to 4k in
+	RedBoot which is enough compared to the previous hard-wired 1k.
+	The overflow occurred in RedBoot, with i82559 ether driver, during
+	GDB connection - but manifested as "network stack out of buffers"
+	because of a recursion in trying to report a trap.
+
 2001-02-24  Gary Thomas  <gthomas@redhat.com>
 
 	* include/hal_mmu.h (MMU_Control_X): Add - used by Win/CE.

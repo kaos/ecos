@@ -52,7 +52,6 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         display       "Support for standard eCos TCP/IP stack."
         flavor        bool
         active_if     CYGPKG_NET
-        no_define
         default_value 1
         compile       net/eth_drv.c
 
@@ -121,13 +120,12 @@ cdl_package CYGPKG_IO_ETH_DRIVERS {
         flavor        bool
         active_if     !CYGPKG_NET
         default_value 1
-        no_define
         compile       stand_alone/eth_drv.c
 
         cdl_option CYGNUM_IO_ETH_DRIVERS_NUM_PKT {
             display          "Number of \[network\] buffers"
             flavor           data
-            default_value    16
+            default_value    4
             legal_values     2 to 32
             description      "
                This option is used to allocate space to buffer incoming network

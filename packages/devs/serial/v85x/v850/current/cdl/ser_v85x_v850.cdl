@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                         
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -33,7 +33,7 @@
 #
 # Author(s):      gthomas
 # Original data:  gthomas
-# Contributors:
+# Contributors:   jlarmour
 # Date:           2000-05-26
 #
 #####DESCRIPTIONEND####
@@ -52,7 +52,7 @@ cdl_package CYGPKG_IO_SERIAL_V85X_V850 {
     include_files ; # none _exported_ whatsoever
     description   "
            This option enables the serial device drivers for the
-           NEC CEB/V850SA1."
+           NEC V850."
     doc           redirect/ecos-device-drivers.html
 
     compile       -library=libextras.a   v85x_v850_serial.c
@@ -66,7 +66,7 @@ cdl_package CYGPKG_IO_SERIAL_V85X_V850 {
     cdl_component CYGPKG_IO_SERIAL_V85X_V850_SERIAL0 {
         display       "NEC V850 serial port 0 driver"
         flavor        bool
-        default_value 0
+        default_value 1
         description   "
             This option includes the serial device driver for the NEC V850
             SA1 (70F3017) and SB1 (70F3033) devices, port 0."

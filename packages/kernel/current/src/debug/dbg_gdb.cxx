@@ -177,6 +177,15 @@ externC int dbg_currthread(threadref * varparm)
 
 //--------------------------------------------------------------------------
 
+externC int dbg_thread_id(threadref *threadid)
+{
+    Cyg_Thread *thread = dbg_get_thread(threadid);
+    if( thread == 0 ) return 0;
+    return thread->get_unique_id ();
+}
+
+//--------------------------------------------------------------------------
+
 externC int dbg_currthread_id(void)
 {
     Cyg_Thread *thread = Cyg_Scheduler::get_current_thread();

@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -31,7 +31,7 @@
 # ====================================================================
 ######DESCRIPTIONBEGIN####
 #
-# Author(s):      gthomas
+# Author(s):      gthomas, jlarmour
 # Original data:  bartv, jskov
 # Contributors:
 # Date:           2000-03-10
@@ -41,21 +41,21 @@
 # ====================================================================
 
 cdl_package CYGPKG_HAL_V85X_V850_CEB {
-    display  "Cosmo CEB-V850/SA1 board"
+    display       "Cosmo CEB-V850 board"
     parent        CYGPKG_HAL_V85X
     requires      CYGPKG_HAL_V85X_V850
     define_header hal_v85x_v850_ceb.h
     include_dir   cyg/hal
     description   "
-           The CEB HAL package should be used when targetting the
-           actual hardware."
+           The CEB-v850 HAL supports the CEB-V850 evaluation board fitted
+           with a NEC V850/SA1 or NEC V850/SB1."
 
-    compile  hal_diag.c plf_misc.c plf_stub.c
+    compile  plf_misc.c plf_stub.c
 
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED
+    implements    CYGINT_HAL_V850_DIAG_ONCHIP_SERIAL0
 
     define_proc {
         puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H   <pkgconf/hal_v85x_v850.h>"
@@ -66,27 +66,86 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
         puts $::cdl_header "#define CYGNUM_HAL_VIRTUAL_VECTOR_ROM_DEBUG_CHANNEL 0"
     }
 
-    cdl_component CYG_HAL_STARTUP {
+    cdl_option CYG_HAL_STARTUP {
         display       "Startup type"
         flavor        data
-        legal_values  {"RAM" "ROM"}
+        legal_values  {"RAM" "ROM" "ROMRAM" }
         default_value {"RAM"}
-	no_define
-	define -file system.h CYG_HAL_STARTUP
+        no_define
+        define -file system.h CYG_HAL_STARTUP
         description   "
            When targetting the CEB board it is possible to build
-           the system for either RAM bootstrap or ROM bootstrap."
+           the system for either RAM bootstrap, ROM bootstrap, or ROMRAM
+           bootstrap. RAM bootstrap generally requires that the board
+           is equipped with ROMs containing a suitable ROM monitor or
+           equivalent software that allows GDB to download the eCos
+           application on to the board. The ROM bootstrap typically
+           requires that the eCos application be blown into EPROMs or
+           equivalent technology. ROMRAM bootstrap is similar to ROM
+           bootstrap, but everything is copied to RAM before execution 
+           starts thus improving performance, but at the cost of an
+           increased RAM footprint."
     }
 
-   cdl_option CYGHWR_HAL_V85X_V850_CEB_DIAG_BAUD {
+    cdl_option CYG_HAL_V85X_STARTUP_FLASH {
+        display       "Build for on-chip FLASH"
+        active_if     {CYG_HAL_STARTUP == "ROM"} || \
+                      {CYG_HAL_STARTUP == "ROMRAM"}
+        default_value 0
+        description   "
+           When building for ROM or ROMRAM startup, you can specify
+           that you actually wish to target the internal FLASH rather
+           than the external EPROM."
+    }
+
+   cdl_component CYGHWR_HAL_V85X_V850_VARIANT {
+        display        "V850 variant"
+        flavor         none
+        no_define
+        description "
+            This component allows you to choose the V850 variant
+            you have on your board."
+
+        cdl_option CYGHWR_HAL_V85X_V850_VARIANT_SA1 {
+            display       "SA1"
+            default_value 1
+            requires { 0 == CYGHWR_HAL_V85X_V850_VARIANT_SB1 }
+            implements CYGINT_HAL_V850_VARIANT_SA1
+            description "
+                Choose this if you have the V850/SA1."
+        }
+
+        cdl_option CYGHWR_HAL_V85X_V850_VARIANT_SB1 {
+            display       "SB1"
+            default_value 0
+            requires { 0 == CYGHWR_HAL_V85X_V850_VARIANT_SA1 }
+            implements CYGINT_HAL_V850_VARIANT_SB1
+            description "
+                Choose this if you have the V850/SB1."
+        }
+   }
+
+    cdl_option CYGHWR_HAL_V85X_CPU_FREQ {
+        display       "CPU frequency in Hz"
+        flavor        data
+        legal_values  { 4194304 5000000 8000000 10000000 12580000 16000000 \
+                        17000000 20000000 }
+        default_value { CYGHWR_HAL_V85X_V850_VARIANT_SA1 ? 17000000 : 16000000 }
+        description "
+           This option contains the frequency of the board oscillator
+           connected to the CPU, in Hertz.
+           Choose the frequency to match the oscillator on your board.
+           This may affect thing like serial device, interval clock and
+           memory access speed settings."
+    }
+
+   cdl_option CYGHWR_HAL_V85X_V850_DIAG_BAUD {
        display          "Diagnostic serial port baud rate"
        flavor data
-       legal_values     9600 19200 38400
+       legal_values     1200 2400 4800 9600 19200 38400 
        default_value    38400
        description      "
-           This option selects the baud rate used for the diagnostic port.
-           Note: this should match the value chosen for the GDB port if the
-           diagnostic and GDB port are the same."
+           This option selects the baud rate used for the diagnostic port."
    }
 
     # Real-time clock/counter specifics
@@ -107,7 +166,7 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
         cdl_option CYGNUM_HAL_RTC_PERIOD {
             display       "Real-time clock period"
             flavor        data
-            calculated    42500
+            calculated    { CYGHWR_HAL_V85X_CPU_FREQ / 400 }
         }
     }
 
@@ -115,6 +174,7 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
         display "Global build options"
         flavor  none
         parent  CYGPKG_NONE
+        no_define
         description   "
 	    Global build options including control over
 	    compiler flags, linker flags and choice of toolchain."
@@ -176,6 +236,10 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
                 <PREFIX>/bin/gdb_module.bin : <PREFIX>/bin/gdb_module.img
                 $(OBJCOPY) -O binary $< $@
             }
+            make -priority 320 {
+                <PREFIX>/bin/gdb_module.sre : <PREFIX>/bin/gdb_module.img
+                $(OBJCOPY) -O srec $< $@
+            }
         }
     }
 
@@ -184,8 +248,9 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
         flavor data
         no_define
         calculated { CYG_HAL_STARTUP == "RAM" ? "v85x_v850_ceb_ram" : \
-                     CYG_HAL_STARTUP == "ROM" ? "v85x_v850_ceb_rom" : \
-	                                        "v85x_v850_ceb_romram" }
+                     CYG_HAL_STARTUP == "ROM" ? \
+                     CYG_HAL_V85X_STARTUP_FLASH == 0 ? "v85x_v850_ceb_rom" : "v85x_v850_ceb_flash" : \
+                     CYG_HAL_V85X_STARTUP_FLASH == 0 ? "v85x_v850_ceb_romram" : "v85x_v850_ceb_flashromram" }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_LDI {
             display "Memory layout linker script fragment"
@@ -193,8 +258,9 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_LDI
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_v85x_v850_ceb_ram.ldi>" : \
-                         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_v85x_v850_ceb_rom.ldi>" : \
-                                                    "<pkgconf/mlt_v85x_v850_ceb_romram.ldi>" }
+                         CYG_HAL_STARTUP == "ROM" ? \
+                         CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_rom.ldi>" : "<pkgconf/mlt_v85x_v850_ceb_flash.ldi>" : \
+                         CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_romram.ldi>" : "<pkgconf/mlt_v85x_v850_ceb_flashromram.ldi>" }
         }
 
         cdl_option CYGHWR_MEMORY_LAYOUT_H {
@@ -203,8 +269,9 @@ cdl_package CYGPKG_HAL_V85X_V850_CEB {
             no_define
             define -file system.h CYGHWR_MEMORY_LAYOUT_H
             calculated { CYG_HAL_STARTUP == "RAM" ? "<pkgconf/mlt_v85x_v850_ceb_ram.h>" : \
-                         CYG_HAL_STARTUP == "ROM" ? "<pkgconf/mlt_v85x_v850_ceb_rom.h>" : \
-                                                    "<pkgconf/mlt_v85x_v850_ceb_romram.h>" }
+                         CYG_HAL_STARTUP == "ROM" ? \
+                         CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_rom.h>" : "<pkgconf/mlt_v85x_v850_ceb_rom.h>" : \
+                         CYG_HAL_V85X_STARTUP_FLASH == 0 ? "<pkgconf/mlt_v85x_v850_ceb_romram.h>" : "<pkgconf/mlt_v85x_v850_ceb_flashromram.h>" }
         }
     }
 

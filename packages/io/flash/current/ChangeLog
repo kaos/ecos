@@ -1,3 +1,25 @@
+2001-03-21  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (flash_program): Verify data after programming.
+
+2001-03-21  Jesper Skov  <jskov@redhat.com>
+
+	* include/flash.h: Added low voltage error message.
+	* src/flash.c: And its error message.
+
+2001-03-17  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (flash_program): 
+	* include/flash.h: Add support for [StrataFLASH] buffered writes.
+	This requires knowledge of the device write buffer size [saved].
+
+2001-03-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c: 
+	* include/flash.h: Allow platform to define pre/post routines
+	to enable/disable device access.  These may be required, e.g.
+	to turn on some voltage, etc.
+
 2001-02-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/flash.h: HAL_FLASH_CACHES_WANT_OPTIMAL replaced with

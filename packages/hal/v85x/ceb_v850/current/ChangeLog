@@ -1,3 +1,63 @@
+2001-03-21  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_ceb_v850.cdl: Support choice between V850/SA1 and
+	V850/SB1, and adjust descriptions accordingly.
+	Support ROMRAM startup.
+	Support booting from FLASH.
+	Use generic V850 diag driver.
+	Allow setting of CPU frequency.
+	Add extra baud rates.
+	Build SREC GDB stub images as well as binary images.
+
+	* include/hal_diag.h: We only support virtual vectors now.
+
+	* include/hal_platform_setup.h: Comment better.
+	Support different wait states for different CPU speeds.
+
+	* include/plf_cache.h: Just empty now - defaults are in variant HAL.
+	* include/plf_intr.h: Ditto.
+	* include/plf_io.h: Ditto.
+	
+	* include/plf_sections.h: Support V850/SB1 differences, and
+	add __allow_nmi as per recent arch HAL vectors.S change.
+
+	* src/plf_misc.c: Update register names with new versions defined
+	in variant HAL.
+
+	* src/plf_stub.c: Remove unnecessary includes. Add some comments.
+	* include/v850_regs.h: Remove. Content moved to v850 HAL.
+
+	* src/hal_diag.c: Remove. Consolidated into v850 HAL.
+
+	* src/v850flash.S: Sample image to program into flash for EPROM
+	startup.
+
+	* include/pkgconf/mlt_v85x_v850_ceb_flash.h:
+        * include/pkgconf/mlt_v85x_v850_ceb_flash.ldi:
+        * include/pkgconf/mlt_v85x_v850_ceb_flash.mlt:
+        * include/pkgconf/mlt_v85x_v850_ceb_flashromram.h:
+        * include/pkgconf/mlt_v85x_v850_ceb_flashromram.ldi:
+        * include/pkgconf/mlt_v85x_v850_ceb_flashromram.mlt:
+        * include/pkgconf/mlt_v85x_v850_ceb_romram.h:
+        * include/pkgconf/mlt_v85x_v850_ceb_romram.ldi:
+        * include/pkgconf/mlt_v85x_v850_ceb_romram.mlt:
+	Create.
+
+        * include/pkgconf/mlt_v85x_v850_ceb_ram.h:
+        * include/pkgconf/mlt_v85x_v850_ceb_ram.ldi:
+        * include/pkgconf/mlt_v85x_v850_ceb_ram.mlt:
+        * include/pkgconf/mlt_v85x_v850_ceb_rom.h:
+        * include/pkgconf/mlt_v85x_v850_ceb_rom.ldi:
+        * include/pkgconf/mlt_v85x_v850_ceb_rom.mlt:
+	Support new ram_vectors section, and fix ram region size (don't
+	allow the use of I/O space).
+
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_v85x_ceb_v850.cdl: Removed
+	CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED which is now the
+	default.
+
 2001-02-08  Jesper Skov  <jskov@redhat.com>
 
 	* src/hal_diag.c: Replace CYGSEM_HAL_DIAG_MANGLER_None with
@@ -140,7 +200,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

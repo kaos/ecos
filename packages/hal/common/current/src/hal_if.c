@@ -59,6 +59,13 @@
 
 #include <cyg/hal/hal_intr.h>           // hal_vsr_table and others
 
+#ifdef CYGPKG_REDBOOT
+#include <pkgconf/redboot.h>
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+#include <redboot.h>
+#include <flash_config.h>
+#endif
+#endif
 
 //--------------------------------------------------------------------------
 
@@ -68,9 +75,31 @@ externC void init_thread_syscall(void * vector);
 //--------------------------------------------------------------------------
 // Implementations and function wrappers for monitor services
 
+// flash config state queries
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+
+static __call_if_flash_cfg_op_fn_t flash_config_op;
+
+static cyg_bool
+flash_config_op( int op, char * key, void *val, int type)
+{
+    switch ( op ) {
+    case CYGNUM_CALL_IF_FLASH_CFG_GET:
+        return flash_get_config( key, val, type );
+    default:
+        // nothing else supported yet - though it is expected that "set"
+        // will fit the same set of arguments, potentially.
+        break;
+    }
+    return 0;
+}
+#endif
+
 //----------------------------
 // Delay uS
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
+
+static __call_if_delay_us_t delay_us;
 
 static void
 delay_us(cyg_int32 usecs)
@@ -129,6 +158,9 @@ delay_us(cyg_int32 usecs)
 
 // Reset functions
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
+
+static __call_if_reset_t reset;
+
 static void
 reset(void)
 {
@@ -587,6 +619,12 @@ externC void cyg_hal_plf_comms_init(void);
 void
 hal_if_diag_init(void)
 {
+    // This function may be called from various places and the code
+    // should only run once.
+    static cyg_uint8 called = 0;
+    if (called) return;
+    called = 1;
+
 #ifndef CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE
 
 #if defined(CYGDBG_HAL_DIAG_TO_DEBUG_CHAN)
@@ -746,6 +784,31 @@ hal_ctrlc_check(CYG_ADDRWORD vector, CYG_ADDRWORD data)
 void
 hal_if_init(void)
 {
+    //**********************************************************************
+    //
+    // Note that if your RAM application is configured to initialize
+    // the whole table _or_ the communication channels, you _cannot_
+    // step through this function with the debugger. If your channel
+    // configurations are set to the default, you should be able to
+    // simply step over this function though (or use 'finish' once you
+    // have entered this function if that GDB command works).
+    // 
+    // If you really do need to debug this code, the best approach is
+    // to have a working RedBoot / GDB stub in ROM and then change the
+    // hal_virtual_vector_table to reside at some other address in the
+    // RAM configuration than that used by the ROM monitor.  Then
+    // you'll be able to use the ROM monitor to debug the below code
+    // and check that it does the right thing.
+    //
+    // Note that if you have a ROM monitor in ROM/flash which does
+    // support virtual vectors, you should be able to disable the
+    // option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE. On some
+    // targets (which predate the introduction of virtual vectors)
+    // that option is enabled per default and needs to be explicitly
+    // disabled when you have an updated ROM monitor.
+    //
+    //**********************************************************************
+
 #ifdef CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE
     {
         int i;
@@ -758,7 +821,7 @@ hal_if_init(void)
         
         // Version number
         CYGACC_CALL_IF_VERSION_SET(CYGNUM_CALL_IF_TABLE_VERSION_CALL
-                                   |(CYGNUM_CALL_IF_TABLE_VERSION_COMM<<CYGNUM_CALL_IF_TABLE_VERSION_COMM_shift));
+            |((CYG_ADDRWORD)CYGNUM_CALL_IF_TABLE_VERSION_COMM<<CYGNUM_CALL_IF_TABLE_VERSION_COMM_shift));
     }
 #endif
 
@@ -782,6 +845,10 @@ hal_if_init(void)
     // Cache functions
     CYGACC_CALL_IF_FLUSH_ICACHE_SET(flush_icache);
     CYGACC_CALL_IF_FLUSH_DCACHE_SET(flush_dcache);
+#endif
+
+#ifdef CYGSEM_REDBOOT_FLASH_CONFIG
+    CYGACC_CALL_IF_FLASH_CFG_OP_SET(flash_config_op);
 #endif
 
     // Data entries not currently supported in eCos
@@ -854,5 +921,11 @@ hal_if_init(void)
 #if defined(CYGDBG_HAL_DEBUG_GDB_BREAK_SUPPORT)
     // Install async breakpoint handler into vector table.
     CYGACC_CALL_IF_INSTALL_BPT_FN_SET(&cyg_hal_gdb_interrupt);
+#endif
+
+#if 0 != CYGINT_HAL_PLF_IF_INIT
+    // Call platform specific initializations - should only be used
+    // to augment what has already been set up, etc.
+    plf_if_init();
 #endif
 }

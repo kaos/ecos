@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -45,7 +45,6 @@
 #include <pkgconf/hal.h>
 
 #include <cyg/infra/cyg_type.h>         // Base types
-#include <cyg/infra/cyg_trac.h>         // tracing macros
 #include <cyg/infra/cyg_ass.h>          // assertion macros
 
 #include <cyg/hal/hal_intr.h>

@@ -135,8 +135,8 @@ typedef struct i82559 {
         active:1,                       // has this if been brung up?
         hardwired_esa:1,                // set if ESA is hardwired via CDL
         spare1:4; 
-    cyg_uint8
-        spare2:8; 
+    cyg_uint8                           // Count nested sends to reject
+        within_send:8;                  //     nested requests to send
     cyg_uint8
         tx_in_progress:1,               // transmit in progress flag
         tx_queue_full:1,                // all Tx descriptors used flag
@@ -167,6 +167,9 @@ typedef struct i82559 {
 #ifdef KEEP_STATISTICS
     void *p_statistics;                 // pointer to statistical counters
 #endif
+
+    cyg_uint32 platform_timeout;        // Some platforms use a timeout
+    int tx_descriptor_timeout;          // Is it fixated on this tx?
 
 } I82559;
 

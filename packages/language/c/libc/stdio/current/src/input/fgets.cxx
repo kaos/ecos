@@ -2,7 +2,7 @@
 //
 //      fgets.cxx
 //
-//      ANSI Stdio fgets() function
+//      ISO C standard I/O fgets() function
 //
 //========================================================================
 //####COPYRIGHTBEGIN####
@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                         
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -33,8 +33,8 @@
 //
 // Author(s):     jlarmour
 // Contributors:  
-// Date:          2000-04-20
-// Purpose:     
+// Date:          2001-03-14
+// Purpose:       Implementation of ISO C standard I/O fgets() function
 // Description: 
 // Usage:       
 //
@@ -48,7 +48,9 @@
 
 // INCLUDES
 
-#include <cyg/infra/cyg_type.h>     // Common project-wide type definitions
+#include <cyg/infra/cyg_type.h>     // Common type definitions
+#include <cyg/infra/cyg_ass.h>      // Assertion support
+#include <cyg/infra/cyg_trac.h>     // Tracing support
 #include <stddef.h>                 // NULL and size_t from compiler
 #include <stdio.h>                  // header for this file
 #include <errno.h>                  // error codes
@@ -56,32 +58,58 @@
 
 // FUNCTIONS
 
+// FIXME: should be reworked to read buffer at a time, and scan that
+// for newlines, rather than reading byte at a time.
+
 externC char *
 fgets( char *s, int n, FILE *stream )
 {
     Cyg_StdioStream *real_stream = (Cyg_StdioStream *)stream;
-    cyg_ucount32 bytes_read;
-    Cyg_ErrNo err;
+    Cyg_ErrNo err=ENOERR;
+    cyg_uint8 c;
+    cyg_uint8 *str=(cyg_uint8 *)s;
+    int nch;
+
+    CYG_CHECK_DATA_PTRC( s );
+    CYG_CHECK_DATA_PTRC( stream );
+    CYG_PRECONDITION( n > 0, "requested 0 or negative chars");
+
+    CYG_REPORT_FUNCTYPE( "returning string %08x");
+    CYG_REPORT_FUNCARG3( "s=%08x, n=%d, stream=%08x", s, n, stream );
     
+    for (nch=1; nch < n; nch++) {
+        err = real_stream->read_byte( &c );
+        
+        // if nothing to read, try again ONCE after refilling buffer
+        if (EAGAIN == err) {
+            err = real_stream->refill_read_buffer();
+            if ( !err )
+                err = real_stream->read_byte( &c );
 
-    err = real_stream->read( (cyg_uint8 *)s, n-1, &bytes_read );
-
-    if (!err && !bytes_read) { // if no err, but nothing to read, try again
-        err = real_stream->refill_read_buffer();
-        if ( !err )
-            err = real_stream->read( (cyg_uint8 *)s, n-1, &bytes_read );
-
-    } // if
-
-    if (err) {
+            if (EAGAIN == err) {
+                if (1 == nch) {   // indicates EOF at start
+                    CYG_REPORT_RETVAL( NULL );
+                    return NULL;
+                } else
+                    break; // EOF
+            } // if
+        } // if
+        
+        *str++ = c;
+        if ('\n' == c)
+            break;
+    } // while
+    
+    *str = '\0'; // NULL terminate it
+    
+    if (err && EAGAIN != err) {
         real_stream->set_error( err );
         errno = err;
+        CYG_REPORT_RETVAL( NULL );
         return NULL;
     } // if
-    
-    if (bytes_read > 0)
-        s[bytes_read]='\0'; // NULL terminate it
-    
+
+    CYG_REPORT_RETVAL( s );
     return s;
 
 } // fgets()

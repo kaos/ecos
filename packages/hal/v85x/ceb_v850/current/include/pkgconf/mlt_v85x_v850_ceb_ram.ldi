@@ -1,4 +1,4 @@
-// eCos memory layout - Fri Oct 20 08:31:56 2000
+// eCos memory layout - Fri Jan 26 09:07:19 2001
 
 // This is a generated file - do not edit
 
@@ -6,7 +6,7 @@
 
 MEMORY
 {
-    ram : ORIGIN = 0xfc0000, LENGTH = 0x40000
+    ram : ORIGIN = 0xfc0000, LENGTH = 0x3f000
 }
 
 SECTIONS

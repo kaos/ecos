@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                   
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,8 +32,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: gthomas
-// Date:         2000-03-31
+// Contributors: gthomas,jlarmour
+// Date:         2001-03-21
 // Purpose:      V850 Serial I/O module (interrupt driven version)
 // Description: 
 //
@@ -44,7 +44,9 @@
 #include <pkgconf/system.h>
 #include <pkgconf/io_serial.h>
 #include <pkgconf/io.h>
+#ifdef CYGPKG_KERNEL
 #include <pkgconf/kernel.h>
+#endif
 #include CYGBLD_HAL_TARGET_H
 
 #include <cyg/io/io.h>
@@ -144,7 +146,7 @@ v850_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
     unsigned char parity = select_parity[new_config->parity];
     unsigned char word_length = select_word_length[new_config->word_length-CYGNUM_SERIAL_WORD_LENGTH_5];
     unsigned char stop_bits = select_stop_bits[new_config->stop];
-    int mode, count;
+    int divisor, count;
 
     if ((select_baud[new_config->baud].count == 0) ||
         (word_length == 0xFF) ||
@@ -153,19 +155,21 @@ v850_serial_config_port(serial_channel *chan, cyg_serial_info_t *new_config, boo
         return false;  // Unsupported configuration
     }
     port->asim = ASIM_TxRx_Tx | ASIM_TxRx_Rx | parity | word_length | stop_bits;
-    mode = select_baud[new_config->baud].mode + 1;
     count = select_baud[new_config->baud].count;
+    divisor = select_baud[new_config->baud].divisor;
+
     while (count > 0xFF) {
         count >>= 1;
-        mode++;
+        divisor++;
     }
+
     port->brgc = count;
-#if CYGINT_HAL_V85X_VARIANT_SB1
-    port->brgm = mode & 0x07; 
-    port->brgm1 = mode >> 3;
-#else
-    port->brgm = mode;
+    
+    port->brgm = divisor & 0x07; 
+#if CYGINT_HAL_V850_VARIANT_SB1
+    port->brgm1 = divisor >> 3;
 #endif
+
     if (new_config != &chan->config) {
         chan->config = *new_config;
     }
@@ -256,6 +260,7 @@ v850_serial_putc(serial_channel *chan, unsigned char c)
 #ifdef CYGVAR_KERNEL_COUNTERS_CLOCK
         cyg_alarm_initialize(v850_chan->tx_timeout_handle, cyg_current_time()+10, 0);
 #endif
+        return true;
     } else {
         return false;  // Couldn't send, tx was busy
     }
@@ -342,3 +347,5 @@ v850_serial_DSR(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
     cyg_drv_interrupt_unmask(vector);
 }
 #endif
+
+// EOF v85x_v850_serial.c

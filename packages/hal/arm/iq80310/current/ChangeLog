@@ -1,3 +1,12 @@
+2001-03-12  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/iq80310_misc.c: Ensure case ranges have spaces around
+	identifiers to allow correct parsing by compiler.
+
+2001-02-27  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/diag/pci_bios.h: Remove CVS-unfriendly keyword substitutions
+
 2001-02-23  Jesper Skov  <jskov@redhat.com>
 
 	* include/hal_cache.h (HAL_FLASH_CACHES_OLD_MACROS):  This platform

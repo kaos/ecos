@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -59,7 +59,7 @@
 //
 
 char RedBoot_version[] CYGBLD_ATTRIB_WEAK = 
-  "\nRedBoot(tm) debug environment - built " __TIME__ ", " __DATE__ "\n";
+  "\nRedBoot(tm) bootstrap and debug environment - built " __TIME__ ", " __DATE__ "\n\n";
 
 // Override default GDB stubs 'info'
 // Note: this can still be a "weak" symbol since it will occur in the .o

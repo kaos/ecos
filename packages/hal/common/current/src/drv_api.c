@@ -62,7 +62,8 @@
 
 static volatile cyg_int32 isr_disable_counter = 1;  // ISR disable counter
 
-volatile cyg_int32 dsr_disable_counter asm("cyg_scheduler_sched_lock");  // DSR disable counter
+volatile cyg_int32 dsr_disable_counter  // DSR disable counter
+                      CYGBLD_ATTRIB_ASM_ALIAS( cyg_scheduler_sched_lock );
 
 static cyg_interrupt* volatile dsr_list;        // List of pending DSRs
 
@@ -591,7 +592,7 @@ externC void cyg_drv_interrupt_detach( cyg_handle_t interrupt )
         cyg_uint32 index;
         cyg_interrupt **p;
 
-        HAL_TRANSLATE_VECTOR( vector, index );
+        HAL_TRANSLATE_VECTOR( intr->vector, index );
 
         p = &chain_list[index];
 

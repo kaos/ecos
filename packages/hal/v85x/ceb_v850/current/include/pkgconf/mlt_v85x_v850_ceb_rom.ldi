@@ -1,4 +1,4 @@
-// eCos memory layout - Fri Oct 20 08:32:23 2000
+// eCos memory layout - Fri Jan 26 09:44:26 2001
 
 // This is a generated file - do not edit
 
@@ -7,7 +7,7 @@
 MEMORY
 {
     rom : ORIGIN = 0x100000, LENGTH = 0x80000
-    ram : ORIGIN = 0xfc0000, LENGTH = 0x40000
+    ram : ORIGIN = 0xfc0000, LENGTH = 0x3f000
 }
 
 SECTIONS
@@ -20,7 +20,8 @@ SECTIONS
     SECTION_rodata1 (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_fixup (rom, ALIGN (0x4), LMA_EQ_VMA)
     SECTION_gcc_except_table (rom, ALIGN (0x4), LMA_EQ_VMA)
-    SECTION_data (ram, 0xfc0000, FOLLOWING (.gcc_except_table))
+    SECTION_ram_vectors (ram, 0xfc0000, FOLLOWING (.gcc_except_table))
+    SECTION_data (ram, ALIGN (0x4), FOLLOWING (.ram_vectors))
     SECTION_bss (ram, ALIGN (0x4), LMA_EQ_VMA)
     CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
     SECTIONS_END

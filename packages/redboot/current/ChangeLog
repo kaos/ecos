@@ -1,3 +1,157 @@
+2001-03-28  Mark Salter  <msalter@redhat.com>
+
+	* src/net/tcp.c (__tcp_handler): Don't send ACK from TIME_WAIT state
+	unless the FIN comes in again.
+
+2000-03-27  Grant Edwards <grante@visi.com>
+
+        * src/net/tcp.c (__tcp_handler): Fixed sequence number bug seen when
+        doing an active close.
+
+2001-03-23  Gary Thomas  <gthomas@redhat.com>
+
+	* src/printf.c (_vprintf): Support %u (unsigned) descriptor.
+
+	* src/main.c (do_cksum): New command to compute and print a POSIX
+	checksum on a range of memory.
+
+	* src/crc.c (posix_crc32): New routine - matches POSIX algorithm.
+
+2001-03-21  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/redboot.cdl: Back off previous change in number of packets.
+	Also change minimum - below this, network debugging fails.
+
+	* src/flash.c (fis_write): New function - support raw writes to FLASH.
+
+	* src/net/enet.c (__enet_poll): Try to continue if out of packets.
+
+	* src/main.c: 
+	* src/load.c: 
+	* src/flash.c: 
+	* include/redboot.h: Keep track of available "user" RAM.
+
+	* cdl/redboot.cdl: Reduce default number of [network] packets.
+
+2001-03-20  Gary Thomas  <gthomas@redhat.com>
+
+	* src/net/net_io.c (net_io_test): Change for new calling convention.
+
+	* src/main.c (cyg_start): Idle processing now in I/O routines.
+
+	* src/io.c (gets): Move idle processing into this function.
+
+	* include/net/net.h (net_io_test): Needs idle parameter.
+
+	* include/redboot.h: Change 'idle' functions to take state (idle/not).
+
+2001-03-19  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/redboot.cdl: Put version.o file in the public lib directory
+	so other packages can get at it and link redboot.
+
+2001-03-16  Gary Thomas  <gthomas@redhat.com>
+
+	* src/flash.c (fis_create): Preserve memory [load/exec] address 
+	when making assumptions [rewriting existing image].
+
+2001-03-16  Mark Salter  <msalter@redhat.com>
+
+	* src/main.c (cyg_start): Restore console channel after returning
+	from stub.
+
+2001-03-15  Gary Thomas  <gthomas@redhat.com>
+2001-03-15  Grant Edwards <grante@visi.com>
+
+	* src/net/bootp.c (bootp_handler): Guard against buffer overflow.
+
+2001-03-15  Hugo Tyson  <hmt@redhat.com>
+
+	* src/flash.c (fis_create): The code was installing a default for
+	img_size from data_length of an extant record.  That's zero, so,
+	so whilst the flash was erased, no data was copied in!
+	(fis_list): Added a -d to get the data length field displayed.
+
+2001-03-15  Jesper Skov  <jskov@redhat.com>
+
+	* src/main.c: Make use of script variable conditional on flash.
+
+	* include/redboot.h: Changed type of workspace_end to silence
+	warning.
+
+	* src/net/ping.c (do_ping): Fix warning.
+	* src/net/pktbuf.c (__pktbuf_dump): Fix warnings.
+
+2001-03-14  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_go): Make timeout code consistent with other
+	versions, e.g. script timeout.  Also, allow a script to continue
+	if it was in effect when 'go' was called and ^C was typed.
+
+	* src/flash.c (fis_create): Ask for additional user verification
+	if any [important] parameters are being assumed [left out by user].
+	This just adds a level of safety in the presence of assumptions.
+
+2001-03-13  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c: Define 'workspace' based on MLT files, rather than
+	simply using end of RAM area.
+
+	* src/flash.c: Use 'workspace' for scratch area.
+
+	* include/redboot.h: Define new variables 'workspace_XXX' to specify
+	ares used by RedBoot for scratch, etc.
+
+2001-03-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/decompress.c: Removed Z_BAD_CRC hack. zlib does CRC checking
+	now.
+
+2001-03-09  Jesper Skov  <jskov@redhat.com>
+
+	* src/misc_funs.c: Added strncpy.
+	* include/redboot.h: And declaration.
+
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* src/load.c (do_load): Added decompression support.
+	* src/flash.c (fis_load): Same.
+
+	* src/decompress.c: Added. Interfaces the zlib API.
+
+	* include/redboot.h: Added some definitions used by decompression
+	code.
+
+	* cdl/redboot.cdl: Added option to control size of zlib bounce
+	buffer.
+
+2001-03-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/main.c (cyg_start): Make sure communication channels are
+	initialized.
+
+2001-03-03  Gary Thomas  <gthomas@redhat.com>
+
+	* src/main.c (do_idle): New function - all 'idle' handling is here.
+
+	* src/io.c (mon_read_char_with_timeout): Improve timeout handling
+	when scanning for a console by applying the minimum possible value
+	(1 ms) to each channel, accumulating the total value.  The previous
+	algorithm was quite poor on systems where there is no buffering,
+	i.e. serial channels with no FIFOs, because each channel would 
+	wait for T/N (t = total timeout, N = number channels).  This might
+	possibly have been much longer than the devices could tolerate and
+	still return valid data.
+
+2001-03-01  Gary Thomas  <gthomas@redhat.com>
+
+	* src/version.c: Add 'bootstrap' to banner so the world can see
+	more of what RedBoot's all about.
+
+2001-02-28  Gary Thomas  <gthomas@redhat.com>
+
+	* include/redboot.h: Fix prioritization of 'init' table entries.
+
 2001-02-26  Gary Thomas  <gthomas@redhat.com>
 
 	* include/redboot.h (RedBoot_INIT_PRIO): Slight change - avoid
@@ -146,6 +300,7 @@
 
 	* src/syscall.c (__do_syscall):
 	Added SYS_meminfo syscall.
+	This is used by the MIPS3264 GNUPro runtime.
 
 	* src/net/net_io.c (net_io_getc_nonblock):
 	Telnet escape processing temporarily disabled because it does not

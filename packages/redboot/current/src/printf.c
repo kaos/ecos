@@ -119,6 +119,7 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
                 zero_fill = true;
                 left_prec = sizeof(unsigned long)*2;
             case 'd':
+            case 'u':
             case 'x':
             case 'X':
                 val = va_arg(ap, long);
@@ -128,6 +129,7 @@ _vprintf(void (*putc)(char c), char *fmt0, va_list ap)
                         sign = '-';
                         val = -val;
                     }
+                case 'u':
                     length = _cvt(val, buf, 10, "0123456789");
                     break;
                 case 'p':

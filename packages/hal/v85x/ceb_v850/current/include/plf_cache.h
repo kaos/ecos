@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -34,36 +34,22 @@
 //=============================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):   nickg
-// Contributors:        nickg
-// Date:        1998-02-17
-// Purpose:     Cache control API
-// Description: The macros defined here provide the HAL APIs for handling
-//              cache control operations.
+// Author(s):    nickg
+// Contributors: nickg,jlarmour
+// Date:         2001-03-21
+// Purpose:      Cache control API
+// Description:  The macros defined here provide the HAL APIs for handling
+//               cache control operations.
 // Usage:
-//              #include <cyg/hal/plf_cache.h>
-//              ...
+//               #include <cyg/hal/plf_cache.h>
+//               ...
 //              
 //
 //####DESCRIPTIONEND####
 //
 //=============================================================================
 
-#include <pkgconf/hal.h>
-#include <cyg/infra/cyg_type.h>
-
-//=============================================================================
-
-// No caches defined on this platform
-#define HAL_ICACHE_ENABLE()
-#define HAL_ICACHE_DISABLE()
-#define HAL_ICACHE_SYNC()
-#define HAL_ICACHE_INVALIDATE_ALL()
-
-#define HAL_DCACHE_ENABLE()
-#define HAL_DCACHE_DISABLE()
-#define HAL_DCACHE_SYNC()
-#define HAL_DCACHE_INVALIDATE_ALL()
+// Nothing to do here
 
 //-----------------------------------------------------------------------------
 #endif // ifndef CYGONCE_PLF_CACHE_H

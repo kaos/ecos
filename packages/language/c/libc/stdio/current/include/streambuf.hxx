@@ -150,6 +150,6 @@ public:
 
 #endif // if defined(CYGSEM_LIBC_STDIO_WANT_BUFFERED_IO)
 
-#endif CYGONCE_LIBC_STDIO_STREAMBUF_HXX multiple inclusion protection
+#endif // CYGONCE_LIBC_STDIO_STREAMBUF_HXX multiple inclusion protection
 
 // EOF streambuf.hxx

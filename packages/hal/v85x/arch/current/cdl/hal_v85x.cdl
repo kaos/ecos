@@ -23,7 +23,7 @@
 #                                                                          
 # The Initial Developer of the Original Code is Red Hat.                   
 # Portions created by Red Hat are                                          
-# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+# Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                     
 # All Rights Reserved.                                                     
 # -------------------------------------------                              
 #                                                                          
@@ -32,8 +32,8 @@
 ######DESCRIPTIONBEGIN####
 #
 # Author(s):      gthomas
-# Contributors:
-# Date:           2000-03-09
+# Contributors:   jlarmour
+# Date:           2001-03-21
 #
 #####DESCRIPTIONEND####
 #
@@ -46,7 +46,7 @@ cdl_package CYGPKG_HAL_V85X {
     include_dir   cyg/hal
     define_header hal_v85x.h
     description   "
-        The NEC architecture HAL package provides generic support
+        The NEC V85x architecture HAL package provides generic support
         for this processor architecture. It is also necessary to
         select a CPU variant and a specific target platform HAL
         package."
@@ -78,18 +78,6 @@ cdl_package CYGPKG_HAL_V85X {
         @rm vectors.tmp
     }
 
-    cdl_option CYGHWR_HAL_V85X_CPU_FREQ {
-        display "CPU frequency in MHz"
-        flavor  data
-        legal_values 5 10 17
-        default_value 17
-        description "
-           This option contains the frequency of the CPU in MegaHertz.
-           Choose the frequency to match the processor you have. This
-           may affect thing like serial device, interval clock and
-           memory access speed settings."
-    }
-
     cdl_option CYGSEM_HAL_V85X_INLINE_INTERRUPT_FUNCTIONS {
         display        "In-line interrupt functions"
         flavor         bool
@@ -99,5 +87,12 @@ cdl_package CYGPKG_HAL_V85X {
            e.g. HAL_ENABLE_INTERRUPTS() to be coded as either in-line
            assembly code or real functions.  The primary motivations
            for the latter would be debugging, tracing, etc."
+    }
+
+    cdl_interface CYGINT_HAL_V85X_ICE_DEBUG {
+        display        "Debugging via ICE support"
+        description "
+           This interface is enabled when the underlying variant or platform
+           supports ICE debugging."
     }
 }

@@ -1068,7 +1068,7 @@ irq_level:
 #ifdef CYGDBG_HAL_DEBUG_GDB_INCLUDE_STUBS
         .balign 16
 __GDB_stack_base:
-        .rept 0x400
+        .rept CYGNUM_HAL_COMMON_INTERRUPTS_STACK_SIZE // rather than 1k
         .byte 0
         .endr
 __GDB_stack:

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                             
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -193,6 +193,7 @@ flash_erase(void *addr, int len, void **err_addr)
     printf("... Erase from %p-%p: ", (void*)block, (void*)end_addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+    FLASH_Enable(block, end_addr);
     while (block < end_addr) {
         // Supply the blocksize for a gross check for erase success
         stat = (*_flash_erase_block)(block, flash_info.block_size);
@@ -204,6 +205,7 @@ flash_erase(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
+    FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
@@ -214,7 +216,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
 {
     int stat = 0;
     int size;
-    typedef int code_fun(unsigned short *, unsigned short *, int);
+    typedef int code_fun(unsigned short *, unsigned short *, int, unsigned long, int);
     code_fun *_flash_program_buf;
     unsigned short *addr = (unsigned short *)_addr;
     unsigned short *data = (unsigned short *)_data;
@@ -244,12 +246,18 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
            (void*)(((unsigned long)data)+len), (void*)addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+    FLASH_Enable(addr, addr+len);
     while (len > 0) {
         size = len;
         if (size > flash_info.block_size) size = flash_info.block_size;
 
-        stat = (*_flash_program_buf)(addr, data, size);
+        stat = (*_flash_program_buf)(addr, data, size, 
+                                     flash_info.block_mask, flash_info.buffer_size);
         stat = flash_hwr_map_error(stat);
+        if (memcmp(addr, data, size) != 0) {
+            stat = 0x0BAD;
+            printf("V");
+        }
         if (stat) {
             *err_addr = (void *)addr;
             break;
@@ -259,6 +267,7 @@ flash_program(void *_addr, void *_data, int len, void **err_addr)
         addr += size/sizeof(*addr);
         data += size/sizeof(*data);
     }
+    FLASH_Disable(addr, addr+len);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
@@ -301,6 +310,7 @@ flash_lock(void *addr, int len, void **err_addr)
     printf("... Lock from %p-%p: ", block, end_addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+    FLASH_Enable(block, end_addr);
     while (block < end_addr) {
         stat = (*_flash_lock_block)(block);
         stat = flash_hwr_map_error(stat);
@@ -311,6 +321,7 @@ flash_lock(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
+    FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
@@ -351,6 +362,7 @@ flash_unlock(void *addr, int len, void **err_addr)
     printf("... Unlock from %p-%p: ", block, end_addr);
 
     HAL_FLASH_CACHES_OFF(d_cache, i_cache);
+    FLASH_Enable(block, end_addr);
     while (block < end_addr) {
         stat = (*_flash_unlock_block)(block, flash_info.block_size, flash_info.blocks);
         stat = flash_hwr_map_error(stat);
@@ -361,6 +373,7 @@ flash_unlock(void *addr, int len, void **err_addr)
         block += flash_info.block_size / sizeof(*block);
         printf(".");
     }
+    FLASH_Disable(block, end_addr);
     HAL_FLASH_CACHES_ON(d_cache, i_cache);
     printf("\n");
     return (stat);
@@ -397,6 +410,8 @@ flash_errmsg(int err)
         return "Driver timed out waiting for device";
     case FLASH_ERR_DRV_WRONG_PART:
         return "Driver does not support device";
+    case FLASH_ERR_LOW_VOLTAGE:
+        return "Device reports low voltage";
     default:
         return "Unknown error";
     }

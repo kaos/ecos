@@ -177,6 +177,17 @@
 	# Initialize CPU
 	.macro	hal_cpu_init
 
+#if defined(CYGPKG_HAL_MIPS_MIPS32) || defined(CYGPKG_HAL_MIPS_MIPS64)
+	# Initialize/clear watchpoint registers
+	mvatc0	zero, C0_WATCHLO
+	nop
+	nop
+	nop
+	mtc0	zero, C0_WATCHHI 
+	nop
+	nop
+	nop
+#endif /* CYGPKG_HAL_MIPS_MIPS32 || CYGPKG_HAL_MIPS_MIPS64 */
 	mtc0	zero,cause		# zero cause reg
 	nop
 	la	v0,INITIAL_SR 		# initialize status register

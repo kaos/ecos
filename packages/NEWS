@@ -1,3 +1,28 @@
+* Ported to Compaq StrongARM SA1110 PocketPC (iPAQ), including keypad,
+  touch screen, watchdog, FLASH, PCMCIA and Compact Flash drivers.
+  Also includes RedBoot, with support for booting ARM Linux.
+  Derived from an initial port by Richard Panton of 3G Lab.
+  http://www.3glab.org/
+* Added flash verification checksums to RedBoot.
+* Added watchdog driver for Intel SA11x0 StrongARM.
+* Added generic Intel FlashFile 28Fxxx flash driver.
+* Added generic Intel StrataFLASH driver.
+* Support flash and ROMRAM startup for V850 HAL and Cosmo CEB board; also
+  adding support for the NEC V850/SB1 CPU variant. Also support for
+  thread debugging via ICE and gdbserv.
+* Added support for MIPS32/64 MIPS variants and Atlas platform, using both
+  the MIPS32 4Kc and MIPS64 5Kc processor modules. Includes PCI, serial,
+  ethernet and flash drivers. This is a RedBoot-only port at this time, not
+  full eCos.
+* Added simple ROM based file system support, contributed by 
+  Richard Panton of 3G Lab.
+* Added support for MIPS QED RM7000 variant and Ocelot board, including
+  PCI, ethernet and FLASH support.
+* Added gzip/zlib decompression support to RedBoot.
+* Added zlib decompression library.
+* GDB stubs no longer reboot the board in response to a 'k' packet. Instead
+  from within GDB a "maintenance packet r" must be sent, followed by a
+  "detach". Then you can reconnect to the board.a
 * Added generic AMD AM29xxxxx flash driver based on MBX driver, and make
   the MBX use it.
 * Added RedBoot support to PID target.

@@ -1,3 +1,86 @@
+2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/dbg-threads-api.h: Add dbg_thread_id() function prototype.
+
+2001-03-21  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_if.c (hal_if_init): Add explicit typecast when setting 
+	version. Needed when sizeof(int) < sizeof(CYG_ADDRWORD).
+
+2001-03-21  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c (hal_if_init): Added warning about debugging.
+
+2001-03-20  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* include/hal_if.h: Add argument names to __call_if_flash_cfg_op_fn_t
+
+2001-03-16  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_stub.c (__build_t_packet): Add hook for adding arch-specific
+	registers to T packet.
+	(handle_exception_cleanup): Skip orig_registers past breakpoint so we
+	return to original context rather than hit breakpoint again.
+
+2001-03-16  Hugo Tyson  <hmt@redhat.com>
+
+	* include/hal_if.h: Define types and slots and macros themed with
+	the phrase CALL_IF_FLASH_CFG_OP following the pattern of what's
+	there for the other slots.  Thus CYGNUM_CALL_IF_FLASH_CFG_OP,
+	CYGACC_CALL_IF_FLASH_CFG_OP(...) and __call_if_flash_cfg_op_fn_t
+	are all newly defined.  Also CYGNUM_CALL_IF_FLASH_CFG_GET which is
+	the only operation supported in this initial version.
+
+	Also changed many typedef'd function pointers to not include the
+	pointerness; that way the type can be used to validate the
+	correctness of arguments in the called function.
+
+	* src/hal_stub.c (__reset): Minor change to reset function
+	handling; pointerness of typedef removed.
+
+	* src/hal_if.c (flash_config_op): New function to call flash ops
+	in RedBoot.  This is so that RedBoot can manage ethernet addresses
+	for you, and the application can get at the data "cleanly".
+	(hal_if_init): Install flash_config_op() in the table if defined.
+
+2001-03-12  Mark Salter  <msalter@redhat.com>
+
+	* src/hal_misc.c (cyg_hal_user_break): Use macro to find PC
+	in saved regs.
+
+	* src/generic-stub.c: Add support for harvard memories.
+	* src/bplist-dynamic.c: Ditto.
+	* include/generic-stub.h: Ditto.
+	* include/hal_stub.h: Add dummy harvard memory macros for
+	princeton memory systems.
+
+2001-03-12  Jesper Skov  <jskov@redhat.com>
+
+	* src/drv_api.c (cyg_drv_interrupt_detach): Fix missing intr->
+	change.
+
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal.cdl: Change sense of
+	CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED to new
+	CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED.
+
+2001-03-07  Jesper Skov  <jskov@redhat.com>
+
+	* src/drv_api.c: Use macro to provide symbol alias.
+
+2001-03-05  Jesper Skov  <jskov@redhat.com>
+
+	* src/hal_if.c (hal_if_diag_init): Ensure the function only
+	executes once.
+
+2001-03-02  Gary Thomas  <gthomas@redhat.com>
+
+	* cdl/hal.cdl: 
+	* include/hal_if.h: 
+	* src/hal_if.c (hal_if_init): 
+	Support platform specific initializations.
+
 2001-02-26  Mark Salter  <msalter@redhat.com>
 
 	* src/generic-stub.c (__process_packet): Change 'k' packet to cause

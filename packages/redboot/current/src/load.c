@@ -46,10 +46,19 @@
 #include <redboot.h>
 #include <xyzModem.h>
 
+#ifdef CYGPKG_COMPRESS_ZLIB
+static unsigned char _buffer[CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER];
+static _pipe_t load_pipe;
+#endif
+
 // Buffer used by redboot_getc
 getc_info_t getc_info;
 
-static char usage[] = "[-r] [-v] [-h <host>] [-m {TFTP | xyzMODEM}]\n"
+static char usage[] = "[-r] [-v] "
+#ifdef CYGPKG_COMPRESS_ZLIB
+                      "[-d] "
+#endif
+                      "[-h <host>] [-m {TFTP | xyzMODEM}]\n"
                       "        [-b <base_address>] <file_name>";
 
 // Exported CLI function
@@ -59,10 +68,11 @@ RedBoot_cmd("load",
             do_load 
     );
 
-static void
+static unsigned long
 load_elf_image(int (*getc)(void))
 {
     printf("ELF images not supported\n");
+    return 0;
 }
 
 //
@@ -102,7 +112,7 @@ _hex2(int (*getc)(void), int len, long *sum)
 // data which has only one section, e.g. a ROM image.
 //
 #define MAX_LINE 80
-static void
+static unsigned long
 load_srec_image(int (*getc)(void), unsigned long base)
 {
     char line[MAX_LINE];
@@ -122,14 +132,14 @@ load_srec_image(int (*getc)(void), unsigned long base)
         if (c != 'S') {
             printf("Invalid S-record at offset %p, input: %c\n", 
                    (void *)offset, c);
-            return;
+            return 0;
         }
         type = (*getc)();
         offset += 2;
         sum = 0;
         if ((count = _hex2(getc, 1, &sum)) < 0) {
             printf("Bad S-record count at offset %p\n", (void *)offset);
-            return;
+            return 0;
         }
         offset += 1;
         switch (type) {
@@ -153,9 +163,9 @@ load_srec_image(int (*getc)(void), unsigned long base)
             if ((unsigned long)(addr-addr_offset) < lowest_address) {
                 lowest_address = (unsigned long)(addr - addr_offset);
             }
-            if ((addr < ram_start) || (addr > ram_end)) {
+            if ((addr < user_ram_start) || (addr > user_ram_end)) {
                 printf("Attempt to load S-record data to address: %p [not in RAM]\n", (void*)addr);
-                return;
+                return 0;
             }
             count -= ((type-'1'+2)+1);
             offset += count;
@@ -170,7 +180,7 @@ load_srec_image(int (*getc)(void), unsigned long base)
             if (cksum != sum) {
                 printf("*** Warning! Checksum failure - Addr: %lx, %02lX <> %02lX\n", 
                        (unsigned long)base_addr, sum, cksum);
-                return;
+                return 0;
             }
             if ((unsigned long)(addr-addr_offset) > highest_address) {
                 highest_address = (unsigned long)(addr - addr_offset);
@@ -185,14 +195,15 @@ load_srec_image(int (*getc)(void), unsigned long base)
             printf("Entry point: %p, address range: %p-%p\n", 
                    (void*)entry_address, (void *)lowest_address, (void *)highest_address);
             while ((c = (*getc)()) > 0) ;  // Swallow rest of data
-            return;
+            return highest_address;
         default:
             printf("Invalid S-record at offset 0x%lx, type: %x\n", 
                    (unsigned long)offset, type);
-            return;
+            return 0;
         }
         while ((c = (*getc)()) != '\n') offset++;
     }
+    return 0;
 }
 
 
@@ -261,10 +272,14 @@ do_load(int argc, char *argv[])
     bool hostname_set;
     char *hostname;
 #endif
+#ifdef CYGPKG_COMPRESS_ZLIB
+    bool decompress;
+#endif
     unsigned long base = 0;
+    unsigned long end = 0;
     char type[4];
     char *filename = 0;
-    struct option_info opts[5];
+    struct option_info opts[6];
 
 #ifdef CYGPKG_REDBOOT_NETWORKING
     memset((char *)&host, 0, sizeof(host));
@@ -291,8 +306,14 @@ do_load(int argc, char *argv[])
 #ifdef CYGPKG_REDBOOT_NETWORKING
     init_opts(&opts[4], 'h', true, OPTION_ARG_TYPE_STR, 
               (void **)&hostname, (bool *)&hostname_set, "host name (IP address)");
-    num_options = 5;
+    num_options++;
 #endif
+#ifdef CYGPKG_COMPRESS_ZLIB
+    init_opts(&opts[5], 'd', false, OPTION_ARG_TYPE_FLG, 
+              (void **)&decompress, 0, "decompress");
+    num_options++;
+#endif
+
     if (!scan_opts(argc, argv, 1, opts, num_options, (void *)&filename, OPTION_ARG_TYPE_STR, "file name"))
     {
         return;
@@ -340,8 +361,8 @@ do_load(int argc, char *argv[])
         return;
     }
     if (base_addr_set &&
-        ((base < (unsigned long)ram_start) ||
-         (base > (unsigned long)ram_end))) {
+        ((base < (unsigned long)user_ram_start) ||
+         (base > (unsigned long)user_ram_end))) {
         printf("Specified address (%p) is not in RAM.\n", (void*)base);
         return;
     }
@@ -378,19 +399,55 @@ do_load(int argc, char *argv[])
             if (!base_addr_set) {
                 printf("Raw load requires a memory address\n");
             } else {
-                unsigned char *mp = (unsigned char *)base;
-                while ((res = redboot_getc()) >= 0) {
-                    *mp++ = res;
+#ifdef CYGPKG_COMPRESS_ZLIB
+                if (decompress) {
+                    _pipe_t* p = &load_pipe;
+                    p->out_buf = (unsigned char*) base;
+                    p->out_size = 0;
+                    p->in_buf = _buffer;
+                
+                    err = (*_dc_init)(p);
+
+                    while (0 == err) {
+                        p->in_avail = 0;
+                        for (i = 0; i < CYGNUM_REDBOOT_LOAD_ZLIB_BUFFER; i++) {
+                            res = redboot_getc();
+                            if (res < 0) break;
+                            p->in_buf[p->in_avail++] = res;
+                        }
+                        if (0 == p->in_avail) break;
+
+                        err = (*_dc_inflate)(p);
+                    }
+
+                    // Free used resources, do final translation of
+                    // error value.
+                    err = (*_dc_close)(p, err);
+
+                    if (0 != err && p->msg)
+                        printf("zlib: %s\n", p->msg);
+
+                    end = (unsigned long) base + p->out_size;
+                } else // dangling block
+#endif
+                {
+                    unsigned char *mp = (unsigned char *)base;
+                    while ((res = redboot_getc()) >= 0) {
+                        *mp++ = res;
+                    }
+                    err = 0;
+                    end = (unsigned long) mp;
                 }
-                printf("Raw file loaded %p-%p\n", (void *)base, (void *)mp);
+                if (0 == err)
+                    printf("Raw file loaded %p-%p\n", (void *)base, (void *)end);
             }
         } else {
             // Treat data as some sort of executable image
             if (strncmp(&type[1], "ELF", 3) == 0) {
-                load_elf_image(redboot_getc);
+                end = load_elf_image(redboot_getc);
             } else if ((type[0] == 'S') &&
                        ((type[1] >= '0') && (type[1] <= '9'))) {
-                load_srec_image(redboot_getc, base);
+                end = load_srec_image(redboot_getc, base);
             } else {
                 printf("Unrecognized image type: %lx\n", *(unsigned long *)type);
             }

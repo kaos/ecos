@@ -1,3 +1,33 @@
+2001-03-13  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/ser_generic_16x5x.cdl: Rename 
+	CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO_OPTIONS to
+	CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO and make it a boolean. Clarify
+	descriptions a little.
+
+	* src/ser_16x5x.c (serial_config_port): Only program FCR if FIFO
+	support requested.
+	Don't bother with intermediate _fifo_thresh.
+	Detabify.
+
+2001-03-13  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/ser_generic_16x5x.cdl: Removed the default value.
+
+2001-03-09  Julian Smart  <julians@redhat.com>
+	Removed default value for flavor none in
+	CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO_OPTIONS since it
+	causes an assert in libcdl
+
+2001-03-05  Jesper Skov  <jskov@redhat.com>
+	2001-02-15  Dave Airlie <airlied@parthus.com>
+
+        * src/ser_16x5x.c (serial_config_port): Add support for setting
+        a FIFO RX Threshold via CDL
+
+        * cdl/ser_generic_16x5x.cdl: Add support for setting a FIFO
+          RX threshold via CDL
+
 2001-01-24  Dave Airlie  <airlied@parthus.com>
 
 	* src/ser_16x5x.c (pc_serial_DSR): Allow RX timeouts to be interpreted

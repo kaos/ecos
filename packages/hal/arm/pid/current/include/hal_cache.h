@@ -85,6 +85,12 @@
 // Purge contents of data cache
 #define HAL_DCACHE_PURGE_ALL()
 
+// Query the state of the data cache (does not affect the caching)
+#define HAL_DCACHE_IS_ENABLED(_state_)          \
+    CYG_MACRO_START                             \
+    (_state_) = 0;                              \
+    CYG_MACRO_END
+
 // Set the data cache refill burst size
 //#define HAL_DCACHE_BURST_SIZE(_size_)
 
@@ -146,6 +152,12 @@
 
 // Synchronize the contents of the cache with memory.
 #define HAL_ICACHE_SYNC()
+
+// Query the state of the instruction cache (does not affect the caching)
+#define HAL_ICACHE_IS_ENABLED(_state_)          \
+    CYG_MACRO_START                             \
+    (_state_) = 0;                              \
+    CYG_MACRO_END
 
 // Set the instruction cache refill burst size
 //#define HAL_ICACHE_BURST_SIZE(_size_)

@@ -23,7 +23,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -32,7 +32,7 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg, gthomas
+// Contributors: nickg, gthomas, jlarmour
 // Date:         2000-03-10
 // Purpose:      HAL miscellaneous functions
 // Description:  This file contains miscellaneous functions provided by the
@@ -209,11 +209,7 @@ static unsigned char led_bits[] = {
         LED(0,0,0,0,0,0,0,0), // 0x7F
 };
 
-#ifdef CYG_HAL_STARTUP_ROM
 #define DELAY 10000
-#else
-#define DELAY 100000
-#endif
 
 void
 show_led(int p)
@@ -270,12 +266,12 @@ hal_clock_initialize(cyg_int32 period)
 {
     volatile unsigned char *tmc = (volatile unsigned char *)V850_REG_TMC1;
     volatile unsigned char *crc = (volatile unsigned char *)V850_REG_CRC1;
-    volatile unsigned char *prm = (volatile unsigned char *)V850_REG_PRM1;
+    volatile unsigned char *prm = (volatile unsigned char *)V850_REG_PRM10;
     volatile unsigned short *cmp0 = (volatile unsigned short *)V850_REG_CR10;
     volatile unsigned short *cmp1 = (volatile unsigned short *)V850_REG_CR11;
     *tmc = 0x00;  // Halt timer
     *crc = 0x00;  // Select simple compare mode
-    *prm = 0x01;  // System clock / 4 = 4250KHz
+    *prm = 0x01;  // System clock / 4
     *cmp0 = period;
     *cmp1 = period;
     *tmc = 0x0C;  // Continuous, reset mode (interval timer)
@@ -298,7 +294,8 @@ cyg_uint32 hal_clock_read(void)
 }
 
 
-extern void _hal_thread_load_context(HAL_SavedRegisters **to);
+extern void _hal_thread_load_context(HAL_SavedRegisters **to)
+     CYGBLD_ATTRIB_NORET;
 extern void _hal_thread_switch_context(HAL_SavedRegisters **to, HAL_SavedRegisters **from);
 
 void hal_thread_load_context(CYG_ADDRESS to)

@@ -65,7 +65,8 @@ cdl_package CYGPKG_HAL_ARM_SA11X0 {
         active_if     { CYG_HAL_STARTUP == "ROM" }
         flavor        data
         legal_values  59000 73700 88500 103200 118000 132700 147500 162200 176900 191700 206400 221200
-        default_value 221200
+        default_value { CYGHWR_HAL_ARM_SA11X0_PROCESSOR_CLOCK_OVERRIDE_DEFAULT ?
+                        CYGHWR_HAL_ARM_SA11X0_PROCESSOR_CLOCK_OVERRIDE_DEFAULT : 221200}
         description   "
            The SA-1100 processor can run at various frequencies.
            These values are expressed in KHz.  Note that there are

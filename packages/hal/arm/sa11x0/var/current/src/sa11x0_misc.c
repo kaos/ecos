@@ -99,7 +99,6 @@ void hal_hardware_init(void)
     HAL_ICACHE_ENABLE();
 }
 
-
 // -------------------------------------------------------------------------
 static cyg_uint32  clock_period;
 

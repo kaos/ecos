@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.          
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -34,9 +34,9 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    nickg
-// Contributors: nickg
-// Date:         1999-02-17
+// Author(s):    nickg,gthomas
+// Contributors: nickg,jlarmour
+// Date:         2001-03-21
 // Purpose:      Define architecture abstractions
 // Usage:        #include <cyg/hal/hal_arch.h>
 //              
@@ -51,8 +51,6 @@
 
 //--------------------------------------------------------------------------
 // Processor saved states:
-// The layout of this structure is also defined in "arch.inc", for assembly
-// code. Do not change this without changing that (or vice versa).
 
 #define CYG_HAL_NEC_REG CYG_WORD32
 #define CYG_HAL_NEC_REG_SIZE 4

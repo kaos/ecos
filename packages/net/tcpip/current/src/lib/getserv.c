@@ -2,7 +2,7 @@
 //
 //      lib/getserv.c
 //
-//      getservbyname(), getservbynumber()
+//      getservbyname(), getservbyport()
 //
 //==========================================================================
 //####COPYRIGHTBEGIN####
@@ -79,7 +79,7 @@ getservbyname(const char *name, const char *proto)
 }
 
 struct servent *
-getservbynumber(const int num, const char *proto)
+getservbyport(const int num, const char *proto)
 {
     struct servent *p = services;
     while (p->s_name) {

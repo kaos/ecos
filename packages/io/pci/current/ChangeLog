@@ -1,3 +1,11 @@
+2001-02-28  Hugo Tyson  <hmt@redhat.com>
+
+	* tests/pci1.c (pci_scan): Added a new function to re-scan the
+	device list after configuring to let a human confirm that we truly
+	are seeing distinct devices - ie. do they retain their distinct
+	resource allocations in the BARs?  This was useful to me in
+	investigating a recalcitrant target...
+
 2001-02-02  Jesper Skov  <jskov@redhat.com>
 
 	* tests/pci2.c (pci_test): Removed bogus check for 1MB IO limit.

@@ -26,7 +26,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          
@@ -35,8 +35,8 @@
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    nickg
-// Contributors: nickg, gthomas
-// Date:         1998-03-02
+// Contributors: nickg, gthomas,jlarmour
+// Date:         2001-03-21
 // Purpose:      HAL Support for Kernel Diagnostic Routines
 // Description:  Diagnostic routines for use during kernel development.
 // Usage:        #include <cyg/hal/hal_diag.h>
@@ -45,31 +45,13 @@
 //
 //===========================================================================*/
 
-#include <pkgconf/hal.h>
-
-#include <cyg/infra/cyg_type.h>
-
 /*---------------------------------------------------------------------------*/
-
-#if defined(CYGSEM_HAL_VIRTUAL_VECTOR_DIAG)
 
 #include <cyg/hal/hal_if.h>
 
 #define HAL_DIAG_INIT()          hal_if_diag_init()
 #define HAL_DIAG_WRITE_CHAR(_c_) hal_if_diag_write_char(_c_)
 #define HAL_DIAG_READ_CHAR(_c_)  hal_if_diag_read_char(&_c_)
-
-#else
-
-externC void hal_diag_init(void);
-externC void hal_diag_write_char(char c);
-externC void hal_diag_read_char(char *c);
-
-#define HAL_DIAG_INIT()          hal_diag_init()
-#define HAL_DIAG_WRITE_CHAR(_c_) hal_diag_write_char(_c_)
-#define HAL_DIAG_READ_CHAR(_c_)  hal_diag_read_char(&_c_)
-
-#endif
 
 /*---------------------------------------------------------------------------*/
 /* end of hal_diag.h                                                         */

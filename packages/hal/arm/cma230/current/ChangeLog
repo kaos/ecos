@@ -1,3 +1,8 @@
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_cma230.cdl: Does not guarantee virtual vector
+	support.
+
 2001-02-20  Jesper Skov  <jskov@redhat.com>
 
 	* cdl/hal_arm_cma230.cdl: Also enable -mthumb-interwork when

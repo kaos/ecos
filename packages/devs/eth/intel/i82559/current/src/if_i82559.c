@@ -53,36 +53,63 @@
 //               driver polls the completion bit in the packet status
 //               word instead.
 //
-//               Platform code must provide this vector:
-//               CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT if it
-//               requires the interrupts to be handled via demuxers.
+//               Platform code may provide this vector:
+//               CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT if it
+//               requires the interrupts to be handled via demuxers
+//               attached to a distinct interrupt.
+//
+//               Platform code may alternatively define:
+//               CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL if it is necessary
+//               to demux all interrupt sources - for example if they are
+//               wire-or'd together on some hardware but distinct on
+//               others.  In this circumstance it is permitted for
+//               cyg_pci_translate_interrupt [HAL_PCI_TRANSLATE_INTERRUPT]
+//               to return invalid for 2nd and subsequent devices.
+//
+//               Platform code can also define these three:
+//               CYGPRI_DEVS_ETH_INTEL_I82559_MASK_INTERRUPTS(p_i82559,old)
+//               CYGPRI_DEVS_ETH_INTEL_I82559_UNMASK_INTERRUPTS(p_i82559,old)
+//               CYGPRI_DEVS_ETH_INTEL_I82559_ACK_INTERRUPTS(p_i82559)
+//               which are particularly useful when nested interrupt
+//               management is needed (which is always IMHO).
+//
+//               Platform code can define this:
+//               CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559)
+//               to detect a dropped interrupt and loop again or
+//               direct-call the DSR to reschedule the delivery routine.
+//               Only a problem on edge-triggered interrupt systems.
 //
 //               Platform code can also provide this macro:
 //               CYGPRI_DEVS_ETH_INTEL_I82559_INTERRUPT_ACK_LOOP(p_i82559)
 //               to handle delaying for acks to register on the interrupt
 //               controller as necessary on the EBSA.
 //
-//        FIXME: IN/OUT macros for accessing PCI IO space are probably
-//               broken on proper BE systems. Tested on a board with
-//               a Galileo which seems to do some weird stuff to 8/16
-//               bit word addressing.
+//               Platform can define CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA()
+//               as an external means to get ESAs, possibly from RedBoot
+//               configuration info that's stored in flash memory.
+//
+//               Platform def CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+//               removes all code for dealing with the EEPROM for those
+//               targets where there is none fitted.  Either an external
+//               means to get ESAs should be used, or we must rely on
+//               hard-wiring the ESA's into each executable by means of the
+//               usual CDL configuration.
+//
+//
 //        FIXME: replace -1/-2 return values with proper E-defines
-//        FIXME: eth_set_mac_address and eth_set_promiscuous_mode
-//               failures are not handled properly [try writing
-//               endian swapped cmd - CU starts, but wedges]
-//        FIXME: For 82557/8 compatibility the eth_set_config and
-//               eth_set_promiscuous_mode functions probably need
-//               some tweaking - config bits differ slightly but
-//               crucially.
+//        FIXME: For 82557/8 compatibility i82559_configure() function
+//               probably needs some tweaking - config bits differ
+//               slightly but crucially.
 //        FIXME: EEPROM code not tested on a BE system.
-//        FIXME: Apparently promiscuous mode cannot be disabled (on
-//               BE systems?)
 //
 //####DESCRIPTIONEND####
 //
 //==========================================================================
 
 #include <pkgconf/system.h>
+#ifdef CYGPKG_IO_ETH_DRIVERS
+#include <pkgconf/io_eth_drivers.h>
+#endif
 #include <pkgconf/devs_eth_intel_i82559.h>
 #include <cyg/infra/cyg_type.h>
 #include <cyg/infra/cyg_ass.h>
@@ -116,10 +143,29 @@
 #include CYGDAT_DEVS_ETH_INTEL_I82559_INL
 
 // ------------------------------------------------------------------------
-// Platform specific
+// Check on the environment.
+// 
+// These are not CDL type config points; they are set up for your platform
+// in the platform driver's include file and that's that.  These messages
+// are for the eCos driver writer, not config tool users.
 
-#define CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE (CYGARC_UNCACHED_ADDRESS(0x0ff00000))
-#define CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE 0x00100000
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
+#error Both a separate demux interrupt *and* DEMUX_ALL are defined
+#endif
+#endif
+
+#ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+#error This platform has no EEPROM, yet WRITE_EEPROM is enabled
+#endif
+#endif
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+#error This platform has EEPROM, yet external ..._GET_ESA is defined
+#endif
+#endif
 
 // ------------------------------------------------------------------------
 
@@ -129,9 +175,103 @@
 #define DEBUG_EE       // Some EEPROM specific retries &c
 #endif
 
+#ifdef CYGDBG_USE_ASSERTS
+static struct {
+    int can_send;
+    int deliver;
+    int stats;
+    int waitcmd_timeouts;
+    int waitcmd_timeouts_cu;
+    int lockup_timeouts;
+} missed_interrupt = { 0,0,0, 0,0, 0 };
+#endif
+
 #define os_printf diag_printf
 #define db_printf diag_printf
 
+// ------------------------------------------------------------------------
+//
+//                             MEMORY ADDRESSING
+// 
+// There is scope for confusion here; we deal with LE/BE systems and
+// addressing issues in two separate ways depending on the type of access
+// in question.
+//
+// 1) IO-style access to the device regsiters over the PCI bus
+// 2) Memory access to build and read the structures in shared memory
+// 
+// In detail:
+// 
+// 1) IO-style access to the device regsiters over the PCI bus
+// 
+// All such access is via macros which perform byte-swapping as necessary
+// for the endianness of the CPU.  These macros are called INL, INW, INB
+// and OUTL, OUTW, OUTB - for Long (32) Word (16) and Byte (8).  Intel
+// nomenclature seems to have crept in here for shorts.
+// 
+// Consequently, all the constants only have to be expressed once, in their
+// true LE format - bit 15 is 0x8000, bit 0 is 1.
+// 
+// All the offsets are also only expressed once.  This is OK so long as GIB
+// endian addressing (sic, see below) is not employed - or so long as is
+// does not affect the PCI bus accesses.
+//
+// 
+// 2) Memory access to build and read the structures in shared memory
+// 
+// These accesses are by means of peek and poke to an address created from
+// a base + offset.  No swapping occurs within the access so all constants
+// and flags need to be defined twice, once for BE and once for LE
+// accesses.  Worse, for BE, constants need to be defined in flavours for
+// 16-bit versus 32-bit accesses, ie. 0x8000 sets bit 7 only in BE; for a
+// 32-bit access you must instead write 0x80000000 to set bit 7.
+//
+// Thus all constants are defined twice depending on the CPU's endianness.
+//
+// For most BE/LE machines, this is sufficient; the layout of memory is the
+// same.  Specifically, within a 32-bit word, byte[0] will be data[0:7],
+// short[0] will be data [0:15] and so on.  &byte[0] == &short[0] == &word
+// regardless.  But data[0:7] *OF THE MEMORY SYSTEM* will hold either the
+// LSbyte (0xFF) on a LE machine, and the MSbyte (0xFF000000) on a BE
+// machine, for a 32-bit access.
+// 
+// It is in terms of the memory system that the i82559 defines its view of
+// the world.
+// 
+// Therefore the structure layouts remain the same for both BE and LE
+// machines.  This means that the offsets for, specifically, the status
+// word in command blocks is always zero, and the offset for the command
+// word is always two.
+//
+// But there is one furter variant: so-called GIB endian.  (BIG endian
+// backwards) Some architectures support BE only for software
+// compatibility; they allow code to run which relies on overlaid C
+// structures behaving in a certain way; specifically
+//     *(char *)&i == (i >> 24)
+// ARM's BE mode is an example of this.
+// 
+// But while such an operation would use data[0:7] for the char access in a
+// true BE or any LE system, in a GE system, data[24:31] are used here.
+// The implementation is that for memory accesses, A0 and A1 are inverted
+// before going outside to the memory system.  So if &i == 0x1000,
+// accessing i uses address 0x1000, A0 and A1 being ignored for a 32-bit
+// access.  But the 8-bit access to *(char *)&i also uses 0x1000 for the
+// address as the code sees it, the memory system sees a byte request for
+// address 0x1003, thus picking up the MSbyte, from data[24:31].
+//
+// For such addressing, offsets need to be redefined to swap bytes and
+// shorts within words.  Therefore offsets are defined twice, once for
+// "normal" addressing, and once for "GIB endian" addressing.
+//
+// FIXME: this BE/GE configuration probably won't work with an ARM in its
+// BE mode - because that will define the global BE flags, yet it's not
+// true BE, it's GE.
+// Perhaps a solution whereby the GE flag CYG_ADDRESSING_IS_GIBENDIAN
+// overrides the BYTEORDER choices would be good; we want the constants to
+// be LE, but address offsets to be swapped per GE.
+//
+// Essay ends.
+//
 // ------------------------------------------------------------------------
 // I/O access macros as inlines for type safety
 
@@ -144,64 +284,104 @@
 #define HAL_LE16TOC(x)  ((((x) & 0xff) << 8) | (((x) & 0xff00) >> 8))
 
 static inline void OUTB(cyg_uint8 value, cyg_uint32 io_address)
-{   *((volatile cyg_uint8 *)(io_address)) = value;    }
+{
+    HAL_WRITE_UINT8( io_address, value);
+}
 
 static inline void OUTW(cyg_uint16 value, cyg_uint32 io_address)
-{   *((volatile cyg_uint16 *)(io_address)) = (((value & 0xff) << 8) | ((value & 0xff00) >> 8));   }
+{
+    HAL_WRITE_UINT16( io_address, (((value & 0xff) << 8) | ((value & 0xff00) >> 8)) );
+}
 
 static inline void OUTL(cyg_uint32 value, cyg_uint32 io_address)
-{   *((volatile cyg_uint32 *)io_address) = ((((value) & 0xff) << 24) | (((value) & 0xff00) << 8) | (((value) & 0xff0000) >> 8) | (((value) >> 24) & 0xff));   }
+{
+    HAL_WRITE_UINT32( io_address,
+                      ((((value) & 0xff) << 24) | (((value) & 0xff00) << 8) | (((value) & 0xff0000) >> 8) | (((value) >> 24) & 0xff)) );
+}
 
 static inline cyg_uint8 INB(cyg_uint32 io_address)
-{   return *((volatile cyg_uint8 *)(io_address));     }
+{   
+    cyg_uint8 d;
+    HAL_READ_UINT8( io_address, d );
+    return d;
+}
 
 static inline cyg_uint16 INW(cyg_uint32 io_address)
-{   cyg_uint16 d;
-    d = *((volatile cyg_uint16 *)(io_address));
+{
+    cyg_uint16 d;
+    HAL_READ_UINT16( io_address, d );
     return (((d & 0xff) << 8) | ((d & 0xff00) >> 8));
 }
 
 static inline cyg_uint32 INL(cyg_uint32 io_address)
-{   cyg_uint32 d;
-    d = *((volatile cyg_uint32 *)io_address); 
+{
+    cyg_uint32 d;
+    HAL_READ_UINT32( io_address, d );
     return ((((d) & 0xff) << 24) | (((d) & 0xff00) << 8) | (((d) & 0xff0000) >> 8) | (((d) >> 24) & 0xff));
 }
 #else
-static inline void OUTB(cyg_uint8 value, cyg_uint32 io_address)
-{   *((volatile cyg_uint8 *)io_address) = value;    }
+
+// Maintaining the same styleee as above...
+#define HAL_CTOLE32(x)  ((((x))))
+#define HAL_LE32TOC(x)  ((((x))))
+
+#define HAL_CTOLE16(x)  ((((x))))
+#define HAL_LE16TOC(x)  ((((x))))
+
+static inline void OUTB(cyg_uint8  value, cyg_uint32 io_address)
+{   HAL_WRITE_UINT8( io_address, value );   }
 
 static inline void OUTW(cyg_uint16 value, cyg_uint32 io_address)
-{   *((volatile cyg_uint16 *)io_address) = value;   }
+{   HAL_WRITE_UINT16( io_address, value );   }
 
 static inline void OUTL(cyg_uint32 value, cyg_uint32 io_address)
-{   *((volatile cyg_uint32 *)io_address) = value;   }
+{   HAL_WRITE_UINT32( io_address, value );   }
 
-static inline cyg_uint8 INB(cyg_uint32 io_address)
-{   return *((volatile cyg_uint8 *)io_address);     }
+static inline cyg_uint8  INB(cyg_uint32 io_address)
+ {   cyg_uint8  _t_; HAL_READ_UINT8(  io_address, _t_ ); return _t_;   }
 
 static inline cyg_uint16 INW(cyg_uint32 io_address)
-{   return *((volatile cyg_uint16 *)io_address);    }
+ {   cyg_uint16 _t_; HAL_READ_UINT16( io_address, _t_ ); return _t_;   }
 
 static inline cyg_uint32 INL(cyg_uint32 io_address)
-{   return *((volatile cyg_uint32 *)io_address);    }
+ {   cyg_uint32 _t_; HAL_READ_UINT32( io_address, _t_ ); return _t_;   }
+
 #endif // byteorder
+
+// ------------------------------------------------------------------------
+// Macros for writing shared memory structures - no need for byte flipping
+
+#define READMEM8(   _reg_, _val_ ) ((_val_) = *((volatile CYG_BYTE *)(_reg_)))
+#define WRITEMEM8(  _reg_, _val_ ) (*((volatile CYG_BYTE *)(_reg_)) = (_val_))
+#define READMEM16(  _reg_, _val_ ) ((_val_) = *((volatile CYG_WORD16 *)(_reg_)))
+#define WRITEMEM16( _reg_, _val_ ) (*((volatile CYG_WORD16 *)(_reg_)) = (_val_))
+#define READMEM32(  _reg_, _val_ ) ((_val_) = *((volatile CYG_WORD32 *)(_reg_)))
+#define WRITEMEM32( _reg_, _val_ ) (*((volatile CYG_WORD32 *)(_reg_)) = (_val_))
+
+// ------------------------------------------------------------------------
+// Map from CPU-view addresses to PCI-bus master's view - however that is:
+
+#ifdef CYGHWR_INTEL_I82559_PCI_VIRT_TO_BUS
+
+#define VIRT_TO_BUS( _x_ ) CYGHWR_INTEL_I82559_PCI_VIRT_TO_BUS( _x_ )
+
+#else // use default mappings: get a physical address to give to the device
 
 #define VIRT_TO_BUS( _x_ ) virt_to_bus((cyg_uint32)(_x_))
 static inline cyg_uint32 virt_to_bus(cyg_uint32 p_memory)
 { return CYGARC_PHYSICAL_ADDRESS(p_memory);    }
 
-#define BUS_TO_VIRT( _x_ ) bus_to_virt((cyg_uint32)(_x_))
-static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
-{ return CYGARC_UNCACHED_ADDRESS(p_memory); }
-
+#endif // not defined CYGHWR_INTEL_I82559_PCI_VIRT_TO_BUS
 
 // ------------------------------------------------------------------------
 //                                                                      
 //                   82559 REGISTER OFFSETS (I/O SPACE)                 
 //                                                                      
 // ------------------------------------------------------------------------
-#define SCBStatus       0               // Rx/Command Unit command and status.
-#define SCBCmd          2               // Rx/Command Unit command and status.
+#define SCBStatus       0               // Rx/Command Unit Status *Word*
+#define SCBIntAckByte   1               // Rx/Command Unit STAT/ACK byte
+#define SCBCmd          2               // Rx/Command Unit Command *Word*
+#define SCBIntrCtlByte  3               // Rx/Command Unit Intr.Control Byte
 #define SCBPointer      4               // General purpose pointer.
 #define SCBPort         8               // Misc. commands and operands.
 #define SCBflash        12              // Flash memory control.
@@ -226,9 +406,53 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define SCB_STATUS_FCP  0x0100          // flow control pause interrupt
 
 #define SCB_INTACK_MASK 0xFD00          // all the above
+#define SCB_INTACK_MASK_BYTE 0xFD       // all the above
 
 #define SCB_INTACK_TX (SCB_STATUS_CX | SCB_STATUS_CNA)
 #define SCB_INTACK_RX (SCB_STATUS_FR | SCB_STATUS_RNR)
+
+// ------------------------------------------------------------------------
+//
+//               SYSTEM CONTROL BLOCK COMMANDS
+//
+// ------------------------------------------------------------------------
+// CU COMMANDS
+#define CU_NOP          0x0000
+#define	CU_START        0x0010
+#define	CU_RESUME       0x0020
+#define	CU_STATSADDR    0x0040          // Load Dump Statistics ctrs addr
+#define	CU_SHOWSTATS    0x0050          // Dump statistics counters.
+#define	CU_ADDR_LOAD    0x0060          // Base address to add to CU commands
+#define	CU_DUMPSTATS    0x0070          // Dump then reset stats counters.
+
+// RUC COMMANDS
+#define RUC_NOP         0x0000
+#define	RUC_START       0x0001
+#define	RUC_RESUME      0x0002
+#define RUC_ABORT       0x0004
+#define	RUC_ADDR_LOAD   0x0006          // (seems not to clear on acceptance)
+#define RUC_RESUMENR    0x0007
+
+#define CU_CMD_MASK     0x00f0
+#define RU_CMD_MASK     0x0007
+
+#define SCB_M	        0x0100          // 0 = enable interrupt, 1 = disable
+#define SCB_SWI         0x0200          // 1 - cause device to interrupt
+#define SCB_BYTE_M	  0x01          // 0 = enable interrupt, 1 = disable
+#define SCB_BYTE_SWI      0x02          // 1 - cause device to interrupt
+
+#define CU_STATUS_MASK  0x00C0
+#define RU_STATUS_MASK  0x003C
+
+#define RU_STATUS_IDLE  (0<<2)
+#define RU_STATUS_SUS   (1<<2)
+#define RU_STATUS_NORES (2<<2)
+#define RU_STATUS_READY (4<<2)
+#define RU_STATUS_NO_RBDS_SUS   ((1<<2)|(8<<2))
+#define RU_STATUS_NO_RBDS_NORES ((2<<2)|(8<<2))
+#define RU_STATUS_NO_RBDS_READY ((4<<2)|(8<<2))
+
+#define MAX_MEM_RESERVED_IOCTL 1000
 
 // ------------------------------------------------------------------------
 //
@@ -277,47 +501,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 
 // ------------------------------------------------------------------------
 //
-//               SYSTEM CONTROL BLOCK COMMANDS
-//
-// ------------------------------------------------------------------------
-// CU COMMANDS
-#define CU_NOP          0x0000
-#define	CU_START        0x0010
-#define	CU_RESUME       0x0020
-#define	CU_STATSADDR    0x0040          // Load Dump Statistics ctrs addr
-#define	CU_SHOWSTATS    0x0050          // Dump statistics counters.
-#define	CU_ADDR_LOAD    0x0060          // Base address to add to CU commands
-#define	CU_DUMPSTATS    0x0070          // Dump then reset stats counters.
-
-// RUC COMMANDS
-#define RUC_NOP         0x0000
-#define	RUC_START       0x0001
-#define	RUC_RESUME      0x0002
-#define RUC_ABORT       0x0004
-#define	RUC_ADDR_LOAD   0x0006          // (seems not to clear on acceptance)
-#define RUC_RESUMENR    0x0007
-
-#define CU_CMD_MASK     0x00f0
-#define RU_CMD_MASK     0x0007
-
-#define SCB_M	        0x0100          // 0 = enable interrupt, 1 = disable
-#define SCB_SI          0x0200          // 1 - cause device to interrupt
-
-#define CU_STATUS_MASK  0x00C0
-#define RU_STATUS_MASK  0x003C
-
-#define RU_STATUS_IDLE  (0<<2)
-#define RU_STATUS_SUS   (1<<2)
-#define RU_STATUS_NORES (2<<2)
-#define RU_STATUS_READY (4<<2)
-#define RU_STATUS_NO_RBDS_SUS   ((1<<2)|(8<<2))
-#define RU_STATUS_NO_RBDS_NORES ((2<<2)|(8<<2))
-#define RU_STATUS_NO_RBDS_READY ((4<<2)|(8<<2))
-
-#define MAX_MEM_RESERVED_IOCTL 1000
-
-// ------------------------------------------------------------------------
-//
 //               RECEIVE FRAME DESCRIPTORS
 //
 // ------------------------------------------------------------------------
@@ -329,16 +512,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 // bit round and the device writing into the previous slot.
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST)
-
-#define RFD_STATUS       0
-#define RFD_STATUS_HI    2              // swapped
-#define RFD_STATUS_LO    0              // swapped
-#define RFD_LINK         4
-#define RFD_RDB_ADDR     8
-#define RFD_SIZE        14              // swapped
-#define RFD_COUNT       12              // swapped
-#define RFD_BUFFER      16
-#define RFD_SIZEOF      16
 
 // Note that status bits are endian converted - so we don't need to
 // fiddle the byteorder when accessing the status word!
@@ -375,15 +548,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 
 #else // Little-endian
 
-#define RFD_STATUS       0
-#define RFD_STATUS_HI    0
-#define RFD_STATUS_LO    2
-#define RFD_LINK         4
-#define RFD_RDB_ADDR     8
-#define RFD_SIZE        12
-#define RFD_COUNT       14
-#define RFD_BUFFER      16
-
 #define RFD_STATUS_EL   0x80000000      // 1=last RFD in RFA
 #define RFD_STATUS_S    0x40000000      // 1=suspend RU after receiving frame
 #define RFD_STATUS_H    0x00100000      // 1=RFD is a header RFD
@@ -416,6 +580,36 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 
 #endif // CYG_BYTEORDER
 
+#ifndef CYG_ADDRESSING_IS_GIBENDIAN
+
+// Normal addressing
+#define RFD_STATUS       0
+#define RFD_STATUS_LO    0
+#define RFD_STATUS_HI    2
+#define RFD_LINK         4
+#define RFD_RDB_ADDR     8
+#define RFD_COUNT       12
+#define RFD_SIZE        14
+#define RFD_BUFFER      16
+#define RFD_SIZEOF      16
+
+#else // CYG_ADDRESSING_IS_GIBENDIAN
+
+// GIBENDIAN addressing; A0 and A1 are flipped:
+#define RFD_STATUS       0
+#define RFD_STATUS_LO    2              // swapped
+#define RFD_STATUS_HI    0              // swapped
+#define RFD_LINK         4
+#define RFD_RDB_ADDR     8
+#define RFD_COUNT       14              // swapped
+#define RFD_SIZE        12              // swapped
+#define RFD_BUFFER      16
+#define RFD_SIZEOF      16
+
+#endif // CYG_ADDRESSING_IS_GIBENDIAN
+
+
+
 // ------------------------------------------------------------------------
 //
 //               TRANSMIT FRAME DESCRIPTORS
@@ -423,16 +617,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 // ------------------------------------------------------------------------
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST)
-
-#define TxCB_CMD             2          // swapped
-#define TxCB_STATUS          0          // swapped
-#define TxCB_LINK            4
-#define TxCB_TBD_ADDR        8
-#define TxCB_TX_THRESHOLD   14          // swapped
-#define TxCB_TBD_NUMBER     15          // swapped
-#define TxCB_COUNT          12          // swapped
-#define TxCB_BUFFER         16
-#define TxCB_SIZEOF         16
 
 // Note that CMD/STATUS bits are endian converted - so we don't need
 // to fiddle the byteorder when accessing the CMD/STATUS word!
@@ -449,15 +633,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 
 #else // Little-endian layout
 
-#define TxCB_CMD             0
-#define TxCB_STATUS          2
-#define TxCB_LINK            4
-#define TxCB_TBD_ADDR        8
-#define TxCB_TBD_NUMBER     12
-#define TxCB_TX_THRESHOLD   13
-#define TxCB_COUNT          14
-#define TxCB_BUFFER         16
-
 #define TxCB_COUNT_MASK     0x3fff
 #define TxCB_COUNT_EOF      0x8000
 
@@ -470,6 +645,33 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 
 #endif // CYG_BYTEORDER
 
+#ifndef CYG_ADDRESSING_IS_GIBENDIAN
+
+// Normal addressing
+#define TxCB_STATUS          0
+#define TxCB_CMD             2
+#define TxCB_LINK            4
+#define TxCB_TBD_ADDR        8
+#define TxCB_COUNT          12
+#define TxCB_TX_THRESHOLD   14
+#define TxCB_TBD_NUMBER     15
+#define TxCB_BUFFER         16
+#define TxCB_SIZEOF         16
+
+#else // CYG_ADDRESSING_IS_GIBENDIAN
+
+// GIBENDIAN addressing; A0 and A1 are flipped:
+#define TxCB_STATUS          2          // swapped
+#define TxCB_CMD             0          // swapped
+#define TxCB_LINK            4
+#define TxCB_TBD_ADDR        8
+#define TxCB_COUNT          14          // swapped
+#define TxCB_TX_THRESHOLD   13          // swapped
+#define TxCB_TBD_NUMBER     12          // swapped
+#define TxCB_BUFFER         16
+#define TxCB_SIZEOF         16
+#endif // CYG_ADDRESSING_IS_GIBENDIAN
+
 // ------------------------------------------------------------------------
 //
 //                   STRUCTURES ADDED FOR PROMISCUOUS MODE
@@ -477,12 +679,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 // ------------------------------------------------------------------------
 
 #if (CYG_BYTEORDER == CYG_MSBFIRST)
-
-#define CFG_STATUS          0
-#define CFG_CMD             2
-#define CFG_CB_LINK_OFFSET  4
-#define CFG_BYTES           8
-#define CFG_SIZEOF          32
 
 // Note CFG CMD and STATUS swapped, so no need for endian conversion
 // in code.
@@ -497,12 +693,6 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 
 #else // Little-endian 
 
-#define CFG_CMD             0
-#define CFG_STATUS          2
-#define CFG_CB_LINK_OFFSET  4
-#define CFG_BYTES           8
-#define CFG_SIZEOF          32
-
 #define CFG_CMD_EL         0x8000
 #define CFG_CMD_SUSPEND    0x4000
 #define CFG_CMD_INT        0x2000
@@ -513,6 +703,26 @@ static inline cyg_uint32 bus_to_virt(cyg_uint32 p_memory)
 #define CFG_STATUS_OK      0x2000
 
 #endif  // CYG_BYTEORDER
+
+#ifndef CYG_ADDRESSING_IS_GIBENDIAN
+
+// Normal addressing
+#define CFG_STATUS          0
+#define CFG_CMD             2
+#define CFG_CB_LINK_OFFSET  4
+#define CFG_BYTES           8
+#define CFG_SIZEOF          32
+
+#else // CYG_ADDRESSING_IS_GIBENDIAN
+
+// GIBENDIAN addressing; A0 and A1 are flipped:
+#define CFG_STATUS          2
+#define CFG_CMD             0
+#define CFG_CB_LINK_OFFSET  4
+#define CFG_BYTES           8
+#define CFG_SIZEOF          32
+
+#endif // CYG_ADDRESSING_IS_GIBENDIAN
 
 
 // ------------------------------------------------------------------------
@@ -597,13 +807,14 @@ static void ResetRxRing(struct i82559* p_i82559);
 static void InitTxRing(struct i82559* p_i82559);
 static void ResetTxRing(struct i82559* p_i82559);
 
-static int eth_set_config(struct i82559* p_i82559);
+static void
+eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data);
+static cyg_uint32
+eth_isr(cyg_vector_t vector, cyg_addrword_t data);
 
+static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized);
 #ifdef CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
 static void program_eeprom(cyg_uint32 , cyg_uint32 , cyg_uint8 * );
-#endif
-#ifdef CYGPKG_NET
-static int eth_set_promiscuous_mode(struct i82559* p_i82559);
 #endif
 
 // debugging/logging only:
@@ -623,57 +834,83 @@ typedef enum {
     WAIT_CU                             // wait before CU cmd
 } cmd_wait_t;
 
-static // inline
+static inline
 void 
 wait_for_cmd_done(long scb_ioaddr, cmd_wait_t type)
 {
     register int status;
     register int wait;
 
-#ifdef nDEBUG_82559
-    os_printf(">%s %04x\n", __FUNCTION__, INW(scb_ioaddr + SCBCmd));
-#endif
     wait = 0x100000;
-    do status = INW(scb_ioaddr + SCBCmd) ;
+    do status = INW(scb_ioaddr + SCBCmd) /* nothing */ ;
     while( (0 != ((CU_CMD_MASK | RU_CMD_MASK) & status)) && --wait >= 0);
-#ifdef nDEBUG_82559
-    os_printf(">%s %04x\n", __FUNCTION__, INW(scb_ioaddr + SCBCmd));
+
+    if ( wait <= 0 ) {
+        // Then we timed out; reset the device and try again...
+        OUTL(I82559_SELECTIVE_RESET, scb_ioaddr + SCBPort);
+#ifdef CYGDBG_USE_ASSERTS
+        missed_interrupt.waitcmd_timeouts++;
 #endif
+        wait = 0x100000;
+        do status = INW(scb_ioaddr + SCBCmd) /* nothing */;
+        while( (0 != ((CU_CMD_MASK | RU_CMD_MASK) & status)) && --wait >= 0);
+    }
+
     CYG_ASSERT( wait > 0, "wait_for_cmd_done: cmd busy" );
 
     if (WAIT_CU == type) {
         // Also check CU is idle
-#ifdef nDEBUG_82559
-      os_printf(">%s %04x\n", __FUNCTION__, INW(scb_ioaddr + SCBStatus));
-#endif
         wait = 0x100000;
-        do status = INW(scb_ioaddr + SCBStatus) ;
+        do status = INW(scb_ioaddr + SCBStatus) /* nothing */;
         while( (status & CU_STATUS_MASK) && --wait >= 0);
-#ifdef nDEBUG_82559
-        os_printf("<%s %04x\n", __FUNCTION__, INW(scb_ioaddr + SCBStatus));
+        if ( wait <= 0 ) {
+            // Then we timed out; reset the device and try again...
+            OUTL(I82559_SELECTIVE_RESET, scb_ioaddr + SCBPort);
+#ifdef CYGDBG_USE_ASSERTS
+            missed_interrupt.waitcmd_timeouts_cu++;
 #endif
+            wait = 0x100000;
+            do status = INW(scb_ioaddr + SCBCmd) /* nothing */;
+            while( (0 != ((CU_CMD_MASK | RU_CMD_MASK) & status)) && --wait >= 0);
+        }
+
         CYG_ASSERT( wait > 0, "wait_for_cmd_done: CU busy" );
+
     } else if (WAIT_RU == type) {
         // Can't see any active state in the doc to check for 
     }
 }
 
-// Short circuit the drv_interrupt_XXX API once we are started:
+// ------------------------------------------------------------------------
+
+externC void hal_delay_us(int);
+static void
+udelay(int delay)
+{
+    hal_delay_us(delay);
+}
+
+// ------------------------------------------------------------------------
+// If we are demuxing for all interrupt sources, we must mask and unmask
+// *all* interrupt sources together.
 
 static inline int 
 Mask82559Interrupt(struct i82559* p_i82559)
 {
     int old = 0;
 
+#ifdef CYGPRI_DEVS_ETH_INTEL_I82559_MASK_INTERRUPTS
+    CYGPRI_DEVS_ETH_INTEL_I82559_MASK_INTERRUPTS(p_i82559,old);
+#else
 //    if (query_enabled)
     old |= 1;
     cyg_drv_interrupt_mask(p_i82559->vector);
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
 //    if (query_enabled)
     old |= 2;
-    cyg_drv_interrupt_mask(CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT);
+    cyg_drv_interrupt_mask(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT);
 #endif
-
+#endif
     /* it may prove necessary to do something like this
     if ( mybits != (mybits & old) )
         /# then at least one of them was disabled, so
@@ -687,22 +924,31 @@ Mask82559Interrupt(struct i82559* p_i82559)
 static inline void
 UnMask82559Interrupt(struct i82559* p_i82559, int old)
 {
+#ifdef CYGPRI_DEVS_ETH_INTEL_I82559_UNMASK_INTERRUPTS
+    CYGPRI_DEVS_ETH_INTEL_I82559_UNMASK_INTERRUPTS(p_i82559,old);
+#else
     // We must only unmask (enable) those which were unmasked before,
     // according to the bits in old.
     if (old & 1)
         cyg_drv_interrupt_unmask(p_i82559->vector);
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
     if (old & 2)
-        cyg_drv_interrupt_mask(CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT);
+        cyg_drv_interrupt_mask(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT);
+#endif
 #endif
 }
 
-static void
+
+static inline void
 Acknowledge82559Interrupt(struct i82559* p_i82559)
 {
+#ifdef CYGPRI_DEVS_ETH_INTEL_I82559_ACK_INTERRUPTS
+    CYGPRI_DEVS_ETH_INTEL_I82559_ACK_INTERRUPTS(p_i82559);
+#else
     cyg_drv_interrupt_acknowledge(p_i82559->vector);
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
-    cyg_drv_interrupt_acknowledge(CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT);
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
+    cyg_drv_interrupt_acknowledge(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT);
+#endif
 #endif
 
 #ifdef CYGPRI_DEVS_ETH_INTEL_I82559_INTERRUPT_ACK_LOOP
@@ -711,11 +957,33 @@ Acknowledge82559Interrupt(struct i82559* p_i82559)
 }
 
 
-externC void hal_delay_us(int);
-static void
-udelay(int delay)
+static inline void
+Check82559TxLockupTimeout(struct i82559* p_i82559)
 {
-    hal_delay_us(delay);
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_RESET_TIMEOUT
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_TIMEOUT_FIRED
+    int ints = Mask82559Interrupt(p_i82559);
+    if ( p_i82559->tx_in_progress &&
+        (p_i82559->tx_descriptor_timeout == p_i82559->tx_descriptor_active) ) {
+        if ( CYGHWR_DEVS_ETH_INTEL_I82559_TIMEOUT_FIRED( p_i82559->platform_timeout ) ) {
+            // Then reset the device; the TX unit is locked up.
+            cyg_uint32 ioaddr = p_i82559->io_address;
+            // Wait some time afterwards for chip to settle.
+            OUTL(I82559_SELECTIVE_RESET, ioaddr + SCBPort);
+#ifdef CYGDBG_USE_ASSERTS
+            missed_interrupt.lockup_timeouts++;
+#endif
+            udelay(20);
+        }
+    }
+    else {
+        // All is well:
+        CYGHWR_DEVS_ETH_INTEL_I82559_RESET_TIMEOUT( p_i82559->platform_timeout );
+        p_i82559->tx_descriptor_timeout = p_i82559->tx_descriptor_active;
+    }
+    UnMask82559Interrupt(p_i82559,ints);
+#endif
+#endif
 }
 
 // ------------------------------------------------------------------------
@@ -761,6 +1029,7 @@ pciwindow_mem_alloc(int size)
 //                       GET EEPROM SIZE
 //
 // ------------------------------------------------------------------------
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
 static int
 get_eeprom_size(long ioaddr)
 {
@@ -913,6 +1182,7 @@ read_eeprom(long ioaddr, int location, int addr_len)
     
     return retval;
 }
+#endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
 
 // ------------------------------------------------------------------------
 //
@@ -1019,7 +1289,8 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
               HAL_LE32TOC(p_selftest[0]));
 #endif
 
-    // FIXME: free self-test memory?
+    // free self-test memory?
+    // No, there's no point: this "heap" does not support free.
 
     if (p_i82559->hardwired_esa) {
         // Hardwire the address without consulting the EEPROM.
@@ -1033,7 +1304,20 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
         mac_address[5] = p_i82559->mac_address[5];
 
         eth_set_mac_address(p_i82559, mac_address);
+
     } else {
+
+        // Acquire the ESA either from extenal means (probably RedBoot
+        // variables) or from the attached EEPROM - if there is one.
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
+        int ok = false;
+        CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA( p_i82559, mac_address, ok );
+        if ( ok )
+            eth_set_mac_address(p_i82559, mac_address);
+
+#else // ! CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
+#ifndef CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
         int addr_length, i;
         cyg_uint16 checksum;
 
@@ -1093,10 +1377,12 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
         p_i82559->mac_address[3] = mac_address[3];
         p_i82559->mac_address[4] = mac_address[4];
         p_i82559->mac_address[5] = mac_address[5];
+#endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_HAS_NO_EEPROM
+#endif // ! CYGHWR_DEVS_ETH_INTEL_I82559_GET_ESA
     }
 
 #ifdef DEBUG
-    os_printf("MAC Address = %02X %02X %02X %02X %02X %02X\n",
+    os_printf("i82559_init: MAC Address = %02X %02X %02X %02X %02X %02X\n",
               p_i82559->mac_address[0], p_i82559->mac_address[1],
               p_i82559->mac_address[2], p_i82559->mac_address[3],
               p_i82559->mac_address[4], p_i82559->mac_address[5]);
@@ -1105,6 +1391,8 @@ i82559_init(struct cyg_netdevtab_entry * ndp)
     // and record the net dev pointer
     p_i82559->ndp = (void *)ndp;
     
+    p_i82559->within_send = 0; // init recursion level
+
     InitRxRing(p_i82559);
     InitTxRing(p_i82559);
 
@@ -1173,12 +1461,12 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
     // ...and wait for it to complete operation
     count = 1000;
     do {
-      HAL_READ_UINT16((cyg_uint8*)p_statistics + CFG_STATUS, status);
+      READMEM16((cyg_uint8*)p_statistics + CFG_STATUS, status);
       udelay(1);
     } while (0 == (status & CFG_STATUS_C) && (count-- > 0));
 #ifdef CYGDBG_USE_ASSERTS
     {
-      HAL_READ_UINT16((cyg_uint8*)p_statistics + CFG_STATUS, status);
+      READMEM16((cyg_uint8*)p_statistics + CFG_STATUS, status);
       CYG_ASSERT((CFG_STATUS_C | CFG_STATUS_OK)
                  == (status & (CFG_STATUS_C | CFG_STATUS_OK)),
                  "Dump stat command incomplete/failedd");
@@ -1189,18 +1477,21 @@ i82559_start( struct eth_drv_sc *sc, unsigned char *enaddr, int flags )
 
     // Enable device
     p_i82559->active = 1;
-    eth_set_config(p_i82559);
 
+    /* Enable promiscuous mode if requested, reception of oversized frames always.
+     * The latter is needed for VLAN support and shouldn't hurt even if we're not
+     * using VLANs.
+     */
+    i82559_configure(p_i82559, 0
 #ifdef CYGPKG_NET
-    if (( 0
+                     || !!(ifp->if_flags & IFF_PROMISC)
+#endif
 #ifdef ETH_DRV_FLAGS_PROMISC_MODE
-          != (flags & ETH_DRV_FLAGS_PROMISC_MODE)
+                     || !!(flags & ETH_DRV_FLAGS_PROMISC_MODE)
 #endif
-        ) || (ifp->if_flags & IFF_PROMISC)
-        ) {
-        eth_set_promiscuous_mode(p_i82559);
-    }
-#endif
+                     , 1);
+
+
 #ifdef DEBUG
     {
         int status = i82559_status( sc );
@@ -1297,11 +1588,11 @@ InitRxRing(struct i82559* p_i82559)
         rfd = (RFD *)pciwindow_mem_alloc(RFD_SIZEOF + MAX_RX_PACKET_SIZE);
         p_i82559->rx_ring[i] = rfd;
         if ( i )
-            HAL_WRITE_UINT32(p_rfd+RFD_LINK, HAL_CTOLE32(VIRT_TO_BUS(rfd)));
+            WRITEMEM32(p_rfd+RFD_LINK, HAL_CTOLE32(VIRT_TO_BUS(rfd)));
         p_rfd = (RFD *)rfd;
     }
     // link last RFD to first:
-    HAL_WRITE_UINT32(p_rfd+RFD_LINK,
+    WRITEMEM32(p_rfd+RFD_LINK,
                      HAL_CTOLE32(VIRT_TO_BUS(p_i82559->rx_ring[0])));
 
     ResetRxRing( p_i82559 );
@@ -1329,24 +1620,24 @@ ResetRxRing(struct i82559* p_i82559)
           RFD *p_rfd2;
           cyg_uint32 link;
           p_rfd2 = p_i82559->rx_ring[ ( i ? (i-1) : (MAX_RX_DESCRIPTORS-1) ) ];
-          HAL_READ_UINT32(p_rfd2 + RFD_LINK, link);
+          READMEM32(p_rfd2 + RFD_LINK, link);
           CYG_ASSERT( HAL_LE32TOC(link) == VIRT_TO_BUS(p_rfd), 
                       "rfd linked list broken" );
         }
 #endif
-        HAL_WRITE_UINT32(p_rfd + RFD_STATUS, /*0*/RFD_STATUS_S);
-        HAL_WRITE_UINT16(p_rfd + RFD_COUNT, 0);
-        HAL_WRITE_UINT32(p_rfd + RFD_RDB_ADDR, HAL_CTOLE32(0xFFFFFFFF));
-        HAL_WRITE_UINT16(p_rfd + RFD_SIZE, HAL_CTOLE16(MAX_RX_PACKET_SIZE));
+        WRITEMEM32(p_rfd + RFD_STATUS, 0 ); // do NOT suspend after just one rx
+        WRITEMEM16(p_rfd + RFD_COUNT, 0);
+        WRITEMEM32(p_rfd + RFD_RDB_ADDR, HAL_CTOLE32(0xFFFFFFFF));
+        WRITEMEM16(p_rfd + RFD_SIZE, HAL_CTOLE16(MAX_RX_PACKET_SIZE));
     }
     p_i82559->next_rx_descriptor = 0;
     // And set an end-of-list marker in the previous one.
-    HAL_WRITE_UINT32(p_rfd + RFD_STATUS, RFD_STATUS_EL);
+    WRITEMEM32(p_rfd + RFD_STATUS, RFD_STATUS_EL);
 }
 
 // ------------------------------------------------------------------------
 //
-//  Function : PacketRxReady        (Called from delivery thread)
+//  Function : PacketRxReady     (Called from delivery thread & foreground)
 //
 // ------------------------------------------------------------------------
 static void
@@ -1376,15 +1667,15 @@ PacketRxReady(struct i82559* p_i82559)
     while ( 1 ) {
         cyg_uint32 rxstatus;
         cyg_uint16 rxstatus_hi;
-        HAL_READ_UINT32(p_rfd + RFD_STATUS, rxstatus);
+        READMEM32(p_rfd + RFD_STATUS, rxstatus);
         if (0 == (rxstatus & RFD_STATUS_C))
             break;
 
-        HAL_READ_UINT16(p_rfd + RFD_STATUS_HI, rxstatus_hi);
+        READMEM16(p_rfd + RFD_STATUS_HI, rxstatus_hi);
         rxstatus_hi |= RFD_STATUS_HI_EL;
-        HAL_WRITE_UINT16(p_rfd + RFD_STATUS_HI, rxstatus_hi);
+        WRITEMEM16(p_rfd + RFD_STATUS_HI, rxstatus_hi);
 
-        HAL_READ_UINT16(p_rfd + RFD_COUNT, length);
+        READMEM16(p_rfd + RFD_COUNT, length);
         length = HAL_LE16TOC(length);
         length &= RFD_COUNT_MASK;
 
@@ -1403,8 +1694,8 @@ PacketRxReady(struct i82559* p_i82559)
 #endif
         (sc->funs->eth_drv->recv)( sc, length );
 
-        HAL_WRITE_UINT16(p_rfd + RFD_COUNT, 0);
-        HAL_WRITE_UINT16(p_rfd + RFD_STATUS_LO, 0);
+        WRITEMEM16(p_rfd + RFD_COUNT, 0);
+        WRITEMEM16(p_rfd + RFD_STATUS_LO, 0);
 
         // The just-emptied slot is now ready for re-use and already marked EL;
         // we can now remove the EL marker from the previous one.
@@ -1413,10 +1704,10 @@ PacketRxReady(struct i82559* p_i82559)
         else
             p_rfd = p_i82559->rx_ring[ next_descriptor-1 ];
         // The previous one: check it *was* marked before clearing.
-        HAL_READ_UINT16(p_rfd + RFD_STATUS_HI, rxstatus_hi);
+        READMEM16(p_rfd + RFD_STATUS_HI, rxstatus_hi);
         CYG_ASSERT( rxstatus_hi & RFD_STATUS_HI_EL, "No prev EL" );
         // that word is not written by the device.
-        HAL_WRITE_UINT16(p_rfd + RFD_STATUS_HI, 0);
+        WRITEMEM16(p_rfd + RFD_STATUS_HI, 0);
 
 #ifdef KEEP_STATISTICS
         statistics[p_i82559->index].rx_deliver++;
@@ -1470,6 +1761,7 @@ i82559_recv( struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len )
     struct eth_drv_sg *last_sg;
     volatile cyg_uint8 *from_p;
     cyg_uint32 rxstatus;
+    cyg_uint16 rxstatus16;
 
     p_i82559 = (struct i82559 *)sc->driver_private;
     
@@ -1486,16 +1778,18 @@ i82559_recv( struct eth_drv_sc *sc, struct eth_drv_sg *sg_list, int sg_len )
     CYG_ASSERT( (cyg_uint8 *)p_rfd >= i82559_heap_base, "rfd under" );
     CYG_ASSERT( (cyg_uint8 *)p_rfd <  i82559_heap_free, "rfd over" );
 
-    HAL_READ_UINT32(p_rfd + RFD_STATUS, rxstatus);
+    READMEM32(p_rfd + RFD_STATUS, rxstatus);
     CYG_ASSERT( rxstatus & RFD_STATUS_C, "No complete frame" );
     CYG_ASSERT( rxstatus & RFD_STATUS_EL, "No marked frame" );
-    CYG_ASSERT( rxstatus & RFD_STATUS_C, "No complete frame 2" );
-    CYG_ASSERT( rxstatus & RFD_STATUS_EL, "No marked frame 2" );
+    READMEM16(p_rfd + RFD_STATUS_LO, rxstatus16 );
+    CYG_ASSERT( rxstatus16 & RFD_STATUS_LO_C, "No complete frame 2" );
+    READMEM16(p_rfd + RFD_STATUS_HI, rxstatus16 );
+    CYG_ASSERT( rxstatus16 & RFD_STATUS_HI_EL, "No marked frame 2" );
     
     if ( 0 == (rxstatus & RFD_STATUS_C) )
         return;
 
-    HAL_READ_UINT16(p_rfd + RFD_COUNT, total_len);
+    READMEM16(p_rfd + RFD_COUNT, total_len);
     total_len = HAL_LE16TOC(total_len);
     total_len &= RFD_COUNT_MASK;
     
@@ -1593,17 +1887,21 @@ ResetTxRing(struct i82559* p_i82559)
         CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
         CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
 
-        HAL_WRITE_UINT16(p_txcb + TxCB_STATUS, 0);
-        HAL_WRITE_UINT16(p_txcb + TxCB_CMD, 0);
-        HAL_WRITE_UINT32(p_txcb + TxCB_LINK,
+        WRITEMEM16(p_txcb + TxCB_STATUS, 0);
+        WRITEMEM16(p_txcb + TxCB_CMD, 0);
+        WRITEMEM32(p_txcb + TxCB_LINK,
                          HAL_CTOLE32(VIRT_TO_BUS((cyg_uint32)p_txcb)));
-        HAL_WRITE_UINT32(p_txcb + TxCB_TBD_ADDR, HAL_CTOLE32(0xFFFFFFFF));
-        HAL_WRITE_UINT8(p_txcb + TxCB_TBD_NUMBER, 0);
-        HAL_WRITE_UINT8(p_txcb + TxCB_TX_THRESHOLD, 16);
-        HAL_WRITE_UINT16(p_txcb + TxCB_COUNT,
+        WRITEMEM32(p_txcb + TxCB_TBD_ADDR, HAL_CTOLE32(0xFFFFFFFF));
+        WRITEMEM8(p_txcb + TxCB_TBD_NUMBER, 0);
+        WRITEMEM8(p_txcb + TxCB_TX_THRESHOLD, 16);
+        WRITEMEM16(p_txcb + TxCB_COUNT,
                          HAL_CTOLE16(TxCB_COUNT_EOF | 0));
         p_i82559->tx_keys[i] = 0;
     }
+    
+    wait_for_cmd_done(ioaddr,WAIT_CU);
+    OUTL(0, ioaddr + SCBPointer);
+    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
 }
 
 // ------------------------------------------------------------------------
@@ -1646,7 +1944,11 @@ TxMachine(struct i82559* p_i82559)
          && p_i82559->tx_descriptor_add != tx_descriptor_active ) {
         TxCB *p_txcb = p_i82559->tx_ring[tx_descriptor_active];
         cyg_uint16 status;
+
+        // start Tx operation
+        wait_for_cmd_done(ioaddr, WAIT_CU);
         status = INW(ioaddr + SCBStatus);
+
         CYG_ASSERT( ( 0 == (status & CU_STATUS_MASK)), "CU not idle");
         CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
         CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
@@ -1658,8 +1960,6 @@ TxMachine(struct i82559* p_i82559)
         }
 #endif
 
-        // start Tx operation
-        wait_for_cmd_done(ioaddr, WAIT_CU);
         OUTL(VIRT_TO_BUS(p_txcb), ioaddr + SCBPointer);
         OUTW(CU_START, ioaddr + SCBCmd);
         p_i82559->tx_in_progress = 1;
@@ -1688,15 +1988,17 @@ TxDone(struct i82559* p_i82559)
     
     // "Done" txen are from here to active, OR 
     // the remove one if the queue is full AND its status is nonzero:
-    while (  (tx_descriptor_remove != p_i82559->tx_descriptor_active) ||
-             ( p_i82559->tx_queue_full) ) {
-
+    while ( 1 ) {
         cyg_uint16 txstatus;
         TxCB *p_txcb = p_i82559->tx_ring[ tx_descriptor_remove ];
         unsigned long key = p_i82559->tx_keys[ tx_descriptor_remove ];
 
-        HAL_READ_UINT16(p_txcb + TxCB_STATUS, txstatus);
-        if (0 == txstatus)
+        READMEM16(p_txcb + TxCB_STATUS, txstatus);
+
+        // Break out if "remove" is the active slot
+        // (AND the Q is not full, or the Tx is not complete yet)
+        if ( (tx_descriptor_remove == p_i82559->tx_descriptor_active) &&
+             ( ( ! p_i82559->tx_queue_full) || (0 == txstatus) ) )
             break;
 
 #ifdef DEBUG_82559
@@ -1736,12 +2038,60 @@ i82559_can_send(struct eth_drv_sc *sc)
     
     // Advance TxMachine atomically
     ints = Mask82559Interrupt(p_i82559);
+
+    // This helps unstick deadly embraces.
+    CYG_ASSERT( p_i82559->within_send < 10, "send: Excess send recursions" );
+    p_i82559->within_send++;
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+    {
+        int i;
+        // The problem is, if DEMUX_ALL, either device can eat the other's
+        // interrupts; so we must poll them *both*:
+        for (i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++) {
+            p_i82559 = i82559_priv_array[i];
+            if ( p_i82559->active ) {
+                // See if the Tx machine is wedged - reset if so:
+                Check82559TxLockupTimeout(p_i82559);
+                TxMachine(p_i82559);
+                Acknowledge82559Interrupt(p_i82559);
+                PacketRxReady(p_i82559);
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+                if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
+#ifdef CYGDBG_USE_ASSERTS
+                    missed_interrupt.can_send++;
+#endif
+                    eth_isr( p_i82559->vector, (cyg_addrword_t)p_i82559 );
+                    eth_dsr( p_i82559->vector, 1, (cyg_addrword_t)p_i82559 );
+                }
+#endif
+            }
+        }
+    }
+    // ensure we look at the correct device at the end
+    p_i82559 = (struct i82559 *)sc->driver_private;
+#else // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+
+    // See if the Tx machine is wedged - reset if so:
+    Check82559TxLockupTimeout(p_i82559);
     TxMachine(p_i82559);
     Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
     PacketRxReady(p_i82559);
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+    if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
+#ifdef CYGDBG_USE_ASSERTS
+        missed_interrupt.can_send++;
+#endif
+        eth_isr( p_i82559->vector, (cyg_addrword_t)p_i82559 );
+        eth_dsr( p_i82559->vector, 1, (cyg_addrword_t)p_i82559 );
+    }
+#endif
+#endif // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+
+    p_i82559->within_send--;
     UnMask82559Interrupt(p_i82559,ints);
 
-    return ! p_i82559->tx_queue_full;
+    return (0 == p_i82559->within_send) && ! p_i82559->tx_queue_full;
 }
 
 // ------------------------------------------------------------------------
@@ -1781,6 +2131,9 @@ i82559_send(struct eth_drv_sc *sc,
 #endif
     ioaddr = p_i82559->io_address;      // get device I/O address
 
+    // See if the Tx machine is wedged - reset if so:
+    Check82559TxLockupTimeout(p_i82559);
+
     if ( p_i82559->tx_queue_full ) {
 #ifdef KEEP_STATISTICS
         statistics[p_i82559->index].tx_dropped++;
@@ -1803,17 +2156,17 @@ i82559_send(struct eth_drv_sc *sc,
         CYG_ASSERT( (cyg_uint8 *)p_txcb >= i82559_heap_base, "txcb under" );
         CYG_ASSERT( (cyg_uint8 *)p_txcb <  i82559_heap_free, "txcb over" );
 
-        HAL_WRITE_UINT16(p_txcb + TxCB_STATUS, 0);
-        HAL_WRITE_UINT16(p_txcb + TxCB_CMD,
+        WRITEMEM16(p_txcb + TxCB_STATUS, 0);
+        WRITEMEM16(p_txcb + TxCB_CMD,
                          (TxCB_CMD_TRANSMIT | TxCB_CMD_S
                           | TxCB_CMD_I | TxCB_CMD_EL));
-        HAL_WRITE_UINT32(p_txcb + TxCB_LINK, 
+        WRITEMEM32(p_txcb + TxCB_LINK, 
                          HAL_CTOLE32(VIRT_TO_BUS((cyg_uint32)p_txcb)));
-        HAL_WRITE_UINT32(p_txcb + TxCB_TBD_ADDR,
+        WRITEMEM32(p_txcb + TxCB_TBD_ADDR,
                          HAL_CTOLE32(0xFFFFFFFF));
-        HAL_WRITE_UINT8(p_txcb + TxCB_TBD_NUMBER, 0);
-        HAL_WRITE_UINT8(p_txcb + TxCB_TX_THRESHOLD, 16);
-        HAL_WRITE_UINT16(p_txcb + TxCB_COUNT,
+        WRITEMEM8(p_txcb + TxCB_TBD_NUMBER, 0);
+        WRITEMEM8(p_txcb + TxCB_TX_THRESHOLD, 16);
+        WRITEMEM16(p_txcb + TxCB_COUNT,
                          HAL_CTOLE16(TxCB_COUNT_EOF | total_len));
 
         // Copy from the sglist into the txcb
@@ -1863,6 +2216,10 @@ i82559_send(struct eth_drv_sc *sc,
     // no more interrupts until started
     ints = Mask82559Interrupt(p_i82559);
 
+    // This helps unstick deadly embraces.
+    CYG_ASSERT( p_i82559->within_send < 10, "send: Excess send recursions" );
+    p_i82559->within_send++;
+
     // Check that either:
     //     tx is already active, there is other stuff queued,
     // OR  this tx just added is the current active one
@@ -1878,10 +2235,30 @@ i82559_send(struct eth_drv_sc *sc,
         (p_i82559->tx_descriptor_add == p_i82559->tx_descriptor_active),
                 "Active/add mismatch" );
 
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+    {
+        int i;
+        // The problem is, if DEMUX_ALL, either device can eat the other's
+        // interrupts; so we must poll them *both*:
+        for (i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++) {
+            p_i82559 = i82559_priv_array[i];
+            if ( p_i82559->active ) {
+                TxMachine(p_i82559);
+                Acknowledge82559Interrupt(p_i82559);
+                PacketRxReady(p_i82559);
+            }
+        }
+    }
+    // ensure we look at the correct device at the end
+    p_i82559 = (struct i82559 *)sc->driver_private;
+#else // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
     // Advance TxMachine atomically
     TxMachine(p_i82559);
     Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
     PacketRxReady(p_i82559);
+#endif // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+
+    p_i82559->within_send--;
     UnMask82559Interrupt(p_i82559, ints);
 }
 
@@ -1970,7 +2347,8 @@ eth_isr(cyg_vector_t vector, cyg_addrword_t data)
 
 
 // ------------------------------------------------------------------------
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
+#if defined( CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT ) || \
+    defined( CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL )
 static cyg_uint32
 eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
 {
@@ -1992,6 +2370,10 @@ eth_mux_isr(cyg_vector_t vector, cyg_addrword_t data)
 static void
 eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 {
+    // This conditioning out is necessary because of explicit calls to this
+    // DSR - which would not ever be called in the case of a polled mode
+    // usage ie. in RedBoot.
+#ifdef CYGPKG_IO_ETH_DRIVERS_NET
     struct i82559* p_i82559 = (struct i82559 *)data;
     struct cyg_netdevtab_entry *ndp =
         (struct cyg_netdevtab_entry *)(p_i82559->ndp);
@@ -1999,39 +2381,101 @@ eth_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
 
     // but here, it must be a *sc:
     eth_drv_dsr( vector, count, (cyg_addrword_t)sc );
+#else
+# ifndef CYGPKG_REDBOOT
+#  error Empty i82559 ethernet DSR is compiled.  Is this what you want?
+# endif
+#endif
 }
 
 // ------------------------------------------------------------------------
-// This is called from the function below (used to be uni-DSR)
+// Deliver routine:
+#if defined( CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT ) || \
+    defined( CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL )
+
+void
+i82559_deliver(struct eth_drv_sc *sc)
+{
+    int i;
+    struct i82559* p_i82559;
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+    again:
+#endif
+
+    // Since this must mux all devices, the incoming arg is ignored.
+    for (i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++) {
+        p_i82559 = i82559_priv_array[i];
+        if ( p_i82559->active ) {
+
+            // See if the Tx machine is wedged - reset if so:
+            Check82559TxLockupTimeout(p_i82559);
+
+            // First pass any rx data up the stack
+            PacketRxReady(p_i82559);
+
+            // Then scan for completed Txen and inform the stack
+            TxDone(p_i82559);
+        }
+    }
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+    {
+        int retry = 0;
+        for (i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++) {
+            p_i82559 = i82559_priv_array[i];
+            if ( p_i82559->active ) {
+                if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
+                    int ints = Mask82559Interrupt(p_i82559);
+                    retry++;
+#ifdef CYGDBG_USE_ASSERTS
+                    missed_interrupt.deliver++;
+#endif
+                    eth_isr( p_i82559->vector, (cyg_addrword_t)p_i82559 );
+                    UnMask82559Interrupt(p_i82559,ints);
+                }
+            }
+            
+        }
+        if ( retry )
+            goto again;
+    }
+#endif
+}
+
+#else // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL : Simplex version:
+
 void
 i82559_deliver(struct eth_drv_sc *sc)
 {
     struct i82559* p_i82559 = (struct i82559 *)(sc->driver_private);
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+ again:
+#endif
+    // See if the Tx machine is wedged - reset if so:
+    Check82559TxLockupTimeout(p_i82559);
 
     // First pass any rx data up the stack
     PacketRxReady(p_i82559);
 
     // Then scan for completed Txen and inform the stack
     TxDone(p_i82559);
-}
 
-
-// ------------------------------------------------------------------------
-
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
-static void
-mux_deliver(struct eth_drv_sc *sc)
-{
-    int i;
-
-    // Since this must mux all devices, the incoming arg is ignored.
-    for (i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++) {
-        sc = i82559_sc_array[i];
-        if ( p_i82559->active )
-            i82559_deliver( sc );
-    }
-}
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+    if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
+        int ints = Mask82559Interrupt(p_i82559);
+#ifdef CYGDBG_USE_ASSERTS
+        missed_interrupt.deliver++;
 #endif
+        eth_isr( p_i82559->vector, (cyg_addrword_t)p_i82559 );
+        UnMask82559Interrupt(p_i82559,ints);
+        goto again;
+    }
+#endif
+}
+
+#endif // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
 
 // ------------------------------------------------------------------------
 // Device table entry to operate the chip in a polled mode.
@@ -2104,6 +2548,20 @@ i82559_int_op( struct eth_drv_sc *sc, int mask)
 //  o instantiate interrupts for them
 //  o attach those interrupts appropriately
 // ------------------------------------------------------------------------
+static cyg_pci_match_func find_82559s_match_func;
+
+// Intel 82559 and 82557 are virtually identical, with different
+// dev codes; also 82559ER (cutdown) = 0x1209.
+static cyg_bool
+find_82559s_match_func( cyg_uint16 v, cyg_uint16 d, cyg_uint32 c, void *p )
+{
+    return
+        (0x8086 == v) &&
+        ((0x1030 == d) ||
+         (0x1229 == d) ||
+         (0x1209 == d));
+}
+
 static int
 pci_init_find_82559s( void )
 {
@@ -2125,14 +2583,25 @@ pci_init_find_82559s( void )
         return 0;
     }
 
+#ifdef CYGARC_UNCACHED_ADDRESS
     CYG_ASSERT( CYGARC_UNCACHED_ADDRESS((CYG_ADDRWORD)CYGMEM_SECTION_pci_window) ==
                 CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE,
       "PCI window configured does not match PCI memory section base" );
+#else
+    CYG_ASSERT( (CYG_ADDRWORD)CYGMEM_SECTION_pci_window ==
+                CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE,
+      "PCI window configured does not match PCI memory section base" );
+#endif
     CYG_ASSERT( CYGMEM_SECTION_pci_window_SIZE ==
                 CYGHWR_INTEL_I82559_PCI_MEM_MAP_SIZE,
         "PCI window configured does not match PCI memory section size" );
 
-    if ( CYGARC_UNCACHED_ADDRESS((CYG_ADDRWORD)CYGMEM_SECTION_pci_window) !=
+    if (
+#ifdef CYGARC_UNCACHED_ADDRESS
+         CYGARC_UNCACHED_ADDRESS((CYG_ADDRWORD)CYGMEM_SECTION_pci_window) !=
+#else
+         (CYG_ADDRWORD)CYGMEM_SECTION_pci_window !=
+#endif
          CYGHWR_INTEL_I82559_PCI_MEM_MAP_BASE
          ||
          CYGMEM_SECTION_pci_window_SIZE !=
@@ -2164,16 +2633,16 @@ pci_init_find_82559s( void )
 
         p_i82559->index = device_index;
 
-        // Intel 82559 and 82557 are virtually identical,
-        // with different dev codes
-        if (cyg_pci_find_device(0x8086, 0x1030, &devid) ||
-            cyg_pci_find_device(0x8086, 0x1209, &devid) ||
-            cyg_pci_find_device(0x8086, 0x1229, &devid) ) {
+        // See above for find_82559s_match_func - it selects any of several
+        // variants.  This is necessary in case we have multiple mixed-type
+        // devices on one board in arbitrary orders.
+        if (cyg_pci_find_matching( &find_82559s_match_func, NULL, &devid )) {
 #ifdef DEBUG
             db_printf("eth%d = 82559\n", device_index);
 #endif
             cyg_pci_get_device_info(devid, &dev_info);
 
+            p_i82559->interrupt_handle = 0; // Flag not attached.
             if (cyg_pci_translate_interrupt(&dev_info, &p_i82559->vector)) {
 #ifdef DEBUG
                 db_printf(" Wired to HAL vector %d\n", p_i82559->vector);
@@ -2182,7 +2651,11 @@ pci_init_find_82559s( void )
                     p_i82559->vector,
                     0,                  // Priority - unused
                     (CYG_ADDRWORD)p_i82559, // Data item passed to ISR & DSR
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+                    eth_mux_isr,        // ISR
+#else
                     eth_isr,            // ISR
+#endif
                     eth_dsr,            // DSR
                     &p_i82559->interrupt_handle, // handle to intr obj
                     &p_i82559->interrupt_object ); // space for int obj
@@ -2191,7 +2664,7 @@ pci_init_find_82559s( void )
 
                 // Don't unmask the interrupt yet, that could get us into a
                 // race.
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
                 // ALSO attach it to MUX interrupt for multiplexed
                 // interrupts.  This is for certain boards where the
                 // PCI backplane is wired "straight through" instead of
@@ -2204,10 +2677,10 @@ pci_init_find_82559s( void )
                     if ( ! mux_interrupt_handle ) {
 #ifdef DEBUG
                         db_printf(" Also attaching to HAL vector %d\n", 
-                                  CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT);
+                                  CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT);
 #endif
                         cyg_drv_interrupt_create(
-                            CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT,
+                            CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT,
                             0,              // Priority - unused
                             (CYG_ADDRWORD)p_i82559,// Data item passed to ISR and DSR
                             eth_mux_isr,    // ISR
@@ -2218,7 +2691,7 @@ pci_init_find_82559s( void )
                         cyg_drv_interrupt_attach(mux_interrupt_handle);
                     }
                 }
-#endif // CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
+#endif // CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
             }
             else {
                 p_i82559->vector=0;
@@ -2283,7 +2756,8 @@ pci_init_find_82559s( void )
                 // interrupt
                 i82559_reset(p_i82559);
 
-                if (p_i82559->vector != 0) {
+                // This is the indicator for "uses an interrupt"
+                if (p_i82559->interrupt_handle != 0) {
                     cyg_drv_interrupt_acknowledge(p_i82559->vector);
                     cyg_drv_interrupt_unmask(p_i82559->vector);
                 }
@@ -2312,11 +2786,11 @@ pci_init_find_82559s( void )
     if (0 == found_devices)
         return 0;
 
-#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT
+#ifdef CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT
     // Now enable the mux shared interrupt if it is in use
     if (mux_interrupt_handle) {
-        cyg_drv_interrupt_acknowledge(CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT);
-        cyg_drv_interrupt_unmask(CYGNUM_DEVS_ETH_INTEL_I82559_MUX_INTERRUPT);
+        cyg_drv_interrupt_acknowledge(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT);
+        cyg_drv_interrupt_unmask(CYGNUM_DEVS_ETH_INTEL_I82559_SEPARATE_MUX_INTERRUPT);
     }
 #endif
 
@@ -2328,88 +2802,15 @@ pci_init_find_82559s( void )
     return 1;
 }
 
-// This function is called to enable the device by setting the necessary
-// minimum of the configuration.
-static int
-eth_set_config(struct i82559* p_i82559)
-{
-    cyg_uint32  ioaddr;
-    volatile CFG *ccs;
-    volatile cyg_uint8* config_bytes;
-    cyg_uint16 status;
-    int count;
-
-    IF_BAD_82559( p_i82559 ) {
-#ifdef DEBUG
-        os_printf( "eth_set_config: Bad device pointer %x\n", p_i82559 );
-#endif
-        return -1;
-    }
-
-    ioaddr = p_i82559->io_address;
-
-    // Check the malloc we did earlier worked
-    ccs = (CFG *)mem_reserved_ioctl;
-    if (ccs == (void*)0) 
-        return 2; // Failed
-
-    // Prepare header
-    HAL_WRITE_UINT16(ccs + CFG_CMD, 
-                     (CFG_CMD_EL | CFG_CMD_SUSPEND | CFG_CMD_CONFIGURE));
-    HAL_WRITE_UINT16(ccs + CFG_STATUS, 0);
-    HAL_WRITE_UINT32(ccs + CFG_CB_LINK_OFFSET, 
-                     HAL_CTOLE32(VIRT_TO_BUS((cyg_uint32)ccs)));
-
-    // Default values from the Intel Manual
-    config_bytes = ccs + CFG_BYTES;
-    config_bytes[0]=0x9;
-    config_bytes[1]=0xc;
-    config_bytes[2]=0x0;
-    config_bytes[3]=0x0;
-    config_bytes[4]=0x0;
-    config_bytes[5]=0x0;
-    config_bytes[6]=0x32;
-    config_bytes[7]=0x1;
-    // This is the bit we go through all the trouble for. Must be set
-    // before the device activates.
-    config_bytes[8]=0x1;
-
-    // Let chip read configuration
-    wait_for_cmd_done(ioaddr, WAIT_CU);
-    OUTL(VIRT_TO_BUS(ccs), ioaddr + SCBPointer);
-    OUTW(SCB_M | CU_START, ioaddr + SCBCmd);
-
-    // ...and wait for it to complete operation
-    count = 1000;
-    do {
-      HAL_READ_UINT16(ccs + CFG_STATUS, status);
-      udelay(1);
-    } while (0 == (status & CFG_STATUS_C) && (count-- > 0));
-
-    // Check status
-    if ((status & (CFG_STATUS_C | CFG_STATUS_OK)) 
-        != (CFG_STATUS_C | CFG_STATUS_OK)) {
-        // Failed!
-#ifdef DEBUG_82559
-        os_printf("%s:%d Config update failed\n", __FUNCTION__, __LINE__);
-#endif
-        return 1;
-    }
-
-    return 0;
-}
-
-#ifdef CYGPKG_NET
 // ------------------------------------------------------------------------
 //
-//  Function : eth_set_promiscuous_mode
+//  Function : i82559_configure
 //
 //  Return : 0 = It worked.
 //           non0 = It failed.
 // ------------------------------------------------------------------------
 
-static int
-eth_set_promiscuous_mode(struct i82559* p_i82559)
+static int i82559_configure(struct i82559* p_i82559, int promisc, int oversized)
 {
     cyg_uint32  ioaddr;
     volatile CFG *ccs;
@@ -2426,6 +2827,13 @@ eth_set_promiscuous_mode(struct i82559* p_i82559)
     }
 
     ioaddr = p_i82559->io_address;  
+    wait_for_cmd_done(ioaddr, WAIT_CU); 
+    // load cu base address = 0 */ 
+    OUTL(0, ioaddr + SCBPointer);         
+    // 32 bit linear addressing used
+    OUTW(SCB_M | CU_ADDR_LOAD, ioaddr + SCBCmd);
+    // wait for SCB command complete
+    wait_for_cmd_done(ioaddr, WAIT_CU);   
   
     // Check the malloc we did earlier worked
     ccs = (CFG *)mem_reserved_ioctl;
@@ -2433,60 +2841,68 @@ eth_set_promiscuous_mode(struct i82559* p_i82559)
         return 2; // Failed
 
     // Prepare header
-    HAL_WRITE_UINT16(ccs + CFG_CMD, 
+    WRITEMEM16(ccs + CFG_CMD, 
                      (CFG_CMD_EL | CFG_CMD_SUSPEND | CFG_CMD_CONFIGURE));
-    HAL_WRITE_UINT16(ccs + CFG_STATUS, 0);
-    HAL_WRITE_UINT32(ccs + CFG_CB_LINK_OFFSET, 
+    WRITEMEM16(ccs + CFG_STATUS, 0);
+    WRITEMEM32(ccs + CFG_CB_LINK_OFFSET, 
                      HAL_CTOLE32(VIRT_TO_BUS((cyg_uint32)ccs)));
 
     // Default values from the Intel Manual
     config_bytes = ccs + CFG_BYTES;
+
     config_bytes[0]=0x13;
-    config_bytes[1]=0x8;
+    config_bytes[1]=0xc;
     config_bytes[2]=0x0;
     config_bytes[3]=0x0;
     config_bytes[4]=0x0;
     config_bytes[5]=0x0;
-    config_bytes[6]=0xb2; // (promisc ? 0x80 : 0) | 0x32 for small stats,
-    config_bytes[7]=0x1;  // \      ditto         | 0x12 for stats with PAUSE stats
-    config_bytes[8]=0x0;  //  \     ditto         | 0x16 for PAUSE + TCO stats
+    config_bytes[6]=0x32 | (promisc ? 0x80 : 0x00); //   | 0x32 for small stats,
+    config_bytes[7]=0x00 | (promisc ? 0x00 : 0x01); //\  | 0x12 for stats with PAUSE stats
+    config_bytes[8]=0x01; // [7]:discard short frames  \ | 0x16 for PAUSE + TCO stats
     config_bytes[9]=0x0;
     config_bytes[10]=0x28;
     config_bytes[11]=0x0;
     config_bytes[12]=0x60;
     config_bytes[13]=0x0;          // arp
     config_bytes[14]=0x0;          // arp
-                   
-    config_bytes[15]=0x81;         // promiscuous mode set
-                                   // \ or 0x80 for normal mode.
+    
+    config_bytes[15]=0x80 | (promisc ? 1 : 0); // 0x81: promiscuous mode set
+                                               // 0x80: normal mode
     config_bytes[16]=0x0;
     config_bytes[17]=0x40;
-    config_bytes[18]=0x72;         // Keep the Padding Enable bit
-
+    config_bytes[18]=0x72 | (oversized ? 8 : 0); // Keep the Padding Enable bit
+    
     // Let chip read configuration
     wait_for_cmd_done(ioaddr, WAIT_CU);
+
     OUTL(VIRT_TO_BUS(ccs), ioaddr + SCBPointer);
     OUTW(SCB_M | CU_START, ioaddr + SCBCmd);
 
     // ...and wait for it to complete operation
-    count = 1000;
+    count = 10000;
     do {
-      HAL_READ_UINT16(ccs + CFG_STATUS, status);
       udelay(1);
+      READMEM16(ccs + CFG_STATUS, status);
     } while (0 == (status & CFG_STATUS_C) && (count-- > 0));
 
     // Check status
     if ((status & (CFG_STATUS_C | CFG_STATUS_OK)) 
         != (CFG_STATUS_C | CFG_STATUS_OK)) {
         // Failed!
-#ifdef DEBUG_82559
+#ifdef DEBUG
         os_printf("%s:%d Config update failed\n", __FUNCTION__, __LINE__);
 #endif
         return 1;
     }
+
+    wait_for_cmd_done(ioaddr, WAIT_CU);
+    /* load pointer to Rx Ring */
+    
+    OUTL(VIRT_TO_BUS(p_i82559->rx_ring[0]), ioaddr + SCBPointer);
+    OUTW(RUC_START, ioaddr + SCBCmd);
+
     return 0;
 }
-#endif
 
 // ------------------------------------------------------------------------
 // We use this as a templete when writing a new MAC address into the
@@ -2554,10 +2970,10 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
     if (ccs == (void*)0)
         return 2;
 
-    HAL_WRITE_UINT16(ccs + CFG_CMD, 
+    WRITEMEM16(ccs + CFG_CMD, 
                      (CFG_CMD_EL | CFG_CMD_SUSPEND | CFG_CMD_IAS));
-    HAL_WRITE_UINT16(ccs + CFG_STATUS, 0);
-    HAL_WRITE_UINT32(ccs + CFG_CB_LINK_OFFSET, 
+    WRITEMEM16(ccs + CFG_STATUS, 0);
+    WRITEMEM32(ccs + CFG_CB_LINK_OFFSET, 
                      HAL_CTOLE32(VIRT_TO_BUS((cyg_uint32)ccs)));
 
     config_bytes = ccs + CFG_BYTES;
@@ -2573,15 +2989,15 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
     // ...and wait for it to complete operation
     count = 1000;
     do {
-      HAL_READ_UINT16(ccs + CFG_STATUS, status);
+      READMEM16(ccs + CFG_STATUS, status);
       udelay(1);
     } while (0 == (status & CFG_STATUS_C) && (count-- > 0));
 
     // Check status
-    HAL_READ_UINT16(ccs + CFG_STATUS, status);
+    READMEM16(ccs + CFG_STATUS, status);
     if ((status & (CFG_STATUS_C | CFG_STATUS_OK)) 
         != (CFG_STATUS_C | CFG_STATUS_OK)) {
-#ifdef DEBUG_82559
+#ifdef DEBUG
         os_printf("%s:%d ESA update failed\n", __FUNCTION__, __LINE__);
 #endif
         return 3;
@@ -2620,7 +3036,7 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
         }
     
 #ifdef DEBUG
-        os_printf("MAC Address = %02X %02X %02X %02X %02X %02X\n",
+        os_printf("eth_set_mac_address[WRITE_EEPROM]: MAC Address = %02X %02X %02X %02X %02X %02X\n",
                   p_i82559->mac_address[0], p_i82559->mac_address[1],
                   p_i82559->mac_address[2], p_i82559->mac_address[3],
                   p_i82559->mac_address[4], p_i82559->mac_address[5]);
@@ -2661,6 +3077,17 @@ eth_set_mac_address(struct i82559* p_i82559, char *addr)
     p_i82559->mac_address[4] = addr[4];
     p_i82559->mac_address[5] = addr[5];
     p_i82559->mac_addr_ok = 1;
+
+#ifdef DEBUG
+    os_printf( "No EEPROM configured: MAC Address = %02X %02X %02X %02X %02X %02X (ok %d)\n",
+               p_i82559->mac_address[0],
+               p_i82559->mac_address[1],
+               p_i82559->mac_address[2],
+               p_i82559->mac_address[3],
+               p_i82559->mac_address[4],
+               p_i82559->mac_address[5],
+               p_i82559->mac_addr_ok       );
+#endif
 
 #endif // ! CYGPKG_DEVS_ETH_INTEL_I82559_WRITE_EEPROM
 
@@ -2934,7 +3361,10 @@ update_statistics(struct i82559* p_i82559)
     cyg_uint32 *p_counter;
     cyg_uint32 *p_register;
     int reg_count, ints;
-    
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+    struct i82559* op_i82559 = p_i82559;
+#endif
+
     ints = Mask82559Interrupt(p_i82559);
 
     // This points to the sthared memory stats area/command block
@@ -2955,235 +3385,55 @@ update_statistics(struct i82559* p_i82559)
         wait_for_cmd_done(p_i82559->io_address, WAIT_CU);
         OUTW(CU_DUMPSTATS, p_i82559->io_address + SCBCmd);
     }
+
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+    {
+        int i;
+        // The problem is, if DEMUX_ALL, either device can eat the other's
+        // interrupts; so we must poll them *both*:
+        for (i = 0; i < CYGNUM_DEVS_ETH_INTEL_I82559_DEV_COUNT; i++) {
+            p_i82559 = i82559_priv_array[i];
+            if ( p_i82559->active ) {
+                // See if the Tx machine is wedged - reset if so:
+                Check82559TxLockupTimeout(p_i82559);
+                TxMachine(p_i82559);
+                Acknowledge82559Interrupt(p_i82559);
+                PacketRxReady(p_i82559);
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+                if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
+#ifdef CYGDBG_USE_ASSERTS
+                    missed_interrupt.stats++;
+#endif
+                    eth_isr( p_i82559->vector, (cyg_addrword_t)p_i82559 );
+                    eth_dsr( p_i82559->vector, 1, (cyg_addrword_t)p_i82559 );
+                }
+#endif
+            }
+        }
+    }
+    // ensure we look at the correct device at the end
+    p_i82559 = op_i82559;
+#else // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
+    // See if the Tx machine is wedged - reset if so:
+    Check82559TxLockupTimeout(p_i82559);
+    TxMachine(p_i82559);
     Acknowledge82559Interrupt(p_i82559); // This can eat an Rx interrupt, so
     PacketRxReady(p_i82559);
+#ifdef CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT
+    if ( CYGHWR_DEVS_ETH_INTEL_I82559_MISSED_INTERRUPT(p_i82559) ) {
+#ifdef CYGDBG_USE_ASSERTS
+        missed_interrupt.stats++;
+#endif
+        eth_isr( p_i82559->vector, (cyg_addrword_t)p_i82559 );
+        eth_dsr( p_i82559->vector, 1, (cyg_addrword_t)p_i82559 );
+    }
+#endif
+#endif // no CYGHWR_DEVS_ETH_INTEL_I82559_DEMUX_ALL
 
     UnMask82559Interrupt(p_i82559, ints);
 }
 #endif
 #endif // KEEP_STATISTICS
-
-// ------------------------------------------------------------------------
-//
-//
-//           CODE FOR DEBUGGING PURPOSES ONLY
-//
-//
-// ------------------------------------------------------------------------
-void
-dump_txcb(TxCB *p_txcb)
-{
-    cyg_uint16 tmp8;
-    cyg_uint16 tmp16;
-    cyg_uint32 tmp32;
-
-    os_printf("TxCB @ %x\n", (int)p_txcb);
-    HAL_READ_UINT16(p_txcb + TxCB_STATUS, tmp16);
-    os_printf("status = %04X ", HAL_LE16TOC(tmp16));
-    HAL_READ_UINT16(p_txcb + TxCB_CMD, tmp16);
-    os_printf("command = %04X ", HAL_LE16TOC(tmp16));
-    HAL_READ_UINT32(p_txcb + TxCB_LINK, tmp32);
-    os_printf("link = %08X ", HAL_LE32TOC(tmp32));
-    HAL_READ_UINT32(p_txcb + TxCB_TBD_ADDR, tmp32);
-    os_printf("tbd = %08X ", HAL_LE32TOC(tmp32));
-    HAL_READ_UINT16(p_txcb + TxCB_COUNT, tmp16);
-    tmp16 = HAL_LE16TOC(tmp16);
-    os_printf("count = %d ", (tmp16 & TxCB_COUNT_MASK));
-    os_printf("eof = %x ", (tmp16 & TxCB_COUNT_EOF) ? 1 : 0);
-    HAL_READ_UINT8(p_txcb + TxCB_TX_THRESHOLD, tmp8);
-    os_printf("threshold = %d ", tmp8);
-    HAL_READ_UINT8(p_txcb + TxCB_TBD_NUMBER, tmp8);
-    os_printf("tbd number = %d\n", tmp8);
-}
-
-// This is intended to be the body of a THREAD that prints stuff every 10
-// seconds or so:
-#ifdef KEEP_STATISTICS
-#ifdef DISPLAY_STATISTICS
-void
-DisplayStatistics(void)
-{
-    int i;
-    I82559_COUNTERS *p_statistics;
-    cyg_uint32 *p_counter;
-    cyg_uint32 *p_register;
-    int reg_count;
-    int status;
-    
-    while ( 1 ) {
-#ifdef DISPLAY_82559_STATISTICS
-        for ( i = 0; i < 2; i ++ ) {
-            p_statistics = (I82559_COUNTERS *)i82559[i].p_statistics;
-            if ( (p_statistics->done & 0xFFFF) == 0xA007 ) {
-                p_counter = (cyg_uint32 *)&i82559_counters[i];
-                p_register = (cyg_uint32 *)&p_statistics->tx_good;
-                for ( reg_count = 20; reg_count != 0; reg_count--) {
-                    *p_counter += *p_register;
-                    p_counter++;
-                    p_register++;
-                }
-                p_statistics->done = 0;
-                // start register dump
-            	wait_for_cmd_done(i82559[i].io_address, WAIT_CU);
-                OUTW(CU_DUMPSTATS, i82559[i].io_address + SCBCmd);
-            }
-        }
-#endif
-        os_printf("\nRx\nPackets = %d  %d\n",
-        statistics[0].rx_count, statistics[1].rx_count);
-        os_printf("Deliver   %d  %d\n",
-        statistics[0].rx_deliver, statistics[1].rx_deliver);
-        os_printf("Resource  %d  %d\n",
-        statistics[0].rx_resource, statistics[1].rx_resource);
-        os_printf("Restart   %d  %d\n",
-        statistics[0].rx_restart, statistics[1].rx_restart);
-
-#ifdef DISPLAY_82559_STATISTICS
-        os_printf("Count     %d  %d\n",
-        i82559_counters[0].rx_good, i82559_counters[1].rx_good);
-        os_printf("CRC       %d  %d\n",
-        i82559_counters[0].rx_crc_errors, i82559_counters[1].rx_crc_errors);
-        os_printf("Align     %d  %d\n",
-        i82559_counters[0].rx_align_errors, i82559_counters[1].rx_align_errors);
-        os_printf("Resource  %d  %d\n",
-        i82559_counters[0].rx_resource_errors, i82559_counters[1].rx_resource_errors);
-        os_printf("Overrun   %d  %d\n",
-        i82559_counters[0].rx_overrun_errors, i82559_counters[1].rx_overrun_errors);
-        os_printf("Collision %d  %d\n",
-        i82559_counters[0].rx_collisions, i82559_counters[1].rx_collisions);
-        os_printf("Short     %d  %d\n",
-        i82559_counters[0].rx_short_frames, i82559_counters[1].rx_short_frames);
-#endif
-        os_printf("\nTx\nPackets = %d  %d\n",
-        statistics[0].tx_count, statistics[1].tx_count);
-        os_printf("Complete  %d  %d\n",
-        statistics[0].tx_complete, statistics[1].tx_complete);
-        os_printf("Dropped   %d  %d\n",
-        statistics[0].tx_dropped, statistics[1].tx_dropped);
-        os_printf("Count     %d  %d\n",
-        i82559_counters[0].tx_good, i82559_counters[1].tx_good);
-#ifdef DISPLAY_82559_STATISTICS
-        os_printf("Collision %d  %d\n",
-        i82559_counters[0].tx_max_collisions,i82559_counters[1].tx_max_collisions);
-        os_printf("Late Col. %d  %d\n",
-        i82559_counters[0].tx_late_collisions,i82559_counters[1].tx_late_collisions);
-        os_printf("Underrun  %d  %d\n",
-        i82559_counters[0].tx_underrun,i82559_counters[1].tx_underrun);
-        os_printf("Carrier   %d  %d\n",
-        i82559_counters[0].tx_carrier_loss,i82559_counters[1].tx_carrier_loss);
-        os_printf("Deferred  %d  %d\n",
-        i82559_counters[0].tx_deferred, i82559_counters[1].tx_deferred);
-        os_printf("1 Col     %d  %d\n",
-        i82559_counters[0].tx_single_collisions, i82559_counters[0].tx_single_collisions);
-        os_printf("Mult. Col %d  %d\n",
-        i82559_counters[0].tx_mult_collisions, i82559_counters[0].tx_mult_collisions);
-        os_printf("Total Col %d  %d\n",
-        i82559_counters[0].tx_total_collisions, i82559_counters[0].tx_total_collisions);
-#endif
-        status = INB(i82559[0].io_address + SCBGenStatus);
-        os_printf("Interface 0 Link = %s, %s Mbps, %s Duplex\n",
-            status & GEN_STATUS_LINK ? "Up" : "Down",
-            status & GEN_STATUS_100MBPS ?  "100" : "10",
-            status & GEN_STATUS_FDX ? "Full" : "Half");
-
-        status = INB(i82559[1].io_address + SCBGenStatus);
-        os_printf("Interface 1 Link = %s, %s Mbps, %s Duplex\n",
-            status & GEN_STATUS_LINK ? "Up" : "Down",
-            status & GEN_STATUS_100MBPS ?  "100" : "10",
-            status & GEN_STATUS_FDX ? "Full" : "Half");
-
-        cyg_thread_delay(1000);
-    }
-}
-#endif // DISPLAY_STATISTICS
-#endif // KEEP_STATISTICS
-
-void
-dump_rfd(RFD *p_rfd, int anyway )
-{
-    cyg_uint32 rxstatus, tmp32;
-    cyg_uint16 tmp16;
-
-    HAL_READ_UINT32(p_rfd + RFD_STATUS, rxstatus);
-    if ( (0 != rxstatus) || anyway ) {
-        os_printf("RFD @ %x = ", (int)p_rfd);
-        os_printf("status = %x ", HAL_LE32TOC(rxstatus));
-        HAL_READ_UINT32(p_rfd + RFD_LINK, tmp32);
-        os_printf("link = %x ", HAL_LE32TOC(tmp32));
-//      HAL_READ_UINT32(p_rfd + RFD_RDB_ADDR, tmp32);
-//      os_printf("rdb_address = %x ", HAL_LE32TOC(rdb_address));
-        HAL_READ_UINT16(p_rfd + RFD_COUNT, tmp16);
-        tmp16 = HAL_LE16TOC(tmp16);
-        os_printf("count = %x ", (tmp16 & RFD_COUNT_MASK));
-        os_printf("f = %x ", (tmp16 & RFD_COUNT_F) ? 1 : 0);
-        os_printf("eof = %x ", (tmp16 & RFD_COUNT_EOF) ? 1 : 0);
-        HAL_READ_UINT16(p_rfd + RFD_SIZE, tmp16);
-        os_printf("size = %x\n", HAL_LE16TOC(tmp16));
-        // FIXME: HAL_BE16TOC surely? This is the network package
-        // header, right?
-        os_printf("[%04x %04x %04x] ",
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 0)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 2)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 4)));
-        os_printf("[%04x %04x %04x] %04x : ",          
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 6)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 8)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 10)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 12)));
-        os_printf("(%04x %04x %04x %04x) ",            
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 14)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 16)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 18)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 20)) );
-        os_printf("[%04x %04x %04x] ",                 
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 22)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 24)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 26)) );
-        os_printf("%d.%d.%d.%d ",
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 28)),
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 29)),
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 30)),
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 31)) );
-        os_printf("[%04x %04x %04x] ",                 
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 32)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 34)),
-                  *((cyg_uint16 *)(p_rfd + RFD_BUFFER + 36)) );
-        os_printf("%d.%d.%d.%d ...\n",
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 38)),
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 39)),
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 40)),
-                  *((cyg_uint8  *)(p_rfd + RFD_BUFFER + 41)) );
-    }
-}
-
-void
-dump_all_rfds( int intf )
-{
-    struct i82559* p_i82559 = i82559_priv_array[intf];
-    int i, j;
-    j = p_i82559->next_rx_descriptor;
-    os_printf("rx descriptors for interface %d (eth%d):\n", intf, intf );
-    for ( i = 0; i < MAX_RX_DESCRIPTORS; i++ )
-        dump_rfd( p_i82559->rx_ring[i], (i > (j-3) && (i <= j)) );
-    os_printf("next rx descriptor = %x\n\n", j);
-}
-
-
-void
-dump_packet(cyg_uint8 *p_buffer, int length)
-{
-    int count;
-
-    count = 0;
-    while ( length > 0 ) {
-        if ( count == 0 )
-            os_printf("\n");
-        count = (count + 1) & 0x0F;
-        os_printf("%02X ", *p_buffer++);
-        length--;
-    }
-    os_printf("\n");
-}
 
 // ------------------------------------------------------------------------
 

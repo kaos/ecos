@@ -1,3 +1,42 @@
+2001-03-29  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* cdl/hal_v85x_v850.cdl: Fix typo.
+
+2001-03-28  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/hal_diag.c: Move here from platform HALs - on-board serial0
+	is generic for V850 platforms.
+
+	* cdl/hal_v85x_v850.cdl: Build hal_diag.c
+	Add interfaces indicating variant.
+	Add option for ICE debugging.
+
+	* include/v850_common.h: Move register definitions here from
+	platform HAL and define both SA1 and SB1 variants.
+	Also rename some to match official docs.
+
+	* include/var_arch.h: No need to include <pkgconf/hal.h>
+
+	* include/var_cache.h: Provide empty default cache macros here.
+
+	* include/var_intr.h: Move interrupt definitions here from
+	platform HAL and define for both SA1 and SB1 variants.
+	Also rename some to match official docs.
+
+	* src/v850_misc.c: Doesn't use tracing, so don't include header.
+
+	* src/v850_stub.c: Reflect CYGNUM_HAL_VECTOR_WATCHDOG_TIMER ->
+	CYGNUM_HAL_VECTOR_INTWDT renaming.
+	Add support for debugging via ICE and gdbserv.
+
+	* src/v85x_v850.ld: Start at "start" not "reset_vector".
+	Support ram_vectors section (separated out to support ROMRAM startup).
+
+	* src/nec.ld: Remove - redundant.
+
+	* tests/nmitest.c: Added. Standalone test for checking if we've
+	received an NMI.
+
 2000-09-06  Gary Thomas  <gthomas@redhat.com>
 
 	* cdl/hal_v85x_v850.cdl: Improve [CPU] variant support.
@@ -87,7 +126,7 @@
 //                                                                          
 // The Initial Developer of the Original Code is Red Hat.                   
 // Portions created by Red Hat are                                          
-// Copyright (C) 1998, 1999, 2000 Red Hat, Inc.                             
+// Copyright (C) 1998, 1999, 2000, 2001 Red Hat, Inc.                
 // All Rights Reserved.                                                     
 // -------------------------------------------                              
 //                                                                          

@@ -64,7 +64,10 @@
 //==========================================================================
 // Implement filesystem locking protocol. 
 
-#define LOCK_FS( _mte_ ) cyg_fs_lock( _mte_, (_mte_)->fs->syncmode)
+#define LOCK_FS( _mte_ )  {                             \
+   CYG_ASSERT(_mte_ != NULL, "Bad mount table entry");  \
+   cyg_fs_lock( _mte_, (_mte_)->fs->syncmode);          \
+}
 
 #define UNLOCK_FS( _mte_ ) cyg_fs_unlock( _mte_, (_mte_)->fs->syncmode)
 
@@ -186,6 +189,10 @@ __externC int open( const char *path, int oflag, ... )
     cyg_mtab_entry *mte = cdir_mtab_entry;
     cyg_dir dir = cdir_dir;
     const char *name = path;
+
+    // At least one of O_RDONLY, O_WRONLY, O_RDWR must be provided
+    if( (oflag & O_RDWR) == 0 )
+        FILEIO_RETURN(EINVAL);
 
     fd = cyg_fd_alloc(0);
 

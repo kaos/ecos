@@ -1,3 +1,7 @@
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_arm_aeb.cdl: Does not guarantee virtual vector support.
+
 2001-02-13  Gary Thomas  <gthomas@redhat.com>
 
 	* src/aeb_misc.c (hal_IRQ_handler): Use CYGNUM_HAL_INTERRUPT_NONE

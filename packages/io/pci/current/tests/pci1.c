@@ -78,11 +78,13 @@
 // devices on the PCI bus. By enabling the below definition, the
 // devices will get PCI IO and MEM access activated after configuration
 // so you can play with IO registers and display/set contents of MEM.
-#undef ENABLE_PCI_DEVICES
+#define nENABLE_PCI_DEVICES
 
 unsigned char stack[CYGNUM_HAL_STACK_SIZE_TYPICAL];
 cyg_thread thread_data;
 cyg_handle_t thread_handle;
+
+void pci_scan( void );
 
 cyg_bool
 pci_api_test(int dummy)
@@ -154,6 +156,8 @@ pci_test( void )
     pci_api_test(1);
 
     cyg_pci_init();
+
+    diag_printf( "========== Finding and configuring devices\n" );
 
     if (cyg_pci_find_next(CYG_PCI_NULL_DEVID, &devid)) {
         do {
@@ -283,7 +287,124 @@ pci_test( void )
         diag_printf("No PCI devices found.");
     }
 
+    pci_scan();
+
     CYG_TEST_PASS_FINISH("pci1 test OK");
+}
+
+void
+pci_scan( void )
+{
+    cyg_pci_device dev_info;
+    cyg_pci_device_id devid;
+    CYG_ADDRWORD irq;
+    int i;
+#ifdef USE_PCI_CODE_LIST
+    cyg_bool no_match = false;
+    cyg_uint16 vendor, device;
+    cyg_uint8  bc, sc, pi;
+    PCI_VENTABLE* vtbl;
+    PCI_DEVTABLE* dtbl;
+    PCI_CLASSCODETABLE* ctbl;
+#endif
+
+    diag_printf( "========== Scanning initialized devices\n" );
+
+    if (cyg_pci_find_next(CYG_PCI_NULL_DEVID, &devid)) {
+        do {
+            // Since we are NOT about to configure the device, set the
+            // devinfo record so we don't mistake garbage for data.
+            memset( &dev_info, 0xAAAAAAAAu, sizeof( dev_info ) );
+
+            // Get device info
+            cyg_pci_get_device_info(devid, &dev_info);
+
+            // Print stuff
+            diag_printf("Found device on bus %d, devfn 0x%02x:\n",
+                        CYG_PCI_DEV_GET_BUS(devid),
+                        CYG_PCI_DEV_GET_DEVFN(devid));
+
+            if (dev_info.command & CYG_PCI_CFG_COMMAND_ACTIVE) {
+                diag_printf(" Note that board is active. Probed"
+                            " sizes and CPU addresses invalid!\n");
+            }
+
+            diag_printf(" Vendor    0x%04x", dev_info.vendor);
+#ifdef USE_PCI_CODE_LIST
+            vendor = dev_info.vendor;
+            vtbl = PciVenTable;
+            for (i = 0; i < PCI_VENTABLE_LEN; i++, vtbl++)
+                if (vendor == vtbl->VenId) 
+                    break;
+
+            if (i < PCI_VENTABLE_LEN) {
+                diag_printf(" [%s][%s]", vtbl->VenShort, vtbl->VenFull);
+            } else {
+                diag_printf(" [UNKNOWN]");
+                no_match = true;
+            }
+#endif
+            diag_printf("\n Device    0x%04x", dev_info.device);
+#ifdef USE_PCI_CODE_LIST
+            device = dev_info.device;
+            dtbl = PciDevTable;
+            for (i = 0; i < PCI_DEVTABLE_LEN; i++, dtbl++)
+                if (vendor == dtbl->VenId && device == dtbl->DevId) 
+                    break;
+
+            if (i < PCI_DEVTABLE_LEN) {
+                diag_printf(" [%s][%s]", dtbl->Chip, dtbl->ChipDesc);
+            } else {
+                diag_printf(" [UNKNOWN]");
+                no_match = true;
+            }
+#endif
+
+            diag_printf("\n Command   0x%04x, Status 0x%04x\n",
+                        dev_info.command, dev_info.status);
+
+            diag_printf(" Class/Rev 0x%08x", dev_info.class_rev);
+#ifdef USE_PCI_CODE_LIST
+            bc = (dev_info.class_rev >> 24) & 0xff;
+            sc = (dev_info.class_rev >> 16) & 0xff;
+            pi = (dev_info.class_rev >>  8) & 0xff;
+            ctbl = PciClassCodeTable;
+            for (i = 0; i < PCI_CLASSCODETABLE_LEN; i++, ctbl++)
+                if (bc == ctbl->BaseClass 
+                    && sc == ctbl->SubClass
+                    && pi == ctbl->ProgIf)
+                    break;
+
+            if (i < PCI_CLASSCODETABLE_LEN) {
+                diag_printf(" [%s][%s][%s]", ctbl->BaseDesc,
+                            ctbl->SubDesc, ctbl->ProgDesc);
+            } else {
+                diag_printf(" [UNKNOWN]");
+                no_match = true;
+            }
+#endif
+            diag_printf("\n Header 0x%02x\n", dev_info.header_type);
+
+            diag_printf(" SubVendor 0x%04x, Sub ID 0x%04x\n",
+                        dev_info.header.normal.sub_vendor, 
+                        dev_info.header.normal.sub_id);
+
+
+            for(i = 0; i < CYG_PCI_MAX_BAR; i++) {
+                diag_printf(" BAR[%d]    0x%08x /", i, dev_info.base_address[i]);
+                diag_printf(" probed size 0x%08x / CPU addr 0x%08x\n",
+                            dev_info.base_size[i], dev_info.base_map[i]);
+            }
+            
+            if (cyg_pci_translate_interrupt(&dev_info, &irq))
+                diag_printf(" Wired to HAL vector %d\n", irq);
+            else
+                diag_printf(" Does not generate interrupts.\n");
+
+        } while (cyg_pci_find_next(devid, &devid));
+    } else {
+        diag_printf("No PCI devices found.");
+    }
 }
 
 void

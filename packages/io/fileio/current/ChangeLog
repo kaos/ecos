@@ -1,3 +1,25 @@
+2001-03-15  Gary Thomas  <gthomas@redhat.com>
+
+	* src/file.cxx (open): Check for required/valid open mode.
+
+2001-03-14  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* src/misc.cxx (cyg_mtab_lookup): check valid mtab entry
+	(umount): ditto.
+
+2001-03-14   Martin van Veen  <martin_van_veen@yahoo.com>
+
+	* src/misc.cxx (mount): Return error if mount fails.
+
+2001-03-12  Gary Thomas  <gthomas@redhat.com>
+
+	* src/misc.cxx (mount): Do implicit 'chdir()' in the
+	absence of any statically mounted file systems.
+	(cyg_fs_lock, cyg_fs_unlock): Add assertions.
+
+	* src/file.cxx (LOCK_FS):
+	* src/dir.cxx (LOCK_FS): Add assertions on 'mte'.
+
 2001-01-05  Nick Garnett  <nickg@cygnus.co.uk>
 
 	* tests/socket.c (main):

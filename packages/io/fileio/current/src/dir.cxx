@@ -70,7 +70,10 @@ CYG_MACRO_END
 //==========================================================================
 // Implement filesystem locking protocol. 
 
-#define LOCK_FS( _mte_ ) cyg_fs_lock( _mte_, (_mte_)->fs->syncmode)
+#define LOCK_FS( _mte_ )  {                             \
+   CYG_ASSERT(_mte_ != NULL, "Bad mount table entry");  \
+   cyg_fs_lock( _mte_, (_mte_)->fs->syncmode);          \
+}
 
 #define UNLOCK_FS( _mte_ ) cyg_fs_unlock( _mte_, (_mte_)->fs->syncmode)
 

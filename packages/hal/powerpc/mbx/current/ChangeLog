@@ -1,3 +1,8 @@
+2001-03-08  Jesper Skov  <jskov@redhat.com>
+
+	* cdl/hal_powerpc_mbx.cdl: Does not guarantee virtual vector
+	support.
+
 2001-02-23  Gary Thomas  <gthomas@redhat.com>
 
 	* misc/redboot_RAM.ecm: Renamed from redboot_RAM.cfg

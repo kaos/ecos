@@ -97,15 +97,15 @@ struct tftpd_fileops {
 #define O_WRONLY 2
 #endif
 
-extern int tftpd_start(int, struct tftpd_fileops *);
-extern int tftpd_stop(int);
+__externC int tftpd_start(int, struct tftpd_fileops *);
+__externC int tftpd_stop(int);
 
 /*
  * Client support
  */
 
-extern int tftp_get(char *, struct sockaddr_in *, char *, int, int, int *);
-extern int tftp_put(char *, struct sockaddr_in *, char *, int, int, int *);
+__externC int tftp_get(char *, struct sockaddr_in *, char *, int, int, int *);
+__externC int tftp_put(char *, struct sockaddr_in *, char *, int, int, int *);
 
 #define TFTP_TIMEOUT_PERIOD  5          // Seconds between retries
 #define TFTP_TIMEOUT_MAX    50          // Max timeouts over all blocks

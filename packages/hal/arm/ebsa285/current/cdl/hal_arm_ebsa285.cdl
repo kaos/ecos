@@ -54,7 +54,6 @@ cdl_package CYGPKG_HAL_ARM_EBSA285 {
     implements    CYGINT_HAL_DEBUG_GDB_STUBS
     implements    CYGINT_HAL_DEBUG_GDB_STUBS_BREAK
     implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT
-    implements    CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED
     implements    CYGINT_HAL_ARM_MEM_REAL_REGION_TOP
 
     define_proc {

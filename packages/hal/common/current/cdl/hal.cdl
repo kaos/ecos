@@ -139,12 +139,12 @@ cdl_package CYGPKG_HAL {
         }
 
 
-        cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED {
-            display "The platform port was written with vector support"
+        cdl_interface CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED {
+            display "The platform port predates virtual vectors"
             no_define
             description    "
                 Many platform HALs have adopted the virtual vector support
-                after its introduction. On those platforms, old ROM
+                only after its introduction. On those platforms, old ROM
                 monitors will not provide the necessary services - and
                 so the use of these services should be disabled per default.
                 Newer ports, however, guarantee to provide the necessary
@@ -167,7 +167,7 @@ cdl_package CYGPKG_HAL {
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INHERIT_CONSOLE {
                 display       "Inherit console settings from ROM monitor"
 	        active_if     CYGSEM_HAL_USE_ROM_MONITOR
-                default_value { CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED \
+                default_value { !CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED \
                                 && !CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_COMMS }
                 description   "
                     When this option is set, the application will inherit
@@ -199,7 +199,7 @@ cdl_package CYGPKG_HAL {
 
             cdl_option CYGSEM_HAL_VIRTUAL_VECTOR_INIT_WHOLE_TABLE {
                 display       "Initialize whole of virtual vector table"
-                default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR || !CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_GUARANTEED }
+                default_value { CYG_HAL_STARTUP != "RAM" || !CYGSEM_HAL_USE_ROM_MONITOR || CYGINT_HAL_VIRTUAL_VECTOR_SUPPORT_NOT_GUARANTEED }
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_ICTRL
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_RESET
                 requires CYGSEM_HAL_VIRTUAL_VECTOR_CLAIM_DELAY_US
@@ -356,6 +356,15 @@ cdl_package CYGPKG_HAL {
         }
 
 
+    }
+
+    # Does platform need special I/O initializations?
+    cdl_interface     CYGINT_HAL_PLF_IF_INIT {
+        display       "Platform defined I/O channels."
+        description   "
+          Platforms which provide additional I/O channels can implement
+          this interface, indicating that the function plf_if_init()
+          needs to be called."
     }
 
     define_proc {

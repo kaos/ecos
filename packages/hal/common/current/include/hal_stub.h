@@ -95,6 +95,14 @@ extern "C" {
 # endif
 #endif
 
+//-----------------------------------------------------------------------------
+// Dummy definitions for harvard memory support for princeton memory systems.
+#ifndef TARGET_HAS_HARVARD_MEMORY
+typedef target_register_t target_addr_t;
+#define TARGET_ADDR_IS_PROGMEM(x) 0
+#define TARGET_ADDR_TO_PTR(x)     ((char *) (x))
+#endif
+
 //----------------------------------------------------------------------------
 // Signal definitions to avoid 'signal.h'/
 #define SIGHUP  1       /* hangup */

@@ -77,5 +77,5 @@ typedef cyg_io_handle_t cyg_stdio_handle_t;
 #endif
 
 //========================================================================
-#endif CYGONCE_LIBC_STDIO_IO_HXX multiple inclusion protection
+#endif // CYGONCE_LIBC_STDIO_IO_HXX multiple inclusion protection
 // EOF io.hxx

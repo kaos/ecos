@@ -53,6 +53,11 @@
 #include <cyg/hal/hal_arch.h>
 #include <cyg/hal/hal_cache.h>
 
+#ifdef TARGET_HAS_HARVARD_MEMORY
+#define __read_mem_safe __read_progmem_safe
+#define __write_mem_safe __write_progmem_safe
+#endif
+
 /*
  * A simple target breakpoint list without using malloc.
  * To use this package, you must define HAL_BREAKINST_SIZE to be the size

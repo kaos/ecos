@@ -40,7 +40,6 @@
 //
 //==========================================================================
 
-#include <pkgconf/kernel.h>             // Kernel config
 #include <pkgconf/wallclock.h>          // Wallclock device config
 
 #include <cyg/hal/hal_io.h>             // IO macros

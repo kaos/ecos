@@ -67,9 +67,29 @@ cdl_package CYGPKG_IO_SERIAL_GENERIC_16X5X {
         puts $::cdl_header "#include CYGDAT_IO_SERIAL_GENERIC_16X5X_CFG";
     }
 
+    cdl_component CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO {
+        display       "16x5x FIFO support"
+        flavor        bool
+        default_value 1
+        description   "
+            Options to configure the FIFO on a 16550 (or above) variant."
+
+        cdl_option CYGPKG_IO_SERIAL_GENERIC_16X5X_FIFO_RX_THRESHOLD {
+            display "Threshold for RX interrupt on 16550 FIFO"
+            flavor data
+            legal_values { 14 8 4 1 }
+            default_value 1
+            description "
+                This options configures the threshold value at which
+                the RX interrupt occurs when a FIFO is used. (16550 and
+                above only), this may be after 1, 4, 8 or 14 characters."
+        }
+    }
+	     
     cdl_component CYGPKG_IO_SERIAL_GENERIC_16X5X_OPTIONS {
         display "Serial device driver build options"
         flavor  none
+
         description   "
 	    Package specific build options including control over
 	    compiler flags used only in building this package,
