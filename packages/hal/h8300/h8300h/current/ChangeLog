@@ -1,3 +1,7 @@
+2005-01-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* src/h8300_h8300h.ld: h8300h_sim target build error fix
+
 2004-04-22  Jani Monoses <jani@iv.ro>
 
 	 * cdl/hal_h8300_h8300h.cdl :
